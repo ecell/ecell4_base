@@ -52,7 +52,7 @@ public:
 
 private:
 
-  struct p_survival_params 
+  struct p_reaction_params 
   { 
     const PlainPairGreensFunction* const gf;
     const Real r0;
@@ -83,17 +83,17 @@ private:
     const Real kf;
   };
 
-  static const Real p_survival_F( const Real t, 
-				  const p_survival_params* params );
-  static const Real p_survival_deriv_F( const Real t,
-					const p_survival_params* params );
-  static void p_survival_fdf_F( const Real t,
-				const p_survival_params* params,
+  static const Real p_reaction_F( const Real tsqrt, 
+				  const p_reaction_params* params );
+  static const Real p_reaction_deriv_F( const Real tsqrt,
+					const p_reaction_params* params );
+  static void p_reaction_fdf_F( const Real tsqrt,
+				const p_reaction_params* params,
 				Real* const f, Real* const df );
 
-  const Real p_survival( const Real t, const Real r0 ) const;
-  const Real p_survival_deriv( const Real t, const Real r0 ) const;
-  void p_survival_fdf( const Real t, const Real r0,
+  const Real p_reaction( const Real tsqrt, const Real r0 ) const;
+  const Real p_reaction_deriv( const Real tsqrt, const Real r0 ) const;
+  void p_reaction_fdf( const Real tsqrt, const Real r0,
 		       Real* const f, Real* const df ) const;
 
   const Real p_irr_radial( const Real r, const Real r0, const Real t ) const;
