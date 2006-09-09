@@ -382,7 +382,7 @@ inline const Real expxsq_erfc( const Real x )
     }
   else
     {
-      result = exp( xsq ) * gsl_sf_erfc( x );
+      result = exp( xsq ) * erfc( x );
     }
 
   return result;
@@ -509,7 +509,7 @@ PlainPairGreensFunction::p_reaction_fdf( const Real tsqrt,
     const Real dfnum2( ( sqrtPI * tsqrt * ( alpha * sqrtD + r0 - Sigma ) ) 
 		       * Wdf );
     
-    const Real dffactor( ( alpha + alpha ) / ( sqrtPI * sqrtD ) * factor );
+    const Real dffactor( ( alpha * M_2_SQRTPI / sqrtD ) * factor );
     
     *df = ( dfnum1 - dfnum2 ) * dffactor;
   }
