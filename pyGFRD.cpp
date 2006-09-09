@@ -13,6 +13,7 @@ BOOST_PYTHON_MODULE(gfrd)
     .def("getD", &PlainPairGreensFunction::getD)
     .def("getkf", &PlainPairGreensFunction::getkf)
     .def("getSigma", &PlainPairGreensFunction::getSigma)
+    .def("drawTime", &PlainPairGreensFunction::drawTime )
     .def("drawR", &PlainPairGreensFunction::drawR )
     .def("drawTheta", &PlainPairGreensFunction::drawTheta )
     ;

@@ -4,21 +4,25 @@
 #define BOOST_DISABLE_ASSERTS
 
 #include <exception>
+#include <vector>
 
-#include <boost/multi_array.hpp>
 #include <boost/array.hpp>
 
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_errno.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_erf.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_interp.h>
+#include <gsl/gsl_roots.h>
 
-#include "bessel.c"
 
 #include "HalfOrderBesselGenerator.hpp"
 
+#include "bessel.c"
+
 #include "PlainPairGreensFunction.hpp"
+
 
 
 PlainPairGreensFunction::PlainPairGreensFunction( const Real D, 
@@ -407,9 +411,7 @@ PlainPairGreensFunction::p_irr_radial( const Real r,
   const Real Dt4( 4.0 * this->getD() * t );
 
   const Real r_plus_r0_minus_2sigma( r + r0 - 2.0 * this->getSigma() );
-  //  printf("irr1 %g %g %g\n",- gsl_pow_2( r - r0 ) / Dt4,- gsl_pow_2( r_plus_r0_minus_2sigma ) / Dt4,W( r_plus_r0_minus_2sigma / sqrt( Dt4 ), alpha * sqrt( t ) ) * alpha );
 
-  // 
   const Real num1( exp( - gsl_pow_2( r - r0 ) / Dt4 ) );
   const Real num2( exp( - gsl_pow_2( r_plus_r0_minus_2sigma ) / Dt4 ) );
   const Real num3( W( r_plus_r0_minus_2sigma / sqrt( Dt4 ), 
@@ -421,100 +423,205 @@ PlainPairGreensFunction::p_irr_radial( const Real r,
 
   const Real result( num / den );
 
-  //  printf("irr %g %g %g\n",num1, num2,num3);
-
   const Real jacobian( 4.0 * M_PI * r * r );
 
   return result * jacobian;
 }
 
+
+
 const Real 
-PlainPairGreensFunction::intt_p_irr_radial( const Real r, 
-					    const Real r0, 
-					    const Real t ) const
-{
-  static const Real M_1_SQRTPI( M_2_SQRTPI * 0.5 );
-
-  const Real rmr0( r - r0 );
-  const Real rpr0m2Sigma( r + r0 - 2.0 * getSigma() );
-  const Real Dt4( 4.0 * getD() * t );
-  const Real sqrtDt4( sqrt( Dt4 ) );
-  const Real sqrtD( sqrt( getD() ) );
-
-  const Real alpha( this->alpha );
-
-  const Real num1( M_1_SQRTPI * sqrtD *
-		   ( exp( - rmr0 * rmr0 / Dt4 ) -
-		     exp( - rpr0m2Sigma * rpr0m2Sigma / Dt4 ) ) );
-  const Real num2( sqrtD * 0.5 *
-		   rmr0 * erf( rmr0 / sqrtDt4 ) );
-  const Real num3( ( sqrtD * 0.5 / alpha ) *
-		   ( alpha * rpr0m2Sigma + 2.0 * sqrtD ) *
-		   erf( rpr0m2Sigma / sqrtDt4 ) );
-
-  const Real num4( ( 1.0 / alpha ) * 
-  		   W( rpr0m2Sigma / sqrtDt4, alpha * sqrt( t ) ) );
-
-  const Real result( ( num1 + num2 - num3 - num4 ) / 
-		     ( 4.0 * sqrtD * M_PI * r * r0 ) );
-
-  //  printf("n %g %g %g %g %g %g\n", num1,num2,num3,num4,( 4.0 * sqrtD * M_PI * r * r0 ),result );
-
-
-  return result; //  * 4.0 * M_PI * r * r;
-}
-
-const Real PlainPairGreensFunction::p_survival( const Real t, 
-						const Real r0 ) const 
+PlainPairGreensFunction::p_survival( const Real tsqrt, const Real r0 ) const
 {
   const Real kD( this->getkD() );
   const Real kf( this->getkf() );
   const Real Sigma( this->getSigma() );
   const Real D( this->getD() );
-  const Real r0_m_sigma_over_sqrt4Dt( ( r0 - Sigma ) 
-				      / sqrt( 4.0 * D * t ) );
   const Real alpha( this->getalpha() );
 
-  Real p( ( Sigma / r0 ) * getkf() / ( kf + kD ) );
-  p *= erfc( r0_m_sigma_over_sqrt4Dt ) - 
-    W( r0_m_sigma_over_sqrt4Dt, alpha * sqrt( t ) );
+  const Real sqrtD( sqrt( D ) );
 
-  return 1.0 - p;
+  const Real r0_m_Sigma_over_sqrt4D_t( ( r0 - Sigma ) 
+      				      / ( ( sqrtD + sqrtD ) * tsqrt ) );
+
+  const Real Wf( W( r0_m_Sigma_over_sqrt4D_t, alpha * tsqrt ) );
+  const Real factor( Sigma * kf / ( r0 * ( kf + kD ) ) );
+
+  return factor * ( erfc( r0_m_Sigma_over_sqrt4D_t ) - Wf );
 }
 
-const Real PlainPairGreensFunction::p_survival_deriv( const Real t, 
-						      const Real r0 ) const 
+const Real 
+PlainPairGreensFunction::p_survival_deriv( const Real tsqrt, 
+					   const Real r0 ) const
 {
-  Real deriv;
-
   const Real Sigma( this->getSigma() );
   const Real D( this->getD() );
   const Real alpha( this->getalpha() );
-  const Real sqrtPit( sqrt( M_PI * t ) );
   const Real kD( this->getkD() );
   const Real kf( this->getkf() );
 
-  const Real r0_m_Sigma_over_sqrt4Dt( ( r0 - Sigma ) / sqrt( 4.0 * D * t ) );
+  const Real sqrtD( sqrt( D ) );
+  const Real sqrtPI( sqrt( M_PI ) );
 
-  const Real num1( exp( - gsl_pow_2( r0_m_Sigma_over_sqrt4Dt ) ) );
-  const Real num2( alpha * sqrtPit * 
-		   W( r0_m_Sigma_over_sqrt4Dt, alpha * sqrt( t ) ) );
+  const Real r0_m_Sigma_t_over_sqrt4D( ( r0 - Sigma ) * tsqrt / 
+				       ( sqrtD + sqrtD ) );
+  const Real Wf( W( r0_m_Sigma_t_over_sqrt4D, alpha * tsqrt ) );
 
+  const Real num1( sqrtD * exp( - gsl_pow_2( r0_m_Sigma_t_over_sqrt4D ) ) );
+  const Real num2( ( sqrtPI * tsqrt * ( alpha * sqrtD + r0 - Sigma ) ) * Wf );
 
-  const Real factor( alpha * kf * Sigma / ( sqrtPit * r0 * ( kf + kD ) ) );
-
-  deriv = ( num2 - num1 ) * factor;
-
-  return deriv;
-}
-
-
-const Real PlainPairGreensFunction::drawNextReactionTime( const Real rnd, 
-							  const Real r0 )
-{
+  const Real factor( ( alpha + alpha ) * kf * Sigma /
+		     ( sqrtPI * sqrtD * r0 * ( kf + kD ) ) );
   
+  return ( num1 - num2 ) * factor;
+}
 
+void
+PlainPairGreensFunction::p_survival_fdf( const Real tsqrt, 
+					 const Real r0,
+					 Real* const f, Real* const df ) const
+{
+  const Real kD( this->getkD() );
+  const Real kf( this->getkf() );
+  const Real Sigma( this->getSigma() );
+  const Real D( this->getD() );
+  const Real alpha( this->getalpha() );
+
+  const Real sqrtD( sqrt ( D ) );
+
+  const Real r0_m_Sigma_over_sqrt4D( ( r0 - Sigma ) / ( sqrtD + sqrtD ) );
+  const Real r0_m_Sigma_over_sqrt4D_t( r0_m_Sigma_over_sqrt4D / tsqrt );
+
+  const Real factor( Sigma * kf / ( r0 * ( kf + kD ) ) );
+
+  const Real Wf( W( r0_m_Sigma_over_sqrt4D_t, alpha * tsqrt ) );
+
+  *f = factor * ( erfc( r0_m_Sigma_over_sqrt4D_t ) - Wf );
+
+  const Real r0_m_Sigma_t_over_sqrt4D( r0_m_Sigma_over_sqrt4D * tsqrt );
+  const Real Wdf( W( r0_m_Sigma_t_over_sqrt4D, alpha * tsqrt ) );
+
+  const Real sqrtPI( sqrt( M_PI ) );
+
+  const Real dfnum1( sqrtD * exp( - gsl_pow_2( r0_m_Sigma_t_over_sqrt4D ) ) );
+  const Real dfnum2( ( sqrtPI * tsqrt * ( alpha * sqrtD + r0 - Sigma ) ) 
+		     * Wdf );
+
+  const Real dffactor( ( alpha + alpha ) / ( sqrtPI * sqrtD ) * factor );
+
+  *df = ( dfnum1 - dfnum2 ) * dffactor;
+}
+
+
+
+
+const Real 
+PlainPairGreensFunction::p_survival_F( const Real tsqrt, 
+				       const p_survival_params* const params )
+{
+  const PlainPairGreensFunction* const gf( params->gf ); 
+  const Real r0( params->r0 );
+  const Real rnd( params->rnd );
+
+  return gf->p_survival( tsqrt, r0 ) - rnd;
+}
+
+const Real 
+PlainPairGreensFunction::
+p_survival_deriv_F( const Real tsqrt, const p_survival_params* const params )
+{
+  const PlainPairGreensFunction* const gf( params->gf ); 
+  const Real r0( params->r0 );
+  //  const Real rnd( params->rnd );
+
+  return gf->p_survival_deriv( tsqrt, r0 );
+}
+
+void
+PlainPairGreensFunction::
+p_survival_fdf_F( const Real tsqrt, const p_survival_params* const params,
+		  Real* const f, Real* const df )
+{
+  const PlainPairGreensFunction* const gf( params->gf ); 
+  const Real r0( params->r0 );
+  const Real rnd( params->rnd );
+
+  gf->p_survival_fdf( tsqrt, r0, f, df );
+  *f -= rnd;
+}
+
+
+
+
+const Real PlainPairGreensFunction::drawTime( const Real rnd, 
+					      const Real r0, 
+					      const Real maxt ) const
+{
+  assert( rnd <= 1.0 && rnd >= 0.0 );
+
+  {
+    const Real maxp( p_survival( maxt, r0 ) );
+
+    if( rnd >= maxp )
+      {
+	return INFINITY;
+      }
+  }
+
+  p_survival_params params = { this, r0, rnd };
+  gsl_function_fdf FDF = 
+    {
+      reinterpret_cast<typeof(FDF.f)>( &p_survival_F ),
+      reinterpret_cast<typeof(FDF.df)>( &p_survival_deriv_F ),
+      reinterpret_cast<typeof(FDF.fdf)>( &p_survival_fdf_F ),
+      &params 
+    };
+
+  // This initial guess must be smaller than the answer, or
+  // newton-type iteration can undershoot into tsqrt < 0, where
+  // value of p_survival is undefined.
+  const Real initialGuess( 1e-100 );
+
+  //const gsl_root_fdfsolver_type* solverType( gsl_root_fdfsolver_steffenson );
+  const gsl_root_fdfsolver_type* solverType( gsl_root_fdfsolver_secant );
+  gsl_root_fdfsolver* solver( gsl_root_fdfsolver_alloc( solverType ) );
+  gsl_root_fdfsolver_set( solver, &FDF, initialGuess );
+
+  const Index maxIter( 100 );
+
+  Real tsqrt( initialGuess );
+  Index i( 0 );
+  while( true )
+    {
+      gsl_root_fdfsolver_iterate( solver );
+      const Real tsqrt_prev( tsqrt );
+      tsqrt = gsl_root_fdfsolver_root( solver );
+
+      int status( gsl_root_test_delta( tsqrt, tsqrt_prev, 1e-18, 1e-12 ) );
+
+      if( status == GSL_CONTINUE )
+	{
+	  if( i >= maxIter )
+	    {
+	      gsl_root_fdfsolver_free( solver );
+	      std::cerr << "drawTime: failed to converge." << std::endl;
+	      throw std::exception();
+	    }
+	}
+      else
+	{
+	  break;
+	}
+
+      ++i;
+    }
+  
+  gsl_root_fdfsolver_free( solver );
+
+  return gsl_pow_2( tsqrt );
 } 
+
+
 
 
 const Real PlainPairGreensFunction::drawR( const Real rnd, 
@@ -666,7 +773,7 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
       if( fabs( Rn ) < 
 	  fabs( RnCum * std::numeric_limits<double>::epsilon() ) )
 	{
-	  //	  printf("%d\n",order );
+	  	  printf("%d\n",order );
 	  break;
 	}
     }
@@ -697,7 +804,6 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 
       if( value < pTable[i] * std::numeric_limits<Real>::epsilon() ) 
 	{
-	  printf("%ld\n",i);
 	  break;   // truncation; pTable is valid in [0,i].
 	}
 
@@ -707,7 +813,7 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
   // Ideally, p_irr_r below can work as a normalization factor,
   const Real p_irr_r( this->p_irr_radial( r, t, r0 ) );
   const Real relerror( (pTable[i]*thetaStep- p_irr_r)/p_irr_r );
-  printf("%g %g\n", pTable[i-1]*thetaStep, p_irr_r );
+  //  printf("%g %g\n", pTable[i-1]*thetaStep, p_irr_r );
   if( fabs( relerror ) >= 1e-2 )
     {
       std::cerr << "drawTheta: relative error estimate is large: " << relerror 

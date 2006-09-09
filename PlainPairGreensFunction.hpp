@@ -24,7 +24,8 @@ public:
   virtual const Real p_tot( const Real r, const Real r0, 
 			    const Real theta, const Real time ) const;
 
-  virtual const Real drawNextReactionTime( const Real rnd, const Real r0 );
+  virtual const Real drawTime( const Real rnd, const Real r0,
+			       const Real maxt ) const;
 
   virtual const Real drawR( const Real rnd, 
 			    const Real r0, 
@@ -48,21 +49,15 @@ public:
 
 
   
-  const Real p_free(  const Real r, const Real r0, 
-		      const Real theta, const Real t ) const;
-
-  const Real p_corr( const Real r, const Real r0, 
-		     const Real theta, const Real t ) const;
-
-  const Real p_irr_radial( const Real r, const Real r0, 
-			   const Real t ) const;
-
-  const Real intt_p_irr_radial( const Real r, 
-				const Real r0, 
-				const Real t ) const;
-
 
 private:
+
+  struct p_survival_params 
+  { 
+    const PlainPairGreensFunction* const gf;
+    const Real r0;
+    const Real rnd;
+  };
 
   struct p_corr_R_params 
   { 
@@ -88,9 +83,26 @@ private:
     const Real kf;
   };
 
+  static const Real p_survival_F( const Real t, 
+				  const p_survival_params* params );
+  static const Real p_survival_deriv_F( const Real t,
+					const p_survival_params* params );
+  static void p_survival_fdf_F( const Real t,
+				const p_survival_params* params,
+				Real* const f, Real* const df );
+
   const Real p_survival( const Real t, const Real r0 ) const;
   const Real p_survival_deriv( const Real t, const Real r0 ) const;
+  void p_survival_fdf( const Real t, const Real r0,
+		       Real* const f, Real* const df ) const;
 
+  const Real p_irr_radial( const Real r, const Real r0, const Real t ) const;
+
+  const Real p_free( const Real r, const Real r0, 
+		     const Real theta, const Real t ) const;
+
+  const Real p_corr( const Real r, const Real r0, 
+		     const Real theta, const Real t ) const;
 
   static const Real p_corr_R( const Real u, 
 			      const p_corr_R_params* const params );
@@ -126,10 +138,8 @@ private:
 
 private:
 
-  //  const Real kD;
-  //  const Real alpha;
-   Real kD;
-   Real alpha;
+  const Real kD;
+  const Real alpha;
 
   static const Real P_CUTOFF = 1e-6;
   static const Real H = 4.0;

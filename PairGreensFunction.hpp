@@ -60,7 +60,8 @@ public:
 
   //  virtual const Real p_survival( const Real t, const Real r0 ) = 0;
 
-  virtual const Real drawNextReactionTime( const Real rnd, const Real r0 ) = 0;
+  virtual const Real drawTime( const Real rnd, const Real r0,
+			       const Real maxt ) const = 0;
 
   virtual const Real drawR( const Real r, 
 			    const Real r0, 

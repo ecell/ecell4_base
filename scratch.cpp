@@ -268,3 +268,337 @@ PlainPairGreensFunction::lookupP_totTable( const Index rIndex,
       //    bessjy(u*r,order+0.5,&jr,&yr,&tmp_,&tmp_);
       //      bessjy(u*r0,order+0.5,&jr0,&yr0,&tmp_,&tmp_);
       //      bessjy(u*Sigma,order+0.5,&js,&ys,&jps,&yps);
+
+
+
+
+
+
+const Real 
+PlainPairGreensFunction::intt_p_irr_radial( const Real r, 
+					    const Real r0, 
+					    const Real t ) const
+{
+  static const Real M_1_SQRTPI( M_2_SQRTPI * 0.5 );
+
+  const Real rmr0( r - r0 );
+  const Real rpr0m2Sigma( r + r0 - 2.0 * getSigma() );
+  const Real Dt4( 4.0 * getD() * t );
+  const Real sqrtDt4( sqrt( Dt4 ) );
+  const Real sqrtD( sqrt( getD() ) );
+
+  const Real alpha( this->alpha );
+
+  const Real num1( M_1_SQRTPI * sqrtD *
+		   ( exp( - rmr0 * rmr0 / Dt4 ) -
+		     exp( - rpr0m2Sigma * rpr0m2Sigma / Dt4 ) ) );
+  const Real num2( sqrtD * 0.5 *
+		   rmr0 * erf( rmr0 / sqrtDt4 ) );
+  const Real num3( ( sqrtD * 0.5 / alpha ) *
+		   ( alpha * rpr0m2Sigma + 2.0 * sqrtD ) *
+		   erf( rpr0m2Sigma / sqrtDt4 ) );
+
+  const Real num4( ( 1.0 / alpha ) * 
+  		   W( rpr0m2Sigma / sqrtDt4, alpha * sqrt( t ) ) );
+
+  const Real result( ( num1 + num2 - num3 - num4 ) / 
+		     ( 4.0 * sqrtD * M_PI * r * r0 ) );
+
+  //  printf("n %g %g %g %g %g %g\n", num1,num2,num3,num4,( 4.0 * sqrtD * M_PI * r * r0 ),result );
+
+
+  return result; //  * 4.0 * M_PI * r * r;
+}
+
+
+
+
+
+const Real PlainPairGreensFunction::drawTime( const Real rnd, 
+					      const Real r0, 
+					      const Real maxt ) const
+{
+  assert( rnd <= 1.0 && rnd >= 0.0 );
+
+  {
+    const Real maxp( p_survival( maxt, r0 ) );
+
+    if( rnd >= maxp )
+      {
+	return INFINITY;
+      }
+  }
+
+  p_survival_params params = { this, r0, rnd };
+  gsl_function F = 
+    {
+      reinterpret_cast<typeof(F.function)>( &p_survival_F ),
+      &params 
+    };
+
+  // This initial guess must be smaller than the answer, or
+  // newton-type iteration can undershoot into tsqrt < 0, where
+  // value of p_survival is undefined.
+  const Real initialGuess( 1e-100 );
+
+  //  const gsl_root_fdfsolver_type* solverType( gsl_root_fdfsolver_steffenson );
+  const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
+  gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
+  gsl_root_fsolver_set( solver, &F, initialGuess, maxt );
+
+  const Index maxIter( 100 );
+
+  Real tsqrt( initialGuess );
+  Index i( 0 );
+  while( true )
+    {
+      gsl_root_fsolver_iterate( solver );
+
+      tsqrt = gsl_root_fsolver_root( solver );
+      const Real x_lo( gsl_root_fsolver_x_lower( solver ) );
+      const Real x_hi( gsl_root_fsolver_x_upper( solver ) );
+
+      //      int status( gsl_root_test_delta( tsqrt, tsqrt_prev, 0.0, 
+      //				       1e-12 ) );
+      int status = gsl_root_test_interval( x_lo, x_hi, 1e-30, 1e-18 );
+      if( status == GSL_CONTINUE )
+	{
+	  if( i >= maxIter )
+	    {
+	      gsl_root_fsolver_free( solver );
+	      std::cerr << "drawTime: failed to converge" << std::endl;
+	      throw std::exception();
+	    }
+	}
+      else
+	{
+	  break;
+	}
+
+      ++i;
+    }
+  
+  gsl_root_fsolver_free( solver );
+
+  return gsl_pow_2( tsqrt );
+} 
+
+
+
+const Real PlainPairGreensFunction::drawTime( const Real rnd, 
+					      const Real r0, 
+					      const Real maxt ) const
+{
+  assert( rnd <= 1.0 && rnd >= 0.0 );
+
+  {
+    const Real maxp( p_survival( maxt, r0 ) );
+
+    if( rnd >= maxp )
+      {
+	return INFINITY;
+      }
+  }
+
+  p_survival_params params = { this, r0, rnd };
+  gsl_function_fdf FDF = 
+    {
+      reinterpret_cast<typeof(FDF.f)>( &p_survival_F ),
+      reinterpret_cast<typeof(FDF.df)>( &p_survival_deriv_F ),
+      reinterpret_cast<typeof(FDF.fdf)>( &p_survival_fdf_F ),
+      &params 
+    };
+
+  // This initial guess must be smaller than the answer, or
+  // newton-type iteration can undershoot into tsqrt < 0, where
+  // value of p_survival is undefined.
+  const Real initialGuess( 1e-100 );
+
+  //  const gsl_root_fdfsolver_type* solverType( gsl_root_fdfsolver_steffenson );
+  const gsl_root_fdfsolver_type* solverType( gsl_root_fdfsolver_secant );
+  gsl_root_fdfsolver* solver( gsl_root_fdfsolver_alloc( solverType ) );
+  gsl_root_fdfsolver_set( solver, &FDF, initialGuess );
+
+  const Index maxIter( 100 );
+
+  Real tsqrt( initialGuess );
+  Index i( 0 );
+  while( true )
+    {
+      gsl_root_fdfsolver_iterate( solver );
+      const Real tsqrt_prev( tsqrt );
+      tsqrt = gsl_root_fdfsolver_root( solver );
+
+      int status( gsl_root_test_delta( tsqrt, tsqrt_prev, 0.0, 
+				       1e-12 ) );
+
+      if( status == GSL_CONTINUE )
+	{
+	  if( i >= maxIter )
+	    {
+	      gsl_root_fdfsolver_free( solver );
+	      std::cerr << "drawTime: failed to converge" << std::endl;
+	      throw std::exception();
+	    }
+	}
+      else
+	{
+	  break;
+	}
+
+      ++i;
+    }
+  
+  gsl_root_fdfsolver_free( solver );
+
+  return gsl_pow_2( tsqrt );
+} 
+
+
+
+const Real PlainPairGreensFunction::drawTime( const Real rnd, 
+					      const Real r0, 
+					      const Real maxt ) const
+{
+  assert( rnd <= 1.0 && rnd >= 0.0 );
+
+  gsl_function_fdf FDF;
+  p_survival_params params = {this, r0, rnd};
+     
+      
+  FDF.f = reinterpret_cast<typeof(FDF.f)>( &p_survival_F );
+  FDF.df = reinterpret_cast<typeof(FDF.df)>( &p_survival_deriv_F );
+  FDF.fdf = reinterpret_cast<typeof(FDF.fdf)>( &p_survival_fdf_F );
+  FDF.params = &params;
+  
+
+  Real x( 7e-100 );
+
+  const gsl_root_fdfsolver_type* T( gsl_root_fdfsolver_newton );
+  gsl_root_fdfsolver* s( gsl_root_fdfsolver_alloc(T) );
+  gsl_root_fdfsolver_set (s, &FDF, x);
+  printf ("%-5s %10s %10s %10s\n",
+	  "iter", "root", "err", "err(est)");
+  
+  int status;
+  
+
+  int iter = 0, max_iter = 100;
+  do
+    {
+      iter++;
+      status = gsl_root_fdfsolver_iterate (s);
+      Real x0( x );
+      x = gsl_root_fdfsolver_root (s);
+
+      status = gsl_root_test_delta (x, x0, 0, 1e-16);
+      
+      if (status == GSL_SUCCESS)
+	printf ("Converged:\n");
+      
+      printf ("%5d %10.7f %10.7f\n",
+	      iter, x, x - x0);
+    }
+  while (status == GSL_CONTINUE && iter < max_iter);
+  
+  gsl_root_fdfsolver_free( s );
+  return x*x;
+} 
+
+
+const Real PlainPairGreensFunction::drawTime( const Real rnd, 
+					      const Real r0, 
+					      const Real maxt ) const
+{
+  assert( rnd <= 1.0 && rnd >= 0.0 );
+
+  gsl_function F;
+  p_survival_params params = {this, r0, rnd};
+     
+  F.function = reinterpret_cast<typeof(F.function)>( &p_survival_F );
+  F.params = &params;
+
+  const gsl_root_fsolver_type* T( gsl_root_fsolver_brent );
+  gsl_root_fsolver* s( gsl_root_fsolver_alloc(T) );
+  gsl_root_fsolver_set( s, &F, 1e-100, maxt );
+     
+  int status;
+
+  int iter = 0, max_iter = 100;
+  Real t;
+  do
+    {
+      iter++;
+      status = gsl_root_fsolver_iterate (s);
+      t = gsl_root_fsolver_root(s);
+      const Real x_lo( gsl_root_fsolver_x_lower(s) );
+      const Real x_hi( gsl_root_fsolver_x_upper(s) );
+      status = gsl_root_test_interval( x_lo, x_hi, 0, 1e-16 );
+      
+//      printf ("%5d %10.7f %10.7f\n",   iter, x_lo, x_hi);
+    }
+  while (status == GSL_CONTINUE && iter < max_iter);
+
+  gsl_root_fsolver_free( s );
+
+  return t*t;
+} 
+
+
+
+/*
+const Real 
+PlainPairGreensFunction::p_survival_deriv( const Real t, 
+					   const Real r0 ) const
+{
+  Real deriv;
+
+  const Real Sigma( this->getSigma() );
+  const Real D( this->getD() );
+  const Real alpha( this->getalpha() );
+  const Real kD( this->getkD() );
+  const Real kf( this->getkf() );
+
+  const Real r0_m_Sigma_over_sqrt4Dt( ( r0 - Sigma ) / sqrt( 4.0 * D * t ) );
+
+  const Real sqrtPit( sqrt( M_PI * t ) );
+
+  const Real num1( exp( - gsl_pow_2( r0_m_Sigma_over_sqrt4Dt ) ) );
+  const Real num2( alpha * sqrtPit * 
+  W( r0_m_Sigma_over_sqrt4Dt, alpha * sqrt( t ) ) );
+
+
+
+  const Real factor( alpha * kf * Sigma / ( sqrtPit * r0 * ( kf + kD ) ) );
+
+  deriv = ( num2 - num1 ) * factor;
+
+  return deriv;
+}
+
+void
+PlainPairGreensFunction::p_survival_fdf( const Real t, 
+					 const Real r0,
+					 Real* const f, Real* const df ) const
+{
+  const Real kD( this->getkD() );
+  const Real kf( this->getkf() );
+  const Real Sigma( this->getSigma() );
+  const Real D( this->getD() );
+  const Real alpha( this->getalpha() );
+  const Real sqrtPit( sqrt( M_PI * t ) );
+
+  const Real r0_m_Sigma_over_sqrt4Dt( ( r0 - Sigma ) / sqrt( 4.0 * D * t ) );
+  const Real W( W( r0_m_Sigma_over_sqrt4Dt, alpha * sqrt( t ) ) );
+  
+  const Real Sigmakf_over_r0_kf_p_kD( Sigma * kf / ( r0 * ( kf + kD ) ) );
+
+  *f = 1.0 - Sigmakf_over_r0_kf_p_kD * ( erfc( r0_m_Sigma_over_sqrt4Dt ) - W );
+
+  const Real dfnum1( exp( - gsl_pow_2( r0_m_Sigma_over_sqrt4Dt ) ) );
+  const Real dfnum2( alpha * sqrtPit * W );
+  const Real dffactor( ( alpha / sqrtPit ) * Sigmakf_over_r0_kf_p_kD );
+
+  *df = ( dfnum2 - dfnum1 ) * dffactor;
+}
+*/
