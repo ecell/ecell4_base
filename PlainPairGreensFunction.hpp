@@ -120,7 +120,7 @@ private:
 
   const Real 
   Rn( const Int order, const Real r, const Real r0, const Real t,
-      gsl_integration_workspace* workspace ) const;
+      gsl_integration_workspace* const workspace ) const;
 
   const Real getMinR() const
   {

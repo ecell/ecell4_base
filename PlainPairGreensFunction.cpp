@@ -1,7 +1,7 @@
 #define HAVE_INLINE
 
 //#define NDEBUG
-#define BOOST_DISABLE_ASSERTS
+//#define BOOST_DISABLE_ASSERTS
 
 #include <exception>
 #include <vector>
@@ -578,9 +578,9 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
       &params 
     };
 
-  // This initial guess must be smaller than the answer, or
-  // newton-type iteration can undershoot into tsqrt < 0, where
-  // value of p_reaction is undefined.
+  // This initial guess must be smaller than the answer (but still
+  // larger than zero), or newton-type iteration can undershoot into
+  // tsqrt < 0, where value of p_reaction is undefined.
   const Real initialGuess( 1e-100 );
 
   //const gsl_root_fdfsolver_type* solverType( gsl_root_fdfsolver_steffenson );
@@ -642,19 +642,23 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
 
   Real r_prev( p_irr_radial( minR, t, r0 ) );
   Index i( 1 );
-  for( ; i < tableSize; ++i )
+
+  while( true )
     {
       const Real r( minR + i * rStep );
       const Real p( p_irr_radial( r, t, r0 ) );
       const Real value( ( r_prev + p ) * 0.5 );
       pTable[i] = pTable[i-1] + value;
 
-      if( value < pTable[i] * std::numeric_limits<double>::epsilon() ) 
+      if( value < pTable[i] * std::numeric_limits<double>::epsilon() 
+	  || i >= tableSize-1 ) 
 	{
-	  break;   // truncation; pTable is valid in [0,i].
+	  break;   // pTable is valid in [0,i].
 	}
 
       r_prev = p;
+
+      ++i;
     }
 
   if( i >= tableSize-1 )
@@ -686,17 +690,17 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
 
 const Real PlainPairGreensFunction::
 Rn( const Int order, const Real r, const Real r0, const Real t,
-    gsl_integration_workspace* workspace ) const
+    gsl_integration_workspace* const workspace ) const
 {
   Real integral;
   Real error;
 
-  gsl_function p_corr_R_F;
-  p_corr_R_F.function = 
-    reinterpret_cast<typeof(p_corr_R_F.function)>( &p_corr_R );
-
   p_corr_R_params params = { order, r, r0, t, getSigma(), getD(), getkf() };
-  p_corr_R_F.params = reinterpret_cast<typeof(p_corr_R_F.params)>( &params );
+  gsl_function p_corr_R_F = 
+    {
+      reinterpret_cast<typeof(p_corr_R_F.function)>( &p_corr_R ),
+      &params
+    };
 
 
   const Real umax( sqrt( 30.0 / ( this->getD() * t ) ) ); 
@@ -721,13 +725,13 @@ p_corr_RnTable( const Real theta, const Real r, const Real r0,
   const Index tableSize( RnTable.size() );
   
   RealVector PnTable( tableSize );
-  gsl_sf_legendre_Pl_array( tableSize-1, cos( theta ), PnTable.data() );
+  gsl_sf_legendre_Pl_array( tableSize-1, cos( theta ), &PnTable[0] );
 
   for( Index order( 0 ); order < tableSize; ++order )
     {
       const Real Cn( 2.0 * order + 1 );
 
-      //      printf( "p %d %g\n", order, PnTable[order] );
+      //printf( "p %d %g\n", order, Cn * PnTable[order] * RnTable[order] );
 
       result += Cn * PnTable[order] * RnTable[order];
     }
@@ -743,8 +747,8 @@ p_tot_RnTable( const Real theta, const Real r, const Real r0,
 {
   const Real factor( 2.0 * M_PI * r * r * sin( theta ) );
 
-  const Real p_corr( this->p_corr_RnTable( theta, r, r0, t, RnTable ) ); 
   const Real p_free( this->p_free( r, r0, theta, t ) );
+  const Real p_corr( this->p_corr_RnTable( theta, r, r0, t, RnTable ) ); 
 
   return ( p_free + p_corr ) * factor;
 }
@@ -759,37 +763,46 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
   RealVector RnTable;
   RnTable.reserve( 8 );
 
-  const Int MAXORDER( 100 );
+  const unsigned int MAXORDER( 100 );
+
+  const Real p_free_max( this->p_free( r, r0, 0.0, t ) );
 
   gsl_integration_workspace* 
     workspace( gsl_integration_workspace_alloc( 1000 ) );
 
-  Real RnCum( 0.0 );
-  for( Int order( 0 ); order <= MAXORDER; ++order )
+  Real Rn_prev( 0.0 );
+  const Real RnFactor( 1.0 / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
+
+  for( unsigned int order( 0 ); order <= MAXORDER; ++order )
     {
       const Real Rn( this->Rn( order, r, r0, t, workspace ) );
+
       RnTable.push_back( Rn );
-      RnCum += Rn;
+
       // truncate when converged enough.
-      if( fabs( Rn ) < 
-	  fabs( RnCum * std::numeric_limits<double>::epsilon() ) )
+      if( fabs( Rn * RnFactor ) < 
+	  p_free_max * std::numeric_limits<double>::epsilon() &&
+	  fabs( Rn ) < fabs( Rn_prev ) )
 	{
 	  printf("%d\n",order );
 	  break;
 	}
+
+      Rn_prev = Rn;
     }
 
   gsl_integration_workspace_free( workspace );
 
   const Index tableSize( 200 );
-  const Real thetaStep( M_PI / (tableSize-1) );
+  const Real thetaStep( M_PI / tableSize );
 
-  boost::array<Real, tableSize> pTable;
+  //boost::array<Real, tableSize+1> pTable;
+  RealVector pTable( tableSize+1 );
+
   pTable[0] = 0.0;
-
-  Real p_prev( this->p_tot_RnTable( 0.0, r, r0, t, RnTable ) );
+  Real p_prev( 0.0 ); // p_tot_RnTable() with theta = 0 is always zero.
   Index i( 1 );
-  for( ; i < tableSize; ++i )
+  while( true )
     {
       const Real theta( thetaStep * i );
 
@@ -803,30 +816,26 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 
       pTable[i] = pTable[i-1] + value;
 
-      if( value < pTable[i] * std::numeric_limits<Real>::epsilon() ) 
+      if( value < pTable[i] * std::numeric_limits<Real>::epsilon() ||
+	  i >= tableSize-1 )
 	{
-	  break;   // truncation; pTable is valid in [0,i].
+	  break;   // pTable is valid in [0,i].
 	}
 
       p_prev = p;
+      ++i;
     }
 
-  // Ideally, p_irr_r below can work as a normalization factor,
+  /*
   const Real p_irr_r( this->p_irr_radial( r, t, r0 ) );
   const Real relerror( (pTable[i]*thetaStep- p_irr_r)/p_irr_r );
-  //  printf("%g %g\n", pTable[i-1]*thetaStep, p_irr_r );
   if( fabs( relerror ) >= 1e-2 )
     {
       std::cerr << "drawTheta: relative error estimate is large: " << relerror 
 		<< "( r= " << r << ", r0= " << r0 << ", t= " << t 
 		<< ")." << std::endl;
     }
-
-  if( i >= tableSize-1 )
-    {
-      std::cerr << "drawTheta: p didn't converge within the range of table." <<
-	std::endl;
-    }
+  */
 
   const Real targetPoint( rnd * pTable[i] );
   const size_t lowerBound( gsl_interp_bsearch( pTable.data(), targetPoint, 
@@ -840,7 +849,7 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
     }
   else
     {
-      // this can happen when rnd is or is too close to 1.0.
+      // this can happen when rnd is equal to or is too close to 1.0.
       theta = low;
     }
 
