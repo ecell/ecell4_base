@@ -124,7 +124,7 @@ private:
 
   const Real getMinR() const
   {
-    return getSigma();   // need to consider r0?
+    return getSigma();
   }
 
   const Real getMaxR( const Real t ) const

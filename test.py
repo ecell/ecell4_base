@@ -19,8 +19,8 @@ gf = gfrd.PlainPairGreensFunction( D, kf, Sigma )
 #    gf.drawTime( 0.8, 1e-8, 1.0 )
 
 
-#for i in range(1000):
-#    print gf.drawR( 0.9, r0, t )
+for i in range(1000):
+    print gf.drawR( 0.9, r0, t )
 
     
 for i in range(100):

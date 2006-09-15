@@ -702,14 +702,13 @@ Rn( const Int order, const Real r, const Real r0, const Real t,
       &params
     };
 
-
   const Real umax( sqrt( 30.0 / ( this->getD() * t ) ) ); 
-  // abs_err >> 1 because the integral can be huge.
-  // instead use rel_err.
+
   gsl_integration_qag( &p_corr_R_F, 0.0, 
 		       umax,
-		       1e4, 1e-18, 1000,
-		       GSL_INTEG_GAUSS61,
+		       1e4,   // abs_err >> 1 because the integral can be huge.
+		       1e-18, // instead rel_err is used.
+		       1000, GSL_INTEG_GAUSS61,
 		       workspace, &integral, &error );
   
   return integral;
@@ -784,7 +783,6 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 	  p_free_max * std::numeric_limits<double>::epsilon() &&
 	  fabs( Rn ) < fabs( Rn_prev ) )
 	{
-	  printf("%d\n",order );
 	  break;
 	}
 
@@ -797,7 +795,7 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
   const Real thetaStep( M_PI / tableSize );
 
   //boost::array<Real, tableSize+1> pTable;
-  RealVector pTable( tableSize+1 );
+  RealVector pTable( tableSize );
 
   pTable[0] = 0.0;
   Real p_prev( 0.0 ); // p_tot_RnTable() with theta = 0 is always zero.
