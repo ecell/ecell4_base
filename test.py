@@ -1,6 +1,11 @@
 import gfrd
 import math
 
+import numpy
+
+print gfrd.distanceSq( numpy.array( (1.,2.,3.) ), numpy.array( (4.,5.,6.,) ) )
+
+
 r = 1e-7
 r0 = 5e-8
 
@@ -19,9 +24,9 @@ gf = gfrd.PlainPairGreensFunction( D, kf, Sigma )
 #    gf.drawTime( 0.8, 1e-8, 1.0 )
 
 
-for i in range(1000):
-    print gf.drawR( 0.9, r0, t )
+#for i in range(1000):
+#    print gf.drawR( 0.9, r0, t )
 
     
-for i in range(100):
-    print gf.drawTheta( 0.5, r, r0, t )
+#for i in range(100):
+#   print gf.drawTheta( 0.5, r, r0, t )

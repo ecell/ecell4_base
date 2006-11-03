@@ -36,6 +36,7 @@ def distanceSq_Simple( position1, position2, fsize=None ):
 def distanceSqArray_Simple( position1, positions, fsize=None ):
     
     return ( ( position1 - positions ) **2 ).sum(1)
+    #return ( ( positions - position1 ) **2 ).sum(1)
 
 
 

@@ -62,11 +62,11 @@ public:
   virtual const Real drawTime( const Real rnd, const Real r0,
 			       const Real maxt ) const = 0;
 
-  virtual const Real drawR( const Real r, 
+  virtual const Real drawR( const Real rnd, 
 			    const Real r0, 
 			    const Real t ) const = 0;
 
-  virtual const Real drawTheta( const Real theta, 
+  virtual const Real drawTheta( const Real rnd,
 				const Real r, 
 				const Real r0, 
 				const Real t ) const = 0;
