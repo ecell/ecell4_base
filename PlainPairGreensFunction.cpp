@@ -634,7 +634,7 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
   pTable[0] = 0.0;
 
   const Real minR( this->getMinR() );
-  const Real maxR( this->getMaxR( t ) );
+  const Real maxR( this->getMaxR( t, r0 ) );
   const Real rStep( ( maxR - minR ) / ( tableSize - 1) );
 
   Real r_prev( p_irr_radial( minR, t, r0 ) );
@@ -703,7 +703,7 @@ Rn( const Int order, const Real r, const Real r0, const Real t,
 
   gsl_integration_qag( &p_corr_R_F, 0.0, 
 		       umax,
-		       1e4,   // abs_err >> 1 because the integral can be huge.
+		       1e5,  // abs_err >> 1 because the integral can be huge.
 		       1e-18, // instead rel_err is used.
 		       1000, GSL_INTEG_GAUSS61,
 		       workspace, &integral, &error );

@@ -88,6 +88,15 @@ def distanceSqArray_Cyclic( position1, positions, fsize ):
     return array.sum(2).min(0)
 
 
+def cartesianToSpherical( c ):
+    # x, y, z = c
+    r = math.sqrt( sum( c ** 2 ) )
+    theta = math.acos( c[2] / r )
+    phi = math.atan( c[1] / c[0] )
+    if c[0] < 0.0:
+        phi += Pi
+    return numpy.array( [ r, theta, phi ] )
+
 
 def sphericalToCartesian( s ):
     r, theta, phi = s
@@ -748,49 +757,54 @@ class Simulator:
             D1 = species1.D
             D2 = species2.D
 
-            sqrtD2D1 = math.sqrt( D2 / D1 ) 
-            sqrtD1D2 = math.sqrt( D1 / D2 )
+            #debug
+            if D1 == 0.0 and D1 == D2:
+                raise "unexpected: D1 == D2 == 0.0"
 
             pos1 = species1.pool.positions[i1]
             pos2 = species2.pool.positions[i2]
-
-            r0 = distance( pos1, pos2 )
-            limitSq = self.H * ( numpy.sqrt( 6.0 * D1 * self.dt )+
-                                 numpy.sqrt( 6.0 * D2 * self.dt )  )
-            if r0 >= limitSq:
-                print 'skip'
-                self.simpleDiffusion( speciesIndex1, i1 )
-                self.simpleDiffusion( speciesIndex2, i2 )
-                continue
                 
-            R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
-            dR = numpy.array( [ gfrdfunctions.p2_R( D1, D2, self.dt )
-                                for i in range( 3 ) ] )
-            R = R0 + dR
-            
-            r = rt.pairGreensFunction.drawR( random.random(), r0, self.dt )
-            theta = rt.pairGreensFunction.drawTheta( random.random(),\
-                                                     r, r0, self.dt )
-            phi = random.random() * 2 * Pi
-            
-            interr = sphericalToCartesian( numpy.array( [ r, theta, phi ] ) )
+            r0 = distance( pos1, pos2 )
 
-            pos1 = ( R - sqrtD1D2 * interr ) / ( sqrtD1D2 + sqrtD2D1 )
+            interParticle = pos2 - pos1
+            interParticleS = cartesianToSpherical( interParticle )
 
-            pos2 = interr + pos1
+            if D1 == 0.0:
+                raise 'D1 == 0; not implemented yet'
+            elif D2 == 0.0:
+                raise 'D2 == 0; not implemented yet'
+            else:
+                sqrtD2D1 = math.sqrt( D2 / D1 ) 
+                sqrtD1D2 = math.sqrt( D1 / D2 )
+                
+                # if particles are far apart use simpleDiffusion()
+                limit = self.H * ( numpy.sqrt( 6.0 * D1 * self.dt ) +
+                                   numpy.sqrt( 6.0 * D2 * self.dt )  )\
+                                   + species1.radius + species2.radius
+                if r0 > limit:
+                    print '== skip =='
+                    self.simpleDiffusion( speciesIndex1, i1 )
+                    self.simpleDiffusion( speciesIndex2, i2 )
+                    continue
+                
+                R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
+                dR = numpy.array( [ gfrdfunctions.p2_R( D1, D2, self.dt )
+                                    for i in range( 3 ) ] )
+                R = R0 + dR
+                
+                r = rt.pairGreensFunction.drawR( random.random(), r0, self.dt )
+                theta = rt.pairGreensFunction.drawTheta( random.random(),\
+                                                         r, r0, self.dt )
+                phi = random.random() * 2 * Pi
+                
+                newInterParticle = sphericalToCartesian( numpy.array(\
+                    [ r, theta, phi ] ) + interParticleS )
+                
+                pos1 = ( R - sqrtD1D2 * newInterParticle )\
+                       / ( sqrtD1D2 + sqrtD2D1 )
 
-            
+                pos2 = newInterParticle + pos1
 
-#            if species1.D != 0.0:
-#                dts1 = self.dtCache[speciesIndex1][i1]
-#                pairradii1 = self.H * numpy.sqrt( 6.0 * species1.D * dts1 )
-#                #self.simpleDiffusion( speciesIndex1, i1 )
-
-
-#            if species2.D != 0.0:
-#                dts2 = self.dtCache[speciesIndex2][i2]
-#                pairradii2 = self.H * numpy.sqrt( 6.0 * species2.D * dts2 )
-#                #self.simpleDiffusion( speciesIndex2, i2 )
 
             
     def propagateSingles( self ):
