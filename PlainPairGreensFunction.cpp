@@ -139,8 +139,8 @@ PlainPairGreensFunction::p_corr_R( const Real u,
 {
   Real result;
 
-  const Real SIGMA2KFp1( params->Sigma * 2 * params->kf + 1.0 );
-  const Real SIGMA2U( params->Sigma * 2 * u );
+  const Real SIGMA2KFp1( params->Sigma * 2.0 * params->kf + 1.0 );
+  const Real SIGMA2U( params->Sigma * 2.0 * u );
 
   const int order( params->order );
 
@@ -188,10 +188,7 @@ PlainPairGreensFunction::p_corr_R( const Real u,
 
   result = ( num / den ) * exp_term;
 
-  if( isnan( result ) )
-    {
-      std::cerr << "Error: NaN in p_corr_R" << std::endl;
-    }
+  assert( ! isnan( result ) );
 
   return result;
 }

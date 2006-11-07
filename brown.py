@@ -5,11 +5,10 @@ import math
 import bisect
 import random
 import sys
-#from Numeric import *
 
 import gfrdfunctions
 
-#from scipy import gplt
+import gfrd
 
 import numpy
 import scipy
@@ -29,9 +28,13 @@ NOWHERE = numpy.array( ( INF, INF, INF ) )
 def MsTom3s( rate ):
     return rate / ( 1000 * N_A )
 
+
 def distanceSq_Simple( position1, position2, fsize=None ):
 
     return ( ( position1 - position2 ) **2 ).sum()
+
+def distance( position1, position2 ):
+    return math.sqrt( distanceSq_Simple( position1, position2 ) )
 
 def distanceSqArray_Simple( position1, positions, fsize=None ):
     
@@ -86,14 +89,18 @@ def distanceSqArray_Cyclic( position1, positions, fsize ):
 
 
 
-def randomUnitVector():
-    theta = numpy.random.uniform( 0, Pi2 )
-    phi = numpy.random.uniform( 0, Pi2 )
+def sphericalToCartesian( s ):
+    r, theta, phi = s
+    return numpy.array( [ r * math.cos( theta ) * math.sin( phi ),
+                          r * math.sin( theta ) * math.sin( phi ),
+                          r * math.cos( phi ) ] )
 
-    vector = numpy.array( [ math.cos( theta ) * math.sin( phi ),
-                            math.sin( theta ) * math.sin( phi ),
-                            math.cos( phi ) ] )
-    return vector
+
+def randomUnitVector():
+    s = numpy.array( [ 1.0, numpy.random.uniform( 0, Pi2 ),
+                       numpy.random.uniform( 0, Pi2 ) ] )
+
+    return sphericalToCartesian( s )
 
 
 class Species:
@@ -121,7 +128,7 @@ class ReactionType:
     def order( self ):
         return len( self.reactants )
 
-    def dump( self ):
+    def str( self ):
         s = ''
         for i in self.reactants:
             s += i.id
@@ -148,6 +155,10 @@ class BindingReactionType( ReactionType ):
         self.reactants = ( s1, s2 )
         self.products = ( p1, )
         self.k  = k
+
+        D = s1.D + s2.D
+        sigma = s1.radius + s2.radius
+        self.pairGreensFunction = gfrd.PlainPairGreensFunction( D, k, sigma )
 
 class UnbindingReactionType( ReactionType ):
 
@@ -506,18 +517,24 @@ class Simulator:
 
         radius = species1.radius + species2.radius
         r0 = math.sqrt( ( ( pos1 - pos2 ) ** 2 ).sum() )
-        D = species1.D + species2.D
-        k = rt.k
-        
 
         if radius > r0:
             print 'CRITICAL: radius > r0', str(radius), str(r0)
             #            return scipy.Inf
             print pair
-            print rt.dump()
+            print rt.str()
             #sys.exit(-1)
 
         u = random.random()
+
+
+        res = rt.pairGreensFunction.drawTime( u, r0, self.dtMax )
+        return res
+
+    '''
+        D = species1.D + species2.D
+        k = rt.k
+        
 
 #        infp = gfrdreaction.p_survival2_inf( radius, r0, D, k )
 #        print 'sur', infp
@@ -542,7 +559,7 @@ class Simulator:
                                      args = ( u, radius, r0, D, k) )
 
         return res
-        
+'''     
 
     
     def fireReaction( self ):
@@ -550,7 +567,7 @@ class Simulator:
         if self.nextReaction == None:
             return
 
-        if len( self.nextReaction.reactants ) == 1:
+        if self.nextReaction.order() == 1:
             self.fireReaction1( self.nextReaction )
         else:
             self.fireReaction2( self.nextReaction )
@@ -590,10 +607,15 @@ class Simulator:
             
             newpos1 = pos + vector * ( D1 / (D1 + D2) )
             newpos2 = pos - vector * ( D2 / (D1 + D2) )
-            
+
             newpos1 %= self.fsize
             newpos2 %= self.fsize
             
+            # debug
+            d = self.distance( newpos1, newpos2 )
+            if d < distance:
+                raise "d = %f" % d
+
             productSpecies1.newParticle( newpos1 )
             productSpecies2.newParticle( newpos2 )
 
@@ -636,16 +658,21 @@ class Simulator:
                 D2D1Sqrt = math.sqrt( D2 / D1 ) 
                 D1D2Sqrt = math.sqrt( D1 / D2 )
                 
-                R0 = D2D1Sqrt * pos1 + D1D2Sqrt * pos2
+                R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
                 
                 dR = gfrdfunctions.p2_R( D1, D2, self.dt )
-                newpos = ( R0 + dR ) / ( D1D2Sqrt + D2D1Sqrt )
+                newpos = ( R0 + dR ) / ( sqrtD1D2 + sqrtD2D1 )
                 
                 
             newpos %= self.fsize
+
                 
             species1.removeParticleBySerial( serial1 )
             species2.removeParticleBySerial( serial2 )
+
+            # debug
+            #self.checkOverlap( newpos, species3.radius )
+
             species3.newParticle( newpos )
 
 
@@ -709,10 +736,6 @@ class Simulator:
 
     def propagatePairs( self, pairs ):
 
-        if len( pairs ) == 0:
-            return
-
-
         # dummy procedure, assumes no correlation.
         for pair in pairs:
 
@@ -721,18 +744,53 @@ class Simulator:
 
             species1 = self.speciesList.values()[speciesIndex1]
             species2 = self.speciesList.values()[speciesIndex2]
+
+            D1 = species1.D
+            D2 = species2.D
+
+            sqrtD2D1 = math.sqrt( D2 / D1 ) 
+            sqrtD1D2 = math.sqrt( D1 / D2 )
+
+            pos1 = species1.pool.positions[i1]
+            pos2 = species2.pool.positions[i2]
+
+            r0 = distance( pos1, pos2 )
+            limitSq = self.H * ( numpy.sqrt( 6.0 * D1 * self.dt )+
+                                 numpy.sqrt( 6.0 * D2 * self.dt )  )
+            if r0 >= limitSq:
+                print 'skip'
+                self.simpleDiffusion( speciesIndex1, i1 )
+                self.simpleDiffusion( speciesIndex2, i2 )
+                continue
+                
+            R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
+            dR = numpy.array( [ gfrdfunctions.p2_R( D1, D2, self.dt )
+                                for i in range( 3 ) ] )
+            R = R0 + dR
+            
+            r = rt.pairGreensFunction.drawR( random.random(), r0, self.dt )
+            theta = rt.pairGreensFunction.drawTheta( random.random(),\
+                                                     r, r0, self.dt )
+            phi = random.random() * 2 * Pi
+            
+            interr = sphericalToCartesian( numpy.array( [ r, theta, phi ] ) )
+
+            pos1 = ( R - sqrtD1D2 * interr ) / ( sqrtD1D2 + sqrtD2D1 )
+
+            pos2 = interr + pos1
+
             
 
-            if species1.D != 0.0:
-                dts1 = self.dtCache[speciesIndex1][i1]
-                pairradii1 = self.H * numpy.sqrt( 6.0 * species1.D * dts1 )
-                self.simpleDiffusion( speciesIndex1, i1 )
+#            if species1.D != 0.0:
+#                dts1 = self.dtCache[speciesIndex1][i1]
+#                pairradii1 = self.H * numpy.sqrt( 6.0 * species1.D * dts1 )
+#                #self.simpleDiffusion( speciesIndex1, i1 )
 
 
-            if species2.D != 0.0:
-                dts2 = self.dtCache[speciesIndex2][i2]
-                pairradii2 = self.H * numpy.sqrt( 6.0 * species2.D * dts2 )
-                self.simpleDiffusion( speciesIndex2, i2 )
+#            if species2.D != 0.0:
+#                dts2 = self.dtCache[speciesIndex2][i2]
+#                pairradii2 = self.H * numpy.sqrt( 6.0 * species2.D * dts2 )
+#                #self.simpleDiffusion( speciesIndex2, i2 )
 
             
     def propagateSingles( self ):
@@ -817,7 +875,7 @@ class Simulator:
                 partnerDts = self.dtCache\
                              [ partnerSpeciesIndex ][ partnerIndex ]
 
-                # (2) If the partner's partner has to be this, else
+                # (2) The partner's partner has to be this, otherwise
                 #     this combination isn't a pair.
                 # (3) 'Neighbor' of this pair is the closer of
                 #     this and the partner's second closest.
@@ -983,7 +1041,8 @@ class Simulator:
             raise "critical"
 
         factor = ( math.sqrt( species1.D ) + math.sqrt( species2.D ) ) * self.H
-        factor *= factor * 6.0
+        factor *= factor
+        factor *= 6.0
 
         distanceSqSorted = distanceSq.take( sortedindices[:2] )
 
