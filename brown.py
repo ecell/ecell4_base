@@ -90,7 +90,7 @@ def distanceSqArray_Cyclic( position1, positions, fsize ):
 
 def cartesianToSpherical( c ):
     # x, y, z = c
-    r = math.sqrt( sum( c ** 2 ) )
+    r = math.sqrt( ( c ** 2 ).sum() )
     theta = math.acos( c[2] / r )
     phi = math.atan( c[1] / c[0] )
     if c[0] < 0.0:
@@ -100,9 +100,10 @@ def cartesianToSpherical( c ):
 
 def sphericalToCartesian( s ):
     r, theta, phi = s
-    return numpy.array( [ r * math.cos( theta ) * math.sin( phi ),
-                          r * math.sin( theta ) * math.sin( phi ),
-                          r * math.cos( phi ) ] )
+    sintheta = math.sin( theta )
+    return numpy.array( [ r * math.cos( phi ) * sintheta,
+                          r * math.sin( phi ) * sintheta,
+                          r * math.cos( theta ) ] )
 
 
 def randomUnitVector():
@@ -168,6 +169,18 @@ class BindingReactionType( ReactionType ):
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
         self.pairGreensFunction = gfrd.PlainPairGreensFunction( D, k, sigma )
+
+class RepulsionReactionType( ReactionType ):
+
+    def __init__( self, s1, s2 ):
+        self.reactants = ( s1, s2 )
+        self.products = ( )
+        self.k  = 0.0
+
+        D = s1.D + s2.D
+        sigma = s1.radius + s2.radius
+        self.pairGreensFunction = gfrd.PlainPairGreensFunction( D, self.k,\
+                                                                sigma )
 
 class UnbindingReactionType( ReactionType ):
 
@@ -316,13 +329,14 @@ class Simulator:
         self._distanceSqArray = distanceSqArray_Cyclic
 
         self.resampledMoves = 0
+        self.reactionEvents = 0
 
     def simpleDiffusion( self, speciesIndex, particleIndex ):
 
         species = self.speciesList.values()[speciesIndex]
 
-        limitSq = self.H * numpy.sqrt( 6.0 * species.D * self.dt ) - \
-                  species.radius
+        limitSq = self.H * numpy.sqrt( 6.0 * species.D * self.dt ) #- \
+                  #species.radius
         limitSq *= limitSq
 
         while True:
@@ -372,6 +386,17 @@ class Simulator:
                 self.reactionTypeList2[ (species2,species1) ] = r
         else:
             raise 'unexpected'
+
+    def setAllRepulsive( self ):
+        for species1 in self.speciesList.values():
+            for species2 in self.speciesList.values():
+                try:
+                    rt = self.reactionTypeList2[ (species1,species2) ]
+                except:
+                    self.reactionTypeList2[ (species1,species2) ] =\
+                                            RepulsionReactionType( species1,\
+                                                                   species2 )
+        
 
     def throwInParticles( self, id, n ):
         print 'throwing in %s %s particles' % ( n, id )
@@ -441,6 +466,7 @@ class Simulator:
         self.determineNextReaction()
 
         print 'maxdt', self.dtMax, 'dt', self.dt,\
+              'reactions', self.reactionEvents,\
               'resampled moves', self.resampledMoves
         
         self.propagateParticles()
@@ -481,7 +507,7 @@ class Simulator:
         # second order reactions
 
         self.pairs = [ ( self.nextReactionTime2( r ),\
-                         r[1], r[2], r[3], r[4], r[5], r[6] )\
+                         r[0], r[1], r[2], r[3], r[4], r[5], r[6] )\
                        for r in self.pairs ]
 
         if len( self.pairs ) != 0:
@@ -525,7 +551,7 @@ class Simulator:
         pos2 = species2.pool.positions[i2]
 
         radius = species1.radius + species2.radius
-        r0 = math.sqrt( ( ( pos1 - pos2 ) ** 2 ).sum() )
+        r0 = self.distance( pos1, pos2 )
 
         if radius > r0:
             print 'CRITICAL: radius > r0', str(radius), str(r0)
@@ -538,6 +564,7 @@ class Simulator:
 
 
         res = rt.pairGreensFunction.drawTime( u, r0, self.dtMax )
+
         return res
 
     '''
@@ -571,15 +598,7 @@ class Simulator:
 '''     
 
     
-    def fireReaction( self ):
 
-        if self.nextReaction == None:
-            return
-
-        if self.nextReaction.order() == 1:
-            self.fireReaction1( self.nextReaction )
-        else:
-            self.fireReaction2( self.nextReaction )
 
     def fireReaction1( self, reaction ):
 
@@ -640,7 +659,7 @@ class Simulator:
 
         print 'fire:', pair
 
-        dt, ndt, speciesIndex1, index1, speciesIndex2, index2, rt = pair
+        dt, pdt, ndt, speciesIndex1, index1, speciesIndex2, index2, rt = pair
 
         species1 = self.speciesList.values()[speciesIndex1]
         species2 = self.speciesList.values()[speciesIndex2]
@@ -664,8 +683,8 @@ class Simulator:
                 newpos = pos2
             else:
                 
-                D2D1Sqrt = math.sqrt( D2 / D1 ) 
-                D1D2Sqrt = math.sqrt( D1 / D2 )
+                sqrtD2D1 = math.sqrt( D2 / D1 ) 
+                sqrtD1D2 = math.sqrt( D1 / D2 )
                 
                 R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
                 
@@ -714,6 +733,7 @@ class Simulator:
 #                p.dt[1] = scipy.Inf
 #                p.partner = None
                 
+
     def debug( self ):
 
         for species in self.speciesList.values():
@@ -729,7 +749,7 @@ class Simulator:
 
 
         # fireReaction should come last in any case because
-        # it can change particle identities.
+        # it can change particle identities, thus invalidate particle indices.
 
         if self.nextReaction == None:  # no reaction
             self.propagatePairs( self.pairs )
@@ -738,9 +758,22 @@ class Simulator:
             if len( self.pairs ) > 1: 
                 self.propagatePairs( self.pairs[1:] )
             self.fireReaction2( self.nextReaction )
+            self.reactionEvents += 1
         else:                           # unary reaction
             self.propagatePairs( self.pairs )
             self.fireReaction1( self.nextReaction ) # after propagatePairs()
+            self.reactionEvents += 1
+
+    def propagateSingles( self ):
+
+
+        for i in range( len( self.singles ) ):
+            species = self.speciesList.values()[i]
+
+            if species.D != 0.0:
+                for j in self.singles[i]:
+
+                    self.simpleDiffusion( i, j )
 
 
     def propagatePairs( self, pairs ):
@@ -749,7 +782,7 @@ class Simulator:
         for pair in pairs:
 
             print pair
-            dt, ndt, speciesIndex1, i1, speciesIndex2, i2, rt = pair
+            dt, pdt, ndt, speciesIndex1, i1, speciesIndex2, i2, rt = pair
 
             species1 = self.speciesList.values()[speciesIndex1]
             species2 = self.speciesList.values()[speciesIndex2]
@@ -763,11 +796,16 @@ class Simulator:
 
             pos1 = species1.pool.positions[i1]
             pos2 = species2.pool.positions[i2]
+
+            # for debug
+            #oldpos1 = pos1[:]
+            #oldpos2 = pos2[:]
                 
             r0 = distance( pos1, pos2 )
 
             interParticle = pos2 - pos1
             interParticleS = cartesianToSpherical( interParticle )
+
 
             if D1 == 0.0:
                 raise 'D1 == 0; not implemented yet'
@@ -779,7 +817,7 @@ class Simulator:
                 
                 # if particles are far apart use simpleDiffusion()
                 limit = self.H * ( numpy.sqrt( 6.0 * D1 * self.dt ) +
-                                   numpy.sqrt( 6.0 * D2 * self.dt )  )\
+                                   numpy.sqrt( 6.0 * D2 * self.dt ) )\
                                    + species1.radius + species2.radius
                 if r0 > limit:
                     print '== skip =='
@@ -788,38 +826,41 @@ class Simulator:
                     continue
                 
                 R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
-                dR = numpy.array( [ gfrdfunctions.p2_R( D1, D2, self.dt )
-                                    for i in range( 3 ) ] )
+                dR = gfrdfunctions.p2_R( D1, D2, self.dt )
                 R = R0 + dR
+
+
                 
                 r = rt.pairGreensFunction.drawR( random.random(), r0, self.dt )
                 theta = rt.pairGreensFunction.drawTheta( random.random(),\
                                                          r, r0, self.dt )
                 phi = random.random() * 2 * Pi
-                
-                newInterParticle = sphericalToCartesian( numpy.array(\
-                    [ r, theta, phi ] ) + interParticleS )
+
+                newInterParticleS = numpy.array( [ r, theta + interParticle[1],
+                                                   phi ] )
+                #newInterParticleS = numpy.array( [ r, interParticle[1],
+                #interParticle[2] ] )
+                newInterParticle = sphericalToCartesian( newInterParticleS )
                 
                 pos1 = ( R - sqrtD1D2 * newInterParticle )\
                        / ( sqrtD1D2 + sqrtD2D1 )
 
                 pos2 = newInterParticle + pos1
 
+                interParticleS = cartesianToSpherical( pos2 - pos1 )
 
+            '''
+            #debug
+            limitSq1 = self.H * self.H * 6.0 * D1 * self.dt
+            limitSq2 = self.H * self.H * 6.0 * D2 * self.dt
+            dist1 = ( ( oldpos1 - pos1 ) ** 2 ).sum()
+            dist2 = ( ( oldpos2 - pos2 ) ** 2 ).sum()
+            if limitSq1 <= dist1 or \
+                   limitSq2 <= dist2:
+                print math.sqrt( limitSq1 ), math.sqrt( dist1 )
+                print math.sqrt( limitSq2 ), math.sqrt( dist2 )
+                raise "unexpected"'''     
             
-    def propagateSingles( self ):
-
-
-        for i in range( len( self.singles ) ):
-            species = self.speciesList.values()[i]
-
-            if species.D != 0.0:
-                for j in self.singles[i]:
-
-                    self.simpleDiffusion( i, j )
-
-
-
     def newParticles( self ):
 
         for i in self._newparticles:
@@ -852,6 +893,7 @@ class Simulator:
         for speciesIndex in range( len( speciesList ) ):
             size = speciesList[speciesIndex].pool.size
             for particleIndex in range( size ):
+
                 ret = self.checkPairs( speciesIndex, particleIndex )
                 self.dtCache[ speciesIndex ][ particleIndex ] = ret[0]
                 self.neighborCache[ speciesIndex ][ particleIndex ] = ret[1]
@@ -875,12 +917,6 @@ class Simulator:
                 # (1) Find the closest particle (partner).
                 partner = self.neighborCache[ speciesIndex1 ][ particleIndex ][0]
 
-                # (skip the last particle)
-                #if partner[0] == -1:
-                # continue
-
-                #print partner
-                
                 dts = self.dtCache[ speciesIndex1 ][ particleIndex ]
                 ( partnerSpeciesIndex, partnerIndex ) = partner
 
@@ -902,6 +938,7 @@ class Simulator:
                 # (4) Now we have a candidate pair.
                 species2 = speciesList[partnerSpeciesIndex]
                 rt = self.reactionTypeList2.get( ( species1, species2 ), None )
+
                 pair = ( dts[0], dts[1], speciesIndex1, particleIndex,\
                          partnerSpeciesIndex, partnerIndex, rt )
                 self.pairs.append( pair )
@@ -943,16 +980,10 @@ class Simulator:
             checklist[si2][i2] = 0
 
 
-        #print self.dtMax, self.pairs
-
         # now we have the final list of pairs
 
-        #for i in range(len(checklist)):
-        #    print checklist[i]
-            
-
-        # make the list of singles.
-        # a single is a particle that is not in the list
+        # next, make the list of singles.
+        # a single is a particle that doesn't appear in the list
         # of pairs.
         self.singles = []
 
@@ -975,10 +1006,8 @@ class Simulator:
         speciesList = self.speciesList.values()
 
         neighbordts = [ INF, INF ]
-        #neighbordts = []
-        # [ ( index, reaction type ), ]
+        #           [ ( index, reaction type ), (...,...), .. ]
         neighbors = [ ( -1, -1 ), ( -1, -1 ) ]
-        #neighbors = []
         drSqs = []
 
         species1 = speciesList[ speciesIndex1 ]
@@ -1061,11 +1090,11 @@ class Simulator:
         distanceSqSorted = distanceSq.take( sortedindices[:2] )
 
         # instead of just
-        dts = distanceSqSorted / factor
+        #dts = distanceSqSorted / factor
         # below takes into account of particle radii.
-        #dts = numpy.sqrt( distanceSqSorted ) - radius12
-        #dts *= dts
-        #dts /= factor
+        dts = numpy.sqrt( distanceSqSorted ) - radius12
+        dts *= dts
+        dts /= factor
 
         #if min( dts ) < 0.0:
         #print 'negative dts occured, clipping.', dts
