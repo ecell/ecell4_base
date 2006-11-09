@@ -567,37 +567,6 @@ class Simulator:
 
         return res
 
-    '''
-        D = species1.D + species2.D
-        k = rt.k
-        
-
-#        infp = gfrdreaction.p_survival2_inf( radius, r0, D, k )
-#        print 'sur', infp
-#        if u <= infp:
-#            return scipy.Inf
-        
-        maxtp = gfrdfunctions.p_survival2( self.dtMax, radius, r0, D, k )
-#        print 'maxtp', maxtp
-#        if k == 0.0:
-#            print 'kmaxp', maxtp
-
-        if u <= maxtp:
-            return INF
-
-        def __s( f, u, radius, r0, D, k ):
-            print '__s', ( f,u,radius, r0, D, k ),\
-                  u - gfrdfunctions.p_survival2( f, radius, r0, D, k )
-            return u - gfrdfunctions.p_survival2( f, radius, r0, D, k )
-
-
-        res = scipy.optimize.brenth( __s, 1e-100, self.dtMax,\
-                                     args = ( u, radius, r0, D, k) )
-
-        return res
-'''     
-
-    
 
 
     def fireReaction1( self, reaction ):
@@ -631,13 +600,10 @@ class Simulator:
 
             #print 'unit', self.distance( unitVector, numpy.array([0,0,0]) )
             distance = productSpecies1.radius + productSpecies2.radius
-            vector = unitVector * ( distance * ( 1.0 + 1e-10 ) ) # safety
+            vector = unitVector * ( distance * ( 1.0 + 1e-2 ) ) # safety
 
             newpos1 = pos + vector * ( D1 / (D1 + D2) )
             newpos2 = pos - vector * ( D2 / (D1 + D2) )
-
-            print distance, vector, newpos1, newpos2, vector * ( D1 / (D1 + D2) ),- vector * ( D2 / (D1 + D2) )
-            
 
             newpos1 %= self.fsize
             newpos2 %= self.fsize

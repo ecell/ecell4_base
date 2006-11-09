@@ -583,9 +583,9 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
   gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
   gsl_root_fsolver_set( solver, &F, low, high );
 
-  const Index maxIter( 100 );
+  const unsigned int maxIter( 100 );
 
-  int i( 0 );
+  unsigned int i( 0 );
   while( true )
     {
       gsl_root_fsolver_iterate( solver );
@@ -682,9 +682,10 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
 }
 
 
-const Real PlainPairGreensFunction::
-Rn( const Int order, const Real r, const Real r0, const Real t,
-    gsl_integration_workspace* const workspace ) const
+const Real 
+PlainPairGreensFunction::Rn( const Int order, const Real r, const Real r0,
+			     const Real t,
+			     gsl_integration_workspace* const workspace ) const
 {
   Real integral;
   Real error;
@@ -756,7 +757,7 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
   RealVector RnTable;
   RnTable.reserve( 8 );
 
-  const unsigned int MAXORDER( 100 );
+  const unsigned int MAXORDER( 80 );
 
   const Real p_free_max( this->p_free( r, r0, 0.0, t ) );
 
@@ -766,11 +767,14 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
   Real Rn_prev( 0.0 );
   const Real RnFactor( 1.0 / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
 
-  for( unsigned int order( 0 ); order <= MAXORDER; ++order )
+  unsigned int order( 0 );
+  while( true ) 
     {
       const Real Rn( this->Rn( order, r, r0, t, workspace ) );
 
       RnTable.push_back( Rn );
+
+      //std::cerr << Rn << std::endl;
 
       // truncate when converged enough.
       if( fabs( Rn * RnFactor ) < 
@@ -780,7 +784,15 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 	  break;
 	}
 
+      if( order >= MAXORDER )
+	{
+	  std::cerr << "Rn didn't converge." << std::endl;
+	  break;
+	}
+
       Rn_prev = Rn;
+
+      ++order;
     }
 
   gsl_integration_workspace_free( workspace );

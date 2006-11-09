@@ -25,6 +25,9 @@ class Logger:
 
         self.prepareTimecourseFile()
 
+    def setInterval( self, interval ):
+        self.interval = interval
+
     def setParticleOutput( self, outlist ):
         self.particleOutList = outlist
 

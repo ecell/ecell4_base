@@ -24,7 +24,7 @@ s.throwInParticles( 'S', 0 )
 s.throwInParticles( 'P', 600 )
 
 l = Logger( s, 'dimer' )
-l.interval=1e-6
+l.setInterval( 1e-6 )
 l.log()
 
 
