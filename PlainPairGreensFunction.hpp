@@ -143,7 +143,7 @@ private:
   const Real alpha;
 
   static const Real P_CUTOFF = 1e-6;
-  static const Real H = 4.0;
+  static const Real H = 3.0;
 
 };
 

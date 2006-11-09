@@ -557,8 +557,10 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
 {
   assert( rnd <= 1.0 && rnd >= 0.0 );
 
+  Real sqrtMaxt( sqrt( maxt ) );
+
   {
-    const Real maxp( p_reaction( sqrt( maxt ), r0 ) );
+    const Real maxp( p_reaction( sqrtMaxt, r0 ) );
 
     if( rnd >= maxp )
       {
@@ -567,15 +569,6 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
   }
 
   p_reaction_params params = { this, r0, rnd };
-  /*
-  gsl_function_fdf FDF = 
-    {
-      reinterpret_cast<typeof(FDF.f)>( &p_reaction_F ),
-      reinterpret_cast<typeof(FDF.df)>( &p_reaction_deriv_F ),
-      reinterpret_cast<typeof(FDF.fdf)>( &p_reaction_fdf_F ),
-      &params 
-    };
-  */
 
   gsl_function F = 
     {
@@ -583,45 +576,28 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
       &params 
     };
 
-  // This initial guess must be smaller than the answer (but still
-  // larger than zero), or newton-type iteration can undershoot into
-  // tsqrt < 0, where value of p_reaction is undefined.
-  const Real initialGuess( 1e-30 );
+  Real low( 1e-100 );
+  Real high( sqrtMaxt );
 
-  /*
-  //const gsl_root_fdfsolver_type* solverType( gsl_root_fdfsolver_steffenson );
-  const gsl_root_fdfsolver_type* solverType( gsl_root_fdfsolver_secant );
-  gsl_root_fdfsolver* solver( gsl_root_fdfsolver_alloc( solverType ) );
-  gsl_root_fdfsolver_set( solver, &FDF, initialGuess );
-  */
   const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
   gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
-  gsl_root_fsolver_set( solver, &F, initialGuess, sqrt( maxt ) );
+  gsl_root_fsolver_set( solver, &F, low, high );
 
   const Index maxIter( 100 );
 
-  Real tsqrt( initialGuess );
-  Real low;
-  Index i( 0 );
+  int i( 0 );
   while( true )
     {
-      //      gsl_root_fdfsolver_iterate( solver );
       gsl_root_fsolver_iterate( solver );
-      const Real tsqrt_prev( tsqrt );
 
-      /*
-      tsqrt = gsl_root_fdfsolver_root( solver );
-      int status( gsl_root_test_delta( tsqrt, tsqrt_prev, 1e-18, 1e-12 ) );
-      */
       low = gsl_root_fsolver_x_lower( solver );
-      Real high( gsl_root_fsolver_x_lower( solver ) );
+      high = gsl_root_fsolver_x_upper( solver );
       int status( gsl_root_test_interval( low, high, 1e-18, 1e-12 ) );
 
       if( status == GSL_CONTINUE )
 	{
 	  if( i >= maxIter )
 	    {
-	      //	      gsl_root_fdfsolver_free( solver );
 	      gsl_root_fsolver_free( solver );
 	      std::cerr << "drawTime: failed to converge." << std::endl;
 	      throw std::exception();
@@ -635,10 +611,8 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
       ++i;
     }
   
-  //  gsl_root_fdfsolver_free( solver );
   gsl_root_fsolver_free( solver );
 
-  //  return gsl_pow_2( tsqrt );
   return gsl_pow_2( low );
 } 
 

@@ -312,7 +312,7 @@ class Simulator:
         self.dt = 1e-7
         self.t = 0.0
 
-        self.H = 4.0
+        self.H = 3.0
         
         self.dtLimit = 1e-3
         self.dtMax = self.dtLimit
@@ -631,10 +631,13 @@ class Simulator:
 
             #print 'unit', self.distance( unitVector, numpy.array([0,0,0]) )
             distance = productSpecies1.radius + productSpecies2.radius
-            vector = unitVector * distance * ( 1.0 + 1e-18 ) # safety
-            
+            vector = unitVector * ( distance * ( 1.0 + 1e-10 ) ) # safety
+
             newpos1 = pos + vector * ( D1 / (D1 + D2) )
             newpos2 = pos - vector * ( D2 / (D1 + D2) )
+
+            print distance, vector, newpos1, newpos2, vector * ( D1 / (D1 + D2) ),- vector * ( D2 / (D1 + D2) )
+            
 
             newpos1 %= self.fsize
             newpos2 %= self.fsize
@@ -642,7 +645,7 @@ class Simulator:
             # debug
             d = self.distance( newpos1, newpos2 )
             if d < distance:
-                raise "d = %f" % d
+                raise "d = %s, %s" %( d, distance)
 
             productSpecies1.newParticle( newpos1 )
             productSpecies2.newParticle( newpos2 )
@@ -801,7 +804,7 @@ class Simulator:
             #oldpos1 = pos1[:]
             #oldpos2 = pos2[:]
                 
-            r0 = distance( pos1, pos2 )
+            r0 = self.distance( pos1, pos2 )
 
             interParticle = pos2 - pos1
             interParticleS = cartesianToSpherical( interParticle )
@@ -820,7 +823,7 @@ class Simulator:
                                    numpy.sqrt( 6.0 * D2 * self.dt ) )\
                                    + species1.radius + species2.radius
                 if r0 > limit:
-                    print '== skip =='
+                    print '== simple diffusion =='
                     self.simpleDiffusion( speciesIndex1, i1 )
                     self.simpleDiffusion( speciesIndex2, i2 )
                     continue
@@ -848,6 +851,9 @@ class Simulator:
                 pos2 = newInterParticle + pos1
 
                 interParticleS = cartesianToSpherical( pos2 - pos1 )
+
+            pos1 %= self.fsize
+            pos2 %= self.fsize
 
             '''
             #debug
