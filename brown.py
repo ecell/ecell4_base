@@ -831,7 +831,8 @@ class Simulator:
                    limitSq2 <= dist2:
                 print math.sqrt( limitSq1 ), math.sqrt( dist1 )
                 print math.sqrt( limitSq2 ), math.sqrt( dist2 )
-                raise "unexpected"'''     
+                raise "unexpected"
+            '''     
             
     def newParticles( self ):
 
@@ -858,7 +859,7 @@ class Simulator:
         #self.drCache = []
         for speciesIndex in range( len( speciesList ) ):
             size = speciesList[speciesIndex].pool.size
-            self.dtCache.append( numpy.zeros( ( size, 2), numpy.floating ) )
+            self.dtCache.append( numpy.zeros( ( size, 2 ), numpy.floating ) )
             self.neighborCache.append( [[[ -1, -1 ],[-1,-1]]] * size )
             #self.drCache.append( numpy.zeros( size, numpy.floating ) )
 
@@ -876,9 +877,8 @@ class Simulator:
         for speciesIndex1 in range( len( speciesList ) ):
 
             species1 = speciesList[speciesIndex1]
-            positions1 = species1.pool.positions
 
-            for particleIndex in range( len( positions1 ) ):
+            for particleIndex in range( species1.pool.size ):
 
                 # A partner: the other of the pair.
                 # A neighbor of a pair: closer of the second closest of
@@ -887,10 +887,15 @@ class Simulator:
                 #                       a particle.
                 
                 # (1) Find the closest particle (partner).
-                partner = self.neighborCache[ speciesIndex1 ][ particleIndex ][0]
+                partner =\
+                        self.neighborCache[ speciesIndex1 ][ particleIndex ][0]
+
+                ( partnerSpeciesIndex, partnerIndex ) = partner
+
+                if partnerSpeciesIndex == -1:
+                    continue
 
                 dts = self.dtCache[ speciesIndex1 ][ particleIndex ]
-                ( partnerSpeciesIndex, partnerIndex ) = partner
 
                 partnersPartner = self.neighborCache\
                                   [ partnerSpeciesIndex ][ partnerIndex ][0]
@@ -939,7 +944,7 @@ class Simulator:
             # Don't take pairs with partner dt greater than dtMax.
             if dt > self.dtMax:
                 self.pairs = self.pairs[:i]
-                break
+                break   # pairs are sorted by dt.  break here.
 
             # debug
             if checklist[si1][i1] == 0 or checklist[si2][i2] == 0:
@@ -960,7 +965,8 @@ class Simulator:
         self.singles = []
 
         for i in range( len( checklist ) ):
-            singleIndices = numpy.flatnonzero( checklist[i] )
+            #singleIndices = numpy.flatnonzero( checklist[i] )
+            singleIndices = numpy.nonzero( checklist[i] )
             self.singles.append( singleIndices )
 
         #debug
@@ -986,7 +992,8 @@ class Simulator:
         positions = species1.pool.positions
         position1 = positions[ particleIndex ].copy()
 
-        if len( position1 ) >= 2 and species1.D != 0.0:
+        if self.reactionTypeList2.get( ( species1, species1 ), None ) != None \
+           and len( position1 ) >= 2 and species1.D != 0.0:
 
             # temporarily displace the particle
             positions[particleIndex] = NOWHERE
@@ -1010,6 +1017,11 @@ class Simulator:
                 + range( speciesIndex1 + 1, len( speciesList ) ):
             species2 = speciesList[speciesIndex2]
 
+            # non reactive
+            if self.reactionTypeList2.get( ( species1, species2 ), None )\
+                   == None:
+                continue
+            
             if species2.pool.size == 0:
                 continue
 

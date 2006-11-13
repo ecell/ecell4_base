@@ -18,10 +18,10 @@ s.addReactionType( r1 )
 r2 = UnbindingReactionType( P, S, S, 5e1 )
 s.addReactionType( r2 )
 
-s.setAllRepulsive()
+#s.setAllRepulsive()
 
-s.throwInParticles( 'S', 0 )
-s.throwInParticles( 'P', 600 )
+s.throwInParticles( 'S', 2 )
+s.throwInParticles( 'P', 0 )
 
 l = Logger( s, 'dimer' )
 l.setInterval( 1e-6 )
