@@ -120,8 +120,10 @@ private:
 
   const Real 
   Rn( const Int order, const Real r, const Real r0, const Real t,
-      gsl_integration_workspace* const workspace ) const;
+      gsl_integration_workspace* const workspace, const Real err ) const;
 
+
+  // Range of R = [ Sigma, Sigma + r0(t) + H sqrt( 6 D t ) ];
   const Real getMinR() const
   {
     return getSigma();
@@ -129,9 +131,6 @@ private:
 
   const Real getMaxR( const Real t, const Real r0 ) const
   {
-    // [ Sigma, Sigma + 2 H sqrt( 6 D t ) ];
-    // should actually be [ Sigma, r0(t) + H sqrt( 6 D t ) ]
-    //    return getMinR() + (this->H*2) * sqrt( 6.0 * getD() * t );
     return getMinR() + r0 + ( this->H + 1 ) * sqrt( 6.0 * getD() * t );
   }
 

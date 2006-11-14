@@ -261,15 +261,13 @@ class ParticlePool:
         return index
 
 
+'''
 class Reaction:
 
     def __init__( self ):
         pass
 
     
-
-
-'''
 class Particle:
     
     def __init__( self, pos, species ):
@@ -328,7 +326,7 @@ class Simulator:
         self._distanceSq = distanceSq_Cyclic
         self._distanceSqArray = distanceSqArray_Cyclic
 
-        self.resampledMoves = 0
+        self.rejectedMoves = 0
         self.reactionEvents = 0
 
     def simpleDiffusion( self, speciesIndex, particleIndex ):
@@ -347,7 +345,7 @@ class Simulator:
             if distanceSq <= limitSq:
                 break
 
-            self.resampledMoves += 1
+            self.rejectedMoves += 1
 
         pos = species.pool.positions[particleIndex]
         pos += displacement
@@ -467,13 +465,24 @@ class Simulator:
 
         print 'maxdt', self.dtMax, 'dt', self.dt,\
               'reactions', self.reactionEvents,\
-              'resampled moves', self.resampledMoves
+              'rejected moves', self.rejectedMoves
         
         self.propagateParticles()
 
         self.t += self.dt
 
         self.newParticles()
+
+    def clear( self ):
+
+        self.dtMax = self.dtLimit
+        self.dt = self.dtLimit
+
+        self.nextReaction = None
+
+        self.pairs = []
+        self.singles = []
+
 
 
     def isPopulationChanged( self ):
@@ -686,32 +695,6 @@ class Simulator:
 '''
 
         
-    def clear( self ):
-
-        self.dtMax = self.dtLimit
-        self.dt = self.dtLimit
-
-        self.nextReaction = None
-
-        self.pairs = []
-        self.singles = []
-
-#        for species in self.speciesList.values():
-#            for p in species.pool.keys():
-#                p.dt[0] = scipy.Inf
-#                p.dt[1] = scipy.Inf
-#                p.partner = None
-                
-
-    def debug( self ):
-
-        for species in self.speciesList.values():
-            #            print 'species: %s' % species.id
-
-            for i in species.pool.keys():
-                print i.species.id, i.getPos(), i.dt
-
-
     def propagateParticles( self ):
 
         self.propagateSingles()
@@ -759,6 +742,9 @@ class Simulator:
             D1 = species1.D
             D2 = species2.D
 
+            radius1 = species1.radius
+            radius2 = species2.radius
+
             #debug
             if D1 == 0.0 and D1 == D2:
                 raise "unexpected: D1 == D2 == 0.0"
@@ -775,51 +761,83 @@ class Simulator:
             interParticle = pos2 - pos1
             interParticleS = cartesianToSpherical( interParticle )
 
-
             if D1 == 0.0:
                 raise 'D1 == 0; not implemented yet'
             elif D2 == 0.0:
                 raise 'D2 == 0; not implemented yet'
             else:
-                sqrtD2D1 = math.sqrt( D2 / D1 ) 
                 sqrtD1D2 = math.sqrt( D1 / D2 )
-                
+                sqrtD2D1 = math.sqrt( D2 / D1 ) 
+
+                limit1 = self.H * numpy.sqrt( 6.0 * D1 * self.dt )
+                limit2 = self.H * numpy.sqrt( 6.0 * D2 * self.dt )
+                                     
                 # if particles are far apart use simpleDiffusion()
-                limit = self.H * ( numpy.sqrt( 6.0 * D1 * self.dt ) +
-                                   numpy.sqrt( 6.0 * D2 * self.dt ) )\
-                                   + species1.radius + species2.radius
-                if r0 > limit:
+                correlationLimit = limit1 + limit2 + radius1 + radius2
+
+                
+                if r0 > correlationLimit:
                     print '== simple diffusion =='
                     self.simpleDiffusion( speciesIndex1, i1 )
                     self.simpleDiffusion( speciesIndex2, i2 )
                     continue
                 
                 R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
-                dR = gfrdfunctions.p2_R( D1, D2, self.dt )
-                R = R0 + dR
 
+                while True:
 
+                    dR = gfrdfunctions.p2_R( D1, D2, self.dt )
+                    R = R0 + dR
+
+                    r = rt.pairGreensFunction.drawR( random.random(), r0, \
+                                                     self.dt )
+
+                    print r0, r
+                    theta = rt.pairGreensFunction.drawTheta( random.random(),\
+                                                             r, r0, self.dt )
+                    phi = random.random() * 2.0 * Pi
+
+                    r = r0
+                    theta = 0
+                    phi = interParticleS[2]
+                    newInterParticleS = numpy.array( [ r, \
+                                                       theta +\
+                                                       interParticleS[1],
+                                                       phi ] )
+
+                    #newInterParticleS = interParticleS
+
+                  
+                    #newInterParticleS = numpy.array( [ r, interParticle[1],
+                    #interParticle[2] ] )
+
+                    newInterParticle = \
+                                     sphericalToCartesian( newInterParticleS )
                 
-                r = rt.pairGreensFunction.drawR( random.random(), r0, self.dt )
-                theta = rt.pairGreensFunction.drawTheta( random.random(),\
-                                                         r, r0, self.dt )
-                phi = random.random() * 2 * Pi
+                    newpos1 = ( R - sqrtD1D2 * newInterParticle ) \
+                              / ( sqrtD1D2 + sqrtD2D1 )
 
-                newInterParticleS = numpy.array( [ r, theta + interParticle[1],
-                                                   phi ] )
-                #newInterParticleS = numpy.array( [ r, interParticle[1],
-                #interParticle[2] ] )
-                newInterParticle = sphericalToCartesian( newInterParticleS )
-                
-                pos1 = ( R - sqrtD1D2 * newInterParticle )\
-                       / ( sqrtD1D2 + sqrtD2D1 )
+                    newpos2 = newInterParticle + pos1
 
-                pos2 = newInterParticle + pos1
+                    newDistance1 = distance( pos1, newpos1 )
+                    newDistance2 = distance( pos2, newpos2 )
 
-                interParticleS = cartesianToSpherical( pos2 - pos1 )
+                    if newDistance1 <= limit1 and newDistance2 <= limit2:
+                        break
 
-            pos1 %= self.fsize
-            pos2 %= self.fsize
+                    print 'rejected move', limit1, newDistance1,\
+                          limit2, newDistance2
+
+                    self.rejectedMoves += 1
+
+
+            newpos1 %= self.fsize
+            newpos2 %= self.fsize
+
+            species1.pool.positions[i1] = newpos1
+            species2.pool.positions[i2] = newpos2
+
+
 
             '''
             #debug
@@ -946,12 +964,16 @@ class Simulator:
                 self.pairs = self.pairs[:i]
                 break   # pairs are sorted by dt.  break here.
 
-            # debug
             if checklist[si1][i1] == 0 or checklist[si2][i2] == 0:
                 print self.pairs[:i+1]
                 print self.dtCache[si1][i1], self.dtCache[si2][i2]
                 print self.neighborCache[si1][i1], self.neighborCache[si2][i2]
-                raise 'pairs not mutually exclusive. critical.'
+                print 'pairs not mutually exclusive.'
+                self.pairs = self.pairs[:i]
+                break
+
+            
+            
 
             checklist[si1][i1] = 0
             checklist[si2][i2] = 0
@@ -965,8 +987,7 @@ class Simulator:
         self.singles = []
 
         for i in range( len( checklist ) ):
-            #singleIndices = numpy.flatnonzero( checklist[i] )
-            singleIndices = numpy.nonzero( checklist[i] )
+            singleIndices = numpy.nonzero( checklist[i] )[0] #== flatnonzero()
             self.singles.append( singleIndices )
 
         #debug

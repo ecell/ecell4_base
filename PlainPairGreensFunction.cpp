@@ -232,9 +232,10 @@ PlainPairGreensFunction::p_corr( const Real r, const Real r0,
 	
       // abs_err >> 1 because the integral can be huge.
       // instead use rel_err.
-      gsl_integration_qag( &p_corr_R2_F, 0.0, 
-			   umax, 
-			   1e4, 1e-18, 1000,
+      gsl_integration_qag( &p_corr_R2_F, 0.0, umax, 
+			   10, // FIXME: this needs to be adaptively given.
+			   1e-8, 
+			   1000,
 			   GSL_INTEG_GAUSS61,
 			   workspace, &integral, &error );
       
@@ -631,7 +632,7 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
   pTable[0] = 0.0;
 
   const Real minR( this->getMinR() );
-  const Real maxR( this->getMaxR( t, r0 ) );
+  const Real maxR( this->getMaxR( t, r0 ) * 1.1 ); // 10% margin for safety.
   const Real rStep( ( maxR - minR ) / ( tableSize - 1) );
 
   Real r_prev( p_irr_radial( minR, t, r0 ) );
@@ -644,10 +645,18 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
       const Real value( ( r_prev + p ) * 0.5 );
       pTable[i] = pTable[i-1] + value;
 
-      if( value < pTable[i] * std::numeric_limits<double>::epsilon() 
-	  || i >= tableSize-1 ) 
+
+      // this criterion needs to be decided based upon H.
+      if( value < pTable[i] * std::numeric_limits<double>::epsilon() )
 	{
-	  break;   // pTable is valid in [0,i].
+	  break;
+	}
+
+      if( i >= tableSize - 1 ) 
+	{
+	  std::cerr << "drawR: p didn't converge within the range of table." <<
+	    std::endl;
+	  break;    
 	}
 
       r_prev = p;
@@ -655,11 +664,7 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
       ++i;
     }
 
-  if( i >= tableSize-1 )
-    {
-      std::cerr << "drawR: p didn't converge within the range of table." <<
-	std::endl;
-    }
+  // pTable is valid in [0,i].
 
   const Real targetPoint( rnd * pTable[i] );
   const size_t lowerBound( gsl_interp_bsearch( pTable.data(), targetPoint, 
@@ -685,7 +690,8 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
 const Real 
 PlainPairGreensFunction::Rn( const Int order, const Real r, const Real r0,
 			     const Real t,
-			     gsl_integration_workspace* const workspace ) const
+			     gsl_integration_workspace* const workspace,
+			     const Real err ) const
 {
   Real integral;
   Real error;
@@ -699,10 +705,10 @@ PlainPairGreensFunction::Rn( const Int order, const Real r, const Real r0,
 
   const Real umax( sqrt( 30.0 / ( this->getD() * t ) ) ); 
 
-  gsl_integration_qag( &p_corr_R_F, 0.0, 
+  gsl_integration_qag( &p_corr_R_F, 0.0,
 		       umax,
-		       1e5,  // abs_err >> 1 because the integral can be huge.
-		       1e-18, // instead rel_err is used.
+		       err,
+		       1e-8,
 		       1000, GSL_INTEG_GAUSS61,
 		       workspace, &integral, &error );
   
@@ -752,110 +758,114 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 					       const Real r0, 
 					       const Real t ) const
 {
-  Real theta;
-
   RealVector RnTable;
   RnTable.reserve( 8 );
 
-  const unsigned int MAXORDER( 80 );
 
-  const Real p_free_max( this->p_free( r, r0, 0.0, t ) );
+  {
+    const unsigned int MAXORDER( 80 );
+    const Real p_free_max( this->p_free( r, r0, 0.0, t ) );
+    const Real integrationTolerance( p_free_max * 1e-10 );
+    const Real truncationTolerance( p_free_max * 1e-8 );
+    
+    gsl_integration_workspace* 
+      workspace( gsl_integration_workspace_alloc( 1000 ) );
+    
+    Real Rn_prev( 0.0 );
+    const Real RnFactor( 1.0 / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
+    
+    unsigned int order( 0 );
+    while( true ) 
+      {
+	const Real Rn( this->Rn( order, r, r0, t, workspace, 
+				 integrationTolerance ) );
+	
+	RnTable.push_back( Rn );
+	
+	//std::cerr << Rn << std::endl;
+	
+	// truncate when converged enough.
+	if( fabs( Rn * RnFactor ) < truncationTolerance &&
+	    fabs( Rn ) < fabs( Rn_prev ) )
+	  {
+	    break;
+	  }
+	
+	if( order >= MAXORDER )
+	  {
+	    std::cerr << "Rn didn't converge." << std::endl;
+	    break;
+	  }
+	
+	Rn_prev = Rn;
+	
+	++order;
+      }
+    
+    gsl_integration_workspace_free( workspace );
+  }
 
-  gsl_integration_workspace* 
-    workspace( gsl_integration_workspace_alloc( 1000 ) );
+  Real theta;
 
-  Real Rn_prev( 0.0 );
-  const Real RnFactor( 1.0 / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
-
-  unsigned int order( 0 );
-  while( true ) 
-    {
-      const Real Rn( this->Rn( order, r, r0, t, workspace ) );
-
-      RnTable.push_back( Rn );
-
-      //std::cerr << Rn << std::endl;
-
-      // truncate when converged enough.
-      if( fabs( Rn * RnFactor ) < 
-	  p_free_max * std::numeric_limits<double>::epsilon() &&
-	  fabs( Rn ) < fabs( Rn_prev ) )
-	{
-	  break;
-	}
-
-      if( order >= MAXORDER )
-	{
-	  std::cerr << "Rn didn't converge." << std::endl;
-	  break;
-	}
-
-      Rn_prev = Rn;
-
-      ++order;
-    }
-
-  gsl_integration_workspace_free( workspace );
-
-  const Index tableSize( 200 );
-  const Real thetaStep( M_PI / tableSize );
-
-  //boost::array<Real, tableSize+1> pTable;
-  RealVector pTable( tableSize );
-
-  pTable[0] = 0.0;
-  Real p_prev( 0.0 ); // p_tot_RnTable() with theta = 0 is always zero.
-  Index i( 1 );
-  while( true )
-    {
-      const Real theta( thetaStep * i );
-
-      Real p( this->p_tot_RnTable( theta, r, r0, t, RnTable ) );
-      if( p < 0.0 )
-	{
-	  p = 0.0;
-	}
-
-      const Real value( ( p_prev + p ) * 0.5 );
-
-      pTable[i] = pTable[i-1] + value;
-
-      if( value < pTable[i] * std::numeric_limits<Real>::epsilon() ||
-	  i >= tableSize-1 )
-	{
-	  break;   // pTable is valid in [0,i].
-	}
-
-      p_prev = p;
-      ++i;
-    }
-
-  /*
-  const Real p_irr_r( this->p_irr_radial( r, t, r0 ) );
-  const Real relerror( (pTable[i]*thetaStep- p_irr_r)/p_irr_r );
-  if( fabs( relerror ) >= 1e-2 )
-    {
+  {
+    const Index tableSize( 200 );
+    const Real thetaStep( M_PI / tableSize );
+    
+    //boost::array<Real, tableSize+1> pTable;
+    RealVector pTable( tableSize );
+    
+    pTable[0] = 0.0;
+    Real p_prev( 0.0 ); // p_tot_RnTable() with theta = 0 is always zero.
+    Index i( 1 );
+    while( true )
+      {
+	Real p( this->p_tot_RnTable( thetaStep * i, r, r0, t, RnTable ) );
+	if( p < 0.0 )
+	  {
+	    p = 0.0;
+	  }
+	
+	const Real value( ( p_prev + p ) * 0.5 );
+	
+	pTable[i] = pTable[i-1] + value;
+	
+	if( value < pTable[i] * std::numeric_limits<Real>::epsilon() ||
+	    i >= tableSize-1 )
+	  {
+	    break;   // pTable is valid in [0,i].
+	  }
+	
+	p_prev = p;
+	++i;
+      }
+    
+    /*
+      const Real p_irr_r( this->p_irr_radial( r, t, r0 ) );
+      const Real relerror( (pTable[i]*thetaStep- p_irr_r)/p_irr_r );
+      if( fabs( relerror ) >= 1e-2 )
+      {
       std::cerr << "drawTheta: relative error estimate is large: " << relerror 
-		<< "( r= " << r << ", r0= " << r0 << ", t= " << t 
-		<< ")." << std::endl;
-    }
-  */
-
-  const Real targetPoint( rnd * pTable[i] );
-  const size_t lowerBound( gsl_interp_bsearch( pTable.data(), targetPoint, 
-					       0, i ) );
-  const Real low( lowerBound * thetaStep );
-      
-  if( pTable[lowerBound+1] - pTable[lowerBound] != 0.0 )
-    {
-      theta = low + thetaStep * ( targetPoint - pTable[lowerBound] ) / 
-	( pTable[lowerBound+1] - pTable[lowerBound] );
-    }
-  else
-    {
-      // this can happen when rnd is equal to or is too close to 1.0.
-      theta = low;
-    }
+      << "( r= " << r << ", r0= " << r0 << ", t= " << t 
+      << ")." << std::endl;
+      }
+    */
+    
+    const Real targetPoint( rnd * pTable[i] );
+    const size_t lowerBound( gsl_interp_bsearch( pTable.data(), targetPoint, 
+						 0, i ) );
+    const Real low( lowerBound * thetaStep );
+    
+    if( pTable[lowerBound+1] - pTable[lowerBound] != 0.0 )
+      {
+	theta = low + thetaStep * ( targetPoint - pTable[lowerBound] ) / 
+	  ( pTable[lowerBound+1] - pTable[lowerBound] );
+      }
+    else
+      {
+	// this can happen when rnd is equal to or is too close to 1.0.
+	theta = low;
+      }
+  }
 
 
   return theta;
