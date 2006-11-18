@@ -12,6 +12,7 @@ from scipy import special
 
 N_A = 6.0221367e23
 
+
 def p1( D, dt ):
     ro = math.sqrt( 2.0 * D * dt )
 

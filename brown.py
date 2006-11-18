@@ -106,11 +106,40 @@ def sphericalToCartesian( s ):
                           r * math.cos( theta ) ] )
 
 
-def randomUnitVector():
+def randomUnitVectorS():
     s = numpy.array( [ 1.0, numpy.random.uniform( 0, Pi2 ),
                        numpy.random.uniform( 0, Pi2 ) ] )
+    return s
 
-    return sphericalToCartesian( s )
+
+def randomUnitVector():
+    return sphericalToCartesian( randomUnitVectorS() )
+
+
+
+def rotateSpherical( orig, offsetS ):
+    origDist = math.sqrt( ( orig ** 2 ).sum() )
+    
+    mx = numpy.array( [ 1.0, 1.0,
+                        ( 0.0 - orig[0] - orig[1] ) / orig[2] ] )
+    mx /= math.sqrt( ( mx ** 2 ).sum() )  # norm_x
+
+    mz = orig / origDist
+
+    my = numpy.array( [ mz[1] * mx[2] - mz[2] * mx[1],
+                        mz[2] * mx[0] - mz[0] * mx[2],
+                        mz[0] * mx[1] - mz[1] * mx[0] ] )
+    my /= math.sqrt( ( my ** 2 ).sum() )
+
+    offset = sphericalToCartesian( offsetS )
+
+    m = numpy.array( [ mx, my, mz ] )
+    new = numpy.dot( m, offset )
+
+    #print math.sqrt( ( newPos **2 ).sum() ), newInterParticleS[0]
+
+    return new
+
 
 
 class Species:
@@ -752,10 +781,6 @@ class Simulator:
             pos1 = species1.pool.positions[i1]
             pos2 = species2.pool.positions[i2]
 
-            # for debug
-            #oldpos1 = pos1[:]
-            #oldpos2 = pos2[:]
-                
             r0 = self.distance( pos1, pos2 )
 
             interParticle = pos2 - pos1
@@ -775,7 +800,6 @@ class Simulator:
                 # if particles are far apart use simpleDiffusion()
                 correlationLimit = limit1 + limit2 + radius1 + radius2
 
-                
                 if r0 > correlationLimit:
                     print '== simple diffusion =='
                     self.simpleDiffusion( speciesIndex1, i1 )
@@ -792,35 +816,29 @@ class Simulator:
                     r = rt.pairGreensFunction.drawR( random.random(), r0, \
                                                      self.dt )
 
-                    print r0, r
                     theta = rt.pairGreensFunction.drawTheta( random.random(),\
                                                              r, r0, self.dt )
                     phi = random.random() * 2.0 * Pi
 
-                    r = r0
-                    theta = 0
-                    phi = interParticleS[2]
-                    newInterParticleS = numpy.array( [ r, \
-                                                       theta +\
-                                                       interParticleS[1],
-                                                       phi ] )
+                    # relative inter particle vector in spherical coordinates.
+                    newInterParticleS = numpy.array( [ r, theta, phi ] )
 
                     #newInterParticleS = interParticleS
-
-                  
                     #newInterParticleS = numpy.array( [ r, interParticle[1],
                     #interParticle[2] ] )
 
-                    newInterParticle = \
-                                     sphericalToCartesian( newInterParticleS )
+                    #                    newInterParticle = \
+                    #                sphericalToCartesian( newInterParticleS )
+                    newInterParticle = rotateSpherical( interParticle,
+                                                        newInterParticleS )
                 
                     newpos1 = ( R - sqrtD1D2 * newInterParticle ) \
                               / ( sqrtD1D2 + sqrtD2D1 )
 
                     newpos2 = newInterParticle + pos1
 
-                    newDistance1 = distance( pos1, newpos1 )
-                    newDistance2 = distance( pos2, newpos2 )
+                    newDistance1 = self.distance( pos1, newpos1 )
+                    newDistance2 = self.distance( pos2, newpos2 )
 
                     if newDistance1 <= limit1 and newDistance2 <= limit2:
                         break
