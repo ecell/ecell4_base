@@ -116,6 +116,47 @@ def randomUnitVector():
     return sphericalToCartesian( randomUnitVectorS() )
 
 
+def length( a ):
+    return math.sqrt( (a*a).sum() )
+
+def normalize( a ):
+    return a / length( a )
+
+
+def vectorAngle( a, b ):
+    cosangle = numpy.dot( a, b ) / ( length( a ) * length( b ) )
+    return math.acos( cosangle )
+
+
+def crossproduct( a, b ):
+    M = numpy.array( [ [    0.0, - a[2],   a[1] ],
+                       [   a[2],    0.0, - a[0] ],
+                       [ - a[1],   a[0],    0.0 ] ] )
+    return numpy.dot( M, b )
+
+
+'''
+v: vector to rotate
+r: normalized rotation axis
+alpha: rotation angle in radian
+'''
+def rotateVector( v, r, alpha ):
+    cosalpha = math.cos( alpha )
+    sinalpha = math.sin( alpha )
+    cosalphac = 1.0 - cosalpha
+
+    M = numpy.array( [ [ cosalpha + cosalphac * r[0] * r[0],
+                         cosalphac * r[0] * r[1] - r[2] * sinalpha,
+                         cosalphac * r[0] * r[2] + r[1] * sinalpha ],
+                       [ cosalphac * r[0] * r[1] + r[2] * sinalpha,
+                         cosalpha + cosalphac * r[1] * r[1],
+                         cosalphac * r[1] * r[2] - r[0] * sinalpha ],
+                       [ cosalphac * r[0] * r[2] - r[1] * sinalpha,
+                         cosalphac * r[1] * r[2] + r[0] * sinalpha,
+                         cosalpha + cosalphac * r[2] * r[2] ] ] )
+
+    return numpy.dot( M,v )
+                         
 
 def rotateSpherical( orig, offsetS ):
     origDist = math.sqrt( ( orig ** 2 ).sum() )
@@ -820,18 +861,36 @@ class Simulator:
                                                              r, r0, self.dt )
                     phi = random.random() * 2.0 * Pi
 
-                    # relative inter particle vector in spherical coordinates.
+                    # new inter particle vector
                     newInterParticleS = numpy.array( [ r, theta, phi ] )
+                    newInterParticle = \
+                                     sphericalToCartesian( newInterParticleS )
 
-                    #newInterParticleS = interParticleS
-                    #newInterParticleS = numpy.array( [ r, interParticle[1],
-                    #interParticle[2] ] )
 
-                    #                    newInterParticle = \
-                    #                sphericalToCartesian( newInterParticleS )
-                    newInterParticle = rotateSpherical( interParticle,
-                                                        newInterParticleS )
-                
+                    # Now I rotate this new interparticle vector along the
+                    # rotation axis that is perpendicular to both the
+                    # z-axis and the original interparticle vector for
+                    # the angle between these.
+
+                    # the rotation axis is a cross product of the z-axis
+                    # and the original vector, normalized by itself.
+                    rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
+                    rotationAxis = normalize( rotationAxis )
+
+                    print 'rot', rotationAxis, length( rotationAxis )
+
+                    #print 'r ', vectorAngle( rotationAxis, interParticle ),\
+                    #vectorAngle( rotationAxis, numpy.array([0,0,1]) )
+
+                    angle = vectorAngle( numpy.array([0,0,1]), interParticle )
+                    
+                    print 'angle', angle
+
+                    newInterParticle = rotateVector( newInterParticle,
+                                                     rotationAxis,
+                                                     angle )
+#                                                     2*Pi - angle )
+
                     newpos1 = ( R - sqrtD1D2 * newInterParticle ) \
                               / ( sqrtD1D2 + sqrtD2D1 )
 
