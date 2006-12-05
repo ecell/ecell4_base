@@ -92,9 +92,9 @@ def cartesianToSpherical( c ):
     # x, y, z = c
     r = math.sqrt( ( c ** 2 ).sum() )
     theta = math.acos( c[2] / r )
-    phi = math.atan( c[1] / c[0] )
-    if c[0] < 0.0:
-        phi += Pi
+    phi = math.atan2( c[1], c[0] )
+    if phi < 0.0:  # atan2 returns [- PI, PI]
+        phi += 2.0 * Pi
     return numpy.array( [ r, theta, phi ] )
 
 
@@ -194,6 +194,7 @@ class Species:
     def newParticle( self, position ):
 
         serial = self.pool.newParticle( position )
+        return serial
 
 
     def removeParticleByIndex( self, index ):
@@ -487,7 +488,7 @@ class Simulator:
 
     def placeParticle( self, id, position ):
 
-        position = numpy.array(position)
+        position = numpy.array( position )
         species = self.speciesList[ id ]
 
         if not self.checkOverlap( position, species.radius ):
@@ -800,7 +801,6 @@ class Simulator:
 
     def propagatePairs( self, pairs ):
 
-        # dummy procedure, assumes no correlation.
         for pair in pairs:
 
             print pair
@@ -822,10 +822,23 @@ class Simulator:
             pos1 = species1.pool.positions[i1]
             pos2 = species2.pool.positions[i2]
 
+
             r0 = self.distance( pos1, pos2 )
 
             interParticle = pos2 - pos1
-            interParticleS = cartesianToSpherical( interParticle )
+            #interParticleS = cartesianToSpherical( interParticle )
+
+            limit1 = self.H * numpy.sqrt( 6.0 * D1 * self.dt )
+            limit2 = self.H * numpy.sqrt( 6.0 * D2 * self.dt )
+                                     
+            # if particles are far apart use simpleDiffusion()
+            correlationLimit = limit1 + limit2 + radius1 + radius2
+
+            if r0 > correlationLimit:
+                print '== simple diffusion =='
+                self.simpleDiffusion( speciesIndex1, i1 )
+                self.simpleDiffusion( speciesIndex2, i2 )
+                continue
 
             if D1 == 0.0:
                 raise 'D1 == 0; not implemented yet'
@@ -834,78 +847,68 @@ class Simulator:
             else:
                 sqrtD1D2 = math.sqrt( D1 / D2 )
                 sqrtD2D1 = math.sqrt( D2 / D1 ) 
-
-                limit1 = self.H * numpy.sqrt( 6.0 * D1 * self.dt )
-                limit2 = self.H * numpy.sqrt( 6.0 * D2 * self.dt )
-                                     
-                # if particles are far apart use simpleDiffusion()
-                correlationLimit = limit1 + limit2 + radius1 + radius2
-
-                if r0 > correlationLimit:
-                    print '== simple diffusion =='
-                    self.simpleDiffusion( speciesIndex1, i1 )
-                    self.simpleDiffusion( speciesIndex2, i2 )
-                    continue
-                
                 R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
 
-                while True:
+            while True:
 
-                    dR = gfrdfunctions.p2_R( D1, D2, self.dt )
-                    R = R0 + dR
-
-                    r = rt.pairGreensFunction.drawR( random.random(), r0, \
-                                                     self.dt )
-
-                    theta = rt.pairGreensFunction.drawTheta( random.random(),\
-                                                             r, r0, self.dt )
-                    phi = random.random() * 2.0 * Pi
-
-                    # new inter particle vector
-                    newInterParticleS = numpy.array( [ r, theta, phi ] )
-                    newInterParticle = \
-                                     sphericalToCartesian( newInterParticleS )
-
-
-                    # Now I rotate this new interparticle vector along the
-                    # rotation axis that is perpendicular to both the
-                    # z-axis and the original interparticle vector for
-                    # the angle between these.
-
-                    # the rotation axis is a cross product of the z-axis
-                    # and the original vector, normalized by itself.
-                    rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
-                    rotationAxis = normalize( rotationAxis )
-
-                    print 'rot', rotationAxis, length( rotationAxis )
-
-                    #print 'r ', vectorAngle( rotationAxis, interParticle ),\
-                    #vectorAngle( rotationAxis, numpy.array([0,0,1]) )
-
-                    angle = vectorAngle( numpy.array([0,0,1]), interParticle )
-                    
-                    print 'angle', angle
-
-                    newInterParticle = rotateVector( newInterParticle,
-                                                     rotationAxis,
-                                                     angle )
-#                                                     2*Pi - angle )
-
-                    newpos1 = ( R - sqrtD1D2 * newInterParticle ) \
-                              / ( sqrtD1D2 + sqrtD2D1 )
-
-                    newpos2 = newInterParticle + pos1
-
-                    newDistance1 = self.distance( pos1, newpos1 )
-                    newDistance2 = self.distance( pos2, newpos2 )
-
-                    if newDistance1 <= limit1 and newDistance2 <= limit2:
-                        break
-
-                    print 'rejected move', limit1, newDistance1,\
-                          limit2, newDistance2
-
-                    self.rejectedMoves += 1
+                dR = gfrdfunctions.p2_R( D1, D2, self.dt )
+                R = R0 + dR
+                
+                r = rt.pairGreensFunction.drawR( random.random(), r0, \
+                                                 self.dt )
+                
+                theta = rt.pairGreensFunction.drawTheta( random.random(),\
+                                                         r, r0, self.dt )
+                phi = random.random() * 2.0 * Pi
+                
+                # new inter particle vector
+                newInterParticleS = numpy.array( [ r, theta, phi ] )
+                newInterParticle = \
+                                 sphericalToCartesian( newInterParticleS )
+                
+                
+                # Now I rotate this new interparticle vector along the
+                # rotation axis that is perpendicular to both the
+                # z-axis and the original interparticle vector for
+                # the angle between these.
+                
+                # the rotation axis is a cross product of the z-axis
+                # and the original vector, normalized by itself.
+                rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
+                rotationAxis = normalize( rotationAxis )
+                
+                print 'rot', rotationAxis, length( rotationAxis )
+                
+                #print 'r ', vectorAngle( rotationAxis, interParticle ),\
+                #vectorAngle( rotationAxis, numpy.array([0,0,1]) )
+                
+                angle = vectorAngle( numpy.array([0,0,1]), interParticle )
+                
+                print 'angle', angle
+                
+                newInterParticle = rotateVector( newInterParticle,
+                                                 rotationAxis,
+                                                 angle )
+                #                                                     2*Pi - angle )
+                
+                newpos1 = ( R - sqrtD1D2 * newInterParticle ) \
+                          / ( sqrtD1D2 + sqrtD2D1 )
+                
+                newpos2 = newInterParticle + pos1
+                
+                
+                newDistance1 = distance( pos1, newpos1 )
+                newDistance2 = distance( pos2, newpos2 )
+                newParticleDistance = distance( newpos1, newpos2 )
+                if newDistance1 <= limit1 and newDistance2 <= limit2\
+                       and newParticleDistance > radius1 + radius2:
+                    break
+                
+                print 'rejected move', limit1, newDistance1,\
+                      limit2, newDistance2,\
+                      radius1 + radius2, newParticleDistance
+                
+                self.rejectedMoves += 1
 
 
             newpos1 %= self.fsize
@@ -915,20 +918,6 @@ class Simulator:
             species2.pool.positions[i2] = newpos2
 
 
-
-            '''
-            #debug
-            limitSq1 = self.H * self.H * 6.0 * D1 * self.dt
-            limitSq2 = self.H * self.H * 6.0 * D2 * self.dt
-            dist1 = ( ( oldpos1 - pos1 ) ** 2 ).sum()
-            dist2 = ( ( oldpos2 - pos2 ) ** 2 ).sum()
-            if limitSq1 <= dist1 or \
-                   limitSq2 <= dist2:
-                print math.sqrt( limitSq1 ), math.sqrt( dist1 )
-                print math.sqrt( limitSq2 ), math.sqrt( dist2 )
-                raise "unexpected"
-            '''     
-            
     def newParticles( self ):
 
         for i in self._newparticles:
