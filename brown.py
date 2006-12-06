@@ -126,12 +126,18 @@ def vectorAngle( a, b ):
     cosangle = numpy.dot( a, b ) / ( length( a ) * length( b ) )
     return math.acos( cosangle )
 
+def vectorAngleAgainstZAxis( b ):
+    cosangle = b[2] / length( b )
+    return math.acos( cosangle )
 
 def crossproduct( a, b ):
     M = numpy.array( [ [    0.0, - a[2],   a[1] ],
                        [   a[2],    0.0, - a[0] ],
                        [ - a[1],   a[0],    0.0 ] ] )
     return numpy.dot( M, b )
+
+def crossproductAgainstZAxis( a ):
+    return numpy.array( [ - a[1], a[0], 0.0 ] )
 
 
 '''
@@ -155,31 +161,6 @@ def rotateVector( v, r, alpha ):
                          cosalpha + cosalphac * r[2] * r[2] ] ] )
 
     return numpy.dot( M,v )
-                         
-
-def rotateSpherical( orig, offsetS ):
-    origDist = math.sqrt( ( orig ** 2 ).sum() )
-    
-    mx = numpy.array( [ 1.0, 1.0,
-                        ( 0.0 - orig[0] - orig[1] ) / orig[2] ] )
-    mx /= math.sqrt( ( mx ** 2 ).sum() )  # norm_x
-
-    mz = orig / origDist
-
-    my = numpy.array( [ mz[1] * mx[2] - mz[2] * mx[1],
-                        mz[2] * mx[0] - mz[0] * mx[2],
-                        mz[0] * mx[1] - mz[1] * mx[0] ] )
-    my /= math.sqrt( ( my ** 2 ).sum() )
-
-    offset = sphericalToCartesian( offsetS )
-
-    m = numpy.array( [ mx, my, mz ] )
-    new = numpy.dot( m, offset )
-
-    #print math.sqrt( ( newPos **2 ).sum() ), newInterParticleS[0]
-
-    return new
-
 
 
 class Species:
@@ -865,11 +846,11 @@ class Simulator:
                 
                 # the rotation axis is a normalized cross product of
                 # the z-axis and the original vector.
-                rotationAxis = crossproduct( [ 0,0,1 ],\
-                                             normalize( interParticle ) )
+                # rotationAxis2 = crossproduct( [ 0,0,1 ], interParticle )
+                rotationAxis = crossproductAgainstZAxis( interParticle )
                 rotationAxis = normalize( rotationAxis )
                 
-                angle = vectorAngle( numpy.array([0,0,1]), interParticle )
+                angle = vectorAngleAgainstZAxis( interParticle )
                 
                 newInterParticle = rotateVector( newInterParticle,
                                                  rotationAxis,
