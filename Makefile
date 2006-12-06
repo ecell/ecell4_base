@@ -1,7 +1,7 @@
 
 
 CXXFLAGS=-Wall -O2 -g # -ftree-vectorize -ftree-vectorizer-verbose=6 -msse2
-NUMPYINCLUDE=$(shell python -c "import numpy; print numpy.get_numpy_include()")
+NUMPYINCLUDE=$(shell python -c "import numpy; print numpy.get_include()")
 
 all: 
 	g++ $(CXXFLAGS) -fPIC -c PlainPairGreensFunction.cpp

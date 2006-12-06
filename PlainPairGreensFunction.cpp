@@ -631,8 +631,14 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
   boost::array<Real, tableSize> pTable;
   pTable[0] = 0.0;
 
-  const Real minR( this->getMinR( t, r0 ) );
-  const Real maxR( this->getMaxR( t, r0 ) * 1.1 ); // 10% margin for safety.
+  // Range of r in this function = 
+  //     [ max( Sigma, r0 - H sqrt( 6 D t ), r0(t) + H sqrt( 6 D t ) ];
+
+  const Real Hsqrt6Dt( ( this->H + 1 ) * sqrt( 6.0 * getD() * t ) );
+
+  const Real minR( std::max( getSigma(), r0 - Hsqrt6Dt ) );
+  const Real maxR( ( r0 + Hsqrt6Dt ) * 1.1 ); // need to fine tune these
+
   const Real rStep( ( maxR - minR ) / ( tableSize - 1) );
 
   Real r_prev( p_irr_radial( minR, t, r0 ) );

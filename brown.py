@@ -38,8 +38,7 @@ def distance( position1, position2 ):
 
 def distanceSqArray_Simple( position1, positions, fsize=None ):
     
-    return ( ( position1 - positions ) **2 ).sum(1)
-    #return ( ( positions - position1 ) **2 ).sum(1)
+    return ( ( positions - position1 ) **2 ).sum(1)
 
 
 
@@ -514,8 +513,6 @@ class Simulator:
 
             closestdistsq = self.distanceSqArray( position, positions2 ).min()
 
-#            print distsq
-
             if closestdistsq <= radius12sq:
                 print 'reject:', math.sqrt(closestdistsq), math.sqrt( radius12sq )
                 return False
@@ -753,24 +750,11 @@ class Simulator:
             species2.removeParticleBySerial( serial2 )
 
             # debug
-            #self.checkOverlap( newpos, species3.radius )
+            self.checkOverlap( newpos, species3.radius )
 
             species3.newParticle( newpos )
 
 
-            '''
-            else: 
-                species1.pool.positions[ index1 ] = pos1
-                species2.pool.positions[ index2 ] = pos2
-                try:  # no space for the product molecule, just propagate.
-                    print 'fireReaction2: no space for product, just propagate'
-                    self.propagatePairs( [ pair, ] )
-                except:  #FIXME: catch a class
-                    print 'fireReaction2: fail, restoring pair positions.'
-                    # restore pair position (already done above)
-'''
-
-        
     def propagateParticles( self ):
 
         self.propagateSingles()
@@ -900,8 +884,8 @@ class Simulator:
                 newDistance22 = distance( newpos2, pos2 )
                 newParticleDistance = distance( newpos1, newpos2 )
                 if limit1 >= newDistance11 and \
-                   limit2 >= newDistance22 and \
-                      newParticleDistance > radius1 + radius2:
+                       limit2 >= newDistance22 and \
+                       newParticleDistance > radius1 + radius2:
                     break
                 
                 print 'rejected move: ',\
