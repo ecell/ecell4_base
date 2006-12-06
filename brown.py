@@ -850,7 +850,8 @@ class Simulator:
                 sqrtD2D1 = 1.0
                 R = pos1
             elif D2 == 0.0:
-                # need to check if this procedure is stable.
+                # need to check if this procedure is stable and
+                # pos2 remains immobile.
                 sqrtD1D2 = 1.0
                 sqrtD2D1 = 0.0
                 R = pos1
