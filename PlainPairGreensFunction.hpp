@@ -123,15 +123,19 @@ private:
       gsl_integration_workspace* const workspace, const Real err ) const;
 
 
-  // Range of R = [ Sigma, Sigma + r0(t) + H sqrt( 6 D t ) ];
-  const Real getMinR() const
+  // Range of r = [ Sigma, Sigma + r0(t) + H sqrt( 6 D t ) ];
+  // Range of r = [ max( Sigma, r0 - H sqrt( 6 D t ),
+  //                r0(t) + H sqrt( 6 D t ) ];
+  const Real getMinR( const Real t, const Real r0 ) const
   {
-    return getSigma();
+    return std::max( getSigma(), 
+		     r0 - ( this->H ) * sqrt( 6.0 * getD() * t ) );
+		     
   }
 
   const Real getMaxR( const Real t, const Real r0 ) const
   {
-    return getMinR() + r0 + ( this->H + 1 ) * sqrt( 6.0 * getD() * t );
+    return r0 + ( this->H ) * sqrt( 6.0 * getD() * t );
   }
 
 

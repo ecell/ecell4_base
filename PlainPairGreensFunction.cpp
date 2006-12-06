@@ -631,7 +631,7 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
   boost::array<Real, tableSize> pTable;
   pTable[0] = 0.0;
 
-  const Real minR( this->getMinR() );
+  const Real minR( this->getMinR( t, r0 ) );
   const Real maxR( this->getMaxR( t, r0 ) * 1.1 ); // 10% margin for safety.
   const Real rStep( ( maxR - minR ) / ( tableSize - 1) );
 
