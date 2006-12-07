@@ -6,161 +6,15 @@ import bisect
 import random
 import sys
 
-import gfrdfunctions
-
-import gfrd
-
 import numpy
 import scipy
 import scipy.optimize
 
 
-Pi = scipy.pi
-Pi2 = scipy.pi * 2.0
-PiSqrt = math.sqrt( scipy.pi )
-
-N_A = 6.0221367e23
-INF = numpy.Inf
-
-NOWHERE = numpy.array( ( INF, INF, INF ) )
-
-
-def MsTom3s( rate ):
-    return rate / ( 1000 * N_A )
-
-
-def distanceSq_Simple( position1, position2, fsize=None ):
-
-    return ( ( position1 - position2 ) **2 ).sum()
-
-def distance( position1, position2 ):
-    return math.sqrt( distanceSq_Simple( position1, position2 ) )
-
-def distanceSqArray_Simple( position1, positions, fsize=None ):
-    
-    return ( ( positions - position1 ) **2 ).sum(1)
-
-
-
-def distanceSq_Cyclic( position1, position2, fsize ):
-
-    halfsize = fsize * 0.5
-    location = numpy.less( position1, halfsize ) * 2.0 - 1.0
-    xtransposes = ( 0.0, location[0] * fsize )
-    ytransposes = ( 0.0, location[1] * fsize )
-    ztransposes = ( 0.0, location[2] * fsize )
-
-    array = numpy.zeros( ( 8, 3 ), numpy.floating )
-
-    i = 0
-    for xtranspose in xtransposes:
-        for ytranspose in ytransposes:
-            for ztranspose in ztransposes:
-                array[i] = ( ( position1 +\
-                               ( xtranspose, ytranspose, ztranspose ) )\
-                             - position2 ) **2
-                i += 1
-
-    return array.sum(1).min()
-
-
-def distanceSqArray_Cyclic( position1, positions, fsize ):
-
-    halfsize = fsize * 0.5
-
-    location = numpy.less( position1, halfsize ) * 2.0 - 1.0
-    xtransposes = ( 0.0, location[0] * fsize )
-    ytransposes = ( 0.0, location[1] * fsize )
-    ztransposes = ( 0.0, location[2] * fsize )
-
-    array = numpy.zeros( ( 8, len(positions), 3 ), numpy.floating )
-
-    i = 0
-    for xtranspose in xtransposes:
-        for ytranspose in ytransposes:
-            for ztranspose in ztransposes:
-                array[i] = ( ( position1 +\
-                               ( xtranspose, ytranspose, ztranspose ) )\
-                             - positions ) **2
-                i += 1
-                
-    return array.sum(2).min(0)
-
-
-def cartesianToSpherical( c ):
-    # x, y, z = c
-    r = math.sqrt( ( c ** 2 ).sum() )
-    theta = math.acos( c[2] / r )
-    phi = math.atan2( c[1], c[0] )
-    if phi < 0.0:  # atan2 returns [- PI, PI]
-        phi += 2.0 * Pi
-    return numpy.array( [ r, theta, phi ] )
-
-
-def sphericalToCartesian( s ):
-    r, theta, phi = s
-    sintheta = math.sin( theta )
-    return numpy.array( [ r * math.cos( phi ) * sintheta,
-                          r * math.sin( phi ) * sintheta,
-                          r * math.cos( theta ) ] )
-
-
-def randomUnitVectorS():
-    s = numpy.array( [ 1.0, numpy.random.uniform( 0, Pi2 ),
-                       numpy.random.uniform( 0, Pi2 ) ] )
-    return s
-
-
-def randomUnitVector():
-    return sphericalToCartesian( randomUnitVectorS() )
-
-
-def length( a ):
-    return math.sqrt( (a*a).sum() )
-
-def normalize( a ):
-    return a / length( a )
-
-
-def vectorAngle( a, b ):
-    cosangle = numpy.dot( a, b ) / ( length( a ) * length( b ) )
-    return math.acos( cosangle )
-
-def vectorAngleAgainstZAxis( b ):
-    cosangle = b[2] / length( b )
-    return math.acos( cosangle )
-
-def crossproduct( a, b ):
-    M = numpy.array( [ [    0.0, - a[2],   a[1] ],
-                       [   a[2],    0.0, - a[0] ],
-                       [ - a[1],   a[0],    0.0 ] ] )
-    return numpy.dot( M, b )
-
-def crossproductAgainstZAxis( a ):
-    return numpy.array( [ - a[1], a[0], 0.0 ] )
-
-
-'''
-v: vector to rotate
-r: normalized rotation axis
-alpha: rotation angle in radian
-'''
-def rotateVector( v, r, alpha ):
-    cosalpha = math.cos( alpha )
-    sinalpha = math.sin( alpha )
-    cosalphac = 1.0 - cosalpha
-
-    M = numpy.array( [ [ cosalpha + cosalphac * r[0] * r[0],
-                         cosalphac * r[0] * r[1] - r[2] * sinalpha,
-                         cosalphac * r[0] * r[2] + r[1] * sinalpha ],
-                       [ cosalphac * r[0] * r[1] + r[2] * sinalpha,
-                         cosalpha + cosalphac * r[1] * r[1],
-                         cosalphac * r[1] * r[2] - r[0] * sinalpha ],
-                       [ cosalphac * r[0] * r[2] - r[1] * sinalpha,
-                         cosalphac * r[1] * r[2] + r[0] * sinalpha,
-                         cosalpha + cosalphac * r[2] * r[2] ] ] )
-
-    return numpy.dot( M,v )
+from utils import *
+from surface import *
+import gfrdfunctions
+import gfrd
 
 
 class Species:
@@ -312,13 +166,8 @@ class ParticlePool:
         return index
 
 
+
 '''
-class Reaction:
-
-    def __init__( self ):
-        pass
-
-    
 class Particle:
     
     def __init__( self, pos, species ):
@@ -358,6 +207,8 @@ class Simulator:
         self.reactionTypeList1 = {}
         self.reactionTypeList2 = {}
 
+        self.boundaryList = []
+
         self.dt = 1e-7
         self.t = 0.0
 
@@ -370,23 +221,24 @@ class Simulator:
 
         self.fsize = 0.0
 
-        self._newparticles = []
 
+        # counters
+        self.rejectedMoves = 0
+        self.reactionEvents = 0
+
+
+        # internal variables
         self._distanceSq = distanceSq_Simple
         self._distanceSqArray = distanceSqArray_Simple
         #self._distanceSq = distanceSq_Cyclic
         #self._distanceSqArray = distanceSqArray_Cyclic
 
-        self.rejectedMoves = 0
-        self.reactionEvents = 0
 
     def simpleDiffusion( self, speciesIndex, particleIndex ):
 
         species = self.speciesList.values()[speciesIndex]
 
-        limitSq = self.H * numpy.sqrt( 6.0 * species.D * self.dt ) #- \
-                  #species.radius
-        limitSq *= limitSq
+        limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
 
         while True:
             displacement = gfrdfunctions.p1( species.D, self.dt )
@@ -417,6 +269,9 @@ class Simulator:
 
     def setSize( self, size ):
         self.fsize = size
+
+    def addBoundary( self, boundary ):
+        self.boundaryList.append( boundary )
 
 
     def addSpecies( self, species ):
@@ -459,9 +314,7 @@ class Simulator:
 
             while True:
 
-                position= numpy.array( [ random.uniform( 0, self.fsize ),\
-                                         random.uniform( 0, self.fsize ),\
-                                         random.uniform( 0, self.fsize ) ] )
+                position= numpy.random.uniform( 0, self.fsize, 3 )
                 if self.checkOverlap( position, species.radius ):
                     break
             
@@ -523,7 +376,6 @@ class Simulator:
 
         self.t += self.dt
 
-        self.newParticles()
 
     def clear( self ):
 
@@ -887,13 +739,6 @@ class Simulator:
             species2.pool.positions[i2] = newpos2
 
 
-    def newParticles( self ):
-
-        for i in self._newparticles:
-            i.species.insert( i )
-
-        self._newparticles = []
-        
     def formPairs( self ):
 
         # 1. form pairs in self.pairs
@@ -920,9 +765,13 @@ class Simulator:
             size = speciesList[speciesIndex].pool.size
             for particleIndex in range( size ):
 
-                ret = self.checkPairs( speciesIndex, particleIndex )
-                self.dtCache[ speciesIndex ][ particleIndex ] = ret[0]
-                self.neighborCache[ speciesIndex ][ particleIndex ] = ret[1]
+                dt, neighbor = self.checkPairs( speciesIndex, particleIndex )
+
+                bdt, boundary = self.checkBoundaries( speciesIndex,\
+                                                     particleIndex )
+
+                self.dtCache[ speciesIndex ][ particleIndex ] = dt
+                self.neighborCache[ speciesIndex ][ particleIndex ] = neighbor
                 #self.drCache[ speciesIndex ][ particleIndex ] = ret[2]
 
 
@@ -1144,3 +993,25 @@ class Simulator:
         indices = sortedindices[:2]
 
         return dts, indices # , distanceSqSorted[0]
+
+
+    def checkBoundaries( self, speciesIndex1, particleIndex ):
+
+        speciesList = self.speciesList.values()
+
+        species = speciesList[ speciesIndex1 ]
+        pos = species.pool.positions[ particleIndex ].copy()
+
+        dist = [ boundary.distance( pos ) for boundary in self.boundaryList ]
+
+        if len( dist ) == 0:
+            return -1, 0.0
+
+        idx = numpy.argmin( dist )
+        dist = dist[idx]
+
+        dt = ( mindist - species.radius ) ** 2 / \
+                ( self.H * self.H * 6.0 * species.D ) 
+        
+        return dt, idx
+        
