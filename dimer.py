@@ -18,7 +18,7 @@ s.addReactionType( r1 )
 r2 = UnbindingReactionType( P, S, S, 5e1 )
 s.addReactionType( r2 )
 
-#s.setAllRepulsive()
+s.setAllRepulsive()
 
 s.throwInParticles( 'S', 600 )
 s.throwInParticles( 'P', 0 )

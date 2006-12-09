@@ -207,7 +207,7 @@ class Simulator:
         self.reactionTypeList1 = {}
         self.reactionTypeList2 = {}
 
-        self.boundaryList = []
+        self.surfaceList = []
 
         self.dt = 1e-7
         self.t = 0.0
@@ -254,8 +254,28 @@ class Simulator:
         pos += displacement
 
 
-        #FIXME: BOUNDARY
-        #pos %= self.fsize
+    def simpleDiffusionWithSurface( self, speciesIndex, particleIndex,\
+                                    surface ):
+        species = self.speciesList.values()[speciesIndex]
+
+        limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
+
+        while True:
+            displacement = gfrdfunctions.p1( species.D, self.dt )
+            
+            distanceSq = ( displacement * displacement ).sum()
+
+            if distanceSq <= limitSq:
+                break
+
+            self.rejectedMoves += 1
+
+        pos = species.pool.positions[particleIndex]
+        pos += displacement
+
+        #SURFACE
+
+        
 
 
     def distanceSq( self, position1, position2 ):
@@ -270,8 +290,8 @@ class Simulator:
     def setSize( self, size ):
         self.fsize = size
 
-    def addBoundary( self, boundary ):
-        self.boundaryList.append( boundary )
+    def addSurface( self, surface ):
+        self.surfaceList.append( surface )
 
 
     def addSpecies( self, species ):
@@ -518,7 +538,7 @@ class Simulator:
             newpos1 = pos + vector * ( D1 / (D1 + D2) )
             newpos2 = pos - vector * ( D2 / (D1 + D2) )
 
-            #FIXME: BOUNDARY
+            #FIXME: SURFACE
             #newpos1 %= self.fsize
             #newpos2 %= self.fsize
             
@@ -575,7 +595,7 @@ class Simulator:
                 newpos = ( R0 + dR ) / ( sqrtD1D2 + sqrtD2D1 )
                 
                 
-            #FIXME: BOUNDARY
+            #FIXME: SURFACE
             #newpos %= self.fsize
 
                 
@@ -731,7 +751,7 @@ class Simulator:
                 self.rejectedMoves += 1
 
 
-            #FIXME: BOUNDARY
+            #FIXME: SURFACE
             #newpos1 %= self.fsize
             #newpos2 %= self.fsize
 
@@ -767,7 +787,7 @@ class Simulator:
 
                 dt, neighbor = self.checkPairs( speciesIndex, particleIndex )
 
-                bdt, boundary = self.checkBoundaries( speciesIndex,\
+                bdt, surface = self.checkBoundaries( speciesIndex,\
                                                      particleIndex )
 
                 self.dtCache[ speciesIndex ][ particleIndex ] = dt
@@ -1002,7 +1022,7 @@ class Simulator:
         species = speciesList[ speciesIndex1 ]
         pos = species.pool.positions[ particleIndex ].copy()
 
-        dist = [ boundary.distance( pos ) for boundary in self.boundaryList ]
+        dist = [ surface.distance( pos ) for surface in self.surfaceList ]
 
         if len( dist ) == 0:
             return -1, 0.0
