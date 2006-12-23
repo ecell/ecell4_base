@@ -6,7 +6,7 @@
 \maketitle
 \begin{center}
 Initial version on Dec 18, 2006.\\
-Revised on Dec 19, 2006.
+Revised on Dec 19, 2006, Dec 22, 2006.
 \end{center}
 
 \section{The Green's function}
@@ -50,17 +50,17 @@ We get
 S(t) = -2 \sum_{n=1}^{\infty} (-1)^n e^{- \frac{D n^2 \pi^2 t}{a^2}}.
 \end{equation}
 
-This series is not a good behaving one and does not converge well.
+Numerically, this series is not a good behaving one and does not converge well.
 Using the fact that
 \begin{equation}
 \sum_{n=1}^{\infty} (-1)^{(n-1)} e^{- n^2 w} = 
 \frac{1}{2} ( 1 - \vartheta_4( 0, e^{-w} ) ),
 \end{equation}
-where $\vartheta$ is Jacobi theta, we rewrite $S(t)$ as 
+where $\vartheta$ is Jacobi's theta, we rewrite $S(t)$ as 
 \begin{equation}
 S(t) = 1 - \vartheta_4( 0, e^{- \frac{D \pi^2 t}{a^2}} ).
 \end{equation}
-Then we can efficiently evaluate this function with a product 
+Then we can efficiently evaluate this function through a product 
 representation
 \begin{equation}
 \vartheta_4( 0, q ) = \prod_{n=1}^{\infty} (1-q^{2n})(1-q^{(2n-1)})^2.
