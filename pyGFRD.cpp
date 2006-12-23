@@ -9,6 +9,8 @@
 #include "PairGreensFunction.hpp"
 #include "PlainPairGreensFunction.hpp"
 
+#include "FirstPassageGreensFunction.hpp"
+
 using namespace boost::python;
 
 const double distanceSq( const double* const p1, const double* const p2 )
@@ -57,6 +59,13 @@ BOOST_PYTHON_MODULE( gfrd )
     .def( "drawTime", &PlainPairGreensFunction::drawTime )
     .def( "drawR", &PlainPairGreensFunction::drawR )
     .def( "drawTheta", &PlainPairGreensFunction::drawTheta )
+    ;
+
+  class_<FirstPassageGreensFunction>( "FirstPassageGreensFunction",
+				      init<const Real, const Real>() )
+    .def( "getD", &FirstPassageGreensFunction::getD )
+    .def( "geta", &FirstPassageGreensFunction::geta )
+    .def( "p_survival", &FirstPassageGreensFunction::p_survival )
     ;
 
   def( "distanceSq", &distanceSq_ );

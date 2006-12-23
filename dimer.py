@@ -7,6 +7,10 @@ import sys
 
 s = Simulator()
 s.setSize( 1e-5 )
+
+box1 = CuboidalSurface( [0,0,0],[1e-5,1e-5,1e-5] )
+s.addSurface( box1 )
+
 S = Species( 'S', 2e-11, 5e-8 )
 s.addSpecies( S )
 P = Species( 'P', 1e-11, 7e-8 )
@@ -20,8 +24,8 @@ s.addReactionType( r2 )
 
 s.setAllRepulsive()
 
-s.throwInParticles( 'S', 600 )
-s.throwInParticles( 'P', 0 )
+s.throwInParticles( 'S', 600, box1 )
+s.throwInParticles( 'P', 0, box1 )
 
 l = Logger( s, 'dimer' )
 l.setInterval( 1e-6 )
