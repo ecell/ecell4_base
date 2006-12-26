@@ -43,6 +43,13 @@ public:
 
   const Real drawR( const Real rnd, const Real r, const Real t ) const;
 
+  const Real p_r_int( const Real r, const Real time ) const;
+  const Real p_free_int( const Real r, const Real time ) const;
+
+  const Real p_r_fourier( const Real r, const Real time ) const;
+
+
+
 
 private:
 
