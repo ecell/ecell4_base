@@ -62,9 +62,10 @@ BOOST_PYTHON_MODULE( gfrd )
     ;
 
   class_<FirstPassageGreensFunction>( "FirstPassageGreensFunction",
-				      init<const Real, const Real>() )
+				      init<const Real>() )
     .def( "getD", &FirstPassageGreensFunction::getD )
-    .def( "geta", &FirstPassageGreensFunction::geta )
+    .def( "drawTime", &FirstPassageGreensFunction::drawTime )
+    .def( "drawR", &FirstPassageGreensFunction::drawR )
     .def( "p_survival", &FirstPassageGreensFunction::p_survival )
     .def( "p_r_int", &FirstPassageGreensFunction::p_r_int )
     .def( "p_r_fourier", &FirstPassageGreensFunction::p_r_fourier )

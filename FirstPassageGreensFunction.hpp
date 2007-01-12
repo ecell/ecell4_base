@@ -12,10 +12,9 @@ class FirstPassageGreensFunction
 
 public:
 
-  FirstPassageGreensFunction( const Real D, const Real a )
+  FirstPassageGreensFunction( const Real D )
     :
-    D( D ),
-    a( a )
+    D( D )
   {
     ;
   }
@@ -30,31 +29,46 @@ public:
     return this->D;
   }
 
-  const Real geta() const
-  {
-    return this->a;
-  }
+  const Real p_survival( const Real t, const Real a ) const; 
 
+  const Real drawTime( const Real rnd, const Real a ) const;
 
-  const Real p_survival( const Real time ) const; 
+  const Real drawR( const Real rnd, const Real t, const Real a ) const;
 
-  const Real drawExitTime( const Real rnd, const Real r,
-				   const Real time ) const;
+  const Real p_r_int( const Real r, const Real t, const Real a ) const;
+  const Real p_free_int( const Real r, const Real t ) const;
 
-  const Real drawR( const Real rnd, const Real r, const Real t ) const;
-
-  const Real p_r_int( const Real r, const Real time ) const;
-  const Real p_free_int( const Real r, const Real time ) const;
-
-  const Real p_r_fourier( const Real r, const Real time ) const;
+  const Real p_r_fourier( const Real r, const Real t, const Real a ) const;
 
 
 
 
 private:
 
+  struct p_survival_params
+  {
+    const FirstPassageGreensFunction* const gf;
+    const Real a;
+    const Real rnd;
+  };
+
+  static const Real p_survival_F( const Real t, 
+				  const p_survival_params* params );
+
+  struct p_r_params
+  {
+    const FirstPassageGreensFunction* const gf;
+    const Real t;
+    const Real a;
+    const Real St;
+    const Real rnd;
+  };
+
+  static const Real p_r_F( const Real r, 
+			   const p_r_params* params );
+
+
   const Real D;
-  const Real a;
 };
 
 
