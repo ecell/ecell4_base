@@ -44,7 +44,7 @@ void* extract_pyarray(PyObject* x)
 }
 
 
-BOOST_PYTHON_MODULE( gfrd )
+BOOST_PYTHON_MODULE( _gfrd )
 {
   import_array();
 

@@ -14,7 +14,7 @@ import scipy.optimize
 from utils import *
 from surface import *
 import gfrdfunctions
-import gfrd
+import _gfrd
 
 
 class Species:
@@ -73,7 +73,7 @@ class BindingReactionType( ReactionType ):
 
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
-        self.pairGreensFunction = gfrd.PlainPairGreensFunction( D, k, sigma )
+        self.pairGreensFunction = _gfrd.PlainPairGreensFunction( D, k, sigma )
 
 class RepulsionReactionType( ReactionType ):
 
@@ -84,7 +84,7 @@ class RepulsionReactionType( ReactionType ):
 
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
-        self.pairGreensFunction = gfrd.PlainPairGreensFunction( D, self.k,\
+        self.pairGreensFunction = _gfrd.PlainPairGreensFunction( D, self.k,\
                                                                 sigma )
 
 class UnbindingReactionType( ReactionType ):
@@ -200,7 +200,7 @@ class Particle:
 
 
 
-class Simulator:
+class GFRDSimulatorBase:
     
     def __init__( self ):
         self.speciesList = {}

@@ -14,18 +14,17 @@ import scipy.optimize
 from utils import *
 from surface import *
 import gfrdfunctions
-import gfrd
+import _gfrd
 
 from gfrdbase import *
 
 
-class EGFRDSimulator( SimulatorBase ):
+class GFRDSimulator( GFRDSimulatorBase ):
     
     def __init__( self ):
-        SimulatorBase.__init__( self )
+        GFRDSimulatorBase.__init__( self )
 
 
-    
     def step( self ):
     
         self.clear()
@@ -58,6 +57,10 @@ class EGFRDSimulator( SimulatorBase ):
         self.pairs = []
         self.singles = []
 
+
+
+    def isPopulationChanged( self ):
+        return self.nextReaction != None
 
 
     def determineNextReaction( self ):
