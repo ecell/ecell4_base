@@ -14,18 +14,18 @@ import scipy.optimize
 from utils import *
 from surface import *
 import gfrdfunctions
-import gfrd
+import _gfrd
 
 from gfrdbase import *
 
 
-class EGFRDSimulator( SimulatorBase ):
+
+class GFRDSimulator( GFRDSimulatorBase ):
     
     def __init__( self ):
-        SimulatorBase.__init__( self )
+        GFRDSimulatorBase.__init__( self )
 
 
-    
     def step( self ):
     
         self.clear()
@@ -34,8 +34,8 @@ class EGFRDSimulator( SimulatorBase ):
 
 
         # proceed slightly even if dtMax is 0.
-        if self.dtMax <= 1e-18:
-            self.dtMax = 1e-18
+        #if self.dtMax <= 1e-18:
+        #    self.dtMax = 1e-18
         
         self.determineNextReaction()
 
@@ -58,6 +58,10 @@ class EGFRDSimulator( SimulatorBase ):
         self.pairs = []
         self.singles = []
 
+
+
+    def isPopulationChanged( self ):
+        return self.nextReaction != None
 
 
     def determineNextReaction( self ):
@@ -86,20 +90,23 @@ class EGFRDSimulator( SimulatorBase ):
 
         # second order reactions
 
-        self.pairs = [ ( self.nextReactionTime2( r ),\
-                         r[0], r[1], r[2], r[3], r[4], r[5], r[6] )\
-                       for r in self.pairs ]
+        for pair in self.pairs:
+            pair.rdt = self.nextReactionTime2( pair )
+
+        #self.pairs = [ ( self.nextReactionTime2( r ),\
+        #r[0], r[1], r[2], r[3], r[4], r[5], r[6] )\
+        #                       for r in self.pairs ]
 
         if len( self.pairs ) != 0:
             
-            self.pairs.sort()
-            reaction2 = self.pairs[0]
-            dt2 = reaction2[0]
+            self.pairs.sort(key=operator.attrgetter('rdt'))
+            pair = self.pairs[0]
+            dt2 = pair.rdt  # reaction2[0]
 
             if self.dt >= dt2:
 
                 self.dt = dt2
-                self.nextReaction = reaction2
+                self.nextReaction = pair
 
         print 'next reaction = ', self.nextReaction
 
@@ -120,15 +127,13 @@ class EGFRDSimulator( SimulatorBase ):
 
     def nextReactionTime2( self, pair ):
 
-        ( dt, ndt, s1, i1, s2, i2, rt ) = pair
-
-        if rt == None:
+        if pair.rt == None:
             return INF
 
-        species1 = self.speciesList.values()[s1]
-        species2 = self.speciesList.values()[s2]
-        pos1 = species1.pool.positions[i1]
-        pos2 = species2.pool.positions[i2]
+        species1 = self.speciesList.values()[pair.si1]
+        species2 = self.speciesList.values()[pair.si2]
+        pos1 = species1.pool.positions[pair.i1]
+        pos2 = species2.pool.positions[pair.i2]
 
         radius = species1.radius + species2.radius
         r0 = self.distance( pos1, pos2 )
@@ -137,13 +142,13 @@ class EGFRDSimulator( SimulatorBase ):
             print 'CRITICAL: radius > r0', str(radius), str(r0)
             #            return scipy.Inf
             print pair
-            print rt.str()
+            print pair.rt.str()
             #sys.exit(-1)
 
         u = random.random()
 
 
-        res = rt.pairGreensFunction.drawTime( u, r0, self.dtMax )
+        res = pair.rt.pairGreensFunction.drawTime( u, r0, self.dtMax )
 
         return res
 
@@ -186,8 +191,8 @@ class EGFRDSimulator( SimulatorBase ):
             newpos2 = pos - vector * ( D2 / (D1 + D2) )
 
             #FIXME: SURFACE
-            #newpos1 %= self.fsize
-            #newpos2 %= self.fsize
+            newpos1 %= self.fsize
+            newpos2 %= self.fsize
             
             # debug
             d = self.distance( newpos1, newpos2 )
@@ -209,23 +214,23 @@ class EGFRDSimulator( SimulatorBase ):
 
         print 'fire:', pair
 
-        dt, pdt, ndt, speciesIndex1, index1, speciesIndex2, index2, rt = pair
+        #dt, pdt, ndt, speciesIndex1, index1, speciesIndex2, index2, rt = pair
 
-        species1 = self.speciesList.values()[speciesIndex1]
-        species2 = self.speciesList.values()[speciesIndex2]
+        species1 = self.speciesList.values()[pair.si1]
+        species2 = self.speciesList.values()[pair.si2]
 
-        pos1 = species1.pool.positions[ index1 ].copy()
-        pos2 = species2.pool.positions[ index2 ].copy()
+        pos1 = species1.pool.positions[ pair.i1 ].copy()
+        pos2 = species2.pool.positions[ pair.i2 ].copy()
 
         D1 = species1.D
         D2 = species2.D
 
-        if len( rt.products ) == 1:
+        if len( pair.rt.products ) == 1:
 
-            species3 = rt.products[0]
+            species3 = pair.rt.products[0]
 
-            serial1 = species1.pool.getSerialByIndex( index1 )
-            serial2 = species2.pool.getSerialByIndex( index2 )
+            serial1 = species1.pool.getSerialByIndex( pair.i1 )
+            serial2 = species2.pool.getSerialByIndex( pair.i2 )
 
             if D1 == 0.0:
                 newpos = pos1
@@ -243,7 +248,7 @@ class EGFRDSimulator( SimulatorBase ):
                 
                 
             #FIXME: SURFACE
-            #newpos %= self.fsize
+            newpos %= self.fsize
 
                 
             species1.removeParticleBySerial( serial1 )
@@ -293,10 +298,10 @@ class EGFRDSimulator( SimulatorBase ):
         for pair in pairs:
 
             print pair
-            dt, pdt, ndt, speciesIndex1, i1, speciesIndex2, i2, rt = pair
+            #dt, pdt, ndt, speciesIndex1, i1, speciesIndex2, i2, rt = pair
 
-            species1 = self.speciesList.values()[speciesIndex1]
-            species2 = self.speciesList.values()[speciesIndex2]
+            species1 = self.speciesList.values()[pair.si1]
+            species2 = self.speciesList.values()[pair.si2]
 
             D1 = species1.D
             D2 = species2.D
@@ -308,8 +313,14 @@ class EGFRDSimulator( SimulatorBase ):
             if D1 == 0.0 and D1 == D2:
                 raise "unexpected: D1 == D2 == 0.0"
 
-            pos1 = species1.pool.positions[i1]
-            pos2 = species2.pool.positions[i2]
+            pos1 = species1.pool.positions[pair.i1]
+            pos2 = species2.pool.positions[pair.i2]
+
+            if True: # cyclic boundary; temporary displace particles.
+                disposition = ( pos2 - pos1 ) > ( self.fsize * 0.5 )
+                pos2 -= disposition * self.fsize
+                disposition = ( pos1 - pos2 ) > ( self.fsize * 0.5 )
+                pos1 -= disposition * self.fsize
 
 
             r0 = self.distance( pos1, pos2 )
@@ -325,8 +336,8 @@ class EGFRDSimulator( SimulatorBase ):
 
             if r0 > correlationLimit:
                 print '== simple diffusion =='
-                self.simpleDiffusion( speciesIndex1, i1 )
-                self.simpleDiffusion( speciesIndex2, i2 )
+                self.simpleDiffusion( pair.si1, pair.i1 )
+                self.simpleDiffusion( pair.si2, pair.i2 )
                 continue
 
             if D1 == 0.0:
@@ -348,10 +359,10 @@ class EGFRDSimulator( SimulatorBase ):
 
             while True:
 
-                r = rt.pairGreensFunction.drawR( random.random(), r0, self.dt )
+                r =pair.rt.pairGreensFunction.drawR( random.random(), r0, self.dt )
                 
-                theta = rt.pairGreensFunction.drawTheta( random.random(),\
-                                                         r, r0, self.dt )
+                theta = pair.rt.pairGreensFunction.drawTheta( random.random(),\
+                                                              r, r0, self.dt )
                 phi = random.random() * 2.0 * Pi
                 
                 # new inter particle vector
@@ -396,154 +407,15 @@ class EGFRDSimulator( SimulatorBase ):
                       r0, self.dt, pos1, pos2, newpos1, newpos2
                 
                 self.rejectedMoves += 1
+                raise 'stop'
 
 
             #FIXME: SURFACE
-            #newpos1 %= self.fsize
-            #newpos2 %= self.fsize
+            newpos1 %= self.fsize
+            newpos2 %= self.fsize
 
-            species1.pool.positions[i1] = newpos1
-            species2.pool.positions[i2] = newpos2
-
-
-    def formPairs( self ):
-
-        # 1. form pairs in self.pairs
-        # 2. list singles in self.singles
-
-        speciesList = self.speciesList.values()
-
-        # list up pair candidates
-
-        # partner -> nearest particle
-        # neighbor -> second nearest particle
-
-        # dtCache[ speciesIndex ][ particleIndex ][ 0 .. 1 ]
-        dtCache = []
-        neighborCache = []
-        checklist = []
-
-        for speciesIndex in range( len( speciesList ) ):
-            size = speciesList[speciesIndex].pool.size
-
-            dtCache.append( numpy.zeros( ( size, 2 ), numpy.floating ) )
-            neighborCache.append( [[[ -1, -1 ],[-1,-1]]] * size )
-
-            checklist.append( numpy.ones( speciesList[speciesIndex].pool.size ) )
-            for particleIndex in range( size ):
-
-                dt, neighbor = self.checkPairs( speciesIndex, particleIndex )
-
-                dtCache[ speciesIndex ][ particleIndex ] = dt
-                neighborCache[ speciesIndex ][ particleIndex ] = neighbor
-
-        self.pairs = []
-        for speciesIndex1 in range( len( speciesList ) ):
-
-            species1 = speciesList[speciesIndex1]
-
-            for particleIndex1 in range( species1.pool.size ):
-
-                #bdt, surface = self.checkSurfaces( speciesIndex,\
-                #particleIndex )
-
-                # skip if this particle has already taken in a pair.
-                if checklist[speciesIndex1][particleIndex1] == 0:
-                    print 'skip', speciesIndex1, particleIndex1
-                    continue
-
-                # A partner: the other of the pair.
-                # A neighbor of a pair: closer of the second closest of
-                #                       the particles in the pair.
-                #                       This is different from neighbors of
-                #                       a particle.
-                
-                # (1) Find the closest particle (partner).
-                partner = neighborCache[ speciesIndex1 ][ particleIndex1 ][0]
-
-                ( speciesIndex2, particleIndex2 ) = partner
-
-                if speciesIndex2 == -1:
-                    continue
-
-                dts = dtCache[ speciesIndex1 ][ particleIndex1 ]
-
-                partnersPartner = neighborCache\
-                                  [ speciesIndex2 ][ particleIndex2 ][0]
-                partnerDts = dtCache[ speciesIndex2 ][ particleIndex2 ]
-
-                # (2) The partner's partner has to be this, otherwise
-                #     this combination isn't a pair.
-                # (3) 'Neighbor' of this pair is the closer of
-                #     this and the partner's second closest.
-                #     We take the particle that has this neighbor.
-                if partnersPartner != ( speciesIndex1, particleIndex1 ) or \
-                       partnerDts[1] < dts[1]:
-                    continue
-                
-                # (4) Now we have a candidate pair.
-                species2 = speciesList[speciesIndex2]
-                rt = self.reactionTypeList2.get( ( species1, species2 ) )
-
-                pair = ( dts[0], dts[1], speciesIndex1, particleIndex1,\
-                         speciesIndex2, particleIndex2, rt )
-                self.pairs.append( pair )
-
-                # (5) dtMax = the minimum neighbor dt of all pairs.
-                self.dtMax = min( self.dtMax, dts[1] )
-
-                # (6) book keeping
-                checklist[speciesIndex1][particleIndex1] = 0
-                checklist[speciesIndex2][particleIndex2] = 0
-
-
-
-        # screening pairs
-        self.pairs.sort()
-
-        checklist = []
-        for i in range( len( speciesList ) ):
-            checklist.append( numpy.ones( speciesList[i].pool.size ) )
-
-        for i in range( len( self.pairs ) ):
-            ( dt, ndt, si1, i1, si2, i2, rt ) = self.pairs[i]
-
-
-            # Don't take pairs with partner dt greater than dtMax.
-            if dt > self.dtMax:
-                self.pairs = self.pairs[:i]
-                break   # pairs are sorted by dt.  break here.
-
-            if checklist[si1][i1] == 0 or checklist[si2][i2] == 0:
-                print self.pairs[:i+1]
-                print dtCache[si1][i1], dtCache[si2][i2]
-                print neighborCache[si1][i1], neighborCache[si2][i2]
-                print 'pairs not mutually exclusive.'
-                self.pairs = self.pairs[:i]
-                break
-
-            checklist[si1][i1] = 0
-            checklist[si2][i2] = 0
-
-
-        # now we have the final list of pairs
-
-        # next, make the list of singles.
-        # a single is a particle that doesn't appear in the list
-        # of pairs.
-        self.singles = []
-
-        for i in range( len( checklist ) ):
-            singleIndices = numpy.nonzero( checklist[i] )[0] #== flatnonzero()
-            self.singles.append( singleIndices )
-
-        #debug
-        numSingles = 0
-        for i in self.singles:
-            numSingles += len(i)
-
-        print '# pairs = ', len(self.pairs),\
-              ', # singles = ', numSingles
+            species1.pool.positions[pair.i1] = newpos1
+            species2.pool.positions[pair.i2] = newpos2
 
 
 
