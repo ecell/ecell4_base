@@ -112,6 +112,19 @@ class Pair:
                     ( self.si1, self.i1 ), ( self.si2, self.i2 ), self.rt) )
 
 
+class Single:
+
+    def __init__( self, dt, si, i, dr=-1.0 ):
+        self.dt = dt
+        self.dr = INF
+        self.si = si
+        self.i = i
+        self.dr = dr
+
+    def __str__( self ):
+        return str( (self.dt, ( self.si, self.i ) ) )
+
+
 
 
 
@@ -257,6 +270,8 @@ class GFRDSimulatorBase:
     def simpleDiffusion( self, speciesIndex, particleIndex ):
 
         species = self.speciesList.values()[speciesIndex]
+        if species.D == 0.0:
+            return
 
         limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
 
@@ -657,13 +672,14 @@ class GFRDSimulatorBase:
         self.singles = []
 
         for i in range( len( checklist ) ):
-            singleIndices = numpy.nonzero( checklist[i] )[0] #== flatnonzero()
-            self.singles.append( singleIndices )
+            singleIndices = numpy.nonzero( checklist[i] )[0]
+            for j in singleIndices:
+                self.singles.append( Single( INF, i, j ) )
+        #    singleIndices = numpy.nonzero( checklist[i] )[0] #== flatnonzero()
+        #    self.singles.append( singleIndices )
 
         #debug
-        numSingles = 0
-        for i in self.singles:
-            numSingles += len(i)
+        numSingles = len( self.singles )
 
         print '# pairs = ', len(self.pairs),\
               ', # singles = ', numSingles

@@ -20,18 +20,23 @@ from gfrdbase import *
 
 
 
-class GFRDSimulator( GFRDSimulatorBase ):
+class EGFRDSimulator( GFRDSimulatorBase ):
     
     def __init__( self ):
         GFRDSimulatorBase.__init__( self )
 
 
-    def step( self ):
-    
+
+    def initialize( self ):
         self.clear()
 
         self.formPairs()
 
+        self.assignFirstPassageTime()
+
+    def step( self ):
+    
+        self.clear()
 
         # proceed slightly even if dtMax is 0.
         #if self.dtMax <= 1e-18:
@@ -50,8 +55,8 @@ class GFRDSimulator( GFRDSimulatorBase ):
 
     def clear( self ):
 
-        self.dtMax = self.dtLimit
-        self.dt = self.dtLimit
+        self.dtMax = INF
+        self.dt = INF
 
         self.nextReaction = None
 
@@ -59,6 +64,17 @@ class GFRDSimulator( GFRDSimulatorBase ):
         self.singles = []
 
 
+    def assignFirstPassageTime( self ):
+        
+        for single in self.singles:
+            single.dt = self.calculateFirstPassageTime1( single )
+
+    def calculateFirstPassageTime1( self, single ):
+        
+        species = self.speciesList.values()[single.si]
+        fpgf = _gfrd.FirstPassageGreensFunction( species.D )
+        print single.dr
+        return fpgf.drawTime( random.random(), single.dr[0] )
 
     def isPopulationChanged( self ):
         return self.nextReaction != None
@@ -419,14 +435,164 @@ class GFRDSimulator( GFRDSimulatorBase ):
 
 
 
+
+    def formPairs( self ):
+
+        # 1. form pairs in self.pairs
+        # 2. list singles in self.singles
+
+        speciesList = self.speciesList.values()
+
+        # list up pair candidates
+
+        # partner -> nearest particle
+        # neighbor -> second nearest particle
+
+        # dtCache[ speciesIndex ][ particleIndex ][ 0 .. 1 ]
+        dtCache = []
+        drCache = []
+        neighborCache = []
+        checklist = []
+
+        for speciesIndex in range( len( speciesList ) ):
+            size = speciesList[speciesIndex].pool.size
+
+            dtCache.append( numpy.zeros( ( size, 2 ), numpy.floating ) )
+            drCache.append( numpy.zeros( ( size, 2 ), numpy.floating ) )
+            neighborCache.append( [[[ -1, -1 ],[-1,-1]]] * size )
+
+            checklist.append( numpy.ones( speciesList[speciesIndex].pool.size ) )
+            for particleIndex in range( size ):
+
+                neighbors, dts, drs = self.checkPairs( speciesIndex,\
+                                                       particleIndex )
+
+                neighborCache[ speciesIndex ][ particleIndex ] = neighbors
+                dtCache[ speciesIndex ][ particleIndex ] = dts
+                drCache[ speciesIndex ][ particleIndex ] = drs
+
+        self.pairs = []
+        for speciesIndex1 in range( len( speciesList ) ):
+
+            species1 = speciesList[speciesIndex1]
+
+            for particleIndex1 in range( species1.pool.size ):
+
+                # skip if this particle has already taken in a pair.
+                if checklist[speciesIndex1][particleIndex1] == 0:
+                    #print 'skip', speciesIndex1, particleIndex1
+                    continue
+
+                # A partner: the other of the pair.
+                # A neighbor of a pair: closer of the second closest of
+                #                       the particles in the pair.
+                #                       This is different from neighbors of
+                #                       a particle.
+                
+                # (1) Find the closest particle (partner).
+                partner = neighborCache[ speciesIndex1 ][ particleIndex1 ][0]
+
+                ( speciesIndex2, particleIndex2 ) = partner
+
+                if speciesIndex2 == -1:
+                    continue
+
+                dts = dtCache[ speciesIndex1 ][ particleIndex1 ]
+
+                partnersPartner = neighborCache\
+                                  [ speciesIndex2 ][ particleIndex2 ][0]
+                partnerDts = dtCache[ speciesIndex2 ][ particleIndex2 ]
+
+                # (2) The partner's partner has to be this, otherwise
+                #     this combination isn't a pair.
+                # (3) 'Neighbor' of this pair is the closer of
+                #     this and the partner's second closest.
+                #     We take the particle that has this neighbor.
+                if partnersPartner != ( speciesIndex1, particleIndex1 ) or \
+                       partnerDts[1] < dts[1]:
+                    continue
+                
+                # (4) Now we have a candidate pair.
+                species2 = speciesList[speciesIndex2]
+                rt = self.reactionTypeList2.get( ( species1, species2 ) )
+
+                #pair = ( dts[0], dts[1], speciesIndex1, particleIndex1,\
+                #speciesIndex2, particleIndex2, rt )
+                pair = Pair( dts[0], dts[1], speciesIndex1, particleIndex1,\
+                             speciesIndex2, particleIndex2, rt )
+                self.pairs.append( pair )
+
+                # (5) dtMax = the minimum neighbor dt of all pairs.
+                self.dtMax = min( self.dtMax, dts[1] )
+
+                # (6) book keeping
+                checklist[speciesIndex1][particleIndex1] = 0
+                checklist[speciesIndex2][particleIndex2] = 0
+
+
+
+        # screening pairs
+        self.pairs.sort(key=operator.attrgetter('dt'))
+
+        checklist = []
+        for i in range( len( speciesList ) ):
+            checklist.append( numpy.ones( speciesList[i].pool.size ) )
+
+        for i in range( len( self.pairs ) ):
+            #( dt, ndt, si1, i1, si2, i2, rt ) = self.pairs[i]
+            pair = self.pairs[i]
+
+
+            # Don't take pairs with partner dt greater than dtMax.
+            if pair.dt > self.dtMax:
+                self.pairs = self.pairs[:i]
+                break   # pairs are sorted by dt.  break here.
+
+            if checklist[pair.si1][pair.i1] == 0 or \
+                   checklist[pair.si2][pair.i2] == 0:
+                print self.pairs[:i+1]
+                print dtCache[pair.si1][pair.i1], dtCache[pair.si2][pair.i2]
+                print neighborCache[pair.si1][pair.i1], \
+                      neighborCache[pair.si2][pair.i2]
+                print 'pairs not mutually exclusive.'
+                self.pairs = self.pairs[:i]
+                break
+
+            checklist[pair.si1][pair.i1] = 0
+            checklist[pair.si2][pair.i2] = 0
+
+
+        # now we have the final list of pairs
+
+        # next, make the list of singles.
+        # a single is a particle that doesn't appear in the list
+        # of pairs.
+        self.singles = []
+
+        for i in range( len( checklist ) ):
+            singleIndices = numpy.nonzero( checklist[i] )[0]
+            for j in singleIndices:
+                self.singles.append( Single( INF, i, j, drCache[i][j] ) )
+        #    singleIndices = numpy.nonzero( checklist[i] )[0] #== flatnonzero()
+        #    self.singles.append( singleIndices )
+
+        #debug
+        numSingles = len( self.singles )
+
+        print '# pairs = ', len(self.pairs),\
+              ', # singles = ', numSingles
+
+
+
+
     def checkPairs( self, speciesIndex1, particleIndex ):
 
         speciesList = self.speciesList.values()
 
-        neighbordts = [ INF, INF ]
-        #           [ ( index, reaction type ), (...,...), .. ]
+        #           [ ( species, particle ), (...,...), .. ]
         neighbors = [ ( -1, -1 ), ( -1, -1 ) ]
-        drSqs = []
+        neighborDts = [ INF, INF ]
+        neighborDrs = [ INF, INF ]
 
         species1 = speciesList[ speciesIndex1 ]
         positions = species1.pool.positions
@@ -438,19 +604,20 @@ class GFRDSimulator( GFRDSimulatorBase ):
             # temporarily displace the particle
             positions[particleIndex] = NOWHERE
             
-            topDts, topIndices = self.checkDistance( position1, positions,
-                                                     species1, species1 )
+            indices, dts, drs = self.checkDistance( position1, positions,
+                                                    species1, species1 )
 
             # restore the particle.
             positions[particleIndex] = position1
 
-            neighbordts.extend( topDts )
+            neighborDts.extend( dts )
+            neighborDrs.extend( drs )
 
-            if len( topIndices ) == 2:
-                neighbors.extend( ( ( speciesIndex1, topIndices[0] ),\
-                                    ( speciesIndex1, topIndices[1] ) ) )
+            if len( indices ) == 2:
+                neighbors.extend( ( ( speciesIndex1, indices[0] ),\
+                                    ( speciesIndex1, indices[1] ) ) )
             else:
-                neighbors.extend( ( ( speciesIndex1, topIndices[0] ), ) )
+                neighbors.extend( ( ( speciesIndex1, indices[0] ), ) )
 
         #for speciesIndex2 in range( speciesIndex1 + 1, len( speciesList ) ):
         for speciesIndex2 in range( speciesIndex1 )\
@@ -473,17 +640,19 @@ class GFRDSimulator( GFRDSimulatorBase ):
             if species2.pool.size == 1:  # insert a dummy
                 positions = numpy.concatenate( ( positions, [NOWHERE,] ) )
                 
-            topDts, topIndices = self.checkDistance( position1, positions,
-                                                     species1, species2 )
-            neighbordts.extend( topDts )
-            neighbors.extend( ( ( speciesIndex2, topIndices[0] ),\
-                                ( speciesIndex2, topIndices[1] ) ) )
+            indices, dts, drs = self.checkDistance( position1, positions,
+                                                    species1, species2 )
+            neighborDts.extend( dts )
+            neighborDrs.extend( drs )
+            neighbors.extend( ( ( speciesIndex2, indices[0] ),\
+                                ( speciesIndex2, indices[1] ) ) )
 
-        topargs = numpy.argsort( neighbordts )[:2]
-        topNeighborDts = numpy.take( neighbordts, topargs )
+        topargs = numpy.argsort( neighborDts )[:2]
+        topNeighborDts = numpy.take( neighborDts, topargs )
+        topNeighborDrs = numpy.take( neighborDrs, topargs )
         topNeighbors = ( neighbors[topargs[0]], neighbors[topargs[1]] )
 
-        return topNeighborDts, topNeighbors
+        return topNeighbors, topNeighborDts, topNeighborDrs
 
 
     def checkDistance( self, position1, positions2, species1, species2 ):
@@ -493,7 +662,6 @@ class GFRDSimulator( GFRDSimulatorBase ):
         distanceSq = self.distanceSqArray( position1, positions2 )
         sortedindices = distanceSq.argsort()
 
-        #print sortedindices
         #debug
         radius12 = species1.radius + species2.radius
         radius12sq = radius12 * radius12
@@ -511,11 +679,11 @@ class GFRDSimulator( GFRDSimulatorBase ):
         factor *= 6.0
 
         distanceSqSorted = distanceSq.take( sortedindices[:2] )
-
+        distances = numpy.sqrt( distanceSqSorted )
         # instead of just
         #dts = distanceSqSorted / factor
         # below takes into account of particle radii.
-        dts = numpy.sqrt( distanceSqSorted ) - radius12
+        dts = distances - radius12
         dts *= dts
         dts /= factor
 
@@ -524,28 +692,9 @@ class GFRDSimulator( GFRDSimulatorBase ):
         #dts = numpy.clip( dts, 0.0, INF )
         # raise 'stop'
 
+        drs = self.H * numpy.sqrt( 6.0 * species1.D * dts )
+
         indices = sortedindices[:2]
 
-        return dts, indices # , distanceSqSorted[0]
+        return indices, dts, drs
 
-
-    def checkSurfaces( self, speciesIndex1, particleIndex ):
-
-        speciesList = self.speciesList.values()
-
-        species = speciesList[ speciesIndex1 ]
-        pos = species.pool.positions[ particleIndex ].copy()
-
-        dist = [ surface.distance( pos ) for surface in self.surfaceList ]
-
-        if len( dist ) == 0:
-            return -1, 0.0
-
-        idx = numpy.argmin( dist )
-        dist = dist[idx]
-
-        dt = ( dist - species.radius ) ** 2 / \
-                ( self.H * self.H * 6.0 * species.D ) 
-        
-        return dt, idx
-        

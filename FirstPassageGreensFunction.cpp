@@ -237,7 +237,7 @@ FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
 	    &params 
 	};
 
-    Real low( 1e-20 );
+    Real low( 1e-18 );
     Real high( 1.0 );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );

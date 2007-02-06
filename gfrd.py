@@ -283,15 +283,9 @@ class GFRDSimulator( GFRDSimulatorBase ):
 
     def propagateSingles( self ):
 
-
-        for i in range( len( self.singles ) ):
-            species = self.speciesList.values()[i]
-
-            if species.D != 0.0:
-                for j in self.singles[i]:
-
-                    self.simpleDiffusion( i, j )
-
+        for single in self.singles:
+            self.simpleDiffusion( single.si, single.i )
+                    
 
     def propagatePairs( self, pairs ):
 

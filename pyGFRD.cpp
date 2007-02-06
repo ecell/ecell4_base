@@ -6,6 +6,73 @@
 #include <boost/python/numeric.hpp>
 #include <numpy/arrayobject.h>
 
+#include "DynamicPriorityQueue.hpp"
+
+class PyEvent
+{
+  
+public:
+  
+  PyEvent( const double time )
+    :
+    time( time )
+  {
+    ; // do nothing
+  }
+  
+  void setTime( const double time )
+  {
+    this->time = time;
+  }
+  
+  const double getTime() const
+  {
+    return this->time;
+  }
+  
+  
+  
+  const bool operator< ( const PyEvent& rhs ) const
+  {
+    if( getTime() < rhs.getTime() )
+      {
+	return true;
+      }
+    else
+      {
+	return false;
+      }
+  }
+  
+  const bool operator!= ( const PyEvent& rhs ) const
+  {
+    if( getTime() == rhs.getTime() )
+      {
+	return false;
+      }
+    else
+      {
+	return true;
+      }
+  }
+  
+  
+  // dummy, because DynamicPriorityQueue requires this. better without.
+  PyEvent()
+  {
+    ; // do nothing
+  }
+  
+  
+private:
+  
+  double             time;
+};
+
+
+typedef DynamicPriorityQueue<PyEvent> PyEventDynamicPriorityQueue;
+
+
 #include "PairGreensFunction.hpp"
 #include "PlainPairGreensFunction.hpp"
 

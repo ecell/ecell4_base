@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-from gfrd import *
+from egfrd import *
 
 from logger import *
 import sys
 
-s = GFRDSimulator()
+s = EGFRDSimulator()
 s.setSize( 1e-5 )
 
 box1 = CuboidalSurface( [0,0,0],[1e-5,1e-5,1e-5] )
@@ -31,7 +31,7 @@ l = Logger( s, 'dimer' )
 l.setInterval( 1e-6 )
 l.log()
 
-
+s.initialize()
 while s.t < 5:
     s.step()
     l.log()
