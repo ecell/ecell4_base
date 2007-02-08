@@ -27,6 +27,9 @@ const Real CUTOFF( 1e-10 );
 
 /*
   EllipticTheta[4,0,q]
+
+  Efficiently calculate EllipticTheta[4,0,q] for q < 1.0.
+
 */
 static const Real ellipticTheta4Zero( const Real q )
 {
@@ -357,7 +360,20 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t,
 
 int main()
 {
-    printf("%g\n",ellipticTheta4zero( 0.9 ) );
+    printf("%g\n",ellipticTheta4Zero( 1.0 - 1e-5 ) );
+    printf("%g\n",ellipticTheta4Zero( 1.0 - 1e-4 ) );
+    printf("%g\n",ellipticTheta4Zero( 1.0 - 1e-3 ) );
+
+    printf("%20.20e\n",1.0 - ellipticTheta4Zero( 1e-15 ) );
+    printf("%20.20e\n",1.0 - ellipticTheta4Zero( 1e-16 ) );
+    printf("%20.20e\n",1.0 - ellipticTheta4Zero( 1e-17 ) );
+
+
+// et4z( 1 - 1e4 ) ~= 7.2e-23
+
+// et4z( 1e-15 ) ~= 1 - 2e-15
+// et4z( 1e-16 ) ~= 1 - 2.2e-16
+// et4z( 1e-17 ) ~= 1 - (zero)
 }
 
 

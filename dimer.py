@@ -31,7 +31,6 @@ l = Logger( s, 'dimer' )
 l.setInterval( 1e-6 )
 l.log()
 
-s.initialize()
 while s.t < 5:
     s.step()
     l.log()

@@ -7,78 +7,117 @@
 #include <numpy/arrayobject.h>
 
 #include "DynamicPriorityQueue.hpp"
+#include "EventScheduler.hpp"
+
+using namespace boost::python;
+
 
 class PyEvent
-{
-  
-public:
-  
-  PyEvent( const double time )
     :
-    time( time )
-  {
-    ; // do nothing
-  }
-  
-  void setTime( const double time )
-  {
-    this->time = time;
-  }
-  
-  const double getTime() const
-  {
-    return this->time;
-  }
-  
-  
-  
-  const bool operator< ( const PyEvent& rhs ) const
-  {
-    if( getTime() < rhs.getTime() )
-      {
-	return true;
-      }
-    else
-      {
-	return false;
-      }
-  }
-  
-  const bool operator!= ( const PyEvent& rhs ) const
-  {
-    if( getTime() == rhs.getTime() )
-      {
-	return false;
-      }
-    else
-      {
-	return true;
-      }
-  }
-  
-  
-  // dummy, because DynamicPriorityQueue requires this. better without.
-  PyEvent()
-  {
-    ; // do nothing
-  }
-  
-  
+    public libecs::EventBase
+{
+    
+public:
+	
+    PyEvent( const double time, object obj )
+        :
+        EventBase( time ),
+	obj( obj )
+    {
+	; // do nothing
+    }
+
+    virtual ~PyEvent()
+    {
+	; // do nothing
+    }
+    
+
+    const object& getObj() const
+    {
+	return this->obj;
+    }
+
+    void fire()
+    {
+	object ret( this->obj.attr( "fire" )() );
+	this->setTime( this->getTime() + extract<double>(ret) );
+    }
+
+    void update( const double t )
+    {
+	this->obj.attr( "update" )( t );
+    }
+
+    const bool isDependentOn( const PyEvent& arg ) const
+    {
+	return this->obj.attr( "isDependentOn" )( arg.getObj() );
+    }
+
+    PyEvent() // dummy
+    {
+	; // do nothing
+    }
+
 private:
-  
-  double             time;
+
+    object obj;
 };
 
 
-typedef DynamicPriorityQueue<PyEvent> PyEventDynamicPriorityQueue;
+
+class PyEventScheduler
+    :
+    public libecs::EventScheduler<PyEvent>
+{
+public:
+
+    typedef libecs::EventScheduler<PyEvent>::EventIndex EventIndex;
+    
+    PyEventScheduler()
+    {
+	; // do nothing
+    }
+    
+    ~PyEventScheduler()
+    {
+	; // do nothing
+    }
+    
+    const EventIndex addEvent( const double t, const object& obj )
+    {
+	return libecs::EventScheduler<PyEvent>::addEvent( PyEvent( t, obj ) );
+    }
+
+
+};
+
+
+
+
+class PyEvent_to_python
+{
+public:
+
+  static PyObject* 
+  convert( const PyEvent& value )
+  {
+      return PyTuple_Pack( 2, 
+			   PyFloat_FromDouble( value.getTime() ),
+			   value.getObj().ptr() );
+  }
+
+};
+
+
+
+
 
 
 #include "PairGreensFunction.hpp"
 #include "PlainPairGreensFunction.hpp"
 
 #include "FirstPassageGreensFunction.hpp"
-
-using namespace boost::python;
 
 const double distanceSq( const double* const p1, const double* const p2 )
 {
@@ -117,7 +156,42 @@ BOOST_PYTHON_MODULE( _gfrd )
 {
     import_array();
 
-    converter::registry::insert( &extract_pyarray, type_id<PyArrayObject>());
+    to_python_converter< PyEvent, PyEvent_to_python>();
+  
+
+    class_<PyEvent, boost::noncopyable>( "Event", init<const Real,
+					 object>() )
+	.def( "setTime", &PyEvent::setTime )
+	.def( "getTime", &PyEvent::getTime )
+//	.def( "fire", &PyEvent::fire )
+//	.def( "update", &PyEvent::update )
+//	.def( "isDependentOn", &PyEvent::isDependentOn )
+	;
+
+    typedef const PyEventScheduler::Event& 
+	(PyEventScheduler::*geteventrefsig)() const;
+    typedef PyEventScheduler::Event& (PyEventScheduler::*geteventrefbyindexsig)
+	( const PyEventScheduler::EventIndex );
+
+    class_<PyEventScheduler, boost::noncopyable>( "EventScheduler" )
+	.def( "getTime", &PyEventScheduler::getTime )
+	.def( "getSize", &PyEventScheduler::getSize )
+	.def( "getTopEvent", geteventrefsig( &PyEventScheduler::getTopEvent ),
+//	      return_value_policy<reference_existing_object>() )
+//	      return_value_policy<copy_const_reference>() )
+	      return_value_policy<return_by_value>() )
+	.def( "getTopIndex", &PyEventScheduler::getTopIndex )
+	.def( "getEvent", geteventrefbyindexsig( &PyEventScheduler::getEvent ),
+	      return_value_policy<reference_existing_object>() )
+	.def( "step", &PyEventScheduler::step )
+	.def( "clear", &PyEventScheduler::clear )
+	.def( "addEvent", &PyEventScheduler::addEvent )
+	.def( "updateAllEventDependency", 
+	      &PyEventScheduler::updateAllEventDependency )
+	;
+
+
+    //    converter::registry::insert( &extract_pyarray, type_id<PyArrayObject>());
 
 
     class_<PlainPairGreensFunction>( "PlainPairGreensFunction",

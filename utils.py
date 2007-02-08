@@ -94,7 +94,7 @@ def sphericalToCartesian( s ):
 
 
 def randomUnitVectorS():
-    s = numpy.array( [ 1.0, numpy.random.uniform( 0, Pi2 ),
+    s = numpy.array( [ 1.0, numpy.random.uniform( 0, Pi ),
                        numpy.random.uniform( 0, Pi2 ) ] )
     return s
 

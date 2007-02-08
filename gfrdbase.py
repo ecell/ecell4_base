@@ -97,28 +97,26 @@ class UnbindingReactionType( ReactionType ):
     
 class Pair:
 
-    def __init__( self, dt, ndt, si1, i1, si2, i2, rt=None, rdt=-1.0 ):
+    def __init__( self, single1, single2, dt, ndt, rt=None, rdt=-1.0 ):
+        self.single1 = single1
+        self.single2 = single2
         self.dt = dt
         self.ndt = ndt
-        self.si1 = si1
-        self.i1 = i1
-        self.si2 = si2
-        self.i2 = i2
         self.rt = rt
         self.rdt = rdt
 
     def __str__( self ):
         return str( (self.rdt, self.dt, self.ndt,\
-                    ( self.si1, self.i1 ), ( self.si2, self.i2 ), self.rt) )
+                    single1, single2, self.rt) )
 
 
 class Single:
 
-    def __init__( self, dt, si, i, dr=-1.0 ):
-        self.dt = dt
-        self.dr = INF
+    def __init__( self, si, i, dt, dr=-1.0 ):
+
         self.si = si
         self.i = i
+        self.dt = dt
         self.dr = dr
 
     def __str__( self ):
@@ -140,6 +138,8 @@ class ParticlePool:
         self.positions = numpy.array( [], numpy.floating )
         self.positions.shape = ( 0, 3 )
 
+        self.drs = numpy.array( [], numpy.floating )
+
         self.size = 0
 
     def newParticle( self, position ):
@@ -156,6 +156,8 @@ class ParticlePool:
         self.serials[ newindex ] = newserial
         self.positions[ newindex ] = position
 
+        self.drs[ newindex ] = 0.0
+
         return newserial
     
 
@@ -163,6 +165,8 @@ class ParticlePool:
 
         self.serials = numpy.resize( self.serials, newsize )
         self.positions = numpy.resize( self.positions, ( newsize, 3 ) )
+        self.drs = numpy.resize( self.drs, newsize )
+
 
     def removeBySerial( self, serial ):
 
@@ -182,6 +186,7 @@ class ParticlePool:
         # the arrays by one.
         self.serials[ index ] = self.serials[ self.size ]
         self.positions[ index ] = self.positions[ self.size ]
+        self.drs[ index ] = self.drs[ self.size ]
         self.__resizeArrays( self.size )
 
         # book keeping
@@ -413,29 +418,6 @@ class GFRDSimulatorBase:
         return True
     
 
-    
-    def step( self ):
-    
-        self.clear()
-
-        self.formPairs()
-
-
-        # proceed slightly even if dtMax is 0.
-        if self.dtMax <= 1e-18:
-            self.dtMax = 1e-18
-        
-        self.determineNextReaction()
-
-        print 'maxdt', self.dtMax, 'dt', self.dt,\
-              'reactions', self.reactionEvents,\
-              'rejected moves', self.rejectedMoves
-        
-        self.propagateParticles()
-
-        self.t += self.dt
-
-
     def clear( self ):
 
         self.dtMax = self.dtLimit
@@ -450,50 +432,6 @@ class GFRDSimulatorBase:
 
     def isPopulationChanged( self ):
         return self.nextReaction != None
-
-
-    def determineNextReaction( self ):
-
-        self.dt = self.dtMax
-
-        # first order reactions
-        for rt in self.reactionTypeList1.values():
-            reactantSpecies = rt.reactants[0]
-
-            pool = reactantSpecies.pool
-
-            dt, i = self.nextReactionTime1( rt, pool )
-            
-            reaction1 = ( dt, reactantSpecies, i, rt )
-
-            if i != None:
-            
-                dt1 = reaction1[0]
-
-                if self.dt >= dt1:
-                    self.dt = dt1
-                    self.nextReaction = reaction1
-
-                
-
-        # second order reactions
-
-        self.pairs = [ ( self.nextReactionTime2( r ),\
-                         r[0], r[1], r[2], r[3], r[4], r[5], r[6] )\
-                       for r in self.pairs ]
-
-        if len( self.pairs ) != 0:
-            
-            self.pairs.sort()
-            reaction2 = self.pairs[0]
-            dt2 = reaction2[0]
-
-            if self.dt >= dt2:
-
-                self.dt = dt2
-                self.nextReaction = reaction2
-
-        print 'next reaction = ', self.nextReaction
 
 
     def nextReactionTime1( self, rt, pool ):
