@@ -270,6 +270,12 @@ class GFRDSimulatorBase:
         self._distanceSqArray = distanceSqArray_Cyclic
 
 
+    def getReactionType2( self, species1, species2 ):
+        return self.reactionTypeList2.get( ( species1, species1 ), None )
+
+    def getSpeciesByIndex( self, i ):
+        return self.speciesList.values()[i]
+
     def simpleDiffusion( self, speciesIndex, particleIndex ):
 
         species = self.speciesList.values()[speciesIndex]

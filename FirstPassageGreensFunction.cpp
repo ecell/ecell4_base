@@ -240,8 +240,25 @@ FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
 	    &params 
 	};
 
-    Real low( 1e-18 );
+    Real low( 1e-15 );
     Real high( 1.0 );
+
+
+    // adjust low to make sure tha f( low ) and f( high ) straddle.
+    const Real highvalue( GSL_FN_EVAL( &F, high ) );
+    while( GSL_FN_EVAL( &F, low ) * highvalue >= 0.0 )
+    {
+	printf("adjusting low: %g\n",low);
+	low *= .1;
+	if( fabs( low ) <= 1e-50 )
+	{
+	    std::cerr << "Couldn't adjust low. (" << low <<
+		      ")" << std::endl;
+	    throw std::exception();
+	    
+	}
+    }
+
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
