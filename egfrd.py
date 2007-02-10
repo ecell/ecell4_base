@@ -18,18 +18,19 @@ import _gfrd
 
 from gfrdbase import *
 
-class EGFRDSingle( Single ):
-    def __init__( self, sim, si, i, dt, dr=-1.0 ):
+class EGFRDSingle:
+    def __init__( self, sim, si, i ):
 
         #FIXME: si and i are fragile
-        Single.__init__( self, si, i, dt, dr )
+        self.particle = Particle( si, i )
         self.sim = sim
+        self.dt = 0.0
 
     def fire( self ):
-        self.sim.fireSingle( self )
-        #self.dt = self.sim.calculateFirstPassageTime1( self )
-        print self.dt
-        return self.dt
+        dt = self.sim.fireSingle( self )
+        # self.dt for debug
+        self.dt = dt
+        return dt
 
     def update( self, t ):
         print 'update'
@@ -37,6 +38,13 @@ class EGFRDSingle( Single ):
     def isDependentOn( self, event ):
         #print event
         return False
+
+    def setDr( self, dr ):
+        self.sim.getSpeciesByIndex(self.particle.si).pool.drs[self.particle.i] = dr
+
+    def getDr( self ):
+        return self.sim.getSpeciesByIndex(self.particle.si).pool.drs[self.particle.i]
+
 
 """
 class DistanceMatrix:
@@ -58,19 +66,26 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.scheduler = _gfrd.EventScheduler()
 
+        self.lastEvent = None
+        self.eventCounter = 0
+
+
+
+    def getSpeciesByIndex( self, i ):
+        return self.speciesList.values()[i]
+
     def initialize( self ):
         self.clear()
 
+        self.scheduler.clear()
+
         self.initializeSingleList()
         self.initializeSingleDrs()
-        #self.formPairs()
-
-        self.assignFirstPassageTimeForAll()
-
-        #        self.singleList.sort(key=operator.attrgetter('dt'))
 
         for single in self.singleList:
-           self.scheduler.addEvent( self.t + single.dt, single ) 
+            dt = self.calculateFirstPassageTime1( single )
+            self.scheduler.addEvent( self.t + dt, single )
+            single.dt = dt # single.dt for debug
 
         self.scheduler.updateAllEventDependency()
 
@@ -89,10 +104,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         #self.determineNextReaction()
 
-        print self.scheduler.getSize()
-        print self.scheduler.getTopIndex()
-        nextEvent = self.scheduler.getTopEvent()
-        print nextEvent
+        nextEvent = self.scheduler.getTopEvent()[1]
+        #print self.eventCounter, nextEvent, self.lastEvent
+        if self.lastEvent is nextEvent:
+            self.eventCounter += 1
+            if self.eventCounter >= 10:
+                print 'reinitialize'
+                self.eventCounter = 0
+                self.initialize()
+                self.clear()
+                nextEvent = self.scheduler.getTopEvent()
+        else:
+            self.eventCounter = 0
+
+        self.lastEvent = nextEvent
 
         self.t = self.scheduler.getTime()
 
@@ -100,13 +125,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.dt = self.scheduler.getTime() - self.t
         
-        nextEvent = self.scheduler.getTopEvent()
-        print nextEvent
-
-
         print 'maxdt', self.dtMax, 'dt', self.dt,\
               'reactions', self.reactionEvents,\
-              'rejected moves', self.rejectedMoves
+              'rejected moves', self.rejectedMoves,\
+              'event counter', self.eventCounter
+        print ''
         
         self.propagateParticles()
 
@@ -123,43 +146,35 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.pairs = []
         self.singleList = []
 
-
-    def assignFirstPassageTimeForAll( self ):
-        
-        for single in self.singleList:
-            single.dt = self.calculateFirstPassageTime1( single )
-            print single.dt
-
     def calculateFirstPassageTime1( self, single ):
         
-        species = self.speciesList.values()[single.si]
+        species = self.speciesList.values()[single.particle.si]
         fpgf = _gfrd.FirstPassageGreensFunction( species.D )
-        dr = species.pool.drs[single.i]
+        dr = single.getDr()
         rnd = random.random()
-        print "FP ",rnd,dr
+
         return fpgf.drawTime( rnd, dr )
 
     def fireSingle( self, single ):
 
-        species = self.speciesList.values()[single.si]
-        dr = species.pool.drs[single.i]
+        species = self.speciesList.values()[single.particle.si]
+        dr = single.getDr()
 
+        print 'dr', dr
         displacementS = numpy.array( ( dr,
                                        numpy.random.uniform( 0.0, Pi ),
                                        numpy.random.uniform( 0.0, 2*Pi ) ) )
         displacement = sphericalToCartesian( displacementS )
 
-        #print displacementS, length( displacement )
-        
-        species = self.speciesList.values()[single.si]
-        pos = species.pool.positions[single.i]
+        pos = species.pool.positions[single.particle.i]
         pos += displacement
+        print 'displacement', length(displacement)
+        #single.setDr( 0.0 )
+        closest, newdr = self.checkClosestShell( single )
+        print 'newdr', newdr
 
-        closest, distance = self.checkClosest( single.si, single.i )
-
-        dr = distance * .5
-        species.pool.drs[single.i] = dr
-        single.dt = self.calculateFirstPassageTime1( single )
+        single.setDr( newdr )
+        return self.calculateFirstPassageTime1( single )
 
 
     def nextReactionTime1( self, rt, pool ):
@@ -476,7 +491,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         for si in range( len( self.speciesList ) ):
             species = self.speciesList.values()[si]
             for i in range( species.pool.size ):
-                self.singleList.append( EGFRDSingle( self, si, i, 0.0, 0.0 ) )
+                single = EGFRDSingle( self, si, i )
+                single.setDr( 0.0 )
+                self.singleList.append( single )
 
 
     def initializeSingleDrs( self ):
@@ -484,10 +501,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         speciesList = self.speciesList.values()
 
         for single in self.singleList:
-            closest, dr = self.checkClosest( single.si, single.i )
-            species = self.speciesList.values()[single.si]
-            species.pool.drs[single.i] = dr * 0.5
-            #print dr
+            closest, dr = self.checkClosest( single )
+            species = self.speciesList.values()[single.particle.si]
+            print 'dr', dr
+            single.setDr( dr * .5 )
         
         #perhaps a second pass to get drs maximally large.
 
@@ -636,7 +653,18 @@ class EGFRDSimulator( GFRDSimulatorBase ):
               ', # singles = ', numSingles
 
 
-    def checkClosest( self, speciesIndex, particleIndex ):
+    def checkClosest( self, single ):
+
+        # dummy
+        if single.getDr() != 0.0:
+            raise 'error'
+        
+        return self.checkClosestShell( single )
+
+    def checkClosestShell( self, single ):
+
+        speciesIndex = single.particle.si
+        particleIndex = single.particle.i
 
         speciesList = self.speciesList.values()
 
@@ -649,47 +677,62 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         position1 = positions[ particleIndex ].copy()
 
         if self.reactionTypeList2.get( ( species1, species1 ), None ) != None \
-           and len( position1 ) >= 2 and species1.D != 0.0:
+           and len( positions ) >= 2 and species1.D != 0.0:
 
             # temporarily displace the particle
             positions[particleIndex] = NOWHERE
-            
-            distanceSqList = self.distanceSqArray( position1, positions )
-            minIndex = distanceSqList.argmin()
-            distanceSq = distanceSqList[minIndex]
-            closest = ( speciesIndex, minIndex )
 
-            # restore the particle.
+            # calculate distances
+            distanceList = self.distanceSqArray( position1, positions )
+            distanceList = numpy.sqrt( distanceList )
+
+            # restore the particle position.
             positions[particleIndex] = position1
 
+            # find the particle of which shell is closest to this particle.
+            distanceList -= species1.pool.drs
+            minIndex = distanceList.argmin()
+            
+            minDistance = distanceList[minIndex] - species1.radius * 2
+            closest = ( speciesIndex, minIndex )
 
+            if minDistance == 0.0:
+                print position1, positions
+                print distanceList
 
         for speciesIndex2 in range( speciesIndex )\
                 + range( speciesIndex + 1, len( speciesList ) ):
             species2 = speciesList[speciesIndex2]
+
+            # empty
+            if species2.pool.size == 0:
+                continue
 
             # non reactive
             if self.reactionTypeList2.get( ( species1, species2 ), None )\
                    == None:
                 continue
             
-            if species2.pool.size == 0:
-                continue
-
-            if species1.D + species2.D == 0.0:
+            # both of species 1 and 2 are immobile
+            if species1.D == 0.0 and species1.D == species2.D:
                 continue
                     
             positions = species2.pool.positions
 
-            distanceSqList = self.distanceSqArray( position1, positions )
-            minIndex = distanceSq.argmin()
+            distanceList = self.distanceSqArray( position1, positions )
+            distanceList = numpy.sqrt( distanceList )
+            distanceList -= species2.pool.drs
+            
+            minIndex = distanceList.argmin()
+            radius12 = species1.radius + species2.radius
+            
+            distance = distanceList[minIndex] - radius12
+            if distance < minDistance:
+                minDistance = distance
+                closest = ( speciesIndex2, minIndex ) 
 
-            if distanceSqList[minIndex] < distance:
-                distanceSq = distanceSqList[minIndex]
-                closest = ( speciesIndex, minIndex ) 
+        return closest, minDistance
 
-
-        return closest, math.sqrt( distanceSq )
 
 
 

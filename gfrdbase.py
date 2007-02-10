@@ -110,17 +110,15 @@ class Pair:
                     single1, single2, self.rt) )
 
 
-class Single:
+class Particle:
 
-    def __init__( self, si, i, dt, dr=-1.0 ):
+    def __init__( self, si, i ):
 
         self.si = si
         self.i = i
-        self.dt = dt
-        self.dr = dr
 
     def __str__( self ):
-        return str( (self.dt, ( self.si, self.i ) ) )
+        return str( ( self.si, self.i ) )
 
 
 
