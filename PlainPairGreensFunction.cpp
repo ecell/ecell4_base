@@ -673,7 +673,7 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
     // pTable is valid in [0,i].
 
     const Real targetPoint( rnd * pTable[i] );
-    const size_t lowerBound( gsl_interp_bsearch( pTable.data(), targetPoint, 
+    const size_t lowerBound( gsl_interp_bsearch( &pTable[0], targetPoint, 
 						 0, i ) );
 
     const Real low( minR + lowerBound * rStep );
@@ -857,7 +857,7 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 	*/
     
 	const Real targetPoint( rnd * pTable[i] );
-	const size_t lowerBound( gsl_interp_bsearch( pTable.data(), targetPoint, 
+	const size_t lowerBound( gsl_interp_bsearch( &pTable[0], targetPoint, 
 						     0, i ) );
 	const Real low( lowerBound * thetaStep );
     
