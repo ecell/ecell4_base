@@ -9,7 +9,7 @@ s = EGFRDSimulator()
 s.setBoundarySize( 1e-5 )
 
 box1 = CuboidalSurface( [0,0,0],[1e-5,1e-5,1e-5] )
-s.addSurface( box1 )
+#s.addSurface( box1 )
 
 S = Species( 'S', 2e-11, 5e-8 )
 s.addSpecies( S )

@@ -111,6 +111,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
+        self.lastEvent = self.scheduler.getTopEvent()[1]
+
+        self.t = self.scheduler.getTime()
+
+        self.scheduler.step()
+
+        self.dt = self.scheduler.getTime() - self.t
+        
         # if the same single stepped in the last n steps,
         # reinitialize everything.
         # FIXME: don't need to initialize everything.
@@ -125,23 +133,21 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #print self.eventCounter, nextEvent, self.lastEvent
         if self.lastEvent is nextEvent:
             self.eventCounter += 1
-            if self.eventCounter >= 10:
-                print 'reinitialize'
-                self.eventCounter = 0
-                self.initialize()
-                nextEvent = self.scheduler.getTopEvent()[1]
         else:
             self.eventCounter = 0
 
-        self.lastEvent = nextEvent
+        if self.eventCounter >= 10: # or self.dt < 1e-15:
+                print 'reinitialize'
+                self.eventCounter = 0
+                self.initialize()
+                #nextEvent = self.scheduler.getTopEvent()[1]
+                self.dt = self.scheduler.getTime() - self.t
 
-        self.t = self.scheduler.getTime()
+        #if self.dt == 0.0:
+        #    raise 'dt=0'
 
-        self.scheduler.step()
 
-        self.dt = self.scheduler.getTime() - self.t
-        
-        print 'maxdt', self.dtMax, 'dt', self.dt,\
+        print 'dt', self.dt,\
               'reactions', self.reactionEvents,\
               'rejected moves', self.rejectedMoves,\
               'event counter', self.eventCounter
@@ -153,10 +159,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         species = single.particle.species
         fpgf = _gfrd.FirstPassageGreensFunction( species.D )
-        dr = single.getDr()
         rnd = random.random()
-        print dr
-        return fpgf.drawTime( rnd, dr )
+        dr = single.getDr()
+        if dr <= 0.0:
+            raise 'dr <= 0.0: %s' % str(dr)
+        dt = fpgf.drawTime( rnd, dr )
+        print dt
+        if dt <= 0.0:
+            raise 'dt <= 0.0: %s' % str(dt)
+        return dt
 
     def fireSingle( self, single ):
 
@@ -177,12 +188,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #print 'displacement', length(displacement), single.getDr()
 
         closest, newdr = self.checkClosestShell( single )
+        single.closest = closest
+
         #print 'newdr', newdr
         if newdr <= 0:
-            print single.closest, closest
+            print newdr, single.closest
             raise 'Fatal newdr <= 0'
 
-        single.closest = closest
         single.setDr( newdr )
 
         #print single, single.closest
