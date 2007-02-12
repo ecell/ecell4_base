@@ -6,7 +6,7 @@ from logger import *
 import sys
 
 s = EGFRDSimulator()
-s.setSize( 1e-5 )
+s.setBoundarySize( 1e-5 )
 
 box1 = CuboidalSurface( [0,0,0],[1e-5,1e-5,1e-5] )
 s.addSurface( box1 )

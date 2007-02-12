@@ -241,14 +241,15 @@ FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
 	};
 
     Real low( 1e-15 );
-    Real high( 1.0 );
+    Real high( 10.0 );
 
+    //FIXME: adjust high here.
 
     // adjust low to make sure tha f( low ) and f( high ) straddle.
     const Real highvalue( GSL_FN_EVAL( &F, high ) );
     while( GSL_FN_EVAL( &F, low ) * highvalue >= 0.0 )
     {
-	printf("adjusting low: %g\n",low);
+	printf("drawTime: adjusting low: %g\n",low);
 	low *= .1;
 	if( fabs( low ) <= 1e-50 )
 	{

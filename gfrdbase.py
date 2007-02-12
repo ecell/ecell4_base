@@ -112,13 +112,13 @@ class Pair:
 
 class Particle:
 
-    def __init__( self, si, i ):
+    def __init__( self, species, i ):
 
-        self.si = si
+        self.species = species
         self.i = i
 
     def __str__( self ):
-        return str( ( self.si, self.i ) )
+        return str( ( self.species.id, self.i ) )
 
 
 
@@ -255,7 +255,8 @@ class GFRDSimulatorBase:
 
         self.nextReaction = None
 
-        self.fsize = 0.0
+
+        self.setBoundarySize( INF )
 
 
         # counters
@@ -263,11 +264,23 @@ class GFRDSimulatorBase:
         self.reactionEvents = 0
 
 
-        # internal variables
-        #self._distanceSq = distanceSq_Simple
-        #self._distanceSqArray = distanceSqArray_Simple
-        self._distanceSq = distanceSq_Cyclic
-        self._distanceSqArray = distanceSqArray_Cyclic
+
+    def setBoundarySize( self, size ):
+
+        self.fsize = size
+
+        if self.fsize == INF:
+            self._distanceSq = distanceSq_Simple
+            self._distanceSqArray = distanceSqArray_Simple
+        else:
+            self._distanceSq = distanceSq_Cyclic
+            self._distanceSqArray = distanceSqArray_Cyclic
+
+    def checkBoundary( self, pos ):
+        if self.fsize != INF:
+            pos %= self.fsize
+
+        return pos
 
 
     def getReactionType2( self, species1, species2 ):
@@ -333,9 +346,6 @@ class GFRDSimulatorBase:
         
     def distanceSqArray( self, position1, positions ):
         return self._distanceSqArray( position1, positions, self.fsize )
-
-    def setSize( self, size ):
-        self.fsize = size
 
     def addSurface( self, surface ):
         self.surfaceList.append( surface )

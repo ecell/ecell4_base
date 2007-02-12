@@ -31,11 +31,11 @@ class DistanceMatrix:
 
 
 
-class EGFRDSingle:
-    def __init__( self, sim, si, i ):
+class Single:
+    def __init__( self, sim, species, i ):
 
         #FIXME: si and i are fragile
-        self.particle = Particle( si, i )
+        self.particle = Particle( species, i )
         self.sim = sim
         self.dt = 0.0
         self.closest = (-1, -1)
@@ -51,11 +51,20 @@ class EGFRDSingle:
         #print event
         return False
 
+    def setPosition( self, pos ):
+        self.particle.species.pool.positions[self.particle.i] = pos
+
+    def getPosition( self ):
+        return self.particle.species.pool.positions[self.particle.i]
+
     def setDr( self, dr ):
-        self.sim.getSpeciesByIndex(self.particle.si).pool.drs[self.particle.i] = dr
+        self.particle.species.pool.drs[self.particle.i] = dr
 
     def getDr( self ):
-        return self.sim.getSpeciesByIndex(self.particle.si).pool.drs[self.particle.i]
+        return self.particle.species.pool.drs[self.particle.i]
+
+    def __str__( self ):
+        return str(self.particle) + str(self.getDr())
 
 
 class EGFRDSimulator( GFRDSimulatorBase ):
@@ -85,7 +94,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.initializeSingleDrs()
 
         #debug
-        self.checkShells()
+        self.checkShellForAll()
 
         for single in self.singleList:
             dt = self.calculateFirstPassageTime1( single )
@@ -142,7 +151,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def calculateFirstPassageTime1( self, single ):
         
-        species = self.getSpeciesByIndex( single.particle.si )
+        species = single.particle.species
         fpgf = _gfrd.FirstPassageGreensFunction( species.D )
         dr = single.getDr()
         rnd = random.random()
@@ -151,27 +160,34 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def fireSingle( self, single ):
 
-        species = self.getSpeciesByIndex( single.particle.si )
+        species = single.particle.species
 
         displacementS = numpy.array( ( single.getDr(),
                                        numpy.random.uniform( 0.0, Pi ),
                                        numpy.random.uniform( 0.0, 2*Pi ) ) )
         displacement = sphericalToCartesian( displacementS )
 
+        self.checkShellForAll()
         pos = species.pool.positions[single.particle.i]
         pos += displacement
-        print 'displacement', length(displacement), single.getDr()
+
+        # BOUNDARY
+        self.checkBoundary( pos )
+        
+        #print 'displacement', length(displacement), single.getDr()
 
         closest, newdr = self.checkClosestShell( single )
-        print 'newdr', newdr
+        #print 'newdr', newdr
         if newdr <= 0:
             print single.closest, closest
             raise 'Fatal newdr <= 0'
-        single.setDr( newdr )
-        single.closest = closest
 
+        single.closest = closest
+        single.setDr( newdr )
+
+        #print single, single.closest
         #debug
-        self.checkShells()
+        self.checkShellForAll()
 
         return self.calculateFirstPassageTime1( single )
 
@@ -180,10 +196,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.singleList = []
 
-        for si in range( len( self.speciesList ) ):
-            species = self.getSpeciesByIndex( si )
+        for species in self.speciesList.values():
             for i in range( species.pool.size ):
-                single = EGFRDSingle( self, si, i )
+                single = Single( self, species, i )
                 single.setDr( 0.0 )
                 self.singleList.append( single )
 
@@ -192,33 +207,32 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         for single in self.singleList:
             closest, dr = self.checkClosest( single )
-            #species = self.getSpeciesByIndex( single.particle.si )
             print 'dr', dr
             #FIXME: take different D into account
             single.setDr( dr * .5 )
         
         #FIXME: here perhaps a second pass to get drs maximally large.
+    def checkShell( self, single ):
+        dr = single.getDr()
+        closest, distance = self.checkClosestShell( single )
 
+        if dr - distance >= 1e-18:
+            print single.particle, closest, dr, distance, dr - distance
+            raise 'Fatal: shells overlap.'
 
-    def checkShells( self ):
+    def checkShellForAll( self ):
         for single in self.singleList:
-            dr = single.getDr()
-            closest, distance = self.checkClosestShell( single )
-
-            if dr - distance >= 1e-18:
-                print single.particle, closest, dr, distance, dr - distance
-                raise 'Fatal: shells overlap.'
+            self.checkShell( single )
 
 
     def checkClosest( self, single ):
 
-        speciesIndex = single.particle.si
+        species1 = single.particle.species
         particleIndex = single.particle.i
 
         closest = ( -1, -1 )
         minDistance = INF
 
-        species1 = self.getSpeciesByIndex( speciesIndex )
         positions = species1.pool.positions
         position1 = positions[ particleIndex ].copy()
 
@@ -228,17 +242,22 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             # temporarily displace the particle
             positions[particleIndex] = NOWHERE
 
-            closest, minDistance = self.checkClosestInSpecies( position1,\
-                                                               positions,\
-                                                               species1,
-                                                               species1 )
+            minIndex, minDistance = self.checkClosestInSpecies( position1,\
+                                                                positions,\
+                                                                species1,
+                                                                species1 )
+
+            closest = ( species1, minIndex )
             # don't forget to restore the particle position.
             positions[particleIndex] = position1
 
 
-        for speciesIndex2 in range( speciesIndex )\
-                + range( speciesIndex + 1, len( self.speciesList ) ):
-            species2 = self.getSpeciesByIndex( speciesIndex2 )
+            #        for speciesIndex2 in range( speciesIndex )\
+            #                + range( speciesIndex + 1, len( self.speciesList ) ):
+
+        for species2 in self.speciesList.values():
+            if species2 == species1:
+                continue
 
             # empty
             if species2.pool.size == 0:
@@ -256,26 +275,25 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             positions = species2.pool.positions
 
             closest, distance = self.checkClosestInSpecies( position1,
-                                                               positions,
-                                                               species1,
-                                                               species2 )
+                                                            positions,
+                                                            species1,
+                                                            species2 )
 
             if minDistance > distance:
                 minDistance = distance
-                closest = ( speciesIndex2, minIndex ) 
+                closest = ( species2, minIndex ) 
 
         return closest, minDistance
 
 
     def checkClosestShell( self, single ):
 
-        speciesIndex = single.particle.si
+        species1 = single.particle.species
         particleIndex = single.particle.i
 
         closest = ( -1, -1 )
         minDistance = INF
 
-        species1 = self.getSpeciesByIndex( speciesIndex )
         positions = species1.pool.positions
         position1 = positions[ particleIndex ].copy()
 
@@ -289,15 +307,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                                                      positions,
                                                                      species1,
                                                                      species1 )
-            closest = ( speciesIndex, minIndex )
+            closest = ( species1, minIndex )
 
             # don't forget to restore the particle position.
             positions[particleIndex] = position1
 
 
-        for speciesIndex2 in range( speciesIndex )\
-                + range( speciesIndex + 1, len( self.speciesList ) ):
-            species2 = self.getSpeciesByIndex( speciesIndex2 )
+        for species2 in self.speciesList.values():
+            if species2 == species1:
+                continue
 
             # empty
             if species2.pool.size == 0:
@@ -320,7 +338,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                                                   species2 )
             if minDistance > distance:
                 minDistance = distance
-                closest = ( speciesIndex2, minIndex ) 
+                closest = ( species2, minIndex ) 
 
         return closest, minDistance
 
@@ -351,9 +369,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         distanceList -= species2.pool.drs
         minIndex = distanceList.argmin()
         
-        radius12 = species1.radius + species2.radius
-        minDistance = distanceList[minIndex] - radius12
-        
+        minDistance = distanceList[minIndex] - species1.radius
+
         return minIndex, minDistance
 
 
