@@ -33,7 +33,7 @@ const Real CUTOFF( 1e-10 );
 */
 static const Real ellipticTheta4Zero( const Real q )
 {
-    assert( q < 1.0 );
+    assert( fabs( q ) < 1.0 );
 
     const Int N( 100 );
     Real value( 1.0 );
