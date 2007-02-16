@@ -1,0 +1,65 @@
+TOPSRCDIR=${top_srcdir}
+
+LTDL_SHLIB_EXT=@LTDL_SHLIB_EXT@
+
+PYTHON=@PYTHON@
+#PYTHON_PREFIX=@PYTHON_PREFIX@
+PYTHON_VERSION=@PYTHON_VERSION@
+
+NUMPY_INCLUDE_DIR=$(shell python -c "import numpy; print numpy.get_include()")
+PYTHON_INCLUDES=@PYTHON_INCLUDES@
+
+pkgpyexecdir=@pkgpyexecdir@
+
+LIBPYTHON=-lpython$(PYTHON_VERSION)
+
+INCLUDES=${PYTHON_INCLUDES} -I${NUMPY_INCLUDE_DIR}
+AM_CXXFLAGS=@CXXFLAGS@ ${ECELLINCLUDES}
+
+LIBBOOSTPYTHON=-lboost_python
+
+CFLAGS=${CXXFLAGS}
+
+#pkgpyexec_LTLIBRARIES = _ecs.la _emc.la
+
+
+lib_LTLIBRARIES = _gfrd.la
+
+noinst_HEADERS=\
+Defs.hpp\
+HalfOrderBesselGenerator.hpp\
+DynamicPriorityQueue.hpp\
+EventScheduler.hpp\
+PairGreensFunction.hpp\
+FirstPassageGreensFunction.hpp\
+PlainPairGreensFunction.hpp\
+FirstPassagePairGreensFunction.hpp
+
+
+
+_gfrd_la_SOURCES=\
+PlainPairGreensFunction.cpp\
+FirstPassageGreensFunction.cpp\
+pyGFRD.cpp
+
+_gfrd_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
+
+_gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON)
+
+_gfrd_la_DEPENDENCIES=
+
+GFRD_SO=_gfrd$(LTDL_SHLIB_EXT)
+
+all-local: $(GFRD_SO)
+
+$(GFRD_SO): _gfrd.la 
+	ln -sf .libs/$(GFRD_SO) ./$(GFRD_SO)
+
+clean-local:
+	rm -f $(GFRD_SO)
+
+
+#test: *.cpp
+#	g++ $(CXXFLAGS) -D__TEST_PLAINPAIRGREENSFUNCTION PlainPairGreensFunction.cpp -lgsl -lgslcblas -lm -o test
+
+
