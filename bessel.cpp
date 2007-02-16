@@ -1,7 +1,12 @@
+
+// Taken from Numerical Recepies.
+// Modified by Koichi Takahashi.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <limits>
+#include <algorithm>
 #define NRANSI
 //#define EPS 1.0e-10
 const double EPS( std::numeric_limits<double>::epsilon() );

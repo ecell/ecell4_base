@@ -23,10 +23,12 @@ CFLAGS=${CXXFLAGS}
 #pkgpyexec_LTLIBRARIES = _ecs.la _emc.la
 
 
-lib_LTLIBRARIES = _gfrd.la
+noinst_LTLIBRARIES= bessel.la 
+lib_LTLIBRARIES= _gfrd.la
 
 noinst_HEADERS=\
 Defs.hpp\
+bessel.hpp\
 HalfOrderBesselGenerator.hpp\
 DynamicPriorityQueue.hpp\
 EventScheduler.hpp\
@@ -36,17 +38,22 @@ PlainPairGreensFunction.hpp\
 FirstPassagePairGreensFunction.hpp
 
 
+bessel_la_SOURCES=\
+bessel.cpp
+bessel_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
+
 
 _gfrd_la_SOURCES=\
 PlainPairGreensFunction.cpp\
 FirstPassageGreensFunction.cpp\
+FirstPassagePairGreensFunction.cpp\
 pyGFRD.cpp
 
 _gfrd_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
 
 _gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON)
 
-_gfrd_la_DEPENDENCIES=
+_gfrd_la_DEPENDENCIES=bessel.la
 
 GFRD_SO=_gfrd$(LTDL_SHLIB_EXT)
 

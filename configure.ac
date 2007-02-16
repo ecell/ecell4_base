@@ -38,6 +38,7 @@ AC_CHECK_LIB(gslcblas,cblas_dgemm,,[AC_MSG_ERROR([could not find libgslcblas.])]
 AC_CHECK_LIB(gsl,gsl_block_alloc,,[AC_MSG_ERROR([could not find libgsl.])])
 dnl
 AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])
+AM_CHECK_PYMOD(scipy,,,[AC_MSG_ERROR([could not find Python scipy module.])])
 dnl
 dnl AC_LIBLTDL_INSTALLABLE
 AM_CONFIG_HEADER([config.h])

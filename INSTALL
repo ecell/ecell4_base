@@ -1,0 +1,28 @@
+
+:author: Koichi Takahashi
+
+
+Prerequisites
+-------------------------
+
+1. autotools
+   (autoconf, automake, libtool)
+2. GNU Scientific Library (GSL).
+3. Python 2.4 or later.
+4. Scipy 0.5 or later, Numpy 1.0 or later.
+
+
+Building this package
+-------------------------
+
+1. ./autogen.sh
+2. ./configure
+3. make
+
+
+Testing
+-------------------------
+
+% python dimer.py
+
+

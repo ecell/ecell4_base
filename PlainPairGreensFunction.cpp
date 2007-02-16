@@ -16,10 +16,9 @@
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_roots.h>
 
+#include "bessel.hpp"
 
 #include "HalfOrderBesselGenerator.hpp"
-
-#include "bessel.c"
 
 #include "PlainPairGreensFunction.hpp"
 
