@@ -51,7 +51,7 @@ pyGFRD.cpp
 
 _gfrd_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
 
-_gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON)
+_gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) bessel.la
 
 _gfrd_la_DEPENDENCIES=bessel.la
 

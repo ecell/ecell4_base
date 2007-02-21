@@ -21,9 +21,6 @@ public:
     virtual ~PlainPairGreensFunction();
     
     
-    virtual const Real p_tot( const Real r, const Real r0, 
-			      const Real theta, const Real time ) const;
-    
     virtual const Real drawTime( const Real rnd, const Real r0,
 				 const Real maxt ) const;
     
@@ -36,7 +33,7 @@ public:
 				  const Real r0, 
 				  const Real t ) const;
     
-    
+
     const Real getkD() const
     {
 	return this->kD;
@@ -46,6 +43,10 @@ public:
     {
 	return this->alpha;
     }
+    
+    const Real p_tot( const Real r, const Real r0, 
+		      const Real theta, const Real time ) const;
+    
     
 
   

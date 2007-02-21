@@ -1,4 +1,4 @@
-import gfrd
+import _gfrd
 import math
 
 import numpy
@@ -13,8 +13,21 @@ kf = 1e-18
 
 r = 1e-7
 r0 = 5e-8
+a = 2e-8
 
-#gf = gfrd.PlainPairGreensFunction( D, kf, Sigma )
+
+
+def test_alpha_survival_n():
+
+    gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
+    
+    lower = 1e-8
+    upper = 1e10
+    for i in range(10):
+        alpha = gf.alpha_survival_n( a, i, lower, upper )
+        #lower = alpha
+        print 'alpha, f_alpha_survival: ', i, alpha, gf.f_alpha_survival( alpha, a )
+
 
 #print gf.drawTime( 1e-10, 1e-8, 1.0 )
 #for i in range(10000):
@@ -27,16 +40,9 @@ r0 = 5e-8
 #    print gf.drawR( 0.9, r0, t )
 
 
-t = 1.07e-6
-D = 2e-11
-Sigma = 1.4e-7
-kf = 0.0
-gf = gfrd.PlainPairGreensFunction( D, kf, Sigma )
+test_alpha_survival_n()
 
-r = 1.454e-6
-r0 = 1.5e-6
 
-print gf.drawTheta( 0.5, r, r0, t )
-    
-#for i in range(100):
-#   print gf.drawTheta( 0.5, r, r0, t )
+
+
+

@@ -116,8 +116,8 @@ public:
 
 #include "PairGreensFunction.hpp"
 #include "PlainPairGreensFunction.hpp"
-
 #include "FirstPassageGreensFunction.hpp"
+#include "FirstPassagePairGreensFunction.hpp"
 
 const double distanceSq( const double* const p1, const double* const p2 )
 {
@@ -214,6 +214,23 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "p_survival", &FirstPassageGreensFunction::p_survival )
 	.def( "p_r_int", &FirstPassageGreensFunction::p_r_int )
 	.def( "p_r_fourier", &FirstPassageGreensFunction::p_r_fourier )
+	;
+
+
+    class_<FirstPassagePairGreensFunction>( "FirstPassagePairGreensFunction",
+					    init<const Real, 
+					    const Real,
+					    const Real>() )
+	.def( "getD", &FirstPassagePairGreensFunction::getD )
+	.def( "drawTime", &FirstPassagePairGreensFunction::drawTime )
+	.def( "drawR", &FirstPassagePairGreensFunction::drawR )
+
+	// debug
+	.def( "f_alpha", &FirstPassagePairGreensFunction::f_alpha )
+	.def( "f_alpha_survival", 
+	      &FirstPassagePairGreensFunction::f_alpha_survival )
+	.def( "alpha_survival_n", 
+	      &FirstPassagePairGreensFunction::alpha_survival_n )
 	;
 
     def( "distanceSq", &distanceSq_ );
