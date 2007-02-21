@@ -145,10 +145,9 @@ f_alpha_survival_aux_fdf_F( const Real alpha,
 const Real 
 FirstPassagePairGreensFunction::alpha_survival_n( const Real a,
 						  const Int n,
-						  const Real lower,
-						  const Real upper ) const
+						  const Real lower ) const
 {
-    assert( lower > 0 && lower < upper );
+    assert( lower > 0 );
 
     const Real target( n * M_PI + M_PI_2 );
     f_alpha_survival_aux_params params = { this, a, target };
@@ -160,8 +159,27 @@ FirstPassagePairGreensFunction::alpha_survival_n( const Real a,
 	    &params 
 	};
 
+    Real factor( 2.5 );
+
     Real low( lower );
-    Real high( upper );
+    Real high( lower * factor );
+
+    // adjust low to make sure tha f( low ) and f( high ) straddle.
+    const Real lowvalue( GSL_FN_EVAL( &F, low ) );
+    while( GSL_FN_EVAL( &F, high ) * lowvalue >= 0.0 )
+    {
+	printf("alpha_survival_n: adjusting high: %g\n",high);
+	factor *= factor;
+	high *= factor;
+	if( fabs( low ) <= 1e-50 )
+	{
+	    std::cerr << "Couldn't adjust high. (" << low <<
+		      ")" << std::endl;
+	    throw std::exception();
+	    
+	}
+    }
+
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
 //    const gsl_root_fsolver_type* solverType( gsl_root_fsolver_bisection );
@@ -198,7 +216,7 @@ FirstPassagePairGreensFunction::alpha_survival_n( const Real a,
 	++i;
     }
 
-    //printf("%d\n",i);
+    printf("%d\n",i);
 
     gsl_root_fsolver_free( solver );
   

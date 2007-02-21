@@ -21,11 +21,10 @@ def test_alpha_survival_n():
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     
-    lower = 1e-8
-    upper = 1e10
+    lower = 1
     for i in range(10):
-        alpha = gf.alpha_survival_n( a, i, lower, upper )
-        #lower = alpha
+        alpha = gf.alpha_survival_n( a, i, lower )
+        lower = alpha
         print 'alpha, f_alpha_survival: ', i, alpha, gf.f_alpha_survival( alpha, a )
 
 

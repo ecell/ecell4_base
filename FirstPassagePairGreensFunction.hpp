@@ -48,8 +48,7 @@ public:
 
     const Real alpha_survival_n( const Real a,
 				 const Int n,
-				 const Real lower,
-				 const Real upper ) const;
+				 const Real lower ) const;
 
   
     const Real f_alpha( const Real x, const Real a, const Int n ) const;
