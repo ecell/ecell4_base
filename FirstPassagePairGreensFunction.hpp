@@ -47,11 +47,16 @@ public:
     const Real f_alpha_survival_aux_df( const Real alpha, const Real a ) const;
 
     const Real alpha_survival_n( const Real a,
-				 const Int n,
-				 const Real lower ) const;
+				 const Int n ) const;
 
   
     const Real f_alpha( const Real x, const Real a, const Int n ) const;
+
+    const Real p_survival( const Real r,
+			   const Real t,
+			   const Real r0,
+			   const Real a ) const;
+
 
     const Real p_survival_i( const Real r,
 			     const Real t,
@@ -59,8 +64,10 @@ public:
 			     const Real alpha,
 			     const Real a ) const;
 
+
+
+
 private:
-    
     
     struct f_alpha_survival_aux_params
     { 
@@ -88,8 +95,7 @@ private:
 private:
     
     const Real h;
-//    const Real kD;
-//    const Real alpha;
+    const Real hsigma_p_1;
     
     static const Real P_CUTOFF = 1e-6;
     

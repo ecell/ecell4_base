@@ -225,6 +225,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawTime", &FirstPassagePairGreensFunction::drawTime )
 	.def( "drawR", &FirstPassagePairGreensFunction::drawR )
 
+	.def( "p_survival", &FirstPassagePairGreensFunction::p_survival )
+
 	// debug
 	.def( "f_alpha", &FirstPassagePairGreensFunction::f_alpha )
 	.def( "f_alpha_survival", 

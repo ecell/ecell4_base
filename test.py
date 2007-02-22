@@ -6,27 +6,50 @@ import numpy
 #print gfrd.distanceSq( numpy.array( (1.,2.,3.) ), numpy.array( (4.,5.,6.,) ) )
 
 
-t = 1e-4
-D = 1e-12
-Sigma = 1e-8
-kf = 1e-18
-
-r = 1e-7
-r0 = 5e-8
-a = 2e-8
 
 
 
 def test_alpha_survival_n():
 
+    t = 1e-4
+    D = 1e-12
+    Sigma = 1e-8
+    kf = 1e-18
+
+    r = 1e-7
+    r0 = 5e-8
+    a = 2e-8
+
+
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     
-    lower = 1
-    for i in range(10):
-        alpha = gf.alpha_survival_n( a, i, lower )
-        lower = alpha
-        print 'alpha, f_alpha_survival: ', i, alpha, gf.f_alpha_survival( alpha, a )
+    maxerror = 0
 
+    for i in range(100):
+        alpha = gf.alpha_survival_n( a, i )
+        error = abs( gf.f_alpha_survival( alpha, a ) )
+        maxerror = max( error, maxerror )
+
+    if abs( maxerror ) > 1e-8:
+        print 'failed: alpha_survival_n: maxerror = ', maxerror
+
+def test_p_survival():
+
+    t = 1e-4
+    D = 1e-12
+    Sigma = 1e-8
+    kf = 1e-18
+
+    r = 1e-7
+    r0 = 5e-8
+    a = 2e-8
+
+    gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
+
+    print gf.p_survival( r, t, r0, a )
+
+
+    
 
 #print gf.drawTime( 1e-10, 1e-8, 1.0 )
 #for i in range(10000):
@@ -41,7 +64,7 @@ def test_alpha_survival_n():
 
 test_alpha_survival_n()
 
-
+test_p_survival()
 
 
 

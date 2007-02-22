@@ -30,7 +30,8 @@ FirstPassagePairGreensFunction( const Real D,
 				const Real Sigma )
     :
     PairGreensFunction( D, kf, Sigma ),
-    h( getkf() / ( 4.0 * M_PI * getSigma() * getSigma() * getD() ) )
+    h( getkf() / ( 4.0 * M_PI * getSigma() * getSigma() * getD() ) ),
+    hsigma_p_1( 1.0 + h * getSigma() )
 {
     ; // do nothing
 }
@@ -63,12 +64,9 @@ FirstPassagePairGreensFunction::f_alpha_survival_aux( const Real alpha,
 
 {
     const Real sigma( getSigma() );
-    const Real h( geth() );
-    const Real hsigma_p_1( 1.0 + h * sigma );
 
     const Real term1( ( a - sigma ) * alpha );
-    const Real term2( atan( hsigma_p_1 / ( sigma * alpha ) ) );
-//    const Real term2( atan2( hsigma_p_1, ( sigma * alpha ) ) );
+    const Real term2( atan( this->hsigma_p_1 / ( sigma * alpha ) ) );
     
     const Real result( term1 - term2 );
 
@@ -81,8 +79,7 @@ FirstPassagePairGreensFunction::f_alpha_survival_aux_df( const Real alpha,
 
 {
     const Real sigma( getSigma() );
-    const Real h( geth() );
-    const Real hsigma_p_1( 1.0 + h * sigma );
+    const Real hsigma_p_1( this->hsigma_p_1 );
 
     const Real alphasq( alpha * alpha );
 
@@ -144,10 +141,11 @@ f_alpha_survival_aux_fdf_F( const Real alpha,
 
 const Real 
 FirstPassagePairGreensFunction::alpha_survival_n( const Real a,
-						  const Int n,
-						  const Real lower ) const
+						  const Int n ) const
 {
-    assert( lower > 0 );
+    assert( a > 0 && n >= 0 );
+
+    const Real sigma( this->getSigma() );
 
     const Real target( n * M_PI + M_PI_2 );
     f_alpha_survival_aux_params params = { this, a, target };
@@ -159,27 +157,11 @@ FirstPassagePairGreensFunction::alpha_survival_n( const Real a,
 	    &params 
 	};
 
-    Real factor( 2.5 );
 
-    Real low( lower );
-    Real high( lower * factor );
-
-    // adjust low to make sure tha f( low ) and f( high ) straddle.
-    const Real lowvalue( GSL_FN_EVAL( &F, low ) );
-    while( GSL_FN_EVAL( &F, high ) * lowvalue >= 0.0 )
-    {
-	printf("alpha_survival_n: adjusting high: %g\n",high);
-	factor *= factor;
-	high *= factor;
-	if( fabs( low ) <= 1e-50 )
-	{
-	    std::cerr << "Couldn't adjust high. (" << low <<
-		      ")" << std::endl;
-	    throw std::exception();
-	    
-	}
-    }
-
+    // We know the range of the solution from - Pi/2 <= atan <= Pi.
+    const Real rangeFactor( M_PI / ( a - sigma ) );
+    Real low( n * rangeFactor );
+    Real high( low + rangeFactor );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
 //    const gsl_root_fsolver_type* solverType( gsl_root_fsolver_bisection );
@@ -193,10 +175,13 @@ FirstPassagePairGreensFunction::alpha_survival_n( const Real a,
     while( true )
     {
 	gsl_root_fsolver_iterate( solver );
+
 	alpha = gsl_root_fsolver_root( solver );
         low = gsl_root_fsolver_x_lower( solver );
         high = gsl_root_fsolver_x_upper( solver );
 	int status( gsl_root_test_interval( low, high, 0.0, 1e-15 ) );
+        //	printf("%g %g\n", low, high );
+
 
 	if( status == GSL_CONTINUE )
 	{
@@ -216,7 +201,7 @@ FirstPassagePairGreensFunction::alpha_survival_n( const Real a,
 	++i;
     }
 
-    printf("%d\n",i);
+    // printf("%d\n",i);
 
     gsl_root_fsolver_free( solver );
   
@@ -239,27 +224,84 @@ FirstPassagePairGreensFunction::p_survival_i( const Real r,
     const Real sigmasq( sigma * sigma );
     const Real alphasq( alpha * alpha );
 
-    const Real alpha_a_m_sigma( alpha * ( a - sigma ) );
-
     const Real hs_p_1( h * sigma + 1.0 );
 
     const Real term1( exp( - D * t * alphasq ) );
-    const Real term2( alpha * sigma * cos( alpha * ( r - sigma ) ) +
-		      hs_p_1 * cos( alpha * ( r - sigma ) ) );
-    const Real term3( alpha * sigma * cos( alpha * ( r0 - sigma ) ) +
-		      hs_p_1 * cos( alpha * ( r0 - sigma ) ) );
+
+    const Real angle_r( alpha * ( r - sigma ) );
+    const Real term2( alpha * sigma * cos( angle_r ) +
+		      hs_p_1 * sin( angle_r ) );
+
+    const Real angle_r0( alpha * ( r0 - sigma ) );
+    const Real term3( alpha * sigma * cos( angle_r0 ) +
+		      hs_p_1 * sin( angle_r0 ) );
 		      
 
     const Real PI2rr0( 2.0 * M_PI * r * r0 );
 
     const Real den( PI2rr0 * 
 		    ( ( a - sigma ) * sigmasq * alphasq +
-		      hs_p_1 * ( - h * sigmasq + a * h * sigma + a ) ) );
+		      hs_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
+    printf("pi %g %g %g %g\n",term1,term2,term3,den);
 
     const Real result( term1 * term2 * term3 / den );
 
     return result;
+}
+
+const Real 
+FirstPassagePairGreensFunction::p_survival( const Real r,
+					    const Real t,
+					    const Real r0,
+					    const Real a ) const
+{
+    const Real alpha_cutoff( 40 ); //  e^-40 ~= 4e-18, -50 ~= 2e-22
+    const Real alpha_cutoff_Dt( alpha_cutoff / ( getD() * t ) );
+
+    RealVector alphaTable( 1 );
+    alphaTable.reserve( 8 );
+    
+    alphaTable[0] = this->alpha_survival_n( a, 0 );
+
+    const Real alphasq_0( alphaTable[0] * alphaTable[0] );
+
+    const Int maxIter( 100 );
+
+    Int i( 1 );
+    while( true )
+    {
+	const Real alpha_i( this->alpha_survival_n( a, i ) );
+	alphaTable.push_back( alpha_i );
+
+	printf("%d %g %g\n", 
+	       i, alpha_i, exp( - getD() * t * alpha_i * alpha_i ) );
+
+	if( alpha_i * alpha_i - alphasq_0 > alpha_cutoff_Dt )
+	{
+	    break;
+	}
+
+	if( i >= maxIter )
+	{
+	    std::cerr << "p_survival: max iteration reached." << std::endl;
+	    throw std::exception();
+	}
+
+	++i;
+    }
+
+    Real p( 0.0 );
+    for( unsigned int j( 0 ); j < alphaTable.size(); ++j )
+    {
+	const Real value( p_survival_i( r, t, r0, alphaTable[j], a ) );
+	p += value;
+
+	printf("%d %g %g\n", j, value, p );
+    }
+
+
+    return p;
 }
 
 
