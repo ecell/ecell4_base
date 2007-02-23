@@ -52,18 +52,30 @@ public:
   
     const Real f_alpha( const Real x, const Real a, const Int n ) const;
 
-    const Real p_survival( const Real r,
-			   const Real t,
+    const Real p_survival( const Real t,
 			   const Real r0,
 			   const Real a ) const;
 
 
-    const Real p_survival_i( const Real r,
+    const Real p_survival_i( const Real alpha,
 			     const Real t,
 			     const Real r0,
-			     const Real alpha,
 			     const Real a ) const;
 
+    const Real p_leavea_i( const Real alpha,
+			   const Real t,
+			   const Real r0,
+			   const Real a ) const;
+
+    const Real p_leaves_i( const Real alpha,
+			   const Real t,
+			   const Real r0,
+			   const Real a ) const;
+
+    const Real asratio( const Real alpha,
+			const Real t,
+			const Real r0,
+			const Real a ) const;
 
 
 

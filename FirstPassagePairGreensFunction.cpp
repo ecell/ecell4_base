@@ -211,10 +211,9 @@ FirstPassagePairGreensFunction::alpha_survival_n( const Real a,
 
 
 const Real 
-FirstPassagePairGreensFunction::p_survival_i( const Real r,
+FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
 					      const Real t,
 					      const Real r0,
-					      const Real alpha,
 					      const Real a ) const
 {
     const Real D( getD() );
@@ -226,37 +225,141 @@ FirstPassagePairGreensFunction::p_survival_i( const Real r,
 
     const Real hs_p_1( h * sigma + 1.0 );
 
-    const Real term1( exp( - D * t * alphasq ) );
+    const Real term1( 2.0 * exp( - D * t * alphasq ) );
 
-    const Real angle_r( alpha * ( r - sigma ) );
-    const Real term2( alpha * sigma * cos( angle_r ) +
-		      hs_p_1 * sin( angle_r ) );
+    const Real angle_a( alpha * ( a - sigma ) );
+
+    const Real term2( alpha * sigmasq * h - 
+		      alpha * ( a - sigma + a * h * sigma ) * cos( angle_a ) +
+		      ( hs_p_1 + a * sigma * alphasq ) * sin( angle_a ) );
+
 
     const Real angle_r0( alpha * ( r0 - sigma ) );
     const Real term3( alpha * sigma * cos( angle_r0 ) +
 		      hs_p_1 * sin( angle_r0 ) );
 		      
 
-    const Real PI2rr0( 2.0 * M_PI * r * r0 );
-
-    const Real den( PI2rr0 * 
+    const Real den( r0 * alphasq * 
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hs_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
-
-    printf("pi %g %g %g %g\n",term1,term2,term3,den);
 
     const Real result( term1 * term2 * term3 / den );
 
     return result;
 }
 
+
 const Real 
-FirstPassagePairGreensFunction::p_survival( const Real r,
+FirstPassagePairGreensFunction::p_leavea_i( const Real alpha,
 					    const Real t,
 					    const Real r0,
 					    const Real a ) const
 {
-    const Real alpha_cutoff( 40 ); //  e^-40 ~= 4e-18, -50 ~= 2e-22
+    const Real D( getD() );
+    const Real sigma( getSigma() );
+    const Real h( geth() );
+
+    const Real sigmasq( sigma * sigma );
+    const Real alphasq( alpha * alpha );
+
+    const Real hs_p_1( h * sigma + 1.0 );
+
+    const Real term1( 2.0 * ( 1.0 - exp( - D * t * alphasq ) ) );
+
+    const Real angle_a( alpha * ( a - sigma ) );
+
+    const Real term2( alpha * ( a - sigma + a * h * sigma ) * cos( angle_a ) -
+		      ( hs_p_1 + a * sigma * alphasq ) * sin( angle_a ) );
+
+    const Real angle_r0( alpha * ( r0 - sigma ) );
+    const Real term3( alpha * sigma * cos( angle_r0 ) +
+		      hs_p_1 * sin( angle_r0 ) );
+		      
+
+    const Real den( r0 * alphasq *
+		    ( ( a - sigma ) * sigmasq * alphasq +
+		      hs_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
+
+    const Real result( term1 * term2 * term3 / den );
+
+
+    return result;// * 4 * M_PI * a * a;
+}
+
+
+const Real 
+FirstPassagePairGreensFunction::p_leaves_i( const Real alpha,
+					    const Real t,
+					    const Real r0,
+					    const Real a ) const
+{
+    const Real D( getD() );
+    const Real sigma( getSigma() );
+    const Real h( geth() );
+
+    const Real sigmasq( sigma * sigma );
+    const Real alphasq( alpha * alpha );
+
+    const Real hs_p_1( h * sigma + 1.0 );
+
+//    const Real term1( 1.0 - exp( - D * t * alphasq ) );
+    const Real term1( - D * exp( - D * t * alphasq ) * h );
+
+    const Real angle_r0( alpha * ( r0 - sigma ) );
+    const Real term3( alpha * sigma * cos( angle_r0 ) +
+		      hs_p_1 * sin( angle_r0 ) );
+		      
+
+    const Real den( 2.0 * M_PI * r0 * alphasq *
+		    ( ( a - sigma ) * sigmasq * alphasq +
+		      hs_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
+
+
+    const Real result( term1 * h * term3 / den );
+
+	
+	
+    return result * 4 * M_PI * sigma * sigma;
+}
+
+const Real 
+FirstPassagePairGreensFunction::asratio( const Real alpha,
+					 const Real t,
+					 const Real r0,
+					 const Real a ) const
+{
+    const Real D( getD() );
+    const Real sigma( getSigma() );
+    const Real h( geth() );
+
+    const Real sigmasq( sigma * sigma );
+    const Real alphasq( alpha * alpha );
+
+    const Real hs_p_1( h * sigma + 1.0 );
+
+//    const Real term1( 1.0 - exp( - D * t * alphasq ) );
+
+    const Real angle_a( alpha * ( a - sigma ) );
+    const Real term3( ( - hs_p_1 ) * cos( angle_a ) +
+		      sigma * alpha * sin( angle_a ) );
+		      
+
+    const Real den( a * h );
+
+
+    const Real result( term3 / den );
+
+    return result;
+}
+
+
+
+const Real 
+FirstPassagePairGreensFunction::p_survival( const Real t,
+					    const Real r0,
+					    const Real a ) const
+{
+    const Real alpha_cutoff( - log( 1e-303 ) ); 
     const Real alpha_cutoff_Dt( alpha_cutoff / ( getD() * t ) );
 
     RealVector alphaTable( 1 );
@@ -266,7 +369,7 @@ FirstPassagePairGreensFunction::p_survival( const Real r,
 
     const Real alphasq_0( alphaTable[0] * alphaTable[0] );
 
-    const Int maxIter( 100 );
+    const Int maxIter( 1000 );
 
     Int i( 1 );
     while( true )
@@ -292,14 +395,23 @@ FirstPassagePairGreensFunction::p_survival( const Real r,
     }
 
     Real p( 0.0 );
+    Real p_a( 0.0 );
+    Real p_s( 0.0 );
+    Real as( 0.0 );
     for( unsigned int j( 0 ); j < alphaTable.size(); ++j )
     {
-	const Real value( p_survival_i( r, t, r0, alphaTable[j], a ) );
+	const Real value( p_survival_i( alphaTable[j], t, r0, a ) );
+	const Real value_a( p_leavea_i( alphaTable[j], t, r0, a ) );
+	const Real value_s( p_leaves_i( alphaTable[j], t, r0, a ) );
+	const Real value_as( asratio( alphaTable[j], t, r0, a ) );
+
 	p += value;
+	p_a += value_a;
+	p_s += value_s;
+	as += value_as;
 
-	printf("%d %g %g\n", j, value, p );
+	printf("%d %g %g %g %g %g %g\n", j, value, p, p_a + p_s, p_a, p_s, as );
     }
-
 
     return p;
 }
