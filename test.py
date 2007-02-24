@@ -35,7 +35,7 @@ def test_alpha_survival_n():
 
 def test_p_survival():
 
-    t = 1e-5
+    t = 1e-8
     D = 1e-12
     Sigma = 1e-8
     kf = 1e-18

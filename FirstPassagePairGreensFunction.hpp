@@ -79,7 +79,11 @@ public:
 
 
 
-private:
+protected:
+
+    void updateAlphaTable( RealVector& alphaTable,
+			   const Real t,
+			   const Real a ) const;
     
     struct f_alpha_survival_aux_params
     { 
@@ -110,6 +114,8 @@ private:
     const Real hsigma_p_1;
     
     static const Real P_CUTOFF = 1e-6;
+
+    static const Real ALPHA_CUTOFF = 1e-8;
     
 };
 
