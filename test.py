@@ -35,7 +35,7 @@ def test_alpha_survival_n():
 
 def test_p_survival():
 
-    t = 1e-8
+    t = 1e-3
     D = 1e-12
     Sigma = 1e-8
     kf = 1e-18
@@ -44,6 +44,9 @@ def test_p_survival():
     a = 6e-8
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
+
+    for i in range(100):
+        gf.p_survival( t, r0, a )
 
     print gf.p_survival( t, r0, a )
 

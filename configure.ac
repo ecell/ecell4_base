@@ -8,15 +8,49 @@ AM_PROG_LIBTOOL
 dnl AC_CONFIG_AUX_DIR()
 dnl
 dnl 
+AH_TEMPLATE(HAVE_SINCOS)
 dnl 
 dnl
 AC_CANONICAL_TARGET([])
 AM_INIT_AUTOMAKE([ecell],${ECELL_VERSION_NUMBER})
 AC_PROG_MAKE_SET
+AC_LANG(C++)
+dnl
+dnl checks for programs
+dnl
+AM_PATH_PYTHON()
+dnl
+dnl
+dnl checks for libraries
+dnl
+dnl
+AC_CHECK_LIB(gslcblas,cblas_dgemm,,[AC_MSG_ERROR([could not find libgslcblas.])])
+AC_CHECK_LIB(gsl,gsl_block_alloc,,[AC_MSG_ERROR([could not find libgsl.])])
+dnl
+dnl
+AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])
+AM_CHECK_PYMOD(scipy,,,[AC_MSG_ERROR([could not find Python scipy module.])])
+dnl
+dnl
+dnl
+dnl checks for header files
+dnl
+dnl
 dnl
 #PYTHON_INCLUDE_DIR=$(shell python -c "import sys; print sys.prefix + '/include/python' + sys.version[:3]")
 AM_CHECK_PYTHON_HEADERS()
-AM_PATH_PYTHON()
+dnl
+dnl checks for types
+dnl
+dnl
+dnl checks for structures
+dnl
+dnl
+dnl checks for compiler characteristics
+dnl
+dnl
+dnl
+dnl extract LTDL_SHLIB_EXT
 dnl
 rm -f conftest
 ./libtool --config > conftest
@@ -34,19 +68,13 @@ elif test -n "$shrext"; then
     AC_SUBST(LTDL_SHLIB_EXT)
 fi
 dnl
-AC_CHECK_LIB(gslcblas,cblas_dgemm,,[AC_MSG_ERROR([could not find libgslcblas.])])
-AC_CHECK_LIB(gsl,gsl_block_alloc,,[AC_MSG_ERROR([could not find libgsl.])])
+dnl checks for library functions
 dnl
-AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])
-AM_CHECK_PYMOD(scipy,,,[AC_MSG_ERROR([could not find Python scipy module.])])
+AC_CHECK_FUNC(sincos,AC_DEFINE(HAVE_SINCOS))
 dnl
-dnl AC_LIBLTDL_INSTALLABLE
+dnl
+dnl no checks for system services
+dnl
 AM_CONFIG_HEADER([config.h])
-dnl
-dnl
-dnl Create the top-level Makefile.
-dnl
 AC_CONFIG_FILES([Makefile])
-dnl
 AC_OUTPUT([])
-
