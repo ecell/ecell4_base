@@ -76,7 +76,10 @@ FirstPassagePairGreensFunction::f_alpha_survival_aux( const Real alpha ) const
     const Real sigma( getSigma() );
 
     const Real term1( ( a - sigma ) * alpha );
-    const Real term2( atan( this->hsigma_p_1 / ( sigma * alpha ) ) );
+
+    const Real angle( this->hsigma_p_1 / ( sigma * alpha ) );
+//    printf("%g\n",angle);
+    const Real term2( std::atan( angle ) );
 
     const Real result( term1 - term2 );
 
@@ -383,7 +386,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Real t ) const
     const Real alpha0sq( alphaTable[0] * alphaTable[0] );
     const Real 
 	alpha_cutoff( sqrt( gsl_sf_lambert_W0( Dt2 * alpha0sq * 
-					       exp( Dt2 * alpha0sq ) / 
+					       std::exp( Dt2 * alpha0sq ) / 
 					       ( this->CUTOFF *
 						 this->CUTOFF ) ) /
 			    Dt2 ) );
@@ -406,7 +409,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Real t ) const
 	if( alpha_i > alpha_cutoff )
 	{
 //	    printf("%d %g %g\n", 
-//		   i, alpha_i, exp( - getD() * t * alpha_i * alpha_i ) 
+//		   i, alpha_i, std::exp( - getD() * t * alpha_i * alpha_i ) 
 //		   / alpha_i );
 	    break;
 	}
@@ -440,7 +443,7 @@ FirstPassagePairGreensFunction::updateExpTable( const Real t ) const
     for( RealVector::size_type j( 1 ); j < alphaTable.size(); ++j )
     {
 	const Real alpha( alphaTable[j] );
-	const Real value( 2.0 * exp( mDt * alpha * alpha ) / alpha );
+	const Real value( 2.0 * std::exp( mDt * alpha * alpha ) / alpha );
 	expTable.push_back( value );
 
 	if( value * factor < this->CUTOFF )
