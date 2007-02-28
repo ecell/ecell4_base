@@ -4,7 +4,7 @@
 #include "config.h"
 #include <vector>
 #include <boost/multi_array.hpp>
-#include <math.h>
+#include <cmath>
 
 typedef double Real;
 typedef int Int;

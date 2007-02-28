@@ -221,6 +221,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 					    init<const Real, 
 					    const Real,
 					    const Real>() )
+	.def( "seta", &FirstPassagePairGreensFunction::seta )
+	.def( "geta", &FirstPassagePairGreensFunction::geta )
 	.def( "getD", &FirstPassagePairGreensFunction::getD )
 	.def( "drawTime", &FirstPassagePairGreensFunction::drawTime )
 	.def( "drawR", &FirstPassagePairGreensFunction::drawR )

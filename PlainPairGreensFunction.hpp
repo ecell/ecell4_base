@@ -2,7 +2,7 @@
 #define __PLAINPAIRGREENSFUNCTION 
 
 #include <iostream>
-#include <math.h>
+#include <cmath>
 
 #include <gsl/gsl_integration.h>
 
@@ -18,20 +18,20 @@ public:
     
     PlainPairGreensFunction( const Real D, const Real kf, const Real Sigma );
     
-    virtual ~PlainPairGreensFunction();
+    ~PlainPairGreensFunction();
     
     
-    virtual const Real drawTime( const Real rnd, const Real r0,
-				 const Real maxt ) const;
+    const Real drawTime( const Real rnd, const Real r0,
+			 const Real maxt ) const;
     
-    virtual const Real drawR( const Real rnd, 
-			      const Real r0, 
-			      const Real t ) const;
+    const Real drawR( const Real rnd, 
+		      const Real r0, 
+		      const Real t ) const;
     
-    virtual const Real drawTheta( const Real rnd,
-				  const Real r, 
-				  const Real r0, 
-				  const Real t ) const;
+    const Real drawTheta( const Real rnd,
+			  const Real r, 
+			  const Real r0, 
+			  const Real t ) const;
     
 
     const Real getkD() const

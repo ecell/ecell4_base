@@ -14,7 +14,7 @@ pkgpyexecdir=@pkgpyexecdir@
 LIBPYTHON=-lpython$(PYTHON_VERSION)
 
 INCLUDES=${PYTHON_INCLUDES} -I${NUMPY_INCLUDE_DIR}
-AM_CXXFLAGS=@CXXFLAGS@ ${ECELLINCLUDES}
+AM_CXXFLAGS=@CXXFLAGS@ ${ECELLINCLUDES} -g -ffast-math
 
 LIBBOOSTPYTHON=-lboost_python
 
@@ -51,7 +51,9 @@ pyGFRD.cpp
 
 _gfrd_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
 
-_gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) bessel.la
+#GSL_LIBS=/usr/lib64/libgsl.a /usr/lib64/libgslcblas.a
+
+_gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS) bessel.la
 
 _gfrd_la_DEPENDENCIES=bessel.la
 
@@ -64,9 +66,4 @@ $(GFRD_SO): _gfrd.la
 
 clean-local:
 	rm -f $(GFRD_SO)
-
-
-#test: *.cpp
-#	g++ $(CXXFLAGS) -D__TEST_PLAINPAIRGREENSFUNCTION PlainPairGreensFunction.cpp -lgsl -lgslcblas -lm -o test
-
 

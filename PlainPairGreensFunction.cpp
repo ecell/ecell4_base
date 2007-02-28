@@ -1,5 +1,3 @@
-#define HAVE_INLINE
-
 //#define NDEBUG
 //#define BOOST_DISABLE_ASSERTS
 

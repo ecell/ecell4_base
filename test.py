@@ -1,5 +1,6 @@
 import _gfrd
 import math
+import random
 
 import numpy
 
@@ -35,7 +36,7 @@ def test_alpha_survival_n():
 
 def test_p_survival():
 
-    t = 1e-3
+    t = 1e-7
     D = 1e-12
     Sigma = 1e-8
     kf = 1e-18
@@ -44,29 +45,44 @@ def test_p_survival():
     a = 6e-8
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
+    gf.seta( a )
+    
+    for i in range(1000):
+        gf.p_survival( t, r0 )
 
-    for i in range(100):
-        gf.p_survival( t, r0, a )
+    print gf.p_survival( t, r0 )
 
-    print gf.p_survival( t, r0, a )
+
+
+def test_drawTime():
+
+    t = 1e-7
+    D = 1e-12
+    Sigma = 1e-8
+    kf = 1e-18
+
+    r0 = 5e-8
+    a = 6e-8
+
+    gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
+    gf.seta( a )
+    
+    for i in range(100000):
+        rnd = random.random()
+        gf.drawTime( rnd, r0 )
+
+    print gf.drawTime( .5, r0 )
 
 
     
-
-#print gf.drawTime( 1e-10, 1e-8, 1.0 )
-#for i in range(10000):
-#    gf.drawTime( 0.2, 1e-8, 1.0 )
-#    gf.drawTime( 0.5, 1e-8, 1.0 )
-#    gf.drawTime( 0.8, 1e-8, 1.0 )
-
-
 #for i in range(1000):
 #    print gf.drawR( 0.9, r0, t )
 
 
-test_alpha_survival_n()
+#test_alpha_survival_n()
 
-test_p_survival()
+#test_p_survival()
+test_drawTime()
 
 
 

@@ -1,8 +1,3 @@
-#define HAVE_INLINE
-
-//#define NDEBUG
-//#define BOOST_DISABLE_ASSERTS
-
 #include <iostream>
 #include <exception>
 #include <vector>

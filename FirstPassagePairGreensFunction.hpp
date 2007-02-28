@@ -1,9 +1,6 @@
 #if !defined( __FIRSTPASSAGEPAIRGREENSFUNCTION )
 #define __FIRSTPASSAGEPAIRGREENSFUNCTION 
 
-#include <iostream>
-#include <math.h>
-
 #include <gsl/gsl_integration.h>
 
 #include "PairGreensFunction.hpp"
@@ -21,74 +18,79 @@ public:
 				    const Real Sigma );
     
     virtual ~FirstPassagePairGreensFunction();
-    
-    
-    virtual const Real drawTime( const Real rnd, const Real r0,
-				 const Real maxt ) const;
-    
-    virtual const Real drawR( const Real rnd, 
-			      const Real r0, 
-			      const Real t ) const;
-    
-    virtual const Real drawTheta( const Real rnd,
-				  const Real r, 
-				  const Real r0, 
-				  const Real t ) const;
-    
-    
+
     const Real geth() const
     {
 	return this->h;
     }
 
+    const Real geta() const
+    {
+	return this->a;
+    }
 
-    const Real f_alpha_survival( const Real alpha, const Real a ) const;
-    const Real f_alpha_survival_aux( const Real alpha, const Real a ) const;
-    const Real f_alpha_survival_aux_df( const Real alpha, const Real a ) const;
+    void seta( Real a );
+    
+    
+    const Real drawTime( const Real rnd, const Real r0 ) const;
+    
+    const Real drawR( const Real rnd, 
+		      const Real r0, 
+		      const Real t ) const;
+    
+    const Real drawTheta( const Real rnd,
+			  const Real r, 
+			  const Real r0, 
+			  const Real t ) const;
+    
+    
+    const Real f_alpha_survival( const Real alpha ) const;
+    const Real f_alpha_survival_aux( const Real alpha ) const;
+    const Real f_alpha_survival_aux_df( const Real alpha ) const;
 
-    const Real alpha_survival_n( const Real a,
-				 const Int n ) const;
+    const Real alpha_survival_n( const Int n ) const;
 
   
-    const Real f_alpha( const Real x, const Real a, const Int n ) const;
+    const Real f_alpha( const Real x, const Int n ) const;
 
     const Real p_survival( const Real t,
-			   const Real r0,
-			   const Real a ) const;
+			   const Real r0 ) const;
+
+    const Real p_leaves( const Real t,
+			 const Real r0 ) const;
+
+    const Real p_leavea( const Real t,
+			 const Real r0 ) const;
 
 
     const Real p_survival_i( const Real alpha,
-			     const Real t,
-			     const Real r0,
-			     const Real a ) const;
+			     const Real r0 ) const;
 
     const Real p_leavea_i( const Real alpha,
-			   const Real t,
-			   const Real r0,
-			   const Real a ) const;
+			   const Real r0 ) const;
 
     const Real p_leaves_i( const Real alpha,
-			   const Real t,
-			   const Real r0,
-			   const Real a ) const;
+			   const Real r0 ) const;
 
     const Real asratio( const Real alpha,
-			const Real t,
-			const Real r0,
-			const Real a ) const;
+			const Real r0 ) const;
 
+
+
+    const RealVector& getAlphaTable() const
+    {
+	return this->alphaTable;
+    }
 
 
 protected:
 
-    void updateAlphaTable( RealVector& alphaTable,
-			   const Real t,
-			   const Real a ) const;
+    void updateAlphaTable( const Real t ) const;
+    void updateExpTable( const Real t ) const;
     
     struct f_alpha_survival_aux_params
     { 
 	const FirstPassagePairGreensFunction* const gf;
-	const Real a;
 	const Real value;
     };
 
@@ -105,15 +107,29 @@ protected:
 				params,
 				Real* const f, Real* const df );
 
+    struct p_survival_params
+    { 
+	const FirstPassagePairGreensFunction* const gf;
+	const Real r0;
+	const Real rnd;
+    };
 
+    static const Real 
+    p_survival_F( const Real t,
+		  const p_survival_params* const params );
     
     
 private:
     
     const Real h;
     const Real hsigma_p_1;
+
+    mutable RealVector alphaTable;
+    mutable RealVector expTable;
+
+    Real a;
     
-    static const Real P_CUTOFF = 1e-6;
+    static const Real CUTOFF = 1e-8;
 
     static const Real ALPHA_CUTOFF = 1e-8;
     
