@@ -225,6 +225,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "geta", &FirstPassagePairGreensFunction::geta )
 	.def( "getD", &FirstPassagePairGreensFunction::getD )
 	.def( "drawTime", &FirstPassagePairGreensFunction::drawTime )
+	.def( "drawEventType", &FirstPassagePairGreensFunction::drawEventType )
 	.def( "drawR", &FirstPassagePairGreensFunction::drawR )
 
 	.def( "p_survival", &FirstPassagePairGreensFunction::p_survival )

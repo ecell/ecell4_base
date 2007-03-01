@@ -59,19 +59,43 @@ def test_drawTime():
     t = 1e-7
     D = 1e-12
     Sigma = 1e-8
-    kf = 1e-18
+    kf = 1e-8
 
-    r0 = 5e-8
-    a = 6e-8
+    r0 = 1.1e-8
+    a = 1e-7
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     gf.seta( a )
     
-    for i in range(100000):
+    for i in range(20000):
         rnd = random.random()
-        gf.drawTime( rnd, r0 )
+        t = gf.drawTime( rnd, r0 )
+        gf.drawEventType( rnd, r0, t )
 
-    print gf.drawTime( .5, r0 )
+    t = gf.drawTime( .5, r0 )
+    type = gf.drawEventType( .5, r0, t )
+    print t, type
+
+
+def test_drawR():
+
+    t = 1e-8
+    D = 1e-12
+    Sigma = 1e-8
+    kf = 1e-8
+
+    r0 = 5e-8
+    a = 1e-7
+
+    gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
+    gf.seta( a )
+    
+    for i in range(1000):
+        rnd = random.random()
+        t = gf.drawR( rnd, r0, t )
+
+    t = gf.drawR( rnd, r0, t )
+    print t
 
 
     
@@ -82,7 +106,8 @@ def test_drawTime():
 #test_alpha_survival_n()
 
 #test_p_survival()
-test_drawTime()
+#test_drawTime()
+test_drawR()
 
 
 
