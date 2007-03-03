@@ -635,32 +635,6 @@ FirstPassagePairGreensFunction::p_int_r( const Real r,
 
 
 
-const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
-						    const Int n ) const
-{
-    const Real a( this->geta() );
-    const Real aalpha( a * alpha );
-    const Real alphaSigma( alpha * getSigma() );
-    const Real hSigma( geth() * getSigma() );
-    const Real realn( static_cast<Real>( n ) );
-
-    const Real hSigma_m_n( hSigma - realn );
-
-    Real tmp, jas1, yas1, jas2, yas2, jaa, yaa;
-
-    bessjy( alphaSigma, realn + 0.5, &jas1, &yas1, &tmp, &tmp );
-    bessjy( alphaSigma, realn + 1.5, &jas2, &yas2, &tmp, &tmp );
-    bessjy( aalpha, realn + 0.5, &jaa, &yaa, &tmp, &tmp );
-
-
-    const Real term1( ( hSigma_m_n * jas1 + alphaSigma * jas2 ) * yaa );
-    const Real term2( ( hSigma_m_n * yas1 + alphaSigma * yas2 ) * jaa );
-
-    const Real result( term1 - term2 );
-    
-    return result;
-}
-
 
 const Real
 FirstPassagePairGreensFunction::p_survival_F( const Real t,
@@ -879,12 +853,44 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 
     return r;
 }
+
+
+const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
+						    const Int n ) const
+{
+    const Real a( this->geta() );
+    const Real aalpha( a * alpha );
+    const Real alphaSigma( alpha * getSigma() );
+    const Real hSigma( geth() * getSigma() );
+    const Real realn( static_cast<Real>( n ) );
+
+    const Real hSigma_m_n( hSigma - realn );
+
+    Real tmp, jas1, yas1, jas2, yas2, jaa, yaa;
+
+    bessjy( alphaSigma, realn + 0.5, &jas1, &yas1, &tmp, &tmp );
+    bessjy( alphaSigma, realn + 1.5, &jas2, &yas2, &tmp, &tmp );
+    bessjy( aalpha, realn + 0.5, &jaa, &yaa, &tmp, &tmp );
+
+
+    const Real term1( ( hSigma_m_n * jas1 + alphaSigma * jas2 ) * yaa );
+    const Real term2( ( hSigma_m_n * yas1 + alphaSigma * yas2 ) * jaa );
+
+    const Real result( term1 - term2 );
+    
+    return result;
+}
+
+
+
     
 const Real FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 						      const Real r, 
 						      const Real r0, 
 						      const Real t ) const
 {
+
+
 
 
     return 0.0;

@@ -6,6 +6,38 @@ import numpy
 
 #print gfrd.distanceSq( numpy.array( (1.,2.,3.) ), numpy.array( (4.,5.,6.,) ) )
 
+def test_drawTime_single():
+
+    D = 1e-12
+
+    a = 1e-7
+
+    gf = _gfrd.FirstPassageGreensFunction( D )
+    #gf.seta( a )
+    
+    for i in range(150000):
+        rnd = random.random()
+        t = gf.drawTime( rnd, a )
+
+    t = gf.drawTime( .5, a )
+    print t
+
+
+def test_drawR_single():
+
+    D = 1e-12
+    t = 1.38e-3
+
+    a = 1e-7
+
+    gf = _gfrd.FirstPassageGreensFunction( D )
+    
+    for i in range(50000):
+        rnd = random.random()
+        r = gf.drawR( rnd, t, a )
+
+    r = gf.drawR( .5, t, a )
+    print r
 
 
 
@@ -98,6 +130,26 @@ def test_drawR():
     print t
 
 
+def test_f_alpha():
+
+    t = 1e-8
+    D = 1e-12
+    Sigma = 1e-8
+    kf = 1e-8
+
+    r0 = 5e-8
+    a = 1e-7
+
+    gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
+    gf.seta( a )
+    
+    n = 0
+    for i in range(1,1000):
+        f = gf.f_alpha( 1e6 * i, n )
+        print f
+
+
+
     
 #for i in range(1000):
 #    print gf.drawR( 0.9, r0, t )
@@ -107,7 +159,11 @@ def test_drawR():
 
 #test_p_survival()
 #test_drawTime()
-test_drawR()
+#test_drawR()
 
+#test_drawTime_single()
+#test_drawR_single()
+
+test_f_alpha()
 
 
