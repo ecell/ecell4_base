@@ -1,4 +1,4 @@
-AC_REVISION([$Revision:$])
+AC_REVISION([$Id$])
 dnl
 dnl
 AC_INIT
