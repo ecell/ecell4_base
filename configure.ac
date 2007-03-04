@@ -25,7 +25,7 @@ dnl
 dnl checks for libraries
 dnl
 dnl
-AM_PATH_GSL(1.8,,AC_MSG_ERROR([could not find required version of GSL.]))
+AM_PATH_GSL(1.0,,AC_MSG_ERROR([could not find required version of GSL.]))
 dnl
 dnl
 AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])
