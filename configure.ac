@@ -1,4 +1,4 @@
-AC_REVISION([$Id: configure.in 2563 2006-05-28 03:00:28Z shafi $])
+AC_REVISION([$Revision$])
 dnl
 dnl
 AC_INIT
