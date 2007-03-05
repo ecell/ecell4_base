@@ -123,8 +123,12 @@ FirstPassageGreensFunction::p_r_int( const Real r, const Real t, const Real a ) 
     {
 	const Real term1( exp( - n * n * DtPIsq_asq ) );
       
-	const Real term2( a * sin( n * PIr_a ) );
-	const Real term3( n * PIr * cos( n * PIr_a ) );
+	const Real angle_n( n * PIr_a );
+	Real sin_n;
+	Real cos_n;
+	sincos( angle_n, &sin_n, &cos_n );
+	const Real term2( a * sin_n );
+	const Real term3( n * PIr * cos_n );
 
 	const Real term( term1 * ( term2 - term3 ) / n );
 	value += term;
@@ -240,7 +244,7 @@ FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
 
     //FIXME: adjust high here.
 
-    // adjust low to make sure tha f( low ) and f( high ) straddle.
+    // adjust low to make sure that f( low ) and f( high ) straddle.
     const Real highvalue( GSL_FN_EVAL( &F, high ) );
     while( GSL_FN_EVAL( &F, low ) * highvalue >= 0.0 )
     {
