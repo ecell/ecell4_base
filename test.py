@@ -42,7 +42,7 @@ def test_drawR_single():
 
 
 
-def test_alpha_survival_n():
+def test_alpha0():
 
     t = 1e-4
     D = 1e-12
@@ -55,16 +55,45 @@ def test_alpha_survival_n():
 
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
-    
+    gf.seta( a )
     maxerror = 0
 
     for i in range(100):
-        alpha = gf.alpha_survival_n( a, i )
-        error = abs( gf.f_alpha_survival( alpha, a ) )
+        alpha = gf.alpha0_i( i )
+        error = abs( gf.f_alpha0( alpha ) )
         maxerror = max( error, maxerror )
 
     if abs( maxerror ) > 1e-8:
         print 'failed: alpha_survival_n: maxerror = ', maxerror
+
+
+def test_alpha():
+
+    t = 1e-4
+    D = 1e-12
+    Sigma = 1e-8
+    kf = 1e-18
+
+    r = 1e-7
+    r0 = 5e-8
+    a = 2e-6
+
+
+    gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
+    gf.seta( a )
+    maxerror = 0
+
+    n = 7
+    for i in range(1,10):
+        alpha = gf.alpha_i( i, n )
+        error = abs( gf.f_alpha( alpha, n ) )
+        #error = abs( gf.f_alpha0( alpha ) )
+        print error
+        maxerror = max( error, maxerror )
+
+    if abs( maxerror ) > 1e-8:
+        print 'failed: alpha_i: maxerror = ', maxerror
+
 
 def test_p_survival():
 
@@ -149,13 +178,34 @@ def test_f_alpha():
         print f
 
 
+def test_drawTheta():
+
+    t = 1e-8
+    D = 1e-12
+    Sigma = 1e-8
+    kf = 1e-8
+
+    r = 1e-8
+    r0 = 5e-8
+    a = 1e-7
+
+    gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
+    gf.seta( a )
+    
+    #for i in range(1000):
+    #    rnd = random.random()
+    #    t = gf.drawTheta( rnd, r0, t )
+
+    t = gf.drawTheta( 0.5, r, r0, t )
+
 
     
 #for i in range(1000):
 #    print gf.drawR( 0.9, r0, t )
 
 
-#test_alpha_survival_n()
+#test_alpha0()
+
 
 #test_p_survival()
 #test_drawTime()
@@ -164,6 +214,9 @@ def test_f_alpha():
 #test_drawTime_single()
 #test_drawR_single()
 
-test_f_alpha()
+#test_f_alpha()
 
+test_drawTheta()
+
+test_alpha()
 

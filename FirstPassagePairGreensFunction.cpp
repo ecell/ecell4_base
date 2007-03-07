@@ -7,6 +7,8 @@
 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_lambert.h>
 #include <gsl/gsl_sf_expint.h>
 #include <gsl/gsl_integration.h>
@@ -51,7 +53,7 @@ void FirstPassagePairGreensFunction::seta( Real a )
 
 
 const Real 
-FirstPassagePairGreensFunction::f_alpha_survival( const Real alpha ) const
+FirstPassagePairGreensFunction::f_alpha0( const Real alpha ) const
 {
     const Real a( geta() );
     const Real sigma( getSigma() );
@@ -72,7 +74,7 @@ FirstPassagePairGreensFunction::f_alpha_survival( const Real alpha ) const
 }
 
 const Real 
-FirstPassagePairGreensFunction::f_alpha_survival_aux( const Real alpha ) const
+FirstPassagePairGreensFunction::f_alpha0_aux( const Real alpha ) const
 
 {
     const Real a( geta() );
@@ -91,7 +93,7 @@ FirstPassagePairGreensFunction::f_alpha_survival_aux( const Real alpha ) const
 
 const Real 
 FirstPassagePairGreensFunction::
-f_alpha_survival_aux_df( const Real alpha ) const
+f_alpha0_aux_df( const Real alpha ) const
 
 {
     const Real a( geta() );
@@ -116,72 +118,72 @@ f_alpha_survival_aux_df( const Real alpha ) const
 
 const Real 
 FirstPassagePairGreensFunction::
-f_alpha_survival_aux_F( const Real alpha,
-			const f_alpha_survival_aux_params* const params )
+f_alpha0_aux_F( const Real alpha,
+		const f_alpha0_aux_params* const params )
 {
     const FirstPassagePairGreensFunction* const gf( params->gf ); 
     const Real value( params->value );
 
-    return gf->f_alpha_survival_aux( alpha ) - value;
+    return gf->f_alpha0_aux( alpha ) - value;
 }
 
 const Real
 FirstPassagePairGreensFunction::
-f_alpha_survival_aux_df_F( const Real alpha,
-			   const f_alpha_survival_aux_params* const params )
+f_alpha0_aux_df_F( const Real alpha,
+		   const f_alpha0_aux_params* const params )
 {
     const FirstPassagePairGreensFunction* const gf( params->gf ); 
 
-    return gf->f_alpha_survival_aux_df( alpha );
+    return gf->f_alpha0_aux_df( alpha );
 }
 
 
 void
 FirstPassagePairGreensFunction::
-f_alpha_survival_aux_fdf_F( const Real alpha,
-			    const f_alpha_survival_aux_params* const params,
-			    Real* const f, Real* const df )
+f_alpha0_aux_fdf_F( const Real alpha,
+		    const f_alpha0_aux_params* const params,
+		    Real* const f, Real* const df )
 {
     const FirstPassagePairGreensFunction* const gf( params->gf ); 
     const Real value( params->value );    // n * M_PI_2;
 
-    *f = gf->f_alpha_survival_aux( alpha ) - value;
-    *df = gf->f_alpha_survival_aux_df( alpha );
+    *f = gf->f_alpha0_aux( alpha ) - value;
+    *df = gf->f_alpha0_aux_df( alpha );
 }
 
 
 
 
 const Real 
-FirstPassagePairGreensFunction::alpha_survival_n( const Int n ) const
+FirstPassagePairGreensFunction::alpha0_i( const Int i ) const
 {
-    assert( n >= 0 );
+    assert( i >= 0 );
 
     const Real sigma( this->getSigma() );
 
-    const Real target( n * M_PI + M_PI_2 );
-    f_alpha_survival_aux_params params = { this, target };
+    const Real target( i * M_PI + M_PI_2 );
+    f_alpha0_aux_params params = { this, target };
 
 
     gsl_function F = 
 	{
-	    reinterpret_cast<typeof(F.function)>( &f_alpha_survival_aux_F ),
+	    reinterpret_cast<typeof(F.function)>( &f_alpha0_aux_F ),
 	    &params 
 	};
 
 
     // We know the range of the solution from - Pi/2 <= atan <= Pi.
     const Real rangeFactor( M_PI / ( a - sigma ) );
-    Real low( n * rangeFactor );
-    Real high( low + rangeFactor );
+    Real low( i * rangeFactor );
+    Real high( (i+1) * rangeFactor );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
     gsl_root_fsolver_set( solver, &F, low, high );
 
-    const unsigned int maxIter( 1000 );
+    const unsigned int maxIter( 100 );
 
-    unsigned int i( 0 );
+    unsigned int j( 0 );
     while( true )
     {
 	gsl_root_fsolver_iterate( solver );
@@ -194,10 +196,10 @@ FirstPassagePairGreensFunction::alpha_survival_n( const Int n ) const
 
 	if( status == GSL_CONTINUE )
 	{
-	    if( i >= maxIter )
+	    if( j >= maxIter )
 	    {
 		gsl_root_fsolver_free( solver );
-		std::cerr << "alpha_survival_n: failed to converge." 
+		std::cerr << "alpha0_i: failed to converge." 
 			  << std::endl;
 		throw std::exception();
 	    }
@@ -207,12 +209,12 @@ FirstPassagePairGreensFunction::alpha_survival_n( const Int n ) const
 	    break;
 	}
 
-	++i;
+	++j;
     }
 
-    // printf("%d\n",i);
+    // printf("%d\n",j);
 
-    Real alpha( gsl_root_fsolver_root( solver ) );
+    const Real alpha( gsl_root_fsolver_root( solver ) );
     gsl_root_fsolver_free( solver );
   
     return alpha;
@@ -321,7 +323,7 @@ FirstPassagePairGreensFunction::p_leaves_i( const Real alpha,
 	sincos( angle_r0, &sin_r0, &cos_r0 );
 	
 	num = h * sigmasq * ( alpha * sigma * cos_r0 +
-				    hsigma_p_1 * sin_r0 );
+			      hsigma_p_1 * sin_r0 );
     }
 		      
     const Real den( r0 *
@@ -426,7 +428,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Real t ) const
     RealVector& alphaTable( this->alphaTable );
     alphaTable.clear();
 
-    alphaTable.push_back( this->alpha_survival_n( 0 ) );
+    alphaTable.push_back( this->alpha0_i( 0 ) );
 
     const Real D( getD() );
     const Real Dt2( 2.0 * D * t );
@@ -437,9 +439,9 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Real t ) const
 					       ( this->CUTOFF *
 						 this->CUTOFF ) ) /
 			    Dt2 ) );
-/*    const Real alpha_cutoff( sqrt( ( - log( this->ALPHA_CUTOFF ) 
-				     / ( getD() * t ) )
-				     + alphaTable[0] * alphaTable[0] ) );*/
+/*    const Real alpha_cutoff( sqrt( ( - log( this->CUTOFF ) 
+      / ( getD() * t ) )
+      + alphaTable[0] * alphaTable[0] ) );*/
 
 
 //    printf("%g %g\n", alphaTable[0], alpha_cutoff );
@@ -450,7 +452,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Real t ) const
     Int i( 1 );
     while( true )
     {
-	const Real alpha_i( this->alpha_survival_n( i ) );
+	const Real alpha_i( this->alpha0_i( i ) );
 	alphaTable.push_back( alpha_i );
 
 	if( alpha_i > alpha_cutoff )
@@ -697,7 +699,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	if( fabs( low ) <= 1e-50 )
 	{
 	    std::cerr << "Couldn't adjust low. (" << low <<
-		      ")" << std::endl;
+		")" << std::endl;
 	    throw std::exception();
 	    
 	}
@@ -859,28 +861,222 @@ const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
 						    const Int n ) const
 {
     const Real a( this->geta() );
-    const Real aalpha( a * alpha );
-    const Real alphaSigma( alpha * getSigma() );
+    const Real aAlpha( a * alpha );
+    const Real sigmaAlpha( getSigma() * alpha );
     const Real hSigma( geth() * getSigma() );
     const Real realn( static_cast<Real>( n ) );
 
     const Real hSigma_m_n( hSigma - realn );
 
+#if 0
+    // Numerical recipes
     Real tmp, jas1, yas1, jas2, yas2, jaa, yaa;
+    bessjy( sigmaAlpha, realn + 0.5, &jas1, &yas1, &tmp, &tmp );
+    bessjy( sigmaAlpha, realn + 1.5, &jas2, &yas2, &tmp, &tmp );
+    bessjy( aAlpha, realn + 0.5, &jaa, &yaa, &tmp, &tmp );
+#else
+    // GSL
+    const Real factors( sqrt( sigmaAlpha * M_2_PI ) );
+    const Real factora( sqrt( aAlpha * M_2_PI ) );
+    const Real jas1( gsl_sf_bessel_jl( n, sigmaAlpha ) * factors );
+    const Real yas1( gsl_sf_bessel_yl( n, sigmaAlpha ) * factors );
+    const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) * factors );
+    const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) * factors );
+    const Real jaa( gsl_sf_bessel_jl( n, aAlpha ) * factora );
+    const Real yaa( gsl_sf_bessel_yl( n, aAlpha ) * factora );
+#endif
 
-    bessjy( alphaSigma, realn + 0.5, &jas1, &yas1, &tmp, &tmp );
-    bessjy( alphaSigma, realn + 1.5, &jas2, &yas2, &tmp, &tmp );
-    bessjy( aalpha, realn + 0.5, &jaa, &yaa, &tmp, &tmp );
 
-
-    const Real term1( ( hSigma_m_n * jas1 + alphaSigma * jas2 ) * yaa );
-    const Real term2( ( hSigma_m_n * yas1 + alphaSigma * yas2 ) * jaa );
+    const Real term1( ( hSigma_m_n * jas1 + sigmaAlpha * jas2 ) * yaa );
+    const Real term2( ( hSigma_m_n * yas1 + sigmaAlpha * yas2 ) * jaa );
 
     const Real result( term1 - term2 );
     
     return result;
 }
 
+
+const Real FirstPassagePairGreensFunction::RS( const Int n,
+					       const Real x )
+{
+    Real result( 0.0 );
+
+    Real sx2( 1.0 );
+    const Real x2sq( gsl_pow_2( x + x ) );
+    for( unsigned int m( 0 ); m <= n; m+=2 )
+    {
+//	const unsigned int m2( 2 * m );
+
+	const Real term1( 1.0 + (-2.0) * ( (m/2) % 2 ) ); // (-1)^m
+	const Real term2( gsl_sf_doublefact( n + m ) );
+	const Real den( gsl_sf_fact( m ) * gsl_sf_doublefact( n - m ) );
+
+	const Real value( term1 * term2 / ( den * sx2 ) );
+	result += value;
+
+	sx2 *= x2sq;
+    }
+
+    return result;
+}
+
+
+const Real FirstPassagePairGreensFunction::IS( const Int n,
+					       const Real x )
+{
+    Real result( 0.0 );
+
+    Real sx2( x + x );
+    const Real x2sq( sx2 * sx2 );
+
+    for( unsigned int m( 1 ); m <= n; m+=2 )
+    {
+	//const unsigned int m2p1( 2 * m + 1 );
+
+	const Real term1( 1.0 + (-2.0) * ( (m-1)/2 % 2 ) ); // (-1)^m
+	const Real term2( gsl_sf_doublefact( n + m ) );
+	const Real den( gsl_sf_fact( m ) * gsl_sf_doublefact( n - m ) );
+
+	const Real value( term1 * term2 / ( den * sx2 ) );
+	result += value;
+
+	sx2 *= x2sq;
+    }
+
+    return result;
+}
+
+const Real 
+FirstPassagePairGreensFunction::f_alpha_aux( const Real alpha, 
+					     const Int n ) const
+{
+    const Real a( geta() );
+    const Real sigma( getSigma() );
+
+    const Real aAlpha( a * alpha );
+    const Real sigmaAlpha( sigma * alpha );
+
+    const Real realn( static_cast<Real>( n ) );
+    const Real n_m_hSigma( n - h * sigma );
+
+    /*
+    (a - s) u - 
+    ArcTan[(RS[n, a u] (s u IS[1 + n, s u] + (-n + h s) RS[n, s u]) - 
+            IS[n, a u] ((n - h s) IS[n, s u] + s u RS[1 + n, s u]))/
+           (IS[n, a u] (s u IS[1 + n, s u] + (-n + h s) RS[n, s u]) + 
+            RS[n, a u] ((n - h s) IS[n, s u] + s u RS[1 + n, s u]))]
+    */
+
+    const Real term1( ( a - sigma ) * alpha );
+
+    const Real RSa( RS( n, aAlpha ) );
+    const Real RSs( RS( n, sigmaAlpha ) );
+    const Real RSsp( RS( n+1, sigmaAlpha ) );
+    const Real ISa( IS( n, aAlpha ) );
+    const Real ISs( IS( n, sigmaAlpha ) );
+    const Real ISsp( IS( n+1, sigmaAlpha ) );
+
+    printf("%g %g %g %g\n",RSa,RSs,ISa,ISs);
+
+    const Real sigmaAlphaISs_m_n_m_hSigmaRSs( sigmaAlpha * ISs - 
+					      n_m_hSigma * RSs );
+    const Real n_m_hSigmaISs_p_sigmaAlphaRSs( n_m_hSigma * ISs + 
+					      sigmaAlpha * RSs );
+
+    const Real angle( ( RSa * ( sigmaAlpha * ISsp - n_m_hSigma * RSs ) - 
+			ISa * ( n_m_hSigma * ISs  + sigmaAlpha * RSsp ) ) /
+		      ( ISa * ( sigmaAlpha * ISsp - n_m_hSigma * RSs ) + 
+			RSa * ( n_m_hSigma * ISs  + sigmaAlpha * RSsp ) ) );
+    const Real term2( std::atan( angle ) );
+
+    const Real result( term1 - term2 );
+    printf("value %g cos %g result %g term1 %g angle %g atan %g\n",f_alpha(alpha,n), cos( result ), result,term1, angle, term2);
+    
+
+    return result;
+}
+
+
+const Real 
+FirstPassagePairGreensFunction::
+f_alpha_aux_F( const Real alpha,
+	       const f_alpha_aux_params* const params )
+{
+    const FirstPassagePairGreensFunction* const gf( params->gf ); 
+    const Int n( params->n );
+    const Real value( params->value );
+
+    return gf->f_alpha_aux( alpha, n ) - value;
+    //return gf->f_alpha( alpha, n );// - value;
+}
+
+
+const Real 
+FirstPassagePairGreensFunction::alpha_i( const Int i, const Int n ) const
+{
+    assert( i >= 0 );
+
+    const Real sigma( this->getSigma() );
+
+    const Real target( i * M_PI + M_PI_2 );
+    f_alpha_aux_params params = { this, n, target };
+
+    gsl_function F = 
+	{
+	    reinterpret_cast<typeof(F.function)>( &f_alpha_aux_F ),
+	    &params 
+	};
+
+
+    // We know the range of the solution from - Pi/2 <= atan <= Pi.
+    const Real rangeFactor( M_PI / ( a - sigma ) );
+    Real low( i * rangeFactor );
+    Real high( (i+1) * rangeFactor );
+    printf("target %g high %g low %g\n",target, low, high);
+
+
+    const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
+    gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
+    gsl_root_fsolver_set( solver, &F, low, high );
+
+    const unsigned int maxIter( 100 );
+
+    unsigned int j( 0 );
+    while( true )
+    {
+	gsl_root_fsolver_iterate( solver );
+
+        low = gsl_root_fsolver_x_lower( solver );
+        high = gsl_root_fsolver_x_upper( solver );
+	int status( gsl_root_test_interval( low, high, 0.0, 1e-15 ) );
+        //	printf("%g %g\n", low, high );
+
+
+	if( status == GSL_CONTINUE )
+	{
+	    if( j >= maxIter )
+	    {
+		gsl_root_fsolver_free( solver );
+		std::cerr << "alpha_i: failed to converge." 
+			  << std::endl;
+		throw std::exception();
+	    }
+	}
+	else
+	{
+	    break;
+	}
+
+	++j;
+    }
+
+    printf("%d\n",j);
+
+    const Real alpha( gsl_root_fsolver_root( solver ) );
+    gsl_root_fsolver_free( solver );
+  
+    return alpha;
+}
 
 
     
@@ -890,7 +1086,11 @@ const Real FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 						      const Real t ) const
 {
 
+    for( int i(0); i< 10; ++i )
+    {
+	printf("%d %g %g\n", i, RS(i,.2), IS(i,.2) );
 
+    }
 
 
     return 0.0;

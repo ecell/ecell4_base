@@ -227,15 +227,21 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawTime", &FirstPassagePairGreensFunction::drawTime )
 	.def( "drawEventType", &FirstPassagePairGreensFunction::drawEventType )
 	.def( "drawR", &FirstPassagePairGreensFunction::drawR )
+	.def( "drawTheta", &FirstPassagePairGreensFunction::drawTheta )
 
 	.def( "p_survival", &FirstPassagePairGreensFunction::p_survival )
 
 	// debug
-	.def( "f_alpha", &FirstPassagePairGreensFunction::f_alpha )
-	.def( "f_alpha_survival", 
-	      &FirstPassagePairGreensFunction::f_alpha_survival )
-	.def( "alpha_survival_n", 
-	      &FirstPassagePairGreensFunction::alpha_survival_n )
+	.def( "f_alpha0", 
+	      &FirstPassagePairGreensFunction::f_alpha0 )
+	.def( "alpha0_i", 
+	      &FirstPassagePairGreensFunction::alpha0_i )
+	.def( "f_alpha", 
+	      &FirstPassagePairGreensFunction::f_alpha )
+	.def( "f_alpha_aux", 
+	      &FirstPassagePairGreensFunction::f_alpha_aux )
+	.def( "alpha_i", 
+	      &FirstPassagePairGreensFunction::alpha_i )
 	;
 
     def( "distanceSq", &distanceSq_ );

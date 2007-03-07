@@ -52,14 +52,15 @@ public:
 			  const Real t ) const;
     
     
-    const Real f_alpha_survival( const Real alpha ) const;
-    const Real f_alpha_survival_aux( const Real alpha ) const;
-    const Real f_alpha_survival_aux_df( const Real alpha ) const;
-
-    const Real alpha_survival_n( const Int n ) const;
+    const Real f_alpha0( const Real alpha ) const;
+    const Real f_alpha0_aux( const Real alpha ) const;
+    const Real f_alpha0_aux_df( const Real alpha ) const;
+    const Real alpha0_i( const Int i ) const;
 
   
-    const Real f_alpha( const Real x, const Int n ) const;
+    const Real f_alpha( const Real alpha, const Int n ) const;
+    const Real f_alpha_aux( const Real alpha, const Int n ) const;
+    const Real alpha_i( const Int i, const Int n ) const;
 
     const Real p_survival( const Real t,
 			   const Real r0 ) const;
@@ -108,25 +109,37 @@ protected:
     void updateNum_r0Table( RealVector& num_r0Table,
 			    const Real r0 ) const;
 
-    struct f_alpha_survival_aux_params
+    struct f_alpha0_aux_params
     { 
 	const FirstPassagePairGreensFunction* const gf;
 	const Real value;
     };
 
     static const Real 
-    f_alpha_survival_aux_F( const Real alpha,
-			    const f_alpha_survival_aux_params* const params );
+    f_alpha0_aux_F( const Real alpha,
+		    const f_alpha0_aux_params* const params );
     static const Real 
-    f_alpha_survival_aux_df_F( const Real alpha,
-			       const f_alpha_survival_aux_params* const 
-			       params );
+    f_alpha0_aux_df_F( const Real alpha,
+		       const f_alpha0_aux_params* const 
+		       params );
     static void
-    f_alpha_survival_aux_fdf_F( const Real alpha,
-				const f_alpha_survival_aux_params* const 
-				params,
-				Real* const f, Real* const df );
+    f_alpha0_aux_fdf_F( const Real alpha,
+			const f_alpha0_aux_params* const 
+			params,
+			Real* const f, Real* const df );
 
+    struct f_alpha_aux_params
+    { 
+	const FirstPassagePairGreensFunction* const gf;
+	const Int n;
+	const Real value;
+    };
+
+    static const Real 
+    f_alpha_aux_F( const Real alpha,
+		   const f_alpha_aux_params* const params );
+
+    
     struct p_survival_params
     { 
 	const FirstPassagePairGreensFunction* const gf;
@@ -156,6 +169,10 @@ protected:
     const Real num_r0( const Real alpha,
 		       const Real r0 ) const;
 
+    static const Real RS( const Int n, const Real x );
+    static const Real IS( const Int n, const Real x );
+
+
 
 private:
     
@@ -170,8 +187,6 @@ private:
     
     static const Real CUTOFF = 1e-8;
 
-    static const Real ALPHA_CUTOFF = 1e-8;
-    
 };
 
 
