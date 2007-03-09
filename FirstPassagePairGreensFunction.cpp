@@ -860,6 +860,10 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
 						    const Int n ) const
 {
+    if( alpha <= 1e-18 )
+    {
+	return -INFINITY;
+    }
     const Real a( this->geta() );
     const Real aAlpha( a * alpha );
     const Real sigmaAlpha( getSigma() * alpha );
@@ -886,58 +890,61 @@ const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
     const Real yaa( gsl_sf_bessel_yl( n, aAlpha ) * factora );
 #endif
 
-
+//    printf("b %g %g %g %g %g %g\n", jas1, jas2, yas1, yas2, yaa, jaa );
     const Real term1( ( hSigma_m_n * jas1 + sigmaAlpha * jas2 ) * yaa );
     const Real term2( ( hSigma_m_n * yas1 + sigmaAlpha * yas2 ) * jaa );
 
+//    printf("s %g %g %g %g\n", hSigma_m_n * jas1 * yaa, sigmaAlpha * jas2 * yaa,
+//	   hSigma_m_n * yas1 * jaa, sigmaAlpha * yas2 * jaa);
+
+//    printf("t %g %g %g %g\n", alpha, term1, term2, term1-term2 );// cos(f_alpha_aux( alpha,n )) );
     const Real result( term1 - term2 );
     
     return result;
 }
 
+const Real G( const unsigned int n, const unsigned int k )
+{
+    //std::cerr << n << ' ' << k << std::endl;
+    return gsl_sf_fact( n + k ) / ( gsl_sf_fact( k ) * gsl_sf_fact( n - k ) );
+}
 
-const Real FirstPassagePairGreensFunction::RS( const Int n,
-					       const Real x )
+const Real FirstPassagePairGreensFunction::P( const Int n,
+					      const Real x )
 {
     Real result( 0.0 );
 
     Real sx2( 1.0 );
-    const Real x2sq( gsl_pow_2( x + x ) );
-    for( unsigned int m( 0 ); m <= n; m+=2 )
+    const Real x2sq_r( 1.0 / gsl_pow_2( x + x ) );
+
+    const unsigned int maxm( n/2 );
+    for( unsigned int m( 0 ); m <= maxm; ++m )
     {
-//	const unsigned int m2( 2 * m );
-
-	const Real term1( 1.0 + (-2.0) * ( (m/2) % 2 ) ); // (-1)^m
-	const Real term2( gsl_sf_doublefact( n + m ) );
-	const Real den( gsl_sf_fact( m ) * gsl_sf_doublefact( n - m ) );
-
-	const Real value( term1 * term2 / ( den * sx2 ) );
+	const Real term1( 1.0 + (-2.0) * ( m % 2 ) ); // (-1)^m
+	const Real value( term1 * sx2 * G( n, 2 * m ) );
 	result += value;
 
-	sx2 *= x2sq;
+	sx2 *= x2sq_r;
     }
 
     return result;
 }
 
 
-const Real FirstPassagePairGreensFunction::IS( const Int n,
-					       const Real x )
+const Real FirstPassagePairGreensFunction::Q( const Int n,
+					      const Real x )
 {
     Real result( 0.0 );
 
-    Real sx2( x + x );
+    Real sx2( 1.0 / ( x + x ) );
     const Real x2sq( sx2 * sx2 );
 
-    for( unsigned int m( 1 ); m <= n; m+=2 )
+    const unsigned int maxm( (n+1)/2 ); // sum_(0)^((n-1)/2)
+    for( unsigned int m( 0 ); m < maxm; ++m )
     {
-	//const unsigned int m2p1( 2 * m + 1 );
+	const Real term1( 1.0 + (-2.0) * ( m % 2 ) ); // (-1)^m
 
-	const Real term1( 1.0 + (-2.0) * ( (m-1)/2 % 2 ) ); // (-1)^m
-	const Real term2( gsl_sf_doublefact( n + m ) );
-	const Real den( gsl_sf_fact( m ) * gsl_sf_doublefact( n - m ) );
-
-	const Real value( term1 * term2 / ( den * sx2 ) );
+	const Real value( term1 * sx2 * G( n, 2 * m + 1 ) );
 	result += value;
 
 	sx2 *= x2sq;
@@ -959,38 +966,66 @@ FirstPassagePairGreensFunction::f_alpha_aux( const Real alpha,
     const Real realn( static_cast<Real>( n ) );
     const Real n_m_hSigma( n - h * sigma );
 
-    /*
-    (a - s) u - 
-    ArcTan[(RS[n, a u] (s u IS[1 + n, s u] + (-n + h s) RS[n, s u]) - 
-            IS[n, a u] ((n - h s) IS[n, s u] + s u RS[1 + n, s u]))/
-           (IS[n, a u] (s u IS[1 + n, s u] + (-n + h s) RS[n, s u]) + 
-            RS[n, a u] ((n - h s) IS[n, s u] + s u RS[1 + n, s u]))]
+    /*(a - s) u - 
+      ArcTan[( P[n, a u] ((-n + h s) P[n, s u] + s u Q[1 + n, s u]) -
+               Q[n, a u] (s u P[1 + n, s u] + (n - h s) Q[n, s u]) )/
+             ( Q[n, a u] ((-n + h s) P[n, s u] + s u Q[1 + n, s u]) + 
+               P[n, a u] (s u P[1 + n, s u] + (n - h s) Q[n, s u]) )]
     */
 
     const Real term1( ( a - sigma ) * alpha );
 
-    const Real RSa( RS( n, aAlpha ) );
-    const Real RSs( RS( n, sigmaAlpha ) );
-    const Real RSsp( RS( n+1, sigmaAlpha ) );
-    const Real ISa( IS( n, aAlpha ) );
-    const Real ISs( IS( n, sigmaAlpha ) );
-    const Real ISsp( IS( n+1, sigmaAlpha ) );
+    const Real Pa( P( n, aAlpha ) );
+    const Real Ps( P( n, sigmaAlpha ) );
+    const Real Psp( P( n+1, sigmaAlpha ) );
+    const Real Qa( Q( n, aAlpha ) );
+    const Real Qs( Q( n, sigmaAlpha ) );
+    const Real Qsp( Q( n+1, sigmaAlpha ) );
 
-    printf("%g %g %g %g\n",RSa,RSs,ISa,ISs);
+    //printf("%g %g %g %g %g %g\n",Pa,Ps,Qa,Qs,Psp,Qsp);
 
-    const Real sigmaAlphaISs_m_n_m_hSigmaRSs( sigmaAlpha * ISs - 
-					      n_m_hSigma * RSs );
-    const Real n_m_hSigmaISs_p_sigmaAlphaRSs( n_m_hSigma * ISs + 
-					      sigmaAlpha * RSs );
+    /*
+    const Real sigmaAlphaQs_m_n_m_hSigmaPs( sigmaAlpha * Qs - 
+					      n_m_hSigma * Ps );
+    const Real n_m_hSigmaQs_p_sigmaAlphaPs( n_m_hSigma * Qs + 
+					      sigmaAlpha * Ps );
+    */
 
-    const Real angle( ( RSa * ( sigmaAlpha * ISsp - n_m_hSigma * RSs ) - 
-			ISa * ( n_m_hSigma * ISs  + sigmaAlpha * RSsp ) ) /
-		      ( ISa * ( sigmaAlpha * ISsp - n_m_hSigma * RSs ) + 
-			RSa * ( n_m_hSigma * ISs  + sigmaAlpha * RSsp ) ) );
+    const Real PaQa( Pa / Qa );
+
+    const Real t1( Qa * ( sigmaAlpha * Qsp - n_m_hSigma * Ps ) ); 
+    const Real t2( Pa * ( n_m_hSigma * Qs  + sigmaAlpha * Psp ) );
+
+    const Real t3( Qa * sigmaAlpha * Qsp + Pa * sigmaAlpha * Psp );
+    const Real t4( Pa * n_m_hSigma * Qs  - Qa * n_m_hSigma * Ps );
+//    printf("ppp %f %f %g %g %g %g\n", Qa * sigmaAlpha * Qsp,Pa * sigmaAlpha * Psp,Pa * n_m_hSigma * Qs, Qa * n_m_hSigma * Ps );
+//    printf("ppp %f %f %g %g %g %g\n", t1, t2, t1 + t2, t3, t4, t3+t4 );
+
+/*
+    const Real angle( ( ( PaQa * sigmaAlpha * Qsp - PaQa * n_m_hSigma * Ps ) - 
+			( n_m_hSigma * Qs  + sigmaAlpha * Psp ) ) /
+		      ( ( sigmaAlpha * Qsp - n_m_hSigma * Ps ) + 
+		      ( PaQa * n_m_hSigma * Qs  + PaQa * sigmaAlpha * Psp ) ) );*/
+//    printf("%g\n", angle );
+
+    const Real angle( ( Pa * ( sigmaAlpha * Qsp - n_m_hSigma * Ps ) - 
+			Qa * ( n_m_hSigma * Qs  + sigmaAlpha * Psp ) ) /
+		      ( Qa * ( sigmaAlpha * Qsp - n_m_hSigma * Ps ) + 
+			Pa * ( n_m_hSigma * Qs  + sigmaAlpha * Psp ) ) );
+
     const Real term2( std::atan( angle ) );
 
+
+/*
+    const Real term2( std::atan2( 
+			  ( Pa * ( sigmaAlpha * Qsp - n_m_hSigma * Ps ) - 
+			    Qa * ( n_m_hSigma * Qs  + sigmaAlpha * Psp ) ),
+			  ( Qa * ( sigmaAlpha * Qsp - n_m_hSigma * Ps ) + 
+			    Pa * ( n_m_hSigma * Qs  + sigmaAlpha * Psp ) ) ) );
+*/
     const Real result( term1 - term2 );
-    printf("value %g cos %g result %g term1 %g angle %g atan %g\n",f_alpha(alpha,n), cos( result ), result,term1, angle, term2);
+//    printf("value %g cos %g result %g \n",f_alpha(alpha,n), cos( result ), result);
+//    printf("aux %18.18g %g %g %g %g\n", alpha, result, term1, term2, angle );
     
 
     return result;
@@ -1006,8 +1041,8 @@ f_alpha_aux_F( const Real alpha,
     const Int n( params->n );
     const Real value( params->value );
 
-    return gf->f_alpha_aux( alpha, n ) - value;
-    //return gf->f_alpha( alpha, n );// - value;
+    //return gf->f_alpha_aux( alpha, n ) - value;
+    return gf->f_alpha( alpha, n );// - value;
 }
 
 
@@ -1029,10 +1064,32 @@ FirstPassagePairGreensFunction::alpha_i( const Int i, const Int n ) const
 
 
     // We know the range of the solution from - Pi/2 <= atan <= Pi.
-    const Real rangeFactor( M_PI / ( a - sigma ) );
-    Real low( i * rangeFactor );
-    Real high( (i+1) * rangeFactor );
+    const Real alphaMid( target / ( a - sigma ) );
+    const Real alphaHalfRange( M_PI_2 / ( a - sigma ) );
+    Real low( alphaMid - alphaHalfRange );
+    Real high( alphaMid + alphaHalfRange );
     printf("target %g high %g low %g\n",target, low, high);
+
+    Real lowvalue;
+    Real highvalue;
+
+    while( true )
+    {
+	Real lowvalue( f_alpha(low,n) );
+	Real highvalue( f_alpha(high,n) );
+
+	if( lowvalue * highvalue > 0 )
+	{
+	    printf("lh: %g %g\n", lowvalue, highvalue );
+	    low += M_PI;
+	    high += M_PI;
+	}
+	else
+	{
+	    break;
+	}
+    }
+
 
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
@@ -1049,8 +1106,6 @@ FirstPassagePairGreensFunction::alpha_i( const Int i, const Int n ) const
         low = gsl_root_fsolver_x_lower( solver );
         high = gsl_root_fsolver_x_upper( solver );
 	int status( gsl_root_test_interval( low, high, 0.0, 1e-15 ) );
-        //	printf("%g %g\n", low, high );
-
 
 	if( status == GSL_CONTINUE )
 	{
@@ -1070,11 +1125,12 @@ FirstPassagePairGreensFunction::alpha_i( const Int i, const Int n ) const
 	++j;
     }
 
-    printf("%d\n",j);
 
     const Real alpha( gsl_root_fsolver_root( solver ) );
     gsl_root_fsolver_free( solver );
   
+    printf("%d %g\n",j,alpha);
+
     return alpha;
 }
 
@@ -1088,7 +1144,7 @@ const Real FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 
     for( int i(0); i< 10; ++i )
     {
-	printf("%d %g %g\n", i, RS(i,.2), IS(i,.2) );
+	printf("%d %g %g\n", i, P(i,.2), Q(i,.2) );
 
     }
 

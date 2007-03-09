@@ -169,8 +169,8 @@ protected:
     const Real num_r0( const Real alpha,
 		       const Real r0 ) const;
 
-    static const Real RS( const Int n, const Real x );
-    static const Real IS( const Int n, const Real x );
+    static const Real P( const Int n, const Real x );
+    static const Real Q( const Int n, const Real x );
 
 
 

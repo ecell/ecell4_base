@@ -44,15 +44,11 @@ def test_drawR_single():
 
 def test_alpha0():
 
-    t = 1e-4
     D = 1e-12
     Sigma = 1e-8
     kf = 1e-18
 
-    r = 1e-7
-    r0 = 5e-8
-    a = 2e-6
-
+    a = 2e-7
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     gf.seta( a )
@@ -69,22 +65,18 @@ def test_alpha0():
 
 def test_alpha():
 
-    t = 1e-4
     D = 1e-12
     Sigma = 1e-8
     kf = 1e-18
 
-    r = 1e-7
-    r0 = 5e-8
-    a = 2e-6
-
+    a = 2e-7
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     gf.seta( a )
     maxerror = 0
-
-    n = 7
-    for i in range(1,10):
+    
+    n = 0
+    for i in range(20):
         alpha = gf.alpha_i( i, n )
         error = abs( gf.f_alpha( alpha, n ) )
         #error = abs( gf.f_alpha0( alpha ) )
