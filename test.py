@@ -75,8 +75,8 @@ def test_alpha():
     gf.seta( a )
     maxerror = 0
     
-    n = 0
-    for i in range(20):
+    n = 13
+    for i in range(200):
         alpha = gf.alpha_i( i, n )
         error = abs( gf.f_alpha( alpha, n ) )
         #error = abs( gf.f_alpha0( alpha ) )
@@ -84,7 +84,7 @@ def test_alpha():
         maxerror = max( error, maxerror )
 
     if abs( maxerror ) > 1e-8:
-        print 'failed: alpha_i: maxerror = ', maxerror
+        print 'alpha_i: maxerror = ', maxerror
 
 
 def test_p_survival():

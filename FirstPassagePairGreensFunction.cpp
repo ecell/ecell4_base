@@ -860,10 +860,6 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
 						    const Int n ) const
 {
-    if( alpha <= 1e-18 )
-    {
-	return -INFINITY;
-    }
     const Real a( this->geta() );
     const Real aAlpha( a * alpha );
     const Real sigmaAlpha( getSigma() * alpha );
@@ -1001,18 +997,19 @@ FirstPassagePairGreensFunction::f_alpha_aux( const Real alpha,
 //    printf("ppp %f %f %g %g %g %g\n", Qa * sigmaAlpha * Qsp,Pa * sigmaAlpha * Psp,Pa * n_m_hSigma * Qs, Qa * n_m_hSigma * Ps );
 //    printf("ppp %f %f %g %g %g %g\n", t1, t2, t1 + t2, t3, t4, t3+t4 );
 
-/*
+
     const Real angle( ( ( PaQa * sigmaAlpha * Qsp - PaQa * n_m_hSigma * Ps ) - 
 			( n_m_hSigma * Qs  + sigmaAlpha * Psp ) ) /
 		      ( ( sigmaAlpha * Qsp - n_m_hSigma * Ps ) + 
-		      ( PaQa * n_m_hSigma * Qs  + PaQa * sigmaAlpha * Psp ) ) );*/
+			( PaQa * n_m_hSigma * Qs  + PaQa * sigmaAlpha * Psp ) ) );
 //    printf("%g\n", angle );
 
+/*
     const Real angle( ( Pa * ( sigmaAlpha * Qsp - n_m_hSigma * Ps ) - 
 			Qa * ( n_m_hSigma * Qs  + sigmaAlpha * Psp ) ) /
 		      ( Qa * ( sigmaAlpha * Qsp - n_m_hSigma * Ps ) + 
 			Pa * ( n_m_hSigma * Qs  + sigmaAlpha * Psp ) ) );
-
+*/
     const Real term2( std::atan( angle ) );
 
 
@@ -1041,8 +1038,8 @@ f_alpha_aux_F( const Real alpha,
     const Int n( params->n );
     const Real value( params->value );
 
-    //return gf->f_alpha_aux( alpha, n ) - value;
-    return gf->f_alpha( alpha, n );// - value;
+    return gf->f_alpha_aux( alpha, n ) - value;
+    //return gf->f_alpha( alpha, n );// - value;
 }
 
 
@@ -1053,7 +1050,7 @@ FirstPassagePairGreensFunction::alpha_i( const Int i, const Int n ) const
 
     const Real sigma( this->getSigma() );
 
-    const Real target( i * M_PI + M_PI_2 );
+    Real target( (i+1) * M_PI + M_PI_2 ); //+ n/2 * M_PI );
     f_alpha_aux_params params = { this, n, target };
 
     gsl_function F = 
@@ -1068,7 +1065,7 @@ FirstPassagePairGreensFunction::alpha_i( const Int i, const Int n ) const
     const Real alphaHalfRange( M_PI_2 / ( a - sigma ) );
     Real low( alphaMid - alphaHalfRange );
     Real high( alphaMid + alphaHalfRange );
-    printf("target %g high %g low %g\n",target, low, high);
+    printf("target %g low %g high %g\n",target, low, high);
 
     Real lowvalue;
     Real highvalue;
@@ -1078,14 +1075,16 @@ FirstPassagePairGreensFunction::alpha_i( const Int i, const Int n ) const
 	Real lowvalue( f_alpha(low,n) );
 	Real highvalue( f_alpha(high,n) );
 
-	if( lowvalue * highvalue > 0 )
+	if( lowvalue * highvalue >= 0 )
 	{
-	    printf("lh: %g %g\n", lowvalue, highvalue );
-	    low += M_PI;
-	    high += M_PI;
+	    printf("lh: %g %g %g %g\n", low, high, lowvalue, highvalue );
+	    target += M_PI;
+	    low += (target - M_PI_2) / (a-sigma);
+	    high += (target + M_PI_2) / (a-sigma);
 	}
 	else
 	{
+	    printf("ok: %g %g %g %g\n", low, high, lowvalue, highvalue );
 	    break;
 	}
     }

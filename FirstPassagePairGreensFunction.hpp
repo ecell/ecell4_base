@@ -124,8 +124,7 @@ protected:
 		       params );
     static void
     f_alpha0_aux_fdf_F( const Real alpha,
-			const f_alpha0_aux_params* const 
-			params,
+			const f_alpha0_aux_params* const params,
 			Real* const f, Real* const df );
 
     struct f_alpha_aux_params
