@@ -905,25 +905,61 @@ inline const Real G( const unsigned int n, const unsigned int k )
     return gsl_sf_fact( n + k ) / ( gsl_sf_fact( k ) * gsl_sf_fact( n - k ) );
 }
 
+
 const Real FirstPassagePairGreensFunction::P( const Int n,
-					      const Real x )
+					       const Real x )
 {
     Real result( 0.0 );
 
     Real sx2( 1.0 );
     const Real x2sq_r( 1.0 / gsl_pow_2( x + x ) );
+
+    Int term1( 1 );
     
     const unsigned int maxm( n/2 );
     for( unsigned int m( 0 ); m <= maxm; ++m )
     {
-	const Int term1( 1 + -2 * ( m % 2 ) ); // (-1)^m
 	const Real value( term1 * sx2 * G( n, 2 * m ) );
 	result += value;
 
+	term1 -= 2 * term1;
 	sx2 *= x2sq_r;
     }
 
     return result;
+}
+
+const boost::tuple<Real,Real>
+FirstPassagePairGreensFunction::P2( const Int n, const Real x )
+{
+    Real result( 0.0 );
+    Real resultp( 0.0 );
+
+    Real sx2( 1.0 );
+    const Real x2sq_r( 1.0 / gsl_pow_2( x + x ) );
+
+    Int term1( 1 );
+    
+    const unsigned int maxm( n/2 );
+    for( unsigned int m( 0 ); m <= maxm; ++m )
+    {
+	const Real value( term1 * sx2 * G( n, 2 * m ) );
+	result += value;
+
+	const Real valuep( term1 * sx2 * G( n+1, 2 * m ) );
+	resultp += valuep;
+
+	term1 -= 2 * term1;
+	sx2 *= x2sq_r;
+    }
+
+    if( n % 2 )
+    {
+	resultp += term1 * sx2 * G(n+1,n+1);
+    }
+
+
+    return boost::make_tuple( result, resultp );
 }
 
 
@@ -935,18 +971,53 @@ const Real FirstPassagePairGreensFunction::Q( const Int n,
     Real sx2( 1.0 / ( x + x ) );
     const Real x2sq( sx2 * sx2 );
 
+    Int term1( 1 );
     const unsigned int maxm( (n+1)/2 ); // sum_(0)^((n-1)/2)
     for( unsigned int m( 0 ); m < maxm; ++m )
     {
-        const Int term1( 1 + -2 * ( m % 2 ) ); // (-1)^m
 	const Real value( term1 * sx2 * G( n, 2 * m + 1 ) );
 	result += value;
 
+	term1 -= 2 * term1;  // (-1)^m
 	sx2 *= x2sq;
     }
 
     return result;
 }
+
+const boost::tuple<Real,Real>
+FirstPassagePairGreensFunction::Q2( const Int n, const Real x )
+{
+    Real result( 0.0 );
+    Real resultp( 0.0 );
+
+    Real sx2( 1.0 / ( x + x ) );
+    const Real x2sq( sx2 * sx2 );
+    Int term1( 1 );  // (-1)^m
+
+    const unsigned int maxm( (n+1)/2 ); // sum_(0)^((n-1)/2)
+    for( unsigned int m( 0 ); m < maxm; ++m )
+    {
+	const Real value( term1 * sx2 * G( n, 2 * m + 1 ) );
+	result += value;
+
+	const Real valuep( term1 * sx2 * G( n + 1, 2 * m + 1 ) );
+	resultp += valuep;
+
+	term1 -= 2 * term1; // (-1)^m
+	sx2 *= x2sq;
+    }
+
+
+    if( !( n % 2 ) )
+    {
+	resultp += term1 * sx2 * G(n+1,n+1);
+    }
+
+
+    return boost::make_tuple( result, resultp );
+}
+
 
 const Real 
 FirstPassagePairGreensFunction::f_alpha_aux( const Real alpha, 
@@ -971,11 +1042,22 @@ FirstPassagePairGreensFunction::f_alpha_aux( const Real alpha,
     const Real term1( ( a - sigma ) * alpha );
 
     const Real Pa( P( n, aAlpha ) );
+    const Real Qa( Q( n, aAlpha ) );
+
+    Real Ps;
+    Real Psp;
+    boost::tie( Ps, Psp ) = P2( n, sigmaAlpha );
+
+    Real Qs;
+    Real Qsp;
+    boost::tie( Qs, Qsp ) = Q2( n, sigmaAlpha );
+
+/*
     const Real Ps( P( n, sigmaAlpha ) );
     const Real Psp( P( n+1, sigmaAlpha ) );
-    const Real Qa( Q( n, aAlpha ) );
     const Real Qs( Q( n, sigmaAlpha ) );
     const Real Qsp( Q( n+1, sigmaAlpha ) );
+*/
 
     //printf("%g %g %g %g %g %g\n",Pa,Ps,Qa,Qs,Psp,Qsp);
 
@@ -1154,22 +1236,10 @@ const Real FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 
     }
 
+
     for( int n(1); n< 50; ++n )
     {
 	updateAlphaTable( n, t );
-	/*
-
-	Real ii;
-	for( RealVector::iterator i( this->alphaTable.begin() ); 
-	     i != this->alphaTable.end(); ++i )
-	{
-	    printf("%g %g\n", *i, *i - ii );	    
-	    ii = *i;
-
-	}
-
-	*/
-
 
     }
 

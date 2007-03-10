@@ -1,6 +1,8 @@
 #if !defined( __FIRSTPASSAGEPAIRGREENSFUNCTION )
 #define __FIRSTPASSAGEPAIRGREENSFUNCTION 
 
+#include <boost/tuple/tuple.hpp>
+
 #include <gsl/gsl_integration.h>
 
 #include "PairGreensFunction.hpp"
@@ -171,6 +173,8 @@ protected:
 
     static const Real P( const Int n, const Real x );
     static const Real Q( const Int n, const Real x );
+    static const boost::tuple<Real,Real> P2( const Int n, const Real x );
+    static const boost::tuple<Real,Real> Q2( const Int n, const Real x );
 
 
 
