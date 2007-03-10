@@ -75,8 +75,8 @@ def test_alpha():
     gf.seta( a )
     maxerror = 0
     
-    n = 13
-    for i in range(200):
+    n = 30
+    for i in range(1,200):
         alpha = gf.alpha_i( i, n )
         error = abs( gf.f_alpha( alpha, n ) )
         #error = abs( gf.f_alpha0( alpha ) )
@@ -184,11 +184,12 @@ def test_drawTheta():
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     gf.seta( a )
     
-    #for i in range(1000):
-    #    rnd = random.random()
-    #    t = gf.drawTheta( rnd, r0, t )
+    for i in range(100):
+        rnd = random.random()
+        theta = gf.drawTheta( rnd, r, r0, t )
 
-    t = gf.drawTheta( 0.5, r, r0, t )
+    theta = gf.drawTheta( 0.5, r, r0, t )
+    print theta
 
 
     
@@ -210,5 +211,5 @@ def test_drawTheta():
 
 test_drawTheta()
 
-test_alpha()
+#test_alpha()
 

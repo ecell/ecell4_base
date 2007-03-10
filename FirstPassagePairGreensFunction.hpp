@@ -76,9 +76,9 @@ public:
 			const Real r0,
 			const RealVector& num_r0Table ) const;
 
-    const RealVector& getAlphaTable() const
+    const RealVector& getAlpha0Table() const
     {
-	return this->alphaTable;
+	return this->alpha0Table;
     }
 
 
@@ -103,7 +103,8 @@ protected:
 			  const Real r0,
 			  const Real num_r0 ) const;
 
-    void updateAlphaTable( const Real t ) const;
+    void updateAlpha0Table( const Real t ) const;
+    void updateAlphaTable( const Int n, const Real t ) const;
     void updateExpTable( const Real t ) const;
     void updatePsurvTable( const Real r0 ) const;
     void updateNum_r0Table( RealVector& num_r0Table,
@@ -131,7 +132,7 @@ protected:
     { 
 	const FirstPassagePairGreensFunction* const gf;
 	const Int n;
-	const Real value;
+	Real value;
     };
 
     static const Real 
@@ -178,6 +179,7 @@ private:
     const Real h;
     const Real hsigma_p_1;
 
+    mutable RealVector alpha0Table;
     mutable RealVector alphaTable;
     mutable RealVector expTable;
     mutable RealVector psurvTable;
