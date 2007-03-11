@@ -869,7 +869,7 @@ const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
 
     const Real hSigma_m_n( hSigma - realn );
 
-#if 0
+#if 1
     // Numerical recipes
     Real tmp, jas1, yas1, jas2, yas2, jaa, yaa;
     bessjy( sigmaAlpha, realn + 0.5, &jas1, &yas1, &tmp, &tmp );
