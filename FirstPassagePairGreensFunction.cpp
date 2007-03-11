@@ -8,12 +8,13 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
-#include <gsl/gsl_sf_gamma.h>
+//#include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_lambert.h>
 #include <gsl/gsl_sf_expint.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_roots.h>
 
+#include "factorial.hpp"
 #include "bessel.hpp"
 
 #include "HalfOrderBesselGenerator.hpp"
@@ -902,7 +903,8 @@ const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
 inline const Real G( const unsigned int n, const unsigned int k )
 {
     //std::cerr << n << ' ' << k << std::endl;
-    return gsl_sf_fact( n + k ) / ( gsl_sf_fact( k ) * gsl_sf_fact( n - k ) );
+//    return gsl_sf_fact( n + k ) / ( gsl_sf_fact( k ) * gsl_sf_fact( n - k ) );    
+    return factorial( n + k ) / ( factorial( k ) * factorial( n - k ) );
 }
 
 
@@ -922,7 +924,7 @@ const Real FirstPassagePairGreensFunction::P( const Int n,
 	const Real value( term1 * sx2 * G( n, 2 * m ) );
 	result += value;
 
-	term1 -= 2 * term1;
+	term1 = - term1;
 	sx2 *= x2sq_r;
     }
 
@@ -939,23 +941,25 @@ FirstPassagePairGreensFunction::P2( const Int n, const Real x )
     const Real x2sq_r( 1.0 / gsl_pow_2( x + x ) );
 
     Int term1( 1 );
-    
-    const unsigned int maxm( n/2 );
+    const unsigned int np1( n + 1 );
+    const unsigned int maxm( n / 2 );
     for( unsigned int m( 0 ); m <= maxm; ++m )
     {
-	const Real value( term1 * sx2 * G( n, 2 * m ) );
+	const Real sx2p( term1 * sx2 );
+	const unsigned int m2( 2 * m );
+	const Real value( sx2p * G( n, m2 ) );
 	result += value;
 
-	const Real valuep( term1 * sx2 * G( n+1, 2 * m ) );
+	const Real valuep( sx2p * G( np1, m2 ) );
 	resultp += valuep;
 
-	term1 -= 2 * term1;
+	term1 = - term1;
 	sx2 *= x2sq_r;
     }
 
     if( n % 2 )
     {
-	resultp += term1 * sx2 * G(n+1,n+1);
+	resultp += term1 * sx2 * G( np1, np1 );
     }
 
 
@@ -974,11 +978,13 @@ const Real FirstPassagePairGreensFunction::Q( const Int n,
     Int term1( 1 );
     const unsigned int maxm( (n+1)/2 ); // sum_(0)^((n-1)/2)
     for( unsigned int m( 0 ); m < maxm; ++m )
+//    unsigned int m( 0 );
+//    while( true )
     {
 	const Real value( term1 * sx2 * G( n, 2 * m + 1 ) );
 	result += value;
 
-	term1 -= 2 * term1;  // (-1)^m
+	term1 = - term1;  // (-1)^m
 	sx2 *= x2sq;
     }
 
@@ -994,24 +1000,28 @@ FirstPassagePairGreensFunction::Q2( const Int n, const Real x )
     Real sx2( 1.0 / ( x + x ) );
     const Real x2sq( sx2 * sx2 );
     Int term1( 1 );  // (-1)^m
-
+    const unsigned int np1( n + 1 );
     const unsigned int maxm( (n+1)/2 ); // sum_(0)^((n-1)/2)
     for( unsigned int m( 0 ); m < maxm; ++m )
+//    unsigned int m( 0 );
+//    while( true )
     {
-	const Real value( term1 * sx2 * G( n, 2 * m + 1 ) );
+	const Real sx2p( term1 * sx2 );
+	const unsigned int m2p1( 2 * m + 1 );
+	const Real value( sx2p * G( n, m2p1 ) );
 	result += value;
 
-	const Real valuep( term1 * sx2 * G( n + 1, 2 * m + 1 ) );
+	const Real valuep( sx2p * G( np1, m2p1 ) );
 	resultp += valuep;
 
-	term1 -= 2 * term1; // (-1)^m
+	term1 = - term1; // (-1)^m
 	sx2 *= x2sq;
-    }
+    } 
 
 
     if( !( n % 2 ) )
     {
-	resultp += term1 * sx2 * G(n+1,n+1);
+	resultp += term1 * sx2 * G( np1, np1 );
     }
 
 
@@ -1229,13 +1239,13 @@ const Real FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 						      const Real r0, 
 						      const Real t ) const
 {
-
+/*
     for( int i(0); i< 10; ++i )
     {
 	printf("%d %g %g\n", i, P(i,.2), Q(i,.2) );
 
     }
-
+*/
 
     for( int n(1); n< 50; ++n )
     {
