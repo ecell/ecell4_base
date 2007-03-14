@@ -7,18 +7,14 @@
 #include <math.h>
 #include <limits>
 #include <algorithm>
-#define NRANSI
-//#define EPS 1.0e-10
-const double EPS( std::numeric_limits<double>::epsilon() );
-//#define FPMIN 1.0e-30
-const double FPMIN( std::numeric_limits<double>::min()/EPS );
-#define MAXIT 10000
-#define XMIN 2.0
 
-#define PI M_PI
+static const double EPS( 1.0e-10 );
+static const double FPMIN( 1.0e-30 );
+static const int MAXIT( 10000 );
+static const double XMIN( 2.0 );
 
-//static int imaxarg1,imaxarg2;
-//#define IMAX(a,b) (imaxarg1=(a),imaxarg2=(b),(imaxarg1)>(imaxarg2) ? (imaxarg1):(imaxarg2))
+static const double PI( M_PI );
+
 #define IMAX(a,b) std::max((a),(b))
 
 
@@ -37,7 +33,7 @@ void nrerror(char error_text[])
 }
 
 
-double chebev(double a, double b, double c[], int m, double x)
+inline double chebev(double a, double b, double c[], int m, double x)
 {
 	double d=0.0,dd=0.0,sv,y,y2;
 	int j;
@@ -54,9 +50,6 @@ double chebev(double a, double b, double c[], int m, double x)
 
 
 
-#define NUSE1 5
-#define NUSE2 5
-
 void beschb(double x, double *gam1, double *gam2, double *gampl, double *gammi)
 {
 	double xx;
@@ -70,13 +63,12 @@ void beschb(double x, double *gam1, double *gam2, double *gampl, double *gammi)
 		2.42310e-10,-1.70e-13,-1.0e-15};
 
 	xx=8.0*x*x-1.0;
-	*gam1=chebev(-1.0,1.0,c1,NUSE1,xx);
-	*gam2=chebev(-1.0,1.0,c2,NUSE2,xx);
+	*gam1=chebev(-1.0,1.0,c1,5,xx); // NUSE1=5
+	*gam2=chebev(-1.0,1.0,c2,5,xx); // NUSE2=5
 	*gampl= *gam2-x*(*gam1);
 	*gammi= *gam2+x*(*gam1);
 }
-#undef NUSE1
-#undef NUSE2
+
 
 void bessjy(double x, double xnu, double *rj, double *ry, double *rjp, double *ryp)
 {
@@ -216,12 +208,7 @@ void bessjy(double x, double xnu, double *rj, double *ry, double *rjp, double *r
 	*ry=rymu;
 	*ryp=xnu*xi*rymu-ry1;
 }
-#undef EPS
-#undef FPMIN
-#undef MAXIT
-#undef XMIN
-#undef PI
-#undef NRANSI
+
 /* (C) Copr. 1986-92 Numerical Recipes Software "0j. */
 
 // bessjy has been modified: it does not need the header file "nrutils.h", since we imported  from there the definition for IMAX and SIGN
