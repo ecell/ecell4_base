@@ -110,10 +110,11 @@ protected:
 			  const Real r0,
 			  const Real num_r0 ) const;
 
-    const Real p_theta( const Real r, 
+    const Real p_theta( const Real theta,
+			const Real r, 
 			const Real r0, 
 			const Real t, 
-			RealVector& PnTable ) const;
+			const RealVector& PnTable ) const;
 	
     void updateAlpha0Table( const Real t ) const;
     void updateAlphaTable( const Int n, const Real t ) const;

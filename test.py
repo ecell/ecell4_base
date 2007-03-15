@@ -184,9 +184,9 @@ def test_drawTheta():
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     gf.seta( a )
     
-#    for i in range(150):
-#        rnd = random.random()
-#        theta = gf.drawTheta( rnd, r, r0, t )
+    for i in range(800):
+        rnd = random.random()
+        theta = gf.drawTheta( rnd, r, r0, t )
 
     theta = gf.drawTheta( 0.5, r, r0, t )
     print theta

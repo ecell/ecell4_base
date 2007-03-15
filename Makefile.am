@@ -45,7 +45,7 @@ pyGFRD.cpp
 
 _gfrd_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
 
-GSL_LIBS=/usr/lib64/libgsl.a /usr/lib64/libgslcblas.a
+GSL_LIBS=/usr/lib/libgsl.a /usr/lib/libgslcblas.a
 
 _gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
 

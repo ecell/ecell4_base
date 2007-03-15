@@ -11,8 +11,7 @@
 //#include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_lambert.h>
-#include <gsl/gsl_sf_expint.h>
-#include <gsl/gsl_integration.h>
+#include <gsl/gsl_interp.h>
 #include <gsl/gsl_roots.h>
 
 #include "factorial.hpp"
@@ -49,6 +48,7 @@ void FirstPassagePairGreensFunction::seta( Real a )
     this->a = a;
 
     this->alpha0Table.clear();
+    this->alphaTable.clear();
     this->expTable.clear();
 }
 
@@ -147,7 +147,7 @@ f_alpha0_aux_fdf_F( const Real alpha,
 		    Real* const f, Real* const df )
 {
     const FirstPassagePairGreensFunction* const gf( params->gf ); 
-    const Real value( params->value );    // n * M_PI_2;
+    const Real value( params->value );
 
     *f = gf->f_alpha0_aux( alpha ) - value;
     *df = gf->f_alpha0_aux_df( alpha );
@@ -1181,7 +1181,7 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Int n,
 
     const unsigned int maxIter( 100 );
 
-    for( unsigned int j( offset ); j <= 100 + offset; ++j )
+    for( unsigned int j( offset ); j <= 10 + offset; ++j )
     {
 	params.value = target;
 	gsl_root_fsolver_set( solver, &F, low, high );
@@ -1221,6 +1221,9 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Int n,
 //	printf("%d %d %g\n",n, j, f);
 
 	this->alphaTable.push_back( alpha );
+
+
+
 
 
 	// update to the next target range.
@@ -1355,12 +1358,29 @@ FirstPassagePairGreensFunction::makePnTable( const Real r,
 }
 
 const Real 
-FirstPassagePairGreensFunction::p_theta( const Real r, 
+FirstPassagePairGreensFunction::p_theta( const Real theta,
+					 const Real r, 
 					 const Real r0, 
 					 const Real t, 
-					 RealVector& PnTable ) const
+					 const RealVector& PnTable ) const
 {
+    Real p( 0.0 );
 
+    const unsigned int tableSize( PnTable.size() );
+
+    RealVector LegendrePTable( tableSize );
+
+    gsl_sf_legendre_Pl_array( tableSize - 1, cos( theta ), 
+			      &LegendrePTable[0] );
+
+    for( RealVector::size_type n( 0 ); n < tableSize; ++n )
+    {
+	//const Real Cn( 2.0 * order + 1 );
+
+	p += PnTable[n] * LegendrePTable[n];
+    }
+
+    return p;
 
 }
 
@@ -1374,18 +1394,66 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
     RealVector PnTable;
     makePnTable( r, r0, t, PnTable );
 
-    Real p( 0.0 );
-    for( int n(0); n< 50; ++n )
+
+    const unsigned int tableSize( 200 );
+    const Real thetaStep( M_PI / tableSize );
+
+    RealVector pTable( tableSize );
+    
+    // pTable[0] = 0.0;
+    Real p_prev( 0.0 );
+
+    unsigned int i( 1 );
+    while( true )
     {
-	Real p_n( this->p_n( n, r, r0, t ) );
-	p_n *= 4.0 * M_PI * r * r;
+	const Real theta( thetaStep * i );
 
-	Real lp( gsl_sf_legendre_Pl( n, 1.0 ) );
-		
-	printf("p %d %g %g\n", n, p_n, p * lp );
+	Real p( this->p_theta( theta, r, r0, t, PnTable ) );
+	if( p < 0.0 )
+	{
+	    printf("p<0 %g\n", p );
+	    p = 0.0;
+	}
 
-	p += p_n;
+
+	const Real value( ( p_prev + p ) * 0.5 );
+	pTable[i] = pTable[i-1] + value;
+
+//	printf("p %g %g\n", theta, p );
+
+	if( value < pTable[i] * std::numeric_limits<Real>::epsilon() ||
+	    i >= tableSize-1 )
+	{
+	    break;   // pTable is valid in [0,i].
+	}
+
+	p_prev = p;
+	++i;
     }
-    return p;
+
+//    printf("p_int %g %g\n", pTable[i],
+//	   pTable[i] * 4.0 * M_PI * r * r / thetaStep );
+
+
+    Real theta;
+
+    const Real targetPoint( rnd * pTable[i] );
+    const size_t lowerBound( gsl_interp_bsearch( &pTable[0], targetPoint, 
+						 0, i ) );
+    const Real low( lowerBound * thetaStep );
+    
+    if( pTable[lowerBound+1] - pTable[lowerBound] != 0.0 )
+    {
+	theta = low + thetaStep * ( targetPoint - pTable[lowerBound] ) / 
+	    ( pTable[lowerBound+1] - pTable[lowerBound] );
+    }
+    else
+    {
+	// this can happen when rnd is equal to or is too close to 1.0.
+	theta = low;
+    }
+
+
+    return theta;
 }
     
