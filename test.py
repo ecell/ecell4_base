@@ -172,7 +172,7 @@ def test_f_alpha():
 
 def test_drawTheta():
 
-    t = 1e-8
+    t = 1e-3
     D = 1e-12
     Sigma = 1e-8
     kf = 1e-8
@@ -184,9 +184,9 @@ def test_drawTheta():
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     gf.seta( a )
     
-    for i in range(100):
-        rnd = random.random()
-        theta = gf.drawTheta( rnd, r, r0, t )
+#    for i in range(150):
+#        rnd = random.random()
+#        theta = gf.drawTheta( rnd, r, r0, t )
 
     theta = gf.drawTheta( 0.5, r, r0, t )
     print theta

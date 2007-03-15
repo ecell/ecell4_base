@@ -78,6 +78,12 @@ public:
 			const Real r0,
 			const RealVector& num_r0Table ) const;
 
+    const Real p_n( const Int n, const Real r, 
+		    const Real r0, const Real t ) const;
+    const Real p_n_i( const Int i, const Int n, const Real r, const Real r0,
+		      const Real t ) const;
+
+
     const RealVector& getAlpha0Table() const
     {
 	return this->alpha0Table;
@@ -99,18 +105,27 @@ protected:
     const Real asratio( const Real alpha,
 			const Real r0 ) const;
 
-
     const Real p_int_r_i( const Real r,
 			  const Real alpha,
 			  const Real r0,
 			  const Real num_r0 ) const;
 
+    const Real p_theta( const Real r, 
+			const Real r0, 
+			const Real t, 
+			RealVector& PnTable ) const;
+	
     void updateAlpha0Table( const Real t ) const;
     void updateAlphaTable( const Int n, const Real t ) const;
     void updateExpTable( const Real t ) const;
     void updatePsurvTable( const Real r0 ) const;
     void updateNum_r0Table( RealVector& num_r0Table,
 			    const Real r0 ) const;
+
+    void makePnTable( const Real r, 
+		      const Real r0, 
+		      const Real t,
+		      RealVector& PnTable ) const;
 
     struct f_alpha0_aux_params
     { 

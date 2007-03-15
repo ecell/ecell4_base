@@ -14,16 +14,13 @@ pkgpyexecdir=@pkgpyexecdir@
 LIBPYTHON=-lpython$(PYTHON_VERSION)
 
 INCLUDES=${PYTHON_INCLUDES} -I${NUMPY_INCLUDE_DIR}
-AM_CXXFLAGS=@CXXFLAGS@ -g # -ffast-math # -ftree-vectorize -ftree-vectorizer-verbose=5
+AM_CXXFLAGS=@CXXFLAGS@ -g #-ffast-math # -ftree-vectorize -ftree-vectorizer-verbose=5
 
 LIBBOOSTPYTHON=-lboost_python
 
 CFLAGS=${CXXFLAGS}
 
-#pkgpyexec_LTLIBRARIES = _ecs.la _emc.la
 
-
-noinst_LTLIBRARIES= bessel.la 
 lib_LTLIBRARIES= _gfrd.la
 
 noinst_HEADERS=\
@@ -38,24 +35,19 @@ PlainPairGreensFunction.hpp\
 FirstPassagePairGreensFunction.hpp
 
 
-bessel_la_SOURCES=\
-bessel.cpp
-bessel_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
-
 
 _gfrd_la_SOURCES=\
 PlainPairGreensFunction.cpp\
 FirstPassageGreensFunction.cpp\
 FirstPassagePairGreensFunction.cpp\
+bessel.cpp\
 pyGFRD.cpp
 
 _gfrd_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
 
-GSL_LIBS=/usr/lib/libgsl.a /usr/lib/libgslcblas.a
+GSL_LIBS=/usr/lib64/libgsl.a /usr/lib64/libgslcblas.a
 
-_gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS) bessel.la
-
-_gfrd_la_DEPENDENCIES=bessel.la
+_gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
 
 GFRD_SO=_gfrd$(LTDL_SHLIB_EXT)
 
