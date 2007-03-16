@@ -602,3 +602,81 @@ PlainPairGreensFunction::p_survival_fdf( const Real t,
   *df = ( dfnum2 - dfnum1 ) * dffactor;
 }
 */
+
+
+
+
+const Real 
+FirstPassagePairGreensFunction::asratio( const Real alpha,
+					 const Real r0 ) const
+{
+    const Real a( geta() );
+    const Real D( getD() );
+    const Real sigma( getSigma() );
+    const Real h( geth() );
+    const Real hsigma_p_1( this->hsigma_p_1 );
+
+    const Real sigmasq( sigma * sigma );
+    const Real alphasq( alpha * alpha );
+
+    const Real angle_a( alpha * ( a - sigma ) );
+    Real sin_a;
+    Real cos_a;
+    sincos( angle_a, &sin_a, &cos_a );
+    const Real num( - a * ( ( hsigma_p_1 ) * cos_a -
+			    sigma * alpha * sin_a ) );
+		      
+
+    const Real den( h * sigmasq );
+
+
+    const Real result( num / den );
+
+    return result;
+}
+
+const Real
+FirstPassagePairGreensFunction::
+f_alpha0_aux_df_F( const Real alpha,
+		   const f_alpha0_aux_params* const params )
+{
+    const FirstPassagePairGreensFunction* const gf( params->gf ); 
+
+    return gf->f_alpha0_aux_df( alpha );
+}
+
+
+void
+FirstPassagePairGreensFunction::
+f_alpha0_aux_fdf_F( const Real alpha,
+		    const f_alpha0_aux_params* const params,
+		    Real* const f, Real* const df )
+{
+    const FirstPassagePairGreensFunction* const gf( params->gf ); 
+    const Real value( params->value );
+
+    *f = gf->f_alpha0_aux( alpha ) - value;
+    *df = gf->f_alpha0_aux_df( alpha );
+}
+
+const Real 
+FirstPassagePairGreensFunction::
+f_alpha0_aux_df( const Real alpha ) const
+
+{
+    const Real a( geta() );
+    const Real sigma( getSigma() );
+    const Real hsigma_p_1( this->hsigma_p_1 );
+
+    const Real alphasq( alpha * alpha );
+
+    const Real term1( alpha - sigma );
+    const Real term2( hsigma_p_1 / 
+		      ( sigma * alphasq * 
+			( 1.0 + ( hsigma_p_1 * hsigma_p_1 / 
+				  ( sigma * sigma * alphasq ) ) ) ) );
+
+    const Real result( term1 + term2 );
+
+    return result;
+}

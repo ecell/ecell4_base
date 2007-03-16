@@ -56,7 +56,6 @@ public:
     
     const Real f_alpha0( const Real alpha ) const;
     const Real f_alpha0_aux( const Real alpha ) const;
-    const Real f_alpha0_aux_df( const Real alpha ) const;
     const Real alpha0_i( const Int i ) const;
 
   
@@ -80,8 +79,11 @@ public:
 
     const Real p_n( const Int n, const Real r, 
 		    const Real r0, const Real t ) const;
-    const Real p_n_i( const Int i, const Int n, const Real r, const Real r0,
-		      const Real t ) const;
+    const Real p_n_alpha( const Real alpha,
+			  const Int n, 
+			  const Real r, 
+			  const Real r0,
+			  const Real t ) const;
 
 
     const RealVector& getAlpha0Table() const
@@ -102,9 +104,6 @@ protected:
     const Real p_leaves_i( const Real alpha,
 			   const Real r0 ) const;
 
-    const Real asratio( const Real alpha,
-			const Real r0 ) const;
-
     const Real p_int_r_i( const Real r,
 			  const Real alpha,
 			  const Real r0,
@@ -114,7 +113,7 @@ protected:
 			const Real r, 
 			const Real r0, 
 			const Real t, 
-			const RealVector& PnTable ) const;
+			const RealVector& p_nTable ) const;
 	
     void updateAlpha0Table( const Real t ) const;
     void updateAlphaTable( const Int n, const Real t ) const;
@@ -123,10 +122,10 @@ protected:
     void updateNum_r0Table( RealVector& num_r0Table,
 			    const Real r0 ) const;
 
-    void makePnTable( const Real r, 
+    void makep_nTable( const Real r, 
 		      const Real r0, 
 		      const Real t,
-		      RealVector& PnTable ) const;
+		      RealVector& p_nTable ) const;
 
     struct f_alpha0_aux_params
     { 
@@ -137,14 +136,7 @@ protected:
     static const Real 
     f_alpha0_aux_F( const Real alpha,
 		    const f_alpha0_aux_params* const params );
-    static const Real 
-    f_alpha0_aux_df_F( const Real alpha,
-		       const f_alpha0_aux_params* const 
-		       params );
-    static void
-    f_alpha0_aux_fdf_F( const Real alpha,
-			const f_alpha0_aux_params* const params,
-			Real* const f, Real* const df );
+
 
     struct f_alpha_aux_params
     { 

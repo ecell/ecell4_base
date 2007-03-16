@@ -8,11 +8,6 @@
 #include <limits>
 #include <algorithm>
 
-static const double EPS( 1.0e-10 );
-static const double FPMIN( 1.0e-30 );
-static const int MAXIT( 10000 );
-static const double XMIN( 2.0 );
-
 static const double PI( M_PI );
 
 #define IMAX(a,b) std::max((a),(b))
@@ -72,6 +67,11 @@ void beschb(double x, double *gam1, double *gam2, double *gampl, double *gammi)
 
 void bessjy(double x, double xnu, double *rj, double *ry, double *rjp, double *ryp)
 {
+        const double EPS( std::numeric_limits<double>::epsilon() );
+        const double FPMIN( std::numeric_limits<double>::min() / EPS );
+        const double XMIN( 2.0 );
+        const int MAXIT( 10000 );
+
 	int i,isign,l,nl;
 	double a,b,br,bi,c,cr,ci,d,del,del1,den,di,dlr,dli,dr,e,f,fact,fact2,
 		fact3,ff,gam,gam1,gam2,gammi,gampl,h,p,pimu,pimu2,q,r,rjl,
