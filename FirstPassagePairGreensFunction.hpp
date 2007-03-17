@@ -3,7 +3,7 @@
 
 #include <boost/tuple/tuple.hpp>
 
-#include <gsl/gsl_integration.h>
+#include <gsl/gsl_roots.h>
 
 #include "PairGreensFunction.hpp"
 
@@ -56,12 +56,9 @@ public:
     
     const Real f_alpha0( const Real alpha ) const;
     const Real f_alpha0_aux( const Real alpha ) const;
-    const Real alpha0_i( const Int i ) const;
-
   
     const Real f_alpha( const Real alpha, const Int n ) const;
     const Real f_alpha_aux( const Real alpha, const Int n ) const;
-    const Real alpha_i( const Int i, const Int n ) const;
 
     const Real p_survival( const Real t,
 			   const Real r0 ) const;
@@ -86,13 +83,24 @@ public:
 			  const Real t ) const;
 
 
-    const RealVector& getAlpha0Table() const
+protected:
+
+
+    RealVector& getAlphaTable( const RealVector::size_type n ) const
     {
-	return this->alpha0Table;
+	if( this->alphaTable.size() <= n )
+	{
+	    this->alphaTable.resize( n+1 );
+	}
+
+	return this->alphaTable[n];
     }
 
 
-protected:
+    const Real alpha0_i( const Int i ) const;
+
+    const Real alpha_i( const Int i, const Int n, 
+			gsl_root_fsolver* const solver ) const;
 
 
     const Real p_survival_i( const Real alpha,
@@ -115,7 +123,7 @@ protected:
 			const Real t, 
 			const RealVector& p_nTable ) const;
 	
-    void updateAlpha0Table( const Real t ) const;
+    void updateAlphaTable0( const Real t ) const;
     void updateAlphaTable( const Int n, const Real t ) const;
     void updateExpTable( const Real t ) const;
     void updatePsurvTable( const Real r0 ) const;
@@ -191,8 +199,7 @@ private:
     const Real h;
     const Real hsigma_p_1;
 
-    mutable RealVector alpha0Table;
-    mutable RealVector alphaTable;
+    mutable std::vector<RealVector> alphaTable;
     mutable RealVector expTable;
     mutable RealVector psurvTable;
 

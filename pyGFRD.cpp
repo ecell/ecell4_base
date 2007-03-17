@@ -234,14 +234,14 @@ BOOST_PYTHON_MODULE( _gfrd )
 	// debug
 	.def( "f_alpha0", 
 	      &FirstPassagePairGreensFunction::f_alpha0 )
-	.def( "alpha0_i", 
-	      &FirstPassagePairGreensFunction::alpha0_i )
+//	.def( "alpha0_i", 
+//	      &FirstPassagePairGreensFunction::alpha0_i )
 	.def( "f_alpha", 
 	      &FirstPassagePairGreensFunction::f_alpha )
 	.def( "f_alpha_aux", 
 	      &FirstPassagePairGreensFunction::f_alpha_aux )
-	.def( "alpha_i", 
-	      &FirstPassagePairGreensFunction::alpha_i )
+//	.def( "alpha_i", 
+//	      &FirstPassagePairGreensFunction::alpha_i )
 	;
 
     def( "distanceSq", &distanceSq_ );

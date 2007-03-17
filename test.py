@@ -109,12 +109,11 @@ def test_p_survival():
 
 def test_drawTime():
 
-    t = 1e-7
     D = 1e-12
     Sigma = 1e-8
     kf = 1e-8
 
-    r0 = 1.1e-8
+    r0 = 5e-8
     a = 1e-7
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
@@ -171,22 +170,22 @@ def test_f_alpha():
 
 
 def test_drawTheta():
-
-    t = 1e-6
+    
+    t = 1e-4
     D = 1e-12
     Sigma = 1e-8
     kf = 1e-8
 
-    r = 2e-8
-    r0 = 2e-8
-    a = 1e-7
+    r = 5e-8
+    r0 = 5e-8
+    a = 1e-6
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     gf.seta( a )
     
-#    for i in range(800):
-#        rnd = random.random()
-#        theta = gf.drawTheta( rnd, r, r0, t )
+    for i in range(200):
+        rnd = random.random()
+        theta = gf.drawTheta( rnd, r, r0, t )
 
     theta = gf.drawTheta( 0.5, r, r0, t )
     print theta
