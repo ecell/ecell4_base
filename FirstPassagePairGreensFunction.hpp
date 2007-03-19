@@ -60,6 +60,11 @@ public:
     const Real f_alpha( const Real alpha, const Int n ) const;
     const Real f_alpha_aux( const Real alpha, const Int n ) const;
 
+    
+    const Real p_0( const Real t,
+		    const Real r,
+		    const Real r0 ) const;
+    
     const Real p_survival( const Real t,
 			   const Real r0 ) const;
 
@@ -102,6 +107,9 @@ protected:
     const Real alpha_i( const Int i, const Int n, 
 			gsl_root_fsolver* const solver ) const;
 
+    const Real p_0_i( const Real alpha,
+		      const Real r,
+		      const Real r0 ) const;
 
     const Real p_survival_i( const Real alpha,
 			     const Real r0 ) const;
