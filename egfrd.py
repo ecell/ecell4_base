@@ -76,9 +76,10 @@ class Single:
         return dt
 
 
-
     def __str__( self ):
         return str(self.particle) + str(self.getDr())
+
+
 
 class Pair:
     def __init__( self, sim, kf, species1, i1, species2, i2 ):
@@ -276,8 +277,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def formPairsModestly( self ):
 
         for single in self.singleList:
-            closest, dr = self.checkClosest( single )
-            print single, closest, dr
+            #closest, dr = self.checkClosest( single )
+            print single, single.closest, dr
 
 
     def formPairsGreedily( self ):
