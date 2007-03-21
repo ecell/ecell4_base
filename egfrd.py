@@ -300,7 +300,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 pair = self.createPair( single.particle, partnerClosest )
                 pivot = pair.getPivot()
                 print pivot
-                print self.getNeighbors( pivot, 2 )
+                pairPartner, pairPartnerDr = self.getNeighbors( pivot, 3 )[2]
+                print pairPartner, pairPartnerDr
 
     def formPairsGreedily( self ):
 
@@ -388,7 +389,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return closest, minDistance
 
 
-    def getNeighbors( self, pos, n=2 ):
+    def getNeighbors( self, pos, n=2 ):  # may give a species list here
 
         neighbors = [( -1, -1 ),] * n
         distances = [INF,] * n
@@ -611,37 +612,3 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
 
-
-'''
-    def checkDistance( self, position1, positions2, species1, species2, n=1 ):
-
-        #positions2 = species2.pool.positions
-
-        distanceSq = self.distanceSqArray( position1, positions2 )
-        sortedindices = distanceSq.argsort()
-
-        #debug
-        radius12 = species1.radius + species2.radius
-        radius12sq = radius12 * radius12
-
-        # check if particles overlap
-        if distanceSq[ sortedindices[0] ] < radius12sq - 1e-20 and \
-               distanceSq[ sortedindices[0] ] != 0.0:
-            print position1, positions2[ sortedindices[0] ]
-            print 'dr<radius', math.sqrt(distanceSq[sortedindices[0]]), radius12
-            print species1.id, species2.id, sortedindices[0]
-            raise "critical"
-
-        distanceSqSorted = distanceSq.take( sortedindices[:n] )
-        distances = numpy.sqrt( distanceSqSorted )
-        # instead of just
-
-        #drs = self.H * numpy.sqrt( 6.0 * species1.D * dts )
-        drs = ( distances - radius12 )
-
-        indices = sortedindices[:n]
-
-        return indices, drs
-
-
-'''
