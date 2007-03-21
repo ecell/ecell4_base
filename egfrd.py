@@ -61,8 +61,66 @@ class Single:
     def getDr( self ):
         return self.particle.species.pool.drs[self.particle.i]
 
+    def calculateFirstPassageTime( self ):
+        
+        species = self.particle.species
+        fpgf = _gfrd.FirstPassageGreensFunction( species.D )
+        rnd = random.random()
+        dr = self.getDr()
+        if dr <= 0.0:
+            raise 'dr <= 0.0: %s' % str(dr)
+        dt = fpgf.drawTime( rnd, dr )
+        print dt
+        if dt <= 0.0:
+            raise 'dt <= 0.0: %s' % str(dt)
+        return dt
+
+
+
     def __str__( self ):
         return str(self.particle) + str(self.getDr())
+
+class Pair:
+    def __init__( self, sim, kf, species1, i1, species2, i2 ):
+
+        #FIXME: si and i are fragile
+        self.particle1 = Particle( species1, i1 )
+        self.particle2 = Particle( species2, i2 )
+
+        self.kf = kf
+        
+        self.sim = sim
+        self.dt = 0.0
+        self.closest = (-1, -1)
+
+        self.D = species1.D + species2.D
+        self.sigma = species1.radius + species2.radius
+
+        self.sgf = _gfrd.FirstPassageGreensFunction( self.D )
+        self.pgf = _gfrd.FirstPassagePairGreensFunction( self.D, kf,
+                                                         self.sigma )
+
+
+    def fire( self ):
+        pass
+        #dt = self.sim.fireSingle( self )
+        #return dt
+
+    def update( self, t ):
+        print 'update'
+
+    def isDependentOn( self, event ):
+        #print event
+        return False
+
+    def setPosition( self, pos ):
+        self.particle.species.pool.positions[self.particle.i] = pos
+
+    def getPosition( self ):
+        return self.particle.species.pool.positions[self.particle.i]
+
+    def __str__( self ):
+        return str(self.particle1) + str(self.particle2)
 
 
 class EGFRDSimulator( GFRDSimulatorBase ):
@@ -91,11 +149,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.initializeSingleList()
         self.initializeSingleDrs()
 
+        self.formPairs()
+
         #debug
         self.checkShellForAll()
 
         for single in self.singleList:
-            dt = self.calculateFirstPassageTime1( single )
+            dt = single.calculateFirstPassageTime()
             self.scheduler.addEvent( self.t + dt, single )
 
         self.scheduler.updateAllEventDependency()
@@ -153,20 +213,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
 
 
-    def calculateFirstPassageTime1( self, single ):
-        
-        species = single.particle.species
-        fpgf = _gfrd.FirstPassageGreensFunction( species.D )
-        rnd = random.random()
-        dr = single.getDr()
-        if dr <= 0.0:
-            raise 'dr <= 0.0: %s' % str(dr)
-        dt = fpgf.drawTime( rnd, dr )
-        print dt
-        if dt <= 0.0:
-            raise 'dt <= 0.0: %s' % str(dt)
-        return dt
-
     def fireSingle( self, single ):
 
         species = single.particle.species
@@ -199,7 +245,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #debug
         self.checkShellForAll()
 
-        return self.calculateFirstPassageTime1( single )
+        return single.calculateFirstPassageTime()
 
 
     def initializeSingleList( self ):
@@ -222,6 +268,26 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             single.setDr( dr * .5 )
         
         #FIXME: here perhaps a second pass to get drs maximally large.
+
+
+    def formPairs( self ):
+        self.formPairsModestly()
+
+    def formPairsModestly( self ):
+
+        for single in self.singleList:
+            closest, dr = self.checkClosest( single )
+            print single, closest, dr
+
+
+    def formPairsGreedily( self ):
+
+        for single in self.singleList:
+            closest, dr = self.checkClosest( single )
+            print single, closest, dr
+
+            
+        
     def checkShell( self, single ):
         dr = single.getDr()
         closest, distance = self.checkClosestShell( single )
