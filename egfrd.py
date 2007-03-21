@@ -30,10 +30,10 @@ class DistanceMatrix:
 
 
 class Single:
-    def __init__( self, sim, species, i ):
+    def __init__( self, sim, particle ):
 
         #FIXME: si and i are fragile
-        self.particle = Particle( species, i )
+        self.particle = particle
         self.sim = sim
         self.dt = 0.0
         self.closest = (-1, -1)
@@ -82,25 +82,38 @@ class Single:
 
 
 class Pair:
-    def __init__( self, sim, kf, species1, i1, species2, i2 ):
+    def __init__( self, sim, particle1, particle2, rt ):
 
         #FIXME: si and i are fragile
-        self.particle1 = Particle( species1, i1 )
-        self.particle2 = Particle( species2, i2 )
+        self.particle1 = particle1
+        self.particle2 = particle2
 
-        self.kf = kf
+        self.rt = rt
         
         self.sim = sim
         self.dt = 0.0
         self.closest = (-1, -1)
 
-        self.D = species1.D + species2.D
-        self.sigma = species1.radius + species2.radius
+        self.D = particle1.species.D + particle2.species.D
+        self.sigma = particle1.species.radius + particle2.species.radius
 
         self.sgf = _gfrd.FirstPassageGreensFunction( self.D )
-        self.pgf = _gfrd.FirstPassagePairGreensFunction( self.D, kf,
+        self.pgf = _gfrd.FirstPassagePairGreensFunction( self.D, rt.k,
                                                          self.sigma )
+    def getPivot( self ):
+        D1 = self.particle1.species.D
+        D2 = self.particle2.species.D
 
+        sqrtD2D1 = math.sqrt( D2 / D1 ) 
+        sqrtD1D2 = math.sqrt( D1 / D2 )
+
+        pos1 = self.particle1.getPos()
+        pos2 = self.particle1.getPos()
+
+        
+        pivot = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
+
+        return pivot
 
     def fire( self ):
         pass
@@ -255,7 +268,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         for species in self.speciesList.values():
             for i in range( species.pool.size ):
-                single = Single( self, species, i )
+                single = Single( self, Particle( species, i ) )
                 single.setDr( 0.0 )
                 self.singleList.append( single )
 
@@ -263,7 +276,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def initializeSingleDrs( self ):
 
         for single in self.singleList:
-            closest, dr = self.checkClosest( single )
+            closest, dr = self.checkClosest( single.particle )
+            single.closest = Particle( closest[0], closest[1] )
             print 'dr', dr
             #FIXME: take different D into account
             single.setDr( dr * .5 )
@@ -277,15 +291,26 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def formPairsModestly( self ):
 
         for single in self.singleList:
-            #closest, dr = self.checkClosest( single )
-            print single, single.closest, dr
+            #print single, single.closest, single.getDr()
+            neighbors, drs = self.getParticleNeighbors( single.particle,2 )
+            partnerNeighbors, partnerDrs = self.getParticleNeighbors( single.closest,2 )
+            partnerClosest = Particle( partnerNeighbors[0][0], partnerNeighbors[0][1] )
 
+            if single.particle == partnerClosest:
+                pair = self.createPair( single.particle, partnerClosest )
+                pivot = pair.getPivot()
+                print pivot
+                print self.getNeighbors( pivot, 2 )
 
     def formPairsGreedily( self ):
 
         for single in self.singleList:
-            closest, dr = self.checkClosest( single )
+            closest, dr = self.checkClosest( single.particle )
             print single, closest, dr
+
+    def createPair( self, particle1, particle2 ):
+        rt = self.reactionTypeList2.get( ( particle1.species, particle2.species ) )
+        return Pair( self, particle1, particle2, rt )
 
             
         
@@ -302,10 +327,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.checkShell( single )
 
 
-    def checkClosest( self, single ):
+    def checkClosest( self, particle ):
 
-        species1 = single.particle.species
-        particleIndex = single.particle.i
+        species1 = particle.species
+        particleIndex = particle.i
 
         closest = ( -1, -1 )
         minDistance = INF
@@ -363,6 +388,138 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return closest, minDistance
 
 
+    def getNeighbors( self, pos, n=2 ):
+
+        neighbors = [( -1, -1 ),] * n
+        distances = [INF,] * n
+
+        for species in self.speciesList.values():
+
+            # empty
+            if species.pool.size == 0:
+                continue
+
+            # non reactive
+            #if self.reactionTypeList2.get( ( species1, species2 ), None )\
+            #== None:
+            #continue
+            
+            # both of species 1 and 2 are immobile
+            #if species1.D == 0.0 and species1.D == species2.D:
+            #    continue
+                    
+            positions = species.pool.positions
+
+            indices, distances2 = self.getNeighborsInSpecies( pos,
+                                                              positions,
+                                                              n )
+            distances2 -= species.radius
+
+            distances.extend( distances2 )
+            neighbors.extend( [ ( species, i ) for i in indices ] )
+
+        topargs = numpy.argsort( distances )[:n]
+        distances = numpy.take( distances, topargs )
+        neighbors = [ neighbors[arg] for arg in topargs ]
+
+        return neighbors, distances
+
+
+    def getNeighborsInSpecies( self, position1, positions, n=2 ):
+
+        distances = self.distanceSqArray( position1, positions )
+        distances = numpy.sqrt( distances )
+        
+        indices = distances.argsort()[:n]
+        distances = distances.take( indices )
+
+        return indices, distances
+
+
+    def getParticleNeighbors( self, particle, n=2 ):
+
+        species1 = particle.species
+        particleIndex = particle.i
+
+        neighbors = [( -1, -1 ),] * n
+        distances = (INF,) * n
+
+        positions = species1.pool.positions
+        position1 = positions[ particleIndex ].copy()
+
+        if self.getReactionType2( species1, species1 ) != None \
+           and len( positions ) >= 2 and species1.D != 0.0:
+
+            # temporarily displace the particle
+            positions[particleIndex] = NOWHERE
+
+            indices, distances = self.getParticleNeighborsInSpecies( position1,\
+                                                                     positions,\
+                                                                     species1,\
+                                                                     species1,
+                                                                     n )
+
+            neighbors = [ ( species1, i ) for i in indices ]
+
+            positions[particleIndex] = position1
+
+
+            #        for speciesIndex2 in range( speciesIndex )\
+            #                + range( speciesIndex + 1, len( self.speciesList ) ):
+
+        for species2 in self.speciesList.values():
+            if species2 == species1:
+                continue
+
+            # empty
+            if species2.pool.size == 0:
+                continue
+
+            # non reactive
+            if self.reactionTypeList2.get( ( species1, species2 ), None )\
+                   == None:
+                continue
+            
+            # both of species 1 and 2 are immobile
+            if species1.D == 0.0 and species1.D == species2.D:
+                continue
+                    
+            positions = species2.pool.positions
+
+            indices, distances2 = self.getParticleNeighborsInSpecies( position1,
+                                                                      positions,
+                                                                      species1,
+                                                                      species2 )
+
+            distances.extend( distances2 )
+            neighbors.extend( [ ( species2, i ) for i in indices ] )
+
+        topargs = numpy.argsort( distances )[:n]
+        distances = numpy.take( distances, topargs )
+        neighbors = [ neighbors[arg] for arg in topargs ]
+
+        return neighbors, distances
+
+
+    def getParticleNeighborsInSpecies( self, position1, positions2,
+                                       species1, species2, n=2 ):
+
+        # calculate distances
+        distances = self.distanceSqArray( position1, positions2 )
+        distances = numpy.sqrt( distances )
+        
+        # find the closest particle ignoring their shells.
+        radius12 = species1.radius + species2.radius
+        distances -= radius12
+
+        indices = distances.argsort()[:n]
+        distances = distances.take( indices )
+
+        return indices, distances
+
+
+
+
     def checkClosestShell( self, single ):
 
         species1 = single.particle.species
@@ -418,6 +575,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 closest = ( species2, minIndex ) 
 
         return closest, minDistance
+
+
 
 
     def checkClosestInSpecies( self, position1, positions2,
