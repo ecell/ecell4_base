@@ -300,7 +300,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 pair = self.createPair( single.particle, partnerClosest )
                 pivot = pair.getPivot()
                 print pivot
-                pairPartner, pairPartnerDr = self.getNeighbors( pivot, 3 )[2]
+                pairPartner, pairPartnerDr = self.getNeighbors( pivot, 3 )
+                pairPartner = pairPartner[2]
+                pairPartnerDr = pairPartnerDr[2]
                 print pairPartner, pairPartnerDr
 
     def formPairsGreedily( self ):
