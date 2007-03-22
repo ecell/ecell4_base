@@ -372,8 +372,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
     def checkShell( self, single ):
         dr = single.getDr()
-        closest, distance = self.checkClosestShell( single )
-
+        neighbors, drs = self.getNeighborShells( single.particle.getPos(), 2 )
+        closest, distance = neighbors[1], drs[1]
         if dr - distance >= 1e-18:
             print single.particle, closest, dr, distance, dr - distance
             raise 'Fatal: shells overlap.'
@@ -460,12 +460,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def getNeighborShellsInSpecies( self, position1, species, positions, n=2 ):
 
-        distances = self.distanceSqArray( position1, species, positions )
-        distances = numpy.sqrt( distances )
-        distances -= species.pool.drs
-        
+        distances = self.distanceSqArray( position1, positions )
+
+        drs = species.pool.drs
+        drSqs = drs * drs
+
+        distances -= drSqs
+
         indices = distances.argsort()[:n]
         distances = distances.take( indices )
+        distances = numpy.sqrt( distances )
         
         return indices, distances
 
