@@ -90,7 +90,7 @@ class GFRDSimulator( GFRDSimulatorBase ):
         self.dt = self.dtMax
 
         # first order reactions
-        for rt in self.reactionTypeList1.values():
+        for rt in self.reactionTypeMap1.values():
             reactantSpecies = rt.reactants[0]
 
             pool = reactantSpecies.pool
@@ -509,7 +509,7 @@ class GFRDSimulator( GFRDSimulatorBase ):
                 
                 # (4) Now we have a candidate pair.
                 species2 = speciesList[speciesIndex2]
-                rt = self.reactionTypeList2.get( ( species1, species2 ) )
+                rt = self.reactionTypeMap2.get( ( species1, species2 ) )
 
                 #pair = ( dts[0], dts[1], speciesIndex1, particleIndex1,\
                 #speciesIndex2, particleIndex2, rt )
@@ -592,7 +592,7 @@ class GFRDSimulator( GFRDSimulatorBase ):
         positions = species1.pool.positions
         position1 = positions[ particleIndex ].copy()
 
-        if self.reactionTypeList2.get( ( species1, species1 ), None ) != None \
+        if self.reactionTypeMap2.get( ( species1, species1 ), None ) != None \
            and len( position1 ) >= 2 and species1.D != 0.0:
 
             # temporarily displace the particle
@@ -618,7 +618,7 @@ class GFRDSimulator( GFRDSimulatorBase ):
             species2 = speciesList[speciesIndex2]
 
             # non reactive
-            if self.reactionTypeList2.get( ( species1, species2 ), None )\
+            if self.reactionTypeMap2.get( ( species1, species2 ), None )\
                    == None:
                 continue
             

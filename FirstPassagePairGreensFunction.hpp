@@ -11,6 +11,14 @@ class FirstPassagePairGreensFunction
     :
     public PairGreensFunction
 {
+
+public:
+
+    enum EventType
+    {
+	ESCAPE = 0,
+	REACTION = 1
+    };
     
     
 public:
@@ -39,9 +47,9 @@ public:
 
 
     // true = reaction, false = shell.
-    const bool drawEventType( const Real rnd, 
-			      const Real r0, 
-			      const Real t ) const;
+    const EventType drawEventType( const Real rnd, 
+				   const Real r0, 
+				   const Real t ) const;
 
     
     const Real drawR( const Real rnd, 

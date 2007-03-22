@@ -114,15 +114,15 @@ def test_drawTime():
     kf = 1e-8
 
     r0 = 5e-8
-    a = 1e-7
+    a = 1e-5
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     gf.seta( a )
     
-    for i in range(20000):
-        rnd = random.random()
-        t = gf.drawTime( rnd, r0 )
-        gf.drawEventType( rnd, r0, t )
+    #for i in range(20000):
+    #    rnd = random.random()
+    #    t = gf.drawTime( rnd, r0 )
+    #    gf.drawEventType( rnd, r0, t )
 
     t = gf.drawTime( .5, r0 )
     type = gf.drawEventType( .5, r0, t )
@@ -201,7 +201,7 @@ def test_drawTheta():
 
 
 #test_p_survival()
-#test_drawTime()
+test_drawTime()
 #test_drawR()
 
 #test_drawTime_single()
@@ -209,7 +209,7 @@ def test_drawTheta():
 
 #test_f_alpha()
 
-test_drawTheta()
+#test_drawTheta()
 
 #test_alpha()
 

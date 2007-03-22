@@ -216,6 +216,10 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "p_r_fourier", &FirstPassageGreensFunction::p_r_fourier )
 	;
 
+    enum_<FirstPassagePairGreensFunction::EventType>("EventType")
+	.value("ESCAPE", FirstPassagePairGreensFunction::ESCAPE )
+	.value("REACTION", FirstPassagePairGreensFunction::REACTION )
+	;
 
     class_<FirstPassagePairGreensFunction>( "FirstPassagePairGreensFunction",
 					    init<const Real, 

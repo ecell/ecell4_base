@@ -98,16 +98,24 @@ class UnbindingReactionType( ReactionType ):
 
 class Particle:
 
-    def __init__( self, species, i ):
+    def __init__( self, species, serial=None, index=None ):
 
         self.species = species
-        self.i = i
+
+        if serial != None and index == None:
+            self.serial = serial
+        elif serial == None and index != None:
+            self.serial = species.pool.getSerialByIndex( index )
+        else:
+            raise 'give either serial or index.'
+
+        self.pool = self.species.pool
 
     def __str__( self ):
-        return str( ( self.species.id, self.i ) )
+        return str( ( self.species.id, self.serial ) )
 
     def __eq__( self, other ):
-        if self.species == other.species and self.i == other.i:
+        if self.species == other.species and self.serial == other.serial:
             return True
         else:
             return False
@@ -115,15 +123,14 @@ class Particle:
     def __ne__( self, other ):
         return not __eq__( self, other )
         
-        
     def getPos( self ):
-        pool = self.species.pool
-        return pool.positions[ self.i ]
+        return self.pool.positions[ self.pool.getIndex( self.serial ) ]
 
-    def setPos( self ):
-        pool = self.species.pool
-        return pool.positions[ self.i ]
+    def setPos( self, pos ):
+        self.pool.positions[ self.pool.getIndex( self.serial ) ] = pos
 
+    def getIndex( self ):
+        return self.pool.getIndex( self.serial )
 
 
 class ParticlePool:
@@ -242,8 +249,8 @@ class GFRDSimulatorBase:
     
     def __init__( self ):
         self.speciesList = {}
-        self.reactionTypeList1 = {}
-        self.reactionTypeList2 = {}
+        self.reactionTypeMap1 = {}
+        self.reactionTypeMap2 = {}
 
         self.surfaceList = []
 
@@ -286,7 +293,7 @@ class GFRDSimulatorBase:
 
 
     def getReactionType2( self, species1, species2 ):
-        return self.reactionTypeList2.get( ( species1, species1 ), None )
+        return self.reactionTypeMap2.get( ( species1, species1 ), None )
 
     def getSpeciesByIndex( self, i ):
         return self.speciesList.values()[i]
@@ -363,13 +370,13 @@ class GFRDSimulatorBase:
 
         if numReactants == 1:
             species1 = r.reactants[0]
-            self.reactionTypeList1[species1] = r
+            self.reactionTypeMap1[species1] = r
         elif numReactants == 2:
             species1 = r.reactants[0]
             species2 = r.reactants[1]
-            self.reactionTypeList2[ (species1,species2) ] = r
+            self.reactionTypeMap2[ (species1,species2) ] = r
             if species1 != species2:
-                self.reactionTypeList2[ (species2,species1) ] = r
+                self.reactionTypeMap2[ (species2,species1) ] = r
         else:
             raise 'unexpected'
 
@@ -377,9 +384,9 @@ class GFRDSimulatorBase:
         for species1 in self.speciesList.values():
             for species2 in self.speciesList.values():
                 try:
-                    rt = self.reactionTypeList2[ (species1,species2) ]
+                    rt = self.reactionTypeMap2[ (species1,species2) ]
                 except:
-                    self.reactionTypeList2[ (species1,species2) ] =\
+                    self.reactionTypeMap2[ (species1,species2) ] =\
                                             RepulsionReactionType( species1,\
                                                                    species2 )
         

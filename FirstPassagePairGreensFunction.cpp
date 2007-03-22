@@ -392,14 +392,14 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 
     const Real Dt( this->getD() * t );
 
-    const Real alpha_cutoff( sqrt( ( - log( 1e-10 ) / Dt )
+    const Real alpha_cutoff( sqrt( ( - log( 1e-8 ) / Dt )
 				   + alpha0_0 * alpha0_0 ) );
 
 
 //    printf("%g %g\n", alphaTable_0[0], alpha_cutoff );
 
 
-    const Int maxIter( 2000 );
+    const Int maxIter( 5000 );
 
     Int i( 1 );
     while( true )
@@ -419,6 +419,7 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 	{
 	    std::cerr << "alphaTable_0: max iteration reached." << std::endl;
 	    throw std::exception();
+	    //break;
 	}
 
 	++i;
@@ -732,9 +733,10 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     return t;
 }
 
-const bool FirstPassagePairGreensFunction::drawEventType( const Real rnd, 
-							  const Real r0,
-							  const Real t ) const
+const FirstPassagePairGreensFunction::EventType 
+FirstPassagePairGreensFunction::drawEventType( const Real rnd, 
+					       const Real r0,
+					       const Real t ) const
 {
     // NOTE: The huge assumption for this method to operate correctly is that
     // drawTime() was called immediately before invokation of this with
@@ -750,11 +752,11 @@ const bool FirstPassagePairGreensFunction::drawEventType( const Real rnd,
 
     if( rnd < value )  
     {
-	return true;   // leaves
+	return REACTION;   // leaves
     }
     else 
     {
-	return false;  // leavea
+	return ESCAPE;  // leavea
     }
 }
 
