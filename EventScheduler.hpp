@@ -205,7 +205,8 @@ namespace libecs
 
 	    // fire top
 	    aTopEvent.fire();
-	    theEventPriorityQueue.moveDown( aTopEventIndex );
+	    //theEventPriorityQueue.moveDown( aTopEventIndex );
+	    theEventPriorityQueue.moveTop();
 
 	    // update dependent events
 	    const EventIndexVector&
@@ -261,7 +262,7 @@ namespace libecs
 
 	const EventIndex addEvent( const Event& anEvent )
 	{
-	    return theEventPriorityQueue.pushItem( anEvent );
+	    return theEventPriorityQueue.push( anEvent );
 	}
 
 
