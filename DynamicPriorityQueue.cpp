@@ -11,30 +11,22 @@ int main()
   DynamicPriorityQueue<int> dpq;
 
 
-  for( int i( 100 ); i != 0  ; --i )
-    //  for( int i( 0 ); i < 10000  ; ++i )
+  for( int i( 10 ); i != 0  ; --i )
     {
-	std::cout << i << std::endl;
 	dpq.pushItem( i );
+	std::cout << i << ' ' << dpq.getTopItem() << std::endl;
     }
 
-  std::cerr << dpq.getTopItem() << std::endl;
-  dpq.popTop();
-  std::cerr << dpq.getTopItem() << std::endl;
-
-/*
-  for( int i( 0 ); i < 10000  ; ++i )
-    {
-      dpq.changeOneKey( dpq.topIndex(), i+1000 );
-    }
-*/
+//  dpq.popItem( 3 );
+//  dpq.popItem( 5 );
+//  std::cerr << dpq.getTopItem() << std::endl;
+//  dpq.popTop();
+//  std::cerr << dpq.getTopItem() << std::endl;
 
 //  DynamicPriorityQueue<int> copy( dpq );
   while( ! dpq.isEmpty() )
     {
 	std::cerr << dpq.getSize() << ' ' << dpq.getTopItem() << std::endl;
-	dpq.getTopItem() = 10000;
-	dpq.moveDown( dpq.getTopIndex() );
 	dpq.popTop();
     }
 

@@ -739,9 +739,8 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
 					       const Real r0,
 					       const Real t ) const
 {
-    // NOTE: The huge assumption for this method to operate correctly is that
-    // drawTime() was called immediately before invokation of this with
-    // the same parameter r0.
+    // psurvTable, expTable
+
 
     Real p( p_survival( t, r0 ) );
     Real leaves( p_leaves( t, r0 ) );

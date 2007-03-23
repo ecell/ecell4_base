@@ -171,7 +171,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     typedef const PyEventScheduler::Event& 
 	(PyEventScheduler::*geteventrefsig)() const;
     typedef PyEventScheduler::Event& (PyEventScheduler::*geteventrefbyindexsig)
-	( const PyEventScheduler::EventIndex );
+	( const PyEventScheduler::EventID );
 
     class_<PyEventScheduler, boost::noncopyable>( "EventScheduler" )
 	.def( "getTime", &PyEventScheduler::getTime )
@@ -180,14 +180,14 @@ BOOST_PYTHON_MODULE( _gfrd )
 //	      return_value_policy<reference_existing_object>() )
 //	      return_value_policy<copy_const_reference>() )
 	      return_value_policy<return_by_value>() )
-	.def( "getTopIndex", &PyEventScheduler::getTopIndex )
+//	.def( "getTopIndex", &PyEventScheduler::getTopIndex )
 	.def( "getEvent", geteventrefbyindexsig( &PyEventScheduler::getEvent ),
 	      return_value_policy<reference_existing_object>() )
 	.def( "step", &PyEventScheduler::step )
 	.def( "clear", &PyEventScheduler::clear )
 	.def( "addEvent", &PyEventScheduler::addEvent )
-	.def( "updateAllEventDependency", 
-	      &PyEventScheduler::updateAllEventDependency )
+//	.def( "updateAllEventDependency", 
+//	      &PyEventScheduler::updateAllEventDependency )
 	;
 
 

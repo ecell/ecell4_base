@@ -146,9 +146,10 @@ namespace libecs
 	typedef DynamicPriorityQueue<Event> EventPriorityQueue;
 
 	typedef typename DynamicPriorityQueue<Event>::Index EventIndex;
+	typedef typename DynamicPriorityQueue<Event>::ID EventID;
 
-	typedef std::vector<EventIndex> EventIndexVector;
-	typedef std::vector<EventIndexVector> EventIndexVectorVector;
+//	typedef std::vector<EventIndex> EventIndexVector;
+//	typedef std::vector<EventIndexVector> EventIndexVectorVector;
 
 
 	EventScheduler()
@@ -182,26 +183,28 @@ namespace libecs
 	    return theEventPriorityQueue.getTopItem();
 	}
 
+/*
 	EventIndex getTopIndex()
 	{
 	    return theEventPriorityQueue.getTopIndex();
 	}
+*/
 
-	const Event& getEvent( const EventIndex anIndex ) const
+	const Event& getEvent( const EventID id ) const
 	{
-	    return theEventPriorityQueue.getItem( anIndex );
+	    return theEventPriorityQueue.getItem( id );
 	}
 
-	Event& getEvent( const EventIndex anIndex )
+	Event& getEvent( const EventID id )
 	{
-	    return theEventPriorityQueue.getItem( anIndex );
+	    return theEventPriorityQueue.getItemByIndex( id );
 	}
 
 	void step()
 	{
 	    Event& aTopEvent( theEventPriorityQueue.getTopItem() );
 	    const double aCurrentTime( aTopEvent.getTime() );
-	    const EventIndex aTopEventIndex( getTopIndex() );
+//	    const EventIndex aTopEventIndex( getTopIndex() );
 
 	    // fire top
 	    aTopEvent.fire();
@@ -209,9 +212,10 @@ namespace libecs
 	    theEventPriorityQueue.moveTop();
 
 	    // update dependent events
-	    const EventIndexVector&
-		anEventIndexVector( theEventDependencyArray[ aTopEventIndex ] );
+//	    const EventIndexVector&
+//		anEventIndexVector( theEventDependencyArray[ aTopEventIndex ] );
 
+/*
 	    for( typename EventIndexVector::const_iterator 
 		     i( anEventIndexVector.begin() );
 		 i != anEventIndexVector.end(); ++i )
@@ -220,8 +224,10 @@ namespace libecs
 
 		updateEvent( anIndex, aCurrentTime );
 	    }
+*/
 	}
 
+/*
 	void updateAllEvents( const double aCurrentTime )
 	{
 	    const EventIndex aSize( getSize() );
@@ -233,7 +239,7 @@ namespace libecs
 
 	void updateEvent( const EventIndex anIndex, const double aCurrentTime )
 	{
-	    Event& anEvent( theEventPriorityQueue.getItem( anIndex ) );
+	    Event& anEvent( theEventPriorityQueue.getItemByIndex( anIndex ) );
 	    const double anOldTime( anEvent.getTime() );
 	    anEvent.update( aCurrentTime );
 	    const double aNewTime( anEvent.getTime() );
@@ -248,41 +254,41 @@ namespace libecs
 		theEventPriorityQueue.moveUp( anIndex );
 	    }
 	}
+*/
 
+//	void updateAllEventDependency();  // update all
 
-	void updateAllEventDependency();  // update all
-
-	void updateEventDependency( const EventIndex anIndex );
+//	void updateEventDependency( const EventIndex anIndex );
     
 	void clear()
 	{
 	    theEventPriorityQueue.clear();
-	    theEventDependencyArray.clear();
+//	    theEventDependencyArray.clear();
 	}
 
-	const EventIndex addEvent( const Event& anEvent )
+	const EventID addEvent( const Event& anEvent )
 	{
-	    return theEventPriorityQueue.push( anEvent );
+	    return theEventPriorityQueue.pushItem( anEvent );
 	}
 
 
 	// this is here for DiscreteEventStepper::log().
 	// should be removed in future. 
-	const EventIndexVector& getDependencyVector( const EventIndex anIndex )
-	{
-	    return theEventDependencyArray[ anIndex ] ;
-	}
+//	const EventIndexVector& getDependencyVector( const EventIndex anIndex )
+//	{
+//	    return theEventDependencyArray[ anIndex ] ;
+//	}
 
     private:
 
 	EventPriorityQueue       theEventPriorityQueue;
 
-	EventIndexVectorVector   theEventDependencyArray;
+//	EventIndexVectorVector   theEventDependencyArray;
 
     };
 
   
-
+/*
 
     template < class Event >
     void EventScheduler<Event>::updateAllEventDependency()
@@ -322,7 +328,7 @@ namespace libecs
     
 	std::sort( anEventIndexVector.begin(), anEventIndexVector.end() );
     }
-
+*/
 
 
 
