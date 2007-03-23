@@ -392,32 +392,33 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 
     const Real Dt( this->getD() * t );
 
-    const Real alpha_cutoff( sqrt( ( - log( 1e-8 ) / Dt )
+    const Real alpha_cutoff( sqrt( ( - log( ALPHA_TOLERANCE ) / Dt )
 				   + alpha0_0 * alpha0_0 ) );
 
 
-//    printf("%g %g\n", alphaTable_0[0], alpha_cutoff );
+    printf("%g %g\n", alpha0_0, alpha_cutoff );
 
 
-    const Int maxIter( 5000 );
+    const Int maxIter( 10000 );
 
     Int i( 1 );
     while( true )
     {
-	const Real alpha_i( this->alpha0_i( i ) );
-	alphaTable_0.push_back( alpha_i );
+	const Real alpha0_i( this->alpha0_i( i ) );
+	alphaTable_0.push_back( alpha0_i );
 
-	if( alpha_i > alpha_cutoff )
+	if( alpha0_i > alpha_cutoff )
 	{
-//	    printf("%d %g %g\n", 
-//		   i, alpha_i, std::exp( - getD() * t * alpha_i * alpha_i ) 
-//		   / alpha_i );
 	    break;
 	}
 
 	if( i >= maxIter )
 	{
-	    std::cerr << "alphaTable_0: max iteration reached." << std::endl;
+	    std::cerr << "alphaTable_0: max iteration reached. (exp(Dt u^2) = "
+		      << exp( - Dt * alpha0_i * alpha0_i ) << 
+		", exp(Dt u0^2) = " << exp( - Dt * alpha0_0 * alpha0_0 ) <<
+		", a = " << a << ", D = " << this->getD() << 
+		", t = " << t  << ")." << std::endl;
 	    throw std::exception();
 	    //break;
 	}
@@ -669,7 +670,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     while( GSL_FN_EVAL( &F, low ) * highvalue >= 0.0 )
     {
 	low *= .1;
-	//printf("drawTime: adjusting low: %g\n",low);
+	printf("drawTime: adjusting low: %g\n",low);
 
 	if( fabs( low ) <= 1e-50 )
 	{
@@ -1197,10 +1198,10 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Int n,
     alphaTable_n.push_back( alphan_0 );
 
     const Real Dt( this->getD() * t );
-    const Real alpha_cutoff( sqrt( ( - log( 1e-10 ) / Dt )
+    const Real alpha_cutoff( sqrt( ( - log( ALPHA_TOLERANCE ) / Dt )
 				   + alphan_0 * alphan_0 ) ); 
     
-    const unsigned int MAXI( offset + 500 );
+    const unsigned int MAXI( offset + 10000 );
     for( unsigned int i( offset ); i <= MAXI; ++i )
     {
 	const Real alpha_i( this->alpha_i( i, n, solver ) );

@@ -145,13 +145,12 @@ class Pair:
         else:
             self.eventType = self.pgf.drawEventType( rnd[2], r0, self.t_r )
 
-        print self.eventType, self.t_R, self.t_r, self.eventType
+        print self.eventType, self.t_R, self.t_r
 
 
     def fire( self ):
         pass
-        #dt = self.sim.fireSingle( self )
-        #return dt
+
 
     def update( self, t ):
         print 'update'
@@ -264,6 +263,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         displacement = sphericalToCartesian( displacementS )
 
         self.checkShellForAll()
+        
         pos = single.particle.getPos()
         pos += displacement
 
@@ -272,8 +272,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         #print 'displacement', length(displacement), single.getDr()
 
-        closest, newdr = self.checkClosestShell( single )
-        single.closest = closest
+        neighbors, distances = self.getNeighborShells( pos )
+        newdr = distances[1] - single.particle.species.radius
+        
+        single.closest = self.findSingle( Particle( neighbors[1][0],
+                                                    neighbors[1][1] ) )
 
         #print 'newdr', newdr
         if newdr <= 0:
@@ -284,7 +287,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         #print single, single.closest
         #debug
-        self.checkShellForAll()
+        #self.checkShellForAll()
 
         return single.calculateFirstPassageTime()
 
@@ -308,12 +311,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         for single in self.singleMap.values():
             neighbors, drs = self.getNeighbors( single.particle.getPos() )
             closest = neighbors[1]
-            dr = drs[1]
+            dr = drs[1] - single.particle.species.radius
             closestParticle = Particle( closest[0], index=closest[1] )
             closestSingle = self.findSingle( closestParticle )
             
             single.closest = closestSingle
-            print 'dr', dr
+            #print 'dr', dr
             #FIXME: take different D into account
             single.setDr( dr * .5 )
         
@@ -321,26 +324,31 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def formPairs( self ):
-        self.formPairsModestly()
+        pass
+        #self.formPairsModestly()
 
     def formPairsModestly( self ):
 
         for single in self.singleMap.values():
 
-            neighbors, drs = self.getNeighbors( single.particle.getPos() )
-            closest = Particle( neighbors[1][0], neighbors[1][1] )
-            partnerNeighbors, partnerDrs = self.getNeighbors( closest.getPos())
+            #neighbors, drs = self.getNeighbors( single.particle.getPos() )
+            #closest = Particle( neighbors[1][0], neighbors[1][1] )
+            closest = single.closest
+
+            if single.particle < closest.particle:
+                continue
+
+            partnerNeighbors, partnerDrs = self.getNeighbors( closest.particle.getPos())
             partnerClosest = Particle( partnerNeighbors[1][0],
                                        index=partnerNeighbors[1][1] )
 
             if single.particle == partnerClosest:
-                closestSingle = self.findSingle( closest )
-
-                pair = self.createPair( single, closestSingle )
+                
                 pos1 = single.particle.getPos()
-                pos2 = closest.getPos()
+                pos2 = closest.particle.getPos()
                 r0 = self.distance( pos1, pos2 )
 
+                pair = self.createPair( single, closest )
                 com = pair.getCoM()
                 print com
                 neighbors, drs = self.getNeighbors( com, 3 )
@@ -354,6 +362,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 
                 print Particle( pairPartner[0],index=pairPartner[1] ).getPos()
                 print pairPartner, pairDr
+
+                if pairDr > r0 * 5:
+                    pairDr = r0 * 5
 
                 pair.nextEvent( pairDr )
                 #raise ''
@@ -371,10 +382,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
         
     def checkShell( self, single ):
-        dr = single.getDr()
-        neighbors, drs = self.getNeighborShells( single.particle.getPos(), 2 )
+        neighbors, drs = self.getNeighborShells( single.particle.getPos() )
         closest, distance = neighbors[1], drs[1]
-        if dr - distance >= 1e-18:
+        distance -= single.particle.species.radius
+        if single.getDr() - distance >= 1e-18:
+            dr = single.getDr()
             print single.particle, closest, dr, distance, dr - distance
             raise 'Fatal: shells overlap.'
 
@@ -386,8 +398,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def getNeighbors( self, pos, n=2, speciesList=None ):
 
-        topNeighbors = [( -1, -1 ),] * n
-        topDistances = [INF,] * n
+        topNeighbors = []
+        topDistances = []
 
         if speciesList == None:
             speciesList = self.speciesList.values()
@@ -428,8 +440,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def getNeighborShells( self, pos, n=2, speciesList=None ):
 
-        topNeighbors = [( -1, -1 ),] * n
-        topDistances = [INF,] * n
+        topNeighbors = []
+        topDistances = []
 
         if speciesList == None:
             speciesList = self.speciesList.values()
@@ -441,13 +453,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 continue
 
             positions = species.pool.positions
-
             indices, distances = self.getNeighborShellsInSpecies( pos,
                                                                   species,
                                                                   positions,
                                                                   n )
-            distances -= species.radius
-
             topDistances.extend( distances )
             topNeighbors.extend( [ ( species, i ) for i in indices ] )
 
@@ -462,89 +471,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         distances = self.distanceSqArray( position1, positions )
 
+        distances = numpy.sqrt( distances )
         drs = species.pool.drs
-        drSqs = drs * drs
-
-        distances -= drSqs
+        distances -= drs
 
         indices = distances.argsort()[:n]
         distances = distances.take( indices )
-        distances = numpy.sqrt( distances )
-        
         return indices, distances
-
-
-    def checkClosestShell( self, single ):
-
-        species1 = single.particle.species
-        particleIndex = single.particle.getIndex()
-
-        closest = ( -1, -1 )
-        minDistance = INF
-
-        positions = species1.pool.positions
-        position1 = positions[ particleIndex ].copy()
-
-        if self.getReactionType2( species1, species1 ) != None \
-           and len( positions ) >= 2 and species1.D != 0.0:
-
-            # temporarily displace the particle
-            positions[particleIndex] = NOWHERE
-
-            minIndex, minDistance = self.checkClosestShellInSpecies( position1,
-                                                                     positions,
-                                                                     species1,
-                                                                     species1 )
-            closest = ( species1, minIndex )
-
-            # don't forget to restore the particle position.
-            positions[particleIndex] = position1
-
-
-        for species2 in self.speciesList.values():
-            if species2 == species1:
-                continue
-
-            # empty
-            if species2.pool.size == 0:
-                continue
-
-            # non reactive
-            if self.reactionTypeMap2.get( ( species1, species2 ), None )\
-                   == None:
-                continue
-            
-            # both of species 1 and 2 are immobile
-            if species1.D == 0.0 and species1.D == species2.D:
-                continue
-                    
-            positions = species2.pool.positions
-
-            minIndex, distance = self.checkClosestShellInSpecies( position1,
-                                                                  positions,
-                                                                  species1,
-                                                                  species2 )
-            if minDistance > distance:
-                minDistance = distance
-                closest = ( species2, minIndex ) 
-
-        return closest, minDistance
-
-
-    def checkClosestShellInSpecies( self, position1, positions2,
-                                    species1, species2 ):
-
-        # calculate distances
-        distanceList = self.distanceSqArray( position1, positions2 )
-        distanceList = numpy.sqrt( distanceList )
-        
-        # find the particle of which shell is closest to this particle.
-        distanceList -= species2.pool.drs
-        minIndex = distanceList.argmin()
-        
-        minDistance = distanceList[minIndex] - species1.radius
-
-        return minIndex, minDistance
-
-
 

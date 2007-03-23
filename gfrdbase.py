@@ -114,15 +114,14 @@ class Particle:
     def __str__( self ):
         return str( ( self.species.id, self.serial ) )
 
-    def __eq__( self, other ):
-        if self.species == other.species and self.serial == other.serial:
-            return True
+    def __cmp__( self, other ):
+        if self.species == other.species:
+            return self.serial - other.serial
+        elif self.species < other.species:
+            return -1
         else:
-            return False
+            return 1
 
-    def __ne__( self, other ):
-        return not __eq__( self, other )
-        
     def getPos( self ):
         return self.pool.positions[ self.pool.getIndex( self.serial ) ]
 
@@ -206,9 +205,7 @@ class ParticlePool:
 
     def getIndex( self, serial ):
 
-        index = self.indexMap[ serial ]
-
-        return index
+        return self.indexMap[ serial ]
 
 
 

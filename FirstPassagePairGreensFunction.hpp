@@ -221,6 +221,7 @@ private:
 
     Real a;
     
+    static const Real ALPHA_TOLERANCE = 1e-6;
     static const Real CUTOFF = 1e-8;
 
 };
