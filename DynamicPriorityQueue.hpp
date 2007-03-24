@@ -28,9 +28,6 @@
 // written by Eiichiro Adachi and Koichi Takahashi
 //
 
-//#define NDEBUG
-#undef NDEBUG
-
 #ifndef __DYNAMICPRIORITYQUEUE_HPP
 #define __DYNAMICPRIORITYQUEUE_HPP
 #include <assert.h>
@@ -57,12 +54,11 @@ public:
     typedef long long unsigned int ID;
 
     typedef std::vector< Item >    ItemVector;
-    //typedef std::vector< Item* >   ItemPtrVector;
 
     typedef typename ItemVector::difference_type       Index;
 
-    typedef std::vector< Index >  IndexVector;
-    typedef std::vector< ID >     IDVector;
+    typedef std::vector< Index >   IndexVector;
+    typedef std::vector< ID >      IDVector;
 
 //    typedef std::tr1::unordered_map<const ID, Index> IndexMap;
     typedef std::map<const ID, Index> IndexMap;
@@ -72,7 +68,7 @@ public:
   
     void move( const Index index )
     {
-	const Index pos( this->positionVector[index] );
+	const Index pos( this->positionVector[ index ] );
 	movePos( pos );
     }
 
@@ -95,19 +91,17 @@ public:
 
     const Index getTopIndex() const 
     {
-	assert( positionVector[this->heap[0]] == 0 );
-	assert( this->heap[0] <= getSize() );
 	return this->heap[0];
     }
 
     const Item& getTopItem() const
     {
-	return this->itemVector[ this->heap[0] ];
+	return this->itemVector[ getTopIndex() ];
     }
 
     Item& getTopItem()
     {
-	return this->itemVector[ this->heap[0] ];
+	return this->itemVector[ getTopIndex() ];
     }
 
     const Item& getItemByIndex( const Index index ) const
@@ -122,14 +116,13 @@ public:
 
     const Item& getItem( const ID id ) const
     {
-	return this->getItemByIndex( this->indexMap[ id ] );
+	return this->getItemByIndex( this->indexMap.at( id ) );
     }
 
     Item& getItem( const ID id )
     {
-	return this->getItemByIndex( this->indexMap[ id ] );
+	return this->getItemByIndex( this->indexMap.at( id ) );
     }
-
 
     void popTop()
     {
@@ -141,63 +134,21 @@ public:
 	return popItemByIndex( getIndex( id ) );
     }
 
-    void popItemByIndex( const Index index );
+    inline void popItemByIndex( const Index index );
 
-    const ID pushItem( const Item& item )
-    {
-	consistencyCheck();
-
-	const Index index( this->size );
-    
-	++this->size;
-    
-//	this->itemVector.push_back( item );
-	// index == pos at this time.
-//	this->heap.push_back( index );
-//	this->positionVector.push_back( index );
-
-	this->itemVector.resize( getSize() );
-	this->heap.resize( getSize() );
-	this->positionVector.resize( getSize() );
-	this->idVector.resize( getSize() );
-
-	this->itemVector[index] = item;
-	// index == pos at this time.
-	this->heap[index] = index;
-	this->positionVector[index] = index;
-
-	const ID id( this->idCounter );
-	++this->idCounter;
-
-	this->indexMap.insert( typename IndexMap::value_type( id, index ) );
-	this->idVector[ index ] = id;
-
-	if( index != 0 )
-	{
-	    moveUpPos( index ); 
-	}
-
-
-	sizeCheck();
-	consistencyCheck();
-
-	return id;
-    }
-
+    inline const ID pushItem( const Item& item );
 
     const bool isEmpty() const
     {
-	return ( getSize() == 0 );
+	return this->itemVector.empty();
     }
 
     const Index getSize() const
     {
-	return this->size;
+	return this->itemVector.size();
     }
 
-
     void clear();
-
 
     void dump() const;
 
@@ -205,20 +156,19 @@ protected:
 
     void moveUp( const Index index )
     {
-	const Index position( this->positionVector[index] );
+	const Index position( this->positionVector[ index ] );
 	moveUpPos( position );
     }
 
     void moveDown( const Index index )
     {
-	const Index position( this->positionVector[index] );
+	const Index position( this->positionVector[ index ] );
 	moveDownPos( position );
     }
 
 private:
 
-
-    inline void moveUpPos( const Index position );
+    inline void moveUpPos( const Index position, const Index start = 0 );
     inline void moveDownPos( const Index position );
 
     inline void sizeCheck() const;
@@ -242,7 +192,6 @@ private:
     Index    size;
 
     PtrGreater< const Item* const > comp;
-
 };
 
 
@@ -264,211 +213,137 @@ void DynamicPriorityQueue< Item >::clear()
     this->itemVector.clear();
     this->heap.clear();
     this->positionVector.clear();
-  
-    this->size = 0;
 }
-
-
-
 
 
 template < typename Item >
 void DynamicPriorityQueue< Item >::
-movePos( Index pos )
+movePos( const Index pos )
 {
-    const Index index( this->heap[pos] );
+    const Index index( this->heap[ pos ] );
+    const Item* const item( &getItemByIndex( index ) );
 
-    moveDownPos( pos );
+    const Index size( getSize() );
 
-    // If above moveDown() didn't move this item,
-    // then we need to try moveUp() too.  If moveDown()
-    // did work, nothing should be done.
-    if( this->positionVector[index] == pos )
+    const Index succ( 2 * pos + 1 );
+    if( succ < size )
+    {
+	if( this->comp( item, &getItemByIndex( this->heap[ succ ] ) ) ||
+	    ( succ + 1 < size && 
+	      this->comp( item, &getItemByIndex( this->heap[ succ + 1 ] ) ) ) )
+	{
+	    moveDownPos( pos );
+	    return;
+	}
+    }
+
+    const Index pred( ( pos - 1 ) / 2 );
+    if( pred >= 0  && 
+	this->comp( &getItemByIndex( this->heap[ pred ] ), item ) )
     {
 	moveUpPos( pos );
     }
 }
 
-
 template < typename Item >
-void DynamicPriorityQueue<Item>::moveUpPos( const Index position )
+void DynamicPriorityQueue<Item>::moveUpPos( const Index position, 
+					    const Index start )
 {
-    const Index index( this->heap[position] );
-    Item* const item( &getItemByIndex( index ) );
+    const Index index( this->heap[ position ] );
+    const Item* const item( &getItemByIndex( index ) );
 
-    Index pred( ( position - 1 ) / 2 );
-
-    // first pass: do nothing if move up doesn't occur.
-    Item* predItem( &getItemByIndex( this->heap[ pred ] ) );
-    if( this->comp( item, predItem ) )
-    {
-	return;
-    }
-
-    // main loop
     Index pos( position );
-    while( 1 )
+    while( pos > start )
     {
-	this->heap[ pos ] = this->heap[ pred ];
-	this->positionVector[ this->heap[ pred ] ] = pos;
+	const Index pred( ( pos - 1 ) / 2 );
+	const Index predIndex( this->heap[ pred ] );
+	if( this->comp( item, &getItemByIndex( predIndex ) ) )
+	{
+	    break;
+	}
+
+	this->heap[ pos ] = predIndex;
+	this->positionVector[ predIndex ] = pos;
 	pos = pred;
-      
-	if( pred == 0 )
-	{
-	    break;
-	}
-
-	pred = ( pred - 1 ) / 2;
-
-	predItem = &getItemByIndex( this->heap[ pred ] );
-
-	if( this->comp( item, predItem ) )
-	{
-	    break;
-	}
     }
 
-    this->heap[pos] = index;
+    this->heap[ pos ] = index;
     this->positionVector[ index ] = pos;
-
-    puts("u a");
-    consistencyCheck();
-    puts("u b");
 }
 
-// this is an optimized version.
+
 template < typename Item >
 void DynamicPriorityQueue< Item >::moveDownPos( const Index position )
 {
-    printf("dropping pos %d\n",position);
-    assert( this->heap[ 0 ] <= heap.size() );
-    const Index index( this->heap[position] );
-    Item* const item( &getItemByIndex( index ) );
+    const Index index( this->heap[ position ] );
+    const Item* const item( &getItemByIndex( index ) );
 
-    Index succ( position * 2 + 1 );
- 
-    // first pass: simply return doing nothing if move down doesn't occur.
-    if( succ >= heap.size() )
-    {
-	return;
-    }
-
-    if( this->comp( &getItemByIndex( this->heap[ succ ] ), 
-		    &getItemByIndex( this->heap[ succ + 1 ] ) ) )
-    {
-	++succ;
-    }
+    const Index size( getSize() );
     
-    if( this->comp( &getItemByIndex( this->heap[ succ ] ), item ) )
-    {
-	return;    // the going down does not occur.
-    }
-  
+    Index succ( 2 * position + 1 );
     Index pos( position );
-
-    // main loop
-    while( 1 )
+    while( succ < size )
     {
-	// bring up the successor
+	const Index rightPos( succ + 1 );
+	if( rightPos < size && 
+	    this->comp( &getItemByIndex( this->heap[ succ ] ),
+			&getItemByIndex( this->heap[ rightPos ] ) ) )
+	{
+	    succ = rightPos;
+	}
+
 	this->heap[ pos ] = this->heap[ succ ];
-	this->positionVector[ this->heap[ succ ] ] = pos;
+	this->positionVector[ this->heap[ pos ] ] = pos;
 	pos = succ;
-
-	// the next successor
-	succ = succ * 2 + 1;
-
-	if( succ >= heap.size() )
-	{
-	    break;
-	}
-
-	if( this->comp( &getItemByIndex( this->heap[ succ ] ), 
-			&getItemByIndex( this->heap[ succ + 1 ] ) ) )
-	{
-	    ++succ;
-	}
-	
-	// if the going down is finished, break.
-	if( this->comp( &getItemByIndex( this->heap[ succ ] ), item ) )
-	{
-	    break;
-	}
+	succ = 2 * pos + 1;
     }
-    dump();
-    puts("d a");
-    printf("i %d p %d\n",index,pos);
-    this->heap[pos] = index;
-    this->positionVector[ index ] = pos;
-    dump();
 
-    consistencyCheck();
-    puts("d b");
+    this->heap[ pos ] = index;
+    this->positionVector[ index ] = pos;
+
+    moveUpPos( pos, position );
 }
 
 
-/* original version
-   template < typename Item >
-   void DynamicPriorityQueue< Item >::moveDown( Index index )
-   {
-   Index successor( index * 2 + 1 );
+template < typename Item >
+const typename DynamicPriorityQueue<Item>::ID
+DynamicPriorityQueue<Item>::pushItem( const Item& item )
+{
+    const Index index( getSize() );
+    
+    this->itemVector.push_back( item );
+    // index == pos at this time.
+    this->heap.push_back( index );
+    this->positionVector.push_back( index );
 
-   if( successor < heap.size() - 1 && this->comp( this->heap[successor], this->heap[successor + 1] ) )
-   {
-   ++successor;
-   }
+    const ID id( this->idCounter );
+    ++this->idCounter;
 
-   Item* item( this->heap[index] );
-  
-   while( successor < heap.size() && this->comp( item, this->heap[successor] ) )
-   {
-   this->heap[index] = this->heap[successor];
-   this->positionVector[ this->heap[index] - theFirstItemPtr ] = index;
-   index = successor;
-   successor = index * 2 + 1;
+    this->indexMap.insert( typename IndexMap::value_type( id, index ) );
+    this->idVector.push_back( id );
 
-   if( successor < heap.size() - 1 && 
-   this->comp( this->heap[successor], this->heap[ successor + 1 ] ) )
-   {
-   ++successor;
-   }
-   }
+    moveUpPos( index ); 
 
-   this->heap[index] = item;
-   this->positionVector[ this->heap[index] - theFirstItemPtr ] = index;
-   }
-*/
+//    sizeCheck();
+//    consistencyCheck();
+
+    return id;
+}
 
 
 template < typename Item >
 void DynamicPriorityQueue< Item >::popItemByIndex( const Index index )
 {
-    puts("p a");
-
-    dump();
-    consistencyCheck();
-    puts("p b");
-    --this->size;
-    
     // first, pop the item from the itemVector.
-    this->itemVector[ index ] = this->itemVector[ getSize() ];
-    this->itemVector.resize( getSize() );
+    this->itemVector[ index ] = this->itemVector.back();
+    this->itemVector.pop_back();
 
     // update the idVector and the indexMap.
-    printf("ind %d size %d\n",index,getSize());
-    assert( index <= getSize() );
     const ID removedID( this->idVector[ index ] );
-    const ID movedID( this->idVector[ getSize() ] );
+    const ID movedID( this->idVector.back() );
     this->idVector[ index ] = movedID;
-    this->idVector.resize( getSize() );
+    this->idVector.pop_back();
 
-    for( Index i( 0 ); i < getSize(); ++i )
-    {
-	printf("%d ",idVector[i]);
-    }
-
-    printf("\nremoved %d moved %d\n", removedID, movedID );
-
-    assert( this->indexMap.find( movedID ) != this->indexMap.end() );
     this->indexMap[ movedID ] = index;
     this->indexMap.erase( removedID );
 
@@ -476,70 +351,54 @@ void DynamicPriorityQueue< Item >::popItemByIndex( const Index index )
     // update the positionVector and the heap.
     //
     const Index removedPos( this->positionVector[ index ] );
-    const Index movedPos( this->positionVector[ getSize() ] );
-    printf("removedPos %d movedPos %d\n", removedPos, movedPos );
+    const Index movedPos( this->positionVector.back() );
     
     // 1. swap positionVector[ end ] and positionVector[ index ]
     this->positionVector[ index ] = movedPos;
     this->heap[ movedPos ] = index;
 
     // 2. swap heap[ end ] and heap[ removed ].
-    this->positionVector[ this->heap[ getSize() ] ] = removedPos;
-    this->heap[ removedPos ] = this->heap[ getSize() ];
+    this->positionVector[ this->heap.back() ] = removedPos;
+    this->heap[ removedPos ] = this->heap.back();
 
     // 3. discard the last.
-    this->positionVector.resize( getSize() );
-    this->heap.resize( getSize() );
-    dump();
-    if( getSize() != 0 )
-    {
-	movePos( removedPos );
-    }
+    this->positionVector.pop_back();
+    this->heap.pop_back();
 
-    assert( this->heap[ 0 ] <= getSize() );
+    movePos( removedPos );
 
-    sizeCheck();
-    consistencyCheck();
-    puts("p c");
-    dump();
+//    sizeCheck();
+//    consistencyCheck();
 }
 
 
 template < typename Item >
 void DynamicPriorityQueue< Item >::dump() const
 {
-    for( Index i( 0 ); i < getSize(); ++i )
+    for( Index i( 0 ); i < heap.size(); ++i )
     {
 	printf("heap %d %d %d\n", i,heap[i],itemVector[heap[i]]);
     }
-    for( Index i( 0 ); i < getSize(); ++i )
+    for( Index i( 0 ); i < positionVector.size(); ++i )
     {
 	printf("pos %d %d\n", i,positionVector[i]);
     }
-//    for( Index i( 0 ); i < getSize(); ++i )
-//    {
-//	printf("id %d\n",id);
-//    }
-
 }
 
 template < typename Item >
 void DynamicPriorityQueue< Item >::sizeCheck() const
 {
-#ifndef NDEBUG
-    assert( this->itemVector.size() == getSize() );
-    assert( this->heap.size() == getSize() );
-    assert( this->positionVector.size() == getSize() );
-    assert( this->idVector.size() == getSize() );
-    assert( this->indexMap.size() == getSize() );
-#endif /* NDEBUG */
+    assert( this->itemVector.size() == getSize());
+    assert( this->heap.size() == getSize());
+    assert( this->positionVector.size() == getSize());
+    assert( this->idVector.size() == getSize());
+    assert( this->indexMap.size() == getSize());
 }
 
 
 template < typename Item >
 void DynamicPriorityQueue< Item >::consistencyCheck() const
 {
-#ifndef NDEBUG
     // assert correct mapping between the heap and the positionVector.
     for( Index i( 0 ); i < getSize(); ++i )
     {
@@ -547,7 +406,6 @@ void DynamicPriorityQueue< Item >::consistencyCheck() const
 	assert( this->positionVector[ i ] <= getSize() );
 	assert( this->heap[ this->positionVector[i] ] == i );
     }
-
 
     // assert correct mapping between the indexMap and the idVector.
     for( Index i( 0 ); i < getSize(); ++i )
@@ -558,31 +416,24 @@ void DynamicPriorityQueue< Item >::consistencyCheck() const
     }
 
     // assert correct ordering of items in the heap.
+
     for( Index pos( 0 ); pos < getSize(); ++pos )
     {
 	const Item* const item( &getItemByIndex( this->heap[ pos ] ) );
 
-	const Index pred( ( pos - 1 ) / 2 );
-	if( pred > 0 )
-	{
-	    const Item* const 
-		predItem( &getItemByIndex( this->heap[ pred ] ) );
-
-	    assert( this->comp( item, predItem ) );
-	}
-
 	const Index succ( pos * 2 + 1 );
 	if( succ < getSize() )
 	{
-	    const Item* const 
-		succItem( &getItemByIndex( this->heap[ succ ] ) );
+	    assert( this->comp( &getItemByIndex( this->heap[succ] ), item ) );
 
-	    assert( this->comp( succItem, item ) );
+	    if( succ+1 < getSize() )
+	    {
+		assert( this->comp( &getItemByIndex( this->heap[succ+1] ),
+				    item ));
+	    }
 	}
 
     }
-
-#endif /* NDEBUG */
 }
 
 
