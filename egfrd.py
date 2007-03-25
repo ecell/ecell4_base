@@ -5,8 +5,8 @@ import math
 import random
 
 import numpy
-import scipy
-import scipy.optimize
+#import scipy
+#import scipy.optimize
 
 
 from utils import *
@@ -192,13 +192,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.formPairs()
 
         #debug
-        self.checkShellForAll()
+        #self.checkShellForAll()
 
         for single in self.singleMap.values():
             dt = single.calculateFirstPassageTime()
             self.scheduler.addEvent( self.t + dt, single )
 
-        self.scheduler.updateAllEventDependency()
+        #self.scheduler.updateAllEventDependency()
 
         self.isDirty = False
 
@@ -262,7 +262,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                        numpy.random.uniform( 0.0, 2*Pi ) ) )
         displacement = sphericalToCartesian( displacementS )
 
-        self.checkShellForAll()
+        #self.checkShellForAll()
         
         pos = single.particle.getPos()
         pos += displacement

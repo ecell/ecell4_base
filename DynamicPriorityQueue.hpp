@@ -189,7 +189,6 @@ private:
     IndexMap      indexMap;
 
     ID   idCounter;
-    Index    size;
 
     PtrGreater< const Item* const > comp;
 };
@@ -200,7 +199,6 @@ private:
 template < typename Item >
 DynamicPriorityQueue< Item >::DynamicPriorityQueue()
     :
-    size( 0 ),
     idCounter( 0 )
 {
     ; // do nothing
@@ -213,6 +211,8 @@ void DynamicPriorityQueue< Item >::clear()
     this->itemVector.clear();
     this->heap.clear();
     this->positionVector.clear();
+    this->idVector.clear();
+    this->indexMap.clear();
 }
 
 
