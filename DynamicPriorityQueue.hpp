@@ -385,8 +385,19 @@ void DynamicPriorityQueue< Item >::popItemByIndex( const Index index )
 template < typename Item >
 void DynamicPriorityQueue< Item >::replaceTop( const Item& item )
 {
-    pushItem( item );
+    getItemByIndex( this->heap[0] ) = item;
     moveTop();
+    
+//    assert( checkSize() );
+//    assert( checkConsistency() );
+}
+
+template < typename Item >
+void DynamicPriorityQueue< Item >::replaceItem( const ID id, const Item& item )
+{
+    const Index index( getIndex( id ) );
+    getItemByIndex( index ) = item;
+    move( index );
     
 //    assert( checkSize() );
 //    assert( checkConsistency() );

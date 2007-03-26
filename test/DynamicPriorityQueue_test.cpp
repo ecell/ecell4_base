@@ -15,9 +15,12 @@ public:
     CPPUNIT_TEST( testConstruction ); 
     CPPUNIT_TEST( testPush );
     CPPUNIT_TEST( testPushPop );
+    CPPUNIT_TEST( testReplaceTop );
+    CPPUNIT_TEST( testReplace );
     CPPUNIT_TEST( testDuplicatedItems );
     CPPUNIT_TEST( testSimpleSorting );
     CPPUNIT_TEST( testSimpleSortingWithPops );
+    CPPUNIT_TEST( testInterleavedSorting );
     CPPUNIT_TEST( testInterleavedSortingWithPops );
     CPPUNIT_TEST_SUITE_END();
 
@@ -69,6 +72,65 @@ public:
 	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 	CPPUNIT_ASSERT( dpq.isEmpty() );
+    }
+
+    void testReplaceTop()
+    {
+	DynamicPriorityQueue<int> dpq;
+
+	dpq.pushItem( 4 );
+	dpq.pushItem( 2 );
+	dpq.pushItem( 1 );
+
+	CPPUNIT_ASSERT_EQUAL( 1, dpq.getTopItem() );
+
+	dpq.replaceTop( 3 );
+
+	CPPUNIT_ASSERT( dpq.checkSize() );
+	CPPUNIT_ASSERT( dpq.checkConsistency() );
+	CPPUNIT_ASSERT_EQUAL( 2, dpq.getTopItem() );
+
+	dpq.popTop();
+	CPPUNIT_ASSERT_EQUAL( 3, dpq.getTopItem() );
+	dpq.popTop();
+	CPPUNIT_ASSERT_EQUAL( 4, dpq.getTopItem() );
+	dpq.popTop();
+
+
+	CPPUNIT_ASSERT( dpq.isEmpty() );
+	CPPUNIT_ASSERT( dpq.checkSize() );
+	CPPUNIT_ASSERT( dpq.checkConsistency() );
+    }
+
+    void testReplace()
+    {
+	DynamicPriorityQueue<int> dpq;
+
+	dpq.pushItem( 5 );
+	const ID id( dpq.pushItem( 4 ) );
+	dpq.pushItem( 3 );
+	dpq.pushItem( 1 );
+
+	CPPUNIT_ASSERT_EQUAL( 1, dpq.getTopItem() );
+
+	dpq.replaceItem( id, 2 );  // 4->2
+
+	CPPUNIT_ASSERT( dpq.checkSize() );
+	CPPUNIT_ASSERT( dpq.checkConsistency() );
+	CPPUNIT_ASSERT_EQUAL( 1, dpq.getTopItem() );
+
+	dpq.popTop();
+	CPPUNIT_ASSERT_EQUAL( 2, dpq.getTopItem() );
+	dpq.popTop();
+	CPPUNIT_ASSERT_EQUAL( 3, dpq.getTopItem() );
+	dpq.popTop();
+	CPPUNIT_ASSERT_EQUAL( 5, dpq.getTopItem() );
+	dpq.popTop();
+
+
+	CPPUNIT_ASSERT( dpq.isEmpty() );
+	CPPUNIT_ASSERT( dpq.checkSize() );
+	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
     void testDuplicatedItems()
