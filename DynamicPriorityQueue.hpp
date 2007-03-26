@@ -177,6 +177,19 @@ public:
 
 };
 
+/**
+   Dynamic priority queue for items of type Item.
+
+   When IDPolicy is PersistentIDPolicy, IDs given to
+   pushed items are persistent for the life time of this
+   priority queue.
+
+   When VolatileIDPolicy is used as the IDPolicy, IDs
+   are valid only until the next call or pop or push methods.
+   However, VolatileIDPolicy saves some memory and eliminates
+   the overhead incurred in pop/push methods.
+
+*/
 
 template < typename Item, class IDPolicy = PersistentIDPolicy >
 class DynamicPriorityQueue
@@ -209,41 +222,41 @@ public:
 
     void clear();
 
-    const Item& getTopItem() const
+    const Item& getTop() const
     {
 	return this->itemVector[ getTopIndex() ];
     }
 
-    Item& getTopItem()
+    Item& getTop()
     {
 	return this->itemVector[ getTopIndex() ];
     }
 
-    const Item& getItem( const ID id ) const
+    const Item& operator[]( const ID id ) const
     {
-	return this->getItemByIndex( getIndex( id ) );
+	return this->itemVector[ getIndex( id ) ];
     }
 
-    Item& getItem( const ID id )
+    Item& operator[]( const ID id )
     {
-	return this->getItemByIndex( getIndex( id ) );
+	return this->itemVector[ getIndex( id ) ];
     }
 
     void popTop()
     {
-	popItemByIndex( getTopIndex() );
+	popByIndex( getTopIndex() );
     }
 
-    void popItem( const ID id )
+    void pop( const ID id )
     {
-	popItemByIndex( getIndex( id ) );
+	popByIndex( getIndex( id ) );
     }
 
     void replaceTop( const Item& item );
 
-    void replaceItem( const ID id, const Item& item );
+    void replace( const ID id, const Item& item );
 
-    inline const ID pushItem( const Item& item );
+    inline const ID push( const Item& item );
 
     void dump() const;
 
@@ -253,14 +266,9 @@ public:
 
 protected:
 
-    inline void popItemByIndex( const Index index );
+    inline void popByIndex( const Index index );
 
-    const Item& getItemByIndex( const Index index ) const
-    {
-	return this->itemVector[ index ];
-    }
-
-    Item& getItemByIndex( const Index index )
+    Item& getByIndex( const Index index )
     {
 	return this->itemVector[ index ];
     }
@@ -340,16 +348,16 @@ void DynamicPriorityQueue< Item, IDPolicy >::
 movePos( const Index pos )
 {
     const Index index( this->heap[ pos ] );
-    const Item& item( getItemByIndex( index ) );
+    const Item& item( this->itemVector[ index ] );
 
     const Index size( getSize() );
 
     const Index succ( 2 * pos + 1 );
     if( succ < size )
     {
-	if( this->comp( getItemByIndex( this->heap[ succ ] ), item ) ||
+	if( this->comp( this->itemVector[ this->heap[ succ ] ], item ) ||
 	    ( succ + 1 < size && 
-	      this->comp( getItemByIndex( this->heap[ succ + 1 ] ), item ) ) )
+	      this->comp( this->itemVector[ this->heap[ succ + 1 ] ], item ) ) )
 	{
 	    moveDownPos( pos );
 	    return;
@@ -358,7 +366,7 @@ movePos( const Index pos )
 
     const Index pred( ( pos - 1 ) / 2 );
     if( pred >= 0  && 
-	this->comp( item, getItemByIndex( this->heap[ pred ] ) ) )
+	this->comp( item, this->itemVector[ this->heap[ pred ] ] ) )
     {
 	moveUpPos( pos );
     }
@@ -369,14 +377,14 @@ void DynamicPriorityQueue< Item, IDPolicy >::moveUpPos( const Index position,
 							const Index start )
 {
     const Index index( this->heap[ position ] );
-    const Item& item( getItemByIndex( index ) );
+    const Item& item( this->itemVector[ index ] );
 
     Index pos( position );
     while( pos > start )
     {
 	const Index pred( ( pos - 1 ) / 2 );
 	const Index predIndex( this->heap[ pred ] );
-	if( this->comp( getItemByIndex( predIndex ), item ) )
+	if( this->comp( this->itemVector[ predIndex ], item ) )
 	{
 	    break;
 	}
@@ -395,7 +403,7 @@ template < typename Item, class IDPolicy >
 void DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
 {
     const Index index( this->heap[ position ] );
-    const Item& item( getItemByIndex( index ) );
+    const Item& item( this->itemVector[ index ] );
 
     const Index size( getSize() );
     
@@ -405,8 +413,8 @@ void DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
     {
 	const Index rightPos( succ + 1 );
 	if( rightPos < size && 
-	    this->comp( getItemByIndex( this->heap[ rightPos ] ),
-			getItemByIndex( this->heap[ succ ] ) ) )
+	    this->comp( this->itemVector[ this->heap[ rightPos ] ],
+			this->itemVector[ this->heap[ succ ] ] ) )
 	{
 	    succ = rightPos;
 	}
@@ -426,7 +434,7 @@ void DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
 
 template < typename Item, class IDPolicy >
 const typename DynamicPriorityQueue< Item, IDPolicy >::ID
-DynamicPriorityQueue< Item, IDPolicy >::pushItem( const Item& item )
+DynamicPriorityQueue< Item, IDPolicy >::push( const Item& item )
 {
     const Index index( getSize() );
     
@@ -446,7 +454,7 @@ DynamicPriorityQueue< Item, IDPolicy >::pushItem( const Item& item )
 
 
 template < typename Item, class IDPolicy >
-void DynamicPriorityQueue< Item, IDPolicy >::popItemByIndex( const Index index )
+void DynamicPriorityQueue< Item, IDPolicy >::popByIndex( const Index index )
 {
     // first, pop the item from the itemVector.
     this->itemVector[ index ] = this->itemVector.back();
@@ -484,7 +492,7 @@ void DynamicPriorityQueue< Item, IDPolicy >::popItemByIndex( const Index index )
 template < typename Item, class IDPolicy >
 void DynamicPriorityQueue< Item, IDPolicy >::replaceTop( const Item& item )
 {
-    getItemByIndex( this->heap[0] ) = item;
+    this->itemVector[ this->heap[0] ] = item;
     moveTop();
     
 //    assert( checkConsistency() );
@@ -492,10 +500,10 @@ void DynamicPriorityQueue< Item, IDPolicy >::replaceTop( const Item& item )
 
 template < typename Item, class IDPolicy >
 void DynamicPriorityQueue< Item, IDPolicy >::
-replaceItem( const ID id, const Item& item )
+replace( const ID id, const Item& item )
 {
     const Index index( getIndex( id ) );
-    getItemByIndex( index ) = item;
+    this->itemVector[ index ] = item;
     move( index );
     
 //    assert( checkConsistency() );
@@ -508,11 +516,13 @@ void DynamicPriorityQueue< Item, IDPolicy >::dump() const
 {
     for( Index i( 0 ); i < heap.size(); ++i )
     {
-	printf("heap %d %d %d\n", i,heap[i],itemVector[heap[i]]);
+	printf( "heap %d %d %d\n", 
+		i, heap[i], this->itemVector[ this->heap[i] ] );
     }
     for( Index i( 0 ); i < positionVector.size(); ++i )
     {
-	printf("pos %d %d\n", i,positionVector[i]);
+	printf( "pos %d %d\n", 
+		i, positionVector[i] );
     }
 }
 
@@ -539,18 +549,20 @@ const bool DynamicPriorityQueue< Item, IDPolicy >::checkConsistency() const
 
     for( Index pos( 0 ); pos < getSize(); ++pos )
     {
-	const Item& item( getItemByIndex( this->heap[ pos ] ) );
+	const Item& item( this->itemVector[ this->heap[ pos ] ] );
 
 	const Index succ( pos * 2 + 1 );
 	if( succ < getSize() )
 	{
-	    result &= this->comp( item, getItemByIndex( this->heap[succ] ) );
+	    result &= this->comp( item, 
+				  this->itemVector[ this->heap[ succ ] ] );
 
 	    const Index rightPos( succ + 1 );
 	    if( rightPos < getSize() )
 	    {
-		result &= this->comp( item, 
-				      getItemByIndex( this->heap[rightPos] ) );
+		result &= 
+		    this->comp( item, 
+				this->itemVector[ this->heap[ rightPos ] ] );
 	    }
 	}
 

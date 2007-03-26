@@ -69,9 +69,9 @@ public:
     {
 	DPQ dpq;
 
-	dpq.pushItem( 1 );
-	dpq.pushItem( 20 );
-	dpq.pushItem( 50 );
+	dpq.push( 1 );
+	dpq.push( 20 );
+	dpq.push( 50 );
 
 	CPPUNIT_ASSERT_EQUAL( 3, dpq.getSize() );
 
@@ -80,9 +80,9 @@ public:
 	CPPUNIT_ASSERT( dpq.isEmpty() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 
-	dpq.pushItem( 2 );
-	dpq.pushItem( 20 );
-	dpq.pushItem( 30 );
+	dpq.push( 2 );
+	dpq.push( 20 );
+	dpq.push( 30 );
 
 	CPPUNIT_ASSERT_EQUAL( 3, dpq.getSize() );
 
@@ -97,10 +97,10 @@ public:
     {
 	DPQ dpq;
 
-	dpq.pushItem( 1 );
+	dpq.push( 1 );
 
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
-	CPPUNIT_ASSERT( dpq.getTopItem() == 1.0 );
+	CPPUNIT_ASSERT( dpq.getTop() == 1.0 );
     }
 
     template < class DPQ >
@@ -108,12 +108,12 @@ public:
     {
 	DynamicPriorityQueue<double> dpq;
 
-	const ID id( dpq.pushItem( 1 ) );
+	const ID id( dpq.push( 1 ) );
 
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
-	CPPUNIT_ASSERT( dpq.getTopItem() == 1 );
+	CPPUNIT_ASSERT( dpq.getTop() == 1 );
 
-	dpq.popItem( id );
+	dpq.pop( id );
 
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 	CPPUNIT_ASSERT( dpq.isEmpty() );
@@ -124,21 +124,21 @@ public:
     {
 	DPQ dpq;
 
-	dpq.pushItem( 4 );
-	dpq.pushItem( 2 );
-	dpq.pushItem( 1 );
+	dpq.push( 4 );
+	dpq.push( 2 );
+	dpq.push( 1 );
 
-	CPPUNIT_ASSERT_EQUAL( 1, dpq.getTopItem() );
+	CPPUNIT_ASSERT_EQUAL( 1, dpq.getTop() );
 
 	dpq.replaceTop( 3 );
 
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
-	CPPUNIT_ASSERT_EQUAL( 2, dpq.getTopItem() );
+	CPPUNIT_ASSERT_EQUAL( 2, dpq.getTop() );
 
 	dpq.popTop();
-	CPPUNIT_ASSERT_EQUAL( 3, dpq.getTopItem() );
+	CPPUNIT_ASSERT_EQUAL( 3, dpq.getTop() );
 	dpq.popTop();
-	CPPUNIT_ASSERT_EQUAL( 4, dpq.getTopItem() );
+	CPPUNIT_ASSERT_EQUAL( 4, dpq.getTop() );
 	dpq.popTop();
 
 
@@ -151,24 +151,24 @@ public:
     {
 	DPQ dpq;
 
-	dpq.pushItem( 5 );
-	const ID id( dpq.pushItem( 4 ) );
-	dpq.pushItem( 3 );
-	dpq.pushItem( 1 );
+	dpq.push( 5 );
+	const ID id( dpq.push( 4 ) );
+	dpq.push( 3 );
+	dpq.push( 1 );
 
-	CPPUNIT_ASSERT_EQUAL( 1, dpq.getTopItem() );
+	CPPUNIT_ASSERT_EQUAL( 1, dpq.getTop() );
 
-	dpq.replaceItem( id, 2 );  // 4->2
+	dpq.replace( id, 2 );  // 4->2
 
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
-	CPPUNIT_ASSERT_EQUAL( 1, dpq.getTopItem() );
+	CPPUNIT_ASSERT_EQUAL( 1, dpq.getTop() );
 
 	dpq.popTop();
-	CPPUNIT_ASSERT_EQUAL( 2, dpq.getTopItem() );
+	CPPUNIT_ASSERT_EQUAL( 2, dpq.getTop() );
 	dpq.popTop();
-	CPPUNIT_ASSERT_EQUAL( 3, dpq.getTopItem() );
+	CPPUNIT_ASSERT_EQUAL( 3, dpq.getTop() );
 	dpq.popTop();
-	CPPUNIT_ASSERT_EQUAL( 5, dpq.getTopItem() );
+	CPPUNIT_ASSERT_EQUAL( 5, dpq.getTop() );
 	dpq.popTop();
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
@@ -180,20 +180,20 @@ public:
     {
 	DPQ dpq;
 
-	dpq.pushItem( 1 );
-	dpq.pushItem( 2 );
-	dpq.pushItem( 1 );
-	dpq.pushItem( 2 );
+	dpq.push( 1 );
+	dpq.push( 2 );
+	dpq.push( 1 );
+	dpq.push( 2 );
 
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 
-	CPPUNIT_ASSERT( dpq.getTopItem() == 1 );
+	CPPUNIT_ASSERT( dpq.getTop() == 1 );
 	dpq.popTop();
-	CPPUNIT_ASSERT( dpq.getTopItem() == 1 );
+	CPPUNIT_ASSERT( dpq.getTop() == 1 );
 	dpq.popTop();
-	CPPUNIT_ASSERT( dpq.getTopItem() == 2 );
+	CPPUNIT_ASSERT( dpq.getTop() == 2 );
 	dpq.popTop();
-	CPPUNIT_ASSERT( dpq.getTopItem() == 2 );
+	CPPUNIT_ASSERT( dpq.getTop() == 2 );
 	dpq.popTop();
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
@@ -210,7 +210,7 @@ public:
 	const int MAXI( 100 );
 	for( int i( MAXI ); i != 0  ; --i )
 	{
-	    dpq.pushItem( i );
+	    dpq.push( i );
 	}
 
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
@@ -219,7 +219,7 @@ public:
 	while( ! dpq.isEmpty() )
 	{
 	    ++n;
-	    CPPUNIT_ASSERT_EQUAL( n, dpq.getTopItem() );
+	    CPPUNIT_ASSERT_EQUAL( n, dpq.getTop() );
 	    dpq.popTop();
 	}
 
@@ -240,7 +240,7 @@ public:
 	const int MAXI( 100 );
 	for( int n( MAXI ); n != 0  ; --n )
 	{
-	    ID id( dpq.pushItem( n ) );
+	    ID id( dpq.push( n ) );
 	    if( n == 11 || n == 45 )
 	    {
 		idVector.push_back( id );
@@ -254,7 +254,7 @@ public:
 	for( IDVector::const_iterator i( idVector.begin() );
 	     i != idVector.end(); ++i )
 	{
-	    dpq.popItem( *i );
+	    dpq.pop( *i );
 	}
 
 	CPPUNIT_ASSERT_EQUAL( MAXI - 2, dpq.getSize() );
@@ -267,7 +267,7 @@ public:
 	    {
 		continue; // skip
 	    }
-	    CPPUNIT_ASSERT_EQUAL( n, dpq.getTopItem() );
+	    CPPUNIT_ASSERT_EQUAL( n, dpq.getTop() );
 	    dpq.popTop();
 	}
 
@@ -286,12 +286,12 @@ public:
 	const int MAXI( 101 );
 	for( int i( MAXI-1 ); i != 0  ; i-=2 )
 	{
-	    dpq.pushItem( i );
+	    dpq.push( i );
 	}
 
 	for( int i( MAXI ); i != -1  ; i-=2 )
 	{
-	    dpq.pushItem( i );
+	    dpq.push( i );
 	}
 
 	CPPUNIT_ASSERT_EQUAL( MAXI, dpq.getSize() );
@@ -302,7 +302,7 @@ public:
 	while( ! dpq.isEmpty() )
 	{
 	    ++n;
-	    CPPUNIT_ASSERT_EQUAL( n, dpq.getTopItem() );
+	    CPPUNIT_ASSERT_EQUAL( n, dpq.getTop() );
 	    dpq.popTop();
 	}
 
@@ -323,7 +323,7 @@ public:
 	const int MAXI( 101 );
 	for( int n( MAXI-1 ); n != 0  ; n-=2 )
 	{
-	    const ID id( dpq.pushItem( n ) );
+	    const ID id( dpq.push( n ) );
 
 	    if( n == 12 || n == 46 )
 	    {
@@ -331,7 +331,7 @@ public:
 	    }
 	}
 
-	dpq.popItem( idVector.back() );
+	dpq.pop( idVector.back() );
 	idVector.pop_back();
 
 	CPPUNIT_ASSERT_EQUAL( MAXI/2 -1, dpq.getSize() );
@@ -340,7 +340,7 @@ public:
 
 	for( int n( MAXI ); n != -1  ; n-=2 )
 	{
-	    const ID id( dpq.pushItem( n ) );
+	    const ID id( dpq.push( n ) );
 
 	    if( n == 17 || n == 81 )
 	    {
@@ -351,7 +351,7 @@ public:
 	for( IDVector::const_iterator i( idVector.begin() );
 	     i != idVector.end(); ++i )
 	{
-	    dpq.popItem( *i );
+	    dpq.pop( *i );
 	}
 
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
@@ -365,7 +365,7 @@ public:
 	    {
 		continue;
 	    }
-	    CPPUNIT_ASSERT_EQUAL( n, dpq.getTopItem() );
+	    CPPUNIT_ASSERT_EQUAL( n, dpq.getTop() );
 	    dpq.popTop();
 	}
 

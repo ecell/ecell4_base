@@ -71,21 +71,21 @@ namespace libecs
 	
     public:
 	
-	EventBase( const double aTime )
+	EventBase( const double time )
 	    :
-	    theTime( aTime )
+	    time( time )
 	{
 	    ; // do nothing
 	}
 
-	void setTime( const double aTime )
+	void setTime( const double time )
 	{
-	    theTime = aTime;
+	    this->time = time;
 	}
 
 	const double getTime() const
 	{
-	    return theTime;
+	    return this->time;
 	}
 
    
@@ -129,7 +129,7 @@ namespace libecs
 
     private:
 
-	double             theTime;
+	double             time;
     };
 
 
@@ -175,51 +175,51 @@ namespace libecs
 
 	const EventIndex getSize() const
 	{
-	    return theEventPriorityQueue.getSize();
+	    return this->eventPriorityQueue.getSize();
 	}
 
 	const Event& getTopEvent() const
 	{
-	    return theEventPriorityQueue.getTopItem();
+	    return this->eventPriorityQueue.getTop();
 	}
 
 	Event& getTopEvent()
 	{
-	    return theEventPriorityQueue.getTopItem();
+	    return this->eventPriorityQueue.getTop();
 	}
 
 /*
 	EventIndex getTopIndex()
 	{
-	    return theEventPriorityQueue.getTopIndex();
+	    return this->eventPriorityQueue.getTopIndex();
 	}
 */
 
 	const Event& getEvent( const EventID id ) const
 	{
-	    return theEventPriorityQueue.getItem( id );
+	    return this->eventPriorityQueue[ id ];
 	}
 
 	Event& getEvent( const EventID id )
 	{
-	    return theEventPriorityQueue.getItem( id );
+	    return this->eventPriorityQueue[ id ];
 	}
 
 	void step()
 	{
-	    Event& aTopEvent( theEventPriorityQueue.getTopItem() );
+	    Event& aTopEvent( this->eventPriorityQueue.getTop() );
 	    const double aCurrentTime( aTopEvent.getTime() );
 //	    const EventIndex aTopEventIndex( getTopIndex() );
 
 	    // fire top
 	    aTopEvent.fire();
-	    //theEventPriorityQueue.moveDown( aTopEventIndex );
-	    //theEventPriorityQueue.moveTop();
-	    theEventPriorityQueue.replaceTop( aTopEvent );
+	    //this->eventPriorityQueue.moveDown( aTopEventIndex );
+	    //this->eventPriorityQueue.moveTop();
+	    this->eventPriorityQueue.replaceTop( aTopEvent );
 
 	    // update dependent events
 //	    const EventIndexVector&
-//		anEventIndexVector( theEventDependencyArray[ aTopEventIndex ] );
+//		anEventIndexVector( this->eventDependencyArray[ aTopEventIndex ] );
 
 /*
 	    for( typename EventIndexVector::const_iterator 
@@ -245,19 +245,19 @@ namespace libecs
 
 	void updateEvent( const EventIndex anIndex, const double aCurrentTime )
 	{
-	    Event& anEvent( theEventPriorityQueue.getItemIndex( anIndex ) );
+	    Event& anEvent( this->eventPriorityQueue.getIndex( anIndex ) );
 	    const double anOldTime( anEvent.getTime() );
 	    anEvent.update( aCurrentTime );
 	    const double aNewTime( anEvent.getTime() );
 
-	    // theEventPriorityQueue.move( anIndex );
+	    // this->eventPriorityQueue.move( anIndex );
 	    if( aNewTime >= anOldTime )
 	    {
-		theEventPriorityQueue.moveDown( anIndex );
+		this->eventPriorityQueue.moveDown( anIndex );
 	    }
 	    else
 	    {
-		theEventPriorityQueue.moveUp( anIndex );
+		this->eventPriorityQueue.moveUp( anIndex );
 	    }
 	}
 */
@@ -268,13 +268,13 @@ namespace libecs
     
 	void clear()
 	{
-	    theEventPriorityQueue.clear();
-//	    theEventDependencyArray.clear();
+	    this->eventPriorityQueue.clear();
+//	    this->eventDependencyArray.clear();
 	}
 
 	const EventID addEvent( const Event& anEvent )
 	{
-	    return theEventPriorityQueue.pushItem( anEvent );
+	    return this->eventPriorityQueue.push( anEvent );
 	}
 
 
@@ -282,14 +282,14 @@ namespace libecs
 	// should be removed in future. 
 //	const EventIndexVector& getDependencyVector( const EventIndex anIndex )
 //	{
-//	    return theEventDependencyArray[ anIndex ] ;
+//	    return this->eventDependencyArray[ anIndex ] ;
 //	}
 
     private:
 
-	EventPriorityQueue       theEventPriorityQueue;
+	EventPriorityQueue       eventPriorityQueue;
 
-//	EventIndexVectorVector   theEventDependencyArray;
+//	EventIndexVectorVector   eventDependencyArray;
 
     };
 
@@ -299,9 +299,9 @@ namespace libecs
     template < class Event >
     void EventScheduler<Event>::updateAllEventDependency()
     {
-	theEventDependencyArray.resize( theEventPriorityQueue.getSize() );
+	this->eventDependencyArray.resize( this->eventPriorityQueue.getSize() );
     
-	for( EventIndex i1( 0 ); i1 != theEventPriorityQueue.getSize(); ++i1 )
+	for( EventIndex i1( 0 ); i1 != this->eventPriorityQueue.getSize(); ++i1 )
 	{
 	    updateEventDependency( i1 );
 	}
@@ -311,12 +311,12 @@ namespace libecs
     void EventScheduler<Event>::
     updateEventDependency( const EventIndex i1 )
     {
-	const Event& anEvent1( theEventPriorityQueue.getItem( i1 ) );
+	const Event& anEvent1( this->eventPriorityQueue[ i1 ] );
 
-	EventIndexVector& anEventIndexVector( theEventDependencyArray[ i1 ] );
+	EventIndexVector& anEventIndexVector( this->eventDependencyArray[ i1 ] );
 	anEventIndexVector.clear();
 
-	for( EventIndex i2( 0 ); i2 < theEventPriorityQueue.getSize(); ++i2 )
+	for( EventIndex i2( 0 ); i2 < this->eventPriorityQueue.getSize(); ++i2 )
 	{
 	    if( i1 == i2 )
 	    {
@@ -324,7 +324,7 @@ namespace libecs
 		continue;
 	    }
 	
-	    const Event& anEvent2( theEventPriorityQueue.getItem( i2 ) );
+	    const Event& anEvent2( this->eventPriorityQueue[ i2 ] );
 	
 	    if( anEvent2.isDependentOn( anEvent1 ) )
 	    {
