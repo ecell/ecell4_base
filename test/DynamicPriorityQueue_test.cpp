@@ -13,6 +13,7 @@ public:
 
     CPPUNIT_TEST_SUITE( DynamicPriorityQueueTest );
     CPPUNIT_TEST( testConstruction ); 
+    CPPUNIT_TEST( testClear ); 
     CPPUNIT_TEST( testPush );
     CPPUNIT_TEST( testPushPop );
     CPPUNIT_TEST( testReplaceTop );
@@ -42,7 +43,33 @@ public:
 	DynamicPriorityQueue<double> dpq;
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
-	CPPUNIT_ASSERT( dpq.checkSize() );
+	CPPUNIT_ASSERT( dpq.checkConsistency() );
+    }
+
+    void testClear()
+    {
+	DynamicPriorityQueue<double> dpq;
+
+	dpq.pushItem( 1.0 );
+	dpq.pushItem( 20.0 );
+	dpq.pushItem( 50.0 );
+
+	CPPUNIT_ASSERT_EQUAL( 3, dpq.getSize() );
+
+	dpq.clear();
+
+	CPPUNIT_ASSERT( dpq.isEmpty() );
+	CPPUNIT_ASSERT( dpq.checkConsistency() );
+
+	dpq.pushItem( 2.0 );
+	dpq.pushItem( 20.0 );
+	dpq.pushItem( 30.0 );
+
+	CPPUNIT_ASSERT_EQUAL( 3, dpq.getSize() );
+
+	dpq.clear();
+
+	CPPUNIT_ASSERT( dpq.isEmpty() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
@@ -52,7 +79,6 @@ public:
 
 	dpq.pushItem( 1.0 );
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 	CPPUNIT_ASSERT( dpq.getTopItem() == 1.0 );
     }
@@ -63,13 +89,11 @@ public:
 
 	const ID id( dpq.pushItem( 1.0 ) );
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 	CPPUNIT_ASSERT( dpq.getTopItem() == 1.0 );
 
 	dpq.popItem( id );
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 	CPPUNIT_ASSERT( dpq.isEmpty() );
     }
@@ -86,7 +110,6 @@ public:
 
 	dpq.replaceTop( 3 );
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 	CPPUNIT_ASSERT_EQUAL( 2, dpq.getTopItem() );
 
@@ -98,7 +121,6 @@ public:
 
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
@@ -115,7 +137,6 @@ public:
 
 	dpq.replaceItem( id, 2 );  // 4->2
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 	CPPUNIT_ASSERT_EQUAL( 1, dpq.getTopItem() );
 
@@ -129,7 +150,6 @@ public:
 
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
@@ -142,7 +162,6 @@ public:
 	dpq.pushItem( 1 );
 	dpq.pushItem( 2 );
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 
 	CPPUNIT_ASSERT( dpq.getTopItem() == 1 );
@@ -156,7 +175,6 @@ public:
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
@@ -171,7 +189,6 @@ public:
 	    dpq.pushItem( i );
 	}
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 
 	int n( 0 );
@@ -185,7 +202,6 @@ public:
 	CPPUNIT_ASSERT_EQUAL( MAXI, n );
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
@@ -206,7 +222,6 @@ public:
 	    }
 	}
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 
 	CPPUNIT_ASSERT_EQUAL( MAXI, dpq.getSize() );
@@ -234,7 +249,6 @@ public:
 	CPPUNIT_ASSERT_EQUAL( MAXI, n );
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
@@ -256,7 +270,6 @@ public:
 
 	CPPUNIT_ASSERT_EQUAL( MAXI, dpq.getSize() );
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 
 	int n( 0 );
@@ -270,7 +283,6 @@ public:
 	CPPUNIT_ASSERT_EQUAL( MAXI, n );
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
@@ -297,7 +309,6 @@ public:
 
 	CPPUNIT_ASSERT_EQUAL( MAXI/2 -1, dpq.getSize() );
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 
 	for( int n( MAXI ); n != -1  ; n-=2 )
@@ -316,7 +327,6 @@ public:
 	    dpq.popItem( *i );
 	}
 
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 	CPPUNIT_ASSERT_EQUAL( MAXI-4, dpq.getSize() );
 
@@ -335,7 +345,6 @@ public:
 	CPPUNIT_ASSERT_EQUAL( MAXI, n );
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
-	CPPUNIT_ASSERT( dpq.checkSize() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 

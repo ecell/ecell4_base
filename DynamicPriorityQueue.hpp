@@ -90,12 +90,12 @@ public:
 
     const Item& getItem( const ID id ) const
     {
-	return this->getItemByIndex( this->indexMap.at( id ) );
+	return this->getItemByIndex( getIndex( id ) );
     }
 
     Item& getItem( const ID id )
     {
-	return this->getItemByIndex( this->indexMap.at( id ) );
+	return this->getItemByIndex( getIndex( id ) );
     }
 
     void popTop()
@@ -117,9 +117,7 @@ public:
     void dump() const;
 
 
-    // self-diagnostic methods
-
-    const bool checkSize() const;
+    // self-diagnostic method
     const bool checkConsistency() const;
 
 protected:
@@ -193,7 +191,6 @@ private:
 
     // map itemVector index to id.
     IDVector      idVector;
-
     // map id to itemVector index.
     IndexMap      indexMap;
 
@@ -333,7 +330,6 @@ DynamicPriorityQueue<Item>::pushItem( const Item& item )
 
     moveUpPos( index ); 
 
-//    assert( checkSize() );
 //    assert( checkConsistency() );
 
     return id;
@@ -376,7 +372,6 @@ void DynamicPriorityQueue< Item >::popItemByIndex( const Index index )
 
     movePos( removedPos );
 
-//    assert( checkSize() );
 //    assert( checkConsistency() );
 }
 
@@ -388,7 +383,6 @@ void DynamicPriorityQueue< Item >::replaceTop( const Item& item )
     getItemByIndex( this->heap[0] ) = item;
     moveTop();
     
-//    assert( checkSize() );
 //    assert( checkConsistency() );
 }
 
@@ -399,7 +393,6 @@ void DynamicPriorityQueue< Item >::replaceItem( const ID id, const Item& item )
     getItemByIndex( index ) = item;
     move( index );
     
-//    assert( checkSize() );
 //    assert( checkConsistency() );
 }
 
@@ -418,25 +411,18 @@ void DynamicPriorityQueue< Item >::dump() const
     }
 }
 
-template < typename Item >
-const bool DynamicPriorityQueue< Item >::checkSize() const
-{
-    bool result( true );
-
-    result &= this->itemVector.size() == getSize();
-    result &= this->heap.size() == getSize();
-    result &= this->positionVector.size() == getSize();
-    result &= this->idVector.size() == getSize();
-    result &= this->indexMap.size() == getSize();
-
-    return result;
-}
-
 
 template < typename Item >
 const bool DynamicPriorityQueue< Item >::checkConsistency() const
 {
     bool result( true );
+
+    // check sizes of data structures.
+    result &= this->itemVector.size() == getSize();
+    result &= this->heap.size() == getSize();
+    result &= this->positionVector.size() == getSize();
+    result &= this->idVector.size() == getSize();
+    result &= this->indexMap.size() == getSize();
 
     // assert correct mapping between the heap and the positionVector.
     for( Index i( 0 ); i < getSize(); ++i )
