@@ -25,8 +25,9 @@
 // 
 //END_HEADER
 //
-// written by Eiichiro Adachi and Koichi Takahashi
+// written by Koichi Takahashi based on initial version by Eiichiro Adachi.
 //
+
 #ifndef __DYNAMICPRIORITYQUEUE_HPP
 #define __DYNAMICPRIORITYQUEUE_HPP
 //#include <assert.h>
