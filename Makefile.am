@@ -1,3 +1,5 @@
+SUBDIRS = . test
+
 TOPSRCDIR=${top_srcdir}
 
 LTDL_SHLIB_EXT=@LTDL_SHLIB_EXT@

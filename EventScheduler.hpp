@@ -90,9 +90,9 @@ namespace libecs
 
    
 
-	const bool operator< ( const EventBase& rhs ) const
+	const bool operator<= ( const EventBase& rhs ) const
 	{
-	    if( getTime() < rhs.getTime() )
+	    if( getTime() <= rhs.getTime() )
 	    {
 		return true;
 	    }
@@ -100,6 +100,11 @@ namespace libecs
 	    {
 		return false;
 	    }
+	}
+
+	const bool operator> ( const EventBase& rhs ) const
+	{
+	    return ! this->operator<=( rhs );
 	}
 
 	const bool operator!= ( const EventBase& rhs ) const
@@ -197,7 +202,7 @@ namespace libecs
 
 	Event& getEvent( const EventID id )
 	{
-	    return theEventPriorityQueue.getItemByIndex( id );
+	    return theEventPriorityQueue.getItem( id );
 	}
 
 	void step()
@@ -209,7 +214,8 @@ namespace libecs
 	    // fire top
 	    aTopEvent.fire();
 	    //theEventPriorityQueue.moveDown( aTopEventIndex );
-	    theEventPriorityQueue.moveTop();
+	    //theEventPriorityQueue.moveTop();
+	    theEventPriorityQueue.replaceTop( aTopEvent );
 
 	    // update dependent events
 //	    const EventIndexVector&
@@ -239,7 +245,7 @@ namespace libecs
 
 	void updateEvent( const EventIndex anIndex, const double aCurrentTime )
 	{
-	    Event& anEvent( theEventPriorityQueue.getItemByIndex( anIndex ) );
+	    Event& anEvent( theEventPriorityQueue.getItemIndex( anIndex ) );
 	    const double anOldTime( anEvent.getTime() );
 	    anEvent.update( aCurrentTime );
 	    const double aNewTime( anEvent.getTime() );
