@@ -25,8 +25,21 @@ dnl
 dnl checks for libraries
 dnl
 dnl
+AC_CHECK_LIB([dl],[dlsym])
 AM_PATH_GSL(1.0,,AC_MSG_ERROR([could not find required version of GSL.]))
 dnl
+dnl
+dnl AC_ARG_WITH([cppunit],[AS_HELP_STRING([--with-cppunit],
+dnl [enable testing suite for C++ classes that uses CppUnit.])],
+dnl [],[with-cppunit=check])
+dnl
+AM_PATH_CPPUNIT(1.10.0,,[
+    AC_MSG_WARN([])
+    AC_MSG_WARN([CppUnit not found.])
+dnl    AC_MSG_WARN([Disabling the C++ testging suite.])
+    AC_MSG_WARN([])
+    AC_MSG_ERROR([])
+])
 dnl
 AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])
 AM_CHECK_PYMOD(scipy,,,[AC_MSG_ERROR([could not find Python scipy module.])])
@@ -39,6 +52,9 @@ dnl
 dnl
 #PYTHON_INCLUDE_DIR=$(shell python -c "import sys; print sys.prefix + '/include/python' + sys.version[:3]")
 AM_CHECK_PYTHON_HEADERS()
+dnl
+dnl
+AC_CHECK_HEADERS([cppunit/TestSuite.h])
 dnl
 dnl checks for types
 dnl

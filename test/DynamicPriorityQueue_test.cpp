@@ -1,4 +1,8 @@
+
+#define CPPUNIT_ENABLE_NAKED_ASSERT 1
+
 #include <cppunit/TestFixture.h>
+#include <cppunit/TestAssert.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 
@@ -73,7 +77,8 @@ public:
 	dpq.push( 20 );
 	dpq.push( 50 );
 
-	CPPUNIT_ASSERT_EQUAL( 3, dpq.getSize() );
+	//CPPUNIT_ASSERT_EQUAL( 3, dpq.getSize() );
+	CPPUNIT_ASSERT( 3 == dpq.getSize() );
 
 	dpq.clear();
 

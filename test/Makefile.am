@@ -10,4 +10,4 @@ DynamicPriorityQueue_test.cpp
 
 
 AllTests_LDFLAGS = -L$(libdir)
-AllTests_LDADD   = -lcppunit -ldl
+AllTests_LDADD   = $(CPPUNIT_LIBS)
