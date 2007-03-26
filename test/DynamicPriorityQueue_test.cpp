@@ -11,18 +11,34 @@ class DynamicPriorityQueueTest
 
 public:
 
+    typedef DynamicPriorityQueue< int > IntDPQ;
+    typedef DynamicPriorityQueue< int, VolatileIDPolicy > VolatileIntDPQ;
+
+
     CPPUNIT_TEST_SUITE( DynamicPriorityQueueTest );
-    CPPUNIT_TEST( testConstruction ); 
-    CPPUNIT_TEST( testClear ); 
-    CPPUNIT_TEST( testPush );
-    CPPUNIT_TEST( testPushPop );
-    CPPUNIT_TEST( testReplaceTop );
-    CPPUNIT_TEST( testReplace );
-    CPPUNIT_TEST( testDuplicatedItems );
-    CPPUNIT_TEST( testSimpleSorting );
-    CPPUNIT_TEST( testSimpleSortingWithPops );
-    CPPUNIT_TEST( testInterleavedSorting );
-    CPPUNIT_TEST( testInterleavedSortingWithPops );
+
+    CPPUNIT_TEST( testConstruction< IntDPQ > ); 
+    CPPUNIT_TEST( testClear< IntDPQ > ); 
+    CPPUNIT_TEST( testPush< IntDPQ > );
+    CPPUNIT_TEST( testPushPop< IntDPQ > );
+    CPPUNIT_TEST( testReplaceTop< IntDPQ > );
+    CPPUNIT_TEST( testReplace< IntDPQ > );
+    CPPUNIT_TEST( testDuplicatedItems< IntDPQ > );
+    CPPUNIT_TEST( testSimpleSorting< IntDPQ > );
+    CPPUNIT_TEST( testSimpleSortingWithPops< IntDPQ > );
+    CPPUNIT_TEST( testInterleavedSorting< IntDPQ > );
+    CPPUNIT_TEST( testInterleavedSortingWithPops< IntDPQ > );
+
+    CPPUNIT_TEST( testConstruction< VolatileIntDPQ > ); 
+    CPPUNIT_TEST( testClear< VolatileIntDPQ > ); 
+    CPPUNIT_TEST( testPush< VolatileIntDPQ > );
+    CPPUNIT_TEST( testPushPop< VolatileIntDPQ > );
+    CPPUNIT_TEST( testReplaceTop< VolatileIntDPQ > );
+    CPPUNIT_TEST( testReplace< VolatileIntDPQ > );
+    CPPUNIT_TEST( testDuplicatedItems< VolatileIntDPQ > );
+    CPPUNIT_TEST( testSimpleSorting< VolatileIntDPQ > );
+    CPPUNIT_TEST( testInterleavedSorting< VolatileIntDPQ > );
+
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -37,22 +53,25 @@ public:
     void tearDown() 
     {
     }
-    
+
+
+    template < class DPQ >
     void testConstruction()
     {
-	DynamicPriorityQueue<double> dpq;
+	DPQ dpq;
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
+    template < class DPQ >
     void testClear()
     {
-	DynamicPriorityQueue<double> dpq;
+	DPQ dpq;
 
-	dpq.pushItem( 1.0 );
-	dpq.pushItem( 20.0 );
-	dpq.pushItem( 50.0 );
+	dpq.pushItem( 1 );
+	dpq.pushItem( 20 );
+	dpq.pushItem( 50 );
 
 	CPPUNIT_ASSERT_EQUAL( 3, dpq.getSize() );
 
@@ -61,9 +80,9 @@ public:
 	CPPUNIT_ASSERT( dpq.isEmpty() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 
-	dpq.pushItem( 2.0 );
-	dpq.pushItem( 20.0 );
-	dpq.pushItem( 30.0 );
+	dpq.pushItem( 2 );
+	dpq.pushItem( 20 );
+	dpq.pushItem( 30 );
 
 	CPPUNIT_ASSERT_EQUAL( 3, dpq.getSize() );
 
@@ -73,24 +92,26 @@ public:
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
+    template < class DPQ >
     void testPush()
     {
-	DynamicPriorityQueue<double> dpq;
+	DPQ dpq;
 
-	dpq.pushItem( 1.0 );
+	dpq.pushItem( 1 );
 
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
 	CPPUNIT_ASSERT( dpq.getTopItem() == 1.0 );
     }
 
+    template < class DPQ >
     void testPushPop()
     {
 	DynamicPriorityQueue<double> dpq;
 
-	const ID id( dpq.pushItem( 1.0 ) );
+	const ID id( dpq.pushItem( 1 ) );
 
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
-	CPPUNIT_ASSERT( dpq.getTopItem() == 1.0 );
+	CPPUNIT_ASSERT( dpq.getTopItem() == 1 );
 
 	dpq.popItem( id );
 
@@ -98,9 +119,10 @@ public:
 	CPPUNIT_ASSERT( dpq.isEmpty() );
     }
 
+    template < class DPQ >
     void testReplaceTop()
     {
-	DynamicPriorityQueue<int> dpq;
+	DPQ dpq;
 
 	dpq.pushItem( 4 );
 	dpq.pushItem( 2 );
@@ -124,9 +146,10 @@ public:
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
+    template < class DPQ >
     void testReplace()
     {
-	DynamicPriorityQueue<int> dpq;
+	DPQ dpq;
 
 	dpq.pushItem( 5 );
 	const ID id( dpq.pushItem( 4 ) );
@@ -148,14 +171,14 @@ public:
 	CPPUNIT_ASSERT_EQUAL( 5, dpq.getTopItem() );
 	dpq.popTop();
 
-
 	CPPUNIT_ASSERT( dpq.isEmpty() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
     }
 
+    template < class DPQ >
     void testDuplicatedItems()
     {
-	DynamicPriorityQueue<int> dpq;
+	DPQ dpq;
 
 	dpq.pushItem( 1 );
 	dpq.pushItem( 2 );
@@ -179,9 +202,10 @@ public:
     }
 
 
+    template < class DPQ >
     void testSimpleSorting()
     {
-	DynamicPriorityQueue<int> dpq;
+	DPQ dpq;
 
 	const int MAXI( 100 );
 	for( int i( MAXI ); i != 0  ; --i )
@@ -206,9 +230,10 @@ public:
     }
 
 
+    template < class DPQ >
     void testSimpleSortingWithPops()
     {
-	DynamicPriorityQueue<int> dpq;
+	DPQ dpq;
 
 	IDVector idVector;
 
@@ -253,9 +278,10 @@ public:
     }
 
 
+    template < class DPQ >
     void testInterleavedSorting()
     {
-	DynamicPriorityQueue<int> dpq;
+	DPQ dpq;
 
 	const int MAXI( 101 );
 	for( int i( MAXI-1 ); i != 0  ; i-=2 )
@@ -287,9 +313,10 @@ public:
     }
 
 
+    template < class DPQ >
     void testInterleavedSortingWithPops()
     {
-	DynamicPriorityQueue<int> dpq;
+	DPQ dpq;
 
 	IDVector idVector;
 
