@@ -201,14 +201,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.initializeSingleMap()
         self.initializeSingles()
 
+        for single in self.singleMap.values():
+            dt = single.calculateFirstPassageTime()
+            single.eventID = self.scheduler.addEvent( self.t + dt, single )
+
         self.formPairs()
 
         #debug
         #self.checkShellForAll()
-
-        for single in self.singleMap.values():
-            dt = single.calculateFirstPassageTime()
-            single.eventID = self.scheduler.addEvent( self.t + dt, single )
 
         #self.scheduler.updateAllEventDependency()
 
