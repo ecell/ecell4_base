@@ -207,6 +207,7 @@ namespace libecs
 
 	void step()
 	{
+	    puts("a");
 	    Event& aTopEvent( this->eventPriorityQueue.getTop() );
 	    const double aCurrentTime( aTopEvent.getTime() );
 //	    const EventIndex aTopEventIndex( getTopIndex() );
@@ -276,6 +277,12 @@ namespace libecs
 	{
 	    return this->eventPriorityQueue.push( anEvent );
 	}
+
+	void removeEvent( const EventID id )
+	{
+	    return this->eventPriorityQueue.pop( id );
+	}
+
 
 
 	// this is here for DiscreteEventStepper::log().

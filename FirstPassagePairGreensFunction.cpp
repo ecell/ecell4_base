@@ -734,7 +734,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     return t;
 }
 
-const FirstPassagePairGreensFunction::EventType 
+const EventType 
 FirstPassagePairGreensFunction::drawEventType( const Real rnd, 
 					       const Real r0,
 					       const Real t ) const

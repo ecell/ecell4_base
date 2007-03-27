@@ -6,118 +6,16 @@
 #include <boost/python/numeric.hpp>
 #include <numpy/arrayobject.h>
 
-#include "DynamicPriorityQueue.hpp"
-#include "EventScheduler.hpp"
-
-using namespace boost::python;
-
-
-class PyEvent
-    :
-    public libecs::EventBase
-{
-    
-public:
-	
-    PyEvent( const double time, object obj )
-        :
-        EventBase( time ),
-	obj( obj )
-    {
-	; // do nothing
-    }
-
-    virtual ~PyEvent()
-    {
-	; // do nothing
-    }
-    
-
-    const object& getObj() const
-    {
-	return this->obj;
-    }
-
-    void fire()
-    {
-	object ret( this->obj.attr( "fire" )() );
-	this->setTime( this->getTime() + extract<double>(ret) );
-    }
-
-    void update( const double t )
-    {
-	this->obj.attr( "update" )( t );
-    }
-
-    const bool isDependentOn( const PyEvent& arg ) const
-    {
-	return this->obj.attr( "isDependentOn" )( arg.getObj() );
-    }
-
-    PyEvent() // dummy
-    {
-	; // do nothing
-    }
-
-private:
-
-    object obj;
-};
-
-
-
-class PyEventScheduler
-    :
-    public libecs::EventScheduler<PyEvent>
-{
-public:
-
-    typedef libecs::EventScheduler<PyEvent>::EventIndex EventIndex;
-    
-    PyEventScheduler()
-    {
-	; // do nothing
-    }
-    
-    ~PyEventScheduler()
-    {
-	; // do nothing
-    }
-    
-    const EventIndex addEvent( const double t, const object& obj )
-    {
-	return libecs::EventScheduler<PyEvent>::addEvent( PyEvent( t, obj ) );
-    }
-
-
-};
-
-
-
-
-class PyEvent_to_python
-{
-public:
-
-  static PyObject* 
-  convert( const PyEvent& value )
-  {
-      return PyTuple_Pack( 2, 
-			   PyFloat_FromDouble( value.getTime() ),
-			   value.getObj().ptr() );
-  }
-
-};
-
-
-
-
-
+#include "PyEventScheduler.hpp"
 
 #include "PairGreensFunction.hpp"
 #include "PlainPairGreensFunction.hpp"
 #include "FirstPassageGreensFunction.hpp"
 #include "FirstPassagePairGreensFunction.hpp"
+
+
+using namespace boost::python;
+
 
 const double distanceSq( const double* const p1, const double* const p2 )
 {
@@ -160,7 +58,7 @@ BOOST_PYTHON_MODULE( _gfrd )
   
 
     class_<PyEvent, boost::noncopyable>( "Event", init<const Real,
-					 object>() )
+					 const object&>() )
 	.def( "setTime", &PyEvent::setTime )
 	.def( "getTime", &PyEvent::getTime )
 //	.def( "fire", &PyEvent::fire )
@@ -186,6 +84,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "step", &PyEventScheduler::step )
 	.def( "clear", &PyEventScheduler::clear )
 	.def( "addEvent", &PyEventScheduler::addEvent )
+	.def( "removeEvent", &PyEventScheduler::removeEvent )
 //	.def( "updateAllEventDependency", 
 //	      &PyEventScheduler::updateAllEventDependency )
 	;
@@ -216,9 +115,9 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "p_r_fourier", &FirstPassageGreensFunction::p_r_fourier )
 	;
 
-    enum_<FirstPassagePairGreensFunction::EventType>("EventType")
-	.value("ESCAPE", FirstPassagePairGreensFunction::ESCAPE )
-	.value("REACTION", FirstPassagePairGreensFunction::REACTION )
+    enum_<EventType>( "EventType" )
+	.value( "REACTION", REACTION )
+	.value( "ESCAPE", ESCAPE )
 	;
 
     class_<FirstPassagePairGreensFunction>( "FirstPassagePairGreensFunction",

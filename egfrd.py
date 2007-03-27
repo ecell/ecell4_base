@@ -37,6 +37,8 @@ class Single:
         self.sim = sim
         self.dt = 0.0
         self.closest = (-1, -1)
+        self.eventID = None
+
 
     def fire( self ):
         dt = self.sim.fireSingle( self )
@@ -105,6 +107,13 @@ class Pair:
         self.pgf = _gfrd.FirstPassagePairGreensFunction( D12, rt.k,
                                                          self.sigma )
 
+
+
+    def __del__( self ):
+        print 'del', str( self )
+
+
+
     def getCoM( self ):
         particle1 = self.single1.particle
         particle2 = self.single2.particle
@@ -141,15 +150,17 @@ class Pair:
         self.t_r = self.pgf.drawTime( rnd[1], r0 )
 
         if self.t_R < self.t_r:
+            t = self.t_R
             self.eventType = 2
         else:
+            t = self.t_r
             self.eventType = self.pgf.drawEventType( rnd[2], r0, self.t_r )
 
-        print self.eventType, self.t_R, self.t_r
+        return t, self.eventType
 
 
     def fire( self ):
-        pass
+        return 0.0
 
 
     def update( self, t ):
@@ -172,6 +183,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.scheduler = _gfrd.EventScheduler()
 
+        self.t = 0.0
         self.dtMax = INF
         self.dt = INF
 
@@ -196,7 +208,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         for single in self.singleMap.values():
             dt = single.calculateFirstPassageTime()
-            self.scheduler.addEvent( self.t + dt, single )
+            single.eventID = self.scheduler.addEvent( self.t + dt, single )
 
         #self.scheduler.updateAllEventDependency()
 
@@ -324,8 +336,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def formPairs( self ):
-        pass
-        #self.formPairsModestly()
+        #pass
+        self.formPairsModestly()
 
     def formPairsModestly( self ):
 
@@ -350,7 +362,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                 pair = self.createPair( single, closest )
                 com = pair.getCoM()
-                print com
+
                 neighbors, drs = self.getNeighbors( com, 3 )
                 pairPartner = neighbors[2]
                 pairDr = drs[2]
@@ -360,14 +372,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     #raise ''
                     break
                 
-                print Particle( pairPartner[0],index=pairPartner[1] ).getPos()
-                print pairPartner, pairDr
-
                 if pairDr > r0 * 5:
                     pairDr = r0 * 5
 
-                pair.nextEvent( pairDr )
-                #raise ''
+                nextEvent = pair.nextEvent( pairDr )
+                dt = nextEvent[0]
+                eventType = nextEvent[1]
+
+                if pair.single1.eventID != None:
+                    self.scheduler.removeEvent( pair.single1.eventID )
+                if pair.single2.eventID != None:
+                    self.scheduler.removeEvent( pair.single2.eventID )
+
+                pair.eventID = self.scheduler.addEvent( self.t + dt, pair ) 
+                
 
     def formPairsGreedily( self ):
 

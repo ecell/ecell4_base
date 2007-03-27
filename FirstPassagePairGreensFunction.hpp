@@ -7,20 +7,19 @@
 
 #include "PairGreensFunction.hpp"
 
+
+
+enum EventType
+{
+    REACTION = 0,
+    ESCAPE = 1
+};
+
 class FirstPassagePairGreensFunction
     :
     public PairGreensFunction
 {
 
-public:
-
-    enum EventType
-    {
-	ESCAPE = 0,
-	REACTION = 1
-    };
-    
-    
 public:
     
     FirstPassagePairGreensFunction( const Real D, 
