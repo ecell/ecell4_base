@@ -1,4 +1,3 @@
-
 #define CPPUNIT_ENABLE_NAKED_ASSERT 1
 
 #include <cppunit/TestFixture.h>
@@ -72,13 +71,13 @@ public:
     void testClear()
     {
 	DPQ dpq;
+	typedef typename DPQ::Index Index;
 
 	dpq.push( 1 );
 	dpq.push( 20 );
 	dpq.push( 50 );
 
-	//CPPUNIT_ASSERT_EQUAL( 3, dpq.getSize() );
-	CPPUNIT_ASSERT( 3 == dpq.getSize() );
+	CPPUNIT_ASSERT_EQUAL( Index( 3 ), dpq.getSize() );
 
 	dpq.clear();
 
@@ -89,7 +88,7 @@ public:
 	dpq.push( 20 );
 	dpq.push( 30 );
 
-	CPPUNIT_ASSERT_EQUAL( 3, dpq.getSize() );
+	CPPUNIT_ASSERT_EQUAL( Index( 3 ), dpq.getSize() );
 
 	dpq.clear();
 
@@ -239,10 +238,11 @@ public:
     void testSimpleSortingWithPops()
     {
 	DPQ dpq;
+	typedef typename DPQ::Index Index;
 
 	IDVector idVector;
 
-	const int MAXI( 100 );
+	const Index MAXI( 100 );
 	for( int n( MAXI ); n != 0  ; --n )
 	{
 	    ID id( dpq.push( n ) );
@@ -272,11 +272,11 @@ public:
 	    {
 		continue; // skip
 	    }
-	    CPPUNIT_ASSERT_EQUAL( n, dpq.getTop() );
+	    CPPUNIT_ASSERT_EQUAL( int( n ), dpq.getTop() );
 	    dpq.popTop();
 	}
 
-	CPPUNIT_ASSERT_EQUAL( MAXI, n );
+	CPPUNIT_ASSERT_EQUAL( MAXI, Index( n ) );
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
@@ -287,8 +287,9 @@ public:
     void testInterleavedSorting()
     {
 	DPQ dpq;
+	typedef typename DPQ::Index Index;
 
-	const int MAXI( 101 );
+	const Index MAXI( 101 );
 	for( int i( MAXI-1 ); i != 0  ; i-=2 )
 	{
 	    dpq.push( i );
@@ -311,7 +312,7 @@ public:
 	    dpq.popTop();
 	}
 
-	CPPUNIT_ASSERT_EQUAL( MAXI, n );
+	CPPUNIT_ASSERT_EQUAL( MAXI, Index( n ) );
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );
@@ -322,10 +323,11 @@ public:
     void testInterleavedSortingWithPops()
     {
 	DPQ dpq;
+	typedef typename DPQ::Index Index;
 
 	IDVector idVector;
 
-	const int MAXI( 101 );
+	const Index MAXI( 101 );
 	for( int n( MAXI-1 ); n != 0  ; n-=2 )
 	{
 	    const ID id( dpq.push( n ) );
@@ -374,7 +376,7 @@ public:
 	    dpq.popTop();
 	}
 
-	CPPUNIT_ASSERT_EQUAL( MAXI, n );
+	CPPUNIT_ASSERT_EQUAL( MAXI, Index( n ) );
 
 	CPPUNIT_ASSERT( dpq.isEmpty() );
 	CPPUNIT_ASSERT( dpq.checkConsistency() );

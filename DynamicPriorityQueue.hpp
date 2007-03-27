@@ -46,19 +46,19 @@ public:
 
     typedef long long unsigned int ID;
 
-    typedef std::vector<int>::difference_type       Index;
-
     typedef std::vector< ID >      IDVector;
+    typedef IDVector::size_type    Index;
+
 //    typedef std::tr1::unordered_map<const ID, Index> IndexMap;
     typedef std::map<const ID, Index> IndexMap;
 
     PersistentIDPolicy()
-    :
-    idCounter( 0 )
+	:
+	idCounter( 0 )
     {
 	; // do nothing
     }
-
+    
     void reset()
     {
 	idCounter = 0;
@@ -137,8 +137,9 @@ class VolatileIDPolicy
 {
 public:
 
-    typedef std::vector<int>::difference_type       Index;
-    typedef Index ID;
+
+    typedef size_t    Index;
+    typedef Index     ID;
 
     void reset()
     {
@@ -358,11 +359,17 @@ movePos( const Index pos )
     {
 	if( this->comp( this->itemVector[ this->heap[ succ ] ], item ) ||
 	    ( succ + 1 < size && 
-	      this->comp( this->itemVector[ this->heap[ succ + 1 ] ], item ) ) )
+	      this->comp( this->itemVector[ this->heap[ succ + 1 ] ], 
+			  item ) ) )
 	{
 	    moveDownPos( pos );
 	    return;
 	}
+    }
+
+    if( pos <= 0 )
+    {
+	return;
     }
 
     const Index pred( ( pos - 1 ) / 2 );
@@ -370,6 +377,7 @@ movePos( const Index pos )
 	this->comp( item, this->itemVector[ this->heap[ pred ] ] ) )
     {
 	moveUpPos( pos );
+	return;
     }
 }
 
