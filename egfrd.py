@@ -150,18 +150,68 @@ class Pair:
         self.t_r = self.pgf.drawTime( rnd[1], r0 )
 
         if self.t_R < self.t_r:
-            t = self.t_R
+            self.dt = self.t_R
             self.eventType = 2
         else:
-            t = self.t_r
+            self.dt = self.t_r
             self.eventType = self.pgf.drawEventType( rnd[2], r0, self.t_r )
 
-        return t, self.eventType
+        return self.dt, self.eventType
 
 
     def fire( self ):
-        return 0.0
 
+        print 'fire:', self
+
+        particle1 = self.single1.particle
+        particle2 = self.single2.particle
+        species1 = particle1.species
+        species2 = particle1.species
+
+        pos1 = particle1.getPos()
+        pos2 = particle2.getPos()
+
+        D1 = species1.D
+        D2 = species2.D
+
+        if self.eventType == EventType.REACTION:
+
+            if len( self.rt.products ) == 1:
+                
+                species3 = self.rt.products[0]
+
+                if D1 == 0.0:
+                    newR = pos1
+                elif D2 == 0.0:
+                    newR = pos2
+                else:
+                
+                    sqrtD1D2 = math.sqrt( D1 / D2 )
+                
+                    R0 = ( pos1 + sqrtD1D2 * pos2 ) * .5
+                    dR = gfrdfunctions.p2_R( D1/4, D2/4, self.dt )
+                    newR = R0 + dR
+                
+                
+                #FIXME: SURFACE
+                newR = self.sim.checkBoundary( newR )
+
+                
+                species1.removeParticleBySerial( particle1.serial )
+                species2.removeParticleBySerial( particle2.serial )
+                species3.newParticle( newR )
+
+            else:
+                raise 'num products >= 2 not supported yet.'
+
+        elif self.eventType == EventType.ESCAPE:
+            pass
+        elif self.eventType == 2:
+            pass
+        else:
+            raise 'Bug: invalid eventType.'
+
+        return 0.0
 
     def update( self, t ):
         print 'update'
