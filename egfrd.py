@@ -68,7 +68,7 @@ class Single:
     def calculateFirstPassageTime( self ):
         
         species = self.particle.species
-        fpgf = _gfrd.FirstPassageGreensFunction( species.D )
+        fpgf = FirstPassageGreensFunction( species.D )
         rnd = random.random()
         dr = self.getDr()
         if dr <= 0.0:
@@ -103,8 +103,8 @@ class Pair:
         D12 = particle1.species.D + particle2.species.D
         self.sigma = particle1.species.radius + particle2.species.radius
 
-        self.sgf = _gfrd.FirstPassageGreensFunction( D12 / 4.0 )
-        self.pgf = _gfrd.FirstPassagePairGreensFunction( D12, rt.k,
+        self.sgf = FirstPassageGreensFunction( D12 / 4.0 )
+        self.pgf = FirstPassagePairGreensFunction( D12, rt.k,
                                                          self.sigma )
 
 
@@ -231,7 +231,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.isDirty = True
 
-        self.scheduler = _gfrd.EventScheduler()
+        self.scheduler = EventScheduler()
 
         self.t = 0.0
         self.dtMax = INF

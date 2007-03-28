@@ -16,7 +16,7 @@ from surface import *
 import gfrdfunctions
 import _gfrd
 
-from _gfrd import EventType
+from _gfrd import *
 
 
 class Species:
