@@ -11,8 +11,6 @@ import numpy
 
 from utils import *
 from surface import *
-import gfrdfunctions
-import _gfrd
 
 from gfrdbase import *
 
@@ -200,6 +198,8 @@ class Pair:
         D1 = species1.D
         D2 = species2.D
 
+        sqrtD1D2 = math.sqrt( D1 / D2 )
+
         # 1. now we handle the reaction case first.
         if self.eventType == EventType.REACTION:
 
@@ -213,7 +213,7 @@ class Pair:
                     newR = pos2
                 else:
                     R0 = self.getCoM()
-                    dR = gfrdfunctions.p2_R( D1/4, D2/4, self.dt )
+                    dR = p_free( D1/4, D2/4, self.dt )
                     newR = R0 + dR
                 
                 
@@ -263,7 +263,7 @@ class Pair:
             theta_r = self.pgf.drawTheta( rnd[1], r, self.r0, self.dt )
             phi_r = random.uniform( 0.0, 2*Pi )
             newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
-            newInterParticle = sphericalToCartesian( displacement_r_S )
+            newInterParticle = sphericalToCartesian( newInterParticleS )
 
             # Now I rotate the new interparticle vector along the
             # rotation axis that is perpendicular to both the
@@ -284,7 +284,8 @@ class Pair:
                                              rotationAxis,
                                              angle )
 
-            newpos1 = ( 2 * R - sqrtD1D2 * newInterParticle ) \
+
+            newpos1 = ( 2 * newR - sqrtD1D2 * newInterParticle ) \
                       / ( 1 + sqrtD1D2 )
             newpos2 = newpos1 + newInterParticle
                 

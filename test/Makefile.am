@@ -1,9 +1,7 @@
 PYCHECKER = @PYCHECKER@
 
 
-TESTS = AllTests 
-
-#pycheck
+TESTS = AllTests pycheck
 
 
 INCLUDES = -I$(top_srcdir)

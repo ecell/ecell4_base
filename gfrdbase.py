@@ -13,10 +13,18 @@ import scipy.optimize
 
 from utils import *
 #from surface import *
-import gfrdfunctions
-import _gfrd
-
 from _gfrd import *
+
+
+N_A = 6.0221367e23
+
+
+def p_free( D, dt ):
+    ro = math.sqrt( 2.0 * D * dt )
+
+    displacement = numpy.random.normal( 0.0, ro, 3 )
+
+    return displacement
 
 
 class Species:
@@ -75,7 +83,7 @@ class BindingReactionType( ReactionType ):
 
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
-        self.pairGreensFunction = _gfrd.PlainPairGreensFunction( D, k, sigma )
+        self.pairGreensFunction = PlainPairGreensFunction( D, k, sigma )
 
 class RepulsionReactionType( ReactionType ):
 
@@ -86,7 +94,7 @@ class RepulsionReactionType( ReactionType ):
 
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
-        self.pairGreensFunction = _gfrd.PlainPairGreensFunction( D, self.k,\
+        self.pairGreensFunction = PlainPairGreensFunction( D, self.k,\
                                                                 sigma )
 
 class UnbindingReactionType( ReactionType ):
@@ -306,7 +314,7 @@ class GFRDSimulatorBase:
         limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
 
         while True:
-            displacement = gfrdfunctions.p1( species.D, self.dt )
+            displacement = p_free( species.D, self.dt )
             
             distanceSq = ( displacement * displacement ).sum()
 
@@ -329,7 +337,7 @@ class GFRDSimulatorBase:
         limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
 
         while True:
-            displacement = gfrdfunctions.p1( species.D, self.dt )
+            displacement = p_free( species.D, self.dt )
             
             distanceSq = ( displacement * displacement ).sum()
 

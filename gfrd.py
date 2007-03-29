@@ -13,8 +13,6 @@ import scipy.optimize
 
 from utils import *
 from surface import *
-import gfrdfunctions
-import _gfrd
 
 from gfrdbase import *
 
@@ -264,7 +262,7 @@ class GFRDSimulator( GFRDSimulatorBase ):
                 
                 R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
                 
-                dR = gfrdfunctions.p2_R( D1, D2, self.dt )
+                dR = p_free( D1 + D2, self.dt )
                 newpos = ( R0 + dR ) / ( sqrtD1D2 + sqrtD2D1 )
                 
                 
@@ -369,7 +367,7 @@ class GFRDSimulator( GFRDSimulatorBase ):
                 sqrtD1D2 = math.sqrt( D1 / D2 )
                 sqrtD2D1 = math.sqrt( D2 / D1 ) 
                 R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
-                dR = gfrdfunctions.p2_R( D1, D2, self.dt )
+                dR = p_free( D1 + D2, self.dt )
                 R = R0 + dR
 
             while True:
