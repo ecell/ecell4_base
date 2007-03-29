@@ -12,7 +12,7 @@ import scipy.optimize
 
 
 from utils import *
-from surface import *
+#from surface import *
 import gfrdfunctions
 import _gfrd
 
@@ -284,7 +284,7 @@ class GFRDSimulatorBase:
             self._distanceSq = distanceSq_Cyclic
             self._distanceSqArray = distanceSqArray_Cyclic
 
-    def checkBoundary( self, pos ):
+    def applyBoundary( self, pos ):
         if self.fsize != INF:
             pos %= self.fsize
 
@@ -408,16 +408,20 @@ class GFRDSimulatorBase:
 
 
 
-    def placeParticle( self, id, position ):
+    def placeParticle( self, id, pos ):
 
-        position = numpy.array( position )
         species = self.speciesList[ id ]
 
         if not self.checkOverlap( position, species.radius ):
             raise 'placeParticle: overlap check failed'
             
-        species.newParticle( position )
-        
+        particle = self.createParticle( species, pos )
+        return particle
+
+
+    def createParticle( self, species, pos ):
+        newserial = species.newParticle( pos )
+        return Particle( species, newserial )
         
     def checkOverlap( self, position, radius ):
         

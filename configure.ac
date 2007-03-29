@@ -20,12 +20,17 @@ dnl
 dnl checks for programs
 dnl
 AM_PATH_PYTHON()
+AC_CHECK_PROGS(PYCHECKER, [pychecker], [no])
+if test "$PYCHECKER" == no ; then
+   AC_MSG_WARN([pychecker not found.])
+dnl   AC_MSG_WARN([Python source checking is disabled.])
+   AC_MSG_ERROR([])
+fi
 dnl
 dnl
 dnl checks for libraries
 dnl
 dnl
-AC_CHECK_LIB([dl],[dlsym])
 AM_PATH_GSL(1.0,,AC_MSG_ERROR([could not find required version of GSL.]))
 dnl
 dnl
@@ -40,6 +45,9 @@ dnl    AC_MSG_WARN([Disabling the C++ testging suite.])
     AC_MSG_WARN([])
     AC_MSG_ERROR([])
 ])
+dnl
+dnl currently we need libdl only for cppunit.
+AC_CHECK_LIB([dl],[dlsym])
 dnl
 AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])
 AM_CHECK_PYMOD(scipy,,,[AC_MSG_ERROR([could not find Python scipy module.])])

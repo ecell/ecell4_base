@@ -35,17 +35,33 @@ class Single:
         #FIXME: si and i are fragile
         self.particle = particle
         self.sim = sim
+        self.lastTime = 0.0
         self.dt = 0.0
         self.closest = (-1, -1)
         self.eventID = None
-
 
     def fire( self ):
         dt = self.sim.fireSingle( self )
         return dt
 
     def update( self, t ):
-        print 'update'
+
+        self.lastTime = t
+        
+        neighbors, drs = self.sim.getNeighbors( self.particle.getPos() )
+        closest = neighbors[1]
+        dr = drs[1] - self.particle.species.radius
+        closestParticle = Particle( closest[0], index=closest[1] )
+        closestSingle = self.sim.findSingle( closestParticle )
+        
+        self.closest = closestSingle
+        
+        #print 'dr', dr
+        #FIXME: take different D into account
+        self.setDr( dr * .5 )
+        
+        self.dt = self.calculateFirstPassageTime()
+
 
     def isDependentOn( self, event ):
         #print event
@@ -59,11 +75,11 @@ class Single:
 
     def setDr( self, dr ):
         pool = self.particle.species.pool
-        pool.drs[ pool.getSerialByIndex( self.particle.serial ) ] = dr
+        pool.drs[ pool.getIndex( self.particle.serial ) ] = dr
 
     def getDr( self ):
         pool = self.particle.species.pool
-        return pool.drs[ pool.getSerialByIndex( self.particle.serial ) ]
+        return pool.drs[ pool.getIndex( self.particle.serial ) ]
 
     def calculateFirstPassageTime( self ):
         
@@ -88,12 +104,14 @@ class Single:
 class Pair:
     def __init__( self, sim, single1, single2, rt ):
 
+
         self.single1 = single1
         self.single2 = single2
 
         self.rt = rt
         
         self.sim = sim
+        self.lastTime = 0.0
         self.dt = 0.0
         self.closest = None
 
@@ -105,7 +123,9 @@ class Pair:
 
         self.sgf = FirstPassageGreensFunction( D12 / 4.0 )
         self.pgf = FirstPassagePairGreensFunction( D12, rt.k,
-                                                         self.sigma )
+                                                   self.sigma )
+
+        self.eventID = None
 
 
 
@@ -114,6 +134,10 @@ class Pair:
 
 
 
+    '''
+    Calculate and return Center of Mass (== CoM) of this pair.
+    '''
+
     def getCoM( self ):
         particle1 = self.single1.particle
         particle2 = self.single2.particle
@@ -121,7 +145,7 @@ class Pair:
         D1 = particle1.species.D
         D2 = particle2.species.D
 
-        sqrtD2D1 = math.sqrt( D2 / D1 ) 
+#        sqrtD2D1 = math.sqrt( D2 / D1 ) 
         sqrtD1D2 = math.sqrt( D1 / D2 )
 
         pos1 = particle1.getPos()
@@ -129,6 +153,7 @@ class Pair:
         
         #com = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
         com = ( pos1 + sqrtD1D2 * pos2 ) * .5
+
         return com
 
     def nextEvent( self, dr ):
@@ -137,24 +162,25 @@ class Pair:
         pos1 = self.single1.particle.getPos()
         pos2 = self.single2.particle.getPos()
 
-        r0 = self.sim.distance( pos1, pos2 )
+        self.r0 = self.sim.distance( pos1, pos2 )
 
-        a_r = ( dr + r0 ) * .5
-        a_R = a_r - r0
+        self.a_r = ( dr + self.r0 ) * .5
+        self.a_R = self.a_r - self.r0
 
-        print 'dr', dr, 'r0', r0, 'a_r', a_r, 'a_R', a_R, dr - a_r - a_R
+        #print 'dr', dr, 'r0', r0, 'a_r', a_r, 'a_R', a_R, dr - a_r - a_R
 
-        self.pgf.seta( a_r )
+        self.pgf.seta( self.a_r )
 
-        self.t_R = self.sgf.drawTime( rnd[0], a_R )
-        self.t_r = self.pgf.drawTime( rnd[1], r0 )
+        self.t_R = self.sgf.drawTime( rnd[0], self.a_R )
+        self.t_r = self.pgf.drawTime( rnd[1], self.r0 )
 
         if self.t_R < self.t_r:
             self.dt = self.t_R
             self.eventType = 2
         else:
             self.dt = self.t_r
-            self.eventType = self.pgf.drawEventType( rnd[2], r0, self.t_r )
+            self.eventType = self.pgf.drawEventType( rnd[2], self.r0,
+                                                     self.t_r )
 
         return self.dt, self.eventType
 
@@ -174,6 +200,7 @@ class Pair:
         D1 = species1.D
         D2 = species2.D
 
+        # 1. now we handle the reaction case first.
         if self.eventType == EventType.REACTION:
 
             if len( self.rt.products ) == 1:
@@ -185,33 +212,92 @@ class Pair:
                 elif D2 == 0.0:
                     newR = pos2
                 else:
-                
-                    sqrtD1D2 = math.sqrt( D1 / D2 )
-                
-                    R0 = ( pos1 + sqrtD1D2 * pos2 ) * .5
+                    R0 = self.getCoM()
                     dR = gfrdfunctions.p2_R( D1/4, D2/4, self.dt )
                     newR = R0 + dR
                 
                 
                 #FIXME: SURFACE
-                newR = self.sim.checkBoundary( newR )
+                newR = self.sim.applyBoundary( newR )
 
-                
                 species1.removeParticleBySerial( particle1.serial )
                 species2.removeParticleBySerial( particle2.serial )
-                species3.newParticle( newR )
+
+                particle = self.sim.createParticle( species3, newR )
+
+                self.sim.scheduler.removeEvent( self.eventID )
+
+                single = self.sim.createSingle( particle )
+                self.sim.createSingleEvent( single )
+
+                return Inf
 
             else:
-                raise 'num products >= 2 not supported yet.'
+                raise NotImplementedError,\
+                      'num products >= 2 not supported yet.'
 
-        elif self.eventType == EventType.ESCAPE:
-            pass
+        # 2. escape cases.
+
+        # 2.1 escape r
+        if self.eventType == EventType.ESCAPE:
+
+            #return 0.0
+            raise NotImplementedError,'ESCAPE'
+
+
+        # 2.2 escape R
         elif self.eventType == 2:
-            pass
-        else:
-            raise 'Bug: invalid eventType.'
 
-        return 0.0
+            # calculate new R
+            displacement_R_S = numpy.array( [ self.a_R,
+                                              random.uniform( 0.0, Pi ),
+                                              random.uniform( 0.0, 2*Pi ) ] )
+            displacement_R = sphericalToCartesian( displacement_R_S )
+            newR = self.getCoM() + displacement_R
+
+
+            # calculate new r
+            rnd = numpy.random.uniform( size = 2 )
+            r = self.pgf.drawR( rnd[0], self.a_r, self.dt )
+            print ( rnd[1], r, self.r0, self.dt )
+            theta_r = self.pgf.drawTheta( rnd[1], r, self.r0, self.dt )
+            phi_r = random.uniform( 0.0, 2*Pi )
+            newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
+            newInterParticle = sphericalToCartesian( displacement_r_S )
+
+            # Now I rotate the new interparticle vector along the
+            # rotation axis that is perpendicular to both the
+            # z-axis and the original interparticle vector for
+            # the angle between these.
+            
+            # the rotation axis is a normalized cross product of
+            # the z-axis and the original vector.
+            # rotationAxis2 = crossproduct( [ 0,0,1 ], interParticle )
+
+            interParticle = pos2 - pos1
+            rotationAxis = crossproductAgainstZAxis( interParticle )
+            rotationAxis = normalize( rotationAxis )
+            
+            angle = vectorAngleAgainstZAxis( interParticle )
+            
+            newInterParticle = rotateVector( newInterParticle,
+                                             rotationAxis,
+                                             angle )
+
+            newpos1 = ( 2 * R - sqrtD1D2 * newInterParticle ) \
+                      / ( 1 + sqrtD1D2 )
+            newpos2 = newpos1 + newInterParticle
+                
+            raise NotImplementedError,'ESCAPE2'  # escape R
+        else:
+            raise SystemError, 'Bug: invalid eventType.'
+
+        particle1.setPos( newpos1 )
+        particle2.setPos( newpos2 )
+
+        dt, eventType = self.nextEvent()
+        return dt
+
 
     def update( self, t ):
         print 'update'
@@ -243,17 +329,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.lastEvent = None
         self.hoggerCounter = 0
 
-
     def initialize( self ):
 
         self.scheduler.clear()
 
         self.initializeSingleMap()
         self.initializeSingles()
-
-        for single in self.singleMap.values():
-            dt = single.calculateFirstPassageTime()
-            single.eventID = self.scheduler.addEvent( self.t + dt, single )
 
         self.formPairs()
 
@@ -330,7 +411,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pos += displacement
 
         # BOUNDARY
-        self.checkBoundary( pos )
+        self.applyBoundary( pos )
         
         #print 'displacement', length(displacement), single.getDr()
 
@@ -361,28 +442,29 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         for species in self.speciesList.values():
             for i in range( species.pool.size ):
                 particle = Particle( species, index=i )
-                single = Single( self, particle )
-                single.setDr( 0.0 )
-                self.singleMap[ ( species, particle.serial ) ] = single
+                single = self.createSingle( particle )
+                self.singleMap[ ( species, particle.serial ) ] = single        
 
     def findSingle( self, particle ):
         return self.singleMap.get( ( particle.species, particle.serial ) )
 
+    def createSingle( self, particle ):
+        single = Single( self, particle )
+        single.setDr( 0.0 )
+        return single
+
     def initializeSingles( self ):
 
         for single in self.singleMap.values():
-            neighbors, drs = self.getNeighbors( single.particle.getPos() )
-            closest = neighbors[1]
-            dr = drs[1] - single.particle.species.radius
-            closestParticle = Particle( closest[0], index=closest[1] )
-            closestSingle = self.findSingle( closestParticle )
-            
-            single.closest = closestSingle
-            #print 'dr', dr
-            #FIXME: take different D into account
-            single.setDr( dr * .5 )
+            self.createSingleEvent( single )
         
         #FIXME: here perhaps a second pass to get drs maximally large.
+
+
+    def createSingleEvent( self, single ):
+        single.update( self.t )
+        nextt = single.lastTime + single.dt
+        self.scheduler.addEvent( nextt, single )
 
 
     def formPairs( self ):
@@ -414,7 +496,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 com = pair.getCoM()
 
                 neighbors, drs = self.getNeighbors( com, 3 )
-                pairPartner = neighbors[2]
                 pairDr = drs[2]
 
                 if pairDr < r0:   # this happens with a small probability
@@ -427,7 +508,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                 nextEvent = pair.nextEvent( pairDr )
                 dt = nextEvent[0]
-                eventType = nextEvent[1]
+                #eventType = nextEvent[1]
 
                 if pair.single1.eventID != None:
                     self.scheduler.removeEvent( pair.single1.eventID )
@@ -440,12 +521,26 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def formPairsGreedily( self ):
 
         for single in self.singleMap.values():
-            print single, closest, dr
+            print single, single.closest, single.getDr()
 
     def createPair( self, single1, single2 ):
-        rt = self.reactionTypeMap2.get( ( single1.particle.species,\
-                                          single2.particle.species ) )
-        return Pair( self, single1, single2, rt )
+
+        species1 = single1.particle.species
+        species2 = single2.particle.species
+        rt = self.reactionTypeMap2.get( ( species1, species2 ) )
+
+        # If either one of D1 or D2 are zero, it must be D1.
+        # D1 and D2 must not be zero at the same time.
+        if single2.particle.species.D == 0.0:
+            if single1.particle.species.D == 0.0:
+                raise RuntimeError, 'createPair: D1 == D2 == 0.'
+            else:
+                s1, s2 = single2, single1 # D1 must be nonzero.
+        else:
+            s1, s2 = single1, single2
+
+        
+        return Pair( self, s1, s2, rt )
 
             
         
@@ -456,7 +551,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if single.getDr() - distance >= 1e-18:
             dr = single.getDr()
             print single.particle, closest, dr, distance, dr - distance
-            raise 'Fatal: shells overlap.'
+            raise RuntimeError, 'Fatal: shells overlap.'
 
     def checkShellForAll( self ):
         for single in self.singleMap.values():
