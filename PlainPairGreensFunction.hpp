@@ -120,7 +120,7 @@ private:
 		    const Real t, const RealVector& RnTable );
     
     const Real 
-    Rn( const Int order, const Real r, const Real r0, const Real t,
+    Rn( const Integer order, const Real r, const Real r0, const Real t,
 	gsl_integration_workspace* const workspace, const Real err ) const;
     
     

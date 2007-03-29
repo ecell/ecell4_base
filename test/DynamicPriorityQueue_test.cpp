@@ -14,33 +14,33 @@ class DynamicPriorityQueueTest
 
 public:
 
-    typedef DynamicPriorityQueue< int > IntDPQ;
-    typedef DynamicPriorityQueue< int, VolatileIDPolicy > VolatileIntDPQ;
+    typedef DynamicPriorityQueue< int > IntegerDPQ;
+    typedef DynamicPriorityQueue< int, VolatileIDPolicy > VolatileIntegerDPQ;
 
 
     CPPUNIT_TEST_SUITE( DynamicPriorityQueueTest );
 
-    CPPUNIT_TEST( testConstruction< IntDPQ > ); 
-    CPPUNIT_TEST( testClear< IntDPQ > ); 
-    CPPUNIT_TEST( testPush< IntDPQ > );
-    CPPUNIT_TEST( testPushPop< IntDPQ > );
-    CPPUNIT_TEST( testReplaceTop< IntDPQ > );
-    CPPUNIT_TEST( testReplace< IntDPQ > );
-    CPPUNIT_TEST( testDuplicatedItems< IntDPQ > );
-    CPPUNIT_TEST( testSimpleSorting< IntDPQ > );
-    CPPUNIT_TEST( testSimpleSortingWithPops< IntDPQ > );
-    CPPUNIT_TEST( testInterleavedSorting< IntDPQ > );
-    CPPUNIT_TEST( testInterleavedSortingWithPops< IntDPQ > );
+    CPPUNIT_TEST( testConstruction< IntegerDPQ > ); 
+    CPPUNIT_TEST( testClear< IntegerDPQ > ); 
+    CPPUNIT_TEST( testPush< IntegerDPQ > );
+    CPPUNIT_TEST( testPushPop< IntegerDPQ > );
+    CPPUNIT_TEST( testReplaceTop< IntegerDPQ > );
+    CPPUNIT_TEST( testReplace< IntegerDPQ > );
+    CPPUNIT_TEST( testDuplicatedItems< IntegerDPQ > );
+    CPPUNIT_TEST( testSimpleSorting< IntegerDPQ > );
+    CPPUNIT_TEST( testSimpleSortingWithPops< IntegerDPQ > );
+    CPPUNIT_TEST( testIntegererleavedSorting< IntegerDPQ > );
+    CPPUNIT_TEST( testIntegererleavedSortingWithPops< IntegerDPQ > );
 
-    CPPUNIT_TEST( testConstruction< VolatileIntDPQ > ); 
-    CPPUNIT_TEST( testClear< VolatileIntDPQ > ); 
-    CPPUNIT_TEST( testPush< VolatileIntDPQ > );
-    CPPUNIT_TEST( testPushPop< VolatileIntDPQ > );
-    CPPUNIT_TEST( testReplaceTop< VolatileIntDPQ > );
-    CPPUNIT_TEST( testReplace< VolatileIntDPQ > );
-    CPPUNIT_TEST( testDuplicatedItems< VolatileIntDPQ > );
-    CPPUNIT_TEST( testSimpleSorting< VolatileIntDPQ > );
-    CPPUNIT_TEST( testInterleavedSorting< VolatileIntDPQ > );
+    CPPUNIT_TEST( testConstruction< VolatileIntegerDPQ > ); 
+    CPPUNIT_TEST( testClear< VolatileIntegerDPQ > ); 
+    CPPUNIT_TEST( testPush< VolatileIntegerDPQ > );
+    CPPUNIT_TEST( testPushPop< VolatileIntegerDPQ > );
+    CPPUNIT_TEST( testReplaceTop< VolatileIntegerDPQ > );
+    CPPUNIT_TEST( testReplace< VolatileIntegerDPQ > );
+    CPPUNIT_TEST( testDuplicatedItems< VolatileIntegerDPQ > );
+    CPPUNIT_TEST( testSimpleSorting< VolatileIntegerDPQ > );
+    CPPUNIT_TEST( testIntegererleavedSorting< VolatileIntegerDPQ > );
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -284,7 +284,7 @@ public:
 
 
     template < class DPQ >
-    void testInterleavedSorting()
+    void testIntegererleavedSorting()
     {
 	DPQ dpq;
 	typedef typename DPQ::Index Index;
@@ -320,7 +320,7 @@ public:
 
 
     template < class DPQ >
-    void testInterleavedSortingWithPops()
+    void testIntegererleavedSortingWithPops()
     {
 	DPQ dpq;
 	typedef typename DPQ::Index Index;

@@ -30,13 +30,13 @@ static const Real ellipticTheta4Zero( const Real q )
 {
     assert( fabs( q ) < 1.0 );
 
-    const Int N( 100 );
+    const Integer N( 100 );
     Real value( 1.0 );
 
     Real q_n( q );
     Real q_2n( 1.0 );
 
-    for( Int n( 1 ); n <= N; ++n )
+    for( Integer n( 1 ); n <= N; ++n )
     {
 	const Real term2( 1.0 - q_2n * q );  // q^(2n-1) = (q^(n-1))^2 * q
 
@@ -117,7 +117,7 @@ FirstPassageGreensFunction::p_r_int( const Real r, const Real t, const Real a ) 
 
     const Real factor( 2.0 / ( a * M_PI ) );
 
-    const Int N( 1000 );
+    const Integer N( 1000 );
     long int n( 1 );
     while( true )
     {
@@ -169,7 +169,7 @@ FirstPassageGreensFunction::p_r_fourier( const Real r, const Real t,
     const Real asq( a * a );
     const Real PIsq( M_PI * M_PI );
 
-    const Int N( 100 );
+    const Integer N( 100 );
 
     long int n( 1 );
     while( true )

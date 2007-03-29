@@ -171,18 +171,13 @@ def test_f_alpha():
 
 def test_drawTheta():
     
-#    t = 1e-4
-#    D = 1e-12
-#    Sigma = 1e-8
-#    kf = 1e-8
-
-    t = 0.001527
+    t = 1e-4
     D = 1e-12
-    Sigma = 2e-8
+    Sigma = 1e-8
     kf = 1e-8
 
-    r = 4e-8
-    r0 = 4e-8
+    r = 1e-7
+    r0 = 1e-7
     a = 5e-8
     
 

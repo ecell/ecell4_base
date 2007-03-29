@@ -155,6 +155,9 @@ class Pair:
         return com
 
     def nextEvent( self, dr ):
+
+        self.dr = dr
+        
         rnd = numpy.random.uniform( size=3 )
 
         pos1 = self.single1.particle.getPos()
@@ -162,7 +165,7 @@ class Pair:
 
         self.r0 = self.sim.distance( pos1, pos2 )
 
-        self.a_r = ( dr + self.r0 ) * .5
+        self.a_r = ( self.dr + self.r0 ) * .5
         self.a_R = self.a_r - self.r0
 
         #print 'dr', dr, 'r0', r0, 'a_r', a_r, 'a_R', a_R, dr - a_r - a_R
@@ -241,12 +244,63 @@ class Pair:
         # 2.1 escape r
         if self.eventType == EventType.ESCAPE:
 
+            print 'escape r'
+
+            rnd = numpy.random.uniform( size=2 )
+
+            # calculate new R
+            
+            r_R = self.sgf.drawR( rnd[0], self.dt, self.a_R )
+            
+            displacement_R_S = numpy.array( [ r_R,
+                                              random.uniform( 0.0, Pi ),
+                                              random.uniform( 0.0, 2*Pi ) ] )
+            displacement_R = sphericalToCartesian( displacement_R_S )
+            newR = self.getCoM() + displacement_R
+
+
+            # calculate new r
+            print ( rnd[1], self.a_r, self.r0, self.dt )
+            theta_r = self.pgf.drawTheta( rnd[1], self.a_r*.09, self.r0, self.dt )
+            phi_r = random.uniform( 0.0, 2*Pi )
+            newInterParticleS = numpy.array( [ self.a_r, theta_r, phi_r ] )
+            newInterParticle = sphericalToCartesian( newInterParticleS )
+
+            # Now I rotate the new interparticle vector along the
+            # rotation axis that is perpendicular to both the
+            # z-axis and the original interparticle vector for
+            # the angle between these.
+            
+            # the rotation axis is a normalized cross product of
+            # the z-axis and the original vector.
+            # rotationAxis2 = crossproduct( [ 0,0,1 ], interParticle )
+
+            interParticle = pos2 - pos1
+            rotationAxis = crossproductAgainstZAxis( interParticle )
+            rotationAxis = normalize( rotationAxis )
+            
+            angle = vectorAngleAgainstZAxis( interParticle )
+            
+            newInterParticle = rotateVector( newInterParticle,
+                                             rotationAxis,
+                                             angle )
+
+
+            newpos1 = ( 2 * newR - sqrtD1D2 * newInterParticle ) \
+                      / ( 1 + sqrtD1D2 )
+            newpos2 = newpos1 + newInterParticle
+                
+
+
+
             #return 0.0
-            raise NotImplementedError,'ESCAPE'
+            #raise NotImplementedError,'ESCAPE'
 
 
         # 2.2 escape R
         elif self.eventType == 2:
+
+            print 'escape R'
 
             # calculate new R
             displacement_R_S = numpy.array( [ self.a_R,
@@ -289,14 +343,14 @@ class Pair:
                       / ( 1 + sqrtD1D2 )
             newpos2 = newpos1 + newInterParticle
                 
-            raise NotImplementedError,'ESCAPE2'  # escape R
+            # raise NotImplementedError,'ESCAPE2'  # escape R
         else:
             raise SystemError, 'Bug: invalid eventType.'
 
         particle1.setPos( newpos1 )
         particle2.setPos( newpos2 )
 
-        dt, eventType = self.nextEvent()
+        dt, eventType = self.nextEvent( self.dr )
         return dt
 
 

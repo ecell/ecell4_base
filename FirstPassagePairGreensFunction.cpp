@@ -109,7 +109,7 @@ f_alpha0_aux_F( const Real alpha,
 
 
 const Real 
-FirstPassagePairGreensFunction::alpha0_i( const Int i ) const
+FirstPassagePairGreensFunction::alpha0_i( const Integer i ) const
 {
     assert( i >= 0 );
 
@@ -399,9 +399,9 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
     printf("%g %g\n", alpha0_0, alpha_cutoff );
 
 
-    const Int maxIter( 10000 );
+    const Integer maxIter( 10000 );
 
-    Int i( 1 );
+    Integer i( 1 );
     while( true )
     {
 	const Real alpha0_i( this->alpha0_i( i ) );
@@ -834,7 +834,7 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 
 
 const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
-						    const Int n ) const
+						    const Integer n ) const
 {
     const Real a( this->geta() );
     const Real aAlpha( a * alpha );
@@ -884,13 +884,13 @@ inline const Real G( const unsigned int n, const unsigned int k )
 }
 
 
-const Real FirstPassagePairGreensFunction::P( const Int n,
+const Real FirstPassagePairGreensFunction::P( const Integer n,
 					       const Real x )
 {
     Real result( 0.0 );
 
     Real sx2( 1.0 );
-    Int term1( 1 );
+    Integer term1( 1 );
 
     const Real x2sq_r( 1.0 / gsl_pow_2( x + x ) );
     const unsigned int maxm( n / 2 );
@@ -907,13 +907,13 @@ const Real FirstPassagePairGreensFunction::P( const Int n,
 }
 
 const boost::tuple<Real,Real>
-FirstPassagePairGreensFunction::P2( const Int n, const Real x )
+FirstPassagePairGreensFunction::P2( const Integer n, const Real x )
 {
     Real result( 0.0 );
     Real resultp( 0.0 );
 
     Real sx2( 1.0 );
-    Int term1( 1 );
+    Integer term1( 1 );
 
     const Real x2sq_r( 1.0 / gsl_pow_2( x + x ) );
     const unsigned int np1( n + 1 );
@@ -942,13 +942,13 @@ FirstPassagePairGreensFunction::P2( const Int n, const Real x )
 }
 
 
-const Real FirstPassagePairGreensFunction::Q( const Int n,
+const Real FirstPassagePairGreensFunction::Q( const Integer n,
 					      const Real x )
 {
     Real result( 0.0 );
 
     Real sx2( 1.0 / ( x + x ) );
-    Int term1( 1 );
+    Integer term1( 1 );
 
     const Real x2sq( sx2 * sx2 );
     const unsigned int maxm( (n+1)/2 ); // sum_(0)^((n-1)/2)
@@ -965,13 +965,13 @@ const Real FirstPassagePairGreensFunction::Q( const Int n,
 }
 
 const boost::tuple<Real,Real>
-FirstPassagePairGreensFunction::Q2( const Int n, const Real x )
+FirstPassagePairGreensFunction::Q2( const Integer n, const Real x )
 {
     Real result( 0.0 );
     Real resultp( 0.0 );
 
     Real sx2( 1.0 / ( x + x ) );
-    Int term1( 1 );  // (-1)^m
+    Integer term1( 1 );  // (-1)^m
 
     const Real x2sq( sx2 * sx2 );
     const unsigned int np1( n + 1 );
@@ -1003,7 +1003,7 @@ FirstPassagePairGreensFunction::Q2( const Int n, const Real x )
 
 const Real 
 FirstPassagePairGreensFunction::f_alpha_aux( const Real alpha, 
-					     const Int n ) const
+					     const Integer n ) const
 {
     if( alpha == 0.0 )
     {
@@ -1066,17 +1066,17 @@ f_alpha_aux_F( const Real alpha,
 	       const f_alpha_aux_params* const params )
 {
     const FirstPassagePairGreensFunction* const gf( params->gf ); 
-    const Int n( params->n );
+    const Integer n( params->n );
     const Real value( params->value );
 
 
-    return gf->f_alpha_aux( alpha, n ) - value;
-//    return gf->f_alpha( alpha, n );
+//    return gf->f_alpha_aux( alpha, n ) - value;
+    return gf->f_alpha( alpha, n );
 }
 
 
 const Real 
-FirstPassagePairGreensFunction::alpha_i( const Int i, const Int n, 
+FirstPassagePairGreensFunction::alpha_i( const Integer i, const Integer n, 
 					 gsl_root_fsolver* const solver ) const
 {
     const Real sigma( this->getSigma() );
@@ -1133,7 +1133,7 @@ FirstPassagePairGreensFunction::alpha_i( const Int i, const Int n,
 }
 
 
-void FirstPassagePairGreensFunction::updateAlphaTable( const Int n,
+void FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
 						       const Real t ) const
 {
     assert( n >= 0 );
@@ -1167,7 +1167,7 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Int n,
     Real lowvalue( f_alpha(low,n) );
     Real highvalue( f_alpha(high,n) );
 
-    Int offset( 0 );
+    Integer offset( 0 );
 
     while( true ) // this can be much faster if better initial guess is given.
     {
@@ -1193,12 +1193,14 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Int n,
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
 
-    const Real alphan_0( alpha_i( offset, n, solver ) );
-    alphaTable_n.push_back( alphan_0 );
+    const Real alpha0_0( this->getAlphaTable( 0 )[0] );
+//    const Real alphan_0( alpha_i( offset, n, solver ) );
+//    alphaTable_n.push_back( alphan_0 );
 
     const Real Dt( this->getD() * t );
     const Real alpha_cutoff( sqrt( ( - log( ALPHA_TOLERANCE ) / Dt )
-				   + alphan_0 * alphan_0 ) ); 
+				   + alpha0_0 * alpha0_0 ) ); 
+//				   + alphan_0 * alphan_0 ) ); 
     
     const unsigned int MAXI( offset + 10000 );
     for( unsigned int i( offset ); i <= MAXI; ++i )
@@ -1222,7 +1224,7 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Int n,
 
 
 const Real FirstPassagePairGreensFunction::p_n_alpha( const Real alpha,
-						      const Int n,
+						      const Integer n,
 						      const Real r,
 						      const Real r0, 
 						      const Real t ) const
@@ -1273,7 +1275,7 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const Real alpha,
 
 
 const Real 
-FirstPassagePairGreensFunction::p_n( const Int n,
+FirstPassagePairGreensFunction::p_n( const Integer n,
 				     const Real r,
 				     const Real r0, 
 				     const Real t ) const
@@ -1324,9 +1326,9 @@ FirstPassagePairGreensFunction::makep_nTable( const Real r,
     const Real p_0( this->p_n( 0, r, r0, t ) );
     p_nTable.push_back( p_0 );
 
-    const Real threshold( truncationTolerance * p_0 );
+    const Real threshold( fabs( truncationTolerance * p_0 ) );
 
-    Real p_n_prev( p_0 );
+    Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
     while( true )
     {
@@ -1339,13 +1341,14 @@ FirstPassagePairGreensFunction::makep_nTable( const Real r,
 #endif // NDEBUG
 //	    p_n = 0.0;
 	}
+	printf("p_n %g\n",p_n );
 
 	p_nTable.push_back( p_n );
 
-	
+	const Real p_n_abs( fabs( p_n ) );
 	// truncate when converged enough.
-	if( fabs( p_n ) < threshold &&
-	    fabs( p_n ) < fabs( p_n_prev ) )
+	if( p_n_abs < threshold &&
+	    p_n_abs < p_n_prev_abs )
 	{
 	    break;
 	}
@@ -1356,7 +1359,7 @@ FirstPassagePairGreensFunction::makep_nTable( const Real r,
 	    break;
 	}
 	
-	p_n_prev = p_n;
+	p_n_prev_abs = p_n_abs;
 	++n;
     }
 

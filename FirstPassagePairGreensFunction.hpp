@@ -64,8 +64,8 @@ public:
     const Real f_alpha0( const Real alpha ) const;
     const Real f_alpha0_aux( const Real alpha ) const;
   
-    const Real f_alpha( const Real alpha, const Int n ) const;
-    const Real f_alpha_aux( const Real alpha, const Int n ) const;
+    const Real f_alpha( const Real alpha, const Integer n ) const;
+    const Real f_alpha_aux( const Real alpha, const Integer n ) const;
 
     
     const Real p_0( const Real t,
@@ -86,10 +86,10 @@ public:
 			const Real r0,
 			const RealVector& num_r0Table ) const;
 
-    const Real p_n( const Int n, const Real r, 
+    const Real p_n( const Integer n, const Real r, 
 		    const Real r0, const Real t ) const;
     const Real p_n_alpha( const Real alpha,
-			  const Int n, 
+			  const Integer n, 
 			  const Real r, 
 			  const Real r0,
 			  const Real t ) const;
@@ -109,9 +109,9 @@ protected:
     }
 
 
-    const Real alpha0_i( const Int i ) const;
+    const Real alpha0_i( const Integer i ) const;
 
-    const Real alpha_i( const Int i, const Int n, 
+    const Real alpha_i( const Integer i, const Integer n, 
 			gsl_root_fsolver* const solver ) const;
 
     const Real p_0_i( const Real alpha,
@@ -139,7 +139,7 @@ protected:
 			const RealVector& p_nTable ) const;
 	
     void updateAlphaTable0( const Real t ) const;
-    void updateAlphaTable( const Int n, const Real t ) const;
+    void updateAlphaTable( const Integer n, const Real t ) const;
     void updateExpTable( const Real t ) const;
     void updatePsurvTable( const Real r0 ) const;
     void updateNum_r0Table( RealVector& num_r0Table,
@@ -164,7 +164,7 @@ protected:
     struct f_alpha_aux_params
     { 
 	const FirstPassagePairGreensFunction* const gf;
-	const Int n;
+	const Integer n;
 	Real value;
     };
 
@@ -202,10 +202,10 @@ protected:
     const Real num_r0( const Real alpha,
 		       const Real r0 ) const;
 
-    static const Real P( const Int n, const Real x );
-    static const Real Q( const Int n, const Real x );
-    static const boost::tuple<Real,Real> P2( const Int n, const Real x );
-    static const boost::tuple<Real,Real> Q2( const Int n, const Real x );
+    static const Real P( const Integer n, const Real x );
+    static const Real Q( const Integer n, const Real x );
+    static const boost::tuple<Real,Real> P2( const Integer n, const Real x );
+    static const boost::tuple<Real,Real> Q2( const Integer n, const Real x );
 
 
 

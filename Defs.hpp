@@ -7,7 +7,7 @@
 #include <cmath>
 
 typedef double Real;
-typedef int Int;
+typedef int Integer;
 typedef size_t Index;
 
 
