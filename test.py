@@ -170,15 +170,15 @@ def test_f_alpha():
 
 
 def test_drawTheta():
-    
-    t = 1e-4
+
+    t = 1e-3
     D = 1e-12
     Sigma = 1e-8
     kf = 1e-8
 
-    r = 1e-7
-    r0 = 1e-7
-    a = 5e-8
+    r = 4e-7
+    r0 = 4e-7
+    a = 5e-7
     
 
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )

@@ -350,6 +350,8 @@ class Pair:
         particle1.setPos( newpos1 )
         particle2.setPos( newpos2 )
 
+        # here decide whether this pair still continues or breaks up
+
         dt, eventType = self.nextEvent( self.dr )
         return dt
 

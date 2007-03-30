@@ -1070,8 +1070,8 @@ f_alpha_aux_F( const Real alpha,
     const Real value( params->value );
 
 
-//    return gf->f_alpha_aux( alpha, n ) - value;
-    return gf->f_alpha( alpha, n );
+    return gf->f_alpha_aux( alpha, n ) - value;
+//    return gf->f_alpha( alpha, n );
 }
 
 
@@ -1085,8 +1085,8 @@ FirstPassagePairGreensFunction::alpha_i( const Integer i, const Integer n,
     const Real target( M_PI * i + M_PI_2 );
 
     const Real factor( 1.0 / ( a - sigma ) );
-    Real low( (target - M_PI_2) * factor );
-    Real high( (target + M_PI_2) * factor );
+    Real low( ( target - M_PI_2 ) * factor );
+    Real high( ( target + M_PI_2 ) * factor );
 
     f_alpha_aux_params params = { this, n, target };
 
@@ -1169,6 +1169,7 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
 
     Integer offset( 0 );
 
+
     while( true ) // this can be much faster if better initial guess is given.
     {
 
@@ -1187,6 +1188,7 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
 	lowvalue = highvalue;
 	highvalue = f_alpha(high,n);
     }
+
     RealVector& alphaTable_n( this->getAlphaTable( n ) );
     alphaTable_n.clear();
 
@@ -1194,27 +1196,56 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
 
     const Real alpha0_0( this->getAlphaTable( 0 )[0] );
-//    const Real alphan_0( alpha_i( offset, n, solver ) );
-//    alphaTable_n.push_back( alphan_0 );
+    const Real alphan_0( alpha_i( offset, n, solver ) );
+    const Real alphan_0_sq( alphan_0 * alphan_0 );
+
+    alphaTable_n.push_back( alphan_0 );
+//    printf("alpha %d %d %g %g %g\n", n, 0, alpha_i, f_alpha(alphan_0,n),
+//	   f_alpha(alphan_0*1.1,n));
 
     const Real Dt( this->getD() * t );
+/*
     const Real alpha_cutoff( sqrt( ( - log( ALPHA_TOLERANCE ) / Dt )
-				   + alpha0_0 * alpha0_0 ) ); 
-//				   + alphan_0 * alphan_0 ) ); 
-    
+//				   + alpha0_0 * alpha0_0 ) ); 
+				   + alphan_0 * alphan_0 ) ); 
+*/
+
+//     const Real alpha_cutoff( 
+// 	sqrt( - gsl_sf_lambert_W0( - Dt * 
+// 				   alphan_0_sq * exp( - Dt * alphan_0_sq ) 
+// 				   / ALPHA_TOLERANCE ) ) / sqrt( Dt ) );
+//     printf("cutoff %g\n", alpha_cutoff);
+
+    const Real threshold( this->ALPHA_TOLERANCE * 
+			  alphan_0_sq * exp( - Dt * alphan_0_sq ) );
+   
     const unsigned int MAXI( offset + 10000 );
-    for( unsigned int i( offset ); i <= MAXI; ++i )
+    for( unsigned int i( offset + 1 ); i <= MAXI; ++i )
     {
 	const Real alpha_i( this->alpha_i( i, n, solver ) );
+
+	printf("alpha %d %d %g %g %g\n", n, i, alpha_i, f_alpha(alpha_i,n),
+	       f_alpha(alpha_i*1.1,n));
+
+	/* bad idea
+	if( fabs(f_alpha(alpha_i,n)) >   fabs(f_alpha(alpha_i*1.1,n)) )
+	{
+	    puts("skip");
+	    continue;
+	}
+	*/
+
 	alphaTable_n.push_back( alpha_i );
 
-	printf("alpha %d %d %g %g\n", n, i, alpha_i, f_alpha(alpha_i,n));
-
 	// cutoff
-	if( alpha_i > alpha_cutoff )
+//	if( alpha_i > alpha_cutoff )
+	const Real alpha_i_sq( alpha_i * alpha_i );
+	if( alpha_i_sq * exp( - Dt * alpha_i_sq )  < threshold )
 	{
-//	    printf("alpha %d %g %g\n", 
-//		   i-offset, alpha_i, std::exp( - Dt * alpha_i * alpha_i ) );
+	    printf("alpha cutoff %d %g %g\n", 
+		   i-offset, alpha_i, alpha_i * alpha_i * std::exp( - Dt * alpha_i * alpha_i ) );
+
+
 	    break;
 	}
     }
@@ -1378,7 +1409,11 @@ FirstPassagePairGreensFunction::p_theta( const Real theta,
 
     RealVector LgndTable( tableSize );
 
-    gsl_sf_legendre_Pl_array( tableSize-1, cos( theta ), &LgndTable[0] );
+    Real sin_theta;
+    Real cos_theta;
+    sincos( theta, &sin_theta, &cos_theta );
+
+    gsl_sf_legendre_Pl_array( tableSize-1, cos_theta, &LgndTable[0] );
 
     for( RealVector::size_type n( 0 ); n < tableSize; ++n )
     {
@@ -1386,7 +1421,7 @@ FirstPassagePairGreensFunction::p_theta( const Real theta,
 //	printf("%d %g %g %g\n",n,p_nTable[n],LgndTable[n],p);
     }
 
-    p *= sin( theta );
+    p *= sin_theta;
     return p;
 }
 
@@ -1437,13 +1472,15 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	++i;
     }
 
+
+    // debug
     this->updateExpTable( t );
     this->updatePsurvTable( r0 );
     const Real psurv( p_survival( t, r0 ) );
+    printf("ps %g\n",psurv );
     const Real p0r( p_0( t, r, r0 ) * 4.0 * M_PI * r * r * 2);
-    printf("ps %g pr %g\n",psurv, p0r );
-
-    printf( "p_int %g\n", pTable[i] * 4.0 * M_PI * r * r * thetaStep );
+    printf( "pr %g p_int %g\n", p0r, 
+	    pTable[i] * 4.0 * M_PI * r * r * thetaStep );
 
 
     Real theta;
