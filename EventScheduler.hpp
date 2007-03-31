@@ -207,20 +207,26 @@ namespace libecs
 
 	void step()
 	{
-	    puts("a");
-	    Event& aTopEvent( this->eventPriorityQueue.getTop() );
-	    const double aCurrentTime( aTopEvent.getTime() );
-//	    const EventIndex aTopEventIndex( getTopIndex() );
+	    Event& topEvent( this->eventPriorityQueue.getTop() );
+	    const double currentTime( topEvent.getTime() );
+//	    const EventIndex topEventIndex( getTopIndex() );
 
 	    // fire top
-	    aTopEvent.fire();
-	    //this->eventPriorityQueue.moveDown( aTopEventIndex );
-	    //this->eventPriorityQueue.moveTop();
-	    this->eventPriorityQueue.replaceTop( aTopEvent );
+	    topEvent.fire();
+//	    const Event& newEvent( topEvent.fire() );
+
+	    if( topEvent.getTime() >= currentTime )
+	    {
+		this->eventPriorityQueue.replaceTop( topEvent );
+	    }
+	    else
+	    {
+		this->eventPriorityQueue.popTop();
+	    }
 
 	    // update dependent events
 //	    const EventIndexVector&
-//		anEventIndexVector( this->eventDependencyArray[ aTopEventIndex ] );
+//		anEventIndexVector( this->eventDependencyArray[ topEventIndex ] );
 
 /*
 	    for( typename EventIndexVector::const_iterator 
@@ -229,7 +235,7 @@ namespace libecs
 	    {
 		const EventIndex anIndex( *i );
 
-		updateEvent( anIndex, aCurrentTime );
+		updateEvent( anIndex, currentTime );
 	    }
 */
 	}
