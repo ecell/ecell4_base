@@ -116,7 +116,10 @@ class Pair:
         particle1 = self.single1.particle
         particle2 = self.single2.particle
 
-        D12 = particle1.species.D + particle2.species.D
+        D1, D2 = particle1.species.D, particle2.species.D
+        D12 = D1 + D2
+        self.sqrtD1D2 = math.sqrt( D1 / D2 )
+        
         self.sigma = particle1.species.radius + particle2.species.radius
 
         self.sgf = FirstPassageGreensFunction( D12 / 4.0 )
@@ -143,16 +146,43 @@ class Pair:
         D1 = particle1.species.D
         D2 = particle2.species.D
 
-#        sqrtD2D1 = math.sqrt( D2 / D1 ) 
-        sqrtD1D2 = math.sqrt( D1 / D2 )
 
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
         
-        #com = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
-        com = ( pos1 + sqrtD1D2 * pos2 ) * .5
+        #com = sqrtD2D1 * pos1 + self.sqrtD1D2 * pos2
+        com = ( pos1 + self.sqrtD1D2 * pos2 ) * .5
 
         return com
+
+
+    def newPositions( self, newCoM, newInterParticle, oldInterParticle ):
+
+        # Now I rotate the new interparticle vector along the
+        # rotation axis that is perpendicular to both the
+        # z-axis and the original interparticle vector for
+        # the angle between these.
+        
+        # the rotation axis is a normalized cross product of
+        # the z-axis and the original vector.
+        # rotationAxis2 = crossproduct( [ 0,0,1 ], interParticle )
+        
+        rotationAxis = crossproductAgainstZAxis( oldInterParticle )
+        rotationAxis = normalize( rotationAxis )
+        
+        angle = vectorAngleAgainstZAxis( oldInterParticle )
+        
+        newInterParticle = rotateVector( newInterParticle,
+                                         rotationAxis,
+                                         angle )
+        
+        
+        newpos1 = ( 2 * newCoM - self.sqrtD1D2 * newInterParticle ) \
+                  / ( 1 + self.sqrtD1D2 )
+        newpos2 = newpos1 + newInterParticle
+
+        return newpos1, newpos2
+        
 
     def nextEvent( self, dr ):
 
@@ -201,7 +231,7 @@ class Pair:
         D1 = species1.D
         D2 = species2.D
 
-        sqrtD1D2 = math.sqrt( D1 / D2 )
+        oldInterParticle = pos2 - pos1
 
         # 1. now we handle the reaction case first.
         if self.eventType == EventType.REACTION:
@@ -228,12 +258,13 @@ class Pair:
 
                 particle = self.sim.createParticle( species3, newR )
 
-                self.sim.scheduler.removeEvent( self.eventID )
 
                 single = self.sim.createSingle( particle )
                 self.sim.createSingleEvent( single )
 
-                return Inf
+                # self.sim.scheduler.removeEvent( self.eventID )
+                # returning -1 will make the scheduler removing this event.
+                return -1
 
             else:
                 raise NotImplementedError,\
@@ -256,7 +287,7 @@ class Pair:
                                               random.uniform( 0.0, Pi ),
                                               random.uniform( 0.0, 2*Pi ) ] )
             displacement_R = sphericalToCartesian( displacement_R_S )
-            newR = self.getCoM() + displacement_R
+            newCoM = self.getCoM() + displacement_R
 
 
             # calculate new r
@@ -266,30 +297,8 @@ class Pair:
             newInterParticleS = numpy.array( [ self.a_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
 
-            # Now I rotate the new interparticle vector along the
-            # rotation axis that is perpendicular to both the
-            # z-axis and the original interparticle vector for
-            # the angle between these.
-            
-            # the rotation axis is a normalized cross product of
-            # the z-axis and the original vector.
-            # rotationAxis2 = crossproduct( [ 0,0,1 ], interParticle )
-
-            interParticle = pos2 - pos1
-            rotationAxis = crossproductAgainstZAxis( interParticle )
-            rotationAxis = normalize( rotationAxis )
-            
-            angle = vectorAngleAgainstZAxis( interParticle )
-            
-            newInterParticle = rotateVector( newInterParticle,
-                                             rotationAxis,
-                                             angle )
-
-
-            newpos1 = ( 2 * newR - sqrtD1D2 * newInterParticle ) \
-                      / ( 1 + sqrtD1D2 )
-            newpos2 = newpos1 + newInterParticle
-                
+            newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
+                                                  oldInterParticle )
 
 
 
@@ -307,7 +316,7 @@ class Pair:
                                               random.uniform( 0.0, Pi ),
                                               random.uniform( 0.0, 2*Pi ) ] )
             displacement_R = sphericalToCartesian( displacement_R_S )
-            newR = self.getCoM() + displacement_R
+            newCoM = self.getCoM() + displacement_R
 
 
             # calculate new r
@@ -319,29 +328,8 @@ class Pair:
             newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
 
-            # Now I rotate the new interparticle vector along the
-            # rotation axis that is perpendicular to both the
-            # z-axis and the original interparticle vector for
-            # the angle between these.
-            
-            # the rotation axis is a normalized cross product of
-            # the z-axis and the original vector.
-            # rotationAxis2 = crossproduct( [ 0,0,1 ], interParticle )
-
-            interParticle = pos2 - pos1
-            rotationAxis = crossproductAgainstZAxis( interParticle )
-            rotationAxis = normalize( rotationAxis )
-            
-            angle = vectorAngleAgainstZAxis( interParticle )
-            
-            newInterParticle = rotateVector( newInterParticle,
-                                             rotationAxis,
-                                             angle )
-
-
-            newpos1 = ( 2 * newR - sqrtD1D2 * newInterParticle ) \
-                      / ( 1 + sqrtD1D2 )
-            newpos2 = newpos1 + newInterParticle
+            newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
+                                                  oldInterParticle )
                 
             # raise NotImplementedError,'ESCAPE2'  # escape R
         else:
@@ -364,7 +352,7 @@ class Pair:
         return False
 
     def __str__( self ):
-        return str(self.single1.particle) + str(self.single2.particle)
+        return str(self.single1.particle) + ' ' + str(self.single2.particle)
 
 
 class EGFRDSimulator( GFRDSimulatorBase ):

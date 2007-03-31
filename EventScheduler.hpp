@@ -209,12 +209,11 @@ namespace libecs
 	{
 	    Event& topEvent( this->eventPriorityQueue.getTop() );
 	    const double currentTime( topEvent.getTime() );
-//	    const EventIndex topEventIndex( getTopIndex() );
 
-	    // fire top
+	    // Fire top
 	    topEvent.fire();
-//	    const Event& newEvent( topEvent.fire() );
-
+	    // If the event is rescheduled into the past, remove it.
+	    // Otherwise, create a new event.
 	    if( topEvent.getTime() >= currentTime )
 	    {
 		this->eventPriorityQueue.replaceTop( topEvent );
