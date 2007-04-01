@@ -50,6 +50,11 @@ class Species:
 
 class ReactionType:
 
+    def __init__( self, reactants=[], products=[], k=0.0 ):
+        self.reactants = reactants
+        self.products = products
+        self.k = k
+
     def order( self ):
         return len( self.reactants )
 
@@ -70,17 +75,12 @@ class ReactionType:
 class UnimolecularReactionType( ReactionType ):
 
     def __init__( self, s1, p1, k ):
-        self.reactants = ( s1, )
-        self.products = ( p1, )
-        self.k  = k
+        ReactionType.__init__( self, [ s1, ], [ p1, ], k )
 
 class BindingReactionType( ReactionType ):
 
     def __init__( self, s1, s2, p1, k ):
-        self.reactants = ( s1, s2 )
-        self.products = ( p1, )
-        self.k  = k
-
+        ReactionType.__init__( self, [ s1, s2 ], [ p1, ], k )
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
         self.pairGreensFunction = PlainPairGreensFunction( D, k, sigma )
@@ -88,9 +88,7 @@ class BindingReactionType( ReactionType ):
 class RepulsionReactionType( ReactionType ):
 
     def __init__( self, s1, s2 ):
-        self.reactants = ( s1, s2 )
-        self.products = ( )
-        self.k  = 0.0
+        ReactionType.__init__( self, [ s1, s2 ], [], 0.0 )
 
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
@@ -100,10 +98,7 @@ class RepulsionReactionType( ReactionType ):
 class UnbindingReactionType( ReactionType ):
 
     def __init__( self, s1, p1, p2, k ):
-        self.reactants = ( s1, )
-        self.products = ( p1, p2 )
-        self.k  = k
-    
+        ReactionType.__init__( self, [ s1, ], [ p1, p2 ], k )
 
 
 class Particle:
@@ -117,7 +112,7 @@ class Particle:
         elif serial == None and index != None:
             self.serial = species.pool.getSerialByIndex( index )
         else:
-            raise 'give either serial or index.'
+            raise ValueError, 'give either serial or index.'
 
         self.pool = self.species.pool
 
@@ -300,7 +295,7 @@ class GFRDSimulatorBase:
 
 
     def getReactionType2( self, species1, species2 ):
-        return self.reactionTypeMap2.get( ( species1, species1 ), None )
+        return self.reactionTypeMap2.get( ( species1, species2 ), None )
 
     def getSpeciesByIndex( self, i ):
         return self.speciesList.values()[i]
@@ -316,9 +311,9 @@ class GFRDSimulatorBase:
         while True:
             displacement = p_free( species.D, self.dt )
             
-            distanceSq = ( displacement * displacement ).sum()
+            distSq = ( displacement * displacement ).sum()
 
-            if distanceSq <= limitSq:
+            if distSq <= limitSq:
                 break
 
             self.rejectedMoves += 1
@@ -339,9 +334,9 @@ class GFRDSimulatorBase:
         while True:
             displacement = p_free( species.D, self.dt )
             
-            distanceSq = ( displacement * displacement ).sum()
+            distSq = ( displacement * displacement ).sum()
 
-            if distanceSq <= limitSq:
+            if distSq <= limitSq:
                 break
 
             self.rejectedMoves += 1
@@ -385,15 +380,15 @@ class GFRDSimulatorBase:
             if species1 != species2:
                 self.reactionTypeMap2[ (species2,species1) ] = r
         else:
-            raise 'unexpected'
+            raise RuntimeError, 'unexpected'
 
     def setAllRepulsive( self ):
         for species1 in self.speciesList.values():
             for species2 in self.speciesList.values():
                 try:
-                    rt = self.reactionTypeMap2[ (species1,species2) ]
+                    _ = self.reactionTypeMap2[ ( species1, species2 ) ]
                 except:
-                    self.reactionTypeMap2[ (species1,species2) ] =\
+                    self.reactionTypeMap2[ ( species1, species2 ) ] =\
                                             RepulsionReactionType( species1,\
                                                                    species2 )
         
@@ -403,7 +398,7 @@ class GFRDSimulatorBase:
 
         species = self.speciesList[ id ]
         
-        for i in range( n ):
+        for _ in range( n ):
 
             while True:
 
@@ -420,8 +415,8 @@ class GFRDSimulatorBase:
 
         species = self.speciesList[ id ]
 
-        if not self.checkOverlap( position, species.radius ):
-            raise 'placeParticle: overlap check failed'
+        if not self.checkOverlap( pos, species.radius ):
+            raise RuntimeError, 'placeParticle: overlap check failed'
             
         particle = self.createParticle( species, pos )
         return particle

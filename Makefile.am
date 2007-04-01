@@ -61,3 +61,10 @@ $(GFRD_SO): _gfrd.la
 clean-local:
 	rm -f $(GFRD_SO)
 
+
+PYCHECKER = @PYCHECKER@
+PYCHECKER_FLAGS = --limit 0 
+
+pycheck:
+	$(PYCHECKER) $(PYCHECKER_FLAGS) $(top_srcdir)/egfrd.py
+

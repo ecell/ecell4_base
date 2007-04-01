@@ -18,14 +18,14 @@ def MsTom3s( rate ):
     return rate / ( 1000 * N_A )
 
 
-def distanceSq_Simple( position1, position2, fsize=None ):
+def distanceSq_Simple( position1, position2 ):
     tmp = position1 - position2
     return numpy.dot( tmp, tmp )
 
 def distance( position1, position2 ):
     return math.sqrt( distanceSq_Simple( position1, position2 ) )
 
-def distanceSqArray_Simple( position1, positions, fsize=None ):
+def distanceSqArray_Simple( position1, positions ):
     tmp = positions - position1
     return ( tmp * tmp ).sum(1)
 

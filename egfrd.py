@@ -86,11 +86,11 @@ class Single:
         rnd = random.random()
         dr = self.getDr()
         if dr <= 0.0:
-            raise 'dr <= 0.0: %s' % str(dr)
+            raise RuntimeError, 'dr <= 0.0: %s' % str(dr)
         dt = fpgf.drawTime( rnd, dr )
         print dt
         if dt <= 0.0:
-            raise 'dt <= 0.0: %s' % str(dt)
+            raise RuntimeError, 'dt <= 0.0: %s' % str(dt)
         return dt
 
 
@@ -143,10 +143,6 @@ class Pair:
         particle1 = self.single1.particle
         particle2 = self.single2.particle
         
-        D1 = particle1.species.D
-        D2 = particle2.species.D
-
-
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
         
@@ -223,7 +219,7 @@ class Pair:
         particle1 = self.single1.particle
         particle2 = self.single2.particle
         species1 = particle1.species
-        species2 = particle1.species
+        species2 = particle2.species
 
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
@@ -246,7 +242,7 @@ class Pair:
                     newR = pos2
                 else:
                     R0 = self.getCoM()
-                    dR = p_free( D1/4, D2/4, self.dt )
+                    dR = p_free( ( D1 + D2 ) / 4, self.dt )
                     newR = R0 + dR
                 
                 
@@ -345,7 +341,7 @@ class Pair:
 
 
     def update( self, t ):
-        print 'update'
+        print 'update ', t
 
     def isDependentOn( self, event ):
         #print event
@@ -443,8 +439,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def fireSingle( self, single ):
 
-        species = single.particle.species
-
         displacementS = numpy.array( ( single.getDr(),
                                        numpy.random.uniform( 0.0, Pi ),
                                        numpy.random.uniform( 0.0, 2*Pi ) ) )
@@ -469,7 +463,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #print 'newdr', newdr
         if newdr <= 0:
             print newdr, single.closest
-            raise 'Fatal newdr <= 0'
+            raise RuntimeError, 'Fatal newdr <= 0'
 
         single.setDr( newdr )
 
