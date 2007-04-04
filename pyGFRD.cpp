@@ -50,12 +50,23 @@ void* extract_pyarray(PyObject* x)
 }
 
 
+
+// Exception translators here.
+
+void translateException( const std::exception& anException )
+{
+  PyErr_SetString( PyExc_RuntimeError, anException.what() );
+}
+
+
+
 BOOST_PYTHON_MODULE( _gfrd )
 {
     import_array();
 
     to_python_converter< PyEvent, PyEvent_to_python>();
   
+    register_exception_translator<std::exception>( &translateException );
 
     class_<PyEvent, boost::noncopyable>( "Event", init<const Real,
 					 const object&>() )
