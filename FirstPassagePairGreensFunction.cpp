@@ -1349,7 +1349,7 @@ FirstPassagePairGreensFunction::makep_nTable( const Real r,
 					      const Real t,
 					      RealVector& p_nTable ) const
 {
-    const unsigned NMAX( 1000 );
+    const unsigned NMAX( 100 );
     const Real truncationTolerance( 1e-8 );
 
     p_nTable.clear();

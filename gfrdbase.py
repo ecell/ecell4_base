@@ -424,7 +424,7 @@ class GFRDSimulatorBase:
 
     def createParticle( self, species, pos ):
         newserial = species.newParticle( pos )
-        return Particle( species, newserial )
+        return Particle( species, serial=newserial )
         
     def checkOverlap( self, position, radius ):
         

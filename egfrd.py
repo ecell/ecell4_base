@@ -2,7 +2,6 @@
 
 
 import math
-import random
 
 import numpy
 #import scipy
@@ -13,6 +12,9 @@ from utils import *
 from surface import *
 
 from gfrdbase import *
+
+
+
 
 """
 class DistanceMatrix:
@@ -28,6 +30,7 @@ class DistanceMatrix:
 
 
 class Single:
+
     def __init__( self, sim, particle ):
 
         #FIXME: si and i are fragile
@@ -35,20 +38,27 @@ class Single:
         self.sim = sim
         self.lastTime = 0.0
         self.dt = 0.0
-        self.closest = (-1, -1)
+        self.closest = None
         self.eventID = None
 
-    def fire( self ):
-        dt = self.sim.fireSingle( self )
-        return dt
+        self.gf = FirstPassageGreensFunction( particle.species.D )
 
-    def update( self, t ):
 
-        self.lastTime = t
-        
+    '''
+    Initialize this Single.
+
+    The protective sphere size, self.lastTime, self.dt, and self.closest
+    are updated.  The protective sphere size is determined without
+    taken into account of other shells.
+
+    '''
+
+    def initialize( self ):
+
         neighbors, drs = self.sim.getNeighbors( self.particle.getPos() )
         closest = neighbors[1]
         dr = drs[1] - self.particle.species.radius
+        dr *= .5
         closestParticle = Particle( closest[0], index=closest[1] )
         closestSingle = self.sim.findSingle( closestParticle )
         
@@ -56,10 +66,65 @@ class Single:
         
         #print 'dr', dr
         #FIXME: take different D into account
-        self.setDr( dr * .5 )
+        self.setDr( dr )
         
+        self.lastTime = self.sim.t
         self.dt = self.calculateFirstPassageTime()
+        
 
+
+    def fire( self ):
+        dt = self.sim.fireSingle( self )
+        return dt
+
+    '''
+    Update the position of the particle and the protective sphere.
+    '''
+    
+    def update( self, t ):
+
+        assert t > self.lastTime
+        assert self.getDr() > 0.0
+
+        rnd = numpy.random.uniform( size=3 )
+
+        dt = t - self.lastTime
+        r = self.gf.drawR( rnd[0], dt, self.getDr() )
+        theta = rnd[1] * Pi
+        phi = rnd[2] * 2 * Pi
+        displacement = sphericalToCartesian( [ r, theta, phi ] )
+        newPos = self.particle.getPos() + displacement
+
+        self.particle.setPos( newPos )
+
+        self.updateShell()
+        self.updateDt()
+
+        self.lastTime = t
+
+    '''
+    Update the protective sphere.
+    self.closest is updated too.
+    '''
+
+    def updateShell( self ):
+
+        neighbors, drs = self.sim.getNeighborShells( self.particle.getPos() )
+        closest = neighbors[1]
+        dr = drs[1] - self.particle.species.radius
+        print 'dr dr1', dr, drs[1]
+        closestParticle = Particle( closest[0], index=closest[1] )
+        closestSingle = self.sim.findSingle( closestParticle )
+        
+        self.closest = closestSingle
+        
+        #print 'dr', dr
+        #FIXME: take different D into account
+        self.setDr( dr )
+
+    def updateDt( self ):
+        self.dt = self.calculateFirstPassageTime()        
+        
 
     def isDependentOn( self, event ):
         #print event
@@ -82,12 +147,11 @@ class Single:
     def calculateFirstPassageTime( self ):
         
         species = self.particle.species
-        fpgf = FirstPassageGreensFunction( species.D )
-        rnd = random.random()
+        rnd = numpy.random.uniform()
         dr = self.getDr()
         if dr <= 0.0:
             raise RuntimeError, 'dr <= 0.0: %s' % str(dr)
-        dt = fpgf.drawTime( rnd, dr )
+        dt = self.gf.drawTime( rnd, dr )
         print dt
         if dt <= 0.0:
             raise RuntimeError, 'dt <= 0.0: %s' % str(dt)
@@ -100,8 +164,8 @@ class Single:
 
 
 class Pair:
+    
     def __init__( self, sim, single1, single2, rt ):
-
 
         self.single1 = single1
         self.single2 = single2
@@ -151,17 +215,23 @@ class Pair:
 
         return com
 
+    '''
+    Calculate new positions of the pair particles using
+    a new center-of-mass, a new inter-particle vector, and
+    an old inter-particle vector.
+
+    '''
 
     def newPositions( self, newCoM, newInterParticle, oldInterParticle ):
 
-        # Now I rotate the new interparticle vector along the
+        # I rotate the new interparticle vector along the
         # rotation axis that is perpendicular to both the
         # z-axis and the original interparticle vector for
         # the angle between these.
         
         # the rotation axis is a normalized cross product of
         # the z-axis and the original vector.
-        # rotationAxis2 = crossproduct( [ 0,0,1 ], interParticle )
+        # rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
         
         rotationAxis = crossproductAgainstZAxis( oldInterParticle )
         rotationAxis = normalize( rotationAxis )
@@ -229,7 +299,12 @@ class Pair:
 
         oldInterParticle = pos2 - pos1
 
-        # 1. now we handle the reaction case first.
+        # Three cases:
+        #  1. Reaction
+        #  2.1 Escaping through a_r.
+        #  2.2 Escaping through a_R.
+
+        # 1. Reaction
         if self.eventType == EventType.REACTION:
 
             if len( self.rt.products ) == 1:
@@ -254,8 +329,9 @@ class Pair:
 
                 particle = self.sim.createParticle( species3, newR )
 
-
                 single = self.sim.createSingle( particle )
+                single.updateShell()
+                single.updateDt()
                 self.sim.createSingleEvent( single )
 
                 # self.sim.scheduler.removeEvent( self.eventID )
@@ -266,30 +342,30 @@ class Pair:
                 raise NotImplementedError,\
                       'num products >= 2 not supported yet.'
 
-        # 2. escape cases.
+        # 2. escaping cases.
 
-        # 2.1 escape r
+        # 2.1 escaping through a_r.
         if self.eventType == EventType.ESCAPE:
 
             print 'escape r'
 
-            rnd = numpy.random.uniform( size=2 )
+            rnd = numpy.random.uniform( size=5 )
 
             # calculate new R
             
             r_R = self.sgf.drawR( rnd[0], self.dt, self.a_R )
             
-            displacement_R_S = numpy.array( [ r_R,
-                                              random.uniform( 0.0, Pi ),
-                                              random.uniform( 0.0, 2*Pi ) ] )
+            displacement_R_S = [ r_R,
+                                 rnd[1] * Pi,
+                                 rnd[2] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
             newCoM = self.getCoM() + displacement_R
 
 
             # calculate new r
-            print ( rnd[1], self.a_r, self.r0, self.dt )
-            theta_r = self.pgf.drawTheta( rnd[1], self.a_r*.09, self.r0, self.dt )
-            phi_r = random.uniform( 0.0, 2*Pi )
+            print ( rnd[3], self.a_r, self.r0, self.dt )
+            theta_r = self.pgf.drawTheta( rnd[3], self.a_r*.09, self.r0, self.dt )
+            phi_r = rnd[4] * 2 * Pi
             newInterParticleS = numpy.array( [ self.a_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
 
@@ -297,47 +373,78 @@ class Pair:
                                                   oldInterParticle )
 
 
-
-            #return 0.0
-            #raise NotImplementedError,'ESCAPE'
-
-
-        # 2.2 escape R
+        # 2.2 escaping through a_R.
         elif self.eventType == 2:
 
             print 'escape R'
 
+            rnd = numpy.random.uniform( size = 5 )
+
+            # calculate new r
+            r = self.pgf.drawR( rnd[0], self.a_r, self.dt )
+            print ( rnd[1], r, self.r0, self.dt )
+            theta_r = self.pgf.drawTheta( rnd[1], r, self.r0, self.dt )
+            phi_r = rnd[2] * 2*Pi
+            newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
+            newInterParticle = sphericalToCartesian( newInterParticleS )
+
             # calculate new R
-            displacement_R_S = numpy.array( [ self.a_R,
-                                              random.uniform( 0.0, Pi ),
-                                              random.uniform( 0.0, 2*Pi ) ] )
+            displacement_R_S = [ self.a_R,
+                                 rnd[3] * Pi,
+                                 rnd[4] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
             newCoM = self.getCoM() + displacement_R
 
 
-            # calculate new r
-            rnd = numpy.random.uniform( size = 2 )
-            r = self.pgf.drawR( rnd[0], self.a_r, self.dt )
-            print ( rnd[1], r, self.r0, self.dt )
-            theta_r = self.pgf.drawTheta( rnd[1], r, self.r0, self.dt )
-            phi_r = random.uniform( 0.0, 2*Pi )
-            newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
-            newInterParticle = sphericalToCartesian( newInterParticleS )
-
             newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
                                                   oldInterParticle )
                 
-            # raise NotImplementedError,'ESCAPE2'  # escape R
         else:
             raise SystemError, 'Bug: invalid eventType.'
 
         particle1.setPos( newpos1 )
         particle2.setPos( newpos2 )
 
+        # check if the new positions are valid:
+        # FIXME: check if positions are inside the shells too.
+        newParticleDistance = distance( newpos1, newpos2 )
+        if newParticleDistance <= species1.radius + species2.radius:
+            print 'rejected move: ', 'radii, interp',\
+                  species1.radius + species2.radius, newParticleDistance
+            print 'DEBUG: r0, dt, pos1, pos2, newpos1, newpos2',\
+                  self.r0, self.dt, pos1, pos2, newpos1, newpos2
+            raise RuntimeError
+
         # here decide whether this pair still continues or breaks up
 
-        dt, eventType = self.nextEvent( self.dr )
-        return dt
+        # temporarily, it alwayw breaks up to singles.
+        single1 = self.sim.findSingle( particle1 )
+        single2 = self.sim.findSingle( particle2 )
+
+        # protect the singles with shells.
+        single1.setDr( single1.particle.species.radius )
+        single2.setDr( single2.particle.species.radius )
+        single1.updateShell()
+        single2.updateShell()
+
+#         if single1.closest == single2:
+#             single1.setDr( newParticleDistance * .49 )
+#         if single2.closest == single1:
+#             single2.setDr( newParticleDistance * .49 )
+        print 'aa', newParticleDistance
+        single1.updateDt()
+        single2.updateDt()
+
+        self.sim.checkShell( single1 )
+        self.sim.checkShell( single2 )
+        
+        self.sim.createSingleEvent( single1 )
+        self.sim.createSingleEvent( single2 )
+
+        return -1
+
+        #dt, eventType = self.nextEvent( self.dr )
+        #        return dt
 
 
     def update( self, t ):
@@ -354,6 +461,7 @@ class Pair:
 class EGFRDSimulator( GFRDSimulatorBase ):
     
     def __init__( self ):
+
         GFRDSimulatorBase.__init__( self )
 
         self.isDirty = True
@@ -364,7 +472,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.dtMax = INF
         self.dt = INF
 
-        self.pairList = []
+        #self.pairList = []
         self.singleMap = {}
 
         self.lastEvent = None
@@ -390,17 +498,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def step( self ):
 
+        self.checkInvariants()
         if self.isDirty:
             self.initialize()
 
         self.lastEvent = self.scheduler.getTopEvent()[1]
 
-        self.t = self.scheduler.getTime()
-
         self.scheduler.step()
 
-        self.dt = self.scheduler.getTime() - self.t
+        self.t = self.scheduler.getTime()
+        nextTime, nextEvent = self.scheduler.getTopEvent()
+        self.dt = nextTime - self.t
         
+        assert self.scheduler.getSize() != 0
+
         # if the same single stepped in the last n steps,
         # reinitialize everything.
         # FIXME: don't need to initialize everything.
@@ -411,8 +522,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #                 dr to the closest, with its dr
         #                 shrunken )
 
-        nextEvent = self.scheduler.getTopEvent()[1]
-        #print self.hoggerCounter, nextEvent, self.lastEvent
         if self.lastEvent is nextEvent:
             self.hoggerCounter += 1
         else:
@@ -439,9 +548,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def fireSingle( self, single ):
 
-        displacementS = numpy.array( ( single.getDr(),
-                                       numpy.random.uniform( 0.0, Pi ),
-                                       numpy.random.uniform( 0.0, 2*Pi ) ) )
+        rnd = numpy.random.uniform( size=2 )
+
+        displacementS = [ single.getDr(), rnd[0] * Pi, rnd[1] * 2 * Pi ]
         displacement = sphericalToCartesian( displacementS )
 
         #self.checkShellForAll()
@@ -474,6 +583,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return single.calculateFirstPassageTime()
 
 
+    def findSingle( self, particle ):
+        return self.singleMap.get( ( particle.species, particle.serial ) )
+
+    def createSingle( self, particle ):
+        single = Single( self, particle )
+        return single
+
+
     def initializeSingleMap( self ):
 
         self.singleMap = {}
@@ -482,35 +599,27 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             for i in range( species.pool.size ):
                 particle = Particle( species, index=i )
                 single = self.createSingle( particle )
+                single.setDr( 0.0 )
                 self.singleMap[ ( species, particle.serial ) ] = single        
-
-    def findSingle( self, particle ):
-        return self.singleMap.get( ( particle.species, particle.serial ) )
-
-    def createSingle( self, particle ):
-        single = Single( self, particle )
-        single.setDr( 0.0 )
-        return single
 
     def initializeSingles( self ):
 
         for single in self.singleMap.values():
-            self.createSingleEvent( single )
+            single.initialize()
+            nextt = single.lastTime + single.dt
+            self.scheduler.addEvent( nextt, single )
+
+            #self.createSingleEvent( single )
         
         #FIXME: here perhaps a second pass to get drs maximally large.
 
 
     def createSingleEvent( self, single ):
-        single.update( self.t )
         nextt = single.lastTime + single.dt
         self.scheduler.addEvent( nextt, single )
 
 
     def formPairs( self ):
-        #pass
-        self.formPairsModestly()
-
-    def formPairsModestly( self ):
 
         for single in self.singleMap.values():
 
@@ -556,11 +665,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                 pair.eventID = self.scheduler.addEvent( self.t + dt, pair ) 
                 
-
-    def formPairsGreedily( self ):
-
-        for single in self.singleMap.values():
-            print single, single.closest, single.getDr()
 
     def createPair( self, single1, single2 ):
 
@@ -674,10 +778,17 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         distances = self.distanceSqArray( position1, positions )
 
         distances = numpy.sqrt( distances )
-        drs = species.pool.drs
-        distances -= drs
+        distances -= species.pool.drs
 
         indices = distances.argsort()[:n]
         distances = distances.take( indices )
         return indices, distances
 
+    def checkInvariants( self ):
+
+        assert self.t >= 0.0
+        assert self.dt >= 0.0
+        
+        self.checkShellForAll()
+        
+        
