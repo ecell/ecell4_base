@@ -1,7 +1,9 @@
 #include <exception>
 
-#include <gsl/gsl_math.h>
+//#include <gsl/gsl_math.h>
+#include <gsl/gsl_errno.h>
 
+#include <boost/lexical_cast.hpp>
 #include <boost/python.hpp>
 #include <boost/python/numeric.hpp>
 #include <numpy/arrayobject.h>
@@ -59,10 +61,26 @@ void translateException( const std::exception& anException )
 }
 
 
+// GSL error handler.
+void gfrd_gsl_error_handler( const char * reason,
+			     const char * file,
+			     int line,
+			     int gsl_errno )
+{
+    throw std::runtime_error( std::string( "GSL error: " ) +
+			      std::string( reason ) +
+			      std::string( " at " ) +
+			      std::string( file ) + std::string( ":" ) +
+			      boost::lexical_cast<std::string>( line ) );
+}
+
 
 BOOST_PYTHON_MODULE( _gfrd )
 {
     import_array();
+
+    // GSL error handler: is this the best place for this?
+    gsl_set_error_handler( &gfrd_gsl_error_handler );
 
     to_python_converter< PyEvent, PyEvent_to_python>();
   
