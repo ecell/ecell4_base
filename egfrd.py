@@ -187,8 +187,7 @@ class Pair:
         self.sigma = particle1.species.radius + particle2.species.radius
 
         self.sgf = FirstPassageGreensFunction( D12 / 4.0 )
-        self.pgf = FirstPassagePairGreensFunction( D12, rt.k,
-                                                   self.sigma )
+        self.pgf = FirstPassagePairGreensFunction( D12, rt.k, self.sigma )
 
         self.eventID = None
 
@@ -200,7 +199,7 @@ class Pair:
 
 
     '''
-    Calculate and return Center of Mass (== CoM) of this pair.
+    Calculate and return the "Center of Mass" (== CoM) of this pair.
     '''
 
     def getCoM( self ):
@@ -322,20 +321,18 @@ class Pair:
                 
                 
                 #FIXME: SURFACE
-                newR = self.sim.applyBoundary( newR )
+                newPos = self.sim.applyBoundary( newR )
 
                 species1.removeParticleBySerial( particle1.serial )
                 species2.removeParticleBySerial( particle2.serial )
 
-                particle = self.sim.createParticle( species3, newR )
+                particle = self.sim.createParticle( species3, newPos )
 
-                single = self.sim.createSingle( particle )
-                single.updateShell()
-                single.updateDt()
-                self.sim.createSingleEvent( single )
+                self.sim.insertParticle( particle )
+
 
                 # self.sim.scheduler.removeEvent( self.eventID )
-                # returning -1 will make the scheduler removing this event.
+                # returning -1 instruct the scheduler to remove this event.
                 return -1
 
             else:
@@ -503,11 +500,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.initialize()
 
         self.lastEvent = self.scheduler.getTopEvent()[1]
+        self.t = self.scheduler.getTime()
 
         self.scheduler.step()
 
-        self.t = self.scheduler.getTime()
         nextTime, nextEvent = self.scheduler.getTopEvent()
+        print 't', nextTime, self.t
         self.dt = nextTime - self.t
         
         assert self.scheduler.getSize() != 0
@@ -617,6 +615,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def createSingleEvent( self, single ):
         nextt = single.lastTime + single.dt
         self.scheduler.addEvent( nextt, single )
+
+    def insertParticle( self, particle ):
+
+        single = self.createSingle( particle )
+        single.updateShell()
+        single.updateDt()
+        self.createSingleEvent( single )
 
 
     def formPairs( self ):

@@ -158,6 +158,8 @@ namespace libecs
 
 
 	EventScheduler()
+	    :
+	    time( 0.0 )
 	{
 	    ; // do nothing
 	}
@@ -169,6 +171,11 @@ namespace libecs
 
 
 	const double getTime() const
+	{
+	    return time;
+	}
+
+	const double getNextTime() const
 	{
 	    return getTopEvent().getTime();
 	}
@@ -207,14 +214,14 @@ namespace libecs
 
 	void step()
 	{
-	    Event& topEvent( this->eventPriorityQueue.getTop() );
-	    const double currentTime( topEvent.getTime() );
+	    Event& topEvent( getTopEvent() );
+	    this->time = topEvent.getTime();
 
 	    // Fire top
 	    topEvent.fire();
 	    // If the event is rescheduled into the past, remove it.
-	    // Otherwise, create a new event.
-	    if( topEvent.getTime() >= currentTime )
+	    // Otherwise, reuse the event.
+	    if( topEvent.getTime() >= getTime() )
 	    {
 		this->eventPriorityQueue.replaceTop( topEvent );
 	    }
@@ -302,6 +309,9 @@ namespace libecs
 	EventPriorityQueue       eventPriorityQueue;
 
 //	EventIndexVectorVector   eventDependencyArray;
+
+	double                   time;
+
 
     };
 

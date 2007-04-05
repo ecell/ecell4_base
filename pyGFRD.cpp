@@ -62,8 +62,8 @@ void translateException( const std::exception& anException )
 
 
 // GSL error handler.
-void gfrd_gsl_error_handler( const char * reason,
-			     const char * file,
+void gfrd_gsl_error_handler( const char* reason,
+			     const char* file,
 			     int line,
 			     int gsl_errno )
 {
@@ -102,6 +102,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     class_<PyEventScheduler, boost::noncopyable>( "EventScheduler" )
 	.def( "getTime", &PyEventScheduler::getTime )
+	.def( "getNextTime", &PyEventScheduler::getNextTime )
 	.def( "getSize", &PyEventScheduler::getSize )
 	.def( "getTopEvent", geteventrefsig( &PyEventScheduler::getTopEvent ),
 //	      return_value_policy<reference_existing_object>() )
