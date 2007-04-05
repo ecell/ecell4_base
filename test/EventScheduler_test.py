@@ -56,19 +56,20 @@ class EventSchedulerTestCase( unittest.TestCase ):
 
         event1 = TestEvent()
         event2 = TestEvent()
-        event1.dt = 0.5
+        event1.dt = 1.0
         event2.dt = -1.0
 
         scheduler.addEvent( 0.0, event1 )
         scheduler.addEvent( 0.0, event2 )
-
+        self.failIf( scheduler.getSize() != 2 )
+        
         scheduler.step()
         scheduler.step()
 
         self.failIf( scheduler.getSize() != 1 )
         self.failIf( scheduler.getTopEvent()[1] != event1 )
         self.failIf( scheduler.getTime() != 0.0 )
-        self.failIf( scheduler.getNextTime() != 0.5 )
+        self.failIf( scheduler.getNextTime() != 1.0 )
         
         
 
