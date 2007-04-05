@@ -434,7 +434,9 @@ class Pair:
 
         self.sim.checkShell( single1 )
         self.sim.checkShell( single2 )
-        
+
+
+        # this must be done after this method!!
         self.sim.createSingleEvent( single1 )
         self.sim.createSingleEvent( single2 )
 
@@ -500,10 +502,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.initialize()
 
         self.lastEvent = self.scheduler.getTopEvent()[1]
-        self.t = self.scheduler.getTime()
 
+        s = self.scheduler.getSize()
         self.scheduler.step()
+        print s, self.scheduler.getSize()
 
+        self.t = self.scheduler.getTime()
         nextTime, nextEvent = self.scheduler.getTopEvent()
         print 't', nextTime, self.t
         self.dt = nextTime - self.t
@@ -613,8 +617,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def createSingleEvent( self, single ):
-        nextt = single.lastTime + single.dt
-        self.scheduler.addEvent( nextt, single )
+        self.scheduler.addEvent( self.t + single.dt, single )
 
     def insertParticle( self, particle ):
 

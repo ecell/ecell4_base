@@ -223,12 +223,16 @@ namespace libecs
 	    // Otherwise, reuse the event.
 	    if( topEvent.getTime() >= getTime() )
 	    {
+		puts("replace");
 		this->eventPriorityQueue.replaceTop( topEvent );
 	    }
 	    else
 	    {
+		puts("pop");
 		this->eventPriorityQueue.popTop();
 	    }
+
+	    //assert( getNextTime() >= getTime() );
 
 	    // update dependent events
 //	    const EventIndexVector&
