@@ -103,7 +103,7 @@ class EventSchedulerTestCase( unittest.TestCase ):
 
 
     # not supported
-    def _testEventCreationDuringStepping(self):
+    def testEventCreationDuringStepping(self):
 
         scheduler = mod.EventScheduler()
 
@@ -128,7 +128,7 @@ class EventSchedulerTestCase( unittest.TestCase ):
 
 
     # not supported
-    def _testEventCreationDuringSteppingWithPop(self):
+    def testEventCreationDuringSteppingWithPop(self):
 
         scheduler = mod.EventScheduler()
 

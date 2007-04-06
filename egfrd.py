@@ -110,8 +110,6 @@ class Single:
 
         return self.dt
 
-    def post( self ):
-        pass
 
     '''
     Update the position of the particle and the protective sphere.
@@ -321,36 +319,6 @@ class Pair:
 
         print 'fire:', self
 
-        # Three cases:
-        #  1. Reaction
-        #  2.1 Escaping through a_r.
-        #  2.2 Escaping through a_R.
-
-        # 1. Reaction
-        if self.eventType == EventType.REACTION:
-
-            if len( self.rt.products ) == 1:
-                return -1
-            else:
-                raise NotImplementedError,\
-                      'num products >= 2 not supported yet.'
-
-        # 2. escaping cases.
-
-        # 2.1 escaping through a_r.
-        elif self.eventType == EventType.ESCAPE:
-
-            print 'escape r'
-            
-        # 2.2 escaping through a_R.
-        elif self.eventType == 2:
-
-            print 'escape R'
-
-        return -1
-
-
-    def post( self ):
 
         particle1 = self.single1.particle
         particle2 = self.single2.particle
@@ -363,11 +331,14 @@ class Pair:
         D1 = species1.D
         D2 = species2.D
 
-
-
         oldInterParticle = pos2 - pos1
 
+        # Three cases:
+        #  1. Reaction
+        #  2.1 Escaping through a_r.
+        #  2.2 Escaping through a_R.
 
+        # 1. Reaction
         if self.eventType == EventType.REACTION:
 
             if len( self.rt.products ) == 1:
@@ -392,12 +363,13 @@ class Pair:
 
                 particle = self.sim.createParticle( species3, newPos )
                 self.sim.insertParticle( particle )
-                return
+                return -1
 
             else:
                 raise NotImplementedError,\
                       'num products >= 2 not supported yet.'
 
+        # 2.1 Escaping through a_r.
         elif self.eventType == EventType.ESCAPE:
 
             print 'escape r'
@@ -494,6 +466,8 @@ class Pair:
         self.sim.createSingleEvent( single1 )
         self.sim.createSingleEvent( single2 )
 
+        return -1
+
 
     def update( self, t ):
         print 'update ', t
@@ -550,20 +524,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
-        self.lastEvent = self.scheduler.getTopEvent()[1]
+        self.t, self.lastEvent = self.scheduler.getTopEvent()
 
-        s = self.scheduler.getSize()
         self.scheduler.step()
-        print s, self.scheduler.getSize()
 
-        self.t = self.scheduler.getTime()
         nextTime, nextEvent = self.scheduler.getTopEvent()
-        print 't', nextTime, self.t
         self.dt = nextTime - self.t
         
         assert self.scheduler.getSize() != 0
-
-        self.lastEvent.post()
 
 
         # if the same event stepped in the last n steps,
@@ -632,7 +600,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def createSingleEvent( self, single ):
-        print 'create', self.t, single.dt, single
+        print 'create', self.t+single.dt, self.t, single.dt, single
         self.scheduler.addEvent( self.t + single.dt, single )
 
     def insertParticle( self, particle ):

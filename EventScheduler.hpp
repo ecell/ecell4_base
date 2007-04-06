@@ -214,20 +214,23 @@ namespace libecs
 
 	void step()
 	{
-	    Event& topEvent( getTopEvent() );
 
-	    // Here I use ID to reschedule this event.  This is
-	    // necessary if events can be created or deleted within
-	    // fire().  The cost of using this is optimized way when
+	    // Here I copy construct and use its event ID to
+	    // reschedule the top event.  This is necessary if events
+	    // can be created or deleted within fire() and the dynamic
+	    // priority queue can reallocate internal data structures.
+	    // Most of the cost of using this is optimized way when
 	    // the dynamic priority queue has a VolatileIDPolicy.
+	    Event topEvent( getTopEvent() );
 	    const EventID ID( this->eventPriorityQueue.getTopID() );
 	    this->time = topEvent.getTime();
 
 	    // Fire top
 	    topEvent.fire();
+
 	    // If the event is rescheduled into the past, remove it.
 	    // Otherwise, reuse the event.
-	    if( this->eventPriorityQueue[ ID ].getTime() >= getTime() )
+	    if( topEvent.getTime() >= getTime() )
 	    {
 		//this->eventPriorityQueue.replaceTop( topEvent );
 		this->eventPriorityQueue.replace( ID, topEvent );
