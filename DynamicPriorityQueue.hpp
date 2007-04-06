@@ -234,6 +234,11 @@ public:
 	return this->itemVector[ getTopIndex() ];
     }
 
+    ID getTopID() const
+    {
+	return IDPolicy::getIDByIndex( getTopIndex() );
+    }
+
     const Item& operator[]( const ID id ) const
     {
 	return this->itemVector[ getIndex( id ) ];

@@ -33,7 +33,6 @@ class Single:
 
     def __init__( self, sim, particle ):
 
-        #FIXME: si and i are fragile
         self.particle = particle
         self.sim = sim
         self.lastTime = 0.0
@@ -74,8 +73,45 @@ class Single:
 
 
     def fire( self ):
-        dt = self.sim.fireSingle( self )
-        return dt
+
+        rnd = numpy.random.uniform( size=2 )
+
+        displacementS = [ self.getDr(), rnd[0] * Pi, rnd[1] * 2 * Pi ]
+        displacement = sphericalToCartesian( displacementS )
+
+        #self.checkShellForAll()
+        
+        pos = self.particle.getPos()
+        pos += displacement
+
+        # BOUNDARY
+        self.sim.applyBoundary( pos )
+        
+        #print 'displacement', length(displacement), self.getDr()
+
+        neighbors, distances = self.sim.getNeighborShells( pos )
+        newdr = distances[1] - self.particle.species.radius
+        
+        self.closest = self.sim.findSingle( Particle( neighbors[1][0],
+                                                    neighbors[1][1] ) )
+
+        #print 'newdr', newdr
+        if newdr <= 0:
+            print newdr, self.closest
+            raise RuntimeError, 'Fatal newdr <= 0'
+
+        self.setDr( newdr )
+
+        #print self, self.closest
+        #debug
+        #self.checkShellForAll()
+
+        self.dt = self.calculateFirstPassageTime()
+
+        return self.dt
+
+    def post( self ):
+        pass
 
     '''
     Update the position of the particle and the protective sphere.
@@ -159,7 +195,7 @@ class Single:
 
 
     def __str__( self ):
-        return str(self.particle) + str(self.getDr())
+        return str( self.particle )
 
 
 
@@ -285,6 +321,37 @@ class Pair:
 
         print 'fire:', self
 
+        # Three cases:
+        #  1. Reaction
+        #  2.1 Escaping through a_r.
+        #  2.2 Escaping through a_R.
+
+        # 1. Reaction
+        if self.eventType == EventType.REACTION:
+
+            if len( self.rt.products ) == 1:
+                return -1
+            else:
+                raise NotImplementedError,\
+                      'num products >= 2 not supported yet.'
+
+        # 2. escaping cases.
+
+        # 2.1 escaping through a_r.
+        elif self.eventType == EventType.ESCAPE:
+
+            print 'escape r'
+            
+        # 2.2 escaping through a_R.
+        elif self.eventType == 2:
+
+            print 'escape R'
+
+        return -1
+
+
+    def post( self ):
+
         particle1 = self.single1.particle
         particle2 = self.single2.particle
         species1 = particle1.species
@@ -296,14 +363,11 @@ class Pair:
         D1 = species1.D
         D2 = species2.D
 
+
+
         oldInterParticle = pos2 - pos1
 
-        # Three cases:
-        #  1. Reaction
-        #  2.1 Escaping through a_r.
-        #  2.2 Escaping through a_R.
 
-        # 1. Reaction
         if self.eventType == EventType.REACTION:
 
             if len( self.rt.products ) == 1:
@@ -327,22 +391,14 @@ class Pair:
                 species2.removeParticleBySerial( particle2.serial )
 
                 particle = self.sim.createParticle( species3, newPos )
-
                 self.sim.insertParticle( particle )
-
-
-                # self.sim.scheduler.removeEvent( self.eventID )
-                # returning -1 instruct the scheduler to remove this event.
-                return -1
+                return
 
             else:
                 raise NotImplementedError,\
                       'num products >= 2 not supported yet.'
 
-        # 2. escaping cases.
-
-        # 2.1 escaping through a_r.
-        if self.eventType == EventType.ESCAPE:
+        elif self.eventType == EventType.ESCAPE:
 
             print 'escape r'
 
@@ -435,15 +491,8 @@ class Pair:
         self.sim.checkShell( single1 )
         self.sim.checkShell( single2 )
 
-
-        # this must be done after this method!!
         self.sim.createSingleEvent( single1 )
         self.sim.createSingleEvent( single2 )
-
-        return -1
-
-        #dt, eventType = self.nextEvent( self.dr )
-        #        return dt
 
 
     def update( self, t ):
@@ -514,7 +563,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         assert self.scheduler.getSize() != 0
 
-        # if the same single stepped in the last n steps,
+        self.lastEvent.post()
+
+
+        # if the same event stepped in the last n steps,
         # reinitialize everything.
         # FIXME: don't need to initialize everything.
         #        (1) recalculate dr to the closest with
@@ -546,43 +598,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
               'hogger counter', self.hoggerCounter
         print ''
         
-
-
-    def fireSingle( self, single ):
-
-        rnd = numpy.random.uniform( size=2 )
-
-        displacementS = [ single.getDr(), rnd[0] * Pi, rnd[1] * 2 * Pi ]
-        displacement = sphericalToCartesian( displacementS )
-
-        #self.checkShellForAll()
-        
-        pos = single.particle.getPos()
-        pos += displacement
-
-        # BOUNDARY
-        self.applyBoundary( pos )
-        
-        #print 'displacement', length(displacement), single.getDr()
-
-        neighbors, distances = self.getNeighborShells( pos )
-        newdr = distances[1] - single.particle.species.radius
-        
-        single.closest = self.findSingle( Particle( neighbors[1][0],
-                                                    neighbors[1][1] ) )
-
-        #print 'newdr', newdr
-        if newdr <= 0:
-            print newdr, single.closest
-            raise RuntimeError, 'Fatal newdr <= 0'
-
-        single.setDr( newdr )
-
-        #print single, single.closest
-        #debug
-        #self.checkShellForAll()
-
-        return single.calculateFirstPassageTime()
 
 
     def findSingle( self, particle ):
@@ -617,6 +632,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def createSingleEvent( self, single ):
+        print 'create', self.t, single.dt, single
         self.scheduler.addEvent( self.t + single.dt, single )
 
     def insertParticle( self, particle ):
