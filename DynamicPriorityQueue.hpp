@@ -25,7 +25,7 @@
 // 
 //END_HEADER
 //
-// written by Koichi Takahashi based on initial version by Eiichiro Adachi.
+// written by Koichi Takahashi based on the initial version by Eiichiro Adachi.
 //
 
 #ifndef __DYNAMICPRIORITYQUEUE_HPP
@@ -103,7 +103,7 @@ public:
 	this->indexMap.erase( removedID );
     }
 
-    const bool check( const Index size ) const
+    const bool checkConsistency( const Index size ) const
     {
 	bool result( true );
 
@@ -171,7 +171,7 @@ public:
 	; // do nothing
     }
 
-    const bool check( const Index size ) const
+    const bool checkConsistency( const Index size ) const
     {
 	return true;
     }
@@ -280,13 +280,10 @@ protected:
 	return this->itemVector[ index ];
     }
 
-
     const Index getTopIndex() const 
     {
 	return this->heap[0];
     }
-
-
 
     void move( const Index index )
     {
@@ -414,7 +411,8 @@ void DynamicPriorityQueue< Item, IDPolicy >::moveUpPos( const Index position,
 
 
 template < typename Item, class IDPolicy >
-void DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
+void 
+DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
 {
     const Index index( this->heap[ position ] );
     const Item& item( this->itemVector[ index ] );
@@ -524,7 +522,6 @@ replace( const ID id, const Item& item )
 }
 
 
-
 template < typename Item, class IDPolicy >
 void DynamicPriorityQueue< Item, IDPolicy >::dump() const
 {
@@ -582,7 +579,7 @@ const bool DynamicPriorityQueue< Item, IDPolicy >::checkConsistency() const
 
     }
 
-    result &= IDPolicy::check( getSize() );
+    result &= IDPolicy::checkConsistency( getSize() );
 
     return result;
 }
@@ -590,18 +587,3 @@ const bool DynamicPriorityQueue< Item, IDPolicy >::checkConsistency() const
 
 
 #endif // __DYNAMICPRIORITYQUEUE_HPP
-
-
-
-/*
-  Do not modify
-  $Author: shafi $
-  $Revision: 2529 $
-  $Date: 2005-11-19 01:36:40 -0800 (Sat, 19 Nov 2005) $
-  $Locker$
-*/
-
-
-
-
-

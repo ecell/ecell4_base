@@ -396,7 +396,7 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 				   + alpha0_0 * alpha0_0 ) );
 
 
-    printf("%g %g\n", alpha0_0, alpha_cutoff );
+//    printf("%g %g\n", alpha0_0, alpha_cutoff );
 
 
     const Integer maxIter( 10000 );

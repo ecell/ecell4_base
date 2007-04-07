@@ -39,17 +39,17 @@ class EventSchedulerTestCase( unittest.TestCase ):
     def tearDown(self):
         pass
     
-    def testInstantiation(self):
+    def test1Instantiation(self):
         scheduler = mod.EventScheduler()
         self.failIf( scheduler == None )
 
-    def testEmptyState(self):
+    def test2EmptyState(self):
         scheduler = mod.EventScheduler()
         self.failIf( scheduler.getSize() != 0 )
         self.failIf( scheduler.getTime() != 0.0 )
         # what if getTopEvent() are called here?
 
-    def testOneEvent(self):
+    def test3OneEvent(self):
         scheduler = mod.EventScheduler()
 
         event = TestEvent()
@@ -64,7 +64,7 @@ class EventSchedulerTestCase( unittest.TestCase ):
         self.failIf( scheduler.getNextTime() != scheduler.getTopEvent()[0] )
         self.failIf( scheduler.getTopEvent()[1] != event )
 
-    def testEventPop(self):
+    def test4EventPop(self):
         scheduler = mod.EventScheduler()
 
         event1 = TestEvent()
@@ -79,7 +79,7 @@ class EventSchedulerTestCase( unittest.TestCase ):
         self.failIf( scheduler.getTime() != 0.0 )
 
         
-    def testEventPop2(self):
+    def test5EventPop2(self):
 
         scheduler = mod.EventScheduler()
 
@@ -102,8 +102,7 @@ class EventSchedulerTestCase( unittest.TestCase ):
         self.failIf( scheduler.getNextTime() != 1.0 )
 
 
-    # not supported
-    def testEventCreationDuringStepping(self):
+    def test6EventCreationDuringStepping(self):
 
         scheduler = mod.EventScheduler()
 
@@ -127,8 +126,7 @@ class EventSchedulerTestCase( unittest.TestCase ):
         self.failIf( scheduler.getNextTime() != 0.5 )
 
 
-    # not supported
-    def testEventCreationDuringSteppingWithPop(self):
+    def test7EventCreationDuringSteppingWithPop(self):
 
         scheduler = mod.EventScheduler()
 
