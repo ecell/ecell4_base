@@ -682,6 +682,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	this->updateAlphaTable0( low );
 	this->updatePsurvTable( r0 );
     }
+    //this->updatePsurvTable( r0 );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );

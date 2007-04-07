@@ -229,24 +229,14 @@ public:
 	return this->itemVector[ getTopIndex() ];
     }
 
-    Item& getTop()
+    const Item& get( const ID id ) const
     {
-	return this->itemVector[ getTopIndex() ];
+	return this->itemVector[ getIndex( id ) ];
     }
 
     ID getTopID() const
     {
 	return IDPolicy::getIDByIndex( getTopIndex() );
-    }
-
-    const Item& operator[]( const ID id ) const
-    {
-	return this->itemVector[ getIndex( id ) ];
-    }
-
-    Item& operator[]( const ID id )
-    {
-	return this->itemVector[ getIndex( id ) ];
     }
 
     void popTop()
@@ -266,6 +256,11 @@ public:
     inline const ID push( const Item& item );
 
     void dump() const;
+
+    const Item& operator[]( const ID id ) const
+    {
+	return get( id );
+    }
 
 
     // self-diagnostic method

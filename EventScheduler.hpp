@@ -190,34 +190,22 @@ namespace libecs
 	    return this->eventPriorityQueue.getTop();
 	}
 
-	Event& getTopEvent()
+	EventIndex getTopID() const
 	{
-	    return this->eventPriorityQueue.getTop();
+	    return this->eventPriorityQueue.getTopID();
 	}
-
-/*
-	EventIndex getTopIndex()
-	{
-	    return this->eventPriorityQueue.getTopIndex();
-	}
-*/
 
 	const Event& getEvent( const EventID id ) const
 	{
-	    return this->eventPriorityQueue[ id ];
-	}
-
-	Event& getEvent( const EventID id )
-	{
-	    return this->eventPriorityQueue[ id ];
+	    return this->eventPriorityQueue.get( id );
 	}
 
 	void step()
 	{
 
-	    // Here I copy construct and use its event ID to
-	    // reschedule the top event.  This is necessary if events
-	    // can be created or deleted within fire() and the dynamic
+	    // Here I copy construct the top event and use its event
+	    // ID to reschedule it.  This is necessary if events can
+	    // be created or deleted within fire() and the dynamic
 	    // priority queue can reallocate internal data structures.
 	    // Most of the cost of using this is optimized way when
 	    // the dynamic priority queue has a VolatileIDPolicy.

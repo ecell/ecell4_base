@@ -341,6 +341,8 @@ class Pair:
         # 1. Reaction
         if self.eventType == EventType.REACTION:
 
+            print 'reaction'
+
             if len( self.rt.products ) == 1:
                 
                 species3 = self.rt.products[0]
@@ -358,8 +360,11 @@ class Pair:
                 #FIXME: SURFACE
                 newPos = self.sim.applyBoundary( newR )
 
-                species1.removeParticleBySerial( particle1.serial )
-                species2.removeParticleBySerial( particle2.serial )
+                self.sim.removeParticle( particle1 )
+                self.sim.removeParticle( particle2 )
+
+#                species1.removeParticleBySerial( particle1.serial )
+#                species2.removeParticleBySerial( particle2.serial )
 
                 particle = self.sim.createParticle( species3, newPos )
                 self.sim.insertParticle( particle )
@@ -573,8 +578,19 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def createSingle( self, particle ):
         single = Single( self, particle )
+        self.singleMap[ ( particle.species, particle.serial ) ] = single
         return single
 
+    def removeSingle( self, single ):
+        particle = single.particle
+        del self.singleMap[ ( particle.species, particle.serial ) ]
+        return single
+
+
+    def removeParticle( self, particle ):
+        single = self.findSingle( particle )
+        self.removeSingle( single )
+        particle.species.removeParticleBySerial( particle.serial )
 
     def initializeSingleMap( self ):
 
@@ -585,7 +601,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 particle = Particle( species, index=i )
                 single = self.createSingle( particle )
                 single.setDr( 0.0 )
-                self.singleMap[ ( species, particle.serial ) ] = single        
 
     def initializeSingles( self ):
 
