@@ -53,72 +53,72 @@ public:
     typedef std::map<const ID, Index> IndexMap;
 
     PersistentIDPolicy()
-	:
-	idCounter( 0 )
+        :
+        idCounter( 0 )
     {
-	; // do nothing
+        ; // do nothing
     }
     
     void reset()
     {
-	idCounter = 0;
+        idCounter = 0;
     }
 
     void clear()
     {
-	this->idVector.clear();
-	this->indexMap.clear();
+        this->idVector.clear();
+        this->indexMap.clear();
     }
 
     const Index getIndex( const ID id ) const
     {
-	return this->indexMap.at( id );
+        return this->indexMap.at( id );
     }
 
     const ID getIDByIndex( const Index index ) const
     {
-	return this->idVector[ index ];
+        return this->idVector[ index ];
     }
 
     const ID push( const Index index )
     {
-	const ID id( this->idCounter );
-	++this->idCounter;
+        const ID id( this->idCounter );
+        ++this->idCounter;
 
-	this->indexMap.insert( IndexMap::value_type( id, index ) );
-	this->idVector.push_back( id );
+        this->indexMap.insert( IndexMap::value_type( id, index ) );
+        this->idVector.push_back( id );
 
-	return id;
+        return id;
     }
 
     void pop( const Index index )
     {
-	// update the idVector and the indexMap.
-	const ID removedID( this->idVector[ index ] );
-	const ID movedID( this->idVector.back() );
-	this->idVector[ index ] = movedID;
-	this->idVector.pop_back();
-	
-	this->indexMap[ movedID ] = index;
-	this->indexMap.erase( removedID );
+        // update the idVector and the indexMap.
+        const ID removedID( this->idVector[ index ] );
+        const ID movedID( this->idVector.back() );
+        this->idVector[ index ] = movedID;
+        this->idVector.pop_back();
+        
+        this->indexMap[ movedID ] = index;
+        this->indexMap.erase( removedID );
     }
 
     const bool checkConsistency( const Index size ) const
     {
-	bool result( true );
+        bool result( true );
 
-	result &= this->idVector.size() == size;
-	result &= this->indexMap.size() == size;
+        result = result && this->idVector.size() == size;
+        result = result && this->indexMap.size() == size;
 
-	// assert correct mapping between the indexMap and the idVector.
-	for( Index i( 0 ); i < size; ++i )
-	{
-	    const ID id( this->idVector[i] );
-	    result &= id < this->idCounter;
-	    result &= this->indexMap.at( id ) == i;
-	}
+        // assert correct mapping between the indexMap and the idVector.
+        for( Index i( 0 ); i < size; ++i )
+        {
+            const ID id( this->idVector[i] );
+            result = result && id < this->idCounter;
+            result = result && this->indexMap.at( id ) == i;
+        }
 
-	return result;
+        return result;
     }
 
 
@@ -143,37 +143,37 @@ public:
 
     void reset()
     {
-	; // do nothing
+        ; // do nothing
     }
 
     void clear()
     {
-	; // do nothing
+        ; // do nothing
     }
 
     const Index getIndex( const ID id ) const
     {
-	return id;
+        return id;
     }
 
     const ID getIDByIndex( const Index index ) const
     {
-	return index;
+        return index;
     }
 
     const ID push( const Index index )
     {
-	return index;
+        return index;
     }
 
     void pop( const Index index )
     {
-	; // do nothing
+        ; // do nothing
     }
 
     const bool checkConsistency( const Index size ) const
     {
-	return true;
+        return true;
     }
 
 
@@ -214,39 +214,39 @@ public:
   
     const bool isEmpty() const
     {
-	return this->itemVector.empty();
+        return this->itemVector.empty();
     }
 
     const Index getSize() const
     {
-	return this->itemVector.size();
+        return this->itemVector.size();
     }
 
     void clear();
 
     const Item& getTop() const
     {
-	return this->itemVector[ getTopIndex() ];
+        return this->itemVector[ getTopIndex() ];
     }
 
     const Item& get( const ID id ) const
     {
-	return this->itemVector[ getIndex( id ) ];
+        return this->itemVector[ getIndex( id ) ];
     }
 
     ID getTopID() const
     {
-	return IDPolicy::getIDByIndex( getTopIndex() );
+        return IDPolicy::getIDByIndex( getTopIndex() );
     }
 
     void popTop()
     {
-	popByIndex( getTopIndex() );
+        popByIndex( getTopIndex() );
     }
 
     void pop( const ID id )
     {
-	popByIndex( getIndex( id ) );
+        popByIndex( getIndex( id ) );
     }
 
     void replaceTop( const Item& item );
@@ -259,7 +259,7 @@ public:
 
     const Item& operator[]( const ID id ) const
     {
-	return get( id );
+        return get( id );
     }
 
 
@@ -272,37 +272,37 @@ protected:
 
     Item& getByIndex( const Index index )
     {
-	return this->itemVector[ index ];
+        return this->itemVector[ index ];
     }
 
     const Index getTopIndex() const 
     {
-	return this->heap[0];
+        return this->heap[0];
     }
 
     void move( const Index index )
     {
-	const Index pos( this->positionVector[ index ] );
-	movePos( pos );
+        const Index pos( this->positionVector[ index ] );
+        movePos( pos );
     }
 
     inline void movePos( const Index pos );
 
     void moveTop()
     {
-	moveDownPos( 0 );
+        moveDownPos( 0 );
     }
 
     void moveUp( const Index index )
     {
-	const Index position( this->positionVector[ index ] );
-	moveUpPos( position );
+        const Index position( this->positionVector[ index ] );
+        moveUpPos( position );
     }
 
     void moveDown( const Index index )
     {
-	const Index position( this->positionVector[ index ] );
-	moveDownPos( position );
+        const Index position( this->positionVector[ index ] );
+        moveDownPos( position );
     }
 
 private:
@@ -354,33 +354,33 @@ movePos( const Index pos )
     const Index succ( 2 * pos + 1 );
     if( succ < size )
     {
-	if( this->comp( this->itemVector[ this->heap[ succ ] ], item ) ||
-	    ( succ + 1 < size && 
-	      this->comp( this->itemVector[ this->heap[ succ + 1 ] ], 
-			  item ) ) )
-	{
-	    moveDownPos( pos );
-	    return;
-	}
+        if( this->comp( this->itemVector[ this->heap[ succ ] ], item ) ||
+            ( succ + 1 < size && 
+              this->comp( this->itemVector[ this->heap[ succ + 1 ] ], 
+                          item ) ) )
+        {
+            moveDownPos( pos );
+            return;
+        }
     }
 
     if( pos <= 0 )
     {
-	return;
+        return;
     }
 
     const Index pred( ( pos - 1 ) / 2 );
     if( pred >= 0  && 
-	this->comp( item, this->itemVector[ this->heap[ pred ] ] ) )
+        this->comp( item, this->itemVector[ this->heap[ pred ] ] ) )
     {
-	moveUpPos( pos );
-	return;
+        moveUpPos( pos );
+        return;
     }
 }
 
 template < typename Item, class IDPolicy >
 void DynamicPriorityQueue< Item, IDPolicy >::moveUpPos( const Index position, 
-							const Index start )
+                                                        const Index start )
 {
     const Index index( this->heap[ position ] );
     const Item& item( this->itemVector[ index ] );
@@ -388,16 +388,16 @@ void DynamicPriorityQueue< Item, IDPolicy >::moveUpPos( const Index position,
     Index pos( position );
     while( pos > start )
     {
-	const Index pred( ( pos - 1 ) / 2 );
-	const Index predIndex( this->heap[ pred ] );
-	if( this->comp( this->itemVector[ predIndex ], item ) )
-	{
-	    break;
-	}
+        const Index pred( ( pos - 1 ) / 2 );
+        const Index predIndex( this->heap[ pred ] );
+        if( this->comp( this->itemVector[ predIndex ], item ) )
+        {
+            break;
+        }
 
-	this->heap[ pos ] = predIndex;
-	this->positionVector[ predIndex ] = pos;
-	pos = pred;
+        this->heap[ pos ] = predIndex;
+        this->positionVector[ predIndex ] = pos;
+        pos = pred;
     }
 
     this->heap[ pos ] = index;
@@ -418,18 +418,18 @@ DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
     Index pos( position );
     while( succ < size )
     {
-	const Index rightPos( succ + 1 );
-	if( rightPos < size && 
-	    this->comp( this->itemVector[ this->heap[ rightPos ] ],
-			this->itemVector[ this->heap[ succ ] ] ) )
-	{
-	    succ = rightPos;
-	}
+        const Index rightPos( succ + 1 );
+        if( rightPos < size && 
+            this->comp( this->itemVector[ this->heap[ rightPos ] ],
+                        this->itemVector[ this->heap[ succ ] ] ) )
+        {
+            succ = rightPos;
+        }
 
-	this->heap[ pos ] = this->heap[ succ ];
-	this->positionVector[ this->heap[ pos ] ] = pos;
-	pos = succ;
-	succ = 2 * pos + 1;
+        this->heap[ pos ] = this->heap[ succ ];
+        this->positionVector[ this->heap[ pos ] ] = pos;
+        pos = succ;
+        succ = 2 * pos + 1;
     }
 
     this->heap[ pos ] = index;
@@ -522,13 +522,13 @@ void DynamicPriorityQueue< Item, IDPolicy >::dump() const
 {
     for( Index i( 0 ); i < heap.size(); ++i )
     {
-	printf( "heap %d %d %d\n", 
-		i, heap[i], this->itemVector[ this->heap[i] ] );
+        printf( "heap %d %d %d\n", 
+                i, heap[i], this->itemVector[ this->heap[i] ] );
     }
     for( Index i( 0 ); i < positionVector.size(); ++i )
     {
-	printf( "pos %d %d\n", 
-		i, positionVector[i] );
+        printf( "pos %d %d\n", 
+                i, positionVector[i] );
     }
 }
 
@@ -539,42 +539,42 @@ const bool DynamicPriorityQueue< Item, IDPolicy >::checkConsistency() const
     bool result( true );
 
     // check sizes of data structures.
-    result &= this->itemVector.size() == getSize();
-    result &= this->heap.size() == getSize();
-    result &= this->positionVector.size() == getSize();
+    result = result && this->itemVector.size() == getSize();
+    result = result && this->heap.size() == getSize();
+    result = result && this->positionVector.size() == getSize();
 
     // assert correct mapping between the heap and the positionVector.
     for( Index i( 0 ); i < getSize(); ++i )
     {
-	result &= this->heap[ i ] <= getSize();
-	result &= this->positionVector[ i ] <= getSize();
-	result &= this->heap[ this->positionVector[i] ] == i;
+        result = result && this->heap[ i ] <= getSize();
+        result = result && this->positionVector[ i ] <= getSize();
+        result = result && this->heap[ this->positionVector[i] ] == i;
     }
 
     // assert correct ordering of items in the heap.
 
     for( Index pos( 0 ); pos < getSize(); ++pos )
     {
-	const Item& item( this->itemVector[ this->heap[ pos ] ] );
+        const Item& item( this->itemVector[ this->heap[ pos ] ] );
 
-	const Index succ( pos * 2 + 1 );
-	if( succ < getSize() )
-	{
-	    result &= this->comp( item, 
-				  this->itemVector[ this->heap[ succ ] ] );
+        const Index succ( pos * 2 + 1 );
+        if( succ < getSize() )
+        {
+            result = result && 
+                this->comp( item, this->itemVector[ this->heap[ succ ] ] );
 
-	    const Index rightPos( succ + 1 );
-	    if( rightPos < getSize() )
-	    {
-		result &= 
-		    this->comp( item, 
-				this->itemVector[ this->heap[ rightPos ] ] );
-	    }
-	}
+            const Index rightPos( succ + 1 );
+            if( rightPos < getSize() )
+            {
+                result = result &&  
+                    this->comp( item, 
+                                this->itemVector[ this->heap[ rightPos ] ] );
+            }
+        }
 
     }
 
-    result &= IDPolicy::checkConsistency( getSize() );
+    result = result && IDPolicy::checkConsistency( getSize() );
 
     return result;
 }

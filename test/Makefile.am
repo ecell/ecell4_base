@@ -12,15 +12,16 @@ TESTS_ENVIRONMENT = PYTHONPATH=$(top_srcdir)
 #%.py:
 #	$(TESTS_ENVIRONMENT) $(PYTHON) $<
 
+AllTests_LDFLAGS = -L$(libdir)
+AllTests_LDADD   = -lboost_unit_test_framework
 
 INCLUDES = -I$(top_srcdir)
 
 check_PROGRAMS = $(CPP_TESTS)
 
-AllTests_SOURCES = AllTests.cpp\
+AllTests_SOURCES = \
 DynamicPriorityQueue_test.cpp
 
 
-AllTests_LDFLAGS = -L$(libdir)
-AllTests_LDADD   = $(CPPUNIT_LIBS)
+
 
