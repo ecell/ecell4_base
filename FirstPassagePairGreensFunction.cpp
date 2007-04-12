@@ -1283,17 +1283,80 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const Real alpha,
     bessjy( r * alpha,  np,       &jar,  &yar,  &_, &_ );
     bessjy( r0 * alpha, np,       &jar0, &yar0, &_, &_ );
 
-    const Real f_1( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
-    const Real f_2( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
+    const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
+    const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
 
-    const Real num( ( f_1 * yar - f_2 * jar ) * 
-		    ( f_1 * yar0 - f_2 * jar0 ) );
+    const Real falpha_r( f_1 * yar - f_2 * jar );
+    const Real falpha_r0( J * yar0 - Y * jar0 );
+
+    const Real num( falpha_r * falpha_r0 );
+
+    const Real E1( realn + realn * realn - 
+		   sigma * ( h + h * h * sigma + sigma * alphasq ) );
+
+    const Real E2( ( J * J + Y * Y ) / 
+		   ( jaa * jaa + yaa * yaa ) );
+
+//    const Real E2( ( hSigma_m_n * jas1 + sigmaAlpha * jas2 ) / 
+//		   jaa * jaa );
+
+    const Real den( E1 + E2 );
+
+    const Real result( term1 * num / den );
+
+    return result;
+}
+
+
+const Real 
+FirstPassagePairGreensFunction::dp_n_alpha_at_a( const Real alpha,
+						  const Integer n,
+						  const Real r0, 
+						  const Real t ) const
+{
+    const Real Dt( this->getD() * t );
+    const Real sigma( this->getSigma() );
+    const Real h( this->geth() );
+
+    const Real alphasq( alpha * alpha );
+
+    const Real aAlpha( a * alpha );
+    const Real sigmaAlpha( sigma * alpha );
+    const Real hSigma( geth() * getSigma() );
+    const Real realn( static_cast<Real>( n ) );
+    const Real hSigma_m_n( hSigma - realn );
+
+    const Real term1( alphasq * exp( - Dt * alphasq ) );
+    const Real np( realn + 0.5 );
+  
+    //(D*(1 + 2*n)*Pi*u^2*falpha[r0]*((-(n*BesselY[1/2 + n, a*u]) +
+    //a*u*BesselY[3/2 + n, a*u])*J[u] + (n*BesselJ[1/2 + n, a*u] -
+    //a*u*BesselJ[3/2 + n, a*u])*Y[u]))/ (8*a^(3/2)*Sqrt[r0]*(n + n^2
+    //- s*(h + h^2*s + s*u^2) + (J[u]^2 + Y[u]^2)/(BesselJ[1/2 + n,
+    //a*u]^2 + BesselY[1/2 + n, a*u]^2)))
+    
+    Real jas1, yas1, jas2, yas2, jaa1, yaa1, jaa2, yaa2, // jar, yar, 
+	jar0, yar0, _;
+    bessjy( sigmaAlpha, np,       &jas1, &yas1, &_, &_ );
+    bessjy( sigmaAlpha, np + 1.0, &jas2, &yas2, &_, &_ );
+    bessjy( aAlpha,     np,       &jaa1, &yaa1, &_, &_ );
+    bessjy( aAlpha,     np + 1.0, &jaa2, &yaa2, &_, &_ );
+//    bessjy( r * alpha,  np,       &jar,  &yar,  &_, &_ );
+    bessjy( r0 * alpha, np,       &jar0, &yar0, &_, &_ );
+
+    const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
+    const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
+
+    const Real falpha_r0( J * yar0 - Y * jar0 );
+    const Real num1(    );
+
+    const Real num( falpha_r0 );
 
     const Real E1( realn + realn * realn - 
 		   sigma * ( h + h * h * sigma + sigma * alphasq ) );
 
     const Real E2( ( f_1 * f_1 + f_2 * f_2 ) / 
-		   ( jaa * jaa + yaa * yaa ) );
+		   ( jaa1 * jaa1 + yaa1 * yaa1 ) );
 
 //    const Real E2( ( hSigma_m_n * jas1 + sigmaAlpha * jas2 ) / 
 //		   jaa * jaa );

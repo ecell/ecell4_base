@@ -88,12 +88,18 @@ public:
 
     const Real p_n( const Integer n, const Real r, 
 		    const Real r0, const Real t ) const;
+
+
     const Real p_n_alpha( const Real alpha,
 			  const Integer n, 
 			  const Real r, 
 			  const Real r0,
 			  const Real t ) const;
 
+    const Real dp_n_alpha_at_a( const Real alpha,
+				const Integer n, 
+				const Real r0,
+				const Real t ) const;
 
 protected:
 
