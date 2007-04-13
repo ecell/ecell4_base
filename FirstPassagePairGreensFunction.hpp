@@ -38,7 +38,7 @@ public:
 	return this->a;
     }
 
-    void seta( Real a );
+    void seta( const Real a );
     
     
 
@@ -88,6 +88,8 @@ public:
 
     const Real p_n( const Integer n, const Real r, 
 		    const Real r0, const Real t ) const;
+
+    const Real dp_n_at_a( const Integer n, const Real r0, const Real t ) const;
 
 
     const Real p_n_alpha( const Real alpha,
@@ -152,9 +154,13 @@ protected:
 			    const Real r0 ) const;
 
     void makep_nTable( const Real r, 
-		      const Real r0, 
-		      const Real t,
-		      RealVector& p_nTable ) const;
+		       const Real r0, 
+		       const Real t,
+		       RealVector& p_nTable ) const;
+
+    void makedp_n_at_aTable( const Real r0, 
+			     const Real t,
+			     RealVector& p_nTable ) const;
 
     struct f_alpha0_aux_params
     { 

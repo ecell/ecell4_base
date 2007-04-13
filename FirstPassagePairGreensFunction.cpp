@@ -43,7 +43,7 @@ FirstPassagePairGreensFunction::~FirstPassagePairGreensFunction()
     ; // do nothing
 }
 
-void FirstPassagePairGreensFunction::seta( Real a )
+void FirstPassagePairGreensFunction::seta( const Real a )
 {
     assert( a > this->getSigma() );
 
@@ -417,7 +417,8 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 	    std::cerr << "alphaTable_0: max iteration reached. (exp(Dt u^2) = "
 		      << exp( - Dt * alpha0_i * alpha0_i ) << 
 		", exp(Dt u0^2) = " << exp( - Dt * alpha0_0 * alpha0_0 ) <<
-		", a = " << a << ", D = " << this->getD() << 
+		", a = " << a << ", sigma = " << this->getSigma() <<
+		", D = " << this->getD() << 
 		", t = " << t  << ")." << std::endl;
 	    throw std::exception();
 	    //break;
@@ -789,9 +790,9 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
     Real low( this->getSigma() );
     Real high( this->geta() );
 
-    //const Real lowvalue( GSL_FN_EVAL( &F, low*1.1 ) );
-    //    const Real highvalue( GSL_FN_EVAL( &F, high*0.9 ) );
-    //printf("%g %g %g\n", lowvalue, highvalue, psurv );
+    const Real lowvalue( GSL_FN_EVAL( &F, low*1.1 ) );
+    const Real highvalue( GSL_FN_EVAL( &F, high*0.9 ) );
+    printf("drawr %g %g %g\n", lowvalue, highvalue, psurv );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -1286,8 +1287,8 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const Real alpha,
     const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
     const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
 
-    const Real falpha_r( f_1 * yar - f_2 * jar );
-    const Real falpha_r0( J * yar0 - Y * jar0 );
+    const Real falpha_r( - J * yar + Y * jar );
+    const Real falpha_r0( - J * yar0 + Y * jar0 );
 
     const Real num( falpha_r * falpha_r0 );
 
@@ -1297,8 +1298,7 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const Real alpha,
     const Real E2( ( J * J + Y * Y ) / 
 		   ( jaa * jaa + yaa * yaa ) );
 
-//    const Real E2( ( hSigma_m_n * jas1 + sigmaAlpha * jas2 ) / 
-//		   jaa * jaa );
+//    const Real E2( J * J / ( jaa * jaa ) );
 
     const Real den( E1 + E2 );
 
@@ -1307,66 +1307,6 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const Real alpha,
     return result;
 }
 
-
-const Real 
-FirstPassagePairGreensFunction::dp_n_alpha_at_a( const Real alpha,
-						  const Integer n,
-						  const Real r0, 
-						  const Real t ) const
-{
-    const Real Dt( this->getD() * t );
-    const Real sigma( this->getSigma() );
-    const Real h( this->geth() );
-
-    const Real alphasq( alpha * alpha );
-
-    const Real aAlpha( a * alpha );
-    const Real sigmaAlpha( sigma * alpha );
-    const Real hSigma( geth() * getSigma() );
-    const Real realn( static_cast<Real>( n ) );
-    const Real hSigma_m_n( hSigma - realn );
-
-    const Real term1( alphasq * exp( - Dt * alphasq ) );
-    const Real np( realn + 0.5 );
-  
-    //(D*(1 + 2*n)*Pi*u^2*falpha[r0]*((-(n*BesselY[1/2 + n, a*u]) +
-    //a*u*BesselY[3/2 + n, a*u])*J[u] + (n*BesselJ[1/2 + n, a*u] -
-    //a*u*BesselJ[3/2 + n, a*u])*Y[u]))/ (8*a^(3/2)*Sqrt[r0]*(n + n^2
-    //- s*(h + h^2*s + s*u^2) + (J[u]^2 + Y[u]^2)/(BesselJ[1/2 + n,
-    //a*u]^2 + BesselY[1/2 + n, a*u]^2)))
-    
-    Real jas1, yas1, jas2, yas2, jaa1, yaa1, jaa2, yaa2, // jar, yar, 
-	jar0, yar0, _;
-    bessjy( sigmaAlpha, np,       &jas1, &yas1, &_, &_ );
-    bessjy( sigmaAlpha, np + 1.0, &jas2, &yas2, &_, &_ );
-    bessjy( aAlpha,     np,       &jaa1, &yaa1, &_, &_ );
-    bessjy( aAlpha,     np + 1.0, &jaa2, &yaa2, &_, &_ );
-//    bessjy( r * alpha,  np,       &jar,  &yar,  &_, &_ );
-    bessjy( r0 * alpha, np,       &jar0, &yar0, &_, &_ );
-
-    const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
-    const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
-
-    const Real falpha_r0( J * yar0 - Y * jar0 );
-    const Real num1(    );
-
-    const Real num( falpha_r0 );
-
-    const Real E1( realn + realn * realn - 
-		   sigma * ( h + h * h * sigma + sigma * alphasq ) );
-
-    const Real E2( ( f_1 * f_1 + f_2 * f_2 ) / 
-		   ( jaa1 * jaa1 + yaa1 * yaa1 ) );
-
-//    const Real E2( ( hSigma_m_n * jas1 + sigmaAlpha * jas2 ) / 
-//		   jaa * jaa );
-
-    const Real den( E1 + E2 );
-
-    const Real result( term1 * num / den );
-
-    return result;
-}
 
 
 const Real 
@@ -1405,7 +1345,6 @@ FirstPassagePairGreensFunction::p_n( const Integer n,
 
     return p;
 }
-
 
 void
 FirstPassagePairGreensFunction::makep_nTable( const Real r, 
@@ -1460,6 +1399,154 @@ FirstPassagePairGreensFunction::makep_nTable( const Real r,
 
 }
 
+
+const Real 
+FirstPassagePairGreensFunction::dp_n_alpha_at_a( const Real alpha,
+						 const Integer n,
+						 const Real r0, 
+						 const Real t ) const
+{
+    const Real Dt( this->getD() * t );
+    const Real sigma( this->getSigma() );
+    const Real h( this->geth() );
+
+    const Real alphasq( alpha * alpha );
+
+    const Real aAlpha( a * alpha );
+    const Real sigmaAlpha( sigma * alpha );
+    const Real hSigma( geth() * getSigma() );
+    const Real realn( static_cast<Real>( n ) );
+    const Real hSigma_m_n( hSigma - realn );
+
+    const Real term1( alphasq * alpha * exp( - Dt * alphasq ) );
+    const Real np( realn + 0.5 );
+  
+    Real jas1, yas1, jas2, yas2, jaa1, yaa1, jaa2, yaa2, jar0, yar0, _;
+    bessjy( sigmaAlpha, np,       &jas1, &yas1, &_, &_ );
+    bessjy( sigmaAlpha, np + 1.0, &jas2, &yas2, &_, &_ );
+    bessjy( aAlpha,     np,       &jaa1, &yaa1, &_, &_ );
+    bessjy( aAlpha,     np + 1.0, &jaa2, &yaa2, &_, &_ );
+    bessjy( r0 * alpha, np,       &jar0, &yar0, &_, &_ );
+
+    const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
+    const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
+
+    const Real falpha_r0( - J * yar0 + Y * jar0 );
+    const Real num1( - jaa2 * Y );
+    const Real num2(   yaa2 * J );
+    
+    const Real num( - falpha_r0 * ( num1 + num2 ) );
+
+    const Real E1( realn + realn * realn - 
+		   sigma * ( h + h * h * sigma + sigma * alphasq ) );
+
+    const Real E2( ( J * J + Y * Y ) / 
+		   ( jaa1 * jaa1 + yaa1 * yaa1 ) );
+
+//    const Real E2( ( J * J ) / 
+//		   ( jaa1 * jaa1 ) );
+
+    const Real den( E1 + E2 );
+
+    printf("f n1 n2 d %g %g %g %g\n",falpha_r0, num1, num2, den );
+
+    const Real result( term1 * num / den );
+
+    return result;
+}
+
+const Real 
+FirstPassagePairGreensFunction::dp_n_at_a( const Integer n,
+					   const Real r0, 
+					   const Real t ) const
+{
+    Real p( 0.0 );
+
+    updateAlphaTable( n, t );
+
+    const RealVector& alphaTable_n( this->getAlphaTable( n ) );
+
+    for( unsigned int i( 0 ); i < alphaTable_n.size(); ++i )
+    {
+	const Real alpha( alphaTable_n[i] );
+	const Real value( dp_n_alpha_at_a( alpha, n, r0, t ) );
+	p += value;
+
+	//printf("p_n %d %d %g %g\n", 
+	// n, i, value, dp_n_alpha_at_a( alpha, n, r, r0, t ) );
+
+	if( fabs( value ) < fabs( p * this->CUTOFF ) )
+	{
+	    break;
+	}
+
+
+    }
+
+    const Real factor( getD() * ( 1 + 2 * n ) * M_PI / 
+		       ( 8.0 * sqrt( a * r0 ) ) );
+
+    p *= factor;
+
+    return p;
+}
+
+
+void
+FirstPassagePairGreensFunction::
+makedp_n_at_aTable( const Real r0, 
+		    const Real t,
+		    RealVector& p_nTable ) const
+{
+    const unsigned NMAX( 100 );
+    const Real truncationTolerance( 1e-8 );
+
+    p_nTable.clear();
+
+    const Real p_0( this->dp_n_at_a( 0, r0, t ) );
+    p_nTable.push_back( p_0 );
+
+    const Real threshold( fabs( truncationTolerance * p_0 ) );
+
+    Real p_n_prev_abs( fabs( p_0 ) );
+    unsigned int n( 1 );
+    while( true )
+    {
+	Real p_n( this->dp_n_at_a( n, r0, t ) );
+
+	if( p_n < 0.0 )
+	{
+#ifndef NDEBUG
+	    printf("makedp_n_at_aTable: p_n < 0 %g \n", p_n );
+#endif // NDEBUG
+//	    p_n = 0.0;
+	}
+	printf("p_n %g\n",p_n );
+
+	p_nTable.push_back( p_n );
+
+	const Real p_n_abs( fabs( p_n ) );
+	// truncate when converged enough.
+	if( p_n_abs < threshold &&
+	    p_n_abs < p_n_prev_abs )
+	{
+	    break;
+	}
+	
+	if( n >= NMAX )
+	{
+	    std::cerr << "dp_n_at_a didn't converge." << std::endl;
+	    break;
+	}
+	
+	p_n_prev_abs = p_n_abs;
+	++n;
+    }
+
+}
+
+
+
 const Real 
 FirstPassagePairGreensFunction::p_theta( const Real theta,
 					 const Real r, 
@@ -1497,7 +1584,17 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 					   const Real t ) const
 {
     RealVector p_nTable;
-    makep_nTable( r, r0, t, p_nTable );
+
+    if( r != geta() )
+    {
+	makep_nTable( r, r0, t, p_nTable );
+    }
+    else
+    {
+	puts("dp");
+	makedp_n_at_aTable( r0, t, p_nTable );
+    }
+
 
 
     const unsigned int tableSize( 200 );

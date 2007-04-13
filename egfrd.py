@@ -411,7 +411,7 @@ class Pair:
             rnd = numpy.random.uniform( size = 5 )
 
             # calculate new r
-            r = self.pgf.drawR( rnd[0], self.a_r, self.dt )
+            r = self.pgf.drawR( rnd[0], self.r0, self.dt )
             print ( rnd[1], r, self.r0, self.dt )
             theta_r = self.pgf.drawTheta( rnd[1], r, self.r0, self.dt )
             phi_r = rnd[2] * 2*Pi
