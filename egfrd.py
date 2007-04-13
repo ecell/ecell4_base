@@ -465,8 +465,8 @@ class Pair:
         self.sim.checkShell( single1 )
         self.sim.checkShell( single2 )
 
-        self.sim.createSingleEvent( single1 )
-        self.sim.createSingleEvent( single2 )
+        self.sim.addEvent( self.sim.t + single1.dt, single1 )
+        self.sim.addEvent( self.sim.t + single2.dt, single2 )
 
         return -1
 
@@ -583,11 +583,25 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         del self.singleMap[ ( particle.species, particle.serial ) ]
         return single
 
+    def insertParticle( self, particle ):
+        single = self.createSingle( particle )
+        single.updateShell()
+        single.updateDt()
+        self.addEvent( self.t + single.dt, single )
 
     def removeParticle( self, particle ):
         single = self.findSingle( particle )
         self.removeSingle( single )
         particle.species.removeParticleBySerial( particle.serial )
+
+
+    def addEvent( self, t, event ):
+        eventID = self.scheduler.addEvent( t, event )
+        event.eventID = eventID
+
+    def removeEvent( self, event ):
+        eventID = self.scheduler.removeEvent( event.eventID )
+
 
     def initializeSingleMap( self ):
 
@@ -605,22 +619,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             single.initialize()
             nextt = single.lastTime + single.dt
             self.addEvent( nextt, single )
-
-    def addEvent( self, t, event ):
-        eventID = self.scheduler.addEvent( nextt, event )
-        event.eventID = eventID
-
-
-    def createSingleEvent( self, single ):
-        print 'create', self.t+single.dt, self.t, single.dt, single
-        self.scheduler.addEvent( self.t + single.dt, single )
-
-    def insertParticle( self, particle ):
-
-        single = self.createSingle( particle )
-        single.updateShell()
-        single.updateDt()
-        self.createSingleEvent( single )
 
 
     def formPairs( self ):
@@ -663,11 +661,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 #eventType = nextEvent[1]
 
                 if pair.single1.eventID != None:
-                    self.scheduler.removeEvent( pair.single1.eventID )
+                    self.removeEvent( pair.single1 )
                 if pair.single2.eventID != None:
-                    self.scheduler.removeEvent( pair.single2.eventID )
+                    self.removeEvent( pair.single2 )
 
-                pair.eventID = self.scheduler.addEvent( self.t + dt, pair ) 
+                self.addEvent( self.t + dt, pair ) 
                 
 
     def createPair( self, single1, single2 ):
