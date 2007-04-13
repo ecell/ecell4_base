@@ -363,9 +363,6 @@ class Pair:
                 self.sim.removeParticle( particle1 )
                 self.sim.removeParticle( particle2 )
 
-#                species1.removeParticleBySerial( particle1.serial )
-#                species2.removeParticleBySerial( particle2.serial )
-
                 particle = self.sim.createParticle( species3, newPos )
                 self.sim.insertParticle( particle )
                 return -1
@@ -607,11 +604,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         for single in self.singleMap.values():
             single.initialize()
             nextt = single.lastTime + single.dt
-            self.scheduler.addEvent( nextt, single )
+            self.addEvent( nextt, single )
 
-            #self.createSingleEvent( single )
-        
-        #FIXME: here perhaps a second pass to get drs maximally large.
+    def addEvent( self, t, event ):
+        eventID = self.scheduler.addEvent( nextt, event )
+        event.eventID = eventID
 
 
     def createSingleEvent( self, single ):
