@@ -2,7 +2,7 @@
 //
 //        This file is part of E-Cell Simulation Environment package
 //
-//                Copyright (C) 1996-2005 Keio University
+//                Copyright (C) 1996-2007 Keio University
 //                Copyright (C) 2005-2007 The Molecular Sciences Institute
 //
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -26,17 +26,32 @@
 //END_HEADER
 //
 // written by Koichi Takahashi based on the initial version by Eiichiro Adachi.
+// modified by Mozoyoshi Koizumi
 //
 
 #ifndef __DYNAMICPRIORITYQUEUE_HPP
 #define __DYNAMICPRIORITYQUEUE_HPP
-//#include <assert.h>
+
+#include "config.h"
+
 #include <functional>
 #include <vector>
 #include <algorithm>
-#include <map>
-//#include <tr1/unordered_map>
+#include <stdexcept>
 
+//#define HAVE_TR1_UNORDERED_MAP
+
+#if HAVE_UNORDERED_MAP
+#include <unordered_map>
+#elif HAVE_TR1_UNORDERED_MAP
+#include <tr1/unordered_map>
+#else
+#include <map>
+#endif /* HAVE_UNORDERED_MAP */
+
+
+//namespace libecs
+//{
 
 
 class PersistentIDPolicy
@@ -49,8 +64,33 @@ public:
     typedef std::vector< ID >      IDVector;
     typedef IDVector::size_type    Index;
 
-//    typedef std::tr1::unordered_map<const ID, Index> IndexMap;
+#if HAVE_UNORDERED_MAP || HAVE_TR1_UNORDERED_MAP
+
+    class IDHasher
+        : 
+        public std::unary_function<ID, std::size_t>
+    {
+
+    public:
+
+        std::size_t operator()( ID value ) const
+        {
+            return static_cast<std::size_t>( value ) ^
+                static_cast<std::size_t>( value >> ( sizeof( ID ) * 8 / 2 ) );
+        }
+
+    };
+
+#endif // HAVE_UNORDERED_MAP || HAVE_TR1_UNORDERED_MAP
+
+#if HAVE_UNORDERED_MAP
+    typedef std::unordered_map<const ID, Index, IDHasher> IndexMap;
+#elif HAVE_TR1_UNORDERED_MAP
+    typedef std::tr1::unordered_map<const ID, Index, IDHasher> IndexMap;
+#else 
     typedef std::map<const ID, Index> IndexMap;
+#endif
+
 
     PersistentIDPolicy()
         :
@@ -72,7 +112,14 @@ public:
 
     const Index getIndex( const ID id ) const
     {
-        return this->indexMap.at( id );
+        IndexMap::const_iterator i = this->indexMap.find( id );
+
+        if( i == this->indexMap.end() )
+        {
+            throw std::out_of_range( "PersistentIDPolicy::getIndex()" );
+        }
+
+        return (*i).second;
     }
 
     const ID getIDByIndex( const Index index ) const
@@ -105,22 +152,40 @@ public:
 
     const bool checkConsistency( const Index size ) const
     {
-        bool result( true );
+        if( this->idVector.size() != size )
+        {
+            return false;
+        }
 
-        result = result && this->idVector.size() == size;
-        result = result && this->indexMap.size() == size;
+        if( this->indexMap.size() != size )
+        {
+            return false;
+        }
 
         // assert correct mapping between the indexMap and the idVector.
         for( Index i( 0 ); i < size; ++i )
         {
             const ID id( this->idVector[i] );
-            result = result && id < this->idCounter;
-            result = result && this->indexMap.at( id ) == i;
+
+            if (id >= this->idCounter)
+            {
+                return false;
+            }
+
+            IndexMap::const_iterator iter = this->indexMap.find( id );
+            if (iter == this->indexMap.end())
+            {
+                return false;
+            }
+
+            if ((*iter).second != i)
+            {
+                return false;
+            }
         }
 
-        return result;
+        return true;
     }
-
 
 private:
 
@@ -193,12 +258,14 @@ public:
 
 */
 
+template<typename T> class DynamicPriorityQueueTest;
+
 template < typename Item, class IDPolicy = PersistentIDPolicy >
 class DynamicPriorityQueue
     :
     private IDPolicy
 {
-  
+    friend class DynamicPriorityQueueTest<Item>;
 
 public:
 
@@ -224,12 +291,22 @@ public:
 
     void clear();
 
-    const Item& getTop() const
+    Item& getTop()
     {
         return this->itemVector[ getTopIndex() ];
     }
 
-    const Item& get( const ID id ) const
+    Item const& getTop() const
+    {
+        return this->itemVector[ getTopIndex() ];
+    }
+
+    Item& get( const ID id )
+    {
+        return this->itemVector[ getIndex( id ) ];
+    }
+
+    Item const& get( const ID id ) const
     {
         return this->itemVector[ getIndex( id ) ];
     }
@@ -257,16 +334,16 @@ public:
 
     void dump() const;
 
-    const Item& operator[]( const ID id ) const
+    Item& operator[]( const ID id )
     {
         return get( id );
     }
 
+    Item const& operator[]( const ID id ) const
+    {
+        return get( id );
+    }
 
-    // self-diagnostic method
-    const bool checkConsistency() const;
-
-protected:
 
     inline void popByIndex( const Index index );
 
@@ -304,6 +381,11 @@ protected:
         const Index position( this->positionVector[ index ] );
         moveDownPos( position );
     }
+
+
+    // self-diagnostic method
+    const bool checkConsistency() const;
+
 
 private:
 
@@ -579,6 +661,6 @@ const bool DynamicPriorityQueue< Item, IDPolicy >::checkConsistency() const
     return result;
 }
 
-
+//} // namespace libecs
 
 #endif // __DYNAMICPRIORITYQUEUE_HPP
