@@ -163,6 +163,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawTheta", &FirstPassagePairGreensFunction::drawTheta )
 
 	.def( "p_survival", &FirstPassagePairGreensFunction::p_survival )
+	.def( "dump", 
+	      &FirstPassagePairGreensFunction::dump )
 
 	// debug
 	.def( "f_alpha0", 

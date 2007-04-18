@@ -193,7 +193,7 @@ class Single:
 
 
     def __str__( self ):
-        return str( self.particle )
+        return 'Single: ' + str( self.particle )
 
 
 
@@ -364,7 +364,11 @@ class Pair:
                 self.sim.removeParticle( particle2 )
 
                 particle = self.sim.createParticle( species3, newPos )
-                self.sim.insertParticle( particle )
+                newsingle = self.sim.insertParticle( particle )
+                
+                #debug
+                self.sim.checkShell( newsingle )
+                
                 return -1
 
             else:
@@ -408,6 +412,7 @@ class Pair:
             rnd = numpy.random.uniform( size = 5 )
 
             # calculate new r
+            print 'r0 = ', self.r0, 'dt = ', self.dt, self.pgf.dump()
             r = self.pgf.drawR( rnd[0], self.r0, self.dt )
             print ( rnd[1], r, self.r0, self.dt )
             theta_r = self.pgf.drawTheta( rnd[1], r, self.r0, self.dt )
@@ -479,7 +484,8 @@ class Pair:
         return False
 
     def __str__( self ):
-        return str(self.single1.particle) + ' ' + str(self.single2.particle)
+        return 'Pair of ' + str(self.single1.particle) +\
+               ' and ' + str(self.single2.particle)
 
 
 class EGFRDSimulator( GFRDSimulatorBase ):
@@ -528,6 +534,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.t, self.lastEvent = self.scheduler.getTopEvent()
 
+        print self.lastEvent
+        
         self.scheduler.step()
 
         nextTime, nextEvent = self.scheduler.getTopEvent()
@@ -588,6 +596,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single.updateShell()
         single.updateDt()
         self.addEvent( self.t + single.dt, single )
+        return single
 
     def removeParticle( self, particle ):
         single = self.findSingle( particle )

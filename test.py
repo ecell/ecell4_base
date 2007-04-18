@@ -171,7 +171,7 @@ def test_f_alpha():
 
 def test_drawTheta():
 
-    t = 1e-5
+    t = 1e-2
     D = 1e-12
     Sigma = 1e-8
     kf = 1e-8
@@ -229,8 +229,8 @@ def test_drawTheta_at_a():
 
 #test_f_alpha()
 
-#test_drawTheta()
-test_drawTheta_at_a()
+test_drawTheta()
+#test_drawTheta_at_a()
 
 #test_alpha()
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <exception>
 #include <vector>
+#include <sstream>
 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
@@ -223,7 +224,6 @@ FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
     const Real sigmasq( sigma * sigma );
     const Real alphasq( alpha * alpha );
 
-
     Real num1;
     {
 	const Real angle_a( alpha * ( a - sigma ) );
@@ -231,8 +231,8 @@ FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
 	Real cos_a;
 	sincos( angle_a, &sin_a, &cos_a );
 	num1 = alpha * sigmasq * h - 
-	    alpha * ( a - sigma + a * h * sigma ) * cos_a +
-	    ( hsigma_p_1 + a * sigma * alphasq ) * sin_a ;
+	    alpha * ( a + a * h * sigma ) * cos_a +
+	    ( a * sigma * alphasq ) * sin_a ;
     }
 
     const Real num2( num_r0( alpha, r0 ) );
@@ -266,8 +266,8 @@ FirstPassagePairGreensFunction::p_leavea_i( const Real alpha,
 	Real cos_a;
 	sincos( angle_a, &sin_a, &cos_a );
 
-	num1 = - alpha * ( a - sigma + a * h * sigma ) * cos_a
-	    + ( hsigma_p_1 + a * sigma * alphasq ) * sin_a;
+	num1 = - ( a * h * sigma + a ) * cos_a
+	    + a * sigma * alpha * sin_a;
     }
     
     Real num2;
@@ -281,7 +281,7 @@ FirstPassagePairGreensFunction::p_leavea_i( const Real alpha,
     }
     
     
-    const Real den( r0 * alphasq *
+    const Real den( r0 * alpha *
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
@@ -346,8 +346,6 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
 					   const Real r0,
 					   const Real num_r0 ) const
 {
-    // NOTE: identical to p_survival_i with a -> r.
-
     const Real sigma( getSigma() );
 
     const Real angle_r( alpha * ( r - sigma ) );
@@ -362,18 +360,18 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
     const Real alphasq( alpha * alpha );
 
     const Real num1( alpha * sigmasq * h - 
-		     alpha * ( r - sigma + r * h * sigma ) * cos_r +
+		     alpha * ( - sigma +  hsigma_p_1 * r ) * cos_r -
 		     ( hsigma_p_1 + r * sigma * alphasq ) * sin_r );
 
 
 //    const Real num2( num_r0( alpha, r0 ) );
     const Real num2( num_r0 );
 
-    const Real den( r0 * alpha * 
-		    ( ( r - sigma ) * sigmasq * alphasq +
-		      hsigma_p_1 * ( r + r * h * sigma - h * sigmasq ) ) );
+    const Real den( r0 * alphasq * 
+		    ( ( a - sigma ) * sigmasq * alphasq +
+		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
-    const Real result( num1 * num2 / den );
+    const Real result( 2.0 * num1 * num2 / den );
 
     return result;
 }
@@ -417,11 +415,9 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 	    std::cerr << "alphaTable_0: max iteration reached. (exp(Dt u^2) = "
 		      << exp( - Dt * alpha0_i * alpha0_i ) << 
 		", exp(Dt u0^2) = " << exp( - Dt * alpha0_0 * alpha0_0 ) <<
-		", a = " << a << ", sigma = " << this->getSigma() <<
-		", D = " << this->getD() << 
-		", t = " << t  << ")." << std::endl;
-	    throw std::exception();
-	    //break;
+		", t = " << t  << ")." << dump() << std::endl;
+	    //throw std::exception();
+	    break;
 	}
 
 	++i;
@@ -625,7 +621,7 @@ FirstPassagePairGreensFunction::p_survival_F( const Real t,
 
     gf->updateExpTable( t );
 
-    return gf->p_survival( t, r0 ) - rnd;
+    return rnd - gf->p_survival( t, r0 );
 }
 
 
@@ -659,7 +655,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	};
 
     Real low( 1e-5 );
-    Real high( 10.0 );
+    Real high( 1.0 );
 
     this->updateAlphaTable0( low );
     this->updatePsurvTable( r0 );
@@ -667,23 +663,43 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     //FIXME: adjust high here.
 
     // adjust low to make sure tha f( low ) and f( high ) straddle.
-    const Real highvalue( GSL_FN_EVAL( &F, high ) );
-    while( GSL_FN_EVAL( &F, low ) * highvalue >= 0.0 )
+    while( GSL_FN_EVAL( &F, high ) < 0.0 )
+    {
+	high *= 10;
+	printf( "drawTime: adjusting high: %g\n", high );
+	if( fabs( high ) >= 1e10 )
+	{
+	    std::cerr << "Couldn't adjust high. F(" << high <<
+		") = " << GSL_FN_EVAL( &F, high ) << "; r0 = " << r0 << 
+		", " << dump() << std::endl;
+	    throw std::exception();
+	    
+	}
+	this->updateAlphaTable0( high );
+	this->updatePsurvTable( r0 );
+    }
+    //this->updatePsurvTable( r0 );
+
+    // printf("highvalue %g\n",GSL_FN_EVAL( &F, high ));
+
+    while( GSL_FN_EVAL( &F, low ) > 0.0 )
     {
 	low *= .1;
-	printf("drawTime: adjusting low: %g\n",low);
+	printf( "drawTime: adjusting low: %g\n",low );
 
 	if( fabs( low ) <= 1e-50 )
 	{
-	    std::cerr << "Couldn't adjust low. (" << low <<
-		")" << std::endl;
+	    std::cerr << "Couldn't adjust low. F(" << low <<
+		") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
+		      << dump() << std::endl;
 	    throw std::exception();
-	    
 	}
 	this->updateAlphaTable0( low );
 	this->updatePsurvTable( r0 );
     }
     //this->updatePsurvTable( r0 );
+
+    //printf("lowvalue %g\n",GSL_FN_EVAL( &F, low ));
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -770,6 +786,9 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
     assert( rnd <= 1.0 && rnd >= 0.0 );
     assert( r0 > 0.0 );
 
+    const Real sigma( this->getSigma() );
+    const Real a( this->geta() );
+
     this->updateAlphaTable0( t );
     this->updateExpTable( t );
     this->updatePsurvTable( r0 );
@@ -787,11 +806,11 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 	    &params 
 	};
 
-    Real low( this->getSigma() );
-    Real high( this->geta() );
+    Real low( sigma + sigma * 1e-10 );
+    Real high( a - a * 1e-10 );
 
-    const Real lowvalue( GSL_FN_EVAL( &F, low*1.1 ) );
-    const Real highvalue( GSL_FN_EVAL( &F, high*0.9 ) );
+    const Real lowvalue( GSL_FN_EVAL( &F, low  ) );
+    const Real highvalue( GSL_FN_EVAL( &F, high ) );
     printf("drawr %g %g %g\n", lowvalue, highvalue, psurv );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
@@ -1665,4 +1684,14 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 
     return theta;
 }
-    
+
+
+
+const std::string FirstPassagePairGreensFunction::dump() const
+{
+    std::ostringstream ss;
+    ss << "D = " << this->getD() << ", sigma = " << this->getSigma() <<
+	", a = " << this->geta() <<
+	", h = " << this->geth() << std::endl;
+    return ss.str();
+}    
