@@ -661,8 +661,6 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     this->updateAlphaTable0( low );
     this->updatePsurvTable( r0 );
 
-    //FIXME: adjust high here.
-
     // adjust low to make sure tha f( low ) and f( high ) straddle.
     while( GSL_FN_EVAL( &F, high ) < 0.0 )
     {
@@ -676,8 +674,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	    throw std::exception();
 	    
 	}
-	this->updateAlphaTable0( high );
-	this->updatePsurvTable( r0 );
+	//this->updateAlphaTable0( high );
+	//this->updatePsurvTable( r0 );
     }
     //this->updatePsurvTable( r0 );
 
