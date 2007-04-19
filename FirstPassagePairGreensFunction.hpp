@@ -103,7 +103,16 @@ public:
 				const Real r0,
 				const Real t ) const;
 
+
+    // methods below are kept public for debugging purpose.
+
     const std::string dump() const;
+
+    const Real alpha0_i( const Integer i ) const;
+
+    const Real alpha_i( const Integer i, const Integer n, 
+			gsl_root_fsolver* const solver ) const;
+
 
 protected:
 
@@ -119,10 +128,6 @@ protected:
     }
 
 
-    const Real alpha0_i( const Integer i ) const;
-
-    const Real alpha_i( const Integer i, const Integer n, 
-			gsl_root_fsolver* const solver ) const;
 
     const Real p_0_i( const Real alpha,
 		      const Real r,

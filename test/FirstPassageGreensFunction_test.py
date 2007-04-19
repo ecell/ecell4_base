@@ -12,7 +12,7 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
     def tearDown(self):
         pass
     
-    def test1Instantiation(self):
+    def test01Instantiation(self):
         D = 1e-12
         gf = mod.FirstPassageGreensFunction( D )
         self.failIf( gf == None )

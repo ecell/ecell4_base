@@ -58,6 +58,7 @@ class Single:
         closest = neighbors[1]
         dr = drs[1] - self.particle.species.radius
         dr *= .5
+
         closestParticle = Particle( closest[0], index=closest[1] )
         closestSingle = self.sim.findSingle( closestParticle )
         
@@ -171,6 +172,10 @@ class Single:
         return self.particle.species.pool.positions[self.particle.i]
 
     def setDr( self, dr ):
+
+        if dr < 0.0:
+            raise RuntimeError, 'dr < 0.0'
+
         pool = self.particle.species.pool
         pool.drs[ pool.getIndex( self.particle.serial ) ] = dr
 
@@ -333,6 +338,9 @@ class Pair:
 
         oldInterParticle = pos2 - pos1
 
+        oldCoM = self.getCoM()
+
+
         # Three cases:
         #  1. Reaction
         #  2.1 Escaping through a_r.
@@ -352,9 +360,8 @@ class Pair:
                 elif D2 == 0.0:
                     newR = pos2
                 else:
-                    R0 = self.getCoM()
                     dR = p_free( ( D1 + D2 ) / 4, self.dt )
-                    newR = R0 + dR
+                    newR = oldCoM + dR
                 
                 
                 #FIXME: SURFACE
@@ -390,12 +397,12 @@ class Pair:
                                  rnd[1] * Pi,
                                  rnd[2] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = self.getCoM() + displacement_R
+            newCoM = oldCoM + displacement_R
 
 
             # calculate new r
             print ( rnd[3], self.a_r, self.r0, self.dt )
-            theta_r = self.pgf.drawTheta( rnd[3], self.a_r*.09, self.r0, self.dt )
+            theta_r = self.pgf.drawTheta( rnd[3], self.a_r, self.r0, self.dt )
             phi_r = rnd[4] * 2 * Pi
             newInterParticleS = numpy.array( [ self.a_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
@@ -425,7 +432,7 @@ class Pair:
                                  rnd[3] * Pi,
                                  rnd[4] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = self.getCoM() + displacement_R
+            newCoM = oldCoM + displacement_R
 
 
             newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
@@ -434,44 +441,64 @@ class Pair:
         else:
             raise SystemError, 'Bug: invalid eventType.'
 
+        newpos1 = self.sim.applyBoundary( newpos1 )
+        newpos2 = self.sim.applyBoundary( newpos2 )
+
         particle1.setPos( newpos1 )
         particle2.setPos( newpos2 )
 
         # check if the new positions are valid:
-        # FIXME: check if positions are inside the shells too.
-        newParticleDistance = distance( newpos1, newpos2 )
-        if newParticleDistance <= species1.radius + species2.radius:
+        # FIXME: check if positions are inside the shells, too.
+        newDistance = distance( newpos1, newpos2 )
+        radius12 = species1.radius + species2.radius
+        # debug
+        if newDistance <= radius12:
             print 'rejected move: ', 'radii, interp',\
-                  species1.radius + species2.radius, newParticleDistance
+                  species1.radius + species2.radius, newDistance
             print 'DEBUG: r0, dt, pos1, pos2, newpos1, newpos2',\
                   self.r0, self.dt, pos1, pos2, newpos1, newpos2
-            raise RuntimeError
+            raise RuntimeError, 'New particles overlap'
+
+        # debug
+        if self.sim.distance( oldCoM, newpos1 ) > self.a_r + self.a_R or \
+               self.sim.distance( oldCoM, newpos2 ) > self.a_r + self.a_R:
+            raise RuntimeError, 'New particle(s) out of protective sphere.'
+            
+
+        pairFormingFactor = 10
 
         # here decide whether this pair still continues or breaks up
+        if newDistance <= radius12 * pairFormingFactor:
+            dt, type = self.nextEvent()
+            print 'pair continues'
+            raise ''
 
-        # temporarily, it alwayw breaks up to singles.
-        single1 = self.sim.findSingle( particle1 )
-        single2 = self.sim.findSingle( particle2 )
+        else: # breaking up to singles
 
-        # protect the singles with shells.
-        single1.setDr( single1.particle.species.radius )
-        single2.setDr( single2.particle.species.radius )
-        single1.updateShell()
-        single2.updateShell()
+            single1 = self.sim.findSingle( particle1 )
+            single2 = self.sim.findSingle( particle2 )
+            
+            # protect the singles with shells.
+            single1.setDr( single1.particle.species.radius )
+            single2.setDr( single2.particle.species.radius )
+            single1.updateShell()
+            single2.updateShell()
 
-#         if single1.closest == single2:
-#             single1.setDr( newParticleDistance * .49 )
-#         if single2.closest == single1:
-#             single2.setDr( newParticleDistance * .49 )
-        print 'aa', newParticleDistance
-        single1.updateDt()
-        single2.updateDt()
+            #         if single1.closest == single2:
+            #             single1.setDr( newParticleDistance * .49 )
+            #         if single2.closest == single1:
+            #             single2.setDr( newParticleDistance * .49 )
+            print 'aa', newDistance
+            single1.updateDt()
+            single2.updateDt()
+            
+            self.sim.checkShell( single1 )
+            self.sim.checkShell( single2 )
+            
+            self.sim.addEvent( self.sim.t + single1.dt, single1 )
+            self.sim.addEvent( self.sim.t + single2.dt, single2 )
 
-        self.sim.checkShell( single1 )
-        self.sim.checkShell( single2 )
-
-        self.sim.addEvent( self.sim.t + single1.dt, single1 )
-        self.sim.addEvent( self.sim.t + single2.dt, single2 )
+        self.sim.checkInvariants()
 
         return -1
 
@@ -702,8 +729,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         neighbors, drs = self.getNeighborShells( single.particle.getPos() )
         closest, distance = neighbors[1], drs[1]
         distance -= single.particle.species.radius
-        if single.getDr() - distance >= 1e-18:
-            dr = single.getDr()
+        dr = single.getDr()
+        if dr - distance >= 1e-18:
             print single.particle, closest, dr, distance, dr - distance
             raise RuntimeError, 'Fatal: shells overlap.'
 

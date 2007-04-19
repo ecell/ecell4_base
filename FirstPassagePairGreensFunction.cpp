@@ -359,10 +359,9 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
     const Real sigmasq( sigma * sigma );
     const Real alphasq( alpha * alpha );
 
-    const Real num1( alpha * sigmasq * h - 
-		     alpha * ( - sigma +  hsigma_p_1 * r ) * cos_r -
+    const Real num1( alpha * ( sigmasq * h -
+			       ( - sigma + hsigma_p_1 * r ) * cos_r ) -
 		     ( hsigma_p_1 + r * sigma * alphasq ) * sin_r );
-
 
 //    const Real num2( num_r0( alpha, r0 ) );
     const Real num2( num_r0 );
@@ -637,6 +636,7 @@ FirstPassagePairGreensFunction::p_int_r_F( const Real r,
     const Real rnd( params->rnd );
 
     return ( gf->p_int_r( r, t, r0, num_r0Table ) / psurv ) - rnd;
+//    return gf->p_int_r( r, t, r0, num_r0Table ) - rnd * psurv;
 }
 
 
@@ -806,8 +806,8 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 	    &params 
 	};
 
-    Real low( sigma + sigma * 1e-10 );
-    Real high( a - a * 1e-10 );
+    Real low( sigma );
+    Real high( a );
 
     const Real lowvalue( GSL_FN_EVAL( &F, low  ) );
     const Real highvalue( GSL_FN_EVAL( &F, high ) );
@@ -825,7 +825,7 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 	gsl_root_fsolver_iterate( solver );
 	low = gsl_root_fsolver_x_lower( solver );
 	high = gsl_root_fsolver_x_upper( solver );
-	int status( gsl_root_test_interval( low, high, .0, this->CUTOFF ) );
+	int status( gsl_root_test_interval( low, high, 1e-15, this->CUTOFF ) );
 
 	if( status == GSL_CONTINUE )
 	{
