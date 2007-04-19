@@ -200,6 +200,11 @@ namespace libecs
 	    return this->eventPriorityQueue.get( id );
 	}
 
+	const Event& getEventByIndex( const EventIndex index ) const
+	{
+	    return this->eventPriorityQueue.getByIndex( index );
+	}
+
 	void step()
 	{
 

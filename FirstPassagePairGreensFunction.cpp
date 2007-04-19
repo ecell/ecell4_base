@@ -6,6 +6,7 @@
 #include <vector>
 #include <sstream>
 
+
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
@@ -812,6 +813,12 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
     const Real lowvalue( GSL_FN_EVAL( &F, low  ) );
     const Real highvalue( GSL_FN_EVAL( &F, high ) );
     printf("drawr %g %g %g\n", lowvalue, highvalue, psurv );
+    if( highvalue < 0.0 )
+    {
+	printf( "drawR: highvalue < 0.0 (%g). returning a.\n", highvalue );
+	return a;
+    }
+
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -1245,8 +1252,8 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
     {
 	const Real alpha_i( this->alpha_i( i, n, solver ) );
 
-	printf("alpha %d %d %g %g %g\n", n, i, alpha_i, f_alpha(alpha_i,n),
-	       f_alpha(alpha_i*1.1,n));
+//	printf("alpha %d %d %g %g %g\n", n, i, alpha_i, f_alpha(alpha_i,n),
+//	       f_alpha(alpha_i*1.1,n));
 
 	/* bad idea
 	if( fabs(f_alpha(alpha_i,n)) >   fabs(f_alpha(alpha_i*1.1,n)) )
@@ -1263,8 +1270,8 @@ void FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
 	const Real alpha_i_sq( alpha_i * alpha_i );
 	if( alpha_i_sq * exp( - Dt * alpha_i_sq )  < threshold )
 	{
-	    printf("alpha cutoff %d %g %g\n", 
-		   i-offset, alpha_i, alpha_i * alpha_i * std::exp( - Dt * alpha_i * alpha_i ) );
+//	    printf("alpha cutoff %d %g %g\n", 
+//		   i-offset, alpha_i, alpha_i * alpha_i * std::exp( - Dt * alpha_i * alpha_i ) );
 
 
 	    break;
@@ -1387,14 +1394,15 @@ FirstPassagePairGreensFunction::makep_nTable( const Real r,
     {
 	Real p_n( this->p_n( n, r, r0, t ) );
 
-	if( p_n < 0.0 )
+	if( p_n < 0.0 || ! std::isnormal( p_n ) )
 	{
 #ifndef NDEBUG
-	    printf("makep_nTable: p_n < 0 %g \n", p_n );
+	    printf("makep_nTable: invalid p_n; %g \n", p_n );
 #endif // NDEBUG
 //	    p_n = 0.0;
+	    break;
 	}
-	printf("p_n %g\n",p_n );
+//	printf("p_n %g\n",p_n );
 
 	p_nTable.push_back( p_n );
 
@@ -1467,7 +1475,7 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const Real alpha,
 
     const Real den( E1 + E2 );
 
-    printf("f n1 n2 d %g %g %g %g\n",falpha_r0, num1, num2, den );
+//    printf("f n1 n2 d %g %g %g %g\n",falpha_r0, num1, num2, den );
 
     const Real result( term1 * num / den );
 
@@ -1489,6 +1497,7 @@ FirstPassagePairGreensFunction::dp_n_at_a( const Integer n,
     {
 	const Real alpha( alphaTable_n[i] );
 	const Real value( dp_n_alpha_at_a( alpha, n, r0, t ) );
+
 	p += value;
 
 	//printf("p_n %d %d %g %g\n", 
@@ -1533,14 +1542,15 @@ makedp_n_at_aTable( const Real r0,
     {
 	Real p_n( this->dp_n_at_a( n, r0, t ) );
 
-	if( p_n < 0.0 )
+	if( p_n < 0.0 || ! std::isnormal( p_n ) )
 	{
 #ifndef NDEBUG
-	    printf("makedp_n_at_aTable: p_n < 0 %g \n", p_n );
+	    printf("makedp_n_at_aTable: invalid p_n;  %g \n", p_n );
 #endif // NDEBUG
 //	    p_n = 0.0;
+	    break;
 	}
-	printf("p_n %g\n",p_n );
+//	printf("p_n %g\n",p_n );
 
 	p_nTable.push_back( p_n );
 
@@ -1632,7 +1642,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	Real p( this->p_theta( theta, r, r0, t, p_nTable ) );
 	if( p < 0.0 )
 	{
-	    printf("drawTheta: p<0 %g\n", p );
+//	    printf("drawTheta: p<0 %g\n", p );
 //	    p = 0.0;
 	}
 
@@ -1640,7 +1650,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	const Real value( ( p_prev + p ) * 0.5 );
 	pTable[i] = pTable[i-1] + value;
 
-	printf("p %g %g %g\n", theta, pTable[i], p );
+//	printf("p %g %g %g\n", theta, pTable[i], p );
 
 	if( //value < pTable[i] * std::numeric_limits<Real>::epsilon() ||
 	    i >= tableSize - 1 )

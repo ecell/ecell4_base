@@ -82,18 +82,22 @@ BOOST_PYTHON_MODULE( _gfrd )
     // GSL error handler: is this the best place for this?
     gsl_set_error_handler( &gfrd_gsl_error_handler );
 
-    to_python_converter< PyEvent, PyEvent_to_python>();
   
     register_exception_translator<std::exception>( &translateException );
+
+
+    to_python_converter<PyEvent, PyEvent_to_python>();
 
     class_<PyEvent, boost::noncopyable>( "Event", init<const Real,
 					 const object&>() )
 	.def( "setTime", &PyEvent::setTime )
 	.def( "getTime", &PyEvent::getTime )
+//	.def( "getObj", &PyEvent::getObj )
 //	.def( "fire", &PyEvent::fire )
 //	.def( "update", &PyEvent::update )
 //	.def( "isDependentOn", &PyEvent::isDependentOn )
 	;
+
 
     typedef const PyEventScheduler::Event& 
 	(PyEventScheduler::*geteventrefsig)() const;
@@ -108,9 +112,10 @@ BOOST_PYTHON_MODULE( _gfrd )
 //	      return_value_policy<reference_existing_object>() )
 //	      return_value_policy<copy_const_reference>() )
 	      return_value_policy<return_by_value>() )
-//	.def( "getTopIndex", &PyEventScheduler::getTopIndex )
 	.def( "getEvent", geteventrefbyindexsig( &PyEventScheduler::getEvent ),
-	      return_value_policy<reference_existing_object>() )
+	      return_value_policy<return_by_value>() )
+	.def( "getEventByIndex", &PyEventScheduler::getEventByIndex,
+	      return_value_policy<return_by_value>() )
 	.def( "step", &PyEventScheduler::step )
 	.def( "clear", &PyEventScheduler::clear )
 	.def( "addEvent", &PyEventScheduler::addEvent )

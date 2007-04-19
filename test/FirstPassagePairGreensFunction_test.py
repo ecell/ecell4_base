@@ -87,9 +87,9 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( r < Sigma or r > a )
         self.assertEqual( r, Sigma )
 
-        r = gf.drawR( self.N8, r0, t )
+        r = gf.drawR( 1.0, r0, t )
         self.failIf( r < Sigma or r > a )
-        #self.failIf( r != a )
+        self.failIf( abs( r - a ) > 1e-15 )
 
 
     def testDrawTheta( self ):
@@ -136,6 +136,27 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         self.failIf( abs( maxerror ) > 1e-8 )
 
+'''
+    def testAlphan( self ):
+
+        D = 1e-12
+        Sigma = 1e-8
+        kf = 1e-18
+        
+        a = 2e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf.seta( a )
+        maxerror = 0
+        
+        for n in range(100):
+            for i in range(1000):
+                alpha = gf.alpha_i( n, i )
+                error = abs( gf.f_alpha0( alpha ) )
+                maxerror = max( error, maxerror )
+
+        self.failIf( abs( maxerror ) > 1e-8 )
+'''
 
         
 if __name__ == "__main__":

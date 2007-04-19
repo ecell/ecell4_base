@@ -306,7 +306,7 @@ public:
         return this->itemVector[ getIndex( id ) ];
     }
 
-    Item const& get( const ID id ) const
+    const Item& get( const ID id ) const
     {
         return this->itemVector[ getIndex( id ) ];
     }
@@ -347,7 +347,7 @@ public:
 
     inline void popByIndex( const Index index );
 
-    Item& getByIndex( const Index index )
+    const Item& getByIndex( const Index index ) const
     {
         return this->itemVector[ index ];
     }
