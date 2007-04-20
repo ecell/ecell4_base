@@ -110,6 +110,7 @@ class Single:
 
     def fire( self ):
 
+        #debug
         self.sim.checkShellForAll()
 
         rnd = numpy.random.uniform( size=2 )
@@ -151,11 +152,10 @@ class Single:
 
         self.setShellSize( shellSize )
 
-        #print self, self.closest
-        #debug
-        #self.checkShellForAll()
-
         self.dt = self.calculateFirstPassageTime()
+
+        if self.dt == 0.0:
+            self.dt = -1
 
         return self.dt
 
