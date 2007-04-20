@@ -57,6 +57,14 @@ class Single:
         pool = self.particle.species.pool
         pool.drs[ pool.getIndex( self.particle.serial ) ] = size
 
+
+    '''
+    A shell size of a particle is the distance from the current position
+    of the particle to the farthest point in space that it can occupy
+    when it made the maximum displacement defined by the mobility radius
+    of the particle.
+    '''
+
     def getShellSize( self ):
         pool = self.particle.species.pool
         return pool.drs[ pool.getIndex( self.particle.serial ) ]
@@ -66,11 +74,14 @@ class Single:
 
     '''
     A mobility radius indicates the maximum displacement this single
-    particle can make.   A mobility radius is calculated as follows;
+    particle can make.
+
+    Mobility radius of a particle is calculated as follows;
 
     mobility radius = shell size - radius.
 
     '''
+    
     def getMobilityRadius( self ):
         return self.getShellSize() - self.getRadius()
 
