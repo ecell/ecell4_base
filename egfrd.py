@@ -72,15 +72,15 @@ class Single:
 
     '''
     def getMobilityRadius( self ):
-        return self.getShellSize() - self.particle.species.radius
+        return self.getShellSize() - self.getRadius()
 
 
     '''
     Initialize this Single.
 
-    The protective sphere size, self.lastTime, self.dt, and self.closest
-    are updated.  The protective sphere size is determined without
-    taken into account of other shells.
+    The shell size is shrinked to the particle radius.
+    self.lastTime is reset to the current time, and self.dt
+    is set to zero.
 
     '''
 
@@ -88,34 +88,41 @@ class Single:
 
         neighbors, distances = self.sim.getNeighbors( self.particle.getPos() )
         closest = neighbors[1]
-        distance = distances[1] 
-        distance *= .5
-        
+        #distance = distances[1] 
+
         closestParticle = Particle( closest[0], index=closest[1] )
         closestSingle = self.sim.findSingle( closestParticle )
         
         self.closest = closestSingle
         
         #FIXME: take different D into account
-        self.setShellSize( distance )
+
+        #shellSize = distance * .5
+        #shellSize *= ( 1.0 - 1e-8 ) # safety
+        #self.setShellSize( distance )
         
+        #self.dt = self.calculateFirstPassageTime()
+
+        self.setShellSize( self.getRadius() )
         self.lastTime = self.sim.t
-        self.dt = self.calculateFirstPassageTime()
-        
+        self.dt = 0.0
 
 
     def fire( self ):
 
+        self.sim.checkShellForAll()
+
         rnd = numpy.random.uniform( size=2 )
 
-        r = self.getShellSize() - self.particle.species.radius
+        radius = self.getRadius()
+
+        r = self.getMobilityRadius()
         displacementS = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
         displacement = sphericalToCartesian( displacementS )
+        #print 'disp', r, displacement
 
-        #self.checkShellForAll()
-        
         pos = self.particle.getPos()
-        pos += displacement
+        self.particle.setPos( pos + displacement )
 
         # BOUNDARY
         self.sim.applyBoundary( pos )
@@ -124,9 +131,25 @@ class Single:
 
         neighbors, distances = self.sim.getNeighborShells( pos )
         self.closest = neighbors[1]
+        distanceToClosestShell = distances[1]
+        #print neighbors, distances
 
-        newShellSize = distances[1] * ( 1.0 - 1e-18 ) # safety
-        self.setShellSize( newShellSize  )
+        shellSize = self.getShellSize()
+
+        ShellSizeDisparityFactor = 2
+
+        closestMobilityRadius = self.closest.getMobilityRadius()
+        shellSize = min( closestMobilityRadius * ShellSizeDisparityFactor
+                         + ( distanceToClosestShell - radius ) * 0.5 + radius,
+                         distanceToClosestShell )
+
+        shellSize = shellSize * ( 1.0 - 1e-8 ) # safety
+        shellSize = max( shellSize, radius )
+
+        print shellSize, distanceToClosestShell
+        assert shellSize <= distanceToClosestShell
+
+        self.setShellSize( shellSize )
 
         #print self, self.closest
         #debug
@@ -191,15 +214,11 @@ class Single:
 
     def calculateFirstPassageTime( self ):
         
-        species = self.particle.species
         rnd = numpy.random.uniform()
         r = self.getMobilityRadius()
-        if r <= 0.0:
-            raise RuntimeError, 'r <= 0.0: %s' % str(r)
         dt = self.gf.drawTime( rnd, r )
-        print dt
-        if dt <= 0.0:
-            raise RuntimeError, 'dt <= 0.0: %s' % str(dt)
+        if dt < 0.0:
+            raise RuntimeError, 'dt < 0.0: %s' % str(dt)
         return dt
 
 
@@ -505,8 +524,8 @@ class Pair:
             
             print closest1, single2, closest2, single1
             if closest1 == single2 and closest2 == single1:
-                single1.setShellSize( newDistance * .5 )
-                single2.setShellSize( newDistance * .5 )
+                single1.setShellSize( newDistance * .4999 )
+                single2.setShellSize( newDistance * .4999 )
                 
             else:
                 print 'd1, d2', distance1, distance2
@@ -568,7 +587,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #self.formPairs()
 
         #debug
-        #self.checkShellForAll()
+        self.checkShellForAll()
 
         #self.scheduler.updateAllEventDependency()
 

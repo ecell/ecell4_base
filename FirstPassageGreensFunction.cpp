@@ -229,7 +229,12 @@ const Real
 FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
 {
     assert( rnd <= 1.0 && rnd >= 0.0 );
-    assert( a > 0.0 );
+    assert( a >= 0.0 );
+
+    if( a == 0.0 )
+    {
+	return 0.0;
+    }
 
     p_survival_params params = { this, a, rnd };
 
