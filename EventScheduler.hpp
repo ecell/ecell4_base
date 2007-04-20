@@ -225,7 +225,6 @@ namespace libecs
 	    // Otherwise, reuse the event.
 	    if( topEvent.getTime() >= getTime() )
 	    {
-		//this->eventPriorityQueue.replaceTop( topEvent );
 		this->eventPriorityQueue.replace( ID, topEvent );
 	    }
 	    else
@@ -290,14 +289,21 @@ namespace libecs
 //	    this->eventDependencyArray.clear();
 	}
 
-	const EventID addEvent( const Event& anEvent )
+	const EventID addEvent( const Event& event )
 	{
-	    return this->eventPriorityQueue.push( anEvent );
+	    return this->eventPriorityQueue.push( event );
 	}
 
 	void removeEvent( const EventID id )
 	{
 	    return this->eventPriorityQueue.pop( id );
+	}
+
+
+	void updateEvent( const EventID id )
+	{
+	    const Event& event( this->eventPriorityQueue.get( id ) );
+	    return this->eventPriorityQueue.replace( id, event  );
 	}
 
 

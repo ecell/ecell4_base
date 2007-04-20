@@ -120,6 +120,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "clear", &PyEventScheduler::clear )
 	.def( "addEvent", &PyEventScheduler::addEvent )
 	.def( "removeEvent", &PyEventScheduler::removeEvent )
+	.def( "updateEvent", &PyEventScheduler::updateEvent )
 //	.def( "updateAllEventDependency", 
 //	      &PyEventScheduler::updateAllEventDependency )
 	;

@@ -116,7 +116,8 @@ public:
 
         if( i == this->indexMap.end() )
         {
-            throw std::out_of_range( "PersistentIDPolicy::getIndex()" );
+            throw std::out_of_range( "PersistentIDPolicy::getIndex():"
+				     " Key not found." );
         }
 
         return (*i).second;

@@ -78,7 +78,7 @@ class Single:
     '''
     Initialize this Single.
 
-    The shell size is shrinked to the particle radius.
+    The shell size is shrunken to the particle radius.
     self.lastTime is reset to the current time, and self.dt
     is set to zero.
 
@@ -86,24 +86,29 @@ class Single:
 
     def initialize( self ):
 
-#         neighbors, distances = self.sim.getNeighbors( self.particle.getPos() )
-#         closest = neighbors[1]
-#         closestParticle = Particle( closest[0], index=closest[1] )
-#         closestSingle = self.sim.findSingle( closestParticle )
-#        
-#        self.closest = closestSingle
-
-        self.update( self.sim.t )
+        neighbors, distances = self.sim.getNeighbors( self.particle.getPos() )
+        closest = neighbors[1]
+        closestParticle = Particle( closest[0], index=closest[1] )
+        closestSingle = self.sim.findSingle( closestParticle )
         
+        self.closest = closestSingle
+
         self.setShellSize( self.getRadius() )
         self.lastTime = self.sim.t
         self.dt = 0.0
+
+
+    def reinitialize( self ):
+        
+        self.update( self.sim.t )
 
 
     def fire( self ):
 
         #debug
         self.sim.checkShellForAll()
+
+        # (1) propagate
 
         rnd = numpy.random.uniform( size=2 )
 
@@ -112,20 +117,25 @@ class Single:
         r = self.getMobilityRadius()
         displacementS = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
         displacement = sphericalToCartesian( displacementS )
-        #print 'disp', r, displacement
 
         pos = self.particle.getPos()
         self.particle.setPos( pos + displacement )
 
         # BOUNDARY
         self.sim.applyBoundary( pos )
-        
-        #print 'displacement', length(displacement), self.getShellSize()
 
-        neighbors, distances = self.sim.getNeighborShells( pos )
-        self.closest = neighbors[1]
+        self.lastTime = self.sim.t
+
+
+        # (2) pair check
+        neighborShells, distances = self.sim.getNeighbors( pos )
+
+        # (3) determine new shell size and dt.
+
+        neighborShells, distances = self.sim.getNeighborShells( pos )
+        self.closest = neighborShells[1]
         distanceToClosestShell = distances[1]
-        #print neighbors, distances
+        #print neighborShells, distances
 
         shellSize = self.getShellSize()
 
@@ -139,21 +149,20 @@ class Single:
         shellSize = shellSize * ( 1.0 - 1e-8 ) # safety
         shellSize = max( shellSize, radius )
 
-        print shellSize, distanceToClosestShell
         assert shellSize <= distanceToClosestShell
 
         self.setShellSize( shellSize )
 
         self.updateDt()
 
-        if self.dt < 1e-13:
-            self.dt = -1
-
         return self.dt
 
 
     '''
-    Update the position of the particle and the protective sphere.
+    Update the position of the particle.
+
+    Shell size shrunken to the radius.   self.lastTime is reset.
+    self.dt is set to 0.0.
     '''
     
     def update( self, t ):
@@ -167,6 +176,7 @@ class Single:
         rnd = numpy.random.uniform( size=3 )
 
         dt = t - self.lastTime
+        #print rnd[0], dt, self.getMobilityRadius()
         r = self.gf.drawR( rnd[0], dt, self.getMobilityRadius() )
         theta = rnd[1] * Pi
         phi = rnd[2] * 2 * Pi
@@ -175,9 +185,10 @@ class Single:
 
         self.particle.setPos( newPos )
 
-        self.updateDt()
-
         self.lastTime = t
+
+        self.setShellSize( self.getRadius() )
+        self.dt = 0.0
 
 
     def getNeighborShells( self, n=2 ):
@@ -571,12 +582,18 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.lastEvent = None
         self.hoggerCounter = 0
 
+
     def initialize( self ):
 
         self.scheduler.clear()
 
         self.initializeSingleMap()
         self.initializeSingles()
+
+        for single in self.singleMap.values():
+            nextt = single.lastTime + single.dt
+            self.addEvent( nextt, single )
+
 
         #self.formPairs()
 
@@ -587,6 +604,18 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.isDirty = False
 
+
+    def reinitialize( self ):
+
+        for single in self.singleMap.values():
+            single.reinitialize()
+            self.updateEvent( single )
+
+        self.dt = self.scheduler.getTime() - self.t
+        assert self.dt >= 0.0
+
+        #debug
+        self.checkShellForAll()
 
 
     def step( self ):
@@ -626,9 +655,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.hoggerCounter >= 10: # or self.dt < 1e-15:
                 print 'reinitialize'
                 self.hoggerCounter = 0
-                self.initialize()
-                #nextEvent = self.scheduler.getTopEvent()[1]
-                self.dt = self.scheduler.getTime() - self.t
+                self.reinitialize()
 
         #if self.dt == 0.0:
         #    raise 'dt=0'
@@ -669,11 +696,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def addEvent( self, t, event ):
-        eventID = self.scheduler.addEvent( t, event )
-        event.eventID = eventID
+        event.eventID = self.scheduler.addEvent( t, event )
 
     def removeEvent( self, event ):
-        eventID = self.scheduler.removeEvent( event.eventID )
+        self.scheduler.removeEvent( event.eventID )
+
+    def updateEvent( self, event ):
+        print event.eventID
+        self.scheduler.updateEvent( event.eventID )
 
 
     def initializeSingleMap( self ):
@@ -690,8 +720,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         for single in self.singleMap.values():
             single.initialize()
-            nextt = single.lastTime + single.dt
-            self.addEvent( nextt, single )
 
 
     def formPairs( self ):

@@ -115,11 +115,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testReplace, DPQ, both )
     dpq.push( 3 );
     dpq.push( 1 );
 
+    BOOST_CHECK_EQUAL( 4, dpq.getSize() );
     BOOST_CHECK_EQUAL( 1, dpq.getTop() );
 
     dpq.replace( id, 2 );  // 4->2
 
     BOOST_CHECK( dpq.checkConsistency() );
+    BOOST_CHECK_EQUAL( 4, dpq.getSize() );
     BOOST_CHECK_EQUAL( 1, dpq.getTop() );
 
     dpq.popTop();

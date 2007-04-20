@@ -16,9 +16,6 @@
 
 
 
-//FIXME: move to better place
-const Real CUTOFF( 1e-10 );
-
 
 /*
   EllipticTheta[4,0,q]
@@ -28,7 +25,7 @@ const Real CUTOFF( 1e-10 );
 */
 static const Real ellipticTheta4Zero( const Real q )
 {
-    assert( fabs( q ) < 1.0 );
+    assert( fabs( q ) <= 1.0 );
 
     const Integer N( 100 );
     Real value( 1.0 );
@@ -53,7 +50,6 @@ static const Real ellipticTheta4Zero( const Real q )
 	if( fabs( value - value_prev ) < 1e-8 ) 
 	{
 	    // normal exit.
-	    //printf("%d\n",n);
 	    return value;
 	}
 
@@ -133,10 +129,7 @@ FirstPassageGreensFunction::p_r_int( const Real r, const Real t, const Real a ) 
 	const Real term( term1 * ( term2 - term3 ) / n );
 	value += term;
 
-	//printf("%ld %g %g %g %g %g %g\n", n, p_free,
-	//value*factor, term*factor, term1, term2, term3 );
-
-	if( fabs( value ) * 1e-10 >= fabs( term ) )
+	if( fabs( value ) * CUTOFF >= fabs( term ) )
 	{
 	    break;
 	}
@@ -220,7 +213,7 @@ FirstPassageGreensFunction::p_survival_F( const Real t,
     const Real a( params->a );
     const Real rnd( params->rnd );
 
-    return gf->p_survival( t, a ) - rnd;
+    return rnd - gf->p_survival( t, a );
 }
 
 
@@ -228,13 +221,20 @@ FirstPassageGreensFunction::p_survival_F( const Real t,
 const Real 
 FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
 {
-    assert( rnd <= 1.0 && rnd >= 0.0 );
+    assert( rnd < 1.0 && rnd >= 0.0 );
     assert( a >= 0.0 );
 
     if( a == 0.0 )
     {
 	return 0.0;
     }
+
+/*
+    if( rnd == 1.0 )
+    {
+	return INFINITY;
+    }
+*/
 
     p_survival_params params = { this, a, rnd };
 
@@ -244,16 +244,25 @@ FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
 	    &params 
 	};
 
-    Real low( 1e-15 );
-    Real high( 10.0 );
-
-    //FIXME: adjust high here.
+    Real low( 1e-6 );
+    Real high( 1.0 );
 
     // adjust low to make sure that f( low ) and f( high ) straddle.
-    const Real highvalue( GSL_FN_EVAL( &F, high ) );
-    while( GSL_FN_EVAL( &F, low ) * highvalue >= 0.0 )
+    while( GSL_FN_EVAL( &F, high ) <= 0.0 )
     {
-	printf("drawTime: adjusting low: %g\n",low);
+	//printf("drawTime: adjusting high: %g\n",high);
+	high *= 10;
+	if( fabs( high ) >= 1e300 )
+	{
+	    std::cerr << "Couldn't adjust high. (" << high <<
+		      ")" << std::endl;
+	    throw std::exception();
+	    
+	}
+    }
+    while( GSL_FN_EVAL( &F, low ) >= 0.0 )
+    {
+	//printf("drawTime: adjusting low: %g\n",low);
 	low *= .1;
 	if( fabs( low ) <= 1e-50 )
 	{
@@ -327,6 +336,10 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t,
 
     const Real St( p_survival( t, a ) ); 
 
+    if( St == 0.0 )
+    {
+	printf("p_survival = 0.0\n");
+    }
 
     p_r_params params = { this, t, a, St, rnd };
 
@@ -336,7 +349,7 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t,
 	    &params 
 	};
 
-    Real low( 1e-100 );
+    Real low( 0.00 );
     Real high( a );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );

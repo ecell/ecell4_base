@@ -68,7 +68,12 @@ private:
 			     const p_r_params* params );
 
 
+private:
+
+    static const Real CUTOFF = 1e-10;
+
     const Real D;
+
 };
 
 
