@@ -86,23 +86,15 @@ class Single:
 
     def initialize( self ):
 
-        neighbors, distances = self.sim.getNeighbors( self.particle.getPos() )
-        closest = neighbors[1]
-        #distance = distances[1] 
+#         neighbors, distances = self.sim.getNeighbors( self.particle.getPos() )
+#         closest = neighbors[1]
+#         closestParticle = Particle( closest[0], index=closest[1] )
+#         closestSingle = self.sim.findSingle( closestParticle )
+#        
+#        self.closest = closestSingle
 
-        closestParticle = Particle( closest[0], index=closest[1] )
-        closestSingle = self.sim.findSingle( closestParticle )
+        self.update( self.sim.t )
         
-        self.closest = closestSingle
-        
-        #FIXME: take different D into account
-
-        #shellSize = distance * .5
-        #shellSize *= ( 1.0 - 1e-8 ) # safety
-        #self.setShellSize( distance )
-        
-        #self.dt = self.calculateFirstPassageTime()
-
         self.setShellSize( self.getRadius() )
         self.lastTime = self.sim.t
         self.dt = 0.0
@@ -152,9 +144,9 @@ class Single:
 
         self.setShellSize( shellSize )
 
-        self.dt = self.calculateFirstPassageTime()
+        self.updateDt()
 
-        if self.dt == 0.0:
+        if self.dt < 1e-13:
             self.dt = -1
 
         return self.dt
@@ -166,13 +158,16 @@ class Single:
     
     def update( self, t ):
 
-        assert t > self.lastTime
-        assert self.getShellSize() > 0.0
+        assert t >= self.lastTime
+        assert self.getShellSize() >= self.getRadius()
+
+        if t == self.lastTime or self.getMobilityRadius() == 0.0:
+            return
 
         rnd = numpy.random.uniform( size=3 )
 
         dt = t - self.lastTime
-        r = self.gf.drawR( rnd[0], dt, self.getShellSize() )
+        r = self.gf.drawR( rnd[0], dt, self.getMobilityRadius() )
         theta = rnd[1] * Pi
         phi = rnd[2] * 2 * Pi
         displacement = sphericalToCartesian( [ r, theta, phi ] )
@@ -180,7 +175,6 @@ class Single:
 
         self.particle.setPos( newPos )
 
-        self.updateShell()
         self.updateDt()
 
         self.lastTime = t
@@ -189,20 +183,20 @@ class Single:
     def getNeighborShells( self, n=2 ):
         return self.sim.getNeighborShells( self.particle.getPos(), n )
 
-    '''
-    Update the protective sphere.
-    self.closest is updated too.
-    '''
+#     '''
+#     Update the protective sphere.
+#     self.closest is updated too.
+#     '''
 
-    def updateShell( self ):
+#     def updateShell( self ):
 
-        neighbors, distancess = self.getNeighborShells()
-        self.closest = neighbors[1]
-        distance = distances[1]
-        print 'distance', distance
+#         neighbors, distancess = self.getNeighborShells()
+#         self.closest = neighbors[1]
+#         distance = distances[1]
+#         print 'distance', distance
         
-        #FIXME: take different D into account
-        self.setShellSize( distance )
+#         #FIXME: take different D into account
+#         self.setShellSize( distance )
 
     def updateDt( self ):
         self.dt = self.calculateFirstPassageTime()        
