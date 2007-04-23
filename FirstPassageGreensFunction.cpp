@@ -91,7 +91,9 @@ FirstPassageGreensFunction::p_free_int( const Real r, const Real t ) const
 }
 
 const Real 
-FirstPassageGreensFunction::p_r_int( const Real r, const Real t, const Real a ) const
+FirstPassageGreensFunction::p_r_int( const Real r, 
+                                     const Real t, 
+                                     const Real a ) const
 {
     Real value( 0.0 );
 
@@ -113,7 +115,7 @@ FirstPassageGreensFunction::p_r_int( const Real r, const Real t, const Real a ) 
 
     const Real factor( 2.0 / ( a * M_PI ) );
 
-    const Integer N( 1000 );
+    const Integer N( 10000 );
     long int n( 1 );
     while( true )
     {
@@ -252,12 +254,9 @@ FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
     {
 	//printf("drawTime: adjusting high: %g\n",high);
 	high *= 10;
-	if( fabs( high ) >= 1e300 )
+	if( fabs( high ) >= INFINITY )
 	{
-	    std::cerr << "Couldn't adjust high. (" << high <<
-		      ")" << std::endl;
-	    throw std::exception();
-	    
+            return INFINITY;
 	}
     }
     while( GSL_FN_EVAL( &F, low ) >= 0.0 )
@@ -322,7 +321,7 @@ FirstPassageGreensFunction::p_r_F( const Real r,
     const Real St( params->St );
     const Real rnd( params->rnd );
 
-    return ( gf->p_r_int( r, t, a ) / St ) - rnd;
+    return gf->p_r_int( r, t, a ) - rnd * St;
 }
 
 
@@ -331,8 +330,13 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t,
 				   const Real a ) const
 {
     assert( rnd <= 1.0 && rnd >= 0.0 );
-    assert( t > 0.0 );
-    assert( a > 0.0 );
+    assert( t >= 0.0 );
+    assert( a >= 0.0 );
+
+    if( a == 0.0 )
+    {
+        return 0.0;
+    }
 
     const Real St( p_survival( t, a ) ); 
 
