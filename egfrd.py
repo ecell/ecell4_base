@@ -86,6 +86,38 @@ class Single:
         return self.getShellSize() - self.getRadius()
 
 
+    def propagate( self, r, t ):
+
+        rnd = numpy.random.uniform( size=2 )
+
+        radius = self.getRadius()
+
+        r = self.getMobilityRadius()
+        displacementS = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
+        displacement = sphericalToCartesian( displacementS )
+
+        pos = self.particle.getPos()
+        self.particle.setPos( pos + displacement )
+
+        # BOUNDARY
+        self.sim.applyBoundary( pos )
+
+        self.lastTime = t
+
+
+    '''
+    Burst the protective shell.
+
+    Shell size is shrunken to the actual radius of the particle.
+    self.dt is reset to 0.0.  Do not forget to reschedule this Single
+    after calling this method.
+    '''
+    def burstShell( self ):
+
+        self.setShellSize( self.getRadius() )
+        self.dt = 0.0
+        
+
     '''
     Initialize this Single.
 
@@ -119,46 +151,51 @@ class Single:
         #debug
         self.sim.checkShellForAll()
 
+        radius = self.getRadius()
+        t = self.sim.t
+
         # (1) propagate
 
-        rnd = numpy.random.uniform( size=2 )
+        self.propagate( self.getMobilityRadius(), t )
 
-        radius = self.getRadius()
-
-        r = self.getMobilityRadius()
-        displacementS = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
-        displacement = sphericalToCartesian( displacementS )
-
-        pos = self.particle.getPos()
-        self.particle.setPos( pos + displacement )
-
-        # BOUNDARY
-        self.sim.applyBoundary( pos )
-
-        self.lastTime = self.sim.t
-
-
-        # (2) pair check
+        # (2) neighbor check
+        pos = self.getPos()
         neighborShells, distances = self.sim.getNeighbors( pos )
-
-        # (3) determine new shell size and dt.
-
         neighborShells, distances = self.sim.getNeighborShells( pos )
         self.closest = neighborShells[1]
         distanceToClosestShell = distances[1]
         #print neighborShells, distances
+
+        
+        # (3) determine new shell size and dt.
 
         shellSize = self.getShellSize()
 
         ShellSizeDisparityFactor = 2
 
         closestMobilityRadius = self.closest.getMobilityRadius()
+        closestMeanArrivalTime = closestMobilityRadius ** 2 / \
+                                 ( 6.0 * self.closest.particle.species.D )
+        
         shellSize = min( closestMobilityRadius * ShellSizeDisparityFactor
                          + ( distanceToClosestShell - radius ) * 0.5 + radius,
                          distanceToClosestShell )
 
         shellSize = shellSize * ( 1.0 - 1e-8 ) # safety
         shellSize = max( shellSize, radius )
+
+
+        meanArrivalTime = shellSize ** 2 / \
+                          ( 6.0 * self.particle.species.D )
+
+        print 'mat', meanArrivalTime, closestMeanArrivalTime
+        if meanArrivalTime <= 0.0 or \
+           closestMeanArrivalTime / meanArrivalTime \
+               >= ShellSizeDisparityFactor:
+            print 'burst'
+            self.closest.propagate( self.closest.getMobilityRadius(), t )
+            self.closest.burstShell()
+            self.sim.updateEvent( self.closest )
 
         assert shellSize <= distanceToClosestShell
 
@@ -184,22 +221,13 @@ class Single:
         if t == self.lastTime or self.getMobilityRadius() == 0.0:
             return
 
-        rnd = numpy.random.uniform( size=3 )
-
         dt = t - self.lastTime
-        #print rnd[0], dt, self.getMobilityRadius()
-        r = self.gf.drawR( rnd[0], dt, self.getMobilityRadius() )
-        theta = rnd[1] * Pi
-        phi = rnd[2] * 2 * Pi
-        displacement = sphericalToCartesian( [ r, theta, phi ] )
-        newPos = self.particle.getPos() + displacement
 
-        self.particle.setPos( newPos )
+        rnd = numpy.random.uniform()
+        r = self.gf.drawR( rnd , dt, self.getMobilityRadius() )
+        self.propagate( r, t )
 
-        self.lastTime = t
-
-        self.setShellSize( self.getRadius() )
-        self.dt = 0.0
+        self.burstShell()
 
 
     def getNeighborShells( self, n=2 ):
