@@ -1,0 +1,222 @@
+(************** Content-type: application/mathematica **************
+                     CreatedBy='Mathematica 5.2'
+
+                    Mathematica-Compatible Notebook
+
+This notebook can be used with any Mathematica-compatible
+application, such as Mathematica, MathReader or Publicon. The data
+for the notebook starts with the line containing stars above.
+
+To get the notebook into a Mathematica-compatible application, do
+one of the following:
+
+* Save the data starting with the line of stars above into a file
+  with a name ending in .nb, then open the file inside the
+  application;
+
+* Copy the data starting with the line of stars above to the
+  clipboard, then use the Paste menu command inside the application.
+
+Data for notebooks contains only printable 7-bit ASCII and can be
+sent directly in email or through ftp in text mode.  Newlines can be
+CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
+
+NOTE: If you modify the data for this notebook not in a Mathematica-
+compatible application, you must delete the line below containing
+the word CacheID, otherwise Mathematica-compatible applications may
+try to use invalid cache data.
+
+For more information on notebooks and Mathematica-compatible 
+applications, contact Wolfram Research:
+  web: http://www.wolfram.com
+  email: info@wolfram.com
+  phone: +1-217-398-0700 (U.S.)
+
+Notebook reader applications are available free of charge from 
+Wolfram Research.
+*******************************************************************)
+
+(*CacheID: 232*)
+
+
+(*NotebookFileLineBreakTest
+NotebookFileLineBreakTest*)
+(*NotebookOptionsPosition[      4772,        153]*)
+(*NotebookOutlinePosition[      5403,        175]*)
+(*  CellTagsIndexPosition[      5359,        171]*)
+(*WindowFrame->Normal*)
+
+
+
+Notebook[{
+Cell[BoxData[
+    \(W[a_, b_]\  := \ 
+      Exp[\ 2\ a\ b\  + \ b^2\ ]\ Erfc[\ a\  + \ b]\)], "Input"],
+
+Cell[BoxData[
+    \(\(\(alpha\  := \ \((\ 1\  + \ \((\ k\ /\ kD\ )\)\ )\)\ \((\ 
+          Sqrt[D]\ /\ Sigma\ )\)\)\(\[IndentingNewLine]\)
+    \)\)], "Input"],
+
+Cell[BoxData[
+    \(kD\  := \ 4\ Pi\ Sigma\ D\)], "Input"],
+
+Cell[BoxData[
+    \(prt\  := \ \(\(\((\((\ 
+                Exp[\ \(-\ \((\ 
+                            r\  - \ r0\ )\)\ ^2\)\ /\ \((4\ D\ t)\)\ ]\  + \ 
+                  Exp[\ \(-\ \((\ r\  + \ r0\  - \ 2\ Sigma\ )\)\ ^\ 
+                          2\)\ /\ \((4\ D\ t)\)\ ]\ \ )\)\ /\ 
+              Sqrt[\ 4\ Pi\ t]\  - \ 
+            alpha\ W[\ \((r + r0\  - \ 2\ Sigma\ )\)\ /\ Sqrt[4\ D\ t], \ 
+                alpha\ Sqrt[t]\ ]\ )\)\ /\ \((\ 
+          4\ Pi\ r\ r0\ Sqrt[D]\ )\)\)\(\ \)\)\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Integrate[prt, t]\)], "Input"],
+
+Cell[BoxData[
+    \(\(1\/\(4\ \@D\ \[Pi]\ r\ r0\)\) \((\[Integral]\((\(\[ExponentialE]\^\(-\
+\(\((r - r0)\)\^2\/\(4\ D\ t\)\)\) + \[ExponentialE]\^\(-\(\((r + r0 - 2\ \
+Sigma)\)\^2\/\(4\ D\ t\)\)\)\)\/\(2\ \@\[Pi]\ \@t\) - \(1\/Sigma\) \((\@D\ \
+\[ExponentialE]\^\(\(D\ \((1 + k\/\(4\ D\ \[Pi]\ Sigma\))\)\^2\ t\)\/Sigma\^2 \
++ \(\@D\ \((1 + k\/\(4\ D\ \[Pi]\ Sigma\))\)\ \((r + r0 - 2\ Sigma)\)\ \
+\@t\)\/\(Sigma\ \@\(D\ t\)\)\)\ \((1 + 
+                          k\/\(4\ D\ \[Pi]\ Sigma\))\)\ Erfc[\(\@D\ \((1 + \
+k\/\(4\ D\ \[Pi]\ Sigma\))\)\ \@t\)\/Sigma + \(r + r0 - 2\ Sigma\)\/\(2\ \
+\@\(D\ t\)\)])\))\) \[DifferentialD]t)\)\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[""], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(Integrate[\((\ Exp[\ \((r\  - r0)\)\ ^2\ ]\ \ \ \ )\)/r, \ 
+      r]\)\(\ \)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\[Integral]\(\[ExponentialE]\^\(\((r - r0)\)\^2\)\/r\) \
+\[DifferentialD]r\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(D[\ \(,\)\(r\)]\)], "Input"],
+
+Cell[BoxData[
+    \(2\ \[ExponentialE]\^\(\((r - r0)\)\^2\)\ \((r - r0)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Integrate[(Exp[r^2] /r ) (Exp[ - 2 r r0]/r) (Exp[ r0^2] /r), \
+r]\
+\>", "Input"],
+
+Cell[BoxData[
+    \(\[Integral]\(\[ExponentialE]\^\(r\^2 - 2\ r\ r0 + r0\^2\)\/r\^3\) \
+\[DifferentialD]r\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(D[
+      Exp[\((x - a)\)^2]\  - \ 
+        Integrate[\ 2 \((\ x - a)\)\ Exp[\((x - a)\)^2], x]\  + \ 
+        Integrate[Exp[\((x - a)\)^2]/x, x], x]\)\(\[IndentingNewLine]\)
+    \)\)], "Input"],
+
+Cell[BoxData[
+    \(2\ \[ExponentialE]\^\(\((a - x)\)\^2\)\ \((a - 
+            x)\) + \[ExponentialE]\^\(\((\(-a\) + x)\)\^2\)\/x + 
+      2\ \[ExponentialE]\^\(\((\(-a\) + x)\)\^2\)\ \((\(-a\) + 
+            x)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(Simplify[%]\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\[ExponentialE]\^\(\((a - x)\)\^2\)\/x\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(\[IndentingNewLine]\)], "Input"]
+},
+FrontEndVersion->"5.2 for X",
+ScreenRectangle->{{0, 3200}, {0, 1200}},
+WindowSize->{520, 600},
+WindowMargins->{{750, Automatic}, {Automatic, 25}}
+]
+
+(*******************************************************************
+Cached data follows.  If you edit this Notebook file directly, not
+using Mathematica, you must remove the line containing CacheID at
+the top of  the file.  The cache data will then be recreated when
+you save this file from within Mathematica.
+*******************************************************************)
+
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+
+(*NotebookFileOutline
+Notebook[{
+Cell[1754, 51, 102, 2, 27, "Input"],
+Cell[1859, 55, 158, 3, 43, "Input"],
+Cell[2020, 60, 58, 1, 27, "Input"],
+Cell[2081, 63, 509, 9, 107, "Input"],
+
+Cell[CellGroupData[{
+Cell[2615, 76, 50, 1, 27, "Input"],
+Cell[2668, 79, 645, 9, 268, "Output"]
+}, Open  ]],
+Cell[3328, 91, 26, 0, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[3379, 95, 115, 2, 27, "Input"],
+Cell[3497, 99, 108, 2, 49, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[3642, 106, 48, 1, 27, "Input"],
+Cell[3693, 109, 87, 1, 32, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[3817, 115, 90, 3, 42, "Input"],
+Cell[3910, 120, 119, 2, 49, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4066, 127, 217, 5, 59, "Input"],
+Cell[4286, 134, 228, 4, 49, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4551, 143, 75, 1, 43, "Input"],
+Cell[4629, 146, 72, 1, 49, "Output"]
+}, Open  ]],
+Cell[4716, 150, 52, 1, 43, "Input"]
+}
+]
+*)
+
+
+
+(*******************************************************************
+End of Mathematica Notebook file.
+*******************************************************************)
+

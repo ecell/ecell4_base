@@ -1,0 +1,270 @@
+(************** Content-type: application/mathematica **************
+                     CreatedBy='Mathematica 5.2'
+
+                    Mathematica-Compatible Notebook
+
+This notebook can be used with any Mathematica-compatible
+application, such as Mathematica, MathReader or Publicon. The data
+for the notebook starts with the line containing stars above.
+
+To get the notebook into a Mathematica-compatible application, do
+one of the following:
+
+* Save the data starting with the line of stars above into a file
+  with a name ending in .nb, then open the file inside the
+  application;
+
+* Copy the data starting with the line of stars above to the
+  clipboard, then use the Paste menu command inside the application.
+
+Data for notebooks contains only printable 7-bit ASCII and can be
+sent directly in email or through ftp in text mode.  Newlines can be
+CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
+
+NOTE: If you modify the data for this notebook not in a Mathematica-
+compatible application, you must delete the line below containing
+the word CacheID, otherwise Mathematica-compatible applications may
+try to use invalid cache data.
+
+For more information on notebooks and Mathematica-compatible 
+applications, contact Wolfram Research:
+  web: http://www.wolfram.com
+  email: info@wolfram.com
+  phone: +1-217-398-0700 (U.S.)
+
+Notebook reader applications are available free of charge from 
+Wolfram Research.
+*******************************************************************)
+
+(*CacheID: 232*)
+
+
+(*NotebookFileLineBreakTest
+NotebookFileLineBreakTest*)
+(*NotebookOptionsPosition[      5761,        191]*)
+(*NotebookOutlinePosition[      6394,        213]*)
+(*  CellTagsIndexPosition[      6350,        209]*)
+(*WindowFrame->Normal*)
+
+
+
+Notebook[{
+Cell[BoxData[
+    \(f\  := \ \ \ \ \((n\ /\ \((\ 2\ a^2\ r\ )\))\)\ Sin[\ 
+          Pi\ n\ r\ /\ a\ ]\ Exp[\ \(-\ D\)\ Pi^2\ n^2\ t\ /\ 
+              a^2\ ]\)], "Input",
+  ImageSize->{258, 111},
+  ImageMargins->{{0, 0}, {0, 0}},
+  ImageRegion->{{0, 1}, {0, 1}},
+  FontFamily->"Helvetica",
+  FontSize->14],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(ifa\  = \ 
+      Integrate[4\ Pi\ r\ r\ f, {r, 0, a}, \ 
+        Assumptions\  \[Rule] \ {n\ \  \[Element] \ Integers, \ \ n\  > \ 
+              0, \ r' > 0}]\)], "Input",
+  FontFamily->"Helvetica",
+  FontSize->14],
+
+Cell[BoxData[
+    \(\(-2\)\ \((\(-1\))\)\^n\ \[ExponentialE]\^\(-\(\(D\ n\^2\ \[Pi]\^2\ t\)\
+\/a\^2\)\)\)], "Output",
+  FontFamily->"Helvetica",
+  FontSize->14]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(ifr\  = \ 
+      Integrate[4\ Pi\ r\ r\ f, {r, 0, r'}, \ 
+        Assumptions\  \[Rule] \ {n\ \  \[Element] \ Integers, \ \ n\  > \ 
+              0, \ r' > 0, \ a > 0}]\)\(\[IndentingNewLine]\)
+    \)\)], "Input",
+  FontFamily->"Helvetica",
+  FontSize->14],
+
+Cell[BoxData[
+    FractionBox[
+      RowBox[{
+      "2", " ", \(\[ExponentialE]\^\(-\(\(D\ n\^2\ \[Pi]\^2\ t\)\/a\^2\)\)\), 
+        " ", 
+        RowBox[{"(", 
+          RowBox[{
+            RowBox[{"a", " ", 
+              RowBox[{"Sin", "[", 
+                FractionBox[
+                  RowBox[{"n", " ", "\[Pi]", " ", 
+                    SuperscriptBox["r", "\[Prime]",
+                      MultilineFunction->None]}], "a"], "]"}]}], "-", 
+            RowBox[{"n", " ", "\[Pi]", " ", 
+              RowBox[{"Cos", "[", 
+                FractionBox[
+                  RowBox[{"n", " ", "\[Pi]", " ", 
+                    SuperscriptBox["r", "\[Prime]",
+                      MultilineFunction->None]}], "a"], "]"}], " ", 
+              SuperscriptBox["r", "\[Prime]",
+                MultilineFunction->None]}]}], 
+          ")"}]}], \(a\ n\ \[Pi]\)]], "Output",
+  FontFamily->"Helvetica",
+  FontSize->14]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(FourierCosTransform[\ 
+      a\ Exp[\(-D\)\ n^2\ Pi^2\ t\ /\ a^2]\ Sin[Pi\ n\ \ r/\ a]/n\ , n, w, \ 
+      Assumptions \[Rule] {\ n > 0, D > 0, \ t > 0, a > 0, \ r > 0, \ 
+          w > 0, \ r \[Element] \ Reals, \ a \[Element] Reals, \ 
+          D \[Element] Reals, \ t \[Element] Reals}]\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(FourierCosTransform[\(a\ \[ExponentialE]\^\(-\(\(D\ n\^2\ \[Pi]\^2\ t\)\
+\/a\^2\)\)\ Sin[\(n\ \[Pi]\ r\)\/a]\)\/n, n, w, 
+      Assumptions \[Rule] {n > 0, D > 0, t > 0, a > 0, r > 0, w > 0, 
+          r \[Element] Reals, a \[Element] Reals, D \[Element] Reals, 
+          t \[Element] Reals}]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Log[\(-2\)\ ]\)], "Input"],
+
+Cell[BoxData[
+    \(Log[\(-2\)\ i]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\[ImaginaryI]\ Log[\(-2\)\ \[ImaginaryI]]\)], "Input"],
+
+Cell[BoxData[
+    \(\[ImaginaryI]\ \((\(-\(\(\[ImaginaryI]\ \[Pi]\)\/2\)\) + 
+          Log[2])\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(\[ImaginaryI]\ Erfi[a\ ]\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\[ImaginaryI]\ Erfi[a]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Erf[a\ \[ImaginaryI]]\)], "Input"],
+
+Cell[BoxData[
+    \(\[ImaginaryI]\ Erfi[a]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(TrigExpand[
+      Sin[p]\  - \ Cos[p]]\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\(-Cos[p]\) + Sin[p]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(FourierTransform[BesselJ[1/2, a\ n], n, p]\)], "Input"],
+
+Cell[BoxData[
+    \(\(\[ImaginaryI]\ \((\(-\@\(-a\)\) + \@a)\)\ \((\(a - \[ImaginaryI]\ \
+\@\(-a\^2\)\ Sign[a - p]\)\/\((\((a - p)\)\^2)\)\^\(1/4\) - \(a + \
+\[ImaginaryI]\ \@\(-a\^2\)\ Sign[a + p]\)\/\((\((a + p)\)\^2)\)\^\(1/4\))\)\)\
+\/\(2\ a\^2\ \@\(2\ \[Pi]\)\)\)], "Output"]
+}, Open  ]]
+},
+FrontEndVersion->"5.2 for X",
+ScreenRectangle->{{0, 3200}, {0, 1200}},
+WindowSize->{520, 1121},
+WindowMargins->{{1075, Automatic}, {Automatic, 25}}
+]
+
+(*******************************************************************
+Cached data follows.  If you edit this Notebook file directly, not
+using Mathematica, you must remove the line containing CacheID at
+the top of  the file.  The cache data will then be recreated when
+you save this file from within Mathematica.
+*******************************************************************)
+
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+
+(*NotebookFileOutline
+Notebook[{
+Cell[1754, 51, 306, 8, 50, "Input"],
+
+Cell[CellGroupData[{
+Cell[2085, 63, 235, 6, 50, "Input"],
+Cell[2323, 71, 160, 4, 45, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[2520, 80, 281, 7, 70, "Input"],
+Cell[2804, 89, 913, 23, 70, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[3754, 117, 377, 5, 107, "Input"],
+Cell[4134, 124, 327, 5, 106, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4498, 134, 46, 1, 27, "Input"],
+Cell[4547, 137, 48, 1, 27, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4632, 143, 74, 1, 27, "Input"],
+Cell[4709, 146, 111, 2, 43, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4857, 153, 88, 1, 43, "Input"],
+Cell[4948, 156, 56, 1, 27, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[5041, 162, 54, 1, 27, "Input"],
+Cell[5098, 165, 56, 1, 27, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[5191, 171, 102, 2, 43, "Input"],
+Cell[5296, 175, 54, 1, 27, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[5387, 181, 75, 1, 27, "Input"],
+Cell[5465, 184, 280, 4, 71, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+
+
+(*******************************************************************
+End of Mathematica Notebook file.
+*******************************************************************)
+

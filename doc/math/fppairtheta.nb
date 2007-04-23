@@ -1,0 +1,765 @@
+(************** Content-type: application/mathematica **************
+                     CreatedBy='Mathematica 5.2'
+
+                    Mathematica-Compatible Notebook
+
+This notebook can be used with any Mathematica-compatible
+application, such as Mathematica, MathReader or Publicon. The data
+for the notebook starts with the line containing stars above.
+
+To get the notebook into a Mathematica-compatible application, do
+one of the following:
+
+* Save the data starting with the line of stars above into a file
+  with a name ending in .nb, then open the file inside the
+  application;
+
+* Copy the data starting with the line of stars above to the
+  clipboard, then use the Paste menu command inside the application.
+
+Data for notebooks contains only printable 7-bit ASCII and can be
+sent directly in email or through ftp in text mode.  Newlines can be
+CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
+
+NOTE: If you modify the data for this notebook not in a Mathematica-
+compatible application, you must delete the line below containing
+the word CacheID, otherwise Mathematica-compatible applications may
+try to use invalid cache data.
+
+For more information on notebooks and Mathematica-compatible 
+applications, contact Wolfram Research:
+  web: http://www.wolfram.com
+  email: info@wolfram.com
+  phone: +1-217-398-0700 (U.S.)
+
+Notebook reader applications are available free of charge from 
+Wolfram Research.
+*******************************************************************)
+
+(*CacheID: 232*)
+
+
+(*NotebookFileLineBreakTest
+NotebookFileLineBreakTest*)
+(*NotebookOptionsPosition[     22901,        591]*)
+(*NotebookOutlinePosition[     23533,        613]*)
+(*  CellTagsIndexPosition[     23489,        609]*)
+(*WindowFrame->Normal*)
+
+
+
+Notebook[{
+Cell[BoxData[
+    \(Clear[falpha]\)], "Input"],
+
+Cell[BoxData[
+    \(solnBJY := \((1 + 
+            2\ n)\) \((\[Pi]\ u\^2\ \((\((\((n - h\ s)\)\ BesselJ[1/2 + n, 
+                            s\ u]\  - 
+                        s\ u\ BesselJ[3/2 + n, s\ u])\)\ BesselY[1/2 + n, 
+                      r\ u] + 
+                  BesselJ[1/2 + n, 
+                      r\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1/2 + n, s\ u] + 
+                        s\ u\ BesselY[3/2 + n, 
+                            s\ u])\))\)\ \((\((\((n - h\ s)\)\ BesselJ[
+                            1/2 + n, s\ u]\  - 
+                        s\ u\ BesselJ[3/2 + n, s\ u]\ )\) 
+                    BesselY[1/2 + n, r0\ u] + 
+                  BesselJ[1/2 + n, 
+                      r0\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1/2 + n, 
+                            s\ u] + 
+                        s\ u\ BesselY[3/2 + n, 
+                            s\ u])\))\))\)/\((8\ \[Sqrt]r\ \[Sqrt]r0 \((\ 
+                n + n\^2 - 
+                  s\ \((h + h\^2\ s + 
+                        s\ u\^2)\) + \((\((\((\(-n\) + h\ s)\)\ BesselJ[1/2 + \
+n, s\ u] + s\ u\ BesselJ[3/2 + n, s\ u])\)\^2 + \((\((\(-n\) + h\ s)\)\ \
+BesselY[1/2 + n, s\ u] + s\ u\ BesselY[3/2 + n, s\ u])\)\^2)\)/\((BesselJ[1/2 \
++ n, a\ u]\^2 + BesselY[1/2 + n, a\ u]\^2)\))\))\)\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \($Assumptions = {r > 0, \ r0 > 0, \ u > 0, \ s > 0, \ h > 0, \ a > 0, \ 
+        a > s, \ n \[Element] Integers, \ n > 0}\)], "Input"],
+
+Cell[BoxData[
+    \({r > 0, r0 > 0, u > 0, s > 0, h > 0, a > 0, a > s, 
+      n \[Element] Integers, n > 0}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(falpha[a_, s_, 
+        u_]\  = \ \((\((n - h\ s)\)\ BesselJ[1\/2 + n, s\ u] - 
+              s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, a\ u]\  + \ 
+        BesselJ[1\/2 + n, 
+            a\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+              s\ u\ BesselY[3\/2 + n, s\ u])\)\)], "Input"],
+
+Cell[BoxData[
+    \(\((\((n - h\ s)\)\ BesselJ[1\/2 + n, s\ u] - 
+            s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, a\ u] + 
+      BesselJ[1\/2 + n, 
+          a\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+            s\ u\ BesselY[3\/2 + n, s\ u])\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(falpha0\  = \ 
+      FullSimplify[falpha[a, s, u]\  /. \ n \[Rule] 0, \ 
+        Assumptions \[Rule] {a > 0, u > 0, 
+            s > 0}]\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \)\)], "Input"],
+
+Cell[BoxData[
+    \(\(-\(\(2\ \((s\ u\ Cos[\((a - s)\)\ u] + \((1 + 
+                      h\ s)\)\ Sin[\((a - 
+                          s)\)\ u])\)\)\/\(\[Pi]\ \@\(a\ s\)\ u\)\)\)\)], \
+"Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(tmp1\  = \ \(\(falpha[r, s, u]\)\(\ \)\(falpha[r0, s, 
+          u]\)\(\ \)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\((\((\((n - h\ s)\)\ BesselJ[1\/2 + n, s\ u] - 
+                s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, r\ u] + 
+          BesselJ[1\/2 + n, 
+              r\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                s\ u\ BesselY[3\/2 + n, 
+                    s\ u])\))\)\ \((\((\((n - h\ s)\)\ BesselJ[1\/2 + n, 
+                    s\ u] - s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[
+              1\/2 + n, r0\ u] + 
+          BesselJ[1\/2 + n, 
+              r0\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                s\ u\ BesselY[3\/2 + n, s\ u])\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(E1\  = \ 
+      n\  + \ n^2\  - \ 
+        s \((\ h\  + \ h^2\ s\  + \ 
+              s\ u^2)\)\  + \ \(\(\((\((\ \((\(-n\) + h\ s)\)\ BesselJ[
+                        1\/2 + n, s\ u] + 
+                    s\ u\ BesselJ[3\/2 + n, 
+                        s\ u])\)^2\  + \ \((\((\(-n\) + h\ s)\)\ BesselY[
+                        1\/2 + n, s\ u] + 
+                    s\ u\ BesselY[3\/2 + n, s\ u])\)^2\ )\)/\ \((\ 
+            BesselY[1\/2 + n, a\ u]^2 + 
+              BesselJ[1\/2 + n, a\ u]^2)\)\)\(\ \)\)\)], "Input"],
+
+Cell[BoxData[
+    \(n + n\^2 - 
+      s\ \((h + h\^2\ s + 
+            s\ u\^2)\) + \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ u] + \
+s\ u\ BesselJ[3\/2 + n, s\ u])\)\^2 + \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + \
+n, s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\)\^2)\)/\((BesselJ[1\/2 + n, a\ \
+u]\^2 + BesselY[1\/2 + n, a\ u]\^2)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(E2\  = \ 
+      n\  + \ n^2\  - \ 
+        s \((\ h\  + \ h^2\ s\  + \ 
+              s\ u^2)\)\  + \ \((\ \((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, 
+                    s\ u] + s\ u\ BesselJ[3\/2 + n, s\ u])\)^2\ \ /\ 
+          BesselJ[1\/2 + n, a\ u]^2\)], "Input"],
+
+Cell[BoxData[
+    \(n + n\^2 - 
+      s\ \((h + h\^2\ s + 
+            s\ u\^2)\) + \((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ u] + s\ \
+u\ BesselJ[3\/2 + n, s\ u])\)\^2\/BesselJ[1\/2 + n, a\ u]\^2\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(tmp1\ /\ E1\  // \ Simplify\)], "Input"],
+
+Cell[BoxData[
+    \(\((\((\((\((n - h\ s)\)\ BesselJ[1\/2 + n, s\ u] - 
+                    s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, 
+                  r\ u] + 
+              BesselJ[1\/2 + n, 
+                  r\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                    s\ u\ BesselY[3\/2 + n, 
+                        s\ u])\))\)\ \((\((\((n - h\ s)\)\ BesselJ[1\/2 + n, 
+                        s\ u] - s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[
+                  1\/2 + n, r0\ u] + 
+              BesselJ[1\/2 + n, 
+                  r0\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                    s\ u\ BesselY[3\/2 + n, s\ u])\))\))\)/\((n + n\^2 - 
+          s\ \((h + h\^2\ s + 
+                s\ u\^2)\) + \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ \
+u] + s\ u\ BesselJ[3\/2 + n, s\ u])\)\^2 + \((\((\(-n\) + h\ s)\)\ \
+BesselY[1\/2 + n, s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\)\^2)\)/\((BesselJ[1\
+\/2 + n, a\ u]\^2 + BesselY[1\/2 + n, a\ u]\^2)\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(pni\  = \ tmp1\ /\ E1\  // \ Simplify\)], "Input"],
+
+Cell[BoxData[
+    \(\((\((\((\((n - h\ s)\)\ BesselJ[1\/2 + n, s\ u] - 
+                    s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, 
+                  r\ u] + 
+              BesselJ[1\/2 + n, 
+                  r\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                    s\ u\ BesselY[3\/2 + n, 
+                        s\ u])\))\)\ \((\((\((n - h\ s)\)\ BesselJ[1\/2 + n, 
+                        s\ u] - s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[
+                  1\/2 + n, r0\ u] + 
+              BesselJ[1\/2 + n, 
+                  r0\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                    s\ u\ BesselY[3\/2 + n, s\ u])\))\))\)/\((n + n\^2 - 
+          s\ \((h + h\^2\ s + 
+                s\ u\^2)\) + \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ \
+u] + s\ u\ BesselJ[3\/2 + n, s\ u])\)\^2 + \((\((\(-n\) + h\ s)\)\ \
+BesselY[1\/2 + n, s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\)\^2)\)/\((BesselJ[1\
+\/2 + n, a\ u]\^2 + BesselY[1\/2 + n, a\ u]\^2)\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(p0i\  = \ 
+      FullSimplify[
+        pni\ \ \((1\  + \ 
+                2\ n\ )\)\ Pi\ u\ u\ /\ \((8\ Sqrt[r\ r0\ ])\)\ \  /. \ 
+          n \[Rule] 0]\)], "Input"],
+
+Cell[BoxData[
+    \(\(-\(\(\((s\ u\ Cos[\((r - s)\)\ u] + \((1 + 
+                      h\ s)\)\ Sin[\((r - s)\)\ u])\)\ \((s\ u\ Cos[\((r0 - 
+                          s)\)\ u] + \((1 + 
+                      h\ s)\)\ Sin[\((r0 - 
+                          s)\)\ u])\)\)\/\(2\ \[Pi]\ r\ r0\ \((\((1 + 
+                      h\ s)\)\ \((h\ s\^2 - a\ \((1 + h\ s)\))\) + 
+                s\^2\ \((\(-a\) + s)\)\ u\^2)\)\)\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(tmp2\  = \ solnBJY\  /. \ n \[Rule] 0\  // \ Simplify\)], "Input"],
+
+Cell[BoxData[
+    \(\(\((s\ u\ Cos[\((r - s)\)\ u] + \((1 + h\ s)\)\ Sin[\((r - s)\)\ u])\)\
+\ \((s\ u\ Cos[\((r0 - s)\)\ u] + \((1 + h\ s)\)\ Sin[\((r0 - s)\)\ u])\)\)\/\
+\(2\ \[Pi]\ r\ r0\ \((\(-s\^2\)\ \((h + h\^2\ s + s\ u\^2)\) + a\ \((1 + 2\ h\
+\ s + h\^2\ s\^2 + s\^2\ u\^2)\))\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(p0i\  \[Equal] \ tmp2\  // \ FullSimplify\)], "Input"],
+
+Cell[BoxData[
+    \(True\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(pni\ /\ solnBJY\  // \ Simplify\)], "Input"],
+
+Cell[BoxData[
+    \(\(8\ \@\(r\ r0\)\)\/\(\((\[Pi] + 2\ n\ \[Pi])\)\ u\^2\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(tmp2\)], "Input"],
+
+Cell[BoxData[
+    \(\(\((s\ u\ Cos[\((r - s)\)\ u] + \((1 + h\ s)\)\ Sin[\((r - s)\)\ u])\)\
+\ \((s\ u\ Cos[\((r0 - s)\)\ u] + \((1 + h\ s)\)\ Sin[\((r0 - s)\)\ u])\)\)\/\
+\(2\ \[Pi]\ r\ r0\ \((\(-s\^2\)\ \((h + h\^2\ s + s\ u\^2)\) + a\ \((1 + 2\ h\
+\ s + h\^2\ s\^2 + s\^2\ u\^2)\))\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(pni\)], "Input"],
+
+Cell[BoxData[
+    \(\((\((\((\((n - h\ s)\)\ BesselJ[1\/2 + n, s\ u] - 
+                    s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, 
+                  r\ u] + 
+              BesselJ[1\/2 + n, 
+                  r\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                    s\ u\ BesselY[3\/2 + n, 
+                        s\ u])\))\)\ \((\((\((n - h\ s)\)\ BesselJ[1\/2 + n, 
+                        s\ u] - s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[
+                  1\/2 + n, r0\ u] + 
+              BesselJ[1\/2 + n, 
+                  r0\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                    s\ u\ BesselY[3\/2 + n, s\ u])\))\))\)/\((n + n\^2 - 
+          s\ \((h + h\^2\ s + 
+                s\ u\^2)\) + \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ \
+u] + s\ u\ BesselJ[3\/2 + n, s\ u])\)\^2 + \((\((\(-n\) + h\ s)\)\ \
+BesselY[1\/2 + n, s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\)\^2)\)/\((BesselJ[1\
+\/2 + n, a\ u]\^2 + BesselY[1\/2 + n, a\ u]\^2)\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Dsolnata\  = \ 
+      D\ D[solnBJY, r] /. {r \[Rule] a}\  // \ FullSimplify\)], "Input"],
+
+Cell[BoxData[
+    \(\((D\ \((1 + 
+              2\ n)\)\ \[Pi]\ u\^2\ \((\((\((n - h\ s)\)\ BesselJ[1\/2 + n, 
+                        s\ u] - s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[
+                  1\/2 + n, r0\ u] + 
+              BesselJ[1\/2 + n, 
+                  r0\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                    s\ u\ BesselY[3\/2 + n, s\ u])\))\)\ \((\((n - 
+                    h\ s)\)\ BesselJ[1\/2 + n, 
+                  s\ u]\ \((n\ BesselY[1\/2 + n, a\ u] - 
+                    a\ u\ BesselY[3\/2 + n, a\ u])\) + 
+              s\ u\ BesselJ[3\/2 + n, 
+                  s\ u]\ \((\(-n\)\ BesselY[1\/2 + n, a\ u] + 
+                    a\ u\ BesselY[3\/2 + n, a\ u])\) + \((n\ BesselJ[
+                        1\/2 + n, a\ u] - 
+                    a\ u\ BesselJ[3\/2 + n, 
+                        a\ u])\)\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, 
+                        s\ u] + 
+                    s\ u\ BesselY[3\/2 + n, 
+                        s\ u])\))\))\)/\((8\ a\^\(3/2\)\ \@r0\ \((n + n\^2 - 
+              s\ \((h + h\^2\ s + 
+                    s\ u\^2)\) + \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, \
+s\ u] + s\ u\ BesselJ[3\/2 + n, s\ u])\)\^2 + \((\((\(-n\) + h\ s)\)\ \
+BesselY[1\/2 + n, s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\)\^2)\)/\((BesselJ[1\
+\/2 + n, a\ u]\^2 + BesselY[1\/2 + n, a\ u]\^2)\))\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(transbj\  = \ {\ BesselJ[n_, x_]\  \[Rule] \ BJ[n, x], \ 
+        BesselY[n_, \ x_]\  -> \ BY[n, x]}\)], "Input"],
+
+Cell[BoxData[
+    \({BesselJ[n_, x_] \[Rule] BJ[n, x], 
+      BesselY[n_, x_] \[Rule] BY[n, x]}\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(transf\  = \ {\ \((\((n - \ h\ s)\)\ BesselJ[1\/2 + n, s\ u]\  - 
+                  s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, 
+                x_\ u] + 
+            BesselJ[1\/2 + n, 
+                x_\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                  s\ u\ BesselY[3\/2 + n, s\ u])\)\  -> \ 
+          falpha[x]}\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(transf2\  = \[IndentingNewLine]{\ 
+        falpha[x_]\  -> \((\((n - \ h\ s)\)\ BesselJ[1\/2 + n, s\ u]\  - 
+                  s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, x\ u] + 
+            BesselJ[1\/2 + n, 
+                x\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                  s\ u\ BesselY[3\/2 + n, s\ u])\)\ }\)], "Input"],
+
+Cell[BoxData[
+    \({falpha[
+          x_] \[Rule] \((\((n - h\ s)\)\ BesselJ[1\/2 + n, s\ u] - 
+                s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, u\ x] + 
+          BesselJ[1\/2 + n, 
+              u\ x]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+                s\ u\ BesselY[3\/2 + n, s\ u])\)}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(transjysim\  = \ {\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ u_] + 
+              s\ u\ BesselJ[3\/2 + n, s\ u_])\)\  \[Rule] \ 
+          J[u], \ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u_] + 
+              s\ u\ BesselY[3\/2 + n, s\ u_])\)\  \[Rule] \ Y[u]}\)], "Input"],
+
+Cell[BoxData[
+    \({\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ u_] + 
+          s\ u\ BesselJ[3\/2 + n, s\ u_] \[Rule] 
+        J[u], \((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u_] + 
+          s\ u\ BesselY[3\/2 + n, s\ u_] \[Rule] Y[u]}\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(Clear[\ transjsim, \ transysim]\)], "Input"],
+
+Cell[BoxData[
+    \(transjsim[\ \ \((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ u_] + 
+            s\ u\ BesselJ[3\/2 + n, s\ u_])\)]\  = \ \ J[u]; \ 
+    transjsim[x_]\  := \ x; \ 
+    transysim[\ \ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u_] + 
+            s\ u\ BesselY[3\/2 + n, s\ u_])\)\ ]\  = \ \ Y[u]; \ 
+    transysim[x_]\  := \ x;\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(transjyexp\  = \ {\ 
+        J[u_]\  -> \ \((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ u] + 
+              s\ u\ BesselJ[3\/2 + n, s\ u])\), \ 
+        Y[u_]\  \[Rule] \ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+              s\ u\ BesselY[3\/2 + n, s\ u])\)}\)], "Input"],
+
+Cell[BoxData[
+    \({J[u_] \[Rule] \((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ u] + 
+          s\ u\ BesselJ[3\/2 + n, s\ u], 
+      Y[u_] \[Rule] \((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+          s\ u\ BesselY[3\/2 + n, s\ u]}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(Simplify[
+        Dsolnata\ ]\)\(\ \)\(//.\)\(\ \)\(transf\)\(\ \)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\((D\ \((1 + 
+              2\ n)\)\ \[Pi]\ u\^2\ \((\((n - h\ s)\)\ BesselJ[1\/2 + n, 
+                  s\ u]\ \((n\ BesselY[1\/2 + n, a\ u] - 
+                    a\ u\ BesselY[3\/2 + n, a\ u])\) + 
+              s\ u\ BesselJ[3\/2 + n, 
+                  s\ u]\ \((\(-n\)\ BesselY[1\/2 + n, a\ u] + 
+                    a\ u\ BesselY[3\/2 + n, a\ u])\) + \((n\ BesselJ[
+                        1\/2 + n, a\ u] - 
+                    a\ u\ BesselJ[3\/2 + n, 
+                        a\ u])\)\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, 
+                        s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\))\)\ falpha[
+            r0])\)/\((8\ a\^\(3/2\)\ \@r0\ \((n + n\^2 - 
+              s\ \((h + h\^2\ s + 
+                    s\ u\^2)\) + \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, \
+s\ u] + s\ u\ BesselJ[3\/2 + n, s\ u])\)\^2 + \((\((\(-n\) + h\ s)\)\ \
+BesselY[1\/2 + n, s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\)\^2)\)/\((BesselJ[1\
+\/2 + n, a\ u]\^2 + BesselY[1\/2 + n, a\ u]\^2)\))\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(falpha[a]\  //. \ transf2\)], "Input"],
+
+Cell[BoxData[
+    \(\((\((n - h\ s)\)\ BesselJ[1\/2 + n, s\ u] - 
+            s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, a\ u] + 
+      BesselJ[1\/2 + n, 
+          a\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, s\ u] + 
+            s\ u\ BesselY[3\/2 + n, s\ u])\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\((\((n - h\ s)\)\ BesselJ[1\/2 + n, 
+                  s\ u]\ \((n\ BesselY[1\/2 + n, a\ u] - 
+                    a\ u\ BesselY[3\/2 + n, a\ u])\) + 
+              s\ u\ BesselJ[3\/2 + n, 
+                  s\ u]\ \((\(-n\)\ BesselY[1\/2 + n, a\ u] + 
+                    a\ u\ BesselY[3\/2 + n, a\ u])\) + \((n\ BesselJ[
+                        1\/2 + n, a\ u] - 
+                    a\ u\ BesselJ[3\/2 + n, 
+                        a\ u])\)\ \((\((\(-n\) + h\ s)\)\ BesselY[1\/2 + n, 
+                        s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\))\)\  - \ 
+          n\ falpha[a] //. \ transf2\  // \ FullSimplify\)], "Input"],
+
+Cell[BoxData[
+    \(a\ u\ \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ u] + 
+                s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[3\/2 + n, a\ u] + 
+          BesselJ[3\/2 + n, 
+              a\ u]\ \((\((n - h\ s)\)\ BesselY[1\/2 + n, s\ u] - 
+                s\ u\ BesselY[3\/2 + n, s\ u])\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Dsolnatasim\  = \((D\ \((1 + 2\ n)\)\ \[Pi]\ u\^2\ \((\ 
+                a\ u\ \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ u] + 
+                            s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[
+                          3\/2 + n, a\ u] + 
+                      BesselJ[3\/2 + n, 
+                          a\ u]\ \((\((n - h\ s)\)\ BesselY[1\/2 + n, s\ u] - 
+                            s\ u\ BesselY[3\/2 + n, s\ u])\))\))\)\ falpha[
+                r0])\)/\((8\ a\^\(3/2\)\ \@r0\ \((n + n\^2 - 
+                  s\ \((h + h\^2\ s + 
+                        s\ u\^2)\) + \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 \
++ n, s\ u] + s\ u\ BesselJ[3\/2 + n, s\ u])\)\^2 + \((\((\(-n\) + h\ s)\)\ \
+BesselY[1\/2 + n, s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\)\^2)\)/\((BesselJ[1\
+\/2 + n, a\ u]\^2 + BesselY[1\/2 + n, a\ u]\^2)\))\))\)\  // \ 
+        FullSimplify\)], "Input"],
+
+Cell[BoxData[
+    \(\((D\ \((1 + 
+              2\ n)\)\ \[Pi]\ u\^3\ \((\((\((\(-n\) + h\ s)\)\ BesselJ[
+                        1\/2 + n, s\ u] + 
+                    s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[3\/2 + n, 
+                  a\ u] + 
+              BesselJ[3\/2 + n, 
+                  a\ u]\ \((\((n - h\ s)\)\ BesselY[1\/2 + n, s\ u] - 
+                    s\ u\ BesselY[3\/2 + n, s\ u])\))\)\ falpha[
+            r0])\)/\((8\ \@\(a\ r0\)\ \((n + n\^2 - 
+              s\ \((h + h\^2\ s + 
+                    s\ u\^2)\) + \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, \
+s\ u] + s\ u\ BesselJ[3\/2 + n, s\ u])\)\^2 + \((\((\(-n\) + h\ s)\)\ \
+BesselY[1\/2 + n, s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\)\^2)\)/\((BesselJ[1\
+\/2 + n, a\ u]\^2 + BesselY[1\/2 + n, a\ u]\^2)\))\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(FullSimplify[Dsolnatasim, \ 
+      TransformationFunctions \[Rule] {Automatic, \ transjsim, \ 
+          transysim}]\)], "Input"],
+
+Cell[BoxData[
+    \(\(D\ \((1 + 2\ n)\)\ \[Pi]\ u\^3\ falpha[r0]\ \((BesselJ[3\/2 + n, a\ \
+u]\ \((\((n - h\ s)\)\ BesselY[1\/2 + n, s\ u] - s\ u\ BesselY[3\/2 + n, s\ \
+u])\) + BesselY[3\/2 + n, a\ u]\ J[u])\)\)\/\(8\ \@\(a\ r0\)\ \((n + n\^2 - s\
+\ \((h + h\^2\ s + s\ u\^2)\) + \(J[u]\^2 + Y[u]\^2\)\/\(BesselJ[1\/2 + n, a\ \
+u]\^2 + BesselY[1\/2 + n, a\ u]\^2\))\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Dsolnatasim2\  = \ \(D\ \((1 + 2\ n)\)\ \[Pi]\ u\^3\ falpha[r0]\ \
+\((\(-BesselJ[3\/2 + n, a\ u]\)\ Y[u] + BesselY[3\/2 + n, a\ u]\ \
+J[u])\)\)\/\(8\ \@\(a\ r0\)\ \((n + n\^2 - s\ \((h + h\^2\ s + s\ u\^2)\) + \
+\(J[u]\^2 + Y[u]\^2\)\/\(BesselJ[1\/2 + n, a\ u]\^2 + BesselY[1\/2 + n, a\ u]\
+\^2\))\)\) // \ FullSimplify\)], "Input"],
+
+Cell[BoxData[
+    \(\(D\ \((1 + 2\ n)\)\ \[Pi]\ u\^3\ falpha[r0]\ \((BesselY[3\/2 + n, a\ \
+u]\ J[u] - BesselJ[3\/2 + n, a\ u]\ Y[u])\)\)\/\(8\ \@\(a\ r0\)\ \((n + n\^2 \
+- s\ \((h + h\^2\ s + s\ u\^2)\) + \(J[u]\^2 + Y[u]\^2\)\/\(BesselJ[1\/2 + n, \
+a\ u]\^2 + BesselY[1\/2 + n, a\ u]\^2\))\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Dsolnatasim2\  \[Equal] \ Dsolnatasim //. \ transjyexp\  // \ 
+      Simplify\)], "Input"],
+
+Cell[BoxData[
+    \(True\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(solnBJY\  /. \ transf\)], "Input"],
+
+Cell[BoxData[
+    \(\((\((1 + 2\ n)\)\ \[Pi]\ u\^2\ falpha[r]\ falpha[
+            r0])\)/\((8\ \@r\ \@r0\ \((n + n\^2 - 
+              s\ \((h + h\^2\ s + 
+                    s\ u\^2)\) + \((\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, \
+s\ u] + s\ u\ BesselJ[3\/2 + n, s\ u])\)\^2 + \((\((\(-n\) + h\ s)\)\ \
+BesselY[1\/2 + n, s\ u] + s\ u\ BesselY[3\/2 + n, s\ u])\)\^2)\)/\((BesselJ[1\
+\/2 + n, a\ u]\^2 + BesselY[1\/2 + n, a\ u]\^2)\))\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(Clear[J]\)], "Input"]
+},
+FrontEndVersion->"5.2 for X",
+ScreenRectangle->{{0, 3200}, {0, 1200}},
+WindowSize->{1172, 1171},
+WindowMargins->{{Automatic, 104}, {Automatic, 0}}
+]
+
+(*******************************************************************
+Cached data follows.  If you edit this Notebook file directly, not
+using Mathematica, you must remove the line containing CacheID at
+the top of  the file.  The cache data will then be recreated when
+you save this file from within Mathematica.
+*******************************************************************)
+
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+
+(*NotebookFileOutline
+Notebook[{
+Cell[1754, 51, 46, 1, 27, "Input"],
+Cell[1803, 54, 1281, 23, 235, "Input"],
+
+Cell[CellGroupData[{
+Cell[3109, 81, 153, 2, 27, "Input"],
+Cell[3265, 85, 121, 2, 27, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[3423, 92, 335, 6, 81, "Input"],
+Cell[3761, 100, 290, 5, 44, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4088, 110, 228, 5, 59, "Input"],
+Cell[4319, 117, 197, 4, 48, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4553, 126, 110, 2, 27, "Input"],
+Cell[4666, 130, 634, 11, 81, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[5337, 146, 543, 11, 99, "Input"],
+Cell[5883, 159, 345, 6, 96, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[6265, 170, 285, 6, 44, "Input"],
+Cell[6553, 178, 213, 4, 63, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[6803, 187, 60, 1, 27, "Input"],
+Cell[6866, 190, 1025, 17, 170, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[7928, 212, 70, 1, 27, "Input"],
+Cell[8001, 215, 1025, 17, 170, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[9063, 237, 186, 5, 27, "Input"],
+Cell[9252, 244, 438, 7, 46, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[9727, 256, 86, 1, 27, "Input"],
+Cell[9816, 259, 302, 4, 46, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[10155, 268, 74, 1, 27, "Input"],
+Cell[10232, 271, 38, 1, 27, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[10307, 277, 64, 1, 27, "Input"],
+Cell[10374, 280, 89, 1, 50, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[10500, 286, 37, 1, 27, "Input"],
+Cell[10540, 289, 302, 4, 46, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[10879, 298, 36, 1, 27, "Input"],
+Cell[10918, 301, 1025, 17, 170, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[11980, 323, 108, 2, 27, "Input"],
+Cell[12091, 327, 1392, 24, 243, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[13520, 356, 133, 2, 27, "Input"],
+Cell[13656, 360, 109, 2, 27, "Output"]
+}, Open  ]],
+Cell[13780, 365, 381, 7, 83, "Input"],
+
+Cell[CellGroupData[{
+Cell[14186, 376, 379, 6, 99, "Input"],
+Cell[14568, 384, 338, 6, 70, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[14943, 395, 299, 4, 44, "Input"],
+Cell[15245, 401, 251, 4, 44, "Output"]
+}, Open  ]],
+Cell[15511, 408, 64, 1, 27, "Input"],
+Cell[15578, 411, 357, 6, 99, "Input"],
+
+Cell[CellGroupData[{
+Cell[15960, 421, 301, 5, 44, "Input"],
+Cell[16264, 428, 247, 4, 44, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[16548, 437, 105, 2, 27, "Input"],
+Cell[16656, 441, 1029, 17, 206, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[17722, 463, 58, 1, 27, "Input"],
+Cell[17783, 466, 290, 5, 44, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[18110, 476, 653, 11, 99, "Input"],
+Cell[18766, 489, 318, 5, 44, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[19121, 499, 898, 14, 268, "Input"],
+Cell[20022, 515, 806, 14, 170, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[20865, 534, 149, 3, 27, "Input"],
+Cell[21017, 539, 384, 5, 78, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[21438, 549, 352, 5, 78, "Input"],
+Cell[21793, 556, 309, 4, 78, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[22139, 565, 110, 2, 27, "Input"],
+Cell[22252, 569, 38, 1, 27, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[22327, 575, 54, 1, 27, "Input"],
+Cell[22384, 578, 457, 7, 128, "Output"]
+}, Open  ]],
+Cell[22856, 588, 41, 1, 27, "Input"]
+}
+]
+*)
+
+
+
+(*******************************************************************
+End of Mathematica Notebook file.
+*******************************************************************)
+

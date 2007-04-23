@@ -1,0 +1,616 @@
+(************** Content-type: application/mathematica **************
+                     CreatedBy='Mathematica 5.2'
+
+                    Mathematica-Compatible Notebook
+
+This notebook can be used with any Mathematica-compatible
+application, such as Mathematica, MathReader or Publicon. The data
+for the notebook starts with the line containing stars above.
+
+To get the notebook into a Mathematica-compatible application, do
+one of the following:
+
+* Save the data starting with the line of stars above into a file
+  with a name ending in .nb, then open the file inside the
+  application;
+
+* Copy the data starting with the line of stars above to the
+  clipboard, then use the Paste menu command inside the application.
+
+Data for notebooks contains only printable 7-bit ASCII and can be
+sent directly in email or through ftp in text mode.  Newlines can be
+CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
+
+NOTE: If you modify the data for this notebook not in a Mathematica-
+compatible application, you must delete the line below containing
+the word CacheID, otherwise Mathematica-compatible applications may
+try to use invalid cache data.
+
+For more information on notebooks and Mathematica-compatible 
+applications, contact Wolfram Research:
+  web: http://www.wolfram.com
+  email: info@wolfram.com
+  phone: +1-217-398-0700 (U.S.)
+
+Notebook reader applications are available free of charge from 
+Wolfram Research.
+*******************************************************************)
+
+(*CacheID: 232*)
+
+
+(*NotebookFileLineBreakTest
+NotebookFileLineBreakTest*)
+(*NotebookOptionsPosition[     17608,        467]*)
+(*NotebookOutlinePosition[     18239,        489]*)
+(*  CellTagsIndexPosition[     18195,        485]*)
+(*WindowFrame->Normal*)
+
+
+
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+    \(Hkwiki[n_, 
+        x_]\  = \ \(\((\((\(-\[ImaginaryI]\))\)^\((n + 
+                  1)\)\ Exp[\[ImaginaryI]\ x]\ /\ \((\ \ x\ )\))\)\(\ \
+\)\(Sum[\ \((\[ImaginaryI]\ ^
+                  m/\ \((\ \(m!\)\ \((\ 2\ x)\)^m)\))\)\ \((\(\((n + 
+                      m)\)!!\)/\(\((n - m)\)!!\))\), {m, 0, 
+            n}]\)\(\ \)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\(\((\(-\[ImaginaryI]\))\)\^\(1 + n\)\ \[ExponentialE]\^\(\[ImaginaryI]\
+\ x\)\ \(\[Sum]\+\(m = 0\)\%n\(\((\[ImaginaryI]\/2)\)\^m\ x\^\(-m\)\ \(\((m + \
+n)\)!!\)\)\/\(\(m!\)\ \(\((\(-m\) + n)\)!!\)\)\)\)\/x\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\($Assumptions\  = \ {x\  \[Element] \ Reals, \ x > 0\ , \ 
+        n \[Element] \ Integers, \ n > 0, \ a > 0, \ s > 0, \ 
+        u > 0}\)\(\[IndentingNewLine]\)
+    \)\)], "Input"],
+
+Cell[BoxData[
+    \({x \[Element] Reals, x > 0, n \[Element] Integers, n > 0, a > 0, s > 0, 
+      u > 0}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Hk[n_, 
+        x_]\  = \ \((\((\[ImaginaryI])\)^\((\(-n\) - 
+                  1)\)\ Exp[\[ImaginaryI]\ x]\ /\ \((\ \ x\ )\))\)\ Sum[\ \((\
+\(\((n + m)\)!\)\ /\ \((\ \(m!\)\ \(\((n - 
+                          m)\)!\)\ )\))\)\ \((\(-2\)\ I\ x)\)^\((\(-m\))\), \
+{m, 0, n}]\)], "Input"],
+
+Cell[BoxData[
+    \(\(\[ImaginaryI]\^\(\(-1\) - n\)\ \@\(2\/\[Pi]\)\ \@\(\(-\[ImaginaryI]\)\
+\ x\)\ BesselK[1\/2\ \((\(-1\) - 2\ n)\), \(-\[ImaginaryI]\)\ x]\)\/x\)], \
+"Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(Clear[HJ, HY]\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(hbexpand\  = \ {HJ[n_, x_]\  -> 
+          FullSimplify[ComplexExpand[Re[Hk[n, x]]]], \ \ HY[n_, 
+            x_]\  -> \ \ FullSimplify[
+            ComplexExpand[Im[Hk[n, x]]]]\ }\)], "Input"],
+
+Cell[BoxData[
+    \({HJ[n_, 
+          x_] \[Rule] \(\(1\/\@x\)\((\@\(2\/\[Pi]\)\ \((Cos[
+                    1\/4\ \((3 + 2\ n)\)\ \[Pi]]\ Re[
+                    BesselK[\(-\(1\/2\)\) - n, \(-\[ImaginaryI]\)\ x]] + 
+                Im[BesselK[\(-\(1\/2\)\) - n, \(-\[ImaginaryI]\)\ x]]\ Sin[
+                    1\/4\ \((3 + 2\ n)\)\ \[Pi]])\))\)\), 
+      HY[n_, x_] \[Rule] \(\(1\/\@x\)\((\@\(2\/\[Pi]\)\ \((Cos[
+                    1\/4\ \((3 + 2\ n)\)\ \[Pi]]\ Im[
+                    BesselK[\(-\(1\/2\)\) - n, \(-\[ImaginaryI]\)\ x]] - 
+                Re[BesselK[\(-\(1\/2\)\) - n, \(-\[ImaginaryI]\)\ x]]\ Sin[
+                    1\/4\ \((3 + 2\ n)\)\ \[Pi]])\))\)\)}\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(Clear[G, P, Q]\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(expandgpq\  = \ {G[n_, 
+            m_]\  -> \ \(\((n + 
+                  m)\)!\)\ /\ \((\ \(m!\)\ \(\((n - 
+                      m)\)!\))\), \[IndentingNewLine]P[n_, x_]\  -> \ 
+          Sum[\((\(-1\))\)^m\ \ G[n, \ 
+                2  m]\ \((2\ x)\)^\((\(-2\) m)\), \ {m, 0, 
+              n/2}], \[IndentingNewLine]Q[n_, x_]\  -> \ 
+          Sum[\ \((\(-1\))\)^m\ G[n, 
+                2  m + 1]\ \((2\ x)\)^\((\(-2\) m - 1)\), {m, 
+              0, \((n - 1)\)/2}]}\)], "Input"],
+
+Cell[BoxData[
+    \({G[n_, m_] \[Rule] \(\((m + n)\)!\)\/\(\(m!\)\ \(\((\(-m\) + n)\)!\)\), 
+      P[n_, x_] \[Rule] \[Sum]\+\(m = 0\)\%\(n\/2\)\((\(-1\))\)\^m\ 2\^\(\(-2\
+\)\ m\)\ x\^\(\(-2\)\ m\)\ G[n, 2\ m], 
+      Q[n_, x_] \[Rule] \[Sum]\+\(m = 0\)\%\(1\/2\ \((\(-1\) + \
+n)\)\)\((\(-1\))\)\^m\ 2\^\(\(-1\) - 2\ m\)\ x\^\(\(-1\) - 2\ m\)\ G[n, 
+              1 + 2\ m]}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(hbexpand2\  = \ {HJ[n_, 
+            x_]\  -> \ \((1/x)\)\ \((\ 
+              P[n, x]\ Sin[x - Pi\ n/2]\  + \ 
+                Q[n, x]\ Cos[x - Pi\ n/2])\), \[IndentingNewLine]HY[n_, 
+            x_]\  -> \((\(-1\))\)^\((n + 1)\)\ \((1/
+                x)\)\ \((P[n, x]\ Cos[\ x + \ Pi\ n\ /2]\  - \ 
+                Q[n, x]\ Sin[x\  + \ Pi\ n/2])\)}\)], "Input"],
+
+Cell[BoxData[
+    \({HJ[n_, 
+          x_] \[Rule] \(Cos[\(n\ \[Pi]\)\/2 - x]\ Q[n, x] - P[n, x]\ Sin[\(n\ \
+\[Pi]\)\/2 - x]\)\/x, 
+      HY[n_, x_] \[Rule] \(\((\(-1\))\)\^\(1 + n\)\ \((Cos[\(n\ \[Pi]\)\/2 + \
+x]\ P[n, x] - Q[n, x]\ Sin[\(n\ \[Pi]\)\/2 + x])\)\)\/x}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(({HJ[n, x], \ HY[n, x]} /. \ 
+              hbexpand\ )\)\  \[Equal] \ \((\({\ HJ[n, x], \ HY[n, x]}\  /. \ 
+                hbexpand2\)\  //. \ expandgpq)\)\  /. \ n \[Rule] 3\  // \ 
+      FullSimplify\)], "Input"],
+
+Cell[BoxData[
+    \(True\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[{
+    \(transcossin := {a_\ Cos[z_] + b_\ Sin[z_] \[Rule] 
+          Sqrt[1 + b^2/a^2]\ a\ Cos[
+              z - ArcTan[b/a]]}\), "\[IndentingNewLine]", 
+    \(getcosarg\  := \ {\ a_\ Cos[z_]\ \  \[Rule] \ \ z}\)}], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(falpha = 
+      FullSimplify[\(-\((\((\((n - h\ s)\)\ BesselJ[1/2 + n, s\ u] - 
+                      s\ u\ BesselJ[3/2 + n, s\ u])\)\ BesselY[1/2 + n, 
+                    r\ u] + 
+                BesselJ[1/2 + n, 
+                    r\ u]\ \((\((\(-n\) + h\ s)\)\ BesselY[1/2 + n, s\ u] + 
+                      s\ u\ BesselY[3/2 + n, s\ u])\))\)\) /. {r \[Rule] 
+              a}]\)], "Input"],
+
+Cell[BoxData[
+    \(\((\((\(-n\) + h\ s)\)\ BesselJ[1\/2 + n, s\ u] + 
+            s\ u\ BesselJ[3\/2 + n, s\ u])\)\ BesselY[1\/2 + n, a\ u] + 
+      BesselJ[1\/2 + n, 
+          a\ u]\ \((\((n - h\ s)\)\ BesselY[1\/2 + n, s\ u] - 
+            s\ u\ BesselY[3\/2 + n, s\ u])\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(transhbessel = {BesselJ[n_ + 2\ nn_ \((1/2)\), z_] \[Rule] 
+          HJ[n + nn - 1/2, z]\ /\ Sqrt[Pi/\((2\ z)\)], 
+        BesselY[n_ + 2\ nn_\ \((1/2)\), z_] \[Rule] 
+          HY[n + nn - 1/2, z]\ /\ Sqrt[Pi\ /\ \((2  z)\)]}\)], "Input"],
+
+Cell[BoxData[
+    \({BesselJ[n_ + nn_, 
+          z_] \[Rule] \(\@\(2\/\[Pi]\)\ HJ[\(-\(1\/2\)\) + n + nn, \
+z]\)\/\@\(1\/z\), 
+      BesselY[n_ + nn_, 
+          z_] \[Rule] \(\@\(2\/\[Pi]\)\ HY[\(-\(1\/2\)\) + n + nn, \
+z]\)\/\@\(1\/z\)}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(falphahb\  = \ falpha\  /. \ transhbessel\  // \ Simplify\)], "Input"],
+
+Cell[BoxData[
+    \(\(\(1\/\[Pi]\)\((2\ \@\(a\ s\)\ u\ \((\((\(-n\) + h\ s)\)\ HJ[n, 
+                s\ u]\ HY[n, a\ u] + s\ u\ HJ[1 + n, s\ u]\ HY[n, a\ u] + 
+            HJ[n, a\ u]\ \((\((n - h\ s)\)\ HY[n, s\ u] - 
+                  s\ u\ HY[1 + n, s\ u])\))\))\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(tmp\  = Simplify[falphahb\  /. \ transhbexpand2]\)], "Input"],
+
+Cell[BoxData[
+    \(\(\(1\/\(\[Pi]\ \@\(a\ s\)\ u\)\)\((2\ \((\(-1\))\)\^n\ s\ \
+\((\(\(1\/s\)\((\((n - h\ s)\)\ \((Cos[\(n\ \[Pi]\)\/2 + a\ u]\ P[n, a\ u] - 
+                    Q[n, a\ u]\ Sin[\(n\ \[Pi]\)\/2 + 
+                          a\ u])\)\ \((Cos[\(n\ \[Pi]\)\/2 - s\ u]\ Q[n, 
+                        s\ u] - 
+                    P[n, s\ u]\ Sin[\(n\ \[Pi]\)\/2 - s\ u])\))\)\) + 
+            u\ \((Cos[\(n\ \[Pi]\)\/2 + a\ u]\ P[n, a\ u] - 
+                  Q[n, a\ u]\ Sin[\(n\ \[Pi]\)\/2 + 
+                        a\ u])\)\ \((Cos[\(n\ \[Pi]\)\/2 - s\ u]\ P[1 + n, 
+                      s\ u] + 
+                  Q[1 + n, s\ u]\ Sin[\(n\ \[Pi]\)\/2 - s\ u])\) + 
+            u\ \((Cos[\(n\ \[Pi]\)\/2 - a\ u]\ Q[n, a\ u] - 
+                  P[n, a\ u]\ Sin[\(n\ \[Pi]\)\/2 - a\ u])\)\ \((\(-Cos[
+                        1\/2\ \((1 + n)\)\ \[Pi] + s\ u]\)\ P[1 + n, s\ u] + 
+                  Cos[\(n\ \[Pi]\)\/2 + s\ u]\ Q[1 + n, 
+                      s\ u] + \(\(1\/\(s\ u\)\)\((\((\(-n\) + 
+                          h\ s)\)\ \((Cos[\(n\ \[Pi]\)\/2 + s\ u]\ P[n, 
+                              s\ u] - 
+                          Q[n, s\ u]\ Sin[\(n\ \[Pi]\)\/2 + 
+                                s\ u])\))\)\))\))\))\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(tmp2\  = \(\(tmp\ \  // \ TrigFactor\) // \ Simplify\)\  // \ 
+        TrigFactor\)], "Input"],
+
+Cell[BoxData[
+    \(\(\(1\/\(\[Pi]\ \@\(a\ s\)\ u\)\)\((2\ \((s\ u\ Cos[\((a - s)\)\ u]\ P[
+                n, a\ u]\ P[1 + n, s\ u] - 
+            n\ Cos[\((a - s)\)\ u]\ P[n, s\ u]\ Q[n, a\ u] + 
+            h\ s\ Cos[\((a - s)\)\ u]\ P[n, s\ u]\ Q[n, a\ u] + 
+            n\ Cos[\((a - s)\)\ u]\ P[n, a\ u]\ Q[n, s\ u] - 
+            h\ s\ Cos[\((a - s)\)\ u]\ P[n, a\ u]\ Q[n, s\ u] + 
+            s\ u\ Cos[\((a - s)\)\ u]\ Q[n, a\ u]\ Q[1 + n, s\ u] - 
+            n\ P[n, a\ u]\ P[n, s\ u]\ Sin[\((a - s)\)\ u] + 
+            h\ s\ P[n, a\ u]\ P[n, s\ u]\ Sin[\((a - s)\)\ u] - 
+            s\ u\ P[1 + n, s\ u]\ Q[n, a\ u]\ Sin[\((a - s)\)\ u] - 
+            n\ Q[n, a\ u]\ Q[n, s\ u]\ Sin[\((a - s)\)\ u] + 
+            h\ s\ Q[n, a\ u]\ Q[n, s\ u]\ Sin[\((a - s)\)\ u] + 
+            s\ u\ P[n, a\ u]\ Q[1 + n, 
+                s\ u]\ Sin[\((a - s)\)\ u])\))\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(transcossingroup\  := \ {\ 
+        a_\ Cos[x_]\  + \ b_\ Cos[x_]\  \[Rule] \ \((a\  + \ b)\)\ Cos[x], \ 
+        a_\ Sin[x_]\  + \ 
+            b_\ Sin[x_]\  \[Rule] \ \((a + b)\)\ Sin[x]}\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(falpha2\  = \ \(tmp2 //. \ transcossingroup\)\ \  /. \ 
+          transcossin\  // \ FullSimplify\)], "Input"],
+
+Cell[BoxData[
+    \(\(\(1\/\(\[Pi]\ \@\(a\ s\)\ u\)\)\((2\ Cos[\((a - s)\)\ u - 
+            ArcTan[\((\(-Q[n, 
+                          a\ u]\)\ \((s\ u\ P[1 + n, 
+                              s\ u] + \((n - h\ s)\)\ Q[n, s\ u])\) + 
+                    P[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ P[n, s\ u] + 
+                          s\ u\ Q[1 + n, s\ u])\))\)/\((P[n, 
+                        a\ u]\ \((s\ u\ P[1 + n, s\ u] + \((n - h\ s)\)\ Q[n, 
+                              s\ u])\) + 
+                    Q[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ P[n, s\ u] + 
+                          s\ u\ Q[1 + n, s\ u])\))\)]]\ \((P[n, 
+                a\ u]\ \((s\ u\ P[1 + n, s\ u] + \((n - h\ s)\)\ Q[n, 
+                      s\ u])\) + 
+            Q[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ P[n, s\ u] + 
+                  s\ u\ Q[1 + n, 
+                      s\ u])\))\)\ \[Sqrt]\((1 + \((Q[n, a\ u]\ \((s\ u\ P[1 \
++ n, s\ u] + \((n - h\ s)\)\ Q[n, s\ u])\) + P[n, a\ u]\ \((\((n - h\ s)\)\ \
+P[n, s\ u] - s\ u\ Q[1 + n, s\ u])\))\)\^2/\((P[n, a\ u]\ \((s\ u\ P[1 + n, s\
+\ u] + \((n - h\ s)\)\ Q[n, s\ u])\) + Q[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ \
+P[n, s\ u] + s\ u\ Q[1 + n, s\ u])\))\)\^2)\))\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(falphaaux\  = \ 
+      falpha2\ \  /. \ getcosarg\  // \ FullSimplify\)], "Input"],
+
+Cell[BoxData[
+    \(\((a - s)\)\ u - 
+      ArcTan[\((\(-Q[n, 
+                    a\ u]\)\ \((s\ u\ P[1 + n, s\ u] + \((n - h\ s)\)\ Q[n, 
+                        s\ u])\) + 
+              P[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ P[n, s\ u] + 
+                    s\ u\ Q[1 + n, s\ u])\))\)/\((P[n, 
+                  a\ u]\ \((s\ u\ P[1 + n, s\ u] + \((n - h\ s)\)\ Q[n, 
+                        s\ u])\) + 
+              Q[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ P[n, s\ u] + 
+                    s\ u\ Q[1 + n, s\ u])\))\)]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(tmpq\  = \ 
+      Sum[\ \((\(-1\))\)^m\ G[n, 
+              2  m + 1]\ \((2\ x)\)^\((\(-2\) m - 1)\), {m, 
+            0, \((n - 1)\)/2}]\  /. \ expandgpq\)], "Input"],
+
+Cell[BoxData[
+    \(\[Sum]\+\(m = 0\)\%\(1\/2\ \((\(-1\) + n)\)\)\(\((\(-1\))\)\^m\ \
+2\^\(\(-1\) - 2\ m\)\ x\^\(\(-1\) - 2\ m\)\ \(\((1 + 2\ m + \
+n)\)!\)\)\/\(\(\((1 + 2\ m)\)!\)\ \(\((\(-1\) - 2\ m + n)\)!\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(FullSimplify[tmpq]\)], "Input"],
+
+Cell[BoxData[
+    \(\[Sum]\+\(m = 0\)\%\(1\/2\ \((\(-1\) + n)\)\)\(\((\(-1\))\)\^m\ \
+2\^\(\(-1\) - 2\ m\)\ x\^\(\(-1\) - 2\ m\)\ Gamma[2 + 2\ m + n]\)\/\(Gamma[2 \
++ 2\ m]\ Gamma[\(-2\)\ m + n]\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(tmpq\)], "Input"],
+
+Cell[BoxData[
+    \(\[Sum]\+\(m = 0\)\%\(1\/2\ \((\(-1\) + n)\)\)\(\((\(-1\))\)\^m\ \
+2\^\(\(-1\) - 2\ m\)\ x\^\(\(-1\) - 2\ m\)\ \(\((1 + 2\ m + \
+n)\)!\)\)\/\(\(\((1 + 2\ m)\)!\)\ \(\((\(-1\) - 2\ m + n)\)!\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(tmpa\  = \ 
+      Sum[\ \((\(-1\))\)^m\ G[n, 
+            2  m + 1]\ \((2\ x)\)^\((\(-2\) m - 1)\), {m, 
+          0, \((n - 1)\)/2}]\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(General::"spell"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
+error: new symbol name \\\"\\!\\(tmpa\\)\\\" is similar to existing symbols \
+\\!\\({tmp, tmpp, tmpq}\\). \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"General::spell\\\"]\\)\"\>"}]], "Message"],
+
+Cell[BoxData[
+    \(\[Sum]\+\(m = 0\)\%\(1\/2\ \((\(-1\) + n)\)\)\((\(-1\))\)\^m\ 2\^\(\(-1\
+\) - 2\ m\)\ x\^\(\(-1\) - 2\ m\)\ G[n, 1 + 2\ m]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(tmpp\)\(\ \)\(=\)\(\ \)\(Sum[\((\(-1\))\)^m\ \ G[n, \ 
+            2  m]\ \((2\ x)\)^\((\(-2\) m)\), \ {m, 0, 
+          n/2}]\)\(\ \ \)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\[Sum]\+\(m = 0\)\%\(n\/2\)\((\(-1\))\)\^m\ 2\^\(\(-2\)\ m\)\ x\^\(\(-2\
+\)\ m\)\ G[n, 2\ m]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(FullSimplify[G[n, m]\  /. \ expandgpq, \ 
+      Assumptions \[Rule] {{n, m} \[Element] Integers, \ n > 0, \ 
+          m > 0}]\)], "Input"],
+
+Cell[BoxData[
+    \(\(\((m + n)\)!\)\/\(\(m!\)\ \(\((\(-m\) + n)\)!\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\({P[n,  .2], \ Q[n,  .2], \ G[n, 5]}\  //. \ expandgpq\) /. \ 
+        n \[Rule] 3 // \ N\)], "Input"],
+
+Cell[BoxData[
+    \({\(-373.99999999999994`\), \(-1844.9999999999995`\), 0.`}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(1\/\(\[Pi]\ \@\(a\ s\)\ u\)\) \((2\ \ \((P[n, 
+                    a\ u]\ \((s\ u\ P[1 + n, s\ u] + \((n - h\ s)\)\ Q[n, 
+                          s\ u])\) + 
+                Q[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ P[n, s\ u] + 
+                      s\ u\ Q[1 + n, 
+                          s\ u])\))\)\ \[Sqrt]\((1 + \((Q[n, a\ u]\ \((s\ u\ \
+P[1 + n, s\ u] + \((n - h\ s)\)\ Q[n, s\ u])\) + P[n, a\ u]\ \((\((n - h\ \
+s)\)\ P[n, s\ u] - s\ u\ Q[1 + n, s\ u])\))\)\^2/\((P[n, a\ u]\ \((s\ u\ P[1 \
++ n, s\ u] + \((n - h\ s)\)\ Q[n, s\ u])\) + Q[n, a\ u]\ \((\((\(-n\) + h\ s)\
+\)\ P[n, s\ u] + s\ u\ Q[1 + n, s\ u])\))\)\^2)\))\)\  // \ 
+      FullSimplify\)], "Input"],
+
+Cell[BoxData[
+    \(\(\(1\/\(\[Pi]\ \@\(a\ s\)\ u\)\)\((2\ \((P[n, 
+                a\ u]\ \((s\ u\ P[1 + n, s\ u] + \((n - h\ s)\)\ Q[n, 
+                      s\ u])\) + 
+            Q[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ P[n, s\ u] + 
+                  s\ u\ Q[1 + n, 
+                      s\ u])\))\)\ \[Sqrt]\((1 + \((Q[n, a\ u]\ \((s\ u\ P[1 \
++ n, s\ u] + \((n - h\ s)\)\ Q[n, s\ u])\) + P[n, a\ u]\ \((\((n - h\ s)\)\ \
+P[n, s\ u] - s\ u\ Q[1 + n, s\ u])\))\)\^2/\((P[n, a\ u]\ \((s\ u\ P[1 + n, s\
+\ u] + \((n - h\ s)\)\ Q[n, s\ u])\) + Q[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ \
+P[n, s\ u] + s\ u\ Q[1 + n, s\ u])\))\)\^2)\))\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(\(\(1\/\(\[Pi]\ \@\(a\ s\)\ u\)\)\((2\ \((P[n, 
+                a\ u]\ \((s\ u\ P[1 + n, s\ u] + \((n - h\ s)\)\ Q[n, 
+                      s\ u])\) + 
+            Q[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ P[n, s\ u] + 
+                  s\ u\ Q[1 + n, 
+                      s\ u])\))\)\ \[Sqrt]\((1 + \((Q[n, a\ u]\ \((s\ u\ P[1 \
++ n, s\ u] + \((n - h\ s)\)\ Q[n, s\ u])\) + P[n, a\ u]\ \((\((n - h\ s)\)\ \
+P[n, s\ u] - s\ u\ Q[1 + n, s\ u])\))\)\^2/\((P[n, a\ u]\ \((s\ u\ P[1 + n, s\
+\ u] + \((n - h\ s)\)\ Q[n, s\ u])\) + Q[n, a\ u]\ \((\((\(-n\) + h\ s)\)\ \
+P[n, s\ u] + s\ u\ Q[1 + n, s\ u])\))\)\^2)\))\)\)\)], "Input"]
+},
+FrontEndVersion->"5.2 for X",
+ScreenRectangle->{{0, 3200}, {0, 1200}},
+WindowSize->{520, 1171},
+WindowMargins->{{Automatic, 610}, {Automatic, 0}}
+]
+
+(*******************************************************************
+Cached data follows.  If you edit this Notebook file directly, not
+using Mathematica, you must remove the line containing CacheID at
+the top of  the file.  The cache data will then be recreated when
+you save this file from within Mathematica.
+*******************************************************************)
+
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+
+(*NotebookFileOutline
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[1776, 53, 359, 7, 59, "Input"],
+Cell[2138, 62, 240, 3, 66, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[2415, 70, 204, 4, 59, "Input"],
+Cell[2622, 76, 119, 2, 27, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[2778, 83, 306, 6, 43, "Input"],
+Cell[3087, 91, 178, 3, 67, "Output"]
+}, Open  ]],
+Cell[3280, 97, 46, 1, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[3351, 102, 213, 4, 91, "Input"],
+Cell[3567, 108, 692, 11, 286, "Output"]
+}, Open  ]],
+Cell[4274, 122, 47, 1, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[4346, 127, 506, 10, 91, "Input"],
+Cell[4855, 139, 388, 6, 159, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[5280, 150, 384, 7, 107, "Input"],
+Cell[5667, 159, 281, 5, 110, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[5985, 169, 238, 4, 59, "Input"],
+Cell[6226, 175, 38, 1, 27, "Output"]
+}, Open  ]],
+Cell[6279, 179, 238, 4, 75, "Input"],
+
+Cell[CellGroupData[{
+Cell[6542, 187, 417, 8, 123, "Input"],
+Cell[6962, 197, 290, 5, 118, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[7289, 207, 260, 4, 91, "Input"],
+Cell[7552, 213, 253, 6, 192, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[7842, 224, 90, 1, 27, "Input"],
+Cell[7935, 227, 284, 4, 86, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[8256, 236, 81, 1, 27, "Input"],
+Cell[8340, 239, 1256, 20, 355, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[9633, 264, 114, 2, 27, "Input"],
+Cell[9750, 268, 886, 14, 227, "Output"]
+}, Open  ]],
+Cell[10651, 285, 222, 4, 59, "Input"],
+
+Cell[CellGroupData[{
+Cell[10898, 293, 130, 2, 43, "Input"],
+Cell[11031, 297, 1203, 19, 217, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[12271, 321, 102, 2, 27, "Input"],
+Cell[12376, 325, 530, 10, 91, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[12943, 340, 187, 4, 59, "Input"],
+Cell[13133, 346, 226, 3, 72, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[13396, 354, 51, 1, 27, "Input"],
+Cell[13450, 357, 210, 3, 72, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[13697, 365, 37, 1, 27, "Input"],
+Cell[13737, 368, 226, 3, 72, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[14000, 376, 166, 4, 43, "Input"],
+Cell[14169, 382, 360, 5, 46, "Message"],
+Cell[14532, 389, 156, 2, 62, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[14725, 396, 175, 3, 27, "Input"],
+Cell[14903, 401, 126, 2, 60, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[15066, 408, 159, 3, 43, "Input"],
+Cell[15228, 413, 85, 1, 45, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[15350, 419, 123, 2, 43, "Input"],
+Cell[15476, 423, 91, 1, 27, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[15604, 429, 691, 11, 209, "Input"],
+Cell[16298, 442, 646, 10, 137, "Output"]
+}, Open  ]],
+Cell[16959, 455, 645, 10, 177, "Input"]
+}
+]
+*)
+
+
+
+(*******************************************************************
+End of Mathematica Notebook file.
+*******************************************************************)
+

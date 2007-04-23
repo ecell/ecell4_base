@@ -1,0 +1,381 @@
+(************** Content-type: application/mathematica **************
+                     CreatedBy='Mathematica 5.2'
+
+                    Mathematica-Compatible Notebook
+
+This notebook can be used with any Mathematica-compatible
+application, such as Mathematica, MathReader or Publicon. The data
+for the notebook starts with the line containing stars above.
+
+To get the notebook into a Mathematica-compatible application, do
+one of the following:
+
+* Save the data starting with the line of stars above into a file
+  with a name ending in .nb, then open the file inside the
+  application;
+
+* Copy the data starting with the line of stars above to the
+  clipboard, then use the Paste menu command inside the application.
+
+Data for notebooks contains only printable 7-bit ASCII and can be
+sent directly in email or through ftp in text mode.  Newlines can be
+CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
+
+NOTE: If you modify the data for this notebook not in a Mathematica-
+compatible application, you must delete the line below containing
+the word CacheID, otherwise Mathematica-compatible applications may
+try to use invalid cache data.
+
+For more information on notebooks and Mathematica-compatible 
+applications, contact Wolfram Research:
+  web: http://www.wolfram.com
+  email: info@wolfram.com
+  phone: +1-217-398-0700 (U.S.)
+
+Notebook reader applications are available free of charge from 
+Wolfram Research.
+*******************************************************************)
+
+(*CacheID: 232*)
+
+
+(*NotebookFileLineBreakTest
+NotebookFileLineBreakTest*)
+(*NotebookOptionsPosition[      8949,        272]*)
+(*NotebookOutlinePosition[      9581,        294]*)
+(*  CellTagsIndexPosition[      9537,        290]*)
+(*WindowFrame->Normal*)
+
+
+
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+    \(falphasurv\  := \ 
+      u\ s\ Cos[\ u\ \((\ a\  - \ s\ )\)\ ]\  + \ \((\ 
+            1\  + \ h\ s\ )\)\ Sin[\ u\ \((\ a\  - \ s\ )\)\ ]\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(General::"spell1"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
+error: new symbol name \\\"\\!\\(falphasurv\\)\\\" is similar to existing \
+symbol \\\"\\!\\(falphaserv\\)\\\". \
+\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
+\\\", ButtonFrame->None, ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], \
+"Message"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(\(\(trans\  := \ {\ 
+        a_\ Cos[z_] + b_\ Sin[z_]\  -> 
+          Sqrt[1 + b^2/a^2]\ a\ Cos[
+              z - ArcTan[b/a]]}\)\(\[IndentingNewLine]\)
+    \)\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(falphasurv2\  = \ falphasurv\ \  /. \ trans\)], "Input"],
+
+Cell[BoxData[
+    \(s\ \@\(1 + \((1 + h\ s)\)\^2\/\(s\^2\ u\^2\)\)\ u\ Cos[\((a - s)\)\ u - 
+          ArcTan[\(1 + h\ s\)\/\(s\ u\)]]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(phase\  = \ \((a - s)\)\ u\  - 
+        ArcTan[\(1 + h\ s\)\/\(s\ u\)]\)], "Input"],
+
+Cell[BoxData[
+    \(\((a - s)\)\ u - ArcTan[\(1 + h\ s\)\/\(s\ u\)]\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(\(\(falphaaux\  := \ 
+      phase\  - \ \((\ n\ Pi\ \  + \ Pi/\ 2)\)\)\(\ \)\(\[IndentingNewLine]\)
+    \)\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(f\  = \ 
+      Exp[\(-D\)\ t\ u\ u\ ]\ \ /\ u\  - \ thd\  \[Equal] \ 0\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\(-thd\) + \[ExponentialE]\^\(\(-D\)\ t\ u\^2\)\/u \[Equal] 
+      0\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(FullSimplify[
+      Assuming[u > 0 && t > 0 && D > 0\  && \ thd > 0, 
+        Solve[f\ , u]]]\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(InverseFunction::"ifun"\), \(\(:\)\(\ \)\), "\<\"Inverse \
+functions are being used. Values may be lost for multivalued inverses. \\!\\(\
+\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\\\", \
+ButtonFrame->None, ButtonData:>\\\"InverseFunction::ifun\\\"]\\)\"\>"}]], \
+"Message"],
+
+Cell[BoxData[
+    RowBox[{\(Solve::"ifun"\), \(\(:\)\(\ \)\), "\<\"Inverse functions are \
+being used by \\!\\(Solve\\), so some solutions may not be found; use Reduce \
+for complete solution information. \
+\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
+\\\", ButtonFrame->None, ButtonData:>\\\"Solve::ifun\\\"]\\)\"\>"}]], \
+"Message"],
+
+Cell[BoxData[
+    \({{u \[Rule] \(-\(\@ProductLog[\(2\ D\ t\)\/thd\^2]\/\(\@2\ \@D\ \@t\)\)\
+\)}, {u \[Rule] \@ProductLog[\(2\ D\ t\)\/thd\^2]\/\(\@2\ \@D\ \@t\)}}\)], \
+"Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(%\ \  /. \ {D -> 0.001, \ t -> 0.01, \ thd -> 30}\)], "Input"],
+
+Cell[BoxData[
+    \({{u \[Rule] \(-0.03333333296296298`\)}, {u \[Rule] 
+          0.03333333296296298`}}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Clear[D, t, thd]\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(Clear::"wrsym"\), \(\(:\)\(\ \)\), "\<\"Symbol \\!\\(D\\) is \
+Protected. \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"General::wrsym\\\"]\\)\"\>"}]], "Message"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(f\  = \ \((Exp[\(-D\)\ t\ alphai^2\ ]\ /\ 
+              alphai\ )\)\ /\ \((\ 
+            Exp[\ \(-\ D\)\ t\ alpha0^2]/alpha0)\)\  \[Equal] \ 
+        thd\)\)\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(General::"spell1"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
+error: new symbol name \\\"\\!\\(alpha0\\)\\\" is similar to existing symbol \
+\\\"\\!\\(falpha0\\)\\\". \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], "Message"],
+
+Cell[BoxData[
+    \(\(alpha0\ \[ExponentialE]\^\(alpha0\^2\ D\ t - alphai\^2\ D\ \
+t\)\)\/alphai \[Equal] thd\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(FullSimplify[Solve[f, alphai]]\)\(\[IndentingNewLine]\)
+    \)\)], "Input",
+  FontFamily->"Nimbus mono l",
+  FontSize->16],
+
+Cell[BoxData[
+    RowBox[{\(InverseFunction::"ifun"\), \(\(:\)\(\ \)\), "\<\"Inverse \
+functions are being used. Values may be lost for multivalued inverses. \\!\\(\
+\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\\\", \
+ButtonFrame->None, ButtonData:>\\\"InverseFunction::ifun\\\"]\\)\"\>"}]], \
+"Message"],
+
+Cell[BoxData[
+    RowBox[{\(Solve::"ifun"\), \(\(:\)\(\ \)\), "\<\"Inverse functions are \
+being used by \\!\\(Solve\\), so some solutions may not be found; use Reduce \
+for complete solution information. \
+\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
+\\\", ButtonFrame->None, ButtonData:>\\\"Solve::ifun\\\"]\\)\"\>"}]], \
+"Message"],
+
+Cell[BoxData[
+    \({{alphai \[Rule] \(-\(\@ProductLog[\(2\ alpha0\^2\ D\ \[ExponentialE]\^\
+\(2\ alpha0\^2\ D\ t\)\ t\)\/thd\^2]\/\(\@2\ \@D\ \@t\)\)\)}, {alphai \[Rule] \
+\@ProductLog[\(2\ alpha0\^2\ D\ \[ExponentialE]\^\(2\ alpha0\^2\ D\ t\)\ \
+t\)\/thd\^2]\/\(\@2\ \@D\ \@t\)}}\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(falphasurv\  \[Equal] \ 0\  /. \ s \[Rule] 0\)], "Input"],
+
+Cell[BoxData[
+    \(Sin[a\ u] \[Equal] 0\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[""], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Reduce[\((falphasurv\  \[Equal] \ 0\  /. \ s \[Rule] 0\ )\)\  && \ 
+        a > 0, \ u]\)], "Input"],
+
+Cell[BoxData[
+    \(C[1] \[Element] Integers && 
+      a > 0 && \((u \[Equal] \(2\ \[Pi]\ C[1]\)\/a || 
+          u \[Equal] \(-\(\(\(-\[Pi]\) - 
+                    2\ \[Pi]\ C[1]\)\/a\)\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(p1\  = \ 
+      1/\((2\ a\ a\ r)\)\ Sum[\ 
+          n\ Exp[\ \(-D\)\ n^2\ Pi\ Pi\ t\ /\ \((a^2\ )\)]\ Sin[\ 
+              n\ Pi\ r/a], \ {n, \ Infinity}]\)], "Input"],
+
+Cell[BoxData[
+    \(\(\[Sum]\+\(n = 1\)\%\[Infinity] \[ExponentialE]\^\(-\(\(D\ n\^2\ \[Pi]\
+\^2\ t\)\/a\^2\)\)\ n\ Sin[\(n\ \[Pi]\ r\)\/a]\)\/\(2\ a\^2\ r\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(p1m\  = \ \ \ \ 1/\((2\ a\ a\ r)\)\ Sum[\ 
+            n\ Exp[\ \(-\ D\)\ u^2\ t\ /\ 4]\ Sin[\ u\ r\ /\ 2], \ {n, 
+              Infinity}]\  /. \ 
+        u \[Rule] \ 2\ Pi\ \(\(n\)\(/\)\(a\)\(\ \)\)\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(Sum::"div"\), \(\(:\)\(\ \)\), "\<\"Sum does not converge. \
+\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
+\\\", ButtonFrame->None, ButtonData:>\\\"Sum::div\\\"]\\)\"\>"}]], "Message"],
+
+Cell[BoxData[
+    RowBox[{\(Sum::"div"\), \(\(:\)\(\ \)\), "\<\"Sum does not converge. \
+\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
+\\\", ButtonFrame->None, ButtonData:>\\\"Sum::div\\\"]\\)\"\>"}]], "Message"],
+
+Cell[BoxData[
+    \(\(\[Sum]\+\(n = 1\)\%\[Infinity] \[ExponentialE]\^\(-\(\(D\ n\^2\ \[Pi]\
+\^2\ t\)\/a\^2\)\)\ n\ Sin[\(n\ \[Pi]\ r\)\/a]\)\/\(2\ a\^2\ r\)\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[""], "Input"]
+},
+FrontEndVersion->"5.2 for X",
+ScreenRectangle->{{0, 3200}, {0, 1200}},
+WindowSize->{704, 607},
+WindowMargins->{{Automatic, 787}, {220, Automatic}}
+]
+
+(*******************************************************************
+Cached data follows.  If you edit this Notebook file directly, not
+using Mathematica, you must remove the line containing CacheID at
+the top of  the file.  The cache data will then be recreated when
+you save this file from within Mathematica.
+*******************************************************************)
+
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+
+(*NotebookFileOutline
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[1776, 53, 170, 3, 27, "Input"],
+Cell[1949, 58, 370, 6, 33, "Message"]
+}, Open  ]],
+Cell[2334, 67, 194, 5, 43, "Input"],
+
+Cell[CellGroupData[{
+Cell[2553, 76, 76, 1, 27, "Input"],
+Cell[2632, 79, 148, 2, 50, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[2817, 86, 103, 2, 44, "Input"],
+Cell[2923, 90, 81, 1, 44, "Output"]
+}, Open  ]],
+Cell[3019, 94, 139, 3, 43, "Input"],
+
+Cell[CellGroupData[{
+Cell[3183, 101, 134, 2, 43, "Input"],
+Cell[3320, 105, 102, 2, 49, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[3459, 112, 126, 3, 27, "Input"],
+Cell[3588, 117, 331, 5, 33, "Message"],
+Cell[3922, 124, 368, 6, 33, "Message"],
+Cell[4293, 132, 179, 3, 71, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4509, 140, 82, 1, 27, "Input"],
+Cell[4594, 143, 118, 2, 27, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4749, 150, 49, 1, 27, "Input"],
+Cell[4801, 153, 266, 4, 20, "Message"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[5104, 162, 219, 4, 43, "Input"],
+Cell[5326, 168, 361, 5, 33, "Message"],
+Cell[5690, 175, 123, 2, 52, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[5850, 182, 146, 4, 55, "Input"],
+Cell[5999, 188, 331, 5, 33, "Message"],
+Cell[6333, 195, 368, 6, 33, "Message"],
+Cell[6704, 203, 295, 4, 142, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[7036, 212, 77, 1, 27, "Input"],
+Cell[7116, 215, 54, 1, 27, "Output"]
+}, Open  ]],
+Cell[7185, 219, 26, 0, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[7236, 223, 120, 2, 27, "Input"],
+Cell[7359, 227, 206, 4, 44, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[7602, 236, 188, 4, 27, "Input"],
+Cell[7793, 242, 171, 2, 68, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[8001, 249, 233, 4, 27, "Input"],
+Cell[8237, 255, 245, 3, 20, "Message"],
+Cell[8485, 260, 245, 3, 20, "Message"],
+Cell[8733, 265, 171, 2, 68, "Output"]
+}, Open  ]],
+Cell[8919, 270, 26, 0, 27, "Input"]
+}
+]
+*)
+
+
+
+(*******************************************************************
+End of Mathematica Notebook file.
+*******************************************************************)
+

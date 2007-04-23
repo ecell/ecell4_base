@@ -1,0 +1,370 @@
+(************** Content-type: application/mathematica **************
+                     CreatedBy='Mathematica 5.2'
+
+                    Mathematica-Compatible Notebook
+
+This notebook can be used with any Mathematica-compatible
+application, such as Mathematica, MathReader or Publicon. The data
+for the notebook starts with the line containing stars above.
+
+To get the notebook into a Mathematica-compatible application, do
+one of the following:
+
+* Save the data starting with the line of stars above into a file
+  with a name ending in .nb, then open the file inside the
+  application;
+
+* Copy the data starting with the line of stars above to the
+  clipboard, then use the Paste menu command inside the application.
+
+Data for notebooks contains only printable 7-bit ASCII and can be
+sent directly in email or through ftp in text mode.  Newlines can be
+CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
+
+NOTE: If you modify the data for this notebook not in a Mathematica-
+compatible application, you must delete the line below containing
+the word CacheID, otherwise Mathematica-compatible applications may
+try to use invalid cache data.
+
+For more information on notebooks and Mathematica-compatible 
+applications, contact Wolfram Research:
+  web: http://www.wolfram.com
+  email: info@wolfram.com
+  phone: +1-217-398-0700 (U.S.)
+
+Notebook reader applications are available free of charge from 
+Wolfram Research.
+*******************************************************************)
+
+(*CacheID: 232*)
+
+
+(*NotebookFileLineBreakTest
+NotebookFileLineBreakTest*)
+(*NotebookOptionsPosition[      8868,        260]*)
+(*NotebookOutlinePosition[      9521,        283]*)
+(*  CellTagsIndexPosition[      9477,        279]*)
+(*WindowFrame->Normal*)
+
+
+
+Notebook[{
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(W[a_, b_]\  := \ 
+      Exp[\ 2\ a\ b\  + \ b^2\ ]\ Erfc[\ a\  + \ b]\[IndentingNewLine]
+    psurvival\  := \ 
+      1\  - \ \(\((\ Sigma\ /\ r0\ )\)\(\ \)\((\ 
+            k\ /\ \((\ k\  + \ kD\ )\)\ )\)\(\ \)\((\ 
+            Erfc[\((r0 - Sigma)\)/Sqrt[\ 4\ D\ t\ ]\ ]\  - \ 
+              W[\ \((r0\  - \ Sigma)\)\ /\ Sqrt[\ 4\ D\ t], \ 
+                alpha\ Sqrt[t]\ ]\ )\)\(\ \)\)\)\)\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(psurvival\)], "Input"],
+
+Cell[BoxData[
+    \(1 - \((k\ Sigma\ \((Erfc[\(r0 - Sigma\)\/\(2\ \@\(D\ t\)\)] - \
+\[ExponentialE]\^\(alpha\^2\ t + \(alpha\ \((r0 - Sigma)\)\ \@t\)\/\@\(D\ t\)\
+\)\ Erfc[alpha\ \@t + \(r0 - Sigma\)\/\(2\ \@\(D\ t\)\)])\))\)/\((r0\ \((k + 
+                4\ D\ \[Pi]\ Sigma)\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(dpsurvival\  = \ D[psurvival, t]\)], "Input"],
+
+Cell[BoxData[
+    \(\(-\(\((k\ Sigma\ \((\(D\ \[ExponentialE]\^\(-\(\((r0 - \
+Sigma)\)\^2\/\(4\ D\ t\)\)\)\ \((r0 - Sigma)\)\)\/\(2\ \@\[Pi]\ \((D\ \
+t)\)\^\(3/2\)\) + \(\(1\/\@\[Pi]\)\((2\ \[ExponentialE]\^\(alpha\^2\ t + \
+\(alpha\ \((r0 - Sigma)\)\ \@t\)\/\@\(D\ t\) - \((alpha\ \@t + \(r0 - Sigma\)\
+\/\(2\ \@\(D\ t\)\))\)\^2\)\ \((alpha\/\(2\ \@t\) - \(D\ \((r0 - Sigma)\)\)\/\
+\(4\ \((D\ t)\)\^\(3/2\)\))\))\)\) - \[ExponentialE]\^\(alpha\^2\ t + \(alpha\
+\ \((r0 - Sigma)\)\ \@t\)\/\@\(D\ t\)\)\ \((alpha\^2 - \(alpha\ D\ \((r0 - \
+Sigma)\)\ \@t\)\/\(2\ \((D\ t)\)\^\(3/2\)\) + \(alpha\ \((r0 - \
+Sigma)\)\)\/\(2\ \@t\ \@\(D\ t\)\))\)\ Erfc[
+                    alpha\ \@t + \(r0 - Sigma\)\/\(2\ \@\(D\ \
+t\)\)])\))\)/\((r0\ \((k + 4\ D\ \[Pi]\ Sigma)\))\)\)\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Simplify[dpsurvival]\)], "Input"],
+
+Cell[BoxData[
+    \(\((alpha\ k\ Sigma\ \((\(-\[ExponentialE]\^\(-\(\((r0 - \
+Sigma)\)\^2\/\(4\ D\ t\)\)\)\) + 
+              alpha\ \[ExponentialE]\^\(\(alpha\ \((alpha\ D\ t\^\(3/2\) + \
+\((r0 - Sigma)\)\ \@\(D\ t\))\)\)\/\(D\ \@t\)\)\ \@\[Pi]\ \@t\ Erfc[\(2\ \
+alpha\ D\ t\^\(3/2\) + \((r0 - Sigma)\)\ \@\(D\ t\)\)\/\(2\ D\ t\)])\))\)/\((\
+\@\[Pi]\ r0\ \((k + 4\ D\ \[Pi]\ Sigma)\)\ \@t)\)\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[""], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Simplify[\[IndentingNewLine]alpha\ k\ Sigma\ \((\ \
+\(-\[ExponentialE]\^\(-\(\((r0 - Sigma)\)\^2\/\(4\ D\ t\)\)\)\)\  + \ 
+                alpha\ Sqrt[
+                    Pi\ t]\ W[\ \((r0\  - \ Sigma)\)\ /\ Sqrt[\ 4\ D\ t], \ 
+                    alpha\ Sqrt[t]\ ]\ )\)\ /\ \((\ 
+              Sqrt[Pi\ t]\ r0\ \((\ k\  + \ kD\ )\)\ )\)\  \[Equal] \ 
+        dpsurvival\ ]\)], "Input"],
+
+Cell[BoxData[
+    \(True\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(Simplify[
+      D[psurvival - u, t]\  \[Equal] \ dpsurvival]\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(True\)], "Output"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(psurvivaltsq\  := \ 
+      1\  - \ \(\((\ Sigma\ /\ r0\ )\)\(\ \)\((\ 
+            k\ /\ \((\ k\  + \ kD\ )\)\ )\)\(\ \)\((\ 
+            Erfc[\((r0 - Sigma)\)/Sqrt[\ 4\ D\ \ ]\ t\ ]\  - \ 
+              W[\ \((r0\  - \ Sigma)\)\ /\ Sqrt[\ 4\ D\ ]\ t, \ 
+                alpha\ t\ ]\ )\)\(\ \)\)\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(tsqderiv\  = \ Simplify[D[psurvivaltsq, t]]\)], "Input"],
+
+Cell[BoxData[
+    \(\((2\ alpha\ \[ExponentialE]\^\(-\(\(\((r0 - Sigma)\)\^2\ t\^2\)\/\(4\ \
+D\)\)\)\ k\ Sigma\ \((\(-\@D\) + \[ExponentialE]\^\(\(\((2\ alpha\ \@D + r0 - \
+Sigma)\)\^2\ t\^2\)\/\(4\ D\)\)\ \@\[Pi]\ \((alpha\ \@D + r0 - 
+                    Sigma)\)\ t\ Erfc[
+                  alpha\ t + \(\((r0 - Sigma)\)\ t\)\/\(2\ \
+\@D\)])\))\)/\((\@D\ \@\[Pi]\ r0\ \((k + 4\ D\ \[Pi]\ Sigma)\))\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(Simplify[\ 
+      2  alpha\ k\ Sigma\ \ \((\((\ \(-\ 
+                      Sqrt[D]\)\ \[ExponentialE]\^\(-\(\(\((r0 - Sigma)\)\^2\ \
+t^2\)\/\(\(4\)\(\ \)\(D\)\(\ \)\)\)\)\ \ \ )\)\  + \ \((Sqrt[Pi\ ]\ t\ \((\ 
+                      alpha\ Sqrt[D]\  + \ r0\  - \ 
+                        Sigma\ )\)\ W[\ \((r0\  - \ Sigma)\)\ t\ /\ 
+                          Sqrt[\ 4\ D\ ], \ alpha\ t\ ]\ )\)\ )\)\ \ /\ \((\ 
+              Sqrt[Pi\ \ D]\ \ r0\ \((\ k\  + \ kD\ )\)\ )\)\  \[Equal] \ 
+        tsqderiv]\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(True\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Solve[1 - psurvival\  \[Equal] \ p, \ t]\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(Solve::"tdep"\), \(\(:\)\(\ \)\), "\<\"The equations appear to \
+involve the variables to be solved for in an essentially non-algebraic way. \
+\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
+\\\", ButtonFrame->None, ButtonData:>\\\"Solve::tdep\\\"]\\)\"\>"}]], \
+"Message"],
+
+Cell[BoxData[
+    \(Solve[\((k\ Sigma\ \((Erfc[\(r0 - Sigma\)\/\(2\ \@\(D\ t\)\)] - \
+\[ExponentialE]\^\(alpha\^2\ t + \(alpha\ \((r0 - Sigma)\)\ \@t\)\/\@\(D\ t\)\
+\)\ Erfc[alpha\ \@t + \(r0 - Sigma\)\/\(2\ \@\(D\ t\)\)])\))\)/\((r0\ \((k + 
+                  4\ D\ \[Pi]\ Sigma)\))\) \[Equal] p, t]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(a\ Sin[b/a]\  - \ b\ Cos[b/a]\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\(-b\)\ Cos[b\/a] + a\ Sin[b\/a]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(FullSimplify[%]\)], "Input"],
+
+Cell[BoxData[
+    \(\(-b\)\ Cos[b\/a] + a\ Sin[b\/a]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(TrigToExp[%]\)], "Input"],
+
+Cell[BoxData[
+    \(1\/2\ \[ImaginaryI]\ a\ \[ExponentialE]\^\(-\(\(\[ImaginaryI]\ b\)\/a\)\
+\) - 1\/2\ b\ \[ExponentialE]\^\(-\(\(\[ImaginaryI]\ b\)\/a\)\) - 
+      1\/2\ \[ImaginaryI]\ a\ \[ExponentialE]\^\(\(\[ImaginaryI]\ b\)\/a\) - 
+      1\/2\ b\ \[ExponentialE]\^\(\(\[ImaginaryI]\ b\)\/a\)\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(FullSimplify[%]\)], "Input"],
+
+Cell[BoxData[
+    \(\(-b\)\ Cos[b\/a] + a\ Sin[b\/a]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(-n\)\ b\ Cos[\(n\ b\)\/a] + a\ Sin[\(n\ b\)\/a]\)], "Input"],
+
+Cell[BoxData[
+    \(\(-b\)\ n\ Cos[\(b\ n\)\/a] + a\ Sin[\(b\ n\)\/a]\)], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(Sum[\(-b\)\ n\ Cos[\(b\ n\)\/a] + a\ Sin[\(b\ n\)\/a], {n, 1, 
+        Infinity}]\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(Sum::"div"\), \(\(:\)\(\ \)\), "\<\"Sum does not converge. \
+\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
+\\\", ButtonFrame->None, ButtonData:>\\\"Sum::div\\\"]\\)\"\>"}]], "Message"],
+
+Cell[BoxData[
+    RowBox[{\(Sum::"div"\), \(\(:\)\(\ \)\), "\<\"Sum does not converge. \
+\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
+\\\", ButtonFrame->None, ButtonData:>\\\"Sum::div\\\"]\\)\"\>"}]], "Message"],
+
+Cell[BoxData[
+    \(\[Sum]\+\(n = 1\)\%\[Infinity]\((\(-b\)\ n\ Cos[\(b\ n\)\/a] + 
+          a\ Sin[\(b\ n\)\/a])\)\)], "Output"]
+}, Open  ]]
+},
+FrontEndVersion->"5.2 for X",
+ScreenRectangle->{{0, 3200}, {0, 1200}},
+WindowSize->{520, 1046},
+WindowMargins->{{684, Automatic}, {Automatic, 53}},
+Magnification->1.25
+]
+
+(*******************************************************************
+Cached data follows.  If you edit this Notebook file directly, not
+using Mathematica, you must remove the line containing CacheID at
+the top of  the file.  The cache data will then be recreated when
+you save this file from within Mathematica.
+*******************************************************************)
+
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+
+(*NotebookFileOutline
+Notebook[{
+Cell[1754, 51, 451, 8, 133, "Input"],
+
+Cell[CellGroupData[{
+Cell[2230, 63, 42, 1, 33, "Input"],
+Cell[2275, 66, 295, 4, 202, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[2607, 75, 65, 1, 33, "Input"],
+Cell[2675, 78, 781, 11, 547, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[3493, 94, 53, 1, 33, "Input"],
+Cell[3549, 97, 406, 6, 356, "Output"]
+}, Open  ]],
+Cell[3970, 106, 26, 0, 33, "Input"],
+
+Cell[CellGroupData[{
+Cell[4021, 110, 407, 7, 195, "Input"],
+Cell[4431, 119, 38, 1, 33, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[4506, 125, 124, 2, 54, "Input"],
+Cell[4633, 129, 38, 1, 33, "Output"]
+}, Open  ]],
+Cell[4686, 133, 328, 6, 114, "Input"],
+
+Cell[CellGroupData[{
+Cell[5039, 143, 76, 1, 34, "Input"],
+Cell[5118, 146, 416, 6, 234, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[5571, 157, 590, 9, 288, "Input"],
+Cell[6164, 168, 38, 1, 34, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[6239, 174, 73, 1, 34, "Input"],
+Cell[6315, 177, 332, 5, 81, "Message"],
+Cell[6650, 184, 314, 4, 197, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[7001, 193, 93, 1, 54, "Input"],
+Cell[7097, 196, 66, 1, 52, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[7200, 202, 48, 1, 34, "Input"],
+Cell[7251, 205, 66, 1, 52, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[7354, 211, 45, 1, 34, "Input"],
+Cell[7402, 214, 311, 4, 52, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[7750, 223, 48, 1, 34, "Input"],
+Cell[7801, 226, 66, 1, 52, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[7904, 232, 82, 1, 58, "Input"],
+Cell[7989, 235, 83, 1, 52, "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[8109, 241, 114, 2, 83, "Input"],
+Cell[8226, 245, 245, 3, 27, "Message"],
+Cell[8474, 250, 245, 3, 27, "Message"],
+Cell[8722, 255, 130, 2, 62, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+
+
+(*******************************************************************
+End of Mathematica Notebook file.
+*******************************************************************)
+
