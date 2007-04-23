@@ -85,6 +85,14 @@ public:
     }
 
 
+    void updateEvent( const EventID id, const double t, 
+                      const boost::python::object& obj )
+    {
+	libecs::EventScheduler<PyEvent>::updateEvent( id,
+                                                      PyEvent( t, obj ) );
+    }
+
+
 };
 
 

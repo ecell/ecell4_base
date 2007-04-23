@@ -180,42 +180,46 @@ class Single:
         shellSize = min( closestMobilityRadius * ShellSizeDisparityFactor
                          + ( distanceToClosestShell - radius ) * 0.5 + radius,
                          distanceToClosestShell )
-
         shellSize = shellSize * ( 1.0 - 1e-8 ) # safety
-        shellSize = max( shellSize, radius )
-
-
-        meanArrivalTime = shellSize ** 2 / \
-                          ( 6.0 * self.particle.species.D )
-
-        print 'mat', meanArrivalTime, closestMeanArrivalTime
-        if meanArrivalTime <= 0.0 or \
-           closestMeanArrivalTime / meanArrivalTime \
-               >= ShellSizeDisparityFactor:
-            print 'burst'
-            self.closest.propagate( self.closest.getMobilityRadius(), t )
-            self.closest.burstShell()
-            self.sim.updateEvent( self.closest )
+        shellSize = max( shellSize, radius ) # cannot be smaller than radius
 
         assert shellSize <= distanceToClosestShell
 
         self.setShellSize( shellSize )
 
+        meanArrivalTime = self.getMobilityRadius() ** 2 / \
+                          ( 6.0 * self.particle.species.D )
+
+        print 'mat', self, meanArrivalTime, self.closest, closestMeanArrivalTime
         self.updateDt()
+
+        if meanArrivalTime <= 0.0 or \
+           closestMeanArrivalTime / meanArrivalTime \
+               >= ShellSizeDisparityFactor * 5:
+            print 'burst'
+            self.closest.update( t )
+            self.sim.updateEvent( self.closest )
 
         return self.dt
 
 
     '''
-    Update the position of the particle.
+    Update the position of the particle at time t.
+
+    t must be after the last time this Single was propagated
+    (self.lastTime) but before the next scheduled time
+    (self.lastTime + self.dt).
 
     Shell size shrunken to the radius.   self.lastTime is reset.
     self.dt is set to 0.0.
+
+    Update the scheduler after calling this method.
     '''
     
     def update( self, t ):
 
         assert t >= self.lastTime
+        assert t <= self.lastTime + self.dt
         assert self.getShellSize() >= self.getRadius()
 
         if t == self.lastTime or self.getMobilityRadius() == 0.0:
@@ -261,8 +265,6 @@ class Single:
         rnd = numpy.random.uniform()
         r = self.getMobilityRadius()
         dt = self.gf.drawTime( rnd, r )
-        if dt < 0.0:
-            raise RuntimeError, 'dt < 0.0: %s' % str(dt)
         return dt
 
 
@@ -627,7 +629,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.scheduler.clear()
 
         self.initializeSingleMap()
-        self.initializeSingles()
+
+        for single in self.singleMap.values():
+            single.initialize()
+
 
         for single in self.singleMap.values():
             nextt = single.lastTime + single.dt
@@ -650,7 +655,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             single.reinitialize()
             self.updateEvent( single )
 
-        self.dt = self.scheduler.getTime() - self.t
+        #self.dt = self.scheduler.getTime() - self.t
         assert self.dt >= 0.0
 
         #debug
@@ -692,9 +697,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.hoggerCounter = 0
 
         if self.hoggerCounter >= 10: # or self.dt < 1e-15:
-                print 'reinitialize'
-                self.hoggerCounter = 0
-                self.reinitialize()
+            print 'reinitialize'
+            self.hoggerCounter = 0
+            self.reinitialize()
 
         #if self.dt == 0.0:
         #    raise 'dt=0'
@@ -742,7 +747,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def updateEvent( self, event ):
         print event.eventID
-        self.scheduler.updateEvent( event.eventID )
+        self.scheduler.updateEvent( event.eventID, self.t + event.dt, event )
 
 
     def initializeSingleMap( self ):
@@ -754,11 +759,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 particle = Particle( species, index=i )
                 single = self.createSingle( particle )
                 single.setShellSize( single.getRadius() )
-
-    def initializeSingles( self ):
-
-        for single in self.singleMap.values():
-            single.initialize()
 
 
     def formPairs( self ):

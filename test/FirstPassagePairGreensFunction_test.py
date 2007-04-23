@@ -76,20 +76,19 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
         gf.seta( a )
 
-        t = gf.drawTime( 0.5, r0 )
-        eventType = gf.drawEventType( 0.5, r0, t )
-        self.failIf( eventType != 0 and eventType != 1 and eventType != 2 )
+        t = 1e-3
 
         r = gf.drawR( 0.5, r0, t )
         self.failIf( r < Sigma or r > a )
 
-        r = gf.drawR( 0.0, r0, t )
-        self.failIf( r < Sigma or r > a )
-        self.assertEqual( r, Sigma )
+        r1 = gf.drawR( 0.0, r0, t )
+        r2 = gf.drawR( 1.0, r0, t )
 
-        r = gf.drawR( 1.0, r0, t )
-        self.failIf( r < Sigma or r > a )
-        self.failIf( abs( r - a ) > 1e-15 )
+        self.failIf( r1 < Sigma or r1 > a )
+        self.failIf( r2 < Sigma or r2 > a )
+
+        self.failIf( abs( r1 - Sigma ) > 1e-15 )
+        self.failIf( abs( r2 - a ) > 1e-15 )
 
 
     def testDrawTheta( self ):
@@ -127,15 +126,15 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         
         gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
         gf.seta( a )
-        maxerror = 0
+        maxerror = 0.0
         
         for i in range(100):
             alpha = gf.alpha0_i( i )
-            error = abs( gf.f_alpha0( alpha ) )
-            print error, gf.f_alpha0( alpha*1.1 )
+            error = abs( gf.f_alpha0( alpha ) / alpha )
+            #print error/alpha, gf.f_alpha0( alpha*1.1 )/alpha
             maxerror = max( error, maxerror )
 
-        self.failIf( abs( maxerror ) > 1e-2 )
+        self.failIf( abs( maxerror ) > 1e-10 )
 
 '''
     def testAlphan( self ):

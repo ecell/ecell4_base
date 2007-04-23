@@ -102,6 +102,7 @@ namespace libecs
 	    }
 	}
 
+
 	const bool operator> ( const EventBase& rhs ) const
 	{
 	    return ! this->operator<=( rhs );
@@ -300,9 +301,9 @@ namespace libecs
 	}
 
 
-	void updateEvent( const EventID id )
+	void updateEvent( const EventID id, const Event& event )
 	{
-	    const Event& event( this->eventPriorityQueue.get( id ) );
+	    //const Event& event( this->eventPriorityQueue.get( id ) );
 	    return this->eventPriorityQueue.replace( id, event  );
 	}
 

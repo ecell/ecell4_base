@@ -221,7 +221,7 @@ def test_drawTheta_at_a():
 
 
 #test_p_survival()
-#test_drawTime()
+test_drawTime()
 #test_drawR()
 
 #test_drawTime_single()
@@ -229,7 +229,9 @@ def test_drawTheta_at_a():
 
 #test_f_alpha()
 
-test_drawTheta()
+
+
+#test_drawTheta()
 #test_drawTheta_at_a()
 
 #test_alpha()
