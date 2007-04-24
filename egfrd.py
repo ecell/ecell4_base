@@ -40,7 +40,12 @@ class Single:
         self.closest = None
         self.eventID = None
 
+        self.isPaired = False
+
         self.gf = FirstPassageGreensFunction( particle.species.D )
+
+    def __del__( self ):
+        print 'del', str( self )
 
     def setPos( self, pos ):
         self.particle.setPos( pos )
@@ -129,11 +134,10 @@ class Single:
 
     def initialize( self ):
 
-        neighbors, distances = self.sim.getNeighbors( self.particle.getPos() )
-        closestParticle = neighbors[1]
-        closestSingle = self.sim.findSingle( closestParticle )
-        
-        self.closest = closestSingle
+        #neighbors, distances = self.sim.getNeighborShells( self.getPos() )
+        #closestParticle = neighbors[1]
+        #closestSingle = self.sim.findSingle( closestParticle )
+        #self.closest = closestSingle
 
         self.setShellSize( self.getRadius() )
         self.lastTime = self.sim.t
@@ -159,23 +163,33 @@ class Single:
         pos = self.getPos()
 
         # (2) pair check
-        neighbors, distances = self.sim.getNeighbors( pos, n=3 )
+        neighbors, distances = self.sim.getNeighborParticles( pos )
         closest = neighbors[1]
         closestDistance = distances[1]
 
         if closestDistance < radius * 2:
-            # make pair
-
-            pairNeighborDistance = distances[2]
 
             closestSingle = self.sim.findSingle( closest )
-            print 'pair', self, closestSingle, closestDistance
-            pair = self.sim.createPair( self, closestSingle )
-            nextEvent = pair.nextEvent( pairNeighborDistance )
-            dt = nextEvent[0]
-            self.sim.removeEvent( closestSingle )
-            self.sim.addEvent( t + dt, pair)
-            return -1
+
+            if closestSingle.isPaired != True:
+                print 'pair', self, closestSingle, closestDistance
+                pair = self.sim.createPair( self, closestSingle )
+
+                pairClosest, pairDistance = pair.findClosestShell()
+                print pairClosest, pairDistance, pair.sigma
+                pair.setShellSize( pairDistance )
+                nextEvent = pair.nextEvent()
+                dt = nextEvent[0]
+                
+                self.sim.removeEvent( closestSingle )
+                self.sim.addEvent( t + dt, pair)
+                return -1
+
+            else:
+                print 'partner already paired', \
+                      self, closestSingle, closestDistance
+
+
             
         
         # (3) neighbor check
@@ -250,9 +264,6 @@ class Single:
         self.burstShell()
 
 
-    def getNeighborShells( self, n=2 ):
-        return self.sim.getNeighborShells( self.particle.getPos(), n )
-
 
     def updateDt( self ):
         self.dt = self.calculateFirstPassageTime()        
@@ -282,6 +293,9 @@ class Pair:
         self.single1 = single1
         self.single2 = single2
 
+        self.single1.isPaired = True
+        self.single2.isPaired = True
+
         self.rt = rt
         
         self.sim = sim
@@ -295,16 +309,20 @@ class Pair:
         D1, D2 = particle1.species.D, particle2.species.D
         D12 = D1 + D2
         self.sqrtD1D2 = math.sqrt( D1 / D2 )
+        self.sqrtD2D1 = math.sqrt( D2 / D1 )
         
         self.sigma = particle1.species.radius + particle2.species.radius
 
-        self.sgf = FirstPassageGreensFunction( D12 / 4.0 )
+        #self.sgf = FirstPassageGreensFunction( D12 / 4.0 )
+        self.sgf = FirstPassageGreensFunction( D12 )
         self.pgf = FirstPassagePairGreensFunction( D12, rt.k, self.sigma )
 
         self.eventID = None
 
         self.radius = max( self.single1.particle.species.radius * 2,
-                           self.single2.particle.species.radius )
+                           self.single2.particle.species.radius * 2 )
+
+        self.shellSize = self.radius
 
 
 
@@ -314,11 +332,20 @@ class Pair:
     def getPos( self ):
         return self.getCoM()
 
+    def setShellSize( self, shellSize ):
+        assert shellSize > self.radius
+        self.shellSize = shellSize
+
     def getShellSize( self ):
-        return self.a_r + self.a_R
+        return self.shellSize
+        #return self.a_r + self.a_R
 
     def getRadius( self ):
         return self.radius
+
+    def getMobilityRadius( self ):
+        return self.shellSize - self.getRadius()
+
 
     '''
     Calculate and return the "Center of Mass" (== CoM) of this pair.
@@ -331,10 +358,16 @@ class Pair:
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
         
-        #com = sqrtD2D1 * pos1 + self.sqrtD1D2 * pos2
-        com = ( pos1 + self.sqrtD1D2 * pos2 ) * .5
+        com = ( self.sqrtD2D1 * pos1 + self.sqrtD1D2 * pos2 ) / \
+              ( self.sqrtD2D1 + self.sqrtD1D2 )
+        
+        #com = ( pos1 + self.sqrtD1D2 * pos2 ) * .5
 
         return com
+
+    def releaseSingles( self ):
+        self.single1.isPaired = False
+        self.single2.isPaired = False
 
     '''
     Calculate new positions of the pair particles using
@@ -343,7 +376,7 @@ class Pair:
 
     '''
 
-    def newPositions( self, newCoM, newInterParticle, oldInterParticle ):
+    def newPositions( self, CoM, newInterParticle, oldInterParticle ):
 
         # I rotate the new interparticle vector along the
         # rotation axis that is perpendicular to both the
@@ -363,18 +396,15 @@ class Pair:
                                          rotationAxis,
                                          angle )
         
-        
-        newpos1 = ( 2 * newCoM - self.sqrtD1D2 * newInterParticle ) \
-                  / ( 1 + self.sqrtD1D2 )
+        newpos1 = CoM - ( self.sqrtD1D2 * newInterParticle / \
+                          ( self.sqrtD2D1 + self.sqrtD1D2 ) )
         newpos2 = newpos1 + newInterParticle
 
         return newpos1, newpos2
         
 
-    def nextEvent( self, dr ):
+    def nextEvent( self ):
 
-        self.dr = dr
-        
         rnd = numpy.random.uniform( size=3 )
 
         pos1 = self.single1.particle.getPos()
@@ -382,10 +412,10 @@ class Pair:
 
         self.r0 = self.sim.distance( pos1, pos2 )
 
-        self.a_r = ( self.dr + self.r0 ) * .5
-        self.a_R = self.a_r - self.r0
+        self.a_r = self.getMobilityRadius() * .5
+        self.a_R = self.a_r # - self.r0
 
-        #print 'dr', dr, 'r0', r0, 'a_r', a_r, 'a_R', a_R, dr - a_r - a_R
+        print self.getMobilityRadius(), self.r0, self.a_r, self.a_R
 
         self.pgf.seta( self.a_r )
 
@@ -438,26 +468,27 @@ class Pair:
                 
                 species3 = self.rt.products[0]
 
-                if D1 == 0.0:
-                    newR = pos1
-                elif D2 == 0.0:
-                    newR = pos2
-                else:
-                    dR = p_free( ( D1 + D2 ) / 4, self.dt )
-                    newR = oldCoM + dR
-                
+                rnd = numpy.random.uniform( size=5 )
+
+                # calculate new R
+            
+                r_R = self.sgf.drawR( rnd[0], self.dt, self.a_R )
+            
+                displacement_R_S = [ r_R,
+                                     rnd[1] * Pi,
+                                     rnd[2] * 2 * Pi ]
+                displacement_R = sphericalToCartesian( displacement_R_S )
+                newCoM = oldCoM + displacement_R \
+                         / ( self.sqrtD2D1 + self.sqrtD1D2 )
                 
                 #FIXME: SURFACE
-                newPos = self.sim.applyBoundary( newR )
+                newPos = self.sim.applyBoundary( newCoM )
 
                 self.sim.removeParticle( particle1 )
                 self.sim.removeParticle( particle2 )
 
                 particle = self.sim.createParticle( species3, newPos )
                 newsingle = self.sim.insertParticle( particle )
-                
-                #debug
-                self.sim.checkShell( newsingle )
                 
                 return -1
 
@@ -480,11 +511,11 @@ class Pair:
                                  rnd[1] * Pi,
                                  rnd[2] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = oldCoM + displacement_R
-
+            newCoM = oldCoM + displacement_R \
+                     / ( self.sqrtD2D1 + self.sqrtD1D2 )
 
             # calculate new r
-            print ( rnd[3], self.a_r, self.r0, self.dt )
+            #print ( rnd[3], self.a_r, self.r0, self.dt )
             theta_r = self.pgf.drawTheta( rnd[3], self.a_r, self.r0, self.dt )
             phi_r = rnd[4] * 2 * Pi
             newInterParticleS = numpy.array( [ self.a_r, theta_r, phi_r ] )
@@ -515,8 +546,8 @@ class Pair:
                                  rnd[3] * Pi,
                                  rnd[4] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = oldCoM + displacement_R
-
+            newCoM = oldCoM + displacement_R \
+                     / ( self.sqrtD2D1 + self.sqrtD1D2 )
 
             newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
                                                   oldInterParticle )
@@ -530,11 +561,9 @@ class Pair:
         particle1.setPos( newpos1 )
         particle2.setPos( newpos2 )
 
-        # check if the new positions are valid:
-        # FIXME: check if positions are inside the shells, too.
+        # debug: check if the new positions are valid:
         newDistance = distance( newpos1, newpos2 )
         radius12 = species1.radius + species2.radius
-        # debug
         if newDistance <= radius12:
             print 'rejected move: ', 'radii, interp',\
                   species1.radius + species2.radius, newDistance
@@ -552,6 +581,10 @@ class Pair:
 
         # here decide whether this pair still continues or breaks up
         if newDistance <= radius12 * pairFormingFactor:
+
+            pairClosest, pairDistance = self.findClosestShell()
+            self.setShellSize( pairDistance )
+
             dt, type = self.nextEvent()
             return dt
 
@@ -561,11 +594,13 @@ class Pair:
             single2 = self.single2
             
             # protect the singles with shells.
-            neighbors1, distances1 = single1.getNeighborShells( n=3 )
-            closest1, distance1 = neighbors1[1], drs1[1]
+            neighbors1, distances1 =\
+                        self.sim.getNeighborShells( single1.getPos(), n=3 )
+            closest1, distance1 = neighbors1[1], distances1[1]
             if closest1 == self:  # avoid this pair. ugly
                 closest1, distance1 = neighbors1[2], distances1[2]
-            neighbors2, distancess2 = single2.getNeighborShells()
+            neighbors2, distancess2 = \
+                        self.sim.getNeighborShells( single2.getPos(), n=3 )
             closest2, distance2 = neighbors2[1], distancess2[1]
             if closest2 == self:  # avoid this pair. ugly
                 closest2, distance2 = neighbors2[2], distancess2[2]
@@ -584,13 +619,25 @@ class Pair:
             single1.updateDt()
             single2.updateDt()
             
-            self.sim.checkShell( single1 )
-            self.sim.checkShell( single2 )
-            
             self.sim.addEvent( self.sim.t + single1.dt, single1 )
             self.sim.addEvent( self.sim.t + single2.dt, single2 )
 
         return -1
+
+    def findClosestShell( self ):
+
+        pairNeighbors, pairDistances = \
+                       self.sim.getNeighborShells( self.getCoM(), n=3 )
+        # find pair neighbor.
+        n = 0
+        if self.single1 in pairNeighbors:
+            n += 1
+        if self.single2 in pairNeighbors:
+            n += 1
+        pairClosest, pairDistance = pairNeighbors[n], pairDistances[n]
+        assert not pairClosest in ( self.single1, self.single2 )
+
+        return pairClosest, pairDistance
 
 
     def update( self, t ):
@@ -788,8 +835,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         closest, distance = neighbors[1], distances[1]
         shellSize = obj.getShellSize()
         if distance - shellSize <= 0.0:
-            print obj, closest, shellSize, distance, shellSize - distance
-            raise RuntimeError, 'Fatal: shells overlap.'
+            raise RuntimeError,\
+                  'Shell of %s (size = %g ) overlaps with %s. Distance = %g.' \
+                  % ( str( obj ), shellSize, str( closest ), distance )
 
     def checkShellForAll( self ):
         scheduler = self.scheduler
@@ -801,7 +849,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.checkShell( obj )
 
 
-    def getNeighbors( self, pos, n=2, speciesList=None ):
+    def getNeighborParticles( self, pos, n=2, speciesList=None ):
 
         topNeighbors = []
         topDistances = []
@@ -837,7 +885,35 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return topNeighbors, topDistances
 
 
+    '''
+    Get neighbors simply by distance.
 
+    This does not take into account of particle radius or shell size.
+    '''
+    def getNeighbors( self, pos, n=2 ):
+
+        scheduler = self.scheduler
+
+        size = scheduler.getSize()
+        topNeighbors = [None,] * size
+        topDistances = numpy.zeros( size )
+
+
+        for i in range( scheduler.getSize() ):
+            obj = scheduler.getEventByIndex(i)[1]
+            topNeighbors[i] = obj
+            topDistances[i] = self.distance( obj.getPos(), pos )
+            
+        topargs = numpy.argsort( topDistances )[:n]
+        topDistances = numpy.take( topDistances, topargs )
+        topNeighbors = [ topNeighbors[arg] for arg in topargs ]
+
+        return topNeighbors, topDistances
+
+    '''
+    Find closest shells.
+
+    '''
     def getNeighborShells( self, pos, n=2 ):
 
         scheduler = self.scheduler

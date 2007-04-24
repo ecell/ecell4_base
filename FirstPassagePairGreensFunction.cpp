@@ -2,7 +2,7 @@
 //#define BOOST_DISABLE_ASSERTS
 
 #include <iostream>
-#include <exception>
+#include <stdexcept>
 #include <vector>
 #include <sstream>
 
@@ -47,7 +47,7 @@ FirstPassagePairGreensFunction::~FirstPassagePairGreensFunction()
 
 void FirstPassagePairGreensFunction::seta( const Real a )
 {
-    assert( a > this->getSigma() );
+    THROW_UNLESS( std::range_error, a >= this->getSigma() );
 
     this->a = a;
 
@@ -649,7 +649,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     this->updateAlphaTable0( high );
     this->updatePsurvTable( r0 );
 
-    // adjust low to make sure tha f( low ) and f( high ) straddle.
+    // adjust high and low to make sure that f( low ) and f( high ) straddle.
     while( GSL_FN_EVAL( &F, high ) < 0.0 )
     {
 	high *= 10;

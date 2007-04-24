@@ -8,6 +8,7 @@
 
 typedef double Real;
 typedef int Integer;
+typedef unsigned int UnsignedInteger;
 typedef size_t Index;
 
 
@@ -29,7 +30,16 @@ inline void sincos( double x, double* s, double* c )
 }
 #endif /* !HAVE_SINCOS */
 
+// stringifiers.  see preprocessor manual
+#define XSTR( S ) STR( S )
+#define STR( S ) #S
 
+#define THROW_UNLESS( CLASS, EXPRESSION )	\
+    if( ! ( EXPRESSION ) )\
+    {\
+	throw CLASS( "Expression [" + std::string( STR( EXPRESSION ) ) +\
+		     "] is not true." );\
+    }\
 
 
 #endif // __DEFS_HPP
