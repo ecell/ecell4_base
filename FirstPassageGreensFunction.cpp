@@ -338,14 +338,14 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t,
         return 0.0;
     }
 
-    const Real St( p_survival( t, a ) ); 
+    const Real psurv( p_survival( t, a ) ); 
 
-    if( St == 0.0 )
+    if( psurv == 0.0 )
     {
 	printf("p_survival = 0.0\n");
     }
 
-    p_r_params params = { this, t, a, St, rnd };
+    p_r_params params = { this, t, a, psurv, rnd };
 
     gsl_function F = 
 	{
