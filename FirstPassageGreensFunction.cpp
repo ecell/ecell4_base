@@ -25,7 +25,7 @@
 */
 static const Real ellipticTheta4Zero( const Real q )
 {
-    assert( fabs( q ) <= 1.0 );
+    THROW_UNLESS( std::invalid_argument, fabs( q ) <= 1.0 );
 
     const Integer N( 100 );
     Real value( 1.0 );
@@ -223,8 +223,8 @@ FirstPassageGreensFunction::p_survival_F( const Real t,
 const Real 
 FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
 {
-    assert( rnd < 1.0 && rnd >= 0.0 );
-    assert( a >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, a >= 0.0 );
 
     if( a == 0.0 )
     {
@@ -329,9 +329,9 @@ const Real
 FirstPassageGreensFunction::drawR( const Real rnd, const Real t, 
 				   const Real a ) const
 {
-    assert( rnd <= 1.0 && rnd >= 0.0 );
-    assert( t >= 0.0 );
-    assert( a >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, a >= 0.0 );
 
     if( a == 0.0 )
     {

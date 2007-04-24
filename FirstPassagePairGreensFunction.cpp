@@ -47,7 +47,7 @@ FirstPassagePairGreensFunction::~FirstPassagePairGreensFunction()
 
 void FirstPassagePairGreensFunction::seta( const Real a )
 {
-    THROW_UNLESS( std::range_error, a >= this->getSigma() );
+    THROW_UNLESS( std::invalid_argument, a >= this->getSigma() );
 
     this->a = a;
 
@@ -113,7 +113,7 @@ f_alpha0_aux_F( const Real alpha,
 const Real 
 FirstPassagePairGreensFunction::alpha0_i( const Integer i ) const
 {
-    assert( i >= 0 );
+    THROW_UNLESS( std::out_of_range, i >= 0 );
 
     const Real sigma( this->getSigma() );
 
@@ -442,7 +442,7 @@ FirstPassagePairGreensFunction::updateNum_r0Table( RealVector& num_r0Table,
     num_r0Table.clear();
     num_r0Table.reserve( alphaTable_0.size() );
 
-    assert( alphaTable_0.size() >= expTable.size() );
+    THROW_UNLESS( std::logic_error, alphaTable_0.size() >= expTable.size() );
 
     for( unsigned int j( 0 ); j < expTable.size(); ++j )
     {
@@ -493,7 +493,7 @@ FirstPassagePairGreensFunction::p_0( const Real t,
     const RealVector& alphaTable_0( this->getAlphaTable( 0 ) );
     const RealVector& expTable( this->expTable );
 
-    assert( alphaTable_0.size() >= expTable.size() );
+    THROW_UNLESS( std::logic_error, alphaTable_0.size() >= expTable.size() );
 
     for( RealVector::size_type i( 0 ); i < expTable.size(); ++i )
     {
@@ -515,7 +515,7 @@ FirstPassagePairGreensFunction::p_survival( const Real t,
     const RealVector& expTable( this->expTable );
     const RealVector& psurvTable( this->psurvTable );
 
-    assert( alphaTable_0.size() >= expTable.size() );
+    THROW_UNLESS( std::logic_error, alphaTable_0.size() >= expTable.size() );
 
     for( RealVector::size_type i( 0 ); i < expTable.size(); ++i )
     {
@@ -581,7 +581,7 @@ FirstPassagePairGreensFunction::p_int_r( const Real r,
     const RealVector& alphaTable_0( this->getAlphaTable( 0 ) );
     const RealVector& expTable( this->expTable );
 
-    assert( alphaTable_0.size() >= expTable.size() );
+    THROW_UNLESS( std::logic_error, alphaTable_0.size() >= expTable.size() );
 
     for( RealVector::size_type i( 0 ); i < expTable.size(); ++i )
     {
@@ -632,8 +632,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
 
-    assert( rnd <= 1.0 && rnd >= 0.0 );
-    assert( r0 > sigma && r0 < a );
+    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
 
     p_survival_params params = { this, r0, rnd };
 
@@ -744,9 +744,9 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
 
-    assert( rnd <= 1.0 && rnd >= 0.0 );
-    assert( r0 > sigma && r0 < a );
-    assert( t > 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+    THROW_UNLESS( std::invalid_argument, t > 0.0 );
 
     // psurvTable, expTable
 
@@ -777,8 +777,8 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
 
-    assert( rnd <= 1.0 && rnd >= 0.0 );
-    assert( r0 > sigma && r0 < a );
+    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
 
     this->updateAlphaTable0( t );
     this->updateExpTable( t );
@@ -1154,7 +1154,7 @@ FirstPassagePairGreensFunction::alpha_i( const Integer i, const Integer n,
 void FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
 						       const Real t ) const
 {
-    assert( n >= 0 );
+    THROW_UNLESS( std::range_error, n >= 0 );
 
     if( n == 0 )
     {

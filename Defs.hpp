@@ -37,8 +37,8 @@ inline void sincos( double x, double* s, double* c )
 #define THROW_UNLESS( CLASS, EXPRESSION )	\
     if( ! ( EXPRESSION ) )\
     {\
-	throw CLASS( "Expression [" + std::string( STR( EXPRESSION ) ) +\
-		     "] is not true." );\
+	throw CLASS( "Check [" + std::string( STR( EXPRESSION ) ) +\
+		     "] failed." );\
     }\
 
 

@@ -624,16 +624,20 @@ class Pair:
 
         return -1
 
+
     def findClosestShell( self ):
 
         pairNeighbors, pairDistances = \
-                       self.sim.getNeighborShells( self.getCoM(), n=3 )
-        # find pair neighbor.
+                       self.sim.getNeighborShells( self.getCoM(), n=4 )
+
         n = 0
-        if self.single1 in pairNeighbors:
-            n += 1
-        if self.single2 in pairNeighbors:
-            n += 1
+        if pairNeighbors[0] in ( self, self.single1, self.single2 ):
+            n = 1
+            if pairNeighbors[1] in ( self, self.single1, self.single2 ):
+                n = 2
+                if pairNeighbors[2] in ( self, self.single1, self.single2 ):
+                    n = 3
+        
         pairClosest, pairDistance = pairNeighbors[n], pairDistances[n]
         assert not pairClosest in ( self.single1, self.single2 )
 
