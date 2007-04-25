@@ -353,6 +353,7 @@ class Pair:
 
     def __del__( self ):
         print 'del', str( self )
+        assert self.single1.isPaired == False && self.single2.isPaired == False
 
     def getPos( self ):
         return self.getCoM()
