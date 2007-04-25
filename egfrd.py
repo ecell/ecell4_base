@@ -199,6 +199,7 @@ class Single:
                 # than r0 * max( D1/(D1+D2)+raidus1, D2/(D1+D2)+radius2 )
 
                 # D2 is always larger
+                #FIXME:
                 rmax = max(  D1 / pair.D + radius1, D2 / pair.D + radius2 ) *\
                        closestDistance
 
