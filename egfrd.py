@@ -696,8 +696,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.singleMap = {}
 
         self.lastEvent = None
-        self.hoggerCounter = 0
-        self.reinitializationCounter = 0
 
 
     def initialize( self ):
@@ -771,9 +769,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         print 'dt', self.dt
         print 'reactions', self.reactionEvents,\
-              'rejected moves', self.rejectedMoves,\
-              'hogger counter', self.hoggerCounter,\
-              'reinitialization', self.reinitializationCounter
+              'rejected moves', self.rejectedMoves
         print ''
         
 
