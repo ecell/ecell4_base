@@ -139,14 +139,8 @@ class Single:
         #closestSingle = self.sim.findSingle( closestParticle )
         #self.closest = closestSingle
 
-        self.setShellSize( self.getRadius() )
+        self.burstShell()
         self.lastTime = self.sim.t
-        self.dt = 0.0
-
-
-    def reinitialize( self ):
-        
-        self.update( self.sim.t )
 
 
     def fire( self ):
@@ -172,7 +166,8 @@ class Single:
             closestSingle = self.sim.findSingle( closest )
 
             if closestSingle.isPaired != True:
-                print 'pair', self, closestSingle, closestDistance
+                print 'making pair of: %s and %s' % ( self, closestSingle )
+
                 pair = self.sim.createPair( self, closestSingle )
 
                 pairClosest, pairDistance = pair.findClosestShell()
@@ -319,8 +314,8 @@ class Pair:
 
         self.eventID = None
 
-        self.radius = max( self.single1.particle.species.radius * 2,
-                           self.single2.particle.species.radius * 2 )
+        self.radius = max( self.single1.particle.species.radius,
+                           self.single2.particle.species.radius )
 
         self.shellSize = self.radius
 
@@ -413,7 +408,7 @@ class Pair:
         self.r0 = self.sim.distance( pos1, pos2 )
 
         self.a_r = self.getMobilityRadius() * .5
-        self.a_R = self.a_r # - self.r0
+        self.a_R = self.a_r
 
         print self.getMobilityRadius(), self.r0, self.a_r, self.a_R
 
@@ -515,7 +510,7 @@ class Pair:
                      / ( self.sqrtD2D1 + self.sqrtD1D2 )
 
             # calculate new r
-            #print ( rnd[3], self.a_r, self.r0, self.dt )
+            print ( rnd[3], self.a_r, self.r0, self.dt )
             theta_r = self.pgf.drawTheta( rnd[3], self.a_r, self.r0, self.dt )
             phi_r = rnd[4] * 2 * Pi
             newInterParticleS = numpy.array( [ self.a_r, theta_r, phi_r ] )
@@ -572,8 +567,8 @@ class Pair:
             raise RuntimeError, 'New particles overlap'
 
         # debug
-        if self.sim.distance( oldCoM, newpos1 ) > self.a_r + self.a_R or \
-               self.sim.distance( oldCoM, newpos2 ) > self.a_r + self.a_R:
+        if self.sim.distance( oldCoM, newpos1 ) > self.getMobilityRadius() or \
+               self.sim.distance( oldCoM, newpos2 ) > self.getMobilityRadius():
             raise RuntimeError, 'New particle(s) out of protective sphere.'
             
 
@@ -590,34 +585,8 @@ class Pair:
 
         else: # breaking up to singles
 
-            single1 = self.single1
-            single2 = self.single2
-            
-            # protect the singles with shells.
-            neighbors1, distances1 =\
-                        self.sim.getNeighborShells( single1.getPos(), n=3 )
-            closest1, distance1 = neighbors1[1], distances1[1]
-            if closest1 == self:  # avoid this pair. ugly
-                closest1, distance1 = neighbors1[2], distances1[2]
-            neighbors2, distancess2 = \
-                        self.sim.getNeighborShells( single2.getPos(), n=3 )
-            closest2, distance2 = neighbors2[1], distancess2[1]
-            if closest2 == self:  # avoid this pair. ugly
-                closest2, distance2 = neighbors2[2], distancess2[2]
-            
-            print closest1, single2, closest2, single1
-            if closest1 == single2 and closest2 == single1:
-                single1.setShellSize( newDistance * .4999 )
-                single2.setShellSize( newDistance * .4999 )
-                
-            else:
-                print 'd1, d2', distance1, distance2
-                single1.setShellSize( distance1 )
-                single2.setShellSize( distance2 )
-
-
-            single1.updateDt()
-            single2.updateDt()
+            self.single1.initialize()
+            self.single2.initialize()
             
             self.sim.addEvent( self.sim.t + single1.dt, single1 )
             self.sim.addEvent( self.sim.t + single2.dt, single2 )
@@ -705,7 +674,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def reinitialize( self ):
 
         for single in self.singleMap.values():
-            single.reinitialize()
+            single.update( self.t )
             self.updateEvent( single )
 
         #self.dt = self.scheduler.getTime() - self.t
