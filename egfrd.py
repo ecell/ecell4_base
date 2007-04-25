@@ -146,7 +146,7 @@ class Single:
     def fire( self ):
 
         #debug
-        self.sim.checkShellForAll()
+        #self.sim.checkShellForAll()
 
         radius = self.getRadius()
         t = self.sim.t
@@ -160,24 +160,52 @@ class Single:
         neighbors, distances = self.sim.getNeighborParticles( pos )
         closest = neighbors[1]
         closestDistance = distances[1]
+        radius12 = radius + closest.species.radius
 
-        if closestDistance < radius * 2:
+        # pair making criteria:
+        # 1. Distance between particles to form pair is closer than
+        #    the total radii * PairMakingFactor, and
+        # 2. The particles are not already members of pairs.
+        # 3. Distance from the center-of-mass of the pair to the pair
+        #    neighbor is larger than the distance between particles.
+
+        PairMakingFactor = 5
+
+        # 1
+        if closestDistance < radius12 * PairMakingFactor:
 
             closestSingle = self.sim.findSingle( closest )
 
+            # 2
             if closestSingle.isPaired != True:
                 print 'making pair of: %s and %s' % ( self, closestSingle )
 
+                closestSingle.update( t ) # update the partner.
+
                 pair = self.sim.createPair( self, closestSingle )
 
-                pairClosest, pairDistance = pair.findClosestShell()
-                print pairClosest, pairDistance, pair.sigma
-                pair.setShellSize( pairDistance )
+                pairClosest, pairClosestDistance = pair.findClosestShell()
+                print pairClosest, pairClosestDistance
+
+                # now, shellSize of this pair must be at minimum larger
+                # than r0 * max(D1,D2)/(D1+D2).
+
+                # D2 is always larger
+                rmax = ( pair.single2.particle.species.D / pair.D ) *\
+                       closestDistance
+
+                # 3
+                if pairClosestDistance < rmax:
+                    print 'pairClosestDistance < rmax; %g, %g' % \
+                          ( pairClosestDistance, rmax )
+                    raise ''
+
+                pair.setShellSize( pairClosestDistance )
                 nextEvent = pair.nextEvent()
                 dt = nextEvent[0]
                 
                 self.sim.removeEvent( closestSingle )
-                self.sim.addEvent( t + dt, pair)
+                self.sim.addEvent( t + dt, pair )
                 return -1
 
             else:
@@ -215,7 +243,6 @@ class Single:
         meanArrivalTime = self.getMobilityRadius() ** 2 / \
                           ( 6.0 * self.particle.species.D )
 
-        print 'mat', self, meanArrivalTime, self.closest, closestMeanArrivalTime
         self.updateDt()
 
         if meanArrivalTime <= 0.0 or \
@@ -277,7 +304,7 @@ class Single:
 
 
     def __str__( self ):
-        return 'Single: ' + str( self.particle )
+        return 'Single' + str( self.particle )
 
 
 
@@ -285,8 +312,11 @@ class Pair:
     
     def __init__( self, sim, single1, single2, rt ):
 
-        self.single1 = single1
-        self.single2 = single2
+        # Order single1 and single2 so that D1 < D2.
+        if single1.particle.species.D <= single1.particle.species.D:
+            self.single1, self.single2 = single1, single2 
+        else:
+            self.single1, self.single2 = single2, single1 
 
         self.single1.isPaired = True
         self.single2.isPaired = True
@@ -302,15 +332,15 @@ class Pair:
         particle2 = self.single2.particle
 
         D1, D2 = particle1.species.D, particle2.species.D
-        D12 = D1 + D2
+        self.D = D1 + D2
         self.sqrtD1D2 = math.sqrt( D1 / D2 )
         self.sqrtD2D1 = math.sqrt( D2 / D1 )
         
         self.sigma = particle1.species.radius + particle2.species.radius
 
-        #self.sgf = FirstPassageGreensFunction( D12 / 4.0 )
-        self.sgf = FirstPassageGreensFunction( D12 )
-        self.pgf = FirstPassagePairGreensFunction( D12, rt.k, self.sigma )
+        #self.sgf = FirstPassageGreensFunction( self.D / 4.0 )
+        self.sgf = FirstPassageGreensFunction( self.D )
+        self.pgf = FirstPassagePairGreensFunction( self.D, rt.k, self.sigma )
 
         self.eventID = None
 
@@ -347,6 +377,9 @@ class Pair:
     '''
 
     def getCoM( self ):
+
+        #FIXME: what if there are boundaries?
+        
         particle1 = self.single1.particle
         particle2 = self.single2.particle
         
@@ -356,9 +389,8 @@ class Pair:
         com = ( self.sqrtD2D1 * pos1 + self.sqrtD1D2 * pos2 ) / \
               ( self.sqrtD2D1 + self.sqrtD1D2 )
         
-        #com = ( pos1 + self.sqrtD1D2 * pos2 ) * .5
-
         return com
+
 
     def releaseSingles( self ):
         self.single1.isPaired = False
@@ -588,8 +620,8 @@ class Pair:
             self.single1.initialize()
             self.single2.initialize()
             
-            self.sim.addEvent( self.sim.t + single1.dt, single1 )
-            self.sim.addEvent( self.sim.t + single2.dt, single2 )
+            self.sim.addEvent( self.sim.t + self.single1.dt, self.single1 )
+            self.sim.addEvent( self.sim.t + self.single2.dt, self.single2 )
 
         return -1
 
@@ -621,8 +653,8 @@ class Pair:
         return False
 
     def __str__( self ):
-        return 'Pair of ' + str(self.single1.particle) +\
-               ' and ' + str(self.single2.particle)
+        return 'Pair( ' + str(self.single1.particle) +\
+               ', ' + str(self.single2.particle) + ' )'
 
 
 class EGFRDSimulator( GFRDSimulatorBase ):
@@ -644,6 +676,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.lastEvent = None
         self.hoggerCounter = 0
+        self.reinitializationCounter = 0
 
 
     def initialize( self ):
@@ -660,13 +693,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             nextt = single.lastTime + single.dt
             self.addEvent( nextt, single )
 
-
-        #self.formPairs()
-
         #debug
         self.checkShellForAll()
-
-        #self.scheduler.updateAllEventDependency()
 
         self.isDirty = False
 
@@ -686,7 +714,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def step( self ):
 
-        #self.checkInvariants()
+        self.checkInvariants()
 
         if self.isDirty:
             self.initialize()
@@ -722,15 +750,17 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             print 'reinitialize'
             self.hoggerCounter = 0
             self.reinitialize()
+            self.reinitializationCounter += 1
 
         #if self.dt == 0.0:
         #    raise 'dt=0'
 
 
-        print 'dt', self.dt,\
-              'reactions', self.reactionEvents,\
+        print 'dt', self.dt
+        print 'reactions', self.reactionEvents,\
               'rejected moves', self.rejectedMoves,\
-              'hogger counter', self.hoggerCounter
+              'hogger counter', self.hoggerCounter,\
+              'reinitialization', self.reinitializationCounter
         print ''
         
 
@@ -788,18 +818,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         species2 = single2.particle.species
         rt = self.reactionTypeMap2.get( ( species1, species2 ) )
 
-        # If either one of D1 or D2 are zero, it must be D1.
-        # D1 and D2 must not be zero at the same time.
-        if single2.particle.species.D == 0.0:
-            if single1.particle.species.D == 0.0:
-                raise RuntimeError, 'createPair: D1 == D2 == 0.'
-            else:
-                s1, s2 = single2, single1 # D1 must be nonzero.
-        else:
-            s1, s2 = single1, single2
-
-        
-        return Pair( self, s1, s2, rt )
+        return Pair( self, single1, single2, rt )
 
             
         
@@ -807,10 +826,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         neighbors, distances = self.getNeighborShells( obj.getPos() )
         closest, distance = neighbors[1], distances[1]
         shellSize = obj.getShellSize()
-        if distance - shellSize <= 0.0:
+        if distance - shellSize < 0.0:
             raise RuntimeError,\
-                  'Shell of %s (size = %g ) overlaps with %s. Distance = %g.' \
-                  % ( str( obj ), shellSize, str( closest ), distance )
+                  '%s overlaps with %s. (shell: %g, dist: %g, diff: %g.' \
+                  % ( str( obj ), str( closest ), shellSize, distance,\
+                      shellSize - distance )
 
     def checkShellForAll( self ):
         scheduler = self.scheduler
