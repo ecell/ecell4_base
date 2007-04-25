@@ -345,7 +345,7 @@ class GFRDSimulatorBase:
         pos += displacement
 
         #SURFACE
-
+        print surface
         
 
 

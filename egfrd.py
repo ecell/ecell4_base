@@ -53,6 +53,9 @@ class Single:
     def getPos( self ):
         return self.particle.getPos()
 
+    def getD( self ):
+        return self.particle.species.D
+
     def setShellSize( self, size ):
 
         if size < self.getRadius():
@@ -94,8 +97,6 @@ class Single:
     def propagate( self, r, t ):
 
         rnd = numpy.random.uniform( size=2 )
-
-        radius = self.getRadius()
 
         r = self.getMobilityRadius()
         displacementS = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
@@ -177,28 +178,36 @@ class Single:
             closestSingle = self.sim.findSingle( closest )
 
             # 2
-            if closestSingle.isPaired != True:
+            if not closestSingle.isPaired:
                 print 'making pair of: %s and %s' % ( self, closestSingle )
 
                 closestSingle.update( t ) # update the partner.
 
                 pair = self.sim.createPair( self, closestSingle )
 
+                species1 = pair.single1.particle.species
+                species2 = pair.single2.particle.species
+                radius1 = species1.radius
+                radius2 = species2.radius
+                D1 = species1.D
+                D2 = species2.D
+
                 pairClosest, pairClosestDistance = pair.findClosestShell()
                 print pairClosest, pairClosestDistance
 
                 # now, shellSize of this pair must be at minimum larger
-                # than r0 * max(D1,D2)/(D1+D2).
+                # than r0 * max( D1/(D1+D2)+raidus1, D2/(D1+D2)+radius2 )
 
                 # D2 is always larger
-                rmax = ( pair.single2.particle.species.D / pair.D ) *\
+                rmax = max(  D1 / pair.D + radius1, D2 / pair.D + radius2 ) *\
                        closestDistance
 
                 # 3
                 if pairClosestDistance < rmax:
+                    pair.releaseSingles()
                     print 'pairClosestDistance < rmax; %g, %g' % \
                           ( pairClosestDistance, rmax )
-                    raise ''
+                    raise RuntimeError
 
                 pair.setShellSize( pairClosestDistance )
                 nextEvent = pair.nextEvent()
@@ -228,7 +237,7 @@ class Single:
 
         closestMobilityRadius = self.closest.getMobilityRadius()
         closestMeanArrivalTime = closestMobilityRadius ** 2 / \
-                                 ( 6.0 * self.closest.particle.species.D )
+                                 ( 6.0 * self.closest.getD() )
         
         shellSize = min( closestMobilityRadius * ShellSizeDisparityFactor
                          + ( distanceToClosestShell - radius ) * 0.5 + radius,
@@ -352,14 +361,20 @@ class Pair:
 
 
     def __del__( self ):
+        #debug
+        if ( self.single1.isPaired or self.single2.isPaired ):
+            print 'Error: singles not released.'
+            raise RuntimeError
         print 'del', str( self )
-        assert self.single1.isPaired == False && self.single2.isPaired == False
 
     def getPos( self ):
         return self.getCoM()
 
+    def getD( self ):
+        return self.D
+
     def setShellSize( self, shellSize ):
-        assert shellSize > self.radius
+        assert shellSize >= self.radius
         self.shellSize = shellSize
 
     def getShellSize( self ):
@@ -440,6 +455,8 @@ class Pair:
 
         self.r0 = self.sim.distance( pos1, pos2 )
 
+        assert self.r0 < self.getMobilityRadius()
+
         self.a_r = self.getMobilityRadius() * .5
         self.a_R = self.a_r
 
@@ -473,9 +490,6 @@ class Pair:
 
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
-
-        D1 = species1.D
-        D2 = species2.D
 
         oldInterParticle = pos2 - pos1
 
@@ -512,11 +526,14 @@ class Pair:
                 #FIXME: SURFACE
                 newPos = self.sim.applyBoundary( newCoM )
 
+                self.releaseSingles()
                 self.sim.removeParticle( particle1 )
                 self.sim.removeParticle( particle2 )
 
                 particle = self.sim.createParticle( species3, newPos )
-                newsingle = self.sim.insertParticle( particle )
+                newsingle = self.sim.createSingle( particle )
+                newsingle.initialize()
+                self.sim.addSingle( newsingle )
                 
                 return -1
 
@@ -613,10 +630,12 @@ class Pair:
             pairClosest, pairDistance = self.findClosestShell()
             self.setShellSize( pairDistance )
 
-            dt, type = self.nextEvent()
+            dt, eventType = self.nextEvent()
             return dt
 
         else: # breaking up to singles
+
+            self.releaseSingles()
 
             self.single1.initialize()
             self.single2.initialize()
@@ -734,24 +753,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # if the same event stepped in the last n steps,
         # reinitialize everything.
-        # FIXME: don't need to initialize everything.
-        #        (1) recalculate shell size to the closest with
-        #            its shell size shrunken.
-        #        (2) new shell size is
-        #            min( shell size to the second closest,
-        #                 shell size to the closest, with its shell size
-        #                 shrunken )
+#         if self.lastEvent is nextEvent:
+#             self.hoggerCounter += 1
+#         else:
+#             self.hoggerCounter = 0
 
-        if self.lastEvent is nextEvent:
-            self.hoggerCounter += 1
-        else:
-            self.hoggerCounter = 0
-
-        if self.hoggerCounter >= 10: # or self.dt < 1e-15:
-            print 'reinitialize'
-            self.hoggerCounter = 0
-            self.reinitialize()
-            self.reinitializationCounter += 1
+#         if self.hoggerCounter >= 10: # or self.dt < 1e-15:
+#             print 'reinitialize'
+#             self.hoggerCounter = 0
+#             self.reinitialize()
+#             self.reinitializationCounter += 1
 
         #if self.dt == 0.0:
         #    raise 'dt=0'
@@ -779,11 +790,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         del self.singleMap[ ( particle.species, particle.serial ) ]
         return single
 
-    def insertParticle( self, particle ):
-        single = self.createSingle( particle )
-        single.initialize()
+    def addSingle( self, single ):
         self.addEvent( self.t + single.dt, single )
-        return single
 
     def removeParticle( self, particle ):
         single = self.findSingle( particle )
@@ -835,8 +843,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def checkShellForAll( self ):
         scheduler = self.scheduler
-
-        size = scheduler.getSize()
 
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i)[1]
