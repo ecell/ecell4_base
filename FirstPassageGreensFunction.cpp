@@ -333,7 +333,7 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t,
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     THROW_UNLESS( std::invalid_argument, a >= 0.0 );
 
-    if( a == 0.0 )
+    if( a == 0.0 || t == 0.0 )
     {
         return 0.0;
     }

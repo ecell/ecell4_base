@@ -62,6 +62,15 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         r = gf.drawR( 0.5, t, a )
         r = gf.drawR( 1.0 - 1e-16, t, a )
 
+    def test_drawR_zerot( self ):
+        D = 1e-12
+        a = 1e-8
+        t = 0.0
+
+        gf = mod.FirstPassageGreensFunction( D )
+        r = gf.drawR( 0.5, t, a )
+        self.assertEqual( 0.0, r )
+
     def test_drawR_smallt( self ):
         D = 1e-12
         a = 1e-8

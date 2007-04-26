@@ -633,7 +633,13 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     const Real a( this->geta() );
 
     THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+    THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 <= a );
+
+    if( r0 == a || a == sigma )
+    {
+	return 0.0;
+    }
+
 
     p_survival_params params = { this, r0, rnd };
 
@@ -779,6 +785,12 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 
     THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+
+    if( t == 0.0 )
+    {
+	return r0;
+    }
+
 
     this->updateAlphaTable0( t );
     this->updateExpTable( t );
@@ -1602,6 +1614,20 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 					   const Real r0, 
 					   const Real t ) const
 {
+    const Real sigma( this->getSigma() );
+    const Real a( this->geta() );
+
+    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+    THROW_UNLESS( std::invalid_argument, r > sigma && r < a );
+    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+
+    if( t == 0.0 )
+    {
+	return 0.0;
+    }
+
+
     RealVector p_nTable;
 
     if( r != geta() )
