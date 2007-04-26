@@ -168,7 +168,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf.seta( a )
 
         t = 0.0
-        theta = gf.drawTheta( 0.5, r, r0, t )
+        theta = gf.drawTheta( 0.5, r0, r0, t )
         self.assertEqual( 0.0, theta )
 
 

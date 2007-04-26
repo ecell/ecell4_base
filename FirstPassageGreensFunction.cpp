@@ -353,7 +353,7 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t,
 	    &params 
 	};
 
-    Real low( 0.00 );
+    Real low( 0.0 );
     Real high( a );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );

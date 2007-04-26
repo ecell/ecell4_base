@@ -41,9 +41,9 @@ Wolfram Research.
 
 (*NotebookFileLineBreakTest
 NotebookFileLineBreakTest*)
-(*NotebookOptionsPosition[     16807,        455]*)
-(*NotebookOutlinePosition[     17438,        477]*)
-(*  CellTagsIndexPosition[     17394,        473]*)
+(*NotebookOptionsPosition[     19016,        499]*)
+(*NotebookOutlinePosition[     19645,        521]*)
+(*  CellTagsIndexPosition[     19601,        517]*)
 (*WindowFrame->Normal*)
 
 
@@ -147,6 +147,13 @@ Cell[BoxData[
         Integrate[\ 4\ Pi\ r^2\ surv[r, r0, u], {r, s, a}, \ 
           Assumptions \[Rule] {a > 0, \ s > 0, a > s, \ 
               r\  > \ 0}]]\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(General::"spell1"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
+error: new symbol name \\\"\\!\\(psurv\\)\\\" is similar to existing symbol \
+\\\"\\!\\(surv\\)\\\". \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], "Message"],
 
 Cell[BoxData[
     \(\((2\ \[ExponentialE]\^\(\(-D\)\ t\ u\^2\)\ \((h\ s\^2\ u - \((a - s + 
@@ -313,6 +320,13 @@ Cell[BoxData[
               s}]\)\)\)], "Input"],
 
 Cell[BoxData[
+    RowBox[{\(General::"spell1"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
+error: new symbol name \\\"\\!\\(leaves\\)\\\" is similar to existing symbol \
+\\\"\\!\\(leavea\\)\\\". \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], "Message"],
+
+Cell[BoxData[
     \(\(-\(\(D\ \[ExponentialE]\^\(\(-D\)\ t\ u\^2\)\ h\ u\ \((s\ u\ \
 Cos[\((r0 - s)\)\ u] + \((1 + 
                       h\ s)\)\ Sin[\((r0 - 
@@ -334,6 +348,13 @@ Cell[CellGroupData[{
 Cell[BoxData[
     \(pleavea\  = \ 
       FullSimplify[Integrate[\ 4\ Pi\ a\ a\ leavea, t]]\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(General::"spell1"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
+error: new symbol name \\\"\\!\\(pleavea\\)\\\" is similar to existing symbol \
+\\\"\\!\\(leavea\\)\\\". \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], "Message"],
 
 Cell[BoxData[
     \(\(2\ \[ExponentialE]\^\(\(-D\)\ t\ u\^2\)\ \((\(-\((a - s + a\ h\ \
@@ -372,6 +393,14 @@ Cell[BoxData[
       FullSimplify[Integrate[\ 4\ Pi\ s\ s\ leaves, t]]\)], "Input"],
 
 Cell[BoxData[
+    RowBox[{\(General::"spell"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
+error: new symbol name \\\"\\!\\(pleaves\\)\\\" is similar to existing \
+symbols \\!\\({leaves, pleavea}\\). \
+\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
+\\\", ButtonFrame->None, ButtonData:>\\\"General::spell\\\"]\\)\"\>"}]], \
+"Message"],
+
+Cell[BoxData[
     \(\(2\ \[ExponentialE]\^\(\(-D\)\ t\ u\^2\)\ h\ s\^2\ \((s\ u\ Cos[\((r0 \
 - s)\)\ u] + \((1 + h\ s)\)\ Sin[\((r0 - s)\)\ u])\)\)\/\(r0\ u\ \((\((1 + h\ \
 s)\)\ \((a + a\ h\ s - h\ s\^2)\) + \((a - s)\)\ s\^2\ u\^2)\)\)\)], "Output"]
@@ -400,6 +429,14 @@ Cell[BoxData[
         FullSimplify\)], "Input"],
 
 Cell[BoxData[
+    RowBox[{\(General::"spell1"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
+error: new symbol name \\\"\\!\\(pleavesrepul\\)\\\" is similar to existing \
+symbol \\\"\\!\\(pleavearepul\\)\\\". \
+\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
+\\\", ButtonFrame->None, ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], \
+"Message"],
+
+Cell[BoxData[
     \({\(2\ a\ \[ExponentialE]\^\(\(-D\)\ t\ u\^2\)\ \((\(-Cos[\((a - s)\)\ \
 u]\) + s\ u\ Sin[\((a - s)\)\ u])\)\ \((s\ u\ Cos[\((r0 - s)\)\ u] + \
 Sin[\((r0 - s)\)\ u])\)\)\/\(r0\ u\ \((a + \((a - s)\)\ s\^2\ u\^2)\)\), \(2\ \
@@ -416,6 +453,13 @@ Cell[BoxData[
     \({psurvabsorb, \ pleaveaabsorb, \ pleavesabsorb}\  = \ 
       Limit[{psurv1, \ pleavea1, \ pleaves}, h \[Rule] Infinity]\  // \ 
         FullSimplify\)], "Input"],
+
+Cell[BoxData[
+    RowBox[{\(General::"spell1"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
+error: new symbol name \\\"\\!\\(pleavesabsorb\\)\\\" is similar to existing \
+symbol \\\"\\!\\(pleaveaabsorb\\)\\\". \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\
+\\\", ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], "Message"],
 
 Cell[BoxData[
     \({\(2\ \[ExponentialE]\^\(\(-D\)\ t\ u\^2\)\ \((s - a\ Cos[\((a - s)\)\ \
@@ -454,9 +498,9 @@ Cell[BoxData[
 }, Open  ]]
 },
 FrontEndVersion->"5.2 for X",
-ScreenRectangle->{{0, 3200}, {0, 1200}},
-WindowSize->{883, 1137},
-WindowMargins->{{707, Automatic}, {9, Automatic}}
+ScreenRectangle->{{0, 1400}, {0, 1050}},
+WindowSize->{883, 992},
+WindowMargins->{{25, Automatic}, {6, Automatic}}
 ]
 
 (*******************************************************************
@@ -507,90 +551,96 @@ Cell[4985, 139, 58, 0, 32, "Text"],
 
 Cell[CellGroupData[{
 Cell[5068, 143, 211, 5, 27, "Input"],
-Cell[5282, 150, 516, 8, 61, "Output"]
+Cell[5282, 150, 357, 5, 20, "Message"],
+Cell[5642, 157, 516, 8, 61, "Output"]
 }, Open  ]],
-Cell[5813, 161, 37, 0, 32, "Text"],
+Cell[6173, 168, 37, 0, 32, "Text"],
 
 Cell[CellGroupData[{
-Cell[5875, 165, 494, 8, 75, "Input"],
-Cell[6372, 175, 345, 5, 51, "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-Cell[6754, 185, 249, 4, 59, "Input"],
-Cell[7006, 191, 1694, 36, 80, "Output"]
+Cell[6235, 172, 494, 8, 75, "Input"],
+Cell[6732, 182, 345, 5, 51, "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
-Cell[8737, 232, 114, 2, 27, "Input"],
-Cell[8854, 236, 38, 1, 27, "Output"]
+Cell[7114, 192, 249, 4, 59, "Input"],
+Cell[7366, 198, 1694, 36, 80, "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
-Cell[8929, 242, 106, 2, 27, "Input"],
-Cell[9038, 246, 38, 1, 27, "Output"]
+Cell[9097, 239, 114, 2, 27, "Input"],
+Cell[9214, 243, 38, 1, 27, "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
-Cell[9113, 252, 81, 1, 27, "Input"],
-Cell[9197, 255, 516, 8, 61, "Output"]
+Cell[9289, 249, 106, 2, 27, "Input"],
+Cell[9398, 253, 38, 1, 27, "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
-Cell[9750, 268, 67, 0, 27, "Input"],
-Cell[9820, 270, 540, 8, 51, "Output"]
+Cell[9473, 259, 81, 1, 27, "Input"],
+Cell[9557, 262, 516, 8, 61, "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
-Cell[10397, 283, 526, 8, 75, "Input"],
-Cell[10926, 293, 511, 8, 51, "Output"]
+Cell[10110, 275, 67, 0, 27, "Input"],
+Cell[10180, 277, 540, 8, 51, "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
-Cell[11474, 306, 270, 6, 75, "Input"],
-Cell[11747, 314, 358, 6, 51, "Output"],
-Cell[12108, 322, 358, 6, 51, "Output"]
+Cell[10757, 290, 526, 8, 75, "Input"],
+Cell[11286, 300, 511, 8, 51, "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
-Cell[12503, 333, 103, 2, 27, "Input"],
-Cell[12609, 337, 358, 5, 51, "Output"]
+Cell[11834, 313, 270, 6, 75, "Input"],
+Cell[12107, 321, 360, 5, 20, "Message"],
+Cell[12470, 328, 358, 6, 51, "Output"],
+Cell[12831, 336, 358, 6, 51, "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
-Cell[13004, 347, 150, 4, 43, "Input"],
-Cell[13157, 353, 363, 5, 20, "Message"],
-Cell[13523, 360, 326, 4, 51, "Output"]
+Cell[13226, 347, 103, 2, 27, "Input"],
+Cell[13332, 351, 361, 5, 20, "Message"],
+Cell[13696, 358, 358, 5, 51, "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
-Cell[13886, 369, 103, 2, 27, "Input"],
-Cell[13992, 373, 251, 3, 51, "Output"]
+Cell[14091, 368, 150, 4, 43, "Input"],
+Cell[14244, 374, 363, 5, 20, "Message"],
+Cell[14610, 381, 326, 4, 51, "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
-Cell[14280, 381, 260, 4, 27, "Input"],
-Cell[14543, 387, 127, 2, 44, "Output"]
+Cell[14973, 390, 103, 2, 27, "Input"],
+Cell[15079, 394, 365, 6, 20, "Message"],
+Cell[15447, 402, 251, 3, 51, "Output"]
 }, Open  ]],
-Cell[14685, 392, 34, 0, 32, "Text"],
 
 Cell[CellGroupData[{
-Cell[14744, 396, 171, 3, 27, "Input"],
-Cell[14918, 401, 469, 6, 96, "Output"]
+Cell[15735, 410, 260, 4, 27, "Input"],
+Cell[15998, 416, 127, 2, 44, "Output"]
 }, Open  ]],
-Cell[15402, 410, 36, 0, 32, "Text"],
+Cell[16140, 421, 34, 0, 32, "Text"],
 
 Cell[CellGroupData[{
-Cell[15463, 414, 181, 3, 27, "Input"],
-Cell[15647, 419, 423, 6, 51, "Output"]
+Cell[16199, 425, 171, 3, 27, "Input"],
+Cell[16373, 430, 374, 6, 20, "Message"],
+Cell[16750, 438, 469, 6, 96, "Output"]
 }, Open  ]],
-Cell[16085, 428, 34, 0, 32, "Text"],
+Cell[17234, 447, 36, 0, 32, "Text"],
 
 Cell[CellGroupData[{
-Cell[16144, 432, 524, 11, 75, "Input"],
-Cell[16671, 445, 38, 1, 27, "Output"],
-Cell[16712, 448, 38, 1, 27, "Output"],
-Cell[16753, 451, 38, 1, 27, "Output"]
+Cell[17295, 451, 181, 3, 27, "Input"],
+Cell[17479, 456, 374, 5, 20, "Message"],
+Cell[17856, 463, 423, 6, 51, "Output"]
+}, Open  ]],
+Cell[18294, 472, 34, 0, 32, "Text"],
+
+Cell[CellGroupData[{
+Cell[18353, 476, 524, 11, 75, "Input"],
+Cell[18880, 489, 38, 1, 27, "Output"],
+Cell[18921, 492, 38, 1, 27, "Output"],
+Cell[18962, 495, 38, 1, 27, "Output"]
 }, Open  ]]
 }
 ]
