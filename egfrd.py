@@ -40,7 +40,7 @@ class Single:
         self.closest = None
         self.eventID = None
 
-        self.isPaired = False
+        self.partner = None
 
         self.gf = FirstPassageGreensFunction( particle.species.D )
 
@@ -118,6 +118,7 @@ class Single:
     self.dt is reset to 0.0.  Do not forget to reschedule this Single
     after calling this method.
     '''
+
     def burstShell( self ):
 
         self.setShellSize( self.getRadius() )
@@ -158,9 +159,31 @@ class Single:
         pos = self.getPos()
 
         # (2) pair check
-        pair = self.sim.makePair( self )
-        if pair != None:  # if pair was made, destroy this single.
-            return -1
+
+        neighbors, distances = self.sim.getNeighborParticles( self.getPos() )
+        closest = neighbors[1]
+        closestDistance = distances[1]
+        radius12 = radius + closest.species.radius
+        closestSingle = self.sim.findSingle( closest )
+
+
+        if closestSingle.partner == None:
+            print t, closestSingle.lastTime, closestSingle.dt
+            closestSingle.update( t ) # update the partner candidate.
+            self.sim.updateEvent( closestSingle )
+
+            pair = self.sim.createPair( self, closestSingle )
+        
+            if self.sim.checkPair( pair ) != None:
+                # if pair was formed, destroy this single.
+                self.sim.removeEvent( closestSingle )
+                dt = pair.nextEvent()[0]
+                self.sim.addEvent( t + dt, pair )
+                return -1
+            else:
+                # if not, this single continues. clean up the pair.
+                pair.releaseSingles()
+                del pair
             
         
         # (3) neighbor check
@@ -174,11 +197,11 @@ class Single:
 
         ShellSizeDisparityFactor = 2
 
-        closestMobilityRadius = self.closest.getMobilityRadius()
-        closestMeanArrivalTime = closestMobilityRadius ** 2 / \
-                                 ( 6.0 * self.closest.getD() )
+        #closestMobilityRadius = self.closest.getMobilityRadius()
+        #closestMeanArrivalTime = closestMobilityRadius ** 2 / \
+        #( 6.0 * self.closest.getD() )
         
-        shellSize = min( closestMobilityRadius * ShellSizeDisparityFactor
+        shellSize = min( self.closest.getShellSize() * ShellSizeDisparityFactor
                          + ( distanceToClosestShell - radius ) * 0.5 + radius,
                          distanceToClosestShell )
         shellSize = shellSize * ( 1.0 - 1e-8 ) # safety
@@ -193,9 +216,10 @@ class Single:
 
         self.updateDt()
 
+        #FIXME: use of closest.dt here is a temporary workaround.
         if meanArrivalTime <= 0.0 or \
-           closestMeanArrivalTime / meanArrivalTime \
-               >= ShellSizeDisparityFactor * 5:
+           self.closest.dt / meanArrivalTime\
+           >= ShellSizeDisparityFactor * 5:
             print 'burst'
             self.closest.update( t )
             self.sim.updateEvent( self.closest )
@@ -266,8 +290,8 @@ class Pair:
         else:
             self.single1, self.single2 = single2, single1 
 
-        self.single1.isPaired = True
-        self.single2.isPaired = True
+        self.single1.partner = self.single2
+        self.single2.partner = self.single1
 
         self.rt = rt
         
@@ -300,10 +324,6 @@ class Pair:
 
 
     def __del__( self ):
-        #debug
-        if ( self.single1.isPaired or self.single2.isPaired ):
-            print 'Error: singles not released.'
-            raise RuntimeError
         print 'del', str( self )
 
     def getPos( self ):
@@ -318,13 +338,6 @@ class Pair:
 
     def getShellSize( self ):
         return self.shellSize
-        #return self.a_r + self.a_R
-
-    def getRadius( self ):
-        return self.radius
-
-    def getMobilityRadius( self ):
-        return self.shellSize - self.getRadius()
 
 
     '''
@@ -348,8 +361,8 @@ class Pair:
 
 
     def releaseSingles( self ):
-        self.single1.isPaired = False
-        self.single2.isPaired = False
+        self.single1.partner = None
+        self.single2.partner = None
 
     '''
     Calculate new positions of the pair particles using
@@ -405,27 +418,29 @@ class Pair:
         self.r0 = self.sim.distance( pos1, pos2 )
         
         # determine which of particle 1 or 2 defines the r_shell
-        rmin_1 = self.r0 * D1 / self.D + radius1
-        rmin_2 = self.r0 * D2 / self.D + radius2
-        if rmin_1 > rmin_2:
+        rmin_1 = self.r0 * D1 / self.D
+        rmin_2 = self.r0 * D2 / self.D
+        if rmin_1 + radius1 > rmin_2 + radius2:
+            rmin_factor = D1 / self.D
             rmin = rmin_1
             r_sigma = radius1
         else:
+            rmin_factor = D2 / self.D
             rmin = rmin_2
             r_sigma = radius2
             
-        # mobilityRadius = R_shell + rmax = R_shell +
-        #                     ( rmin + | r_shell - rmin | )
-        # shellSize (pair) = mobilityRadius + r_sigma
-        # ->
-        # R_shell + r_shell = shellSize - r_sigma - 2 * rmin
-
-        margin = self.getShellSize() - r_sigma - 2 * rmin
-
-        self.a_r = margin * .5 + rmin
+        # mobilityRadius = a_R + a_r 
+        # shellSize      = mobilityRadius + r_sigma
+        #            a_r > rmin + r_sigma
+        
+        margin = self.getShellSize() - rmin - r_sigma
+        
+        self.a_r = ( margin * .5 + rmin ) / rmin_factor
         self.a_R = margin * .5
 
-        print self.getMobilityRadius(), self.r0, self.a_r, self.a_R
+        assert margin > 0.0
+        assert self.a_r > self.r0
+        #print 'ne', self.getShellSize(), margin, self.r0, self.a_r, self.a_R
 
         self.pgf.seta( self.a_r )
 
@@ -452,7 +467,9 @@ class Pair:
         particle2 = self.single2.particle
         species1 = particle1.species
         species2 = particle2.species
-
+        radius1 = species1.radius
+        radius2 = species2.radius
+        
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
 
@@ -499,6 +516,8 @@ class Pair:
                 newsingle = self.sim.createSingle( particle )
                 newsingle.initialize()
                 self.sim.addSingle( newsingle )
+
+                self.sim.reactionEvents += 1
                 
                 return -1
 
@@ -574,31 +593,32 @@ class Pair:
         # debug: check if the new positions are valid:
         newDistance = distance( newpos1, newpos2 )
         radius12 = species1.radius + species2.radius
+        # check 1: particles don't overlap.
         if newDistance <= radius12:
             print 'rejected move: ', 'radii, interp',\
                   species1.radius + species2.radius, newDistance
             print 'DEBUG: r0, dt, pos1, pos2, newpos1, newpos2',\
                   self.r0, self.dt, pos1, pos2, newpos1, newpos2
             raise RuntimeError, 'New particles overlap'
-
-        # debug
-        if self.sim.distance( oldCoM, newpos1 ) > self.getMobilityRadius() or \
-               self.sim.distance( oldCoM, newpos2 ) > self.getMobilityRadius():
+        # check 2: particles within mobility radius.
+        if self.sim.distance( oldCoM, newpos1 ) + radius1 \
+               > self.getShellSize() or \
+               self.sim.distance( oldCoM, newpos2 ) + radius2 \
+               > self.getShellSize():
             raise RuntimeError, 'New particle(s) out of protective sphere.'
             
 
-        pairFormingFactor = 10
-
         # here decide whether this pair still continues or breaks up
-        if newDistance <= radius12 * pairFormingFactor:
+
+        if self.sim.checkPair( self ) != None:  # pair continues.
 
             pairClosest, pairDistance = self.findClosestShell()
             self.setShellSize( pairDistance )
 
-            dt, eventType = self.nextEvent()
+            dt = self.nextEvent()[0]
             return dt
 
-        else: # breaking up to singles
+        else: # breaks up to singles
 
             self.releaseSingles()
 
@@ -803,73 +823,54 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     '''
 
-    def makePair( self, single ):
+    def checkPair( self, pair ):
 
-        radius = single.getRadius()
-        neighbors, distances = self.getNeighborParticles( single.getPos() )
-        closest = neighbors[1]
-        closestDistance = distances[1]
-        radius12 = radius + closest.species.radius
+
+        PairMakingFactor = 5
 
         # pair making criteria:
         # 1. Distance between particles to form pair is closer than
         #    the total radii * PairMakingFactor, and
-        # 2. The particles are not already members of pairs.
-        # 3. Distance from the center-of-mass of the pair to the pair
+        # 2. Distance from the center-of-mass of the pair to the pair
         #    neighbor is larger than the distance between particles.
 
-        PairMakingFactor = 5
+        single1 = pair.single1
+        single2 = pair.single2
+        species1 = single1.particle.species
+        species2 = single2.particle.species
+        D1 = species1.D
+        D2 = species2.D
+        radius1 = species1.radius
+        radius2 = species2.radius
+        radius12 = radius1 + radius2
+
+        pairDistance = self.distance( single1.particle.getPos(),
+                                      single2.particle.getPos() )
 
         # 1
-        if closestDistance < radius12 * PairMakingFactor:
+        if pairDistance > radius12 * PairMakingFactor:
+            return None
+            
 
-            closestSingle = self.findSingle( closest )
+        pairClosest, pairClosestDistance = pair.findClosestShell()
+        print pairClosest, pairClosestDistance
+        
+        # now, shellSize of this pair must be at minimum larger
+        # than r0 * max( D1/(D1+D2)+raidus1, D2/(D1+D2)+radius2 )
+        
+        rmax = max(  D1 / pair.D + radius1, D2 / pair.D + radius2 ) *\
+               pairDistance
+        
+        # 2
+        if pairClosestDistance < rmax:
+            print 'pairClosestDistance < rmax; %g, %g' % \
+                  ( pairClosestDistance, rmax )
+            return None
 
-            # 2
-            if not closestSingle.isPaired:
-                print 'making pair of: %s and %s' % ( single, closestSingle )
-
-                closestSingle.update( self.t ) # update the partner.
-
-                pair = self.createPair( single, closestSingle )
-
-                species1 = pair.single1.particle.species
-                species2 = pair.single2.particle.species
-                radius1 = species1.radius
-                radius2 = species2.radius
-                D1 = species1.D
-                D2 = species2.D
-
-                pairClosest, pairClosestDistance = pair.findClosestShell()
-                print pairClosest, pairClosestDistance
-
-                # now, shellSize of this pair must be at minimum larger
-                # than r0 * max( D1/(D1+D2)+raidus1, D2/(D1+D2)+radius2 )
-
-                rmax = max(  D1 / pair.D + radius1, D2 / pair.D + radius2 ) *\
-                       closestDistance
-
-                # 3
-                if pairClosestDistance < rmax:
-                    pair.releaseSingles()
-                    print 'pairClosestDistance < rmax; %g, %g' % \
-                          ( pairClosestDistance, rmax )
-                    return None
-                    
-
-                pair.setShellSize( pairClosestDistance )
-                dt = pair.nextEvent()[0]
-                
-                self.removeEvent( closestSingle )
-                self.addEvent( self.t + dt, pair )
-                return pair
-
-            else:
-                print 'partner already paired', \
-                      self, closestSingle, closestDistance
-                return None
-
-        return None
+        pair.setShellSize( pairClosestDistance * (1.0 - 1e-8) )
+        
+        return pair
+    
     
         
     def checkShell( self, obj ):
@@ -1017,5 +1018,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         assert self.dt >= 0.0
         
         self.checkShellForAll()
-        
-        
+
+        scheduler = self.scheduler
+        for i in range( scheduler.getSize() ):
+            obj = scheduler.getEventByIndex(i)[1]
+            if isinstance( obj, Single ):
+                assert obj.partner == None
