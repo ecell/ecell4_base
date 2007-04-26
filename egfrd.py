@@ -858,8 +858,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     
 
                 pair.setShellSize( pairClosestDistance )
-                nextEvent = pair.nextEvent()
-                dt = nextEvent[0]
+                dt = pair.nextEvent()[0]
                 
                 self.removeEvent( closestSingle )
                 self.addEvent( self.t + dt, pair )
