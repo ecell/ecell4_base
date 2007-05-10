@@ -859,10 +859,10 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
 
     // psurvTable, expTable
 
-    Real reaction( leaves( t, r0 ) );
-    Real escape( leavea( t, r0 ) );
+    const Real reaction( leaves( t, r0 ) );
+    const Real escape( leavea( t, r0 ) );
 
-    Real value( reaction / ( reaction + escape ) );
+    const Real value( reaction / ( reaction + escape ) );
 
 //    printf("%g %g %g\n", value, reaction, escape );
 
