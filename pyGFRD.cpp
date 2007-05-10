@@ -169,6 +169,10 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawTheta", &FirstPassagePairGreensFunction::drawTheta )
 
 	.def( "p_survival", &FirstPassagePairGreensFunction::p_survival )
+	.def( "p_leaves", &FirstPassagePairGreensFunction::p_leaves )
+	.def( "p_leavea", &FirstPassagePairGreensFunction::p_leavea )
+	.def( "leaves", &FirstPassagePairGreensFunction::leaves )
+	.def( "leaves", &FirstPassagePairGreensFunction::leavea )
 	.def( "dump", 
 	      &FirstPassagePairGreensFunction::dump )
 

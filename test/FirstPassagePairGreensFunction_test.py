@@ -15,7 +15,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def tearDown( self ):
         pass
     
-    def testInstantiation( self ):
+    def test_Instantiation( self ):
         D = 1e-12
         kf = 1e8
         Sigma = 1e-8
@@ -26,7 +26,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf.seta( a )
 
 
-    def testDrawTime( self ):
+    def test_DrawTime( self ):
         D = 1e-12
         kf = 1e-8
         Sigma = 1e-8
@@ -45,7 +45,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         t = gf.drawTime( 1.0, r0 )
         self.failIf( t <= 0.0 or t >= numpy.inf )
 
-    def testDrawTime_a_equal_sigma( self ):
+    def test_DrawTime_a_equal_sigma( self ):
         D = 1e-12
         kf = 1e-8
         Sigma = 1e-8
@@ -58,7 +58,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         t = gf.drawTime( 0.5, r0 )
         self.assertEqual( 0.0, t )
 
-    def testDrawTime_r0_equal_a( self ):
+    def test_DrawTime_r0_equal_a( self ):
         D = 1e-12
         kf = 1e-8
         Sigma = 1e-8
@@ -72,7 +72,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.assertEqual( 0.0, t )
 
 
-    def testDrawEventType( self ):
+    def test_DrawEventType( self ):
         D = 1e-12
         kf = 1e-8
         Sigma = 1e-8
@@ -93,7 +93,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.assertEqual( eventType, 1 )
 
 
-    def testDrawR( self ):
+    def test_DrawR( self ):
         D = 1e-12
         kf = 1e-8
         Sigma = 1e-8
@@ -118,7 +118,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( abs( r2 - a ) > 1e-15 )
 
 
-    def testDrawR_zerot( self ):
+    def test_DrawR_zerot( self ):
         D = 1e-12
         kf = 1e-8
         Sigma = 1e-8
@@ -133,7 +133,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         r = gf.drawR( 0.5, r0, t )
         self.assertEqual( r0, r )
 
-    def testDrawTheta( self ):
+    def test_DrawTheta( self ):
         D = 1e-12
         kf = 1e-8
         Sigma = 1e-8
@@ -157,7 +157,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( theta < 0.0 or theta > 2 * numpy.pi )
 
 
-    def testDrawTheta_zerot( self ):
+    def test_DrawTheta_zerot( self ):
         D = 1e-12
         kf = 1e-8
         Sigma = 1e-8
@@ -174,7 +174,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
 
 
-    def testAlpha0( self ):
+    def test_Alpha0( self ):
 
         D = 1e-12
         Sigma = 1e-8
@@ -194,8 +194,31 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         self.failIf( abs( maxerror ) > 1e-10 )
 
+    def test_psurvival_is_pleaves_plus_pleavea( self ):
+
+        D = 1e-12
+        Sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 5e-8
+        
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf.seta( a )
+
+        surv = gf.p_survival( t, r0 )
+        pleaves = gf.p_leaves( t, r0 )
+        pleavea = gf.p_leavea( t, r0 )
+
+        self.assertNotEqual( 0.0, surv )
+        self.assertAlmostEqual( surv, pleaves + pleavea )
+        
+                
+
 '''
-    def testAlphan( self ):
+    def test_Alphan( self ):
 
         D = 1e-12
         Sigma = 1e-8

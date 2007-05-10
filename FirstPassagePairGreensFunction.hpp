@@ -45,11 +45,9 @@ public:
     const Real drawTime( const Real rnd, const Real r0 ) const;
 
 
-    // true = reaction, false = shell.
     const EventType drawEventType( const Real rnd, 
 				   const Real r0, 
 				   const Real t ) const;
-
     
     const Real drawR( const Real rnd, 
 		      const Real r0, 
@@ -74,6 +72,11 @@ public:
     
     const Real p_survival( const Real t,
 			   const Real r0 ) const;
+
+    const Real p_survival_table( const Real t,
+				 const Real r0,
+				 const RealVector& psurvTable ) const;
+
 
     const Real leaves( const Real t,
 		       const Real r0 ) const;
@@ -167,10 +170,9 @@ protected:
 	
     void updateAlphaTable0( const Real t ) const;
     void updateAlphaTable( const Integer n, const Real t ) const;
-    void updateExpTable( const Real t ) const;
-    void updatePsurvTable( const Real r0 ) const;
-    void updateNum_r0Table( RealVector& num_r0Table,
-			    const Real r0 ) const;
+//    void updateExpTable( const Real t ) const;
+    void updatePsurvTable( RealVector& psurvTable, const Real r0 ) const;
+    void updateNum_r0Table( RealVector& num_r0Table, const Real r0 ) const;
 
     void makep_nTable( const Real r, 
 		       const Real r0, 
@@ -208,6 +210,7 @@ protected:
     { 
 	const FirstPassagePairGreensFunction* const gf;
 	const Real r0;
+	const RealVector& psurvTable;
 	const Real rnd;
     };
 
@@ -221,7 +224,6 @@ protected:
 	const FirstPassagePairGreensFunction* const gf;
 	const Real t;
 	const Real r0;
-	const Real psurv;
 	const RealVector& num_r0Table;
 	const Real rnd;
     };
@@ -246,8 +248,6 @@ private:
     const Real hsigma_p_1;
 
     mutable std::vector<RealVector> alphaTable;
-    mutable RealVector expTable;
-    mutable RealVector psurvTable;
 
     Real a;
     
