@@ -78,7 +78,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         Sigma = 1e-8
         a = 1e-7
         r0 = 5e-8
-        
+
         gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
         gf.seta( a )
 
@@ -87,10 +87,10 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( eventType != 0 and eventType != 1 and eventType != 2 )
 
         eventType = gf.drawEventType( 0.0, r0, t )
-        self.failIf( eventType != 0 and eventType != 1 and eventType != 2 )
+        self.assertEqual( eventType, 0 )
 
         eventType = gf.drawEventType( 1.0, r0, t )
-        self.failIf( eventType != 0 and eventType != 1 and eventType != 2 )
+        self.assertEqual( eventType, 1 )
 
 
     def testDrawR( self ):
@@ -162,6 +162,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         kf = 1e-8
         Sigma = 1e-8
         a = 1e-7
+        r = 5e-8
         r0 = 5e-8
         
         gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )

@@ -249,6 +249,66 @@ FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
 
 
 const Real 
+FirstPassagePairGreensFunction::leavea_i( const Real alpha,
+					  const Real r0 ) const
+{
+    const Real a( geta() );
+    const Real sigma( getSigma() );
+    const Real h( geth() );
+    const Real D( getD() );
+    const Real hsigma_p_1( this->hsigma_p_1 );
+
+    const Real sigmasq( sigma * sigma );
+    const Real alphasq( alpha * alpha );
+
+    Real num1;
+    {
+	const Real angle_a( alpha * ( a - sigma ) );
+	Real sin_a;
+	Real cos_a;
+	sincos( angle_a, &sin_a, &cos_a );
+
+	num1 = alpha * ( hsigma_p_1 * cos_a - sigma * alpha * sin_a );
+    }
+
+    const Real num2( num_r0( alpha, r0 ) );
+    
+    const Real den( 2.0 * a * M_PI * r0 *
+		    ( ( a - sigma ) * sigmasq * alphasq +
+		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
+
+    const Real result( D * num1 * num2 / den );
+
+    return result;
+}
+
+
+const Real 
+FirstPassagePairGreensFunction::leaves_i( const Real alpha,
+					  const Real r0 ) const
+{
+    const Real a( geta() );
+    const Real sigma( getSigma() );
+    const Real h( geth() );
+    const Real D( getD() );
+    const Real hsigma_p_1( this->hsigma_p_1 );
+
+    const Real sigmasq( sigma * sigma );
+    const Real alphasq( alpha * alpha );
+
+    const Real num( h * alpha * num_r0( alpha, r0 ) );
+		      
+    const Real den( 2.0 * M_PI * r0 *
+		    ( ( a - sigma ) * sigmasq * alphasq +
+		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
+
+    const Real result( - D * num / den );
+	
+    return result;
+}
+
+
+const Real 
 FirstPassagePairGreensFunction::p_leavea_i( const Real alpha,
 					    const Real r0 ) const
 {
@@ -527,6 +587,49 @@ FirstPassagePairGreensFunction::p_survival( const Real t,
 }
 
 const Real 
+FirstPassagePairGreensFunction::leaves( const Real t,
+					const Real r0 ) const
+{
+    Real p( 0.0 );
+
+    const RealVector& alphaTable_0( this->getAlphaTable( 0 ) );
+    const RealVector& expTable( this->expTable );
+
+    this->updateExpTable( t );
+
+    for( unsigned int i( 0 ); i < expTable.size(); ++i )
+    {
+	const Real value( leaves_i( alphaTable_0[i], r0 ) );
+
+	p += value * expTable[i];
+    }
+
+    return p * 4.0 * M_PI * getSigma() * getSigma();
+}
+
+const Real 
+FirstPassagePairGreensFunction::leavea( const Real t,
+					const Real r0 ) const
+{
+    Real p( 0.0 );
+
+    const RealVector& alphaTable_0( this->getAlphaTable( 0 ) );
+    const RealVector& expTable( this->expTable );
+
+    this->updateExpTable( t );
+
+    for( unsigned int i( 0 ); i < expTable.size(); ++i )
+    {
+	const Real value( leavea_i( alphaTable_0[i], r0 ) );
+
+	p += value * expTable[i];
+    }
+
+    return p * 4.0 * M_PI * geta() * geta();
+}
+
+
+const Real 
 FirstPassagePairGreensFunction::p_leaves( const Real t,
 					  const Real r0 ) const
 {
@@ -756,14 +859,12 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
 
     // psurvTable, expTable
 
+    Real reaction( leaves( t, r0 ) );
+    Real escape( leavea( t, r0 ) );
 
-    Real p( p_survival( t, r0 ) );
-    Real leaves( p_leaves( t, r0 ) );
+    Real value( reaction / ( reaction + escape ) );
 
-    Real value( leaves / p );
-
-//    Real leavea( p - leaves );
-//    printf("%g %g %g %g\n", value, p, leaves, leavea);
+//    printf("%g %g %g\n", value, reaction, escape );
 
     if( rnd < value )  
     {
@@ -771,7 +872,7 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     }
     else 
     {
-	return ESCAPE;  // leavea
+	return ESCAPE;     // leavea
     }
 }
 
