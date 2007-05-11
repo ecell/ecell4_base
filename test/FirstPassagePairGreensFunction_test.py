@@ -215,7 +215,29 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.assertNotEqual( 0.0, surv )
         self.assertAlmostEqual( surv, pleaves + pleavea )
         
-                
+
+    def test_dpsurvival_is_leaves_plus_leavea( self ):
+
+        D = 1e-12
+        Sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 5e-8
+        
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf.seta( a )
+
+        dsurv = gf.dp_survival( t, r0 )
+        leaves = gf.leaves( t, r0 )
+        leavea = gf.leavea( t, r0 )
+
+        self.assertNotEqual( 0.0, dsurv )
+        self.assertAlmostEqual( dsurv, leaves + leavea )
+        
+
 
 '''
     def test_Alphan( self ):

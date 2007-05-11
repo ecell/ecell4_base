@@ -205,8 +205,6 @@ FirstPassagePairGreensFunction::p_0_i( const Real alpha,
 }
 
 
-
-
 const Real 
 FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
 					      const Real r0 ) const
@@ -238,6 +236,41 @@ FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
     const Real result( 2.0 * num1 * num2 / den );
+
+    return result;
+}
+
+
+const Real 
+FirstPassagePairGreensFunction::dp_survival_i( const Real alpha,
+					       const Real r0 ) const
+{
+    const Real a( geta() );
+    const Real sigma( getSigma() );
+    const Real h( geth() );
+    const Real hsigma_p_1( this->hsigma_p_1 );
+
+    const Real sigmasq( sigma * sigma );
+    const Real alphasq( alpha * alpha );
+
+    Real num1;
+    {
+	const Real angle_a( alpha * ( a - sigma ) );
+	Real sin_a;
+	Real cos_a;
+	sincos( angle_a, &sin_a, &cos_a );
+
+	num1 = alpha * ( - a * hsigma_p_1 * cos_a +
+			 sigma * ( h * sigma + a * alpha * sin_a ) );
+    }
+
+    const Real num2( num_r0( alpha, r0 ) );
+
+    const Real den( r0 * 
+		    ( ( a - sigma ) * sigmasq * alphasq +
+		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
+
+    const Real result( - 2.0 * getD() * num1 * num2 / den );
 
     return result;
 }
@@ -563,6 +596,28 @@ p_survival_table( const Real t,
 
     return p;
 }
+
+const Real 
+FirstPassagePairGreensFunction::dp_survival( const Real t,
+					     const Real r0 ) const
+{
+    Real p( 0.0 );
+
+    this->updateAlphaTable0( t );
+    const RealVector& alphaTable_0( this->getAlphaTable( 0 ) );
+
+    const Real mDt( - getD() * t );
+
+    for( RealVector::size_type i( 0 ); i < alphaTable_0.size(); ++i )
+    {
+	const Real alpha( alphaTable_0[i] );
+	const Real value( dp_survival_i( alpha, r0 ) );
+	p += value * std::exp( mDt * alpha * alpha );
+    }
+
+    return p;
+}
+
 
 
 const Real 

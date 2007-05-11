@@ -77,6 +77,9 @@ public:
 				 const Real r0,
 				 const RealVector& psurvTable ) const;
 
+    const Real dp_survival( const Real t,
+			    const Real r0 ) const;
+
 
     const Real leaves( const Real t,
 		       const Real r0 ) const;
@@ -144,6 +147,9 @@ protected:
 
     const Real p_survival_i( const Real alpha,
 			     const Real r0 ) const;
+
+    const Real dp_survival_i( const Real alpha,
+			      const Real r0 ) const;
 
     const Real leavea_i( const Real alpha,
 			 const Real r0 ) const;
