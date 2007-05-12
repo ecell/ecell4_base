@@ -177,8 +177,9 @@ protected:
     void updateAlphaTable0( const Real t ) const;
     void updateAlphaTable( const Integer n, const Real t ) const;
 //    void updateExpTable( const Real t ) const;
-    void updatePsurvTable( RealVector& psurvTable, const Real r0 ) const;
-    void updateNum_r0Table( RealVector& num_r0Table, const Real r0 ) const;
+
+    void createPsurvTable( RealVector& psurvTable, const Real r0 ) const;
+    void createNum_r0Table( RealVector& num_r0Table, const Real r0 ) const;
 
     void makep_nTable( const Real r, 
 		       const Real r0, 

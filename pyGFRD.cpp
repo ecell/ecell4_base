@@ -174,10 +174,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "p_leavea", &FirstPassagePairGreensFunction::p_leavea )
 	.def( "leaves", &FirstPassagePairGreensFunction::leaves )
 	.def( "leavea", &FirstPassagePairGreensFunction::leavea )
-	.def( "dump", 
-	      &FirstPassagePairGreensFunction::dump )
 
-	// debug
 	.def( "f_alpha0", 
 	      &FirstPassagePairGreensFunction::f_alpha0 )
 	.def( "alpha0_i", 
@@ -186,6 +183,10 @@ BOOST_PYTHON_MODULE( _gfrd )
 	      &FirstPassagePairGreensFunction::f_alpha )
 	.def( "f_alpha_aux", 
 	      &FirstPassagePairGreensFunction::f_alpha_aux )
+
+	.def( "dump", 
+	      &FirstPassagePairGreensFunction::dump )
+
 //	.def( "alpha_i", 
 //	      &FirstPassagePairGreensFunction::alpha_i )
 	;
