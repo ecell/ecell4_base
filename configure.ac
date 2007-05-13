@@ -33,6 +33,8 @@ dnl
 dnl
 AM_PATH_GSL(1.0,,AC_MSG_ERROR([could not find required version of GSL.]))
 dnl
+AC_CHECK_LIB(boost_python,,AC_MSG_ERROR([could not find libboost_python.]))
+dnl
 dnl
 AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])
 AM_CHECK_PYMOD(scipy,,,[AC_MSG_ERROR([could not find Python scipy module.])])

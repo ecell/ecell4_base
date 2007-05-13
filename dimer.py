@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from egfrd import *
-from gfrd import *
 
 from logger import *
 import sys
