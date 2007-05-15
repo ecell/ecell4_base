@@ -236,7 +236,108 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         self.assertNotEqual( 0.0, dsurv )
         self.assertAlmostEqual( dsurv, leaves + leavea )
+
+    def test_psurvival_smallt( self ):
+
+        D = 1e-12
+        Sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 5e-8
+
+        a = 1e-7
         
+        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf.seta( a )
+
+        for i in range( 10 ):
+            surv = gf.p_survival( t, r0 )
+            pleaves = gf.p_leaves( t, r0 )
+            pleavea = gf.p_leavea( t, r0 )
+            self.assertNotEqual( 0.0, surv )
+            self.assertAlmostEqual( surv, pleaves + pleavea )
+            t *= .1
+
+
+    def test_psurvival_smallt( self ):
+
+        D = 1e-12
+        Sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 5e-8
+
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf.seta( a )
+
+        for i in range( 10 ):
+            psurv = gf.p_survival( t, r0 )
+            pleaves = gf.p_leaves( t, r0 )
+            pleavea = gf.p_leavea( t, r0 )
+            self.assertNotEqual( 0.0, psurv )
+            self.assertAlmostEqual( pleaves + pleavea, psurv )
+            t *= .1
+
+    def test_p_int_r( self ):
+
+        D = 1e-12
+        Sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 5e-8
+
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf.seta( a )
+
+        r = r0
+        pintr = gf.p_int_r( r, t, r0 )
+        print 'r', pintr
+
+
+    def test_p_int_r_at_a_is_p_survival( self ):
+
+        D = 1e-12
+        Sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 5e-8
+
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf.seta( a )
+        r = r0
+        
+        pintr = gf.p_int_r( a, t, r0 )
+        psurv = gf.p_survival( t, r0 )
+        self.assertAlmostEqual( pintr, psurv )
+
+    def test_p_int_r_at_s_is_zero( self ):
+
+        D = 1e-12
+        Sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 5e-8
+
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf.seta( a )
+        r = r0
+        
+        pintr = gf.p_int_r( Sigma, t, r0 )
+        self.assertEqual( 0.0, pintr )
+
 
 
 '''

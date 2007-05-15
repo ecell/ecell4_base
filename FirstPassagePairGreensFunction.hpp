@@ -41,8 +41,6 @@ public:
 
     void seta( const Real a );
     
-    
-
     const Real drawTime( const Real rnd, const Real r0 ) const;
 
 
@@ -96,8 +94,12 @@ public:
 
     const Real p_int_r( const Real r,
 			const Real t,
-			const Real r0,
-			const RealVector& num_r0Table ) const;
+			const Real r0 ) const;
+
+    const Real p_int_r_table( const Real r,
+			      const Real t,
+			      const Real r0,
+			      const RealVector& num_r0Table ) const;
 
     const Real p_n( const Integer n, const Real r, 
 		    const Real r0, const Real t ) const;
@@ -175,10 +177,15 @@ protected:
 			const Real t ) const;
 
     const Real p_theta_table( const Real theta,
-			const Real r, 
-			const Real r0, 
-			const Real t, 
-			const RealVector& p_nTable ) const;
+			      const Real r, 
+			      const Real r0, 
+			      const Real t, 
+			      const RealVector& p_nTable ) const;
+
+    const Real p_0_i_exp( const unsigned int i,
+			  const Real t,
+			  const Real r,
+			  const Real r0 ) const;
 
     const Real p_survival_i_exp( const unsigned int i,
 				 const Real t,
@@ -212,8 +219,13 @@ protected:
     const Real p_int_r_i_exp( const unsigned int i,
 			      const Real t,
 			      const Real r,
-			      const Real r0,
-			      const RealVector& num_r0Table ) const;
+			      const Real r0 ) const;
+
+    const Real p_int_r_i_exp_table( const unsigned int i,
+				    const Real t,
+				    const Real r,
+				    const Real r0,
+				    const RealVector& num_r0Table ) const;
 
     const Real 
     sumOverAlphaTable0( boost::function<const Real( const unsigned int i )> f )
@@ -221,7 +233,7 @@ protected:
 	
     void updateAlphaTable0( const Real t ) const;
     void updateAlphaTable( const Integer n, 
-				 const Real t ) const; 
+			   const Real t ) const; 
 
     void createPsurvTable( RealVector& psurvTable, const Real r0 ) const;
     void createNum_r0Table( RealVector& num_r0Table, const Real r0 ) const;
@@ -305,8 +317,8 @@ private:
     
 
     static const unsigned int MAX_ALPHA_SEQ = 100;
-    static const Real ALPHA_TOLERANCE = 1e-8;
-    static const Real CUTOFF = 1e-8;
+    static const Real ALPHA_CUTOFF = 1e-10;
+    static const Real TOLERANCE = 1e-8;
 
 };
 
