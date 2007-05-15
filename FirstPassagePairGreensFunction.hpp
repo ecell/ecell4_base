@@ -2,6 +2,7 @@
 #define __FIRSTPASSAGEPAIRGREENSFUNCTION 
 
 #include <boost/tuple/tuple.hpp>
+#include <boost/function.hpp>
 
 #include <gsl/gsl_roots.h>
 
@@ -171,12 +172,56 @@ protected:
     const Real p_theta( const Real theta,
 			const Real r, 
 			const Real r0, 
+			const Real t ) const;
+
+    const Real p_theta_table( const Real theta,
+			const Real r, 
+			const Real r0, 
 			const Real t, 
 			const RealVector& p_nTable ) const;
+
+    const Real p_survival_i_exp( const unsigned int i,
+				 const Real t,
+				 const Real r0 ) const;
+
+    const Real p_survival_i_table( const unsigned int i,
+				   const Real t,
+				   const Real r0,
+				   const RealVector& psurvTable ) const;
+
+    const Real dp_survival_i_exp( const unsigned int i,
+				  const Real alpha,
+				  const Real r0 ) const;
+
+    const Real leavea_i_exp( const unsigned int i,
+			     const Real alpha,
+			     const Real r0 ) const;
+
+    const Real leaves_i_exp( const unsigned int i,
+			     const Real alpha,
+			     const Real r0 ) const;
+    
+    const Real p_leavea_i_exp( const unsigned int i,
+			       const Real alpha,
+			       const Real r0 ) const;
+
+    const Real p_leaves_i_exp( const unsigned int i,
+			       const Real alpha,
+			       const Real r0 ) const;
+
+    const Real p_int_r_i_exp( const unsigned int i,
+			      const Real t,
+			      const Real r,
+			      const Real r0,
+			      const RealVector& num_r0Table ) const;
+
+    const Real 
+    sumOverAlphaTable0( boost::function<const Real( const unsigned int i )> f )
+	const;
 	
     void updateAlphaTable0( const Real t ) const;
-    void updateAlphaTable( const Integer n, const Real t ) const;
-//    void updateExpTable( const Real t ) const;
+    void updateAlphaTable( const Integer n, 
+				 const Real t ) const; 
 
     void createPsurvTable( RealVector& psurvTable, const Real r0 ) const;
     void createNum_r0Table( RealVector& num_r0Table, const Real r0 ) const;
@@ -258,6 +303,8 @@ private:
 
     Real a;
     
+
+    static const unsigned int MAX_ALPHA_SEQ = 100;
     static const Real ALPHA_TOLERANCE = 1e-8;
     static const Real CUTOFF = 1e-8;
 

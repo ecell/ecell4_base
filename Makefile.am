@@ -16,7 +16,8 @@ pkgpyexecdir=@pkgpyexecdir@
 LIBPYTHON=-lpython$(PYTHON_VERSION)
 
 INCLUDES=${PYTHON_INCLUDES} -I${NUMPY_INCLUDE_DIR}
-AM_CXXFLAGS=@CXXFLAGS@ -g # -msse2 -mfpmath=sse  #-ffast-math # -ftree-vectorize -ftree-vectorizer-verbose=5
+AM_CXXFLAGS=@CXXFLAGS@ -g # -msse2 -mfpmath=sse  #-ffast-math 
+#AM_CXXFLAGS+= -ftree-vectorize -ftree-vectorizer-verbose=5
 
 LIBBOOSTPYTHON=-lboost_python
 

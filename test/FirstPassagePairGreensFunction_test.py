@@ -231,8 +231,8 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf.seta( a )
 
         dsurv = gf.dp_survival( t, r0 )
-        leaves = gf.leaves( t, r0 )
-        leavea = gf.leavea( t, r0 )
+        leaves = gf.leaves( t, r0 ) * 4.0 * numpy.pi * Sigma * Sigma
+        leavea = gf.leavea( t, r0 ) * 4.0 * numpy.pi * a * a
 
         self.assertNotEqual( 0.0, dsurv )
         self.assertAlmostEqual( dsurv, leaves + leavea )
