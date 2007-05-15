@@ -18,10 +18,10 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_Instantiation( self ):
         D = 1e-12
         kf = 1e8
-        Sigma = 1e-8
+        sigma = 1e-8
         a = 1e-7
 
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         self.failIf( gf == None )
         gf.seta( a )
 
@@ -29,11 +29,11 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_DrawTime( self ):
         D = 1e-12
         kf = 1e-8
-        Sigma = 1e-8
+        sigma = 1e-8
         a = 1e-7
         r0 = 5e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = gf.drawTime( 0.5, r0 )
@@ -48,11 +48,11 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_DrawTime_a_equal_sigma( self ):
         D = 1e-12
         kf = 1e-8
-        Sigma = 1e-8
-        a = Sigma
+        sigma = 1e-8
+        a = sigma
         r0 = a
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = gf.drawTime( 0.5, r0 )
@@ -61,11 +61,11 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_DrawTime_r0_equal_a( self ):
         D = 1e-12
         kf = 1e-8
-        Sigma = 1e-8
+        sigma = 1e-8
         a = 1e-7
         r0 = a
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = gf.drawTime( 0.5, r0 )
@@ -75,11 +75,11 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_DrawEventType( self ):
         D = 1e-12
         kf = 1e-8
-        Sigma = 1e-8
+        sigma = 1e-8
         a = 1e-7
         r0 = 5e-8
 
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = gf.drawTime( 0.5, r0 )
@@ -96,36 +96,36 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_DrawR( self ):
         D = 1e-12
         kf = 1e-8
-        Sigma = 1e-8
+        sigma = 1e-8
         a = 1e-7
         r0 = 2e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = 1e-3
 
         r = gf.drawR( 0.5, r0, t )
-        self.failIf( r < Sigma or r > a )
+        self.failIf( r < sigma or r > a )
 
         r1 = gf.drawR( 0.0, r0, t )
         r2 = gf.drawR( 1.0, r0, t )
 
-        self.failIf( r1 < Sigma or r1 > a )
-        self.failIf( r2 < Sigma or r2 > a )
+        self.failIf( r1 < sigma or r1 > a )
+        self.failIf( r2 < sigma or r2 > a )
 
-        self.failIf( abs( r1 - Sigma ) > 1e-15 )
+        self.failIf( abs( r1 - sigma ) > 1e-15 )
         self.failIf( abs( r2 - a ) > 1e-15 )
 
 
     def test_DrawR_zerot( self ):
         D = 1e-12
         kf = 1e-8
-        Sigma = 1e-8
+        sigma = 1e-8
         a = 1e-7
         r0 = 2e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = 0.0
@@ -136,11 +136,11 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_DrawTheta( self ):
         D = 1e-12
         kf = 1e-8
-        Sigma = 1e-8
+        sigma = 1e-8
         a = 1e-7
         r0 = 5e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = gf.drawTime( 0.5, r0 )
@@ -148,41 +148,57 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         r = gf.drawR( 0.5, r0, t )
 
         theta = gf.drawTheta( 0.5, r, r0, t )
-        self.failIf( theta < 0.0 or theta > 2 * numpy.pi )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
 
         theta = gf.drawTheta( 0.0, r, r0, t )
-        self.failIf( theta < 0.0 or theta > 2 * numpy.pi )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
 
         theta = gf.drawTheta( 1.0, r, r0, t )
-        self.failIf( theta < 0.0 or theta > 2 * numpy.pi )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
 
 
     def test_DrawTheta_zerot( self ):
         D = 1e-12
         kf = 1e-8
-        Sigma = 1e-8
+        sigma = 1e-8
         a = 1e-7
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = 0.0
         theta = gf.drawTheta( 0.5, r0, r0, t )
         self.assertEqual( 0.0, theta )
 
+    def test_DrawTheta_smallt( self ):
+        D = 1e-12
+        kf = 1e-8
+        sigma = 1e-8
+        a = 1e-7
+        r = 5e-8
+        r0 = 5e-8
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        t = 1e-4
+        theta = gf.drawTheta( 0.5, r0, r0, t )
+        print theta
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
 
 
     def test_Alpha0( self ):
 
         D = 1e-12
-        Sigma = 1e-8
+        sigma = 1e-8
         kf = 1e-8
         
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
         maxerror = 0.0
         
@@ -197,7 +213,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_psurvival_is_pleaves_plus_pleavea( self ):
 
         D = 1e-12
-        Sigma = 1e-8
+        sigma = 1e-8
         kf = 1e-8
 
         t = 1e-3
@@ -205,7 +221,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         surv = gf.p_survival( t, r0 )
@@ -219,7 +235,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_dpsurvival_is_leaves_plus_leavea( self ):
 
         D = 1e-12
-        Sigma = 1e-8
+        sigma = 1e-8
         kf = 1e-8
 
         t = 1e-3
@@ -227,11 +243,11 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         dsurv = gf.dp_survival( t, r0 )
-        leaves = gf.leaves( t, r0 ) * 4.0 * numpy.pi * Sigma * Sigma
+        leaves = gf.leaves( t, r0 ) * 4.0 * numpy.pi * sigma * sigma
         leavea = gf.leavea( t, r0 ) * 4.0 * numpy.pi * a * a
 
         self.assertNotEqual( 0.0, dsurv )
@@ -240,7 +256,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_psurvival_smallt( self ):
 
         D = 1e-12
-        Sigma = 1e-8
+        sigma = 1e-8
         kf = 1e-8
 
         t = 1e-3
@@ -248,7 +264,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         for i in range( 10 ):
@@ -263,7 +279,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_psurvival_smallt( self ):
 
         D = 1e-12
-        Sigma = 1e-8
+        sigma = 1e-8
         kf = 1e-8
 
         t = 1e-3
@@ -271,7 +287,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         for i in range( 10 ):
@@ -285,7 +301,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_p_int_r( self ):
 
         D = 1e-12
-        Sigma = 1e-8
+        sigma = 1e-8
         kf = 1e-8
 
         t = 1e-3
@@ -293,18 +309,18 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         r = r0
         pintr = gf.p_int_r( r, t, r0 )
-        print 'r', pintr
+        self.failIf( pintr < 0.0 or pintr > 1.0 )
 
 
     def test_p_int_r_at_a_is_p_survival( self ):
 
         D = 1e-12
-        Sigma = 1e-8
+        sigma = 1e-8
         kf = 1e-8
 
         t = 1e-3
@@ -312,7 +328,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
         r = r0
         
@@ -323,7 +339,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_p_int_r_at_s_is_zero( self ):
 
         D = 1e-12
-        Sigma = 1e-8
+        sigma = 1e-8
         kf = 1e-8
 
         t = 1e-3
@@ -331,11 +347,11 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
         r = r0
         
-        pintr = gf.p_int_r( Sigma, t, r0 )
+        pintr = gf.p_int_r( sigma, t, r0 )
         self.assertEqual( 0.0, pintr )
 
 
@@ -344,12 +360,12 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
     def test_Alphan( self ):
 
         D = 1e-12
-        Sigma = 1e-8
+        sigma = 1e-8
         kf = 1e-18
         
         a = 2e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, Sigma )
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
         maxerror = 0
         

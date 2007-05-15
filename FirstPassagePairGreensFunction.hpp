@@ -176,6 +176,11 @@ protected:
 			const Real r0, 
 			const Real t ) const;
 
+    const Real dp_theta_at_a( const Real theta,
+			      const Real r0, 
+			      const Real t ) const;
+
+
     const Real p_theta_table( const Real theta,
 			      const Real r, 
 			      const Real r0, 

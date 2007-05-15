@@ -893,8 +893,8 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
 
     const Real hsigma( h * sigma );
 
-    const Real num1( alpha * ( hsigma * sigma - hsigma * r * cos_r +
-			       ( sigma - r ) * cos_r ) -
+    const Real num1( alpha * ( h * sigmasq - hsigma * r * cos_r +
+			       ( sigma - r ) * cos_r ) +
 		     ( hsigma_p_1 + r * sigma * alphasq ) * sin_r );
 
     const Real num2( num_r0 );
@@ -1633,7 +1633,7 @@ FirstPassagePairGreensFunction::makep_nTable( const Real r,
 //	    p_n = 0.0;
 	    break;
 	}
-//	printf("p_n %g\n",p_n );
+	printf("p_n %g\n",p_n );
 
 	p_nTable.push_back( p_n );
 
@@ -1816,6 +1816,41 @@ makedp_n_at_aTable( const Real r0,
 
 }
 
+const Real 
+FirstPassagePairGreensFunction::
+p_theta( const Real theta,
+	 const Real r, 
+	 const Real r0, 
+	 const Real t ) const 
+{
+    Real p( 0.0 );
+
+    RealVector p_nTable;
+
+    makep_nTable( r, r0, t, p_nTable );
+
+    p = p_theta_table( theta, r, r0, t, p_nTable );
+
+    return p;
+}
+
+
+const Real 
+FirstPassagePairGreensFunction::
+dp_theta_at_a( const Real theta,
+	       const Real r0, 
+	       const Real t ) const 
+{
+    Real p( 0.0 );
+
+    RealVector p_nTable;
+
+    makedp_n_at_aTable( r0, t, p_nTable );
+
+    p = p_theta_table( theta, geta(), r0, t, p_nTable );
+
+    return p;
+}
 
 
 const Real 
@@ -1897,8 +1932,8 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	Real p( this->p_theta_table( theta, r, r0, t, p_nTable ) );
 	if( p < 0.0 )
 	{
-//	    printf("drawTheta: p<0 %g\n", p );
-//	    p = 0.0;
+	    printf("drawTheta: p<0 %g\n", p );
+	    p = 0.0;
 	}
 
 
