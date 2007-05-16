@@ -952,8 +952,7 @@ FirstPassagePairGreensFunction::p_0_i_exp( const unsigned int i,
 					   const Real r0 ) const
 {
     const Real alpha( this->getAlphaTable( 0 )[i] );
-    return std::exp( - getD() * t * alpha * alpha ) * 
-	p_0_i( alpha, r, r0 );
+    return std::exp( - getD() * t * alpha * alpha ) * p_0_i( alpha, r, r0 );
 }
 
 
@@ -1955,8 +1954,8 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 
     // debug
     //const Real psurv( p_survival( t, r0 ) );
-    //const Real p0r( p_0( t, r, r0 ) * 4.0 * M_PI * r * r * 2);
-
+    const Real p0r( p_0( t, r, r0 ) * 4.0 * M_PI * r * r );
+    printf("%g %g\n", p0r, pTable[i] * 2.0 * M_PI * r * r * thetaStep );
 
     const Real targetPoint( rnd * pTable[i] );
     const size_t lowerBound( gsl_interp_bsearch( &pTable[0], targetPoint, 
