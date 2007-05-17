@@ -1816,11 +1816,10 @@ makedp_n_at_aTable( const Real r0,
 }
 
 const Real 
-FirstPassagePairGreensFunction::
-p_theta( const Real theta,
-	 const Real r, 
-	 const Real r0, 
-	 const Real t ) const 
+FirstPassagePairGreensFunction::p_theta( const Real theta,
+					 const Real r, 
+					 const Real r0, 
+					 const Real t ) const 
 {
     Real p( 0.0 );
 
@@ -1835,10 +1834,9 @@ p_theta( const Real theta,
 
 
 const Real 
-FirstPassagePairGreensFunction::
-dp_theta_at_a( const Real theta,
-	       const Real r0, 
-	       const Real t ) const 
+FirstPassagePairGreensFunction::dp_theta_at_a( const Real theta,
+					       const Real r0, 
+					       const Real t ) const 
 {
     Real p( 0.0 );
 
@@ -1852,7 +1850,7 @@ dp_theta_at_a( const Real theta,
 }
 
 
-const Real 
+const Real
 FirstPassagePairGreensFunction::
 p_theta_table( const Real theta,
 	       const Real r, 
@@ -1883,12 +1881,109 @@ p_theta_table( const Real theta,
 }
 
 
+void
+FirstPassagePairGreensFunction::
+make_p_thetaTable( RealVector& pTable,
+		   const Real r, 
+		   const Real r0, 
+		   const Real t,
+		   const unsigned int n,
+		   const RealVector& p_nTable ) const
+{
+    const Real thetaStep( M_PI / n );
+
+    pTable.push_back( 0.0 );
+
+    Real p_prev( 0.0 );
+    unsigned int i( 1 );
+    while( true )
+    {
+	const Real theta( thetaStep * i );
+
+	Real p( this->p_theta_table( theta, r, r0, t, p_nTable ) );
+	Real ip( this->ip_theta_table( theta, r, r0, t, p_nTable ) );
+	if( p < 0.0 )
+	{
+	    printf("drawTheta: p<0 %g\n", p );
+	    p = 0.0;
+	}
+
+	printf("ip %g\n",ip);
+
+	const Real value( ( p_prev + p ) * 0.5 );
+	pTable.push_back( *( pTable.end() - 1 ) + value );
+
+//	printf("p %g %g %g\n", theta, pTable[i], p );
+
+	if( //value < pTable[i] * std::numeric_limits<Real>::epsilon() ||
+	    i >= n - 1 )
+	{
+	    break;   // pTable is valid in [0,i].
+	}
+
+	p_prev = p;
+	++i;
+    }
+
+}
+
+
+const Real 
+FirstPassagePairGreensFunction::
+ip_theta_table( const Real theta,
+		const Real r, 
+		const Real r0, 
+		const Real t,	 
+		const RealVector& p_nTable ) const
+{
+    Real p( 0.0 );
+
+    const unsigned int tableSize( p_nTable.size() );
+
+    const Real cos_theta( cos( theta ) );
+
+    // LgndTable is offset by 1 to incorporate the n=-1 case.
+    // For ex: LgndTable[0] is for n=-1, LengTable[1] is n=0 ...
+
+    RealVector LgndTable1( tableSize + 2 );
+    LgndTable1[0] = 1.0;  // n = -1
+    gsl_sf_legendre_Pl_array( tableSize, cos_theta, &LgndTable1[1] );
+
+    for( RealVector::size_type n( 0 ); n < tableSize; ++n )
+    {
+	const Real Lgnd_n_m1( LgndTable1[n] );
+	const Real Lgnd_n_p1( LgndTable1[n+2] );
+
+	p += p_nTable[n] * ( Lgnd_n_m1 - Lgnd_n_p1 ) / ( 1.0 + 2.0 * n );
+    }
+
+    return p;
+}
+
+const Real
+FirstPassagePairGreensFunction::ip_theta_F( const Real theta,
+					    const ip_theta_params* params )
+{
+    const FirstPassagePairGreensFunction* const gf( params->gf ); 
+    const Real r( params->r );
+    const Real r0( params->r0 );
+    const Real t( params->t );
+    const RealVector& p_nTable( params->p_nTable );
+    const Real value( params->value );
+
+    return gf->ip_theta_table( theta, r, r0, t, p_nTable ) - value;
+}
+
+
+
 const Real 
 FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 					   const Real r, 
 					   const Real r0, 
 					   const Real t ) const
 {
+    Real theta;
+
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
 
@@ -1902,7 +1997,6 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	return 0.0;
     }
 
-
     RealVector p_nTable;
 
     if( r != geta() )
@@ -1915,54 +2009,81 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	makedp_n_at_aTable( r0, t, p_nTable );
     }
 
-    const unsigned int tableSize( 200 );
-    const Real thetaStep( M_PI / tableSize );
+#if 1
+    // root finding with the integrand form.
 
-    RealVector pTable( tableSize );
-    
-    // pTable[0] = 0.0;
-    Real p_prev( 0.0 );
+    const Real ip_theta_pi( ip_theta_table( M_PI, r, r0, t, p_nTable ) );
 
-    unsigned int i( 1 );
+    ip_theta_params params = { this, r, r0, t, p_nTable, rnd * ip_theta_pi };
+
+    gsl_function F = 
+	{
+	    reinterpret_cast<typeof(F.function)>( &ip_theta_F ),
+	    &params 
+	};
+
+    const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
+    gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
+    gsl_root_fsolver_set( solver, &F, 0.0, M_PI );
+
+    const unsigned int maxIter( 100 );
+
+    unsigned int i( 0 );
     while( true )
     {
-	const Real theta( thetaStep * i );
+	gsl_root_fsolver_iterate( solver );
+	const Real low( gsl_root_fsolver_x_lower( solver ) );
+	const Real high( gsl_root_fsolver_x_upper( solver ) );
+	int status( gsl_root_test_interval( low, high, 1e-15, 
+					    this->TOLERANCE ) );
 
-	Real p( this->p_theta_table( theta, r, r0, t, p_nTable ) );
-	if( p < 0.0 )
+	if( status == GSL_CONTINUE )
 	{
-	    printf("drawTheta: p<0 %g\n", p );
-	    p = 0.0;
+	    if( i >= maxIter )
+	    {
+		gsl_root_fsolver_free( solver );
+		std::cerr << "drawTheta: failed to converge." << std::endl;
+		throw std::exception();
+	    }
+	}
+	else
+	{
+	    break;
 	}
 
-
-	const Real value( ( p_prev + p ) * 0.5 );
-	pTable[i] = pTable[i-1] + value;
-
-//	printf("p %g %g %g\n", theta, pTable[i], p );
-
-	if( //value < pTable[i] * std::numeric_limits<Real>::epsilon() ||
-	    i >= tableSize - 1 )
-	{
-	    break;   // pTable is valid in [0,i].
-	}
-
-	p_prev = p;
 	++i;
     }
+  
+    //printf("%d\n", i );
 
+    theta = gsl_root_fsolver_root( solver );
+    gsl_root_fsolver_free( solver );
+    
+
+#else
+    // bisection after numerical integration.
+
+    const RealVector::size_type thetaResolution( 200 );
+    const Real thetaStep( M_PI / thetaResolution );
+
+    RealVector pTable;
+    pTable.reserve( thetaResolution );
+
+    make_p_thetaTable( pTable, r, r0, t, thetaResolution, p_nTable );
+    const RealVector::size_type tableLast( pTable.size()-1 );
 
     // debug
     //const Real psurv( p_survival( t, r0 ) );
     const Real p0r( p_0( t, r, r0 ) * 4.0 * M_PI * r * r );
-    printf("%g %g\n", p0r, pTable[i] * 2.0 * M_PI * r * r * thetaStep );
+    const Real ip( ip_theta_table( M_PI,r, r0,t,p_nTable ) );
+    printf("theta %g %g %g\n", p0r, pTable[tableLast] * 
+	   2.0 * M_PI * r * r * thetaStep, ip * 2.0 * M_PI * r * r );
 
-    const Real targetPoint( rnd * pTable[i] );
+    const Real targetPoint( rnd * pTable[tableLast] );
     const size_t lowerBound( gsl_interp_bsearch( &pTable[0], targetPoint, 
-						 0, i ) );
+						 0, tableLast ) );
     const Real low( lowerBound * thetaStep );
 
-    Real theta;
     if( pTable[lowerBound+1] - pTable[lowerBound] != 0.0 )
     {
 	theta = low + thetaStep * ( targetPoint - pTable[lowerBound] ) / 
@@ -1973,6 +2094,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	// this can happen when rnd is equal to or is too close to 1.0.
 	theta = low;
     }
+#endif
 
 
     return theta;

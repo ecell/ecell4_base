@@ -176,6 +176,17 @@ protected:
 			const Real r0, 
 			const Real t ) const;
 
+    const Real ip_theta( const Real theta,
+			 const Real r, 
+			 const Real r0, 
+			 const Real t ) const;
+
+    const Real ip_theta_table( const Real theta,
+			       const Real r, 
+			       const Real r0, 
+			       const Real t,
+			       const RealVector& p_nTable ) const;
+
     const Real dp_theta_at_a( const Real theta,
 			      const Real r0, 
 			      const Real t ) const;
@@ -186,6 +197,13 @@ protected:
 			      const Real r0, 
 			      const Real t, 
 			      const RealVector& p_nTable ) const;
+
+    void make_p_thetaTable( RealVector& pTable,
+			    const Real r, 
+			    const Real r0, 
+			    const Real t,
+			    const unsigned int n,
+			    const RealVector& p_nTable ) const;
 
     const Real p_0_i_exp( const unsigned int i,
 			  const Real t,
@@ -233,8 +251,8 @@ protected:
 				    const RealVector& num_r0Table ) const;
 
     const Real 
-    sumOverAlphaTable0( boost::function<const Real( const unsigned int i )> f )
-	const;
+    sumOverAlphaTable0( boost::function<const Real( const unsigned int i )> 
+			f ) const;
 	
     void updateAlphaTable0( const Real t ) const;
     void updateAlphaTable( const Integer n, 
@@ -300,6 +318,21 @@ protected:
     static const Real 
     p_int_r_F( const Real r,
 	       const p_int_r_params* const params );
+
+    struct ip_theta_params
+    { 
+	const FirstPassagePairGreensFunction* const gf;
+	const Real r;
+	const Real r0;
+	const Real t;
+	const RealVector& p_nTable;
+	const Real value;
+    };
+
+    static const Real 
+    ip_theta_F( const Real theta,
+		const ip_theta_params* const params );
+
     
     const Real num_r0( const Real alpha,
 		       const Real r0 ) const;
