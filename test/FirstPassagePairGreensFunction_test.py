@@ -365,7 +365,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         kf = 1e-8
 
-        t = 1e-3
+        t = 1e-4
         r0 = 5e-8
 
         a = 1e-7
