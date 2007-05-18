@@ -175,6 +175,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "leaves", &FirstPassagePairGreensFunction::leaves )
 	.def( "leavea", &FirstPassagePairGreensFunction::leavea )
 	.def( "p_int_r", &FirstPassagePairGreensFunction::p_int_r )
+	.def( "p_theta", &FirstPassagePairGreensFunction::p_theta )
+	.def( "ip_theta", &FirstPassagePairGreensFunction::ip_theta )
 
 	.def( "f_alpha0", 
 	      &FirstPassagePairGreensFunction::f_alpha0 )

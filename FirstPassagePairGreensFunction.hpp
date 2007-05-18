@@ -96,10 +96,15 @@ public:
 			const Real t,
 			const Real r0 ) const;
 
-    const Real p_int_r_table( const Real r,
-			      const Real t,
-			      const Real r0,
-			      const RealVector& num_r0Table ) const;
+    const Real p_theta( const Real theta,
+			const Real r, 
+			const Real r0, 
+			const Real t ) const;
+
+    const Real ip_theta( const Real theta,
+			 const Real r, 
+			 const Real r0, 
+			 const Real t ) const;
 
     const Real p_n( const Integer n, const Real r, 
 		    const Real r0, const Real t ) const;
@@ -171,15 +176,11 @@ protected:
 			  const Real r0,
 			  const Real num_r0 ) const;
 
-    const Real p_theta( const Real theta,
-			const Real r, 
-			const Real r0, 
-			const Real t ) const;
 
-    const Real ip_theta( const Real theta,
-			 const Real r, 
-			 const Real r0, 
-			 const Real t ) const;
+    const Real p_int_r_table( const Real r,
+			      const Real t,
+			      const Real r0,
+			      const RealVector& num_r0Table ) const;
 
     const Real ip_theta_table( const Real theta,
 			       const Real r, 
@@ -261,14 +262,14 @@ protected:
     void createPsurvTable( RealVector& psurvTable, const Real r0 ) const;
     void createNum_r0Table( RealVector& num_r0Table, const Real r0 ) const;
 
-    void makep_nTable( const Real r, 
+    void makep_nTable( RealVector& p_nTable,
+		       const Real r, 
 		       const Real r0, 
-		       const Real t,
-		       RealVector& p_nTable ) const;
-
-    void makedp_n_at_aTable( const Real r0, 
-			     const Real t,
-			     RealVector& p_nTable ) const;
+		       const Real t ) const;
+    
+    void makedp_n_at_aTable( RealVector& p_nTable,
+			     const Real r0, 
+			     const Real t ) const;
 
     struct f_alpha0_aux_params
     { 
@@ -355,7 +356,7 @@ private:
     
 
     static const unsigned int MAX_ALPHA_SEQ = 100;
-    static const Real ALPHA_CUTOFF = 1e-10;
+    static const Real ALPHA_CUTOFF = 1e-9;
     static const Real TOLERANCE = 1e-8;
 
 };

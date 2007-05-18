@@ -357,6 +357,34 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         pintr = gf.p_int_r( sigma, t, r0 )
         self.assertEqual( 0.0, pintr )
 
+    def test_ip_theta_is_int_p_theta( self ):
+
+        import scipy.integrate
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 5e-8
+
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+        r = r0
+
+        ip = gf.ip_theta( 0.0, r, r0, t )
+        self.assertEqual( 0.0, ip )
+        
+        resolution = 10
+        for i in range( 1, resolution ):
+            theta = i * numpy.pi / resolution 
+            ip = gf.ip_theta( theta, r, r0, t )
+            result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
+                                           args=( r, r0, t ) )
+            np = result[0]
+            self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
 
 '''

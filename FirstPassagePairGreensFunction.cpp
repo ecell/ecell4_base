@@ -150,7 +150,7 @@ FirstPassagePairGreensFunction::alpha0_i( const Integer i ) const
 
         low = gsl_root_fsolver_x_lower( solver );
         high = gsl_root_fsolver_x_upper( solver );
-	int status( gsl_root_test_interval( low, high, 0.0, 1e-15 ) );
+	const int status( gsl_root_test_interval( low, high, 0.0, 1e-15 ) );
 
 	if( status == GSL_CONTINUE )
 	{
@@ -491,7 +491,7 @@ FirstPassagePairGreensFunction::alpha_i( const Integer i, const Integer n,
 	
 	low = gsl_root_fsolver_x_lower( solver );
 	high = gsl_root_fsolver_x_upper( solver );
-	int status( gsl_root_test_interval( low, high, 1e-6, 1e-21 ) );
+	const int status( gsl_root_test_interval( low, high, 1e-6, 1e-21 ) );
 	
 	if( status == GSL_CONTINUE )
 	{
@@ -1070,6 +1070,8 @@ sumOverAlphaTable0( boost::function<const Real( const unsigned int )> f ) const
     const Real threshold( fabs( p_0 * this->TOLERANCE ) );
     pTable.push_back( p_0 );
 
+    bool extrapolationNeeded( true );
+
     RealVector::size_type i( 1 ); 
     while( i < tableLength )
     {
@@ -1079,25 +1081,26 @@ sumOverAlphaTable0( boost::function<const Real( const unsigned int )> f ) const
 	//std::cerr << pTable[i]<< std::endl;
 	if( threshold > fabs( p_i ) )
 	{
+	    extrapolationNeeded = false;
 	    break;
 	}
 	
 	++i;
     }
 
-    const bool extrapolationNeeded( i >= tableLength-1 );
     if( ! extrapolationNeeded )
     {
 	p = std::accumulate( pTable.begin(), pTable.begin()+i, 0.0 );
     }
     else
     {
+	std::cerr << "Using series acceleration." << std::endl;
+
 	gsl_sum_levin_u_workspace* 
 	    workspace( gsl_sum_levin_u_alloc( tableLength ) );
 	Real error;
 	gsl_sum_levin_u_accel( &pTable[0], pTable.size(), workspace, 
 			       &p, &error );
-
 	if( fabs( error ) >= fabs( p * TOLERANCE ) )
 	{
 	    std::cerr << "Series acceleration error exceeds tolerance; "
@@ -1371,8 +1374,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	gsl_root_fsolver_iterate( solver );
 	low = gsl_root_fsolver_x_lower( solver );
 	high = gsl_root_fsolver_x_upper( solver );
-	int status( gsl_root_test_interval( low, high, 0.0, 
-					    this->TOLERANCE ) );
+	const int status( gsl_root_test_interval( low, high, 0.0, 
+						  this->TOLERANCE ) );
 
 	if( status == GSL_CONTINUE )
 	{
@@ -1484,7 +1487,8 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 	gsl_root_fsolver_iterate( solver );
 	low = gsl_root_fsolver_x_lower( solver );
 	high = gsl_root_fsolver_x_upper( solver );
-	int status( gsl_root_test_interval( low, high, 1e-15, this->TOLERANCE ) );
+	const int status( gsl_root_test_interval( low, high, 1e-15, 
+						  this->TOLERANCE ) );
 
 	if( status == GSL_CONTINUE )
 	{
@@ -1626,10 +1630,10 @@ FirstPassagePairGreensFunction::p_n( const Integer n,
 }
 
 void
-FirstPassagePairGreensFunction::makep_nTable( const Real r, 
+FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
+					      const Real r, 
 					      const Real r0, 
-					      const Real t,
-					      RealVector& p_nTable ) const
+					      const Real t ) const
 {
     const unsigned NMAX( 100 );
 
@@ -1646,15 +1650,15 @@ FirstPassagePairGreensFunction::makep_nTable( const Real r,
     {
 	Real p_n( this->p_n( n, r, r0, t ) );
 
-	if( p_n < 0.0 || ! std::isnormal( p_n ) )
+	if( ! std::isnormal( p_n ) )
 	{
 #ifndef NDEBUG
-	    printf("makep_nTable: invalid p_n; %g \n", p_n );
+	    printf("makep_nTable: invalid value;  %g (n=%d)\n", p_n, n );
 #endif // NDEBUG
 //	    p_n = 0.0;
 	    break;
 	}
-	printf("p_n %g\n",p_n );
+	printf("%d p_n %g\n", n, p_n );
 
 	p_nTable.push_back( p_n );
 
@@ -1785,10 +1789,9 @@ FirstPassagePairGreensFunction::dp_n_at_a( const Integer n,
 
 
 void
-FirstPassagePairGreensFunction::
-makedp_n_at_aTable( const Real r0, 
-		    const Real t,
-		    RealVector& p_nTable ) const
+FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
+						    const Real r0, 
+						    const Real t ) const
 {
     const unsigned NMAX( 100 );
 
@@ -1805,10 +1808,10 @@ makedp_n_at_aTable( const Real r0,
     {
 	Real p_n( this->dp_n_at_a( n, r0, t ) );
 
-	if( p_n < 0.0 || ! std::isnormal( p_n ) )
+	if( ! std::isnormal( p_n ) )
 	{
 #ifndef NDEBUG
-	    printf("makedp_n_at_aTable: invalid p_n;  %g \n", p_n );
+	    printf("makedp_n_at_aTable: invalid value;  %g (n=%d)\n", p_n, n );
 #endif // NDEBUG
 //	    p_n = 0.0;
 	    break;
@@ -1843,13 +1846,33 @@ FirstPassagePairGreensFunction::p_theta( const Real theta,
 					 const Real r0, 
 					 const Real t ) const 
 {
-    Real p( 0.0 );
+    {
+	const Real sigma( this->getSigma() );
+	const Real a( this->geta() );
+	
+	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+	THROW_UNLESS( std::invalid_argument, r > sigma && r <= a );
+	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    }
+
+    if( t == 0.0 )
+    {
+	return 0.0;
+    }
 
     RealVector p_nTable;
 
-    makep_nTable( r, r0, t, p_nTable );
+    if( r != geta() )
+    {
+	makep_nTable( p_nTable, r, r0, t );
+    }
+    else
+    {
+	makedp_n_at_aTable( p_nTable, r0, t );
+    }
 
-    p = p_theta_table( theta, r, r0, t, p_nTable );
+    const Real p( p_theta_table( theta, r, r0, t, p_nTable ) );
 
     return p;
 }
@@ -1864,7 +1887,7 @@ FirstPassagePairGreensFunction::dp_theta_at_a( const Real theta,
 
     RealVector p_nTable;
 
-    makedp_n_at_aTable( r0, t, p_nTable );
+    makedp_n_at_aTable( p_nTable, r0, t );
 
     p = p_theta_table( theta, geta(), r0, t, p_nTable );
 
@@ -1951,6 +1974,44 @@ make_p_thetaTable( RealVector& pTable,
 
 
 const Real 
+FirstPassagePairGreensFunction::ip_theta( const Real theta,
+					  const Real r, 
+					  const Real r0, 
+					  const Real t ) const
+{
+    {
+	const Real sigma( this->getSigma() );
+	const Real a( this->geta() );
+	
+	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+	THROW_UNLESS( std::invalid_argument, r > sigma && r <= a );
+	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    }
+
+    if( t == 0.0 || theta == 0.0 )
+    {
+	return 0.0;
+    }
+
+    RealVector p_nTable;
+
+    if( r != geta() )
+    {
+	makep_nTable( p_nTable, r, r0, t );
+    }
+    else
+    {
+	makedp_n_at_aTable( p_nTable, r0, t );
+    }
+
+    const Real p( ip_theta_table( theta, r, r0, t, p_nTable ) );
+
+    return p;
+}
+
+
+const Real 
 FirstPassagePairGreensFunction::
 ip_theta_table( const Real theta,
 		const Real r, 
@@ -2006,13 +2067,15 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 {
     Real theta;
 
-    const Real sigma( this->getSigma() );
-    const Real a( this->geta() );
-
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
-    THROW_UNLESS( std::invalid_argument, r > sigma && r < a );
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    {
+	const Real sigma( this->getSigma() );
+	const Real a( this->geta() );
+	
+	THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+	THROW_UNLESS( std::invalid_argument, r > sigma && r <= a );
+	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    }
 
     if( t == 0.0 )
     {
@@ -2023,12 +2086,12 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 
     if( r != geta() )
     {
-	makep_nTable( r, r0, t, p_nTable );
+	makep_nTable( p_nTable, r, r0, t );
     }
     else
     {
 	puts("dp");
-	makedp_n_at_aTable( r0, t, p_nTable );
+	makedp_n_at_aTable( p_nTable, r0, t );
     }
 
 #if 1
@@ -2056,8 +2119,8 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	gsl_root_fsolver_iterate( solver );
 	const Real low( gsl_root_fsolver_x_lower( solver ) );
 	const Real high( gsl_root_fsolver_x_upper( solver ) );
-	int status( gsl_root_test_interval( low, high, 1e-15, 
-					    this->TOLERANCE ) );
+	const int status( gsl_root_test_interval( low, high, 1e-15, 
+						  this->TOLERANCE ) );
 
 	if( status == GSL_CONTINUE )
 	{
