@@ -1060,31 +1060,50 @@ sumOverAlphaTable0( boost::function<const Real( const unsigned int )> f ) const
 
     const RealVector::size_type tableLength( alphaTable_0.size() );
 
-    RealVector p_i( tableLength );
-    for( RealVector::size_type i( 0 ); i < tableLength; ++i )
+    RealVector pTable;
+    const Real p_0( f( 0 ) );
+    if( p_0 == 0.0 )
     {
-	p_i[i] = f( i );
+	return p;
     }
 
-    const bool extrapolationNeeded( tableLength >= MAX_ALPHA_SEQ );
+    const Real threshold( fabs( p_0 * this->TOLERANCE ) );
+    pTable.push_back( p_0 );
+
+    RealVector::size_type i( 1 ); 
+    while( i < tableLength )
+    {
+	const Real p_i( f( i ) );
+	pTable.push_back( p_i );
+	
+	//std::cerr << pTable[i]<< std::endl;
+	if( threshold > fabs( p_i ) )
+	{
+	    break;
+	}
+	
+	++i;
+    }
+
+    const bool extrapolationNeeded( i >= tableLength-1 );
     if( ! extrapolationNeeded )
     {
-	p = std::accumulate( p_i.begin(), p_i.end(), 0.0 );
+	p = std::accumulate( pTable.begin(), pTable.begin()+i, 0.0 );
     }
     else
     {
 	gsl_sum_levin_u_workspace* 
 	    workspace( gsl_sum_levin_u_alloc( tableLength ) );
 	Real error;
-	gsl_sum_levin_u_accel( &p_i[0], tableLength, workspace, 
+	gsl_sum_levin_u_accel( &pTable[0], pTable.size(), workspace, 
 			       &p, &error );
 
-	if( fabs( error ) >= p * TOLERANCE )
+	if( fabs( error ) >= fabs( p * TOLERANCE ) )
 	{
 	    std::cerr << "Series acceleration error exceeds tolerance; "
-		      << fabs( error ) << " (rel: " << fabs( error ) / p
-		      << "), terms_used = " << workspace->terms_used
-		      << "." << std::endl;
+		      << fabs( error ) << " (rel: " << fabs( error / p )
+		      << "), terms_used = " 
+		      << workspace->terms_used << "." << std::endl;
 	}
 
 	gsl_sum_levin_u_free( workspace );
@@ -1135,6 +1154,7 @@ p_survival_table( const Real t,
 					 p_survival_i_table, 
 					 this,
 					 _1, t, r0, psurvTable ) ) );
+
     return p;
 }
 
@@ -1315,11 +1335,12 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 		") = " << GSL_FN_EVAL( &F, high ) << "; r0 = " << r0 << 
 		", " << dump() << std::endl;
 	    throw std::exception();
-	    
 	}
 //	this->updateAlphaTable0( high );
     }
 
+    this->updateAlphaTable0( low );
+    this->createPsurvTable( psurvTable, r0 );
 
     while( GSL_FN_EVAL( &F, low ) > 0.0 )
     {
@@ -1350,7 +1371,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	gsl_root_fsolver_iterate( solver );
 	low = gsl_root_fsolver_x_lower( solver );
 	high = gsl_root_fsolver_x_upper( solver );
-	int status( gsl_root_test_interval( low, high, 0.0, this->TOLERANCE ) );
+	int status( gsl_root_test_interval( low, high, 0.0, 
+					    this->TOLERANCE ) );
 
 	if( status == GSL_CONTINUE )
 	{
