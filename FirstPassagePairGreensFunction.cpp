@@ -1238,7 +1238,7 @@ FirstPassagePairGreensFunction::p_int_r( const Real r,
 					 const Real r0 ) const
 
 {
-    this->updateAlphaTable0( t ); // ?
+    this->updateAlphaTable0( t );
 
     const Real p( 
 	sumOverAlphaTable0( boost::bind( &FirstPassagePairGreensFunction::
