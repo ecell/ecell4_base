@@ -365,7 +365,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         kf = 1e-8
 
-        t = 1e-4
+        t = 1e-3
         r0 = 5e-8
 
         a = 1e-7
@@ -386,6 +386,55 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             np = result[0]
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
+
+    def test_ip_theta_pi_is_p_0( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-5
+        r0 = 5e-8
+        r = r0
+
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        ip = gf.ip_theta( numpy.pi, r, r0, t )
+        p0 = gf.p_0( t, r, r0 ) * 2
+
+        self.assertNotEqual( 0.0, ip )
+        self.assertAlmostEqual( 1.0, ip/p0 )
+
+    def test_p_theta_never_negative( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-4
+        r0 = 5e-8
+        r = r0
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        pint = gf.ip_theta( numpy.pi, r, r0, t )
+
+        pmin = 0.0
+        resolution = 50
+        for i in range( resolution ):
+            theta = i * numpy.pi / resolution
+            p = gf.p_theta( theta, r, r0, t ) / pint / resolution 
+            pmin = min( pmin, p )
+            print 'theta: ', theta, '\tp: ', p
+            
+        self.failIf( pmin < 0.0, 'Negative p_theta; t= %g, %s'
+                     % ( t, gf.dump() ) )
+        
 
 '''
     def test_Alphan( self ):
@@ -408,6 +457,28 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         self.failIf( abs( maxerror ) > 1e-8 )
 '''
+
+
+
+
+'''
+    def test_dump( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 5e-8
+
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        print gf.dump()
+'''
+
 
         
 if __name__ == "__main__":

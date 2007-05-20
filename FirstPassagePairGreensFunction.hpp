@@ -355,6 +355,7 @@ private:
     Real a;
     
 
+    static const unsigned int MAX_ORDER = 50;
     static const unsigned int MAX_ALPHA_SEQ = 100;
     static const Real ALPHA_CUTOFF = 1e-9;
     static const Real TOLERANCE = 1e-8;

@@ -537,7 +537,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
     // We know the range of the solution from - Pi/2 <= atan <= Pi/2.
     const Real alphaMid( target * factor );
     const Real alphaHalfRange( M_PI_2 * factor );
-    Real low( alphaMid - alphaHalfRange * .9 ); // avoid zero.
+    Real low( alphaMid - alphaHalfRange * (1.0 - 1e-3) ); // avoid zero.
     Real high( alphaMid + alphaHalfRange );
 
 
@@ -548,11 +548,12 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
     // The assumption is the interval between roots is not much
     // smaller than Pi / ( a - sigma ).
 
-    Real lowvalue( f_alpha(low,n) );
-    Real highvalue( f_alpha(high,n) );
 
     Integer offset( 0 );
 
+
+    Real lowvalue( f_alpha(low,n) );
+    Real highvalue( f_alpha(high,n) );
 
     while( true ) // this can be much faster if better initial guess is given.
     {
@@ -563,7 +564,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
 	}
 
 //	printf("lh: %d %d %g %g %g %g\n", 
-//	       n, offset, low, high, lowvalue, highvalue );
+//	       n, offset, low, high, f_alpha( low, n ), f_alpha( high, n ) );
 	++offset;
 	target = M_PI * offset + M_PI_2;
 	low = ( target - M_PI_2 ) * factor;
@@ -572,6 +573,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
 	lowvalue = highvalue;
 	highvalue = f_alpha( high, n );
     }
+
 
     RealVector& alphaTable_n( this->getAlphaTable( n ) );
     alphaTable_n.clear();
@@ -596,8 +598,8 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
     {
 	const Real alpha_i( this->alpha_i( i, n, solver ) );
 
-//	printf("alpha %d %d %g %g %g\n", n, i, alpha_i, f_alpha(alpha_i,n),
-//	       f_alpha(alpha_i*1.1,n));
+//	printf("alpha %d %d %g %g %g\n", n, i, alpha_i, f_alpha(alpha_i+1,n),
+//	       f_alpha(alpha_i-1,n));
 
 	alphaTable_n.push_back( alpha_i );
 
@@ -649,7 +651,7 @@ FirstPassagePairGreensFunction::p_0_i( const Real alpha,
 
     const Real num2( num_r0( alpha, r0 ) );
 
-    const Real den( 2.0 * M_PI * r * r0 * 
+    const Real den( 2 * M_PI * r * r0 * 
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
@@ -695,7 +697,7 @@ FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
-    const Real result( 2.0 * num1 * num2 / den );
+    const Real result( 2 * num1 * num2 / den );
 
     return result;
 }
@@ -730,7 +732,7 @@ FirstPassagePairGreensFunction::dp_survival_i( const Real alpha,
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
-    const Real result( - 2.0 * getD() * num1 * num2 / den );
+    const Real result( - 2 * getD() * num1 * num2 / den );
 
     return result;
 }
@@ -761,7 +763,7 @@ FirstPassagePairGreensFunction::leavea_i( const Real alpha,
 
     const Real num2( num_r0( alpha, r0 ) );
     
-    const Real den( 2.0 * a * M_PI * r0 *
+    const Real den( 2 * a * M_PI * r0 *
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
@@ -786,7 +788,7 @@ FirstPassagePairGreensFunction::leaves_i( const Real alpha,
 
     const Real num( h * alpha * num_r0( alpha, r0 ) );
 		      
-    const Real den( 2.0 * M_PI * r0 *
+    const Real den( 2 * M_PI * r0 *
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
@@ -826,7 +828,7 @@ FirstPassagePairGreensFunction::p_leavea_i( const Real alpha,
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
-    const Real result( 2.0 * num1 * num2 / den );
+    const Real result( 2 * num1 * num2 / den );
 
     return result;
 }
@@ -850,7 +852,7 @@ FirstPassagePairGreensFunction::p_leaves_i( const Real alpha,
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
-    const Real result( 2.0 * num / den );
+    const Real result( 2 * num / den );
 	
     return result;
 }
@@ -903,7 +905,7 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
-    const Real result( 2.0 * num1 * num2 / den );
+    const Real result( 2 * num1 * num2 / den );
 
     return result;
 }
@@ -1104,7 +1106,7 @@ sumOverAlphaTable0( boost::function<const Real( const unsigned int )> f ) const
 	if( fabs( error ) >= fabs( p * TOLERANCE ) )
 	{
 	    std::cerr << "Series acceleration error exceeds tolerance; "
-		      << fabs( error ) << " (rel: " << fabs( error / p )
+		      << fabs( error ) << " (rel error: " << fabs( error / p )
 		      << "), terms_used = " 
 		      << workspace->terms_used << "." << std::endl;
 	}
@@ -1635,8 +1637,6 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 					      const Real r0, 
 					      const Real t ) const
 {
-    const unsigned NMAX( 100 );
-
     p_nTable.clear();
 
     const Real p_0( this->p_n( 0, r, r0, t ) );
@@ -1652,13 +1652,12 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 
 	if( ! std::isnormal( p_n ) )
 	{
-#ifndef NDEBUG
-	    printf("makep_nTable: invalid value;  %g (n=%d)\n", p_n, n );
-#endif // NDEBUG
+	    std::cerr << "makep_nTable: invalid value; " <<
+		p_n << "( n= " << n << ")." << std::endl;
 //	    p_n = 0.0;
 	    break;
 	}
-	printf("%d p_n %g\n", n, p_n );
+//	printf("%d p_n %g\n", n, p_n );
 
 	p_nTable.push_back( p_n );
 
@@ -1670,9 +1669,9 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 	    break;
 	}
 	
-	if( n >= NMAX )
+	if( n >= this->MAX_ORDER )
 	{
-	    std::cerr << "p_n didn't converge." << std::endl;
+	    // std::cerr << "p_n didn't converge." << std::endl;
 	    break;
 	}
 	
@@ -1728,7 +1727,7 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const Real alpha,
     const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
     const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
 
-    const Real dfalpha_r( - 2.0 * ( J + Y ) / ( a * M_PI * jaa1 ) );
+    const Real dfalpha_r( - 2 * ( J + Y ) / ( a * M_PI * jaa1 ) );
     const Real falpha_r0( - J * yar0 + Y * jar0 );
 
     const Real num( dfalpha_r * falpha_r0 );
@@ -1793,8 +1792,6 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 						    const Real r0, 
 						    const Real t ) const
 {
-    const unsigned NMAX( 100 );
-
     p_nTable.clear();
 
     const Real p_0( this->dp_n_at_a( 0, r0, t ) );
@@ -1810,9 +1807,8 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 
 	if( ! std::isnormal( p_n ) )
 	{
-#ifndef NDEBUG
-	    printf("makedp_n_at_aTable: invalid value;  %g (n=%d)\n", p_n, n );
-#endif // NDEBUG
+	    std::cerr << "makedp_n_at_aTable: invalid value; " <<
+		p_n << "( n= " << n << ")." << std::endl;
 //	    p_n = 0.0;
 	    break;
 	}
@@ -1828,7 +1824,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 	    break;
 	}
 	
-	if( n >= NMAX )
+	if( n >= this->MAX_ORDER )
 	{
 	    std::cerr << "dp_n_at_a didn't converge." << std::endl;
 	    break;
@@ -1907,19 +1903,45 @@ p_theta_table( const Real theta,
 
     const unsigned int tableSize( p_nTable.size() );
 
-    RealVector LgndTable( tableSize );
+    RealVector pTable( tableSize );
 
     Real sin_theta;
     Real cos_theta;
     sincos( theta, &sin_theta, &cos_theta );
-
-    gsl_sf_legendre_Pl_array( tableSize-1, cos_theta, &LgndTable[0] );
+    gsl_sf_legendre_Pl_array( tableSize-1, cos_theta, &pTable[0] );
 
     for( RealVector::size_type n( 0 ); n < tableSize; ++n )
     {
-	p += p_nTable[n] * LgndTable[n];
-//	printf("%d %g %g %g\n",n,p_nTable[n],LgndTable[n],p);
+	pTable[n] = p_nTable[n] * pTable[n];
+	//printf("%d %g %g\n",n,p_nTable[n],pTable[n]);
     }
+
+    const bool extrapolationNeeded( tableSize >= this->MAX_ORDER );
+    if( ! extrapolationNeeded )
+    {
+	p = std::accumulate( pTable.begin(), pTable.end(), 0.0 );
+    }
+    else
+    {
+	std::cerr << "p_theta: using series acceleration." << std::endl;
+
+	gsl_sum_levin_u_workspace* 
+	    workspace( gsl_sum_levin_u_alloc( pTable.size() ) );
+	Real error;
+	gsl_sum_levin_u_accel( &pTable[0], pTable.size(), workspace, 
+			       &p, &error );
+	if( fabs( error ) >= fabs( p * TOLERANCE ) )
+	{
+	    std::cerr << "Series acceleration error exceeds tolerance; "
+		      << fabs( error ) << " (rel error: " << fabs( error / p )
+		      << "), terms_used = " 
+		      << workspace->terms_used << "." << std::endl;
+	}
+
+	gsl_sum_levin_u_free( workspace );
+    }
+
+
 
     p *= sin_theta;
     return p;
@@ -1946,14 +1968,14 @@ make_p_thetaTable( RealVector& pTable,
 	const Real theta( thetaStep * i );
 
 	Real p( this->p_theta_table( theta, r, r0, t, p_nTable ) );
-	Real ip( this->ip_theta_table( theta, r, r0, t, p_nTable ) );
+
 	if( p < 0.0 )
 	{
 	    printf("drawTheta: p<0 %g\n", p );
 	    p = 0.0;
 	}
 
-	printf("ip %g\n",ip);
+	printf("p %g\n",p);
 
 	const Real value( ( p_prev + p ) * 0.5 );
 	pTable.push_back( *( pTable.end() - 1 ) + value );
@@ -2037,7 +2059,7 @@ ip_theta_table( const Real theta,
 	const Real Lgnd_n_m1( LgndTable1[n] );
 	const Real Lgnd_n_p1( LgndTable1[n+2] );
 
-	p += p_nTable[n] * ( Lgnd_n_m1 - Lgnd_n_p1 ) / ( 1.0 + 2.0 * n );
+	p += p_nTable[n] * ( Lgnd_n_m1 - Lgnd_n_p1 ) / ( 1.0 + 2 * n );
     }
 
     return p;
@@ -2094,7 +2116,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	makedp_n_at_aTable( p_nTable, r0, t );
     }
 
-#if 1
+#if 0
     // root finding with the integrand form.
 
     const Real ip_theta_pi( ip_theta_table( M_PI, r, r0, t, p_nTable ) );
@@ -2162,7 +2184,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
     const Real p0r( p_0( t, r, r0 ) * 4.0 * M_PI * r * r );
     const Real ip( ip_theta_table( M_PI,r, r0,t,p_nTable ) );
     printf("theta %g %g %g\n", p0r, pTable[tableLast] * 
-	   2.0 * M_PI * r * r * thetaStep, ip * 2.0 * M_PI * r * r );
+	   2 * M_PI * r * r * thetaStep, ip * 2 * M_PI * r * r );
 
     const Real targetPoint( rnd * pTable[tableLast] );
     const size_t lowerBound( gsl_interp_bsearch( &pTable[0], targetPoint, 
