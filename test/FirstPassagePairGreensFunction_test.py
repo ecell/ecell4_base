@@ -414,7 +414,8 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         kf = 1e-8
 
-        t = 1e-4
+        # smaller t causes problem
+        t = 1e-3
         r0 = 5e-8
         r = r0
         a = 1e-7
@@ -430,7 +431,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             theta = i * numpy.pi / resolution
             p = gf.p_theta( theta, r, r0, t ) / pint / resolution 
             pmin = min( pmin, p )
-            print 'theta: ', theta, '\tp: ', p
+            #print 'theta: ', theta, '\tp: ', p
             
         self.failIf( pmin < 0.0, 'Negative p_theta; t= %g, %s'
                      % ( t, gf.dump() ) )

@@ -112,14 +112,14 @@ public:
     const Real dp_n_at_a( const Integer n, const Real r0, const Real t ) const;
 
 
-    const Real p_n_alpha( const Real alpha,
-			  const Integer n, 
+    const Real p_n_alpha( const unsigned int i,
+			  const unsigned int n,
 			  const Real r, 
 			  const Real r0,
 			  const Real t ) const;
 
-    const Real dp_n_alpha_at_a( const Real alpha,
-				const Integer n, 
+    const Real dp_n_alpha_at_a( const unsigned int i,
+				const unsigned int n,
 				const Real r0,
 				const Real t ) const;
 
@@ -250,11 +250,15 @@ protected:
 				    const Real r,
 				    const Real r0,
 				    const RealVector& num_r0Table ) const;
+const Real 
+sumOverAlphaTable0( boost::function<const Real( const unsigned int )> f ) const;
 
-    const Real 
-    sumOverAlphaTable0( boost::function<const Real( const unsigned int i )> 
-			f ) const;
-	
+
+    static const Real 
+    funcSum( const size_t max_i,
+	     boost::function<const Real( const unsigned int i )> f,
+	     const Real tolerance = TOLERANCE );
+	 
     void updateAlphaTable0( const Real t ) const;
     void updateAlphaTable( const Integer n, 
 			   const Real t ) const; 
