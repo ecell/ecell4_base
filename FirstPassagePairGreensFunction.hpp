@@ -250,10 +250,6 @@ protected:
 				    const Real r,
 				    const Real r0,
 				    const RealVector& num_r0Table ) const;
-const Real 
-sumOverAlphaTable0( boost::function<const Real( const unsigned int )> f ) const;
-
-
     static const Real 
     funcSum( const size_t max_i,
 	     boost::function<const Real( const unsigned int i )> f,
@@ -361,7 +357,7 @@ private:
 
     static const unsigned int MAX_ORDER = 50;
     static const unsigned int MAX_ALPHA_SEQ = 100;
-    static const Real ALPHA_CUTOFF = 1e-9;
+    static const Real ALPHA_CUTOFF = 1e-12;
     static const Real TOLERANCE = 1e-8;
 
 };

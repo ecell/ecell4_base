@@ -1102,7 +1102,8 @@ funcSum( const size_t max_i,
 	    std::cerr << "Series acceleration error exceeds tolerance; "
 		      << fabs( error ) << " (rel error: " << fabs( error / p )
 		      << "), terms_used = " 
-		      << workspace->terms_used << "." << std::endl;
+		      << workspace->terms_used << " (" 
+		      << pTable.size() << " terms given)." << std::endl;
 	}
 
 	gsl_sum_levin_u_free( workspace );
@@ -1110,72 +1111,6 @@ funcSum( const size_t max_i,
 
     return p;
 }
-
-const Real 
-FirstPassagePairGreensFunction::
-sumOverAlphaTable0( boost::function<const Real( const unsigned int )> f ) const
-{
-    Real p( 0.0 );
-
-    const RealVector& alphaTable_0( this->getAlphaTable( 0 ) );
-
-    const RealVector::size_type tableLength( alphaTable_0.size() );
-
-    RealVector pTable;
-    const Real p_0( f( 0 ) );
-    if( p_0 == 0.0 )
-    {
-	return p;
-    }
-
-    const Real threshold( fabs( p_0 * this->TOLERANCE ) );
-    pTable.push_back( p_0 );
-
-    bool extrapolationNeeded( true );
-
-    RealVector::size_type i( 1 ); 
-    while( i < tableLength )
-    {
-	const Real p_i( f( i ) );
-	pTable.push_back( p_i );
-	
-	//std::cerr << pTable[i]<< std::endl;
-	if( threshold > fabs( p_i ) )
-	{
-	    extrapolationNeeded = false;
-	    break;
-	}
-	
-	++i;
-    }
-
-    if( ! extrapolationNeeded )
-    {
-	p = std::accumulate( pTable.begin(), pTable.begin()+i, 0.0 );
-    }
-    else
-    {
-	std::cerr << "Using series acceleration." << std::endl;
-
-	gsl_sum_levin_u_workspace* 
-	    workspace( gsl_sum_levin_u_alloc( tableLength ) );
-	Real error;
-	gsl_sum_levin_u_accel( &pTable[0], pTable.size(), workspace, 
-			       &p, &error );
-	if( fabs( error ) >= fabs( p * TOLERANCE ) )
-	{
-	    std::cerr << "Series acceleration error exceeds tolerance; "
-		      << fabs( error ) << " (rel error: " << fabs( error / p )
-		      << "), terms_used = " 
-		      << workspace->terms_used << "." << std::endl;
-	}
-
-	gsl_sum_levin_u_free( workspace );
-    }
-
-    return p;
-}
-
 
 const Real 
 FirstPassagePairGreensFunction::p_0( const Real t,
@@ -1977,7 +1912,8 @@ p_theta_table( const Real theta,
 	    std::cerr << "Series acceleration error exceeds tolerance; "
 		      << fabs( error ) << " (rel error: " << fabs( error / p )
 		      << "), terms_used = " 
-		      << workspace->terms_used << "." << std::endl;
+		      << workspace->terms_used << "( out of " 
+		      << pTable.size() << " terms available)." << std::endl;
 	}
 
 	gsl_sum_levin_u_free( workspace );
