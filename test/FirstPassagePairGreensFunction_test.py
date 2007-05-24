@@ -10,7 +10,7 @@ import numpy
 class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
     def setUp( self ):
-        self.N8 = 0.99999999
+        pass
 
     def tearDown( self ):
         pass
@@ -384,6 +384,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
+            #print theta, np, ip
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
 
@@ -435,7 +436,77 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             
         self.failIf( pmin < 0.0, 'Negative p_theta; t= %g, %s'
                      % ( t, gf.dump() ) )
+
+
+    def test_ip_theta_never_decrease( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        # smaller t causes problem
+        t = 1e-3
+        r0 = 5e-8
+        r = r0
+        a = 1e-7
         
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        pint_prev = 0.0
+
+        resolution = 50
+        for i in range( resolution ):
+            theta = i * numpy.pi / resolution
+            pint = gf.ip_theta( theta, r, r0, t )
+            self.failIf( pint < pint_prev )
+            pint_prev = pint
+
+
+    def test_ip_theta_at_a_is_leavea( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        # smaller t causes problem
+        t = 1e-4
+        r0 = 9e-8
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        leavea = gf.leavea( t, r0 ) * numpy.pi * a * a * 2
+        iptheta = gf.ip_theta( numpy.pi, a, r0, t ) * numpy.pi * a * a
+
+        self.assertAlmostEqual( leavea, iptheta )
+
+
+    def test_a( self ):
+
+        D = 3e-11
+        sigma = 1.2e-7
+        kf = 0
+
+        # smaller t causes problem
+        t = 2.106e-5
+        r0 = 3.433314093e-7
+        a = 4.32817e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        t = gf.drawTime( 0.5, r0 )
+        self.failIf( t <= 0.0 or t >= numpy.inf )
+
+
+        t = gf.drawTime( 0.0, r0 )
+        self.failIf( t <= 0.0 or t >= numpy.inf )
+        
+        t = gf.drawTime( 1.0, r0 )
+        self.failIf( t <= 0.0 or t >= numpy.inf )
+
 
 '''
     def test_Alphan( self ):

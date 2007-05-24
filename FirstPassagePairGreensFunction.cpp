@@ -1114,11 +1114,11 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 
     if( ! extrapolationNeeded )
     {
-	sum = std::accumulate( pTable.begin(), pTable.begin() + i, 0.0 );
+	sum = std::accumulate( pTable.begin(), pTable.end(), 0.0 );
     }
     else
     {
-	std::cerr << "Using series acceleration." << std::endl;
+	// std::cerr << "Using series acceleration." << std::endl;
 
 	gsl_sum_levin_u_workspace* 
 	    workspace( gsl_sum_levin_u_alloc( i ) );
@@ -1355,9 +1355,10 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	low *= .1;
 	printf( "drawTime: adjusting low: %g\n",low );
 
-	if( fabs( low ) <= 1e-50 )
+	if( fabs( low ) <= MIN_T )
 	{
-	    std::cerr << "Couldn't adjust low. F(" << low <<
+	    std::cerr << "Couldn't adjust low.  Returning MIN_T (= "
+		      << MIN_T << "); F(" << low <<
 		") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
 		      << dump() << std::endl;
 	    throw std::exception();
@@ -1711,7 +1712,7 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
     const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
     const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
 
-    const Real dfalpha_r( - 2 * ( J + Y ) / ( a * M_PI * jaa1 ) );
+    const Real dfalpha_r( - 2 * J / ( a * M_PI * jaa1 ) );
     const Real falpha_r0( - J * yar0 + Y * jar0 );
 
     const Real num( dfalpha_r * falpha_r0 );
@@ -1746,7 +1747,7 @@ FirstPassagePairGreensFunction::dp_n_at_a( const Integer n,
 			   this->MAX_ALPHA_SEQ ) );
 
     const Real factor( getD() * ( 1 + 2 * n ) * M_PI / 
-		       ( 8.0 * sqrt( a * r0 ) ) );
+		       ( 8.0 * sqrt( geta() * r0 ) ) );
 
 
     return p * factor;
@@ -1983,10 +1984,12 @@ ip_theta_i( const unsigned int n,
 	    const RealVector& p_nTable, 
 	    const RealVector& lgndTable1 ) const
 {
-    const Real lgnd_n_m1( lgndTable1[n] );
-    const Real lgnd_n_p1( lgndTable1[n+2] );
+    // lgndTable1 is offset by 1; lgndTable1[0] is for n=-1.
+
+    const Real lgnd_n_m1( lgndTable1[n] );   // n-1
+    const Real lgnd_n_p1( lgndTable1[n+2] ); // n+1
     
-    return p_nTable[n] * ( lgnd_n_m1 - lgnd_n_p1 ) / ( 1.0 + 2 * n );
+    return p_nTable[n] * ( lgnd_n_m1 - lgnd_n_p1 ) / ( 1.0 + 2.0 * n );
 }
 
 
@@ -2006,7 +2009,7 @@ ip_theta_table( const Real theta,
     const Real cos_theta( cos( theta ) );
 
     // LgndTable is offset by 1 to incorporate the n=-1 case.
-    // For ex: LgndTable[0] is for n=-1, lgndTable[1] is n=0 ...
+    // For ex: LgndTable[0] is for n=-1, lgndTable[1] is for n=0 ...
 
     RealVector lgndTable1( tableSize + 2 );
     lgndTable1[0] = 1.0;  // n = -1
@@ -2174,6 +2177,7 @@ const std::string FirstPassagePairGreensFunction::dump() const
     std::ostringstream ss;
     ss << "D = " << this->getD() << ", sigma = " << this->getSigma() <<
 	", a = " << this->geta() <<
+	", kf = " << this->getkf() <<
 	", h = " << this->geth() << std::endl;
     return ss.str();
 }    
