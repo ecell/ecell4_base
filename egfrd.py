@@ -613,7 +613,7 @@ class Pair:
         if self.sim.checkPair( self ) != None:  # pair continues.
 
             pairClosest, pairDistance = self.findClosestShell()
-            self.setShellSize( pairDistance )
+            self.setShellSize( pairDistance * (1.0 - 1e-8) )
 
             dt = self.nextEvent()[0]
             return dt
@@ -853,7 +853,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
 
         pairClosest, pairClosestDistance = pair.findClosestShell()
-        print pairClosest, pairClosestDistance
+        #print pairClosest, pairClosestDistance
         
         # now, shellSize of this pair must be at minimum larger
         # than r0 * max( D1/(D1+D2)+raidus1, D2/(D1+D2)+radius2 )

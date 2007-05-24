@@ -14,6 +14,7 @@
 //#include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_lambert.h>
+#include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_roots.h>
 #include <gsl/gsl_sum.h>
@@ -21,7 +22,7 @@
 #include "factorial.hpp"
 #include "bessel.hpp"
 
-#include "HalfOrderBesselGenerator.hpp"
+//#include "HalfOrderBesselGenerator.hpp"
 
 #include "FirstPassagePairGreensFunction.hpp"
 
@@ -33,11 +34,12 @@ FirstPassagePairGreensFunction( const Real D,
 				const Real Sigma )
     :
     PairGreensFunction( D, kf, Sigma ),
-    h( getkf() / ( 4.0 * M_PI * getSigma() * getSigma() * getD() ) ),
-    hsigma_p_1( 1.0 + h * getSigma() ),
+//    alphaTable( this->MAX_ORDER+1 ),
+    h( kf / ( 4.0 * M_PI * Sigma * Sigma * D ) ),
+    hsigma_p_1( 1.0 + h * Sigma ),
     a( INFINITY )
 {
-    this->alphaTable.reserve( 32 );
+    ; // do nothing
 }
 
 FirstPassagePairGreensFunction::~FirstPassagePairGreensFunction()
@@ -51,12 +53,22 @@ void FirstPassagePairGreensFunction::seta( const Real a )
 
     this->a = a;
 
-    this->alphaTable.clear();
+    clearAlphaTable();
 }
 
 //
 // Alpha-related methods
 //
+
+void FirstPassagePairGreensFunction::clearAlphaTable() const
+{
+    std::for_each( this->alphaTable.begin(), this->alphaTable.end(),
+		   boost::mem_fn( &RealVector::clear ) );
+    std::fill( this->alphaOffsetTable.begin(), this->alphaOffsetTable.end(),
+	       -1 );
+
+}
+
 
 const Real 
 FirstPassagePairGreensFunction::f_alpha0( const Real alpha ) const
@@ -228,7 +240,6 @@ const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
     const Real realn( static_cast<Real>( n ) );
 
     const Real hSigma_m_n( hSigma - realn );
-
 #if 0
     // Numerical recipes
     Real tmp, jas1, yas1, jas2, yas2, jaa, yaa;
@@ -517,15 +528,19 @@ FirstPassagePairGreensFunction::alpha_i( const Integer i, const Integer n,
 }
 
 
-void
-FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
-						  const Real t ) const
+const unsigned int
+FirstPassagePairGreensFunction::alphaOffset( const unsigned int n ) const
 {
-    THROW_UNLESS( std::range_error, n >= 0 );
+    if( this->alphaOffsetTable[n] >= 0 )
+    {
+	return this->alphaOffsetTable[n];
+    }
+
+    unsigned int offset( 0 );
 
     if( n == 0 )
     {
-	return this->updateAlphaTable0( t );
+	return offset;
     }
 
     const Real sigma( this->getSigma() );
@@ -547,9 +562,6 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
     // where the values of f_alpha() straddle.
     // The assumption is the interval between roots is not much
     // smaller than Pi / ( a - sigma ).
-
-
-    Integer offset( 0 );
 
 
     Real lowvalue( f_alpha(low,n) );
@@ -574,6 +586,25 @@ FirstPassagePairGreensFunction::updateAlphaTable( const Integer n,
 	highvalue = f_alpha( high, n );
     }
 
+    this->alphaOffsetTable[n] = offset;
+
+    return offset;
+}
+
+
+void
+FirstPassagePairGreensFunction::updateAlphaTable( const unsigned int n,
+						  const Real t ) const
+{
+    THROW_UNLESS( std::range_error, n >= 0 && n <= this->MAX_ORDER );
+
+    if( n == 0 )
+    {
+	this->updateAlphaTable0( t );
+	return;
+    }
+
+    const unsigned int offset( alphaOffset( n ) );
 
     RealVector& alphaTable_n( this->getAlphaTable( n ) );
     alphaTable_n.clear();
@@ -920,12 +951,10 @@ createPsurvTable( RealVector& psurvTable, const Real r0 ) const
     psurvTable.clear();
     psurvTable.reserve( alphaTable_0.size() );
 
-    for( RealVector::const_iterator i( alphaTable_0.begin() );
-	 i != alphaTable_0.end(); ++i )
-    {
-	const Real alpha( *i );
-	psurvTable.push_back( p_survival_i( alpha, r0 ) );
-    }
+    std::transform( alphaTable_0.begin(), alphaTable_0.end(),
+		    std::back_inserter( psurvTable ),
+		    boost::bind( &FirstPassagePairGreensFunction::p_survival_i,
+				 this, _1, r0 ) );
 }
 
 
@@ -938,11 +967,10 @@ FirstPassagePairGreensFunction::createNum_r0Table( RealVector& num_r0Table,
     num_r0Table.clear();
     num_r0Table.reserve( alphaTable_0.size() );
 
-    for( unsigned int j( 0 ); j < alphaTable_0.size(); ++j )
-    {
-	const Real alpha( alphaTable_0[j] );
-	num_r0Table.push_back( num_r0( alpha, r0 ) );
-    }
+    std::transform( alphaTable_0.begin(), alphaTable_0.end(),
+		    std::back_inserter( num_r0Table ),
+		    boost::bind( &FirstPassagePairGreensFunction::num_r0,
+				 this, _1, r0 ) );
 }
 
 const Real 
@@ -951,7 +979,7 @@ FirstPassagePairGreensFunction::p_0_i_exp( const unsigned int i,
 					   const Real r,
 					   const Real r0 ) const
 {
-    const Real alpha( this->getAlphaTable( 0 )[i] );
+    const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * p_0_i( alpha, r, r0 );
 }
 
@@ -961,7 +989,7 @@ FirstPassagePairGreensFunction::p_survival_i_exp( const unsigned int i,
 						  const Real t,
 						  const Real r0 ) const
 {
-    const Real alpha( this->getAlphaTable( 0 )[i] );
+    const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * 
 	p_survival_i( alpha, r0 );
 }
@@ -973,7 +1001,7 @@ p_survival_i_table( const unsigned int i,
 		    const Real r0,
 		    const RealVector& psurvTable ) const
 {
-    const Real alpha( this->getAlphaTable( 0 )[i] );
+    const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * psurvTable[i];
 }
 
@@ -982,7 +1010,7 @@ FirstPassagePairGreensFunction::dp_survival_i_exp( const unsigned int i,
 						   const Real t,
 						   const Real r0 ) const
 {
-    const Real alpha( this->getAlphaTable( 0 )[i] );
+    const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * 
 	dp_survival_i( alpha, r0 );
 }
@@ -992,7 +1020,7 @@ FirstPassagePairGreensFunction::leavea_i_exp( const unsigned int i,
 					      const Real t,
 					      const Real r0 ) const
 {
-    const Real alpha( this->getAlphaTable( 0 )[i] );
+    const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * leavea_i( alpha, r0 );
 }
 
@@ -1001,7 +1029,7 @@ FirstPassagePairGreensFunction::leaves_i_exp( const unsigned int i,
 					      const Real t,
 					      const Real r0 ) const
 {
-    const Real alpha( this->getAlphaTable( 0 )[i] );
+    const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * leaves_i( alpha, r0 );
 }
 
@@ -1010,7 +1038,7 @@ FirstPassagePairGreensFunction::p_leavea_i_exp( const unsigned int i,
 						const Real t,
 						const Real r0 ) const
 {
-    const Real alpha( this->getAlphaTable( 0 )[i] );
+    const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * p_leavea_i( alpha, r0 );
 }
 
@@ -1019,7 +1047,7 @@ FirstPassagePairGreensFunction::p_leaves_i_exp( const unsigned int i,
 						const Real t,
 						const Real r0 ) const
 {
-    const Real alpha( this->getAlphaTable( 0 )[i] );
+    const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * p_leaves_i( alpha, r0 );
 }
 
@@ -1030,7 +1058,7 @@ p_int_r_i_exp( const unsigned int i,
 	       const Real r,
 	       const Real r0 ) const
 {
-    const Real alpha( this->getAlphaTable( 0 )[i] );
+    const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * 
 	p_int_r_i( r, alpha, r0, num_r0( alpha, r0 ) );
 }
@@ -1043,24 +1071,24 @@ p_int_r_i_exp_table( const unsigned int i,
 		     const Real r0,
 		     const RealVector& num_r0Table ) const
 {
-    const Real alpha( this->getAlphaTable( 0 )[i] );
+    const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * 
 	p_int_r_i( r, alpha, r0, num_r0Table[i] );
 }
 
 const Real 
 FirstPassagePairGreensFunction::
-funcSum( const size_t max_i,
-	 boost::function<const Real( const unsigned int i )> f,
+funcSum( boost::function<const Real( const unsigned int i )> f,
+	 const size_t max_i,
 	 const Real tolerance )
 {
-    Real p( 0.0 );
+    Real sum( 0.0 );
 
     RealVector pTable;
     const Real p_0( f( 0 ) );
     if( p_0 == 0.0 )
     {
-	return p;
+	return sum;
     }
 
     const Real threshold( fabs( p_0 * tolerance ) );
@@ -1069,7 +1097,7 @@ funcSum( const size_t max_i,
     bool extrapolationNeeded( true );
 
     RealVector::size_type i( 1 ); 
-    while( i < max_i )
+    while( i <= max_i )
     {
 	const Real p_i( f( i ) );
 	pTable.push_back( p_i );
@@ -1086,7 +1114,7 @@ funcSum( const size_t max_i,
 
     if( ! extrapolationNeeded )
     {
-	p = std::accumulate( pTable.begin(), pTable.begin()+i, 0.0 );
+	sum = std::accumulate( pTable.begin(), pTable.begin() + i, 0.0 );
     }
     else
     {
@@ -1096,20 +1124,20 @@ funcSum( const size_t max_i,
 	    workspace( gsl_sum_levin_u_alloc( i ) );
 	Real error;
 	gsl_sum_levin_u_accel( &pTable[0], pTable.size(), workspace, 
-			       &p, &error );
-	if( fabs( error ) >= fabs( p * tolerance ) )
+			       &sum, &error );
+	if( fabs( error ) >= fabs( sum * tolerance ) )
 	{
 	    std::cerr << "Series acceleration error exceeds tolerance; "
-		      << fabs( error ) << " (rel error: " << fabs( error / p )
-		      << "), terms_used = " 
+		      << fabs( error ) << " (rel error: " 
+		      << fabs( error / sum ) << "), terms_used = " 
 		      << workspace->terms_used << " (" 
-		      << pTable.size() << " terms given)." << std::endl;
+		      << pTable.size() << " given)." << std::endl;
 	}
 
 	gsl_sum_levin_u_free( workspace );
     }
 
-    return p;
+    return sum;
 }
 
 const Real 
@@ -1117,14 +1145,11 @@ FirstPassagePairGreensFunction::p_0( const Real t,
 				     const Real r,
 				     const Real r0 ) const
 {
-    this->updateAlphaTable0( t );
-    const size_t length( this->getAlphaTable( 0 ).size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					p_0_i_exp,
 					this,
-					_1, t, r, r0 ) ) );
+					_1, t, r, r0 ),
+			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
 
@@ -1133,14 +1158,11 @@ const Real
 FirstPassagePairGreensFunction::p_survival( const Real t,
 					    const Real r0 ) const
 {
-    this->updateAlphaTable0( t );
-    const size_t length( this->getAlphaTable( 0 ).size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					p_survival_i_exp, 
 					this,
-					_1, t, r0 ) ) );
+					_1, t, r0 ), 
+			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
 
@@ -1150,13 +1172,11 @@ p_survival_table( const Real t,
 		  const Real r0,
 		  const RealVector& psurvTable ) const
 {
-    const size_t length( this->getAlphaTable( 0 ).size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					p_survival_i_table, 
 					this,
-					_1, t, r0, psurvTable ) ) );
+					_1, t, r0, psurvTable ),
+			   this->MAX_ALPHA_SEQ ) );
 
     return p;
 }
@@ -1165,31 +1185,24 @@ const Real
 FirstPassagePairGreensFunction::dp_survival( const Real t,
 					     const Real r0 ) const
 {
-    this->updateAlphaTable0( t );
-    const size_t length( this->getAlphaTable( 0 ).size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					dp_survival_i_exp, 
 					this,
-					_1, t, r0 ) ) );
+					_1, t, r0 ),
+			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
-
 
 
 const Real 
 FirstPassagePairGreensFunction::leaves( const Real t,
 					const Real r0 ) const
 {
-    this->updateAlphaTable0( t );
-    const size_t length( this->getAlphaTable( 0 ).size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					leaves_i_exp,
 					this,
-					_1, t, r0 ) ) );
+					_1, t, r0 ),
+			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
 
@@ -1197,14 +1210,11 @@ const Real
 FirstPassagePairGreensFunction::leavea( const Real t,
 					const Real r0 ) const
 {
-    this->updateAlphaTable0( t );
-    const size_t length( this->getAlphaTable( 0 ).size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					leavea_i_exp,
 					this,
-					_1, t, r0 ) ) );
+					_1, t, r0 ),
+			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
 
@@ -1213,14 +1223,11 @@ const Real
 FirstPassagePairGreensFunction::p_leaves( const Real t,
 					  const Real r0 ) const
 {
-    this->updateAlphaTable0( t );
-    const size_t length( this->getAlphaTable( 0 ).size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					p_leaves_i_exp,
 					this,
-					_1, t, r0 ) ) );
+					_1, t, r0 ),
+			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
 
@@ -1229,14 +1236,11 @@ const Real
 FirstPassagePairGreensFunction::p_leavea( const Real t,
 					  const Real r0 ) const
 {
-    this->updateAlphaTable0( t );
-    const size_t length( this->getAlphaTable( 0 ).size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					p_leavea_i_exp,
 					this,
-					_1, t, r0 ) ) );
+					_1, t, r0 ),
+			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
 
@@ -1246,14 +1250,11 @@ FirstPassagePairGreensFunction::p_int_r( const Real r,
 					 const Real r0 ) const
 
 {
-    this->updateAlphaTable0( t );
-    const size_t length( this->getAlphaTable( 0 ).size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					p_int_r_i_exp,
 					this,
-					_1, t, r, r0 ) ) );
+					_1, t, r, r0 ),
+			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
 
@@ -1264,14 +1265,11 @@ p_int_r_table( const Real r,
 	       const Real r0,
 	       const RealVector& num_r0Table ) const
 {
-    this->updateAlphaTable0( t ); // ?
-    const size_t length( this->getAlphaTable( 0 ).size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					p_int_r_i_exp_table,
 					this,
-					_1, t, r, r0, num_r0Table ) ) );
+					_1, t, r, r0, num_r0Table ),
+			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
 
@@ -1536,7 +1534,7 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
     const Real sigma( this->getSigma() );
     const Real h( this->geth() );
 
-    const Real alpha( this->getAlphaTable( n )[ i ] );
+    const Real alpha( this->getAlpha( n, i ) );
     const Real alphasq( alpha * alpha );
 
     const Real aAlpha( a * alpha );
@@ -1604,16 +1602,11 @@ FirstPassagePairGreensFunction::p_n( const Integer n,
 				     const Real r0, 
 				     const Real t ) const
 {
-    this->updateAlphaTable( n, t );
-
-    const RealVector& alphaTable_n( this->getAlphaTable( n ) );
-    const size_t length( alphaTable_n.size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					p_n_alpha,
 					this,
-					_1, n, r, r0, t ) ) );
+					_1, n, r, r0, t ),
+			   this->MAX_ALPHA_SEQ ) );
 
     const Real factor( ( 1 + 2 * n ) * M_PI / ( 8.0 * sqrt( r * r0 ) ) );
 
@@ -1658,6 +1651,8 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 	    break;
 	}
 	
+	++n;
+
 	if( n >= this->MAX_ORDER )
 	{
 	    // std::cerr << "p_n didn't converge." << std::endl;
@@ -1665,7 +1660,6 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 	}
 	
 	p_n_prev_abs = p_n_abs;
-	++n;
     }
 
 }
@@ -1680,7 +1674,7 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
     const Real mDt( - this->getD() * t );
     const Real sigma( this->getSigma() );
     const Real h( this->geth() );
-    const Real alpha( this->getAlphaTable( n )[i] );
+    const Real alpha( this->getAlpha( n, i ) );
 
     const Real alphasq( alpha * alpha );
 
@@ -1745,16 +1739,11 @@ FirstPassagePairGreensFunction::dp_n_at_a( const Integer n,
 					   const Real r0, 
 					   const Real t ) const
 {
-    this->updateAlphaTable( n, t );
-
-    const RealVector& alphaTable_n( this->getAlphaTable( n ) );
-    const size_t length( alphaTable_n.size() );
-
-    const Real p( funcSum( length,
-			   boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					dp_n_alpha_at_a,
 					this,
-					_1, n, r0, t ) ) );
+					_1, n, r0, t ),
+			   this->MAX_ALPHA_SEQ ) );
 
     const Real factor( getD() * ( 1 + 2 * n ) * M_PI / 
 		       ( 8.0 * sqrt( a * r0 ) ) );
@@ -1801,6 +1790,8 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 	    break;
 	}
 	
+	++n;
+
 	if( n >= this->MAX_ORDER )
 	{
 	    std::cerr << "dp_n_at_a didn't converge." << std::endl;
@@ -1808,7 +1799,6 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 	}
 	
 	p_n_prev_abs = p_n_abs;
-	++n;
     }
 
 }
@@ -1868,6 +1858,14 @@ FirstPassagePairGreensFunction::dp_theta_at_a( const Real theta,
 }
 
 
+const Real 
+FirstPassagePairGreensFunction::
+p_theta_i( const unsigned int n,
+	   const RealVector& p_nTable, const RealVector& lgndTable ) const
+{
+    return p_nTable[n] * lgndTable[n];
+}
+
 const Real
 FirstPassagePairGreensFunction::
 p_theta_table( const Real theta,
@@ -1876,53 +1874,22 @@ p_theta_table( const Real theta,
 	       const Real t, 
 	       const RealVector& p_nTable ) const
 {
-    Real p( 0.0 );
-
     const unsigned int tableSize( p_nTable.size() );
 
-    RealVector pTable( tableSize );
+    RealVector lgndTable( tableSize );
 
     Real sin_theta;
     Real cos_theta;
     sincos( theta, &sin_theta, &cos_theta );
-    gsl_sf_legendre_Pl_array( tableSize-1, cos_theta, &pTable[0] );
+    gsl_sf_legendre_Pl_array( tableSize-1, cos_theta, &lgndTable[0] );
 
-    for( RealVector::size_type n( 0 ); n < tableSize; ++n )
-    {
-	pTable[n] = p_nTable[n] * pTable[n];
-	//printf("%d %g %g\n",n,p_nTable[n],pTable[n]);
-    }
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
+					p_theta_i,
+					this,
+					_1, p_nTable, lgndTable ),
+			   tableSize-1 ) );
 
-    const bool extrapolationNeeded( tableSize >= this->MAX_ORDER );
-    if( ! extrapolationNeeded )
-    {
-	p = std::accumulate( pTable.begin(), pTable.end(), 0.0 );
-    }
-    else
-    {
-	std::cerr << "p_theta: using series acceleration." << std::endl;
-
-	gsl_sum_levin_u_workspace* 
-	    workspace( gsl_sum_levin_u_alloc( pTable.size() ) );
-	Real error;
-	gsl_sum_levin_u_accel( &pTable[0], pTable.size(), workspace, 
-			       &p, &error );
-	if( fabs( error ) >= fabs( p * TOLERANCE ) )
-	{
-	    std::cerr << "Series acceleration error exceeds tolerance; "
-		      << fabs( error ) << " (rel error: " << fabs( error / p )
-		      << "), terms_used = " 
-		      << workspace->terms_used << "( out of " 
-		      << pTable.size() << " terms available)." << std::endl;
-	}
-
-	gsl_sum_levin_u_free( workspace );
-    }
-
-
-
-    p *= sin_theta;
-    return p;
+    return p * sin_theta;
 }
 
 
@@ -2010,6 +1977,18 @@ FirstPassagePairGreensFunction::ip_theta( const Real theta,
     return p;
 }
 
+const Real 
+FirstPassagePairGreensFunction::
+ip_theta_i( const unsigned int n,
+	    const RealVector& p_nTable, 
+	    const RealVector& lgndTable1 ) const
+{
+    const Real lgnd_n_m1( lgndTable1[n] );
+    const Real lgnd_n_p1( lgndTable1[n+2] );
+    
+    return p_nTable[n] * ( lgnd_n_m1 - lgnd_n_p1 ) / ( 1.0 + 2 * n );
+}
+
 
 const Real 
 FirstPassagePairGreensFunction::
@@ -2019,26 +1998,26 @@ ip_theta_table( const Real theta,
 		const Real t,	 
 		const RealVector& p_nTable ) const
 {
-    Real p( 0.0 );
-
     const unsigned int tableSize( p_nTable.size() );
+
+    RealVector pTable;
+    pTable.reserve( tableSize );
 
     const Real cos_theta( cos( theta ) );
 
     // LgndTable is offset by 1 to incorporate the n=-1 case.
-    // For ex: LgndTable[0] is for n=-1, LengTable[1] is n=0 ...
+    // For ex: LgndTable[0] is for n=-1, lgndTable[1] is n=0 ...
 
-    RealVector LgndTable1( tableSize + 2 );
-    LgndTable1[0] = 1.0;  // n = -1
-    gsl_sf_legendre_Pl_array( tableSize, cos_theta, &LgndTable1[1] );
+    RealVector lgndTable1( tableSize + 2 );
+    lgndTable1[0] = 1.0;  // n = -1
+    gsl_sf_legendre_Pl_array( tableSize, cos_theta, &lgndTable1[1] );
 
-    for( RealVector::size_type n( 0 ); n < tableSize; ++n )
-    {
-	const Real Lgnd_n_m1( LgndTable1[n] );
-	const Real Lgnd_n_p1( LgndTable1[n+2] );
 
-	p += p_nTable[n] * ( Lgnd_n_m1 - Lgnd_n_p1 ) / ( 1.0 + 2 * n );
-    }
+    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
+					ip_theta_i,
+					this,
+					_1, p_nTable, lgndTable1 ),
+			   tableSize-1 ) );
 
     return p;
 }

@@ -3,6 +3,7 @@
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/function.hpp>
+#include <boost/array.hpp>
 
 #include <gsl/gsl_roots.h>
 
@@ -20,6 +21,11 @@ class FirstPassagePairGreensFunction
     :
     public PairGreensFunction
 {
+
+    static const unsigned int MAX_ORDER = 50;
+    static const unsigned int MAX_ALPHA_SEQ = 100;
+    static const Real ALPHA_CUTOFF = 1e-10;
+    static const Real TOLERANCE = 1e-8;
 
 public:
     
@@ -128,6 +134,8 @@ public:
 
     const std::string dump() const;
 
+    const unsigned int alphaOffset( const unsigned int n ) const;
+
     const Real alpha0_i( const Integer i ) const;
 
     const Real alpha_i( const Integer i, const Integer n, 
@@ -136,15 +144,49 @@ public:
 
 protected:
 
+    void clearAlphaTable() const;
 
-    RealVector& getAlphaTable( const RealVector::size_type n ) const
+
+    RealVector& getAlphaTable( const size_t n ) const
     {
-	if( this->alphaTable.size() <= n )
+	return this->alphaTable[n];
+    }
+
+    const Real getAlpha( const size_t n, const RealVector::size_type i ) const
+    {
+	RealVector& alphaTable( this->alphaTable[n] );
+	
+	if( alphaTable.size() <= i )
 	{
-	    this->alphaTable.resize( n+1 );
+	    alphaTable.resize( i+1 );
+	    const unsigned int offset( alphaOffset( n ) );
+	    alphaTable[i] = alpha0_i( i + offset );
+	}
+	else if( alphaTable[i] <= 0.0 )
+	{
+	    const unsigned int offset( alphaOffset( n ) );
+	    alphaTable[i] = alpha0_i( i + offset );
 	}
 
-	return this->alphaTable[n];
+	return alphaTable[i];
+
+    }
+
+    const Real getAlpha0( const RealVector::size_type i ) const
+    {
+	RealVector& alphaTable( this->alphaTable[0] );
+	
+	if( alphaTable.size() <= i )
+	{
+	    alphaTable.resize( i+1 );
+	    alphaTable[i] = alpha0_i( i );
+	}
+	else if( alphaTable[i] <= 0.0 )
+	{
+	    alphaTable[i] = alpha0_i( i );
+	}
+
+	return alphaTable[i];
     }
 
 
@@ -245,18 +287,28 @@ protected:
 			      const Real r,
 			      const Real r0 ) const;
 
+    const Real p_theta_i( const unsigned int n,
+			  const RealVector& p_nTable, 
+			  const RealVector& lgndTable ) const;
+
+    const Real ip_theta_i( const unsigned int n,
+			   const RealVector& p_nTable, 
+			   const RealVector& lgndTable1 ) const;
+
+
     const Real p_int_r_i_exp_table( const unsigned int i,
 				    const Real t,
 				    const Real r,
 				    const Real r0,
 				    const RealVector& num_r0Table ) const;
     static const Real 
-    funcSum( const size_t max_i,
-	     boost::function<const Real( const unsigned int i )> f,
+    funcSum( boost::function<const Real( const unsigned int i )> f,
+	     const size_t max_i,
 	     const Real tolerance = TOLERANCE );
-	 
+
+    void initializeAlphaTable( const unsigned int n ) const;
     void updateAlphaTable0( const Real t ) const;
-    void updateAlphaTable( const Integer n, 
+    void updateAlphaTable( const unsigned int n, 
 			   const Real t ) const; 
 
     void createPsurvTable( RealVector& psurvTable, const Real r0 ) const;
@@ -350,15 +402,12 @@ private:
     const Real h;
     const Real hsigma_p_1;
 
-    mutable std::vector<RealVector> alphaTable;
+    mutable boost::array<Integer,MAX_ORDER+1> alphaOffsetTable;
+    mutable boost::array<RealVector,MAX_ORDER+1> alphaTable;
+    //mutable std::vector<RealVector> alphaTable;
 
     Real a;
     
-
-    static const unsigned int MAX_ORDER = 50;
-    static const unsigned int MAX_ALPHA_SEQ = 100;
-    static const Real ALPHA_CUTOFF = 1e-12;
-    static const Real TOLERANCE = 1e-8;
 
 };
 
