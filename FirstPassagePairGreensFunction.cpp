@@ -1560,16 +1560,16 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
     const Real factora( sqrt( aAlpha * M_2_PI ) );
     const Real factorr( sqrt( r * alpha * M_2_PI ) );
     const Real factorr0( sqrt( r0 * alpha * M_2_PI ) );
-    const Real jas1( gsl_sf_bessel_jl( n, sigmaAlpha ) * factors );
-    const Real yas1( gsl_sf_bessel_yl( n, sigmaAlpha ) * factors );
+    const Real jas1( gsl_sf_bessel_jl( n,   sigmaAlpha ) * factors );
+    const Real yas1( gsl_sf_bessel_yl( n,   sigmaAlpha ) * factors );
     const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) * factors );
     const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) * factors );
-    const Real jaa( gsl_sf_bessel_jl( n, aAlpha ) * factora );
-    const Real yaa( gsl_sf_bessel_yl( n, aAlpha ) * factora );
-    const Real jar( gsl_sf_bessel_jl( n, r * alpha ) * factorr );
-    const Real yar( gsl_sf_bessel_yl( n, r * alpha ) * factorr );
-    const Real jar0( gsl_sf_bessel_jl( n, r0 * alpha ) * factorr0 );
-    const Real yar0( gsl_sf_bessel_yl( n, r0 * alpha ) * factorr0 );
+    const Real jaa(  gsl_sf_bessel_jl( n,   aAlpha )     * factora );
+    const Real yaa(  gsl_sf_bessel_yl( n,   aAlpha )     * factora );
+    const Real jar(  gsl_sf_bessel_jl( n,   r * alpha )  * factorr );
+    const Real yar(  gsl_sf_bessel_yl( n,   r * alpha )  * factorr );
+    const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) * factorr0 );
+    const Real yar0( gsl_sf_bessel_yl( n,   r0 * alpha ) * factorr0 );
 #endif
 
     const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
@@ -1699,20 +1699,20 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
     const Real factors( sqrt( sigmaAlpha * M_2_PI ) );
     const Real factora( sqrt( aAlpha * M_2_PI ) );
     const Real factorr0( sqrt( r0 * alpha * M_2_PI ) );
-    const Real jas1( gsl_sf_bessel_jl( n, sigmaAlpha ) * factors );
-    const Real yas1( gsl_sf_bessel_yl( n, sigmaAlpha ) * factors );
+    const Real jas1( gsl_sf_bessel_jl( n,   sigmaAlpha ) * factors );
+    const Real yas1( gsl_sf_bessel_yl( n,   sigmaAlpha ) * factors );
     const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) * factors );
     const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) * factors );
-    const Real jaa1( gsl_sf_bessel_jl( n, aAlpha ) * factora );
-    const Real yaa1( gsl_sf_bessel_yl( n, aAlpha ) * factora );
-    const Real jar0( gsl_sf_bessel_jl( n, r0 * alpha ) * factorr0 );
-    const Real yar0( gsl_sf_bessel_yl( n, r0 * alpha ) * factorr0 );
+    const Real jaa1( gsl_sf_bessel_jl( n,   aAlpha )     * factora );
+    const Real yaa1( gsl_sf_bessel_yl( n,   aAlpha )     * factora );
+    const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) * factorr0 );
+    const Real yar0( gsl_sf_bessel_yl( n,   r0 * alpha ) * factorr0 );
 #endif
 
     const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
     const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
 
-    const Real dfalpha_r( - 2 * J / ( a * M_PI * jaa1 ) );
+    const Real dfalpha_r( - 2.0 * J / ( a * M_PI * jaa1 ) );
     const Real falpha_r0( - J * yar0 + Y * jar0 );
 
     const Real num( dfalpha_r * falpha_r0 );
