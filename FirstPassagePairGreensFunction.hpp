@@ -131,6 +131,16 @@ public:
 				const Real r0,
 				const Real t ) const;
 
+    const Real p_theta_free( const Real theta,
+			     const Real r,
+			     const Real r0,
+			     const Real t ) const;
+
+    const Real ip_theta_free( const Real theta,
+			      const Real r,
+			      const Real r0,
+			      const Real t ) const;
+
 
     // methods below are kept public for debugging purpose.
 

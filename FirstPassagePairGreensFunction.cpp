@@ -2041,6 +2041,52 @@ FirstPassagePairGreensFunction::ip_theta_F( const Real theta,
 }
 
 
+const Real 
+FirstPassagePairGreensFunction::p_theta_free( const Real theta,
+                                              const Real r,
+                                              const Real r0,
+                                              const Real t ) const
+{
+    const Real D( getD() );
+    const Real Dt4( 4.0 * D * t );
+    const Real Dt4PI( Dt4 * M_PI );
+
+    const Real p( ( 1.0 / std::sqrt( gsl_pow_3( Dt4PI ) ) ) *
+                  exp( - ( r * r + r0 * r0 - 2.0 * r * r0 * cos( theta ) ) 
+                       / Dt4 ) );
+
+    return p * sin( theta );
+}
+
+const Real 
+FirstPassagePairGreensFunction::ip_theta_free( const Real theta,
+                                               const Real r,
+                                               const Real r0,
+                                               const Real t ) const
+{
+
+    const Real Dt( getD() * t );
+
+    const Real den( 4.0 * sqrt( M_PI * M_PI * M_PI ) * r * r0 *
+                    sqrt( gsl_pow_5( Dt ) ) );
+
+    const Real term2( expm1( 0.5 * Dt * ( r * r0 
+                                          - 0.5 * ( r * r + r0 * r0 ) ) ) );
+    const Real term3( expm1( 0.5 * Dt * ( r * r0 * cos( theta ) 
+                                          - 0.5 * ( r * r + r0 * r0 ) ) ) );
+
+    printf("ip %15.15g %g %g %g\n", term2-term3, term2, term3, den);
+
+    return ( term2 - term3 ) / den;
+}
+
+
+
+
+
+
+
+
 
 const Real 
 FirstPassagePairGreensFunction::drawTheta( const Real rnd,

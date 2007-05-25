@@ -179,6 +179,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "p_int_r", &FirstPassagePairGreensFunction::p_int_r )
 	.def( "p_theta", &FirstPassagePairGreensFunction::p_theta )
 	.def( "ip_theta", &FirstPassagePairGreensFunction::ip_theta )
+	.def( "p_theta_free", &FirstPassagePairGreensFunction::p_theta_free )
+	.def( "ip_theta_free", &FirstPassagePairGreensFunction::ip_theta_free )
 
 	.def( "f_alpha0", 
 	      &FirstPassagePairGreensFunction::f_alpha0 )
