@@ -946,7 +946,7 @@ void
 FirstPassagePairGreensFunction::
 createPsurvTable( RealVector& psurvTable, const Real r0 ) const
 {
-    const RealVector& alphaTable_0( this->alphaTable[0] );
+    const RealVector& alphaTable_0( this->getAlphaTable(0) );
 
     psurvTable.clear();
     psurvTable.reserve( alphaTable_0.size() );
@@ -996,11 +996,12 @@ FirstPassagePairGreensFunction::p_survival_i_exp( const unsigned int i,
 
 const Real 
 FirstPassagePairGreensFunction::
-p_survival_i_table( const unsigned int i,
-		    const Real t,
-		    const Real r0,
-		    const RealVector& psurvTable ) const
+p_survival_i_exp_table( const unsigned int i,
+			const Real t,
+			const Real r0,
+			const RealVector& psurvTable ) const
 {
+
     const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * psurvTable[i];
 }
@@ -1088,7 +1089,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
     const Real p_0( f( 0 ) );
     if( p_0 == 0.0 )
     {
-	return sum;
+	return 0.0;
     }
 
     const Real threshold( fabs( p_0 * tolerance ) );
@@ -1102,8 +1103,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 	const Real p_i( f( i ) );
 	pTable.push_back( p_i );
 	
-	//std::cerr << pTable[i]<< std::endl;
-	if( threshold > fabs( p_i ) )
+	if( threshold >= fabs( p_i ) ) // '=' is important when p0 is so small.
 	{
 	    extrapolationNeeded = false;
 	    break;
@@ -1173,10 +1173,10 @@ p_survival_table( const Real t,
 		  const RealVector& psurvTable ) const
 {
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					p_survival_i_table, 
+					p_survival_i_exp_table, 
 					this,
 					_1, t, r0, psurvTable ),
-			   this->MAX_ALPHA_SEQ ) );
+			   psurvTable.size()-1 ) );
 
     return p;
 }
@@ -1355,13 +1355,13 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	low *= .1;
 	printf( "drawTime: adjusting low: %g\n",low );
 
-	if( fabs( low ) <= MIN_T )
+	if( fabs( low ) <= this->MIN_T )
 	{
 	    std::cerr << "Couldn't adjust low.  Returning MIN_T (= "
-		      << MIN_T << "); F(" << low <<
+		      << this->MIN_T << "); F(" << low <<
 		") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
 		      << dump() << std::endl;
-	    throw std::exception();
+	    return this->MIN_T;
 	}
 	this->updateAlphaTable0( low );
 	this->createPsurvTable( psurvTable, r0 );
@@ -1380,7 +1380,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	gsl_root_fsolver_iterate( solver );
 	low = gsl_root_fsolver_x_lower( solver );
 	high = gsl_root_fsolver_x_upper( solver );
-	const int status( gsl_root_test_interval( low, high, 0.0, 
+
+	const int status( gsl_root_test_interval( low, high, this->MIN_T, 
 						  this->TOLERANCE ) );
 
 	if( status == GSL_CONTINUE )

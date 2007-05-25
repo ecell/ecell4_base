@@ -485,19 +485,17 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
     def test_a( self ):
 
-        D = 3e-11
-        sigma = 1.2e-7
-        kf = 0
+        D = 4e-11
+        sigma = 1e-7
+        kf = 1.66054e-6
 
-        # smaller t causes problem
-        t = 2.106e-5
-        r0 = 3.433314093e-7
-        a = 4.32817e-7
+        r0 = 3.7663937e-7
+        a = 7.31108e-7
         
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
-        t = gf.drawTime( 0.5, r0 )
+        t = gf.drawTime( 0.260276, r0 )
         self.failIf( t <= 0.0 or t >= numpy.inf )
 
 

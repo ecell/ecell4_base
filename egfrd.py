@@ -442,10 +442,14 @@ class Pair:
         assert self.a_r > self.r0
         #print 'ne', self.getShellSize(), margin, self.r0, self.a_r, self.a_R
 
-        self.pgf.seta( self.a_r )
-
         self.t_R = self.sgf.drawTime( rnd[0], self.a_R )
-        self.t_r = self.pgf.drawTime( rnd[1], self.r0 )
+
+        try:
+            self.pgf.seta( self.a_r )
+            self.t_r = self.pgf.drawTime( rnd[1], self.r0 )
+        except:
+            print self.r0, self.pgf.dump()
+            raise
 
         if self.t_R < self.t_r:
             self.dt = self.t_R

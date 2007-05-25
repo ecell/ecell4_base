@@ -259,10 +259,10 @@ protected:
 				 const Real t,
 				 const Real r0 ) const;
 
-    const Real p_survival_i_table( const unsigned int i,
-				   const Real t,
-				   const Real r0,
-				   const RealVector& psurvTable ) const;
+    const Real p_survival_i_exp_table( const unsigned int i,
+				       const Real t,
+				       const Real r0,
+				       const RealVector& psurvTable ) const;
 
     const Real dp_survival_i_exp( const unsigned int i,
 				  const Real alpha,
