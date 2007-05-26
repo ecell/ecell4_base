@@ -490,8 +490,8 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         D = 1e-12
         sigma = 1e-8
         kf = 1e-8
-
-        t = 1e-2
+        
+        t = 1e-5
         r0 = 5e-8
         r = 2.5e-8
         a = 1e-7
@@ -502,16 +502,13 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         ip = gf.ip_theta_free( 0.0, r, r0, t )
         self.assertEqual( 0.0, ip )
 
-        print 'pi', gf.ip_theta_free( numpy.pi, r, r0, t )
-        
-        resolution = 10
+        resolution = 20
         for i in range( 1, resolution ):
             theta = i * numpy.pi / resolution 
             ip = gf.ip_theta_free( theta, r, r0, t )
             result = scipy.integrate.quad( gf.p_theta_free, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
-            print theta, ip, np
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
 

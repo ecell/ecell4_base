@@ -2064,20 +2064,22 @@ FirstPassagePairGreensFunction::ip_theta_free( const Real theta,
                                                const Real r0,
                                                const Real t ) const
 {
-
     const Real Dt( getD() * t );
+    const Real Dt2( Dt + Dt );
+    const Real rr0( r * r0 );
 
-    const Real den( 4.0 * sqrt( M_PI * M_PI * M_PI ) * r * r0 *
-                    sqrt( gsl_pow_5( Dt ) ) );
+    const Real rr0_over_2Dt( rr0 / ( Dt2 ) );
 
-    const Real term2( expm1( 0.5 * Dt * ( r * r0 
-                                          - 0.5 * ( r * r + r0 * r0 ) ) ) );
-    const Real term3( expm1( 0.5 * Dt * ( r * r0 * cos( theta ) 
-                                          - 0.5 * ( r * r + r0 * r0 ) ) ) );
+    const Real rsqr0sq_over_4Dt( ( r * r + r0 * r0 ) / ( Dt2 + Dt2 ) );
 
-    printf("ip %15.15g %g %g %g\n", term2-term3, term2, term3, den);
+    const Real term1( exp( rr0_over_2Dt 
+                           - rsqr0sq_over_4Dt ) );
+    const Real term2( exp( rr0_over_2Dt * cos( theta ) 
+                           - rsqr0sq_over_4Dt ) );
 
-    return ( term2 - term3 ) / den;
+    const Real den( 4.0 * sqrt( M_PI * M_PI * M_PI * Dt ) * rr0 );
+
+    return ( term1 - term2 ) / den;
 }
 
 
