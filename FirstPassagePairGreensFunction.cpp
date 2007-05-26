@@ -2083,12 +2083,58 @@ FirstPassagePairGreensFunction::ip_theta_free( const Real theta,
 }
 
 
+const Real 
+FirstPassagePairGreensFunction::dp_theta_free( const Real theta,
+                                               const Real r,
+                                               const Real r0,
+                                               const Real t ) const
+{
+    const Real D( getD() );
+    const Real Dt( D * t );
+    const Real Dt4( 4.0 * Dt );
+    const Real rsq( r * r );
 
+    Real sin_theta;
+    Real cos_theta;
+    sincos( theta, &sin_theta, &cos_theta );
+    const Real rr0costheta( r * r0 * cos_theta );
 
+    const Real num1( r * D * 
+                    exp( - ( rsq + r0 * r0 - 2.0 * rr0costheta ) / 
+                         Dt4 ) );
 
+    const Real num2( - rsq + Dt4 + rr0costheta );
 
+    const Real den( 4.0 * sqrt( M_PI * gsl_pow_5( Dt ) ) );
 
+    return ( num1 * num2 / den ) * sin_theta;
+}
 
+const Real 
+FirstPassagePairGreensFunction::idp_theta_free( const Real theta,
+                                                const Real r,
+                                                const Real r0,
+                                                const Real t ) const
+{
+    const Real D( getD() );
+    const Real Dt( D * t );
+    const Real Dt2( Dt + Dt );
+    const Real rr0( r * r0 );
+    const Real rsq( r * r );
+    const Real rr0_over_2Dt( rr0 / ( Dt2 ) );
+    const Real rsqr0sq_over_4Dt( ( rsq + r0 * r0 ) / ( Dt2 + Dt2 ) );
+
+    const Real cos_theta( cos( theta ) );
+
+    const Real num1( exp( rr0_over_2Dt - rsqr0sq_over_4Dt ) *
+                      ( - rsq + rr0 + Dt2 ) );
+    const Real num2( exp( rr0_over_2Dt * cos_theta - rsqr0sq_over_4Dt ) *
+                      ( - rsq + rr0 * cos_theta + Dt2 ) );
+
+    const Real den( 2.0 * sqrt( M_PI * Dt * Dt * Dt ) * r0 );
+
+    return D * ( num1 - num2 ) / den;
+}
 
 const Real 
 FirstPassagePairGreensFunction::drawTheta( const Real rnd,
@@ -2191,7 +2237,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
     // debug
     //const Real psurv( p_survival( t, r0 ) );
     const Real p0r( p_0( t, r, r0 ) * 4.0 * M_PI * r * r );
-    const Real ip( ip_theta_table( M_PI,r, r0,t,p_nTable ) );
+    const Real ip( ip_theta_table( M_PI, r, r0, t, p_nTable ) );
     printf("theta %g %g %g\n", p0r, pTable[tableLast] * 
 	   2 * M_PI * r * r * thetaStep, ip * 2 * M_PI * r * r );
 
