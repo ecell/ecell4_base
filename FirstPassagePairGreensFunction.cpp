@@ -926,7 +926,7 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
 
     const Real hsigma( h * sigma );
 
-    const Real num1( alpha * ( h * sigmasq - hsigma * r * cos_r +
+    const Real num1( alpha * ( hsigma * sigma - hsigma * r * cos_r +
 			       ( sigma - r ) * cos_r ) +
 		     ( hsigma_p_1 + r * sigma * alphasq ) * sin_r );
 
@@ -937,6 +937,7 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
     const Real result( 2 * num1 * num2 / den );
+
 
     return result;
 }
@@ -1087,7 +1088,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 
     RealVector pTable;
     const Real p_0( f( 0 ) );
-    if( p_0 == 0.0 )
+    if ( p_0 == 0.0 )
     {
 	return 0.0;
     }
@@ -2072,13 +2073,13 @@ FirstPassagePairGreensFunction::ip_theta_free( const Real theta,
 
     const Real rsqr0sq_over_4Dt( ( r * r + r0 * r0 ) / ( Dt2 + Dt2 ) );
 
-    const Real term1( exp( rr0_over_2Dt 
+    const Real term1( expm1( rr0_over_2Dt 
                            - rsqr0sq_over_4Dt ) );
-    const Real term2( exp( rr0_over_2Dt * cos( theta ) 
+    const Real term2( expm1( rr0_over_2Dt * cos( theta ) 
                            - rsqr0sq_over_4Dt ) );
 
     const Real den( 4.0 * sqrt( M_PI * M_PI * M_PI * Dt ) * rr0 );
-
+//    printf("ip %g %g %g\n",term1, term2, term1-term2);
     return ( term1 - term2 ) / den;
 }
 

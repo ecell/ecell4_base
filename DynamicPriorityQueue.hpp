@@ -56,11 +56,11 @@
 
 class PersistentIDPolicy
 {
-
+    
 public:
-
+    
     typedef long long unsigned int ID;
-
+    
     typedef std::vector< ID >      IDVector;
     typedef IDVector::size_type    Index;
 

@@ -354,7 +354,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf.seta( a )
         r = r0
         
-        pintr = gf.p_int_r( sigma, t, r0 )
+        pintr = gf.p_int_r( gf.getSigma(), t, r0 )
         self.assertEqual( 0.0, pintr )
 
     def test_ip_theta_is_int_p_theta( self ):
