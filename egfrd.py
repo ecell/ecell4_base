@@ -45,8 +45,9 @@ class Single:
         self.gf = FirstPassageGreensFunction( particle.species.D )
 
     def __del__( self ):
-        print 'del', str( self )
-
+        pass
+        #print 'del', str( self )
+        
     def setPos( self, pos ):
         self.particle.setPos( pos )
 
@@ -324,7 +325,8 @@ class Pair:
 
 
     def __del__( self ):
-        print 'del', str( self )
+        pass
+        #print 'del', str( self )
 
     def getPos( self ):
         return self.getCoM()
@@ -755,8 +757,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #    raise 'dt=0'
 
 
-        print 'dt', self.dt
-        print 'reactions', self.reactionEvents,\
+        print 'dt', self.dt, 'reactions', self.reactionEvents,\
               'rejected moves', self.rejectedMoves
         print ''
         

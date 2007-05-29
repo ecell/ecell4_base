@@ -1817,8 +1817,9 @@ FirstPassagePairGreensFunction::p_theta( const Real theta,
 	const Real a( this->geta() );
 	
 	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        // r \in ( sigma, a );  not defined at r == sigma and r == a.
+	THROW_UNLESS( std::invalid_argument, r > sigma && r < a );
 	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
-	THROW_UNLESS( std::invalid_argument, r > sigma && r <= a );
 	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
 
@@ -1829,14 +1830,7 @@ FirstPassagePairGreensFunction::p_theta( const Real theta,
 
     RealVector p_nTable;
 
-    if( r != geta() )
-    {
-	makep_nTable( p_nTable, r, r0, t );
-    }
-    else
-    {
-	makedp_n_at_aTable( p_nTable, r0, t );
-    }
+    makep_nTable( p_nTable, r, r0, t );
 
     const Real p( p_theta_table( theta, r, r0, t, p_nTable ) );
 
@@ -1845,17 +1839,34 @@ FirstPassagePairGreensFunction::p_theta( const Real theta,
 
 
 const Real 
-FirstPassagePairGreensFunction::dp_theta_at_a( const Real theta,
-					       const Real r0, 
-					       const Real t ) const 
+FirstPassagePairGreensFunction::dp_theta( const Real theta,
+                                          const Real r, 
+                                          const Real r0, 
+                                          const Real t ) const 
 {
-    Real p( 0.0 );
+    {
+	const Real sigma( this->getSigma() );
+	const Real a( this->geta() );
+	
+	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+
+        // r \in [ sigma, a ]  ;  unlike p_theta,
+        // defined at r == sigma and r == a.
+	THROW_UNLESS( std::invalid_argument, r >= sigma && r <= a );
+	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    }
+
+    if( t == 0.0 )
+    {
+	return 0.0;
+    }
 
     RealVector p_nTable;
 
     makedp_n_at_aTable( p_nTable, r0, t );
 
-    p = p_theta_table( theta, geta(), r0, t, p_nTable );
+    const Real p( p_theta_table( theta, r, r0, t, p_nTable ) );
 
     return p;
 }
@@ -1954,8 +1965,9 @@ FirstPassagePairGreensFunction::ip_theta( const Real theta,
 	const Real a( this->geta() );
 	
 	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        // r \in ( sigma, a )
+	THROW_UNLESS( std::invalid_argument, r > sigma && r < a );
 	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
-	THROW_UNLESS( std::invalid_argument, r > sigma && r <= a );
 	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
 
@@ -1966,14 +1978,39 @@ FirstPassagePairGreensFunction::ip_theta( const Real theta,
 
     RealVector p_nTable;
 
-    if( r != geta() )
+    makep_nTable( p_nTable, r, r0, t );
+
+    const Real p( ip_theta_table( theta, r, r0, t, p_nTable ) );
+
+    return p;
+}
+
+
+const Real 
+FirstPassagePairGreensFunction::idp_theta( const Real theta,
+                                           const Real r, 
+                                           const Real r0, 
+                                           const Real t ) const
+{
     {
-	makep_nTable( p_nTable, r, r0, t );
+	const Real sigma( this->getSigma() );
+	const Real a( this->geta() );
+	
+	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        // r \in [ sigma, a ]
+	THROW_UNLESS( std::invalid_argument, r >= sigma && r <= a );
+	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
-    else
+
+    if( t == 0.0 || theta == 0.0 )
     {
-	makedp_n_at_aTable( p_nTable, r0, t );
+	return 0.0;
     }
+
+    RealVector p_nTable;
+
+    makedp_n_at_aTable( p_nTable, r0, t );
 
     const Real p( ip_theta_table( theta, r, r0, t, p_nTable ) );
 
@@ -2074,12 +2111,12 @@ FirstPassagePairGreensFunction::ip_theta_free( const Real theta,
     const Real rsqr0sq_over_4Dt( ( r * r + r0 * r0 ) / ( Dt2 + Dt2 ) );
 
     const Real term1( expm1( rr0_over_2Dt 
-                           - rsqr0sq_over_4Dt ) );
+                             - rsqr0sq_over_4Dt ) );
     const Real term2( expm1( rr0_over_2Dt * cos( theta ) 
-                           - rsqr0sq_over_4Dt ) );
+                             - rsqr0sq_over_4Dt ) );
 
     const Real den( 4.0 * sqrt( M_PI * M_PI * M_PI * Dt ) * rr0 );
-//    printf("ip %g %g %g\n",term1, term2, term1-term2);
+
     return ( term1 - term2 ) / den;
 }
 

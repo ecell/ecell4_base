@@ -181,26 +181,21 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "p_int_r", &FirstPassagePairGreensFunction::p_int_r )
 	.def( "p_theta", &FirstPassagePairGreensFunction::p_theta )
 	.def( "ip_theta", &FirstPassagePairGreensFunction::ip_theta )
+	.def( "idp_theta", &FirstPassagePairGreensFunction::idp_theta )
 	.def( "p_theta_free", &FirstPassagePairGreensFunction::p_theta_free )
 	.def( "ip_theta_free", &FirstPassagePairGreensFunction::ip_theta_free )
 	.def( "dp_theta_free", &FirstPassagePairGreensFunction::dp_theta_free )
 	.def( "idp_theta_free", 
               &FirstPassagePairGreensFunction::idp_theta_free )
 
-	.def( "f_alpha0", 
-	      &FirstPassagePairGreensFunction::f_alpha0 )
-	.def( "alpha0_i", 
-	      &FirstPassagePairGreensFunction::alpha0_i )
-	.def( "f_alpha", 
-	      &FirstPassagePairGreensFunction::f_alpha )
-	.def( "f_alpha_aux", 
-	      &FirstPassagePairGreensFunction::f_alpha_aux )
+	.def( "f_alpha0", &FirstPassagePairGreensFunction::f_alpha0 )
+	.def( "alpha0_i", &FirstPassagePairGreensFunction::alpha0_i )
+	.def( "f_alpha", &FirstPassagePairGreensFunction::f_alpha )
+	.def( "f_alpha_aux", &FirstPassagePairGreensFunction::f_alpha_aux )
 
-	.def( "dump", 
-	      &FirstPassagePairGreensFunction::dump )
+	.def( "dump", &FirstPassagePairGreensFunction::dump )
 
-//	.def( "alpha_i", 
-//	      &FirstPassagePairGreensFunction::alpha_i )
+//	.def( "alpha_i", &FirstPassagePairGreensFunction::alpha_i )
 	;
 
     def( "distanceSq", &distanceSq_ );

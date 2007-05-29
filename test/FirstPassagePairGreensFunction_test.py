@@ -463,7 +463,10 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             pint_prev = pint
 
 
-    def test_ip_theta_at_a_is_leavea( self ):
+    def test_int_dp_theta_at_a_is_leavea( self ):
+
+        # NOTE: p_theta computes dp_theta when r=a, therefore
+        #      this test checks if int dp_theta d theta == leavea.
 
         D = 1e-12
         sigma = 1e-8
@@ -478,7 +481,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf.seta( a )
 
         leavea = gf.leavea( t, r0 ) * numpy.pi * a * a * 2
-        iptheta = gf.ip_theta( numpy.pi, a, r0, t ) * numpy.pi * a * a
+        iptheta = gf.idp_theta( numpy.pi, a, r0, t ) * numpy.pi * a * a
 
         self.assertAlmostEqual( leavea, iptheta )
 
@@ -536,36 +539,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             result = scipy.integrate.quad( gf.dp_theta_free, 0.0, theta,
                                            args=( a, r0, t ) )
             np = result[0]
-            self.assertAlmostEqual( 0.0, (np-ip)/ip )
-
-
-    def test_int_dp_theta_free_is_p_theta_free( self ):
-
-        import scipy.integrate
-        
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
-        
-        t = 1e-4
-        r0 = 5e-8
-        r = 5e-8
-        a = 1e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        f = lambda rr, theta, r0, t: gf.dp_theta_free( theta, rr, r0, t )
-
-        resolution = 20
-        for i in range( 1, resolution ):
-            theta = i * numpy.pi / resolution 
-            ip = gf.p_theta_free( theta, a, r0, t )
-            result = scipy.integrate.quad( f, 0.0, a,
-                                           args=(theta, r0, t) )
-
-            np = result[0]
-            print ip, np
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
 
