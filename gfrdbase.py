@@ -393,7 +393,7 @@ class GFRDSimulatorBase:
                                                                    species2 )
         
 
-    def throwInParticles( self, id, n, surface ):
+    def throwInParticles( self, id, n, surface=[] ):
         print 'throwing in %s %s particles' % ( n, id )
 
         species = self.speciesList[ id ]
