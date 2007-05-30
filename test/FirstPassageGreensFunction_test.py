@@ -86,9 +86,8 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         a = 1e-6
         gf = mod.FirstPassageGreensFunction( D )
         t = gf.drawTime( 1.0 - 1e-16, a )
-        print 't', t
         r = gf.drawR( 0.5, t, a )
-        print r
+
         self.failIf( r <= 0.0 )
         self.failIf( r > a )
 

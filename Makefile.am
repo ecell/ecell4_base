@@ -35,15 +35,16 @@ single.py\
 dimer.py  
 
 
-
 lib_LTLIBRARIES= _gfrd.la
 
 noinst_HEADERS=\
 Defs.hpp\
 bessel.hpp\
+factorial.hpp\
 HalfOrderBesselGenerator.hpp\
 DynamicPriorityQueue.hpp\
 EventScheduler.hpp\
+PyEventScheduler.hpp\
 PairGreensFunction.hpp\
 FirstPassageGreensFunction.hpp\
 PlainPairGreensFunction.hpp\
@@ -82,4 +83,8 @@ PYCHECKER_FLAGS = --limit 0
 
 pycheck:
 	$(PYCHECKER) $(PYCHECKER_FLAGS) $(top_srcdir)/egfrd.py
+
+
+EXTRA_DIST=\
+autogen.sh
 

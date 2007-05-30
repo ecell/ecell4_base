@@ -1934,8 +1934,6 @@ make_p_thetaTable( RealVector& pTable,
 	    p = 0.0;
 	}
 
-	printf("p %g\n",p);
-
 	const Real value( ( p_prev + p ) * 0.5 );
 	pTable.push_back( *( pTable.end() - 1 ) + value );
 
