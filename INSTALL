@@ -16,7 +16,7 @@ Prerequisites
 If you use Fedora or RedHat line of linux, check
 if the following RPM packages are installed:
 
-gsl, gsl-devel, numpy, scipy, cppunit, cppunit-devel, pychecker, boost,
+gsl, gsl-devel, numpy, scipy, pychecker, boost,
 boost-devel.
 
 On Ubuntu, install the following:
