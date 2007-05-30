@@ -15,16 +15,16 @@ dnl
 AC_CANONICAL_TARGET([])
 AM_INIT_AUTOMAKE([brown],[0.0])
 AC_PROG_MAKE_SET
-AC_LANG(C++)
+AC_LANG_CPLUSPLUS
 dnl
 dnl checks for programs
 dnl
-AM_PATH_PYTHON()
+AM_PATH_PYTHON(2.4)
 AC_CHECK_PROGS(PYCHECKER, [pychecker], [no])
 if test "$PYCHECKER" == no ; then
    AC_MSG_WARN([pychecker not found.])
 dnl   AC_MSG_WARN([Python source checking is disabled.])
-   AC_MSG_ERROR([])
+dnl   AC_MSG_ERROR([])
 fi
 dnl
 dnl
@@ -33,7 +33,11 @@ dnl
 dnl
 AM_PATH_GSL(1.0,,AC_MSG_ERROR([could not find required version of GSL.]))
 dnl
-AC_CHECK_LIB(boost_python,,AC_MSG_ERROR([could not find libboost_python.]))
+AC_CHECK_LIB(m,exp,,AC_MSG_ERROR([could not find libm.]))
+dnl
+AC_CHECK_LIB(python${PYTHON_VERSION},main,,AC_MSG_ERROR([could not find libpython.]))
+dnl
+AC_CHECK_LIB(boost_python,main,,AC_MSG_ERROR([could not find libboost_python.]),-lpython${PYTHON_VERSION})
 dnl
 dnl
 AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])

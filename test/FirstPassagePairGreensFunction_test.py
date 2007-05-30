@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+__author__    = 'Koichi Takahashi <shafi@e-cell.org>'
+__license__   = 'GPL'
+__copyright__ = 'Copyright The Molecular Sciences Institute 2006-2007'
+
+
 import unittest
 
 import _gfrd as mod

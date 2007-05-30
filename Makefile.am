@@ -23,6 +23,18 @@ LIBBOOSTPYTHON=-lboost_python
 
 CFLAGS=${CXXFLAGS}
 
+noinst_PYTHON=\
+gfrdbase.py\
+logger.py\
+gfrdbase.py\
+utils.py\
+egfrd.py\
+gfrd.py\
+surface.py\
+single.py\
+dimer.py  
+
+
 
 lib_LTLIBRARIES= _gfrd.la
 
@@ -45,7 +57,6 @@ FirstPassageGreensFunction.cpp\
 FirstPassagePairGreensFunction.cpp\
 bessel.cpp\
 pyGFRD.cpp
-
 
 
 
