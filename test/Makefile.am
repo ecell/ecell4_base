@@ -9,6 +9,15 @@ TESTS = $(CPP_TESTS) $(PYTHON_TESTS)
 
 TESTS_ENVIRONMENT = PYTHONPATH=$(top_srcdir)
 
+
+EXTRA_DIST=\
+AllTests.cpp\
+DynamicPriorityQueue_test.cpp\
+alltests.py\
+EventScheduler_test.py\
+FirstPassageGreensFunction_test.py\
+FirstPassagePairGreensFunction_test.py
+
 #%.py:
 #	$(TESTS_ENVIRONMENT) $(PYTHON) $<
 
