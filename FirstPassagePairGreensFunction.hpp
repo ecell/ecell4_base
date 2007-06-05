@@ -22,12 +22,21 @@ class FirstPassagePairGreensFunction
     public PairGreensFunction
 {
 
+    // Error tolerance used by default.
+    static const Real TOLERANCE = 1e-8;
+
+    // H is used to switch between p_theta and p_theta_free.
+    // 4.0: ~3e-5, 4.26: ~1e-6, 5.0: ~3e-7, 5.2: ~1e-7, 5.6: ~1e-8, 6.0: ~1e-9
+    static const Real H = 5.6;
+
+    // Relative cutoff used when obtaining series of alpha.
+    static const Real ALPHA_CUTOFF = 1e-10;
+
     static const Real MIN_T = 1e-18;
 
     static const unsigned int MAX_ORDER = 50;
     static const unsigned int MAX_ALPHA_SEQ = 100;
-    static const Real ALPHA_CUTOFF = 1e-10;
-    static const Real TOLERANCE = 1e-8;
+
 
 public:
     

@@ -2180,20 +2180,54 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 {
     Real theta;
 
-    {
-	const Real sigma( this->getSigma() );
-	const Real a( this->geta() );
-	
-	THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
-	THROW_UNLESS( std::invalid_argument, r > sigma && r <= a );
-	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
-    }
+    const Real sigma( this->getSigma() );
+    const Real a( this->geta() );
 
+    // input parameter range checks.
+    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+    THROW_UNLESS( std::invalid_argument, r > sigma && r <= a );
+    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+
+    // t == 0 means no move.
     if( t == 0.0 )
     {
 	return 0.0;
     }
+
+    // 
+    const Real distanceFromSigma( r0 - sigma );
+    const Real distanceFromA( a - r0 );
+
+    const Real thresholdDistance( this->H * sqrt( 6.0 * getD() * t ) );
+
+
+    if( distanceFromSigma < thresholdDistance )
+    {
+        if( distanceFromA < thresholdDistance )
+        {
+            // near both a and sigma;
+            // use FirstPassagePairGreensFunction
+        }
+        else
+        {
+            // near sigma; use PlainPairGreensFunction
+        }
+    }
+    else 
+    {
+        if( distanceFromA < thresholdDistance )
+        {
+            // near a; use FirstPassageGreensFunction
+        }
+        else
+        {
+            // distant from both a and sigma; 
+            // free
+        }
+    }
+    
+
 
     RealVector p_nTable;
 

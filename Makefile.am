@@ -48,12 +48,14 @@ PyEventScheduler.hpp\
 PairGreensFunction.hpp\
 FirstPassageGreensFunction.hpp\
 PlainPairGreensFunction.hpp\
+FreePairGreensFunction.hpp\
 FirstPassagePairGreensFunction.hpp
 
 
 
 _gfrd_la_SOURCES=\
 PlainPairGreensFunction.cpp\
+FreePairGreensFunction.cpp\
 FirstPassageGreensFunction.cpp\
 FirstPassagePairGreensFunction.cpp\
 bessel.cpp\

@@ -20,7 +20,7 @@ public:
     ;
   }
 
-  virtual ~PairGreensFunction()
+  ~PairGreensFunction()
   {
     ;
   }

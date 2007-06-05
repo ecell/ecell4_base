@@ -10,8 +10,8 @@
 
 #include "PyEventScheduler.hpp"
 
-#include "PairGreensFunction.hpp"
 #include "PlainPairGreensFunction.hpp"
+#include "FreePairGreensFunction.hpp"
 #include "FirstPassageGreensFunction.hpp"
 #include "FirstPassagePairGreensFunction.hpp"
 
@@ -139,6 +139,16 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawTime", &PlainPairGreensFunction::drawTime )
 	.def( "drawR", &PlainPairGreensFunction::drawR )
 	.def( "drawTheta", &PlainPairGreensFunction::drawTheta )
+	;
+
+    class_<FreePairGreensFunction>( "FreePairGreensFunction",
+                                    init<const Real>() )
+	.def( "getD", &FreePairGreensFunction::getD )
+	.def( "getkf", &FreePairGreensFunction::getkf )
+	.def( "getSigma", &FreePairGreensFunction::getSigma )
+	.def( "drawTime", &FreePairGreensFunction::drawTime )
+	.def( "drawR", &FreePairGreensFunction::drawR )
+	.def( "drawTheta", &FreePairGreensFunction::drawTheta )
 	;
 
     class_<FirstPassageGreensFunction>( "FirstPassageGreensFunction",

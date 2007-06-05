@@ -178,6 +178,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.assertEqual( 0.0, theta )
 
     def test_DrawTheta_smallt( self ):
+
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -188,7 +189,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
-        t = 1e-4
+        t = 1e-6
         theta = gf.drawTheta( 0.5, r0, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
@@ -465,9 +466,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
 
     def test_int_dp_theta_at_a_is_leavea( self ):
-
-        # NOTE: p_theta computes dp_theta when r=a, therefore
-        #      this test checks if int dp_theta d theta == leavea.
 
         D = 1e-12
         sigma = 1e-8
