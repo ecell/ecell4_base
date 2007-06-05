@@ -149,6 +149,9 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawTime", &FreePairGreensFunction::drawTime )
 	.def( "drawR", &FreePairGreensFunction::drawR )
 	.def( "drawTheta", &FreePairGreensFunction::drawTheta )
+
+	.def( "p_theta", &FreePairGreensFunction::p_theta )
+	.def( "ip_theta", &FreePairGreensFunction::ip_theta )
 	;
 
     class_<FirstPassageGreensFunction>( "FirstPassageGreensFunction",
@@ -192,11 +195,6 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "p_theta", &FirstPassagePairGreensFunction::p_theta )
 	.def( "ip_theta", &FirstPassagePairGreensFunction::ip_theta )
 	.def( "idp_theta", &FirstPassagePairGreensFunction::idp_theta )
-	.def( "p_theta_free", &FirstPassagePairGreensFunction::p_theta_free )
-	.def( "ip_theta_free", &FirstPassagePairGreensFunction::ip_theta_free )
-	.def( "dp_theta_free", &FirstPassagePairGreensFunction::dp_theta_free )
-	.def( "idp_theta_free", 
-              &FirstPassagePairGreensFunction::idp_theta_free )
 
 	.def( "f_alpha0", &FirstPassagePairGreensFunction::f_alpha0 )
 	.def( "alpha0_i", &FirstPassagePairGreensFunction::alpha0_i )

@@ -498,47 +498,20 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         r = 2.5e-8
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
+        gf = mod.FreePairGreensFunction( D )
 
-        ip = gf.ip_theta_free( 0.0, r, r0, t )
+        ip = gf.ip_theta( 0.0, r, r0, t )
         self.assertEqual( 0.0, ip )
 
         resolution = 20
         for i in range( 1, resolution ):
             theta = i * numpy.pi / resolution 
-            ip = gf.ip_theta_free( theta, r, r0, t )
-            result = scipy.integrate.quad( gf.p_theta_free, 0.0, theta,
+            ip = gf.ip_theta( theta, r, r0, t )
+            result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
-    def test_int_dp_theta_free_is_idp_theta_free( self ):
-
-        import scipy.integrate
-
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
-        
-        t = 1e-4
-        r0 = 9e-8
-        a = 1e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        ip = gf.idp_theta_free( 0.0, a, r0, t )
-        self.assertEqual( 0.0, ip )
-
-        resolution = 20
-        for i in range( 1, resolution ):
-            theta = i * numpy.pi / resolution 
-            ip = gf.idp_theta_free( theta, a, r0, t )
-            result = scipy.integrate.quad( gf.dp_theta_free, 0.0, theta,
-                                           args=( a, r0, t ) )
-            np = result[0]
-            self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
 
 
