@@ -150,6 +150,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawR", &FreePairGreensFunction::drawR )
 	.def( "drawTheta", &FreePairGreensFunction::drawTheta )
 
+	.def( "p_r", &FreePairGreensFunction::p_r )
+	.def( "ip_r", &FreePairGreensFunction::ip_r )
 	.def( "p_theta", &FreePairGreensFunction::p_theta )
 	.def( "ip_theta", &FreePairGreensFunction::ip_theta )
 	;

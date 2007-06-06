@@ -16,16 +16,53 @@ FreePairGreensFunction::drawTheta( const Real rnd,
                                    const Real r0, 
                                    const Real t ) const
 {
-
+    
 }
 
+
+const Real 
+FreePairGreensFunction::p_r( const Real r, 
+                             const Real r0, 
+                             const Real t ) const
+{
+    const Real D( getD() );
+    const Real Dt( D * t );
+    const Real Dt4( 4.0 * Dt );
+    const Real rr04( 4.0 * r * r0 );
+
+    const Real mrr0sq_over_4Dt( - gsl_pow_2( r + r0 ) / Dt4 );
+
+    const Real num1( expm1( mrr0sq_over_4Dt ) );
+    const Real num2( expm1( mrr0sq_over_4Dt + rr04 / Dt4 ) );
+
+    const Real den( rr04 * sqrt( M_PI * M_PI * M_PI * Dt ) );
+
+    const Real jacobian( 4.0 * r * r * M_PI );
+
+    return jacobian * ( - num1 + num2 ) / den;
+}
 
 const Real 
 FreePairGreensFunction::ip_r( const Real r, 
                               const Real r0, 
                               const Real t ) const
 {
+    const Real D( getD() );
+    const Real Dt4( 4.0 * D * t );
+    const Real Dt4r( 1.0 / Dt4 );
+    const Real Dt4sqrt( sqrt( Dt4 ) );
+    const Real Dt4sqrtr( 1.0 / Dt4sqrt );
 
+    const Real num1a( exp( - gsl_pow_2( r - r0 ) * Dt4r ) );
+    const Real num1b( exp( - gsl_pow_2( r + r0 ) * Dt4r ) );
+    const Real den1( r0 * sqrt( M_PI ) );
+
+    const Real term1( Dt4sqrt * ( - num1a + num1b ) / den1 );
+
+    const Real term2( erf( ( r - r0 ) * Dt4sqrtr ) );
+    const Real term3( erf( ( r + r0 ) * Dt4sqrtr ) );
+
+    return term1 + term2 + term3;
 }
     
 const Real 

@@ -55,6 +55,10 @@ public:
 			  const Real r0, 
 			  const Real t ) const;
 
+    const Real p_r( const Real r, 
+                     const Real r0, 
+                     const Real t ) const;
+
     const Real ip_r( const Real r, 
                      const Real r0, 
                      const Real t ) const;
