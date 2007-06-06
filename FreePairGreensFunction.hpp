@@ -76,7 +76,19 @@ public:
     
 
 private:
-    
+
+    struct ip_theta_params
+    { 
+	const FreePairGreensFunction* const gf;
+	const Real r;
+	const Real r0;
+	const Real t;
+	const Real value;
+    };
+
+
+    static const Real ip_theta_F( const Real theta,
+                                  const ip_theta_params* params );
     
 };
 

@@ -26,6 +26,43 @@ class FreePairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.FreePairGreensFunction( D )
         self.failIf( gf == None )
 
+    def test_DrawR( self ):
+        D = 1e-12
+        r0 = 2e-8
+        
+        gf = mod.FreePairGreensFunction( D )
+
+        t = 1e-3
+
+        r = gf.drawR( 0.5, r0, t )
+        self.failIf( r < 0.0 )
+
+        r = gf.drawR( 0.0, r0, t )
+        self.failIf( r < 0.0 )
+
+        r = gf.drawR( 1.0, r0, t )
+        self.failIf( r < 0.0 )
+
+
+
+    def test_DrawTheta( self ):
+        D = 1e-12
+        r0 = 5e-8
+        t = 1e-4
+        
+        gf = mod.FreePairGreensFunction( D )
+
+        r = gf.drawR( 0.5, r0, t )
+
+        theta = gf.drawTheta( 0.5, r, r0, t )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
+        theta = gf.drawTheta( 0.0, r, r0, t )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
+        theta = gf.drawTheta( 1.0, r, r0, t )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
 
     def test_int_p_r_is_ip_r( self ):
 
