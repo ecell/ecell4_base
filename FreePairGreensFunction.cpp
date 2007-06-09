@@ -229,7 +229,8 @@ FreePairGreensFunction::drawTheta( const Real rnd,
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
-    gsl_root_fsolver_set( solver, &F, 0.0, M_PI + std::numeric_limits<Real>::epsilon );
+    gsl_root_fsolver_set( solver, &F, 0.0,
+                          M_PI + std::numeric_limits<Real>::epsilon() );
 
     const unsigned int maxIter( 100 );
 
