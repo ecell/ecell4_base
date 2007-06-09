@@ -76,11 +76,11 @@ class FreePairGreensFunctionTestCase( unittest.TestCase ):
         theta = gf.drawTheta( 0.0, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
-        theta = gf.drawTheta( 1.0, r, r0, t )
+        theta = gf.drawTheta( 0.99999, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
 
-    def test_ip_r_lim_infinity_is_one( self ):
+    def test_ip_r_infinity_is_one( self ):
 
         D = 1e-12
         
