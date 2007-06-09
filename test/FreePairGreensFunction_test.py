@@ -76,7 +76,9 @@ class FreePairGreensFunctionTestCase( unittest.TestCase ):
         theta = gf.drawTheta( 0.0, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
-        theta = gf.drawTheta( 0.99999, r, r0, t )
+        # rnd=1.0 fails on x87.  it's not a big problem, but
+        # need to look at it later.
+        theta = gf.drawTheta( 0.999999, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
 
