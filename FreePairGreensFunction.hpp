@@ -23,6 +23,7 @@ private:
 
     static const Real TOLERANCE = 1e-8;
 
+    static const Real H = 6;
     
 public:
     
@@ -56,8 +57,8 @@ public:
 			  const Real t ) const;
 
     const Real p_r( const Real r, 
-                     const Real r0, 
-                     const Real t ) const;
+                    const Real r0, 
+                    const Real t ) const;
 
     const Real ip_r( const Real r, 
                      const Real r0, 
@@ -76,6 +77,19 @@ public:
     
 
 private:
+
+    struct ip_r_params
+    { 
+	const FreePairGreensFunction* const gf;
+	const Real r0;
+	const Real t;
+	const Real value;
+    };
+
+
+    static const Real ip_r_F( const Real r,
+                              const ip_r_params* params );
+
 
     struct ip_theta_params
     { 
