@@ -137,7 +137,12 @@ FreePairGreensFunction::drawR( const Real rnd,
 	    &params 
 	};
 
-    const Real max_r( H * sqrt( 6.0 * getD() * t ) );
+    const Real max_r( H * sqrt( 6.0 * getD() * t ) + r0 );
+
+    if( GSL_FN_EVAL( &F, max_r ) < 0.0 )
+    {
+        return max_r;
+    }
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
