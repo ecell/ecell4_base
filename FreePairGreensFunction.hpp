@@ -10,8 +10,8 @@
 /**
    Pair Green's function for the case where the pair never interact.
 
-   Therefore, drawTime() always returns +INFINITY, and 
-   getkf() and getSigma() return zero.
+   Therefore, drawTime() always returns +INFINITY.
+   kf == sigma == 0.
 */
 
 class FreePairGreensFunction

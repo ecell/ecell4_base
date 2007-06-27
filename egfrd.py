@@ -171,7 +171,7 @@ class Single:
         if closestSingle.partner == None:
             print t, closestSingle.lastTime, closestSingle.dt
             closestSingle.update( t ) # update the partner candidate.
-            self.sim.updateEvent( closestSingle )
+            #self.sim.updateEvent( closestSingle )
 
             pair = self.sim.createPair( self, closestSingle )
         
@@ -223,7 +223,7 @@ class Single:
            >= ShellSizeDisparityFactor * 5:
             print 'burst'
             self.closest.update( t )
-            self.sim.updateEvent( self.closest )
+            #self.sim.updateEvent( self.closest )
 
         return self.dt
 
@@ -258,7 +258,7 @@ class Single:
 
         self.burstShell()
 
-
+        self.sim.updateEvent( self )
 
     def updateDt( self ):
         self.dt = self.calculateFirstPassageTime()        
@@ -712,7 +712,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         for single in self.singleMap.values():
             single.update( self.t )
-            self.updateEvent( single )
+            #self.updateEvent( single )
 
         #self.dt = self.scheduler.getTime() - self.t
         assert self.dt >= 0.0
