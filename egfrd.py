@@ -238,7 +238,7 @@ class Single:
     Shell size shrunken to the radius.   self.lastTime is reset.
     self.dt is set to 0.0.
 
-    Update the scheduler after calling this method.
+    This method updates the scheduler.
     '''
     
     def update( self, t ):
@@ -297,7 +297,7 @@ class Pair:
         self.rt = rt
         
         self.sim = sim
-        self.lastTime = 0.0
+        self.lastTime = self.sim.t
         self.dt = 0.0
         self.closest = None
 
@@ -436,11 +436,11 @@ class Pair:
         #            a_r > rmin + r_sigma
         
         margin = self.getShellSize() - rmin - r_sigma
+        assert margin > 0.0
         
         self.a_r = ( margin * .5 + rmin ) / rmin_factor
         self.a_R = margin * .5
 
-        assert margin > 0.0
         assert self.a_r > self.r0
         #print 'ne', self.getShellSize(), margin, self.r0, self.a_r, self.a_R
 
@@ -467,7 +467,6 @@ class Pair:
     def fire( self ):
 
         print 'fire:', self
-
 
         particle1 = self.single1.particle
         particle2 = self.single2.particle
@@ -596,23 +595,6 @@ class Pair:
         particle1.setPos( newpos1 )
         particle2.setPos( newpos2 )
 
-        # debug: check if the new positions are valid:
-        newDistance = distance( newpos1, newpos2 )
-        radius12 = species1.radius + species2.radius
-        # check 1: particles don't overlap.
-        if newDistance <= radius12:
-            print 'rejected move: ', 'radii, interp',\
-                  species1.radius + species2.radius, newDistance
-            print 'DEBUG: r0, dt, pos1, pos2, newpos1, newpos2',\
-                  self.r0, self.dt, pos1, pos2, newpos1, newpos2
-            raise RuntimeError, 'New particles overlap'
-        # check 2: particles within mobility radius.
-        if self.sim.distance( oldCoM, newpos1 ) + radius1 \
-               > self.getShellSize() or \
-               self.sim.distance( oldCoM, newpos2 ) + radius2 \
-               > self.getShellSize():
-            raise RuntimeError, 'New particle(s) out of protective sphere.'
-            
 
         # here decide whether this pair still continues or breaks up
 
@@ -620,6 +602,8 @@ class Pair:
 
             pairClosest, pairDistance = self.findClosestShell()
             self.setShellSize( pairDistance * (1.0 - 1e-8) )
+
+            self.lastTime = self.sim.t
 
             dt = self.nextEvent()[0]
             return dt
@@ -655,13 +639,104 @@ class Pair:
 
         return pairClosest, pairDistance
 
+    '''
+    Burst the shell, update positions of the particles and
+    release them as two Singles.
+
+    '''
 
     def update( self, t ):
-        print 'update ', t
+
+        print 'pair update; ' , self, t
+
+        assert t >= self.lastTime
+
+        if t - self.lastTime != 0.0:
+
+            dt = t - self.lastTime 
+
+            particle1 = self.single1.particle
+            particle2 = self.single2.particle
+            
+            rnd = numpy.random.uniform( size=6 )
+            
+            oldInterParticle = particle2.getPos() - particle1.getPos()
+            oldCoM = self.getCoM()
+            
+            # calculate new CoM
+            r_R = self.sgf.drawR( rnd[0], dt, self.a_R )
+            
+            displacement_R_S = [ r_R,
+                                 rnd[1] * Pi,
+                                 rnd[2] * 2 * Pi ]
+            displacement_R = sphericalToCartesian( displacement_R_S )
+            newCoM = oldCoM + displacement_R \
+                     / ( self.sqrtD2D1 + self.sqrtD1D2 )
+            
+            # calculate new interparticle
+            print ( rnd[3], self.a_r, self.r0, dt )
+            r_r = self.pgf.drawR( rnd[3], self.r0, dt )
+            theta_r = self.pgf.drawTheta( rnd[4], r_r, self.r0, dt )
+            phi_r = rnd[5] * 2 * Pi
+            newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
+            newInterParticle = sphericalToCartesian( newInterParticleS )
+            
+            newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
+                                                  oldInterParticle )
+
+            newpos1 = self.sim.applyBoundary( newpos1 )
+            newpos2 = self.sim.applyBoundary( newpos2 )
+
+            self.checkNewpos( newpos1, newpos2 )
+
+            particle1.setPos( newpos1 )
+            particle2.setPos( newpos2 )
+
+
+        self.releaseSingles()
+
+        self.single1.initialize()
+        self.single2.initialize()
+            
+        self.sim.removeEvent( self )
+
+        self.sim.addEvent( self.sim.t + self.single1.dt, self.single1 )
+        self.sim.addEvent( self.sim.t + self.single2.dt, self.single2 )
+
+
 
     def isDependentOn( self, event ):
         #print event
         return False
+
+
+    def checkNewpos( self, pos1, pos2 ):
+
+        species1 = self.single1.particle.species
+        species2 = self.single2.particle.species
+
+        oldCoM = self.getCoM()
+        
+        # debug: check if the new positions are valid:
+        newDistance = distance( pos1, pos2 )
+        radius12 = species1.radius + species2.radius
+
+        # check 1: particles don't overlap.
+        if newDistance <= radius12:
+            print 'rejected move: ', 'radii, interp',\
+                  species1.radius + species2.radius, newDistance
+            print 'DEBUG: r0, dt, pos1, pos2, pos1, pos2',\
+                  self.r0, self.dt, pos1, pos2, pos1, pos2
+            raise RuntimeError, 'New particles overlap'
+
+        # check 2: particles within mobility radius.
+        if self.sim.distance( oldCoM, pos1 ) + species1.radius \
+               > self.getShellSize() or \
+               self.sim.distance( oldCoM, pos2 ) + species2.radius \
+               > self.getShellSize():
+            raise RuntimeError, 'New particle(s) out of protective sphere.'
+
+
 
     def __str__( self ):
         return 'Pair( ' + str(self.single1.particle) +\
