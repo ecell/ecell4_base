@@ -413,6 +413,7 @@ class GFRDSimulatorBase:
 
     def placeParticle( self, id, pos ):
 
+        pos = numpy.array( pos )
         species = self.speciesList[ id ]
 
         if not self.checkOverlap( pos, species.radius ):

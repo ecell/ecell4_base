@@ -47,6 +47,10 @@ class Single:
     def __del__( self ):
         pass
         #print 'del', str( self )
+
+    def fire( self ):
+        self.sim.fireSingle( self )
+        return self.dt
         
     def setPos( self, pos ):
         self.particle.setPos( pos )
@@ -107,7 +111,7 @@ class Single:
         self.particle.setPos( pos + displacement )
 
         # BOUNDARY
-        self.sim.applyBoundary( pos )
+        pos = self.sim.applyBoundary( pos )
 
         self.lastTime = t
 
@@ -146,88 +150,6 @@ class Single:
         self.lastTime = self.sim.t
 
 
-    def fire( self ):
-
-        #debug
-        #self.sim.checkShellForAll()
-
-        radius = self.getRadius()
-        t = self.sim.t
-
-        # (1) propagate
-
-        self.propagate( self.getMobilityRadius(), t )
-        pos = self.getPos()
-
-        # (2) pair check
-
-        neighbors, distances = self.sim.getNeighborParticles( self.getPos() )
-        closest = neighbors[1]
-        closestDistance = distances[1]
-        radius12 = radius + closest.species.radius
-        closestSingle = self.sim.findSingle( closest )
-
-
-        if closestSingle.partner == None:
-            print t, closestSingle.lastTime, closestSingle.dt
-            closestSingle.update( t ) # update the partner candidate.
-            #self.sim.updateEvent( closestSingle )
-
-            pair = self.sim.createPair( self, closestSingle )
-        
-            if self.sim.checkPair( pair ) != None:
-                # if pair was formed, destroy this single.
-                self.sim.removeEvent( closestSingle )
-                dt = pair.nextEvent()[0]
-                self.sim.addEvent( t + dt, pair )
-                return -1
-            else:
-                # if not, this single continues. clean up the pair.
-                pair.releaseSingles()
-                del pair
-            
-        
-        # (3) neighbor check
-        neighborShells, shellDistances = self.sim.getNeighborShells( pos )
-        self.closest = neighborShells[1]
-        distanceToClosestShell = shellDistances[1]
-
-        # (4) determine new shell size and dt.
-
-        shellSize = self.getShellSize()
-
-        ShellSizeDisparityFactor = 2
-
-        #closestMobilityRadius = self.closest.getMobilityRadius()
-        #closestMeanArrivalTime = closestMobilityRadius ** 2 / \
-        #( 6.0 * self.closest.getD() )
-        
-        shellSize = min( self.closest.getShellSize() * ShellSizeDisparityFactor
-                         + ( distanceToClosestShell - radius ) * 0.5 + radius,
-                         distanceToClosestShell )
-        shellSize = shellSize * ( 1.0 - 1e-8 ) # safety
-        shellSize = max( shellSize, radius ) # cannot be smaller than radius
-
-        assert shellSize <= distanceToClosestShell
-
-        self.setShellSize( shellSize )
-
-        meanArrivalTime = self.getMobilityRadius() ** 2 / \
-                          ( 6.0 * self.particle.species.D )
-
-        self.updateDt()
-
-        #FIXME: use of closest.dt here is a temporary workaround.
-        if meanArrivalTime <= 0.0 or \
-           self.closest.dt / meanArrivalTime\
-           >= ShellSizeDisparityFactor * 5:
-            print 'burst'
-            self.closest.update( t )
-            #self.sim.updateEvent( self.closest )
-
-        return self.dt
-
-
     '''
     Update the position of the particle at time t.
 
@@ -241,7 +163,7 @@ class Single:
     This method updates the scheduler.
     '''
     
-    def update( self, t ):
+    def burst( self, t ):
 
         assert t >= self.lastTime
         assert t <= self.lastTime + self.dt
@@ -328,6 +250,12 @@ class Pair:
         pass
         #print 'del', str( self )
 
+    def fire( self ):
+        self.sim.firePair( self )
+        return self.dt
+
+
+
     def getPos( self ):
         return self.getCoM()
 
@@ -365,6 +293,7 @@ class Pair:
     def releaseSingles( self ):
         self.single1.partner = None
         self.single2.partner = None
+
 
     '''
     Calculate new positions of the pair particles using
@@ -464,163 +393,6 @@ class Pair:
         return self.dt, self.eventType
 
 
-    def fire( self ):
-
-        print 'fire:', self
-
-        particle1 = self.single1.particle
-        particle2 = self.single2.particle
-        species1 = particle1.species
-        species2 = particle2.species
-        radius1 = species1.radius
-        radius2 = species2.radius
-        
-        pos1 = particle1.getPos()
-        pos2 = particle2.getPos()
-
-        oldInterParticle = pos2 - pos1
-
-        oldCoM = self.getCoM()
-
-
-        # Three cases:
-        #  1. Reaction
-        #  2.1 Escaping through a_r.
-        #  2.2 Escaping through a_R.
-
-        # 1. Reaction
-        if self.eventType == EventType.REACTION:
-
-            print 'reaction'
-
-            if len( self.rt.products ) == 1:
-                
-                species3 = self.rt.products[0]
-
-                rnd = numpy.random.uniform( size=5 )
-
-                # calculate new R
-            
-                r_R = self.sgf.drawR( rnd[0], self.dt, self.a_R )
-            
-                displacement_R_S = [ r_R,
-                                     rnd[1] * Pi,
-                                     rnd[2] * 2 * Pi ]
-                displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R \
-                         / ( self.sqrtD2D1 + self.sqrtD1D2 )
-                
-                #FIXME: SURFACE
-                newPos = self.sim.applyBoundary( newCoM )
-
-                self.releaseSingles()
-                self.sim.removeParticle( particle1 )
-                self.sim.removeParticle( particle2 )
-
-                particle = self.sim.createParticle( species3, newPos )
-                newsingle = self.sim.createSingle( particle )
-                newsingle.initialize()
-                self.sim.addSingle( newsingle )
-
-                self.sim.reactionEvents += 1
-                
-                return -1
-
-            else:
-                raise NotImplementedError,\
-                      'num products >= 2 not supported yet.'
-
-        # 2.1 Escaping through a_r.
-        elif self.eventType == EventType.ESCAPE:
-
-            print 'escape r'
-
-            rnd = numpy.random.uniform( size=5 )
-
-            # calculate new R
-            
-            r_R = self.sgf.drawR( rnd[0], self.dt, self.a_R )
-            
-            displacement_R_S = [ r_R,
-                                 rnd[1] * Pi,
-                                 rnd[2] * 2 * Pi ]
-            displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = oldCoM + displacement_R \
-                     / ( self.sqrtD2D1 + self.sqrtD1D2 )
-
-            # calculate new r
-            print ( rnd[3], self.a_r, self.r0, self.dt )
-            theta_r = self.pgf.drawTheta( rnd[3], self.a_r, self.r0, self.dt )
-            phi_r = rnd[4] * 2 * Pi
-            newInterParticleS = numpy.array( [ self.a_r, theta_r, phi_r ] )
-            newInterParticle = sphericalToCartesian( newInterParticleS )
-
-            newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
-                                                  oldInterParticle )
-
-
-        # 2.2 escaping through a_R.
-        elif self.eventType == 2:
-
-            print 'escape R'
-
-            rnd = numpy.random.uniform( size = 5 )
-
-            # calculate new r
-            print 'r0 = ', self.r0, 'dt = ', self.dt, self.pgf.dump()
-            r = self.pgf.drawR( rnd[0], self.r0, self.dt )
-            print ( rnd[1], r, self.r0, self.dt )
-            theta_r = self.pgf.drawTheta( rnd[1], r, self.r0, self.dt )
-            phi_r = rnd[2] * 2*Pi
-            newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
-            newInterParticle = sphericalToCartesian( newInterParticleS )
-
-            # calculate new R
-            displacement_R_S = [ self.a_R,
-                                 rnd[3] * Pi,
-                                 rnd[4] * 2 * Pi ]
-            displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = oldCoM + displacement_R \
-                     / ( self.sqrtD2D1 + self.sqrtD1D2 )
-
-            newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
-                                                  oldInterParticle )
-                
-        else:
-            raise SystemError, 'Bug: invalid eventType.'
-
-        newpos1 = self.sim.applyBoundary( newpos1 )
-        newpos2 = self.sim.applyBoundary( newpos2 )
-
-        particle1.setPos( newpos1 )
-        particle2.setPos( newpos2 )
-
-
-        # here decide whether this pair still continues or breaks up
-
-        if self.sim.checkPair( self ) != None:  # pair continues.
-
-            pairClosest, pairDistance = self.findClosestShell()
-            self.setShellSize( pairDistance * (1.0 - 1e-8) )
-
-            self.lastTime = self.sim.t
-
-            dt = self.nextEvent()[0]
-            return dt
-
-        else: # breaks up to singles
-
-            self.releaseSingles()
-
-            self.single1.initialize()
-            self.single2.initialize()
-            
-            self.sim.addEvent( self.sim.t + self.single1.dt, self.single1 )
-            self.sim.addEvent( self.sim.t + self.single2.dt, self.single2 )
-
-        return -1
-
-
     def findClosestShell( self ):
 
         pairNeighbors, pairDistances = \
@@ -645,7 +417,7 @@ class Pair:
 
     '''
 
-    def update( self, t ):
+    def burst( self, t ):
 
         print 'pair update; ' , self, t
 
@@ -765,6 +537,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def initialize( self ):
 
+        self.setAllRepulsive()
+
         self.scheduler.clear()
 
         self.initializeSingleMap()
@@ -781,19 +555,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.checkShellForAll()
 
         self.isDirty = False
-
-
-    def reinitialize( self ):
-
-        for single in self.singleMap.values():
-            single.update( self.t )
-            #self.updateEvent( single )
-
-        #self.dt = self.scheduler.getTime() - self.t
-        assert self.dt >= 0.0
-
-        #debug
-        self.checkShellForAll()
 
 
     def step( self ):
@@ -880,6 +641,251 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 particle = Particle( species, index=i )
                 single = self.createSingle( particle )
                 single.setShellSize( single.getRadius() )
+
+
+    def fireSingle( self, single ):
+
+        #debug
+        #self.checkShellForAll()
+
+        radius = single.getRadius()
+        t = self.t
+
+        # (1) propagate
+        #
+        # Propagate this particle to the exit point on the surface.
+        
+        single.propagate( single.getMobilityRadius(), t )
+        pos = single.getPos()
+
+        # (2) pair check
+        #
+        # Check if this and the closest particle can form a Pair.
+        # Skip this step if the closest was already a member of a Pair.
+
+        neighbors, distances = self.getNeighborParticles( pos )
+        closest = neighbors[1]
+        closestDistance = distances[1]
+        radius12 = radius + closest.species.radius
+        closestSingle = self.findSingle( closest )
+
+        #  ignore if it was a member of a pair
+        if closestSingle.partner == None:  
+            print t, closestSingle, closestSingle.lastTime, closestSingle.dt
+
+            closestSingle.burst( t ) 
+
+            pair = self.createPair( single, closestSingle )
+        
+            if self.checkPair( pair ) != None:
+                # if pair was formed, destroy the pair singles.
+                self.removeEvent( closestSingle )
+                dt = pair.nextEvent()[0]
+                self.addEvent( t + dt, pair )
+                single.dt = -1
+                return
+            else:
+                # if not, this single continues. clean up the pair.
+                pair.releaseSingles()
+                del pair
+            
+        
+        # (3) determine new shell size and dt.
+
+        neighborShells, shellDistances = self.getNeighborShells( pos )
+        single.closest = neighborShells[1]
+        distanceToClosestShell = shellDistances[1]
+
+        shellSize = single.getShellSize()
+
+        ShellSizeDisparityFactor = 2
+
+        shellSize = min( single.closest.getShellSize() *
+                         ShellSizeDisparityFactor
+                         + ( distanceToClosestShell - radius ) * 0.5 + radius,
+                         distanceToClosestShell )
+        shellSize = shellSize * ( 1.0 - 1e-8 ) # safety
+        shellSize = max( shellSize, radius ) # cannot be smaller than radius
+
+        assert shellSize <= distanceToClosestShell
+
+        single.setShellSize( shellSize )
+
+        single.updateDt()
+
+
+        # (4) Burst the closest, either Single or Pair, if 
+
+        #FIXME: use of closest.dt here is a temporary workaround.
+        meanArrivalTime = single.getMobilityRadius() ** 2 / \
+                          ( 6.0 * single.particle.species.D )
+        if meanArrivalTime == 0.0 or \
+           single.closest.dt / meanArrivalTime\
+           >= ShellSizeDisparityFactor * 5:
+            print 'burst'
+            single.closest.burst( t )
+
+
+
+    def firePair( self, pair ):
+
+
+        print 'fire:', pair
+
+        particle1 = pair.single1.particle
+        particle2 = pair.single2.particle
+        species1 = particle1.species
+        species2 = particle2.species
+        radius1 = species1.radius
+        radius2 = species2.radius
+        
+        pos1 = particle1.getPos()
+        pos2 = particle2.getPos()
+
+        oldInterParticle = pos2 - pos1
+
+        oldCoM = pair.getCoM()
+
+
+        # Three cases:
+        #  1. Reaction
+        #  2.1 Escaping through a_r.
+        #  2.2 Escaping through a_R.
+
+        # 1. Reaction
+        if pair.eventType == EventType.REACTION:
+
+            print 'reaction'
+
+            if len( pair.rt.products ) == 1:
+                
+                species3 = pair.rt.products[0]
+
+                rnd = numpy.random.uniform( size=5 )
+
+                # calculate new R
+            
+                r_R = pair.sgf.drawR( rnd[0], pair.dt, pair.a_R )
+            
+                displacement_R_S = [ r_R,
+                                     rnd[1] * Pi,
+                                     rnd[2] * 2 * Pi ]
+                displacement_R = sphericalToCartesian( displacement_R_S )
+                newCoM = oldCoM + displacement_R \
+                         / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
+                
+                #FIXME: SURFACE
+                newPos = self.applyBoundary( newCoM )
+
+                pair.releaseSingles()
+                self.removeParticle( particle1 )
+                self.removeParticle( particle2 )
+
+                particle = self.createParticle( species3, newPos )
+                newsingle = self.createSingle( particle )
+                newsingle.initialize()
+                self.addSingle( newsingle )
+
+                self.reactionEvents += 1
+                
+                pair.dt = -1
+                return
+
+            else:
+                raise NotImplementedError,\
+                      'num products >= 2 not supported yet.'
+
+        # 2.1 Escaping through a_r.
+        elif pair.eventType == EventType.ESCAPE:
+
+            print 'escape r'
+
+            rnd = numpy.random.uniform( size=5 )
+
+            # calculate new R
+            
+            r_R = pair.sgf.drawR( rnd[0], pair.dt, pair.a_R )
+            
+            displacement_R_S = [ r_R,
+                                 rnd[1] * Pi,
+                                 rnd[2] * 2 * Pi ]
+            displacement_R = sphericalToCartesian( displacement_R_S )
+            newCoM = oldCoM + displacement_R \
+                     / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
+
+            # calculate new r
+            print ( rnd[3], pair.a_r, pair.r0, pair.dt )
+            theta_r = pair.pgf.drawTheta( rnd[3], pair.a_r, pair.r0, pair.dt )
+            phi_r = rnd[4] * 2 * Pi
+            newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
+            newInterParticle = sphericalToCartesian( newInterParticleS )
+
+            newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
+                                                  oldInterParticle )
+
+
+        # 2.2 escaping through a_R.
+        elif pair.eventType == 2:
+
+            print 'escape R'
+
+            rnd = numpy.random.uniform( size = 5 )
+
+            # calculate new r
+            print 'r0 = ', pair.r0, 'dt = ', pair.dt, pair.pgf.dump()
+            r = pair.pgf.drawR( rnd[0], pair.r0, pair.dt )
+            print ( rnd[1], r, pair.r0, pair.dt )
+            theta_r = pair.pgf.drawTheta( rnd[1], r, pair.r0, pair.dt )
+            phi_r = rnd[2] * 2*Pi
+            newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
+            newInterParticle = sphericalToCartesian( newInterParticleS )
+
+            # calculate new R
+            displacement_R_S = [ pair.a_R,
+                                 rnd[3] * Pi,
+                                 rnd[4] * 2 * Pi ]
+            displacement_R = sphericalToCartesian( displacement_R_S )
+            newCoM = oldCoM + displacement_R \
+                     / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
+
+            newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
+                                                  oldInterParticle )
+                
+        else:
+            raise SystemError, 'Bug: invalid eventType.'
+
+        newpos1 = self.applyBoundary( newpos1 )
+        newpos2 = self.applyBoundary( newpos2 )
+
+        particle1.setPos( newpos1 )
+        particle2.setPos( newpos2 )
+
+
+        # here decide whether this pair still continues or breaks up
+
+        if self.checkPair( pair ) != None:  # pair continues.
+
+            pairClosest, pairDistance = pair.findClosestShell()
+            pair.setShellSize( pairDistance * (1.0 - 1e-8) )
+
+            pair.lastTime = self.t
+
+            pair.dt = pair.nextEvent()[0]
+            return
+
+        else: # breaks up to singles
+
+            pair.releaseSingles()
+
+            pair.single1.initialize()
+            pair.single2.initialize()
+            
+            self.addEvent( self.t + pair.single1.dt, pair.single1 )
+            self.addEvent( self.t + pair.single2.dt, pair.single2 )
+
+        pair.dt = -1
+        return
+
 
 
     def createPair( self, single1, single2 ):
