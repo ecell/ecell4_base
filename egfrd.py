@@ -165,6 +165,8 @@ class Single:
     
     def burst( self, t ):
 
+        print 'burst', self, t, self.lastTime, self.dt
+
         assert t >= self.lastTime
         assert t <= self.lastTime + self.dt
         assert self.getShellSize() >= self.getRadius()
@@ -180,7 +182,8 @@ class Single:
 
         self.burstShell()
 
-        self.sim.updateEvent( self )
+        self.sim.updateEvent( t, self )
+        
 
     def updateDt( self ):
         self.dt = self.calculateFirstPassageTime()        
@@ -419,7 +422,7 @@ class Pair:
 
     def burst( self, t ):
 
-        print 'pair update; ' , self, t
+        print 'pair burst; ' , self, t
 
         assert t >= self.lastTime
 
@@ -430,7 +433,7 @@ class Pair:
             particle1 = self.single1.particle
             particle2 = self.single2.particle
             
-            rnd = numpy.random.uniform( size=6 )
+            rnd = numpy.random.uniform( size = 6 )
             
             oldInterParticle = particle2.getPos() - particle1.getPos()
             oldCoM = self.getCoM()
@@ -472,8 +475,8 @@ class Pair:
             
         self.sim.removeEvent( self )
 
-        self.sim.addEvent( self.sim.t + self.single1.dt, self.single1 )
-        self.sim.addEvent( self.sim.t + self.single2.dt, self.single2 )
+        self.sim.addEvent( t + self.single1.dt, self.single1 )
+        self.sim.addEvent( t + self.single2.dt, self.single2 )
 
 
 
@@ -627,9 +630,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def removeEvent( self, event ):
         self.scheduler.removeEvent( event.eventID )
 
-    def updateEvent( self, event ):
+    def updateEvent( self, t, event ):
         print event.eventID
-        self.scheduler.updateEvent( event.eventID, self.t + event.dt, event )
+        self.scheduler.updateEvent( event.eventID, t, event )
 
 
     def initializeSingleMap( self ):
@@ -644,6 +647,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def fireSingle( self, single ):
+
+        print 'fireSingle', single, single.dt
 
         #debug
         #self.checkShellForAll()
@@ -671,7 +676,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         #  ignore if it was a member of a pair
         if closestSingle.partner == None:  
-            print t, closestSingle, closestSingle.lastTime, closestSingle.dt
 
             closestSingle.burst( t ) 
 
