@@ -36,7 +36,6 @@ l.log()
 while s.t < 5:
     s.step()
     l.log()
-    print 't = ', s.t
     
 
 '''

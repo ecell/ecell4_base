@@ -49,8 +49,10 @@ class Single:
         #print 'del', str( self )
 
     def fire( self ):
+        print 'fireSingle', self, self.dt
         self.sim.fireSingle( self )
-        return self.dt
+        print 'single new t dt', self.sim.t + self.dt, self.dt
+        return self.sim.t + self.dt
         
     def setPos( self, pos ):
         self.particle.setPos( pos )
@@ -124,7 +126,7 @@ class Single:
     after calling this method.
     '''
 
-    def burstShell( self ):
+    def resetShell( self ):
 
         self.setShellSize( self.getRadius() )
         self.dt = 0.0
@@ -146,7 +148,7 @@ class Single:
         #closestSingle = self.sim.findSingle( closestParticle )
         #self.closest = closestSingle
 
-        self.burstShell()
+        self.resetShell()
         self.lastTime = self.sim.t
 
 
@@ -178,20 +180,13 @@ class Single:
 
         rnd = numpy.random.uniform()
         r = self.gf.drawR( rnd , dt, self.getMobilityRadius() )
-        self.propagate( r, t )
+        self.propagate( r, t )  # self.lastTime = t
 
-        self.burstShell()
+        self.resetShell()
 
-        self.sim.updateEvent( t, self )
-        
+        self.sim.updateEvent( t + self.dt, self )
 
-    def updateDt( self ):
-        self.dt = self.calculateFirstPassageTime()        
-        
 
-    def isDependentOn( self, event ):
-        #print event
-        return False
 
     def calculateFirstPassageTime( self ):
         
@@ -255,7 +250,7 @@ class Pair:
 
     def fire( self ):
         self.sim.firePair( self )
-        return self.dt
+        return self.sim.t + self.dt
 
 
 
@@ -569,13 +564,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.t, self.lastEvent = self.scheduler.getTopEvent()
 
-        print self.lastEvent
+        print 't = ', self.t, ': event = ', self.lastEvent
         
         self.scheduler.step()
 
         nextTime, nextEvent = self.scheduler.getTopEvent()
         self.dt = nextTime - self.t
-        
+
         assert self.scheduler.getSize() != 0
 
 
@@ -648,8 +643,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def fireSingle( self, single ):
 
-        print 'fireSingle', single, single.dt
-
         #debug
         #self.checkShellForAll()
 
@@ -715,7 +708,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         single.setShellSize( shellSize )
 
-        single.updateDt()
+        single.dt = single.calculateFirstPassageTime()
 
 
         # (4) Burst the closest, either Single or Pair, if 

@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testReplaceTop, DPQ, both )
     BOOST_CHECK( dpq.checkConsistency() );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testReplace, DPQ, both )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testReplace1, DPQ, both )
 {
     DPQ dpq;
 
@@ -118,18 +118,48 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testReplace, DPQ, both )
     BOOST_CHECK_EQUAL( 4, dpq.getSize() );
     BOOST_CHECK_EQUAL( 1, dpq.getTop() );
 
-    dpq.replace( id, 2 );  // 4->2
+    dpq.replace( id, 2 );  // 4->2 up
 
     BOOST_CHECK( dpq.checkConsistency() );
     BOOST_CHECK_EQUAL( 4, dpq.getSize() );
-    BOOST_CHECK_EQUAL( 1, dpq.getTop() );
 
+    BOOST_CHECK_EQUAL( 1, dpq.getTop() );
     dpq.popTop();
     BOOST_CHECK_EQUAL( 2, dpq.getTop() );
     dpq.popTop();
     BOOST_CHECK_EQUAL( 3, dpq.getTop() );
     dpq.popTop();
     BOOST_CHECK_EQUAL( 5, dpq.getTop() );
+    dpq.popTop();
+
+    BOOST_CHECK( dpq.isEmpty() );
+    BOOST_CHECK( dpq.checkConsistency() );
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( testReplace2, DPQ, both )
+{
+    DPQ dpq;
+
+    dpq.push( 5 );
+    dpq.push( 4 );
+    const ID id( dpq.push( 3 ) );
+    dpq.push( 1 );
+
+    BOOST_CHECK_EQUAL( 4, dpq.getSize() );
+    BOOST_CHECK_EQUAL( 1, dpq.getTop() );
+
+    dpq.replace( id, 6 );  // 3->6 down
+
+    BOOST_CHECK( dpq.checkConsistency() );
+    BOOST_CHECK_EQUAL( 4, dpq.getSize() );
+
+    BOOST_CHECK_EQUAL( 1, dpq.getTop() );
+    dpq.popTop();
+    BOOST_CHECK_EQUAL( 4, dpq.getTop() );
+    dpq.popTop();
+    BOOST_CHECK_EQUAL( 5, dpq.getTop() );
+    dpq.popTop();
+    BOOST_CHECK_EQUAL( 6, dpq.getTop() );
     dpq.popTop();
 
     BOOST_CHECK( dpq.isEmpty() );

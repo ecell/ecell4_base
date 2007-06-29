@@ -447,7 +447,7 @@ movePos( const Index pos )
         }
     }
 
-    if( pos <= 0 )
+    if( pos <= 0 ) // already on top
     {
         return;
     }
