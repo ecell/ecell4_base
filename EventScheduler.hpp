@@ -213,7 +213,7 @@ namespace libecs
 	    // ID to reschedule it.  This is necessary if events can
 	    // be created or deleted within fire() and the dynamic
 	    // priority queue can reallocate internal data structures.
-	    // Most of the cost of using this is optimized way when
+	    // Most of the cost of using this is optimized away when
 	    // the dynamic priority queue has a VolatileIDPolicy.
 	    Event topEvent( getTopEvent() );
 	    const EventID ID( this->eventPriorityQueue.getTopID() );

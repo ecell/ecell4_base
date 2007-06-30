@@ -173,19 +173,18 @@ class Single:
         assert t <= self.lastTime + self.dt
         assert self.getShellSize() >= self.getRadius()
 
-        if t == self.lastTime or self.getMobilityRadius() == 0.0:
-            return
+        if t != self.lastTime:
 
-        dt = t - self.lastTime
-
-        rnd = numpy.random.uniform()
-        r = self.gf.drawR( rnd , dt, self.getMobilityRadius() )
-        self.propagate( r, t )  # self.lastTime = t
+            dt = t - self.lastTime
+            rnd = numpy.random.uniform()
+            r = self.gf.drawR( rnd , dt, self.getMobilityRadius() )
+            self.propagate( r, t )  # self.lastTime = t
 
         self.resetShell()
 
-        self.sim.updateEvent( t + self.dt, self )
-
+        assert self.dt == 0.0
+        self.sim.updateEvent( t, self )  # self.dt == 0.0
+        print 'b', self.dt
 
 
     def calculateFirstPassageTime( self ):
@@ -654,27 +653,28 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # Propagate this particle to the exit point on the surface.
         
         single.propagate( single.getMobilityRadius(), t )
-        pos = single.getPos()
 
         # (2) pair check
         #
         # Check if this and the closest particle can form a Pair.
         # Skip this step if the closest was already a member of a Pair.
 
-        neighbors, distances = self.getNeighborParticles( pos )
+        # First find the closest particle.
+        neighbors, distances = self.getNeighborParticles( single.getPos() )
         closest = neighbors[1]
         closestDistance = distances[1]
-        radius12 = radius + closest.species.radius
         closestSingle = self.findSingle( closest )
 
-        #  ignore if it was a member of a pair
+        # Ignore if it was already a member of a pair
         if closestSingle.partner == None:  
 
             closestSingle.burst( t ) 
-
+            print closestSingle.dt
             pair = self.createPair( single, closestSingle )
         
             if self.checkPair( pair ) != None:
+                print 'Pair formed: ', pair
+
                 # if pair was formed, destroy the pair singles.
                 self.removeEvent( closestSingle )
                 dt = pair.nextEvent()[0]
@@ -689,7 +689,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         # (3) determine new shell size and dt.
 
-        neighborShells, shellDistances = self.getNeighborShells( pos )
+        neighborShells, shellDistances = \
+                        self.getNeighborShells( single.getPos() )
         single.closest = neighborShells[1]
         distanceToClosestShell = shellDistances[1]
 
@@ -886,6 +887,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def createPair( self, single1, single2 ):
+
+        print single1.dt, single2.dt
+        assert single1.dt == 0
+        assert single2.dt == 0
+        assert single1.getMobilityRadius() == 0
+        assert single2.getMobilityRadius() == 0
 
         species1 = single1.particle.species
         species2 = single2.particle.species
