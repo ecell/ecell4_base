@@ -671,7 +671,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                               single.particle.species.D,\
                               closestSingle.particle.species.D )
             pairClosest, pairClosestShellDistance =\
-                         self.findClosestShell( com, ( single, closestSingle ) )
+                         self.getClosestShell( com, ( single, closestSingle ) )
             
             if self.checkPairFormationCriteria( single, closestSingle,
                                                 pairClosestShellDistance ):
@@ -684,7 +684,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                 # find closest again; singles were propagated. can be faster?
                 _, shellSize =\
-                   self.findClosestShell( pair.getCoM(),\
+                   self.getClosestShell( pair.getCoM(),\
                                               ( pair, single, closestSingle ) )
                 
                 pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
@@ -874,9 +874,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # here decide whether this pair still continues or breaks up
 
         pairClosest, pairClosestShellDistance =\
-                     self.findClosestShell( pair.getCoM(),\
-                                                ( pair, pair.single1,\
-                                                      pair.single2 ) )
+                     self.getClosestShell( pair.getCoM(),\
+                                               ( pair, pair.single1,\
+                                                     pair.single2 ) )
 
         if self.checkPairFormationCriteria( pair.single1, pair.single2,
                                             pairClosestShellDistance ): 
@@ -1139,7 +1139,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     This method returns a tuple ( neighbors, distances ).
     '''
 
-    def findClosestShell( self, pos, ignore=[] ):
+    def getClosestShell( self, pos, ignore=[] ):
 
         neighbors, distances = self.getNeighborShells( pos, len( ignore ) + 1 )
 
