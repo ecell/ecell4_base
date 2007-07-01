@@ -19,14 +19,17 @@ def MsTom3s( rate ):
 
 
 '''
-Transpose the position pos so that it can be used with another 
-position vector basis.
+Transpose the position pos1 so that it can be used with another 
+position pos2.
 
+pos1 is transposed into one of mirror images of the cyclic boundary
+condition so that the distance between pos1 and pos2 is smallest.
 
-Both pos and basis must be within the cyclic boundary.
+Both of given pos1 and pos2 must be within the cyclic boundary.  However,
+note that the returned transposed pos1 may not be within the cyclic boundary.
 '''
 
-def cyclicTranspose( pos, basis, fsize ):
+def cyclicTranspose( pos1, pos2, fsize ):
     halfsize = fsize * 0.5
 
     diff = basis - pos
