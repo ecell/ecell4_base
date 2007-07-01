@@ -23,7 +23,10 @@ class UtilsTestCase( unittest.TestCase ):
         self.failIf( not pos[0] == pos[1] == pos[2] == -2 )
 
         pos = cyclicTranspose( numpy.array([1,1,1]), numpy.array([8,8,8]), 10 )
-        self.failIf( not pos[0] == pos[1] == pos[2] == 1 )
+        self.failIf( not pos[0] == pos[1] == pos[2] == 11 )
+
+        pos = cyclicTranspose( numpy.array([1,8,1]), numpy.array([8,1,8]), 10 )
+        self.failIf( not ( pos[0] == pos[2] == 11 and pos[1] == -2 ) )
 
     
     def test_distanceSq_Cyclic( self ):
