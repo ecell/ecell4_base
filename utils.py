@@ -17,10 +17,28 @@ NOWHERE = numpy.array( ( INF, INF, INF ) )
 def MsTom3s( rate ):
     return rate / ( 1000 * N_A )
 
+'''
+Transpose the position pos so that it can be used with another 
+position vector basis.
+
+
+Both pos and basis must be within the cyclic boundary.
+'''
+
+def cyclicTranspose( pos, basis, fsize ):
+    halfsize = fsize * 0.5
+
+    diff = basis - pos
+
+    reloc = numpy.greater( diff, halfsize ) * fsize - \
+        numpy.less( diff, - halfsize ) * fsize
+
+    return pos + reloc
+
 
 def distanceSq_Simple( position1, position2, fsize = 0 ):
-    tmp = position1 - position2
-    return numpy.dot( tmp, tmp )
+    diff = position1 - position2
+    return numpy.dot( diff, diff )
 
 def distance( position1, position2, fsize = 0 ):
     return math.sqrt( distanceSq_Simple( position1, position2 ) )
@@ -32,47 +50,19 @@ def distanceSqArray_Simple( position1, positions, fsize = 0 ):
 
 def distanceSq_Cyclic( position1, position2, fsize ):
 
-    halfsize = fsize * 0.5
-    location = numpy.less( position1, halfsize ) * 2.0 - 1.0
-    xtransposes = ( 0.0, location[0] * fsize )
-    ytransposes = ( 0.0, location[1] * fsize )
-    ztransposes = ( 0.0, location[2] * fsize )
+    diff = numpy.abs( position2 - position1 )
+    diff -= numpy.greater( diff, fsize * 0.5 ) * fsize # transpose
 
-    array = numpy.zeros( ( 8, 3 ), numpy.floating )
-
-    i = 0
-    for xtranspose in xtransposes:
-        for ytranspose in ytransposes:
-            for ztranspose in ztransposes:
-                array[i] = ( ( position1 +\
-                               ( xtranspose, ytranspose, ztranspose ) )\
-                             - position2 ) **2
-                i += 1
-
-    return array.sum(1).min()
+    return numpy.dot( diff, diff )
 
 
 def distanceSqArray_Cyclic( position1, positions, fsize ):
 
-    halfsize = fsize * 0.5
+    diff = numpy.abs( positions - position1 )
+    diff -= numpy.greater( diff, fsize * 0.5 ) * fsize # transpose
 
-    location = numpy.less( position1, halfsize ) * 2.0 - 1.0
-    xtransposes = ( 0.0, location[0] * fsize )
-    ytransposes = ( 0.0, location[1] * fsize )
-    ztransposes = ( 0.0, location[2] * fsize )
+    return ( diff * diff ).sum(1)
 
-    array = numpy.zeros( ( 8, len(positions), 3 ), numpy.floating )
-
-    i = 0
-    for xtranspose in xtransposes:
-        for ytranspose in ytransposes:
-            for ztranspose in ztransposes:
-                array[i] = ( ( position1 +\
-                               ( xtranspose, ytranspose, ztranspose ) )\
-                             - positions ) **2
-                i += 1
-                
-    return array.sum(2).min(0)
 
 
 def cartesianToSpherical( c ):
