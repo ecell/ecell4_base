@@ -17,6 +17,7 @@ NOWHERE = numpy.array( ( INF, INF, INF ) )
 def MsTom3s( rate ):
     return rate / ( 1000 * N_A )
 
+
 '''
 Transpose the position pos so that it can be used with another 
 position vector basis.

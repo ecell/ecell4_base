@@ -204,14 +204,16 @@ class Single:
 Just a free func ver of Pair.getCoM().
 '''
 
-def getPairCoM( pos1, pos2, D1, D2 ):
+def getPairCoM( pos1, pos2, D1, D2, fsize ):
 
     #FIXME: what if there are boundaries?
     
     sqrtD1D2 = math.sqrt( D1 / D2 )
     sqrtD2D1 = math.sqrt( D2 / D1 )
 
-    com = ( sqrtD2D1 * pos1 + sqrtD1D2 * pos2 ) / \
+    pos2t = cyclicTranspose( pos2, pos1, fsize )
+
+    com = ( sqrtD2D1 * pos1 + sqrtD1D2 * pos2t ) / \
           ( sqrtD2D1 + sqrtD1D2 )
     
     return com
@@ -297,11 +299,13 @@ class Pair:
         
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
+
+        pos2t = cyclicTranspose( pos2, pos1, self.sim.fsize )
         
-        com = ( self.sqrtD2D1 * pos1 + self.sqrtD1D2 * pos2 ) / \
+        com = ( self.sqrtD2D1 * pos1 + self.sqrtD1D2 * pos2t ) / \
               ( self.sqrtD2D1 + self.sqrtD1D2 )
         
-        return com
+        return self.sim.applyBoundary( com )
 
 
     def releaseSingles( self ):
@@ -669,7 +673,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             com = getPairCoM( single.getPos(), closestSingle.getPos(),\
                               single.particle.species.D,\
-                              closestSingle.particle.species.D )
+                              closestSingle.particle.species.D, self.fsize )
+            com = self.applyBoundary( com )
             pairClosest, pairClosestShellDistance =\
                          self.getClosestShell( com, ( single, closestSingle ) )
             
