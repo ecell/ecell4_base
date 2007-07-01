@@ -32,12 +32,12 @@ note that the returned transposed pos1 may not be within the cyclic boundary.
 def cyclicTranspose( pos1, pos2, fsize ):
     halfsize = fsize * 0.5
 
-    diff = basis - pos
+    diff = pos2 - pos1
 
     reloc = numpy.greater( diff, halfsize ) * fsize - \
         numpy.less( diff, - halfsize ) * fsize
 
-    return pos + reloc
+    return pos1 + reloc
 
 
 def distanceSq_Simple( position1, position2, fsize = 0 ):
