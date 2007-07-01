@@ -671,8 +671,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                               single.particle.species.D,\
                               closestSingle.particle.species.D )
             pairClosest, pairClosestShellDistance =\
-                         self.findClosestShellExcept( com,\
-                                                      ( single, closestSingle ) )
+                         self.findClosestShell( com, ( single, closestSingle ) )
             
             if self.checkPairFormationCriteria( single, closestSingle,
                                                 pairClosestShellDistance ):
@@ -685,8 +684,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                 # find closest again; singles were propagated. can be faster?
                 _, shellSize =\
-                   self.findClosestShellExcept( pair.getCoM(),\
-                                                ( pair, single, closestSingle ) )
+                   self.findClosestShell( pair.getCoM(),\
+                                              ( pair, single, closestSingle ) )
                 
                 pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
 
@@ -875,9 +874,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # here decide whether this pair still continues or breaks up
 
         pairClosest, pairClosestShellDistance =\
-                     self.findClosestShellExcept( pair.getCoM(),\
-                                                  ( pair, pair.single1,\
-                                                    pair.single2 ) )
+                     self.findClosestShell( pair.getCoM(),\
+                                                ( pair, pair.single1,\
+                                                      pair.single2 ) )
 
         if self.checkPairFormationCriteria( pair.single1, pair.single2,
                                             pairClosestShellDistance ): 
@@ -990,10 +989,22 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.checkShell( obj )
 
 
+    '''
+    Get closest n Particles.
+
+    When the optional argument speciesList is given, only Particles of
+    species in the list are considered.  When speciesList is not given
+    or is None, all species in the simulator are considered.
+    
+    This method returns a tuple ( neighbors, distances ), where neighbors
+    is a list of Particle objects.
+    '''
+
+
     def getNeighborParticles( self, pos, n=2, speciesList=None ):
 
-        topNeighbors = []
-        topDistances = []
+        neighbors = []
+        distances = []
 
         if speciesList == None:
             speciesList = self.speciesList.values()
@@ -1004,87 +1015,93 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             if species.pool.size == 0:
                 continue
 
-            positions = species.pool.positions
-
-            distances = self.distanceSqArray( pos, positions )
+            dist = self.distanceSqArray( pos, species.pool.positions )
         
-            indices = distances.argsort()[:n]
-            distances = distances.take( indices )
-            distances = numpy.sqrt( distances )
+            indices = dist.argsort()[:n]
+            dist = numpy.sqrt( dist.take( indices ) )
+            dist -= species.radius
 
-            distances -= species.radius
+            distances.extend( dist )
+            neighbors.extend( [ ( species, i ) for i in indices ] )
 
-            topDistances.extend( distances )
-            topNeighbors.extend( [ ( species, i ) for i in indices ] )
+        topargs = numpy.argsort( distances )[:n]
+        distances = numpy.take( distances, topargs )
+        neighbors = [ neighbors[arg] for arg in topargs ]
+        neighbors = [ Particle( arg[0], index=arg[1] ) for arg in neighbors ]
 
-        topargs = numpy.argsort( topDistances )[:n]
-        topDistances = numpy.take( topDistances, topargs )
-        topNeighbors = [ topNeighbors[arg] for arg in topargs ]
-        topNeighbors = [ Particle( arg[0], index=arg[1] )\
-                         for arg in topNeighbors ]
-
-        return topNeighbors, topDistances
+        return neighbors, distances
 
 
     '''
     Get neighbors simply by distance.
 
-    This does not take into account of particle radius or shell size.
+    This method does not take into account of particle radius or shell size.
+    This method pick top n neighbors simply by the distance between given
+    position pos to positions of particles around.
+
+    This method returns a tuple ( neighbors, distances ).
     '''
+
     def getNeighbors( self, pos, n=2 ):
 
         scheduler = self.scheduler
 
         size = scheduler.getSize()
-        topNeighbors = [None,] * size
-        topDistances = numpy.zeros( size )
-
+        neighbors = [None,] * size
+        distances = numpy.zeros( size )
 
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i)[1]
-            topNeighbors[i] = obj
-            topDistances[i] = self.distance( obj.getPos(), pos )
+            neighbors[i] = obj
+            distances[i] = self.distance( obj.getPos(), pos )
             
-        topargs = numpy.argsort( topDistances )[:n]
-        topDistances = numpy.take( topDistances, topargs )
-        topNeighbors = [ topNeighbors[arg] for arg in topargs ]
+        topargs = numpy.argsort( distances )[:n]
+        distances = numpy.take( distances, topargs )
+        neighbors = [ neighbors[arg] for arg in topargs ]
 
-        return topNeighbors, topDistances
+        return neighbors, distances
 
 
-
-    '''
-    Find closest shells.
 
     '''
+    Find closest n shells.
+
+    This method returns a tuple ( neighbors, distances ).
+    '''
+
     def getNeighborShells( self, pos, n=2 ):
 
         scheduler = self.scheduler
 
         size = scheduler.getSize()
-        topNeighbors = [None,] * size
-        topDistances = numpy.zeros( size )
+        neighbors = [None,] * size
+        distances = numpy.zeros( size )
 
 
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i)[1]
             #print obj.getPos(), obj.getShellSize()
-            topNeighbors[i] = obj
-            topDistances[i] = self.distance( obj.getPos(), pos )\
+            neighbors[i] = obj
+            distances[i] = self.distance( obj.getPos(), pos )\
                               - obj.getShellSize()
             
-        topargs = numpy.argsort( topDistances )[:n]
-        topDistances = numpy.take( topDistances, topargs )
-        topNeighbors = [ topNeighbors[arg] for arg in topargs ]
+        topargs = numpy.argsort( distances )[:n]
+        distances = numpy.take( distances, topargs )
+        neighbors = [ neighbors[arg] for arg in topargs ]
 
-        return topNeighbors, topDistances
+        return neighbors, distances
 
+    '''
+    Find closest n shells taking into account only Singles, ignoring
+    Pairs.
 
+    This method returns a tuple ( neighbors, distances ).
+    '''
 
     def getNeighborSingleShells( self, pos, n=2, speciesList=None ):
 
-        topNeighbors = []
-        topDistances = []
+        neighbors = []
+        distances = []
 
         if speciesList == None:
             speciesList = self.speciesList.values()
@@ -1103,31 +1120,38 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             indices = distances.argsort()[:n]
             distances = distances.take( indices )
 
-            topDistances.extend( distances )
-            topNeighbors.extend( [ ( species, i ) for i in indices ] )
+            distances.extend( distances )
+            neighbors.extend( [ ( species, i ) for i in indices ] )
 
-        topargs = numpy.argsort( topDistances )[:n]
-        topDistances = numpy.take( topDistances, topargs )
-        topNeighbors = [ topNeighbors[arg] for arg in topargs ]
+        topargs = numpy.argsort( distances )[:n]
+        distances = numpy.take( distances, topargs )
+        neighbors = [ neighbors[arg] for arg in topargs ]
 
-        return topNeighbors, topDistances
+        return neighbors, distances
 
 
-    def findClosestShellExcept( self, pos, ignore=[] ):
+    '''
+    Find the closest shell from the position pos.
 
-        numIgnore = len( ignore )
+    When the sequence parameter ignore is given, this method finds the
+    closest ignoring the objects in it.
 
-        pairNeighbors, pairDistances = \
-                       self.getNeighborShells( pos, numIgnore + 1 )
+    This method returns a tuple ( neighbors, distances ).
+    '''
 
-        i = 0
-        while pairNeighbors[i] in ignore:
-            i += 1
-        
-        pairClosest, pairDistance = pairNeighbors[i], pairDistances[i]
-        assert not pairClosest in ignore
+    def findClosestShell( self, pos, ignore=[] ):
 
-        return pairClosest, pairDistance
+        neighbors, distances = self.getNeighborShells( pos, len( ignore ) + 1 )
+
+        for i in range( len( neighbors ) ): 
+            if neighbors[i] not in ignore:
+                closest, distance = neighbors[i], distances[i]
+
+                assert not closest in ignore
+                return closest, distance
+
+        # default case: none left.
+        return None, numpy.inf
 
 
 
