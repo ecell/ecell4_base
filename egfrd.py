@@ -363,31 +363,26 @@ class Pair:
         pos2 = particle2.getPos()
 
         self.r0 = self.sim.distance( pos1, pos2 )
-        
-        # determine which of particle 1 or 2 defines the r_shell
+
+        factor_1 = D1 / self.D
+        factor_2 = D2 / self.D
         r0_1 = self.r0 * D1 / self.D
         r0_2 = self.r0 * D2 / self.D
-        if r0_1 + radius1 > r0_2 + radius2:
-            r0_max = r0_1
-            r_sigma = radius1
-        else:
-            r0_max = r0_2
-            r_sigma = radius2
-            
-        # mobilityRadius = a_R + a_r 
-        # shellSize      = mobilityRadius + r_sigma
-        #            a_r > rmin + r_sigma
+
+        shellSize = self.getShellSize()
+
+        margin_1 = shellSize - r0_1 - radius1
+        margin_2 = shellSize - r0_2 - radius2
         
-        margin = self.getShellSize() - r0_max - r_sigma
-        print margin, self.getShellSize(), r0_max
-        assert margin > 0.0
-        
-        self.a_r = margin * .5 + r0_max
+        margin = min( margin_1, margin_2 )
+
+        self.a_r = self.r0 + margin * .5
         self.a_R = margin * .5
 
+        assert margin > 0.0
+        
         print 'ar0', self.a_r, self.r0
         assert self.a_r > self.r0
-        print self.a_r + self.a_R + r_sigma - self.getShellSize() 
 
         rnd = numpy.random.uniform( size=3 )
 
@@ -886,7 +881,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.checkPairFormationCriteria( pair.single1, pair.single2,
                                             pairClosestShellDistance ): 
 
-            pair.setShellSize( pairClosestShellDistance ) # * (1.0 - 1e-8) )
+            pair.setShellSize( pairClosestShellDistance * (1.0 - 1e-8) )
 
             pair.lastTime = self.t
 
