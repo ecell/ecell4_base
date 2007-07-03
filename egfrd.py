@@ -375,12 +375,11 @@ class Pair:
         margin_2 = shellSize - r0_2 - radius2
         
         margin = min( margin_1, margin_2 )
+        assert margin > 0.0
 
         self.a_r = self.r0 + margin * .5
         self.a_R = margin * .5
 
-        assert margin > 0.0
-        
         print 'ar0', self.a_r, self.r0
         assert self.a_r > self.r0
 
