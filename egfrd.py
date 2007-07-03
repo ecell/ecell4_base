@@ -258,6 +258,7 @@ class Pair:
 
         #self.sgf = FirstPassageGreensFunction( self.D / 4.0 )
         self.sgf = FirstPassageGreensFunction( self.D )
+        self.sgf_free = FreeGreensFunction( self.D )
         self.pgf = FirstPassagePairGreensFunction( self.D, rt.k, self.sigma )
         self.pgf_free = FreePairGreensFunction( self.D )
 
@@ -321,34 +322,15 @@ class Pair:
         self.single2.partner = None
 
 
-    def chooseSingleGreensFunction( self, r0, t ):
+    def chooseSingleGreensFunction( self, t ):
 
-        distanceFromShell = self.a_R - r0;
-
+        shellSize = self.a_R
         thresholdDistance = Pair.H * math.sqrt( 6.0 * self.D * t );
 
-        if distanceFromSigma < thresholdDistance:
-        
-            if distanceFromShell < thresholdDistance:
-                # near both a and sigma;
-                # use FirstPassagePairGreensFunction
-                return self.pgf
-            else:
-                # near sigma; use PlainPairGreensFunction
-
-                #FIXME:
-                return self.pgf
+        if shellSize < thresholdDistance:
+            return self.sgf
         else:
-            if distanceFromShell < thresholdDistance:
-                # near a;
-
-                #FIXME:
-                return self.pgf
-                
-            else:
-                # distant from both a and sigma; 
-                print 'FREE'
-                return self.pgf_free
+            return self.sgf_free
 
 
     def choosePairGreensFunction( self, r0, t ):
@@ -382,8 +364,22 @@ class Pair:
                 return self.pgf_free
 
 
+    def drawR_single( self, rnd, t, shellSize ):
+
+        gf = self.chooseSingleGreensFunction( t )
+        print gf
+
+        r = gf.drawR( rnd, t, shellSize )
+        while r > self.a_R: # redraw; shouldn't happen often
+            print 'drawR_single: redraw'
+            self.sim.rejectedMoves += 1
+            r = gf.drawR( rnd, t, shellSize )
+
+        return r
+
+
     '''
-    Draw theta for the pair inter-particle vector.
+    Draw r for the pair inter-particle vector.
     '''
     def drawR_pair( self, rnd, r0, t ):
 
@@ -393,6 +389,7 @@ class Pair:
         r = gf.drawR( rnd, r0, t )
         while r > self.a_r or r <= self.sigma: # redraw; shouldn't happen often
             print 'drawR_pair: redraw'
+            self.sim.rejectedMoves += 1
             r = gf.drawR( rnd, r0, t )
 
 
@@ -528,7 +525,7 @@ class Pair:
             oldCoM = self.getCoM()
             
             # calculate new CoM
-            r_R = self.sgf.drawR( rnd[0], dt, self.a_R )
+            r_R = self.drawR_single( rnd[0], dt, self.a_R )
             print dt, self.a_R, r_R
             
             displacement_R_S = [ r_R,
@@ -874,7 +871,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                 # calculate new R
             
-                r_R = pair.sgf.drawR( rnd[0], pair.dt, pair.a_R )
+                r_R = pair.drawR_single( rnd[0], pair.dt, pair.a_R )
             
                 displacement_R_S = [ r_R,
                                      rnd[1] * Pi,
@@ -913,7 +910,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             # calculate new R
             
-            r_R = pair.sgf.drawR( rnd[0], pair.dt, pair.a_R )
+            r_R = pair.drawR_single( rnd[0], pair.dt, pair.a_R )
             
             displacement_R_S = [ r_R,
                                  rnd[1] * Pi,

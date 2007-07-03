@@ -44,7 +44,7 @@ public:
     }
     
     const Real drawR( const Real rnd, 
-		      const Real t ) const;
+		      const Real t, const Real a=0.0 ) const;
     
     const Real p_r( const Real r, 
                     const Real t ) const;

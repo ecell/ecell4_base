@@ -22,6 +22,7 @@ FreeGreensFunction::p_r( const Real r,
 
     const Real term1( 1.0 / sqrt( gsl_pow_3( Dt4Pi ) ) );
     const Real term2( exp( - r * r / Dt4 ) );
+
     const Real jacobian( 4.0 * r * r * M_PI );
 
     return jacobian * term1 * term2;
@@ -33,11 +34,12 @@ FreeGreensFunction::ip_r( const Real r,
 {
     const Real D( getD() );
     const Real Dt( D * t );
-    const Real sqrtDt( sqrt( D * t ) );
+    const Real sqrtDt_r( 1.0 / sqrt( D * t ) );
+    const Real sqrtPi_r( 1.0 / sqrt( M_PI ) );
 
-    const Real term1( exp( - r * r / ( 4.0 * Dt ) ) * r / 
-                      ( sqrt( M_PI ) * sqrtDt ) );
-    const Real term2( erf( r / ( 2.0 * sqrtDt ) ) );
+    const Real term1( exp( - r * r / ( 4.0 * Dt ) ) * 
+                      r * sqrtDt_r * sqrtPi_r );
+    const Real term2( erf( r * 0.5 * sqrtDt_r ) );
 
     return term2 - term1;
 }
@@ -57,7 +59,7 @@ FreeGreensFunction::ip_r_F( const Real r,
 
 const Real 
 FreeGreensFunction::drawR( const Real rnd, 
-                           const Real t ) const
+                           const Real t, const Real ) const
 {
     // input parameter range checks.
     THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
