@@ -25,10 +25,6 @@ class FirstPassagePairGreensFunction
     // Error tolerance used by default.
     static const Real TOLERANCE = 1e-8;
 
-    // H is used to switch between p_theta and p_theta_free.
-    // 4.0: ~3e-5, 4.26: ~1e-6, 5.0: ~3e-7, 5.2: ~1e-7, 5.6: ~1e-8, 6.0: ~1e-9
-    static const Real H = 5.6;
-
     // Relative cutoff used when obtaining series of alpha.
     static const Real ALPHA_CUTOFF = 1e-10;
 

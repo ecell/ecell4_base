@@ -10,9 +10,10 @@
 
 #include "PyEventScheduler.hpp"
 
+#include "FreeGreensFunction.hpp"
+#include "FirstPassageGreensFunction.hpp"
 #include "PlainPairGreensFunction.hpp"
 #include "FreePairGreensFunction.hpp"
-#include "FirstPassageGreensFunction.hpp"
 #include "FirstPassagePairGreensFunction.hpp"
 
 
@@ -129,6 +130,27 @@ BOOST_PYTHON_MODULE( _gfrd )
     //    converter::registry::insert( &extract_pyarray, type_id<PyArrayObject>());
 
 
+    class_<FreeGreensFunction>( "FreeGreensFunction",
+                                init<const Real>() )
+	.def( "getD", &FreeGreensFunction::getD )
+	.def( "drawTime", &FreeGreensFunction::drawTime )
+	.def( "drawR", &FreeGreensFunction::drawR )
+	.def( "p_r", &FreeGreensFunction::p_r )
+	.def( "ip_r", &FreeGreensFunction::ip_r )
+	;
+
+    class_<FirstPassageGreensFunction>( "FirstPassageGreensFunction",
+					init<const Real>() )
+	.def( "getD", &FirstPassageGreensFunction::getD )
+	.def( "drawTime", &FirstPassageGreensFunction::drawTime )
+	.def( "drawR", &FirstPassageGreensFunction::drawR )
+	.def( "p_survival", &FirstPassageGreensFunction::p_survival )
+	.def( "p_r_int", &FirstPassageGreensFunction::p_r_int )
+	.def( "p_r_fourier", &FirstPassageGreensFunction::p_r_fourier )
+	;
+
+
+
     class_<PlainPairGreensFunction>( "PlainPairGreensFunction",
 				     init<const Real, 
 				     const Real, 
@@ -154,16 +176,6 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "ip_r", &FreePairGreensFunction::ip_r )
 	.def( "p_theta", &FreePairGreensFunction::p_theta )
 	.def( "ip_theta", &FreePairGreensFunction::ip_theta )
-	;
-
-    class_<FirstPassageGreensFunction>( "FirstPassageGreensFunction",
-					init<const Real>() )
-	.def( "getD", &FirstPassageGreensFunction::getD )
-	.def( "drawTime", &FirstPassageGreensFunction::drawTime )
-	.def( "drawR", &FirstPassageGreensFunction::drawR )
-	.def( "p_survival", &FirstPassageGreensFunction::p_survival )
-	.def( "p_r_int", &FirstPassageGreensFunction::p_r_int )
-	.def( "p_r_fourier", &FirstPassageGreensFunction::p_r_fourier )
 	;
 
     enum_<EventType>( "EventType" )

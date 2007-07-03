@@ -193,7 +193,7 @@ FirstPassageGreensFunction::p_r_fourier( const Real r, const Real t,
 
 	if( n > N )
 	{
-	    std::cerr << "p_r_int: didn't converge; " << n << " " << value 
+	    std::cerr << "p_r_fourier: didn't converge; " << n << " " << value 
 		      << std::endl;
 	    break;
 	}

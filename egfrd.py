@@ -221,6 +221,13 @@ def getPairCoM( pos1, pos2, D1, D2, fsize ):
 
 class Pair:
     
+    # H is a threshold to choose between the real and approximate
+    # Green's functions.
+    # H = 4.0: ~3e-5, 4.26: ~1e-6, 5.0: ~3e-7, 5.2: ~1e-7,
+    # 5.6: ~1e-8, 6.0: ~1e-9
+    H = 5.6
+
+
     def __init__( self, sim, single1, single2, rt ):
 
         # Order single1 and single2 so that D1 < D2.
@@ -252,6 +259,7 @@ class Pair:
         #self.sgf = FirstPassageGreensFunction( self.D / 4.0 )
         self.sgf = FirstPassageGreensFunction( self.D )
         self.pgf = FirstPassagePairGreensFunction( self.D, rt.k, self.sigma )
+        self.pgf_free = FreePairGreensFunction( self.D )
 
         self.eventID = None
 
@@ -313,6 +321,96 @@ class Pair:
         self.single2.partner = None
 
 
+    def chooseSingleGreensFunction( self, r0, t ):
+
+        distanceFromShell = self.a_R - r0;
+
+        thresholdDistance = Pair.H * math.sqrt( 6.0 * self.D * t );
+
+        if distanceFromSigma < thresholdDistance:
+        
+            if distanceFromShell < thresholdDistance:
+                # near both a and sigma;
+                # use FirstPassagePairGreensFunction
+                return self.pgf
+            else:
+                # near sigma; use PlainPairGreensFunction
+
+                #FIXME:
+                return self.pgf
+        else:
+            if distanceFromShell < thresholdDistance:
+                # near a;
+
+                #FIXME:
+                return self.pgf
+                
+            else:
+                # distant from both a and sigma; 
+                print 'FREE'
+                return self.pgf_free
+
+
+    def choosePairGreensFunction( self, r0, t ):
+
+        distanceFromSigma = r0 - self.sigma
+        distanceFromShell = self.a_r - r0;
+
+        thresholdDistance = Pair.H * math.sqrt( 6.0 * self.D * t );
+
+        if distanceFromSigma < thresholdDistance:
+        
+            if distanceFromShell < thresholdDistance:
+                # near both a and sigma;
+                # use FirstPassagePairGreensFunction
+                return self.pgf
+            else:
+                # near sigma; use PlainPairGreensFunction
+
+                #FIXME:
+                return self.pgf
+        else:
+            if distanceFromShell < thresholdDistance:
+                # near a;
+
+                #FIXME:
+                return self.pgf
+                
+            else:
+                # distant from both a and sigma; 
+                print 'FREE'
+                return self.pgf_free
+
+
+    '''
+    Draw theta for the pair inter-particle vector.
+    '''
+    def drawR_pair( self, rnd, r0, t ):
+
+        gf = self.choosePairGreensFunction( r0, t )
+        print gf
+
+        r = gf.drawR( rnd, r0, t )
+        while r > self.a_r or r <= self.sigma: # redraw; shouldn't happen often
+            print 'drawR_pair: redraw'
+            r = gf.drawR( rnd, r0, t )
+
+
+        return r
+
+
+    '''
+    Draw theta for the pair inter-particle vector.
+    '''
+    def drawTheta_pair( self, rnd, r, r0, t ):
+
+        gf = self.choosePairGreensFunction( r0, t )
+        print gf
+        theta = gf.drawTheta( rnd, r, r0, t )
+
+        return theta
+
+        
     '''
     Calculate new positions of the pair particles using
     a new center-of-mass, a new inter-particle vector, and
@@ -431,6 +529,7 @@ class Pair:
             
             # calculate new CoM
             r_R = self.sgf.drawR( rnd[0], dt, self.a_R )
+            print dt, self.a_R, r_R
             
             displacement_R_S = [ r_R,
                                  rnd[1] * Pi,
@@ -441,8 +540,8 @@ class Pair:
             
             # calculate new interparticle
             print ( rnd[3], self.a_r, self.r0, dt )
-            r_r = self.pgf.drawR( rnd[3], self.r0, dt )
-            theta_r = self.pgf.drawTheta( rnd[4], r_r, self.r0, dt )
+            r_r = self.drawR_pair( rnd[3], self.r0, dt )
+            theta_r = self.drawTheta_pair( rnd[4], r_r, self.r0, dt )
             phi_r = rnd[5] * 2 * Pi
             newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
@@ -825,7 +924,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             # calculate new r
             print ( rnd[3], pair.a_r, pair.r0, pair.dt )
-            theta_r = pair.pgf.drawTheta( rnd[3], pair.a_r, pair.r0, pair.dt )
+            theta_r = pair.drawTheta_pair( rnd[3], pair.a_r, pair.r0, pair.dt )
             phi_r = rnd[4] * 2 * Pi
             newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
@@ -843,9 +942,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             # calculate new r
             print 'r0 = ', pair.r0, 'dt = ', pair.dt, pair.pgf.dump()
-            r = pair.pgf.drawR( rnd[0], pair.r0, pair.dt )
+            r = pair.drawR_pair( rnd[0], pair.r0, pair.dt )
             print ( rnd[1], r, pair.r0, pair.dt )
-            theta_r = pair.pgf.drawTheta( rnd[1], r, pair.r0, pair.dt )
+            theta_r = pair.drawTheta_pair( rnd[1], r, pair.r0, pair.dt )
             phi_r = rnd[2] * 2*Pi
             newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
@@ -953,16 +1052,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
         # 2
         
-        # Shell size of this pair must be larger
+        # Shell size of this pair must be at least larger
         # than r0 * max( D1/(D1+D2)+raidus1, D2/(D1+D2)+radius2 )
         
         # here add single12's mobility radii when the singles are still
-        # on fly
+        # on the fly.
 
         rmax = max( pairDistance * D1 / D12 + radius1 + single1.getMobilityRadius(),
-                    pairDistance * D2 / D12 + radius2+ single2.getMobilityRadius() )
+                    pairDistance * D2 / D12 + radius2 + single2.getMobilityRadius() )
         
-        if closestShellDistance < rmax:
+        if closestShellDistance < rmax * 1.1:  # 10% safety
             print 'closestShellDistance < rmax; %g, %g' % \
                   ( closestShellDistance, rmax )
             return False

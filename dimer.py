@@ -26,14 +26,14 @@ s.addReactionType( r2 )
 
 s.setAllRepulsive()
 
-s.throwInParticles( 'S', 6, box1 )
+s.throwInParticles( 'S', 30, box1 )
 s.throwInParticles( 'P', 0, box1 )
 
 l = Logger( s, 'dimer' )
 l.setInterval( 1e-6 )
 l.log()
 
-while s.t < 10:
+while s.t < 5:
     s.step()
     l.log()
     

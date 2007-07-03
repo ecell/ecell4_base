@@ -2101,50 +2101,16 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	return 0.0;
     }
 
-    // 
-    const Real distanceFromSigma( r0 - sigma );
-    const Real distanceFromA( a - r0 );
-
-    const Real thresholdDistance( this->H * sqrt( 6.0 * getD() * t ) );
-
-
-    if( distanceFromSigma < thresholdDistance )
-    {
-        if( distanceFromA < thresholdDistance )
-        {
-            // near both a and sigma;
-            // use FirstPassagePairGreensFunction
-        }
-        else
-        {
-            // near sigma; use PlainPairGreensFunction
-        }
-    }
-    else 
-    {
-        if( distanceFromA < thresholdDistance )
-        {
-            // near a; use FirstPassageGreensFunction
-        }
-        else
-        {
-            // distant from both a and sigma; 
-            // free
-        }
-    }
-    
-
-
     RealVector p_nTable;
 
-    if( r != geta() )
-    {
-	makep_nTable( p_nTable, r, r0, t );
-    }
-    else
+    if( r == geta() || r < 0.0 )
     {
 	puts("dp");
 	makedp_n_at_aTable( p_nTable, r0, t );
+    }
+    else
+    {
+	makep_nTable( p_nTable, r, r0, t );
     }
 
 #if 1
@@ -2211,11 +2177,13 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
     const RealVector::size_type tableLast( pTable.size()-1 );
 
     // debug
-    //const Real psurv( p_survival( t, r0 ) );
+    /*
+    const Real psurv( p_survival( t, r0 ) );
     const Real p0r( p_0( t, r, r0 ) * 4.0 * M_PI * r * r );
     const Real ip( ip_theta_table( M_PI, r, r0, t, p_nTable ) );
     printf("theta %g %g %g\n", p0r, pTable[tableLast] * 
-	   2 * M_PI * r * r * thetaStep, ip * 2 * M_PI * r * r );
+           2 * M_PI * r * r * thetaStep, ip * 2 * M_PI * r * r );
+    */
 
     const Real targetPoint( rnd * pTable[tableLast] );
     const size_t lowerBound( gsl_interp_bsearch( &pTable[0], targetPoint, 

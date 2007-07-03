@@ -15,6 +15,8 @@ AllTests.cpp\
 DynamicPriorityQueue_test.cpp\
 alltests.py\
 EventScheduler_test.py\
+FreeGreensFunction_test.py\
+FreePairGreensFunction_test.py\
 FirstPassageGreensFunction_test.py\
 FirstPassagePairGreensFunction_test.py
 

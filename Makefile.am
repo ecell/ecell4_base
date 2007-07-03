@@ -46,6 +46,7 @@ DynamicPriorityQueue.hpp\
 EventScheduler.hpp\
 PyEventScheduler.hpp\
 PairGreensFunction.hpp\
+FreeGreensFunction.hpp\
 FirstPassageGreensFunction.hpp\
 PlainPairGreensFunction.hpp\
 FreePairGreensFunction.hpp\
@@ -54,9 +55,10 @@ FirstPassagePairGreensFunction.hpp
 
 
 _gfrd_la_SOURCES=\
+FreeGreensFunction.cpp\
+FirstPassageGreensFunction.cpp\
 PlainPairGreensFunction.cpp\
 FreePairGreensFunction.cpp\
-FirstPassageGreensFunction.cpp\
 FirstPassagePairGreensFunction.cpp\
 bessel.cpp\
 pyGFRD.cpp

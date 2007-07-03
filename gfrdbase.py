@@ -19,8 +19,8 @@ from _gfrd import *
 N_A = 6.0221367e23
 
 
-def p_free( D, dt ):
-    ro = math.sqrt( 2.0 * D * dt )
+def p_free( t, D ):
+    ro = math.sqrt( 2.0 * D * t )
 
     displacement = numpy.random.normal( 0.0, ro, 3 )
 
@@ -309,7 +309,7 @@ class GFRDSimulatorBase:
         limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
 
         while True:
-            displacement = p_free( species.D, self.dt )
+            displacement = p_free( self.dt, species.D )
             
             distSq = ( displacement * displacement ).sum()
 
@@ -332,7 +332,7 @@ class GFRDSimulatorBase:
         limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
 
         while True:
-            displacement = p_free( species.D, self.dt )
+            displacement = p_free( self.dt, species.D )
             
             distSq = ( displacement * displacement ).sum()
 

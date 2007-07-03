@@ -262,7 +262,7 @@ class GFRDSimulator( GFRDSimulatorBase ):
                 
                 R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
                 
-                dR = p_free( D1 + D2, self.dt )
+                dR = p_free( self.dt, D1 + D2 )
                 newpos = ( R0 + dR ) / ( sqrtD1D2 + sqrtD2D1 )
                 
                 
@@ -367,7 +367,7 @@ class GFRDSimulator( GFRDSimulatorBase ):
                 sqrtD1D2 = math.sqrt( D1 / D2 )
                 sqrtD2D1 = math.sqrt( D2 / D1 ) 
                 R0 = sqrtD2D1 * pos1 + sqrtD1D2 * pos2
-                dR = p_free( D1 + D2, self.dt )
+                dR = p_free( self.dt, D1 + D2 )
                 R = R0 + dR
 
             while True:
