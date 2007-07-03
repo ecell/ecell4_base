@@ -14,7 +14,8 @@ public:
 
     FirstPassageGreensFunction( const Real D )
 	:
-	D( D )
+	D( D ),
+        a( 0.0 )
     {
 	;
     }
@@ -29,26 +30,33 @@ public:
 	return this->D;
     }
 
-    const Real p_survival( const Real t, const Real a ) const; 
+    void seta( const Real a )
+    {
+        THROW_UNLESS( std::invalid_argument, a >= 0.0 );
+        this->a = a;
+    }
 
-    const Real drawTime( const Real rnd, const Real a ) const;
+    const Real geta() const
+    {
+        return this->a;
+    }
 
-    const Real drawR( const Real rnd, const Real t, const Real a ) const;
+    const Real p_survival( const Real t ) const; 
 
-    const Real p_r_int( const Real r, const Real t, const Real a ) const;
+    const Real drawTime( const Real rnd ) const;
+
+    const Real drawR( const Real rnd, const Real t ) const;
+
+    const Real p_r_int( const Real r, const Real t ) const;
     const Real p_free_int( const Real r, const Real t ) const;
 
-    const Real p_r_fourier( const Real r, const Real t, const Real a ) const;
-
-
-
+    const Real p_r_fourier( const Real r, const Real t ) const;
 
 private:
 
     struct p_survival_params
     {
 	const FirstPassageGreensFunction* const gf;
-	const Real a;
 	const Real rnd;
     };
 
@@ -59,7 +67,6 @@ private:
     {
 	const FirstPassageGreensFunction* const gf;
 	const Real t;
-	const Real a;
 	const Real St;
 	const Real rnd;
     };
@@ -74,6 +81,7 @@ private:
 
     const Real D;
 
+    Real a;
 };
 
 

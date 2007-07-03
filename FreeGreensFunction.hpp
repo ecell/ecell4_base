@@ -36,6 +36,11 @@ public:
     {
         ; // do nothing
     }
+
+    void seta( const Real ) const // don't have any effect
+    {
+        ; // do nothing
+    }
     
     
     const Real drawTime( const Real ) const
@@ -43,14 +48,11 @@ public:
         return INFINITY;
     }
     
-    const Real drawR( const Real rnd, 
-		      const Real t, const Real a=0.0 ) const;
+    const Real drawR( const Real rnd, const Real t ) const;
     
-    const Real p_r( const Real r, 
-                    const Real t ) const;
+    const Real p_r( const Real r, const Real t ) const;
 
-    const Real ip_r( const Real r, 
-                     const Real t ) const;
+    const Real ip_r( const Real r, const Real t ) const;
     
 
 private:

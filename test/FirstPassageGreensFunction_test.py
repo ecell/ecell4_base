@@ -17,18 +17,19 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
     def test_instantiation( self ):
         D = 1e-12
         gf = mod.FirstPassageGreensFunction( D )
+        gf.seta( 1.0 )
         self.failIf( gf == None )
 
     def test_no_shell( self ):
         D = 1e-12
         a = numpy.inf
         gf = mod.FirstPassageGreensFunction( D )
-
-        t = gf.drawTime( 0.5, a )
+        gf.seta( a )
+        t = gf.drawTime( 0.5 )
         self.assertEqual( numpy.inf, t )
 
-        # not supported yet
-        # r = gf.drawR( 0.5, 1.0, a )
+        # not supported now
+        # r = gf.drawR( 0.5, 1.0 )
         # self.assertAlmostEqual( p_free, r )
 
 
@@ -36,10 +37,11 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         D = 1e-12
         a = 0.0
         gf = mod.FirstPassageGreensFunction( D )
-
-        t = gf.drawTime( 0.5, a )
+        gf.seta( a )
+        
+        t = gf.drawTime( 0.5 )
         self.assertEqual( 0.0, t )
-        r = gf.drawR( 0.5, t, a )
+        r = gf.drawR( 0.5, t )
         self.assertEqual( 0.0, r )
 
 
@@ -47,20 +49,23 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         D = 1e-12
         a = 1e-7
         gf = mod.FirstPassageGreensFunction( D )
+        gf.seta( a )
 
-        t = gf.drawTime( 0.0, a )
-        t = gf.drawTime( 0.5, a )
-        t = gf.drawTime( 1.0 - 1e-16, a )
+        t = gf.drawTime( 0.0 )
+        t = gf.drawTime( 0.5 )
+        t = gf.drawTime( 1.0 - 1e-16 )
 
     def test_drawR( self ):
         D = 1e-12
         a = 1e-7
         gf = mod.FirstPassageGreensFunction( D )
-        t = gf.drawTime( 0.5, a )
+        gf.seta( a )
 
-        r = gf.drawR( 0.0, t, a )
-        r = gf.drawR( 0.5, t, a )
-        r = gf.drawR( 1.0 - 1e-16, t, a )
+        t = gf.drawTime( 0.5 )
+
+        r = gf.drawR( 0.0, t )
+        r = gf.drawR( 0.5, t )
+        r = gf.drawR( 1.0 - 1e-16, t )
 
     def test_drawR_zerot( self ):
         D = 1e-12
@@ -68,16 +73,19 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         t = 0.0
 
         gf = mod.FirstPassageGreensFunction( D )
-        r = gf.drawR( 0.5, t, a )
+        gf.seta( a )
+
+        r = gf.drawR( 0.5, t )
         self.assertEqual( 0.0, r )
 
     def test_drawR_smallt( self ):
         D = 1e-12
         a = 1e-8
         gf = mod.FirstPassageGreensFunction( D )
-        t = gf.drawTime( 0.5, a )
+        gf.seta( a )
+        t = gf.drawTime( 0.5 )
         t *= 1e-4
-        r = gf.drawR( 0.5, t, a )
+        r = gf.drawR( 0.5, t )
         self.failIf( r <= 0.0 )
         self.failIf( r > a )
 
@@ -85,8 +93,9 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         D = 1e-12
         a = 1e-6
         gf = mod.FirstPassageGreensFunction( D )
-        t = gf.drawTime( 1.0 - 1e-16, a )
-        r = gf.drawR( 0.5, t, a )
+        gf.seta( a )
+        t = gf.drawTime( 1.0 - 1e-16 )
+        r = gf.drawR( 0.5, t )
 
         self.failIf( r <= 0.0 )
         self.failIf( r > a )

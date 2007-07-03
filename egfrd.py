@@ -179,7 +179,8 @@ class Single:
 
             dt = t - self.lastTime
             rnd = numpy.random.uniform()
-            r = self.gf.drawR( rnd , dt, self.getMobilityRadius() )
+            self.gf.seta( self.getMobilityRadius() )
+            r = self.gf.drawR( rnd , dt )
             self.propagate( r, t )  # self.lastTime = t
 
         self.resetShell()
@@ -190,8 +191,8 @@ class Single:
     def calculateFirstPassageTime( self ):
         
         rnd = numpy.random.uniform()
-        r = self.getMobilityRadius()
-        dt = self.gf.drawTime( rnd, r )
+        self.gf.seta( self.getMobilityRadius() )
+        dt = self.gf.drawTime( rnd )
         return dt
 
 
@@ -368,12 +369,12 @@ class Pair:
 
         gf = self.chooseSingleGreensFunction( t )
         print gf
-
-        r = gf.drawR( rnd, t, shellSize )
+        gf.seta( shellSize )
+        r = gf.drawR( rnd, t )
         while r > self.a_R: # redraw; shouldn't happen often
             print 'drawR_single: redraw'
             self.sim.rejectedMoves += 1
-            r = gf.drawR( rnd, t, shellSize )
+            r = gf.drawR( rnd, t )
 
         return r
 
@@ -480,7 +481,8 @@ class Pair:
 
         rnd = numpy.random.uniform( size=3 )
 
-        self.t_R = self.sgf.drawTime( rnd[0], self.a_R )
+        self.sgf.seta( self.a_R )
+        self.t_R = self.sgf.drawTime( rnd[0] )
 
         try:
             self.pgf.seta( self.a_r )

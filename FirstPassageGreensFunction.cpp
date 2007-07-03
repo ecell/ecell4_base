@@ -17,15 +17,20 @@
 
 
 
-/*
+/**
   EllipticTheta[4,0,q]
 
   Efficiently calculate EllipticTheta[4,0,q] for q < 1.0.
-
 */
+
 static const Real ellipticTheta4Zero( const Real q )
 {
     THROW_UNLESS( std::invalid_argument, fabs( q ) <= 1.0 );
+    
+    // et4z( 1 - 1e4 ) ~= 7.2e-23
+    // et4z( 1e-15 ) ~= 1 - 2e-15
+    // et4z( 1e-16 ) ~= 1 - 2.2e-16
+    // et4z( 1e-17 ) ~= 1 - (zero)
 
     const Integer N( 100 );
     Real value( 1.0 );
@@ -62,9 +67,10 @@ static const Real ellipticTheta4Zero( const Real q )
 
 
 const Real 
-FirstPassageGreensFunction::p_survival( const Real t, const Real a ) const
+FirstPassageGreensFunction::p_survival( const Real t ) const
 {
     const Real D( getD() );
+    const Real a( geta() );
     const Real asq( a * a );
     const Real PIsq( M_PI * M_PI );
 
@@ -92,11 +98,11 @@ FirstPassageGreensFunction::p_free_int( const Real r, const Real t ) const
 
 const Real 
 FirstPassageGreensFunction::p_r_int( const Real r, 
-                                     const Real t, 
-                                     const Real a ) const
+                                     const Real t ) const
 {
     Real value( 0.0 );
 
+    const Real a( geta() );
     const Real p_free( this->p_free_int( r, t ) );
 
     // p_r_int is always smaller than p_free.
@@ -155,12 +161,12 @@ FirstPassageGreensFunction::p_r_int( const Real r,
 
 
 const Real 
-FirstPassageGreensFunction::p_r_fourier( const Real r, const Real t, 
-					 const Real a ) const
+FirstPassageGreensFunction::p_r_fourier( const Real r, const Real t ) const 
 {
     Real value( 0.0 );
 
     const Real D( getD() );
+    const Real a( geta() );
     const Real asq( a * a );
     const Real PIsq( M_PI * M_PI );
 
@@ -212,19 +218,19 @@ FirstPassageGreensFunction::p_survival_F( const Real t,
 					  const p_survival_params* params )
 {
     const FirstPassageGreensFunction* const gf( params->gf ); 
-    const Real a( params->a );
     const Real rnd( params->rnd );
 
-    return rnd - gf->p_survival( t, a );
+    return rnd - gf->p_survival( t );
 }
 
 
 
 const Real 
-FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
+FirstPassageGreensFunction::drawTime( const Real rnd ) const
 {
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, a >= 0.0 );
+
+    const Real a( geta() );
 
     if( a == 0.0 )
     {
@@ -238,7 +244,7 @@ FirstPassageGreensFunction::drawTime( const Real rnd, const Real a ) const
     }
 */
 
-    p_survival_params params = { this, a, rnd };
+    p_survival_params params = { this, rnd };
 
     gsl_function F = 
 	{
@@ -317,35 +323,34 @@ FirstPassageGreensFunction::p_r_F( const Real r,
 {
     const FirstPassageGreensFunction* const gf( params->gf ); 
     const Real t( params->t );
-    const Real a( params->a );
     const Real St( params->St );
     const Real rnd( params->rnd );
 
-    return gf->p_r_int( r, t, a ) - rnd * St;
+    return gf->p_r_int( r, t ) - rnd * St;
 }
 
 
 const Real 
-FirstPassageGreensFunction::drawR( const Real rnd, const Real t, 
-				   const Real a ) const
+FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const 
 {
     THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, a >= 0.0 );
+
+    const Real a( geta() );
 
     if( a == 0.0 || t == 0.0 )
     {
         return 0.0;
     }
 
-    const Real psurv( p_survival( t, a ) ); 
+    const Real psurv( p_survival( t ) ); 
 
     if( psurv == 0.0 )
     {
 	printf("p_survival = 0.0\n");
     }
 
-    p_r_params params = { this, t, a, psurv, rnd };
+    p_r_params params = { this, t, psurv, rnd };
 
     gsl_function F = 
 	{
@@ -395,26 +400,3 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t,
 
 
 
-#ifdef __FPGF_TEST__
-
-int main()
-{
-    printf("%g\n",ellipticTheta4Zero( 1.0 - 1e-5 ) );
-    printf("%g\n",ellipticTheta4Zero( 1.0 - 1e-4 ) );
-    printf("%g\n",ellipticTheta4Zero( 1.0 - 1e-3 ) );
-
-    printf("%20.20e\n",1.0 - ellipticTheta4Zero( 1e-15 ) );
-    printf("%20.20e\n",1.0 - ellipticTheta4Zero( 1e-16 ) );
-    printf("%20.20e\n",1.0 - ellipticTheta4Zero( 1e-17 ) );
-
-
-// et4z( 1 - 1e4 ) ~= 7.2e-23
-
-// et4z( 1e-15 ) ~= 1 - 2e-15
-// et4z( 1e-16 ) ~= 1 - 2.2e-16
-// et4z( 1e-17 ) ~= 1 - (zero)
-}
-
-
-
-#endif

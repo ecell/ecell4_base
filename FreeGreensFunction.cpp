@@ -58,8 +58,7 @@ FreeGreensFunction::ip_r_F( const Real r,
 
 
 const Real 
-FreeGreensFunction::drawR( const Real rnd, 
-                           const Real t, const Real ) const
+FreeGreensFunction::drawR( const Real rnd, const Real t ) const
 {
     // input parameter range checks.
     THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
