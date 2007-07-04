@@ -56,13 +56,14 @@ class EventSchedulerTestCase( unittest.TestCase ):
         scheduler.addEvent( 0.0, event )
         self.failIf( scheduler.getTime() != 0.0 )
         self.failIf( scheduler.getNextTime() != 0.0 )
-        self.failIf( scheduler.getTopEvent()[1] != event )
+        self.failIf( scheduler.getTopEvent().getObj() != event )
         
         scheduler.step()
         self.failIf( scheduler.getTime() != 0.0 )
         self.failIf( scheduler.getNextTime() != 1.0 )
-        self.failIf( scheduler.getNextTime() != scheduler.getTopEvent()[0] )
-        self.failIf( scheduler.getTopEvent()[1] != event )
+        self.failIf( scheduler.getNextTime() != 
+                     scheduler.getTopEvent().getTime() )
+        self.failIf( scheduler.getTopEvent().getObj() != event )
 
     def test4EventPop(self):
         scheduler = mod.EventScheduler()
@@ -98,7 +99,7 @@ class EventSchedulerTestCase( unittest.TestCase ):
 
         self.failIf( scheduler.getTime() != 0.5 )
         self.failIf( scheduler.getSize() != 1 )
-        self.failIf( scheduler.getTopEvent()[1] != event1 )
+        self.failIf( scheduler.getTopEvent().getObj() != event1 )
         self.failIf( scheduler.getNextTime() != 1.0 )
 
 
@@ -121,8 +122,8 @@ class EventSchedulerTestCase( unittest.TestCase ):
 
         self.failIf( scheduler.getTime() != 0.5 )
         self.failIf( scheduler.getSize() != 3 )
-        self.failIf( scheduler.getTopEvent()[1] == event1 or
-                     scheduler.getTopEvent()[1] == event2 )
+        self.failIf( scheduler.getTopEvent().getObj() == event1 or
+                     scheduler.getTopEvent().getObj() == event2 )
         self.failIf( scheduler.getNextTime() != 0.5 )
 
 
@@ -145,8 +146,8 @@ class EventSchedulerTestCase( unittest.TestCase ):
 
         self.failIf( scheduler.getTime() != 0.5 )
         self.failIf( scheduler.getSize() != 2 )
-        self.failIf( scheduler.getTopEvent()[1] == event1 or
-                     scheduler.getTopEvent()[1] == event2 )
+        self.failIf( scheduler.getTopEvent().getObj() == event1 or
+                     scheduler.getTopEvent().getObj() == event2 )
         self.failIf( scheduler.getNextTime() != 0.5 )
 
 

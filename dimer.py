@@ -34,7 +34,7 @@ l.setInterval( 1e-6 )
 l.log()
 
 
-while s.t < 10:
+while s.t < 100:
     s.step()
     l.log()
     
