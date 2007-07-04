@@ -297,14 +297,14 @@ namespace libecs
 
 	void removeEvent( const EventID id )
 	{
-	    return this->eventPriorityQueue.pop( id );
+	    this->eventPriorityQueue.pop( id );
 	}
 
 
 	void updateEvent( const EventID id, const Event& event )
 	{
 	    //const Event& event( this->eventPriorityQueue.get( id ) );
-	    return this->eventPriorityQueue.replace( id, event  );
+	    this->eventPriorityQueue.replace( id, event  );
 	}
 
 

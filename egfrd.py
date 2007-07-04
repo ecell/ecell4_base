@@ -39,7 +39,6 @@ class Single:
         self.sim = sim
         self.lastTime = 0.0
         self.dt = 0.0
-        self.closest = None
         self.eventID = None
 
         self.partner = None
@@ -47,8 +46,9 @@ class Single:
         self.gf = FirstPassageGreensFunction( particle.species.D )
 
     def __del__( self ):
-        pass
-        #print 'del', str( self )
+        #pass
+        print 'del', str( self )
+
 
     def fire( self ):
         print 'fireSingle', self, self.dt
@@ -145,11 +145,6 @@ class Single:
 
     def initialize( self ):
 
-        #neighbors, distances = self.sim.getNeighborShells( self.getPos() )
-        #closestParticle = neighbors[1]
-        #closestSingle = self.sim.findSingle( closestParticle )
-        #self.closest = closestSingle
-
         self.resetShell()
         self.lastTime = self.sim.t
 
@@ -243,7 +238,6 @@ class Pair:
         self.sim = sim
         self.lastTime = self.sim.t
         self.dt = 0.0
-        self.closest = None
 
         particle1 = self.single1.particle
         particle2 = self.single2.particle
@@ -271,8 +265,8 @@ class Pair:
 
 
     def __del__( self ):
-        pass
-        #print 'del', str( self )
+        #pass
+        print 'del', str( self )
 
     def fire( self ):
         self.sim.firePair( self )
@@ -617,9 +611,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.dtMax = INF
         self.dt = INF
 
-        self.pairList = []
-        self.singleMap = {}
-
         self.lastEvent = None
 
 
@@ -629,15 +620,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.scheduler.clear()
 
-        self.initializeSingleMap()
+        for species in self.speciesList.values():
+            for i in range( species.pool.size ):
+                particle = Particle( species, index=i )
+                single = self.createSingle( particle )
+                single.setShellSize( single.getRadius() )
+                single.initialize()
+                nextt = single.lastTime + single.dt
+                self.addEvent( nextt, single )
 
-        for single in self.singleMap.values():
-            single.initialize()
-
-
-        for single in self.singleMap.values():
-            nextt = single.lastTime + single.dt
-            self.addEvent( nextt, single )
 
         #debug
         self.checkShellForAll()
@@ -668,27 +659,25 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         print ''
         
 
-
-    def findSingle( self, particle ):
-        return self.singleMap.get( ( particle.species, particle.serial ) )
-
     def createSingle( self, particle ):
         single = Single( self, particle )
-        self.singleMap[ ( particle.species, particle.serial ) ] = single
-        return single
-
-    def removeSingle( self, single ):
-        particle = single.particle
-        del self.singleMap[ ( particle.species, particle.serial ) ]
         return single
 
     def addSingle( self, single ):
         self.addEvent( self.t + single.dt, single )
 
-    def removeParticle( self, particle ):
-        single = self.findSingle( particle )
-        self.removeSingle( single )
-        particle.species.removeParticleBySerial( particle.serial )
+#     def findSingleByParticle( particle ):
+#         scheduler = self.scheduler
+#         for i in range( scheduler.getSize() ):
+#             obj = scheduler.getEventByIndex(i)[1]
+#             if obj.hasattr( 'particle' ):
+#                 if obj.particle == particle:
+#                     return obj
+
+#     def removeParticle( self, particle ):
+#         single = self.findSingle( particle )
+#         self.removeSingle( single )
+#         particle.species.removeParticleBySerial( particle.serial )
 
 
     def addEvent( self, t, event ):
@@ -701,15 +690,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.scheduler.updateEvent( event.eventID, t, event )
 
 
-    def initializeSingleMap( self ):
-
-        self.singleMap = {}
-
-        for species in self.speciesList.values():
-            for i in range( species.pool.size ):
-                particle = Particle( species, index=i )
-                single = self.createSingle( particle )
-                single.setShellSize( single.getRadius() )
 
 
     def fireSingle( self, single ):
@@ -731,35 +711,35 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # Check if this and the closest particle can form a Pair.
 
         # First, find the closest particle.
-        neighbors, distances = self.getNeighborParticles( single.getPos() )
+        neighbors, distances = self.getNeighbors( single.getPos() )
         closest = neighbors[1]
         closestDistance = distances[1]
-        closestSingle = self.findSingle( closest )
 
-        # Then try forming a Pair.
-        pair = self.formPair( single, closestSingle )
-        if pair != None:
-            # if a Pair was formed, destroy the pair singles including
-            # self (by rescheduling to the past).
-            self.removeEvent( closestSingle )
-            pair.determineNextEvent()
-            self.addEvent( t + pair.dt, pair )
-            single.dt = -1
-            return
+        # Try forming a Pair if the closest is a Single.
+        if hasattr( closest, 'particle' ):
+            pair = self.formPair( single, closest )
+            if pair != None:
+                # if a Pair was formed, destroy the pair singles including
+                # self (by rescheduling to the past).
+                self.removeEvent( closest )
+                pair.determineNextEvent()
+                self.addEvent( t + pair.dt, pair )
+                single.dt = -1
+                return
             
         
         # (3) determine new shell size and dt.
 
         neighborShells, shellDistances = \
                         self.getNeighborShells( single.getPos() )
-        single.closest = neighborShells[1]
+        closest = neighborShells[1]
         distanceToClosestShell = shellDistances[1]
 
         shellSize = single.getShellSize()
 
         ShellSizeDisparityFactor = 2
 
-        shellSize = min( single.closest.getShellSize() *
+        shellSize = min( closest.getShellSize() *
                          ShellSizeDisparityFactor
                          + ( distanceToClosestShell - radius ) * 0.5 + radius,
                          distanceToClosestShell )
@@ -779,10 +759,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         meanArrivalTime = single.getMobilityRadius() ** 2 / \
                           ( 6.0 * single.particle.species.D )
         if meanArrivalTime == 0.0 or \
-           single.closest.dt / meanArrivalTime\
+           closest.dt / meanArrivalTime\
            >= ShellSizeDisparityFactor * 5:
-            print 'burst', single.closest, 'distance= ', distanceToClosestShell
-            single.closest.burst( t )
+            print 'burst', closest, 'distance= ', distanceToClosestShell
+            closest.burst( t )
 
 
 
@@ -1123,7 +1103,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     This method does not take into account of particle radius or shell size.
     This method pick top n neighbors simply by the distance between given
-    position pos to positions of particles around.
+    position pos to positions of objects (either Singles or Pairs) around.
 
     This method returns a tuple ( neighbors, distances ).
     '''
@@ -1134,7 +1114,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         size = scheduler.getSize()
         neighbors = [None,] * size
-        positions = numpy.zeros( ( 3, size ) )
+        positions = numpy.zeros( ( size, 3 ) )
         distances = numpy.zeros( size )
 
         for i in range( scheduler.getSize() ):
@@ -1185,44 +1165,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     '''
-    Find closest n shells taking into account only Singles, ignoring
-    Pairs.
-
-    This method returns a tuple ( neighbors, distances ).
-    '''
-
-    def getNeighborSingleShells( self, pos, n=2, speciesList=None ):
-
-        neighbors = []
-        distances = []
-
-        if speciesList == None:
-            speciesList = self.speciesList.values()
-
-        for species in speciesList:
-
-            # empty
-            if species.pool.size == 0:
-                continue
-
-            positions = species.pool.positions
-            distances = self.distanceArray( pos, positions )
-            distances -= species.pool.distances
-            
-            indices = distances.argsort()[:n]
-            distances = distances.take( indices )
-
-            distances.extend( distances )
-            neighbors.extend( [ ( species, i ) for i in indices ] )
-
-        topargs = numpy.argsort( distances )[:n]
-        distances = numpy.take( distances, topargs )
-        neighbors = [ neighbors[arg] for arg in topargs ]
-
-        return neighbors, distances
-
-
-    '''
     Find the closest shell from the position pos.
 
     When the sequence parameter ignore is given, this method finds the
@@ -1260,3 +1202,44 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             obj = scheduler.getEventByIndex(i)[1]
             if isinstance( obj, Single ):
                 assert obj.partner == None
+
+
+
+# not used
+#     '''
+#     Find closest n shells taking into account only Singles, ignoring
+#     Pairs.
+
+#     This method returns a tuple ( neighbors, distances ).
+#     '''
+
+#     def getNeighborSingleShells( self, pos, n=2, speciesList=None ):
+
+#         neighbors = []
+#         distances = []
+
+#         if speciesList == None:
+#             speciesList = self.speciesList.values()
+
+#         for species in speciesList:
+
+#             # empty
+#             if species.pool.size == 0:
+#                 continue
+
+#             positions = species.pool.positions
+#             distances = self.distanceArray( pos, positions )
+#             distances -= species.pool.distances
+            
+#             indices = distances.argsort()[:n]
+#             distances = distances.take( indices )
+
+#             distances.extend( distances )
+#             neighbors.extend( [ ( species, i ) for i in indices ] )
+
+#         topargs = numpy.argsort( distances )[:n]
+#         distances = numpy.take( distances, topargs )
+#         neighbors = [ neighbors[arg] for arg in topargs ]
+
+#         return neighbors, distances
+

@@ -18,11 +18,22 @@ public:
 	obj( obj )
     {
 	; // do nothing
+        puts("new");
     }
+
+
+    PyEvent( const PyEvent& pyEvent )
+    {
+        puts("copy");
+        setTime( pyEvent.getTime() );
+        obj = pyEvent.getObj();
+    }
+
 
     virtual ~PyEvent()
     {
 	; // do nothing
+        puts("del");
     }
     
 
