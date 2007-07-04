@@ -169,8 +169,6 @@ class Single:
     
     def burst( self, t ):
 
-        print 'burst', self, t, self.lastTime, self.dt
-
         assert t >= self.lastTime
         assert t <= self.lastTime + self.dt
         assert self.getShellSize() >= self.getRadius()
@@ -510,8 +508,6 @@ class Pair:
 
     def burst( self, t ):
 
-        print 'pair burst; ' , self, t
-
         assert t >= self.lastTime
 
         if t - self.lastTime != 0.0:
@@ -651,7 +647,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def step( self ):
 
-        self.checkInvariants()
+        #self.checkInvariants()
 
         if self.isDirty:
             self.initialize()
@@ -752,49 +748,23 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # (2) pair check
         #
         # Check if this and the closest particle can form a Pair.
-        # Skip this step if the closest was already a member of a Pair.
 
-        # First find the closest particle.
+        # First, find the closest particle.
         neighbors, distances = self.getNeighborParticles( single.getPos() )
         closest = neighbors[1]
         closestDistance = distances[1]
         closestSingle = self.findSingle( closest )
 
-        # Ignore if it was already a member of a pair
-        if closestSingle.partner == None:  
-
-            com = getPairCoM( single.getPos(), closestSingle.getPos(),\
-                              single.particle.species.D,\
-                              closestSingle.particle.species.D, self.fsize )
-            com = self.applyBoundary( com )
-            pairClosest, pairClosestShellDistance =\
-                         self.getClosestShell( com, ( single, closestSingle ) )
-            
-            if self.checkPairFormationCriteria( single, closestSingle,
-                                                pairClosestShellDistance ):
-
-                # burst shells of both Singles.  
-                single.burst( t )
-                closestSingle.burst( t )
-
-                pair = self.createPair( single, closestSingle )
-
-                # find closest again; singles were propagated. can be faster?
-                _, shellSize =\
-                   self.getClosestShell( pair.getCoM(),\
-                                              ( pair, single, closestSingle ) )
-                
-                pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
-
-                print 'Pair formed: ', pair, ', closest = ', pairClosest,\
-                      ', distance = ', shellSize
-
-                # if pair was formed, destroy the pair singles.
-                self.removeEvent( closestSingle )
-                pair.determineNextEvent()
-                self.addEvent( t + pair.dt, pair )
-                single.dt = -1
-                return
+        # Then try forming a Pair.
+        pair = self.formPair( single, closestSingle )
+        if pair != None:
+            # if a Pair was formed, destroy the pair singles including
+            # self (by rescheduling to the past).
+            self.removeEvent( closestSingle )
+            pair.determineNextEvent()
+            self.addEvent( t + pair.dt, pair )
+            single.dt = -1
+            return
             
         
         # (3) determine new shell size and dt.
@@ -830,7 +800,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if meanArrivalTime == 0.0 or \
            single.closest.dt / meanArrivalTime\
            >= ShellSizeDisparityFactor * 5:
-            print 'burst'
+            print 'burst', single.closest
             single.closest.burst( t )
 
 
@@ -1000,7 +970,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
 
-    def createPair( self, single1, single2 ):
+    def createPairInstance( self, single1, single2 ):
 
         print single1.dt, single2.dt
         assert single1.dt == 0
@@ -1008,14 +978,55 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         assert single1.getMobilityRadius() == 0
         assert single2.getMobilityRadius() == 0
 
-        
-
         species1 = single1.particle.species
         species2 = single2.particle.species
         rt = self.reactionTypeMap2.get( ( species1, species2 ) )
 
         return Pair( self, single1, single2, rt )
 
+
+    def formPair( self, single1, single2 ):
+
+        # First, don't form a pair if either one of the singles was
+        # already a member of a pair
+        if single1.partner != None or single2.partner != None:
+            return None
+
+        # Second, don't form a pair unless the closest's closest is this.
+        
+
+        # Then, check if this pair of singles meets the pair formation
+        # criteria defined in self.checkPairFormationCriteria().
+        
+        com = getPairCoM( single1.getPos(), single2.getPos(),\
+                          single1.particle.species.D,\
+                          single2.particle.species.D, self.fsize )
+        com = self.applyBoundary( com )
+        pairClosest, pairClosestShellDistance =\
+                     self.getClosestShell( com, ( single1, single2 ) )
+        
+        if not self.checkPairFormationCriteria( single1, single2,
+                                                pairClosestShellDistance ):
+            return None
+
+        # burst shells of both Singles.  
+        single1.burst( self.t )
+        single2.burst( self.t )
+            
+        pair = self.createPairInstance( single1, single2 )
+            
+        # find closest again; singles were propagated. can be faster?
+        _, shellSize =\
+           self.getClosestShell( pair.getCoM(),\
+                                 ( pair, single1, single2 ) )
+            
+        pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
+            
+        print 'Pair formed: ', pair, ', closest = ', pairClosest,\
+              ', distance = ', shellSize
+
+        return pair
+            
 
     '''
     Determine if given couple singles meet the criteria of forming
@@ -1145,15 +1156,19 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         size = scheduler.getSize()
         neighbors = [None,] * size
+        positions = numpy.zeros( ( 3, size ) )
         distances = numpy.zeros( size )
 
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i)[1]
             neighbors[i] = obj
-            distances[i] = self.distance( obj.getPos(), pos )
+            positions[i] = obj.getPos()
+
+        distances = self.distanceSqArray( positions, pos )
             
         topargs = numpy.argsort( distances )[:n]
         distances = numpy.take( distances, topargs )
+        distances = numpy.sqrt( distances )
         neighbors = [ neighbors[arg] for arg in topargs ]
 
         return neighbors, distances
@@ -1173,20 +1188,23 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         size = scheduler.getSize()
         neighbors = [None,] * size
         distances = numpy.zeros( size )
-
+        positions = numpy.zeros( ( size, 3 ) )
+        shellSizes = numpy.zeros( size )
 
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i)[1]
-            #print obj.getPos(), obj.getShellSize()
             neighbors[i] = obj
-            distances[i] = self.distance( obj.getPos(), pos )\
-                              - obj.getShellSize()
+            positions[i] = obj.getPos()
+            shellSizes[i] = obj.getShellSize()
+            
+        distances = self.distanceArray( positions, pos ) - shellSizes
             
         topargs = numpy.argsort( distances )[:n]
         distances = numpy.take( distances, topargs )
         neighbors = [ neighbors[arg] for arg in topargs ]
 
         return neighbors, distances
+
 
     '''
     Find closest n shells taking into account only Singles, ignoring
@@ -1210,8 +1228,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 continue
 
             positions = species.pool.positions
-            distances = self.distanceSqArray( pos, positions )
-            distances = numpy.sqrt( distances )
+            distances = self.distanceArray( pos, positions )
             distances -= species.pool.distances
             
             indices = distances.argsort()[:n]

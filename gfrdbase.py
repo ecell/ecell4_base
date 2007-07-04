@@ -358,6 +358,10 @@ class GFRDSimulatorBase:
     def distanceSqArray( self, position1, positions ):
         return self._distanceSqArray( position1, positions, self.fsize )
 
+    def distanceArray( self, position1, positions ):
+        return numpy.sqrt( self.distanceSqArray( position1,\
+                                                 positions ) )
+
     def addSurface( self, surface ):
         self.surfaceList.append( surface )
 

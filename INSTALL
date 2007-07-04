@@ -13,15 +13,17 @@ Prerequisites
 5. Scipy 0.5 or later, Numpy 1.0 or later.
 (6. Pychecker if you want to run 'make pycheck'.)
 
-If you use Fedora or RedHat line of linux, check
+If you use Fedora or any other RedHat lines of linux, check
 if the following RPM packages are installed:
 
 gsl, gsl-devel, numpy, scipy, boost, and boost-devel.
 
-On Ubuntu, install the following:
+On Ubuntu Linux and some other Debian families, install the following:
 
 gsl-bin, libgsl0, libgsl0-dev, libboost-dev, libboost-python-dev,
 libboost-test-dev, python-scipy, pychecker.
+
+Tested on Fedora 6 and Ubuntu 7.04.
 
 
 Building this package
