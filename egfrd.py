@@ -164,6 +164,7 @@ class Single:
     
     def burst( self, t ):
 
+        print t, self.lastTime, self.dt
         assert t >= self.lastTime
         assert t <= self.lastTime + self.dt
         assert self.getShellSize() >= self.getRadius()
@@ -642,13 +643,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
-        self.t, self.lastEvent = self.scheduler.getTopEvent()
+        event = self.scheduler.getTopEvent()
+        self.t, self.lastEvent = event.getTime(), event.getObj()
 
         print 't = ', self.t, ': event = ', self.lastEvent
         
         self.scheduler.step()
 
-        nextTime, nextEvent = self.scheduler.getTopEvent()
+        event = self.scheduler.getTopEvent()
+        nextTime, nextEvent = event.getTime(), event.getObj()
         self.dt = nextTime - self.t
 
         assert self.scheduler.getSize() != 0
@@ -1048,7 +1051,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         scheduler = self.scheduler
 
         for i in range( scheduler.getSize() ):
-            obj = scheduler.getEventByIndex(i)[1]
+            obj = scheduler.getEventByIndex(i).getObj()
             self.checkShell( obj )
 
 
@@ -1115,7 +1118,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         distances = numpy.zeros( size )
 
         for i in range( scheduler.getSize() ):
-            obj = scheduler.getEventByIndex(i)[1]
+            obj = scheduler.getEventByIndex(i).getObj()
             neighbors[i] = obj
             positions[i] = obj.getPos()
 
@@ -1147,7 +1150,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         shellSizes = numpy.zeros( size )
 
         for i in range( scheduler.getSize() ):
-            obj = scheduler.getEventByIndex(i)[1]
+            obj = scheduler.getEventByIndex(i).getObj()
             neighbors[i] = obj
             positions[i] = obj.getPos()
             shellSizes[i] = obj.getShellSize()
@@ -1196,7 +1199,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         scheduler = self.scheduler
         for i in range( scheduler.getSize() ):
-            obj = scheduler.getEventByIndex(i)[1]
+            obj = scheduler.getEventByIndex(i).getObj()
             if hasattr( obj, 'partner' ):
                 assert obj.partner == None
 

@@ -86,14 +86,13 @@ BOOST_PYTHON_MODULE( _gfrd )
   
     register_exception_translator<std::exception>( &translateException );
 
+//    to_python_converter<PyEvent, PyEvent_to_python>();
 
-    to_python_converter<PyEvent, PyEvent_to_python>();
-
-    class_<PyEvent, boost::noncopyable>( "Event", init<const Real,
-					 const object&>() )
+    class_<PyEvent>( "PyEvent", init<const Real, const object&>() )
 	.def( "setTime", &PyEvent::setTime )
 	.def( "getTime", &PyEvent::getTime )
-//	.def( "getObj", &PyEvent::getObj )
+	.def( "getObj", &PyEvent::getObj,
+	      return_value_policy<copy_const_reference>() )
 //	.def( "fire", &PyEvent::fire )
 //	.def( "update", &PyEvent::update )
 //	.def( "isDependentOn", &PyEvent::isDependentOn )
@@ -102,7 +101,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     typedef const PyEventScheduler::Event& 
 	(PyEventScheduler::*geteventrefsig)() const;
-    typedef PyEventScheduler::Event& (PyEventScheduler::*geteventrefbyindexsig)
+    typedef const PyEventScheduler::Event& 
+        (PyEventScheduler::*geteventrefbyindexsig)
 	( const PyEventScheduler::EventID );
 
     class_<PyEventScheduler, boost::noncopyable>( "EventScheduler" )
@@ -110,13 +110,11 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "getNextTime", &PyEventScheduler::getNextTime )
 	.def( "getSize", &PyEventScheduler::getSize )
 	.def( "getTopEvent", geteventrefsig( &PyEventScheduler::getTopEvent ),
-//	      return_value_policy<reference_existing_object>() )
-//	      return_value_policy<copy_const_reference>() )
-	      return_value_policy<return_by_value>() )
+	      return_value_policy<copy_const_reference>() )
 	.def( "getEvent", geteventrefbyindexsig( &PyEventScheduler::getEvent ),
-	      return_value_policy<return_by_value>() )
+	      return_value_policy<copy_const_reference>() )
 	.def( "getEventByIndex", &PyEventScheduler::getEventByIndex,
-	      return_value_policy<return_by_value>() )
+	      return_value_policy<copy_const_reference>() )
 	.def( "step", &PyEventScheduler::step )
 	.def( "clear", &PyEventScheduler::clear )
 	.def( "addEvent", &PyEventScheduler::addEvent )

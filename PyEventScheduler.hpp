@@ -34,8 +34,6 @@ public:
     void fire()
     {
 	boost::python::object ret( this->obj.attr( "fire" )() );
-	//this->setTime( this->getTime() + 
-//		       boost::python::extract<double>( ret ) );
 	this->setTime( boost::python::extract<double>( ret ) );
     }
 
