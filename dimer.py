@@ -33,7 +33,7 @@ l = Logger( s, 'dimer' )
 l.setInterval( 1e-6 )
 l.log()
 
-while s.t < 5:
+while s.t < 50:
     s.step()
     l.log()
     

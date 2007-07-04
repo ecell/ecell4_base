@@ -267,6 +267,7 @@ class Pair:
     def __del__( self ):
         #pass
         print 'del', str( self )
+        assert self.single1.partner == None and self.single2.partner == None
 
     def fire( self ):
         self.sim.firePair( self )
@@ -624,10 +625,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             for i in range( species.pool.size ):
                 particle = Particle( species, index=i )
                 single = self.createSingle( particle )
-                single.setShellSize( single.getRadius() )
                 single.initialize()
-                nextt = single.lastTime + single.dt
-                self.addEvent( nextt, single )
+                self.addEvent( self.t, single )
 
 
         #debug
@@ -690,8 +689,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.scheduler.updateEvent( event.eventID, t, event )
 
 
-
-
     def fireSingle( self, single ):
 
         #debug
@@ -716,7 +713,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         closestDistance = distances[1]
 
         # Try forming a Pair if the closest is a Single.
-        if hasattr( closest, 'particle' ):
+        if hasattr( closest, 'particle' ): # is single
             pair = self.formPair( single, closest )
             if pair != None:
                 # if a Pair was formed, destroy the pair singles including
@@ -1200,7 +1197,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         scheduler = self.scheduler
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i)[1]
-            if isinstance( obj, Single ):
+            if hasattr( obj, 'partner' ):
                 assert obj.partner == None
 
 
