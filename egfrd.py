@@ -647,7 +647,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def step( self ):
 
-        #self.checkInvariants()
+        self.checkInvariants()
 
         if self.isDirty:
             self.initialize()
@@ -663,25 +663,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         assert self.scheduler.getSize() != 0
 
-
-        # if the same event stepped in the last n steps,
-        # reinitialize everything.
-#         if self.lastEvent is nextEvent:
-#             self.hoggerCounter += 1
-#         else:
-#             self.hoggerCounter = 0
-
-#         if self.hoggerCounter >= 10: # or self.dt < 1e-15:
-#             print 'reinitialize'
-#             self.hoggerCounter = 0
-#             self.reinitialize()
-#             self.reinitializationCounter += 1
-
-        #if self.dt == 0.0:
-        #    raise 'dt=0'
-
-
-        print 'dt', self.dt, 'reactions', self.reactionEvents,\
+        print 'next dt = ', self.dt, 'reactions', self.reactionEvents,\
               'rejected moves', self.rejectedMoves
         print ''
         
@@ -716,7 +698,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.scheduler.removeEvent( event.eventID )
 
     def updateEvent( self, t, event ):
-        print event.eventID
         self.scheduler.updateEvent( event.eventID, t, event )
 
 
@@ -800,7 +781,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if meanArrivalTime == 0.0 or \
            single.closest.dt / meanArrivalTime\
            >= ShellSizeDisparityFactor * 5:
-            print 'burst', single.closest
+            print 'burst', single.closest, 'distance= ', distanceToClosestShell
             single.closest.burst( t )
 
 
@@ -970,7 +951,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
 
-    def createPairInstance( self, single1, single2 ):
+    def createPair( self, single1, single2 ):
 
         print single1.dt, single2.dt
         assert single1.dt == 0
@@ -992,9 +973,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if single1.partner != None or single2.partner != None:
             return None
 
-        # Second, don't form a pair unless the closest's closest is this.
-        
-
         # Then, check if this pair of singles meets the pair formation
         # criteria defined in self.checkPairFormationCriteria().
         
@@ -1013,7 +991,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single1.burst( self.t )
         single2.burst( self.t )
             
-        pair = self.createPairInstance( single1, single2 )
+        pair = self.createPair( single1, single2 )
             
         # find closest again; singles were propagated. can be faster?
         _, shellSize =\
