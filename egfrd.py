@@ -656,7 +656,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         print 'next dt = ', self.dt, 'reactions', self.reactionEvents,\
               'rejected moves', self.rejectedMoves
-        self.dumpScheduler()
         assert self.scheduler.check()
         print ''
         
@@ -722,15 +721,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if hasattr( closest, 'particle' ): # is single
             pair = self.formPair( single, closest )
             if pair:
-                self.dumpScheduler()
                 # if a Pair was formed, destroy the pair singles including
                 # self (by rescheduling to the past).
                 pair.determineNextEvent()
                 self.addEvent( self.t + pair.dt, pair )
-                self.dumpScheduler()
-
                 self.removeEvent( closest )
-                self.dumpScheduler()
                 single.dt = -1
                 return
             

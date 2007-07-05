@@ -392,6 +392,10 @@ private:
     inline void moveUpPos( const Index position, const Index start = 0 );
     inline void moveDownPos( const Index position );
 
+    inline void moveUpPosNoCheck( const Index position, 
+                                       const Index start = 0 );
+    inline void moveDownPosNoCheck( const Index position ); 
+
 private:
 
     ItemVector    itemVector;
@@ -441,7 +445,7 @@ movePos( const Index pos )
               ! this->comp( item, 
                             this->itemVector[ this->heap[ succ + 1 ] ] ) ) )
         {
-            moveDownPos( pos );
+            moveDownPosNoCheck( pos );
             return;
         }
     }
@@ -451,39 +455,24 @@ movePos( const Index pos )
         return;
     }
 
-    const Index pred( ( pos - 1 ) / 2 );
-    if( pred >= 0  && 
-        ! this->comp( this->itemVector[ this->heap[ pred ] ], item ) )
-    {
-        moveUpPos( pos );
-        return;
-    }
+    moveUpPos( pos );
 }
 
 template < typename Item, class IDPolicy >
 void DynamicPriorityQueue< Item, IDPolicy >::moveUpPos( const Index position, 
                                                         const Index start )
 {
+
     const Index index( this->heap[ position ] );
     const Item& item( this->itemVector[ index ] );
 
-    Index pos( position );
-    while( pos > start )
+    const Index pred( ( position - 1 ) / 2 );
+    const Index predIndex( this->heap[ pred ] );
+
+    if( ! this->comp( this->itemVector[ predIndex ], item ) )
     {
-        const Index pred( ( pos - 1 ) / 2 );
-        const Index predIndex( this->heap[ pred ] );
-        if( this->comp( this->itemVector[ predIndex ], item ) )
-        {
-            break;
-        }
-
-        this->heap[ pos ] = predIndex;
-        this->positionVector[ predIndex ] = pos;
-        pos = pred;
+        this->moveUpPosNoCheck( position, start );
     }
-
-    this->heap[ pos ] = index;
-    this->positionVector[ index ] = pos;
 }
 
 
@@ -492,8 +481,70 @@ void
 DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
 {
     const Index index( this->heap[ position ] );
+    const Item& item( this->itemVector[ index ] );
 
     const Index size( getSize() );
+
+    const Index succ( 2 * position + 1 );
+    if( succ < size )
+    {
+        if( ! this->comp( item, this->itemVector[ this->heap[ succ ] ] ) ||
+            ( succ + 1 < size && 
+              ! this->comp( item, 
+                            this->itemVector[ this->heap[ succ + 1 ] ] ) ) )
+        {
+            this->moveDownPosNoCheck( position );
+        }
+    }
+}
+
+template < typename Item, class IDPolicy >
+void DynamicPriorityQueue< Item, IDPolicy >:: 
+moveUpPosNoCheck( const Index position,
+                  const Index start )
+{
+    const Index index( this->heap[ position ] );
+    const Item& item( this->itemVector[ index ] );
+
+    if( position <= start )
+    {
+        return;
+    }
+
+    Index pos( position );
+    Index pred( ( pos - 1 ) / 2 );
+    Index predIndex( this->heap[ pred ] );
+
+    do
+    {
+        this->heap[ pos ] = predIndex;
+        this->positionVector[ predIndex ] = pos;
+        pos = pred;
+
+        if( pos <= start )
+        {
+            break;
+        }
+
+        pred = ( pos - 1 ) / 2;
+        predIndex = this->heap[ pred ];
+
+    } while( ! this->comp( this->itemVector[ predIndex ], item ) );
+
+
+    this->heap[ pos ] = index;
+    this->positionVector[ index ] = pos;
+}
+
+
+template < typename Item, class IDPolicy >
+void 
+DynamicPriorityQueue< Item, IDPolicy >::
+moveDownPosNoCheck( const Index position )
+{
+    const Index index( this->heap[ position ] );
+
+    const Index size( this->getSize() );
     
     Index succ( 2 * position + 1 );
     Index pos( position );
@@ -520,12 +571,11 @@ DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
 }
 
 
+
 template < typename Item, class IDPolicy >
 const typename DynamicPriorityQueue< Item, IDPolicy >::ID
 DynamicPriorityQueue< Item, IDPolicy >::push( const Item& item )
 {
-    assert( check() );
-
     const Index index( getSize() );
     
     this->itemVector.push_back( item );
@@ -535,22 +585,9 @@ DynamicPriorityQueue< Item, IDPolicy >::push( const Item& item )
 
     const ID id( IDPolicy::push( index ) );
 
-    assert( index == this->positionVector[ index ] );
-    assert( checkSize() );
-    assert( checkPositionMapping() );
-
-
-    /*
-const Index pred( ( index - 1 ) / 2 );
-    if( pred >= 0  && 
-        ! this->comp( this->itemVector[ this->heap[ pred ] ], item ) )
-    {
-        moveUpPos( index );  // remember, still pos == index.
-    }
-    */
     moveUpPos( index ); 
 
-    assert( check() );
+    // assert( check() );
 
     return id;
 }
@@ -591,7 +628,7 @@ void DynamicPriorityQueue< Item, IDPolicy >::popByIndex( const Index index )
         this->heap.pop_back();
     }
 
-    assert( check() );
+    //    assert( check() );
 }
 
 
@@ -602,7 +639,7 @@ void DynamicPriorityQueue< Item, IDPolicy >::replaceTop( const Item& item )
     this->itemVector[ this->heap[0] ] = item;
     moveTop();
     
-    assert( check() );
+    // assert( check() );
 }
 
 template < typename Item, class IDPolicy >
@@ -613,7 +650,7 @@ replace( const ID id, const Item& item )
     this->itemVector[ index ] = item;
     move( index );
     
-    assert( check() );
+    // assert( check() );
 }
 
 
