@@ -392,9 +392,9 @@ private:
     inline void moveUpPos( const Index position, const Index start = 0 );
     inline void moveDownPos( const Index position );
 
-    inline void moveUpPosNoCheck( const Index position, 
+    inline void moveUpPosImpl( const Index position, 
                                        const Index start = 0 );
-    inline void moveDownPosNoCheck( const Index position ); 
+    inline void moveDownPosImpl( const Index position ); 
 
 private:
 
@@ -445,7 +445,7 @@ movePos( const Index pos )
               ! this->comp( item, 
                             this->itemVector[ this->heap[ succ + 1 ] ] ) ) )
         {
-            moveDownPosNoCheck( pos );
+            moveDownPosImpl( pos );
             return;
         }
     }
@@ -471,7 +471,7 @@ void DynamicPriorityQueue< Item, IDPolicy >::moveUpPos( const Index position,
 
     if( ! this->comp( this->itemVector[ predIndex ], item ) )
     {
-        this->moveUpPosNoCheck( position, start );
+        this->moveUpPosImpl( position, start );
     }
 }
 
@@ -493,14 +493,14 @@ DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
               ! this->comp( item, 
                             this->itemVector[ this->heap[ succ + 1 ] ] ) ) )
         {
-            this->moveDownPosNoCheck( position );
+            this->moveDownPosImpl( position );
         }
     }
 }
 
 template < typename Item, class IDPolicy >
 void DynamicPriorityQueue< Item, IDPolicy >:: 
-moveUpPosNoCheck( const Index position,
+moveUpPosImpl( const Index position,
                   const Index start )
 {
     const Index index( this->heap[ position ] );
@@ -531,7 +531,6 @@ moveUpPosNoCheck( const Index position,
 
     } while( ! this->comp( this->itemVector[ predIndex ], item ) );
 
-
     this->heap[ pos ] = index;
     this->positionVector[ index ] = pos;
 }
@@ -540,7 +539,7 @@ moveUpPosNoCheck( const Index position,
 template < typename Item, class IDPolicy >
 void 
 DynamicPriorityQueue< Item, IDPolicy >::
-moveDownPosNoCheck( const Index position )
+moveDownPosImpl( const Index position )
 {
     const Index index( this->heap[ position ] );
 
