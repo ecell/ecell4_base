@@ -111,6 +111,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "getSize", &PyEventScheduler::getSize )
 	.def( "getTopEvent", geteventrefsig( &PyEventScheduler::getTopEvent ),
 	      return_value_policy<copy_const_reference>() )
+	.def( "getTopID", &PyEventScheduler::getTopID )
 	.def( "getEvent", geteventrefbyindexsig( &PyEventScheduler::getEvent ),
 	      return_value_policy<copy_const_reference>() )
 	.def( "getEventByIndex", &PyEventScheduler::getEventByIndex,
@@ -122,6 +123,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "updateEvent", &PyEventScheduler::updateEvent )
 //	.def( "updateAllEventDependency", 
 //	      &PyEventScheduler::updateAllEventDependency )
+	.def( "check", &PyEventScheduler::check )
 	;
 
 

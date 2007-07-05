@@ -87,7 +87,6 @@ namespace libecs
 	{
 	    return this->time;
 	}
-
    
 
 	const bool operator<= ( const EventBase& rhs ) const
@@ -102,27 +101,29 @@ namespace libecs
 	    }
 	}
 
-
-	const bool operator> ( const EventBase& rhs ) const
+	const bool operator== ( const EventBase& rhs ) const
 	{
-	    return ! this->operator<=( rhs );
+	    if( getTime() == rhs.getTime() )
+	    {
+		return true;
+	    }
+	    else
+	    {
+		return false;
+	    }
 	}
 
 	const bool operator!= ( const EventBase& rhs ) const
 	{
-	    if( getTime() == rhs.getTime() )
-	    {
-		return false;
-	    }
-	    else
-	    {
-		return true;
-	    }
+	    return ! this->operator==( rhs );
 	}
+
 
 
 	// dummy, because DynamicPriorityQueue requires this. better without.
 	EventBase()
+            :
+            time( -1.0 )
 	{
 	    ; // do nothing
 	}
@@ -191,7 +192,7 @@ namespace libecs
 	    return this->eventPriorityQueue.getTop();
 	}
 
-	EventIndex getTopID() const
+	EventID getTopID() const
 	{
 	    return this->eventPriorityQueue.getTopID();
 	}
@@ -303,7 +304,6 @@ namespace libecs
 
 	void updateEvent( const EventID id, const Event& event )
 	{
-	    //const Event& event( this->eventPriorityQueue.get( id ) );
 	    this->eventPriorityQueue.replace( id, event  );
 	}
 
@@ -315,6 +315,11 @@ namespace libecs
 //	{
 //	    return this->eventDependencyArray[ anIndex ] ;
 //	}
+
+        const bool check() const
+        {
+            return this->eventPriorityQueue.check();
+        }
 
     private:
 

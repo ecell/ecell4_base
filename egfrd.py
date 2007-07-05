@@ -54,7 +54,7 @@ class Single:
         print 'fireSingle', self, self.dt
         self.sim.fireSingle( self )
         print 'single new t dt', self.sim.t + self.dt, self.dt
-        return self.sim.t + self.dt
+        return self.dt
         
     def setPos( self, pos ):
         self.particle.setPos( pos )
@@ -164,7 +164,7 @@ class Single:
     
     def burst( self, t ):
 
-        print t, self.lastTime, self.dt
+        print 'b', self, 't ', t, 'last ', self.lastTime, 'dt ', self.dt
         assert t >= self.lastTime
         assert t <= self.lastTime + self.dt
         assert self.getShellSize() >= self.getRadius()
@@ -178,7 +178,6 @@ class Single:
             self.propagate( r, t )  # self.lastTime = t
 
         self.resetShell()
-
         self.sim.updateEvent( t, self )  # self.dt == 0.0
 
 
@@ -268,11 +267,10 @@ class Pair:
     def __del__( self ):
         #pass
         print 'del', str( self )
-        assert self.single1.partner == None and self.single2.partner == None
 
     def fire( self ):
         self.sim.firePair( self )
-        return self.sim.t + self.dt
+        return self.dt
 
 
 
@@ -658,6 +656,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         print 'next dt = ', self.dt, 'reactions', self.reactionEvents,\
               'rejected moves', self.rejectedMoves
+        self.dumpScheduler()
+        assert self.scheduler.check()
         print ''
         
 
@@ -683,10 +683,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def addEvent( self, t, event ):
+        assert self.scheduler.check()
         event.eventID = self.scheduler.addEvent( t, event )
+        assert self.scheduler.check()
 
     def removeEvent( self, event ):
+        assert self.scheduler.check()
         self.scheduler.removeEvent( event.eventID )
+        assert self.scheduler.check()
 
     def updateEvent( self, t, event ):
         self.scheduler.updateEvent( event.eventID, t, event )
@@ -698,13 +702,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #self.checkShellForAll()
 
         radius = single.getRadius()
-        t = self.t
 
         # (1) propagate
         #
         # Propagate this particle to the exit point on the surface.
         
-        single.propagate( single.getMobilityRadius(), t )
+        single.propagate( single.getMobilityRadius(), self.t )
 
         # (2) pair check
         #
@@ -718,12 +721,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # Try forming a Pair if the closest is a Single.
         if hasattr( closest, 'particle' ): # is single
             pair = self.formPair( single, closest )
-            if pair != None:
+            if pair:
+                self.dumpScheduler()
                 # if a Pair was formed, destroy the pair singles including
                 # self (by rescheduling to the past).
-                self.removeEvent( closest )
                 pair.determineNextEvent()
-                self.addEvent( t + pair.dt, pair )
+                self.addEvent( self.t + pair.dt, pair )
+                self.dumpScheduler()
+
+                self.removeEvent( closest )
+                self.dumpScheduler()
                 single.dt = -1
                 return
             
@@ -752,7 +759,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         single.dt = single.calculateFirstPassageTime()
 
-
         # (4) Burst the closest, either Single or Pair, if 
 
         #FIXME: use of closest.dt here is a temporary workaround.
@@ -762,7 +768,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
            closest.dt / meanArrivalTime\
            >= ShellSizeDisparityFactor * 5:
             print 'burst', closest, 'distance= ', distanceToClosestShell
-            closest.burst( t )
+            closest.burst( self.t )
 
 
 
@@ -920,11 +926,19 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             pair.releaseSingles()
 
-            pair.single1.initialize()
-            pair.single2.initialize()
+            single1, single2 = pair.single1, pair.single2
+
+            single1.initialize()
+            single2.initialize()
             
-            self.addEvent( self.t + pair.single1.dt, pair.single1 )
-            self.addEvent( self.t + pair.single2.dt, pair.single2 )
+            # singles step immediately.
+            # single dts are zero.
+            self.addEvent( self.t, single1 )
+            self.addEvent( self.t, single2 )
+
+            print pair.eventID, single1.eventID, single2.eventID
+            print self.scheduler.getEvent( single1.eventID ).getTime(),\
+                self.scheduler.getEvent( single2.eventID ).getTime()
 
         pair.dt = -1
         return
@@ -934,10 +948,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def createPair( self, single1, single2 ):
 
         print single1.dt, single2.dt
-        assert single1.dt == 0
-        assert single2.dt == 0
-        assert single1.getMobilityRadius() == 0
-        assert single2.getMobilityRadius() == 0
+        assert single1.dt == 0.0
+        assert single2.dt == 0.0
+        assert single1.getMobilityRadius() == 0.0
+        assert single2.getMobilityRadius() == 0.0
 
         species1 = single1.particle.species
         species2 = single2.particle.species
@@ -979,7 +993,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                  ( pair, single1, single2 ) )
             
         pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
-            
+
         print 'Pair formed: ', pair, ', closest = ', pairClosest,\
               ', distance = ', shellSize
 
@@ -1188,6 +1202,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return None, numpy.inf
 
 
+    def dumpScheduler( self ):
+        scheduler = self.scheduler
+        for i in range( scheduler.getSize() ):
+            event = scheduler.getEventByIndex(i)
+            print i, event.getTime(), event.getObj()
 
 
     def checkInvariants( self ):

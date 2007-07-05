@@ -34,7 +34,8 @@ public:
     void fire()
     {
 	boost::python::object ret( this->obj.attr( "fire" )() );
-	this->setTime( boost::python::extract<double>( ret ) );
+	this->setTime( this->getTime() + 
+                       boost::python::extract<double>( ret ) );
     }
 
     void update( const double t )
@@ -96,7 +97,7 @@ public:
 
 
 
-
+/*
 class PyEvent_to_python
 {
 public:
@@ -110,4 +111,4 @@ public:
   }
 
 };
-
+*/
