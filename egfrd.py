@@ -71,8 +71,7 @@ class Single:
             raise RuntimeError, 'shell size < radius; %g %g %g' % \
                   ( size, self.getRadius(), size - self.getRadius() )
 
-        pool = self.particle.species.pool
-        pool.drs[ pool.getIndex( self.particle.serial ) ] = size
+        self.dr = size
 
 
     '''
@@ -83,8 +82,7 @@ class Single:
     '''
 
     def getShellSize( self ):
-        pool = self.particle.species.pool
-        return pool.drs[ pool.getIndex( self.particle.serial ) ]
+        return self.dr
 
     def getRadius( self ):
         return self.particle.species.radius

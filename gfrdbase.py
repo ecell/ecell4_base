@@ -149,8 +149,6 @@ class ParticlePool:
         self.positions = numpy.array( [], numpy.floating )
         self.positions.shape = ( 0, 3 )
 
-        self.drs = numpy.array( [], numpy.floating )
-
         self.size = 0
 
     def newParticle( self, position ):
@@ -167,8 +165,6 @@ class ParticlePool:
         self.serials[ newindex ] = newserial
         self.positions[ newindex ] = position
 
-        self.drs[ newindex ] = 0.0
-
         return newserial
     
 
@@ -176,7 +172,6 @@ class ParticlePool:
 
         self.serials = numpy.resize( self.serials, newsize )
         self.positions = numpy.resize( self.positions, ( newsize, 3 ) )
-        self.drs = numpy.resize( self.drs, newsize )
 
 
     def removeBySerial( self, serial ):
@@ -197,7 +192,6 @@ class ParticlePool:
         # the arrays by one.
         self.serials[ index ] = self.serials[ self.size ]
         self.positions[ index ] = self.positions[ self.size ]
-        self.drs[ index ] = self.drs[ self.size ]
         self.__resizeArrays( self.size )
 
         # book keeping
@@ -211,39 +205,6 @@ class ParticlePool:
     def getIndex( self, serial ):
 
         return self.indexMap[ serial ]
-
-
-
-'''
-class Particle:
-    
-    def __init__( self, pos, species ):
-        self.species = species
-
-        pool = species.pool
-        
-        self.serial = pool.newLot()
-
-        index = pool.getIndexBySerial( self.serial )
-
-
-        print 'idx', index
-        print pool.positions
-        pool.positions[ index ] = pos
-
-        self.partner = None
-
-        # temporary area, should be gotten rid of
-        self.dt = array( (scipy.Inf,scipy.Inf) )
-
-    def getPos( self ):
-        pool = self.species.pool
-        return pool.positions[ pool.getIndexBySerial( self.serial ) ]
-
-    def setPos( self ):
-        pool = self.species.pool
-        return pool.positions[ pool.getIndexBySerial( self.serial ) ]
-'''        
 
 
 
