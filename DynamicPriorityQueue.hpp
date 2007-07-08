@@ -440,10 +440,9 @@ movePos( const Index pos )
     const Index succ( 2 * pos + 1 );
     if( succ < size )
     {
-        if( ! this->comp( item, this->itemVector[ this->heap[ succ ] ] ) ||
+        if( this->comp( this->itemVector[ this->heap[ succ ] ], item ) ||
             ( succ + 1 < size && 
-              ! this->comp( item, 
-                            this->itemVector[ this->heap[ succ + 1 ] ] ) ) )
+              this->comp( this->itemVector[ this->heap[ succ + 1 ] ], item ) ) )
         {
             moveDownPosImpl( pos );
             return;
@@ -469,7 +468,7 @@ void DynamicPriorityQueue< Item, IDPolicy >::moveUpPos( const Index position,
     const Index pred( ( position - 1 ) / 2 );
     const Index predIndex( this->heap[ pred ] );
 
-    if( ! this->comp( this->itemVector[ predIndex ], item ) )
+    if( this->comp( item, this->itemVector[ predIndex ] ) )
     {
         this->moveUpPosImpl( position, start );
     }
@@ -488,10 +487,10 @@ DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
     const Index succ( 2 * position + 1 );
     if( succ < size )
     {
-        if( ! this->comp( item, this->itemVector[ this->heap[ succ ] ] ) ||
+        if( this->comp( this->itemVector[ this->heap[ succ ] ], item ) ||
             ( succ + 1 < size && 
-              ! this->comp( item, 
-                            this->itemVector[ this->heap[ succ + 1 ] ] ) ) )
+              this->comp( this->itemVector[ this->heap[ succ + 1 ] ], 
+                          item ) ) )
         {
             this->moveDownPosImpl( position );
         }

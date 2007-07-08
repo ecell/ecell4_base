@@ -101,6 +101,19 @@ namespace libecs
 	    }
 	}
 
+	const bool operator< ( const EventBase& rhs ) const
+	{
+	    if( getTime() < rhs.getTime() )
+	    {
+		return true;
+	    }
+	    else
+	    {
+		return false;
+	    }
+	}
+
+
 	const bool operator== ( const EventBase& rhs ) const
 	{
 	    if( getTime() == rhs.getTime() )
