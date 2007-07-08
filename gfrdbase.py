@@ -228,7 +228,7 @@ class GFRDSimulatorBase:
         self.nextReaction = None
 
 
-        self.setBoundarySize( INF )
+        self.setCellSize( INF )
 
 
         # counters
@@ -236,8 +236,11 @@ class GFRDSimulatorBase:
         self.reactionEvents = 0
 
 
+    def getTime( self ):
+        return self.t
 
-    def setBoundarySize( self, size ):
+
+    def setCellSize( self, size ):
 
         self.fsize = size
 
@@ -247,6 +250,9 @@ class GFRDSimulatorBase:
         else:
             self._distanceSq = distanceSq_Cyclic
             self._distanceSqArray = distanceSqArray_Cyclic
+
+    def getCellSize( self ):
+        return self.fsize
 
     def applyBoundary( self, pos ):
         if self.fsize != INF:

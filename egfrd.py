@@ -65,13 +65,13 @@ class Single:
     def getD( self ):
         return self.particle.species.D
 
-    def setShellSize( self, size ):
+    def setShellSize( self, shellSize ):
 
-        if size < self.getRadius():
+        if shellSize < self.getRadius():
             raise RuntimeError, 'shell size < radius; %g %g %g' % \
-                  ( size, self.getRadius(), size - self.getRadius() )
+                  ( size, self.getRadius(), shellSize - self.getRadius() )
 
-        self.dr = size
+        self.dr = min( shellSize, self.sim.getCellSize() )
 
 
     '''
@@ -280,7 +280,7 @@ class Pair:
 
     def setShellSize( self, shellSize ):
         assert shellSize >= self.radius
-        self.shellSize = shellSize
+        self.shellSize = min( shellSize, self.sim.getCellSize() )
 
     def getShellSize( self ):
         return self.shellSize
@@ -300,7 +300,7 @@ class Pair:
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
 
-        pos2t = cyclicTranspose( pos2, pos1, self.sim.fsize )
+        pos2t = cyclicTranspose( pos2, pos1, self.sim.getCellSize() )
         
         com = ( self.sqrtD2D1 * pos1 + self.sqrtD1D2 * pos2t ) / \
               ( self.sqrtD2D1 + self.sqrtD1D2 )
@@ -965,7 +965,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         com = getPairCoM( single1.getPos(), single2.getPos(),\
                           single1.particle.species.D,\
-                          single2.particle.species.D, self.fsize )
+                          single2.particle.species.D, self.getCellSize() )
         com = self.applyBoundary( com )
         pairClosest, pairClosestShellDistance =\
                      self.getClosestShell( com, ( single1, single2 ) )
