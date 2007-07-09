@@ -14,23 +14,6 @@ from surface import *
 from gfrdbase import *
 
 
-
-
-"""
-class DistanceMatrix:
-
-    def __init__( self, numSpecies ):
-        row = [ numpy.array([], numpy.floating ), ] * numSpecies
-        self.matrix = [ row, ] * numSpecies
-
-    def __getitem__( self, si1, i1, si2, i2 ):
-        return self.matrix[si1][si2][
-"""
-
-
-
-
-
 class Single:
 
     def __init__( self, sim, particle ):
@@ -291,7 +274,7 @@ class Pair:
         return self.D
 
     def setShellSize( self, shellSize ):
-        assert shellSize >= self.radius
+        #assert shellSize >= self.radius
         self.shellSize = min( shellSize, self.sim.getCellSize() )
 
     def getShellSize( self ):
@@ -472,8 +455,8 @@ class Pair:
         assert margin > 0.0
 
         # FIXME: equalize expected mean t_r and t_R
-        self.a_r = self.r0 + margin * .3
-        self.a_R = margin * .7
+        self.a_r = self.r0 + margin * .25
+        self.a_R = margin * .75
 
         print 'ar0', self.a_r, self.r0
         assert self.a_r > self.r0
@@ -743,8 +726,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     self.removeEvent( closest )
                     single.dt = -1
                     return
-            except SqueezingException:
-                print 'squeezing'
+            except SqueezingException, e:
+                print 'squeezed'
+                self.recoverSqueezed( e.single1, e.single2, e.single3 )
             
         
         # (3) determine new shell size and dt.
@@ -985,7 +969,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pair.dt = -1
         return
 
-
+    def recoverSqueezed( self, single1, single2, single3 ):
+        # displace single1 a bit.
+        origPos = single1.getPos().copy()
+        displacement = math.sqrt( single1.particle.spedcies.D * 1e-9 * 6.0 )
+        while True:
+            pass
+            
 
     def createPair( self, single1, single2 ):
 
@@ -1025,11 +1015,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pairDistance = self.distance( single1.getPos(), single2.getPos() )
         if pairDistance <= (radius1 + radius2) * (1.0+1e-6):
             neighbors, neighborDistances = \
-                      self.getNeighborParticles( com, n=3 )
+                      self.getNeighbors( com, n=3 )
             closest, distance = neighbors[2], neighborDistances[2]
-            
-            if neighborDistance <= radius1 + radius2:
-                raise SqueezingException
+            closestRadius = closest.particle.species.radius
+            if distance - closestRadius <= \
+                    (radius1 + radius2) * (1.0+1e-6):
+                print single1.getPos(), single2.getPos(), closest.getPos()
+                print self.distance( com, closest.getPos() )
+                raise SqueezingException( single1, single2, closest )
         
         if not self.checkPairFormationCriteria( single1, single2,
                                                 pairClosestShellDistance ):
@@ -1078,7 +1071,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def checkPairFormationCriteria( self, single1, single2,
                                     closestShellDistance ):
 
-        PairMakingFactor = 5
+        # FIXME: should be larger when the GF impl is improved.
+        PairMakingFactor = 3
 
         # pair making criteria:
         # 1. Distance between particles to form a pair is closer than
@@ -1114,7 +1108,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     pairDistance * D2 / D12 + radius2
                     + single2.getMobilityRadius() )
         
-        if closestShellDistance < rmax * 1.1:  # 10% margin
+        if closestShellDistance < rmax * 1.0:  # 10% margin
             print 'closestShellDistance < rmax; %g, %g' % \
                   ( closestShellDistance, rmax )
             return False

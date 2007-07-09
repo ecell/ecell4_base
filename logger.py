@@ -78,11 +78,11 @@ class Logger:
 
         if self.simulator.isPopulationChanged():
             self.writeTimecourse()
-
         currentTime = self.simulator.t
         if self.nextTime > currentTime:
             return
 
+        print 'log'
         self.writeParticles()
 
         self.nextTime += self.interval
