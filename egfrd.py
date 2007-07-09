@@ -385,6 +385,7 @@ class Pair:
     def drawTheta_pair( self, rnd, r, r0, t ):
 
         gf = self.choosePairGreensFunction( r0, t )
+        print gf
         theta = gf.drawTheta( rnd, r, r0, t )
 
         return theta
@@ -455,8 +456,8 @@ class Pair:
         assert margin > 0.0
 
         # FIXME: equalize expected mean t_r and t_R
-        self.a_r = self.r0 + margin * .25
-        self.a_R = margin * .75
+        self.a_r = self.r0 + margin * .5
+        self.a_R = margin * .5
 
         print 'ar0', self.a_r, self.r0
         assert self.a_r > self.r0
@@ -587,7 +588,10 @@ class Pair:
                ', ' + str(self.single2.particle) + ' )'
 
 class SqueezingException:
-    pass
+    def __init__( self, s1, s2, s3 ):
+        self.s1 = s1
+        self.s2 = s2
+        self.s3 = s3
 
 
 class EGFRDSimulator( GFRDSimulatorBase ):
@@ -625,6 +629,32 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.checkShellForAll()
 
         self.isDirty = False
+
+    def stop( self, t ):
+
+        self.t = t
+        
+        scheduler = self.scheduler
+        
+        pairList = []
+
+        # first burst all Singles.
+        for i in range( scheduler.getSize() ):
+            obj = scheduler.getEventByIndex(i).getObj()
+            if obj.isPair():
+                pairList.append( obj )
+            else:
+                obj.burst( t )
+
+        # then burst all Pairs.
+        for obj in pairList:
+            obj.burst( t )
+
+        self.dt = 0.0
+#         event = self.scheduler.getTopEvent()
+#         nextTime, nextEvent = event.getTime(), event.getObj()
+#         self.dt = nextTime - self.t
+#         assert self.dt == 0.0
 
 
     def step( self ):
@@ -728,7 +758,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     return
             except SqueezingException, e:
                 print 'squeezed'
-                self.recoverSqueezed( e.single1, e.single2, e.single3 )
+                self.recoverSqueezed( e.s1, e.s2, e.s3 )
             
         
         # (3) determine new shell size and dt.
@@ -741,18 +771,19 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pairDistance = self.distance( single.getPos(), closest.getPos() )
 
         ShellSizeDisparityFactor = 2
+        radius1 = single.particle.species.radius
 
         if not closest.isPair():  # closest is a Single
             D1, D2 = single.getD(), closest.getD()
             sqrtD1, sqrtD2 = math.sqrt( D1 ), math.sqrt( D2 )
-            radius1 = single.particle.species.radius
             radius2 = closest.particle.species.radius
         
             shellSize = min( sqrtD1 / ( sqrtD1 + sqrtD2 ) * pairDistance,
                              distanceToClosestShell )
         else: 
-            # be aggressive if the closest is a Pair.
+            # the closest is a Pair.
             print 'closest is pair'
+            #shellSize = max( distanceToClosestShell*.5, radius1 )
             shellSize = distanceToClosestShell
 
 
@@ -1056,8 +1087,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
 
-        print 'Pair formed: ', pair, ', closest = ', pairClosest,\
-              ', distance = ', shellSize
+        print 'Pair formed: ', pair, 'shell size=', shellSize,\
+              ', closest = ', pairClosest,\
+              ', distance to shell = ', pairClosestShellDistance
 
         return pair
             
@@ -1072,7 +1104,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                     closestShellDistance ):
 
         # FIXME: should be larger when the GF impl is improved.
-        PairMakingFactor = 3
+        PairMakingFactor = 2
 
         # pair making criteria:
         # 1. Distance between particles to form a pair is closer than
@@ -1108,7 +1140,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     pairDistance * D2 / D12 + radius2
                     + single2.getMobilityRadius() )
         
-        if closestShellDistance < rmax * 1.0:  # 10% margin
+        if closestShellDistance < rmax * 1.0:  # margin
             print 'closestShellDistance < rmax; %g, %g' % \
                   ( closestShellDistance, rmax )
             return False

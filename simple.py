@@ -18,11 +18,11 @@ s.addSpecies( P )
 
 s.setAllRepulsive()
 
-s.throwInParticles( 'P', 600, box1 )
+s.throwInParticles( 'P', 6, box1 )
 
 l = Logger( s, 'simple' )
 l.setParticleOutput( ('P',) )
-l.setInterval( 1e-3 )
+l.setInterval( 1e-4 )
 l.log()
 
 while s.t < 1:

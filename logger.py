@@ -9,6 +9,8 @@ class Logger:
         self.simulator = simulator
 
         self.interval = 0.001
+
+        self.lastTime = 0.0
         self.nextTime = 0.0
 
         self.logname = logname
@@ -74,18 +76,28 @@ class Logger:
 
         self.fileCounter += 1
 
+
     def log( self ):
+        self.logTimeCourse()
+        self.logParticles()
+
+    def logTimeCourse( self ):
 
         if self.simulator.isPopulationChanged():
             self.writeTimecourse()
-        currentTime = self.simulator.t
-        if self.nextTime > currentTime:
-            return
 
-        print 'log'
-        self.writeParticles()
+    def logParticles( self ):
+        sim = self.simulator
+        currentTime = sim.t
+        nextTime = sim.t + sim.dt
 
-        self.nextTime += self.interval
+        if self.nextTime <= nextTime:
+            print 'log', self.nextTime
+
+            sim.stop( self.nextTime )
+            self.writeParticles()
+
+            self.nextTime += self.interval
 
 
         
