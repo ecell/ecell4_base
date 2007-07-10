@@ -22,6 +22,7 @@ class Single:
         self.sim = sim
         self.lastTime = 0.0
         self.dt = 0.0
+        self.setShellSize( self.getRadius() )
         self.eventID = None
 
         self.partner = None
@@ -60,7 +61,7 @@ class Single:
             raise RuntimeError, 'shell size < radius; %g %g %g' % \
                   ( size, self.getRadius(), shellSize - self.getRadius() )
 
-        self.dr = min( shellSize, self.sim.getCellSize() )
+        self.shellSize = min( shellSize, self.sim.getCellSize() )
 
 
     '''
@@ -71,7 +72,7 @@ class Single:
     '''
 
     def getShellSize( self ):
-        return self.dr
+        return self.shellSize
 
     def getRadius( self ):
         return self.particle.species.radius
@@ -94,7 +95,6 @@ class Single:
 
         rnd = numpy.random.uniform( size=2 )
 
-        r = self.getMobilityRadius()
         displacementS = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
         displacement = sphericalToCartesian( displacementS )
 
@@ -156,16 +156,18 @@ class Single:
         assert t <= self.lastTime + self.dt
         assert self.getShellSize() >= self.getRadius()
 
-        if t != self.lastTime:
+        dt = t - self.lastTime
 
-            dt = t - self.lastTime
+        if dt != 0.0:
+
             rnd = numpy.random.uniform()
             self.gf.seta( self.getMobilityRadius() )
             r = self.gf.drawR( rnd , dt )
             self.propagate( r, t )  # self.lastTime = t
 
         self.resetShell()
-        self.sim.updateEvent( t, self )  # self.dt == 0.0
+        assert self.dt == 0.0
+        self.sim.updateEvent( t, self )
 
 
     def calculateFirstPassageTime( self ):
@@ -313,6 +315,8 @@ class Pair:
         shellSize = self.a_R
         thresholdDistance = Pair.H * math.sqrt( 6.0 * self.D * t );
 
+        return self.sgf
+
         if shellSize < thresholdDistance:
             return self.sgf
         else:
@@ -400,6 +404,8 @@ class Pair:
 
     def newPositions( self, CoM, newInterParticle, oldInterParticle ):
 
+        #FIXME: needs better handling of angles near zero and pi.
+
         # I rotate the new interparticle vector along the
         # rotation axis that is perpendicular to both the
         # z-axis and the original interparticle vector for
@@ -408,19 +414,25 @@ class Pair:
         # the rotation axis is a normalized cross product of
         # the z-axis and the original vector.
         # rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
-        
-        rotationAxis = crossproductAgainstZAxis( oldInterParticle )
-        rotationAxis = normalize( rotationAxis )
-        
+
         angle = vectorAngleAgainstZAxis( oldInterParticle )
-        
-        newInterParticle = rotateVector( newInterParticle,
-                                         rotationAxis,
-                                         angle )
-        
-        newpos1 = CoM - ( self.sqrtD1D2 * newInterParticle / \
+        if angle % numpy.pi != 0.0:
+            rotationAxis = crossproductAgainstZAxis( oldInterParticle )
+            rotationAxis = normalize( rotationAxis )
+            rotated = rotateVector( newInterParticle,
+                                    rotationAxis,
+                                    angle )
+        elif angle == 0.0:
+            rotated = newInterParticle
+        else:
+            rotated = numpy.array( [newInterParticle[0],newInterParticle[1],
+                                    -newInterParticle[2]] )
+
+        newpos1 = CoM - ( self.sqrtD1D2 * rotated / \
                           ( self.sqrtD2D1 + self.sqrtD1D2 ) )
-        newpos2 = newpos1 + newInterParticle
+        newpos2 = newpos1 + rotated
+
+        print newpos1, newpos2
 
         return newpos1, newpos2
         
@@ -495,9 +507,9 @@ class Pair:
 
         assert t >= self.lastTime
 
-        if t - self.lastTime != 0.0:
+        dt = t - self.lastTime 
 
-            dt = t - self.lastTime 
+        if dt != 0.0:
 
             particle1 = self.single1.particle
             particle2 = self.single2.particle
@@ -509,33 +521,35 @@ class Pair:
             
             # calculate new CoM
             r_R = self.drawR_single( rnd[0], dt, self.a_R )
-            print dt, self.a_R, r_R
             
             displacement_R_S = [ r_R,
                                  rnd[1] * Pi,
                                  rnd[2] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = oldCoM + displacement_R \
-                     / ( self.sqrtD2D1 + self.sqrtD1D2 )
+            newCoM = oldCoM + displacement_R#\
+            #/ ( self.sqrtD2D1 + self.sqrtD1D2 )
             
             # calculate new interparticle
-            print ( rnd[3], self.a_r, self.r0, dt )
+            #print ( rnd[3], self.r0, dt )
             r_r = self.drawR_pair( rnd[3], self.r0, dt )
             theta_r = self.drawTheta_pair( rnd[4], r_r, self.r0, dt )
             phi_r = rnd[5] * 2 * Pi
             newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
-            
+
             newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
                                                   oldInterParticle )
 
             newpos1 = self.sim.applyBoundary( newpos1 )
             newpos2 = self.sim.applyBoundary( newpos2 )
 
+            dist = self.sim.distance( newpos1, newpos2 )
+
             self.checkNewpos( newpos1, newpos2 )
 
             particle1.setPos( newpos1 )
             particle2.setPos( newpos2 )
+
 
 
         self.releaseSingles()
@@ -681,6 +695,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
               'rejected moves', self.rejectedMoves
         assert self.scheduler.check()
         print ''
+
         
 
     def createSingle( self, particle ):
@@ -954,6 +969,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         particle1.setPos( newpos1 )
         particle2.setPos( newpos2 )
 
+        print newpos1, newpos2
+
         # here decide whether this pair still continues or breaks up
 
         pairClosest, pairClosestShellDistance =\
@@ -1066,7 +1083,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pair = self.createPair( single1, single2 )
             
         # find closest again; singles were propagated. can be faster?
-        _, pairClosestShellDistance =\
+        pairClosest, pairClosestShellDistance =\
            self.getClosestShell( pair.getCoM(),\
                                  ( pair, single1, single2 ) )
 
@@ -1087,7 +1104,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
 
-        print 'Pair formed: ', pair, 'shell size=', shellSize,\
+        print 'Pair formed: ', pair, 'shell size=', pair.getShellSize(),\
               ', closest = ', pairClosest,\
               ', distance to shell = ', pairClosestShellDistance
 
@@ -1104,7 +1121,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                     closestShellDistance ):
 
         # FIXME: should be larger when the GF impl is improved.
-        PairMakingFactor = 2
+        PairMakingFactor = 1.1
 
         # pair making criteria:
         # 1. Distance between particles to form a pair is closer than
@@ -1323,7 +1340,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             event = scheduler.getEventByIndex(i)
             print i, event.getTime(), event.getObj()
 
+    def dump( self ):
+        scheduler = self.scheduler
+        for i in range( scheduler.getSize() ):
+            event = scheduler.getEventByIndex(i)
+            print i, event.getTime(), event.getObj(), event.getObj().getPos()
 
+        
     def checkInvariants( self ):
 
         assert self.t >= 0.0

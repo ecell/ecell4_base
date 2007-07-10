@@ -60,8 +60,8 @@ class Logger:
             species = self.simulator.speciesList[ speciesName ]
             positions = species.pool.positions
 
-            filename = speciesName + '_' + str( self.fileCounter ) + '.dat'
-
+            filename = speciesName + '_' + '%04d' % self.fileCounter + '.dat'
+            print filename
             file = open( self.directory + os.sep + filename, 'w' )
             file.write( '# name: %s\n' % speciesName )
             file.write( '# radius: %f\n' % species.radius )

@@ -47,6 +47,10 @@ class UtilsTestCase( unittest.TestCase ):
                                       numpy.array([1.,9.,1.]), 10 )
         self.assertAlmostEqual( numpy.sqrt( 12. ), numpy.sqrt( distance ) )
 
+        distance = distanceSq_Cyclic( numpy.array([0,0,0]),
+                                      numpy.array([5,5,5]), 10 )
+        self.assertAlmostEqual( numpy.sqrt( 75. ), numpy.sqrt( distance ) )
+
     def test_distanceSqArray_Cyclic( self ):
 
         distance = distanceSqArray_Cyclic( numpy.array([1.,1.,1.]),

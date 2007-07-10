@@ -46,8 +46,7 @@ def addParticle( ren, pos, radius, color ):
         ren.AddActor( sphereActor )
 
 
-def writeFrame( infiles, outfile ):
-
+def writeFrame( infiles, outfile, renWin ):
 
     ren = vtk.vtkRenderer()
     ren.SetBackground( 1, 1, 1 )
@@ -62,8 +61,7 @@ def writeFrame( infiles, outfile ):
     
     ren.AddActor( cubeActor )
     
-    
-    renWin = vtk.vtkRenderWindow()
+
     renWin.AddRenderer( ren )
     renWin.SetSize( 400, 400 )
     #iren = vtk.vtkRenderWindowInteractor()
@@ -102,12 +100,15 @@ def writeFrame( infiles, outfile ):
     wr.SetInputConnection( w2if.GetOutputPort() )
     wr.SetFileName( outfile )
     wr.Write()
-        
+
+    renWin.RemoveRenderer( ren )
 
 
 
 
 def main():
+
+    print os.getcwd()
 
     tmpdir='tmpimg'
     outfile='out.mpeg'
@@ -115,15 +116,21 @@ def main():
     if not os.access( tmpdir, os.W_OK ):
         os.mkdir( tmpdir )
 
+
+    renWin = vtk.vtkRenderWindow()
+    renWin.MappedOff()
+    renWin.OffScreenRenderingOn()
+
     i = 0
     for filename in sys.argv[1:]:
         
         outfile = os.path.join( tmpdir, '%04d.png' % i )
         print outfile
-        writeFrame( (filename,), outfile )
+        writeFrame( (filename,), outfile, renWin )
         i += 1
 
-    subprocess.call( ['ffmpeg', '-y', '-i',  '%s/%%04d.png' % tmpdir, '-r', '24',
+
+    subprocess.call( ['ffmpeg', '-y', '-i',  './%s/%%04d.png' % tmpdir, '-r', '24',
                       outfile ] )
 
     #os.rmdir(tmpdir)

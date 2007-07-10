@@ -13,19 +13,19 @@ box1 = CuboidalSurface( [0,0,0],[1e-5,1e-5,1e-5] )
 # not supported yet
 #s.addSurface( box1 )
 
-P = Species( 'P', 2e-11, 1e-7 )
+P = Species( 'P', 1e-12, 1e-8 )
 s.addSpecies( P )
 
 s.setAllRepulsive()
 
-s.throwInParticles( 'P', 6, box1 )
+s.throwInParticles( 'P', 60, box1 )
 
 l = Logger( s, 'simple' )
 l.setParticleOutput( ('P',) )
-l.setInterval( 1e-4 )
+l.setInterval( 1e-2 )
 l.log()
 
-while s.t < 1:
+while s.t < 10:
     s.step()
     l.log()
     
