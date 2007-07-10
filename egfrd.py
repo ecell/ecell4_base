@@ -620,6 +620,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.lastEvent = None
 
+        self.clearPopulationChanged()
 
     def initialize( self ):
 
@@ -671,6 +672,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         #self.checkInvariants()
 
+        self.clearPopulationChanged()
+
         if self.isDirty:
             self.initialize()
 
@@ -692,6 +695,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         assert self.scheduler.check()
         print ''
 
+
+    def populationChanged( self ):
+        return self.isPopulationChanged
+
+    def clearPopulationChanged( self ):
+        self.isPopulationChanged = False
+
+    def setPopulationChanged( self ):
+        self.isPopulationChanged = True
         
 
     def createSingle( self, particle ):
@@ -887,6 +899,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.addSingle( newsingle )
 
                 self.reactionEvents += 1
+                self.setPopulationChanged()
                 
                 pair.dt = -1
                 return

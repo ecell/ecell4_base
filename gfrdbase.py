@@ -435,10 +435,6 @@ class GFRDSimulatorBase:
 
 
 
-    def isPopulationChanged( self ):
-        return self.nextReaction != None
-
-
     def nextReactionTime1( self, rt, pool ):
 
         if pool.size == 0:
