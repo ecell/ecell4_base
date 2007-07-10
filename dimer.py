@@ -30,7 +30,8 @@ s.throwInParticles( 'S', 60, box1 )
 s.throwInParticles( 'P', 0, box1 )
 
 l = Logger( s, 'dimer' )
-l.setInterval( 1e-6 )
+l.setParticleOutput( ('P',) )
+l.setInterval( 1e-3 )
 l.log()
 
 

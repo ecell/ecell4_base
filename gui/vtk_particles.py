@@ -81,6 +81,9 @@ def writeFrame( infiles, outfile, renWin ):
         except:
             i += 1
             continue
+
+        if data.shape == ( 3, ):
+            data = numpy.reshape( data, (1,3) )
         
         addParticles( ren, data, 0 ) #i )
         i += 1

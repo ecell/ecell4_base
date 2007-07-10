@@ -18,21 +18,21 @@ s.addSpecies( P )
 
 s.setAllRepulsive()
 
-s.throwInParticles( 'P', 60, box1 )
+s.throwInParticles( 'P', 600, box1 )
 
 l = Logger( s, 'simple' )
 l.setParticleOutput( ('P',) )
 l.setInterval( 1e-2 )
 l.log()
 
-while s.t < 10:
-    s.step()
-    l.log()
+#while s.t < 10:
+#    s.step()
+#    l.log()
     
 
-'''
+
 def profrun():
-    for i in range( 10 ):
+    for i in range( 100 ):
         s.step()
 
 import profile
@@ -42,4 +42,4 @@ pstats.Stats('fooprof').sort_stats('time').print_stats(30)
 
 
 sys.exit(1)
-'''
+

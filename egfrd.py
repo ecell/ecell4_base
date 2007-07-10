@@ -151,7 +151,7 @@ class Single:
     
     def burst( self, t ):
 
-        print 'b', self, 't ', t, 'last ', self.lastTime, 'dt ', self.dt
+        #print 'b', self, 't ', t, 'last ', self.lastTime, 'dt ', self.dt
         assert t >= self.lastTime
         assert t <= self.lastTime + self.dt
         assert self.getShellSize() >= self.getRadius()
@@ -315,8 +315,6 @@ class Pair:
         shellSize = self.a_R
         thresholdDistance = Pair.H * math.sqrt( 6.0 * self.D * t );
 
-        return self.sgf
-
         if shellSize < thresholdDistance:
             return self.sgf
         else:
@@ -431,8 +429,6 @@ class Pair:
         newpos1 = CoM - ( self.sqrtD1D2 * rotated / \
                           ( self.sqrtD2D1 + self.sqrtD1D2 ) )
         newpos2 = newpos1 + rotated
-
-        print newpos1, newpos2
 
         return newpos1, newpos2
         
@@ -738,7 +734,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #debug
         #self.checkShellForAll()
 
-        radius = single.getRadius()
+        radius1 = single.getRadius()
 
         # (1) propagate
         #
@@ -778,14 +774,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         # (3) determine new shell size and dt.
 
-        neighborShells, shellDistances = \
-                        self.getNeighborShells( single.getPos() )
-        closest = neighborShells[1]
-        distanceToClosestShell = shellDistances[1]
+        closest, distanceToClosestShell =\
+                 self.getClosestShell( single.getPos(), ignore = [ single, ] )
 
         pairDistance = self.distance( single.getPos(), closest.getPos() )
 
         ShellSizeDisparityFactor = 2
+
         radius1 = single.particle.species.radius
 
         if not closest.isPair():  # closest is a Single
@@ -793,7 +788,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             sqrtD1, sqrtD2 = math.sqrt( D1 ), math.sqrt( D2 )
             radius2 = closest.particle.species.radius
         
-            shellSize = min( sqrtD1 / ( sqrtD1 + sqrtD2 ) * pairDistance,
+            shellSize = min( sqrtD1 / ( sqrtD1 + sqrtD2 ) *
+                             ( pairDistance - radius1 - radius2 ) + radius1,
                              distanceToClosestShell )
         else: 
             # the closest is a Pair.
@@ -802,11 +798,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             shellSize = distanceToClosestShell
 
 
-        #shellSize = min( closest.getShellSize() * ShellSizeDisparityFactor
-        #+ ( distanceToClosestShell - radius ) * 0.5 + radius,
-        #distanceToClosestShell )
         shellSize = shellSize * ( 1.0 - 1e-8 ) # safety
-        shellSize = max( shellSize, radius ) # cannot be smaller than radius
+        shellSize = max( shellSize, radius1 ) # cannot be smaller than radius
 
         assert shellSize <= distanceToClosestShell
 
@@ -943,7 +936,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             # calculate new r
             print 'r0 = ', pair.r0, 'dt = ', pair.dt, pair.pgf.dump()
             r = pair.drawR_pair( rnd[0], pair.r0, pair.dt )
-            print ( rnd[1], r, pair.r0, pair.dt )
+            print 'new r = ', r
             theta_r = pair.drawTheta_pair( rnd[1], r, pair.r0, pair.dt )
             phi_r = rnd[2] * 2*Pi
             newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
@@ -979,6 +972,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                                      pair.single2 ) )
 
         if self.checkPairFormationCriteria( pair.single1, pair.single2,
+                                            pairClosest,
                                             pairClosestShellDistance ): 
 
             pairDistance = self.distance( pair.single1.getPos(),
@@ -1021,8 +1015,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # displace single1 a bit.
         origPos = single1.getPos().copy()
         displacement = math.sqrt( single1.particle.spedcies.D * 1e-9 * 6.0 )
-        while True:
-            pass
+        raise 'not implemented yet'
+
             
 
     def createPair( self, single1, single2 ):
@@ -1073,6 +1067,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 raise SqueezingException( single1, single2, closest )
         
         if not self.checkPairFormationCriteria( single1, single2,
+                                                pairClosest,
                                                 pairClosestShellDistance ):
             return None
 
@@ -1118,10 +1113,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     '''
 
     def checkPairFormationCriteria( self, single1, single2,
-                                    closestShellDistance ):
+                                    closest, closestShellDistance ):
 
         # FIXME: should be larger when the GF impl is improved.
-        PairMakingFactor = 1.1
+        PairMakingFactor = 5
 
         # pair making criteria:
         # 1. Distance between particles to form a pair is closer than
@@ -1138,7 +1133,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         radius2 = species2.radius
         radius12 = radius1 + radius2
 
-        pairDistance = self.distance( single1.getPos(), single2.getPos() )
+        pos1, pos2 = single1.getPos(), single2.getPos()
+        pairDistance = self.distance( pos1, pos2 )
 
         # 1
         if pairDistance > radius12 * PairMakingFactor:
@@ -1146,8 +1142,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
         # 2
         
-        # Shell size of this pair must be at least larger
-        # than max( r0 * D1/(D1+D2)+raidus1, r0 * D2/(D1+D2)+radius2 )
+        # Shell size of this pair must be at least larger than
+        # rmax = max( r0 * D1/(D1+D2)+raidus1, r0 * D2/(D1+D2)+radius2 )
         
         # here add single12's mobility radii when the singles are still
         # on the fly.
@@ -1162,6 +1158,17 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                   ( closestShellDistance, rmax )
             return False
 
+        # 3 finally, check if Pair is better than two Singles.
+        closestShellSize = closest.getShellSize()
+        singleMobility = min( pairDistance - radius12,
+                              min( self.distance( pos1, closest.getPos() )
+                                   - closestShellSize,
+                                   self.distance( pos2, closest.getPos() )
+                                   - closestShellSize ) )
+        pairMobility = closestShellDistance - rmax
+        if singleMobility >= pairMobility:
+            return False
+        
         return True
     
         
