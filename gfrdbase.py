@@ -377,6 +377,8 @@ class GFRDSimulatorBase:
                 position = surface.randomPosition()
                 if self.checkOverlap( position, species.radius ):
                     break
+                else:
+                    print _
             
             species.newParticle( position )
 

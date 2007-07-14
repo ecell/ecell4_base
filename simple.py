@@ -6,19 +6,21 @@ from logger import *
 import sys
 
 s = EGFRDSimulator()
-s.setCellSize( 1e-5 )
+size = 5e-6
+s.setCellSize( size )
 
 
-box1 = CuboidalSurface( [0,0,0],[1e-5,1e-5,1e-5] )
+box1 = CuboidalSurface( [0,0,0],[size,size,size])
 # not supported yet
 #s.addSurface( box1 )
 
-P = Species( 'P', 1e-12, 1e-8 )
+#P = Species( 'P', 1e-12, 5e-8 )
+P = Species( 'P', 1e-12, 3e-9 ) #hemo
 s.addSpecies( P )
 
 s.setAllRepulsive()
 
-s.throwInParticles( 'P', 600, box1 )
+s.throwInParticles( 'P', 60*125, box1 )
 
 l = Logger( s, 'simple' )
 l.setParticleOutput( ('P',) )

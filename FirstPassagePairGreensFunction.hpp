@@ -10,13 +10,6 @@
 #include "PairGreensFunction.hpp"
 
 
-
-enum EventType
-{
-    REACTION = 0,
-    ESCAPE = 1
-};
-
 class FirstPassagePairGreensFunction
     :
     public PairGreensFunction

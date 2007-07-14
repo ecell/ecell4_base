@@ -1027,7 +1027,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def recoverSqueezed( self, single1, single2, single3 ):
         # displace single1 a bit.
         origPos = single1.getPos().copy()
-        displacement = math.sqrt( single1.particle.spedcies.D * 1e-9 * 6.0 )
+        displacement = math.sqrt( single1.particle.species.D * 1e-9 * 6.0 )
         raise 'not implemented yet'
 
             

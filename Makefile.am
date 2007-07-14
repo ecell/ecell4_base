@@ -50,7 +50,8 @@ FreeGreensFunction.hpp\
 FirstPassageGreensFunction.hpp\
 PlainPairGreensFunction.hpp\
 FreePairGreensFunction.hpp\
-FirstPassagePairGreensFunction.hpp
+FirstPassagePairGreensFunction.hpp\
+FirstPassageNoCollisionPairGreensFunction.hpp
 
 
 
@@ -60,6 +61,7 @@ FirstPassageGreensFunction.cpp\
 PlainPairGreensFunction.cpp\
 FreePairGreensFunction.cpp\
 FirstPassagePairGreensFunction.cpp\
+FirstPassageNoCollisionPairGreensFunction.cpp\
 bessel.cpp\
 pyGFRD.cpp
 

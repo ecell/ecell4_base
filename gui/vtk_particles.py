@@ -12,11 +12,12 @@ import numpy
 import scipy.io
 
 
-zoom = 1e5
-size = 1e-5  * zoom
+zoom = 1e6
+size = 5e-6  * zoom
 #size = 2.1544e-7  * zoom
 
-radii = [ 1e-7, 3.2e-9, 4.02e-9 ]
+#radii = [ 5e-8, 3.2e-9, 4.02e-9 ]
+radii = [ 3e-9,]
 
 
 colors = [ (1, .2, .2 ),  ( .2,.2,1 ), ( .8, .8, .3 )]
@@ -63,7 +64,7 @@ def writeFrame( infiles, outfile, renWin ):
     
 
     renWin.AddRenderer( ren )
-    renWin.SetSize( 400, 400 )
+    renWin.SetSize( 800, 800 )
     #iren = vtk.vtkRenderWindowInteractor()
     #iren.SetRenderWindow(renWin)
     
