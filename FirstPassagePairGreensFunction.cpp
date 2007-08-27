@@ -1455,7 +1455,7 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
     const Real a( this->geta() );
 
     THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+    THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
 
     if( t == 0.0 )
     {

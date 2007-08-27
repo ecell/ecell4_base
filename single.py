@@ -6,7 +6,7 @@ from logger import *
 import sys
 
 s = GFRDSimulator()
-s.setSize( 1e-5 )
+s.setCellSize( 1e-5 )
 S = Species( 'S', 2e-11, 5e-8 )
 s.addSpecies( S )
 P = Species( 'P', 0.0, 7e-8 )
@@ -23,7 +23,7 @@ s.addReactionType( r2 )
 #s.setAllRepulsive()
 
 s.placeParticle( 'P', [0,0,0] )
-s.throwInParticles( 'S', 100 )
+s.throwInParticles( 'S', 1 )
 
 
 l = Logger( s, 'dimer' )

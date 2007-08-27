@@ -31,7 +31,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
             s.step()
         self.failIf( t == s.getTime() )
 
-    def test_TwoParticles( self ):
+    def no_test_TwoParticles( self ):
         s = EGFRDSimulator()
         s.setCellSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
@@ -44,7 +44,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
             s.step()
         self.failIf( t == s.getTime() )
 
-    def test_ThreeParticles( self ):
+    def no_test_ThreeParticles( self ):
         s = EGFRDSimulator()
         s.setCellSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
@@ -59,7 +59,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         self.failIf( t == s.getTime() )
 
 
-    def test_ThreeParticlesInContact( self ):
+    def no_test_ThreeParticlesInContact( self ):
         s = EGFRDSimulator()
         s.setCellSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )

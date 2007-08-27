@@ -13,7 +13,7 @@ import scipy.io
 
 
 zoom = 1e6
-size = 5e-6  * zoom
+size = 1e-6  * zoom
 #size = 2.1544e-7  * zoom
 
 #radii = [ 5e-8, 3.2e-9, 4.02e-9 ]
@@ -58,13 +58,16 @@ def writeFrame( infiles, outfile, renWin ):
     cubeMapper.SetInputConnection( cube.GetOutputPort() )
     cubeActor = vtk.vtkActor()
     cubeActor.SetMapper( cubeMapper )
-    cubeActor.GetProperty().SetOpacity( 0.2 )
-    
+
+    cubeActor.GetProperty().SetRepresentationToWireframe()
+#    cubeActor.GetProperty().EdgeVisibilityOn()
+#     cubeActor.GetProperty().SetEdgeColor( 1.,1.,0.)
+    cubeActor.GetProperty().SetOpacity( 0.1 )    
     ren.AddActor( cubeActor )
     
 
     renWin.AddRenderer( ren )
-    renWin.SetSize( 800, 800 )
+    renWin.SetSize( 400, 400 )
     #iren = vtk.vtkRenderWindowInteractor()
     #iren.SetRenderWindow(renWin)
     
@@ -91,7 +94,9 @@ def writeFrame( infiles, outfile, renWin ):
 
     ren.ResetCamera(0,size,0,size,0,size)
     camera = ren.GetActiveCamera()
-    camera.Zoom(1.3)
+    camera.Zoom(1.4)
+    pos = camera.GetPosition()
+    camera.SetPosition(pos[0]*1.6, pos[1]*1.4, pos[2] )
     #camera.Dolly(1.5)
     #camera.SetDistance(.1)
 

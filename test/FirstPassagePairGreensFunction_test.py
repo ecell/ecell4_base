@@ -138,6 +138,22 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         r = gf.drawR( 0.5, r0, t )
         self.assertEqual( r0, r )
 
+    def test_DrawR_3( self ):
+        r0 =  2.17347820755e-08
+        t =  1.18837787599e-06 
+        D = 2e-12
+        sigma = 6e-09
+        a = 2.77628e-08
+        kf = 0
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        r = gf.drawR( 0.5, r0, t )
+        print r
+        self.failIf( True )
+
+
 
     def test_DrawR_squeezed( self ):
 

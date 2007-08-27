@@ -367,9 +367,12 @@ class Pair:
     '''
     Draw r for the pair inter-particle vector.
     '''
-    def drawR_pair( self, rnd, r0, t ):
+    def drawR_pair( self, rnd, r0, t, a ):
 
         gf = self.choosePairGreensFunction( r0, t )
+
+        if hasattr( gf, 'seta' ):  # FIXME: not clean
+            gf.seta( a )
 
         r = gf.drawR( rnd, r0, t )
         while r > self.a_r or r <= self.sigma: # redraw; shouldn't happen often
@@ -450,6 +453,11 @@ class Pair:
 
         self.r0 = self.sim.distance( pos1, pos2 )
 
+        #FIXME: not good
+        if self.r0 < self.sigma:
+            self.r0 = self.sigma
+
+
         factor_1 = D1 / self.D
         factor_2 = D2 / self.D
         r0_1 = self.r0 * D1 / self.D
@@ -527,7 +535,7 @@ class Pair:
             
             # calculate new interparticle
             #print ( rnd[3], self.r0, dt )
-            r_r = self.drawR_pair( rnd[3], self.r0, dt )
+            r_r = self.drawR_pair( rnd[3], self.r0, dt, self.a_r )
             theta_r = self.drawTheta_pair( rnd[4], r_r, self.r0, dt )
             phi_r = rnd[5] * 2 * Pi
             newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
@@ -948,8 +956,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             # calculate new r
             print 'r0 = ', pair.r0, 'dt = ', pair.dt, pair.pgf.dump()
-            r = pair.drawR_pair( rnd[0], pair.r0, pair.dt )
+            r = pair.drawR_pair( rnd[0], pair.r0, pair.dt, pair.a_r )
             print 'new r = ', r
+            #assert r >= pair.sigma
+
             theta_r = pair.drawTheta_pair( rnd[1], r, pair.r0, pair.dt )
             phi_r = rnd[2] * 2*Pi
             newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
@@ -971,6 +981,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         newpos1 = self.applyBoundary( newpos1 )
         newpos2 = self.applyBoundary( newpos2 )
+
+        #assert self.distance( newpos1, newpos2 ) >= pair.sigma
 
         particle1.setPos( newpos1 )
         particle2.setPos( newpos2 )
@@ -1142,6 +1154,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         D1 = species1.D
         D2 = species2.D
         D12 = D1 + D2
+
         radius1 = species1.radius
         radius2 = species2.radius
         radius12 = radius1 + radius2
