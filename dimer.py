@@ -18,7 +18,7 @@ s.addSpecies( S )
 P = Species( 'P', 1e-11, 7e-8 )
 s.addSpecies( P )
 
-r1 = BindingReactionType( S, S, P, numpy.inf ) #1e18 / N_A )
+r1 = BindingReactionType( S, S, P, 1e18 / N_A )
 s.addReactionType( r1 )
 #r2 = UnimolecularReactionType( P, S, 1e3 )
 #r2 = UnbindingReactionType( P, S, S, 5e1 )

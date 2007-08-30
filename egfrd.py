@@ -208,7 +208,7 @@ class Pair:
     # Green's functions.
     # H = 4.0: ~3e-5, 4.26: ~1e-6, 5.0: ~3e-7, 5.2: ~1e-7,
     # 5.6: ~1e-8, 6.0: ~1e-9
-    H = 5.6
+    CUTOFF_FACTOR = 5.6
 
 
     def __init__( self, sim, single1, single2, rt ):
@@ -313,7 +313,7 @@ class Pair:
     def chooseSingleGreensFunction( self, t ):
 
         shellSize = self.a_R
-        thresholdDistance = Pair.H * math.sqrt( 6.0 * self.D * t );
+        thresholdDistance = Pair.CUTOFF_FACTOR * math.sqrt( 6.0 * self.D * t )
 
         if shellSize < thresholdDistance:
             return self.sgf
@@ -326,28 +326,32 @@ class Pair:
         distanceFromSigma = r0 - self.sigma
         distanceFromShell = self.a_r - r0;
 
-        thresholdDistance = Pair.H * math.sqrt( 6.0 * self.D * t );
+        thresholdDistance = Pair.CUTOFF_FACTOR * math.sqrt( 6.0 * self.D * t )
 
         if distanceFromSigma < thresholdDistance:
         
             if distanceFromShell < thresholdDistance:
                 # near both a and sigma;
                 # use FirstPassagePairGreensFunction
+                print 'normal'
                 return self.pgf
             else:
                 # near sigma; use PlainPairGreensFunction
 
                 #FIXME:
+                print 'near only sigma'
                 return self.pgf
         else:
             if distanceFromShell < thresholdDistance:
                 # near a;
 
                 #FIXME:
+                print 'near only a'
                 return self.pgf
                 
             else:
                 # distant from both a and sigma; 
+                print 'free'
                 return self.pgf_free
 
 
@@ -475,7 +479,7 @@ class Pair:
         self.a_r = self.r0 + margin * .5
         self.a_R = margin * .5
 
-        print 'ar0', self.a_r, self.r0
+        print 'a r0', self.a_r, self.r0
         assert self.a_r > self.r0
 
         rnd = numpy.random.uniform( size=3 )
@@ -487,7 +491,7 @@ class Pair:
             self.pgf.seta( self.a_r )
             self.t_r = self.pgf.drawTime( rnd[1], self.r0 )
         except:
-            print self.r0, self.pgf.dump()
+            print 'dump', self.pgf.dump()
             raise
 
         if self.t_R < self.t_r:

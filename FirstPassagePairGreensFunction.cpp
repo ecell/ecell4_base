@@ -95,8 +95,8 @@ FirstPassagePairGreensFunction::f_alpha0( const Real alpha ) const
 const Real 
 FirstPassagePairGreensFunction::f_alpha0_aux( const Real alpha ) const
 {
-    const Real a( geta() );
-    const Real sigma( getSigma() );
+    const Real a( this->geta() );
+    const Real sigma( this->getSigma() );
 
     const Real term1( ( a - sigma ) * alpha );
 
@@ -128,7 +128,9 @@ FirstPassagePairGreensFunction::alpha0_i( const Integer i ) const
 {
     THROW_UNLESS( std::out_of_range, i >= 0 );
 
+    const Real a( this->geta() );
     const Real sigma( this->getSigma() );
+
 
     const Real target( i * M_PI + M_PI_2 );
     f_alpha0_aux_params params = { this, target };
@@ -141,13 +143,10 @@ FirstPassagePairGreensFunction::alpha0_i( const Integer i ) const
 	};
 
 
-    // We know the range of the solution from - Pi/2 <= atan <= Pi.
+    // We know the range of the solution from - Pi/2 <= atan <= Pi/2.
     const Real interval( M_PI / ( a - sigma ) );
-    Real low( i * interval + std::numeric_limits<Real>::epsilon() );
+    Real low( i * interval );// + std::numeric_limits<Real>::epsilon() );
     Real high( (i+1) * interval );
-
-//    printf("lowvalue %g\n",GSL_FN_EVAL( &F, low ));
-//    printf("highvalue %g\n",GSL_FN_EVAL( &F, high ));
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -947,7 +946,7 @@ void
 FirstPassagePairGreensFunction::
 createPsurvTable( RealVector& psurvTable, const Real r0 ) const
 {
-    const RealVector& alphaTable_0( this->getAlphaTable(0) );
+    const RealVector& alphaTable_0( this->getAlphaTable( 0 ) );
 
     psurvTable.clear();
     psurvTable.reserve( alphaTable_0.size() );
@@ -1321,7 +1320,6 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	return 0.0;
     }
 
-
     Real low( 1e-5 );
     Real high( 1.0 );
 
@@ -1372,7 +1370,6 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	this->updateAlphaTable0( low );
 	this->createPsurvTable( psurvTable, r0 );
     }
-
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
