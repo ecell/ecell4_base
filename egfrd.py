@@ -238,7 +238,6 @@ class Pair:
         
         self.sigma = particle1.species.radius + particle2.species.radius
 
-        #self.sgf = FirstPassageGreensFunction( self.D / 4.0 )
         self.sgf = FirstPassageGreensFunction( self.D )
         self.sgf_free = FreeGreensFunction( self.D )
         self.pgf = FirstPassagePairGreensFunction( self.D, rt.k, self.sigma )
@@ -1183,7 +1182,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     pairDistance * D2 / D12 + radius2
                     + single2.getMobilityRadius() )
         
-        if closestShellDistance < rmax * 1.0:  # margin
+        if closestShellDistance < rmax * 1.1:  # margin
             print 'closestShellDistance < rmax; %g, %g' % \
                   ( closestShellDistance, rmax )
             return False

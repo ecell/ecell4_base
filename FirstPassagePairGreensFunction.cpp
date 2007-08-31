@@ -1422,7 +1422,7 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     const Real a( this->geta() );
 
     THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+    THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
     THROW_UNLESS( std::invalid_argument, t > 0.0 );
 
     // leaves() and leavea() call updateAlphaTable0(). redundant?
@@ -1820,8 +1820,8 @@ FirstPassagePairGreensFunction::p_theta( const Real theta,
 	
 	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
         // r \in ( sigma, a );  not defined at r == sigma and r == a.
-	THROW_UNLESS( std::invalid_argument, r > sigma && r < a );
-	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+	THROW_UNLESS( std::invalid_argument, r >= sigma && r < a );
+	THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
 	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
 
@@ -1855,7 +1855,7 @@ FirstPassagePairGreensFunction::dp_theta( const Real theta,
         // r \in [ sigma, a ]  ;  unlike p_theta,
         // defined at r == sigma and r == a.
 	THROW_UNLESS( std::invalid_argument, r >= sigma && r <= a );
-	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+	THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
 	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
 
@@ -1966,8 +1966,8 @@ FirstPassagePairGreensFunction::ip_theta( const Real theta,
 	
 	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
         // r \in ( sigma, a )
-	THROW_UNLESS( std::invalid_argument, r > sigma && r < a );
-	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+	THROW_UNLESS( std::invalid_argument, r >= sigma && r < a );
+	THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
 	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
 
@@ -1999,7 +1999,7 @@ FirstPassagePairGreensFunction::idp_theta( const Real theta,
 	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
         // r \in [ sigma, a ]
 	THROW_UNLESS( std::invalid_argument, r >= sigma && r <= a );
-	THROW_UNLESS( std::invalid_argument, r0 > sigma && r0 < a );
+	THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
 	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
 
