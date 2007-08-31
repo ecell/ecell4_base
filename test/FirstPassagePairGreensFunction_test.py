@@ -76,6 +76,20 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         t = gf.drawTime( 0.5, r0 )
         self.assertEqual( 0.0, t )
 
+    def test_DrawTime_r0_equal_sigma( self ):
+        D = 1e-12
+        kf = 0.0 # note this
+        sigma = 1e-8
+        a = 1e-7
+        r0 = sigma
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        t = gf.drawTime( 0.5, r0 )
+        self.failIf( t < 0.0 or t >= numpy.inf )
+
+
 
     def test_DrawEventType( self ):
         D = 1e-12
@@ -138,22 +152,21 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         r = gf.drawR( 0.5, r0, t )
         self.assertEqual( r0, r )
 
-    def test_DrawR_3( self ):
-        r0 =  2.17347820755e-08
-        t =  1.18837787599e-06 
-        D = 2e-12
-        sigma = 6e-09
-        a = 2.77628e-08
-        kf = 0
+
+    def test_DrawR_r0_equal_sigma( self ):
+        D = 1e-12
+        kf = 1e-8
+        sigma = 1e-8
+        a = 1e-7
+        r0 = sigma
+
+        t = 1e-3
         
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         r = gf.drawR( 0.5, r0, t )
-        print r
-        self.failIf( True )
-
-
+        self.failIf( r < sigma or r > a )
 
     def test_DrawR_squeezed( self ):
 
@@ -265,6 +278,23 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         # near a
         r = 1.0099e-8
         r0 = 1.0099e-8
+        theta = gf.drawTheta( 0.5, r, r0, t )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
+
+    def test_DrawTheta_r0_equal_sigma( self ):
+        D = 1e-12
+        kf = 1e-8
+        sigma = 1e-8
+        a = 1e-7
+        r0 = sigma
+
+        t = 1e-3
+        r = r0
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
