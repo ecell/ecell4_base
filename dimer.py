@@ -37,7 +37,7 @@ l.log()
 
 while s.t < 100:
     s.step()
-    l.log()
+#    l.log()
     
 
 '''

@@ -1182,8 +1182,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     pairDistance * D2 / D12 + radius2
                     + single2.getMobilityRadius() )
         
-        if closestShellDistance < rmax * 1.1:  # margin
-            print 'closestShellDistance < rmax; %g, %g' % \
+        if closestShellDistance < rmax * 1.05:  # margin
+            print 'closestShellDistance < rmax * margin; %g, %g' % \
                   ( closestShellDistance, rmax )
             return False
 
