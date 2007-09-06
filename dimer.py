@@ -20,14 +20,13 @@ s.addSpecies( P )
 
 r1 = BindingReactionType( S, S, P, 1e18 / N_A )
 s.addReactionType( r1 )
-#r2 = UnimolecularReactionType( P, S, 1e3 )
-#r2 = UnbindingReactionType( P, S, S, 5e1 )
-#s.addReactionType( r2 )
+r2 = UnbindingReactionType( P, S, S, 1e3 )
+s.addReactionType( r2 )
 
 s.setAllRepulsive()
 
-s.throwInParticles( 'S', 60, box1 )
-s.throwInParticles( 'P', 0, box1 )
+s.throwInParticles( S, 0, box1 )
+s.throwInParticles( P, 60, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )

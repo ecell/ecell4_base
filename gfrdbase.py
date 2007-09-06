@@ -260,6 +260,8 @@ class GFRDSimulatorBase:
 
         return pos
 
+    def getReactionType1( self, species ):
+        return self.reactionTypeMap1.get( species, None )
 
     def getReactionType2( self, species1, species2 ):
         return self.reactionTypeMap2.get( ( species1, species2 ), None )
@@ -340,18 +342,22 @@ class GFRDSimulatorBase:
 
         numReactants = len( r.reactants )
 
-
         if numReactants == 1:
             species1 = r.reactants[0]
+            if self.reactionTypeMap1.has_key( species1 ):
+                raise RuntimeError,\
+                      'Multiple single reactions for a Species not supported.'
             self.reactionTypeMap1[species1] = r
+
         elif numReactants == 2:
             species1 = r.reactants[0]
             species2 = r.reactants[1]
             self.reactionTypeMap2[ (species1,species2) ] = r
             if species1 != species2:
                 self.reactionTypeMap2[ (species2,species1) ] = r
+
         else:
-            raise RuntimeError, 'unexpected'
+            raise RuntimeError, 'Invalid ReactionType.'
 
     def setAllRepulsive( self ):
         for species1 in self.speciesList.values():
@@ -364,11 +370,9 @@ class GFRDSimulatorBase:
                                                                    species2 )
         
 
-    def throwInParticles( self, id, n, surface=[] ):
-        print 'throwing in %s %s particles' % ( n, id )
+    def throwInParticles( self, species, n, surface=[] ):
+        print 'throwing in %s %s particles' % ( n, species.id )
 
-        species = self.speciesList[ id ]
-        
         for _ in range( n ):
 
             while True:
@@ -384,10 +388,9 @@ class GFRDSimulatorBase:
 
 
 
-    def placeParticle( self, id, pos ):
+    def placeParticle( self, species, pos ):
 
         pos = numpy.array( pos )
-        species = self.speciesList[ id ]
 
         if not self.checkOverlap( pos, species.radius ):
             raise RuntimeError, 'placeParticle: overlap check failed'

@@ -22,6 +22,8 @@ class Single:
         self.sim = sim
         self.lastTime = 0.0
         self.dt = 0.0
+        self.eventType = None
+
         self.setShellSize( self.getRadius() )
         self.eventID = None
 
@@ -91,7 +93,11 @@ class Single:
         return self.getShellSize() - self.getRadius()
 
 
-    def propagate( self, r, t ):
+    #def propagateByDt( self, dt ):
+        
+        
+
+    def propagate( self, r ):
 
         rnd = numpy.random.uniform( size=2 )
 
@@ -103,8 +109,6 @@ class Single:
 
         # BOUNDARY
         pos = self.sim.applyBoundary( pos )
-
-        self.lastTime = t
 
 
     '''
@@ -119,6 +123,7 @@ class Single:
 
         self.setShellSize( self.getRadius() )
         self.dt = 0.0
+        self.eventType = EventType.ESCAPE
         
 
     '''
@@ -163,12 +168,35 @@ class Single:
             rnd = numpy.random.uniform()
             self.gf.seta( self.getMobilityRadius() )
             r = self.gf.drawR( rnd , dt )
-            self.propagate( r, t )  # self.lastTime = t
+            self.propagate( r )
+            self.lastTime = t
 
         self.resetShell()
         assert self.dt == 0.0
         self.sim.updateEvent( t, self )
 
+    def determineNextEvent( self ):
+        firstPassageTime = self.calculateFirstPassageTime()
+        reactionTime = self.calculateReactionTime()
+
+        if firstPassageTime <= reactionTime:
+            self.dt = firstPassageTime
+            self.eventType = EventType.ESCAPE
+        else:
+            self.dt = reactionTime
+            self.eventType = EventType.REACTION
+
+
+    def calculateReactionTime( self ):
+
+        reactionType = self.sim.getReactionType1( self.particle.species )
+        if reactionType == None:
+            return numpy.inf
+
+        rnd = numpy.random.uniform()
+        dt = ( 1.0 / reactionType.k ) * math.log( 1.0 / rnd )
+
+        return dt
 
     def calculateFirstPassageTime( self ):
         
@@ -697,7 +725,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         event = self.scheduler.getTopEvent()
         nextTime, nextEvent = event.getTime(), event.getObj()
-        self.dt = nextTime - self.t
+        #self.dt = nextTime - self.t
+        self.dt = nextEvent.dt
 
         assert self.scheduler.getSize() != 0
 
@@ -751,11 +780,96 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def updateEvent( self, t, event ):
         self.scheduler.updateEvent( event.eventID, t, event )
 
+    def fireSingleReaction( self, single ):
+
+        single.gf.seta( single.getMobilityRadius() )
+        dr = single.gf.drawR( numpy.random.uniform(), single.dt )
+        
+        single.propagate( dr )
+        single.lastTime = self.t
+        
+        rt = self.getReactionType1( single.particle.species )
+        pos = single.getPos().copy()
+        
+        if len( rt.products ) == 0:
+            
+            self.removeParticle( single.particle )
+            
+        elif len( rt.products ) == 1:
+            
+            productSpecies = rt.products[0]
+            
+            self.removeParticle( single.particle )
+            
+            newparticle = self.placeParticle( productSpecies, pos )
+            newsingle = self.createSingle( newparticle )
+            newsingle.initialize()
+            self.addSingle( newsingle )
+            
+        elif len( rt.products ) == 2:
+            
+            productSpecies1 = rt.products[0]
+            productSpecies2 = rt.products[1]
+            
+            D1 = productSpecies1.D
+            D2 = productSpecies2.D
+            
+            self.removeParticle( single.particle )
+            
+            unitVector = randomUnitVector()
+            
+            #print 'unit', self.distance( unitVector, numpy.array([0,0,0]) )
+            radius1 = productSpecies1.radius
+            radius2 = productSpecies2.radius
+            distance = radius1 + radius2
+            vector = unitVector * ( distance * 1.01 ) # safety
+            
+            # place particles according to the ratio D1:D2
+            # this way, species with D=0 doesn't move.
+            # FIXME: what if D1 == D2 == 0?
+            newpos1 = pos + vector * ( D1 / ( D1 + D2 ) )
+            newpos2 = pos - vector * ( D2 / ( D1 + D2 ) )
+            
+            #FIXME: check surfaces here
+            
+            newpos1 = self.applyBoundary( newpos1 )
+            newpos2 = self.applyBoundary( newpos2 )
+            
+            # debug
+            d = self.distance( newpos1, newpos2 )
+            if d < distance:
+                raise "d = %s, %s" %( d, distance)
+
+            particle1 = self.placeParticle( productSpecies1, newpos1 )
+            particle2 = self.placeParticle( productSpecies2, newpos2 )
+            newsingle1 = self.createSingle( particle1 )
+            newsingle2 = self.createSingle( particle2 )
+            newsingle1.initialize()
+            newsingle2.initialize()
+            
+            self.addSingle( newsingle1 )
+            self.addSingle( newsingle2 )
+
+        else:
+            raise RuntimeError, 'num products >= 3 not supported.'
+
+        self.reactionEvents += 1
+        self.setPopulationChanged()
+
 
     def fireSingle( self, single ):
 
         #debug
         #self.checkShellForAll()
+
+        if single.eventType == EventType.REACTION:
+
+            self.fireSingleReaction( single )
+
+            single.dt = -1  # remove this Single from the Scheduler
+            return
+
+        # below, single.eventType == EventType.ESCAPE:
 
         radius1 = single.getRadius()
 
@@ -763,8 +877,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #
         # Propagate this particle to the exit point on the surface.
         
-        single.propagate( single.getMobilityRadius(), self.t )
-
+        single.propagate( single.getMobilityRadius() )
+        single.lastTime = self.t
+        
 
         # (2) pair check
         # First, find the closest particle.
@@ -827,7 +942,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         assert shellSize <= distanceToClosestShell
 
         single.setShellSize( shellSize )
-        single.dt = single.calculateFirstPassageTime()
+        single.determineNextEvent()
 
         print 'single shell', single.getShellSize(), 'dt', single.dt
 
