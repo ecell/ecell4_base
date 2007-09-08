@@ -63,6 +63,19 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         t = gf.drawTime( 0.5, r0 )
         self.assertEqual( 0.0, t )
 
+    def test_DrawTime_a_near_sigma( self ):
+        D = 1e-12
+        kf = 1e-8
+        sigma = 1e-8
+        a = sigma + sigma * 1e-6
+        r0 = (a + sigma) * .5
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        t = gf.drawTime( 0.5, r0 )
+        self.failIf( t <= 0.0 or t >= numpy.inf )
+
     def test_DrawTime_r0_equal_a( self ):
         D = 1e-12
         kf = 1e-8
@@ -82,6 +95,19 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         a = 1e-7
         r0 = sigma
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        t = gf.drawTime( 0.5, r0 )
+        self.failIf( t < 0.0 or t >= numpy.inf )
+
+    def test_DrawTime_r0_equal_sigma_kf_nonzero( self ):
+        D = 1e-12
+        kf = 1e-3
+        sigma = 1e-8
+        a = 1e-7
+        r0 = sigma + 1e-12
         
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )

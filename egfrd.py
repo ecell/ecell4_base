@@ -232,7 +232,7 @@ def getPairCoM( pos1, pos2, D1, D2, fsize ):
 
 class Pair:
     
-    # H is a threshold to choose between the real and approximate
+    # CUTOFF_FACTOR is a threshold to choose between the real and approximate
     # Green's functions.
     # H = 4.0: ~3e-5, 4.26: ~1e-6, 5.0: ~3e-7, 5.2: ~1e-7,
     # 5.6: ~1e-8, 6.0: ~1e-9
@@ -654,12 +654,17 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.scheduler = EventScheduler()
 
         self.t = 0.0
-        self.dtMax = INF
         self.dt = INF
+
+        self.maxDt = INF
+        self.minDt = 1e-12
+
 
         self.lastEvent = None
 
         self.clearPopulationChanged()
+
+        self.squeezed = 0
 
     def initialize( self ):
 
@@ -725,13 +730,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         event = self.scheduler.getTopEvent()
         nextTime, nextEvent = event.getTime(), event.getObj()
-        #self.dt = nextTime - self.t
-        self.dt = nextEvent.dt
+        self.dt = nextTime - self.t
 
         assert self.scheduler.getSize() != 0
 
         print 'next dt = ', self.dt, 'reactions', self.reactionEvents,\
-              'rejected moves', self.rejectedMoves
+              'rejected moves', self.rejectedMoves, 'squeezed', self.squeezed
         assert self.scheduler.check()
         print ''
 
@@ -747,35 +751,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
 
     def createSingle( self, particle ):
-        single = Single( self, particle )
-        return single
+        return Single( self, particle )
 
     def addSingle( self, single ):
         self.addEvent( self.t + single.dt, single )
 
-#     def findSingleByParticle( particle ):
-#         scheduler = self.scheduler
-#         for i in range( scheduler.getSize() ):
-#             obj = scheduler.getEventByIndex(i)[1]
-#             if obj.hasattr( 'particle' ):
-#                 if obj.particle == particle:
-#                     return obj
-
-#     def removeParticle( self, particle ):
-#         single = self.findSingle( particle )
-#         self.removeSingle( single )
-#         particle.species.removeParticleBySerial( particle.serial )
-
-
     def addEvent( self, t, event ):
-        assert self.scheduler.check()
         event.eventID = self.scheduler.addEvent( t, event )
-        assert self.scheduler.check()
 
     def removeEvent( self, event ):
-        assert self.scheduler.check()
         self.scheduler.removeEvent( event.eventID )
-        assert self.scheduler.check()
 
     def updateEvent( self, t, event ):
         self.scheduler.updateEvent( event.eventID, t, event )
@@ -822,7 +807,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             radius1 = productSpecies1.radius
             radius2 = productSpecies2.radius
             distance = radius1 + radius2
-            vector = unitVector * ( distance * 1.01 ) # safety
+            vector = unitVector * ( distance * (1.0+1e-10) ) # safety
             
             # place particles according to the ratio D1:D2
             # this way, species with D=0 doesn't move.
@@ -862,6 +847,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #debug
         #self.checkShellForAll()
 
+        # Reaction.
         if single.eventType == EventType.REACTION:
 
             self.fireSingleReaction( single )
@@ -869,7 +855,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             single.dt = -1  # remove this Single from the Scheduler
             return
 
-        # below, single.eventType == EventType.ESCAPE:
+        # If not reaction, simply propagate.
 
         radius1 = single.getRadius()
 
@@ -894,20 +880,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # Try forming a Pair if the closest is a Single.
         if not closest.isPair():
 
-            try:
-                pair = self.formPair( single, closest )
-                if pair:
-                    # if a Pair was formed, destroy the pair singles including
-                    # self (by rescheduling to the past).
-                    pair.determineNextEvent()
-                    print 'pair dt', pair.dt
-                    self.addEvent( self.t + pair.dt, pair )
-                    self.removeEvent( closest )
-                    single.dt = -1
-                    return
-            except SqueezingException, e:
-                print 'squeezed'
-                self.recoverSqueezed( e.s1, e.s2, e.s3 )
+            #try:
+            pair = self.formPair( single, closest )
+            if pair:
+                # if a Pair was formed, destroy the pair singles including
+                # self (by rescheduling to the past).
+                pair.determineNextEvent()
+                print 'pair dt', pair.dt, 'event type', pair.eventType
+                self.addEvent( self.t + pair.dt, pair )
+                self.removeEvent( closest )
+                single.dt = -1
+                return
+            #except SqueezingException, e:
+            #    print 'squeezed'
+            #    self.recoverSqueezed( e.s1, e.s2, e.s3 )
             
         
         # (3) determine new shell size and dt.
@@ -916,30 +902,49 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                  self.getClosestShell( single.getPos(), ignore = [ single, ] )
 
         pairDistance = self.distance( single.getPos(), closest.getPos() )
-
-        ShellSizeDisparityFactor = 2
-
         radius1 = single.particle.species.radius
 
-        if not closest.isPair():  # closest is a Single
+        if closest.isPair():  # closest is a Pair
+            shellSize = distanceToClosestShell
+        else:                 # closest is a Single
             D1, D2 = single.getD(), closest.getD()
             sqrtD1, sqrtD2 = math.sqrt( D1 ), math.sqrt( D2 )
             radius2 = closest.particle.species.radius
-        
+            radius12 = radius1 + radius2
+            
+            # Squeezing handling:
+            # If the closest is a Single and this is very close to that,
+            # AND a pair was not formed, that means this and the closest
+            # is squeezed.
+#             if pairDistance <= radius12 + 1e-12:
+#                 print 'squeezed'
+#                 self.squeezed += 1
+#                 while 1:
+#                     newpos = single.getPos() + p_free( 1e-8, single.getD() )
+#                     single.setPos( newpos )
+#                     closest, distanceToClosestShell =\
+#                              self.getClosestShell( single.getPos(),
+#                                                    ignore = [ single, ] )
+
+#                     if distanceToClosestShell > radius1:
+#                         break
+
+
+#                 pairDistance = self.distance( single.getPos(),
+#                                               closest.getPos() )
+
             shellSize = min( sqrtD1 / ( sqrtD1 + sqrtD2 ) *
                              ( pairDistance - radius1 - radius2 ) + radius1,
                              distanceToClosestShell )
-        else: 
-            # the closest is a Pair.
-            print 'closest is pair'
-            #shellSize = max( distanceToClosestShell*.5, radius1 )
-            shellSize = distanceToClosestShell
 
 
-        shellSize = shellSize * ( 1.0 - 1e-8 ) # safety
-        shellSize = max( shellSize, radius1 ) # cannot be smaller than radius
 
-        assert shellSize <= distanceToClosestShell
+        shellSize = shellSize * ( 1.0 - 1e-10 ) # safety
+        shellSize = max( shellSize, radius1 ) # not smaller than the radius
+
+
+        assert shellSize <= distanceToClosestShell,\
+               '%g %g' % (shellSize, distanceToClosestShell)
 
         single.setShellSize( shellSize )
         single.determineNextEvent()
@@ -952,7 +957,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             print 'burst', closest, single.dt, closest.dt
             closest.burst( self.t )
 
-        
+#         ShellSizeDisparityFactor = 2
 #         meanArrivalTime = single.getMobilityRadius() ** 2 / \
 #                           ( 6.0 * single.particle.species.D )
 #         if meanArrivalTime == 0.0 or \
@@ -1133,7 +1138,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             pair.determineNextEvent()
             return
 
-        else: # breaks up to singles
+        else: # break up to singles
 
             pair.releaseSingles()
 
@@ -1194,20 +1199,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pairClosest, pairClosestShellDistance =\
                      self.getClosestShell( com, ignore = ( single1, single2 ) )
         
-
         radius1 = single1.particle.species.radius
         radius2 = single2.particle.species.radius
+        radius12 = radius1 + radius2
         pairDistance = self.distance( single1.getPos(), single2.getPos() )
-        if pairDistance <= (radius1 + radius2) * (1.0+1e-6):
-            neighbors, neighborDistances = \
-                      self.getNeighbors( com, n=3 )
-            closest, distance = neighbors[2], neighborDistances[2]
-            closestRadius = closest.particle.species.radius
-            if distance - closestRadius <= \
-                    (radius1 + radius2) * (1.0+1e-6):
-                print single1.getPos(), single2.getPos(), closest.getPos()
-                print self.distance( com, closest.getPos() )
-                raise SqueezingException( single1, single2, closest )
+
+#         if pairDistance <= radius12 * (1.0+1e-6):
+#             neighbors, neighborDistances = self.getNeighbors( com, n=3 )
+#             closest, distance = neighbors[2], neighborDistances[2]
+#             closestRadius = closest.particle.species.radius
+
+#             if distance - closestRadius <= radius12 * (1.0+1e-6):
+#                 print single1.getPos(), single2.getPos(), closest.getPos()
+#                 print self.distance( com, closest.getPos() )
+#                 raise SqueezingException( single1, single2, closest )
         
         if not self.checkPairFormationCriteria( single1, single2,
                                                 pairClosest,
@@ -1242,7 +1247,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
 
-        print 'Pair formed: ', pair, 'shell size=', pair.getShellSize(),\
+        print 'Pair formed: ', pair, 'pair distance', pairDistance,\
+              'shell size=', pair.getShellSize(),\
               ', closest = ', pairClosest,\
               ', distance to shell = ', pairClosestShellDistance
 
@@ -1259,7 +1265,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                     closest, closestShellDistance ):
 
         # FIXME: should be larger when the GF impl is improved.
-        PairMakingFactor = 5
+        PairMakingFactor = 10
 
         # pair making criteria:
         # 1. Distance between particles to form a pair is closer than
@@ -1508,7 +1514,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         scheduler = self.scheduler
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i).getObj()
-            if hasattr( obj, 'partner' ):
+            if not obj.isPair():
                 assert obj.partner == None
 
 

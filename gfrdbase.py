@@ -504,3 +504,9 @@ class GFRDSimulatorBase:
         
         return dt, idx
         
+    def dumpPopulation( self ):
+        buf = ''
+        for species in self.speciesList.values():
+            buf += species.id + ':' + str( species.pool.size ) + '\t'
+
+        print buf

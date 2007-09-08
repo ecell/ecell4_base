@@ -20,7 +20,7 @@ s.addSpecies( P )
 
 s.setAllRepulsive()
 
-s.throwInParticles( 'P', 60, box1 )
+s.throwInParticles( P, 60, box1 )
 
 l = Logger( s, 'simple' )
 l.setParticleOutput( ('P',) )
