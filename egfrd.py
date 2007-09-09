@@ -637,10 +637,12 @@ class Pair:
                ', ' + str(self.single2.particle) + ' )'
 
 class SqueezingException:
-    def __init__( self, s1, s2, s3 ):
-        self.s1 = s1
-        self.s2 = s2
-        self.s3 = s3
+    def __init( self ):
+        pass
+#     def __init__( self, s1, s2, s3 ):
+#         self.s1 = s1
+#         self.s2 = s2
+#         self.s3 = s3
 
 
 class EGFRDSimulator( GFRDSimulatorBase ):
@@ -1204,20 +1206,24 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         radius12 = radius1 + radius2
         pairDistance = self.distance( single1.getPos(), single2.getPos() )
 
-#         if pairDistance <= radius12 * (1.0+1e-6):
-#             neighbors, neighborDistances = self.getNeighbors( com, n=3 )
-#             closest, distance = neighbors[2], neighborDistances[2]
-#             closestRadius = closest.particle.species.radius
-
-#             if distance - closestRadius <= radius12 * (1.0+1e-6):
-#                 print single1.getPos(), single2.getPos(), closest.getPos()
-#                 print self.distance( com, closest.getPos() )
-#                 raise SqueezingException( single1, single2, closest )
+        #         if pairDistance <= radius12 * (1.0+1e-6):
+        #             neighbors, neighborDistances = self.getNeighbors( com, n=3 )
+        #             closest, distance = neighbors[2], neighborDistances[2]
+        #             closestRadius = closest.particle.species.radius
         
-        if not self.checkPairFormationCriteria( single1, single2,
-                                                pairClosest,
-                                                pairClosestShellDistance ):
-            return None
+        #             if distance - closestRadius <= radius12 * (1.0+1e-6):
+        #                 print single1.getPos(), single2.getPos(), closest.getPos()
+        #                 print self.distance( com, closest.getPos() )
+        #                 raise SqueezingException( single1, single2, closest )
+        
+        try:
+            if not self.checkPairFormationCriteria( single1, single2,
+                                                    pairClosest,
+                                                    pairClosestShellDistance ):
+                return None
+        except SqueezingException:
+            print 'special'
+            pairClosestShellDistance = radius12 + 1e-10
 
         # burst shells of both Singles.  
         single1.burst( self.t )
@@ -1290,6 +1296,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if pairDistance > radius12 * PairMakingFactor:
             return False
             
+        # if the real distance between the pair is very close,
+        # it is a special case, form a Pair.
+        pairMargin = pairDistance - radius12
+        if pairMargin <= math.sqrt( 6.0 * D12 * self.minDt ):
+            print 'special'
+            raise SqueezingException
+
         # 2
         
         # Shell size of this pair must be at least larger than
@@ -1303,7 +1316,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     pairDistance * D2 / D12 + radius2
                     + single2.getMobilityRadius() )
         
-        if closestShellDistance < rmax * 1.05:  # margin
+        if closestShellDistance < rmax * 1.01:  # margin
             print 'closestShellDistance < rmax * margin; %g, %g' % \
                   ( closestShellDistance, rmax )
             return False
@@ -1481,10 +1494,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         for i in range( len( neighbors ) ): 
             if neighbors[i] not in ignore:
-                closest, distance = neighbors[i], distances[i]
-
-                assert not closest in ignore
-                return closest, distance
+                
+                assert not neighbors[i] in distances[i]
+                return closest in ignore
 
         # default case: none left.
         return None, numpy.inf
