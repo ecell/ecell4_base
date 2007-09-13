@@ -18,6 +18,11 @@ def MsTom3s( rate ):
     return rate / ( 1000 * N_A )
 
 
+def meanArrivalTime( r, D ):
+    return ( r * r ) / ( 6.0 * D )
+
+
+
 '''
 Transpose the position pos1 so that it can be used with another 
 position pos2.
