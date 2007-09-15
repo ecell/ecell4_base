@@ -1,0 +1,135 @@
+\documentclass[english]{article}
+
+
+\begin{document}
+
+\title{Enhanced Green's Function Reaction Dynamics Implementation Notes}
+
+
+\author{Koichi Takahashi}
+
+\maketitle
+
+\section*{Definitions}
+
+
+\subsection*{Conventions}
+
+\begin{itemize}
+\item Units are in SI MKS unless otherwise noted.
+\end{itemize}
+
+\subsection*{Symbols}
+
+\begin{description}
+\item [{$D$}] a translational diffusion coefficient.
+\item [{$a$}] a radius of the protective sphere.
+\item [{$e$}] the base of natural logarithm.
+\item [{$t$}] time.
+\item [{$r$}] a distance from the origin.
+\item [{$r_{0}$}] an initial distance of the particle from the origin.
+\item [{$\mathbf{r}$}] a position in Cartesian coordinates.
+\item [{$\mathbf{r_{0}}$}] an initial position in Cartesian coordinates
+\item [{\textmd{$\vartheta_{i}$}}] Jacobi theta function as defined in
+\emph{Abramowitz and Stegun}.
+\item [{$\mathcal{U}$}] a unit uniform random variable.
+\end{description}
+
+\section{Green's functions}
+
+
+\subsection{Free Single}
+
+Cartesian form:
+
+\begin{equation}
+p(\mathbf{r},t)=
+\frac{1}{(4\pi Dt)^{\frac{3}{2}}}e^{-\frac{|\mathbf{r}|^{2}}{4Dt}}.
+\end{equation}
+
+
+In spherical coordinates:
+
+\begin{equation}
+  p(r,t|r_{0},t_{0}=0)=
+  \frac{1}{(4\pi Dt)^{\frac{3}{2}}}
+  e^{-\frac{r^{2}+r_{0}^{2}-2rr_{0}\cos(\theta)}
+    {4Dt}}.
+\end{equation}
+
+
+\subsubsection{Survival probability}
+
+\begin{equation}
+S(t)=1.
+\end{equation}
+
+
+\subsubsection{Sampling $r$}
+
+\begin{equation}
+\mathrm{erf}\left(\frac{r}{2 \sqrt{Dt}}\right) 
+- \frac{e^{-\frac{r^2}{4 D t}} r}{\sqrt{\pi D t}}
+\end{equation}
+
+
+\subsubsection{Sampling $\theta$}
+
+
+\subsection{Single with an absorbing sphere}
+
+We find the following in section 14.7 of C\&J (eq. 17 in page 366),
+that is for the sphere $0 \geq r>a$ with an absorbing surface and
+an unit instantaneous spherical surface source at $r=r_{0},t=0$;
+
+\begin{equation}
+\frac{1}{2\pi arr_{0}}\sum_{n=1}^{\infty}e^{-\frac{Dn^{2}\pi^{2}t}{a^{2}}}\sin\frac{n\pi r}{a}\sin\frac{n\pi r_{0}}{a}.\end{equation}
+
+
+The initial condition with a Dirac delta $\delta(r,t)$ corresponds
+to taking the limit $r_{0}\rightarrow0$. Using \begin{equation}
+\lim_{r_{0}\rightarrow0}\left(\frac{a}{n\pi r_{0}}\sin\frac{n\pi r_{0}}{a}\right)=1,\end{equation}
+ we obtain the desired Green's function \begin{equation}
+p_{1}(r,t)=\frac{1}{2a^{2}r}\sum_{n=1}^{\infty}n\, e^{-\frac{Dn^{2}\pi^{2}t}{a^{2}}}\sin\frac{n\pi r}{a}.\end{equation}
+
+
+A conceptually identical equation can be found in eq (3.12) in \textit{Kalos
+and Verlet 1974}. See also 9.3 (3) and (19) in C\&J.
+
+The Jacobian in terms of $r$ in three dimentional space is $4\pi r^{2}$.
+
+
+\subsubsection{Survival probability}
+
+We want to calculate \begin{equation}
+S(t)=\int_{0}^{a}4\pi r^{2}p_{1}(r,t)dr.\end{equation}
+
+
+We get \begin{equation}
+S(t)=-2\sum_{n=1}^{\infty}(-1)^{n}e^{-\frac{Dn^{2}\pi^{2}t}{a^{2}}}.\end{equation}
+
+
+Numerically, this series is not a good behaving one and does not converge
+well. Using the fact that \begin{equation}
+\sum_{n=1}^{\infty}(-1)^{(n-1)}e^{-n^{2}w}=\frac{1}{2}(1-\vartheta_{4}(0,e^{-w})),\end{equation}
+ where $\vartheta$ is Jacobi's theta, we rewrite $S(t)$ as \begin{equation}
+S(t)=1-\vartheta_{4}(0,e^{-\frac{D\pi^{2}t}{a^{2}}}).\end{equation}
+ Then we can efficiently evaluate this function through a product
+representation \begin{equation}
+\vartheta_{4}(0,q)=\prod_{n=1}^{\infty}(1-q^{2n})(1-q^{(2n-1)})^{2}.\end{equation}
+
+
+
+\subsubsection{Sampling $r$}
+
+Unless we are somehow able to obtain an inverse function, one simple
+but not awfully efficient way to sample $r$ is to use another integral
+of $p_{1}(r,t)$, \begin{equation}
+\int_{0}^{r'}4\pi r^{2}p_{1}(r,t)dr=\frac{2}{a\pi}\sum_{n=1}^{\infty}\frac{e^{-\frac{Dn^{2}\pi^{2}t}{a^{2}}}\left(a\sin\frac{n\pi r'}{a}-n\pi r'\cos\frac{n\pi r'}{a}\right)}{n}.\end{equation}
+
+
+Using this, and eq. (6), with nonlinear programming, we find $r'$
+so that \begin{equation}
+\mathcal{U}-\frac{\int_{0}^{r'}4\pi r^{2}p_{1}(r,t)dr}{S(t)}=0,\end{equation}
+ where $\mathcal{U}$ is a unit uniform random number.
+\end{document}
