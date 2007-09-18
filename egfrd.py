@@ -982,47 +982,22 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                 if pair:
                     pair.determineNextEvent()
-                    print 'pair dt', pair.dt, 'event type', pair.eventType
                     self.addEvent( self.t + pair.dt, pair )
                     self.removeEvent( partnerCandidates[0] )
                     
-                    for r in partnerCandidates[1:]:
-                        
-                        print r
-                        rClosest, rToClosestShell =\
-                                  self.getClosestShell( r.getPos(),
-                                                        ignore = [ r, ] )
-                        
-                        rToClosest = self.distance( r.getPos(),
-                                                    rClosest.getPos() )
-                        
-                        shellSize = r.calculateShellSize( rClosest,
-                                                          rToClosest,
-                                                          rToClosestShell )
-                        r.setShellSize( shellSize )
-                        r.determineNextEvent()
-                        self.updateEvent( self.t + r.dt, r )
+                    for remainingCandidate in partnerCandidates[1:]:
+                        self.updateSingle( remainingCandidate )
+                        self.updateEvent( self.t + remainingCandidate.dt,
+                                          remainingCandidate )
                         
                     single.dt = -1 # remove by rescheduling to past.
                     return
 
                 else:
-                    for r in partnerCandidates:
-                        rClosest, rToClosestShell =\
-                                  self.getClosestShell( r.getPos(),
-                                                        ignore = [ r, ] )
-                        
-                        rToClosest = self.distance( r.getPos(),
-                                                    rClosest.getPos() )
-                        
-                        shellSize = r.calculateShellSize( rClosest,
-                                                          rToClosest,
-                                                          rToClosestShell )
-                        print r, rClosest, shellSize, rToClosest, rToClosestShell
-                        
-                        r.setShellSize( shellSize )
-                        r.determineNextEvent()
-                        self.updateEvent( self.t + r.dt, r )
+                    for remainingCandidate in partnerCandidates:
+                        self.updateSingle( remainingCandidate )
+                        self.updateEvent( self.t + remainingCandidate.dt,
+                                          remainingCandidate )
 
 
 
@@ -1030,6 +1005,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #     Determine a new shell size and dt.
 
         # recheck the closest and distance to it.
+        self.updateSingle( single )
+
+        print 'single shell', single.getShellSize(), 'dt', single.dt
+
+
+    def updateSingle( self, single ):
         closest, distanceToClosestShell =\
                  self.getClosestShell( single.getPos(), ignore = [ single, ] )
 
@@ -1044,118 +1025,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single.setShellSize( shellSize )
         single.determineNextEvent()
 
-        print 'single shell', single.getShellSize(), 'dt', single.dt
-
-
-
-
-
-    '''
-    def fireSingle( self, single ):
-
-        #debug
-        #self.checkShellForAll()
-
-        # Reaction.
-        if single.eventType == EventType.REACTION:
-
-            print 'single reaction', single
-            self.fireSingleReaction( single )
-
-            single.dt = -1  # remove this Single from the Scheduler
-            return
-
-        # If not reaction, simply propagate.
-
-        #radius1 = single.getRadius()
-
-        # (1) propagate
-        #
-        # Propagate this particle to the exit point on the surface.
-        
-        single.propagate( single.getMobilityRadius(), self.t )
-        
-
-        # (2) pair check
-        # First, find the closest particle.
-        neighbors, distances = self.getNeighbors( single.getPos() )
-        closest = neighbors[1]
-        closestDistance = distances[1]
-
-        print 'closest:', closest, 'dt:', closest.dt, 'distance:', closestDistance, 'shell', closest.getShellSize()
-
-        # Check if this and the closest particle can form a Pair.
-
-        # Try forming a Pair if the closest is a Single.
-        if not closest.isPair():
-
-            closest.burst( self.t )
-
-            pair = self.formPair( single, closest )
-            if pair:
-                # if a Pair was formed, destroy the pair singles including
-                # self.
-                pair.determineNextEvent()
-                print 'pair dt', pair.dt, 'event type', pair.eventType
-                self.addEvent( self.t + pair.dt, pair )
-                self.removeEvent( closest )
-                single.dt = -1 # remove by rescheduling to past.
-                return
-
-            else:  # clean up; reschedule the closest, or the sim hangs.
-                closestClosest, closestClosestDistance =\
-                   self.getClosestShell( closest.getPos(),
-                                         ignore = [ closest, ] )
-                pairDistance = self.distance( closest.getPos(), closestClosest.getPos() )
-                shellSize = closest.calculateShellSize( closestClosest,
-                                                        pairDistance,
-                                                        closestClosestDistance )
-                closest.setShellSize( shellSize )
-                closest.determineNextEvent()
-                print shellSize, closest.dt
-                self.updateEvent( self.t + closest.dt, closest )
-            
-        
-        # (3) determine new shell size and dt.
-
-        closest, distanceToClosestShell =\
-                 self.getClosestShell( single.getPos(), ignore = [ single, ] )
-
-        pairDistance = self.distance( single.getPos(), closest.getPos() )
-        shellSize = single.calculateShellSize( closest, pairDistance,
-                                               distanceToClosestShell )
-
-#         radius1 = single.getRadius()
-
-#         if closest.isPair():  # closest is a Pair
-#             shellSize = distanceToClosestShell
-#         else:                 # closest is a Single
-#             D1, D2 = single.getD(), closest.getD()
-#             sqrtD1, sqrtD2 = math.sqrt( D1 ), math.sqrt( D2 )
-#             radius2 = closest.particle.species.radius
-#             radius12 = radius1 + radius2
-            
-
-#             shellSize = min( sqrtD1 / ( sqrtD1 + sqrtD2 ) *
-#                              ( pairDistance - radius1 - radius2 ) + radius1,
-#                              distanceToClosestShell )
-
-
-        assert shellSize <= distanceToClosestShell,\
-               '%g %g' % (shellSize, distanceToClosestShell)
-
-        single.setShellSize( shellSize )
-        single.determineNextEvent()
-
-        print 'single shell', single.getShellSize(), 'dt', single.dt
-
-        # (4) Burst the closest, either Single or Pair, if its dt is
-        #     too much larger than this.
-        if single.dt != 0.0 and single.dt * 10 < closest.dt:
-            print 'burst', closest, single.dt, closest.dt
-            if closest.isPair():
-                closest.burst( self.t )
-    '''
 
 
     def firePair( self, pair ):
