@@ -928,10 +928,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                    ( math.sqrt( D0 ) + math.sqrt( closest.getD() ) ) *\
                    realDistance + radius0
 
-        print 'criticalPoint %g, distance to shell %g' % (criticalPoint,distanceToClosestShell)
+        print 'criticalPoint %g, closest shell %s, distance to shell %g' %\
+              (criticalPoint,closest,distanceToClosestShell)
 
-        if distanceToClosestShell < criticalPoint\
-               or distanceToClosestShell < radius0 * 10:
+        if distanceToClosestShell < criticalPoint or \
+               distanceToClosestShell < radius0 * 10:
 
             print 'pair making'
             # (2-1) Burst the closest and do pair check with that.
@@ -949,7 +950,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 pos1 = candidate1.getPos()
                 pos2 = candidate2.getPos()
 
-                dist01 = self.distance( pos0, pos1 )
+                dist01 = self.distance( pos0, pos1 ) # radius?
                 dist02 = self.distance( pos0, pos2 )
                 dist12 = self.distance( pos1, pos2 )
 
@@ -962,42 +963,77 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 MTTC12 = meanArrivalTime( dist12 - radius1 - radius2, D1 + D2 )
 
                 if dist01 < dist02 and MTTC01 < MTTC12:
-                    partnerCandidate = candidate1
+                    partnerCandidates = [ candidate1, candidate2 ]
                 elif dist02 < dist01 and MTTC02 < MTTC12:
-                    partnerCandidate = candidate2
+                    partnerCandidates = [ candidate2, candidate1 ]
                 else:
-                    partnerCandidate = None
+                    partnerCandidates = []
                 
             else:  # If the closest was a Single, that is the partnerCandidate.
-                partnerCandidate = closest
+                partnerCandidates = [closest,]
 
-            print 'partnerCandidate=',partnerCandidate
+            print 'partnerCandidates=',str(partnerCandidates)
 
             # try forming a Pair
-            if partnerCandidate:
+            if len( partnerCandidates ) >= 1:
 
-                closestByDistance, _ =\
-                                   self.getClosestNeighbor( single.getPos(),
-                                                            ignore=[ single, ] )
-                if partnerCandidate == closestByDistance:
-                    print 'closest == closestByDistance'
+                pair = self.formPair( single, partnerCandidates[0] )
+                print 'pair=',pair
 
-                    pair = self.formPair( single, partnerCandidate )
-                    print 'pair=',pair
+                if pair:
+                    pair.determineNextEvent()
+                    print 'pair dt', pair.dt, 'event type', pair.eventType
+                    self.addEvent( self.t + pair.dt, pair )
+                    self.removeEvent( partnerCandidates[0] )
+                    
+                    for r in partnerCandidates[1:]:
+                        
+                        print r
+                        rClosest, rToClosestShell =\
+                                  self.getClosestShell( r.getPos(),
+                                                        ignore = [ r, ] )
+                        
+                        rToClosest = self.distance( r.getPos(),
+                                                    rClosest.getPos() )
+                        
+                        shellSize = r.calculateShellSize( rClosest,
+                                                          rToClosest,
+                                                          rToClosestShell )
+                        r.setShellSize( shellSize )
+                        r.determineNextEvent()
+                        self.updateEvent( self.t + r.dt, r )
+                        
+                    single.dt = -1 # remove by rescheduling to past.
+                    return
 
-                    if pair:
-                        pair.determineNextEvent()
-                        print 'pair dt', pair.dt, 'event type', pair.eventType
-                        self.addEvent( self.t + pair.dt, pair )
-                        self.removeEvent( partnerCandidate )
-                        single.dt = -1 # remove by rescheduling to past.
-                        return
-
+                else:
+                    for r in partnerCandidates:
+                        rClosest, rToClosestShell =\
+                                  self.getClosestShell( r.getPos(),
+                                                        ignore = [ r, ] )
+                        
+                        rToClosest = self.distance( r.getPos(),
+                                                    rClosest.getPos() )
+                        
+                        shellSize = r.calculateShellSize( rClosest,
+                                                          rToClosest,
+                                                          rToClosestShell )
+                        print r, rClosest, shellSize, rToClosest, rToClosestShell
+                        
+                        r.setShellSize( shellSize )
+                        r.determineNextEvent()
+                        self.updateEvent( self.t + r.dt, r )
 
 
 
         # (3) If a new Pair was not formed, this Single continues.
         #     Determine a new shell size and dt.
+
+        # recheck the closest and distance to it.
+        closest, distanceToClosestShell =\
+                 self.getClosestShell( single.getPos(), ignore = [ single, ] )
+
+        distanceToClosest = self.distance( single.getPos(), closest.getPos() )
 
         shellSize = single.calculateShellSize( closest, distanceToClosest,
                                                distanceToClosestShell )
