@@ -143,6 +143,11 @@ so that
 
 \section{Main algorithm}
 
+The main part of the implementation of EGFRD algorithm is described
+in this section.  Here I avoided details and concentrated on basic
+concepts, flows and schemes that should be useful to understand
+the implementation.  
+
 \subsection{Classes}
 
 \subsubsection{Species}
@@ -159,7 +164,7 @@ so that
 \paragraph{Properties}
 
 \begin{itemize}
-\item[pos] the position of this Particle in [$m$].
+\item[pos] the position of this Particle.
 \item[species] the Species this Particle belongs to.
 \end{itemize}
 
@@ -243,7 +248,7 @@ so that
 \end{itemize}
 
 
-\subsection{Handling the Squeezing conditions}
+\subsection{Handling the Squeezing Conditions}
 
 When two particles are very close to each other, a Pair must be formed
 to advance time.  However, the distance from the center-of-mass of the
@@ -254,7 +259,7 @@ by the closest neighbor of the Pair.
 
 (FIXME: a figure here)
 
-There are three classes of methods in avoiding and handling the squeezing
+There are three types of methods in avoiding and handling the squeezing
 conditions.
 
 \begin{enumerate}
@@ -269,10 +274,17 @@ conditions.
   until the squeezing condition is dissolved.
 \end{enumerate}
 
+It is unclear if methods of type (1) that can avoid squeezing to
+happen completely can be possible, thus this type of method shall be used in
+conjunction with either (2) 'recovery' methods or (3) 'allow and
+watch' methods.
 
-few different ways to handle squeezing conditions.  One
-possible scheme is described in the following.
+Here I describe a type of 'allow and watch' methods that is included
+in the implementation.
 
+
+
+\subsection{Subvolumes and Cyclic Boundaries}
 
 
 
