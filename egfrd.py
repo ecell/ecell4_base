@@ -587,7 +587,7 @@ class Pair:
 
     '''
 
-    def burst( self, t ):
+    def burstIntoSingles( self, t ):
 
         assert t >= self.lastTime
 
@@ -1213,7 +1213,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.updateEvent( self.t, single )
 
     def burstPair( self, pair ):
-        single1, single2 = pair.burst( self.t )
+        single1, single2 = pair.burstIntoSingles( self.t )
         single1.initialize( self.t )
         single2.initialize( self.t )
         
