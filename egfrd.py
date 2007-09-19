@@ -676,7 +676,7 @@ class Pair:
         buf = 'Pair( ' + str(self.single1.particle) +\
               ', ' + str(self.single2.particle) + ' )'
         if self.squeezed:
-            buf += ', squeezed'
+            buf += '; squeezed.'
 
         return buf
 
@@ -1173,41 +1173,22 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         print newpos1, newpos2
 
-        # here decide whether this pair still continues or breaks up
+        # Break up to singles.
+        pair.releaseSingles()
 
-        pairClosest, pairClosestShellDistance =\
-                     self.getClosestShell( pair.getCoM(),\
-                                               ( pair, pair.single1,\
-                                                     pair.single2 ) )
+        single1, single2 = pair.single1, pair.single2
 
-        shellSize = self.checkPairFormationCriteria( pair.single1, pair.single2,
-                                                     pairClosest,
-                                                     pairClosestShellDistance )
-        #if shellSize > 0.0:
-        if 0: #temporarily
-
-            pair.lastTime = self.t
-
-            pair.determineNextEvent()
-            return
-
-        else: # break up to singles
-
-            pair.releaseSingles()
-
-            single1, single2 = pair.single1, pair.single2
-
-            single1.initialize()
-            single2.initialize()
+        single1.initialize()
+        single2.initialize()
             
-            # singles step immediately.
-            # single dts are zero.
-            self.addEvent( self.t, single1 )
-            self.addEvent( self.t, single2 )
+        # singles step immediately.
+        # single dts are zero.
+        self.addEvent( self.t, single1 )
+        self.addEvent( self.t, single2 )
 
-            print pair.eventID, single1.eventID, single2.eventID
-            print self.scheduler.getEvent( single1.eventID ).getTime(),\
-                self.scheduler.getEvent( single2.eventID ).getTime()
+        print pair.eventID, single1.eventID, single2.eventID
+        print self.scheduler.getEvent( single1.eventID ).getTime(),\
+              self.scheduler.getEvent( single2.eventID ).getTime()
 
         pair.dt = -1
         return
@@ -1260,12 +1241,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pair = self.createPair( single1, single2 )
 
         # Squeezed; Pair must be formed but shell size bigger than given space.
-        if shellSize < pairClosestShellDistance:
-            print 'squeezed'
+        if shellSize > pairClosestShellDistance:
+            print 'squeezed', shellSize, pairClosestShellDistance
             pair.squeezed = True
             self.squeezed += 1
-        else:
-            pair.squeezed = False
             
         pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
 
@@ -1338,12 +1317,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # 3 finally, check if a Pair is better than two Singles.
         closestShell = closest.getShellSize()
         closestPos = closest.getPos()
-        singleMobility = \
-                       min( pairDistance - radius12,
-                            self.distance( pos1, closestPos )
-                            - closestShell - radius1,
-                            self.distance( pos2, closestPos )
-                            - closestShell - radius2 )
+        singleMobility = min( pairDistance - radius12,
+                              self.distance( pos1, closestPos )
+                              - closestShell - radius1,
+                              self.distance( pos2, closestPos )
+                              - closestShell - radius2 )
         
         pairMobility = closestShellDistance - minShellSize
         if singleMobility >= pairMobility:
