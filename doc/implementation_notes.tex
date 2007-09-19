@@ -86,17 +86,22 @@ an unit instantaneous spherical surface source at $r=r_{0},t=0$;
 \frac{1}{2\pi arr_{0}}\sum_{n=1}^{\infty}e^{-\frac{Dn^{2}\pi^{2}t}{a^{2}}}\sin\frac{n\pi r}{a}\sin\frac{n\pi r_{0}}{a}.\end{equation}
 
 
-The initial condition with a Dirac delta $\delta(r,t)$ corresponds
-to taking the limit $r_{0}\rightarrow0$. Using \begin{equation}
-\lim_{r_{0}\rightarrow0}\left(\frac{a}{n\pi r_{0}}\sin\frac{n\pi r_{0}}{a}\right)=1,\end{equation}
- we obtain the desired Green's function \begin{equation}
-p_{1}(r,t)=\frac{1}{2a^{2}r}\sum_{n=1}^{\infty}n\, e^{-\frac{Dn^{2}\pi^{2}t}{a^{2}}}\sin\frac{n\pi r}{a}.\end{equation}
+The initial condition with a Dirac delta $\delta(r,t)$ corresponds to
+taking the limit $r_{0}\rightarrow0$. Using 
+\begin{equation}
+  \lim_{r_{0}\rightarrow0}\left(\frac{a}{n\pi r_{0}}\sin\frac{n\pi
+      r_{0}}{a}\right)=1,
+\end{equation}
+ we obtain the desired Green's function 
+ \begin{equation}
+   p_{1}(r,t)=\frac{1}{2a^{2}r}\sum_{n=1}^{\infty}n\, e^{-\frac{Dn^{2}\pi^{2}t}{a^{2}}}\sin\frac{n\pi r}{a}.
+ \end{equation}
 
 
 A conceptually identical equation can be found in eq (3.12) in \textit{Kalos
 and Verlet 1974}. See also 9.3 (3) and (19) in C\&J.
 
-The Jacobian in terms of $r$ in three dimentional space is $4\pi r^{2}$.
+Note the Jacobian in terms of $r$, $4\pi r^{2}$.
 
 
 \subsubsection{Survival probability}
@@ -129,7 +134,132 @@ of $p_{1}(r,t)$, \begin{equation}
 
 
 Using this, and eq. (6), with nonlinear programming, we find $r'$
-so that \begin{equation}
-\mathcal{U}-\frac{\int_{0}^{r'}4\pi r^{2}p_{1}(r,t)dr}{S(t)}=0,\end{equation}
+so that 
+\begin{equation}
+   \mathcal{U}-\frac{\int_{0}^{r'}4\pi r^{2}p_{1}(r,t)dr}{S(t)}=0,
+\end{equation}
  where $\mathcal{U}$ is a unit uniform random number.
+
+
+\section{Main algorithm}
+
+\subsection{Classes}
+
+\subsubsection{Species}
+
+\paragraph{Properties}
+
+\begin{itemize}
+\item[radius] the radius of a particle of this Species in [$m$].
+\item[D] the diffusion coefficient of particles of this Species in [$m^2/s$].
+\end{itemize}
+
+\subsubsection{Particle}
+
+\paragraph{Properties}
+
+\begin{itemize}
+\item[pos] the position of this Particle in [$m$].
+\item[species] the Species this Particle belongs to.
+\end{itemize}
+
+\subsubsection{Single}
+
+\paragraph{Properties}
+
+\begin{itemize}
+\item[eventType] the time of the next event, either REACTION or ESCAPE.
+\item[dt] the time to the next event from the lastTime.
+\item[lastTime] the last time this Single was updated.
+\item[mobilityRadius] $shellSize - particle.radius$.  This
+  indicates the maximum displacement the particle can make within the
+  shell.
+\item[particle] the particle that this Single represents.
+\item[pos] the position of this Single defined as the position of the
+  particle.
+\item[shellSize] the shell size of this Single.
+
+
+\end{itemize}
+
+\paragraph{Methods}
+
+\begin{itemize}
+\item[burst( t )] This method updates the position of the particle at
+  time $t$.
+  \begin{enumerate}
+  \item[precondition] $lastTime <= t <= lastTime + dt$.
+
+    \item draw $r$ from the Greens Function (which one?).
+
+    \item propagate( r, t )
+  \end{enumerate}
+
+\item[determineNextEvent()] This method updates dt and eventType of
+  this Single.
+
+%\item[displace( r )] This method displaces the particle to a random
+%  point on the spherical surface of distance r from the original
+%  position.
+
+\item[propagate( r, t )] This method displaces the particle to a
+  random point on the spherical surface of distance r from the
+  original position, set lastTime to t, then reset the shell size to
+  the radius of the particle, dt to zero, and eventType to ESCAPE.
+
+\end{itemize}
+
+\subsubsection{Pair}
+
+\paragraph{Properties}
+
+\begin{itemize}
+\item[D] $single1.particle.D + single2.particle.D$
+
+
+\item[CoM] Center-of-Mass  
+  $= ( \frac{\sqrt{D2}}{\sqrt{D1}} * single1.pos +
+  \frac{\sqrt{D1}}{\sqrt{D2}} * single2.pos ) / (
+  \frac{\sqrt{D2}}{\sqrt{D1}}+\frac{\sqrt{D1}}{\sqrt{D2}})$
+
+\item[single1, single2] the pair of singles this Pair is responsible for.
+
+
+\item[eventType] the type of the next event, one of REACTION,
+  ESCAPE1, or ESCAPE2.
+
+\item[lastTime] the last time this Pair was updated.
+
+\item[dt] the time to the next event from the lastTime.
+
+\item[shellSize] the shell size of this Pair.
+
+\end{itemize}
+
+\paragraph{Methods}
+
+\begin{itemize}
+\item 
+\end{itemize}
+
+
+\subsection{Handling the Squeezing conditions}
+
+When two particles are very close to each other, a Pair must be formed
+to advance time.  However, the distance from the center-of-mass of the
+Pair to the closest neighbor of this pair of particles is very close
+to or is less than the minimum mobility radius of the pair, the Pair
+can no longer hold, and the couple of particles is said to be 'squeezed'
+by the closest neighbor of the Pair.
+
+(FIXME: a figure here)
+
+There are a few different ways to handle squeezing conditions.  One
+possible scheme is described in the following.
+
+
+
+
+
+
 \end{document}

@@ -18,8 +18,8 @@ class Single:
 
     def __init__( self, sim, particle ):
 
-        self.particle = particle
         self.sim = sim
+        self.particle = particle
         self.lastTime = 0.0
         self.dt = 0.0
         self.eventType = None
@@ -27,7 +27,7 @@ class Single:
         self.setShellSize( self.getRadius() )
         self.eventID = None
 
-        self.partner = None
+        self.partner = None  # deprecated?
 
         self.gf = FirstPassageGreensFunction( particle.species.D )
 
@@ -114,8 +114,6 @@ class Single:
         return self.getShellSize() - self.getRadius()
 
 
-    #def propagateByDt( self, dt ):
-        
     def displace( self, r ):
 
         rnd = numpy.random.uniform( size=2 )
@@ -205,7 +203,7 @@ class Single:
         self.sim.updateEvent( t, self )
 
     def determineNextEvent( self ):
-        firstPassageTime = self.calculateFirstPassageTime()
+        firstPassageTime = self.calculateEscapeTime()
         reactionTime = self.calculateReactionTime()
 
         if firstPassageTime <= reactionTime:
@@ -227,7 +225,7 @@ class Single:
 
         return dt
 
-    def calculateFirstPassageTime( self ):
+    def calculateEscapeTime( self ):
         
         rnd = numpy.random.uniform()
         self.gf.seta( self.getMobilityRadius() )
@@ -675,8 +673,12 @@ class Pair:
 
 
     def __str__( self ):
-        return 'Pair( ' + str(self.single1.particle) +\
-               ', ' + str(self.single2.particle) + ' )'
+        buf = 'Pair( ' + str(self.single1.particle) +\
+              ', ' + str(self.single2.particle) + ' )'
+        if self.squeezed:
+            buf += ', squeezed'
+
+        return buf
 
 class SqueezingException:
     def __init( self ):
@@ -1210,13 +1212,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pair.dt = -1
         return
 
-    def recoverSqueezed( self, single1, single2, single3 ):
-        # displace single1 a bit.
-        origPos = single1.getPos().copy()
-        displacement = math.sqrt( single1.particle.species.D * 1e-9 * 6.0 )
-        raise 'not implemented yet'
-
-            
 
     def createPair( self, single1, single2 ):
 
@@ -1268,29 +1263,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if shellSize < pairClosestShellDistance:
             print 'squeezed'
             pair.squeezed = True
+            self.squeezed += 1
         else:
             pair.squeezed = False
             
-        # find closest again; singles were propagated. can be faster?
-        #pairClosest, pairClosestShellDistance =\
-        #   self.getClosestShell( pair.getCoM(),\
-        #                         ( pair, single1, single2 ) )
-
-        #pairDistance = self.distance( single1.getPos(), single2.getPos() )
-
-#         species1 = single1.particle.species
-#         species2 = single2.particle.species
-#         D1 = species1.D
-#         D2 = species2.D
-#         D12 = D1 + D2
-#         radius1 = species1.radius
-#         radius2 = species2.radius
-
-#         rmax = max( pairDistance * D1 / D12 + radius1,
-#                     pairDistance * D2 / D12 + radius2 )
-
-#         shellSize = rmax + (pairClosestShellDistance-rmax)*.5
-
         pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
 
         print 'Pair formed: ', pair, 'pair distance', pairDistance,\
