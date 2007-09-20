@@ -29,8 +29,6 @@ class Single:
         self.setShellSize( self.getRadius() )
         self.eventID = None
 
-        self.partner = None  # deprecated?
-
         self.gf = FirstPassageGreensFunction( particle.species.D )
 
     def __del__( self ):
@@ -275,9 +273,6 @@ class Pair:
         else:
             self.single1, self.single2 = single2, single1 
 
-        self.single1.partner = self.single2
-        self.single2.partner = self.single1
-
         self.rt = rt
         
         self.sim = sim
@@ -379,11 +374,6 @@ class Pair:
               ( self.sqrtD2D1 + self.sqrtD1D2 )
         
         return self.sim.applyBoundary( com )
-
-
-    def releaseSingles( self ):
-        self.single1.partner = None
-        self.single2.partner = None
 
 
     def chooseSingleGreensFunction( self, t ):
@@ -1046,7 +1036,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def firePair( self, pair ):
 
-
         print 'fire:', pair
 
         particle1 = pair.single1.particle
@@ -1086,9 +1075,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
                 r_R = pair.drawR_single( rnd[0], pair.dt, pair.a_R )
             
-                displacement_R_S = [ r_R,
-                                     rnd[1] * Pi,
-                                     rnd[2] * 2 * Pi ]
+                displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
                 newCoM = oldCoM + displacement_R \
                          / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
@@ -1096,7 +1083,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 #FIXME: SURFACE
                 newPos = self.applyBoundary( newCoM )
 
-                pair.releaseSingles()
                 self.removeParticle( particle1 )
                 self.removeParticle( particle2 )
 
@@ -1127,9 +1113,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
             r_R = pair.drawR_single( rnd[0], pair.dt, pair.a_R )
             
-            displacement_R_S = [ r_R,
-                                 rnd[1] * Pi,
-                                 rnd[2] * 2 * Pi ]
+            displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
             newCoM = oldCoM + displacement_R \
                      / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
@@ -1164,9 +1148,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             newInterParticle = sphericalToCartesian( newInterParticleS )
 
             # calculate new R
-            displacement_R_S = [ pair.a_R,
-                                 rnd[3] * Pi,
-                                 rnd[4] * 2 * Pi ]
+            displacement_R_S = [ pair.a_R, rnd[3] * Pi, rnd[4] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
             newCoM = oldCoM + displacement_R \
                      / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
@@ -1186,9 +1168,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         particle2.setPos( newpos2 )
 
         print newpos1, newpos2
-
-        # Break up to singles.
-        pair.releaseSingles()
 
         single1, single2 = pair.single1, pair.single2
 
@@ -1226,7 +1205,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         assert single1.isReset()
         assert single2.isReset()
-        assert single1.partner == None and single2.partner == None
 
         # Then, check if this pair of singles meets the pair formation
         # criteria defined in self.checkPairFormationCriteria().
@@ -1528,8 +1506,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         scheduler = self.scheduler
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i).getObj()
-            if not obj.isPair():
-                assert obj.partner == None
 
 
     #
