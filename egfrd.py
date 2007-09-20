@@ -620,8 +620,6 @@ class Pair:
             particle1.setPos( newpos1 )
             particle2.setPos( newpos2 )
 
-        self.releaseSingles()
-
         return ( self.single1, self.single2 )
 
 
@@ -839,6 +837,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             newparticle = self.placeParticle( productSpecies, pos )
             newsingle = self.createSingle( newparticle )
             self.addSingle( newsingle )
+
+            print 'product;', newsingle
             
         elif len( rt.products ) == 2:
             
@@ -856,7 +856,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             radius1 = productSpecies1.radius
             radius2 = productSpecies2.radius
             distance = radius1 + radius2
-            vector = unitVector * ( distance * (1.0+1e-10) ) # safety
+            vector = unitVector * distance * 1.00000001 # safety
             
             # place particles according to the ratio D1:D2
             # this way, species with D=0 doesn't move.
@@ -881,6 +881,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
             self.addSingle( newsingle1 )
             self.addSingle( newsingle2 )
+
+            print 'products;', newsingle1, newsingle2
 
         else:
             raise RuntimeError, 'num products >= 3 not supported.'
@@ -989,6 +991,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                 if pair:
                     pair.determineNextEvent()
+
+                    print pair, 'dt=', pair.dt, 'type=', pair.eventType
+                    
                     self.addEvent( self.t + pair.dt, pair )
                     self.removeEvent( partnerCandidates[0] )
                     
@@ -1484,10 +1489,28 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         closest, distance = self.getClosestShell( obj.getPos(), [obj,] )
         shellSize = obj.getShellSize()
         if distance - shellSize < 0.0:
-            raise RuntimeError,\
-                  '%s overlaps with %s. (shell: %g, dist: %g, diff: %g.' \
-                  % ( str( obj ), str( closest ), shellSize, distance,\
-                      distance - shellSize )
+            if closest.isPair() and closest.squeezed:
+                # if the overlapping is caused by a squeezed Pair, then
+                # at least check if the particles in the Pair don't infringe.
+                particle1 = closest.single1.particle
+                particle2 = closest.single2.particle
+                d1 = self.distance( particle1.getPos(), obj.getPos() )\
+                     - shellSize - particle1.radius
+                d2 = self.distance( particle2.getPos(), obj.getPos() )\
+                     - shellSize - particle2.radius
+                if d1 < 0.0 or d2 < 0.0:
+                    raise RuntimeError,\
+                      '%s overlaps with a particle in %s.' \
+                      % ( str( obj ), str( closest ) )
+                else:
+                    print '%s overlaps with %s, but ignoring.' \
+                          % ( str( obj ), str( closest ) )
+                    raise ''
+            else:
+                raise RuntimeError,\
+                      '%s overlaps with %s. (shell: %g, dist: %g, diff: %g.' \
+                      % ( str( obj ), str( closest ), shellSize, distance,\
+                          distance - shellSize )
 
     def checkShellForAll( self ):
         scheduler = self.scheduler

@@ -1357,7 +1357,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     while( GSL_FN_EVAL( &F, low ) > 0.0 )
     {
 	low *= .1;
-	printf( "drawTime: adjusting low: %g\n",low );
+	printf( "drawTime: adjusting low: %g, F = %g\n",
+                low, GSL_FN_EVAL( &F, low ));
 
 	if( fabs( low ) <= this->MIN_T )
 	{
