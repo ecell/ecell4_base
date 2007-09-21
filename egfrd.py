@@ -572,12 +572,10 @@ class Pair:
 
 
     '''
-    Burst the shell, update positions of the particles and
-    release them as two Singles.
-
+    Update positions of the particles and release them as a couple of Singles.
     '''
 
-    def burstIntoSingles( self, t ):
+    def breakUp( self, t ):
 
         assert t >= self.lastTime
 
@@ -856,7 +854,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             radius1 = productSpecies1.radius
             radius2 = productSpecies2.radius
             distance = radius1 + radius2
-            vector = unitVector * distance * 1.00000001 # safety
+            vector = unitVector * distance * (1.0 + 1e-10) # safety
             
             # place particles according to the ratio D1:D2
             # this way, species with D=0 doesn't move.
@@ -1197,7 +1195,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.updateEvent( self.t, single )
 
     def burstPair( self, pair ):
-        single1, single2 = pair.burstIntoSingles( self.t )
+        single1, single2 = pair.breakUp( self.t )
         single1.initialize( self.t )
         single2.initialize( self.t )
         
@@ -1489,23 +1487,22 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         closest, distance = self.getClosestShell( obj.getPos(), [obj,] )
         shellSize = obj.getShellSize()
         if distance - shellSize < 0.0:
-            if closest.isPair() and closest.squeezed:
+            if obj.squeezed or ( closest.isPair() and closest.squeezed ):
                 # if the overlapping is caused by a squeezed Pair, then
                 # at least check if the particles in the Pair don't infringe.
-                particle1 = closest.single1.particle
-                particle2 = closest.single2.particle
-                d1 = self.distance( particle1.getPos(), obj.getPos() )\
-                     - shellSize - particle1.radius
-                d2 = self.distance( particle2.getPos(), obj.getPos() )\
-                     - shellSize - particle2.radius
+                single1 = closest.single1
+                single2 = closest.single2
+                d1 = self.distance( single1.particle.getPos(), obj.getPos() )\
+                     - shellSize - single1.getRadius()
+                d2 = self.distance( single2.particle.getPos(), obj.getPos() )\
+                     - shellSize - single2.getRadius()
                 if d1 < 0.0 or d2 < 0.0:
                     raise RuntimeError,\
                       '%s overlaps with a particle in %s.' \
                       % ( str( obj ), str( closest ) )
                 else:
-                    print '%s overlaps with %s, but ignoring.' \
+                    print '%s overlaps with %s  ignoring because squeezed.' \
                           % ( str( obj ), str( closest ) )
-                    raise ''
             else:
                 raise RuntimeError,\
                       '%s overlaps with %s. (shell: %g, dist: %g, diff: %g.' \

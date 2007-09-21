@@ -198,15 +198,13 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
     alphaTable_0.reserve( MAX_ALPHA_SEQ );
 
     const Real alpha0_0( this->alpha0_i( 0 ) );
+    const Real alpha0_0_sq( alpha0_0 * alpha0_0 );
     alphaTable_0.push_back( alpha0_0 );
 
     const Real Dt( this->getD() * t );
 
     const Real alpha_cutoff( sqrt( ( - log( ALPHA_CUTOFF ) / Dt )
 				   + alpha0_0 * alpha0_0 ) );
-
-
-//    printf("%g %g\n", alpha0_0, alpha_cutoff );
 
     unsigned int i( 1 );
     while( true )
@@ -1354,13 +1352,16 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     this->updateAlphaTable0( low );
     this->createPsurvTable( psurvTable, r0 );
 
-    while( GSL_FN_EVAL( &F, low ) > 0.0 )
+    Real low_value( GSL_FN_EVAL( &F, low ) );
+    while( low_value > 0.0 )
     {
 	low *= .1;
-	printf( "drawTime: adjusting low: %g, F = %g\n",
-                low, GSL_FN_EVAL( &F, low ));
+        const Real low_value_new( GSL_FN_EVAL( &F, low ) );
 
-	if( fabs( low ) <= this->MIN_T )
+	printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value_new );
+
+	if( fabs( low ) <= this->MIN_T || 
+            fabs( low_value - low_value_new ) < TOLERANCE ) 
 	{
 	    std::cerr << "Couldn't adjust low.  Returning MIN_T (= "
 		      << this->MIN_T << "); F(" << low <<
@@ -1368,6 +1369,9 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 		      << dump() << std::endl;
 	    return this->MIN_T;
 	}
+
+        low_value = low_value_new;
+
 	this->updateAlphaTable0( low );
 	this->createPsurvTable( psurvTable, r0 );
     }
