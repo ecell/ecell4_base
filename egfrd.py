@@ -1066,7 +1066,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #  2.1 Escaping through a_r.
         #  2.2 Escaping through a_R.
 
+        #
         # 1. Reaction
+        #
         if pair.eventType == EventType.REACTION:
 
             print 'reaction'
@@ -1075,6 +1077,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 
                 species3 = pair.rt.products[0]
 
+
+                
                 rnd = numpy.random.uniform( size=5 )
 
                 # calculate new R
@@ -1099,15 +1103,22 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.reactionEvents += 1
                 self.setPopulationChanged()
                 
-                pair.dt = -1
-                return
-
+        
             else:
                 raise NotImplementedError,\
                       'num products >= 2 not supported yet.'
 
+        pair.dt = -1
+        return
+
+
+        #
+        # 2 Escape
+        #
+
+
         # 2.1 Escaping through a_r.
-        elif pair.eventType == EventType.ESCAPE:
+        if pair.eventType == EventType.ESCAPE:
 
             print 'escape r'
 
