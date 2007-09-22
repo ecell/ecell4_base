@@ -555,10 +555,13 @@ class Pair:
 
         try:
             self.pgf.seta( self.a_r )
+            print rnd[1]
             self.t_r = self.pgf.drawTime( rnd[1], self.r0 )
         except:
             print 'dump', self.pgf.dump()
             raise
+
+        print 't_R', self.t_R, 't_r', self.t_r
 
         if self.t_R < self.t_r:
             self.dt = self.t_R
@@ -1177,10 +1180,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single1.initialize( self.t )
         single2.initialize( self.t )
             
-        # singles step immediately.
-        # single dts are zero.
-        self.addEvent( self.t, single1 )
-        self.addEvent( self.t, single2 )
+        self.addEvent( self.t + single1.dt, single1 )
+        self.addEvent( self.t + single2.dt, single2 )
 
         print pair.eventID, single1.eventID, single2.eventID
         print self.scheduler.getEvent( single1.eventID ).getTime(),\
@@ -1487,7 +1488,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         closest, distance = self.getClosestShell( obj.getPos(), [obj,] )
         shellSize = obj.getShellSize()
         if distance - shellSize < 0.0:
-            if obj.squeezed or ( closest.isPair() and closest.squeezed ):
+            if ( obj.isPair() and obj.squeezed ) or \
+                   ( closest.isPair() and closest.squeezed ):
                 # if the overlapping is caused by a squeezed Pair, then
                 # at least check if the particles in the Pair don't infringe.
                 single1 = closest.single1
