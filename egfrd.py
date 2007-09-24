@@ -744,12 +744,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def step( self ):
 
-        self.checkInvariants()
-
         self.clearPopulationChanged()
 
         if self.isDirty:
             self.initialize()
+
+        self.checkInvariants()
+
 
         event = self.scheduler.getTopEvent()
         self.t, self.lastEvent = event.getTime(), event.getObj()
@@ -758,8 +759,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         self.scheduler.step()
 
-        event = self.scheduler.getTopEvent()
-        nextTime, nextEvent = event.getTime(), event.getObj()
+        nextEvent = self.scheduler.getTopEvent()
+        nextTime, nextEventObject = nextEvent.getTime(), nextEvent.getObj()
         self.dt = nextTime - self.t
 
         assert self.scheduler.getSize() != 0
@@ -1042,7 +1043,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def firePair( self, pair ):
 
-        print 'fire:', pair
+        print 'fire:', pair, pair.eventType
 
         particle1 = pair.single1.particle
         particle2 = pair.single2.particle
@@ -1108,8 +1109,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 raise NotImplementedError,\
                       'num products >= 2 not supported yet.'
 
-        pair.dt = -1
-        return
+            pair.dt = -1
+            return
 
 
         #
@@ -1124,26 +1125,43 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             print 'r0 = ', pair.r0, 'dt = ', pair.dt, pair.pgf.dump()
             
-            rnd = numpy.random.uniform( size=5 )
+            for i in range(1000):
 
-            # calculate new R
+                rnd = numpy.random.uniform( size=5 )
+
+                # calculate new R
             
-            r_R = pair.drawR_single( rnd[0], pair.dt, pair.a_R )
-            
-            displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
-            displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = oldCoM + displacement_R \
-                     / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
+                r_R = pair.drawR_single( rnd[0], pair.dt, pair.a_R )
+                
+                displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
+                displacement_R = sphericalToCartesian( displacement_R_S )
+                newCoM = oldCoM + displacement_R \
+                         / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
 
-            # calculate new r
-            print ( rnd[3], pair.a_r, pair.r0, pair.dt )
-            theta_r = pair.drawTheta_pair( rnd[3], pair.a_r, pair.r0, pair.dt )
-            phi_r = rnd[4] * 2 * Pi
-            newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
-            newInterParticle = sphericalToCartesian( newInterParticleS )
-
-            newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
-                                                  oldInterParticle )
+                # calculate new r
+                print ( rnd[3], pair.a_r, pair.r0, pair.dt )
+                theta_r = pair.drawTheta_pair( rnd[3], pair.a_r, pair.r0,
+                                               pair.dt )
+                phi_r = rnd[4] * 2 * Pi
+                newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
+                newInterParticle = sphericalToCartesian( newInterParticleS )
+                
+                newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
+                                                      oldInterParticle )
+                newpos1 = self.applyBoundary( newpos1 )
+                newpos2 = self.applyBoundary( newpos2 )
+                
+                if not pair.squeezed or \
+                   ( self.checkOverlap( newpos1, radius1 ) and \
+                     self.checkOverlap( newpos2, radius2 ) ):
+                    break
+                else:
+                    self.rejectedMoves += 1
+                    print '%s:ESCAPE_r: rejected move. redrawing..' % pair
+            else:
+                print 'redrawing limit reached.  hanging up..'
+                raise RuntimeError,\
+                      'redrawing limit reached under squeezing in Pair.ESCAPE_r'
 
 
         # 2.2 escaping through a_R.
@@ -1151,33 +1169,48 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             print 'escape R'
 
-            rnd = numpy.random.uniform( size = 5 )
+            for i in range(1000):
+                
+                rnd = numpy.random.uniform( size = 5 )
 
-            # calculate new r
-            print 'r0 = ', pair.r0, 'dt = ', pair.dt, pair.pgf.dump()
-            r = pair.drawR_pair( rnd[0], pair.r0, pair.dt, pair.a_r )
-            print 'new r = ', r
-            #assert r >= pair.sigma
+                # calculate new r
+                print 'r0 = ', pair.r0, 'dt = ', pair.dt, pair.pgf.dump()
+                r = pair.drawR_pair( rnd[0], pair.r0, pair.dt, pair.a_r )
+                print 'new r = ', r
+                #assert r >= pair.sigma
+            
+                theta_r = pair.drawTheta_pair( rnd[1], r, pair.r0, pair.dt )
+                phi_r = rnd[2] * 2*Pi
+                newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
+                newInterParticle = sphericalToCartesian( newInterParticleS )
+                
+                # calculate new R
+                displacement_R_S = [ pair.a_R, rnd[3] * Pi, rnd[4] * 2 * Pi ]
+                displacement_R = sphericalToCartesian( displacement_R_S )
+                newCoM = oldCoM + displacement_R \
+                         / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
+                
+                newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
+                                                      oldInterParticle )
+                newpos1 = self.applyBoundary( newpos1 )
+                newpos2 = self.applyBoundary( newpos2 )
 
-            theta_r = pair.drawTheta_pair( rnd[1], r, pair.r0, pair.dt )
-            phi_r = rnd[2] * 2*Pi
-            newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
-            newInterParticle = sphericalToCartesian( newInterParticleS )
+                if not pair.squeezed or \
+                   ( self.checkOverlap( newpos1, radius1 ) and \
+                     self.checkOverlap( newpos2, radius2 ) ):
+                    break
+                else:
+                    self.rejectedMoves += 1
+                    print '%s:ESCAPE_r: rejected move. redrawing..' % pair
+            else:
+                print 'redrawing limit reached.  hanging up..'
+                raise RuntimeError,\
+                      'redrawing limit reached under squeezing in Pair.ESCAPE_R'
 
-            # calculate new R
-            displacement_R_S = [ pair.a_R, rnd[3] * Pi, rnd[4] * 2 * Pi ]
-            displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = oldCoM + displacement_R \
-                     / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
-
-            newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
-                                                  oldInterParticle )
                 
         else:
             raise SystemError, 'Bug: invalid eventType.'
 
-        newpos1 = self.applyBoundary( newpos1 )
-        newpos2 = self.applyBoundary( newpos2 )
 
         #assert self.distance( newpos1, newpos2 ) >= pair.sigma
 
@@ -1191,8 +1224,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single1.initialize( self.t )
         single2.initialize( self.t )
             
-        self.addEvent( self.t + single1.dt, single1 )
-        self.addEvent( self.t + single2.dt, single2 )
+        self.addSingle( single1 )
+        self.addSingle( single2 )
 
         print pair.eventID, single1.eventID, single2.eventID
         print self.scheduler.getEvent( single1.eventID ).getTime(),\
@@ -1384,6 +1417,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return neighbors, distances
 
 
+
     '''
     Get neighbors simply by distance.
 
@@ -1514,7 +1548,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                       '%s overlaps with a particle in %s.' \
                       % ( str( obj ), str( closest ) )
                 else:
-                    print '%s overlaps with %s  ignoring because squeezed.' \
+                    print '%s overlaps with %s.  ignoring because squeezed.' \
                           % ( str( obj ), str( closest ) )
             else:
                 raise RuntimeError,\
@@ -1528,6 +1562,27 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i).getObj()
             self.checkShell( obj )
+
+    def checkEventStoichiometry( self ):
+
+        population = 0
+        for species in self.speciesList.values():
+            population += species.pool.size
+        
+        eventPopulation = 0
+        for i in range( self.scheduler.getSize() ):
+            obj = self.scheduler.getEventByIndex(i).getObj()
+            if obj.isPair():
+                eventPopulation += 2
+            else:
+                eventPopulation += 1
+
+        if population != eventPopulation:
+            raise RuntimeError, 'population %d != eventPopulation %d' %\
+                  ( population, eventPopulation )
+        
+                
+        
         
     def checkInvariants( self ):
 
@@ -1536,10 +1591,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         self.checkShellForAll()
 
-        scheduler = self.scheduler
-        for i in range( scheduler.getSize() ):
-            obj = scheduler.getEventByIndex(i).getObj()
-
+        self.checkEventStoichiometry()
 
     #
     # methods for debugging.
