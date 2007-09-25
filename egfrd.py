@@ -749,7 +749,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
-        self.checkInvariants()
+        #self.checkInvariants()
 
 
         event = self.scheduler.getTopEvent()
@@ -1211,6 +1211,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         else:
             raise SystemError, 'Bug: invalid eventType.'
 
+        pair.squeezed = False
 
         #assert self.distance( newpos1, newpos2 ) >= pair.sigma
 
@@ -1535,20 +1536,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if distance - shellSize < 0.0:
             if ( obj.isPair() and obj.squeezed ) or \
                    ( closest.isPair() and closest.squeezed ):
-                # if the overlapping is caused by a squeezed Pair, then
-                # at least check if the particles in the Pair don't infringe.
-                single1 = closest.single1
-                single2 = closest.single2
-                d1 = self.distance( single1.particle.getPos(), obj.getPos() )\
-                     - shellSize - single1.getRadius()
-                d2 = self.distance( single2.particle.getPos(), obj.getPos() )\
-                     - shellSize - single2.getRadius()
-                if d1 < 0.0 or d2 < 0.0:
-                    raise RuntimeError,\
-                      '%s overlaps with a particle in %s.' \
-                      % ( str( obj ), str( closest ) )
-                else:
-                    print '%s overlaps with %s.  ignoring because squeezed.' \
+                print '%s overlaps with %s.  ignoring because squeezed.' \
                           % ( str( obj ), str( closest ) )
             else:
                 raise RuntimeError,\

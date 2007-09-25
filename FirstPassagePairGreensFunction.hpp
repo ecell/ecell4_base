@@ -19,12 +19,12 @@ class FirstPassagePairGreensFunction
     static const Real TOLERANCE = 1e-6;
 
     // Relative cutoff used when obtaining series of alpha.
-    static const Real ALPHA_CUTOFF = 1e-8;
+    static const Real ALPHA_CUTOFF = 1e-10;
 
     static const Real MIN_T = 1e-18;
 
     static const unsigned int MAX_ORDER = 45;
-    static const unsigned int MAX_ALPHA_SEQ = 50;
+    static const unsigned int MAX_ALPHA_SEQ = 100;
 
 
 public:
@@ -185,17 +185,22 @@ protected:
     const Real getAlpha( const size_t n, const RealVector::size_type i ) const
     {
 	RealVector& alphaTable( this->alphaTable[n] );
-	
-	if( alphaTable.size() <= i )
+        const RealVector::size_type oldSize( alphaTable.size() );
+
+	if( oldSize <= i )
 	{
 	    alphaTable.resize( i+1 );
 	    const unsigned int offset( alphaOffset( n ) );
-	    alphaTable[i] = alpha0_i( i + offset );
-	}
-	else if( alphaTable[i] <= 0.0 )
-	{
-	    const unsigned int offset( alphaOffset( n ) );
-	    alphaTable[i] = alpha0_i( i + offset );
+
+            const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
+            gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
+
+            for( RealVector::size_type m( oldSize ); m <= i; ++m )
+            {
+                alphaTable[m] = alpha_i( m + offset, n, solver );
+            }
+
+            gsl_root_fsolver_free( solver );
 	}
 
 	return alphaTable[i];
@@ -206,14 +211,16 @@ protected:
     {
 	RealVector& alphaTable( this->alphaTable[0] );
 	
-	if( alphaTable.size() <= i )
+        const RealVector::size_type oldSize( alphaTable.size() );
+
+	if( oldSize <= i )
 	{
 	    alphaTable.resize( i+1 );
-	    alphaTable[i] = alpha0_i( i );
-	}
-	else if( alphaTable[i] <= 0.0 )
-	{
-	    alphaTable[i] = alpha0_i( i );
+
+            for( RealVector::size_type m( oldSize ); m <= i; ++m )
+            {
+                alphaTable[m] = alpha0_i( m );
+            }
 	}
 
 	return alphaTable[i];
@@ -341,7 +348,8 @@ protected:
     void updateAlphaTable( const unsigned int n, 
 			   const Real t ) const; 
 
-    void createPsurvTable( RealVector& psurvTable, const Real r0 ) const;
+    void createPsurvTable( RealVector& psurvTable, const Real r0, 
+                           const Real mint ) const;
     void createNum_r0Table( RealVector& num_r0Table, const Real r0 ) const;
 
     void makep_nTable( RealVector& p_nTable,
@@ -437,7 +445,7 @@ private:
     //mutable std::vector<RealVector> alphaTable;
 
     Real a;
-    
+    //Real alpha0_threshold;
 
 };
 

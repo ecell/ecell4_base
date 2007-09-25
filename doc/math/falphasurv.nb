@@ -1,220 +1,482 @@
-(************** Content-type: application/mathematica **************
-                     CreatedBy='Mathematica 5.2'
+(* Content-type: application/mathematica *)
 
-                    Mathematica-Compatible Notebook
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
 
-This notebook can be used with any Mathematica-compatible
-application, such as Mathematica, MathReader or Publicon. The data
-for the notebook starts with the line containing stars above.
+(* CreatedBy='Mathematica 6.0' *)
 
-To get the notebook into a Mathematica-compatible application, do
-one of the following:
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[     20629,        709]
+NotebookOptionsPosition[     18234,        624]
+NotebookOutlinePosition[     18566,        639]
+CellTagsIndexPosition[     18523,        636]
+WindowFrame->Normal
+ContainsDynamic->False*)
 
-* Save the data starting with the line of stars above into a file
-  with a name ending in .nb, then open the file inside the
-  application;
-
-* Copy the data starting with the line of stars above to the
-  clipboard, then use the Paste menu command inside the application.
-
-Data for notebooks contains only printable 7-bit ASCII and can be
-sent directly in email or through ftp in text mode.  Newlines can be
-CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
-
-NOTE: If you modify the data for this notebook not in a Mathematica-
-compatible application, you must delete the line below containing
-the word CacheID, otherwise Mathematica-compatible applications may
-try to use invalid cache data.
-
-For more information on notebooks and Mathematica-compatible 
-applications, contact Wolfram Research:
-  web: http://www.wolfram.com
-  email: info@wolfram.com
-  phone: +1-217-398-0700 (U.S.)
-
-Notebook reader applications are available free of charge from 
-Wolfram Research.
-*******************************************************************)
-
-(*CacheID: 232*)
-
-
-(*NotebookFileLineBreakTest
-NotebookFileLineBreakTest*)
-(*NotebookOptionsPosition[      8949,        272]*)
-(*NotebookOutlinePosition[      9581,        294]*)
-(*  CellTagsIndexPosition[      9537,        290]*)
-(*WindowFrame->Normal*)
-
-
-
+(* Beginning of Notebook Content *)
 Notebook[{
 
 Cell[CellGroupData[{
 Cell[BoxData[
-    \(falphasurv\  := \ 
-      u\ s\ Cos[\ u\ \((\ a\  - \ s\ )\)\ ]\  + \ \((\ 
-            1\  + \ h\ s\ )\)\ Sin[\ u\ \((\ a\  - \ s\ )\)\ ]\)], "Input"],
+ RowBox[{"$Assumptions", "=", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"r", ">", "0"}], ",", 
+    RowBox[{"r0", ">", "0"}], ",", 
+    RowBox[{"u", ">", "0"}], ",", 
+    RowBox[{"s", ">", "0"}], ",", 
+    RowBox[{"h", ">", "0"}], ",", 
+    RowBox[{"a", ">", "0"}], ",", 
+    RowBox[{"a", ">", "s"}], ",", " ", 
+    RowBox[{"r", "<", "a"}], ",", " ", 
+    RowBox[{"r0", "<", "a"}], ",", " ", 
+    RowBox[{"r", ">", "s"}], ",", " ", 
+    RowBox[{"r0", ">", "s"}], ",", " ", 
+    RowBox[{"D", ">", "0"}], ",", 
+    RowBox[{"t", ">", "0"}], ",", 
+    RowBox[{"n", "\[Element]", "Integers"}], ",", 
+    RowBox[{"n", ">", "0"}], ",", 
+    RowBox[{"theta", "\[GreaterEqual]", "0"}], ",", 
+    RowBox[{"theta", "\[LessEqual]", "\[Pi]"}], ",", " ", 
+    RowBox[{"gamma", ">", "0"}]}], "}"}]}]], "Input",
+ CellChangeTimes->{{3.399669477248418*^9, 3.3996694791506233`*^9}, {
+  3.399669614921514*^9, 3.399669618200058*^9}}],
 
 Cell[BoxData[
-    RowBox[{\(General::"spell1"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
-error: new symbol name \\\"\\!\\(falphasurv\\)\\\" is similar to existing \
-symbol \\\"\\!\\(falphaserv\\)\\\". \
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"r", ">", "0"}], ",", 
+   RowBox[{"r0", ">", "0"}], ",", 
+   RowBox[{"u", ">", "0"}], ",", 
+   RowBox[{"s", ">", "0"}], ",", 
+   RowBox[{"h", ">", "0"}], ",", 
+   RowBox[{"a", ">", "0"}], ",", 
+   RowBox[{"a", ">", "s"}], ",", 
+   RowBox[{"r", "<", "a"}], ",", 
+   RowBox[{"r0", "<", "a"}], ",", 
+   RowBox[{"r", ">", "s"}], ",", 
+   RowBox[{"r0", ">", "s"}], ",", 
+   RowBox[{"D", ">", "0"}], ",", 
+   RowBox[{"t", ">", "0"}], ",", 
+   RowBox[{"n", "\[Element]", "Integers"}], ",", 
+   RowBox[{"n", ">", "0"}], ",", 
+   RowBox[{"theta", "\[GreaterEqual]", "0"}], ",", 
+   RowBox[{"theta", "\[LessEqual]", "\[Pi]"}], ",", 
+   RowBox[{"gamma", ">", "0"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.399669170898428*^9, 3.399669208698984*^9, 
+  3.3996694796348963`*^9, 3.3996696188122663`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"falphasurv", " ", ":=", " ", 
+  RowBox[{
+   RowBox[{"u", " ", "s", " ", 
+    RowBox[{"Cos", "[", " ", 
+     RowBox[{"u", " ", 
+      RowBox[{"(", " ", 
+       RowBox[{"a", " ", "-", " ", "s"}], " ", ")"}]}], " ", "]"}]}], " ", 
+   "+", " ", 
+   RowBox[{
+    RowBox[{"(", " ", 
+     RowBox[{"1", " ", "+", " ", 
+      RowBox[{"h", " ", "s"}]}], " ", ")"}], " ", 
+    RowBox[{"Sin", "[", " ", 
+     RowBox[{"u", " ", 
+      RowBox[{"(", " ", 
+       RowBox[{"a", " ", "-", " ", "s"}], " ", ")"}]}], " ", 
+     "]"}]}]}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"General", "::", "\<\"spell1\"\>"}], 
+  RowBox[{
+  ":", " "}], "\<\"Possible spelling error: new symbol name \
+\\\"\\!\\(falphasurv\\)\\\" is similar to existing symbol \
+\\\"\\!\\(falphaserv\\)\\\". \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], "Message"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"trans", " ", ":=", " ", 
+   RowBox[{"{", " ", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"a_", " ", 
+       RowBox[{"Cos", "[", "z_", "]"}]}], "+", 
+      RowBox[{"b_", " ", 
+       RowBox[{"Sin", "[", "z_", "]"}]}]}], " ", "->", 
+     RowBox[{
+      RowBox[{"Sqrt", "[", 
+       RowBox[{"1", "+", 
+        RowBox[{
+         RowBox[{"b", "^", "2"}], "/", 
+         RowBox[{"a", "^", "2"}]}]}], "]"}], " ", "a", " ", 
+      RowBox[{"Cos", "[", 
+       RowBox[{"z", "-", 
+        RowBox[{"ArcTan", "[", 
+         RowBox[{"b", "/", "a"}], "]"}]}], "]"}]}]}], "}"}]}], 
+  "\[IndentingNewLine]"}]], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"falphasurv2", " ", "=", " ", 
+  RowBox[{"falphasurv", "  ", "/.", " ", "trans"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"s", " ", 
+  SqrtBox[
+   RowBox[{"1", "+", 
+    FractionBox[
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{"1", "+", 
+        RowBox[{"h", " ", "s"}]}], ")"}], "2"], 
+     RowBox[{
+      SuperscriptBox["s", "2"], " ", 
+      SuperscriptBox["u", "2"]}]]}]], " ", "u", " ", 
+  RowBox[{"Cos", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"a", "-", "s"}], ")"}], " ", "u"}], "-", 
+    RowBox[{"ArcTan", "[", 
+     FractionBox[
+      RowBox[{"1", "+", 
+       RowBox[{"h", " ", "s"}]}], 
+      RowBox[{"s", " ", "u"}]], "]"}]}], "]"}]}]], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"phase", " ", "=", " ", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{"a", "-", "s"}], ")"}], " ", "u"}], " ", "-", 
+   RowBox[{"ArcTan", "[", 
+    FractionBox[
+     RowBox[{"1", "+", 
+      RowBox[{"h", " ", "s"}]}], 
+     RowBox[{"s", " ", "u"}]], "]"}]}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{"a", "-", "s"}], ")"}], " ", "u"}], "-", 
+  RowBox[{"ArcTan", "[", 
+   FractionBox[
+    RowBox[{"1", "+", 
+     RowBox[{"h", " ", "s"}]}], 
+    RowBox[{"s", " ", "u"}]], "]"}]}]], "Output",
+ CellChangeTimes->{3.399673526779499*^9}]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{3.399669759692897*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"falphaaux", " ", ":=", " ", 
+   RowBox[{"phase", " ", "-", " ", 
+    RowBox[{"(", " ", 
+     RowBox[{
+      RowBox[{"n", " ", "Pi"}], "  ", "+", " ", 
+      RowBox[{"Pi", "/", " ", "2"}]}], ")"}]}]}], " ", 
+  "\[IndentingNewLine]"}]], "Input"],
+
+Cell["when k -> Inifinity, it becomes simple.  ", "Text",
+ CellChangeTimes->{{3.3996695761868*^9, 3.399669601914014*^9}, {
+  3.399673623798175*^9, 3.399673637542103*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Reduce", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"falphaaux", " ", "\[Equal]", " ", "0"}], "/.", " ", 
+      RowBox[{"h", "\[Rule]", "Infinity"}]}], "//", " ", "Simplify"}], ",", 
+    "u"}], "]"}], " ", "//", " ", "Simplify"}]], "Input",
+ CellChangeTimes->{{3.399673517651574*^9, 3.399673533687056*^9}, {
+  3.3996735710902557`*^9, 3.3996736190169153`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"a", "\[NotEqual]", "s"}], "&&", 
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"1", "+", "n"}], ")"}], " ", "\[Pi]"}], 
+    RowBox[{"a", "-", "s"}]], "\[Equal]", "u"}]}]], "Output",
+ CellChangeTimes->{{3.3996735236356573`*^9, 3.3996735339355373`*^9}, {
+  3.399673575082366*^9, 3.399673619558457*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{"f", " ", "=", " ", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"Exp", "[", 
+       RowBox[{
+        RowBox[{"-", "D"}], " ", "t", " ", "u", " ", "u"}], " ", "]"}], "  ", 
+      "/", " ", "u"}], " ", "-", " ", "thd"}], " ", "\[Equal]", " ", 
+    "0"}]}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"-", "thd"}], "+", 
+   FractionBox[
+    SuperscriptBox["\[ExponentialE]", 
+     RowBox[{
+      RowBox[{"-", "D"}], " ", "t", " ", 
+      SuperscriptBox["u", "2"]}]], "u"]}], "\[Equal]", "0"}]], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"FullSimplify", "[", 
+  RowBox[{"Assuming", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"u", ">", "0"}], "&&", 
+     RowBox[{"t", ">", "0"}], "&&", 
+     RowBox[{"D", ">", "0"}], " ", "&&", " ", 
+     RowBox[{"thd", ">", "0"}]}], ",", 
+    RowBox[{"Solve", "[", 
+     RowBox[{"f", " ", ",", "u"}], "]"}]}], "]"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"InverseFunction", "::", "\<\"ifun\"\>"}], 
+  RowBox[{
+  ":", " "}], "\<\"Inverse functions are being used. Values may be lost for \
+multivalued inverses. \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"InverseFunction::ifun\\\"]\\)\"\>"}]], "Message"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Solve", "::", "\<\"ifun\"\>"}], 
+  RowBox[{
+  ":", " "}], "\<\"Inverse functions are being used by \\!\\(Solve\\), so \
+some solutions may not be found; use Reduce for complete solution \
+information. \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"Solve::ifun\\\"]\\)\"\>"}]], "Message"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"u", "\[Rule]", 
+     RowBox[{"-", 
+      FractionBox[
+       SqrtBox[
+        RowBox[{"ProductLog", "[", 
+         FractionBox[
+          RowBox[{"2", " ", "D", " ", "t"}], 
+          SuperscriptBox["thd", "2"]], "]"}]], 
+       RowBox[{
+        SqrtBox["2"], " ", 
+        SqrtBox["D"], " ", 
+        SqrtBox["t"]}]]}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"u", "\[Rule]", 
+     FractionBox[
+      SqrtBox[
+       RowBox[{"ProductLog", "[", 
+        FractionBox[
+         RowBox[{"2", " ", "D", " ", "t"}], 
+         SuperscriptBox["thd", "2"]], "]"}]], 
+      RowBox[{
+       SqrtBox["2"], " ", 
+       SqrtBox["D"], " ", 
+       SqrtBox["t"]}]]}], "}"}]}], "}"}]], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"%", "  ", "/.", " ", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"D", "->", "0.001"}], ",", " ", 
+    RowBox[{"t", "->", "0.01"}], ",", " ", 
+    RowBox[{"thd", "->", "30"}]}], "}"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"u", "\[Rule]", 
+     RowBox[{"-", "0.03333333296296298`"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"u", "\[Rule]", "0.03333333296296298`"}], "}"}]}], 
+  "}"}]], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Clear", "[", 
+  RowBox[{"D", ",", "t", ",", "thd"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Clear", "::", "\<\"wrsym\"\>"}], 
+  RowBox[{
+  ":", " "}], "\<\"Symbol \\!\\(D\\) is Protected. \
 \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
-\\\", ButtonFrame->None, ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], \
+\\\", ButtonFrame->None, ButtonData:>\\\"General::wrsym\\\"]\\)\"\>"}]], \
 "Message"]
 }, Open  ]],
 
-Cell[BoxData[
-    \(\(\(trans\  := \ {\ 
-        a_\ Cos[z_] + b_\ Sin[z_]\  -> 
-          Sqrt[1 + b^2/a^2]\ a\ Cos[
-              z - ArcTan[b/a]]}\)\(\[IndentingNewLine]\)
-    \)\)], "Input"],
-
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(falphasurv2\  = \ falphasurv\ \  /. \ trans\)], "Input"],
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{"f", " ", "=", " ", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"Exp", "[", 
+        RowBox[{
+         RowBox[{"-", "D"}], " ", "t", " ", 
+         RowBox[{"alphai", "^", "2"}]}], " ", "]"}], " ", "/", " ", 
+       "alphai"}], " ", ")"}], " ", "/", " ", 
+     RowBox[{"(", " ", 
+      RowBox[{
+       RowBox[{"Exp", "[", " ", 
+        RowBox[{
+         RowBox[{"-", " ", "D"}], " ", "t", " ", 
+         RowBox[{"alpha0", "^", "2"}]}], "]"}], "/", "alpha0"}], ")"}]}], " ",
+     "\[Equal]", " ", "thd"}]}]}]], "Input"],
 
 Cell[BoxData[
-    \(s\ \@\(1 + \((1 + h\ s)\)\^2\/\(s\^2\ u\^2\)\)\ u\ Cos[\((a - s)\)\ u - 
-          ArcTan[\(1 + h\ s\)\/\(s\ u\)]]\)], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
-    \(phase\  = \ \((a - s)\)\ u\  - 
-        ArcTan[\(1 + h\ s\)\/\(s\ u\)]\)], "Input"],
-
-Cell[BoxData[
-    \(\((a - s)\)\ u - ArcTan[\(1 + h\ s\)\/\(s\ u\)]\)], "Output"]
-}, Open  ]],
-
-Cell[BoxData[
-    \(\(\(falphaaux\  := \ 
-      phase\  - \ \((\ n\ Pi\ \  + \ Pi/\ 2)\)\)\(\ \)\(\[IndentingNewLine]\)
-    \)\)], "Input"],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
-    \(\(\(\[IndentingNewLine]\)\(f\  = \ 
-      Exp[\(-D\)\ t\ u\ u\ ]\ \ /\ u\  - \ thd\  \[Equal] \ 0\)\)\)], "Input"],
-
-Cell[BoxData[
-    \(\(-thd\) + \[ExponentialE]\^\(\(-D\)\ t\ u\^2\)\/u \[Equal] 
-      0\)], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
-    \(FullSimplify[
-      Assuming[u > 0 && t > 0 && D > 0\  && \ thd > 0, 
-        Solve[f\ , u]]]\)], "Input"],
-
-Cell[BoxData[
-    RowBox[{\(InverseFunction::"ifun"\), \(\(:\)\(\ \)\), "\<\"Inverse \
-functions are being used. Values may be lost for multivalued inverses. \\!\\(\
-\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\\\", \
-ButtonFrame->None, ButtonData:>\\\"InverseFunction::ifun\\\"]\\)\"\>"}]], \
-"Message"],
-
-Cell[BoxData[
-    RowBox[{\(Solve::"ifun"\), \(\(:\)\(\ \)\), "\<\"Inverse functions are \
-being used by \\!\\(Solve\\), so some solutions may not be found; use Reduce \
-for complete solution information. \
-\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
-\\\", ButtonFrame->None, ButtonData:>\\\"Solve::ifun\\\"]\\)\"\>"}]], \
-"Message"],
-
-Cell[BoxData[
-    \({{u \[Rule] \(-\(\@ProductLog[\(2\ D\ t\)\/thd\^2]\/\(\@2\ \@D\ \@t\)\)\
-\)}, {u \[Rule] \@ProductLog[\(2\ D\ t\)\/thd\^2]\/\(\@2\ \@D\ \@t\)}}\)], \
-"Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
-    \(%\ \  /. \ {D -> 0.001, \ t -> 0.01, \ thd -> 30}\)], "Input"],
-
-Cell[BoxData[
-    \({{u \[Rule] \(-0.03333333296296298`\)}, {u \[Rule] 
-          0.03333333296296298`}}\)], "Output"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
-    \(Clear[D, t, thd]\)], "Input"],
-
-Cell[BoxData[
-    RowBox[{\(Clear::"wrsym"\), \(\(:\)\(\ \)\), "\<\"Symbol \\!\\(D\\) is \
-Protected. \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
-ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
-ButtonData:>\\\"General::wrsym\\\"]\\)\"\>"}]], "Message"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
-    \(\(\(\[IndentingNewLine]\)\(f\  = \ \((Exp[\(-D\)\ t\ alphai^2\ ]\ /\ 
-              alphai\ )\)\ /\ \((\ 
-            Exp[\ \(-\ D\)\ t\ alpha0^2]/alpha0)\)\  \[Equal] \ 
-        thd\)\)\)], "Input"],
-
-Cell[BoxData[
-    RowBox[{\(General::"spell1"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
-error: new symbol name \\\"\\!\\(alpha0\\)\\\" is similar to existing symbol \
+ RowBox[{
+  RowBox[{"General", "::", "\<\"spell1\"\>"}], 
+  RowBox[{
+  ":", " "}], "\<\"Possible spelling error: new symbol name \
+\\\"\\!\\(alpha0\\)\\\" is similar to existing symbol \
 \\\"\\!\\(falpha0\\)\\\". \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
 ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
 ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], "Message"],
 
 Cell[BoxData[
-    \(\(alpha0\ \[ExponentialE]\^\(alpha0\^2\ D\ t - alphai\^2\ D\ \
-t\)\)\/alphai \[Equal] thd\)], "Output"]
+ RowBox[{
+  FractionBox[
+   RowBox[{"alpha0", " ", 
+    SuperscriptBox["\[ExponentialE]", 
+     RowBox[{
+      RowBox[{
+       SuperscriptBox["alpha0", "2"], " ", "D", " ", "t"}], "-", 
+      RowBox[{
+       SuperscriptBox["alphai", "2"], " ", "D", " ", "t"}]}]]}], "alphai"], 
+  "\[Equal]", "thd"}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(\(\(FullSimplify[Solve[f, alphai]]\)\(\[IndentingNewLine]\)
-    \)\)], "Input",
-  FontFamily->"Nimbus mono l",
-  FontSize->16],
+ RowBox[{
+  RowBox[{"FullSimplify", "[", 
+   RowBox[{"Solve", "[", 
+    RowBox[{"f", ",", "alphai"}], "]"}], "]"}], 
+  "\[IndentingNewLine]"}]], "Input",
+ FontFamily->"Nimbus mono l",
+ FontSize->16],
 
 Cell[BoxData[
-    RowBox[{\(InverseFunction::"ifun"\), \(\(:\)\(\ \)\), "\<\"Inverse \
-functions are being used. Values may be lost for multivalued inverses. \\!\\(\
-\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\\\", \
-ButtonFrame->None, ButtonData:>\\\"InverseFunction::ifun\\\"]\\)\"\>"}]], \
-"Message"],
+ RowBox[{
+  RowBox[{"InverseFunction", "::", "\<\"ifun\"\>"}], 
+  RowBox[{
+  ":", " "}], "\<\"Inverse functions are being used. Values may be lost for \
+multivalued inverses. \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"InverseFunction::ifun\\\"]\\)\"\>"}]], "Message"],
 
 Cell[BoxData[
-    RowBox[{\(Solve::"ifun"\), \(\(:\)\(\ \)\), "\<\"Inverse functions are \
-being used by \\!\\(Solve\\), so some solutions may not be found; use Reduce \
-for complete solution information. \
-\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
-\\\", ButtonFrame->None, ButtonData:>\\\"Solve::ifun\\\"]\\)\"\>"}]], \
-"Message"],
+ RowBox[{
+  RowBox[{"Solve", "::", "\<\"ifun\"\>"}], 
+  RowBox[{
+  ":", " "}], "\<\"Inverse functions are being used by \\!\\(Solve\\), so \
+some solutions may not be found; use Reduce for complete solution \
+information. \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
+ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"Solve::ifun\\\"]\\)\"\>"}]], "Message"],
 
 Cell[BoxData[
-    \({{alphai \[Rule] \(-\(\@ProductLog[\(2\ alpha0\^2\ D\ \[ExponentialE]\^\
-\(2\ alpha0\^2\ D\ t\)\ t\)\/thd\^2]\/\(\@2\ \@D\ \@t\)\)\)}, {alphai \[Rule] \
-\@ProductLog[\(2\ alpha0\^2\ D\ \[ExponentialE]\^\(2\ alpha0\^2\ D\ t\)\ \
-t\)\/thd\^2]\/\(\@2\ \@D\ \@t\)}}\)], "Output"]
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"alphai", "\[Rule]", 
+     RowBox[{"-", 
+      FractionBox[
+       SqrtBox[
+        RowBox[{"ProductLog", "[", 
+         FractionBox[
+          RowBox[{"2", " ", 
+           SuperscriptBox["alpha0", "2"], " ", "D", " ", 
+           SuperscriptBox["\[ExponentialE]", 
+            RowBox[{"2", " ", 
+             SuperscriptBox["alpha0", "2"], " ", "D", " ", "t"}]], " ", "t"}],
+           
+          SuperscriptBox["thd", "2"]], "]"}]], 
+       RowBox[{
+        SqrtBox["2"], " ", 
+        SqrtBox["D"], " ", 
+        SqrtBox["t"]}]]}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"alphai", "\[Rule]", 
+     FractionBox[
+      SqrtBox[
+       RowBox[{"ProductLog", "[", 
+        FractionBox[
+         RowBox[{"2", " ", 
+          SuperscriptBox["alpha0", "2"], " ", "D", " ", 
+          SuperscriptBox["\[ExponentialE]", 
+           RowBox[{"2", " ", 
+            SuperscriptBox["alpha0", "2"], " ", "D", " ", "t"}]], " ", "t"}], 
+         
+         SuperscriptBox["thd", "2"]], "]"}]], 
+      RowBox[{
+       SqrtBox["2"], " ", 
+       SqrtBox["D"], " ", 
+       SqrtBox["t"]}]]}], "}"}]}], "}"}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(falphasurv\  \[Equal] \ 0\  /. \ s \[Rule] 0\)], "Input"],
+ RowBox[{
+  RowBox[{"falphasurv", " ", "\[Equal]", " ", "0"}], " ", "/.", " ", 
+  RowBox[{"s", "\[Rule]", "0"}]}]], "Input"],
 
 Cell[BoxData[
-    \(Sin[a\ u] \[Equal] 0\)], "Output"]
+ RowBox[{
+  RowBox[{"Sin", "[", 
+   RowBox[{"a", " ", "u"}], "]"}], "\[Equal]", "0"}]], "Output"]
 }, Open  ]],
 
 Cell[BoxData[""], "Input"],
@@ -222,160 +484,235 @@ Cell[BoxData[""], "Input"],
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(Reduce[\((falphasurv\  \[Equal] \ 0\  /. \ s \[Rule] 0\ )\)\  && \ 
-        a > 0, \ u]\)], "Input"],
+ RowBox[{"Reduce", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"falphasurv", " ", "\[Equal]", " ", "0"}], " ", "/.", " ", 
+      RowBox[{"s", "\[Rule]", "0"}]}], " ", ")"}], " ", "&&", " ", 
+    RowBox[{"a", ">", "0"}]}], ",", " ", "u"}], "]"}]], "Input"],
 
 Cell[BoxData[
-    \(C[1] \[Element] Integers && 
-      a > 0 && \((u \[Equal] \(2\ \[Pi]\ C[1]\)\/a || 
-          u \[Equal] \(-\(\(\(-\[Pi]\) - 
-                    2\ \[Pi]\ C[1]\)\/a\)\))\)\)], "Output"]
+ RowBox[{
+  RowBox[{
+   RowBox[{"C", "[", "1", "]"}], "\[Element]", "Integers"}], "&&", 
+  RowBox[{"a", ">", "0"}], "&&", 
+  RowBox[{"(", 
+   RowBox[{
+    RowBox[{"u", "\[Equal]", 
+     FractionBox[
+      RowBox[{"2", " ", "\[Pi]", " ", 
+       RowBox[{"C", "[", "1", "]"}]}], "a"]}], "||", 
+    RowBox[{"u", "\[Equal]", 
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{
+        RowBox[{"-", "\[Pi]"}], "-", 
+        RowBox[{"2", " ", "\[Pi]", " ", 
+         RowBox[{"C", "[", "1", "]"}]}]}], "a"]}]}]}], ")"}]}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(p1\  = \ 
-      1/\((2\ a\ a\ r)\)\ Sum[\ 
-          n\ Exp[\ \(-D\)\ n^2\ Pi\ Pi\ t\ /\ \((a^2\ )\)]\ Sin[\ 
-              n\ Pi\ r/a], \ {n, \ Infinity}]\)], "Input"],
+ RowBox[{"p1", " ", "=", " ", 
+  RowBox[{
+   RowBox[{"1", "/", 
+    RowBox[{"(", 
+     RowBox[{"2", " ", "a", " ", "a", " ", "r"}], ")"}]}], " ", 
+   RowBox[{"Sum", "[", " ", 
+    RowBox[{
+     RowBox[{"n", " ", 
+      RowBox[{"Exp", "[", " ", 
+       RowBox[{
+        RowBox[{"-", "D"}], " ", 
+        RowBox[{"n", "^", "2"}], " ", "Pi", " ", "Pi", " ", 
+        RowBox[{"t", " ", "/", " ", 
+         RowBox[{"(", 
+          RowBox[{"a", "^", "2"}], " ", ")"}]}]}], "]"}], " ", 
+      RowBox[{"Sin", "[", " ", 
+       RowBox[{"n", " ", "Pi", " ", 
+        RowBox[{"r", "/", "a"}]}], "]"}]}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"n", ",", " ", "Infinity"}], "}"}]}], "]"}]}]}]], "Input"],
 
 Cell[BoxData[
-    \(\(\[Sum]\+\(n = 1\)\%\[Infinity] \[ExponentialE]\^\(-\(\(D\ n\^2\ \[Pi]\
-\^2\ t\)\/a\^2\)\)\ n\ Sin[\(n\ \[Pi]\ r\)\/a]\)\/\(2\ a\^2\ r\)\)], "Output"]
+ FractionBox[
+  RowBox[{
+   UnderoverscriptBox["\[Sum]", 
+    RowBox[{"n", "=", "1"}], "\[Infinity]"], 
+   RowBox[{
+    SuperscriptBox["\[ExponentialE]", 
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"D", " ", 
+        SuperscriptBox["n", "2"], " ", 
+        SuperscriptBox["\[Pi]", "2"], " ", "t"}], 
+       SuperscriptBox["a", "2"]]}]], " ", "n", " ", 
+    RowBox[{"Sin", "[", 
+     FractionBox[
+      RowBox[{"n", " ", "\[Pi]", " ", "r"}], "a"], "]"}]}]}], 
+  RowBox[{"2", " ", 
+   SuperscriptBox["a", "2"], " ", "r"}]]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(p1m\  = \ \ \ \ 1/\((2\ a\ a\ r)\)\ Sum[\ 
-            n\ Exp[\ \(-\ D\)\ u^2\ t\ /\ 4]\ Sin[\ u\ r\ /\ 2], \ {n, 
-              Infinity}]\  /. \ 
-        u \[Rule] \ 2\ Pi\ \(\(n\)\(/\)\(a\)\(\ \)\)\)], "Input"],
+ RowBox[{"p1m", " ", "=", "    ", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"1", "/", 
+     RowBox[{"(", 
+      RowBox[{"2", " ", "a", " ", "a", " ", "r"}], ")"}]}], " ", 
+    RowBox[{"Sum", "[", " ", 
+     RowBox[{
+      RowBox[{"n", " ", 
+       RowBox[{"Exp", "[", " ", 
+        RowBox[{
+         RowBox[{"-", " ", "D"}], " ", 
+         RowBox[{"u", "^", "2"}], " ", 
+         RowBox[{"t", " ", "/", " ", "4"}]}], "]"}], " ", 
+       RowBox[{"Sin", "[", " ", 
+        RowBox[{"u", " ", 
+         RowBox[{"r", " ", "/", " ", "2"}]}], "]"}]}], ",", " ", 
+      RowBox[{"{", 
+       RowBox[{"n", ",", "Infinity"}], "}"}]}], "]"}]}], " ", "/.", " ", 
+   RowBox[{"u", "\[Rule]", " ", 
+    RowBox[{"2", " ", "Pi", " ", 
+     RowBox[{
+      RowBox[{"n", "/", "a"}], " "}]}]}]}]}]], "Input"],
 
 Cell[BoxData[
-    RowBox[{\(Sum::"div"\), \(\(:\)\(\ \)\), "\<\"Sum does not converge. \
-\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
-\\\", ButtonFrame->None, ButtonData:>\\\"Sum::div\\\"]\\)\"\>"}]], "Message"],
+ RowBox[{
+  RowBox[{"Sum", "::", "\<\"div\"\>"}], 
+  RowBox[{
+  ":", " "}], "\<\"Sum does not converge. \\!\\(\\*ButtonBox[\\\"More\
+\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"Sum::div\\\"]\\)\"\>"}]], "Message"],
 
 Cell[BoxData[
-    RowBox[{\(Sum::"div"\), \(\(:\)\(\ \)\), "\<\"Sum does not converge. \
-\\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\
-\\\", ButtonFrame->None, ButtonData:>\\\"Sum::div\\\"]\\)\"\>"}]], "Message"],
+ RowBox[{
+  RowBox[{"Sum", "::", "\<\"div\"\>"}], 
+  RowBox[{
+  ":", " "}], "\<\"Sum does not converge. \\!\\(\\*ButtonBox[\\\"More\
+\[Ellipsis]\\\", ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
+ButtonData:>\\\"Sum::div\\\"]\\)\"\>"}]], "Message"],
 
 Cell[BoxData[
-    \(\(\[Sum]\+\(n = 1\)\%\[Infinity] \[ExponentialE]\^\(-\(\(D\ n\^2\ \[Pi]\
-\^2\ t\)\/a\^2\)\)\ n\ Sin[\(n\ \[Pi]\ r\)\/a]\)\/\(2\ a\^2\ r\)\)], "Output"]
+ FractionBox[
+  RowBox[{
+   UnderoverscriptBox["\[Sum]", 
+    RowBox[{"n", "=", "1"}], "\[Infinity]"], 
+   RowBox[{
+    SuperscriptBox["\[ExponentialE]", 
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"D", " ", 
+        SuperscriptBox["n", "2"], " ", 
+        SuperscriptBox["\[Pi]", "2"], " ", "t"}], 
+       SuperscriptBox["a", "2"]]}]], " ", "n", " ", 
+    RowBox[{"Sin", "[", 
+     FractionBox[
+      RowBox[{"n", " ", "\[Pi]", " ", "r"}], "a"], "]"}]}]}], 
+  RowBox[{"2", " ", 
+   SuperscriptBox["a", "2"], " ", "r"}]]], "Output"]
 }, Open  ]],
 
 Cell[BoxData[""], "Input"]
 },
-FrontEndVersion->"5.2 for X",
-ScreenRectangle->{{0, 3200}, {0, 1200}},
 WindowSize->{704, 607},
-WindowMargins->{{Automatic, 787}, {220, Automatic}}
+WindowMargins->{{Automatic, 0}, {Automatic, 25}},
+FrontEndVersion->"6.0 for Linux x86 (64-bit) (June 19, 2007)",
+StyleDefinitions->"Default.nb"
 ]
+(* End of Notebook Content *)
 
-(*******************************************************************
-Cached data follows.  If you edit this Notebook file directly, not
-using Mathematica, you must remove the line containing CacheID at
-the top of  the file.  The cache data will then be recreated when
-you save this file from within Mathematica.
-*******************************************************************)
-
+(* Internal cache information *)
 (*CellTagsOutline
 CellTagsIndex->{}
 *)
-
 (*CellTagsIndex
 CellTagsIndex->{}
 *)
-
 (*NotebookFileOutline
 Notebook[{
-
 Cell[CellGroupData[{
-Cell[1776, 53, 170, 3, 27, "Input"],
-Cell[1949, 58, 370, 6, 33, "Message"]
+Cell[590, 23, 924, 23, 77, "Input"],
+Cell[1517, 48, 840, 22, 52, "Output"]
 }, Open  ]],
-Cell[2334, 67, 194, 5, 43, "Input"],
-
 Cell[CellGroupData[{
-Cell[2553, 76, 76, 1, 27, "Input"],
-Cell[2632, 79, 148, 2, 50, "Output"]
+Cell[2394, 75, 554, 17, 32, "Input"],
+Cell[2951, 94, 399, 8, 65, "Message"]
 }, Open  ]],
-
+Cell[3365, 105, 636, 20, 55, "Input"],
 Cell[CellGroupData[{
-Cell[2817, 86, 103, 2, 44, "Input"],
-Cell[2923, 90, 81, 1, 44, "Output"]
+Cell[4026, 129, 117, 2, 32, "Input"],
+Cell[4146, 133, 595, 21, 59, "Output"]
 }, Open  ]],
-Cell[3019, 94, 139, 3, 43, "Input"],
-
 Cell[CellGroupData[{
-Cell[3183, 101, 134, 2, 43, "Input"],
-Cell[3320, 105, 102, 2, 49, "Output"]
+Cell[4778, 159, 302, 10, 52, "Input"],
+Cell[5083, 171, 295, 10, 45, "Output"]
 }, Open  ]],
-
+Cell[5393, 184, 68, 1, 32, "Input"],
+Cell[5464, 187, 278, 8, 55, "Input"],
+Cell[5745, 197, 170, 2, 31, "Text"],
 Cell[CellGroupData[{
-Cell[3459, 112, 126, 3, 27, "Input"],
-Cell[3588, 117, 331, 5, 33, "Message"],
-Cell[3922, 124, 368, 6, 33, "Message"],
-Cell[4293, 132, 179, 3, 71, "Output"]
+Cell[5940, 203, 410, 10, 32, "Input"],
+Cell[6353, 215, 362, 10, 45, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[4509, 140, 82, 1, 27, "Input"],
-Cell[4594, 143, 118, 2, 27, "Output"]
+Cell[6752, 230, 333, 10, 55, "Input"],
+Cell[7088, 242, 249, 8, 51, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[4749, 150, 49, 1, 27, "Input"],
-Cell[4801, 153, 266, 4, 20, "Message"]
+Cell[7374, 255, 353, 10, 32, "Input"],
+Cell[7730, 267, 360, 7, 45, "Message"],
+Cell[8093, 276, 397, 8, 65, "Message"],
+Cell[8493, 286, 754, 27, 64, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[5104, 162, 219, 4, 43, "Input"],
-Cell[5326, 168, 361, 5, 33, "Message"],
-Cell[5690, 175, 123, 2, 52, "Output"]
+Cell[9284, 318, 216, 6, 32, "Input"],
+Cell[9503, 326, 245, 8, 31, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[5850, 182, 146, 4, 55, "Input"],
-Cell[5999, 188, 331, 5, 33, "Message"],
-Cell[6333, 195, 368, 6, 33, "Message"],
-Cell[6704, 203, 295, 4, 142, "Output"]
+Cell[9785, 339, 93, 2, 32, "Input"],
+Cell[9881, 343, 297, 7, 24, "Message"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[7036, 212, 77, 1, 27, "Input"],
-Cell[7116, 215, 54, 1, 27, "Output"]
+Cell[10215, 355, 605, 18, 55, "Input"],
+Cell[10823, 375, 392, 8, 45, "Message"],
+Cell[11218, 385, 325, 10, 53, "Output"]
 }, Open  ]],
-Cell[7185, 219, 26, 0, 27, "Input"],
-
 Cell[CellGroupData[{
-Cell[7236, 223, 120, 2, 27, "Input"],
-Cell[7359, 227, 206, 4, 44, "Output"]
+Cell[11580, 400, 212, 7, 73, "Input"],
+Cell[11795, 409, 360, 7, 45, "Message"],
+Cell[12158, 418, 397, 8, 65, "Message"],
+Cell[12558, 428, 1177, 37, 161, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[7602, 236, 188, 4, 27, "Input"],
-Cell[7793, 242, 171, 2, 68, "Output"]
+Cell[13772, 470, 138, 3, 32, "Input"],
+Cell[13913, 475, 111, 3, 31, "Output"]
 }, Open  ]],
-
+Cell[14039, 481, 26, 0, 32, "Input"],
 Cell[CellGroupData[{
-Cell[8001, 249, 233, 4, 27, "Input"],
-Cell[8237, 255, 245, 3, 20, "Message"],
-Cell[8485, 260, 245, 3, 20, "Message"],
-Cell[8733, 265, 171, 2, 68, "Output"]
+Cell[14090, 485, 300, 8, 32, "Input"],
+Cell[14393, 495, 543, 17, 45, "Output"]
 }, Open  ]],
-Cell[8919, 270, 26, 0, 27, "Input"]
+Cell[CellGroupData[{
+Cell[14973, 517, 709, 20, 55, "Input"],
+Cell[15685, 539, 556, 17, 67, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[16278, 561, 794, 23, 55, "Input"],
+Cell[17075, 586, 276, 6, 24, "Message"],
+Cell[17354, 594, 276, 6, 24, "Message"],
+Cell[17633, 602, 556, 17, 67, "Output"]
+}, Open  ]],
+Cell[18204, 622, 26, 0, 32, "Input"]
 }
 ]
 *)
 
-
-
-(*******************************************************************
-End of Mathematica Notebook file.
-*******************************************************************)
-
+(* End of internal cache information *)

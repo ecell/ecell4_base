@@ -38,6 +38,7 @@ FirstPassagePairGreensFunction( const Real D,
     h( kf / ( 4.0 * M_PI * Sigma * Sigma * D ) ),
     hsigma_p_1( 1.0 + h * Sigma ),
     a( INFINITY )
+//    alpha0_threshold( 0.0 )
 {
     ; // do nothing
 }
@@ -49,9 +50,18 @@ FirstPassagePairGreensFunction::~FirstPassagePairGreensFunction()
 
 void FirstPassagePairGreensFunction::seta( const Real a )
 {
-    THROW_UNLESS( std::invalid_argument, a >= this->getSigma() );
+    const Real sigma( this->getSigma() );
+
+    THROW_UNLESS( std::invalid_argument, a >= sigma );
 
     this->a = a;
+
+    /*
+    alpha0_threshold = sqrt( hsigma_p_1 / 
+                             ( ( a * sigma - sigma * sigma ) * TOLERANCE ) );
+
+    assert( hsigma_p_1 / ( alpha0_threshold * sigma ) < 1.0 );
+    */
 
     clearAlphaTable();
 }
@@ -198,7 +208,6 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
     alphaTable_0.reserve( MAX_ALPHA_SEQ );
 
     const Real alpha0_0( this->alpha0_i( 0 ) );
-    const Real alpha0_0_sq( alpha0_0 * alpha0_0 );
     alphaTable_0.push_back( alpha0_0 );
 
     const Real Dt( this->getD() * t );
@@ -206,13 +215,14 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
     const Real alpha_cutoff( sqrt( ( - log( ALPHA_CUTOFF ) / Dt )
 				   + alpha0_0 * alpha0_0 ) );
 
+
     unsigned int i( 1 );
     while( true )
     {
 	const Real alpha0_i( this->alpha0_i( i ) );
 	alphaTable_0.push_back( alpha0_i );
 
-	if( alpha0_i > alpha_cutoff )
+	if( alpha0_i > alpha_cutoff && i >= 10 ) // make at least 10 terms
 	{
 	    break;
 	}
@@ -225,7 +235,6 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 	}
     }
 }
-
 
 const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
 						    const Integer n ) const
@@ -942,7 +951,7 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
 
 void 
 FirstPassagePairGreensFunction::
-createPsurvTable( RealVector& psurvTable, const Real r0 ) const
+createPsurvTable( RealVector& psurvTable, const Real r0, const Real mint ) const
 {
     const RealVector& alphaTable_0( this->getAlphaTable( 0 ) );
 
@@ -953,6 +962,45 @@ createPsurvTable( RealVector& psurvTable, const Real r0 ) const
 		    std::back_inserter( psurvTable ),
 		    boost::bind( &FirstPassagePairGreensFunction::p_survival_i,
 				 this, _1, r0 ) );
+
+
+/*
+    psurvTable.clear();
+    psurvTable.reserve( MAX_ALPHA_SEQ );
+
+    const Real alpha0( getAlpha0( 0 ) );
+    const Real minExp0( std::exp( - getD() * mint * alpha0 * alpha0 ) );
+    const Real psurv0( p_survival_i( alpha0, r0 ) );
+    psurvTable.push_back( psurv0 );
+
+    const Real threshold( fabs( psurv0 * minExp0 * TOLERANCE ) );
+
+    unsigned int i( 1 );
+    while( true )
+    {
+        const Real alpha( getAlpha0( i ) );
+        const Real minExp( std::exp( - getD() * mint * alpha * alpha ) );
+        const Real psurv( p_survival_i( alpha, r0 ) );
+        psurvTable.push_back( psurv );
+
+        if( fabs( psurv * minExp ) < threshold )
+        {
+            break;
+        }
+
+        if( i >= MAX_ALPHA_SEQ )
+        {
+	    std::cerr << "MAX_ALPHA_SEQ ( " << MAX_ALPHA_SEQ << 
+                " ) reached in createPsurvTable.  alpha = " << alpha <<
+                ", value = " << psurv * minExp << ", threshold = " <<
+                threshold<< std::endl;
+
+            break;
+        }
+
+        ++i;
+    }
+*/
 }
 
 
@@ -1100,7 +1148,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
     {
 	const Real p_i( f( i ) );
 	pTable.push_back( p_i );
-	
+
 	if( threshold >= fabs( p_i ) ) // '=' is important when p0 is so small.
 	{
 	    extrapolationNeeded = false;
@@ -1321,10 +1369,10 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     Real low( 1e-5 );
     Real high( 1.0 );
 
-    this->updateAlphaTable0( high );
+    this->updateAlphaTable0( low );
 
     RealVector psurvTable;
-    this->createPsurvTable( psurvTable, r0 );
+    this->createPsurvTable( psurvTable, r0, low );
 
     p_survival_params params = { this, r0, psurvTable, rnd };
 
@@ -1349,13 +1397,17 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 //	this->updateAlphaTable0( high );
     }
 
-    this->updateAlphaTable0( low );
-    this->createPsurvTable( psurvTable, r0 );
+//    this->updateAlphaTable0( low );
+//    this->createPsurvTable( psurvTable, r0, low );
 
     Real low_value( GSL_FN_EVAL( &F, low ) );
     while( low_value > 0.0 )
     {
 	low *= .1;
+
+	this->updateAlphaTable0( low );
+	this->createPsurvTable( psurvTable, r0, low );
+
         const Real low_value_new( GSL_FN_EVAL( &F, low ) );
 
 	printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value_new );
@@ -1371,9 +1423,6 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	}
 
         low_value = low_value_new;
-
-	this->updateAlphaTable0( low );
-	this->createPsurvTable( psurvTable, r0 );
     }
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
