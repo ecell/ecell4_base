@@ -26,7 +26,7 @@ s.addReactionType( r2 )
 s.setAllRepulsive()
 
 s.throwInParticles( S, 0, box1 )
-s.throwInParticles( P, 60, box1 )
+s.throwInParticles( P, 600, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )

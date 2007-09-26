@@ -508,7 +508,7 @@ FirstPassagePairGreensFunction::alpha_i( const Integer i, const Integer n,
 	
 	low = gsl_root_fsolver_x_lower( solver );
 	high = gsl_root_fsolver_x_upper( solver );
-	const int status( gsl_root_test_interval( low, high, 1e-6, 1e-21 ) );
+	const int status( gsl_root_test_interval( low, high, 1e-6, 1e-15 ) );
 	
 	if( status == GSL_CONTINUE )
 	{

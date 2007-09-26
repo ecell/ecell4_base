@@ -665,7 +665,7 @@ class Pair:
 
         return buf
 
-class SqueezingException:
+class NoSpace:
     def __init( self ):
         pass
 #     def __init__( self, s1, s2, s3 ):
@@ -817,12 +817,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def fireSingleReaction( self, single ):
 
-        single.gf.seta( single.getMobilityRadius() )
-        r = single.gf.drawR( numpy.random.uniform(), single.dt )
-        
-        single.propagate( r, self.t )
-        self.updateEvent( self.t, single )
-        
         rt = self.getReactionType1( single.particle.species )
         pos = single.getPos().copy()
         
@@ -833,14 +827,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         elif len( rt.products ) == 1:
             
             productSpecies = rt.products[0]
-            
+
+            single.particle.setPos( NOWHERE )
+
+            if not self.checkOverlap( pos, productSpecies.radius ):
+                print 'no space for product particle.'
+                single.particle.setPos( pos )
+                raise NoSpace
+                
             self.removeParticle( single.particle )
-            
             newparticle = self.placeParticle( productSpecies, pos )
             newsingle = self.createSingle( newparticle )
             self.addSingle( newsingle )
-
             print 'product;', newsingle
+
             
         elif len( rt.products ) == 2:
             
@@ -849,32 +849,42 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
             D1 = productSpecies1.D
             D2 = productSpecies2.D
+            D12 = D1 + D2
             
-            self.removeParticle( single.particle )
-            
-            unitVector = randomUnitVector()
+            #self.removeParticle( single.particle )
+            single.particle.setPos( NOWHERE )
             
             #print 'unit', self.distance( unitVector, numpy.array([0,0,0]) )
             radius1 = productSpecies1.radius
             radius2 = productSpecies2.radius
             distance = radius1 + radius2
-            vector = unitVector * distance * (1.0 + 1e-10) # safety
+
+            for i in range( 100 ):
+                unitVector = randomUnitVector()
+                vector = unitVector * distance * (1.0 + 1e-10) # safety
             
-            # place particles according to the ratio D1:D2
-            # this way, species with D=0 doesn't move.
-            # FIXME: what if D1 == D2 == 0?
-            newpos1 = pos + vector * ( D1 / ( D1 + D2 ) )
-            newpos2 = pos - vector * ( D2 / ( D1 + D2 ) )
+                # place particles according to the ratio D1:D2
+                # this way, species with D=0 doesn't move.
+                # FIXME: what if D1 == D2 == 0?
+                newpos1 = pos + vector * ( D1 / D12 )
+                newpos2 = pos - vector * ( D2 / D12 )
             
-            #FIXME: check surfaces here
+                #FIXME: check surfaces here
             
-            newpos1 = self.applyBoundary( newpos1 )
-            newpos2 = self.applyBoundary( newpos2 )
+                newpos1 = self.applyBoundary( newpos1 )
+                newpos2 = self.applyBoundary( newpos2 )
+
+                # accept the new positions if there is enough space.
+                if self.checkOverlap( newpos1, radius1 ) and \
+                       self.checkOverlap( newpos2, radius2 ):
+                    break
+            else:
+                print 'no space for product particle.'
+                single.particle.setPos( pos )
+                raise NoSpace
+
             
-            # debug
-            d = self.distance( newpos1, newpos2 )
-            if d < distance:
-                raise "d = %s, %s" %( d, distance)
+            assert self.distance( newpos1, newpos2 ) >= distance
 
             particle1 = self.placeParticle( productSpecies1, newpos1 )
             particle2 = self.placeParticle( productSpecies2, newpos2 )
@@ -903,7 +913,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if single.eventType == EventType.REACTION:
 
             print 'single reaction', single
-            self.fireSingleReaction( single )
+            single.gf.seta( single.getMobilityRadius() )
+            r = single.gf.drawR( numpy.random.uniform(), single.dt )
+            single.propagate( r, self.t )
+
+            try:
+                self.fireSingleReaction( single )
+            except NoSpace:
+                self.rejectedMoves += 1
+                self.updateEvent( self.t, single )
+                return
 
             single.dt = -1  # remove this Single from the Scheduler
             return
@@ -1033,9 +1052,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         shellSize = single.calculateShellSize( closest, distanceToClosest,
                                                distanceToClosestShell )
 
-        assert shellSize <= distanceToClosestShell,\
-               '%g %g' % (shellSize, distanceToClosestShell)
-
         single.setShellSize( shellSize )
         single.determineNextEvent()
 
@@ -1054,10 +1070,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         D1 = species1.D
         D2 = species2.D
         
-        pos1 = particle1.getPos()
-        pos2 = particle2.getPos()
-
-        oldInterParticle = pos2 - pos1
+        oldInterParticle = particle2.getPos() - particle1.getPos()
 
         oldCoM = pair.getCoM()
 
@@ -1117,6 +1130,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # 2 Escape
         #
 
+        # temporary displace particles to do overlap check correctly.
+        particle1.setPos( NOWHERE )
+        particle2.setPos( NOWHERE )
 
         # 2.1 Escaping through a_r.
         if pair.eventType == EventType.ESCAPE:
@@ -1125,7 +1141,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             print 'r0 = ', pair.r0, 'dt = ', pair.dt, pair.pgf.dump()
             
-            for i in range(1000):
+            for i in range(100):
 
                 rnd = numpy.random.uniform( size=5 )
 
