@@ -526,14 +526,13 @@ class Pair:
         pos2 = particle2.getPos()
 
         self.r0 = self.sim.distance( pos1, pos2 )
+        assert self.r0 >= self.sigma
+
 
         #FIXME: not good
         if self.r0 < self.sigma:
             self.r0 = self.sigma
 
-
-        factor_1 = D1 / self.D
-        factor_2 = D2 / self.D
         r0_1 = self.r0 * D1 / self.D
         r0_2 = self.r0 * D2 / self.D
 
@@ -1360,6 +1359,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                             pairDistance * D2 / D12 + radius2 )
 
         shellSizeMargin = 1e-9 #minShellSize * 1.01 # margin; dummy
+        # OR, margin = the distance from r0 to sigma so that shell size
+        # is 2 * (r0 to sigma) ?
         minShellSizeWithMargin = minShellSize + shellSizeMargin
 
         # pairGap = real distance including radii
