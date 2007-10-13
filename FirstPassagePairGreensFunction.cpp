@@ -1854,7 +1854,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 
 	if( n >= this->MAX_ORDER )
 	{
-	    std::cerr << "dp_n_at_a didn't converge." << std::endl;
+	    //std::cerr << "dp_n_at_a didn't converge." << std::endl;
 	    break;
 	}
 	
