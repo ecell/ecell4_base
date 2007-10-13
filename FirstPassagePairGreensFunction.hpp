@@ -402,7 +402,7 @@ protected:
 	const FirstPassagePairGreensFunction* const gf;
 	const Real t;
 	const Real r0;
-	const RealVector& num_r0Table;
+//	const RealVector& num_r0Table;
 	const Real rnd;
     };
 

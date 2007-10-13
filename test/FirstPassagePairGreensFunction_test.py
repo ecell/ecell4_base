@@ -221,6 +221,27 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         r = gf.drawR( 0.5, r0, t )
         self.failIf( r < sigma or r > a )
 
+    def test_DrawR_not_finite( self ):
+
+        D = 4e-11
+        kf = 1.66054e-15
+        sigma = 1e-7
+        a =  1.71891e-07
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        r0 = 1.43575813022e-7
+
+        t = gf.drawTime( 0.5, r0 )
+
+        t = 1.50239148312e-6
+        r = gf.drawR( 0.9999999, r0, t )
+        print 'notf', r
+        self.failIf( r < sigma or r > a )
+
+
+
 
     def test_DrawTheta( self ):
         D = 1e-12

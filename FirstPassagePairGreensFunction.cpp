@@ -879,7 +879,7 @@ FirstPassagePairGreensFunction::p_leaves_i( const Real alpha,
     const Real sigma( getSigma() );
     const Real h( geth() );
     const Real hsigma_p_1( this->hsigma_p_1 );
-
+ 
     const Real sigmasq( sigma * sigma );
     const Real alphasq( alpha * alpha );
 
@@ -1120,7 +1120,7 @@ p_int_r_i_exp_table( const unsigned int i,
 {
     const Real alpha( this->getAlpha0( i ) );
     return std::exp( - getD() * t * alpha * alpha ) * 
-	p_int_r_i( r, alpha, r0, num_r0Table[i] );
+	p_int_r_i( r, alpha, r0, num_r0( alpha, r0 ) );//num_r0Table[i] );
 }
 
 const Real 
@@ -1320,7 +1320,7 @@ p_int_r_table( const Real r,
 					p_int_r_i_exp_table,
 					this,
 					_1, t, r, r0, num_r0Table ),
-			   this->MAX_ALPHA_SEQ ) );
+			   num_r0Table.size() ) );
     return p;
 }
 
@@ -1345,10 +1345,11 @@ FirstPassagePairGreensFunction::p_int_r_F( const Real r,
     const FirstPassagePairGreensFunction* const gf( params->gf ); 
     const Real t( params->t );
     const Real r0( params->r0 );
-    const RealVector& num_r0Table( params->num_r0Table );
+//    const RealVector& num_r0Table( params->num_r0Table );
     const Real rnd( params->rnd );
 
-    return gf->p_int_r_table( r, t, r0, num_r0Table ) - rnd;
+//    return gf->p_int_r_table( r, t, r0, num_r0Table ) - rnd;
+    return gf->p_int_r( r, t, r0 ) - rnd;
 }
 
 
@@ -1515,10 +1516,10 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 
     const Real psurv( p_survival( t, r0 ) );
 
-    RealVector num_r0Table;
-    createNum_r0Table( num_r0Table, r0 );
+//    RealVector num_r0Table;
+//    createNum_r0Table( num_r0Table, r0 );
 
-    p_int_r_params params = { this, t, r0, num_r0Table, rnd * psurv };
+    p_int_r_params params = { this, t, r0, /*num_r0Table,*/ rnd * psurv };
 
     gsl_function F = 
 	{
@@ -1529,12 +1530,12 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
     Real low( sigma );
     Real high( a );
 
-    //const Real lowvalue( GSL_FN_EVAL( &F, low  ) );
+//    const Real lowvalue( GSL_FN_EVAL( &F, low  ) );
     const Real highvalue( GSL_FN_EVAL( &F, high ) );
 
     if( highvalue < 0.0 )
     {
-	//printf( "drawR: highvalue < 0.0 (%g). returning a.\n", highvalue );
+	printf( "drawR: highvalue < 0.0 (%g). returning a.\n", highvalue );
 	return a;
     }
 

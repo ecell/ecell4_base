@@ -447,6 +447,7 @@ class Pair:
         if hasattr( gf, 'seta' ):  # FIXME: not clean
             gf.seta( a )
 
+        print r0, t, a
         r = gf.drawR( rnd, r0, t )
         while r > self.a_r or r <= self.sigma: # redraw; shouldn't happen often
             print 'drawR_pair: redraw'
@@ -854,7 +855,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             D2 = productSpecies2.D
             D12 = D1 + D2
             
-            #self.removeParticle( single.particle )
             single.particle.setPos( NOWHERE )
             
             #print 'unit', self.distance( unitVector, numpy.array([0,0,0]) )
@@ -864,7 +864,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             for i in range( 100 ):
                 unitVector = randomUnitVector()
-                vector = unitVector * distance * (1.0 + 1e-10) # safety
+                vector = unitVector * distance * (1.0 + 1e-4) # safety
             
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.
@@ -886,8 +886,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 single.particle.setPos( pos )
                 raise NoSpace
 
-            
+            print self.distance( newpos1, newpos2 ), distance            
             assert self.distance( newpos1, newpos2 ) >= distance
+
+            self.removeParticle( single.particle )
 
             particle1 = self.placeParticle( productSpecies1, newpos1 )
             particle2 = self.placeParticle( productSpecies2, newpos2 )
