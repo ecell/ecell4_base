@@ -1166,15 +1166,15 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
     {
 	// std::cerr << "Using series acceleration." << std::endl;
 	Real error;
-
+        /*
 	gsl_sum_levin_u_workspace* 
 	    workspace( gsl_sum_levin_u_alloc( i ) );
 	gsl_sum_levin_u_accel( &pTable[0], pTable.size(), workspace, 
-        &sum, &error );
-/*	gsl_sum_levin_utrunc_workspace* 
+        &sum, &error );*/
+	gsl_sum_levin_utrunc_workspace* 
 	    workspace( gsl_sum_levin_utrunc_alloc( i ) );
 	gsl_sum_levin_utrunc_accel( &pTable[0], pTable.size(), workspace, 
-        &sum, &error );*/
+        &sum, &error );
 	if( fabs( error ) >= fabs( sum * tolerance ) )
 	{
 	    std::cerr << "Series acceleration error; "
@@ -1184,8 +1184,8 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 		      << pTable.size() << " given)." << std::endl;
 	}
 
-	gsl_sum_levin_u_free( workspace );
-//	gsl_sum_levin_utrunc_free( workspace );
+//	gsl_sum_levin_u_free( workspace );
+	gsl_sum_levin_utrunc_free( workspace );
     }
 
     return sum;

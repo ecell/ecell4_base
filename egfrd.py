@@ -19,6 +19,7 @@ class Single:
     def __init__( self, particle, sim ):
 
         self.particle = particle
+        #self.pos = self.particle.getPos()
 
         self.sim = sim
 
@@ -49,9 +50,11 @@ class Single:
         return self.dt
         
     def setPos( self, pos ):
+        #self.pos = pos
         self.particle.setPos( pos )
 
     def getPos( self ):
+        #return self.pos
         return self.particle.getPos()
 
     def getD( self ):
