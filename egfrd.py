@@ -526,7 +526,8 @@ class Pair:
         pos2 = particle2.getPos()
 
         self.r0 = self.sim.distance( pos1, pos2 )
-        assert self.r0 >= self.sigma, 'r0 %g, sigma %g' % ( r0, sigma )
+        assert self.r0 >= self.sigma, \
+            'r0 %g, sigma %g' % ( self.r0, self.sigma )
 
 
         #FIXME: not good
