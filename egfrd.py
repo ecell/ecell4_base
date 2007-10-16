@@ -526,7 +526,7 @@ class Pair:
         pos2 = particle2.getPos()
 
         self.r0 = self.sim.distance( pos1, pos2 )
-        assert self.r0 >= self.sigma
+        assert self.r0 >= self.sigma, 'r0 %g, sigma %g' % ( r0, sigma )
 
 
         #FIXME: not good
@@ -542,14 +542,14 @@ class Pair:
         margin_2 = shellSize - r0_2 - radius2
         
         margin = min( margin_1, margin_2 )
-        assert margin > 0.0
+        assert margin > 0.0, 'margin %g' % margin
 
         # FIXME: equalize expected mean t_r and t_R
         self.a_r = self.r0 + margin * .5
         self.a_R = margin * .5
 
         print 'a r0', self.a_r, self.r0
-        assert self.a_r > self.r0
+        assert self.a_r > self.r0, '%g %g' % ( self.a_r, self.r0 )
 
         rnd = numpy.random.uniform( size=3 )
 

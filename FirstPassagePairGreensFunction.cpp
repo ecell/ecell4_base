@@ -455,7 +455,10 @@ FirstPassagePairGreensFunction::f_alpha_aux( const Real alpha,
 
     const Real result( term1 - term2 );
 
-    //printf("aux %g %g %g %g\n",alpha,term1, term2, result );
+    if( ! finite( result ) )// debug
+    {
+        printf("aux %g %g %g %g %g\n",alpha,angle,term1, term2, result );
+    }
 
     return result;
 }
