@@ -54,24 +54,12 @@ public:
 			  const Real r0, 
 			  const Real t ) const;
     
-    
-    const Real f_alpha0( const Real alpha ) const;
-    const Real f_alpha0_aux( const Real alpha ) const;
-  
-    const Real f_alpha( const Real alpha, const Integer n ) const;
-    const Real f_alpha_aux( const Real alpha, const Integer n ) const;
-
-    
-    const Real p_0( const Real t,
-		    const Real r,
-		    const Real r0 ) const;
-    
     const Real p_survival( const Real t,
 			   const Real r0 ) const;
 
-    const Real p_survival_table( const Real t,
-				 const Real r0,
-				 const RealVector& psurvTable ) const;
+    const Real p_survival_n( const unsigned int n,
+                             const Real t,
+			   const Real r0 ) const;
 
     const Real dp_survival( const Real t,
 			    const Real r0 ) const;
