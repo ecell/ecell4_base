@@ -206,6 +206,10 @@ class Single:
         return self
 
     def determineNextEvent( self ):
+        if self.getD() == 0:
+            self.dt = numpy.inf
+            self.eventType = EventType.ESCAPE
+
         firstPassageTime = self.calculateEscapeTime()
         reactionTime = self.calculateReactionTime()
 
@@ -249,15 +253,9 @@ def calculatePairCoM( pos1, pos2, D1, D2, fsize ):
 
     #FIXME: what if there are boundaries?
     
-    sqrtD1D2 = math.sqrt( D1 / D2 )
-    sqrtD2D1 = math.sqrt( D2 / D1 )
-
     pos2t = cyclicTranspose( pos2, pos1, fsize )
 
-    com = ( sqrtD2D1 * pos1 + sqrtD1D2 * pos2t ) / \
-          ( sqrtD2D1 + sqrtD1D2 )
-    
-    return com
+    return ( D1 * pos1 + D2 * pos2t ) / ( D1 + D2 )
 
 
 class Pair:
@@ -271,7 +269,7 @@ class Pair:
     def __init__( self, single1, single2, rt, sim ):
 
         # Order single1 and single2 so that D1 < D2.
-        if single1.particle.species.D <= single1.particle.species.D:
+        if single1.particle.species.D <= single2.particle.species.D:
             self.single1, self.single2 = single1, single2 
         else:
             self.single1, self.single2 = single2, single1 
@@ -285,9 +283,7 @@ class Pair:
 
         self.D1, self.D2 = particle1.species.D, particle2.species.D
         self.D = self.D1 + self.D2
-        self.sqrtD1D2 = math.sqrt( self.D1 / self.D2 )
-        self.sqrtD2D1 = math.sqrt( self.D2 / self.D1 )
-        
+
         self.radius = max( particle1.species.radius,
                            particle2.species.radius )
         self.sigma = particle1.species.radius + particle2.species.radius
@@ -373,8 +369,7 @@ class Pair:
 
         pos2t = cyclicTranspose( pos2, pos1, self.sim.getCellSize() )
         
-        com = ( self.sqrtD2D1 * pos1 + self.sqrtD1D2 * pos2t ) / \
-              ( self.sqrtD2D1 + self.sqrtD1D2 )
+        com = ( pos1 * self.D1 + pos2t * self.D2 ) / self.D
         
         return self.sim.applyBoundary( com )
 
@@ -503,8 +498,7 @@ class Pair:
             rotated = numpy.array( [ newInterParticle[0], newInterParticle[1],
                                      - newInterParticle[2] ] )
 
-        newpos1 = CoM - ( self.sqrtD1D2 * rotated / \
-                          ( self.sqrtD2D1 + self.sqrtD1D2 ) )
+        newpos1 = CoM - self.D1 / self.D * rotated
         newpos2 = newpos1 + rotated
 
         return newpos1, newpos2
@@ -914,6 +908,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #debug
         #self.checkShellForAll()
 
+        # But if this is immobile, don't move.
+        D0 = single.getD()
+        if D0 == 0.0:
+            single.dt = numpy.inf
+            single.eventType = EventType.ESCAPE
+            return
+
+
+
         # Reaction.
         if single.eventType == EventType.REACTION:
 
@@ -935,6 +938,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # If not reaction, propagate.
 
 
+
         # (1) propagate
         #
         # Propagate this particle to the exit point on the shell.
@@ -949,7 +953,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                  self.getClosestShell( single.getPos(), ignore = [ single, ] )
 
         distanceToClosest = self.distance( single.getPos(), closest.getPos() )
-        D0 = single.getD()
         sqrtD0 = math.sqrt( D0 ) 
         radius0 = single.getRadius()
 
@@ -1057,6 +1060,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         shellSize = single.calculateShellSize( closest, distanceToClosest,
                                                distanceToClosestShell )
 
+        shellSize = min( shellSize, self.getCellSize() )
         single.setShellSize( shellSize )
         single.determineNextEvent()
 
@@ -1106,8 +1110,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
                 displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R \
-                         / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
+                newCoM = oldCoM + displacement_R * \
+                    math.sqrt( pair.D1 * pair.D2 ) / pair.D
                 
                 #FIXME: SURFACE
                 newPos = self.applyBoundary( newCoM )
@@ -1156,8 +1160,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 
                 displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R \
-                         / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
+                newCoM = oldCoM + displacement_R * \
+                    math.sqrt( pair.D1 * pair.D2 ) / pair.D
 
                 # calculate new r
                 print ( rnd[3], pair.a_r, pair.r0, pair.dt )
@@ -1208,8 +1212,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 # calculate new R
                 displacement_R_S = [ pair.a_R, rnd[3] * Pi, rnd[4] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R \
-                         / ( pair.sqrtD2D1 + pair.sqrtD1D2 )
+                newCoM = oldCoM + displacement_R * \
+                    math.sqrt( pair.D1 * pair.D2 ) / pair.D
                 
                 newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                       oldInterParticle )
@@ -1306,8 +1310,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             print 'squeezed', shellSize, pairClosestShellDistance
             pair.squeezed = True
             self.squeezed += 1
-            
-        pair.setShellSize( shellSize * ( 1.0 - 1e-8 ) )
+
+        shellSize *= 1.0 - 1e-8
+        shellSize = min( shellSize, self.getCellSize() )
+        pair.setShellSize( shellSize )
 
         print 'Pair formed: ', pair, 'pair distance', pairDistance,\
               'shell size=', pair.getShellSize(),\
@@ -1556,6 +1562,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def checkShell( self, obj ):
         closest, distance = self.getClosestShell( obj.getPos(), [obj,] )
         shellSize = obj.getShellSize()
+
+        if shellSize > self.getCellSize():
+            raise RuntimeError, '%s shell size larger than simulator cell size'
+
         if distance - shellSize < 0.0:
             if ( obj.isPair() and obj.squeezed ) or \
                    ( closest.isPair() and closest.squeezed ):

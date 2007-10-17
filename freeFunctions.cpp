@@ -48,7 +48,6 @@ const Real expxsq_erfc( const Real x )
 */
 const Real W( const Real a, const Real b )
 {
-
     // exp( 2 a b + b^2 ) erfc( a + b ) == 
     //               exp( - a^2 ) exp( ( a + b )^2 ) erfc( a + b )
     return exp( - a * a ) * expxsq_erfc( a + b );

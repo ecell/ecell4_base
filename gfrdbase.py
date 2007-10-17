@@ -322,7 +322,7 @@ class GFRDSimulatorBase:
         return self._distanceSq( position1, position2, self.fsize )
 
     def distance( self, position1, position2 ):
-        return math.sqrt( self.distanceSq( position1, position2 ) )
+        return numpy.sqrt( self.distanceSq( position1, position2 ) )
         
     def distanceSqArray( self, position1, positions ):
         return self._distanceSqArray( position1, positions, self.fsize )
