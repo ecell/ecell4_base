@@ -40,6 +40,7 @@ lib_LTLIBRARIES= _gfrd.la
 noinst_HEADERS=\
 Defs.hpp\
 bessel.hpp\
+freeFunctions.hpp\
 factorial.hpp\
 HalfOrderBesselGenerator.hpp\
 DynamicPriorityQueue.hpp\
@@ -56,6 +57,7 @@ FirstPassageNoCollisionPairGreensFunction.hpp
 
 
 _gfrd_la_SOURCES=\
+freeFunctions.cpp\
 FreeGreensFunction.cpp\
 FirstPassageGreensFunction.cpp\
 PlainPairGreensFunction.cpp\

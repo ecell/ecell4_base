@@ -10,6 +10,8 @@
 
 #include "PyEventScheduler.hpp"
 
+#include "freeFunctions.hpp"
+
 #include "FreeGreensFunction.hpp"
 #include "FirstPassageGreensFunction.hpp"
 #include "PlainPairGreensFunction.hpp"
@@ -88,6 +90,13 @@ BOOST_PYTHON_MODULE( _gfrd )
     register_exception_translator<std::exception>( &translateException );
 
 //    to_python_converter<PyEvent, PyEvent_to_python>();
+
+
+    // free functions
+
+    def( "p_irr_radial", p_irr_radial );
+    def( "p_irr_radial_alpha", p_irr_radial_alpha );
+
 
     class_<PyEvent>( "PyEvent", init<const Real, const object&>() )
 	.def( "setTime", &PyEvent::setTime )

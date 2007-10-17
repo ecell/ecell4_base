@@ -16,6 +16,8 @@
 
 #include "bessel.hpp"
 
+#include "freeFunctions.hpp"
+
 #include "HalfOrderBesselGenerator.hpp"
 
 #include "PlainPairGreensFunction.hpp"
@@ -345,83 +347,6 @@ PlainPairGreensFunction::p_tot( const Real r, const Real r0,
 
 //  virtual const Real p_t_given_r0( const Real t, const Real r0 );
 
-/**
-   Calculates exp( x^2 ) * erfc( x )
-
-   See asymptotic expansion here:
-   http://en.wikipedia.org/wiki/Error_function
-*/  
-inline const Real expxsq_erfc( const Real x )
-{
-    Real result;
-
-    const Real xsq( x * x );
-    if( x > 26.0 )
-    {
-	static const Real M_1_SQRTPI( M_2_SQRTPI * 0.5 ); 
-
-	const Real x2sq_r( 1.0 / ( 2.0 * xsq ) );  // 2 / (2 x)^2
-
-	/*
-	  up to second term in the expansion.
-	  abs err ~= 9e-8 at x == 20, 3e-8 at x == 25
-
-	  the third term 
-	  - ( 8 / ( x2sq * x2sq * x2sq ) )       
-	  and beyond doesn't have a major contribution for large x.
-	*/
-
-	result = ( M_1_SQRTPI / x ) * 
-	    ( 1.0 - x2sq_r +      // term 1
-	      x2sq_r * x2sq_r );  // term 2
-    }
-    else
-    {
-	result = exp( xsq ) * erfc( x );
-    }
-
-    return result;
-}
-
-/**
-   W( a, b ) := exp( 2 a b + b^2 ) erfc( a + b )
-*/
-inline const Real W( const Real a, const Real b )
-{
-
-    // exp( 2 a b + b^2 ) erfc( a + b ) == 
-    //               exp( - a^2 ) exp( ( a + b )^2 ) erfc( a + b )
-    return exp( - a * a ) * expxsq_erfc( a + b );
-}
-
-const Real 
-PlainPairGreensFunction::p_irr_radial( const Real r,
-				       const Real t,
-				       const Real r0 ) const
-{
-    //  printf("irrp %g %g %g\n",r,r0,t);
-    const Real sqrtD( sqrt( getD() ) );
-    const Real alpha( this->getalpha() );
-
-    const Real Dt4( 4.0 * this->getD() * t );
-
-    const Real r_plus_r0_minus_2sigma( r + r0 - 2.0 * this->getSigma() );
-
-    const Real num1( exp( - gsl_pow_2( r - r0 ) / Dt4 ) );
-    const Real num2( exp( - gsl_pow_2( r_plus_r0_minus_2sigma ) / Dt4 ) );
-    const Real num3( W( r_plus_r0_minus_2sigma / sqrt( Dt4 ), 
-			alpha * sqrt( t ) ) );
-
-    const Real num( ( num1 + num2 ) / sqrt( 4.0 * M_PI * t ) -  alpha * num3 );
-
-    const Real den( 4.0 * M_PI * r * r0 * sqrtD );
-
-    const Real result( num / den );
-
-    const Real jacobian( 4.0 * M_PI * r * r );
-
-    return result * jacobian;
-}
 
 
 
@@ -638,13 +563,15 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
 
     const Real rStep( ( maxR - minR ) / ( tableSize - 1) );
 
-    Real r_prev( p_irr_radial( minR, t, r0 ) );
+    Real r_prev( p_irr_radial_alpha( minR, t, r0, getkf(),
+                                     getD(), getSigma(), getalpha() ) );
     Index i( 1 );
 
     while( true )
     {
 	const Real r( minR + i * rStep );
-	const Real p( p_irr_radial( r, t, r0 ) );
+	const Real p( p_irr_radial_alpha( r, t, r0, getkf(),
+                                          getD(), getSigma(), getalpha() ) );
 	const Real value( ( r_prev + p ) * 0.5 );
 	pTable[i] = pTable[i-1] + value;
 
