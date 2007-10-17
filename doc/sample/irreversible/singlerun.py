@@ -7,6 +7,8 @@ import sys
 s = EGFRDSimulator()
 s.setCellSize( 1e-3 )
 
+s.setMaxShellSize( 1e-6 )
+
 A = Species( 'A', 0.0, 5e-8 )
 s.addSpecies( A )
 B = Species( 'B', 1e-11, 5e-8 )

@@ -697,15 +697,19 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.t = 0.0
         self.dt = INF
 
-        self.maxDt = INF
-        self.minDt = 1e-12
-
+        self.maxShellSize = INF
 
         self.lastEvent = None
 
         self.clearPopulationChanged()
 
         self.squeezed = 0
+
+    def setMaxShellSize( self, maxShellSize ):
+        self.maxShellSize = maxShellSize
+
+    def getMaxShellSize( self ):
+        return self.maxShellSize
 
     def initialize( self ):
 
@@ -1072,7 +1076,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         shellSize = single.calculateShellSize( closest, distanceToClosest,
                                                distanceToClosestShell )
 
-        shellSize = min( shellSize, self.getCellSize() )
+        shellSize = min( shellSize, self.getCellSize(), self.maxShellSize )
         single.setShellSize( shellSize )
         single.determineNextEvent()
 
@@ -1314,7 +1318,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             return None
 
         shellSize *= 1.0 - 1e-8
-        shellSize = min( shellSize, self.getCellSize() )
+        shellSize = min( shellSize, self.getCellSize(), self.maxShellSize )
 
         print 'pair shell size', shellSize
 
