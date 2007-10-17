@@ -663,6 +663,18 @@ class Pair:
 
         return buf
 
+class DummySingle:
+    def __init__( self ):
+        pass
+
+    def getShellSize( self ):
+        return 0.0
+
+    def getPos( self ):
+        return NOWHERE
+    
+
+
 class NoSpace:
     def __init( self ):
         pass
@@ -1298,10 +1310,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         shellSize = self.checkPairFormationCriteria( single1, single2,
                                                      pairClosest,
                                                      pairClosestShellDistance )
-        print 'pair shell size', shellSize
-
         if shellSize <= 0.0:  # Pair not formed
             return None
+
+        shellSize *= 1.0 - 1e-8
+        shellSize = min( shellSize, self.getCellSize() )
+
+        print 'pair shell size', shellSize
 
         pair = self.createPair( single1, single2 )
 
@@ -1311,8 +1326,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             pair.squeezed = True
             self.squeezed += 1
 
-        shellSize *= 1.0 - 1e-8
-        shellSize = min( shellSize, self.getCellSize() )
         pair.setShellSize( shellSize )
 
         print 'Pair formed: ', pair, 'pair distance', pairDistance,\
@@ -1463,7 +1476,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         scheduler = self.scheduler
 
         size = scheduler.getSize()
-        neighbors = [None,] * size
+        neighbors = [DummySingle(),] * size
         positions = numpy.zeros( ( size, 3 ) )
         distances = numpy.zeros( size )
 
@@ -1494,7 +1507,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         scheduler = self.scheduler
 
         size = scheduler.getSize()
-        neighbors = [None,] * size
+        neighbors = [DummySingle(),] * size
         distances = numpy.zeros( size )
         positions = numpy.zeros( ( size, 3 ) )
         shellSizes = numpy.zeros( size )
@@ -1535,7 +1548,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 return closest, distance
 
         # default case: none left.
-        return None, numpy.inf
+        return DummySingle(), numpy.inf
 
     '''
     '''

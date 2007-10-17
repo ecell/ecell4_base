@@ -14,6 +14,9 @@ s.addSpecies( B )
 C = Species( 'C', 0.0, 5e-8 )
 s.addSpecies( C )
 
+N = Species( 'N', 0.0, 5e-8 )
+s.addSpecies( N )
+
 r1 = BindingReactionType( A, B, C, 1e5 / N_A )
 s.addReactionType( r1 )
 
@@ -21,7 +24,7 @@ s.setAllRepulsive()
 
 s.placeParticle( A, [0,0,0] )
 s.placeParticle( B, [1e-7+1e-18,0,0] )
-s.placeParticle( C, NOWHERE )
+#s.placeParticle( N, NOWHERE )
 
 while s.t < 100:
     s.step()
