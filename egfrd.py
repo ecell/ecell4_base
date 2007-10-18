@@ -763,7 +763,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
-        #self.checkInvariants()
+        self.checkInvariants()
 
 
         event = self.scheduler.getTopEvent()
@@ -829,6 +829,21 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def updateEvent( self, t, event ):
         self.scheduler.updateEvent( event.eventID, t, event )
 
+    def excludeVolume( self, radius, pos ):
+
+        neighbors, distances = self.getNeighborShells( pos )
+        n = numpy.searchsorted( distances, radius )
+        print distances, radius, n
+        raise RuntimeError
+        neighbors = neighbors[:n]
+
+        for neighbor in neighbors:
+            if isinstance( neighbor, Single ):
+                self.burstSingle( neighbor )
+            else:
+                self.burstPair( neighbor )
+
+
     def fireSingleReaction( self, single ):
 
         rt = self.getReactionType1( single.particle.species )
@@ -892,12 +907,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                        self.checkOverlap( newpos2, radius2 ):
                     break
             else:
-                print 'no space for product particle.'
+                print 'no space for product particles.'
                 single.particle.setPos( pos )
                 raise NoSpace
 
-            print self.distance( newpos1, newpos2 ), distance            
-            assert self.distance( newpos1, newpos2 ) >= distance
+            self.excludeVolume( newpos1, productSpecies1.radius )
+            self.excludeVolume( newpos2, productSpecies2.radius )
 
             self.removeParticle( single.particle )
 
@@ -1475,11 +1490,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     This method returns a tuple ( neighbors, distances ).
     '''
 
-    def getNeighbors( self, pos, n=2 ):
+    def getNeighbors( self, pos, n=None ):
 
         scheduler = self.scheduler
 
         size = scheduler.getSize()
+        if n == None:
+            n = size 
+
         neighbors = [DummySingle(),] * size
         positions = numpy.zeros( ( size, 3 ) )
         distances = numpy.zeros( size )
@@ -1506,11 +1524,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     This method returns a tuple ( neighbors, distances ).
     '''
 
-    def getNeighborShells( self, pos, n=2 ):
+    def getNeighborShells( self, pos, n=None ):
 
         scheduler = self.scheduler
 
         size = scheduler.getSize()
+
+        if n == None:
+            n = size
+
         neighbors = [DummySingle(),] * size
         distances = numpy.zeros( size )
         positions = numpy.zeros( ( size, 3 ) )

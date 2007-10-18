@@ -26,6 +26,9 @@ def p_free( t, D ):
 
     return displacement
 
+class OverlapError:
+    pass
+
 
 class Species:
     
@@ -387,13 +390,12 @@ class GFRDSimulatorBase:
             species.newParticle( position )
 
 
-
     def placeParticle( self, species, pos ):
 
-        pos = numpy.array( pos )
+        radius = species.radius
 
-        if not self.checkOverlap( pos, species.radius ):
-            raise RuntimeError, 'placeParticle: overlap check failed'
+        if not self.checkOverlap( pos, radius ):
+            raise OverlapError, 'overlap check failed'
             
         particle = self.createParticle( species, pos )
         return particle

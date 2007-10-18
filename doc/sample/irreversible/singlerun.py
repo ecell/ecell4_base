@@ -16,9 +16,6 @@ s.addSpecies( B )
 C = Species( 'C', 0.0, 5e-8 )
 s.addSpecies( C )
 
-N = Species( 'N', 0.0, 5e-8 )
-s.addSpecies( N )
-
 r1 = BindingReactionType( A, B, C, 1e5 / N_A )
 s.addReactionType( r1 )
 
