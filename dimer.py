@@ -18,7 +18,7 @@ s.addSpecies( S )
 P = Species( 'P', 1e-11, 7e-8 )
 s.addSpecies( P )
 
-r1 = BindingReactionType( S, S, P, 1e9 / N_A )
+r1 = BindingReactionType( S, S, P, 1e10 / N_A )
 s.addReactionType( r1 )
 r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )

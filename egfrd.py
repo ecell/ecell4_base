@@ -829,14 +829,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def updateEvent( self, t, event ):
         self.scheduler.updateEvent( event.eventID, t, event )
 
-    def excludeVolume( self, radius, pos ):
+    def excludeVolume( self, pos, radius ):
 
         neighbors, distances = self.getNeighborShells( pos )
         n = numpy.searchsorted( distances, radius )
-        print distances, radius, n
-        raise RuntimeError
         neighbors = neighbors[:n]
-
         for neighbor in neighbors:
             if isinstance( neighbor, Single ):
                 self.burstSingle( neighbor )
@@ -846,7 +843,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def fireSingleReaction( self, single ):
 
-        rt = self.getReactionType1( single.particle.species )
+        reactantSpecies = single.particle.species
+        rt = self.getReactionType1( reactantSpecies )
         pos = single.getPos().copy()
         
         if len( rt.products ) == 0:
@@ -864,6 +862,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 single.particle.setPos( pos )
                 raise NoSpace
                 
+            if reactantSpecies.species.radius < productSpecies.radius:
+                self.excludeVolume( pos, productSpecies.radius )
+
             self.removeParticle( single.particle )
             newparticle = self.placeParticle( productSpecies, pos )
             newsingle = self.createSingle( newparticle )
@@ -1502,7 +1503,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         positions = numpy.zeros( ( size, 3 ) )
         distances = numpy.zeros( size )
 
-        for i in range( scheduler.getSize() ):
+        for i in range( size ):
             obj = scheduler.getEventByIndex(i).getObj()
             neighbors[i] = obj
             positions[i] = obj.getPos()
@@ -1538,7 +1539,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         positions = numpy.zeros( ( size, 3 ) )
         shellSizes = numpy.zeros( size )
 
-        for i in range( scheduler.getSize() ):
+        for i in range( size ):
             obj = scheduler.getEventByIndex(i).getObj()
             neighbors[i] = obj
             positions[i] = obj.getPos()
