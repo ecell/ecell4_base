@@ -89,7 +89,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         t = gf.drawTime( 0.5, r0 )
         self.assertEqual( 0.0, t )
 
-    def test_DrawTime_r0_equal_sigma( self ):
+    def test_DrawTime_r0_equal_sigma_kf_zero( self ):
         D = 1e-12
         kf = 0.0 # note this
         sigma = 1e-8
@@ -102,11 +102,13 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         t = gf.drawTime( 0.5, r0 )
         self.failIf( t < 0.0 or t >= numpy.inf )
 
-    def test_DrawTime_r0_equal_sigma_kf_nonzero( self ):
+
+    '''
+    def test_DrawTime_r0_equal_sigma_kf_large( self ):
         D = 1e-12
-        kf = 1e-3
+        kf = 1e-5
         sigma = 1e-8
-        a = 1e-7
+        a = 10e-7
         r0 = sigma + 1e-12
         
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
@@ -114,6 +116,22 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t = gf.drawTime( 0.5, r0 )
         self.failIf( t < 0.0 or t >= numpy.inf )
+'''
+
+    def test_DrawTime_1( self ):
+        r0 = 1.0001e-07
+        D = 4e-11
+        sigma = 1e-07
+        a = 2.51935e-07
+        kf = 1.66054e-14
+
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        t = gf.drawTime( 0.5, r0 )
+        self.failIf( t < 0.0 or t >= numpy.inf )
+
 
 
 
@@ -326,13 +344,14 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
 
     def test_DrawTheta_1( self ):
+        print 'a'
         D = 3e-11
         kf = 0
         sigma = 1.2e-7
         a = 1.2367e-7
         r0 = 1.224279e-7
 
-        t = 1e-9
+        t = 1e-7
         r = 1.224e-7
         
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )

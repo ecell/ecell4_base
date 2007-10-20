@@ -30,5 +30,7 @@ while s.t < 100:
     s.dumpPopulation()
     if s.isPopulationChanged:
         print 'reaction'
-        sys.exit(1)
+        break
+
+
     

@@ -1370,7 +1370,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	return 0.0;
     }
 
-    Real low( 1e-5 );
+    Real low( 1e-6 );
     Real high( 1.0 );
 
     this->updateAlphaTable0( low );

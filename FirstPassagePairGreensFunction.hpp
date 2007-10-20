@@ -19,12 +19,12 @@ class FirstPassagePairGreensFunction
     static const Real TOLERANCE = 1e-6;
 
     // Relative cutoff used when obtaining series of alpha.
-    static const Real ALPHA_CUTOFF = 1e-10;
+    static const Real ALPHA_CUTOFF = 1e-8;
 
     static const Real MIN_T = 1e-18;
 
-    static const unsigned int MAX_ORDER = 45;
-    static const unsigned int MAX_ALPHA_SEQ = 100;
+    static const unsigned int MAX_ORDER = 55;
+    static const unsigned int MAX_ALPHA_SEQ = 1000;
 
 
 public:
