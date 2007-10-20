@@ -835,6 +835,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         n = numpy.searchsorted( distances, radius )
         neighbors = neighbors[:n]
         for neighbor in neighbors:
+            print 'bursting', neighbor
             if isinstance( neighbor, Single ):
                 self.burstSingle( neighbor )
             else:
@@ -1209,10 +1210,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newpos2 = self.applyBoundary( newpos2 )
                 
                 if not pair.squeezed or \
-                   ( self.checkOverlap( newpos1, radius1 ) and \
-                     self.checkOverlap( newpos2, radius2 ) ):
+                        ( self.checkOverlap( newpos1, radius1 ) and \
+                              self.checkOverlap( newpos2, radius2 ) ):
                     break
-                else:
+
+                else:   # overlap check failed
                     self.rejectedMoves += 1
                     print '%s:ESCAPE_r: rejected move. redrawing..' % pair
             else:
@@ -1252,10 +1254,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newpos1 = self.applyBoundary( newpos1 )
                 newpos2 = self.applyBoundary( newpos2 )
 
+
                 if not pair.squeezed or \
-                   ( self.checkOverlap( newpos1, radius1 ) and \
-                     self.checkOverlap( newpos2, radius2 ) ):
+                        ( self.checkOverlap( newpos1, radius1 ) and \
+                              self.checkOverlap( newpos2, radius2 ) ):
                     break
+
                 else:
                     self.rejectedMoves += 1
                     print '%s:ESCAPE_r: rejected move. redrawing..' % pair
@@ -1267,6 +1271,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 
         else:
             raise SystemError, 'Bug: invalid eventType.'
+
+
+        if pair.squeezed:
+            # make sure displaced particles don't intrude squeezer shells.
+            self.excludeVolume( newpos1, radius1 )
+            self.excludeVolume( newpos2, radius2 )
+
 
         pair.squeezed = False
 
