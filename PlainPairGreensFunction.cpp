@@ -348,94 +348,19 @@ PlainPairGreensFunction::p_tot( const Real r, const Real r0,
 //  virtual const Real p_t_given_r0( const Real t, const Real r0 );
 
 
-
-
 const Real 
-PlainPairGreensFunction::p_reaction( const Real tsqrt, const Real r0 ) const
+PlainPairGreensFunction::p_reaction( const Real t, const Real r0 ) const
 {
-    const Real kD( this->getkD() );
-    const Real kf( this->getkf() );
-    const Real Sigma( this->getSigma() );
-    const Real D( this->getD() );
-    const Real alpha( this->getalpha() );
+    const Real sqrtt( sqrt( t ) );
+    const Real kf( getkf() );
+    const Real D( getD() );
+    const Real sigma( getSigma() );
+    const Real alpha( getalpha() );
+    const Real kD( getkD() );
 
-    const Real sqrtD( sqrt( D ) );
 
-    const Real r0_m_Sigma_over_sqrt4D_t( ( r0 - Sigma ) 
-					 / ( ( sqrtD + sqrtD ) * tsqrt ) );
-
-    const Real Wf( W( r0_m_Sigma_over_sqrt4D_t, alpha * tsqrt ) );
-    const Real factor( Sigma * kf / ( r0 * ( kf + kD ) ) );
-
-    return factor * ( erfc( r0_m_Sigma_over_sqrt4D_t ) - Wf );
+    return __p_reaction_irr( sqrtt, r0, kf, D, sigma, alpha, kD  );
 }
-
-const Real 
-PlainPairGreensFunction::p_reaction_deriv( const Real tsqrt, 
-					   const Real r0 ) const
-{
-    const Real Sigma( this->getSigma() );
-    const Real D( this->getD() );
-    const Real alpha( this->getalpha() );
-    const Real kD( this->getkD() );
-    const Real kf( this->getkf() );
-
-    const Real sqrtD( sqrt( D ) );
-    const Real sqrtPI( sqrt( M_PI ) );
-
-    const Real r0_m_Sigma_t_over_sqrt4D( ( r0 - Sigma ) * tsqrt / 
-					 ( sqrtD + sqrtD ) );
-    const Real Wf( W( r0_m_Sigma_t_over_sqrt4D, alpha * tsqrt ) );
-
-    const Real num1( sqrtD * exp( - gsl_pow_2( r0_m_Sigma_t_over_sqrt4D ) ) );
-    const Real num2( ( sqrtPI * tsqrt * ( alpha * sqrtD + r0 - Sigma ) ) * Wf );
-
-    const Real factor( ( alpha + alpha ) * kf * Sigma /
-		       ( sqrtPI * sqrtD * r0 * ( kf + kD ) ) );
-  
-    return ( num1 - num2 ) * factor;
-}
-
-void
-PlainPairGreensFunction::p_reaction_fdf( const Real tsqrt, 
-					 const Real r0,
-					 Real* const f, Real* const df ) const
-{
-    const Real kD( this->getkD() );
-    const Real kf( this->getkf() );
-    const Real Sigma( this->getSigma() );
-    const Real D( this->getD() );
-    const Real alpha( this->getalpha() );
-
-    const Real sqrtD( sqrt ( D ) );
-
-    const Real r0_m_Sigma_over_sqrt4D( ( r0 - Sigma ) / ( sqrtD + sqrtD ) );
-    const Real factor( Sigma * kf / ( r0 * ( kf + kD ) ) );
-
-    {
-	const Real r0_m_Sigma_over_sqrt4D_t( r0_m_Sigma_over_sqrt4D / tsqrt );
-	const Real Wf( W( r0_m_Sigma_over_sqrt4D_t, alpha * tsqrt ) );
-
-	*f = factor * ( erfc( r0_m_Sigma_over_sqrt4D_t ) - Wf );
-    }
-
-    {
-	const Real r0_m_Sigma_t_over_sqrt4D( r0_m_Sigma_over_sqrt4D * tsqrt );
-	const Real Wdf( W( r0_m_Sigma_t_over_sqrt4D, alpha * tsqrt ) );
-	const Real sqrtPI( sqrt( M_PI ) );
-
-	const Real dfnum1( sqrtD * 
-			   exp( - gsl_pow_2( r0_m_Sigma_t_over_sqrt4D ) ) );
-	const Real dfnum2( ( sqrtPI * tsqrt * ( alpha * sqrtD + r0 - Sigma ) ) 
-			   * Wdf );
-    
-	const Real dffactor( ( alpha * M_2_SQRTPI / sqrtD ) * factor );
-    
-	*df = ( dfnum1 - dfnum2 ) * dffactor;
-    }
-}
-
-
 
 
 const Real 
@@ -443,35 +368,18 @@ PlainPairGreensFunction::p_reaction_F( const Real tsqrt,
 				       const p_reaction_params* const params )
 {
     const PlainPairGreensFunction* const gf( params->gf ); 
+    const Real kf( gf->getkf() );
+    const Real D( gf->getD() );
+    const Real sigma( gf->getSigma() );
+    const Real alpha( gf->getalpha() );
+    const Real kD( gf->getkD() );
+
     const Real r0( params->r0 );
     const Real rnd( params->rnd );
 
-    return gf->p_reaction( tsqrt, r0 ) - rnd;
+    return __p_reaction_irr( tsqrt, r0, kf, D, sigma, alpha, kD  ) - rnd;
 }
 
-const Real 
-PlainPairGreensFunction::
-p_reaction_deriv_F( const Real tsqrt, const p_reaction_params* const params )
-{
-    const PlainPairGreensFunction* const gf( params->gf ); 
-    const Real r0( params->r0 );
-    //  const Real rnd( params->rnd );
-
-    return gf->p_reaction_deriv( tsqrt, r0 );
-}
-
-void
-PlainPairGreensFunction::
-p_reaction_fdf_F( const Real tsqrt, const p_reaction_params* const params,
-		  Real* const f, Real* const df )
-{
-    const PlainPairGreensFunction* const gf( params->gf ); 
-    const Real r0( params->r0 );
-    const Real rnd( params->rnd );
-
-    gf->p_reaction_fdf( tsqrt, r0, f, df );
-    *f -= rnd;
-}
 
 
 const Real PlainPairGreensFunction::drawTime( const Real rnd, 
@@ -480,10 +388,8 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
 {
     assert( rnd <= 1.0 && rnd >= 0.0 );
 
-    Real sqrtMaxt( sqrt( maxt ) );
-
     {
-	const Real maxp( p_reaction( sqrtMaxt, r0 ) );
+	const Real maxp( p_reaction( maxt, r0 ) );
 
 	if( rnd >= maxp )
 	{
@@ -500,7 +406,7 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
 	};
 
     Real low( 1e-100 );
-    Real high( sqrtMaxt );
+    Real high( sqrt( maxt ) );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -563,15 +469,15 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
 
     const Real rStep( ( maxR - minR ) / ( tableSize - 1) );
 
-    Real r_prev( p_irr_radial_alpha( minR, t, r0, getkf(),
-                                     getD(), getSigma(), getalpha() ) );
+    Real r_prev( __p_irr( minR, t, r0, getkf(),
+                          getD(), getSigma(), getalpha() ) );
     Index i( 1 );
 
     while( true )
     {
 	const Real r( minR + i * rStep );
-	const Real p( p_irr_radial_alpha( r, t, r0, getkf(),
-                                          getD(), getSigma(), getalpha() ) );
+	const Real p( __p_irr( r, t, r0, getkf(),
+                               getD(), getSigma(), getalpha() ) );
 	const Real value( ( r_prev + p ) * 0.5 );
 	pTable[i] = pTable[i-1] + value;
 
@@ -770,7 +676,7 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 	}
     
 	/*
-	  const Real p_irr_r( this->p_irr_radial( r, t, r0 ) );
+	  const Real p_irr_r( this->p_irr( r, t, r0 ) );
 	  const Real relerror( (pTable[i]*thetaStep- p_irr_r)/p_irr_r );
 	  if( fabs( relerror ) >= 1e-2 )
 	  {

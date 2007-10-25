@@ -54,13 +54,13 @@ const Real W( const Real a, const Real b )
 }
 
 const Real 
-p_irr_radial_alpha( const Real r,
-                    const Real t,
-                    const Real r0,
-                    const Real kf,
-                    const Real D,
-                    const Real sigma,
-                    const Real alpha )
+__p_irr( const Real r,
+         const Real t,
+         const Real r0,
+         const Real kf,
+         const Real D,
+         const Real sigma,
+         const Real alpha )
 {
     //  printf("irrp %g %g %g\n",r,r0,t);
     const Real sqrtD( sqrt( D ) );
@@ -85,18 +85,113 @@ p_irr_radial_alpha( const Real r,
 }
 
 const Real 
-p_irr_radial( const Real r,
-              const Real t,
-              const Real r0,
-              const Real kf,
-              const Real D,
-              const Real sigma )
+p_irr( const Real r,
+        const Real t,
+        const Real r0,
+        const Real kf,
+        const Real D,
+        const Real sigma )
 {
     const Real kD( 4.0 * M_PI * sigma * D );
     const Real alpha( ( 1.0 + ( kf / kD ) ) * ( sqrt( D ) / sigma ) );
 
-    const Real p(  p_irr_radial_alpha( r, t, r0, kf, D, sigma, alpha ) );
+    const Real p( __p_irr( r, t, r0, kf, D, sigma, alpha ) );
 
     return p;
 }
 
+
+const Real S_irr( const Real t, const Real r0,
+                  const Real kf, const Real D, const Real sigma )
+{
+    const Real kD( 4.0 * M_PI * sigma * D );
+    const Real alpha( ( 1.0 + ( kf / kD ) ) * ( sqrt( D ) / sigma ) );
+
+    const Real sqrtt( sqrt( t ) );
+
+    const Real p( __p_reaction_irr( sqrtt, r0, kf, D, sigma, alpha, kD ) );
+
+    return 1.0 - p;
+}
+
+const Real 
+__p_reaction_irr( const Real sqrtt, const Real r0,
+                  const Real kf, const Real D, const Real sigma,
+                  const Real alpha, const Real kD )
+{
+    const Real sqrtD( sqrt( D ) );
+
+    const Real r0_m_sigma_over_sqrt4D_t( ( r0 - sigma ) 
+					 / ( ( sqrtD + sqrtD ) * sqrtt ) );
+
+    const Real Wf( W( r0_m_sigma_over_sqrt4D_t, alpha * sqrtt ) );
+    const Real factor( sigma * kf / ( r0 * ( kf + kD ) ) );
+
+    return factor * ( erfc( r0_m_sigma_over_sqrt4D_t ) - Wf );
+}
+
+/*
+const Real S_irr_deriv( const Real tsqrt, 
+                        const Real r0 ) const
+{
+    const Real Sigma( this->getSigma() );
+    const Real D( this->getD() );
+    const Real alpha( this->getalpha() );
+    const Real kD( this->getkD() );
+    const Real kf( this->getkf() );
+
+    const Real sqrtD( sqrt( D ) );
+    const Real sqrtPI( sqrt( M_PI ) );
+
+    const Real r0_m_Sigma_t_over_sqrt4D( ( r0 - Sigma ) * tsqrt / 
+					 ( sqrtD + sqrtD ) );
+    const Real Wf( W( r0_m_Sigma_t_over_sqrt4D, alpha * tsqrt ) );
+
+    const Real num1( sqrtD * exp( - gsl_pow_2( r0_m_Sigma_t_over_sqrt4D ) ) );
+    const Real num2( ( sqrtPI * tsqrt * ( alpha * sqrtD + r0 - Sigma ) ) * Wf );
+
+    const Real factor( ( alpha + alpha ) * kf * Sigma /
+		       ( sqrtPI * sqrtD * r0 * ( kf + kD ) ) );
+  
+    return ( num1 - num2 ) * factor;
+}
+
+void
+S_irr_fdf( const Real tsqrt, 
+					 const Real r0,
+					 Real* const f, Real* const df ) const
+{
+    const Real kD( this->getkD() );
+    const Real kf( this->getkf() );
+    const Real Sigma( this->getSigma() );
+    const Real D( this->getD() );
+    const Real alpha( this->getalpha() );
+
+    const Real sqrtD( sqrt ( D ) );
+
+    const Real r0_m_Sigma_over_sqrt4D( ( r0 - Sigma ) / ( sqrtD + sqrtD ) );
+    const Real factor( Sigma * kf / ( r0 * ( kf + kD ) ) );
+
+    {
+	const Real r0_m_Sigma_over_sqrt4D_t( r0_m_Sigma_over_sqrt4D / tsqrt );
+	const Real Wf( W( r0_m_Sigma_over_sqrt4D_t, alpha * tsqrt ) );
+
+	*f = factor * ( erfc( r0_m_Sigma_over_sqrt4D_t ) - Wf );
+    }
+
+    {
+	const Real r0_m_Sigma_t_over_sqrt4D( r0_m_Sigma_over_sqrt4D * tsqrt );
+	const Real Wdf( W( r0_m_Sigma_t_over_sqrt4D, alpha * tsqrt ) );
+	const Real sqrtPI( sqrt( M_PI ) );
+
+	const Real dfnum1( sqrtD * 
+			   exp( - gsl_pow_2( r0_m_Sigma_t_over_sqrt4D ) ) );
+	const Real dfnum2( ( sqrtPI * tsqrt * ( alpha * sqrtD + r0 - Sigma ) ) 
+			   * Wdf );
+    
+	const Real dffactor( ( alpha * M_2_SQRTPI / sqrtD ) * factor );
+    
+	*df = ( dfnum1 - dfnum2 ) * dffactor;
+    }
+}
+*/

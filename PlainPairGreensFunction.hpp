@@ -86,17 +86,9 @@ private:
 
     static const Real p_reaction_F( const Real tsqrt, 
 				    const p_reaction_params* params );
-    static const Real p_reaction_deriv_F( const Real tsqrt,
-					  const p_reaction_params* params );
-    static void p_reaction_fdf_F( const Real tsqrt,
-				  const p_reaction_params* params,
-				  Real* const f, Real* const df );
-    
-    const Real p_reaction( const Real tsqrt, const Real r0 ) const;
-    const Real p_reaction_deriv( const Real tsqrt, const Real r0 ) const;
-    void p_reaction_fdf( const Real tsqrt, const Real r0,
-			 Real* const f, Real* const df ) const;
-    
+
+    const Real p_reaction( const Real t, const Real r0 ) const;
+
     const Real p_free( const Real r, const Real r0, 
 		       const Real theta, const Real t ) const;
     

@@ -224,7 +224,7 @@ class Single:
     def calculateReactionTime( self ):
 
         reactionType = self.sim.getReactionType1( self.particle.species )
-        if reactionType == None:
+        if not reactionType:
             return numpy.inf
 
         rnd = numpy.random.uniform()
@@ -730,6 +730,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.isDirty = False
 
     def stop( self, t ):
+
+        if t >= self.scheduler.getTopEvent().getTime():
+            raise RuntimeError, 'Stop time <= next event time.'
+
 
         self.t = t
         
@@ -1465,7 +1469,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         neighbors = []
         distances = []
 
-        if speciesList == None:
+        if not speciesList:
             speciesList = self.speciesList.values()
 
         for species in speciesList:
@@ -1507,7 +1511,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         scheduler = self.scheduler
 
         size = scheduler.getSize()
-        if n == None:
+        if not n:
             n = size 
 
         neighbors = [DummySingle(),] * size
@@ -1542,7 +1546,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         size = scheduler.getSize()
 
-        if n == None:
+        if not n:
             n = size
 
         neighbors = [DummySingle(),] * size

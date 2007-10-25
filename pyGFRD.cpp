@@ -94,8 +94,9 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     // free functions
 
-    def( "p_irr_radial", p_irr_radial );
-    def( "p_irr_radial_alpha", p_irr_radial_alpha );
+    //def( "p_free", p_free );
+    def( "p_irr", p_irr );
+    def( "S_irr", S_irr );
 
 
     class_<PyEvent>( "PyEvent", init<const Real, const object&>() )
