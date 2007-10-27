@@ -4,7 +4,8 @@ from egfrd import *
 
 def run( outfilename, N ):
     print outfilename
-    outfile = open( outfilename, 'w' )
+
+    outfile = open( outfilename, 'w+' )
 
     T = .1
 
@@ -15,8 +16,8 @@ def run( outfilename, N ):
         print d, t
         assert d == 0 or t == T
 
-
     outfile.close()
+
 
 
 def singlerun( T ):
@@ -51,10 +52,14 @@ def singlerun( T ):
         s.step()
         if s.populationChanged():
             print 'reaction'
-            return 0.0, s.t
+            t = s.t
+            del s
+            return 0.0, t
 
     distance = s.distance( particle.getPos(), [0,0,0] )
-    return distance, s.t
+    t = s.t
+    del s
+    return distance, t
     
 
 

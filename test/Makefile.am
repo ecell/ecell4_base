@@ -14,6 +14,7 @@ EXTRA_DIST=\
 AllTests.cpp\
 DynamicPriorityQueue_test.cpp\
 alltests.py\
+freeFunctions_test.py\
 EventScheduler_test.py\
 FreeGreensFunction_test.py\
 FreePairGreensFunction_test.py\
@@ -23,6 +24,7 @@ FirstPassagePairGreensFunction_test.py
 #%.py:
 #	$(TESTS_ENVIRONMENT) $(PYTHON) $<
 
+AllTests_CXXFLAGS = -DBOOST_TEST_DYN_LINK
 AllTests_LDFLAGS = -L$(libdir)
 AllTests_LDADD   = -lboost_unit_test_framework
 

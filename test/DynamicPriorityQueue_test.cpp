@@ -1,8 +1,8 @@
 #include <boost/mpl/list.hpp>
+#define BOOST_TEST_MAIN
 
 #include <boost/test/test_case_template.hpp>
 
-#define BOOST_AUTO_TEST_MAIN
 #include <boost/test/auto_unit_test.hpp>
 
 
