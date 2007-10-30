@@ -18,25 +18,22 @@ N_A = 6.0221367e23
 N = 100
 
 sigma = 1e-7
-r0 = sigma + 1e-18
+r0 = sigma
 t = .1
 kf = 1e6 / N_A
 D = 1e-11
 
 rmin = sigma
-rmax = sigma * 1e2
+rmax = sigma * 5e1
 
 rtick = ( rmax - rmin ) / N
 rarray = numpy.mgrid[rmin:rmax:rtick]
-parray = numpy.zeros( N )
 
-
-for i in range( N ):
-    parray[i] = p_irr( rarray[i], t, r0, kf, D, sigma )
+parray = array( [ p_irr( r, t, r0, kf, D, sigma ) for r in rarray ] )
 
 S = _gfrd.S_irr( t, r0, kf, D, sigma )
 
-#parray /= parray.sum() * rtick
+print  parray.sum() * rtick, S
 parray *= S 
 
 print rarray, parray
@@ -61,8 +58,8 @@ print len( lower_edges[1:] ), len( lower_edges[:-1])
 print len( hist )
 xtick = lower_edges[2]-lower_edges[1]
 
-hist /= len( data )
-hist /= xtick
+hist /= len( data ) * xtick
+#hist /= xtick
 #hist *= 3.14
 
 x = lower_edges + ( xtick * .5 )

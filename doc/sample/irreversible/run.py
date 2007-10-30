@@ -37,8 +37,8 @@ def singlerun( T ):
     r1 = BindingReactionType( A, B, C, 1e6 / N_A )
     s.addReactionType( r1 )
     
-    s.placeParticle( A, [0,0,0] )
-    particle = s.placeParticle( B, [1e-7+1e-18,0,0] )
+    particleA = s.placeParticle( A, [0,0,0] )
+    particleB = s.placeParticle( B, [1e-7+1e-18,0,0] )
 
     endTime = T
 
@@ -55,6 +55,9 @@ def singlerun( T ):
             t = s.t
             del s
             return 0.0, t
+
+    print particleA.getPos()
+    assert s.distance( particleA.getPos(), [0,0,0] ) == 0.0
 
     distance = s.distance( particle.getPos(), [0,0,0] )
     t = s.t

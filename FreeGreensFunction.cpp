@@ -64,8 +64,8 @@ FreeGreensFunction::drawR( const Real rnd, const Real t ) const
     THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
-    // t == 0 means no move.
-    if( t == 0.0 )
+    // t == 0 or D == 0 means no move.
+    if( t == 0.0 || getD() == 0.0 )
     {
 	return 0.0;
     }

@@ -57,8 +57,6 @@ class Single:
         #return self.pos
         return self.particle.getPos()
 
-    def getD( self ):
-        return self.particle.species.D
 
     def setShellSize( self, shellSize ):
 
@@ -255,7 +253,7 @@ def calculatePairCoM( pos1, pos2, D1, D2, fsize ):
     
     pos2t = cyclicTranspose( pos2, pos1, fsize )
 
-    return ( D1 * pos1 + D2 * pos2t ) / ( D1 + D2 )
+    return ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 )
 
 
 class Pair:
@@ -282,16 +280,19 @@ class Pair:
         particle2 = self.single2.particle
 
         self.D1, self.D2 = particle1.species.D, particle2.species.D
-        self.D = self.D1 + self.D2
+
+        self.D_tot = self.D1 + self.D2
+        self.D_geom = math.sqrt( self.D1 * self.D2 )  # geometric mean
 
         self.radius = max( particle1.species.radius,
                            particle2.species.radius )
         self.sigma = particle1.species.radius + particle2.species.radius
 
-        self.sgf = FirstPassageGreensFunction( self.D )
-        self.sgf_free = FreeGreensFunction( self.D )
-        self.pgf = FirstPassagePairGreensFunction( self.D, rt.k, self.sigma )
-        self.pgf_free = FreePairGreensFunction( self.D )
+        self.sgf = FirstPassageGreensFunction( self.D_geom )
+        self.sgf_free = FreeGreensFunction( self.D_geom )
+        self.pgf = FirstPassagePairGreensFunction( self.D_tot, 
+                                                   rt.k, self.sigma )
+        self.pgf_free = FreePairGreensFunction( self.D_tot )
 
         self.eventID = None
 
@@ -317,9 +318,6 @@ class Pair:
     def isPair( self ):
         return True
 
-    def getD( self ):
-        return self.D
-
     def fire( self ):
         self.sim.firePair( self )
         return self.dt
@@ -330,7 +328,7 @@ class Pair:
         return self.getCoM()
 
     def getD( self ):
-        return self.D
+        return self.D_tot #FIXME: is this correct?
 
     def setShellSize( self, shellSize ):
         #assert shellSize >= self.radius
@@ -348,9 +346,9 @@ class Pair:
         pairDistance = self.sim.distance( self.single1.getPos(),
                                           self.single2.getPos() )
         radius = max( pairDistance * self.D1 /
-                      self.D + self.single1.getRadius(),
+                      self.D_tot + self.single1.getRadius(),
                       pairDistance * self.D2 /
-                      self.D + self.single2.getRadius() )
+                      self.D_tot + self.single2.getRadius() )
         return radius
 
     '''
@@ -369,7 +367,7 @@ class Pair:
 
         pos2t = cyclicTranspose( pos2, pos1, self.sim.getCellSize() )
         
-        com = ( pos1 * self.D1 + pos2t * self.D2 ) / self.D
+        com = ( pos1 * self.D2 + pos2t * self.D1 ) / self.D_tot
         
         return self.sim.applyBoundary( com )
 
@@ -377,7 +375,8 @@ class Pair:
     def chooseSingleGreensFunction( self, t ):
 
         shellSize = self.a_R
-        thresholdDistance = Pair.CUTOFF_FACTOR * math.sqrt( 6.0 * self.D * t )
+        thresholdDistance = Pair.CUTOFF_FACTOR \
+            * math.sqrt( 6.0 * self.D_geom * t )
 
         if shellSize < thresholdDistance:
             return self.sgf
@@ -390,7 +389,8 @@ class Pair:
         distanceFromSigma = r0 - self.sigma
         distanceFromShell = self.a_r - r0;
 
-        thresholdDistance = Pair.CUTOFF_FACTOR * math.sqrt( 6.0 * self.D * t )
+        thresholdDistance = Pair.CUTOFF_FACTOR * \
+            math.sqrt( 6.0 * self.D_tot * t )
 
         if distanceFromSigma < thresholdDistance:
         
@@ -498,8 +498,8 @@ class Pair:
             rotated = numpy.array( [ newInterParticle[0], newInterParticle[1],
                                      - newInterParticle[2] ] )
 
-        newpos1 = CoM - self.D1 / self.D * rotated
-        newpos2 = newpos1 + rotated
+        newpos1 = CoM - rotated * ( self.D1 / self.D_tot )
+        newpos2 = CoM + rotated * ( self.D2 / self.D_tot )
 
         return newpos1, newpos2
         
@@ -513,8 +513,6 @@ class Pair:
         species2 = particle2.species
         radius1 = species1.radius
         radius2 = species2.radius
-        D1 = species1.D
-        D2 = species2.D
 
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
@@ -528,8 +526,8 @@ class Pair:
         if self.r0 < self.sigma:
             self.r0 = self.sigma
 
-        r0_1 = self.r0 * D1 / self.D
-        r0_2 = self.r0 * D2 / self.D
+        r0_1 = self.r0 * self.D1 / self.D_tot
+        r0_2 = self.r0 * self.D2 / self.D_tot
 
         shellSize = self.getShellSize()
 
@@ -539,9 +537,11 @@ class Pair:
         margin = min( margin_1, margin_2 )
         assert margin > 0.0, 'margin %g' % margin
 
-        # FIXME: equalize expected mean t_r and t_R
-        self.a_r = self.r0 + margin * .5
-        self.a_R = margin * .5
+        # equalize expected mean t_r and t_R.
+        sqrtD_tot = math.sqrt( self.D_tot )
+        sqrtD_geom = math.sqrt( self.D_geom )
+        self.a_r = self.r0 + margin * sqrtD_tot / ( sqrtD_tot + sqrtD_geom )
+        self.a_R = margin * sqrtD_geom / ( sqrtD_tot + sqrtD_geom )
 
         print 'a r0', self.a_r, self.r0
         assert self.a_r > self.r0, '%g %g' % ( self.a_r, self.r0 )
@@ -731,9 +731,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def stop( self, t ):
 
+        if self.t == t:
+            return
+
         if t >= self.scheduler.getTopEvent().getTime():
             raise RuntimeError, 'Stop time <= next event time.'
-
 
         self.t = t
         
@@ -768,7 +770,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.initialize()
 
         self.checkInvariants()
-
 
         event = self.scheduler.getTopEvent()
         self.t, self.lastEvent = event.getTime(), event.getObj()
@@ -945,7 +946,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #debug
         #self.checkShellForAll()
 
-        # But if this is immobile, don't move.
+        # If this is immobile, don't move.
         D0 = single.getD()
         if D0 == 0.0:
             single.dt = numpy.inf
@@ -1113,13 +1114,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         species2 = particle2.species
         radius1 = species1.radius
         radius2 = species2.radius
-        D1 = species1.D
-        D2 = species2.D
         
         oldInterParticle = particle2.getPos() - particle1.getPos()
 
         oldCoM = pair.getCoM()
-
 
         # Three cases:
         #  1. Reaction
@@ -1147,8 +1145,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
                 displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R * \
-                    math.sqrt( pair.D1 * pair.D2 ) / pair.D
+                newCoM = oldCoM + displacement_R
                 
                 #FIXME: SURFACE
                 newPos = self.applyBoundary( newCoM )
@@ -1197,8 +1194,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 
                 displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R * \
-                    math.sqrt( pair.D1 * pair.D2 ) / pair.D
+                newCoM = oldCoM + displacement_R
 
                 # calculate new r
                 print ( rnd[3], pair.a_r, pair.r0, pair.dt )
@@ -1250,9 +1246,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 # calculate new R
                 displacement_R_S = [ pair.a_R, rnd[3] * Pi, rnd[4] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R * \
-                    math.sqrt( pair.D1 * pair.D2 ) / pair.D
+            
+                newCoM = oldCoM + displacement_R
                 
+                print 'COM', oldCoM, newCoM
+
                 newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                       oldInterParticle )
                 newpos1 = self.applyBoundary( newpos1 )

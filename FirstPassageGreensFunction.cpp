@@ -237,12 +237,11 @@ FirstPassageGreensFunction::drawTime( const Real rnd ) const
 	return 0.0;
     }
 
-/*
-    if( rnd == 1.0 )
+    if( getD() == 0.0 )
     {
-	return INFINITY;
+        return INFINITY;
     }
-*/
+
 
     p_survival_params params = { this, rnd };
 
@@ -338,7 +337,7 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
 
     const Real a( geta() );
 
-    if( a == 0.0 || t == 0.0 )
+    if( a == 0.0 || t == 0.0 || getD() == 0.0 )
     {
         return 0.0;
     }
