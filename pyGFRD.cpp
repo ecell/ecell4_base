@@ -99,10 +99,13 @@ BOOST_PYTHON_MODULE( _gfrd )
     def( "S_irr", S_irr );
 
 
-    class_<PyEvent>( "PyEvent", init<const Real, const object&>() )
+    class_<PyEvent>( "PyEvent", 
+                     init<const Real, const object&, const object&>() )
 	.def( "setTime", &PyEvent::setTime )
 	.def( "getTime", &PyEvent::getTime )
-	.def( "getObj", &PyEvent::getObj,
+	.def( "getFunc", &PyEvent::getFunc,
+	      return_value_policy<copy_const_reference>() )
+	.def( "getArg", &PyEvent::getArg,
 	      return_value_policy<copy_const_reference>() )
 //	.def( "fire", &PyEvent::fire )
 //	.def( "update", &PyEvent::update )
@@ -131,7 +134,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "clear", &PyEventScheduler::clear )
 	.def( "addEvent", &PyEventScheduler::addEvent )
 	.def( "removeEvent", &PyEventScheduler::removeEvent )
-	.def( "updateEvent", &PyEventScheduler::updateEvent )
+	.def( "updateEventTime", &PyEventScheduler::updateEventTime )
 //	.def( "updateAllEventDependency", 
 //	      &PyEventScheduler::updateAllEventDependency )
 	.def( "check", &PyEventScheduler::check )

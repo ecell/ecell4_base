@@ -315,9 +315,13 @@ namespace libecs
 	}
 
 
-	void updateEvent( const EventID id, const Event& event )
+	void updateEventTime( const EventID id, const double t )
 	{
-	    this->eventPriorityQueue.replace( id, event  );
+            const EventIndex index( this->eventPriorityQueue.getIndex( id ) );
+            Event& event( this->eventPriorityQueue.getByIndex( index ) );
+
+            event.setTime( t );
+	    this->eventPriorityQueue.move( index );
 	}
 
 

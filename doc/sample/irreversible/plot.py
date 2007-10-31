@@ -24,7 +24,7 @@ kf = 1e6 / N_A
 D = 1e-11
 
 rmin = sigma
-rmax = sigma * 5e1
+rmax = sigma * 1e2
 
 rtick = ( rmax - rmin ) / N
 rarray = numpy.mgrid[rmin:rmax:rtick]
@@ -32,9 +32,6 @@ rarray = numpy.mgrid[rmin:rmax:rtick]
 parray = array( [ p_irr( r, t, r0, kf, D, sigma ) for r in rarray ] )
 
 S = _gfrd.S_irr( t, r0, kf, D, sigma )
-
-print  parray.sum() * rtick, S
-parray *= S 
 
 print rarray, parray
 

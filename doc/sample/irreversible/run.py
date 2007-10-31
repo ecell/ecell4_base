@@ -5,7 +5,7 @@ from egfrd import *
 def run( outfilename, N ):
     print outfilename
 
-    outfile = open( outfilename, 'w+' )
+    outfile = open( outfilename, 'w' )
 
     T = .1
 
@@ -15,6 +15,8 @@ def run( outfilename, N ):
 
         print d, t
         assert d == 0 or t == T
+
+        gc_classlist()
 
     outfile.close()
 
@@ -38,10 +40,9 @@ def singlerun( T ):
     s.addReactionType( r1 )
     
     particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [1e-7+1e-18,0,0] )
+    particleB = s.placeParticle( B, [1e-7 * (1.0 + 1e-8),0,0] )
 
     endTime = T
-
     s.step()
 
     while 1:
@@ -59,12 +60,30 @@ def singlerun( T ):
     print particleA.getPos()
     assert s.distance( particleA.getPos(), [0,0,0] ) == 0.0
 
-    distance = s.distance( particle.getPos(), [0,0,0] )
+    distance = s.distance( particleB.getPos(), [0,0,0] )
     t = s.t
     del s
     return distance, t
     
 
+import gc
+
+def gc_classlist():
+    gc.collect()
+    objCount = {}
+    objList = gc.get_objects()
+    for obj in objList:
+        if getattr(obj, "__class__", None):
+            name = obj.__class__.__name__
+            if objCount.has_key(name):
+                objCount[name] += 1
+            else:
+                objCount[name] = 1
+
+    objs = objCount.items()
+    objs.sort(key=lambda x: x[1],reverse=True) 
+    print 'GC', objs
+    del objList
 
 if __name__ == '__main__':
     run( sys.argv[1], int( sys.argv[2] ) )

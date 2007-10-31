@@ -329,15 +329,6 @@ public:
 
     inline const ID push( const Item& item );
 
-    const Item& getByIndex( const Index index ) const
-    {
-        return this->itemVector[ index ];
-    }
-
-    const Index getTopIndex() const 
-    {
-        return this->heap[0];
-    }
 
     Item& operator[]( const ID id )
     {
@@ -350,6 +341,43 @@ public:
     }
 
 
+    // Note:  Methods below are not part of the recommended public
+    // interface but provided here for cases where directly accessing them
+    // can improve performance.
+
+    const Index getIndex( const ID id ) const
+    {
+        return IDPolicy::getIndex( id );
+    }
+
+    const Item& getByIndex( const Index index ) const
+    {
+        return this->itemVector[ index ];
+    }
+
+    Item& getByIndex( const Index index )
+    {
+        return this->itemVector[ index ];
+    }
+
+    const Index getTopIndex() const 
+    {
+        return this->heap[0];
+    }
+
+    inline void popByIndex( const Index index );
+
+    void move( const Index index )
+    {
+        const Index pos( this->positionVector[ index ] );
+        movePos( pos );
+    }
+
+    void moveTop()
+    {
+        moveDownPos( 0 );
+    }
+
     // self-diagnostic methods
     const bool check() const; // check all
     const bool checkSize() const;
@@ -361,20 +389,7 @@ public:
 
 private:
 
-    inline void popByIndex( const Index index );
-
-    void move( const Index index )
-    {
-        const Index pos( this->positionVector[ index ] );
-        movePos( pos );
-    }
-
     inline void movePos( const Index pos );
-
-    void moveTop()
-    {
-        moveDownPos( 0 );
-    }
 
     void moveUp( const Index index )
     {

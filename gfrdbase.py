@@ -136,6 +136,8 @@ class Particle:
     def setPos( self, pos ):
         self.pool.positions[ self.pool.getIndex( self.serial ) ] = pos
 
+    pos = property( getPos, setPos )
+
     def getIndex( self ):
         return self.pool.getIndex( self.serial )
 
@@ -153,6 +155,9 @@ class ParticlePool:
         self.positions.shape = ( 0, 3 )
 
         self.size = 0
+
+    def __del__( self ):
+        print 'GC del Pool'
 
     def newParticle( self, position ):
 
@@ -237,6 +242,9 @@ class GFRDSimulatorBase:
         # counters
         self.rejectedMoves = 0
         self.reactionEvents = 0
+
+    def __del__( self ):
+        print 'GC del simbase'
 
 
     def getTime( self ):

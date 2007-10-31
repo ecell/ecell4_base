@@ -232,14 +232,14 @@ FirstPassageGreensFunction::drawTime( const Real rnd ) const
 
     const Real a( geta() );
 
-    if( a == 0.0 )
-    {
-	return 0.0;
-    }
-
     if( getD() == 0.0 )
     {
         return INFINITY;
+    }
+
+    if( a == 0.0 )
+    {
+	return 0.0;
     }
 
 

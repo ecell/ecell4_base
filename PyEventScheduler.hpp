@@ -12,40 +12,38 @@ class PyEvent
     
 public:
 	
-    PyEvent( const double time, const boost::python::object& obj )
+    PyEvent( const double time, 
+             const boost::python::object& func,
+             const boost::python::object& arg )
         :
         EventBase( time ),
-	obj( obj )
+        func( func ),
+        arg( arg )
     {
 	; // do nothing
     }
 
-    virtual ~PyEvent()
+    ~PyEvent()
     {
 	; // do nothing
     }
     
 
-    const boost::python::object& getObj() const
+    const boost::python::object& getFunc() const
     {
-	return this->obj;
+	return this->func;
+    }
+
+    const boost::python::object& getArg() const
+    {
+	return this->arg;
     }
 
     void fire()
     {
-	boost::python::object ret( this->obj.attr( "fire" )() );
+	boost::python::object ret( this->func( this->arg ) );
 	this->setTime( this->getTime() + 
                        boost::python::extract<double>( ret ) );
-    }
-
-    void update( const double t )
-    {
-	this->obj.attr( "update" )( t );
-    }
-
-    const bool isDependentOn( const PyEvent& arg ) const
-    {
-	return this->obj.attr( "isDependentOn" )( arg.getObj() );
     }
 
     PyEvent() // dummy
@@ -55,7 +53,8 @@ public:
 
 private:
 
-    boost::python::object obj;
+    boost::python::object func;
+    boost::python::object arg;
 };
 
 
@@ -79,17 +78,17 @@ public:
     }
     
     const EventID addEvent( const double t, 
-			    const boost::python::object& obj )
+			    const boost::python::object& func,
+			    const boost::python::object& arg )
     {
-	return libecs::EventScheduler<PyEvent>::addEvent( PyEvent( t, obj ) );
+	return libecs::EventScheduler<PyEvent>::
+            addEvent( PyEvent( t, func, arg ) );
     }
 
 
-    void updateEvent( const EventID id, const double t, 
-                      const boost::python::object& obj )
+    void updateEventTime( const EventID id, const double t ) 
     {
-	libecs::EventScheduler<PyEvent>::updateEvent( id,
-                                                      PyEvent( t, obj ) );
+	libecs::EventScheduler<PyEvent>::updateEventTime( id, t );
     }
 
 

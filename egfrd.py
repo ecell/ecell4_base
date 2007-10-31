@@ -16,12 +16,10 @@ from gfrdbase import *
 
 class Single:
 
-    def __init__( self, particle, sim ):
+    def __init__( self, particle, rt ):
 
         self.particle = particle
-        #self.pos = self.particle.getPos()
-
-        self.sim = sim
+        self.rt = rt
 
         self.lastTime = 0.0
         self.dt = 0.0
@@ -32,8 +30,8 @@ class Single:
 
         self.gf = FirstPassageGreensFunction( particle.species.D )
 
-    def __del__( self ):
-        pass
+    #def __del__( self ):
+    #    pass
 #        print 'del', str( self )
 
 
@@ -43,11 +41,6 @@ class Single:
     def getD( self ):
         return self.particle.species.D
 
-    def fire( self ):
-        print 'fireSingle', self, self.dt
-        self.sim.fireSingle( self )
-        print 'single new t dt', self.sim.t + self.dt, self.dt
-        return self.dt
         
     def setPos( self, pos ):
         #self.pos = pos
@@ -141,9 +134,6 @@ class Single:
         pos = self.particle.getPos()
         pos += displacement
 
-        # BOUNDARY
-        pos = self.sim.applyBoundary( pos )
-
         self.particle.setPos( pos )
 
     def propagate( self, r, t ):
@@ -221,12 +211,11 @@ class Single:
 
     def calculateReactionTime( self ):
 
-        reactionType = self.sim.getReactionType1( self.particle.species )
-        if not reactionType:
+        if not self.rt:
             return numpy.inf
 
         rnd = numpy.random.uniform()
-        dt = ( 1.0 / reactionType.k ) * math.log( 1.0 / rnd )
+        dt = ( 1.0 / self.rt.k ) * math.log( 1.0 / rnd )
 
         return dt
 
@@ -264,7 +253,7 @@ class Pair:
     # 5.6: ~1e-8, 6.0: ~1e-9
     CUTOFF_FACTOR = 5.6
 
-    def __init__( self, single1, single2, rt, sim ):
+    def __init__( self, single1, single2, rt, distFunc, cellSize ):
 
         # Order single1 and single2 so that D1 < D2.
         if single1.particle.species.D <= single2.particle.species.D:
@@ -273,9 +262,10 @@ class Pair:
             self.single1, self.single2 = single2, single1 
 
         self.rt = rt
-        
-        self.sim = sim
 
+        self.distance = distFunc
+        self.cellSize = cellSize
+        
         particle1 = self.single1.particle
         particle2 = self.single2.particle
 
@@ -305,8 +295,8 @@ class Pair:
         self.squeezed = False
 
 
-    def __del__( self ):
-        pass
+    #def __del__( self ):
+    #pass
     #        print 'del', str( self )
 
     def initialize( self, t ):
@@ -317,12 +307,6 @@ class Pair:
 
     def isPair( self ):
         return True
-
-    def fire( self ):
-        self.sim.firePair( self )
-        return self.dt
-
-
 
     def getPos( self ):
         return self.getCoM()
@@ -343,8 +327,8 @@ class Pair:
     '''
 
     def getRadius( self ):  #FIXME: should be renamed?
-        pairDistance = self.sim.distance( self.single1.getPos(),
-                                          self.single2.getPos() )
+        pairDistance = self.distance( self.single1.getPos(),
+                                      self.single2.getPos() )
         radius = max( pairDistance * self.D1 /
                       self.D_tot + self.single1.getRadius(),
                       pairDistance * self.D2 /
@@ -365,11 +349,11 @@ class Pair:
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
 
-        pos2t = cyclicTranspose( pos2, pos1, self.sim.getCellSize() )
+        pos2t = cyclicTranspose( pos2, pos1, self.cellSize ) #FIXME:
         
         com = ( pos1 * self.D2 + pos2t * self.D1 ) / self.D_tot
         
-        return self.sim.applyBoundary( com )
+        return com
 
 
     def chooseSingleGreensFunction( self, t ):
@@ -419,52 +403,6 @@ class Pair:
                 return self.pgf_free
 
 
-    def drawR_single( self, rnd, t, shellSize ):
-
-        gf = self.chooseSingleGreensFunction( t )
-        gf.seta( shellSize )
-        r = gf.drawR( rnd, t )
-        while r > self.a_R: # redraw; shouldn't happen often
-            print 'drawR_single: redraw'
-            self.sim.rejectedMoves += 1
-            r = gf.drawR( rnd, t )
-
-        return r
-
-
-    '''
-    Draw r for the pair inter-particle vector.
-    '''
-    def drawR_pair( self, rnd, r0, t, a ):
-
-        gf = self.choosePairGreensFunction( r0, t )
-
-        if hasattr( gf, 'seta' ):  # FIXME: not clean
-            gf.seta( a )
-
-        print r0, t, a
-        r = gf.drawR( rnd, r0, t )
-        while r > self.a_r or r <= self.sigma: # redraw; shouldn't happen often
-            print 'drawR_pair: redraw'
-            self.sim.rejectedMoves += 1
-            r = gf.drawR( rnd, r0, t )
-
-
-        return r
-
-
-    '''
-    Draw theta for the pair inter-particle vector.
-    '''
-    def drawTheta_pair( self, rnd, r, r0, t ):
-
-        gf = self.choosePairGreensFunction( r0, t )
-        print gf
-        theta = gf.drawTheta( rnd, r, r0, t )
-
-        return theta
-
-        
     '''
     Calculate new positions of the pair particles using
     a new center-of-mass, a new inter-particle vector, and
@@ -517,7 +455,7 @@ class Pair:
         pos1 = particle1.getPos()
         pos2 = particle2.getPos()
 
-        self.r0 = self.sim.distance( pos1, pos2 )
+        self.r0 = self.distance( pos1, pos2 )
         assert self.r0 >= self.sigma, \
             'r0 %g, sigma %g' % ( self.r0, self.sigma )
 
@@ -609,10 +547,7 @@ class Pair:
             newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
                                                   oldInterParticle )
 
-            newpos1 = self.sim.applyBoundary( newpos1 )
-            newpos2 = self.sim.applyBoundary( newpos2 )
-
-            dist = self.sim.distance( newpos1, newpos2 )
+            dist = self.distance( newpos1, newpos2 )
 
             self.checkNewpos( newpos1, newpos2 )
 
@@ -622,9 +557,49 @@ class Pair:
         return ( self.single1, self.single2 )
 
 
-    def isDependentOn( self, event ):
-        #print event
-        return False
+    def drawR_single( self, rnd, t, shellSize ):
+
+        gf = self.chooseSingleGreensFunction( t )
+        gf.seta( shellSize )
+        r = gf.drawR( rnd, t )
+        while r > self.a_R: # redraw; shouldn't happen often
+            print 'drawR_single: redraw'
+            #self.sim.rejectedMoves += 1
+            r = gf.drawR( rnd, t )
+
+        return r
+
+
+    '''
+    Draw r for the pair inter-particle vector.
+    '''
+    def drawR_pair( self, rnd, r0, t, a ):
+
+        gf = self.choosePairGreensFunction( r0, t )
+
+        if hasattr( gf, 'seta' ):  # FIXME: not clean
+            gf.seta( a )
+
+        r = gf.drawR( rnd, r0, t )
+        while r > self.a_r or r <= self.sigma: # redraw; shouldn't happen often
+            print 'drawR_pair: redraw'
+            #self.sim.rejectedMoves += 1
+            r = gf.drawR( rnd, r0, t )
+
+
+        return r
+
+
+    '''
+    Draw theta for the pair inter-particle vector.
+    '''
+    def drawTheta_pair( self, rnd, r, r0, t ):
+
+        gf = self.choosePairGreensFunction( r0, t )
+        print gf
+        theta = gf.drawTheta( rnd, r, r0, t )
+
+        return theta
 
 
     def checkNewpos( self, pos1, pos2 ):
@@ -647,9 +622,9 @@ class Pair:
             raise RuntimeError, 'New particles overlap'
 
         # check 2: particles within mobility radius.
-        if self.sim.distance( oldCoM, pos1 ) + species1.radius \
+        if self.distance( oldCoM, pos1 ) + species1.radius \
                > self.getShellSize() or \
-               self.sim.distance( oldCoM, pos2 ) + species2.radius \
+               self.distance( oldCoM, pos2 ) + species2.radius \
                > self.getShellSize():
             raise RuntimeError, 'New particle(s) out of protective sphere.'
 
@@ -705,6 +680,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.squeezed = 0
 
+#    def __del__( self ):
+#        print 'GC del sim'
+
     def setMaxShellSize( self, maxShellSize ):
         self.maxShellSize = maxShellSize
 
@@ -721,7 +699,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             for i in range( species.pool.size ):
                 particle = Particle( species, index=i )
                 single = self.createSingle( particle )
-                self.addEvent( self.t, single )
+                self.addSingleEvent( single )
 
 
         #debug
@@ -745,7 +723,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # first burst all Singles.
         for i in range( scheduler.getSize() ):
-            obj = scheduler.getEventByIndex(i).getObj()
+            obj = scheduler.getEventByIndex(i).getArg()
             if obj.isPair():
                 pairList.append( obj )
             else:
@@ -756,10 +734,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.burstPair( obj )
 
         self.dt = 0.0
-#         event = self.scheduler.getTopEvent()
-#         nextTime, nextEvent = event.getTime(), event.getObj()
-#         self.dt = nextTime - self.t
-#         assert self.dt == 0.0
 
 
     def step( self ):
@@ -772,14 +746,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.checkInvariants()
 
         event = self.scheduler.getTopEvent()
-        self.t, self.lastEvent = event.getTime(), event.getObj()
+        self.t, self.lastEvent = event.getTime(), event.getArg()
 
         print 't = ', self.t, ': event = ', self.lastEvent
         
         self.scheduler.step()
 
         nextEvent = self.scheduler.getTopEvent()
-        nextTime, nextEventObject = nextEvent.getTime(), nextEvent.getObj()
+        nextTime, nextEventObject = nextEvent.getTime(), nextEvent.getArg()
         self.dt = nextTime - self.t
 
         assert self.scheduler.getSize() != 0
@@ -801,7 +775,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
 
     def createSingle( self, particle ):
-        single = Single( particle, self )
+        rt = self.getReactionType1( particle.species )
+        single = Single( particle, rt )
         single.initialize( self.t )
         return single
 
@@ -817,22 +792,26 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         species2 = single2.particle.species
         rt = self.reactionTypeMap2.get( ( species1, species2 ) )
 
-        pair = Pair( single1, single2, rt, self )
+        pair = Pair( single1, single2, rt, self.distance, self.getCellSize() )
         pair.initialize( self.t )
         return pair
 
+    def addEvent( self, t, func, arg ):
+        return self.scheduler.addEvent( t, func, arg )
 
-    def addSingle( self, single ):
-        self.addEvent( self.t + single.dt, single )
+    def addSingleEvent( self, single ):
+        eventID = self.addEvent( self.t + single.dt, self.fireSingle, single )
+        single.eventID = eventID
 
-    def addEvent( self, t, event ):
-        event.eventID = self.scheduler.addEvent( t, event )
+    def addPairEvent( self, pair ):
+        eventID = self.addEvent( self.t + pair.dt, self.firePair, pair )
+        pair.eventID = eventID
 
     def removeEvent( self, event ):
         self.scheduler.removeEvent( event.eventID )
 
     def updateEvent( self, t, event ):
-        self.scheduler.updateEvent( event.eventID, t, event )
+        self.scheduler.updateEventTime( event.eventID, t )
 
     def excludeVolume( self, pos, radius ):
 
@@ -874,7 +853,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.removeParticle( single.particle )
             newparticle = self.placeParticle( productSpecies, pos )
             newsingle = self.createSingle( newparticle )
-            self.addSingle( newsingle )
+            self.addSingleEvent( newsingle )
             print 'product;', newsingle
 
             
@@ -928,8 +907,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             newsingle1 = self.createSingle( particle1 )
             newsingle2 = self.createSingle( particle2 )
             
-            self.addSingle( newsingle1 )
-            self.addSingle( newsingle2 )
+            self.addSingleEvent( newsingle1 )
+            self.addSingleEvent( newsingle2 )
 
             print 'products;', newsingle1, newsingle2
 
@@ -951,7 +930,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if D0 == 0.0:
             single.dt = numpy.inf
             single.eventType = EventType.ESCAPE
-            return
+            return single.dt
 
 
 
@@ -962,16 +941,19 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             single.gf.seta( single.getMobilityRadius() )
             r = single.gf.drawR( numpy.random.uniform(), single.dt )
             single.propagate( r, self.t )
+            single.particle.pos = self.applyBoundary( single.particle.pos )
+
 
             try:
                 self.fireSingleReaction( single )
             except NoSpace:
                 self.rejectedMoves += 1
                 self.updateEvent( self.t, single )
-                return
+                single.dt = 0
+                return single.dt
 
             single.dt = -1  # remove this Single from the Scheduler
-            return
+            return single.dt
 
         # If not reaction, propagate.
 
@@ -982,6 +964,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # Propagate this particle to the exit point on the shell.
         
         single.propagate( single.getMobilityRadius(), self.t )
+        single.particle.pos = self.applyBoundary( single.particle.pos )
+
+
         self.updateEvent( self.t, single )
 
         # (2) Check shell size disparity.   Check if this Single needs
@@ -1061,7 +1046,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                     print pair, 'dt=', pair.dt, 'type=', pair.eventType
                     
-                    self.addEvent( self.t + pair.dt, pair )
+                    self.addPairEvent( pair )
                     self.removeEvent( partnerCandidates[0] )
                     
                     for remainingCandidate in partnerCandidates[1:]:
@@ -1070,7 +1055,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                           remainingCandidate )
                         
                     single.dt = -1 # remove by rescheduling to past.
-                    return
+                    return single.dt
 
                 else:
                     for remainingCandidate in partnerCandidates:
@@ -1087,6 +1072,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.updateSingle( single )
 
         print 'single shell', single.getShellSize(), 'dt', single.dt
+
+        return single.dt
 
 
     def updateSingle( self, single ):
@@ -1117,7 +1104,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         oldInterParticle = particle2.getPos() - particle1.getPos()
 
-        oldCoM = pair.getCoM()
+        oldCoM = self.applyBoundary( pair.getCoM() )
 
         # Three cases:
         #  1. Reaction
@@ -1155,7 +1142,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                 particle = self.createParticle( species3, newPos )
                 newsingle = self.createSingle( particle )
-                self.addSingle( newsingle )
+                self.addSingleEvent( newsingle )
 
                 self.reactionEvents += 1
                 self.setPopulationChanged()
@@ -1166,7 +1153,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                       'num products >= 2 not supported yet.'
 
             pair.dt = -1
-            return
+            return pair.dt
 
 
         #
@@ -1295,29 +1282,36 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single1.initialize( self.t )
         single2.initialize( self.t )
             
-        self.addSingle( single1 )
-        self.addSingle( single2 )
+        self.addSingleEvent( single1 )
+        self.addSingleEvent( single2 )
 
         print pair.eventID, single1.eventID, single2.eventID
         print self.scheduler.getEvent( single1.eventID ).getTime(),\
               self.scheduler.getEvent( single2.eventID ).getTime()
 
         pair.dt = -1
-        return
+        return pair.dt
+
+
+        
+
 
 
     def burstSingle( self, single ):
         single.burstShell( self.t )
+        single.particle.pos = self.applyBoundary( single.particle.pos )
         self.updateEvent( self.t, single )
 
     def burstPair( self, pair ):
         single1, single2 = pair.breakUp( self.t )
+        single1.particle.pos = self.applyBoundary( single1.particle.pos )
+        single2.particle.pos = self.applyBoundary( single2.particle.pos )
         single1.initialize( self.t )
         single2.initialize( self.t )
         
         self.removeEvent( pair )
-        self.addEvent( self.t + single1.dt, single1 )
-        self.addEvent( self.t + single2.dt, single2 )
+        self.addSingleEvent( single1 )
+        self.addSingleEvent( single2 )
 
 
     def formPair( self, single1, single2 ):
@@ -1517,7 +1511,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         distances = numpy.zeros( size )
 
         for i in range( size ):
-            obj = scheduler.getEventByIndex(i).getObj()
+            obj = scheduler.getEventByIndex(i).getArg()
             neighbors[i] = obj
             positions[i] = obj.getPos()
 
@@ -1553,7 +1547,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         shellSizes = numpy.zeros( size )
 
         for i in range( size ):
-            obj = scheduler.getEventByIndex(i).getObj()
+            obj = scheduler.getEventByIndex(i).getArg()
             neighbors[i] = obj
             positions[i] = obj.getPos()
             shellSizes[i] = obj.getShellSize()
@@ -1634,7 +1628,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         scheduler = self.scheduler
 
         for i in range( scheduler.getSize() ):
-            obj = scheduler.getEventByIndex(i).getObj()
+            obj = scheduler.getEventByIndex(i).getArg()
             self.checkShell( obj )
 
     def checkEventStoichiometry( self ):
@@ -1645,7 +1639,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         eventPopulation = 0
         for i in range( self.scheduler.getSize() ):
-            obj = self.scheduler.getEventByIndex(i).getObj()
+            obj = self.scheduler.getEventByIndex(i).getArg()
             if obj.isPair():
                 eventPopulation += 2
             else:
@@ -1676,13 +1670,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         scheduler = self.scheduler
         for i in range( scheduler.getSize() ):
             event = scheduler.getEventByIndex(i)
-            print i, event.getTime(), event.getObj()
+            print i, event.getTime(), event.getArg()
 
     def dump( self ):
         scheduler = self.scheduler
         for i in range( scheduler.getSize() ):
             event = scheduler.getEventByIndex(i)
-            print i, event.getTime(), event.getObj(), event.getObj().getPos()
+            print i, event.getTime(), event.getArg(), event.getArg().getPos()
 
 
 
