@@ -1,5 +1,6 @@
 #!/usr/env python
 
+import weakref
 
 import math
 
@@ -12,6 +13,16 @@ from utils import *
 from surface import *
 
 from gfrdbase import *
+
+class Delegate:
+
+    def __init__( self, obj, method ):
+        self.obj = weakref.proxy( obj )
+        self.method = method
+
+    def __call__( self, arg ):
+        return self.method( self.obj, arg )
+
 
 
 class Single:
@@ -680,8 +691,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.squeezed = 0
 
-#    def __del__( self ):
-#        print 'GC del sim'
+    #def __del__( self ):
+    #    print 'GC del sim'
 
     def setMaxShellSize( self, maxShellSize ):
         self.maxShellSize = maxShellSize
@@ -800,11 +811,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return self.scheduler.addEvent( t, func, arg )
 
     def addSingleEvent( self, single ):
-        eventID = self.addEvent( self.t + single.dt, self.fireSingle, single )
+
+        eventID = self.addEvent( self.t + single.dt, 
+                                 Delegate( self, EGFRDSimulator.fireSingle ), 
+                                 single )
         single.eventID = eventID
 
     def addPairEvent( self, pair ):
-        eventID = self.addEvent( self.t + pair.dt, self.firePair, pair )
+        eventID = self.addEvent( self.t + pair.dt, 
+                                 Delegate( self, EGFRDSimulator.firePair ), 
+                                 pair )
         pair.eventID = eventID
 
     def removeEvent( self, event ):

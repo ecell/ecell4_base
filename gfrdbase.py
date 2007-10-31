@@ -156,9 +156,6 @@ class ParticlePool:
 
         self.size = 0
 
-    def __del__( self ):
-        print 'GC del Pool'
-
     def newParticle( self, position ):
 
         newindex = self.size
@@ -242,9 +239,6 @@ class GFRDSimulatorBase:
         # counters
         self.rejectedMoves = 0
         self.reactionEvents = 0
-
-    def __del__( self ):
-        print 'GC del simbase'
 
 
     def getTime( self ):

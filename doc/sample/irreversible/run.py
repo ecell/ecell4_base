@@ -2,6 +2,8 @@
 
 from egfrd import *
 
+import gc
+
 def run( outfilename, N ):
     print outfilename
 
@@ -16,7 +18,7 @@ def run( outfilename, N ):
         print d, t
         assert d == 0 or t == T
 
-        gc_classlist()
+        #gc_classlist()
 
     outfile.close()
 
@@ -62,6 +64,14 @@ def singlerun( T ):
 
     distance = s.distance( particleB.getPos(), [0,0,0] )
     t = s.t
+
+    #gc.collect()
+    #print 'GC referrers', gc.get_referrers( s)
+    #for i in  gc.get_referrers( s):
+    #print 'GC i ref', i, gc.get_referrers( i )
+    #print 'GC referrents', gc.get_referents( s)
+
+
     del s
     return distance, t
     
@@ -72,6 +82,8 @@ def gc_classlist():
     gc.collect()
     objCount = {}
     objList = gc.get_objects()
+
+    tuplist = []
     for obj in objList:
         if getattr(obj, "__class__", None):
             name = obj.__class__.__name__
@@ -79,11 +91,18 @@ def gc_classlist():
                 objCount[name] += 1
             else:
                 objCount[name] = 1
+            if name == 'tuple':
+                tuplist.append( str( obj ) )
+
+                
+    tuplist.sort()
+    #print 'GC', tuplist
 
     objs = objCount.items()
     objs.sort(key=lambda x: x[1],reverse=True) 
     print 'GC', objs
-    del objList
+    #print 'GC', objs[0]
+    del objList, objs, objCount
 
 if __name__ == '__main__':
     run( sys.argv[1], int( sys.argv[2] ) )
