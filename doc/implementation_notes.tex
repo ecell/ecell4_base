@@ -233,16 +233,20 @@ the implementation.
 \paragraph{Properties}
 
 \begin{itemize}
-\item[D] $single1.particle.D + single2.particle.D$
-
-
 \item[CoM] Center-of-Mass  
   $= ( \frac{\sqrt{D2}}{\sqrt{D1}} * single1.pos +
   \frac{\sqrt{D1}}{\sqrt{D2}} * single2.pos ) / (
   \frac{\sqrt{D2}}{\sqrt{D1}}+\frac{\sqrt{D1}}{\sqrt{D2}})$
 
-\item[single1, single2] the pair of singles this Pair is responsible for.
+\item[D_tot] Total of the diffusion constants of the pair of particles.
+ $single1.particle.D + single2.particle.D$
 
+\item[D_geom] Geometric mean of the diffusion constants of the pair of
+  particles.
+ $\sqrt{ single1.particle.D \cdot single2.particle.D}$
+
+
+\item[single1, single2] the pair of singles this Pair is responsible for.
 
 \item[eventType] the type of the next event, one of REACTION,
   ESCAPE1, or ESCAPE2.

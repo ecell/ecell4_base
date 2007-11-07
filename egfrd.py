@@ -142,10 +142,10 @@ class Single:
         displacementS = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
         displacement = sphericalToCartesian( displacementS )
 
-        pos = self.particle.getPos()
+        pos = self.particle.pos
         pos += displacement
 
-        self.particle.setPos( pos )
+        self.particle.pos = pos
 
     def propagate( self, r, t ):
 
@@ -352,13 +352,11 @@ class Pair:
 
     def getCoM( self ):
 
-        #FIXME: what if there are boundaries?
-        
         particle1 = self.single1.particle
         particle2 = self.single2.particle
         
-        pos1 = particle1.getPos()
-        pos2 = particle2.getPos()
+        pos1 = particle1.pos
+        pos2 = particle2.pos
 
         pos2t = cyclicTranspose( pos2, pos1, self.cellSize ) #FIXME:
         
@@ -463,37 +461,56 @@ class Pair:
         radius1 = species1.radius
         radius2 = species2.radius
 
-        pos1 = particle1.getPos()
-        pos2 = particle2.getPos()
+        pos1 = particle1.pos
+        pos2 = particle2.pos
 
-        self.r0 = self.distance( pos1, pos2 )
-        assert self.r0 >= self.sigma, \
-            'r0 %g, sigma %g' % ( self.r0, self.sigma )
-
-
-        #FIXME: not good
-        if self.r0 < self.sigma:
-            self.r0 = self.sigma
-
-        r0_1 = self.r0 * self.D1 / self.D_tot
-        r0_2 = self.r0 * self.D2 / self.D_tot
+        D1_factor = self.D1 / self.D_tot
+        D2_factor = self.D2 / self.D_tot
 
         shellSize = self.getShellSize()
 
-        margin_1 = shellSize - r0_1 - radius1
-        margin_2 = shellSize - r0_2 - radius2
-        
-        margin = min( margin_1, margin_2 )
-        assert margin > 0.0, 'margin %g' % margin
-
-        # equalize expected mean t_r and t_R.
         sqrtD_tot = math.sqrt( self.D_tot )
         sqrtD_geom = math.sqrt( self.D_geom )
-        self.a_r = self.r0 + margin * sqrtD_tot / ( sqrtD_tot + sqrtD_geom )
-        self.a_R = margin * sqrtD_geom / ( sqrtD_tot + sqrtD_geom )
 
-        print 'a r0', self.a_r, self.r0
-        assert self.a_r > self.r0, '%g %g' % ( self.a_r, self.r0 )
+        r0 = self.distance( pos1, pos2 )
+
+        #FIXME: not good
+        if r0 < self.sigma:
+            r0 = self.sigma
+
+        assert r0 >= self.sigma, \
+            'r0 %g, sigma %g' % ( r0, self.sigma )
+
+        # equalize expected mean t_r and t_R.
+
+        r0_1 = r0 * D1_factor
+        r0_2 = r0 * D2_factor
+
+        r_thr = ( 2 * shellSize - radius1 - radius2 ) / \
+            ( 1 + math.sqrt( sqrtD_tot / sqrtD_geom ) )
+
+        D_factor = sqrtD_tot + sqrtD_geom
+
+        ap1 = shellSize - r0_1 - radius1
+        r_1 = ap1 * sqrtD_tot / D_factor
+        a_R1 = ap1 * sqrtD_geom / D_factor
+
+        ap2 = shellSize - r0_2 - radius2
+        r_2 = ap2 * sqrtD_tot / D_factor
+        a_R2 = ap2 * sqrtD_geom / D_factor
+
+        print 'shell, r, r1, r2', shellSize, r_thr, r_1+ a_R1+radius1,\
+            r_2+ a_R2 + radius2
+
+        self.a_r = ( r0_1 + r_1 ) / D1_factor
+        self.a_R = a_R1
+
+
+        print 'tr, tR', math.sqrt( self.a_r - r0_1 ), math.sqrt( self.a_R )
+
+        print 'a_r a_R r0', self.a_r, self.a_R, r0
+        assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
+        assert False
 
         rnd = numpy.random.uniform( size=3 )
 
@@ -503,7 +520,7 @@ class Pair:
         try:
             self.pgf.seta( self.a_r )
             print rnd[1]
-            self.t_r = self.pgf.drawTime( rnd[1], self.r0 )
+            self.t_r = self.pgf.drawTime( rnd[1], r0 )
         except:
             print 'dump', self.pgf.dump()
             raise
@@ -516,7 +533,7 @@ class Pair:
         else:
             self.dt = self.t_r
             self.eventType = self.pgf.drawEventType( rnd[2],
-                                                     self.r0, self.t_r )
+                                                     r0, self.t_r )
 
 
 
@@ -538,8 +555,10 @@ class Pair:
             
             rnd = numpy.random.uniform( size = 6 )
             
-            oldInterParticle = particle2.getPos() - particle1.getPos()
+            oldInterParticle = particle2.pos - particle1.pos
             oldCoM = self.getCoM()
+
+            r0 = self.distance( particle1.pos, particle2.pos )
             
             # calculate new CoM
             r_R = self.drawR_single( rnd[0], dt, self.a_R )
@@ -549,8 +568,8 @@ class Pair:
             newCoM = oldCoM + displacement_R
             
             # calculate new interparticle
-            r_r = self.drawR_pair( rnd[3], self.r0, dt, self.a_r )
-            theta_r = self.drawTheta_pair( rnd[4], r_r, self.r0, dt )
+            r_r = self.drawR_pair( rnd[3], r0, dt, self.a_r )
+            theta_r = self.drawTheta_pair( rnd[4], r_r, r0, dt )
             phi_r = rnd[5] * 2 * Pi
             newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
@@ -562,8 +581,8 @@ class Pair:
 
             self.checkNewpos( newpos1, newpos2 )
 
-            particle1.setPos( newpos1 )
-            particle2.setPos( newpos2 )
+            particle1.pos = newpos1
+            particle2.pos = newpos2
 
         return ( self.single1, self.single2 )
 
@@ -628,8 +647,8 @@ class Pair:
         if newDistance <= radius12:
             print 'rejected move: ', 'radii, interp',\
                   species1.radius + species2.radius, newDistance
-            print 'DEBUG: r0, dt, pos1, pos2, pos1, pos2',\
-                  self.r0, self.dt, pos1, pos2, pos1, pos2
+            print 'DEBUG: dt, pos1, pos2, pos1, pos2',\
+                  self.dt, pos1, pos2, pos1, pos2
             raise RuntimeError, 'New particles overlap'
 
         # check 2: particles within mobility radius.
@@ -856,11 +875,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
             productSpecies = rt.products[0]
 
-            single.particle.setPos( NOWHERE )
+            single.particle.pos = NOWHERE
 
             if not self.checkOverlap( pos, productSpecies.radius ):
                 print 'no space for product particle.'
-                single.particle.setPos( pos )
+                single.particle.pos = pos
                 raise NoSpace
                 
             if reactantSpecies.species.radius < productSpecies.radius:
@@ -882,7 +901,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             D2 = productSpecies2.D
             D12 = D1 + D2
             
-            single.particle.setPos( NOWHERE )
+            single.particle.pos = NOWHERE
             
             #print 'unit', self.distance( unitVector, numpy.array([0,0,0]) )
             radius1 = productSpecies1.radius
@@ -910,7 +929,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     break
             else:
                 print 'no space for product particles.'
-                single.particle.setPos( pos )
+                single.particle.pos = pos
                 raise NoSpace
 
             self.excludeVolume( newpos1, productSpecies1.radius )
@@ -1118,7 +1137,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         radius1 = species1.radius
         radius2 = species2.radius
         
-        oldInterParticle = particle2.getPos() - particle1.getPos()
+        oldInterParticle = particle2.pos - particle1.pos
 
         oldCoM = self.applyBoundary( pair.getCoM() )
 
@@ -1176,16 +1195,18 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # 2 Escape
         #
 
+        r0 = self.distance( particle1.pos, particle2.pos )
+
         # temporary displace particles to do overlap check correctly.
-        particle1.setPos( NOWHERE )
-        particle2.setPos( NOWHERE )
+        particle1.pos = NOWHERE
+        particle2.pos = NOWHERE
 
         # 2.1 Escaping through a_r.
         if pair.eventType == EventType.ESCAPE:
 
             print 'escape r'
 
-            print 'r0 = ', pair.r0, 'dt = ', pair.dt, pair.pgf.dump()
+            print 'r0 = ', r0, 'dt = ', pair.dt, pair.pgf.dump()
             
             for i in range(100):
 
@@ -1200,8 +1221,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newCoM = oldCoM + displacement_R
 
                 # calculate new r
-                print ( rnd[3], pair.a_r, pair.r0, pair.dt )
-                theta_r = pair.drawTheta_pair( rnd[3], pair.a_r, pair.r0,
+                print ( rnd[3], pair.a_r, r0, pair.dt )
+                theta_r = pair.drawTheta_pair( rnd[3], pair.a_r, r0,
                                                pair.dt )
                 phi_r = rnd[4] * 2 * Pi
                 newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
@@ -1236,12 +1257,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 rnd = numpy.random.uniform( size = 5 )
 
                 # calculate new r
-                print 'r0 = ', pair.r0, 'dt = ', pair.dt, pair.pgf.dump()
-                r = pair.drawR_pair( rnd[0], pair.r0, pair.dt, pair.a_r )
+                print 'r0 = ', r0, 'dt = ', pair.dt, pair.pgf.dump()
+                r = pair.drawR_pair( rnd[0], r0, pair.dt, pair.a_r )
                 print 'new r = ', r
                 #assert r >= pair.sigma
             
-                theta_r = pair.drawTheta_pair( rnd[1], r, pair.r0, pair.dt )
+                theta_r = pair.drawTheta_pair( rnd[1], r, r0, pair.dt )
                 phi_r = rnd[2] * 2*Pi
                 newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
                 newInterParticle = sphericalToCartesian( newInterParticleS )
@@ -1288,8 +1309,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         #assert self.distance( newpos1, newpos2 ) >= pair.sigma
 
-        particle1.setPos( newpos1 )
-        particle2.setPos( newpos2 )
+        particle1.pos = newpos1
+        particle2.pos = newpos2
 
         print newpos1, newpos2
 
@@ -1426,6 +1447,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # is 2 * (r0 to sigma) ?
         minShellSizeWithMargin = minShellSize + shellSizeMargin
 
+        if minShellSizeWithMargin > self.maxShellSize:
+            return -0.0
+
         # pairGap = real distance including radii
         pairGap = pairDistance - radius12
 
@@ -1456,6 +1480,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         #FIXME: dummy?
         shellSize = minShellSize + ( closestShellDistance - minShellSize ) * .5
+
+        shellsize = min( shellSize, self.maxShellSize )
+
 
         return shellSize
     
@@ -1628,6 +1655,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         if shellSize > self.getCellSize():
             raise RuntimeError, '%s shell size larger than simulator cell size'
+
+        if shellSize > self.maxShellSize:
+            raise RuntimeError, '%s shell size larger than maxShellSize'
 
         if distance - shellSize < 0.0:
             if ( obj.isPair() and obj.squeezed ) or \
