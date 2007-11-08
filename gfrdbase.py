@@ -26,11 +26,11 @@ def p_free( t, D ):
 
     return displacement
 
-class OverlapError:
+class OverlapError( Exception ):
     pass
 
 
-class Species:
+class Species( object ):
     
     def __init__( self, id, D, radius ):
         self.id = id
@@ -51,7 +51,7 @@ class Species:
         self.pool.removeBySerial( serial )
 
 
-class ReactionType:
+class ReactionType( object ):
 
     def __init__( self, reactants=[], products=[], k=0.0 ):
         self.reactants = reactants
@@ -104,7 +104,7 @@ class UnbindingReactionType( ReactionType ):
         ReactionType.__init__( self, [ s1, ], [ p1, p2 ], k )
 
 
-class Particle:
+class Particle( object ):
 
     def __init__( self, species, serial=None, index=None ):
 
@@ -133,8 +133,8 @@ class Particle:
     def getPos( self ):
         return self.pool.positions[ self.pool.getIndex( self.serial ) ]
 
-    def setPos( self, pos ):
-        self.pool.positions[ self.pool.getIndex( self.serial ) ] = pos
+    def setPos( self, newpos ):
+        self.pool.positions[ self.pool.getIndex( self.serial ) ] = newpos
 
     pos = property( getPos, setPos )
 
@@ -142,7 +142,7 @@ class Particle:
         return self.pool.getIndex( self.serial )
 
 
-class ParticlePool:
+class ParticlePool( object ):
 
     def __init__( self ):
 
@@ -213,7 +213,7 @@ class ParticlePool:
 
 
 
-class GFRDSimulatorBase:
+class GFRDSimulatorBase( object ):
     
     def __init__( self ):
         self.speciesList = {}
@@ -426,7 +426,8 @@ class GFRDSimulatorBase:
             closestdistsq = self.distanceSqArray( position, positions2 ).min()
 
             if closestdistsq <= radius12sq:
-                print 'reject:', math.sqrt(closestdistsq), math.sqrt( radius12sq )
+                print 'reject: closest distance = ', math.sqrt(closestdistsq),\
+                    ', which must be at least ', radius12
                 return False
 
         return True

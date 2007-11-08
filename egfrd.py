@@ -14,7 +14,7 @@ from surface import *
 
 from gfrdbase import *
 
-class Delegate:
+class Delegate( object ):
 
     def __init__( self, obj, method ):
         self.obj = weakref.proxy( obj )
@@ -25,7 +25,7 @@ class Delegate:
 
 
 
-class Single:
+class Single( object ):
 
     def __init__( self, particle, rt ):
 
@@ -53,13 +53,9 @@ class Single:
         return self.particle.species.D
 
         
-    def setPos( self, pos ):
-        #self.pos = pos
-        self.particle.setPos( pos )
-
     def getPos( self ):
         #return self.pos
-        return self.particle.getPos()
+        return self.particle.pos
 
 
     def setShellSize( self, shellSize ):
@@ -256,7 +252,7 @@ def calculatePairCoM( pos1, pos2, D1, D2, fsize ):
     return ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 )
 
 
-class Pair:
+class Pair( object ):
     
     # CUTOFF_FACTOR is a threshold to choose between the real and approximate
     # Green's functions.
@@ -464,8 +460,11 @@ class Pair:
         pos1 = particle1.pos
         pos2 = particle2.pos
 
-        D1_factor = self.D1 / self.D_tot
-        D2_factor = self.D2 / self.D_tot
+        D1 = self.D1
+        D2 = self.D2
+
+        D1_factor = D1 / self.D_tot
+        D2_factor = D2 / self.D_tot
 
         shellSize = self.getShellSize()
 
@@ -486,31 +485,38 @@ class Pair:
         r0_1 = r0 * D1_factor
         r0_2 = r0 * D2_factor
 
-        r_thr = ( 2 * shellSize - radius1 - radius2 ) / \
-            ( 1 + math.sqrt( sqrtD_tot / sqrtD_geom ) )
-
         D_factor = sqrtD_tot + sqrtD_geom
 
-        ap1 = shellSize - r0_1 - radius1
-        r_1 = ap1 * sqrtD_tot / D_factor
-        a_R1 = ap1 * sqrtD_geom / D_factor
 
-        ap2 = shellSize - r0_2 - radius2
-        r_2 = ap2 * sqrtD_tot / D_factor
-        a_R2 = ap2 * sqrtD_geom / D_factor
+        den1 = ( math.sqrt( math.sqrt( D1 * D2**5 ) ) +
+                 D1 * ( sqrtD_geom + sqrtD_tot ) )
 
-        print 'shell, r, r1, r2', shellSize, r_thr, r_1+ a_R1+radius1,\
-            r_2+ a_R2 + radius2
+        a_R1 = sqrtD_geom * ( D2 * ( shellSize - radius1) + 
+                              D1 * ( shellSize - r0 - radius1 ) ) / den1
 
-        self.a_r = ( r0_1 + r_1 ) / D1_factor
+        a_r1 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
+                             ( shellSize - radius1 ) ) / den1
+
+        a_1 = a_R1 + a_r1 * D1_factor + radius1
+        a_2 = a_R1 + a_r1 * D2_factor + radius2
+
+
+        print 'a_1, 2', a_1, a_2, shellSize
+
+
+
+        self.a_r = a_r1
         self.a_R = a_R1
 
+        print 'r R', a_r1, a_R1
 
-        print 'tr, tR', math.sqrt( self.a_r - r0_1 ), math.sqrt( self.a_R )
+
+        print 'tr, tR', ( self.a_r - r0 ) / math.sqrt(self.D_tot),\
+            self.a_R / math.sqrt( self.D_geom )
 
         print 'a_r a_R r0', self.a_r, self.a_R, r0
         assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
-        assert False
+
 
         rnd = numpy.random.uniform( size=3 )
 
@@ -519,7 +525,6 @@ class Pair:
 
         try:
             self.pgf.seta( self.a_r )
-            print rnd[1]
             self.t_r = self.pgf.drawTime( rnd[1], r0 )
         except:
             print 'dump', self.pgf.dump()
@@ -535,7 +540,7 @@ class Pair:
             self.eventType = self.pgf.drawEventType( rnd[2],
                                                      r0, self.t_r )
 
-
+        #assert False
 
 
     '''
@@ -668,7 +673,7 @@ class Pair:
 
         return buf
 
-class DummySingle:
+class DummySingle( object ):
     def __init__( self ):
         pass
 
@@ -680,7 +685,7 @@ class DummySingle:
     
 
 
-class NoSpace:
+class NoSpace( object ):
     def __init( self ):
         pass
 #     def __init__( self, s1, s2, s3 ):
@@ -865,7 +870,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         reactantSpecies = single.particle.species
         rt = self.getReactionType1( reactantSpecies )
-        pos = single.getPos().copy()
+        oldpos = single.particle.pos.copy()
         
         if len( rt.products ) == 0:
             
@@ -879,14 +884,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             if not self.checkOverlap( pos, productSpecies.radius ):
                 print 'no space for product particle.'
-                single.particle.pos = pos
+                single.particle.pos = oldpos
                 raise NoSpace
                 
             if reactantSpecies.species.radius < productSpecies.radius:
-                self.excludeVolume( pos, productSpecies.radius )
+                self.excludeVolume( oldpos, productSpecies.radius )
 
             self.removeParticle( single.particle )
-            newparticle = self.placeParticle( productSpecies, pos )
+            newparticle = self.placeParticle( productSpecies, oldpos )
             newsingle = self.createSingle( newparticle )
             self.addSingleEvent( newsingle )
             print 'product;', newsingle
@@ -902,22 +907,25 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             D12 = D1 + D2
             
             single.particle.pos = NOWHERE
-            
-            #print 'unit', self.distance( unitVector, numpy.array([0,0,0]) )
+            print single.particle.pos.__class__
+
+            #single.particle.setPos( NOWHERE )
+
             radius1 = productSpecies1.radius
             radius2 = productSpecies2.radius
-            distance = radius1 + radius2
+            radius12 = radius1 + radius2
 
             for i in range( 100 ):
                 unitVector = randomUnitVector()
-                vector = unitVector * distance * (1.0 + 1e-4) # safety
+                vector = unitVector * radius12 * (1.0 + 1e-4) # safety
             
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.
                 # FIXME: what if D1 == D2 == 0?
-                newpos1 = pos + vector * ( D1 / D12 )
-                newpos2 = pos - vector * ( D2 / D12 )
-            
+                newpos1 = oldpos + vector * ( D1 / D12 )
+                newpos2 = oldpos - vector * ( D2 / D12 )
+                print numpy.sum(vector**2)
+
                 #FIXME: check surfaces here
             
                 newpos1 = self.applyBoundary( newpos1 )
@@ -929,7 +937,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     break
             else:
                 print 'no space for product particles.'
-                single.particle.pos = pos
+                single.particle.pos = oldpos
                 raise NoSpace
 
             self.excludeVolume( newpos1, productSpecies1.radius )
@@ -1008,9 +1016,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #     to burst the closest Single or Pair.
 
         closest, distanceToClosestShell =\
-                 self.getClosestShell( single.getPos(), ignore = [ single, ] )
+                 self.getClosestShell( single.particle.pos, 
+                                       ignore = [ single, ] )
 
-        distanceToClosest = self.distance( single.getPos(), closest.getPos() )
+        distanceToClosest = self.distance( single.particle.pos, 
+                                           closest.getPos() )
         sqrtD0 = math.sqrt( D0 ) 
         radius0 = single.getRadius()
 
