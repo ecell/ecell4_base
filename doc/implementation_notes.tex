@@ -242,8 +242,8 @@ the implementation.
  $single1.particle.D + single2.particle.D$
 
 \item[D_geom] Geometric mean of the diffusion constants of the pair of
-  particles.
- $\sqrt{ single1.particle.D \cdot single2.particle.D}$
+  particles.  $\sqrt{ single1.particle.D \cdot single2.particle.D}$.
+  This defines the diffusion constant of the CoM $D_{CoM}$
 
 
 \item[single1, single2] the pair of singles this Pair is responsible for.
@@ -267,6 +267,69 @@ the implementation.
 
 
 \subsection{Pair implementation}
+
+\subsubsection{Determining Next Event}
+
+\paragraph{Determining $a_r$ and $a_R$}
+
+Here we have some degrees of freedom in Pair parameters, such as how
+to determine the ratio between $a_r$ and $a_R$ given certain size of
+the shell.  The objective here is to maximize the probability for the
+pair to react, not to escape either through the protective shells of
+the CoM or the inter-particle vector.  If the pair is non-reactive, on
+the other hand, we want to maximize the time to escape by setting
+these two parameters.  To do a perfect job here can be as hard as 
+solving some equations involving the Green's functions analytically.
+However, the empirical strategy described below works reasonably
+good in most cases.
+
+We want to equalize the expected mean time for the CoM to escape
+through $a_R$ and for the inter-particle vector to escape through
+$a_r$.  To keep the problem handy, here we ignore the boundary
+at $\sigma$.  Then, we can expect that the mean time for the CoM
+and the inter-particle vector to arrive at the absorbing shell
+are
+
+\begin{eqnarray}
+  \Delta t_r &=& \frac{a^{\{A,B\}}_r - r^{\{A,B\}}_0 - \sigma^{\{A,B\}}} 
+  {\sqrt{D_{tot}}},\\
+  \Delta t_R &=& \frac{a_R}{\sqrt{D_{CoM}}},
+\end{eqnarray}
+respectively, where ${\{A,B\}}$ is either $A$ or $B$, depending on which
+one of the particles define the protective shell.
+
+
+Use the following to set $a_R$ and $a_r$
+
+\begin{eqnarray}
+  a_R &=& \frac{\sqrt{D_{CoM}} 
+    (D_A ( a - r_0 - \sigma_A ) + D_B (a - \sigma_A))}
+  {(D_A {D_B}^5)^{1/4} + D_A( \sqrt{D_{CoM}} + \sqrt{D_{tot}})}, \\
+  a_r &=& \frac{D_{tot} 
+    (\sqrt{D_{CoM}} r_0 + \sqrt{D_{tot}} (a - \sigma_A))}
+  {(D_A {D_B}^5)^{1/4} + D_A( \sqrt{D_{CoM}} + \sqrt{D_{tot}})},
+\end{eqnarray}
+when
+\begin{math}
+  ( D_A = D_B \wedge \sigma_A > \sigma_B ) \ \vee \ \\
+  \left ( ( D_A > D_B ) \wedge a_r > a_{thr} \right ) \ \vee \
+  \left ( ( D_A < D_B ) \wedge a_r < a_{thr} \right ), \\
+  a_{thr} = \frac{( D_A + D_B ) (\sigma_B - \sigma_A)}{D_A - D_B},
+\end{math}
+that means the particle $A$ defines the Pair shell.  Otherwise,
+\begin{eqnarray}
+  a_R &=& \frac{\sqrt{D_{CoM}} 
+    (D_B ( a - r_0 - \sigma_B ) + D_A (a - \sigma_B))}
+  {({D_A}^5 D_B)^{1/4} + D_B( \sqrt{D_{CoM}} + \sqrt{D_{tot}})}, \\
+  a_r &=& \frac{D_{tot} 
+    (\sqrt{D_{CoM}} r_0 + \sqrt{D_{tot}} (a - \sigma_B))}
+  {({D_A}^5 D_B)^{1/4} + D_B( \sqrt{D_{CoM}} + \sqrt{D_{tot}})},
+\end{eqnarray}
+
+When $D_A = D_B \wedge \sigma_A = \sigma_B$, the choice of shell-defining particle
+doesn't make any difference.
+
+
 
 
 
