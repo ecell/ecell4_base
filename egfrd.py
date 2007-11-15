@@ -487,39 +487,55 @@ class Pair( object ):
 
         D_factor = sqrtD_tot + sqrtD_geom
 
+        qrrtD1D25 = ( D1 * D2**5 ) ** 0.25
+        qrrtD15D2 = ( D1**5 * D2 ) ** 0.25
 
-        den1 = ( math.sqrt( math.sqrt( D1 * D2**5 ) ) +
-                 D1 * ( sqrtD_geom + sqrtD_tot ) )
 
-        a_R_1 = sqrtD_geom * ( D2 * ( shellSize - radius1) + 
-                              D1 * ( shellSize - r0 - radius1 ) ) / den1
 
-        a_r_1 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
-                                ( shellSize - radius1 ) ) / den1
+        if qrrtD15D2 * r0 + ( qrrtD15D2 + qrrtD1D25 ) * radius1 \
+                + D1 * ( sqrtD_tot * ( shellSize - radius2 ) 
+                         - sqrtD_geom * radius2 )\
+                - D2 * ( sqrtD_geom * r0 + sqrtD_tot * 
+                         ( shellSize - radius1 ) )\
+                         - qrrtD1D25 * radius2 >= 0:
 
-        a_1 = a_R_1 + a_r_1 * D1_factor + radius1
-        a_2 = a_R_1 + a_r_1 * D2_factor + radius2
+            den1 = qrrtD1D25 + D1 * ( sqrtD_geom + sqrtD_tot )
 
-        if a_1 >= a_2:
+            a_R_1 = sqrtD_geom * ( D2 * ( shellSize - radius1) + 
+                                   D1 * ( shellSize - r0 - radius1 ) ) / den1
+
+            a_r_1 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
+                                   ( shellSize - radius1 ) ) / den1
+
+            assert a_R_1 + a_r_1 * D1_factor + radius1 >= \
+                a_R_1 + a_r_1 * D2_factor + radius2
+
+            assert abs( a_R_1 + a_r_1 * D1_factor + radius1 - shellSize ) \
+                < 1e-8 * shellSize
+
             self.a_r = a_r_1
             self.a_R = a_R_1
         else:
             print 'a_2'
-            den2 = ( math.sqrt( math.sqrt( D1**5 * D2 ) ) +
-                      D2 * ( sqrtD_geom + sqrtD_tot ) )
+            den2 = qrrtD15D2 + D2 * ( sqrtD_geom + sqrtD_tot )
 
-            a_R_2 = sqrtD_geom * ( D1 * ( shellSize - radius1) + 
+            a_R_2 = sqrtD_geom * ( D1 * ( shellSize - radius2 ) + 
                                    D2 * ( shellSize - r0 - radius2 ) ) / den2
 
             a_r_2 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
                                    ( shellSize - radius2 ) ) / den2
 
-            assert a_R_2 + a_r_2 * D2_factor + radius2 > \
+            assert a_R_2 + a_r_2 * D2_factor + radius2 >= \
                 a_R_2 + a_r_2 * D1_factor + radius1
+
+            assert abs( a_R_2 + a_r_2 * D2_factor + radius2 - shellSize ) \
+                < 1e-8 * shellSize
+
 
             self.a_r = a_r_2
             self.a_R = a_R_2
             
+
 
         print 'r R', self.a_r, self.a_R
 
@@ -1244,7 +1260,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newCoM = oldCoM + displacement_R
 
                 # calculate new r
-                print ( rnd[3], pair.a_r, r0, pair.dt )
+                print rnd[3], pair.a_r, r0, pair.dt
                 theta_r = pair.drawTheta_pair( rnd[3], pair.a_r, r0,
                                                pair.dt )
                 phi_r = rnd[4] * 2 * Pi
@@ -1344,10 +1360,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
         self.addSingleEvent( single1 )
         self.addSingleEvent( single2 )
-
-        print pair.eventID, single1.eventID, single2.eventID
-        print self.scheduler.getEvent( single1.eventID ).getTime(),\
-              self.scheduler.getEvent( single2.eventID ).getTime()
 
         pair.dt = -1
         return pair.dt

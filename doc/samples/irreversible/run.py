@@ -3,7 +3,6 @@
 from egfrd import *
 
 def run( outfilename, N ):
-    print outfilename
 
     outfile = open( outfilename, 'w' )
 
