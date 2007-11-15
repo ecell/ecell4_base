@@ -491,28 +491,41 @@ class Pair( object ):
         den1 = ( math.sqrt( math.sqrt( D1 * D2**5 ) ) +
                  D1 * ( sqrtD_geom + sqrtD_tot ) )
 
-        a_R1 = sqrtD_geom * ( D2 * ( shellSize - radius1) + 
+        a_R_1 = sqrtD_geom * ( D2 * ( shellSize - radius1) + 
                               D1 * ( shellSize - r0 - radius1 ) ) / den1
 
-        a_r1 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
-                             ( shellSize - radius1 ) ) / den1
+        a_r_1 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
+                                ( shellSize - radius1 ) ) / den1
 
-        a_1 = a_R1 + a_r1 * D1_factor + radius1
-        a_2 = a_R1 + a_r1 * D2_factor + radius2
+        a_1 = a_R_1 + a_r_1 * D1_factor + radius1
+        a_2 = a_R_1 + a_r_1 * D2_factor + radius2
+
+        if a_1 >= a_2:
+            self.a_r = a_r_1
+            self.a_R = a_R_1
+        else:
+            print 'a_2'
+            den2 = ( math.sqrt( math.sqrt( D1**5 * D2 ) ) +
+                      D2 * ( sqrtD_geom + sqrtD_tot ) )
+
+            a_R_2 = sqrtD_geom * ( D1 * ( shellSize - radius1) + 
+                                   D2 * ( shellSize - r0 - radius2 ) ) / den2
+
+            a_r_2 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
+                                   ( shellSize - radius2 ) ) / den2
+
+            assert a_R_2 + a_r_2 * D2_factor + radius2 > \
+                a_R_2 + a_r_2 * D1_factor + radius1
+
+            self.a_r = a_r_2
+            self.a_R = a_R_2
+            
+
+        print 'r R', self.a_r, self.a_R
 
 
-        print 'a_1, 2', a_1, a_2, shellSize
-
-
-
-        self.a_r = a_r1
-        self.a_R = a_R1
-
-        print 'r R', a_r1, a_R1
-
-
-        print 'tr, tR', ( self.a_r - r0 ) / math.sqrt(self.D_tot),\
-            self.a_R / math.sqrt( self.D_geom )
+        print 'tr, tR', (( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
+            (self.a_R / math.sqrt( 6*self.D_geom ))**2
 
         print 'a_r a_R r0', self.a_r, self.a_R, r0
         assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
