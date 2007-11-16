@@ -540,17 +540,17 @@ FirstPassagePairGreensFunction::alpha_i( const Integer i, const Integer n,
 const unsigned int
 FirstPassagePairGreensFunction::alphaOffset( const unsigned int n ) const
 {
+    if( n == 0 )
+    {
+	return 0;
+    }
+
     if( this->alphaOffsetTable[n] >= 0 )
     {
 	return this->alphaOffsetTable[n];
     }
 
     unsigned int offset( 0 );
-
-    if( n == 0 )
-    {
-	return offset;
-    }
 
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
@@ -614,6 +614,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const unsigned int n,
     }
 
     const unsigned int offset( alphaOffset( n ) );
+//    const unsigned int offset( 0 );
 
     RealVector& alphaTable_n( this->getAlphaTable( n ) );
     alphaTable_n.clear();
@@ -1687,7 +1688,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
     const Real p_0( this->p_n( 0, r, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( this->TOLERANCE * p_0 ) );
+    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-2 ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
@@ -1776,23 +1777,22 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
 
     const Real falpha_r0( - J * yar0 + Y * jar0 );
 
-
     const Real num1( - J * jaa1 );
-    const Real E1( ( realn + realn * realn - 
-                     sigma * ( h + h * h * sigma + sigma * alphasq ) )
-                   * jaa1 * jaa1 );
-    const Real E2( J * J );
-    const Real den( E1 + E2 );
-
+    const Real den1( ( realn + realn * realn - 
+                       sigma * ( h + h * h * sigma + sigma * alphasq ) )
+                     * jaa1 * jaa1 );
+    const Real den2( J * J );
+    const Real den( den1 + den2 );
 
 // Alternative form;
-//     const Real num1( - J );
-//     const Real E1( realn + realn * realn - 
-//                      sigma * ( h + h * h * sigma + sigma * alphasq ) );
-//     const Real E2( ( J * J + Y * Y ) / 
-// 		   ( jaa1 * jaa1 + yaa1 * yaa1 ) );
-//     const Real den( ( E1 + E2 ) * jaa1 );
-
+/*
+     const Real num1( - J );
+     const Real den1( realn + realn * realn - 
+                      sigma * ( h + h * h * sigma + sigma * alphasq ) );
+     const Real den2( ( J * J + Y * Y ) / 
+ 		   ( jaa1 * jaa1 + yaa1 * yaa1 ) );
+     const Real den( ( den1 + den2 ) * jaa1 );
+*/
 
      const Real num( num1 * falpha_r0 );
 
@@ -1832,7 +1832,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
     const Real p_0( this->dp_n_at_a( 0, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( this->TOLERANCE * p_0 ) );
+    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-2 ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );

@@ -1,270 +1,383 @@
-(************** Content-type: application/mathematica **************
-                     CreatedBy='Mathematica 5.2'
+(* Content-type: application/mathematica *)
 
-                    Mathematica-Compatible Notebook
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
 
-This notebook can be used with any Mathematica-compatible
-application, such as Mathematica, MathReader or Publicon. The data
-for the notebook starts with the line containing stars above.
+(* CreatedBy='Mathematica 6.0' *)
 
-To get the notebook into a Mathematica-compatible application, do
-one of the following:
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[     10340,        373]
+NotebookOptionsPosition[      9102,        324]
+NotebookOutlinePosition[      9436,        339]
+CellTagsIndexPosition[      9393,        336]
+WindowFrame->Normal
+ContainsDynamic->False*)
 
-* Save the data starting with the line of stars above into a file
-  with a name ending in .nb, then open the file inside the
-  application;
-
-* Copy the data starting with the line of stars above to the
-  clipboard, then use the Paste menu command inside the application.
-
-Data for notebooks contains only printable 7-bit ASCII and can be
-sent directly in email or through ftp in text mode.  Newlines can be
-CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
-
-NOTE: If you modify the data for this notebook not in a Mathematica-
-compatible application, you must delete the line below containing
-the word CacheID, otherwise Mathematica-compatible applications may
-try to use invalid cache data.
-
-For more information on notebooks and Mathematica-compatible 
-applications, contact Wolfram Research:
-  web: http://www.wolfram.com
-  email: info@wolfram.com
-  phone: +1-217-398-0700 (U.S.)
-
-Notebook reader applications are available free of charge from 
-Wolfram Research.
-*******************************************************************)
-
-(*CacheID: 232*)
-
-
-(*NotebookFileLineBreakTest
-NotebookFileLineBreakTest*)
-(*NotebookOptionsPosition[      5761,        191]*)
-(*NotebookOutlinePosition[      6394,        213]*)
-(*  CellTagsIndexPosition[      6350,        209]*)
-(*WindowFrame->Normal*)
-
-
-
+(* Beginning of Notebook Content *)
 Notebook[{
 Cell[BoxData[
-    \(f\  := \ \ \ \ \((n\ /\ \((\ 2\ a^2\ r\ )\))\)\ Sin[\ 
-          Pi\ n\ r\ /\ a\ ]\ Exp[\ \(-\ D\)\ Pi^2\ n^2\ t\ /\ 
-              a^2\ ]\)], "Input",
-  ImageSize->{258, 111},
-  ImageMargins->{{0, 0}, {0, 0}},
-  ImageRegion->{{0, 1}, {0, 1}},
-  FontFamily->"Helvetica",
-  FontSize->14],
+ RowBox[{"f", " ", ":=", "    ", 
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{"n", " ", "/", " ", 
+     RowBox[{"(", " ", 
+      RowBox[{"2", " ", 
+       RowBox[{"a", "^", "2"}], " ", "r"}], " ", ")"}]}], ")"}], " ", 
+   RowBox[{"Sin", "[", " ", 
+    RowBox[{"Pi", " ", "n", " ", 
+     RowBox[{"r", " ", "/", " ", "a"}]}], " ", "]"}], " ", 
+   RowBox[{"Exp", "[", " ", 
+    RowBox[{
+     RowBox[{"-", " ", "D"}], " ", 
+     RowBox[{"Pi", "^", "2"}], " ", 
+     RowBox[{"n", "^", "2"}], " ", 
+     RowBox[{"t", " ", "/", " ", 
+      RowBox[{"a", "^", "2"}]}]}], " ", "]"}]}]}]], "Input",
+ ImageSize->{258, 111},
+ ImageMargins->{{0, 0}, {0, 0}},
+ ImageRegion->{{0, 1}, {0, 1}},
+ FontFamily->"Helvetica",
+ FontSize->14],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(ifa\  = \ 
-      Integrate[4\ Pi\ r\ r\ f, {r, 0, a}, \ 
-        Assumptions\  \[Rule] \ {n\ \  \[Element] \ Integers, \ \ n\  > \ 
-              0, \ r' > 0}]\)], "Input",
-  FontFamily->"Helvetica",
-  FontSize->14],
-
-Cell[BoxData[
-    \(\(-2\)\ \((\(-1\))\)\^n\ \[ExponentialE]\^\(-\(\(D\ n\^2\ \[Pi]\^2\ t\)\
-\/a\^2\)\)\)], "Output",
-  FontFamily->"Helvetica",
-  FontSize->14]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
-    \(\(\(ifr\  = \ 
-      Integrate[4\ Pi\ r\ r\ f, {r, 0, r'}, \ 
-        Assumptions\  \[Rule] \ {n\ \  \[Element] \ Integers, \ \ n\  > \ 
-              0, \ r' > 0, \ a > 0}]\)\(\[IndentingNewLine]\)
-    \)\)], "Input",
-  FontFamily->"Helvetica",
-  FontSize->14],
-
-Cell[BoxData[
-    FractionBox[
+ RowBox[{"ifa", " ", "=", " ", 
+  RowBox[{"Integrate", "[", 
+   RowBox[{
+    RowBox[{"4", " ", "Pi", " ", "r", " ", "r", " ", "f"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"r", ",", "0", ",", "a"}], "}"}], ",", " ", 
+    RowBox[{"Assumptions", " ", "\[Rule]", " ", 
+     RowBox[{"{", 
       RowBox[{
-      "2", " ", \(\[ExponentialE]\^\(-\(\(D\ n\^2\ \[Pi]\^2\ t\)\/a\^2\)\)\), 
-        " ", 
-        RowBox[{"(", 
-          RowBox[{
-            RowBox[{"a", " ", 
-              RowBox[{"Sin", "[", 
-                FractionBox[
-                  RowBox[{"n", " ", "\[Pi]", " ", 
-                    SuperscriptBox["r", "\[Prime]",
-                      MultilineFunction->None]}], "a"], "]"}]}], "-", 
-            RowBox[{"n", " ", "\[Pi]", " ", 
-              RowBox[{"Cos", "[", 
-                FractionBox[
-                  RowBox[{"n", " ", "\[Pi]", " ", 
-                    SuperscriptBox["r", "\[Prime]",
-                      MultilineFunction->None]}], "a"], "]"}], " ", 
-              SuperscriptBox["r", "\[Prime]",
-                MultilineFunction->None]}]}], 
-          ")"}]}], \(a\ n\ \[Pi]\)]], "Output",
-  FontFamily->"Helvetica",
-  FontSize->14]
+       RowBox[{"n", "  ", "\[Element]", " ", "Integers"}], ",", "  ", 
+       RowBox[{"n", " ", ">", " ", "0"}], ",", " ", 
+       RowBox[{
+        RowBox[{"r", "'"}], ">", "0"}]}], "}"}]}]}], "]"}]}]], "Input",
+ FontFamily->"Helvetica",
+ FontSize->14],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", "2"}], " ", 
+  SuperscriptBox[
+   RowBox[{"(", 
+    RowBox[{"-", "1"}], ")"}], "n"], " ", 
+  SuperscriptBox["\[ExponentialE]", 
+   RowBox[{"-", 
+    FractionBox[
+     RowBox[{"D", " ", 
+      SuperscriptBox["n", "2"], " ", 
+      SuperscriptBox["\[Pi]", "2"], " ", "t"}], 
+     SuperscriptBox["a", "2"]]}]]}]], "Output",
+ FontFamily->"Helvetica",
+ FontSize->14]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(\(\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(FourierCosTransform[\ 
-      a\ Exp[\(-D\)\ n^2\ Pi^2\ t\ /\ a^2]\ Sin[Pi\ n\ \ r/\ a]/n\ , n, w, \ 
-      Assumptions \[Rule] {\ n > 0, D > 0, \ t > 0, a > 0, \ r > 0, \ 
-          w > 0, \ r \[Element] \ Reals, \ a \[Element] Reals, \ 
-          D \[Element] Reals, \ t \[Element] Reals}]\)\)\)], "Input"],
+ RowBox[{
+  RowBox[{"ifr", " ", "=", " ", 
+   RowBox[{"Integrate", "[", 
+    RowBox[{
+     RowBox[{"4", " ", "Pi", " ", "r", " ", "r", " ", "f"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"r", ",", "0", ",", 
+       RowBox[{"r", "'"}]}], "}"}], ",", " ", 
+     RowBox[{"Assumptions", " ", "\[Rule]", " ", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"n", "  ", "\[Element]", " ", "Integers"}], ",", "  ", 
+        RowBox[{"n", " ", ">", " ", "0"}], ",", " ", 
+        RowBox[{
+         RowBox[{"r", "'"}], ">", "0"}], ",", " ", 
+        RowBox[{"a", ">", "0"}]}], "}"}]}]}], "]"}]}], 
+  "\[IndentingNewLine]"}]], "Input",
+ FontFamily->"Helvetica",
+ FontSize->14],
 
 Cell[BoxData[
-    \(FourierCosTransform[\(a\ \[ExponentialE]\^\(-\(\(D\ n\^2\ \[Pi]\^2\ t\)\
-\/a\^2\)\)\ Sin[\(n\ \[Pi]\ r\)\/a]\)\/n, n, w, 
-      Assumptions \[Rule] {n > 0, D > 0, t > 0, a > 0, r > 0, w > 0, 
-          r \[Element] Reals, a \[Element] Reals, D \[Element] Reals, 
-          t \[Element] Reals}]\)], "Output"]
+ FractionBox[
+  RowBox[{"2", " ", 
+   SuperscriptBox["\[ExponentialE]", 
+    RowBox[{"-", 
+     FractionBox[
+      RowBox[{"D", " ", 
+       SuperscriptBox["n", "2"], " ", 
+       SuperscriptBox["\[Pi]", "2"], " ", "t"}], 
+      SuperscriptBox["a", "2"]]}]], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"a", " ", 
+      RowBox[{"Sin", "[", 
+       FractionBox[
+        RowBox[{"n", " ", "\[Pi]", " ", 
+         SuperscriptBox["r", "\[Prime]",
+          MultilineFunction->None]}], "a"], "]"}]}], "-", 
+     RowBox[{"n", " ", "\[Pi]", " ", 
+      RowBox[{"Cos", "[", 
+       FractionBox[
+        RowBox[{"n", " ", "\[Pi]", " ", 
+         SuperscriptBox["r", "\[Prime]",
+          MultilineFunction->None]}], "a"], "]"}], " ", 
+      SuperscriptBox["r", "\[Prime]",
+       MultilineFunction->None]}]}], ")"}]}], 
+  RowBox[{"a", " ", "n", " ", "\[Pi]"}]]], "Output",
+ FontFamily->"Helvetica",
+ FontSize->14]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(Log[\(-2\)\ ]\)], "Input"],
+ RowBox[{"\[IndentingNewLine]", "\[IndentingNewLine]", 
+  RowBox[{"FourierCosTransform", "[", " ", 
+   RowBox[{
+    RowBox[{"a", " ", 
+     RowBox[{"Exp", "[", 
+      RowBox[{
+       RowBox[{"-", "D"}], " ", 
+       RowBox[{"n", "^", "2"}], " ", 
+       RowBox[{"Pi", "^", "2"}], " ", 
+       RowBox[{"t", " ", "/", " ", 
+        RowBox[{"a", "^", "2"}]}]}], "]"}], " ", 
+     RowBox[{
+      RowBox[{"Sin", "[", 
+       RowBox[{"Pi", " ", "n", "  ", 
+        RowBox[{"r", "/", " ", "a"}]}], "]"}], "/", "n"}]}], " ", ",", "n", 
+    ",", "w", ",", " ", 
+    RowBox[{"Assumptions", "\[Rule]", 
+     RowBox[{"{", " ", 
+      RowBox[{
+       RowBox[{"n", ">", "0"}], ",", 
+       RowBox[{"D", ">", "0"}], ",", " ", 
+       RowBox[{"t", ">", "0"}], ",", 
+       RowBox[{"a", ">", "0"}], ",", " ", 
+       RowBox[{"r", ">", "0"}], ",", " ", 
+       RowBox[{"w", ">", "0"}], ",", " ", 
+       RowBox[{"r", "\[Element]", " ", "Reals"}], ",", " ", 
+       RowBox[{"a", "\[Element]", "Reals"}], ",", " ", 
+       RowBox[{"D", "\[Element]", "Reals"}], ",", " ", 
+       RowBox[{"t", "\[Element]", "Reals"}]}], "}"}]}]}], "]"}]}]], "Input"],
 
 Cell[BoxData[
-    \(Log[\(-2\)\ i]\)], "Output"]
+ RowBox[{"FourierCosTransform", "[", 
+  RowBox[{
+   FractionBox[
+    RowBox[{"a", " ", 
+     SuperscriptBox["\[ExponentialE]", 
+      RowBox[{"-", 
+       FractionBox[
+        RowBox[{"D", " ", 
+         SuperscriptBox["n", "2"], " ", 
+         SuperscriptBox["\[Pi]", "2"], " ", "t"}], 
+        SuperscriptBox["a", "2"]]}]], " ", 
+     RowBox[{"Sin", "[", 
+      FractionBox[
+       RowBox[{"n", " ", "\[Pi]", " ", "r"}], "a"], "]"}]}], "n"], ",", "n", 
+   ",", "w", ",", 
+   RowBox[{"Assumptions", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"n", ">", "0"}], ",", 
+      RowBox[{"D", ">", "0"}], ",", 
+      RowBox[{"t", ">", "0"}], ",", 
+      RowBox[{"a", ">", "0"}], ",", 
+      RowBox[{"r", ">", "0"}], ",", 
+      RowBox[{"w", ">", "0"}], ",", 
+      RowBox[{"r", "\[Element]", "Reals"}], ",", 
+      RowBox[{"a", "\[Element]", "Reals"}], ",", 
+      RowBox[{"D", "\[Element]", "Reals"}], ",", 
+      RowBox[{"t", "\[Element]", "Reals"}]}], "}"}]}]}], "]"}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(\[ImaginaryI]\ Log[\(-2\)\ \[ImaginaryI]]\)], "Input"],
+ RowBox[{"Log", "[", 
+  RowBox[{"-", "2"}], " ", "]"}]], "Input"],
 
 Cell[BoxData[
-    \(\[ImaginaryI]\ \((\(-\(\(\[ImaginaryI]\ \[Pi]\)\/2\)\) + 
-          Log[2])\)\)], "Output"]
+ RowBox[{"Log", "[", 
+  RowBox[{
+   RowBox[{"-", "2"}], " ", "i"}], "]"}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(\(\(\[IndentingNewLine]\)\(\[ImaginaryI]\ Erfi[a\ ]\)\)\)], "Input"],
+ RowBox[{"\[ImaginaryI]", " ", 
+  RowBox[{"Log", "[", 
+   RowBox[{
+    RowBox[{"-", "2"}], " ", "\[ImaginaryI]"}], "]"}]}]], "Input"],
 
 Cell[BoxData[
-    \(\[ImaginaryI]\ Erfi[a]\)], "Output"]
+ RowBox[{"\[ImaginaryI]", " ", 
+  RowBox[{"(", 
+   RowBox[{
+    RowBox[{"-", 
+     FractionBox[
+      RowBox[{"\[ImaginaryI]", " ", "\[Pi]"}], "2"]}], "+", 
+    RowBox[{"Log", "[", "2", "]"}]}], ")"}]}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(Erf[a\ \[ImaginaryI]]\)], "Input"],
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{"\[ImaginaryI]", " ", 
+   RowBox[{"Erfi", "[", "a", " ", "]"}]}]}]], "Input"],
 
 Cell[BoxData[
-    \(\[ImaginaryI]\ Erfi[a]\)], "Output"]
+ RowBox[{"\[ImaginaryI]", " ", 
+  RowBox[{"Erfi", "[", "a", "]"}]}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(\(\(\[IndentingNewLine]\)\(TrigExpand[
-      Sin[p]\  - \ Cos[p]]\)\)\)], "Input"],
+ RowBox[{"Erf", "[", 
+  RowBox[{"a", " ", "\[ImaginaryI]"}], "]"}]], "Input"],
 
 Cell[BoxData[
-    \(\(-Cos[p]\) + Sin[p]\)], "Output"]
+ RowBox[{"\[ImaginaryI]", " ", 
+  RowBox[{"Erfi", "[", "a", "]"}]}]], "Output"]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
-    \(FourierTransform[BesselJ[1/2, a\ n], n, p]\)], "Input"],
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{"TrigExpand", "[", 
+   RowBox[{
+    RowBox[{"Sin", "[", "p", "]"}], " ", "-", " ", 
+    RowBox[{"Cos", "[", "p", "]"}]}], "]"}]}]], "Input"],
 
 Cell[BoxData[
-    \(\(\[ImaginaryI]\ \((\(-\@\(-a\)\) + \@a)\)\ \((\(a - \[ImaginaryI]\ \
-\@\(-a\^2\)\ Sign[a - p]\)\/\((\((a - p)\)\^2)\)\^\(1/4\) - \(a + \
-\[ImaginaryI]\ \@\(-a\^2\)\ Sign[a + p]\)\/\((\((a + p)\)\^2)\)\^\(1/4\))\)\)\
-\/\(2\ a\^2\ \@\(2\ \[Pi]\)\)\)], "Output"]
+ RowBox[{
+  RowBox[{"-", 
+   RowBox[{"Cos", "[", "p", "]"}]}], "+", 
+  RowBox[{"Sin", "[", "p", "]"}]}]], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"FourierTransform", "[", 
+  RowBox[{
+   RowBox[{"BesselJ", "[", 
+    RowBox[{
+     RowBox[{"1", "/", "2"}], ",", 
+     RowBox[{"a", " ", "n"}]}], "]"}], ",", "n", ",", "p"}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox["1", 
+   RowBox[{"2", " ", 
+    SuperscriptBox["a", "2"], " ", 
+    SqrtBox[
+     RowBox[{"2", " ", "\[Pi]"}]]}]], 
+  RowBox[{"\[ImaginaryI]", " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      SqrtBox[
+       RowBox[{"-", "a"}]]}], "+", 
+     SqrtBox["a"]}], ")"}], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      RowBox[{"a", "-", 
+       RowBox[{"\[ImaginaryI]", " ", 
+        SqrtBox[
+         RowBox[{"-", 
+          SuperscriptBox["a", "2"]}]], " ", 
+        RowBox[{"Sign", "[", 
+         RowBox[{"a", "-", "p"}], "]"}]}]}], 
+      SuperscriptBox[
+       RowBox[{"(", 
+        SuperscriptBox[
+         RowBox[{"(", 
+          RowBox[{"a", "-", "p"}], ")"}], "2"], ")"}], 
+       RowBox[{"1", "/", "4"}]]], "-", 
+     FractionBox[
+      RowBox[{"a", "+", 
+       RowBox[{"\[ImaginaryI]", " ", 
+        SqrtBox[
+         RowBox[{"-", 
+          SuperscriptBox["a", "2"]}]], " ", 
+        RowBox[{"Sign", "[", 
+         RowBox[{"a", "+", "p"}], "]"}]}]}], 
+      SuperscriptBox[
+       RowBox[{"(", 
+        SuperscriptBox[
+         RowBox[{"(", 
+          RowBox[{"a", "+", "p"}], ")"}], "2"], ")"}], 
+       RowBox[{"1", "/", "4"}]]]}], ")"}]}]}]], "Output"]
 }, Open  ]]
 },
-FrontEndVersion->"5.2 for X",
-ScreenRectangle->{{0, 3200}, {0, 1200}},
-WindowSize->{520, 1121},
-WindowMargins->{{1075, Automatic}, {Automatic, 25}}
+WindowSize->{784, 973},
+WindowMargins->{{158, Automatic}, {Automatic, 24}},
+FrontEndVersion->"6.0 for Linux x86 (64-bit) (June 19, 2007)",
+StyleDefinitions->"Default.nb"
 ]
+(* End of Notebook Content *)
 
-(*******************************************************************
-Cached data follows.  If you edit this Notebook file directly, not
-using Mathematica, you must remove the line containing CacheID at
-the top of  the file.  The cache data will then be recreated when
-you save this file from within Mathematica.
-*******************************************************************)
-
+(* Internal cache information *)
 (*CellTagsOutline
 CellTagsIndex->{}
 *)
-
 (*CellTagsIndex
 CellTagsIndex->{}
 *)
-
 (*NotebookFileOutline
 Notebook[{
-Cell[1754, 51, 306, 8, 50, "Input"],
-
+Cell[568, 21, 727, 22, 33, "Input"],
 Cell[CellGroupData[{
-Cell[2085, 63, 235, 6, 50, "Input"],
-Cell[2323, 71, 160, 4, 45, "Output"]
+Cell[1320, 47, 564, 15, 57, "Input"],
+Cell[1887, 64, 400, 14, 54, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[2520, 80, 281, 7, 70, "Input"],
-Cell[2804, 89, 913, 23, 70, "Output"]
+Cell[2324, 83, 682, 19, 80, "Input"],
+Cell[3009, 104, 923, 28, 80, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[3754, 117, 377, 5, 107, "Input"],
-Cell[4134, 124, 327, 5, 106, "Output"]
+Cell[3969, 137, 1142, 29, 121, "Input"],
+Cell[5114, 168, 1004, 28, 106, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[4498, 134, 46, 1, 27, "Input"],
-Cell[4547, 137, 48, 1, 27, "Output"]
+Cell[6155, 201, 79, 2, 32, "Input"],
+Cell[6237, 205, 99, 3, 31, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[4632, 143, 74, 1, 27, "Input"],
-Cell[4709, 146, 111, 2, 43, "Output"]
+Cell[6373, 213, 147, 4, 32, "Input"],
+Cell[6523, 219, 228, 7, 48, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[4857, 153, 88, 1, 43, "Input"],
-Cell[4948, 156, 56, 1, 27, "Output"]
+Cell[6788, 231, 134, 3, 55, "Input"],
+Cell[6925, 236, 93, 2, 31, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[5041, 162, 54, 1, 27, "Input"],
-Cell[5098, 165, 56, 1, 27, "Output"]
+Cell[7055, 243, 91, 2, 32, "Input"],
+Cell[7149, 247, 93, 2, 31, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[5191, 171, 102, 2, 43, "Input"],
-Cell[5296, 175, 54, 1, 27, "Output"]
+Cell[7279, 254, 197, 5, 55, "Input"],
+Cell[7479, 261, 129, 4, 31, "Output"]
 }, Open  ]],
-
 Cell[CellGroupData[{
-Cell[5387, 181, 75, 1, 27, "Input"],
-Cell[5465, 184, 280, 4, 71, "Output"]
+Cell[7645, 270, 214, 6, 32, "Input"],
+Cell[7862, 278, 1224, 43, 107, "Output"]
 }, Open  ]]
 }
 ]
 *)
 
-
-
-(*******************************************************************
-End of Mathematica Notebook file.
-*******************************************************************)
+(* End of internal cache information *)
 
