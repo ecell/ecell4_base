@@ -639,7 +639,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         kf = 1e-8
 
         # smaller t causes problem
-        t = 1e-5
+        t = 1e-3
         r0 = 9e-8
         a = 1e-7
         

@@ -103,7 +103,7 @@ BOOST_PYTHON_MODULE( _gfrd )
                      init<const Real, const object&, const object&>() )
 	.def( "setTime", &PyEvent::setTime )
 	.def( "getTime", &PyEvent::getTime )
-	.def( "getFunc", &PyEvent::getFunc,
+	.def( "getObj", &PyEvent::getObj,
 	      return_value_policy<copy_const_reference>() )
 	.def( "getArg", &PyEvent::getArg,
 	      return_value_policy<copy_const_reference>() )

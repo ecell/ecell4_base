@@ -1593,7 +1593,7 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
 						      const Real r0, 
 						      const Real t ) const
 {
-    const Real Dt( this->getD() * t );
+    const Real mDt( - this->getD() * t );
     const Real sigma( this->getSigma() );
     const Real h( this->geth() );
 
@@ -1606,7 +1606,7 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
     const Real realn( static_cast<Real>( n ) );
     const Real hSigma_m_n( hSigma - realn );
 
-    const Real term1( alphasq * exp( - Dt * alphasq ) );
+    const Real term1( alphasq * exp( mDt * alphasq ) );
 
 #if 0
     const Real np( realn + 0.5 );
@@ -1774,13 +1774,15 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
     const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
     const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
 
-    const Real dfalpha_r( - 2.0 * J / ( a * M_PI * jaa1 ) );
+    const Real num1( - J / ( a * M_PI * jaa1 ) );
     const Real falpha_r0( - J * yar0 + Y * jar0 );
 
-    const Real num( dfalpha_r * falpha_r0 );
+    const Real num( num1 * falpha_r0 );
 
     const Real E1( realn + realn * realn - 
-		   sigma * ( h + h * h * sigma + sigma * alphasq ) );
+		   sigma * ( h + h * h * sigma + sigma * alphasq ) );//* jaa1 );
+
+    //const Real E2( J * J / jaa1 );
 
     const Real E2( ( J * J + Y * Y ) / 
 		   ( jaa1 * jaa1 + yaa1 * yaa1 ) );
@@ -1808,8 +1810,10 @@ FirstPassagePairGreensFunction::dp_n_at_a( const Integer n,
 					_1, n, r0, t ),
 			   this->MAX_ALPHA_SEQ ) );
 
-    const Real factor( getD() * ( 1 + 2 * n ) * M_PI / 
-		       ( 8.0 * sqrt( geta() * r0 ) ) );
+    const Real a( geta() );
+
+    const Real factor( getD() * ( 1 + 2 * n ) / 
+		       ( 4.0 * sqrt( gsl_pow_3( a ) * r0 ) ) );
 
 
     return p * factor;

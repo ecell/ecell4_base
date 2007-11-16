@@ -13,11 +13,11 @@ class PyEvent
 public:
 	
     PyEvent( const double time, 
-             const boost::python::object& func,
+             const boost::python::object& obj,
              const boost::python::object& arg )
         :
         EventBase( time ),
-        func( func ),
+        obj( obj ),
         arg( arg )
     {
 	; // do nothing
@@ -29,9 +29,9 @@ public:
     }
     
 
-    const boost::python::object& getFunc() const
+    const boost::python::object& getObj() const
     {
-	return this->func;
+	return this->obj;
     }
 
     const boost::python::object& getArg() const
@@ -41,7 +41,7 @@ public:
 
     void fire()
     {
-	boost::python::object ret( this->func( this->arg ) );
+	boost::python::object ret( this->obj( this->arg ) );
 	this->setTime( this->getTime() + 
                        boost::python::extract<double>( ret ) );
     }
@@ -53,7 +53,7 @@ public:
 
 private:
 
-    boost::python::object func;
+    boost::python::object obj;
     boost::python::object arg;
 };
 
