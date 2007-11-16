@@ -106,7 +106,6 @@ class EventSchedulerTestCase( unittest.TestCase ):
         id = scheduler.addEvent( 0.0, Delegate( event, TestEvent.fire ), () )
         self.failIf( scheduler.getTime() != 0.0 )
         self.failIf( scheduler.getNextTime() != 0.0 )
-        print scheduler.getTopEvent().getObj()
         self.failIf( scheduler.getTopID() != id )
         
         scheduler.step()

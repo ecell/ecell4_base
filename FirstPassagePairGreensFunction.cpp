@@ -1766,7 +1766,7 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
     const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) * factors );
     const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) * factors );
     const Real jaa1( gsl_sf_bessel_jl( n,   aAlpha )     * factora );
-    const Real yaa1( gsl_sf_bessel_yl( n,   aAlpha )     * factora );
+    //const Real yaa1( gsl_sf_bessel_yl( n,   aAlpha )     * factora );
     const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) * factorr0 );
     const Real yar0( gsl_sf_bessel_yl( n,   r0 * alpha ) * factorr0 );
 #endif
@@ -1774,23 +1774,28 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
     const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
     const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
 
-    const Real num1( - J / ( a * M_PI * jaa1 ) );
     const Real falpha_r0( - J * yar0 + Y * jar0 );
 
-    const Real num( num1 * falpha_r0 );
 
-    const Real E1( realn + realn * realn - 
-		   sigma * ( h + h * h * sigma + sigma * alphasq ) );//* jaa1 );
-
-    //const Real E2( J * J / jaa1 );
-
-    const Real E2( ( J * J + Y * Y ) / 
-		   ( jaa1 * jaa1 + yaa1 * yaa1 ) );
-
-//    const Real E2( ( J * J ) / 
-//		   ( jaa1 * jaa1 ) );
-
+    const Real num1( - J * jaa1 );
+    const Real E1( ( realn + realn * realn - 
+                     sigma * ( h + h * h * sigma + sigma * alphasq ) )
+                   * jaa1 * jaa1 );
+    const Real E2( J * J );
     const Real den( E1 + E2 );
+
+
+// Alternative form;
+//     const Real num1( - J );
+//     const Real E1( realn + realn * realn - 
+//                      sigma * ( h + h * h * sigma + sigma * alphasq ) );
+//     const Real E2( ( J * J + Y * Y ) / 
+// 		   ( jaa1 * jaa1 + yaa1 * yaa1 ) );
+//     const Real den( ( E1 + E2 ) * jaa1 );
+
+
+     const Real num( num1 * falpha_r0 );
+
 
 //    printf("f n1 n2 d %g %g %g %g\n",falpha_r0, num1, num2, den );
 
