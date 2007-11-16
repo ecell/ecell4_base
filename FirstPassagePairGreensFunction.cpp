@@ -1671,9 +1671,7 @@ FirstPassagePairGreensFunction::p_n( const Integer n,
 					_1, n, r, r0, t ),
 			   this->MAX_ALPHA_SEQ ) );
 
-    const Real factor( ( 1 + 2 * n ) * M_PI / ( 8.0 * sqrt( r * r0 ) ) );
-
-    return p * factor;
+    return p;
 }
 
 void
@@ -1684,7 +1682,9 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 {
     p_nTable.clear();
 
-    const Real p_0( this->p_n( 0, r, r0, t ) );
+    const Real factor( M_PI / ( 8.0 * sqrt( r * r0 ) ) );
+
+    const Real p_0( this->p_n( 0, r, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
     const Real threshold( fabs( this->TOLERANCE * p_0 ) );
@@ -1693,7 +1693,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
     unsigned int n( 1 );
     while( true )
     {
-	Real p_n( this->p_n( n, r, r0, t ) );
+	Real p_n( this->p_n( n, r, r0, t ) * factor );
 
 	if( ! std::isnormal( p_n ) )
 	{
@@ -1815,13 +1815,7 @@ FirstPassagePairGreensFunction::dp_n_at_a( const Integer n,
 					_1, n, r0, t ),
 			   this->MAX_ALPHA_SEQ ) );
 
-    const Real a( geta() );
-
-    const Real factor( getD() * ( 1 + 2 * n ) / 
-		       ( 4.0 * sqrt( gsl_pow_3( a ) * r0 ) ) );
-
-
-    return p * factor;
+    return p;
 }
 
 
@@ -1832,7 +1826,10 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 {
     p_nTable.clear();
 
-    const Real p_0( this->dp_n_at_a( 0, r0, t ) );
+    const Real factor( getD() / ( 4.0 * sqrt( gsl_pow_3( a ) * r0 ) ) );
+
+
+    const Real p_0( this->dp_n_at_a( 0, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
     const Real threshold( fabs( this->TOLERANCE * p_0 ) );
@@ -1841,7 +1838,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
     unsigned int n( 1 );
     while( true )
     {
-	Real p_n( this->dp_n_at_a( n, r0, t ) );
+	Real p_n( this->dp_n_at_a( n, r0, t ) * factor );
 
 	if( ! std::isnormal( p_n ) )
 	{
@@ -1946,7 +1943,7 @@ FirstPassagePairGreensFunction::
 p_theta_i( const unsigned int n,
 	   const RealVector& p_nTable, const RealVector& lgndTable ) const
 {
-    return p_nTable[n] * lgndTable[n];
+    return p_nTable[n] * lgndTable[n] * ( 2 * n + 1 );
 }
 
 const Real
@@ -2095,7 +2092,7 @@ ip_theta_i( const unsigned int n,
     const Real lgnd_n_m1( lgndTable1[n] );   // n-1
     const Real lgnd_n_p1( lgndTable1[n+2] ); // n+1
     
-    return p_nTable[n] * ( lgnd_n_m1 - lgnd_n_p1 ) / ( 1.0 + 2.0 * n );
+    return p_nTable[n] * ( lgnd_n_m1 - lgnd_n_p1 );// / ( 1.0 + 2.0 * n );
 }
 
 
