@@ -74,7 +74,8 @@ void FirstPassagePairGreensFunction::clearAlphaTable() const
 {
     std::for_each( this->alphaTable.begin(), this->alphaTable.end(),
 		   boost::mem_fn( &RealVector::clear ) );
-    std::fill( this->alphaOffsetTable.begin(), this->alphaOffsetTable.end(),
+    this->alphaOffsetTable[0] = 0;
+    std::fill( this->alphaOffsetTable.begin()+1, this->alphaOffsetTable.end(),
 	       -1 );
 
 }
@@ -540,24 +541,20 @@ FirstPassagePairGreensFunction::alpha_i( const Integer i, const Integer n,
 const unsigned int
 FirstPassagePairGreensFunction::alphaOffset( const unsigned int n ) const
 {
-    if( n == 0 )
-    {
-	return 0;
-    }
-
     if( this->alphaOffsetTable[n] >= 0 )
     {
 	return this->alphaOffsetTable[n];
     }
 
-    unsigned int offset( 0 );
-
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
 
-    Real target( M_PI_2 );
-    const Real factor( 1.0 / (a-sigma) );
+    assert( this->alphaOffsetTable.size() >= n );
+    unsigned int offset( this->alphaOffsetTable[n-1] );
 
+    const Real factor( 1.0 / ( a - sigma ) );
+
+    Real target( offset * M_PI + M_PI_2 );
     // We know the range of the solution from - Pi/2 <= atan <= Pi/2.
     const Real alphaMid( target * factor );
     const Real alphaHalfRange( M_PI_2 * factor );
@@ -584,8 +581,8 @@ FirstPassagePairGreensFunction::alphaOffset( const unsigned int n ) const
 	    break;
 	}
 
-//	printf("lh: %d %d %g %g %g %g\n", 
-//	       n, offset, low, high, f_alpha( low, n ), f_alpha( high, n ) );
+	//printf("lh: %d %d %g %g %g %g\n", 
+        //n, offset, low, high, f_alpha( low, n ), f_alpha( high, n ) );
 	++offset;
 	target = M_PI * offset + M_PI_2;
 	low = ( target - M_PI_2 ) * factor;

@@ -345,8 +345,7 @@ protected:
 
     void initializeAlphaTable( const unsigned int n ) const;
     void updateAlphaTable0( const Real t ) const;
-    void updateAlphaTable( const unsigned int n, 
-			   const Real t ) const; 
+    void updateAlphaTable( const unsigned int n, const Real t ) const; 
 
     void createPsurvTable( RealVector& psurvTable, const Real r0, 
                            const Real mint ) const;
