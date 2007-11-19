@@ -57,13 +57,8 @@ public:
     const Real p_survival( const Real t,
 			   const Real r0 ) const;
 
-    const Real p_survival_n( const unsigned int n,
-                             const Real t,
-			   const Real r0 ) const;
-
     const Real dp_survival( const Real t,
 			    const Real r0 ) const;
-
 
     const Real p_int_r( const Real r,
 			const Real t,
@@ -89,26 +84,6 @@ public:
                           const Real r0, 
                           const Real t ) const;
 
-
-    const Real p_theta_free( const Real theta,
-			     const Real r,
-			     const Real r0,
-			     const Real t ) const;
-
-    const Real ip_theta_free( const Real theta,
-			      const Real r,
-			      const Real r0,
-			      const Real t ) const;
-
-    const Real dp_theta_free( const Real theta,
-                              const Real r,
-                              const Real r0,
-                              const Real t ) const;
-
-    const Real idp_theta_free( const Real theta,
-                               const Real r,
-                               const Real r0,
-                               const Real t ) const;
 
     const Real p_n( const Integer n, const Real r, 
 		    const Real r0, const Real t ) const;

@@ -1700,7 +1700,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 //	    p_n = 0.0;
 	    break;
 	}
-//	printf("%d p_n %g\n", n, p_n );
+/*	printf("%d p_n %g\n", n, p_n );*/
 
 	p_nTable.push_back( p_n );
 
@@ -1710,7 +1710,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 	    p_n_abs < p_n_prev_abs )
 	{
 	    break;
-	}
+        }
 	
 	++n;
 

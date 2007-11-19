@@ -343,17 +343,33 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
 
-    def test_DrawTheta_1( self ):
+#     def test_DrawTheta_1( self ):
 
-        D = 3e-11
-        kf = 1e-6
-        sigma = 1.2e-7
-        a = 1.2367e-7
-        r0 = 1.224279e-7
+#         D = 3e-11
+#         kf = 1e-6
+#         sigma = 1.2e-7
+#         a = 1.2367e-7
+#         r0 = 1.224279e-7
 
-        t = 1e-7
-        r = 1.224e-7
+#         t = 1e-7
+#         r = 1.224e-7
         
+#         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+#         gf.seta( a )
+
+#         theta = gf.drawTheta( 0.5, r, r0, t )
+#         self.failIf( theta < 0.0 or theta > numpy.pi )
+
+    def test_DrawTheta_2( self ):
+
+        r0 =  1.84101103437e-06 
+        t =  6.22760394717e-06
+        D = 1e-11
+        sigma = 1e-07
+        a = 1.86545e-06
+        kf = 1.66054e-18 # h = 1.32142e+06
+        r =  1.84124695865e-06
+
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
@@ -522,7 +538,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
         r = r0
-        
+         
         pintr = gf.p_int_r( gf.getSigma(), t, r0 )
         self.assertEqual( 0.0, pintr )
 
@@ -638,7 +654,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         kf = 1e-8
 
         # smaller t causes problem
-        t = 1e-3
+        t = 1e-5
         r0 = 9e-8
         a = 1e-7
         
