@@ -259,10 +259,6 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "dp_survival", &FirstPassageNoCollisionPairGreensFunction::dp_survival )
 	.def( "idp_theta", &FirstPassageNoCollisionPairGreensFunction::idp_theta )
 
-	.def( "f_alpha0", &FirstPassageNoCollisionPairGreensFunction::f_alpha0 )
-	.def( "alpha0_i", &FirstPassageNoCollisionPairGreensFunction::alpha0_i )
-	.def( "f_alpha", &FirstPassageNoCollisionPairGreensFunction::f_alpha )
-	.def( "f_alpha_aux", &FirstPassageNoCollisionPairGreensFunction::f_alpha_aux )
         */
 	.def( "dump", &FirstPassageNoCollisionPairGreensFunction::dump )
 

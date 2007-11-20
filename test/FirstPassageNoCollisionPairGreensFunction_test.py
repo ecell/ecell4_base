@@ -47,88 +47,48 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
 
         t = gf.drawTime( 1.0, r0 )
         self.failIf( t <= 0.0 or t >= numpy.inf )
-'''
-    def test_DrawTime_a_equal_sigma( self ):
-        D = 1e-12
-        kf = 1e-8
-        sigma = 1e-8
-        a = sigma
-        r0 = a
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        t = gf.drawTime( 0.5, r0 )
-        self.assertEqual( 0.0, t )
 
     def test_DrawTime_r0_equal_a( self ):
         D = 1e-12
-        kf = 1e-8
-        sigma = 1e-8
+
         a = 1e-7
         r0 = a
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
         t = gf.drawTime( 0.5, r0 )
         self.assertEqual( 0.0, t )
 
-
-    def test_DrawEventType( self ):
-        D = 1e-12
-        kf = 1e-8
-        sigma = 1e-8
-        a = 1e-7
-        r0 = 5e-8
-
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        t = gf.drawTime( 0.5, r0 )
-        eventType = gf.drawEventType( 0.5, r0, t )
-        self.failIf( eventType != 0 and eventType != 1 and eventType != 2 )
-
-        eventType = gf.drawEventType( 0.0, r0, t )
-        self.assertEqual( eventType, 0 )
-
-        eventType = gf.drawEventType( 1.0, r0, t )
-        self.assertEqual( eventType, 1 )
-
-
     def test_DrawR( self ):
         D = 1e-12
-        kf = 1e-8
-        sigma = 1e-8
+
         a = 1e-7
         r0 = 2e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
         t = 1e-3
 
         r = gf.drawR( 0.5, r0, t )
-        self.failIf( r < sigma or r > a )
+        self.failIf( r < 0.0 or r > a )
 
         r1 = gf.drawR( 0.0, r0, t )
         r2 = gf.drawR( 1.0, r0, t )
 
-        self.failIf( r1 < sigma or r1 > a )
-        self.failIf( r2 < sigma or r2 > a )
+        self.failIf( r1 < 0.0 or r1 > a )
+        self.failIf( r2 < 0.0 or r2 > a )
 
-        self.failIf( abs( r1 - sigma ) > 1e-15 )
-        self.failIf( abs( r2 - a ) > 1e-15 )
-
+        self.failIf( abs( r1 ) > 1e-15 )
+        self.assertAlmostEqual( abs( r2 - a ), 0 )
 
     def test_DrawR_zerot( self ):
         D = 1e-12
-        kf = 1e-8
-        sigma = 1e-8
         a = 1e-7
         r0 = 2e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
         t = 0.0
@@ -140,39 +100,36 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
     def test_DrawR_squeezed( self ):
 
         D = 1e-12
-        kf = 1e-8
-        sigma = 1e-8
         a = 1.01e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D  )
         gf.seta( a )
 
         t = 1e-6
         r0 = 1.005e-8
         r = gf.drawR( 0.5, r0, t )
-        self.failIf( r < sigma or r > a )
+        self.failIf( r < 0.0 or r > a )
 
-        # near s
-        r = 1.0001e-8
-        r0 = 1.0001e-8
+        # near 0
+        r = 0.0001e-8
+        r0 = 0.0001e-8
         r = gf.drawR( 0.5, r0, t )
-        self.failIf( r < sigma or r > a )
+        self.failIf( r < 0.0 or r > a )
 
         # near a
         r = 1.0099e-8
         r0 = 1.0099e-8
         r = gf.drawR( 0.5, r0, t )
-        self.failIf( r < sigma or r > a )
+        self.failIf( r < 0.0 or r > a )
 
 
+        '''
     def test_DrawTheta( self ):
         D = 1e-12
-        kf = 1e-8
-        sigma = 1e-8
         a = 1e-7
         r0 = 5e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
         t = gf.drawTime( 0.5, r0 )
@@ -197,7 +154,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = 0.0
@@ -213,7 +170,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = 1e-4  # well this is not *very* small..
@@ -229,7 +186,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         #a = 1.01e-8  # this is a better test but currently fails
         a = 1.1e-8
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         t = 1e-6
@@ -249,129 +206,18 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         r0 = 1.0099e-8
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
-
-
-
-    def test_Alpha0( self ):
-
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
-        
-        a = 1e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-        maxerror = 0.0
-        
-        for i in range(100):
-            alpha = gf.alpha0_i( i )
-            error = abs( gf.f_alpha0( alpha ) / alpha )
-            #print error/alpha, gf.f_alpha0( alpha*1.1 )/alpha
-            maxerror = max( error, maxerror )
-
-        self.failIf( abs( maxerror ) > 1e-10 )
-
-    def test_psurvival_is_pleaves_plus_pleavea( self ):
-
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
-
-        t = 1e-3
-        r0 = 5e-8
-        
-        a = 1e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        surv = gf.p_survival( t, r0 )
-        pleaves = gf.p_leaves( t, r0 )
-        pleavea = gf.p_leavea( t, r0 )
-
-        self.assertNotEqual( 0.0, surv )
-        self.assertAlmostEqual( surv, pleaves + pleavea )
-        
-
-    def test_dpsurvival_is_leaves_plus_leavea( self ):
-
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
-
-        t = 1e-3
-        r0 = 5e-8
-        
-        a = 1e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        dsurv = gf.dp_survival( t, r0 )
-        leaves = gf.leaves( t, r0 ) * 4.0 * numpy.pi * sigma * sigma
-        leavea = gf.leavea( t, r0 ) * 4.0 * numpy.pi * a * a
-
-        self.assertNotEqual( 0.0, dsurv )
-        self.assertAlmostEqual( dsurv, leaves + leavea )
-
-    def test_psurvival_smallt( self ):
-
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
-
-        t = 1e-3
-        r0 = 5e-8
-
-        a = 1e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        for i in range( 10 ):
-            surv = gf.p_survival( t, r0 )
-            pleaves = gf.p_leaves( t, r0 )
-            pleavea = gf.p_leavea( t, r0 )
-            self.assertNotEqual( 0.0, surv )
-            self.assertAlmostEqual( surv, pleaves + pleavea )
-            t *= .1
-
-
-    def test_psurvival_smallt( self ):
-
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
-
-        t = 1e-3
-        r0 = 5e-8
-
-        a = 1e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        for i in range( 10 ):
-            psurv = gf.p_survival( t, r0 )
-            pleaves = gf.p_leaves( t, r0 )
-            pleavea = gf.p_leavea( t, r0 )
-            self.assertNotEqual( 0.0, psurv )
-            self.assertAlmostEqual( pleaves + pleavea, psurv )
-            t *= .1
+'''
 
     def test_p_int_r( self ):
 
         D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
 
         t = 1e-3
         r0 = 5e-8
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
         r = r0
@@ -382,15 +228,13 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
     def test_p_int_r_at_a_is_p_survival( self ):
 
         D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
 
         t = 1e-3
         r0 = 5e-8
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
         r = r0
         
@@ -398,22 +242,20 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         psurv = gf.p_survival( t, r0 )
         self.assertAlmostEqual( pintr, psurv )
 
-    def test_p_int_r_at_s_is_zero( self ):
+    def test_p_int_r_at_zero_is_zero( self ):
 
         D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
 
         t = 1e-3
         r0 = 5e-8
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D  )
         gf.seta( a )
         r = r0
         
-        pintr = gf.p_int_r( gf.getSigma(), t, r0 )
+        pintr = gf.p_int_r( 0.0, t, r0 )
         self.assertEqual( 0.0, pintr )
 
     def test_ip_theta_is_int_p_theta( self ):
@@ -421,15 +263,13 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         import scipy.integrate
 
         D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
 
-        t = 1e-3
+        t = 1e-4
         r0 = 5e-8
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
         r = r0
 
@@ -443,9 +283,10 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
             result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
-            #print theta, np, ip
+            print theta, np, ip
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
+'''
 
     def test_ip_theta_pi_is_p_0( self ):
 
@@ -459,7 +300,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         ip = gf.ip_theta( numpy.pi, r, r0, t )
@@ -480,7 +321,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         r = r0
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         pint = gf.ip_theta( numpy.pi, r, r0, t )
@@ -509,7 +350,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         r = r0
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         pint_prev = 0.0
@@ -532,7 +373,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         r0 = 9e-8
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         leavea = gf.leavea( t, r0 ) * numpy.pi * a * a * 2
@@ -555,7 +396,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         r = 5e-7
         a = 1e-6
         
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
         resolution = 20
@@ -570,50 +411,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
 '''
 
 
-'''
-    def test_Alphan( self ):
-
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-18
-        
-        a = 2e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-        maxerror = 0
-        
-        for n in range(100):
-            for i in range(1000):
-                alpha = gf.alpha_i( n, i )
-                error = abs( gf.f_alpha0( alpha ) )
-                maxerror = max( error, maxerror )
-
-        self.failIf( abs( maxerror ) > 1e-8 )
-'''
 
 
-
-
-'''
-    def test_dump( self ):
-
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
-
-        t = 1e-3
-        r0 = 5e-8
-
-        a = 1e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        print gf.dump()
-'''
-
-
-        
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

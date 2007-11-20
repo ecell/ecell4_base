@@ -47,8 +47,6 @@ FirstPassageNoCollisionPairGreensFunction::
 void FirstPassageNoCollisionPairGreensFunction::seta( const Real a )
 {
     this->a = a;
-
-//    clearAlphaTable();
 }
 
 
@@ -68,14 +66,12 @@ FirstPassageNoCollisionPairGreensFunction::p_survival( const Real t,
     const Real exp_factor( - Dt * M_PI * M_PI * a_r * a_r );
 
     const unsigned int i_max( 
-        std::min( static_cast<unsigned int>( 
+        std::max( static_cast<unsigned int>( 
                       ceil( sqrt( Dt * M_PI * M_PI 
                                   + a * a * 
                                   log( 1.0 / this->TOLERANCE ) / 
                                   Dt ) /
                             M_PI ) ), 2u ) );
-
-    printf("t %g exp %g imax %d \n",t,exp_factor,i_max );
 
     Real p( 0.0 );
     Real sign( 1.0 );
@@ -87,7 +83,6 @@ FirstPassageNoCollisionPairGreensFunction::p_survival( const Real t,
         const Real term( sign * 
                          exp( exp_factor * reali * reali ) * 
                          sin( angle_factor * reali ) / reali );
-        //printf("%d %g\n",i,term);
         
         p += term;
 
@@ -126,13 +121,15 @@ FirstPassageNoCollisionPairGreensFunction::p_int_r( const Real r,
     const Real r_angle_factor( PIr * a_r );
     const Real exp_factor( - Dt * M_PI * M_PI * a_r * a_r );
 
-    const Real threshold( exp( exp_factor ) * this->TOLERANCE );
-    const unsigned int 
-        i_max( static_cast<unsigned int>( ceil( a * 
-                                                sqrt( log( threshold ) / Dt ) / 
-                                                M_PI ) ) );
+    const unsigned int i_max( 
+        std::max( static_cast<unsigned int>( 
+                      ceil( sqrt( Dt * M_PI * M_PI 
+                                  + a * a * 
+                                  log( 1.0 / this->TOLERANCE ) / 
+                                  Dt ) /
+                            M_PI ) ), 2u ) );
 
-    Real p( 2.0  / ( M_PI * PIr0 ) );
+    Real p( 0.0 );
     unsigned int i( 1 );
     while( true )
     {
@@ -155,7 +152,9 @@ FirstPassageNoCollisionPairGreensFunction::p_int_r( const Real r,
         ++i;
     }
 
-    return p;
+    const Real factor( 2.0  / ( M_PI * PIr0 ) );
+
+    return p * factor;
 }
 
 const Real
@@ -179,10 +178,8 @@ p_int_r_F( const Real r,
     const FirstPassageNoCollisionPairGreensFunction* const gf( params->gf ); 
     const Real t( params->t );
     const Real r0( params->r0 );
-//    const RealVector& num_r0Table( params->num_r0Table );
     const Real rnd( params->rnd );
 
-//    return gf->p_int_r_table( r, t, r0, num_r0Table ) - rnd;
     return gf->p_int_r( r, t, r0 ) - rnd;
 }
 
@@ -200,19 +197,22 @@ FirstPassageNoCollisionPairGreensFunction::p_n_alpha( const unsigned int i,
 
     const Real mDt( - this->getD() * t );
 
-    const Real alpha( gsl_sf_bessel_zero_Jnu( static_cast<Real>( n ) + 0.5,
-                                              i ) );
+    // j = a alpha -> alpha = j / a
+    const Real alpha( gsl_sf_bessel_zero_Jnu( static_cast<Real>( n ) + 0.5, 
+                                              i + 1 ) / a );
 
     const Real term1( exp( mDt * alpha * alpha ) );
 
-    const Real jar(  gsl_sf_bessel_jl( n,   r * alpha ) );
+    const Real jar(  gsl_sf_bessel_jl( n,   r  * alpha ) );
     const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
-    const Real jaa2( gsl_sf_bessel_jl( n+1, a * alpha ) );
+    const Real jaa2( gsl_sf_bessel_jl( n+1, a  * alpha ) );
 
     const Real num( jar * jar0 );
     const Real den( jaa2 * jaa2 );
 
     const Real result( term1 * num / den );
+
+    //printf("pn %d %g %g\n",i,alpha, result);
 
     return result;
 }
@@ -575,10 +575,7 @@ FirstPassageNoCollisionPairGreensFunction::drawR( const Real rnd,
 
     const Real psurv( p_survival( t, r0 ) );
 
-//    RealVector num_r0Table;
-//    createNum_r0Table( num_r0Table, r0 );
-
-    p_int_r_params params = { this, t, r0, /*num_r0Table,*/ rnd * psurv };
+    p_int_r_params params = { this, t, r0, rnd * psurv };
 
     gsl_function F = 
 	{
