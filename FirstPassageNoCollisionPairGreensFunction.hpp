@@ -17,9 +17,6 @@ class FirstPassageNoCollisionPairGreensFunction
     // Error tolerance used by default.
     static const Real TOLERANCE = 1e-8;
 
-    // Relative cutoff used when obtaining series of alpha.
-    static const Real ALPHA_CUTOFF = 1e-10;
-
     static const Real MIN_T = 1e-18;
 
     static const unsigned int MAX_ORDER = 40;
@@ -106,15 +103,77 @@ public:
 
     const std::string dump() const;
 
-    const unsigned int alphaOffset( const unsigned int n ) const;
-
-    const Real alpha0_i( const Integer i ) const;
-
-    const Real alpha_i( const Integer i, const Integer n, 
-			gsl_root_fsolver* const solver ) const;
-
-
 protected:
+
+
+    const Real p_theta_table( const Real theta,
+			      const Real r, 
+			      const Real r0, 
+			      const Real t, 
+			      const RealVector& p_nTable ) const;
+
+    const Real ip_theta_table( const Real theta,
+			       const Real r, 
+			       const Real r0, 
+			       const Real t,
+			       const RealVector& p_nTable ) const;
+
+    void makep_nTable( RealVector& p_nTable,
+		       const Real r, 
+		       const Real r0, 
+		       const Real t ) const;
+    
+    void makedp_n_at_aTable( RealVector& p_nTable,
+			     const Real r0, 
+			     const Real t ) const;
+
+    const Real p_theta_i( const unsigned int n,
+			  const RealVector& p_nTable, 
+			  const RealVector& lgndTable ) const;
+
+    const Real ip_theta_i( const unsigned int n,
+			   const RealVector& p_nTable, 
+			   const RealVector& lgndTable1 ) const;
+
+    
+    struct p_survival_params
+    { 
+	const FirstPassageNoCollisionPairGreensFunction* const gf;
+	const Real r0;
+	const Real rnd;
+    };
+
+    static const Real 
+    p_survival_F( const Real t,
+		  const p_survival_params* const params );
+
+
+    struct p_int_r_params
+    { 
+	const FirstPassageNoCollisionPairGreensFunction* const gf;
+	const Real t;
+	const Real r0;
+//	const RealVector& num_r0Table;
+	const Real rnd;
+    };
+
+    static const Real 
+    p_int_r_F( const Real r,
+	       const p_int_r_params* const params );
+
+    struct ip_theta_params
+    { 
+	const FirstPassageNoCollisionPairGreensFunction* const gf;
+	const Real r;
+	const Real r0;
+	const Real t;
+	const RealVector& p_nTable;
+	const Real value;
+    };
+
+    static const Real 
+    ip_theta_F( const Real theta,
+		const ip_theta_params* const params );
 
 
 private:

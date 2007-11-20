@@ -30,7 +30,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( gf == None )
         gf.seta( a )
 
-'''
+
     def test_DrawTime( self ):
         D = 1e-12
         a = 1e-7
@@ -47,7 +47,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
 
         t = gf.drawTime( 1.0, r0 )
         self.failIf( t <= 0.0 or t >= numpy.inf )
-
+'''
     def test_DrawTime_a_equal_sigma( self ):
         D = 1e-12
         kf = 1e-8

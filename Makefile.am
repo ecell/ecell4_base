@@ -39,6 +39,7 @@ lib_LTLIBRARIES= _gfrd.la
 
 noinst_HEADERS=\
 Defs.hpp\
+funcSum.hpp\
 bessel.hpp\
 freeFunctions.hpp\
 factorial.hpp\
@@ -57,6 +58,7 @@ FirstPassageNoCollisionPairGreensFunction.hpp
 
 
 _gfrd_la_SOURCES=\
+funcSum.cpp\
 freeFunctions.cpp\
 FreeGreensFunction.cpp\
 FirstPassageGreensFunction.cpp\

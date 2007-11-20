@@ -243,23 +243,20 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "seta", &FirstPassageNoCollisionPairGreensFunction::seta )
 	.def( "geta", &FirstPassageNoCollisionPairGreensFunction::geta )
 	.def( "getD", &FirstPassageNoCollisionPairGreensFunction::getD )
-//	.def( "drawTime", &FirstPassageNoCollisionPairGreensFunction::drawTime )
+	.def( "drawTime", &FirstPassageNoCollisionPairGreensFunction::drawTime )
 //	.def( "drawEventType", &FirstPassageNoCollisionPairGreensFunction::drawEventType )
-//	.def( "drawR", &FirstPassageNoCollisionPairGreensFunction::drawR )
-//	.def( "drawTheta", &FirstPassageNoCollisionPairGreensFunction::drawTheta )
+	.def( "drawR", &FirstPassageNoCollisionPairGreensFunction::drawR )
+	.def( "drawTheta", &FirstPassageNoCollisionPairGreensFunction::drawTheta )
 
-        /*
+
 	.def( "p_survival", &FirstPassageNoCollisionPairGreensFunction::p_survival )
-	.def( "dp_survival", &FirstPassageNoCollisionPairGreensFunction::dp_survival )
-	.def( "p_leaves", &FirstPassageNoCollisionPairGreensFunction::p_leaves )
-	.def( "p_leavea", &FirstPassageNoCollisionPairGreensFunction::p_leavea )
-	.def( "leaves", &FirstPassageNoCollisionPairGreensFunction::leaves )
-	.def( "leavea", &FirstPassageNoCollisionPairGreensFunction::leavea )
-	.def( "p_0", &FirstPassageNoCollisionPairGreensFunction::p_0 )
-	.def( "p_int_r", &FirstPassageNoCollisionPairGreensFunction::p_int_r )
+
 	.def( "p_int_r", &FirstPassageNoCollisionPairGreensFunction::p_int_r )
 	.def( "p_theta", &FirstPassageNoCollisionPairGreensFunction::p_theta )
 	.def( "ip_theta", &FirstPassageNoCollisionPairGreensFunction::ip_theta )
+
+        /*
+	.def( "dp_survival", &FirstPassageNoCollisionPairGreensFunction::dp_survival )
 	.def( "idp_theta", &FirstPassageNoCollisionPairGreensFunction::idp_theta )
 
 	.def( "f_alpha0", &FirstPassageNoCollisionPairGreensFunction::f_alpha0 )
@@ -267,7 +264,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "f_alpha", &FirstPassageNoCollisionPairGreensFunction::f_alpha )
 	.def( "f_alpha_aux", &FirstPassageNoCollisionPairGreensFunction::f_alpha_aux )
         */
-	//.def( "dump", &FirstPassageNoCollisionPairGreensFunction::dump )
+	.def( "dump", &FirstPassageNoCollisionPairGreensFunction::dump )
 
 //	.def( "alpha_i", &FirstPassageNoCollisionPairGreensFunction::alpha_i )
 	;
