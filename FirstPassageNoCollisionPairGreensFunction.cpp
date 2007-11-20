@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <vector>
 #include <sstream>
+#include <algorithm>
 
 #include <boost/bind.hpp>
 
@@ -66,24 +67,26 @@ FirstPassageNoCollisionPairGreensFunction::p_survival( const Real t,
     const Real angle_factor( PIr0 * a_r );
     const Real exp_factor( - Dt * M_PI * M_PI * a_r * a_r );
 
-    const Real threshold( exp( exp_factor ) * this->TOLERANCE );
-    const unsigned int 
-        i_max( static_cast<unsigned int>( ceil( a * 
-                                                sqrt( log( 1.0 / threshold ) / 
-                                                      Dt ) / 
-                                                M_PI ) ) + 2 );
-    printf("%s %g %g %g\n",dump().c_str(),t,r0,exp_factor);
+    const unsigned int i_max( 
+        std::min( static_cast<unsigned int>( 
+                      ceil( sqrt( Dt * M_PI * M_PI 
+                                  + a * a * 
+                                  log( 1.0 / this->TOLERANCE ) / 
+                                  Dt ) /
+                            M_PI ) ), 2u ) );
 
-    printf("imax %g %g %d %g\n",threshold,exp_factor,i_max );
+    printf("t %g exp %g imax %d \n",t,exp_factor,i_max );
 
     Real p( 0.0 );
     Real sign( 1.0 );
     unsigned int i( 1 );
     while( true )
     {
+
+        const Real reali( static_cast<Real>( i ) );
         const Real term( sign * 
-                         exp( i * i * exp_factor ) * 
-                         sin( i * angle_factor ) / i );
+                         exp( exp_factor * reali * reali ) * 
+                         sin( angle_factor * reali ) / reali );
         //printf("%d %g\n",i,term);
         
         p += term;
@@ -164,7 +167,7 @@ p_survival_F( const Real t,
     const Real r0( params->r0 );
     const Real rnd( params->rnd );
 
-    return gf->p_survival( t, r0 ) - rnd;
+    return rnd - gf->p_survival( t, r0 );
 }
 
 
