@@ -123,7 +123,6 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( r < 0.0 or r > a )
 
 
-        '''
     def test_DrawTheta( self ):
         D = 1e-12
         a = 1e-7
@@ -133,7 +132,6 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         gf.seta( a )
 
         t = gf.drawTime( 0.5, r0 )
-        eventType = gf.drawEventType( 0.5, r0, t )
         r = gf.drawR( 0.5, r0, t )
 
         theta = gf.drawTheta( 0.5, r, r0, t )
@@ -148,13 +146,12 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
 
     def test_DrawTheta_zerot( self ):
         D = 1e-12
-        kf = 1e-8
-        sigma = 1e-8
+
         a = 1e-7
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
         t = 0.0
@@ -164,49 +161,100 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
     def test_DrawTheta_smallt( self ):
 
         D = 1e-12
-        kf = 1e-8
-        sigma = 1e-8
+
         a = 1e-7
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
-        t = 1e-4  # well this is not *very* small..
+        t = 1e-5  # not very small though..
+        theta = gf.drawTheta( 0.5, r, r0, t )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
+    def test_DrawTheta_large_t( self ):
+
+        D = 1e-12
+
+        a = 1e-7
+        r = 5e-8
+        r0 = 5e-8
+        
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
+        gf.seta( a )
+
+        t = 1e5 
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
 
-    def test_DrawTheta_squeezed( self ):
+
+    def test_DrawTheta_near_a( self ):
 
         D = 1e-12
-        kf = 1e-8
-        sigma = 1e-8
         #a = 1.01e-8  # this is a better test but currently fails
         a = 1.1e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
-        t = 1e-6
-        r = 1.005e-8
-        r0 = 1.005e-8
-        theta = gf.drawTheta( 0.5, r, r0, t )
-        self.failIf( theta < 0.0 or theta > numpy.pi )
-
-        # near s
-        r = 1.0001e-8
-        r0 = 1.0001e-8
-        theta = gf.drawTheta( 0.5, r, r0, t )
-        self.failIf( theta < 0.0 or theta > numpy.pi )
+        t = 1e-2
 
         # near a
-        r = 1.0099e-8
-        r0 = 1.0099e-8
+        r = 1.009999e-8
+        r0 = 1.009999e-8
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
-'''
+
+    def test_DrawTheta_r_equal_a( self ):
+        D = 1e-12
+        a = 1e-7
+        r0 = 9e-8
+
+        t = 1e-4
+        r = a
+        
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
+        gf.seta( a )
+
+        theta = gf.drawTheta( 0.5, r, r0, t )
+
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
+    def test_DrawTheta_r0_near_a_r_equal_a( self ):
+        D = 1e-12
+        a = 1e-7
+        r0 = a - 1e-9
+
+        t = 1e-5
+        r = a
+        
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
+        gf.seta( a )
+
+        theta = gf.drawTheta( 0.5, r, r0, t )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
+
+    def test_DrawTheta_2( self ):
+
+        D = 1e-11
+        t =  6.22760394717e-06
+
+        #a = 1.86545e-06
+        a = 1.84101203437e-06
+        r0 =  1.84101103437e-06 
+        #r =  1.84124695865e-06
+        r = r0
+
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
+        gf.seta( a )
+
+        theta = gf.drawTheta( 0.5, r, r0, t )
+        print theta
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
 
     def test_p_int_r( self ):
 
@@ -262,9 +310,9 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
 
         import scipy.integrate
 
-        D = 1e-12
+        D = 1e-11
 
-        t = 1e-4
+        t = 1e-3
         r0 = 5e-8
 
         a = 1e-7
@@ -286,7 +334,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
             print theta, np, ip
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
-'''
+    '''
 
     def test_ip_theta_pi_is_p_0( self ):
 
@@ -308,12 +356,12 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
 
         self.assertNotEqual( 0.0, ip )
         self.assertAlmostEqual( 1.0, ip/p0 )
+'''
+
 
     def test_p_theta_never_negative( self ):
 
         D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
 
         # smaller t causes problem
         t = 1e-3
@@ -321,7 +369,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         r = r0
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
         pint = gf.ip_theta( numpy.pi, r, r0, t )
@@ -341,8 +389,6 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
     def test_ip_theta_never_decrease( self ):
 
         D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
 
         # smaller t causes problem
         t = 1e-3
@@ -350,7 +396,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         r = r0
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
         pint_prev = 0.0
@@ -362,53 +408,24 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
             self.failIf( pint < pint_prev )
             pint_prev = pint
 
-    def test_int_dp_theta_at_a_is_leavea( self ):
+    def test_idp_theta_at_a_is_dp_survival( self ):
 
         D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
 
         # smaller t causes problem
-        t = 1e-5
+        t = 1e-3
         r0 = 9e-8
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
+        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
-        leavea = gf.leavea( t, r0 ) * numpy.pi * a * a * 2
-        iptheta = gf.idp_theta( numpy.pi, a, r0, t ) * numpy.pi * a * a
+        dp = gf.dp_survival( t, r0 )
+        iptheta = gf.idp_theta( numpy.pi, a, r0, t ) * numpy.pi * a * a * 2
 
-        self.assertAlmostEqual( leavea, iptheta )
-'''
-
+        self.assertAlmostEqual( dp, iptheta )
 
 
-'''
-    def test_p_theta_free_is_p_theta_smallt( self ):
-
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
-        
-        t = 1e-4
-        r0 = 5e-7
-        r = 5e-7
-        a = 1e-6
-        
-        gf = mod.FirstPassageNoCollisionPairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        resolution = 20
-        for i in range( 1, resolution ):
-            theta = i * numpy.pi / resolution 
-
-            pfree = gf.p_theta_free( theta, r, r0, t )
-            p = gf.p_theta( theta, r, r0, t )
-            print pfree, p
-
-            self.assertAlmostEqual( 0.0, (pfree - p)/pfree )
-'''
 
 
 

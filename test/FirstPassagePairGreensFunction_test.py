@@ -342,6 +342,22 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
+    def test_DrawTheta_r_equal_a( self ):
+        D = 1e-12
+        kf = 1e-8
+        sigma = 1e-8
+        a = 1e-7
+        r0 = 9e-8
+
+        t = 1e-3
+        r = a
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        theta = gf.drawTheta( 0.5, r, r0, t )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
 
 #     def test_DrawTheta_1( self ):
 
@@ -374,6 +390,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf.seta( a )
 
         theta = gf.drawTheta( 0.5, r, r0, t )
+        print theta
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
 

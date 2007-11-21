@@ -19,8 +19,8 @@ class FirstPassageNoCollisionPairGreensFunction
 
     static const Real MIN_T = 1e-18;
 
-    static const unsigned int MAX_ORDER = 40;
-    static const unsigned int MAX_ALPHA_SEQ = 50;
+    static const unsigned int MAX_ORDER = 300;
+    static const unsigned int MAX_ALPHA_SEQ = 500;
 
 
 public:
@@ -85,7 +85,7 @@ public:
     const Real p_n( const Integer n, const Real r, 
 		    const Real r0, const Real t ) const;
 
-    const Real dp_n_at_a( const Integer n, const Real r0, const Real t ) const;
+    const Real dp_n( const Integer n, const Real r0, const Real t ) const;
 
 
     const Real p_n_alpha( const unsigned int i,
@@ -94,10 +94,10 @@ public:
 			  const Real r0,
 			  const Real t ) const;
 
-    const Real dp_n_alpha_at_a( const unsigned int i,
-				const unsigned int n,
-				const Real r0,
-				const Real t ) const;
+    const Real dp_n_alpha( const unsigned int i,
+                           const unsigned int n,
+                           const Real r0,
+                           const Real t ) const;
 
     // methods below are kept public for debugging purpose.
 
@@ -123,9 +123,9 @@ protected:
 		       const Real r0, 
 		       const Real t ) const;
     
-    void makedp_n_at_aTable( RealVector& p_nTable,
-			     const Real r0, 
-			     const Real t ) const;
+    void makedp_nTable( RealVector& p_nTable,
+                        const Real r0, 
+                        const Real t ) const;
 
     const Real p_theta_i( const unsigned int n,
 			  const RealVector& p_nTable, 

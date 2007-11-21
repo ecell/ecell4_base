@@ -101,6 +101,57 @@ FirstPassageNoCollisionPairGreensFunction::p_survival( const Real t,
 }
 
 
+const Real
+FirstPassageNoCollisionPairGreensFunction::dp_survival( const Real t,
+                                                        const Real r0 ) const
+{
+    const Real D( getD() );
+    const Real a( geta() );
+
+    const Real Dt( D * t );
+    const Real a_r( 1.0 / a );
+
+    const Real PIr0( M_PI * r0 );
+
+    const Real angle_factor( PIr0 * a_r );
+    const Real exp_factor( - Dt * M_PI * M_PI * a_r * a_r );
+
+    const unsigned int i_max( 
+        std::max( static_cast<unsigned int>( 
+                      ceil( sqrt( Dt * M_PI * M_PI 
+                                  + a * a * 
+                                  log( 1.0 / this->TOLERANCE ) / 
+                                  Dt ) /
+                            M_PI ) ), 2u ) );
+
+    Real p( 0.0 );
+    Real sign( - 1.0 );
+    unsigned int i( 1 );
+    while( true )
+    {
+
+        const Real reali( static_cast<Real>( i ) );
+        const Real term( sign * 
+                         exp( exp_factor * reali * reali ) * 
+                         sin( angle_factor * reali ) * reali );
+        
+        p += term;
+
+        if( i >= i_max )
+        {
+            break;
+        }
+
+        sign = -sign;
+        ++i;
+    }
+
+    const Real factor( D * 2.0 * M_PI / ( a * r0 ) );
+
+    return p * factor;
+}
+
+
 
 
 const Real
@@ -123,11 +174,10 @@ FirstPassageNoCollisionPairGreensFunction::p_int_r( const Real r,
 
     const unsigned int i_max( 
         std::max( static_cast<unsigned int>( 
-                      ceil( sqrt( Dt * M_PI * M_PI 
-                                  + a * a * 
-                                  log( 1.0 / this->TOLERANCE ) / 
-                                  Dt ) /
-                            M_PI ) ), 2u ) );
+                      ceil( sqrt( Dt * M_PI * M_PI + a * a * 
+                                  log( 1.0 / this->TOLERANCE ) / Dt ) / 
+                            M_PI ) ), 
+                  2u ) );
 
     Real p( 0.0 );
     unsigned int i( 1 );
@@ -198,21 +248,24 @@ FirstPassageNoCollisionPairGreensFunction::p_n_alpha( const unsigned int i,
     const Real mDt( - this->getD() * t );
 
     // j = a alpha -> alpha = j / a
-    const Real alpha( gsl_sf_bessel_zero_Jnu( static_cast<Real>( n ) + 0.5, 
-                                              i + 1 ) / a );
+    const Real aalpha( gsl_sf_bessel_zero_Jnu( static_cast<Real>( n ) + 0.5, 
+                                               i + 1 ) );
+    const Real alpha( aalpha / a );
 
     const Real term1( exp( mDt * alpha * alpha ) );
 
     const Real jar(  gsl_sf_bessel_jl( n,   r  * alpha ) );
     const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
-    const Real jaa2( gsl_sf_bessel_jl( n+1, a  * alpha ) );
+    const Real jaa2( gsl_sf_bessel_jl( n+1, aalpha ) );
 
     const Real num( jar * jar0 );
     const Real den( jaa2 * jaa2 );
 
     const Real result( term1 * num / den );
 
-    //printf("pn %d %g %g\n",i,alpha, result);
+    //printf("i %d res %g jar %g jar0 %g jaa2 %g\n",i,result, jar, jar0, jaa2 );
+
+    //printf("pn %d %g %g %g\n",i,alpha, result,gsl_sf_bessel_jl(n,aalpha));
 
     return result;
 }
@@ -240,6 +293,8 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
                                                          const Real r0, 
                                                          const Real t ) const
 {
+    const Real a( geta() );
+
     p_nTable.clear();
 
     const Real factor( 1.0 / ( 2.0 * gsl_pow_3( a ) * M_PI ) ); 
@@ -255,14 +310,14 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
     {
 	Real p_n( this->p_n( n, r, r0, t ) * factor );
 
-	if( ! std::isnormal( p_n ) )
+	if( ! ( std::isnormal( p_n ) || p_n == 0.0 ) )
 	{
 	    std::cerr << "makep_nTable: invalid value; " <<
 		p_n << "( n= " << n << ")." << std::endl;
 //	    p_n = 0.0;
 	    break;
 	}
-/*	printf("%d p_n %g\n", n, p_n );*/
+	//printf("%d p_n %g\n", n, p_n );
 
 	p_nTable.push_back( p_n );
 
@@ -452,6 +507,168 @@ ip_theta_F( const Real theta,
     return gf->ip_theta_table( theta, r, r0, t, p_nTable ) - value;
 }
 
+
+const Real 
+FirstPassageNoCollisionPairGreensFunction::dp_n_alpha( const unsigned int i,
+                                                       const unsigned int n,
+                                                       const Real r0, 
+                                                       const Real t ) const
+{
+    const Real a( this->geta() );
+
+    const Real mDt( - this->getD() * t );
+
+    // j = a alpha -> alpha = j / a
+    const Real 
+        aalpha( gsl_sf_bessel_zero_Jnu( static_cast<Real>( n ) + 0.5, i + 1 ) );
+    const Real alpha( aalpha / a );
+
+    const Real term1( exp( mDt * alpha * alpha ) * alpha );
+
+    const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
+    const Real jaa2( gsl_sf_bessel_jl( n+1, aalpha ) );
+
+    const Real result( term1 * jar0 / jaa2 );
+
+    //printf("i %d res %g jar0 %g jaa2 %g\n",i,result, jar0, jaa2 );
+
+    //printf("pn %d %g %g %g\n",i,alpha, result,gsl_sf_bessel_jl(n,aalpha));
+
+    return result;
+}
+
+
+
+const Real 
+FirstPassageNoCollisionPairGreensFunction::dp_n( const Integer n,
+                                                 const Real r0, 
+                                                 const Real t ) const
+{
+    const Real 
+        p( funcSum( boost::bind( &FirstPassageNoCollisionPairGreensFunction::
+                                 dp_n_alpha,
+                                 this,
+                                 _1, n, r0, t ),
+                    this->MAX_ALPHA_SEQ ) );
+
+    return p;
+}
+
+
+void
+FirstPassageNoCollisionPairGreensFunction::
+makedp_nTable( RealVector& p_nTable,
+               const Real r0, 
+               const Real t ) const
+{
+    p_nTable.clear();
+
+    const Real factor( - getD() / ( 2.0 * M_PI * gsl_pow_3( a ) ) );
+
+    const Real p_0( this->dp_n( 0, r0, t ) * factor );
+    p_nTable.push_back( p_0 );
+
+    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-2 ) );
+
+    Real p_n_prev_abs( fabs( p_0 ) );
+    unsigned int n( 1 );
+    while( true )
+    {
+	Real p_n( this->dp_n( n, r0, t ) * factor );
+
+	if( ! std::isnormal( p_n ) )
+	{
+	    std::cerr << "makedp_nTable: invalid value; " <<
+		p_n << "( n= " << n << ")." << std::endl;
+//	    p_n = 0.0;
+	    break;
+	}
+//	printf("p_n %g\n",p_n );
+
+	p_nTable.push_back( p_n );
+
+	const Real p_n_abs( fabs( p_n ) );
+	// truncate when converged enough.
+	if( p_n_abs < threshold &&
+	    p_n_abs < p_n_prev_abs )
+	{
+	    break;
+	}
+	
+	++n;
+
+	if( n >= this->MAX_ORDER )
+	{
+	    //std::cerr << "dp_n didn't converge." << std::endl;
+	    break;
+	}
+	
+	p_n_prev_abs = p_n_abs;
+    }
+
+}
+
+const Real 
+FirstPassageNoCollisionPairGreensFunction::dp_theta( const Real theta,
+                                                     const Real r, 
+                                                     const Real r0, 
+                                                     const Real t ) const 
+{
+    {
+	const Real a( this->geta() );
+	
+	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+
+        // r \in [ sigma, a ]  ;  unlike p_theta,
+        // defined at r == sigma and r == a.
+	THROW_UNLESS( std::invalid_argument, r >= 0.0 && r <= a );
+	THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
+	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    }
+
+    if( t == 0.0 )
+    {
+	return 0.0;
+    }
+
+    RealVector p_nTable;
+
+    makedp_nTable( p_nTable, r0, t );
+
+    const Real p( p_theta_table( theta, r, r0, t, p_nTable ) );
+
+    return p;
+}
+
+const Real 
+FirstPassageNoCollisionPairGreensFunction::idp_theta( const Real theta,
+                                                      const Real r, 
+                                                      const Real r0, 
+                                                      const Real t ) const
+{
+    {
+	const Real a( this->geta() );
+	
+	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        // r \in [ sigma, a ]
+	THROW_UNLESS( std::invalid_argument, r >= 0.0 && r <= a );
+	THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
+	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    }
+
+    if( t == 0.0 || theta == 0.0 )
+    {
+	return 0.0;
+    }
+
+    RealVector p_nTable;
+
+    makedp_nTable( p_nTable, r0, t );
+
+    const Real p( ip_theta_table( theta, r, r0, t, p_nTable ) );
+
+    return p;
+}
 
 const Real 
 FirstPassageNoCollisionPairGreensFunction::drawTime( const Real rnd, 
@@ -664,7 +881,7 @@ FirstPassageNoCollisionPairGreensFunction::drawTheta( const Real rnd,
     if( r == geta() || r < 0.0 )
     {
 	puts("dp");
-	//makedp_n_at_aTable( p_nTable, r0, t );
+	makedp_nTable( p_nTable, r0, t );
     }
     else
     {

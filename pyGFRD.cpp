@@ -244,22 +244,20 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "geta", &FirstPassageNoCollisionPairGreensFunction::geta )
 	.def( "getD", &FirstPassageNoCollisionPairGreensFunction::getD )
 	.def( "drawTime", &FirstPassageNoCollisionPairGreensFunction::drawTime )
-//	.def( "drawEventType", &FirstPassageNoCollisionPairGreensFunction::drawEventType )
 	.def( "drawR", &FirstPassageNoCollisionPairGreensFunction::drawR )
-	.def( "drawTheta", &FirstPassageNoCollisionPairGreensFunction::drawTheta )
+	.def( "drawTheta", 
+              &FirstPassageNoCollisionPairGreensFunction::drawTheta )
 
-
-	.def( "p_survival", &FirstPassageNoCollisionPairGreensFunction::p_survival )
-
+	.def( "p_survival", 
+              &FirstPassageNoCollisionPairGreensFunction::p_survival )
+	.def( "dp_survival", 
+              &FirstPassageNoCollisionPairGreensFunction::dp_survival )
 	.def( "p_int_r", &FirstPassageNoCollisionPairGreensFunction::p_int_r )
 	.def( "p_theta", &FirstPassageNoCollisionPairGreensFunction::p_theta )
 	.def( "ip_theta", &FirstPassageNoCollisionPairGreensFunction::ip_theta )
+	.def( "idp_theta", 
+              &FirstPassageNoCollisionPairGreensFunction::idp_theta )
 
-        /*
-	.def( "dp_survival", &FirstPassageNoCollisionPairGreensFunction::dp_survival )
-	.def( "idp_theta", &FirstPassageNoCollisionPairGreensFunction::idp_theta )
-
-        */
 	.def( "dump", &FirstPassageNoCollisionPairGreensFunction::dump )
 
 //	.def( "alpha_i", &FirstPassageNoCollisionPairGreensFunction::alpha_i )
