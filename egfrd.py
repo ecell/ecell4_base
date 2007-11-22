@@ -1414,9 +1414,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if shellSize <= 0.0:  # Pair not formed
             return None
 
-        shellSize *= 1.0 - 1e-8
-        shellSize = min( shellSize, self.getCellSize(), self.maxShellSize )
-
         print 'pair shell size', shellSize
 
         pair = self.createPair( single1, single2 )
@@ -1479,7 +1476,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         minShellSize = max( pairDistance * D1 / D12 + radius1,
                             pairDistance * D2 / D12 + radius2 )
 
-        shellSizeMargin = 1e-9 #minShellSize * 1.01 # margin; dummy
+        shellSizeMargin = minShellSize * 1.01 # margin; dummy
         # OR, margin = the distance from r0 to sigma so that shell size
         # is 2 * (r0 to sigma) ?
         minShellSizeWithMargin = minShellSize + shellSizeMargin
@@ -1518,7 +1515,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #FIXME: dummy?
         shellSize = minShellSize + ( closestShellDistance - minShellSize ) * .5
 
-        shellsize = min( shellSize, self.maxShellSize )
+        shellSize *= 1.0 - 1e-8
+        shellSize = min( shellSize, self.getCellSize(), self.maxShellSize )
+        if shellSize <= minShellSizeWithMargin:
+            return -0.0
 
 
         return shellSize

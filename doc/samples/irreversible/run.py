@@ -37,7 +37,7 @@ def singlerun1( T ):
     s.addReactionType( r1 )
     
     particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [1e-7 * (1.0 + 1e-8),0,0] )
+    particleB = s.placeParticle( B, [A.radius + B.radius,0,0] )
 
     endTime = T
     s.step()
@@ -77,7 +77,7 @@ def singlerun2( T ):
     s.addReactionType( r1 )
     
     particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [1e-7 * (1.0 + 1e-8),0,0] )
+    particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
 
     endTime = T
     s.step()

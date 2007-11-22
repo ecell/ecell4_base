@@ -586,7 +586,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
-            #print theta, np, ip
+            print theta, np, ip
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
 

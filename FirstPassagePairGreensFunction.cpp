@@ -1538,7 +1538,7 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
     const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
     const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) );
     const Real jaa(  gsl_sf_bessel_jl( n,   aAlpha ) );
-    //const Real yaa(  gsl_sf_bessel_yl( n,   aAlpha ) );
+    const Real yaa(  gsl_sf_bessel_yl( n,   aAlpha ) );
     const Real jar(  gsl_sf_bessel_jl( n,   r * alpha ) );
     const Real yar(  gsl_sf_bessel_yl( n,   r * alpha ) );
     const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
@@ -1554,10 +1554,10 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
     const Real E1( a * ( realn + realn * realn - 
                          sigma * ( h + h * h * sigma + sigma * alphasq ) ) );
 
-    //const Real E2( ( J * J + Y * Y ) / ( jaa * jaa + yaa * yaa ) );
-    const Real E2a( sigma * J * J / ( jaa * jaa ) );
+    const Real E2( sigma * ( J * J + Y * Y ) / ( jaa * jaa + yaa * yaa ) );
+    //const Real E2( sigma * J * J / ( jaa * jaa ) );
 
-    const Real den( E1 + E2a );
+    const Real den( E1 + E2 );
 
     const Real result( term1 * num / den );
 
@@ -1597,7 +1597,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
     const Real p_0( this->p_n( 0, r, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-2 ) );
+    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-3 ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
@@ -1612,13 +1612,14 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 //	    p_n = 0.0;
 	    break;
 	}
-/*	printf("%d p_n %g\n", n, p_n );*/
+	//printf("%d p_n %g\n", n, p_n );
 
 	p_nTable.push_back( p_n );
 
 	const Real p_n_abs( fabs( p_n ) );
 	// truncate when converged enough.
 	if( p_n_abs < threshold &&
+            p_n_prev_abs < threshold &&
 	    p_n_abs < p_n_prev_abs )
 	{
 	    break;
@@ -1667,7 +1668,7 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
     const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
     const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) );
     const Real jaa1( gsl_sf_bessel_jl( n,   aAlpha ) );
-    //const Real yaa1( gsl_sf_bessel_yl( n,   aAlpha ) );
+    const Real yaa1( gsl_sf_bessel_yl( n,   aAlpha ) );
     const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
     const Real yar0( gsl_sf_bessel_yl( n,   r0 * alpha ) );
 
@@ -1676,22 +1677,24 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
 
     const Real falpha_r0( - J * yar0 + Y * jar0 );
 
+    /*
     const Real num1( - J * jaa1 );
     const Real den1( a * ( realn + realn * realn - 
                            sigma * ( h + h * h * sigma + sigma * alphasq ) )
                      * jaa1 * jaa1 );
     const Real den2( sigma * J * J );
     const Real den( den1 + den2 );
+    */
 
 // Alternative form;
-/*
+
      const Real num1( - J );
-     const Real den1( realn + realn * realn - 
-                      sigma * ( h + h * h * sigma + sigma * alphasq ) );
-     const Real den2( ( J * J + Y * Y ) / 
+     const Real den1( a * ( realn + realn * realn - 
+                            sigma * ( h + h * h * sigma + sigma * alphasq ) ) );
+     const Real den2( sigma * ( J * J + Y * Y ) / 
  		   ( jaa1 * jaa1 + yaa1 * yaa1 ) );
      const Real den( ( den1 + den2 ) * jaa1 );
-*/
+
 
      const Real num( num1 * falpha_r0 );
 
@@ -1756,6 +1759,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 	const Real p_n_abs( fabs( p_n ) );
 	// truncate when converged enough.
 	if( p_n_abs < threshold &&
+            p_n_prev_abs < threshold &&
 	    p_n_abs < p_n_prev_abs )
 	{
 	    break;
