@@ -20,9 +20,6 @@
 
 #include "factorial.hpp"
 #include "funcSum.hpp"
-//#include "bessel.hpp"
-
-//#include "HalfOrderBesselGenerator.hpp"
 
 #include "FirstPassagePairGreensFunction.hpp"
 
@@ -241,29 +238,22 @@ const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
 						    const Integer n ) const
 {
     const Real a( this->geta() );
+    const Real sigma( getSigma() );
     const Real aAlpha( a * alpha );
     const Real sigmaAlpha( getSigma() * alpha );
     const Real hSigma( geth() * getSigma() );
     const Real realn( static_cast<Real>( n ) );
 
     const Real hSigma_m_n( hSigma - realn );
-#if 0
-    // Numerical recipes
-    Real tmp, jas1, yas1, jas2, yas2, jaa, yaa;
-    bessjy( sigmaAlpha, realn + 0.5, &jas1, &yas1, &tmp, &tmp );
-    bessjy( sigmaAlpha, realn + 1.5, &jas2, &yas2, &tmp, &tmp );
-    bessjy( aAlpha, realn + 0.5, &jaa, &yaa, &tmp, &tmp );
-#else
+
     // GSL
-    const Real factors( sqrt( sigmaAlpha * M_2_PI ) );
-    const Real factora( sqrt( aAlpha * M_2_PI ) );
-    const Real jas1( gsl_sf_bessel_jl( n, sigmaAlpha ) * factors );
-    const Real yas1( gsl_sf_bessel_yl( n, sigmaAlpha ) * factors );
-    const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) * factors );
-    const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) * factors );
-    const Real jaa( gsl_sf_bessel_jl( n, aAlpha ) * factora );
-    const Real yaa( gsl_sf_bessel_yl( n, aAlpha ) * factora );
-#endif
+    const Real jas1( gsl_sf_bessel_jl( n, sigmaAlpha ) );
+    const Real yas1( gsl_sf_bessel_yl( n, sigmaAlpha ) );
+    const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
+    const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) );
+    const Real jaa( gsl_sf_bessel_jl( n, aAlpha ) );
+    const Real yaa( gsl_sf_bessel_yl( n, aAlpha ) );
+
 
 //    printf("b %g %g %g %g %g %g\n", jas1, jas2, yas1, yas2, yaa, jaa );
     const Real term1( ( hSigma_m_n * jas1 + sigmaAlpha * jas2 ) * yaa );
@@ -273,7 +263,9 @@ const Real FirstPassagePairGreensFunction::f_alpha( const Real alpha,
 //	   hSigma_m_n * yas1 * jaa, sigmaAlpha * yas2 * jaa);
 
 //    printf("t %g %g %g %g\n", alpha, term1, term2, term1-term2 );// cos(f_alpha_aux( alpha,n )) );
-    const Real result( term1 - term2 );
+    const Real factor( 2.0 * alpha * sqrt( a * sigma ) * M_1_PI );
+
+    const Real result( ( term1 - term2 ) * factor );
     
     return result;
 }
@@ -1523,9 +1515,11 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
 						      const Real r0, 
 						      const Real t ) const
 {
-    const Real mDt( - this->getD() * t );
     const Real sigma( this->getSigma() );
     const Real h( this->geth() );
+    const Real a( this->geta() );
+
+    const Real mDt( - this->getD() * t );
 
     const Real alpha( this->getAlpha( n, i ) );
     const Real alphasq( alpha * alpha );
@@ -1536,33 +1530,19 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
     const Real realn( static_cast<Real>( n ) );
     const Real hSigma_m_n( hSigma - realn );
 
-    const Real term1( alphasq * exp( mDt * alphasq ) );
+    const Real term1( alphasq * alphasq * exp( mDt * alphasq ) );
 
-#if 0
-    const Real np( realn + 0.5 );
-    Real jas1, yas1, jas2, yas2, jaa, yaa, jar, yar, jar0, yar0, _;
-    bessjy( sigmaAlpha, np,       &jas1, &yas1, &_, &_ );
-    bessjy( sigmaAlpha, np + 1.0, &jas2, &yas2, &_, &_ );
-    bessjy( aAlpha,     np,       &jaa,  &yaa,  &_, &_ );
-    bessjy( r * alpha,  np,       &jar,  &yar,  &_, &_ );
-    bessjy( r0 * alpha, np,       &jar0, &yar0, &_, &_ );
-#else
     // GSL
-    const Real factors( sqrt( sigmaAlpha * M_2_PI ) );
-    const Real factora( sqrt( aAlpha * M_2_PI ) );
-    const Real factorr( sqrt( r * alpha * M_2_PI ) );
-    const Real factorr0( sqrt( r0 * alpha * M_2_PI ) );
-    const Real jas1( gsl_sf_bessel_jl( n,   sigmaAlpha ) * factors );
-    const Real yas1( gsl_sf_bessel_yl( n,   sigmaAlpha ) * factors );
-    const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) * factors );
-    const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) * factors );
-    const Real jaa(  gsl_sf_bessel_jl( n,   aAlpha )     * factora );
-    const Real yaa(  gsl_sf_bessel_yl( n,   aAlpha )     * factora );
-    const Real jar(  gsl_sf_bessel_jl( n,   r * alpha )  * factorr );
-    const Real yar(  gsl_sf_bessel_yl( n,   r * alpha )  * factorr );
-    const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) * factorr0 );
-    const Real yar0( gsl_sf_bessel_yl( n,   r0 * alpha ) * factorr0 );
-#endif
+    const Real jas1( gsl_sf_bessel_jl( n,   sigmaAlpha ) );
+    const Real yas1( gsl_sf_bessel_yl( n,   sigmaAlpha ) );
+    const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
+    const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) );
+    const Real jaa(  gsl_sf_bessel_jl( n,   aAlpha ) );
+    //const Real yaa(  gsl_sf_bessel_yl( n,   aAlpha ) );
+    const Real jar(  gsl_sf_bessel_jl( n,   r * alpha ) );
+    const Real yar(  gsl_sf_bessel_yl( n,   r * alpha ) );
+    const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
+    const Real yar0( gsl_sf_bessel_yl( n,   r0 * alpha ) );
 
     const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
     const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
@@ -1571,16 +1551,13 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
 
     const Real num( falpha_r * falpha_r0 );
 
-    const Real E1( realn + realn * realn - 
-		   sigma * ( h + h * h * sigma + sigma * alphasq ) );
+    const Real E1( a * ( realn + realn * realn - 
+                         sigma * ( h + h * h * sigma + sigma * alphasq ) ) );
 
-    const Real E2( ( J * J + Y * Y ) / ( jaa * jaa + yaa * yaa ) );
+    //const Real E2( ( J * J + Y * Y ) / ( jaa * jaa + yaa * yaa ) );
+    const Real E2a( sigma * J * J / ( jaa * jaa ) );
 
-    // Following is simpler, but jaa sometimes gets irregularly huge,
-    // perhaps because of some error in alpha, so E2 above is safer for now.
-    // const Real E2a( J * J / ( jaa * jaa ) );
-
-    const Real den( E1 + E2 );
+    const Real den( E1 + E2a );
 
     const Real result( term1 * num / den );
 
@@ -1610,9 +1587,12 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 					      const Real r0, 
 					      const Real t ) const
 {
+    const Real sigma( this->getSigma() );
+    const Real a( this->geta() );
+
     p_nTable.clear();
 
-    const Real factor( M_PI / ( 8.0 * sqrt( r * r0 ) ) );
+    const Real factor( a * sigma / ( M_PI * 2 ) );
 
     const Real p_0( this->p_n( 0, r, r0, t ) * factor );
     p_nTable.push_back( p_0 );
@@ -1664,9 +1644,11 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
 						 const Real r0, 
 						 const Real t ) const
 {
-    const Real mDt( - this->getD() * t );
     const Real sigma( this->getSigma() );
     const Real h( this->geth() );
+    const Real a( this->geta() );
+
+    const Real mDt( - this->getD() * t );
     const Real alpha( this->getAlpha( n, i ) );
 
     const Real alphasq( alpha * alpha );
@@ -1677,29 +1659,17 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
     const Real realn( static_cast<Real>( n ) );
     const Real hSigma_m_n( hSigma - realn );
 
-    const Real term1( alphasq * exp( mDt * alphasq ) );
+    const Real term1( alphasq * alpha * exp( mDt * alphasq ) );
 
-#if 0  
-    const Real np( realn + 0.5 );
-    Real jas1, yas1, jas2, yas2, jaa1, yaa1, jaa2, yaa2, jar0, yar0, _;
-    bessjy( sigmaAlpha, np,       &jas1, &yas1, &_, &_ );
-    bessjy( sigmaAlpha, np + 1.0, &jas2, &yas2, &_, &_ );
-    bessjy( aAlpha,     np,       &jaa1, &yaa1, &_, &_ );
-    bessjy( r0 * alpha, np,       &jar0, &yar0, &_, &_ );
-#else
     // GSL
-    const Real factors( sqrt( sigmaAlpha * M_2_PI ) );
-    const Real factora( sqrt( aAlpha * M_2_PI ) );
-    const Real factorr0( sqrt( r0 * alpha * M_2_PI ) );
-    const Real jas1( gsl_sf_bessel_jl( n,   sigmaAlpha ) * factors );
-    const Real yas1( gsl_sf_bessel_yl( n,   sigmaAlpha ) * factors );
-    const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) * factors );
-    const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) * factors );
-    const Real jaa1( gsl_sf_bessel_jl( n,   aAlpha )     * factora );
-    //const Real yaa1( gsl_sf_bessel_yl( n,   aAlpha )     * factora );
-    const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) * factorr0 );
-    const Real yar0( gsl_sf_bessel_yl( n,   r0 * alpha ) * factorr0 );
-#endif
+    const Real jas1( gsl_sf_bessel_jl( n,   sigmaAlpha ) );
+    const Real yas1( gsl_sf_bessel_yl( n,   sigmaAlpha ) );
+    const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
+    const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) );
+    const Real jaa1( gsl_sf_bessel_jl( n,   aAlpha ) );
+    //const Real yaa1( gsl_sf_bessel_yl( n,   aAlpha ) );
+    const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
+    const Real yar0( gsl_sf_bessel_yl( n,   r0 * alpha ) );
 
     const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
     const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
@@ -1707,10 +1677,10 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
     const Real falpha_r0( - J * yar0 + Y * jar0 );
 
     const Real num1( - J * jaa1 );
-    const Real den1( ( realn + realn * realn - 
-                       sigma * ( h + h * h * sigma + sigma * alphasq ) )
+    const Real den1( a * ( realn + realn * realn - 
+                           sigma * ( h + h * h * sigma + sigma * alphasq ) )
                      * jaa1 * jaa1 );
-    const Real den2( J * J );
+    const Real den2( sigma * J * J );
     const Real den( den1 + den2 );
 
 // Alternative form;
@@ -1753,9 +1723,12 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 						    const Real r0, 
 						    const Real t ) const
 {
+    const Real sigma( this->getSigma() );
+    const Real a( this->geta() );
+
     p_nTable.clear();
 
-    const Real factor( getD() / ( 4.0 * sqrt( gsl_pow_3( a ) * r0 ) ) );
+    const Real factor( getD() * sigma / ( 2.0 * a * M_PI ) );
 
 
     const Real p_0( this->dp_n_at_a( 0, r0, t ) * factor );

@@ -290,6 +290,7 @@ class Pair( object ):
         self.pgf = FirstPassagePairGreensFunction( self.D_tot, 
                                                    rt.k, self.sigma )
         self.pgf_free = FreePairGreensFunction( self.D_tot )
+        self.pgf_nocol = FirstPassageNoCollisionPairGreensFunction( self.D_tot )
 
         self.eventID = None
 
@@ -400,7 +401,8 @@ class Pair( object ):
 
                 #FIXME:
                 print 'near only a'
-                return self.pgf
+                #return self.pgf
+                return self.pgf_nocol
                 
             else:
                 # distant from both a and sigma; 

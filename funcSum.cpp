@@ -18,7 +18,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 	return 0.0;
     }
 
-    const Real threshold( fabs( p_0 * tolerance ) );
+    const Real threshold( fabs( p_0 * tolerance * 1e-1 ) );
     pTable.push_back( p_0 );
 
     bool extrapolationNeeded( true );
