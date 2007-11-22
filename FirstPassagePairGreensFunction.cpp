@@ -8,14 +8,13 @@
 
 #include <boost/bind.hpp>
 
+
+#include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
-//#include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_legendre.h>
-#include <gsl/gsl_sf_lambert.h>
 #include <gsl/gsl_sf_bessel.h>
-//#include <gsl/gsl_interp.h>
 #include <gsl/gsl_roots.h>
 
 #include "factorial.hpp"
@@ -52,13 +51,6 @@ void FirstPassagePairGreensFunction::seta( const Real a )
     THROW_UNLESS( std::invalid_argument, a >= sigma );
 
     this->a = a;
-
-    /*
-    alpha0_threshold = sqrt( hsigma_p_1 / 
-                             ( ( a * sigma - sigma * sigma ) * TOLERANCE ) );
-
-    assert( hsigma_p_1 / ( alpha0_threshold * sigma ) < 1.0 );
-    */
 
     clearAlphaTable();
 }
@@ -1477,7 +1469,7 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 	gsl_root_fsolver_iterate( solver );
 	low = gsl_root_fsolver_x_lower( solver );
 	high = gsl_root_fsolver_x_upper( solver );
-	const int status( gsl_root_test_interval( low, high, 1e-15, 
+	const int status( gsl_root_test_interval( low, high, 1e-15,
 						  this->TOLERANCE ) );
 
 	if( status == GSL_CONTINUE )
@@ -1597,7 +1589,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
     const Real p_0( this->p_n( 0, r, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-3 ) );
+    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-2 ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
@@ -2110,7 +2102,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	gsl_root_fsolver_iterate( solver );
 	const Real low( gsl_root_fsolver_x_lower( solver ) );
 	const Real high( gsl_root_fsolver_x_upper( solver ) );
-	const int status( gsl_root_test_interval( low, high, 1e-15, 
+	const int status( gsl_root_test_interval( low, high, 1e-15,
 						  this->TOLERANCE ) );
 
 	if( status == GSL_CONTINUE )

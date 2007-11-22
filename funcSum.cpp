@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <boost/bind.hpp>
+
 #include <gsl/gsl_sum.h>
 
 #include "funcSum.hpp"
