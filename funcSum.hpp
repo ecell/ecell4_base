@@ -5,7 +5,7 @@
 
 #include "Defs.hpp"
 
-const Real TOLERANCE( 1e-8 );
+static const Real TOLERANCE( 1e-8 );
 
 const Real 
 funcSum( boost::function<const Real( const unsigned int i )> f,

@@ -3,13 +3,14 @@
 from egfrd import *
 
 def run( outfilename, N ):
+    print outfilename
 
     outfile = open( outfilename, 'w' )
 
     T = .01
 
     for i in range( N ):
-        d, t = singlerun2( T )
+        d, t = singlerun( T )
         outfile.write( '%g\n' % d )
 
         print d, t
@@ -19,45 +20,7 @@ def run( outfilename, N ):
 
 
 
-def singlerun1( T ):
-
-    s = EGFRDSimulator()
-    s.setCellSize( 1e-3 )
-
-    s.setMaxShellSize( 1e-6 )
-
-    A = Species( 'A', 0.0, 5e-8 )
-    s.addSpecies( A )
-    B = Species( 'B', 1e-11, 5e-8 )
-    s.addSpecies( B )
-    C = Species( 'C', 0.0, 5e-8 )
-    s.addSpecies( C )
-    
-    r1 = BindingReactionType( A, B, C, 1e6 / N_A )
-    s.addReactionType( r1 )
-    
-    particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
-
-    endTime = T
-    s.step()
-
-    while 1:
-        nextTime = s.scheduler.getNextTime()
-        if nextTime > endTime:
-            s.stop( endTime )
-            break
-        s.step()
-        if s.populationChanged():
-            print 'reaction'
-            return 0.0, s.t
-
-    distance = s.distance( particleB.getPos(), particleA.getPos() )
-
-    return distance, s.t
-
-
-def singlerun2( T ):
+def singlerun( T ):
 
     s = EGFRDSimulator()
     s.setCellSize( 1e-3 )
@@ -73,7 +36,10 @@ def singlerun2( T ):
     
     r1 = BindingReactionType( A, B, C, 1e6 / N_A )
     s.addReactionType( r1 )
-    
+
+    r2 = UnbindingReactionType( C, A, B, 1e3 )
+    s.addReactionType( r2 )
+
     particleA = s.placeParticle( A, [0,0,0] )
     particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
 
@@ -86,15 +52,13 @@ def singlerun2( T ):
             s.stop( endTime )
             break
         s.step()
-        if s.populationChanged():
-            print 'reaction'
-            return 0.0, s.t
+
+    if C.pool.size != 0:
+        return 0, s.t
 
     distance = s.distance( particleB.getPos(), particleA.getPos() )
 
     return distance, s.t
-
     
-
 if __name__ == '__main__':
     run( sys.argv[1], int( sys.argv[2] ) )

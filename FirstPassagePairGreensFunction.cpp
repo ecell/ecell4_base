@@ -202,7 +202,7 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 
     const Real Dt( this->getD() * t );
 
-    const Real alpha_cutoff( sqrt( ( - log( ALPHA_CUTOFF ) / Dt )
+    const Real alpha_cutoff( sqrt( ( - log( TOLERANCE * 1e-2 ) / Dt )
 				   + alpha0_0 * alpha0_0 ) );
 
 
@@ -219,7 +219,7 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 
 	++i;
 
-	if( i >= MAX_ALPHA_SEQ )
+	if( i >= MAX_ALPHA_SEQ - 1 )
 	{
 	    break;
 	}
@@ -611,10 +611,10 @@ FirstPassagePairGreensFunction::updateAlphaTable( const unsigned int n,
 
     const Real Dt( this->getD() * t );
 
-    const Real threshold( this->ALPHA_CUTOFF * 
+    const Real threshold( this->TOLERANCE * 1e-2 * 
 			  alphan_0_sq * exp( - Dt * alphan_0_sq ) );
    
-    const unsigned int end( offset + MAX_ALPHA_SEQ );
+    const unsigned int end( offset + MAX_ALPHA_SEQ - 1 );
     unsigned int i( offset + 1 );
     while( true )
     {

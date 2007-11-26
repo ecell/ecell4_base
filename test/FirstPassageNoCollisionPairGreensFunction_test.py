@@ -169,7 +169,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
-        t = 1e-5  # not very small though..
+        t = 1e-4  # not very small though..
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
@@ -199,7 +199,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
-        t = 1e-2
+        t = 1e-5
 
         # near a
         r = 1.009999e-8
@@ -227,32 +227,13 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
         a = 1e-7
         r0 = a - 1e-9
 
-        t = 1e-5
+        t = 1e-2
         r = a
         
         gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
         gf.seta( a )
 
         theta = gf.drawTheta( 0.5, r, r0, t )
-        self.failIf( theta < 0.0 or theta > numpy.pi )
-
-
-    def test_DrawTheta_2( self ):
-
-        D = 1e-11
-        t =  6.22760394717e-06
-
-        #a = 1.86545e-06
-        a = 1.84101203437e-06
-        r0 =  1.84101103437e-06 
-        #r =  1.84124695865e-06
-        r = r0
-
-        gf = mod.FirstPassageNoCollisionPairGreensFunction( D )
-        gf.seta( a )
-
-        theta = gf.drawTheta( 0.5, r, r0, t )
-        print theta
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
 
@@ -331,7 +312,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase( unittest.TestCase ):
             result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
-            print theta, np, ip
+            #print theta, np, ip
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
     '''

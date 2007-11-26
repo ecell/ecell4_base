@@ -26,7 +26,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
     bool extrapolationNeeded( true );
 
     RealVector::size_type i( 1 ); 
-    while( i <= max_i )
+    while( i < max_i )
     {
 	const Real p_i( f( i ) );
 	pTable.push_back( p_i );

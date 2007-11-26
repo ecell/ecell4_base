@@ -8,7 +8,7 @@ from matplotlib.pylab import *
 
 
 import _gfrd
-from p_irr import p_irr
+from p_rev import p_rev
 
 infilename = sys.argv[1]
 
@@ -23,19 +23,20 @@ t = .01
 kf = 1e6 / N_A
 D = 1e-11
 
-rmin = sigma
-rmax = sigma * 30
+# rmin = sigma
+# rmax = sigma * 1e2
+# rtick = ( rmax - rmin ) / N
+# rarray = numpy.mgrid[rmin:rmax:rtick]
+# parray = array( [ p_rev( r, t, r0, kf, D, sigma ) for r in rarray ] )
+# S = _gfrd.S_irr( t, r0, kf, D, sigma )
 
-rtick = ( rmax - rmin ) / N
-rarray = numpy.mgrid[rmin:rmax:rtick]
-
-parray = array( [ p_irr( r, t, r0, kf, D, sigma ) for r in rarray ] )
-
-S = _gfrd.S_irr( t, r0, kf, D, sigma )
+data = scipy.io.read_array( 'p_rev.tsv' )
+print data
+rarray, parray = numpy.transpose( data )
 
 print rarray, parray
 
-bins = 100
+bins = 50
 print 'load'
 #data = scipy.io.read_array( infilename )  # <-- slow
 infile = open( infilename )
@@ -65,7 +66,7 @@ print hist,lower_edges, lower_edges[1:] - lower_edges[:-1]
 plot( rarray, parray  )
 plot( x, hist )
 
-print S, S_sim
+#print S, S_sim
 
 
 show()
