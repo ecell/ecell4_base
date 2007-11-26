@@ -950,7 +950,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             for i in range( 100 ):
                 unitVector = randomUnitVector()
-                vector = unitVector * radius12 * (1.0 + 1e-8) # safety
+                vector = unitVector * radius12 * (1.0 + 1e-10) # safety
             
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.
@@ -1466,9 +1466,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         minShellSizeWithMargin = minShellSize + shellSizeMargin
 
-
-        #    return -0.0
-        
         # 1. Squeezed?
         if closestShellDistance <= minShellSizeWithMargin:
             print 'closest shell < minShellSize w/ margin; %g, %g' % \
