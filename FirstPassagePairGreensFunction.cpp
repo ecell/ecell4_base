@@ -219,7 +219,7 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 
 	++i;
 
-	if( i >= MAX_ALPHA_SEQ - 1 )
+	if( i >= MAX_ALPHA_SEQ )
 	{
 	    break;
 	}
@@ -614,7 +614,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const unsigned int n,
     const Real threshold( this->TOLERANCE * 1e-2 * 
 			  alphan_0_sq * exp( - Dt * alphan_0_sq ) );
    
-    const unsigned int end( offset + MAX_ALPHA_SEQ - 1 );
+    const unsigned int end( offset + MAX_ALPHA_SEQ );
     unsigned int i( offset + 1 );
     while( true )
     {
@@ -632,6 +632,9 @@ FirstPassagePairGreensFunction::updateAlphaTable( const unsigned int n,
 	    break;
 	}
 
+
+	++i;
+
 	if( i >= end )
 	{
 	    std::cerr << "alphaTable (" << n << 
@@ -639,8 +642,6 @@ FirstPassagePairGreensFunction::updateAlphaTable( const unsigned int n,
 		      << dump() << std::endl;
 	    break;
 	}
-
-	++i;
     }
 
     gsl_root_fsolver_free( solver );

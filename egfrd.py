@@ -740,7 +740,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.t = 0.0
         self.dt = INF
 
-        self.smallT = 1e-8
+        self.smallT = 1e-8  # FIXME: is this ok?
 
         self.maxShellSize = INF
 
