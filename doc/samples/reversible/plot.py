@@ -31,12 +31,11 @@ D = 1e-11
 # S = _gfrd.S_irr( t, r0, kf, D, sigma )
 
 data = scipy.io.read_array( 'p_rev.tsv' )
-print data
 rarray, parray = numpy.transpose( data )
 
 print rarray, parray
 
-bins = 50
+bins = 25
 print 'load'
 #data = scipy.io.read_array( infilename )  # <-- slow
 infile = open( infilename )
@@ -52,8 +51,8 @@ histsum = hist.sum()
 S_sim = float( len( nonreactions ) ) / len( data )
 hist = hist.astype( numpy.float )
 
-print len( lower_edges[1:] ), len( lower_edges[:-1])
-print len( hist )
+#print len( lower_edges[1:] ), len( lower_edges[:-1])
+#print len( hist )
 xtick = lower_edges[2]-lower_edges[1]
 
 hist /= len( data ) * xtick
@@ -63,11 +62,10 @@ hist /= len( data ) * xtick
 x = lower_edges + ( xtick * .5 )
 
 print hist,lower_edges, lower_edges[1:] - lower_edges[:-1]
-plot( rarray, parray  )
-plot( x, hist )
+plot( rarray, parray, 'b-'  )
+plot( x, hist, 'k.' )
 
 #print S, S_sim
-
 
 show()
 

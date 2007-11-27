@@ -35,7 +35,7 @@ S = _gfrd.S_irr( t, r0, kf, D, sigma )
 
 print rarray, parray
 
-bins = 100
+bins = 25
 print 'load'
 #data = scipy.io.read_array( infilename )  # <-- slow
 infile = open( infilename )
@@ -62,8 +62,8 @@ hist /= len( data ) * xtick
 x = lower_edges + ( xtick * .5 )
 
 print hist,lower_edges, lower_edges[1:] - lower_edges[:-1]
-plot( rarray, parray  )
-plot( x, hist )
+plot( rarray, parray, 'b-'  )
+plot( x, hist, 'k.' )
 
 print S, S_sim
 
