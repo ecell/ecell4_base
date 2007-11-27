@@ -23,6 +23,8 @@ t = .01
 kf = 1e6 / N_A
 D = 1e-11
 
+#tau = sigma*sigma / D
+
 rmin = sigma
 rmax = sigma * 30
 
@@ -43,7 +45,6 @@ data = array([float(x) for x in infile.read().split()], numpy.float)
 infile.close()
 
 print 'hist'
-#grid = numpy.mgrid[rmin:rmax:rmax/N2]
 nonreactions = numpy.compress( data >= sigma, data )
 hist, lower_edges = numpy.histogram( nonreactions, bins=bins )
 
@@ -51,19 +52,15 @@ histsum = hist.sum()
 S_sim = float( len( nonreactions ) ) / len( data )
 hist = hist.astype( numpy.float )
 
-print len( lower_edges[1:] ), len( lower_edges[:-1])
-print len( hist )
 xtick = lower_edges[2]-lower_edges[1]
 
 hist /= len( data ) * xtick
-#hist /= xtick
-#hist *= 3.14
 
 x = lower_edges + ( xtick * .5 )
 
 print hist,lower_edges, lower_edges[1:] - lower_edges[:-1]
-plot( rarray, parray, 'b-'  )
-plot( x, hist, 'k.' )
+loglog( rarray, parray, 'b-'  )
+loglog( x, hist, 'k.' )
 
 print S, S_sim
 
