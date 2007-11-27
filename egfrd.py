@@ -20,6 +20,7 @@ class Delegate( object ):
         self.obj = weakref.proxy( obj )
         self.method = method
 
+
     def __call__( self, arg ):
         return self.method( self.obj, arg )
 
@@ -41,20 +42,19 @@ class Single( object ):
 
         self.gf = FirstPassageGreensFunction( particle.species.D )
 
-    #def __del__( self ):
-    #    pass
-#        print 'del', str( self )
-
 
     def isPair( self ):
+
         return False
+
         
     def getD( self ):
+
         return self.particle.species.D
 
         
     def getPos( self ):
-        #return self.pos
+
         return self.particle.pos
 
 
@@ -75,10 +75,13 @@ class Single( object ):
     '''
 
     def getShellSize( self ):
+
         return self.shellSize
 
     def getRadius( self ):
+
         return self.particle.species.radius
+
 
     '''
     Initialize this Single.
@@ -128,6 +131,7 @@ class Single( object ):
     '''
     
     def getMobilityRadius( self ):
+
         return self.getShellSize() - self.getRadius()
 
 
@@ -142,6 +146,7 @@ class Single( object ):
         pos += displacement
 
         self.particle.pos = pos
+
 
     def propagate( self, r, t ):
 
@@ -164,12 +169,12 @@ class Single( object ):
         self.dt = 0.0
         self.eventType = EventType.ESCAPE
 
+
     def isReset( self ):
+
         return self.getShellSize() == self.getRadius() and self.dt == 0.0\
                and self.eventType == EventType.ESCAPE
         
-        
-
 
     '''
     Update the position of the particle at time t.
@@ -200,6 +205,7 @@ class Single( object ):
 
         return self
 
+
     def determineNextEvent( self ):
         if self.getD() == 0:
             self.dt = numpy.inf
@@ -225,6 +231,7 @@ class Single( object ):
         dt = ( 1.0 / self.rt.k ) * math.log( 1.0 / rnd )
 
         return dt
+
 
     def calculateEscapeTime( self ):
         
@@ -308,26 +315,34 @@ class Pair( object ):
     #        print 'del', str( self )
 
     def initialize( self, t ):
+
         self.lastTime = t
         self.shellSize = self.radius
         self.dt = 0
         self.eventType = None
 
     def isPair( self ):
+
         return True
 
     def getPos( self ):
+
         return self.getCoM()
 
     def getD( self ):
+
         return self.D_tot #FIXME: is this correct?
 
     def setShellSize( self, shellSize ):
+
         #assert shellSize >= self.radius
         self.shellSize = shellSize
 
+
     def getShellSize( self ):
+
         return self.shellSize
+
 
     '''
     This method returns the radius from its CoM that this Pair must reserve
@@ -335,6 +350,7 @@ class Pair( object ):
     '''
 
     def getRadius( self ):  #FIXME: should be renamed?
+
         pairDistance = self.distance( self.single1.getPos(),
                                       self.single2.getPos() )
         radius = max( pairDistance * self.D1 /
@@ -342,6 +358,7 @@ class Pair( object ):
                       pairDistance * self.D2 /
                       self.D_tot + self.single2.getRadius() )
         return radius
+
 
     '''
     Calculate and return the "Center of Mass" (== CoM) of this pair.
@@ -398,10 +415,7 @@ class Pair( object ):
         else:
             if distanceFromShell < thresholdDistance:
                 # near a;
-
-                #FIXME:
                 print 'near only a'
-                #return self.pgf
                 return self.pgf_nocol
                 
             else:
@@ -475,12 +489,13 @@ class Pair( object ):
 
         r0 = self.distance( pos1, pos2 )
 
-        #FIXME: not good
-        if r0 < self.sigma:
-            r0 = self.sigma
-
         assert r0 >= self.sigma, \
             'r0 %g, sigma %g' % ( r0, self.sigma )
+
+        #FIXME: not good
+        #if r0 < self.sigma:
+        #    r0 = self.sigma
+
 
         # equalize expected mean t_r and t_R.
 
@@ -491,8 +506,6 @@ class Pair( object ):
 
         qrrtD1D25 = ( D1 * D2**5 ) ** 0.25
         qrrtD15D2 = ( D1**5 * D2 ) ** 0.25
-
-
 
         if qrrtD15D2 * r0 + ( qrrtD15D2 + qrrtD1D25 ) * radius1 \
                 + D1 * ( sqrtD_tot * ( shellSize - radius2 ) 
@@ -513,7 +526,7 @@ class Pair( object ):
                 a_R_1 + a_r_1 * D2_factor + radius2
 
             assert abs( a_R_1 + a_r_1 * D1_factor + radius1 - shellSize ) \
-                < 1e-8 * shellSize
+                < 1e-12 * shellSize
 
             self.a_r = a_r_1
             self.a_R = a_R_1
@@ -530,7 +543,7 @@ class Pair( object ):
                 a_R_2 + a_r_2 * D1_factor + radius1
 
             assert abs( a_R_2 + a_r_2 * D2_factor + radius2 - shellSize ) \
-                < 1e-8 * shellSize
+                < 1e-12 * shellSize
 
 
             self.a_r = a_r_2
@@ -691,7 +704,6 @@ class Pair( object ):
             raise RuntimeError, 'New particle(s) out of protective sphere.'
 
 
-
     def __str__( self ):
         buf = 'Pair( ' + str(self.single1.particle) +\
               ', ' + str(self.single2.particle) + ' )'
@@ -699,6 +711,8 @@ class Pair( object ):
             buf += '; squeezed.'
 
         return buf
+
+
 
 class DummySingle( object ):
     def __init__( self ):
@@ -750,13 +764,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.squeezed = 0
 
-    #def __del__( self ):
-    #    print 'GC del sim'
 
     def setMaxShellSize( self, maxShellSize ):
+
         self.maxShellSize = maxShellSize
 
     def getMaxShellSize( self ):
+
         return self.maxShellSize
 
     def initialize( self ):
@@ -776,6 +790,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.checkShellForAll()
 
         self.isDirty = False
+
 
     def stop( self, t ):
 
@@ -835,20 +850,25 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def populationChanged( self ):
+
         return self.isPopulationChanged
 
     def clearPopulationChanged( self ):
+
         self.isPopulationChanged = False
 
     def setPopulationChanged( self ):
+
         self.isPopulationChanged = True
         
 
     def createSingle( self, particle ):
+
         rt = self.getReactionType1( particle.species )
         single = Single( particle, rt )
         single.initialize( self.t )
         return single
+
 
     def createPair( self, single1, single2 ):
 
@@ -865,8 +885,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pair.initialize( self.t )
         return pair
 
+
     def addEvent( self, t, func, arg ):
+
         return self.scheduler.addEvent( t, func, arg )
+
 
     def addSingleEvent( self, single ):
 
@@ -875,17 +898,23 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                  single )
         single.eventID = eventID
 
+
     def addPairEvent( self, pair ):
+
         eventID = self.addEvent( self.t + pair.dt, 
                                  Delegate( self, EGFRDSimulator.firePair ), 
                                  pair )
         pair.eventID = eventID
 
+
     def removeEvent( self, event ):
+
         self.scheduler.removeEvent( event.eventID )
+
 
     def updateEvent( self, t, event ):
         self.scheduler.updateEventTime( event.eventID, t )
+
 
     def excludeVolume( self, pos, radius ):
 
@@ -1363,14 +1392,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return pair.dt
 
 
-        
-
-
-
     def burstSingle( self, single ):
         single.burstShell( self.t )
         single.particle.pos = self.applyBoundary( single.particle.pos )
         self.updateEvent( self.t, single )
+
 
     def burstPair( self, pair ):
         single1, single2 = pair.breakUp( self.t )
@@ -1656,6 +1682,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # default case: none left.
         return DummySingle(), numpy.inf
 
+
     '''
     '''
 
@@ -1699,12 +1726,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                       % ( str( obj ), str( closest ), shellSize, distance,\
                           distance - shellSize )
 
+
     def checkShellForAll( self ):
         scheduler = self.scheduler
 
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i).getArg()
             self.checkShell( obj )
+
 
     def checkEventStoichiometry( self ):
 
@@ -1723,9 +1752,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if population != eventPopulation:
             raise RuntimeError, 'population %d != eventPopulation %d' %\
                   ( population, eventPopulation )
-        
-                
-        
+
         
     def checkInvariants( self ):
 
@@ -1736,10 +1763,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.checkEventStoichiometry()
 
+
     #
     # methods for debugging.
     #
-
 
     def dumpScheduler( self ):
         scheduler = self.scheduler
