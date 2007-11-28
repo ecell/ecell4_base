@@ -492,11 +492,6 @@ class Pair( object ):
         assert r0 >= self.sigma, \
             'r0 %g, sigma %g' % ( r0, self.sigma )
 
-        #FIXME: not good
-        #if r0 < self.sigma:
-        #    r0 = self.sigma
-
-
         # equalize expected mean t_r and t_R.
 
         r0_1 = r0 * D1_factor
@@ -545,18 +540,17 @@ class Pair( object ):
             assert abs( a_R_2 + a_r_2 * D2_factor + radius2 - shellSize ) \
                 < 1e-12 * shellSize
 
-
             self.a_r = a_r_2
             self.a_R = a_R_2
-            
 
-
-        #print 'r R', self.a_r, self.a_R
-        #print 'tr, tR', (( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
-        #(self.a_R / math.sqrt( 6*self.D_geom ))**2
+        print 'r R', self.a_r, self.a_R
+        print 'tr, tR', (( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
+              (self.a_R / math.sqrt( 6*self.D_geom ))**2
 
         #print 'a_r a_R r0', self.a_r, self.a_R, r0
-        assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
+        assert self.a_r > 0
+        assert self.a_R > 0
+        #assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
 
 
         rnd = numpy.random.uniform( size=3 )
@@ -1190,6 +1184,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                                distanceToClosestShell )
 
         shellSize = min( shellSize, self.getCellSize(), self.maxShellSize )
+
         single.setShellSize( shellSize )
         single.determineNextEvent()
 
@@ -1428,7 +1423,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         radius1 = single1.getRadius()
         radius2 = single2.getRadius()
         radius12 = radius1 + radius2
-        pairDistance = self.distance( single1.getPos(), single2.getPos() )
 
         shellSize = self.checkPairFormationCriteria( single1, single2,
                                                      pairClosest,
@@ -1446,6 +1440,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         pair.setShellSize( shellSize )
 
+        pairDistance = self.distance( single1.getPos(), single2.getPos() )
         print 'Pair formed: ', pair, 'pair distance', pairDistance,\
               'shell size=', pair.getShellSize(),\
               ', closest = ', pairClosest,\
@@ -1492,6 +1487,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         minShellSizeWithMargin = minShellSize + shellSizeMargin
 
+        maxShellSize = min( self.getCellSize(), self.maxShellSize )
+
+
+        # 0. Shell cannot be larger than max shell size or sim cell size.
+        if minShellSizeWithMargin > maxShellSize:
+            return -0.0
+
         # 1. Squeezed?
         if closestShellDistance <= minShellSizeWithMargin:
             print 'closest shell < minShellSize w/ margin; %g, %g' % \
@@ -1517,7 +1519,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                               self.distance( pos2, closestPos )
                               - closestShell - radius2 )
         
-        pairMobility = closestShellDistance - minShellSize
+        pairMobility = min( closestShellDistance, maxShellSize ) - minShellSize
         if singleMobility >= pairMobility:
             print 'singleMobility %g >= pairMobility %g' %\
                   (singleMobility, pairMobility)
@@ -1531,13 +1533,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         shellSize = minShellSize + ( closestShellDistance - minShellSize ) * .5
         shellSize = max( shellSize, minShellSizeWithMargin )
 
-        #shellSize *= 1.0 - 1e-8
         shellSize = min( shellSize, self.getCellSize(), self.maxShellSize )
-
-        #if shellSize <= minShellSizeWithMargin:
-        #    print 'shellSize <= minShellSizeWithMargin'
-        #    return -0.0
-
 
         return shellSize
     

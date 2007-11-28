@@ -28,8 +28,6 @@ D = 1e-11
 data = scipy.io.read_array( 'p_rev.tsv' )
 rarray, parray = numpy.transpose( data )
 
-rarray /= sigma
-
 print rarray, parray
 
 bins = 25
@@ -52,13 +50,12 @@ xtick = lower_edges[2]-lower_edges[1]
 hist /= len( data ) * xtick
 
 x = lower_edges + ( xtick * .5 )
-x /= sigma
 
 print hist,lower_edges, lower_edges[1:] - lower_edges[:-1]
-plot( rarray, parray, 'b-'  )
-plot( x, hist, 'k.' )
-loglog( rarray, parray, 'b-'  )
-loglog( x, hist, 'k.' )
+loglog( rarray / sigma, parray, 'b-'  )
+loglog( x / sigma, hist, 'k.' )
 
+xlabel( 'r / sigma' )
+ylabel( 'p_rev' )
 show()
 

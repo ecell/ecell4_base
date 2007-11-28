@@ -2,12 +2,10 @@
 
 from egfrd import *
 
-def run( outfilename, N ):
+def run( outfilename, T, N ):
     print outfilename
 
     outfile = open( outfilename, 'w' )
-
-    T = .01
 
     for i in range( N ):
         d, t = singlerun( T )
@@ -61,4 +59,4 @@ def singlerun( T ):
     return distance, s.t
     
 if __name__ == '__main__':
-    run( sys.argv[1], int( sys.argv[2] ) )
+    run( sys.argv[1], float( sys.argv[2] ), int( sys.argv[3] ) )
