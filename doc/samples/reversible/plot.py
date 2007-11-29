@@ -25,37 +25,64 @@ D = 1e-11
 #t = .01
 
 
-data = scipy.io.read_array( 'p_rev.tsv' )
-rarray, parray = numpy.transpose( data )
+def load_data( filename ):
+    infile = open( filename )
+    data = array([float(x) for x in infile.read().split()], numpy.float)
+    infile.close()
 
-print rarray, parray
+    return data
+    
+def plot_sol( filename, maxr ):
 
-bins = 25
-print 'load'
-#data = scipy.io.read_array( infilename )  # <-- slow
-infile = open( infilename )
-data = array([float(x) for x in infile.read().split()], numpy.float)
-infile.close()
+    data = scipy.io.read_array( filename )
+    rarray, parray = numpy.transpose( data )
+    mask = numpy.less_equal( rarray, maxr )
+    rarray = numpy.compress( mask, rarray )
+    parray = numpy.compress( mask, parray )
+    print rarray, parray
 
-print 'hist'
-nonreactions = numpy.compress( data >= sigma, data )
-hist, lower_edges = numpy.histogram( nonreactions, bins=bins )
+    loglog( rarray / sigma, parray, '-'  )
 
-histsum = hist.sum()
-S_sim = float( len( nonreactions ) ) / len( data )
-hist = hist.astype( numpy.float )
 
-xtick = lower_edges[2]-lower_edges[1]
 
-hist /= len( data ) * xtick
+def plot_hist( data, T ):
 
-x = lower_edges + ( xtick * .5 )
+    bins = 20
 
-print hist,lower_edges, lower_edges[1:] - lower_edges[:-1]
-loglog( rarray / sigma, parray, 'b-'  )
-loglog( x / sigma, hist, 'k.' )
+    nonreactions = numpy.compress( data >= sigma, data )
+    print 'max', max( nonreactions )
+    hist, lower_edges = numpy.histogram( nonreactions, bins=bins )
 
-xlabel( 'r / sigma' )
-ylabel( 'p_rev' )
-show()
+    histsum = hist.sum()
+    S_sim = float( len( nonreactions ) ) / len( data )
+    hist = hist.astype( numpy.float )
+
+    xtick = lower_edges[2]-lower_edges[1]
+
+    hist /= len( data ) * xtick
+
+    x = lower_edges + ( xtick * .5 )
+    #print 'x', x
+
+    loglog( x / sigma, hist, '.', label='sim (T = %g tau)' % (T * 100) )
+    
+
+
+if __name__ == '__main__':
+
+    for i in range( len(sys.argv[1:])/3 ):
+        simfilename = sys.argv[i*3+1]
+        solfilename = sys.argv[i*3+2]
+        T = float( sys.argv[i*3+3] )
+        print simfilename,solfilename,T
+        data = load_data( simfilename )
+        plot_sol( solfilename, max( data ) )
+        plot_hist( data, T )
+
+
+    xlabel( 'r / sigma' )
+    ylabel( 'p_rev' )
+    #legend()
+    show()
+
 

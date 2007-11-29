@@ -748,6 +748,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.t = 0.0
         self.dt = INF
 
+        self.stepCounter = 0
+
         self.smallT = 1e-8  # FIXME: is this ok?
 
         self.maxShellSize = INF
@@ -822,7 +824,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
-        #self.checkInvariants()
+        if self.stepCounter % 100 == 0:
+            self.checkInvariants()
+
+        self.stepCounter += 1
 
         event = self.scheduler.getTopEvent()
         self.t, self.lastEvent = event.getTime(), event.getArg()
@@ -939,12 +944,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             single.particle.pos = NOWHERE
 
-            if not self.checkOverlap( pos, productSpecies.radius ):
+            if not self.checkOverlap( oldpos, productSpecies.radius ):
                 print 'no space for product particle.'
                 single.particle.pos = oldpos
-                raise NoSpace
+                raise ''
+                #raise NoSpace
                 
-            if reactantSpecies.species.radius < productSpecies.radius:
+            if reactantSpecies.radius < productSpecies.radius:
                 self.excludeVolume( oldpos, productSpecies.radius )
 
             self.removeParticle( single.particle )

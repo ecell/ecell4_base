@@ -41,7 +41,7 @@ def plot_sol( t, rmax ):
 
 def plot_hist( data, T ):
 
-    bins = 25
+    bins = 20
 
     nonreactions = numpy.compress( data >= sigma, data )
     print 'max', max( nonreactions )
@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     xlabel( 'r / sigma' )
     ylabel( 'p_irr' )
-    legend()
+    #legend()
     show()
 
 
