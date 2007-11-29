@@ -57,11 +57,11 @@ r9 = UnimolecularReactionType( EaI, Ea, 1e2 )
 s.addReactionType( r9 )
 
 s.throwInParticles( Ea, 60, box1 )
-s.throwInParticles( EaX, 60, box1 )
+s.throwInParticles( X, 60, box1 )
 
 
 l = Logger( s, 'dimer' )
-l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
+#l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
 l.setInterval( 1e-3 )
 l.log()
 
