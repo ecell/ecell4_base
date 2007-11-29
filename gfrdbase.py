@@ -362,9 +362,9 @@ class GFRDSimulatorBase( object ):
         if numReactants == 1:
             species1 = r.reactants[0]
             if self.reactionTypeMap1.has_key( species1 ):
-                raise RuntimeError,\
-                      'Multiple single reactions for a Species not supported.'
-            self.reactionTypeMap1[species1] = r
+                self.reactionTypeMap1[species1].append( r )
+            else:
+                self.reactionTypeMap1[species1] = [ r, ]
 
         elif numReactants == 2:
             species1 = r.reactants[0]

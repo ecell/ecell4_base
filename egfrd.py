@@ -28,10 +28,12 @@ class Delegate( object ):
 
 class Single( object ):
 
-    def __init__( self, particle, rt ):
+    def __init__( self, particle, reactiontypes ):
 
         self.particle = particle
-        self.rt = rt
+        self.reactiontypes = reactiontypes
+
+        self.k_tot = 0
 
         self.lastTime = 0.0
         self.dt = 0.0
@@ -41,6 +43,8 @@ class Single( object ):
         self.eventID = None
 
         self.gf = FirstPassageGreensFunction( particle.species.D )
+
+        self.updatek_tot()
 
 
     def isPair( self ):
@@ -223,12 +227,12 @@ class Single( object ):
 
 
     def calculateReactionTime( self ):
-
-        if not self.rt:
+        
+        if self.k_tot == 0:
             return numpy.inf
 
         rnd = numpy.random.uniform()
-        dt = ( 1.0 / self.rt.k ) * math.log( 1.0 / rnd )
+        dt = ( 1.0 / self.k_tot ) * math.log( 1.0 / rnd )
 
         return dt
 
@@ -240,6 +244,25 @@ class Single( object ):
         dt = self.gf.drawTime( rnd )
         return dt
 
+    def updatek_tot( self ):
+
+        self.k_tot = 0
+
+        if not self.reactiontypes:
+            return
+
+        for rt in self.reactiontypes:
+            self.k_tot += rt.k
+
+    def drawReactionType( self ):
+        k_array = [ rt.k for rt in self.reactiontypes ]
+        k_array = numpy.add.accumulate( k_array )
+        k_max = k_array[-1]
+
+        rnd = numpy.random.uniform()
+        i = numpy.searchsorted( k_array, rnd * k_max )
+
+        return self.reactiontypes[i]
 
     def __str__( self ):
         return 'Single' + str( self.particle )
@@ -499,7 +522,7 @@ class Pair( object ):
 
         D_factor = sqrtD_tot + sqrtD_geom
 
-        qrrtD1D25 = ( D1 * D2**5 ) ** 0.25
+        qrrtD1D25 = ( D1    * D2**5 ) ** 0.25
         qrrtD15D2 = ( D1**5 * D2 ) ** 0.25
 
         if qrrtD15D2 * r0 + ( qrrtD15D2 + qrrtD1D25 ) * radius1 \
@@ -729,10 +752,6 @@ class DummySingle( object ):
 class NoSpace( object ):
     def __init( self ):
         pass
-#     def __init__( self, s1, s2, s3 ):
-#         self.s1 = s1
-#         self.s2 = s2
-#         self.s3 = s3
 
 
 class EGFRDSimulator( GFRDSimulatorBase ):
@@ -931,9 +950,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def fireSingleReaction( self, single ):
 
         reactantSpecies = single.particle.species
-        rt = self.getReactionType1( reactantSpecies )
         oldpos = single.particle.pos.copy()
         
+        rt = single.drawReactionType()
+
         if len( rt.products ) == 0:
             
             self.removeParticle( single.particle )
