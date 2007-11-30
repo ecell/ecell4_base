@@ -244,7 +244,6 @@ namespace libecs
 	    }
 	    else
 	    {
-            printf("id %lld\n",ID);
 		this->eventPriorityQueue.pop( ID );
 	    }
 

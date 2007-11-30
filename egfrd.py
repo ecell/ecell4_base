@@ -108,6 +108,10 @@ class Single( object ):
         radius1 = self.getRadius()
 
         D1, D2 = self.getD(), closest.getD()
+
+        if D1 == 0:
+            return radius1
+        
         radius2 = closest.getRadius()
         radius12 = radius1 + radius2
         sqrtD1 = math.sqrt( D1 )
@@ -212,11 +216,12 @@ class Single( object ):
 
     def determineNextEvent( self ):
         if self.getD() == 0:
-            self.dt = numpy.inf
-            self.eventType = EventType.ESCAPE
-
-        firstPassageTime = self.drawEscapeTime()
+            firstPassageTime = numpy.inf
+        else:
+            firstPassageTime = self.drawEscapeTime()
+            
         reactionTime = self.drawReactionTime()
+        print firstPassageTime, reactionTime
 
         if firstPassageTime <= reactionTime:
             self.dt = firstPassageTime
@@ -513,7 +518,7 @@ class Pair( object ):
         r0 = self.distance( pos1, pos2 )
 
         assert r0 >= self.sigma, \
-            'r0 %g, sigma %g' % ( r0, self.sigma )
+            '%s;  r0 %g < sigma %g' % ( self, r0, self.sigma )
 
         # equalize expected mean t_r and t_R.
 
@@ -572,7 +577,7 @@ class Pair( object ):
 
         #print 'a_r a_R r0', self.a_r, self.a_R, r0
         assert self.a_r > 0
-        assert self.a_R > 0
+        assert self.a_R > 0 or ( self.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
         #assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
 
         rnd = numpy.random.uniform( size=3 )
@@ -811,7 +816,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 particle = Particle( species, index=i )
                 single = self.createSingle( particle )
                 self.addSingleEvent( single )
-
 
         #debug
         self.checkShellForAll()
@@ -1066,15 +1070,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         #debug
         #self.checkShellForAll()
-
-        # If this is immobile, don't move.
-        D0 = single.getD()
-        if D0 == 0.0:
-            single.dt = numpy.inf
-            single.eventType = EventType.ESCAPE
-            return single.dt
-
-
+        print single, single.dt
 
         # Reaction.
         if single.eventType == EventType.REACTION:
@@ -1098,7 +1094,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # If not reaction, propagate.
 
+        D0 = single.getD()
 
+        if D0 == 0:
+            self.updateSingle( single )
+            return single.dt
+        
 
         # (1) propagate
         #
@@ -1108,6 +1109,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single.particle.pos = self.applyBoundary( single.particle.pos )
 
 
+        # is this necessary???
         self.updateEvent( self.t, single )
 
         # (2) Check shell size disparity.   Check if this Single needs
@@ -1371,8 +1373,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newpos2 = self.applyBoundary( newpos2 )
                 
                 if not pair.squeezed or \
-                        ( self.checkOverlap( newpos1, radius1 ) and \
-                              self.checkOverlap( newpos2, radius2 ) ):
+                       ( self.checkOverlap( newpos1, radius1 ) and \
+                         self.checkOverlap( newpos2, radius2 ) ):
                     break
 
                 else:   # overlap check failed
@@ -1419,8 +1421,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
                 if not pair.squeezed or \
-                        ( self.checkOverlap( newpos1, radius1 ) and \
-                              self.checkOverlap( newpos2, radius2 ) ):
+                       ( self.checkOverlap( newpos1, radius1 ) and \
+                         self.checkOverlap( newpos2, radius2 ) ):
                     break
 
                 else:

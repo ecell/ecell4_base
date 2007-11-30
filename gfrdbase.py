@@ -92,6 +92,12 @@ class UnimolecularReactionType( ReactionType ):
     def __init__( self, s1, p1, k ):
         ReactionType.__init__( self, [ s1, ], [ p1, ], k )
 
+class DecayReactionType( ReactionType ):
+
+    def __init__( self, s1, k ):
+        ReactionType.__init__( self, [ s1, ], [], k )
+
+
 class BindingReactionType( ReactionType ):
 
     def __init__( self, s1, s2, p1, k ):
