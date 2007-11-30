@@ -16,7 +16,7 @@ N = 100
 
 sigma = 1e-7
 r0 = sigma
-kf = 1e6 / N_A
+kf = 1e7 / N_A
 D = 1e-11
 
 tau = sigma*sigma / D

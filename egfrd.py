@@ -215,8 +215,8 @@ class Single( object ):
             self.dt = numpy.inf
             self.eventType = EventType.ESCAPE
 
-        firstPassageTime = self.calculateEscapeTime()
-        reactionTime = self.calculateReactionTime()
+        firstPassageTime = self.drawEscapeTime()
+        reactionTime = self.drawReactionTime()
 
         if firstPassageTime <= reactionTime:
             self.dt = firstPassageTime
@@ -226,7 +226,7 @@ class Single( object ):
             self.eventType = EventType.REACTION
 
 
-    def calculateReactionTime( self ):
+    def drawReactionTime( self ):
         
         if self.k_tot == 0:
             return numpy.inf
@@ -237,7 +237,7 @@ class Single( object ):
         return dt
 
 
-    def calculateEscapeTime( self ):
+    def drawEscapeTime( self ):
         
         rnd = numpy.random.uniform()
         self.gf.seta( self.getMobilityRadius() )
@@ -575,28 +575,41 @@ class Pair( object ):
         assert self.a_R > 0
         #assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
 
-
         rnd = numpy.random.uniform( size=3 )
 
+        # draw t_R
         self.sgf.seta( self.a_R )
         self.t_R = self.sgf.drawTime( rnd[0] )
 
-        try:
-            self.pgf.seta( self.a_r )
-            self.t_r = self.pgf.drawTime( rnd[1], r0 )
-        except:
-            print 'dump', self.pgf.dump()
-            raise
+        # draw t_r
+        self.pgf.seta( self.a_r )
+        self.t_r = self.pgf.drawTime( rnd[1], r0 )
 
-        #print 't_R', self.t_R, 't_r', self.t_r
+        # draw t_reaction
+        t_reaction1 = self.single1.drawReactionTime()
+        t_reaction2 = self.single2.drawReactionTime()
 
-        if self.t_R < self.t_r:
-            self.dt = self.t_R
-            self.eventType = 2
+        if t_reaction1 < t_reaction2:
+            self.t_single_reaction = t_reaction1
+            self.reactingsingle = self.single1
         else:
-            self.dt = self.t_r
+            self.t_single_reaction = t_reaction2
+            self.reactingsingle = self.single2
+
+        #print ( self.t_R, self.t_r, self.t_single_reaction )
+        self.dt = min( self.t_R, self.t_r, self.t_single_reaction )
+
+        assert self.dt >= 0
+
+        if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
             self.eventType = self.pgf.drawEventType( rnd[2],
                                                      r0, self.t_r )
+        elif self.dt == self.t_R: # type = ESCAPE_R (2)
+            self.eventType = 2
+        elif self.dt == self.t_single_reaction:  # type = single reaction (3)
+            self.eventType = 3 
+        else:
+            raise 'never get here'
 
         #assert False
 
@@ -620,7 +633,6 @@ class Pair( object ):
             
             oldInterParticle = particle2.pos - particle1.pos
             oldCoM = self.getCoM()
-
             r0 = self.distance( particle1.pos, particle2.pos )
             
             # calculate new CoM
@@ -809,6 +821,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def stop( self, t ):
 
+        print 'stop at', t
+
         if self.t == t:
             return
 
@@ -831,7 +845,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # then burst all Pairs.
         for obj in pairList:
-            self.burstPair( obj )
+            single1, single2 = self.burstPair( obj )
+            self.removeEvent( obj )
+            self.addSingleEvent( single1 )
+            self.addSingleEvent( single2 )
 
         self.dt = 0.0
 
@@ -944,7 +961,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             if isinstance( neighbor, Single ):
                 self.burstSingle( neighbor )
             else:
-                self.burstPair( neighbor )
+                single1, single2 = self.burstPair( neighbor )
+                self.removeEvent( neighbor )
+                self.addSingleEvent( single1 )
+                self.addSingleEvent( single2 )
 
 
     def fireSingleReaction( self, single ):
@@ -990,8 +1010,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             D12 = D1 + D2
             
             single.particle.pos = NOWHERE
-
-            #single.particle.setPos( NOWHERE )
 
             radius1 = productSpecies1.radius
             radius2 = productSpecies2.radius
@@ -1067,7 +1085,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             single.propagate( r, self.t )
             single.particle.pos = self.applyBoundary( single.particle.pos )
 
-
             try:
                 self.fireSingleReaction( single )
             except NoSpace:
@@ -1076,7 +1093,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 single.dt = 0
                 return single.dt
 
-            single.dt = -1  # remove this Single from the Scheduler
+            single.dt = -numpy.inf  # remove this Single from the Scheduler
             return single.dt
 
         # If not reaction, propagate.
@@ -1126,7 +1143,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 # If the partner was a Pair, then this has bursted into two
                 # singles.  Find the closer one.
 
-                self.burstPair( closest )
+                single1, single2 = self.burstPair( closest )
+                self.removeEvent( closest )
+                self.addSingleEvent( single1 )
+                self.addSingleEvent( single2 )
+                
                 candidate1 = closest.single1
                 candidate2 = closest.single2
                 D1 = candidate1.getD()
@@ -1178,7 +1199,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                         self.updateEvent( self.t + remainingCandidate.dt,
                                           remainingCandidate )
                         
-                    single.dt = -1 # remove by rescheduling to past.
+                    single.dt = -numpy.inf # remove by rescheduling to past.
                     return single.dt
 
                 else:
@@ -1232,12 +1253,41 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         oldCoM = self.applyBoundary( pair.getCoM() )
 
         # Three cases:
-        #  1. Reaction
-        #  2.1 Escaping through a_r.
-        #  2.2 Escaping through a_R.
+        #  0. Reaction
+        #  1. Escaping through a_r.
+        #  2. Escaping through a_R.
+        #  3. Single reaction 
+
+        # First handle single reaction case.
+        if pair.eventType == 3:
+
+            reactingsingle = pair.reactingsingle
+
+            print 'pair: single reaction', reactingsingle
+
+            if reactingsingle == pair.single1:
+                theothersingle = pair.single2
+            else:
+                theothersingle = pair.single1
+
+            self.burstPair( pair )
+
+            try:
+                self.fireSingleReaction( reactingsingle )
+            except NoSpace:
+                self.rejectedMoves += 1
+                reactingsingle.dt = 0
+                self.addSingleEvent( reactingsingle )
+
+            self.addSingleEvent( theothersingle )
+
+            pair.dt = -numpy.inf
+            return pair.dt
+        
+
 
         #
-        # 1. Reaction
+        # 0. Reaction
         #
         if pair.eventType == EventType.REACTION:
 
@@ -1247,8 +1297,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 
                 species3 = pair.rt.products[0]
 
-
-                
                 rnd = numpy.random.uniform( size=5 )
 
                 # calculate new R
@@ -1275,14 +1323,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
             else:
                 raise NotImplementedError,\
-                      'num products >= 2 not supported yet.'
+                      'num products >= 2 not supported.'
 
-            pair.dt = -1
+            pair.dt = -numpy.inf
             return pair.dt
 
 
         #
-        # 2 Escape
+        # Escape 
         #
 
         r0 = self.distance( particle1.pos, particle2.pos )
@@ -1291,7 +1339,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         particle1.pos = NOWHERE
         particle2.pos = NOWHERE
 
-        # 2.1 Escaping through a_r.
+        # 1 Escaping through a_r.
         if pair.eventType == EventType.ESCAPE:
 
             print 'escape r'
@@ -1336,7 +1384,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                       'redrawing limit reached under squeezing in Pair.ESCAPE_r'
 
 
-        # 2.2 escaping through a_R.
+        # 2 escaping through a_R.
         elif pair.eventType == 2:
 
             print 'escape R'
@@ -1383,7 +1431,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 raise RuntimeError,\
                       'redrawing limit reached under squeezing in Pair.ESCAPE_R'
 
-                
         else:
             raise SystemError, 'Bug: invalid eventType.'
 
@@ -1409,7 +1456,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.addSingleEvent( single1 )
         self.addSingleEvent( single2 )
 
-        pair.dt = -1
+        pair.dt = -numpy.inf
         return pair.dt
 
 
@@ -1426,9 +1473,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single1.initialize( self.t )
         single2.initialize( self.t )
         
-        self.removeEvent( pair )
-        self.addSingleEvent( single1 )
-        self.addSingleEvent( single2 )
+        #self.removeEvent( pair )
+        #self.addSingleEvent( single1 )
+        #self.addSingleEvent( single2 )
+        return single1, single2
 
 
     def formPair( self, single1, single2 ):

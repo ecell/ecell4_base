@@ -69,7 +69,7 @@ def singlerun2( T ):
     C = Species( 'C', 5e-12, 5e-8 )
     s.addSpecies( C )
     
-    r1 = BindingReactionType( A, B, C, 1e6 / N_A )
+    r1 = BindingReactionType( A, B, C, 1e7 / N_A )
     s.addReactionType( r1 )
     
     particleA = s.placeParticle( A, [0,0,0] )
