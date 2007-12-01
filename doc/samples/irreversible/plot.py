@@ -12,7 +12,7 @@ from p_irr import p_irr
 
 N_A = 6.0221367e23
 
-N = 100
+N = 1000
 
 sigma = 1e-7
 r0 = sigma

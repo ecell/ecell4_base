@@ -51,7 +51,7 @@ static const Real ellipticTheta4Zero( const Real q )
 	value *= term;
       
 	// here only absolute error is checked because it is good enough
-	// for our use in p_survival().
+	// for our use.
 	if( fabs( value - value_prev ) < 1e-8 ) 
 	{
 	    // normal exit.

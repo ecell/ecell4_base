@@ -82,6 +82,7 @@ class Single( object ):
 
         return self.shellSize
 
+
     def getRadius( self ):
 
         return self.particle.species.radius
@@ -249,6 +250,7 @@ class Single( object ):
         dt = self.gf.drawTime( rnd )
         return dt
 
+
     def updatek_tot( self ):
 
         self.k_tot = 0
@@ -259,7 +261,9 @@ class Single( object ):
         for rt in self.reactiontypes:
             self.k_tot += rt.k
 
+
     def drawReactionType( self ):
+
         k_array = [ rt.k for rt in self.reactiontypes ]
         k_array = numpy.add.accumulate( k_array )
         k_max = k_array[-1]
@@ -268,6 +272,7 @@ class Single( object ):
         i = numpy.searchsorted( k_array, rnd * k_max )
 
         return self.reactiontypes[i]
+
 
     def __str__( self ):
         return 'Single' + str( self.particle )
