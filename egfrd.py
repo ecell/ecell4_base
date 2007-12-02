@@ -791,7 +791,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.stepCounter = 0
 
-        self.smallT = 1e-8  # FIXME: is this ok?
+        self.smallT = 1e-7  # FIXME: is this ok?
 
         self.maxShellSize = INF
 
@@ -877,7 +877,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         event = self.scheduler.getTopEvent()
         self.t, self.lastEvent = event.getTime(), event.getArg()
 
-        print 't = ', self.t, ': event = ', self.lastEvent
+        print self.stepCounter, ': t = ', self.t, ': event = ', self.lastEvent
         
         self.scheduler.step()
 
@@ -1112,10 +1112,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         single.propagate( single.getMobilityRadius(), self.t )
         single.particle.pos = self.applyBoundary( single.particle.pos )
-
-
-        # is this necessary???
-        self.updateEvent( self.t, single )
 
         # (2) Check shell size disparity.   Check if this Single needs
         #     to burst the closest Single or Pair.
@@ -1563,8 +1559,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         minShellSize = max( pairDistance * D1 / D12 + radius1,
                             pairDistance * D2 / D12 + radius2 )
 
-        margin = math.sqrt( 6 * D12 * self.smallT ) # dummy
-        shellSizeMargin = margin
+        shellSizeMargin = math.sqrt( 6 * D12 * self.smallT )
+        #shellSizeMargin = 5e-1 * ( D1 * radius1 + D2 * radius2 ) / D12
+        print 'margin', shellSizeMargin
 
         minShellSizeWithMargin = minShellSize + shellSizeMargin
 

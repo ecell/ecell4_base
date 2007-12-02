@@ -428,24 +428,28 @@ FirstPassagePairGreensFunction::f_alpha_aux( const Real alpha,
     const Real sigmaAlphaPsp( sigmaAlpha * Psp );
     const Real sigmaAlphaQsp( sigmaAlpha * Qsp );
 
-    const Real t1( Pa * ( sigmaAlphaQsp - n_m_hSigmaPs ) ); 
-    const Real t2( Qa * ( n_m_hSigmaQs  + sigmaAlphaPsp ) );
-    const Real t3( Qa * sigmaAlphaQsp + Pa * sigmaAlphaPsp );
-    const Real t4( Pa * n_m_hSigmaQs  - Qa * n_m_hSigmaPs );
+    const Real Qa_Pa( Qa / Pa );
 
-    const Real angle( (t1 - t2) / (t3 + t4) );
+    const Real A( sigmaAlphaQsp - n_m_hSigmaPs );
+    const Real B( sigmaAlphaPsp + n_m_hSigmaQs );
+
+    // this form, dividing all terms by Pa, prevents overflow.
+    const Real angle( ( A - Qa_Pa * B ) / ( Qa_Pa * A + B ) );
 
     const Real term1( ( a - sigma ) * alpha );
     const Real term2( std::atan( angle ) );
 
     const Real result( term1 - term2 );
 
+    /*
     if( ! finite( result ) )// debug
     {
         printf("alpha %g n %d\n",alpha,n );
+        printf("t1 %g t2 %g t3 %g t4 %g\n",t1,t2,t3,t4);
         printf("Pa %g Qa %g Ps %g Qs %g Psp %g Qsp %g\n",Pa,Qa,Ps,Qs,Psp,Qsp);
         printf("aux %g %g %g %g\n",angle,term1, term2, result );
     }
+    */
 
     return result;
 }
