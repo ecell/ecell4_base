@@ -222,7 +222,6 @@ class Single( object ):
             firstPassageTime = self.drawEscapeTime()
             
         reactionTime = self.drawReactionTime()
-        print firstPassageTime, reactionTime
 
         if firstPassageTime <= reactionTime:
             self.dt = firstPassageTime
@@ -791,7 +790,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.stepCounter = 0
 
-        self.smallT = 1e-7  # FIXME: is this ok?
+        self.smallT = 1e-9  # FIXME: is this ok?
 
         self.maxShellSize = INF
 
@@ -996,8 +995,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             if not self.checkOverlap( oldpos, productSpecies.radius ):
                 print 'no space for product particle.'
                 single.particle.pos = oldpos
-                raise ''
-                #raise NoSpace
+                raise NoSpace
                 
             if reactantSpecies.radius < productSpecies.radius:
                 self.excludeVolume( oldpos, productSpecies.radius )
@@ -1069,12 +1067,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.reactionEvents += 1
         self.setPopulationChanged()
 
+    def propagateSingle( self, single, r ):
+        
+        closest, distance =\
+                 self.getClosestShell( single.particle.pos, 
+                                       ignore = [ single, ] )
+        if closest.isPair() and distance < single.getShellSize():
+            assert closest.squeezed
+            single.propagate( r, self.t )
+        else:
+            single.propagate( r, self.t )
 
 
     def fireSingle( self, single ):
 
-        #debug
-        #self.checkShellForAll()
         print single, single.dt
 
         # Reaction.
@@ -1083,7 +1089,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             print 'single reaction', single
             single.gf.seta( single.getMobilityRadius() )
             r = single.gf.drawR( numpy.random.uniform(), single.dt )
-            single.propagate( r, self.t )
+            self.propagateSingle( single, r )
+
             single.particle.pos = self.applyBoundary( single.particle.pos )
 
             try:
@@ -1110,7 +1117,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #
         # Propagate this particle to the exit point on the shell.
         
-        single.propagate( single.getMobilityRadius(), self.t )
+        self.propagateSingle( single, single.getMobilityRadius() )
         single.particle.pos = self.applyBoundary( single.particle.pos )
 
         # (2) Check shell size disparity.   Check if this Single needs
@@ -1362,8 +1369,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newCoM = oldCoM + displacement_R
 
                 # calculate new r
-                theta_r = pair.drawTheta_pair( rnd[3], pair.a_r, r0,
-                                               pair.dt )
+                theta_r = pair.drawTheta_pair( rnd[3], pair.a_r, r0, pair.dt )
                 phi_r = rnd[4] * 2 * Pi
                 newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
                 newInterParticle = sphericalToCartesian( newInterParticleS )
@@ -1372,10 +1378,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                                       oldInterParticle )
                 newpos1 = self.applyBoundary( newpos1 )
                 newpos2 = self.applyBoundary( newpos2 )
-                
+
                 if not pair.squeezed or \
-                       ( self.checkOverlap( newpos1, radius1 ) and \
-                         self.checkOverlap( newpos2, radius2 ) ):
+                        ( self.checkOverlap( newpos1, radius1 ) and \
+                              self.checkOverlap( newpos2, radius2 ) ):
                     break
 
                 else:   # overlap check failed
@@ -1420,10 +1426,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newpos1 = self.applyBoundary( newpos1 )
                 newpos2 = self.applyBoundary( newpos2 )
 
-
                 if not pair.squeezed or \
-                       ( self.checkOverlap( newpos1, radius1 ) and \
-                         self.checkOverlap( newpos2, radius2 ) ):
+                        ( self.checkOverlap( newpos1, radius1 ) and \
+                              self.checkOverlap( newpos2, radius2 ) ):
                     break
 
                 else:
@@ -1448,8 +1453,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         assert self.distance( newpos1, newpos2 ) >= pair.sigma
 
+        assert self.checkOverlap( newpos1, radius1 )
+        assert self.checkOverlap( newpos2, radius2 )
         particle1.pos = newpos1
         particle2.pos = newpos2
+
+
 
         single1, single2 = pair.single1, pair.single2
 
@@ -1550,6 +1559,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # pairGap = real distance excluding radii
         pairGap = pairDistance - radius12
+        assert pairGap >= 0, 'pairGap between %s and %s = %g < 0' \
+            % ( single1, single2, pairGap )
 
 
         #PairMakingFactor = 10
@@ -1559,9 +1570,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         minShellSize = max( pairDistance * D1 / D12 + radius1,
                             pairDistance * D2 / D12 + radius2 )
 
+        # consider both D_IV and D_CoM?
         shellSizeMargin = math.sqrt( 6 * D12 * self.smallT )
         #shellSizeMargin = 5e-1 * ( D1 * radius1 + D2 * radius2 ) / D12
-        print 'margin', shellSizeMargin
+        #print 'margin', shellSizeMargin
 
         minShellSizeWithMargin = minShellSize + shellSizeMargin
 
