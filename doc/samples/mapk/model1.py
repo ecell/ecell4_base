@@ -5,6 +5,8 @@ from egfrd import *
 from logger import *
 import sys
 
+V = 1e-15 #liter
+
 s = EGFRDSimulator()
 s.setCellSize( 1e-6 )
 
@@ -12,25 +14,25 @@ box1 = CuboidalSurface( [0,0,0],[1e-6,1e-6,1e-6] )
 # not supported yet
 #s.addSurface( box1 )
 
-K = Species( 'K', 2e-11, 5e-8 )
+K = Species( 'K', 2e-12, 5e-9 )
 s.addSpecies( K )
-KK = Species( 'KK', 2e-11, 5e-8 )
+KK = Species( 'KK', 2e-12, 5e-9 )
 s.addSpecies( KK )
-P = Species( 'P', 2e-11, 5e-8 )
+P = Species( 'P', 2e-12, 5e-9 )
 s.addSpecies( P )
-Kp = Species( 'Kp', 2e-11, 5e-8 )
+Kp = Species( 'Kp', 2e-12, 5e-9 )
 s.addSpecies( Kp )
-Kpp = Species( 'Kpp', 2e-11, 5e-8 )
+Kpp = Species( 'Kpp', 2e-12, 5e-9 )
 s.addSpecies( Kpp )
-K_KK = Species( 'K_KK', 2e-11, 5e-8 )
+K_KK = Species( 'K_KK', 2e-12, 5e-9 )
 s.addSpecies( K_KK )
-Kp_KK = Species( 'Kp_KK', 2e-11, 5e-8 )
+Kp_KK = Species( 'Kp_KK', 2e-12, 5e-9 )
 s.addSpecies( Kp_KK )
-Kpp_KK = Species( 'Kpp_KK', 2e-11, 5e-8 )
+Kpp_KK = Species( 'Kpp_KK', 2e-12, 5e-9 )
 s.addSpecies( Kpp_KK )
-Kpp_P = Species( 'Kpp_P', 2e-11, 5e-8 )
+Kpp_P = Species( 'Kpp_P', 2e-12, 5e-9 )
 s.addSpecies( Kpp_P )
-Kp_P = Species( 'Kp_P', 2e-11, 5e-8 )
+Kp_P = Species( 'Kp_P', 2e-12, 5e-9 )
 s.addSpecies( Kp_P )
 
 #  1 2   K + KK   <-> K_KK
@@ -45,44 +47,58 @@ s.addSpecies( Kp_P )
 # 13     Kpp     -> Kp
 # 14     Kp      -> K
 
-r1 = BindingReactionType( K, KK, K_KK, 1e9 / N_A )
+
+Dtot = 4e-12
+sigma = 5e-9
+Dpisigma4 = 4 * numpy.pi * Dtot * sigma
+
+def k_i( k ):
+    return k * Dpisigma4 / (k - Dpisigma4)
+
+
+r1 = BindingReactionType( K, KK, K_KK, k_i(0.02e-9) )
 s.addReactionType( r1 )
-r2 = UnbindingReactionType( K_KK, K, KK, 1e3 )
+r2 = UnbindingReactionType( K_KK, K, KK, 1 )
 s.addReactionType( r2 )
-r3 = UnbindingReactionType( K_KK, Kp, KK, 1e3 )
+r3 = UnbindingReactionType( K_KK, Kp, KK, 1e-2 )
 s.addReactionType( r3 )
 
-r4 = BindingReactionType( Kp, KK, Kp_KK, 1e9 / N_A )
+r4 = BindingReactionType( Kp, KK, Kp_KK, k_i( 0.032e-9 ) )
 s.addReactionType( r4 )
-r5 = UnbindingReactionType( Kp_KK, Kp, KK, 1e3 )
+r5 = UnbindingReactionType( Kp_KK, Kp, KK, 1 )
 s.addReactionType( r5 )
-r6 = UnbindingReactionType( Kpp_KK, Kpp, KK, 1e3 )
+r6 = UnbindingReactionType( Kp_KK, Kpp, KK, 15 )
 s.addReactionType( r6 )
 
-r7 = BindingReactionType( Kpp, P, Kpp_P, 1e9 / N_A )
+r7 = BindingReactionType( Kpp, P, Kpp_P, k_i( 0.02e-9 ) )
 s.addReactionType( r7 )
-r8 = UnbindingReactionType( Kpp_P, Kpp, P, 1e3 )
+r8 = UnbindingReactionType( Kpp_P, Kpp, P, 1 )
 s.addReactionType( r8 )
-r9 = UnbindingReactionType( Kpp_P, Kp, P, 1e3 )
+r9 = UnbindingReactionType( Kpp_P, Kp, P, 0.01 )
 s.addReactionType( r9 )
 
-r10 = BindingReactionType( Kp, P, Kp_P, 1e9 / N_A )
+r10 = BindingReactionType( Kp, P, Kp_P, k_i( 0.032e-9 ))
 s.addReactionType( r10 )
-r11 = UnbindingReactionType( Kp_P, Kp, P, 1e3 )
+r11 = UnbindingReactionType( Kp_P, Kp, P, 1 )
 s.addReactionType( r11 )
-r12 = UnbindingReactionType( Kp_P, K, P, 1e3 )
+r12 = UnbindingReactionType( Kp_P, K, P, 15 )
 s.addReactionType( r12 )
 
-r13 = UnimolecularReactionType( Kpp, Kp, 1e2 )
-s.addReactionType( r13 )
-r14 = UnimolecularReactionType( Kp, K, 1e2 )
-s.addReactionType( r14 )
+#r13 = UnimolecularReactionType( Kpp, Kp, 1e-1 )
+#s.addReactionType( r13 )
+#r14 = UnimolecularReactionType( Kp, K, 1e-1 )
+#s.addReactionType( r14 )
 
-s.throwInParticles( K, 60, box1 )
-s.throwInParticles( KK, 30, box1 )
+def C2N( c ):
+    return round( c * V * N_A )
+
+s.throwInParticles( K, C2N( 300e-9 ), box1 )
+
+s.throwInParticles( KK, C2N( 50e-9 ), box1 )
+s.throwInParticles( P, C2N( 50e-9 ), box1 )
 
 
-l = Logger( s, 'dimer' )
+l = Logger( s, 'mapk' )
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
 l.setInterval( 1e-3 )
 l.log()
@@ -91,7 +107,6 @@ l.log()
 while s.t < 100:
     s.step()
     s.dumpPopulation()
-
-#    l.log()
+    l.log()
     
 

@@ -16,9 +16,9 @@ class FirstPassagePairGreensFunction
 {
 
     // Error tolerance used by default.
-    static const Real TOLERANCE = 1e-9;
+    static const Real TOLERANCE = 1e-7;
 
-    static const Real MIN_T = 1e-18;
+    static const Real MIN_T = 1e-12;
 
     //static const unsigned int MAX_ORDER = 55;
     static const unsigned int MAX_ORDER = 45;
