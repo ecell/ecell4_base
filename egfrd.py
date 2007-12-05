@@ -767,6 +767,10 @@ class DummySingle( object ):
 
     def getPos( self ):
         return NOWHERE
+
+    def isPair( self ):
+
+        return False
     
 
 
