@@ -576,9 +576,9 @@ class Pair( object ):
             self.a_r = a_r_2
             self.a_R = a_R_2
 
-        print 'r R', self.a_r, self.a_R
-        print 'tr, tR', (( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
-              (self.a_R / math.sqrt( 6*self.D_geom ))**2
+        #print 'r R', self.a_r, self.a_R
+        #print 'tr, tR', (( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
+        #      (self.a_R / math.sqrt( 6*self.D_geom ))**2
 
         #print 'a_r a_R r0', self.a_r, self.a_R, r0
         assert self.a_r > 0

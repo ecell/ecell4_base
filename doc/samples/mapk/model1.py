@@ -5,12 +5,17 @@ from egfrd import *
 from logger import *
 import sys
 
-V = 1e-15 #liter
+import math
+
+#V = 1e-15 #liter
+#L = 1e-6
+V = 3.33e-17
+L = math.pow( V, 1.0 / 3.0 )
 
 s = EGFRDSimulator()
-s.setCellSize( 1e-6 )
+s.setCellSize( L )
 
-box1 = CuboidalSurface( [0,0,0],[1e-6,1e-6,1e-6] )
+box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 # not supported yet
 #s.addSurface( box1 )
 
@@ -53,7 +58,10 @@ sigma = 5e-9
 Dpisigma4 = 4 * numpy.pi * Dtot * sigma
 
 def k_i( k ):
-    return k * Dpisigma4 / (k - Dpisigma4)
+    kk = k * 1e3 / N_A
+    return - kk * Dpisigma4 / (kk - Dpisigma4)
+
+print k_i( 0.02e-9)
 
 
 r1 = BindingReactionType( K, KK, K_KK, k_i(0.02e-9) )
@@ -92,7 +100,7 @@ s.addReactionType( r12 )
 def C2N( c ):
     return round( c * V * N_A )
 
-s.throwInParticles( K, C2N( 300e-9 ), box1 )
+s.throwInParticles( K, C2N( 500e-9 ), box1 )
 
 s.throwInParticles( KK, C2N( 50e-9 ), box1 )
 s.throwInParticles( P, C2N( 50e-9 ), box1 )
@@ -100,7 +108,7 @@ s.throwInParticles( P, C2N( 50e-9 ), box1 )
 
 l = Logger( s, 'mapk' )
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
-l.setInterval( 1e-3 )
+l.setInterval( 1e-0 )
 l.log()
 
 
