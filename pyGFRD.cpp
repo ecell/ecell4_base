@@ -97,7 +97,9 @@ BOOST_PYTHON_MODULE( _gfrd )
     //def( "p_free", p_free );
     def( "p_irr", p_irr );
     def( "S_irr", S_irr );
-
+    def( "p_theta_free", p_theta_free );
+    def( "g_bd", g_bd );
+    def( "I_bd", I_bd );
 
     class_<PyEvent>( "PyEvent", 
                      init<const Real, const object&, const object&>() )

@@ -200,7 +200,8 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
     const Real alpha0_0( this->alpha0_i( 0 ) );
     alphaTable_0.push_back( alpha0_0 );
 
-    const Real Dt( this->getD() * t );
+//    const Real Dt( this->getD() * t );
+    const Real Dt( this->getD() * this->MIN_T );
 
     const Real alpha_cutoff( sqrt( ( - log( TOLERANCE * 1e-2 ) / Dt )
 				   + alpha0_0 * alpha0_0 ) );
@@ -709,15 +710,15 @@ FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
 	Real cos_a;
 	sincos( angle_a, &sin_a, &cos_a );
 
-	/*
 	num1 = alpha * sigmasq * h - 
 	    alpha * ( a - sigma + a * h * sigma ) * cos_a +
 	    ( hsigma_p_1 + a * sigma * alphasq ) * sin_a ;
-	*/
 
+        /*
 	num1 = alpha * sigmasq * h - 
 	    alpha * ( a + a * h * sigma ) * cos_a +
 	    ( a * sigma * alphasq ) * sin_a ;
+        */
     }
 
     const Real num2( num_r0( alpha, r0 ) );
@@ -726,7 +727,7 @@ FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
-    const Real result( 2 * num1 * num2 / den );
+    const Real result( 2.0 * num1 * num2 / den );
 
     return result;
 }
@@ -761,7 +762,7 @@ FirstPassagePairGreensFunction::dp_survival_i( const Real alpha,
 		    ( ( a - sigma ) * sigmasq * alphasq +
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
-    const Real result( - 2 * getD() * num1 * num2 / den );
+    const Real result( - 2.0 * getD() * num1 * num2 / den );
 
     return result;
 }

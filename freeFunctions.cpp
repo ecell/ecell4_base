@@ -195,3 +195,63 @@ S_irr_fdf( const Real tsqrt,
     }
 }
 */
+
+
+const Real p_theta_free( const Real theta, const Real r, const Real r0, 
+                         const Real t, const Real D )
+{
+    Real sin_theta;
+    Real cos_theta;
+    sincos( theta, &sin_theta, &cos_theta );
+
+    const Real Dt4( 4.0 * D * t );
+    const Real Dt4Pi( Dt4 * M_PI );
+
+    const Real term1( exp( - ( r * r - 2.0 * cos_theta * r * r0 + r0 * r0 ) / 
+                           Dt4 ) );
+    const Real term2( 1.0 / sqrt( Dt4Pi * Dt4Pi * Dt4Pi ) );
+
+    return term1 * term2 * sin_theta; // jacobian
+}
+
+
+const Real g_bd( const Real r0, const Real sigma, const Real t, const Real D )
+{
+    const Real Dt4( 4.0 * D * t );
+    const Real sqrtDt4( sqrt( Dt4 ) );
+    const Real sqrtPi( sqrt( M_PI ) );
+
+    const Real r0ps( r0 + sigma );
+    const Real r0ms( r0 - sigma );
+
+    const Real term1( ( exp( - r0ps * r0ps / Dt4 ) - 
+                        exp( - r0ms * r0ms / Dt4 ) ) * sqrtDt4 / 
+                      ( sqrtPi * r0 ) );
+    const Real term2( erf( r0ps / sqrtDt4 ) - erf( r0ms / sqrtDt4 ) );
+
+    return 0.5 * ( term1 + term2 ) * 4.0 * M_PI * r0 * r0;
+}
+    
+const Real I_bd( const Real sigma, const Real t, const Real D )
+{
+    const Real sqrtPi( sqrt( M_PI ) );
+
+    const Real Dt( D * t );
+    const Real Dt2( 2.0 * Dt );
+    const Real sqrtDt( sqrt( Dt ) );
+    const Real sigmasq( sigma * sigma );
+    const Real sigmasq_over_Dt( sigmasq / Dt );
+
+    const Real exp_sigmasq_over_Dt( exp( - sigmasq_over_Dt ) );
+
+    const Real term1( 4.0 * sqrtPi / 3.0 );
+    const Real term2( - sqrtDt * ( sigmasq - Dt2 ) );
+    const Real term3( - sqrtDt * ( - 3.0 * sigmasq + Dt2 ) );
+    const Real term4( sqrtPi * sigmasq * sigma * erfc( sigma / sqrtDt ) );
+
+    printf("%g %g %g\n",term1, term2, term3);
+    const Real result( term1 * ( ( term2 * exp_sigmasq_over_Dt + term3 )
+                                 + term4 ) );
+    
+    return result;
+}

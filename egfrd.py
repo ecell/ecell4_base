@@ -144,25 +144,22 @@ class Single( object ):
         return self.getShellSize() - self.getRadius()
 
 
-    def displace( self, r ):
+    def drawDisplacement( self, r ):
 
         rnd = numpy.random.uniform( size=2 )
 
         displacementS = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
         displacement = sphericalToCartesian( displacementS )
 
-        pos = self.particle.pos
-        pos += displacement
+        return displacement
 
-        self.particle.pos = pos
-
-
+    '''
     def propagate( self, r, t ):
 
         self.displace( r )
         self.lastTime = t
         self.resetShell()
-
+    '''
 
     '''
     Reset the protective shell.
@@ -210,7 +207,11 @@ class Single( object ):
         rnd = numpy.random.uniform()
         self.gf.seta( self.getMobilityRadius() )
         r = self.gf.drawR( rnd , dt )
-        self.propagate( r, t )
+        
+        displacement = self.drawDisplacement( r )
+        self.particle.pos += displacement
+        self.lastTime = t
+        self.resetShell()
 
         return self
 
@@ -1078,10 +1079,37 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                  self.getClosestShell( single.particle.pos, 
                                        ignore = [ single, ] )
         if closest.isPair() and distance < single.getShellSize():
-            assert closest.squeezed
-            single.propagate( r, self.t )
+            assert closest.squeezed,\
+                'When Single is squeezed, the closest must be a squeezed Pair'
+            single1, single2 = self.burstPair( closest )
+            self.removeEvent( closest )
+            self.addSingleEvent( single1 )
+            self.addSingleEvent( single2 )
+
+            radius = single.getRadius()
+            oldpos = single.particle.pos.copy()
+            
+            for i in range( 100 ):
+
+                displacement = single.drawDisplacement( r )
+        
+                newpos = oldpos + displacement
+
+                if self.checkOverlap( newpos, radius ):
+                    break
+
+            else:
+                raise NoSpace
+
+            single.particle.pos = newpos
+            single.lastTime = self.t
+            single.resetShell()
+
         else:
-            single.propagate( r, self.t )
+            displacement = single.drawDisplacement( r )
+            single.particle.pos += displacement
+            single.lastTime = self.t
+            single.resetShell()
 
 
     def fireSingle( self, single ):
@@ -1448,13 +1476,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             raise SystemError, 'Bug: invalid eventType.'
 
 
-        if pair.squeezed:
-            # make sure displaced particles don't intrude squeezer shells.
-            self.excludeVolume( newpos1, radius1 )
-            self.excludeVolume( newpos2, radius2 )
+        #if pair.squeezed:
+        # make sure displaced particles don't intrude squeezer shells.
+        #   self.excludeVolume( newpos1, radius1 )
+        #  self.excludeVolume( newpos2, radius2 )
 
 
-        pair.squeezed = False
+        #pair.squeezed = False
 
         assert self.distance( newpos1, newpos2 ) >= pair.sigma
 
@@ -1462,8 +1490,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         assert self.checkOverlap( newpos2, radius2 )
         particle1.pos = newpos1
         particle2.pos = newpos2
-
-
 
         single1, single2 = pair.single1, pair.single2
 
