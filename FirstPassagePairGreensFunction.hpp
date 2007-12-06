@@ -16,7 +16,7 @@ class FirstPassagePairGreensFunction
 {
 
     // Error tolerance used by default.
-    static const Real TOLERANCE = 1e-7;
+    static const Real TOLERANCE = 1e-8;
 
     static const Real MIN_T = 1e-12;
 

@@ -78,14 +78,13 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
     def test_immobile_is_immobile( self ):
         s = EGFRDSimulator()
         s.setCellSize( 1e-5 )
-        A = Species( 'A', 0, 1e-7 )
+        A = Species( 'A', 0, 1e-8 )
         s.addSpecies( A )
-        B = Species( 'B', 2e-11, 5e-8 )
+        B = Species( 'B', 2e-11, 5e-9 )
         s.addSpecies( B )
 
         particleA = s.placeParticle( A, [0.0,0.0,0.0] )
-        s.placeParticle( B, [1.5000001e-7,0.0,0.0] )
-        s.placeParticle( B, [-2e-7,1e-8,1e-8] )
+        s.placeParticle( B, [1.5000001e-8,0.0,0.0] )
 
         initialPosition = particleA.getPos().copy()
 

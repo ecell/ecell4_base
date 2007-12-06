@@ -367,7 +367,7 @@ class Pair( object ):
 
     def setShellSize( self, shellSize ):
 
-        #assert shellSize >= self.radius
+        assert shellSize >= self.radius
         self.shellSize = shellSize
 
 
@@ -488,6 +488,7 @@ class Pair( object ):
         else:
             rotated = numpy.array( [ newInterParticle[0], newInterParticle[1],
                                      - newInterParticle[2] ] )
+            #rotated = newInterParticle * numpy.array( [ 1, 1, -1 ] )
 
         newpos1 = CoM - rotated * ( self.D1 / self.D_tot )
         newpos2 = CoM + rotated * ( self.D2 / self.D_tot )
