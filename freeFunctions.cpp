@@ -239,12 +239,9 @@ const Real I_bd( const Real sigma, const Real t, const Real D )
     const Real sqrtPi( sqrt( M_PI ) );
 
     const Real Dt( D * t );
-    const Real Dt2( 2.0 * Dt );
+    const Real Dt2( Dt + Dt );
     const Real sqrtDt( sqrt( Dt ) );
     const Real sigmasq( sigma * sigma );
-    const Real sigmasq_over_Dt( sigmasq / Dt );
-
-    const Real exp_sigmasq_over_Dt( exp( - sigmasq_over_Dt ) );
 
     const Real term1( 4.0 / 3.0 * sqrtPi );
     const Real term2( sigmasq - Dt2 );
@@ -252,7 +249,7 @@ const Real I_bd( const Real sigma, const Real t, const Real D )
     const Real term4( sqrtPi * sigmasq * sigma * erfc( sigma / sqrtDt ) );
 
     const Real result( term1 * ( ( - sqrtDt *
-                                   ( term2 * exp_sigmasq_over_Dt + term3 ) )
+                                   ( term2 * exp( - sigmasq / Dt ) + term3 ) )
                                  + term4 ) );
     
     return result;
