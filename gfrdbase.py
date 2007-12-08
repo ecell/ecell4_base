@@ -507,6 +507,65 @@ class GFRDSimulatorBase( object ):
         return res
 
 
+        
+    '''
+    Get closest n Particles.
+
+    When the optional argument speciesList is given, only Particles of
+    species in the list are considered.  When speciesList is not given
+    or is None, all species in the simulator are considered.
+    
+    This method returns a tuple ( neighbors, distances ), where neighbors
+    is a list of Particle objects.
+    '''
+
+
+    def getNeighborParticles( self, pos, n=2, speciesList=None ):
+
+        neighbors = []
+        distances = []
+
+        if not speciesList:
+            speciesList = self.speciesList.values()
+
+        for species in speciesList:
+
+            # empty
+            if species.pool.size == 0:
+                continue
+
+            dist = self.distanceSqArray( pos, species.pool.positions )
+        
+            indices = dist.argsort()[:n]
+            dist = numpy.sqrt( dist.take( indices ) )
+            dist -= species.radius
+
+            distances.extend( dist )
+            neighbors.extend( [ ( species, i ) for i in indices ] )
+
+        topargs = numpy.argsort( distances )[:n]
+        distances = numpy.take( distances, topargs )
+        neighbors = [ neighbors[arg] for arg in topargs ]
+        neighbors = [ Particle( arg[0], index=arg[1] ) for arg in neighbors ]
+
+        return neighbors, distances
+
+
+    def getClosestParticle( self, pos, ignore=[] ):
+
+        neighbors, distances = self.getNeighborParticles( pos, 
+                                                          len( ignore ) + 1 )
+
+        for i in range( len( neighbors ) ): 
+            if neighbors[i] not in ignore:
+                closest, distance = neighbors[i], distances[i]
+
+                assert not closest in ignore
+                return closest, distance
+
+        # default case: none left.
+        return None, numpy.inf
+
     def checkSurfaces( self, speciesIndex1, particleIndex ):
 
         speciesList = self.speciesList.values()

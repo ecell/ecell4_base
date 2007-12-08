@@ -83,17 +83,15 @@ FirstPassageGreensFunction::p_survival( const Real t ) const
 
 
 const Real 
-FirstPassageGreensFunction::p_free_int( const Real r, const Real t ) const
+FirstPassageGreensFunction::p_r_int_free( const Real r, const Real t ) const
 {
     const Real D( getD() );
     const Real Dt( D * t );
-    const Real sqrtD( sqrt( D ) );
-    const Real sqrtt( sqrt( t ) );
+    const Real sqrtDt( sqrt( Dt ) );
     const Real sqrtPI( sqrt( M_PI ) );
-    const Real sqrtPI2Dt15( 2.0 * sqrtPI * sqrt( Dt * Dt * Dt ) );
 
-    return ( sqrtPI2Dt15 * erf( r / ( 2.0 * sqrtD * sqrtt ) )
-	     - 2.0 * Dt * r * exp( - r * r / ( 4.0 * Dt ) ) ) / sqrtPI2Dt15;
+    return erf( r / ( sqrtDt + sqrtDt ) )
+        - r * exp( - r * r / ( 4.0 * Dt ) ) / ( sqrtPI * sqrtDt );
 }
 
 const Real 
@@ -103,7 +101,7 @@ FirstPassageGreensFunction::p_r_int( const Real r,
     Real value( 0.0 );
 
     const Real a( geta() );
-    const Real p_free( this->p_free_int( r, t ) );
+    const Real p_free( this->p_r_int_free( r, t ) );
 
     // p_r_int is always smaller than p_free.
     if( fabs( p_free ) < CUTOFF )
@@ -315,6 +313,17 @@ FirstPassageGreensFunction::drawTime( const Real rnd ) const
     return low;
 }
 
+const Real
+FirstPassageGreensFunction::p_r_free_F( const Real r,
+                                        const p_r_params* params )
+{
+    const FirstPassageGreensFunction* const gf( params->gf ); 
+    const Real t( params->t );
+    const Real target( params->target );
+
+    return gf->p_r_int_free( r, t ) - target;
+}
+
 
 const Real
 FirstPassageGreensFunction::p_r_F( const Real r,
@@ -322,11 +331,11 @@ FirstPassageGreensFunction::p_r_F( const Real r,
 {
     const FirstPassageGreensFunction* const gf( params->gf ); 
     const Real t( params->t );
-    const Real St( params->St );
-    const Real rnd( params->rnd );
+    const Real target( params->target );
 
-    return gf->p_r_int( r, t ) - rnd * St;
+    return gf->p_r_int( r, t ) - target;
 }
+
 
 
 const Real 
@@ -336,26 +345,37 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
     const Real a( geta() );
+    const Real D( getD() );
 
-    if( a == 0.0 || t == 0.0 || getD() == 0.0 )
+    if( a == 0.0 || t == 0.0 || D == 0.0 )
     {
         return 0.0;
     }
 
     const Real psurv( p_survival( t ) ); 
+    assert( psurv > 0.0 );
+    const Real target( psurv * rnd );
 
-    if( psurv == 0.0 )
+    const Real thresholdDistance( this->CUTOFF_H * sqrt( 6.0 * D * t ) );
+
+    p_r_params params = { this, t, target };
+
+    gsl_function F;
+    if( a <= thresholdDistance )
     {
-	printf("p_survival = 0.0\n");
+        F.function = reinterpret_cast<typeof(F.function)>( &p_r_F );
+    }
+    else
+    {
+        if( p_r_int_free( a, t ) < target )
+        {
+            return a;
+        }
+
+        F.function = reinterpret_cast<typeof(F.function)>( &p_r_free_F );
     }
 
-    p_r_params params = { this, t, psurv, rnd };
-
-    gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &p_r_F ),
-	    &params 
-	};
+    F.params = &params;
 
     Real low( 0.0 );
     Real high( a );

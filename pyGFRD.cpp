@@ -165,7 +165,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawR", &FirstPassageGreensFunction::drawR )
 	.def( "p_survival", &FirstPassageGreensFunction::p_survival )
 	.def( "p_r_int", &FirstPassageGreensFunction::p_r_int )
-	.def( "p_r_fourier", &FirstPassageGreensFunction::p_r_fourier )
+	.def( "p_r_int_free", &FirstPassageGreensFunction::p_r_int_free )
+	//.def( "p_r_fourier", &FirstPassageGreensFunction::p_r_fourier )
 	;
 
 

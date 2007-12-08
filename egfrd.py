@@ -182,38 +182,14 @@ class Single( object ):
                and self.eventType == EventType.ESCAPE
         
 
-    '''
-    Update the position of the particle at time t.
+    def drawR( self, dt ):
+        assert dt >= 0
 
-    t must be after the last time this Single was propagated
-    (self.lastTime) but before the next scheduled time
-    (self.lastTime + self.dt).
-
-    Shell size shrunken to the radius.   self.lastTime is reset.
-    self.dt is set to 0.0.
-
-    This method updates the scheduler.
-    '''
-    
-    def burstShell( self, t ):
-
-        #print 'b', self, 't ', t, 'last ', self.lastTime, 'dt ', self.dt
-        assert t >= self.lastTime
-        assert t <= self.lastTime + self.dt
-        assert self.getShellSize() >= self.getRadius()
-
-        dt = t - self.lastTime
-
-        rnd = numpy.random.uniform()
         self.gf.seta( self.getMobilityRadius() )
+        rnd = numpy.random.uniform()
         r = self.gf.drawR( rnd , dt )
-        
-        displacement = self.drawDisplacement( r )
-        self.particle.pos += displacement
-        self.lastTime = t
-        self.resetShell()
+        return r
 
-        return self
 
 
     def determineNextEvent( self ):
@@ -326,7 +302,6 @@ class Pair( object ):
         self.sigma = particle1.species.radius + particle2.species.radius
 
         self.sgf = FirstPassageGreensFunction( self.D_geom )
-        self.sgf_free = FreeGreensFunction( self.D_geom )
         self.pgf = FirstPassagePairGreensFunction( self.D_tot, 
                                                    rt.k, self.sigma )
         self.pgf_free = FreePairGreensFunction( self.D_tot )
@@ -410,18 +385,6 @@ class Pair( object ):
         com = ( pos1 * self.D2 + pos2t * self.D1 ) / self.D_tot
         
         return com
-
-
-    def chooseSingleGreensFunction( self, t ):
-
-        shellSize = self.a_R
-        thresholdDistance = Pair.CUTOFF_FACTOR \
-            * math.sqrt( 6.0 * self.D_geom * t )
-
-        if shellSize < thresholdDistance:
-            return self.sgf
-        else:
-            return self.sgf_free
 
 
     def choosePairGreensFunction( self, r0, t ):
@@ -625,63 +588,15 @@ class Pair( object ):
         #assert False
 
 
-    '''
-    Update positions of the particles and release them as a couple of Singles.
-    '''
-
-    def breakUp( self, t ):
-
-        assert t >= self.lastTime
-
-        dt = t - self.lastTime 
-
-        if dt != 0.0:
-
-            particle1 = self.single1.particle
-            particle2 = self.single2.particle
-            
-            rnd = numpy.random.uniform( size = 6 )
-            
-            oldInterParticle = particle2.pos - particle1.pos
-            oldCoM = self.getCoM()
-            r0 = self.distance( particle1.pos, particle2.pos )
-            
-            # calculate new CoM
-            r_R = self.drawR_single( rnd[0], dt, self.a_R )
-            
-            displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
-            displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = oldCoM + displacement_R
-            
-            # calculate new interparticle
-            r_r = self.drawR_pair( rnd[3], r0, dt, self.a_r )
-            theta_r = self.drawTheta_pair( rnd[4], r_r, r0, dt )
-            phi_r = rnd[5] * 2 * Pi
-            newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
-            newInterParticle = sphericalToCartesian( newInterParticleS )
-
-            newpos1, newpos2 = self.newPositions( newCoM, newInterParticle,
-                                                  oldInterParticle )
-
-            dist = self.distance( newpos1, newpos2 )
-
-            self.checkNewpos( newpos1, newpos2 )
-
-            particle1.pos = newpos1
-            particle2.pos = newpos2
-
-        return ( self.single1, self.single2 )
 
 
-    def drawR_single( self, rnd, t, shellSize ):
+    def drawR_single( self, t, shellSize ):
 
-        gf = self.chooseSingleGreensFunction( t )
-        gf.seta( shellSize )
-        r = gf.drawR( rnd, t )
+        self.sgf.seta( shellSize )
+        r = self.sgf.drawR( numpy.random.uniform(), t )
         while r > self.a_R: # redraw; shouldn't happen often
             print 'drawR_single: redraw'
-            #self.sim.rejectedMoves += 1
-            r = gf.drawR( rnd, t )
+            r = self.sgf.drawR( numpy.random.uniform(), t )
 
         return r
 
@@ -689,19 +604,18 @@ class Pair( object ):
     '''
     Draw r for the pair inter-particle vector.
     '''
-    def drawR_pair( self, rnd, r0, t, a ):
+    def drawR_pair( self, r0, t, a ):
 
         gf = self.choosePairGreensFunction( r0, t )
 
         if hasattr( gf, 'seta' ):  # FIXME: not clean
             gf.seta( a )
 
-        r = gf.drawR( rnd, r0, t )
+        r = gf.drawR( numpy.random.uniform(), r0, t )
         while r > self.a_r or r <= self.sigma: # redraw; shouldn't happen often
             print 'drawR_pair: redraw'
             #self.sim.rejectedMoves += 1
-            r = gf.drawR( rnd, r0, t )
-
+            r = gf.drawR( numpy.random.uniform(), r0, t )
 
         return r
 
@@ -717,12 +631,12 @@ class Pair( object ):
         return theta
 
 
-    def checkNewpos( self, pos1, pos2 ):
+    def checkNewpos( self, pos1, pos2, com ):
 
         species1 = self.single1.particle.species
         species2 = self.single2.particle.species
 
-        oldCoM = self.getCoM()
+        oldCoM = com
         
         # debug: check if the new positions are valid:
         newDistance = distance( pos1, pos2 )
@@ -776,8 +690,8 @@ class DummySingle( object ):
     
 
 
-class NoSpace( object ):
-    def __init( self ):
+class NoSpace( Exception ):
+    def __init__( self ):
         pass
 
 
@@ -796,7 +710,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.stepCounter = 0
 
-        self.smallT = 1e-9  # FIXME: is this ok?
+        self.smallT = 1e-8  # FIXME: is this ok?
 
         self.maxShellSize = INF
 
@@ -855,7 +769,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             if obj.isPair():
                 pairList.append( obj )
             else:
-                self.burstSingle( obj )
+                try:
+                    self.burstSingle( obj )
+                except NoSpace:
+                    self.rejectedMoves += 1
 
         # then burst all Pairs.
         for obj in pairList:
@@ -973,7 +890,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         for neighbor in neighbors:
             print 'bursting', neighbor
             if isinstance( neighbor, Single ):
-                self.burstSingle( neighbor )
+                try:
+                    self.burstSingle( neighbor )
+                except NoSpace:
+                    self.rejectedMoves += 1
+
             else:
                 single1, single2 = self.burstPair( neighbor )
                 self.removeEvent( neighbor )
@@ -1001,7 +922,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             if not self.checkOverlap( oldpos, productSpecies.radius ):
                 print 'no space for product particle.'
                 single.particle.pos = oldpos
-                raise NoSpace
+                raise NoSpace()
                 
             if reactantSpecies.radius < productSpecies.radius:
                 self.excludeVolume( oldpos, productSpecies.radius )
@@ -1050,7 +971,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             else:
                 print 'no space for product particles.'
                 single.particle.pos = oldpos
-                raise NoSpace
+                raise NoSpace()
 
             self.excludeVolume( newpos1, productSpecies1.radius )
             self.excludeVolume( newpos2, productSpecies2.radius )
@@ -1075,42 +996,55 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def propagateSingle( self, single, r ):
         
-        closest, distance =\
+        closest, distanceToClosestShell =\
                  self.getClosestShell( single.particle.pos, 
                                        ignore = [ single, ] )
-        if closest.isPair() and distance < single.getShellSize():
+        squeezed = False;
+
+
+        # check if this Single is squeezed.
+        if closest.isPair() and distanceToClosestShell < single.getShellSize():
             assert closest.squeezed,\
                 'When Single is squeezed, the closest must be a squeezed Pair'
-            single1, single2 = self.burstPair( closest )
-            self.removeEvent( closest )
-            self.addSingleEvent( single1 )
-            self.addSingleEvent( single2 )
+            squeezed = True
 
-            radius = single.getRadius()
-            oldpos = single.particle.pos.copy()
-            
-            for i in range( 100 ):
+            print 'single ', single, ' squeezed by ', closest, 'distance ', \
+                distanceToClosestShell
 
-                displacement = single.drawDisplacement( r )
+#             single1, single2 = self.burstPair( closest )
+#             self.removeEvent( closest )
+#             self.addSingleEvent( single1 )
+#             self.addSingleEvent( single2 )
+
+
+        radius = single.getRadius()
+        oldpos = single.particle.pos.copy()
         
-                newpos = oldpos + displacement
-
-                if self.checkOverlap( newpos, radius ):
-                    break
-
-            else:
-                raise NoSpace
-
-            single.particle.pos = newpos
-            single.lastTime = self.t
-            single.resetShell()
-
-        else:
+        single.particle.pos = NOWHERE
+        
+        for i in range( 100 ):
+            
             displacement = single.drawDisplacement( r )
-            single.particle.pos += displacement
-            single.lastTime = self.t
-            single.resetShell()
+            
+            newpos = oldpos + displacement
+            
+            if self.checkOverlap( newpos, radius ):
+                break
+            
+        else:
+            single.particle.pos = oldpos
+            single.initialize( self.t )
+            raise NoSpace()
+        
+        single.particle.pos = self.applyBoundary( newpos )
+        single.initialize( self.t )
+        return squeezed
 
+#         else:  # normal procedure; not squeezed.
+#             displacement = single.drawDisplacement( r )
+#             single.particle.pos += displacement
+#             single.initialize( self.t )
+#             return False
 
     def fireSingle( self, single ):
 
@@ -1120,11 +1054,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if single.eventType == EventType.REACTION:
 
             print 'single reaction', single
-            single.gf.seta( single.getMobilityRadius() )
-            r = single.gf.drawR( numpy.random.uniform(), single.dt )
-            self.propagateSingle( single, r )
+            r = single.drawR( single.dt )
 
-            single.particle.pos = self.applyBoundary( single.particle.pos )
+            try:
+                self.propagateSingle( single, r )
+            except NoSpace:
+                # just reject the move, still try reaction.
+                print 'single reaction; pre-reaction propagation failed'
+                self.rejectedMoves += 1
 
             try:
                 self.fireSingleReaction( single )
@@ -1150,31 +1087,55 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #
         # Propagate this particle to the exit point on the shell.
         
-        self.propagateSingle( single, single.getMobilityRadius() )
-        single.particle.pos = self.applyBoundary( single.particle.pos )
+        squeezed = False
+        try:
+            squeezed = self.propagateSingle( single, 
+                                             single.getMobilityRadius() )
+        except NoSpace:
+            print 'single propagation move failed'
+            self.rejectedMoves += 1
+            squeezed = True
 
+
+        if squeezed:  
+            # If this single was squeezed, update the shell, and just return.
+            # Because the squeezer Pair was broke up in the propagateSingle()
+            # above, one of the Sinlge in the Pair will step in the next step.
+            # It is important for this Single to take non-zero step size,
+            # otherwise this Single and the squeezer Pair will burst each
+            # other indefinitely.
+
+            self.updateSingle( single, 
+                               math.sqrt( 6 * single.getD() *
+                                          self.smallT ) + single.getRadius() )
+            print 'squeezed single; shell', single.getShellSize(), \
+                'dt', single.dt
+
+            return single.dt
+
+            
         # (2) Check shell size disparity.   Check if this Single needs
         #     to burst the closest Single or Pair.
 
-        closest, distanceToClosestShell =\
+        closestShell, distanceToClosestShell =\
                  self.getClosestShell( single.particle.pos, 
                                        ignore = [ single, ] )
 
         distanceToClosest = self.distance( single.particle.pos, 
-                                           closest.getPos() )
+                                           closestShell.getPos() )
         sqrtD0 = math.sqrt( D0 ) 
         radius0 = single.getRadius()
 
-        realDistance = distanceToClosest - radius0 - closest.getRadius()
+        realDistance = distanceToClosest - radius0 - closestShell.getRadius()
             
         SHELLSIZE_DISPARITY_FACTOR = 0.8
 
         criticalPoint = SHELLSIZE_DISPARITY_FACTOR * math.sqrt( D0 ) / \
-                   ( math.sqrt( D0 ) + math.sqrt( closest.getD() ) ) *\
+                   ( math.sqrt( D0 ) + math.sqrt( closestShell.getD() ) ) *\
                    realDistance + radius0
 
         #print 'criticalPoint %g, closest shell %s, distance to shell %g' %\
-        #(criticalPoint,closest,distanceToClosestShell)
+        #(criticalPoint,closestShell,distanceToClosestShell)
 
         if distanceToClosestShell < criticalPoint or \
                distanceToClosestShell < radius0 * 10:
@@ -1182,17 +1143,17 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             # (2-1) Burst the closest and do pair check with that.
 
             # Determine the partnerCandidate, which is the closest single.
-            if closest.isPair():
+            if closestShell.isPair():
                 # If the partner was a Pair, then this has bursted into two
                 # singles.  Find the closer one.
 
-                single1, single2 = self.burstPair( closest )
-                self.removeEvent( closest )
+                single1, single2 = self.burstPair( closestShell )
+                self.removeEvent( closestShell )
                 self.addSingleEvent( single1 )
                 self.addSingleEvent( single2 )
                 
-                candidate1 = closest.single1
-                candidate2 = closest.single2
+                candidate1 = closestShell.single1
+                candidate2 = closestShell.single2
                 D1 = candidate1.getD()
                 D2 = candidate2.getD()
                 pos0 = single.getPos()
@@ -1219,8 +1180,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     partnerCandidates = []
                 
             else:  # If the closest was a Single, that is the partnerCandidate.
-                self.burstSingle( closest )
-                partnerCandidates = [closest,]
+                try:
+                    self.burstSingle( closestShell )
+                except NoSpace:
+                    self.rejectedMoves += 1
+                partnerCandidates = [closestShell,]
 
             #print 'partnerCandidates=',str(partnerCandidates)
 
@@ -1264,7 +1228,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return single.dt
 
 
-    def updateSingle( self, single ):
+    def updateSingle( self, single, minShellSize=0.0 ):
         closest, distanceToClosestShell =\
                  self.getClosestShell( single.getPos(), ignore = [ single, ] )
 
@@ -1274,9 +1238,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                                distanceToClosestShell )
 
         shellSize = min( shellSize, self.getCellSize(), self.maxShellSize )
+        shellSize = max( shellSize, minShellSize )
 
         single.setShellSize( shellSize )
         single.determineNextEvent()
+
 
 
 
@@ -1340,13 +1306,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 
                 species3 = pair.rt.products[0]
 
-                rnd = numpy.random.uniform( size=5 )
+                rnd = numpy.random.uniform( size=2 )
 
                 # calculate new R
             
-                r_R = pair.drawR_single( rnd[0], pair.dt, pair.a_R )
+                r_R = pair.drawR_single( pair.dt, pair.a_R )
             
-                displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
+                displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
                 newCoM = oldCoM + displacement_R
                 
@@ -1391,19 +1357,19 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
             for i in range(100):
 
-                rnd = numpy.random.uniform( size=5 )
+                rnd = numpy.random.uniform( size=4 )
 
                 # calculate new R
             
-                r_R = pair.drawR_single( rnd[0], pair.dt, pair.a_R )
+                r_R = pair.drawR_single( pair.dt, pair.a_R )
                 
-                displacement_R_S = [ r_R, rnd[1] * Pi, rnd[2] * 2 * Pi ]
+                displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
                 newCoM = oldCoM + displacement_R
 
                 # calculate new r
-                theta_r = pair.drawTheta_pair( rnd[3], pair.a_r, r0, pair.dt )
-                phi_r = rnd[4] * 2 * Pi
+                theta_r = pair.drawTheta_pair( rnd[2], pair.a_r, r0, pair.dt )
+                phi_r = rnd[3] * 2 * Pi
                 newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
                 newInterParticle = sphericalToCartesian( newInterParticleS )
                 
@@ -1433,21 +1399,21 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             for i in range(1000):
                 
-                rnd = numpy.random.uniform( size = 5 )
+                rnd = numpy.random.uniform( size = 4 )
 
                 # calculate new r
                 print 'r0 = ', r0, 'dt = ', pair.dt, pair.pgf.dump()
-                r = pair.drawR_pair( rnd[0], r0, pair.dt, pair.a_r )
+                r = pair.drawR_pair( r0, pair.dt, pair.a_r )
                 print 'new r = ', r
                 #assert r >= pair.sigma
             
-                theta_r = pair.drawTheta_pair( rnd[1], r, r0, pair.dt )
-                phi_r = rnd[2] * 2*Pi
+                theta_r = pair.drawTheta_pair( rnd[0], r, r0, pair.dt )
+                phi_r = rnd[1] * 2*Pi
                 newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
                 newInterParticle = sphericalToCartesian( newInterParticleS )
                 
                 # calculate new R
-                displacement_R_S = [ pair.a_R, rnd[3] * Pi, rnd[4] * 2 * Pi ]
+                displacement_R_S = [ pair.a_R, rnd[2] * Pi, rnd[3] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
             
                 newCoM = oldCoM + displacement_R
@@ -1504,15 +1470,101 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def burstSingle( self, single ):
-        single.burstShell( self.t )
-        single.particle.pos = self.applyBoundary( single.particle.pos )
+
+        #print 'b', self, 't ', t, 'last ', self.lastTime, 'dt ', self.dt
+        assert self.t >= single.lastTime
+        assert self.t <= single.lastTime + single.dt
+        assert single.getShellSize() >= single.getRadius()
+
+        dt = self.t - single.lastTime
+
+        radius = single.getRadius()
+        oldpos = single.particle.pos.copy()
+        single.particle.pos = NOWHERE
+
+        for i in range( 100 ):
+            
+            r = single.drawR( dt )
+
+            displacement = single.drawDisplacement( r )
+            
+            newpos = oldpos + displacement
+            
+            if self.checkOverlap( newpos, radius ):
+                break
+            
+        else:
+            single.particle.pos = oldpos
+            single.initialize( self.t )
+            raise NoSpace()
+
+        single.initialize( self.t )
+        single.particle.pos = self.applyBoundary( newpos )
         self.updateEvent( self.t, single )
 
 
+    def breakUpPair( self, pair ):
+
+        assert self.t >= pair.lastTime
+
+        dt = self.t - pair.lastTime 
+
+        if dt != 0.0:
+
+            particle1 = pair.single1.particle
+            particle2 = pair.single2.particle
+
+            radius1 = particle1.species.radius
+            radius2 = particle2.species.radius
+            
+            oldpos1 = particle1.pos.copy()
+            oldpos2 = particle2.pos.copy()
+
+            oldInterParticle = particle2.pos - particle1.pos
+            oldCoM = pair.getCoM()
+            r0 = pair.distance( particle1.pos, particle2.pos )
+            
+            particle1.pos = NOWHERE
+            particle2.pos = NOWHERE
+
+            for i in range(100):
+                rnd = numpy.random.uniform( size = 4 )
+
+                # calculate new CoM
+                r_R = pair.drawR_single( dt, pair.a_R )
+            
+                displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
+                displacement_R = sphericalToCartesian( displacement_R_S )
+                newCoM = oldCoM + displacement_R
+            
+                # calculate new interparticle
+                r_r = pair.drawR_pair( r0, dt, pair.a_r )
+                theta_r = pair.drawTheta_pair( rnd[2], r_r, r0, dt )
+                phi_r = rnd[3] * 2 * Pi
+                newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
+                newInterParticle = sphericalToCartesian( newInterParticleS )
+
+                newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
+                                                      oldInterParticle )
+                if not pair.squeezed or \
+                        ( self.checkOverlap( newpos1, radius1 ) and \
+                              self.checkOverlap( newpos2, radius2 ) ):
+                    pair.checkNewpos( newpos1, newpos2, oldCoM )
+                    particle1.pos = self.applyBoundary( newpos1 )
+                    particle2.pos = self.applyBoundary( newpos2 )
+                    break
+
+            else:
+                print 'redrawing limit reached.  giving up displacement.'
+                particle1.pos = oldpos1
+                particle2.pos = oldpos2
+                self.rejectedMoves += 1
+
+        return ( pair.single1, pair.single2 )
+
+
     def burstPair( self, pair ):
-        single1, single2 = pair.breakUp( self.t )
-        single1.particle.pos = self.applyBoundary( single1.particle.pos )
-        single2.particle.pos = self.applyBoundary( single2.particle.pos )
+        single1, single2 = self.breakUpPair( pair )
         single1.initialize( self.t )
         single2.initialize( self.t )
         
@@ -1551,7 +1603,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # Squeezed; Pair must be formed but shell size bigger than given space.
         if shellSize > pairClosestShellDistance:
-            print 'squeezed', shellSize, pairClosestShellDistance
+            print 'squeezed shell=', shellSize, 'closest shell distance =',\
+                pairClosestShellDistance
             pair.squeezed = True
             self.squeezed += 1
 
@@ -1642,8 +1695,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         pairMobility = min( closestShellDistance, maxShellSize ) - minShellSize
         if singleMobility >= pairMobility:
-            print 'singleMobility %g >= pairMobility %g' %\
-                  (singleMobility, pairMobility)
+            #print 'singleMobility %g >= pairMobility %g' %\
+            #      (singleMobility, pairMobility)
             return -0.0
         
 
@@ -1658,49 +1711,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         return shellSize
     
-        
-    '''
-    Get closest n Particles.
-
-    When the optional argument speciesList is given, only Particles of
-    species in the list are considered.  When speciesList is not given
-    or is None, all species in the simulator are considered.
-    
-    This method returns a tuple ( neighbors, distances ), where neighbors
-    is a list of Particle objects.
-    '''
-
-
-    def getNeighborParticles( self, pos, n=2, speciesList=None ):
-
-        neighbors = []
-        distances = []
-
-        if not speciesList:
-            speciesList = self.speciesList.values()
-
-        for species in speciesList:
-
-            # empty
-            if species.pool.size == 0:
-                continue
-
-            dist = self.distanceSqArray( pos, species.pool.positions )
-        
-            indices = dist.argsort()[:n]
-            dist = numpy.sqrt( dist.take( indices ) )
-            dist -= species.radius
-
-            distances.extend( dist )
-            neighbors.extend( [ ( species, i ) for i in indices ] )
-
-        topargs = numpy.argsort( distances )[:n]
-        distances = numpy.take( distances, topargs )
-        neighbors = [ neighbors[arg] for arg in topargs ]
-        neighbors = [ Particle( arg[0], index=arg[1] ) for arg in neighbors ]
-
-        return neighbors, distances
-
 
 
     '''

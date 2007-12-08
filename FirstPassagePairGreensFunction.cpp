@@ -200,8 +200,8 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
     const Real alpha0_0( this->alpha0_i( 0 ) );
     alphaTable_0.push_back( alpha0_0 );
 
-//    const Real Dt( this->getD() * t );
-    const Real Dt( this->getD() * this->MIN_T );
+    const Real Dt( this->getD() * t );
+//    const Real Dt( this->getD() * this->MIN_T );
 
     const Real alpha_cutoff( sqrt( ( - log( TOLERANCE * 1e-2 ) / Dt )
 				   + alpha0_0 * alpha0_0 ) );
@@ -1338,14 +1338,16 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 
 	printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value_new );
 
+        // FIXME: 
 	if( fabs( low ) <= this->MIN_T || 
             fabs( low_value - low_value_new ) < TOLERANCE ) 
 	{
-	    std::cerr << "Couldn't adjust low.  Returning MIN_T (= "
-		      << this->MIN_T << "); F(" << low <<
+	    std::cerr << "Couldn't adjust low.  Returning low (= "
+		      << low << "); F(" << low <<
 		") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
 		      << dump() << std::endl;
-	    return this->MIN_T;
+	    //return this->MIN_T;
+            return low;
 	}
 
         low_value = low_value_new;

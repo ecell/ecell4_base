@@ -29,8 +29,8 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         self.assertEqual( numpy.inf, t )
 
         # not supported now
-        # r = gf.drawR( 0.5, 1.0 )
-        # self.assertAlmostEqual( p_free, r )
+        #r = gf.drawR( 0.5, 1e-6 )
+        #self.assertAlmostEqual( p_free, r )
 
 
     def test_zero_shell( self ):
@@ -53,7 +53,7 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
 
         t = gf.drawTime( 0.0 )
         t = gf.drawTime( 0.5 )
-        t = gf.drawTime( 1.0 - 1e-16 )
+        t = gf.drawTime( 1.0 - 1e-8 )
 
     def test_drawR( self ):
         D = 1e-12
@@ -89,6 +89,16 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( r <= 0.0 )
         self.failIf( r > a )
 
+    def test_drawR_large_shell( self ):
+        D = 1e-12
+        a = 1e-3
+        gf = mod.FirstPassageGreensFunction( D )
+        gf.seta( a )
+        t = 1e-10
+        r = gf.drawR( 0.5, t )
+        self.failIf( r <= 0.0 )
+        self.failIf( r > a )
+
     def test_drawR_large_t( self ):
         D = 1e-12
         a = 1e-6
@@ -99,6 +109,22 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
 
         self.failIf( r <= 0.0 )
         self.failIf( r > a )
+
+    def test_p_r_int_is_p_r_int_free_with_large_shell( self ):
+        D = 1e-12
+        a = 1e-6
+        gf = mod.FirstPassageGreensFunction( D )
+        gf.seta( a )
+
+        r = 1e-9
+        t = 1e-6
+
+        p = gf.p_r_int( r, t )
+        p_free = gf.p_r_int_free( r, t )
+
+        self.assertAlmostEqual( p, p_free )
+
+
 
 
 if __name__ == "__main__":
