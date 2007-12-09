@@ -2,7 +2,8 @@
 
 ///
 /// doesn't run fast, but if bessel_sequence uses adaptive runge kutta
-/// it should show excellent performance.
+/// it should show excellent performance ??
+/// maybe, but maybe not because alpha sequence is not quite dense.
 //
 const Real 
 FirstPassagePairGreensFunction::p_n( const Integer n,

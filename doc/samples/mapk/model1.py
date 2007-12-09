@@ -54,44 +54,49 @@ s.addSpecies( Kp_P )
 
 
 Dtot = 2e-12
-sigma = 5e-9 * 2
+sigma = 5e-9 * 25
 Dpisigma4 = 4 * numpy.pi * Dtot * sigma
 
-def k_i( k ):
+def k_a( k ):
     kon = k / 1e3 / N_A
     k_smol = Dpisigma4
     print kon, k_smol
     return 1 / ( ( 1 / kon ) - ( 1 / k_smol ) )
 
-#print k_i( 0.02e9)
+def k_d( koff, kon ):
+    return k_a( kon ) * koff / kon * N_A * 1e3
+    
 
+#print k_a( 0.02e9)
+#print k_d( 1.0, 0.02e9 )
+#raise ''
 
-r1 = BindingReactionType( K, KK, K_KK, k_i(0.02e9) )
+r1 = BindingReactionType( K, KK, K_KK, k_a(0.02e9) )
 s.addReactionType( r1 )
-r2 = UnbindingReactionType( K_KK, K, KK, 1 )
+r2 = UnbindingReactionType( K_KK, K, KK, k_d( 1.0, 0.02e9 ) )
 s.addReactionType( r2 )
-r3 = UnbindingReactionType( K_KK, Kp, KK, 1.5 )
+r3 = UnbindingReactionType( K_KK, Kp, KK, k_d( 1.5, 0.02e9 ) )
 s.addReactionType( r3 )
 
-r4 = BindingReactionType( Kp, KK, Kp_KK, k_i( 0.032e9 ) )
+r4 = BindingReactionType( Kp, KK, Kp_KK, k_a( 0.032e9 ) )
 s.addReactionType( r4 )
-r5 = UnbindingReactionType( Kp_KK, Kp, KK, 1 )
+r5 = UnbindingReactionType( Kp_KK, Kp, KK, k_d( 1.0, 0.032e9 ) )
 s.addReactionType( r5 )
-r6 = UnbindingReactionType( Kp_KK, Kpp, KK, 15 )
+r6 = UnbindingReactionType( Kp_KK, Kpp, KK, k_d( 15.0, 0.032e9 ) )
 s.addReactionType( r6 )
 
-r7 = BindingReactionType( Kpp, P, Kpp_P, k_i( 0.02e9 ) )
+r7 = BindingReactionType( Kpp, P, Kpp_P, k_a( 0.02e9 ) )
 s.addReactionType( r7 )
-r8 = UnbindingReactionType( Kpp_P, Kpp, P, 1 )
+r8 = UnbindingReactionType( Kpp_P, Kpp, P, k_d( 1.0, 0.02e9 ) )
 s.addReactionType( r8 )
-r9 = UnbindingReactionType( Kpp_P, Kp, P, 1.5 )
+r9 = UnbindingReactionType( Kpp_P, Kp, P, k_d( 1.5, 0.02e9 ) )
 s.addReactionType( r9 )
 
-r10 = BindingReactionType( Kp, P, Kp_P, k_i( 0.032e9 ))
+r10 = BindingReactionType( Kp, P, Kp_P, k_a( 0.032e9 ))
 s.addReactionType( r10 )
-r11 = UnbindingReactionType( Kp_P, Kp, P, 1 )
+r11 = UnbindingReactionType( Kp_P, Kp, P, k_d( 1.0, 0.032e9 ) )
 s.addReactionType( r11 )
-r12 = UnbindingReactionType( Kp_P, K, P, 15 )
+r12 = UnbindingReactionType( Kp_P, K, P, k_d( 15.0, 0.032e9 ) )
 s.addReactionType( r12 )
 
 #r13 = UnimolecularReactionType( Kpp, Kp, 1e-1 )
