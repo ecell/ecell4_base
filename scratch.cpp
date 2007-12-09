@@ -1,5 +1,96 @@
 
 
+///
+/// doesn't run fast, but if bessel_sequence uses adaptive runge kutta
+/// it should show excellent performance.
+//
+const Real 
+FirstPassagePairGreensFunction::p_n( const Integer n,
+				     const Real r,
+				     const Real r0, 
+				     const Real t ) const
+{
+    Real p( 0.0 );
+
+    const Real a( geta() );
+    const Real sigma( getSigma() );
+
+    Real realn( 0.5 + n );
+
+    const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
+    gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
+
+    RealVector::size_type mini( 0 );
+    RealVector::size_type maxi( 4 );
+
+    RealVector alphaTable;
+    RealVector jas1Table;
+    RealVector jaaTable;
+    RealVector jarTable;
+    RealVector jar0Table;
+
+    RealVector pTable;
+
+    const unsigned int offset( alphaOffset( n ) );    
+
+    while( true )
+    {
+        for( RealVector::size_type i( 0 ); i < maxi-mini; ++i )
+        {
+            alphaTable.push_back( alpha_i( i+mini+offset, n, solver ) );
+            jas1Table.push_back( alphaTable[i] * sigma );
+            jaaTable.push_back( alphaTable[i] * a );
+            jarTable.push_back( alphaTable[i] * r );
+            jar0Table.push_back( alphaTable[i] * r0 );
+        }
+        
+        RealVector jas2Table( jas1Table );
+
+        gsl_sf_bessel_sequence_Jnu_e( realn, GSL_PREC_SINGLE,
+                                      jas1Table.size(), &jas1Table[0] );
+        gsl_sf_bessel_sequence_Jnu_e( realn+1.0, GSL_PREC_SINGLE,
+                                      jas2Table.size(), &jas2Table[0] );
+        gsl_sf_bessel_sequence_Jnu_e( realn, GSL_PREC_SINGLE,
+                                      jaaTable.size(), &jaaTable[0] );
+        gsl_sf_bessel_sequence_Jnu_e( realn, GSL_PREC_SINGLE,
+                                      jarTable.size(), &jarTable[0] );
+        gsl_sf_bessel_sequence_Jnu_e( realn, GSL_PREC_SINGLE,
+                                      jar0Table.size(), &jar0Table[0] );
+
+        
+        for( RealVector::size_type i( 0 ); i < maxi-mini; ++i )
+        {
+            const Real p_i( p_n_alpha( alphaTable[i], n, r, r0, t, jas1Table[i], 
+                                       jas2Table[i], jaaTable[i], jarTable[i],
+                                       jar0Table[i] ) );
+            
+            p += p_i;
+            pTable.push_back( p_i );
+        }
+
+        if( fabs( p * TOLERANCE ) > fabs( pTable.back() ) || maxi >= MAX_ALPHA_SEQ )
+        {
+//            printf("%d %g %g\n",maxi, p, pTable.back() );
+            break;
+        }
+
+        alphaTable.clear();
+        jas1Table.clear();
+        jas2Table.clear();
+        jaaTable.clear();
+        jarTable.clear();
+        jar0Table.clear();
+
+        mini = maxi;
+        maxi *= 2;
+    }
+
+    //p = std::accumulate( pTable.begin(), pTable.end(), 0.0 );
+    return p;
+//    return pTable.back();
+}
+
+
 #if 0
 const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 					       const Real r, 
