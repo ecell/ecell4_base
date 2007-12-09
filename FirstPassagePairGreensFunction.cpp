@@ -1516,6 +1516,7 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
 						      const Real r,
 						      const Real r0, 
 						      const Real t ) const
+//                                                      const RealVector& jas1Table ) const
 {
     const Real sigma( this->getSigma() );
     const Real h( this->geth() );
@@ -1574,11 +1575,32 @@ FirstPassagePairGreensFunction::p_n( const Integer n,
 				     const Real r0, 
 				     const Real t ) const
 {
+
+
+    /*
+    const Real sigma( getSigma() );
+
+    RealVector& alphaTable( getAlphaTable( n ) );
+    
+    Real realn( 0.5 + n );
+    RealVector jas1Table( alphaTable );
+
+    for( RealVector::iterator i( alphaTable.begin() );  i !=alphaTable.end();
+         ++i )
+    {
+        *i = *i * sigma;
+    }
+
+    gsl_sf_bessel_sequence_Jnu_e( realn, GSL_PREC_SINGLE, 
+                                  jas1Table.size(), &jas1Table[0] );
+    */
+
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					p_n_alpha,
 					this,
-					_1, n, r, r0, t ),
+					_1, n, r, r0, t ),// jas1Table ),
 			   this->MAX_ALPHA_SEQ ) );
+
 
     return p;
 }

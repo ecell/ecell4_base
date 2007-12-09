@@ -25,7 +25,6 @@ class Delegate( object ):
         return self.method( self.obj, arg )
 
 
-
 class Single( object ):
 
     def __init__( self, particle, reactiontypes ):
@@ -59,8 +58,8 @@ class Single( object ):
         
     def getPos( self ):
 
-        return self.particle.pos
-
+        #return self.particle.pos
+        return self.particle._pos
 
     def setShellSize( self, shellSize ):
 
@@ -141,7 +140,7 @@ class Single( object ):
     
     def getMobilityRadius( self ):
 
-        return self.getShellSize() - self.getRadius()
+        return self.shellSize - self.getRadius()
 
 
     def drawDisplacement( self, r ):
@@ -178,7 +177,7 @@ class Single( object ):
 
     def isReset( self ):
 
-        return self.getShellSize() == self.getRadius() and self.dt == 0.0\
+        return self.shellSize == self.getRadius() and self.dt == 0.0\
                and self.eventType == EventType.ESCAPE
         
 
@@ -479,7 +478,7 @@ class Pair( object ):
         D1_factor = D1 / self.D_tot
         D2_factor = D2 / self.D_tot
 
-        shellSize = self.getShellSize()
+        shellSize = self.shellSize
 
         sqrtD_tot = math.sqrt( self.D_tot )
         sqrtD_geom = math.sqrt( self.D_geom )
@@ -652,9 +651,9 @@ class Pair( object ):
 
         # check 2: particles within mobility radius.
         if self.distance( oldCoM, pos1 ) + species1.radius \
-               > self.getShellSize() or \
+               > self.shellSize or \
                self.distance( oldCoM, pos2 ) + species2.radius \
-               > self.getShellSize():
+               > self.shellSize:
             raise RuntimeError, 'New particle(s) out of protective sphere.'
 
 
@@ -670,10 +669,7 @@ class Pair( object ):
 
 class DummySingle( object ):
     def __init__( self ):
-        pass
-
-    def getShellSize( self ):
-        return 0.0
+        self.shellSize = 0.0
 
     def getRadius( self ):
         return 0.0
@@ -741,9 +737,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 single = self.createSingle( particle )
                 self.addSingleEvent( single )
 
-        #debug
-        self.checkShellForAll()
-
         self.isDirty = False
 
 
@@ -791,8 +784,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
-        if self.stepCounter % 10000 == 0:
-            self.checkInvariants()
+        #if self.stepCounter % 10000 == 0:
+        #    self.checkInvariants()
 
         self.stepCounter += 1
 
@@ -1003,7 +996,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
         # check if this Single is squeezed.
-        if closest.isPair() and distanceToClosestShell < single.getShellSize():
+        if closest.isPair() and distanceToClosestShell < single.shellSize:
             assert closest.squeezed,\
                 'When Single is squeezed, the closest must be a squeezed Pair'
             squeezed = True
@@ -1079,7 +1072,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         D0 = single.getD()
 
         if D0 == 0:
-            self.updateSingle( single )
+            # no propagation, just calculate reaction times.
+            single.determineNextEvent() 
             return single.dt
         
 
@@ -1108,7 +1102,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.updateSingle( single, 
                                math.sqrt( 6 * single.getD() *
                                           self.smallT ) + single.getRadius() )
-            print 'squeezed single; shell', single.getShellSize(), \
+            print 'squeezed single; shell', single.shellSize, \
                 'dt', single.dt
 
             return single.dt
@@ -1223,7 +1217,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # recheck the closest and distance to it.
         self.updateSingle( single )
 
-        print 'single shell', single.getShellSize(), 'dt', single.dt
+        print 'single shell', single.shellSize, 'dt', single.dt
 
         return single.dt
 
@@ -1474,7 +1468,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #print 'b', self, 't ', t, 'last ', self.lastTime, 'dt ', self.dt
         assert self.t >= single.lastTime
         assert self.t <= single.lastTime + single.dt
-        assert single.getShellSize() >= single.getRadius()
+        assert single.shellSize >= single.getRadius()
 
         dt = self.t - single.lastTime
 
@@ -1612,7 +1606,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         pairDistance = self.distance( single1.getPos(), single2.getPos() )
         print 'Pair formed: ', pair, 'pair distance', pairDistance,\
-              'shell size=', pair.getShellSize(),\
+              'shell size=', pair.shellSize,\
               ', closest = ', pairClosest,\
               ', distance to shell = ', pairClosestShellDistance
 
@@ -1685,7 +1679,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 return minShellSizeWithMargin
 
         # 2. Check if a Pair is better than two Singles.
-        closestShell = closest.getShellSize()
+        closestShell = closest.shellSize
         closestPos = closest.getPos()
         singleMobility = min( pairDistance - radius12,
                               self.distance( pos1, closestPos )
@@ -1766,17 +1760,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if not n:
             n = size
 
-        neighbors = [DummySingle(),] * size
-        distances = numpy.zeros( size )
-        positions = numpy.zeros( ( size, 3 ) )
-        shellSizes = numpy.zeros( size )
+        #neighbors = [DummySingle(),] * size
+        #positions = numpy.zeros( ( size, 3 ) )
+        #shellSizes = numpy.zeros( size )
 
-        for i in range( size ):
-            obj = scheduler.getEventByIndex(i).getArg()
-            neighbors[i] = obj
-            positions[i] = obj.getPos()
-            shellSizes[i] = obj.getShellSize()
-            
+        neighbors = [ scheduler.getEventByIndex(i).getArg()
+                      for i in range( size ) ]
+        positions = numpy.array( [ obj.getPos() for obj in neighbors ] )
+        shellSizes = numpy.array( [ obj.shellSize for obj in neighbors ] )
+
         distances = self.distanceArray( positions, pos ) - shellSizes
             
         topargs = numpy.argsort( distances )[:n]
@@ -1834,7 +1826,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     
     def checkShell( self, obj ):
         closest, distance = self.getClosestShell( obj.getPos(), [obj,] )
-        shellSize = obj.getShellSize()
+        shellSize = obj.shellSize
 
         if shellSize > self.getCellSize():
             raise RuntimeError, '%s shell size larger than simulator cell size'

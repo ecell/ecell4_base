@@ -63,10 +63,10 @@ def k_i( k ):
     print kon, k_smol
     return 1 / ( ( 1 / kon ) - ( 1 / k_smol ) )
 
-print k_i( 0.02e9)
+#print k_i( 0.02e9)
 
 
-r1 = BindingReactionType( K, KK, K_KK, k_i(0.07e9) ) #k_i(0.02e9) )
+r1 = BindingReactionType( K, KK, K_KK, k_i(0.02e9) )
 s.addReactionType( r1 )
 r2 = UnbindingReactionType( K_KK, K, KK, 1 )
 s.addReactionType( r2 )

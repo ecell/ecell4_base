@@ -24,7 +24,7 @@ r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
 s.throwInParticles( S, 0, box1 )
-s.throwInParticles( P, 400, box1 )
+s.throwInParticles( P, 600, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )
@@ -32,15 +32,16 @@ l.setInterval( 1e-3 )
 l.log()
 
 
+'''
 while s.t < 100:
     s.step()
     s.dumpPopulation()
 #    l.log()
-    
+'''    
 
-'''
+
 def profrun():
-    for i in range( 10 ):
+    for i in range( 300 ):
         s.step()
 
 import profile
@@ -50,4 +51,4 @@ pstats.Stats('fooprof').sort_stats('time').print_stats(30)
 
 
 sys.exit(1)
-'''
+

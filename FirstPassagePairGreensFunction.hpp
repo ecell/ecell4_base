@@ -131,6 +131,7 @@ public:
 			  const Real r, 
 			  const Real r0,
 			  const Real t ) const;
+//                          const RealVector& jas1Table ) const;
 
     const Real dp_n_alpha_at_a( const unsigned int i,
 				const unsigned int n,

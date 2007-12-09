@@ -137,6 +137,8 @@ class Particle( object ):
 
         self.pool = self.species.pool
 
+        self._pos = self.__readPos()
+
     def __str__( self ):
         return str( ( self.species.id, self.serial ) )
 
@@ -148,16 +150,22 @@ class Particle( object ):
         else:
             return 1
 
+    def __readPos( self ):
+        pool = self.pool
+        return pool.positions[ pool.indexMap[ self.serial ] ]
+
     def getPos( self ):
-        return self.pool.positions[ self.pool.getIndex( self.serial ) ]
+        return self._pos
 
     def setPos( self, newpos ):
-        self.pool.positions[ self.pool.getIndex( self.serial ) ] = newpos
+        self._pos = newpos
+        pool = self.pool
+        pool.positions[ pool.indexMap[ self.serial ] ] = newpos
 
     pos = property( getPos, setPos )
 
     def getIndex( self ):
-        return self.pool.getIndex( self.serial )
+        return self.pool.indexMap[ self.serial ]
 
 
 class ParticlePool( object ):
