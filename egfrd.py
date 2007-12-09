@@ -1090,6 +1090,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.rejectedMoves += 1
             squeezed = True
 
+        closestShell, distanceToClosestShell =\
+                 self.getClosestShell( single.particle.pos, 
+                                       ignore = [ single, ] )
 
         if squeezed:  
             # If this single was squeezed, update the shell, and just return.
@@ -1099,7 +1102,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             # otherwise this Single and the squeezer Pair will burst each
             # other indefinitely.
 
-            self.updateSingle( single, 
+            self.updateSingle( single, closestShell, distanceToClosestShell,
                                math.sqrt( 6 * single.getD() *
                                           self.smallT ) + single.getRadius() )
             print 'squeezed single; shell', single.shellSize, \
@@ -1110,10 +1113,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
         # (2) Check shell size disparity.   Check if this Single needs
         #     to burst the closest Single or Pair.
-
-        closestShell, distanceToClosestShell =\
-                 self.getClosestShell( single.particle.pos, 
-                                       ignore = [ single, ] )
 
         distanceToClosest = self.distance( single.particle.pos, 
                                            closestShell.getPos() )
