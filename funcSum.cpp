@@ -46,7 +46,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
     }
     else
     {
-        std::cerr << "Using series acceleration." << i << std::endl;
+        //std::cerr << "Using series acceleration." << i << std::endl;
 	Real error;
         /*
 	gsl_sum_levin_u_workspace* 

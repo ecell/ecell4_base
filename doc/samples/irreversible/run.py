@@ -24,14 +24,20 @@ def singlerun1( T ):
 
     s.setMaxShellSize( 1e-6 )
 
-    A = Species( 'A', 0.0, 5e-8 )
+
+    sigma = 1e-8
+    r0 = sigma
+    D = 1e-12
+    kf = 10 * sigma * D
+
+    A = Species( 'A', 0.0, sigma/2 )
     s.addSpecies( A )
-    B = Species( 'B', 1e-11, 5e-8 )
+    B = Species( 'B', D, sigma/2 )
     s.addSpecies( B )
-    C = Species( 'C', 0.0, 5e-8 )
+    C = Species( 'C', 0.0, sigma/2 )
     s.addSpecies( C )
-    
-    r1 = BindingReactionType( A, B, C, 1e6 / N_A )
+
+    r1 = BindingReactionType( A, B, C, kf )
     s.addReactionType( r1 )
     
     particleA = s.placeParticle( A, [0,0,0] )
@@ -62,14 +68,19 @@ def singlerun2( T ):
 
     s.setMaxShellSize( 1e-6 )
 
-    A = Species( 'A', 5e-12, 5e-8 )
+    sigma = 1e-8
+    r0 = sigma
+    D = 1e-12
+    kf = 10 * sigma * D
+
+    A = Species( 'A', D/2, sigma/2 )
     s.addSpecies( A )
-    B = Species( 'B', 5e-12, 5e-8 )
+    B = Species( 'B', D/2, sigma/2 )
     s.addSpecies( B )
-    C = Species( 'C', 5e-12, 5e-8 )
+    C = Species( 'C', D/2, sigma/2 )
     s.addSpecies( C )
-    
-    r1 = BindingReactionType( A, B, C, 1e7 / N_A )
+
+    r1 = BindingReactionType( A, B, C, kf )
     s.addReactionType( r1 )
     
     particleA = s.placeParticle( A, [0,0,0] )

@@ -25,14 +25,19 @@ def singlerun( T ):
 
     s.setMaxShellSize( 1e-6 )
 
-    A = Species( 'A', 5e-12, 5e-8 )
+    sigma = 1e-8
+    r0 = sigma
+    D = 1e-12
+    kf = 10 * sigma * D
+
+    A = Species( 'A', D/2, sigma/2 )
     s.addSpecies( A )
-    B = Species( 'B', 5e-12, 5e-8 )
+    B = Species( 'B', D/2, sigma/2 )
     s.addSpecies( B )
-    C = Species( 'C', 5e-12, 5e-8 )
+    C = Species( 'C', D/2, sigma/2 )
     s.addSpecies( C )
-    
-    r1 = BindingReactionType( A, B, C, 1e7 / N_A )
+
+    r1 = BindingReactionType( A, B, C, kf )
     s.addReactionType( r1 )
 
     r2 = UnbindingReactionType( C, A, B, 1e3 )

@@ -14,10 +14,10 @@ N_A = 6.0221367e23
 
 N = 1000
 
-sigma = 1e-7
+sigma = 1e-8
 r0 = sigma
-kf = 1e7 / N_A
-D = 1e-11
+D = 1e-12
+kf = 10 * sigma * D
 
 tau = sigma*sigma / D
 
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
 
 
-#S = _gfrd.S_irr( t, r0, kf, D, sigma )
-#print S, S_sim
+#>>> _gfrd.S_irr( .0001 * 1e-8**2/1e-12, 1e-8, 10 * 1e-8 * 1e-12, 1e-12, 1e-8 )
+#0.99116163945434221
 
 

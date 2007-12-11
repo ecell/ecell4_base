@@ -19,25 +19,28 @@ box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 # not supported yet
 #s.addSurface( box1 )
 
-K = Species( 'K', 1e-12, 5e-9 )
+#D = 1e-12 # run1
+D = 5e-13 # run2
+
+K = Species( 'K', D, 5e-9 )
 s.addSpecies( K )
-KK = Species( 'KK', 1e-12, 5e-9 )
+KK = Species( 'KK', D, 5e-9 )
 s.addSpecies( KK )
-P = Species( 'P', 1e-12, 5e-9 )
+P = Species( 'P', D, 5e-9 )
 s.addSpecies( P )
-Kp = Species( 'Kp', 1e-12, 5e-9 )
+Kp = Species( 'Kp', D, 5e-9 )
 s.addSpecies( Kp )
-Kpp = Species( 'Kpp', 1e-12, 5e-9 )
+Kpp = Species( 'Kpp', D, 5e-9 )
 s.addSpecies( Kpp )
-K_KK = Species( 'K_KK', 1e-12, 5e-9 )
+K_KK = Species( 'K_KK', D, 5e-9 )
 s.addSpecies( K_KK )
-Kp_KK = Species( 'Kp_KK', 1e-12, 5e-9 )
+Kp_KK = Species( 'Kp_KK', D, 5e-9 )
 s.addSpecies( Kp_KK )
-Kpp_KK = Species( 'Kpp_KK', 1e-12, 5e-9 )
+Kpp_KK = Species( 'Kpp_KK', D, 5e-9 )
 s.addSpecies( Kpp_KK )
-Kpp_P = Species( 'Kpp_P', 1e-12, 5e-9 )
+Kpp_P = Species( 'Kpp_P', D, 5e-9 )
 s.addSpecies( Kpp_P )
-Kp_P = Species( 'Kp_P', 1e-12, 5e-9 )
+Kp_P = Species( 'Kp_P', D, 5e-9 )
 s.addSpecies( Kp_P )
 
 #  1 2   K + KK   <-> K_KK
@@ -53,8 +56,8 @@ s.addSpecies( Kp_P )
 # 14     Kp      -> K
 
 
-Dtot = 2e-12
-sigma = 5e-9 * 25
+Dtot = D + D
+sigma = 5e-9 * 2
 Dpisigma4 = 4 * numpy.pi * Dtot * sigma
 
 def k_a( k ):
@@ -67,8 +70,8 @@ def k_d( koff, kon ):
     return k_a( kon ) * koff / kon * N_A * 1e3
     
 
-#print k_a( 0.02e9)
-#print k_d( 1.0, 0.02e9 )
+print k_a( 0.02e9)
+print k_d( 1.0, 0.02e9 )
 #raise ''
 
 r1 = BindingReactionType( K, KK, K_KK, k_a(0.02e9) )
@@ -119,7 +122,7 @@ l.setInterval( 1e-0 )
 l.log()
 
 
-while s.t < 100:
+while s.t < 10:
     s.step()
     s.dumpPopulation()
     l.log()
