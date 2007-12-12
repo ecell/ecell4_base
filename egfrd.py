@@ -852,7 +852,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.initialize()
 
         #if self.stepCounter % 10000 == 0:
-        self.checkInvariants()
+        #self.checkInvariants()
 
         self.stepCounter += 1
 
