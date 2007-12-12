@@ -19,9 +19,10 @@ box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 # not supported yet
 #s.addSurface( box1 )
 
-#D = 1e-12 # run1
-#D = 5e-13 # run2
-D = 0.25e-12 # run3
+#D = 2e-12 # run1
+#D = 1e-12 # run2
+#D = 5e-13 # run3
+#D = 0.25e-12 # run4
 
 K = Species( 'K', D, 5e-9 )
 s.addSpecies( K )
