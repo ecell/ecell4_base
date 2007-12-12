@@ -13,9 +13,9 @@ box1 = CuboidalSurface( [0,0,0],[1e-6,1e-6,1e-6] )
 # not supported yet
 #s.addSurface( box1 )
 
-S = Species( 'S', 2e-12, 1e-8 )
+S = Species( 'S', 2e-12, 5e-9 )
 s.addSpecies( S )
-P = Species( 'P', 1e-12, 1.5e-8 )
+P = Species( 'P', 1e-12, 7e-9 )
 s.addSpecies( P )
 
 r1 = BindingReactionType( S, S, P, 1e7 / N_A )
@@ -24,7 +24,7 @@ r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
 s.throwInParticles( S, 0, box1 )
-s.throwInParticles( P, 60, box1 )
+s.throwInParticles( P, 600, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )
@@ -41,7 +41,7 @@ while s.t < 100:
 
 
 def profrun():
-    for i in range( 300 ):
+    for i in range( 3000 ):
         s.step()
 
 import profile

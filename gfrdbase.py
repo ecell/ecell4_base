@@ -137,8 +137,6 @@ class Particle( object ):
 
         self.pool = self.species.pool
 
-        self._pos = self.__readPos()
-
     def __str__( self ):
         return str( ( self.species.id, self.serial ) )
 
@@ -150,15 +148,11 @@ class Particle( object ):
         else:
             return 1
 
-    def __readPos( self ):
+    def getPos( self ):
         pool = self.pool
         return pool.positions[ pool.indexMap[ self.serial ] ]
 
-    def getPos( self ):
-        return self._pos
-
     def setPos( self, newpos ):
-        self._pos = newpos
         pool = self.pool
         pool.positions[ pool.indexMap[ self.serial ] ] = newpos
 
@@ -201,8 +195,8 @@ class ParticlePool( object ):
 
     def __resizeArrays( self, newsize ):
 
-        self.serials = numpy.resize( self.serials, newsize )
-        self.positions = numpy.resize( self.positions, ( newsize, 3 ) )
+        self.serials.resize( newsize )
+        self.positions.resize( ( newsize, 3 ) )
 
 
     def removeBySerial( self, serial ):

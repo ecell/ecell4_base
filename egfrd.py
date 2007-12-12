@@ -25,6 +25,68 @@ class Delegate( object ):
         return self.method( self.obj, arg )
 
 
+class ObjectMatrix( object ):
+    def __init__( self ):
+
+        self.clear()
+
+
+    def clear( self ):
+
+        self.size = 0
+        self.objList = []
+
+        self.positions = numpy.array( [], numpy.floating )
+        self.positions.shape = ( 0, 3 )
+
+        self.shellSizes = numpy.array( [], numpy.floating )
+
+        #self.distanceMatrix = numpy.array( [[]], numpy.floating )
+        
+        
+    def append( self, obj ):
+
+        assert obj not in self.objList
+
+        self.size += 1
+        self.__resizeArrays( self.size )
+
+        self.objList.append( obj )
+        self.positions[ -1 ] = obj.getPos()
+        self.shellSizes[ -1 ] = obj.shellSize
+
+    def remove( self, obj ):
+
+        self.size -= 1
+        i = self.objList.index( obj )
+
+        if i != self.size:
+            self.objList[ i ] = self.objList.pop()
+            self.positions[ i ] = self.positions[ -1 ]
+            self.shellSizes[ i ] = self.shellSizes[ -1 ]
+        else:
+            self.objList.pop()
+
+        self.__resizeArrays( self.size )
+
+
+    def update( self, obj ):
+        i = self.objList.index( obj )
+        self.positions[ i ] = obj.getPos()
+        self.shellSizes[ i ] = obj.shellSize
+
+    def __resizeArrays( self, newsize ):
+
+        self.positions.resize( ( newsize, 3 ) )
+        self.shellSizes.resize( newsize )
+
+    def check( self ):
+        assert self.size == len( self.objList ) 
+        assert self.size == len( self.positions )
+        assert self.size == len( self.shellSizes )
+
+
+
 class Single( object ):
 
     def __init__( self, particle, reactiontypes ):
@@ -58,8 +120,7 @@ class Single( object ):
         
     def getPos( self ):
 
-        #return self.particle.pos
-        return self.particle._pos
+        return self.particle.pos
 
     def setShellSize( self, shellSize ):
 
@@ -704,6 +765,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.maxShellSize = INF
 
+        self.objMatrix = ObjectMatrix()
+
         self.reset()
 
 
@@ -734,6 +797,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.setAllRepulsive()
 
         self.scheduler.clear()
+        self.objMatrix.clear()
 
         for species in self.speciesList.values():
             for i in range( species.pool.size ):
@@ -774,7 +838,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # then burst all Pairs.
         for obj in pairList:
             single1, single2 = self.burstPair( obj )
-            self.removeEvent( obj )
             self.addSingleEvent( single1 )
             self.addSingleEvent( single2 )
 
@@ -789,7 +852,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.initialize()
 
         #if self.stepCounter % 10000 == 0:
-        #    self.checkInvariants()
+        #self.checkInvariants()
 
         self.stepCounter += 1
 
@@ -830,6 +893,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         rt = self.getReactionType1( particle.species )
         single = Single( particle, rt )
         single.initialize( self.t )
+
+        self.objMatrix.append( single )
+
         return single
 
 
@@ -846,13 +912,17 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         pair = Pair( single1, single2, rt, self.distance, self.getCellSize() )
         pair.initialize( self.t )
+
+        self.objMatrix.remove( single1 )
+        self.objMatrix.remove( single2 )
+        self.objMatrix.append( pair )
+
         return pair
 
 
     def addEvent( self, t, func, arg ):
 
         return self.scheduler.addEvent( t, func, arg )
-
 
     def addSingleEvent( self, single ):
 
@@ -991,6 +1061,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.reactionEvents += 1
         self.setPopulationChanged()
 
+
     def propagateSingle( self, single, r ):
         
         closest, distanceToClosestShell =\
@@ -1031,10 +1102,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         else:
             single.particle.pos = oldpos
             single.initialize( self.t )
+            self.objMatrix.update( single )
             raise NoSpace()
         
         single.particle.pos = self.applyBoundary( newpos )
         single.initialize( self.t )
+
+        self.objMatrix.update( single )
+
         return squeezed
 
 #         else:  # normal procedure; not squeezed.
@@ -1061,8 +1136,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.rejectedMoves += 1
 
             try:
+                self.objMatrix.remove( single )
                 self.fireSingleReaction( single )
             except NoSpace:
+                self.objMatrix.append( single )
                 self.rejectedMoves += 1
                 self.updateEvent( self.t, single )
                 single.dt = 0
@@ -1136,14 +1213,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         if distanceToClosestShell < criticalPoint or \
                distanceToClosestShell < radius0 * 10:
-
             # (2-1) Burst the closest and do pair check with that.
 
             # Determine the partnerCandidate, which is the closest single.
             if closestShell.isPair():
                 # If the partner was a Pair, then this has bursted into two
                 # singles.  Find the closer one.
-
                 single1, single2 = self.burstPair( closestShell )
                 self.removeEvent( closestShell )
                 self.addSingleEvent( single1 )
@@ -1196,6 +1271,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     print pair, 'dt=', pair.dt, 'type=', pair.eventType
                     
                     self.addPairEvent( pair )
+
                     self.removeEvent( partnerCandidates[0] )
                     
                     for remainingCandidate in partnerCandidates[1:]:
@@ -1254,6 +1330,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single.setShellSize( shellSize )
         single.determineNextEvent()
 
+        self.objMatrix.update( single )
+
 
 
 
@@ -1293,8 +1371,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.burstPair( pair )
 
             try:
+                self.objMatrix.remove( reactingsingle )
                 self.fireSingleReaction( reactingsingle )
             except NoSpace:
+                self.objMatrix.append( reactingsingle )
                 self.rejectedMoves += 1
                 reactingsingle.dt = 0
                 self.addSingleEvent( reactingsingle )
@@ -1327,6 +1407,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 displacement_R = sphericalToCartesian( displacement_R_S )
                 newCoM = oldCoM + displacement_R
                 
+                assert self.distance( oldCoM, newCoM ) + species3.radius <\
+                    pair.shellSize
+
                 #FIXME: SURFACE
                 newPos = self.applyBoundary( newCoM )
 
@@ -1340,10 +1423,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.reactionEvents += 1
                 self.setPopulationChanged()
                 
-        
             else:
                 raise NotImplementedError,\
                       'num products >= 2 not supported.'
+
+            self.objMatrix.remove( pair )
 
             pair.dt = -numpy.inf
             return pair.dt
@@ -1476,6 +1560,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.addSingleEvent( single1 )
         self.addSingleEvent( single2 )
 
+        self.objMatrix.remove( pair )
+        self.objMatrix.append( single1 )
+        self.objMatrix.append( single2 )
+
         pair.dt = -numpy.inf
         return pair.dt
 
@@ -1507,10 +1595,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         else:
             single.particle.pos = oldpos
             single.initialize( self.t )
+            self.objMatrix.update( single )
             raise NoSpace()
 
         single.initialize( self.t )
         single.particle.pos = self.applyBoundary( newpos )
+
+        self.objMatrix.update( single )
         self.updateEvent( self.t, single )
 
 
@@ -1579,6 +1670,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single1.initialize( self.t )
         single2.initialize( self.t )
         
+        self.objMatrix.remove( pair )
+        self.objMatrix.append( single1 )
+        self.objMatrix.append( single2 )
+
+
         #self.removeEvent( pair )
         #self.addSingleEvent( single1 )
         #self.addSingleEvent( single2 )
@@ -1620,6 +1716,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.squeezed += 1
 
         pair.setShellSize( shellSize )
+        self.objMatrix.update( pair )
 
         pairDistance = self.distance( single1.getPos(), single2.getPos() )
         print 'Pair formed: ', pair, 'pair distance', pairDistance,\
@@ -1742,21 +1839,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if not n:
             n = size 
 
-        neighbors = [DummySingle(),] * size
-        positions = numpy.zeros( ( size, 3 ) )
-        distances = numpy.zeros( size )
+        objMatrix = self.objMatrix
 
-        for i in range( size ):
-            obj = scheduler.getEventByIndex(i).getArg()
-            neighbors[i] = obj
-            positions[i] = obj.getPos()
+        distances = self.distanceSqArray( objMatrix.positions, pos )
 
-        distances = self.distanceSqArray( positions, pos )
-            
-        topargs = numpy.argsort( distances )[:n]
-        distances = numpy.take( distances, topargs )
+        topargs = distances.argsort()[:n]
+        distances = distances.take( topargs )
         distances = numpy.sqrt( distances )
-        neighbors = [ neighbors[arg] for arg in topargs ]
+        neighbors = [ objMatrix.objList[arg] for arg in topargs ]
 
         return neighbors, distances
 
@@ -1777,20 +1867,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if not n:
             n = size
 
-        #neighbors = [DummySingle(),] * size
-        #positions = numpy.zeros( ( size, 3 ) )
-        #shellSizes = numpy.zeros( size )
+        objMatrix = self.objMatrix
 
-        neighbors = [ scheduler.getEventByIndex(i).getArg()
-                      for i in range( size ) ]
-        positions = numpy.array( [ obj.getPos() for obj in neighbors ] )
-        shellSizes = numpy.array( [ obj.shellSize for obj in neighbors ] )
+        distances = self.distanceArray( objMatrix.positions, pos ) -\
+           objMatrix.shellSizes
 
-        distances = self.distanceArray( positions, pos ) - shellSizes
-            
-        topargs = numpy.argsort( distances )[:n]
-        distances = numpy.take( distances, topargs )
-        neighbors = [ neighbors[arg] for arg in topargs ]
+        topargs = distances.argsort()[:n]
+        distances = distances.take( topargs )
+        neighbors = [ objMatrix.objList[arg] for arg in topargs ]
 
         return neighbors, distances
 
@@ -1889,15 +1973,40 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             raise RuntimeError, 'population %d != eventPopulation %d' %\
                   ( population, eventPopulation )
 
+    def checkDistanceMatrix( self ):
+
+        self.objMatrix.check()
+
+        if self.scheduler.getSize() != self.objMatrix.size:
+            raise RuntimeError,\
+                'self.scheduler.getSize() != self.objMatrix.size'
+
+        for i in range( len( self.objMatrix.objList ) ):
+            obj = self.objMatrix.objList[i]
+            if ( obj.getPos() - self.objMatrix.positions[i] ).sum() != 0:
+                raise RuntimeError, 'objMatrix positions consistency failed'
+            if obj.shellSize != self.objMatrix.shellSizes[i]:
+                raise RuntimeError, 'objMatrix shellSizes consistency failed'
+
+        objList1 = self.objMatrix.objList[:]
+        objList2 = [ self.scheduler.getEventByIndex( i ).getArg() 
+                     for i in range( self.scheduler.getSize() ) ]
+                    
+        if objList1.sort() != objList2.sort():
+            raise RuntimeError, 'objMatrix consistency check failed'
         
     def checkInvariants( self ):
 
         assert self.t >= 0.0
         assert self.dt >= 0.0
+
+        self.checkDistanceMatrix()
+
+        self.checkEventStoichiometry()
         
         self.checkShellForAll()
 
-        self.checkEventStoichiometry()
+
 
 
     #
