@@ -852,7 +852,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.initialize()
 
         #if self.stepCounter % 10000 == 0:
-        #self.checkInvariants()
+        self.checkInvariants()
 
         self.stepCounter += 1
 
@@ -1142,7 +1142,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.objMatrix.append( single )
                 self.rejectedMoves += 1
                 self.updateEvent( self.t, single )
-                single.dt = 0
+                single.dt = self.smallT
                 return single.dt
 
             single.dt = -numpy.inf  # remove this Single from the Scheduler
@@ -1833,13 +1833,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def getNeighbors( self, pos, n=None ):
 
-        scheduler = self.scheduler
+        objMatrix = self.objMatrix
 
-        size = scheduler.getSize()
+        size = objMatrix.size
         if not n:
             n = size 
 
-        objMatrix = self.objMatrix
 
         distances = self.distanceSqArray( objMatrix.positions, pos )
 
@@ -1860,14 +1859,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def getNeighborShells( self, pos, n=None ):
 
-        scheduler = self.scheduler
+        objMatrix = self.objMatrix
 
-        size = scheduler.getSize()
+        size = objMatrix.size
 
         if not n:
             n = size
-
-        objMatrix = self.objMatrix
 
         distances = self.distanceArray( objMatrix.positions, pos ) -\
            objMatrix.shellSizes
@@ -1896,7 +1893,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             if neighbors[i] not in ignore:
                 closest, distance = neighbors[i], distances[i]
 
-                assert not closest in ignore
+                #assert not closest in ignore
                 return closest, distance
 
         # default case: none left.
@@ -1914,7 +1911,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             if neighbors[i] not in ignore:
                 closest, distance = neighbors[i], distances[i]
 
-                assert not closest in ignore
+                #assert not closest in ignore
                 return closest, distance
 
         # default case: none left.
@@ -1948,10 +1945,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def checkShellForAll( self ):
-        scheduler = self.scheduler
 
-        for i in range( scheduler.getSize() ):
-            obj = scheduler.getEventByIndex(i).getArg()
+        for obj in self.objMatrix.objList:
             self.checkShell( obj )
 
 
@@ -1981,7 +1976,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             raise RuntimeError,\
                 'self.scheduler.getSize() != self.objMatrix.size'
 
-        for i in range( len( self.objMatrix.objList ) ):
+        for i in range( self.objMatrix.size ):
             obj = self.objMatrix.objList[i]
             if ( obj.getPos() - self.objMatrix.positions[i] ).sum() != 0:
                 raise RuntimeError, 'objMatrix positions consistency failed'
@@ -1995,6 +1990,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if objList1.sort() != objList2.sort():
             raise RuntimeError, 'objMatrix consistency check failed'
         
+
     def checkInvariants( self ):
 
         assert self.t >= 0.0
