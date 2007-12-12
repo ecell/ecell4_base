@@ -19,7 +19,7 @@ box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 # not supported yet
 #s.addSurface( box1 )
 
-#D = 2e-12 # run1
+D = 2e-12 # run1
 #D = 1e-12 # run2
 #D = 5e-13 # run3
 #D = 0.25e-12 # run4
@@ -123,12 +123,12 @@ s.addReactionType( r12 )
 #s.addReactionType( r14 )
 
 
-l = Logger( s, 'mapk3' )
+l = Logger( s, 'mapk1' )
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
 l.setInterval( 1e-0 )
 l.log()
 
-while s.t < 10:
+while s.t < 30:
     s.step()
     s.dumpPopulation()
     l.log()
