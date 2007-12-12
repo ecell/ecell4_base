@@ -404,7 +404,7 @@ class GFRDSimulatorBase( object ):
     def throwInParticles( self, species, n, surface=[] ):
         print 'throwing in %s %s particles' % ( n, species.id )
 
-        for _ in range( n ):
+        for _ in range( int( n ) ):
 
             while True:
 

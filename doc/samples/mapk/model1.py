@@ -20,7 +20,8 @@ box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 #s.addSurface( box1 )
 
 #D = 1e-12 # run1
-D = 5e-13 # run2
+#D = 5e-13 # run2
+D = 0.25e-12 # run3
 
 K = Species( 'K', D, 5e-9 )
 s.addSpecies( K )
@@ -74,6 +75,19 @@ print k_a( 0.02e9)
 print k_d( 1.0, 0.02e9 )
 #raise ''
 
+def C2N( c ):
+    return round( c * V * N_A )
+
+s.throwInParticles( K, C2N( 200e-9 ), box1 )
+
+s.throwInParticles( KK, C2N( 50e-9 ), box1 )
+s.throwInParticles( P, C2N( 50e-9 ), box1 )
+
+print ''
+while s.t < 1:
+    s.step()
+s.reset()
+
 r1 = BindingReactionType( K, KK, K_KK, k_a(0.02e9) )
 s.addReactionType( r1 )
 r2 = UnbindingReactionType( K_KK, K, KK, k_d( 1.0, 0.02e9 ) )
@@ -107,24 +121,14 @@ s.addReactionType( r12 )
 #r14 = UnimolecularReactionType( Kp, K, 1e-1 )
 #s.addReactionType( r14 )
 
-def C2N( c ):
-    return round( c * V * N_A )
 
-s.throwInParticles( K, C2N( 200e-9 ), box1 )
-
-s.throwInParticles( KK, C2N( 50e-9 ), box1 )
-s.throwInParticles( P, C2N( 50e-9 ), box1 )
-
-
-l = Logger( s, 'mapk' )
+l = Logger( s, 'mapk3' )
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
 l.setInterval( 1e-0 )
 l.log()
-
 
 while s.t < 10:
     s.step()
     s.dumpPopulation()
     l.log()
-    
 

@@ -698,23 +698,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         GFRDSimulatorBase.__init__( self )
 
         self.isDirty = True
-
         self.scheduler = EventScheduler()
-
-        self.t = 0.0
-        self.dt = INF
-
-        self.stepCounter = 0
 
         self.smallT = 1e-8  # FIXME: is this ok?
 
         self.maxShellSize = INF
 
-        self.lastEvent = None
-
-        self.clearPopulationChanged()
-
-        self.squeezed = 0
+        self.reset()
 
 
     def setMaxShellSize( self, maxShellSize ):
@@ -724,6 +714,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def getMaxShellSize( self ):
 
         return self.maxShellSize
+
+    def reset( self ):
+
+        self.t = 0.0
+        self.dt = INF
+        self.stepCounter = 0
+        self.rejectedMoves = 0
+        self.reactionEvents = 0
+        self.lastEvent = None
+        self.clearPopulationChanged()
+        self.squeezed = 0
+        self.isDirty = True
+        #self.initialize()
+        
 
     def initialize( self ):
 
