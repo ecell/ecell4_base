@@ -838,6 +838,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # then burst all Pairs.
         for obj in pairList:
             single1, single2 = self.burstPair( obj )
+            self.removeEvent( obj )
             self.addSingleEvent( single1 )
             self.addSingleEvent( single2 )
 
@@ -1141,7 +1142,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             except NoSpace:
                 self.objMatrix.append( single )
                 self.rejectedMoves += 1
-                self.updateEvent( self.t, single )
+                #self.updateEvent( self.t, single )
                 single.dt = self.smallT
                 return single.dt
 
@@ -1295,8 +1296,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                         self.updateSingle( remainingCandidate, c, d )
                         self.updateEvent( self.t + remainingCandidate.dt,
                                           remainingCandidate )
-            # this Single bursted something, and potentially a Pair was
-            # formed.  Recheck closest and closest shell distance.
+            # this Single bursted something.
+            # Recheck closest and closest shell distance.
             closestShell, distanceToClosestShell =\
                 self.getClosestShell( single.getPos(), ignore = [ single, ] )
 

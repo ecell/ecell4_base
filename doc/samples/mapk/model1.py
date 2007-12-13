@@ -19,10 +19,12 @@ box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 # not supported yet
 #s.addSurface( box1 )
 
+modelName='mapk4'
+
 #D = 2e-12 # run1
 #D = 1e-12 # run2
-D = 5e-13 # run3
-#D = 0.25e-12 # run4
+#D = 5e-13 # run3
+D = 0.25e-12 # run4
 
 K = Species( 'K', D, 5e-9 )
 s.addSpecies( K )
@@ -84,9 +86,14 @@ s.throwInParticles( K, C2N( 200e-9 ), box1 )
 s.throwInParticles( KK, C2N( 50e-9 ), box1 )
 s.throwInParticles( P, C2N( 50e-9 ), box1 )
 
-print ''
-while s.t < 1:
+endTime = 1
+while 1:
     s.step()
+    nextTime = s.scheduler.getNextTime()
+    if nextTime > endTime:
+        s.stop( endTime )
+        break
+
 s.reset()
 
 r1 = BindingReactionType( K, KK, K_KK, k_a(0.02e9) )
@@ -123,7 +130,7 @@ s.addReactionType( r12 )
 #s.addReactionType( r14 )
 
 
-l = Logger( s, 'mapk3' )
+l = Logger( s, modelName )
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
 l.setInterval( 1e-0 )
 l.log()
