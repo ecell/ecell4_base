@@ -15,11 +15,11 @@ N_A = 6.0221367e23
 
 N = 100
 
-sigma = 1e-7
+sigma = 1e-8
 
-r0 = sigma
-kf = 1e6 / N_A
-D = 1e-11
+#r0 = sigma
+#D = 1e-12
+#kf = 10 * sigma * D
 
 #tau = sigma*sigma / D
 #t = .01
@@ -49,7 +49,7 @@ def plot_hist( data, T ):
 
     bins = 20
 
-    nonreactions = numpy.compress( data >= sigma, data )
+    nonreactions = numpy.compress( data > sigma, data )
     print 'max', max( nonreactions )
     hist, lower_edges = numpy.histogram( nonreactions, bins=bins )
 
@@ -62,7 +62,7 @@ def plot_hist( data, T ):
     hist /= len( data ) * xtick
 
     x = lower_edges + ( xtick * .5 )
-    #print 'x', x
+    print 'x', x, hist
 
     loglog( x / sigma, hist, '.', label='sim (T = %g tau)' % (T * 100) )
     
