@@ -1346,8 +1346,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 		      << low << "); F(" << low <<
 		") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
 		      << dump() << std::endl;
-	    //return this->MIN_T;
-            return low;
+	    return this->MIN_T;
+            //return low;
 	}
 
         low_value = low_value_new;

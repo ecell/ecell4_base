@@ -788,6 +788,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.lastEvent = None
         self.clearPopulationChanged()
         self.squeezed = 0
+
         self.isDirty = True
         #self.initialize()
         
