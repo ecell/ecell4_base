@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# tau = 0.0001
+#PYTHONPATH=../../.. python run.py rev.0.out 0.0001 1000000
+
 from egfrd import *
 
 def run( outfilename, T, N ):

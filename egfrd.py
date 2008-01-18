@@ -604,10 +604,10 @@ class Pair( object ):
         #print 'tr, tR', (( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
         #      (self.a_R / math.sqrt( 6*self.D_geom ))**2
 
-        #print 'a_r a_R r0', self.a_r, self.a_R, r0
+        #print 'a a_r a_R', shellSize, self.a_r, self.a_R
         assert self.a_r > 0
         assert self.a_R > 0 or ( self.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
-        #assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
+        assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
 
         rnd = numpy.random.uniform( size=3 )
 
@@ -634,7 +634,8 @@ class Pair( object ):
         self.dt = min( self.t_R, self.t_r, self.t_single_reaction )
 
         assert self.dt >= 0
-
+        print 'dt ', self.dt, 't_R', self.t_R, 't_r', self.t_r
+        print self.pgf.dump()
         if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
             self.eventType = self.pgf.drawEventType( rnd[2],
                                                      r0, self.t_r )
@@ -672,8 +673,10 @@ class Pair( object ):
             gf.seta( a )
 
         r = gf.drawR( numpy.random.uniform(), r0, t )
+
         while r > self.a_r or r <= self.sigma: # redraw; shouldn't happen often
             print 'drawR_pair: redraw'
+            raise ''
             #self.sim.rejectedMoves += 1
             r = gf.drawR( numpy.random.uniform(), r0, t )
 

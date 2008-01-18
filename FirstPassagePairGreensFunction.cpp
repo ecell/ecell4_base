@@ -925,9 +925,9 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
 
     const Real hsigma( h * sigma );
 
-    const Real num1( alpha * ( hsigma * sigma - hsigma * r * cos_r +
-			       ( sigma - r ) * cos_r ) +
-		     ( hsigma_p_1 + r * sigma * alphasq ) * sin_r );
+    const Real num1( alpha * ( hsigma * sigma - hsigma * r * cos_r 
+                               - ( r - sigma ) * cos_r ) 
+                     + ( hsigma_p_1 + r * sigma * alphasq ) * sin_r );
 
     const Real num2( num_r0 );
 
@@ -936,7 +936,6 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
 		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
 
     const Real result( 2 * num1 * num2 / den );
-
 
     return result;
 }
@@ -1061,6 +1060,7 @@ FirstPassagePairGreensFunction::leavea_i_exp( const unsigned int i,
 					      const Real r0 ) const
 {
     const Real alpha( this->getAlpha0( i ) );
+
     return std::exp( - getD() * t * alpha * alpha ) * leavea_i( alpha, r0 );
 }
 
@@ -1070,6 +1070,7 @@ FirstPassagePairGreensFunction::leaves_i_exp( const unsigned int i,
 					      const Real r0 ) const
 {
     const Real alpha( this->getAlpha0( i ) );
+
     return std::exp( - getD() * t * alpha * alpha ) * leaves_i( alpha, r0 );
 }
 
@@ -1342,8 +1343,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	if( fabs( low ) <= this->MIN_T || 
             fabs( low_value - low_value_new ) < TOLERANCE ) 
 	{
-	    std::cerr << "Couldn't adjust low.  Returning low (= "
-		      << low << "); F(" << low <<
+	    std::cerr << "Couldn't adjust low.  Returning MIN_T (= "
+		      << this->MIN_T << "); F(" << low <<
 		") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
 		      << dump() << std::endl;
 	    return this->MIN_T;
@@ -1395,6 +1396,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     return t;
 }
 
+
 const EventType 
 FirstPassagePairGreensFunction::drawEventType( const Real rnd, 
 					       const Real r0,
@@ -1407,7 +1409,6 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
     THROW_UNLESS( std::invalid_argument, t > 0.0 );
 
-    // leaves() and leavea() call updateAlphaTable0(). redundant?
     const Real reaction( leaves( t, r0 ) * 
 			 4.0 * M_PI * sigma * sigma );
     const Real escape( leavea( t, r0 ) *
@@ -1886,11 +1887,11 @@ p_theta_table( const Real theta,
 {
     const unsigned int tableSize( p_nTable.size() );
 
-    RealVector lgndTable( tableSize );
-
     Real sin_theta;
     Real cos_theta;
     sincos( theta, &sin_theta, &cos_theta );
+
+    RealVector lgndTable( tableSize );
     gsl_sf_legendre_Pl_array( tableSize-1, cos_theta, &lgndTable[0] );
 
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
@@ -2036,24 +2037,24 @@ ip_theta_table( const Real theta,
 {
     const unsigned int tableSize( p_nTable.size() );
 
-    RealVector pTable;
-    pTable.reserve( tableSize );
+    //RealVector pTable;
+    //pTable.reserve( tableSize );
 
     const Real cos_theta( cos( theta ) );
 
     // LgndTable is offset by 1 to incorporate the n=-1 case.
     // For ex: LgndTable[0] is for n=-1, lgndTable[1] is for n=0 ...
 
-    RealVector lgndTable1( tableSize + 2 );
-    lgndTable1[0] = 1.0;  // n = -1
-    gsl_sf_legendre_Pl_array( tableSize, cos_theta, &lgndTable1[1] );
+    RealVector lgndTable( tableSize + 2 );
+    lgndTable[0] = 1.0;  // n = -1
+    gsl_sf_legendre_Pl_array( tableSize, cos_theta, &lgndTable[1] );
 
 
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					ip_theta_i,
 					this,
-					_1, p_nTable, lgndTable1 ),
-			   tableSize-1 ) );
+					_1, p_nTable, lgndTable ),
+			   tableSize - 1 ) );
 
     return p;
 }

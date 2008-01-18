@@ -476,7 +476,8 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         r = r0
         pintr = gf.p_int_r( r, t, r0 )
-        self.failIf( pintr < 0.0 or pintr > 1.0 )
+
+        self.failIf( pintr < 0.0 or pintr > 1.0, 'pintr %f' % pintr )
 
 
     def test_p_int_r_at_a_is_p_survival( self ):
@@ -641,8 +642,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.assertAlmostEqual( leavea, iptheta )
 
 
-
-
 '''
     def test_p_theta_free_is_p_theta_smallt( self ):
 
@@ -692,26 +691,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( abs( maxerror ) > 1e-8 )
 '''
 
-
-
-
-'''
-    def test_dump( self ):
-
-        D = 1e-12
-        sigma = 1e-8
-        kf = 1e-8
-
-        t = 1e-3
-        r0 = 5e-8
-
-        a = 1e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        print gf.dump()
-'''
 
 
         

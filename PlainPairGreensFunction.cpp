@@ -3,8 +3,10 @@
 
 #include <exception>
 #include <vector>
+#include <sstream>
 
-#include <boost/array.hpp>
+#include <boost/bind.hpp>
+
 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
@@ -17,6 +19,8 @@
 #include "bessel.hpp"
 
 #include "freeFunctions.hpp"
+
+#include "funcSum.hpp"
 
 #include "HalfOrderBesselGenerator.hpp"
 
@@ -383,13 +387,18 @@ PlainPairGreensFunction::p_reaction_F( const Real tsqrt,
 
 
 const Real PlainPairGreensFunction::drawTime( const Real rnd, 
-					      const Real r0, 
-					      const Real maxt ) const
+					      const Real r0 ) const
 {
-    assert( rnd <= 1.0 && rnd >= 0.0 );
+    const Real sigma( this->getSigma() );
+
+    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, r0 >= sigma );
+
+    Real low( 1e-100 );
+    Real high( sqrt( 1 ) );
 
     {
-	const Real maxp( p_reaction( maxt, r0 ) );
+	const Real maxp( p_reaction( high, r0 ) );
 
 	if( rnd >= maxp )
 	{
@@ -404,9 +413,6 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
 	    reinterpret_cast<typeof(F.function)>( &p_reaction_F ),
 	    &params 
 	};
-
-    Real low( 1e-100 );
-    Real high( sqrt( maxt ) );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -452,6 +458,16 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
 					   const Real r0, 
 					   const Real t ) const
 {
+    const Real sigma( this->getSigma() );
+
+    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, r0 >= sigma );
+
+    if( t == 0.0 )
+    {
+	return r0;
+    }
+
     Real r;
 
     const Index tableSize( 100 );
@@ -553,163 +569,269 @@ PlainPairGreensFunction::Rn( const Integer order, const Real r, const Real r0,
 
 
 const Real PlainPairGreensFunction::
-p_corr_RnTable( const Real theta, const Real r, const Real r0,
-		const Real t, const RealVector& RnTable )
+p_corr_n( const unsigned int n, const RealVector& RnTable, 
+          const RealVector& lgndTable ) const
+{
+    return RnTable[n] * lgndTable[n] * ( 2 * n + 1 );
+}
+
+const Real PlainPairGreensFunction::
+ip_corr_n( const unsigned int n, const RealVector& RnTable, 
+           const RealVector& lgndTable ) const
+{
+    // lgndTable1 is offset by 1; lgndTable1[0] is for n=-1.
+
+    const Real lgnd_n_m1( lgndTable[n] );   // n-1
+    const Real lgnd_n_p1( lgndTable[n+2] ); // n+1
+    
+    return RnTable[n] * ( lgnd_n_m1 - lgnd_n_p1 );// / ( 1.0 + 2.0 * n );
+}
+
+
+const Real PlainPairGreensFunction::
+p_corr_table( const Real theta, const Real r, const Real r0,
+              const Real t, const RealVector& RnTable ) const
 {
     Real result( 0.0 );
 
     const Index tableSize( RnTable.size() );
   
-    RealVector PnTable( tableSize );
-    gsl_sf_legendre_Pl_array( tableSize-1, cos( theta ), &PnTable[0] );
+    Real sin_theta;
+    Real cos_theta;
+    sincos( theta, &sin_theta, &cos_theta );
 
-    for( Index order( 0 ); order < tableSize; ++order )
-    {
-	const Real Cn( 2.0 * order + 1 );
+    RealVector lgndTable( tableSize );
+    gsl_sf_legendre_Pl_array( tableSize-1, cos( theta ), &lgndTable[0] );
 
-	//printf( "p %d %g\n", order, Cn * PnTable[order] * RnTable[order] );
 
-	result += Cn * PnTable[order] * RnTable[order];
-    }
+    const Real p( funcSum( boost::bind( &PlainPairGreensFunction::
+					p_corr_n,
+					this,
+					_1, RnTable, lgndTable ),
+			   tableSize-1 ) );
 
-    result /= 4.0 * M_PI * sqrt( r * r0 );
+    result = p * sin_theta;
+
+    //result /= 4.0 * M_PI * sqrt( r * r0 );
 
     return result;
 }
 
+
 const Real PlainPairGreensFunction::
-p_tot_RnTable( const Real theta, const Real r, const Real r0,
-	       const Real t, const RealVector& RnTable ) const
+ip_corr_table( const Real theta, const Real r, const Real r0,
+               const Real t, const RealVector& RnTable ) const
+{
+    const Index tableSize( RnTable.size() );
+
+    const Real cos_theta( cos( theta ) );
+    
+    // lgndTable is offset by 1. lengTable[0] -> n = -1
+
+    RealVector lgndTable( tableSize + 2 );
+    lgndTable[0] = 1.0; // n = -1
+    gsl_sf_legendre_Pl_array( tableSize, cos_theta, &lgndTable[1] );
+
+    const Real p( funcSum( boost::bind( &PlainPairGreensFunction::
+					ip_corr_n,
+					this,
+					_1, RnTable, lgndTable ),
+			   tableSize - 1 ) );
+
+    return p;
+}
+
+const Real PlainPairGreensFunction::
+p_theta( const Real theta, const Real r, const Real r0, const Real t ) const
+{
+    RealVector RnTable;
+    makeRnTable( RnTable, r, r0, t );
+
+    return p_theta_table( theta, r, r0, t, RnTable );
+}
+
+const Real PlainPairGreensFunction::
+ip_theta( const Real theta, const Real r, const Real r0, const Real t ) const
+{
+    RealVector RnTable;
+    makeRnTable( RnTable, r, r0, t );
+
+    return ip_theta_table( theta, r, r0, t, RnTable );
+}
+
+
+const Real PlainPairGreensFunction::
+p_theta_table( const Real theta, const Real r, const Real r0,
+               const Real t, const RealVector& RnTable ) const
 {
     const Real factor( 2.0 * M_PI * r * r * sin( theta ) );
 
     const Real p_free( this->p_free( r, r0, theta, t ) );
-    const Real p_corr( this->p_corr_RnTable( theta, r, r0, t, RnTable ) ); 
+    const Real p_corr( this->p_corr_table( theta, r, r0, t, RnTable ) ); 
 
     return ( p_free + p_corr ) * factor;
 }
+
+const Real PlainPairGreensFunction::
+ip_theta_table( const Real theta, const Real r, const Real r0,
+                const Real t, const RealVector& RnTable ) const
+{
+    const Real factor( 2.0 * M_PI * r * r * sin( theta ) );
+
+    const Real p_free( this->p_free( r, r0, theta, t ) );
+    const Real p_corr( this->ip_corr_table( theta, r, r0, t, RnTable ) ); 
+
+    return ( p_free + p_corr ) * factor;
+}
+
+void PlainPairGreensFunction::makeRnTable( RealVector& RnTable,
+                                           const Real r,
+                                           const Real r0,
+                                           const Real t ) const
+{
+    const unsigned int MAXORDER( 80 );
+    const Real p_free_max( this->p_free( r, r0, 0.0, t ) );
+    const Real integrationTolerance( p_free_max * 1e-10 );
+    const Real truncationTolerance( p_free_max * 1e-8 );
+    
+    gsl_integration_workspace* 
+        workspace( gsl_integration_workspace_alloc( 1000 ) );
+    
+    Real Rn_prev( 0.0 );
+    const Real RnFactor( 1.0 / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
+    
+    unsigned int order( 0 );
+    while( true ) 
+    {
+        const Real Rn( this->Rn( order, r, r0, t, workspace, 
+                                 integrationTolerance ) );
+	
+        RnTable.push_back( Rn );
+	
+        //std::cerr << Rn << std::endl;
+	
+        // truncate when converged enough.
+        if( fabs( Rn * RnFactor ) < truncationTolerance &&
+            fabs( Rn ) < fabs( Rn_prev ) )
+        {
+            break;
+        }
+	
+        if( order >= MAXORDER )
+        {
+            std::cerr << "Rn didn't converge." << std::endl;
+            break;
+        }
+	
+        Rn_prev = Rn;
+	
+        ++order;
+    }
+    
+    gsl_integration_workspace_free( workspace );
+}
+
+const Real PlainPairGreensFunction::ip_theta_F( const Real theta,
+                                                const p_theta_params* params )
+{
+    const PlainPairGreensFunction* const gf( params->gf ); 
+    const Real r( params->r );
+    const Real r0( params->r0 );
+    const Real t( params->t );
+    const RealVector& RnTable( params->RnTable );
+    const Real value( params->value );
+
+    return gf->ip_theta_table( theta, r, r0, t, RnTable ) - value;
+}
+
 
 const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 					       const Real r, 
 					       const Real r0, 
 					       const Real t ) const
 {
-    RealVector RnTable;
-    RnTable.reserve( 8 );
-
-
-    {
-	const unsigned int MAXORDER( 80 );
-	const Real p_free_max( this->p_free( r, r0, 0.0, t ) );
-	const Real integrationTolerance( p_free_max * 1e-10 );
-	const Real truncationTolerance( p_free_max * 1e-8 );
-    
-	gsl_integration_workspace* 
-	    workspace( gsl_integration_workspace_alloc( 1000 ) );
-    
-	Real Rn_prev( 0.0 );
-	const Real RnFactor( 1.0 / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
-    
-	unsigned int order( 0 );
-	while( true ) 
-	{
-	    const Real Rn( this->Rn( order, r, r0, t, workspace, 
-				     integrationTolerance ) );
-	
-	    RnTable.push_back( Rn );
-	
-	    //std::cerr << Rn << std::endl;
-	
-	    // truncate when converged enough.
-	    if( fabs( Rn * RnFactor ) < truncationTolerance &&
-		fabs( Rn ) < fabs( Rn_prev ) )
-	    {
-		break;
-	    }
-	
-	    if( order >= MAXORDER )
-	    {
-		std::cerr << "Rn didn't converge." << std::endl;
-		break;
-	    }
-	
-	    Rn_prev = Rn;
-	
-	    ++order;
-	}
-    
-	gsl_integration_workspace_free( workspace );
-    }
-
     Real theta;
 
+    const Real sigma( this->getSigma() );
+
+    // input parameter range checks.
+    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, r0 >= sigma );
+    THROW_UNLESS( std::invalid_argument, r >= sigma );
+    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+
+    // t == 0 means no move.
+    if( t == 0.0 )
     {
-	const Index tableSize( 200 );
-	const Real thetaStep( M_PI / tableSize );
-    
-	//boost::array<Real, tableSize+1> pTable;
-	RealVector pTable( tableSize );
-    
-	pTable[0] = 0.0;
-	Real p_prev( 0.0 ); // p_tot_RnTable() with theta = 0 is always zero.
-	Index i( 1 );
-	while( true )
+	return 0.0;
+    }
+
+    RealVector RnTable;
+    makeRnTable( RnTable, r, r0, t );
+
+
+    // root finding with the integrand form.
+
+    const Real ip_theta_pi( ip_theta_table( M_PI, r, r0, t, RnTable ) );
+
+    p_theta_params params = { this, r, r0, t, RnTable, rnd * ip_theta_pi };
+
+    gsl_function F = 
 	{
-	    Real p( this->p_tot_RnTable( thetaStep * i, r, r0, t, RnTable ) );
-	    if( p < 0.0 )
-	    {
-		p = 0.0;
-	    }
-	
-	    const Real value( ( p_prev + p ) * 0.5 );
-	
-	    pTable[i] = pTable[i-1] + value;
-	
-	    if( value < pTable[i] * std::numeric_limits<Real>::epsilon() ||
-		i >= tableSize-1 )
-	    {
-		break;   // pTable is valid in [0,i].
-	    }
-	
-	    p_prev = p;
-	    ++i;
-	}
-    
-	/*
-	  const Real p_irr_r( this->p_irr( r, t, r0 ) );
-	  const Real relerror( (pTable[i]*thetaStep- p_irr_r)/p_irr_r );
-	  if( fabs( relerror ) >= 1e-2 )
-	  {
-	  std::cerr << "drawTheta: relative error estimate is large: " << relerror 
-	  << "( r= " << r << ", r0= " << r0 << ", t= " << t 
-	  << ")." << std::endl;
-	  }
-	*/
-    
-	const Real targetPoint( rnd * pTable[i] );
-	const size_t lowerBound( gsl_interp_bsearch( &pTable[0], targetPoint, 
-						     0, i ) );
-	const Real low( lowerBound * thetaStep );
-    
-	if( pTable[lowerBound+1] - pTable[lowerBound] != 0.0 )
+	    reinterpret_cast<typeof(F.function)>( &ip_theta_F ),
+	    &params 
+	};
+
+    const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
+    gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
+    gsl_root_fsolver_set( solver, &F, 0.0, M_PI );
+
+    const unsigned int maxIter( 100 );
+
+    unsigned int i( 0 );
+    while( true )
+    {
+	gsl_root_fsolver_iterate( solver );
+	const Real low( gsl_root_fsolver_x_lower( solver ) );
+	const Real high( gsl_root_fsolver_x_upper( solver ) );
+	const int status( gsl_root_test_interval( low, high, 1e-15,
+						  this->TOLERANCE ) );
+
+	if( status == GSL_CONTINUE )
 	{
-	    theta = low + thetaStep * ( targetPoint - pTable[lowerBound] ) / 
-		( pTable[lowerBound+1] - pTable[lowerBound] );
+	    if( i >= maxIter )
+	    {
+		gsl_root_fsolver_free( solver );
+		std::cerr << "drawTheta: failed to converge." << std::endl;
+		throw std::exception();
+	    }
 	}
 	else
 	{
-	    // this can happen when rnd is equal to or is too close to 1.0.
-	    theta = low;
+	    break;
 	}
-    }
 
+	++i;
+    }
+  
+    theta = gsl_root_fsolver_root( solver );
+    gsl_root_fsolver_free( solver );
 
     return theta;
 }
 
 
 
+//
+// debug
+//
 
-
-
-
+const std::string PlainPairGreensFunction::dump() const
+{
+    std::ostringstream ss;
+    ss << "D = " << this->getD() << ", sigma = " << this->getSigma() <<
+	", kf = " << this->getkf() <<
+	", kD = " << this->getkD() <<
+	", alpha = " << this->getalpha() << std::endl;
+    return ss.str();
+}    

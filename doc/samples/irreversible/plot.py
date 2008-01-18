@@ -1,4 +1,4 @@
-#!/usr/bin/env/python
+#!/usr/bin/env python
 
 # PYTHONPATH=../../.. python plot.py irr.-1.out 0.00001 irr.0.out 0.0001 irr.1.out 0.001 irr.2.out 0.01
 

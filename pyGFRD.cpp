@@ -181,6 +181,14 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawTime", &PlainPairGreensFunction::drawTime )
 	.def( "drawR", &PlainPairGreensFunction::drawR )
 	.def( "drawTheta", &PlainPairGreensFunction::drawTheta )
+
+        .def( "p_tot", &PlainPairGreensFunction::p_tot )
+        .def( "p_free", &PlainPairGreensFunction::p_tot )
+        .def( "p_corr", &PlainPairGreensFunction::p_tot )
+        .def( "p_theta", &PlainPairGreensFunction::p_theta )
+        .def( "ip_theta", &PlainPairGreensFunction::ip_theta )
+
+        .def( "dump", &PlainPairGreensFunction::dump )
 	;
 
     class_<FreePairGreensFunction>( "FreePairGreensFunction",

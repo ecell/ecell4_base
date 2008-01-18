@@ -22,7 +22,7 @@ class FirstPassagePairGreensFunction
 
     //static const unsigned int MAX_ORDER = 55;
     static const unsigned int MAX_ORDER = 45;
-    static const unsigned int MAX_ALPHA_SEQ = 500;
+    static const unsigned int MAX_ALPHA_SEQ = 700;
 
 
 public:
@@ -82,7 +82,6 @@ public:
 
     const Real dp_survival( const Real t,
 			    const Real r0 ) const;
-
 
     const Real leaves( const Real t,
 		       const Real r0 ) const;
@@ -232,7 +231,6 @@ protected:
 			  const Real alpha,
 			  const Real r0,
 			  const Real num_r0 ) const;
-
 
     const Real p_int_r_table( const Real r,
 			      const Real t,

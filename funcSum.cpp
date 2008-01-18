@@ -12,16 +12,17 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 	 const Real tolerance )
 {
     Real sum( 0.0 );
-
     RealVector pTable;
+
     const Real p_0( f( 0 ) );
     if ( p_0 == 0.0 )
     {
 	return 0.0;
     }
 
-    const Real threshold( fabs( p_0 * tolerance * 1e-1 ) );
+    //const Real threshold( fabs( p_0 * tolerance * 1e-1 ) );
     pTable.push_back( p_0 );
+    sum = p_0;
 
     bool extrapolationNeeded( true );
 
@@ -30,8 +31,10 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
     {
 	const Real p_i( f( i ) );
 	pTable.push_back( p_i );
+        sum += p_i;
 
-	if( threshold >= fabs( p_i ) ) // '=' is important when p0 is so small.
+	if( fabs( sum ) * tolerance >=
+            fabs( p_i ) ) // '=' is important when p0 is so small.
 	{
 	    extrapolationNeeded = false;
 	    break;
@@ -40,11 +43,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 	++i;
     }
 
-    if( ! extrapolationNeeded )
-    {
-	sum = std::accumulate( pTable.begin(), pTable.end(), 0.0 );
-    }
-    else
+    if( extrapolationNeeded )
     {
         //std::cerr << "Using series acceleration." << i << std::endl;
 	Real error;
