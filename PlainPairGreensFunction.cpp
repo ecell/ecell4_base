@@ -285,23 +285,19 @@ PlainPairGreensFunction::p_corr( const Real r, const Real r0,
   
 
 const Real 
-PlainPairGreensFunction::p_free( const Real r, const Real r0, 
-				 const Real theta, const Real t ) const
+PlainPairGreensFunction::p_free( const Real theta, const Real r, const Real r0, 
+				 const Real t ) const
 {
-    const Real Dt4( 4.0 * getD() * t );
-    const Real Dt4PI( Dt4 * M_PI );
-
-    return exp( ( 2.0 * r * r0 * cos( theta ) - r * r - r0 * r0 ) / Dt4 )
-	/ sqrt( Dt4PI * Dt4PI * Dt4PI );
+    return p_theta_free( theta, r, r0, t, getD() );
 }
 
 const Real 
 PlainPairGreensFunction::p_tot( const Real r, const Real r0, 
 				const Real theta, const Real t ) const
 {
-    const Real factor( 2.0 * M_PI * r * r * sin( theta ) );
+    const Real factor( 4.0 * M_PI * r * r );
 
-    const Real p_free( this->p_free( r, r0, theta, t ) * factor );
+    const Real p_free( this->p_free( theta, r, r0, t ) * factor );
 
     if( p_free <= PlainPairGreensFunction::P_CUTOFF )
     {
@@ -347,9 +343,6 @@ PlainPairGreensFunction::p_tot( const Real r, const Real r0,
     
     return p_tot;
 }
-
-
-//  virtual const Real p_t_given_r0( const Real t, const Real r0 );
 
 
 const Real 
@@ -560,7 +553,7 @@ PlainPairGreensFunction::Rn( const Integer order, const Real r, const Real r0,
     gsl_integration_qag( &p_corr_R_F, 0.0,
 			 umax,
 			 err,
-			 1e-8,
+			 1e-6,
 			 1000, GSL_INTEG_GAUSS61,
 			 workspace, &integral, &error );
   
@@ -641,6 +634,16 @@ ip_corr_table( const Real theta, const Real r, const Real r0,
     return p;
 }
 
+const Real 
+PlainPairGreensFunction::ip_free( const Real theta, 
+                                  const Real r, 
+                                  const Real r0, 
+                                  const Real t ) const
+{
+    return ip_theta_free( theta, r, r0, t, getD() );
+}
+
+
 const Real PlainPairGreensFunction::
 p_theta( const Real theta, const Real r, const Real r0, const Real t ) const
 {
@@ -664,24 +667,22 @@ const Real PlainPairGreensFunction::
 p_theta_table( const Real theta, const Real r, const Real r0,
                const Real t, const RealVector& RnTable ) const
 {
-    const Real factor( 2.0 * M_PI * r * r * sin( theta ) );
-
-    const Real p_free( this->p_free( r, r0, theta, t ) );
+    const Real p_free( this->p_free( theta, r, r0, t ) );
     const Real p_corr( this->p_corr_table( theta, r, r0, t, RnTable ) ); 
 
-    return ( p_free + p_corr ) * factor;
+//    return p_free;
+    return ( p_free + p_corr );
 }
 
 const Real PlainPairGreensFunction::
 ip_theta_table( const Real theta, const Real r, const Real r0,
                 const Real t, const RealVector& RnTable ) const
 {
-    const Real factor( 2.0 * M_PI * r * r * sin( theta ) );
-
-    const Real p_free( this->p_free( r, r0, theta, t ) );
+    const Real p_free( this->ip_free( theta, r, r0, t ) );
     const Real p_corr( this->ip_corr_table( theta, r, r0, t, RnTable ) ); 
 
-    return ( p_free + p_corr ) * factor;
+//    return p_free; 
+    return ( p_free + p_corr );
 }
 
 void PlainPairGreensFunction::makeRnTable( RealVector& RnTable,
@@ -690,8 +691,9 @@ void PlainPairGreensFunction::makeRnTable( RealVector& RnTable,
                                            const Real t ) const
 {
     const unsigned int MAXORDER( 80 );
-    const Real p_free_max( this->p_free( r, r0, 0.0, t ) );
-    const Real integrationTolerance( p_free_max * 1e-10 );
+//    const Real p_free_max( this->p_free( 0.0, r, r0, t ) ); // sin(0.0)
+    const Real p_free_max( 1 );
+    const Real integrationTolerance( p_free_max * 1e-6 );
     const Real truncationTolerance( p_free_max * 1e-8 );
     
     gsl_integration_workspace* 
@@ -756,8 +758,8 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 
     // input parameter range checks.
     THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 >= sigma );
     THROW_UNLESS( std::invalid_argument, r >= sigma );
+    THROW_UNLESS( std::invalid_argument, r0 >= sigma );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
     // t == 0 means no move.

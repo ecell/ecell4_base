@@ -140,7 +140,7 @@ class FreePairGreensFunctionTestCase( unittest.TestCase ):
                                        args=( r, r0, t ) )
         np = result[0]
 
-        pr = gf.p_r( r, r0, t ) / ( 4 * numpy.pi * r * r )
+        pr = gf.p_r( r, r0, t ) / ( 2 * numpy.pi * r * r )
         
         self.assertAlmostEqual( 0.0, (pr-ip)/pr )
         self.assertAlmostEqual( 0.0, (pr-np)/pr )
@@ -155,7 +155,7 @@ class FreePairGreensFunctionTestCase( unittest.TestCase ):
 
         D = 1e-12
         
-        t = 1e-5
+        t = 1e-3
         r0 = 5e-8
         r = 2.5e-8
         

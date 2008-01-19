@@ -57,7 +57,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.PlainPairGreensFunction( D, kf, sigma )
 
         t = gf.drawTime( 0.5, r0 )
-        self.failIf( t < 0.0 or t >= numpy.inf )
+        self.failIf( t < 0.0 )
 
     def test_DrawR( self ):
         D = 1e-12
@@ -119,7 +119,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
 
         t = gf.drawTime( 0.5, r0 )
         r = gf.drawR( 0.5, r0, t )
-
+        print 'r', r
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
@@ -180,7 +180,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         kf = 1e-8
 
-        t = 1e-2  #FIXME: smaller t should be fine
+        t = 1e-4
         r0 = 5e-8
 
         gf = mod.PlainPairGreensFunction( D, kf, sigma )
@@ -196,7 +196,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
             result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
-            #print theta, np, ip
+            print 'theta, np, ip', theta, np, ip
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
 
@@ -246,6 +246,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         for i in range( resolution ):
             theta = i * numpy.pi / resolution
             pint = gf.ip_theta( theta, r, r0, t )
+            print pint
             self.failIf( pint < pint_prev )
             pint_prev = pint
 

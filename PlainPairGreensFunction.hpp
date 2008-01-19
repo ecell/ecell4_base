@@ -60,8 +60,13 @@ public:
     const Real ip_theta( const Real r, const Real r0, 
                          const Real theta, const Real time ) const;
 
-    const Real p_free( const Real r, const Real r0, 
-		       const Real theta, const Real t ) const;
+    const Real p_free( const Real theta, const Real r, const Real r0, 
+		       const Real t ) const;
+
+    const Real ip_free( const Real theta, 
+                        const Real r, 
+                        const Real r0, 
+                        const Real t ) const;
     
     const Real p_corr( const Real r, const Real r0, 
 		       const Real theta, const Real t ) const;

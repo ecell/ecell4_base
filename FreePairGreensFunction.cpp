@@ -4,6 +4,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_roots.h>
 
+#include "freeFunctions.hpp"
 
 #include "FreePairGreensFunction.hpp"
 
@@ -40,17 +41,17 @@ FreePairGreensFunction::ip_r( const Real r,
     const Real D( getD() );
     const Real Dt4( 4.0 * D * t );
     const Real Dt4r( 1.0 / Dt4 );
-    const Real Dt4sqrt( sqrt( Dt4 ) );
-    const Real Dt4sqrtr( 1.0 / Dt4sqrt );
+    const Real sqrtDt4( sqrt( Dt4 ) );
+    const Real sqrtDt4r( 1.0 / sqrtDt4 );
 
     const Real num1a( exp( - gsl_pow_2( r - r0 ) * Dt4r ) );
     const Real num1b( exp( - gsl_pow_2( r + r0 ) * Dt4r ) );
     const Real den1( r0 * sqrt( M_PI ) );
 
-    const Real term1( Dt4sqrt * ( - num1a + num1b ) / den1 );
+    const Real term1( sqrtDt4 * ( - num1a + num1b ) / den1 );
 
-    const Real term2( erf( ( r - r0 ) * Dt4sqrtr ) );
-    const Real term3( erf( ( r + r0 ) * Dt4sqrtr ) );
+    const Real term2( erf( ( r - r0 ) * sqrtDt4r ) );
+    const Real term3( erf( ( r + r0 ) * sqrtDt4r ) );
 
     return ( term1 + term2 + term3 ) * .5;
 }
@@ -61,18 +62,7 @@ FreePairGreensFunction::p_theta( const Real theta,
                                  const Real r0,
                                  const Real t ) const
 {
-    const Real D( getD() );
-    const Real Dt4( 4.0 * D * t );
-    const Real Dt4PI( Dt4 * M_PI );
-
-    Real sin_theta;
-    Real cos_theta;
-    sincos( theta, &sin_theta, &cos_theta );
-    const Real p( ( 1.0 / std::sqrt( gsl_pow_3( Dt4PI ) ) ) *
-                  exp( - ( r * r + r0 * r0 - 2.0 * r * r0 * cos_theta ) 
-                       / Dt4 ) );
-
-    return p * sin_theta * 0.5;
+    return p_theta_free( theta, r, r0, t, getD() );
 }
 
 const Real 
@@ -81,22 +71,7 @@ FreePairGreensFunction::ip_theta( const Real theta,
                                   const Real r0,
                                   const Real t ) const
 {
-    const Real Dt( getD() * t );
-    const Real Dt2( Dt + Dt );
-    const Real rr0( r * r0 );
-
-    const Real rr0_over_2Dt( rr0 / ( Dt2 ) );
-
-    const Real rsqr0sq_over_4Dt( ( r * r + r0 * r0 ) / ( Dt2 + Dt2 ) );
-
-    const Real term1( expm1( rr0_over_2Dt 
-                             - rsqr0sq_over_4Dt ) );
-    const Real term2( expm1( rr0_over_2Dt * cos( theta ) 
-                             - rsqr0sq_over_4Dt ) );
-
-    const Real den( 2.0 * 4.0 * sqrt( M_PI * M_PI * M_PI * Dt ) * rr0 );
-
-    return ( term1 - term2 ) / den;
+    return ip_theta_free( theta, r, r0, t, getD() );
 }
 
 const Real

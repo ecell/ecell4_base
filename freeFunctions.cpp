@@ -214,6 +214,28 @@ const Real p_theta_free( const Real theta, const Real r, const Real r0,
     return term1 * term2 * sin_theta; // jacobian
 }
 
+const Real ip_theta_free( const Real theta, const Real r, const Real r0,
+                          const Real t, const Real D )
+{
+    const Real Dt( D * t );
+    const Real Dt2( Dt + Dt );
+    const Real rr0( r * r0 );
+
+    const Real rr0_over_2Dt( rr0 / Dt2 );
+
+    const Real rsqr0sq_over_4Dt( ( r * r + r0 * r0 ) / ( Dt2 + Dt2 ) );
+
+    const Real term1( expm1( rr0_over_2Dt 
+                             - rsqr0sq_over_4Dt ) );
+    const Real term2( expm1( rr0_over_2Dt * cos( theta ) 
+                             - rsqr0sq_over_4Dt ) );
+
+    const Real den( 4.0 * sqrt( M_PI * M_PI * M_PI * Dt ) * rr0 );
+
+    return ( term1 - term2 ) / den;
+}
+
+
 
 const Real g_bd( const Real r0, const Real sigma, const Real t, const Real D )
 {
