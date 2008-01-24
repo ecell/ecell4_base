@@ -183,8 +183,10 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawTheta", &PlainPairGreensFunction::drawTheta )
 
         .def( "p_tot", &PlainPairGreensFunction::p_tot )
-        .def( "p_free", &PlainPairGreensFunction::p_tot )
-        .def( "p_corr", &PlainPairGreensFunction::p_tot )
+        .def( "p_free", &PlainPairGreensFunction::p_free )
+        .def( "p_corr", &PlainPairGreensFunction::p_corr )
+        .def( "p_survival", &PlainPairGreensFunction::p_survival )
+        .def( "p_int_r", &PlainPairGreensFunction::p_int_r )
         .def( "p_theta", &PlainPairGreensFunction::p_theta )
         .def( "ip_theta", &PlainPairGreensFunction::ip_theta )
 

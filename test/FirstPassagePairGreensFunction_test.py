@@ -512,7 +512,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
-        r = r0
          
         pintr = gf.p_int_r( gf.getSigma(), t, r0 )
         self.assertEqual( 0.0, pintr )

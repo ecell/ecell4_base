@@ -113,13 +113,12 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
-        r0 = 5e-8
+        r0 = 2e-8
+        t = 1e-3
+        r = 2.1e-8
         
         gf = mod.PlainPairGreensFunction( D, kf, sigma )
 
-        t = gf.drawTime( 0.5, r0 )
-        r = gf.drawR( 0.5, r0, t )
-        print 'r', r
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
@@ -172,6 +171,36 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
+    def test_p_int_r_at_s_is_zero( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 2e-8
+
+        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+         
+        pintr = gf.p_int_r( sigma, t, r0 )
+        self.assertEqual( 0.0, pintr )
+
+    def test_p_int_r_large_is_p_survival( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-3
+        r0 = 2e-8
+
+        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+         
+        pintr = gf.p_int_r( sigma * 1e8, t, r0 )
+        psurv = gf.p_survival( t, r0 )
+
+        self.assertAlmostEqual( psurv, pintr )
+
     def test_ip_theta_is_int_p_theta( self ):
 
         import scipy.integrate
@@ -180,7 +209,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         kf = 1e-8
 
-        t = 1e-4
+        t = 1e-3
         r0 = 5e-8
 
         gf = mod.PlainPairGreensFunction( D, kf, sigma )
@@ -246,7 +275,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         for i in range( resolution ):
             theta = i * numpy.pi / resolution
             pint = gf.ip_theta( theta, r, r0, t )
-            print pint
+            #print pint
             self.failIf( pint < pint_prev )
             pint_prev = pint
 

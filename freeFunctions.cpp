@@ -107,18 +107,17 @@ const Real S_irr( const Real t, const Real r0,
     const Real kD( 4.0 * M_PI * sigma * D );
     const Real alpha( ( 1.0 + ( kf / kD ) ) * ( sqrt( D ) / sigma ) );
 
-    const Real sqrtt( sqrt( t ) );
-
-    const Real p( __p_reaction_irr( sqrtt, r0, kf, D, sigma, alpha, kD ) );
+    const Real p( __p_reaction_irr( t, r0, kf, D, sigma, alpha, kD ) );
 
     return 1.0 - p;
 }
 
 const Real 
-__p_reaction_irr( const Real sqrtt, const Real r0,
+__p_reaction_irr( const Real t, const Real r0,
                   const Real kf, const Real D, const Real sigma,
                   const Real alpha, const Real kD )
 {
+    const Real sqrtt( sqrt( t ) );
     const Real sqrtD( sqrt( D ) );
 
     const Real r0_m_sigma_over_sqrt4D_t( ( r0 - sigma ) 

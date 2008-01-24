@@ -346,22 +346,27 @@ PlainPairGreensFunction::p_tot( const Real r, const Real r0,
 
 
 const Real 
+PlainPairGreensFunction::p_survival( const Real t, const Real r0 ) const
+{
+    return 1.0 - p_reaction( t, r0 );
+}
+
+
+const Real 
 PlainPairGreensFunction::p_reaction( const Real t, const Real r0 ) const
 {
-    const Real sqrtt( sqrt( t ) );
     const Real kf( getkf() );
     const Real D( getD() );
     const Real sigma( getSigma() );
     const Real alpha( getalpha() );
     const Real kD( getkD() );
 
-
-    return __p_reaction_irr( sqrtt, r0, kf, D, sigma, alpha, kD  );
+    return __p_reaction_irr( t, r0, kf, D, sigma, alpha, kD  );
 }
 
 
 const Real 
-PlainPairGreensFunction::p_reaction_F( const Real tsqrt, 
+PlainPairGreensFunction::p_reaction_F( const Real t,
 				       const p_reaction_params* const params )
 {
     const PlainPairGreensFunction* const gf( params->gf ); 
@@ -374,7 +379,64 @@ PlainPairGreensFunction::p_reaction_F( const Real tsqrt,
     const Real r0( params->r0 );
     const Real rnd( params->rnd );
 
-    return __p_reaction_irr( tsqrt, r0, kf, D, sigma, alpha, kD  ) - rnd;
+    return __p_reaction_irr( t, r0, kf, D, sigma, alpha, kD  ) - rnd;
+}
+
+
+const Real 
+PlainPairGreensFunction::p_int_r( const Real r, 
+                                  const Real t, 
+                                  const Real r0 ) const
+{
+    const Real kf( getkf() );
+    const Real D( getD() );
+    const Real sigma( getSigma() );
+    const Real alpha( getalpha() );
+    const Real kD( getkD() );
+
+    const Real Dt( D * t );
+
+    const Real kf_kD( kf + kD );
+    const Real Dt4( 4.0 * Dt );
+    const Real sqrtDt4( sqrt( Dt4 ) );
+    const Real ksigma2( 2.0 * kf * sigma );
+    const Real alphasqrtt( alpha * sqrt( t ) );
+
+    const Real r_r0__2s___sqrtDt4( ( r - 2.0 * sigma + r0 ) / sqrtDt4 );
+    const Real r_r0__sqrtDt4( ( r - r0 ) / sqrtDt4 );
+    const Real r0_s__sqrtDt4( ( r0 - sigma ) / sqrtDt4 );
+
+    const Real term1( ( expm1( - gsl_pow_2( r_r0__2s___sqrtDt4  ) )
+                        - expm1( - gsl_pow_2( r_r0__sqrtDt4 ) ) )* 
+                        sqrt( Dt / M_PI ) );
+
+    const Real erf_r_r0__2s___sqrtDt4( erf( r_r0__2s___sqrtDt4 ) );
+    const Real term2( kf_kD * r0 * erf( r_r0__sqrtDt4 ) 
+                      + kf_kD * r0 * erf_r_r0__2s___sqrtDt4
+                      - ksigma2 * erf_r_r0__2s___sqrtDt4
+                      + ksigma2 * erf( r0_s__sqrtDt4 ) );
+
+    const Real term3( kf * sigma * W( r0_s__sqrtDt4, alphasqrtt ) 
+                      - ( kf * r + kD * ( r - sigma ) ) *
+                      W( r_r0__2s___sqrtDt4, alphasqrtt ) );
+
+    const Real result( ( 1 / r0 ) * ( term1 + ( 1 / kf_kD ) * 
+                                      ( ( 0.5 * term2 ) + term3 ) ) );
+
+    return result;
+}
+
+const Real 
+PlainPairGreensFunction::p_int_r_F( const Real r,
+                                    const p_int_r_params* const params )
+{
+    const PlainPairGreensFunction* const gf( params->gf ); 
+
+    const Real t( params->t );
+    const Real r0( params->r0 );
+    const Real rnd( params->rnd );
+
+    return gf->p_int_r( r, t, r0 ) - rnd;
 }
 
 
@@ -388,10 +450,10 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
     THROW_UNLESS( std::invalid_argument, r0 >= sigma );
 
     Real low( 1e-100 );
-    Real high( sqrt( 1 ) );
+    Real high( 100 );
 
     {
-	const Real maxp( p_reaction( high, r0 ) );
+	const Real maxp( p_reaction( INFINITY, r0 ) );
 
 	if( rnd >= maxp )
 	{
@@ -439,9 +501,10 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
 	++i;
     }
   
+    const Real r( gsl_root_fsolver_root( solver ) );
     gsl_root_fsolver_free( solver );
 
-    return gsl_pow_2( low );
+    return r;
 } 
 
 

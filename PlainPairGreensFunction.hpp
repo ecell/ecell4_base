@@ -49,7 +49,11 @@ public:
 	return this->alpha;
     }
     
-
+    const Real p_reaction( const Real t, const Real r0 ) const;
+    const Real p_survival( const Real t, const Real r0 ) const;
+    const Real p_int_r( const Real r, 
+                        const Real t, 
+                        const Real r0 ) const;
 
     const Real p_tot( const Real r, const Real r0, 
 		      const Real theta, const Real time ) const;
@@ -78,6 +82,14 @@ private:
     struct p_reaction_params 
     { 
 	const PlainPairGreensFunction* const gf;
+	const Real r0;
+	const Real rnd;
+    };
+
+    struct p_int_r_params 
+    { 
+	const PlainPairGreensFunction* const gf;
+	const Real t;
 	const Real r0;
 	const Real rnd;
     };
@@ -122,7 +134,8 @@ private:
     static const Real ip_theta_F( const Real theta,
                                   const p_theta_params* params );
 
-    const Real p_reaction( const Real t, const Real r0 ) const;
+    const Real p_int_r_F( const Real r,
+                          const p_int_r_params* const params );
 
     static const Real p_corr_R( const Real u, 
 				const p_corr_R_params* const params );
