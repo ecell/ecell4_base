@@ -1871,7 +1871,7 @@ FirstPassagePairGreensFunction::dp_theta( const Real theta,
 
 const Real 
 FirstPassagePairGreensFunction::
-p_theta_i( const unsigned int n,
+p_theta_n( const unsigned int n,
 	   const RealVector& p_nTable, const RealVector& lgndTable ) const
 {
     return p_nTable[n] * lgndTable[n] * ( 2 * n + 1 );
@@ -1895,7 +1895,7 @@ p_theta_table( const Real theta,
     gsl_sf_legendre_Pl_array( tableSize-1, cos_theta, &lgndTable[0] );
 
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					p_theta_i,
+					p_theta_n,
 					this,
 					_1, p_nTable, lgndTable ),
 			   tableSize-1 ) );
@@ -2014,7 +2014,7 @@ FirstPassagePairGreensFunction::idp_theta( const Real theta,
 
 const Real 
 FirstPassagePairGreensFunction::
-ip_theta_i( const unsigned int n,
+ip_theta_n( const unsigned int n,
 	    const RealVector& p_nTable, 
 	    const RealVector& lgndTable1 ) const
 {
@@ -2051,7 +2051,7 @@ ip_theta_table( const Real theta,
 
 
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					ip_theta_i,
+					ip_theta_n,
 					this,
 					_1, p_nTable, lgndTable ),
 			   tableSize - 1 ) );
@@ -2110,9 +2110,6 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	makep_nTable( p_nTable, r, r0, t );
     }
 
-#if 1
-    // root finding with the integrand form.
-
     const Real ip_theta_pi( ip_theta_table( M_PI, r, r0, t, p_nTable ) );
 
     ip_theta_params params = { this, r, r0, t, p_nTable, rnd * ip_theta_pi };
@@ -2160,46 +2157,6 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
     theta = gsl_root_fsolver_root( solver );
     gsl_root_fsolver_free( solver );
     
-
-#else
-    // bisection after numerical integration.
-
-    const RealVector::size_type thetaResolution( 200 );
-    const Real thetaStep( M_PI / thetaResolution );
-
-    RealVector pTable;
-    pTable.reserve( thetaResolution );
-
-    make_p_thetaTable( pTable, r, r0, t, thetaResolution, p_nTable );
-    const RealVector::size_type tableLast( pTable.size()-1 );
-
-    // debug
-    /*
-    const Real psurv( p_survival( t, r0 ) );
-    const Real p0r( p_0( t, r, r0 ) * 4.0 * M_PI * r * r );
-    const Real ip( ip_theta_table( M_PI, r, r0, t, p_nTable ) );
-    printf("theta %g %g %g\n", p0r, pTable[tableLast] * 
-           2 * M_PI * r * r * thetaStep, ip * 2 * M_PI * r * r );
-    */
-
-    const Real targetPoint( rnd * pTable[tableLast] );
-    const size_t lowerBound( gsl_interp_bsearch( &pTable[0], targetPoint, 
-						 0, tableLast ) );
-    const Real low( lowerBound * thetaStep );
-
-    if( pTable[lowerBound+1] - pTable[lowerBound] != 0.0 )
-    {
-	theta = low + thetaStep * ( targetPoint - pTable[lowerBound] ) / 
-	    ( pTable[lowerBound+1] - pTable[lowerBound] );
-    }
-    else
-    {
-	// this can happen when rnd is equal to or is too close to 1.0.
-	theta = low;
-    }
-#endif
-
-
     return theta;
 }
 

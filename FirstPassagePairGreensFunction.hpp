@@ -300,11 +300,11 @@ protected:
 			      const Real r,
 			      const Real r0 ) const;
 
-    const Real p_theta_i( const unsigned int n,
+    const Real p_theta_n( const unsigned int n,
 			  const RealVector& p_nTable, 
 			  const RealVector& lgndTable ) const;
 
-    const Real ip_theta_i( const unsigned int n,
+    const Real ip_theta_n( const unsigned int n,
 			   const RealVector& p_nTable, 
 			   const RealVector& lgndTable1 ) const;
 

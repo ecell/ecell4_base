@@ -93,11 +93,11 @@ BOOST_PYTHON_MODULE( _gfrd )
 
 
     // free functions
-
     //def( "p_free", p_free );
     def( "p_irr", p_irr );
     def( "S_irr", S_irr );
     def( "p_theta_free", p_theta_free );
+    def( "ip_theta_free", ip_theta_free );
     def( "g_bd", g_bd );
     def( "I_bd", I_bd );
 
@@ -182,9 +182,9 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawR", &PlainPairGreensFunction::drawR )
 	.def( "drawTheta", &PlainPairGreensFunction::drawTheta )
 
-        .def( "p_tot", &PlainPairGreensFunction::p_tot )
+//        .def( "p_tot", &PlainPairGreensFunction::p_tot )
         .def( "p_free", &PlainPairGreensFunction::p_free )
-        .def( "p_corr", &PlainPairGreensFunction::p_corr )
+//        .def( "p_corr", &PlainPairGreensFunction::p_corr )
         .def( "p_survival", &PlainPairGreensFunction::p_survival )
         .def( "p_int_r", &PlainPairGreensFunction::p_int_r )
         .def( "p_theta", &PlainPairGreensFunction::p_theta )

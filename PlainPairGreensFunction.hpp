@@ -106,13 +106,11 @@ private:
     
     struct p_corr_R_params 
     { 
-	int order;
+	const PlainPairGreensFunction* const gf;
+	unsigned int n;
 	const Real r;
 	const Real r0; 
 	const Real t; 
-	const Real Sigma; 
-	const Real D;
-	const Real kf;
     };
     
     struct p_corr_R2_params 
@@ -134,13 +132,21 @@ private:
     static const Real ip_theta_F( const Real theta,
                                   const p_theta_params* params );
 
-    const Real p_int_r_F( const Real r,
-                          const p_int_r_params* const params );
+    static const Real p_int_r_F( const Real r,
+                                 const p_int_r_params* const params );
 
-    static const Real p_corr_R( const Real u, 
-				const p_corr_R_params* const params );
-    static const Real p_corr_R2( const Real u, 
-				 const p_corr_R2_params* const params );
+    static const Real p_corr_R_F( const Real alpha, 
+                                  const p_corr_R_params* const params );
+//    static const Real p_corr_R2( const Real alpha, 
+//				 const p_corr_R2_params* const params );
+
+
+    const Real p_corr_R( const Real alpha,
+                         const unsigned int n,
+                         const Real r,
+                         const Real r0,
+                         const Real t ) const;
+
     
     const Real p_corr_n( const unsigned int n, const RealVector& RnTable, 
                          const RealVector& lgndTable ) const;
@@ -175,8 +181,8 @@ private:
                       const Real t ) const;
 
     const Real 
-    Rn( const Integer order, const Real r, const Real r0, const Real t,
-	gsl_integration_workspace* const workspace, const Real err ) const;
+    Rn( const unsigned int order, const Real r, const Real r0, const Real t,
+	gsl_integration_workspace* const workspace, const Real tol ) const;
     
     
 private:

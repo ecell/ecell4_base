@@ -7,6 +7,33 @@
 #include "funcSum.hpp"
 
 const Real 
+funcSum_all( boost::function<const Real( const unsigned int i )> f,
+             const size_t max_i )
+{
+    Real sum( 0.0 );
+
+    const Real p_0( f( 0 ) );
+    if ( p_0 == 0.0 )
+    {
+	return 0.0;
+    }
+
+    sum = p_0;
+
+    RealVector::size_type i( 1 ); 
+    while( i <= max_i )
+    {
+	const Real p_i( f( i ) );
+        sum += p_i;
+
+	++i;
+    }
+
+    return sum;
+}
+
+
+const Real 
 funcSum( boost::function<const Real( const unsigned int i )> f,
 	 const size_t max_i,
 	 const Real tolerance )

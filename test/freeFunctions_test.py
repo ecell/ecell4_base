@@ -20,6 +20,29 @@ class FreeFunctionsTestCase( unittest.TestCase ):
     def tearDown( self ):
         pass
 
+    def test_int_p_theta_free_is_ip_theta_free( self ):
+
+        import scipy.integrate
+
+        D = 1e-12
+        t = 1e-5
+        sigma = 1e-9
+        r0 = 1e-9
+        r = r0
+        kf = 1e-18
+        
+        ip = mod.ip_theta_free( 0.0, r, r0, t, D )
+        self.assertEqual( 0.0, ip )
+        
+        resolution = 10
+        for i in range( 1, resolution ):
+            theta = i * numpy.pi / resolution 
+            ip = mod.ip_theta_free( theta, r, r0, t, D )
+            result = scipy.integrate.quad( mod.p_theta_free, 0.0, theta,
+                                           args=( r, r0, t, D ) )
+            np = result[0]
+            self.assertAlmostEqual( 0.0, (np-ip)/ip )
+
 
     def test_int_p_irr_is_S_irr( self ):
 

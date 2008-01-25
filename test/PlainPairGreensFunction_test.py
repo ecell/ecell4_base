@@ -185,6 +185,22 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         pintr = gf.p_int_r( sigma, t, r0 )
         self.assertEqual( 0.0, pintr )
 
+    def test_p_int_r0_at_s_zerot_is_zero( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        t = 0
+        r0 = 2e-8
+
+        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+         
+        pintr = gf.p_int_r( sigma, t, r0 )
+
+        self.assertEqual( 0.0, pintr )
+
+
     def test_p_int_r_large_is_p_survival( self ):
 
         D = 1e-12
@@ -210,7 +226,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         kf = 1e-8
 
         t = 1e-3
-        r0 = 5e-8
+        r0 = sigma*2
 
         gf = mod.PlainPairGreensFunction( D, kf, sigma )
         r = r0
@@ -225,9 +241,49 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
             result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
-            print 'theta, np, ip', theta, np, ip
+            #print 'theta, np, ip', theta, np, ip
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
+
+    def test_ip_theta_r0_is_sigma( self ):
+
+        import scipy.integrate
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-6
+        r0 = sigma
+
+        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        r = 1.1 * r0
+
+        ip = gf.ip_theta( 0.0, r, r0, t )
+        self.assertEqual( 0.0, ip )
+
+        ip = gf.ip_theta( numpy.pi, r, r0, t )
+        #print 'ip', ip
+        #self.assertEqual( 0.0, ip )
+
+
+    def test_ip_theta_pi_is_p_irr( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        t = 1e-4
+        r0 = 2e-8
+        r = r0
+
+        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+
+        ip = gf.ip_theta( numpy.pi, r, r0, t ) * ( 2 * numpy.pi * r * r )
+        pirr = mod.p_irr( r, t, r0, kf, D, sigma )
+
+        self.assertNotEqual( 0.0, ip )
+        self.assertAlmostEqual( ip, pirr )
 
     def test_p_theta_never_negative( self ):
 
