@@ -149,34 +149,37 @@ PlainPairGreensFunction::p_corr_R( const Real alpha,
     const Real D( this->getD() );
     const Real sigma( this->getSigma() );
     
-    const Real sigmaAlpha( sigma * alpha );
-    const Real kSigma( getkf() * getSigma() );
+    const Real kSigma( getkf() * sigma );
     const Real realn( static_cast<Real>( n ) );
     const Real kSigma_m_n( kSigma - realn );
 
     const Real term1( exp( - D * t * alpha * alpha ) );
 
+    const Real sigmaAlpha( sigma * alpha );
+    const Real rAlpha( r * alpha );
+    const Real r0Alpha( r0 * alpha );
+
     // GSL
-    const Real js1( gsl_sf_bessel_Jnu( realn,   sigmaAlpha ) );
-    const Real ys1( gsl_sf_bessel_Ynu( realn,   sigmaAlpha ) );
-    const Real js2( gsl_sf_bessel_Jnu( realn+1.0, sigmaAlpha ) );
-    const Real ys2( gsl_sf_bessel_Ynu( realn+1.0, sigmaAlpha ) );
-    const Real jr(  gsl_sf_bessel_Jnu( realn,   r * alpha ) );
-    const Real yr(  gsl_sf_bessel_Ynu( realn,   r * alpha ) );
-    const Real jr0( gsl_sf_bessel_Jnu( realn,   r0 * alpha ) );
-    const Real yr0( gsl_sf_bessel_Ynu( realn,   r0 * alpha ) );
+    const Real js1( gsl_sf_bessel_Jnu( realn,       sigmaAlpha ) );
+    const Real ys1( gsl_sf_bessel_Ynu( realn,       sigmaAlpha ) );
+    const Real js2( gsl_sf_bessel_Jnu( realn + 1.0, sigmaAlpha ) );
+    const Real ys2( gsl_sf_bessel_Ynu( realn + 1.0, sigmaAlpha ) );
+    const Real jr(  gsl_sf_bessel_Jnu( realn,       rAlpha ) );
+    const Real yr(  gsl_sf_bessel_Ynu( realn,       rAlpha ) );
+    const Real jr0( gsl_sf_bessel_Jnu( realn,       r0Alpha ) );
+    const Real yr0( gsl_sf_bessel_Ynu( realn,       r0Alpha ) );
 
-    const Real P1( kSigma_m_n * js1 + sigmaAlpha * js2 );
-    const Real P2( kSigma_m_n * ys1 + sigmaAlpha * ys2 );
+    const Real R1( ( kSigma_m_n * js1 + sigmaAlpha * js2 ) * 2 );
+    const Real R2( ( kSigma_m_n * ys1 + sigmaAlpha * ys2 ) * 2 );
+    const Real F1R1( R1 * jr * jr0 - R1 * yr * yr0 );
+    const Real F2( jr0 * yr + jr * yr0 );
 
-    const Real num1( P1 * yr * ( P2 * jr0 - P1 * yr0 ) );
-    const Real num2( jr * ( P1 * P1 * jr0 + P1 * P2 * yr0 ) );
-    const Real num( alpha * ( num1 + num2 ) );
-    const Real den( P1 * P1 + P2 * P2 );
+    const Real num( alpha * R1 * ( F1R1 + F2 * R2 ) );
+    const Real den( R1 * R1 + R2 * R2 );
 
     const Real result( term1 * num / den );
 
-    //printf("%g %g %g %g %g %g\n", result, num1, num2, den, P1, P2 );
+    //printf("%g %g %g %g %g %g\n", result, num, den, F1, F2 );
 
     assert( std::isfinite( result ) );
 
@@ -199,154 +202,26 @@ PlainPairGreensFunction::p_corr_R_F( const Real alpha,
 }
 
 
-#if 0
 const Real 
-PlainPairGreensFunction::p_corr_R( const Real u, 
-				   const p_corr_R_params* const params )
+PlainPairGreensFunction::p_corr( const Real theta, const Real r, 
+                                 const Real r0, const Real t ) const
 {
-    Real result;
-    
-    const Real SIGMA2KFp1( params->Sigma * 2.0 * params->kf + 1.0 );
-    const Real SIGMA2U( params->Sigma * 2.0 * u );
-    
-    const int order( params->order );
-    
-    Real jr,yr,jr0,yr0,js,ys,jps,yps,tmp_;
-    bessjy(u*params->Sigma,order+0.5,&js,&ys,&jps,&yps);
-    bessjy(u*params->r,order+0.5,&jr,&yr,&tmp_,&tmp_);
-    bessjy(u*params->r0,order+0.5,&jr0,&yr0,&tmp_,&tmp_);
+    RealVector RnTable;
+    makeRnTable( RnTable, r, r0, t );
 
-    // R1 / ( R1^2 + R2^2 ) * ( R1 F2 + R2 F2 )
-  
-    // below I rewrote the equation in the way that 
-    // (1) j and y are multiplied first, before j^2 or y^2 occurs,
-    //     of which absolute values of exponents can be huge 
-    //    (either positive or negative).
-    // (2) avoid roundoff error caused by j? - j?.
-    //     (including j? - jp? etc.)  assumed y? - y? is ok (?).
-  
-    const Real R1a( SIGMA2KFp1 * js );
-    const Real R1b( SIGMA2U * jps );
-  
-    const Real R1F1( ( ( R1a * jr ) * jr0 - ( R1a * yr ) * yr0 ) + 
-		     ( R1b * yr ) * yr0 - ( R1b * jr ) * jr0 );
-  
-    const Real R2( SIGMA2KFp1 * ys - SIGMA2U * yps ); 
-    const Real F2( jr * yr0 + jr0 * yr );
-  
-    const Real R1F1_plus_R2F2( R1F1 + R2 * F2 );
-    const Real num( R1a * R1F1_plus_R2F2 - R1b * R1F1_plus_R2F2 );
-  
-    // R1^2 + R2^2, roundoff error here wouldn't be a big problem, though.
-    const Real den( R2 * R2 + R1a * R1a - 2.0 * R1a * R1b + R1b * R1b );
-
-    /*
-      const double _R1( SIGMA2KFp1 * js - SIGMA2U * jps );
-      const double _R2( SIGMA2KFp1 * ys - SIGMA2U * yps );
-  
-      const double _R1F1( jr*jr0*_R1 - (_R1*yr)*yr0 );
-      const double _F2( yr0*jr + jr0*yr );
-  
-      const double num( _R1 * _R1F1+ (_R1*_R2)*_F2 );
-      const double den( _R1*_R1+_R2*_R2 );
-    */
-  
-    const Real exp_term( exp( - params->D * u * u * params->t ) * u );
-
-    result = ( num / den ) * exp_term;
-
-    assert( ! isnan( result ) );
-
-    return result;
+    return p_corr_table( theta, r, r0, t, RnTable );
 }
-#endif
 
-#if 0
 const Real 
-PlainPairGreensFunction::p_corr( const Real r, const Real r0, 
-				 const Real theta, const Real t ) const
+PlainPairGreensFunction::ip_corr( const Real theta, const Real r, 
+                                  const Real r0, const Real t ) const
 {
-    //  int NU=(int)(100*pow((D/0.05*time),-0.3)); 
-    //Real umax=25/sqrt(D/0.05*time); 
-    
+    RealVector RnTable;
+    makeRnTable( RnTable, r, r0, t );
 
-    // the point that the scaling factor becomes exp( -30 ) ~= 1e-13
-    const Real umax( sqrt( 30.0 / ( getD() * t ) ) ); 
-    
-    const int maxorder( 100 );
-    
-    // initially calculate orders \in [0,3], use of recursion implemented in
-    // HalfBesselGenerator is justified at least two orders, plus overhead.
-    int order_step( 4 );
-
-    gsl_function p_corr_R2_F;
-    p_corr_R2_F.function = 
-	reinterpret_cast<typeof(p_corr_R2_F.function)>( &p_corr_R2 );
-
-    //              params = { nmin, nmax-1, r, r0, theta, t, Sigma, D, kf };
-    p_corr_R2_params params = { 0, order_step-1, r, r0, theta, t, getSigma(), 
-				getD(), getkf() };
-    p_corr_R2_F.params = reinterpret_cast<typeof(p_corr_R2_F.params)>( &params );
-
-    gsl_integration_workspace* 
-	workspace( gsl_integration_workspace_alloc( 1000 ) );
-
-    Real inttot( 0.0 );
-    while(true)
-    {			
-	Real integral;
-	Real error;
-	
-	// abs_err >> 1 because the integral can be huge.
-	// instead use rel_err.
-	gsl_integration_qag( &p_corr_R2_F, 0.0, umax, 
-			     10, // FIXME: this needs to be adaptively given.
-			     1e-8, 
-			     1000,
-			     GSL_INTEG_GAUSS61,
-			     workspace, &integral, &error );
-      
-	//      printf("%g %g\n",integral,error);
-	inttot += integral;
-
-	//printf("%d %g %g\n",params.order,inttot, integral );
-	
-	// truncate when converged enough.
-	const Real integral_abs( fabs( integral ) );
-	if( integral_abs / fabs( inttot ) < 1e-10  )
-	{
-	    break;
-	}
-	
-	if( params.order >= maxorder )
-	{
-	    std::cerr << "Didn't converge. " << params.order << std::endl;
-	    // throw std::exception();//"Didn't converge.");
-	    break;
-	}
-	
-
-	params.order = params.order_max + 1;
-	params.order_max = params.order + order_step;
-
-	if( order_step <= 10 )
-	{
-	    ++order_step;
-	}
-	//printf("%d %d\n", params.order,params.order_max);
-    }	
-
-    gsl_integration_workspace_free( workspace );
-
-    //printf("%d\n",params.nmax);
-    
-    inttot /= - ( M_PI*4.0*sqrt( r * r0 ) );
-
-    //printf("%d\n",params.order_max);
-    
-    return inttot;
+    return ip_corr_table( theta, r, r0, t, RnTable );
 }
-#endif  
+
 
 const Real 
 PlainPairGreensFunction::p_free( const Real theta, const Real r, const Real r0, 
@@ -354,61 +229,6 @@ PlainPairGreensFunction::p_free( const Real theta, const Real r, const Real r0,
 {
     return p_theta_free( theta, r, r0, t, getD() );
 }
-
-#if 0
-const Real 
-PlainPairGreensFunction::p_tot( const Real r, const Real r0, 
-				const Real theta, const Real t ) const
-{
-    const Real factor( 4.0 * M_PI * r * r );
-
-    const Real p_free( this->p_free( theta, r, r0, t ) * factor );
-
-    if( p_free <= PlainPairGreensFunction::P_CUTOFF )
-    {
-	return 0.0;
-    }
-
-    const Real p_corr( this->p_corr( r, r0, theta, t ) * factor );
-
-    Real p_tot( p_free + p_corr );
-		    
-						
-    if( p_tot < 0.0 )
-    {
-	if( - p_tot < P_CUTOFF )
-	{
-	    std::cerr << "p_tot is negative, but" <<
-		" abs( p_tot ) < EPSILON." <<
-		"setting zero.\n"
-		      << "p_tot = " << p_tot
-		      << ", p_corr = " << p_corr
-		      << ", p_free = " << p_free
-		      << std::endl;
-	    std::cerr << "t " << t << "\tr0 " << r0 << "\tr " << r
-		      << "\ttheta " << theta << std::endl;
-	    //	    exit(1);
-	    p_tot = 0.0;
-	}
-	else
-	{
-	    std::cerr << "WARNING: p_tot is negative, and" <<
-		" abs( p_tot ) >= EPSILON. Setting zero.\n"
-		      << "p_tot = " << p_tot
-		      << ", p_corr = " << p_corr
-		      << ", p_free = " << p_free
-		      << std::endl;
-	    std::cerr << "t " << t << "\tr0 " << r0 << "\tr " << r
-		      << "\ttheta " << theta << std::endl;
-
-	    p_tot = 0.0;
-	    //exit( 1 );
-	}
-    }
-    
-    return p_tot;
-}
-#endif
 
 const Real 
 PlainPairGreensFunction::p_survival( const Real t, const Real r0 ) const
@@ -472,7 +292,7 @@ PlainPairGreensFunction::p_int_r( const Real r,
     const Real r0_s__sqrtDt4( ( r0 - sigma ) / sqrtDt4 );
 
     const Real term1( ( expm1( - gsl_pow_2( r_r0__2s___sqrtDt4  ) )
-                        - expm1( - gsl_pow_2( r_r0__sqrtDt4 ) ) )* 
+                        - expm1( - gsl_pow_2( r_r0__sqrtDt4 ) ) ) * 
                         sqrt( Dt / M_PI ) );
 
     const Real erf_r_r0__2s___sqrtDt4( erf( r_r0__2s___sqrtDt4 ) );
@@ -719,10 +539,10 @@ p_corr_table( const Real theta, const Real r, const Real r0,
 
 
     const Real p( funcSum_all( boost::bind( &PlainPairGreensFunction::
-                                                p_corr_n,
-                                                this,
-                                                _1, RnTable, lgndTable ),
-                                   tableSize-1 ) );
+                                            p_corr_n,
+                                            this,
+                                            _1, RnTable, lgndTable ),
+                               tableSize-1 ) );
 
     result = - p * sin_theta;
 
@@ -747,10 +567,10 @@ ip_corr_table( const Real theta, const Real r, const Real r0,
     gsl_sf_legendre_Pl_array( tableSize, cos_theta, &lgndTable[1] );
 
     const Real p( funcSum_all( boost::bind( &PlainPairGreensFunction::
-                                                ip_corr_n,
-                                                this,
-                                                _1, RnTable, lgndTable ),
-                                   tableSize - 1 ) );
+                                            ip_corr_n,
+                                            this,
+                                            _1, RnTable, lgndTable ),
+                               tableSize - 1 ) );
 
     const Real result( - p / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
     return result;
@@ -792,6 +612,7 @@ p_theta_table( const Real theta, const Real r, const Real r0,
     const Real p_free( this->p_free( theta, r, r0, t ) );
     const Real p_corr( this->p_corr_table( theta, r, r0, t, RnTable ) ); 
 
+//    return p_free;
     return ( p_free + p_corr );
 }
 
@@ -802,6 +623,9 @@ ip_theta_table( const Real theta, const Real r, const Real r0,
     const Real p_free( this->ip_free( theta, r, r0, t ) );
     const Real p_corr( this->ip_corr_table( theta, r, r0, t, RnTable ) ); 
 
+    //printf("%g %g\n",p_free,p_corr);
+
+//    return p_free;
     return ( p_free + p_corr );
 }
 

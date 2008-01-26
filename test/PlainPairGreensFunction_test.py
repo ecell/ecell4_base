@@ -271,16 +271,19 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
 
         D = 1e-12
         sigma = 1e-8
-        kf = 1e-8
+        kf = 0
 
-        t = 1e-4
-        r0 = 2e-8
-        r = r0
+        t = 1e-7
+        r0 = 1e-8
+        r = r0*1.1
 
         gf = mod.PlainPairGreensFunction( D, kf, sigma )
 
         ip = gf.ip_theta( numpy.pi, r, r0, t ) * ( 2 * numpy.pi * r * r )
         pirr = mod.p_irr( r, t, r0, kf, D, sigma )
+        pcorr = gf.ip_corr( numpy.pi, r, r0, t ) * ( 2 * numpy.pi * r * r )
+        pfree = gf.ip_free( numpy.pi, r, r0, t ) * ( 2 * numpy.pi * r * r )
+        print 'PP', pirr, ip, pcorr, pfree
 
         self.assertNotEqual( 0.0, ip )
         self.assertAlmostEqual( ip, pirr )
