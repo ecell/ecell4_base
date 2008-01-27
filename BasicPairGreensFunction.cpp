@@ -491,7 +491,7 @@ BasicPairGreensFunction::Rn( const unsigned int n, const Real r, const Real r0,
 	    &params
 	};
 
-    const Real umax( sqrt( 30.0 / ( this->getD() * t ) ) ); 
+    const Real umax( sqrt( 40.0 / ( this->getD() * t ) ) ); 
 
     gsl_integration_qag( &F, 0.0,
 			 umax,
