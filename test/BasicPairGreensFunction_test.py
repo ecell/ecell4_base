@@ -225,7 +225,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         kf = 1e-8
 
-        t = 1e-3
+        t = 1e-2
         r0 = sigma*2
 
         gf = mod.BasicPairGreensFunction( D, kf, sigma )
@@ -253,7 +253,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         kf = 1e-8
 
-        t = 1e-6
+        t = 1e-3
         r0 = sigma
 
         gf = mod.BasicPairGreensFunction( D, kf, sigma )
@@ -275,7 +275,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         kf = 0
 
         t = 1e-3
-        r0 = 2e-8
+        r0 = 1.1e-8
         r = r0
 
         gf = mod.BasicPairGreensFunction( D, kf, sigma )
@@ -284,10 +284,46 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         pirr = mod.p_irr( r, t, r0, kf, D, sigma )
         pcorr = gf.ip_corr( numpy.pi, r, r0, t ) * ( 2 * numpy.pi * r * r )
         pfree = gf.ip_free( numpy.pi, r, r0, t ) * ( 2 * numpy.pi * r * r )
+
+        self.assertNotAlmostEqual( pirr, pfree, 6,
+                                   'pcorr estimated to be too small.' + \
+                                       ' test may not be valid.' )
+
         print 'PP', pirr, ip, pcorr, pfree
 
         self.assertNotEqual( 0.0, ip )
-        self.assertAlmostEqual( ip, pirr )
+        self.assertAlmostEqual( ip/pirr, 1 )
+
+    def test_ip_theta_pi_at_sigma_is_p_irr( self ):
+
+        import math
+
+        D = 1e-12
+        sigma = 1e-8
+
+        kf = 0
+
+        t = 1e-5
+        r0 = sigma
+        r = r0 + math.sqrt( 6 * D * t )
+
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
+
+        ip = gf.ip_theta( numpy.pi, r, r0, t ) * ( 2 * numpy.pi * r * r )
+        pirr = mod.p_irr( r, t, r0, kf, D, sigma )
+        pcorr = gf.ip_corr( numpy.pi, r, r0, t ) * ( 2 * numpy.pi * r * r )
+        pfree = gf.ip_free( numpy.pi, r, r0, t ) * ( 2 * numpy.pi * r * r )
+
+        self.assertNotAlmostEqual( pirr, pfree, 7,
+                                   'pcorr estimated to be too small.' + \
+                                       ' test may not be valid.' )
+
+        print 'PP', pirr, ip, pcorr, pfree
+
+        self.assertNotEqual( 0.0, ip )
+        self.assertAlmostEqual( ip/pirr, 1 )
+
+
 
     def test_p_theta_never_negative( self ):
 

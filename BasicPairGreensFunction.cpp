@@ -153,6 +153,8 @@ BasicPairGreensFunction::p_corr_R( const Real alpha,
     const Real realn( static_cast<Real>( n ) );
     const Real kSigma_m_n( kSigma - realn );
 
+    const Real order( realn + 0.5 );
+
     const Real term1( exp( - D * t * alpha * alpha ) );
 
     const Real sigmaAlpha( sigma * alpha );
@@ -160,17 +162,17 @@ BasicPairGreensFunction::p_corr_R( const Real alpha,
     const Real r0Alpha( r0 * alpha );
 
     // GSL
-    const Real js1( gsl_sf_bessel_Jnu( realn,       sigmaAlpha ) );
-    const Real ys1( gsl_sf_bessel_Ynu( realn,       sigmaAlpha ) );
-    const Real js2( gsl_sf_bessel_Jnu( realn + 1.0, sigmaAlpha ) );
-    const Real ys2( gsl_sf_bessel_Ynu( realn + 1.0, sigmaAlpha ) );
-    const Real jr(  gsl_sf_bessel_Jnu( realn,       rAlpha ) );
-    const Real yr(  gsl_sf_bessel_Ynu( realn,       rAlpha ) );
-    const Real jr0( gsl_sf_bessel_Jnu( realn,       r0Alpha ) );
-    const Real yr0( gsl_sf_bessel_Ynu( realn,       r0Alpha ) );
+    const Real js1( gsl_sf_bessel_Jnu( order,       sigmaAlpha ) );
+    const Real ys1( gsl_sf_bessel_Ynu( order,       sigmaAlpha ) );
+    const Real js2( gsl_sf_bessel_Jnu( order + 1.0, sigmaAlpha ) );
+    const Real ys2( gsl_sf_bessel_Ynu( order + 1.0, sigmaAlpha ) );
+    const Real jr(  gsl_sf_bessel_Jnu( order,       rAlpha ) );
+    const Real yr(  gsl_sf_bessel_Ynu( order,       rAlpha ) );
+    const Real jr0( gsl_sf_bessel_Jnu( order,       r0Alpha ) );
+    const Real yr0( gsl_sf_bessel_Ynu( order,       r0Alpha ) );
 
-    const Real R1( ( kSigma_m_n * js1 + sigmaAlpha * js2 ) * 2 );
-    const Real R2( ( kSigma_m_n * ys1 + sigmaAlpha * ys2 ) * 2 );
+    const Real R1( ( kSigma_m_n * js1 + sigmaAlpha * js2 ) * 2.0 );
+    const Real R2( ( kSigma_m_n * ys1 + sigmaAlpha * ys2 ) * 2.0 );
     const Real F1R1( R1 * jr * jr0 - R1 * yr * yr0 );
     const Real F2( jr0 * yr + jr * yr0 );
 
@@ -489,21 +491,23 @@ BasicPairGreensFunction::Rn( const unsigned int n, const Real r, const Real r0,
 	    &params
 	};
 
-    const Real umax( sqrt( 5000.0 / ( this->getD() * t ) ) ); 
+    const Real umax( sqrt( 30.0 / ( this->getD() * t ) ) ); 
 
     gsl_integration_qag( &F, 0.0,
 			 umax,
 			 tol,
-			 1e-8,
-			 1000000, GSL_INTEG_GAUSS61,
+			 1e-6,
+			 1000, GSL_INTEG_GAUSS31,
 			 workspace, &integral, &error );
-    /*
+
+
+/*
     gsl_integration_qagiu( &F, 0.0,
                            0, // tol,
                            1e-6,
-                           1000000,
+                           1000,
                            workspace, &integral, &error );
-    */
+*/
   
     return integral;
 }
@@ -533,10 +537,15 @@ const Real BasicPairGreensFunction::
 p_corr_table( const Real theta, const Real r, const Real r0,
               const Real t, const RealVector& RnTable ) const
 {
+    const Index tableSize( RnTable.size() );
+    if( tableSize == 0 )
+    {
+        return 0.0;
+    }
+
     Real result( 0.0 );
 
-    const Index tableSize( RnTable.size() );
-  
+
     Real sin_theta;
     Real cos_theta;
     sincos( theta, &sin_theta, &cos_theta );
@@ -564,6 +573,10 @@ ip_corr_table( const Real theta, const Real r, const Real r0,
                const Real t, const RealVector& RnTable ) const
 {
     const Index tableSize( RnTable.size() );
+    if( tableSize == 0 )
+    {
+        return 0.0;
+    }
 
     const Real cos_theta( cos( theta ) );
     
@@ -655,18 +668,36 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
                                            const Real r0,
                                            const Real t ) const
 {
+    RnTable.clear();
+
+    const Real sigma( getSigma() );
+    const Real D( getD() );
+    const Real kf( getkf() );
+
+    {  
+        // First, estimate the size of p_corr, and if it's small enough,
+        // we don't need to calculate it in the first place.
+        const Real pirr( p_irr( r, t, r0, kf, D, sigma ) );
+        const Real ipfree_max( ip_free( M_PI, r, r0, t ) * 2 * M_PI * r * r );
+        
+        if( fabs( ( pirr - ipfree_max ) / pirr ) < 1e-8 )
+        {
+            return;
+        }
+    }
+
+
     const unsigned int MAXORDER( 80 );
-//    const Real p_free_max( this->p_free( 0.0, r, r0, t ) ); // sin(0.0)
-    const Real pfreemax( p_free_max( r, r0, t, getD() ) );
+    const Real pfreemax( p_free_max( r, r0, t, D ) );
 
     gsl_integration_workspace* 
-        workspace( gsl_integration_workspace_alloc( 1000000 ) );
+        workspace( gsl_integration_workspace_alloc( 1000 ) );
     
     Real Rn_prev( 0.0 );
     const Real RnFactor( 1.0 / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
 
-    const Real integrationTolerance( pfreemax / RnFactor * 1e-6 );
-    const Real truncationTolerance( pfreemax * 1e-6 );
+    const Real integrationTolerance( pfreemax / RnFactor * 1e-15 );
+    const Real truncationTolerance( pfreemax * 1e-8 );
     
     unsigned int n( 0 );
     while( true ) 
