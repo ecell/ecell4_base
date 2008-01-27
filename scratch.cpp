@@ -93,7 +93,7 @@ FirstPassagePairGreensFunction::p_n( const Integer n,
 
 
 #if 0
-const Real PlainPairGreensFunction::drawTheta( const Real rnd,
+const Real BasicPairGreensFunction::drawTheta( const Real rnd,
 					       const Real r, 
 					       const Real r0, 
 					       const Real t )
@@ -129,7 +129,7 @@ const Real PlainPairGreensFunction::drawTheta( const Real rnd,
 
 
 #if 0
-const Real PlainPairGreensFunction::drawR( const Real rnd, 
+const Real BasicPairGreensFunction::drawR( const Real rnd, 
 					   const Real r0, 
 					   const Real t )
 {
@@ -313,7 +313,7 @@ const Real PlainPairGreensFunction::drawR( const Real rnd,
 
 #if 0
 const Real 
-PlainPairGreensFunction::lookupP_totTable( const Index rIndex, 
+BasicPairGreensFunction::lookupP_totTable( const Index rIndex, 
 					   const Index r0Index,
 					   const Index thetaIndex, 
 					   const Index tIndex )
@@ -367,7 +367,7 @@ PlainPairGreensFunction::lookupP_totTable( const Index rIndex,
 
 
 const Real 
-PlainPairGreensFunction::intt_p_irr_radial( const Real r, 
+BasicPairGreensFunction::intt_p_irr_radial( const Real r, 
 					    const Real r0, 
 					    const Real t ) const
 {
@@ -406,7 +406,7 @@ PlainPairGreensFunction::intt_p_irr_radial( const Real r,
 
 
 
-const Real PlainPairGreensFunction::drawTime( const Real rnd, 
+const Real BasicPairGreensFunction::drawTime( const Real rnd, 
 					      const Real r0, 
 					      const Real maxt ) const
 {
@@ -477,7 +477,7 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
 
 
 
-const Real PlainPairGreensFunction::drawTime( const Real rnd, 
+const Real BasicPairGreensFunction::drawTime( const Real rnd, 
 					      const Real r0, 
 					      const Real maxt ) const
 {
@@ -548,7 +548,7 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
 
 
 
-const Real PlainPairGreensFunction::drawTime( const Real rnd, 
+const Real BasicPairGreensFunction::drawTime( const Real rnd, 
 					      const Real r0, 
 					      const Real maxt ) const
 {
@@ -598,7 +598,7 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
 } 
 
 
-const Real PlainPairGreensFunction::drawTime( const Real rnd, 
+const Real BasicPairGreensFunction::drawTime( const Real rnd, 
 					      const Real r0, 
 					      const Real maxt ) const
 {
@@ -640,7 +640,7 @@ const Real PlainPairGreensFunction::drawTime( const Real rnd,
 
 /*
 const Real 
-PlainPairGreensFunction::p_survival_deriv( const Real t, 
+BasicPairGreensFunction::p_survival_deriv( const Real t, 
 					   const Real r0 ) const
 {
   Real deriv;
@@ -669,7 +669,7 @@ PlainPairGreensFunction::p_survival_deriv( const Real t,
 }
 
 void
-PlainPairGreensFunction::p_survival_fdf( const Real t, 
+BasicPairGreensFunction::p_survival_fdf( const Real t, 
 					 const Real r0,
 					 Real* const f, Real* const df ) const
 {

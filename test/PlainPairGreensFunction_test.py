@@ -12,7 +12,7 @@ import _gfrd as mod
 import numpy
 
 
-class PlainPairGreensFunctionTestCase( unittest.TestCase ):
+class BasicPairGreensFunctionTestCase( unittest.TestCase ):
 
     def setUp( self ):
         pass
@@ -26,7 +26,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         a = 1e-7
 
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
         self.failIf( gf == None )
 
 
@@ -36,7 +36,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         r0 = 5e-8
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         t = gf.drawTime( 0.5, r0 )
         self.failIf( t <= 0.0 )
@@ -54,7 +54,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         r0 = sigma
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         t = gf.drawTime( 0.5, r0 )
         self.failIf( t < 0.0 )
@@ -65,7 +65,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         r0 = 2e-8
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         t = 1e-3
 
@@ -87,7 +87,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         r0 = 2e-8
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         t = 0.0
 
@@ -103,7 +103,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
 
         t = 1e-3
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         r = gf.drawR( 0.5, r0, t )
         self.failIf( r < sigma )
@@ -117,7 +117,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         t = 1e-3
         r = 2.1e-8
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
@@ -136,7 +136,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         t = 0.0
         theta = gf.drawTheta( 0.5, r0, r0, t )
@@ -150,7 +150,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         t = 1e-4  # well this is not *very* small..
         theta = gf.drawTheta( 0.5, r, r0, t )
@@ -166,7 +166,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         t = 1e-3
         r = r0
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         theta = gf.drawTheta( 0.5, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
@@ -180,7 +180,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         t = 1e-3
         r0 = 2e-8
 
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
          
         pintr = gf.p_int_r( sigma, t, r0 )
         self.assertEqual( 0.0, pintr )
@@ -194,7 +194,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         t = 0
         r0 = 2e-8
 
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
          
         pintr = gf.p_int_r( sigma, t, r0 )
 
@@ -210,7 +210,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         t = 1e-3
         r0 = 2e-8
 
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
          
         pintr = gf.p_int_r( sigma * 1e8, t, r0 )
         psurv = gf.p_survival( t, r0 )
@@ -228,7 +228,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         t = 1e-3
         r0 = sigma*2
 
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
         r = r0
 
         ip = gf.ip_theta( 0.0, r, r0, t )
@@ -256,7 +256,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         t = 1e-6
         r0 = sigma
 
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
         r = 1.1 * r0
 
         ip = gf.ip_theta( 0.0, r, r0, t )
@@ -271,13 +271,14 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
 
         D = 1e-12
         sigma = 1e-8
+
         kf = 0
 
-        t = 1e-7
-        r0 = 1e-8
-        r = r0*1.1
+        t = 1e-3
+        r0 = 2e-8
+        r = r0
 
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         ip = gf.ip_theta( numpy.pi, r, r0, t ) * ( 2 * numpy.pi * r * r )
         pirr = mod.p_irr( r, t, r0, kf, D, sigma )
@@ -299,7 +300,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         r0 = 5e-8
         r = r0
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         pint = gf.ip_theta( numpy.pi, r, r0, t )
 
@@ -326,7 +327,7 @@ class PlainPairGreensFunctionTestCase( unittest.TestCase ):
         r0 = 5e-8
         r = r0
         
-        gf = mod.PlainPairGreensFunction( D, kf, sigma )
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
         pint_prev = 0.0
 

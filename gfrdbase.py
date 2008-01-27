@@ -104,7 +104,7 @@ class BindingReactionType( ReactionType ):
         ReactionType.__init__( self, [ s1, s2 ], [ p1, ], k )
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
-        self.pairGreensFunction = PlainPairGreensFunction( D, k, sigma )
+        self.pairGreensFunction = BasicPairGreensFunction( D, k, sigma )
 
 class RepulsionReactionType( ReactionType ):
 
@@ -113,7 +113,7 @@ class RepulsionReactionType( ReactionType ):
 
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
-        self.pairGreensFunction = PlainPairGreensFunction( D, self.k,\
+        self.pairGreensFunction = BasicPairGreensFunction( D, self.k,\
                                                                 sigma )
 
 class UnbindingReactionType( ReactionType ):

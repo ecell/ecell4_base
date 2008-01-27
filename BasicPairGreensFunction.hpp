@@ -8,7 +8,7 @@
 
 #include "PairGreensFunction.hpp"
 
-class PlainPairGreensFunction
+class BasicPairGreensFunction
     :
     public PairGreensFunction
 {
@@ -22,9 +22,9 @@ class PlainPairGreensFunction
     
 public:
     
-    PlainPairGreensFunction( const Real D, const Real kf, const Real Sigma );
+    BasicPairGreensFunction( const Real D, const Real kf, const Real Sigma );
     
-    ~PlainPairGreensFunction();
+    ~BasicPairGreensFunction();
     
     
     const Real drawTime( const Real rnd, const Real r0 ) const;
@@ -82,14 +82,14 @@ private:
     
     struct p_reaction_params 
     { 
-	const PlainPairGreensFunction* const gf;
+	const BasicPairGreensFunction* const gf;
 	const Real r0;
 	const Real rnd;
     };
 
     struct p_int_r_params 
     { 
-	const PlainPairGreensFunction* const gf;
+	const BasicPairGreensFunction* const gf;
 	const Real t;
 	const Real r0;
 	const Real rnd;
@@ -97,7 +97,7 @@ private:
 
     struct p_theta_params 
     { 
-	const PlainPairGreensFunction* const gf;
+	const BasicPairGreensFunction* const gf;
 	const Real r;
 	const Real r0;
 	const Real t;
@@ -107,7 +107,7 @@ private:
     
     struct p_corr_R_params 
     { 
-	const PlainPairGreensFunction* const gf;
+	const BasicPairGreensFunction* const gf;
 	unsigned int n;
 	const Real r;
 	const Real r0; 

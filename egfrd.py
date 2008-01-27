@@ -463,7 +463,7 @@ class Pair( object ):
                 print 'normal'
                 return self.pgf
             else:
-                # near sigma; use PlainPairGreensFunction
+                # near sigma; use BasicPairGreensFunction
 
                 #FIXME:
                 print 'near only sigma'

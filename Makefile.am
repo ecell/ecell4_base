@@ -50,7 +50,7 @@ PyEventScheduler.hpp\
 PairGreensFunction.hpp\
 FreeGreensFunction.hpp\
 FirstPassageGreensFunction.hpp\
-PlainPairGreensFunction.hpp\
+BasicPairGreensFunction.hpp\
 FreePairGreensFunction.hpp\
 FirstPassagePairGreensFunction.hpp\
 FirstPassageNoCollisionPairGreensFunction.hpp
@@ -62,7 +62,7 @@ funcSum.cpp\
 freeFunctions.cpp\
 FreeGreensFunction.cpp\
 FirstPassageGreensFunction.cpp\
-PlainPairGreensFunction.cpp\
+BasicPairGreensFunction.cpp\
 FreePairGreensFunction.cpp\
 FirstPassagePairGreensFunction.cpp\
 FirstPassageNoCollisionPairGreensFunction.cpp\

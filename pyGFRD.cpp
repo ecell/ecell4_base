@@ -14,7 +14,7 @@
 
 #include "FreeGreensFunction.hpp"
 #include "FirstPassageGreensFunction.hpp"
-#include "PlainPairGreensFunction.hpp"
+#include "BasicPairGreensFunction.hpp"
 #include "FreePairGreensFunction.hpp"
 #include "FirstPassagePairGreensFunction.hpp"
 #include "FirstPassageNoCollisionPairGreensFunction.hpp"
@@ -171,28 +171,28 @@ BOOST_PYTHON_MODULE( _gfrd )
 
 
 
-    class_<PlainPairGreensFunction>( "PlainPairGreensFunction",
+    class_<BasicPairGreensFunction>( "BasicPairGreensFunction",
 				     init<const Real, 
 				     const Real, 
 				     const Real>() )
-	.def( "getD", &PlainPairGreensFunction::getD )
-	.def( "getkf", &PlainPairGreensFunction::getkf )
-	.def( "getSigma", &PlainPairGreensFunction::getSigma )
-	.def( "drawTime", &PlainPairGreensFunction::drawTime )
-	.def( "drawR", &PlainPairGreensFunction::drawR )
-	.def( "drawTheta", &PlainPairGreensFunction::drawTheta )
+	.def( "getD", &BasicPairGreensFunction::getD )
+	.def( "getkf", &BasicPairGreensFunction::getkf )
+	.def( "getSigma", &BasicPairGreensFunction::getSigma )
+	.def( "drawTime", &BasicPairGreensFunction::drawTime )
+	.def( "drawR", &BasicPairGreensFunction::drawR )
+	.def( "drawTheta", &BasicPairGreensFunction::drawTheta )
 
-//        .def( "p_tot", &PlainPairGreensFunction::p_tot )
-        .def( "p_free", &PlainPairGreensFunction::p_free )
-        .def( "ip_free", &PlainPairGreensFunction::ip_free )
-        .def( "p_corr", &PlainPairGreensFunction::p_corr )
-        .def( "ip_corr", &PlainPairGreensFunction::ip_corr )
-        .def( "p_survival", &PlainPairGreensFunction::p_survival )
-        .def( "p_int_r", &PlainPairGreensFunction::p_int_r )
-        .def( "p_theta", &PlainPairGreensFunction::p_theta )
-        .def( "ip_theta", &PlainPairGreensFunction::ip_theta )
+//        .def( "p_tot", &BasicPairGreensFunction::p_tot )
+        .def( "p_free", &BasicPairGreensFunction::p_free )
+        .def( "ip_free", &BasicPairGreensFunction::ip_free )
+        .def( "p_corr", &BasicPairGreensFunction::p_corr )
+        .def( "ip_corr", &BasicPairGreensFunction::ip_corr )
+        .def( "p_survival", &BasicPairGreensFunction::p_survival )
+        .def( "p_int_r", &BasicPairGreensFunction::p_int_r )
+        .def( "p_theta", &BasicPairGreensFunction::p_theta )
+        .def( "ip_theta", &BasicPairGreensFunction::ip_theta )
 
-        .def( "dump", &PlainPairGreensFunction::dump )
+        .def( "dump", &BasicPairGreensFunction::dump )
 	;
 
     class_<FreePairGreensFunction>( "FreePairGreensFunction",
@@ -222,8 +222,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "seta", &FirstPassagePairGreensFunction::seta )
 	.def( "geta", &FirstPassagePairGreensFunction::geta )
 	.def( "getD", &FirstPassagePairGreensFunction::getD )
-	.def( "getkf", &PlainPairGreensFunction::getkf )
-	.def( "getSigma", &PlainPairGreensFunction::getSigma )
+	.def( "getkf", &BasicPairGreensFunction::getkf )
+	.def( "getSigma", &BasicPairGreensFunction::getSigma )
 	.def( "drawTime", &FirstPassagePairGreensFunction::drawTime )
 	.def( "drawEventType", &FirstPassagePairGreensFunction::drawEventType )
 	.def( "drawR", &FirstPassagePairGreensFunction::drawR )
