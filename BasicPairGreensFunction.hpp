@@ -19,6 +19,9 @@ class BasicPairGreensFunction
 
     static const unsigned int MAX_ORDER = 45;
 
+    static const Real H = 4.0;
+    
+
     
 public:
     
@@ -54,6 +57,8 @@ public:
     const Real p_int_r( const Real r, 
                         const Real t, 
                         const Real r0 ) const;
+
+//    const Real p_int_r_max( const Real t, const Real r0 ) const;
 
     
     const Real p_theta( const Real theta, const Real r, const Real r0, 
@@ -190,9 +195,6 @@ private:
     
     const Real kD;
     const Real alpha;
-    
-    static const Real P_CUTOFF = 1e-6;
-    static const Real H = 3.0;
     
 };
 

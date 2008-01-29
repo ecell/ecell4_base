@@ -327,6 +327,38 @@ BasicPairGreensFunction::p_int_r_F( const Real r,
 }
 
 
+/*
+const Real 
+BasicPairGreensFunction::p_int_r_max( const Real t, 
+                                      const Real r0 ) const
+{
+    const Real kf( getkf() );
+    const Real D( getD() );
+    const Real sigma( getSigma() );
+    const Real alpha( getalpha() );
+    const Real kD( getkD() );
+
+    const Real Dt( D * t );
+
+    const Real kf_kD( kf + kD );
+    const Real Dt4( 4.0 * Dt );
+    const Real sqrtDt4( sqrt( Dt4 ) );
+    const Real alphasqrtt( alpha * sqrt( t ) );
+    const Real kfsigma( kf * sigma );
+
+    const Real r0_s__sqrtDt4( ( r0 - sigma ) / sqrtDt4 );
+
+    const Real term1( kfsigma * erfc( r0_s__sqrtDt4 ) );
+    const Real term2( kfsigma * W( r0_s__sqrtDt4, alphasqrtt ) );
+
+    const Real den( kf_kD * r0 );
+
+    const Real result( 1.0 - ( term1 + term2 ) / den );
+
+    return result;
+}
+*/
+
 
 const Real BasicPairGreensFunction::drawTime( const Real rnd, 
 					      const Real r0 ) const
@@ -402,6 +434,7 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
 					   const Real t ) const
 {
     const Real sigma( this->getSigma() );
+    const Real D( this->getD() );
 
     THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma );
@@ -421,10 +454,11 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
 	    &params 
 	};
 
-    Real low( sigma );
-    Real high( sigma * 1e8 );
+    const Real H( 5.0 );
 
-//    const Real lowvalue( GSL_FN_EVAL( &F, low  ) );
+    Real low( sigma );
+    Real high( sigma + ( H + 1 ) * sqrt( 6.0 * D * t ) );
+
     const Real highvalue( GSL_FN_EVAL( &F, high ) );
 
     if( highvalue < 0.0 )
