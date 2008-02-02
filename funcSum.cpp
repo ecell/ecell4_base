@@ -38,7 +38,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 	 const size_t max_i,
 	 const Real tolerance )
 {
-    const unsigned int CONVERGENCE_CHECK( 10 );
+    const unsigned int CONVERGENCE_CHECK( 5 );
 
     Real sum( 0.0 );
     RealVector pTable;
