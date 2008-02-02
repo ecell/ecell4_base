@@ -303,7 +303,7 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
     {
 	Real p_n( this->p_n( n, r, r0, t ) * factor );
 
-	if( ! ( std::isnormal( p_n ) || p_n == 0.0 ) )
+	if( ! ( std::isfinite( p_n ) || p_n == 0.0 ) )
 	{
 	    std::cerr << "makep_nTable: invalid value; " <<
 		p_n << "( n= " << n << ")." << std::endl;
@@ -565,7 +565,7 @@ makedp_nTable( RealVector& p_nTable,
     {
 	Real p_n( this->dp_n( n, r0, t ) * factor );
 
-	if( ! std::isnormal( p_n ) )
+	if( ! std::isfinite( p_n ) )
 	{
 	    std::cerr << "makedp_nTable: invalid value; " <<
 		p_n << "( n= " << n << ")." << std::endl;

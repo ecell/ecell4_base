@@ -365,6 +365,7 @@ class Pair( object ):
         self.pgf = FirstPassagePairGreensFunction( self.D_tot, 
                                                    rt.k, self.sigma )
         self.pgf_free = FreePairGreensFunction( self.D_tot )
+        self.pgf_basic = BasicPairGreensFunction( self.D_tot, rt.k, self.sigma )
         self.pgf_nocol = FirstPassageNoCollisionPairGreensFunction( self.D_tot )
 
         self.eventID = None
@@ -464,10 +465,9 @@ class Pair( object ):
                 return self.pgf
             else:
                 # near sigma; use BasicPairGreensFunction
-
-                #FIXME:
                 print 'near only sigma'
-                return self.pgf
+                return self.pgf_basic
+                #return self.pgf
         else:
             if distanceFromShell < thresholdDistance:
                 # near a;

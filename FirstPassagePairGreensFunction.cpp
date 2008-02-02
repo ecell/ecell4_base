@@ -1289,7 +1289,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
 
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 <= a );
 
     if( r0 == a || a == sigma )
@@ -1409,7 +1409,7 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
 
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
     THROW_UNLESS( std::invalid_argument, t > 0.0 );
 
@@ -1435,10 +1435,11 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 						  const Real r0, 
 						  const Real t ) const
 {
+    const Real D( this->getD() );
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
 
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
 
     if( t == 0.0 )
@@ -1459,18 +1460,76 @@ const Real FirstPassagePairGreensFunction::drawR( const Real rnd,
 	    &params 
 	};
 
-    Real low( sigma );
-    Real high( a );
 
-//    const Real lowvalue( GSL_FN_EVAL( &F, low  ) );
-    const Real highvalue( GSL_FN_EVAL( &F, high ) );
+    // adjust low and high starting from r0.
 
-    if( highvalue < 0.0 )
+    Real low( r0 );
+    Real high( r0 );
+
+    const Real sqrt6Dt( sqrt( 6.0 * D * t ) );
+    if( GSL_FN_EVAL( &F, r0 ) < 0.0 )
     {
-	printf( "drawR: highvalue < 0.0 (%g). returning a.\n", highvalue );
-	return a;
+        // low = r0
+        unsigned int H( 3 );
+
+        while( true )
+        {
+            high = r0 + H * sqrt6Dt;
+            if( high > a )
+            {
+                if( GSL_FN_EVAL( &F, a ) < 0.0 )
+                {
+                    printf( "drawR: p_int_r( a ) < 0.0. returning a.\n" );
+                    return a;
+                }
+
+                high = a;
+                break;
+            }
+
+            const Real value( GSL_FN_EVAL( &F, high ) );
+            if( value > 0.0 )
+            {
+                break;
+            }
+
+            ++H;
+        }
+
+    }
+    else
+    {
+        // high = r0
+        unsigned int H( 3 );
+
+        while( true )
+        {
+            low = r0 - H * sqrt6Dt;
+            if( low < sigma )
+            {
+                if( GSL_FN_EVAL( &F, sigma ) > 0.0 )
+                {
+                    printf( "drawR: p_int_r( sigma ) > 0.0. "
+                            "returning sigma.\n" );
+                    return sigma;
+                }
+
+                low = sigma;
+                break;
+            }
+
+            const Real value( GSL_FN_EVAL( &F, low ) );
+            if( value < 0.0 )
+            {
+                break;
+            }
+
+            ++H;
+        }
     }
 
+
+    // root finding by iteration.
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -1634,7 +1693,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
     {
 	Real p_n( this->p_n( n, r, r0, t ) * factor );
 
-	if( ! std::isnormal( p_n ) )
+	if( ! std::isfinite( p_n ) )
 	{
 	    std::cerr << "makep_nTable: invalid value; " <<
 		p_n << "( n= " << n << ")." << std::endl;
@@ -1650,6 +1709,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 	if( p_n_abs < threshold &&
             p_n_prev_abs < threshold &&
 	    p_n_abs < p_n_prev_abs )
+//            n >= 5 )
 	{
 	    break;
         }
@@ -1774,7 +1834,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
     {
 	Real p_n( this->dp_n_at_a( n, r0, t ) * factor );
 
-	if( ! std::isnormal( p_n ) )
+	if( ! std::isfinite( p_n ) )
 	{
 	    std::cerr << "makedp_n_at_aTable: invalid value; " <<
 		p_n << "( n= " << n << ")." << std::endl;
@@ -2091,7 +2151,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
     const Real a( this->geta() );
 
     // input parameter range checks.
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
     THROW_UNLESS( std::invalid_argument, r >= sigma && r <= a );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );

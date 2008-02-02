@@ -365,7 +365,7 @@ const Real BasicPairGreensFunction::drawTime( const Real rnd,
 {
     const Real sigma( this->getSigma() );
 
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma );
 
     Real low( 1e-100 );
@@ -436,7 +436,7 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
     const Real sigma( this->getSigma() );
     const Real D( this->getD() );
 
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma );
 
     if( t == 0.0 )
@@ -454,18 +454,72 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
 	    &params 
 	};
 
-    const Real H( 5.0 );
 
-    Real low( sigma );
-    Real high( sigma + ( H + 1 ) * sqrt( 6.0 * D * t ) );
+    // adjust low and high starting from r0.
 
-    const Real highvalue( GSL_FN_EVAL( &F, high ) );
+    Real low( r0 );
+    Real high( r0 );
 
-    if( highvalue < 0.0 )
+    const Real sqrt6Dt( sqrt( 6.0 * D * t ) );
+    if( GSL_FN_EVAL( &F, r0 ) < 0.0 )
     {
-	printf( "drawR: highvalue < 0.0 (%g). returning high.\n", highvalue );
-	return high;
+        // low = r0
+        unsigned int H( 3 );
+
+        while( true )
+        {
+            high = r0 + H * sqrt6Dt;
+
+            const Real value( GSL_FN_EVAL( &F, high ) );
+            if( value > 0.0 )
+            {
+                break;
+            }
+
+            ++H;
+
+            if( H > 20 )
+            {
+                std::cerr << "drawR: H > 10 while adjusting upper bound of r."
+                          << std::endl;
+                throw std::exception();
+            }
+        }
+
     }
+    else
+    {
+        // high = r0
+        unsigned int H( 3 );
+
+        while( true )
+        {
+            low = r0 - H * sqrt6Dt;
+            if( low < sigma )
+            {
+                if( GSL_FN_EVAL( &F, sigma ) > 0.0 )
+                {
+                    printf( "drawR: p_int_r( sigma ) > 0.0. "
+                            "returning sigma.\n" );
+                    return sigma;
+                }
+
+                low = sigma;
+                break;
+            }
+
+            const Real value( GSL_FN_EVAL( &F, low ) );
+            if( value < 0.0 )
+            {
+                break;
+            }
+
+            ++H;
+        }
+    }
+
+
+    // root finding by iteration.
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -789,7 +843,7 @@ const Real BasicPairGreensFunction::drawTheta( const Real rnd,
     const Real sigma( this->getSigma() );
 
     // input parameter range checks.
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r >= sigma );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );

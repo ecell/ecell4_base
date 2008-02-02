@@ -44,7 +44,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         t = gf.drawTime( 0.0, r0 )
         self.failIf( t < 0.0 )
 
-        t = gf.drawTime( 1.0, r0 )
+        t = gf.drawTime( 0.9999999, r0 )
         self.failIf( t <= 0.0 )
 
 
@@ -73,7 +73,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( r < sigma )
 
         r1 = gf.drawR( 0.0, r0, t )
-        r2 = gf.drawR( 1.0, r0, t )
+        r2 = gf.drawR( 0.9999999, r0, t )
 
         self.failIf( r1 < sigma )
         self.failIf( r2 < sigma )
@@ -125,7 +125,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         theta = gf.drawTheta( 0.0, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
-        theta = gf.drawTheta( 1.0, r, r0, t )
+        theta = gf.drawTheta( 0.9999999, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
 
