@@ -1,4 +1,4 @@
-SUBDIRS = . test
+SUBDIRS = doc test
 
 TOPSRCDIR=${top_srcdir}
 
@@ -8,7 +8,7 @@ PYTHON=@PYTHON@
 #PYTHON_PREFIX=@PYTHON_PREFIX@
 PYTHON_VERSION=@PYTHON_VERSION@
 
-NUMPY_INCLUDE_DIR=$(shell python -c "import numpy; print numpy.get_include()")
+NUMPY_INCLUDE_DIR=@NUMPY_INCLUDE_DIR@
 PYTHON_INCLUDES=@PYTHON_INCLUDES@
 
 pkgpyexecdir=@pkgpyexecdir@
@@ -40,7 +40,6 @@ lib_LTLIBRARIES= _gfrd.la
 noinst_HEADERS=\
 Defs.hpp\
 funcSum.hpp\
-bessel.hpp\
 freeFunctions.hpp\
 factorial.hpp\
 HalfOrderBesselGenerator.hpp\
@@ -66,7 +65,6 @@ BasicPairGreensFunction.cpp\
 FreePairGreensFunction.cpp\
 FirstPassagePairGreensFunction.cpp\
 FirstPassageNoCollisionPairGreensFunction.cpp\
-bessel.cpp\
 pyGFRD.cpp
 
 

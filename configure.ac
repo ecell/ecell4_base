@@ -13,7 +13,7 @@ AH_TEMPLATE(HAVE_INLINE)
 dnl 
 dnl
 AC_CANONICAL_TARGET([])
-AM_INIT_AUTOMAKE([brown],[0.0])
+AM_INIT_AUTOMAKE([pdpp],[0.0])
 AC_PROG_MAKE_SET
 AC_LANG_CPLUSPLUS
 dnl
@@ -49,7 +49,8 @@ dnl checks for header files
 dnl
 dnl
 dnl
-#PYTHON_INCLUDE_DIR=$(shell python -c "import sys; print sys.prefix + '/include/python' + sys.version[:3]")
+ECELL_CHECK_NUMPY
+dnl
 AM_CHECK_PYTHON_HEADERS()
 dnl
 dnl
@@ -96,5 +97,5 @@ dnl
 dnl no checks for system services
 dnl
 AM_CONFIG_HEADER([config.h])
-AC_CONFIG_FILES([Makefile test/Makefile])
+AC_CONFIG_FILES([Makefile test/Makefile doc/Makefile])
 AC_OUTPUT([])

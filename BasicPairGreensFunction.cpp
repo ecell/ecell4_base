@@ -456,6 +456,8 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
 
 
     // adjust low and high starting from r0.
+    // this is necessary to avoid root finding in the long tails where
+    // numerics can be unstable.
 
     Real low( r0 );
     Real high( r0 );

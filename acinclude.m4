@@ -61,3 +61,60 @@ $1],dnl
 $2])
 CPPFLAGS="$save_CPPFLAGS"
 ])
+
+dnl numpy package.
+dnl find arrayobject.h.
+dnl
+AC_DEFUN([ECELL_CHECK_NUMPY], [
+  AC_REQUIRE([AM_CHECK_PYTHON_HEADERS])
+
+  AC_ARG_WITH(numpy-includes,
+    AC_HELP_STRING([--with-numpy-includes=DIR],
+                   [specify the numpy header location]),
+    [NUMPY_INCLUDE_DIR=$withval],
+    [NUMPY_INCLUDE_DIR=]
+  )
+
+  AC_MSG_CHECKING([for numpy include directory])
+  if test -z "$NUMPY_INCLUDE_DIR"; then
+    if ! NUMPY_INCLUDE_DIR=`$PYTHON -c "import numpy; print numpy.get_include();"`; then
+      py_prefix=`$PYTHON -c "import sys; print sys.prefix"`
+      pydir=python${PYTHON_VERSION}
+      numpy_include="site-packages/numpy/core/include"
+      EXT_GUESS= \
+        "${py_prefix}/Lib/${numpy_include}" \
+        "${py_prefix}/lib/${pydir}/${numpy_include}" \
+        "${py_prefix}/lib64/${pydir}/${numpy_include}" \
+        "/usr/lib/${pydir}/${numpy_include}" \
+        "/usr/lib64/${pydir}/${numpy_include}" \
+        "/usr/local/lib/${pydir}/${numpy_include}" \
+        "/usr/local/lib64/${pydir}/${numpy_include}" \
+        "${prefix}/include" \
+        "/usr/include/${pydir}" \
+        "/usr/local/include" \
+        "/opt/numpy/include"
+      NUMPY_INCLUDE_DIR=""
+      for ac_dir in $EXT_GUESS ; do
+        if test -f ${ac_dir}/numpy/arrayobject.h ; then
+           NUMPY_INCLUDE_DIR=`(cd $ac_dir ; pwd)`
+        fi
+      done
+    fi
+  fi
+  if test -z "${NUMPY_INCLUDE_DIR}"; then        
+    AC_MSG_RESULT([not found in ${EXT_GUESS}.])
+  else
+    AC_MSG_RESULT(${NUMPY_INCLUDE_DIR})
+  fi
+  ac_save_CPPFLAGS="${CPPFLAGS}"
+  CPPFLAGS="-I${NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDES}"
+  AC_CHECK_HEADERS([numpy/arrayobject.h], [], [
+    AC_MSG_ERROR([no usable NumPy headers were found. please check the installation of NumPy package.])
+  ], [
+#include <Python.h>
+  ])
+  CPPFLAGS="${ac_save_CPPFLAGS}"
+  AC_SUBST(NUMPY_INCLUDE_DIR)
+])
+
+
