@@ -289,7 +289,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
                                    'pcorr estimated to be too small.' + \
                                        ' test may not be valid.' )
 
-        print 'PP', pirr, ip, pcorr, pfree
+        #print 'PP', pirr, ip, pcorr, pfree
 
         self.assertNotEqual( 0.0, ip )
         self.assertAlmostEqual( ip/pirr, 1 )

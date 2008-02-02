@@ -38,6 +38,8 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 	 const size_t max_i,
 	 const Real tolerance )
 {
+    const unsigned int CONVERGENCE_CHECK( 10 );
+
     Real sum( 0.0 );
     RealVector pTable;
 
@@ -53,6 +55,8 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 
     bool extrapolationNeeded( true );
 
+    unsigned int convergenceCounter( 0 );
+
     RealVector::size_type i( 1 ); 
     while( i <= max_i )
     {
@@ -60,14 +64,19 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 	pTable.push_back( p_i );
         sum += p_i;
 
-	if( fabs( sum ) * tolerance >=
-            fabs( p_i ) ) // '=' is important when p0 is so small.
+	++i;
+
+	if( fabs( sum ) * tolerance >= fabs( p_i ) ) // '=' is important
+        {
+            ++convergenceCounter;
+        }
+
+        if( convergenceCounter >= CONVERGENCE_CHECK )
 	{
 	    extrapolationNeeded = false;
 	    break;
 	}
 	
-	++i;
     }
 
     if( extrapolationNeeded )

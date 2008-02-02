@@ -516,6 +516,34 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         pintr = gf.p_int_r( gf.getSigma(), t, r0 )
         self.assertEqual( 0.0, pintr )
 
+    def test_p_int_r_never_decrease( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        kf = 1e-8
+
+        # smaller t causes problem
+        t = 1e-3
+        r0 = sigma
+
+        a = 3e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        psurv = gf.p_survival( t, r0 )
+
+        pintr_prev = 0.0
+        resolution = 500
+        for i in range( resolution ):
+            r = i * (a-sigma) / resolution + sigma
+            pintr = gf.p_int_r( r, t, r0 )
+            #print r, pintr, psurv
+            self.failIf( pintr > psurv )
+            self.failIf( pintr < pintr_prev )
+            pintr_prev = pintr
+
+
     def test_ip_theta_is_int_p_theta( self ):
 
         import scipy.integrate

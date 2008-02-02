@@ -937,6 +937,8 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
 
     const Real result( 2 * num1 * num2 / den );
 
+    //printf("%g\t%g\t%g\t%g\t\n",result, alpha, num1, num2, den);
+
     return result;
 }
 
@@ -1100,6 +1102,8 @@ p_int_r_i_exp( const unsigned int i,
 	       const Real r0 ) const
 {
     const Real alpha( this->getAlpha0( i ) );
+    //printf("exp %g\n",std::exp( - getD() * t * alpha * alpha ) );
+
     return std::exp( - getD() * t * alpha * alpha ) * 
 	p_int_r_i( r, alpha, r0, num_r0( alpha, r0 ) );
 }
