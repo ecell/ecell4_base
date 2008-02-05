@@ -46,6 +46,7 @@ HalfOrderBesselGenerator.hpp\
 DynamicPriorityQueue.hpp\
 EventScheduler.hpp\
 PyEventScheduler.hpp\
+GreensFunction.hpp\
 PairGreensFunction.hpp\
 FreeGreensFunction.hpp\
 FirstPassageGreensFunction.hpp\
