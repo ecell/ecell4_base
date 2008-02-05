@@ -1,7 +1,6 @@
 #!/usr/bin/env/python
 
-# PYTHONPATH=../../.. python plot.py rev.-1.out p_rev.-1.tsv 0.00001 rev.0.out p_rev.0.tsv 0.0001 rev.1.out p_rev.1.tsv 0.001 rev.2.out p_rev.2.tsv 0.01 
-# rev.3.out p_rev.3.tsv 0.1
+# PYTHONPATH=../../.. python plot.py rev.-1.out p_rev.-1.tsv 0.00001 rev.0.out p_rev.0.tsv 0.0001 rev.1.out p_rev.1.tsv 0.001 rev.2.out p_rev.2.tsv 0.01 rev.3.out p_rev.3.tsv 0.1
 
 import sys
 
