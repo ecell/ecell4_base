@@ -39,9 +39,9 @@ def plot_sol( t, rmax ):
 
     parray = array( [ p_irr( r, t, r0, kf, D, sigma ) for r in rarray ] )
 
-    loglog( rarray / sigma , parray, '-', label='theory' )
+    loglog( rarray / sigma , parray, 'k-', label='theory' )
 
-def plot_hist( data, T ):
+def plot_hist( data, T, i ):
 
     bins = 20
 
@@ -59,9 +59,12 @@ def plot_hist( data, T ):
 
     x = lower_edges + ( xtick * .5 )
     #print 'x', x
+    #pStyles = [ 'o', '^', 'v', '<', '>', 's', '+' ]
+    colors = [ 'b', 'g', 'r', 'c', 'm', 'y' ]
 
-    loglog( x / sigma, hist, '.', label='sim (T = %g tau)' % (T * 100) )
+    loglog( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
     
+    return lower_edges[-1] + xtick
 
 
 if __name__ == '__main__':
@@ -71,8 +74,9 @@ if __name__ == '__main__':
         T = float( sys.argv[i*2+2] )
         print filename,T
         data = load_data( filename )
-        plot_sol( T, max( data ) )
-        plot_hist( data, T )
+        maxr = plot_hist( data, T, i )
+        plot_sol( T, maxr )
+
 
 
     xlabel( 'r / sigma' )

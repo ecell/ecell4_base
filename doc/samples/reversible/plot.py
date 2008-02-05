@@ -43,11 +43,11 @@ def plot_sol( filename, maxr ):
     parray = numpy.compress( mask, parray )
     print rarray, parray
 
-    loglog( rarray / sigma, parray, '-'  )
+    loglog( rarray / sigma, parray, 'k-'  )
 
 
 
-def plot_hist( data, T ):
+def plot_hist( data, T, i ):
 
     bins = 20
 
@@ -58,15 +58,18 @@ def plot_hist( data, T ):
     histsum = hist.sum()
     S_sim = float( len( nonreactions ) ) / len( data )
     hist = hist.astype( numpy.float )
-    print hist
+    #print hist
     xtick = lower_edges[2]-lower_edges[1]
 
     hist /= len( data ) * xtick
 
     x = lower_edges + ( xtick * .5 )
-    print 'x', x, hist
+    #print 'x', x, hist
+    colors = [ 'b', 'g', 'r', 'c', 'm', 'y' ]
 
-    loglog( x / sigma, hist, '.', label='sim (T = %g tau)' % (T * 100) )
+    loglog( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
+
+    return lower_edges[-1] + xtick
     
 
 
@@ -78,8 +81,8 @@ if __name__ == '__main__':
         T = float( sys.argv[i*3+3] )
         print simfilename,solfilename,T
         data = load_data( simfilename )
-        plot_sol( solfilename, max( data ) )
-        plot_hist( data, T )
+        maxr = plot_hist( data, T, i )
+        plot_sol( solfilename, maxr )
 
 
     xlabel( 'r / sigma' )
