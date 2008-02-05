@@ -2,4 +2,4 @@
 
 #SUBDIRS= samples
 
-EXTRA_DIST= doc
+EXTRA_DIST= samples
