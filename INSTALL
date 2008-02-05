@@ -57,9 +57,18 @@ A temporary remedy to this problem is to modify the code as below;
 Building this package
 -------------------------
 
-1. ./autogen.sh (optional)
-2. ./configure
-3. make
+1. ./configure
+2. make
+
+
+If you cannot find the configure script, or the build process
+fails to complete even if you have set up the environment correctly,
+try
+
+./autogen.sh
+
+to remake the entire build mechanism.
+
 
 Testing
 -------------------
@@ -68,8 +77,7 @@ Running
 
 % make check
 
-provides a means to make sure some of the core components of the software
-are running correctly.
+checks if some of the core components of the software run correctly.
 
 In addition, you may run
 
