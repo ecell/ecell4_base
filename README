@@ -2,7 +2,29 @@
 :author: Koichi Takahashi
 
 
+About this package
+========================
+
+This package is temporarily named Particle Dynamics Platform Prototype
+(PDPP).  It currently implements the enhanced Greens Function Reaction
+Dynamics (eGFRD) simulation algorithm.  Implementation of brute-force
+Brownian Dynamics (BD) and the original version of GFRD is in
+progress.  The code is implemented with the hope that it will
+eventually be ported to the E-Cell System Version 4 to become part of
+the multi-algorithm, multi-space simulation platform.
+
+The eGFRD algorithm is described in the following paper:
+K. Takahashi, S. Tanase-Nicola, P.R. ten Wolde, 2008 (unpublished).
+
+
 Building this package
 ========================
 
 See INSTALL.
+
+
+Licensing
+========================
+
+See COPYING.
+

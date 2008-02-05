@@ -11,19 +11,47 @@ Prerequisites
 3. Boost C++ Library 1.34 or later.
 4. Python 2.4 or later.
 5. Scipy 0.5 or later, Numpy 1.0 or later.
-(6. Pychecker if you want to run 'make pycheck'.)
+6. Matplotlib if you want to use the plotting programs used in sample
+   scripts.
+(7. Pychecker if you want to run 'make pycheck'.)
 
 If you use Fedora or any other RedHat lines of linux, check
 if the following RPM packages are installed:
 
-gsl, gsl-devel, numpy, scipy, boost, and boost-devel.
+gsl, gsl-devel, numpy, scipy, python-matplotlib, boost, and boost-devel.
 
 On Ubuntu Linux and some other Debian families, install the following:
 
 gsl-bin, libgsl0, libgsl0-dev, libboost-dev, libboost-python-dev,
-libboost-test-dev, python-scipy, pychecker.
+libboost-test-dev, python-scipy, python-matplotlib.
 
-Tested on Fedora 6 and Ubuntu 7.04.
+Tested on Fedora 7 and Ubuntu 7.10.
+
+
+A note on GSL version
+++++++++++++++++++++++++++++++
+
+GSL version 1.10 has at least two bugs that can causes an abnormal
+program exit when a Bessel function is evaluated with specific argument
+values.  These bugs can seriously hit stability of this software.
+
+As of January 2008, one of these two bugs is fixed in the official CVS
+repository of the GSL project.  
+http://lists.gnu.org/archive/html/bug-gsl/2007-10/msg00010.html
+
+The other is not addressed yet by GSL developers, but a report has
+been made as below.
+http://lists.gnu.org/archive/html/bug-gsl/2007-12/msg00000.html
+
+A temporary remedy to this problem is to modify the code as below;
+
+1. Open the GSL source file specfunc/bessel.c
+2. Find the function named gsl_sf_bessel_J_CF1() around line 485.
+3. Find the following line:
+   const int maxiter = 10000;
+4. Increase the number.  For example,
+   const int maxiter = 100000;
+5. Rebuild and install GSL.
 
 
 Building this package
@@ -32,12 +60,27 @@ Building this package
 1. ./autogen.sh (optional)
 2. ./configure
 3. make
-4. make check
+
+Testing
+-------------------
+
+Running
+
+% make check
+
+provides a means to make sure some of the core components of the software
+are running correctly.
+
+In addition, you may run
+
+% make pycheck
+
+if you want to be super-strict about Python syntax.
 
 
 Running
 -------------------------
 
-% python dimer.py
+Go to subdirectories under doc/samples, and read README files there.
 
 
