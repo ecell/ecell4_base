@@ -14,13 +14,15 @@ EXTRA_DIST=\
 AllTests.cpp\
 DynamicPriorityQueue_test.cpp\
 alltests.py\
+utils_test.py\
 freeFunctions_test.py\
 EventScheduler_test.py\
 FreeGreensFunction_test.py\
 FreePairGreensFunction_test.py\
 BasicPairGreensFunction_test.py\
 FirstPassageGreensFunction_test.py\
-FirstPassagePairGreensFunction_test.py
+FirstPassagePairGreensFunction_test.py\
+EGFRDSimulator_test.py
 
 #%.py:
 #	$(TESTS_ENVIRONMENT) $(PYTHON) $<
