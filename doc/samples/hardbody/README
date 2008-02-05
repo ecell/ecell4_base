@@ -17,3 +17,10 @@ D:     Diffusion coefficient = 1e-12 [m^2/s]
 sigma: Radius of particles = 3e-8 [m]
 
 By default, the model has cyclic boundary in space.
+
+
+After N particles are randomly placed, the simulator runs
+for some small duration of time (stirTime in the script) to stir.
+After that, the simulator is re-initialized, and run for T
+to take the benchmark.
+

@@ -17,11 +17,11 @@ V = 1e-15
 #N=120
 # 9.34459114075
 # 1-3.  C=1e-6M
-# N=600
+N=600
 # 296.172708988
 # 1-4.  C=2e-6M
-T=0.001
-N=3000
+#T=0.001
+#N=3000
 
 # 2
 #N=600
@@ -97,12 +97,12 @@ s.addSpecies( A )
 
 s.throwInParticles( A, N, box1 )
 
-endTime = 1e-7
+stirTime = 1e-7
 while 1:
     s.step()
     nextTime = s.scheduler.getNextTime()
-    if nextTime > endTime:
-        s.stop( endTime )
+    if nextTime > stirTime:
+        s.stop( stirTime )
         break
 
 s.reset()
