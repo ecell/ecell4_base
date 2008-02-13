@@ -13,7 +13,7 @@ box1 = CuboidalSurface( [0,0,0],[1e-6,1e-6,1e-6] )
 # not supported yet
 #s.addSurface( box1 )
 
-S = Species( 'S', 2e-12, 5e-9 )
+S = Species( 'S', 1.5e-12, 5e-9 )
 s.addSpecies( S )
 P = Species( 'P', 1e-12, 7e-9 )
 s.addSpecies( P )

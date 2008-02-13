@@ -22,8 +22,8 @@ box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 modelName='mapk3'
 
 #D = 2e-12 # run1
-#D = 1e-12 # run2
-D = 5e-13 # run3
+D = 1e-12 # run2
+#D = 5e-13 # run3
 #D = 0.25e-12 # run4
 
 K = Species( 'K', D, 5e-9 )
@@ -67,8 +67,9 @@ Dpisigma4 = 4 * numpy.pi * Dtot * sigma
 def k_a( k ):
     kon = k / 1e3 / N_A
     k_smol = Dpisigma4
-    print kon, k_smol
-    return 1 / ( ( 1 / kon ) - ( 1 / k_smol ) )
+    ka = 1 / ( ( 1 / kon ) - ( 1 / k_smol ) )
+    assert ka > 0
+    return ka
 
 def k_d( koff, kon ):
     return k_a( kon ) * koff / kon * N_A * 1e3

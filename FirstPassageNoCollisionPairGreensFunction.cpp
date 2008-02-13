@@ -796,6 +796,9 @@ FirstPassageNoCollisionPairGreensFunction::drawR( const Real rnd,
 //    const Real lowvalue( GSL_FN_EVAL( &F, low  ) );
     const Real highvalue( GSL_FN_EVAL( &F, high ) );
 
+    // No initial range guess, except the negative value check below,
+    // as evaluation of p_int_r in this GF seems pretty robust.
+
     if( highvalue < 0.0 )
     {
 	printf( "drawR: highvalue < 0.0 (%g). returning a.\n", highvalue );

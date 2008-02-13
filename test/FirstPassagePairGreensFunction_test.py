@@ -103,7 +103,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( t < 0.0 or t >= numpy.inf )
 
 
-    '''
     def test_DrawTime_r0_equal_sigma_kf_large( self ):
         D = 1e-12
         kf = 1e-5
@@ -116,7 +115,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t = gf.drawTime( 0.5, r0 )
         self.failIf( t < 0.0 or t >= numpy.inf )
-'''
+
 
     def no_test_DrawTime_1( self ):
         r0 = 1.0001e-07

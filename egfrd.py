@@ -674,10 +674,9 @@ class Pair( object ):
 
         r = gf.drawR( numpy.random.uniform(), r0, t )
 
-        while r > self.a_r or r <= self.sigma: # redraw; shouldn't happen often
+        while r >= self.a_r or r <= self.sigma: # redraw; shouldn't happen often
             print 'drawR_pair: redraw'
-            raise ''
-            #self.sim.rejectedMoves += 1
+            self.sim.rejectedMoves += 1
             r = gf.drawR( numpy.random.uniform(), r0, t )
 
         return r
@@ -1077,8 +1076,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # check if this Single is squeezed.
         if closest.isPair() and distanceToClosestShell < single.shellSize:
-            assert closest.squeezed,\
-                'When Single is squeezed, the closest must be a squeezed Pair'
+            #assert closest.squeezed,\
+            print 'When Single is squeezed, the closest must be a squeezed Pair'
             squeezed = True
 
             print 'single ', single, ' squeezed by ', closest, 'distance ', \
@@ -1671,6 +1670,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
     def burstPair( self, pair ):
+        print 'burst', pair
+
         single1, single2 = self.breakUpPair( pair )
         single1.initialize( self.t )
         single2.initialize( self.t )
@@ -1768,7 +1769,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                             pairDistance * D2 / D12 + radius2 )
 
         # consider both D_IV and D_CoM?
-        shellSizeMargin = math.sqrt( 6 * D12 * self.smallT )
+        #tau = radius12 * radius12 / D12
+        #shellSizeMargin = math.sqrt( 6 * D12 * self.smallT )
+        shellSizeMargin = radius12 / 2
         #shellSizeMargin = 5e-1 * ( D1 * radius1 + D2 * radius2 ) / D12
         #print 'margin', shellSizeMargin
 
