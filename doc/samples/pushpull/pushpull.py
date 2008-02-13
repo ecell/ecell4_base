@@ -8,12 +8,12 @@ import sys
 def k_a( k ):
     Dpisigma4 = 4 * numpy.pi * Dtot * sigma
     kon = k / 1e3 / N_A
-    k_smol = Dpisigma4
-    print 'kon ', kon, 'k_smol', k_smol
-    if kon > k_smol:
-        print 'ERROR: kon > k_smol, implying k_a is negative'
+    k_D = Dpisigma4
+    print 'kon ', kon, 'k_D', k_D
+    if kon > k_D:
+        print 'ERROR: kon > k_D.'
         sys.exit( 1 )
-    ka = 1 / ( ( 1 / kon ) - ( 1 / k_smol ) )
+    ka = 1 / ( ( 1 / kon ) - ( 1 / k_D ) )
     return ka
 
 def k_d( koff, kon ):
@@ -73,10 +73,16 @@ k_a_f = k_a( kf )
 print k_a_f
 print k_d( kb, kf )
 
-#sys.exit(0)
+print '1e8 1/Ms =', 1e8 / N_A / 1000
+
+
+sys.exit(0)
+
+N_K = int( sys.argv[1] )
+
+s.throwInParticles( K, N_K, box1 )
 
 s.throwInParticles( P, 5, box1 )
-s.throwInParticles( K, 5, box1 )
 s.throwInParticles( Sp, 150, box1 )
 s.throwInParticles( S, 150, box1 )
 
@@ -110,13 +116,13 @@ s.addReactionType( r6 )
 
 
 
-l = Logger( s, 'pushpull-0_05' )
+l = Logger( s, 'pushpull-0_1-%d' % N_K )
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
 l.setInterval( 1e-3 )
 l.log()
 
 
-while s.t < 10:
+while s.t < 100:
     s.step()
     #s.dumpPopulation()
     l.log()
