@@ -9,7 +9,7 @@ def run( outfilename, T, N ):
     for i in range( N ):
         d, t = singlerun2( T )
         outfile.write( '%g\n' % d )
-
+        outfile.flush()
         print d, t
         assert d == 0 or t == T
 

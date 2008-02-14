@@ -5,6 +5,8 @@ from egfrd import *
 from logger import *
 import sys
 
+from fractionS import *
+
 def k_a( k ):
     Dpisigma4 = 4 * numpy.pi * Dtot * sigma
     kon = k / 1e3 / N_A
@@ -65,32 +67,38 @@ Dtot = D + D
 #  4 5 Sp + P <-> PSp
 #  6   PSp     -> P + S
 
-k1 = k2 = 6.0
-kb = 1.5
-kf = 0.15e9
+kcat = 6.1
+koff = 2.0
+kon = 0.15e9
 
-k_a_f = k_a( kf )
-print k_a_f
-print k_d( kb, kf )
+kf = k_a( kon )
+print kf
+print k_d( koff, kon )
 
-print '1e8 1/Ms =', 1e8 / N_A / 1000
+print 0.15e9 / N_A / 1000
 
 
-sys.exit(0)
+#sys.exit(0)
 
 N_K = int( sys.argv[1] )
+N_P = 5
+
+Km_S = 0.1
+
+fracS = fraction_S( N_K, N_P, Km_S )
+
+S_tot = 300
+N_S = S_tot * fracS
+N_Sp = S_tot - N_S
 
 s.throwInParticles( K, N_K, box1 )
-
-s.throwInParticles( P, 5, box1 )
-s.throwInParticles( Sp, 150, box1 )
-s.throwInParticles( S, 150, box1 )
-
-
+s.throwInParticles( P, N_P, box1 )
+s.throwInParticles( Sp, N_Sp, box1 )
+s.throwInParticles( S, N_S, box1 )
 
 # Stir before actually start the sim.
 
-stirTime = 1e-3
+stirTime = 1e-8
 while 1:
     s.step()
     nextTime = s.scheduler.getNextTime()
@@ -101,17 +109,17 @@ while 1:
 s.reset()
 
 
-r1 = BindingReactionType( S, K, KS, k_a_f )
+r1 = BindingReactionType( S, K, KS, kf )
 s.addReactionType( r1 )
-r2 = UnbindingReactionType( KS, S, K, k_d( kb, kf ) )
+r2 = UnbindingReactionType( KS, S, K, k_d( koff, kon ) )
 s.addReactionType( r2 )
-r3 = UnbindingReactionType( KS, K, Sp, k_d( k1, kf ) )
+r3 = UnbindingReactionType( KS, K, Sp, kcat )
 s.addReactionType( r3 )
-r4 = BindingReactionType( Sp, P, PSp, k_a_f )
+r4 = BindingReactionType( Sp, P, PSp, kf )
 s.addReactionType( r4 )
-r5 = UnbindingReactionType( PSp, Sp, P, k_d( kb, kf ) )
+r5 = UnbindingReactionType( PSp, Sp, P, k_d( koff, kon ) )
 s.addReactionType( r5 )
-r6 = UnbindingReactionType( PSp, P, S, k_d( k2, kf ) )
+r6 = UnbindingReactionType( PSp, P, S, kcat )
 s.addReactionType( r6 )
 
 

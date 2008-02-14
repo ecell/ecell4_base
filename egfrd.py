@@ -1315,7 +1315,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # recheck the closest and distance to it.
         self.updateSingle( single, closestShell, distanceToClosestShell )
 
-        print 'single shell', single.shellSize, 'dt', single.dt
+        #print 'single shell', single.shellSize, 'dt', single.dt
 
         return single.dt
 
