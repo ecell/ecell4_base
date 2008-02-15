@@ -4,7 +4,8 @@ import string
 
 class Logger:
 
-    def __init__( self, simulator, logname = 'log', directory = 'data' ):
+    def __init__( self, simulator, logname = 'log', directory = 'data',
+                  comment='' ):
 
         self.simulator = simulator
 
@@ -24,8 +25,10 @@ class Logger:
             pass
 
         self.particleOutList = []
-
         self.prepareTimecourseFile()
+        self.writeTimecourseComment( comment )
+        self.writeTimecourse()
+
 
     def setInterval( self, interval ):
         self.interval = interval
@@ -35,15 +38,18 @@ class Logger:
 
     def prepareTimecourseFile( self ):
 
-        self.timecourseFilename = self.logname + '_timecourse.dat'
+        self.timecourseFilename = self.logname + '.dat'
         self.timecourseFile = open( self.directory + os.sep +\
                                     self.timecourseFilename, 'w' )
 
         speciesNameList = string.join( self.simulator.speciesList.keys(),\
                                        '\t' )
 
-        self.timecourseFile.write( '#\t' + speciesNameList + '\n' )
-        self.writeTimecourse()
+        self.writeTimecourseComment( '\t' + speciesNameList )
+
+
+    def writeTimecourseComment( self, s ):
+        self.timecourseFile.write( '#' + s + '\n' )
 
     def writeTimecourse( self ):
 

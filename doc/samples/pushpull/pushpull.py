@@ -24,6 +24,10 @@ def k_d( koff, kon ):
 def C2N( c, V ):
     return round( c * V * N_A )
 
+Keq = float( sys.argv[1] )
+koff_ratio = float( sys.argv[2] )
+N_K = int( sys.argv[3] )
+
 
 radius = 5e-9
 sigma = radius * 2
@@ -62,37 +66,31 @@ s.addSpecies( PSp )
 
 Dtot = D + D
 
-#  1 2 S + K  <-> KS
-#  3   KS      -> K + Sp
-#  4 5 Sp + P <-> PSp
-#  6   PSp     -> P + S
+N_P = 5
 
-#kcat = 7.1
-#koff = 1.0
-kcat = 0.71
-koff = 0.2
+fracS = fraction_S( N_K, N_P, Keq )
+
+S_tot = 300
+S_conc = S_tot / N_A / V   # in M
+
+N_S = S_tot * fracS
+N_Sp = S_tot - N_S
 
 kon = 0.15e9
 
+Keq_S = Keq * S_conc
+
+kcatkoff = Keq_S * kon
+
+koff = kcatkoff * koff_ratio
+kcat = kcatkoff - koff
+
+
 kf = k_a( kon )
-print kf
-print k_d( koff, kon )
 
-print 0.15e9 / N_A / 1000
-
+print 'kon', kon, 'koff', koff, 'kcat', kcat
 
 #sys.exit(0)
-
-N_K = int( sys.argv[1] )
-N_P = 5
-
-Km_S = 0.1
-
-fracS = fraction_S( N_K, N_P, Km_S )
-
-S_tot = 300
-N_S = S_tot * fracS
-N_Sp = S_tot - N_S
 
 s.throwInParticles( K, N_K, box1 )
 s.throwInParticles( P, N_P, box1 )
@@ -101,7 +99,7 @@ s.throwInParticles( S, N_S, box1 )
 
 # Stir before actually start the sim.
 
-stirTime = 1e-3
+stirTime = 1e-8
 while 1:
     s.step()
     nextTime = s.scheduler.getNextTime()
@@ -110,6 +108,11 @@ while 1:
         break
 
 s.reset()
+
+#  1 2 S + K  <-> KS
+#  3   KS      -> K + Sp
+#  4 5 Sp + P <-> PSp
+#  6   PSp     -> P + S
 
 
 r1 = BindingReactionType( S, K, KS, kf )
@@ -127,13 +130,15 @@ s.addReactionType( r6 )
 
 
 
-l = Logger( s, 'pushpull-0_1-%d' % N_K )
+l = Logger( s, 'pushpull-%s-%s-%s' % ( sys.argv[1], sys.argv[2], sys.argv[3] ),
+            comment = '# kon=%f; koff=%f; kcat=%f; V=%f; S_tot=%f; N_P=%f' %
+            ( kon, koff, kcat, V, S_tot, N_P ) )
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
-l.setInterval( 1e-3 )
+#l.setInterval( 1e-3 )
 l.log()
 
 
-while s.t < 100:
+while s.t < 30:
     s.step()
     #s.dumpPopulation()
     l.log()
