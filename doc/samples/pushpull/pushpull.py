@@ -99,7 +99,7 @@ s.throwInParticles( S, N_S, box1 )
 
 # Stir before actually start the sim.
 
-stirTime = 1e-8
+stirTime = 1e-2
 while 1:
     s.step()
     nextTime = s.scheduler.getNextTime()
