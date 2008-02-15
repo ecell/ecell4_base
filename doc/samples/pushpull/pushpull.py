@@ -67,8 +67,11 @@ Dtot = D + D
 #  4 5 Sp + P <-> PSp
 #  6   PSp     -> P + S
 
-kcat = 6.1
-koff = 2.0
+#kcat = 7.1
+#koff = 1.0
+kcat = 0.71
+koff = 0.2
+
 kon = 0.15e9
 
 kf = k_a( kon )

@@ -79,7 +79,9 @@ class Logger:
 
     def log( self ):
         self.logTimeCourse()
-        self.logParticles()
+
+        if self.particleOutList:
+            self.logParticles()
 
     def logTimeCourse( self ):
 

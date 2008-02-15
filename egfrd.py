@@ -785,6 +785,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.t = 0.0
         self.dt = INF
         self.stepCounter = 0
+        self.zeroSteps = 0
         self.rejectedMoves = 0
         self.reactionEvents = 0
         self.lastEvent = None
@@ -855,8 +856,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
-        #if self.stepCounter % 10000 == 0:
-        #self.checkInvariants()
+        #if self.stepCounter % 1000 == 0:
+        #    self.checkInvariants()
 
         self.stepCounter += 1
 
@@ -870,6 +871,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         nextEvent = self.scheduler.getTopEvent()
         nextTime, nextEventObject = nextEvent.getTime(), nextEvent.getArg()
         self.dt = nextTime - self.t
+
+
+        # assert if not many successive dt=0 steps occur.
+        if self.dt == 0:
+            self.zeroSteps += 1
+        else:
+            self.zeroSteps = 0
+        assert self.zeroSteps < self.scheduler.getSize() * 2,\
+            'too many dt=zero steps.  simulator halted?'
+
 
         assert self.scheduler.getSize() != 0
 
@@ -1076,12 +1087,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # check if this Single is squeezed.
         if closest.isPair() and distanceToClosestShell < single.shellSize:
-            #assert closest.squeezed,\
-            print 'When Single is squeezed, the closest must be a squeezed Pair'
-            squeezed = True
-
             print 'single ', single, ' squeezed by ', closest, 'distance ', \
                 distanceToClosestShell
+            #assert closest.squeezed,\
+            #'When Single is squeezed, the closest must be a squeezed Pair'
+            squeezed = True
+
 
 #             single1, single2 = self.burstPair( closest )
 #             self.removeEvent( closest )
@@ -1201,29 +1212,25 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         distanceToClosest = self.distance( single.particle.pos, 
                                            closestShell.getPos() )
-        sqrtD0 = math.sqrt( D0 ) 
         radius0 = single.getRadius()
-
-        realDistance = distanceToClosest - radius0 - closestShell.getRadius()
-            
-        SHELLSIZE_DISPARITY_FACTOR = 0.5
-
-        criticalPoint = SHELLSIZE_DISPARITY_FACTOR * math.sqrt( D0 ) / \
-                   ( math.sqrt( D0 ) + math.sqrt( closestShell.getD() ) ) *\
-                   realDistance + radius0
 
         #print 'criticalPoint %g, closest shell %s, distance to shell %g' %\
         #(criticalPoint,closestShell,distanceToClosestShell)
 
-        if distanceToClosestShell < criticalPoint or \
-               distanceToClosestShell < radius0 * 10:
-            # (2-1) Burst the closest and do pair check with that.
+        somethingBursted = False
+        partnerCandidates = []
 
-            # Determine the partnerCandidate, which is the closest single.
-            if closestShell.isPair():
+        # (2-1) Burst the closest and do pair check with that.
+
+        # Determine the partnerCandidate, which is the closest single.
+        if closestShell.isPair():
+
+            if distanceToClosestShell < radius0 * 2:
+
                 # If the partner was a Pair, then this has bursted into two
                 # singles.  Find the closer one.
                 single1, single2 = self.burstPair( closestShell )
+                somethingBursted = True
                 self.removeEvent( closestShell )
                 self.addSingleEvent( single1 )
                 self.addSingleEvent( single2 )
@@ -1252,62 +1259,73 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     partnerCandidates = [ candidate1, candidate2 ]
                 elif dist02 < dist01 and MTTC02 < MTTC12:
                     partnerCandidates = [ candidate2, candidate1 ]
-                else:
-                    partnerCandidates = []
-                
-            else:  # If the closest was a Single, that is the partnerCandidate.
+                # else, partnerCandidates = empty
+
+        else:  
+            # If the closest was a Single, that is a potential partnerCandidate.
+            
+            realDistance = distanceToClosest - radius0 \
+                - closestShell.getRadius()
+            SHELLSIZE_DISPARITY_FACTOR = 0.5
+            sqrtD0 = math.sqrt( D0 ) 
+            criticalPoint = SHELLSIZE_DISPARITY_FACTOR * sqrtD0 / \
+                ( sqrtD0 + math.sqrt( closestShell.getD() ) ) *\
+                realDistance + radius0
+
+            #print closestShell, distanceToClosestShell, criticalPoint
+
+            if distanceToClosestShell < criticalPoint or \
+                    distanceToClosestShell < radius0 * 2:
+                somethingBursted = True
                 try:
                     self.burstSingle( closestShell )
                 except NoSpace:
                     self.rejectedMoves += 1
                 partnerCandidates = [closestShell,]
 
-            #print 'partnerCandidates=',str(partnerCandidates)
+        #print partnerCandidates
+        # try forming a Pair
+        if len( partnerCandidates ) >= 1:
 
-            # try forming a Pair
-            if len( partnerCandidates ) >= 1:
+            pair = self.formPair( single, partnerCandidates[0] )
 
-                pair = self.formPair( single, partnerCandidates[0] )
+            if pair:
+                pair.determineNextEvent()
 
-                if pair:
-                    pair.determineNextEvent()
-
-                    print pair, 'dt=', pair.dt, 'type=', pair.eventType
+                print pair, 'dt=', pair.dt, 'type=', pair.eventType
                     
-                    self.addPairEvent( pair )
+                self.addPairEvent( pair )
 
-                    self.removeEvent( partnerCandidates[0] )
+                self.removeEvent( partnerCandidates[0] )
                     
-                    for remainingCandidate in partnerCandidates[1:]:
-                        c, d =\
-                            self.getClosestShell( remainingCandidate.getPos(), 
-                                                  ignore = 
-                                                  [ remainingCandidate, ] )
-                        self.updateSingle( remainingCandidate, c, d )
-                        self.updateEvent( self.t + remainingCandidate.dt,
-                                          remainingCandidate )
+                for remainingCandidate in partnerCandidates[1:]:
+                    c, d =\
+                        self.getClosestShell( remainingCandidate.getPos(), 
+                                              ignore = 
+                                              [ remainingCandidate, ] )
+                    self.updateSingle( remainingCandidate, c, d )
+                    self.updateEvent( self.t + remainingCandidate.dt,
+                                      remainingCandidate )
 
-                    single.dt = -numpy.inf # remove by rescheduling to past.
-                    return single.dt
+                single.dt = -numpy.inf # remove by rescheduling to past.
+                return single.dt
 
-                else:
-                    for remainingCandidate in partnerCandidates:
-                        c, d =\
-                            self.getClosestShell( remainingCandidate.getPos(), 
-                                                  ignore = 
-                                                  [ remainingCandidate, ] )
-                        self.updateSingle( remainingCandidate, c, d )
-                        self.updateEvent( self.t + remainingCandidate.dt,
-                                          remainingCandidate )
-            # this Single bursted something.
-            # Recheck closest and closest shell distance.
+            else:
+                for remainingCandidate in partnerCandidates:
+                    c, d =\
+                        self.getClosestShell( remainingCandidate.getPos(), 
+                                              ignore = 
+                                              [ remainingCandidate, ] )
+                    self.updateSingle( remainingCandidate, c, d )
+                    self.updateEvent( self.t + remainingCandidate.dt,
+                                      remainingCandidate )
+
+
+        # If this Single bursted something,
+        # Recheck closest and closest shell distance.
+        if somethingBursted:
             closestShell, distanceToClosestShell =\
                 self.getClosestShell( single.getPos(), ignore = [ single, ] )
-
-
-        else:  # this Single didn't burst anything.
-            # closest and closest shell distance are unchanged.
-            pass
 
         # (3) If a new Pair was not formed, this Single continues.
         #     Determine a new shell size and dt.

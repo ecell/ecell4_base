@@ -1,7 +1,7 @@
 import math
 
 
-def fraction_S( E1, E2, K ):
+def fraction_Sp( E1, E2, K ):
 
     if E1 == E2:
         return 0.5
@@ -11,7 +11,11 @@ def fraction_S( E1, E2, K ):
                        ( ( E1 + E2 ) * K ) ** 2 )
     den = 2 * ( E1 - E2 )
 
-    return 1.0 - num / den
+    return  num / den
+
+def fraction_S( E1, E2, K ):
+
+    return 1.0 - fraction_Sp( E1, E2, K )
 
 
 
