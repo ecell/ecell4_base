@@ -147,13 +147,14 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
-        r = 5e-8
-        r0 = 5e-8
+        r = 1.0001e-8
+        r0 = 1.0001e-8
         
         gf = mod.BasicPairGreensFunction( D, kf, sigma )
-
-        t = 1e-4  # well this is not *very* small..
+        t = 1e-9
         theta = gf.drawTheta( 0.5, r, r0, t )
+        print 'TT', theta
+
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
 
