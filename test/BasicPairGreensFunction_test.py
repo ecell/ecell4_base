@@ -151,7 +151,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         r0 = 1.0001e-8
         
         gf = mod.BasicPairGreensFunction( D, kf, sigma )
-        t = 1e-9
+        t = 1e-6  # well, not very small
         theta = gf.drawTheta( 0.5, r, r0, t )
         print 'TT', theta
 

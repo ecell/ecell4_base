@@ -161,7 +161,6 @@ BasicPairGreensFunction::p_corr_R( const Real alpha,
     const Real rAlpha( r * alpha );
     const Real r0Alpha( r0 * alpha );
 
-    // GSL
     const Real js1( gsl_sf_bessel_Jnu( order,       sigmaAlpha ) );
     const Real ys1( gsl_sf_bessel_Ynu( order,       sigmaAlpha ) );
     const Real js2( gsl_sf_bessel_Jnu( order + 1.0, sigmaAlpha ) );
@@ -587,7 +586,7 @@ BasicPairGreensFunction::Rn( const unsigned int n, const Real r, const Real r0,
 			 umax,
 			 tol,
 			 1e-6,
-			 1000, GSL_INTEG_GAUSS31,
+			 1000, GSL_INTEG_GAUSS61,
 			 workspace, &integral, &error );
 
 
@@ -777,7 +776,6 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
     }
 
 
-    const unsigned int MAXORDER( 80 );
     const Real pfreemax( p_free_max( r, r0, t, D ) );
 
     gsl_integration_workspace* 
@@ -786,7 +784,7 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
     Real Rn_prev( 0.0 );
     const Real RnFactor( 1.0 / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
 
-    const Real integrationTolerance( pfreemax / RnFactor * 1e-15 );
+    const Real integrationTolerance( pfreemax / RnFactor * 1e-6 );
     const Real truncationTolerance( pfreemax * 1e-8 );
     
     unsigned int n( 0 );
@@ -807,7 +805,7 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
         }
 
     
-        if( n >= MAXORDER )
+        if( n >= this->MAX_ORDER )
         {
             std::cerr << "Rn didn't converge." << std::endl;
             break;
