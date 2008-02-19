@@ -12,12 +12,11 @@ from fractionS import *
 N_A = 6.0221367e23
 
 E2 = 5
-kcat = 7.1
 V = 1e-15
 
 def plot_theory( E1, E2, K, maxt ):
 
-    frac = 1.0 - fraction_S( E1, E2, K )
+    frac = fraction_S( E1, E2, K )
     x = [0.0, maxt]
     y = [frac,frac]
 
@@ -33,18 +32,16 @@ def plot_data( data, xcolumn,  ycolumns, St ):
     plot( x, y )
 
 
-K = 0.1
-E1 = 3
+K = sys.argv[1]
 St = 300
-maxt = 1
 
-for E1 in sys.argv[1:]:
+for E1 in sys.argv[2:]:
     E1 = int( E1 )
-    filename = 'pushpull-0_1-%d_timecourse.dat' % E1
+    filename = 'pushpull-%s-0.2-%d.dat' % ( K, E1 )
     data = load( filename )
     maxt = data[-1,0]
-    plot_data( data, 0, (2,6), St )
-    plot_theory( E1, E2, 0.1, maxt )
+    plot_data( data, 0, (3,5), St )
+    plot_theory( E1, E2, float( K ), maxt )
 
 
 

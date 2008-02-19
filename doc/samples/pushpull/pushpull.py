@@ -34,7 +34,7 @@ sigma = radius * 2
 D = 1.0e-12
 
 #V = 2000 * sigma * sigma * sigma * 1000 * 500 #liter
-V = 1e-15
+V = 1e-14
 L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
 s = EGFRDSimulator()
@@ -99,7 +99,7 @@ s.throwInParticles( S, N_S, box1 )
 
 # Stir before actually start the sim.
 
-stirTime = 1e-2
+stirTime = 1e-3
 while 1:
     s.step()
     nextTime = s.scheduler.getNextTime()
@@ -138,7 +138,7 @@ l = Logger( s, 'pushpull-%s-%s-%s' % ( sys.argv[1], sys.argv[2], sys.argv[3] ),
 l.log()
 
 
-while s.t < 30:
+while s.t < 300:
     s.step()
     #s.dumpPopulation()
     l.log()
