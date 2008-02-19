@@ -8,7 +8,6 @@ import operator
 
 import numpy
 import scipy
-import scipy.optimize
 
 
 from utils import *

@@ -976,8 +976,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     self.burstSingle( neighbor )
                 except NoSpace:
                     self.rejectedMoves += 1
-
-            else:
+            else:  # Pair
                 single1, single2 = self.burstPair( neighbor )
                 self.removeEvent( neighbor )
                 self.addSingleEvent( single1 )
@@ -1031,6 +1030,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             radius2 = productSpecies2.radius
             radius12 = radius1 + radius2
 
+            # clean up space.
+            rad = max( radius12 * ( D1 / D12 ) + radius1,
+                       radius12 * ( D2 / D12 ) + radius2 )
+            self.excludeVolume( oldpos, rad )
+
+
             for i in range( 100 ):
                 unitVector = randomUnitVector()
                 vector = unitVector * radius12 * (1.0 + 1e-10) # safety
@@ -1054,9 +1059,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 print 'no space for product particles.'
                 single.particle.pos = oldpos
                 raise NoSpace()
-
-            self.excludeVolume( newpos1, productSpecies1.radius )
-            self.excludeVolume( newpos2, productSpecies2.radius )
 
             self.removeParticle( single.particle )
 
@@ -1392,6 +1394,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             self.burstPair( pair )
 
+            self.addSingleEvent( theothersingle )
+
             try:
                 self.objMatrix.remove( reactingsingle )
                 self.fireSingleReaction( reactingsingle )
@@ -1400,8 +1404,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.rejectedMoves += 1
                 reactingsingle.dt = 0
                 self.addSingleEvent( reactingsingle )
-
-            self.addSingleEvent( theothersingle )
 
             pair.dt = -numpy.inf
             return pair.dt
@@ -1809,7 +1811,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             # there is enough pairGap; singles can do it better.
             if pairGap >= shellSizeMargin:
-                print 'squeezed, but there is enough pairGap'
+                print 'squeezed, but there is enough pairGap.  Pair not formed.'
                 return -0.0
             else:
                 # real squeezing
@@ -1851,7 +1853,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     Get neighbors simply by distance.
 
     This method does not take into account of particle radius or shell size.
-    This method pick top n neighbors simply by the distance between given
+    This method picks top n neighbors simply by the distance between given
     position pos to positions of objects (either Singles or Pairs) around.
 
     This method returns a tuple ( neighbors, distances ).
