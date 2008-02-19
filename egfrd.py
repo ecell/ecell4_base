@@ -167,12 +167,12 @@ class Single( object ):
     def calculateShellSize( self, closest, distance, shellDistance ):
 
         radius1 = self.getRadius()
-
-        D1, D2 = self.getD(), closest.getD()
+        D1 = self.getD()
 
         if D1 == 0:
             return radius1
-        
+
+        D2 = closest.getD()
         radius2 = closest.getRadius()
         radius12 = radius1 + radius2
         sqrtD1 = math.sqrt( D1 )
@@ -1096,12 +1096,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             squeezed = True
 
 
-#             single1, single2 = self.burstPair( closest )
-#             self.removeEvent( closest )
-#             self.addSingleEvent( single1 )
-#             self.addSingleEvent( single2 )
-
-
         radius = single.getRadius()
         oldpos = single.particle.pos.copy()
         
@@ -1129,11 +1123,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         return squeezed
 
-#         else:  # normal procedure; not squeezed.
-#             displacement = single.drawDisplacement( r )
-#             single.particle.pos += displacement
-#             single.initialize( self.t )
-#             return False
+
 
     def fireSingle( self, single ):
 
@@ -1781,10 +1771,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             % ( single1, single2, pairGap )
 
 
-        #PairMakingFactor = 10
-        #if pairDistance > radius12 * PairMakingFactor:
-        #    return -0.0
-            
         minShellSize = max( pairDistance * D1 / D12 + radius1,
                             pairDistance * D2 / D12 + radius2 )
 
