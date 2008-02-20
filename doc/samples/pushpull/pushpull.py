@@ -13,9 +13,9 @@ def k_D( D, sigma ):
     return Dpisigma4
 
 def k_a( k, D, sigma ):
-    kon = k / 1e3 / N_A
+    kon = k
     kD = k_D( D, sigma )
-    print 'kon ', kon, 'k_D', kD
+    #print 'kon ', kon, 'k_D', kD
     if kon > k_D:
         print 'ERROR: kon > k_D.'
         sys.exit( 1 )
@@ -23,7 +23,12 @@ def k_a( k, D, sigma ):
     return ka
 
 def k_d( koff, kon, D, sigma ):
-    return k_a( kon, D, sigma ) * koff / kon * N_A * 1e3
+    return k_a( kon, D, sigma ) * koff / kon
+
+def k_on( ka, kD ):
+    kon = 1 / ( ( 1 / kD ) + ( 1 / ka ) )  # m^3/s
+    return kon
+
 
 def C2N( c, V ):
     return round( c * V * N_A )
@@ -96,7 +101,7 @@ s.addSpecies( PSp )
 fracS = fraction_S( N_K, N_P, Keq )
 
 S_tot = 300
-S_conc = S_tot / N_A / V   # in M
+S_conc = S_tot / V * 1e3   # in #/m^3
 
 N_S = S_tot * fracS
 N_Sp = S_tot - N_S
@@ -104,11 +109,11 @@ N_Sp = S_tot - N_S
 Dtot = D1 + D2
 
 #ka = k_a( kon, Dtot, sigma )
-ka = 1.5e10 / N_A / 1e3 # m^3/s
+ka = 1.5e10 / N_A / 1e3 # 1/M s -> m^3/s
 
 kD = k_D( Dtot, sigma )  # m^3/s
 
-kon = 1 / ( ( 1 / kD ) + ( 1 / ka ) )  # m^3/s
+kon = k_on( ka, kD )
 
 Keq_S = Keq * S_conc
 
@@ -120,8 +125,10 @@ kcat = kcatkoff - koff
 kd = k_d( koff, kon, Dtot, sigma )
 
 print 'ka', ka, 'kD', kD, 'kd', kd
-print 'm^3/s kon', kon, 'koff', koff, 'kcat', kcat
-print '1/M s kon', kon*N_A*1e3, 'koff', koff*N_A*1e3, 'kcat', kcat*N_A*1e3
+print 'kon m^3/s', kon, '1/M s', kon * N_A * 1e3
+print 'koff ', koff
+print 'kcat ', kcat
+
 
 #sys.exit(0)
 
