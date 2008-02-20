@@ -54,14 +54,13 @@ def distance( position1, position2, fsize = 0 ):
 
 def distanceSqArray_Simple( position1, positions, fsize = 0 ):
     tmp = positions - position1
-    return ( tmp * tmp ).sum(1)
+    return numpy.square( tmp ).sum( 1 )
 
 
 def distanceSq_Cyclic( position1, position2, fsize ):
 
     diff = numpy.abs( position2 - position1 )
     diff -= numpy.greater( diff, fsize * 0.5 ) * fsize # transpose
-
     return numpy.dot( diff, diff )
 
 
@@ -69,9 +68,7 @@ def distanceSqArray_Cyclic( position1, positions, fsize ):
 
     diff = numpy.abs( positions - position1 )
     diff -= numpy.greater( diff, fsize * 0.5 ) * fsize # transpose
-    diff *= diff
-
-    return diff.sum(1)
+    return numpy.square( diff ).sum( 1 )
 
 
 
