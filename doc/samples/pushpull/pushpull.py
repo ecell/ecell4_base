@@ -126,8 +126,8 @@ kd = k_d( koff, kon, Dtot, sigma )
 
 print 'ka', ka, 'kD', kD, 'kd', kd
 print 'kon m^3/s', kon, '1/M s', kon * N_A * 1e3
-print 'koff ', koff
-print 'kcat ', kcat
+print 'koff 1/s ', koff
+print 'kcat 1/s ', kcat
 
 
 #sys.exit(0)
