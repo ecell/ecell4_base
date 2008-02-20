@@ -25,8 +25,7 @@ class Logger:
             pass
 
         self.particleOutList = []
-        self.prepareTimecourseFile()
-        self.writeTimecourseComment( comment )
+        self.prepareTimecourseFile( comment )
         self.writeTimecourse()
 
 
@@ -36,16 +35,17 @@ class Logger:
     def setParticleOutput( self, outlist ):
         self.particleOutList = outlist
 
-    def prepareTimecourseFile( self ):
+    def prepareTimecourseFile( self, comment ):
 
         self.timecourseFilename = self.logname + '.dat'
         self.timecourseFile = open( self.directory + os.sep +\
                                     self.timecourseFilename, 'w' )
+        self.writeTimecourseComment( comment )
 
-        speciesNameList = string.join( self.simulator.speciesList.keys(),\
-                                       '\t' )
-
-        self.writeTimecourseComment( '\t' + speciesNameList )
+        speciesNameList = '\'' +\
+            string.join( self.simulator.speciesList.keys(), '\', \'' ) + '\''
+        columns = '[ \'t\', ' + speciesNameList + ']'
+        self.writeTimecourseComment( '@ columns= ' + columns )
 
 
     def writeTimecourseComment( self, s ):
