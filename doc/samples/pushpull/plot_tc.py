@@ -1,49 +1,78 @@
 #!/usr/bin/env python
 
-
+import string
 import sys
 
 import numpy
 import scipy.io
+
+import fractionS
+
 from matplotlib.pylab import *
 
-from fractionS import *
+def load_header( filename ):
+    file = open( filename )
+    header = []
+    for line in file.readlines():
+        if line[0:2] == '#@':
+            hline = line[2:].lstrip()
+            header.append( hline )
 
-N_A = 6.0221367e23
+    return header
 
-E2 = 5
-V = 1e-15
+def add_columns( data, ycolumns ):
+
+    y = numpy.array([ data[:,col] for col in ycolumns ]) 
+
+    y = y.sum(0)
+
+    return y
 
 def plot_theory( E1, E2, K, maxt ):
 
-    frac = fraction_S( E1, E2, K )
+    frac = fractionS.fraction_Sp( E1, E2, K )
     x = [0.0, maxt]
     y = [frac,frac]
 
     plot( x, y )
 
 
-def plot_data( data, xcolumn,  ycolumns, St ):
+def plot_file( filename ):
+    ycolumns = [2,]
+    #ycolumns = [2,6]
+    #ycolumns = [3,5]
+    #ycolumns = [2,6,3,5]
 
-    x = data[:,xcolumn]
-    y = numpy.array([ data[:,col] for col in ycolumns ]) 
-    y = y[0] + y[1]
-    y /= float( St )
-    plot( x, y )
+    header = load_header( filename )
+    print header
+    for l in header:
+        exec( l )
 
 
-K = sys.argv[1]
-St = 300
-
-for E1 in sys.argv[2:]:
-    E1 = int( E1 )
-    filename = 'pushpull-%s-0.2-%d.dat' % ( K, E1 )
     data = load( filename )
-    maxt = data[-1,0]
-    plot_data( data, 0, (3,5), St )
-    plot_theory( E1, E2, float( K ), maxt )
+    x = data[:,0]
+    y = add_columns( data, ycolumns )
+
+    plot_theory( N_K, N_P, Keq, x[-1] )
+    plot( x, y / S_tot )
 
 
+import glob
+import os
 
+pattern = sys.argv[1]
+globpattern = pattern.replace('ALL','*')
 
-show()
+figtitle = os.path.basename( os.path.splitext( pattern )[0] )
+print title
+#print globpattern
+filelist = glob.glob( globpattern )
+#print filelist
+for filename in filelist:
+    plot_file( filename )
+
+title( figtitle )
+
+savefig( 'figs/' + figtitle + '.png', dpi=80 )
+
+#show()
