@@ -89,17 +89,17 @@ def singlerun2( T ):
     particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
 
     endTime = T
-    s.step()
 
     while 1:
-        nextTime = s.getNextTime()
-        if nextTime > endTime:
-            s.stop( endTime )
-            break
         s.step()
         if s.populationChanged():
             print 'reaction'
             return 0.0, s.t
+
+        nextTime = s.getNextTime()
+        if nextTime > endTime:
+            s.stop( endTime )
+            break
 
     distance = s.distance( particleB.getPos(), particleA.getPos() )
 

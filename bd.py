@@ -137,10 +137,11 @@ class BDSimulator( GFRDSimulatorBase ):
         #if D == 0.0:  # already checked in propagate()
         #    return
 
-        pos = species.pool.positions[i].copy()
+        #displacement = drawR_free( self.dt, D )
+        displacement = numpy.random.normal( 0.0, 
+                                            math.sqrt( 2 * D * self.dt ), 3 )
 
-        displacement = drawR_free( self.dt, D )
-        newpos = pos + displacement
+        newpos = species.pool.positions[i] + displacement
         
         n, d = self.getNeighborParticles( newpos )
 
@@ -151,7 +152,7 @@ class BDSimulator( GFRDSimulatorBase ):
         closest = n[1]
         dist = d[1]
         
-        if dist <= species.radius:
+        if dist <= species.radius:  # collision
             species2 = closest.species
 
             rt = self.reactionTypeMap2.get( ( species, species2 ) )
