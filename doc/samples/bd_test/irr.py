@@ -21,30 +21,33 @@ def singlerun( T ):
     s = BDSimulator()
     s.setCellSize( 1e-3 )
 
-    #s.setMaxShellSize( 1e-6 )
+    sigma = 1e-8
+    r0 = sigma
+    D = 1e-12
+    kf = 10 * sigma * D
 
-    A = Species( 'A', 2e-12, 5e-9 )
+    A = Species( 'A', D, sigma/2 )
     s.addSpecies( A )
-    B = Species( 'B', 2e-12, 5e-9 )
+    B = Species( 'B', D, sigma/2 )
     s.addSpecies( B )
-    C = Species( 'C', 2e-12, 5e-9 )
+    C = Species( 'C', D, sigma/2 )
     s.addSpecies( C )
     
-    r1 = BindingReactionType( A, B, C, 1e7 / N_A )
+    r1 = BindingReactionType( A, B, C, kf )
     s.addReactionType( r1 )
     
     particleA = s.placeParticle( A, [0,0,0] )
     particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
 
     endTime = T
-    s.step()
+    #s.initialize()
 
     while 1:
         nextTime = s.t + s.dt
         if nextTime > endTime:
             break
         s.step()
-        print s.populationChanged()
+        #print s.populationChanged()
         if s.populationChanged():
             print 'reaction'
             return 0.0, s.t

@@ -168,12 +168,13 @@ class ParticlePool( object ):
         self.indexMap = {}
         self.serialCounter = 0
 
-        self.serials = numpy.array( [0,], numpy.integer )
+        self.serials = numpy.array( [], numpy.integer )
 
         self.positions = numpy.array( [], numpy.floating )
         self.positions.shape = ( 0, 3 )
 
         self.size = 0
+
 
     def newParticle( self, position ):
 
@@ -208,6 +209,11 @@ class ParticlePool( object ):
 
         self.size -= 1
 
+        if self.size == 0:
+            self.indexMap = {}
+            self.__resizeArrays( self.size )
+            return
+
         serialOfRemovedItem = self.serials[ index ]
         serialOfMovedItem = self.serials[ self.size ]
 
@@ -221,6 +227,8 @@ class ParticlePool( object ):
         # book keeping
         del self.indexMap[ serialOfRemovedItem ]
         self.indexMap[ serialOfMovedItem ] = index
+
+
 
     def getSerialByIndex( self, index ):
         

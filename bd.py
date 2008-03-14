@@ -25,7 +25,7 @@ class BDSimulator( GFRDSimulatorBase ):
         self.isDirty = True
 
         self.t = 0.0
-        self.dt = 1e-9
+        self.dt = 0.0
 
         self.stepCounter = 0
 
@@ -40,7 +40,27 @@ class BDSimulator( GFRDSimulatorBase ):
 
         self.setAllRepulsive()
 
+        self.determineDt()
+
         self.isDirty = False
+
+
+    def determineDt( self ):
+
+        D_list = []
+        radius_list = []
+        for species in self.speciesList.values():
+            if species.pool.size != 0:
+                D_list.append( species.D )
+                radius_list.append( species.radius )
+        D_max = max( D_list )
+        radius_min = min( radius_list )
+        sigma_min = radius_min * 2
+
+        DT_FACTOR = 1e-3
+
+        self.dt = DT_FACTOR * sigma_min ** 2 / D_max  
+        print 'dt = ', self.dt
 
 
     def step( self ):
@@ -78,18 +98,33 @@ class BDSimulator( GFRDSimulatorBase ):
 
     def propagate( self ):
         
+        particleList = []
         for species in self.speciesList.values():
-            for i in range( species.pool.size ):
-                self.propagateParticle( species, i )
+            if species.D != 0.0:
+                print species.pool.serials
+                particleList.extend( [ ( species, s )\
+                                           for s in species.pool.serials ] )
+
+        random.shuffle( particleList )
+        print particleList
+        for p in particleList:
+            print p[0].id, p[1]
+            self.propagateParticle( p[0], p[1] )
 
 
-    def propagateParticle( self, species, i ):
+    def propagateParticle( self, species, serial ):
 
-        D = species.D
-        if D == 0.0:
+        try:
+            i = species.pool.indexMap[ serial ]
+            print species.id, i
+        except KeyError:  # already deleted by reaction
             return
 
-        pos = species.pool.positions[i]
+        D = species.D
+        #if D == 0.0:  # already checked in propagate()
+        #    return
+
+        pos = species.pool.positions[i].copy()
 
         displacement = drawR_free( self.dt, D )
         newpos = pos + displacement
@@ -107,19 +142,21 @@ class BDSimulator( GFRDSimulatorBase ):
             species2 = closest.species
 
             rt = self.reactionTypeMap2.get( ( species, species2 ) )
-            if rt == None:
-                k = 0.0
-            else:
-                k = rt.k
+            k = rt.k
+            #if rt == None:
+            #    k = 0.0
+            #else:
+            #    k = rt.k
 
             if k != 0.0:
                 radius12 = species.radius + species2.radius
                 D12 = species.D + species2.D
 
+                print ( radius12, self.dt, D12 )
+
                 I = _gfrd.I_bd( radius12, self.dt, D12 )
                 print 'I', I
-                kdt = k * self.dt
-                p = k * self.dt / I
+                p = k * self.dt / ( I * 4.0 * numpy.pi )
                 print 'p', p
                 assert p <= 1.0 and p >= 0.0
 
@@ -138,7 +175,7 @@ class BDSimulator( GFRDSimulatorBase ):
 
 
         species.pool.positions[i] = self.applyBoundary( newpos )
-        print pos
+        #print species.pool.positions[i]
 
     def fireReaction2( self, particle1, particle2, rt ):
 
