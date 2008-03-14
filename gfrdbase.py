@@ -37,7 +37,7 @@ def drawR_free( t, D ):
 
     return displacement
 
-class OverlapError( Exception ):
+class NoSpace( Exception ):
     pass
 
 
@@ -134,8 +134,6 @@ class Particle( object ):
         else:
             raise ValueError, 'give either serial or index.'
 
-        self.pool = self.species.pool
-
     def __str__( self ):
         return str( ( self.species.id, self.serial ) )
 
@@ -148,17 +146,17 @@ class Particle( object ):
             return 1
 
     def getPos( self ):
-        pool = self.pool
+        pool = self.species.pool
         return pool.positions[ pool.indexMap[ self.serial ] ]
 
     def setPos( self, newpos ):
-        pool = self.pool
+        pool = self.species.pool
         pool.positions[ pool.indexMap[ self.serial ] ] = newpos
 
     pos = property( getPos, setPos )
 
     def getIndex( self ):
-        return self.pool.indexMap[ self.serial ]
+        return self.species.pool.indexMap[ self.serial ]
 
 
 class ParticlePool( object ):
@@ -309,7 +307,7 @@ class GFRDSimulatorBase( object ):
 
         limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
 
-        while True:
+        while 1:
             displacement = drawR_free( self.dt, species.D )
             
             distSq = ( displacement * displacement ).sum()
@@ -332,7 +330,7 @@ class GFRDSimulatorBase( object ):
 
         limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
 
-        while True:
+        while 1:
             displacement = drawR_free( self.dt, species.D )
             
             distSq = ( displacement * displacement ).sum()
@@ -407,7 +405,7 @@ class GFRDSimulatorBase( object ):
 
         for _ in range( int( n ) ):
 
-            while True:
+            while 1:
 
                 #position= numpy.random.uniform( 0, self.fsize, 3 )
                 position = surface.randomPosition()
@@ -424,7 +422,7 @@ class GFRDSimulatorBase( object ):
         radius = species.radius
 
         if not self.checkOverlap( pos, radius ):
-            raise OverlapError, 'overlap check failed'
+            raise NoSpace, 'overlap check failed'
             
         particle = self.createParticle( species, pos )
         return particle
@@ -532,7 +530,7 @@ class GFRDSimulatorBase( object ):
     def getNeighborParticles( self, pos, n=2, speciesList=None ):
 
         neighbors = []
-        distances = []
+        distances = numpy.array([],numpy.floating)
 
         if not speciesList:
             speciesList = self.speciesList.values()
@@ -546,16 +544,16 @@ class GFRDSimulatorBase( object ):
             dist = self.distanceSqArray( pos, species.pool.positions )
         
             indices = dist.argsort()[:n]
-            dist = numpy.sqrt( dist.take( indices ) )
-            dist -= species.radius
+            dist = numpy.sqrt( dist.take( indices ) ) - species.radius
 
-            distances.extend( dist )
+            distances = numpy.concatenate( ( distances, dist ) )
             neighbors.extend( [ ( species, i ) for i in indices ] )
 
-        topargs = numpy.argsort( distances )[:n]
-        distances = numpy.take( distances, topargs )
-        neighbors = [ neighbors[arg] for arg in topargs ]
-        neighbors = [ Particle( arg[0], index=arg[1] ) for arg in neighbors ]
+        distances = numpy.array( distances )
+        topargs = distances.argsort()[:n]
+        distances = distances.take( topargs )
+        neighbors = [ Particle( neighbors[arg][0], index=neighbors[arg][1] ) 
+                      for arg in topargs ]
 
         return neighbors, distances
 

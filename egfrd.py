@@ -749,11 +749,6 @@ class DummySingle( object ):
     
 
 
-class NoSpace( Exception ):
-    def __init__( self ):
-        pass
-
-
 class EGFRDSimulator( GFRDSimulatorBase ):
     
     def __init__( self ):
@@ -771,6 +766,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.reset()
 
+
+    def getNextTime( self ):
+        return self.scheduler.getNextTime()
 
     def setMaxShellSize( self, maxShellSize ):
 

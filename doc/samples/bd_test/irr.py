@@ -26,11 +26,11 @@ def singlerun( T ):
     D = 1e-12
     kf = 10 * sigma * D
 
-    A = Species( 'A', D, sigma/2 )
+    A = Species( 'A', D/2, sigma/2 )
     s.addSpecies( A )
-    B = Species( 'B', D, sigma/2 )
+    B = Species( 'B', D/2, sigma/2 )
     s.addSpecies( B )
-    C = Species( 'C', D, sigma/2 )
+    C = Species( 'C', D/2, sigma/2 )
     s.addSpecies( C )
     
     r1 = BindingReactionType( A, B, C, kf )

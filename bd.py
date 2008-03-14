@@ -6,7 +6,7 @@ import math
 
 import numpy
 #import scipy
-#import scipy.optimize
+import scipy.optimize
 
 
 from utils import *
@@ -29,10 +29,6 @@ class BDSimulator( GFRDSimulatorBase ):
 
         self.stepCounter = 0
 
-        self.smallT = 1e-8  # FIXME: is this ok?
-
-        self.lastEvent = None
-
         self.clearPopulationChanged()
 
 
@@ -44,6 +40,13 @@ class BDSimulator( GFRDSimulatorBase ):
 
         self.isDirty = False
 
+
+    def getNextTime( self ):
+        return self.t + self.dt
+
+    def stop( self, t ):
+        # dummy
+        self.t = t
 
     def determineDt( self ):
 
@@ -101,14 +104,13 @@ class BDSimulator( GFRDSimulatorBase ):
         particleList = []
         for species in self.speciesList.values():
             if species.D != 0.0:
-                print species.pool.serials
                 particleList.extend( [ ( species, s )\
                                            for s in species.pool.serials ] )
 
+        #print particleList
+
         random.shuffle( particleList )
-        print particleList
         for p in particleList:
-            print p[0].id, p[1]
             self.propagateParticle( p[0], p[1] )
 
 
@@ -116,9 +118,22 @@ class BDSimulator( GFRDSimulatorBase ):
 
         try:
             i = species.pool.indexMap[ serial ]
-            print species.id, i
         except KeyError:  # already deleted by reaction
+            print 'already deleted: ', species.id, serial
             return
+
+        rt1 = self.attemptSingleReactions( species )
+
+        if rt1:
+            print rt1
+
+            try:
+                print Particle( species, serial ).pos
+                self.fireReaction1( Particle( species, serial ), rt1 )
+                return
+            except NoSpace:
+                pass  #FIXME:
+
 
         D = species.D
         #if D == 0.0:  # already checked in propagate()
@@ -143,10 +158,6 @@ class BDSimulator( GFRDSimulatorBase ):
 
             rt = self.reactionTypeMap2.get( ( species, species2 ) )
             k = rt.k
-            #if rt == None:
-            #    k = 0.0
-            #else:
-            #    k = rt.k
 
             if k != 0.0:
                 radius12 = species.radius + species2.radius
@@ -155,15 +166,15 @@ class BDSimulator( GFRDSimulatorBase ):
                 print ( radius12, self.dt, D12 )
 
                 I = _gfrd.I_bd( radius12, self.dt, D12 )
-                print 'I', I
                 p = k * self.dt / ( I * 4.0 * numpy.pi )
-                print 'p', p
+                #print 'p', p
                 assert p <= 1.0 and p >= 0.0
 
                 rnd = numpy.random.uniform()
-                if p < rnd:
+                if p > rnd:
                     print 'fire reaction2'
-                    self.fireReaction2( Particle( species, i ), closest, rt )
+                    self.fireReaction2( Particle( species, serial ), 
+                                        closest, rt )
                     return
                 else:
                     print 'reaction reject'
@@ -177,21 +188,135 @@ class BDSimulator( GFRDSimulatorBase ):
         species.pool.positions[i] = self.applyBoundary( newpos )
         #print species.pool.positions[i]
 
+
+    def attemptSingleReactions( self, species ):
+
+        reactionTypes = self.getReactionType1( species )
+        if not reactionTypes:
+            return None  # no reaction
+
+        k_array = [ rt.k * self.dt for rt in reactionTypes ]
+        k_array = numpy.add.accumulate( k_array )
+        k_max = k_array[-1]
+
+        rnd = numpy.random.uniform()
+        if k_max < rnd:
+            return None
+
+        i = numpy.searchsorted( k_array, rnd )
+
+        return reactionTypes[i]
+
+
+    def fireReaction1( self, particle, rt ):
+        
+        reactantSpecies = particle.species
+        oldpos = particle.pos.copy()
+
+        if len( rt.products ) == 0:
+            
+            self.removeParticle( particle )
+            
+        elif len( rt.products ) == 1:
+            
+            productSpecies = rt.products[0]
+
+            particle.pos = NOWHERE
+
+            if not self.checkOverlap( oldpos, productSpecies.radius ):
+                print 'no space for product particle.'
+                particle.pos = oldpos
+                raise NoSpace()
+                
+            self.removeParticle( particle )
+            self.placeParticle( productSpecies, oldpos )
+            
+        elif len( rt.products ) == 2:
+            
+            productSpecies1 = rt.products[0]
+            productSpecies2 = rt.products[1]
+            
+            D1 = productSpecies1.D
+            D2 = productSpecies2.D
+            D12 = D1 + D2
+            
+            particle.pos = NOWHERE
+
+            radius1 = productSpecies1.radius
+            radius2 = productSpecies2.radius
+            radius12 = radius1 + radius2
+
+            for i in range( 100 ):
+
+                pairDistance = self.drawR_gbd( radius12, self.dt, D12 )
+                print pairDistance
+
+                unitVector = randomUnitVector()
+                vector = unitVector * pairDistance # * (1.0 + 1e-10) # safety
+            
+                # place particles according to the ratio D1:D2
+                # this way, species with D=0 doesn't move.
+                # FIXME: what if D1 == D2 == 0?
+                newpos1 = oldpos + vector * ( D1 / D12 )
+                newpos2 = oldpos - vector * ( D2 / D12 )
+                print oldpos, vector
+                print newpos1, newpos2
+                #FIXME: check surfaces here
+            
+                newpos1 = self.applyBoundary( newpos1 )
+                newpos2 = self.applyBoundary( newpos2 )
+
+                # accept the new positions if there is enough space.
+                if self.checkOverlap( newpos1, radius1 ) and \
+                       self.checkOverlap( newpos2, radius2 ):
+                    break
+            else:
+                print 'no space for product particles.'
+                particle.pos = oldpos
+                raise NoSpace()
+
+            # move accepted
+            self.removeParticle( particle )
+
+            particle1 = self.createParticle( productSpecies1, newpos1 )
+            particle2 = self.createParticle( productSpecies2, newpos2 )
+
+            print newpos1, newpos2
+
+        else:
+            raise RuntimeError, 'num products >= 3 not supported.'
+
+        self.reactionEvents += 1
+        self.setPopulationChanged()
+
+
+
     def fireReaction2( self, particle1, particle2, rt ):
+
+        oldPos1 = particle1.pos.copy()
+        oldPos2 = particle2.pos.copy()
+
+        particle1.pos = particle2.pos = NOWHERE
 
         if len( rt.products ) == 1:
                 
-            species3 = rt.products[0]
+            productSpecies = rt.products[0]
 
             D1 = particle1.species.D
             D2 = particle2.species.D
 
-            newPos = ( D2 * particle1.pos + D1 * particle2.pos ) / ( D1 + D2 )
+            newPos = ( D2 * oldPos1 + D1 * oldPos2 ) / ( D1 + D2 )
 
+            if not self.checkOverlap( newPos, productSpecies.radius ):
+                print 'no space for product particle.'
+                particle1.pos = oldPos1
+                particle2.pos = oldPos2
+                raise NoSpace()
+                
+            # move accepted
             self.removeParticle( particle1 )
             self.removeParticle( particle2 )
-
-            particle = self.createParticle( species3, newPos )
+            particle = self.createParticle( productSpecies, newPos )
 
             self.reactionEvents += 1
             self.setPopulationChanged()
@@ -201,6 +326,21 @@ class BDSimulator( GFRDSimulatorBase ):
             raise NotImplementedError,\
                 'num products >= 2 not supported.'
 
+
+
+    def drawR_gbd( self, sigma, t, D ):
+
+        def f( r, sigma, t, D, I ):
+            return _gfrd.g_bd( r, sigma, t, D ) / I
+
+        I = _gfrd.I_bd( sigma, t, D )
+
+        result = scipy.optimize.brent( f, ( sigma, t, D, I ), 
+                                       ( sigma, 
+                                         sigma + 6 * math.sqrt( 6 * D * t ) ) )
+        r = result
+
+        return r
 
 
 

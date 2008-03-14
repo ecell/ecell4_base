@@ -3,7 +3,8 @@
 # tau = 0.0001
 #PYTHONPATH=../../.. python run.py rev.0.out 0.0001 1000000
 
-from egfrd import *
+#from egfrd import *
+from bd import *
 
 def run( outfilename, T, N ):
     print outfilename
@@ -23,10 +24,12 @@ def run( outfilename, T, N ):
 
 def singlerun( T ):
 
-    s = EGFRDSimulator()
-    s.setCellSize( 1e-3 )
+    #s = EGFRDSimulator()
+    #s.setMaxShellSize( 1e-6 )
 
-    s.setMaxShellSize( 1e-6 )
+    s = BDSimulator()
+
+    s.setCellSize( 1e-3 )
 
     sigma = 1e-8
     r0 = sigma
@@ -46,14 +49,14 @@ def singlerun( T ):
     r2 = UnbindingReactionType( C, A, B, 1e3 )
     s.addReactionType( r2 )
 
-    particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
+    s.placeParticle( A, [0,0,0] )
+    s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
 
     endTime = T
     s.step()
 
     while 1:
-        nextTime = s.scheduler.getNextTime()
+        nextTime = s.getNextTime()
         if nextTime > endTime:
             s.stop( endTime )
             break
@@ -62,7 +65,8 @@ def singlerun( T ):
     if C.pool.size != 0:
         return 0, s.t
 
-    distance = s.distance( particleB.getPos(), particleA.getPos() )
+    print ( A.pool.positions[0], B.pool.positions[0] )
+    distance = s.distance( A.pool.positions[0], B.pool.positions[0] )
 
     return distance, s.t
     

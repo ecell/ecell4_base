@@ -236,7 +236,7 @@ const Real ip_theta_free( const Real theta, const Real r, const Real r0,
 
 
 
-const Real g_bd( const Real r0, const Real sigma, const Real t, const Real D )
+const Real g_bd( const Real r, const Real sigma, const Real t, const Real D )
 {
     const Real Dt4( 4.0 * D * t );
     const Real mDt4_r( - 1.0 / Dt4 );
@@ -244,15 +244,15 @@ const Real g_bd( const Real r0, const Real sigma, const Real t, const Real D )
     const Real sqrtDt4_r( 1.0 / sqrtDt4 );
     const Real sqrtPi( sqrt( M_PI ) );
 
-    const Real r0ps( r0 + sigma );
-    const Real r0ms( r0 - sigma );
+    const Real rps( r + sigma );
+    const Real rms( r - sigma );
 
-    const Real term1( ( exp( r0ps * r0ps * mDt4_r ) - 
-                        exp( r0ms * r0ms * mDt4_r ) ) * sqrtDt4 / 
-                      ( sqrtPi * r0 ) );
-    const Real term2( erf( r0ps * sqrtDt4_r ) - erf( r0ms * sqrtDt4_r ) );
+    const Real term1( ( exp( rps * rps * mDt4_r ) - 
+                        exp( rms * rms * mDt4_r ) ) * sqrtDt4 / 
+                      ( sqrtPi * r ) );
+    const Real term2( erf( rps * sqrtDt4_r ) - erf( rms * sqrtDt4_r ) );
 
-    return 0.5 * ( term1 + term2 ) * 4.0 * M_PI * r0 * r0;
+    return 0.5 * ( term1 + term2 ) * r * r;
 }
     
 const Real I_bd( const Real sigma, const Real t, const Real D )
@@ -264,7 +264,7 @@ const Real I_bd( const Real sigma, const Real t, const Real D )
     const Real sqrtDt( sqrt( Dt ) );
     const Real sigmasq( sigma * sigma );
 
-    const Real term1( 4.0 / 3.0 * sqrtPi );
+    const Real term1( 1.0 / ( 3.0 * sqrtPi ) );
     const Real term2( sigmasq - Dt2 );
     const Real term3( - 3.0 * sigmasq + Dt2 );
     const Real term4( sqrtPi * sigmasq * sigma * erfc( sigma / sqrtDt ) );
