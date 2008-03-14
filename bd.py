@@ -60,7 +60,7 @@ class BDSimulator( GFRDSimulatorBase ):
         radius_min = min( radius_list )
         sigma_min = radius_min * 2
 
-        DT_FACTOR = 1e-3
+        DT_FACTOR = 1e-6
 
         self.dt = DT_FACTOR * sigma_min ** 2 / D_max  
         print 'dt = ', self.dt
@@ -126,9 +126,7 @@ class BDSimulator( GFRDSimulatorBase ):
 
         if rt1:
             print rt1
-
             try:
-                print Particle( species, serial ).pos
                 self.fireReaction1( Particle( species, serial ), rt1 )
                 return
             except NoSpace:

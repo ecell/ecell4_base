@@ -65,7 +65,6 @@ def singlerun( T ):
     if C.pool.size != 0:
         return 0, s.t
 
-    print ( A.pool.positions[0], B.pool.positions[0] )
     distance = s.distance( A.pool.positions[0], B.pool.positions[0] )
 
     return distance, s.t

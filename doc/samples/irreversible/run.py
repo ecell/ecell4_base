@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from egfrd import *
+#from egfrd import *
+from bd import *
 
 def run( outfilename, T, N ):
 
@@ -19,10 +20,10 @@ def run( outfilename, T, N ):
 
 def singlerun1( T ):
 
-    s = EGFRDSimulator()
+    s = BDSimulator()
     s.setCellSize( 1e-3 )
 
-    s.setMaxShellSize( 1e-6 )
+    #s.setMaxShellSize( 1e-6 )
 
 
     sigma = 1e-8
@@ -47,7 +48,7 @@ def singlerun1( T ):
     s.step()
 
     while 1:
-        nextTime = s.scheduler.getNextTime()
+        nextTime = s.getNextTime()
         if nextTime > endTime:
             s.stop( endTime )
             break
@@ -63,10 +64,10 @@ def singlerun1( T ):
 
 def singlerun2( T ):
 
-    s = EGFRDSimulator()
+    s = BDSimulator()
     s.setCellSize( 1e-3 )
 
-    s.setMaxShellSize( 1e-6 )
+    #s.setMaxShellSize( 1e-6 )
 
     sigma = 1e-8
     r0 = sigma
@@ -91,7 +92,7 @@ def singlerun2( T ):
     s.step()
 
     while 1:
-        nextTime = s.scheduler.getNextTime()
+        nextTime = s.getNextTime()
         if nextTime > endTime:
             s.stop( endTime )
             break
