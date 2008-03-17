@@ -424,8 +424,8 @@ class Pair( object ):
 
     def getRadius( self ):  #FIXME: should be renamed?
 
-        pairDistance = self.distance( self.single1.getPos(),
-                                      self.single2.getPos() )
+        pairDistance = self.distance( self.single1.pos,
+                                      self.single2.pos )
         radius = max( pairDistance * self.D1 /
                       self.D_tot + self.single1.getRadius(),
                       pairDistance * self.D2 /
@@ -746,6 +746,8 @@ class DummySingle( object ):
 
     def getPos( self ):
         return NOWHERE
+
+    pos = property( getPos )
 
     def isPair( self ):
 
@@ -1205,7 +1207,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         #     to burst the closest Single or Pair.
 
         distanceToClosest = self.distance( single.particle.pos, 
-                                           closestShell.getPos() )
+                                           closestShell.pos )
         radius0 = single.getRadius()
 
         #print 'criticalPoint %g, closest shell %s, distance to shell %g' %\
@@ -1233,9 +1235,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 candidate2 = closestShell.single2
                 D1 = candidate1.getD()
                 D2 = candidate2.getD()
-                pos0 = single.getPos()
-                pos1 = candidate1.getPos()
-                pos2 = candidate2.getPos()
+                pos0 = single.pos
+                pos1 = candidate1.pos
+                pos2 = candidate2.pos
 
                 dist01 = self.distance( pos0, pos1 ) # radius?
                 dist02 = self.distance( pos0, pos2 )
@@ -1294,7 +1296,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     
                 for remainingCandidate in partnerCandidates[1:]:
                     c, d =\
-                        self.getClosestShell( remainingCandidate.getPos(), 
+                        self.getClosestShell( remainingCandidate.pos,
                                               ignore = 
                                               [ remainingCandidate, ] )
                     self.updateSingle( remainingCandidate, c, d )
@@ -1307,7 +1309,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             else:
                 for remainingCandidate in partnerCandidates:
                     c, d =\
-                        self.getClosestShell( remainingCandidate.getPos(), 
+                        self.getClosestShell( remainingCandidate.pos,
                                               ignore = 
                                               [ remainingCandidate, ] )
                     self.updateSingle( remainingCandidate, c, d )
@@ -1319,7 +1321,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # Recheck closest and closest shell distance.
         if somethingBursted:
             closestShell, distanceToClosestShell =\
-                self.getClosestShell( single.getPos(), ignore = [ single, ] )
+                self.getClosestShell( single.pos, ignore = [ single, ] )
 
         # (3) If a new Pair was not formed, this Single continues.
         #     Determine a new shell size and dt.
@@ -1335,7 +1337,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def updateSingle( self, single, closest, distanceToShell, 
                       minShellSize=0.0 ):
 
-        distanceToClosest = self.distance( single.getPos(), closest.getPos() )
+        distanceToClosest = self.distance( single.pos, closest.pos )
 
         shellSize = single.calculateShellSize( closest, distanceToClosest,
                                                distanceToShell )
@@ -1707,7 +1709,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # Then, check if this pair of singles meets the pair formation
         # criteria defined in self.checkPairFormationCriteria().
         
-        com = calculatePairCoM( single1.getPos(), single2.getPos(),\
+        com = calculatePairCoM( single1.pos, single2.pos,\
                                 single1.getD(), single2.getD(),\
                                 self.getCellSize() )
         com = self.applyBoundary( com )
@@ -1736,7 +1738,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pair.setShellSize( shellSize )
         self.objMatrix.update( pair )
 
-        pairDistance = self.distance( single1.getPos(), single2.getPos() )
+        pairDistance = self.distance( single1.pos, single2.pos )
         print 'Pair formed: ', pair, 'pair distance', pairDistance,\
               'shell size=', pair.shellSize,\
               ', closest = ', pairClosest,\
@@ -1764,7 +1766,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         radius2 = species2.radius
         radius12 = radius1 + radius2
 
-        pos1, pos2 = single1.getPos(), single2.getPos()
+        pos1, pos2 = single1.pos, single2.pos
         pairDistance = self.distance( pos1, pos2 )
 
         # pairGap = real distance excluding radii
@@ -1810,7 +1812,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # 2. Check if a Pair is better than two Singles.
         closestShell = closest.shellSize
-        closestPos = closest.getPos()
+        closestPos = closest.pos
         singleMobility = min( pairDistance - radius12,
                               self.distance( pos1, closestPos )
                               - closestShell - radius1,
@@ -1939,7 +1941,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     #
     
     def checkShell( self, obj ):
-        closest, distance = self.getClosestShell( obj.getPos(), [obj,] )
+        closest, distance = self.getClosestShell( obj.pos, [obj,] )
         shellSize = obj.shellSize
 
         if shellSize > self.getCellSize():
@@ -1994,7 +1996,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         for i in range( self.objMatrix.size ):
             obj = self.objMatrix.objList[i]
-            if ( obj.getPos() - self.objMatrix.positions[i] ).sum() != 0:
+            if ( obj.pos - self.objMatrix.positions[i] ).sum() != 0:
                 raise RuntimeError, 'objMatrix positions consistency failed'
             if obj.shellSize != self.objMatrix.shellSizes[i]:
                 raise RuntimeError, 'objMatrix shellSizes consistency failed'
@@ -2035,7 +2037,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         scheduler = self.scheduler
         for i in range( scheduler.getSize() ):
             event = scheduler.getEventByIndex(i)
-            print i, event.getTime(), event.getArg(), event.getArg().getPos()
+            print i, event.getTime(), event.getArg(), event.getArg().pos
 
 
 
