@@ -52,7 +52,7 @@ class ObjectMatrix( object ):
         self.__resizeArrays( self.size )
 
         self.objList.append( obj )
-        self.positions[ -1 ] = obj.getPos()
+        self.positions[ -1 ] = obj.pos
         self.shellSizes[ -1 ] = obj.shellSize
 
     def remove( self, obj ):
@@ -72,7 +72,7 @@ class ObjectMatrix( object ):
 
     def update( self, obj ):
         i = self.objList.index( obj )
-        self.positions[ i ] = obj.getPos()
+        self.positions[ i ] = obj.pos
         self.shellSizes[ i ] = obj.shellSize
 
     def __resizeArrays( self, newsize ):
@@ -117,10 +117,12 @@ class Single( object ):
 
         return self.particle.species.D
 
-        
     def getPos( self ):
 
         return self.particle.pos
+
+    pos = property( getPos )
+
 
     def setShellSize( self, shellSize ):
 
@@ -397,6 +399,8 @@ class Pair( object ):
     def getPos( self ):
 
         return self.getCoM()
+
+    pos = property( getPos )
 
     def getD( self ):
 
