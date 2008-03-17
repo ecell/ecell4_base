@@ -61,7 +61,7 @@ D1 = 1.0e-12
 
 if mode == 'normal':
     D2 = D1
-elif mode == 'immobile' or mode == 'localized':
+elif mode == 'immobile' or mode == 'localized' or mode == 'single':
     D2 = 0
 else:
     raise 'invalid mode'
@@ -122,13 +122,24 @@ kcatkoff = Keq_S * kon
 koff = kcatkoff * koff_ratio
 kcat = kcatkoff - koff
 
+if mode == 'single':
+    kcat2 = kcat * float( N_K ) / float( N_P )
+    koff2 = kcatkoff - kcat2
+else:
+    kcat2 = kcat
+    koff2 = koff
+
+
 kd = k_d( koff, kon, Dtot, sigma )
 
 print 'ka', ka, 'kD', kD, 'kd', kd
 print 'kon m^3/s', kon, '1/M s', kon * N_A * 1e3
 print 'koff 1/s ', koff
 print 'kcat 1/s ', kcat
+print 'koff2 1/s ', koff2
+print 'kcat2 1/s ', kcat2
 
+assert koff2 >= 0
 
 #sys.exit(0)
 
@@ -138,6 +149,9 @@ if mode == 'normal' or mode == 'immobile':
 elif mode == 'localized':
     s.throwInParticles( K, N_K, plain1 )
     s.throwInParticles( P, N_P, plain2 )
+elif mode == 'single':
+    s.placeParticle( K, [0,0,0] )
+    s.placeParticle( p, [L/2,0,0] )
 else:
     assert False
 
