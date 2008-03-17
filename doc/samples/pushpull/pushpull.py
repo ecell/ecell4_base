@@ -141,7 +141,7 @@ print 'kcat2 1/s ', kcat2
 
 assert koff2 >= 0
 
-sys.exit(0)
+#sys.exit(0)
 
 if mode == 'normal' or mode == 'immobile':
     s.throwInParticles( K, N_K, box1 )
