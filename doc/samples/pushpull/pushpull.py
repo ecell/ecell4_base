@@ -141,7 +141,7 @@ print 'kcat2 1/s ', kcat2
 
 assert koff2 >= 0
 
-#sys.exit(0)
+sys.exit(0)
 
 if mode == 'normal' or mode == 'immobile':
     s.throwInParticles( K, N_K, box1 )
@@ -151,7 +151,7 @@ elif mode == 'localized':
     s.throwInParticles( P, N_P, plain2 )
 elif mode == 'single':
     s.placeParticle( K, [0,0,0] )
-    s.placeParticle( p, [L/2,0,0] )
+    s.placeParticle( P, [L/2,0,0] )
 else:
     assert False
 
