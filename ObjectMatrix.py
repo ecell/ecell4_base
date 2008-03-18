@@ -294,8 +294,15 @@ class ObjectMatrix( object ):
 
             idxp = idx % self.matrixSize
             objMatrix = self.cellMatrix[ idxp[0] ][ idxp[1] ][ idxp[2] ]
+            
+            # offset the positions; no need to use the cyclic distance later.
+            offsetp = idxp - idx
+            if offsetp[0] == offsetp[1] == offsetp[2] == 0: 
+                positions[i] = objMatrix.positions
+            else:
+                offset = self.worldSize * ( offsetp / self.matrixSize )
+                positions[i] = objMatrix.positions + offset
 
-            positions[i] = objMatrix.positions
             radii[i] = objMatrix.radii
             neighbors += objMatrix.objList
 
@@ -305,8 +312,11 @@ class ObjectMatrix( object ):
         if len( positions ) == 0:
             return [None,], [0,] #FIXME:
 
-        distances = distanceArray_Cyclic( positions, pos,
-                                          self.worldSize ) - radii
+        #distances = distanceArray_Cyclic( positions, pos,
+        #                                  self.worldSize ) - radii
+        distances = distanceArray_Simple( positions, pos ) - radii
+
+
         if not n:
             n = len( distances )
 
