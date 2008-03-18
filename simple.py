@@ -7,7 +7,7 @@ import sys
 
 s = EGFRDSimulator()
 size = 1e-6
-s.setCellSize( size )
+s.setWorldSize( size )
 
 
 box1 = CuboidalSurface( [0,0,0],[size,size,size])

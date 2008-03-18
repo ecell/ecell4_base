@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-#from egfrd import *
-from bd import *
+from egfrd import *
+#from bd import *
 
 from logger import *
 import sys
 
-#s = EGFRDSimulator()
-s = BDSimulator()
-s.setCellSize( 1e-6 )
+s = EGFRDSimulator()
+#s = BDSimulator()
+s.setWorldSize( 1e-6 )
 
 
 box1 = CuboidalSurface( [0,0,0],[1e-6,1e-6,1e-6] )
@@ -26,7 +26,7 @@ r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
 s.throwInParticles( S, 0, box1 )
-s.throwInParticles( P, 60, box1 )
+s.throwInParticles( P, 600, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )
@@ -43,7 +43,7 @@ while s.t < 100:
 
 
 def profrun():
-    for i in range( 300 ):
+    for i in range( 3000 ):
         s.step()
 
 import profile

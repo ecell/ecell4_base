@@ -29,7 +29,7 @@ def singlerun( T ):
 
     s = BDSimulator()
 
-    s.setCellSize( 1e-3 )
+    s.setWorldSize( 1e-3 )
 
     sigma = 1e-8
     r0 = sigma

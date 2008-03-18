@@ -13,7 +13,7 @@ V = 1e-15 #liter
 L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
 s = EGFRDSimulator()
-s.setCellSize( L )
+s.setWorldSize( L )
 
 box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 # not supported yet

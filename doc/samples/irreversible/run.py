@@ -21,7 +21,7 @@ def run( outfilename, T, N ):
 def singlerun1( T ):
 
     s = BDSimulator()
-    s.setCellSize( 1e-3 )
+    s.setWorldSize( 1e-3 )
 
     #s.setMaxShellSize( 1e-6 )
 
@@ -65,7 +65,7 @@ def singlerun1( T ):
 def singlerun2( T ):
 
     s = BDSimulator()
-    s.setCellSize( 1e-3 )
+    s.setWorldSize( 1e-3 )
 
     #s.setMaxShellSize( 1e-6 )
 

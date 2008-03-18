@@ -258,7 +258,7 @@ class GFRDSimulatorBase( object ):
         self.nextReaction = None
 
 
-        self.setCellSize( INF )
+        self.setWorldSize( INF )
 
 
         # counters
@@ -270,23 +270,23 @@ class GFRDSimulatorBase( object ):
         return self.t
 
 
-    def setCellSize( self, size ):
+    def setWorldSize( self, size ):
 
-        self.fsize = size
+        self.worldSize = size
 
-        if self.fsize == INF:
+        if self.worldSize == INF:
             self._distanceSq = distanceSq_Simple
             self._distanceSqArray = distanceSqArray_Simple
         else:
             self._distanceSq = distanceSq_Cyclic
             self._distanceSqArray = distanceSqArray_Cyclic
 
-    def getCellSize( self ):
-        return self.fsize
+    def getWorldSize( self ):
+        return self.worldSize
 
     def applyBoundary( self, pos ):
-        if self.fsize != INF:
-            pos %= self.fsize
+        if self.worldSize != INF:
+            pos %= self.worldSize
 
         return pos
 
@@ -321,7 +321,7 @@ class GFRDSimulatorBase( object ):
         pos += displacement
 
         #FIXME: SURFACE
-        pos %= self.fsize
+        pos %= self.worldSize
 
 
     def simpleDiffusionWithSurface( self, speciesIndex, particleIndex,\
@@ -349,13 +349,13 @@ class GFRDSimulatorBase( object ):
 
 
     def distanceSq( self, position1, position2 ):
-        return self._distanceSq( position1, position2, self.fsize )
+        return self._distanceSq( position1, position2, self.worldSize )
 
     def distance( self, position1, position2 ):
         return numpy.sqrt( self.distanceSq( position1, position2 ) )
         
     def distanceSqArray( self, position1, positions ):
-        return self._distanceSqArray( position1, positions, self.fsize )
+        return self._distanceSqArray( position1, positions, self.worldSize )
 
     def distanceArray( self, position1, positions ):
         return numpy.sqrt( self.distanceSqArray( position1,\
@@ -407,7 +407,7 @@ class GFRDSimulatorBase( object ):
 
             while 1:
 
-                #position= numpy.random.uniform( 0, self.fsize, 3 )
+                #position= numpy.random.uniform( 0, self.worldSize, 3 )
                 position = surface.randomPosition()
                 if self.checkOverlap( position, species.radius ):
                     break

@@ -21,7 +21,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
     
     def no_test_OneParticle( self ):  # this currently fails
         s = EGFRDSimulator()
-        s.setCellSize( 1e-5 )
+        s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
         s.placeParticle( 'S', [0.0,0.0,0.0] )
@@ -33,7 +33,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
 
     def no_test_TwoParticles( self ):
         s = EGFRDSimulator()
-        s.setCellSize( 1e-5 )
+        s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
         s.placeParticle( 'S', [0.0,0.0,0.0] )
@@ -46,7 +46,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
 
     def no_test_ThreeParticles( self ):
         s = EGFRDSimulator()
-        s.setCellSize( 1e-5 )
+        s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
         s.placeParticle( 'S', [0.0,0.0,0.0] )
@@ -61,7 +61,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
 
     def no_test_ThreeParticlesInContact( self ):
         s = EGFRDSimulator()
-        s.setCellSize( 1e-5 )
+        s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
         s.placeParticle( 'S', [0.0,0.0,0.0] )
@@ -77,7 +77,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
 
     def test_immobile_is_immobile( self ):
         s = EGFRDSimulator()
-        s.setCellSize( 1e-5 )
+        s.setWorldSize( 1e-5 )
         A = Species( 'A', 0, 1e-8 )
         s.addSpecies( A )
         B = Species( 'B', 2e-11, 5e-9 )

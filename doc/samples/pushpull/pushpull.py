@@ -70,7 +70,7 @@ else:
 L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
 s = EGFRDSimulator()
-s.setCellSize( L )
+s.setWorldSize( L )
 print V, L
 
 print C2N( 498e-9, V )

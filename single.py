@@ -6,7 +6,7 @@ from logger import *
 import sys
 
 s = GFRDSimulator()
-s.setCellSize( 1e-5 )
+s.setWorldSize( 1e-5 )
 S = Species( 'S', 2e-11, 5e-8 )
 s.addSpecies( S )
 P = Species( 'P', 0.0, 7e-8 )

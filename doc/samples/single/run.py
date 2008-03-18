@@ -21,7 +21,7 @@ def run( outfilename, T, S, N ):
 def singlerun( T, S ):
 
     s = EGFRDSimulator()
-    s.setCellSize( 1e-3 )
+    s.setWorldSize( 1e-3 )
 
     s.setMaxShellSize( S )
 
