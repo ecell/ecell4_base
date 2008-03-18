@@ -56,6 +56,9 @@ def distanceSqArray_Simple( position1, positions, fsize = 0 ):
     tmp = positions - position1
     return numpy.square( tmp ).sum( 1 )
 
+def distanceArray_Simple( position1, positions, fsize = 0 ):
+    return numpy.sqrt( distanceSqArray_Simple( position1, positions ) )
+
 
 def distanceSq_Cyclic( position1, position2, fsize ):
 
@@ -70,7 +73,8 @@ def distanceSqArray_Cyclic( position1, positions, fsize ):
     diff -= numpy.greater( diff, fsize * 0.5 ) * fsize # transpose
     return numpy.square( diff ).sum( 1 )
 
-
+def distanceArray_Cyclic( position1, positions, fsize = 0 ):
+    return numpy.sqrt( distanceSqArray_Cyclic( position1, positions, fsize ) )
 
 def cartesianToSpherical( c ):
     # x, y, z = c
@@ -146,3 +150,20 @@ def rotateVector( v, r, alpha ):
                          cosalpha + cosalphac * r[2] * r[2] ] ] )
 
     return numpy.dot( M,v )
+
+
+def permutate(seq):
+
+    """permutate a sequence and return a list of the permutations"""
+
+    if not seq:
+        return [seq] # is an empty sequence
+    else:
+        temp = []
+
+        for k in range(len(seq)):
+            part = seq[:k] + seq[k+1:]
+            for m in permutate(part):
+                temp.append(seq[k:k+1] + m)
+        return temp
+

@@ -31,6 +31,7 @@ class ObjectMatrixTestCase( unittest.TestCase ):
 
     def testSingle(self):
         m = mod.ObjectMatrix()
+        m.setWorldSize( 1.0 )
 
         o1 = Obj( [0,0,.1], .1 )
         m.add( o1 )

@@ -717,8 +717,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def setMatrixSize( self, size ):
         self.objMatrix.setMatrixSize( size )
 
-        cellSize = self.getCellSize()
-
     def getMatrixCellSize( self ):
 
         return self.objMatrix.cellSize

@@ -9,7 +9,7 @@ import sys
 s = EGFRDSimulator()
 #s = BDSimulator()
 s.setWorldSize( 1e-6 )
-
+s.setMatrixSize( 10 )
 
 box1 = CuboidalSurface( [0,0,0],[1e-6,1e-6,1e-6] )
 # not supported yet
@@ -26,7 +26,7 @@ r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
 s.throwInParticles( S, 0, box1 )
-s.throwInParticles( P, 600, box1 )
+s.throwInParticles( P, 12000, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )
