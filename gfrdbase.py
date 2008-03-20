@@ -14,6 +14,8 @@ from utils import *
 #from surface import *
 from _gfrd import *
 
+from ObjectMatrix import *
+
 
 N_A = 6.0221367e23
 
@@ -265,6 +267,8 @@ class GFRDSimulatorBase( object ):
         self.rejectedMoves = 0
         self.reactionEvents = 0
 
+        self.particleMatrix = ObjectMatrix()
+
 
     def getTime( self ):
         return self.t
@@ -382,11 +386,26 @@ class GFRDSimulatorBase( object ):
 
     def createParticle( self, species, pos ):
         newserial = species.newParticle( pos )
-        return Particle( species, serial=newserial )
+        newparticle = Particle( species, serial=newserial )
+        self.addToParticleMatrix( newparticle )
+
+        return newparticle
 
     def removeParticle( self, particle ):
         particle.species.pool.removeBySerial( particle.serial )
+        self.removeFromParticleMatrix( particle )
 
+
+    def addToParticleMatrix( self, particle ):
+        self.particleMatrix.add( ( particle.species, particle.serial ), 
+                                 particle.pos, particle.species.radius )
+
+    def removeFromParticleMatrix( self, particle ):
+        self.particleMatrix.remove( ( particle.species, particle.serial ) )
+
+    def updateOnParticleMatrix( self, particle ):
+        self.particleMatrix.update( ( particle.species, particle.serial ), 
+                                    particle.pos, particle.species.radius )
         
     def checkOverlap( self, position, radius ):
         

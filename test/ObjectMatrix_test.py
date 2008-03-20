@@ -34,7 +34,7 @@ class ObjectMatrixTestCase( unittest.TestCase ):
         m.setWorldSize( 1.0 )
 
         o1 = Obj( [0,0,.1], .1 )
-        m.add( o1 )
+        m.add( o1, o1.pos, o1.radius )
         self.assertEqual( m.size, 1 )
 
         n, d = m.getNeighbors( numpy.array( [0,0,0] ) )
@@ -49,8 +49,8 @@ class ObjectMatrixTestCase( unittest.TestCase ):
 
         o1 = Obj( [0,0,.1], .1 )
         o2 = Obj( [0,.3,0], .1 )
-        m.add( o1 )
-        m.add( o2 )
+        m.add( o1, o1.pos, o1.radius )
+        m.add( o2, o2.pos, o2.radius )
         self.assertEqual( m.size, 2 )
 
         n, d = m.getNeighbors( numpy.array( [0,0,0] ) )
@@ -67,8 +67,8 @@ class ObjectMatrixTestCase( unittest.TestCase ):
 
         o1 = Obj( [0,0,.1], .1 )
         o2 = Obj( [0,.8,0], .1 )
-        m.add( o1 )
-        m.add( o2 )
+        m.add( o1, o1.pos, o1.radius )
+        m.add( o2, o2.pos, o2.radius )
         self.assertEqual( m.size, 2 )
 
         n, d = m.getNeighbors( numpy.array( [0,0,0] ) )

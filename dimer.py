@@ -26,7 +26,7 @@ r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
 s.throwInParticles( S, 0, box1 )
-s.throwInParticles( P, 3000, box1 )
+s.throwInParticles( P, 300, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )

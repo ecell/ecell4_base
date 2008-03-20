@@ -16,7 +16,7 @@ class ObjectMatrixCell( object ):
     def clear( self ):
 
         self.size = 0
-        self.objList = []
+        self.keyList = []
 
         self.positions = numpy.array( [], numpy.floating )
         self.positions.shape = ( 0, 3 )
@@ -26,37 +26,37 @@ class ObjectMatrixCell( object ):
         #self.distanceMatrix = numpy.array( [[]], numpy.floating )
         
         
-    def add( self, obj ):
+    def add( self, key, pos, radius ):
 
-        assert obj not in self.objList
+        assert key not in self.keyList
 
         self.size += 1
         self.__resizeArrays( self.size )
 
-        self.objList.append( obj )
-        self.positions[ -1 ] = obj.pos
-        self.radii[ -1 ] = obj.radius
+        self.keyList.append( key )
+        self.positions[ -1 ] = pos
+        self.radii[ -1 ] = radius
 
-    def remove( self, obj ):
+    def remove( self, key ):
 
         self.size -= 1
-        i = self.objList.index( obj )
-        #i = self.objList[ obj ]
+        i = self.keyList.index( key )
+        #i = self.keyList[ key ]
 
         if i != self.size:
-            self.objList[ i ] = self.objList.pop()
+            self.keyList[ i ] = self.keyList.pop()
             self.positions[ i ] = self.positions[ -1 ]
             self.radii[ i ] = self.radii[ -1 ]
         else:
-            self.objList.pop()
+            self.keyList.pop()
 
         self.__resizeArrays( self.size )
 
 
-    def update( self, obj ):
-        i = self.objList.index( obj )
-        self.positions[ i ] = obj.pos
-        self.radii[ i ] = obj.radius
+    def update( self, key, pos, radius ):
+        i = self.keyList.index( key )
+        self.positions[ i ] = pos
+        self.radii[ i ] = radius
 
     def __resizeArrays( self, newsize ):
 
@@ -65,16 +65,16 @@ class ObjectMatrixCell( object ):
 
     def check( self ):
  
-        assert self.size == len( self.objList ) 
+        assert self.size == len( self.keyList ) 
         assert self.size == len( self.positions )
         assert self.size == len( self.radii )
-
-        for i, obj in enumerate( self.objList ):
-            if ( obj.pos - self.positions[i] ).sum() != 0:
-                raise RuntimeError, 'objMatrix positions consistency failed'
-            if obj.radius != self.radii[i]:
-                raise RuntimeError, 'objMatrix radii consistency failed'
-
+        '''
+        for i, key in enumerate( self.keyList ):
+            if ( key.pos - self.positions[i] ).sum() != 0:
+                raise RuntimeError, 'keyMatrix positions consistency failed'
+            if key.radius != self.radii[i]:
+                raise RuntimeError, 'keyMatrix radii consistency failed'
+        '''
 
 
 
@@ -104,8 +104,8 @@ class SimpleObjectMatrix( object ):
     def getSize( self ):
         return self.matrix.size
 
-    def getObjList( self ):
-        return self.matrix.objList
+    def getKeyList( self ):
+        return self.matrix.keyList
 
     def getPositions( self ):
         return self.matrix.positions
@@ -114,41 +114,41 @@ class SimpleObjectMatrix( object ):
         return self.matrix.radii
 
     size = property( getSize )
-    objList = property( getObjList )
+    keyList = property( getKeyList )
     positions = property( getPositions )
     radii = property( getRadii )
 
     def clear( self ):
         self.matrix.clear()
         
-    def add( self, obj ):
+    def add( self, key, pos, radius ):
 
-        self.matrix.add( obj )
+        self.matrix.add( key, pos, radius )
 
-    def remove( self, obj ):
+    def remove( self, key ):
 
-        self.matrix.remove( obj )
+        self.matrix.remove( key )
 
-    def update( self, obj ):
+    def update( self, key, pos, radius ):
 
-        self.matrix.update( obj )
+        self.matrix.update( key, pos, radius )
 
 
     def getNeighbors( self, pos, n=None ):
 
-        objMatrix = self.matrix
+        keyMatrix = self.matrix
 
-        size = objMatrix.size
+        size = keyMatrix.size
 
         if not n:
             n = size
 
-        distances = self.distanceArray( objMatrix.positions, pos ) -\
-           objMatrix.radii
+        distances = self.distanceArray( keyMatrix.positions, pos ) -\
+           keyMatrix.radii
 
         topargs = distances.argsort()[:n]
         distances = distances.take( topargs )
-        neighbors = [ objMatrix.objList[arg] for arg in topargs ]
+        neighbors = [ keyMatrix.keyList[arg] for arg in topargs ]
 
         return neighbors, distances
 
@@ -167,7 +167,7 @@ class ObjectMatrix( object ):
 
         self.worldSize = 1.0
 
-        self.objCellMap = {}
+        self.objectCellMap = {}
 
         self._distanceSq = distanceSq_Cyclic
         self._distanceSqArray = distanceSqArray_Cyclic
@@ -239,39 +239,37 @@ class ObjectMatrix( object ):
                 for k in j:
                     k.clear()
 
-        self.objCellMap.clear()
+        self.objectCellMap.clear()
 
 
-    def add( self, obj ):
+    def add( self, key, pos, radius ):
 
-        assert obj.radius <= self.cellSize
-        matrix = self.cellByPos( obj.pos )
-        matrix.add( obj )
+        assert radius <= self.cellSize
+        matrix = self.cellByPos( pos )
+        matrix.add( key, pos, radius )
 
-        self.objCellMap[ obj ] = matrix
-
-
-    def remove( self, obj ):
-
-        matrix = self.objCellMap[ obj ]
-        matrix.remove( obj )
-
-        #assert matrix == self.cellByPos( obj.pos )
-
-        del self.objCellMap[ obj ]
+        self.objectCellMap[ key ] = matrix
 
 
-    def update( self, obj ):
+    def remove( self, key ):
 
-        matrix = self.objCellMap[ obj ]
-        newMatrix = self.cellByPos( obj.pos )
+        matrix = self.objectCellMap[ key ]
+        matrix.remove( key )
+
+        del self.objectCellMap[ key ]
+
+
+    def update( self, key, pos, radius ):
+
+        matrix = self.objectCellMap[ key ]
+        newMatrix = self.cellByPos( pos )
 
         if matrix is newMatrix:
-            matrix.update( obj )
+            matrix.update( key, pos, radius )
         else:
-            matrix.remove( obj )
-            newMatrix.add( obj )
-            self.objCellMap[ obj ] = newMatrix
+            matrix.remove( key )
+            newMatrix.add( key, pos, radius )
+            self.objectCellMap[ key ] = newMatrix
 
 
     def getNeighborsCyclic( self, pos, n=None, dummy=None ):
@@ -287,24 +285,24 @@ class ObjectMatrix( object ):
         for i, idx in enumerate( transposes ):
 
             idxp = idx % self.matrixSize
-            objMatrix = self.cellMatrix[ idxp[0] ][ idxp[1] ][ idxp[2] ]
+            keyMatrix = self.cellMatrix[ idxp[0] ][ idxp[1] ][ idxp[2] ]
             
             # offset the positions; no need to use the cyclic distance later.
             offsetp = idxp - idx
             if offsetp[0] == offsetp[1] == offsetp[2] == 0: 
-                positions[i] = objMatrix.positions
+                positions[i] = keyMatrix.positions
             else:
                 offset = self.cellSize * offsetp
-                positions[i] = objMatrix.positions - offset
+                positions[i] = keyMatrix.positions - offset
 
-            radii[i] = objMatrix.radii
-            neighbors += objMatrix.objList
+            radii[i] = keyMatrix.radii
+            neighbors += keyMatrix.keyList
 
         positions = numpy.concatenate( positions )
         radii = numpy.concatenate( radii )
 
         if len( positions ) == 0:
-            return [dummy(),], [numpy.inf,] #FIXME:
+            return [dummy(),], [numpy.inf,]
 
         distances = distanceArray_Simple( positions, pos ) - radii
 
@@ -329,7 +327,7 @@ class ObjectMatrix( object ):
                 for k in j:
                     k.check()
 
-        if len( self.objCellMap ) != self.size:
-            raise RuntimeError, 'len( self.objCellMap ) != self.size'
+        if len( self.objectCellMap ) != self.size:
+            raise RuntimeError, 'len( self.objectCellMap ) != self.size'
 
 

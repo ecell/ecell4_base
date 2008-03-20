@@ -859,7 +859,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single = Single( particle, rt )
         single.initialize( self.t )
 
-        self.shellMatrix.add( single )
+        self.shellMatrix.add( single, single.pos, single.radius )
 
         return single
 
@@ -880,7 +880,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.shellMatrix.remove( single1 )
         self.shellMatrix.remove( single2 )
-        # self.shellMatrix.add( pair ) # this is done by the caller
 
         return pair
 
@@ -974,6 +973,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             D2 = productSpecies2.D
             D12 = D1 + D2
             
+
             single.particle.pos = NOWHERE
 
             particleRadius1 = productSpecies1.radius
@@ -1007,7 +1007,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     break
             else:
                 print 'no space for product particles.'
-                single.particle.pos = oldpos
+                particle.pos = oldpos
                 raise NoSpace()
 
             self.removeParticle( single.particle )
@@ -1063,13 +1063,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         else:
             single.particle.pos = oldpos
             single.initialize( self.t )
-            self.shellMatrix.update( single )
+            self.shellMatrix.update( single, single.pos, single.radius )
             raise NoSpace()
         
-        single.particle.pos = self.applyBoundary( newpos )
+        newpos = self.applyBoundary( newpos )
+        single.particle.pos = newpos
+
         single.initialize( self.t )
 
-        self.shellMatrix.update( single )
+        self.shellMatrix.update( single, single.pos, single.radius )
 
         return squeezed
 
@@ -1096,7 +1098,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.shellMatrix.remove( single )
                 self.fireSingleReaction( single )
             except NoSpace:
-                self.shellMatrix.add( single )
+                self.shellMatrix.add( single, single.pos, single.radius )
                 self.rejectedMoves += 1
                 #self.updateEvent( self.t, single )
                 single.dt = self.smallT
@@ -1299,7 +1301,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single.setRadius( shellSize )
         single.determineNextEvent()
 
-        self.shellMatrix.update( single )
+        self.shellMatrix.update( single, single.pos, single.radius )
 
 
 
@@ -1345,7 +1347,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.shellMatrix.remove( reactingsingle )
                 self.fireSingleReaction( reactingsingle )
             except NoSpace:
-                self.shellMatrix.add( reactingsingle )
+                self.shellMatrix.add( reactingsingle, 
+                                      reactingsingle.pos, 
+                                      reactingsingle.radius )
                 self.rejectedMoves += 1
                 reactingsingle.dt = 0
                 self.addSingleEvent( reactingsingle )
@@ -1530,8 +1534,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.addSingleEvent( single2 )
 
         self.shellMatrix.remove( pair )
-        self.shellMatrix.add( single1 )
-        self.shellMatrix.add( single2 )
+        self.shellMatrix.add( single1, single1.pos, single1.radius )
+        self.shellMatrix.add( single2, single2.pos, single2.radius )
 
         pair.dt = -numpy.inf
         return pair.dt
@@ -1548,6 +1552,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         particleRadius = single.getMinRadius()
         oldpos = single.particle.pos.copy()
+
         single.particle.pos = NOWHERE
 
         for i in range( 100 ):
@@ -1562,15 +1567,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 break
             
         else:
-            single.particle.pos = oldpos
+            particle.pos = oldpos
             single.initialize( self.t )
-            self.shellMatrix.update( single )
+            self.shellMatrix.update( single, single.pos, single.radius )
             raise NoSpace()
 
         single.initialize( self.t )
-        single.particle.pos = self.applyBoundary( newpos )
+        newpos = self.applyBoundary( newpos )
+        single.particle.pos = newpos
 
-        self.shellMatrix.update( single )
+        self.shellMatrix.update( single, single.pos, single.radius )
         self.updateEvent( self.t, single )
 
 
@@ -1621,14 +1627,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                         ( self.checkOverlap( newpos1, particleRadius1 ) and \
                               self.checkOverlap( newpos2, particleRadius2 ) ):
                     pair.checkNewpos( newpos1, newpos2, oldCoM )
+
                     particle1.pos = self.applyBoundary( newpos1 )
                     particle2.pos = self.applyBoundary( newpos2 )
+
                     break
 
             else:
                 print 'redrawing limit reached.  giving up displacement.'
-                particle1.pos = oldpos1
-                particle2.pos = oldpos2
+                particle1.pos = self.applyBoundary( oldpos1 )
+                particle2.pos = self.applyBoundary( oldpos2 )
                 self.rejectedMoves += 1
 
         return ( pair.single1, pair.single2 )
@@ -1642,8 +1650,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single2.initialize( self.t )
         
         self.shellMatrix.remove( pair )
-        self.shellMatrix.add( single1 )
-        self.shellMatrix.add( single2 )
+        self.shellMatrix.add( single1, single1.pos, single1.radius )
+        self.shellMatrix.add( single2, single2.pos, single2.radius )
 
 
         #self.removeEvent( pair )
@@ -1687,7 +1695,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.squeezed += 1
 
         pair.setRadius( shellSize )
-        self.shellMatrix.add( pair )
+        self.shellMatrix.add( pair, pair.pos, pair.radius )
 
         pairDistance = self.distance( single1.pos, single2.pos )
         print 'Pair formed: ', pair, 'pair distance', pairDistance,\
