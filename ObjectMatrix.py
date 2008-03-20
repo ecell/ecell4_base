@@ -41,6 +41,7 @@ class ObjectMatrixCell( object ):
 
         self.size -= 1
         i = self.objList.index( obj )
+        #i = self.objList[ obj ]
 
         if i != self.size:
             self.objList[ i ] = self.objList.pop()
@@ -202,8 +203,10 @@ class ObjectMatrix( object ):
         self.matrixSize = size
 
         self.cellMatrix = \
-            [ [ [ ObjectMatrixCell() for i in range( size ) ] 
-                for j in range( size ) ] for k in range( size ) ]
+            [ [ [ ObjectMatrixCell() \
+                      for i in range( size ) ] \
+                    for j in range( size ) ] \
+                  for k in range( size ) ]
 
         self.initialize()
 
@@ -212,20 +215,11 @@ class ObjectMatrix( object ):
         self.cellSize = self.worldSize / self.matrixSize
 
     def hashPos( self, pos ):
-        #FIXME: this should work
-        #assert pos.max() < self.worldSize and pos.min() >= 0.0
         return ( ( pos % self.worldSize ) / self.cellSize ).astype( numpy.int )
 
     def cellByPos( self, pos ):
         i = self.hashPos( pos )
         return self.cellMatrix[ i[0] ][ i[1] ][ i[2] ]
-
-    def distanceSqArray( self, position1, positions ):
-        return self._distanceSqArray( position1, positions, self.worldSize )
-
-    def distanceArray( self, position1, positions ):
-        return numpy.sqrt( self.distanceSqArray( position1,\
-                                                 positions ) )
 
     def getSize( self ):
         size = 0
@@ -280,14 +274,14 @@ class ObjectMatrix( object ):
             self.objCellMap[ obj ] = newMatrix
 
 
-    def getNeighborsCyclic( self, pos, n=None ):
+    def getNeighborsCyclic( self, pos, n=None, dummy=None ):
 
         centeridx = self.hashPos( pos )
 
         transposes = self.TRANSPOSES + centeridx
 
-        positions = [None,] * 27
-        radii = [None,] * 27
+        positions = [0,] * 27
+        radii = [0,] * 27
         neighbors = []
 
         for i, idx in enumerate( transposes ):
@@ -300,8 +294,8 @@ class ObjectMatrix( object ):
             if offsetp[0] == offsetp[1] == offsetp[2] == 0: 
                 positions[i] = objMatrix.positions
             else:
-                offset = self.worldSize * ( offsetp / self.matrixSize )
-                positions[i] = objMatrix.positions + offset
+                offset = self.cellSize * offsetp
+                positions[i] = objMatrix.positions - offset
 
             radii[i] = objMatrix.radii
             neighbors += objMatrix.objList
@@ -310,12 +304,9 @@ class ObjectMatrix( object ):
         radii = numpy.concatenate( radii )
 
         if len( positions ) == 0:
-            return [None,], [0,] #FIXME:
+            return [dummy(),], [numpy.inf,] #FIXME:
 
-        #distances = distanceArray_Cyclic( positions, pos,
-        #                                  self.worldSize ) - radii
         distances = distanceArray_Simple( positions, pos ) - radii
-
 
         if not n:
             n = len( distances )
@@ -327,8 +318,8 @@ class ObjectMatrix( object ):
         return neighbors, distances
 
 
-    def getNeighbors( self, pos, n=None ):
-        return self.getNeighborsCyclic( pos, n )
+    def getNeighbors( self, pos, n=None, dummy=None ):
+        return self.getNeighborsCyclic( pos, n, dummy )
 
 
     def check( self ):

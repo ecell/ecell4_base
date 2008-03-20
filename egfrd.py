@@ -260,11 +260,9 @@ Just a free func ver of Pair.getCoM().
 
 def calculatePairCoM( pos1, pos2, D1, D2, worldSize ):
 
-    #FIXME: what if there are boundaries?
-    
     pos2t = cyclicTranspose( pos2, pos1, worldSize )
 
-    return ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 )
+    return ( ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 ) ) % worldSize
 
 
 class Pair( object ):
@@ -385,8 +383,8 @@ class Pair( object ):
         pos2t = cyclicTranspose( pos2, pos1, self.worldSize ) #FIXME:
         
         com = ( pos1 * self.D2 + pos2t * self.D1 ) / self.D_tot
-        
-        return com
+
+        return com % self.worldSize
 
 
     def choosePairGreensFunction( self, r0, t ):
@@ -696,8 +694,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     
     def __init__( self ):
 
-        self.objMatrix = ObjectMatrix()
-        #self.objMatrix = SimpleObjectMatrix()
+        self.shellMatrix = ObjectMatrix()
+        #self.shellMatrix = SimpleObjectMatrix()
 
         GFRDSimulatorBase.__init__( self )
 
@@ -712,14 +710,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def setWorldSize( self, size ):
         GFRDSimulatorBase.setWorldSize( self, size )
-        self.objMatrix.setWorldSize( size )
+        self.shellMatrix.setWorldSize( size )
 
     def setMatrixSize( self, size ):
-        self.objMatrix.setMatrixSize( size )
+        self.shellMatrix.setMatrixSize( size )
 
     def getMatrixCellSize( self ):
 
-        return self.objMatrix.cellSize
+        return self.shellMatrix.cellSize
 
     def getNextTime( self ):
         return self.scheduler.getNextTime()
@@ -753,7 +751,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.setAllRepulsive()
 
         self.scheduler.clear()
-        self.objMatrix.clear()
+        self.shellMatrix.clear()
 
         for species in self.speciesList.values():
             for i in range( species.pool.size ):
@@ -861,7 +859,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single = Single( particle, rt )
         single.initialize( self.t )
 
-        self.objMatrix.add( single )
+        self.shellMatrix.add( single )
 
         return single
 
@@ -880,9 +878,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pair = Pair( single1, single2, rt, self.distance, self.getWorldSize() )
         pair.initialize( self.t )
 
-        self.objMatrix.remove( single1 )
-        self.objMatrix.remove( single2 )
-        # self.objMatrix.add( pair ) # this is done by the caller
+        self.shellMatrix.remove( single1 )
+        self.shellMatrix.remove( single2 )
+        # self.shellMatrix.add( pair ) # this is done by the caller
 
         return pair
 
@@ -1065,13 +1063,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         else:
             single.particle.pos = oldpos
             single.initialize( self.t )
-            self.objMatrix.update( single )
+            self.shellMatrix.update( single )
             raise NoSpace()
         
         single.particle.pos = self.applyBoundary( newpos )
         single.initialize( self.t )
 
-        self.objMatrix.update( single )
+        self.shellMatrix.update( single )
 
         return squeezed
 
@@ -1095,10 +1093,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.rejectedMoves += 1
 
             try:
-                self.objMatrix.remove( single )
+                self.shellMatrix.remove( single )
                 self.fireSingleReaction( single )
             except NoSpace:
-                self.objMatrix.add( single )
+                self.shellMatrix.add( single )
                 self.rejectedMoves += 1
                 #self.updateEvent( self.t, single )
                 single.dt = self.smallT
@@ -1301,7 +1299,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single.setRadius( shellSize )
         single.determineNextEvent()
 
-        self.objMatrix.update( single )
+        self.shellMatrix.update( single )
 
 
 
@@ -1344,10 +1342,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.addSingleEvent( theothersingle )
 
             try:
-                self.objMatrix.remove( reactingsingle )
+                self.shellMatrix.remove( reactingsingle )
                 self.fireSingleReaction( reactingsingle )
             except NoSpace:
-                self.objMatrix.add( reactingsingle )
+                self.shellMatrix.add( reactingsingle )
                 self.rejectedMoves += 1
                 reactingsingle.dt = 0
                 self.addSingleEvent( reactingsingle )
@@ -1398,7 +1396,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 raise NotImplementedError,\
                       'num products >= 2 not supported.'
 
-            self.objMatrix.remove( pair )
+            self.shellMatrix.remove( pair )
 
             pair.dt = -numpy.inf
             return pair.dt
@@ -1531,9 +1529,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.addSingleEvent( single1 )
         self.addSingleEvent( single2 )
 
-        self.objMatrix.remove( pair )
-        self.objMatrix.add( single1 )
-        self.objMatrix.add( single2 )
+        self.shellMatrix.remove( pair )
+        self.shellMatrix.add( single1 )
+        self.shellMatrix.add( single2 )
 
         pair.dt = -numpy.inf
         return pair.dt
@@ -1566,13 +1564,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         else:
             single.particle.pos = oldpos
             single.initialize( self.t )
-            self.objMatrix.update( single )
+            self.shellMatrix.update( single )
             raise NoSpace()
 
         single.initialize( self.t )
         single.particle.pos = self.applyBoundary( newpos )
 
-        self.objMatrix.update( single )
+        self.shellMatrix.update( single )
         self.updateEvent( self.t, single )
 
 
@@ -1643,9 +1641,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single1.initialize( self.t )
         single2.initialize( self.t )
         
-        self.objMatrix.remove( pair )
-        self.objMatrix.add( single1 )
-        self.objMatrix.add( single2 )
+        self.shellMatrix.remove( pair )
+        self.shellMatrix.add( single1 )
+        self.shellMatrix.add( single2 )
 
 
         #self.removeEvent( pair )
@@ -1689,7 +1687,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.squeezed += 1
 
         pair.setRadius( shellSize )
-        self.objMatrix.add( pair )
+        self.shellMatrix.add( pair )
 
         pairDistance = self.distance( single1.pos, single2.pos )
         print 'Pair formed: ', pair, 'pair distance', pairDistance,\
@@ -1801,7 +1799,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def getNeighborShells( self, pos, n=None ):
 
-        return self.objMatrix.getNeighbors( pos, n )
+        return self.shellMatrix.getNeighbors( pos, n, dummy=DummySingle )
 
 
     '''
@@ -1838,7 +1836,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     This method returns a tuple ( neighbors, distances ).
 
     def getNeighbors( self, pos, n=None ):
-        return self.objMatrix.getNeighbors( pos, n )
+        return self.shellMatrix.getNeighbors( pos, n )
 
     def getNeighbors( self, pos, n=None ):
 
@@ -1926,15 +1924,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def checkDistanceMatrix( self ):
 
-        if self.worldSize != self.objMatrix.worldSize:
+        if self.worldSize != self.shellMatrix.worldSize:
             raise RuntimeError,\
-                'self.worldSize != self.objMatrix.worldSize'
+                'self.worldSize != self.shellMatrix.worldSize'
 
-        if self.scheduler.getSize() != self.objMatrix.size:
+        if self.scheduler.getSize() != self.shellMatrix.size:
             raise RuntimeError,\
-                'self.scheduler.getSize() != self.objMatrix.size'
+                'self.scheduler.getSize() != self.shellMatrix.size'
         
-        self.objMatrix.check()
+        self.shellMatrix.check()
 
 
     def checkInvariants( self ):

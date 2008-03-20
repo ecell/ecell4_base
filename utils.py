@@ -38,7 +38,7 @@ def cyclicTranspose( pos1, pos2, fsize ):
     halfsize = fsize * 0.5
 
     diff = pos2 - pos1
-
+    
     reloc = numpy.greater( diff, halfsize ) * fsize - \
         numpy.less( diff, - halfsize ) * fsize
 

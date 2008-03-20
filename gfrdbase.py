@@ -299,54 +299,6 @@ class GFRDSimulatorBase( object ):
     def getSpeciesByIndex( self, i ):
         return self.speciesList.values()[i]
 
-    def simpleDiffusion( self, speciesIndex, particleIndex ):
-
-        species = self.speciesList.values()[speciesIndex]
-        if species.D == 0.0:
-            return
-
-        limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
-
-        while 1:
-            displacement = drawR_free( self.dt, species.D )
-            
-            distSq = ( displacement * displacement ).sum()
-
-            if distSq <= limitSq:
-                break
-
-            self.rejectedMoves += 1
-
-        pos = species.pool.positions[particleIndex]
-        pos += displacement
-
-        #FIXME: SURFACE
-        pos %= self.worldSize
-
-
-    def simpleDiffusionWithSurface( self, speciesIndex, particleIndex,\
-                                    surface ):
-        species = self.speciesList.values()[speciesIndex]
-
-        limitSq = self.H * self.H * ( 6.0 * species.D * self.dt )
-
-        while 1:
-            displacement = drawR_free( self.dt, species.D )
-            
-            distSq = ( displacement * displacement ).sum()
-
-            if distSq <= limitSq:
-                break
-
-            self.rejectedMoves += 1
-
-        pos = species.pool.positions[particleIndex]
-        pos += displacement
-
-        #SURFACE
-        print surface
-        
-
 
     def distanceSq( self, position1, position2 ):
         return self._distanceSq( position1, position2, self.worldSize )
@@ -414,7 +366,7 @@ class GFRDSimulatorBase( object ):
                 else:
                     print _
             
-            species.newParticle( position )
+            self.createParticle( species, position )
 
 
     def placeParticle( self, species, pos ):
@@ -464,55 +416,6 @@ class GFRDSimulatorBase( object ):
         self.dt = self.dtLimit
 
         self.nextReaction = None
-
-        self.pairs = []
-        self.singles = []
-
-
-
-    def nextReactionTime1( self, rt, pool ):
-
-        if pool.size == 0:
-            return None, None
-
-        dts = numpy.array( [ random.random() for i in range( pool.size ) ] )
-        dts = - numpy.log( dts ) / rt.k
-
-        i = numpy.argmin( dts )
-
-        return dts[i], i 
-        
-
-
-    def nextReactionTime2( self, pair ):
-
-        ( dt, ndt, s1, i1, s2, i2, rt ) = pair
-
-        if rt == None:
-            return INF
-
-        species1 = self.speciesList.values()[s1]
-        species2 = self.speciesList.values()[s2]
-        pos1 = species1.pool.positions[i1]
-        pos2 = species2.pool.positions[i2]
-
-        radius = species1.radius + species2.radius
-        r0 = self.distance( pos1, pos2 )
-
-        if radius > r0:
-            print 'CRITICAL: radius > r0', str(radius), str(r0)
-            #            return scipy.Inf
-            print pair
-            print rt.str()
-            #sys.exit(-1)
-
-        u = random.random()
-
-
-        res = rt.pairGreensFunction.drawTime( u, r0, self.dtMax )
-
-        return res
-
 
         
     '''
