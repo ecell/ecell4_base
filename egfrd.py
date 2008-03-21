@@ -748,7 +748,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def initialize( self ):
 
-        #GFRDSimulatorBase.initialize( self )
+        GFRDSimulatorBase.initialize( self )
 
         self.setAllRepulsive()
 
@@ -949,13 +949,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
             productSpecies = rt.products[0]
 
-            #single.particle.pos = NOWHERE
-
             if not self.checkOverlap( oldpos, productSpecies.radius,
                                       ignore = [ single.particle, ] ):
                 print 'no space for product particle.'
-                #self.moveParticle( single.particle, oldpos )
-                #single.particle.pos = oldpos
                 raise NoSpace()
                 
             if reactantSpecies.radius < productSpecies.radius:
@@ -977,8 +973,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             D2 = productSpecies2.D
             D12 = D1 + D2
             
-            #single.particle.pos = NOWHERE
-
             particleRadius1 = productSpecies1.radius
             particleRadius2 = productSpecies2.radius
             particleRadius12 = particleRadius1 + particleRadius2
@@ -1013,8 +1007,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     break
             else:
                 print 'no space for product particles.'
-                #self.moveParticle( single.particle, oldpos )
-                #single.particle.pos = oldpos
                 raise NoSpace()
 
             self.removeParticle( single.particle )
@@ -1056,8 +1048,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         particleRadius = single.getMinRadius()
         oldpos = single.particle.pos.copy()
         
-        #single.particle.pos = NOWHERE
-        
         for i in range( 100 ):
             
             displacement = single.drawDisplacement( r )
@@ -1069,8 +1059,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 break
             
         else:
-            #self.moveParticle( single.particle, oldpos )
-            #single.particle.pos = oldpos
             single.initialize( self.t )
             self.shellMatrix.update( single, single.pos, single.radius )
             raise NoSpace()
@@ -1421,10 +1409,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         r0 = self.distance( particle1.pos, particle2.pos )
 
-        # temporary displace particles to do overlap check correctly.
-        #particle1.pos = NOWHERE
-        #particle2.pos = NOWHERE
-
         # 1 Escaping through a_r.
         if pair.eventType == EventType.ESCAPE:
 
@@ -1574,8 +1558,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         particleRadius = single.getMinRadius()
         oldpos = single.particle.pos.copy()
 
-        #single.particle.pos = NOWHERE
-
         for i in range( 100 ):
             
             r = single.drawR( dt )
@@ -1596,7 +1578,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             raise NoSpace()
 
         single.initialize( self.t )
-        #single.particle.pos = self.applyBoundary( newpos )
         newpos = self.applyBoundary( newpos )
         self.moveParticle( single.particle, newpos )
 
@@ -1625,9 +1606,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             oldCoM = pair.getCoM()
             r0 = pair.distance( particle1.pos, particle2.pos )
             
-            #particle1.pos = NOWHERE
-            #particle2.pos = NOWHERE
-
             for i in range(100):
                 rnd = numpy.random.uniform( size = 4 )
 
@@ -1664,10 +1642,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             else:
                 print 'redrawing limit reached.  giving up displacement.'
-                #self.moveParticle( particle1, oldpos1 )
-                #self.moveParticle( particle2, oldpos2 )
-                #particle1.pos = oldpos1
-                #particle2.pos = oldpos2
                 self.rejectedMoves += 1
 
         return ( pair.single1, pair.single2 )
@@ -1961,7 +1935,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             raise RuntimeError, 'population %d != eventPopulation %d' %\
                   ( population, eventPopulation )
 
-    def checkDistanceMatrix( self ):
+    def checkShellMatrix( self ):
 
         if self.worldSize != self.shellMatrix.worldSize:
             raise RuntimeError,\
@@ -1973,13 +1947,23 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         self.shellMatrix.check()
 
+        for key in self.shellMatrix.objectCellMap.keys():
+            pos, radius = self.shellMatrix.get( key )
+            if ( key.pos - pos ).sum() != 0:
+                raise RuntimeError, 'shellMatrix positions consistency broken'
+            if key.radius != radius:
+                raise RuntimeError, 'shellMatrix radii consistency broken'
+
+
 
     def checkInvariants( self ):
+
+        GFRDSimulatorBase.check( self )
 
         assert self.t >= 0.0
         assert self.dt >= 0.0
 
-        self.checkDistanceMatrix()
+        self.checkShellMatrix()
 
         self.checkEventStoichiometry()
         

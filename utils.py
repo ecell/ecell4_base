@@ -53,8 +53,7 @@ def distance( position1, position2, fsize = 0 ):
     return math.sqrt( distanceSq_Simple( position1, position2 ) )
 
 def distanceSqArray_Simple( position1, positions, fsize = 0 ):
-    tmp = positions - position1
-    return numpy.square( tmp ).sum( 1 )
+    return numpy.square( positions - position1 ).sum( 1 )
 
 def distanceArray_Simple( position1, positions, fsize = 0 ):
     return numpy.sqrt( distanceSqArray_Simple( position1, positions ) )

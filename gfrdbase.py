@@ -266,18 +266,29 @@ class GFRDSimulatorBase( object ):
 
         self.nextReaction = None
 
-
-        self.setWorldSize( INF )
-
-
         # counters
         self.rejectedMoves = 0
         self.reactionEvents = 0
 
         self.particleMatrix = ObjectMatrix()
 
+        self.setWorldSize( INF )
+
+
+
+
     def initialize( self ):
+        pass
+
+    def reconstructParticleMatrix( self ):
+
         self.particleMatrix.clear()
+        for species in self.speciesList.values():
+            for i in range( species.pool.size ):
+                particle = Particle( species, index=i )
+                self.particleMatrix.add( ( species, particle.serial ),
+                                         particle.pos, species.radius )
+
 
 
     def getTime( self ):
@@ -287,6 +298,8 @@ class GFRDSimulatorBase( object ):
     def setWorldSize( self, size ):
 
         self.worldSize = size
+
+        self.particleMatrix.setWorldSize( size )
 
         if self.worldSize == INF:
             self._distanceSq = distanceSq_Simple
@@ -399,7 +412,6 @@ class GFRDSimulatorBase( object ):
         newserial = species.newParticle( pos )
         newparticle = Particle( species, serial=newserial )
         self.addToParticleMatrix( newparticle )
-
         return newparticle
 
     def removeParticle( self, particle ):
@@ -565,6 +577,40 @@ class GFRDSimulatorBase( object ):
         
         return dt, idx
         
+
+    def checkParticleMatrix( self ):
+
+        if self.worldSize != self.particleMatrix.worldSize:
+            raise RuntimeError,\
+                'self.worldSize != self.particleMatrix.worldSize'
+
+
+        total = numpy.array( [ species.pool.size for species 
+                               in self.speciesList.values() ] ).sum()
+
+
+        if total != self.particleMatrix.size:
+            raise RuntimeError,\
+                'total number of particles %d != self.particleMatrix.size %d'\
+                % ( total, self.particleMatrix.size )
+
+        for species in self.speciesList.values():
+            for i in range( species.pool.size ):
+                particle = Particle( species, index=i )
+                pos, radius = self.particleMatrix.get( ( species, 
+                                                         particle.serial ) )
+                if ( particle.pos - pos ).sum() != 0:
+                    raise RuntimeError,\
+                        'particleMatrix positions consistency broken'
+                if particle.species.radius != radius:
+                    raise RuntimeError,\
+                        'particleMatrix radii consistency broken'
+
+    def check( self ):
+
+        self.checkParticleMatrix()
+
+
     def dumpPopulation( self ):
         buf = ''
         for species in self.speciesList.values():

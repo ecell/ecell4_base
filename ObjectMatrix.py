@@ -58,6 +58,11 @@ class ObjectMatrixCell( object ):
         self.positions[ i ] = pos
         self.radii[ i ] = radius
 
+    def get( self, key ):
+        i = self.keyList.index( key )
+        return self.positions[ i ], self.radii[ i ]
+
+
     def __resizeArrays( self, newsize ):
 
         self.positions.resize( ( newsize, 3 ) )
@@ -68,13 +73,6 @@ class ObjectMatrixCell( object ):
         assert self.size == len( self.keyList ) 
         assert self.size == len( self.positions )
         assert self.size == len( self.radii )
-        '''
-        for i, key in enumerate( self.keyList ):
-            if ( key.pos - self.positions[i] ).sum() != 0:
-                raise RuntimeError, 'keyMatrix positions consistency failed'
-            if key.radius != self.radii[i]:
-                raise RuntimeError, 'keyMatrix radii consistency failed'
-        '''
 
 
 
@@ -222,13 +220,7 @@ class ObjectMatrix( object ):
         return self.cellMatrix[ i[0] ][ i[1] ][ i[2] ]
 
     def getSize( self ):
-        size = 0
-        for i in self.cellMatrix:
-            for j in i:
-                for k in j:
-                    size += k.size
-        return size
-
+        return len( self.objectCellMap )
 
     size = property( getSize )
 
@@ -245,6 +237,7 @@ class ObjectMatrix( object ):
     def add( self, key, pos, radius ):
 
         assert radius <= self.cellSize
+        assert key not in self.objectCellMap
         matrix = self.cellByPos( pos )
         matrix.add( key, pos, radius )
 
@@ -271,6 +264,10 @@ class ObjectMatrix( object ):
             newMatrix.add( key, pos, radius )
             self.objectCellMap[ key ] = newMatrix
 
+    def get( self, key ):
+        matrix = self.objectCellMap[ key ]
+        return matrix.get( key )
+
 
     def getNeighborsCyclic( self, pos, n=None, dummy=None ):
 
@@ -285,18 +282,18 @@ class ObjectMatrix( object ):
         for i, idx in enumerate( transposes ):
 
             idxp = idx % self.matrixSize
-            keyMatrix = self.cellMatrix[ idxp[0] ][ idxp[1] ][ idxp[2] ]
+            matrix = self.cellMatrix[ idxp[0] ][ idxp[1] ][ idxp[2] ]
             
             # offset the positions; no need to use the cyclic distance later.
             offsetp = idxp - idx
             if offsetp[0] == offsetp[1] == offsetp[2] == 0: 
-                positions[i] = keyMatrix.positions
+                positions[i] = matrix.positions
             else:
                 offset = self.cellSize * offsetp
-                positions[i] = keyMatrix.positions - offset
+                positions[i] = matrix.positions - offset
 
-            radii[i] = keyMatrix.radii
-            neighbors += keyMatrix.keyList
+            radii[i] = matrix.radii
+            neighbors += matrix.keyList
 
         positions = numpy.concatenate( positions )
         radii = numpy.concatenate( radii )
@@ -327,7 +324,13 @@ class ObjectMatrix( object ):
                 for k in j:
                     k.check()
 
-        if len( self.objectCellMap ) != self.size:
-            raise RuntimeError, 'len( self.objectCellMap ) != self.size'
+        size = 0
+        for i in self.cellMatrix:
+            for j in i:
+                for k in j:
+                    size += k.size
+
+        if size != self.size:
+            raise RuntimeError, 'size consistency broken.'
 
 
