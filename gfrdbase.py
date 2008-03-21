@@ -161,6 +161,13 @@ class Particle( object ):
         return self.species.pool.indexMap[ self.serial ]
 
 
+class DummyParticle( object ):
+    def __init__( self ):
+        self.species = None
+        self.serial = -1
+
+
+
 class ParticlePool( object ):
 
     def __init__( self ):
@@ -269,6 +276,9 @@ class GFRDSimulatorBase( object ):
 
         self.particleMatrix = ObjectMatrix()
 
+    def initialize( self ):
+        self.particleMatrix.clear()
+
 
     def getTime( self ):
         return self.t
@@ -375,6 +385,7 @@ class GFRDSimulatorBase( object ):
 
     def placeParticle( self, species, pos ):
 
+        pos = numpy.array( pos )
         radius = species.radius
 
         if not self.checkOverlap( pos, radius ):
@@ -395,6 +406,10 @@ class GFRDSimulatorBase( object ):
         particle.species.pool.removeBySerial( particle.serial )
         self.removeFromParticleMatrix( particle )
 
+    def moveParticle( self, particle, newpos ):
+        particle.pos = newpos
+        self.updateOnParticleMatrix( particle )
+
 
     def addToParticleMatrix( self, particle ):
         self.particleMatrix.add( ( particle.species, particle.serial ), 
@@ -406,8 +421,19 @@ class GFRDSimulatorBase( object ):
     def updateOnParticleMatrix( self, particle ):
         self.particleMatrix.update( ( particle.species, particle.serial ), 
                                     particle.pos, particle.species.radius )
+
+
+    def checkOverlap( self, pos, radius, ignore=[] ):
         
-    def checkOverlap( self, position, radius ):
+        c, d = self.getClosestParticle( pos, ignore )
+        if d < radius:
+            print 'reject: closest = ', c, ', distance = ', d,\
+                ', which must be at least ', radius
+            return False
+
+        return True
+        
+    def checkOverlap2( self, position, radius ):
         
         for species2 in self.speciesList.values():
 
@@ -449,7 +475,13 @@ class GFRDSimulatorBase( object ):
     '''
 
 
-    def getNeighborParticles( self, pos, n=2, speciesList=None ):
+    def getNeighborParticles( self, pos, n=None, dummy=None ):
+        n, d = self.particleMatrix.getNeighbors( pos, n, dummy )
+        neighbors = [ Particle( i[0], i[1] ) for i in n ]
+        return neighbors, d
+
+
+    def getNeighborParticles2( self, pos, n=2, speciesList=None ):
 
         neighbors = []
         distances = numpy.array([],numpy.floating)
@@ -481,6 +513,24 @@ class GFRDSimulatorBase( object ):
 
 
     def getClosestParticle( self, pos, ignore=[] ):
+
+        neighbors, distances =\
+            self.getNeighborParticles( pos, 
+                                       len( ignore ) + 1,
+                                       dummy = ( None, -1 ) )
+
+        for i in range( len( neighbors ) ): 
+            if neighbors[i] not in ignore:
+                closest, distance = neighbors[i], distances[i]
+
+                #assert not closest in ignore
+                return closest, distance
+
+        # default case: none left.
+        return DummyParticle(), numpy.inf
+
+
+    def getClosestParticle2( self, pos, ignore=[] ):
 
         neighbors, distances = self.getNeighborParticles( pos, 
                                                           len( ignore ) + 1 )

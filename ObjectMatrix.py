@@ -302,7 +302,7 @@ class ObjectMatrix( object ):
         radii = numpy.concatenate( radii )
 
         if len( positions ) == 0:
-            return [dummy(),], [numpy.inf,]
+            return [dummy,], [numpy.inf,]
 
         distances = distanceArray_Simple( positions, pos ) - radii
 

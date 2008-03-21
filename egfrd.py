@@ -748,6 +748,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def initialize( self ):
 
+        #GFRDSimulatorBase.initialize( self )
+
         self.setAllRepulsive()
 
         self.scheduler.clear()
@@ -947,11 +949,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
             productSpecies = rt.products[0]
 
-            single.particle.pos = NOWHERE
+            #single.particle.pos = NOWHERE
 
-            if not self.checkOverlap( oldpos, productSpecies.radius ):
+            if not self.checkOverlap( oldpos, productSpecies.radius,
+                                      ignore = [ single.particle, ] ):
                 print 'no space for product particle.'
-                single.particle.pos = oldpos
+                #self.moveParticle( single.particle, oldpos )
+                #single.particle.pos = oldpos
                 raise NoSpace()
                 
             if reactantSpecies.radius < productSpecies.radius:
@@ -973,8 +977,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             D2 = productSpecies2.D
             D12 = D1 + D2
             
-
-            single.particle.pos = NOWHERE
+            #single.particle.pos = NOWHERE
 
             particleRadius1 = productSpecies1.radius
             particleRadius2 = productSpecies2.radius
@@ -1002,12 +1005,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newpos2 = self.applyBoundary( newpos2 )
 
                 # accept the new positions if there is enough space.
-                if self.checkOverlap( newpos1, particleRadius1 ) and \
-                       self.checkOverlap( newpos2, particleRadius2 ):
+                if self.checkOverlap( newpos1, particleRadius1,
+                                      ignore = [ single.particle, ] ) \
+                and \
+                    self.checkOverlap( newpos2, particleRadius2,
+                                       ignore = [ single.particle, ] ):
                     break
             else:
                 print 'no space for product particles.'
-                particle.pos = oldpos
+                #self.moveParticle( single.particle, oldpos )
+                #single.particle.pos = oldpos
                 raise NoSpace()
 
             self.removeParticle( single.particle )
@@ -1049,7 +1056,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         particleRadius = single.getMinRadius()
         oldpos = single.particle.pos.copy()
         
-        single.particle.pos = NOWHERE
+        #single.particle.pos = NOWHERE
         
         for i in range( 100 ):
             
@@ -1057,17 +1064,19 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
             newpos = oldpos + displacement
             
-            if self.checkOverlap( newpos, particleRadius ):
+            if self.checkOverlap( newpos, particleRadius,
+                                  ignore = [ single.particle, ] ):
                 break
             
         else:
-            single.particle.pos = oldpos
+            #self.moveParticle( single.particle, oldpos )
+            #single.particle.pos = oldpos
             single.initialize( self.t )
             self.shellMatrix.update( single, single.pos, single.radius )
             raise NoSpace()
         
         newpos = self.applyBoundary( newpos )
-        single.particle.pos = newpos
+        self.moveParticle( single.particle, newpos )
 
         single.initialize( self.t )
 
@@ -1413,8 +1422,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         r0 = self.distance( particle1.pos, particle2.pos )
 
         # temporary displace particles to do overlap check correctly.
-        particle1.pos = NOWHERE
-        particle2.pos = NOWHERE
+        #particle1.pos = NOWHERE
+        #particle2.pos = NOWHERE
 
         # 1 Escaping through a_r.
         if pair.eventType == EventType.ESCAPE:
@@ -1447,8 +1456,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newpos2 = self.applyBoundary( newpos2 )
 
                 if not pair.squeezed or \
-                        ( self.checkOverlap( newpos1, particleRadius1 ) and \
-                              self.checkOverlap( newpos2, particleRadius2 ) ):
+                        ( self.checkOverlap( newpos1, particleRadius1,
+                                             ignore = [ particle1, 
+                                                        particle2 ] ) and \
+                              self.checkOverlap( newpos2, particleRadius2,
+                                                 ignore = [ particle1, 
+                                                            particle2 ] ) ):
                     break
 
                 else:   # overlap check failed
@@ -1494,8 +1507,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newpos2 = self.applyBoundary( newpos2 )
 
                 if not pair.squeezed or \
-                        ( self.checkOverlap( newpos1, particleRadius1 ) and \
-                              self.checkOverlap( newpos2, particleRadius2 ) ):
+                        ( self.checkOverlap( newpos1, particleRadius1,
+                                             ignore = [ particle1, 
+                                                        particle2 ] ) and \
+                              self.checkOverlap( newpos2, particleRadius2,
+                                                 ignore = [ particle1, 
+                                                            particle2 ]) ):
                     break
 
                 else:
@@ -1520,10 +1537,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         assert self.distance( newpos1, newpos2 ) >= pair.sigma
 
-        assert self.checkOverlap( newpos1, particleRadius1 )
-        assert self.checkOverlap( newpos2, particleRadius2 )
-        particle1.pos = newpos1
-        particle2.pos = newpos2
+        assert self.checkOverlap( newpos1, particleRadius1,
+                                  ignore = [ particle1, particle2 ] )
+        assert self.checkOverlap( newpos2, particleRadius2,
+                                  ignore = [ particle1, particle2 ] )
+        self.moveParticle( particle1, newpos1 )
+        self.moveParticle( particle2, newpos2 )
+        #particle1.pos = newpos1
+        #particle2.pos = newpos2
 
         single1, single2 = pair.single1, pair.single2
 
@@ -1553,7 +1574,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         particleRadius = single.getMinRadius()
         oldpos = single.particle.pos.copy()
 
-        single.particle.pos = NOWHERE
+        #single.particle.pos = NOWHERE
 
         for i in range( 100 ):
             
@@ -1563,18 +1584,21 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
             newpos = oldpos + displacement
             
-            if self.checkOverlap( newpos, particleRadius ):
+            if self.checkOverlap( newpos, particleRadius,
+                                  ignore = [ single.particle, ] ):
                 break
             
         else:
-            particle.pos = oldpos
+            #single.particle.pos = oldpos
+            #self.moveParticle( single.particle, oldpos )
             single.initialize( self.t )
             self.shellMatrix.update( single, single.pos, single.radius )
             raise NoSpace()
 
         single.initialize( self.t )
+        #single.particle.pos = self.applyBoundary( newpos )
         newpos = self.applyBoundary( newpos )
-        single.particle.pos = newpos
+        self.moveParticle( single.particle, newpos )
 
         self.shellMatrix.update( single, single.pos, single.radius )
         self.updateEvent( self.t, single )
@@ -1601,8 +1625,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             oldCoM = pair.getCoM()
             r0 = pair.distance( particle1.pos, particle2.pos )
             
-            particle1.pos = NOWHERE
-            particle2.pos = NOWHERE
+            #particle1.pos = NOWHERE
+            #particle2.pos = NOWHERE
 
             for i in range(100):
                 rnd = numpy.random.uniform( size = 4 )
@@ -1624,19 +1648,26 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                       oldInterParticle )
                 if not pair.squeezed or \
-                        ( self.checkOverlap( newpos1, particleRadius1 ) and \
-                              self.checkOverlap( newpos2, particleRadius2 ) ):
+                        ( self.checkOverlap( newpos1, particleRadius1,
+                                             ignore = [ particle1, 
+                                                        particle2 ] ) and \
+                              self.checkOverlap( newpos2, particleRadius2,
+                                                 ignore = [ particle1, 
+                                                            particle2 ] ) ):
                     pair.checkNewpos( newpos1, newpos2, oldCoM )
 
-                    particle1.pos = self.applyBoundary( newpos1 )
-                    particle2.pos = self.applyBoundary( newpos2 )
-
+                    newpos1 = self.applyBoundary( newpos1 )
+                    newpos2 = self.applyBoundary( newpos2 )
+                    self.moveParticle( particle1, newpos1 )
+                    self.moveParticle( particle2, newpos2 )
                     break
 
             else:
                 print 'redrawing limit reached.  giving up displacement.'
-                particle1.pos = self.applyBoundary( oldpos1 )
-                particle2.pos = self.applyBoundary( oldpos2 )
+                #self.moveParticle( particle1, oldpos1 )
+                #self.moveParticle( particle2, oldpos2 )
+                #particle1.pos = oldpos1
+                #particle2.pos = oldpos2
                 self.rejectedMoves += 1
 
         return ( pair.single1, pair.single2 )
@@ -1807,7 +1838,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def getNeighborShells( self, pos, n=None ):
 
-        return self.shellMatrix.getNeighbors( pos, n, dummy=DummySingle )
+        return self.shellMatrix.getNeighbors( pos, n, dummy=DummySingle() )
 
 
     '''
