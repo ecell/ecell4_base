@@ -38,9 +38,12 @@ def file_mean( filename, skip ):
     y = data[:,ycolumns[0]]
 
     start = x.searchsorted( skip )
+    if len(x)<=start:
+        return None
 
     x = x[start:]
     y = y[start:]
+    #print x[-1]
 
     xdiff = x[1:] - x[:-1] 
     yscaled = y[:-1] * xdiff
@@ -57,34 +60,44 @@ import os
 S_tot = 300.0
 
 model = 'pushpull'
-#Keq_str = '0.05'
-Keq_str = '5'
-koff_ratio_str = '0.5'
+Keq_str = '0.05'
+#Keq_str = '5'
+koff_ratio_str = '0.1'
+#koff_ratio_str = '0.5'
+#koff_ratio_str = '0.9'
 #koff_ratio_str = '0'
-N_P = 5
+N_P = 10
 V = '1e-14'
-T = '100'
-mode = 'normal'
+T = '80'
+#mode = 'normal'
 #mode = 'localized'
+mode = 'single'
 
-skip = float(T) / 2
+skip = float(T) *0.1
 
 dir = sys.argv[1]
+outdir = sys.argv[2]
 #pattern = sys.argv[2]
 #globpattern = pattern.replace('ALL','*') + '_*.dat'
 
 
-for N_K in ( 1, 2, 3, 4, 5 ):
+for N_K in range( 40 ):
     globpattern = \
         string.join( ( model, Keq_str, koff_ratio_str, str(N_K), 
                        str(N_P), V, mode, T, '*' ), '_' )
     print globpattern
     filelist = glob.glob( dir + os.sep + globpattern )
-    data = numpy.zeros(len(filelist))
+    if not filelist:
+        continue
 
-    for i, file in enumerate( filelist ):
+    data = []
+
+    for file in filelist:
         print file
-        data[i] = file_mean( file, skip )
+        res = file_mean( file, skip )
+        if res:
+            data.append( res )
+    data = numpy.array( data )
     print data
     data /= S_tot
     mean = data.mean()
@@ -101,5 +114,5 @@ figtitle = string.join( ( model, Keq_str, koff_ratio_str, 'ALL',
 title( figtitle )
 
 #show()
-savefig( 'figs2/' + figtitle + '.png', dpi=80 )
+savefig( outdir + '/' + figtitle + '.png', dpi=80 )
 

@@ -131,6 +131,7 @@ else:
 
 
 kd = k_d( koff, kon, Dtot, sigma )
+kd2 = k_d( koff2, kon, Dtot, sigma )
 
 print 'ka', ka, 'kD', kD, 'kd', kd
 print 'kon m^3/s', kon, '1/M s', kon * N_A * 1e3
@@ -186,9 +187,9 @@ r3 = UnbindingReactionType( KS, K, Sp, kcat )
 s.addReactionType( r3 )
 r4 = BindingReactionType( Sp, P, PSp, ka )
 s.addReactionType( r4 )
-r5 = UnbindingReactionType( PSp, Sp, P, kd )
+r5 = UnbindingReactionType( PSp, Sp, P, kd2 )
 s.addReactionType( r5 )
-r6 = UnbindingReactionType( PSp, P, S, kcat )
+r6 = UnbindingReactionType( PSp, P, S, kcat2 )
 s.addReactionType( r6 )
 
 
