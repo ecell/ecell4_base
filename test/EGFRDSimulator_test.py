@@ -19,39 +19,39 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         self.failIf( s == None )
 
     
-    def no_test_OneParticle( self ):  # this currently fails
+    def test_OneParticle( self ):
         s = EGFRDSimulator()
         s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
-        s.placeParticle( 'S', [0.0,0.0,0.0] )
+        s.placeParticle( S, [0.0,0.0,0.0] )
 
         t = s.getTime()
         for i in range( 5 ):
             s.step()
         self.failIf( t == s.getTime() )
 
-    def no_test_TwoParticles( self ):
+    def test_TwoParticles( self ):
         s = EGFRDSimulator()
         s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
-        s.placeParticle( 'S', [0.0,0.0,0.0] )
-        s.placeParticle( 'S', [5e-6,5e-6,5e-6] )
+        s.placeParticle( S, [0.0,0.0,0.0] )
+        s.placeParticle( S, [5e-6,5e-6,5e-6] )
 
         t = s.getTime()
         for i in range( 5 ):
             s.step()
         self.failIf( t == s.getTime() )
 
-    def no_test_ThreeParticles( self ):
+    def test_ThreeParticles( self ):
         s = EGFRDSimulator()
         s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
-        s.placeParticle( 'S', [0.0,0.0,0.0] )
-        s.placeParticle( 'S', [5e-6,5e-6,5e-6] )
-        s.placeParticle( 'S', [1e-7,1e-7,1e-7] )
+        s.placeParticle( S, [0.0,0.0,0.0] )
+        s.placeParticle( S, [5e-6,5e-6,5e-6] )
+        s.placeParticle( S, [1e-7,1e-7,1e-7] )
 
         t = s.getTime()
         for i in range( 5 ):
@@ -59,16 +59,16 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         self.failIf( t == s.getTime() )
 
 
-    def no_test_ThreeParticlesInContact( self ):
+    def test_ThreeParticlesInContact( self ):
         s = EGFRDSimulator()
         s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
-        s.placeParticle( 'S', [0.0,0.0,0.0] )
-        s.placeParticle( 'S', [1.00001e-7,0.0,0.0] )
+        s.placeParticle( S, [0.0,0.0,0.0] )
+        s.placeParticle( S, [1e-7,0.0,0.0] )
 
         # dummy
-        s.placeParticle( 'S', [1e-6,1e-6,1e-6] )
+        s.placeParticle( S, [2e-7,0.0,0.0] )
 
         t = s.getTime()
         for i in range( 5 ):

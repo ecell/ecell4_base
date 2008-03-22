@@ -270,7 +270,8 @@ class GFRDSimulatorBase( object ):
         self.rejectedMoves = 0
         self.reactionEvents = 0
 
-        self.particleMatrix = ObjectMatrix()
+        #self.particleMatrix = ObjectMatrix()
+        self.particleMatrix = SimpleObjectMatrix()
 
         self.setWorldSize( INF )
 

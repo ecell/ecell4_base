@@ -132,21 +132,24 @@ class SimpleObjectMatrix( object ):
         self.matrix.update( key, pos, radius )
 
 
-    def getNeighbors( self, pos, n=None ):
+    def getNeighbors( self, pos, n=None, dummy=None ):
 
-        keyMatrix = self.matrix
+        matrix = self.matrix
 
-        size = keyMatrix.size
+        size = matrix.size
 
         if not n:
             n = size
 
-        distances = self.distanceArray( keyMatrix.positions, pos ) -\
-           keyMatrix.radii
+        if len( matrix.positions ) == 0:
+            return [dummy,], [numpy.inf,]
+
+        distances = self.distanceArray( matrix.positions, pos ) -\
+           matrix.radii
 
         topargs = distances.argsort()[:n]
         distances = distances.take( topargs )
-        neighbors = [ keyMatrix.keyList[arg] for arg in topargs ]
+        neighbors = [ matrix.keyList[arg] for arg in topargs ]
 
         return neighbors, distances
 

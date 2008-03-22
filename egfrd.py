@@ -694,8 +694,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     
     def __init__( self ):
 
-        self.shellMatrix = ObjectMatrix()
-        #self.shellMatrix = SimpleObjectMatrix()
+        #self.shellMatrix = ObjectMatrix()
+        self.shellMatrix = SimpleObjectMatrix()
 
         GFRDSimulatorBase.__init__( self )
 

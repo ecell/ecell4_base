@@ -3,7 +3,7 @@
 # tau = 0.0001
 #PYTHONPATH=../../.. python run.py rev.0.out 0.0001 1000000
 
-#from egfrd import *
+from egfrd import *
 from bd import *
 
 def run( outfilename, T, N ):
@@ -24,10 +24,9 @@ def run( outfilename, T, N ):
 
 def singlerun( T ):
 
-    #s = EGFRDSimulator()
-    #s.setMaxShellSize( 1e-6 )
-
-    s = BDSimulator()
+    s = EGFRDSimulator()
+    s.setMaxShellSize( 1e-6 )
+    #s = BDSimulator()
 
     s.setWorldSize( 1e-3 )
 
