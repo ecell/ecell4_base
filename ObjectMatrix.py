@@ -276,32 +276,35 @@ class ObjectMatrix( object ):
 
         centeridx = self.hashPos( pos )
 
-        transposes = self.TRANSPOSES + centeridx
-
-        positions = [0,] * 27
-        radii = [0,] * 27
+        positions = []
+        radii = []
         neighbors = []
 
-        for i, idx in enumerate( transposes ):
+        transposes = self.TRANSPOSES + centeridx
+        for idx in transposes:
 
             idxp = idx % self.matrixSize
             matrix = self.cellMatrix[ idxp[0] ][ idxp[1] ][ idxp[2] ]
+            if matrix.size == 0:
+                continue
             
             # offset the positions; no need to use the cyclic distance later.
             offsetp = idxp - idx
             if offsetp[0] == offsetp[1] == offsetp[2] == 0: 
-                positions[i] = matrix.positions
+                positions += [matrix.positions,]
             else:
                 offset = self.cellSize * offsetp
-                positions[i] = matrix.positions - offset
+                positions += [matrix.positions - offset,]
 
-            radii[i] = matrix.radii
+            radii += [ matrix.radii, ]
             neighbors += matrix.keyList
+
+        if len( neighbors ) == 0:
+            return [dummy,], [INF,]
 
         positions = numpy.concatenate( positions )
         radii = numpy.concatenate( radii )
-
-        if len( positions ) == 0:
+        if len( neighbors ) == 0:
             return [dummy,], [numpy.inf,]
 
         distances = distanceArray_Simple( positions, pos ) - radii

@@ -116,7 +116,7 @@ class Single( object ):
         D1 = self.getD()
 
         if D1 == 0:
-            return minRadius
+            return minRadius1
 
         D2 = closest.getD()
         minRadius2 = closest.getMinRadius()
@@ -127,7 +127,7 @@ class Single( object ):
                          * ( distance - minRadius12 ) + minRadius1,
                          shellDistance )
 
-        shellSize = shellSize * ( 1.0 - 1e-10 ) # safety
+        shellSize *= ( 1.0 - 1e-10 ) # safety
         shellSize = max( shellSize, minRadius1 ) # not smaller than the radius
 
         return shellSize
@@ -713,6 +713,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.shellMatrix.setWorldSize( size )
 
     def setMatrixSize( self, size ):
+        GFRDSimulatorBase.setMatrixSize( self, size )
         self.shellMatrix.setMatrixSize( size )
 
     def getMatrixCellSize( self ):

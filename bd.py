@@ -122,12 +122,13 @@ class BDSimulator( GFRDSimulatorBase ):
             print 'already deleted: ', species.id, serial
             return
 
+        particle = Particle( species, serial )
         rt1 = self.attemptSingleReactions( species )
 
         if rt1:
             print rt1
             try:
-                self.fireReaction1( Particle( species, serial ), rt1 )
+                self.fireReaction1( particle, rt1 )
                 return
             except NoSpace:
                 pass  #FIXME:
@@ -143,15 +144,13 @@ class BDSimulator( GFRDSimulatorBase ):
 
         newpos = species.pool.positions[i] + displacement
         
-        n, d = self.getNeighborParticles( newpos )
-
-        if len( n ) <= 1:  # no other particles; free diffusion.
+        closest, dist = self.getClosestParticle( newpos, 
+                                                 ignore = [ particle, ] )
+        
+        if closest:  # no other particles; free diffusion.
             species.pool.positions[i] = self.applyBoundary( newpos )
             return
 
-        closest = n[1]
-        dist = d[1]
-        
         if dist <= species.radius:  # collision
             species2 = closest.species
 
@@ -220,11 +219,9 @@ class BDSimulator( GFRDSimulatorBase ):
             
             productSpecies = rt.products[0]
 
-            particle.pos = NOWHERE
-
-            if not self.checkOverlap( oldpos, productSpecies.radius ):
+            if not self.checkOverlap( oldpos, productSpecies.radius,
+                                      ignore = [ particle, ] ):
                 print 'no space for product particle.'
-                particle.pos = oldpos
                 raise NoSpace()
                 
             self.removeParticle( particle )
@@ -239,8 +236,6 @@ class BDSimulator( GFRDSimulatorBase ):
             D2 = productSpecies2.D
             D12 = D1 + D2
             
-            particle.pos = NOWHERE
-
             radius1 = productSpecies1.radius
             radius2 = productSpecies2.radius
             radius12 = radius1 + radius2
@@ -266,19 +261,20 @@ class BDSimulator( GFRDSimulatorBase ):
                 newpos2 = self.applyBoundary( newpos2 )
 
                 # accept the new positions if there is enough space.
-                if self.checkOverlap( newpos1, radius1 ) and \
-                       self.checkOverlap( newpos2, radius2 ):
+                if self.checkOverlap( newpos1, radius1,
+                                      ignore = [ particle, ]) and \
+                       self.checkOverlap( newpos2, radius2,
+                                          ignore = [ particle, ]):
                     break
             else:
                 print 'no space for product particles.'
-                particle.pos = oldpos
                 raise NoSpace()
 
             # move accepted
             self.removeParticle( particle )
 
-            particle1 = self.createParticle( productSpecies1, newpos1 )
-            particle2 = self.createParticle( productSpecies2, newpos2 )
+            self.createParticle( productSpecies1, newpos1 )
+            self.createParticle( productSpecies2, newpos2 )
 
             print newpos1, newpos2
 
@@ -292,10 +288,8 @@ class BDSimulator( GFRDSimulatorBase ):
 
     def fireReaction2( self, particle1, particle2, rt ):
 
-        oldPos1 = particle1.pos.copy()
-        oldPos2 = particle2.pos.copy()
-
-        particle1.pos = particle2.pos = NOWHERE
+        pos1 = particle1.pos
+        pos2 = particle2.pos
 
         if len( rt.products ) == 1:
                 
@@ -304,18 +298,17 @@ class BDSimulator( GFRDSimulatorBase ):
             D1 = particle1.species.D
             D2 = particle2.species.D
 
-            newPos = ( D2 * oldPos1 + D1 * oldPos2 ) / ( D1 + D2 )
+            newPos = ( D2 * pos1 + D1 * pos2 ) / ( D1 + D2 )
 
-            if not self.checkOverlap( newPos, productSpecies.radius ):
+            if not self.checkOverlap( newPos, productSpecies.radius,
+                                      ignore=[ particle1, particle2 ]):
                 print 'no space for product particle.'
-                particle1.pos = oldPos1
-                particle2.pos = oldPos2
                 raise NoSpace()
                 
             # move accepted
             self.removeParticle( particle1 )
             self.removeParticle( particle2 )
-            particle = self.createParticle( productSpecies, newPos )
+            self.createParticle( productSpecies, newPos )
 
             self.reactionEvents += 1
             self.setPopulationChanged()

@@ -270,8 +270,8 @@ class GFRDSimulatorBase( object ):
         self.rejectedMoves = 0
         self.reactionEvents = 0
 
-        #self.particleMatrix = ObjectMatrix()
-        self.particleMatrix = SimpleObjectMatrix()
+        self.particleMatrix = ObjectMatrix()
+        #self.particleMatrix = SimpleObjectMatrix()
 
         self.setWorldSize( INF )
 
@@ -311,6 +311,9 @@ class GFRDSimulatorBase( object ):
 
     def getWorldSize( self ):
         return self.worldSize
+
+    def setMatrixSize( self, size ):
+        self.particleMatrix.setMatrixSize( size )
 
     def applyBoundary( self, pos ):
         if self.worldSize != INF:
@@ -540,7 +543,8 @@ class GFRDSimulatorBase( object ):
                 return closest, distance
 
         # default case: none left.
-        return DummyParticle(), numpy.inf
+        return None, numpy.inf
+        #return DummyParticle(), numpy.inf
 
 
     def getClosestParticle2( self, pos, ignore=[] ):
