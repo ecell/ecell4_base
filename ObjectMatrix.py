@@ -131,6 +131,8 @@ class SimpleObjectMatrix( object ):
 
         self.matrix.update( key, pos, radius )
 
+    def get( self, key ):
+        return self.matrix.get( key )
 
     def getNeighbors( self, pos, n=None, dummy=None ):
 
@@ -144,8 +146,7 @@ class SimpleObjectMatrix( object ):
         if len( matrix.positions ) == 0:
             return [dummy,], [numpy.inf,]
 
-        distances = self.distanceArray( matrix.positions, pos ) -\
-           matrix.radii
+        distances = self.distanceArray( matrix.positions, pos ) - matrix.radii
 
         topargs = distances.argsort()[:n]
         distances = distances.take( topargs )
@@ -222,9 +223,13 @@ class ObjectMatrix( object ):
         i = self.hashPos( pos )
         return self.cellMatrix[ i[0] ][ i[1] ][ i[2] ]
 
+    def getKeyList( self ):
+        return self.objectCellMap.keys()
+
     def getSize( self ):
         return len( self.objectCellMap )
 
+    keyList = property( getKeyList )
     size = property( getSize )
 
     def clear( self ):

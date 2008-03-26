@@ -87,7 +87,8 @@ s.throwInParticles( K, C2N( 200e-9 ), box1 )
 s.throwInParticles( KK, C2N( 50e-9 ), box1 )
 s.throwInParticles( P, C2N( 50e-9 ), box1 )
 
-endTime = 1
+#endTime = 1
+endTime = 0
 while 1:
     s.step()
     nextTime = s.scheduler.getNextTime()
@@ -139,5 +140,6 @@ l.log()
 while s.t < 30:
     s.step()
     s.dumpPopulation()
+    #s.check()
     l.log()
 

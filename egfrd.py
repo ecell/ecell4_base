@@ -35,6 +35,8 @@ class Single( object ):
 
     def __init__( self, particle, reactiontypes ):
 
+        self.multiplicity = 1
+
         self.particle = particle
         self.reactiontypes = reactiontypes
 
@@ -52,11 +54,6 @@ class Single( object ):
         self.updatek_tot()
 
 
-    def isPair( self ):
-
-        return False
-
-        
     def getD( self ):
 
         return self.particle.species.D
@@ -275,6 +272,8 @@ class Pair( object ):
 
     def __init__( self, single1, single2, rt, distFunc, worldSize ):
 
+        self.multiplicity = 2
+
         # Order single1 and single2 so that D1 < D2.
         if single1.particle.species.D <= single2.particle.species.D:
             self.single1, self.single2 = single1, single2 
@@ -326,10 +325,6 @@ class Pair( object ):
         self.radius = self.getMinRadius()
         self.dt = 0
         self.eventType = None
-
-    def isPair( self ):
-
-        return True
 
     def getPos( self ):
 
@@ -668,9 +663,31 @@ class Pair( object ):
         return buf
 
 
+class Multi( object ):
+    def __init__( self ):
+        self.multiplicity = 0
+
+    def getMinRadius( self ):
+        assert False  #FIXME:
+        #return 0.0
+
+    def getD( self ):
+        return 0.0
+
+    def getPos( self ):
+        return NOWHERE
+
+    pos = property( getPos )
+
+    
+
+
+
 
 class DummySingle( object ):
     def __init__( self ):
+        self.multiplicity = 1
+
         self.radius = 0.0
 
     def getMinRadius( self ):
@@ -684,9 +701,6 @@ class DummySingle( object ):
 
     pos = property( getPos )
 
-    def isPair( self ):
-
-        return False
     
 
 
@@ -784,13 +798,16 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # first burst all Singles.
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i).getArg()
-            if obj.isPair():
+            if isinstance( obj, Pair ):
                 pairList.append( obj )
-            else:
+            elif isinstance( obj, Single ):
                 try:
                     self.burstSingle( obj )
                 except NoSpace:
                     self.rejectedMoves += 1
+            else:
+                raise NotImplementedError
+
 
         # then burst all Pairs.
         for obj in pairList:
@@ -810,7 +827,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.initialize()
 
         #if self.stepCounter % 100 == 0:
-        #    self.checkInvariants()
+        #    self.check()
 
         self.stepCounter += 1
 
@@ -1038,7 +1055,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
         # check if this Single is squeezed.
-        if closest.isPair() and distanceToClosestShell < single.radius:
+        if closest.multiplicity != 1 and distanceToClosestShell < single.radius:
             print 'single ', single, ' squeezed by ', closest, 'distance ', \
                 distanceToClosestShell
             #assert closest.squeezed,\
@@ -1134,7 +1151,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         if squeezed:  
             # If this single was squeezed, update the shell, and just return.
-            # Because the squeezer Pair was broke up in the propagateSingle()
+            # Because the squeezer Pair was broken up in the propagateSingle()
             # above, one of the Sinlge in the Pair will step in the next step.
             # It is important for this Single to take non-zero step size,
             # otherwise this Single and the squeezer Pair will burst each
@@ -1164,12 +1181,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # (2-1) Burst the closest and do pair check with that.
 
-        # Determine the partnerCandidate, which is the closest single.
-        if closestShell.isPair():
+        if isinstance( closestShell, Pair ): # pair
 
             if distanceToClosestShell < particleRadius0 * 2:
 
-                # If the partner was a Pair, then this has bursted into two
+                # If the partner was a Pair, and it is bursted into two
                 # singles.  Find the closer one.
                 single1, single2 = self.burstPair( closestShell )
                 somethingBursted = True
@@ -1511,11 +1527,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         else:
             raise SystemError, 'Bug: invalid eventType.'
 
+        # this has to be done before the following excludeVolume()
+        self.shellMatrix.remove( pair )
 
-        #if pair.squeezed:
+        if pair.squeezed:
         # make sure displaced particles don't intrude squeezer shells.
-        #   self.excludeVolume( newpos1, particleRadius1 )
-        #  self.excludeVolume( newpos2, particleRadius2 )
+            self.excludeVolume( newpos1, particleRadius1 )
+            self.excludeVolume( newpos2, particleRadius2 )
 
 
         #pair.squeezed = False
@@ -1528,8 +1546,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                   ignore = [ particle1, particle2 ] )
         self.moveParticle( particle1, newpos1 )
         self.moveParticle( particle2, newpos2 )
-        #particle1.pos = newpos1
-        #particle2.pos = newpos2
 
         single1, single2 = pair.single1, pair.single2
 
@@ -1539,7 +1555,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.addSingleEvent( single1 )
         self.addSingleEvent( single2 )
 
-        self.shellMatrix.remove( pair )
         self.shellMatrix.add( single1, single1.pos, single1.radius )
         self.shellMatrix.add( single2, single2.pos, single2.radius )
 
@@ -1734,7 +1749,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pos1, pos2 = single1.pos, single2.pos
         pairDistance = self.distance( pos1, pos2 )
 
-        # pairGap = real distance excluding radii
+        # pairGap = real distance including radii
         pairGap = pairDistance - particleRadius12
         assert pairGap >= 0, 'pairGap between %s and %s = %g < 0' \
             % ( single1, single2, pairGap )
@@ -1900,8 +1915,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             raise RuntimeError, '%s shell size larger than maxShellSize'
 
         if distance - radius < 0.0:
-            if ( obj.isPair() and obj.squeezed ) or \
-                   ( closest.isPair() and closest.squeezed ):
+            if ( isinstance( obj, Pair ) and obj.squeezed ) or \
+                   ( isinstance( closest, Pair ) and closest.squeezed ):
                 print '%s overlaps with %s.  ignoring because squeezed.' \
                           % ( str( obj ), str( closest ) )
             else:
@@ -1927,10 +1942,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         eventPopulation = 0
         for i in range( self.scheduler.getSize() ):
             obj = self.scheduler.getEventByIndex(i).getArg()
-            if obj.isPair():
-                eventPopulation += 2
-            else:
-                eventPopulation += 1
+            eventPopulation += obj.multiplicity
 
         if population != eventPopulation:
             raise RuntimeError, 'population %d != eventPopulation %d' %\
@@ -1948,7 +1960,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         self.shellMatrix.check()
 
-        for key in self.shellMatrix.objectCellMap.keys():
+        for key in self.shellMatrix.keyList:
             pos, radius = self.shellMatrix.get( key )
             if ( key.pos - pos ).sum() != 0:
                 raise RuntimeError, 'shellMatrix positions consistency broken'
@@ -1957,7 +1969,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
 
-    def checkInvariants( self ):
+    def check( self ):
 
         GFRDSimulatorBase.check( self )
 
