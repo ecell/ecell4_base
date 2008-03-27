@@ -157,6 +157,12 @@ class Particle( object ):
 
     pos = property( getPos, setPos )
 
+    def getRadius( self ):
+        return self.species.radius
+
+    radius = property( getRadius )
+
+
     def getIndex( self ):
         return self.species.pool.indexMap[ self.serial ]
 
@@ -256,8 +262,8 @@ class GFRDSimulatorBase( object ):
 
         self.surfaceList = []
 
-        self.dt = 1e-7
-        self.t = 0.0
+        #self.dt = 1e-7
+        #self.t = 0.0
 
         self.H = 3.0
         
@@ -275,7 +281,7 @@ class GFRDSimulatorBase( object ):
 
         self.setWorldSize( INF )
 
-
+        self.populationChanged = False
 
 
     def initialize( self ):

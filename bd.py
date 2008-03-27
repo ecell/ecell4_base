@@ -15,6 +15,8 @@ from surface import *
 from gfrdbase import *
 import _gfrd
 
+DEFAULT_DT_FACTOR = 1e-4
+
 def drawR_gbd( sigma, t, D ):
     
     def f( r, sigma, t, D, I ):
@@ -27,7 +29,7 @@ def drawR_gbd( sigma, t, D ):
                                      sigma + 6 * math.sqrt( 6 * D * t ) ) )
     return result
 
-def calculateBDDt( speciesList ):
+def calculateBDDt( speciesList, factor = DEFAULT_DT_FACTOR ):
 
         D_list = []
         radius_list = []
@@ -39,27 +41,51 @@ def calculateBDDt( speciesList ):
         radius_min = min( radius_list )
         sigma_min = radius_min * 2
 
-        DT_FACTOR = 1e-6
-        dt = DT_FACTOR * sigma_min ** 2 / D_max  
+        dt = factor * sigma_min ** 2 / D_max  
         print 'dt = ', dt
 
         return dt
 
-class ChildBDSimulator( object ):
+class BDSimulatorCoreBase( object ):
     
-    def __init__( self ):
+    '''
+    BDSimulatorCore borrows the following from the main simulator:
+    - speciesList
+    - reactionTypes list (both 1 and 2)
+    
+    '''
 
-        self.isDirty = True
+    def __init__( self, main, particleMatrix=None ):
+
+        self.main = weakref.proxy( main )
+
+        self.particleList = []
 
         self.t = 0.0
         self.dt = 0.0
 
         self.stepCounter = 0
 
+        self.reactionEvents = 0
 
+        self.speciesList = self.main.speciesList
+        self.getReactionType1 = self.main.getReactionType1
+        self.getReactionType2 = self.main.getReactionType2
+        self.applyBoundary = self.main.applyBoundary
+
+
+        
     def initialize( self ):
-
         self.determineDt()
+
+    def clearParticleList( self ):
+        self.particleList = []
+
+    def addToParticleList( self, particle ):
+        self.particleList.append( particle )
+
+    def removeFromParticleList( self, particle ):
+        self.particleList.remove( particle )
 
 
     def getNextTime( self ):
@@ -85,24 +111,18 @@ class ChildBDSimulator( object ):
 
     def propagate( self ):
         
-        particles = self.particleList.copy()
+        particles = self.particleList[:]
 
         #print particleList
 
         random.shuffle( particles )
         for p in particles:
-            self.propagateParticle( p[0], p[1] )
+            self.propagateParticle( p )
 
 
-    def propagateParticle( self, species, serial ):
+    def propagateParticle( self, particle ):
 
-        try:
-            i = species.pool.indexMap[ serial ]
-        except KeyError:  # already deleted by reaction
-            print 'already deleted: ', species.id, serial
-            return
-
-        particle = Particle( species, serial )
+        species = particle.species
         rt1 = self.attemptSingleReactions( species )
 
         if rt1:
@@ -115,20 +135,22 @@ class ChildBDSimulator( object ):
 
 
         D = species.D
-        #if D == 0.0:  # already checked in propagate()
-        #    return
+        if D == 0.0:
+            return
 
         #displacement = drawR_free( self.dt, D )
         displacement = numpy.random.normal( 0.0, 
                                             math.sqrt( 2 * D * self.dt ), 3 )
 
-        newpos = species.pool.positions[i] + displacement
+        newpos = particle.pos + displacement
         
-        closest, dist = self.getClosestParticle( newpos, 
-                                                 ignore = [ particle, ] )
+        closest, dist =\
+            self.getClosestParticle( newpos, 
+                                     ignore = [ particle, ] )
         
         if closest:  # no other particles; free diffusion.
-            species.pool.positions[i] = self.applyBoundary( newpos )
+            newpos = self.applyBoundary( newpos )
+            self.moveParticle( particle, newpos )
             return
 
         if dist <= species.radius:  # collision
@@ -163,8 +185,9 @@ class ChildBDSimulator( object ):
                 return
 
 
-        species.pool.positions[i] = self.applyBoundary( newpos )
-        #print species.pool.positions[i]
+        newpos = self.applyBoundary( newpos )
+        self.moveParticle( particle, newpos )
+
 
 
     def attemptSingleReactions( self, species ):
@@ -200,7 +223,7 @@ class ChildBDSimulator( object ):
             productSpecies = rt.products[0]
 
             if not self.checkOverlap( oldpos, productSpecies.radius,
-                                      ignore = [ particle, ] ):
+                                           ignore = [ particle, ] ):
                 print 'no space for product particle.'
                 raise NoSpace()
                 
@@ -242,9 +265,9 @@ class ChildBDSimulator( object ):
 
                 # accept the new positions if there is enough space.
                 if self.checkOverlap( newpos1, radius1,
-                                      ignore = [ particle, ]) and \
+                                           ignore = [ particle, ]) and \
                        self.checkOverlap( newpos2, radius2,
-                                          ignore = [ particle, ]):
+                                               ignore = [ particle, ]):
                     break
             else:
                 print 'no space for product particles.'
@@ -262,7 +285,7 @@ class ChildBDSimulator( object ):
             raise RuntimeError, 'num products >= 3 not supported.'
 
         self.reactionEvents += 1
-        self.setPopulationChanged()
+        self.populationChanged = True
 
 
 
@@ -291,7 +314,7 @@ class ChildBDSimulator( object ):
             self.createParticle( productSpecies, newPos )
 
             self.reactionEvents += 1
-            self.setPopulationChanged()
+            self.populationChanged = True
             return
         
         else:
@@ -299,6 +322,85 @@ class ChildBDSimulator( object ):
                 'num products >= 2 not supported.'
 
 
+    def check( self ):
+        pass
+
+
+'''
+IndependentBDSimulatorCore holds its own ObjectMatrix to
+calculate distances between particles.   
+'''
+
+class IndependentBDSimulatorCore( BDSimulatorCoreBase ):
+    
+    def __init__( self, main ):
+
+        BDSimulatorCoreBase.__init__( self, main )
+
+        self.checkOverlap = self.main.checkOverlap
+
+        self.particleMatrix = SimpleObjectMatrix()
+        self.particleMatrix.setWorldSize( self.main.worldSize )
+
+        self.getNeighborParticles = self._getNeighborParticles
+        self.getClosestParticle = self._getClosestParticle
+
+        
+
+    def initialize( self ):
+        BDSimulatorCoreBase.initialize( self )
+
+    def _addParticle( self, particle ):
+        self.addToParticleList( particle )
+        self.particleMatrix.add( ( particle[0], particle[1] ),
+                                 particle.pos, particle.radius )
+
+    def _updateParticle( self, particle, pos ):
+        self.particleMatrix.update( ( particle[0], particle[1] ), pos,
+                                    particle.radius )
+
+    def removeParticle( self, particle ):
+        self.main.removeParticle( particle )
+        self.removeFromParticleList( particle )
+        self.particleMatrix.remove( ( particle[0], particle[1] ) )
+
+    def createParticle( self, species, pos ):
+        particle = self.main.createParticle( species, pos )
+        self._addParticle( particle )
+
+    def placeaParticle( self, species, pos ):
+        self.main.placeParticle( species, pos )
+        self._addParticle( Particle( species, pos ) )
+
+    def moveParticle( self, particle, pos ):
+        self.main.moveParticle( particle, pos )
+        self._updateParticle( particle, pos )
+
+
+    def _getNeighborParticles( self, pos, n=None, dummy=None ):
+
+        n, d = self.particleMatrix.getNeighbors( pos, n, dummy )
+        neighbors = [ Particle( i[0], i[1] ) for i in n ]
+        return neighbors, d
+
+
+    def _getClosestParticle( self, pos, ignore=[] ):
+
+        neighbors, distances =\
+            self.getNeighborParticles( pos, 
+                                       len( ignore ) + 1,
+                                       dummy = ( None, -1 ) )
+
+        for i in range( len( neighbors ) ): 
+            if neighbors[i] not in ignore:
+                closest, distance = neighbors[i], distances[i]
+
+                #assert not closest in ignore
+                return closest, distance
+
+        # default case: none left.
+        return None, numpy.inf
+        #return DummyParticle(), numpy.inf
 
 
 
@@ -307,44 +409,100 @@ class ChildBDSimulator( object ):
         pass
 
 
+'''
+DependentBDSimulatorCore uses its main simulator's ObjectMatrix
+to hold and calculate distances between particles.
+'''
+
+class DependentBDSimulatorCore( BDSimulatorCoreBase ):
+    
+
+    def __init__( self, main ):
+
+        BDSimulatorCoreBase.__init__( self, main )
+
+        self.checkOverlap = self.main.checkOverlap
+
+        self.moveParticle = self.main.moveParticle
+
+        self.getNeighborParticles = main.getNeighborParticles
+        self.getClosestParticle = main.getClosestParticle
+
+        
+    def initialize( self ):
+        BDSimulatorCoreBase.initialize( self )
+
+        self.updateParticleList()
+
+    def updateParticleList( self ):
+
+        self.clearParticleList()
+
+        for s in self.speciesList.values():
+            for i in range( s.pool.size ):
+                self.addToParticleList( Particle( s, index = i ) )
+
+    def removeParticle( self, particle ):
+        self.main.removeParticle( particle )
+        self.removeFromParticleList( particle )
+
+    def createParticle( self, species, pos ):
+        particle = self.main.createParticle( species, pos )
+        self.addToParticleList( particle )
+
+    def placeaParticle( self, species, pos ):
+        self.main.placeParticle( species, pos )
+        self.addToParticleList( particle )
+
+
+
+
+
 class BDSimulator( GFRDSimulatorBase ):
     
     def __init__( self ):
 
         GFRDSimulatorBase.__init__( self )
 
-
-        self.bdsim = ChildBDSimulator()
-
+        self.core = DependentBDSimulatorCore( self )
         self.isDirty = True
 
-        self.t = 0.0
-        self.dt = 0.0
+    def gett( self ):
+        return self.core.t
 
-        self.stepCounter = 0
+    def sett( self, t ):
+        self.core.t = t
 
-        self.clearPopulationChanged()
+    def getDt( self ):
+        return self.core.dt
 
+    def getStepCounter( self ):
+        return self.core.stepCounter
+
+    t = property( gett, sett )
+    dt = property( getDt )
+    stepCounter = property( getStepCounter )
 
     def initialize( self ):
 
         self.setAllRepulsive()
 
-        self.bdsim.determineDt()
+        self.core.initialize()
 
         self.isDirty = False
 
 
+
     def getNextTime( self ):
-        return self.bdsim.t + self.bdsim.dt
+        return self.core.t + self.core.dt
 
     def stop( self, t ):
         # dummy
-        self.bdsim.stop( t )
+        self.core.stop( t )
 
     def step( self ):
 
-        self.clearPopulationChanged()
+        self.populationChanged = False
 
         if self.isDirty:
             self.initialize()
@@ -352,27 +510,13 @@ class BDSimulator( GFRDSimulatorBase ):
         if self.stepCounter % 10000 == 0:
             self.check()
 
-        self.stepCounter += 1
+        self.core.step()
 
-        self.bdsim.step()
-
-        print self.stepCounter, ': t = ', self.bdsim.t, 'dt = ', self.bdsim.dt, 
-        'reactions', self.reactionEvents, 'rejected moves', self.rejectedMoves
-        print ''
-
-
-    def populationChanged( self ):
-
-        return self.isPopulationChanged
-
-    def clearPopulationChanged( self ):
-
-        self.isPopulationChanged = False
-
-    def setPopulationChanged( self ):
-
-        self.isPopulationChanged = True
-        
+        print self.stepCounter, ': t = ', self.t,\
+            'dt = ', self.dt,\
+            'reactions:', self.reactionEvents,\
+            'rejected moves:', self.rejectedMoves
+        #print ''
 
 
 

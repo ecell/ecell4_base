@@ -774,7 +774,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.rejectedMoves = 0
         self.reactionEvents = 0
         self.lastEvent = None
-        self.clearPopulationChanged()
+        self.populationChanged = False
         self.squeezed = 0
 
         self.isDirty = True
@@ -841,7 +841,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def step( self ):
 
-        self.clearPopulationChanged()
+        self.populationChanged = False
 
         if self.isDirty:
             self.initialize()
@@ -880,18 +880,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         print ''
 
 
-    def populationChanged( self ):
-
-        return self.isPopulationChanged
-
-    def clearPopulationChanged( self ):
-
-        self.isPopulationChanged = False
-
-    def setPopulationChanged( self ):
-
-        self.isPopulationChanged = True
-        
 
     def createSingle( self, particle ):
 
@@ -1078,7 +1066,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             raise RuntimeError, 'num products >= 3 not supported.'
 
         self.reactionEvents += 1
-        self.setPopulationChanged()
+        self.populationChanged = True
 
 
     def propagateSingle( self, single, r ):
@@ -1443,7 +1431,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.addSingleEvent( newsingle )
 
                 self.reactionEvents += 1
-                self.setPopulationChanged()
+                self.populationChanged = True
                 
             else:
                 raise NotImplementedError,\

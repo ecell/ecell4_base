@@ -91,7 +91,7 @@ class Logger:
 
     def logTimeCourse( self ):
 
-        if self.simulator.populationChanged():
+        if self.simulator.populationChanged:
             self.writeTimecourse()
 
     def logParticles( self ):

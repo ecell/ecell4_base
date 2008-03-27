@@ -26,8 +26,8 @@ s.addReactionType( r1 )
 r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
-s.throwInParticles( S, 0, box1 )
-s.throwInParticles( P, 1000, box1 )
+s.throwInParticles( S, 10, box1 )
+s.throwInParticles( P, 10, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )
@@ -44,7 +44,7 @@ while s.t < 100:
 
 
 def profrun():
-    for i in range( 10 ):
+    for i in range( 100 ):
         s.step()
 
 import profile
