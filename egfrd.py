@@ -666,6 +666,7 @@ class Pair( object ):
 class Multi( object ):
     def __init__( self ):
         self.multiplicity = 0
+        self.singleList = []
 
     def getMinRadius( self ):
         assert False  #FIXME:
@@ -679,9 +680,28 @@ class Multi( object ):
 
     pos = property( getPos )
 
-    
+    def add( self, single ):
+        assert isinstance( single, Single )
+        self.singleList.append( single )
 
+    def remove( self, single ):
+        self.singleList.remove( single )
 
+    def run( self, T ):
+        pass
+
+    def check( self ):
+
+        for s in self.singleList:
+            assert not s.isReset()
+            #s.radius
+        
+
+    def __str__( self ):
+        buf = 'Multi( '
+        for s in self.singleList:
+            buf += str( s.particle )
+        return buf
 
 
 class DummySingle( object ):
@@ -826,8 +846,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
-        #if self.stepCounter % 100 == 0:
-        #    self.check()
+        if self.stepCounter % 100 == 0:
+            self.check()
 
         self.stepCounter += 1
 
@@ -950,6 +970,21 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.removeEvent( neighbor )
                 self.addSingleEvent( single1 )
                 self.addSingleEvent( single2 )
+
+    def excludeSingleVolume( self, pos, radius ): # to be removed
+
+        neighbors, distances = self.getNeighborShells( pos )
+        n = numpy.searchsorted( distances, radius )
+        neighbors = neighbors[:n]
+        for neighbor in neighbors:
+            print 'bursting', neighbor
+            if isinstance( neighbor, Single ):
+                try:
+                    self.burstSingle( neighbor )
+                except NoSpace:
+                    self.rejectedMoves += 1
+            else:  # Pair
+                neighbor.squeezed = True
 
 
     def fireSingleReaction( self, single ):
@@ -1531,9 +1566,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.shellMatrix.remove( pair )
 
         if pair.squeezed:
-        # make sure displaced particles don't intrude squeezer shells.
-            self.excludeVolume( newpos1, particleRadius1 )
-            self.excludeVolume( newpos2, particleRadius2 )
+            # make sure displaced particles don't intrude squeezer shells.
+            self.excludeSingleVolume( newpos1, particleRadius1 )
+            self.excludeSingleVolume( newpos2, particleRadius2 )
 
 
         #pair.squeezed = False
@@ -1560,6 +1595,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         pair.dt = -numpy.inf
         return pair.dt
+
+    def fireMulti( self, multi ):
+        print 'fire', multi
+
+        bdsim = BDSimulator()
+        #for single in multi.singleList:
+        #    bdsim.
+
 
 
     def burstSingle( self, single ):

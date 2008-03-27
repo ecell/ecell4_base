@@ -15,12 +15,39 @@ from surface import *
 from gfrdbase import *
 import _gfrd
 
+def drawR_gbd( sigma, t, D ):
+    
+    def f( r, sigma, t, D, I ):
+        return _gfrd.g_bd( r, sigma, t, D ) / I
 
-class BDSimulator( GFRDSimulatorBase ):
+    I = _gfrd.I_bd( sigma, t, D )
+    
+    result = scipy.optimize.brent( f, ( sigma, t, D, I ), 
+                                   ( sigma, 
+                                     sigma + 6 * math.sqrt( 6 * D * t ) ) )
+    return result
+
+def calculateBDDt( speciesList ):
+
+        D_list = []
+        radius_list = []
+        for species in speciesList:
+            if species.pool.size != 0:
+                D_list.append( species.D )
+                radius_list.append( species.radius )
+        D_max = max( D_list )
+        radius_min = min( radius_list )
+        sigma_min = radius_min * 2
+
+        DT_FACTOR = 1e-6
+        dt = DT_FACTOR * sigma_min ** 2 / D_max  
+        print 'dt = ', dt
+
+        return dt
+
+class ChildBDSimulator( object ):
     
     def __init__( self ):
-
-        GFRDSimulatorBase.__init__( self )
 
         self.isDirty = True
 
@@ -29,16 +56,10 @@ class BDSimulator( GFRDSimulatorBase ):
 
         self.stepCounter = 0
 
-        self.clearPopulationChanged()
-
 
     def initialize( self ):
 
-        self.setAllRepulsive()
-
         self.determineDt()
-
-        self.isDirty = False
 
 
     def getNextTime( self ):
@@ -50,67 +71,26 @@ class BDSimulator( GFRDSimulatorBase ):
 
     def determineDt( self ):
 
-        D_list = []
-        radius_list = []
-        for species in self.speciesList.values():
-            if species.pool.size != 0:
-                D_list.append( species.D )
-                radius_list.append( species.radius )
-        D_max = max( D_list )
-        radius_min = min( radius_list )
-        sigma_min = radius_min * 2
-
-        DT_FACTOR = 1e-6
-
-        self.dt = DT_FACTOR * sigma_min ** 2 / D_max  
-        print 'dt = ', self.dt
+        self.dt = calculateBDDt( self.speciesList.values() )
 
 
     def step( self ):
-
-        self.clearPopulationChanged()
-
-        if self.isDirty:
-            self.initialize()
-
-        if self.stepCounter % 10000 == 0:
-            self.checkInvariants()
 
         self.stepCounter += 1
 
         self.propagate()
 
         self.t += self.dt
-        print self.stepCounter, ': t = ', self.t, 'dt = ', self.dt, 
-        'reactions', self.reactionEvents, 'rejected moves', self.rejectedMoves
-        print ''
 
-
-    def populationChanged( self ):
-
-        return self.isPopulationChanged
-
-    def clearPopulationChanged( self ):
-
-        self.isPopulationChanged = False
-
-    def setPopulationChanged( self ):
-
-        self.isPopulationChanged = True
-        
 
     def propagate( self ):
         
-        particleList = []
-        for species in self.speciesList.values():
-            if species.D != 0.0:
-                particleList.extend( [ ( species, s )\
-                                           for s in species.pool.serials ] )
+        particles = self.particleList.copy()
 
         #print particleList
 
-        random.shuffle( particleList )
-        for p in particleList:
+        random.shuffle( particles )
+        for p in particles:
             self.propagateParticle( p[0], p[1] )
 
 
@@ -242,7 +222,7 @@ class BDSimulator( GFRDSimulatorBase ):
 
             for i in range( 100 ):
 
-                pairDistance = self.drawR_gbd( radius12, self.dt, D12 )
+                pairDistance = drawR_gbd( radius12, self.dt, D12 )
                 print pairDistance
 
                 unitVector = randomUnitVector()
@@ -320,21 +300,81 @@ class BDSimulator( GFRDSimulatorBase ):
 
 
 
-    def drawR_gbd( self, sigma, t, D ):
-
-        def f( r, sigma, t, D, I ):
-            return _gfrd.g_bd( r, sigma, t, D ) / I
-
-        I = _gfrd.I_bd( sigma, t, D )
-
-        result = scipy.optimize.brent( f, ( sigma, t, D, I ), 
-                                       ( sigma, 
-                                         sigma + 6 * math.sqrt( 6 * D * t ) ) )
-        r = result
-
-        return r
 
 
 
-    def checkInvariants( self ):
+    def check( self ):
+        pass
+
+
+class BDSimulator( GFRDSimulatorBase ):
+    
+    def __init__( self ):
+
+        GFRDSimulatorBase.__init__( self )
+
+
+        self.bdsim = ChildBDSimulator()
+
+        self.isDirty = True
+
+        self.t = 0.0
+        self.dt = 0.0
+
+        self.stepCounter = 0
+
+        self.clearPopulationChanged()
+
+
+    def initialize( self ):
+
+        self.setAllRepulsive()
+
+        self.bdsim.determineDt()
+
+        self.isDirty = False
+
+
+    def getNextTime( self ):
+        return self.bdsim.t + self.bdsim.dt
+
+    def stop( self, t ):
+        # dummy
+        self.bdsim.stop( t )
+
+    def step( self ):
+
+        self.clearPopulationChanged()
+
+        if self.isDirty:
+            self.initialize()
+
+        if self.stepCounter % 10000 == 0:
+            self.check()
+
+        self.stepCounter += 1
+
+        self.bdsim.step()
+
+        print self.stepCounter, ': t = ', self.bdsim.t, 'dt = ', self.bdsim.dt, 
+        'reactions', self.reactionEvents, 'rejected moves', self.rejectedMoves
+        print ''
+
+
+    def populationChanged( self ):
+
+        return self.isPopulationChanged
+
+    def clearPopulationChanged( self ):
+
+        self.isPopulationChanged = False
+
+    def setPopulationChanged( self ):
+
+        self.isPopulationChanged = True
+        
+
+
+
+    def check( self ):
         pass
