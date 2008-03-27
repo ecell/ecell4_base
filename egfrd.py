@@ -1565,22 +1565,21 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # this has to be done before the following excludeVolume()
         self.shellMatrix.remove( pair )
 
+        assert self.distance( newpos1, newpos2 ) >= pair.sigma
+
+        self.moveParticle( particle1, newpos1 )
+        self.moveParticle( particle2, newpos2 )
+
         if pair.squeezed:
             # make sure displaced particles don't intrude squeezer shells.
             self.excludeSingleVolume( newpos1, particleRadius1 )
             self.excludeSingleVolume( newpos2, particleRadius2 )
 
 
-        #pair.squeezed = False
-
-        assert self.distance( newpos1, newpos2 ) >= pair.sigma
-
         assert self.checkOverlap( newpos1, particleRadius1,
                                   ignore = [ particle1, particle2 ] )
         assert self.checkOverlap( newpos2, particleRadius2,
                                   ignore = [ particle1, particle2 ] )
-        self.moveParticle( particle1, newpos1 )
-        self.moveParticle( particle2, newpos2 )
 
         single1, single2 = pair.single1, pair.single2
 
