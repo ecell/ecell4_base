@@ -144,7 +144,10 @@ class Single( object ):
     
     def getMobilityRadius( self ):
 
+        #return self.radius - ( self.getMinRadius() * 2 )
         return self.radius - self.getMinRadius()
+
+
 
 
     def drawDisplacement( self, r ):

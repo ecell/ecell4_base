@@ -357,26 +357,40 @@ class GFRDSimulatorBase( object ):
     def addSpecies( self, species ):
         self.speciesList[ species.id ] = species
 
-    def addReactionType( self, r ):
+    def addReactionType( self, rt ):
 
-        numReactants = len( r.reactants )
+        numReactants = len( rt.reactants )
 
         if numReactants == 1:
-            species1 = r.reactants[0]
+            species1 = rt.reactants[0]
+
+            if len( rt.products ) == 1:
+                if species1.radius * 2 < rt.products[0].radius:
+                    raise RuntimeError,\
+                        'radius of product must be smaller ' \
+                        + 'than radius of reactant.'
+            elif len( rt.products ) == 2:
+                if species1.radius < rt.products[0].radius or\
+                        species1.radius < rt.products[1].radius:
+                    raise RuntimeError,\
+                        'radii of both products must be smaller than ' \
+                        + 'reactant.radius.'
+
             if self.reactionTypeMap1.has_key( species1 ):
-                self.reactionTypeMap1[species1].append( r )
+                self.reactionTypeMap1[species1].append( rt )
             else:
-                self.reactionTypeMap1[species1] = [ r, ]
+                self.reactionTypeMap1[species1] = [ rt, ]
 
         elif numReactants == 2:
-            species1 = r.reactants[0]
-            species2 = r.reactants[1]
-            self.reactionTypeMap2[ (species1,species2) ] = r
+            species1 = rt.reactants[0]
+            species2 = rt.reactants[1]
+            self.reactionTypeMap2[ (species1,species2) ] = rt
             if species1 != species2:
-                self.reactionTypeMap2[ (species2,species1) ] = r
+                self.reactionTypeMap2[ (species2,species1) ] = rt
 
         else:
             raise RuntimeError, 'Invalid ReactionType.'
+
 
     def setAllRepulsive( self ):
         for species1 in self.speciesList.values():
