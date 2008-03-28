@@ -350,6 +350,9 @@ class IndependentBDSimulatorCore( BDSimulatorCoreBase ):
     def initialize( self ):
         BDSimulatorCoreBase.initialize( self )
 
+    def addParticle( self, particle ):
+        self._addParticle( particle )
+
     def _addParticle( self, particle ):
         self.addToParticleList( particle )
         self.particleMatrix.add( ( particle[0], particle[1] ),

@@ -1583,12 +1583,39 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pair.dt = -numpy.inf
         return pair.dt
 
+
     def fireMulti( self, multi ):
         print 'fire', multi
 
-        bdsim = BDSimulator()
-        #for single in multi.singleList:
-        #    bdsim.
+        bdsim = IndependentBDSimulatorCore( self )
+
+        for single in multi.singleList:
+            bdsim.addParticle( single.particle )
+
+        shellPos = numpy.array( [ s.particle.pos for s in multi.singleList ] )
+        shellRadii = numpy.array( [ s.radius for s in multi.singleList ] )
+
+        while 1:
+
+            bdsim.step()
+
+            if bdsim.populationChanged:
+                break
+
+            for p in bdsim.particleList:
+                dists = self.distanceArray( p.pos, shellPos ) - shellRadii
+                if dists.max() > 0.0:
+                    print 'multi particle ', p, ' escaped.'
+                    break
+
+        self.t += bdsim.t
+
+        for single in multi.singleList:
+            single.initialize( self.t )
+            self.addSingleEvent( single )
+
+        self.multiList = []
+        
 
 
 
