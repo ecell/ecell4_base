@@ -48,7 +48,8 @@ N_K = int( sys.argv[3] )
 N_P = int( sys.argv[4] )
 V_str = sys.argv[5]
 mode = sys.argv[6]
-T_str = sys.argv[7]
+seq = sys.argv[7]
+T_str = sys.argv[8]
 
 Keq = float( Keq_str )
 koff_ratio = float( koff_ratio_str )
