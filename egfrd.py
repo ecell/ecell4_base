@@ -866,7 +866,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.dt = nextTime - self.t
 
 
-        # assert if not too many successive dt=0 steps occur.
+        # assert not too many successive dt=0 steps occur.
         if self.dt == 0:
             self.zeroSteps += 1
         else:
