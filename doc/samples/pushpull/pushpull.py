@@ -199,7 +199,7 @@ model = 'pushpull'
 
 # 'pushpull-Keq-koff_ratio-N_K-N_P-V-mode.dat'
 l = Logger( s, 
-            logname = model + '_' + '_'.join( sys.argv[1:7] ),
+            logname = model + '_' + '_'.join( sys.argv[1:8] ),
             comment = '@ model=\'%s\'; Keq=%s; koff_ratio=%s\n' %
             ( model, Keq_str, koff_ratio_str ) +
             '#@ V=%s; N_K=%s; N_P=%s; mode=\'%s\'; T=%s\n' % 
