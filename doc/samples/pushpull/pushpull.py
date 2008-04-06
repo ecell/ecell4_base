@@ -136,7 +136,7 @@ else:
 kd1 = k_d( koff, kon, Dtot, sigma )
 kd2 = k_d( koff2, kon, Dtot, sigma )
 
-print 'ka', ka, 'kD', kD, 'kd', kd
+print 'ka', ka, 'kD', kD, 'kd1', kd1, 'kd2', kd2
 print 'kon m^3/s', kon, '1/M s', kon * N_A * 1e3
 print 'koff1 1/s ', koff1
 print 'kcat1 1/s ', kcat1
