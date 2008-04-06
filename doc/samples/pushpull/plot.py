@@ -104,7 +104,7 @@ for N_K in range( 40 ):
     std_err = data.std()/math.sqrt(len(data))
     print mean, std_err
 
-    errorbar( float(N_K)/N_P, mean, yerr=std_err )
+    errorbar( float(N_K)/N_P, mean, yerr=std_err, fmt='+' )
 
 plot_theory( float( Keq_str ) )
 
