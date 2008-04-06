@@ -124,20 +124,22 @@ koff = kcatkoff * koff_ratio
 kcat = kcatkoff - koff
 
 if mode == 'single':
-    kcat2 = kcat * float( N_K ) / float( N_P )
-    koff2 = kcatkoff - kcat2
-else:
+    kcat1 = kcat * float( N_K ) / float( N_P )
+    koff1 = kcatkoff - kcat2
     kcat2 = kcat
     koff2 = koff
+else:
+    kcat1 = kcat2 = kcat
+    koff1 = koff2 = koff
 
 
-kd = k_d( koff, kon, Dtot, sigma )
+kd1 = k_d( koff, kon, Dtot, sigma )
 kd2 = k_d( koff2, kon, Dtot, sigma )
 
 print 'ka', ka, 'kD', kD, 'kd', kd
 print 'kon m^3/s', kon, '1/M s', kon * N_A * 1e3
-print 'koff 1/s ', koff
-print 'kcat 1/s ', kcat
+print 'koff1 1/s ', koff1
+print 'kcat1 1/s ', kcat1
 print 'koff2 1/s ', koff2
 print 'kcat2 1/s ', kcat2
 
@@ -182,9 +184,9 @@ s.reset()
 
 r1 = BindingReactionType( S, K, KS, ka )
 s.addReactionType( r1 )
-r2 = UnbindingReactionType( KS, S, K, kd )
+r2 = UnbindingReactionType( KS, S, K, kd1 )
 s.addReactionType( r2 )
-r3 = UnbindingReactionType( KS, K, Sp, kcat )
+r3 = UnbindingReactionType( KS, K, Sp, kcat1 )
 s.addReactionType( r3 )
 r4 = BindingReactionType( Sp, P, PSp, ka )
 s.addReactionType( r4 )
@@ -204,8 +206,8 @@ l = Logger( s,
             ( model, Keq_str, koff_ratio_str ) +
             '#@ V=%s; N_K=%s; N_P=%s; mode=\'%s\'; T=%s\n' % 
             ( V_str, N_K, N_P, mode, T_str ) +
-            '#@ kon=%g; koff=%g; kcat=%g; S_tot=%s' %
-            ( kon, koff, kcat, S_tot ) )
+            '#@ kon=%g; koff1=%g; kcat1=%g; koff2=%g; kcat2=%g; S_tot=%s' %
+            ( kon, koff1, kcat1, koff2, kcat2, S_tot ) )
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
 #l.setInterval( 1e-3 )
 l.log()

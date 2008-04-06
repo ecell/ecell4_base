@@ -68,12 +68,12 @@ koff_ratio_str = '0.1'
 #koff_ratio_str = '0'
 N_P = 10
 V = '1e-14'
-T = '80'
+T = '400'
 #mode = 'normal'
 #mode = 'localized'
 mode = 'single'
 
-skip = float(T) *0.1
+skip = float(T) *0.9
 
 dir = sys.argv[1]
 outdir = sys.argv[2]
@@ -84,7 +84,7 @@ outdir = sys.argv[2]
 for N_K in range( 40 ):
     globpattern = \
         string.join( ( model, Keq_str, koff_ratio_str, str(N_K), 
-                       str(N_P), V, mode, T, '*' ), '_' )
+                       str(N_P), V, mode, '*' ), '_' )
     print globpattern
     filelist = glob.glob( dir + os.sep + globpattern )
     if not filelist:
@@ -113,6 +113,6 @@ figtitle = string.join( ( model, Keq_str, koff_ratio_str, 'ALL',
                         '_' )
 title( figtitle )
 
-#show()
-savefig( outdir + '/' + figtitle + '.png', dpi=80 )
+show()
+#savefig( outdir + '/' + figtitle + '.png', dpi=80 )
 
