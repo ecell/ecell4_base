@@ -125,7 +125,7 @@ kcat = kcatkoff - koff
 
 if mode == 'single':
     kcat1 = kcat * float( N_K ) / float( N_P )
-    koff1 = kcatkoff - kcat2
+    koff1 = kcatkoff - kcat1
     kcat2 = kcat
     koff2 = koff
 else:
