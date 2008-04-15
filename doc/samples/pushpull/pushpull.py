@@ -56,6 +56,7 @@ koff_ratio = float( koff_ratio_str )
 V = float( V_str )
 T = float( T_str )
 
+#radius = 2.5e-9
 radius = 5e-9
 sigma = radius * 2
 D1 = 1.0e-12
@@ -100,6 +101,9 @@ PSp = Species( 'PSp', D2, radius )
 s.addSpecies( PSp )
 
 fracS = fraction_S( N_K, N_P, Keq )
+
+# give some bias
+fracS -= 0.1
 
 S_tot = 300
 S_conc = S_tot / V * 1e3   # in #/m^3
