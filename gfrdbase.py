@@ -322,11 +322,14 @@ class GFRDSimulatorBase( object ):
 
     def setWorldSize( self, size ):
 
+        if isinstance( size, list ) or isinstance( size, tuple ):
+            size = numpy.array( size )
+
         self.worldSize = size
 
         self.particleMatrix.setWorldSize( size )
 
-        if self.worldSize == INF:
+        if isinstance( size, float ) and size == INF:
             self._distanceSq = distanceSq_Simple
             self._distanceSqArray = distanceSqArray_Simple
         else:
@@ -340,8 +343,8 @@ class GFRDSimulatorBase( object ):
         self.particleMatrix.setMatrixSize( size )
 
     def applyBoundary( self, pos ):
-        if self.worldSize != INF:
-            pos %= self.worldSize
+
+        pos %= self.worldSize
 
         return pos
 

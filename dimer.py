@@ -11,9 +11,9 @@ s = EGFRDSimulator()
 #s = BDSimulator()
 
 #L = 1e-6
-L = 8e-8
+L = 5e-8
 #L = 2e-7
-s.setWorldSize( L )
+s.setWorldSize( [L,2*L,2*L] )
 s.setMatrixSize( 10 )
 
 box1 = CuboidalSurface( [0,0,0], [L,L,L] )

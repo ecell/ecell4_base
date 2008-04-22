@@ -961,6 +961,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.reset()
 
     def setWorldSize( self, size ):
+
+        if isinstance( size, list ) or isinstance( size, tuple ):
+            size = numpy.array( size )
+
         GFRDSimulatorBase.setWorldSize( self, size )
         self.shellMatrix.setWorldSize( size )
 
