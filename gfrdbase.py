@@ -34,12 +34,17 @@ def p_free( r, t, D ):
 
 def drawR_free( t, D ):
     ro = math.sqrt( 2.0 * D * t )
-
     displacement = numpy.random.normal( 0.0, ro, 3 )
 
     return displacement
 
 class NoSpace( Exception ):
+    pass
+
+class InvalidValue( Exception ):
+    pass
+
+class AlreadyIn( Exception ):
     pass
 
 
@@ -70,6 +75,19 @@ class ReactionType( object ):
         self.reactants = reactants
         self.products = products
         self.k = k
+        self.check()
+
+
+    def check( self ):
+        if len( self.reactants ) == 1 and len( self.products ) <= 2:
+            totalProductRadii = 0.0
+            for product in self.products:
+                totalProductRadii += product.radius
+            if totalProductRadii > self.reactants[0].radius * 2:
+                raise InvalidValue, \
+                    'total product radii must be smaller than ' \
+                    + 'reactant radius * 2'
+        
 
     def order( self ):
         return len( self.reactants )
@@ -137,7 +155,7 @@ class Particle( object ):
             raise ValueError, 'give either serial or index.'
 
     def __str__( self ):
-        return str( ( self.species.id, self.serial ) )
+        return '( ' + self.species.id + ', ' + str( self.serial ) + ' )'
 
     def __cmp__( self, other ):
         if self.species == other.species:
@@ -276,8 +294,8 @@ class GFRDSimulatorBase( object ):
         self.rejectedMoves = 0
         self.reactionEvents = 0
 
-        self.particleMatrix = ObjectMatrix()
-        #self.particleMatrix = SimpleObjectMatrix()
+        #self.particleMatrix = ObjectMatrix()
+        self.particleMatrix = SimpleObjectMatrix()
 
         self.setWorldSize( INF )
 
@@ -464,7 +482,7 @@ class GFRDSimulatorBase( object ):
         c, d = self.getClosestParticle( pos, ignore )
         if d < radius:
             print 'reject: closest = ', c, ', distance = ', d,\
-                ', which must be at least ', radius
+                ', which must be at least '
             return False
 
         return True
@@ -551,8 +569,7 @@ class GFRDSimulatorBase( object ):
     def getClosestParticle( self, pos, ignore=[] ):
 
         neighbors, distances =\
-            self.getNeighborParticles( pos, 
-                                       len( ignore ) + 1,
+            self.getNeighborParticles( pos, len( ignore ) + 1,
                                        dummy = ( None, -1 ) )
 
         for i in range( len( neighbors ) ): 
@@ -563,8 +580,8 @@ class GFRDSimulatorBase( object ):
                 return closest, distance
 
         # default case: none left.
-        return None, numpy.inf
-        #return DummyParticle(), numpy.inf
+        return None, INF
+        #return DummyParticle(), INF
 
 
     def getClosestParticle2( self, pos, ignore=[] ):
@@ -580,7 +597,7 @@ class GFRDSimulatorBase( object ):
                 return closest, distance
 
         # default case: none left.
-        return None, numpy.inf
+        return None, INF
 
     def checkSurfaces( self, speciesIndex1, particleIndex ):
 

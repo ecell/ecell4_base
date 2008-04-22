@@ -75,8 +75,8 @@ class FreeFunctionsTestCase( unittest.TestCase ):
 
         ibd = mod.I_bd( sigma, t, D )
         print ibd
-        result = scipy.integrate.quad( mod.g_bd, sigma, sigma + 
-                                       6 * math.sqrt( 6 * D * t ),
+        result = scipy.integrate.quad( mod.g_bd, sigma, 
+                                       sigma + 6 * math.sqrt( 6 * D * t ),
                                        args=( sigma, t, D ) )
         igbd = result[0]
         print igbd

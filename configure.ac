@@ -13,13 +13,13 @@ AH_TEMPLATE(HAVE_INLINE)
 dnl 
 dnl
 AC_CANONICAL_TARGET([])
-AM_INIT_AUTOMAKE([pdpp],[0.0])
+AM_INIT_AUTOMAKE([pdpp],[0.1])
 AC_PROG_MAKE_SET
 AC_LANG_CPLUSPLUS
 dnl
 dnl checks for programs
 dnl
-AM_PATH_PYTHON(2.4)
+AM_PATH_PYTHON(2.3)
 AC_CHECK_PROGS(PYCHECKER, [pychecker], [no])
 if test "$PYCHECKER" == no ; then
    AC_MSG_WARN([pychecker not found.])
@@ -31,7 +31,8 @@ dnl
 dnl checks for libraries
 dnl
 dnl
-AX_PATH_GSL(1.0,,AC_MSG_ERROR([could not find required version of GSL.]))
+dnl GSL 1.11 is actually better
+AX_PATH_GSL(1.10,,AC_MSG_ERROR([could not find required version of GSL.]))
 dnl
 AC_CHECK_LIB(m,exp,,AC_MSG_ERROR([could not find libm.]))
 dnl

@@ -7,7 +7,7 @@ Prerequisites
 
 1. autotools
    (autoconf, automake, libtool)
-2. GNU Scientific Library (GSL).
+2. GNU Scientific Library (GSL) 1.11 or later.
 3. Boost C++ Library 1.34 or later.
 4. Python 2.4 or later.
 5. Scipy 0.5 or later, Numpy 1.0 or later.
@@ -30,27 +30,10 @@ Tested on Fedora 7 and Ubuntu 7.10.
 A note on GSL version
 ++++++++++++++++++++++++++++++
 
-GSL version 1.10 has at least two bugs that can cause an abnormal
-program exit when a Bessel function is evaluated with specific argument
+GSL version 1.10 and earlier has at least two bugs that can cause abnormal
+program exits when a Bessel function is evaluated with specific argument
 values.  These bugs can seriously hit stability of this software.
-
-As of January 2008, one of these two bugs is fixed in the official CVS
-repository of the GSL project.  
-http://lists.gnu.org/archive/html/bug-gsl/2007-10/msg00010.html
-
-The other is not addressed yet by GSL developers, but a report has
-been made as below.
-http://lists.gnu.org/archive/html/bug-gsl/2007-12/msg00000.html
-
-A temporary remedy to this problem is to modify the code as following;
-
-1. Open the GSL source file specfunc/bessel.c
-2. Find the function named gsl_sf_bessel_J_CF1() around line 485.
-3. Find the following line:
-   const int maxiter = 10000;
-4. Increase the number.  For example,
-   const int maxiter = 100000;
-5. Rebuild and install GSL.
+For this reason, use of GSL version 1.11 or later is recommended.
 
 
 Building this package
@@ -71,8 +54,6 @@ to remake the entire build mechanism.
 
 Testing
 -------------------
-
-Running
 
 % make check
 

@@ -15,8 +15,10 @@ from surface import *
 from ObjectMatrix import *
 
 from gfrdbase import *
+from bd import *
 
 
+SAFETY = 1.0 + 1e-5
 
 
 class Delegate( object ):
@@ -28,6 +30,181 @@ class Delegate( object ):
 
     def __call__( self, arg ):
         return self.method( self.obj, arg )
+
+
+class Shell( object ):
+    def __init__( self, pos, radius ):
+        self.pos = pos.copy()
+        self.radius = radius
+
+
+'''
+Used internally by Multi.
+'''
+
+class MultiBDCore( BDSimulatorCoreBase ):
+    
+    def __init__( self, main, multi ):
+
+        BDSimulatorCoreBase.__init__( self, main )
+
+        self.multi = multi
+
+        self.particleMatrix = SimpleObjectMatrix()
+        self.particleMatrix.setWorldSize( self.main.worldSize )
+
+        self.shellMatrix = SimpleObjectMatrix()
+        self.shellMatrix.setWorldSize( self.main.worldSize )
+
+        self.escaped = False
+
+        #self.checkOverlap is implemented below.
+        #self.getNeighborParticles() is implemented below.
+        #self.getClosestParticle() is implemented below.
+
+        
+    def updateParticle( self, particle, pos ):
+        self.particleMatrix.update( ( particle.species, particle.serial ), pos,
+                                    particle.radius )
+
+    def initialize( self ):
+        BDSimulatorCoreBase.initialize( self )
+
+        self.updateShellMatrix()
+
+
+    def step( self ):
+        self.escaped = False
+        
+        BDSimulatorCoreBase.step( self )
+
+
+    def updateShellMatrix( self ):
+
+        self.shellMatrix.clear()
+        for shell in self.multi.shellList:
+            self.shellMatrix.add( shell, shell.pos, shell.radius )
+
+    def _addParticle( self, particle ):
+        self.addToParticleList( particle )
+        self.particleMatrix.add( ( particle.species, particle.serial ),
+                                 particle.pos, particle.radius )
+
+    def addParticle( self, particle ):
+        self._addParticle( particle )
+
+    def removeParticle( self, particle ):
+        self.main.removeParticle( particle )
+        self.removeFromParticleList( particle )
+        self.particleMatrix.remove( ( particle.species, particle.serial ) )
+
+
+    def createParticle( self, species, pos ):
+
+        if not self.withinShell( pos, species.radius ):
+            self.escaped = True
+            self.clearOuterVolume( pos, species.radius )
+        else:
+            if not self.checkOverlap(pos, species.radius, ignore ):
+                raise NoSpace()
+            
+        particle = self.main.createParticle( species, pos )
+        self._addParticle( particle )
+
+        return particle
+
+
+    def moveParticle( self, particle, pos ):
+
+        if not self.withinShell( pos, particle.radius ):
+            self.escaped = True
+            raise NoSpace  #FIXME: ok?
+            #self.clearVolume( pos, particle.radius, ignore=[particle,] )
+
+        self.main.moveParticle( particle, pos )
+        self.updateParticle( particle, pos )
+
+
+
+        
+    def clearVolume( self, pos, radius, ignore=[] ):
+
+        if not self.checkOverlap(pos, radius, ignore ):
+            raise NoSpace()
+
+        if not self.withinShell( pos, radius ):
+            self.clearOuterVolume( pos, radius, ignore )
+
+    def clearOuterVolume( self, pos, radius, ignore=[] ):
+        #print 'clear out', [ str(i) for i in ignore ]
+        self.main.clearVolume( pos, radius, ignore=[self.multi,] )
+        if not self.main.checkOverlap( pos, radius, ignore ):
+            raise NoSpace()
+
+ 
+    def withinShell( self, pos, radius ):
+        n, _ = self.shellMatrix.getNeighborsWithinRadius( pos, - radius )
+
+        if n:
+            return True
+        else:
+            return False
+
+        
+    def checkOverlap( self, pos, radius, ignore=[] ):
+        
+        n, _ = self.particleMatrix.getNeighborsWithinRadius( pos, radius )
+
+        if n:
+            return False
+        else:
+            return True
+
+
+    def getNeighborParticles( self, pos, n=None, dummy=None ):
+
+        n, d = self.particleMatrix.getNeighbors( pos, n, dummy )
+        neighbors = [ Particle( i[0], i[1] ) for i in n ]
+        return neighbors, d
+
+
+    def getClosestParticle( self, pos, ignore=[] ):
+
+        neighbors, distances =\
+            self.getNeighborParticles( pos, 
+                                       len( ignore ) + 1,
+                                       dummy = ( None, -1 ) )
+
+        for i, neighbor in enumerate( neighbors ):
+            if neighbor not in ignore:
+                return neighbor, distances[i]
+
+        # default case: none left.
+        return None, INF
+        #return DummyParticle(), INF
+
+
+    def check( self ):
+
+        BDSimulatorCoreBase.check( self )
+
+        # shellMatrix consistency
+        for shell in self.multi.shellList:
+            pos, radius = self.shellMatrix.get( shell )
+            assert not ( pos - shell.pos ).any()
+            assert not ( radius - shell.radius ).any()
+
+
+        # shells are contiguous
+        for shell in self.multi.shellList:
+            n, d = self.shellMatrix.getNeighbors( shell.pos )
+            assert d[1] - shell.radius < 0.0, 'shells are not contiguous.'
+
+        # all particles within the shell.
+                
+        for p in self.particleList:
+            assert self.withinShell( p.pos, p.species.radius ),\
+                'not all particles within the shell.'
 
 
 
@@ -46,7 +223,8 @@ class Single( object ):
         self.dt = 0.0
         self.eventType = None
 
-        self.setRadius( self.getMinRadius() )
+        self.shellList = [ Shell( self.particle.pos, self.getMinRadius() ), ]
+
         self.eventID = None
 
         self.gf = FirstPassageGreensFunction( particle.species.D )
@@ -60,18 +238,20 @@ class Single( object ):
 
     def getPos( self ):
 
-        return self.particle.pos
+        return self.shellList[0].pos
 
-    pos = property( getPos )
+    def setPos( self, pos ):
+        self.shellList[0].pos = pos
+        self.particle.pos = pos
+
+    pos = property( getPos, setPos )
 
 
     def setRadius( self, radius ):
 
-        if radius < self.getMinRadius():
-            raise RuntimeError, 'Single radius < Particle radius; %g %g %g' % \
-                  ( size, self.getMinRadius(), radius - self.getMinRadius() )
+        assert radius >= self.getMinRadius()
 
-        self.radius = radius
+        self.shellList[0].radius = radius
 
 
     '''
@@ -83,12 +263,15 @@ class Single( object ):
 
     def getRadius( self ):
 
-        return self.radius
+        return self.shellList[0].radius
+
+    radius = property( getRadius, setRadius )
 
 
     def getMinRadius( self ):
 
         return self.particle.species.radius
+
 
 
     '''
@@ -123,8 +306,7 @@ class Single( object ):
         shellSize = min( sqrtD1 / ( sqrtD1 + math.sqrt( D2 ) )
                          * ( distance - minRadius12 ) + minRadius1,
                          shellDistance )
-
-        shellSize *= ( 1.0 - 1e-10 ) # safety
+        shellSize /= SAFETY
         shellSize = max( shellSize, minRadius1 ) # not smaller than the radius
 
         return shellSize
@@ -193,7 +375,7 @@ class Single( object ):
 
     def determineNextEvent( self ):
         if self.getD() == 0:
-            firstPassageTime = numpy.inf
+            firstPassageTime = INF
         else:
             firstPassageTime = self.drawEscapeTime()
             
@@ -210,7 +392,7 @@ class Single( object ):
     def drawReactionTime( self ):
         
         if self.k_tot == 0:
-            return numpy.inf
+            return INF
 
         rnd = numpy.random.uniform()
         dt = ( 1.0 / self.k_tot ) * math.log( 1.0 / rnd )
@@ -248,6 +430,9 @@ class Single( object ):
 
         return self.reactiontypes[i]
 
+
+    def check( self ):
+        pass
 
     def __str__( self ):
         return 'Single' + str( self.particle )
@@ -309,13 +494,12 @@ class Pair( object ):
 
         self.eventID = None
 
-        self.radius = self.getMinRadius()
         self.lastTime = 0.0
         self.dt = 0.0
         self.eventType = None
 
+        self.shellList = [ Shell( self.getCoM(), self.getMinRadius() ), ]
 
-        self.squeezed = False
 
 
     #def __del__( self ):
@@ -329,11 +513,14 @@ class Pair( object ):
         self.dt = 0
         self.eventType = None
 
+    def setPos( self, pos ):
+        self.shellList[0].pos = pos
+
     def getPos( self ):
 
-        return self.getCoM()
+        return self.shellList[0].pos
 
-    pos = property( getPos )
+    pos = property( getPos, setPos )
 
     def getD( self ):
 
@@ -342,12 +529,14 @@ class Pair( object ):
     def setRadius( self, radius ):
 
         assert radius >= self.getMinRadius()
-        self.radius = radius
+        self.shellList[0].radius = radius
 
 
     def getRadius( self ):
 
-        return self.radius
+        return self.shellList[0].radius
+
+    radius = property( getRadius, setRadius )
 
 
     '''
@@ -464,8 +653,8 @@ class Pair( object ):
 
         species1 = particle1.species
         species2 = particle2.species
-        particleRadius1 = species1.radius
-        particleRadius2 = species2.radius
+        radius1 = species1.radius
+        radius2 = species2.radius
 
         pos1 = particle1.pos
         pos2 = particle2.pos
@@ -496,25 +685,25 @@ class Pair( object ):
         qrrtD1D25 = ( D1    * D2**5 ) ** 0.25
         qrrtD15D2 = ( D1**5 * D2 ) ** 0.25
 
-        if qrrtD15D2 * r0 + ( qrrtD15D2 + qrrtD1D25 ) * particleRadius1 \
-                + D1 * ( sqrtD_tot * ( shellSize - particleRadius2 ) 
-                         - sqrtD_geom * particleRadius2 )\
+        if qrrtD15D2 * r0 + ( qrrtD15D2 + qrrtD1D25 ) * radius1 \
+                + D1 * ( sqrtD_tot * ( shellSize - radius2 ) 
+                         - sqrtD_geom * radius2 )\
                 - D2 * ( sqrtD_geom * r0 + sqrtD_tot * 
-                         ( shellSize - particleRadius1 ) )\
-                         - qrrtD1D25 * particleRadius2 >= 0:
+                         ( shellSize - radius1 ) )\
+                         - qrrtD1D25 * radius2 >= 0:
 
             den1 = qrrtD1D25 + D1 * ( sqrtD_geom + sqrtD_tot )
 
-            a_R_1 = sqrtD_geom * ( D2 * ( shellSize - particleRadius1) + 
-                                   D1 * ( shellSize - r0 - particleRadius1 ) ) / den1
+            a_R_1 = sqrtD_geom * ( D2 * ( shellSize - radius1) + 
+                                   D1 * ( shellSize - r0 - radius1 ) ) / den1
 
             a_r_1 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
-                                   ( shellSize - particleRadius1 ) ) / den1
+                                   ( shellSize - radius1 ) ) / den1
 
-            assert a_R_1 + a_r_1 * D1_factor + particleRadius1 >= \
-                a_R_1 + a_r_1 * D2_factor + particleRadius2
+            assert a_R_1 + a_r_1 * D1_factor + radius1 >= \
+                a_R_1 + a_r_1 * D2_factor + radius2
 
-            assert abs( a_R_1 + a_r_1 * D1_factor + particleRadius1 - shellSize ) \
+            assert abs( a_R_1 + a_r_1 * D1_factor + radius1 - shellSize ) \
                 < 1e-12 * shellSize
 
             self.a_r = a_r_1
@@ -522,16 +711,16 @@ class Pair( object ):
         else:
             den2 = qrrtD15D2 + D2 * ( sqrtD_geom + sqrtD_tot )
 
-            a_R_2 = sqrtD_geom * ( D1 * ( shellSize - particleRadius2 ) + 
-                                   D2 * ( shellSize - r0 - particleRadius2 ) ) / den2
+            a_R_2 = sqrtD_geom * ( D1 * ( shellSize - radius2 ) + 
+                                   D2 * ( shellSize - r0 - radius2 ) ) / den2
 
             a_r_2 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
-                                   ( shellSize - particleRadius2 ) ) / den2
+                                   ( shellSize - radius2 ) ) / den2
 
-            assert a_R_2 + a_r_2 * D2_factor + particleRadius2 >= \
-                a_R_2 + a_r_2 * D1_factor + particleRadius1
+            assert a_R_2 + a_r_2 * D2_factor + radius2 >= \
+                a_R_2 + a_r_2 * D1_factor + radius1
 
-            assert abs( a_R_2 + a_r_2 * D2_factor + particleRadius2 - shellSize ) \
+            assert abs( a_R_2 + a_r_2 * D2_factor + radius2 - shellSize ) \
                 < 1e-12 * shellSize
 
             self.a_r = a_r_2
@@ -572,7 +761,7 @@ class Pair( object ):
 
         assert self.dt >= 0
         print 'dt ', self.dt, 't_R', self.t_R, 't_r', self.t_r
-        print self.pgf.dump()
+        #print self.pgf.dump()
         if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
             self.eventType = self.pgf.drawEventType( rnd[2],
                                                      r0, self.t_r )
@@ -657,53 +846,68 @@ class Pair( object ):
             raise RuntimeError, 'New particle(s) out of protective sphere.'
 
 
+    def check( self ):
+        pass
+
     def __str__( self ):
         buf = 'Pair( ' + str(self.single1.particle) +\
               ', ' + str(self.single2.particle) + ' )'
-        if self.squeezed:
-            buf += '; squeezed.'
 
         return buf
 
 
 class Multi( object ):
-    def __init__( self ):
-        self.multiplicity = 0
-        self.singleList = []
 
-    def getMinRadius( self ):
-        assert False  #FIXME:
-        #return 0.0
+    def __init__( self, main ):
 
-    def getD( self ):
-        return 0.0
+        self.shellList = []
+        self.eventID = None
 
-    def getPos( self ):
-        return NOWHERE
+        self.sim = MultiBDCore( main, self )
 
-    pos = property( getPos )
 
-    def add( self, single ):
-        assert isinstance( single, Single )
-        self.singleList.append( single )
+    def initialize( self, t ):
 
-    def remove( self, single ):
-        self.singleList.remove( single )
+        self.lastTime = t
+        self.startTime = t
 
-    def run( self, T ):
-        pass
+        self.sim.initialize() # ??
+
+
+    def getDt( self ):
+        return self.sim.dt
+
+    dt = property( getDt )
+
+
+    def getMultiplicity( self ):
+        return len( self.sim.particleList )
+
+    multiplicity = property( getMultiplicity )
+
+    def addParticle( self, particle ):
+        self.sim.addParticle( particle )
+
+    def addShell( self, pos, radius ):
+        self.shellList.append( Shell( pos, radius ) )
+
 
     def check( self ):
 
-        for s in self.singleList:
-            assert not s.isReset()
-            #s.radius
-        
+        self.sim.check()
+
 
     def __str__( self ):
+
+        if len( self.sim.particleList ) == 0:
+            return 'Multi()'
+
         buf = 'Multi( '
-        for s in self.singleList:
-            buf += str( s.particle )
+        buf += str( self.sim.particleList[0] )
+        for particle in self.sim.particleList[1:]:
+            buf += ', ' + str( particle )
+        buf += ' )'
+
         return buf
 
 
@@ -724,11 +928,13 @@ class DummySingle( object ):
 
     pos = property( getPos )
 
-    
+
 
 
 class EGFRDSimulator( GFRDSimulatorBase ):
     
+    SHELL_FACTOR = 1.05
+
     def __init__( self ):
 
         #self.shellMatrix = ObjectMatrix()
@@ -758,7 +964,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return self.shellMatrix.cellSize
 
     def getNextTime( self ):
-        return self.scheduler.getNextTime()
+        return self.scheduler.getTopTime()
 
     def setMaxShellSize( self, maxShellSize ):
 
@@ -778,7 +984,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.reactionEvents = 0
         self.lastEvent = None
         self.populationChanged = False
-        self.squeezed = 0
 
         self.isDirty = True
         #self.initialize()
@@ -797,6 +1002,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             for i in range( species.pool.size ):
                 particle = Particle( species, index=i )
                 single = self.createSingle( particle )
+                self.addToShellMatrix( single )
                 self.addSingleEvent( single )
 
         self.isDirty = False
@@ -816,28 +1022,22 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         
         scheduler = self.scheduler
         
-        pairList = []
+        nonSingleList = []
 
         # first burst all Singles.
         for i in range( scheduler.getSize() ):
             obj = scheduler.getEventByIndex(i).getArg()
-            if isinstance( obj, Pair ):
-                pairList.append( obj )
+            if isinstance( obj, Pair ) or isinstance( obj, Multi ):
+                nonSingleList.append( obj )
             elif isinstance( obj, Single ):
-                try:
-                    self.burstSingle( obj )
-                except NoSpace:
-                    self.rejectedMoves += 1
+                self.burstSingle( obj )
             else:
-                raise NotImplementedError
+                assert False, 'do not reach here'
 
 
         # then burst all Pairs.
-        for obj in pairList:
-            single1, single2 = self.burstPair( obj )
-            self.removeEvent( obj )
-            self.addSingleEvent( single1 )
-            self.addSingleEvent( single2 )
+        for obj in nonSingleList:
+            self.burstObj( obj )
 
         self.dt = 0.0
 
@@ -849,8 +1049,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
-        if self.stepCounter % 100 == 0:
-            self.check()
+        #if self.stepCounter % 100 == 0:
+        #self.check()
 
         self.stepCounter += 1
 
@@ -866,7 +1066,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.dt = nextTime - self.t
 
 
-        # assert not too many successive dt=0 steps occur.
+        # assert if not too many successive dt=0 steps occur.
         if self.dt == 0:
             self.zeroSteps += 1
         else:
@@ -878,7 +1078,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         assert self.scheduler.getSize() != 0
 
         print 'next dt = ', self.dt, 'reactions', self.reactionEvents,\
-              'rejected moves', self.rejectedMoves, 'squeezed', self.squeezed
+              'rejected moves', self.rejectedMoves
         assert self.scheduler.check()
         print ''
 
@@ -889,8 +1089,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         rt = self.getReactionType1( particle.species )
         single = Single( particle, rt )
         single.initialize( self.t )
-
-        self.shellMatrix.add( single, single.pos, single.radius )
 
         return single
 
@@ -909,10 +1107,38 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         pair = Pair( single1, single2, rt, self.distance, self.getWorldSize() )
         pair.initialize( self.t )
 
-        self.shellMatrix.remove( single1 )
-        self.shellMatrix.remove( single2 )
-
         return pair
+
+    def createMulti( self ):
+
+        multi = Multi( self )
+
+        #multi.initialize( self.t )
+
+        return multi
+
+
+    def moveSingle( self, single, pos ):
+        single.pos = pos
+        self.updateOnParticleMatrix( single.particle )
+
+    def movePair( self, pair, pos ):
+        pair.pos = pos
+        self.updateOnParticleMatrix( single.particle )
+
+
+    def addToShellMatrix( self, obj ):
+        for i, shell in enumerate( obj.shellList ):
+            self.shellMatrix.add( ( obj, i ), shell.pos, shell.radius )
+
+    def removeFromShellMatrix( self, obj ):
+        for i in range( len( obj.shellList ) ):
+            self.shellMatrix.remove( ( obj, i ) )
+
+    def updateShellMatrix( self, obj ):
+        for i, shell in enumerate( obj.shellList ):
+            self.shellMatrix.update( ( obj, i ), shell.pos, shell.radius )
+
 
 
     def addEvent( self, t, func, arg ):
@@ -934,6 +1160,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                  pair )
         pair.eventID = eventID
 
+    def addMultiEvent( self, multi ):
+
+        eventID = self.addEvent( self.t + multi.dt, 
+                                 Delegate( self, EGFRDSimulator.fireMulti ), 
+                                 multi )
+        multi.eventID = eventID
+
 
     def removeEvent( self, event ):
 
@@ -944,38 +1177,54 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.scheduler.updateEventTime( event.eventID, t )
 
 
-    def excludeVolume( self, pos, radius ):
+    def burstObj( self, obj ):
+        
+        if isinstance( obj, Single ):
+            print 'bursting', obj
+            self.burstSingle( obj )
+            return [obj,]
+        elif isinstance( obj, Pair ):  # Pair
+            print 'bursting', obj
+            single1, single2 = self.burstPair( obj )
+            self.removeEvent( obj )
+            self.addSingleEvent( single1 )
+            self.addSingleEvent( single2 )
+            return [ single1, single2 ]
+        else:  # Multi
+            print 'bursting', obj
+            bursted = self.burstMulti( obj )
+            self.removeEvent( obj )
+            return bursted
 
-        neighbors, distances = self.getNeighborShells( pos )
-        n = numpy.searchsorted( distances, radius )
-        neighbors = neighbors[:n]
-        for neighbor in neighbors:
-            print 'bursting', neighbor
-            if isinstance( neighbor, Single ):
-                try:
-                    self.burstSingle( neighbor )
-                except NoSpace:
-                    self.rejectedMoves += 1
-            else:  # Pair
-                single1, single2 = self.burstPair( neighbor )
-                self.removeEvent( neighbor )
-                self.addSingleEvent( single1 )
-                self.addSingleEvent( single2 )
+    def burstObjs( self, objs ):
 
-    def excludeSingleVolume( self, pos, radius ): # to be removed
+        bursted = []
+        for obj in objs:
+            b = self.burstObj( obj )
+            bursted.extend( b )
 
-        neighbors, distances = self.getNeighborShells( pos )
-        n = numpy.searchsorted( distances, radius )
-        neighbors = neighbors[:n]
-        for neighbor in neighbors:
-            print 'bursting', neighbor
-            if isinstance( neighbor, Single ):
-                try:
-                    self.burstSingle( neighbor )
-                except NoSpace:
-                    self.rejectedMoves += 1
-            else:  # Pair
-                neighbor.squeezed = True
+        return bursted
+
+    def clearVolume( self, pos, radius, ignore=[] ):
+
+        neighbors = self.getNeighborsWithinRadius( pos, radius, ignore )
+
+        return self.burstObjs( neighbors )
+
+
+    def burstNonMultis( self, neighbors ):
+
+        bursted = []
+
+        for obj in neighbors:
+            if not isinstance( obj, Multi ):
+                b = self.burstObj( obj )
+                bursted.extend( b )
+            else:
+                bursted.append( obj )
+
+        return bursted
+
 
 
     def fireSingleReaction( self, single ):
@@ -993,17 +1242,18 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
             productSpecies = rt.products[0]
 
+            if reactantSpecies.radius < productSpecies.radius:
+                self.clearVolume( oldpos, productSpecies.radius )
+
             if not self.checkOverlap( oldpos, productSpecies.radius,
                                       ignore = [ single.particle, ] ):
                 print 'no space for product particle.'
                 raise NoSpace()
-                
-            if reactantSpecies.radius < productSpecies.radius:
-                self.excludeVolume( oldpos, productSpecies.radius )
 
             self.removeParticle( single.particle )
-            newparticle = self.placeParticle( productSpecies, oldpos )
+            newparticle = self.createParticle( productSpecies, oldpos )
             newsingle = self.createSingle( newparticle )
+            self.addToShellMatrix( newsingle )
             self.addSingleEvent( newsingle )
             print 'product;', newsingle
 
@@ -1024,12 +1274,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             # clean up space.
             rad = max( particleRadius12 * ( D1 / D12 ) + particleRadius1,
                        particleRadius12 * ( D2 / D12 ) + particleRadius2 )
-            self.excludeVolume( oldpos, rad )
 
+            self.clearVolume( oldpos, rad )
 
             for i in range( 100 ):
                 unitVector = randomUnitVector()
-                vector = unitVector * particleRadius12 * (1.0 + 1e-10) # safety
+                vector = unitVector * particleRadius12 * SAFETY
             
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.
@@ -1037,17 +1287,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newpos1 = oldpos + vector * ( D1 / D12 )
                 newpos2 = oldpos - vector * ( D2 / D12 )
 
-                #FIXME: check surfaces here
-            
                 newpos1 = self.applyBoundary( newpos1 )
                 newpos2 = self.applyBoundary( newpos2 )
 
                 # accept the new positions if there is enough space.
-                if self.checkOverlap( newpos1, particleRadius1,
-                                      ignore = [ single.particle, ] ) \
-                and \
-                    self.checkOverlap( newpos2, particleRadius2,
-                                       ignore = [ single.particle, ] ):
+                if ( self.checkOverlap( newpos1, particleRadius1,
+                                        ignore = [ single.particle, ] ) and
+                     self.checkOverlap( newpos2, particleRadius2,
+                                        ignore = [ single.particle, ] ) ):
                     break
             else:
                 print 'no space for product particles.'
@@ -1055,11 +1302,13 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             self.removeParticle( single.particle )
 
-            particle1 = self.placeParticle( productSpecies1, newpos1 )
-            particle2 = self.placeParticle( productSpecies2, newpos2 )
+            particle1 = self.createParticle( productSpecies1, newpos1 )
+            particle2 = self.createParticle( productSpecies2, newpos2 )
             newsingle1 = self.createSingle( particle1 )
             newsingle2 = self.createSingle( particle2 )
-            
+
+            self.addToShellMatrix( newsingle1 )
+            self.addToShellMatrix( newsingle2 )
             self.addSingleEvent( newsingle1 )
             self.addSingleEvent( newsingle2 )
 
@@ -1075,52 +1324,29 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def propagateSingle( self, single, r ):
         
         closest, distanceToClosestShell =\
-                 self.getClosestShell( single.particle.pos, 
-                                       ignore = [ single, ] )
-        squeezed = False;
-
-
-        # check if this Single is squeezed.
-        if closest.multiplicity != 1 and distanceToClosestShell < single.radius:
-            print 'single ', single, ' squeezed by ', closest, 'distance ', \
-                distanceToClosestShell
-            #assert closest.squeezed,\
-            #'When Single is squeezed, the closest must be a squeezed Pair'
-            squeezed = True
-
+                 self.getClosestObj( single.particle.pos, 
+                                     ignore = [ single, ] )
 
         particleRadius = single.getMinRadius()
         oldpos = single.particle.pos.copy()
         
-        for i in range( 100 ):
+        displacement = single.drawDisplacement( r )
             
-            displacement = single.drawDisplacement( r )
-            
-            newpos = oldpos + displacement
-            
-            if self.checkOverlap( newpos, particleRadius,
-                                  ignore = [ single.particle, ] ):
-                break
-            
-        else:
-            single.initialize( self.t )
-            self.shellMatrix.update( single, single.pos, single.radius )
-            raise NoSpace()
-        
+        newpos = oldpos + displacement
         newpos = self.applyBoundary( newpos )
-        self.moveParticle( single.particle, newpos )
+            
+        assert self.checkOverlap( newpos, particleRadius,
+                                  ignore = [ single.particle, ] )
+
+        self.moveSingle( single, newpos )
 
         single.initialize( self.t )
 
-        self.shellMatrix.update( single, single.pos, single.radius )
-
-        return squeezed
+        self.updateShellMatrix( single )
 
 
 
     def fireSingle( self, single ):
-
-        print single, single.dt
 
         # Reaction.
         if single.eventType == EventType.REACTION:
@@ -1128,221 +1354,110 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             print 'single reaction', single
             r = single.drawR( single.dt )
 
-            try:
-                self.propagateSingle( single, r )
-            except NoSpace:
-                # just reject the move, still try reaction.
-                print 'single reaction; pre-reaction propagation failed'
-                self.rejectedMoves += 1
+            self.propagateSingle( single, r )
 
             try:
-                self.shellMatrix.remove( single )
+                self.removeFromShellMatrix( single )
                 self.fireSingleReaction( single )
             except NoSpace:
-                self.shellMatrix.add( single, single.pos, single.radius )
+                print 'single reaction; placing product failed.'
+                self.addToShellMatrix( single )
                 self.rejectedMoves += 1
-                #self.updateEvent( self.t, single )
-                single.dt = self.smallT
+                single.reset()
                 return single.dt
 
-            single.dt = -numpy.inf  # remove this Single from the Scheduler
+            single.dt = -INF  # remove this Single from the Scheduler
             return single.dt
 
-        # If not reaction, propagate.
+        # Propagate, if not reaction.
 
         D0 = single.getD()
 
+        # Handle immobile case first.
         if D0 == 0:
             # no propagation, just calculate reaction times.
             single.determineNextEvent() 
             return single.dt
         
-
-        # (1) propagate
-        #
         # Propagate this particle to the exit point on the shell.
         
-        squeezed = False
-        try:
-            squeezed = self.propagateSingle( single, 
-                                             single.getMobilityRadius() )
-        except NoSpace:
-            print 'single propagation move failed'
-            self.rejectedMoves += 1
-            squeezed = True
+        self.propagateSingle( single, single.getMobilityRadius() )
 
-        closestShell, distanceToClosestShell =\
-                 self.getClosestShell( single.particle.pos, 
-                                       ignore = [ single, ] )
+        # (2) Clear volume.
 
-        if squeezed:  
-            # If this single was squeezed, update the shell, and just return.
-            # Because the squeezer Pair was broken up in the propagateSingle()
-            # above, one of the Sinlge in the Pair will step in the next step.
-            # It is important for this Single to take non-zero step size,
-            # otherwise this Single and the squeezer Pair will burst each
-            # other indefinitely.
+        minShell = single.getMinRadius() * EGFRDSimulator.SHELL_FACTOR
 
-            self.updateSingle( single, closestShell, distanceToClosestShell,
-                               math.sqrt( 6 * single.getD() *
-                                          self.smallT ) + single.getMinRadius() )
-            print 'squeezed single; shell', single.radius, \
-                'dt', single.dt
+        neighbors = self.getNeighborsWithinRadius( single.pos, radius=minShell,
+                                                   ignore=[single,] )
 
-            return single.dt
+        bursted = self.burstNonMultis( neighbors )
 
-            
-        # (2) Check shell size disparity.   Check if this Single needs
-        #     to burst the closest Single or Pair.
+        neighborDists = self.objDistanceArray( single.pos, bursted )
+        neighbors = [ bursted[i] for i in 
+                      ( neighborDists <= minShell ).nonzero()[0] ]
 
-        distanceToClosest = self.distance( single.particle.pos, 
-                                           closestShell.pos )
-        particleRadius0 = single.getMinRadius()
+        #closest, closestShellDistance =\
+        #    self.getClosestObj( single.pos, ignore = [ single, ] )
+        #print 'closest', closest, closestShellDistance
+        #print neighbors
 
-        #print 'criticalPoint %g, closest shell %s, distance to shell %g' %\
-        #(criticalPoint,closestShell,distanceToClosestShell)
+        if neighbors:
+            obj, b = self.formPairOrMulti( single, neighbors )
+            bursted.extend( b )
 
-        somethingBursted = False
-        partnerCandidates = []
-
-        # (2-1) Burst the closest and do pair check with that.
-
-        if isinstance( closestShell, Pair ): # pair
-
-            if distanceToClosestShell < particleRadius0 * 2:
-
-                # If the partner was a Pair, and it is bursted into two
-                # singles.  Find the closer one.
-                single1, single2 = self.burstPair( closestShell )
-                somethingBursted = True
-                self.removeEvent( closestShell )
-                self.addSingleEvent( single1 )
-                self.addSingleEvent( single2 )
-                
-                candidate1 = closestShell.single1
-                candidate2 = closestShell.single2
-                D1 = candidate1.getD()
-                D2 = candidate2.getD()
-                pos0 = single.pos
-                pos1 = candidate1.pos
-                pos2 = candidate2.pos
-
-                dist01 = self.distance( pos0, pos1 ) # radius?
-                dist02 = self.distance( pos0, pos2 )
-                dist12 = self.distance( pos1, pos2 )
-
-                particleRadius1 = candidate1.getMinRadius()
-                particleRadius2 = candidate2.getMinRadius()
-                
-                # MTTC = Mean Time to Correlate
-                MTTC01 = meanArrivalTime( dist01 - particleRadius0 
-                                          - particleRadius1, D0 + D1 )
-                MTTC02 = meanArrivalTime( dist02 - particleRadius0 
-                                          - particleRadius2, 
-                                          D0 + D2 )
-                MTTC12 = meanArrivalTime( dist12 - particleRadius1 
-                                          - particleRadius2, D1 + D2 )
-
-                if dist01 < dist02 and MTTC01 < MTTC12:
-                    partnerCandidates = [ candidate1, candidate2 ]
-                elif dist02 < dist01 and MTTC02 < MTTC12:
-                    partnerCandidates = [ candidate2, candidate1 ]
-                # else, partnerCandidates = empty
-
-        else:  
-            # If the closest was a Single, that is a potential partnerCandidate.
-            
-            realDistance = distanceToClosest - particleRadius0 \
-                - closestShell.getMinRadius()
-            SHELLSIZE_DISPARITY_FACTOR = 0.5
-            sqrtD0 = math.sqrt( D0 ) 
-            criticalPoint = SHELLSIZE_DISPARITY_FACTOR * sqrtD0 / \
-                ( sqrtD0 + math.sqrt( closestShell.getD() ) ) *\
-                realDistance + particleRadius0
-
-            #print closestShell, distanceToClosestShell, criticalPoint
-
-            if distanceToClosestShell < criticalPoint or \
-                    distanceToClosestShell < particleRadius0 * 2:
-                somethingBursted = True
-                try:
-                    self.burstSingle( closestShell )
-                except NoSpace:
-                    self.rejectedMoves += 1
-                partnerCandidates = [closestShell,]
-
-        #print partnerCandidates
-        # try forming a Pair
-        if len( partnerCandidates ) >= 1:
-
-            pair = self.formPair( single, partnerCandidates[0] )
-
-            if pair:
-                pair.determineNextEvent()
-
-                print pair, 'dt=', pair.dt, 'type=', pair.eventType
-                    
-                self.addPairEvent( pair )
-
-                self.removeEvent( partnerCandidates[0] )
-                    
-                for remainingCandidate in partnerCandidates[1:]:
-                    c, d =\
-                        self.getClosestShell( remainingCandidate.pos,
-                                              ignore = 
-                                              [ remainingCandidate, ] )
-                    self.updateSingle( remainingCandidate, c, d )
-                    self.updateEvent( self.t + remainingCandidate.dt,
-                                      remainingCandidate )
-
-                single.dt = -numpy.inf # remove by rescheduling to past.
+            if obj:
+                single.dt = -INF # remove by rescheduling to past.
                 return single.dt
-
-            else:
-                for remainingCandidate in partnerCandidates:
-                    c, d =\
-                        self.getClosestShell( remainingCandidate.pos,
-                                              ignore = 
-                                              [ remainingCandidate, ] )
-                    self.updateSingle( remainingCandidate, c, d )
-                    self.updateEvent( self.t + remainingCandidate.dt,
-                                      remainingCandidate )
 
 
         # If this Single bursted something,
         # Recheck closest and closest shell distance.
-        if somethingBursted:
-            closestShell, distanceToClosestShell =\
-                self.getClosestShell( single.pos, ignore = [ single, ] )
+
+        closest, closestShellDistance =\
+            self.getClosestObj( single.pos, ignore = [ single, ] )
+
+        self.updateSingle( single, closest, closestShellDistance )
+
+        bursted = list( set( bursted ) ) # uniq()
+
+        for s in bursted:
+
+            if isinstance( s, Single ):
+
+                c, d = self.getClosestObj( s.pos, ignore = [s,] )
+                self.updateSingle( s, c, d )
+                self.updateEvent( self.t + s.dt, s )
+                #print 'restore shell', s, s.radius, c, d
+            
+
+
 
         # (3) If a new Pair was not formed, this Single continues.
         #     Determine a new shell size and dt.
 
         # recheck the closest and distance to it.
-        self.updateSingle( single, closestShell, distanceToClosestShell )
+
 
         #print 'single shell', single.radius, 'dt', single.dt
 
         return single.dt
 
 
-    def updateSingle( self, single, closest, distanceToShell, 
-                      minShellSize=0.0 ):
+    def updateSingle( self, single, closest, distanceToShell ): 
 
-        distanceToClosest = self.distance( single.pos, closest.pos )
-
-        shellSize = single.calculateShellSize( closest, distanceToClosest,
-                                               distanceToShell )
+        if isinstance( closest, Single ):
+            distanceToClosest = self.distance( single.pos, closest.pos )
+            shellSize = single.calculateShellSize( closest, distanceToClosest,
+                                                   distanceToShell )
+        else:  # Pair or Multi
+            shellSize = distanceToShell / SAFETY
 
         shellSize = min( shellSize, self.getMatrixCellSize(),
                          self.maxShellSize )
-        shellSize = max( shellSize, minShellSize )
 
         single.setRadius( shellSize )
         single.determineNextEvent()
-
-        self.shellMatrix.update( single, single.pos, single.radius )
-
+        self.updateShellMatrix( single )
 
 
 
@@ -1384,17 +1499,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.addSingleEvent( theothersingle )
 
             try:
-                self.shellMatrix.remove( reactingsingle )
+                self.removeFromShellMatrix( reactingsingle )
                 self.fireSingleReaction( reactingsingle )
             except NoSpace:
-                self.shellMatrix.add( reactingsingle, 
-                                      reactingsingle.pos, 
-                                      reactingsingle.radius )
+                self.addToShellMatrix( reactingsingle )
                 self.rejectedMoves += 1
                 reactingsingle.dt = 0
                 self.addSingleEvent( reactingsingle )
 
-            pair.dt = -numpy.inf
+            pair.dt = -INF
             return pair.dt
         
 
@@ -1431,6 +1544,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
                 particle = self.createParticle( species3, newPos )
                 newsingle = self.createSingle( particle )
+                self.addToShellMatrix( newsingle )
                 self.addSingleEvent( newsingle )
 
                 self.reactionEvents += 1
@@ -1440,9 +1554,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 raise NotImplementedError,\
                       'num products >= 2 not supported.'
 
-            self.shellMatrix.remove( pair )
+            self.removeFromShellMatrix( pair )
 
-            pair.dt = -numpy.inf
+            pair.dt = -INF
             return pair.dt
 
 
@@ -1459,45 +1573,26 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             print 'r0 = ', r0, 'dt = ', pair.dt, pair.pgf.dump()
             
-            for i in range(100):
+            rnd = numpy.random.uniform( size=4 )
 
-                rnd = numpy.random.uniform( size=4 )
-
-                # calculate new R
+            # calculate new R
             
-                r_R = pair.drawR_single( pair.dt, pair.a_R )
+            r_R = pair.drawR_single( pair.dt, pair.a_R )
                 
-                displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
-                displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R
+            displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
+            displacement_R = sphericalToCartesian( displacement_R_S )
+            newCoM = oldCoM + displacement_R
 
-                # calculate new r
-                theta_r = pair.drawTheta_pair( rnd[2], pair.a_r, r0, pair.dt )
-                phi_r = rnd[3] * 2 * Pi
-                newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
-                newInterParticle = sphericalToCartesian( newInterParticleS )
+            # calculate new r
+            theta_r = pair.drawTheta_pair( rnd[2], pair.a_r, r0, pair.dt )
+            phi_r = rnd[3] * 2 * Pi
+            newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
+            newInterParticle = sphericalToCartesian( newInterParticleS )
                 
-                newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
-                                                      oldInterParticle )
-                newpos1 = self.applyBoundary( newpos1 )
-                newpos2 = self.applyBoundary( newpos2 )
-
-                if not pair.squeezed or \
-                        ( self.checkOverlap( newpos1, particleRadius1,
-                                             ignore = [ particle1, 
-                                                        particle2 ] ) and \
-                              self.checkOverlap( newpos2, particleRadius2,
-                                                 ignore = [ particle1, 
-                                                            particle2 ] ) ):
-                    break
-
-                else:   # overlap check failed
-                    self.rejectedMoves += 1
-                    print '%s:ESCAPE_r: rejected move. redrawing..' % pair
-            else:
-                print 'redrawing limit reached.  hanging up..'
-                raise RuntimeError,\
-                      'redrawing limit reached under squeezing in Pair.ESCAPE_r'
+            newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
+                                                  oldInterParticle )
+            newpos1 = self.applyBoundary( newpos1 )
+            newpos2 = self.applyBoundary( newpos2 )
 
 
         # 2 escaping through a_R.
@@ -1505,67 +1600,40 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             print 'escape R'
 
-            for i in range(1000):
-                
-                rnd = numpy.random.uniform( size = 4 )
+            rnd = numpy.random.uniform( size = 4 )
 
-                # calculate new r
-                print 'r0 = ', r0, 'dt = ', pair.dt, pair.pgf.dump()
-                r = pair.drawR_pair( r0, pair.dt, pair.a_r )
-                print 'new r = ', r
-                #assert r >= pair.sigma
+            # calculate new r
+            print 'r0 = ', r0, 'dt = ', pair.dt, pair.pgf.dump()
+            r = pair.drawR_pair( r0, pair.dt, pair.a_r )
+            print 'new r = ', r
+            #assert r >= pair.sigma
             
-                theta_r = pair.drawTheta_pair( rnd[0], r, r0, pair.dt )
-                phi_r = rnd[1] * 2*Pi
-                newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
-                newInterParticle = sphericalToCartesian( newInterParticleS )
+            theta_r = pair.drawTheta_pair( rnd[0], r, r0, pair.dt )
+            phi_r = rnd[1] * 2*Pi
+            newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
+            newInterParticle = sphericalToCartesian( newInterParticleS )
                 
-                # calculate new R
-                displacement_R_S = [ pair.a_R, rnd[2] * Pi, rnd[3] * 2 * Pi ]
-                displacement_R = sphericalToCartesian( displacement_R_S )
+            # calculate new R
+            displacement_R_S = [ pair.a_R, rnd[2] * Pi, rnd[3] * 2 * Pi ]
+            displacement_R = sphericalToCartesian( displacement_R_S )
             
-                newCoM = oldCoM + displacement_R
+            newCoM = oldCoM + displacement_R
                 
-                #print 'COM', oldCoM, newCoM
+            #print 'COM', oldCoM, newCoM
 
-                newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
+            newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                       oldInterParticle )
-                newpos1 = self.applyBoundary( newpos1 )
-                newpos2 = self.applyBoundary( newpos2 )
-
-                if not pair.squeezed or \
-                        ( self.checkOverlap( newpos1, particleRadius1,
-                                             ignore = [ particle1, 
-                                                        particle2 ] ) and \
-                              self.checkOverlap( newpos2, particleRadius2,
-                                                 ignore = [ particle1, 
-                                                            particle2 ]) ):
-                    break
-
-                else:
-                    self.rejectedMoves += 1
-                    print '%s:ESCAPE_r: rejected move. redrawing..' % pair
-            else:
-                print 'redrawing limit reached.  hanging up..'
-                raise RuntimeError,\
-                      'redrawing limit reached under squeezing in Pair.ESCAPE_R'
+            newpos1 = self.applyBoundary( newpos1 )
+            newpos2 = self.applyBoundary( newpos2 )
 
         else:
             raise SystemError, 'Bug: invalid eventType.'
 
-        # this has to be done before the following excludeVolume()
-        self.shellMatrix.remove( pair )
+        # this has to be done before the following clearVolume()
+
+        self.removeFromShellMatrix( pair )
 
         assert self.distance( newpos1, newpos2 ) >= pair.sigma
-
-        self.moveParticle( particle1, newpos1 )
-        self.moveParticle( particle2, newpos2 )
-
-        if pair.squeezed:
-            # make sure displaced particles don't intrude squeezer shells.
-            self.excludeSingleVolume( newpos1, particleRadius1 )
-            self.excludeSingleVolume( newpos2, particleRadius2 )
-
 
         assert self.checkOverlap( newpos1, particleRadius1,
                                   ignore = [ particle1, particle2 ] )
@@ -1574,52 +1642,80 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         single1, single2 = pair.single1, pair.single2
 
+        self.moveSingle( single1, newpos1 )
+        self.moveSingle( single2, newpos2 )
+
         single1.initialize( self.t )
         single2.initialize( self.t )
             
         self.addSingleEvent( single1 )
         self.addSingleEvent( single2 )
 
-        self.shellMatrix.add( single1, single1.pos, single1.radius )
-        self.shellMatrix.add( single2, single2.pos, single2.radius )
+        self.addToShellMatrix( single1 )
+        self.addToShellMatrix( single2 )
 
-        pair.dt = -numpy.inf
+        pair.dt = -INF
         return pair.dt
 
 
     def fireMulti( self, multi ):
-        print 'fire', multi
+        
+        self.updateEvent( INF, multi )
+        nextObjTime = self.scheduler.getTopTime()
 
-        bdsim = IndependentBDSimulatorCore( self )
+        sim = multi.sim
 
-        for single in multi.singleList:
-            bdsim.addParticle( single.particle )
+        startCount = sim.stepCounter
 
-        shellPos = numpy.array( [ s.particle.pos for s in multi.singleList ] )
-        shellRadii = numpy.array( [ s.radius for s in multi.singleList ] )
+        while nextObjTime > self.t:
+            sim.step()
 
-        while 1:
+            if sim.populationChanged:
+                print 'bd reaction'
+                self.reactionEvents += 1
+                
+                self.breakUpMulti( multi )
 
-            bdsim.step()
-
-            if bdsim.populationChanged:
+                dt = -INF
                 break
 
-            for p in bdsim.particleList:
-                dists = self.distanceArray( p.pos, shellPos ) - shellRadii
-                if dists.max() > 0.0:
-                    print 'multi particle ', p, ' escaped.'
-                    break
+            if sim.escaped:
+                print 'multi particle escaped.'
+                self.breakUpMulti( multi )
+                
+                dt = -INF
+                break
+        else:
+            dt = multi.dt
 
-        self.t += bdsim.t
+        steps = sim.stepCounter - startCount
+        assert steps >= 1
+        self.stepCounter += steps-1
 
-        for single in multi.singleList:
-            single.initialize( self.t )
+        print 'multi stepped', steps, 'steps, duration', sim.t
+
+        return dt
+
+
+    def breakUpMulti( self, multi ):
+
+        self.removeFromShellMatrix( multi )
+
+        singles = []
+        for particle in multi.sim.particleList:
+            single = self.createSingle( particle )
+            self.addToShellMatrix( single )
             self.addSingleEvent( single )
+            singles.append( single )
 
-        self.multiList = []
+        return singles
+
+
+    def burstMulti( self, multi ):
         
+        singles = self.breakUpMulti( multi )
 
+        return singles
 
 
     def burstSingle( self, single ):
@@ -1631,33 +1727,25 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         dt = self.t - single.lastTime
 
-        particleRadius = single.getMinRadius()
+        particleRadius = single.particle.species.radius
         oldpos = single.particle.pos.copy()
 
-        for i in range( 100 ):
-            
-            r = single.drawR( dt )
+        r = single.drawR( dt )
 
-            displacement = single.drawDisplacement( r )
+        displacement = single.drawDisplacement( r )
             
-            newpos = oldpos + displacement
-            
-            if self.checkOverlap( newpos, particleRadius,
-                                  ignore = [ single.particle, ] ):
-                break
-            
-        else:
-            #single.particle.pos = oldpos
-            #self.moveParticle( single.particle, oldpos )
-            single.initialize( self.t )
-            self.shellMatrix.update( single, single.pos, single.radius )
-            raise NoSpace()
+        newpos = oldpos + displacement
+
+        newpos = self.applyBoundary( newpos )
+
+        assert self.distance( newpos, oldpos ) <= single.getMobilityRadius()
+        assert self.checkOverlap( newpos, particleRadius,
+                                  ignore = [ single.particle, ] )
 
         single.initialize( self.t )
-        newpos = self.applyBoundary( newpos )
-        self.moveParticle( single.particle, newpos )
+        self.moveSingle( single, newpos )
 
-        self.shellMatrix.update( single, single.pos, single.radius )
+        self.updateShellMatrix( single )
         self.updateEvent( self.t, single )
 
 
@@ -1682,43 +1770,24 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             oldCoM = pair.getCoM()
             r0 = pair.distance( particle1.pos, particle2.pos )
             
-            for i in range(100):
-                rnd = numpy.random.uniform( size = 4 )
+            rnd = numpy.random.uniform( size = 4 )
 
-                # calculate new CoM
-                r_R = pair.drawR_single( dt, pair.a_R )
+            # calculate new CoM
+            r_R = pair.drawR_single( dt, pair.a_R )
             
-                displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
-                displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R
+            displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
+            displacement_R = sphericalToCartesian( displacement_R_S )
+            newCoM = oldCoM + displacement_R
             
-                # calculate new interparticle
-                r_r = pair.drawR_pair( r0, dt, pair.a_r )
-                theta_r = pair.drawTheta_pair( rnd[2], r_r, r0, dt )
-                phi_r = rnd[3] * 2 * Pi
-                newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
-                newInterParticle = sphericalToCartesian( newInterParticleS )
+            # calculate new interparticle
+            r_r = pair.drawR_pair( r0, dt, pair.a_r )
+            theta_r = pair.drawTheta_pair( rnd[2], r_r, r0, dt )
+            phi_r = rnd[3] * 2 * Pi
+            newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
+            newInterParticle = sphericalToCartesian( newInterParticleS )
 
-                newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
-                                                      oldInterParticle )
-                if not pair.squeezed or \
-                        ( self.checkOverlap( newpos1, particleRadius1,
-                                             ignore = [ particle1, 
-                                                        particle2 ] ) and \
-                              self.checkOverlap( newpos2, particleRadius2,
-                                                 ignore = [ particle1, 
-                                                            particle2 ] ) ):
-                    pair.checkNewpos( newpos1, newpos2, oldCoM )
-
-                    newpos1 = self.applyBoundary( newpos1 )
-                    newpos2 = self.applyBoundary( newpos2 )
-                    self.moveParticle( particle1, newpos1 )
-                    self.moveParticle( particle2, newpos2 )
-                    break
-
-            else:
-                print 'redrawing limit reached.  giving up displacement.'
-                self.rejectedMoves += 1
+            newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
+                                                  oldInterParticle )
 
         return ( pair.single1, pair.single2 )
 
@@ -1730,9 +1799,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         single1.initialize( self.t )
         single2.initialize( self.t )
         
-        self.shellMatrix.remove( pair )
-        self.shellMatrix.add( single1, single1.pos, single1.radius )
-        self.shellMatrix.add( single2, single2.pos, single2.radius )
+        self.removeFromShellMatrix( pair )
+        self.addToShellMatrix( single1 )
+        self.addToShellMatrix( single2 )
 
 
         #self.removeEvent( pair )
@@ -1741,51 +1810,70 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return single1, single2
 
 
-    def formPair( self, single1, single2 ):
+    def formPairOrMulti( self, single, neighbors ):
 
-        assert single1.isReset()
-        assert single2.isReset()
+        assert neighbors
 
-        # Then, check if this pair of singles meets the pair formation
-        # criteria defined in self.checkPairFormationCriteria().
-        
-        com = calculatePairCoM( single1.pos, single2.pos,\
-                                single1.getD(), single2.getD(),\
-                                self.getWorldSize() )
-        com = self.applyBoundary( com )
-        pairClosest, pairClosestShellDistance =\
-                     self.getClosestShell( com, ignore = ( single1, single2 ) )
-        
-        particleRadius1 = single1.getMinRadius()
-        particleRadius2 = single2.getMinRadius()
-        particleRadius12 = particleRadius1 + particleRadius2
+        bursted = []
 
-        shellSize = self.checkPairFormationCriteria( single1, single2,
-                                                     pairClosest,
-                                                     pairClosestShellDistance )
-        if shellSize <= 0.0:  # Pair not formed
-            return None
+        # Try forming a Pair.
+        if len( neighbors ) == 1 and isinstance( neighbors[0], Single ):
+            obj, bursted = self.formPair( single, neighbors[0] )
+            if obj:
+                return obj, bursted
 
-        pair = self.createPair( single1, single2 )
+        # Then, a Multi.
+        closest = neighbors[0]
+        if isinstance( closest, Single ):
 
-        # Squeezed; Pair must be formed but shell size bigger than given space.
-        if shellSize > pairClosestShellDistance:
-            print 'squeezed shell=', shellSize, 'closest shell distance =',\
-                pairClosestShellDistance
-            pair.squeezed = True
-            self.squeezed += 1
+            multi = self.createMulti()
+            self.addToMulti( single, multi )
+            self.removeFromShellMatrix( single )
+            for neighbor in neighbors:
+                self.addToMultiRecursive( neighbor, multi )
 
-        pair.setRadius( shellSize )
-        self.shellMatrix.add( pair, pair.pos, pair.radius )
-
-        pairDistance = self.distance( single1.pos, single2.pos )
-        print 'Pair formed: ', pair, 'pair distance', pairDistance,\
-              'shell size=', pair.radius,\
-              ', closest = ', pairClosest,\
-              ', distance to shell = ', pairClosestShellDistance
-
-        return pair
+            multi.initialize( self.t )
             
+            self.addToShellMatrix( multi )
+            self.addMultiEvent( multi )
+
+            return multi, bursted
+
+        elif isinstance( closest, Multi ):
+
+            multi = closest
+            print 'multi merge', single, multi#, closestShellDistance
+
+            self.removeFromShellMatrix( multi )
+
+            self.addToMulti( single, multi )
+            self.removeFromShellMatrix( single )
+            for neighbor in neighbors[1:]:
+                self.addToMultiRecursive( neighbor, multi )
+
+            multi.initialize( self.t )
+
+            self.addToShellMatrix( multi )
+            self.updateEvent( self.t + multi.dt, multi )
+
+            return multi, bursted
+
+
+        assert False, 'do not reach here'
+
+
+    def formPair( self, single, closest ):
+
+        bursted=[]
+        if not closest.isReset():
+            self.burstSingle( closest )
+
+        bursted.append( closest )
+
+        obj = self.tryPair( single, closest )
+        return obj, bursted
+
+
 
     '''
     Determine if given couple singles meet the criteria of forming
@@ -1793,91 +1881,166 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     '''
 
-    def checkPairFormationCriteria( self, single1, single2,
-                                    closest, closestShellDistance ):
+    def tryPair( self, single1, single2 ):
+
+        assert single1.isReset()
+        assert single2.isReset()
 
         species1 = single1.particle.species
         species2 = single2.particle.species
-        D1 = species1.D
-        D2 = species2.D
+
+        radius1 = species1.radius
+        radius2 = species2.radius
+        sigma1 = radius1 * 2
+        sigma2 = radius2 * 2
+
+        D1, D2 = species1.D, species2.D
         D12 = D1 + D2
 
-        particleRadius1 = species1.radius
-        particleRadius2 = species2.radius
-        particleRadius12 = particleRadius1 + particleRadius2
+        radius12 = radius1 + radius2
 
-        pos1, pos2 = single1.pos, single2.pos
-        pairDistance = self.distance( pos1, pos2 )
+
+        com = calculatePairCoM( single1.pos, single2.pos,\
+                                single1.getD(), single2.getD(),\
+                                self.getWorldSize() )
+        com = self.applyBoundary( com )
+        closest, closestShellDistance =\
+            self.getClosestObj( com, ignore = ( single1, single2 ) )
+        pairDistance = self.distance( single1.pos, single2.pos )
+
+        minShellSize = max( pairDistance * D1 / D12 + radius1,
+                            pairDistance * D2 / D12 + radius2 )
+        pairShellSizeMargin = min( sigma1, sigma2 ) * 0.1  #SHELL_FACTOR
+
+        
+        # Squeezing check:
+        #     Pair shell size cannot be smaller than minPairShellSize.
+        if closestShellDistance <= minShellSize + pairShellSizeMargin:
+            print 'Pair not formed because squeezed by ', closest
+            return None
 
         # pairGap = real distance including radii
-        pairGap = pairDistance - particleRadius12
+        pairGap = pairDistance - radius12
         assert pairGap >= 0, 'pairGap between %s and %s = %g < 0' \
             % ( single1, single2, pairGap )
 
 
-        minShellSize = max( pairDistance * D1 / D12 + particleRadius1,
-                            pairDistance * D2 / D12 + particleRadius2 )
-
-        # consider both D_IV and D_CoM?
-        #tau = particleRadius12 * particleRadius12 / D12
-        #shellSizeMargin = math.sqrt( 6 * D12 * self.smallT )
-        shellSizeMargin = particleRadius12 / 2
-        #shellSizeMargin = 5e-1 * ( D1 * particleRadius1 + D2 * particleRadius2 ) / D12
-        #print 'margin', shellSizeMargin
-
-        minShellSizeWithMargin = minShellSize + shellSizeMargin
-
         maxShellSize = min( self.getMatrixCellSize(), self.maxShellSize )
 
 
-        # 0. Shell cannot be larger than max shell size or sim cell size.
-        if minShellSizeWithMargin > maxShellSize:
-            return -0.0
+        # 1. Shell cannot be larger than max shell size or sim cell size.
+        if minShellSize > maxShellSize:
+            print 'tryParing(): minShellSize > maxShellSize: none created'
+            return None
 
-        # 1. Squeezed?
-        if closestShellDistance <= minShellSizeWithMargin:
-            print 'closest shell < minShellSize w/ margin; %g, %g' % \
-                ( closestShellDistance, minShellSizeWithMargin )
+        # 2. Check if a Pair is better than two Singles
 
-            # there is enough pairGap; singles can do it better.
-            if pairGap >= shellSizeMargin:
-                print 'squeezed, but there is enough pairGap.  Pair not formed.'
-                return -0.0
-            else:
-                # real squeezing
-                print 'squeezed; pairGap < shellSizeMargin'
-                assert minShellSizeWithMargin < \
-                    min( self.maxShellSize, self.getMatrixCellSize() )
-                return minShellSizeWithMargin
-
-        # 2. Check if a Pair is better than two Singles.
-        closestShell = closest.radius
-        closestPos = closest.pos
-        singleMobility = min( pairDistance - particleRadius12,
-                              self.distance( pos1, closestPos )
-                              - closestShell - particleRadius1,
-                              self.distance( pos2, closestPos )
-                              - closestShell - particleRadius2 )
+        # pairDistance < min( particles' distances to the shell )
+        if isinstance( closest, Single ):
+            shellSize = minShellSize \
+                + ( closestShellDistance - minShellSize ) * .5
+        else:
+            shellSize = closestShellDistance / SAFETY
         
-        pairMobility = min( closestShellDistance, maxShellSize ) - minShellSize
-        if singleMobility >= pairMobility:
-            #print 'singleMobility %g >= pairMobility %g' %\
-            #      (singleMobility, pairMobility)
-            return -0.0
-        
+        if shellSize < 1.5 * minShellSize:  #FIXME: factor ok?
+            print 'Singles are better than Pair'
+            return None
 
-        # 3. If not squeezed, and Singles are not better, then this couple
-        #    must be a Pair.
+        # 3. Ok, Pair makes sense.  Create one.
 
-        #FIXME: dummy?
-        shellSize = minShellSize + ( closestShellDistance - minShellSize ) * .5
-        shellSize = max( shellSize, minShellSizeWithMargin )
+        shellSize = max( shellSize, minShellSize )
+        shellSize = min( shellSize, maxShellSize )
 
-        shellSize = min( shellSize, self.getMatrixCellSize(), 
-                         self.maxShellSize )
+        pair = self.createPair( single1, single2 )
+        pair.setRadius( shellSize )
 
-        return shellSize
+        self.removeFromShellMatrix( single1 )
+        self.removeFromShellMatrix( single2 )
+        self.addToShellMatrix( pair )
+
+
+        pair.determineNextEvent()
+
+        print pair, 'dt=', pair.dt, 'type=', pair.eventType
+                
+        self.addPairEvent( pair )
+
+        self.removeEvent( single2 )
+
+
+        print 'Pair formed: ', pair, 'pair distance', pairDistance,\
+            'shell size=', pair.radius,\
+            ', closest = ', closest,\
+            ', distance to shell = ', closestShellDistance
+
+
+        return pair
     
+
+
+    def addToMultiRecursive( self, obj, multi ):
+        
+        if isinstance( obj, Single ):
+            if obj.particle in multi.sim.particleList:  # Already in the Multi.
+                return
+            assert obj.isReset()
+            
+            self.addToMulti( obj, multi )
+            self.removeFromShellMatrix( obj )
+            self.removeEvent( obj )
+
+            radius = obj.particle.species.radius *\
+                EGFRDSimulator.SHELL_FACTOR# * SAFETY
+            neighbors = self.getNeighborsWithinRadius( obj.pos, radius,
+                                                       ignore=[obj,] )
+            bursted = self.burstNonMultis( neighbors )
+            neighborDists = self.objDistanceArray( obj.pos, bursted )
+            neighbors = [ bursted[i] for i in 
+                          ( neighborDists <= radius ).nonzero()[0] ]
+
+            for obj in neighbors:
+                self.addToMultiRecursive( obj, multi )
+
+        elif isinstance( obj, Multi ):
+            try:
+                self.mergeMultis( obj, multi )
+                self.removeFromShellMatrix( obj )
+                self.removeEvent( obj )
+            except AlreadyIn:
+                print obj, ' already added. skipping.'
+        else:
+            assert False, 'do not reach here.'  # Pairs are bursted
+
+
+
+
+    def addToMulti( self, single, multi ):
+        print 'adding', single, 'to', multi
+
+        shellSize = single.particle.species.radius * EGFRDSimulator.SHELL_FACTOR
+        multi.addParticle( single.particle )
+        multi.addShell( single.pos, shellSize )
+
+
+    '''
+        merge multi1 into multi2
+    '''
+    def mergeMultis( self, multi1, multi2 ):
+
+        print 'merging', multi1, 'to', multi2
+
+        if multi1.sim.particleList[0] in multi2.sim.particleList:
+            raise AlreadyIn
+
+        for i, particle in enumerate( multi1.sim.particleList ):
+            
+            # FIXME: shells should be renewed
+
+            multi2.addParticle( particle )
+            shell = multi1.shellList[i]
+            multi2.addShell( shell.pos, shell.radius )
+
+        multi2.initialize( self.t )
 
 
     '''
@@ -1886,10 +2049,23 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     This method returns a tuple ( neighbors, distances ).
     '''
 
-    def getNeighborShells( self, pos, n=None ):
+    def getNeighborShells( self, pos, n, dummy=DummySingle() ):
 
-        return self.shellMatrix.getNeighbors( pos, n, dummy=DummySingle() )
+        return self.shellMatrix.getNeighbors( pos, n, dummy )
 
+    def getNeighborShellsWithinRadius( self, pos, radius ):
+
+        return self.shellMatrix.getNeighborsWithinRadius( pos, radius )
+
+
+    def getNeighborsWithinRadius( self, pos, radius, ignore=[] ):
+
+        shells, distances = self.getNeighborShellsWithinRadius( pos, radius )
+
+        neighbors = [ s[0] for s in shells if s[0] not in ignore ]
+        neighbors = list( set( neighbors ) )  # uniq()
+
+        return neighbors
 
     '''
     Find the closest shell from the position pos.
@@ -1904,15 +2080,39 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         neighbors, distances = self.getNeighborShells( pos, len( ignore ) + 1 )
 
-        for i in range( len( neighbors ) ): 
-            if neighbors[i] not in ignore:
-                closest, distance = neighbors[i], distances[i]
-
-                #assert not closest in ignore
-                return closest, distance
+        for i, neighbor in enumerate( neighbors ):
+            if neighbor not in ignore:
+                return neighbor, distances[i]
 
         # default case: none left.
-        return DummySingle(), numpy.inf
+        return ( DummySingle(), 0 ), INF
+
+    def getClosestObj( self, pos, ignore=[] ):
+
+        neighbors, distances = self.getNeighborShells( pos, len( ignore ) + 1 )
+
+        for i, neighbor in enumerate( neighbors ):
+            neighborObj = neighbor[0]
+            if neighborObj not in ignore:
+                return neighborObj, distances[i]
+
+        # default case: none left.
+        return DummySingle(), INF
+
+
+    def objDistance( self, pos, obj ):
+        
+        dists = numpy.zeros( len( obj.shellList ) )
+        for i, shell in enumerate( obj.shellList ):
+            dists[i] = self.distance( pos, shell.pos ) - shell.radius
+
+        return min( dists )
+
+    def objDistanceArray( self, pos, objs ):
+
+        dists = numpy.array( [ self.objDistance( pos, obj ) for obj in objs ] )
+        return dists
+            
 
 
     '''
@@ -1956,41 +2156,49 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 return closest, distance
 
         # default case: none left.
-        return DummySingle(), numpy.inf
+        return DummySingle(), INF
     '''
 
 
     #
     # consistency checkers
     #
+
     
-    def checkShell( self, obj ):
-        closest, distance = self.getClosestShell( obj.pos, [obj,] )
-        radius = obj.radius
+    def checkObj( self, obj ):
 
-        if radius > self.getMatrixCellSize():
-            raise RuntimeError, '%s shell size larger than simulator cell size'
+        obj.check()
 
-        if radius > self.maxShellSize:
-            raise RuntimeError, '%s shell size larger than maxShellSize'
 
-        if distance - radius < 0.0:
-            if ( isinstance( obj, Pair ) and obj.squeezed ) or \
-                   ( isinstance( closest, Pair ) and closest.squeezed ):
-                print '%s overlaps with %s.  ignoring because squeezed.' \
-                          % ( str( obj ), str( closest ) )
-            else:
+        allshells = [ ( obj, i ) for i in range( len( obj.shellList ) ) ]
+        for i, shell in enumerate( obj.shellList ):
+            shellid = (obj,i)
+            closest, distance = self.getClosestShell( shell.pos,
+                                                      ignore = allshells )
+            radius = shell.radius
+
+            if radius > self.getMatrixCellSize():
                 raise RuntimeError,\
-                      '%s overlaps with %s. (shell: %g, dist: %g, diff: %g.' \
-                      % ( str( obj ), str( closest ), radius, distance,\
-                          distance - radius )
+                    '%s shell size larger than simulator cell size' % \
+                    str( shellid )
+
+            if radius > self.maxShellSize:
+                raise RuntimeError,\
+                    '%s shell size larger than maxShellSize' % \
+                    str( shellid )
+
+            if distance - radius < 0.0:
+                raise RuntimeError,\
+                    '%s overlaps with %s. (shell: %g, dist: %g, diff: %g.' \
+                    % ( str( obj ), str( closest[0] ), radius, distance,\
+                            distance - radius )
 
 
-    def checkShellForAll( self ):
+    def checkObjForAll( self ):
 
         for i in range( self.scheduler.getSize() ):
             obj = self.scheduler.getEventByIndex(i).getArg()
-            self.checkShell( obj )
+            self.checkObj( obj )
 
 
     def checkEventStoichiometry( self ):
@@ -1998,7 +2206,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         population = 0
         for species in self.speciesList.values():
             population += species.pool.size
-        
+
         eventPopulation = 0
         for i in range( self.scheduler.getSize() ):
             obj = self.scheduler.getEventByIndex(i).getArg()
@@ -2014,18 +2222,28 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             raise RuntimeError,\
                 'self.worldSize != self.shellMatrix.worldSize'
 
-        if self.scheduler.getSize() != self.shellMatrix.size:
+        shellPopulation = 0
+        for i in range( self.scheduler.getSize() ):
+            obj = self.scheduler.getEventByIndex(i).getArg()
+            shellPopulation += len( obj.shellList )
+
+        if shellPopulation != self.shellMatrix.size:
             raise RuntimeError,\
-                'self.scheduler.getSize() != self.shellMatrix.size'
+                'num shells != self.shellMatrix.size'
         
         self.shellMatrix.check()
 
         for key in self.shellMatrix.keyList:
             pos, radius = self.shellMatrix.get( key )
-            if ( key.pos - pos ).sum() != 0:
-                raise RuntimeError, 'shellMatrix positions consistency broken'
-            if key.radius != radius:
-                raise RuntimeError, 'shellMatrix radii consistency broken'
+            obj, i = key
+
+            if ( obj.shellList[i].pos - pos ).any():
+                raise RuntimeError, \
+                    '%s shellMatrix positions consistency broken' % str( key )
+
+            if obj.shellList[i].radius != radius:
+                raise RuntimeError, \
+                    '%s shellMatrix radii consistency broken' % str( key )
 
 
 
@@ -2040,7 +2258,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.checkEventStoichiometry()
         
-        self.checkShellForAll()
+        self.checkObjForAll()
 
 
 

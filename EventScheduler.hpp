@@ -190,7 +190,7 @@ namespace libecs
 	    return time;
 	}
 
-	const double getNextTime() const
+	const double getTopTime() const
 	{
 	    return getTopEvent().getTime();
 	}

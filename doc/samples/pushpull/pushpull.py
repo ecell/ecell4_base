@@ -173,7 +173,7 @@ s.throwInParticles( S, N_S, box1 )
 stirTime = 1e-3
 while 1:
     s.step()
-    nextTime = s.scheduler.getNextTime()
+    nextTime = s.scheduler.getTopTime()
     if nextTime > stirTime:
         s.stop( stirTime )
         break

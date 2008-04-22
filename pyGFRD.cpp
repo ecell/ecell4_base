@@ -123,7 +123,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     class_<PyEventScheduler, boost::noncopyable>( "EventScheduler" )
 	.def( "getTime", &PyEventScheduler::getTime )
-	.def( "getNextTime", &PyEventScheduler::getNextTime )
+	.def( "getTopTime", &PyEventScheduler::getTopTime )
 	.def( "getSize", &PyEventScheduler::getSize )
 	.def( "getTopEvent", geteventrefsig( &PyEventScheduler::getTopEvent ),
 	      return_value_policy<copy_const_reference>() )
