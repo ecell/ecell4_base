@@ -2,6 +2,7 @@
 
 
 import sys
+import string
 
 import numpy
 import scipy.io
@@ -62,9 +63,9 @@ S_tot = 300.0
 model = 'pushpull'
 Keq_str = '0.05'
 #Keq_str = '5'
-koff_ratio_str = '0.1'
+#koff_ratio_str = '0.1'
 #koff_ratio_str = '0.5'
-#koff_ratio_str = '0.9'
+koff_ratio_str = '0.9'
 #koff_ratio_str = '0'
 N_P = 10
 V = '1e-14'

@@ -167,7 +167,7 @@ class SimpleObjectMatrix( object ):
         matrix = self.matrix
 
         if len( matrix.positions ) == 0:
-            return [dummy,], [numpy.inf,]
+            return [], []
 
         distances = self.distanceArray( matrix.positions, pos ) - matrix.radii
 

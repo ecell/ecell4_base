@@ -101,12 +101,13 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def createParticle( self, species, pos ):
 
-        if not self.withinShell( pos, species.radius ):
-            self.escaped = True
-            self.clearOuterVolume( pos, species.radius )
-        else:
+        if self.withinShell( pos, species.radius ):
             if not self.checkOverlap(pos, species.radius, ignore ):
                 raise NoSpace()
+        else:
+            self.escaped = True
+            self.clearOuterVolume( pos, species.radius )
+
             
         particle = self.main.createParticle( species, pos )
         self._addParticle( particle )
@@ -116,10 +117,13 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def moveParticle( self, particle, pos ):
 
-        if not self.withinShell( pos, particle.radius ):
+        if self.withinShell( pos, particle.radius ):
+            if not self.checkOverlap( pos, particle.radius, 
+                                      ignore=[particle] ):
+                raise NoSpace()
+        else:
             self.escaped = True
-            raise NoSpace  #FIXME: ok?
-            #self.clearVolume( pos, particle.radius, ignore=[particle,] )
+            self.clearOuterVolume( pos, particle.radius, ignore=[particle] )
 
         self.main.moveParticle( particle, pos )
         self.updateParticle( particle, pos )
@@ -136,7 +140,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
             self.clearOuterVolume( pos, radius, ignore )
 
     def clearOuterVolume( self, pos, radius, ignore=[] ):
-        #print 'clear out', [ str(i) for i in ignore ]
+
         self.main.clearVolume( pos, radius, ignore=[self.multi,] )
         if not self.main.checkOverlap( pos, radius, ignore ):
             raise NoSpace()
@@ -154,6 +158,9 @@ class MultiBDCore( BDSimulatorCoreBase ):
     def checkOverlap( self, pos, radius, ignore=[] ):
         
         n, _ = self.particleMatrix.getNeighborsWithinRadius( pos, radius )
+
+        for particle in ignore:
+            n.remove( ( particle.species, particle.serial ) )
 
         if n:
             return False
@@ -933,9 +940,11 @@ class DummySingle( object ):
 
 class EGFRDSimulator( GFRDSimulatorBase ):
     
-    SHELL_FACTOR = 1.05
-
     def __init__( self ):
+
+
+        self.MULTI_SHELL_FACTOR = 0.1
+        self.SINGLE_SHELL_FACTOR = 0.1
 
         #self.shellMatrix = ObjectMatrix()
         self.shellMatrix = SimpleObjectMatrix()
@@ -1385,7 +1394,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # (2) Clear volume.
 
-        minShell = single.getMinRadius() * EGFRDSimulator.SHELL_FACTOR
+        minShell = single.getMinRadius() * ( 1.0 + self.SINGLE_SHELL_FACTOR )
 
         neighbors = self.getNeighborsWithinRadius( single.pos, radius=minShell,
                                                    ignore=[single,] )
@@ -1395,11 +1404,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         neighborDists = self.objDistanceArray( single.pos, bursted )
         neighbors = [ bursted[i] for i in 
                       ( neighborDists <= minShell ).nonzero()[0] ]
-
-        #closest, closestShellDistance =\
-        #    self.getClosestObj( single.pos, ignore = [ single, ] )
-        #print 'closest', closest, closestShellDistance
-        #print neighbors
 
         if neighbors:
             obj, b = self.formPairOrMulti( single, neighbors )
@@ -1667,7 +1671,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         startCount = sim.stepCounter
 
-        while nextObjTime > self.t:
+        while nextObjTime >= self.t:
             sim.step()
 
             if sim.populationChanged:
@@ -1803,10 +1807,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.addToShellMatrix( single1 )
         self.addToShellMatrix( single2 )
 
-
-        #self.removeEvent( pair )
-        #self.addSingleEvent( single1 )
-        #self.addSingleEvent( single2 )
         return single1, single2
 
 
@@ -1824,6 +1824,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # Then, a Multi.
         closest = neighbors[0]
+
+
         if isinstance( closest, Single ):
 
             multi = self.createMulti()
@@ -1910,7 +1912,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         minShellSize = max( pairDistance * D1 / D12 + radius1,
                             pairDistance * D2 / D12 + radius2 )
-        pairShellSizeMargin = min( sigma1, sigma2 ) * 0.1  #SHELL_FACTOR
+        pairShellSizeMargin = min( sigma1, sigma2 ) * self.SINGLE_SHELL_FACTOR
 
         
         # Squeezing check:
@@ -1990,7 +1992,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.removeEvent( obj )
 
             radius = obj.particle.species.radius *\
-                EGFRDSimulator.SHELL_FACTOR# * SAFETY
+                ( 1.0 + self.MULTI_SHELL_FACTOR )
             neighbors = self.getNeighborsWithinRadius( obj.pos, radius,
                                                        ignore=[obj,] )
             bursted = self.burstNonMultis( neighbors )
@@ -2017,7 +2019,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def addToMulti( self, single, multi ):
         print 'adding', single, 'to', multi
 
-        shellSize = single.particle.species.radius * EGFRDSimulator.SHELL_FACTOR
+        shellSize = single.particle.species.radius * \
+            ( 1.0 + self.MULTI_SHELL_FACTOR )
         multi.addParticle( single.particle )
         multi.addShell( single.pos, shellSize )
 
