@@ -1938,7 +1938,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # 1. Shell cannot be larger than max shell size or sim cell size.
         if minShellSize > maxShellSize:
-            print 'tryParing(): minShellSize > maxShellSize: none created'
+            print 'minShellSize > maxShellSize: Pair not created'
             return None
 
         # 2. Check if a Pair is better than two Singles
@@ -1946,11 +1946,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # pairDistance < min( particles' distances to the shell )
         if isinstance( closest, Single ):
             shellSize = minShellSize \
-                + ( closestShellDistance - minShellSize ) * .5
+                + ( closestShellDistance - minShellSize ) * .5 #FIXME:
         else:
             shellSize = closestShellDistance / SAFETY
         
-        if shellSize < 1.5 * minShellSize:  #FIXME: factor ok?
+        if shellSize < 1.3 * minShellSize:  #FIXME: factor ok?
             print 'Singles are better than Pair'
             return None
 
