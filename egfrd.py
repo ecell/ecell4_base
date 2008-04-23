@@ -946,7 +946,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
         self.MULTI_SHELL_FACTOR = 0.1
-        self.SINGLE_SHELL_FACTOR = 0.1
+        self.SINGLE_SHELL_FACTOR = 1
 
         #self.shellMatrix = ObjectMatrix()
         self.shellMatrix = SimpleObjectMatrix()
@@ -1407,12 +1407,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         bursted = self.burstNonMultis( neighbors )
 
-        neighborDists = self.objDistanceArray( single.pos, bursted )
-        neighbors = [ bursted[i] for i in 
-                      ( neighborDists <= minShell ).nonzero()[0] ]
-
-        if neighbors:
-            obj, b = self.formPairOrMulti( single, neighbors )
+        if bursted:
+            obj, b = self.formPairOrMulti( single, bursted )
             bursted.extend( b )
 
             if obj:
@@ -1823,12 +1819,21 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         bursted = []
 
         # Try forming a Pair.
-        if len( neighbors ) == 1 and isinstance( neighbors[0], Single ):
+        if isinstance( neighbors[0], Single ):
             obj, bursted = self.formPair( single, neighbors[0] )
             if obj:
                 return obj, bursted
 
+
         # Then, a Multi.
+        minShell = single.getMinRadius() * ( 1.0 + self.MULTI_SHELL_FACTOR )
+        neighborDists = self.objDistanceArray( single.pos, neighbors )
+        neighbors = [ neighbors[i] for i in 
+                      ( neighborDists <= minShell ).nonzero()[0] ]
+
+        if not neighbors:
+            return None, bursted
+
         closest = neighbors[0]
 
 
