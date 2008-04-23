@@ -1331,20 +1331,23 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 //    this->updateAlphaTable0( low );
 //    this->createPsurvTable( psurvTable, r0, low );
 
-    Real low_value( GSL_FN_EVAL( &F, low ) );
-    while( low_value > 0.0 )
+    Real low_value( 1.0 );
+    while( 1 )
     {
-	low *= .1;
-
 	this->updateAlphaTable0( low );
 	this->createPsurvTable( psurvTable, r0, low );
 
         const Real low_value_new( GSL_FN_EVAL( &F, low ) );
 
+        if( low_value < 0.0 )
+        {
+            break;
+        }
+
 	printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value_new );
 
         // FIXME: 
-	if( fabs( low ) <= this->MIN_T || 
+	if( fabs( low ) < this->MIN_T || 
             fabs( low_value - low_value_new ) < TOLERANCE ) 
 	{
 	    std::cerr << "Couldn't adjust low.  Returning MIN_T (= "
@@ -1355,6 +1358,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
             //return low;
 	}
 
+	low *= .1;
         low_value = low_value_new;
     }
 

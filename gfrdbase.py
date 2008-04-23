@@ -346,8 +346,6 @@ class GFRDSimulatorBase( object ):
 
         pos %= self.worldSize
 
-        return pos
-
     def getReactionType1( self, species ):
         return self.reactionTypeMap1.get( species, None )
 

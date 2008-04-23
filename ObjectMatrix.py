@@ -96,7 +96,10 @@ class SimpleObjectMatrix( object ):
 
     def setWorldSize( self, size ):
         self.worldSize = size
-        self.cellSize = self.worldSize
+        if isinstance( size, float ):
+            self.cellSize = self.worldSize
+        else:
+            self.cellSize = numpy.max( self.worldSize )
 
     def setMatrixSize( self, size ):
         print 'SimpleObjectMatrix.setMatrixSize() ignored.'
@@ -245,6 +248,11 @@ class ObjectMatrix( object ):
         self.initialize()
 
     def initialize( self ):
+
+        if not isinstance( self.worldSize, float ):
+            raise NotImplemented,\
+                'ObjectMatrix does not support non-cubic world.' + \
+                'Use SimpleObjectMatrix.'
 
         self.cellSize = self.worldSize / self.matrixSize
 

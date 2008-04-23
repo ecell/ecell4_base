@@ -42,7 +42,7 @@ def calculateBDDt( speciesList, factor = DEFAULT_DT_FACTOR ):
     sigma_min = radius_min * 2
 
     dt = factor * sigma_min ** 2 / D_max  
-    #print 'dt = ', dt
+    print 'bd dt = ', dt
 
     return dt
 
@@ -193,7 +193,7 @@ class BDSimulatorCoreBase( object ):
                 return
 
 
-        newpos = self.applyBoundary( newpos )
+        self.applyBoundary( newpos )
 
         try:
             self.moveParticle( particle, newpos )
@@ -269,8 +269,8 @@ class BDSimulatorCoreBase( object ):
                 newpos2 = oldpos - vector * ( D2 / D12 )
                 #FIXME: check surfaces here
             
-                newpos1 = self.applyBoundary( newpos1 )
-                newpos2 = self.applyBoundary( newpos2 )
+                self.applyBoundary( newpos1 )
+                self.applyBoundary( newpos2 )
 
                 # accept the new positions if there is enough space.
                 if self.checkOverlap( newpos1, radius1,
@@ -310,7 +310,7 @@ class BDSimulatorCoreBase( object ):
 
             pos2t = cyclicTranspose( pos2, pos1, self.main.worldSize )
             newPos = ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 )
-            newPos = self.applyBoundary( newPos )
+            self.applyBoundary( newPos )
 
             self.clearVolume( newPos, productSpecies.radius,
                               ignore=[ particle1, particle2 ] )

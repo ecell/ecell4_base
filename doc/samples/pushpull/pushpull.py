@@ -39,7 +39,7 @@ def C2N( c, V ):
 # N_K
 # N_P
 # V (liter)
-# mode:  'normal' 'immobile' 'localized'
+# mode:  'normal' 'immobile' 'localized' 'single' 'clustered'
 # T
 
 Keq_str = sys.argv[1]
@@ -56,8 +56,7 @@ koff_ratio = float( koff_ratio_str )
 V = float( V_str )
 T = float( T_str )
 
-#radius = 2.5e-9
-radius = 5e-9
+radius = 2.5e-9
 sigma = radius * 2
 D1 = 1.0e-12
 
@@ -105,7 +104,7 @@ fracS = fraction_S( N_K, N_P, Keq )
 # give some bias
 fracS -= 0.1
 
-S_tot = 300
+S_tot = 30
 S_conc = S_tot / V * 1e3   # in #/m^3
 
 N_S = S_tot * fracS
@@ -114,7 +113,7 @@ N_Sp = S_tot - N_S
 Dtot = D1 + D2
 
 #ka = k_a( kon, Dtot, sigma )
-ka = 1.5e10 / N_A / 1e3 # 1/M s -> m^3/s
+ka = 9e9 / N_A / 1e3 # 1/M s -> m^3/s
 
 kD = k_D( Dtot, sigma )  # m^3/s
 
@@ -170,7 +169,7 @@ s.throwInParticles( S, N_S, box1 )
 
 # Stir before actually start the sim.
 
-stirTime = 1e-3
+stirTime = 1e-8
 while 1:
     s.step()
     nextTime = s.scheduler.getTopTime()

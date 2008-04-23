@@ -102,7 +102,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
     def createParticle( self, species, pos ):
 
         if self.withinShell( pos, species.radius ):
-            if not self.checkOverlap(pos, species.radius, ignore ):
+            if not self.checkOverlap(pos, species.radius ):
                 raise NoSpace()
         else:
             self.escaped = True
@@ -160,7 +160,9 @@ class MultiBDCore( BDSimulatorCoreBase ):
         n, _ = self.particleMatrix.getNeighborsWithinRadius( pos, radius )
 
         for particle in ignore:
-            n.remove( ( particle.species, particle.serial ) )
+            p = ( particle.species, particle.serial )
+            if p in n:
+                n.remove( p )
 
         if n:
             return False
@@ -1300,8 +1302,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 newpos1 = oldpos + vector * ( D1 / D12 )
                 newpos2 = oldpos - vector * ( D2 / D12 )
 
-                newpos1 = self.applyBoundary( newpos1 )
-                newpos2 = self.applyBoundary( newpos2 )
+                self.applyBoundary( newpos1 )
+                self.applyBoundary( newpos2 )
 
                 # accept the new positions if there is enough space.
                 if ( self.checkOverlap( newpos1, particleRadius1,
@@ -1346,7 +1348,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         displacement = single.drawDisplacement( r )
             
         newpos = oldpos + displacement
-        newpos = self.applyBoundary( newpos )
+        self.applyBoundary( newpos )
             
         assert self.checkOverlap( newpos, particleRadius,
                                   ignore = [ single.particle, ] )
@@ -1446,7 +1448,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # recheck the closest and distance to it.
 
 
-        #print 'single shell', single.radius, 'dt', single.dt
+        print 'single shell', single.radius, 'dt', single.dt
 
         return single.dt
 
@@ -1481,8 +1483,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         particleRadius2 = species2.radius
         
         oldInterParticle = particle2.pos - particle1.pos
-
-        oldCoM = self.applyBoundary( pair.getCoM() )
+        oldCoM = pair.getCoM()
+        self.applyBoundary( oldCoM )
 
         # Three cases:
         #  0. Reaction
@@ -1545,12 +1547,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     pair.radius
 
                 #FIXME: SURFACE
-                newPos = self.applyBoundary( newCoM )
+                self.applyBoundary( newCoM )
 
                 self.removeParticle( particle1 )
                 self.removeParticle( particle2 )
 
-                particle = self.createParticle( species3, newPos )
+                particle = self.createParticle( species3, newCoM )
                 newsingle = self.createSingle( particle )
                 self.addToShellMatrix( newsingle )
                 self.addSingleEvent( newsingle )
@@ -1599,8 +1601,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 
             newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                   oldInterParticle )
-            newpos1 = self.applyBoundary( newpos1 )
-            newpos2 = self.applyBoundary( newpos2 )
+            self.applyBoundary( newpos1 )
+            self.applyBoundary( newpos2 )
 
 
         # 2 escaping through a_R.
@@ -1631,8 +1633,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                       oldInterParticle )
-            newpos1 = self.applyBoundary( newpos1 )
-            newpos2 = self.applyBoundary( newpos2 )
+            self.applyBoundary( newpos1 )
+            self.applyBoundary( newpos2 )
 
         else:
             raise SystemError, 'Bug: invalid eventType.'
@@ -1744,7 +1746,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             
         newpos = oldpos + displacement
 
-        newpos = self.applyBoundary( newpos )
+        self.applyBoundary( newpos )
 
         assert self.distance( newpos, oldpos ) <= single.getMobilityRadius()
         assert self.checkOverlap( newpos, particleRadius,
@@ -1909,7 +1911,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         com = calculatePairCoM( single1.pos, single2.pos,\
                                 single1.getD(), single2.getD(),\
                                 self.getWorldSize() )
-        com = self.applyBoundary( com )
+        self.applyBoundary( com )
         closest, closestShellDistance =\
             self.getClosestObj( com, ignore = ( single1, single2 ) )
         pairDistance = self.distance( single1.pos, single2.pos )
