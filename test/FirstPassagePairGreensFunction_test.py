@@ -153,7 +153,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         eventType = gf.drawEventType( 0.999999, r0, t )
         self.assertEqual( eventType, 1 )
 
-
     def test_DrawR( self ):
         D = 1e-12
         kf = 1e-8
@@ -459,15 +458,15 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             self.assertAlmostEqual( pleaves + pleavea, psurv )
             t *= .1
 
-    def no_test_eventType( self ):
+    def test_eventType( self ):
 
         D = 1e-12
         sigma = 1e-8
         #kf = 1e-6
-        kf = 1e-2
+        kf = 1e-16
 
         t = 1e-3
-        r0 = 1.1e-8
+        r0 = 1e-7
         
         a = 1e-7
         
@@ -477,7 +476,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         et = gf.eventType( r0 )
         print 'et', et
         self.assertNotEqual( 0.0, et )
-        #self.assertAlmostEqual( dsurv, leaves + leavea )
+
 
     def test_p_int_r( self ):
 

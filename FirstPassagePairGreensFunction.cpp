@@ -831,36 +831,6 @@ FirstPassagePairGreensFunction::leaves_i( const Real alpha,
 
 
 const Real 
-FirstPassagePairGreensFunction::eventType_i( const Real alpha,
-                                             const Real r0 ) const
-{
-    const Real a( geta() );
-    const Real sigma( getSigma() );
-    const Real h( geth() );
-//    const Real D( getD() );
-    const Real hsigma_p_1( this->hsigma_p_1 );
-    
-    const Real sigmasq( sigma * sigma );
-//    const Real alphasq( alpha * alpha );
-
-    const Real angle_a( alpha * ( a - sigma ) );
-    Real sin_a;
-    Real cos_a;
-    sincos( angle_a, &sin_a, &cos_a );
-        
-    const Real num( h * sigmasq );    
-
-    const Real den( - a * hsigma_p_1 * cos_a 
-                    + h * sigmasq + sigma * a * alpha * sin_a );
-
-    const Real result( num / den );
-
-	
-    return result;
-}
-
-
-const Real 
 FirstPassagePairGreensFunction::p_leavea_i( const Real alpha,
 					    const Real r0 ) const
 {
@@ -1108,17 +1078,6 @@ FirstPassagePairGreensFunction::leaves_i_exp( const unsigned int i,
     return std::exp( - getD() * t * alpha * alpha ) * leaves_i( alpha, r0 );
 }
 
-
-const Real 
-FirstPassagePairGreensFunction::eventType_alpha( const unsigned int i,
-                                                 const Real r0 ) const
-{
-    const Real alpha0( this->getAlpha0( i * 2 ) );
-    const Real alpha1( this->getAlpha0( i * 2 + 1 ) );
-    //printf("%g\n",eventType_i( alpha0, r0 ) + eventType_i( alpha1, r0 ) );
-    return eventType_i( alpha0, r0 ) + eventType_i( alpha1, r0 );
-}
-
 const Real 
 FirstPassagePairGreensFunction::p_leavea_i_exp( const unsigned int i,
 						const Real t,
@@ -1241,18 +1200,6 @@ FirstPassagePairGreensFunction::leavea( const Real t,
 			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
-
-const Real 
-FirstPassagePairGreensFunction::eventType( const Real r0 ) const
-{
-    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					eventType_alpha,
-					this,
-					_1, r0 ),
-			   this->MAX_ALPHA_SEQ ) );
-    return p;
-}
-
 
 const Real 
 FirstPassagePairGreensFunction::p_leaves( const Real t,
@@ -1472,15 +1419,16 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     THROW_UNLESS( std::invalid_argument, t > 0.0 );
 
 
-    const Real reaction( leaves( t, r0 ) * 
-                         4.0 * M_PI * sigma * sigma );
-    const Real escape( leavea( t, r0 ) *
-                       4.0 * M_PI * a * a );
+    const Real reaction( leaves( t, r0 ) * 4.0 * M_PI * sigma * sigma );
+    const Real escape( leavea( t, r0 ) * 4.0 * M_PI * a * a );
     //const Real den( dp_survival( t, r0 ) );
 
     //const Real value( reaction / den );
     const Real value( reaction / ( reaction + escape ) );
-    //printf("%g %g %g %g %g\n", value, value2,reaction,den, escape );
+    printf("%g %g %g %g %g\n", value, reaction, escape );
+
+    printf("%g\n",value );
+    assert( value >= - 1e-7 && value <= 1.0 + 1e-7 );
 
     if( rnd < value )  
     {

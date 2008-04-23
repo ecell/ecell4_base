@@ -10,8 +10,8 @@ s = EGFRDSimulator()
 
 #s = BDSimulator()
 
-#L = 1e-6
-L = 5e-8
+L = 1e-6
+#L = 5e-8
 #L = 2e-7
 s.setWorldSize( [L,2*L,2*L] )
 s.setMatrixSize( 10 )
