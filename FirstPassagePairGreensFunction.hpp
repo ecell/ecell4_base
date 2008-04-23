@@ -88,6 +88,8 @@ public:
     const Real leavea( const Real t,
 		       const Real r0 ) const;
 
+    const Real eventType( const Real r0 ) const;
+
     const Real p_leaves( const Real t,
 			 const Real r0 ) const;
 
@@ -219,6 +221,9 @@ protected:
 
     const Real leaves_i( const Real alpha,
 			 const Real r0 ) const;
+
+    const Real eventType_i( const Real alpha,
+                          const Real r0 ) const;
     
     const Real p_leavea_i( const Real alpha,
 			   const Real r0 ) const;
@@ -285,6 +290,9 @@ protected:
     const Real leaves_i_exp( const unsigned int i,
 			     const Real alpha,
 			     const Real r0 ) const;
+
+    const Real eventType_alpha( const unsigned int i,
+                                const Real r0 ) const;
     
     const Real p_leavea_i_exp( const unsigned int i,
 			       const Real alpha,

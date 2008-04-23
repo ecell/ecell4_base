@@ -419,10 +419,10 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         D = 1e-12
         sigma = 1e-8
-        kf = 1e-8
+        kf = 1e-13
 
         t = 1e-3
-        r0 = 5e-8
+        r0 = 1e-8
         
         a = 1e-7
         
@@ -432,7 +432,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         dsurv = gf.dp_survival( t, r0 )
         leaves = gf.leaves( t, r0 ) * 4.0 * numpy.pi * sigma * sigma
         leavea = gf.leavea( t, r0 ) * 4.0 * numpy.pi * a * a
-
+        #print 'll', leavea, leaves, dsurv
         self.assertNotEqual( 0.0, dsurv )
         self.assertAlmostEqual( dsurv, leaves + leavea )
 
@@ -458,6 +458,26 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             self.assertNotEqual( 0.0, psurv )
             self.assertAlmostEqual( pleaves + pleavea, psurv )
             t *= .1
+
+    def no_test_eventType( self ):
+
+        D = 1e-12
+        sigma = 1e-8
+        #kf = 1e-6
+        kf = 1e-2
+
+        t = 1e-3
+        r0 = 1.1e-8
+        
+        a = 1e-7
+        
+        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
+        gf.seta( a )
+
+        et = gf.eventType( r0 )
+        print 'et', et
+        self.assertNotEqual( 0.0, et )
+        #self.assertAlmostEqual( dsurv, leaves + leavea )
 
     def test_p_int_r( self ):
 
