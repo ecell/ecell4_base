@@ -2087,7 +2087,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         shells, distances = self.getNeighborShellsWithinRadius( pos, radius )
 
         neighbors = [ s[0] for s in shells if s[0] not in ignore ]
-        neighbors = list( set( neighbors ) )  # uniq()
+        #neighbors = list( set( neighbors ) )  # uniq()
+        neighbors = uniq( neighbors )
 
         return neighbors
 

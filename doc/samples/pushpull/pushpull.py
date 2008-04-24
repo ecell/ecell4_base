@@ -163,14 +163,17 @@ elif mode == 'localized':
     s.throwInParticles( K, N_K, plain1 )
     s.throwInParticles( P, N_P, plain2 )
 elif mode == 'single':
-    s.placeParticle( K, [0,0,0] )
-    s.placeParticle( K, [0,0,L/2] )
-    s.placeParticle( K, [0,L/2,0] )
-    s.placeParticle( K, [0,L/2,L/2] )
-    s.placeParticle( P, [L/2,0,0] )
-    s.placeParticle( P, [L/2,0,L/2] )
-    s.placeParticle( P, [L/2,L/2,0] )
-    s.placeParticle( P, [L/2,L/2,L/2] )
+    x = L/2
+    yz = L/2
+    tl = L/4
+    s.placeParticle( K, [ tl, tl, tl ] )
+    s.placeParticle( K, [ tl, tl, yz+tl ] )
+    s.placeParticle( K, [ tl, yz+tl, tl ] )
+    s.placeParticle( K, [ tl, yz+tl, yz+tl ] )
+    s.placeParticle( P, [ x+tl, tl, tl ] )
+    s.placeParticle( P, [ x+tl, tl, yz+tl ] )
+    s.placeParticle( P, [ x+tl, yz+tl, tl ] )
+    s.placeParticle( P, [ x+tl, yz+tl, yz+tl ] )
 else:
     assert False
 
@@ -227,8 +230,9 @@ l = Logger( s,
             ( kcat1, kcat2 ) +
             '#@ ka=%g; kd1=%g; kd2=%g\n' %
             ( ka, kd1, kd2 ) )
-#l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
+#l.setParticleOutput( ('K','P') )
 #l.setInterval( 1e-3 )
+#l.writeParticles()
 l.log()
 
 

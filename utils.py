@@ -22,6 +22,11 @@ def meanArrivalTime( r, D ):
     return ( r * r ) / ( 6.0 * D )
 
 
+def uniq( l ):
+    set = {}
+    map(set.__setitem__, l, [])
+    return set.keys()
+
 
 '''
 Transpose the position pos1 so that it can be used with another 
