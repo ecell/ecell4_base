@@ -20,7 +20,7 @@ class FirstPassagePairGreensFunction
 
     static const Real MIN_T = 1e-12;
 
-    static const unsigned int MAX_ORDER = 55;
+    static const unsigned int MAX_ORDER = 100;
     static const unsigned int MAX_ALPHA_SEQ = 1000;
 
 

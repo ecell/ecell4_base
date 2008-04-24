@@ -300,6 +300,7 @@ namespace libecs
     
 	void clear()
 	{
+            time = 0.0;
 	    this->eventPriorityQueue.clear();
 //	    this->eventDependencyArray.clear();
 	}
