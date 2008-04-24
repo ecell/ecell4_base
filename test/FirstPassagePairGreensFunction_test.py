@@ -282,14 +282,15 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         kf = 1e-8
         sigma = 1e-8
         a = 1e-7
-        r = 5e-8
-        r0 = 5e-8
+        r = 2e-8
+        r0 = 2e-8
         
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
-        t = 1e-4  # well this is not *very* small..
+        t = 1e-5  # well this is not *very* small..
         theta = gf.drawTheta( 0.5, r, r0, t )
+
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
 

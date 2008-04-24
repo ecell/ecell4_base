@@ -2168,6 +2168,12 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	return 0.0;
     }
 
+    //const Real Dt6_r0( sqrt( 6.0 * getD() * t ) / r0 );
+    //const Real high( 5 * Dt6_r0 < 1.0 ? asin( 5 * Dt6_r0 ) : M_PI );
+    //const Real mean( Dt6_r0 < 1.0 ? asin( Dt6_r0 ) : M_PI );
+    //printf("theta high %g %g %g\n", high,mean, t );
+    const Real high( M_PI );
+
     RealVector p_nTable;
 
     if( r == geta() || r < 0.0 )
@@ -2180,7 +2186,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	makep_nTable( p_nTable, r, r0, t );
     }
 
-    const Real ip_theta_pi( ip_theta_table( M_PI, r, r0, t, p_nTable ) );
+    const Real ip_theta_pi( ip_theta_table( high, r, r0, t, p_nTable ) );
 
     ip_theta_params params = { this, r, r0, t, p_nTable, rnd * ip_theta_pi };
 
@@ -2192,7 +2198,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
-    gsl_root_fsolver_set( solver, &F, 0.0, M_PI );
+    gsl_root_fsolver_set( solver, &F, 0.0, high );
 
     const unsigned int maxIter( 100 );
 

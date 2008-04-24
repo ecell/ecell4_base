@@ -174,7 +174,7 @@ class SimpleObjectMatrix( object ):
 
         distances = self.distanceArray( matrix.positions, pos ) - matrix.radii
 
-        args = ( distances <= radius ).nonzero()[0]
+        args = ( distances < radius ).nonzero()[0]
         distances = distances.take( args )
         neighbors = [ matrix.keyList[arg] for arg in args ]
 
@@ -386,7 +386,7 @@ class ObjectMatrix( object ):
             if matrix.size == 0:
                 continue
             dists = self.distanceArray( matrix.positions, pos ) - matrix.radii
-            args = ( dists <= radius ).nonzero()[0]
+            args = ( dists < radius ).nonzero()[0]
 
             if len( args ) != 0:
                 distances += [ dists.take( args ), ]
