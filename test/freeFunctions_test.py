@@ -151,7 +151,7 @@ class FreeFunctionsTestCase( unittest.TestCase ):
         import math
 
         D = 1e-12
-        t = 1e-10
+        t = 1e-8
         sigma = 1e-8
 
         r = mod.drawR_gbd( 0.0, sigma, t, D )

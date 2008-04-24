@@ -311,15 +311,16 @@ const Real I_bd_r( const Real r, const Real sigma, const Real t, const Real D )
 
     /* FIXME: expm1, erfc?
     printf("%g %g %g %g %g %g\n", 
-           exp( - sigmasq / Dt ),
-           exp( - rps_sq / Dt4 ),
-           exp( - rms_sq / Dt4 ),
+           expm1( - sigmasq / Dt ),
+           expm1( - rps_sq / Dt4 ),
+           expm1( - rms_sq / Dt4 ),
            erf( ( r - sigma ) / sqrtDt4 ),
            erf( sigma / sqrtDt ),
            erf( ( r + sigma ) / sqrtDt4 ) );*/
 
 
     const Real result( ( term1 * ( term2 + term3 + term4 + term5 )
+                         // + sigmasq + rsigma + rsigma - Dt2 )//expm1
                          + term6 + term7 + term8 ) / 6.0 );
     
     return result;
@@ -343,7 +344,7 @@ static const Real I_gbd_r_F( const Real r,
     const Real D( params->sigma );
     const Real target( params->target );
 
-//    printf("I %g\n",I_bd_r( r, sigma, t, D ) - target);
+    printf("I %g\n",I_bd_r( r, sigma, t, D ) - target);
     return I_bd_r( r, sigma, t, D ) - target;
 }
 
