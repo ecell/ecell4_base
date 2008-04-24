@@ -9,6 +9,7 @@ import unittest
 
 import _gfrd as mod
 
+import math
 import numpy
 
 
@@ -87,7 +88,6 @@ class FreeFunctionsTestCase( unittest.TestCase ):
     def test_int_g_bd_is_I_bd_smallt( self ):
 
         import scipy.integrate
-        import math
 
         D = 1e-12
         t = 1e-20
@@ -105,6 +105,45 @@ class FreeFunctionsTestCase( unittest.TestCase ):
         self.assertAlmostEqual( 0.0, (ibd-igbd)/ibd )
 
 
+    def test_I_bd_r_large_is_I_bd( self ):
+
+        D = 1e-12
+        t = 1e-10
+        sigma = 1e-8
+        r0 = 1e-9
+
+        ibd = mod.I_bd( sigma, t, D )
+        ibdr = mod.I_bd_r( sigma + 6 * math.sqrt( 6 * D * t ), sigma, t, D )
+        print ibd, ibdr
+
+        self.assertAlmostEqual( 0.0, (ibd-ibdr)/ibd )
+
+
+    def test_int_g_bd_is_I_bd_r( self ):
+
+        import scipy.integrate
+        import math
+
+        D = 1e-12
+        t = 1e-7
+        sigma = 1e-8
+
+        r_max = 6 * math.sqrt( 6 * D * t )
+
+        ibd = mod.I_bd_r( sigma, sigma, t, D )
+        self.failIf( ibd != 0.0 )
+
+        N = 20
+        for i in range( 1, N ):
+            r = sigma + r_max / N * i
+            ibd = mod.I_bd_r( r, sigma, t, D )
+            result = scipy.integrate.quad( mod.g_bd, sigma, r,
+                                           args=( sigma, t, D ) )
+            igbd = result[0]
+
+            self.failIf( ibd == 0 )
+            self.assertAlmostEqual( 0.0, (ibd-igbd)/ibd )
+
 
     def test_drawR_gbd( self ):
 
@@ -112,13 +151,19 @@ class FreeFunctionsTestCase( unittest.TestCase ):
         import math
 
         D = 1e-12
-        t = 1e-20
+        t = 1e-10
         sigma = 1e-8
 
         r = mod.drawR_gbd( 0.0, sigma, t, D )
-        print 'r', r
         self.assertEqual( r, sigma )
 
+        r = mod.drawR_gbd( 0.5, sigma, t, D )
+        self.failIf( r <= sigma )
+        #print 'rr', r
+
+        r = mod.drawR_gbd( 1.0, sigma, t, D )
+        self.failIf( r <= sigma )
+        #print 'rr', r
 
         
 if __name__ == "__main__":

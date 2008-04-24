@@ -309,9 +309,18 @@ const Real I_bd_r( const Real r, const Real sigma, const Real t, const Real D )
     const Real term7( - ( sigmacb + sigmacb ) * erf( sigma / sqrtDt ) );
     const Real term8( ( sigmacb + rcb ) * erf( ( r + sigma ) / sqrtDt4 ) );
 
+    /* FIXME: expm1, erfc?
+    printf("%g %g %g %g %g %g\n", 
+           exp( - sigmasq / Dt ),
+           exp( - rps_sq / Dt4 ),
+           exp( - rms_sq / Dt4 ),
+           erf( ( r - sigma ) / sqrtDt4 ),
+           erf( sigma / sqrtDt ),
+           erf( ( r + sigma ) / sqrtDt4 ) );*/
 
-    const Real result( ( term1 * ( term2 + term3 + term4 + term5 ) +
-                         term6 + term7 + term8 ) / 6.0);
+
+    const Real result( ( term1 * ( term2 + term3 + term4 + term5 )
+                         + term6 + term7 + term8 ) / 6.0 );
     
     return result;
 }
@@ -334,7 +343,7 @@ static const Real I_gbd_r_F( const Real r,
     const Real D( params->sigma );
     const Real target( params->target );
 
-    printf("I %g\n",I_bd_r( r, sigma, t, D ) - target);
+//    printf("I %g\n",I_bd_r( r, sigma, t, D ) - target);
     return I_bd_r( r, sigma, t, D ) - target;
 }
 
@@ -342,7 +351,7 @@ const Real drawR_gbd( const Real rnd, const Real sigma,
                       const Real t, const Real D )
 {
     const Real I( I_bd( sigma, t, D ) );
-    printf("II %g\n", I );
+//    printf("II %g\n", I );
     g_bd_params params = { sigma, t, D, rnd * I };
 
     gsl_function F =
@@ -352,7 +361,7 @@ const Real drawR_gbd( const Real rnd, const Real sigma,
     };
 
     Real low( sigma );
-    Real high( sigma + 5.0 * sqrt ( 6.0 * D * t ) );
+    Real high( sigma + 10.0 * sqrt ( 6.0 * D * t ) );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
