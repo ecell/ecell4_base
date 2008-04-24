@@ -100,6 +100,8 @@ BOOST_PYTHON_MODULE( _gfrd )
     def( "ip_theta_free", ip_theta_free );
     def( "g_bd", g_bd );
     def( "I_bd", I_bd );
+    def( "I_bd_r", I_bd_r );
+    def( "drawR_gbd", drawR_gbd );
 
     class_<PyEvent>( "PyEvent", 
                      init<const Real, const object&, const object&>() )

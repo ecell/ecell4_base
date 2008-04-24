@@ -103,3 +103,23 @@ class FreeFunctionsTestCase( unittest.TestCase ):
         print igbd
         self.failIf( ibd == 0 )
         self.assertAlmostEqual( 0.0, (ibd-igbd)/ibd )
+
+
+
+    def test_drawR_gbd( self ):
+
+        import scipy.integrate
+        import math
+
+        D = 1e-12
+        t = 1e-20
+        sigma = 1e-8
+
+        r = mod.drawR_gbd( 0.0, sigma, t, D )
+        print 'r', r
+        self.assertEqual( r, sigma )
+
+
+        
+if __name__ == "__main__":
+    unittest.main()

@@ -28,5 +28,11 @@ const Real ip_theta_free( const Real theta, const Real r, const Real r0,
                           const Real t, const Real D );
 
 const Real g_bd( const Real r0, const Real sigma, const Real t, const Real D );
-    
+
 const Real I_bd( const Real sigma, const Real t, const Real D );
+
+const Real I_bd_r( const Real r, const Real sigma, const Real t, const Real D );
+
+const Real drawR_gbd( const Real rnd, const Real sigma, 
+                      const Real t, const Real D );
+

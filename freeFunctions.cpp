@@ -1,5 +1,8 @@
+#include <iostream>
 
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_roots.h>
+#include <gsl/gsl_errno.h>
 
 #include "freeFunctions.hpp"
 
@@ -266,12 +269,124 @@ const Real I_bd( const Real sigma, const Real t, const Real D )
 
     const Real term1( 1.0 / ( 3.0 * sqrtPi ) );
     const Real term2( sigmasq - Dt2 );
-    const Real term3( - 3.0 * sigmasq + Dt2 );
+    const Real term3( Dt2 - 3.0 * sigmasq );
     const Real term4( sqrtPi * sigmasq * sigma * erfc( sigma / sqrtDt ) );
 
-    const Real result( term1 * ( ( - sqrtDt *
-                                   ( term2 * exp( - sigmasq / Dt ) + term3 ) )
+    const Real result( term1 * ( - sqrtDt *
+                                 ( term2 * exp( - sigmasq / Dt ) + term3 )
                                  + term4 ) );
     
     return result;
+}
+
+
+const Real I_bd_r( const Real r, const Real sigma, const Real t, const Real D )
+{
+    const Real sqrtPi( sqrt( M_PI ) );
+
+    const Real Dt( D * t );
+    const Real Dt2( Dt + Dt );
+    const Real Dt4( Dt2 + Dt2 );
+    const Real sqrtDt( sqrt( Dt ) );
+    const Real sqrtDt4( sqrt( Dt4 ) );
+    const Real sigmasq( sigma * sigma );
+
+    const Real sigmacb( sigmasq * sigma );
+    const Real rcb( gsl_pow_3( r ) );
+
+    const Real rsigma( r * sigma );
+
+    const Real rps_sq( gsl_pow_2( r + sigma ) );
+    const Real rms_sq( gsl_pow_2( r - sigma ) );
+
+    const Real term1( - 2.0 * sqrtDt / sqrtPi );
+    const Real term2( exp( - sigmasq / Dt ) * ( sigmasq - Dt2 ) );
+    const Real term3( - exp( - rps_sq / Dt4 ) * ( rms_sq + rsigma - Dt2 ) );
+    const Real term4( exp( - rms_sq / Dt4 ) * ( rps_sq - rsigma - Dt2 ) );
+    const Real term5( - sigmasq * 3.0 + Dt2 );
+
+    const Real term6( ( sigmacb - rcb ) * erf( ( r - sigma ) / sqrtDt4 ) );
+    const Real term7( - ( sigmacb + sigmacb ) * erf( sigma / sqrtDt ) );
+    const Real term8( ( sigmacb + rcb ) * erf( ( r + sigma ) / sqrtDt4 ) );
+
+
+    const Real result( ( term1 * ( term2 + term3 + term4 + term5 ) +
+                         term6 + term7 + term8 ) / 6.0);
+    
+    return result;
+}
+
+
+struct g_bd_params
+{ 
+    const Real sigma;
+    const Real t;
+    const Real D;
+    const Real target;
+};
+
+
+static const Real I_gbd_r_F( const Real r,
+                             const g_bd_params* const params )
+{
+    const Real sigma( params->sigma );
+    const Real t( params->t );
+    const Real D( params->sigma );
+    const Real target( params->target );
+
+    printf("I %g\n",I_bd_r( r, sigma, t, D ) - target);
+    return I_bd_r( r, sigma, t, D ) - target;
+}
+
+const Real drawR_gbd( const Real rnd, const Real sigma, 
+                      const Real t, const Real D )
+{
+    const Real I( I_bd( sigma, t, D ) );
+    printf("II %g\n", I );
+    g_bd_params params = { sigma, t, D, rnd * I };
+
+    gsl_function F =
+    {
+        reinterpret_cast<typeof(F.function)>( &I_gbd_r_F ),
+        &params
+    };
+
+    Real low( sigma );
+    Real high( sigma + 5.0 * sqrt ( 6.0 * D * t ) );
+
+    const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
+    gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
+    gsl_root_fsolver_set( solver, &F, low, high );
+
+    const unsigned int maxIter( 100 );
+
+    unsigned int i( 0 );
+    while( true )
+    {
+	gsl_root_fsolver_iterate( solver );
+
+	low = gsl_root_fsolver_x_lower( solver );
+	high = gsl_root_fsolver_x_upper( solver );
+	int status( gsl_root_test_interval( low, high, 1e-18, 1e-12 ) );
+
+	if( status == GSL_CONTINUE )
+	{
+	    if( i >= maxIter )
+	    {
+		gsl_root_fsolver_free( solver );
+		std::cerr << "drawR_gbd: failed to converge." << std::endl;
+		throw std::exception();
+	    }
+	}
+	else
+	{
+	    break;
+	}
+
+	++i;
+    }
+  
+    gsl_root_fsolver_free( solver );
+
+    return low;
 }
