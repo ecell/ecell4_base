@@ -24,7 +24,7 @@ def meanArrivalTime( r, D ):
 
 def uniq( l ):
     set = {}
-    map(set.__setitem__, l, [])
+    map( set.__setitem__, l, [] )
     return set.keys()
 
 

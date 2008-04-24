@@ -1162,13 +1162,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         return self.scheduler.addEvent( t, func, arg )
 
     def addSingleEvent( self, single ):
-        print 'ase'
 
         eventID = self.addEvent( self.t + single.dt, 
                                  Delegate( self, EGFRDSimulator.fireSingle ), 
                                  single )
         single.eventID = eventID
-        print 'ase-'
 
     def addPairEvent( self, pair ):
 
