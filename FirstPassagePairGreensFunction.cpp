@@ -939,8 +939,6 @@ FirstPassagePairGreensFunction::p_int_r_i( const Real r,
 
     const Real result( 2 * num1 * num2 / den );
 
-    //printf("%g\t%g\t%g\t%g\t\n",result, alpha, num1, num2, den);
-
     return result;
 }
 
@@ -1104,7 +1102,6 @@ p_int_r_i_exp( const unsigned int i,
 	       const Real r0 ) const
 {
     const Real alpha( this->getAlpha0( i ) );
-    //printf("exp %g\n",std::exp( - getD() * t * alpha * alpha ) );
 
     return std::exp( - getD() * t * alpha * alpha ) * 
 	p_int_r_i( r, alpha, r0, num_r0( alpha, r0 ) );
@@ -1396,8 +1393,6 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	++i;
     }
   
-    // printf("%d\n", i );
-
 
     Real t( gsl_root_fsolver_root( solver ) );
     gsl_root_fsolver_free( solver );
@@ -1425,10 +1420,9 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
 
     //const Real value( reaction / den );
     const Real value( reaction / ( reaction + escape ) );
-    printf("%g %g %g %g %g\n", value, reaction, escape );
+    //printf("%g %g %g %g %g\n", value, reaction, escape );
 
-    printf("%g\n",value );
-    assert( value >= - 1e-7 && value <= 1.0 + 1e-7 );
+    //assert( value >= - 1e-7 && value <= 1.0 + 1e-7 );
 
     if( rnd < value )  
     {

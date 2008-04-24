@@ -458,25 +458,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             self.assertAlmostEqual( pleaves + pleavea, psurv )
             t *= .1
 
-    def test_eventType( self ):
-
-        D = 1e-12
-        sigma = 1e-8
-        #kf = 1e-6
-        kf = 1e-16
-
-        t = 1e-3
-        r0 = 1e-7
-        
-        a = 1e-7
-        
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        et = gf.eventType( r0 )
-        print 'et', et
-        self.assertNotEqual( 0.0, et )
-
 
     def test_p_int_r( self ):
 

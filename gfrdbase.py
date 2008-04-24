@@ -294,8 +294,8 @@ class GFRDSimulatorBase( object ):
         self.rejectedMoves = 0
         self.reactionEvents = 0
 
-        #self.particleMatrix = ObjectMatrix()
-        self.particleMatrix = SimpleObjectMatrix()
+        self.particleMatrix = ObjectMatrix()
+        #self.particleMatrix = SimpleObjectMatrix()
 
         self.setWorldSize( INF )
 
@@ -480,14 +480,28 @@ class GFRDSimulatorBase( object ):
 
     def checkOverlap( self, pos, radius, ignore=[] ):
         
-        c, d = self.getClosestParticle( pos, ignore )
-        if d < radius:
+        particles = self.getParticlesWithinRadius( pos, radius, ignore )
+
+        if particles:
+            return False
+        else:
+            return True
+        '''
             print 'reject: closest = ', c, ', distance = ', d,\
                 ', which must be at least '
-            return False
-
-        return True
+        '''
         
+    def getParticlesWithinRadius( self, pos, radius, ignore=[] ): 
+        particles, _ =\
+            self.particleMatrix.getNeighborsWithinRadius( pos, radius )
+
+        if not particles:
+            return []
+
+        particles = [ Particle( p[0], p[1] ) for p in particles ]
+        return [ p for p in particles if p not in ignore ]
+
+
     def checkOverlap2( self, position, radius ):
         
         for species2 in self.speciesList.values():

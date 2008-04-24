@@ -8,7 +8,7 @@ import time
 
 # run
 T = 0.01
-V = 1e-15
+V = 40e-15
 
 # 1-1.  C=1e-7M
 #N=60
@@ -20,8 +20,8 @@ V = 1e-15
 #N=600
 # 296.172708988
 # 1-4.  C=2e-6M
-#T=0.001
-N=3000
+T=0.0001
+N=60000
 
 # 2
 #N=600
@@ -88,9 +88,11 @@ L = math.pow( V * 1e-3, 1.0 / 3.0 )
 s = EGFRDSimulator()
 s.setWorldSize( L )
 
+s.setMatrixSize( 30 )
+
 box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 
-A = Species( 'A', 1e-12, 3e-9 )
+A = Species( 'A', 1e-12, 2.5e-9 )
 s.addSpecies( A )
 
 # no reaction
@@ -100,7 +102,7 @@ s.throwInParticles( A, N, box1 )
 stirTime = 1e-7
 while 1:
     s.step()
-    nextTime = s.scheduler.getNextTime()
+    nextTime = s.scheduler.getTopTime()
     if nextTime > stirTime:
         s.stop( stirTime )
         break

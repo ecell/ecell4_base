@@ -596,22 +596,22 @@ class Pair( object ):
             if distanceFromShell < thresholdDistance:
                 # near both a and sigma;
                 # use FirstPassagePairGreensFunction
-                print 'normal'
+                print 'normal', r0, t
                 return self.pgf
             else:
                 # near sigma; use BasicPairGreensFunction
-                print 'near only sigma'
+                print 'near only sigma', r0, t
                 return self.pgf_basic
                 #return self.pgf
         else:
             if distanceFromShell < thresholdDistance:
                 # near a;
-                print 'near only a'
+                print 'near only a', r0, t
                 return self.pgf_nocol
                 
             else:
                 # distant from both a and sigma; 
-                print 'free'
+                print 'free', r0, t
                 return self.pgf_free
 
 
@@ -948,8 +948,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.MULTI_SHELL_FACTOR = 0.1
         self.SINGLE_SHELL_FACTOR = 1
 
-        #self.shellMatrix = ObjectMatrix()
-        self.shellMatrix = SimpleObjectMatrix()
+        self.shellMatrix = ObjectMatrix()
+        #self.shellMatrix = SimpleObjectMatrix()
 
         GFRDSimulatorBase.__init__( self )
 
@@ -1094,7 +1094,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         print 'next dt = ', self.dt, 'reactions', self.reactionEvents,\
               'rejected moves', self.rejectedMoves
-        assert self.scheduler.check()
+
         print ''
 
 
@@ -2264,6 +2264,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def check( self ):
 
         GFRDSimulatorBase.check( self )
+
+        assert self.scheduler.check()
 
         assert self.t >= 0.0
         assert self.dt >= 0.0

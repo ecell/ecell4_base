@@ -235,7 +235,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "p_leavea", &FirstPassagePairGreensFunction::p_leavea )
 	.def( "leaves", &FirstPassagePairGreensFunction::leaves )
 	.def( "leavea", &FirstPassagePairGreensFunction::leavea )
-	.def( "eventType", &FirstPassagePairGreensFunction::eventType )
+
 	.def( "p_0", &FirstPassagePairGreensFunction::p_0 )
 	.def( "p_int_r", &FirstPassagePairGreensFunction::p_int_r )
 	.def( "p_int_r", &FirstPassagePairGreensFunction::p_int_r )

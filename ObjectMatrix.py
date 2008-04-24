@@ -215,6 +215,13 @@ class ObjectMatrix( object ):
 
         self.TRANSPOSES = self.allTransposes()
 
+    def distanceSqArray( self, position1, positions ):
+        return self._distanceSqArray( position1, positions, self.worldSize )
+
+    def distanceArray( self, position1, positions ):
+        return numpy.sqrt( self.distanceSqArray( position1, positions ) )
+        
+
     def allTransposes( self ):
         transposes = []
         a = [ -1, 0, 1 ]
@@ -360,6 +367,40 @@ class ObjectMatrix( object ):
         topargs = distances.argsort()[:n]
         distances = distances.take( topargs )
         neighbors = [ neighbors[arg] for arg in topargs ]
+
+        return neighbors, distances
+
+
+    def getNeighborsWithinRadius( self, pos, radius ):
+
+        centeridx = self.hashPos( pos )
+
+        distances = []
+        neighbors = []
+
+        transposes = self.TRANSPOSES + centeridx
+        for idx in transposes:
+
+            idxp = idx % self.matrixSize
+            matrix = self.cellMatrix[ idxp[0] ][ idxp[1] ][ idxp[2] ]
+            if matrix.size == 0:
+                continue
+            dists = self.distanceArray( matrix.positions, pos ) - matrix.radii
+            args = ( dists <= radius ).nonzero()[0]
+
+            if len( args ) != 0:
+                distances += [ dists.take( args ), ]
+                neighbors += [ matrix.keyList[arg] for arg in args ]
+
+        if len( neighbors ) == 0:
+            return [], []
+
+        distances = numpy.concatenate( distances )
+
+        # sort again
+        args = distances.argsort()
+        distances = distances.take( args )
+        neighbors = [ neighbors[arg] for arg in args ]
 
         return neighbors, distances
 
