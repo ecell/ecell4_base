@@ -243,7 +243,8 @@ class BDSimulatorCoreBase( object ):
 
             for i in range( 100 ):
 
-                pairDistance = drawR_gbd( radius12, self.dt, D12 )
+                rnd = numpy.random.uniform()
+                pairDistance = drawR_gbd( rnd, radius12, self.dt, D12 )
 
                 unitVector = randomUnitVector()
                 vector = unitVector * pairDistance # * (1.0 + 1e-10) # safety
