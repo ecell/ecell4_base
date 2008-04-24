@@ -273,7 +273,7 @@ class ParticlePool( object ):
 
 class GFRDSimulatorBase( object ):
     
-    def __init__( self ):
+    def __init__( self, matrixtype='simple' ):
         self.speciesList = {}
         self.reactionTypeMap1 = {}
         self.reactionTypeMap2 = {}
@@ -294,8 +294,11 @@ class GFRDSimulatorBase( object ):
         self.rejectedMoves = 0
         self.reactionEvents = 0
 
-        self.particleMatrix = ObjectMatrix()
-        #self.particleMatrix = SimpleObjectMatrix()
+        if matrixtype == 'simple':
+            self.particleMatrix = SimpleObjectMatrix()
+        else:
+            self.particleMatrix = ObjectMatrix()
+
 
         self.setWorldSize( INF )
 

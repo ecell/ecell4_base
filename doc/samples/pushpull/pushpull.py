@@ -48,13 +48,15 @@ N_K = int( sys.argv[3] )
 N_P = int( sys.argv[4] )
 V_str = sys.argv[5]
 mode = sys.argv[6]
-seq = sys.argv[7]
-T_str = sys.argv[8]
+bias_str = sys.argv[7]
+seq = sys.argv[8]
+T_str = sys.argv[9]
 
 Keq = float( Keq_str )
 koff_ratio = float( koff_ratio_str )
 V = float( V_str )
 T = float( T_str )
+bias = float( bias_str )
 
 radius = 2.5e-9
 sigma = radius * 2
@@ -70,8 +72,12 @@ else:
 
 L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
-s = EGFRDSimulator()
+#s = EGFRDSimulator( 'normal' )
+#s.setMatrixSize( 10 )
+
+s = EGFRDSimulator( 'simple' )
 s.setWorldSize( L )
+
 print V, L
 
 print C2N( 498e-9, V )
@@ -102,9 +108,9 @@ s.addSpecies( PSp )
 fracS = fraction_S( N_K, N_P, Keq )
 
 # give some bias
-fracS -= 0.1
+fracS -= bias
 
-S_tot = 30
+S_tot = 200
 S_conc = S_tot / V * 1e3   # in #/m^3
 
 N_S = S_tot * fracS
@@ -158,7 +164,13 @@ elif mode == 'localized':
     s.throwInParticles( P, N_P, plain2 )
 elif mode == 'single':
     s.placeParticle( K, [0,0,0] )
+    s.placeParticle( K, [0,0,L/2] )
+    s.placeParticle( K, [0,L/2,0] )
+    s.placeParticle( K, [0,L/2,L/2] )
     s.placeParticle( P, [L/2,0,0] )
+    s.placeParticle( P, [L/2,0,L/2] )
+    s.placeParticle( P, [L/2,L/2,0] )
+    s.placeParticle( P, [L/2,L/2,L/2] )
 else:
     assert False
 
@@ -169,7 +181,7 @@ s.throwInParticles( S, N_S, box1 )
 
 # Stir before actually start the sim.
 
-stirTime = 1e-8
+stirTime = 1e-7
 while 1:
     s.step()
     nextTime = s.scheduler.getTopTime()
@@ -204,13 +216,17 @@ model = 'pushpull'
 
 # 'pushpull-Keq-koff_ratio-N_K-N_P-V-mode.dat'
 l = Logger( s, 
-            logname = model + '_' + '_'.join( sys.argv[1:8] ),
+            logname = model + '_' + '_'.join( sys.argv[1:9] ),
             comment = '@ model=\'%s\'; Keq=%s; koff_ratio=%s\n' %
             ( model, Keq_str, koff_ratio_str ) +
-            '#@ V=%s; N_K=%s; N_P=%s; mode=\'%s\'; T=%s\n' % 
-            ( V_str, N_K, N_P, mode, T_str ) +
-            '#@ kon=%g; koff1=%g; kcat1=%g; koff2=%g; kcat2=%g; S_tot=%s' %
-            ( kon, koff1, kcat1, koff2, kcat2, S_tot ) )
+            '#@ V=%s; N_K=%s; N_P=%s; mode=\'%s\'; bias=%s; T=%s\n' % 
+            ( V_str, N_K, N_P, mode, bias_str, T_str ) +
+            '#@ kon=%g; koff1=%g; koff2=%g; S_tot=%s\n' %
+            ( kon, koff1, koff2, S_tot ) +
+            '#@ kcat1=%g; kcat2=%g\n' %
+            ( kcat1, kcat2 ) +
+            '#@ ka=%g; kd1=%g; kd2=%g\n' %
+            ( ka, kd1, kd2 ) )
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
 #l.setInterval( 1e-3 )
 l.log()
@@ -218,7 +234,7 @@ l.log()
 
 while s.t < T:
     s.step()
-    #s.dumpPopulation()
+    s.dumpPopulation()
     l.log()
     
 

@@ -98,7 +98,7 @@ s.addSpecies( A )
 # no reaction
 
 s.throwInParticles( A, N, box1 )
-
+print 'stir'
 stirTime = 1e-7
 while 1:
     s.step()
@@ -106,16 +106,16 @@ while 1:
     if nextTime > stirTime:
         s.stop( stirTime )
         break
-
+print 'reset'
 s.reset()
-
+print 'reset finish'
 #l = Logger( s, 'hardbody' )
 #l.setParticleOutput( ('A',) )
 #l.setInterval( 1e-1 )
 #l.log()
 
 start = time.time()
-
+print 'run'
 while s.t < T:
     s.step()
     #l.log()
