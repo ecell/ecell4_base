@@ -1426,7 +1426,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         self.updateSingle( single, closest, closestShellDistance )
 
-        bursted = list( set( bursted ) ) # uniq()
+        #bursted = list( set( bursted ) ) # uniq()
+        bursted = uniq( bursted )
 
         for s in bursted:
 
