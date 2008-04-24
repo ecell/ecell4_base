@@ -5,8 +5,6 @@ import weakref
 import math
 
 import numpy
-#import scipy
-import scipy.optimize
 
 
 from utils import *
@@ -16,18 +14,6 @@ from gfrdbase import *
 import _gfrd
 
 DEFAULT_DT_FACTOR = 1e-5
-
-def drawR_gbd( sigma, t, D ):
-    
-    def f( r, sigma, t, D, I ):
-        return _gfrd.g_bd( r, sigma, t, D ) / I
-
-    I = _gfrd.I_bd( sigma, t, D )
-    
-    result = scipy.optimize.brent( f, ( sigma, t, D, I ), 
-                                   ( sigma, 
-                                     sigma + 6 * math.sqrt( 6 * D * t ) ) )
-    return result
 
 def calculateBDDt( speciesList, factor = DEFAULT_DT_FACTOR ):
 
