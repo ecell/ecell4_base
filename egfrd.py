@@ -951,7 +951,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         GFRDSimulatorBase.__init__( self, matrixtype )
 
-        self.MULTI_SHELL_FACTOR = 0.1
+        self.MULTI_SHELL_FACTOR = 0.15
         self.SINGLE_SHELL_FACTOR = 1
 
         self.isDirty = True
