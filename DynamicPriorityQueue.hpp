@@ -407,8 +407,7 @@ private:
     inline void moveUpPos( const Index position, const Index start = 0 );
     inline void moveDownPos( const Index position );
 
-    inline void moveUpPosImpl( const Index position, 
-                                       const Index start = 0 );
+    inline void moveUpPosImpl( const Index position, const Index start = 0 );
     inline void moveDownPosImpl( const Index position ); 
 
 private:
@@ -464,11 +463,6 @@ movePos( const Index pos )
         }
     }
 
-    if( pos <= 0 ) // already on top
-    {
-        return;
-    }
-
     moveUpPos( pos );
 }
 
@@ -476,6 +470,12 @@ template < typename Item, class IDPolicy >
 void DynamicPriorityQueue< Item, IDPolicy >::moveUpPos( const Index position, 
                                                         const Index start )
 {
+    //assert( position >= 0 );
+
+    if( position == 0 )
+    {
+        return;
+    }
 
     const Index index( this->heap[ position ] );
     const Item& item( this->itemVector[ index ] );
@@ -514,8 +514,7 @@ DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
 
 template < typename Item, class IDPolicy >
 void DynamicPriorityQueue< Item, IDPolicy >:: 
-moveUpPosImpl( const Index position,
-                  const Index start )
+moveUpPosImpl( const Index position, const Index start )
 {
     const Index index( this->heap[ position ] );
     const Item& item( this->itemVector[ index ] );

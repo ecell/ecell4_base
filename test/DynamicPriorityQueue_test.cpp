@@ -54,6 +54,37 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testClear, DPQ, both )
 }
 
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( testClear_manyItems, DPQ, both )
+{
+    DPQ dpq;
+    typedef typename DPQ::Index Index;
+
+    for( int i( 0 ); i < 70000; ++i )
+    {
+        dpq.push( i );
+    }
+
+    BOOST_CHECK( dpq.check() );
+
+    dpq.clear();
+
+    BOOST_CHECK( dpq.isEmpty() );
+    BOOST_CHECK( dpq.check() );
+
+    dpq.push( 2 );
+    dpq.push( 20 );
+    dpq.push( 30 );
+
+    BOOST_CHECK_EQUAL( Index( 3 ), dpq.getSize() );
+
+    dpq.clear();
+
+    BOOST_CHECK( dpq.isEmpty() );
+    BOOST_CHECK( dpq.check() );
+}
+
+
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( testPush, DPQ, both )
 {
     DPQ dpq;
