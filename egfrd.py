@@ -1338,10 +1338,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def propagateSingle( self, single, r ):
         
-        closest, distanceToClosestShell =\
-                 self.getClosestObj( single.particle.pos, 
-                                     ignore = [ single, ] )
-
         particleRadius = single.getMinRadius()
         oldpos = single.particle.pos.copy()
         
@@ -1910,17 +1906,24 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         D1, D2 = species1.D, species2.D
         D12 = D1 + D2
 
+        pairDistance = self.distance( single1.pos, single2.pos )
+
+        minShellSize = max( pairDistance * D1 / D12 + radius1,
+                            pairDistance * D2 / D12 + radius2 )
+
+        # 1. Shell cannot be larger than max shell size or sim cell size.
+        maxShellSize = min( self.getMatrixCellSize(), self.maxShellSize )
+        if minShellSize > maxShellSize:
+            print 'minShellSize > maxShellSize: Pair not created'
+            return None
+
+        pairShellSizeMargin = min( sigma1, sigma2 ) * self.SINGLE_SHELL_FACTOR
         com = calculatePairCoM( single1.pos, single2.pos,\
                                 single1.getD(), single2.getD(),\
                                 self.getWorldSize() )
         self.applyBoundary( com )
         closest, closestShellDistance =\
             self.getClosestObj( com, ignore = ( single1, single2 ) )
-        pairDistance = self.distance( single1.pos, single2.pos )
-
-        minShellSize = max( pairDistance * D1 / D12 + radius1,
-                            pairDistance * D2 / D12 + radius2 )
-        pairShellSizeMargin = min( sigma1, sigma2 ) * self.SINGLE_SHELL_FACTOR
 
         # Squeezing check:
         #     Pair shell size cannot be smaller than minPairShellSize.
@@ -1936,13 +1939,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             % ( single1, single2, pairGap )
 
 
-        maxShellSize = min( self.getMatrixCellSize(), self.maxShellSize )
 
-
-        # 1. Shell cannot be larger than max shell size or sim cell size.
-        if minShellSize > maxShellSize:
-            print 'minShellSize > maxShellSize: Pair not created'
-            return None
 
         # 2. Check if a Pair is better than two Singles
 
