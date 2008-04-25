@@ -143,8 +143,10 @@ FirstPassagePairGreensFunction::alpha0_i( const Integer i ) const
 
     // We know the range of the solution from - Pi/2 <= atan <= Pi/2.
     const Real interval( M_PI / ( a - sigma ) );
-    Real low( i * interval );// + std::numeric_limits<Real>::epsilon() );
+    Real low( i * interval + std::numeric_limits<Real>::epsilon() );
     Real high( (i+1) * interval );
+
+    assert( GSL_FN_EVAL( &F, low ) * GSL_FN_EVAL( &F, high ) < 0.0 );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
