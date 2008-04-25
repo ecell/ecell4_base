@@ -6,11 +6,11 @@ from egfrd import *
 from logger import *
 import sys
 
-s = EGFRDSimulator( 'imple' )
+s = EGFRDSimulator( 'simple' )
 
 #s = BDSimulator()
 
-L = 1e-6
+L = 2e-6
 #L = 5e-8
 #L = 2e-7
 s.setWorldSize( L )
@@ -30,8 +30,8 @@ s.addReactionType( r1 )
 r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
-s.throwInParticles( S, 150, box1 )
-s.throwInParticles( P, 150, box1 )
+s.throwInParticles( S, 1500, box1 )
+s.throwInParticles( P, 1500, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )
