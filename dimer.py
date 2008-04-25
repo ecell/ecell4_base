@@ -6,14 +6,14 @@ from egfrd import *
 from logger import *
 import sys
 
-s = EGFRDSimulator()
+s = EGFRDSimulator( 'imple' )
 
 #s = BDSimulator()
 
-#L = 1e-6
-L = 5e-8
+L = 1e-6
+#L = 5e-8
 #L = 2e-7
-s.setWorldSize( [L,2*L,2*L] )
+s.setWorldSize( L )
 s.setMatrixSize( 10 )
 
 box1 = CuboidalSurface( [0,0,0], [L,L,L] )
@@ -30,8 +30,8 @@ s.addReactionType( r1 )
 r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
-s.throwInParticles( S, 15, box1 )
-s.throwInParticles( P, 15, box1 )
+s.throwInParticles( S, 150, box1 )
+s.throwInParticles( P, 150, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )
@@ -40,8 +40,8 @@ l.log()
 
 
 
-while s.t < 100:
-    s.step()
+#while s.t < 100:
+#    s.step()
 
 #s.dumpPopulation()
 #l.log()

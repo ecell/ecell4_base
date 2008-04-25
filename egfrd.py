@@ -951,8 +951,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         GFRDSimulatorBase.__init__( self, matrixtype )
 
-        self.MULTI_SHELL_FACTOR = 0.15
-        self.SINGLE_SHELL_FACTOR = 1
+        self.MULTI_SHELL_FACTOR = 0.1
+        self.SINGLE_SHELL_FACTOR = 0.5
 
         self.isDirty = True
         self.scheduler = EventScheduler()
@@ -1398,10 +1398,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         minShell = single.getMinRadius() * ( 1.0 + self.SINGLE_SHELL_FACTOR )
 
-        neighbors = self.getNeighborsWithinRadius( single.pos, radius=minShell,
-                                                   ignore=[single,] )
+        #neighbors = self.getNeighborsWithinRadius( single.pos, radius=minShell,
+        #                                           ignore=[single,] )
+        neighbors, distances = self.getNeighbors( single.pos, ignore=[single,] )
 
-        bursted = self.burstNonMultis( neighbors )
+        i = numpy.searchsorted( distances, minShell )
+        closeNeighbors = neighbors[:i]
+
+
+        bursted = self.burstNonMultis( closeNeighbors )
 
         if bursted:
             obj, b = self.formPairOrMulti( single, bursted )
@@ -1411,16 +1416,18 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 single.dt = -INF # remove by rescheduling to past.
                 return single.dt
 
-
         # If this Single bursted something,
         # Recheck closest and closest shell distance.
-
-        closest, closestShellDistance =\
-            self.getClosestObj( single.pos, ignore = [ single, ] )
+        if bursted:
+            closest, closestShellDistance =\
+                self.getClosestObj( single.pos, ignore = [ single, ] )
+        elif neighbors:
+            closest, closestShellDistance = neighbors[0], distances[0]
+        else:
+            closest, closestShellDistance = DummySingle(), INF
 
         self.updateSingle( single, closest, closestShellDistance )
 
-        #bursted = list( set( bursted ) ) # uniq()
         bursted = uniq( bursted )
 
         for s in bursted:
@@ -1432,15 +1439,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.updateEvent( self.t + s.dt, s )
                 #print 'restore shell', s, s.radius, c, d
             
-
-
-
-        # (3) If a new Pair was not formed, this Single continues.
-        #     Determine a new shell size and dt.
-
-        # recheck the closest and distance to it.
-
-
         print 'single shell', single.radius, 'dt', single.dt
 
         return single.dt
@@ -1873,6 +1871,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def formPair( self, single, closest ):
 
+        print closest 
         bursted=[]
         if not closest.isReset():
             self.burstSingle( closest )
@@ -1913,8 +1912,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # 1. Shell cannot be larger than max shell size or sim cell size.
         maxShellSize = min( self.getMatrixCellSize(), self.maxShellSize )
-        if minShellSize > maxShellSize:
-            print 'minShellSize > maxShellSize: Pair not created'
+        if minShellSize >= maxShellSize:
+            print 'minShellSize >= maxShellSize: Pair not created'
             return None
 
         pairShellSizeMargin = min( sigma1, sigma2 ) * self.SINGLE_SHELL_FACTOR
@@ -2087,6 +2086,23 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         neighbors = uniq( neighbors )
 
         return neighbors
+
+
+    def getNeighbors( self, pos, n=None, ignore=[] ):
+
+        shells, dists = self.getNeighborShells( pos, n )
+
+        seen = dict.fromkeys( ignore )
+        neighbors = []
+        distances = []
+
+        for i, shell in enumerate( shells ):
+            if not seen.has_key( shell[0] ):
+                seen[ shell ] = None
+                neighbors += [shell[0]]
+                distances += [dists[i]]
+
+        return neighbors, numpy.array( distances )
 
     '''
     Find the closest shell from the position pos.
