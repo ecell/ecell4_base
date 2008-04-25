@@ -6,7 +6,7 @@ from egfrd import *
 from logger import *
 import sys
 
-s = EGFRDSimulator( 'simple' )
+s = EGFRDSimulator( 'normal' )
 
 #s = BDSimulator()
 
@@ -14,7 +14,7 @@ L = 2e-6
 #L = 5e-8
 #L = 2e-7
 s.setWorldSize( L )
-s.setMatrixSize( 10 )
+s.setMatrixSize( 5 )
 
 box1 = CuboidalSurface( [0,0,0], [L,L,L] )
 # not supported yet
@@ -49,7 +49,7 @@ l.log()
 
 
 def profrun():
-    while s.stepCounter < 2000:
+    while s.stepCounter < 6000:
         s.step()
         #s.dumpPopulation()
 

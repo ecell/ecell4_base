@@ -1733,7 +1733,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.applyBoundary( newpos )
 
         assert self.distance( newpos, oldpos ) <= single.getMobilityRadius()
-        assert self.checkOverlap( newpos, particleRadius,
+        assert self.checkOverlap( newpos, particleRadius,\
                                   ignore = [ single.particle, ] )
 
         single.initialize( self.t )
@@ -2061,7 +2061,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     This method returns a tuple ( neighbors, distances ).
     '''
 
-    def getNeighborShells( self, pos, n=None, dummy=DummySingle() ):
+    def getNeighborShells( self, pos, n=None, dummy=(DummySingle(),0) ):
 
         return self.shellMatrix.getNeighbors( pos, n, dummy )
 
@@ -2075,7 +2075,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         shells, distances = self.getNeighborShellsWithinRadius( pos, radius )
 
         neighbors = [ s[0] for s in shells if s[0] not in ignore ]
-        #neighbors = list( set( neighbors ) )  # uniq()
         neighbors = uniq( neighbors )
 
         return neighbors
