@@ -258,7 +258,7 @@ class Single( object ):
 
     def setRadius( self, radius ):
 
-        assert radius >= self.getMinRadius()
+        assert radius - self.getMinRadius() >= 0.0
 
         self.shellList[0].radius = radius
 
@@ -376,8 +376,9 @@ class Single( object ):
         assert dt >= 0
 
         rnd = numpy.random.uniform()
+        self.gf.seta( self.getMobilityRadius() )
+
         try:
-            self.gf.seta( self.getMobilityRadius() )
             r = self.gf.drawR( rnd , dt )
         except Exception, e:
             raise Exception, 'gf.drawR failed; %s; rnd=%g, t=%g, %s' %\
@@ -418,8 +419,9 @@ class Single( object ):
         
         rnd = numpy.random.uniform()
 
+        self.gf.seta( self.getMobilityRadius() )
+
         try:
-            self.gf.seta( self.getMobilityRadius() )
             dt = self.gf.drawTime( rnd )
         except Exception, e:
             raise Exception, 'gf.drawTime() failed; %s; rnd=%g, %s' %\
@@ -548,7 +550,7 @@ class Pair( object ):
 
     def setRadius( self, radius ):
 
-        assert radius >= self.getMinRadius()
+        assert radius - self.getMinRadius() >= 0.0
         self.shellList[0].radius = radius
 
 
@@ -810,10 +812,18 @@ class Pair( object ):
     def drawR_single( self, t, a ):
 
         self.sgf.seta( a )
-        r = self.sgf.drawR( numpy.random.uniform(), t )
-        while r > self.a_R: # redraw; shouldn't happen often
-            print 'drawR_single: redraw'
-            r = self.sgf.drawR( numpy.random.uniform(), t )
+
+        rnd = numpy.random.uniform()
+        try:
+            r = self.sgf.drawR( rnd, t )
+            while r > self.a_R: # redraw; shouldn't happen often
+                print 'drawR_single: redraw'
+                rnd = numpy.random.uniform()
+                r = self.sgf.drawR( rnd, t )
+        except Exception, e:
+            raise Exception,\
+                'gf.drawR_single() failed; %s; t= %g, rnd= %g, %s' %\
+                ( str( e ), t, rnd[2], self.pgf.dump() )
 
         return r
 
@@ -836,10 +846,11 @@ class Pair( object ):
             while r >= self.a_r or r <= self.sigma: 
                 print 'drawR_pair: redraw'
                 #self.sim.rejectedMoves += 1  #FIXME:
-                r = gf.drawR( numpy.random.uniform(), r0, t )
+                rnd = numpy.random.uniform()
+                r = gf.drawR( rnd, r0, t )
         except Exception, e:
             raise Exception,\
-                'gf.drawR() failed; %s; r0= %g, t= %g, rnd= %g, %s' %\
+                'gf.drawR_pair() failed; %s; r0= %g, t= %g, rnd= %g, %s' %\
                 ( str( e ), r0, t, rnd[2], self.pgf.dump() )
 
 
@@ -1471,6 +1482,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                                    distanceToShell )
         else:  # Pair or Multi
             shellSize = distanceToShell / SAFETY
+            shellSize = max( shellSize, single.getMinRadius() )
 
         shellSize = min( shellSize, self.getMatrixCellSize(),
                          self.maxShellSize )
