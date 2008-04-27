@@ -319,10 +319,6 @@ class GFRDSimulatorBase( object ):
 
 
 
-    def getTime( self ):
-        return self.t
-
-
     def setWorldSize( self, size ):
 
         if isinstance( size, list ) or isinstance( size, tuple ):

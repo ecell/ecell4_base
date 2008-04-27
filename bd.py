@@ -209,7 +209,6 @@ class BDSimulatorCoreBase( object ):
 
     def fireReaction1( self, particle, rt ):
         
-        reactantSpecies = particle.species
         oldpos = particle.pos.copy()
 
         if len( rt.products ) == 0:
@@ -306,7 +305,7 @@ class BDSimulatorCoreBase( object ):
             self.removeParticle( particle2 )
 
             try:
-                newparticle = self.createParticle( productSpecies, newPos )
+                self.createParticle( productSpecies, newPos )
             except NoSpace:
                 assert False, "this shouldn't happen"
 

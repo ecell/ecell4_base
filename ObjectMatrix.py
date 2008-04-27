@@ -102,7 +102,7 @@ class SimpleObjectMatrix( object ):
             self.cellSize = numpy.max( self.worldSize )
 
     def setMatrixSize( self, size ):
-        print 'SimpleObjectMatrix.setMatrixSize() ignored.'
+        print 'SimpleObjectMatrix.setMatrixSize() ignored. (', size , ')'
 
     def distanceSqArray( self, position1, positions ):
         return self._distanceSqArray( position1, positions, self.worldSize )
@@ -257,7 +257,7 @@ class ObjectMatrix( object ):
     def initialize( self ):
 
         if not isinstance( self.worldSize, float ):
-            raise NotImplemented,\
+            raise NotImplementedError,\
                 'ObjectMatrix does not support non-cubic world.' + \
                 'Use SimpleObjectMatrix.'
 

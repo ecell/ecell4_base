@@ -54,17 +54,17 @@ def cyclicTranspose( pos1, pos2, fsize ):
     return pos1 + reloc
 
 
-def distanceSq_Simple( position1, position2, fsize = 0 ):
+def distanceSq_Simple( position1, position2, fsize = None ):
     diff = position1 - position2
     return numpy.dot( diff, diff )
 
 def distance( position1, position2, fsize = 0 ):
     return math.sqrt( distanceSq_Simple( position1, position2 ) )
 
-def distanceSqArray_Simple( position1, positions, fsize = 0 ):
+def distanceSqArray_Simple( position1, positions, fsize = None ):
     return numpy.square( positions - position1 ).sum( 1 )
 
-def distanceArray_Simple( position1, positions, fsize = 0 ):
+def distanceArray_Simple( position1, positions, fsize = None ):
     return numpy.sqrt( distanceSqArray_Simple( position1, positions ) )
 
 
