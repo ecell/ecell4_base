@@ -1,4 +1,4 @@
-e#!/usr/env python
+#!/usr/env python
 
 import weakref
 
