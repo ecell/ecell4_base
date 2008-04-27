@@ -375,9 +375,14 @@ class Single( object ):
     def drawR( self, dt ):
         assert dt >= 0
 
-        self.gf.seta( self.getMobilityRadius() )
         rnd = numpy.random.uniform()
-        r = self.gf.drawR( rnd , dt )
+        try:
+            self.gf.seta( self.getMobilityRadius() )
+            r = self.gf.drawR( rnd , dt )
+        except e:
+            raise e, 'gf.drawR failed; rnd=%g, t=%g, %s' %\
+                ( rnd, dt, self.gf.dump() )
+
         return r
 
 
@@ -412,8 +417,14 @@ class Single( object ):
     def drawEscapeTime( self ):
         
         rnd = numpy.random.uniform()
-        self.gf.seta( self.getMobilityRadius() )
-        dt = self.gf.drawTime( rnd )
+
+        try:
+            self.gf.seta( self.getMobilityRadius() )
+            dt = self.gf.drawTime( rnd )
+        except e:
+            raise e, 'gf.drawTime() failed; rnd=%g, %s' %\
+                ( rnd, self.gf.dump() )
+
         return dt
 
 
@@ -747,12 +758,21 @@ class Pair( object ):
         rnd = numpy.random.uniform( size=3 )
 
         # draw t_R
-        self.sgf.seta( self.a_R )
-        self.t_R = self.sgf.drawTime( rnd[0] )
+        try:
+            self.sgf.seta( self.a_R )
+            self.t_R = self.sgf.drawTime( rnd[0] )
+        except e:
+            raise e, 'sgf.drawTime() failed; rnd= %g, %s' %\
+                ( rnd[0], self.sgf.dump() )
 
         # draw t_r
-        self.pgf.seta( self.a_r )
-        self.t_r = self.pgf.drawTime( rnd[1], r0 )
+        try:
+            self.pgf.seta( self.a_r )
+            self.t_r = self.pgf.drawTime( rnd[1], r0 )
+        except e:
+            raise e, 'pgf.drawTime() failed; rnd= %g, %s' %\
+                ( rnd[1], self.sgf.dump() )
+
 
         # draw t_reaction
         t_reaction1 = self.single1.drawReactionTime()
@@ -772,8 +792,13 @@ class Pair( object ):
         print 'dt ', self.dt, 't_R', self.t_R, 't_r', self.t_r
         #print self.pgf.dump()
         if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
-            self.eventType = self.pgf.drawEventType( rnd[2],
-                                                     r0, self.t_r )
+            try:
+                self.eventType = self.pgf.drawEventType( rnd[2],
+                                                         r0, self.t_r )
+            except e:
+                raise e, 'pgf.drawEventType() failed; r0= %g, rnd=%g, %s' %\
+                    ( r0, rnd[2], self.pgf.dump() )
+
         elif self.dt == self.t_R: # type = ESCAPE_R (2)
             self.eventType = 2
         elif self.dt == self.t_single_reaction:  # type = single reaction (3)
@@ -807,12 +832,21 @@ class Pair( object ):
         if hasattr( gf, 'seta' ):  # FIXME: not clean
             gf.seta( a )
 
-        r = gf.drawR( numpy.random.uniform(), r0, t )
+        rnd = numpy.random.uniform()
+        try:
+            r = gf.drawR( rnd , r0, t )
 
-        while r >= self.a_r or r <= self.sigma: # redraw; shouldn't happen often
-            print 'drawR_pair: redraw'
-            self.sim.rejectedMoves += 1
-            r = gf.drawR( numpy.random.uniform(), r0, t )
+            # redraw; shouldn't happen often
+            while r >= self.a_r or r <= self.sigma: 
+                print 'drawR_pair: redraw'
+                self.sim.rejectedMoves += 1
+                r = gf.drawR( numpy.random.uniform(), r0, t )
+
+
+        except:
+            print 'gf.drawR() failed; r0=', r0, 't=', t, 'rnd= ',\
+                rnd[2], self.pgf.dump()
+
 
         return r
 
@@ -823,7 +857,11 @@ class Pair( object ):
     def drawTheta_pair( self, rnd, r, r0, t ):
 
         gf = self.choosePairGreensFunction( r0, t )
-        theta = gf.drawTheta( rnd, r, r0, t )
+        try:
+            theta = gf.drawTheta( rnd, r, r0, t )
+        except:
+            print 'gf.drawR() failed; r= ', r, 'r0=', r0, 't=', t, 'rnd= ',\
+                rnd[2], self.pgf.dump()
 
         return theta
 
