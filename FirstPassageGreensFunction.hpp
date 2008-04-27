@@ -52,6 +52,9 @@ public:
 
     const Real p_r_fourier( const Real r, const Real t ) const;
 
+
+    const std::string dump() const;
+
 private:
 
     struct p_survival_params

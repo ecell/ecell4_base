@@ -1,4 +1,4 @@
-
+#include <sstream>
 #include <iostream>
 
 #include <gsl/gsl_errno.h>
@@ -124,3 +124,11 @@ FreeGreensFunction::drawR( const Real rnd, const Real t ) const
     
     return r;
 }
+
+
+const std::string FreeGreensFunction::dump() const
+{
+    std::ostringstream ss;
+    ss << "D = " << this->getD() << std::endl;
+    return ss.str();
+}    

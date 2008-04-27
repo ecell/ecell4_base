@@ -1,4 +1,4 @@
-
+#include <sstream>
 #include <iostream>
 
 #include <gsl/gsl_errno.h>
@@ -243,3 +243,11 @@ FreePairGreensFunction::drawTheta( const Real rnd,
 
     return theta;
 }
+
+
+const std::string FreePairGreensFunction::dump() const
+{
+    std::ostringstream ss;
+    ss << "D = " << this->getD() << std::endl;
+    return ss.str();
+}    

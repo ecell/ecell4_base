@@ -1,3 +1,4 @@
+#include <sstream>
 #include <iostream>
 #include <exception>
 #include <vector>
@@ -419,3 +420,9 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
 
 
 
+const std::string FirstPassageGreensFunction::dump() const
+{
+    std::ostringstream ss;
+    ss << "D = " << this->getD() << ", a = " << this->geta() << std::endl;
+    return ss.str();
+}    

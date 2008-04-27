@@ -55,6 +55,8 @@ public:
     const Real ip_r( const Real r, const Real t ) const;
     
 
+    const std::string dump() const;
+
 private:
 
     struct ip_r_params

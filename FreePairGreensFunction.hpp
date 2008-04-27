@@ -74,6 +74,9 @@ public:
                          const Real r, 
                          const Real r0, 
                          const Real t ) const;
+
+
+    const std::string dump() const;
     
 
 private:

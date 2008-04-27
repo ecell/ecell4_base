@@ -156,6 +156,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "drawR", &FreeGreensFunction::drawR )
 	.def( "p_r", &FreeGreensFunction::p_r )
 	.def( "ip_r", &FreeGreensFunction::ip_r )
+        .def( "dump", &FreeGreensFunction::dump )
 	;
 
     class_<FirstPassageGreensFunction>( "FirstPassageGreensFunction",
@@ -169,6 +170,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "p_r_int", &FirstPassageGreensFunction::p_r_int )
 	.def( "p_r_int_free", &FirstPassageGreensFunction::p_r_int_free )
 	//.def( "p_r_fourier", &FirstPassageGreensFunction::p_r_fourier )
+        .def( "dump", &FirstPassageGreensFunction::dump )
 	;
 
 
@@ -210,6 +212,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "ip_r", &FreePairGreensFunction::ip_r )
 	.def( "p_theta", &FreePairGreensFunction::p_theta )
 	.def( "ip_theta", &FreePairGreensFunction::ip_theta )
+
+        .def( "dump", &FreePairGreensFunction::dump )
 	;
 
     enum_<EventType>( "EventType" )
