@@ -1945,7 +1945,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             shellSize = min( ( D12 / D_tot ) *
                              ( closestDistance - minShellSize 
-                               - closestMinRadius ) + closestMinRadius,
+                               - closestMinRadius ) + minShellSize,
+                             closestDistance - closestMinRadius * 
+                             ( self.SINGLE_SHELL_FACTOR + 1.0 ),
                              closestShellDistance )
                              
             shellSize /= SAFETY
