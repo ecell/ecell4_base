@@ -697,11 +697,6 @@ class Pair( object ):
 
         # equalize expected mean t_r and t_R.
 
-        r0_1 = r0 * D1_factor
-        r0_2 = r0 * D2_factor
-
-        D_factor = sqrtD_tot + sqrtD_geom
-
         qrrtD1D25 = ( D1    * D2**5 ) ** 0.25
         qrrtD15D2 = ( D1**5 * D2 ) ** 0.25
 
@@ -804,7 +799,7 @@ class Pair( object ):
         elif self.dt == self.t_single_reaction:  # type = single reaction (3)
             self.eventType = 3 
         else:
-            raise 'never get here'
+            raise NeverGetHere
 
         #assert False
 
@@ -839,13 +834,11 @@ class Pair( object ):
             # redraw; shouldn't happen often
             while r >= self.a_r or r <= self.sigma: 
                 print 'drawR_pair: redraw'
-                self.sim.rejectedMoves += 1
+                #self.sim.rejectedMoves += 1  #FIXME:
                 r = gf.drawR( numpy.random.uniform(), r0, t )
-
-
-        except:
-            print 'gf.drawR() failed; r0=', r0, 't=', t, 'rnd= ',\
-                rnd[2], self.pgf.dump()
+        except Exception, e:
+            raise e, 'gf.drawR() failed; r0= %g, t= %g, rnd= %g, %s' %\
+                ( r0, t, rnd[2], self.pgf.dump() )
 
 
         return r
@@ -859,9 +852,9 @@ class Pair( object ):
         gf = self.choosePairGreensFunction( r0, t )
         try:
             theta = gf.drawTheta( rnd, r, r0, t )
-        except:
-            print 'gf.drawR() failed; r= ', r, 'r0=', r0, 't=', t, 'rnd= ',\
-                rnd[2], self.pgf.dump()
+        except Exception, e:
+            raise e, 'gf.drawTheta() failed; r= %g, r0= %g, t=%g, rnd=%g, %s' %\
+                ( r, r0, t, rnd[2], self.pgf.dump() )
 
         return theta
 
@@ -1116,7 +1109,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.scheduler.step()
 
         nextEvent = self.scheduler.getTopEvent()
-        nextTime, nextEventObject = nextEvent.getTime(), nextEvent.getArg()
+        nextTime, _ = nextEvent.getTime(), nextEvent.getArg()
         self.dt = nextTime - self.t
 
 
@@ -1174,10 +1167,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def moveSingle( self, single, pos ):
         single.pos = pos
-        self.updateOnParticleMatrix( single.particle )
-
-    def movePair( self, pair, pos ):
-        pair.pos = pos
         self.updateOnParticleMatrix( single.particle )
 
 
@@ -1330,7 +1319,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             self.clearVolume( oldpos, rad )
 
-            for i in range( 100 ):
+            for _ in range( 100 ):
                 unitVector = randomUnitVector()
                 vector = unitVector * particleRadius12 * SAFETY
             
@@ -1439,10 +1428,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         bursted, distances = self.getNeighbors( single.pos, minShell,
                                                 ignore=[single,] )
 
-        if distances.size == 0:
-            self.updateSingle( single, closest, closestShellDistance )
-            return single.dt
-
         closest = bursted.pop()
         closestShellDistance = distances[-1]
 
@@ -1499,10 +1484,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         particle1 = pair.single1.particle
         particle2 = pair.single2.particle
-        species1 = particle1.species
-        species2 = particle2.species
-        particleRadius1 = species1.radius
-        particleRadius2 = species2.radius
         
         oldInterParticle = particle2.pos - particle1.pos
         oldCoM = pair.getCoM()
@@ -1667,9 +1648,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         assert self.distance( newpos1, newpos2 ) >= pair.sigma
 
-        assert self.checkOverlap( newpos1, particleRadius1,
+        assert self.checkOverlap( newpos1, particle1.species.radius,
                                   ignore = [ particle1, particle2 ] )
-        assert self.checkOverlap( newpos2, particleRadius2,
+        assert self.checkOverlap( newpos2, particle2.species.radius,
                                   ignore = [ particle1, particle2 ] )
 
         single1, single2 = pair.single1, pair.single2
@@ -1791,12 +1772,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             particle1 = pair.single1.particle
             particle2 = pair.single2.particle
-
-            particleRadius1 = particle1.species.radius
-            particleRadius2 = particle2.species.radius
-            
-            oldpos1 = particle1.pos.copy()
-            oldpos2 = particle2.pos.copy()
 
             oldInterParticle = particle2.pos - particle1.pos
             oldCoM = pair.getCoM()

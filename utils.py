@@ -13,6 +13,10 @@ INF = numpy.Inf
 
 NOWHERE = numpy.array( ( INF, INF, INF ) )
 
+class NeverGetHere( Exception ):
+    pass
+
+
 
 def MsTom3s( rate ):
     return rate / ( 1000 * N_A )
@@ -23,9 +27,9 @@ def meanArrivalTime( r, D ):
 
 
 def uniq( l ):
-    set = {}
-    map( set.__setitem__, l, [] )
-    return set.keys()
+    nset = {}
+    map( nset.__setitem__, l, [] )
+    return nset.keys()
 
 
 '''
