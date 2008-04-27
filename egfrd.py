@@ -380,8 +380,8 @@ class Single( object ):
             self.gf.seta( self.getMobilityRadius() )
             r = self.gf.drawR( rnd , dt )
         except Exception, e:
-            raise e, 'gf.drawR failed; rnd=%g, t=%g, %s' %\
-                ( rnd, dt, self.gf.dump() )
+            raise Exception, 'gf.drawR failed; %s; rnd=%g, t=%g, %s' %\
+                ( str( e ), rnd, dt, self.gf.dump() )
 
         return r
 
@@ -422,8 +422,8 @@ class Single( object ):
             self.gf.seta( self.getMobilityRadius() )
             dt = self.gf.drawTime( rnd )
         except Exception, e:
-            raise e, 'gf.drawTime() failed; rnd=%g, %s' %\
-                ( rnd, self.gf.dump() )
+            raise Exception, 'gf.drawTime() failed; %s; rnd=%g, %s' %\
+                ( str( e ), rnd, self.gf.dump() )
 
         return dt
 
@@ -757,16 +757,16 @@ class Pair( object ):
             self.sgf.seta( self.a_R )
             self.t_R = self.sgf.drawTime( rnd[0] )
         except Exception, e:
-            raise e, 'sgf.drawTime() failed; rnd= %g, %s' %\
-                ( rnd[0], self.sgf.dump() )
+            raise Exception, 'sgf.drawTime() failed; %s; rnd= %g, %s' %\
+                ( str( e ), rnd[0], self.sgf.dump() )
 
         # draw t_r
         try:
             self.pgf.seta( self.a_r )
             self.t_r = self.pgf.drawTime( rnd[1], r0 )
         except Exception, e:
-            raise e, 'pgf.drawTime() failed; rnd= %g, %s' %\
-                ( rnd[1], self.sgf.dump() )
+            raise Exception, 'pgf.drawTime() failed; %s; rnd= %g, %s' %\
+                ( str( e ), rnd[1], self.sgf.dump() )
 
 
         # draw t_reaction
@@ -791,8 +791,9 @@ class Pair( object ):
                 self.eventType = self.pgf.drawEventType( rnd[2],
                                                          r0, self.t_r )
             except Exception, e:
-                raise e, 'pgf.drawEventType() failed; r0= %g, rnd=%g, %s' %\
-                    ( r0, rnd[2], self.pgf.dump() )
+                raise Exception,\
+                    'pgf.drawEventType() failed; %s; r0= %g, rnd=%g, %s' %\
+                    ( str( e ), r0, rnd[2], self.pgf.dump() )
 
         elif self.dt == self.t_R: # type = ESCAPE_R (2)
             self.eventType = 2
@@ -837,8 +838,9 @@ class Pair( object ):
                 #self.sim.rejectedMoves += 1  #FIXME:
                 r = gf.drawR( numpy.random.uniform(), r0, t )
         except Exception, e:
-            raise e, 'gf.drawR() failed; r0= %g, t= %g, rnd= %g, %s' %\
-                ( r0, t, rnd[2], self.pgf.dump() )
+            raise Exception,\
+                'gf.drawR() failed; %s; r0= %g, t= %g, rnd= %g, %s' %\
+                ( str( e ), r0, t, rnd[2], self.pgf.dump() )
 
 
         return r
@@ -853,8 +855,9 @@ class Pair( object ):
         try:
             theta = gf.drawTheta( rnd, r, r0, t )
         except Exception, e:
-            raise e, 'gf.drawTheta() failed; r= %g, r0= %g, t=%g, rnd=%g, %s' %\
-                ( r, r0, t, rnd[2], self.pgf.dump() )
+            raise Exception,\
+                'gf.drawTheta() failed; %s; r= %g, r0= %g, t=%g, rnd=%g, %s' %\
+                ( str( e ), r, r0, t, rnd[2], self.pgf.dump() )
 
         return theta
 
