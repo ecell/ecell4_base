@@ -1,4 +1,4 @@
-#!/usr/env python
+e#!/usr/env python
 
 import weakref
 
@@ -379,7 +379,7 @@ class Single( object ):
         try:
             self.gf.seta( self.getMobilityRadius() )
             r = self.gf.drawR( rnd , dt )
-        except e:
+        except Exception, e:
             raise e, 'gf.drawR failed; rnd=%g, t=%g, %s' %\
                 ( rnd, dt, self.gf.dump() )
 
@@ -421,7 +421,7 @@ class Single( object ):
         try:
             self.gf.seta( self.getMobilityRadius() )
             dt = self.gf.drawTime( rnd )
-        except e:
+        except Exception, e:
             raise e, 'gf.drawTime() failed; rnd=%g, %s' %\
                 ( rnd, self.gf.dump() )
 
@@ -761,7 +761,7 @@ class Pair( object ):
         try:
             self.sgf.seta( self.a_R )
             self.t_R = self.sgf.drawTime( rnd[0] )
-        except e:
+        except Exception, e:
             raise e, 'sgf.drawTime() failed; rnd= %g, %s' %\
                 ( rnd[0], self.sgf.dump() )
 
@@ -769,7 +769,7 @@ class Pair( object ):
         try:
             self.pgf.seta( self.a_r )
             self.t_r = self.pgf.drawTime( rnd[1], r0 )
-        except e:
+        except Exception, e:
             raise e, 'pgf.drawTime() failed; rnd= %g, %s' %\
                 ( rnd[1], self.sgf.dump() )
 
@@ -795,7 +795,7 @@ class Pair( object ):
             try:
                 self.eventType = self.pgf.drawEventType( rnd[2],
                                                          r0, self.t_r )
-            except e:
+            except Exception, e:
                 raise e, 'pgf.drawEventType() failed; r0= %g, rnd=%g, %s' %\
                     ( r0, rnd[2], self.pgf.dump() )
 
