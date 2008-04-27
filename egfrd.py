@@ -1909,7 +1909,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             print 'minShellSize >= maxShellSize: Pair not created'
             return None
 
-        pairShellSizeMargin = min( sigma1, sigma2 ) * self.SINGLE_SHELL_FACTOR
         com = calculatePairCoM( single1.pos, single2.pos,\
                                 single1.getD(), single2.getD(),\
                                 self.getWorldSize() )
@@ -1917,11 +1916,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         closest, closestShellDistance =\
             self.getClosestObj( com, ignore = ( single1, single2 ) )
 
-        # Squeezing check:
-        #     Pair shell size cannot be smaller than minPairShellSize.
-        if closestShellDistance <= minShellSize + pairShellSizeMargin:
-            print 'Pair not formed because squeezed by ', closest
-            return None
+        shellSizeMargin = min( sigma1, sigma2 ) * self.SINGLE_SHELL_FACTOR
+        minShellSizeWithMargin = minShellSize + shellSizeMargin
 
         radius12 = radius1 + radius2
 
@@ -1931,28 +1927,37 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             % ( single1, single2, pairGap )
 
 
-
-
         # 2. Check if a Pair is better than two Singles
 
         # pairDistance < min( particles' distances to the shell )
         if isinstance( closest, Single ):
-            
+            closestMinRadius = closest.getMinRadius()
+            closestMinShell = closestMinRadius * \
+                ( self.SINGLE_SHELL_FACTOR + 1.0 )
+
+            if closestShellDistance <= \
+                    minShellSizeWithMargin + closestMinShell:
+                print 'Pair not formed because squeezed by ', closest
+                return None
+
             D_closest = closest.particle.species.D
             D_tot = D_closest + D12
-            closestMinRadius = closest.getMinRadius()
             closestDistance = self.distance( com, closest.pos )
 
             shellSize = min( ( D12 / D_tot ) *
                              ( closestDistance - minShellSize 
                                - closestMinRadius ) + minShellSize,
-                             closestDistance - closestMinRadius * 
-                             ( self.SINGLE_SHELL_FACTOR + 1.0 ),
+                             closestDistance - closestMinShell,
                              closestShellDistance )
-                             
+
+            assert shellSize >= minShellSizeWithMargin
             shellSize /= SAFETY
-            shellSize = max( shellSize, minShellSize )
+
         else:
+            if closestShellDistance <= minShellSizeWithMargin:
+                print 'Pair not formed because squeezed by ', closest
+                return None
+
             shellSize = closestShellDistance / SAFETY
         
         if shellSize < 1.3 * minShellSize:  #FIXME: factor ok?
