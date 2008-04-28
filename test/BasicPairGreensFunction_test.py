@@ -94,6 +94,21 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         r = gf.drawR( 0.5, r0, t )
         self.assertEqual( r0, r )
 
+    def test_DrawR_smallt( self ):
+        D = 1e-12
+        kf = 1e-8
+        sigma = 1e-8
+        r0 = 1.000001e-8
+        
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
+
+        t = 1e-14
+
+        r = gf.drawR( 0.5, r0, t )
+        print r
+        self.failIf( r < sigma )
+
+
 
     def test_DrawR_r0_equal_sigma( self ):
         D = 1e-12
@@ -101,7 +116,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         r0 = sigma
 
-        t = 1e-3
+        t = 1e-5
         
         gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
@@ -153,7 +168,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.BasicPairGreensFunction( D, kf, sigma )
         t = 1e-6  # well, not very small
         theta = gf.drawTheta( 0.5, r, r0, t )
-        print 'TT', theta
+        #print 'TT', theta
 
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
@@ -319,7 +334,7 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
                                    'pcorr estimated to be too small.' + \
                                        ' test may not be valid.' )
 
-        print 'PP', pirr, ip, pcorr, pfree
+        #print 'PP', pirr, ip, pcorr, pfree
 
         self.assertNotEqual( 0.0, ip )
         self.assertAlmostEqual( ip/pirr, 1 )

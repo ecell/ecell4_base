@@ -437,6 +437,7 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
 
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma );
+    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
     if( t == 0.0 )
     {
@@ -481,7 +482,7 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
 
             if( H > 20 )
             {
-                std::cerr << "drawR: H > 10 while adjusting upper bound of r."
+                std::cerr << "drawR: H > 20 while adjusting upper bound of r."
                           << std::endl;
                 throw std::exception();
             }
