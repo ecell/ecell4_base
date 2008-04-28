@@ -60,6 +60,28 @@ class FreePairGreensFunctionTestCase( unittest.TestCase ):
         r = gf.drawR( 1.0, r0, t )
         self.assertEqual( r, r0 )
 
+    def test_DrawR_smallt( self ):
+        D = 1e-12
+        r0 = 2e-8
+        
+        gf = mod.FreePairGreensFunction( D )
+
+        t = 1e-4
+
+        while t > 1e-60:
+            r = gf.drawR( 0.5, r0, t )
+            self.failIf( r < 0.0 )
+            r = gf.drawR( 0.0, r0, t )
+            self.failIf( r < 0.0 )
+            r = gf.drawR( 1.0, r0, t )
+            self.failIf( r < 0.0 )
+            r = gf.drawR( 1e-2, r0, t )
+            self.failIf( r < 0.0 )
+
+            t *= 1e-3
+
+
+
     def test_DrawTheta( self ):
         D = 1e-12
         r0 = 5e-8
@@ -175,3 +197,6 @@ class FreePairGreensFunctionTestCase( unittest.TestCase ):
 
 
 
+
+if __name__ == "__main__":
+    unittest.main()

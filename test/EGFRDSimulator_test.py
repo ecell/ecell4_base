@@ -26,10 +26,10 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         s.addSpecies( S )
         s.placeParticle( S, [0.0,0.0,0.0] )
 
-        t = s.getTime()
+        t = s.t
         for i in range( 5 ):
             s.step()
-        self.failIf( t == s.getTime() )
+        self.failIf( t == s.t )
 
     def test_TwoParticles( self ):
         s = EGFRDSimulator()
@@ -39,10 +39,10 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         s.placeParticle( S, [0.0,0.0,0.0] )
         s.placeParticle( S, [5e-6,5e-6,5e-6] )
 
-        t = s.getTime()
+        t = s.t
         for i in range( 5 ):
             s.step()
-        self.failIf( t == s.getTime() )
+        self.failIf( t == s.t )
 
     def test_ThreeParticles( self ):
         s = EGFRDSimulator()
@@ -53,10 +53,10 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         s.placeParticle( S, [5e-6,5e-6,5e-6] )
         s.placeParticle( S, [1e-7,1e-7,1e-7] )
 
-        t = s.getTime()
+        t = s.t
         for i in range( 5 ):
             s.step()
-        self.failIf( t == s.getTime() )
+        self.failIf( t == s.t )
 
 
     def test_ThreeParticlesInContact( self ):
@@ -70,10 +70,10 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         # dummy
         s.placeParticle( S, [2e-7,0.0,0.0] )
 
-        t = s.getTime()
+        t = s.t
         for i in range( 5 ):
             s.step()
-        self.failIf( t == s.getTime() )
+        self.failIf( t == s.t )
 
     def test_immobile_is_immobile( self ):
         s = EGFRDSimulator()

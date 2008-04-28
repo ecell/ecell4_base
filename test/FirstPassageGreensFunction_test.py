@@ -84,10 +84,13 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.FirstPassageGreensFunction( D )
         gf.seta( a )
         t = gf.drawTime( 0.5 )
-        t *= 1e-4
-        r = gf.drawR( 0.5, t )
-        self.failIf( r <= 0.0 )
-        self.failIf( r > a )
+
+        while t > 1e-30:
+            t *= 1e-4
+            r = gf.drawR( 0.0, t )
+            self.failIf( r < 0.0 )
+            self.failIf( r > a )
+
 
     def test_drawR_large_shell( self ):
         D = 1e-12
