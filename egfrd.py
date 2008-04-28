@@ -1455,8 +1455,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 return single.dt
 
             # if nothing was formed, recheck closest and restore shells.
-            closest, closestShellDistance =\
-                self.getClosestObj( single.pos, ignore = [ single, ] )
+            c, d = self.getClosestObj( single.pos, 1, ignore = [ single, ] )
+            if len( c ) >= 1:
+                closest, closestShellDistance = c[0], d[0]
+            else:
+                closest, closestShellDistance = DummySingle(), INF
 
         self.updateSingle( single, closest, closestShellDistance )
 
@@ -1465,6 +1468,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         for s in bursted:
             if isinstance( s, Single ):
                 c, d = self.getClosestObj( s.pos, ignore = [s,] )
+                if len( c ) >= 1:
+                    c, d = c[0], d[0]
+                else:
+                    c, d = DummySingle(), INF
                 self.updateSingle( s, c, d )
                 self.updateEvent( self.t + s.dt, s )
                 #print 'restore shell', s, s.radius, c, d
@@ -1941,8 +1948,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                 single1.getD(), single2.getD(),\
                                 self.getWorldSize() )
         self.applyBoundary( com )
-        closest, closestShellDistance =\
-            self.getClosestObj( com, ignore = ( single1, single2 ) )
+        n, d = self.getClosestObj( com, n=3 )
+        if len( n ) >= 3:
+            closest, closestShellDistance = n[2], d[2]
+        else:
+            closest, closestShellDistance = DummySingle, INF
 
         shellSizeMargin = min( sigma1, sigma2 ) * self.SINGLE_SHELL_FACTOR
         minShellSizeWithMargin = minShellSize + shellSizeMargin
@@ -1988,7 +1998,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             shellSize = closestShellDistance / SAFETY
         
-        if shellSize < 1.3 * minShellSize:  #FIXME: factor ok?
+        if shellSize < max( d[0] + n[0].getMinRadius() * 
+                            self.SINGLE_SHELL_FACTOR, \
+                            d[1] + n[1].getMinRadius() * 
+                            self.SINGLE_SHELL_FACTOR ):
             print 'Singles are better than Pair'
             return None
 
@@ -2144,27 +2157,35 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     This method returns a tuple ( neighbors, distances ).
     '''
 
-    def getClosestShell( self, pos, ignore=[] ):
+    def getClosestShell( self, pos, n=1, ignore=[] ):
 
         neighbors, distances = self.getNeighborShells( pos, len( ignore ) + 1 )
+
+        objs = []
+        dists = []
 
         for i, neighbor in enumerate( neighbors ):
             if neighbor not in ignore:
-                return neighbor, distances[i]
+                objs += [neighbor]
+                dists += [distances[i]]
+                if len( objs ) >= n:
+                    return objs, numpy.array( dists )
 
-        # default case: none left.
-        return ( DummySingle(), 0 ), INF
+    def getClosestObj( self, pos, n=1, ignore=[] ):
 
-    def getClosestObj( self, pos, ignore=[] ):
+        neighbors, distances = self.getNeighborShells( pos, len( ignore ) + n )
 
-        neighbors, distances = self.getNeighborShells( pos, len( ignore ) + 1 )
+        objs = []
+        dists = []
 
         for i, neighbor in enumerate( neighbors ):
             if neighbor[0] not in ignore:
-                return neighbor[0], distances[i]
+                objs += [neighbor[0]]
+                dists += [distances[i]]
+                if len( objs ) >= n:
+                    return objs, numpy.array( dists )
 
-        # default case: none left.
-        return DummySingle(), INF
+        return objs, dists
 
 
     def objDistance( self, pos, obj ):
