@@ -1899,7 +1899,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def formPair( self, single, closest ):
 
-        print closest 
         bursted=[]
         if not closest.isReset():
             self.burstSingle( closest )
