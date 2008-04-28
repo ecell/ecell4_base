@@ -767,8 +767,8 @@ class Pair( object ):
             self.pgf.seta( self.a_r )
             self.t_r = self.pgf.drawTime( rnd[1], r0 )
         except Exception, e:
-            raise Exception, 'pgf.drawTime() failed; %s; rnd= %g, %s' %\
-                ( str( e ), rnd[1], self.sgf.dump() )
+            raise Exception, 'pgf.drawTime() failed; %s; rnd= %g, r0=%g, %s' %\
+                ( str( e ), rnd[1], r0, self.pgf.dump() )
 
 
         # draw t_reaction
@@ -794,8 +794,8 @@ class Pair( object ):
                                                          r0, self.t_r )
             except Exception, e:
                 raise Exception,\
-                    'pgf.drawEventType() failed; %s; r0= %g, rnd=%g, %s' %\
-                    ( str( e ), r0, rnd[2], self.pgf.dump() )
+                    'pgf.drawEventType() failed; %s; rnd=%g, r0=%g, %s' %\
+                    ( str( e ), rnd[2], r0, self.pgf.dump() )
 
         elif self.dt == self.t_R: # type = ESCAPE_R (2)
             self.eventType = 2
@@ -822,8 +822,8 @@ class Pair( object ):
                 r = self.sgf.drawR( rnd, t )
         except Exception, e:
             raise Exception,\
-                'gf.drawR_single() failed; %s; t= %g, rnd= %g, %s' %\
-                ( str( e ), t, rnd[2], self.pgf.dump() )
+                'gf.drawR_single() failed; %s; rnd= %g, t= %g, %s' %\
+                ( str( e ), rnd[2], t, self.sgf.dump() )
 
         return r
 
@@ -850,8 +850,8 @@ class Pair( object ):
                 r = gf.drawR( rnd, r0, t )
         except Exception, e:
             raise Exception,\
-                'gf.drawR_pair() failed; %s; r0= %g, t= %g, rnd= %g, %s' %\
-                ( str( e ), r0, t, rnd[2], self.pgf.dump() )
+                'gf.drawR_pair() failed; %s; rnd= %g, r0= %g, t= %g, %s' %\
+                ( str( e ), rnd, r0, t, gf.dump() )
 
 
         return r
@@ -867,8 +867,8 @@ class Pair( object ):
             theta = gf.drawTheta( rnd, r, r0, t )
         except Exception, e:
             raise Exception,\
-                'gf.drawTheta() failed; %s; r= %g, r0= %g, t=%g, rnd=%g, %s' %\
-                ( str( e ), r, r0, t, rnd[2], self.pgf.dump() )
+                'gf.drawTheta() failed; %s; rnd= %g, r= %g, r0= %g, t=%g, %s' %\
+                ( str( e ), rnd, r, r0, t, gf.dump() )
 
         return theta
 
