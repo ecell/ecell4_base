@@ -1997,10 +1997,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             shellSize = closestShellDistance / SAFETY
         
-        if shellSize < max( d[0] + n[0].getMinRadius() * 
-                            self.SINGLE_SHELL_FACTOR, \
+        if shellSize < max( d[0] + n[0].getMinRadius() *
+                            ( 2.0 + self.SINGLE_SHELL_FACTOR ), \
                             d[1] + n[1].getMinRadius() * 
-                            self.SINGLE_SHELL_FACTOR ):
+                            ( 2.0 + self.SINGLE_SHELL_FACTOR ) ):
             print 'Singles are better than Pair'
             return None
 
