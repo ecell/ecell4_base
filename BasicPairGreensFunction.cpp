@@ -586,8 +586,8 @@ BasicPairGreensFunction::Rn( const unsigned int n, const Real r, const Real r0,
     gsl_integration_qag( &F, 0.0,
 			 umax,
 			 tol,
-			 1e-6,
-			 1000, GSL_INTEG_GAUSS61,
+			 1e-5,
+			 2000, GSL_INTEG_GAUSS61,
 			 workspace, &integral, &error );
 
 
@@ -780,7 +780,7 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
     const Real pfreemax( p_free_max( r, r0, t, D ) );
 
     gsl_integration_workspace* 
-        workspace( gsl_integration_workspace_alloc( 1000 ) );
+        workspace( gsl_integration_workspace_alloc( 2000 ) );
     
     Real Rn_prev( 0.0 );
     const Real RnFactor( 1.0 / ( 4.0 * M_PI * sqrt( r * r0 ) ) );

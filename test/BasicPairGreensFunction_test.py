@@ -9,6 +9,7 @@ import unittest
 
 import _gfrd as mod
 
+import math
 import numpy
 
 
@@ -102,10 +103,10 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         
         gf = mod.BasicPairGreensFunction( D, kf, sigma )
 
-        t = 1e-14
+        t = 1e-12
 
         r = gf.drawR( 0.5, r0, t )
-        print r
+
         self.failIf( r < sigma )
 
 
@@ -162,13 +163,16 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
-        r = 1.0001e-8
-        r0 = 1.0001e-8
+
+        t = 1e-11
+
+        disp = 3 * math.sqrt( 6 * D * t )
+
+        r = sigma + disp + disp
+        r0 = sigma + disp
         
         gf = mod.BasicPairGreensFunction( D, kf, sigma )
-        t = 1e-6  # well, not very small
         theta = gf.drawTheta( 0.5, r, r0, t )
-        #print 'TT', theta
 
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
@@ -233,16 +237,17 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
 
         self.assertAlmostEqual( psurv, pintr )
 
+
     def test_ip_theta_is_int_p_theta( self ):
 
         import scipy.integrate
 
         D = 1e-12
         sigma = 1e-8
-        kf = 1e-8
+        kf = 1e-9
 
-        t = 1e-2
-        r0 = sigma*2
+        t = 1e-4
+        r0 = sigma*1.1
 
         gf = mod.BasicPairGreensFunction( D, kf, sigma )
         r = r0
