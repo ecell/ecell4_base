@@ -1118,9 +1118,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         event = self.scheduler.getTopEvent()
         self.t, self.lastEvent = event.getTime(), event.getArg()
 
-        log.info( '%d: t=%g event=%s dt=%g reactions=%d rejectedmoves=%d' 
-                      % ( self.stepCounter, self.t, self.lastEvent, 
-                          self.dt, self.reactionEvents, self.rejectedMoves ) )
+        log.info( '\n%d: t=%g dt=%g\nevent=%s reactions=%d rejectedmoves=%d' 
+                      % ( self.stepCounter, self.t, self.dt, self.lastEvent, 
+                          self.reactionEvents, self.rejectedMoves ) )
         
         self.scheduler.step()
 
