@@ -19,7 +19,10 @@ from ObjectMatrix import *
 
 import logging
 #logging.basicConfig( format='%(levelname)s %(message)s' )
-#logging.basicConfig( format='%(message)s' )
+try:
+    logging.basicConfig( format='%(message)s' )
+except:
+    pass
 log = logging.getLogger()
 log.setLevel( logging.INFO )
 
