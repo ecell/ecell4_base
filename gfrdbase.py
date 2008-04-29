@@ -19,7 +19,7 @@ from ObjectMatrix import *
 
 import logging
 #logging.basicConfig( format='%(levelname)s %(message)s' )
-logging.basicConfig( format='%(message)s' )
+#logging.basicConfig( format='%(message)s' )
 log = logging.getLogger()
 log.setLevel( logging.INFO )
 

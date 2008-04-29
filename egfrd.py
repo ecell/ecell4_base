@@ -2014,9 +2014,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         d2 = self.distance( com, single2.pos )
 
         if shellSize < max( d1 + single1.getMinRadius() *
-                            ( 2.0 + self.SINGLE_SHELL_FACTOR ), \
+                            ( 1.0 + self.SINGLE_SHELL_FACTOR ), \
                                 d2 + single2.getMinRadius() * \
-                                ( 2.0 + self.SINGLE_SHELL_FACTOR ) ):
+                                ( 1.0 + self.SINGLE_SHELL_FACTOR ) ) * 1.3:
             log.debug( '%s not formed: singles are better' %
                        'Pair( %s, %s )' % ( single1.particle, 
                                             single2.particle ) )
