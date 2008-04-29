@@ -1138,8 +1138,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.zeroSteps += 1
         else:
             self.zeroSteps = 0
-        assert self.zeroSteps < self.scheduler.getSize() * 2,\
-            'too many dt=zero steps.  simulator halted?'
+        if self.zeroSteps >= self.scheduler.getSize() * 2:
+            raise RuntimeError, 'too many dt=zero steps.  simulator halted?'
 
 
         assert self.scheduler.getSize() != 0
