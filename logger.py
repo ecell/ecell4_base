@@ -1,5 +1,7 @@
+
 import os
 import string
+import logging
 
 
 class Logger:
@@ -67,7 +69,7 @@ class Logger:
             positions = species.pool.positions
 
             filename = speciesName + '_' + '%04d' % self.fileCounter + '.dat'
-            print filename
+            #print filename
             file = open( self.directory + os.sep + filename, 'w' )
             file.write( '# name: %s\n' % speciesName )
             file.write( '# radius: %f\n' % species.radius )
@@ -100,7 +102,7 @@ class Logger:
         nextTime = sim.t + sim.dt
 
         if self.nextTime <= nextTime:
-            print 'log', self.nextTime
+            logging.info( 'log %g' % self.nextTime )
 
             sim.stop( self.nextTime )
             self.writeParticles()

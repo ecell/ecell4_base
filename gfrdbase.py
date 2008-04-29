@@ -17,7 +17,15 @@ from _gfrd import *
 from ObjectMatrix import *
 
 
+import logging
+#logging.basicConfig( format='%(levelname)s %(message)s' )
+logging.basicConfig( format='%(message)s' )
+log = logging.getLogger()
+log.setLevel( logging.INFO )
+
+
 N_A = 6.0221367e23
+
 
 
 def p_free( r, t, D ):
@@ -422,9 +430,9 @@ class GFRDSimulatorBase( object ):
         
 
     def throwInParticles( self, species, n, surface=[] ):
-        print 'throwing in %s %s particles' % ( n, species.id )
+        log.info( 'throwing in %s %s particles' % ( n, species.id ) )
 
-        for _ in range( int( n ) ):
+        for i in range( int( n ) ):
 
             while 1:
 
@@ -433,7 +441,7 @@ class GFRDSimulatorBase( object ):
                 if self.checkOverlap( position, species.radius ):
                     break
                 else:
-                    print _
+                    log.info( '%d-th particle rejected.' %i )
             
             self.createParticle( species, position )
 
@@ -485,10 +493,7 @@ class GFRDSimulatorBase( object ):
             return False
         else:
             return True
-        '''
-            print 'reject: closest = ', c, ', distance = ', d,\
-                ', which must be at least '
-        '''
+
         
     def getParticlesWithinRadius( self, pos, radius, ignore=[] ): 
         particles, _ =\
@@ -500,28 +505,6 @@ class GFRDSimulatorBase( object ):
         particles = [ Particle( p[0], p[1] ) for p in particles ]
         return [ p for p in particles if p not in ignore ]
 
-
-    def checkOverlap2( self, position, radius ):
-        
-        for species2 in self.speciesList.values():
-
-            if species2.pool.size == 0:
-                continue
-
-            positions2 = species2.pool.positions
-
-            radius12 = radius + species2.radius
-            radius12sq = radius12 * radius12
-
-            closestdistsq = self.distanceSqArray( position, positions2 ).min()
-
-            if closestdistsq <= radius12sq:
-                print 'reject: closest distance = ', math.sqrt(closestdistsq),\
-                    ', which must be at least ', radius12
-                return False
-
-        return True
-    
 
     def clear( self ):
 
@@ -672,4 +655,4 @@ class GFRDSimulatorBase( object ):
         for species in self.speciesList.values():
             buf += species.id + ':' + str( species.pool.size ) + '\t'
 
-        print buf
+        return buf

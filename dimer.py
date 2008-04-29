@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 
+import logging
+
 from egfrd import *
 #from bd import *
 
 from logger import *
 import sys
+
+
+log.setLevel( logging.WARNING )
+
+
 
 s = EGFRDSimulator( 'normal' )
 
@@ -51,11 +58,11 @@ l.log()
 def profrun():
     while s.stepCounter < 6000:
         s.step()
-        #s.dumpPopulation()
+        #logging.info( s.dumpPopulation() )
 
 
-import profile
-profile.run('profrun()', 'fooprof')
+import cProfile
+cProfile.run('profrun()', 'fooprof')
 import pstats
 pstats.Stats('fooprof').sort_stats('time').print_stats(30)
 

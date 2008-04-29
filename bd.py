@@ -28,7 +28,7 @@ def calculateBDDt( speciesList, factor = DEFAULT_DT_FACTOR ):
     sigma_min = radius_min * 2
 
     dt = factor * sigma_min ** 2 / D_max  
-    print 'bd dt = ', dt
+    log.debug( 'bd dt = %g' % dt )
 
     return dt
 
@@ -117,8 +117,6 @@ class BDSimulatorCoreBase( object ):
         
         self.particlesToStep = self.particleList[:]
 
-        #print particleList
-
         random.shuffle( self.particlesToStep )
         while len( self.particlesToStep ) != 0:
             particle = self.particlesToStep.pop() # last one
@@ -134,7 +132,7 @@ class BDSimulatorCoreBase( object ):
             try:
                 self.fireReaction1( particle, rt1 )
             except NoSpace:
-                print 'fireReaction1 rejected.'
+                log.info( 'fireReaction1 rejected.' )
 
             return
 
@@ -164,18 +162,18 @@ class BDSimulatorCoreBase( object ):
 
                 rnd = numpy.random.uniform()
                 if p > rnd:
-                    print 'fire reaction2'
+                    log.info( 'fire reaction2' )
                     try:
                         self.fireReaction2( particle, closest, rt )
                     except NoSpace:
-                        print 'fireReaction2 move rejected'
+                        log.info( 'fireReaction2 move rejected' )
                     return
                 else:
-                    print 'reaction2 reject'
+                    log.info( 'reaction2 reject' )
                     return
 
             else:
-                print 'collision move reject'
+                log.info( 'collision move reject' )
                 return
 
 
@@ -184,7 +182,7 @@ class BDSimulatorCoreBase( object ):
         try:
             self.moveParticle( particle, newpos )
         except NoSpace:
-            print 'propagation move rejected.'
+            log.info( 'propagation move rejected.' )
         return
 
 
@@ -221,7 +219,7 @@ class BDSimulatorCoreBase( object ):
 
             if not self.checkOverlap( oldpos, productSpecies.radius,
                                       ignore = [ particle, ] ):
-                print 'no space for product particle.'
+                log.info( 'no space for product particle.' )
                 raise NoSpace()
                 
             self.removeParticle( particle )
@@ -265,7 +263,7 @@ class BDSimulatorCoreBase( object ):
                                           ignore = [ particle, ]):
                     break
             else:
-                print 'no space for product particles.'
+                log.info( 'no space for product particles.' )
                 raise NoSpace()
 
             # move accepted
@@ -308,9 +306,6 @@ class BDSimulatorCoreBase( object ):
                 self.createParticle( productSpecies, newPos )
             except NoSpace:
                 assert False, "this shouldn't happen"
-
-
-            #print particle1, particle2, '->', newparticle
 
 
             try:
@@ -433,10 +428,9 @@ class BDSimulator( GFRDSimulatorBase ):
 
         self.core.step()
 
-        print self.stepCounter, ': t = ', self.t,\
-            'dt = ', self.dt,\
-            'reactions:', self.reactionEvents,\
-            'rejected moves:', self.rejectedMoves
+        log.info( '%d: t=%g dt=%g, reactions=%d, rejectedMoves=%d' %
+                  ( self.stepCounter, self.t, self.dt, self.reactionEvents,
+                    self.rejectedMoves ) )
         #print ''
 
 
