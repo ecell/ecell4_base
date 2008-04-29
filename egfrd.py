@@ -1,6 +1,5 @@
 #!/usr/env python
 
-import logging
 
 import weakref
 
@@ -19,6 +18,8 @@ from ObjectMatrix import *
 from gfrdbase import *
 from bd import *
 
+log = logging.getLogger()
+log.setLevel( logging.WARNING )
 
 
 SAFETY = 1.0 + 1e-5
@@ -1938,14 +1939,17 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # 1. Shell cannot be larger than max shell size or sim cell size.
         maxShellSize = min( self.getMatrixCellSize(), self.maxShellSize )
         if minShellSize >= maxShellSize:
-            log.info( 'minShellSize >= maxShellSize: Pair not created' )
+            log.debug( '%s not formed: minShellSize >= maxShellSize' %
+                       ( 'Pair( %s, %s )' % ( single1, single2 ) ) )
+                       
             return None
 
         com = calculatePairCoM( single1.pos, single2.pos,\
                                 single1.getD(), single2.getD(),\
                                 self.getWorldSize() )
         self.applyBoundary( com )
-        n, d = self.getClosestObj( com, n=3 )
+
+        neighbors, distances = self.getClosestObj( com, n=3 )
         if len( n ) >= 3:
             closest, closestShellDistance = n[2], d[2]
         else:
@@ -1972,8 +1976,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             if closestShellDistance <= \
                     minShellSizeWithMargin + closestMinShell:
-                log.info( 'Pair not formed because squeezed by %s' %
-                              closest )
+                log.debug( '%s not formed: squeezed by %s' %
+                       ( 'Pair( %s, %s )' % ( single1, single2 ), closest ) )
                 return None
 
             D_closest = closest.particle.species.D
@@ -1991,23 +1995,24 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         else:
             if closestShellDistance <= minShellSizeWithMargin:
-                log.info( 'Pair not formed because squeezed by %s' %
-                              closest )
+                log.debug( '%s not formed: squeezed by %s' %
+                           ( 'Pair( %s, %s )' % ( single1, single2 ), 
+                             closest ) )
                 return None
 
             shellSize = closestShellDistance / SAFETY
         
         if shellSize < max( d[0] + n[0].getMinRadius() *
                             ( 2.0 + self.SINGLE_SHELL_FACTOR ), \
-                            d[1] + n[1].getMinRadius() * 
-                            ( 2.0 + self.SINGLE_SHELL_FACTOR ) ):
-            log.info( 'Pair not formed because singles are better' )
+                                d[1] + n[1].getMinRadius() * \
+                                ( 2.0 + self.SINGLE_SHELL_FACTOR ) ):
+            log.debug( '%s not formed: singles are better' %
+                       ( 'Pair( %s, %s )' % ( single1, single2 ), closest ) )
             return None
 
         # 3. Ok, Pair makes sense.  Create one.
 
-        shellSize = max( shellSize, minShellSize )
-        shellSize = min( shellSize, maxShellSize )
+        shellSize = min( max( shellSize, minShellSize ), maxShellSize )
 
         pair = self.createPair( single1, single2 )
         pair.setRadius( shellSize )
@@ -2023,10 +2028,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.removeEvent( single2 )
 
 
-        log.info( 'Pair: %s, dt=%g, pairDistance=%g, shell=%g,' %
-                      ( pair, pair.dt, pairDistance, pair.radius ) +
-                      'closest=%s, shellDistance=%g' %
-                      ( closest, closestShellDistance ) )
+        log.info( '%s, dt=%g, pairDistance=%g, shell=%g,' %
+                  ( pair, pair.dt, pairDistance, pair.radius ) +
+                  'closest=%s, shellDistance=%g' %
+                  ( closest, closestShellDistance ) )
 
         return pair
     

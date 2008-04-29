@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import logging
+
 from egfrd import *
 
 from logger import *
@@ -238,7 +240,7 @@ l.log()
 
 while s.t < T:
     s.step()
-    s.dumpPopulation()
+    logging.info( s.dumpPopulation() )
     l.log()
     
 

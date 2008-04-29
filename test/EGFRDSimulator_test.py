@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 
+import logging
+
 import unittest
 
 import numpy
 
 from egfrd import *
+
+
+log = logging.getLogger()
+log.setLevel( logging.WARNING )
 
 class EGFRDSimulatorTestCase( unittest.TestCase ):
 
@@ -75,6 +81,30 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
             s.step()
         self.failIf( t == s.t )
 
+    def test_FourParticlesClose( self ):
+
+        log.setLevel( logging.DEBUG )
+
+        s = EGFRDSimulator()
+        s.setWorldSize( 1e-5 )
+        S = Species( 'S', 1e-12, 1e-8 )
+        s.addSpecies( S )
+
+        s.placeParticle( S, [1e-8,0.0,0.0] )
+        s.placeParticle( S, [3.1e-8,0.0,0.0] )
+
+        s.placeParticle( S, [0,3e-8,0.0] )
+        s.placeParticle( S, [0,-3e-8,0.0] )
+
+
+        t = s.t
+        for i in range( 50 ):
+            s.step()
+        self.failIf( t == s.t )
+
+        log.setLevel( logging.WARNING )
+
+
     def test_immobile_is_immobile( self ):
         s = EGFRDSimulator()
         s.setWorldSize( 1e-5 )
@@ -90,7 +120,6 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
 
         for i in range( 10 ):
             s.step()
-            print particleA.getPos()
         
         newPosition = particleA.getPos().copy()
         dist = s.distance( initialPosition, newPosition )
