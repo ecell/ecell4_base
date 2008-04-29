@@ -1459,11 +1459,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 return single.dt
 
             # if nothing was formed, recheck closest and restore shells.
-            c, d = self.getClosestObj( single.pos, 1, ignore = [ single, ] )
-            if len( c ) >= 1:
-                closest, closestShellDistance = c[0], d[0]
-            else:
-                closest, closestShellDistance = DummySingle(), INF
+            closest, closestShellDistance = \
+                self.getClosestObj( single.pos, ignore = [ single, ] )
 
         self.updateSingle( single, closest, closestShellDistance )
 
@@ -1472,10 +1469,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         for s in bursted:
             if isinstance( s, Single ):
                 c, d = self.getClosestObj( s.pos, ignore = [s,] )
-                if len( c ) >= 1:
-                    c, d = c[0], d[0]
-                else:
-                    c, d = DummySingle(), INF
                 self.updateSingle( s, c, d )
                 self.updateEvent( self.t + s.dt, s )
                 log.debug( 'restore shell %s %g %s %g' %
@@ -1948,18 +1941,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                        
             return None
 
-        com = calculatePairCoM( single1.pos, single2.pos,\
-                                single1.getD(), single2.getD(),\
+        com = calculatePairCoM( single1.pos, single2.pos, D1, D2,
                                 self.getWorldSize() )
         self.applyBoundary( com )
 
-        neighbors, distances = self.getClosestObj( com, 
-                                                   ignore=[single1,single2] )
-
-        if neighbors:
-            closest, closestShellDistance = neighbors[0], distances[0]
-        else:
-            closest, closestShellDistance = DummySingle(), INF
+        closest, closestShellDistance = \
+            self.getClosestObj( com, ignore=[ single1, single2 ] )
 
         shellSizeMargin = min( sigma1, sigma2 ) * self.SINGLE_SHELL_FACTOR
         minShellSizeWithMargin = minShellSize + shellSizeMargin
@@ -2184,6 +2171,18 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                     return objs, numpy.array( dists )
 
     def getClosestObj( self, pos, n=1, ignore=[] ):
+
+        neighbors, distances = self.getNeighborShells( pos, len( ignore ) + 1 )
+
+        for i, neighbor in enumerate( neighbors ):
+            if neighbor[0] not in ignore:
+                return neighbor[0], distances[i]
+
+        return DummySingle, INF
+
+
+
+    def getClosestNObjs( self, pos, n=1, ignore=[] ):
 
         neighbors, distances = self.getNeighborShells( pos, len( ignore ) + n )
 
