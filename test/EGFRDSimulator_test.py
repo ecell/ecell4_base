@@ -87,18 +87,18 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
 
         s = EGFRDSimulator()
         s.setWorldSize( 1e-5 )
-        S = Species( 'S', 1e-12, 1e-8 )
+        S = Species( 'S', 1e-12, 5e-9 )
         s.addSpecies( S )
 
-        s.placeParticle( S, [1e-8,0.0,0.0] )
-        s.placeParticle( S, [3.1e-8,0.0,0.0] )
+        s.placeParticle( S, [ 2e-8,0.0,0.0 ] )
+        s.placeParticle( S, [ 3.003e-8,0.0,0.0 ] )
 
-        s.placeParticle( S, [0,3e-8,0.0] )
-        s.placeParticle( S, [0,-3e-8,0.0] )
+        s.placeParticle( S, [ 0.994e-8-5e-10, 0.0, 0.0 ] )
+        #s.placeParticle( S, [ 0, 2e-8, 0.0 ] )
 
 
         t = s.t
-        for i in range( 50 ):
+        for i in range( 10 ):
             s.step()
         self.failIf( t == s.t )
 

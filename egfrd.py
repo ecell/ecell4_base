@@ -1443,14 +1443,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         minShell = single.getMinRadius() * ( 1.0 + self.SINGLE_SHELL_FACTOR )
 
-        bursted, distances = self.getNeighbors( single.pos, minShell,
-                                                ignore=[single,] )
+        closeNeighbors, distances = self.getNeighbors( single.pos, minShell,
+                                                       ignore=[single,] )
 
-        closest = bursted.pop()
+        closest = closeNeighbors.pop()
         closestShellDistance = distances[-1]
-
-        if bursted:
-            bursted = self.burstNonMultis( bursted )
+        bursted = []
+        
+        if closeNeighbors:
+            bursted = self.burstNonMultis( closeNeighbors )
             obj, b = self.formPairOrMulti( single, bursted )
             bursted.extend( b )
 
@@ -1465,17 +1466,17 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.updateSingle( single, closest, closestShellDistance )
 
         bursted = uniq( bursted )
-
         for s in bursted:
             if isinstance( s, Single ):
+                assert s.isReset()
                 c, d = self.getClosestObj( s.pos, ignore = [s,] )
                 self.updateSingle( s, c, d )
                 self.updateEvent( self.t + s.dt, s )
-                log.debug( 'restore shell %s %g %s %g' %
-                               ( s, s.radius, c, d ) )
+                log.debug( 'restore shell %s %g dt %g closest %s %g' %
+                               ( s, s.radius, s.dt, c, d ) )
             
         log.info( 'single shell %g dt %g.' % 
-                      ( single.radius, single.dt ) )
+                  ( single.radius, single.dt ) )
 
         return single.dt
 
@@ -1837,7 +1838,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # Try forming a Pair.
         if isinstance( neighbors[0], Single ):
-            obj, bursted = self.formPair( single, neighbors[0] )
+            obj, bursted = self.formPair( single, neighbors[0], neighbors[1:] )
             if obj:
                 return obj, bursted
 
@@ -1892,15 +1893,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         assert False, 'do not reach here'
 
 
-    def formPair( self, single, closest ):
+    def formPair( self, single, closest, bursted ):
 
-        bursted=[]
+        #bursted=[]
         if not closest.isReset():
             self.burstSingle( closest )
 
         bursted.append( closest )
 
-        obj = self.tryPair( single, closest )
+        obj = self.tryPair( single, closest, bursted )
         return obj, bursted
 
 
@@ -1911,7 +1912,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     '''
 
-    def tryPair( self, single1, single2 ):
+    def tryPair( self, single1, single2, bursted ):
 
         assert single1.isReset()
         assert single2.isReset()
@@ -1938,15 +1939,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             log.debug( '%s not formed: minShellSize >= maxShellSize' %
                        ( 'Pair( %s, %s )' % ( single1.particle, 
                                               single2.particle ) ) )
-                       
             return None
 
         com = calculatePairCoM( single1.pos, single2.pos, D1, D2,
                                 self.getWorldSize() )
         self.applyBoundary( com )
-
-        closest, closestShellDistance = \
-            self.getClosestObj( com, ignore=[ single1, single2 ] )
 
         shellSizeMargin = min( sigma1, sigma2 ) * self.SINGLE_SHELL_FACTOR
         minShellSizeWithMargin = minShellSize + shellSizeMargin
@@ -1959,6 +1956,24 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             % ( single1, single2, pairGap )
 
 
+
+        closest, closestDistance =\
+            self.getClosestObj( com, ignore=[ single1, single2 ] )
+
+        # Here, we have to take into account of the bursted Singles in this
+        # steps.  The check for closest above could miss some of them, because
+        # sizes of these Singles for this distance check has to include
+        # SINGLE_SHELL_FACTOR, while these bursted objects have zero radii.
+        # This is not beautiful, though.
+
+        d = [ self.distance( com, b.pos ) \
+                  - b.getMinRadius() * ( 1.0 + self.SINGLE_SHELL_FACTOR )
+              for b in bursted if isinstance( b, Single ) ]
+        i = numpy.argmin( d )
+        if d[ i ] < closestDistance:
+            closest, closestDistance = bursted[i], d[i]
+
+
         # 2. Check if a Pair is better than two Singles
 
         # pairDistance < min( particles' distances to the shell )
@@ -1967,7 +1982,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             closestMinShell = closestMinRadius * \
                 ( self.SINGLE_SHELL_FACTOR + 1.0 )
 
-            if closestShellDistance <= \
+            if closestDistance <= \
                     minShellSizeWithMargin + closestMinShell:
                 log.debug( '%s not formed: squeezed by %s' %
                        ( 'Pair( %s, %s )' % ( single1.particle, 
@@ -1982,20 +1997,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                              ( closestDistance - minShellSize 
                                - closestMinRadius ) + minShellSize,
                              closestDistance - closestMinShell,
-                             closestShellDistance )
+                             closestDistance )
 
             assert shellSize >= minShellSizeWithMargin
             shellSize /= SAFETY
 
         else:
-            if closestShellDistance <= minShellSizeWithMargin:
+            if closestDistance <= minShellSizeWithMargin:
                 log.debug( '%s not formed: squeezed by %s' %
                            ( 'Pair( %s, %s )' % ( single1.particle, 
                                                   single2.particle ), 
                              closest ) )
                 return None
 
-            shellSize = closestShellDistance / SAFETY
+            shellSize = closestDistance / SAFETY
         
         d1 = self.distance( com, single1.pos )
         d2 = self.distance( com, single2.pos )
@@ -2030,7 +2045,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         log.info( '%s, dt=%g, pairDistance=%g, shell=%g,' %
                   ( pair, pair.dt, pairDistance, pair.radius ) +
                   'closest=%s, shellDistance=%g' %
-                  ( closest, closestShellDistance ) )
+                  ( closest, closestDistance ) )
 
         return pair
     
