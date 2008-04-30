@@ -609,22 +609,22 @@ class Pair( object ):
             if distanceFromShell < thresholdDistance:
                 # near both a and sigma;
                 # use FirstPassagePairGreensFunction
-                log.info( 'GF: normal' )
+                log.debug( 'GF: normal' )
                 return self.pgf
             else:
                 # near sigma; use BasicPairGreensFunction
-                log.info( 'GF: only sigma' )
+                log.debug( 'GF: only sigma' )
                 return self.pgf_basic
                 #return self.pgf
         else:
             if distanceFromShell < thresholdDistance:
                 # near a;
-                log.info( 'GF: only a' )
+                log.debug( 'GF: only a' )
                 return self.pgf_nocol
                 
             else:
                 # distant from both a and sigma; 
-                log.info( 'GF: free' )
+                log.debug( 'GF: free' )
                 return self.pgf_free
 
 
