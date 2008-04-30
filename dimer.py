@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 
-import logging
-
 from egfrd import *
 #from bd import *
 
 from logger import *
 import sys
-
-
-log.setLevel( logging.WARNING )
-
-
 
 s = EGFRDSimulator( 'normal' )
 

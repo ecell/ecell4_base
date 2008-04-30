@@ -16,19 +16,45 @@ from _gfrd import *
 
 from ObjectMatrix import *
 
-
+import os
 import logging
-#logging.basicConfig( format='%(levelname)s %(message)s' )
-try:
-    logging.basicConfig( format='%(message)s' )
-except:
-    pass
-log = logging.getLogger()
-log.setLevel( logging.INFO )
+import logging.handlers
+
+
+def setupLogging():
+    global log 
+
+    log = logging.getLogger( 'pdpp' )
+
+    if 'LOGFILE' in os.environ:
+        if 'LOGSIZE' in os.environ and int( os.environ[ 'LOGSIZE' ] ) != 0:
+            handler = logging.handlers.\
+                RotatingFileHandler( os.environ[ 'LOGFILE' ], mode='w',
+                                     maxBytes=int( os.environ[ 'LOGSIZE' ] ) )
+        else:
+            handler = logging.FileHandler( os.environ[ 'LOGFILE' ], 'w', )
+            
+    else:
+        handler = logging.StreamHandler( sys.stdout )
+
+    formatter = logging.Formatter( '%(message)s' )
+    handler.setFormatter( formatter )
+    log.addHandler( handler )
+        
+    LOGLEVELS = { 'CRITICAL': logging.CRITICAL,
+                  'ERROR': logging.ERROR,
+                  'WARNING': logging.WARNING,
+                  'INFO': logging.INFO, 
+                  'DEBUG': logging.DEBUG, 
+                  'NOTSET': logging.NOTSET }
+
+    if 'LOGLEVEL' in os.environ:
+        log.setLevel( LOGLEVELS[ os.environ[ 'LOGLEVEL' ] ] )
+    else:
+        log.setLevel( logging.INFO )
 
 
 N_A = 6.0221367e23
-
 
 
 def p_free( r, t, D ):
@@ -659,3 +685,8 @@ class GFRDSimulatorBase( object ):
             buf += species.id + ':' + str( species.pool.size ) + '\t'
 
         return buf
+
+
+setupLogging()
+
+

@@ -18,9 +18,6 @@ from ObjectMatrix import *
 from gfrdbase import *
 from bd import *
 
-log = logging.getLogger()
-log.setLevel( logging.DEBUG )
-
 
 SAFETY = 1.0 + 1e-5
 
@@ -1961,10 +1958,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             self.getClosestObj( com, ignore=[ single1, single2 ] )
 
         # Here, we have to take into account of the bursted Singles in this
-        # steps.  The check for closest above could miss some of them, because
+        # step.  The check for closest above could miss some of them, because
         # sizes of these Singles for this distance check has to include
-        # SINGLE_SHELL_FACTOR, while these bursted objects have zero radii.
-        # This is not beautiful, though.
+        # SINGLE_SHELL_FACTOR, while these bursted objects have zero mobility 
+        # radii.  This is not beautiful, though.
 
         d = [ self.distance( com, b.pos ) \
                   - b.getMinRadius() * ( 1.0 + self.SINGLE_SHELL_FACTOR )
