@@ -1,7 +1,7 @@
 
 import os
 import string
-import logging
+#import logging
 
 
 class Logger:
@@ -102,7 +102,7 @@ class Logger:
         nextTime = sim.t + sim.dt
 
         if self.nextTime <= nextTime:
-            logging.info( 'log %g' % self.nextTime )
+            #log.info( 'log %g' % self.nextTime )
 
             sim.stop( self.nextTime )
             self.writeParticles()

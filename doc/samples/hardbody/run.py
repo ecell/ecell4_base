@@ -21,7 +21,7 @@ V = 40e-15
 # 296.172708988
 # 1-4.  C=2e-6M
 T=0.01
-N=100000
+N=1000
 
 # 2
 #N=600
@@ -114,8 +114,8 @@ print 'reset finish'
 #l.setInterval( 1e-1 )
 #l.log()
 
-start = time.time()
 print 'run'
+start = time.time()
 while s.t < T:
     s.step()
     #l.log()

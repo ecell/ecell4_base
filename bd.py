@@ -15,7 +15,7 @@ import _gfrd
 
 DEFAULT_DT_FACTOR = 1e-5
 
-def calculateBDDt( speciesList, factor = DEFAULT_DT_FACTOR ):
+def calculateBDDt( speciesList, factor ):
 
     D_list = []
     radius_list = []
@@ -49,6 +49,8 @@ class BDSimulatorCoreBase( object ):
 
         self.t = 0.0
         self.dt = 0.0
+
+        self.dtFactor = DEFAULT_DT_FACTOR
 
         self.stepCounter = 0
 
@@ -85,7 +87,7 @@ class BDSimulatorCoreBase( object ):
 
     def determineDt( self ):
 
-        self.dt = calculateBDDt( self.speciesList.values() )
+        self.dt = calculateBDDt( self.speciesList.values(), self.dtFactor )
 
 
     def getP_acct( self, rt, D, sigma ):
