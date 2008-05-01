@@ -1894,7 +1894,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         assert False, 'do not reach here'
 
 
-    def formPair( self, single, closest, bursted ):
+    def formPair( self, single1, single2, bursted ):
 
         assert single1.isReset()
         assert single2.isReset()
