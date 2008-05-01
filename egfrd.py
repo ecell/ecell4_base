@@ -1428,7 +1428,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # Handle immobile case first.
         if D0 == 0:
-            # no propagation, just calculate reaction times.
+            # no propagation, just calculate next reaction time.
             single.determineNextEvent() 
             return single.dt
         
@@ -1443,8 +1443,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         closeNeighbors, distances = self.getNeighbors( single.pos, minShell,
                                                        ignore=[single,] )
 
+        # This is a bit tryciky, but the last one in closeNeighbors
+        # is the closest object to this Single.
+        # getNeighbors() returns closeNeighbors within minShell *plus* one.
         closest = closeNeighbors.pop()
         closestShellDistance = distances[-1]
+
         bursted = []
         
         if closeNeighbors:
@@ -1835,9 +1839,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         # Try forming a Pair.
         if isinstance( neighbors[0], Single ):
-            obj, bursted = self.formPair( single, neighbors[0], neighbors[1:] )
+            obj = self.formPair( single, neighbors[0], neighbors[1:] )
             if obj:
-                return obj, bursted
+                return obj, neighbors[1:]
 
 
         # Then, a Multi.
@@ -1892,25 +1896,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def formPair( self, single, closest, bursted ):
 
-        #bursted=[]
-        if not closest.isReset():
-            self.burstSingle( closest )
-
-        bursted.append( closest )
-
-        obj = self.tryPair( single, closest, bursted )
-        return obj, bursted
-
-
-
-    '''
-    Determine if given couple singles meet the criteria of forming
-    a Pair.
-
-    '''
-
-    def tryPair( self, single1, single2, bursted ):
-
         assert single1.isReset()
         assert single2.isReset()
 
@@ -1952,11 +1937,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         assert pairGap >= 0, 'pairGap between %s and %s = %g < 0' \
             % ( single1, single2, pairGap )
 
-
-
-        closest, closestDistance =\
-            self.getClosestObj( com, ignore=[ single1, single2 ] )
-
         # Here, we have to take into account of the bursted Singles in this
         # step.  The check for closest above could miss some of them, because
         # sizes of these Singles for this distance check has to include
@@ -1966,9 +1946,22 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         d = [ self.distance( com, b.pos ) \
                   - b.getMinRadius() * ( 1.0 + self.SINGLE_SHELL_FACTOR )
               for b in bursted if isinstance( b, Single ) ]
-        i = numpy.argmin( d )
-        if d[ i ] < closestDistance:
+        if d:
+            i = numpy.argmin( d )
             closest, closestDistance = bursted[i], d[i]
+            print 'burst closest', closest, closestDistance
+            if closestDistance <= minShellSizeWithMargin:
+                log.debug( '%s not formed: squeezed by bursted %s' %
+                       ( 'Pair( %s, %s )' % ( single1.particle, 
+                                              single2.particle ), closest ) )
+                return None
+        else:
+            closest, closestDistance = DummySingle(), INF
+
+
+        c, d = self.getClosestObj( com, ignore=[ single1, single2 ] )
+        if d < closestDistance:
+            closest, closestDistance = c, d
 
 
         # 2. Check if a Pair is better than two Singles
@@ -2038,6 +2031,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.addPairEvent( pair )
         self.removeEvent( single2 )
 
+        assert pair.radius >= minShellSize
+        assert pair.radius <= maxShellSize
 
         log.info( '%s, dt=%g, pairDistance=%g, shell=%g,' %
                   ( pair, pair.dt, pairDistance, pair.radius ) +

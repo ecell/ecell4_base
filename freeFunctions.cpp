@@ -344,7 +344,7 @@ static const Real I_gbd_r_F( const Real r,
     const Real D( params->sigma );
     const Real target( params->target );
 
-    printf("I %g\n",I_bd_r( r, sigma, t, D ) - target);
+    //printf("I %g\n",I_bd_r( r, sigma, t, D ) - target);
     return I_bd_r( r, sigma, t, D ) - target;
 }
 

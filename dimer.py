@@ -49,7 +49,8 @@ l.log()
 
 
 def profrun():
-    while s.stepCounter < 6000:
+    #while s.stepCounter < 6000:
+    for _ in range( 6000 ):
         s.step()
         #logging.info( s.dumpPopulation() )
 
@@ -57,7 +58,7 @@ def profrun():
 import cProfile
 cProfile.run('profrun()', 'fooprof')
 import pstats
-pstats.Stats('fooprof').sort_stats('time').print_stats(30)
+pstats.Stats('fooprof').sort_stats('time').print_stats(40)
 
 
 sys.exit(1)

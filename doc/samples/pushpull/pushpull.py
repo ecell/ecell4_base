@@ -77,7 +77,7 @@ L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
 s = EGFRDSimulator( 'simple' )
 s.setWorldSize( L )
-s.setDtFactor( 1e-5 )
+#s.setDtFactor( 1e-5 )
 
 print V, L
 
