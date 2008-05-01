@@ -1945,16 +1945,15 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # these bursted objects have zero mobility radii.  This is not
         # beautiful, a cleaner framework may be possible.
 
-        closest, closestDistance = DummySingle(), INF
+        closest, closestShellDistance = DummySingle(), INF
         for b in bursted:
             if isinstance( b, Single ):
                 d = self.distance( com, b.pos ) \
                     - b.getMinRadius() * ( 1.0 + self.SINGLE_SHELL_FACTOR )
-                if d < closestDistance:
-                    closest, closestDistance = b, d
+                if d < closestShellDistance:
+                    closest, closestShellDistance = b, d
 
-        print 'closest, which was bursted', closest, closestDistance
-        if closestDistance <= minShellSizeWithMargin:
+        if closestShellDistance <= minShellSizeWithMargin:
             log.debug( '%s not formed: squeezed by bursted neighbor %s' %
                        ( 'Pair( %s, %s )' % ( single1.particle, 
                                               single2.particle ), closest ) )
@@ -1962,25 +1961,25 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
 
         c, d = self.getClosestObj( com, ignore=[ single1, single2 ] )
-        if d < closestDistance:
-            closest, closestDistance = c, d
+        if d < closestShellDistance:
+            closest, closestShellDistance = c, d
 
 
         if isinstance( closest, Single ):
 
             D_closest = closest.particle.species.D
             D_tot = D_closest + D12
-            d = self.distance( com, closest.pos )
+            closestDistance = self.distance( com, closest.pos )
 
             closestMinRadius = closest.getMinRadius()
             closestMinShell = closestMinRadius * \
                 ( self.SINGLE_SHELL_FACTOR + 1.0 )
 
             shellSize = min( ( D12 / D_tot ) *
-                             ( d - minShellSize 
+                             ( closestDistance - minShellSize 
                                - closestMinRadius ) + minShellSize,
-                             d - closestMinShell,
-                             closestDistance )
+                             closestDistance - closestMinShell,
+                             closestShellDistance )
 
             if shellSize <= minShellSizeWithMargin:
                 log.debug( '%s not formed: squeezed by %s' %
@@ -1989,17 +1988,17 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 return None
 
             shellSize /= SAFETY
-            assert shellSize < closestDistance
+            assert shellSize < closestShellDistance
 
         else:
-            if closestDistance <= minShellSizeWithMargin:
+            if closestShellDistance <= minShellSizeWithMargin:
                 log.debug( '%s not formed: squeezed by %s' %
                            ( 'Pair( %s, %s )' % ( single1.particle, 
                                                   single2.particle ), 
                              closest ) )
                 return None
 
-            shellSize = closestDistance / SAFETY
+            shellSize = closestShellDistance / SAFETY
 
 
         d1 = self.distance( com, single1.pos )
@@ -2030,14 +2029,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.addPairEvent( pair )
         self.removeEvent( single2 )
 
-        assert closestDistance == INF or pair.radius < closestDistance
+        assert closestShellDistance == INF or pair.radius < closestShellDistance
         assert pair.radius >= minShellSize
         assert pair.radius <= maxShellSize
 
         log.info( '%s, dt=%g, pairDistance=%g, shell=%g,' %
                   ( pair, pair.dt, pairDistance, pair.radius ) +
-                  'closest=%s, shellDistance=%g' %
-                  ( closest, closestDistance ) )
+                  'closest=%s, closestShellDistance=%g' %
+                  ( closest, closestShellDistance ) )
 
         return pair
     
