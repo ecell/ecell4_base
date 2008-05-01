@@ -1945,21 +1945,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         # these bursted objects have zero mobility radii.  This is not
         # beautiful, a cleaner framework may be possible.
 
-        d = [ self.distance( com, b.pos ) \
-                  - b.getMinRadius() * ( 1.0 + self.SINGLE_SHELL_FACTOR )
-              if isinstance( b, Single ) else INF
-              for b in bursted if isinstance( b, Single ) ]
-        if d:
-            i = numpy.argmin( d )
-            closest, closestDistance = bursted[i], d[i]
-            print 'closest, which was bursted', closest, closestDistance
-            if closestDistance <= minShellSizeWithMargin:
-                log.debug( '%s not formed: squeezed by bursted neighbor %s' %
+        closest, closestDistance = DummySingle(), INF
+        for b in bursted:
+            if isinstance( b, Single ):
+                d = self.distance( com, b.pos ) \
+                    - b.getMinRadius() * ( 1.0 + self.SINGLE_SHELL_FACTOR )
+                if d < closestDistance:
+                    closest, closestDistance = b, d
+
+        print 'closest, which was bursted', closest, closestDistance
+        if closestDistance <= minShellSizeWithMargin:
+            log.debug( '%s not formed: squeezed by bursted neighbor %s' %
                        ( 'Pair( %s, %s )' % ( single1.particle, 
                                               single2.particle ), closest ) )
-                return None
-        else:
-            closest, closestDistance = DummySingle(), INF
+            return None
 
 
         c, d = self.getClosestObj( com, ignore=[ single1, single2 ] )
