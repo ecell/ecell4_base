@@ -9,8 +9,7 @@ import numpy
 from egfrd import *
 
 
-log = logging.getLogger()
-log.setLevel( logging.WARNING )
+#log.setLevel( logging.WARNING )
 
 class EGFRDSimulatorTestCase( unittest.TestCase ):
 
@@ -83,7 +82,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
 
     def test_FourParticlesClose( self ):
 
-        log.setLevel( logging.DEBUG )
+        #log.setLevel( logging.DEBUG )
 
         s = EGFRDSimulator()
         s.setWorldSize( 1e-5 )
@@ -102,7 +101,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
             s.step()
         self.failIf( t == s.t )
 
-        log.setLevel( logging.WARNING )
+        #log.setLevel( logging.WARNING )
 
 
     def test_immobile_is_immobile( self ):
