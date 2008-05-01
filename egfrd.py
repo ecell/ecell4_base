@@ -1467,19 +1467,24 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.updateSingle( single, closest, closestShellDistance )
 
         bursted = uniq( bursted )
-        for s in bursted:
-            if isinstance( s, Single ):
-                assert s.isReset()
-                c, d = self.getClosestObj( s.pos, ignore = [s,] )
-                self.updateSingle( s, c, d )
-                self.updateEvent( self.t + s.dt, s )
-                log.debug( 'restore shell %s %g dt %g closest %s %g' %
-                               ( s, s.radius, s.dt, c, d ) )
+        burstedSingles = [ s for s in bursted if isinstance( s, Single ) ]
+        self.restoreSingleShells( burstedSingles )
             
         log.info( 'single shell %g dt %g.' % 
                   ( single.radius, single.dt ) )
 
         return single.dt
+
+
+    def restoreSingleShells( self, singles ):
+
+        for single in singles:
+            assert single.isReset()
+            c, d = self.getClosestObj( single.pos, ignore = [single,] )
+            self.updateSingle( single, c, d )
+            self.updateEvent( self.t + single.dt, single )
+            log.debug( 'restore shell %s %g dt %g closest %s %g' %
+                       ( single, single.radius, single.dt, c, d ) )
 
 
     def updateSingle( self, single, closest, distanceToShell ): 
@@ -1981,24 +1986,20 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                              closestDistance - closestMinShell,
                              closestShellDistance )
 
-            if shellSize <= minShellSizeWithMargin:
-                log.debug( '%s not formed: squeezed by %s' %
-                       ( 'Pair( %s, %s )' % ( single1.particle, 
-                                              single2.particle ), closest ) )
-                return None
-
             shellSize /= SAFETY
             assert shellSize < closestShellDistance
 
         else:
-            if closestShellDistance <= minShellSizeWithMargin:
-                log.debug( '%s not formed: squeezed by %s' %
-                           ( 'Pair( %s, %s )' % ( single1.particle, 
-                                                  single2.particle ), 
-                             closest ) )
-                return None
+            assert isinstance( closest, ( Pair, Multi ) )
 
             shellSize = closestShellDistance / SAFETY
+
+
+        if shellSize <= minShellSizeWithMargin:
+            log.debug( '%s not formed: squeezed by %s' %
+                       ( 'Pair( %s, %s )' % ( single1.particle, 
+                                              single2.particle ), closest ) )
+            return None
 
 
         d1 = self.distance( com, single1.pos )
