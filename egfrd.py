@@ -1990,7 +1990,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
             assert shellSize < closestShellDistance
 
         else:
-            assert isinstance( closest, ( Pair, Multi ) )
+            assert isinstance( closest, ( Pair, Multi, DummySingle ) )
 
             shellSize = closestShellDistance / SAFETY
 
