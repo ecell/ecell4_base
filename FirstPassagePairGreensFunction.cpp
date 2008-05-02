@@ -1709,13 +1709,15 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 	//printf("%d p_n %g\n", n, p_n );
 
 	p_nTable.push_back( p_n );
+        
+        // std::cerr << n << " " << p_n << " " << threshold << std::endl;
 
 	const Real p_n_abs( fabs( p_n ) );
 	// truncate when converged enough.
 	if( p_n_abs < threshold &&
             p_n_prev_abs < threshold &&
-	    p_n_abs < p_n_prev_abs )
-//            n >= 5 )
+	    p_n_abs <= p_n_prev_abs &&
+            n >= 4 )  // corresponds to funcSum()'s CONVERGENCE_CHECK
 	{
 	    break;
         }

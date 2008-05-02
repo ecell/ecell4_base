@@ -20,8 +20,8 @@ V = 40e-15
 #N=600
 # 296.172708988
 # 1-4.  C=2e-6M
-T=0.01
-N=10000
+T=0.001
+N=30000
 
 # 2
 #N=600
@@ -88,7 +88,8 @@ L = math.pow( V * 1e-3, 1.0 / 3.0 )
 s = EGFRDSimulator( 'normal' )
 s.setWorldSize( L )
 
-s.setMatrixSize( 20 )
+s.setMatrixSize( max( 3, int( N ** (1.0/3.0) ) ) )
+#s.setMatrixSize( 30 )
 
 box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 

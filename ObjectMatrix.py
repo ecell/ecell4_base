@@ -246,11 +246,11 @@ class ObjectMatrix( object ):
 
         self.matrixSize = size
 
-        self.cellMatrix = \
+        self.cellMatrix = numpy.array( \
             [ [ [ ObjectMatrixCell() \
                       for i in range( size ) ] \
                     for j in range( size ) ] \
-                  for k in range( size ) ]
+                  for k in range( size ) ] )
 
         self.initialize()
 

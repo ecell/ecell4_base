@@ -144,6 +144,27 @@ class BasicPairGreensFunctionTestCase( unittest.TestCase ):
         theta = gf.drawTheta( 0.9999999, r, r0, t )
         self.failIf( theta < 0.0 or theta > numpy.pi )
 
+    def test_DrawTheta2( self ):
+        D = 2e-12
+        kf = 0
+        sigma = 5e-9
+        r0 = 5.064e-9
+        r = 5.05e-9
+        t = 1e-9
+
+        print '==========================================='
+
+        gf = mod.BasicPairGreensFunction( D, kf, sigma )
+
+        theta = gf.drawTheta( 0.5, r, r0, t )
+        self.failIf( theta < 0.0 or theta > numpy.pi )
+
+        #theta = gf.drawTheta( 0.0, r, r0, t )
+        #self.failIf( theta < 0.0 or theta > numpy.pi )
+        #theta = gf.drawTheta( 0.9999999, r, r0, t )
+        #self.failIf( theta < 0.0 or theta > numpy.pi )
+
+
 
     def test_DrawTheta_zerot( self ):
         D = 1e-12
