@@ -63,7 +63,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t = gf.drawTime( 1 - 5e-16, r0 )
         self.failIf( t <= 0.0 or t >= numpy.inf )
-    '''
+'''
 
 
     def test_DrawTime_a_equal_sigma( self ):
@@ -121,7 +121,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
     def no_test_DrawTime_r0_equal_sigma_kf_large( self ):
         D = 1e-12
-        kf = 1e-5
+        kf = 1e-8
         sigma = 1e-8
         a = 10e-7
         r0 = sigma + 1e-12
@@ -131,22 +131,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t = gf.drawTime( 0.5, r0 )
         self.failIf( t < 0.0 or t >= numpy.inf )
-
-
-    def no_test_DrawTime_1( self ):
-        r0 = 1.0001e-07
-        D = 4e-11
-        sigma = 1e-07
-        a = 2.51935e-07
-        kf = 1.66054e-14
-
-        gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
-        gf.seta( a )
-
-        t = gf.drawTime( 0.5, r0 )
-        self.failIf( t < 0.0 or t >= numpy.inf )
-
-
 
 
     def test_DrawEventType( self ):
@@ -585,7 +569,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         D = 1e-12
         sigma = 1e-8
-        kf = 1e-8
+        kf = 1e-10
 
         t = 1e-2  #FIXME: smaller t should be fine
         r0 = 5e-8
@@ -606,7 +590,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
-            #print theta, np, ip
+            print theta, np, ip
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
 
@@ -691,7 +675,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         kf = 1e-8
 
         # smaller t causes problem
-        t = 1e-5
+        t = 1e-7
         r0 = 9e-8
         a = 1e-7
         
@@ -703,7 +687,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         self.assertAlmostEqual( leavea, iptheta )
 
-
 '''
     def test_p_theta_free_is_p_theta_smallt( self ):
 
@@ -711,7 +694,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         kf = 1e-8
         
-        t = 1e-4
+        t = 1e-7
         r0 = 5e-7
         r = 5e-7
         a = 1e-6
@@ -723,13 +706,12 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         for i in range( 1, resolution ):
             theta = i * numpy.pi / resolution 
 
-            pfree = gf.p_theta_free( theta, r, r0, t )
-            p = gf.p_theta( theta, r, r0, t )
+            pfree = mod.p_theta_free( theta, r, r0, t, D ) 
+            p = gf.p_theta( theta, r, r0, t )* 4 * numpy.pi * r * r
             print pfree, p
 
             self.assertAlmostEqual( 0.0, (pfree - p)/pfree )
 '''
-
 
 '''
     def test_Alphan( self ):

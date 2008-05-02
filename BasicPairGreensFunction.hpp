@@ -17,7 +17,7 @@ class BasicPairGreensFunction
 
     static const Real MIN_T = 1e-12;
 
-    static const unsigned int MAX_ORDER = 45;
+    static const unsigned int MAX_ORDER = 65;
 
     static const Real H = 4.0;
     

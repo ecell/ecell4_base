@@ -767,7 +767,8 @@ class Pair( object ):
             self.pgf.seta( self.a_r )
             self.t_r = self.pgf.drawTime( rnd[1], r0 )
         except Exception, e:
-            raise Exception, 'pgf.drawTime() failed; %s; rnd= %g, r0=%g, %s' %\
+            raise Exception, \
+                'pgf.drawTime() failed; %s; rnd= %g, r0=%g, %s' % \
                 ( str( e ), rnd[1], r0, self.pgf.dump() )
 
 
@@ -2035,7 +2036,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         assert pair.radius <= maxShellSize
 
         log.info( '%s, dt=%g, pairDistance=%g, shell=%g,' %
-                  ( pair, pair.dt, pairDistance, pair.radius ) +
+                  ( pair, pair.dt, pairDistance, pair.radius ) + 
                   'closest=%s, closestShellDistance=%g' %
                   ( closest, closestShellDistance ) )
 

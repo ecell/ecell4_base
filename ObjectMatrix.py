@@ -245,12 +245,12 @@ class ObjectMatrix( object ):
 
 
         self.matrixSize = size
-
-        self.cellMatrix = numpy.array( \
+        #numpy.array(\
+        self.cellMatrix =    \
             [ [ [ ObjectMatrixCell() \
                       for i in range( size ) ] \
                     for j in range( size ) ] \
-                  for k in range( size ) ] )
+                  for k in range( size ) ] #)
 
         self.initialize()
 
@@ -336,7 +336,8 @@ class ObjectMatrix( object ):
         for idx in transposes:
 
             idxp = idx % self.matrixSize
-            matrix = self.cellMatrix[ idxp[0] ][ idxp[1] ][ idxp[2] ]
+            #matrix = self.cellMatrix[idxp[0],idxp[1],idxp[2]]
+            matrix = self.cellMatrix[idxp[0]][idxp[1]][idxp[2]]
             if matrix.size == 0:
                 continue
             
@@ -381,7 +382,8 @@ class ObjectMatrix( object ):
         transposes = ( self.TRANSPOSES + centeridx ) % self.matrixSize
         for idx in transposes:
 
-            matrix = self.cellMatrix[ idx[0] ][ idx[1] ][ idx[2] ]
+            matrix = self.cellMatrix[idx[0]][idx[1]][idx[2]]
+            #matrix = self.cellMatrix[idx[0],idx[1],idx[2]]
             if matrix.size == 0:
                 continue
             dists = self.distanceArray( matrix.positions, pos ) - matrix.radii

@@ -715,10 +715,11 @@ FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
 	    ( hsigma_p_1 + a * sigma * alphasq ) * sin_a ;
 
         /*
-	num1 = alpha * sigmasq * h - 
-	    alpha * ( a + a * h * sigma ) * cos_a +
-	    ( a * sigma * alphasq ) * sin_a ;
+	num1 = alpha * ( sigmasq * h  
+                         + ( a * sigma * alpha ) * sin_a
+                         - ( a + a * h * sigma ) * cos_a );
         */
+
     }
 
     const Real num2( num_r0( alpha, r0 ) );
@@ -1717,7 +1718,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 	if( p_n_abs < threshold &&
             p_n_prev_abs < threshold &&
 	    p_n_abs <= p_n_prev_abs &&
-            n >= 4 )  // corresponds to funcSum()'s CONVERGENCE_CHECK
+            n >= 3 )  // corresponds to funcSum()'s CONVERGENCE_CHECK
 	{
 	    break;
         }
