@@ -1062,7 +1062,7 @@ createPleavesTable( RealVector& table, const Real r0,
     table.clear();
     table.reserve( alphaTable_0.size() );
 
-    for( unsigned int i( 0 ); i <= alphaTable_0.size(); ++i )
+    for( unsigned int i( 0 ); i < alphaTable_0.size(); ++i )
     {
         const Real alpha( alphaTable_0[i] );
         table.push_back( p_leaves_i( alpha, r0, pleaveFactorTable[i] ) );
@@ -1081,7 +1081,7 @@ createPleaveaTable( RealVector& table, const Real r0,
     table.clear();
     table.reserve( alphaTable_0.size() );
 
-    for( unsigned int i( 0 ); i <= alphaTable_0.size(); ++i )
+    for( unsigned int i( 0 ); i < alphaTable_0.size(); ++i )
     {
         const Real alpha( alphaTable_0[i] );
         table.push_back( p_leavea_i( alpha, r0, pleaveFactorTable[i] ) );
@@ -1590,11 +1590,6 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
     //Real low_value_prev( 1.0 );
     while( 1 )
     {
-        this->updateAlphaTable0( low );
-        this->createPleaveFactorTable( pleaveFactorTable, r0 );
-        this->createPleavesTable( pleavesTable, r0, pleaveFactorTable );
-        this->createPleaveaTable( pleaveaTable, r0, pleaveFactorTable );
-
         const Real value_s( GSL_FN_EVAL( &Fs, low ) );
         const Real value_a( GSL_FN_EVAL( &Fa, low ) );
 
@@ -1625,7 +1620,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
             }
         }
 
-	printf( "drawTime2: adjusting low: %g, F = %g\n", low );
+	printf( "drawTime2: adjusting low: %g, F = %g\n", low, value_s );
 
         // FIXME: 
 	if( fabs( low ) <= this->MIN_T )//|| 
@@ -1641,6 +1636,11 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
 
 	low *= .1;
         //low_value_prev = low_value;
+
+        this->updateAlphaTable0( low );
+        this->createPleaveFactorTable( pleaveFactorTable, r0 );
+        this->createPleavesTable( pleavesTable, r0, pleaveFactorTable );
+        this->createPleaveaTable( pleaveaTable, r0, pleaveFactorTable );
     }
 
     const Real t_escape( findRoot( Fa, solver, low, high, 

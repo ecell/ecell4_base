@@ -149,20 +149,15 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
-        t = gf.drawTime( 0.5, r0 )
-        t2, et = gf.drawTime2( 0.5, 0.5, r0, 1e-3 )
+        t, et = gf.drawTime2( 0.5, 0.5, r0, 1e-3 )
         self.failIf( t <= 0.0 or t >= numpy.inf )
-        self.assertAlmostEqual( t, t2 )
 
-        t = gf.drawTime( 0.5, r0 )
-        t2, et = gf.drawTime2( 0.0, 0.0, r0, 1e-3 )
+        t, et = gf.drawTime2( 0.0, 0.0, r0, 1e-3 )
         self.failIf( t < 0.0 or t >= numpy.inf )
-        self.assertAlmostEqual( t, t2 )
 
-        t = gf.drawTime( 0.5, r0 )
-        t2, et = gf.drawTime2( 1 - 1e-16, 1 - 1e-16, r0, 1e-3 )
+        t, et = gf.drawTime2( 1 - 1e-16, 1 - 1e-16, r0, 1e-3 )
         self.failIf( t <= 0.0 or t >= numpy.inf )
-        self.assertAlmostEqual( t, t2 )
+
 
     def test_DrawTime2_a_equal_sigma( self ):
         D = 1e-12
