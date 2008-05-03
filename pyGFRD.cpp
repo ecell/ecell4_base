@@ -6,12 +6,14 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/python.hpp>
 #include <boost/python/numeric.hpp>
+#include <boost/python/tuple.hpp>
+#include <boost/python/module.hpp>
+#include <boost/python/refcount.hpp>
+
 #include <numpy/arrayobject.h>
 
 #include "PyEventScheduler.hpp"
-
 #include "freeFunctions.hpp"
-
 #include "FreeGreensFunction.hpp"
 #include "FirstPassageGreensFunction.hpp"
 #include "BasicPairGreensFunction.hpp"
@@ -49,6 +51,27 @@ const double distanceSq_( PyArrayObject* o1, PyArrayObject* o2 )
     return distanceSq( p1, p2 );
 }
 
+
+boost::python::tuple tuple_to_python( boost::tuples::null_type )
+{
+    return boost::python::tuple();
+}
+
+template <class H, class T>
+boost::python::tuple tuple_to_python( const boost::tuples::cons<H,T>& x )
+{
+    return boost::python::tuple( boost::python::make_tuple( x.get_head() ) +
+                                 tuple_to_python( x.get_tail() ) );
+}
+
+template <class T>
+struct tupleconverter
+{
+    static PyObject* convert( const T& x )
+    {
+        return incref( tuple_to_python(x).ptr() );
+    }
+};
 
 void* extract_pyarray(PyObject* x)
 {
@@ -90,6 +113,10 @@ BOOST_PYTHON_MODULE( _gfrd )
     register_exception_translator<std::exception>( &translateException );
 
 //    to_python_converter<PyEvent, PyEvent_to_python>();
+
+    // boost::tuple
+    to_python_converter<boost::tuple<Real,EventType>, 
+        tupleconverter<boost::tuple<Real,EventType> > >();
 
 
     // free functions
@@ -231,6 +258,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "getkf", &BasicPairGreensFunction::getkf )
 	.def( "getSigma", &BasicPairGreensFunction::getSigma )
 	.def( "drawTime", &FirstPassagePairGreensFunction::drawTime )
+	.def( "drawTime2", &FirstPassagePairGreensFunction::drawTime2 )
 	.def( "drawEventType", &FirstPassagePairGreensFunction::drawEventType )
 	.def( "drawR", &FirstPassagePairGreensFunction::drawR )
 	.def( "drawTheta", &FirstPassagePairGreensFunction::drawTheta )

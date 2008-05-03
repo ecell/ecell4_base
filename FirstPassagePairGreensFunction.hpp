@@ -46,6 +46,10 @@ public:
     
     const Real drawTime( const Real rnd, const Real r0 ) const;
 
+    const boost::tuple<Real,EventType> 
+    drawTime2( const Real rnd1, const Real rnd2, const Real r0,
+               const Real t_guess = 1e-3 ) const;
+
 
     const EventType drawEventType( const Real rnd, 
 				   const Real r0, 
@@ -222,13 +226,11 @@ protected:
 
     const Real p_leavea_i( const Real alpha,
 			   const Real r0,
-                           const Real num_r0,
-                           const Real den ) const;
+                           const Real pleave_factor ) const;
 
     const Real p_leaves_i( const Real alpha,
 			   const Real r0,
-                           const Real num_r0,
-                           const Real den ) const;
+                           const Real pleave_factor ) const;
 
     const Real p_survival_den( const Real alpha,
                                const Real r0 ) const;
@@ -325,9 +327,15 @@ protected:
     void updateAlphaTable0( const Real t ) const;
     void updateAlphaTable( const unsigned int n, const Real t ) const; 
 
-    void createPsurvTable( RealVector& psurvTable, const Real r0, 
-                           const Real mint ) const;
-    void createNum_r0Table( RealVector& num_r0Table, const Real r0 ) const;
+    void createPsurvTable( RealVector& table, const Real r0 ) const; 
+    void createNum_r0Table( RealVector& table, const Real r0 ) const;
+
+    void createPleaveFactorTable( RealVector& table,
+                                  const Real r0 ) const;
+    void createPleavesTable( RealVector& table, const Real r0,
+                             const RealVector& pleaveFactorTable ) const;
+    void createPleaveaTable( RealVector& table, const Real r0,
+                             const RealVector& pleaveFactorTable ) const;
 
     void makep_nTable( RealVector& p_nTable,
 		       const Real r, 
@@ -412,6 +420,9 @@ protected:
     
     const Real num_r0( const Real alpha,
 		       const Real r0 ) const;
+
+    const Real pleaveFactor( const Real alpha,
+                             const Real r0 ) const;
 
     static const Real P( const Integer n, const Real x );
     static const Real Q( const Integer n, const Real x );
