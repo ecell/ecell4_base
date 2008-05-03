@@ -732,7 +732,7 @@ ip_theta_table( const Real theta, const Real r, const Real r0,
     const Real p_free( this->ip_free( theta, r, r0, t ) );
     const Real p_corr( this->ip_corr_table( theta, r, r0, t, RnTable ) ); 
 
-    printf("%g %g\n",p_free,p_corr);
+    //printf("%g %g\n",p_free,p_corr);
 
 //    return p_free;
     return ( p_free + p_corr );
@@ -795,7 +795,7 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
 	
         RnTable.push_back( Rn );
 	
-        printf("%d %g %g %g\n",n, Rn*RnFactor, pfreemax, integrationTolerance);
+        //printf("%d %g %g %g\n",n, Rn*RnFactor, pfreemax, integrationTolerance);
 	
         // truncate when converged enough.
         if( fabs( Rn * RnFactor ) < fabs( truncationTolerance ) &&

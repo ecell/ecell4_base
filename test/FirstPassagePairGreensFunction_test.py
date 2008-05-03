@@ -557,7 +557,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         for i in range( resolution ):
             r = i * (a-sigma) / resolution + sigma
             pintr = gf.p_int_r( r, t, r0 )
-            #print r, pintr, psurv
+            print r, pintr, psurv
             self.failIf( pintr > psurv )
             self.failIf( pintr < pintr_prev )
             pintr_prev = pintr

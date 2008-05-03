@@ -221,10 +221,17 @@ protected:
 			 const Real r0 ) const;
 
     const Real p_leavea_i( const Real alpha,
-			   const Real r0 ) const;
+			   const Real r0,
+                           const Real num_r0,
+                           const Real den ) const;
 
     const Real p_leaves_i( const Real alpha,
-			   const Real r0 ) const;
+			   const Real r0,
+                           const Real num_r0,
+                           const Real den ) const;
+
+    const Real p_survival_den( const Real alpha,
+                               const Real r0 ) const;
 
     const Real p_int_r_i( const Real r,
 			  const Real alpha,
@@ -330,6 +337,14 @@ protected:
     void makedp_n_at_aTable( RealVector& p_nTable,
 			     const Real r0, 
 			     const Real t ) const;
+
+    const Real findRoot( gsl_function& F,
+                         gsl_root_fsolver* solver,
+                         const Real low,
+                         const Real high,
+                         std::string funcName ) const;
+
+
 
     struct f_alpha0_aux_params
     { 
