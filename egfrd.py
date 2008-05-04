@@ -737,11 +737,11 @@ class Pair( object ):
             self.a_r = a_r_2
             self.a_R = a_R_2
 
-        log.debug( 'a %g, r %g, R %g r0 %g' % 
-                   ( shellSize, self.a_r, self.a_R, r0 ) )
-        log.debug( 'tr %g, tR %g' % 
-                   ( ( ( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
-                         (self.a_R / math.sqrt( 6*self.D_geom ))**2 ) )
+        #log.debug( 'a %g, r %g, R %g r0 %g' % 
+        #           ( shellSize, self.a_r, self.a_R, r0 ) )
+        #log.debug( 'tr %g, tR %g' % 
+        #           ( ( ( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
+        #                 (self.a_R / math.sqrt( 6*self.D_geom ))**2 ) )
         assert self.a_r > 0
         assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
         assert self.a_R > 0 or ( self.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
@@ -780,8 +780,8 @@ class Pair( object ):
         self.dt = min( self.t_R, self.t_r, self.t_single_reaction )
 
         assert self.dt >= 0
-        log.debug( 'dt %g, t_R %g, t_r %g' % 
-                       ( self.dt, self.t_R, self.t_r ) )
+        #log.debug( 'dt %g, t_R %g, t_r %g' % 
+        #           ( self.dt, self.t_R, self.t_r ) )
 
         if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
             try:
