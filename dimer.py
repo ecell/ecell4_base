@@ -40,8 +40,8 @@ l.log()
 
 
 
-#while s.t < 100:
-#    s.step()
+while s.t < 100:
+    s.step()
 
 #s.dumpPopulation()
 #l.log()

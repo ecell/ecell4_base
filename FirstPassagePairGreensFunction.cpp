@@ -1367,6 +1367,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     const Real D( this->getD() );
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
+    const Real kf( this->getkf() );
 
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 <= a );
@@ -1376,10 +1377,24 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	return 0.0;
     }
 
-    const Real minT( sigma * sigma / D * this->MIN_T_FACTOR );
+    Real t_guess;
 
-    Real low( 1e-6 );
-    Real high( 1.0 );
+    if( kf != 0.0 )
+    {
+        const Real dist( std::min( a - r0, r0 - sigma ) );
+        t_guess = dist * dist / ( 6.0 * D );
+    }
+    else // kf == 0.0
+    {
+        const Real dist( a - r0 );
+        t_guess = dist * dist / ( 6.0 * D );
+    }
+
+    const Real minT( std::min( sigma * sigma / D * this->MIN_T_FACTOR,
+                               t_guess * 1e-2 ) );
+
+    Real low( t_guess * .1 );
+    Real high( t_guess * 10 );
 
     this->updateAlphaTable0( low );
 

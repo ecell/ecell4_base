@@ -138,18 +138,18 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         eventType = gf.drawEventType( 0.999999, r0, t )
         self.assertEqual( eventType, 1 )
 
-    '''
+
     def test_DrawEventType_smallt( self ):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
-        a = 1e-5
+        a = 1e-6
         r0 = 2e-8
 
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
         print 'et et et'
-        t = 1e-12
+        t = gf.drawTime( 0.999, r0 )
         eventType = gf.drawEventType( 0.5, r0, t )
         self.failIf( eventType != 0 and eventType != 1 and eventType != 2 )
 
@@ -158,7 +158,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         eventType = gf.drawEventType( 0.999999, r0, t )
         self.assertEqual( eventType, 1 )
-    '''
+
 
     '''
     def test_DrawTime2( self ):
