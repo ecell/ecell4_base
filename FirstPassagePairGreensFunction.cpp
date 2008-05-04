@@ -262,7 +262,7 @@ FirstPassagePairGreensFunction::updateAlphaTable0( const Real t ) const
 
 	if( alpha0_i > alpha_cutoff && i >= 10 ) // make at least 10 terms
 	{
-            printf("\nalpha n %d\n",i );
+            //printf("\nalpha n %d\n",i );
 	    break;
 	}
 
