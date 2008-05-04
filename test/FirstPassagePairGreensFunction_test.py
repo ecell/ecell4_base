@@ -143,13 +143,14 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
-        a = 1e-6
-        r0 = 2e-8
+        a = 1e-6 #sigma + sigma * 0.001
+        r0 = 2e-8 #sigma+(a-sigma)/2
 
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
         print 'et et et'
-        t = gf.drawTime( 0.999, r0 )
+        #t = gf.drawTime( 0.999, r0 )
+        t = 1e-3
         eventType = gf.drawEventType( 0.5, r0, t )
         self.failIf( eventType != 0 and eventType != 1 and eventType != 2 )
 

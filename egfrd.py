@@ -743,14 +743,14 @@ class Pair( object ):
             self.a_r = a_r_2
             self.a_R = a_R_2
 
-        log.debug( 'a %g, r %g, R %g' % 
-                       ( shellSize, self.a_r, self.a_R ) )
+        log.debug( 'a %g, r %g, R %g r0 %g' % 
+                   ( shellSize, self.a_r, self.a_R, r0 ) )
         log.debug( 'tr %g, tR %g' % 
-                       ( ( ( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
-                       (self.a_R / math.sqrt( 6*self.D_geom ))**2 ) )
+                   ( ( ( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
+                         (self.a_R / math.sqrt( 6*self.D_geom ))**2 ) )
         assert self.a_r > 0
-        assert self.a_R > 0 or ( self.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
         assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
+        assert self.a_R > 0 or ( self.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
 
         rnd = numpy.random.uniform( size=3 )
 
@@ -1824,12 +1824,17 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                                   oldInterParticle )
             self.applyBoundary( newpos1 )
             self.applyBoundary( newpos2 )
+            assert self.checkOverlap( newpos1, particle1.species.radius,
+                                      ignore = [ particle1, particle2 ] )
+                                      
+            assert self.checkOverlap( newpos2, particle2.species.radius,
+                                      ignore = [ particle1, particle2 ] )
+                                      
             assert pair.checkNewpos( newpos1, newpos2, oldCoM )
             self.moveParticle( particle1, newpos1 )
             self.moveParticle( particle2, newpos2 )
 
-
-        return ( pair.single1, pair.single2 )
+        return pair.single1, pair.single2
 
 
     def burstPair( self, pair ):
@@ -2032,7 +2037,6 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.removeFromShellMatrix( single1 )
         self.removeFromShellMatrix( single2 )
         self.addToShellMatrix( pair )
-
 
         pair.determineNextEvent()
 
