@@ -670,16 +670,10 @@ class Pair( object ):
 
     def determineNextEvent( self ):
 
-        particle1 = self.single1.particle
-        particle2 = self.single2.particle
-
-        species1 = particle1.species
-        species2 = particle2.species
-        radius1 = species1.radius
-        radius2 = species2.radius
-
-        pos1 = particle1.pos
-        pos2 = particle2.pos
+        single1 = self.single1
+        single2 = self.single2
+        radius1 = single1.particle.species.radius
+        radius2 = single2.particle.species.radius
 
         D1 = self.D1
         D2 = self.D2
@@ -692,7 +686,7 @@ class Pair( object ):
         sqrtD_tot = math.sqrt( self.D_tot )
         sqrtD_geom = math.sqrt( self.D_geom )
 
-        r0 = self.distance( pos1, pos2 )
+        r0 = self.distance( single1.pos, single2.pos )
 
         assert r0 >= self.sigma, \
             '%s;  r0 %g < sigma %g' % ( self, r0, self.sigma )
@@ -1797,12 +1791,14 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         if dt != 0.0:
 
-            particle1 = pair.single1.particle
-            particle2 = pair.single2.particle
+            single1 = pair.single1
+            single2 = pair.single2
+            particle1 = single1.particle
+            particle2 = single2.particle
 
-            oldInterParticle = particle2.pos - particle1.pos
+            oldInterParticle = single2.pos - single1.pos
             oldCoM = pair.getCoM()
-            r0 = pair.distance( particle1.pos, particle2.pos )
+            r0 = pair.distance( single1.pos, single2.pos )
             
             rnd = numpy.random.uniform( size = 4 )
 
@@ -1831,8 +1827,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                                       ignore = [ particle1, particle2 ] )
                                       
             assert pair.checkNewpos( newpos1, newpos2, oldCoM )
-            self.moveParticle( particle1, newpos1 )
-            self.moveParticle( particle2, newpos2 )
+            self.moveSingle( single1, newpos1 )
+            self.moveSingle( single2, newpos2 )
 
         return pair.single1, pair.single2
 
@@ -1915,6 +1911,10 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def formPair( self, single1, single2, bursted ):
 
+        log.debug( 'trying to form %s' %
+                   'Pair( %s, %s )' % ( single1.particle, 
+                                        single2.particle ) )
+
         assert single1.isReset()
         assert single2.isReset()
 
@@ -1983,6 +1983,8 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if d < closestShellDistance:
             closest, closestShellDistance = c, d
 
+        log.debug( 'Pair closest neighbor: %s %g, minShellWithMargin %g' %
+                   ( closest, closestShellDistance, minShellSizeWithMargin ) )
 
         if isinstance( closest, Single ):
 
@@ -2044,7 +2046,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         self.removeEvent( single2 )
 
         assert closestShellDistance == INF or pair.radius < closestShellDistance
-        assert pair.radius >= minShellSize
+        assert pair.radius >= minShellSizeWithMargin
         assert pair.radius <= maxShellSize
 
         log.info( '%s, dt=%g, pairDistance=%g, shell=%g,' %
