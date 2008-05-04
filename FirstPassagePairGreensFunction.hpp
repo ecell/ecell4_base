@@ -18,7 +18,7 @@ class FirstPassagePairGreensFunction
     // Error tolerance used by default.
     static const Real TOLERANCE = 1e-8;
 
-    static const Real MIN_T = 1e-12;
+    static const Real MIN_T_FACTOR = 1e-7;
 
     static const unsigned int MAX_ORDER = 100;
     static const unsigned int MAX_ALPHA_SEQ = 1000;
@@ -47,9 +47,7 @@ public:
     const Real drawTime( const Real rnd, const Real r0 ) const;
 
     const boost::tuple<Real,EventType> 
-    drawTime2( const Real rnd1, const Real rnd2, const Real r0,
-               const Real t_guess = 1e-3 ) const;
-
+    drawTime2( const Real rnd1, const Real rnd2, const Real r0 ) const;
 
     const EventType drawEventType( const Real rnd, 
 				   const Real r0, 
@@ -388,7 +386,6 @@ protected:
     static const Real 
     p_survival_F( const Real t,
 		  const p_survival_params* const params );
-
 
     struct p_int_r_params
     { 

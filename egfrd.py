@@ -898,6 +898,8 @@ class Pair( object ):
                self.distance( oldCoM, pos2 ) + species2.radius > self.radius:
             raise RuntimeError, 'New particle(s) out of protective sphere.'
 
+        return True
+
 
     def check( self ):
         pass
@@ -1820,6 +1822,12 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
             newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                   oldInterParticle )
+            self.applyBoundary( newpos1 )
+            self.applyBoundary( newpos2 )
+            assert pair.checkNewpos( newpos1, newpos2, oldCoM )
+            self.moveParticle( particle1, newpos1 )
+            self.moveParticle( particle2, newpos2 )
+
 
         return ( pair.single1, pair.single2 )
 
