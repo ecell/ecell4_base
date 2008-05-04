@@ -138,7 +138,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         eventType = gf.drawEventType( 0.999999, r0, t )
         self.assertEqual( eventType, 1 )
 
-
+    '''
     def test_DrawEventType_smallt( self ):
         D = 1e-12
         kf = 1e-8
@@ -158,7 +158,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         eventType = gf.drawEventType( 0.999999, r0, t )
         self.assertEqual( eventType, 1 )
-
+    '''
 
     '''
     def test_DrawTime2( self ):
