@@ -795,7 +795,7 @@ FirstPassagePairGreensFunction::dp_survival_i( const Real alpha,
     const Real alphasq( alpha * alpha );
 
     Real num1;
-    //{
+    {
 	const Real angle_a( alpha * ( a - sigma ) );
 	Real sin_a;
 	Real cos_a;
@@ -804,8 +804,7 @@ FirstPassagePairGreensFunction::dp_survival_i( const Real alpha,
 	num1 = h * sigmasq * alpha -
             alpha * a * hsigma_p_1 * cos_a +
             sigma * a * alphasq * sin_a;
-
-//}
+    }
 
     const Real num2( num_r0( alpha, r0 ) );
 
@@ -895,12 +894,13 @@ FirstPassagePairGreensFunction::p_leavea_i( const Real alpha,
 	Real cos_a;
 	sincos( angle_a, &sin_a, &cos_a );
 
-//	num1 = - ( a - sigma + a * h * sigma ) * alpha * cos_a + 
-//	    ( hsigma_p_1 + a * sigma * alphasq ) * sin_a;
-	num1 = - ( a * h * sigma + a ) * cos_a + a * sigma * alpha * sin_a;
+//	num1 = ( a - sigma + a * h * sigma ) * alpha * cos_a - 
+//	    ( hsigma_p_1 + a * sigma * alpha * alpha ) * sin_a;
+	num1 = ( a * h * sigma + a ) * cos_a - a * sigma * alpha * sin_a;
+//        printf("%g %g\n", ( a * h * sigma + a ) * cos_a, - a * sigma * alpha * sin_a );
     }
 
-    const Real result( 2.0 * num1 * pleave_factor );
+    const Real result( - 2.0 * num1 * pleave_factor );
 
     return result;
 }
@@ -1236,7 +1236,7 @@ p_survival_table( const Real t,
 					p_survival_i_exp_table, 
 					this,
 					_1, t, r0, psurvTable ),
-			   psurvTable.size()-1 ) );
+			   psurvTable.size() ) );
 
     return p;
 }
@@ -1341,10 +1341,38 @@ FirstPassagePairGreensFunction::p_survival_F( const Real t,
     const Real r0( params->r0 );
     const RealVector& psurvTable( params->psurvTable );
     const Real rnd( params->rnd );
-//    printf("%g %g %g\n", rnd, gf->p_survival_table( t, r0, psurvTable ),
-//           rnd - gf->p_survival_table( t, r0, psurvTable ) );
+    //printf("%g %g %g\n", rnd, gf->p_survival_table( t, r0, psurvTable ),
+    //rnd - gf->p_survival_table( t, r0, psurvTable ) );
     return rnd - gf->p_survival_table( t, r0, psurvTable );
 }
+
+const Real
+FirstPassagePairGreensFunction::p_leaves_F( const Real t,
+                                           const p_survival_params* params )
+{
+    const FirstPassagePairGreensFunction* const gf( params->gf ); 
+    const Real r0( params->r0 );
+    const RealVector& psurvTable( params->psurvTable );
+    const Real rnd( params->rnd );
+//    printf("p_leaves_F %g %g %g\n", rnd, gf->p_survival_table( t, r0, psurvTable ),
+//           gf->p_survival_table( t, r0, psurvTable ) - rnd );
+    return rnd - gf->p_survival_table( t, r0, psurvTable );
+}
+
+
+const Real
+FirstPassagePairGreensFunction::p_leavea_F( const Real t,
+                                           const p_survival_params* params )
+{
+    const FirstPassagePairGreensFunction* const gf( params->gf ); 
+    const Real r0( params->r0 );
+    const RealVector& psurvTable( params->psurvTable );
+    const Real rnd( params->rnd );
+//    printf("p_leavea_F %g %g %g\n", rnd, gf->p_survival_table( t, r0, psurvTable ),
+//           gf->p_survival_table( t, r0, psurvTable ) - rnd );
+    return rnd - gf->p_survival_table( t, r0, psurvTable );
+}
+
 
 const Real
 FirstPassagePairGreensFunction::p_int_r_F( const Real r,
@@ -1382,6 +1410,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     if( kf != 0.0 )
     {
         const Real dist( std::min( a - r0, r0 - sigma ) );
+        //const Real dist( a - r0 );
         t_guess = dist * dist / ( 6.0 * D );
     }
     else // kf == 0.0
@@ -1390,16 +1419,12 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
         t_guess = dist * dist / ( 6.0 * D );
     }
 
+    t_guess *= .1;
+
     const Real minT( std::min( sigma * sigma / D * this->MIN_T_FACTOR,
                                t_guess * 1e-2 ) );
 
-    Real low( t_guess * .1 );
-    Real high( t_guess * 10 );
-
-    this->updateAlphaTable0( low );
-
     RealVector psurvTable;
-    this->createPsurvTable( psurvTable, r0 );
 
     p_survival_params params = { this, r0, psurvTable, rnd };
 
@@ -1409,52 +1434,70 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	    &params 
 	};
 
+    this->updateAlphaTable0( t_guess );
+    this->createPsurvTable( psurvTable, r0 );
+
+    Real low( t_guess );
+    Real high( t_guess );
+
     // adjust high and low to make sure that f( low ) and f( high ) straddle.
-    while( GSL_FN_EVAL( &F, high ) < 0.0 )
+    const Real value( GSL_FN_EVAL( &F, t_guess ) );
+    if( value < 0.0 )
     {
-	high *= 10;
-	printf( "drawTime: adjusting high: %g\n", high );
-	if( fabs( high ) >= 1e10 )
-	{
-	    std::cerr << "Couldn't adjust high. F(" << high <<
-		") = " << GSL_FN_EVAL( &F, high ) << "; r0 = " << r0 << 
-		", " << dump() << std::endl;
-	    throw std::exception();
-	}
-//	this->updateAlphaTable0( high );
-    }
-
-//    this->updateAlphaTable0( low );
-//    this->createPsurvTable( psurvTable, r0, low );
-
-    Real low_value_prev( 1.0 );
-    while( 1 )
-    {
-	this->updateAlphaTable0( low );
-	this->createPsurvTable( psurvTable, r0 );
-
-        const Real low_value( GSL_FN_EVAL( &F, low ) );
-
-        if( low_value <= 0.0 )
+        high *= 10;
+        while( 1 )
         {
-            break;
+            const Real high_value( GSL_FN_EVAL( &F, high ) );
+            
+            if( high_value >= 0.0 )
+            {
+                break;
+            }
+
+            if( fabs( high ) >= 1e10 )
+            {
+                std::cerr << "Couldn't adjust high. F(" << high <<
+                    ") = " << GSL_FN_EVAL( &F, high ) << "; r0 = " << r0 << 
+                    ", " << dump() << std::endl;
+                throw std::exception();
+            }
+
+            printf( "drawTime: adjusting high: %g F = %g\n", high, high_value );
+            high *= 10;
         }
+    }
+    else
+    {
+        Real low_value_prev( value );
+        low *= .1;
 
-	printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value );
+        while( 1 )
+        {
+            this->updateAlphaTable0( low );
+            this->createPsurvTable( psurvTable, r0 );
+            
+            const Real low_value( GSL_FN_EVAL( &F, low ) );
+            
+            if( low_value <= 0.0 )
+            {
+                break;
+            }
+            
+            // FIXME: 
+            if( fabs( low ) <= minT || 
+                fabs( low_value - low_value_prev ) < TOLERANCE ) 
+            {
+                std::cerr << "Couldn't adjust low.  Returning minT (= "
+                          << minT << "); F(" << low <<
+                    ") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
+                          << dump() << std::endl;
+                return minT;
+            }
+            low_value_prev = low_value;
 
-        // FIXME: 
-	if( fabs( low ) <= minT || 
-            fabs( low_value - low_value_prev ) < TOLERANCE ) 
-	{
-	    std::cerr << "Couldn't adjust low.  Returning minT (= "
-		      << minT << "); F(" << low <<
-		") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
-		      << dump() << std::endl;
-	    return minT;
-	}
-
-	low *= .1;
-        low_value_prev = low_value;
+            printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value );
+            low *= .1;
+        }
     }
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
@@ -1473,24 +1516,29 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
 					       const Real t ) const
 {
     const Real sigma( this->getSigma() );
+    const Real kf( this->getkf() );
     const Real a( this->geta() );
 
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
     THROW_UNLESS( std::invalid_argument, t > 0.0 );
 
+    if( kf == 0 )
+    {
+        return ESCAPE;
+    }
 
     const Real reaction( leaves( t, r0 ) * 4.0 * M_PI * sigma * sigma );
     const Real escape( leavea( t, r0 ) * 4.0 * M_PI * a * a );
-    //const Real den( dp_survival( t, r0 ) );
+    const Real den( dp_survival( t, r0 ) );
 
     //const Real value( reaction / den );
     const Real value( reaction / ( reaction + escape ) );
-    //printf("%g %g %g %g %g\n", value, reaction, escape );
+    printf("et %g %g %g %g\n", value, reaction, escape, den );
 
     //assert( value >= - 1e-7 && value <= 1.0 + 1e-7 );
 
-    if( rnd < value )  
+    if( rnd <= value )  
     {
 	return REACTION;   // leaves
     }
@@ -1500,7 +1548,7 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     }
 }
 
-
+#if 0
 const boost::tuple<Real,EventType>
 FirstPassagePairGreensFunction::drawTime2( const Real rnd1, 
                                            const Real rnd2,
@@ -1527,7 +1575,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
     p_survival_params params_a = { this, r0, pleaveaTable, rnd1 };
     gsl_function Fa = 
 	{
-	    reinterpret_cast<typeof(Fa.function)>( &p_survival_F ),
+	    reinterpret_cast<typeof(Fa.function)>( &p_leavea_F ),
 	    &params_a 
 	};
 
@@ -1560,14 +1608,14 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
     p_survival_params params_s = { this, r0, pleavesTable, rnd2 };
     gsl_function Fs = 
 	{
-	    reinterpret_cast<typeof(Fs.function)>( &p_survival_F ),
+	    reinterpret_cast<typeof(Fs.function)>( &p_leaves_F ),
 	    &params_s
 	};
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
 
-    this->updateAlphaTable0( t_guess );
+    this->updateAlphaTable0( t_guess * 1e-3 );
     this->createPleaveFactorTable( pleaveFactorTable, r0 );
     this->createPleavesTable( pleavesTable, r0, pleaveFactorTable );
     this->createPleaveaTable( pleaveaTable, r0, pleaveFactorTable );
@@ -1811,6 +1859,310 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
 
     return ret;
 }
+#endif // 0
+
+
+const boost::tuple<Real,EventType>
+FirstPassagePairGreensFunction::drawTime2( const Real rnd1, 
+                                           const Real rnd2,
+                                           const Real r0 ) const
+{
+    const Real D( this->getD() );
+    const Real sigma( this->getSigma() );
+    const Real a( this->geta() );
+    const Real kf( this->getkf() );
+
+    THROW_UNLESS( std::invalid_argument, rnd1 < 1.0 && rnd1 >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, rnd2 < 1.0 && rnd2 >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 <= a );
+
+    if( r0 == a || a == sigma )
+    {
+	return boost::make_tuple( 0.0, ESCAPE );
+    }
+
+    //const Real minT( std::min( sigma * sigma / D * this->MIN_T_FACTOR,
+//                               t_guess * 1e-2 ) );
+
+    RealVector pleaveFactorTable;
+    RealVector pleavesTable;
+    RealVector pleaveaTable;
+
+    p_survival_params params_a = { this, r0, pleaveaTable, rnd1 };
+    gsl_function Fa = 
+	{
+	    reinterpret_cast<typeof(Fa.function)>( &p_leavea_F ),
+	    &params_a 
+	};
+
+    p_survival_params params_s = { this, r0, pleavesTable, rnd2 };
+    gsl_function Fs = 
+	{
+	    reinterpret_cast<typeof(Fs.function)>( &p_leaves_F ),
+	    &params_s
+	};
+
+    const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
+    gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
+
+    const Real dist_a( a - r0 );
+    const Real t_guess_a( dist_a * dist_a / ( 6.0 * D ) );
+    Real t_escape;
+
+    if( kf == 0.0 )
+    {
+        this->updateAlphaTable0( t_guess_a );
+        this->createPleaveFactorTable( pleaveFactorTable, r0 );
+        this->createPleaveaTable( pleaveaTable, r0, pleaveFactorTable );
+
+        t_escape = drawPleavea( Fa, solver, r0, t_guess_a,
+                                pleaveFactorTable,
+                                pleaveaTable );
+
+        gsl_root_fsolver_free( solver );
+        return boost::make_tuple( t_escape, ESCAPE );
+    }
+
+    const Real dist_s( r0 - sigma );
+    const Real t_guess_s( dist_s * dist_s / ( 6.0 * D ) );
+    Real t_reaction;
+
+    if( dist_a <= dist_s )
+    {
+        this->updateAlphaTable0( t_guess_a );
+        this->createPleaveFactorTable( pleaveFactorTable, r0 );
+        this->createPleaveaTable( pleaveaTable, r0, pleaveFactorTable );
+
+        t_escape = drawPleavea( Fa, solver, r0, t_guess_a, 
+                                pleaveFactorTable,
+                                pleaveaTable );
+
+        this->updateAlphaTable0( t_guess_s );
+        this->createPleaveFactorTable( pleaveFactorTable, r0 );
+        this->createPleavesTable( pleavesTable, r0, pleaveFactorTable );
+
+        if( t_escape < t_guess_s )
+        {
+            const Real value_s( GSL_FN_EVAL( &Fs, t_guess_s ) );
+            if( value_s <= 0.0 )
+            {
+                gsl_root_fsolver_free( solver );
+                return boost::make_tuple( t_escape, ESCAPE );
+            }
+        }
+
+        t_reaction = drawPleaves( Fs, solver, r0, t_guess_s,
+                                  pleaveFactorTable,
+                                  pleavesTable );
+    }
+    else
+    {
+        this->updateAlphaTable0( t_guess_s );
+        this->createPleaveFactorTable( pleaveFactorTable, r0 );
+        this->createPleavesTable( pleavesTable, r0, pleaveFactorTable );
+
+        t_reaction = drawPleaves( Fs, solver, r0, t_guess_s,
+                                  pleaveFactorTable,
+                                  pleavesTable );
+
+        this->updateAlphaTable0( t_guess_a );
+        this->createPleaveFactorTable( pleaveFactorTable, r0 );
+        this->createPleaveaTable( pleaveaTable, r0, pleaveFactorTable );
+
+        if( t_reaction < t_guess_a )
+        {
+            const Real value_a( GSL_FN_EVAL( &Fa, t_guess_a ) );
+            if( value_a <= 0.0 )
+            {
+                gsl_root_fsolver_free( solver );
+                return boost::make_tuple( t_reaction, REACTION );
+            }
+        }
+
+        t_escape = drawPleavea( Fa, solver, r0, t_guess_a,
+                                pleaveFactorTable,
+                                pleaveaTable );
+    }
+
+    printf("e %g r %g\n", t_escape, t_reaction);
+
+    boost::tuple<Real,EventType> ret;
+    if( t_escape <= t_reaction )
+    {
+        ret = boost::make_tuple( t_escape, ESCAPE );
+    }
+    else
+    {
+        ret = boost::make_tuple( t_reaction, REACTION );
+    }
+
+    gsl_root_fsolver_free( solver );
+
+    return ret;
+}
+
+const Real 
+FirstPassagePairGreensFunction::drawPleavea( gsl_function& F,
+                                             gsl_root_fsolver* solver,
+                                             const Real r0,
+                                             const Real t_guess,
+                                             RealVector& pleaveFactorTable,
+                                             RealVector& pleaveaTable ) const
+{
+    const Real minT( 1e-12 );
+
+    Real low( t_guess );
+    Real high( t_guess );
+
+    // adjust high and low to make sure that f( low ) and f( high ) straddle.
+    const Real value( GSL_FN_EVAL( &F, t_guess ) );
+    if( value < 0.0 )
+    {
+        high *= 10;
+        while( 1 )
+        {
+            const Real high_value( GSL_FN_EVAL( &F, high ) );
+            
+            if( high_value >= 0.0 )
+            {
+                break;
+            }
+
+            if( fabs( high ) >= 1e10 )
+            {
+                std::cerr << "Couldn't adjust high. Fa(" << high <<
+                    ") = " << GSL_FN_EVAL( &F, high ) << "; r0 = " << r0 << 
+                    ", " << dump() << std::endl;
+                throw std::exception();
+            }
+
+            printf( "drawTime2: adjusting high: %g Fa = %g\n", 
+                    high, high_value );
+            high *= 10;
+        }
+    }
+    else
+    {
+        Real low_value_prev( value );
+        low *= .1;
+
+        while( 1 )
+        {
+            this->updateAlphaTable0( low );
+            this->createPleaveFactorTable( pleaveFactorTable, r0 );
+            this->createPleaveaTable( pleaveaTable, r0, pleaveFactorTable );
+
+            
+            const Real low_value( GSL_FN_EVAL( &F, low ) );
+            
+            if( low_value <= 0.0 )
+            {
+                break;
+            }
+            
+            // FIXME: 
+            if( fabs( low ) <= minT || 
+                fabs( low_value - low_value_prev ) < TOLERANCE ) 
+            {
+                std::cerr << "Couldn't adjust low.  Returning minT (= "
+                          << minT << "); Fa(" << low <<
+                    ") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
+                          << dump() << std::endl;
+                return minT;
+            }
+            low_value_prev = low_value;
+
+            printf( "drawTime2: adjusting low: %g, Fa = %g\n", low, low_value );
+            low *= .1;
+        }
+    }
+
+    const Real t( findRoot( F, solver, low, high, "drawTime2: a" ) );
+
+    return t;
+}
+
+
+const Real 
+FirstPassagePairGreensFunction::drawPleaves( gsl_function& F,
+                                             gsl_root_fsolver* solver,
+                                             const Real r0,
+                                             const Real t_guess,
+                                             RealVector& pleaveFactorTable,
+                                             RealVector& pleavesTable ) const
+{
+    const Real minT( 1e-12 );
+
+    Real low( t_guess );
+    Real high( t_guess );
+
+    // adjust high and low to make sure that f( low ) and f( high ) straddle.
+    const Real value( GSL_FN_EVAL( &F, t_guess ) );
+    if( value < 0.0 )
+    {
+        high *= 10;
+        while( 1 )
+        {
+            const Real high_value( GSL_FN_EVAL( &F, high ) );
+            
+            if( high_value >= 0.0 )
+            {
+                break;
+            }
+
+            if( fabs( high ) >= 1e10 )
+            {
+                std::cerr << "Couldn't adjust high. Fs(" << high <<
+                    ") = " << GSL_FN_EVAL( &F, high ) << "; r0 = " << r0 << 
+                    ", " << dump() << std::endl;
+                throw std::exception();
+            }
+
+            printf( "drawTime2: adjusting high: %g Fs = %g\n", 
+                    high, high_value );
+            high *= 10;
+        }
+    }
+    else
+    {
+        Real low_value_prev( value );
+        low *= .1;
+
+        while( 1 )
+        {
+            this->updateAlphaTable0( low );
+            this->createPleaveFactorTable( pleaveFactorTable, r0 );
+            this->createPleavesTable( pleavesTable, r0, pleaveFactorTable );
+            
+            const Real low_value( GSL_FN_EVAL( &F, low ) );
+            
+            if( low_value <= 0.0 )
+            {
+                break;
+            }
+            
+            // FIXME: 
+            if( fabs( low ) <= minT )//|| 
+//                fabs( low_value - low_value_prev ) < TOLERANCE ) 
+            {
+                std::cerr << "Couldn't adjust low.  Returning minT (= "
+                          << minT << "); Fs(" << low <<
+                    ") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
+                          << dump() << std::endl;
+                return minT;
+            }
+            low_value_prev = low_value;
+
+            printf( "drawTime2: adjusting low: %g, Fs = %g\n", low, low_value );
+            low *= .1;
+        }
+    }
+
+    const Real t( findRoot( F, solver, low, high, "drawTime2: s" ) );
+
+    return t;
+}
+
 
 
 
@@ -2349,7 +2701,7 @@ p_theta_table( const Real theta,
 					p_theta_n,
 					this,
 					_1, p_nTable, lgndTable ),
-			   tableSize-1 ) );
+			   tableSize ) );
 
     return p * sin_theta;
 }

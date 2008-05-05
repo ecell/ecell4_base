@@ -149,8 +149,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
         print 'et et et'
-        #t = gf.drawTime( 0.999, r0 )
-        t = 1e-3
+        t = gf.drawTime( 0.999, r0 )
         eventType = gf.drawEventType( 0.5, r0, t )
         self.failIf( eventType != 0 and eventType != 1 and eventType != 2 )
 
@@ -161,10 +160,11 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         self.assertEqual( eventType, 1 )
 
 
-    '''
+
     def test_DrawTime2( self ):
         D = 1e-12
-        kf = 1e-9
+        kf = 1e-18
+        #kf = 0
         sigma = 1e-8
         a = 1e-7
         r0 = 9e-8
@@ -186,7 +186,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         print t, et
         print '==============================================='
 
-        t, et = gf.drawTime2( 1 - 1e-16, 1 - 1e-16, r0 )
+        t, et = gf.drawTime2( 1 - 1e-8, 1 - 1e-8, r0 )
         self.failIf( t <= 0.0 or t >= numpy.inf )
         print t, et
         print '==============================================='
@@ -256,16 +256,17 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
-        a = 1e-4
-        r0 = sigma*2
+        a = 1e-7
+        r0 = sigma*1.1
         print '**************'
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
-        t, et = gf.drawTime2( 0.5, 0.5, r0 )
-        t2 = gf.drawTime( 0.5, r0 )
+        t, et = gf.drawTime2( 0.3, 0.3, r0 )
+        t2 = gf.drawTime( 0.3, r0 )
+        et2 = gf.drawEventType( 0.3, r0, t2 )
         print '**************'
-        print 't t2 ',t, 't2', t2
+        print 't',t, 't2', t2, 'et', et, 'et2', et2
 
         self.failIf( t < 0.0 or t >= numpy.inf )
         self.assertEqual( et, mod.EventType.REACTION )
@@ -285,7 +286,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t, et = gf.drawTime2( 0.5, 0.5, r0 )
         self.failIf( t < 0.0 or t >= numpy.inf )
-    '''
+
 
 
     def test_DrawR( self ):
@@ -564,7 +565,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         surv = gf.p_survival( t, r0 )
         pleaves = gf.p_leaves( t, r0 )
         pleavea = gf.p_leavea( t, r0 )
-
+        print 'pll', surv, pleaves, pleavea
         self.failIf( surv <= 0.0 )
         self.failIf( pleavea <= 0.0 or pleaves <= 0.0 )
         self.assertAlmostEqual( surv, pleaves + pleavea )
@@ -726,7 +727,6 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
-            print theta, np, ip
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
 

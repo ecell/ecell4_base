@@ -21,7 +21,7 @@ class FirstPassagePairGreensFunction
     static const Real MIN_T_FACTOR = 1e-7;
 
     static const unsigned int MAX_ORDER = 100;
-    static const unsigned int MAX_ALPHA_SEQ = 1000;
+    static const unsigned int MAX_ALPHA_SEQ = 2000;
 
 
 public:
@@ -387,6 +387,14 @@ protected:
     p_survival_F( const Real t,
 		  const p_survival_params* const params );
 
+    static const Real 
+    p_leaves_F( const Real t,
+               const p_survival_params* const params );
+
+    static const Real 
+    p_leavea_F( const Real t,
+               const p_survival_params* const params );
+
     struct p_int_r_params
     { 
 	const FirstPassagePairGreensFunction* const gf;
@@ -413,6 +421,22 @@ protected:
     static const Real 
     ip_theta_F( const Real theta,
 		const ip_theta_params* const params );
+
+    const Real 
+    drawPleaves( gsl_function& F,
+                 gsl_root_fsolver* solver,
+                 const Real r0,
+                 const Real t_guess,
+                 RealVector& pleaveFactorTable,
+                 RealVector& pleavesTable ) const;
+
+    const Real 
+    drawPleavea( gsl_function& F,
+                 gsl_root_fsolver* solver,
+                 const Real r0,
+                 const Real t_guess,
+                 RealVector& pleaveFactorTable,
+                 RealVector& pleavesTable ) const;
 
     
     const Real num_r0( const Real alpha,
