@@ -897,7 +897,7 @@ FirstPassagePairGreensFunction::p_leavea_i( const Real alpha,
 //	num1 = ( a - sigma + a * h * sigma ) * alpha * cos_a - 
 //	    ( hsigma_p_1 + a * sigma * alpha * alpha ) * sin_a;
 	num1 = ( a * h * sigma + a ) * cos_a - a * sigma * alpha * sin_a;
-//        printf("%g %g\n", ( a * h * sigma + a ) * cos_a, - a * sigma * alpha * sin_a );
+        printf("%g %g\n", ( a * h * sigma + a ) * cos_a, - a * sigma * alpha * sin_a );
     }
 
     const Real result( - 2.0 * num1 * pleave_factor );
