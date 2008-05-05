@@ -79,7 +79,12 @@ public:
 
     const Real p_survival_table( const Real t,
 				 const Real r0,
-				 const RealVector& psurvTable ) const;
+				 const RealVector& table ) const;
+
+    const Real p_leave_table( const Real t,
+				 const Real r0,
+				 const RealVector& table ) const;
+
 
     const Real dp_survival( const Real t,
 			    const Real r0 ) const;
@@ -279,7 +284,13 @@ protected:
     const Real p_survival_i_exp_table( const unsigned int i,
 				       const Real t,
 				       const Real r0,
-				       const RealVector& psurvTable ) const;
+				       const RealVector& table ) const;
+
+    const Real p_leave_i_exp_table( const unsigned int i,
+                                    const Real t,
+                                    const Real r0,
+                                    const RealVector& table ) const;
+
 
     const Real dp_survival_i_exp( const unsigned int i,
 				  const Real alpha,
@@ -379,7 +390,7 @@ protected:
     { 
 	const FirstPassagePairGreensFunction* const gf;
 	const Real r0;
-	const RealVector& psurvTable;
+	const RealVector& table;
 	const Real rnd;
     };
 
@@ -388,11 +399,7 @@ protected:
 		  const p_survival_params* const params );
 
     static const Real 
-    p_leaves_F( const Real t,
-               const p_survival_params* const params );
-
-    static const Real 
-    p_leavea_F( const Real t,
+    p_leave_F( const Real t,
                const p_survival_params* const params );
 
     struct p_int_r_params
