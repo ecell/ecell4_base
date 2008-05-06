@@ -21,7 +21,7 @@ funcSum_all( boost::function<const Real( const unsigned int i )> f,
     sum = p_0;
 
     RealVector::size_type i( 1 ); 
-    while( i <= max_i )
+    while( i < max_i )
     {
 	const Real p_i( f( i ) );
         sum += p_i;
@@ -49,7 +49,7 @@ funcSum_all_accel( boost::function<const Real( const unsigned int i )> f,
     pTable.push_back( p_0 );
 
     RealVector::size_type i( 1 );
-    for( ;  i <= max_i; ++i )
+    for( ;  i < max_i; ++i )
     {
 	const Real p_i( f( i ) );
 	pTable.push_back( p_i );
@@ -101,7 +101,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
     unsigned int convergenceCounter( 0 );
 
     RealVector::size_type i( 1 ); 
-    while( i <= max_i )
+    while( i < max_i )
     {
 	const Real p_i( f( i ) );
 	pTable.push_back( p_i );
@@ -139,7 +139,7 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 	    workspace( gsl_sum_levin_utrunc_alloc( i ) );
 	gsl_sum_levin_utrunc_accel( &pTable[0], pTable.size(), workspace, 
         &sum, &error );
-	if( fabs( error ) >= fabs( sum * tolerance ) )
+	if( fabs( error ) >= fabs( sum * tolerance * 10 ) )
 	{
 	    std::cerr << "Series acceleration error; "
 		      << fabs( error ) << " (rel error: " 

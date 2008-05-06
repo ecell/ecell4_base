@@ -1911,9 +1911,9 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def formPair( self, single1, single2, bursted ):
 
-        log.debug( 'trying to form %s' %
-                   'Pair( %s, %s )' % ( single1.particle, 
-                                        single2.particle ) )
+        #log.debug( 'trying to form %s' %
+        #           'Pair( %s, %s )' % ( single1.particle, 
+        #                                single2.particle ) )
 
         assert single1.isReset()
         assert single2.isReset()
@@ -1923,39 +1923,39 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         radius1 = species1.radius
         radius2 = species2.radius
-        sigma1 = radius1 * 2
-        sigma2 = radius2 * 2
+        sigma = radius1 + radius2
 
         D1, D2 = species1.D, species2.D
         D12 = D1 + D2
 
         pairDistance = self.distance( single1.pos, single2.pos )
+        # pairGap = real distance including radii
+        r0 = pairDistance - sigma
+        assert r0 >= 0, 'r0 (pair gap) between %s and %s = %g < 0' \
+            % ( single1, single2, r0 )
 
-        minShellSize = max( pairDistance * D1 / D12 + radius1,
-                            pairDistance * D2 / D12 + radius2 )
+        shellSize1 = pairDistance * D1 / D12 + radius1
+        shellSize2 = pairDistance * D2 / D12 + radius2
+        if shellSize1 <= shellSize2:
+            minShellSize = shellSize1
+            shellSizeMargin = radius1 * 2 #* self.SINGLE_SHELL_FACTOR
+        else:
+            minShellSize = shellSize2
+            shellSizeMargin = radius2 * 2 #* self.SINGLE_SHELL_FACTOR
 
         # 1. Shell cannot be larger than max shell size or sim cell size.
-        maxShellSize = min( self.getMatrixCellSize(), self.maxShellSize )
-
         com = calculatePairCoM( single1.pos, single2.pos, D1, D2,
                                 self.getWorldSize() )
         self.applyBoundary( com )
-
-        shellSizeMargin = min( sigma1, sigma2 ) * self.SINGLE_SHELL_FACTOR
         minShellSizeWithMargin = minShellSize + shellSizeMargin
+        maxShellSize = min( self.getMatrixCellSize(), self.maxShellSize,
+                            r0 * 1000 + sigma + shellSizeMargin )
 
         if minShellSizeWithMargin >= maxShellSize:
             log.debug( '%s not formed: minShellSize >= maxShellSize' %
                        ( 'Pair( %s, %s )' % ( single1.particle, 
                                               single2.particle ) ) )
             return None
-
-        radius12 = radius1 + radius2
-
-        # pairGap = real distance including radii
-        pairGap = pairDistance - radius12
-        assert pairGap >= 0, 'pairGap between %s and %s = %g < 0' \
-            % ( single1, single2, pairGap )
 
         # Here, we have to take into account of the bursted Singles in
         # this step.  The simple check for closest below could miss

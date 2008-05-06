@@ -18,11 +18,11 @@ D = 1e-12
 #kf = 1000 * sigma * D
 #kf=1e-8
 #kf=1e-10
-kf=1e-7
+kf=1e-12
 #a = 1e-7
-a = 1e-7
+a = sigma*1.01
 #r0 = a * (1.0-1e-7)
-r0 = sigma * 2
+r0 = sigma# * 1.0001
 
 tau = sigma*sigma / D
 #T = tau * .1
@@ -34,8 +34,8 @@ def plot_p_leaveas( gf, t ):
 
     N = 10000
 
-    tmax = 1e-1
-    tmin = 1e-8
+    tmax = 1e-10
+    tmin = 1e-18
 
     ttick = ( tmax - tmin ) / N
     tarray = numpy.mgrid[tmin:tmax:ttick]
@@ -43,15 +43,15 @@ def plot_p_leaveas( gf, t ):
     parray1 = array( [ 1 - gf.p_survival( t, r0 ) for t in tarray ] )
     semilogx( tarray , parray1, '-', label='psurvival' )
 
-    parray2 = array( [ gf.p_leavea( t, r0 )  for t in tarray ] )
-    parray2 = 1 - parray2# / gf.p_leavea( 0, r0 )
-    semilogx( tarray , parray2, '-', label='pleavea' )
+#     parray2 = array( [ gf.p_leavea( t, r0 )  for t in tarray ] )
+#     parray2 = 1 - parray2# / gf.p_leavea( 0, r0 )
+#     semilogx( tarray , parray2, '-', label='pleavea' )
 
-    parray3 = array( [ gf.p_leaves( t, r0 )  for t in tarray ] )
-    parray3 = 1 - parray3# / gf.p_leaves( 0, r0 )
-    semilogx( tarray , parray3, '-', label='pleaves' )
+#     parray3 = array( [ gf.p_leaves( t, r0 )  for t in tarray ] )
+#     parray3 = 1 - parray3# / gf.p_leaves( 0, r0 )
+#     semilogx( tarray , parray3, '-', label='pleaves' )
 
-    semilogx( tarray , parray2 + parray3 - 1, '-', label='s+a' )
+#     semilogx( tarray , parray2 + parray3 - 1, '-', label='s+a' )
 
     #semilogx( tarray , parray2 + parray3, '-', label='a+s' )
 
@@ -137,8 +137,8 @@ if __name__ == '__main__':
     gf.seta( a )
     #plot_p_int_r( gf, T )
     #plot_ip_theta( gf, r0, T )
-    #plot_p_leaveas( gf, r0 )
-    plot_leaveas( gf, r0 )
+    plot_p_leaveas( gf, r0 )
+    #plot_leaveas( gf, r0 )
 
 
 

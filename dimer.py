@@ -6,13 +6,14 @@ from egfrd import *
 from logger import *
 import sys
 
-s = EGFRDSimulator( 'normal' )
+#s = EGFRDSimulator( 'normal' )
 
-#s = BDSimulator()
+s = BDSimulator()
 
-L = 5e-6
-#L = 5e-8
-#L = 2e-7
+#L = 5e-6
+#L = 2e-6
+L = 5e-8
+#L = 8e-7
 s.setWorldSize( L )
 s.setMatrixSize( 20 )
 
@@ -25,13 +26,13 @@ s.addSpecies( S )
 P = Species( 'P', 1e-12, 7e-9 )
 s.addSpecies( P )
 
-r1 = BindingReactionType( S, S, P, 1e6 / N_A )
+r1 = BindingReactionType( S, S, P, 1e7 / N_A )
 s.addReactionType( r1 )
 r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
-s.throwInParticles( S, 1500, box1 )
-s.throwInParticles( P, 1500, box1 )
+s.throwInParticles( S, 150, box1 )
+s.throwInParticles( P, 150, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )
@@ -40,8 +41,8 @@ l.log()
 
 
 
-while s.t < 100:
-    s.step()
+#while s.t < 100:
+#    s.step()
 
 #s.dumpPopulation()
 #l.log()
@@ -50,7 +51,7 @@ while s.t < 100:
 
 def profrun():
     #while s.stepCounter < 6000:
-    for _ in range( 6000 ):
+    for _ in range( 1000 ):
         s.step()
         #logging.info( s.dumpPopulation() )
 

@@ -121,7 +121,7 @@ class BDSimulatorCoreBase( object ):
 
         random.shuffle( self.particlesToStep )
         while len( self.particlesToStep ) != 0:
-            particle = self.particlesToStep.pop() # last one
+            particle = self.particlesToStep.pop() # take last one
             self.propagateParticle( particle )
 
 
@@ -163,6 +163,7 @@ class BDSimulatorCoreBase( object ):
                 p = self.getP_acct( rt, D12, radius12 )
 
                 rnd = numpy.random.uniform()
+                print p
                 if p > rnd:
                     log.info( 'fire reaction2' )
                     try:
@@ -298,8 +299,11 @@ class BDSimulatorCoreBase( object ):
             newPos = ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 )
             self.applyBoundary( newPos )
 
-            self.clearVolume( newPos, productSpecies.radius,
-                              ignore=[ particle1, particle2 ] )
+            try:
+                self.clearVolume( newPos, productSpecies.radius,
+                                  ignore=[ particle1, particle2 ] )
+            except NoSpace:
+                return
 
             self.removeParticle( particle1 )
             self.removeParticle( particle2 )
@@ -345,7 +349,7 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
 
         self.moveParticle = self.main.moveParticle
 
-        self.getNeighborParticles = main.getNeighborParticles
+        #self.getNeighborParticles = main.getNeighborParticles
         self.getClosestParticle = main.getClosestParticle
 
         
@@ -374,13 +378,18 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
         particle = self.main.createParticle( species, pos )
         self.addToParticleList( particle )
 
+    def clearVolume( self, pos, radius, ignore=[] ):
+
+        if not self.checkOverlap(pos, radius, ignore ):
+            raise NoSpace()
+
 
 
 class BDSimulator( GFRDSimulatorBase ):
     
-    def __init__( self ):
+    def __init__( self, matrixtype='normal' ):
 
-        GFRDSimulatorBase.__init__( self )
+        GFRDSimulatorBase.__init__( self, matrixtype )
 
         self.core = BDSimulatorCore( self )
         self.isDirty = True

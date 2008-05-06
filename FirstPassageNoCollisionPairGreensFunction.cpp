@@ -368,7 +368,7 @@ p_theta_table( const Real theta,
                                    p_theta_i,
                                    this,
                                    _1, p_nTable, lgndTable ),
-                      tableSize-1, this->TOLERANCE ) );
+                      tableSize, this->TOLERANCE ) );
 
     return p * sin_theta;
 }
@@ -479,7 +479,7 @@ ip_theta_table( const Real theta,
                                ip_theta_i,
                                this,
                                _1, p_nTable, lgndTable1 ),
-			   tableSize-1 ) );
+			   tableSize ) );
 
     return p;
 }

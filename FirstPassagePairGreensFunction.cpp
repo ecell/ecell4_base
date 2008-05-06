@@ -1444,22 +1444,13 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 
     Real t_guess;
 
-    if( kf != 0.0 )
-    {
-        const Real dist( std::min( a - r0, r0 - sigma ) );
-        //const Real dist( a - r0 );
-        t_guess = dist * dist / ( 6.0 * D );
-    }
-    else // kf == 0.0
-    {
-        const Real dist( a - r0 );
-        t_guess = dist * dist / ( 6.0 * D );
-    }
-
+    //const Real dist( std::min( a - r0, r0 - sigma ) );
+    const Real dist( a - r0 );  // this is a good guess, actually.
+    t_guess = dist * dist / ( 6.0 * D );
     t_guess *= .1;
 
     const Real minT( std::min( sigma * sigma / D * this->MIN_T_FACTOR,
-                               t_guess * 1e-2 ) );
+                               t_guess * 1e-5 ) );
 
     RealVector psurvTable;
 
@@ -1499,7 +1490,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
                 throw std::exception();
             }
 
-            printf( "drawTime: adjusting high: %g F = %g\n", high, high_value );
+//            printf( "drawTime: adjusting high: %g F = %g\n", high, high_value );
             high *= 10;
         }
     }
@@ -1532,7 +1523,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
             }
             low_value_prev = low_value;
 
-            printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value );
+//            printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value );
             low *= .1;
         }
     }
@@ -2600,12 +2591,11 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 
     const Real factor( getD() * sigma / ( 2.0 * a * M_PI ) );
 
-
     const Real p_0( this->dp_n_at_a( 0, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
     const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-2 ) );
-
+    //printf("p_0 %g\n",p_0 );
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
     while( true )
@@ -2619,7 +2609,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 //	    p_n = 0.0;
 	    break;
 	}
-//	printf("p_n %g\n",p_n );
+	//printf("p_n %g\n",p_n );
 
 	p_nTable.push_back( p_n );
 
@@ -2879,9 +2869,6 @@ ip_theta_table( const Real theta,
 {
     const unsigned int tableSize( p_nTable.size() );
 
-    //RealVector pTable;
-    //pTable.reserve( tableSize );
-
     const Real cos_theta( cos( theta ) );
 
     // LgndTable is offset by 1 to incorporate the n=-1 case.
@@ -2891,12 +2878,12 @@ ip_theta_table( const Real theta,
     lgndTable[0] = 1.0;  // n = -1
     gsl_sf_legendre_Pl_array( tableSize, cos_theta, &lgndTable[1] );
 
-
-    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					ip_theta_n,
-					this,
-					_1, p_nTable, lgndTable ),
-			   tableSize - 1 ) );
+//    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
+                                             ip_theta_n,
+                                             this,
+                                             _1, p_nTable, lgndTable ),
+                                tableSize - 1 ) );
 
     return p;
 }
@@ -2950,7 +2937,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 
     if( r == geta() || r < 0.0 )
     {
-	puts("dp");
+	//puts("dp");
 	makedp_n_at_aTable( p_nTable, r0, t );
     }
     else

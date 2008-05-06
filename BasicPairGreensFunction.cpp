@@ -647,7 +647,7 @@ p_corr_table( const Real theta, const Real r, const Real r0,
                                             p_corr_n,
                                             this,
                                             _1, RnTable, lgndTable ),
-                               tableSize-1 ) );
+                               tableSize ) );
 
     result = - p * sin_theta;
 
@@ -679,7 +679,7 @@ ip_corr_table( const Real theta, const Real r, const Real r0,
                                             ip_corr_n,
                                             this,
                                             _1, RnTable, lgndTable ),
-                               tableSize - 1 ) );
+                               tableSize ) );
 
     const Real result( - p / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
     return result;

@@ -505,7 +505,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t = 1e-3
         r = a
-        
+
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
