@@ -17,11 +17,12 @@ sigma = 1e-8
 D = 1e-12
 #kf = 1000 * sigma * D
 #kf=1e-8
-kf=1e-10
+#kf=1e-10
+kf=1e-7
 #a = 1e-7
 a = 1e-7
 #r0 = a * (1.0-1e-7)
-r0 = sigma * 1
+r0 = sigma * 2
 
 tau = sigma*sigma / D
 #T = tau * .1
@@ -31,10 +32,10 @@ rmin = sigma
 
 def plot_p_leaveas( gf, t ):
 
-    N = 100000
+    N = 10000
 
     tmax = 1e-1
-    tmin = 0
+    tmin = 1e-8
 
     ttick = ( tmax - tmin ) / N
     tarray = numpy.mgrid[tmin:tmax:ttick]
@@ -43,22 +44,26 @@ def plot_p_leaveas( gf, t ):
     semilogx( tarray , parray1, '-', label='psurvival' )
 
     parray2 = array( [ gf.p_leavea( t, r0 )  for t in tarray ] )
-    parray2 = 1 - parray2 / gf.p_leavea( 0, r0 )
+    parray2 = 1 - parray2# / gf.p_leavea( 0, r0 )
     semilogx( tarray , parray2, '-', label='pleavea' )
 
     parray3 = array( [ gf.p_leaves( t, r0 )  for t in tarray ] )
-    parray3 = 1 - parray3 / gf.p_leaves( 0, r0 )
+    parray3 = 1 - parray3# / gf.p_leaves( 0, r0 )
     semilogx( tarray , parray3, '-', label='pleaves' )
+
+    semilogx( tarray , parray2 + parray3 - 1, '-', label='s+a' )
 
     #semilogx( tarray , parray2 + parray3, '-', label='a+s' )
 
 
 def plot_leaveas( gf, t ):
 
-    N = 100000
+    N = 3000
 
-    tmax = 1e-2
-    tmin = 0
+    #tmax = 2.4e-5
+    #tmin = 1.1e-5
+    tmax = 2.5e-2
+    tmin = 2.2e-8
 
     ttick = ( tmax - tmin ) / N
     tarray = numpy.mgrid[tmin:tmax:ttick]
@@ -66,13 +71,21 @@ def plot_leaveas( gf, t ):
     #parray1 = array( [ 1 - gf.p_survival( t, r0 ) for t in tarray ] )
     #semilogx( tarray , parray1, '-', label='psurvival' )
 
-    parray2 = array( [ gf.leavea( t, r0 )  for t in tarray ] )
-    parray3 = array( [ gf.leaves( t, r0 )  for t in tarray ] )
+    parray2 = array( [ gf.leavea( t, r0 ) * 4 * numpy.pi * a * a
+                       for t in tarray ] )
+    parray3 = array( [ gf.leaves( t, r0 ) * 4 * numpy.pi * sigma * sigma
+                       for t in tarray ] )
+    parray4 = array( [ gf.dp_survival( t, r0 )  for t in tarray ] )
 
-    semilogx( tarray , parray2 / (parray2+parray3), '-', label='leavea' )
-    semilogx( tarray , parray3 / (parray2+parray3), '-', label='leaves' )
+    #semilogx( tarray, parray2 / (parray2+parray3), '-', label='leavea' )
+    semilogx( tarray, parray2, '-', label='leavea' )
+    semilogx( tarray, parray3, '-', label='leaves' )
+    #semilogx( tarray, parray3 / (parray2+parray3), '-', label='leaves' )
+    #semilogx( tarray, parray4 / gf.dp_survival(0,r0) , '-', label='dp_survival' )
+    #semilogx( tarray, (parray2 + parray3)/(parray2[0]+parray3[0]) , '-', label='a+s' )
 
-    #semilogx( tarray , parray2 + parray3, '-', label='a+s' )
+    #semilogx( tarray , parray2, '-', label='a' )
+    #semilogx( tarray , parray3, '-', label='s' )
 
 
 
