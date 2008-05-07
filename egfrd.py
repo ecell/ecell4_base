@@ -983,7 +983,7 @@ class DummySingle( object ):
 
 
 
-class EGFRDSimulator( GFRDSimulatorBase ):
+class EParticleSimulator( ParticleSimulatorBase ):
     
     def __init__( self, matrixtype='simple' ):
 
@@ -992,7 +992,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         else:
             self.shellMatrix = ObjectMatrix()
 
-        GFRDSimulatorBase.__init__( self, matrixtype )
+        ParticleSimulatorBase.__init__( self, matrixtype )
 
         self.MULTI_SHELL_FACTOR = 0.1
         self.SINGLE_SHELL_FACTOR = 0.5
@@ -1011,11 +1011,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
         if isinstance( size, list ) or isinstance( size, tuple ):
             size = numpy.array( size )
 
-        GFRDSimulatorBase.setWorldSize( self, size )
+        ParticleSimulatorBase.setWorldSize( self, size )
         self.shellMatrix.setWorldSize( size )
 
     def setMatrixSize( self, size ):
-        GFRDSimulatorBase.setMatrixSize( self, size )
+        ParticleSimulatorBase.setMatrixSize( self, size )
         self.shellMatrix.setMatrixSize( size )
 
     def getMatrixCellSize( self ):
@@ -1050,7 +1050,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def initialize( self ):
 
-        GFRDSimulatorBase.initialize( self )
+        ParticleSimulatorBase.initialize( self )
 
         self.setAllRepulsive()
 
@@ -1202,21 +1202,21 @@ class EGFRDSimulator( GFRDSimulatorBase ):
     def addSingleEvent( self, single ):
 
         eventID = self.addEvent( self.t + single.dt, 
-                                 Delegate( self, EGFRDSimulator.fireSingle ), 
+                                 Delegate( self, EParticleSimulator.fireSingle ), 
                                  single )
         single.eventID = eventID
 
     def addPairEvent( self, pair ):
 
         eventID = self.addEvent( self.t + pair.dt, 
-                                 Delegate( self, EGFRDSimulator.firePair ), 
+                                 Delegate( self, EParticleSimulator.firePair ), 
                                  pair )
         pair.eventID = eventID
 
     def addMultiEvent( self, multi ):
 
         eventID = self.addEvent( self.t + multi.dt, 
-                                 Delegate( self, EGFRDSimulator.fireMulti ), 
+                                 Delegate( self, EParticleSimulator.fireMulti ), 
                                  multi )
         multi.eventID = eventID
 
@@ -2082,11 +2082,11 @@ class EGFRDSimulator( GFRDSimulatorBase ):
                 self.addToMultiRecursive( obj, multi )
 
         elif isinstance( obj, Multi ):
-            try:
+            if not multi1.sim.particleList[0] in multi2.sim.particleList:
                 self.mergeMultis( obj, multi )
                 self.removeFromShellMatrix( obj )
                 self.removeEvent( obj )
-            except AlreadyIn:
+            else:
                 log.debug( '%s already added. skipping.' % obj )
         else:
             assert False, 'do not reach here.'  # Pairs are bursted
@@ -2110,8 +2110,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
         log.info( 'merging %s to %s' % ( multi1, multi2 ) )
 
-        if multi1.sim.particleList[0] in multi2.sim.particleList:
-            raise AlreadyIn
+        assert not multi1.sim.particleList[0] in multi2.sim.particleList:
 
         for i, particle in enumerate( multi1.sim.particleList ):
             
@@ -2370,7 +2369,7 @@ class EGFRDSimulator( GFRDSimulatorBase ):
 
     def check( self ):
 
-        GFRDSimulatorBase.check( self )
+        ParticleSimulatorBase.check( self )
 
         assert self.scheduler.check()
 

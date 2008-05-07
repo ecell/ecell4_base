@@ -75,13 +75,8 @@ def drawR_free( t, D ):
 
     return displacement
 
+
 class NoSpace( Exception ):
-    pass
-
-class InvalidValue( Exception ):
-    pass
-
-class AlreadyIn( Exception ):
     pass
 
 
@@ -121,7 +116,7 @@ class ReactionType( object ):
             for product in self.products:
                 totalProductRadii += product.radius
             if totalProductRadii > self.reactants[0].radius * 2:
-                raise InvalidValue, \
+                raise ValueError, \
                     'total product radii must be smaller than ' \
                     + 'reactant radius * 2'
         
@@ -142,6 +137,7 @@ class ReactionType( object ):
             s += ' '
 
         return s
+
 
 class UnimolecularReactionType( ReactionType ):
 
@@ -308,7 +304,7 @@ class ParticlePool( object ):
 
 
 
-class GFRDSimulatorBase( object ):
+class ParticleSimulatorBase( object ):
     
     def __init__( self, matrixtype='simple' ):
         self.speciesList = {}

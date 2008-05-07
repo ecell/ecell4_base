@@ -5,7 +5,7 @@ from gfrd import *
 from logger import *
 import sys
 
-s = GFRDSimulator()
+s = ParticleSimulator()
 s.setWorldSize( 1e-5 )
 S = Species( 'S', 2e-11, 5e-8 )
 s.addSpecies( S )

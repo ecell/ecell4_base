@@ -39,10 +39,10 @@ class Pair:
 
 
 
-class GFRDSimulator( GFRDSimulatorBase ):
+class GFRDSimulator( ParticleSimulatorBase ):
     
     def __init__( self ):
-        GFRDSimulatorBase.__init__( self )
+        ParticleSimulatorBase.__init__( self )
 
 
     def step( self ):

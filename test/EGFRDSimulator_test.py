@@ -11,7 +11,7 @@ from egfrd import *
 
 #log.setLevel( logging.WARNING )
 
-class EGFRDSimulatorTestCase( unittest.TestCase ):
+class EParticleSimulatorTestCase( unittest.TestCase ):
 
     def setUp(self):
         pass
@@ -20,12 +20,12 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         pass
     
     def test_instantiation( self ):
-        s = EGFRDSimulator()
+        s = EParticleSimulator()
         self.failIf( s == None )
 
     
     def test_OneParticle( self ):
-        s = EGFRDSimulator()
+        s = EParticleSimulator()
         s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
@@ -37,7 +37,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         self.failIf( t == s.t )
 
     def test_TwoParticles( self ):
-        s = EGFRDSimulator()
+        s = EParticleSimulator()
         s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
@@ -50,7 +50,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         self.failIf( t == s.t )
 
     def test_ThreeParticles( self ):
-        s = EGFRDSimulator()
+        s = EParticleSimulator()
         s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
@@ -65,7 +65,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
 
 
     def test_ThreeParticlesInContact( self ):
-        s = EGFRDSimulator()
+        s = EParticleSimulator()
         s.setWorldSize( 1e-5 )
         S = Species( 'S', 2e-11, 5e-8 )
         s.addSpecies( S )
@@ -84,7 +84,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
 
         #log.setLevel( logging.DEBUG )
 
-        s = EGFRDSimulator()
+        s = EParticleSimulator()
         s.setWorldSize( 1e-5 )
         S = Species( 'S', 1e-12, 5e-9 )
         s.addSpecies( S )
@@ -105,7 +105,7 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
 
 
     def test_immobile_is_immobile( self ):
-        s = EGFRDSimulator()
+        s = EParticleSimulator()
         s.setWorldSize( 1e-5 )
         A = Species( 'A', 0, 1e-8 )
         s.addSpecies( A )

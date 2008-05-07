@@ -385,11 +385,11 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
 
 
 
-class BDSimulator( GFRDSimulatorBase ):
+class BDSimulator( ParticleSimulatorBase ):
     
     def __init__( self, matrixtype='normal' ):
 
-        GFRDSimulatorBase.__init__( self, matrixtype )
+        ParticleSimulatorBase.__init__( self, matrixtype )
 
         self.core = BDSimulatorCore( self )
         self.isDirty = True
@@ -434,17 +434,14 @@ class BDSimulator( GFRDSimulatorBase ):
         if self.isDirty:
             self.initialize()
 
-        if self.stepCounter % 10000 == 0:
-            self.check()
+        #if self.stepCounter % 10000 == 0:
+        #    self.check()
 
         self.core.step()
 
         log.info( '%d: t=%g dt=%g, reactions=%d, rejectedMoves=%d' %
                   ( self.stepCounter, self.t, self.dt, self.reactionEvents,
                     self.rejectedMoves ) )
-        #print ''
-
-
 
     def check( self ):
         pass

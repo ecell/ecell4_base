@@ -6,7 +6,7 @@ from egfrd import *
 from logger import *
 import sys
 
-#s = EGFRDSimulator( 'normal' )
+#s = EParticleSimulator( 'normal' )
 
 s = BDSimulator()
 
