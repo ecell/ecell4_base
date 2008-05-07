@@ -121,7 +121,7 @@ class BDSimulatorCoreBase( object ):
 
         random.shuffle( self.particlesToStep )
         while len( self.particlesToStep ) != 0:
-            particle = self.particlesToStep.pop() # take last one
+            particle = self.particlesToStep.pop() # take the last one
             self.propagateParticle( particle )
 
 
@@ -172,11 +172,11 @@ class BDSimulatorCoreBase( object ):
                         log.info( 'fireReaction2 move rejected' )
                     return
                 else:
-                    log.info( 'reaction2 reject' )
+                    log.info( 'reaction2 rejected' )
                     return
 
             else:
-                log.info( 'collision move reject' )
+                log.info( 'collision move rejected' )
                 return
 
 
