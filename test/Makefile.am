@@ -22,7 +22,8 @@ FreePairGreensFunction_test.py\
 BasicPairGreensFunction_test.py\
 FirstPassageGreensFunction_test.py\
 FirstPassagePairGreensFunction_test.py\
-EGFRDSimulator_test.py
+EGFRDSimulator_test.py\
+_object_matrix_test.py
 
 #%.py:
 #	$(TESTS_ENVIRONMENT) $(PYTHON) $<

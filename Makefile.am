@@ -35,7 +35,7 @@ single.py\
 dimer.py  
 
 
-lib_LTLIBRARIES= _gfrd.la
+lib_LTLIBRARIES= _gfrd.la _object_matrix.la
 
 noinst_HEADERS=\
 Defs.hpp\
@@ -68,23 +68,29 @@ FirstPassagePairGreensFunction.cpp\
 FirstPassageNoCollisionPairGreensFunction.cpp\
 pyGFRD.cpp
 
-
-
 _gfrd_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
-
-#GSL_LIBS=/usr/lib/libgsl.a /usr/lib/libgslcblas.a
-
 _gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
-
 GFRD_SO=_gfrd$(LTDL_SHLIB_EXT)
 
-all-local: $(GFRD_SO)
+
+_object_matrix_la_SOURCES=\
+object_matrix_module.cpp
+
+_object_matrix_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
+_object_matrix_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON)
+OBJECT_MATRIX_SO=_object_matrix$(LTDL_SHLIB_EXT)
+
+
+all-local: $(GFRD_SO) $(OBJECT_MATRIX_SO)
 
 $(GFRD_SO): _gfrd.la 
 	ln -sf .libs/$(GFRD_SO) ./$(GFRD_SO)
 
+$(OBJECT_MATRIX_SO): _object_matrix.la 
+	ln -sf .libs/$(OBJECT_MATRIX_SO) ./$(OBJECT_MATRIX_SO)
+
 clean-local:
-	rm -f $(GFRD_SO)
+	rm -f $(GFRD_SO) $(OBJECT_MATRIX_SO)
 
 
 PYCHECKER = @PYCHECKER@
