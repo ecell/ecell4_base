@@ -1,4 +1,4 @@
-SUBDIRS = doc test
+SUBDIRS = doc test object_matrix
 
 TOPSRCDIR=${top_srcdir}
 
@@ -35,7 +35,7 @@ single.py\
 dimer.py  
 
 
-lib_LTLIBRARIES= _gfrd.la _object_matrix.la
+lib_LTLIBRARIES= _gfrd.la
 
 noinst_HEADERS=\
 Defs.hpp\
@@ -73,12 +73,9 @@ _gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
 GFRD_SO=_gfrd$(LTDL_SHLIB_EXT)
 
 
-_object_matrix_la_SOURCES=\
-object_matrix_module.cpp
-
-_object_matrix_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
-_object_matrix_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON)
-OBJECT_MATRIX_SO=_object_matrix$(LTDL_SHLIB_EXT)
+OBJECT_MATRIX_SO=object_matrix.so
+$(OBJECT_MATRIX_SO):
+	ln -sf object_matrix/boost.python/$(OBJECT_MATRIX_SO) ./$(OBJECT_MATRIX_SO)
 
 
 all-local: $(GFRD_SO) $(OBJECT_MATRIX_SO)
@@ -86,11 +83,8 @@ all-local: $(GFRD_SO) $(OBJECT_MATRIX_SO)
 $(GFRD_SO): _gfrd.la 
 	ln -sf .libs/$(GFRD_SO) ./$(GFRD_SO)
 
-$(OBJECT_MATRIX_SO): _object_matrix.la 
-	ln -sf .libs/$(OBJECT_MATRIX_SO) ./$(OBJECT_MATRIX_SO)
-
 clean-local:
-	rm -f $(GFRD_SO) $(OBJECT_MATRIX_SO)
+	rm -f $(GFRD_SO)
 
 
 PYCHECKER = @PYCHECKER@

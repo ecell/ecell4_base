@@ -4,7 +4,7 @@ import unittest
 
 from numpy import ndarray
 
-from _object_matrix import *
+from object_matrix import *
 
 class _object_matrixTestCase( unittest.TestCase ):
 

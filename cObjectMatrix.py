@@ -3,7 +3,7 @@
 
 import numpy
 
-import _object_matrix
+import object_matrix
 
 from utils import *
 
@@ -35,7 +35,7 @@ class ObjectMatrix( object ):
                 'ObjectMatrix does not support non-cubic world.' + \
                 'Use SimpleObjectMatrix.'
 
-        self.impl = _object_matrix.ObjectContainer( self.worldSize, 
+        self.impl = object_matrix.ObjectContainer( self.worldSize, 
                                                     self.matrixSize )
 
 
@@ -54,7 +54,7 @@ class ObjectMatrix( object ):
         assert radius <= self.impl.cell_size
         #assert key not in self.objectCellMap
 
-        self.impl[ key ] = _object_matrix.Sphere( pos, radius )
+        self.impl[ key ] = object_matrix.Sphere( pos, radius )
 
     #def remove( self, key ):
 
