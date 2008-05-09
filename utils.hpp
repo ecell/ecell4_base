@@ -1,13 +1,25 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-template<template<typename, typename> class TTmapper_>
-struct make_get_mapper_mf
+#include <map>
+#include <vector>
+
+namespace get_default_impl
 {
-    template<typename Tkey_, typename Tval_>
-    struct meta_type {
-        typedef TTmapper_<Tkey_, Tval_> type;
-    };
-};
+    namespace std
+    {
+        template<typename Tkey_, typename Tval_>
+        struct map
+        {
+            typedef ::std::map<Tkey_, Tval_> type;
+        };
+
+        template<typename Tval_>
+        struct vector
+        {
+            typedef ::std::vector<Tval_> type; 
+        };
+    } // std
+} // namespace get_default_impl
 
 #endif /* UTILS_HPP */

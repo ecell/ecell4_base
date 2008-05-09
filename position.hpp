@@ -2,12 +2,19 @@
 #define POSITION_HPP
 
 #include <ostream>
+#include <functional>
+#include <algorithm>
+#include <cmath>
 #include <boost/array.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
 
 template<typename T_>
 struct position: public boost::array<T_, 3>
 {
     typedef boost::array<T_, 3> base_type;
+    typedef typename base_type::value_type value_type;
+    typedef typename base_type::size_type size_type;
 
     position()
     {
@@ -24,35 +31,63 @@ struct position: public boost::array<T_, 3>
 
     position(const base_type& a): base_type(a) {}
 
-    position(T_ x, T_ y, T_ z)
+    position(value_type x, value_type y, value_type z)
     {
         (*this)[0] = x;
         (*this)[1] = y;
         (*this)[2] = z;
     }
 
-    T_& x() {
+    value_type& x()
+    {
         return (*this)[0];
     }
 
-    const T_& x() const {
+    const value_type& x() const
+    {
         return (*this)[0];
     }
 
-    T_& y() {
+    value_type& y()
+    {
         return (*this)[1];
     }
 
-    const T_& y() const {
+    const value_type& y() const
+    {
         return (*this)[1];
     }
 
-    T_& z() {
+    value_type& z()
+    {
         return (*this)[2];
     }
 
-    const T_& z() const {
+    const value_type& z() const
+    {
         return (*this)[2];
+    }
+
+    value_type distance_sq(const position& that) const
+    {
+        return std::pow((*this)[0] - that[0], 2)
+            + std::pow((*this)[1] - that[1], 2)
+            + std::pow((*this)[2] - that[2], 2);
+    }
+
+    value_type distance(const position& that)
+    {
+        return std::sqrt(distance_sq(that));
+    }
+
+    position operator+(const position& that) const
+    {
+        position retval;
+        std::transform(
+            boost::const_begin(*this), boost::const_end(*this),
+            boost::const_begin(that), boost::begin(retval),
+            std::plus<value_type>());
+        return retval;
     }
 };
 

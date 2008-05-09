@@ -1,9 +1,7 @@
 #ifndef VMAP_HPP
 #define VMAP_HPP 
 
-#include <map>
 #include <cstring>
-#include <vector>
 #include <utility>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -15,8 +13,9 @@
 
 template<typename Tkey_, typename Tval_,
         template<typename, typename> class MFget_mapper_ =
-            make_get_mapper_mf<std::map>::meta_type,
-        template<typename> class TTracntnr_ = std::vector>
+            get_default_impl::std::template map,
+        template<typename> class MFget_racntnr_ =
+            get_default_impl::std::template vector>
 class vmap
 {
 public:
@@ -34,11 +33,13 @@ public:
         Tsecond_ second;
     };
 
-    typedef TTracntnr_<Tval_> random_accessible_container_type;
+    typedef typename MFget_racntnr_<Tval_>::type
+            random_accessible_container_type;
     typedef typename MFget_mapper_<Tkey_,
             typename random_accessible_container_type::size_type>::type
                  mapper_type;
-    typedef TTracntnr_<typename mapper_type::key_type> reverse_mapper_type;
+    typedef typename MFget_racntnr_<typename mapper_type::key_type>::type
+            reverse_mapper_type;
     typedef Tval_ mapped_type;
     typedef Tkey_ key_type;
     typedef typename mapper_type::size_type size_type;

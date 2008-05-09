@@ -3,7 +3,6 @@
 
 #include <cstddef>
 #include <algorithm>
-#include <map>
 #include <boost/multi_array.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/list/at.hpp>
@@ -15,7 +14,7 @@
 
 template<typename T_, typename Tkey_,
         template<typename, typename> class MFget_mapper_ =
-            make_get_mapper_mf<std::map>::meta_type >
+            get_default_impl::std::template map>
 class object_container
 {
 public:
@@ -134,21 +133,21 @@ public:
         return array_gen<typename matrix_type::size_type>(
             std::min(
                 static_cast<typename matrix_type::size_type>(
-                    std::max(static_cast<typename matrix_type::size_type>(0),
+                    std::max(static_cast<typename matrix_type::size_type>(0u),
                         div_with_jitter_fix<typename matrix_type::size_type>(
                             pos.x(), cell_size_, t))),
                 static_cast<typename matrix_type::size_type>(
                     matrix_.shape()[0])),
             std::min(
                 static_cast<typename matrix_type::size_type>(
-                    std::max(static_cast<typename matrix_type::size_type>(0),
+                    std::max(static_cast<typename matrix_type::size_type>(0u),
                         div_with_jitter_fix<typename matrix_type::size_type>(
                             pos.y(), cell_size_, t))),
                 static_cast<typename matrix_type::size_type>(
                     matrix_.shape()[1])),
             std::min(
                 static_cast<typename matrix_type::size_type>(
-                    std::max(static_cast<typename matrix_type::size_type>(0),
+                    std::max(static_cast<typename matrix_type::size_type>(0u),
                         div_with_jitter_fix<typename matrix_type::size_type>(
                             pos.z(), cell_size_, t))),
                 static_cast<typename matrix_type::size_type>(

@@ -2110,7 +2110,7 @@ class EParticleSimulator( ParticleSimulatorBase ):
 
         log.info( 'merging %s to %s' % ( multi1, multi2 ) )
 
-        assert not multi1.sim.particleList[0] in multi2.sim.particleList:
+        assert not multi1.sim.particleList[0] in multi2.sim.particleList
 
         for i, particle in enumerate( multi1.sim.particleList ):
             
