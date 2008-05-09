@@ -67,17 +67,18 @@ class ObjectMatrix( object ):
 
     def getNeighborsCyclic( self, pos, n=None, dummy=None ):
 
-        return self.impl.all_neighbors_array_cyclic( pos )
+        n, d = self.impl.all_neighbors_array_cyclic( pos )
+        return [ i.id for i in n ], d
 
 
     def getNeighborsWithinRadius( self, pos, radius ):
 
-        return self.impl.neighbors_array( pos, radius )
-
+        n,d = self.impl.neighbors_array( pos, radius )
+        return [ i.id for i in n ], d
 
     def getNeighbors( self, pos, n=None, dummy=None ):
-        return self.impl.all_neighbors_array( pos )
-
+        n,d = self.impl.all_neighbors_array( pos )
+        return [ i.id for i in n ], d
 
     #def check( self ):
 

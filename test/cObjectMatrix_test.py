@@ -72,7 +72,7 @@ class ObjectMatrixTestCase( unittest.TestCase ):
         self.assertEqual( m.size, 2 )
 
         n, d = m.getNeighbors( numpy.array( [0,0,0] ) )
-        print n[0].id, d
+        print n, d
         self.failIf( len( n ) != 2 or len( d ) != 2 )
         self.assertAlmostEqual( 0, d[0] )
         self.assertAlmostEqual( .1, d[1] )
