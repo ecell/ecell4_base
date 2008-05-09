@@ -37,7 +37,7 @@ class ObjectMatrixTestCase( unittest.TestCase ):
         m.add( o1, o1.pos, o1.radius )
         self.assertEqual( m.size, 1 )
 
-        n, d = m.getNeighbors( numpy.array( [0,0,0] ) )
+        n, d = m.getNeighborsCyclic( numpy.array( [0,0,0] ) )
         print d
         self.failIf( len( n ) != 1 or len( d ) != 1 )
         self.failIf( n[0] != o1 )
@@ -53,7 +53,7 @@ class ObjectMatrixTestCase( unittest.TestCase ):
         m.add( o2, o2.pos, o2.radius )
         self.assertEqual( m.size, 2 )
 
-        n, d = m.getNeighbors( numpy.array( [0,0,0] ) )
+        n, d = m.getNeighborsCyclic( numpy.array( [0,0,0] ) )
 
         self.failIf( len( n ) != 2 or len( d ) != 2 )
         self.failIf( n[0] != o1 or n[1] != o2 )
@@ -71,7 +71,7 @@ class ObjectMatrixTestCase( unittest.TestCase ):
         m.add( o2, o2.pos, o2.radius )
         self.assertEqual( m.size, 2 )
 
-        n, d = m.getNeighbors( numpy.array( [0,0,0] ) )
+        n, d = m.getNeighborsCyclic( numpy.array( [0,0,0] ) )
         print n, d
         self.failIf( len( n ) != 2 or len( d ) != 2 )
         self.assertAlmostEqual( 0, d[0] )
