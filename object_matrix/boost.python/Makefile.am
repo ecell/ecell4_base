@@ -12,7 +12,7 @@ pkgpyexecdir=@pkgpyexecdir@
 
 LIBPYTHON=-lpython$(PYTHON_VERSION)
 
-INCLUDES=${PYTHON_INCLUDES} -I${NUMPY_INCLUDE_DIR}
+INCLUDES=${PYTHON_INCLUDES} -I${NUMPY_INCLUDE_DIR} -I../src
 AM_CXXFLAGS=@CXXFLAGS@ -Wall -g # -msse2 -mfpmath=sse  #-ffast-math 
 
 
