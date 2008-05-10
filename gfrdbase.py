@@ -14,6 +14,8 @@ from utils import *
 #from surface import *
 from _gfrd import *
 
+#from cObjectMatrix import *
+#SimpleObjectMatrix = ObjectMatrix
 from ObjectMatrix import *
 
 import os
@@ -551,8 +553,8 @@ class ParticleSimulatorBase( object ):
     '''
 
 
-    def getNeighborParticles( self, pos, n=None, dummy=None ):
-        n, d = self.particleMatrix.getNeighbors( pos, n, dummy )
+    def getNeighborParticles( self, pos, n=None ):
+        n, d = self.particleMatrix.getNeighbors( pos, n )
         neighbors = [ Particle( i[0], i[1] ) for i in n ]
         return neighbors, d
 
@@ -591,8 +593,7 @@ class ParticleSimulatorBase( object ):
     def getClosestParticle( self, pos, ignore=[] ):
 
         neighbors, distances =\
-            self.getNeighborParticles( pos, len( ignore ) + 1,
-                                       dummy = ( None, -1 ) )
+            self.getNeighborParticles( pos, len( ignore ) + 1 )
 
         for i in range( len( neighbors ) ): 
             if neighbors[i] not in ignore:

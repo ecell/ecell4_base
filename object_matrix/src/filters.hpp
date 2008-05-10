@@ -24,10 +24,11 @@ public:
             return;
         }
 
-        const double dist_sq(cmp_.position.distance_sq(item.second.position));
-        if (dist_sq < std::pow(item.second.radius + cmp_.radius, 2))
+        const double dist(cmp_.position.distance(item.second.position)
+            - item.second.radius);
+        if (dist < cmp_.radius)
         {
-            next_(i, std::sqrt(dist_sq));
+            next_(i, dist);
         }
     }
 
@@ -70,11 +71,11 @@ public:
             return;
         }
 
-        const double dist_sq(cmp_.position.distance_sq(
-                item.second.position + p));
-        if (dist_sq < std::pow(item.second.radius + cmp_.radius, 2))
+        const double dist(cmp_.position.distance(item.second.position+p)
+            - item.second.radius);
+        if (dist < cmp_.radius)
         {
-            next_(i, std::sqrt(dist_sq));
+            next_(i, dist);
         }
     }
 

@@ -72,10 +72,55 @@ class ObjectMatrixTestCase( unittest.TestCase ):
         self.assertEqual( m.size, 2 )
 
         n, d = m.getNeighborsCyclic( numpy.array( [0,0,0] ) )
-        print n, d
+
         self.failIf( len( n ) != 2 or len( d ) != 2 )
         self.assertAlmostEqual( 0, d[0] )
+        self.assertEqual( o1, n[0] )
         self.assertAlmostEqual( .1, d[1] )
+        self.assertEqual( o2, n[1] )
+
+
+    def testRemove(self):
+        m = mod.ObjectMatrix()
+        m.setWorldSize( 1.0 )
+
+        o1 = Obj( [0,0,.1], .1 )
+        o2 = Obj( [0,.8,0], .1 )
+        o3 = Obj( [0,.9,9], .1 )
+        m.add( o1, o1.pos, o1.radius )
+        self.assertEqual( m.size, 1 )
+        m.remove( o1 )
+        self.assertEqual( m.size, 0 )
+
+        m.add( o1, o1.pos, o1.radius )
+        m.add( o2, o2.pos, o2.radius )
+        m.add( o3, o3.pos, o3.radius )
+        self.assertEqual( m.size, 3 )
+
+        m.remove( o2 )
+        self.assertEqual( m.size, 2 )
+        n, d = m.getNeighborsCyclic( numpy.array( [0,0,0] ) )
+        self.failIf( len( n ) != 2 or n[0] != o1 )
+
+        m.remove( o1 )
+        self.assertEqual( m.size, 1 )
+
+
+    def testUpdate(self):
+        m = mod.ObjectMatrix()
+        m.setWorldSize( 1.0 )
+
+        o1 = Obj( [0,0,.1], .1 )
+        o2 = Obj( [0,.8,0], .1 )
+        m.add( o1, o1.pos, o1.radius )
+        m.add( o2, o2.pos, o2.radius )
+        self.assertEqual( m.size, 2 )
+
+
+        m.update( o1, [.5,.5,.5],.2 )
+        n, d = m.getNeighborsCyclic( numpy.array( [.5,.5,.7] ) )
+        self.failIf( len( n ) != 2 or n[0] != o1 )
+        self.assertAlmostEqual( 0, d[0] )
 
 
 

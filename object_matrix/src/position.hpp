@@ -75,7 +75,7 @@ struct position: public boost::array<T_, 3>
             + std::pow((*this)[2] - that[2], 2);
     }
 
-    value_type distance(const position& that)
+    value_type distance(const position& that) const
     {
         return std::sqrt(distance_sq(that));
     }

@@ -302,10 +302,12 @@ private:
             std::swap(racntnr_[b], racntnr_[(*i).second]);
             std::swap(rmapper_[b], rmapper_[(*i).second]);
             std::swap(mapper_[k], (*i).second);
-            mapper_.erase((*i).first); 
+            mapper_.erase((*i).first);
         }
         racntnr_.resize(b);
         rmapper_.resize(b);
+
+        //assert( mapper_.size() == b );
         return racntnr_.size() - b;
     }
 

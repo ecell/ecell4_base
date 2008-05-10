@@ -5,7 +5,7 @@ from egfrd import *
 from logger import *
 import sys
 
-s = EParticleSimulator()
+s = EGFRDSimulator()
 size = 1e-6
 s.setWorldSize( size )
 

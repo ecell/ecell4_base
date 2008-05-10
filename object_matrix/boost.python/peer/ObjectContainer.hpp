@@ -190,14 +190,17 @@ public:
             inline void operator()(impl_type::iterator i)
             {
                 sa_.push_back(i);
-                da_.push_back(pos_.distance((*i).second.position));
+                da_.push_back(pos_.distance((*i).second.position) 
+                              - (*i).second.radius);
+
             }
 
             inline void operator()(impl_type::iterator i,
                     const position_type& d)
             {
                 sa_.push_back(i);
-                da_.push_back(pos_.distance((*i).second.position + d));
+                da_.push_back(pos_.distance((*i).second.position + d)
+                              - (*i).second.radius);
             }
 
         private:
@@ -421,6 +424,16 @@ public:
         return retval;
     }
 
+    const bool __contains__(key_type k)
+    {
+        impl_type::iterator i(impl_.find(k));
+        if (i == impl_.end())
+        {
+            return false;
+        }
+        return true;
+    }
+
     SphereRef* __getitem__(key_type k)
     {
         impl_type::iterator i(impl_.find(k));
@@ -494,6 +507,7 @@ public:
             .def("all_neighbors_array", &ObjectContainer::all_neighbors_array)
             .def("all_neighbors_array_cyclic", &ObjectContainer::all_neighbors_array_cyclic)
             .def("__len__", &ObjectContainer::__len__)
+            .def("__contains__", &ObjectContainer::__contains__)
             .def("__setitem__", &ObjectContainer::__setitem__)
             .def("__getitem__", &ObjectContainer::__getitem__,
                         return_value_policy<manage_new_object>())

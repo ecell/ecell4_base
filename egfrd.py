@@ -13,6 +13,8 @@ import numpy
 from utils import *
 from surface import *
 
+#from cObjectMatrix import ObjectMatrix
+#SimpleObjectMatrix = ObjectMatrix
 from ObjectMatrix import *
 
 from gfrdbase import *
@@ -171,9 +173,9 @@ class MultiBDCore( BDSimulatorCoreBase ):
             return True
 
 
-    def getNeighborParticles( self, pos, n=None, dummy=None ):
+    def getNeighborParticles( self, pos, n=None ):
 
-        n, d = self.particleMatrix.getNeighbors( pos, n, dummy )
+        n, d = self.particleMatrix.getNeighbors( pos, n )
         neighbors = [ Particle( i[0], i[1] ) for i in n ]
         return neighbors, d
 
@@ -182,8 +184,8 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
         neighbors, distances =\
             self.getNeighborParticles( pos, 
-                                       len( ignore ) + 1,
-                                       dummy = ( None, -1 ) )
+                                       len( ignore ) + 1 )
+
 
         for i, neighbor in enumerate( neighbors ):
             if neighbor not in ignore:
@@ -983,7 +985,7 @@ class DummySingle( object ):
 
 
 
-class EParticleSimulator( ParticleSimulatorBase ):
+class EGFRDSimulator( ParticleSimulatorBase ):
     
     def __init__( self, matrixtype='simple' ):
 
@@ -1202,21 +1204,21 @@ class EParticleSimulator( ParticleSimulatorBase ):
     def addSingleEvent( self, single ):
 
         eventID = self.addEvent( self.t + single.dt, 
-                                 Delegate( self, EParticleSimulator.fireSingle ), 
+                                 Delegate( self, EGFRDSimulator.fireSingle ), 
                                  single )
         single.eventID = eventID
 
     def addPairEvent( self, pair ):
 
         eventID = self.addEvent( self.t + pair.dt, 
-                                 Delegate( self, EParticleSimulator.firePair ), 
+                                 Delegate( self, EGFRDSimulator.firePair ), 
                                  pair )
         pair.eventID = eventID
 
     def addMultiEvent( self, multi ):
 
         eventID = self.addEvent( self.t + multi.dt, 
-                                 Delegate( self, EParticleSimulator.fireMulti ), 
+                                 Delegate( self, EGFRDSimulator.fireMulti ), 
                                  multi )
         multi.eventID = eventID
 
@@ -1385,7 +1387,7 @@ class EParticleSimulator( ParticleSimulatorBase ):
         newpos = oldpos + displacement
         self.applyBoundary( newpos )
             
-        assert self.checkOverlap( newpos, particleRadius,
+        assert self.checkOverlap( newpos, particleRadius,\
                                   ignore = [ single.particle, ] )
 
         self.moveSingle( single, newpos )
@@ -2129,10 +2131,13 @@ class EParticleSimulator( ParticleSimulatorBase ):
     This method returns a tuple ( neighbors, distances ).
     '''
 
-    def getNeighborShells( self, pos, n=None, dummy=(DummySingle(),0) ):
+    def getNeighborShells( self, pos, n=None ):
 
-        return self.shellMatrix.getNeighbors( pos, n, dummy )
-
+        neighbors, distances = self.shellMatrix.getNeighbors( pos, n )
+        if len( neighbors ) == 0:
+            return ( DummySingle(), 0 )
+        return neighbors, distances
+                           
     def getNeighborShellsWithinRadius( self, pos, radius ):
 
         return self.shellMatrix.getNeighborsWithinRadius( pos, radius )
@@ -2163,7 +2168,7 @@ class EParticleSimulator( ParticleSimulatorBase ):
                 distances.append(dists[i])
                 if dists[i] > radius:
                     return neighbors, numpy.array( distances )
-            
+
         return neighbors + [DummySingle()], numpy.array( distances + [INF] )
 
 
