@@ -31,8 +31,8 @@ s.addReactionType( r1 )
 r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
-s.throwInParticles( S, 150, box1 )
-s.throwInParticles( P, 150, box1 )
+s.throwInParticles( S, 1500, box1 )
+s.throwInParticles( P, 1500, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutput( ('P','S') )
@@ -51,7 +51,7 @@ l.log()
 
 def profrun():
     #while s.stepCounter < 6000:
-    for _ in range( 1000 ):
+    for _ in range( 6000 ):
         s.step()
         #logging.info( s.dumpPopulation() )
 

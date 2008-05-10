@@ -2084,7 +2084,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.addToMultiRecursive( obj, multi )
 
         elif isinstance( obj, Multi ):
-            if not multi1.sim.particleList[0] in multi2.sim.particleList:
+            if not obj.sim.particleList[0] in multi.sim.particleList:
                 self.mergeMultis( obj, multi )
                 self.removeFromShellMatrix( obj )
                 self.removeEvent( obj )
