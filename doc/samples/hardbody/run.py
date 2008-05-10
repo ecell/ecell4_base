@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from egfrd import *
+from bd import *
 
 from logger import *
 import sys
@@ -13,7 +14,9 @@ N = int( sys.argv[3] )
 
 L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
+
 s = EGFRDSimulator( 'normal' )
+#s = BDSimulator( 'normal' )
 s.setWorldSize( L )
 
 s.setMatrixSize( max( 3, int( N ** (1.0/3.0) ) ) )
@@ -28,10 +31,11 @@ s.addSpecies( A )
 
 s.throwInParticles( A, N, box1 )
 print 'stir'
+#stirTime = 0
 stirTime = 1e-7
 while 1:
     s.step()
-    nextTime = s.scheduler.getTopTime()
+    nextTime = s.getNextTime()
     if nextTime > stirTime:
         s.stop( stirTime )
         break

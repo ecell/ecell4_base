@@ -13,7 +13,7 @@ from surface import *
 from gfrdbase import *
 import _gfrd
 
-DEFAULT_DT_FACTOR = 1e-5
+DEFAULT_DT_FACTOR = 1e-3
 
 def calculateBDDt( speciesList, factor ):
 
@@ -419,9 +419,12 @@ class BDSimulator( ParticleSimulatorBase ):
         self.isDirty = False
 
 
-
     def getNextTime( self ):
         return self.core.t + self.core.dt
+
+    def reset( self ):
+        # DUMMY
+        self.core.t=0
 
     def stop( self, t ):
         # dummy
