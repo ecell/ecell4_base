@@ -6,13 +6,13 @@ from bd import *
 from logger import *
 import sys
 
-#s = EGFRDSimulator( 'normal' )
-s = BDSimulator('normal')
+s = EGFRDSimulator( 'normal' )
+#s = BDSimulator('normal')
 
 #L = 5e-6
-#L = 2e-6
+L = 2e-6
 #L = 5e-8
-L = 8e-7
+#L = 8e-7
 s.setWorldSize( L )
 s.setMatrixSize( 20 )
 
@@ -50,7 +50,7 @@ l.log()
 
 def profrun():
     #while s.stepCounter < 6000:
-    for _ in range( 60 ):
+    for _ in range( 6000 ):
         s.step()
         #logging.info( s.dumpPopulation() )
 
