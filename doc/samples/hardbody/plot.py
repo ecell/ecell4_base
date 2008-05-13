@@ -79,13 +79,13 @@ X = numpy.array([2,100,300,1000,3000,10000,30000,100000,3e6])
 plot_data( Nv, data_V,'kx' )
 loglog( X, 0.3* X**(5.0/3), 'k--' )
 
-figtext( .2, .15, r'$y \ \propto \ N^{5/3}$', color='k' )
+figtext( .2, .15, r'(2) $y \ \propto \ N^{5/3}$', color='k' )
 
 #for i in range( len(Nc) ):
 plot_data( Nc, data_C,'ko' )
 loglog( X, 60* X, 'k-' )
 
-figtext( .15, .3, r'$y \  \propto \ N$', color='k' )
+figtext( .15, .32, r'(1) $y \  \propto \ N$', color='k' )
 
 #for i in range( len(Ns) ):
 #    plot_data( Ns[i], data2[i],'k.' )
@@ -98,6 +98,8 @@ loglog( X, 45000* X, 'b:' )
 #for i in range( len(Ns) ):
 #    plot_data( Ns[i], data4[i],'k.' )
 loglog( X, 450000* X, 'b:' )
+
+figtext( .25, .6, r'BD', color='k' )
 
 #loglog( data1[0] , data1[1], 'o-', label='Vol. = 1e-15 L' )
 #loglog( data2[0] , data2[1], 'o-', label='# particles = 600' )
@@ -169,14 +171,14 @@ axes([.61,.18,.27,.28])
 plot_data( Cx300, data_N300,'kd' )
 loglog( Cx300, 2e11* Cx300*(1.0/3.0), 'k--', label='C^(1/3)' )
 
-figtext( .69, .2, r'$y \ \propto \ C^{1/3}$', color='k' )
+figtext( .69, .2, r'(3) $y \ \propto \ C^{1/3}$', color='k' )
 
 #bd 300
 bd300 = numpy.array([1.31794595718,1.31320905685,1.24801301956]).mean()
 bd300 *= 1169607 * 10
 loglog( [1e-11,1e-2],[bd300,bd300], 'b:' )
 
-
+figtext( .65, .4, r'BD', color='k' )
 
 xlabel( 'Concentration [M]' )
 ylabel( 'time [sec]' )

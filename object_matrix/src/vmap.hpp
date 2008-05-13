@@ -173,15 +173,28 @@ public:
         return erase(mapper_.equal_range(k));
     }
 
-    void erase(const iterator& p, const iterator& q)
+    size_type erase(const iterator& p, const iterator& q)
     {
-        erase(std::make_pair(p.miter_, q.miter_));
+        return erase(std::make_pair(p.miter_, q.miter_));
     }
-
-    void erase(const iterator& p)
+ 
+    size_type erase(const iterator& p)
     {
-        erase(std::make_pair(p.miter_,
-                ++typename mapper_type::iterator(p.miter_)));
+        typename random_accessible_container_type::size_type b(
+            racntnr_.size());
+        BOOST_ASSERT(b != 0);
+
+        --b;
+        const key_type& k(rmapper_[b]);
+        const typename random_accessible_container_type::size_type
+            t((*p.miter_).second);
+        std::swap(mapper_[k], (*p.miter_).second);
+        std::swap(racntnr_[b], racntnr_[t]);
+        std::swap(rmapper_[b], rmapper_[t]);
+        mapper_.erase(p.miter_);
+        racntnr_.resize(b);
+        rmapper_.resize(b);
+        return 1;
     }
 
     void clear()
@@ -292,23 +305,27 @@ private:
     size_type erase(const std::pair<typename mapper_type::iterator,
                 typename mapper_type::iterator>& r)
     {
-        typename random_accessible_container_type::size_type b(racntnr_.size());
+        const typename random_accessible_container_type::size_type
+            prev_size(racntnr_.size());
+        typename random_accessible_container_type::size_type b(prev_size);
 
         for (typename mapper_type::iterator i(r.first);
                 i != r.second; ++i)
         {
             --b;
+            const typename random_accessible_container_type::size_type
+                t ((*i).second);
             const key_type& k(rmapper_[b]);
-            std::swap(racntnr_[b], racntnr_[(*i).second]);
-            std::swap(rmapper_[b], rmapper_[(*i).second]);
             std::swap(mapper_[k], (*i).second);
-            mapper_.erase((*i).first);
+            std::swap(racntnr_[b], racntnr_[t]);
+            std::swap(rmapper_[b], rmapper_[t]);
         }
+        mapper_.erase(r.first, r.second);
         racntnr_.resize(b);
         rmapper_.resize(b);
 
-        //assert( mapper_.size() == b );
-        return racntnr_.size() - b;
+        BOOST_ASSERT(mapper_.size() == racntnr_.size());
+        return prev_size - b;
     }
 
 private:

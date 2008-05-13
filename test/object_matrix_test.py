@@ -6,7 +6,7 @@ from numpy import ndarray
 
 from object_matrix import *
 
-class _object_matrixTestCase( unittest.TestCase ):
+class object_matrixTestCase( unittest.TestCase ):
 
     def setUp(self):
         pass

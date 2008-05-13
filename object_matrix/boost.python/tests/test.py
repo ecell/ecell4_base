@@ -1,6 +1,7 @@
 from numpy import ndarray
 from object_matrix import *
 import math
+from decimal import Decimal, Context, ROUND_UP
 from sys import getrefcount
 
 def float_cmp(lhs, rhs, tolerance):
@@ -75,4 +76,29 @@ assert len(c) == 3
 del c[0]
 assert c[0] == None
 assert len(c) == 2
+
+c = ObjectContainer(10, 10)
+os = 0.25
+ss = float(
+    Decimal(
+        str((math.sqrt(c.cell_size ** 2 + c.cell_size * 2) - os * 2) / 2)
+        ).normalize(Context(prec = 2, rounding = ROUND_UP))
+    )
+for i in xrange(0, 10):
+    for j in xrange(0, 10):
+        for k in xrange(0, 10):
+            key = k + j * 10 + i * 100
+            c[key] = Sphere((i + 0.5, j + 0.5, k + 0.5), os)
+
+pat = (8, 4, 1, 4)
+p = 1
+for i in xrange(0, 35):
+    assert pat[i % len(pat)] == len(c.neighbors_array(Sphere((p, p, p), ss))[0])
+    p += 0.25
+assert pat[37 % len(pat)] != len(c.neighbors_array(Sphere((p, p, p), ss))[0])
+
+p = 1
+for i in xrange(0, 40):
+    assert pat[i % len(pat)] == len(c.neighbors_array_cyclic(Sphere((p, p, p), ss))[0])
+    p += 0.25
 

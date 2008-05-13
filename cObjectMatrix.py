@@ -55,7 +55,6 @@ class ObjectMatrix( object ):
 
 
     def add( self, key, pos, radius ):
-        print radius, self.impl.cell_size, self.impl.world_size
 
         assert radius <= self.impl.cell_size
         #assert key not in self.objectCellMap
@@ -64,20 +63,21 @@ class ObjectMatrix( object ):
 
 
     def remove( self, key ):
-        print 'del', key
+
         assert key in self.impl
         del self.impl[ key ]
 
 
     def update( self, key, pos, radius ):
-        print 'update', key
+
         assert key in self.impl
         del self.impl[ key ]
         self.impl[ key ] = object_matrix.Sphere( pos, radius )
 
 
     def get( self, key ):
-        return self.impl[ key ]
+        sphere = self.impl[ key ]
+        return numpy.array( [ sphere.x, sphere.y, sphere.z ] ), sphere.radius
 
 
     def getNeighborsCyclic( self, pos, n=None ):
@@ -89,7 +89,7 @@ class ObjectMatrix( object ):
             topargs = distances.argsort()
         distances = distances.take( topargs )
         neighbors = [ neighbors[arg].id for arg in topargs ]
-        print neighbors, distances
+
         return neighbors, distances
 
 
@@ -121,5 +121,6 @@ class ObjectMatrix( object ):
         return neighbors, distancesq
         '''
 
-    #def check( self ):
+    def check( self ):
+        pass
 

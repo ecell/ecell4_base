@@ -86,7 +86,7 @@ class ObjectMatrixTestCase( unittest.TestCase ):
 
         o1 = Obj( [0,0,.1], .1 )
         o2 = Obj( [0,.8,0], .1 )
-        o3 = Obj( [0,.9,9], .1 )
+        o3 = Obj( [0,.9,.9], .1 )
         m.add( o1, o1.pos, o1.radius )
         self.assertEqual( m.size, 1 )
         m.remove( o1 )
@@ -104,6 +104,9 @@ class ObjectMatrixTestCase( unittest.TestCase ):
 
         m.remove( o1 )
         self.assertEqual( m.size, 1 )
+
+        m.remove( o3 )
+        self.assertEqual( m.size, 0 )
 
 
     def testUpdate(self):

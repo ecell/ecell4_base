@@ -13,9 +13,9 @@ import numpy
 from utils import *
 from surface import *
 
-#from cObjectMatrix import ObjectMatrix
-#SimpleObjectMatrix = ObjectMatrix
-from ObjectMatrix import *
+from cObjectMatrix import ObjectMatrix
+SimpleObjectMatrix = ObjectMatrix
+#from ObjectMatrix import *
 
 from gfrdbase import *
 from bd import *
@@ -204,7 +204,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
         for shell in self.multi.shellList:
             pos, radius = self.shellMatrix.get( shell )
             assert not ( pos - shell.pos ).any()
-            assert not ( radius - shell.radius ).any()
+            assert radius == shell.radius
 
 
         # shells are contiguous
@@ -1111,7 +1111,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.initialize()
 
         #if self.stepCounter % 100 == 0:
-        #self.check()
+        #    self.check()
 
         self.stepCounter += 1
 
@@ -1938,7 +1938,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         shellSize1 = pairDistance * D1 / D12 + radius1
         shellSize2 = pairDistance * D2 / D12 + radius2
-        if shellSize1 <= shellSize2:
+        if shellSize1 >= shellSize2:
             minShellSize = shellSize1
             shellSizeMargin = radius1 * 2 #* self.SINGLE_SHELL_FACTOR
         else:
@@ -1951,7 +1951,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.applyBoundary( com )
         minShellSizeWithMargin = minShellSize + shellSizeMargin
         maxShellSize = min( self.getMatrixCellSize(), self.maxShellSize,
-                            r0 * 1000 + sigma + shellSizeMargin )
+                            r0 * 100 + sigma + shellSizeMargin )
 
         if minShellSizeWithMargin >= maxShellSize:
             log.debug( '%s not formed: minShellSize >= maxShellSize' %
@@ -2196,6 +2196,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 if len( objs ) >= n:
                     return objs, numpy.array( dists )
 
+        return None, INF
+
+
     def getClosestObj( self, pos, n=1, ignore=[] ):
 
         neighbors, distances = self.getNeighborShells( pos, len( ignore ) + 1 )
@@ -2294,12 +2297,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         obj.check()
 
-
         allshells = [ ( obj, i ) for i in range( len( obj.shellList ) ) ]
         for i, shell in enumerate( obj.shellList ):
             shellid = (obj,i)
+
             closest, distance = self.getClosestShell( shell.pos,
                                                       ignore = allshells )
+
             radius = shell.radius
 
             if radius > self.getMatrixCellSize():
@@ -2358,17 +2362,20 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         
         self.shellMatrix.check()
 
-        for key in self.shellMatrix.keyList:
-            pos, radius = self.shellMatrix.get( key )
-            obj, i = key
+        #for key in self.shellMatrix.keyList:
+        for k in range( self.scheduler.getSize() ):
+            obj = self.scheduler.getEventByIndex(k).getArg()
+            for i in range( len( obj.shellList ) ):
+                key = ( obj, i )
+                pos, radius = self.shellMatrix.get( key )
 
-            if ( obj.shellList[i].pos - pos ).any():
-                raise RuntimeError, \
-                    '%s shellMatrix positions consistency broken' % str( key )
+                if ( obj.shellList[i].pos - pos ).any():
+                    raise RuntimeError, \
+                        '%s shellMatrix positions consistency broken' % str( key )
 
-            if obj.shellList[i].radius != radius:
-                raise RuntimeError, \
-                    '%s shellMatrix radii consistency broken' % str( key )
+                if obj.shellList[i].radius != radius:
+                    raise RuntimeError, \
+                        '%s shellMatrix radii consistency broken' % str( key )
 
 
 

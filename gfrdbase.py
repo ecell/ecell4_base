@@ -14,9 +14,9 @@ from utils import *
 #from surface import *
 from _gfrd import *
 
-#from cObjectMatrix import *
-#SimpleObjectMatrix = ObjectMatrix
-from ObjectMatrix import *
+from cObjectMatrix import *
+SimpleObjectMatrix = ObjectMatrix
+#from ObjectMatrix import *
 
 import os
 import logging
@@ -662,7 +662,7 @@ class ParticleSimulatorBase( object ):
         for species in self.speciesList.values():
             for i in range( species.pool.size ):
                 particle = Particle( species, index=i )
-                pos, radius = self.particleMatrix.get( ( species, 
+                pos, radius = self.particleMatrix.get( ( species,
                                                          particle.serial ) )
                 if ( particle.pos - pos ).sum() != 0:
                     raise RuntimeError,\
