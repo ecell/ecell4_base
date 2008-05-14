@@ -150,9 +150,6 @@ class SimpleObjectMatrix( object ):
 
         matrix = self.matrix
 
-        if not n:
-            n = matrix.size
-
         if len( matrix.positions ) == 0:
             return [], []
 

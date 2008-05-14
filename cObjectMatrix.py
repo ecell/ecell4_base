@@ -71,7 +71,7 @@ class ObjectMatrix( object ):
     def update( self, key, pos, radius ):
 
         assert key in self.impl
-        del self.impl[ key ]
+        #del self.impl[ key ]
         self.impl[ key ] = object_matrix.Sphere( pos, radius )
 
 
@@ -83,10 +83,7 @@ class ObjectMatrix( object ):
     def getNeighborsCyclic( self, pos, n=None ):
 
         neighbors, distances = self.impl.all_neighbors_array_cyclic( pos )
-        if n:
-            topargs = distances.argsort()[:n]
-        else:
-            topargs = distances.argsort()
+        topargs = distances.argsort()[:n]
         distances = distances.take( topargs )
         neighbors = [ neighbors[arg].id for arg in topargs ]
 

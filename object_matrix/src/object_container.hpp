@@ -130,12 +130,15 @@ public:
     inline cell_index_type index(const position_type& pos,
             double t = 1e-10) const
     {
-/*        return array_gen<typename matrix_type::size_type>(
-            std::fmod( pos.x(), world_size_ ) / cell_size_,
-            std::fmod( pos.y(), world_size_ ) / cell_size_,
-            std::fmod( pos.z(), world_size_ ) / cell_size_ );
-*/
+        return array_gen<typename matrix_type::size_type>(
+            static_cast<typename matrix_type::size_type>(
+                trunc( pos.x() / cell_size_ ) ) % matrix_.shape()[0],
+            static_cast<typename matrix_type::size_type>(
+                trunc( pos.y() / cell_size_ ) ) % matrix_.shape()[1],
+            static_cast<typename matrix_type::size_type>(
+                trunc( pos.z() / cell_size_ ) ) % matrix_.shape()[2] );
 
+/*
         return array_gen<typename matrix_type::size_type>(
             std::min(
                 static_cast<typename matrix_type::size_type>(
@@ -143,7 +146,7 @@ public:
                         div_with_jitter_fix<typename matrix_type::size_type>(
                             pos.x(), cell_size_, t))),
                 static_cast<typename matrix_type::size_type>(
-                    matrix_.shape()[0])),
+                    
             std::min(
                 static_cast<typename matrix_type::size_type>(
                     std::max(static_cast<typename matrix_type::size_type>(0u),
@@ -158,16 +161,17 @@ public:
                             pos.z(), cell_size_, t))),
                 static_cast<typename matrix_type::size_type>(
                     matrix_.shape()[2])));
+*/
     }
 
     inline cell_offset_type offset(const position_type& pos,
             double t = 1e-10) const
     {
-/*        return array_gen<typename matrix_type::difference_type>(
-            pos.x() / cell_size,
-            pos.y() / cell_size,
-            pos.z() / cell_size );
-*/
+        return array_gen<typename matrix_type::difference_type>(
+            trunc( pos.x() / cell_size ),
+            trunc( pos.y() / cell_size ),
+            trunc( pos.z() / cell_size ) );
+/*
         return array_gen<typename matrix_type::difference_type>(
                 div_with_jitter_fix<typename matrix_type::difference_type>(
                     pos.x(), cell_size_, t),
@@ -175,6 +179,7 @@ public:
                     pos.y(), cell_size_, t),
                 div_with_jitter_fix<typename matrix_type::difference_type>(
                 pos.z(), cell_size_, t));
+*/
     }
 
     inline bool offset_index(
