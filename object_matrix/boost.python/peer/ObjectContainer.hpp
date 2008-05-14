@@ -314,7 +314,8 @@ public:
     {
         static PyObject* convert(const impl_type::iterator& i)
         {
-            return boost::python::incref(boost::python::object(new SphereRef(i)).ptr());
+            return boost::python::incref(boost::python::object(
+                                             SphereRef(i)).ptr());
         }
     };
 

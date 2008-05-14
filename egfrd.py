@@ -13,8 +13,8 @@ import numpy
 from utils import *
 from surface import *
 
-from cObjectMatrix import ObjectMatrix
-SimpleObjectMatrix = ObjectMatrix
+#from cObjectMatrix import ObjectMatrix
+#SimpleObjectMatrix = ObjectMatrix
 #from ObjectMatrix import *
 
 from gfrdbase import *
@@ -29,7 +29,6 @@ class Delegate( object ):
     def __init__( self, obj, method ):
         self.obj = weakref.proxy( obj )
         self.method = method
-
 
     def __call__( self, arg ):
         return self.method( self.obj, arg )
