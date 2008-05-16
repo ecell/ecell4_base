@@ -71,7 +71,7 @@ namespace util
                     throw std::bad_alloc();
                 }
 
-                void* retval = PyArray_malloc(sz * n);
+                void* retval = PyDataMem_NEW(sz * n);
                 if (!retval)
                 {
                     throw std::bad_alloc();
@@ -85,7 +85,7 @@ namespace util
             {   
                 if (ptr && !state_->giveup_ownership)
                 {
-                    PyArray_free(ptr);
+                    PyDataMem_FREE(ptr);
                 }
             }
 

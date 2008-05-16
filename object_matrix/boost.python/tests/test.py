@@ -1,6 +1,7 @@
 from numpy import ndarray
 from object_matrix import *
 import math
+from random import shuffle
 from decimal import Decimal, Context, ROUND_UP
 from sys import getrefcount
 
@@ -78,6 +79,16 @@ assert c[0] == None
 assert len(c) == 2
 
 c = ObjectContainer(10, 10)
+for i in xrange(0, 1000):
+    c[str(i)] = Sphere((0, 0, 0), 0)
+
+l = range(0, 1000)
+shuffle(l)
+for i, k in enumerate(l):
+    assert len(c) == 1000 - i
+    del c[str(k)]
+
+c = ObjectContainer(10, 10)
 os = 0.25
 ss = float(
     Decimal(
@@ -101,4 +112,6 @@ p = 1
 for i in xrange(0, 40):
     assert pat[i % len(pat)] == len(c.neighbors_array_cyclic(Sphere((p, p, p), ss))[0])
     p += 0.25
+
+
 

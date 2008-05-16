@@ -49,11 +49,13 @@ namespace util
                         _dims[i] = val.shape()[i];
                     dims = _dims;
                 }
-                return PyArray_New(&PyArray_Type, N_,
+                PyObject* retval = PyArray_New(&PyArray_Type, N_,
                         const_cast<npy_intp*>(dims),
                         get_numpy_typecode<T_>::value, NULL,
                         const_cast<source_type&>(val).origin(), 0,
-                        NPY_CARRAY | NPY_OWNDATA, NULL);
+                        NPY_CARRAY, NULL);
+                reinterpret_cast<PyArrayObject*>(retval)->flags |= NPY_OWNDATA;
+                return retval;
             }
         };
 
@@ -66,18 +68,21 @@ namespace util
             {
                 const npy_intp dims[1] = { val.size() };
 
-                return PyArray_New(&PyArray_Type, 1,
+                PyObject* retval = PyArray_New(&PyArray_Type, 1,
                         const_cast<npy_intp*>(dims),
                         get_numpy_typecode<T_>::value, NULL,
                         const_cast<source_type&>(val).data(), 0,
-                        NPY_CARRAY | NPY_OWNDATA, NULL);
+                        NPY_CARRAY, NULL);
+                reinterpret_cast<PyArrayObject*>(retval)->flags |= NPY_OWNDATA;
+                return retval;
             }
         };
 
-        template<typename T_>
-        struct to_ndarray_converter<std::vector<T_> >
+
+      template<typename T_, typename Talloc_>
+      struct to_ndarray_converter<std::vector<T_, Talloc_> >
         {
-            typedef std::vector<T_> source_type;
+            typedef std::vector<T_, Talloc_> source_type;
 
             static PyObject* convert(const source_type& val)
             {
@@ -111,11 +116,13 @@ namespace util
                     return NULL; 
                 }
 
-                return PyArray_New(&PyArray_Type, 1,
+                PyObject* retval = PyArray_New(&PyArray_Type, 1,
                         const_cast<npy_intp*>(dims),
-                        get_numpy_typecode<boost::python::object>::value, NULL,
-                        converted_data, 0,
-                        NPY_CARRAY | NPY_OWNDATA, NULL);
+                        get_numpy_typecode<boost::python::object>::value,
+                        NULL, converted_data, 0,
+                        NPY_CARRAY, NULL);
+                 reinterpret_cast<PyArrayObject*>(retval)->flags |= NPY_OWNDATA;
+                 return retval;
             }
         };
     } // namespace detail
