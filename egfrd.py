@@ -512,9 +512,6 @@ class Pair( object ):
         self.sgf = FirstPassageGreensFunction( self.D_geom )
         self.pgf = FirstPassagePairGreensFunction( self.D_tot, 
                                                    rt.k, self.sigma )
-        self.pgf_free = FreePairGreensFunction( self.D_tot )
-        self.pgf_basic = BasicPairGreensFunction( self.D_tot, rt.k, self.sigma )
-        self.pgf_nocol = FirstPassageNoCollisionPairGreensFunction( self.D_tot )
 
         self.eventID = None
 
@@ -615,18 +612,21 @@ class Pair( object ):
             else:
                 # near sigma; use BasicPairGreensFunction
                 log.debug( 'GF: only sigma' )
-                return self.pgf_basic
-                #return self.pgf
+                pgf = BasicPairGreensFunction( self.D_tot, self.rt.k, 
+                                               self.sigma )
+                return pgf
         else:
             if distanceFromShell < thresholdDistance:
                 # near a;
                 log.debug( 'GF: only a' )
-                return self.pgf_nocol
+                pgf = FirstPassageNoCollisionPairGreensFunction( self.D_tot )
+                return pgf
                 
             else:
                 # distant from both a and sigma; 
                 log.debug( 'GF: free' )
-                return self.pgf_free
+                pgf = FreePairGreensFunction( self.D_tot )
+                return pgf
 
 
     '''
@@ -760,6 +760,8 @@ class Pair( object ):
         # draw t_r
         try:
             self.pgf.seta( self.a_r )
+            #print 'r0 = ', r0, ', rnd = ', rnd[1],\
+            #    self.pgf.dump()
             self.t_r = self.pgf.drawTime( rnd[1], r0 )
         except Exception, e:
             raise Exception, \
@@ -1123,8 +1125,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         
         self.scheduler.step()
 
-        nextEvent = self.scheduler.getTopEvent()
-        nextTime, _ = nextEvent.getTime(), nextEvent.getArg()
+        nextTime = self.scheduler.getTopTime()
         self.dt = nextTime - self.t
 
 

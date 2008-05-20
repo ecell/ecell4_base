@@ -14,7 +14,7 @@ L = 5e-6
 #L = 5e-8
 #L = 8e-7
 s.setWorldSize( L )
-s.setMatrixSize( 30 )
+s.setMatrixSize( 20 )
 
 box1 = CuboidalSurface( [0,0,0], [L,L,L] )
 # not supported yet
@@ -50,7 +50,7 @@ l.log()
 
 def profrun():
     #while s.stepCounter < 6000:
-    for _ in range( 6000 ):
+    for _ in range( 12000 ):
         s.step()
         #logging.info( s.dumpPopulation() )
 
