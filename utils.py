@@ -69,7 +69,6 @@ def distanceArray_Simple( position1, positions, fsize = None ):
 
 
 def distanceSq_Cyclic( position1, position2, fsize ):
-
     diff = numpy.abs( position2 - position1 )
     diff -= numpy.greater( diff, fsize * 0.5 ) * fsize # transpose
     return numpy.dot( diff, diff )

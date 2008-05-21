@@ -1251,11 +1251,11 @@ p_survival_table( const Real t,
 		  const Real r0,
 		  const RealVector& psurvTable ) const
 {
-    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					p_survival_i_exp_table, 
-					this,
-					_1, t, r0, psurvTable ),
-			   psurvTable.size() ) );
+    const Real p( funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
+                                            p_survival_i_exp_table, 
+                                            this,
+                                            _1, t, r0, psurvTable ),
+                               psurvTable.size() ) );
 
     return p;
 }
@@ -1301,10 +1301,10 @@ FirstPassagePairGreensFunction::leaves( const Real t,
                                                   _1, t, r0 ),
                                      this->getAlphaTable( 0 ).size() ) );*/
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					leaves_i_exp,
-					this,
-					_1, t, r0 ),
-                                        this->MAX_ALPHA_SEQ ) );
+                                            leaves_i_exp,
+                                            this,
+                                            _1, t, r0 ),
+                               this->MAX_ALPHA_SEQ ) );
 
     return p;
 }
@@ -1323,10 +1323,10 @@ FirstPassagePairGreensFunction::leavea( const Real t,
 */
 
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					leavea_i_exp,
-					this,
-					_1, t, r0 ),
-                                        this->MAX_ALPHA_SEQ ) );
+                                            leavea_i_exp,
+                                            this,
+                                            _1, t, r0 ),
+                               this->MAX_ALPHA_SEQ ) );
     return p;
 }
 
@@ -1432,7 +1432,6 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     const Real D( this->getD() );
     const Real sigma( this->getSigma() );
     const Real a( this->geta() );
-    const Real kf( this->getkf() );
 
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 <= a );

@@ -163,7 +163,7 @@ class BDSimulatorCoreBase( object ):
                 p = self.getP_acct( rt, D12, radius12 )
 
                 rnd = numpy.random.uniform()
-                print p
+
                 if p > rnd:
                     log.info( 'fire reaction2' )
                     try:

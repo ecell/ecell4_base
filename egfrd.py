@@ -1442,7 +1442,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         closeNeighbors, distances = self.getNeighbors( single.pos, minShell,
                                                        ignore=[single,] )
 
-        # This is a bit tryciky, but the last one in closeNeighbors
+        # This is a bit tricky, but the last one in closeNeighbors
         # is the closest object to this Single.
         # getNeighbors() returns closeNeighbors within minShell *plus* one.
         closest = closeNeighbors.pop()
@@ -2167,9 +2167,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 neighbors.append(shell[0])
                 distances.append(dists[i])
                 if dists[i] > radius:
-                    return neighbors, numpy.array( distances )
+                    return neighbors, distances
 
-        return neighbors + [DummySingle()], numpy.array( distances + [INF] )
+        return neighbors + [DummySingle()], numpy.concatenate( [ distances,
+                                                                 [INF] ] )
 
 
 
@@ -2194,7 +2195,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 objs += [neighbor]
                 dists += [distances[i]]
                 if len( objs ) >= n:
-                    return objs, numpy.array( dists )
+                    return objs, dists
 
         return None, INF
 
@@ -2223,7 +2224,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 objs += [neighbor[0]]
                 dists += [distances[i]]
                 if len( objs ) >= n:
-                    return objs, numpy.array( dists )
+                    return objs, dists
 
         return objs, dists
 

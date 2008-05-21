@@ -582,7 +582,6 @@ class ParticleSimulatorBase( object ):
             distances = numpy.concatenate( ( distances, dist ) )
             neighbors.extend( [ ( species, i ) for i in indices ] )
 
-        distances = numpy.array( distances )
         topargs = distances.argsort()[:n]
         distances = distances.take( topargs )
         neighbors = [ Particle( neighbors[arg][0], index=neighbors[arg][1] ) 
