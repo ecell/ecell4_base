@@ -517,10 +517,7 @@ class ParticleSimulatorBase( object ):
         
         particles = self.getParticlesWithinRadiusNoSort( pos, radius, ignore )
 
-        if particles:
-            return False
-        else:
-            return True
+        return not particles
 
         
     def getParticlesWithinRadius( self, pos, radius, ignore=[] ): 
