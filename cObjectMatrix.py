@@ -93,10 +93,8 @@ class ObjectMatrix( object ):
 
         neighbors, distances = self.impl.all_neighbors_array_cyclic( pos )
         topargs = distances.argsort()[:n]
-        distances = distances.take( topargs )
-        neighbors = neighbors.take( topargs )
 
-        return neighbors, distances
+        return neighbors.take( topargs ), distances.take( topargs )
 
 
     def getNeighborsWithinRadius( self, pos, radius ):
@@ -105,10 +103,8 @@ class ObjectMatrix( object ):
             self.impl.neighbors_array_cyclic( object_matrix.Sphere( pos, 
                                                                     radius ) )
         topargs = distances.argsort()
-        distances = distances.take( topargs )
-        neighbors = neighbors.take( topargs )
 
-        return neighbors, distances
+        return neighbors.take( topargs ), distances.take( topargs )
 
 
     def getNeighbors( self, pos, n=None ):

@@ -183,9 +183,9 @@ class Particle( object ):
 
         self.species = species
 
-        if serial != None and index == None:
+        if not serial is None:
             self.serial = serial
-        elif serial == None and index != None:
+        elif not index is None:
             self.serial = species.pool.getSerialByIndex( index )
         else:
             raise ValueError, 'give either serial or index.'
@@ -489,7 +489,7 @@ class ParticleSimulatorBase( object ):
     def createParticle( self, species, pos ):
         newserial = species.newParticle( pos )
         newparticle = Particle( species, serial=newserial )
-        self.addToParticleMatrix( newparticle )
+        self.addToParticleMatrix( newparticle, pos )
         return newparticle
 
     def removeParticle( self, particle ):
@@ -498,19 +498,19 @@ class ParticleSimulatorBase( object ):
 
     def moveParticle( self, particle, newpos ):
         particle.pos = newpos
-        self.updateOnParticleMatrix( particle )
+        self.updateOnParticleMatrix( particle, newpos )
 
 
-    def addToParticleMatrix( self, particle ):
+    def addToParticleMatrix( self, particle, pos ):
         self.particleMatrix.add( ( particle.species, particle.serial ), 
-                                 particle.pos, particle.species.radius )
+                                 pos, particle.species.radius )
 
     def removeFromParticleMatrix( self, particle ):
         self.particleMatrix.remove( ( particle.species, particle.serial ) )
 
-    def updateOnParticleMatrix( self, particle ):
+    def updateOnParticleMatrix( self, particle, pos ):
         self.particleMatrix.update( ( particle.species, particle.serial ), 
-                                    particle.pos, particle.species.radius )
+                                    pos, particle.species.radius )
 
 
     def checkOverlap( self, pos, radius, ignore=[] ):

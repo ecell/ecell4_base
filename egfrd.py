@@ -66,19 +66,26 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
         
     def updateParticle( self, particle, pos ):
+
         self.particleMatrix.update( ( particle.species, particle.serial ), pos,
                                     particle.radius )
 
     def initialize( self ):
-        BDSimulatorCoreBase.initialize( self )
 
+        BDSimulatorCoreBase.initialize( self )
         self.updateShellMatrix()
 
 
     def step( self ):
+
         self.escaped = False
-        
         BDSimulatorCoreBase.step( self )
+
+
+    def sync( self ):
+
+        for particle in self.particleList:
+            self.main.moveParticle( particle, particle.pos )
 
 
     def updateShellMatrix( self ):
@@ -88,14 +95,17 @@ class MultiBDCore( BDSimulatorCoreBase ):
             self.shellMatrix.add( shell, shell.pos, shell.radius )
 
     def _addParticle( self, particle ):
+
         self.addToParticleList( particle )
         self.particleMatrix.add( ( particle.species, particle.serial ),
                                  particle.pos, particle.radius )
 
     def addParticle( self, particle ):
+
         self._addParticle( particle )
 
     def removeParticle( self, particle ):
+
         self.main.removeParticle( particle )
         self.removeFromParticleList( particle )
         self.particleMatrix.remove( ( particle.species, particle.serial ) )
@@ -104,13 +114,12 @@ class MultiBDCore( BDSimulatorCoreBase ):
     def createParticle( self, species, pos ):
 
         if self.withinShell( pos, species.radius ):
-            if not self.checkOverlap(pos, species.radius ):
+            if not self.checkOverlap( pos, species.radius ):
                 raise NoSpace()
         else:
             self.escaped = True
             self.clearOuterVolume( pos, species.radius )
 
-            
         particle = self.main.createParticle( species, pos )
         self._addParticle( particle )
 
@@ -118,6 +127,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
 
     def moveParticle( self, particle, pos ):
+        print particle
 
         if self.withinShell( pos, particle.radius ):
             if not self.checkOverlap1( pos, particle.radius ):
@@ -128,8 +138,6 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
         self.main.moveParticle( particle, pos )
         self.updateParticle( particle, pos )
-
-
 
         
     def clearVolume( self, pos, radius, ignore=[] ):
@@ -148,12 +156,9 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
  
     def withinShell( self, pos, radius ):
-        n, _ = self.shellMatrix.getNeighborsWithinRadiusNoSort( pos, - radius )
 
-        if n:
-            return True
-        else:
-            return False
+        n, _ = self.shellMatrix.getNeighborsWithinRadiusNoSort( pos, - radius )
+        return not not n
 
         
     def checkOverlap( self, pos, radius, ignore=[] ):
@@ -182,6 +187,9 @@ class MultiBDCore( BDSimulatorCoreBase ):
         neighbors = [ Particle( i[0], i[1] ) for i in n ]
         return neighbors, d
     '''
+
+    def getNeighborsWithinRadius( self, pos, radius ):
+        return self.particleMatrix.getNeighborsWithinRadius( pos, radius )
 
     def getClosestParticle( self, pos, ignore=[] ):
 
@@ -1182,7 +1190,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def moveSingle( self, single, pos ):
         single.pos = pos
-        self.updateOnParticleMatrix( single.particle )
+        self.updateOnParticleMatrix( single.particle, pos )
 
 
     def addToShellMatrix( self, obj ):
@@ -1726,6 +1734,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         else:
             dt = multi.dt
 
+        #sim.sync()
+
         steps = sim.stepCounter - startCount
         assert steps >= 1
         self.stepCounter += steps-1
@@ -1738,6 +1748,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def breakUpMulti( self, multi ):
 
+        #multi.sim.sync()
         self.removeFromShellMatrix( multi )
 
         singles = []

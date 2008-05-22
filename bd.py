@@ -146,10 +146,17 @@ class BDSimulatorCoreBase( object ):
 
         newpos = particle.pos + displacement
         
-        closest, dist = self.getClosestParticle( newpos, 
-                                                 ignore = [ particle, ] )
-        
-        if closest and dist <= species.radius:  # collision
+        #closest, dist = self.getClosestParticle( newpos, 
+        #                                         ignore = [ particle, ] )
+
+        neighbors, dists = self.getNeighborsWithinRadius( newpos, 
+                                                          species.radius )
+        #if closest and dist <= species.radius:  # collision
+
+        if len( neighbors ) >= 2:
+            closest = Particle( neighbors[1][0], neighbors[1][1] )
+            dist = dists[1]
+
             species2 = closest.species
 
             rt = self.main.reactionTypeMap2.get( ( species, species2 ) )
@@ -195,10 +202,9 @@ class BDSimulatorCoreBase( object ):
 
         k_array = numpy.add.accumulate( [ rt.k for rt in reactionTypes ] )
         k_array *= self.dt
-        k_max = k_array[-1]
 
         rnd = numpy.random.uniform()
-        if k_max < rnd:
+        if k_array[-1] < rnd:
             return None
 
         i = numpy.searchsorted( k_array, rnd )
