@@ -146,9 +146,12 @@ public:
     {
     public:
         typedef std::vector<impl_type::iterator> sphere_ref_array_type;
+        typedef std::vector<impl_type::key_type> key_array_type;
         typedef std::vector<double, util::pyarray_backed_allocator<double> >
                 distance_array_type;
-        typedef boost::tuple<sphere_ref_array_type, distance_array_type>
+        //typedef boost::tuple<sphere_ref_array_type, distance_array_type>
+//                result_type;
+        typedef boost::tuple<key_array_type, distance_array_type>
                 result_type;
 
         struct collector: public std::binary_function<
@@ -159,18 +162,21 @@ public:
             typedef void result_type;
         public:
             inline collector(Builders::result_type& result)
-                    : sa_(boost::get<0>(result)),
-                      da_(boost::get<1>(result)) {}
+                : //sa_(boost::get<0>(result)),
+                ka_(boost::get<0>(result)),
+                da_(boost::get<1>(result)) {}
 
             inline void operator()(impl_type::iterator i,
                     const position_type::value_type& d)
             {
-                sa_.push_back(i);
+                //sa_.push_back(i);
+                ka_.push_back((*i).first);
                 da_.push_back(d);
             }
 
         private:
-            sphere_ref_array_type& sa_;
+            //sphere_ref_array_type& sa_;
+            key_array_type& ka_;
             distance_array_type& da_;
         };
 
@@ -183,13 +189,15 @@ public:
         public:
             inline all_neighbors_collector(Builders::result_type& result,
                     const position_type& pos)
-                    : sa_(boost::get<0>(result)),
+                : //sa_(boost::get<0>(result)),
+                ka_(boost::get<0>(result)),
                       da_(boost::get<1>(result)),
                       pos_(pos) {}
 
             inline void operator()(impl_type::iterator i)
             {
-                sa_.push_back(i);
+                //sa_.push_back(i);
+                ka_.push_back((*i).first);
                 da_.push_back(pos_.distance((*i).second.position) 
                               - (*i).second.radius);
 
@@ -198,13 +206,15 @@ public:
             inline void operator()(impl_type::iterator i,
                     const position_type& d)
             {
-                sa_.push_back(i);
+                //sa_.push_back(i);
+                ka_.push_back((*i).first);
                 da_.push_back(pos_.distance((*i).second.position + d)
                               - (*i).second.radius);
             }
 
         private:
-            sphere_ref_array_type& sa_;
+            //sphere_ref_array_type& sa_;
+            key_array_type& ka_;
             distance_array_type& da_;
             position_type pos_;
         };

@@ -120,8 +120,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
     def moveParticle( self, particle, pos ):
 
         if self.withinShell( pos, particle.radius ):
-            if not self.checkOverlap( pos, particle.radius, 
-                                      ignore=[particle] ):
+            if not self.checkOverlap1( pos, particle.radius ):
                 raise NoSpace()
         else:
             self.escaped = True
@@ -149,7 +148,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
  
     def withinShell( self, pos, radius ):
-        n, _ = self.shellMatrix.getNeighborsWithinRadius( pos, - radius )
+        n, _ = self.shellMatrix.getNeighborsWithinRadiusNoSort( pos, - radius )
 
         if n:
             return True
@@ -159,40 +158,43 @@ class MultiBDCore( BDSimulatorCoreBase ):
         
     def checkOverlap( self, pos, radius, ignore=[] ):
         
-        n, _ = self.particleMatrix.getNeighborsWithinRadius( pos, radius )
+        n, _ = self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
 
+        n = list( n )
         for particle in ignore:
             p = ( particle.species, particle.serial )
             if p in n:
                 n.remove( p )
 
-        if n:
-            return False
-        else:
-            return True
+        return not n
 
 
+    def checkOverlap1( self, pos, radius ):
+        
+        n, _ = self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
+        return len( n ) <= 1
+
+
+    '''
     def getNeighborParticles( self, pos, n=None ):
 
         n, d = self.particleMatrix.getNeighbors( pos, n )
         neighbors = [ Particle( i[0], i[1] ) for i in n ]
         return neighbors, d
-
+    '''
 
     def getClosestParticle( self, pos, ignore=[] ):
 
         neighbors, distances =\
-            self.getNeighborParticles( pos, 
-                                       len( ignore ) + 1 )
-
+            self.particleMatrix.getNeighbors( pos, len( ignore ) + 1 )
 
         for i, neighbor in enumerate( neighbors ):
-            if neighbor not in ignore:
-                return neighbor, distances[i]
+            particle = Particle( neighbor[0], neighbor[1] )
+            if particle not in ignore:
+                return particle, distances[i]
 
         # default case: none left.
         return None, INF
-        #return DummyParticle(), INF
 
 
     def check( self ):
@@ -1262,7 +1264,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def clearVolume( self, pos, radius, ignore=[] ):
 
-        neighbors = self.getNeighborsWithinRadius( pos, radius, ignore )
+        neighbors = self.getNeighborsWithinRadiusNoSort( pos, radius, ignore )
 
         return self.burstObjs( neighbors )
 
@@ -2073,8 +2075,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             radius = obj.particle.species.radius *\
                 ( 1.0 + self.MULTI_SHELL_FACTOR )
-            neighbors = self.getNeighborsWithinRadius( obj.pos, radius,
-                                                       ignore=[obj,] )
+            neighbors = self.getNeighborsWithinRadiusNoSort( obj.pos, radius,
+                                                             ignore=[obj,] )
             bursted = self.burstNonMultis( neighbors )
             neighborDists = self.objDistanceArray( obj.pos, bursted )
             neighbors = [ bursted[i] for i in 
@@ -2135,17 +2137,59 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         neighbors, distances = self.shellMatrix.getNeighbors( pos, n )
         if len( neighbors ) == 0:
-            return ( DummySingle(), 0 )
+            return DummySingle(), 0
         return neighbors, distances
+
+
+    def getNeighborShellsNoSort( self, pos, n=None ):
+
+        neighbors, distances = self.shellMatrix.getNeighborsNoSort( pos, n )
+        if len( neighbors ) == 0:
+            return DummySingle(), 0
+        return neighbors, distances
+
+
+    def getNeighborShells( self, pos, n=None ):
+
+        neighbors, distances = self.shellMatrix.getNeighbors( pos, n )
+        if len( neighbors ) == 0:
+            return DummySingle(), 0
+        return neighbors, distances
+
+
+    def getNeighborShellsNoSort( self, pos, n=None ):
+
+        neighbors, distances = self.shellMatrix.getNeighborsNoSort( pos, n )
+        if len( neighbors ) == 0:
+            return DummySingle(), 0
+        return neighbors, distances
+
                            
     def getNeighborShellsWithinRadius( self, pos, radius ):
 
         return self.shellMatrix.getNeighborsWithinRadius( pos, radius )
 
 
+    def getNeighborShellsWithinRadiusNoSort( self, pos, radius ):
+
+        return self.shellMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
+
+
     def getNeighborsWithinRadius( self, pos, radius, ignore=[] ):
 
-        shells, distances = self.getNeighborShellsWithinRadius( pos, radius )
+        shells, distances =\
+            self.shellMatrix.getNeighborsWithinRadius( pos, radius )
+
+        neighbors = [ s[0] for s in shells if s[0] not in ignore ]
+        neighbors = uniq( neighbors )
+
+        return neighbors
+
+
+    def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
+
+        shells, distances =\
+            self.shellMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
 
         neighbors = [ s[0] for s in shells if s[0] not in ignore ]
         neighbors = uniq( neighbors )
@@ -2155,7 +2199,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def getNeighbors( self, pos, radius=INF, ignore=[] ):
 
-        shells, dists = self.getNeighborShells( pos )
+        shells, dists = self.shellMatrix.getNeighbors( pos )
 
         seen = dict.fromkeys( ignore )
         neighbors = []

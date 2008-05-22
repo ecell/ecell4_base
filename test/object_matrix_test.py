@@ -38,10 +38,8 @@ class object_matrixTestCase( unittest.TestCase ):
         a = c.neighbors_array(Sphere((0.45, 0.23, 0.13), 0.09))
         self.assertEqual( 1, len(a[0]) )
         self.assertEqual( 1, len(a[1]) )
-        self.assertEqual( 0, a[0][0].id )
-        self.assertAlmostEqual( a[0][0].x, c[0].x )
-        self.assertAlmostEqual( a[0][0].y, c[0].y )
-        self.assertAlmostEqual( a[0][0].z, c[0].z )
+        self.assertEqual( 0, a[0][0] )
+
 
 
 

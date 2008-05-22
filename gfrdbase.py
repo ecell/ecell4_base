@@ -515,7 +515,7 @@ class ParticleSimulatorBase( object ):
 
     def checkOverlap( self, pos, radius, ignore=[] ):
         
-        particles = self.getParticlesWithinRadius( pos, radius, ignore )
+        particles = self.getParticlesWithinRadiusNoSort( pos, radius, ignore )
 
         if particles:
             return False
@@ -527,7 +527,18 @@ class ParticleSimulatorBase( object ):
         particles, _ =\
             self.particleMatrix.getNeighborsWithinRadius( pos, radius )
 
-        if not particles:
+        if len( particles ) == 0:
+            return []
+
+        particles = [ Particle( p[0], p[1] ) for p in particles ]
+        return [ p for p in particles if p not in ignore ]
+
+
+    def getParticlesWithinRadiusNoSort( self, pos, radius, ignore=[] ): 
+        particles, _ =\
+            self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
+
+        if len( particles ) == 0:
             return []
 
         particles = [ Particle( p[0], p[1] ) for p in particles ]
@@ -559,35 +570,10 @@ class ParticleSimulatorBase( object ):
         neighbors = [ Particle( i[0], i[1] ) for i in n ]
         return neighbors, d
 
-
-    def getNeighborParticles2( self, pos, n=2, speciesList=None ):
-
-        neighbors = []
-        distances = numpy.array([],numpy.floating)
-
-        if not speciesList:
-            speciesList = self.speciesList.values()
-
-        for species in speciesList:
-
-            # empty
-            if species.pool.size == 0:
-                continue
-
-            dist = self.distanceSqArray( pos, species.pool.positions )
-        
-            indices = dist.argsort()[:n]
-            dist = numpy.sqrt( dist.take( indices ) ) - species.radius
-
-            distances = numpy.concatenate( ( distances, dist ) )
-            neighbors.extend( [ ( species, i ) for i in indices ] )
-
-        topargs = distances.argsort()[:n]
-        distances = distances.take( topargs )
-        neighbors = [ Particle( neighbors[arg][0], index=neighbors[arg][1] ) 
-                      for arg in topargs ]
-
-        return neighbors, distances
+    def getNeighborParticlesNoSort( self, pos, n=None ):
+        n, d = self.particleMatrix.getNeighborsNoSort( pos, n )
+        neighbors = [ Particle( i[0], i[1] ) for i in n ]
+        return neighbors, d
 
 
     def getClosestParticle( self, pos, ignore=[] ):
@@ -606,21 +592,6 @@ class ParticleSimulatorBase( object ):
         return None, INF
         #return DummyParticle(), INF
 
-
-    def getClosestParticle2( self, pos, ignore=[] ):
-
-        neighbors, distances = self.getNeighborParticles( pos, 
-                                                          len( ignore ) + 1 )
-
-        for i in range( len( neighbors ) ): 
-            if neighbors[i] not in ignore:
-                closest, distance = neighbors[i], distances[i]
-
-                assert not closest in ignore
-                return closest, distance
-
-        # default case: none left.
-        return None, INF
 
     def checkSurfaces( self, speciesIndex1, particleIndex ):
 

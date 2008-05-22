@@ -71,7 +71,6 @@ class ObjectMatrix( object ):
     def update( self, key, pos, radius ):
 
         assert key in self.impl
-        #del self.impl[ key ]
         self.impl[ key ] = object_matrix.Sphere( pos, radius )
 
 
@@ -80,12 +79,22 @@ class ObjectMatrix( object ):
         return numpy.array( [ sphere.x, sphere.y, sphere.z ] ), sphere.radius
 
 
+    def getNeighborsCyclicNoSort( self, pos ):
+
+        return self.impl.all_neighbors_array_cyclic( pos )
+
+    def getNeighborsWithinRadiusNoSort( self, pos, radius ):
+
+        return self.impl.neighbors_array_cyclic(\
+            object_matrix.Sphere( pos, 
+                                  radius ) )
+
     def getNeighborsCyclic( self, pos, n=None ):
 
         neighbors, distances = self.impl.all_neighbors_array_cyclic( pos )
         topargs = distances.argsort()[:n]
         distances = distances.take( topargs )
-        neighbors = [ neighbors[arg].id for arg in topargs ]
+        neighbors = neighbors.take( topargs )
 
         return neighbors, distances
 
@@ -97,12 +106,18 @@ class ObjectMatrix( object ):
                                                                     radius ) )
         topargs = distances.argsort()
         distances = distances.take( topargs )
-        neighbors = [ neighbors[arg].id for arg in topargs ]
- 
+        neighbors = neighbors.take( topargs )
+
         return neighbors, distances
+
 
     def getNeighbors( self, pos, n=None ):
         return self.getNeighborsCyclic( pos, n )
+
+
+    def getNeighborsNoSort( self, pos ):
+        return self.getNeighborsCyclicNoSort( pos )
+
 
     '''
     def getNeighbors( self, pos, n=None ):

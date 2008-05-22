@@ -120,7 +120,7 @@ class BDSimulatorCoreBase( object ):
         self.particlesToStep = self.particleList[:]
 
         random.shuffle( self.particlesToStep )
-        while len( self.particlesToStep ) != 0:
+        while self.particlesToStep:
             particle = self.particlesToStep.pop() # take the last one
             self.propagateParticle( particle )
 
@@ -138,7 +138,6 @@ class BDSimulatorCoreBase( object ):
 
             return
 
-
         D = species.D
         if D == 0.0:
             return
@@ -154,9 +153,8 @@ class BDSimulatorCoreBase( object ):
             species2 = closest.species
 
             rt = self.main.reactionTypeMap2.get( ( species, species2 ) )
-            k = rt.k
 
-            if k != 0.0:
+            if rt.k != 0.0:
                 radius12 = species.radius + species2.radius
                 D12 = species.D + species2.D
 
@@ -195,8 +193,8 @@ class BDSimulatorCoreBase( object ):
         if not reactionTypes:
             return None  # no reaction
 
-        k_array = [ rt.k * self.dt for rt in reactionTypes ]
-        k_array = numpy.add.accumulate( k_array )
+        k_array = numpy.add.accumulate( [ rt.k for rt in reactionTypes ] )
+        k_array *= self.dt
         k_max = k_array[-1]
 
         rnd = numpy.random.uniform()
