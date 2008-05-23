@@ -146,24 +146,18 @@ class BDSimulatorCoreBase( object ):
 
         newpos = particle.pos + displacement
         
-        #closest, dist = self.getClosestParticle( newpos, 
-        #                                         ignore = [ particle, ] )
-
         neighbors, dists = self.getNeighborsWithinRadius( newpos, 
                                                           species.radius )
-        #if closest and dist <= species.radius:  # collision
 
-        if len( neighbors ) >= 2:
-            closest = neighbors[1]#Particle( neighbors[1][0], neighbors[1][1] )
-            dist = dists[1]
-
+        if len( neighbors ) >= 2:  # collision
+            closest = neighbors[1]
             species2 = closest.species
 
             rt = self.main.reactionTypeMap2.get( ( species, species2 ) )
 
             if rt.k != 0.0:
                 radius12 = species.radius + species2.radius
-                D12 = species.D + species2.D
+                D12 = D + species2.D
 
                 p = self.getP_acct( rt, D12, radius12 )
 
@@ -176,22 +170,18 @@ class BDSimulatorCoreBase( object ):
                     except NoSpace:
                         log.info( 'fireReaction2 move rejected' )
                     return
-                else:
-                    log.info( 'reaction2 rejected' )
-                    return
 
             else:
                 log.info( 'collision move rejected' )
                 return
 
-
-        self.applyBoundary( newpos )
+        newpos %= self.main.worldSize   #self.applyBoundary( newpos )
 
         try:
             self.moveParticle( particle, newpos )
         except NoSpace:
             log.info( 'propagation move rejected.' )
-        return
+
 
 
     def attemptSingleReactions( self, species ):

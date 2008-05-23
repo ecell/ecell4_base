@@ -15,8 +15,8 @@ from utils import *
 from _gfrd import *
 
 from cObjectMatrix import *
-#SimpleObjectMatrix = ObjectMatrix
-from ObjectMatrix import SimpleObjectMatrix
+SimpleObjectMatrix = ObjectMatrix
+#from ObjectMatrix import SimpleObjectMatrix
 #from ObjectMatrix import *
 
 import os

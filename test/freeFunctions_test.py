@@ -165,6 +165,26 @@ class FreeFunctionsTestCase( unittest.TestCase ):
         self.failIf( r <= sigma )
         #print 'rr', r
 
+    def test_p_reaction_irr_t_inf( self ):
+        
+        D = 1e-12
+        t = numpy.inf
+        sigma = 1e-8
+        r0 = 1.1e-8
+        kf = 1e-16
+        kr = 10
+        kD = 4 * numpy.pi * sigma * D
+
+        alpha = ( 1 + ( kr / kD ) ) * math.sqrt( D ) / sigma
+
+        pr = mod.p_reaction_irr( t, r0, kf, D, sigma, alpha, kD )
+        prinf = mod.p_reaction_irr_t_inf( r0, kf, sigma, kD )
+
+        print pr, prinf
+
+        self.assertAlmostEqual( pr, prinf )
+
+
         
 if __name__ == "__main__":
     unittest.main()

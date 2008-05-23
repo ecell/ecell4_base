@@ -94,21 +94,17 @@ class MultiBDCore( BDSimulatorCoreBase ):
         for shell in self.multi.shellList:
             self.shellMatrix.add( shell, shell.pos, shell.radius )
 
-    def _addParticle( self, particle ):
-
-        self.addToParticleList( particle )
-        self.particleMatrix.add( particle,#( particle.species, particle.serial ),
-                                 particle.pos, particle.radius )
-
     def addParticle( self, particle ):
 
-        self._addParticle( particle )
+        self.addToParticleList( particle )
+        self.particleMatrix.add( particle,
+                                 particle.pos, particle.radius )
 
     def removeParticle( self, particle ):
 
         self.main.removeParticle( particle )
         self.removeFromParticleList( particle )
-        self.particleMatrix.remove( particle )#( particle.species, particle.serial ) )
+        self.particleMatrix.remove( particle )
 
 
     def createParticle( self, species, pos ):
@@ -122,7 +118,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
             self.clearOuterVolume( pos, species.radius )
 
         particle = self.main.createParticle( species, pos )
-        self._addParticle( particle )
+        self.addParticle( particle )
 
         return particle
 
@@ -188,6 +184,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def getNeighborsWithinRadius( self, pos, radius ):
         return self.particleMatrix.getNeighborsWithinRadius( pos, radius )
+
 
     def getClosestParticle( self, pos, ignore=[] ):
 

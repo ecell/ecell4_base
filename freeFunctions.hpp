@@ -21,6 +21,9 @@ const Real __p_reaction_irr( const Real t, const Real r0,
                              const Real kf, const Real D, const Real sigma,
                              const Real alpha, const Real kD );
 
+const Real __p_reaction_irr_t_inf( const Real r0, const Real kf, 
+                                   const Real sigma, const Real kD );
+
 const Real p_theta_free( const Real theta, const Real r, const Real r0, 
                          const Real t, const Real D );
 

@@ -129,6 +129,8 @@ BOOST_PYTHON_MODULE( _gfrd )
     def( "I_bd", I_bd );
     def( "I_bd_r", I_bd_r );
     def( "drawR_gbd", drawR_gbd );
+    def( "p_reaction_irr", __p_reaction_irr );
+    def( "p_reaction_irr_t_inf", __p_reaction_irr_t_inf );
 
     class_<PyEvent>( "PyEvent", 
                      init<const Real, const object&, const object&>() )

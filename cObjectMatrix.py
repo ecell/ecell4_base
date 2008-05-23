@@ -41,11 +41,6 @@ class ObjectMatrix( object ):
 
     def initialize( self ):
 
-        if not isinstance( self.worldSize, float ):
-            raise NotImplementedError,\
-                'ObjectMatrix does not support non-cubic world.' + \
-                'Use SimpleObjectMatrix.'
-
         self.impl = object_matrix.ObjectContainer( self.worldSize, 
                                                    self.matrixSize )
 

@@ -132,6 +132,15 @@ __p_reaction_irr( const Real t, const Real r0,
     return factor * ( erfc( r0_m_sigma_over_sqrt4D_t ) - Wf );
 }
 
+
+const Real 
+__p_reaction_irr_t_inf( const Real r0, const Real kf, 
+                        const Real sigma, const Real kD )
+{
+    const Real kf_kD_r0( ( kf + kD ) * r0 );
+    return 1 - ( kf_kD_r0 - kf * sigma ) / kf_kD_r0;
+}
+
 /*
 const Real S_irr_deriv( const Real tsqrt, 
                         const Real r0 ) const
