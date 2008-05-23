@@ -15,8 +15,8 @@ from utils import *
 from _gfrd import *
 
 from cObjectMatrix import *
-SimpleObjectMatrix = ObjectMatrix
-#from ObjectMatrix import SimpleObjectMatrix
+#SimpleObjectMatrix = ObjectMatrix
+from ObjectMatrix import SimpleObjectMatrix
 #from ObjectMatrix import *
 
 import os
@@ -74,9 +74,7 @@ def p_free( r, t, D ):
 
 def drawR_free( t, D ):
     ro = math.sqrt( 2.0 * D * t )
-    displacement = numpy.random.normal( 0.0, ro, 3 )
-
-    return displacement
+    return numpy.random.normal( 0.0, ro, 3 )
 
 
 class NoSpace( Exception ):
@@ -330,10 +328,7 @@ class ParticleSimulatorBase( object ):
         self.rejectedMoves = 0
         self.reactionEvents = 0
 
-        if matrixtype == 'simple':
-            self.particleMatrix = SimpleObjectMatrix()
-        else:
-            self.particleMatrix = ObjectMatrix()
+        self.particleMatrix = ObjectMatrix()
 
 
         self.setWorldSize( INF )

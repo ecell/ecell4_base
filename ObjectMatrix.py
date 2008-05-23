@@ -146,6 +146,18 @@ class SimpleObjectMatrix( object ):
         return self.matrix.get( key )
 
 
+    def getNeighborsNoSort( self, pos ):
+
+        matrix = self.matrix
+
+        if len( matrix.positions ) == 0:
+            return [], []
+
+        distances = self.distanceArray( matrix.positions, pos ) - matrix.radii
+
+        return matrix.keyList, distances
+
+
     def getNeighbors( self, pos, n=None, dummy=None ):
 
         matrix = self.matrix
@@ -158,6 +170,22 @@ class SimpleObjectMatrix( object ):
         topargs = distances.argsort()[:n]
         distances = distances.take( topargs )
         neighbors = [ matrix.keyList[arg] for arg in topargs ]
+
+        return neighbors, distances
+
+
+    def getNeighborsWithinRadiusNoSort( self, pos, radius ):
+
+        matrix = self.matrix
+
+        if len( matrix.positions ) == 0:
+            return [], []
+
+        distances = self.distanceArray( matrix.positions, pos ) - matrix.radii
+
+        args = ( distances < radius ).nonzero()[0]
+        distances = distances.take( args )
+        neighbors = [ matrix.keyList[arg] for arg in args ]
 
         return neighbors, distances
 

@@ -154,7 +154,7 @@ class BDSimulatorCoreBase( object ):
         #if closest and dist <= species.radius:  # collision
 
         if len( neighbors ) >= 2:
-            closest = Particle( neighbors[1][0], neighbors[1][1] )
+            closest = neighbors[1]#Particle( neighbors[1][0], neighbors[1][1] )
             dist = dists[1]
 
             species2 = closest.species
@@ -200,10 +200,18 @@ class BDSimulatorCoreBase( object ):
         if not reactionTypes:
             return None  # no reaction
 
-        k_array = numpy.add.accumulate( [ rt.k for rt in reactionTypes ] )
-        k_array *= self.dt
+        rnd = numpy.random.uniform() / self.dt
 
-        rnd = numpy.random.uniform()
+        # handle the most common case efficiently.
+        if len( reactionTypes ) == 1:  
+            if reactionTypes[0].k >= rnd:
+                return reactionTypes[0]
+            else:
+                return None
+
+        # if there are more than one possible reaction types..
+        k_array = numpy.add.accumulate( [ rt.k for rt in reactionTypes ] )
+
         if k_array[-1] < rnd:
             return None
 

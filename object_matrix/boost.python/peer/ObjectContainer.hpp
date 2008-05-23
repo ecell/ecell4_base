@@ -4,7 +4,15 @@
 #include <functional>
 #include <string>
 #include <vector>
+
+#if HAVE_UNORDERED_MAP
+#include <unordered_map>
+#elif HAVE_TR1_UNORDERED_MAP
 #include <tr1/unordered_map>
+#else
+#include <map>
+#endif /* HAVE_UNORDERED_MAP */
+
 #include <boost/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/type_traits.hpp>
@@ -30,7 +38,13 @@ namespace peer {
 template<typename Tkey_, typename Tval_>
 struct get_mapper_mf
 {
+#if HAVE_UNORDERED_MAP
+    typedef std::unordered_map<Tkey_, Tval_> type;
+#elif HAVE_TR1_UNORDERED_MAP
     typedef std::tr1::unordered_map<Tkey_, Tval_> type;
+#else 
+    typedef std::map<Tkey_, Tval_> type;
+#endif
 };
 
 template<typename Tval_>
@@ -47,7 +61,14 @@ struct get_mapper_mf<boost::python::object, Tval_>
         }
     };
 
+
+#if HAVE_UNORDERED_MAP
+    typedef std::unordered_map<boost::python::object, Tval_, hasher> type;
+#elif HAVE_TR1_UNORDERED_MAP
     typedef std::tr1::unordered_map<boost::python::object, Tval_, hasher> type;
+#else 
+    typedef std::map<boost::python::object, Tval_, hasher> type;
+#endif
 };
 
 class ObjectContainer
