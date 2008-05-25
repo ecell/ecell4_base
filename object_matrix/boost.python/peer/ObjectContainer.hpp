@@ -52,6 +52,7 @@ struct get_mapper_mf
 template<typename Tval_>
 struct get_mapper_mf<boost::python::object, Tval_>
 {
+#if HAVE_UNORDERED_MAP || HAVE_TR1_UNORDERED_MAP
     struct hasher: public std::unary_function<boost::python::object, std::size_t>
     {
         typedef boost::python::object argument_type;
@@ -62,6 +63,7 @@ struct get_mapper_mf<boost::python::object, Tval_>
             return static_cast<result_type>((long)PyObject_Hash(arg.ptr()));
         }
     };
+#endif
 
 
 #if HAVE_UNORDERED_MAP
@@ -69,7 +71,7 @@ struct get_mapper_mf<boost::python::object, Tval_>
 #elif HAVE_TR1_UNORDERED_MAP
     typedef std::tr1::unordered_map<boost::python::object, Tval_, hasher> type;
 #else 
-    typedef std::map<boost::python::object, Tval_, hasher> type;
+    typedef std::map<boost::python::object, Tval_> type;
 #endif
 };
 

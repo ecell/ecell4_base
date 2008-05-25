@@ -361,7 +361,7 @@ class ParticleSimulatorBase( object ):
         for species in self.speciesList.values():
             for i in range( species.pool.size ):
                 particle = Particle( species, index=i )
-                self.particleMatrix.add( ( species, particle.serial ),
+                self.particleMatrix.add( particle,
                                          particle.pos, species.radius )
 
 
@@ -513,14 +513,14 @@ class ParticleSimulatorBase( object ):
 
 
     def addToParticleMatrix( self, particle, pos ):
-        self.particleMatrix.add( ( particle.species, particle.serial ), 
+        self.particleMatrix.add( particle,
                                  pos, particle.species.radius )
 
     def removeFromParticleMatrix( self, particle ):
-        self.particleMatrix.remove( ( particle.species, particle.serial ) )
+        self.particleMatrix.remove( particle )
 
     def updateOnParticleMatrix( self, particle, pos ):
-        self.particleMatrix.update( ( particle.species, particle.serial ), 
+        self.particleMatrix.update( particle,
                                     pos, particle.species.radius )
 
 
@@ -530,8 +530,6 @@ class ParticleSimulatorBase( object ):
             self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
         if len( particles ) == 0:
             return True
-
-        particles = [ Particle( p[0], p[1] ) for p in particles ]
 
         if [ p for p in particles if p not in ignore ]:
             return False
