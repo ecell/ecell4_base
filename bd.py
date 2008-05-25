@@ -128,14 +128,13 @@ class BDSimulatorCoreBase( object ):
     def propagateParticle( self, particle ):
 
         species = particle.species
-        rt1 = self.attemptSingleReactions( species )
 
+        rt1 = self.attemptSingleReactions( species )
         if rt1:
             try:
                 self.fireReaction1( particle, rt1 )
             except NoSpace:
                 log.info( 'fireReaction1 rejected.' )
-
             return
 
         D = species.D
@@ -145,11 +144,17 @@ class BDSimulatorCoreBase( object ):
         displacement = drawR_free( self.dt, D )
 
         newpos = particle.pos + displacement
+        newpos %= self.main.worldSize   #self.applyBoundary( newpos )
         
-        neighbors = self.getParticlesWithinRadius( newpos, species.radius )
+        neighbors = self.getParticlesWithinRadius( newpos, species.radius,
+                                                   ignore=[particle] )
+        if neighbors:
 
-        if len( neighbors ) >= 2:  # collision
-            closest = neighbors[1]  # neighbors[0] is this particle
+            if len( neighbors ) >= 2:
+                log.info( 'collision two or more particles; move rejected' )
+                return
+
+            closest = neighbors[0]
             species2 = closest.species
 
             rt = self.main.reactionTypeMap2.get( ( species, species2 ) )
@@ -172,9 +177,8 @@ class BDSimulatorCoreBase( object ):
 
             else:
                 log.info( 'collision move rejected' )
-                return
 
-        newpos %= self.main.worldSize   #self.applyBoundary( newpos )
+            return
 
         try:
             self.moveParticle( particle, newpos )

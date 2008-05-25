@@ -540,18 +540,18 @@ class ParticleSimulatorBase( object ):
 
 
         
-    def getParticlesWithinRadius( self, pos, radius ):
+    def getParticlesWithinRadius( self, pos, radius, ignore=[] ):
         particles, _ =\
             self.particleMatrix.getNeighborsWithinRadius( pos, radius )
 
-        return [ Particle( p[0], p[1] ) for p in particles ]
+        return [ p for p in particles if p not in ignore ]
 
 
-    def getParticlesWithinRadiusNoSort( self, pos, radius ): 
+    def getParticlesWithinRadiusNoSort( self, pos, radius, ignore=[] ): 
         particles, _ =\
             self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
 
-        return [ Particle( p[0], p[1] ) for p in particles ]
+        return [ p for p in particles if p not in ignore ]
 
 
     def clear( self ):

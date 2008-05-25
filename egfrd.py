@@ -67,7 +67,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
         
     def updateParticle( self, particle, pos ):
 
-        self.particleMatrix.update(          particle, pos, particle.radius )
+        self.particleMatrix.update( particle, pos, particle.radius )
 
     def initialize( self ):
 
@@ -124,18 +124,20 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def moveParticle( self, particle, pos ):
 
+        #assert self.checkOverlap( pos, particle.radius, ignore=[particle] )
+
         if not self.withinShell( pos, particle.radius ):
             self.escaped = True
             self.clearOuterVolume( pos, particle.radius, ignore=[particle] )
 
-        self.main.moveParticle( particle, pos )
-        #particle.pos = pos
+        #self.main.moveParticle( particle, pos )
+        particle.pos = pos
         self.updateParticle( particle, pos )
 
         
     def clearVolume( self, pos, radius, ignore=[] ):
 
-        if not self.checkOverlap(pos, radius, ignore ):
+        if not self.checkOverlap( pos, radius, ignore ):
             raise NoSpace()
 
         if not self.withinShell( pos, radius ):
@@ -160,18 +162,10 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
         n = list( n )
         for particle in ignore:
-            p = particle#( particle.species, particle.serial )
-            if p in n:
-                n.remove( p )
+            if particle in n:
+                n.remove( particle )
 
         return not n
-
-
-    def checkOverlap1( self, pos, radius ):
-        
-        n, _ = self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
-        return len( n ) <= 1
-
 
     '''
     def getNeighborParticles( self, pos, n=None ):
@@ -181,9 +175,10 @@ class MultiBDCore( BDSimulatorCoreBase ):
         return neighbors, d
     '''
 
-    def getParticlesWithinRadius( self, pos, radius ):
-        n, _ = self.particleMatrix.getNeighborsWithinRadius( pos, radius )
-        return n
+    def getParticlesWithinRadius( self, pos, radius, ignore=[] ):
+        neighbors, _ = \
+            self.particleMatrix.getNeighborsWithinRadius( pos, radius )
+        return [ n for n in neighbors if n not in ignore ]
 
 
     def getClosestParticle( self, pos, ignore=[] ):
@@ -1117,7 +1112,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.initialize()
 
         #if self.stepCounter % 100 == 0:
-        #    self.check()
+        #self.check()
 
         self.stepCounter += 1
 
