@@ -146,11 +146,10 @@ class BDSimulatorCoreBase( object ):
 
         newpos = particle.pos + displacement
         
-        neighbors, dists = self.getNeighborsWithinRadius( newpos, 
-                                                          species.radius )
+        neighbors = self.getParticlesWithinRadius( newpos, species.radius )
 
         if len( neighbors ) >= 2:  # collision
-            closest = neighbors[1]
+            closest = neighbors[1]  # neighbors[0] is this particle
             species2 = closest.species
 
             rt = self.main.reactionTypeMap2.get( ( species, species2 ) )
@@ -352,7 +351,8 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
         self.moveParticle = self.main.moveParticle
 
         #self.getNeighborParticles = main.getNeighborParticles
-        self.getClosestParticle = main.getClosestParticle
+        self.getParticlesWithinRadius = main.getParticlesWithinRadius
+        #self.getClosestParticle = main.getClosestParticle
 
         
     def initialize( self ):

@@ -510,31 +510,32 @@ class ParticleSimulatorBase( object ):
 
     def checkOverlap( self, pos, radius, ignore=[] ):
         
-        particles = self.getParticlesWithinRadiusNoSort( pos, radius, ignore )
+        particles, _ = \
+            self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
+        if len( particles ) == 0:
+            return True
 
-        return not particles
+        particles = [ Particle( p[0], p[1] ) for p in particles ]
+
+        if [ p for p in particles if p not in ignore ]:
+            return False
+        else:
+            return True
+
 
         
-    def getParticlesWithinRadius( self, pos, radius, ignore=[] ): 
+    def getParticlesWithinRadius( self, pos, radius ):
         particles, _ =\
             self.particleMatrix.getNeighborsWithinRadius( pos, radius )
 
-        if len( particles ) == 0:
-            return []
-
-        particles = [ Particle( p[0], p[1] ) for p in particles ]
-        return [ p for p in particles if p not in ignore ]
+        return [ Particle( p[0], p[1] ) for p in particles ]
 
 
-    def getParticlesWithinRadiusNoSort( self, pos, radius, ignore=[] ): 
+    def getParticlesWithinRadiusNoSort( self, pos, radius ): 
         particles, _ =\
             self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
 
-        if len( particles ) == 0:
-            return []
-
-        particles = [ Particle( p[0], p[1] ) for p in particles ]
-        return [ p for p in particles if p not in ignore ]
+        return [ Particle( p[0], p[1] ) for p in particles ]
 
 
     def clear( self ):
