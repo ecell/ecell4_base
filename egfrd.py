@@ -67,8 +67,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
         
     def updateParticle( self, particle, pos ):
 
-        self.particleMatrix.update( particle, pos, particle.radius )
-
+        self.particleMatrix.update(          particle, pos, particle.radius )
 
     def initialize( self ):
 
@@ -93,7 +92,6 @@ class MultiBDCore( BDSimulatorCoreBase ):
         self.shellMatrix.clear()
         for shell in self.multi.shellList:
             self.shellMatrix.add( shell, shell.pos, shell.radius )
-
 
     def addParticle( self, particle ):
 
@@ -130,8 +128,8 @@ class MultiBDCore( BDSimulatorCoreBase ):
             self.escaped = True
             self.clearOuterVolume( pos, particle.radius, ignore=[particle] )
 
-        #self.main.moveParticle( particle, pos )
-        particle.pos = pos
+        self.main.moveParticle( particle, pos )
+        #particle.pos = pos
         self.updateParticle( particle, pos )
 
         

@@ -188,16 +188,32 @@ class Particle( object ):
         else:
             raise ValueError, 'give either serial or index.'
 
+        self.hash = hash( self.species ) ^ self.serial
+
+
     def __str__( self ):
+
         return '( ' + self.species.id + ', ' + str( self.serial ) + ' )'
 
+
+    def __eq__( self, other ):
+
+        return self.species == other.species and self.serial == other.serial
+
     def __cmp__( self, other ):
+
         if self.species == other.species:
             return self.serial - other.serial
         elif self.species < other.species:
             return -1
         else:
             return 1
+
+
+    def __hash__( self ):
+
+        return self.hash
+
 
     def getPos( self ):
         pool = self.species.pool
