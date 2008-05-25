@@ -71,7 +71,8 @@ namespace util
                 PyObject* retval = PyArray_New(&PyArray_Type, 1,
                         const_cast<npy_intp*>(dims),
                         get_numpy_typecode<T_>::value, NULL,
-                        const_cast<source_type&>(val).data(), 0,
+                        //const_cast<source_type&>(val).data(), 0,
+                        &const_cast<source_type&>(val)[0], 0,
                         NPY_CARRAY, NULL);
                 reinterpret_cast<PyArrayObject*>(retval)->flags |= NPY_OWNDATA;
                 return retval;
