@@ -55,10 +55,12 @@ def profrun():
         #logging.info( s.dumpPopulation() )
 
 
-#import cProfile
-#cProfile.run('profrun()', 'fooprof')
-import profile
+try:
+    import cProfile as profile
+except:
+    import profile
 profile.run('profrun()', 'fooprof')
+
 import pstats
 pstats.Stats('fooprof').sort_stats('time').print_stats(40)
 
