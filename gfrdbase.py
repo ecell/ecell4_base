@@ -200,6 +200,10 @@ class Particle( object ):
 
         return self.species == other.species and self.serial == other.serial
 
+    def __ne__( self, other ):
+
+        return self.species != other.species or self.serial != other.serial
+
     def __cmp__( self, other ):
 
         if self.species == other.species:
