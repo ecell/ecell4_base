@@ -154,3 +154,5 @@ funcSum( boost::function<const Real( const unsigned int i )> f,
 
     return sum;
 }
+
+

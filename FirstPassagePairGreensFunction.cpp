@@ -1233,10 +1233,32 @@ FirstPassagePairGreensFunction::p_0( const Real t,
 }
 
 
+const unsigned int
+FirstPassagePairGreensFunction::guess_maxi( const Real t ) const
+{
+    const Real D( getD() );
+    const Real sigma( getSigma() );
+    const Real a( geta() );
+
+    const Real Dt( D * t );
+    const Real max_alpha( sqrt( - log( this->TOLERANCE ) / Dt ) );
+    
+    return static_cast<unsigned int>( max_alpha * ( a - sigma ) / M_PI ) + 1;
+}
+
+
 const Real 
 FirstPassagePairGreensFunction::p_survival( const Real t,
 					    const Real r0 ) const
 {
+    unsigned int maxi( guess_maxi( t ) );
+    printf("maxi %d\n",maxi );
+/*    if( maxi > this->MAX_ALPHA_SEQ )
+    {
+
+    }
+*/
+
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
 					p_survival_i_exp, 
 					this,
@@ -1383,6 +1405,7 @@ p_int_r_table( const Real r,
 			   num_r0Table.size() ) );
     return p;
 }
+
 
 
 const Real

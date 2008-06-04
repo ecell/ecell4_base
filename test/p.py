@@ -18,17 +18,31 @@ D = 1e-12
 #kf = 1000 * sigma * D
 #kf=1e-8
 #kf=1e-10
-kf=1e-12
+kf=1e-15
 #a = 1e-7
-a = sigma*1.01
+a = sigma*200
 #r0 = a * (1.0-1e-7)
-r0 = sigma# * 1.0001
+#r0 = sigma# * 1.0001
+r0 = sigma * 100
 
 tau = sigma*sigma / D
 #T = tau * .1
-T=1e-10
+T = 1e-1
 
 rmin = sigma
+
+
+def plot_p_survival_i( gf ):
+
+    N = 100
+
+    x = range( N )
+    parray1 = numpy.array( [ gf.p_survival_i_exp( i, T, r0 ) for i in x ] )
+    print len(parray1[:-1]), len( parray1[1:])
+    parray2 = parray1[:-1] + parray1[1:]
+    plot( range(N-1), parray2, '-', label='psurvival_i' )
+    plot( range(N), parray1, '.', label='psurvival_i' )
+
 
 def plot_p_leaveas( gf, t ):
 
@@ -135,12 +149,12 @@ if __name__ == '__main__':
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, sigma )
     #gf = _gfrd.FirstPassageNoCollisionPairGreensFunction( D )
     gf.seta( a )
+                     
     #plot_p_int_r( gf, T )
     #plot_ip_theta( gf, r0, T )
-    plot_p_leaveas( gf, r0 )
+    #plot_p_leaveas( gf, r0 )
     #plot_leaveas( gf, r0 )
-
-
+    plot_p_survival_i( gf )
 
     #xlabel( 'r / sigma' )
     #ylabel( 'p_irr' )

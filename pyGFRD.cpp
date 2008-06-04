@@ -284,6 +284,10 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "f_alpha", &FirstPassagePairGreensFunction::f_alpha )
 	.def( "f_alpha_aux", &FirstPassagePairGreensFunction::f_alpha_aux )
 
+	.def( "p_survival_i_exp", &FirstPassagePairGreensFunction::p_survival_i_exp )
+
+
+
 	.def( "dump", &FirstPassagePairGreensFunction::dump )
 
 //	.def( "alpha_i", &FirstPassagePairGreensFunction::alpha_i )

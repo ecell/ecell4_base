@@ -154,6 +154,47 @@ public:
     const Real alpha_i( const Integer i, const Integer n, 
 			gsl_root_fsolver* const solver ) const;
 
+    const Real p_survival_i( const Real alpha,
+			     const Real r0 ) const;
+
+    const Real p_0_i( const Real alpha,
+		      const Real r,
+		      const Real r0 ) const;
+
+    const Real dp_survival_i( const Real alpha,
+			      const Real r0 ) const;
+
+    const Real leavea_i( const Real alpha,
+			 const Real r0 ) const;
+
+    const Real leaves_i( const Real alpha,
+			 const Real r0 ) const;
+
+    const Real p_leavea_i( const Real alpha,
+			   const Real r0,
+                           const Real pleave_factor ) const;
+
+    const Real p_leaves_i( const Real alpha,
+			   const Real r0,
+                           const Real pleave_factor ) const;
+
+    const Real p_survival_den( const Real alpha,
+                               const Real r0 ) const;
+
+    const Real p_int_r_i( const Real r,
+			  const Real alpha,
+			  const Real r0,
+			  const Real num_r0 ) const;
+
+    const Real p_0_i_exp( const unsigned int i,
+			  const Real t,
+			  const Real r,
+			  const Real r0 ) const;
+
+    const Real p_survival_i_exp( const unsigned int i,
+				 const Real t,
+				 const Real r0 ) const;
+
 
 protected:
 
@@ -210,39 +251,6 @@ protected:
     }
 
 
-
-    const Real p_0_i( const Real alpha,
-		      const Real r,
-		      const Real r0 ) const;
-
-    const Real p_survival_i( const Real alpha,
-			     const Real r0 ) const;
-
-    const Real dp_survival_i( const Real alpha,
-			      const Real r0 ) const;
-
-    const Real leavea_i( const Real alpha,
-			 const Real r0 ) const;
-
-    const Real leaves_i( const Real alpha,
-			 const Real r0 ) const;
-
-    const Real p_leavea_i( const Real alpha,
-			   const Real r0,
-                           const Real pleave_factor ) const;
-
-    const Real p_leaves_i( const Real alpha,
-			   const Real r0,
-                           const Real pleave_factor ) const;
-
-    const Real p_survival_den( const Real alpha,
-                               const Real r0 ) const;
-
-    const Real p_int_r_i( const Real r,
-			  const Real alpha,
-			  const Real r0,
-			  const Real num_r0 ) const;
-
     const Real p_int_r_table( const Real r,
 			      const Real t,
 			      const Real r0,
@@ -271,15 +279,6 @@ protected:
 			    const Real t,
 			    const unsigned int n,
 			    const RealVector& p_nTable ) const;
-
-    const Real p_0_i_exp( const unsigned int i,
-			  const Real t,
-			  const Real r,
-			  const Real r0 ) const;
-
-    const Real p_survival_i_exp( const unsigned int i,
-				 const Real t,
-				 const Real r0 ) const;
 
     const Real p_survival_i_exp_table( const unsigned int i,
 				       const Real t,
@@ -354,6 +353,8 @@ protected:
     void makedp_n_at_aTable( RealVector& p_nTable,
 			     const Real r0, 
 			     const Real t ) const;
+
+    const unsigned int guess_maxi( const Real t ) const;
 
     const Real findRoot( gsl_function& F,
                          gsl_root_fsolver* solver,
