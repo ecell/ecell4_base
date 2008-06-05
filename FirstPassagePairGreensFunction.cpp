@@ -1251,9 +1251,10 @@ const Real
 FirstPassagePairGreensFunction::p_survival( const Real t,
 					    const Real r0 ) const
 {
+/*
     unsigned int maxi( guess_maxi( t ) );
     printf("maxi %d\n",maxi );
-/*    if( maxi > this->MAX_ALPHA_SEQ )
+    if( maxi > this->MAX_ALPHA_SEQ )
     {
 
     }

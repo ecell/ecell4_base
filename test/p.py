@@ -20,27 +20,29 @@ D = 1e-12
 #kf=1e-10
 kf=1e-15
 #a = 1e-7
-a = sigma*200
+a = sigma*10
 #r0 = a * (1.0-1e-7)
-#r0 = sigma# * 1.0001
-r0 = sigma * 100
+r0 = sigma * 2
+#r0 = (a-sigma) * 0.5 + sigma
 
 tau = sigma*sigma / D
 #T = tau * .1
-T = 1e-1
+#T = 1e-300
+T = 0
 
 rmin = sigma
 
 
 def plot_p_survival_i( gf ):
 
-    N = 100
+    N = 1000
 
     x = range( N )
     parray1 = numpy.array( [ gf.p_survival_i_exp( i, T, r0 ) for i in x ] )
     print len(parray1[:-1]), len( parray1[1:])
     parray2 = parray1[:-1] + parray1[1:]
     plot( range(N-1), parray2, '-', label='psurvival_i' )
+    plot( range(N-1), parray2.cumsum(), '-', label='psurvival_i_sum' )
     plot( range(N), parray1, '.', label='psurvival_i' )
 
 
