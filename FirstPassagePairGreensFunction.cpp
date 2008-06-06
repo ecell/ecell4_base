@@ -321,7 +321,7 @@ inline const Real G( const unsigned int n, const unsigned int k )
 
 
 const Real FirstPassagePairGreensFunction::P( const Integer n,
-					       const Real x )
+                                              const Real x )
 {
     Real result( 0.0 );
 
@@ -751,14 +751,12 @@ FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
     const Real sigmasq( sigma * sigma );
     const Real alphasq( alpha * alpha );
 
-    Real num1;
-    {
-	const Real angle_a( alpha * ( a - sigma ) );
-	const Real cos_a( cos( angle_a ) );
+    const Real angle_a( alpha * ( a - sigma ) );
+    const Real cos_a( cos( angle_a ) );
 
-        num1 = h * sigmasq * hsigma_p_1 - a * ( hsigma_p_1 * hsigma_p_1
-                                                + sigmasq * alphasq ) * cos_a;
-    }
+    const Real num1( h * sigmasq * hsigma_p_1 
+                     - a * ( hsigma_p_1 * hsigma_p_1
+                             + sigmasq * alphasq ) * cos_a );
 
     const Real num2( num_r0( alpha, r0 ) );
 
@@ -785,15 +783,13 @@ FirstPassagePairGreensFunction::dp_survival_i( const Real alpha,
     const Real sigmasq( sigma * sigma );
     const Real alphasq( alpha * alpha );
 
-    Real num1;
-    {
-	const Real angle_a( alpha * ( a - sigma ) );
-	const Real cos_a( cos( angle_a ) );
+    const Real angle_a( alpha * ( a - sigma ) );
+    const Real cos_a( cos( angle_a ) );
 
-	num1 = alpha * ( h * sigmasq * hsigma_p_1 
-                         - a * ( hsigma_p_1 * hsigma_p_1 + sigmasq * alphasq ) *
-                                 cos_a );
-    }
+    const Real num1( alpha * ( h * sigmasq * hsigma_p_1 
+                               - a * ( hsigma_p_1 * hsigma_p_1 
+                                       + sigmasq * alphasq ) *
+                               cos_a ) );
 
     const Real num2( num_r0( alpha, r0 ) );
 
@@ -819,28 +815,22 @@ FirstPassagePairGreensFunction::leavea_i( const Real alpha,
 
     const Real sigmasq( sigma * sigma );
     const Real alphasq( alpha * alpha );
+    const Real hsq( h * h );
 
-    Real num1;
-    {
-	const Real angle_a( alpha * ( a - sigma ) );
-	Real sin_a;
-	Real cos_a;
-	sincos( angle_a, &sin_a, &cos_a );
+    const Real f1( 1 + 2 * h * sigma + hsq * sigmasq + sigmasq * alphasq );
 
-	num1 = alpha * ( hsigma_p_1 * cos_a - sigma * alpha * sin_a );
-//        num1 = alpha * ( - a + sigma - a * h * sigma ) * cos_a  
-//            + ( hsigma_p_1 + a * sigma * alphasq ) * sin_a;
-    }
+    const Real angle_a( alpha * ( a - sigma ) );
+    const Real cos_a( cos( angle_a ) );
 
+    const Real num1( alpha * af * cos_a );
     const Real num2( num_r0( alpha, r0 ) );
     
-    const Real den( 2 * a * M_PI * r0 *
-		    ( ( a - sigma ) * sigmasq * alphasq +
-		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
+    const Real den( 2 * a * M_PI * r0 * hsigma_p_1 *
+                    ( a * af 
+                      - sigmasq * ( h + hsq * sigma + sigma * alphasq ) ) );
 
     const Real result( D * num1 * num2 / den );
     //printf("leavea_i %g %g %g %g\n", result, num1, num2, den );
-
 
     return result;
 }
@@ -881,21 +871,17 @@ FirstPassagePairGreensFunction::p_leavea_i( const Real alpha,
 {
     const Real a( geta() );
     const Real sigma( getSigma() );
-    const Real h( geth() );
 
-    Real num1;
-    {
-	const Real angle_a( alpha * ( a - sigma ) );
-	Real sin_a;
-	Real cos_a;
-	sincos( angle_a, &sin_a, &cos_a );
+    const Real hsigma_p_1( this->hsigma_p_1 );
+    const Real sigmasq( sigma * sigma );
+    const Real alphasq( alpha * alpha );
 
-	//num1 = ( a - sigma + a * h * sigma ) * alpha * cos_a - 
-        //   ( hsigma_p_1 + a * sigma * alpha * alpha ) * sin_a;
-	num1 = ( a * h * sigma + a ) * cos_a - a * sigma * alpha * sin_a;
-    }
+    const Real angle_a( alpha * ( a - sigma ) );
+    const Real cos_a( cos( angle_a ) );
 
-    const Real result( - 2.0 * num1 * pleave_factor );
+    const Real num1( ( hsigma_p_1 * hsigma_p_1 + sigmasq * alphasq ) * cos_a );
+
+    const Real result( - 2.0 * a * num1 * pleave_factor / hsigma_p_1 );
 
     return result;
 }
