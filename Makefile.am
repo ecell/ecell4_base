@@ -40,6 +40,7 @@ lib_LTLIBRARIES= _gfrd.la
 noinst_HEADERS=\
 Defs.hpp\
 funcSum.hpp\
+findRoot.hpp\	
 freeFunctions.hpp\
 factorial.hpp\
 HalfOrderBesselGenerator.hpp\
@@ -59,6 +60,7 @@ FirstPassageNoCollisionPairGreensFunction.hpp
 
 _gfrd_la_SOURCES=\
 funcSum.cpp\
+findRoot.cpp\
 freeFunctions.cpp\
 FreeGreensFunction.cpp\
 FirstPassageGreensFunction.cpp\

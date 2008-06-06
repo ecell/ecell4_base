@@ -22,20 +22,20 @@ kf=1e-15
 #a = 1e-7
 a = sigma*100
 #r0 = a * (1.0-1e-7)
-r0 = sigma * 1.1
+r0 = sigma * 5
 #r0 = (a-sigma) * 0.5 + sigma
 
 tau = sigma*sigma / D
 #T = tau * .1
 #T = 1e-300
-T = 1e-8
+T = 1e-10
 
 rmin = sigma
 
 
 def plot_p_survival_i( gf ):
 
-    N = 10000
+    N = 1000
 
     x = range( N )
     parray1 = numpy.array( [ gf.p_survival_i_exp( i, T, r0 ) for i in x ] )

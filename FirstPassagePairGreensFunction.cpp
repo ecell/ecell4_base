@@ -13,10 +13,10 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_bessel.h>
-#include <gsl/gsl_roots.h>
 
 #include "factorial.hpp"
 #include "funcSum.hpp"
+#include "findRoot.hpp"
 
 #include "FirstPassagePairGreensFunction.hpp"
 
@@ -52,54 +52,6 @@ void FirstPassagePairGreensFunction::seta( const Real a )
 
     clearAlphaTable();
 }
-
-const Real 
-FirstPassagePairGreensFunction::findRoot( gsl_function& F,
-                                          gsl_root_fsolver* solver,
-                                          const Real low,
-                                          const Real high,
-                                          std::string funcName ) const
-{
-    Real l( low );
-    Real h( high );
-
-    gsl_root_fsolver_set( solver, &F, l, h );
-
-    const unsigned int maxIter( 100 );
-
-    unsigned int i( 0 );
-    while( true )
-    {
-	gsl_root_fsolver_iterate( solver );
-	l = gsl_root_fsolver_x_lower( solver );
-	h = gsl_root_fsolver_x_upper( solver );
-
-	const int status( gsl_root_test_interval( l, h, 0.0, 
-						  this->TOLERANCE ) );
-
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << funcName << ": failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
-
-	++i;
-    }
-  
-
-    const Real root( gsl_root_fsolver_root( solver ) );
-
-    return root;
-}
-
 
 //
 // Alpha-related methods
@@ -822,11 +774,11 @@ FirstPassagePairGreensFunction::leavea_i( const Real alpha,
     const Real angle_a( alpha * ( a - sigma ) );
     const Real cos_a( cos( angle_a ) );
 
-    const Real num1( alpha * af * cos_a );
+    const Real num1( alpha * f1 * cos_a );
     const Real num2( num_r0( alpha, r0 ) );
     
     const Real den( 2 * a * M_PI * r0 * hsigma_p_1 *
-                    ( a * af 
+                    ( a * f1
                       - sigmasq * ( h + hsq * sigma + sigma * alphasq ) ) );
 
     const Real result( D * num1 * num2 / den );
@@ -1529,7 +1481,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
 
-    const Real t( findRoot( F, solver, low, high, "drawTime" ) );
+    const Real t( findRoot( F, solver, low, high, this->TOLERANCE, 
+                            "drawTime" ) );
 
     gsl_root_fsolver_free( solver );
 
@@ -1627,6 +1580,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
     {
         gsl_root_fsolver_free( solver );
         return boost::make_tuple( findRoot( Fa, solver, low, high, 
+                                            this->TOLERANCE,
                                             "drawTime2: escape" ),
                                   ESCAPE );
     }
@@ -1691,6 +1645,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                         boost::tuple<Real,EventType> 
                             ret(  boost::make_tuple( findRoot( Fs, solver, 
                                                                low, high, 
+                                                               this->TOLERANCE,
                                                                "drawTime2: s" ),
                                                      REACTION ) );
                         gsl_root_fsolver_free( solver );
@@ -1701,6 +1656,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                         boost::tuple<Real,EventType>
                             ret( boost::make_tuple( findRoot( Fa, solver, 
                                                               low, high, 
+                                                               this->TOLERANCE,
                                                               "drawTime2: a" ),
                                                     ESCAPE ) );
                         gsl_root_fsolver_free( solver );
@@ -1745,6 +1701,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                     boost::tuple<Real,EventType> 
                         ret( boost::make_tuple( findRoot( Fa, solver, 
                                                           low, high, 
+                                                          this->TOLERANCE,
                                                           "drawTime2: s" ),
                                                 ESCAPE ) );
                     gsl_root_fsolver_free( solver );
@@ -1799,6 +1756,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                         boost::tuple<Real,EventType> 
                             ret( boost::make_tuple( findRoot( Fs, solver, 
                                                               low, high, 
+                                                               this->TOLERANCE,
                                                               "drawTime2: s" ),
                                                     REACTION ) );
                         gsl_root_fsolver_free( solver );
@@ -1809,6 +1767,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                         boost::tuple<Real,EventType> 
                             ret( boost::make_tuple( findRoot( Fa, solver, 
                                                               low, high, 
+                                                               this->TOLERANCE,
                                                               "drawTime2: a" ),
                                                     ESCAPE ) );
                         gsl_root_fsolver_free( solver );
@@ -1840,6 +1799,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                     boost::tuple<Real,EventType> 
                         ret( boost::make_tuple( findRoot( Fs, solver, 
                                                           low, high, 
+                                                          this->TOLERANCE,
                                                           "drawTime2: s" ),
                                                 REACTION ) );
                     gsl_root_fsolver_free( solver );
@@ -1862,9 +1822,9 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
         }
     }
 
-    const Real t_escape( findRoot( Fa, solver, low, high, 
+    const Real t_escape( findRoot( Fa, solver, low, high, this->TOLERANCE,
                                    "drawTime2: escape" ) );
-    const Real t_reaction( findRoot( Fs, solver, low, high, 
+    const Real t_reaction( findRoot( Fs, solver, low, high, this->TOLERANCE,
                                      "drawTime2: reaction" ) );
 
     printf("e %g r %g\n", t_escape, t_reaction);
@@ -2105,7 +2065,8 @@ FirstPassagePairGreensFunction::drawPleavea( gsl_function& F,
         }
     }
 
-    const Real t( findRoot( F, solver, low, high, "drawTime2: a" ) );
+    const Real t( findRoot( F, solver, low, high,  
+                            this->TOLERANCE, "drawTime2: a" ) );
 
     return t;
 }
@@ -2186,7 +2147,8 @@ FirstPassagePairGreensFunction::drawPleaves( gsl_function& F,
         }
     }
 
-    const Real t( findRoot( F, solver, low, high, "drawTime2: s" ) );
+    const Real t( findRoot( F, solver, low, high, this->TOLERANCE,
+                            "drawTime2: s" ) );
 
     return t;
 }

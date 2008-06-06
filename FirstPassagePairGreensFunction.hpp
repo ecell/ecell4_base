@@ -356,14 +356,6 @@ protected:
 
     const unsigned int guess_maxi( const Real t ) const;
 
-    const Real findRoot( gsl_function& F,
-                         gsl_root_fsolver* solver,
-                         const Real low,
-                         const Real high,
-                         std::string funcName ) const;
-
-
-
     struct f_alpha0_aux_params
     { 
 	const FirstPassagePairGreensFunction* const gf;
