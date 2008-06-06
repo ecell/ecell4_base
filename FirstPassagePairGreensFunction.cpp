@@ -754,29 +754,20 @@ FirstPassagePairGreensFunction::p_survival_i( const Real alpha,
     Real num1;
     {
 	const Real angle_a( alpha * ( a - sigma ) );
-	Real sin_a;
-	Real cos_a;
-	sincos( angle_a, &sin_a, &cos_a );
+	const Real cos_a( cos( angle_a ) );
 
-	num1 = alpha * sigmasq * h - 
-	    alpha * ( a - sigma + a * h * sigma ) * cos_a +
-	    ( hsigma_p_1 + a * sigma * alphasq ) * sin_a ;
-
-        /*
-	num1 = alpha * ( sigmasq * h  
-                         + ( a * sigma * alpha ) * sin_a
-                         - ( a + a * h * sigma ) * cos_a );
-        */
-
+        num1 = h * sigmasq * hsigma_p_1 - a * ( hsigma_p_1 * hsigma_p_1
+                                                + sigmasq * alphasq ) * cos_a;
     }
 
     const Real num2( num_r0( alpha, r0 ) );
 
-    const Real den( r0 * alphasq * 
-		    ( ( a - sigma ) * sigmasq * alphasq +
-		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
+    const Real den( r0 * hsigma_p_1 * alpha * 
+                    ( - hsigma_p_1 *
+                      ( a + a * h * sigma - h * sigmasq ) 
+                      + ( sigma - a ) * sigmasq * alphasq ) );
 
-    const Real result( 2.0 * num1 * num2 / den );
+    const Real result( - 2.0 * num1 * num2 / den );
 
     return result;
 }
@@ -797,22 +788,20 @@ FirstPassagePairGreensFunction::dp_survival_i( const Real alpha,
     Real num1;
     {
 	const Real angle_a( alpha * ( a - sigma ) );
-	Real sin_a;
-	Real cos_a;
-	sincos( angle_a, &sin_a, &cos_a );
+	const Real cos_a( cos( angle_a ) );
 
-	num1 = h * sigmasq * alpha -
-            alpha * a * hsigma_p_1 * cos_a +
-            sigma * a * alphasq * sin_a;
+	num1 = alpha * ( h * sigmasq * hsigma_p_1 
+                         - a * ( hsigma_p_1 * hsigma_p_1 + sigmasq * alphasq ) *
+                                 cos_a );
     }
 
     const Real num2( num_r0( alpha, r0 ) );
 
-    const Real den( r0 * 
-		    ( ( a - sigma ) * sigmasq * alphasq +
-		      hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) ) );
+    const Real den( r0 * hsigma_p_1 * 
+                    (- hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) )
+                    + ( sigma - a ) * sigmasq * alphasq );
 
-    const Real result( - 2.0 * getD() * num1 * num2 / den );
+    const Real result( 2.0 * getD() * num1 * num2 / den );
 
     return result;
 }
