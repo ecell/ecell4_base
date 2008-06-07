@@ -14,6 +14,7 @@ L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
 s = EGFRDSimulator()
 s.setWorldSize( L )
+s.setMatrixSize( 10 )
 
 box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 # not supported yet
@@ -91,7 +92,7 @@ s.throwInParticles( P, C2N( 50e-9 ), box1 )
 endTime = 0
 while 1:
     s.step()
-    nextTime = s.scheduler.getNextTime()
+    nextTime = s.scheduler.getTopTime()
     if nextTime > endTime:
         s.stop( endTime )
         break

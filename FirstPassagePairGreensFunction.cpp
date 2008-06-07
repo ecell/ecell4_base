@@ -635,7 +635,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const unsigned int n,
 
 	// cutoff
 	const Real alpha_i_sq( alpha_i * alpha_i );
-	if( alpha_i_sq * exp( - Dt * alpha_i_sq ) < threshold )
+	if( alpha_i_sq * exp( - Dt * alpha_i_sq )  < threshold )
 	{
 	    break;
 	}
@@ -1182,8 +1182,8 @@ FirstPassagePairGreensFunction::p_survival( const Real t,
 					    const Real r0 ) const
 {
 
-    unsigned int maxi( guess_maxi( t ) );
-    printf("maxi %d\n",maxi );
+//    unsigned int maxi( guess_maxi( t ) );
+//    printf("maxi %d\n",maxi );
 /*    if( maxi > this->MAX_ALPHA_SEQ )
     {
 
