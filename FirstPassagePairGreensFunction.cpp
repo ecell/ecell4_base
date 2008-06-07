@@ -13,6 +13,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_sf_lambert.h>
 
 #include "factorial.hpp"
 #include "funcSum.hpp"
@@ -634,7 +635,7 @@ FirstPassagePairGreensFunction::updateAlphaTable( const unsigned int n,
 
 	// cutoff
 	const Real alpha_i_sq( alpha_i * alpha_i );
-	if( alpha_i_sq * exp( - Dt * alpha_i_sq )  < threshold )
+	if( alpha_i_sq * exp( - Dt * alpha_i_sq ) < threshold )
 	{
 	    break;
 	}
@@ -1168,7 +1169,9 @@ FirstPassagePairGreensFunction::guess_maxi( const Real t ) const
     const Real a( geta() );
 
     const Real Dt( D * t );
-    const Real max_alpha( sqrt( - log( this->TOLERANCE ) / Dt ) );
+    const Real tolsq( this->TOLERANCE * this->TOLERANCE );
+    const Real max_alpha( 1 / sqrt( gsl_sf_lambert_W0( 2 * Dt / tolsq ) 
+                                    * tolsq  ) );
     
     return static_cast<unsigned int>( max_alpha * ( a - sigma ) / M_PI ) + 1;
 }
@@ -1178,10 +1181,10 @@ const Real
 FirstPassagePairGreensFunction::p_survival( const Real t,
 					    const Real r0 ) const
 {
-/*
+
     unsigned int maxi( guess_maxi( t ) );
     printf("maxi %d\n",maxi );
-    if( maxi > this->MAX_ALPHA_SEQ )
+/*    if( maxi > this->MAX_ALPHA_SEQ )
     {
 
     }
