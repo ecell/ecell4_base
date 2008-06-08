@@ -15,7 +15,7 @@ from surface import *
 
 #from cObjectMatrix import ObjectMatrix
 #SimpleObjectMatrix = ObjectMatrix
-#from ObjectMatrix import *
+from ObjectMatrix import ObjectMatrix as pObjectMatrix
 
 from gfrdbase import *
 from bd import *
@@ -597,7 +597,7 @@ class Pair( object ):
     def choosePairGreensFunction( self, r0, t ):
 
         distanceFromSigma = r0 - self.sigma
-        distanceFromShell = self.a_r - r0;
+        distanceFromShell = self.a_r - r0
 
         thresholdDistance = Pair.CUTOFF_FACTOR * \
             math.sqrt( 6.0 * self.D_tot * t )
@@ -638,7 +638,7 @@ class Pair( object ):
 
     def newPositions( self, CoM, newInterParticle, oldInterParticle ):
 
-        #FIXME: needs better handling of angles near zero and pi.
+        #FIXME: need better handling of angles near zero and pi.
 
         # I rotate the new interparticle vector along the
         # rotation axis that is perpendicular to both the
@@ -968,6 +968,8 @@ class DummySingle( object ):
         self.multiplicity = 1
 
         self.radius = 0.0
+        self.shellList = [ Shell( NOWHERE, 0.0 ), ]
+
 
     def getMinRadius( self ):
         return 0.0
@@ -995,6 +997,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         else:
             self.shellMatrix = ObjectMatrix()
 
+        self.sm2 = pObjectMatrix()
+
         ParticleSimulatorBase.__init__( self, matrixtype )
 
         self.MULTI_SHELL_FACTOR = 0.1
@@ -1016,10 +1020,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         ParticleSimulatorBase.setWorldSize( self, size )
         self.shellMatrix.setWorldSize( size )
+        self.sm2.setWorldSize( size )
 
     def setMatrixSize( self, size ):
         ParticleSimulatorBase.setMatrixSize( self, size )
         self.shellMatrix.setMatrixSize( size )
+        self.sm2.setMatrixSize( size )
 
     def getMatrixCellSize( self ):
 
@@ -1059,6 +1065,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.scheduler.clear()
         self.shellMatrix.clear()
+        self.sm2.clear()
 
         for species in self.speciesList.values():
             for i in range( species.pool.size ):
@@ -1113,7 +1120,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         #if self.stepCounter % 100 == 0:
         #self.check()
-
+        
         self.stepCounter += 1
 
         event = self.scheduler.getTopEvent()
@@ -1186,14 +1193,17 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def addToShellMatrix( self, obj ):
         for i, shell in enumerate( obj.shellList ):
             self.shellMatrix.add( ( obj, i ), shell.pos, shell.radius )
+            self.sm2.add( ( obj, i ), shell.pos, shell.radius )
 
     def removeFromShellMatrix( self, obj ):
         for i in range( len( obj.shellList ) ):
             self.shellMatrix.remove( ( obj, i ) )
+            self.sm2.remove( ( obj, i ) )
 
     def updateShellMatrix( self, obj ):
         for i, shell in enumerate( obj.shellList ):
             self.shellMatrix.update( ( obj, i ), shell.pos, shell.radius )
+            self.sm2.update( ( obj, i ), shell.pos, shell.radius )
 
 
 
@@ -1480,6 +1490,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         for single in singles:
             assert single.isReset()
             c, d = self.getClosestObj( single.pos, ignore = [single,] )
+            d2 = self.objDistance( single.pos, c )
+            print c, d, d2
+            assert d > 0
             self.updateSingle( single, c, d )
             self.updateEvent( self.t + single.dt, single )
             log.debug( 'restore shell %s %g dt %g closest %s %g' %
@@ -1506,6 +1519,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
     def firePair( self, pair ):
+
+        self.checkObj( pair )
+        print pair.getCoM()
 
         log.info( 'fire: %s eventType %s' % ( pair, pair.eventType ) )
 
@@ -1658,7 +1674,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             newCoM = oldCoM + displacement_R
                 
             newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
-                                                      oldInterParticle )
+                                                  oldInterParticle )
             self.applyBoundary( newpos1 )
             self.applyBoundary( newpos2 )
 
@@ -1669,14 +1685,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.removeFromShellMatrix( pair )
 
-        assert self.distance( newpos1, newpos2 ) >= pair.sigma
-
+        assert pair.checkNewpos( newpos1, newpos2, oldCoM )
         assert self.checkOverlap( newpos1, particle1.species.radius,
                                   ignore = [ particle1, particle2 ] )
         assert self.checkOverlap( newpos2, particle2.species.radius,
                                   ignore = [ particle1, particle2 ] )
 
         single1, single2 = pair.single1, pair.single2
+
+        self.checkObj( pair.single1 )
+        self.checkObj( pair.single2 )
 
         self.moveSingle( single1, newpos1 )
         self.moveSingle( single2, newpos2 )
@@ -1689,6 +1707,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.addToShellMatrix( single1 )
         self.addToShellMatrix( single2 )
+
+        print single1.pos, single2.pos
+        self.checkObj( single1 )
+        self.checkObj( single2 )
 
         pair.dt = -INF
         return pair.dt
@@ -1985,6 +2007,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
         c, d = self.getClosestObj( com, ignore=[ single1, single2 ] )
+        print d, self.objDistance( com, c )
+        if abs((d - self.objDistance( com, c )).sum()) > 1e-12:
+            raise 'error'
         if d < closestShellDistance:
             closest, closestShellDistance = c, d
 
@@ -2048,6 +2073,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         pair.determineNextEvent()
 
         self.addPairEvent( pair )
+        # single1 will be removed at the end of this step.
         self.removeEvent( single2 )
 
         assert closestShellDistance == INF or pair.radius < closestShellDistance
@@ -2136,9 +2162,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def getNeighborShells( self, pos, n=None ):
 
-        neighbors, distances = self.shellMatrix.getNeighbors( pos, n )
+        #neighbors, distances = self.shellMatrix.getNeighbors( pos, n )
+        n2, d2 = self.sm2.getNeighbors( pos, n )
+        neighbors, distances = self.sm2.getNeighbors( pos, n )
+        print neighbors, n2
+        print distances, d2
+        #assert n2[0] == neighbors[0]
+        #assert abs((distances - d2).sum()) == 0
+
         if len( neighbors ) == 0:
-            return DummySingle(), 0
+            return [( DummySingle(), 0 ),], [INF,]
         return neighbors, distances
 
 
@@ -2146,26 +2179,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         neighbors, distances = self.shellMatrix.getNeighborsNoSort( pos, n )
         if len( neighbors ) == 0:
-            return DummySingle(), 0
+            return [DummySingle(),], [INF,]
         return neighbors, distances
 
 
-    def getNeighborShells( self, pos, n=None ):
-
-        neighbors, distances = self.shellMatrix.getNeighbors( pos, n )
-        if len( neighbors ) == 0:
-            return DummySingle(), 0
-        return neighbors, distances
-
-
-    def getNeighborShellsNoSort( self, pos, n=None ):
-
-        neighbors, distances = self.shellMatrix.getNeighborsNoSort( pos, n )
-        if len( neighbors ) == 0:
-            return DummySingle(), 0
-        return neighbors, distances
-
-                           
     def getNeighborShellsWithinRadius( self, pos, radius ):
 
         return self.shellMatrix.getNeighborsWithinRadius( pos, radius )
@@ -2217,43 +2234,27 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return neighbors + [DummySingle()], numpy.concatenate( [ distances,
                                                                  [INF] ] )
 
+    def getClosestShell( self, pos, ignore=[] ):
 
-
-    '''
-    Find the closest shell from the position pos.
-
-    When the sequence parameter ignore is given, this method finds the
-    closest ignoring the objects in it.
-
-    This method returns a tuple ( neighbors, distances ).
-    '''
-
-    def getClosestShell( self, pos, n=1, ignore=[] ):
-
-        neighbors, distances = self.getNeighborShells( pos, len( ignore ) + 1 )
-
-        objs = []
-        dists = []
+        neighbors, distances = self.getNeighborShells( pos )#len( ignore ) + 1 )
 
         for i, neighbor in enumerate( neighbors ):
             if neighbor not in ignore:
-                objs += [neighbor]
-                dists += [distances[i]]
-                if len( objs ) >= n:
-                    return objs, dists
+                return neighbor, distances[i]
 
         return None, INF
 
 
-    def getClosestObj( self, pos, n=1, ignore=[] ):
+    def getClosestObj( self, pos, ignore=[] ):
 
-        neighbors, distances = self.getNeighborShells( pos, len( ignore ) + 1 )
+        shells, distances = self.getNeighborShells( pos )#, len( ignore ) + 1 )
 
-        for i, neighbor in enumerate( neighbors ):
-            if neighbor[0] not in ignore:
-                return neighbor[0], distances[i]
+        for i, shell in enumerate( shells ):
+            neighbor = shell[0]
+            if neighbor not in ignore:
+                return neighbor, distances[i]
 
-        return DummySingle, INF
+        return DummySingle(), INF
 
 
 
@@ -2288,52 +2289,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return dists
             
 
-
-    '''
-    Get neighbors simply by distance.
-
-    This method does not take into account of particle radius or shell size.
-    This method picks top n neighbors simply by the distance between given
-    position pos to positions of objects (either Singles or Pairs) around.
-
-    This method returns a tuple ( neighbors, distances ).
-
-    def getNeighbors( self, pos, n=None ):
-        return self.shellMatrix.getNeighbors( pos, n )
-
-    def getNeighbors( self, pos, n=None ):
-
-        objMatrix = self.matrix
-
-        size = objMatrix.size
-        if not n:
-            n = size 
-
-        distances = self.distanceSqArray( objMatrix.positions, pos )
-
-        topargs = distances.argsort()[:n]
-        distances = distances.take( topargs )
-        distances = numpy.sqrt( distances )
-        neighbors = [ objMatrix.objList[arg] for arg in topargs ]
-
-        return neighbors, distances
-
-    def getClosestNeighbor( self, pos, ignore=[] ):
-
-        neighbors, distances = self.getNeighbors( pos, len( ignore ) + 1 )
-
-        for i in range( len( neighbors ) ): 
-            if neighbors[i] not in ignore:
-                closest, distance = neighbors[i], distances[i]
-
-                #assert not closest in ignore
-                return closest, distance
-
-        # default case: none left.
-        return DummySingle(), INF
-    '''
-
-
     #
     # consistency checkers
     #
@@ -2345,27 +2300,29 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         allshells = [ ( obj, i ) for i in range( len( obj.shellList ) ) ]
         for i, shell in enumerate( obj.shellList ):
-            shellid = (obj,i)
 
-            closest, distance = self.getClosestShell( shell.pos,
-                                                      ignore = allshells )
-
+            #closest, distance = self.getClosestShell( shell.pos,
+            #                                          ignore = allshells )
+            closest, distance = self.getClosestObj( shell.pos,
+                                                    ignore = [obj] )
             radius = shell.radius
 
             if radius > self.getMatrixCellSize():
                 raise RuntimeError,\
                     '%s shell size larger than simulator cell size' % \
-                    str( shellid )
+                    str( ( obj, i ) )
 
             if radius > self.maxShellSize:
                 raise RuntimeError,\
                     '%s shell size larger than maxShellSize' % \
-                    str( shellid )
+                    str( ( obj, i ) )
+
+            print distance, self.objDistance( shell.pos, closest ), self.worldSize
 
             if distance - radius < 0.0:
                 raise RuntimeError,\
                     '%s overlaps with %s. (shell: %g, dist: %g, diff: %g.' \
-                    % ( str( obj ), str( closest[0] ), radius, distance,\
+                    % ( str( obj ), str( closest ), radius, distance,\
                             distance - radius )
 
 
@@ -2408,7 +2365,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         
         self.shellMatrix.check()
 
-        #for key in self.shellMatrix.keyList:
         for k in range( self.scheduler.getSize() ):
             obj = self.scheduler.getEventByIndex(k).getArg()
             for i in range( len( obj.shellList ) ):

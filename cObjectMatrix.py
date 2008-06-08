@@ -110,20 +110,6 @@ class ObjectMatrix( object ):
         return self.getNeighborsCyclicNoSort( pos )
 
 
-    '''
-    def getNeighbors( self, pos, n=None ):
-
-        neighbors, distances = self.impl.all_neighbors_array( pos )
-        if n:
-            topargs = distances.argsort()[:n]
-        else:
-            topargs = distances.argsort()
-        distances = distances.take( topargs )
-        neighbors = [ neighbors[arg].id for arg in topargs ]
- 
-        return neighbors, distancesq
-        '''
-
     def check( self ):
         pass
 

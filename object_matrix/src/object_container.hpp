@@ -137,31 +137,6 @@ public:
                 trunc( pos.y() / cell_size_ ) ) % matrix_.shape()[1],
             static_cast<typename matrix_type::size_type>(
                 trunc( pos.z() / cell_size_ ) ) % matrix_.shape()[2] );
-
-/*
-        return array_gen<typename matrix_type::size_type>(
-            std::min(
-                static_cast<typename matrix_type::size_type>(
-                    std::max(static_cast<typename matrix_type::size_type>(0u),
-                        div_with_jitter_fix<typename matrix_type::size_type>(
-                            pos.x(), cell_size_, t))),
-                static_cast<typename matrix_type::size_type>(
-                    
-            std::min(
-                static_cast<typename matrix_type::size_type>(
-                    std::max(static_cast<typename matrix_type::size_type>(0u),
-                        div_with_jitter_fix<typename matrix_type::size_type>(
-                            pos.y(), cell_size_, t))),
-                static_cast<typename matrix_type::size_type>(
-                    matrix_.shape()[1])),
-            std::min(
-                static_cast<typename matrix_type::size_type>(
-                    std::max(static_cast<typename matrix_type::size_type>(0u),
-                        div_with_jitter_fix<typename matrix_type::size_type>(
-                            pos.z(), cell_size_, t))),
-                static_cast<typename matrix_type::size_type>(
-                    matrix_.shape()[2])));
-*/
     }
 
     inline cell_offset_type offset(const position_type& pos,
@@ -171,15 +146,6 @@ public:
             trunc( pos.x() / cell_size ),
             trunc( pos.y() / cell_size ),
             trunc( pos.z() / cell_size ) );
-/*
-        return array_gen<typename matrix_type::difference_type>(
-                div_with_jitter_fix<typename matrix_type::difference_type>(
-                    pos.x(), cell_size_, t),
-                div_with_jitter_fix<typename matrix_type::difference_type>(
-                    pos.y(), cell_size_, t),
-                div_with_jitter_fix<typename matrix_type::difference_type>(
-                pos.z(), cell_size_, t));
-*/
     }
 
     inline bool offset_index(
@@ -202,24 +168,30 @@ public:
     }
 
     inline position_type offset_index_cyclic(cell_index_type& i,
-            const cell_offset_type& o)
+                                             const cell_offset_type& o)
     {
         position_type retval;
 
         if (o[0] < 0 &&
-                static_cast<typename matrix_type::size_type>(-o[0]) > i[0])
+            static_cast<typename matrix_type::size_type>(-o[0]) > i[0])
         {
             typename matrix_type::size_type t(
-                    (i[0] + matrix_.shape()[0] - (-o[0] % matrix_.shape()[0])) %
-                        matrix_.shape()[0]);
-            retval[0] = (o[0] - static_cast<typename matrix_type::difference_type>(t - i[0])) * cell_size_;
+                (i[0] + matrix_.shape()[0] - (-o[0] % matrix_.shape()[0])) %
+                matrix_.shape()[0]);
+            retval[0] 
+                = (o[0] - 
+                   static_cast<typename matrix_type::difference_type>
+                   (t - i[0])) * cell_size_;
             i[0] = t;
         }
         else if (matrix_.shape()[0] - o[0] <= i[0])
         {
             typename matrix_type::size_type t(
                     (i[0] + (o[0] % matrix_.shape()[0])) % matrix_.shape()[0]);
-            retval[0] = (o[0] - static_cast<typename matrix_type::difference_type>(t - i[0])) * cell_size_;
+            retval[0] 
+                = (o[0] - 
+                   static_cast<typename matrix_type::difference_type>
+                   (t - i[0])) * cell_size_;
             i[0] = t;
         }
         else
@@ -465,12 +437,6 @@ private:
                 collector(iterator(&c, c.end(), i), pos_off);
             }
         }
-    }
-
-    template<typename Tint_, typename Tfloat_>
-    static inline Tint_ div_with_jitter_fix(const Tfloat_& lhs, const Tfloat_& rhs, const Tfloat_& tolerance)
-    {
-        return static_cast<Tint_>((lhs + tolerance * (lhs - rhs * static_cast<Tint_>(lhs / rhs))) / rhs);
     }
 
 private:

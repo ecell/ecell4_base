@@ -10,15 +10,13 @@ import math
 V = 1e-15 #liter
 #L = 1e-6
 #V = 3.33e-17
-L = math.pow( V * 1e-3, 1.0 / 3.0 )
+L = ( V * 1e-3 ) ** ( 1.0 / 3.0 )
 
 s = EGFRDSimulator()
 s.setWorldSize( L )
 s.setMatrixSize( 10 )
 
 box1 = CuboidalSurface( [0,0,0],[L,L,L] )
-# not supported yet
-#s.addSurface( box1 )
 
 modelName='mapk3'
 

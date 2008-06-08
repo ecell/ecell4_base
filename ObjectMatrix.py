@@ -387,14 +387,52 @@ class ObjectMatrix( object ):
 
         distances = distanceArray_Simple( positions, pos ) - radii
 
-        if not n:
-            n = len( distances )
-
         topargs = distances.argsort()[:n]
         distances = distances.take( topargs )
         neighbors = [ neighbors[arg] for arg in topargs ]
 
         return neighbors, distances
+
+
+    def getNeighborsCyclicNoSort( self, pos, n=None, dummy=None ):
+
+        centeridx = self.hashPos( pos )
+
+        positions = []
+        radii = []
+        neighbors = []
+
+        transposes = self.TRANSPOSES + centeridx
+        for idx in transposes:
+
+            idxp = idx % self.matrixSize
+            #matrix = self.cellMatrix[idxp[0],idxp[1],idxp[2]]
+            matrix = self.cellMatrix[idxp[0]][idxp[1]][idxp[2]]
+            if matrix.size == 0:
+                continue
+            
+            # offset the positions; no need to use the cyclic distance later.
+            offsetp = idxp - idx
+            if offsetp[0] == offsetp[1] == offsetp[2] == 0: 
+                positions += [matrix.positions,]
+            else:
+                offset = self.cellSize * offsetp
+                positions += [matrix.positions - offset,]
+
+            radii += [ matrix.radii, ]
+            neighbors += matrix.keyList
+
+        if len( neighbors ) == 0:
+            return [dummy,], [INF,]
+
+        positions = numpy.concatenate( positions )
+        radii = numpy.concatenate( radii )
+        if len( neighbors ) == 0:
+            return [dummy,], [numpy.inf,]
+
+        distances = distanceArray_Simple( positions, pos ) - radii
+
+        return neighbors[:n], distances[:n]
 
 
     def getNeighborsWithinRadius( self, pos, radius ):
@@ -431,8 +469,40 @@ class ObjectMatrix( object ):
         return neighbors, distances
 
 
+    def getNeighborsWithinRadiusNoSort( self, pos, radius ):
+
+        centeridx = self.hashPos( pos )
+
+        distances = []
+        neighbors = []
+
+        transposes = ( self.TRANSPOSES + centeridx ) % self.matrixSize
+        for idx in transposes:
+
+            matrix = self.cellMatrix[idx[0]][idx[1]][idx[2]]
+            #matrix = self.cellMatrix[idx[0],idx[1],idx[2]]
+            if matrix.size == 0:
+                continue
+            dists = self.distanceArray( matrix.positions, pos ) - matrix.radii
+            args = ( dists < radius ).nonzero()[0]
+
+            if len( args ) != 0:
+                distances += [ dists.take( args ), ]
+                neighbors += [ matrix.keyList[arg] for arg in args ]
+
+        if len( neighbors ) == 0:
+            return [], []
+
+        distances = numpy.concatenate( distances )
+
+        return neighbors, distances
+
+
     def getNeighbors( self, pos, n=None, dummy=None ):
         return self.getNeighborsCyclic( pos, n, dummy )
+
+    def getNeighborsNoSort( self, pos, n=None, dummy=None ):
+        return self.getNeighborsCyclicNoSort( pos, n, dummy )
 
 
     def check( self ):
