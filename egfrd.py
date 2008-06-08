@@ -2162,13 +2162,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def getNeighborShells( self, pos, n=None ):
 
-        #neighbors, distances = self.shellMatrix.getNeighbors( pos, n )
+        neighbors, distances = self.shellMatrix.getNeighbors( pos, n )
         n2, d2 = self.sm2.getNeighbors( pos, n )
-        neighbors, distances = self.sm2.getNeighbors( pos, n )
+        #n2, d2 = self.shellMatrix.getNeighbors( pos, n )
+        #neighbors, distances = self.sm2.getNeighbors( pos, n )
         print neighbors, n2
         print distances, d2
         #assert n2[0] == neighbors[0]
-        #assert abs((distances - d2).sum()) == 0
+        assert abs((distances - d2).sum()) == 0
 
         if len( neighbors ) == 0:
             return [( DummySingle(), 0 ),], [INF,]
@@ -2178,6 +2179,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def getNeighborShellsNoSort( self, pos, n=None ):
 
         neighbors, distances = self.shellMatrix.getNeighborsNoSort( pos, n )
+        n2, d2 = self.sm2.getNeighborsNoSort( pos, n )
+        assert abs((distances - d2).sum()) == 0
         if len( neighbors ) == 0:
             return [DummySingle(),], [INF,]
         return neighbors, distances
@@ -2197,6 +2200,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         shells, distances =\
             self.shellMatrix.getNeighborsWithinRadius( pos, radius )
+        n2, d2 = self.sm2.getNeighborsWithinRadius( pos, radius )
+        assert abs((distances - d2).sum()) == 0
 
         neighbors = [ s[0] for s in shells if s[0] not in ignore ]
         neighbors = uniq( neighbors )

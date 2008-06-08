@@ -349,7 +349,7 @@ class ObjectMatrix( object ):
         return matrix.get( key )
 
 
-    def getNeighborsCyclic( self, pos, n=None, dummy=None ):
+    def getNeighborsCyclic( self, pos, n=None ):
 
         centeridx = self.hashPos( pos )
 
@@ -378,12 +378,12 @@ class ObjectMatrix( object ):
             neighbors += matrix.keyList
 
         if len( neighbors ) == 0:
-            return [dummy,], [INF,]
+            return [], []
 
         positions = numpy.concatenate( positions )
         radii = numpy.concatenate( radii )
         if len( neighbors ) == 0:
-            return [dummy,], [numpy.inf,]
+            return [], []
 
         distances = distanceArray_Simple( positions, pos ) - radii
 
@@ -394,7 +394,7 @@ class ObjectMatrix( object ):
         return neighbors, distances
 
 
-    def getNeighborsCyclicNoSort( self, pos, n=None, dummy=None ):
+    def getNeighborsCyclicNoSort( self, pos, n=None ):
 
         centeridx = self.hashPos( pos )
 
@@ -423,12 +423,12 @@ class ObjectMatrix( object ):
             neighbors += matrix.keyList
 
         if len( neighbors ) == 0:
-            return [dummy,], [INF,]
+            return [], []
 
         positions = numpy.concatenate( positions )
         radii = numpy.concatenate( radii )
         if len( neighbors ) == 0:
-            return [dummy,], [numpy.inf,]
+            return [], []
 
         distances = distanceArray_Simple( positions, pos ) - radii
 
@@ -499,10 +499,10 @@ class ObjectMatrix( object ):
 
 
     def getNeighbors( self, pos, n=None, dummy=None ):
-        return self.getNeighborsCyclic( pos, n, dummy )
+        return self.getNeighborsCyclic( pos, n )
 
     def getNeighborsNoSort( self, pos, n=None, dummy=None ):
-        return self.getNeighborsCyclicNoSort( pos, n, dummy )
+        return self.getNeighborsCyclicNoSort( pos, n )
 
 
     def check( self ):
