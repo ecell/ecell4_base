@@ -15,11 +15,12 @@ N = int( sys.argv[3] )
 L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
 
-s = EGFRDSimulator( 'normal' )
-#s = BDSimulator( 'normal' )
+s = EGFRDSimulator()
+#s = BDSimulator()
 s.setWorldSize( L )
 
 s.setMatrixSize( max( 3, int( N ** (1.0/3.0) ) ) )
+#s.setMatrixSize(10)
 #s.setMatrixSize( 30 )
 
 box1 = CuboidalSurface( [0,0,0],[L,L,L] )

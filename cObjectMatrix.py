@@ -51,8 +51,8 @@ class ObjectMatrix( object ):
 
     def add( self, key, pos, radius ):
 
-        assert radius <= self.impl.cell_size
-        #assert key not in self.objectCellMap
+        assert radius < self.cellSize * .5
+        assert key not in self.impl
 
         self.impl[ key ] = object_matrix.Sphere( pos, radius )
 
@@ -65,7 +65,9 @@ class ObjectMatrix( object ):
 
     def update( self, key, pos, radius ):
 
+        assert radius < self.cellSize * .5
         assert key in self.impl
+
         self.impl[ key ] = object_matrix.Sphere( pos, radius )
 
 
@@ -80,6 +82,8 @@ class ObjectMatrix( object ):
 
     def getNeighborsWithinRadiusNoSort( self, pos, radius ):
 
+        assert radius < self.cellSize * .5
+
         return self.impl.neighbors_array_cyclic(\
             object_matrix.Sphere( pos, 
                                   radius ) )
@@ -93,6 +97,8 @@ class ObjectMatrix( object ):
 
 
     def getNeighborsWithinRadius( self, pos, radius ):
+
+        assert radius < self.cellSize * .5
 
         neighbors, distances = \
             self.impl.neighbors_array_cyclic( object_matrix.Sphere( pos, 

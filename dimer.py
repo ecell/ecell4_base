@@ -6,8 +6,8 @@ from bd import *
 from logger import *
 import sys
 
-s = EGFRDSimulator( 'normal' )
-#s = BDSimulator('normal')
+s = EGFRDSimulator()
+#s = BDSimulator()
 
 L = 5e-6
 #L = 2e-6

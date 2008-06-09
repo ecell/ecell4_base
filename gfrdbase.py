@@ -15,9 +15,6 @@ from utils import *
 from _gfrd import *
 
 from cObjectMatrix import *
-SimpleObjectMatrix = ObjectMatrix
-#from ObjectMatrix import SimpleObjectMatrix
-#from ObjectMatrix import *
 
 import os
 import logging
@@ -327,7 +324,7 @@ class ParticlePool( object ):
 
 class ParticleSimulatorBase( object ):
     
-    def __init__( self, matrixtype='simple' ):
+    def __init__( self ):
         self.speciesList = {}
         self.reactionTypeMap1 = {}
         self.reactionTypeMap2 = {}

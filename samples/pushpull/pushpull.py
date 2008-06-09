@@ -70,12 +70,10 @@ else:
     raise 'invalid mode'
 
 
-L = math.pow( V * 1e-3, 1.0 / 3.0 )
+L = ( V * 1e-3 ) ** ( 1.0 / 3.0 )
 
-#s = EGFRDSimulator( 'normal' )
-#s.setMatrixSize( 10 )
 
-s = EGFRDSimulator( 'simple' )
+s = EGFRDSimulator()
 s.setWorldSize( L )
 #s.setDtFactor( 1e-5 )
 
