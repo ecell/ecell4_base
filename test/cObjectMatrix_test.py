@@ -120,8 +120,8 @@ class ObjectMatrixTestCase( unittest.TestCase ):
         self.assertEqual( m.size, 2 )
 
 
-        m.update( o1, [.5,.5,.5],.2 )
-        n, d = m.getNeighborsCyclic( numpy.array( [.5,.5,.7] ) )
+        m.update( o1, [.5,.5,.5],.05 )
+        n, d = m.getNeighborsCyclic( numpy.array( [.5,.5,.55] ) )
         self.failIf( len( n ) != 2 or n[0] != o1 )
         self.assertAlmostEqual( 0, d[0] )
 
