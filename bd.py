@@ -393,9 +393,9 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
 
 class BDSimulator( ParticleSimulatorBase ):
     
-    def __init__( self, matrixtype='normal' ):
+    def __init__( self ):
 
-        ParticleSimulatorBase.__init__( self, matrixtype )
+        ParticleSimulatorBase.__init__( self )
 
         self.core = BDSimulatorCore( self )
         self.isDirty = True

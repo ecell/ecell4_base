@@ -19,7 +19,10 @@ s = EGFRDSimulator()
 #s = BDSimulator()
 s.setWorldSize( L )
 
-s.setMatrixSize( max( 3, int( N ** (1.0/3.0) ) ) )
+s.setMatrixSize( max( 3, int( (3 * N) ** (1.0/3.0) ) ) )
+
+#print int( N ** (1.0/3.0) )
+#sys.exit(0)
 #s.setMatrixSize(10)
 #s.setMatrixSize( 30 )
 
