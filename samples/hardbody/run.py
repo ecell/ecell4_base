@@ -19,7 +19,9 @@ s = EGFRDSimulator()
 #s = BDSimulator()
 s.setWorldSize( L )
 
-s.setMatrixSize( max( 3, int( (3 * N) ** (1.0/3.0) ) ) )
+matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 60 )
+print 'matrixSize=', matrixSize
+s.setMatrixSize( matrixSize )
 
 #print int( N ** (1.0/3.0) )
 #sys.exit(0)
@@ -36,7 +38,7 @@ s.addSpecies( A )
 s.throwInParticles( A, N, box1 )
 print 'stir'
 #stirTime = 0
-stirTime = 1e-7
+stirTime = T * .1
 while 1:
     s.step()
     nextTime = s.getNextTime()

@@ -14,6 +14,7 @@
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_lambert.h>
+#include <gsl/gsl_integration.h>
 
 #include "factorial.hpp"
 #include "funcSum.hpp"
@@ -1044,6 +1045,23 @@ FirstPassagePairGreensFunction::p_survival_i_exp( const unsigned int i,
 }
 
 const Real 
+FirstPassagePairGreensFunction::p_survival_2i_exp( const unsigned int i,
+                                                   const Real t,
+                                                   const Real r0 ) const
+{
+    const Real Dt( getD() * t );
+    const Real alpha0( this->getAlpha0( 2 * i ) );
+    const Real p0( std::exp( - Dt * alpha0 * alpha0 ) * 
+                   p_survival_i( alpha0, r0 ) );
+
+    const Real alpha1( this->getAlpha0( 2 * i + 1 ) );
+    const Real p1( std::exp( - Dt * alpha1 * alpha1 ) * 
+                   p_survival_i( alpha1, r0 ) );
+
+    return p0 + p1;
+}
+
+const Real 
 FirstPassagePairGreensFunction::
 p_survival_i_exp_table( const unsigned int i,
 			const Real t,
@@ -1181,20 +1199,42 @@ const Real
 FirstPassagePairGreensFunction::p_survival( const Real t,
 					    const Real r0 ) const
 {
+    Real p;
 
-//    unsigned int maxi( guess_maxi( t ) );
-//    printf("maxi %d\n",maxi );
-/*    if( maxi > this->MAX_ALPHA_SEQ )
+    unsigned int maxi( guess_maxi( t ) );
+    printf("maxi %d\n",maxi );
+    if( maxi > this->MAX_ALPHA_SEQ )
     {
+        p_survival_2i_params params = { this, t, r0 };
+        gsl_function F = 
+            {
+                reinterpret_cast<typeof(F.function)>( &p_survival_2i_F ),
+                &params
+            };
 
+        const Real tol( 1e-6 );
+        Real integral;
+        Real error;
+
+        gsl_integration_workspace* 
+            workspace( gsl_integration_workspace_alloc( 2000 ) );
+        gsl_integration_qag( &F, 1,
+                             static_cast<Real>( maxi / 2 ),
+                             tol,
+                             1e-5,
+                             2000, GSL_INTEG_GAUSS31,
+                             workspace, &integral, &error );
+        p = integral * 2.0;
     }
-*/
+    else
+    {
+        p = funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
+                                      p_survival_2i_exp, 
+                                      this,
+                                      _1, t, r0 ), 
+                         this->MAX_ALPHA_SEQ / 2 );
+    }
 
-    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					p_survival_i_exp, 
-					this,
-					_1, t, r0 ), 
-			   this->MAX_ALPHA_SEQ ) );
     return p;
 }
 
@@ -1350,6 +1390,21 @@ FirstPassagePairGreensFunction::p_survival_F( const Real t,
 
     return rnd - gf->p_survival_table( t, r0, table );
 }
+
+
+const Real
+FirstPassagePairGreensFunction::p_survival_2i_F( const Real ri,
+                                                 const p_survival_2i_params* 
+                                                 params )
+{
+    const FirstPassagePairGreensFunction* const gf( params->gf ); 
+    const unsigned int i( static_cast<unsigned int>( ri ) );
+    const Real t( params->t );
+    const Real r0( params->r0 );
+
+    return gf->p_survival_2i_exp( i, t, r0 );
+}
+
 
 const Real
 FirstPassagePairGreensFunction::p_leave_F( const Real t,

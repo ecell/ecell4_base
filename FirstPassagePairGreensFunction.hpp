@@ -196,6 +196,11 @@ public:
 				 const Real r0 ) const;
 
 
+    const Real p_survival_2i_exp( const unsigned int i,
+                                  const Real t,
+                                  const Real r0 ) const;
+
+
 protected:
 
     void clearAlphaTable() const;
@@ -390,6 +395,18 @@ protected:
     static const Real 
     p_survival_F( const Real t,
 		  const p_survival_params* const params );
+
+    struct p_survival_2i_params
+    { 
+	const FirstPassagePairGreensFunction* const gf;
+	const Real t;
+        const Real r0;
+    };
+
+    static const Real 
+    p_survival_2i_F( const Real ri,
+                     const p_survival_2i_params* const params );
+
 
     static const Real 
     p_leave_F( const Real t,
