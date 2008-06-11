@@ -600,7 +600,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         sigma = 1e-8
         kf = 1e-8
 
-        t = 1e-7
+        t = 1e-6
         r0 = 5e-8
 
         a = 1e-7
@@ -608,7 +608,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         gf = mod.FirstPassagePairGreensFunction( D, kf, sigma )
         gf.seta( a )
 
-        for i in range( 10 ):
+        for i in range( 5 ):
             psurv = gf.p_survival( t, r0 )
             pleaves = gf.p_leaves( t, r0 ) 
             pleavea = gf.p_leavea( t, r0 )

@@ -383,8 +383,20 @@ protected:
     f_alpha_aux_F( const Real alpha,
 		   const f_alpha_aux_params* const params );
 
-    
+
     struct p_survival_params
+    { 
+	const FirstPassagePairGreensFunction* const gf;
+	const Real r0;
+	const Real rnd;
+    };
+
+    static const Real 
+    p_survival_F( const Real t,
+                        const p_survival_params* const params );
+
+    
+    struct p_survival_table_params
     { 
 	const FirstPassagePairGreensFunction* const gf;
 	const Real r0;
@@ -393,8 +405,8 @@ protected:
     };
 
     static const Real 
-    p_survival_F( const Real t,
-		  const p_survival_params* const params );
+    p_survival_table_F( const Real t,
+                        const p_survival_table_params* const params );
 
     struct p_survival_2i_params
     { 
@@ -410,7 +422,7 @@ protected:
 
     static const Real 
     p_leave_F( const Real t,
-               const p_survival_params* const params );
+               const p_survival_table_params* const params );
 
     struct p_int_r_params
     { 

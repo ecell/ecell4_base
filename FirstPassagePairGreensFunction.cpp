@@ -1212,27 +1212,28 @@ FirstPassagePairGreensFunction::p_survival( const Real t,
                 &params
             };
 
-        const Real tol( 1e-6 );
         Real integral;
         Real error;
 
         gsl_integration_workspace* 
-            workspace( gsl_integration_workspace_alloc( 2000 ) );
-        gsl_integration_qag( &F, 1,
-                             static_cast<Real>( maxi / 2 ),
-                             tol,
+            workspace( gsl_integration_workspace_alloc( 30000 ) );
+        gsl_integration_qags( &F, 1,
+                             static_cast<Real>( maxi / 3 ),
+                             1e-4,
                              1e-5,
-                             2000, GSL_INTEG_GAUSS31,
+                              maxi/2,// GSL_INTEG_GAUSS15,
                              workspace, &integral, &error );
+        gsl_integration_workspace_free( workspace );
+
         p = integral * 2.0;
     }
     else
     {
         p = funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
-                                      p_survival_2i_exp, 
+                                      p_survival_i_exp, 
                                       this,
                                       _1, t, r0 ), 
-                         this->MAX_ALPHA_SEQ / 2 );
+                         this->MAX_ALPHA_SEQ );
     }
 
     return p;
@@ -1327,7 +1328,7 @@ const Real
 FirstPassagePairGreensFunction::p_leaves( const Real t,
 					  const Real r0 ) const
 {
-    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
 					p_leaves_i_exp,
 					this,
 					_1, t, r0 ),
@@ -1340,7 +1341,7 @@ const Real
 FirstPassagePairGreensFunction::p_leavea( const Real t,
 					  const Real r0 ) const
 {
-    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
 					p_leavea_i_exp,
 					this,
 					_1, t, r0 ),
@@ -1380,8 +1381,9 @@ p_int_r_table( const Real r,
 
 
 const Real
-FirstPassagePairGreensFunction::p_survival_F( const Real t,
-					      const p_survival_params* params )
+FirstPassagePairGreensFunction::
+p_survival_table_F( const Real t,
+                    const p_survival_table_params* params )
 {
     const FirstPassagePairGreensFunction* const gf( params->gf ); 
     const Real r0( params->r0 );
@@ -1390,6 +1392,18 @@ FirstPassagePairGreensFunction::p_survival_F( const Real t,
 
     return rnd - gf->p_survival_table( t, r0, table );
 }
+
+const Real
+FirstPassagePairGreensFunction::p_survival_F( const Real t,
+                                              const p_survival_params* params )
+{
+    const FirstPassagePairGreensFunction* const gf( params->gf ); 
+    const Real r0( params->r0 );
+    const Real rnd( params->rnd );
+
+    return rnd - gf->p_survival( t, r0 );
+}
+
 
 
 const Real
@@ -1407,8 +1421,9 @@ FirstPassagePairGreensFunction::p_survival_2i_F( const Real ri,
 
 
 const Real
-FirstPassagePairGreensFunction::p_leave_F( const Real t,
-                                            const p_survival_params* params )
+FirstPassagePairGreensFunction::
+p_leave_F( const Real t,
+           const p_survival_table_params* params )
 {
     const FirstPassagePairGreensFunction* const gf( params->gf ); 
     const Real r0( params->r0 );
@@ -1462,7 +1477,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 
     RealVector psurvTable;
 
-    p_survival_params params = { this, r0, psurvTable, rnd };
+    //p_survival_table_params params = { this, r0, psurvTable, rnd };
+    p_survival_params params = { this, r0, rnd };
 
     gsl_function F = 
 	{
@@ -1585,7 +1601,7 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     }
 }
 
-
+#if 0
 const boost::tuple<Real,EventType>
 FirstPassagePairGreensFunction::drawTime2( const Real rnd1, 
                                            const Real rnd2,
@@ -1610,7 +1626,8 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
     RealVector pleaveaTable;
 
     const Real pleavea_inf( p_leavea( INFINITY, r0 ) );
-    p_survival_params params_a = { this, r0, pleaveaTable, rnd1 * pleavea_inf };
+    p_survival_table_params params_a = 
+        { this, r0, pleaveaTable, rnd1 * pleavea_inf };
     gsl_function Fa = 
 	{
 	    reinterpret_cast<typeof(Fa.function)>( &p_leave_F ),
@@ -1901,7 +1918,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
 
     return ret;
 }
-
+#endif
 
 #if 0
 const boost::tuple<Real,EventType>
