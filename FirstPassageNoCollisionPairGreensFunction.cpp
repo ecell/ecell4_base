@@ -308,7 +308,7 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
     const Real p_0( this->p_n( 0, r, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( p_0 * this->TOLERANCE * 1e-2  ) );
+    const Real threshold( fabs( p_0 * this->TOLERANCE * 1e-1  ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );

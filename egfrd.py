@@ -743,22 +743,16 @@ class Pair( object ):
         assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
         assert self.a_R > 0 or ( self.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
 
-        rnd = numpy.random.uniform( size=3 )
-
         # draw t_R
         try:
-            self.sgf.seta( self.a_R )
-            self.t_R = self.sgf.drawTime( rnd[0] )
+            self.t_R = self.drawTime_single( self.a_R )
         except Exception, e:
             raise Exception, 'sgf.drawTime() failed; %s; rnd= %g, %s' %\
                 ( str( e ), rnd[0], self.sgf.dump() )
 
         # draw t_r
         try:
-            self.pgf.seta( self.a_r )
-            #print 'r0 = ', r0, ', rnd = ', rnd[1],\
-            #    self.pgf.dump()
-            self.t_r = self.pgf.drawTime( rnd[1], r0 )
+            self.t_r = self.drawTime_pair( r0, self.a_r )
         except Exception, e:
             raise Exception, \
                 'pgf.drawTime() failed; %s; rnd= %g, r0=%g, %s' % \
@@ -784,8 +778,7 @@ class Pair( object ):
 
         if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
             try:
-                self.eventType = self.pgf.drawEventType( rnd[2],
-                                                         r0, self.t_r )
+                self.eventType = self.drawEventType( r0, self.t_r )
             except Exception, e:
                 raise Exception,\
                     'pgf.drawEventType() failed; %s; rnd=%g, r0=%g, %s' %\
@@ -801,6 +794,23 @@ class Pair( object ):
         #assert False
 
 
+    def drawTime_single( self, a ):
+        self.sgf.seta( a )
+        rnd = numpy.random.uniform()
+        return self.sgf.drawTime( rnd )
+
+
+    def drawTime_pair( self, r0, a ):
+        self.pgf.seta( a )
+        rnd = numpy.random.uniform()
+        #print 'r0 = ', r0, ', rnd = ', rnd[1],\
+        #    self.pgf.dump()
+        return self.pgf.drawTime( rnd, r0 )
+
+
+    def drawEventType( self, r0, t ):
+        rnd = numpy.random.uniform()
+        return self.pgf.drawEventType( rnd, r0, t )
 
 
     def drawR_single( self, t, a ):
