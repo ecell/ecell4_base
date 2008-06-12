@@ -678,7 +678,7 @@ class Pair( object ):
         D1_factor = D1 / self.D_tot
         D2_factor = D2 / self.D_tot
 
-        shellSize = self.radius
+        shellSize = self.radius / SAFETY  # FIXME:
 
         sqrtD_tot = math.sqrt( self.D_tot )
         sqrtD_geom = math.sqrt( self.D_geom )
@@ -835,7 +835,6 @@ class Pair( object ):
         rnd = numpy.random.uniform()
         try:
             r = gf.drawR( rnd , r0, t )
-
             # redraw; shouldn't happen often
             while r >= self.a_r or r <= self.sigma: 
                 log.info( 'drawR_pair: redraw' )
@@ -887,9 +886,14 @@ class Pair( object ):
             raise RuntimeError, 'New particles overlap'
 
         # check 2: particles within mobility radius.
-        if self.distance( oldCoM, pos1 ) + species1.radius > self.radius or \
-               self.distance( oldCoM, pos2 ) + species2.radius > self.radius:
-            raise RuntimeError, 'New particle(s) out of protective sphere.'
+        d1 = self.distance( oldCoM, pos1 ) + species1.radius
+        d2 = self.distance( oldCoM, pos2 ) + species2.radius
+        if d1 > self.radius or d2 > self.radius:
+            raise RuntimeError, \
+                'New particle(s) out of protective sphere. %s' % \
+                'radius = %g, d1 = %g, d2 = %g ' % ( self.radius, d1, d2 )
+                
+        
 
         return True
 
@@ -1951,12 +1955,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         shellSize1 = pairDistance * D1 / D12 + radius1
         shellSize2 = pairDistance * D2 / D12 + radius2
-        if shellSize1 >= shellSize2:
+        shellSizeMargin1 = radius1 * 2 #* self.SINGLE_SHELL_FACTOR
+        shellSizeMargin2 = radius2 * 2 #* self.SINGLE_SHELL_FACTOR
+        shellSizeWithMargin1 = shellSize1 + shellSizeMargin1
+        shellSizeWithMargin2 = shellSize2 + shellSizeMargin2
+        if shellSizeWithMargin1  >= shellSizeWithMargin2:
             minShellSize = shellSize1
-            shellSizeMargin = radius1 * 2 #* self.SINGLE_SHELL_FACTOR
+            shellSizeMargin = shellSizeMargin1
         else:
             minShellSize = shellSize2
-            shellSizeMargin = radius2 * 2 #* self.SINGLE_SHELL_FACTOR
+            shellSizeMargin = shellSizeMargin2
 
         # 1. Shell cannot be larger than max shell size or sim cell size.
         com = calculatePairCoM( single1.pos, single2.pos, D1, D2,

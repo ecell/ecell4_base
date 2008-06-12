@@ -20,7 +20,7 @@ class FirstPassageNoCollisionPairGreensFunction
     static const Real MIN_T = 1e-18;
 
     static const unsigned int MAX_ORDER = 100;
-    static const unsigned int MAX_ALPHA_SEQ = 1000;
+    static const unsigned int MAX_ALPHA_SEQ = 2000;
 
 
 public:
@@ -98,6 +98,8 @@ public:
                            const unsigned int n,
                            const Real r0,
                            const Real t ) const;
+    
+//    const unsigned int guess_maxi( const Real t ) const;
 
     // methods below are kept public for debugging purpose.
 

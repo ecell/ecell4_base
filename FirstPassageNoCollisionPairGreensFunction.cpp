@@ -15,7 +15,7 @@
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_roots.h>
-#include <gsl/gsl_sum.h>
+#include <gsl/gsl_sf_lambert.h>
 
 #include "funcSum.hpp"
 
@@ -229,7 +229,21 @@ p_int_r_F( const Real r,
     return gf->p_int_r( r, t, r0 ) - rnd;
 }
 
+/*
+const unsigned int
+FirstPassageNoCollisionPairGreensFunction::guess_maxi( const Real t ) const
+{
+    const Real D( getD() );
+    const Real a( geta() );
 
+    const Real Dt( D * t );
+    const Real tolsq( this->TOLERANCE * this->TOLERANCE );
+    const Real max_alpha( 1 / sqrt( gsl_sf_lambert_W0( 2 * Dt / tolsq ) 
+                                    * tolsq  ) );
+    
+    return static_cast<unsigned int>( max_alpha * a / M_PI ) + 1;
+}
+*/
 
 
 const Real 
@@ -274,8 +288,7 @@ FirstPassageNoCollisionPairGreensFunction::p_n( const Integer n,
                                    p_n_alpha,
                                    this,
                                    _1, n, r, r0, t ),
-                      this->MAX_ALPHA_SEQ,
-                      this->TOLERANCE ) );
+                      this->MAX_ALPHA_SEQ ) );
 
     return p;
 }
@@ -363,13 +376,13 @@ p_theta_table( const Real theta,
     sincos( theta, &sin_theta, &cos_theta );
     gsl_sf_legendre_Pl_array( tableSize-1, cos_theta, &lgndTable[0] );
 
-    const Real p( funcSum( 
+    const Real p( funcSum_all( 
                       boost::bind( &FirstPassageNoCollisionPairGreensFunction::
                                    p_theta_i,
                                    this,
                                    _1, p_nTable, lgndTable ),
-                      tableSize, this->TOLERANCE ) );
-
+                      tableSize ) );
+    
     return p * sin_theta;
 }
 
@@ -474,7 +487,7 @@ ip_theta_table( const Real theta,
     gsl_sf_legendre_Pl_array( tableSize, cos_theta, &lgndTable1[1] );
 
 
-    const Real p( funcSum( boost::bind( 
+    const Real p( funcSum_all( boost::bind( 
                                &FirstPassageNoCollisionPairGreensFunction::
                                ip_theta_i,
                                this,

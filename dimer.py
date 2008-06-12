@@ -6,8 +6,8 @@ from bd import *
 from logger import *
 import sys
 
-#s = EGFRDSimulator()
-s = BDSimulator()
+s = EGFRDSimulator()
+#s = BDSimulator()
 
 L = 5e-6
 #L = 2e-6
@@ -50,7 +50,7 @@ l.log()
 
 def profrun():
     #while s.stepCounter < 6000:
-    for _ in range( 12 ):
+    for _ in range( 12000 ):
         s.step()
         #logging.info( s.dumpPopulation() )
 
