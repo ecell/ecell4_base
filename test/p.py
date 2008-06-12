@@ -20,15 +20,15 @@ D = 1e-12
 #kf=1e-10
 kf=1e-15
 #a = 1e-7
-a = sigma*6
+a = sigma*60
 #r0 = a * (1.0-1e-7)
-r0 = sigma * 5
+r0 = sigma * 3
 #r0 = (a-sigma) * 0.5 + sigma
 
 tau = sigma*sigma / D
 #T = tau * .1
 #T = 1e-300
-T = 1e-10
+T = 1e-16
 
 rmin = sigma
 
@@ -40,10 +40,25 @@ def plot_p_survival_i( gf ):
     x = range( N )
     parray1 = numpy.array( [ gf.p_survival_i_exp( i, T, r0 ) for i in x ] )
     print len(parray1[:-1]), len( parray1[1:])
-    parray2 = parray1[:-1] + parray1[1:]
-    plot( range(N-1), parray2, '-', label='psurvival_i' )
-    plot( range(N-1), parray2.cumsum(), '-', label='psurvival_i_sum' )
-    plot( range(N), parray1, '.', label='psurvival_i' )
+    parray2 = parray1[:-1:2] + parray1[1::2]
+    parray2 = parray2[:-1:2] + parray2[1::2]
+    plot( range(len(parray2)), parray2, '-', label='psurvival_i' )
+    plot( range(len(parray2)), parray2.cumsum(), '-', label='psurvival_i_sum' )
+    #plot( range(N), parray1, '.', label='psurvival_i' )
+
+def plot_p_survival_alpha( gf ):
+
+    N = 1000
+
+    alpha = numpy.array(range( N )) * 1e-3
+    parray1 = numpy.array( [ gf.p_survival_i_alpha( al, T, r0 ) for al in alpha ] )
+    print len(parray1[:-1]), len( parray1[1:])
+    parray2 = parray1[:-1:2] + parray1[1::2]
+    parray2 = parray2[:-1:2] + parray2[1::2]
+    #plot( range(len(parray2)), parray2, '-', label='psurvival_i' )
+    #plot( range(len(parray2)), parray2.cumsum(), '-', label='psurvival_i_sum' )
+    plot( alpha, parray1, '.', label='psurvival_i' )
+
 
 
 def plot_p_leaveas( gf, t ):
@@ -157,6 +172,7 @@ if __name__ == '__main__':
     #plot_p_leaveas( gf, r0 )
     #plot_leaveas( gf, r0 )
     plot_p_survival_i( gf )
+    #plot_p_survival_alpha( gf )
 
     #xlabel( 'r / sigma' )
     #ylabel( 'p_irr' )

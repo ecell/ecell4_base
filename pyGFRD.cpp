@@ -285,8 +285,9 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "f_alpha_aux", &FirstPassagePairGreensFunction::f_alpha_aux )
 
 	.def( "p_survival_i_exp", &FirstPassagePairGreensFunction::p_survival_i_exp )
+	.def( "p_survival_i_alpha", &FirstPassagePairGreensFunction::p_survival_i_alpha )
 
-
+	//.def( "guess_maxi", &FirstPassagePairGreensFunction::guess_maxi )
 
 	.def( "dump", &FirstPassagePairGreensFunction::dump )
 

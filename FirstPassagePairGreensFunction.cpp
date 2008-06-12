@@ -1040,9 +1040,18 @@ FirstPassagePairGreensFunction::p_survival_i_exp( const unsigned int i,
 						  const Real r0 ) const
 {
     const Real alpha( this->getAlpha0( i ) );
+    return p_survival_i_alpha( alpha, t, r0 );
+}
+
+const Real 
+FirstPassagePairGreensFunction::p_survival_i_alpha( const Real alpha,
+                                                    const Real t,
+                                                    const Real r0 ) const
+{
     return std::exp( - getD() * t * alpha * alpha ) * 
 	p_survival_i( alpha, r0 );
 }
+
 
 const Real 
 FirstPassagePairGreensFunction::p_survival_2i_exp( const unsigned int i,
@@ -1191,7 +1200,7 @@ FirstPassagePairGreensFunction::guess_maxi( const Real t ) const
     const Real max_alpha( 1 / sqrt( gsl_sf_lambert_W0( 2 * Dt / tolsq ) 
                                     * tolsq  ) );
     
-    return static_cast<unsigned int>( max_alpha * ( a - sigma ) / M_PI ) + 1;
+    return static_cast<unsigned int>( max_alpha * ( a - sigma ) / M_PI );
 }
 
 
@@ -1211,21 +1220,24 @@ FirstPassagePairGreensFunction::p_survival( const Real t,
                 reinterpret_cast<typeof(F.function)>( &p_survival_2i_F ),
                 &params
             };
+        const Real alpha_0( getAlpha0( 0 ) );
+        const Real alpha_max( getAlpha0( maxi ) );
 
         Real integral;
         Real error;
 
         gsl_integration_workspace* 
             workspace( gsl_integration_workspace_alloc( 30000 ) );
-        gsl_integration_qags( &F, 1,
-                             static_cast<Real>( maxi / 3 ),
+        gsl_integration_qag( &F, 1,
+                             static_cast<Real>( maxi / 2 ),
                              1e-4,
-                             1e-5,
-                              maxi/2,// GSL_INTEG_GAUSS15,
-                             workspace, &integral, &error );
+                             1e-4,
+                             maxi/2, GSL_INTEG_GAUSS15,
+                             workspace, 
+                             &integral, &error );
         gsl_integration_workspace_free( workspace );
 
-        p = integral * 2.0;
+        p = integral * 2;
     }
     else
     {
@@ -1418,6 +1430,19 @@ FirstPassagePairGreensFunction::p_survival_2i_F( const Real ri,
 
     return gf->p_survival_2i_exp( i, t, r0 );
 }
+
+const Real
+FirstPassagePairGreensFunction::p_survival_i_alpha_F( const Real alpha,
+                                                      const p_survival_i_alpha_params* 
+                                                      params )
+{
+    const FirstPassagePairGreensFunction* const gf( params->gf ); 
+    const Real t( params->t );
+    const Real r0( params->r0 );
+
+    return gf->p_survival_i_alpha( alpha, t, r0 );
+}
+
 
 
 const Real

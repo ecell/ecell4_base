@@ -195,6 +195,10 @@ public:
 				 const Real t,
 				 const Real r0 ) const;
 
+    const Real p_survival_i_alpha( const Real alpha,
+                                   const Real t,
+                                   const Real r0 ) const;
+
 
     const Real p_survival_2i_exp( const unsigned int i,
                                   const Real t,
@@ -418,6 +422,19 @@ protected:
     static const Real 
     p_survival_2i_F( const Real ri,
                      const p_survival_2i_params* const params );
+
+
+    struct p_survival_i_alpha_params
+    { 
+	const FirstPassagePairGreensFunction* const gf;
+	const Real t;
+        const Real r0;
+    };
+
+    static const Real 
+    p_survival_i_alpha_F( const Real alpha,
+                          const p_survival_i_alpha_params* const params );
+
 
 
     static const Real 
