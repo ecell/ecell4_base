@@ -20,7 +20,7 @@ class FirstPassageNoCollisionPairGreensFunction
     static const Real MIN_T = 1e-18;
 
     static const unsigned int MAX_ORDER = 100;
-    static const unsigned int MAX_ALPHA_SEQ = 2000;
+    static const unsigned int MAX_ALPHA_SEQ = 1100;
 
 
 public:
