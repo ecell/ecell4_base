@@ -307,7 +307,7 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
 
     const Real p_0( this->p_n( 0, r, r0, t ) * factor );
     p_nTable.push_back( p_0 );
-
+    //printf("0 p_n %18.18g\n", p_0 );
     const Real threshold( fabs( p_0 * this->TOLERANCE * 1e-1  ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
@@ -316,22 +316,22 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
     {
 	Real p_n( this->p_n( n, r, r0, t ) * factor );
 
-	if( ! ( std::isfinite( p_n ) || p_n == 0.0 ) )
+	if( ! std::isfinite( p_n ) )
 	{
 	    std::cerr << "makep_nTable: invalid value; " <<
 		p_n << "( n= " << n << ")." << std::endl;
 //	    p_n = 0.0;
 	    break;
 	}
-	//printf("%d p_n %g\n", n, p_n );
+	//printf("%d p_n %18.18g\n", n, p_n );
 
 	p_nTable.push_back( p_n );
 
 	const Real p_n_abs( fabs( p_n ) );
 	// truncate when converged enough.
-	if( p_n_abs < threshold &&
-            p_n_prev_abs < threshold &&
-	    p_n_abs < p_n_prev_abs )
+	if( p_n_abs <= threshold &&
+            p_n_prev_abs <= threshold &&
+	    p_n_abs <= p_n_prev_abs )
 	{
 	    break;
         }
@@ -570,7 +570,7 @@ makedp_nTable( RealVector& p_nTable,
     const Real p_0( this->dp_n( 0, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-2 ) );
+    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-1 ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
@@ -585,15 +585,15 @@ makedp_nTable( RealVector& p_nTable,
 //	    p_n = 0.0;
 	    break;
 	}
-//	printf("p_n %g\n",p_n );
+	//printf("dp_n %g\n",p_n );
 
 	p_nTable.push_back( p_n );
 
 	const Real p_n_abs( fabs( p_n ) );
 	// truncate when converged enough.
-	if( p_n_abs < threshold &&
-            p_n_prev_abs < threshold &&
-	    p_n_abs < p_n_prev_abs )
+	if( p_n_abs <= threshold &&
+            p_n_prev_abs <= threshold &&
+	    p_n_abs <= p_n_prev_abs )
 	{
 	    break;
 	}
@@ -885,7 +885,7 @@ FirstPassageNoCollisionPairGreensFunction::drawTheta( const Real rnd,
 
     if( r == geta() || r < 0.0 )
     {
-	puts("dp");
+	//puts("dp");
 	makedp_nTable( p_nTable, r0, t );
     }
     else

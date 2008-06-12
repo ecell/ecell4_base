@@ -50,9 +50,11 @@ void FirstPassagePairGreensFunction::seta( const Real a )
 
     THROW_UNLESS( std::invalid_argument, a >= sigma );
 
-    this->a = a;
-
-    clearAlphaTable();
+    if( this->a != a )
+    {
+        this->a = a;
+        clearAlphaTable();
+    }
 }
 
 //

@@ -863,9 +863,13 @@ class Pair( object ):
     '''
     Draw theta for the pair inter-particle vector.
     '''
-    def drawTheta_pair( self, rnd, r, r0, t ):
+    def drawTheta_pair( self, rnd, r, r0, t, a ):
 
         gf = self.choosePairGreensFunction( r0, t )
+
+        if hasattr( gf, 'seta' ):  # FIXME: not clean
+            gf.seta( a )
+
         try:
             theta = gf.drawTheta( rnd, r, r0, t )
         except Exception, e:
@@ -1646,7 +1650,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             newCoM = oldCoM + displacement_R
 
             # calculate new r
-            theta_r = pair.drawTheta_pair( rnd[2], pair.a_r, r0, pair.dt )
+            theta_r = pair.drawTheta_pair( rnd[2], pair.a_r, r0, pair.dt, 
+                                           pair.a_r )
             phi_r = rnd[3] * 2 * Pi
             newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
@@ -1669,7 +1674,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             log.debug( 'new r = %g' % r )
             #assert r >= pair.sigma
             
-            theta_r = pair.drawTheta_pair( rnd[0], r, r0, pair.dt )
+            theta_r = pair.drawTheta_pair( rnd[0], r, r0, pair.dt, pair.a_r )
             phi_r = rnd[1] * 2*Pi
             newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
@@ -1841,7 +1846,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             
             # calculate new interparticle
             r_r = pair.drawR_pair( r0, dt, pair.a_r )
-            theta_r = pair.drawTheta_pair( rnd[2], r_r, r0, dt )
+            theta_r = pair.drawTheta_pair( rnd[2], r_r, r0, dt, pair.a_r )
             phi_r = rnd[3] * 2 * Pi
             newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
