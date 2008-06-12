@@ -112,7 +112,7 @@ xlabel( 'N [# particles]' )
 ylabel( 'time [sec]' )
 #legend()
 xlim(4,1e7)
-ylim(.1,2e12)
+ylim(1.1,2e11)
 
 Cx3000=numpy.array([
     9.35e-11,
@@ -147,7 +147,7 @@ Cx300=numpy.array([
     9.35e-6,#18
     9.35e-5,#19
     9.35e-4,#20
-    #3.74e-3#1e-21
+    3.74e-3#1e-21
     #9.35e-3,#4e-21
     ])
 data_N300 = numpy.array([\
@@ -161,13 +161,14 @@ data_N300 = numpy.array([\
         #t=0.0001
         [1731.63747787,173.117349148,1693.01162958],
         [24478.3381939,25384.5009089,23533.4578991],
+        [0,0,0]
         #[474846.178055,491588.463068,473160.961151]
         ])
 
 data_N3000 *= 11696
 data_N300 *= 11696
 
-axes([.61,.18,.27,.28])
+axes([.61,.21,.27,.28])
 
 for i in range( len(Cx3000) ):
     plot_data( Cx3000, data_N3000,'k+' )
@@ -181,7 +182,7 @@ for i in range( len(Cx300) ):
     plot_data( Cx300, data_N300,'kd' )
 loglog( Cx300, 3e12* Cx300**(4.0/3.0), 'k-.', label='C^(4/3)' )
 
-figtext( .69, .2, r'(3) $t \ \propto \ C^{4/3}$', color='k' )
+figtext( .73, .22, r'(3) $t \ \propto \ C^{4/3}$', color='k' )
 
 #bd 300
 bd300 = numpy.array([1.62390208244,1.62284588814,1.63388109207]).mean()
