@@ -579,7 +579,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         kf = 1e-13
 
         t = 1e-3
-        r0 = 1e-8
+        r0 = 2e-8
         
         a = 1e-7
         

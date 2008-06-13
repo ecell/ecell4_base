@@ -778,7 +778,7 @@ class Pair( object ):
 
         if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
             try:
-                self.eventType = self.drawEventType( r0, self.t_r )
+                self.eventType = self.drawEventType( r0, self.t_r, self.a_r )
             except Exception, e:
                 raise Exception,\
                     'pgf.drawEventType() failed; %s; rnd=%g, r0=%g, %s' %\
@@ -808,8 +808,9 @@ class Pair( object ):
         return self.pgf.drawTime( rnd, r0 )
 
 
-    def drawEventType( self, r0, t ):
+    def drawEventType( self, r0, t, a ):
         rnd = numpy.random.uniform()
+        self.pgf.seta( a )
         return self.pgf.drawEventType( rnd, r0, t )
 
 

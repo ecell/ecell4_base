@@ -743,14 +743,13 @@ FirstPassagePairGreensFunction::dp_survival_i( const Real alpha,
     const Real cos_a( cos( angle_a ) );
 
     const Real num1( alpha * ( h * sigmasq * hsigma_p_1 
-                               - a * ( hsigma_p_1 * hsigma_p_1 
-                                       + sigmasq * alphasq ) *
-                               cos_a ) );
+                               - ( a * ( hsigma_p_1 * hsigma_p_1 
+                                         + sigmasq * alphasq ) ) * cos_a ) );
 
     const Real num2( num_r0( alpha, r0 ) );
 
     const Real den( r0 * hsigma_p_1 * 
-                    (- hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) )
+                    ( - hsigma_p_1 * ( a + a * h * sigma - h * sigmasq ) )
                     + ( sigma - a ) * sigmasq * alphasq );
 
     const Real result( 2.0 * getD() * num1 * num2 / den );
@@ -771,19 +770,18 @@ FirstPassagePairGreensFunction::leavea_i( const Real alpha,
 
     const Real sigmasq( sigma * sigma );
     const Real alphasq( alpha * alpha );
-    const Real hsq( h * h );
-
-    const Real f1( 1 + 2 * h * sigma + hsq * sigmasq + sigmasq * alphasq );
 
     const Real angle_a( alpha * ( a - sigma ) );
     const Real cos_a( cos( angle_a ) );
 
-    const Real num1( alpha * f1 * cos_a );
+    const Real num1( alpha * ( hsigma_p_1 * hsigma_p_1 + sigmasq * alphasq )
+                     * cos_a );
+
     const Real num2( num_r0( alpha, r0 ) );
     
     const Real den( 2 * a * M_PI * r0 * hsigma_p_1 *
-                    ( a * f1
-                      - sigmasq * ( h + hsq * sigma + sigma * alphasq ) ) );
+                    ( hsigma_p_1 * ( a + a * h * sigma - h * sigmasq )
+                      + ( a - sigma ) * sigmasq * alphasq ) );
 
     const Real result( D * num1 * num2 / den );
     //printf("leavea_i %g %g %g %g\n", result, num1, num2, den );
@@ -1595,6 +1593,7 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
 					       const Real r0,
 					       const Real t ) const
 {
+    const Real D( this->getD() );
     const Real sigma( this->getSigma() );
     const Real kf( this->getkf() );
     const Real a( this->geta() );
@@ -1607,16 +1606,50 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     {
         return ESCAPE;
     }
+    
+    // First, check if r0 is close only either to a or sigma relative
+    // to Dt.  In such cases, the event type is always ESCAPE or REACTION,
+    // respectively.   This avoids numerical instability in calculating
+    // leavea() and/or leaves().
+
+    // Here, use a rather large threshold for safety.
+    const unsigned int H( 6 ); 
+    const Real max_dist( H * sqrt( 6.0 * D * t ) );
+    const Real a_dist( a - r0 );
+    const Real s_dist( r0 - sigma );
+
+    if( a_dist > max_dist )
+    {
+        if( s_dist < max_dist )
+        {
+            return REACTION;
+        }
+    }
+    else // a_dist < max_dist
+    {
+        if( s_dist > max_dist )
+        {
+            return ESCAPE;
+        }
+    }
+
+    /*
+    if( s_dist > max_dist && a_dist > max_dist )
+    {
+        printf("drawEventType(): warning: far from both s a.\n" );
+    }
+    */
 
     const Real reaction( leaves( t, r0 ) * 4.0 * M_PI * sigma * sigma );
     const Real escape( leavea( t, r0 ) * 4.0 * M_PI * a * a );
-    //const Real den( dp_survival( t, r0 ) );
-
-    //const Real value( reaction / den );
     const Real value( reaction / ( reaction + escape ) );
-    //printf("et %g %g %g %g\n", value, reaction, escape, den );
+
+    //    const Real den( dp_survival( t, r0 ) );
+    //    const Real value2( reaction / den );
+    //printf("et %g %g %g %g %g\n", value, value2, reaction, escape, den );
 
     //assert( value >= - 1e-7 && value <= 1.0 + 1e-7 );
+    assert( value > 0 );
 
     if( rnd <= value )  
     {
