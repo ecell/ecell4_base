@@ -1262,7 +1262,6 @@ p_survival_table( const Real t,
                                             this,
                                             _1, t, r0, psurvTable ),
                                psurvTable.size() ) );
-
     return p;
 }
 
@@ -2442,7 +2441,6 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
 						      const Real r,
 						      const Real r0, 
 						      const Real t ) const
-//                                                      const RealVector& jas1Table ) const
 {
     const Real sigma( this->getSigma() );
     const Real h( this->geth() );
@@ -2461,32 +2459,30 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
 
     const Real term1( alphasq * alphasq * exp( mDt * alphasq ) );
 
-    // GSL
-    const Real jas1( gsl_sf_bessel_jl( n,   sigmaAlpha ) );
-    const Real yas1( gsl_sf_bessel_yl( n,   sigmaAlpha ) );
-    const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
-    const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) );
-    const Real jaa(  gsl_sf_bessel_jl( n,   aAlpha ) );
-    const Real yaa(  gsl_sf_bessel_yl( n,   aAlpha ) );
-    const Real jar(  gsl_sf_bessel_jl( n,   r * alpha ) );
-    const Real yar(  gsl_sf_bessel_yl( n,   r * alpha ) );
-    const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
-    const Real yar0( gsl_sf_bessel_yl( n,   r0 * alpha ) );
+    const Real js1( gsl_sf_bessel_jl( n,   sigmaAlpha ) );
+    const Real js2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
+    const Real ja(  gsl_sf_bessel_jl( n,   aAlpha ) );
+    const Real ya(  gsl_sf_bessel_yl( n,   aAlpha ) );
+    const Real jr(  gsl_sf_bessel_jl( n,   r * alpha ) );
+    const Real yr(  gsl_sf_bessel_yl( n,   r * alpha ) );
+    const Real jr0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
+    const Real yr0( gsl_sf_bessel_yl( n,   r0 * alpha ) );
 
-    const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
-    const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
-    const Real falpha_r( - J * yar + Y * jar );
-    const Real falpha_r0( - J * yar0 + Y * jar0 );
+    const Real J( hSigma_m_n * js1 + sigmaAlpha * js2 );
+    const Real Jsq( J * J );
 
-    const Real num( falpha_r * falpha_r0 );
+    const Real JY1( ja * yr - ya * jr );
+    const Real JY2( ja * yr0 - ya * jr0 );
+    //printf("%g %g\n", JY1/ yr, JY2/ yr0 );
+    const Real num( Jsq * JY1 * JY2 );
 
-    const Real E1( a * ( realn + realn * realn - 
-                         sigma * ( h + h * h * sigma + sigma * alphasq ) ) );
+    const Real den1( a * ( realn + realn * realn - 
+                           sigma * ( h + h * h * sigma + sigma * alphasq ) )
+                     * ja * ja );
 
-    const Real E2( sigma * ( J * J + Y * Y ) / ( jaa * jaa + yaa * yaa ) );
-    //const Real E2( sigma * J * J / ( jaa * jaa ) );
+    const Real den2( sigma * Jsq );
 
-    const Real den( E1 + E2 );
+    const Real den( den1 + den2 );
 
     const Real result( term1 * num / den );
 
@@ -2595,42 +2591,27 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
 
     const Real term1( alphasq * alpha * exp( mDt * alphasq ) );
 
-    // GSL
-    const Real jas1( gsl_sf_bessel_jl( n,   sigmaAlpha ) );
-    const Real yas1( gsl_sf_bessel_yl( n,   sigmaAlpha ) );
-    const Real jas2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
-    const Real yas2( gsl_sf_bessel_yl( n+1, sigmaAlpha ) );
-    const Real jaa1( gsl_sf_bessel_jl( n,   aAlpha ) );
-    const Real yaa1( gsl_sf_bessel_yl( n,   aAlpha ) );
-    const Real jar0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
-    const Real yar0( gsl_sf_bessel_yl( n,   r0 * alpha ) );
+    const Real js1( gsl_sf_bessel_jl( n,   sigmaAlpha ) );
+    const Real js2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
+    const Real ja(  gsl_sf_bessel_jl( n,   aAlpha ) );
+    const Real ya(  gsl_sf_bessel_yl( n,   aAlpha ) );
+    const Real jr0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
+    const Real yr0( gsl_sf_bessel_yl( n,   r0 * alpha ) );
 
-    const Real J( hSigma_m_n * jas1 + sigmaAlpha * jas2 );
-    const Real Y( hSigma_m_n * yas1 + sigmaAlpha * yas2 );
+    const Real J( hSigma_m_n * js1 + sigmaAlpha * js2 );
+    const Real Jsq( J * J );
 
-    const Real falpha_r0( - J * yar0 + Y * jar0 );
+    const Real JY( - jr0 * ya + ja * yr0 );
 
-    /*
-    const Real num1( - J * jaa1 );
+    const Real num( Jsq * JY );
+
     const Real den1( a * ( realn + realn * realn - 
                            sigma * ( h + h * h * sigma + sigma * alphasq ) )
-                     * jaa1 * jaa1 );
-    const Real den2( sigma * J * J );
+                     * ja * ja );
+
+    const Real den2( sigma * Jsq );
+
     const Real den( den1 + den2 );
-    */
-
-// Alternative form;
-
-     const Real num1( - J );
-     const Real den1( a * ( realn + realn * realn - 
-                            sigma * ( h + h * h * sigma + sigma * alphasq ) ) );
-     const Real den2( sigma * ( J * J + Y * Y ) / 
- 		   ( jaa1 * jaa1 + yaa1 * yaa1 ) );
-     const Real den( ( den1 + den2 ) * jaa1 );
-
-
-     const Real num( num1 * falpha_r0 );
-
 
 //    printf("f n1 n2 d %g %g %g %g\n",falpha_r0, num1, num2, den );
 
