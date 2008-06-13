@@ -11,6 +11,8 @@
 #include <unordered_map>
 #elif HAVE_TR1_UNORDERED_MAP
 #include <tr1/unordered_map>
+#elif HAVE_EXT_HASH_MAP
+#include <ext/hash_map>
 #else
 #include <map>
 #endif /* HAVE_UNORDERED_MAP */
@@ -44,6 +46,8 @@ struct get_mapper_mf
     typedef std::unordered_map<Tkey_, Tval_> type;
 #elif HAVE_TR1_UNORDERED_MAP
     typedef std::tr1::unordered_map<Tkey_, Tval_> type;
+#elif HAVE_EXT_HASH_MAP
+    typedef __gnu_cxx::hash_map<Tkey_, Tval_> type;
 #else 
     typedef std::map<Tkey_, Tval_> type;
 #endif
@@ -52,7 +56,7 @@ struct get_mapper_mf
 template<typename Tval_>
 struct get_mapper_mf<boost::python::object, Tval_>
 {
-#if HAVE_UNORDERED_MAP || HAVE_TR1_UNORDERED_MAP
+#if HAVE_UNORDERED_MAP || HAVE_TR1_UNORDERED_MAP || HAVE_EXT_HASH_MAP
     struct hasher: public std::unary_function<boost::python::object, std::size_t>
     {
         typedef boost::python::object argument_type;
@@ -70,6 +74,8 @@ struct get_mapper_mf<boost::python::object, Tval_>
     typedef std::unordered_map<boost::python::object, Tval_, hasher> type;
 #elif HAVE_TR1_UNORDERED_MAP
     typedef std::tr1::unordered_map<boost::python::object, Tval_, hasher> type;
+#elif HAVE_EXT_HASH_MAP
+    typedef __gnu_cxx::hash_map<boost::python::object, Tval_, hasher> type;
 #else 
     typedef std::map<boost::python::object, Tval_> type;
 #endif

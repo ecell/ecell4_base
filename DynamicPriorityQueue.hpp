@@ -45,6 +45,8 @@
 #include <unordered_map>
 #elif HAVE_TR1_UNORDERED_MAP
 #include <tr1/unordered_map>
+#elif HAVE_EXT_HASH_MAP
+#include <ext/hash_map>
 #else
 #include <map>
 #endif /* HAVE_UNORDERED_MAP */
@@ -64,7 +66,7 @@ public:
     typedef std::vector< ID >      IDVector;
     typedef IDVector::size_type    Index;
 
-#if HAVE_UNORDERED_MAP || HAVE_TR1_UNORDERED_MAP
+#if HAVE_UNORDERED_MAP || HAVE_TR1_UNORDERED_MAP || HAVE_EXT_HASH_MAP
 
     class IDHasher
         : 
@@ -87,6 +89,8 @@ public:
     typedef std::unordered_map<const ID, Index, IDHasher> IndexMap;
 #elif HAVE_TR1_UNORDERED_MAP
     typedef std::tr1::unordered_map<const ID, Index, IDHasher> IndexMap;
+#elif HAVE_EXT_HASH_MAP
+    typedef __gnu_cxx::hash_map<const ID, Index, IDHasher> IndexMap;
 #else 
     typedef std::map<const ID, Index> IndexMap;
 #endif

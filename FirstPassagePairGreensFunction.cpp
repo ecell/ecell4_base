@@ -1298,13 +1298,6 @@ const Real
 FirstPassagePairGreensFunction::leaves( const Real t,
 					const Real r0 ) const
 {
-/*
-    this->updateAlphaTable0( t );
-    const Real p( funcSum_all_accel( boost::bind( &FirstPassagePairGreensFunction::
-                                                  leaves_i_exp,
-                                                  this,
-                                                  _1, t, r0 ),
-                                     this->getAlphaTable( 0 ).size() ) );*/
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
                                         leaves_i_exp,
                                         this,
@@ -1318,15 +1311,6 @@ const Real
 FirstPassagePairGreensFunction::leavea( const Real t,
 					const Real r0 ) const
 {
-/*
-    this->updateAlphaTable0( t );
-    const Real p( funcSum_all_accel( boost::bind( &FirstPassagePairGreensFunction::
-                                            leavea_i_exp,
-                                            this,
-                                            _1, t, r0 ),
-                                     this->getAlphaTable( 0 ).size() ) );
-*/
-
     const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
                                         leavea_i_exp,
                                         this,
