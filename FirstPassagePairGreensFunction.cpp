@@ -1508,21 +1508,17 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     t_guess *= .1;
 
     const Real minT( std::min( sigma * sigma / D * this->MIN_T_FACTOR,
-                               t_guess * 1e-3 ) );
+                               t_guess * 1e-6 ) );
 
     RealVector psurvTable;
 
     p_survival_table_params params = { this, r0, psurvTable, rnd };
-    //p_survival_params params = { this, r0, rnd };
 
     gsl_function F = 
 	{
 	    reinterpret_cast<typeof(F.function)>( &p_survival_table_F ),
 	    &params 
 	};
-
-    //this->updateAlphaTable0( t_guess );
-    //this->createPsurvTable( psurvTable, r0 );
 
     Real low( t_guess );
     Real high( t_guess );
@@ -1549,14 +1545,15 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
                 throw std::exception();
             }
 
-//            printf( "drawTime: adjusting high: %g F = %g\n", high, high_value );
+//            printf( "drawTime: adjusting high: %g F = %g\n", 
+//                    high, high_value );
             high *= 10;
         }
     }
     else
     {
         Real low_value_prev( value );
-        low *= .5;
+        low *= .1;
 
         while( 1 )
         {
@@ -1583,7 +1580,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
             low_value_prev = low_value;
 
             //printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value );
-            low *= .5;
+            low *= .1;
         }
     }
 
