@@ -79,7 +79,7 @@ public:
 
     const Real p_survival_table( const Real t,
 				 const Real r0,
-				 const RealVector& table ) const;
+				 RealVector& table ) const;
 
     const Real p_leave_table( const Real t,
 				 const Real r0,
@@ -404,7 +404,7 @@ protected:
     { 
 	const FirstPassagePairGreensFunction* const gf;
 	const Real r0;
-	const RealVector& table;
+	RealVector& table;
 	const Real rnd;
     };
 

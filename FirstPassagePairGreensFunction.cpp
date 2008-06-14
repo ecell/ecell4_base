@@ -19,6 +19,7 @@
 #include "factorial.hpp"
 #include "funcSum.hpp"
 #include "findRoot.hpp"
+#include "freeFunctions.hpp"
 
 #include "FirstPassagePairGreensFunction.hpp"
 
@@ -1195,12 +1196,17 @@ FirstPassagePairGreensFunction::guess_maxi( const Real t ) const
     const Real sigma( getSigma() );
     const Real a( geta() );
 
+    const Real alpha0( getAlpha0( 0 ) );
     const Real Dt( D * t );
-    const Real tolsq( this->TOLERANCE * this->TOLERANCE );
-    const Real max_alpha( 1 / sqrt( gsl_sf_lambert_W0( 2 * Dt / tolsq ) 
-                                    * tolsq  ) );
-    
-    return static_cast<unsigned int>( max_alpha * ( a - sigma ) / M_PI );
+    const Real thr( ( exp( - Dt * alpha0 * alpha0 ) / alpha0 ) * 
+                    this->TOLERANCE * 1e-1 );
+    const Real thrsq( thr * thr );
+    const Real max_alpha( 1.0 /
+                          ( sqrt( exp( gsl_sf_lambert_W0( 2 * Dt / thrsq ) ) *
+                                  thrsq ) ) );
+
+    return static_cast<unsigned int>( max_alpha
+                                      * ( a - sigma ) / M_PI ) + 2;
 }
 
 
@@ -1208,45 +1214,9 @@ const Real
 FirstPassagePairGreensFunction::p_survival( const Real t,
 					    const Real r0 ) const
 {
-    Real p;
+    RealVector psurvTable;
 
-    //const unsigned int maxi( guess_maxi( t ) );
-    //printf("maxi %d\n",maxi );
-    //if( maxi > this->MAX_ALPHA_SEQ )
-/*        p_survival_2i_params params = { this, t, r0 };
-        gsl_function F = 
-            {
-                reinterpret_cast<typeof(F.function)>( &p_survival_2i_F ),
-                &params
-            };
-        const Real alpha_0( getAlpha0( 0 ) );
-        const Real alpha_max( getAlpha0( maxi ) );
-
-        Real integral;
-        Real error;
-
-        gsl_integration_workspace* 
-            workspace( gsl_integration_workspace_alloc( 30000 ) );
-        gsl_integration_qag( &F, 1,
-                             static_cast<Real>( maxi / 2 ),
-                             1e-4,
-                             1e-4,
-                             maxi/2, GSL_INTEG_GAUSS15,
-                             workspace, 
-                             &integral, &error );
-        gsl_integration_workspace_free( workspace );
-
-        p = integral * 2;
-*/    
-    p = funcSum( boost::bind( &FirstPassagePairGreensFunction::
-                              //p_survival_2i_exp, 
-                              p_survival_i_exp, 
-                              this,
-                              _1, t, r0 ), 
-                 this->MAX_ALPHA_SEQ );
-//                     std::min( maxi, 
-//                               static_cast<unsigned int>
-//                               ( this->MAX_ALPHA_SEQ ) ) );
+    const Real p( p_survival_table( t, r0, psurvTable ) );
 
     return p;
 }
@@ -1255,13 +1225,59 @@ const Real
 FirstPassagePairGreensFunction::
 p_survival_table( const Real t,
 		  const Real r0,
-		  const RealVector& psurvTable ) const
+		  RealVector& psurvTable ) const
 {
-    const Real p( funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
-                                            p_survival_i_exp_table, 
-                                            this,
-                                            _1, t, r0, psurvTable ),
-                               psurvTable.size() ) );
+    Real p;
+
+    unsigned int maxi( guess_maxi( t ) );
+    if( maxi > MAX_ALPHA_SEQ )
+    {
+        maxi = MAX_ALPHA_SEQ;
+    }
+
+    if( psurvTable.size() < maxi )
+    {
+        getAlpha0( maxi );  // this updates the table
+        this->createPsurvTable( psurvTable, r0 );
+    }
+
+    const Real D( this->getD() );
+    const Real sigma( getSigma() );
+    const Real a( this->geta() );
+
+    const Real distToa( a - r0 );
+    const Real distTos( r0 - sigma );
+
+    const Real H( 5.0 );
+    const Real maxDist( H * sqrt( 6.0 * D * t ) );
+
+    if( distToa > maxDist )
+    {
+        if( distTos > maxDist )
+        {
+            p = 1.0;  
+        }
+        else
+        {
+            const Real sigma( this->getSigma() );
+            const Real kf( this->getkf() );
+            p = S_irr( t, r0, kf, D, sigma );
+        }
+    }
+    else
+    {
+        if( distTos > maxDist )
+        {
+            puts("far from s");
+        }
+
+        p = funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
+                                      p_survival_i_exp_table, 
+                                      this,
+                                      _1, t, r0, psurvTable ),
+                         maxi );
+    }
+
     return p;
 }
 
@@ -1382,7 +1398,7 @@ p_survival_table_F( const Real t,
 {
     const FirstPassagePairGreensFunction* const gf( params->gf ); 
     const Real r0( params->r0 );
-    const RealVector& table( params->table );
+    RealVector& table( params->table );
     const Real rnd( params->rnd );
 
     return rnd - gf->p_survival_table( t, r0, table );
@@ -1463,6 +1479,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 {
     const Real D( this->getD() );
     const Real sigma( this->getSigma() );
+    const Real kf( this->getkf() );
     const Real a( this->geta() );
 
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
@@ -1474,14 +1491,22 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     }
 
     Real t_guess;
+    Real dist;
 
-    //const Real dist( std::min( a - r0, r0 - sigma ) );
-    const Real dist( a - r0 );  // this is a good guess, actually.
+    if( this->getkf() != 0 )
+    {
+        dist = std::min( a - r0, r0 - sigma );
+    }
+    else
+    {
+        dist = a - r0;
+    }
+
     t_guess = dist * dist / ( 6.0 * D );
     t_guess *= .1;
 
     const Real minT( std::min( sigma * sigma / D * this->MIN_T_FACTOR,
-                               t_guess * 1e-5 ) );
+                               t_guess * 1e-3 ) );
 
     RealVector psurvTable;
 
@@ -1494,8 +1519,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 	    &params 
 	};
 
-    this->updateAlphaTable0( t_guess );
-    this->createPsurvTable( psurvTable, r0 );
+    //this->updateAlphaTable0( t_guess );
+    //this->createPsurvTable( psurvTable, r0 );
 
     Real low( t_guess );
     Real high( t_guess );
@@ -1529,12 +1554,12 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     else
     {
         Real low_value_prev( value );
-        low *= .1;
+        low *= .5;
 
         while( 1 )
         {
-            this->updateAlphaTable0( low );
-            this->createPsurvTable( psurvTable, r0 );
+            //this->updateAlphaTable0( low );
+            //this->createPsurvTable( psurvTable, r0 );
             
             const Real low_value( GSL_FN_EVAL( &F, low ) );
             
@@ -1544,19 +1569,19 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
             }
             
             // FIXME: 
-            if( fabs( low ) <= minT || 
+            if( fabs( low ) <= minT ||
                 fabs( low_value - low_value_prev ) < TOLERANCE ) 
             {
-                std::cerr << "Couldn't adjust low.  Returning minT (= "
-                          << minT << "); F(" << low <<
+                std::cerr << "Couldn't adjust low.  Returning low (= "
+                          << low << "); F(" << low <<
                     ") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
                           << dump() << std::endl;
-                return minT;
+                return low;
             }
             low_value_prev = low_value;
 
-//            printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value );
-            low *= .1;
+            //printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value );
+            low *= .5;
         }
     }
 

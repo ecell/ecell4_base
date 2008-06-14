@@ -18,11 +18,12 @@ D = 1e-12
 #kf = 1000 * sigma * D
 #kf=1e-8
 #kf=1e-10
-kf=1e-15
+kf=1e-10
 #a = 1e-7
-a = sigma*60
+a = sigma*50
 #r0 = a * (1.0-1e-7)
 r0 = sigma * 3
+#r0 = a * 0.999
 #r0 = (a-sigma) * 0.5 + sigma
 
 tau = sigma*sigma / D
@@ -63,16 +64,21 @@ def plot_p_survival_alpha( gf ):
 
 def plot_p_leaveas( gf, t ):
 
-    N = 1000
+    N = 100000
 
-    tmax = 1e-10
-    tmin = 1e-18
+    tmax = 1e-3
+    tmin = 1e-10
+
 
     ttick = ( tmax - tmin ) / N
     tarray = numpy.mgrid[tmin:tmax:ttick]
 
     parray1 = array( [ 1 - gf.p_survival( t, r0 ) for t in tarray ] )
     semilogx( tarray , parray1, '-', label='psurvival' )
+
+    gf2 = _gfrd.BasicPairGreensFunction( D, kf, sigma )
+    parray2 = array( [ 1 - gf2.p_survival( t, r0 ) for t in tarray ] )
+    semilogx( tarray , parray2, '-', label='psurvival basic' )
 
 #     parray2 = array( [ gf.p_leavea( t, r0 )  for t in tarray ] )
 #     parray2 = 1 - parray2# / gf.p_leavea( 0, r0 )
@@ -169,9 +175,9 @@ if __name__ == '__main__':
                      
     #plot_p_int_r( gf, T )
     #plot_ip_theta( gf, r0, T )
-    #plot_p_leaveas( gf, r0 )
+    plot_p_leaveas( gf, r0 )
     #plot_leaveas( gf, r0 )
-    plot_p_survival_i( gf )
+    #plot_p_survival_i( gf )
     #plot_p_survival_alpha( gf )
 
     #xlabel( 'r / sigma' )

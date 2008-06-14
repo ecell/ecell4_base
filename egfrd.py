@@ -747,16 +747,16 @@ class Pair( object ):
         try:
             self.t_R = self.drawTime_single( self.a_R )
         except Exception, e:
-            raise Exception, 'sgf.drawTime() failed; %s; rnd= %g, %s' %\
-                ( str( e ), rnd[0], self.sgf.dump() )
+            raise Exception, 'sgf.drawTime() failed; %s; %s' %\
+                ( str( e ), self.sgf.dump() )
 
         # draw t_r
         try:
             self.t_r = self.drawTime_pair( r0, self.a_r )
         except Exception, e:
             raise Exception, \
-                'pgf.drawTime() failed; %s; rnd= %g, r0=%g, %s' % \
-                ( str( e ), rnd[1], r0, self.pgf.dump() )
+                'pgf.drawTime() failed; %s; r0=%g, %s' % \
+                ( str( e ), r0, self.pgf.dump() )
 
 
         # draw t_reaction
@@ -781,8 +781,8 @@ class Pair( object ):
                 self.eventType = self.drawEventType( r0, self.t_r, self.a_r )
             except Exception, e:
                 raise Exception,\
-                    'pgf.drawEventType() failed; %s; rnd=%g, r0=%g, %s' %\
-                    ( str( e ), rnd[2], r0, self.pgf.dump() )
+                    'pgf.drawEventType() failed; %s; r0=%g, %s' %\
+                    ( str( e ), r0, self.pgf.dump() )
 
         elif self.dt == self.t_R: # type = ESCAPE_R (2)
             self.eventType = 2
@@ -866,6 +866,7 @@ class Pair( object ):
     '''
     def drawTheta_pair( self, rnd, r, r0, t, a ):
 
+        #print 'r ', r, 'r0 ', r0, 't ', t, 'a ', a
         gf = self.choosePairGreensFunction( r0, t )
 
         if hasattr( gf, 'seta' ):  # FIXME: not clean
