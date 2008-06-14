@@ -1557,8 +1557,6 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
 
         while( 1 )
         {
-            //this->updateAlphaTable0( low );
-            //this->createPsurvTable( psurvTable, r0 );
             
             const Real low_value( GSL_FN_EVAL( &F, low ) );
             
@@ -1579,7 +1577,8 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
             }
             low_value_prev = low_value;
 
-            //printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value );
+            //printf( "drawTime: adjusting low: %g, F = %g\n",
+            //        low, low_value );
             low *= .1;
         }
     }
@@ -1587,8 +1586,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
 
-    const Real t( findRoot( F, solver, low, high, this->TOLERANCE, 
-                            "drawTime" ) );
+    const Real t( findRoot( F, solver, low, high, TOLERANCE, "drawTime" ) );
 
     gsl_root_fsolver_free( solver );
 
