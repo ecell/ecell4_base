@@ -869,6 +869,7 @@ class Pair( object ):
         #print 'r ', r, 'r0 ', r0, 't ', t, 'a ', a
         gf = self.choosePairGreensFunction( r0, t )
 
+        print gf
         if hasattr( gf, 'seta' ):  # FIXME: not clean
             gf.seta( a )
 

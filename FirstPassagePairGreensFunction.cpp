@@ -2980,7 +2980,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
     // input parameter range checks.
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, r0 >= sigma && r0 < a );
-    THROW_UNLESS( std::invalid_argument, r >= sigma && r <= a );
+    THROW_UNLESS( std::invalid_argument, r >= sigma );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
     // t == 0 means no move.
@@ -2997,7 +2997,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 
     RealVector p_nTable;
 
-    if( r == geta() || r < 0.0 )
+    if( r >= geta() )
     {
 	//puts("dp");
 	makedp_n_at_aTable( p_nTable, r0, t );
