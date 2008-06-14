@@ -18,6 +18,7 @@
 #include <gsl/gsl_sf_lambert.h>
 
 #include "funcSum.hpp"
+#include "freeFunctions.hpp"
 
 #include "FirstPassageNoCollisionPairGreensFunction.hpp"
 
@@ -53,45 +54,7 @@ FirstPassageNoCollisionPairGreensFunction::p_survival( const Real t,
     const Real D( getD() );
     const Real a( geta() );
 
-    const Real Dt( D * t );
-    const Real asq( a * a );
-    const Real a_r( 1.0 / a );
-    const Real asq_r( a_r * a_r );
-
-    const Real PIr0( M_PI * r0 );
-
-    const Real angle_factor( PIr0 * a_r );
-    const Real exp_factor( - Dt * M_PI * M_PI * asq_r );
-
-    const unsigned int i_max( 
-        std::max( static_cast<unsigned int>( 
-                      ceil( sqrt( Dt * M_PI * M_PI 
-                                  + asq * log( 1.0 / this->TOLERANCE ) / Dt ) *
-                            M_1_PI ) ), 2u ) );
-
-    Real p( 0.0 );
-    Real sign( 1.0 );
-    unsigned int i( 1 );
-    while( true )
-    {
-        const Real term( sign * 
-                         exp( exp_factor * i * i ) * 
-                         sin( angle_factor * i ) / i );
-        
-        p += term;
-
-        if( i >= i_max )
-        {
-            break;
-        }
-
-        sign = -sign;
-        ++i;
-    }
-
-    const Real factor( ( a + a ) / PIr0 );
-
-    return p * factor;
+    return p_survival_nocollision( t, r0, D, a );
 }
 
 
@@ -102,45 +65,7 @@ FirstPassageNoCollisionPairGreensFunction::dp_survival( const Real t,
     const Real D( getD() );
     const Real a( geta() );
 
-    const Real Dt( D * t );
-    const Real asq( a * a );
-    const Real a_r( 1.0 / a );
-    const Real asq_r( a_r * a_r );
-
-    const Real PIr0( M_PI * r0 );
-
-    const Real angle_factor( PIr0 * a_r );
-    const Real exp_factor( - Dt * M_PI * M_PI * asq_r );
-
-    const unsigned int i_max( 
-        std::max( static_cast<unsigned int>( 
-                      ceil( sqrt( Dt * M_PI * M_PI 
-                                  + asq * log( 1.0 / this->TOLERANCE ) / Dt ) *
-                            M_1_PI ) ), 2u ) );
-
-    Real p( 0.0 );
-    Real sign( - 1.0 );
-    unsigned int i( 1 );
-    while( true )
-    {
-        const Real term( sign * 
-                         exp( exp_factor * i * i) * 
-                         sin( angle_factor * i ) * i );
-        
-        p += term;
-
-        if( i >= i_max )
-        {
-            break;
-        }
-
-        sign = -sign;
-        ++i;
-    }
-
-    const Real factor( D * ( M_PI + M_PI ) / ( a * r0 ) );
-
-    return p * factor;
+    return dp_survival_nocollision( t, r0, D, a );
 }
 
 

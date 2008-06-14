@@ -122,7 +122,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     // free functions
     //def( "p_free", p_free );
     def( "p_irr", p_irr );
-    def( "S_irr", S_irr );
+    def( "p_survival_irr", p_survival_irr );
     def( "p_theta_free", p_theta_free );
     def( "ip_theta_free", ip_theta_free );
     def( "g_bd", g_bd );

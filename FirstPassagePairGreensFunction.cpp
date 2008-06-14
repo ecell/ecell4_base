@@ -1229,18 +1229,6 @@ p_survival_table( const Real t,
 {
     Real p;
 
-    unsigned int maxi( guess_maxi( t ) );
-    if( maxi > MAX_ALPHA_SEQ )
-    {
-        maxi = MAX_ALPHA_SEQ;
-    }
-
-    if( psurvTable.size() < maxi )
-    {
-        getAlpha0( maxi );  // this updates the table
-        this->createPsurvTable( psurvTable, r0 );
-    }
-
     const Real D( this->getD() );
     const Real sigma( getSigma() );
     const Real a( this->geta() );
@@ -1248,34 +1236,48 @@ p_survival_table( const Real t,
     const Real distToa( a - r0 );
     const Real distTos( r0 - sigma );
 
-    const Real H( 5.0 );
+    const Real H( 6.0 ); // fairly strict criterion for safety
     const Real maxDist( H * sqrt( 6.0 * D * t ) );
 
     if( distToa > maxDist )
     {
-        if( distTos > maxDist )
+        if( distTos > maxDist ) // far from anything; it'll survive.
         {
             p = 1.0;  
         }
-        else
+        else // close only to s, ignore a
         {
             const Real sigma( this->getSigma() );
             const Real kf( this->getkf() );
-            p = S_irr( t, r0, kf, D, sigma );
+            p = p_survival_irr( t, r0, kf, D, sigma );
         }
     }
     else
     {
-        if( distTos > maxDist )
+        if( distTos > maxDist )  // close only to a.
         {
-            puts("far from s");
+            p = p_survival_nocollision( t, r0, D, a );
         }
+        else  // close to both boundaries.  do the normal calculation.
+        {
+            unsigned int maxi( guess_maxi( t ) );
+            if( maxi > MAX_ALPHA_SEQ )
+            {
+                maxi = MAX_ALPHA_SEQ;
+            }
+            
+            if( psurvTable.size() < maxi )
+            {
+                getAlpha0( maxi );  // this updates the table
+                this->createPsurvTable( psurvTable, r0 );
+            }
 
-        p = funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
-                                      p_survival_i_exp_table, 
-                                      this,
-                                      _1, t, r0, psurvTable ),
-                         maxi );
+            p = funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
+                                          p_survival_i_exp_table, 
+                                          this,
+                                          _1, t, r0, psurvTable ),
+                             maxi );
+        }
     }
 
     return p;
@@ -2532,7 +2534,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-2 ) );
+    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-1 ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
@@ -2659,7 +2661,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
     const Real p_0( this->dp_n_at_a( 0, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-2 ) );
+    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-1 ) );
     //printf("p_0 %g\n",p_0 );
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );

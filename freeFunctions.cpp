@@ -104,8 +104,8 @@ p_irr( const Real r,
 }
 
 
-const Real S_irr( const Real t, const Real r0,
-                  const Real kf, const Real D, const Real sigma )
+const Real p_survival_irr( const Real t, const Real r0,
+                           const Real kf, const Real D, const Real sigma )
 {
     const Real kD( 4.0 * M_PI * sigma * D );
     const Real alpha( ( 1.0 + ( kf / kD ) ) * ( sqrt( D ) / sigma ) );
@@ -142,12 +142,106 @@ __p_reaction_irr_t_inf( const Real r0, const Real kf,
 }
 
 
+const Real
+p_survival_nocollision( const Real t,
+                        const Real r0,
+                        const Real D, const Real a )
+{
+    const Real Dt( D * t );
+    const Real asq( a * a );
+    const Real a_r( 1.0 / a );
+    const Real asq_r( a_r * a_r );
 
+    const Real PIr0( M_PI * r0 );
+
+    const Real angle_factor( PIr0 * a_r );
+    const Real exp_factor( - Dt * M_PI * M_PI * asq_r );
+
+    const Real TOLERANCE( 1e-8 );
+
+    const unsigned int i_max( 
+        std::max( static_cast<unsigned int>( 
+                      ceil( sqrt( Dt * M_PI * M_PI 
+                                  + asq * log( 1.0 / TOLERANCE ) / Dt ) *
+                            M_1_PI ) ), 2u ) );
+
+    Real p( 0.0 );
+    Real sign( 1.0 );
+    unsigned int i( 1 );
+    while( true )
+    {
+        const Real term( sign * 
+                         exp( exp_factor * i * i ) * 
+                         sin( angle_factor * i ) / i );
+        
+        p += term;
+
+        if( i >= i_max )
+        {
+            break;
+        }
+
+        sign = -sign;
+        ++i;
+    }
+
+    const Real factor( ( a + a ) / PIr0 );
+
+    return p * factor;
+}
+
+const Real
+dp_survival_nocollision( const Real t,
+                         const Real r0,
+                         const Real D, const Real a )
+{
+    const Real Dt( D * t );
+    const Real asq( a * a );
+    const Real a_r( 1.0 / a );
+    const Real asq_r( a_r * a_r );
+
+    const Real PIr0( M_PI * r0 );
+
+    const Real angle_factor( PIr0 * a_r );
+    const Real exp_factor( - Dt * M_PI * M_PI * asq_r );
+
+    const Real TOLERANCE( 1e-8 );
+
+    const unsigned int i_max( 
+        std::max( static_cast<unsigned int>( 
+                      ceil( sqrt( Dt * M_PI * M_PI 
+                                  + asq * log( 1.0 / TOLERANCE ) / Dt ) *
+                            M_1_PI ) ), 2u ) );
+
+    Real p( 0.0 );
+    Real sign( - 1.0 );
+    unsigned int i( 1 );
+    while( true )
+    {
+        const Real term( sign * 
+                         exp( exp_factor * i * i) * 
+                         sin( angle_factor * i ) * i );
+        
+        p += term;
+
+        if( i >= i_max )
+        {
+            break;
+        }
+
+        sign = -sign;
+        ++i;
+    }
+
+    const Real factor( D * ( M_PI + M_PI ) / ( a * r0 ) );
+
+    return p * factor;
+}
 
 
 
 /*
-const Real S_irr_deriv( const Real tsqrt, 
+const Real p_survival_irr_deriv( const Real tsqrt, 
                         const Real r0 ) const
 {
     const Real Sigma( this->getSigma() );
@@ -173,7 +267,7 @@ const Real S_irr_deriv( const Real tsqrt,
 }
 
 void
-S_irr_fdf( const Real tsqrt, 
+p_survival_irr_fdf( const Real tsqrt, 
 					 const Real r0,
 					 Real* const f, Real* const df ) const
 {
