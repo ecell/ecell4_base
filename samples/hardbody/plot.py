@@ -189,7 +189,7 @@ bd300 = numpy.array([1.62390208244,1.62284588814,1.63388109207]).mean()
 bd300 *= 11.69607 / 1e-8
 loglog( [1e-11,1e-2],[bd300,bd300], 'b:' )
 
-figtext( .63, .37, r'BD', color='k' )
+figtext( .63, .405, r'BD', color='k' )
 
 xlabel( 'Concentration [M]' )
 ylabel( 'time [sec]' )
