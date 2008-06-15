@@ -1363,7 +1363,7 @@ FirstPassagePairGreensFunction::p_leaves( const Real t,
 					p_leaves_i_exp,
 					this,
 					_1, t, r0 ),
-			   this->MAX_ALPHA_SEQ ) );
+                               guess_maxi( t ) ) );
     return p;
 }
 
@@ -1376,7 +1376,7 @@ FirstPassagePairGreensFunction::p_leavea( const Real t,
 					p_leavea_i_exp,
 					this,
 					_1, t, r0 ),
-			   this->MAX_ALPHA_SEQ ) );
+                               guess_maxi( t ) ) );
     return p;
 }
 
