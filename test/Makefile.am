@@ -1,7 +1,9 @@
 PYTHON = @PYTHON@
 #PYTHONPATH = $(PYTHONPATH):$(top_srcdir)
 
-CPP_TESTS = AllTests
+CPP_TESTS =\
+DynamicPriorityQueue_test\
+SphericalBesselTable_test
 
 PYTHON_TESTS = alltests.py
 
@@ -28,16 +30,23 @@ _object_matrix_test.py
 #%.py:
 #	$(TESTS_ENVIRONMENT) $(PYTHON) $<
 
-AllTests_CXXFLAGS = -DBOOST_TEST_DYN_LINK
-AllTests_LDFLAGS = -L$(libdir)
-AllTests_LDADD   = -lboost_unit_test_framework
+DynamicPriorityQueue_test_CXXFLAGS = -DBOOST_TEST_DYN_LINK
+DynamicPriorityQueue_test_LDFLAGS = -L$(libdir) 
+DynamicPriorityQueue_test_LDADD   = -lboost_unit_test_framework
+
+SphericalBesselTable_test_CXXFLAGS = -DBOOST_TEST_DYN_LINK
+SphericalBesselTable_test_LDFLAGS = -L$(libdir) $(GSL_LIBS)
+SphericalBesselTable_test_LDADD   = -lboost_unit_test_framework
 
 INCLUDES = -I$(top_srcdir)
 
 check_PROGRAMS = $(CPP_TESTS)
 
-AllTests_SOURCES = \
+DynamicPriorityQueue_test_SOURCES = \
 DynamicPriorityQueue_test.cpp
+
+SphericalBesselTable_test_SOURCES = \
+SphericalBesselTable_test.cpp
 
 
 

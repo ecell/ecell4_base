@@ -42,4 +42,7 @@ inline void sincos( double x, double* s, double* c )
     }\
 
 
+#define IGNORE_RETURN (void)
+
+
 #endif // __DEFS_HPP

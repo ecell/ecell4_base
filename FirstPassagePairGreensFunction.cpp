@@ -1286,7 +1286,7 @@ p_survival_table( const Real t,
             
             if( psurvTable.size() < maxi )
             {
-                getAlpha0( maxi );  // this updates the table
+                IGNORE_RETURN getAlpha0( maxi );  // this updates the table
                 this->createPsurvTable( psurvTable, r0 );
             }
 
