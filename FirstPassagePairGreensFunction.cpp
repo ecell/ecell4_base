@@ -1495,7 +1495,7 @@ const Real FirstPassagePairGreensFunction::drawTime( const Real rnd,
     Real t_guess;
     Real dist;
 
-    if( this->getkf() != 0 )
+    if( kf != 0 )
     {
         dist = std::min( a - r0, r0 - sigma );
     }
@@ -2671,7 +2671,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 //	    p_n = 0.0;
 	    break;
 	}
-	//printf("p_n %g\n",p_n );
+	//printf("dp_n %g\n",p_n );
 
 	p_nTable.push_back( p_n );
 
