@@ -1359,7 +1359,7 @@ const Real
 FirstPassagePairGreensFunction::p_leaves( const Real t,
 					  const Real r0 ) const
 {
-    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
 					p_leaves_i_exp,
 					this,
 					_1, t, r0 ),
@@ -1372,7 +1372,7 @@ const Real
 FirstPassagePairGreensFunction::p_leavea( const Real t,
 					  const Real r0 ) const
 {
-    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
+    const Real p( funcSum_all( boost::bind( &FirstPassagePairGreensFunction::
 					p_leavea_i_exp,
 					this,
 					_1, t, r0 ),
