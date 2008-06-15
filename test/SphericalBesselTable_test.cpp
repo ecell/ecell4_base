@@ -15,13 +15,15 @@ const unsigned int tableResolution( 200 );
 
 static SphericalBesselTable table( maxn, tableResolution );
 
+const Real TOLERANCE( 1e-6 );
+
 
 BOOST_AUTO_TEST_CASE( testJ )
 {
     for( unsigned int n( 0 ); n <= maxn; ++n )
     {
         const Real maxz( table.maxz( n ) * 5 );
-        const unsigned int maxi( 500 );
+        const unsigned int maxi( 100 );
         
         for( UnsignedInteger i( 0 ); i < maxi; ++i )
         {
@@ -30,9 +32,9 @@ BOOST_AUTO_TEST_CASE( testJ )
             const Real j( gsl_sf_bessel_jl( n, z ) );
             const Real tj( table.j( n, z ) );
 
-            BOOST_CHECK_CLOSE( j, tj, 1e-7 );
+            BOOST_CHECK_CLOSE( j, tj, TOLERANCE );
 
-            printf("%d\n",i);
+            printf("%d %d\n",n,i);
         }
     }
         

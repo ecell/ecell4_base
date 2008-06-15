@@ -42,9 +42,14 @@ public:
         Real value;
 
         const RealVector& sjTablen( this->sjTable[n] );
-        const Real maxz( this->delta * ( sjTablen.size() - 1 ) );
+        const Real minz( this->delta * 3 );
+        const Real maxz( this->delta * ( sjTablen.size() - 3 ) );
 
-        if( z < maxz )
+        if( z < minz )
+        {
+            value = this->_j( n, z );
+        }
+        else if( z < maxz )
         {
             // table
             value = interp( z, sjTablen, this->delta );
@@ -62,7 +67,7 @@ public:
         Real value;
 
         const RealVector& syTablen( this->syTable[n] );
-        const Real maxz( this->delta * syTablen.size() );
+        const Real maxz( this->delta * syTablen.size() - 2 );
 
         if( z < maxz )
         {
