@@ -45,7 +45,7 @@ class FreeFunctionsTestCase( unittest.TestCase ):
             self.assertAlmostEqual( 0.0, (np-ip)/ip )
 
 
-    def test_int_p_irr_is_S_irr( self ):
+    def test_int_p_irr_is_p_survival_irr( self ):
 
         import scipy.integrate
 
@@ -57,7 +57,7 @@ class FreeFunctionsTestCase( unittest.TestCase ):
         
 
         for i in range( 1, 20 ):
-            S = mod.S_irr( t, r0 * i, kf, D, sigma )
+            S = mod.p_survival_irr( t, r0 * i, kf, D, sigma )
             result = scipy.integrate.quad( mod.p_irr, sigma, sigma * 1e3,
                                            args=( t, r0 * i, kf, D, sigma ) )
             ip = result[0]

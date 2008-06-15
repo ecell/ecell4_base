@@ -23,6 +23,11 @@
 
 #include "FirstPassagePairGreensFunction.hpp"
 
+const Real FirstPassagePairGreensFunction::TOLERANCE;
+const Real FirstPassagePairGreensFunction::MIN_T_FACTOR;
+const unsigned int FirstPassagePairGreensFunction::MAX_ORDER;
+const unsigned int FirstPassagePairGreensFunction::MAX_ALPHA_SEQ;
+
 
 
 FirstPassagePairGreensFunction::
@@ -1192,6 +1197,13 @@ FirstPassagePairGreensFunction::p_0( const Real t,
 const unsigned int
 FirstPassagePairGreensFunction::guess_maxi( const Real t ) const
 {
+    const unsigned int safety( 2 );
+
+    if( t >= INFINITY )
+    {
+        return safety;
+    }
+
     const Real D( getD() );
     const Real sigma( getSigma() );
     const Real a( geta() );
@@ -1201,12 +1213,22 @@ FirstPassagePairGreensFunction::guess_maxi( const Real t ) const
     const Real thr( ( exp( - Dt * alpha0 * alpha0 ) / alpha0 ) * 
                     this->TOLERANCE * 1e-1 );
     const Real thrsq( thr * thr );
+    //printf("w %g %g\n", thr, 2 * Dt / thrsq );
+    //printf("w0 %g\n", gsl_sf_lambert_W0( 2 * Dt / thrsq ) );
+
+    if( thrsq <= 0.0 )
+    {
+        return this->MAX_ALPHA_SEQ;
+    }
+
     const Real max_alpha( 1.0 /
                           ( sqrt( exp( gsl_sf_lambert_W0( 2 * Dt / thrsq ) ) *
                                   thrsq ) ) );
+    const unsigned int 
+        maxi( safety + 
+              static_cast<unsigned int>( max_alpha * ( a - sigma ) / M_PI ) );
 
-    return static_cast<unsigned int>( max_alpha
-                                      * ( a - sigma ) / M_PI ) + 2;
+    return std::min( maxi, this->MAX_ALPHA_SEQ );
 }
 
 
@@ -1236,7 +1258,7 @@ p_survival_table( const Real t,
     const Real distToa( a - r0 );
     const Real distTos( r0 - sigma );
 
-    const Real H( 6.0 ); // fairly strict criterion for safety
+    const Real H( 6.0 ); // a fairly strict criterion for safety.
     const Real maxDist( H * sqrt( 6.0 * D * t ) );
 
     if( distToa > maxDist )
@@ -1260,11 +1282,7 @@ p_survival_table( const Real t,
         }
         else  // close to both boundaries.  do the normal calculation.
         {
-            unsigned int maxi( guess_maxi( t ) );
-            if( maxi > MAX_ALPHA_SEQ )
-            {
-                maxi = MAX_ALPHA_SEQ;
-            }
+            const unsigned int maxi( guess_maxi( t ) );
             
             if( psurvTable.size() < maxi )
             {
