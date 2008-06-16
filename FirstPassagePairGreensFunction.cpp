@@ -21,6 +21,8 @@
 #include "findRoot.hpp"
 #include "freeFunctions.hpp"
 
+#include "SphericalBesselGenerator.hpp"
+
 #include "FirstPassagePairGreensFunction.hpp"
 
 const Real FirstPassagePairGreensFunction::TOLERANCE;
@@ -2483,6 +2485,17 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
 
     const Real term1( alphasq * alphasq * exp( mDt * alphasq ) );
 
+
+    const Real js1( sphericalBesselGenerator->j( n,   sigmaAlpha ) );
+    const Real js2( sphericalBesselGenerator->j( n+1, sigmaAlpha ) );
+    const Real ja(  sphericalBesselGenerator->j( n,   aAlpha ) );
+    const Real ya(  sphericalBesselGenerator->y( n,   aAlpha ) );
+    const Real jr(  sphericalBesselGenerator->j( n,   r * alpha ) );
+    const Real yr(  sphericalBesselGenerator->y( n,   r * alpha ) );
+    const Real jr0( sphericalBesselGenerator->j( n,   r0 * alpha ) );
+    const Real yr0( sphericalBesselGenerator->y( n,   r0 * alpha ) );
+
+/*
     const Real js1( gsl_sf_bessel_jl( n,   sigmaAlpha ) );
     const Real js2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
     const Real ja(  gsl_sf_bessel_jl( n,   aAlpha ) );
@@ -2491,13 +2504,13 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
     const Real yr(  gsl_sf_bessel_yl( n,   r * alpha ) );
     const Real jr0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
     const Real yr0( gsl_sf_bessel_yl( n,   r0 * alpha ) );
-
+*/
     const Real J( hSigma_m_n * js1 + sigmaAlpha * js2 );
     const Real Jsq( J * J );
 
     const Real JY1( ja * yr - ya * jr );
     const Real JY2( ja * yr0 - ya * jr0 );
-    //printf("%g %g\n", JY1/ yr, JY2/ yr0 );
+
     const Real num( Jsq * JY1 * JY2 );
 
     const Real den1( a * ( realn + realn * realn - 
@@ -2547,7 +2560,8 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-1 ) );
+    const Real tolerance( 1e-5 ); // SphericalBesselGenerator's accuracy
+    const Real threshold( fabs( tolerance * p_0  ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
@@ -2615,13 +2629,21 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
 
     const Real term1( alphasq * alpha * exp( mDt * alphasq ) );
 
+
+    const Real js1( sphericalBesselGenerator->j( n,   sigmaAlpha ) );
+    const Real js2( sphericalBesselGenerator->j( n+1, sigmaAlpha ) );
+    const Real ja(  sphericalBesselGenerator->j( n,   aAlpha ) );
+    const Real ya(  sphericalBesselGenerator->y( n,   aAlpha ) );
+    const Real jr0( sphericalBesselGenerator->j( n,   r0 * alpha ) );
+    const Real yr0( sphericalBesselGenerator->y( n,   r0 * alpha ) );
+/*
     const Real js1( gsl_sf_bessel_jl( n,   sigmaAlpha ) );
     const Real js2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );
     const Real ja(  gsl_sf_bessel_jl( n,   aAlpha ) );
     const Real ya(  gsl_sf_bessel_yl( n,   aAlpha ) );
     const Real jr0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
     const Real yr0( gsl_sf_bessel_yl( n,   r0 * alpha ) );
-
+*/
     const Real J( hSigma_m_n * js1 + sigmaAlpha * js2 );
     const Real Jsq( J * J );
 
@@ -2674,7 +2696,9 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
     const Real p_0( this->dp_n_at_a( 0, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-1 ) );
+    const Real tolerance( 1e-5 ); // SphericalBesselGenerator's accuracy
+    const Real threshold( fabs( tolerance * p_0  ) );
+
     //printf("p_0 %g\n",p_0 );
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
@@ -3048,7 +3072,7 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	const Real low( gsl_root_fsolver_x_lower( solver ) );
 	const Real high( gsl_root_fsolver_x_upper( solver ) );
 	const int status( gsl_root_test_interval( low, high, 1e-15,
-						  this->TOLERANCE ) );
+						  1e-5 ) );
 
 	if( status == GSL_CONTINUE )
 	{

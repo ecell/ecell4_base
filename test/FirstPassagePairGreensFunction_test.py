@@ -822,7 +822,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         leavea = gf.leavea( t, r0 ) * numpy.pi * a * a * 2
         iptheta = gf.idp_theta( numpy.pi, a, r0, t ) * numpy.pi * a * a
 
-        self.assertAlmostEqual( leavea, iptheta )
+        self.assertAlmostEqual( leavea, iptheta, 1e-5 ) # SBG's accuracy
 
 '''
     def test_p_theta_free_is_p_theta_smallt( self ):

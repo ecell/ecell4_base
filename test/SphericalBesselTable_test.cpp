@@ -20,23 +20,21 @@ const Real TOLERANCE( 1e-6 );
 
 BOOST_AUTO_TEST_CASE( testJ )
 {
-    for( unsigned int n( 0 ); n <= maxn; ++n )
+    const UnsignedInteger resolution( 100 );
+    const Real maxz( table.maxz( maxn ) * 1.1 );
+
+    for( UnsignedInteger i( 0 ); i <= resolution; ++i )
     {
-        const Real maxz( table.maxz( n ) * 5 );
-        const unsigned int maxi( 100 );
+        const Real z( i * maxz / resolution );
         
-        for( UnsignedInteger i( 0 ); i < maxi; ++i )
+
+        for( UnsignedInteger n( 0 ); n <= maxn; ++n )
         {
-            const Real z( i * maxz / maxi );
-
-            const Real j( gsl_sf_bessel_jl( n, z ) );
             const Real tj( table.j( n, z ) );
-
+            const Real j( gsl_sf_bessel_jl( n, z ) );
+            
             BOOST_CHECK_CLOSE( j, tj, TOLERANCE );
-
-            printf("%d %d\n",n,i);
         }
     }
-        
 
 }

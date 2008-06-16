@@ -24,7 +24,7 @@
 
 #include "funcSum.hpp"
 
-//#include "HalfOrderBesselGenerator.hpp"
+#include "SphericalBesselGenerator.hpp"
 
 #include "BasicPairGreensFunction.hpp"
 

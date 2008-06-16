@@ -43,7 +43,7 @@ funcSum.hpp\
 findRoot.hpp\	
 freeFunctions.hpp\
 factorial.hpp\
-HalfOrderBesselGenerator.hpp\
+SphericalBesselGenerator.hpp\
 DynamicPriorityQueue.hpp\
 EventScheduler.hpp\
 PyEventScheduler.hpp\
@@ -62,6 +62,7 @@ _gfrd_la_SOURCES=\
 funcSum.cpp\
 findRoot.cpp\
 freeFunctions.cpp\
+SphericalBesselGenerator.cpp\
 FreeGreensFunction.cpp\
 FirstPassageGreensFunction.cpp\
 BasicPairGreensFunction.cpp\
