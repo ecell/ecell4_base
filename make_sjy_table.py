@@ -73,7 +73,7 @@ def writeHeadArray( file, name, N ):
     #file.write( 'boost::array<const double**, %d + 1>%s =\n{\n' % ( N, name ) ) 
 
     for n in range( N+1 ):
-        file.write( '    static_cast<const double*>( &sj_table%d[0][0] ),\n' % n )
+        file.write( '    &sj_table%d[0][0],\n' % n )
 
     file.write( '};' )
 
