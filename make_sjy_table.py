@@ -121,7 +121,7 @@ static const double %s_array[%d + 1] =
 {\n'''
 
     #array_template = '''{\n%s\n}'''
-    number_template = '''    %.18g,\n'''
+    number_template = '''    %.18f'''
     foot_template = '''};\n'''
 
     N = len( table )
@@ -129,7 +129,7 @@ static const double %s_array[%d + 1] =
     file.write( head_template % ( name, N ) )
 
     #file.write( '    {\n' )
-    file.write( string.join( [ number_template % n for n in table ] ) )
+    file.write( ',\n'.join( number_template % n for n in table ) )
     #file.write( '    },\n' )
 
     file.write( foot_template )

@@ -41,7 +41,7 @@ noinst_HEADERS=\
 SphericalBesselTable.hpp\
 Defs.hpp\
 funcSum.hpp\
-findRoot.hpp\	
+findRoot.hpp\
 freeFunctions.hpp\
 factorial.hpp\
 SphericalBesselGenerator.hpp\
@@ -72,11 +72,12 @@ FirstPassagePairGreensFunction.cpp\
 FirstPassageNoCollisionPairGreensFunction.cpp\
 pyGFRD.cpp
 
+
+
+
 _gfrd_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
 _gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
 GFRD_SO=_gfrd$(LTDL_SHLIB_EXT)
-
-
 
 
 SphericalBesselTable.hpp: make_sjy_table.py
