@@ -24,9 +24,9 @@ D_ref = 1e-12
 
 D_move = D_ref * D_ratio
 
-if D_mode == 'move':
+if D_mode == 'normal':
     D_react = D_move
-elif D_mode == 'ref':
+elif D_mode == 'fixed':
     D_react = D_ref
 
 
