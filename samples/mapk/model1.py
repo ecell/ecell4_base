@@ -48,7 +48,7 @@ box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 # not supported yet
 #s.addSurface( box1 )
 
-modelName='mapk1'
+model='mapk1'
 
 #D = 2e-12 # run1
 D = 1e-12 # run2
