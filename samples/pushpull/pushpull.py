@@ -8,31 +8,6 @@ import sys
 from fractionS import *
 
 
-def k_D( D, sigma ):
-    Dpisigma4 = 4.0 * numpy.pi * D * sigma
-    return Dpisigma4
-
-def k_a( k, D, sigma ):
-    kon = k
-    kD = k_D( D, sigma )
-    #print 'kon ', kon, 'k_D', kD
-    if kon > k_D:
-        print 'ERROR: kon > k_D.'
-        sys.exit( 1 )
-    ka = 1 / ( ( 1 / kon ) - ( 1 / kD ) )
-    return ka
-
-def k_d( koff, kon, D, sigma ):
-    return k_a( kon, D, sigma ) * koff / kon
-
-def k_on( ka, kD ):
-    kon = 1 / ( ( 1 / kD ) + ( 1 / ka ) )  # m^3/s
-    return kon
-
-
-def C2N( c, V ):
-    return round( c * V * N_A )
-
 # Args:
 # Keq
 # koff_ratio
@@ -117,7 +92,7 @@ N_Sp = S_tot - N_S
 
 Dtot = D1 + D2
 
-#ka = k_a( kon, Dtot, sigma )
+#ka = k_a( kon, k_D( Dtot, sigma ) )
 ka = 9e9 / N_A / 1e3 # 1/M s -> m^3/s
 
 kD = k_D( Dtot, sigma )  # m^3/s
@@ -141,8 +116,8 @@ else:
     koff1 = koff2 = koff
 
 
-kd1 = k_d( koff, kon, Dtot, sigma )
-kd2 = k_d( koff2, kon, Dtot, sigma )
+kd1 = k_d( koff, kon, kD )
+kd2 = k_d( koff2, kon, kD )
 
 print 'ka', ka, 'kD', kD, 'kd1', kd1, 'kd2', kd2
 print 'kon m^3/s', kon, '1/M s', kon * N_A * 1e3

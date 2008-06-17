@@ -174,3 +174,28 @@ def permutate(seq):
                 temp.append(seq[k:k+1] + m)
         return temp
 
+
+
+def k_D( D, sigma ):
+    Dpisigma4 = 4.0 * numpy.pi * D * sigma
+    return Dpisigma4
+
+def k_a( k, kD ):
+    kon = k
+    #print 'kon ', kon, 'k_D', kD
+    if kon > k_D:
+        print 'ERROR: kon > k_D.'
+        sys.exit( 1 )
+    ka = 1 / ( ( 1 / kon ) - ( 1 / kD ) )
+    return ka
+
+def k_d( koff, kon, kD ):
+    return k_a( kon, kD ) * koff / kon
+
+def k_on( ka, kD ):
+    kon = 1 / ( ( 1 / kD ) + ( 1 / ka ) )  # m^3/s
+    return kon
+
+
+def C2N( c, V ):
+    return round( c * V * N_A )

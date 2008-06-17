@@ -38,6 +38,7 @@ dimer.py
 lib_LTLIBRARIES= _gfrd.la
 
 noinst_HEADERS=\
+SphericalBesselTable.hpp\
 Defs.hpp\
 funcSum.hpp\
 findRoot.hpp\	
@@ -74,6 +75,12 @@ pyGFRD.cpp
 _gfrd_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
 _gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
 GFRD_SO=_gfrd$(LTDL_SHLIB_EXT)
+
+
+
+
+SphericalBesselTable.hpp: make_sjy_table.py
+	$(PYTHON) make_sjy_table.py SphericalBesselTable.hpp
 
 
 OBJECT_MATRIX_SO=object_matrix.so

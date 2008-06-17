@@ -9,19 +9,21 @@
 
 #include "SphericalBesselGenerator.hpp"
 
+//#include "SphericalBesselGenerator.cpp"
 
-const unsigned int maxn( 50 );
-const unsigned int tableResolution( 100 );
 
-//SphericalBesselGenerator& generator( *sphericalBesselGenerator );
-SphericalBesselGenerator generator( maxn, tableResolution );
+const unsigned int maxn( 51 );
+const unsigned int tableResolution( 300 );
+
+const SphericalBesselGenerator& generator( getSphericalBesselGenerator() );
+
 
 const Real TOLERANCE( 1e-5 );
 
 BOOST_AUTO_TEST_CASE( testJ )
 {
     const UnsignedInteger resolution( 100 );
-    const Real maxz( generator.maxz( maxn ) * 1.2 );
+    const Real maxz( std::max( 1000., static_cast<Real>( maxn * maxn ) ) * 2 );
 
     for( UnsignedInteger i( 0 ); i <= resolution; ++i )
     {
@@ -44,7 +46,7 @@ BOOST_AUTO_TEST_CASE( testJ )
 BOOST_AUTO_TEST_CASE( testY )
 {
     const UnsignedInteger resolution( 100 );
-    const Real maxz( generator.maxz( maxn ) * 1.1 );
+    const Real maxz( std::max( 1000., static_cast<Real>( maxn * maxn ) ) * 2 );
 
     for( UnsignedInteger i( 1 ); i <= resolution; ++i )
     {

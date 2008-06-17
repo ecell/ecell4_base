@@ -2486,14 +2486,16 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
     const Real term1( alphasq * alphasq * exp( mDt * alphasq ) );
 
 
-    const Real js1( sphericalBesselGenerator->j( n,   sigmaAlpha ) );
-    const Real js2( sphericalBesselGenerator->j( n+1, sigmaAlpha ) );
-    const Real ja(  sphericalBesselGenerator->j( n,   aAlpha ) );
-    const Real ya(  sphericalBesselGenerator->y( n,   aAlpha ) );
-    const Real jr(  sphericalBesselGenerator->j( n,   r * alpha ) );
-    const Real yr(  sphericalBesselGenerator->y( n,   r * alpha ) );
-    const Real jr0( sphericalBesselGenerator->j( n,   r0 * alpha ) );
-    const Real yr0( sphericalBesselGenerator->y( n,   r0 * alpha ) );
+    const SphericalBesselGenerator& s( getSphericalBesselGenerator() );
+
+    const Real js1( s.j( n,   sigmaAlpha ) );
+    const Real js2( s.j( n+1, sigmaAlpha ) );
+    const Real ja(  s.j( n,   aAlpha ) );
+    const Real ya(  s.y( n,   aAlpha ) );
+    const Real jr(  s.j( n,   r * alpha ) );
+    const Real yr(  s.y( n,   r * alpha ) );
+    const Real jr0( s.j( n,   r0 * alpha ) );
+    const Real yr0( s.y( n,   r0 * alpha ) );
 
 /*
     const Real js1( gsl_sf_bessel_jl( n,   sigmaAlpha ) );
@@ -2629,13 +2631,14 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
 
     const Real term1( alphasq * alpha * exp( mDt * alphasq ) );
 
+    const SphericalBesselGenerator& s( getSphericalBesselGenerator() );
 
-    const Real js1( sphericalBesselGenerator->j( n,   sigmaAlpha ) );
-    const Real js2( sphericalBesselGenerator->j( n+1, sigmaAlpha ) );
-    const Real ja(  sphericalBesselGenerator->j( n,   aAlpha ) );
-    const Real ya(  sphericalBesselGenerator->y( n,   aAlpha ) );
-    const Real jr0( sphericalBesselGenerator->j( n,   r0 * alpha ) );
-    const Real yr0( sphericalBesselGenerator->y( n,   r0 * alpha ) );
+    const Real js1( s.j( n,   sigmaAlpha ) );
+    const Real js2( s.j( n+1, sigmaAlpha ) );
+    const Real ja(  s.j( n,   aAlpha ) );
+    const Real ya(  s.y( n,   aAlpha ) );
+    const Real jr0( s.j( n,   r0 * alpha ) );
+    const Real yr0( s.y( n,   r0 * alpha ) );
 /*
     const Real js1( gsl_sf_bessel_jl( n,   sigmaAlpha ) );
     const Real js2( gsl_sf_bessel_jl( n+1, sigmaAlpha ) );

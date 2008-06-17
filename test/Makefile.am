@@ -36,7 +36,7 @@ DynamicPriorityQueue_test_LDADD   = -lboost_unit_test_framework
 
 SphericalBesselGenerator_test_CXXFLAGS = -DBOOST_TEST_DYN_LINK
 SphericalBesselGenerator_test_LDFLAGS = -L$(libdir) $(GSL_LIBS)
-SphericalBesselGenerator_test_LDADD   = -lboost_unit_test_framework
+SphericalBesselGenerator_test_LDADD   = -lboost_unit_test_framework  ../SphericalBesselGenerator.lo
 
 INCLUDES = -I$(top_srcdir)
 
