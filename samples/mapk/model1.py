@@ -99,8 +99,8 @@ s.throwInParticles( K, C2N( 200e-9, V ), box1 )
 s.throwInParticles( KK, C2N( 50e-9, V ), box1 )
 s.throwInParticles( P, C2N( 50e-9, V ), box1 )
 
-endTime = .5
-#endTime = 0
+#endTime = .5
+endTime = 0
 while 1:
     s.step()
     nextTime = s.scheduler.getTopTime()
@@ -109,29 +109,31 @@ while 1:
         break
 
 s.reset()
+print kD, k_a(0.02e9 / N_A / 1e3, kD)
+raise ''
 
-r1 = BindingReactionType( K, KK, K_KK, k_a(0.02e9, kD) )
+r1 = BindingReactionType( K, KK, K_KK, k_a(0.02e9 / N_A / 1e3, kD) )
 s.addReactionType( r1 )
 r2 = UnbindingReactionType( K_KK, K, KK, k_d( 1.0, 0.02e9, kD ) )
 s.addReactionType( r2 )
 r3 = UnbindingReactionType( K_KK, Kp, KK, k_d( 1.5, 0.02e9, kD ) )
 s.addReactionType( r3 )
 
-r4 = BindingReactionType( Kp, KK, Kp_KK, k_a( 0.032e9, kD ) )
+r4 = BindingReactionType( Kp, KK, Kp_KK, k_a( 0.032e9 / N_A / 1e3, kD ) )
 s.addReactionType( r4 )
 r5 = UnbindingReactionType( Kp_KK, Kp, KK, k_d( 1.0, 0.032e9, kD ) )
 s.addReactionType( r5 )
 r6 = UnbindingReactionType( Kp_KK, Kpp, KK, k_d( 15.0, 0.032e9, kD ) )
 s.addReactionType( r6 )
 
-r7 = BindingReactionType( Kpp, P, Kpp_P, k_a( 0.02e9, kD ) )
+r7 = BindingReactionType( Kpp, P, Kpp_P, k_a( 0.02e9 / N_A / 1e3, kD ) )
 s.addReactionType( r7 )
 r8 = UnbindingReactionType( Kpp_P, Kpp, P, k_d( 1.0, 0.02e9, kD ) )
 s.addReactionType( r8 )
 r9 = UnbindingReactionType( Kpp_P, Kp, P, k_d( 1.5, 0.02e9, kD ) )
 s.addReactionType( r9 )
 
-r10 = BindingReactionType( Kp, P, Kp_P, k_a( 0.032e9, kD ))
+r10 = BindingReactionType( Kp, P, Kp_P, k_a( 0.032e9 / N_A / 1e3, kD ))
 s.addReactionType( r10 )
 r11 = UnbindingReactionType( Kp_P, Kp, P, k_d( 1.0, 0.032e9, kD ) )
 s.addReactionType( r11 )
