@@ -43,6 +43,8 @@ public:
     static const UnsignedInteger getMaxNJ();
     static const UnsignedInteger getMaxNY();
 
+    static const SphericalBesselGenerator& instance();
+
 private:
 
     void fillTables();
@@ -80,7 +82,5 @@ private:
 
 
 
-
-const SphericalBesselGenerator& getSphericalBesselGenerator();
 
 #endif /* __SPHERICALBESSELGENERATOR_HPP */

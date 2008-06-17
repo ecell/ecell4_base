@@ -191,17 +191,12 @@ FirstPassageNoCollisionPairGreensFunction::p_n_alpha( const unsigned int i,
 
     const Real term1( exp( mDt * alpha * alpha ) );
 
-    const SphericalBesselGenerator& s( getSphericalBesselGenerator() );
+    const SphericalBesselGenerator& s( SphericalBesselGenerator::instance() );
 
     const Real jr(  s.j( n,   r * alpha ) );
     const Real jr0( s.j( n,   r0 * alpha ) );
     const Real ja2( s.j( n+1,   aalpha ) );
 
-/*
-    const Real jr(  gsl_sf_bessel_jl( n,   r  * alpha ) );
-    const Real jr0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
-    const Real ja2( gsl_sf_bessel_jl( n+1, aalpha ) );
-*/
     const Real num( jr * jr0 );
     const Real den( ja2 * ja2 );
 
@@ -465,14 +460,11 @@ FirstPassageNoCollisionPairGreensFunction::dp_n_alpha( const unsigned int i,
 
     const Real term1( exp( mDt * alpha * alpha ) * alpha );
 
-    const SphericalBesselGenerator& s( getSphericalBesselGenerator() );
+    const SphericalBesselGenerator& s( SphericalBesselGenerator::instance() );
 
     const Real jr0( s.j( n,   r0 * alpha ) );
     const Real ja2( s.j( n+1,   aalpha ) );
-/*
-    const Real jr0( gsl_sf_bessel_jl( n,   r0 * alpha ) );
-    const Real ja2( gsl_sf_bessel_jl( n+1, aalpha ) );
-*/
+
     const Real result( term1 * jr0 / ja2 );
 
     return result;

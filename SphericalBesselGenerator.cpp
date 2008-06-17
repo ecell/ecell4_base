@@ -3,7 +3,7 @@
 #include "SphericalBesselGenerator.hpp"
 
 
-const SphericalBesselGenerator& getSphericalBesselGenerator()
+const SphericalBesselGenerator& SphericalBesselGenerator::instance()
 {
     static const SphericalBesselGenerator sphericalBesselGenerator;
     return sphericalBesselGenerator;

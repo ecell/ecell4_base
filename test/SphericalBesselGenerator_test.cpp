@@ -15,7 +15,8 @@
 const unsigned int maxn( 51 );
 const unsigned int tableResolution( 300 );
 
-const SphericalBesselGenerator& generator( getSphericalBesselGenerator() );
+const SphericalBesselGenerator& 
+generator( SphericalBesselGenerator::instance() );
 
 
 const Real TOLERANCE( 1e-5 );
