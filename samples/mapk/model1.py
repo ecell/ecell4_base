@@ -146,7 +146,11 @@ s.addReactionType( r12 )
 #s.addReactionType( r14 )
 
 
-l = Logger( s, modelName )
+l = Logger( s, 
+            logname = model + '_' + '_'.join( sys.argv[1:6] ) )
+
+
+
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
 l.setInterval( 1e-0 )
 l.log()
