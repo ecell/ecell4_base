@@ -180,8 +180,7 @@ def k_D( D, sigma ):
     Dpisigma4 = 4.0 * numpy.pi * D * sigma
     return Dpisigma4
 
-def k_a( k, kD ):
-    kon = k
+def k_a( kon, kD ):
     #print 'kon ', kon, 'k_D', kD
     if kon > k_D:
         print 'ERROR: kon > k_D.'

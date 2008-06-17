@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-#from egfrd import *
-from bd import *
+from egfrd import *
+#from bd import *
 
 def run( outfilename, T, N ):
 
@@ -11,7 +11,7 @@ def run( outfilename, T, N ):
         d, t = singlerun2( T )
         outfile.write( '%g\n' % d )
         outfile.flush()
-        print d, t
+        #print d, t
         assert d == 0 or t == T
 
     outfile.close()
@@ -64,10 +64,10 @@ def singlerun1( T ):
 
 def singlerun2( T ):
 
-    s = BDSimulator()
+    s = EGFRDSimulator()
     s.setWorldSize( 1e-3 )
 
-    #s.setMaxShellSize( 1e-6 )
+    s.setUserMaxShellSize( 1e-6 )
 
     sigma = 1e-8
     r0 = sigma
@@ -75,11 +75,11 @@ def singlerun2( T ):
     kf = 10 * sigma * D
     tau = sigma*sigma/D 
 
-    A = Species( 'A', D/2, sigma/2 )
+    A = Species( 'A', D, sigma/2 )
     s.addSpecies( A )
-    B = Species( 'B', D/2, sigma/2 )
+    B = Species( 'B', D, sigma/2 )
     s.addSpecies( B )
-    C = Species( 'C', D/2, sigma/2 )
+    C = Species( 'C', D, sigma/2 )
     s.addSpecies( C )
 
     r1 = BindingReactionType( A, B, C, kf )
@@ -92,8 +92,8 @@ def singlerun2( T ):
 
     while 1:
         s.step()
-        if s.populationChanged():
-            print 'reaction'
+        if s.populationChanged:
+            #print 'reaction'
             return 0.0, s.t
 
         nextTime = s.getNextTime()
