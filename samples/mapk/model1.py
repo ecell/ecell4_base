@@ -99,8 +99,8 @@ s.throwInParticles( K, C2N( 200e-9, V ), box1 )
 s.throwInParticles( KK, C2N( 50e-9, V ), box1 )
 s.throwInParticles( P, C2N( 50e-9, V ), box1 )
 
-#endTime = .5
-endTime = 0
+endTime = .5
+#endTime = 0
 while 1:
     s.step()
     nextTime = s.scheduler.getTopTime()
@@ -109,8 +109,8 @@ while 1:
         break
 
 s.reset()
-print kD, k_a(0.02e9 / N_A / 1e3, kD)
-raise ''
+#print kD, k_a(0.02e9 / N_A / 1e3, kD)
+
 
 r1 = BindingReactionType( K, KK, K_KK, k_a(0.02e9 / N_A / 1e3, kD) )
 s.addReactionType( r1 )
