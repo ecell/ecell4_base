@@ -26,8 +26,8 @@ class Delegate( object ):
         self.obj = weakref.proxy( obj )
         self.method = method
 
-    def __call__( self, arg ):
-        return self.method( self.obj, arg )
+    def __call__( self, *arg ):
+        return self.method( self.obj, *arg )
 
 
 class Shell( object ):
@@ -47,6 +47,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
         BDSimulatorCoreBase.__init__( self, main )
 
         self.multi = multi
+        #self.multi = weakref.proxy( multi ) ??
 
         self.particleMatrix = ObjectMatrix()
         self.particleMatrix.setWorldSize( self.main.worldSize )
@@ -936,6 +937,7 @@ class Multi( object ):
         self.sim = MultiBDCore( main, self )
 
 
+
     def initialize( self, t ):
 
         self.lastTime = t
@@ -1026,6 +1028,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.userMaxShellSize = INF
 
         self.reset()
+
 
     def setWorldSize( self, size ):
 
@@ -1190,7 +1193,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         species2 = single2.particle.species
         rt = self.reactionTypeMap2.get( ( species1, species2 ) )
 
-        pair = Pair( single1, single2, rt, self.distance, self.getWorldSize() )
+        pair = Pair( single1, single2, rt, 
+                     Delegate( self, EGFRDSimulator.distance ),
+                     self.getWorldSize() )
         pair.initialize( self.t )
 
         return pair

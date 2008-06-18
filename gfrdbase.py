@@ -4,7 +4,6 @@
 import math
 import random
 import sys
-import operator
 
 import numpy
 import scipy
@@ -54,7 +53,7 @@ def setupLogging():
         log.setLevel( logging.INFO )
 
 
-N_A = 6.0221367e23
+setupLogging()
 
 
 def p_free( r, t, D ):
@@ -85,6 +84,7 @@ class Species( object ):
         self.D = D
         self.radius = radius
         self.pool = ParticlePool()
+
 
     def newParticle( self, position ):
 
@@ -660,8 +660,3 @@ class ParticleSimulatorBase( object ):
             buf += species.id + ':' + str( species.pool.size ) + '\t'
 
         return buf
-
-
-setupLogging()
-
-

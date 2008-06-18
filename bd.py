@@ -65,6 +65,7 @@ class BDSimulatorCoreBase( object ):
 
         self.P_acct = {}
 
+
     def initialize( self ):
         self.determineDt()
 

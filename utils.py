@@ -9,7 +9,7 @@ Pi2 = scipy.pi * 2.0
 PiSqrt = math.sqrt( scipy.pi )
 
 N_A = 6.0221367e23
-INF = numpy.Inf
+INF = numpy.inf
 
 NOWHERE = numpy.array( ( INF, INF, INF ) )
 
