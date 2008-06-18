@@ -18,7 +18,7 @@ class NeverGetHere( Exception ):
 
 
 
-def MsTom3s( rate ):
+def Mtom3( rate ):
     return rate / ( 1000 * N_A )
 
 
