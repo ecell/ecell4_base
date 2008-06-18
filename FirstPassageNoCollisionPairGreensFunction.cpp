@@ -237,7 +237,7 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
     const Real p_0( this->p_n( 0, r, r0, t ) * factor );
     p_nTable.push_back( p_0 );
     //printf("0 p_n %18.18g\n", p_0 );
-    const Real threshold( fabs( p_0 * this->TOLERANCE * 1e-1  ) );
+    const Real threshold( fabs( p_0 * THETA_TOLERANCE * 1e-1  ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
@@ -269,7 +269,7 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
 
 	if( n >= this->MAX_ORDER )
 	{
-	    // std::cerr << "p_n didn't converge." << std::endl;
+	    std::cerr << "p_n didn't converge." << std::endl;
 	    break;
 	}
 	
@@ -501,7 +501,7 @@ makedp_nTable( RealVector& p_nTable,
     const Real p_0( this->dp_n( 0, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
-    const Real threshold( fabs( this->TOLERANCE * p_0 * 1e-1 ) );
+    const Real threshold( fabs( THETA_TOLERANCE * p_0 * 1e-1 ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
     unsigned int n( 1 );
@@ -848,8 +848,8 @@ FirstPassageNoCollisionPairGreensFunction::drawTheta( const Real rnd,
 	gsl_root_fsolver_iterate( solver );
 	const Real low( gsl_root_fsolver_x_lower( solver ) );
 	const Real high( gsl_root_fsolver_x_upper( solver ) );
-	const int status( gsl_root_test_interval( low, high, 1e-15,
-						  this->TOLERANCE ) );
+	const int status( gsl_root_test_interval( low, high, 1e-11,
+						  THETA_TOLERANCE ) );
 
 	if( status == GSL_CONTINUE )
 	{

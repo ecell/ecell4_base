@@ -9,9 +9,9 @@ const SphericalBesselGenerator& SphericalBesselGenerator::instance()
     return sphericalBesselGenerator;
 }
 
-static const Real interp( const gsl_interp* interpolator, 
-                          const Real* xTable, const Real* yTable,
-                          const Real x )
+inline static const Real interp( const gsl_interp* interpolator, 
+                                 const Real* xTable, const Real* yTable,
+                                 const Real x )
 {
     const Real y( gsl_interp_eval( interpolator, xTable, yTable, x, 0 ) );
     
@@ -22,18 +22,18 @@ static const Real interp( const gsl_interp* interpolator,
 static void 
 fillInterpolatorVector( std::vector<gsl_interp*>& interpolatorVector,
                         const sb_table::Table* const table[],
-                        const UnsignedInteger N,
+                        const UnsignedInteger minn,
+                        const UnsignedInteger maxn,
                         const gsl_interp_type* interpType )
 {
-    interpolatorVector.resize( N + 1 );
-    for( UnsignedInteger n( 0 ); n <= N; ++n )
+    interpolatorVector.resize( maxn + 1 );
+    for( UnsignedInteger n( minn ); n <= maxn; ++n )
     {
         const sb_table::Table* tablen( table[n] ); 
         gsl_interp* interp = gsl_interp_alloc( interpType,
                                                tablen->N );
         
-        gsl_interp_init( interp, tablen->x, tablen->y,
-                         tablen->N );
+        gsl_interp_init( interp, tablen->x, tablen->y, tablen->N );
         
         interpolatorVector[n] = interp;
         
@@ -41,6 +41,18 @@ fillInterpolatorVector( std::vector<gsl_interp*>& interpolatorVector,
     }
 }
 
+
+const UnsignedInteger
+SphericalBesselGenerator::getMinNJ()
+{
+    return sb_table::sj_table_min;
+}
+
+const UnsignedInteger
+SphericalBesselGenerator::getMinNY()
+{
+    return sb_table::sy_table_min;
+}
 
 const UnsignedInteger
 SphericalBesselGenerator::getMaxNJ()
@@ -89,14 +101,16 @@ inline const Real SphericalBesselGenerator::_y_table( const UnsignedInteger n,
 const Real 
 SphericalBesselGenerator::j( const UnsignedInteger n, const Real z ) const
 {
-    if( n > getMaxNJ() )
+    if( n > getMaxNJ() || n < getMinNJ() )
     {
         return this->_j( n, z );
     }
     
     const sb_table::Table* table( getSJTable( n ) );
-    
-    const Real minz( table->x[2] );
+    assert( table != 0 );
+
+    const Real minz( table->x[3] );
+    //const Real minz( 1.0 * n );
     const Real maxz( table->x[table->N - 3] );
     
     if( z < minz )
@@ -117,15 +131,17 @@ SphericalBesselGenerator::j( const UnsignedInteger n, const Real z ) const
 const Real 
 SphericalBesselGenerator::y( const UnsignedInteger n, const Real z ) const
 {
-    if( n > getMaxNY() )
+    if( n > getMaxNY() || n < getMinNY() )
     {
         return this->_y( n, z );
     }
     
     const sb_table::Table* table( getSYTable( n ) );
+    assert( table != 0 );
     
-    const Real minz( table->x[0] );
-    const Real maxz( table->x[table->N - 1] );
+    const Real minz( table->x[3] );
+    //const Real minz( 1.0 * n );
+    const Real maxz( table->x[table->N - 3] );
     
     if( z < minz )
     {
@@ -145,8 +161,8 @@ SphericalBesselGenerator::y( const UnsignedInteger n, const Real z ) const
 void SphericalBesselGenerator::fillTables()
 {
     fillInterpolatorVector( this->sjInterpolatorVector, sb_table::sj_table,
-                            sb_table::sj_table_max, this->interpType );
+                            getMinNJ(), getMaxNJ(), this->interpType );
     fillInterpolatorVector( this->syInterpolatorVector, sb_table::sy_table,
-                            sb_table::sy_table_max, this->interpType );
+                            getMinNY(), getMaxNY(), this->interpType );
 }
 

@@ -17,9 +17,12 @@ class FirstPassageNoCollisionPairGreensFunction
     // Error tolerance used by default.
     static const Real TOLERANCE = 1e-8;
 
+    // SphericalBesselGenerator's accuracy
+    static const Real THETA_TOLERANCE = 1e-5;
+
     static const Real MIN_T = 1e-18;
 
-    static const unsigned int MAX_ORDER = 40;
+    static const unsigned int MAX_ORDER = 50;
     static const unsigned int MAX_ALPHA_SEQ = 1005;
 
 

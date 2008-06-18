@@ -40,6 +40,8 @@ public:
 
     const Real y( const UnsignedInteger n, const Real z ) const;
 
+    static const UnsignedInteger getMinNJ();
+    static const UnsignedInteger getMinNY();
     static const UnsignedInteger getMaxNJ();
     static const UnsignedInteger getMaxNY();
 

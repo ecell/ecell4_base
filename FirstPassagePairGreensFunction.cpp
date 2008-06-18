@@ -2526,7 +2526,7 @@ FirstPassagePairGreensFunction::p_n( const Integer n,
 					p_n_alpha,
 					this,
 					_1, n, r, r0, t ),
-			   this->MAX_ALPHA_SEQ ) );
+			   MAX_ALPHA_SEQ, THETA_TOLERANCE ) );
     return p;
 }
 
@@ -2548,7 +2548,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 
     p_nTable.push_back( p_0 );
 
-    const Real tolerance( 1e-5 ); // SphericalBesselGenerator's accuracy
+    const Real tolerance( THETA_TOLERANCE ); 
     const Real threshold( fabs( tolerance * p_0  ) );
 
     Real p_n_prev_abs( fabs( p_0 ) );
@@ -2564,7 +2564,6 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 //	    p_n = 0.0;
 	    break;
 	}
-	//printf("%d p_n %g\n", n, p_n );
 
 	p_nTable.push_back( p_n );
         
@@ -2574,8 +2573,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 	// truncate when converged enough.
 	if( p_n_abs < threshold &&
             p_n_prev_abs < threshold &&
-	    p_n_abs <= p_n_prev_abs &&
-            n >= 4 )  // corresponds to funcSum()'s CONVERGENCE_CHECK
+	    p_n_abs <= p_n_prev_abs )
 	{
 	    break;
         }
@@ -2584,7 +2582,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 
 	if( n >= this->MAX_ORDER )
 	{
-	    // std::cerr << "p_n didn't converge." << std::endl;
+	    std::cerr << "p_n didn't converge." << std::endl;
 	    break;
 	}
 	
@@ -2657,7 +2655,7 @@ FirstPassagePairGreensFunction::dp_n_at_a( const Integer n,
 					dp_n_alpha_at_a,
 					this,
 					_1, n, r0, t ),
-			   this->MAX_ALPHA_SEQ ) );
+			   MAX_ALPHA_SEQ, THETA_TOLERANCE ) );
 
     return p;
 }
@@ -2678,7 +2676,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
     const Real p_0( this->dp_n_at_a( 0, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
-    const Real tolerance( 1e-5 ); // SphericalBesselGenerator's accuracy
+    const Real tolerance( THETA_TOLERANCE );
     const Real threshold( fabs( tolerance * p_0  ) );
 
     //printf("p_0 %g\n",p_0 );
@@ -3053,8 +3051,8 @@ FirstPassagePairGreensFunction::drawTheta( const Real rnd,
 	gsl_root_fsolver_iterate( solver );
 	const Real low( gsl_root_fsolver_x_lower( solver ) );
 	const Real high( gsl_root_fsolver_x_upper( solver ) );
-	const int status( gsl_root_test_interval( low, high, 1e-15,
-						  1e-5 ) );
+	const int status( gsl_root_test_interval( low, high, 1e-11,
+						  THETA_TOLERANCE ) );
 
 	if( status == GSL_CONTINUE )
 	{
