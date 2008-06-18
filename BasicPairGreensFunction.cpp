@@ -149,34 +149,37 @@ BasicPairGreensFunction::p_corr_R( const Real alpha,
     const Real D( this->getD() );
     const Real sigma( this->getSigma() );
     
-    const Real kSigma( getkf() * sigma );
+    const Real ks( getkf() * sigma );
     const Real realn( static_cast<Real>( n ) );
-    const Real kSigma_m_n( kSigma - realn );
+    const Real ks_m_n( ks - realn );
 
-    const Real order( realn + 0.5 );
+    const Real alphasq( alpha * alpha );
 
-    const Real term1( exp( - D * t * alpha * alpha ) );
+    const Real term1( exp( - D * t * alphasq ) );
 
-    const Real sigmaAlpha( sigma * alpha );
+    const Real sAlpha( sigma * alpha );
     const Real rAlpha( r * alpha );
     const Real r0Alpha( r0 * alpha );
 
-    const Real js1( gsl_sf_bessel_Jnu( order,       sigmaAlpha ) );
-    const Real ys1( gsl_sf_bessel_Ynu( order,       sigmaAlpha ) );
-    const Real js2( gsl_sf_bessel_Jnu( order + 1.0, sigmaAlpha ) );
-    const Real ys2( gsl_sf_bessel_Ynu( order + 1.0, sigmaAlpha ) );
-    const Real jr(  gsl_sf_bessel_Jnu( order,       rAlpha ) );
-    const Real yr(  gsl_sf_bessel_Ynu( order,       rAlpha ) );
-    const Real jr0( gsl_sf_bessel_Jnu( order,       r0Alpha ) );
-    const Real yr0( gsl_sf_bessel_Ynu( order,       r0Alpha ) );
+    const SphericalBesselGenerator& s( SphericalBesselGenerator::instance() );
+    const Real js(  s.j( n,     sAlpha ) );
+    const Real ys(  s.y( n,     sAlpha ) );
+    const Real js1( s.j( n + 1, sAlpha ) );
+    const Real ys1( s.y( n + 1, sAlpha ) );
+    const Real jr(  s.j( n,     rAlpha ) );
+    const Real yr(  s.y( n,     rAlpha ) );
+    const Real jr0( s.j( n,     r0Alpha ) );
+    const Real yr0( s.y( n,     r0Alpha ) );
 
-    const Real R1( ( kSigma_m_n * js1 + sigmaAlpha * js2 ) * 2.0 );
-    const Real R2( ( kSigma_m_n * ys1 + sigmaAlpha * ys2 ) * 2.0 );
+    const Real R1( ( ks_m_n * js + sAlpha * js1 ) );
+    const Real R2( ( ks_m_n * ys + sAlpha * ys1 ) );
+
     const Real F1R1( R1 * jr * jr0 - R1 * yr * yr0 );
     const Real F2( jr0 * yr + jr * yr0 );
 
-    const Real num( alpha * R1 * ( F1R1 + F2 * R2 ) );
-    const Real den( R1 * R1 + R2 * R2 );
+    const Real num( 2.0 * sqrt( r * r0 ) *
+                    alphasq * R1 * ( F1R1 + F2 * R2 ) );
+    const Real den( M_PI * ( R1 * R1 + R2 * R2 ) );
 
     const Real result( term1 * num / den );
 
@@ -804,7 +807,6 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
             break;
         }
 
-    
         if( n >= this->MAX_ORDER )
         {
             std::cerr << "Rn didn't converge." << std::endl;

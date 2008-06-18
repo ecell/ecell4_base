@@ -2548,6 +2548,11 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 
     p_nTable.push_back( p_0 );
 
+    if( p_0 == 0 )
+    {
+        return;
+    }
+
     const Real tolerance( THETA_TOLERANCE ); 
     const Real threshold( fabs( tolerance * p_0  ) );
 
@@ -2578,14 +2583,14 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 	    break;
         }
 	
-	++n;
 
 	if( n >= this->MAX_ORDER )
 	{
-	    std::cerr << "p_n didn't converge." << std::endl;
+	    //std::cerr << "p_n didn't converge." << std::endl;
 	    break;
 	}
 	
+	++n;
 	p_n_prev_abs = p_n_abs;
     }
 
@@ -2676,6 +2681,11 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
     const Real p_0( this->dp_n_at_a( 0, r0, t ) * factor );
     p_nTable.push_back( p_0 );
 
+    if( p_0 == 0 )
+    {
+        return;
+    }
+
     const Real tolerance( THETA_TOLERANCE );
     const Real threshold( fabs( tolerance * p_0  ) );
 
@@ -2706,7 +2716,6 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 	    break;
 	}
 	
-	++n;
 
 	if( n >= this->MAX_ORDER )
 	{
@@ -2714,6 +2723,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
 	    break;
 	}
 	
+	++n;
 	p_n_prev_abs = p_n_abs;
     }
 
@@ -2939,7 +2949,8 @@ ip_theta_n( const unsigned int n,
     const Real lgnd_n_m1( lgndTable1[n] );   // n-1
     const Real lgnd_n_p1( lgndTable1[n+2] ); // n+1
     
-    return p_nTable[n] * ( lgnd_n_m1 - lgnd_n_p1 );// / ( 1.0 + 2.0 * n );
+    // the term ( 1 + 2 n ) is canceled out.
+    return p_nTable[n] * ( lgnd_n_m1 - lgnd_n_p1 );
 }
 
 
@@ -2967,7 +2978,7 @@ ip_theta_table( const Real theta,
                                              ip_theta_n,
                                              this,
                                              _1, p_nTable, lgndTable ),
-                                tableSize - 1 ) );
+                                tableSize ) );
 
     return p;
 }
