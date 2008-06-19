@@ -28,7 +28,7 @@ def singlerun1( T ):
 
     sigma = 1e-8
     r0 = sigma
-    D = 1e-12
+    D = 2e-12
     kf = 10 * sigma * D
 
     A = Species( 'A', 0.0, sigma/2 )
