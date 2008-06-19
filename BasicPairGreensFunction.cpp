@@ -589,7 +589,7 @@ BasicPairGreensFunction::Rn( const unsigned int n, const Real r, const Real r0,
     gsl_integration_qag( &F, 0.0,
 			 umax,
 			 tol,
-			 1e-5,
+                         THETA_TOLERANCE,
 			 2000, GSL_INTEG_GAUSS61,
 			 workspace, &integral, &error );
 
@@ -787,8 +787,8 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
     Real Rn_prev( 0.0 );
     const Real RnFactor( 1.0 / ( 4.0 * M_PI * sqrt( r * r0 ) ) );
 
-    const Real integrationTolerance( pfreemax / RnFactor * 1e-5 );
-    const Real truncationTolerance( pfreemax * 1e-6 );
+    const Real integrationTolerance( pfreemax / RnFactor * THETA_TOLERANCE );
+    const Real truncationTolerance( pfreemax * THETA_TOLERANCE * 1e-1 );
     
     unsigned int n( 0 );
     while( true ) 
@@ -801,8 +801,9 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
         //printf("%d %g %g %g\n",n, Rn*RnFactor, pfreemax, integrationTolerance);
 	
         // truncate when converged enough.
-        if( fabs( Rn * RnFactor ) < fabs( truncationTolerance ) &&
-            fabs( Rn ) < fabs( Rn_prev ) )
+        const Real absRn( fabs( Rn ) );
+        if( absRn * RnFactor < truncationTolerance &&
+            absRn < Rn_prev )
         {
             break;
         }
@@ -813,7 +814,7 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
             break;
         }
 	
-        Rn_prev = Rn;
+        Rn_prev = fabs( Rn );
 	
         ++n;
     }
@@ -885,7 +886,7 @@ const Real BasicPairGreensFunction::drawTheta( const Real rnd,
 	const Real low( gsl_root_fsolver_x_lower( solver ) );
 	const Real high( gsl_root_fsolver_x_upper( solver ) );
 	const int status( gsl_root_test_interval( low, high, 1e-15,
-						  1e-5 ) );
+						  THETA_TOLERANCE ) );
 
 	if( status == GSL_CONTINUE )
 	{
