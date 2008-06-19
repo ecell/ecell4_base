@@ -1368,16 +1368,23 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             for _ in range( 100 ):
                 unitVector = randomUnitVector()
-                vector = unitVector * particleRadius12 * SAFETY
+                vector = unitVector * particleRadius12
             
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.
                 # FIXME: what if D1 == D2 == 0?
-                newpos1 = oldpos + vector * ( D1 / D12 )
-                newpos2 = oldpos - vector * ( D2 / D12 )
 
-                self.applyBoundary( newpos1 )
-                self.applyBoundary( newpos2 )
+                while 1:
+                    newpos1 = oldpos + vector * ( D1 / D12 )
+                    newpos2 = oldpos - vector * ( D2 / D12 )
+                    self.applyBoundary( newpos1 )
+                    self.applyBoundary( newpos2 )
+
+                    if self.distance( newpos1, newpos2 ) > particleRadius12:
+                        break
+
+                    vector *= 1.0 + 1e-7
+
 
                 # accept the new positions if there is enough space.
                 if ( self.checkOverlap( newpos1, particleRadius1,

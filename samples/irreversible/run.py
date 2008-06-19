@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 
+'''
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.3.out 5e-2 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.2.out 5e-3 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.1.out 5e-4 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.0.out 5e-5 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-1.out 5e-6 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-2.out 5e-7 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-3.out 5e-8 1000000 &
+'''
+
+
 from egfrd import *
 #from bd import *
 

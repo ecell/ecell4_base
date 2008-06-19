@@ -1,7 +1,17 @@
 #!/usr/bin/env python
 
 # tau = 0.0001
-#PYTHONPATH=../../.. python run.py rev.0.out 0.0001 1000000
+
+'''
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.3.out 0.05 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.2.out 0.005 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.1.out 0.0005 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.0.out 5e-5 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-1.out 5e-6 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-2.out 5e-7 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-3.out 5e-8 1000000 &
+'''
+
 
 from egfrd import *
 from bd import *
