@@ -21,6 +21,7 @@ sigma = 1e-8
 r0 = sigma
 D = 2e-12
 kf = 10 * sigma * D
+#kf = 0
 
 tau = sigma*sigma / D
 

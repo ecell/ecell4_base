@@ -12,6 +12,7 @@
 #include <gsl/gsl_sf_elljac.h>
 #include <gsl/gsl_roots.h>
 
+#include "findRoot.hpp"
 
 #include "FirstPassageGreensFunction.hpp"
 
@@ -52,8 +53,8 @@ static const Real ellipticTheta4Zero( const Real q )
 	value *= term;
       
 	// here only absolute error is checked because it is good enough
-	// for our use.
-	if( fabs( value - value_prev ) < 1e-8 ) 
+	// for our use.  (it's compared with 1 in p_survival).
+	if( fabs( value - value_prev ) < 1e-12 ) 
 	{
 	    // normal exit.
 	    return value;
@@ -141,7 +142,7 @@ FirstPassageGreensFunction::p_r_int( const Real r,
 	    break;
 	}
 
-	if( n > N )
+	if( n >= N )
 	{
 	    std::cerr << "p_r_int: didn't converge; " << n << " " << value 
 		      << std::endl;
@@ -231,7 +232,7 @@ FirstPassageGreensFunction::drawTime( const Real rnd ) const
 
     const Real a( geta() );
 
-    if( getD() == 0.0 )
+    if( getD() == 0.0 || geta() == INFINITY )
     {
         return INFINITY;
     }
@@ -241,7 +242,6 @@ FirstPassageGreensFunction::drawTime( const Real rnd ) const
 	return 0.0;
     }
 
-
     p_survival_params params = { this, rnd };
 
     gsl_function F = 
@@ -250,68 +250,74 @@ FirstPassageGreensFunction::drawTime( const Real rnd ) const
 	    &params 
 	};
 
-    Real low( 1e-6 );
-    Real high( 1.0 );
+    const Real t_guess( a * a / ( 6. * D ) );
 
-    // adjust low to make sure that f( low ) and f( high ) straddle.
-    while( GSL_FN_EVAL( &F, high ) <= 0.0 )
+    Real low( t_guess );
+    Real high( t_guess );
+
+    const Real value( GSL_FN_EVAL( &F, t_guess ) );
+
+    if( value < 0.0 )
     {
-	//printf("drawTime: adjusting high: %g\n",high);
-	high *= 10;
-	if( fabs( high ) >= INFINITY )
-	{
-            return INFINITY;
-	}
+        high *= 10;
+
+        while( 1 )
+        {
+            const Real high_value( GSL_FN_EVAL( &F, high ) );
+            
+            if( high_value >= 0.0 )
+            {
+                break;
+            }
+
+            if( fabs( high ) >= t_guess * 1e6 )
+            {
+                std::cerr << "Couldn't adjust high. F(" << high <<
+                    ") = " << GSL_FN_EVAL( &F, high ) << "; " <<
+                    ", " << dump() << std::endl;
+                throw std::exception();
+            }
+            high *= 10;
+        }
     }
-    while( GSL_FN_EVAL( &F, low ) >= 0.0 )
+    else
     {
-	//printf("drawTime: adjusting low: %g\n",low);
-	low *= .1;
-	if( fabs( low ) <= 1e-50 )
-	{
-	    std::cerr << "Couldn't adjust low. (" << low <<
-		      ")" << std::endl;
-	    throw std::exception();
-	    
-	}
+        Real low_value_prev( value );
+        low *= .1;
+
+        while( 1 )
+        {
+            const Real low_value( GSL_FN_EVAL( &F, low ) );
+            
+            if( low_value <= 0.0 )
+            {
+                break;
+            }
+            
+            if( fabs( low ) <= t_guess * 1e-6 ||
+                fabs( low_value - low_value_prev ) < CUTOFF )
+            {
+                std::cerr << "Couldn't adjust low.  Returning low (= "
+                          << low << "); F(" << low <<
+                    ") = " << GSL_FN_EVAL( &F, low )
+                          << dump() << std::endl;
+                return low;
+            }
+            low_value_prev = low_value;
+            low *= .1;
+        }
     }
 
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
-    gsl_root_fsolver_set( solver, &F, low, high );
 
-    const unsigned int maxIter( 100 );
+    const Real t( findRoot( F, solver, low, high, 1e-18, 1e-12,
+                            "FirstPassageGreensFunction::drawTime" ) );
 
-    unsigned int i( 0 );
-    while( true )
-    {
-	gsl_root_fsolver_iterate( solver );
-
-	low = gsl_root_fsolver_x_lower( solver );
-	high = gsl_root_fsolver_x_upper( solver );
-	int status( gsl_root_test_interval( low, high, 1e-18, 1e-12 ) );
-
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawTime: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
-
-	++i;
-    }
-  
     gsl_root_fsolver_free( solver );
 
-    return low;
+    return t;
 }
 
 const Real
@@ -368,6 +374,7 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
     }
     else
     {
+        // p_r_int < p_r_int_free
         if( p_r_int_free( a, t ) < target )
         {
             return a;
@@ -378,44 +385,18 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
 
     F.params = &params;
 
-    Real low( 0.0 );
-    Real high( a );
+    const Real low( 0.0 );
+    const Real high( a );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
-    gsl_root_fsolver_set( solver, &F, low, high );
 
-    const unsigned int maxIter( 100 );
-
-    unsigned int i( 0 );
-    while( true )
-    {
-	gsl_root_fsolver_iterate( solver );
-
-	low = gsl_root_fsolver_x_lower( solver );
-	high = gsl_root_fsolver_x_upper( solver );
-	int status( gsl_root_test_interval( low, high, 1e-18, 1e-12 ) );
-
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawR: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
-
-	++i;
-    }
+    const Real r( findRoot( F, solver, low, high, 1e-18, 1e-12,
+                            "FirstPassageGreensFunction::drawR" ) );
   
     gsl_root_fsolver_free( solver );
 
-    return low;
+    return r;
 }
 
 

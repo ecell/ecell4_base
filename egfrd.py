@@ -347,6 +347,8 @@ class Single( object ):
         displacementS = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
         displacement = sphericalToCartesian( displacementS )
 
+        #assert  abs(r - math.sqrt(( displacement **2 ).sum())) < 1e-15
+
         return displacement
 
 
@@ -1126,7 +1128,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 assert False, 'do not reach here'
 
 
-        # then burst all Pairs.
+        # then burst all Pairs and Multis.
         for obj in nonSingleList:
             self.burstObj( obj )
 

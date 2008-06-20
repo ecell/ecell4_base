@@ -22,8 +22,10 @@ def run( outfilename, T, N ):
         d, t = singlerun2( T )
         outfile.write( '%g\n' % d )
         outfile.flush()
+        print i
         #print d, t
         assert d == 0 or t == T
+
 
     outfile.close()
 
@@ -78,7 +80,8 @@ def singlerun2( T ):
     s = EGFRDSimulator()
     s.setWorldSize( 1e-3 )
 
-    s.setUserMaxShellSize( 1e-6 )
+    #s.setUserMaxShellSize( 1e-6 )
+    s.setUserMaxShellSize( 1e-3 )
 
     sigma = 1e-8
     r0 = sigma

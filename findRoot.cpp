@@ -11,7 +11,8 @@ findRoot( gsl_function& F,
           gsl_root_fsolver* solver,
           const Real low,
           const Real high,
-          const Real tolerance,
+          const Real tol_abs,
+          const Real tol_rel,
           std::string funcName )
 {
     Real l( low );
@@ -28,8 +29,8 @@ findRoot( gsl_function& F,
 	l = gsl_root_fsolver_x_lower( solver );
 	h = gsl_root_fsolver_x_upper( solver );
 
-	const int status( gsl_root_test_interval( l, h, 0.0, 
-                                                  tolerance ) );
+	const int status( gsl_root_test_interval( l, h, tol_abs,
+                                                  tol_rel ) );
 
 	if( status == GSL_CONTINUE )
 	{

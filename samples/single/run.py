@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+'''
+ PYTHONPATH=../.. python -O run.py single.0.out 5e-4 3e-8 100000
+'''
+
+
+
 from egfrd import *
 
 def run( outfilename, T, S, N ):
@@ -11,7 +17,7 @@ def run( outfilename, T, S, N ):
         d, t = singlerun( T, S )
         outfile.write( '%g\n' % d )
 
-        print d, t
+        print i
         assert d == 0 or t == T
 
     outfile.close()
@@ -23,9 +29,9 @@ def singlerun( T, S ):
     s = EGFRDSimulator()
     s.setWorldSize( 1e-3 )
 
-    s.setMaxShellSize( S )
+    s.setUserMaxShellSize( S )
 
-    A = Species( 'A', 1e-11, 5e-8 )
+    A = Species( 'A', 1e-12, 5e-9 )
     s.addSpecies( A )
     
     particleA = s.placeParticle( A, [0,0,0] )
@@ -34,7 +40,7 @@ def singlerun( T, S ):
     s.step()
 
     while 1:
-        nextTime = s.scheduler.getNextTime()
+        nextTime = s.scheduler.getTopTime()
         if nextTime > endTime:
             s.stop( endTime )
             break

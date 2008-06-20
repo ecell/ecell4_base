@@ -1,5 +1,9 @@
 #!/usr/bin/env/python
 
+'''
+
+'''
+
 import sys
 
 import numpy
@@ -12,17 +16,15 @@ import gfrdbase
 N_A = gfrdbase.N_A
 
 
-D = 1e-11
+D = 1e-12
 
-sigma = 1e-7
+sigma = 5e-9
 r0 = sigma
-kf = 1e6 / N_A
-t = 0.01
+#kf = 1e6 / N_A
 
 
 
-
-def plot_sol( rmax ):
+def plot_sol( t, rmax ):
     rmin = sigma
     
     N = 100
@@ -37,42 +39,41 @@ def plot_sol( rmax ):
 
 
 
-def plot_file( infilename, maxr ):
-    
-    bins = 25
-    print 'load'
+def plot_file( infilename, t, maxr ):
+
+    bins = 20
+
     infile = open( infilename )
     data = array([float(x) for x in infile.read().split()], numpy.float)
     infile.close()
 
-    print 'hist'
     nonreactions = numpy.compress( data >= sigma, data )
     print 'max', max( nonreactions )
     hist, lower_edges = numpy.histogram( nonreactions, bins=bins,
                                          range=[ sigma, maxr ] )
     print 'hist', hist
-    print 'le', lower_edges
     
     histsum = hist.sum()
     S_sim = float( len( nonreactions ) ) / len( data )
     hist = hist.astype( numpy.float )
     
     xtick = lower_edges[2]-lower_edges[1]
-    
     hist /= len( data ) * xtick
-    
     x = lower_edges + ( xtick * .5 )
-    print 'x', x
 
     plot( x / sigma, hist, '.', label=infilename )
 
 
 if __name__ == '__main__':
 
-    plot_sol( sigma * 25 )
 
-    for filename in sys.argv[1:]:
-        plot_file( filename, sigma * 25 )
+    for i in range( len(sys.argv[1:])/2 ):
+        filename = sys.argv[i*2+1]
+        t = float( sys.argv[i*2+2] )
+
+        rmax = 3 * math.sqrt( 6 * D * t )
+        plot_sol( t, rmax )
+        plot_file( filename, t, rmax )
     
     legend()
     show()
