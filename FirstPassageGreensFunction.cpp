@@ -34,7 +34,7 @@ static const Real ellipticTheta4Zero( const Real q )
     // et4z( 1e-16 ) ~= 1 - 2.2e-16
     // et4z( 1e-17 ) ~= 1 - (zero)
 
-    const Integer N( 100 );
+    const Integer N( 1000 );
     Real value( 1.0 );
 
     Real q_n( q );
@@ -54,7 +54,7 @@ static const Real ellipticTheta4Zero( const Real q )
       
 	// here only absolute error is checked because it is good enough
 	// for our use.  (it's compared with 1 in p_survival).
-	if( fabs( value - value_prev ) < 1e-12 ) 
+	if( fabs( value - value_prev ) < 1e-23 ) 
 	{
 	    // normal exit.
 	    return value;
@@ -118,12 +118,15 @@ FirstPassageGreensFunction::p_r_int( const Real r,
     const Real PIr( M_PI * r );
     const Real PIr_a( PIr / a );
     const Real DtPIsq_asq( D * t * PIsq / asq );
-
+    
     const Real factor( 2.0 / ( a * M_PI ) );
 
-    const Integer N( 10000 );
-    long int n( 1 );
-    while( true )
+    const Real maxn( ( a / M_PI ) * sqrt( log( exp( DtPIsq_asq ) / CUTOFF ) / 
+                                          ( D * t ) ) );
+
+    const Integer N( static_cast<Integer>( ceil( maxn ) + 1 ) );
+
+    for( int n( 1 ); n <= N; ++n )
     {
 	const Real term1( exp( - n * n * DtPIsq_asq ) );
       
@@ -136,20 +139,6 @@ FirstPassageGreensFunction::p_r_int( const Real r,
 
 	const Real term( term1 * ( term2 - term3 ) / n );
 	value += term;
-
-	if( fabs( value ) * CUTOFF >= fabs( term ) )
-	{
-	    break;
-	}
-
-	if( n >= N )
-	{
-	    std::cerr << "p_r_int: didn't converge; " << n << " " << value 
-		      << std::endl;
-	    break;
-	}
-
-	++n;
     }
 
     //  printf( "value: %g, Dt/a^2 %g\tfree %g\n", value*factor, D*t/(a*a),p_free_int( r, t ) );
@@ -360,6 +349,7 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
     }
 
     const Real psurv( p_survival( t ) ); 
+    //const Real psurv( p_r_int( a, t ) );
     assert( psurv > 0.0 );
     const Real target( psurv * rnd );
 

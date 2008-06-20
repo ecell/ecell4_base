@@ -377,7 +377,10 @@ class Single( object ):
 
 
 
-    def determineNextEvent( self ):
+    def determineNextEvent( self, t ):
+
+        self.lastTime = t
+
         if self.getD() == 0:
             firstPassageTime = INF
         else:
@@ -657,7 +660,9 @@ class Pair( object ):
         return newpos1, newpos2
         
 
-    def determineNextEvent( self ):
+    def determineNextEvent( self, t ):
+        
+        self.lastTime = t
 
         single1 = self.single1
         single2 = self.single2
@@ -1226,7 +1231,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return self.scheduler.addEvent( t, func, arg )
 
     def addSingleEvent( self, single ):
-
         eventID = self.addEvent( self.t + single.dt, 
                                  Delegate( self, EGFRDSimulator.fireSingle ), 
                                  single )
@@ -1459,7 +1463,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # Handle immobile case first.
         if D0 == 0:
             # no propagation, just calculate next reaction time.
-            single.determineNextEvent() 
+            single.determineNextEvent( self.t ) 
             return single.dt
         
         # Propagate this particle to the exit point on the shell.
@@ -1500,8 +1504,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         burstedSingles = [ s for s in bursted if isinstance( s, Single ) ]
         self.restoreSingleShells( burstedSingles )
             
-        log.info( 'single shell %g dt %g.' % 
-                  ( single.radius, single.dt ) )
+        log.info( 'single shell %g dt %g.' % ( single.radius, single.dt ) )
 
         return single.dt
 
@@ -1531,7 +1534,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         shellSize = min( shellSize, self.getMaxShellSize() )
 
         single.setRadius( shellSize )
-        single.determineNextEvent()
+        single.determineNextEvent( self.t )
         self.updateShellMatrix( single )
 
 
@@ -1806,8 +1809,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         oldpos = single.particle.pos.copy()
 
         r = single.drawR( dt )
-
-        displacement = normalRandomVector( r )
+        displacement = randomNormalVector( r )
             
         newpos = oldpos + displacement
 
@@ -1827,6 +1829,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def breakUpPair( self, pair ):
 
         assert self.t >= pair.lastTime
+        assert self.t <= pair.lastTime + pair.dt
 
         dt = self.t - pair.lastTime 
 
@@ -2083,7 +2086,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.removeFromShellMatrix( single2 )
         self.addToShellMatrix( pair )
 
-        pair.determineNextEvent()
+        pair.determineNextEvent( self.t )
 
         self.addPairEvent( pair )
         # single1 will be removed at the end of this step.

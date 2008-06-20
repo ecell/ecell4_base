@@ -111,6 +111,18 @@ def randomUnitVector():
     return sphericalToCartesian( randomUnitVectorS() )
 
 
+def randomNormalVector( r ):
+    
+    rnd = numpy.random.uniform( size=2 )
+
+    S = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
+    v = sphericalToCartesian( S )
+
+    #assert  abs(r - math.sqrt(( displacement **2 ).sum())) < 1e-15
+
+    return v
+
+
 def length( a ):
     return math.sqrt( numpy.dot( a, a ) )
 

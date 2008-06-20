@@ -1259,7 +1259,6 @@ p_survival_table( const Real t,
     const Real H( 6.0 ); // a fairly strict criterion for safety.
     const Real maxDist( H * sqrt( 6.0 * D * t ) );
 
-/*
     if( distToa > maxDist )
     {
         if( distTos > maxDist ) // far from anything; it'll survive.
@@ -1280,7 +1279,7 @@ p_survival_table( const Real t,
             p = p_survival_nocollision( t, r0, D, a );
         }
         else  // close to both boundaries.  do the normal calculation.
-        {*/
+        {
             const unsigned int maxi( guess_maxi( t ) );
             //printf("%d\n",maxi);
             
@@ -1295,8 +1294,8 @@ p_survival_table( const Real t,
                                           this,
                                           _1, t, r0, psurvTable ),
                              maxi );
-//        }
-//    }
+        }
+    }
 
     return p;
 }

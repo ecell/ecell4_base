@@ -15,12 +15,9 @@ import gfrdbase
 
 N_A = gfrdbase.N_A
 
-
 D = 1e-12
 
 sigma = 5e-9
-r0 = sigma
-#kf = 1e6 / N_A
 
 
 

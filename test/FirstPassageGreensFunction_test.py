@@ -128,6 +128,20 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         self.assertAlmostEqual( p, p_free )
 
 
+    def test_p_r_int_at_a_is_p_survival( self ):
+        D = 1e-12
+        a = 1e-7
+        gf = mod.FirstPassageGreensFunction( D )
+        gf.seta( a )
+
+        t = 1e-3
+
+        p = gf.p_r_int( a, t )
+        psurv = gf.p_survival( t )
+        print 'ps', p, psurv
+        self.assertAlmostEqual( p, psurv )
+
+
 
 
 if __name__ == "__main__":

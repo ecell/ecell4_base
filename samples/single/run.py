@@ -18,7 +18,7 @@ def run( outfilename, T, S, N ):
         outfile.write( '%g\n' % d )
 
         print i
-        assert d == 0 or t == T
+        assert t == T
 
     outfile.close()
 
@@ -40,13 +40,13 @@ def singlerun( T, S ):
     s.step()
 
     while 1:
-        nextTime = s.scheduler.getTopTime()
+        nextTime = s.getNextTime()
         if nextTime > endTime:
             s.stop( endTime )
             break
         s.step()
 
-    distance = s.distance( [0,0,0], particleA.getPos() )
+    distance = s.distance( [0,0,0], particleA.pos )
 
     return distance, s.t
     
