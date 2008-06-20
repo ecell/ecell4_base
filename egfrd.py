@@ -340,18 +340,6 @@ class Single( object ):
 
 
 
-    def drawDisplacement( self, r ):
-
-        rnd = numpy.random.uniform( size=2 )
-
-        displacementS = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
-        displacement = sphericalToCartesian( displacementS )
-
-        #assert  abs(r - math.sqrt(( displacement **2 ).sum())) < 1e-15
-
-        return displacement
-
-
     '''
     Reset the Single.
 
@@ -1425,7 +1413,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         particleRadius = single.getMinRadius()
         oldpos = single.particle.pos.copy()
         
-        displacement = single.drawDisplacement( r )
+        displacement = randomNormalVector( r )
             
         newpos = oldpos + displacement
         self.applyBoundary( newpos )
@@ -1819,7 +1807,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         r = single.drawR( dt )
 
-        displacement = single.drawDisplacement( r )
+        displacement = normalRandomVector( r )
             
         newpos = oldpos + displacement
 
