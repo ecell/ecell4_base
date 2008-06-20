@@ -85,7 +85,7 @@ FirstPassageGreensFunction::p_survival( const Real t ) const
 
 
 const Real 
-FirstPassageGreensFunction::p_r_int_free( const Real r, const Real t ) const
+FirstPassageGreensFunction::p_int_r_free( const Real r, const Real t ) const
 {
     const Real D( getD() );
     const Real Dt( D * t );
@@ -97,15 +97,15 @@ FirstPassageGreensFunction::p_r_int_free( const Real r, const Real t ) const
 }
 
 const Real 
-FirstPassageGreensFunction::p_r_int( const Real r, 
+FirstPassageGreensFunction::p_int_r( const Real r, 
                                      const Real t ) const
 {
     Real value( 0.0 );
 
     const Real a( geta() );
-    const Real p_free( this->p_r_int_free( r, t ) );
+    const Real p_free( this->p_int_r_free( r, t ) );
 
-    // p_r_int is always smaller than p_free.
+    // p_int_r is always smaller than p_free.
     if( fabs( p_free ) < CUTOFF )
     {
 	return 0.0;
@@ -124,7 +124,8 @@ FirstPassageGreensFunction::p_r_int( const Real r,
     const Real maxn( ( a / M_PI ) * sqrt( log( exp( DtPIsq_asq ) / CUTOFF ) / 
                                           ( D * t ) ) );
 
-    const Integer N( static_cast<Integer>( ceil( maxn ) + 1 ) );
+    const Integer N( std::min( static_cast<Integer>( ceil( maxn ) + 1 ),
+                               10000 ) );
 
     for( int n( 1 ); n <= N; ++n )
     {
@@ -317,7 +318,7 @@ FirstPassageGreensFunction::p_r_free_F( const Real r,
     const Real t( params->t );
     const Real target( params->target );
 
-    return gf->p_r_int_free( r, t ) - target;
+    return gf->p_int_r_free( r, t ) - target;
 }
 
 
@@ -329,7 +330,7 @@ FirstPassageGreensFunction::p_r_F( const Real r,
     const Real t( params->t );
     const Real target( params->target );
 
-    return gf->p_r_int( r, t ) - target;
+    return gf->p_int_r( r, t ) - target;
 }
 
 
@@ -349,7 +350,7 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
     }
 
     const Real psurv( p_survival( t ) ); 
-    //const Real psurv( p_r_int( a, t ) );
+    //const Real psurv( p_int_r( a, t ) );
     assert( psurv > 0.0 );
     const Real target( psurv * rnd );
 
@@ -364,11 +365,11 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
     }
     else
     {
-        // p_r_int < p_r_int_free
-        if( p_r_int_free( a, t ) < target )
+        // p_int_r < p_int_r_free
+/*        if( p_int_r_free( a, t ) < target )
         {
             return a;
-        }
+            }*/
 
         F.function = reinterpret_cast<typeof(F.function)>( &p_r_free_F );
     }

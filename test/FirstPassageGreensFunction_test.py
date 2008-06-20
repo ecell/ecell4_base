@@ -113,7 +113,7 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         self.failIf( r <= 0.0 )
         self.failIf( r > a )
 
-    def test_p_r_int_is_p_r_int_free_with_large_shell( self ):
+    def test_p_int_r_is_p_int_r_free_with_large_shell( self ):
         D = 1e-12
         a = 1e-6
         gf = mod.FirstPassageGreensFunction( D )
@@ -122,13 +122,13 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
         r = 1e-9
         t = 1e-6
 
-        p = gf.p_r_int( r, t )
-        p_free = gf.p_r_int_free( r, t )
+        p = gf.p_int_r( r, t )
+        p_free = gf.p_int_r_free( r, t )
 
         self.assertAlmostEqual( p, p_free )
 
 
-    def test_p_r_int_at_a_is_p_survival( self ):
+    def test_p_int_r_at_a_is_p_survival( self ):
         D = 1e-12
         a = 1e-7
         gf = mod.FirstPassageGreensFunction( D )
@@ -136,7 +136,7 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
 
         t = 1e-3
 
-        p = gf.p_r_int( a, t )
+        p = gf.p_int_r( a, t )
         psurv = gf.p_survival( t )
         print 'ps', p, psurv
         self.assertAlmostEqual( p, psurv )

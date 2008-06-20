@@ -29,7 +29,7 @@ r0 = sigma * 3
 tau = sigma*sigma / D
 #T = tau * .1
 #T = 1e-300
-T = 1e-16
+T = 1e-3
 
 rmin = sigma
 
@@ -127,11 +127,12 @@ def plot_leaveas( gf, t ):
 
 
 
-def plot_p_int_r( gf, r0 ):
+def plot_p_int_r( gf, t ):
 
     N = 10000
 
     rmax = min( a, r0 + 4 * math.sqrt( 6 * D * t ) )
+    #rmax = a
     #rmin = max( sigma, r0 - 4 * math.sqrt( 6 * D * t ) )
     #rmin = max( 0, r0 - 4 * math.sqrt( 6 * D * t ) )
     rmin = 0
@@ -139,9 +140,11 @@ def plot_p_int_r( gf, r0 ):
     rtick = ( rmax - rmin ) / N
     rarray = numpy.mgrid[rmin:rmax:rtick]
 
-    surv = gf.p_survival( t, r0 )
+    #surv = gf.p_survival( t, r0 )
+    surv = gf.p_survival( t )
     print surv
-    parray = array( [ gf.p_int_r( r, t, r0 ) for r in rarray ] ) / surv
+    #parray = array( [ gf.p_int_r( r, t, r0 ) for r in rarray ] ) / surv
+    parray = array( [ gf.p_int_r( r, t ) for r in rarray ] ) / surv
 
     plot( rarray / sigma , parray, '-', label='f' )
 
@@ -169,13 +172,15 @@ def p( r, t ):
 
 if __name__ == '__main__':
 
-    gf = _gfrd.FirstPassagePairGreensFunction( D, kf, sigma )
+    #gf = _gfrd.FirstPassagePairGreensFunction( D, kf, sigma )
     #gf = _gfrd.FirstPassageNoCollisionPairGreensFunction( D )
+    gf = _gfrd.FirstPassageGreensFunction( D )
     gf.seta( a )
-                     
+     
     #plot_p_int_r( gf, T )
+    plot_p_int_r( gf, 1e-6 )
     #plot_ip_theta( gf, r0, T )
-    plot_p_leaveas( gf, r0 )
+    #plot_p_leaveas( gf, r0 )
     #plot_leaveas( gf, r0 )
     #plot_p_survival_i( gf )
     #plot_p_survival_alpha( gf )

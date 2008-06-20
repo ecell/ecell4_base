@@ -47,8 +47,8 @@ public:
 
     const Real drawR( const Real rnd, const Real t ) const;
 
-    const Real p_r_int( const Real r, const Real t ) const;
-    const Real p_r_int_free( const Real r, const Real t ) const;
+    const Real p_int_r( const Real r, const Real t ) const;
+    const Real p_int_r_free( const Real r, const Real t ) const;
 
     const Real p_r_fourier( const Real r, const Real t ) const;
 
