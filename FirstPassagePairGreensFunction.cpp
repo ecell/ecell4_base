@@ -1641,6 +1641,7 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     const Real a_dist( a - r0 );
     const Real s_dist( r0 - sigma );
 
+
     if( a_dist > max_dist )
     {
         if( s_dist < max_dist )

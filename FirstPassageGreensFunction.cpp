@@ -366,10 +366,10 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
     else
     {
         // p_int_r < p_int_r_free
-/*        if( p_int_r_free( a, t ) < target )
+        if( p_int_r_free( a, t ) < target )
         {
             return a;
-            }*/
+        }
 
         F.function = reinterpret_cast<typeof(F.function)>( &p_r_free_F );
     }
@@ -378,6 +378,7 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
 
     const Real low( 0.0 );
     const Real high( a );
+    //const Real high( std::min( thresholdDistance, a ) );
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
