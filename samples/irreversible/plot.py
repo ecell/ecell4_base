@@ -41,8 +41,8 @@ def plot_sol( t, rmax ):
 
     parray = array( [ p_irr( r, t, r0, kf, D_tot, sigma ) for r in rarray ] )
 
-    #loglog( rarray / sigma , parray, 'k-', label='theory' )
-    plot( rarray / sigma , parray, 'k-', label='theory' )
+    loglog( rarray / sigma , parray, 'k-', label='theory' )
+    #plot( rarray / sigma , parray, 'k-', label='theory' )
 
 def plot_hist( data, T, i ):
 
@@ -65,8 +65,8 @@ def plot_hist( data, T, i ):
     #pStyles = [ 'o', '^', 'v', '<', '>', 's', '+' ]
     colors = [ 'b', 'g', 'r', 'c', 'm', 'y' ]
 
-    #loglog( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
-    plot( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
+    loglog( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
+    #plot( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
     
     return lower_edges[-1] + xtick
 

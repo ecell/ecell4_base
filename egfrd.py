@@ -602,10 +602,10 @@ class Pair( object ):
             else:
                 # near sigma; use BasicPairGreensFunction
                 log.debug( 'GF: only sigma' )
-                #pgf = BasicPairGreensFunction( self.D_tot, self.rt.k, 
-                #                               self.sigma )
-                #return pgf
-                return self.pgf
+                pgf = BasicPairGreensFunction( self.D_tot, self.rt.k, 
+                                               self.sigma )
+                return pgf
+                #return self.pgf
         else:
             if distanceFromShell < thresholdDistance:
                 # near a;
