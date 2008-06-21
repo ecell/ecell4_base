@@ -43,7 +43,8 @@ def singlerun( T ):
     sigma = 1e-8
     r0 = sigma
     D = 1e-12
-    kf = 10 * sigma * D
+    D_tot = D * 2
+    kf = 10 * sigma * D_tot
 
     A = Species( 'A', D, sigma/2 )
     s.addSpecies( A )

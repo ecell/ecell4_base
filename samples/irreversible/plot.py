@@ -19,11 +19,11 @@ N = 1000
 
 sigma = 1e-8
 r0 = sigma
-D = 2e-12
-kf = 10 * sigma * D
+D_tot = 2e-12
+kf = 10 * sigma *  D_tot
 #kf = 0
 
-tau = sigma*sigma / D
+tau = sigma*sigma / D_tot
 
 rmin = sigma
 
@@ -39,9 +39,10 @@ def plot_sol( t, rmax ):
     rtick = ( rmax - rmin ) / N
     rarray = numpy.mgrid[rmin:rmax:rtick]
 
-    parray = array( [ p_irr( r, t, r0, kf, D, sigma ) for r in rarray ] )
+    parray = array( [ p_irr( r, t, r0, kf, D_tot, sigma ) for r in rarray ] )
 
-    loglog( rarray / sigma , parray, 'k-', label='theory' )
+    #loglog( rarray / sigma , parray, 'k-', label='theory' )
+    plot( rarray / sigma , parray, 'k-', label='theory' )
 
 def plot_hist( data, T, i ):
 
@@ -64,7 +65,8 @@ def plot_hist( data, T, i ):
     #pStyles = [ 'o', '^', 'v', '<', '>', 's', '+' ]
     colors = [ 'b', 'g', 'r', 'c', 'm', 'y' ]
 
-    loglog( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
+    #loglog( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
+    plot( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
     
     return lower_edges[-1] + xtick
 

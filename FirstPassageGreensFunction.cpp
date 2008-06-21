@@ -142,7 +142,6 @@ FirstPassageGreensFunction::p_int_r( const Real r,
 	value += term;
     }
 
-    //  printf( "value: %g, Dt/a^2 %g\tfree %g\n", value*factor, D*t/(a*a),p_free_int( r, t ) );
     return value * factor;
 } 
 

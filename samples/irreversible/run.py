@@ -42,7 +42,8 @@ def singlerun1( T ):
     sigma = 1e-8
     r0 = sigma
     D = 2e-12
-    kf = 10 * sigma * D
+    D_tot = D
+    kf = 10 * sigma * D_tot
 
     A = Species( 'A', 0.0, sigma/2 )
     s.addSpecies( A )
@@ -80,13 +81,15 @@ def singlerun2( T ):
     s = EGFRDSimulator()
     s.setWorldSize( 1e-3 )
 
-    #s.setUserMaxShellSize( 1e-6 )
+    #s.setUserMaxShellSize( 1e-7 )
     s.setUserMaxShellSize( 1e-3 )
 
     sigma = 1e-8
     r0 = sigma
     D = 1e-12
-    kf = 10 * sigma * D
+    D_tot = D * 2
+
+    kf = 10 * sigma * D_tot
     tau = sigma*sigma/D 
 
     A = Species( 'A', D, sigma/2 )
