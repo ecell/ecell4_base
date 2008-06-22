@@ -810,7 +810,8 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
 
         if( n >= this->MAX_ORDER )
         {
-            std::cerr << "Rn didn't converge." << std::endl;
+            std::cerr << "BasicPairGreensFunction: Rn didn't converge." 
+                      << std::endl;
             break;
         }
 	

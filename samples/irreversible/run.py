@@ -22,7 +22,7 @@ def run( outfilename, T, N ):
         d, t = singlerun2( T )
         outfile.write( '%g\n' % d )
         outfile.flush()
-        print i
+        #print i
         #print d, t
         assert d == 0 or t == T
 
@@ -82,7 +82,7 @@ def singlerun2( T ):
     s.setWorldSize( 1e-3 )
 
     #s.setUserMaxShellSize( 1e-7 )
-    s.setUserMaxShellSize( 1e-3 )
+    #s.setUserMaxShellSize( 1e-3 )
 
     sigma = 1e-8
     r0 = sigma

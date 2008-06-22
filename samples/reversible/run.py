@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# tau = 0.0001
-
 '''
 LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.3.out 0.05 1000000 &
 LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.2.out 0.005 1000000 &
@@ -35,7 +33,7 @@ def run( outfilename, T, N ):
 def singlerun( T ):
 
     s = EGFRDSimulator()
-    s.setUserMaxShellSize( 1e-6 )
+    #s.setUserMaxShellSize( 1e-6 )
     #s = BDSimulator()
 
     s.setWorldSize( 1e-3 )
