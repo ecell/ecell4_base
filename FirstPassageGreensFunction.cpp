@@ -146,12 +146,11 @@ FirstPassageGreensFunction::p_int_r( const Real r,
     const Real p_free( this->p_int_r_free( r, t ) );
 
     // p_int_r is always smaller than p_free.
-    if( fabs( p_free ) < CUTOFF )
+/*    if( fabs( p_free ) < CUTOFF )
     {
 	return 0.0;
     }
-
-
+*/
     const Real D( getD() );
     const Real asq( a * a );
     const Real PIsq( M_PI * M_PI );
@@ -165,8 +164,16 @@ FirstPassageGreensFunction::p_int_r( const Real r,
     const Real maxn( ( a / M_PI ) * sqrt( log( exp( DtPIsq_asq ) / CUTOFF ) / 
                                           ( D * t ) ) );
 
+    const Integer N_MAX( 10000 );
+
     const Integer N( std::min( static_cast<Integer>( ceil( maxn ) + 1 ),
-                               10000 ) );
+                               N_MAX ) );
+    if( N == N_MAX )
+    {
+        std::cerr << "FirstPassageGreensFunction::p_int_r didn't converge." 
+                  << std::endl;
+    }
+    
 
     for( int n( 1 ); n <= N; ++n )
     {
@@ -262,7 +269,7 @@ FirstPassageGreensFunction::drawTime( const Real rnd ) const
 
     const Real a( geta() );
 
-    if( getD() == 0.0 || geta() == INFINITY )
+    if( getD() == 0.0 || a == INFINITY )
     {
         return INFINITY;
     }
@@ -389,32 +396,41 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
         return 0.0;
     }
 
-    const Real psurv( p_survival( t ) ); 
-    //const Real psurv( p_int_r( a, t ) );
-    assert( psurv > 0.0 );
-    const Real target( psurv * rnd );
-
     const Real thresholdDistance( this->CUTOFF_H * sqrt( 6.0 * D * t ) );
 
-    p_r_params params = { this, t, target };
-
     gsl_function F;
+    Real psurv;
+
     if( a <= thresholdDistance )
     {
+        psurv = p_survival( t );
+        //psurv = p_int_r( a, t );
+        //printf("dr %g %g\n",psurv, p_survival( t ));
+        //assert( fabs(psurv - p_int_r( a, t )) < psurv * 1e-8 );
+
+        assert( psurv > 0.0 );
+
         F.function = reinterpret_cast<typeof(F.function)>( &p_r_F );
     }
     else
     {
         // p_int_r < p_int_r_free
-        if( p_int_r_free( a, t ) < target )
+        if( p_int_r_free( a, t ) < rnd )
         {
+            std::cerr << "p_int_r_free( a, t ) < rnd, returning a." 
+                      << std::endl;
             return a;
         }
 
+        psurv = 1.0;
         F.function = reinterpret_cast<typeof(F.function)>( &p_r_free_F );
     }
 
+    const Real target( psurv * rnd );
+    p_r_params params = { this, t, target };
+
     F.params = &params;
+
 
     const Real low( 0.0 );
     const Real high( a );

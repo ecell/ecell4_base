@@ -17,12 +17,9 @@ N_A = gfrdbase.N_A
 
 D = 1e-12
 
-sigma = 5e-9
-
-
 
 def plot_sol( t, rmax ):
-    rmin = sigma
+    rmin = 0
     
     N = 100
     rtick = ( rmax - rmin ) / N
@@ -32,7 +29,7 @@ def plot_sol( t, rmax ):
     
     print rarray, parray
 
-    plot( rarray / sigma , parray, 'b-'  )
+    plot( rarray, parray, 'b-'  )
 
 
 
@@ -44,21 +41,17 @@ def plot_file( infilename, t, maxr ):
     data = array([float(x) for x in infile.read().split()], numpy.float)
     infile.close()
 
-    nonreactions = numpy.compress( data >= sigma, data )
-    print 'max', max( nonreactions )
-    hist, lower_edges = numpy.histogram( nonreactions, bins=bins,
-                                         range=[ sigma, maxr ] )
+    hist, lower_edges = numpy.histogram( data, bins=bins,
+                                         range=[ 0, maxr ] )
     print 'hist', hist
     
-    histsum = hist.sum()
-    S_sim = float( len( nonreactions ) ) / len( data )
     hist = hist.astype( numpy.float )
     
     xtick = lower_edges[2]-lower_edges[1]
     hist /= len( data ) * xtick
     x = lower_edges + ( xtick * .5 )
 
-    plot( x / sigma, hist, '.', label=infilename )
+    plot( x, hist, '.', label=infilename )
 
 
 if __name__ == '__main__':

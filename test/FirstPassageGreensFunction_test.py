@@ -130,7 +130,20 @@ class FirstPassageGreensFunctionTestCase( unittest.TestCase ):
 
     def test_p_int_r_at_a_is_p_survival( self ):
         D = 1e-12
-        a = 1e-7
+        a = 1e-8
+        gf = mod.FirstPassageGreensFunction( D )
+        gf.seta( a )
+
+        t = 1e-5
+
+        p = gf.p_int_r( a, t )
+        psurv = gf.p_survival( t )
+        print 'ps', p, psurv
+        self.assertAlmostEqual( p, psurv )
+
+    def test_p_int_r_at_a_is_p_survival_2( self ):
+        D = 1e-12
+        a = 1e-9
         gf = mod.FirstPassageGreensFunction( D )
         gf.seta( a )
 

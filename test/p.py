@@ -20,7 +20,7 @@ D = 1e-12
 #kf=1e-10
 kf=1e-10
 #a = 1e-7
-a = sigma*50
+a = sigma*5
 #r0 = a * (1.0-1e-7)
 r0 = sigma * 3
 #r0 = a * 0.999
@@ -29,9 +29,20 @@ r0 = sigma * 3
 tau = sigma*sigma / D
 #T = tau * .1
 #T = 1e-300
-T = 1e-3
+T = 1e-2
 
 rmin = sigma
+
+
+def plot_p_survival( gf, T ):
+
+    N = 1000
+
+    x = numpy.mgrid[0:T:T/N]
+    parray1 = numpy.array( [ gf.p_survival( t ) for t in x ] )
+    plot( x, parray1, '-', label='psurvival' )
+
+
 
 
 def plot_p_survival_i( gf ):
@@ -179,6 +190,8 @@ if __name__ == '__main__':
      
     #plot_p_int_r( gf, T )
     plot_p_int_r( gf, 1e-6 )
+    #plot_p_survival( gf, T )
+
     #plot_ip_theta( gf, r0, T )
     #plot_p_leaveas( gf, r0 )
     #plot_leaveas( gf, r0 )
