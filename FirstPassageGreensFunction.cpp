@@ -18,7 +18,6 @@
 
 
 
-
 /**
   EllipticTheta[4,0,q]
 
@@ -36,33 +35,33 @@ static const Real ellipticTheta4Zero( const Real q )
 
     const Integer N( 1000 );
     Real value( 1.0 );
-
+    
     Real q_n( q );
     Real q_2n( 1.0 );
-
+    
     for( Integer n( 1 ); n <= N; ++n )
     {
-	const Real term2( 1.0 - q_2n * q );  // q^(2n-1) = (q^(n-1))^2 * q
-
-	q_2n = q_n * q_n;
-
-	const Real term1( 1.0 - q_2n ); // q^2n
-
-	const Real term( term1 * term2 * term2 );
-	const Real value_prev( value );
-	value *= term;
-      
-	// here only absolute error is checked because it is good enough
-	// for our use.  (it's compared with 1 in p_survival).
-	if( fabs( value - value_prev ) < 1e-23 ) 
-	{
-	    // normal exit.
-	    return value;
-	}
-
-	q_n *= q;  // q_(++n)
+        const Real term2( 1.0 - q_2n * q );  // q^(2n-1) = (q^(n-1))^2 * q
+        
+        q_2n = q_n * q_n;
+        
+        const Real term1( 1.0 - q_2n ); // q^2n
+        
+        const Real term( term1 * term2 * term2 );
+        const Real value_prev( value );
+        value *= term;
+        
+        // here only absolute error is checked because it is good enough
+        // for our use.  (it's compared with 1 in p_survival).
+        if( fabs( value - value_prev ) < 1e-18 ) 
+        {
+            // normal exit.
+            return value;
+        }
+        
+        q_n *= q;  // q_(++n)
     }
-
+    
     std::cerr << "WARNING: ellipticTheta4Zero: didn't converge." << std::endl;
     return value;
 }
@@ -81,6 +80,47 @@ FirstPassageGreensFunction::p_survival( const Real t ) const
     return 1.0 - ellipticTheta4Zero( exp( q ) );
 } 
 
+
+
+#if 0 // an alternative form, which is not very convergent.
+const Real 
+FirstPassageGreensFunction::p_survival( const Real t ) const
+{
+    const Real D( getD() );
+    const Real a( geta() );
+    const Real asq( a * a );
+    const Real Dt( D * t );
+    const Real PIsq( M_PI * M_PI );
+    const Real mDtPIsq_asq( - Dt * PIsq / asq );
+
+    const Integer N( 10000 );
+    Real value( 0. );
+
+    const Real threshold( exp( mDtPIsq_asq ) * CUTOFF );
+
+    for( Integer n( 1 ); n <= N; ++n )
+    {
+        const Real n2( n * 2 );
+        const Real n2m1( n2 - 1 );
+        const Real term1( expm1( n2m1 * n2m1 * mDtPIsq_asq ) );
+        const Real term2( expm1( n2 * n2 * mDtPIsq_asq ) );
+
+        const Real term( term1 - term2 );
+        value += term;
+
+        //printf("%g %g\n", value, term1-term2);
+
+        if( fabs( term ) < threshold )
+	{
+	    // normal exit.
+	    return value * 2;
+	}
+    }
+
+    std::cerr << "WARNING: p_survival didn't converge." << std::endl;
+    return value * 2;
+} 
+#endif // 0
 
 
 
@@ -110,6 +150,7 @@ FirstPassageGreensFunction::p_int_r( const Real r,
     {
 	return 0.0;
     }
+
 
     const Real D( getD() );
     const Real asq( a * a );

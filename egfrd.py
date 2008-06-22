@@ -244,9 +244,11 @@ class Single( object ):
 
         return self.particle.species.D
 
+
     def getPos( self ):
 
         return self.shellList[0].pos
+
 
     def setPos( self, pos ):
         self.shellList[0].pos = pos
@@ -296,30 +298,6 @@ class Single( object ):
         self.reset()
         self.lastTime = t
 
-
-
-    def calculateShellSize( self, closest, distance, shellDistance ):
-
-        minRadius1 = self.getMinRadius()
-        D1 = self.getD()
-
-        if D1 == 0:
-            return minRadius1
-
-        D2 = closest.getD()
-        minRadius2 = closest.getMinRadius()
-        minRadius12 = minRadius1 + minRadius2
-        sqrtD1 = math.sqrt( D1 )
-            
-        shellSize = min( sqrtD1 / ( sqrtD1 + math.sqrt( D2 ) )
-                         * ( distance - minRadius12 ) + minRadius1,
-                         shellDistance )
-        shellSize /= SAFETY
-        shellSize = max( shellSize, minRadius1 ) # not smaller than the radius
-
-        return shellSize
-
-        
 
 
     '''
@@ -379,8 +357,6 @@ class Single( object ):
 
     def determineNextEvent( self, t ):
 
-        self.lastTime = t
-
         if self.getD() == 0:
             firstPassageTime = INF
         else:
@@ -394,6 +370,8 @@ class Single( object ):
         else:
             self.dt = reactionTime
             self.eventType = EventType.REACTION
+
+        self.lastTime = t
 
 
     def drawReactionTime( self ):
@@ -1082,7 +1060,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.scheduler.clear()
         self.shellMatrix.clear()
-        #self.sm2.clear()
 
         for species in self.speciesList.values():
             for i in range( species.pool.size ):
@@ -1102,7 +1079,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             return
 
         if t >= self.scheduler.getTopEvent().getTime():
-            raise RuntimeError, 'Stop time <= next event time.'
+            raise RuntimeError, 'Stop time >= next event time.'
 
         self.t = t
         
@@ -1413,16 +1390,15 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
     def propagateSingle( self, single, r ):
-        
-        particleRadius = single.getMinRadius()
-        oldpos = single.particle.pos.copy()
+
+        assert abs( single.dt + single.lastTime - self.t ) <= 1e-18 * self.t
         
         displacement = randomNormalVector( r )
             
-        newpos = oldpos + displacement
+        newpos = single.particle.pos + displacement
         self.applyBoundary( newpos )
             
-        assert self.checkOverlap( newpos, particleRadius,\
+        assert self.checkOverlap( newpos, single.getMinRadius(),
                                   ignore = [ single.particle, ] )
 
         self.moveSingle( single, newpos )
@@ -1521,12 +1497,36 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                        ( single, single.radius, single.dt, c, d ) )
 
 
+    def calculateSingleShellSize( self, single, closest, 
+                                  distance, shellDistance ):
+
+        minRadius1 = single.getMinRadius()
+        D1 = single.getD()
+
+        if D1 == 0:
+            return minRadius1
+
+        D2 = closest.getD()
+        minRadius2 = closest.getMinRadius()
+        minRadius12 = minRadius1 + minRadius2
+        sqrtD1 = math.sqrt( D1 )
+            
+        shellSize = min( sqrtD1 / ( sqrtD1 + math.sqrt( D2 ) )
+                         * ( distance - minRadius12 ) + minRadius1,
+                         shellDistance )
+        shellSize /= SAFETY
+        shellSize = max( shellSize, minRadius1 ) # not smaller than the radius
+
+        return shellSize
+
+
     def updateSingle( self, single, closest, distanceToShell ): 
 
         if isinstance( closest, Single ):
             distanceToClosest = self.distance( single.pos, closest.pos )
-            shellSize = single.calculateShellSize( closest, distanceToClosest,
-                                                   distanceToShell )
+            shellSize = self.calculateSingleShellSize( single, closest, 
+                                                       distanceToClosest,
+                                                       distanceToShell )
         else:  # Pair or Multi
             shellSize = distanceToShell / SAFETY
             shellSize = max( shellSize, single.getMinRadius() )
@@ -1810,18 +1810,19 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         r = single.drawR( dt )
         displacement = randomNormalVector( r )
-            
+
         newpos = oldpos + displacement
 
         self.applyBoundary( newpos )
 
         assert self.distance( newpos, oldpos ) <= single.getMobilityRadius()
+        assert self.distance( newpos, oldpos ) - r <= r * 1e-6
         assert self.checkOverlap( newpos, particleRadius,\
                                   ignore = [ single.particle, ] )
 
-        single.initialize( self.t )
         self.moveSingle( single, newpos )
 
+        single.initialize( self.t )
         self.updateShellMatrix( single )
         self.updateEvent( self.t, single )
 
@@ -1833,7 +1834,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         dt = self.t - pair.lastTime 
 
-        if dt != 0.0:
+        if dt > 0.0:
 
             single1 = pair.single1
             single2 = pair.single2
