@@ -728,7 +728,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
             result = scipy.integrate.quad( gf.p_theta, 0.0, theta,
                                            args=( r, r0, t ) )
             np = result[0]
-            self.assertAlmostEqual( 0.0, (np-ip)/ip, 1e-6 )
+            self.assertAlmostEqual( 0.0, (np-ip)/ip, 5 )
 
 
     def test_ip_theta_pi_is_p_0( self ):
@@ -750,7 +750,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         p0 = gf.p_0( t, r, r0 ) * 2
 
         self.assertNotEqual( 0.0, ip )
-        self.assertAlmostEqual( 1.0, ip/p0, 1e-6 )
+        self.assertAlmostEqual( 1.0, ip/p0, 5 )
 
     def test_p_theta_never_negative( self ):
 
@@ -822,7 +822,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         leavea = gf.leavea( t, r0 ) * numpy.pi * a * a * 2
         iptheta = gf.idp_theta( numpy.pi, a, r0, t ) * numpy.pi * a * a
 
-        self.assertAlmostEqual( leavea, iptheta, 1e-6 ) # SBG's accuracy
+        self.assertAlmostEqual( leavea / iptheta, 1.0, 5 ) # SBG's accuracy
 
 '''
     def test_p_theta_free_is_p_theta_smallt( self ):

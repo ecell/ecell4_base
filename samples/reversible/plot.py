@@ -15,7 +15,7 @@ infilename = sys.argv[1]
 
 N_A = 6.0221367e23
 
-N = 100
+N = 1000
 
 sigma = 1e-8
 

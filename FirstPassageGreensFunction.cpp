@@ -76,7 +76,6 @@ FirstPassageGreensFunction::p_survival( const Real t ) const
     const Real PIsq( M_PI * M_PI );
 
     const Real q( - D * PIsq * t / asq );
-
     return 1.0 - ellipticTheta4Zero( exp( q ) );
 } 
 
@@ -146,11 +145,11 @@ FirstPassageGreensFunction::p_int_r( const Real r,
     const Real p_free( this->p_int_r_free( r, t ) );
 
     // p_int_r is always smaller than p_free.
-/*    if( fabs( p_free ) < CUTOFF )
+    if( fabs( p_free ) < CUTOFF )
     {
 	return 0.0;
     }
-*/
+
     const Real D( getD() );
     const Real asq( a * a );
     const Real PIsq( M_PI * M_PI );

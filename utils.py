@@ -94,6 +94,8 @@ def cartesianToSpherical( c ):
 
 
 def sphericalToCartesian( s ):
+
+    #FIXME: it's possible that the below is a source of some bias.
     r, theta, phi = s
     sintheta = math.sin( theta )
     return numpy.array( [ r * math.cos( phi ) * sintheta,
@@ -108,16 +110,23 @@ def randomUnitVectorS():
 
 
 def randomUnitVector():
-    return sphericalToCartesian( randomUnitVectorS() )
+    #return sphericalToCartesian( randomUnitVectorS() )
+
+    v = numpy.random.uniform( size=3 ) - 0.5
+    return v * length( v )
 
 
 def randomNormalVector( r ):
-    
+    '''
+    bad idea -- it causes some bias that is seeable from the irr/rev plot tests.
     rnd = numpy.random.uniform( size=2 )
-    S = [ r, rnd[0] * Pi, rnd[1] * 2 * Pi ]
+    S = [ r, rnd[0] * Pi, rnd[1] * Pi2 ]
     v = sphericalToCartesian( S )
+'''
 
-    return v
+    v = numpy.random.uniform( size=3 ) - 0.5
+    return v * ( r / length( v ) )
+
 
 
 def length( a ):

@@ -1394,6 +1394,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert abs( single.dt + single.lastTime - self.t ) <= 1e-18 * self.t
         
         displacement = randomNormalVector( r )
+
+        assert abs( length( displacement ) - r ) <= 1e-15 * r
             
         newpos = single.particle.pos + displacement
         self.applyBoundary( newpos )
