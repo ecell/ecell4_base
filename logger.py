@@ -1,20 +1,19 @@
 
 import os
-import string
+import re
 #import logging
+import numpy
+
+INF = numpy.inf
 
 
 class Logger:
 
-    def __init__( self, simulator, logname = 'log', directory = 'data',
+    def __init__( self, sim, logname = 'log', directory = 'data',
                   comment='' ):
 
-        self.simulator = simulator
+        self.sim = sim
 
-        self.interval = 0.001
-
-        self.lastTime = 0.0
-        self.nextTime = 0.0
 
         self.logname = logname
 
@@ -26,7 +25,12 @@ class Logger:
         except:
             pass
 
-        self.particleOutList = []
+        self.particleOutInterval = INF
+
+        self.lastTime = 0.0
+        self.nextTime = INF
+
+        self.particleOutPattern = re.compile( '' )
         self.prepareTimecourseFile( comment )
         self.writeTimecourse()
 
@@ -34,18 +38,26 @@ class Logger:
     def setInterval( self, interval ):
         self.interval = interval
 
-    def setParticleOutput( self, outlist ):
-        self.particleOutList = outlist
+    def setParticleOutPattern( self, pattern ):
+        self.particleOutPattern = re.compile( pattern )
+
+    def getParticleOutPattern( self ):
+        return self.particleOutPattern.pattern
+
+    def setParticleOutInterval( self, interval ):
+        self.particleOutInterval = interval
+        self.lastTime = self.sim.t
+        self.nextTime = self.lastTime + self.particleOutInterval
 
     def prepareTimecourseFile( self, comment ):
 
-        self.timecourseFilename = self.logname + '.dat'
+        self.timecourseFilename = self.logname + '_timecourse' + '.dat'
         self.timecourseFile = open( self.directory + os.sep +\
                                     self.timecourseFilename, 'w' )
         self.writeTimecourseComment( comment )
 
         speciesNameList = '\'' +\
-            string.join( self.simulator.speciesList.keys(), '\', \'' ) + '\''
+            "\', \'".join( self.sim.speciesList.keys()  ) + '\''
         columns = '[ \'t\', ' + speciesNameList + ']'
         self.writeTimecourseComment( '@ columns= ' + columns )
 
@@ -56,58 +68,56 @@ class Logger:
     def writeTimecourse( self ):
 
         data = [ str( i.pool.size )\
-                 for i in self.simulator.speciesList.values() ]
+                 for i in self.sim.speciesList.values() ]
             
-        self.timecourseFile.write( str( self.simulator.t ) + '\t' )
-        self.timecourseFile.write( string.join( data, '\t' ) + '\n' )
+        self.timecourseFile.write( str( self.sim.t ) + '\t' )
+        self.timecourseFile.write( '\t'.join( data ) + '\n' )
         self.timecourseFile.flush()
 
     def writeParticles( self ):
 
-        for speciesName in self.particleOutList:
-            species = self.simulator.speciesList[ speciesName ]
-            positions = species.pool.positions
+        filename = self.logname + str( self.fileCounter ).zfill(4) + '.dat'
 
-            filename = speciesName + '_' + '%04d' % self.fileCounter + '.dat'
-            #print filename
-            file = open( self.directory + os.sep + filename, 'w' )
-            file.write( '# name: %s\n' % speciesName )
-            file.write( '# radius: %f\n' % species.radius )
-            file.write( '# count: %d\n' % species.pool.size )
-            file.write( '# t: %f\n' % self.simulator.t )
-            file.write( '#--------\n' )
+        file = open( self.directory + os.sep + filename, 'w' )
 
+        file.write( '#@ name = %s\n' % self.logname )
+        file.write( '#@ count = %d\n' % self.fileCounter )
+        file.write( '#@ t = %f\n' % self.sim.t )
+        file.write( '#--------\n' )
+
+        for speciesName in self.sim.speciesList.keys():
+            species = self.sim.speciesList[ speciesName ]
             for i in species.pool.positions:
-                file.write( '%.15g\t%.15g\t%.15g\n' % ( i[0],i[1],i[2] ) )
+                file.write( '%s\t%20.14g %20.14g %20.14g %.15g\n' % 
+                            ( speciesName, i[0], i[1], i[2], species.radius ) )
 
-            file.close()
+            file.write( '#\n' )
+
+        file.close()
 
         self.fileCounter += 1
 
 
     def log( self ):
-        self.logTimeCourse()
 
-        if self.particleOutList:
-            self.logParticles()
+        self.logTimeCourse()
+        self.logParticles()
 
     def logTimeCourse( self ):
 
-        if self.simulator.populationChanged:
+        if self.sim.populationChanged:
             self.writeTimecourse()
 
-    def logParticles( self ):
-        sim = self.simulator
-        currentTime = sim.t
-        nextTime = sim.t + sim.dt
 
-        if self.nextTime <= nextTime:
+    def logParticles( self ):
+        sim = self.sim
+        if self.nextTime <= sim.t + sim.dt:
             #log.info( 'log %g' % self.nextTime )
 
             sim.stop( self.nextTime )
             self.writeParticles()
 
-            self.nextTime += self.interval
+            self.nextTime += self.particleOutInterval
 
 
         

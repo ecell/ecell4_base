@@ -113,7 +113,7 @@ def randomUnitVector():
     #return sphericalToCartesian( randomUnitVectorS() )
 
     v = numpy.random.uniform( size=3 ) - 0.5
-    return v * length( v )
+    return v / length( v )
 
 
 def randomNormalVector( r ):

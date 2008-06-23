@@ -192,6 +192,8 @@ namespace libecs
 
 	const double getTopTime() const
 	{
+            assert( this->getSize() != 0 );  // FIXME: use exception
+
 	    return getTopEvent().getTime();
 	}
 

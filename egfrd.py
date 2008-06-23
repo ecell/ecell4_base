@@ -1040,7 +1040,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def reset( self ):
 
         self.t = 0.0
-        self.dt = INF
+        self.dt = 0.0
         self.stepCounter = 0
         self.zeroSteps = 0
         self.rejectedMoves = 0
@@ -1351,7 +1351,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                     self.applyBoundary( newpos1 )
                     self.applyBoundary( newpos2 )
 
-                    if self.distance( newpos1, newpos2 ) > particleRadius12:
+                    if self.distance( newpos1, newpos2 ) >= particleRadius12:
                         break
 
                     vector *= 1.0 + 1e-7
