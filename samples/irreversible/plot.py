@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#  PYTHONPATH=../.. python plot.py irr.3.out 0.05 irr.2.out 0.005 irr.1.out 0.0005 irr.0.out 0.00005 irr.-1.out 0.000005 irr.-2.out 0.0000005 irr.-3.out 0.00000005
+#  PYTHONPATH=../.. python plot.py irr.-3.out 0.00000005 irr.-2.out 0.0000005  irr.-1.out 0.000005  irr.0.out 0.00005 irr.1.out 0.0005 irr.2.out 0.005 irr.3.out 0.05
 
 
 import sys
@@ -34,14 +34,16 @@ def load_data( filename ):
 
     return data
     
-def plot_sol( t, rmax ):
+def plot_sol( t ):
+
+    rmax = 3.1 * math.sqrt( 6 * D_tot * t ) + rmin
 
     rtick = ( rmax - rmin ) / N
     rarray = numpy.mgrid[rmin:rmax:rtick]
 
     parray = array( [ p_irr( r, t, r0, kf, D_tot, sigma ) for r in rarray ] )
 
-    loglog( rarray / sigma , parray, 'k-', label='theory' )
+    return loglog( rarray / sigma , parray, 'k-' )[0]
     #plot( rarray / sigma , parray, 'k-', label='theory' )
 
 def plot_hist( data, T, i ):
@@ -63,10 +65,11 @@ def plot_hist( data, T, i ):
     x = lower_edges + ( xtick * .5 )
     #print 'x', x
     #pStyles = [ 'o', '^', 'v', '<', '>', 's', '+' ]
-    colors = [ 'b', 'g', 'r', 'c', 'm', 'y' ]
+    colors = [ 'b', 'g', 'r', 'c', 'm', 'y', 'k' ]
 
-    loglog( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
-    #plot( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
+    loglog( x / sigma, hist, colors[i] + '.', 
+            label=r'$T = \tau^{%d}$' % round(math.log10(T/tau)) )
+
     
     return lower_edges[-1] + xtick
 
@@ -79,13 +82,16 @@ if __name__ == '__main__':
         print filename,T
         data = load_data( filename )
         maxr = plot_hist( data, T, i )
-        plot_sol( T, maxr )
+        solline = plot_sol( T )
 
 
 
-    xlabel( 'r / sigma' )
-    ylabel( 'p_irr' )
-    #legend()
+    xlabel( r'$r / \sigma$', fontsize='large' )
+    ylabel( r'$p_{irr}$', fontsize='large' )
+    ylim( 1.5e1, 7e9 )
+    solline.set_label( r'theory' )
+    legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
+    grid()
     show()
 
 

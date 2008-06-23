@@ -20,11 +20,11 @@ N = 100
 sigma = 1e-8
 
 #r0 = sigma
-#D = 2e-12
+D_tot = 2e-12
 #kf = 10 * sigma * D
 
-#tau = sigma*sigma / D
-#t = .01
+tau = sigma*sigma / D_tot
+rmin = sigma
 
 
 def load_data( filename ):
@@ -34,16 +34,18 @@ def load_data( filename ):
 
     return data
     
-def plot_sol( filename, maxr ):
+def plot_sol( filename, t ):
+
+    rmax = 2.2 * math.sqrt( 6 * D_tot * t ) + rmin
 
     data = scipy.io.read_array( filename )
     rarray, parray = numpy.transpose( data )
-    mask = numpy.less_equal( rarray, maxr )
+    mask = numpy.less_equal( rarray, rmax )
     rarray = numpy.compress( mask, rarray )
     parray = numpy.compress( mask, parray )
     print rarray, parray
 
-    loglog( rarray / sigma, parray, 'k-'  )
+    return loglog( rarray / sigma, parray, 'k-'  )[0]
 
 
 
@@ -65,9 +67,10 @@ def plot_hist( data, T, i ):
 
     x = lower_edges + ( xtick * .5 )
     #print 'x', x, hist
-    colors = [ 'b', 'g', 'r', 'c', 'm', 'y' ]
+    colors = [ 'b', 'g', 'r', 'c', 'm', 'y', 'k' ]
 
-    loglog( x / sigma, hist, colors[i] + '.', label='sim (T = %g tau)' % (T * 100) )
+    loglog( x / sigma, hist, colors[i] + '.',             
+            label=r'$T = \tau^{%d}$' % round(math.log10(T/tau)) )
 
     return lower_edges[-1] + xtick
     
@@ -81,13 +84,16 @@ if __name__ == '__main__':
         T = float( sys.argv[i*3+3] )
         print simfilename,solfilename,T
         data = load_data( simfilename )
-        maxr = plot_hist( data, T, i )
-        plot_sol( solfilename, maxr )
+        plot_hist( data, T, i )
+        solline = plot_sol( solfilename, T )
 
 
-    xlabel( 'r / sigma' )
-    ylabel( 'p_rev' )
-    #legend()
+
+    xlabel( r'$r / \sigma$', fontsize='large' )
+    ylabel( r'$p_{rev}$', fontsize='large' )
+    ylim( 1.5e1, 7e9 )
+    solline.set_label( r'theory' )
+    legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
+    grid()
     show()
-
 
