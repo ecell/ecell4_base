@@ -91,6 +91,7 @@ if __name__ == '__main__':
 
     xlabel( r'$r / \sigma$', fontsize='large' )
     ylabel( r'$p_{rev}$', fontsize='large' )
+    xlim( 0.9, 5e2 )
     ylim( 1.5e1, 7e9 )
     solline.set_label( r'theory' )
     legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )

@@ -15,7 +15,7 @@ from p_irr import p_irr
 
 N_A = 6.0221367e23
 
-N = 1000
+N = 10000
 
 sigma = 1e-8
 r0 = sigma
@@ -88,6 +88,7 @@ if __name__ == '__main__':
 
     xlabel( r'$r / \sigma$', fontsize='large' )
     ylabel( r'$p_{irr}$', fontsize='large' )
+    xlim( 0.9, 5e2 )
     ylim( 1.5e1, 7e9 )
     solline.set_label( r'theory' )
     legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
