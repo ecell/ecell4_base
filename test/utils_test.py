@@ -73,6 +73,38 @@ class UtilsTestCase( unittest.TestCase ):
         self.assertAlmostEqual( numpy.sqrt( 12. ), numpy.sqrt( distance[1] ) )
 
 
+    def test_randomUnitVector( self ):
+
+        for i in range( 1000 ):
+            v = randomUnitVector()
+            self.assertAlmostEqual( length( v ), 1.0, 15 )
+
+
+    def test_randomVector( self ):
+
+        for i in range( 1000 ):
+            r = numpy.random.uniform() * 1e3
+            v = randomVector( r )
+            self.assertAlmostEqual( length( v ), r, 12 )
+
+    def test_spherical_cartesian( self ):
+
+        for i in range( 1000 ):
+            r = numpy.random.uniform() * 1e3
+            v = randomVector( r )
+            v2 = sphericalToCartesian( cartesianToSpherical( v ) )
+            diff = abs( v - v2 ).sum()
+            self.assertAlmostEqual( diff, 0, 10 )
+
+    def test_cartesian_spherical( self ):
+
+        for i in range( 1000 ):
+            v = randomUnitVectorS()
+            v[0] *= 1e3
+            v2 = cartesianToSpherical( sphericalToCartesian( v ) )
+            diff = abs( v - v2 ).sum()
+            self.assertAlmostEqual( diff, 0, 10 )
+            
 
 
 if __name__ == "__main__":

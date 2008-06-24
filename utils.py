@@ -85,7 +85,7 @@ def distanceArray_Cyclic( position1, positions, fsize = 0 ):
 
 def cartesianToSpherical( c ):
     # x, y, z = c
-    r = math.sqrt( ( c ** 2 ).sum() )
+    r = length( c )
     theta = math.acos( c[2] / r )
     phi = math.atan2( c[1], c[0] )
     if phi < 0.0:  # atan2 returns [- PI, PI]
@@ -116,9 +116,9 @@ def randomUnitVector():
     return v / length( v )
 
 
-def randomNormalVector( r ):
+def randomVector( r ):
     '''
-    bad idea -- it causes some bias that is seeable from the irr/rev plot tests.
+    bad idea -- it causes some bias that is seeable in the irr/rev plot tests.
     rnd = numpy.random.uniform( size=2 )
     S = [ r, rnd[0] * Pi, rnd[1] * Pi2 ]
     v = sphericalToCartesian( S )
@@ -195,24 +195,26 @@ def permutate(seq):
 
 
 def k_D( D, sigma ):
-    Dpisigma4 = 4.0 * numpy.pi * D * sigma
-    return Dpisigma4
+
+    return 4.0 * numpy.pi * D * sigma
 
 def k_a( kon, kD ):
-    #print 'kon ', kon, 'k_D', kD
+
     if kon > k_D:
-        print 'ERROR: kon > k_D.'
-        sys.exit( 1 )
+        raise RuntimeError, 'kon > k_D.'
     ka = 1 / ( ( 1 / kon ) - ( 1 / kD ) )
     return ka
 
 def k_d( koff, kon, kD ):
+
     return k_a( kon, kD ) * koff / kon
 
 def k_on( ka, kD ):
+
     kon = 1 / ( ( 1 / kD ) + ( 1 / ka ) )  # m^3/s
     return kon
 
 
 def C2N( c, V ):
-    return round( c * V * N_A )
+
+    return c * V * N_A  # round() here?
