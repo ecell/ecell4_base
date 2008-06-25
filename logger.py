@@ -70,7 +70,7 @@ class Logger:
         data = [ str( i.pool.size )\
                  for i in self.sim.speciesList.values() ]
             
-        self.timecourseFile.write( str( self.sim.t ) + '\t' )
+        self.timecourseFile.write( '%g' % self.sim.t + '\t' )
         self.timecourseFile.write( '\t'.join( data ) + '\n' )
         self.timecourseFile.flush()
 
@@ -83,7 +83,7 @@ class Logger:
 
         file.write( '#@ name = \'%s\'\n' % str( self.logname ) )
         file.write( '#@ count = %d\n' % int( self.fileCounter ) )
-        file.write( '#@ t = %f\n' % float( self.sim.t ) )
+        file.write( '#@ t = %s\n' % '%g' % self.sim.t )
         file.write( '#@ worldSize = %f\n' % float( self.sim.getWorldSize() ) )
         file.write( '#--------\n' )
 
