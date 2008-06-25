@@ -80,9 +80,10 @@ class Logger:
 
         file = open( self.directory + os.sep + filename, 'w' )
 
-        file.write( '#@ name = %s\n' % self.logname )
-        file.write( '#@ count = %d\n' % self.fileCounter )
-        file.write( '#@ t = %f\n' % self.sim.t )
+        file.write( '#@ name = \'%s\'\n' % str( self.logname ) )
+        file.write( '#@ count = %d\n' % int( self.fileCounter ) )
+        file.write( '#@ t = %f\n' % float( self.sim.t ) )
+        file.write( '#@ worldSize = %f\n' % float( self.sim.getWorldSize() ) )
         file.write( '#--------\n' )
 
         for speciesName in self.sim.speciesList.keys():

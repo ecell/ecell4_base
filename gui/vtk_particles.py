@@ -25,7 +25,6 @@ colors = [ (1, .2, .2 ),  ( .2,.2,1 ), ( .8, .8, .3 )]
 
 def addParticles( ren, positions, n ):
 
-
     for pos in positions:
         
         addParticle( ren, pos, radii[n], colors[n] )
