@@ -67,11 +67,11 @@ def writeFrame( outfile, particles, renWin, header ):
     renWin.AddRenderer( ren )
     renWin.SetSize( 400, 400 )
 
-    iren = vtk.vtkRenderWindowInteractor()
-    iren.SetRenderWindow(renWin)
-    style = vtk.vtkInteractorStyleTrackballCamera()
-    iren.SetInteractorStyle(style)
-    iren.Initialize()
+    #iren = vtk.vtkRenderWindowInteractor()
+    #iren.SetRenderWindow(renWin)
+    #style = vtk.vtkInteractorStyleTrackballCamera()
+    #iren.SetInteractorStyle(style)
+    #iren.Initialize()
 
     for n, id in enumerate( particlePools.keys() ):
         particles = particlePools[id]
@@ -145,8 +145,8 @@ if __name__ == '__main__':
     particlePools = loadParticles( infilename )
 
     renWin = vtk.vtkRenderWindow()
-    #renWin.MappedOff()
-    #renWin.OffScreenRenderingOn()
+    renWin.MappedOff()
+    renWin.OffScreenRenderingOn()
 
     writeFrame( outfilename, particlePools, renWin, header )
 
