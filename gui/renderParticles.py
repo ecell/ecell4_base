@@ -78,6 +78,11 @@ def writeFrame( outfile, particles, renWin, header ):
         addParticles( ren, particles.pos, particles.radii, n )
         print n
 
+    text = vtk.vtkTextActor()
+    text.SetInput( 't = %16.f' % header['t'] )
+    text.SetDisplayPosition( 300, 360 )
+    ren.AddActor2D( text )
+
 
     ren.ResetCamera(0,size,0,size,0,size)
     camera = ren.GetActiveCamera()
