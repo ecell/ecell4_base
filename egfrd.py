@@ -820,7 +820,7 @@ class Pair( object ):
 
         rnd = numpy.random.uniform()
         try:
-            r = gf.drawR( rnd , r0, t )
+            r = gf.drawR( rnd, r0, t )
             # redraw; shouldn't happen often
             while r >= self.a_r or r <= self.sigma: 
                 log.info( 'drawR_pair: redraw' )
@@ -1099,8 +1099,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
         # then burst all Pairs and Multis.
-        for obj in nonSingleList:
-            self.burstObj( obj )
+        self.burstObjs( nonSingleList )
 
         self.dt = 0.0
 
@@ -1876,6 +1875,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             assert pair.checkNewpos( newpos1, newpos2, oldCoM )
             self.moveSingle( single1, newpos1 )
             self.moveSingle( single2, newpos2 )
+
 
         return pair.single1, pair.single2
 

@@ -76,7 +76,8 @@ class Logger:
 
     def writeParticles( self ):
 
-        filename = self.logname + str( self.fileCounter ).zfill(4) + '.dat'
+        filename = self.logname + '_' + \
+            str( self.fileCounter ).zfill(4) + '.dat'
 
         file = open( self.directory + os.sep + filename, 'w' )
 
