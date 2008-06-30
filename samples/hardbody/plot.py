@@ -84,7 +84,8 @@ X = numpy.array([5,100,300,1000,3000,10000,30000,100000,5e6])
 
 #for i in range( len(Nv) ):
 plot_data( Nv, data_V,'kx' )
-loglog( X, 0.15* X**(5.0/3), 'k--' )
+#loglog( X, 0.15* X**(5.0/3), 'k--' )
+loglog( X, 0.007* X**(6.0/3), 'k--' )
 
 figtext( .2, .15, r'(2) $t \ \propto \ N^{5/3}$', color='k' )
 
