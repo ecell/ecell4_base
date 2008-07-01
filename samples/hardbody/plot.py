@@ -87,13 +87,16 @@ plot_data( Nv, data_V,'kx' )
 #loglog( X, 0.15* X**(5.0/3), 'k--' )
 loglog( X, 0.007* X**(6.0/3), 'k--' )
 
-figtext( .2, .15, r'(2) $t \ \propto \ N^{5/3}$', color='k' )
+figtext( .26, .17, r'(2) V = 40 fL' )
+figtext( .8, .74, r'$t \ \propto \ N^{5/3}$', color='k' )
+
 
 #for i in range( len(Nc) ):
 plot_data( Nc, data_C,'ko' )
 loglog( X, 30* X, 'k-' )
 
-figtext( .15, .32, r'(1) $t \  \propto \ N$', color='k' )
+figtext( .135, .34, r'(1) C = 100 nM' )
+figtext( .8, .6, r'$t \  \propto \ N$', color='k' )
 
 #for i in range( len(Ns) ):
 #    plot_data( Ns[i], data2[i],'k.' )
@@ -114,6 +117,8 @@ ylabel( 'time [sec]' )
 #legend()
 xlim(4,1e7)
 ylim(1.1,2e11)
+
+grid()
 
 Cx3000=numpy.array([
     9.35e-11,
@@ -181,9 +186,12 @@ loglog( [1e-11,1e-2],[bd3000,bd3000], 'b:' )
 
 for i in range( len(Cx300) ):
     plot_data( Cx300, data_N300,'kd' )
+loglog( Cx300, 3e8* Cx300**(2.0/3.0), 'k-.', label='C^(4/3)' )
 loglog( Cx300, 3e12* Cx300**(4.0/3.0), 'k-.', label='C^(4/3)' )
 
-figtext( .73, .22, r'(3) $t \ \propto \ C^{4/3}$', color='k' )
+figtext( .73, .22, r'(3) N = 300' )
+figtext( .79, .30, r'$t \ \propto \ C^{4/3}$', color='k' )
+figtext( .63, .33, r'N = 3000' )
 
 #bd 300
 bd300 = numpy.array([1.62390208244,1.62284588814,1.63388109207]).mean()
@@ -199,7 +207,6 @@ ylabel( 'time [sec]' )
 #ylim(1e2,5e9)
 xlim(5e-10,5e-3)
 ylim(2e2,8e10)
-
 
 show()
 #savefig('fig1.eps')
