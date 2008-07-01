@@ -72,13 +72,18 @@ FirstPassageNoCollisionPairGreensFunction.cpp\
 pyGFRD.cpp
 
 
-
-_gfrd_la_DEPENDENCIES=SphericalBesselTable.hpp
-
 _gfrd_la_LDFLAGS=-module -export-dynamic -avoid-version $(no_undefined)
 _gfrd_la_LIBADD=$(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
 GFRD_SO=_gfrd$(LTDL_SHLIB_EXT)
 
+nodist__gfrd_la_SOURCES=\
+SphericalBesselTable.hpp
+
+BUILT_SOURCES=\
+SphericalBesselTable.hpp
+
+CLEANFILES=\
+SphericalBesselTable.hpp
 
 SphericalBesselTable.hpp: make_sjy_table.py
 	$(PYTHON) make_sjy_table.py SphericalBesselTable.hpp
