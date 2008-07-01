@@ -5,11 +5,11 @@
 About this package
 ========================
 
-This package is temporarily named Particle Dynamics Platform Prototype
-(PDPP).  It currently implements the enhanced Greens Function Reaction
-Dynamics (eGFRD) simulation algorithm.  Implementation of brute-force
-Brownian Dynamics (BD) and the original version of GFRD is in
-progress.  The code is implemented with the hope that it will
+This package is temporarily named E-Cell Particle Dynamics Prototype
+(EPDP).  It currently implements the enhanced Greens Function Reaction
+Dynamics (eGFRD) and brute-force Brownian Dynamics (BD) simulation
+algorithms.  Implementation of the original version of GFRD will possibly
+be added in future.  The code is implemented with the hope that it will
 eventually be ported to the E-Cell System Version 4 to become part of
 the multi-algorithm, multi-space simulation platform.
 

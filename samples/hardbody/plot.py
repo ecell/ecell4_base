@@ -64,8 +64,8 @@ data_V *= 11.696/1e-3
 data_C *= 11.696/1e-3
 
 Nb = numpy.array([10,30,100,300,1000,3000,10000])#,30000,100000])
-data2 = numpy.array([\
-        #t=1e-8
+data_bd_5 = numpy.array([\
+        #t=1e-8, dt = 1e-5 tau
         [0.056921005249,0.0582950115204,0.0573508739471],
         [0.165854215622,0.166671037674,0.166358947754],
         [0.543391942978,0.547204971313,0.53879904747],
@@ -76,9 +76,8 @@ data2 = numpy.array([\
 #        [0,0,0],
 #        [0,0,0]]
         ])
-data2 *=  11.696/ 1e-8
-#data3 = data2 * 10
-#data4 = data2 * 100
+data_bd_5 *=  11.696/ 1e-8
+data_bd_6 = data_bd_5 * 10
 
 X = numpy.array([5,100,300,1000,3000,10000,30000,100000,5e6])
 
@@ -98,14 +97,14 @@ loglog( X, 30* X, 'k-' )
 figtext( .135, .34, r'(1) C = 100 nM' )
 figtext( .8, .6, r'$t \  \propto \ N$', color='k' )
 
-#for i in range( len(Ns) ):
-#    plot_data( Ns[i], data2[i],'k.' )
-plot_data( Nb, data2,'k.' )
-loglog( X, 60000* X, 'b:' )
-loglog( X, 600000* X, 'b:' )
-loglog( X, 6000000* X, 'b:' )
+#plot_data( Nb, data_bd_6,'k.' )
 
-figtext( .2, .7, r'BD', color='k' )
+loglog( X, 6e7* X, 'b:' ) # 1e-6 tau
+loglog( X, 6e4* X, 'b:' ) # 1e-3 tau
+
+figtext( .2, .78, r'BD', color='k' )
+
+figtext( .2, .63, r'BD (draft mode)', color='k' )
 
 #loglog( data1[0] , data1[1], 'o-', label='Vol. = 1e-15 L' )
 #loglog( data2[0] , data2[1], 'o-', label='# particles = 600' )
@@ -180,22 +179,22 @@ for i in range( len(Cx3000) ):
     plot_data( Cx3000, data_N3000,'k+' )
 loglog( Cx3000, 5e6** Cx3000, 'b:' )
 bd3000 = numpy.array([17.1796619892,17.4832251072,17.5032970905]).mean()
-bd3000 *= 11.69607 /1e-8
+bd3000 *= 11.69607 / 1e-9
 loglog( [1e-11,1e-2],[bd3000,bd3000], 'b:' )
 
 
 for i in range( len(Cx300) ):
     plot_data( Cx300, data_N300,'kd' )
-loglog( Cx300, 3e8* Cx300**(2.0/3.0), 'k-.', label='C^(4/3)' )
-loglog( Cx300, 3e12* Cx300**(4.0/3.0), 'k-.', label='C^(4/3)' )
+loglog( Cx300, 4e8* Cx300**(2.0/3.0), 'k-.', label='C^(4/3)' )
+#loglog( Cx300, 3e12* Cx300**(3.0/3.0), 'k-.', label='C^(4/3)' )
 
-figtext( .73, .22, r'(3) N = 300' )
-figtext( .79, .30, r'$t \ \propto \ C^{4/3}$', color='k' )
-figtext( .63, .33, r'N = 3000' )
+figtext( .73, .22, r'(3a) N = 300' )
+figtext( .79, .28, r'$t \ \propto \ C^{2/3}$', color='k' )
+figtext( .62, .35, r'(3b) N = 3000' )
 
 #bd 300
 bd300 = numpy.array([1.62390208244,1.62284588814,1.63388109207]).mean()
-bd300 *= 11.69607 / 1e-8
+bd300 *= 11.69607 / 1e-9
 loglog( [1e-11,1e-2],[bd300,bd300], 'b:' )
 
 figtext( .63, .405, r'BD', color='k' )
@@ -206,7 +205,7 @@ ylabel( 'time [sec]' )
 #xlim(5e-10,5e-2)
 #ylim(1e2,5e9)
 xlim(5e-10,5e-3)
-ylim(2e2,8e10)
+ylim(2e2,8e11)
 
 show()
 #savefig('fig1.eps')

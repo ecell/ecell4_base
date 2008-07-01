@@ -1,4 +1,4 @@
-SUBDIRS = doc test object_matrix
+SUBDIRS = doc test object_matrix # samples
 
 TOPSRCDIR=${top_srcdir}
 
@@ -105,6 +105,11 @@ pycheck:
 	$(PYCHECKER) $(PYCHECKER_FLAGS) $(top_srcdir)/egfrd.py
 
 
+dist-hook:
+	rm -rf `find $(distdir)/samples -name '.svn'`
+
+
 EXTRA_DIST=\
-autogen.sh
+autogen.sh\
+samples
 
