@@ -3,6 +3,7 @@ import math
 import numpy
 import scipy
 
+import _gfrd
 
 Pi = scipy.pi
 Pi2 = scipy.pi * 2.0
@@ -11,6 +12,7 @@ PiSqrt = math.sqrt( scipy.pi )
 N_A = 6.0221367e23
 INF = numpy.inf
 
+ZEROPOS = numpy.array( [ 0., 0., 0. ] )
 NOWHERE = numpy.array( ( INF, INF, INF ) )
 
 class NeverGetHere( Exception ):
@@ -53,13 +55,20 @@ def cyclicTranspose( pos1, pos2, fsize ):
 
     return pos1 + reloc
 
-
+'''
 def distanceSq_Simple( position1, position2, fsize = None ):
     diff = position1 - position2
     return numpy.dot( diff, diff )
 
 def distance( position1, position2, fsize = 0 ):
     return math.sqrt( distanceSq_Simple( position1, position2 ) )
+'''
+
+def distanceSq_Simple( position1, position2, fsize = None ):
+    return _gfrd.distanceSq( position1, position2 )
+
+def distance_Simple( position1, position2, fsize = 0 ):
+    return _gfrd.distance( position1, position2 )
 
 def distanceSqArray_Simple( position1, positions, fsize = None ):
     return numpy.square( positions - position1 ).sum( 1 )
@@ -67,12 +76,18 @@ def distanceSqArray_Simple( position1, positions, fsize = None ):
 def distanceArray_Simple( position1, positions, fsize = None ):
     return numpy.sqrt( distanceSqArray_Simple( position1, positions ) )
 
-
+'''
 def distanceSq_Cyclic( position1, position2, fsize ):
     diff = numpy.abs( position2 - position1 )
     diff -= numpy.greater( diff, fsize * 0.5 ) * fsize # transpose
     return numpy.dot( diff, diff )
+'''
 
+def distanceSq_Cyclic( position1, position2, fsize ):
+    return _gfrd.distanceSq_Cyclic( position1, position2, fsize )
+
+def distance_Cyclic( position1, position2, fsize ):
+    return _gfrd.distance_Cyclic( position1, position2, fsize )
 
 def distanceSqArray_Cyclic( position1, positions, fsize ):
 
@@ -124,13 +139,14 @@ def randomVector( r ):
     v = sphericalToCartesian( S )
 '''
 
-    v = numpy.random.uniform( size=3 ) - 0.5
-    return v * ( r / length( v ) )
+    v = numpy.random.uniform( -1, 1, 3 )
+    return v * ( r / _gfrd.distance( ZEROPOS, v ) )
 
 
 
 def length( a ):
-    return math.sqrt( numpy.dot( a, a ) )
+    #return math.sqrt( numpy.dot( a, a ) )
+    return _gfrd.distance( ZEROPOS, a )
 
 def normalize( a ):
     return a / length( a )

@@ -379,9 +379,13 @@ class ParticleSimulatorBase( object ):
         self.particleMatrix.setWorldSize( size )
 
         if isinstance( size, float ) and size == INF:
+            self._distance = distance_Simple
+            #self._distanceArray = distanceArray_Simple
             self._distanceSq = distanceSq_Simple
             self._distanceSqArray = distanceSqArray_Simple
         else:
+            self._distance = distance_Cyclic
+            #self._distanceArray = distanceSqArray_Cyclic
             self._distanceSq = distanceSq_Cyclic
             self._distanceSqArray = distanceSqArray_Cyclic
 
@@ -409,7 +413,7 @@ class ParticleSimulatorBase( object ):
         return self._distanceSq( position1, position2, self.worldSize )
 
     def distance( self, position1, position2 ):
-        return numpy.sqrt( self.distanceSq( position1, position2 ) )
+        return self._distance( position1, position2, self.worldSize )
         
     def distanceSqArray( self, position1, positions ):
         return self._distanceSqArray( position1, positions, self.worldSize )

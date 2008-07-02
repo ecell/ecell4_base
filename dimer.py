@@ -9,10 +9,10 @@ import sys
 s = EGFRDSimulator()
 #s = BDSimulator()
 
-#L = 5e-6
+L = 5e-6
 #L = 2e-6
 #L = 5e-8
-L = 8e-7
+#L = 8e-7
 s.setWorldSize( L )
 s.setMatrixSize( 20 )
 
@@ -30,8 +30,8 @@ s.addReactionType( r1 )
 r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
-s.throwInParticles( S, 150, box1 )
-s.throwInParticles( P, 150, box1 )
+s.throwInParticles( S, 1500, box1 )
+s.throwInParticles( P, 1500, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutInterval( 1e-7 )
@@ -48,9 +48,9 @@ l.log()
 
 def profrun():
     #while s.stepCounter < 6000:
-    for _ in range( 120000 ):
+    for _ in range( 12000 ):
         s.step()
-        l.log()
+        #l.log()
         #logging.info( s.dumpPopulation() )
 
 

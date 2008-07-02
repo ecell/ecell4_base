@@ -1341,7 +1341,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             for _ in range( 100 ):
                 unitVector = randomUnitVector()
-                vector = unitVector * particleRadius12
+                vector = unitVector * particleRadius12 * ( 1.0 + 1e-7 )
             
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.

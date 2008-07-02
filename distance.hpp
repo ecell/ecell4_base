@@ -49,11 +49,38 @@ const double _distance_Cyclic( const double* const p1,
 }
 
 
+#include "wrapped_multi_array.hpp"
 
-const double distanceSq( const boost::multi_array_ref<double, 1>& a1,
-                         const boost::multi_array_ref<double, 1>& a2 )
+const double 
+distanceSq( const wrapped_multi_array<double, 1>& a1,
+            const wrapped_multi_array<double, 1>& a2 )
 {
-    typedef boost::multi_array_ref<double, 1> container_type;
-    
     return _distanceSq( a1.data(), a2.data() );
+}
+
+
+const double 
+distance( const wrapped_multi_array<double, 1>& a1,
+          const wrapped_multi_array<double, 1>& a2 )
+{
+    return _distance( a1.data(), a2.data() );
+}
+
+
+const double 
+distanceSq_Cyclic( const wrapped_multi_array<double, 1>& a1,
+                   const wrapped_multi_array<double, 1>& a2,
+                   const double worldSize )
+{
+    return _distanceSq_Cyclic( a1.data(), a2.data(), worldSize );
+}
+
+
+const double 
+distance_Cyclic( 
+const wrapped_multi_array<double, 1>& a1,
+                 const wrapped_multi_array<double, 1>& a2,
+                 const double worldSize )
+{
+    return _distance_Cyclic( a1.data(), a2.data(), worldSize );
 }
