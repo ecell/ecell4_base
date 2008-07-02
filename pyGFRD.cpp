@@ -1,4 +1,5 @@
 #include <exception>
+#include <stdexcept>
 
 //#include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
@@ -9,8 +10,11 @@
 #include <boost/python/tuple.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python/refcount.hpp>
+#include <boost/multi_array.hpp>
 
 #include <numpy/arrayobject.h>
+
+#include "distance.hpp"
 
 #include "PyEventScheduler.hpp"
 #include "freeFunctions.hpp"
@@ -22,35 +26,8 @@
 #include "FirstPassageNoCollisionPairGreensFunction.hpp"
 
 
+
 using namespace boost::python;
-
-
-const double distanceSq( const double* const p1, const double* const p2 )
-{
-    return gsl_pow_2( p1[0] - p2[0] ) 
-	+ gsl_pow_2( p1[1] - p2[1] ) 
-	+ gsl_pow_2( p1[2] - p2[2] );
-}
-
-const double distanceSq_( PyArrayObject* o1, PyArrayObject* o2 )
-{
-    // check type, dimension, size.
-    if( o1->descr->type_num != PyArray_DOUBLE || 
-	o2->descr->type_num != PyArray_DOUBLE ||
-	o1->nd != 1 || o2->nd != 1 ||
-	o1->dimensions[0] != 3 || o2->dimensions[0] != 3 )
-    {
-	throw std::exception();
-    }
-
-    const double* const 
-	p1( reinterpret_cast<const double* const>( o1->data ) );
-    const double* const 
-	p2( reinterpret_cast<const double* const>( o2->data ) );
-  
-    return distanceSq( p1, p2 );
-}
-
 
 boost::python::tuple tuple_to_python( boost::tuples::null_type )
 {
@@ -77,6 +54,143 @@ void* extract_pyarray(PyObject* x)
 {
     return PyObject_TypeCheck(x, &PyArray_Type) ? x : 0;
 }
+
+
+namespace for_compile_time_error
+{
+template<typename T_>
+class numpy_does_not_support_the_type_;
+}
+
+
+template<typename T_>
+struct get_numpy_typecode {
+    static const std::size_t value = sizeof(
+        for_compile_time_error::
+        numpy_does_not_support_the_type_<T_>);
+};
+
+#define DEFINE_NUMPY_TYPECODE_ASSOC(__type__, __value__)  \
+    template<> struct get_numpy_typecode<__type__> \
+    { \
+        BOOST_STATIC_CONSTANT(enum NPY_TYPES, value = __value__); \
+    }
+
+DEFINE_NUMPY_TYPECODE_ASSOC(bool,            NPY_BOOL);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_byte,        NPY_BYTE);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_ubyte,       NPY_UBYTE);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_short,       NPY_SHORT);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_ushort,      NPY_USHORT);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_int,         NPY_INT);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_uint,        NPY_UINT);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_long,        NPY_LONG);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_ulong,       NPY_ULONG);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_longlong,    NPY_LONGLONG);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_ulonglong,   NPY_ULONGLONG);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_float,       NPY_FLOAT);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_double,      NPY_DOUBLE);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_longdouble,  NPY_LONGDOUBLE);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_cfloat,      NPY_CFLOAT);
+DEFINE_NUMPY_TYPECODE_ASSOC(std::complex<npy_float>, NPY_CFLOAT);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_cdouble,     NPY_CDOUBLE);
+DEFINE_NUMPY_TYPECODE_ASSOC(std::complex<npy_double>, NPY_CDOUBLE);
+DEFINE_NUMPY_TYPECODE_ASSOC(npy_clongdouble, NPY_CLONGDOUBLE);
+DEFINE_NUMPY_TYPECODE_ASSOC(
+    std::complex<npy_longdouble>, NPY_CLONGDOUBLE);
+DEFINE_NUMPY_TYPECODE_ASSOC(boost::python::object, NPY_OBJECT);
+DEFINE_NUMPY_TYPECODE_ASSOC(std::string,           NPY_STRING);
+#define TMP std::basic_string<wchar_t, std::char_traits<wchar_t> >
+DEFINE_NUMPY_TYPECODE_ASSOC(TMP, NPY_UNICODE);
+#undef TMP
+DEFINE_NUMPY_TYPECODE_ASSOC(void,                  NPY_VOID);
+DEFINE_NUMPY_TYPECODE_ASSOC(char,                  NPY_CHAR);
+#undef DEFINE_NUMPY_TYPECODE_ASSOC
+
+template<typename T_, std::size_t Ndims_>
+struct ndarray_to_multi_array_ref_converter
+{
+    typedef boost::multi_array_ref<T_, Ndims_> native_type;
+
+    static void* convertible(PyObject* ptr)
+    {
+        if (!PyArray_Check(ptr))
+        {
+            return NULL;
+        }
+
+        PyObject* retval(
+            PyArray_CastToType(
+                reinterpret_cast<PyArrayObject*>(ptr),
+                PyArray_DescrFromType(
+                    get_numpy_typecode<
+                    typename native_type::element>::value), 0));
+        if (!retval)
+        {
+            return NULL;
+        }
+
+        if (PyArray_NDIM(reinterpret_cast<PyArrayObject*>(retval)) != Ndims_)
+        {
+            boost::python::decref(retval);
+            return NULL;
+        }
+
+#ifdef DEBUG
+        if (retval != ptr)
+        {
+            std::cerr << "copy performed" << std::endl;
+        }
+#endif
+
+        return retval;
+    }
+
+    static void construct(PyObject* ptr,
+            boost::python::converter::rvalue_from_python_storage<native_type>* data)
+    {
+        PyArrayObject* array_obj = static_cast<PyArrayObject*>(
+                data->stage1.convertible);
+        npy_intp expected_stride = sizeof(typename native_type::value_type);
+        bool need_copy = false;
+
+        for (std::size_t i = 0; i < Ndims_; ++i)
+        {
+            if (expected_stride != array_obj->strides[i])
+            {
+                need_copy = true;
+                break;
+            }
+            expected_stride = array_obj->dimensions[i] * expected_stride;
+        }
+
+        if (need_copy)
+        {
+            data->stage1.convertible = new(data->storage.bytes) native_type(
+                    reinterpret_cast<typename native_type::element*>(
+                        PyArray_DATA(array_obj)),
+                    *reinterpret_cast<boost::array<npy_intp, Ndims_>*>(
+                        array_obj->dimensions));
+        }
+        else
+        {
+            throw std::runtime_error("OOPS");
+        }
+
+        boost::python::decref(reinterpret_cast<PyObject*>(array_obj));
+    }
+};
+
+template<typename T_, std::size_t Ndims_>
+void register_ndarray_to_multi_array_ref_converter()
+{
+    typedef ndarray_to_multi_array_ref_converter<T_, Ndims_> Converter;
+    boost::python::converter::registry::push_back(
+        &Converter::convertible,
+        reinterpret_cast<boost::python::converter::constructor_function>(
+            &Converter::construct),
+        boost::python::type_id<typename Converter::native_type>());
+}
+
 
 
 
@@ -111,6 +225,12 @@ BOOST_PYTHON_MODULE( _gfrd )
 
   
     register_exception_translator<std::exception>( &translateException );
+
+
+    register_ndarray_to_multi_array_ref_converter<npy_double, 1>();
+    register_ndarray_to_multi_array_ref_converter<npy_double, 2>();
+    register_ndarray_to_multi_array_ref_converter<npy_double, 3>();
+
 
 //    to_python_converter<PyEvent, PyEvent_to_python>();
 
@@ -320,6 +440,6 @@ BOOST_PYTHON_MODULE( _gfrd )
 //	.def( "alpha_i", &FirstPassageNoCollisionPairGreensFunction::alpha_i )
 	;
 
-    def( "distanceSq", &distanceSq_ );
+    def( "distanceSq", &distanceSq );
 
 }
