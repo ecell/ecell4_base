@@ -379,6 +379,9 @@ class Single( object ):
         if self.k_tot == 0:
             return INF
 
+        if self.k_tot == INF:
+            return 0.0
+
         rnd = numpy.random.uniform()
         dt = ( 1.0 / self.k_tot ) * math.log( 1.0 / rnd )
 

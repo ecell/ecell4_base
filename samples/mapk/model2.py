@@ -22,8 +22,10 @@ D_ratio = float( D_ratio_str )
 ti = float( ti_str )
 T = float( T_str )
 
-
-ki = math.log( 2 ) / ti
+if ti == 0:
+    ki = float( 'inf' )
+else:
+    ki = math.log( 2 ) / ti
 
 
 D_ref = 1e-12

@@ -43,7 +43,7 @@ def addParticle( ren, pos, radius, color ):
     ren.AddActor( sphereActor )
 
 
-def writeFrame( outfile, particles, renWin, header ):
+def writeFrame( particles, renWin, header ):
 
     ren = vtk.vtkRenderer()
     ren.SetBackground( 1, 1, 1 )
@@ -79,8 +79,9 @@ def writeFrame( outfile, particles, renWin, header ):
         print n
 
     text = vtk.vtkTextActor()
-    text.SetInput( 't = %16.f' % header['t'] )
-    text.SetDisplayPosition( 300, 360 )
+    text.SetInput( 't = %10.9f' % float(header['t']) )
+    text.GetTextProperty().SetColor(0,0,0)
+    text.SetDisplayPosition( 300, 385 )
     ren.AddActor2D( text )
 
 
@@ -97,10 +98,12 @@ def writeFrame( outfile, particles, renWin, header ):
 
     w2if = vtk.vtkWindowToImageFilter()
     w2if.SetInput( renWin )
+
+    outfilename = header['name'] + '_' + str( header['count'] ).zfill(4) + '.png'
         
     wr = vtk.vtkPNGWriter()
     wr.SetInputConnection( w2if.GetOutputPort() )
-    wr.SetFileName( outfile )
+    wr.SetFileName( outfilename )
     wr.Write()
 
     renWin.RemoveRenderer( ren )
@@ -141,18 +144,24 @@ def loadParticles( filename ):
 
 if __name__ == '__main__':
 
-    infilename = sys.argv[1]
-    outfilename = sys.argv[2]
+    import glob
 
-    header = datafile.loadHeader( infilename )
-    print header
+    inpattern = sys.argv[1]
 
-    particlePools = loadParticles( infilename )
+    infiles = glob.glob( inpattern )
+    print infiles
 
     renWin = vtk.vtkRenderWindow()
     renWin.MappedOff()
     renWin.OffScreenRenderingOn()
 
-    writeFrame( outfilename, particlePools, renWin, header )
+    for infile in infiles:
+
+        header = datafile.loadHeader( infile )
+        print header
+
+        particlePools = loadParticles( infile )
+
+        writeFrame( particlePools, renWin, header )
 
 
