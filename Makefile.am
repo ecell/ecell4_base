@@ -41,6 +41,8 @@ noinst_HEADERS=\
 Defs.hpp\
 funcSum.hpp\
 findRoot.hpp\
+wrapped_multi_array.hpp\
+distance.hpp\
 freeFunctions.hpp\
 factorial.hpp\
 SphericalBesselGenerator.hpp\
