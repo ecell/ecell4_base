@@ -155,8 +155,9 @@ s.addReactionType( r8 )
 #r9 = UnbindingReactionType( Kpp_P, Kp, P, k_d( 1.5, Mtom3( 0.02e9 ), kD ) )
 r9a = UnbindingReactionType( Kpp_P, Kpi, P, 1.5 )
 s.addReactionType( r9a )
-r9b = UnimolecularReactionType( Kpi, Kp, ki )
-s.addReactionType( r9b )
+# same as r3b
+#r9b = UnimolecularReactionType( Kpi, Kp, ki )
+#s.addReactionType( r9b )
 
 r10 = BindingReactionType( Kp, P, Kp_P, k_a( Mtom3( 0.032e9 ), kD ))
 s.addReactionType( r10 )
@@ -175,7 +176,7 @@ s.addReactionType( r12b )
 
 
 l = Logger( s, 
-            logname = model + '_' + '_'.join( sys.argv[1:6] ) )
+            logname = model + '_' + '_'.join( sys.argv[1:7] ) )
 
 
 
@@ -183,7 +184,7 @@ l = Logger( s,
 l.setInterval( 1e-0 )
 l.log()
 
-while s.t < 30:
+while s.t < T:
     s.step()
     #s.dumpPopulation()
     #s.check()
