@@ -127,7 +127,6 @@ class MultiBDCore( BDSimulatorCoreBase ):
             self.escaped = True
             self.clearOuterVolume( pos, particle.radius, ignore=[particle] )
 
-        #self.main.moveParticle( particle, pos )
         particle.pos = pos
         self.updateParticle( particle, pos )
 
@@ -869,7 +868,7 @@ class Pair( object ):
         oldCoM = com
         
         # debug: check if the new positions are valid:
-        newDistance = distance( pos1, pos2 )
+        newDistance = distance_Simple( pos1, pos2 )
         particleRadius12 = species1.radius + species2.radius
 
         # check 1: particles don't overlap.
@@ -1438,10 +1437,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         # Propagate, if not reaction.
 
-        D0 = single.getD()
-
         # Handle immobile case first.
-        if D0 == 0:
+        if single.getD() == 0:
             # no propagation, just calculate next reaction time.
             single.determineNextEvent( self.t ) 
             return single.dt

@@ -50,6 +50,7 @@ class ObjectMatrix( object ):
                                                    self.matrixSize )
 
 
+
     def clear( self ):
         self.initialize()
 
@@ -67,6 +68,7 @@ class ObjectMatrix( object ):
         assert self.impl.contains( key )
 
         self.impl.erase( key )
+
 
 
     def update( self, key, pos, radius ):

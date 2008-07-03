@@ -125,19 +125,12 @@ def randomUnitVectorS():
 
 
 def randomUnitVector():
-    #return sphericalToCartesian( randomUnitVectorS() )
 
-    v = numpy.random.uniform( size=3 ) - 0.5
-    return v / length( v )
+    v = numpy.random.uniform( -1, 1, 3 )
+    return v / _gfrd.distance( ZEROPOS, v )
 
 
 def randomVector( r ):
-    '''
-    bad idea -- it causes some bias that is seeable in the irr/rev plot tests.
-    rnd = numpy.random.uniform( size=2 )
-    S = [ r, rnd[0] * Pi, rnd[1] * Pi2 ]
-    v = sphericalToCartesian( S )
-'''
 
     v = numpy.random.uniform( -1, 1, 3 )
     return v * ( r / _gfrd.distance( ZEROPOS, v ) )
