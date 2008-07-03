@@ -1,4 +1,4 @@
-
+#include <iostream>
 #include "position.hpp"
 
 #include "peer/utils.hpp"
@@ -15,10 +15,14 @@ struct position_to_ndarray_converter
     static PyObject* convert(const native_type& p)
     {
         static const npy_intp dims[1] = { native_type::size() };
-        return PyArray_New(&PyArray_Type, 1, const_cast<npy_intp*>(dims),
-                           peer::util::get_numpy_typecode<double>::value, NULL,
-                           const_cast<void*>(static_cast<const void*>(&p)),
-                           0, NPY_CARRAY, NULL);
+        native_type* const newarray( new native_type( p ) );
+        PyObject* array( PyArray_New(&PyArray_Type, 1, 
+                                     const_cast<npy_intp*>(dims),
+                                     peer::util::get_numpy_typecode<double>
+                                     ::value, NULL,
+                                     newarray->data(), 0, NPY_CARRAY, NULL) );
+        reinterpret_cast<PyArrayObject*>(array)->flags |= NPY_OWNDATA;
+        return array;
     }
 };
 
@@ -104,6 +108,9 @@ BOOST_PYTHON_MODULE(object_matrix)
         ndarray_to_position_converter>();
     peer::util::to_native_converter<position_type,
         seq_to_position_converter>();
+
+    //register_ptr_to_python<boost::shared_ptr<position_type> >();
+
 
     import_array();
 #if OBJECTMATRIX_USE_ITERATOR

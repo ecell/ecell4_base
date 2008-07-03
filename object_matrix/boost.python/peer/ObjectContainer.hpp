@@ -411,17 +411,19 @@ public:
         return true;
     }
 
+
     const boost::tuple<position_type,double> get( const key_type& k )
     {
         impl_type::iterator i(impl_.find(k));
         if (i == impl_.end())
         {
-            // FIXME: throw exception
             throw std::runtime_error( "key not found." );
         }
 
-        return boost::make_tuple( (*i).second.position, (*i).second.radius );
+        return boost::make_tuple( (*i).second.position, 
+                                  (*i).second.radius );
     }
+
 
     void insert( const key_type& key, const position_type& p, const double r )
     {
@@ -452,7 +454,6 @@ public:
     inline static void __register_class()
     {
         using namespace boost::python;
-
 
         util::register_tuple_converter<boost::tuple<position_type,double> >();
 

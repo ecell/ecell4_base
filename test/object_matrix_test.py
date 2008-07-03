@@ -14,7 +14,7 @@ class object_matrixTestCase( unittest.TestCase ):
     def tearDown(self):
         pass
 
-    def no_test1( self ):
+    def test1( self ):
 
         c = ObjectContainer(1.0, 10)
         self.assertEqual( 10, c.matrix_size )
@@ -30,7 +30,7 @@ class object_matrixTestCase( unittest.TestCase ):
         self.assertAlmostEqual( c.get(1)[0][1], 0.3 )
         self.assertAlmostEqual( c.get(1)[0][2], 0.9 )
 
-        self.assertEqual( None, c[2] )
+        #self.assertEqual( None, c[2] )
 
         a = c.neighbors_array( numpy.array([0.45, 0.23, 0.13]), 0.09 )
         self.assertEqual( 1, len(a[0]) )

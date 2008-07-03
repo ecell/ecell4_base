@@ -1112,9 +1112,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         if self.isDirty:
             self.initialize()
-
+            
         #if self.stepCounter % 100 == 0:
-        #self.check()
+        #    self.check()
         
         self.stepCounter += 1
 

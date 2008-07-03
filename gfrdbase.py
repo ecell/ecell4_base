@@ -648,6 +648,7 @@ class ParticleSimulatorBase( object ):
             for i in range( species.pool.size ):
                 particle = Particle( species, index=i )
                 pos, radius = self.particleMatrix.get( particle )
+
                 if ( particle.pos - pos ).sum() != 0:
                     raise RuntimeError,\
                         'particleMatrix positions consistency broken'
