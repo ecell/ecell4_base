@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <cmath>
+#include "position.hpp"
 
 template<typename Toc_, typename Tfun_>
 class neighbor_filter
@@ -24,7 +25,10 @@ public:
             return;
         }
 
-        const double dist(cmp_.position.distance(item.second.position)
+        const double dist(
+            // FIXME: something's wrong
+            const_cast<position<double>& >(cmp_.position)
+            .distance(item.second.position)
             - item.second.radius);
         if (dist < cmp_.radius)
         {
@@ -42,7 +46,7 @@ inline void take_neighbor(Toc_& oc, Tfun_& fun,
         const typename Toc_::mapped_type& cmp)
 {
     oc.each_neighbor(oc.index(cmp.position),
-            neighbor_filter<Toc_, Tfun_>(fun, cmp));
+                     neighbor_filter<Toc_, Tfun_>(fun, cmp));
 }
 
 template<typename Toc_, typename Tfun_>
@@ -71,7 +75,10 @@ public:
             return;
         }
 
-        const double dist(cmp_.position.distance(item.second.position+p)
+        const double dist(
+            // FIXME: something's wrong
+            const_cast<position<double>& >(cmp_.position)
+            .distance(item.second.position+p)
             - item.second.radius);
         if (dist < cmp_.radius)
         {

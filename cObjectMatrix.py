@@ -23,21 +23,25 @@ class ObjectMatrix( object ):
 
 
     def setMatrixSize( self, size ):
+
         if size < 3:
             raise RuntimeError,\
                 'Size of distance cell matrix must be at least 3'
         self.matrixSize = size
         self.initialize()
 
+
     def getSize( self ):
         return len( self.impl )
 
     size = property( getSize )
 
+
     def getCellSize( self ):
         return self.impl.cell_size
 
     cellSize = property( getCellSize )
+
 
     def initialize( self ):
 
@@ -52,41 +56,42 @@ class ObjectMatrix( object ):
     def add( self, key, pos, radius ):
 
         assert radius < self.cellSize * .5
-        assert key not in self.impl
+        assert not self.impl.contains( key )
 
-        self.impl[ key ] = object_matrix.Sphere( pos, radius )
+        self.impl.insert( key, pos, radius )
 
 
     def remove( self, key ):
 
-        assert key in self.impl
-        del self.impl[ key ]
+        assert self.impl.contains( key )
+
+        self.impl.erase( key )
 
 
     def update( self, key, pos, radius ):
 
         assert radius < self.cellSize * .5
-        assert key in self.impl
+        assert self.impl.contains( key )
 
-        self.impl[ key ] = object_matrix.Sphere( pos, radius )
+        self.impl.update( key, pos, radius )
 
 
     def get( self, key ):
-        sphere = self.impl[ key ]
-        return numpy.array( [ sphere.x, sphere.y, sphere.z ] ), sphere.radius
+
+        return self.impl.get( key )
 
 
     def getNeighborsCyclicNoSort( self, pos ):
 
         return self.impl.all_neighbors_array_cyclic( pos )
 
+
     def getNeighborsWithinRadiusNoSort( self, pos, radius ):
 
         assert radius < self.cellSize * .5
 
-        return self.impl.neighbors_array_cyclic(\
-            object_matrix.Sphere( pos, 
-                                  radius ) )
+        return self.impl.neighbors_array_cyclic( pos, radius )
+
 
     def getNeighborsCyclic( self, pos, n=None ):
 
@@ -101,21 +106,24 @@ class ObjectMatrix( object ):
         assert radius < self.cellSize * .5
 
         neighbors, distances = \
-            self.impl.neighbors_array_cyclic( object_matrix.Sphere( pos, 
-                                                                    radius ) )
+            self.impl.neighbors_array_cyclic( pos, radius )
+
         topargs = distances.argsort()
 
         return neighbors.take( topargs ), distances.take( topargs )
 
 
     def getNeighbors( self, pos, n=None ):
+
         return self.getNeighborsCyclic( pos, n )
 
 
     def getNeighborsNoSort( self, pos ):
+
         return self.getNeighborsCyclicNoSort( pos )
 
 
     def check( self ):
+
         pass
 

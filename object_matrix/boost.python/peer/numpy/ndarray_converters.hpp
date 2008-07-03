@@ -7,6 +7,7 @@
 #include <boost/python.hpp>
 #include <boost/multi_array.hpp>
 #include <numpy/arrayobject.h>
+#include "peer/utils.hpp"
 #include "peer/numpy/pyarray_backed_allocator.hpp"
 #include "peer/numpy/type_mappings.hpp"
 

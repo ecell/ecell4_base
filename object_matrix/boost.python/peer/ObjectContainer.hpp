@@ -22,11 +22,18 @@
 #include <boost/type_traits.hpp>
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
+#include <numpy/arrayobject.h>
+
+#include "peer/utils.hpp"
+#include "peer/numpy/type_mappings.hpp"
+
 #include "peer/tuple_converters.hpp"
 #include "peer/numpy/pyarray_backed_allocator.hpp"
 #include "peer/numpy/ndarray_converters.hpp"
 
+#include "position.hpp"
 #include "filters.hpp"
+#include "sphere.hpp"
 #include "object_container.hpp"
 
 #if OBJECTMATRIX_USE_ITERATOR
@@ -34,8 +41,6 @@
 #include <boost/bind.hpp>
 #include "peer/generator_support.hpp"
 #endif /* OBJECTMATRIX_USE_ITERATOR */
-
-#include "peer/Sphere.hpp"
 
 namespace peer {
 
@@ -254,7 +259,7 @@ public:
     public:
         inline static void
         build_neighbors_array(result_type& retval,
-                ObjectContainer& cntnr, const mapped_type& sphere)
+                              ObjectContainer& cntnr, const mapped_type& sphere)
         {
             collector col(retval);
             take_neighbor(cntnr.impl_, col, sphere);
@@ -288,85 +293,13 @@ public:
         Builders() {}
     };
 
-    class SphereRef
-    {
-    public:
-        typedef impl_type::mapped_type::value_type value_type;
-        typedef impl_type::iterator impl_type;
-
-    public:
-        SphereRef(impl_type impl): impl_(impl) {}
-
-        PyObject* __repr__() const
-        {
-            return util::pystr_from_repr(&(*impl_).second);
-        }
-
-        value_type _get_x() const
-        {
-            return (*impl_).second.position.x();
-        }
-
-        value_type _get_y() const
-        {
-            return (*impl_).second.position.y();
-        }
-
-        value_type _get_z() const
-        {
-            return (*impl_).second.position.z();
-        }
-
-        value_type _get_radius() const
-        {
-            return (*impl_).second.radius;
-        }
-
-        void _set_radius(value_type val)
-        {
-            (*impl_).second.radius = val;
-        }
-
-        boost::python::object _get_id() const
-        {
-            return (*impl_).first;
-        }
-   
-        inline static void __register_class()
-        {
-            using namespace boost::python;
-
-            class_<SphereRef>("SphereRef", no_init)
-                .def("__repr__", &SphereRef::__repr__)
-                .add_property("x", &SphereRef::_get_x)
-                .add_property("y", &SphereRef::_get_y)
-                .add_property("z", &SphereRef::_get_z)
-                .add_property("radius",
-                        &SphereRef::_get_radius,
-                        &SphereRef::_set_radius)
-                .add_property("id", &SphereRef::_get_id);
-        }
- 
-    private:
-        impl_type impl_;
-    };
-
-    struct iter_to_sphere_ref_converter
-    {
-        static PyObject* convert(const impl_type::iterator& i)
-        {
-            return boost::python::incref(boost::python::object(
-                                             SphereRef(i)).ptr());
-        }
-    };
-
 public:
     ObjectContainer() {}
 
     ObjectContainer(length_type world_size, matrix_size_type size)
         : impl_(world_size, size) {}
 
-    size_type __len__() const
+    size_type size() const
     {
         return impl_.size();
     }
@@ -388,20 +321,21 @@ public:
 
 #if OBJECTMATRIX_USE_ITERATOR
     Enumerator<const Generators::result_type&>* iterneighbors(
-            const Sphere& sphere)
+            const sphere<double>& sphere)
     {
         return Generators::enumerate_neighbors(*this, sphere);
     }
 
     Enumerator<const Generators::result_type&>* iterneighbors_cyclic(
-            const Sphere& sphere)
+            const sphere<double>& sphere)
     {
         return Generators::enumerate_neighbors_cyclic(*this, sphere);
     }
 #endif /* OBJECTMATRIX_USE_ITERATOR */
 
     boost::shared_ptr<Builders::result_type>
-    neighbors_array(const Sphere& sphere)
+    //neighbors_array(const sphere& sphere)
+    neighbors_array(const position_type& pos, const double radius)
     {
         Builders::distance_array_type::allocator_type alloc;
 
@@ -410,7 +344,7 @@ public:
                 boost::tuples::element<0, Builders::result_type>::type(),
                 boost::tuples::element<1, Builders::result_type>::type(alloc)));
         Builders::build_neighbors_array(*retval, *this,
-                static_cast<const Sphere::impl_type&>(sphere));
+                                        sphere<double>( pos, radius ) );
 
         // take over the ownership of the arrays to the Numpy facility
         alloc.giveup_ownership();
@@ -418,7 +352,8 @@ public:
     }
 
     boost::shared_ptr<Builders::result_type>
-    neighbors_array_cyclic(const Sphere& sphere)
+    //neighbors_array_cyclic(const sphere& sphere)
+    neighbors_array_cyclic(const position_type& pos, const double radius)
     {
         Builders::distance_array_type::allocator_type alloc;
 
@@ -427,7 +362,7 @@ public:
                 boost::tuples::element<0, Builders::result_type>::type(),
                 boost::tuples::element<1, Builders::result_type>::type(alloc)));
         Builders::build_neighbors_array_cyclic(*retval, *this,
-                static_cast<const Sphere::impl_type&>(sphere));
+                                               sphere<double>( pos, radius ) );
 
         // take over the ownership of the arrays to the Numpy facility
         alloc.giveup_ownership();
@@ -466,7 +401,7 @@ public:
         return retval;
     }
 
-    const bool __contains__(key_type k)
+    const bool contains( const key_type& k )
     {
         impl_type::iterator i(impl_.find(k));
         if (i == impl_.end())
@@ -476,22 +411,29 @@ public:
         return true;
     }
 
-    SphereRef* __getitem__(key_type k)
+    const boost::tuple<position_type,double> get( const key_type& k )
     {
         impl_type::iterator i(impl_.find(k));
         if (i == impl_.end())
         {
-            return NULL;
+            // FIXME: throw exception
+            return boost::make_tuple(position_type(), 0.);
         }
-        return new SphereRef(i);
+        return boost::make_tuple( (*i).second.position, (*i).second.radius );
     }
 
-    void __setitem__(key_type key, Sphere* item)
+    void insert( const key_type& key, const position_type& p, const double r )
     {
-        impl_.insert(impl_type::value_type(key, *item));
+        impl_.insert(impl_type::value_type(key, sphere<double>(p,r)));
     }
 
-    void __delitem__(key_type key)
+    void update( const key_type& key, const position_type& p, const double r )
+    {
+        impl_.insert(impl_type::value_type(key, sphere<double>(p,r)));
+    }
+
+
+    void erase(const key_type& key)
     {
         impl_.erase(key);
     }
@@ -510,10 +452,6 @@ public:
     {
         using namespace boost::python;
 
-        SphereRef::__register_class();
-
-        to_python_converter<impl_type::iterator,
-                iter_to_sphere_ref_converter>();
 
 #if OBJECTMATRIX_USE_ITERATOR
         util::register_tuple_converter<Generators::result_type>();
@@ -548,12 +486,12 @@ public:
             .def("neighbors_array_cyclic", &ObjectContainer::neighbors_array_cyclic)
             .def("all_neighbors_array", &ObjectContainer::all_neighbors_array)
             .def("all_neighbors_array_cyclic", &ObjectContainer::all_neighbors_array_cyclic)
-            .def("__len__", &ObjectContainer::__len__)
-            .def("__contains__", &ObjectContainer::__contains__)
-            .def("__setitem__", &ObjectContainer::__setitem__)
-            .def("__getitem__", &ObjectContainer::__getitem__,
-                        return_value_policy<manage_new_object>())
-            .def("__delitem__", &ObjectContainer::__delitem__);
+            .def("size", &ObjectContainer::size)
+            .def("contains", &ObjectContainer::contains)
+            .def("insert", &ObjectContainer::insert)
+            .def("update", &ObjectContainer::update)
+            .def("get", &ObjectContainer::get)
+            .def("erase", &ObjectContainer::erase);
     }
 
 private:

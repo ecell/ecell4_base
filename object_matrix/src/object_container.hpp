@@ -295,6 +295,7 @@ public:
         return std::make_pair(iterator(&c, c.end(), ir.first), ir.second);
     }
 
+
     inline bool erase(const key_type& k)
     {
         typename key_to_cell_mapper_type::iterator p(rmap_.find(k));
@@ -366,7 +367,7 @@ public:
 
     template<typename Tcollect_>
     inline void each_neighbor(const cell_index_type& idx,
-            const Tcollect_& collector)
+                              const Tcollect_& collector)
     {
         cell_offset_type _off;
         each_neighbor_loops<const Tcollect_&>(3, _off, idx, collector);

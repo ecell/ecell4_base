@@ -26,7 +26,7 @@ struct sphere
     {
         return !operator==(rhs);
     }
-
+    
     position_type position;
     length_type radius;
 };
