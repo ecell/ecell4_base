@@ -12,16 +12,18 @@ struct position_to_ndarray_converter
 {
     typedef position_type native_type;
     
-    static PyObject* convert(const native_type& p)
+    static PyObject* convert( const native_type& p )
     {
         static const npy_intp dims[1] = { native_type::size() };
-        native_type* const newarray( new native_type( p ) );
-        PyObject* array( PyArray_New(&PyArray_Type, 1, 
-                                     const_cast<npy_intp*>(dims),
-                                     peer::util::get_numpy_typecode<double>
-                                     ::value, NULL,
-                                     newarray->data(), 0, NPY_CARRAY, NULL) );
-        reinterpret_cast<PyArrayObject*>(array)->flags |= NPY_OWNDATA;
+        void* data( PyDataMem_NEW( native_type::size() * sizeof( double ) ) );
+        memcpy( data, static_cast<const void*>( p.data() ),
+                native_type::size() * sizeof( double ) );
+        PyObject* array( PyArray_New( &PyArray_Type, 1, 
+                                      const_cast<npy_intp*>( dims ),
+                                      peer::util::get_numpy_typecode<double>
+                                      ::value, NULL,
+                                      data, 0, NPY_CARRAY, NULL ) );
+        reinterpret_cast<PyArrayObject*>( array )->flags |= NPY_OWNDATA;
         return array;
     }
 };
