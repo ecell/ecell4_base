@@ -417,8 +417,9 @@ public:
         if (i == impl_.end())
         {
             // FIXME: throw exception
-            return boost::make_tuple(position_type(), 0.);
+            throw std::runtime_error( "key not found." );
         }
+
         return boost::make_tuple( (*i).second.position, (*i).second.radius );
     }
 
@@ -452,6 +453,8 @@ public:
     {
         using namespace boost::python;
 
+
+        util::register_tuple_converter<boost::tuple<position_type,double> >();
 
 #if OBJECTMATRIX_USE_ITERATOR
         util::register_tuple_converter<Generators::result_type>();

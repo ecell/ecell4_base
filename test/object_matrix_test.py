@@ -2,7 +2,7 @@
 
 import unittest
 
-from numpy import ndarray
+import numpy
 
 from object_matrix import *
 
@@ -14,28 +14,25 @@ class object_matrixTestCase( unittest.TestCase ):
     def tearDown(self):
         pass
 
-    def test1( self ):
+    def no_test1( self ):
 
         c = ObjectContainer(1.0, 10)
         self.assertEqual( 10, c.matrix_size )
         self.assertEqual( 0.1, c.cell_size )
-        self.assertEqual( 0, len(c) )
-        c[0] = Sphere((0.5, 0.3, 0.2), 0.1)
-        self.assertEqual( 1, len(c) )
-        self.assertEqual( None, c[1] )
-        tmp = ndarray(shape = (3, ))
-        tmp[0] = 0.0
-        tmp[1] = 0.3
-        tmp[2] = 0.9
-        c[1] = Sphere(tmp, 0.1)
-        self.assertEqual( 2, len(c) )
-        self.assertAlmostEqual( c[1].x, 0.0 )
-        self.assertAlmostEqual( c[1].y, 0.3 )
-        self.assertAlmostEqual( c[1].z, 0.9 )
+        self.assertEqual( 0, c.size() )
+        c.insert( 0, numpy.array([0.5, 0.3, 0.2]), 0.1 )
+        self.assertEqual( 1, c.size() )
+        #self.assertEqual( None, c.get( 1 ) )
+        c.insert( 1, numpy.array([0.0,0.3,0.9]), 0.1)
+        self.assertEqual( 2, c.size() )
+
+        self.assertAlmostEqual( c.get(1)[0][0], 0.0 )
+        self.assertAlmostEqual( c.get(1)[0][1], 0.3 )
+        self.assertAlmostEqual( c.get(1)[0][2], 0.9 )
 
         self.assertEqual( None, c[2] )
-        self.failIf( not isinstance(c[0], SphereRef) )
-        a = c.neighbors_array(Sphere((0.45, 0.23, 0.13), 0.09))
+
+        a = c.neighbors_array( numpy.array([0.45, 0.23, 0.13]), 0.09 )
         self.assertEqual( 1, len(a[0]) )
         self.assertEqual( 1, len(a[1]) )
         self.assertEqual( 0, a[0][0] )

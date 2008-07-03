@@ -32,7 +32,8 @@ class ObjectMatrix( object ):
 
 
     def getSize( self ):
-        return len( self.impl )
+
+        return self.impl.size()
 
     size = property( getSize )
 

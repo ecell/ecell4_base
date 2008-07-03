@@ -86,7 +86,7 @@ struct position: public boost::array<T_, 3>
         position retval;
         std::transform(
             boost::const_begin(*this), boost::const_end(*this),
-            boost::const_begin(that), boost::begin(retval),
+            boost::const_begin(thabt), boost::begin(retval),
             std::plus<value_type>());
         return retval;
     }
