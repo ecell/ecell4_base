@@ -147,8 +147,8 @@ class BDSimulatorCoreBase( object ):
         newpos = particle.pos + displacement
         newpos %= self.main.worldSize   #self.applyBoundary( newpos )
         
-        neighbors = self.getParticlesWithinRadius( newpos, species.radius,
-                                                   ignore=[particle] )
+        neighbors = self.getParticlesWithinRadiusNoSort( newpos, species.radius,
+                                                         ignore=[particle] )
         if neighbors:
 
             if len( neighbors ) >= 2:
@@ -357,6 +357,7 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
 
         #self.getNeighborParticles = main.getNeighborParticles
         self.getParticlesWithinRadius = main.getParticlesWithinRadius
+        self.getParticlesWithinRadiusNoSort = main.getParticlesWithinRadiusNoSort
         #self.getClosestParticle = main.getClosestParticle
 
         

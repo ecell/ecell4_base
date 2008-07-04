@@ -15,11 +15,11 @@ N = int( sys.argv[3] )
 L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
 
-s = EGFRDSimulator()
-#s = BDSimulator()
+#s = EGFRDSimulator()
+s = BDSimulator()
 s.setWorldSize( L )
 
-matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 60 )
+matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 100 )
 print 'matrixSize=', matrixSize
 s.setMatrixSize( matrixSize )
 
