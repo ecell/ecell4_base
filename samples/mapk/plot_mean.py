@@ -17,13 +17,11 @@ def load_header( filename ):
 
     return header
 
-def resample( x, y, interval ):
-    start = x[0]
-    end = x[-1]
-    tgrid = numpy.mgrid[start:end:interval]
-    indices = numpy.searchsorted( x, tgrid )
+def resample( x, y, newx ):
 
-    return tgrid, y.take( indices )
+    indices = numpy.searchsorted( x, newx )
+
+    return y.take( indices )
     
 
 def add_columns( data, ycolumns ):
@@ -67,31 +65,37 @@ def plot_file( filename ):
 import glob
 import os
 
-pattern = sys.argv[1]
-globpattern = pattern.replace('ALL','*')
 
-figtitle = os.path.basename( os.path.splitext( pattern )[0] )
-print title
-#print globpattern
-filelist = glob.glob( globpattern )
+for pattern in sys.argv[1:]:
 
-interval = 30. / 1000
+    globpattern = pattern.replace('ALL','*')
 
-data = []
+    l = os.path.basename( os.path.splitext( pattern )[0] )
+    print l
 
-for filename in filelist:
-    x, y = load_data( filename )
-    x, y = resample( x, y, interval )
-    data.append( y )
+    filelist = glob.glob( globpattern )
 
-y = numpy.array( data )
-y = y.mean(0)
+    start = 0
+    end = 50.
+    interval = (end-start) / 1000
+    rx = numpy.mgrid[start:end:interval]
 
-plot( x, y )
+    data = []
+
+    for filename in filelist:
+        x, y = load_data( filename )
+        ry = resample( x, y, rx )
+        print ry.shape
+        data.append( ry )
+
+        mry = numpy.array( data ).mean( 0 )
 
 
+    plot( rx, mry, label=l )
+from matplotlib.font_manager import FontProperties
+legend( loc='lower right', prop=FontProperties( size='tiny' ),pad=0.01 )
 
-title( figtitle )
+#title( figtitle )
 
 #savefig( 'figs/' + figtitle + '.png', dpi=80 )
 
