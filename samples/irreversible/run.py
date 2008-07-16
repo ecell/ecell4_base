@@ -39,7 +39,7 @@ def singlerun1( T ):
     #s.setMaxShellSize( 1e-6 )
 
 
-    sigma = 1e-8
+    sigma = 5e-9
     r0 = sigma
     D = 2e-12
     D_tot = D

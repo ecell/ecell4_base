@@ -55,7 +55,7 @@ D = 1e-12 # run2
 #D = 5e-13 # run3
 #D = 0.25e-12 # run4
 
-radius = 5e-9
+radius = 2.5e-9
 
 K = Species( 'K', D, radius )
 s.addSpecies( K )

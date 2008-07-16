@@ -43,8 +43,7 @@ def load_data( filename ):
     for l in header:
         exec( l )
 
-
-    data = load( filename )
+    data = numpy.loadtxt( filename )
     x = data[:,0]
     y = add_columns( data, ycolumns )
 
@@ -65,13 +64,12 @@ def plot_file( filename ):
 import glob
 import os
 
-
 for pattern in sys.argv[1:]:
 
     globpattern = pattern.replace('ALL','*')
 
     l = os.path.basename( os.path.splitext( pattern )[0] )
-    print l
+    print 'pattern ', l
 
     filelist = glob.glob( globpattern )
 
@@ -83,6 +81,7 @@ for pattern in sys.argv[1:]:
     data = []
 
     for filename in filelist:
+        print 'file ', filename
         x, y = load_data( filename )
         ry = resample( x, y, rx )
         print ry.shape
@@ -92,6 +91,7 @@ for pattern in sys.argv[1:]:
 
 
     plot( rx, mry, label=l )
+
 from matplotlib.font_manager import FontProperties
 legend( loc='lower right', prop=FontProperties( size='tiny' ),pad=0.01 )
 

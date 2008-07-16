@@ -21,7 +21,7 @@ def singlerun( T ):
     s = BDSimulator()
     s.setWorldSize( 1e-3 )
 
-    sigma = 1e-8
+    sigma = 5e-9
     r0 = sigma
     D = 1e-12
     kf = 10 * sigma * D

@@ -38,7 +38,7 @@ def singlerun( T ):
 
     s.setWorldSize( 1e-3 )
 
-    sigma = 1e-8
+    sigma = 5e-9
     r0 = sigma
     D = 1e-12
     D_tot = D * 2
