@@ -9,15 +9,20 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py a 1e-5 1 10000 100
 from egfrd import *
 from bd import *
 
-def run( outfilename, T, DX_factor, N_X, N ):
+def run( outfilename, T, DX_factor, N_X, seq, N ):
     print outfilename
 
-    outfile = open( outfilename, 'w' )
+    outfile_r = open( outfilename + '_r.dat', 'w' )
+    outfile_t = open( outfilename + '_t.dat', 'w' )
 
     for i in range( N ):
-        d, t = singlerun( T, DX_factor, N_X )
-        outfile.write( '%g\n' % d )
-        outfile.flush()
+        d, t, t_a = singlerun( T, DX_factor, N_X )
+        outfile_r.write( '%g\n' % d )
+        outfile_r.flush()
+        if t_a != 0.0:
+            outfile_t.write( '%g\n' % t_a )
+            outfile_t.flush()
+
         print i, d, t
         assert d == 0 or t == T
 
@@ -34,8 +39,14 @@ def singlerun( T, DX_factor, N_X ):
 
     # 100 nM = 100e-9 * N_A * 100 / m^3 = 6.02e19
     # V = 1 / 6.02e19 = 1.66e-20 m^3
-    V = 1.66e-20 # m^3
-    L = V ** (1.0/3.0) # 2.55e-7 m
+    # L = 2.55e-7 m
+
+    # 1 uM = 6.02e20 / m^3
+    # V = 1.66e-21 m^3
+    # L = 1.18e-7
+
+    V = 1.66e-21 # m^3
+    L = V ** (1.0/3.0) 
 
     s.setWorldSize( L )
 
@@ -70,7 +81,7 @@ def singlerun( T, DX_factor, N_X ):
 
     s.throwInParticles( X, N_X, box1 )
 
-    endTime = tau * 10
+    endTime = tau * 1
     while 1:
         s.step()
         nextTime = s.getNextTime()
@@ -114,7 +125,12 @@ def singlerun( T, DX_factor, N_X ):
     endTime = T
     s.step()
 
+    t_a = 0.0
     while 1:
+        if s.populationChanged and t_a == 0.0:
+            t_a = s.t
+        #    print 'reaction'
+        #    return 0.0, s.t
         nextTime = s.getNextTime()
         if nextTime > endTime:
             s.stop( endTime )
@@ -122,12 +138,14 @@ def singlerun( T, DX_factor, N_X ):
         s.step()
 
     if C.pool.size != 0:
-        return 0, s.t
+        return 0, s.t, t_a
 
     distance = s.distance( A.pool.positions[0], B.pool.positions[0] )
 
-    return distance, s.t
+    return distance, s.t, t_a
     
 if __name__ == '__main__':
-    run( sys.argv[1], float( sys.argv[2] ), float( sys.argv[3] ), 
-         int( sys.argv[4] ), int( sys.argv[5] )  )
+
+    outfilename = 'data/rebind_' + '_'.join( sys.argv[1:5] )
+    run( outfilename, float( sys.argv[1] ), float( sys.argv[2] ), 
+         int( sys.argv[3] ), int( sys.argv[4] ), int( sys.argv[5] )  )
