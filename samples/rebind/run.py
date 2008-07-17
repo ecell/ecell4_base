@@ -79,7 +79,8 @@ def singlerun( T, DX_factor, N_X ):
     X = Species( 'X', DX, radius )
     s.addSpecies( X )
 
-    s.throwInParticles( X, N_X, box1 )
+    if N_X != 0:
+        s.throwInParticles( X, N_X, box1 )
 
     endTime = tau * 1
     while 1:
