@@ -1768,8 +1768,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 break
         else:
             dt = multi.dt
-
-        sim.sync()
+            sim.sync()
 
         steps = sim.stepCounter - startCount
         assert steps >= 1
