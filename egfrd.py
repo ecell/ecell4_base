@@ -105,13 +105,9 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def createParticle( self, species, pos ):
 
-
-        if self.withinShell( pos, species.radius ):
-            if not self.checkOverlap( pos, species.radius ):
-                raise NoSpace()
-        else:
-            self.escaped = True
-            self.clearOuterVolume( pos, species.radius )
+        #if not self.withinShell( pos, species.radius ):
+        #    self.escaped = True
+        #    self.clearOuterVolume( pos, species.radius )
 
         particle = self.main.createParticle( species, pos )
         self.addParticle( particle )
@@ -121,23 +117,16 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def moveParticle( self, particle, pos ):
 
-        #assert self.checkOverlap( pos, particle.radius, ignore=[particle] )
-
-        if not self.withinShell( pos, particle.radius ):
-            self.escaped = True
-            self.clearOuterVolume( pos, particle.radius, ignore=[particle] )
-
         particle.pos = pos
         self.updateParticle( particle, pos )
 
         
     def clearVolume( self, pos, radius, ignore=[] ):
 
-        if not self.checkOverlap( pos, radius, ignore ):
-            raise NoSpace()
-
         if not self.withinShell( pos, radius ):
+            self.escaped = True
             self.clearOuterVolume( pos, radius, ignore )
+
 
     def clearOuterVolume( self, pos, radius, ignore=[] ):
 
@@ -992,8 +981,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         ParticleSimulatorBase.__init__( self )
 
-        self.MULTI_SHELL_FACTOR = 0.1
-        self.SINGLE_SHELL_FACTOR = 0.5
+        self.MULTI_SHELL_FACTOR = 0.05
+        self.SINGLE_SHELL_FACTOR = 0.2
 
         self.isDirty = True
         self.scheduler = EventScheduler()

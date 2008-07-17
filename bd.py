@@ -182,6 +182,7 @@ class BDSimulatorCoreBase( object ):
             return
 
         try:
+            self.clearVolume( newpos, particle.radius, ignore=[particle] )
             self.moveParticle( particle, newpos )
         except NoSpace:
             log.info( 'propagation move rejected.' )
@@ -225,11 +226,14 @@ class BDSimulatorCoreBase( object ):
         elif len( rt.products ) == 1:
             
             productSpecies = rt.products[0]
+            radius = productSpecies.radius
 
-            if not self.checkOverlap( oldpos, productSpecies.radius,
+            if not self.checkOverlap( oldpos, radius,
                                       ignore = [ particle, ] ):
                 log.info( 'no space for product particle.' )
                 raise NoSpace()
+
+            self.clearVolume( oldpos, radius, ignore = [ particle ] )
                 
             self.removeParticle( particle )
             self.createParticle( productSpecies, oldpos )
@@ -268,12 +272,16 @@ class BDSimulatorCoreBase( object ):
                 # accept the new positions if there is enough space.
                 if self.checkOverlap( newpos1, radius1,
                                       ignore = [ particle, ]) and \
-                       self.checkOverlap( newpos2, radius2,
-                                          ignore = [ particle, ]):
+                                      self.checkOverlap( newpos2, radius2,
+                                                         ignore = 
+                                                         [ particle, ]):
                     break
             else:
                 log.info( 'no space for product particles.' )
                 raise NoSpace()
+
+            self.clearVolume( newpos1, radius1, ignore = [ particle ] )
+            self.clearVolume( newpos2, radius2, ignore = [ particle ] )
 
             # move accepted
             self.removeParticle( particle )
@@ -305,20 +313,15 @@ class BDSimulatorCoreBase( object ):
             newPos = ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 )
             self.applyBoundary( newPos )
 
-            try:
-                self.clearVolume( newPos, productSpecies.radius,
-                                  ignore=[ particle1, particle2 ] )
-            except NoSpace:
-                return
+            if not self.checkOverlap( newPos, productSpecies.radius,
+                                      ignore=[ particle1, particle2 ] ):
+                raise NoSpace()
+            self.clearVolume( newPos, productSpecies.radius,
+                              ignore=[ particle1, particle2 ] )
 
             self.removeParticle( particle1 )
             self.removeParticle( particle2 )
-
-            try:
-                self.createParticle( productSpecies, newPos )
-            except NoSpace:
-                assert False, "this shouldn't happen"
-
+            self.createParticle( productSpecies, newPos )
 
             try:
                 self.particlesToStep.remove( particle2 )
@@ -386,10 +389,13 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
         particle = self.main.createParticle( species, pos )
         self.addToParticleList( particle )
 
-    def clearVolume( self, pos, radius, ignore=[] ):
 
-        if not self.checkOverlap(pos, radius, ignore ):
-            raise NoSpace()
+    # This method is a customization point for implementing
+    # BD in protective domains.
+
+    def clearVolume( self, pos, radius, ignore=[] ):
+        
+        pass
 
 
 
