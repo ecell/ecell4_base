@@ -1024,6 +1024,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return self.shellMatrix.cellSize
 
     def getNextTime( self ):
+
+        if self.scheduler.getSize() == 0:
+            return self.t
+
         return self.scheduler.getTopTime()
 
     def setUserMaxShellSize( self, size ):
@@ -1749,6 +1753,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             if sim.populationChanged:
                 log.info( 'bd reaction' )
                 self.reactionEvents += 1
+                self.populationChanged = True
                 
                 self.breakUpMulti( multi )
 

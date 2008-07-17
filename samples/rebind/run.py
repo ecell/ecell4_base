@@ -83,13 +83,13 @@ def singlerun( T, DX_factor, N_X ):
     if N_X != 0:
         s.throwInParticles( X, N_X, box1 )
 
-    endTime = tau * 1
-    while 1:
-        s.step()
-        nextTime = s.getNextTime()
-        if nextTime > endTime:
-            s.stop( endTime )
-            break
+        endTime = tau * 1
+        while 1:
+            s.step()
+            nextTime = s.getNextTime()
+            if nextTime > endTime:
+                s.stop( endTime )
+                break
 
 
     s.reset()
