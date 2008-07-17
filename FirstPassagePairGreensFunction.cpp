@@ -1673,6 +1673,7 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     //printf("et v %g r %g e %g t %g r0 %g sigma %g\n", value, reaction, escape,
     //           t, r0, sigma );
 
+    // this still fails.  need to look at the problem.
     //assert( value >= - 1e-7 && value <= 1.0 + 1e-7 );
     //assert( value > 0 );
 

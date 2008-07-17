@@ -58,10 +58,7 @@ box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 # not supported yet
 #s.addSurface( box1 )
 
-#D = 2e-12 # run1
-D = 1e-12 # run2
-#D = 5e-13 # run3
-#D = 0.25e-12 # run4
+D = D_move
 
 radius = 2.5e-9
 
@@ -117,8 +114,11 @@ s.throwInParticles( K, C2N( 200e-9, V ), box1 )
 s.throwInParticles( KK, C2N( 50e-9, V ), box1 )
 s.throwInParticles( P, C2N( 50e-9, V ), box1 )
 
+#print k_a( Mtom3( 0.032e9 ), kD )
+#sys.exit(0)
+
 #endTime = .5
-endTime = 0
+endTime = 10
 while 1:
     s.step()
     nextTime = s.scheduler.getTopTime()

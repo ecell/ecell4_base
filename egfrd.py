@@ -1775,7 +1775,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.stepCounter += steps-1
 
         log.info( 'multi stepped %d steps, duration %g' %
-                      ( steps, sim.t ) )
+                  ( steps, sim.t ) )
 
         return dt
 

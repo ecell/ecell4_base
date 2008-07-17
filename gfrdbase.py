@@ -117,7 +117,8 @@ class ReactionType( object ):
                 raise ValueError, \
                     'total product radii must be smaller than ' \
                     + 'reactant radius * 2'
-        assert self.k >= 0
+        if self.k < 0:
+            raise ValueError, 'k < 0'
 
     def order( self ):
         return len( self.reactants )
