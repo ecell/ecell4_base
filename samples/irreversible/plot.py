@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#  PYTHONPATH=../.. python plot.py irr.-3.out 0.00000005 irr.-2.out 0.0000005  irr.-1.out 0.000005  irr.0.out 0.00005 irr.1.out 0.0005 irr.2.out 0.005 irr.3.out 0.05
+#  PYTHONPATH=../.. python plot.py irr.-3.out 0.0000000125 irr.-2.out 0.000000125  irr.-1.out 0.00000125  irr.0.out 0.0000125 irr.1.out 0.000125 irr.2.out 0.00125 irr.3.out 0.0125
 
 
 import sys
@@ -17,7 +17,7 @@ N_A = 6.0221367e23
 
 N = 10000
 
-sigma = 1e-8
+sigma = 5e-9
 r0 = sigma
 D_tot = 2e-12
 kf = 10 * sigma *  D_tot

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 '''
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.3.out 5e-2 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.2.out 5e-3 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.1.out 5e-4 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.0.out 5e-5 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-1.out 5e-6 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-2.out 5e-7 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-3.out 5e-8 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.3.out 1.25e-2 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.2.out 1.25e-3 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.1.out 1.25e-4 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.0.out 1.25e-5 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-1.out 1.25e-6 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-2.out 1.25e-7 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-3.out 1.25e-8 1000000 &
 '''
 
 
@@ -84,7 +84,7 @@ def singlerun2( T ):
     #s.setUserMaxShellSize( 1e-7 )
     #s.setUserMaxShellSize( 1e-3 )
 
-    sigma = 1e-8
+    sigma = 5e-9
     r0 = sigma
     D = 1e-12
     D_tot = D * 2

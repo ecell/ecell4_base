@@ -1,6 +1,6 @@
 #!/usr/bin/env/python
 
-# PYTHONPATH=../.. python plot.py rev.-3.out p_rev.-3.tsv 0.0000001 rev.-2.out p_rev.-2.tsv 0.000001 rev.-1.out p_rev.-1.tsv 0.00001 rev.0.out p_rev.0.tsv 0.0001 rev.1.out p_rev.1.tsv 0.001 rev.2.out p_rev.2.tsv 0.01 rev.3.out p_rev.3.tsv 0.1
+# PYTHONPATH=../.. python plot.py rev.-3.out p_rev.-3.tsv 0.0000000125 rev.-2.out p_rev.-2.tsv 0.000000125 rev.-1.out p_rev.-1.tsv 0.00000125 rev.0.out p_rev.0.tsv 0.0000125 rev.1.out p_rev.1.tsv 0.000125 rev.2.out p_rev.2.tsv 0.00125 rev.3.out p_rev.3.tsv 0.0125
 
 import sys
 
@@ -17,7 +17,7 @@ N_A = 6.0221367e23
 
 N = 1000
 
-sigma = 1e-8
+sigma = 5e-9
 
 #r0 = sigma
 D_tot = 2e-12

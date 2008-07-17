@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 '''
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.3.out 0.05 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.2.out 0.005 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.1.out 0.0005 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.0.out 5e-5 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-1.out 5e-6 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-2.out 5e-7 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-3.out 5e-8 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.3.out 1.25e-2 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.2.out 1.25e-3 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.1.out 1.25e-4 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.0.out 1.25e-5 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-1.out 1.25e-6 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-2.out 1.25e-7 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-3.out 1.25e-8 1000000 &
 '''
 
 

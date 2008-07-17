@@ -1,7 +1,7 @@
 NA = 6.0221367 10^23;
 Dtot = 2 10^-12;
 kd = 10^3;
-sigma = 1 10^-8;
+sigma = 5 10^-9;
 kf = 10 * sigma * Dtot;
 kD = 4*Pi*sigma*Dtot;
 h = (1 + kf/kD)*Sqrt[Dtot]/sigma;
