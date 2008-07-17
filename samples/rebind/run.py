@@ -26,7 +26,8 @@ def run( outfilename, T, DX_factor, N_X, seq, N ):
         print i, d, t
         assert d == 0 or t == T
 
-    outfile.close()
+    outfile_t.close()
+    outfile_r.close()
 
 
 
