@@ -1737,13 +1737,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         log.debug( 'nextObjTime = %g, multi.sim.dt= %g' % 
                    ( nextObjTime, sim.dt ) )
 
-        startCount = sim.stepCounter
-        startT = sim.t
 
         # first, step multi once to catch up with the current time;
         # here, self.t is not incremented because event scheduled time of this
         # multi included one dt (see addMultiEvent()).
         sim.step()
+
+        startCount = sim.stepCounter
+        startT = sim.t
 
         while 1:
             if sim.populationChanged:
@@ -1772,12 +1773,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.t += sim.dt
 
 
-        steps = sim.stepCounter - startCount
+        additionalSteps = sim.stepCounter - startCount
         #assert steps >= 1
-        self.stepCounter += steps-1
+        self.stepCounter += additionalSteps # already incremented in step()
 
         log.info( 'multi stepped %d steps, duration %g' %
-                  ( steps, sim.t - startT ) )
+                  ( additionalSteps + 1, sim.t - startT ) )
+        log.debug( 'self.t = %g' % self.t )
 
         return dt
 
