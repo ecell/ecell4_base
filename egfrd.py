@@ -982,7 +982,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         ParticleSimulatorBase.__init__( self )
 
         self.MULTI_SHELL_FACTOR = 0.05
-        self.SINGLE_SHELL_FACTOR = 0.2
+        self.SINGLE_SHELL_FACTOR = 0.1
 
         self.isDirty = True
         self.scheduler = EventScheduler()
@@ -1127,7 +1127,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # assert if not too many successive dt=0 steps occur.
         if self.dt == 0:
             self.zeroSteps += 1
-            if self.zeroSteps >= self.scheduler.getSize() * 2:
+            if self.zeroSteps >= self.scheduler.getSize() * 3:
                 raise RuntimeError, 'too many dt=zero steps.  simulator halted?'
         else:
             self.zeroSteps = 0
@@ -1734,11 +1734,18 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         sim = multi.sim
 
+        log.debug( 'nextObjTime = %g, multi.sim.dt= %g' % 
+                   ( nextObjTime, sim.dt ) )
+
         startCount = sim.stepCounter
+        startT = sim.t
 
-        while nextObjTime >= self.t:
-            sim.step()
+        # first, step multi once to catch up with the current time;
+        # here, self.t is not incremented because event scheduled time of this
+        # multi included one dt (see addMultiEvent()).
+        sim.step()
 
+        while 1:
             if sim.populationChanged:
                 log.info( 'bd reaction' )
                 self.reactionEvents += 1
@@ -1755,16 +1762,22 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 
                 dt = -INF
                 break
-        else:
-            dt = multi.dt
-            sim.sync()
+
+            if nextObjTime < self.t + sim.dt:
+                dt = sim.t - startT
+                sim.sync()
+                break
+
+            sim.step()
+            self.t += sim.dt
+
 
         steps = sim.stepCounter - startCount
-        assert steps >= 1
+        #assert steps >= 1
         self.stepCounter += steps-1
 
         log.info( 'multi stepped %d steps, duration %g' %
-                  ( steps, sim.t ) )
+                  ( steps, sim.t - startT ) )
 
         return dt
 
