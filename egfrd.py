@@ -1765,12 +1765,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 break
 
             if nextObjTime < self.t + sim.dt:
-                dt = sim.t + sim.dt - startT
+
+                # schedule the next event of this multi
+                # one dt step ahead of the current time.
+                dt = sim.t - startT
                 sim.sync()
                 break
 
-            sim.step()
             self.t += sim.dt
+            sim.step()
+
 
 
         additionalSteps = sim.stepCounter - startCount
