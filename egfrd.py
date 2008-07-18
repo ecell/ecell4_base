@@ -1739,8 +1739,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         startT = sim.t
 
-
-
         # first, step multi once to catch up with the current time;
         # here, self.t is not incremented because event scheduled time of this
         # multi included one dt (see addMultiEvent()).
@@ -1767,7 +1765,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 break
 
             if nextObjTime < self.t + sim.dt:
-                dt = sim.t - startT
+                dt = sim.t + sim.dt - startT
                 sim.sync()
                 break
 
