@@ -1738,12 +1738,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.updateEvent( INF, multi )
         nextObjTime = self.scheduler.getTopTime()
 
-        stepTime = self.t
-
         sim = multi.sim
 
-        log.debug( 'nextObjTime = %g, multi.sim.dt= %g' % 
-                   ( nextObjTime, sim.dt ) )
+        #log.debug( 'nextObjTime = %g, multi.sim.dt= %g' % 
+        #           ( nextObjTime, sim.dt ) )
 
         # first, step multi once to catch up with the current time;
         # here, self.t is not incremented because event scheduled time of this
@@ -1778,7 +1776,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 break
 
             #if nextObjTime < self.t + sim.dt:
-            if 1:
+            if 1:  # currently, only a step is conducted here.
 
                 # schedule the next event of this multi
                 # one dt step ahead of the current time.
@@ -1786,19 +1784,17 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 sim.sync()
                 break
 
-            self.t += sim.dt
-            sim.step()
+            #self.t += sim.dt
+            #sim.step()
 
 
         additionalSteps = sim.stepCounter - startCount
         assert additionalSteps >= 0
         self.stepCounter += additionalSteps # already incremented in step()
 
-        assert dt < 0 or self.t < stepTime + dt
-
         log.info( 'multi stepped %d steps, duration %g, dt = %g' %
                   ( additionalSteps + 1, sim.t - startT + sim.dt, dt ) )
-        log.debug( 'self.t = %g' % self.t )
+        #log.debug( 'self.t = %g' % self.t )
 
         return dt
 
