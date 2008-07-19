@@ -58,37 +58,35 @@ box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 # not supported yet
 #s.addSurface( box1 )
 
-D = D_move
-
 radius = 2.5e-9
 
-K = Species( 'K', D, radius )
+K = Species( 'K', D_move, radius )
 s.addSpecies( K )
-KK = Species( 'KK', D, radius )
+KK = Species( 'KK', D_move, radius )
 s.addSpecies( KK )
-P = Species( 'P', D, radius )
+P = Species( 'P', D_move, radius )
 s.addSpecies( P )
-Kp = Species( 'Kp', D, radius )
+Kp = Species( 'Kp', D_move, radius )
 s.addSpecies( Kp )
-Kpp = Species( 'Kpp', D, radius )
+Kpp = Species( 'Kpp', D_move, radius )
 s.addSpecies( Kpp )
-K_KK = Species( 'K_KK', D, radius )
+K_KK = Species( 'K_KK', D_move, radius )
 s.addSpecies( K_KK )
-Kp_KK = Species( 'Kp_KK', D, radius )
+Kp_KK = Species( 'Kp_KK', D_move, radius )
 s.addSpecies( Kp_KK )
-Kpp_KK = Species( 'Kpp_KK', D, radius )
+Kpp_KK = Species( 'Kpp_KK', D_move, radius )
 s.addSpecies( Kpp_KK )
-Kpp_P = Species( 'Kpp_P', D, radius )
+Kpp_P = Species( 'Kpp_P', D_move, radius )
 s.addSpecies( Kpp_P )
-Kp_P = Species( 'Kp_P', D, radius )
+Kp_P = Species( 'Kp_P', D_move, radius )
 s.addSpecies( Kp_P )
 
 # inactive forms
-Kpi = Species( 'Kpi', D, radius )
+Kpi = Species( 'Kpi', D_move, radius )
 s.addSpecies( Kpi )
-Kppi = Species( 'Kppi', D, radius )
+Kppi = Species( 'Kppi', D_move, radius )
 s.addSpecies( Kppi )
-Ki = Species( 'Ki', D, radius )
+Ki = Species( 'Ki', D_move, radius )
 s.addSpecies( Ki )
 
 
