@@ -1076,6 +1076,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if t >= self.scheduler.getTopEvent().getTime():
             raise RuntimeError, 'Stop time >= next event time.'
 
+        if t < self.t:
+            raise RuntimeError, 'Stop time < current time.'
+
         self.t = t
         
         scheduler = self.scheduler
@@ -1088,12 +1091,15 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             if isinstance( obj, Pair ) or isinstance( obj, Multi ):
                 nonSingleList.append( obj )
             elif isinstance( obj, Single ):
+                log.debug( 'burst %s, lastTime= %g' % 
+                           ( str( obj ), obj.lastTime ) )
                 self.burstSingle( obj )
             else:
                 assert False, 'do not reach here'
 
 
         # then burst all Pairs and Multis.
+        log.debug( 'burst %s' % nonSingleList )
         self.burstObjs( nonSingleList )
 
         self.dt = 0.0
@@ -1732,43 +1738,51 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.updateEvent( INF, multi )
         nextObjTime = self.scheduler.getTopTime()
 
+        stepTime = self.t
+
         sim = multi.sim
 
         log.debug( 'nextObjTime = %g, multi.sim.dt= %g' % 
                    ( nextObjTime, sim.dt ) )
 
-        startT = sim.t
-
         # first, step multi once to catch up with the current time;
         # here, self.t is not incremented because event scheduled time of this
         # multi included one dt (see addMultiEvent()).
         sim.step()
+
+        startT = sim.t
         startCount = sim.stepCounter
 
 
         while 1:
+
             if sim.populationChanged:
                 log.info( 'bd reaction' )
+
+                sim.sync()
+                self.breakUpMulti( multi )
+
                 self.reactionEvents += 1
                 self.populationChanged = True
-                
-                self.breakUpMulti( multi )
 
                 dt = -INF
                 break
 
             if sim.escaped:
                 log.info( 'multi particle escaped.' )
+
+                sim.sync()
                 self.breakUpMulti( multi )
                 
                 dt = -INF
                 break
 
-            if nextObjTime < self.t + sim.dt:
+            #if nextObjTime < self.t + sim.dt:
+            if 1:
 
                 # schedule the next event of this multi
                 # one dt step ahead of the current time.
-                dt = sim.t - startT
+                dt = sim.t - startT + sim.dt
                 sim.sync()
                 break
 
@@ -1776,13 +1790,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             sim.step()
 
 
-
         additionalSteps = sim.stepCounter - startCount
-        #assert steps >= 1
+        assert additionalSteps >= 0
         self.stepCounter += additionalSteps # already incremented in step()
 
-        log.info( 'multi stepped %d steps, duration %g' %
-                  ( additionalSteps + 1, sim.t - startT ) )
+        assert dt < 0 or self.t < stepTime + dt
+
+        log.info( 'multi stepped %d steps, duration %g, dt = %g' %
+                  ( additionalSteps + 1, sim.t - startT + sim.dt, dt ) )
         log.debug( 'self.t = %g' % self.t )
 
         return dt
@@ -1790,7 +1805,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def breakUpMulti( self, multi ):
 
-        multi.sim.sync()
         self.removeFromShellMatrix( multi )
 
         singles = []
@@ -1805,6 +1819,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def burstMulti( self, multi ):
         
+        multi.sim.sync()
         singles = self.breakUpMulti( multi )
 
         return singles
@@ -1819,7 +1834,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         dt = self.t - single.lastTime
 
         particleRadius = single.particle.species.radius
-        oldpos = single.particle.pos.copy()
+        oldpos = single.particle.pos # .copy()
 
         r = single.drawR( dt )
         displacement = randomVector( r )
