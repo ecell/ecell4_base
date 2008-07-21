@@ -1735,8 +1735,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def fireMulti( self, multi ):
         
-        self.updateEvent( INF, multi )
-        nextObjTime = self.scheduler.getTopTime()
+        #self.updateEvent( INF, multi )
+        #nextObjTime = self.scheduler.getTopTime()
 
         sim = multi.sim
 
