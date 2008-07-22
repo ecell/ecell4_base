@@ -46,8 +46,8 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
         BDSimulatorCoreBase.__init__( self, main )
 
-        self.multi = multi
-        #self.multi = weakref.proxy( multi ) ??
+        # this has to be ref, not proxy, since it is used for comparison.
+        self.multiref = weakref.ref( multi )
 
         self.particleMatrix = ObjectMatrix()
         self.particleMatrix.setWorldSize( self.main.worldSize )
@@ -87,7 +87,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
     def updateShellMatrix( self ):
 
         self.shellMatrix.clear()
-        for shell in self.multi.shellList:
+        for shell in self.multiref().shellList:
             self.shellMatrix.add( shell, shell.pos, shell.radius )
 
     def addParticle( self, particle ):
@@ -130,7 +130,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def clearOuterVolume( self, pos, radius, ignore=[] ):
 
-        self.main.clearVolume( pos, radius, ignore=[self.multi,] )
+        self.main.clearVolume( pos, radius, ignore=[self.multiref(),] )
         if not self.main.checkOverlap( pos, radius, ignore ):
             raise NoSpace()
 
@@ -185,14 +185,14 @@ class MultiBDCore( BDSimulatorCoreBase ):
         BDSimulatorCoreBase.check( self )
 
         # shellMatrix consistency
-        for shell in self.multi.shellList:
+        for shell in self.multiref().shellList:
             pos, radius = self.shellMatrix.get( shell )
             assert not ( pos - shell.pos ).any()
             assert radius == shell.radius
 
 
         # shells are contiguous
-        for shell in self.multi.shellList:
+        for shell in self.multiref().shellList:
             n, d = self.shellMatrix.getNeighbors( shell.pos )
             assert d[1] - shell.radius < 0.0, 'shells are not contiguous.'
 
@@ -1189,18 +1189,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def addToShellMatrix( self, obj ):
         for i, shell in enumerate( obj.shellList ):
             self.shellMatrix.add( ( obj, i ), shell.pos, shell.radius )
-            #self.sm2.add( ( obj, i ), shell.pos, shell.radius )
+
 
     def removeFromShellMatrix( self, obj ):
         for i in range( len( obj.shellList ) ):
             self.shellMatrix.remove( ( obj, i ) )
-            #self.sm2.remove( ( obj, i ) )
+
 
     def updateShellMatrix( self, obj ):
         for i, shell in enumerate( obj.shellList ):
             self.shellMatrix.update( ( obj, i ), shell.pos, shell.radius )
-            #self.sm2.update( ( obj, i ), shell.pos, shell.radius )
-
 
 
     def addEvent( self, t, func, arg ):
@@ -1735,68 +1733,29 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def fireMulti( self, multi ):
         
-        #self.updateEvent( INF, multi )
-        #nextObjTime = self.scheduler.getTopTime()
-
         sim = multi.sim
 
-        #log.debug( 'nextObjTime = %g, multi.sim.dt= %g' % 
-        #           ( nextObjTime, sim.dt ) )
-
-        # first, step multi once to catch up with the current time;
-        # here, self.t is not incremented because event scheduled time of this
-        # multi included one dt (see addMultiEvent()).
         sim.step()
+        sim.sync()
 
-        startT = sim.t
-        startCount = sim.stepCounter
+        if sim.populationChanged:
+            log.info( 'bd reaction' )
 
+            self.breakUpMulti( multi )
+            self.reactionEvents += 1
+            self.populationChanged = True
+            return -INF
 
-        while 1:
+        if sim.escaped:
+            log.info( 'multi particle escaped.' )
 
-            if sim.populationChanged:
-                log.info( 'bd reaction' )
+            self.breakUpMulti( multi )
+            return -INF
 
-                sim.sync()
-                self.breakUpMulti( multi )
+        #log.info( 'multi stepped %d steps, duration %g, dt = %g' %
+        #          ( additionalSteps + 1, sim.t - startT + sim.dt, dt ) )
 
-                self.reactionEvents += 1
-                self.populationChanged = True
-
-                dt = -INF
-                break
-
-            if sim.escaped:
-                log.info( 'multi particle escaped.' )
-
-                sim.sync()
-                self.breakUpMulti( multi )
-                
-                dt = -INF
-                break
-
-            #if nextObjTime < self.t + sim.dt:
-            if 1:  # currently, only a step is conducted here.
-
-                # schedule the next event of this multi
-                # one dt step ahead of the current time.
-                dt = sim.t - startT + sim.dt
-                sim.sync()
-                break
-
-            #self.t += sim.dt
-            #sim.step()
-
-
-        additionalSteps = sim.stepCounter - startCount
-        assert additionalSteps >= 0
-        self.stepCounter += additionalSteps # already incremented in step()
-
-        log.info( 'multi stepped %d steps, duration %g, dt = %g' %
-                  ( additionalSteps + 1, sim.t - startT + sim.dt, dt ) )
-        #log.debug( 'self.t = %g' % self.t )
-
-        return dt
+        return multi.dt
 
 
     def breakUpMulti( self, multi ):

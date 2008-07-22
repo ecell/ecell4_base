@@ -17,7 +17,7 @@ def run_single( T, V, N ):
     #s = BDSimulator()
     s.setWorldSize( L )
 
-    matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 100 )
+    matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 67 )
     print 'matrixSize=', matrixSize
     s.setMatrixSize( matrixSize )
     
