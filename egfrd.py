@@ -57,14 +57,12 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
         self.escaped = False
 
-        #self.checkOverlap is implemented below.
-        #self.getNeighborParticles() is implemented below.
-        #self.getClosestParticle() is implemented below.
 
         
     def updateParticle( self, particle, pos ):
 
         self.particleMatrix.update( particle, pos, particle.radius )
+        self.main.updateOnParticleMatrix( particle, pos )
 
     def initialize( self ):
 
@@ -78,11 +76,11 @@ class MultiBDCore( BDSimulatorCoreBase ):
         BDSimulatorCoreBase.step( self )
 
 
+    '''
     def sync( self ):
-
         for particle in self.particleList:
             self.main.updateOnParticleMatrix( particle, particle.pos )
-
+'''
 
     def updateShellMatrix( self ):
 
@@ -1736,7 +1734,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         sim = multi.sim
 
         sim.step()
-        sim.sync()
+        #sim.sync()
 
         if sim.populationChanged:
             log.info( 'bd reaction' )
@@ -1774,7 +1772,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def burstMulti( self, multi ):
         
-        multi.sim.sync()
+        #multi.sim.sync()
         singles = self.breakUpMulti( multi )
 
         return singles
