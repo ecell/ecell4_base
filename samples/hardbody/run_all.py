@@ -50,8 +50,8 @@ N3000 = [3000,] * 7
 T3000 = [1e-2, 1e-2, 1e-3, 1e-3, 1e-3, 1e-4, 1e-5]
 
 
-run_set( 'data_V', Vv, Nv, Tv ); outfile.write( '\n\n' )
-#run_set( 'data_C', Vc, Nc, Tc ); outfile.write( '\n\n' )
+#run_set( 'data_V', Vv, Nv, Tv ); outfile.write( '\n\n' )
+run_set( 'data_C', Vc, Nc, Tc ); outfile.write( '\n\n' )
 #run_set( 'data_N300', V300, N300, T300 ); outfile.write( '\n\n' )
 #run_set( 'data_N3000', V3000, N3000, T3000 ); outfile.write( '\n\n' )
 
