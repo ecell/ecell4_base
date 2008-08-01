@@ -52,7 +52,7 @@ def load_data( filename ):
 
 def plot_file( filename ):
 
-    x, y = get_data( filename )
+    x, y = load_data( filename )
 
     #plot_theory( N_K, N_P, Keq, x[-1] )
     plot( x, y, '-' )
@@ -74,7 +74,7 @@ for pattern in sys.argv[1:]:
     filelist = glob.glob( globpattern )
 
     start = 0
-    end = 50.
+    end = 80.
     interval = (end-start) / 1000
     rx = numpy.mgrid[start:end:interval]
 
@@ -94,6 +94,11 @@ for pattern in sys.argv[1:]:
 
 from matplotlib.font_manager import FontProperties
 legend( loc='lower right', prop=FontProperties( size='tiny' ),pad=0.01 )
+
+plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp.ecd' )
+plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp2.ecd' )
+plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp_1e-2.ecd' )
+
 
 #title( figtitle )
 

@@ -112,8 +112,10 @@ s.throwInParticles( K, C2N( 200e-9, V ), box1 )
 s.throwInParticles( KK, C2N( 50e-9, V ), box1 )
 s.throwInParticles( P, C2N( 50e-9, V ), box1 )
 
-#print k_a( Mtom3( 0.032e9 ), kD )
-#sys.exit(0)
+# print kD
+# print k_a( Mtom3( 0.02e9 ), kD )
+# print k_a( Mtom3( 0.032e9 ), kD )
+# sys.exit(0)
 
 #endTime = .5
 endTime = 10
