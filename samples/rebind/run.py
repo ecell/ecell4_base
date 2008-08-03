@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 '''
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py a 1e-5 1 10000 100
+# DX_factor N_X seq N
+
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 100 0 10
 
 '''
 
@@ -9,29 +11,43 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py a 1e-5 1 10000 100
 from egfrd import *
 from bd import *
 
-def run( outfilename, T, DX_factor, N_X, seq, N ):
+def run( outfilename, DX_factor, N_X, seq, N ):
     print outfilename
 
-    outfile_r = open( outfilename + '_r.dat', 'w' )
+    radius = 2.5e-9
+    sigma = radius * 2
+    D = 1e-12
+    D_tot = D * 2
+
+    tau = sigma**2 / D_tot
+    print 'tau=', tau
+
+    T_list = [ tau * .1, tau, tau * 10, tau * 100, INF ]
+
     outfile_t = open( outfilename + '_t.dat', 'w' )
+    outfile_r_list = [ open( outfilename + '_r_-1.dat', 'w' ), 
+                       open( outfilename + '_r_0.dat', 'w' ),
+                       open( outfilename + '_r_1.dat', 'w' ),
+                       open( outfilename + '_r_2.dat', 'w' ) ]
 
     for i in range( N ):
-        d, t, t_a = singlerun( T, DX_factor, N_X )
-        outfile_r.write( '%g\n' % d )
-        outfile_r.flush()
-        if t_a != 0.0:
-            outfile_t.write( '%g\n' % t_a )
-            outfile_t.flush()
+        r_list, t_list = singlerun( T_list, DX_factor, N_X )
+        assert len( r_list ) == len( T_list )
 
-        print i, d, t
-        assert d == 0 or t == T
+        for t in t_list:
+            outfile_t.write( '%g\n' % t )
+
+        for j in range( len( r_list ) ):
+            outfile_r_list[j].write( '%g\n' % r_list[j] )
+
+        print i, r_list, t_list
 
     outfile_t.close()
-    outfile_r.close()
+    [ outfile_r.close() for outfile_r in outfile_r_list ]
 
 
 
-def singlerun( T, DX_factor, N_X ):
+def singlerun( T_list, DX_factor, N_X ):
 
     s = EGFRDSimulator()
     #s.setUserMaxShellSize( 1e-6 )
@@ -51,7 +67,7 @@ def singlerun( T, DX_factor, N_X ):
 
     s.setWorldSize( L )
 
-    matrixSize = min( max( 3, int( (3 * N_X) ** (1.0/3.0) ) ), 60 )
+    matrixSize = min( max( 3, int( (9 * N_X) ** (1.0/3.0) ) ), 60 )
     print 'matrixSize=', matrixSize
     s.setMatrixSize( matrixSize )
 
@@ -63,8 +79,7 @@ def singlerun( T, DX_factor, N_X ):
     D = 1e-12
     D_tot = D * 2
 
-    tau = sigma**2 / D
-    print 'tau=', tau
+    tau = sigma**2 / D_tot
 
     kf = 10 * sigma * D_tot
 
@@ -124,30 +139,47 @@ def singlerun( T, DX_factor, N_X ):
     s.placeParticle( B, B_pos )
 
 
-    endTime = T
+    r_list = []
+    t_list = []
+    t_last = 0
+
     s.step()
 
-    t_a = 0.0
+    nextStop = T_list[0]
+
+    i_T = 0
     while 1:
-        if s.populationChanged and t_a == 0.0:
-            t_a = s.t
-        #    print 'reaction'
-        #    return 0.0, s.t
+        if s.populationChanged:
+            if C.pool.size == 0:  #A,B
+                print 'set t_last', s.t
+                t_last = s.t  # set t_last
+            else:    # C
+                print 'reaction: ', s.t - t_last
+                t_list.append( s.t - t_last )
+
         nextTime = s.getNextTime()
-        if nextTime > endTime:
-            s.stop( endTime )
+        if nextTime > nextStop:
+            print 'stop', i_T, nextStop
+            s.stop( nextStop )
+            if C.pool.size != 0:
+                r_list.append( 0 )
+            else:
+                r_list.append( s.distance( A.pool.positions[0], 
+                                           B.pool.positions[0] ) )
+
+            i_T += 1
+            nextStop = T_list[i_T]
+        
+        if nextStop == INF and len( t_list ) != 0:
+            print 'break', s.t
             break
+
         s.step()
 
-    if C.pool.size != 0:
-        return 0, s.t, t_a
-
-    distance = s.distance( A.pool.positions[0], B.pool.positions[0] )
-
-    return distance, s.t, t_a
+    return r_list, t_list
     
 if __name__ == '__main__':
 
-    outfilename = 'data/rebind_' + '_'.join( sys.argv[1:5] )
-    run( outfilename, float( sys.argv[1] ), float( sys.argv[2] ), 
-         int( sys.argv[3] ), int( sys.argv[4] ), int( sys.argv[5] )  )
+    outfilename = 'data/rebind_' + '_'.join( sys.argv[1:4] )
+    run( outfilename, float( sys.argv[1] ), 
+         int( sys.argv[2] ), int( sys.argv[3] ), int( sys.argv[4] )  )
