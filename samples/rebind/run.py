@@ -22,13 +22,12 @@ def run( outfilename, DX_factor, N_X, seq, N ):
     tau = sigma**2 / D_tot
     print 'tau=', tau
 
-    T_list = [ tau * .1, tau, tau * 10, tau * 100, INF ]
+    T_list = [ tau * .1, tau, tau * 10, INF ]
 
     outfile_t = open( outfilename + '_t.dat', 'w' )
     outfile_r_list = [ open( outfilename + '_r_-1.dat', 'w' ), 
                        open( outfilename + '_r_0.dat', 'w' ),
-                       open( outfilename + '_r_1.dat', 'w' ),
-                       open( outfilename + '_r_2.dat', 'w' ) ]
+                       open( outfilename + '_r_1.dat', 'w' ) ]
 
     for i in range( N ):
         r_list, t_list = singlerun( T_list, DX_factor, N_X )
@@ -41,6 +40,9 @@ def run( outfilename, DX_factor, N_X, seq, N ):
             outfile_r_list[j].write( '%g\n' % r_list[j] )
 
         print i, r_list, t_list
+        outfile_t.flush()
+        [ outfile_r.flush() for outfile_r in outfile_r_list ]
+
 
     outfile_t.close()
     [ outfile_r.close() for outfile_r in outfile_r_list ]
