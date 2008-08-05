@@ -22,29 +22,28 @@ def run( outfilename, DX_factor, N_X, seq, N ):
     tau = sigma**2 / D_tot
     print 'tau=', tau
 
-    T_list = [ tau * .1, INF ]
-    #T_list = [ INF ]
+    #T_list = [ tau * .1, INF ]
+    T_list = [ INF ]
 
     outfile_t = open( outfilename + '_t.dat', 'w' )
-    outfile_r_list = [ open( outfilename + '_r_-1.dat', 'w' ) ] 
+    #outfile_r_list = [ open( outfilename + '_r_-1.dat', 'w' ) ] 
 
     for i in range( N ):
         r_list, t_list = singlerun( T_list, DX_factor, N_X )
-        assert len( r_list ) == len( T_list )
 
         for t in t_list:
             outfile_t.write( '%g\n' % t )
 
-        for j in range( len( r_list ) ):
-            outfile_r_list[j].write( '%g\n' % r_list[j] )
+        #for j in range( len( r_list ) ):
+        #    outfile_r_list[j].write( '%g\n' % r_list[j] )
 
         print i, r_list, t_list
         outfile_t.flush()
-        [ outfile_r.flush() for outfile_r in outfile_r_list ]
+        #[ outfile_r.flush() for outfile_r in outfile_r_list ]
 
 
     outfile_t.close()
-    [ outfile_r.close() for outfile_r in outfile_r_list ]
+    #[ outfile_r.close() for outfile_r in outfile_r_list ]
 
 
 
@@ -82,7 +81,10 @@ def singlerun( T_list, DX_factor, N_X ):
 
     tau = sigma**2 / D_tot
 
-    kf = 10 * sigma * D_tot
+    #kf = 1000 * sigma * D_tot
+
+    # 1e9 [ 1 / (M s) ] -> 1e9 / 1000 / N_A [ m^3 / s ]
+    kf = 1.66e-18
 
     A = Species( 'A', D, radius )
     s.addSpecies( A )
@@ -150,7 +152,8 @@ def singlerun( T_list, DX_factor, N_X ):
 
     i_T = 0
     while 1:
-        if s.populationChanged:
+        if s.lastReaction:
+            print s.lastReaction
             if C.pool.size == 0:  #A,B
                 print 'set t_last', s.t
                 t_last = s.t  # set t_last

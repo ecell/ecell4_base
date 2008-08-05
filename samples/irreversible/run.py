@@ -67,7 +67,7 @@ def singlerun1( T ):
             s.stop( endTime )
             break
         s.step()
-        if s.populationChanged():
+        if s.lastReaction:
             print 'reaction'
             return 0.0, s.t
 
@@ -109,7 +109,7 @@ def singlerun2( T ):
 
     while 1:
         s.step()
-        if s.populationChanged:
+        if s.lastReaction:
             #print 'reaction'
             return 0.0, s.t
 

@@ -123,19 +123,20 @@ class ReactionType( object ):
     def order( self ):
         return len( self.reactants )
 
-    def str( self ):
+    def __str__( self ):
         s = ''
         for i in self.reactants:
             s += i.id
             s += ' '
 
-        s += ' -> '
+        s += '-> '
 
         for i in self.products:
             s += i.id
             s += ' '
 
         return s
+
 
 
 class UnimolecularReactionType( ReactionType ):
@@ -173,6 +174,18 @@ class UnbindingReactionType( ReactionType ):
         ReactionType.__init__( self, [ s1, ], [ p1, p2 ], k )
 
 
+
+class Reaction:
+    def __init__( self, type, reactants, products ):
+        self.type = type
+        self.reactants = reactants
+        self.products = products
+
+    def __str__( self ):
+        return 'Reaction( ' + str( self.type ) + ', ' + str( self.reactants )\
+            + ', ' + str( self.products ) + ' )'
+
+
 class Particle( object ):
 
     def __init__( self, species, serial=None, index=None ):
@@ -192,6 +205,10 @@ class Particle( object ):
     def __str__( self ):
 
         return '( ' + self.species.id + ', ' + str( self.serial ) + ' )'
+
+    def __repr__( self ):
+
+        return self.__str__()
 
 
     def __eq__( self, other ):
@@ -341,8 +358,6 @@ class ParticleSimulatorBase( object ):
         self.dtLimit = 1e-3
         self.dtMax = self.dtLimit
 
-        self.nextReaction = None
-
         # counters
         self.rejectedMoves = 0
         self.reactionEvents = 0
@@ -352,7 +367,7 @@ class ParticleSimulatorBase( object ):
 
         self.setWorldSize( INF )
 
-        self.populationChanged = False
+        self.lastReaction = None
 
 
     def initialize( self ):
@@ -565,7 +580,6 @@ class ParticleSimulatorBase( object ):
         self.dtMax = self.dtLimit
         self.dt = self.dtLimit
 
-        self.nextReaction = None
 
         
     '''

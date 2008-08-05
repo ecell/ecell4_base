@@ -47,8 +47,8 @@ def singlerun( T ):
         if nextTime > endTime:
             break
         s.step()
-        #print s.populationChanged()
-        if s.populationChanged():
+
+        if s.lastReaction:
             print 'reaction'
             return 0.0, s.t
 

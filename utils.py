@@ -209,8 +209,8 @@ def k_D( D, sigma ):
 
 def k_a( kon, kD ):
 
-    if kon > k_D:
-        raise RuntimeError, 'kon > k_D.'
+    if kon > kD:
+        raise RuntimeError, 'kon > kD.'
     ka = 1 / ( ( 1 / kon ) - ( 1 / kD ) )
     return ka
 

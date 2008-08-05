@@ -51,7 +51,7 @@ class Logger:
 
     def prepareTimecourseFile( self, comment ):
 
-        self.timecourseFilename = self.logname + '_timecourse' + '.dat'
+        self.timecourseFilename = self.logname + '_tc' + '.dat'
         self.timecourseFile = open( self.directory + os.sep +\
                                     self.timecourseFilename, 'w' )
         self.writeTimecourseComment( comment )
@@ -107,7 +107,7 @@ class Logger:
 
     def logTimeCourse( self ):
 
-        if self.sim.populationChanged:
+        if self.sim.reaction:
             self.writeTimecourse()
 
 

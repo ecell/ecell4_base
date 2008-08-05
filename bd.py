@@ -61,7 +61,7 @@ class BDSimulatorCoreBase( object ):
         self.getReactionType2 = self.main.getReactionType2
         self.applyBoundary = self.main.applyBoundary
 
-        self.populationChanged = False
+        self.lastReaction = None
 
         self.P_acct = {}
 
@@ -110,6 +110,7 @@ class BDSimulatorCoreBase( object ):
     def step( self ):
 
         self.stepCounter += 1
+        self.lastReaction = None
 
         self.propagate()
 
@@ -222,6 +223,8 @@ class BDSimulatorCoreBase( object ):
         if len( rt.products ) == 0:
             
             self.removeParticle( particle )
+
+            self.lastReaction = Reaction( rt, [particle], [] )
             
         elif len( rt.products ) == 1:
             
@@ -236,7 +239,10 @@ class BDSimulatorCoreBase( object ):
             self.clearVolume( oldpos, radius, ignore = [ particle ] )
                 
             self.removeParticle( particle )
-            self.createParticle( productSpecies, oldpos )
+            newparticle = self.createParticle( productSpecies, oldpos )
+
+            self.lastReaction = Reaction( rt, [particle], [newparticle] )
+
             
         elif len( rt.products ) == 2:
             
@@ -286,14 +292,17 @@ class BDSimulatorCoreBase( object ):
             # move accepted
             self.removeParticle( particle )
 
-            self.createParticle( productSpecies1, newpos1 )
-            self.createParticle( productSpecies2, newpos2 )
+            newparticle1 = self.createParticle( productSpecies1, newpos1 )
+            newparticle2 = self.createParticle( productSpecies2, newpos2 )
+
+            self.lastReaction = Reaction( rt, [particle], 
+                                          [newparticle1, newparticle2] )
 
         else:
             raise RuntimeError, 'num products >= 3 not supported.'
 
         self.reactionEvents += 1
-        self.populationChanged = True
+
 
 
 
@@ -321,7 +330,7 @@ class BDSimulatorCoreBase( object ):
 
             self.removeParticle( particle1 )
             self.removeParticle( particle2 )
-            self.createParticle( productSpecies, newPos )
+            newparticle = self.createParticle( productSpecies, newPos )
 
             try:
                 self.particlesToStep.remove( particle2 )
@@ -329,7 +338,10 @@ class BDSimulatorCoreBase( object ):
                 pass     # particle2 already stepped, which is fine.
 
             self.reactionEvents += 1
-            self.populationChanged = True
+
+            self.lastReaction = Reaction( rt, [particle1, particle2], 
+                                          [newparticle] )
+
             return
         
         else:
@@ -446,7 +458,7 @@ class BDSimulator( ParticleSimulatorBase ):
 
     def step( self ):
 
-        self.populationChanged = False
+        self.reactionType = None
 
         if self.isDirty:
             self.initialize()

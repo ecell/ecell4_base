@@ -1039,7 +1039,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.rejectedMoves = 0
         self.reactionEvents = 0
         self.lastEvent = None
-        self.populationChanged = False
+        self.lastReaction = None
 
         self.isDirty = True
         #self.initialize()
@@ -1105,7 +1105,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def step( self ):
 
-        self.populationChanged = False
+        self.lastReaction = None
 
         if self.isDirty:
             self.initialize()
@@ -1293,6 +1293,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if len( rt.products ) == 0:
             
             self.removeParticle( single.particle )
+
+            self.lastReaction = Reaction( rt, [single.particle], [] )
+
             
         elif len( rt.products ) == 1:
             
@@ -1311,6 +1314,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             newsingle = self.createSingle( newparticle )
             self.addToShellMatrix( newsingle )
             self.addSingleEvent( newsingle )
+
+            self.lastReaction = Reaction( rt, [single.particle], [newparticle] )
+
             log.info( 'product; %s' % str( newsingle ) )
 
             
@@ -1375,14 +1381,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.addSingleEvent( newsingle1 )
             self.addSingleEvent( newsingle2 )
 
+            self.lastReaction = Reaction( rt, [single.particle], 
+                                          [particle1, particle2] )
+
             log.info( 'products; %s %s' % 
-                          ( str( newsingle1 ), str( newsingle2 ) ) )
+                      ( str( newsingle1 ), str( newsingle2 ) ) )
 
         else:
             raise RuntimeError, 'num products >= 3 not supported.'
 
         self.reactionEvents += 1
-        self.populationChanged = True
 
 
     def propagateSingle( self, single, r ):
@@ -1620,8 +1628,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.addSingleEvent( newsingle )
 
                 self.reactionEvents += 1
-                self.populationChanged = True
-                
+
+                self.lastReaction = Reaction( pair.rt, [particle1, particle2],
+                                              [particle] )
+
+                log.info( 'product; %s' % str( newsingle ) )
+
             else:
                 raise NotImplementedError,\
                       'num products >= 2 not supported.'
@@ -1736,12 +1748,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         sim.step()
         #sim.sync()
 
-        if sim.populationChanged:
+        if sim.lastReaction:
             log.info( 'bd reaction' )
 
             self.breakUpMulti( multi )
             self.reactionEvents += 1
-            self.populationChanged = True
+            self.lastReaction = sim.lastReaction
             return -INF
 
         if sim.escaped:
@@ -1915,8 +1927,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         elif isinstance( closest, Multi ):
 
             multi = closest
-            log.info( 'multi merge %s %s' %
-                          ( single, multi ) )
+            log.info( 'multi merge %s %s' % ( single, multi ) )
 
             self.removeFromShellMatrix( multi )
 
