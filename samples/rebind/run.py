@@ -22,7 +22,7 @@ def run( outfilename, DX_factor, N_X, seq, N ):
     tau = sigma**2 / D_tot
     print 'tau=', tau
 
-    T_list = [ tau * .1, tau, tau * 10, INF ]
+    T_list = [ tau * .1, tau, INF ]
 
     outfile_t = open( outfilename + '_t.dat', 'w' )
     outfile_r_list = [ open( outfilename + '_r_-1.dat', 'w' ), 
