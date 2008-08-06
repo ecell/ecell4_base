@@ -107,7 +107,7 @@ class Logger:
 
     def logTimeCourse( self ):
 
-        if self.sim.reaction:
+        if self.sim.lastReaction:
             self.writeTimecourse()
 
 

@@ -89,8 +89,7 @@ def singlerun2( T ):
     D = 1e-12
     D_tot = D * 2
 
-    kf = 10 * sigma * D_tot
-    tau = sigma*sigma/D 
+    kf = 100 * sigma * D_tot
 
     A = Species( 'A', D, sigma/2 )
     s.addSpecies( A )

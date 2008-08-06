@@ -166,8 +166,9 @@ r14 = UnimolecularReactionType( Pi, P, ki )
 s.addReactionType( r14 )
 
 
+logname = model + '_' + '_'.join( sys.argv[1:7] )
 l = Logger( s, 
-            logname = model + '_' + '_'.join( sys.argv[1:7] ),
+            logname = logname,
             comment = '@ model=\'%s\'; D_move=%g; D_react=%g\n' %
             ( model, D_move, D_react ) +
             '#@ V=%s; N_K=%d; N_KK=%d; N_P=%d;\n' % 
@@ -177,7 +178,7 @@ l = Logger( s,
             '#@ ti=%g; ki=%g;' %
             ( ti, ki ) )
 
-
+rfile = open( 'data/' + logname + '_reactions.dat', 'w' )
 
 
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
@@ -186,7 +187,12 @@ l.log()
 
 while s.t < T:
     s.step()
-    #s.dumpPopulation()
-    #s.check()
-    l.log()
+
+    if s.lastReaction:
+        r = s.lastReaction
+        print s.t, r.reactants, r.products
+        rfile.write( '%g\t%s\t%s' % ( s.t, r.reactants, r.products ) )
+        rfile.flush()
+
+        l.log()
 

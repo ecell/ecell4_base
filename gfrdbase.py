@@ -204,7 +204,7 @@ class Particle( object ):
 
     def __str__( self ):
 
-        return '( ' + self.species.id + ', ' + str( self.serial ) + ' )'
+        return "( '" + self.species.id + "', " + str( self.serial ) + ' )'
 
     def __repr__( self ):
 

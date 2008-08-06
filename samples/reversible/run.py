@@ -42,7 +42,12 @@ def singlerun( T ):
     r0 = sigma
     D = 1e-12
     D_tot = D * 2
-    kf = 10 * sigma * D_tot
+
+    tau = sigma * sigma / D_tot
+
+    kf = 100 * sigma * D_tot
+    koff = 0.1 / tau
+
 
     A = Species( 'A', D, sigma/2 )
     s.addSpecies( A )
@@ -54,7 +59,7 @@ def singlerun( T ):
     r1 = BindingReactionType( A, B, C, kf )
     s.addReactionType( r1 )
 
-    r2 = UnbindingReactionType( C, A, B, 1e3 )
+    r2 = UnbindingReactionType( C, A, B, koff )
     s.addReactionType( r2 )
 
     s.placeParticle( A, [0,0,0] )
