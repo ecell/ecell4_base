@@ -190,8 +190,9 @@ while s.t < T:
 
     if s.lastReaction:
         r = s.lastReaction
-        print s.t, r.reactants, r.products
-        rfile.write( '%g\t%s\t%s' % ( s.t, r.reactants, r.products ) )
+        line = '( %g,\t%s,\t%s )\n' % ( s.t, r.reactants, r.products )
+        print line
+        rfile.write( line )
         rfile.flush()
 
         l.log()

@@ -36,7 +36,7 @@ def load_data( filename ):
     
 def plot_sol( filename, t ):
 
-    rmax = 2.2 * math.sqrt( 6 * D_tot * t ) + rmin
+    rmax = 3.1 * math.sqrt( 6 * D_tot * t ) + rmin
 
     data = scipy.io.read_array( filename )
     rarray, parray = numpy.transpose( data )

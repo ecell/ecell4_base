@@ -1,8 +1,8 @@
 NA = 6.0221367 10^23;
 Dtot = 2 10^-12;
-kd = 10^3;
+kd = 0.1 / tau;
 sigma = 5 10^-9;
-kf = 10 * sigma * Dtot;
+kf = 100 * sigma * Dtot;
 kD = 4*Pi*sigma*Dtot;
 h = (1 + kf/kD)*Sqrt[Dtot]/sigma;
 a = kd*Sqrt[Dtot]/sigma;

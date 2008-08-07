@@ -20,7 +20,7 @@ N = 10000
 sigma = 5e-9
 r0 = sigma
 D_tot = 2e-12
-kf = 10 * sigma *  D_tot
+kf = 100 * sigma *  D_tot
 #kf = 0
 
 tau = sigma*sigma / D_tot
