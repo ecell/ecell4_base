@@ -15,8 +15,6 @@ infilename = sys.argv[1]
 
 N_A = 6.0221367e23
 
-N = 1000
-
 sigma = 5e-9
 
 #r0 = sigma
@@ -43,7 +41,6 @@ def plot_sol( filename, t ):
     mask = numpy.less_equal( rarray, rmax )
     rarray = numpy.compress( mask, rarray )
     parray = numpy.compress( mask, parray )
-    print rarray, parray
 
     return loglog( rarray / sigma, parray, 'k-'  )[0]
 

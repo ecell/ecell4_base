@@ -8,7 +8,7 @@ h = (1 + kf/kD)*Sqrt[Dtot]/sigma;
 a = kd*Sqrt[Dtot]/sigma;
 r0 = sigma;
 tau = sigma^2 / Dtot;
-maxr = 4.5 Sqrt[ 6 Dtot t] + sigma;
+maxr = 3.5 Sqrt[ 6 Dtot t] + sigma;
 
 sol = 
   N[Solve[{x + y + z == h, x*y + y*z + x*z == kd, x*y*z == a}, {x, y, 
@@ -36,7 +36,7 @@ term4[r_] :=
 f[r_] := 
  4*Pi*r^2*Re[coeff[r]*(term1[r] + term2[r] + term3[r] + term4[r])];
 
-out = Table[{r, f[r]}, {r, sigma, maxr, (maxr - sigma) / 100}]
+out = Table[{r, f[r]}, {r, sigma, maxr, (maxr - sigma) / 1000}]
 
 Export["p_rev.-3.tsv", out /. t -> tau 10^-3 // N]
 Export["p_rev.-2.tsv", out /. t -> tau 10^-2 // N]
