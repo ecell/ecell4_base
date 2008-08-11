@@ -12,15 +12,17 @@ model='mapk3'
 V_str = sys.argv[1]
 D_ratio_str = sys.argv[2]
 D_mode = sys.argv[3]
-Kpp_ratio_str = sys.argv[4]
-ti_str = sys.argv[5]
-mode = sys.argv[6]
-seq = sys.argv[7]
-T_str = sys.argv[8]
+K_nM_str = sys.argv[4]
+Kpp_ratio_str = sys.argv[5]
+ti_str = sys.argv[6]
+mode = sys.argv[7]
+seq = sys.argv[8]
+T_str = sys.argv[9]
 
 V = float( V_str )
 D_ratio = float( D_ratio_str )
 ti = float( ti_str )
+K_nM = float( K_nM_str )
 Kpp_ratio = float( Kpp_ratio_str )
 T = float( T_str )
 
@@ -101,7 +103,7 @@ s.addSpecies( Pi )
 sigma = radius * 2
 kD = k_D( D_react * 2, sigma )
 
-N_K_total = C2N( 200e-9, V ) 
+N_K_total = C2N( K_nM * 10e-9, V ) 
 
 N_Kpp = int( N_K_total * Kpp_ratio )
 N_K = N_K_total - N_Kpp
