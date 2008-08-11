@@ -7,12 +7,12 @@ import sys
 
 import math
 
-model='mapk3'
+model='mapk4'
 
 V_str = sys.argv[1]
 D_ratio_str = sys.argv[2]
 D_mode = sys.argv[3]
-K_nM_str = sys.argv[4]
+N_K_total_str = sys.argv[4]
 Kpp_ratio_str = sys.argv[5]
 ti_str = sys.argv[6]
 mode = sys.argv[7]
@@ -22,7 +22,7 @@ T_str = sys.argv[9]
 V = float( V_str )
 D_ratio = float( D_ratio_str )
 ti = float( ti_str )
-K_nM = float( K_nM_str )
+N_K_total = int( N_K_total_str )
 Kpp_ratio = float( Kpp_ratio_str )
 T = float( T_str )
 
@@ -103,8 +103,6 @@ s.addSpecies( Pi )
 sigma = radius * 2
 kD = k_D( D_react * 2, sigma )
 
-N_K_total = C2N( K_nM * 10e-9, V ) 
-
 N_Kpp = int( N_K_total * Kpp_ratio )
 N_K = N_K_total - N_Kpp
 N_KK = C2N( 50e-9, V )
@@ -173,13 +171,13 @@ r14 = UnimolecularReactionType( Pi, P, ki )
 s.addReactionType( r14 )
 
 
-logname = model + '_' + '_'.join( sys.argv[1:7] )
+logname = model + '_' + '_'.join( sys.argv[1:9] )
 l = Logger( s, 
             logname = logname,
             comment = '@ model=\'%s\'; D_move=%g; D_react=%g\n' %
             ( model, D_move, D_react ) +
-            '#@ V=%s; N_K=%d; N_KK=%d; N_P=%d;\n' % 
-            ( V_str, N_K, N_KK, N_P ) +
+            '#@ V=%s; N_K_total=%d; N_K=%d; N_Kpp=%d; N_KK=%d; N_P=%d;\n' % 
+            ( V_str, N_K_total, N_K, N_Kpp, N_KK, N_P ) +
             '#@ k1=%g; k2=%g; k3=%g; k4=%g; k5=%g; k6=%g;\n' %
             ( k1, k2, k3, k4, k5, k6 ) +
             '#@ ti=%g; ki=%g;' %
