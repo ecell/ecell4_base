@@ -96,8 +96,8 @@ from matplotlib.font_manager import FontProperties
 legend( loc='lower right', prop=FontProperties( size='tiny' ),pad=0.01 )
 
 plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp.ecd' )
-plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp2.ecd' )
-plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp_1e-2.ecd' )
+plot_file('/home/shafi/wrk/brown/samples/mapk/K.ecd' )
+
 
 
 #title( figtitle )

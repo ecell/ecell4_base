@@ -1,13 +1,17 @@
 
-loadModel( 'model2.eml' )
+loadModel( 'model3.eml' )
 
 
-l = createLoggerStub( 'Variable:/:Kpp:Value' )
-l.create()
+lkpp = createLoggerStub( 'Variable:/:Kpp:Value' )
+lkpp.create()
 
-run( 1000 )
+lk = createLoggerStub( 'Variable:/:K:Value' )
+lk.create()
+
+run( 500 )
 
 
 from ecell.ECDDataFile import *
 
-ECDDataFile( l.getData() ).save( 'Kpp2.ecd' )
+ECDDataFile( lkpp.getData() ).save( 'Kpp.ecd' )
+ECDDataFile( lk.getData() ).save( 'K.ecd' )
