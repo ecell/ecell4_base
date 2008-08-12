@@ -37,7 +37,7 @@ System System( / )
 
         Variable Variable( K )
         {
-                Value   @{C2N( 300e-9 )};
+                Value   @{C2N( 80e-9 )};
         }
 
         Variable Variable( KK )
@@ -58,7 +58,7 @@ System System( / )
 
         Variable Variable( Kpp )
         {
-                Value   @{C2N( 250e-9 )};
+                Value   @{C2N( 120e-9 )};
         }
 
          Variable Variable( KKi )
