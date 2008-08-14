@@ -48,4 +48,6 @@ plot:
 	python plot.py
 
 
-	
+
+clean:
+	rm -f *.rebind

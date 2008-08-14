@@ -31,7 +31,6 @@ class ReactionEvent:
 
 def load_reactions( file ):
 
-
     reactions = []
 
     for line in file.readlines():
@@ -46,56 +45,145 @@ def load_reactions( file ):
 def rebind_ratio( reactions ):
 
     KpCreated = {}
-    KpPartner = {}
-    PartnerKp = {}
+    KpKK = {}    
+
+    KpCurrentForm = {}
+    CurrentFormKp = {}
+    KKCurrentForm = {}
+    CurrentFormKK = {}
 
     for r in reactions:
-        print r.t, r.reactants, r.products
+        #print r.t, r.reactants, r.products
 
         # unbinding
         if len( r.reactants ) == 1 and len( r.products ) == 2:
-            for i, p in enumerate( r.products ):
-                if p.speciesName == 'Kp':
-                    Kp = p
-                    peer = r.products[ 1 - i ]
-                    if peer.speciesName == 'KKi':
-                        print 'unbinding', Kp, peer
-                        KpCreated[Kp] = r.t
-                        KpPartner[Kp] = peer
-                        PartnerKp[peer] = Kp
+
+            # K_KK -> Kp + KKi, Kp 
+            # Kp first site phosphorylated.
+            if r.reactants[0].speciesName == 'K_KK':
+
+                for i, p in enumerate( r.products ):
+                    if p.speciesName == 'Kp':
+                        Kp = p
+                        KKi = r.products[ 1 - i ]
+                        if KKi.speciesName == 'KKi':
+
+                            #print r.reactants[0], '->', Kp,  KKi
+                            KpCreated[Kp] = r.t
+                            
+                            KpKK[Kp] = KKi
+
+                            KpCurrentForm[Kp] = Kp
+                            CurrentFormKp[Kp] = Kp
+                            KKCurrentForm[KKi] = KKi
+                            CurrentFormKK[KKi] = KKi
+
+            elif r.reactants[0].speciesName == 'Kp_KK':
+
+                Kp_KK = r.reactants[0]
+
+                # Kp_KK -> Kp + KK
+                for i, p in enumerate( r.products ):
+                    if p.speciesName == 'Kp':
+                        Kp = p
+                        KK = r.products[ 1 - i ]
+                        if KK.speciesName == 'KK':
+
+                            #print r.reactants[0], '->', Kp, KK
+
+                            if CurrentFormKp.has_key(Kp_KK):
+                                originalKp = CurrentFormKp[Kp_KK]
+                                KpCurrentForm[originalKp] = Kp
+                                del CurrentFormKp[Kp_KK]
+                                CurrentFormKp[Kp] = originalKp
+
+                            if CurrentFormKK.has_key(Kp_KK):
+                                originalKK = CurrentFormKK[Kp_KK]
+                                KKCurrentForm[originalKK] = KK
+                                del CurrentFormKK[Kp_KK]
+                                CurrentFormKK[KK] = originalKK
+
+                            break
+
+
+                # Kp_KK -> Kpp + KKi
+                for i, p in enumerate( r.products ):
+                    if p.speciesName == 'Kpp':
+                        Kpp = p
+                        KKi = r.products[ 1 - i ]
+                        if KKi.speciesName == 'KKi':
+
+                            #print r.reactants[0], '->', Kpp, KKi
+
+                            if CurrentFormKp.has_key( Kp_KK ):
+
+                                originalKp = CurrentFormKp[Kp_KK]
+                                del KpCurrentForm[originalKp]
+                                del CurrentFormKp[Kp_KK]
+
+                            if CurrentFormKK.has_key(Kp_KK):
+                                originalKK = CurrentFormKK[Kp_KK]
+                                del KKCurrentForm[originalKK]
+                                del CurrentFormKK[Kp_KK]
+
+                            
+
 
         # binding
         elif len( r.reactants ) == 2 and len( r.products ) == 1:
+
+            # Kp + KK -> Kp_KK
             for i, p in enumerate( r.reactants ):
                 if p.speciesName == 'Kp':
                     Kp = p
-                    peer = r.reactants[ 1 - i ]
-                    if peer.speciesName == 'KK':
-                        print 'binding', Kp, peer
-                        t_u = KpCreated[Kp]
-                        t_rebinding = r.t - t_u
+                    KK = r.reactants[ 1 - i ]
+                    if KK.speciesName == 'KK':
+                        Kp_KK = r.products[0]
+                        assert Kp_KK.speciesName == 'Kp_KK'
 
-                        partner = KpPartner[Kp]
-                        if peer == partner:
-                            print t_rebinding, '\trebinding'
+                        #print Kp, KK, '->', Kp_KK
+                        
+                        if not CurrentFormKp.has_key( Kp ):
+                            break
+
+                        originalKp = CurrentFormKp[Kp]
+                        KpCurrentForm[originalKp] = Kp_KK
+                        del CurrentFormKp[Kp]
+                        CurrentFormKp[Kp_KK] = originalKp
+
+                        if CurrentFormKK.has_key(KK):
+                            originalKK = CurrentFormKK[KK]
+                            KKCurrentForm[originalKK] = Kp_KK
+                            del CurrentFormKK[KK]
+                            CurrentFormKK[Kp_KK] = originalKK
                         else:
-                            print t_rebinding, '\tdiffusion'
+                            originalKK = None
 
-                        del KpCreated[Kp]
-                        del KpPartner[Kp]
-                        del PartnerKp[partner]
+                        if KpCreated.has_key(originalKp):
+
+                            t_create = KpCreated[originalKp]
+                            t = r.t - t_create
+                            partner = KpKK[originalKp]
+                            if originalKK is not None and originalKK == partner:
+                                outfile.write( '%.18g\trebinding\n' % t )
+                            else:
+                                outfile.write( '%.18g\tdiffusion\n' % t )
+
+                            del KpCreated[originalKp]
+                            del KpKK[originalKp]
+
+                        
+                        
 
 
         # monomolecular
         elif len( r.reactants ) == 1 and len( r.products ) == 1:
-            for p in r.reactants:
-                if PartnerKp.has_key( p ):
-                    Kp = PartnerKp[p]
-                    newpartner = r.products[0]
-                    KpPartner[Kp] = newpartner
-                    del PartnerKp[p]
-                    PartnerKp[newpartner] = Kp
-                    #print 'tracked', p, ' -> ', newpartner
+            if CurrentFormKK.has_key( r.reactants[0] ):
+                originalform = CurrentFormKK[ r.reactants[0] ]
+                KKCurrentForm[ originalform ] = r.products[0]
+                del CurrentFormKK[ r.reactants[0] ]
+                CurrentFormKK[ r.products[0] ] = originalform
+                #print 'transition', r.reactants[0], '->', r.products[0]
                                   
         
 
@@ -103,10 +191,25 @@ def rebind_ratio( reactions ):
 if __name__ == '__main__':
 
     import sys
+    import os
+    import glob
 
-    for file in sys.argv[1:]:
-        file = open( sys.argv[1] )
-        reactions = load_reactions( file )
-        print >> sys.stderr, 'num reactions: ', len( reactions )
-        rebind_ratio( reactions )
+    for pattern in sys.argv[1:]:
+    
+        globpattern = pattern.replace('ALL','*')
 
+        l = os.path.basename( os.path.splitext( pattern )[0] )
+
+        outfilename = l + '.rebind'
+        outfile = open( outfilename, 'w' )
+        print >> sys.stderr, 'pattern ', l, '\noutfile', outfilename
+
+        filelist = glob.glob( globpattern )
+
+
+        for file in filelist:
+            reactions = load_reactions( open( file ) )
+            print >> sys.stderr, 'num reactions: ', len( reactions )
+            rebind_ratio( reactions )
+
+        outfile.close()
