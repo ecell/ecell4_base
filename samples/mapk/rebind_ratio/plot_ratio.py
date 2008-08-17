@@ -65,7 +65,7 @@ data_em1=[
 ]
 
 
-
+axes([.13,.13,.8,.8])
 
 semilogx( D, data_em1, 'o:', label='t_half=1e-1 [s]' )
 semilogx( D, data_em2, 'o:', label='t_half=1e-2 [s]' )
@@ -79,11 +79,11 @@ semilogx( D, data_0, 'o:', label='t_half=0' )
 
 
 xlim(0.2,5)
-xticks(D,[str(i) for i in D],fontsize=18)
-yticks(fontsize=18)
+xticks(D,[str(i) for i in D],fontsize=20)
+yticks(fontsize=20)
 
 ylim(0,1)
-xlabel(r'diffusion speed [$\mu m^2 / s$]',fontsize=20)
+xlabel(r'diffusion speed [${\rm \mu m^2 / s }$]',fontsize=22)
 #ylabel('ratio',fontsize=20)
 #legend()
 

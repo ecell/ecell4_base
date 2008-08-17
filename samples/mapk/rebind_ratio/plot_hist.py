@@ -28,9 +28,10 @@ N=50
 
 pattern = re.compile( sys.argv[1] )
 
-xmin = 1e-14
-xmax = 10
+xmin = 1e-9
+xmax = 9
 
+axes([.12,.13,.8,.8])
 
 for filename in sys.argv[2:]:
 
@@ -62,16 +63,22 @@ for filename in sys.argv[2:]:
     print len(data)
     print grid, xmin,xmax
     
-    n, bins = numpy.histogram(numpy.log(data), bins=N)
+    n, bins = numpy.histogram(numpy.log10(data), bins=N)
 
     print bins, n
 
-    loglog( numpy.exp(bins), n+1e-10, clip_on=False )#, label=filename )
+    loglog( 10**bins, n+1e-10, clip_on=False )#, label=filename )
 
-xlabel( 'second phosphorylation time [s]' )
+xlabel( 'Second phosphorylation times [s]', size=22 )
 #legend()
 xlim( xmin, xmax )
-ylim( 1, 1e4 )
+ylim( 4, 5e3 )
+
+xticks( [1e-9, 1e-6, 1e-3, 1], [r'${\rm 1 ns}$',
+                                r'${\rm 1 \mu s}$',
+                                r'${\rm 1 ms}$',
+                                r'${\rm 1 s}$'],
+                                size=20 )
 
 
 show()
