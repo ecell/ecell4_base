@@ -48,32 +48,38 @@ def plot_sol( filename, t ):
 
 def plot_hist( data, T, i ):
 
-    bins = 20
+    bins = 30
 
-    nonreactions = numpy.compress( data > sigma, data )
+    nonreactions = numpy.compress( data >= sigma, data )
     print 'max', max( nonreactions )
-    hist, lower_edges = numpy.histogram( nonreactions, bins=bins )
+    hist, r = numpy.histogram( numpy.log( nonreactions ), 
+                               bins=bins )
 
     histsum = hist.sum()
     S_sim = float( len( nonreactions ) ) / len( data )
+    print 'S_sim', S_sim
     hist = hist.astype( numpy.float )
-    #print hist
-    xtick = lower_edges[2]-lower_edges[1]
 
-    hist /= len( data ) * xtick
+    r = numpy.concatenate( [ r, [r[-1] - r[-2]] ] )
+    r = numpy.exp( r )
 
-    x = lower_edges + ( xtick * .5 )
-    #print 'x', x, hist
+    xticks = r[1:]-r[:-1]
+
+    hist /= len( data ) * xticks
+
+    r = r[:-1] + ( xticks * .5 )
+    #print 'x', x
+    #pStyles = [ 'o', '^', 'v', '<', '>', 's', '+' ]
     colors = [ 'b', 'g', 'r', 'c', 'm', 'y', 'k' ]
 
-    loglog( x / sigma, hist, colors[i] + '.',             
+    loglog( r / sigma, hist, colors[i] + 'o', 
             label=r'$T = \tau^{%d}$' % round(math.log10(T/tau)) )
-
-    return lower_edges[-1] + xtick
     
 
 
 if __name__ == '__main__':
+
+    axes([.12,.13,.8,.8])
 
     for i in range( len(sys.argv[1:])/3 ):
         simfilename = sys.argv[i*3+1]
@@ -85,13 +91,13 @@ if __name__ == '__main__':
         solline = plot_sol( solfilename, T )
 
 
+    xlabel( r'$r / \sigma$', size=20 )
+    ylabel( r'$p_{rev}$', size=20 )
 
-    xlabel( r'$r / \sigma$', fontsize='large' )
-    ylabel( r'$p_{rev}$', fontsize='large' )
-    xlim( 0.9, 5e2 )
-    ylim( 1.5e1, 7e9 )
+    xlim( 0.9, 2.2e2 )
+    ylim( 1e3, 4e9 )
     solline.set_label( r'theory' )
-    legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
-    grid()
+    #legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
+    #grid()
     show()
 

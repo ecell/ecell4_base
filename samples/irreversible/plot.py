@@ -15,7 +15,7 @@ from p_irr import p_irr
 
 N_A = 6.0221367e23
 
-N = 10000
+N = 1000
 
 sigma = 5e-9
 r0 = sigma
@@ -38,61 +38,72 @@ def plot_sol( t ):
 
     rmax = 3.1 * math.sqrt( 6 * D_tot * t ) + rmin
 
-    rtick = ( rmax - rmin ) / N
-    rarray = numpy.mgrid[rmin:rmax:rtick]
+  
+    logrmin = math.log(rmin)
+    logrmax = math.log(rmax)
+    
+    tick=(logrmax-logrmin)/N
+    loggrid = numpy.mgrid[logrmin:logrmax:tick]
+    grid = numpy.exp(loggrid)
 
-    parray = array( [ p_irr( r, t, r0, kf, D_tot, sigma ) for r in rarray ] )
+    parray = array( [ p_irr( r, t, r0, kf, D_tot, sigma ) for r in grid ] )
 
-    return loglog( rarray / sigma , parray, 'k-' )[0]
+    return loglog( grid / sigma , parray, 'k-' )[0]
     #plot( rarray / sigma , parray, 'k-', label='theory' )
 
 def plot_hist( data, T, i ):
 
-    bins = 20
+    bins = 30
 
     nonreactions = numpy.compress( data >= sigma, data )
     print 'max', max( nonreactions )
-    hist, lower_edges = numpy.histogram( nonreactions, bins=bins )
+    hist, r = numpy.histogram( numpy.log( nonreactions ), 
+                               bins=bins )
 
     histsum = hist.sum()
     S_sim = float( len( nonreactions ) ) / len( data )
+    print 'S_sim', S_sim
     hist = hist.astype( numpy.float )
 
-    xtick = lower_edges[2]-lower_edges[1]
+    r = numpy.concatenate( [ r, [r[-1] - r[-2]] ] )
+    r = numpy.exp( r )
 
-    hist /= len( data ) * xtick
+    xticks = r[1:]-r[:-1]
 
-    x = lower_edges + ( xtick * .5 )
+    hist /= len( data ) * xticks
+
+    r = r[:-1] + ( xticks * .5 )
     #print 'x', x
     #pStyles = [ 'o', '^', 'v', '<', '>', 's', '+' ]
     colors = [ 'b', 'g', 'r', 'c', 'm', 'y', 'k' ]
 
-    loglog( x / sigma, hist, colors[i] + '.', 
+    loglog( r / sigma, hist, colors[i] + 'o', 
             label=r'$T = \tau^{%d}$' % round(math.log10(T/tau)) )
 
     
-    return lower_edges[-1] + xtick
-
 
 if __name__ == '__main__':
+
+    axes([.13,.13,.8,.8])
+
 
     for i in range( len(sys.argv[1:])/2 ):
         filename = sys.argv[i*2+1]
         T = float( sys.argv[i*2+2] )
         print filename,T
         data = load_data( filename )
-        maxr = plot_hist( data, T, i )
+        plot_hist( data, T, i )
         solline = plot_sol( T )
 
 
 
-    xlabel( r'$r / \sigma$', fontsize='large' )
-    ylabel( r'$p_{irr}$', fontsize='large' )
-    xlim( 0.9, 5e2 )
-    ylim( 1.5e1, 7e9 )
-    solline.set_label( r'theory' )
-    legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
-    grid()
+    xlabel( r'$r / \sigma$', size=20 )
+    ylabel( r'$p_{irr}$', size=20 )
+    xlim( 0.9, 2.2e2 )
+    ylim( 1e3, 4e9 )
+    #solline.set_label( r'theory' )
+    #legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
+    #grid()
     show()
 
 

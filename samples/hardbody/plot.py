@@ -69,7 +69,7 @@ data_C = [
 [6.51655e+06,6.69382e+06,6.65525e+06,],
 
 # T=0.0001, N=1e+06, V=1.3e-11
-[1.11533e+08,1.19388e+08,1.24238e+08,],
+#[1.11533e+08,1.19388e+08,1.24238e+08,],
 
 ]
 
@@ -120,7 +120,7 @@ data_N3000 = [
 
 
 Nv = numpy.array([30,100,300,1000,3000,10000,30000,100000,300000])
-Nc = numpy.array([30,100,300,1000,3000,10000,30000,100000,300000,1000000])
+Nc = numpy.array([30,100,300,1000,3000,10000,30000,100000,300000])#,1000000])
 
 # (40e-18 ** (1/3.0))**2 / 1e-12
 # = 11.69607095285148
@@ -143,21 +143,24 @@ data_bd_6 = data_bd_5 * 10
 
 X = numpy.array([5,100,300,1000,3000,10000,30000,100000,5e6])
 
+
+axes([.12,.12,.8,.8])
+
 #for i in range( len(Nv) ):
 plot_data( Nv, data_V,'kx' )
 
 loglog( X, 0.09* X**(5.0/3), 'k--' )
 
-figtext( .3, .17, r'(2) V = 40 fL' )
-figtext( .8, .73, r'$t \ \propto \ N^{5/3}$', color='k' )
+figtext( .25, .18, r'(2) V = 40 fL' )
+figtext( .8, .72, r'$t \ \propto \ N^{5/3}$', color='k' )
 
 
 #for i in range( len(Nc) ):
 plot_data( Nc, data_C,'ko' )
 loglog( X, 18* X, 'k-' )
 
-figtext( .135, .34, r'(1) C = 100 nM' )
-figtext( .8, .6, r'$t \  \propto \ N$', color='k' )
+figtext( .135, .36, r'(1) C = 100 nM' )
+figtext( .8, .59, r'$t \  \propto \ N$', color='k' )
 
 #plot_data( Nb, data_bd_6,'k.' )
 
@@ -166,20 +169,22 @@ loglog( X, 5e4* X, 'b:' ) # 1e-3 tau
 
 figtext( .2, .78, r'BD', color='k' )
 
-figtext( .2, .61, r'BD (relaxed)', color='k' )
+figtext( .19, .62, r'BD (relaxed)', color='k' )
 
 #loglog( data1[0] , data1[1], 'o-', label='Vol. = 1e-15 L' )
 #loglog( data2[0] , data2[1], 'o-', label='# particles = 600' )
 #loglog( data3[0] , data3[1], 'o-', label='Conc. = 1e-6 M' )
 
-xlabel( 'N [# particles]' )
+xlabel( 'N [# particles]', size=18 )
 #xlabel( 'Concentration [M]' )
-ylabel( 'time [sec]' )
+ylabel( 'time [s]', size=18 )
 #legend()
-xlim(4,1e7)
+xlim(4,9e6)
 ylim(1.1,2e11)
 
-grid()
+#xticks( Nv )
+
+#grid()
 
 Cx3000=numpy.array([
 #    9.35e-11,
@@ -208,7 +213,7 @@ Cx300=numpy.array([
 #data_N3000 *= 11696
 #data_N300 *= 11696
 
-axes([.61,.21,.27,.28])
+axes([.60,.16,.28,.29])
 
 # M-> uM
 Cx300 *= 1e6
@@ -224,12 +229,12 @@ loglog( [1e-4,1e4],[bd3000,bd3000], 'b:' )
 
 for i in range( len(Cx300) ):
     plot_data( Cx300, data_N300,'kd' )
-loglog( Cx300, 2.5e4* Cx300**(2.0/3.0), 'k-.', label='C^(4/3)' )
-loglog( Cx300, 2.5e4* Cx300**(4.0/3.0), 'k-.', label='C^(4/3)' )
+loglog( Cx300, 2.5e4* Cx300**(2.0/3.0), 'k-.', label='C^(2/3)' )
+#loglog( Cx300, 2.5e4* Cx300**(4.0/3.0), 'k-.', label='C^(4/3)' )
 
-figtext( .73, .22, r'(3a) N = 300' )
-figtext( .79, .28, r'$t \ \propto \ C^{2/3}$', color='k' )
-figtext( .62, .35, r'(3b) N = 3000' )
+figtext( .73, .18, r'(3a) N = 300' )
+figtext( .79, .22, r'$t \ \propto \ C^{2/3}$', color='k' )
+figtext( .62, .31, r'(3b) N = 3000' )
 
 #bd 300
 bd300 = numpy.array([1.62390208244,1.62284588814,1.63388109207]).mean()
@@ -238,14 +243,17 @@ loglog( [1e-5,1e5],[bd300,bd300], 'b:' )
 
 figtext( .63, .405, r'BD', color='k' )
 
-xlabel( 'Concentration [uM]' )
-ylabel( 'time [sec]' )
+#xlabel( 'Concentration' )
+#ylabel( 'time [s]' )
 
 #xlim(5e-10,5e-2)
 #ylim(1e2,5e9)
 #xlim(5e-10,5e-3)
 xlim(2e-4,9e3)
 ylim(2e2,8e11)
+
+xticks( [1e-3, 1e0, 1e3], ['nM','uM','mM'] )
+yticks( [1e4, 1e7, 1e10] )
 
 show()
 #savefig('fig1.eps')

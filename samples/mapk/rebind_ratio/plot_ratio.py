@@ -22,6 +22,14 @@ data_em6=[
 0.208129584352
 ]
 
+data_em5=[
+0.662728062554,
+0.521941198262,
+0.360172138544,
+0.218285548167,
+0.12251119726
+]
+
 data_em4=[
 0.44779842834,
 0.31161462002,
@@ -31,6 +39,13 @@ data_em4=[
 ]
 
 
+data_em3=[
+0.211627566698,
+0.135715851787,
+0.0858701895462,
+0.0565463070573,
+0.0380785002929
+]
 
 data_em2=[
 0.0804020100503,
@@ -51,19 +66,25 @@ data_em1=[
 
 
 
-semilogx( D, data_0, '.', label='t_half=0' )
-semilogx( D, data_em6, '.', label='t_half=1e-6 [s]' )
-semilogx( D, data_em4, '.', label='t_half=1e-4 [s]' )
-semilogx( D, data_em2, '.', label='t_half=1e-2 [s]' )
-semilogx( D, data_em1, '.', label='t_half=1e-1 [s]' )
+
+semilogx( D, data_em1, 'o:', label='t_half=1e-1 [s]' )
+semilogx( D, data_em2, 'o:', label='t_half=1e-2 [s]' )
+semilogx( D, data_em3, 'o:', label='t_half=1e-3 [s]' )
+semilogx( D, data_em4, 'o:', label='t_half=1e-4 [s]' )
+semilogx( D, data_em5, 'o:', label='t_half=1e-5 [s]' )
+semilogx( D, data_em6, 'o:', label='t_half=1e-6 [s]' )
+semilogx( D, data_0, 'o:', label='t_half=0' )
+
+
 
 
 xlim(0.2,5)
-xticks(D,[str(i) for i in D])
+xticks(D,[str(i) for i in D],fontsize=18)
+yticks(fontsize=18)
 
 ylim(0,1)
-xlabel(r'diffusion speed ($\mu m^2 / s)$')
-ylabel('rebinding ratio')
-legend()
+xlabel(r'diffusion speed [$\mu m^2 / s$]',fontsize=20)
+#ylabel('ratio',fontsize=20)
+#legend()
 
 show()

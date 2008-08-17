@@ -7,7 +7,7 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.1.out 1.25e-4 1000000 &
 LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.0.out 1.25e-5 1000000 &
 LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-1.out 1.25e-6 1000000 &
 LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-2.out 1.25e-7 1000000 &
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-3.out 1.25e-8 1000000 &
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-3.out 1.25e-8 5000000 &
 '''
 
 
@@ -21,7 +21,7 @@ def run( outfilename, T, N ):
 
     for i in range( N ):
         d, t = singlerun( T )
-        outfile.write( '%g\n' % d )
+        outfile.write( '%.18g\n' % d )
         outfile.flush()
         #print d, t
         assert d == 0 or t == T
