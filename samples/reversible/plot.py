@@ -91,8 +91,8 @@ if __name__ == '__main__':
         solline = plot_sol( solfilename, T )
 
 
-    xlabel( r'$r / \sigma$', size=20 )
-    ylabel( r'$p_{rev}$', size=20 )
+    xlabel( r'$r / \sigma$', size=22 )
+    ylabel( r'$p_{rev}$', size=22 )
 
     xlim( 0.9, 2.2e2 )
     ylim( 1e3, 4e9 )

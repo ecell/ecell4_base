@@ -27,7 +27,7 @@ V=40e-15
 
 
 data_V = [
-# T=1, N=30, V=4e-14
+# T=1, N=30, V=4e-14e
 [23.315,22.9394,20.5574,],
 # T=0.1, N=100, V=4e-14
 [149.173,184.204,151.575,],
@@ -144,7 +144,7 @@ data_bd_6 = data_bd_5 * 10
 X = numpy.array([5,100,300,1000,3000,10000,30000,100000,5e6])
 
 
-axes([.12,.12,.8,.8])
+axes([.12,.13,.8,.8])
 
 #for i in range( len(Nv) ):
 plot_data( Nv, data_V,'kx' )
@@ -159,7 +159,7 @@ figtext( .8, .72, r'$t \ \propto \ N^{5/3}$', color='k' )
 plot_data( Nc, data_C,'ko' )
 loglog( X, 18* X, 'k-' )
 
-figtext( .135, .36, r'(1) C = 100 nM' )
+figtext( .14, .37, r'(1) C = 100 nM' )
 figtext( .8, .59, r'$t \  \propto \ N$', color='k' )
 
 #plot_data( Nb, data_bd_6,'k.' )
@@ -175,14 +175,16 @@ figtext( .19, .62, r'BD (relaxed)', color='k' )
 #loglog( data2[0] , data2[1], 'o-', label='# particles = 600' )
 #loglog( data3[0] , data3[1], 'o-', label='Conc. = 1e-6 M' )
 
-xlabel( 'N [# particles]', size=18 )
+xlabel( 'N [# particles]', size=22 )
 #xlabel( 'Concentration [M]' )
-ylabel( 'time [s]', size=18 )
+#ylabel( 'time [s]', size=22 )
 #legend()
 xlim(4,9e6)
 ylim(1.1,2e11)
 
-#xticks( Nv )
+xticks( size=18 )
+yticks( [60,3600,3600*24,3600*24*30, 3600*24*30*12],
+        ['minute', 'hour', 'day', 'month', 'year'], size=16 )
 
 #grid()
 
@@ -213,7 +215,7 @@ Cx300=numpy.array([
 #data_N3000 *= 11696
 #data_N300 *= 11696
 
-axes([.60,.16,.28,.29])
+axes([.60,.18,.29,.30])
 
 # M-> uM
 Cx300 *= 1e6
@@ -232,16 +234,16 @@ for i in range( len(Cx300) ):
 loglog( Cx300, 2.5e4* Cx300**(2.0/3.0), 'k-.', label='C^(2/3)' )
 #loglog( Cx300, 2.5e4* Cx300**(4.0/3.0), 'k-.', label='C^(4/3)' )
 
-figtext( .73, .18, r'(3a) N = 300' )
-figtext( .79, .22, r'$t \ \propto \ C^{2/3}$', color='k' )
-figtext( .62, .31, r'(3b) N = 3000' )
+figtext( .73, .19, r'(3a) N = 300' )
+figtext( .79, .24, r'$t \ \propto \ C^{2/3}$', color='k' )
+figtext( .62, .32, r'(3b) N = 3000' )
 
 #bd 300
 bd300 = numpy.array([1.62390208244,1.62284588814,1.63388109207]).mean()
 bd300 *= 11.69607 / 1e-9
 loglog( [1e-5,1e5],[bd300,bd300], 'b:' )
 
-figtext( .63, .405, r'BD', color='k' )
+figtext( .63, .435, r'BD', color='k' )
 
 #xlabel( 'Concentration' )
 #ylabel( 'time [s]' )
@@ -252,8 +254,9 @@ figtext( .63, .405, r'BD', color='k' )
 xlim(2e-4,9e3)
 ylim(2e2,8e11)
 
-xticks( [1e-3, 1e0, 1e3], ['nM','uM','mM'] )
-yticks( [1e4, 1e7, 1e10] )
+xticks( [1e-3, 1e0, 1e3], ['nM','uM','mM'], size=16 )
+yticks( [60,3600,3600*24,3600*24*30, 3600*24*30*12],
+        ['m', 'h', 'd', 'm', 'y'], size=16 )
 
 show()
 #savefig('fig1.eps')
