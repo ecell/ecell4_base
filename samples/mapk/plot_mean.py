@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+#python mapk/plot_mean.py 09/data/mapk3_1e-15_0.25_fixed_0_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.5_fixed_0_normal_ALL_tc.dat 09/data/mapk3_1e-15_1_fixed_0_normal_ALL_tc.dat 09/data/mapk3_1e-15_2_fixed_0_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_0_normal_ALL_tc.dat
+
+# python mapk/plot_mean.py 09/data/mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.5_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_1_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_2_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-2_normal_ALL_tc.dat
+# python mapk/plot_mean.py 09/data/mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.5_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_1_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_2_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-6_normal_ALL_tc.dat
+# python mapk/plot_mean.py 09/data/mapk3_1e-15_4_fixed_0_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-5_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-4_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-3_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-1_normal_ALL_tc.dat
+
+
 import sys
 
 import numpy
@@ -50,12 +57,12 @@ def load_data( filename ):
     return x, y
 
 
-def plot_file( filename ):
+def plot_file( filename, lp='-' ):
 
     x, y = load_data( filename )
 
     #plot_theory( N_K, N_P, Keq, x[-1] )
-    plot( x, y, '-' )
+    plot( x, y, lp )
 
     #psd( y )
     #ylim( 1, 5e4 )
@@ -74,11 +81,14 @@ for pattern in sys.argv[1:]:
     filelist = glob.glob( globpattern )
 
     start = 0
-    end = 80.
+    #end = 50.
+    end = 120.
     interval = (end-start) / 1000
     rx = numpy.mgrid[start:end:interval]
 
     data = []
+
+    assert filelist
 
     for filename in filelist:
         print 'file ', filename
@@ -92,11 +102,18 @@ for pattern in sys.argv[1:]:
 
     plot( rx, mry, label=l )
 
-from matplotlib.font_manager import FontProperties
-legend( loc='lower right', prop=FontProperties( size='tiny' ),pad=0.01 )
+#from matplotlib.font_manager import FontProperties
+#legend( loc='lower right', prop=FontProperties( size='tiny' ),pad=0.01 )
 
-plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp.ecd' )
-plot_file('/home/shafi/wrk/brown/samples/mapk/K.ecd' )
+
+#plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp_ODE_0.ecd', 'k-' )
+#plot_file('/home/shafi/wrk/brown/samples/mapk/K.ecd' )
+
+#ylim( 0, 50 )
+#xlim( 0, 50 )
+
+xlabel( r'time [s]', size=22 )
+ylabel( r'Kpp', size=22 )
 
 
 

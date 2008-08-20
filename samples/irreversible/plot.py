@@ -97,8 +97,8 @@ if __name__ == '__main__':
 
 
 
-    xlabel( r'$r / \sigma$', size=20 )
-    ylabel( r'$p_{irr}$', size=20 )
+    xlabel( r'$r / \sigma$', size=24 )
+    ylabel( r'$p_{irr}$', size=24 )
     xlim( 0.9, 2.2e2 )
     ylim( 1e3, 4e9 )
     #solline.set_label( r'theory' )

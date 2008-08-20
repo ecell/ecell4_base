@@ -20,7 +20,7 @@ def C2N( conc ):
 }
 
 @{
-ti = 1e-2
+ti = 1e-6
 
 import math
 ki = math.log( 2 ) / ti
@@ -37,7 +37,7 @@ System System( / )
 
         Variable Variable( K )
         {
-                Value   @{C2N( 80e-9 )};
+                Value   @{C2N( 200e-9 )};
         }
 
         Variable Variable( KK )
@@ -58,7 +58,7 @@ System System( / )
 
         Variable Variable( Kpp )
         {
-                Value   @{C2N( 120e-9 )};
+                Value   @{C2N( 0 )};
         }
 
          Variable Variable( KKi )
@@ -117,7 +117,7 @@ System System( / )
                 VariableReferenceList   [ _ :.:K_KK -1 ]
                                         [ _ :.:Kp      1 ] 
                                         [ _ :.:KKi   1 ];
-              k       1;
+              k       1.5;
         }
 
         Process @(MAIN_PROCESS)( R4 )
@@ -166,7 +166,7 @@ System System( / )
                  VariableReferenceList   [ _ :.:Kpp_P -1 ]
                                          [ _ :.:Kp      1 ] 
                                          [ _ :.:Pi   1 ];
-                 k      1;
+                 k      1.5;
          }
 
 

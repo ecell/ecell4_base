@@ -28,7 +28,10 @@ N=50
 
 pattern = re.compile( sys.argv[1] )
 
-xmin = 1e-9
+#xmin = 1e-9
+#xmax = 9
+
+xmin = 1e-13
 xmax = 9
 
 axes([.12,.13,.8,.8])
@@ -69,16 +72,18 @@ for filename in sys.argv[2:]:
 
     loglog( 10**bins, n+1e-10, clip_on=False )#, label=filename )
 
-xlabel( 'Second phosphorylation times [s]', size=22 )
+xlabel( 'Second phosphorylation times', size=22 )
 #legend()
 xlim( xmin, xmax )
 ylim( 4, 5e3 )
 
-xticks( [1e-9, 1e-6, 1e-3, 1], [r'${\rm 1 ns}$',
-                                r'${\rm 1 \mu s}$',
-                                r'${\rm 1 ms}$',
-                                r'${\rm 1 s}$'],
-                                size=20 )
+xticks( [1e-12, 1e-9, 1e-6, 1e-3, 1], 
+        [r'${\rm 1 ps}$',
+         r'${\rm 1 ns}$',
+         r'${\rm 1 \mu s}$',
+         r'${\rm 1 ms}$',
+         r'${\rm 1 s}$'],
+        size=20 )
 
 
 show()

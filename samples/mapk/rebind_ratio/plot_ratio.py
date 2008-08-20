@@ -83,7 +83,7 @@ xticks(D,[str(i) for i in D],fontsize=20)
 yticks(fontsize=20)
 
 ylim(0,1)
-xlabel(r'diffusion speed [${\rm \mu m^2 / s }$]',fontsize=22)
+xlabel(r'Diffusion speed [${\rm \mu m^2 / s }$]',fontsize=24)
 #ylabel('ratio',fontsize=20)
 #legend()
 
