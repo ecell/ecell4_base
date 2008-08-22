@@ -2,7 +2,7 @@
 
 # D=1
 
-# python plot_hist.py "." mapk3_1e-15_1_fixed_1e-1_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-3_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-4_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-5_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-6_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_0_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_0_normal_ALL_reactions.rebind
+# python plot_hist.py "." mapk3_1e-15_1_fixed_1e-1_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-3_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-4_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-5_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-6_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_0_normal_ALL_reactions.rebind
 
 
 # t_half = 1e-6
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         plot_hist( filename, xmin, xmax, N, pattern )
 
 
-    xlabel( 'Second phosphorylation times', size=22 )
+    xlabel( 'Second phosphorylation times', size=26 )
 
     xticks( [1e-12, 1e-9, 1e-6, 1e-3, 1], 
             [r'${\rm 1 ps}$',
@@ -84,7 +84,8 @@ if __name__ == '__main__':
              r'${\rm 1 \mu s}$',
              r'${\rm 1 ms}$',
              r'${\rm 1 s}$'],
-            size=20 )
+            size=24 )
+    yticks( size=18 )
     
     xlim( xmin, xmax )
     ylim( 4, 5e3 )

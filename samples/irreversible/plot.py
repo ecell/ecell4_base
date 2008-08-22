@@ -101,7 +101,7 @@ if __name__ == '__main__':
     ylabel( r'$p_{irr}$', size=28 )
     xlim( 0.9, 2.2e2 )
     ylim( 2e-6, 2e1 )
-    xticks( size=22 )
+    xticks( [1, 10, 100], ['1', '10', '100'], size=22 )
     yticks( size=18 )
     #solline.set_label( r'theory' )
     #legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
