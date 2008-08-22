@@ -23,7 +23,9 @@ def run_single( T, V, N ):
     
     box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 
-    A = Species( 'A', 1e-12, 2.5e-9 )
+    D = 1e-11
+
+    A = Species( 'A', D, 2.5e-9 )
     s.addSpecies( A )
     
     s.throwInParticles( A, N, box1 )

@@ -8,6 +8,8 @@
 
 
 import sys
+import os
+import glob
 
 import numpy
 import scipy.io
@@ -39,6 +41,7 @@ def add_columns( data, ycolumns ):
 
     return y
 
+
 def load_data( filename ):
     ycolumns = [1,]
     #ycolumns = [2,6]
@@ -50,7 +53,8 @@ def load_data( filename ):
     for l in header:
         exec( l )
 
-    data = numpy.loadtxt( filename )
+    #data = numpy.loadtxt( filename )
+    data = load( filename )
     x = data[:,0]
     y = add_columns( data, ycolumns )
 
@@ -67,23 +71,10 @@ def plot_file( filename, lp='-' ):
     #psd( y )
     #ylim( 1, 5e4 )
 
+def plot_mean( filelist, end, l='' ):
 
-import glob
-import os
-
-for pattern in sys.argv[1:]:
-
-    globpattern = pattern.replace('ALL','*')
-
-    l = os.path.basename( os.path.splitext( pattern )[0] )
-    print 'pattern ', l
-
-    filelist = glob.glob( globpattern )
-
-    start = 0
-    #end = 50.
-    end = 120.
-    interval = (end-start) / 1000
+    start = 0.
+    interval = (end-start) / 1000.
     rx = numpy.mgrid[start:end:interval]
 
     data = []
@@ -93,6 +84,7 @@ for pattern in sys.argv[1:]:
     for filename in filelist:
         print 'file ', filename
         x, y = load_data( filename )
+        print x,y
         ry = resample( x, y, rx )
         print ry.shape
         data.append( ry )
@@ -102,18 +94,37 @@ for pattern in sys.argv[1:]:
 
     plot( rx, mry, label=l )
 
-#from matplotlib.font_manager import FontProperties
-#legend( loc='lower right', prop=FontProperties( size='tiny' ),pad=0.01 )
+
+def plot_mean_pattern( pattern, end ):
+    globpattern = pattern.replace('ALL','*')
+    
+    l = os.path.basename( os.path.splitext( pattern )[0] )
+    print 'pattern ', l
+
+    filelist = glob.glob( globpattern )
+
+    plot_mean( filelist, end )
 
 
-#plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp_ODE_0.ecd', 'k-' )
-#plot_file('/home/shafi/wrk/brown/samples/mapk/K.ecd' )
+if __name__ == '__main__':
 
-#ylim( 0, 50 )
-#xlim( 0, 50 )
 
-xlabel( r'time [s]', size=22 )
-ylabel( r'Kpp', size=22 )
+    import glob
+    import os
+
+    xmax = 60
+
+    for pattern in sys.argv[1:]:
+        plot_mean_pattern( pattern, xmax )
+
+
+    #plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp_ODE_0.ecd', 'k-' )
+
+    xticks( size=20 )
+    yticks( size=20 )
+
+    xlabel( r'time [s]', size=22 )
+    ylabel( r'Kpp', size=22 )
 
 
 
@@ -121,4 +132,4 @@ ylabel( r'Kpp', size=22 )
 
 #savefig( 'figs/' + figtitle + '.png', dpi=80 )
 
-show()
+    show()

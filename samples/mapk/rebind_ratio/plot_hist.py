@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
-#   python plot_hist.py "." mapk3_1e-15_4_fixed_1e-1_normal_ALL_reactions.rebind mapk3_1e-15_4_fixed_1e-2_normal_ALL_reactions.rebind mapk3_1e-15_4_fixed_1e-4_normal_ALL_reactions.rebind mapk3_1e-15_4_fixed_1e-6_normal_ALL_reactions.rebind mapk3_1e-15_4_fixed_0_normal_ALL_reactions.rebind
-#    python plot_hist.py "." mapk3_1e-15_2_fixed_1e-1_normal_ALL_reactions.rebind mapk3_1e-15_2_fixed_1e-2_normal_ALL_reactions.rebind mapk3_1e-15_2_fixed_1e-4_normal_ALL_reactions.rebind mapk3_1e-15_2_fixed_1e-6_normal_ALL_reactions.rebind mapk3_1e-15_2_fixed_0_normal_ALL_reactions.rebind
-#   python plot_hist.py "." mapk3_1e-15_1_fixed_1e-1_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-4_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-6_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_0_normal_ALL_reactions.rebind
-#   python plot_hist.py "." mapk3_1e-15_0.5_fixed_1e-1_normal_ALL_reactions.rebind mapk3_1e-15_0.5_fixed_1e-2_normal_ALL_reactions.rebind mapk3_1e-15_0.5_fixed_1e-4_normal_ALL_reactions.rebind mapk3_1e-15_0.5_fixed_1e-6_normal_ALL_reactions.rebind mapk3_1e-15_0.5_fixed_0_normal_ALL_reactions.rebind
-#   python plot_hist.py "." mapk3_1e-15_0.25_fixed_1e-1_normal_ALL_reactions.rebind mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_reactions.rebind mapk3_1e-15_0.25_fixed_1e-4_normal_ALL_reactions.rebind mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_reactions.rebind mapk3_1e-15_0.25_fixed_0_normal_ALL_reactions.rebind
+# D=1
 
+# python plot_hist.py "." mapk3_1e-15_1_fixed_1e-1_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-3_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-4_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-5_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-6_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_0_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_0_normal_ALL_reactions.rebind
 
 
 # t_half = 1e-6
@@ -23,20 +20,7 @@ import numpy
 import sys
 import re
 
-N=50
-
-
-pattern = re.compile( sys.argv[1] )
-
-#xmin = 1e-9
-#xmax = 9
-
-xmin = 1e-13
-xmax = 9
-
-axes([.12,.13,.8,.8])
-
-for filename in sys.argv[2:]:
+def plot_hist( filename, xmin, xmax, N, pattern=None ):
 
     file = open( filename )
 
@@ -68,22 +52,42 @@ for filename in sys.argv[2:]:
     
     n, bins = numpy.histogram(numpy.log10(data), bins=N)
 
-    print bins, n
-
-    loglog( 10**bins, n+1e-10, clip_on=False )#, label=filename )
-
-xlabel( 'Second phosphorylation times', size=22 )
-#legend()
-xlim( xmin, xmax )
-ylim( 4, 5e3 )
-
-xticks( [1e-12, 1e-9, 1e-6, 1e-3, 1], 
-        [r'${\rm 1 ps}$',
-         r'${\rm 1 ns}$',
-         r'${\rm 1 \mu s}$',
-         r'${\rm 1 ms}$',
-         r'${\rm 1 s}$'],
-        size=20 )
+    loglog( 10**bins, n+1e-10 )#, label=filename )
 
 
-show()
+
+if __name__ == '__main__':
+
+
+    N=50
+
+
+    pattern = re.compile( sys.argv[1] )
+    
+    xmin = 1e-12
+    xmax = 9
+    
+    axes([.12,.13,.8,.8])
+
+
+
+    for filename in sys.argv[2:]:
+
+        plot_hist( filename, xmin, xmax, N, pattern )
+
+
+    xlabel( 'Second phosphorylation times', size=22 )
+
+    xticks( [1e-12, 1e-9, 1e-6, 1e-3, 1], 
+            [r'${\rm 1 ps}$',
+             r'${\rm 1 ns}$',
+             r'${\rm 1 \mu s}$',
+             r'${\rm 1 ms}$',
+             r'${\rm 1 s}$'],
+            size=20 )
+    
+    xlim( xmin, xmax )
+    ylim( 4, 5e3 )
+
+
+    show()

@@ -42,7 +42,7 @@ def plot_sol( filename, t ):
     rarray = numpy.compress( mask, rarray )
     parray = numpy.compress( mask, parray )
 
-    return loglog( rarray / sigma, parray, 'k-'  )[0]
+    return loglog( rarray / sigma, parray * sigma, 'k-'  )[0]
 
 
 
@@ -72,14 +72,14 @@ def plot_hist( data, T, i ):
     #pStyles = [ 'o', '^', 'v', '<', '>', 's', '+' ]
     colors = [ 'b', 'g', 'r', 'c', 'm', 'y', 'k' ]
 
-    loglog( r / sigma, hist, colors[i] + 'o', 
+    loglog( r / sigma, hist * sigma, colors[i] + 'o', 
             label=r'$T = \tau^{%d}$' % round(math.log10(T/tau)) )
     
 
 
 if __name__ == '__main__':
 
-    axes([.12,.13,.8,.8])
+    axes([.15,.15,.8,.8])
 
     for i in range( len(sys.argv[1:])/3 ):
         simfilename = sys.argv[i*3+1]
@@ -91,11 +91,13 @@ if __name__ == '__main__':
         solline = plot_sol( solfilename, T )
 
 
-    xlabel( r'$r / \sigma$', size=24 )
-    ylabel( r'$p_{rev}$', size=24 )
+    xlabel( r'$r / \sigma$', size=28 )
+    ylabel( r'$p_{rev}$', size=28 )
 
     xlim( 0.9, 2.2e2 )
-    ylim( 1e3, 4e9 )
+    ylim( 2e-6, 2e1 )
+    xticks( size=22 )
+    yticks( size=18 )
     solline.set_label( r'theory' )
     #legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
     #grid()
