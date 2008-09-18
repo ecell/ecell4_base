@@ -24,6 +24,8 @@ LIBBOOSTPYTHON=-lboost_python
 CFLAGS=${CXXFLAGS}
 
 noinst_PYTHON=\
+bd.py\
+cObjectMatrix.py\
 gfrdbase.py\
 logger.py\
 gfrdbase.py\
@@ -118,5 +120,5 @@ dist-hook:
 
 EXTRA_DIST=\
 autogen.sh\
-samples
-
+samples\
+make_sjy_table.py

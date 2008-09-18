@@ -37,3 +37,4 @@ all-local: $(OBJECT_MATRIX_SO)
 clean-local:
 	rm -f  $(OBJECT_MATRIX_SO)
 
+EXTRA_DIST = peer tests
