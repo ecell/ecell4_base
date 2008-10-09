@@ -15,7 +15,7 @@ infilename = sys.argv[1]
 
 N_A = 6.0221367e23
 
-N = 1000
+N = 100
 
 sigma = 5e-9
 
@@ -26,55 +26,30 @@ D_tot = 2e-12
 tau = sigma*sigma / D_tot
 rmin = sigma
 
-
 def load_data( filename ):
     infile = open( filename )
     data = array([float(x) for x in infile.read().split()], numpy.float)
     infile.close()
-
     return data
     
-def plot_sol( filename, t ):
 
-    rmax = 2.2 * math.sqrt( 6 * D_tot * t ) + rmin
+def plot_hist( data, xmin, xmax, N ):
 
-    data = scipy.io.read_array( filename )
-    rarray, parray = numpy.transpose( data )
-    mask = numpy.less_equal( rarray, rmax )
-    rarray = numpy.compress( mask, rarray )
-    parray = numpy.compress( mask, parray )
-    print rarray, parray
+    #    xmin = data.min()
+    #xmax = data.max()
 
-    #return loglog( rarray / sigma, parray, 'k-'  )[0]
-    return plot( rarray / sigma, parray, 'k-'  )[0]
-
-
-
-def plot_hist( data, name, i ):
-
-    bins = 20
-
-    nonreactions = numpy.compress( data > sigma, data )
-    print 'max', max( nonreactions )
-    hist, lower_edges = numpy.histogram( nonreactions, bins=bins )
-
-    histsum = hist.sum()
-    S_sim = float( len( nonreactions ) ) / len( data )
-    hist = hist.astype( numpy.float )
-    #print hist
-    xtick = lower_edges[2]-lower_edges[1]
-
-    hist /= len( data ) * xtick
-
-    x = lower_edges + ( xtick * .5 )
-    #print 'x', x, hist
-    colors = [ 'b', 'g', 'r', 'c', 'm', 'y', 'k' ]
-
-    loglog( x / sigma, hist, colors[i] + '-',             
-            label=name )
-
-    return lower_edges[-1] + xtick
+    logxmin = math.log(xmin)
+    logxmax = math.log(xmax)
     
+    tick=(logxmax-logxmin)/N
+    loggrid = numpy.mgrid[logxmin:logxmax:tick]
+    grid = numpy.exp(loggrid)
+    print len(data)
+    print grid, xmin,xmax
+    
+    n, bins = numpy.histogram(numpy.log10(data), bins=N)
+
+    loglog( 10**bins, n+1e-10 )#, label=filename )
 
 
 if __name__ == '__main__':
@@ -82,33 +57,39 @@ if __name__ == '__main__':
     import os
     import glob
 
-    for i in range( len(sys.argv[1:])/3 ):
-        simpattern = sys.argv[i*3+1]
+    xmin = 1e-9
+    xmax = 1e3
+
+    for i in range( len(sys.argv[1:])/1 ):
+        simpattern = sys.argv[i+1]
 
         globpattern = simpattern.replace('ALL','*')
         l = os.path.basename( os.path.splitext( simpattern )[0] )
         print 'pattern ', l
-        simfilelist = glob.glob( globpattern )
-
-        solfilename = sys.argv[i*3+2]
-        #T = float( sys.argv[i*3+3] )
-        name = sys.argv[i*3+3]
-        print l,solfilename,name
+        filelist = glob.glob( globpattern )
+        print filelist
         data = []
-        for simfile in simfilelist:
-            data.append( load_data( simfile ) )
+        for file in filelist:
+            data.append( load_data( file ) )
         data = numpy.concatenate( data )
         print len(data)
 
-        plot_hist( data, name, i )
-        #solline = plot_sol( solfilename, T )
+        plot_hist( data, xmin, xmax, N )
 
 
+    xticks( [1e-12, 1e-9, 1e-6, 1e-3, 1], 
+            [r'${\rm 1 ps}$',
+             r'${\rm 1 ns}$',
+             r'${\rm 1 \mu s}$',
+             r'${\rm 1 ms}$',
+             r'${\rm 1 s}$'],
+            size=24 )
+    yticks( size=18 )
 
-    xlabel( r'$r / \sigma$', fontsize='large' )
-    ylabel( r'$p_{rev}$', fontsize='large' )
-    #xlim( 0.9, 5e1 )
-    #ylim( 1.5e1, 7e9 )
+    #xlabel( r'$r / \sigma$', fontsize='large' )
+    xlabel( r'time [s]', fontsize='large' )
+    xlim( 1e-15, 10 )
+    ylim( 1, 1e4 )
     #solline.set_label( r'theory' )
     legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
     grid()
