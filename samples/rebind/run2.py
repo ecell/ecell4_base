@@ -67,9 +67,9 @@ def singlerun( T_list, D_factor, kf_factor ):
 
     s.setWorldSize( L )
 
-    matrixSize = min( max( 3, int( (9 * N_X) ** (1.0/3.0) ) ), 60 )
-    print 'matrixSize=', matrixSize
-    s.setMatrixSize( matrixSize )
+    #matrixSize = min( max( 3, int( (9 * N_X) ** (1.0/3.0) ) ), 60 )
+    #print 'matrixSize=', matrixSize
+    #s.setMatrixSize( matrixSize )
 
     box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 
@@ -93,25 +93,6 @@ def singlerun( T_list, D_factor, kf_factor ):
     C = Species( 'C', D, radius )
     s.addSpecies( C )
 
-    DX = D * DX_factor
-
-    X = Species( 'X', DX, radius )
-    s.addSpecies( X )
-
-    if N_X != 0:
-        s.throwInParticles( X, N_X, box1 )
-
-        endTime = tau * 1
-        while 1:
-            s.step()
-            nextTime = s.getNextTime()
-            if nextTime > endTime:
-                s.stop( endTime )
-                break
-
-
-    s.reset()
-
     r1 = BindingReactionType( A, B, C, kf )
     s.addReactionType( r1 )
 
@@ -121,26 +102,8 @@ def singlerun( T_list, D_factor, kf_factor ):
     A_pos = [0,0,0]
     B_pos = [(A.radius + B.radius)+1e-23,0,0]
 
-    while 1:
-        pp = s.getParticlesWithinRadius( A_pos, A.radius )
-        if not pp:
-            break
-        for p in pp:
-            s.removeParticle( p )
-        s.throwInParticles( X, len( pp ), box1 )
-
     s.placeParticle( A, A_pos )
-
-    while 1:
-        pp = s.getParticlesWithinRadius( B_pos, B.radius )
-        if not pp:
-            break
-        for p in pp:
-            s.removeParticle( p )
-        s.throwInParticles( X, len( pp ), box1 )    
-
     s.placeParticle( B, B_pos )
-
 
     r_list = []
     t_list = []
