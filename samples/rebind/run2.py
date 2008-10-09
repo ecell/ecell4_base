@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-# DX_factor N_X seq N
+# D_factor kf_factor seq N
 
 LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 100 0 10
 
@@ -11,16 +11,16 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 100 0 10
 from egfrd import *
 from bd import *
 
-def run( outfilename, DX_factor, N_X, seq, N ):
+def run( outfilename, D_factor, kf_factor, seq, N ):
     print outfilename
 
     radius = 2.5e-9
     sigma = radius * 2
-    D = 1e-12
-    D_tot = D * 2
+    # D = 1e-12
+#     D_tot = D * 2
 
-    tau = sigma**2 / D_tot
-    print 'tau=', tau
+#     tau = sigma**2 / D_tot
+#     print 'tau=', tau
 
     #T_list = [ tau * .1, INF ]
     T_list = [ INF ]
@@ -29,7 +29,7 @@ def run( outfilename, DX_factor, N_X, seq, N ):
     #outfile_r_list = [ open( outfilename + '_r_-1.dat', 'w' ) ] 
 
     for i in range( N ):
-        r_list, t_list = singlerun( T_list, DX_factor, N_X )
+        r_list, t_list = singlerun( T_list, D_factor, kf_factor )
 
         for t in t_list:
             outfile_t.write( '%g\n' % t )
@@ -47,7 +47,7 @@ def run( outfilename, DX_factor, N_X, seq, N ):
 
 
 
-def singlerun( T_list, DX_factor, N_X ):
+def singlerun( T_list, D_factor, kf_factor ):
 
     s = EGFRDSimulator()
     #s.setUserMaxShellSize( 1e-6 )
@@ -76,7 +76,7 @@ def singlerun( T_list, DX_factor, N_X ):
     radius = 2.5e-9
     sigma = radius * 2
     r0 = sigma
-    D = 1e-12
+    D = 1e-12 * D_factor
     D_tot = D * 2
 
     tau = sigma**2 / D_tot
@@ -84,7 +84,7 @@ def singlerun( T_list, DX_factor, N_X ):
     #kf = 1000 * sigma * D_tot
 
     # 1e9 [ 1 / (M s) ] -> 1e9 / 1000 / N_A [ m^3 / s ]
-    kf = 1.66e-18
+    kf = 1.66e-18 * kf_factor
 
     A = Species( 'A', D, radius )
     s.addSpecies( A )
@@ -186,4 +186,4 @@ if __name__ == '__main__':
 
     outfilename = 'data/rebind_' + '_'.join( sys.argv[1:4] )
     run( outfilename, float( sys.argv[1] ), 
-         int( sys.argv[2] ), int( sys.argv[3] ), int( sys.argv[4] )  )
+         float( sys.argv[2] ), int( sys.argv[3] ), int( sys.argv[4] )  )
