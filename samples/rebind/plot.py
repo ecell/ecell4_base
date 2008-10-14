@@ -48,7 +48,9 @@ def plot_hist( data, xmin, xmax, N ):
     print grid, xmin,xmax
     
     n, bins = numpy.histogram(numpy.log10(data), bins=N)
-
+    n = n.astype(numpy.floating)
+    n /= float(len(data))
+    print n
     loglog( 10**bins, n+1e-10 )#, label=filename )
 
 
@@ -77,19 +79,22 @@ if __name__ == '__main__':
         plot_hist( data, xmin, xmax, N )
 
 
-    xticks( [1e-12, 1e-9, 1e-6, 1e-3, 1], 
-            [r'${\rm 1 ps}$',
+    xticks( [1e-15,1e-12, 1e-9, 1e-6, 1e-3, 1, 1e3], 
+            [r'${\rm 1 fs}$',
+             r'${\rm 1 ps}$',
              r'${\rm 1 ns}$',
              r'${\rm 1 \mu s}$',
              r'${\rm 1 ms}$',
-             r'${\rm 1 s}$'],
+             r'${\rm 1 s}$',
+             r'${\rm 1000 s}$'],
             size=24 )
-    yticks( size=18 )
+            #yticks( [],[] )
 
     #xlabel( r'$r / \sigma$', fontsize='large' )
-    xlabel( r'time [s]', fontsize='large' )
-    xlim( 1e-15, 10 )
-    ylim( 1, 1e4 )
+    #xlabel( r'time [s]', fontsize='large' )
+    ylabel( r'relative frequency', size=24 )
+    #xlim( 1e-15, 10 )
+    ylim( 2e-6, 1 )
     #solline.set_label( r'theory' )
     legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
     grid()

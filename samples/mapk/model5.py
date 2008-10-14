@@ -175,7 +175,7 @@ r14 = UnimolecularReactionType( Pi, P, ki )
 s.addReactionType( r14 )
 
 
-logname = model + '_' + '_'.join( sys.argv[1:9] )
+logname = model + '_' + '_'.join( sys.argv[1:8] )
 l = Logger( s, 
             logname = logname,
             comment = '@ model=\'%s\'; D_move=%g; D_react=%g\n' %
