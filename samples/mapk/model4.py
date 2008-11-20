@@ -196,7 +196,7 @@ while s.t < T:
     if s.lastReaction:
         r = s.lastReaction
         line = '( %18.18g,\t%s,\t%s )\n' % ( s.t, r.reactants, r.products )
-        print line
+        #print line
         rfile.write( line )
         rfile.flush()
 

@@ -30,6 +30,9 @@ def resample( x, y, newx ):
 
     indices = numpy.searchsorted( x, newx )
 
+    indices = indices.clip( 0, len(y) - 1 )
+    #print indices, len(y)
+
     return y.take( indices )
     
 
