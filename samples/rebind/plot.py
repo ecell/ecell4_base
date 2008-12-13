@@ -50,8 +50,9 @@ def plot_hist( data, xmin, xmax, N ):
     n, bins = numpy.histogram(numpy.log10(data), bins=N)
     n = n.astype(numpy.floating)
     n /= float(len(data))
-    print n
-    loglog( 10**bins, n+1e-10 )#, label=filename )
+    x, y = 10**bins[:-1], n+1e-10
+    print x.shape, y.shape
+    loglog( x, y )#, label=filename )
 
 
 if __name__ == '__main__':

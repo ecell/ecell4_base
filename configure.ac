@@ -15,7 +15,6 @@ dnl
 AC_CANONICAL_TARGET([])
 AM_INIT_AUTOMAKE([epdp],[0.2])
 AC_PROG_MAKE_SET
-AC_LANG_CPLUSPLUS
 dnl
 dnl checks for programs
 dnl
@@ -36,6 +35,10 @@ dnl
 AC_CHECK_LIB(m,exp,,AC_MSG_ERROR([could not find libm.]))
 dnl
 AC_CHECK_LIB(python${PYTHON_VERSION},main,,AC_MSG_ERROR([could not find libpython.]))
+dnl
+AC_PROG_CXX
+AC_LANG_CPLUSPLUS
+dnl
 dnl
 AC_CHECK_LIB(boost_python,main,,AC_MSG_ERROR([could not find libboost_python.]),-lpython${PYTHON_VERSION})
 dnl
