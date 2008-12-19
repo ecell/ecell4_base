@@ -25,7 +25,7 @@ N_P = int( sys.argv[5] )
 V_str = sys.argv[6]
 mode = sys.argv[7]
 T_str = sys.argv[8]
-seq = sys.argv[9]
+
 
 Keq = float( Keq_str )
 koff_ratio = float( koff_ratio_str )
@@ -197,7 +197,8 @@ model = 'pushpull'
 
 # 'pushpull-Keq-koff_ratio-N_K-N_P-V-mode.dat'
 l = Logger( s, 
-            logname = model + '_' + '_'.join( sys.argv[1:9] ),
+            logname = model + '_' + '_'.join( sys.argv[1:8] ) + '_' +\
+                sys.env[ 'SGE_TASK_ID' ],
             comment = '@ model=\'%s\'; Keq=%s; koff_ratio=%s\n' %
             ( model, Keq_str, koff_ratio_str ) +
             '#@ V=%s; N_K=%s; N_P=%s; mode=\'%s\'; T=%s\n' % 
