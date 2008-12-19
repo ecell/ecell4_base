@@ -1,6 +1,15 @@
 #!/usr/bin/env/python
 
-# PYTHONPATH=../.. python plot.py rev.-3.out p_rev.-3.tsv 0.0000000125 rev.-2.out p_rev.-2.tsv 0.000000125 rev.-1.out p_rev.-1.tsv 0.00000125 rev.0.out p_rev.0.tsv 0.0000125 rev.1.out p_rev.1.tsv 0.000125 rev.2.out p_rev.2.tsv 0.00125 rev.3.out p_rev.3.tsv 0.0125
+# varying kf
+# python plot.py 05/data/rebind_1_0.1_ALL_t.dat 05/data/rebind_1_1_ALL_t.dat 05/data/rebind_1_10_ALL_t.dat 
+
+# 0.01 didn't run correctly?
+# 05/data/rebind_1_0.01_ALL_t.dat 
+
+
+# varying D
+# python plot.py 05/data/rebind_0.1_1_ALL_t.dat 05/data/rebind_1_1_ALL_t.dat 05/data/rebind_10_1_ALL_t.dat
+
 
 import sys
 
@@ -38,16 +47,7 @@ def plot_hist( data, xmin, xmax, N ):
     #    xmin = data.min()
     #xmax = data.max()
 
-    logxmin = math.log(xmin)
-    logxmax = math.log(xmax)
-    
-    tick=(logxmax-logxmin)/N
-    loggrid = numpy.mgrid[logxmin:logxmax:tick]
-    grid = numpy.exp(loggrid)
-    print len(data)
-    print grid, xmin,xmax
-    
-    n, bins = numpy.histogram(numpy.log10(data), bins=N)
+    n, bins = numpy.histogram(numpy.log10(data), bins=N, new=True)
     n = n.astype(numpy.floating)
     n /= float(len(data))
     x, y = 10**bins[:-1], n+1e-10
@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     #xlabel( r'$r / \sigma$', fontsize='large' )
     #xlabel( r'time [s]', fontsize='large' )
-    ylabel( r'relative frequency', size=24 )
+    ylabel( r'Relative frequency', size=24 )
     #xlim( 1e-15, 10 )
     ylim( 2e-6, 1 )
     #solline.set_label( r'theory' )

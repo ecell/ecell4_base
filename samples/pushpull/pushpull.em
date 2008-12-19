@@ -1,32 +1,42 @@
-@#{MAIN_STEPPER='DE1'}
-@#{MAIN_PROCESS='MassActionFluxProcess'}
+@{MAIN_STEPPER='DE1'}
+@{MAIN_PROCESS='MassActionFluxProcess'}
 
-@{MAIN_STEPPER='NR1'}
-@{MAIN_PROCESS='GillespieProcess'}
+@#{MAIN_STEPPER='NR1'}
+@#{MAIN_PROCESS='GillespieProcess'}
 
-Stepper DiscreteEventStepper( NR1 )
+#Stepper DiscreteEventStepper( NR1 )
+#{
+#}
+
+Stepper ODEStepper( DE1 )
 {
-
 }
 
 @{
-VOL = 1e-15
+VOL = 1e-16
 N_A = 6.02214e+23
-}
 
-@{
 def C2N( conc ):
     num = N_A * VOL * conc
     print round( num )
-}
 
-@{
-kcat = 3
-koff = 3
-kon = 0.15e9
+koff_ratio = .1
 
-NP = 3
-NK = 5
+Keq = 0.03
+
+kon = 0.02e9
+
+#{C2N( 249e-9 )};
+NS = 120
+S_conc = NS / N_A / VOL
+
+kcatkoff = Keq * S_conc * kon
+kcat = kcatkoff * (1-koff_ratio)
+koff = kcatkoff * koff_ratio
+
+NSp = 0
+NP = 6
+NK = 6
 }
 
 System System( / )
@@ -41,7 +51,7 @@ System System( / )
 
         Variable Variable( S )
         {
-                Value   @{C2N( 249e-9 )};
+                Value   @(NS);
         }
 
         Variable Variable( P )
@@ -61,7 +71,7 @@ System System( / )
 
         Variable Variable( Sp )
         {
-                Value   @{C2N( 249e-9 )};
+                Value   @(NSp);
         }
 
         Variable Variable( PSp )

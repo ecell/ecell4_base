@@ -19,23 +19,23 @@ from fractionS import *
 
 Keq_str = sys.argv[1]
 koff_ratio_str = sys.argv[2]
-N_K = int( sys.argv[3] )
-N_P = int( sys.argv[4] )
-V_str = sys.argv[5]
-mode = sys.argv[6]
-bias_str = sys.argv[7]
-seq = sys.argv[8]
-T_str = sys.argv[9]
+N_S_total = int( sys.argv[3] )
+N_K = int( sys.argv[4] )
+N_P = int( sys.argv[5] )
+V_str = sys.argv[6]
+mode = sys.argv[7]
+T_str = sys.argv[8]
 
 Keq = float( Keq_str )
 koff_ratio = float( koff_ratio_str )
 V = float( V_str )
 T = float( T_str )
-bias = float( bias_str )
 
 radius = 2.5e-9
 sigma = radius * 2
 D1 = 1.0e-12
+
+
 
 if mode == 'normal':
     D2 = D1
@@ -50,6 +50,12 @@ L = ( V * 1e-3 ) ** ( 1.0 / 3.0 )
 
 s = EGFRDSimulator()
 s.setWorldSize( L )
+
+N = N_S_total * 1.1
+matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 60 )
+print 'matrixSize=', matrixSize
+s.setMatrixSize( matrixSize )
+
 #s.setDtFactor( 1e-5 )
 
 print V, L
@@ -79,30 +85,27 @@ s.addSpecies( Sp )
 PSp = Species( 'PSp', D2, radius )
 s.addSpecies( PSp )
 
-fracS = fraction_S( N_K, N_P, Keq )
+#fracS = fraction_S( N_K, N_P, Keq )
+fracS = 1
 
-# give some bias
-fracS -= bias
 
-S_tot = 200
-S_conc = S_tot / V * 1e3   # in #/m^3
+S_conc = N_S_total / V * 1e3   # in #/m^3
 
-N_S = S_tot * fracS
-N_Sp = S_tot - N_S
+N_S = N_S_total * fracS
+N_Sp = N_S_total - N_S
 
 Dtot = D1 + D2
 
 #ka = k_a( kon, k_D( Dtot, sigma ) )
-ka = 9e9 / N_A / 1e3 # 1/M s -> m^3/s
+#ka = 9e9 / N_A / 1e3 # 1/M s -> m^3/s
+kD = k_D( Dtot, sigma )
 
-kD = k_D( Dtot, sigma )  # m^3/s
-
-kon = k_on( ka, kD )
+kon = Mtom3( 0.02e9 )
+ka = k_a( kon, kD )
 
 Keq_S = Keq * S_conc
 
 kcatkoff = Keq_S * kon
-
 koff = kcatkoff * koff_ratio
 kcat = kcatkoff - koff
 
@@ -193,13 +196,13 @@ model = 'pushpull'
 
 # 'pushpull-Keq-koff_ratio-N_K-N_P-V-mode.dat'
 l = Logger( s, 
-            logname = model + '_' + '_'.join( sys.argv[1:9] ),
+            logname = model + '_' + '_'.join( sys.argv[1:8] ),
             comment = '@ model=\'%s\'; Keq=%s; koff_ratio=%s\n' %
             ( model, Keq_str, koff_ratio_str ) +
-            '#@ V=%s; N_K=%s; N_P=%s; mode=\'%s\'; bias=%s; T=%s\n' % 
-            ( V_str, N_K, N_P, mode, bias_str, T_str ) +
-            '#@ kon=%g; koff1=%g; koff2=%g; S_tot=%s\n' %
-            ( kon, koff1, koff2, S_tot ) +
+            '#@ V=%s; N_K=%s; N_P=%s; mode=\'%s\'; T=%s\n' % 
+            ( V_str, N_K, N_P, mode, T_str ) +
+            '#@ kon=%g; koff1=%g; koff2=%g; N_S_total=%s\n' %
+            ( kon, koff1, koff2, N_S_total ) +
             '#@ kcat1=%g; kcat2=%g\n' %
             ( kcat1, kcat2 ) +
             '#@ ka=%g; kd1=%g; kd2=%g\n' %
@@ -212,7 +215,9 @@ l.log()
 
 while s.t < T:
     s.step()
-    log.info( s.dumpPopulation() )
-    l.log()
+
+    if s.lastReaction:
+        #log.info( s.dumpPopulation() )
+        l.log()
     
 
