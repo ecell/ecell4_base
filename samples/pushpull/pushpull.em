@@ -27,7 +27,7 @@ Keq = 0.03
 kon = 0.02e9
 
 #{C2N( 249e-9 )};
-NS = 120
+NS = 200
 S_conc = NS / N_A / VOL
 
 kcatkoff = Keq * S_conc * kon
@@ -35,8 +35,8 @@ kcat = kcatkoff * (1-koff_ratio)
 koff = kcatkoff * koff_ratio
 
 NSp = 0
-NP = 6
-NK = 6
+NP = 10
+NK = 10
 }
 
 System System( / )
