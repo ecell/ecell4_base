@@ -13,7 +13,7 @@ AH_TEMPLATE(HAVE_INLINE)
 dnl 
 dnl
 AC_CANONICAL_TARGET([])
-AM_INIT_AUTOMAKE([epdp],[0.2])
+AM_INIT_AUTOMAKE([epdp],[0.3])
 AC_PROG_MAKE_SET
 dnl
 dnl checks for programs

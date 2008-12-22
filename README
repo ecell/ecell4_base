@@ -2,10 +2,17 @@
 :author: Koichi Takahashi
 
 
+E-Cell Particle Dynamics Prototype
+Written by Koichi Takahashi
+
+Copyright (C) 2005-2008 The E-Cell Project
+
+
+
 About this package
 ========================
 
-This package is temporarily named E-Cell Particle Dynamics Prototype
+This package is tantatively named E-Cell Particle Dynamics Prototype
 (EPDP).  It currently implements the enhanced Greens Function Reaction
 Dynamics (eGFRD) and brute-force Brownian Dynamics (BD) simulation
 algorithms.  Implementation of the original version of GFRD will possibly
@@ -13,8 +20,8 @@ be added in future.  The code is implemented with the hope that it will
 eventually be ported to the E-Cell System Version 4 to become part of
 the multi-algorithm, multi-space simulation platform.
 
-The eGFRD algorithm is described in the following paper:
-K. Takahashi, S. Tanase-Nicola, P.R. ten Wolde, 2008 (unpublished).
+The eGFRD algorithm is used and described in the following paper:
+K. Takahashi, S. Tanase-Nicola, P.R. ten Wolde, 2009 (in preparation).
 
 
 Building this package
@@ -23,8 +30,51 @@ Building this package
 See INSTALL.
 
 
-Licensing
+History of the Code
 ========================
 
-See COPYING.
+Koichi Takahashi initially stated development of the code in 2005 to
+implement his prototype of Greens Function Reaction Dynamics
+simulation method invented by Jeroen van Zon and Pieter Rein ten Wolde
+in AMOLF, Amsterdam[1,2].  He gave a brief invited talk about
+performance evaluation and applicability of the method to yeast
+pheromon response pathway (the Alpha pathway) using the prototype in
+Third Annual Alpha Project Research Symposium (June 16-27, 2005, at UC
+Berkeley Art Museum).
+
+Later, in December 2006, ten Wolde, Sorin Tanase-Nicola, and Takahashi
+decided to introduce the concept called first-passage processes
+inspired by a paper by Opplestrup et al.[3] to Greens Function
+Reaction Dynamics to further boost the performance and accuracy of the
+method.  The new method was called eGFRD (enhanced Greens Function
+Reaction Dynamics).  Takahashi implemented the single-body Greens
+function within the year.  Tanase-Nicola derived the two-body Greens
+function, and Takahashi devised and implemented a neat yet complicated
+way to efficiently evaluate the function mostly in the first half of
+2007.  Takahashi also implemented the main part of the code,
+asynchronous discrete-event-driven kinetic monte-carlo, which has been
+mostly finished within 2007, and the dynamic switching between Greens
+function and brute-force Brownian Dynamics as a means to recover from
+particle squeezing conditions by April 2008.  At this point,
+development and debugging of the initial version (version 0.1) of the
+code had been largely finished and had been used in simulation experiments
+in study of various biochemical systems including dual-phosphorylation
+pathways[4].
+
+Some features planned to be added are; surfaces, interactions between
+membrane proteins and proteins in solution, optimistic discrete-event
+scheduling for massive parallelization, connection to non-spatial 
+simulation methods such as ODE and Gillespie methods.
+
+
+[1] Green's-function reaction dynamics: a particle-based approach for
+    simulating biochemical networks in time and space; 
+    van Zon and ten Wolde, J. Chem. Phys. 123 (2005).
+[2] Simulating biochemical networks at the particle level and in
+    time and space: Green's function reaction dynamics; 
+    van Zon and ten Wolde, Phys. Rev. Lett. 94 (2005).
+[3] First-Passage Monte Carlo Algorithm: Diffusion without All the Hops,
+    Opplestrup et al., Phys. Rev. Lett. 97 (2006).
+[4] Takahashi, Tanase-Nicola and ten Wolde, in preparation.
+
 
