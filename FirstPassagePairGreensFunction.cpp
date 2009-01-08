@@ -1,5 +1,13 @@
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 //#define NDEBUG
 //#define BOOST_DISABLE_ASSERTS
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
 
 #include <iostream>
 #include <stdexcept>

@@ -16,12 +16,12 @@ pkgpyexecdir=@pkgpyexecdir@
 LIBPYTHON=-lpython$(PYTHON_VERSION)
 
 INCLUDES=${PYTHON_INCLUDES} -I${NUMPY_INCLUDE_DIR}
-AM_CXXFLAGS=@CXXFLAGS@ -Wall -g # -msse2 -mfpmath=sse  #-ffast-math 
+AM_CXXFLAGS=@CXXFLAGS@ @GSL_CFLAGS@ -Wall -g # -msse2 -mfpmath=sse  #-ffast-math 
 #AM_CXXFLAGS+= -ftree-vectorize -ftree-vectorizer-verbose=5
 
 LIBBOOSTPYTHON=-lboost_python
 
-CFLAGS=${CXXFLAGS}
+CFLAGS=${CXXFLAGS} @GSL_CFLAGS@
 
 noinst_PYTHON=\
 bd.py\
