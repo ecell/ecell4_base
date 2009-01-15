@@ -14,7 +14,7 @@ s = EGFRDSimulator()
 #L = 5e-8
 L = 3e-7
 s.setWorldSize( L )
-s.setMatrixSize( 20 )
+s.setMatrixSize( 10 )
 
 box1 = CuboidalSurface( [0,0,0], [L,L,L] )
 # not supported yet
@@ -30,8 +30,8 @@ s.addReactionType( r1 )
 r2 = UnbindingReactionType( P, S, S, 1e3 )
 s.addReactionType( r2 )
 
-s.throwInParticles( S, 1500, box1 )
-s.throwInParticles( P, 1500, box1 )
+s.throwInParticles( S, 150, box1 )
+s.throwInParticles( P, 150, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutInterval( 1e-7 )

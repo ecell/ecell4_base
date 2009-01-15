@@ -23,11 +23,11 @@ SAFETY = 1.0 + 1e-5
 class Delegate( object ):
 
     def __init__( self, obj, method ):
-        self.obj = weakref.proxy( obj )
+        self.ref = weakref.ref( obj )
         self.method = method
 
     def __call__( self, *arg ):
-        return self.method( self.obj, *arg )
+        return self.method( self.ref(), *arg )
 
 
 class Shell( object ):
