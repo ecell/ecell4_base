@@ -23,7 +23,7 @@ def run_single( T, V, N ):
     
     box1 = CuboidalSurface( [0,0,0],[L,L,L] )
 
-    D = 1e-11
+    D = 1e-12
 
     A = Species( 'A', D, 2.5e-9 )
     s.addSpecies( A )
