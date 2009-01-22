@@ -114,7 +114,7 @@ class Logger:
     def logParticles( self ):
         sim = self.sim
         if self.nextTime <= sim.t + sim.dt:
-            #log.info( 'log %g' % self.nextTime )
+            #if __debug__: log.info( 'log %g' % self.nextTime )
 
             sim.stop( self.nextTime )
             self.writeParticles()
