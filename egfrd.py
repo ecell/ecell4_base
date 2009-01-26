@@ -987,7 +987,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def __init__( self ):
 
         self.shellMatrix = ObjectMatrix()
-        #self.sm2 = pObjectMatrix()
 
         ParticleSimulatorBase.__init__( self )
 
@@ -1011,12 +1010,17 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         ParticleSimulatorBase.setWorldSize( self, size )
         self.shellMatrix.setWorldSize( size )
-        #self.sm2.setWorldSize( size )
+
 
     def setMatrixSize( self, size ):
         ParticleSimulatorBase.setMatrixSize( self, size )
+
+        if self.maxMatrixSize == 0:
+            self.shellMatrix.setMatrixSize( size )
+        else:
+            self.shellMatrix.setMatrixSize( max( size, self.maxMatrixSize ) )
+
         self.shellMatrix.setMatrixSize( size )
-        #self.sm2.setMatrixSize( size )
 
     def getMatrixCellSize( self ):
 

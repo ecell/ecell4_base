@@ -369,6 +369,7 @@ class ParticleSimulatorBase( object ):
 
         self.particleMatrix = ObjectMatrix()
 
+        self.maxMatrixSize = 0
 
         self.setWorldSize( INF )
 
@@ -414,7 +415,10 @@ class ParticleSimulatorBase( object ):
         return self.worldSize
 
     def setMatrixSize( self, size ):
-        self.particleMatrix.setMatrixSize( size )
+        if self.maxMatrixSize == 0:
+            self.particleMatrix.setMatrixSize( size )
+        else:
+            self.particleMatrix.setMatrixSize( max( size, self.maxMatrixSize ) )
 
     def applyBoundary( self, pos ):
 
