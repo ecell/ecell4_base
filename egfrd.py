@@ -481,7 +481,8 @@ class Pair( object ):
 
 
     def __del__( self ):
-        if __debug__: log.debug( 'del %s' % str( self ) )
+        if __debug__:
+            log.debug( 'del %s' % str( self ) )
 
     def initialize( self, t ):
 
@@ -564,11 +565,13 @@ class Pair( object ):
             if distanceFromShell < thresholdDistance:
                 # near both a and sigma;
                 # use FirstPassagePairGreensFunction
-                if __debug__: log.debug( 'GF: normal' )
+                if __debug__:
+                    log.debug( 'GF: normal' )
                 return self.pgf
             else:
                 # near sigma; use BasicPairGreensFunction
-                if __debug__: log.debug( 'GF: only sigma' )
+                if __debug__:
+                    log.debug( 'GF: only sigma' )
                 pgf = BasicPairGreensFunction( self.D_tot, self.rt.k, 
                                                self.sigma )
                 return pgf
@@ -576,13 +579,15 @@ class Pair( object ):
         else:
             if distanceFromShell < thresholdDistance:
                 # near a;
-                if __debug__: log.debug( 'GF: only a' )
+                if __debug__:
+                    log.debug( 'GF: only a' )
                 pgf = FirstPassageNoCollisionPairGreensFunction( self.D_tot )
                 return pgf
                 
             else:
                 # distant from both a and sigma; 
-                if __debug__: log.debug( 'GF: free' )
+                if __debug__:
+                    log.debug( 'GF: free' )
                 pgf = FreePairGreensFunction( self.D_tot )
                 return pgf
 
@@ -698,9 +703,11 @@ class Pair( object ):
             self.a_r = a_r_2
             self.a_R = a_R_2
 
-        #if __debug__: log.debug( 'a %g, r %g, R %g r0 %g' % 
+        #if __debug__:
+        #   log.debug( 'a %g, r %g, R %g r0 %g' % 
         #           ( shellSize, self.a_r, self.a_R, r0 ) )
-        #if __debug__: log.debug( 'tr %g, tR %g' % 
+        #if __debug__:
+        #   log.debug( 'tr %g, tR %g' % 
         #           ( ( ( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
         #                 (self.a_R / math.sqrt( 6*self.D_geom ))**2 ) )
         assert self.a_r > 0
@@ -737,7 +744,8 @@ class Pair( object ):
         self.dt = min( self.t_R, self.t_r, self.t_single_reaction )
 
         assert self.dt >= 0
-        #if __debug__: log.debug( 'dt %g, t_R %g, t_r %g' % 
+        #if __debug__:
+        #   log.debug( 'dt %g, t_R %g, t_r %g' % 
         #           ( self.dt, self.t_R, self.t_r ) )
 
         if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
@@ -786,7 +794,8 @@ class Pair( object ):
         try:
             r = self.sgf.drawR( rnd, t )
             while r > self.a_R: # redraw; shouldn't happen often
-                if __debug__: log.info( 'drawR_single: redraw' )
+                if __debug__:
+                    log.info( 'drawR_single: redraw' )
                 rnd = numpy.random.uniform()
                 r = self.sgf.drawR( rnd, t )
         except Exception, e:
@@ -812,7 +821,8 @@ class Pair( object ):
             r = gf.drawR( rnd, r0, t )
             # redraw; shouldn't happen often
             while r >= self.a_r or r <= self.sigma: 
-                if __debug__: log.info( 'drawR_pair: redraw' )
+                if __debug__:
+                    log.info( 'drawR_pair: redraw' )
                 #self.sim.rejectedMoves += 1  #FIXME:
                 rnd = numpy.random.uniform()
                 r = gf.drawR( rnd, r0, t )
@@ -860,9 +870,11 @@ class Pair( object ):
 
         # check 1: particles don't overlap.
         if newDistance <= particleRadius12:
-            if __debug__: log.info( 'rejected move: radii %g, particle distance %g',
+            if __debug__:
+                log.info( 'rejected move: radii %g, particle distance %g',
                           ( species1.radius + species2.radius, newDistance ) )
-            if __debug__: log.debug( 'DEBUG: dt %g, pos1 %s, pos2 %s' %
+            if __debug__:
+                log.debug( 'DEBUG: dt %g, pos1 %s, pos2 %s' %
                            ( self.dt, str( pos1 ), str( pos2 ) ) )
             raise RuntimeError, 'New particles overlap'
 
@@ -1066,7 +1078,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def stop( self, t ):
 
-        if __debug__: log.info( 'stop at %g' % t )
+        if __debug__:
+            log.info( 'stop at %g' % t )
 
         if self.t == t:
             return
@@ -1089,7 +1102,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             if isinstance( obj, Pair ) or isinstance( obj, Multi ):
                 nonSingleList.append( obj )
             elif isinstance( obj, Single ):
-                if __debug__: log.debug( 'burst %s, lastTime= %g' % 
+                if __debug__:
+                    log.debug( 'burst %s, lastTime= %g' % 
                            ( str( obj ), obj.lastTime ) )
                 self.burstSingle( obj )
             else:
@@ -1097,7 +1111,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
         # then burst all Pairs and Multis.
-        if __debug__: log.debug( 'burst %s' % nonSingleList )
+        if __debug__:
+            log.debug( 'burst %s' % nonSingleList )
         self.burstObjs( nonSingleList )
 
         self.dt = 0.0
@@ -1118,7 +1133,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         event = self.scheduler.getTopEvent()
         self.t, self.lastEvent = event.getTime(), event.getArg()
 
-        if __debug__: log.info( '\n%d: t=%g dt=%g\nevent=%s reactions=%d rejectedmoves=%d' 
+        if __debug__:
+            log.info( '\n%d: t=%g dt=%g\nevent=%s reactions=%d rejectedmoves=%d' 
                       % ( self.stepCounter, self.t, self.dt, self.lastEvent, 
                           self.reactionEvents, self.rejectedMoves ) )
         
@@ -1235,7 +1251,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def burstObj( self, obj ):
         
-        if __debug__: log.info( 'bursting %s' % str( obj ) )
+        if __debug__:
+            log.info( 'bursting %s' % str( obj ) )
 
         if isinstance( obj, Single ):
             self.burstSingle( obj )
@@ -1306,7 +1323,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             if not self.checkOverlap( oldpos, productSpecies.radius,
                                       ignore = [ single.particle, ] ):
-                if __debug__: log.info( 'no space for product particle.' )
+                if __debug__:
+                    log.info( 'no space for product particle.' )
                 raise NoSpace()
 
             self.removeParticle( single.particle )
@@ -1317,7 +1335,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             self.lastReaction = Reaction( rt, [single.particle], [newparticle] )
 
-            if __debug__: log.info( 'product; %s' % str( newsingle ) )
+            if __debug__:
+                log.info( 'product; %s' % str( newsingle ) )
 
             
         elif len( rt.products ) == 2:
@@ -1366,7 +1385,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                         ignore = [ single.particle, ] ) ):
                     break
             else:
-                if __debug__: log.info( 'no space for product particles.' )
+                if __debug__:
+                    log.info( 'no space for product particles.' )
                 raise NoSpace()
 
             self.removeParticle( single.particle )
@@ -1384,7 +1404,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.lastReaction = Reaction( rt, [single.particle], 
                                           [particle1, particle2] )
 
-            if __debug__: log.info( 'products; %s %s' % 
+            if __debug__:
+                log.info( 'products; %s %s' % 
                       ( str( newsingle1 ), str( newsingle2 ) ) )
 
         else:
@@ -1420,7 +1441,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # Reaction.
         if single.eventType == EventType.REACTION:
 
-            if __debug__: log.info( 'single reaction %s' % str( single ) )
+            if __debug__:
+                log.info( 'single reaction %s' % str( single ) )
             r = single.drawR( single.dt )
 
             self.propagateSingle( single, r )
@@ -1429,7 +1451,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.removeFromShellMatrix( single )
                 self.fireSingleReaction( single )
             except NoSpace:
-                if __debug__: log.info( 'single reaction; placing product failed.' )
+                if __debug__:
+                    log.info( 'single reaction; placing product failed.' )
                 self.addToShellMatrix( single )
                 self.rejectedMoves += 1
                 single.reset()
@@ -1484,7 +1507,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         burstedSingles = [ s for s in bursted if isinstance( s, Single ) ]
         self.restoreSingleShells( burstedSingles )
             
-        if __debug__: log.info( 'single shell %g dt %g.' % ( single.radius, single.dt ) )
+        if __debug__:
+            log.info( 'single shell %g dt %g.' % ( single.radius, single.dt ) )
 
         return single.dt
 
@@ -1497,7 +1521,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             self.updateSingle( single, c, d )
             self.updateEvent( self.t + single.dt, single )
-            if __debug__: log.debug( 'restore shell %s %g dt %g closest %s %g' %
+            if __debug__:
+                log.debug( 'restore shell %s %g dt %g closest %s %g' %
                        ( single, single.radius, single.dt, c, d ) )
 
 
@@ -1547,7 +1572,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         assert self.checkObj( pair )
 
-        if __debug__: log.info( 'fire: %s eventType %s' % ( pair, pair.eventType ) )
+        if __debug__:
+            log.info( 'fire: %s eventType %s' % ( pair, pair.eventType ) )
 
         particle1 = pair.single1.particle
         particle2 = pair.single2.particle
@@ -1567,7 +1593,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             reactingsingle = pair.reactingsingle
 
-            if __debug__: log.info( 'pair: single reaction %s' % str( reactingsingle ) )
+            if __debug__:
+                log.info( 'pair: single reaction %s' % str( reactingsingle ) )
 
             if reactingsingle == pair.single1:
                 theothersingle = pair.single2
@@ -1597,7 +1624,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         #
         if pair.eventType == EventType.REACTION:
 
-            if __debug__: log.info( 'reaction' )
+            if __debug__:
+                log.info( 'reaction' )
 
             if len( pair.rt.products ) == 1:
                 
@@ -1632,7 +1660,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.lastReaction = Reaction( pair.rt, [particle1, particle2],
                                               [particle] )
 
-                if __debug__: log.info( 'product; %s' % str( newsingle ) )
+                if __debug__:
+                    log.info( 'product; %s' % str( newsingle ) )
 
             else:
                 raise NotImplementedError,\
@@ -1653,7 +1682,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 1 Escaping through a_r.
         if pair.eventType == EventType.ESCAPE:
 
-            if __debug__: log.debug( 'r0 = %g, dt = %g, %s' %
+            if __debug__:
+                log.debug( 'r0 = %g, dt = %g, %s' %
                            ( r0, pair.dt, pair.pgf.dump() ) )
             
             rnd = numpy.random.uniform( size=4 )
@@ -1685,10 +1715,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             rnd = numpy.random.uniform( size = 4 )
 
             # calculate new r
-            if __debug__: log.debug( 'r0 = %g, dt = %g, %s' %
+            if __debug__:
+                log.debug( 'r0 = %g, dt = %g, %s' %
                            ( r0, pair.dt, pair.pgf.dump() ) )
             r = pair.drawR_pair( r0, pair.dt, pair.a_r )
-            if __debug__: log.debug( 'new r = %g' % r )
+            if __debug__:
+                log.debug( 'new r = %g' % r )
             #assert r >= pair.sigma
             
             theta_r = pair.drawTheta_pair( rnd[0], r, r0, pair.dt, pair.a_r )
@@ -1749,7 +1781,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         #sim.sync()
 
         if sim.lastReaction:
-            if __debug__: log.info( 'bd reaction' )
+            if __debug__:
+                log.info( 'bd reaction' )
 
             self.breakUpMulti( multi )
             self.reactionEvents += 1
@@ -1757,12 +1790,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             return -INF
 
         if sim.escaped:
-            if __debug__: log.info( 'multi particle escaped.' )
+            if __debug__:
+                log.info( 'multi particle escaped.' )
 
             self.breakUpMulti( multi )
             return -INF
 
-        #if __debug__: log.info( 'multi stepped %d steps, duration %g, dt = %g' %
+        #if __debug__:
+        #   log.info( 'multi stepped %d steps, duration %g, dt = %g' %
         #          ( additionalSteps + 1, sim.t - startT + sim.dt, dt ) )
 
         return multi.dt
@@ -1927,7 +1962,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         elif isinstance( closest, Multi ):
 
             multi = closest
-            if __debug__: log.info( 'multi merge %s %s' % ( single, multi ) )
+            if __debug__:
+                log.info( 'multi merge %s %s' % ( single, multi ) )
 
             self.removeFromShellMatrix( multi )
 
@@ -1949,7 +1985,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def formPair( self, single1, single2, bursted ):
 
-        #if __debug__: log.debug( 'trying to form %s' %
+        #if __debug__:
+        #    log.debug( 'trying to form %s' %
         #           'Pair( %s, %s )' % ( single1.particle, 
         #                                single2.particle ) )
 
@@ -1993,7 +2030,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                             r0 * 100 + sigma + shellSizeMargin )
 
         if minShellSizeWithMargin >= maxShellSize:
-            if __debug__: log.debug( '%s not formed: minShellSize >= maxShellSize' %
+            if __debug__:
+                log.debug( '%s not formed: minShellSize >= maxShellSize' %
                        ( 'Pair( %s, %s )' % ( single1.particle, 
                                               single2.particle ) ) )
             return None
@@ -2014,7 +2052,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                     closest, closestShellDistance = b, d
 
         if closestShellDistance <= minShellSizeWithMargin:
-            if __debug__: log.debug( '%s not formed: squeezed by bursted neighbor %s' %
+            if __debug__:
+                log.debug( '%s not formed: squeezed by bursted neighbor %s' %
                        ( 'Pair( %s, %s )' % ( single1.particle, 
                                               single2.particle ), closest ) )
             return None
@@ -2024,7 +2063,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if d < closestShellDistance:
             closest, closestShellDistance = c, d
 
-        if __debug__: log.debug( 'Pair closest neighbor: %s %g, minShellWithMargin %g' %
+        if __debug__:
+            log.debug( 'Pair closest neighbor: %s %g, minShellWithMargin %g' %
                    ( closest, closestShellDistance, minShellSizeWithMargin ) )
 
         if isinstance( closest, Single ):
@@ -2052,7 +2092,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             shellSize = closestShellDistance / SAFETY
 
         if shellSize <= minShellSizeWithMargin:
-            if __debug__: log.debug( '%s not formed: squeezed by %s' %
+            if __debug__:
+                log.debug( '%s not formed: squeezed by %s' %
                        ( 'Pair( %s, %s )' % ( single1.particle, 
                                               single2.particle ), closest ) )
             return None
@@ -2065,7 +2106,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                             ( 1.0 + self.SINGLE_SHELL_FACTOR ), \
                                 d2 + single2.getMinRadius() * \
                                 ( 1.0 + self.SINGLE_SHELL_FACTOR ) ) * 1.3:
-            if __debug__: log.debug( '%s not formed: singles are better' %
+            if __debug__:
+                log.debug( '%s not formed: singles are better' %
                        'Pair( %s, %s )' % ( single1.particle, 
                                             single2.particle ) )
             return None
@@ -2090,7 +2132,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert pair.radius >= minShellSizeWithMargin
         assert pair.radius <= maxShellSize
 
-        if __debug__: log.info( '%s, dt=%g, pairDistance=%g, shell=%g,' %
+        if __debug__:
+            log.info( '%s, dt=%g, pairDistance=%g, shell=%g,' %
                   ( pair, pair.dt, pairDistance, pair.radius ) + 
                   'closest=%s, closestShellDistance=%g' %
                   ( closest, closestShellDistance ) )
@@ -2130,7 +2173,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.removeFromShellMatrix( obj )
                 self.removeEvent( obj )
             else:
-                if __debug__: log.debug( '%s already added. skipping.' % obj )
+                if __debug__:
+                    log.debug( '%s already added. skipping.' % obj )
         else:
             assert False, 'do not reach here.'  # Pairs are bursted
 
@@ -2138,7 +2182,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
     def addToMulti( self, single, multi ):
-        if __debug__: log.info( 'adding %s to %s' % ( single, multi ) )
+        if __debug__:
+            log.info( 'adding %s to %s' % ( single, multi ) )
 
         shellSize = single.particle.species.radius * \
             ( 1.0 + self.MULTI_SHELL_FACTOR )
@@ -2151,7 +2196,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     '''
     def mergeMultis( self, multi1, multi2 ):
 
-        if __debug__: log.info( 'merging %s to %s' % ( multi1, multi2 ) )
+        if __debug__:
+            log.info( 'merging %s to %s' % ( multi1, multi2 ) )
 
         assert not multi1.sim.particleList[0] in multi2.sim.particleList
 

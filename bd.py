@@ -28,7 +28,8 @@ def calculateBDDt( speciesList, factor ):
     sigma_min = radius_min * 2
 
     dt = factor * sigma_min ** 2 / D_max  
-    if __debug__: log.debug( 'bd dt = %g' % dt )
+    if __debug__:
+        log.debug( 'bd dt = %g' % dt )
 
     return dt
 
@@ -136,7 +137,8 @@ class BDSimulatorCoreBase( object ):
             try:
                 self.fireReaction1( particle, rt1 )
             except NoSpace:
-                if __debug__: log.info( 'fireReaction1 rejected.' )
+                if __debug__:
+                    log.info( 'fireReaction1 rejected.' )
             return
 
         D = species.D
@@ -153,7 +155,8 @@ class BDSimulatorCoreBase( object ):
         if neighbors:
 
             if len( neighbors ) >= 2:
-                if __debug__: log.info( 'collision two or more particles; move rejected' )
+                if __debug__:
+                    log.info( 'collision two or more particles; move rejected' )
                 return
 
             closest = neighbors[0]
@@ -170,15 +173,18 @@ class BDSimulatorCoreBase( object ):
                 rnd = numpy.random.uniform()
 
                 if p > rnd:
-                    if __debug__: log.info( 'fire reaction2' )
+                    if __debug__:
+                        log.info( 'fire reaction2' )
                     try:
                         self.fireReaction2( particle, closest, rt )
                     except NoSpace:
-                        if __debug__: log.info( 'fireReaction2 move rejected' )
+                        if __debug__:
+                            log.info( 'fireReaction2 move rejected' )
                     return
 
             else:
-                if __debug__: log.info( 'collision move rejected' )
+                if __debug__:
+                    log.info( 'collision move rejected' )
 
             return
 
@@ -186,7 +192,8 @@ class BDSimulatorCoreBase( object ):
             self.clearVolume( newpos, particle.radius, ignore=[particle] )
             self.moveParticle( particle, newpos )
         except NoSpace:
-            if __debug__: log.info( 'propagation move rejected.' )
+            if __debug__:
+                log.info( 'propagation move rejected.' )
 
 
 
@@ -233,7 +240,8 @@ class BDSimulatorCoreBase( object ):
 
             if not self.checkOverlap( oldpos, radius,
                                       ignore = [ particle, ] ):
-                if __debug__: log.info( 'no space for product particle.' )
+                if __debug__:
+                    log.info( 'no space for product particle.' )
                 raise NoSpace()
 
             self.clearVolume( oldpos, radius, ignore = [ particle ] )
@@ -283,7 +291,8 @@ class BDSimulatorCoreBase( object ):
                                                          [ particle, ]):
                     break
             else:
-                if __debug__: log.info( 'no space for product particles.' )
+                if __debug__:
+                    log.info( 'no space for product particles.' )
                 raise NoSpace()
 
             self.clearVolume( newpos1, radius1, ignore = [ particle ] )
@@ -468,7 +477,8 @@ class BDSimulator( ParticleSimulatorBase ):
 
         self.core.step()
 
-        if __debug__: log.info( '%d: t=%g dt=%g, reactions=%d, rejectedMoves=%d' %
+        if __debug__:
+            log.info( '%d: t=%g dt=%g, reactions=%d, rejectedMoves=%d' %
                   ( self.stepCounter, self.t, self.dt, self.reactionEvents,
                     self.rejectedMoves ) )
 

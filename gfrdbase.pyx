@@ -163,7 +163,8 @@ def setupLogging():
 
     formatter = logging.Formatter( '%(message)s' )
     handler.setFormatter( formatter )
-    if __debug__: log.addHandler( handler )
+    if __debug__:
+        log.addHandler( handler )
         
     LOGLEVELS = { 'CRITICAL': logging.CRITICAL,
                   'ERROR': logging.ERROR,
@@ -173,9 +174,11 @@ def setupLogging():
                   'NOTSET': logging.NOTSET }
 
     if 'LOGLEVEL' in os.environ:
-        if __debug__: log.setLevel( LOGLEVELS[ os.environ[ 'LOGLEVEL' ] ] )
+        if __debug__:
+            log.setLevel( LOGLEVELS[ os.environ[ 'LOGLEVEL' ] ] )
     else:
-        if __debug__: log.setLevel( logging.INFO )
+        if __debug__:
+            log.setLevel( logging.INFO )
 
 
 setupLogging()

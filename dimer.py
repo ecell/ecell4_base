@@ -2,7 +2,8 @@
 
 from egfrd import *
 from bd import *
-
+from surface import *
+from gfrdbase import *
 from logger import *
 import sys
 
@@ -48,21 +49,22 @@ l.log()
 
 def profrun():
     #while s.stepCounter < 6000:
-    for _ in range( 15000 ):
+    for _ in xrange( 15000 ):
         s.step()
         #l.log()
         #logging.info( s.dumpPopulation() )
 
 
-try:
-    import cProfile as profile
-except:
-    import profile
-profile.run('profrun()', 'fooprof')
+#try:
+#    import cProfile as profile
+#except:
+#    import profile
+#profile.run('profrun()', 'fooprof')
+profrun()
 
-import pstats
-pstats.Stats('fooprof').sort_stats('time').print_stats(40)
-
+#import pstats
+#pstats.Stats('fooprof').sort_stats('time').print_stats(40)
+#
 
 sys.exit(1)
 

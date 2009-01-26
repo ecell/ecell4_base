@@ -38,7 +38,8 @@ def setupLogging():
 
     formatter = logging.Formatter( '%(message)s' )
     handler.setFormatter( formatter )
-    if __debug__: log.addHandler( handler )
+    if __debug__:
+        log.addHandler( handler )
         
     LOGLEVELS = { 'CRITICAL': logging.CRITICAL,
                   'ERROR': logging.ERROR,
@@ -48,9 +49,11 @@ def setupLogging():
                   'NOTSET': logging.NOTSET }
 
     if 'LOGLEVEL' in os.environ:
-        if __debug__: log.setLevel( LOGLEVELS[ os.environ[ 'LOGLEVEL' ] ] )
+        if __debug__:
+            log.setLevel( LOGLEVELS[ os.environ[ 'LOGLEVEL' ] ] )
     else:
-        if __debug__: log.setLevel( logging.INFO )
+        if __debug__:
+            log.setLevel( logging.INFO )
 
 
 setupLogging()
@@ -494,7 +497,8 @@ class ParticleSimulatorBase( object ):
         
 
     def throwInParticles( self, species, n, surface=[] ):
-        if __debug__: log.info( 'throwing in %s %s particles' % ( n, species.id ) )
+        if __debug__:
+            log.info( 'throwing in %s %s particles' % ( n, species.id ) )
 
         for i in range( int( n ) ):
 
@@ -505,7 +509,8 @@ class ParticleSimulatorBase( object ):
                 if self.checkOverlap( position, species.radius ):
                     break
                 else:
-                    if __debug__: log.info( '%d-th particle rejected.' %i )
+                    if __debug__:
+                        log.info( '%d-th particle rejected.' %i )
             
             self.createParticle( species, position )
 
