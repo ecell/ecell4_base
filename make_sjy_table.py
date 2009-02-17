@@ -156,7 +156,7 @@ static const double %s[%d + 1] =
     file.write( head_template % ( name, N ) )
 
     #file.write( '    {\n' )
-    file.write( ',\n'.join( number_template % n for n in table ) )
+    file.write( ',\n'.join( [ number_template % n for n in table ] ) )
     #file.write( '    },\n' )
 
     file.write( foot_template )

@@ -15,8 +15,7 @@ N_KK_str = sys.argv[3]
 N_P_str = sys.argv[4]
 N_K_total_str = sys.argv[5]
 ti_str = sys.argv[6]
-seq = sys.argv[7]
-T_str = sys.argv[8]
+T_str = sys.argv[7]
 
 V = float( V_str )
 D_ratio = float( D_ratio_str )
@@ -175,7 +174,8 @@ r14 = UnimolecularReactionType( Pi, P, ki )
 s.addReactionType( r14 )
 
 
-logname = model + '_' + '_'.join( sys.argv[1:8] )
+logname = model + '_' + '_'.join( sys.argv[1:7] )  + '_' +\
+          os.environ[ 'SGE_TASK_ID' ]
 l = Logger( s, 
             logname = logname,
             comment = '@ model=\'%s\'; D_move=%g; D_react=%g\n' %
