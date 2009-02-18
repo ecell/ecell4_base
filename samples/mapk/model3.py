@@ -14,8 +14,7 @@ D_ratio_str = sys.argv[2]
 D_mode = sys.argv[3]
 ti_str = sys.argv[4]
 mode = sys.argv[5]
-seq = sys.argv[6]
-T_str = sys.argv[7]
+T_str = sys.argv[6]
 
 V = float( V_str )
 D_ratio = float( D_ratio_str )
@@ -166,7 +165,8 @@ r14 = UnimolecularReactionType( Pi, P, ki )
 s.addReactionType( r14 )
 
 
-logname = model + '_' + '_'.join( sys.argv[1:7] )
+logname = model + '_' + '_'.join( sys.argv[1:6] ) + '_' +\
+          os.environ[ 'SGE_TASK_ID' ]
 l = Logger( s, 
             logname = logname,
             comment = '@ model=\'%s\'; D_move=%g; D_react=%g\n' %
