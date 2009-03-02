@@ -14,18 +14,16 @@ N_A = 6.0221367e23
 E2 = 5
 V = 1e-15
 
-def plot_theory( K ):
+def load_theory():
 
-    N = 1000
-    minE1 = 0.1
-    maxE1 = 100.
-    e1array = numpy.mgrid[minE1:maxE1:(maxE1-minE1)/N]
+    data = load( 'ss2_ode.dat' )
 
-    farray = [ fraction_Sp( E1, E2, K ) for E1 in e1array ]
-    farray = numpy.array( farray )
-    #print farray
+    ti = data[0:len(data):2][:,0]
+    data0 = data[0:len(data):2][:,1]
+    data1 = data[1:len(data):2][:,1]
 
-    semilogx( e1array/E2, farray, label='K = %f' % K )
+    return ti, data0, data1
+
 
 def file_mean( filename, skip ):
     ycolumns = [1,]
@@ -88,7 +86,8 @@ T = '300'
 
 skip = float(T) #*0.95
 
-dir = sys.argv[1]
+#dir = sys.argv[1]
+dir = '11/data'
 #outdir = sys.argv[2]
 #pattern = sys.argv[2]
 #globpattern = pattern.replace('ALL','*') + '_*.dat'
@@ -101,7 +100,7 @@ mean_all = []
 std_err_all = []
 
 
-for Kpp_ratio_str in ['0','.3','.5','.7','1']:
+for Kpp_ratio_str in ['0','.3','.7','1']:
 
     x = []
     mean = []
@@ -143,6 +142,7 @@ for Kpp_ratio_str in ['0','.3','.5','.7','1']:
     std_err_all.append( std_err )
 
 
+ti, theory0, theory1 = load_theory()
 
 axes([.15,.13,.1,.8])
 #plot( [1e-6,1], [0,1] )
@@ -151,13 +151,17 @@ for i in range( len( x_all ) ):
     errorbar( numpy.array(x_all[i])+1e-18, mean_all[i], yerr=std_err_all[i], 
               fmt='s' )
 
+plot(ti[:2],theory0[:2],'k--')
+plot(ti[:2],theory1[:2],'k--')
+
 xlim( [-1e-7,1e-7] )
 ylim( [-0.02, 1.01] )
 
-xticks( [0, ], ['0',], size=22 )
-yticks( size=22 )
+xticks( [0, ], ['$0$',], size=22 )
+yticks( [0,0.2,0.4,0.6,0.8,1], 
+        ['$0$', '$0.2$', '$0.4$', '$0.6$', '$0.8$', '$1.0$'], size=22 )
 
-ylabel('[Kpp] / [K]_total', size=28 )
+ylabel(r'$\rm{[Kpp] / [K]_{total}}$', size=28 )
 
 #xscale( 'symlog' )
 
@@ -171,6 +175,9 @@ for i in range( len( x_all ) ):
     errorbar( numpy.array(x_all[i])+1e-18, mean_all[i], yerr=std_err_all[i], 
               fmt='s' )
 
+semilogx(ti,theory0,'k--')
+semilogx(ti,theory1,'k--')
+
 xscale( 'log' )
 
 
@@ -178,15 +185,15 @@ xlim( [1e-7,0.5] )
 ylim( [-0.02, 1.01] )
 
 
-xticks([1e-6,1e-5,1e-4,1e-3,1e-2,1e-1],['1 us', '10', '100', '1 ms', '10', '100'],size=22)
+xticks([1e-6,1e-5,1e-4,1e-3,1e-2,1e-1],
+       [r'$1 \mu s$', '$10$', '$100$', r'$1 ms$', '$10$', '$100$'],size=22)
 #xticks( [1e-6, 1e-3, 1e0], ['1 us', '1 ms', '1 s'], size=22 )
 yticks( [],[] )
 
 
-xlabel('t_half', size=28 )
+xlabel(r'${\tau}_{\rm rel}$', size=28 )
 
     
-
 
 show()
 #savefig( outdir + '/' + figtitle + '.png', dpi=80 )

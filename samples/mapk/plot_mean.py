@@ -3,8 +3,27 @@
 #python mapk/plot_mean.py 09/data/mapk3_1e-15_0.25_fixed_0_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.5_fixed_0_normal_ALL_tc.dat 09/data/mapk3_1e-15_1_fixed_0_normal_ALL_tc.dat 09/data/mapk3_1e-15_2_fixed_0_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_0_normal_ALL_tc.dat
 
 # python mapk/plot_mean.py 09/data/mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.5_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_1_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_2_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-2_normal_ALL_tc.dat
+
 # python mapk/plot_mean.py 09/data/mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.5_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_1_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_2_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-6_normal_ALL_tc.dat
+
 # python mapk/plot_mean.py 09/data/mapk3_1e-15_4_fixed_0_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-5_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-4_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-3_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-1_normal_ALL_tc.dat
+
+
+# with lower D, ti=1e-6
+# python plot_mean.py 09-3/data/mapk3_1e-15_0.03125_fixed_1e-6_normal_ALL_tc.dat 09-3/data/mapk3_1e-15_0.0625_fixed_1e-6_normal_ALL_tc.dat 09-3/data/mapk3_1e-15_0.125_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.5_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_1_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_2_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-6_normal_ALL_tc.dat 
+
+# less # of data set
+# python plot_mean.py 09-3/data/mapk3_1e-15_0.03125_fixed_1e-6_normal_ALL_tc.dat 09-3/data/mapk3_1e-15_0.0625_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_1_fixed_1e-6_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-6_normal_ALL_tc.dat 
+
+
+# with lower D, ti=1e-2
+# python plot_mean.py 09-3/data/mapk3_1e-15_0.03125_fixed_1e-2_normal_ALL_tc.dat 09-3/data/mapk3_1e-15_0.0625_fixed_1e-2_normal_ALL_tc.dat 09-3/data/mapk3_1e-15_0.125_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.5_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_1_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_2_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-2_normal_ALL_tc.dat 
+
+# less # of data set
+# python plot_mean.py 09-3/data/mapk3_1e-15_0.03125_fixed_1e-2_normal_ALL_tc.dat 09-3/data/mapk3_1e-15_0.0625_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_1_fixed_1e-2_normal_ALL_tc.dat 09/data/mapk3_1e-15_4_fixed_1e-2_normal_ALL_tc.dat 
+
+
+ODE_file = '/home/shafi/wrk/epdp/samples/mapk/Kpp_ODE_1e-6.ecd'
 
 
 import sys
@@ -118,17 +137,35 @@ if __name__ == '__main__':
     xmax = 60
 
     for pattern in sys.argv[1:]:
+    #for pattern in sys.argv[1:3]:
         plot_mean_pattern( pattern, xmax )
 
 
-    #plot_file('/home/shafi/wrk/brown/samples/mapk/Kpp_ODE_0.ecd', 'k-' )
+    plot_file(ODE_file, 'k-' )
 
     xticks( size=20 )
     yticks( size=20 )
 
-    xlabel( r'time [s]', size=22 )
-    ylabel( r'Kpp', size=22 )
+    xlim( 0, xmax )
 
+    xlabel( r'time [s]', size=22 )
+    ylabel( r'#Kpp', size=22 )
+
+
+    leg =legend( (r'$D=0.03 \ \ {\rm \mu m^2 / s}$',
+                  r'$D=0.06 \ \  {\rm \mu m^2 / s}$',
+#                  r'$D=0.13 \ \  {\rm \mu m^2 / s}$',
+                  r'$D=0.25 \ \  {\rm \mu m^2 / s}$',
+                  r'$D=1.0 \ \  {\rm \mu m^2 / s}$',
+                  r'$D=4.0 \ \  {\rm \mu m^2 / s}$',
+                  r'$ODE$',
+                  ),
+                 loc=4,
+                 shadow=True,
+                 pad=0.05
+                 )
+    for l in leg.get_lines():
+        l.set_linewidth(1.5)  # the legend line width
 
 
 #title( figtitle )

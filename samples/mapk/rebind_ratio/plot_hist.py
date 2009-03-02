@@ -50,24 +50,33 @@ def plot_hist( filename, xmin, xmax, N, pattern=None ):
     print len(data)
     print grid, xmin,xmax
     
-    n, bins = numpy.histogram(numpy.log10(data), bins=N)
+    n, bins = numpy.histogram(numpy.log10(data), bins=N, new=True)
+    n = n.astype(numpy.floating)
+    n /= float(len(data))
 
-    loglog( 10**bins, n+1e-10 )#, label=filename )
+    #x = 10**bins[:-1]
+    x = (10**bins[1:] + 10**bins[:-1]) / 2
+    dx = (10**bins[1:]- 10**bins[:-1])
+    y = n / dx    #  n+1e-10
+    print x, y
+    print (y*dx).sum()
+    loglog( x, y  )#, label=filename )
 
 
 
 if __name__ == '__main__':
 
 
-    N=50
+    N=40
 
 
     pattern = re.compile( sys.argv[1] )
     
-    xmin = 1e-12
+    #xmin = 1e-12
+    xmin = 1e-9
     xmax = 9
     
-    axes([.12,.13,.8,.8])
+    axes([.16,.16,.8,.8])
 
 
 
@@ -77,6 +86,7 @@ if __name__ == '__main__':
 
 
     xlabel( 'Second phosphorylation times', size=26 )
+    ylabel( 'Relative frequency', size=26 )
 
     xticks( [1e-12, 1e-9, 1e-6, 1e-3, 1], 
             [r'${\rm 1 ps}$',
@@ -88,7 +98,7 @@ if __name__ == '__main__':
     yticks( size=18 )
     
     xlim( xmin, xmax )
-    ylim( 4, 5e3 )
+    ylim( 1e-4, 2e6 )
 
 
     show()
