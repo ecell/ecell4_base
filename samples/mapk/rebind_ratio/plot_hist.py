@@ -100,5 +100,20 @@ if __name__ == '__main__':
     xlim( xmin, xmax )
     ylim( 1e-4, 2e6 )
 
+    leg =legend( lines, (r'$D=0.03 \ \ {\rm \mu m^2 / s}$',
+                         r'$D=0.06 \ \  {\rm \mu m^2 / s}$',
+                         #              r'$D=0.13 \ \  {\rm \mu m^2 / s}$',
+                         r'$D=0.25 \ \  {\rm \mu m^2 / s}$',
+                         r'$D=1.0 \ \  {\rm \mu m^2 / s}$',
+                         r'$D=4.0 \ \  {\rm \mu m^2 / s}$',
+                         r'ODE (distributive)',
+                         r'ODE (processive)'
+                         ),
+                 loc=2,
+                 shadow=True,
+                 pad=0.05
+                 )
+    for l in leg.get_lines():
+        l.set_linewidth(1.5)  # the legend line width
 
     show()

@@ -34,10 +34,10 @@ N_Kpp = N_K
 
 T = float( T_str )
 
-# if ti == 0:
-#     ki = float( 'inf' )
-# else:
-#     ki = math.log( 2 ) / ti
+if ti == 0:
+     ki = float( 'inf' )
+else:
+     ki = math.log( 2 ) / ti
 
 
 D_ref = 1e-12
