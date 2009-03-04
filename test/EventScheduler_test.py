@@ -276,6 +276,29 @@ class EventSchedulerTestCase( unittest.TestCase ):
 
 
 
+    def testPeekSecondEvent(self):
+
+        scheduler = mod.EventScheduler()
+
+        event1 = TestEvent()
+        event2 = TestEvent3( scheduler, event1 ) 
+        event1.dt = 1.0
+        event2.dt = 1.0
+
+        event1.id = scheduler.addEvent( 0.0, Delegate( event1, TestEvent.fire ),
+                                        event1 )
+
+        id2 = scheduler.addEvent( 0.5, Delegate( event2, TestEvent3.fire ), 
+                                  event2 )
+        self.assertEqual( 2, scheduler.getSize() )
+
+        second = scheduler.peekSecondEvent()
+
+        self.assertEqual( 0.5, second.getTime()  )
+        self.assertEqual( event2, second.getArg()  )
+
+
+
 
 if __name__ == "__main__":
     unittest.main()

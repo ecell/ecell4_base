@@ -233,6 +233,9 @@ BOOST_PYTHON_MODULE( _gfrd )
 	.def( "getTopEvent", geteventrefsig( &PyEventScheduler::getTopEvent ),
 	      return_value_policy<copy_const_reference>() )
 	.def( "getTopID", &PyEventScheduler::getTopID )
+	.def( "peekSecondEvent", 
+              geteventrefsig( &PyEventScheduler::peekSecondEvent ),
+	      return_value_policy<copy_const_reference>() )
 	.def( "getEvent", geteventrefbyindexsig( &PyEventScheduler::getEvent ),
 	      return_value_policy<copy_const_reference>() )
 	.def( "getEventByIndex", &PyEventScheduler::getEventByIndex,

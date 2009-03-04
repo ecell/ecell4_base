@@ -110,6 +110,38 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testPushPop, DPQ, both )
     BOOST_CHECK( dpq.isEmpty() );
 }
 
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSecond, DPQ, both )
+{
+    DPQ dpq;
+
+    dpq.push( 4 );
+    dpq.push( 2 );
+    dpq.push( 1 );
+
+    BOOST_CHECK_EQUAL( 1, dpq.getTop() );
+    BOOST_CHECK_EQUAL( 2, dpq.peekSecond() );
+
+    dpq.replaceTop( 3 );
+
+    BOOST_CHECK( dpq.check() );
+    BOOST_CHECK_EQUAL( 2, dpq.getTop() );
+    BOOST_CHECK_EQUAL( 3, dpq.peekSecond() );
+
+    dpq.popTop();
+    BOOST_CHECK_EQUAL( 3, dpq.getTop() );
+    BOOST_CHECK_EQUAL( 4, dpq.peekSecond() );
+    dpq.popTop();
+    BOOST_CHECK_EQUAL( 4, dpq.getTop() );
+    dpq.popTop();
+
+
+    BOOST_CHECK( dpq.isEmpty() );
+    BOOST_CHECK( dpq.check() );
+}
+
+
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( testReplaceTop, DPQ, both )
 {
     DPQ dpq;

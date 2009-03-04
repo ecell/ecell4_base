@@ -212,6 +212,11 @@ namespace libecs
 	    return this->eventPriorityQueue.getTopID();
 	}
 
+	const Event& peekSecondEvent() const
+	{
+	    return this->eventPriorityQueue.peekSecond();
+	}
+
 	const Event& getEvent( const EventID id ) const
 	{
 	    return this->eventPriorityQueue.get( id );

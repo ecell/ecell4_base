@@ -302,6 +302,19 @@ public:
         return this->itemVector[ getTopIndex() ];
     }
 
+
+    Item& peekSecond()
+    {
+        return this->itemVector[ peekSecondIndex() ];
+    }
+
+    const Item& peekSecond() const
+    {
+        return this->itemVector[ peekSecondIndex() ];
+    }
+
+
+
     Item& get( const ID id )
     {
         return this->itemVector[ getIndex( id ) ];
@@ -367,6 +380,33 @@ public:
     const Index getTopIndex() const 
     {
         return this->heap[0];
+    }
+
+    const Index peekSecondIndex() const 
+    {
+        if( getSize() <= 1 )
+        {
+            throw std::out_of_range( "DynamicPriorityQueue::peekSecondIndex():"
+				     " Item count less than 2." );
+        }
+
+        const Index index1( this->heap[1] );
+
+        if ( getSize() == 2 )
+        {
+            return index1;
+        }
+
+        const Index index2( this->heap[2] );
+        if( this->comp( this->itemVector[ this->heap[ index1 ] ],
+                        this->itemVector[ this->heap[ index2 ] ] ) )
+        {
+            return index2;
+        }
+        else
+        {
+            return index1;
+        }
     }
 
     inline void popByIndex( const Index index );
