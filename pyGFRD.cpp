@@ -403,4 +403,3 @@ BOOST_PYTHON_MODULE( _gfrd )
     def( "distance_Cyclic", &distance_Cyclic );
 
 }
-
