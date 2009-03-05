@@ -147,8 +147,9 @@ if __name__ == '__main__':
     yticks( size=20 )
 
     xlim( 0, xmax )
+    ylim( 0, 60 )
 
-    xlabel( r'time [s]', size=22 )
+    xlabel( r'Time [s]', size=22 )
     ylabel( r'#Kpp', size=22 )
 
 
@@ -158,7 +159,7 @@ if __name__ == '__main__':
                   r'$D=0.25 \ \  {\rm \mu m^2 / s}$',
                   r'$D=1.0 \ \  {\rm \mu m^2 / s}$',
                   r'$D=4.0 \ \  {\rm \mu m^2 / s}$',
-                  r'$ODE$',
+                  r'${\rm ODE} (D=1 \ {\rm \mu m^2 / s})$',
                   ),
                  loc=4,
                  shadow=True,
