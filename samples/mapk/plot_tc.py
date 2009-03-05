@@ -53,24 +53,28 @@ def plot_file( filename ):
 
     #psd( y )
     #ylim( 1, 5e4 )
+    xlim(0,120)
 
 
 import glob
 import os
 
-pattern = sys.argv[1]
-globpattern = pattern.replace('ALL','*')
-
-figtitle = os.path.basename( os.path.splitext( pattern )[0] )
-print title
-#print globpattern
-filelist = glob.glob( globpattern )
-#print filelist
-for filename in filelist:
-    print filename
+for filename in sys.argv[1:]:
     plot_file( filename )
 
-title( figtitle )
+#pattern = sys.argv[1]
+#globpattern = pattern.replace('ALL','*')
+
+#figtitle = os.path.basename( os.path.splitext( pattern )[0] )
+#print title
+#print globpattern
+#filelist = glob.glob( globpattern )
+#print filelist
+#for filename in filelist:
+#    print filename
+#    plot_file( filename )
+
+#title( figtitle )
 
 #savefig( 'figs/' + figtitle + '.png', dpi=80 )
 

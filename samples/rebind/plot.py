@@ -50,8 +50,13 @@ def plot_hist( data, xmin, xmax, N ):
     n, bins = numpy.histogram(numpy.log10(data), bins=N, new=True)
     n = n.astype(numpy.floating)
     n /= float(len(data))
-    x, y = 10**bins[:-1], n+1e-10
+    x = 10**bins[:-1]
+    dx = (10**bins[1:]- 10**bins[:-1])
+    y = n / dx#+1e-10
     print x.shape, y.shape
+    print x, y
+
+    print y.sum()
     loglog( x, y )#, label=filename )
 
 
@@ -62,6 +67,9 @@ if __name__ == '__main__':
 
     xmin = 1e-9
     xmax = 1e3
+
+    axes([.16,.16,.8,.8])
+
 
     for i in range( len(sys.argv[1:])/1 ):
         simpattern = sys.argv[i+1]
@@ -91,13 +99,33 @@ if __name__ == '__main__':
             size=24 )
             #yticks( [],[] )
 
+    leg = legend( 
+
+#         # D
+#         (r'$D=0.1 \ \ {\rm \mu m^2 / s}$',
+#          r'$D=1 \ \  {\rm \mu m^2 / s}$',
+#          r'$D=10 \ \  {\rm \mu m^2 / s}$',
+
+        # kf
+        (r'$k_a = 0.017 \ {\rm nM^{-1} s^{-1}}$',
+         r'$k_a = 0.17 \ \ {\rm nM^{-1} s^{-1}}$',
+         r'$k_a = 1.7 \ \ \ \ {\rm nM^{-1} s^{-1}}$',
+                   ),
+                 loc=1,
+                 shadow=True,
+                 pad=0.05
+                 )
+    for l in leg.get_lines():
+        l.set_linewidth(1.5)  # the legend line width
+
+
     #xlabel( r'$r / \sigma$', fontsize='large' )
-    #xlabel( r'time [s]', fontsize='large' )
-    ylabel( r'Relative frequency', size=24 )
-    #xlim( 1e-15, 10 )
-    ylim( 2e-6, 1 )
+    xlabel( r'$t_{\rm rebind} {\rm [s]}$', size=24 )
+    ylabel( r'$P(t_{\rm rebind})$', size=24 )
+    xlim( 1e-12, 1e5 )
+    ylim( 1.1e-9, 9e10 )
     #solline.set_label( r'theory' )
-    legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
+    #legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
     grid()
     show()
 

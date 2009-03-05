@@ -10,14 +10,16 @@ import time
 
 def run_single( T, V, N ):
 
+    print 'T =', T, '; V= ', V, '; N=', N
+    
+
     L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
-    
     s = EGFRDSimulator()
     #s = BDSimulator()
     s.setWorldSize( L )
 
-    matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 130 )
+    matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 120 )
     print 'matrixSize=', matrixSize
     s.setMatrixSize( matrixSize )
     
@@ -49,7 +51,6 @@ def run_single( T, V, N ):
         #l.log()
 
     end = time.time()
-    print 'T =', T, '; V= ', V, '; N=', N
     print 'TIMING:\n', end - start
 
     return end - start

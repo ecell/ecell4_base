@@ -67,13 +67,13 @@ data_em1=[
 
 axes([.13,.13,.8,.8])
 
-semilogx( D, data_em1, 'o:', label='t_half=1e-1 [s]' )
-semilogx( D, data_em2, 'o:', label='t_half=1e-2 [s]' )
-semilogx( D, data_em3, 'o:', label='t_half=1e-3 [s]' )
-semilogx( D, data_em4, 'o:', label='t_half=1e-4 [s]' )
-semilogx( D, data_em5, 'o:', label='t_half=1e-5 [s]' )
-semilogx( D, data_em6, 'o:', label='t_half=1e-6 [s]' )
-semilogx( D, data_0, 'o:', label='t_half=0' )
+semilogx( D, data_em1, 'o:', label=r'$\tau_{\rm rel}=100 \  {\rm ms}$' )
+semilogx( D, data_em2, 'o:', label=r'$\tau_{\rm rel}=10 \ {\rm ms}$' )
+semilogx( D, data_em3, 'o:', label=r'$\tau_{\rm rel}=1 \ {\rm ms}$' )
+semilogx( D, data_em4, 'o:', label=r'$\tau_{\rm rel}=100 \ {\rm \mu s}$' )
+semilogx( D, data_em5, 'o:', label=r'$\tau_{\rm rel}=10 \ {\rm \mu s}$' )
+semilogx( D, data_em6, 'o:', label=r'$\tau_{\rm rel}=1 \ {\rm \mu s}$' )
+semilogx( D, data_0, 'o:', label=r'$\tau_{\rm rel}=0$' )
 
 
 
@@ -86,5 +86,14 @@ ylim(0,1)
 xlabel(r'Diffusion speed [${\rm \mu m^2 / s }$]',fontsize=24)
 #ylabel('ratio',fontsize=20)
 #legend()
+
+
+leg = legend(loc=1,
+              shadow=True,
+              pad=0.05
+              )
+#for l in leg.get_lines():
+#    l.set_linewidth(1.5)  # the legend line width
+
 
 show()

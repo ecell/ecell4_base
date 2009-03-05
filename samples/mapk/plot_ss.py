@@ -314,7 +314,8 @@ import glob
 import fnmatch
 import os
 
-model = 'mapk5'
+#model = 'mapk5'
+model = 'mapk6'
 V_str = '1e-15'
 D_ratio_str = '1'
 #N_KK_str = 
@@ -333,7 +334,8 @@ T = '60'
 skip = float(T) #*0.95
 
 #dir = sys.argv[1]
-dir = '13/data'
+#dir = '13/data'
+dir = '15/data'
 #outdir = sys.argv[2]
 #pattern = sys.argv[2]
 #globpattern = pattern.replace('ALL','*') + '_*.dat'
@@ -358,10 +360,11 @@ for D_ratio_str in ['0.03125','0.0625','0.25','1','4']:
 
         filelist = glob.glob( dir + os.sep + globpattern )
 
+        print globpattern
+
         if not filelist:
             continue
-        #print globpattern
-
+        
         for N_P in range( 60 ):
 
             fnpattern = \
