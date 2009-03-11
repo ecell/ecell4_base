@@ -303,16 +303,10 @@ public:
     }
 
 
-    Item& peekSecond()
-    {
-        return this->itemVector[ peekSecondIndex() ];
-    }
-
     const Item& peekSecond() const
     {
         return this->itemVector[ peekSecondIndex() ];
     }
-
 
 
     Item& get( const ID id )
