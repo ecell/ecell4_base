@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 '''
-# DX_factor N_B N_X seq N
+# DX_factor N_B N_X N
 
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 1 100 0 10
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 1 100 10
 
 '''
 
@@ -11,7 +11,7 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 1 100 0 10
 from egfrd import *
 from bd import *
 
-def run( outfilename, DX_factor, N_B, N_X, seq, N ):
+def run( outfilename, DX_factor, N_B, N_X, N ):
     print outfilename
 
     radius = 2.5e-9
@@ -186,7 +186,9 @@ def singlerun( T_list, DX_factor, N_B, N_X ):
     
 if __name__ == '__main__':
 
-    outfilename = 'data/rebind_' + '_'.join( sys.argv[1:5] )
+    import os
+
+    outfilename = 'data/rebind_' + '_'.join( sys.argv[1:4] ) +\
+        '_' + os.environ['SGE_TASK_ID']
     run( outfilename, float( sys.argv[1] ), 
-         int( sys.argv[2] ), int( sys.argv[3] ), int( sys.argv[4] ),
-         int( sys.argv[5] ) )
+         int( sys.argv[2] ), int( sys.argv[3] ), int( sys.argv[4] ) )
