@@ -3,7 +3,7 @@
 '''
 # D_factor kf_factor seq N
 
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 100 0 10
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 1 0 10
 
 '''
 
@@ -84,7 +84,7 @@ def singlerun( T_list, D_factor, kf_factor ):
     #kf = 1000 * sigma * D_tot
 
     # 1e9 [ 1 / (M s) ] -> 1e9 / 1000 / N_A [ m^3 / s ]
-    kf = 1.66e-18 * kf_factor
+    kf = 0.092e-18 * kf_factor
 
     A = Species( 'A', D, radius )
     s.addSpecies( A )

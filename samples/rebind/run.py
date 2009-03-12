@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 '''
-# DX_factor N_X seq N
+# DX_factor N_B N_X seq N
 
-LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 100 0 10
+LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 1 100 0 10
 
 '''
 
@@ -11,7 +11,7 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 100 0 10
 from egfrd import *
 from bd import *
 
-def run( outfilename, DX_factor, N_X, seq, N ):
+def run( outfilename, DX_factor, N_B, N_X, seq, N ):
     print outfilename
 
     radius = 2.5e-9
@@ -29,7 +29,7 @@ def run( outfilename, DX_factor, N_X, seq, N ):
     #outfile_r_list = [ open( outfilename + '_r_-1.dat', 'w' ) ] 
 
     for i in range( N ):
-        r_list, t_list = singlerun( T_list, DX_factor, N_X )
+        r_list, t_list = singlerun( T_list, DX_factor, N_B, N_X )
 
         for t in t_list:
             outfile_t.write( '%g\n' % t )
@@ -47,7 +47,7 @@ def run( outfilename, DX_factor, N_X, seq, N ):
 
 
 
-def singlerun( T_list, DX_factor, N_X ):
+def singlerun( T_list, DX_factor, N_B, N_X ):
 
     s = EGFRDSimulator()
     #s.setUserMaxShellSize( 1e-6 )
@@ -62,12 +62,12 @@ def singlerun( T_list, DX_factor, N_X ):
     # V = 1.66e-21 m^3
     # L = 1.18e-7
 
-    V = 1.66e-21 # m^3
+    V = 1e-18 # m^3
     L = V ** (1.0/3.0) 
 
     s.setWorldSize( L )
 
-    matrixSize = min( max( 3, int( (9 * N_X) ** (1.0/3.0) ) ), 60 )
+    matrixSize = min( max( 3, int( (9 * (N_X+N_B)) ** (1.0/3.0) ) ), 60 )
     print 'matrixSize=', matrixSize
     s.setMatrixSize( matrixSize )
 
@@ -84,7 +84,7 @@ def singlerun( T_list, DX_factor, N_X ):
     #kf = 1000 * sigma * D_tot
 
     # 1e9 [ 1 / (M s) ] -> 1e9 / 1000 / N_A [ m^3 / s ]
-    kf = 1.66e-18
+    kf = 0.092e-18
 
     A = Species( 'A', D, radius )
     s.addSpecies( A )
@@ -141,6 +141,8 @@ def singlerun( T_list, DX_factor, N_X ):
 
     s.placeParticle( B, B_pos )
 
+    if N_B > 1:
+        s.throwInParticles( B, N_B-1, box1 )
 
     r_list = []
     t_list = []
@@ -184,6 +186,7 @@ def singlerun( T_list, DX_factor, N_X ):
     
 if __name__ == '__main__':
 
-    outfilename = 'data/rebind_' + '_'.join( sys.argv[1:4] )
+    outfilename = 'data/rebind_' + '_'.join( sys.argv[1:5] )
     run( outfilename, float( sys.argv[1] ), 
-         int( sys.argv[2] ), int( sys.argv[3] ), int( sys.argv[4] )  )
+         int( sys.argv[2] ), int( sys.argv[3] ), int( sys.argv[4] ),
+         int( sys.argv[5] ) )
