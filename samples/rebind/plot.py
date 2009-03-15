@@ -19,8 +19,6 @@ from matplotlib.pylab import *
 
 #import _gfrd
 
-infilename = sys.argv[1]
-
 
 N_A = 6.0221367e23
 
@@ -99,24 +97,23 @@ if __name__ == '__main__':
             size=24 )
             #yticks( [],[] )
 
-    leg = legend( 
+#     leg = legend( 
+# #         # D
+# #         (r'$D=0.1 \ \ {\rm \mu m^2 / s}$',
+# #          r'$D=1 \ \  {\rm \mu m^2 / s}$',
+# #          r'$D=10 \ \  {\rm \mu m^2 / s}$',
 
-#         # D
-#         (r'$D=0.1 \ \ {\rm \mu m^2 / s}$',
-#          r'$D=1 \ \  {\rm \mu m^2 / s}$',
-#          r'$D=10 \ \  {\rm \mu m^2 / s}$',
-
-        # kf
-        (r'$k_a = 0.017 \ {\rm nM^{-1} s^{-1}}$',
-         r'$k_a = 0.17 \ \ {\rm nM^{-1} s^{-1}}$',
-         r'$k_a = 1.7 \ \ \ \ {\rm nM^{-1} s^{-1}}$',
-                   ),
-                 loc=1,
-                 shadow=True,
-                 pad=0.05
-                 )
-    for l in leg.get_lines():
-        l.set_linewidth(1.5)  # the legend line width
+#         # kf
+#         (r'$k_a = 0.017 \ {\rm nM^{-1} s^{-1}}$',
+#          r'$k_a = 0.17 \ \ {\rm nM^{-1} s^{-1}}$',
+#          r'$k_a = 1.7 \ \ \ \ {\rm nM^{-1} s^{-1}}$',
+#                    ),
+#                  loc=1,
+#                  shadow=True,
+#                  pad=0.05
+#                  )
+#     for l in leg.get_lines():
+#         l.set_linewidth(1.5)  # the legend line width
 
 
     #xlabel( r'$r / \sigma$', fontsize='large' )

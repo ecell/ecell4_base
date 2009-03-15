@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-# DX_factor N_B N_X N
+# D_factor N_B N_X N
 
 LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 1 100 10
 
@@ -11,7 +11,7 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 1 100 10
 from egfrd import *
 from bd import *
 
-def run( outfilename, DX_factor, N_B, N_X, N ):
+def run( outfilename, D_factor, N_B, N_X, N ):
     print outfilename
 
     radius = 2.5e-9
@@ -29,7 +29,7 @@ def run( outfilename, DX_factor, N_B, N_X, N ):
     #outfile_r_list = [ open( outfilename + '_r_-1.dat', 'w' ) ] 
 
     for i in range( N ):
-        r_list, t_list = singlerun( T_list, DX_factor, N_B, N_X )
+        r_list, t_list = singlerun( T_list, D_factor, N_B, N_X )
 
         for t in t_list:
             outfile_t.write( '%g\n' % t )
@@ -47,7 +47,7 @@ def run( outfilename, DX_factor, N_B, N_X, N ):
 
 
 
-def singlerun( T_list, DX_factor, N_B, N_X ):
+def singlerun( T_list, D_factor, N_B, N_X ):
 
     s = EGFRDSimulator()
     #s.setUserMaxShellSize( 1e-6 )
@@ -61,6 +61,8 @@ def singlerun( T_list, DX_factor, N_B, N_X ):
     # 1 uM = 6.02e20 / m^3
     # V = 1.66e-21 m^3
     # L = 1.18e-7
+
+    DX_factor = 1
 
     V = 1e-18 # m^3
     L = V ** (1.0/3.0) 
@@ -76,7 +78,7 @@ def singlerun( T_list, DX_factor, N_B, N_X ):
     radius = 2.5e-9
     sigma = radius * 2
     r0 = sigma
-    D = 1e-12
+    D = 1e-12 * D_factor
     D_tot = D * 2
 
     tau = sigma**2 / D_tot
