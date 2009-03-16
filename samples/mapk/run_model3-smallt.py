@@ -11,7 +11,7 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 1 100 10
 from egfrd import *
 from bd import *
 
-def run( outfilename, ti, T, N ):
+def run( outfilename, D_factor, ti, T, N ):
     print outfilename
 
     outfile_t = open( outfilename + '_t.dat', 'w' )
@@ -19,7 +19,7 @@ def run( outfilename, ti, T, N ):
     outfile_t.write( '%d\n' % N )
 
     for i in range( N ):
-        t = singlerun( ti, T )
+        t = singlerun( D_factor, ti, T )
         print t
 
         if t != -1:
@@ -35,7 +35,7 @@ def run( outfilename, ti, T, N ):
 
 
 
-def singlerun( ti, T ):
+def singlerun( D_factor, ti, T ):
     D_mode = 'fixed'
 
     V = 1e-15
@@ -49,7 +49,7 @@ def singlerun( ti, T ):
 
     D_ref = 1e-12
 
-    D_move = D_ref * D_ratio
+    D_move = D_ref * D_factor
 
     if D_mode == 'normal':
         D_react = D_move
@@ -214,4 +214,4 @@ if __name__ == '__main__':
     outfilename = 'data/model3-smallt_' + '_'.join( sys.argv[1:3] ) +\
         '_' + os.environ['SGE_TASK_ID']
     run( outfilename, float( sys.argv[1] ), 
-         float( sys.argv[2] ), int( sys.argv[3] ) )
+         float(sys.argv[2]), float( sys.argv[3] ), int( sys.argv[4] ) )
