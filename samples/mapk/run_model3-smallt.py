@@ -20,7 +20,7 @@ def run( outfilename, D_factor, ti, T, N ):
 
     for i in range( N ):
         t = singlerun( D_factor, ti, T )
-        print t
+        #print t
 
         if t != -1:
             outfile_t.write( '%g\n' % t )
