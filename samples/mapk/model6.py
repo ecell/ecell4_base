@@ -101,15 +101,11 @@ s.addSpecies( Pi )
 
 
 #  1 2   K + KK   <-> K_KK
-#  3     K_KK       -> Kp + KKi
-#  4 5   Kp + KK  <-> Kp_KK
-#  6     Kp_KK      -> Kpp + KKi 
-#  7 8   Kpp + P <-> Kpp_P
-#  9     Kpp_P     -> Kp + Pi
-# 10 11  Kp + P  <-> Kp_P
-# 12     Kp_P      -> K + Pi
-# 13     KKi     -> KK
-# 14     Pi      -> P
+#  3     K_KK       -> Kp_KK
+#  4     Kp_KK       -> Kpp + KK
+#  5 6   Kpp + P <-> Kpp_P
+#  7     Kpp_P     -> Kp_P
+#  8     Kp_P  <-> K + P
 
 
 sigma = radius * 2

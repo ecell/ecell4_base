@@ -58,7 +58,7 @@ def load_data( filename ):
     #ycolumns = [2,6,3,5]
 
     header = load_header( filename )
-    print header
+    #print header
     for l in header:
         exec( l )
 
@@ -107,15 +107,14 @@ def response_time( filelist, end ):
 
     tm=[]
     for filename in filelist:
-        print 'file ', filename
+        #print 'file ', filename
         x, y = load_data( filename )
-        print x,y
+        #print x,y
         ry = resample( x, y, rx )
         data.append( ry )
 
-        res = leastsq(residuals, p0, args=(y, x))
-        print res
-
+        res = leastsq(residuals, p0, args=(y, x),full_output=1)
+        print res[0], numpy.diag(res[1])
 
         mry = numpy.array( data ).mean( 0 )
 
@@ -154,7 +153,7 @@ if __name__ == '__main__':
 
     xmax = 120
 
-    dir = '09*/data'
+    dir = '09-4/data'
 
     model = 'mapk3'
     V_str = '1e-15'
@@ -163,12 +162,12 @@ if __name__ == '__main__':
     lines=[]
 
     #for ti_str in ['0','1e-6','1e-4','1e-2']:
-    for ti_str in ['1e-6','1e-2']:
+    for ti_str in ['1e-2']:#['1e-6','1e-2']:
 
         x = []
         y = []
 
-        for D_str in ['0.03125','0.0625','0.125', '0.25','0.5','1','2','4']:#
+        for D_str in ['0.25', '1', '2','4']:##['0.03125','0.0625','0.125', '0.25','0.5','1','2','4']:#
             
             globpattern = \
                 '_'.join( ( model, V_str, D_str, 'fixed', ti_str, 
@@ -178,8 +177,11 @@ if __name__ == '__main__':
 
             if not filelist:
                 continue
+
+            print globpattern
+            print filelist
             
-            filelist=filelist[:50]
+            filelist=filelist[-50:]
 
 
             ti = float(ti_str)
@@ -248,17 +250,17 @@ if __name__ == '__main__':
     xticks([0.1,1,10],['0.1','1','10'], size=20 )
     yticks([0,5,10,15],['0','5','10','15'], size=20 )
 
-    leg =legend( lines, (r'$t_{\rm rel} = 1 {\rm \mu s}$',
-                         r'$t_{\rm rel} = 10 {\rm m s}$',
-                         r'$t_{\rm rel} = 1 {\rm \mu s} {\rm (ODE)}$',
-                         r'$t_{\rm rel} = 10 {\rm m s} {\rm (ODE)}$',
-                  ),
-                  loc=1,
-                  shadow=True,
-                  pad=0.05
-                  )
-    for l in leg.get_lines():
-        l.set_linewidth(1.5)  # the legend line width
+#     leg =legend( lines, (r'$t_{\rm rel} = 1 {\rm \mu s}$',
+#                          r'$t_{\rm rel} = 10 {\rm m s}$',
+#                          r'$t_{\rm rel} = 1 {\rm \mu s} {\rm (ODE)}$',
+#                          r'$t_{\rm rel} = 10 {\rm m s} {\rm (ODE)}$',
+#                   ),
+#                   loc=1,
+#                   shadow=True,
+#                   pad=0.05
+#                   )
+#     for l in leg.get_lines():
+#         l.set_linewidth(1.5)  # the legend line width
 
 
 #title( figtitle )

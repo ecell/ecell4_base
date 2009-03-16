@@ -48,8 +48,8 @@ def plot_hist( filename, xmin, xmax, N, pattern=None, factor=1.0 ):
     #    xmin = data.min()
     #xmax = data.max()
 
-    logxmin = math.log(xmin)
-    logxmax = math.log(xmax)
+    logxmin = math.log10(xmin)
+    logxmax = math.log10(xmax)
     
     tick=(logxmax-logxmin)/N
     loggrid = numpy.mgrid[logxmin:logxmax:tick]
@@ -58,6 +58,7 @@ def plot_hist( filename, xmin, xmax, N, pattern=None, factor=1.0 ):
     print grid, xmin,xmax
     
     n, bins = numpy.histogram(numpy.log10(data), bins=N, new=True)
+    print n
     n = n.astype(numpy.floating)
     n /= float(len(data))
     n *= factor
@@ -68,6 +69,46 @@ def plot_hist( filename, xmin, xmax, N, pattern=None, factor=1.0 ):
     y = n / dx    #  n+1e-10
     print x, y
     print (y*dx).sum()
+    return loglog( x, y  )#, label=filename )
+
+
+def plot_hist2( filename, xmin, xmax, N, pattern=None, factor=1.0 ):
+
+    file = open( filename )
+
+    data=[]
+
+    for line in file.readlines():
+        line = line.split()
+        t = float(line[0])
+        eventType = line[1]
+        if t == 0:
+            print 'skip zero'
+            continue 
+        if pattern == None or pattern.match( eventType ):
+            data.append( t )
+
+    data = numpy.array(data)
+
+    data.sort()
+
+    i = 0
+    p = 5
+    x = []
+    y = []
+
+    ld = len(data)
+    while i+p < ld:
+        slice = data[i:i+p]
+        min, max = slice.min(), slice.max()
+        x.append((min + max) / 2)
+        y.append(1.0 / (max - min))
+        i += p
+
+    y = numpy.array(y,numpy.floating)
+    y /= float(len(data))
+    y *= factor
+
     return loglog( x, y  )#, label=filename )
 
 
@@ -83,7 +124,7 @@ if __name__ == '__main__':
     pattern = re.compile( sys.argv[1] )
     
     #xmin = 1e-12
-    xmin = 1e-9
+    xmin = 1e-8
     xmax = 50
     
     axes([.16,.16,.8,.8])
@@ -96,19 +137,20 @@ if __name__ == '__main__':
 
         D = Dlist[n]
 
-        sigma = 5e-9
-        kD = 4 * numpy.pi * sigma * D
-        k_a = 9.2e-20#1.6e9 / (1000*6e23)
+        #         sigma = 5e-9
+        #         kD = 4 * numpy.pi * sigma * D
+        #         k_a = 9.2e-20#1.6e9 / (1000*6e23)
+        #factor = D * ( 1 + (k_a / kD ) )
 
-        factor = D * ( 1 + (k_a / kD ) )
+        factor = 1
         print 'factor', factor
         line = plot_hist( filename, xmin, xmax, N, pattern, factor )
         lines.append(line)
 
 
     xlabel( 'Second phosphorylation times', size=26 )
-    #ylabel( 'Relative frequency', size=26 )
-    ylabel( r'$p(t) \cdot D ( 1 + (k_a / kD))$', size=26 )
+    ylabel( 'Relative frequency', size=26 )
+    #ylabel( r'$p(t) \cdot D ( 1 + (k_a / kD))$', size=26 )
 
     xticks( [1e-12, 1e-9, 1e-6, 1e-3, 1], 
             [r'${\rm 1 ps}$',
@@ -120,7 +162,7 @@ if __name__ == '__main__':
     yticks( size=18 )
     
     xlim( xmin, xmax )
-    #ylim( 2e-4, 5e5 )
+    ylim( 2e-4, 5e5 )
 
     leg = legend( lines, (r'$D=0.03 \ \ {\rm \mu m^2 / s}$',
                          r'$D=0.06 \ \  {\rm \mu m^2 / s}$',
