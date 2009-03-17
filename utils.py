@@ -127,20 +127,18 @@ def randomUnitVectorS():
 def randomUnitVector():
 
     v = numpy.random.uniform( -1, 1, 3 )
-    return v / _gfrd.distance( ZEROPOS, v )
+    return v / _gfrd.length( v )
 
 
 def randomVector( r ):
 
     v = numpy.random.uniform( -1, 1, 3 )
-    #return v * ( r / _gfrd.distance( ZEROPOS, v ) )
     return v * ( r / _gfrd.length( v ) )
 
 
 
 def length( a ):
-    #return math.sqrt( numpy.dot( a, a ) )
-    return _gfrd.distance( ZEROPOS, a )
+    return _gfrd.length( a )
 
 def normalize( a ):
     return a / length( a )
