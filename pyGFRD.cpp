@@ -397,6 +397,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 //	.def( "alpha_i", &FirstPassageNoCollisionPairGreensFunction::alpha_i )
 	;
 
+    def( "lengthSq", &lengthSq );
+    def( "length", &length );
     def( "distanceSq", &distanceSq );
     def( "distance", &distance );
     def( "distanceSq_Cyclic", &distanceSq_Cyclic );

@@ -2,7 +2,6 @@
 from utils import *
 import math
 import numpy
-import random
 
 class Surface:
     def __init__( self ):
@@ -93,16 +92,19 @@ class CuboidalSurface( Surface ):
         return dists[i]
 
     def randomPosition( self ):
-        return numpy.array( [ random.uniform( self.origin[0], self.size[0] ),
-                              random.uniform( self.origin[1], self.size[1] ),
-                              random.uniform( self.origin[2], self.size[2] ) ]
+        #numpy.random.uniform( size=3 ) * self.size + self.origin
+        uniform = numpy.random.uniform
+
+        return numpy.array( [ uniform( self.origin[0], self.size[0] ),
+                              uniform( self.origin[1], self.size[1] ),
+                              uniform( self.origin[2], self.size[2] ) ]
                             )
 
     
     def setParams( self, origin, size ):
 
         self.origin = numpy.array( origin )
-        self.size = size
+        self.size = numpy.array( size )
         self.midpoint = ( self.size - self.origin ) * 0.5
 
     def getParams( self ):

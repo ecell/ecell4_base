@@ -133,7 +133,8 @@ def randomUnitVector():
 def randomVector( r ):
 
     v = numpy.random.uniform( -1, 1, 3 )
-    return v * ( r / _gfrd.distance( ZEROPOS, v ) )
+    #return v * ( r / _gfrd.distance( ZEROPOS, v ) )
+    return v * ( r / _gfrd.length( v ) )
 
 
 

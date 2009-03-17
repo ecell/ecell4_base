@@ -213,5 +213,21 @@ if __name__ == '__main__':
 
     outfilename = 'data/model3-smallt_' + '_'.join( sys.argv[1:3] ) +\
         '_' + os.environ['SGE_TASK_ID']
-    run( outfilename, float( sys.argv[1] ), 
-         float(sys.argv[2]), float( sys.argv[3] ), int( sys.argv[4] ) )
+
+    def runmain():
+        run( outfilename, float( sys.argv[1] ), 
+             float(sys.argv[2]), float( sys.argv[3] ), int( sys.argv[4] ) )
+
+
+
+#    runmain()
+    try:
+        import cProfile as profile
+    except:
+        import profile
+    profile.run('runmain()', 'fooprof')
+        
+
+    import pstats
+    pstats.Stats('fooprof').sort_stats('time').print_stats(40)
+

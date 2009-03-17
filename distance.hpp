@@ -1,5 +1,19 @@
 #include <gsl/gsl_math.h>
 
+
+const double _lengthSq( const double* const r )
+{
+    return gsl_pow_2( r[0] )
+	+ gsl_pow_2( r[1] )
+	+ gsl_pow_2( r[2] );
+}
+
+const double _length( const double* const r )
+{
+    return std::sqrt( _lengthSq( r ) );
+}
+
+
 const double _distanceSq( const double* const p1, const double* const p2 )
 {
     return gsl_pow_2( p1[0] - p2[0] ) 
@@ -50,6 +64,19 @@ const double _distance_Cyclic( const double* const p1,
 
 
 #include "wrapped_multi_array.hpp"
+
+const double 
+lengthSq( const wrapped_multi_array<double, 1>& r )
+{
+    return _lengthSq( r.data() );
+}
+
+
+const double 
+length( const wrapped_multi_array<double, 1>& r )
+{
+    return _length( r.data() );
+}
 
 const double 
 distanceSq( const wrapped_multi_array<double, 1>& a1,
