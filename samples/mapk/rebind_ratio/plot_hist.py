@@ -7,14 +7,29 @@
 
 # t_half = 1e-6
 
-# python plot_hist.py "." mapk3_1e-15_0.03125_fixed_1e-6_normal_ALL_reactions.rebind  mapk3_1e-15_0.0625_fixed_1e-6_normal_ALL_reactions.rebind  mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-6_normal_ALL_reactions.rebind  mapk3_1e-15_4_fixed_1e-6_normal_ALL_reactions.rebind 
+# rfiles = [ 'mapk3_1e-15_0.03125_fixed_1e-6_normal_ALL_reactions.rebind',
+#            'mapk3_1e-15_0.0625_fixed_1e-6_normal_ALL_reactions.rebind',
+#            'mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_reactions.rebind',
+#            'mapk3_1e-15_1_fixed_1e-6_normal_ALL_reactions.rebind',
+#            'mapk3_1e-15_4_fixed_1e-6_normal_ALL_reactions.rebind' ] 
+# sfiles = []
+
 
 # t_half = 1e-2
 
-# python plot_hist.py "." mapk3_1e-15_0.03125_fixed_1e-2_normal_ALL_reactions.rebind  mapk3_1e-15_0.0625_fixed_1e-2_normal_ALL_reactions.rebind  mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_reactions.rebind mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind  mapk3_1e-15_4_fixed_1e-2_normal_ALL_reactions.rebind 
+rfiles = [ 'mapk3_1e-15_0.03125_fixed_1e-2_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_0.0625_fixed_1e-2_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_4_fixed_1e-2_normal_ALL_reactions.rebind' ]
 
+sdir = 's01/data/'
 
-
+sfiles = [ 'model3-smallt_0.03125_1e-2_ALL_t.dat',
+           'model3-smallt_0.0625_1e-2_ALL_t.dat',
+           'model3-smallt_0.25_1e-2_ALL_t.dat',
+           'model3-smallt_1_1e-2_ALL_t.dat',
+           'model3-smallt_4_1e-2_ALL_t.dat' ]
 
 
 
@@ -27,7 +42,45 @@ import numpy
 import sys
 import re
 
-def plot_hist( filename, xmin, xmax, N, pattern=None, factor=1.0 ):
+import glob
+
+def load_sfile( sfile ):
+
+    sfile = sfile.replace( 'ALL', '*' )
+
+    filelist = glob.glob( sdir + sfile )
+
+    N = 0
+    data = []
+
+    for fname in filelist:
+
+        f = open( fname )
+
+        firstline = f.readline()
+        n = int(firstline)
+        #print 'N', n
+
+        d = [ float(line) for line in f.readlines() ]
+        f.close()
+
+        N += n
+        data.extend( d )
+
+
+    print 'supplementary data:', N, '(', len(data), ')'
+    return data, N
+        
+
+
+
+def plot_hist( filename, xmin, xmax, BINS, pattern=None, factor=1.0, 
+               sfile=None ):
+
+    if sfile != None:
+        thr = 1e-5
+    else:
+        thr = 0
 
     file = open( filename )
 
@@ -43,24 +96,38 @@ def plot_hist( filename, xmin, xmax, N, pattern=None, factor=1.0 ):
         if pattern == None or pattern.match( eventType ):
             data.append( t )
 
+    file.close()
+
     data = numpy.array(data)
+    N = len(data)
+    weights = numpy.ones(len(data))
+
+    sN = 0
+    if sfile != None:
+        print sfile
+        sdata, sN = load_sfile( sfile )
+        sdata = numpy.array(sdata)
+        weights = numpy.concatenate((weights,
+                                     numpy.ones(len(sdata)) * len(sdata)/float(sN)))
+#                                     (float(N) / (N+sN))))
+
+        data = numpy.concatenate( ( data, numpy.array(sdata) ) )
+
 
     #    xmin = data.min()
     #xmax = data.max()
-
     logxmin = math.log10(xmin)
     logxmax = math.log10(xmax)
     
-    tick=(logxmax-logxmin)/N
-    loggrid = numpy.mgrid[logxmin:logxmax:tick]
-    grid = numpy.exp(loggrid)
-    print len(data)
-    print grid, xmin,xmax
+    print N
     
-    n, bins = numpy.histogram(numpy.log10(data), bins=N, new=True)
+    n, bins = numpy.histogram(numpy.log10(data), 
+                              #range=(numpy.log10(thr),numpy.log10(data.max())),
+                              weights=weights,
+                              bins=BINS, new=True)
     print n
     n = n.astype(numpy.floating)
-    n /= float(len(data))
+    n /= float(N)
     n *= factor
 
     #x = 10**bins[:-1]
@@ -69,6 +136,7 @@ def plot_hist( filename, xmin, xmax, N, pattern=None, factor=1.0 ):
     y = n / dx    #  n+1e-10
     print x, y
     print (y*dx).sum()
+
     return loglog( x, y  )#, label=filename )
 
 
@@ -118,10 +186,10 @@ if __name__ == '__main__':
 
     import numpy
 
-    N=40
+    BINS=30
 
 
-    pattern = re.compile( sys.argv[1] )
+    #pattern = re.compile( sys.argv[1] )
     
     #xmin = 1e-12
     xmin = 1e-8
@@ -133,9 +201,12 @@ if __name__ == '__main__':
 
     lines=[]
 
-    for n, filename in enumerate( sys.argv[2:] ):
+    for n, filename in enumerate( rfiles ):
 
         D = Dlist[n]
+
+        if len(sfiles) >= 1:
+            sfile = sfiles[n]
 
         #         sigma = 5e-9
         #         kD = 4 * numpy.pi * sigma * D
@@ -144,7 +215,7 @@ if __name__ == '__main__':
 
         factor = 1
         print 'factor', factor
-        line = plot_hist( filename, xmin, xmax, N, pattern, factor )
+        line = plot_hist( filename, xmin, xmax, BINS, None, factor, sfile = sfile )
         lines.append(line)
 
 
@@ -162,7 +233,7 @@ if __name__ == '__main__':
     yticks( size=18 )
     
     xlim( xmin, xmax )
-    ylim( 2e-4, 5e5 )
+    #ylim( 2e-4, 5e5 )
 
     leg = legend( lines, (r'$D=0.03 \ \ {\rm \mu m^2 / s}$',
                          r'$D=0.06 \ \  {\rm \mu m^2 / s}$',

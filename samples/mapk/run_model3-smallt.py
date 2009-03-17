@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-# DX_factor N_B N_X N
+# D_factor ti T N
 
 LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 1 100 10
 
