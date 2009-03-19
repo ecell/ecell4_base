@@ -130,7 +130,7 @@ if __name__ == '__main__':
     leg = legend( 
 #         # D
          (r'$D=0.1 \ \ {\rm \mu m^2 / s}$',
-          r'$D=1 \ \  {\rm \mu m^2 / s}$',
+          r'$D=1.0 \ \  {\rm \mu m^2 / s}$',
           r'$D=10 \ \  {\rm \mu m^2 / s}$',
           r'Well-stirred ($D=1$)',
         # kf
