@@ -8,7 +8,7 @@
 
 
 # varying D
-# python plot.py 05/data/rebind_0.1_1_ALL_t.dat 05/data/rebind_1_1_ALL_t.dat 05/data/rebind_10_1_ALL_t.dat
+# python plot.py 07/data/rebind_0.1_10_0_ALL_t.dat 07/data/rebind_1_10_0_ALL_t.dat 07/data/rebind_10_10_0_ALL_t.dat
 
 
 import sys
@@ -22,7 +22,7 @@ from matplotlib.pylab import *
 
 N_A = 6.0221367e23
 
-N = 100
+N = 1000
 
 sigma = 5e-9
 
@@ -48,7 +48,7 @@ def plot_hist( data, xmin, xmax, N ):
     n, bins = numpy.histogram(numpy.log10(data), bins=N, new=True)
     n = n.astype(numpy.floating)
     n /= float(len(data))
-    x = 10**bins[:-1]
+    x = (10**bins[1:]+ 10**bins[:-1])/2
     dx = (10**bins[1:]- 10**bins[:-1])
     y = n / dx#+1e-10
     print x.shape, y.shape
@@ -86,6 +86,34 @@ if __name__ == '__main__':
         plot_hist( data, xmin, xmax, N )
 
 
+    ka = 0.092e-18
+    #1/(1/
+
+
+    kon = 5.313e-20
+    C_B = 16.6e-9
+
+    x = 10 ** numpy.mgrid[-12:3:.1]
+    y = kon * C_B * 1000* N_A * numpy.exp( - kon * C_B * 1000 * N_A * x )
+    loglog( x, y, 'k--' )
+
+    print x, y
+
+
+    x = 10 ** numpy.mgrid[-12:-5.7:.1]
+    y = 1e3 * x ** (- 1./2.)
+    loglog( x, y, 'k:', lw=2 )
+
+
+    x = 10 ** numpy.mgrid[-5.5:-2:.1]
+    y = 1e-3 * x ** (- 3./2.)
+    loglog( x, y, 'k:', lw=2 )
+    
+
+    text(7e-9,3e7,r'$p \propto \ t^{-1/2}$', size=20)
+    text(2e-5,4e4,r'$p \propto \ t^{-3/2}$', size=20)
+
+
     xticks( [1e-15,1e-12, 1e-9, 1e-6, 1e-3, 1, 1e3], 
             [r'${\rm 1 fs}$',
              r'${\rm 1 ps}$',
@@ -97,11 +125,14 @@ if __name__ == '__main__':
             size=24 )
             #yticks( [],[] )
 
+    yticks( [1e-3,1e0, 1e3, 1e6, 1e9], size=20 )
+
     leg = legend( 
 #         # D
          (r'$D=0.1 \ \ {\rm \mu m^2 / s}$',
           r'$D=1 \ \  {\rm \mu m^2 / s}$',
           r'$D=10 \ \  {\rm \mu m^2 / s}$',
+          r'Well-stirred ($D=1$)',
         # kf
 #         (r'$k_a = 0.017 \ {\rm nM^{-1} s^{-1}}$',
 #          r'$k_a = 0.17 \ \ {\rm nM^{-1} s^{-1}}$',
@@ -116,12 +147,13 @@ if __name__ == '__main__':
 
 
     #xlabel( r'$r / \sigma$', fontsize='large' )
-    xlabel( r'$t_{\rm rebind}$', size=24 )
-    ylabel( r'$P(t_{\rm rebind})$', size=24 )
-    xlim( 2e-12, 1e2 )
-    ylim( 1.1e-5, 9e8 )
+    xlabel( r'$t$', size=24 )
+    ylabel( r'$p(t)$', size=24 )
+    #xlim( 2e-12, 1e2 )
+    xlim( 5e-10, 1e2 )
+    ylim( 1.1e-6, 2e9 )
     #solline.set_label( r'theory' )
     #legend( handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001 )
-    grid()
+    #grid()
     show()
 
