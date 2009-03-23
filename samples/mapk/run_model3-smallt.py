@@ -38,8 +38,8 @@ def run( outfilename, D_factor, ti, T, N ):
 def singlerun( D_factor, ti, T ):
     D_mode = 'fixed'
 
-    #V = 1e-15
-    V = 1e-16
+    V = 1e-15
+    #V = 1e-16
     D_ratio = 1
     
     if ti == 0:
