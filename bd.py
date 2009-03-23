@@ -15,23 +15,6 @@ import _gfrd
 
 DEFAULT_DT_FACTOR = 1e-5
 
-def calculateBDDt( speciesList, factor ):
-    D_list = []
-    radius_list = []
-    for species in speciesList:
-        if species.pool.size != 0:
-            D_list.append( species.D )
-            radius_list.append( species.radius )
-    D_max = max( D_list ) * 2  # max relative diffusion speed
-    radius_min = min( radius_list )
-    sigma_min = radius_min * 2
-
-    dt = factor * sigma_min ** 2 / D_max  
-    if __debug__:
-        log.debug( 'bd dt = %g' % dt )
-
-    return dt
-
 class BDSimulatorCoreBase( object ):
     '''
     BDSimulatorCore borrows the following from the main simulator:
@@ -54,17 +37,31 @@ class BDSimulatorCoreBase( object ):
 
         self.reactionEvents = 0
 
-        self.speciesList = self.main.speciesList
-        self.getReactionType1 = self.main.getReactionType1
-        self.getReactionType2 = self.main.getReactionType2
-        self.applyBoundary = self.main.applyBoundary
-
         self.lastReaction = None
 
         self.P_acct = {}
 
     def initialize( self ):
         self.determineDt()
+
+    @staticmethod
+    def calculateBDDt( speciesList, factor ):
+        D_list = []
+        radius_list = []
+        for species in speciesList:
+            if species.pool.size != 0:
+                D_list.append( species.D )
+                radius_list.append( species.radius )
+        D_max = max( D_list ) * 2  # max relative diffusion speed
+        radius_min = min( radius_list )
+        sigma_min = radius_min * 2
+
+        dt = factor * sigma_min ** 2 / D_max  
+        if __debug__:
+            log.debug( 'bd dt = %g' % dt )
+
+        return dt
+
 
     def clearParticleList( self ):
         self.particleList = []
@@ -83,7 +80,7 @@ class BDSimulatorCoreBase( object ):
         self.t = t
 
     def determineDt( self ):
-        self.dt = calculateBDDt( self.speciesList.values(), self.dtFactor )
+        self.dt = self.calculateBDDt( self.main.speciesList.itervalues(), self.dtFactor )
 
     def getP_acct( self, rt, D, sigma ):
         try:
@@ -112,76 +109,73 @@ class BDSimulatorCoreBase( object ):
         random.shuffle( self.particlesToStep )
         while self.particlesToStep:
             particle = self.particlesToStep.pop() # take the last one
-            self.propagateParticle( particle )
+            species = particle.species
 
-    def propagateParticle( self, particle ):
-        species = particle.species
-
-        rt1 = self.attemptSingleReactions( species )
-        if rt1:
-            try:
-                self.fireReaction1( particle, rt1 )
-            except NoSpace:
-                if __debug__:
-                    log.info( 'fireReaction1 rejected.' )
-            return
-
-        D = species.D
-        if D == 0.0:
-            return
-
-        displacement = drawR_free( self.dt, D )
-
-        newpos = particle.pos + displacement
-        newpos %= self.main.worldSize   #self.applyBoundary( newpos )
-        
-        neighbors = self.getParticlesWithinRadiusNoSort( newpos, species.radius,
-                                                         ignore=[particle] )
-        if neighbors:
-
-            if len( neighbors ) >= 2:
-                if __debug__:
-                    log.info( 'collision two or more particles; move rejected' )
+            rt1 = self.attemptSingleReactions( species )
+            if rt1:
+                try:
+                    self.fireReaction1( particle, rt1 )
+                except NoSpace:
+                    if __debug__:
+                        log.info( 'fireReaction1 rejected.' )
                 return
 
-            closest = neighbors[0]
-            species2 = closest.species
+            D = species.D
+            if D == 0.0:
+                return
 
-            rt = self.main.reactionTypeMap2.get( ( species, species2 ) )
+            displacement = drawR_free( self.dt, D )
 
-            if rt.k != 0.0:
-                radius12 = species.radius + species2.radius
-                D12 = D + species2.D
+            newpos = particle.pos + displacement
+            newpos %= self.main.worldSize
 
-                p = self.getP_acct( rt, D12, radius12 )
+            neighbors = self.main.getParticlesWithinRadiusNoSort(
+                newpos, species.radius, ignore=[particle] )
+            if neighbors:
 
-                rnd = numpy.random.uniform()
-
-                if p > rnd:
+                if len( neighbors ) >= 2:
                     if __debug__:
-                        log.info( 'fire reaction2' )
-                    try:
-                        self.fireReaction2( particle, closest, rt )
-                    except NoSpace:
-                        if __debug__:
-                            log.info( 'fireReaction2 move rejected' )
+                        log.info( 'collision two or more particles; move rejected' )
                     return
 
-            else:
+                closest = neighbors[0]
+                species2 = closest.species
+
+                rt = self.main.getReactionType2( species, species2 )
+
+                if rt.k != 0.0:
+                    radius12 = species.radius + species2.radius
+                    D12 = D + species2.D
+
+                    p = self.getP_acct( rt, D12, radius12 )
+
+                    rnd = numpy.random.uniform()
+
+                    if p > rnd:
+                        if __debug__:
+                            log.info( 'fire reaction2' )
+                        try:
+                            self.fireReaction2( particle, closest, rt )
+                        except NoSpace:
+                            if __debug__:
+                                log.info( 'fireReaction2 move rejected' )
+                        return
+
+                else:
+                    if __debug__:
+                        log.info( 'collision move rejected' )
+
+                return
+
+            try:
+                self.clearVolume( newpos, particle.radius, ignore=[particle] )
+                self.moveParticle( particle, newpos )
+            except NoSpace:
                 if __debug__:
-                    log.info( 'collision move rejected' )
-
-            return
-
-        try:
-            self.clearVolume( newpos, particle.radius, ignore=[particle] )
-            self.moveParticle( particle, newpos )
-        except NoSpace:
-            if __debug__:
-                log.info( 'propagation move rejected.' )
+                    log.info( 'propagation move rejected.' )
 
     def attemptSingleReactions( self, species ):
-        reactionTypes = self.getReactionType1( species )
+        reactionTypes = self.main.getReactionType1( species )
         if not reactionTypes:
             return None  # no reaction
 
@@ -260,8 +254,8 @@ class BDSimulatorCoreBase( object ):
                 newpos2 = oldpos - vector * ( D2 / D12 )
                 #FIXME: check surfaces here
             
-                self.applyBoundary( newpos1 )
-                self.applyBoundary( newpos2 )
+                self.main.applyBoundary( newpos1 )
+                self.main.applyBoundary( newpos2 )
 
                 # accept the new positions if there is enough space.
                 if self.checkOverlap( newpos1, radius1,
@@ -305,7 +299,7 @@ class BDSimulatorCoreBase( object ):
 
             pos2t = cyclicTranspose( pos2, pos1, self.main.worldSize )
             newPos = ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 )
-            self.applyBoundary( newPos )
+            self.main.applyBoundary( newPos )
 
             if not self.checkOverlap( newPos, productSpecies.radius,
                                       ignore=[ particle1, particle2 ] ):
@@ -345,15 +339,6 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
     def __init__( self, main ):
         BDSimulatorCoreBase.__init__( self, main )
 
-        self.checkOverlap = self.main.checkOverlap
-
-        self.moveParticle = self.main.moveParticle
-
-        #self.getNeighborParticles = main.getNeighborParticles
-        self.getParticlesWithinRadius = main.getParticlesWithinRadius
-        self.getParticlesWithinRadiusNoSort = main.getParticlesWithinRadiusNoSort
-        #self.getClosestParticle = main.getClosestParticle
-
     def initialize( self ):
         BDSimulatorCoreBase.initialize( self )
 
@@ -369,6 +354,12 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
     def addParticle( self, particle ):
         self.main.addParticle( particle )
         self.addToParticleList( particle )
+
+    def moveParticle( self, particle, newpos ):
+        return self.main.moveParticle( particle, newpos )
+
+    def checkOverlap( self, pos, radius, ignore=() ):
+        return self.main.checkOverlap( pos, radius, ignore )
 
     def removeParticle( self, particle ):
         self.main.removeParticle( particle )
@@ -392,13 +383,13 @@ class BDSimulator( ParticleSimulatorBase ):
         self.core = BDSimulatorCore( self )
         self.isDirty = True
 
-    @property
     def t( self ):
         return self.core.t
 
-    @t.setter
-    def x( self, t ):
+    def sett( self, t ):
         self.core.t = t
+
+    t = property(t, sett)
 
     @property
     def dt( self ):
