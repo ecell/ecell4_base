@@ -761,9 +761,7 @@ class Pair( object ):
         elif self.dt == self.t_single_reaction:  # type = single reaction (3)
             self.eventType = 3 
         else:
-            raise NeverGetHere
-
-        #assert False
+            raise AssertionError, "Never get here"
 
 
     def drawTime_single( self, a ):
