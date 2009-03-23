@@ -20,7 +20,7 @@ def run( outfilename, D_factor, ti, T, N ):
 
     for i in range( N ):
         t = singlerun( D_factor, ti, T )
-        #print t
+        print t
 
         if t != -1:
             outfile_t.write( '%g\n' % t )
@@ -38,7 +38,8 @@ def run( outfilename, D_factor, ti, T, N ):
 def singlerun( D_factor, ti, T ):
     D_mode = 'fixed'
 
-    V = 1e-15
+    #V = 1e-15
+    V = 1e-16
     D_ratio = 1
     
     if ti == 0:
@@ -119,7 +120,7 @@ def singlerun( D_factor, ti, T ):
     N_KK = C2N( 50e-9, V )
     N_P = C2N( 50e-9, V )
 
-
+    #print N_KK
     #s.throwInParticles( K, N_K, box1 )
     #s.throwInParticles( KK, N_KK, box1 )
     #s.throwInParticles( P, N_P, box1 )
@@ -220,14 +221,13 @@ if __name__ == '__main__':
 
 
 
-#    runmain()
-    try:
-        import cProfile as profile
-    except:
-        import profile
-    profile.run('runmain()', 'fooprof')
+    runmain()
+#     try:
+#         import cProfile as profile
+#     except:
+#         import profil    profile.run('runmain()', 'fooprof')
         
 
-    import pstats
-    pstats.Stats('fooprof').sort_stats('time').print_stats(40)
+#     import pstats
+#     pstats.Stats('fooprof').sort_stats('time').print_stats(40)
 
