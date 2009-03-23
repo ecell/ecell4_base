@@ -225,7 +225,8 @@ if __name__ == '__main__':
 #     try:
 #         import cProfile as profile
 #     except:
-#         import profil    profile.run('runmain()', 'fooprof')
+#         import profile
+#     profile.run('runmain()', 'fooprof')
         
 
 #     import pstats
