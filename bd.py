@@ -16,7 +16,6 @@ import _gfrd
 DEFAULT_DT_FACTOR = 1e-5
 
 def calculateBDDt( speciesList, factor ):
-
     D_list = []
     radius_list = []
     for species in speciesList:
@@ -34,7 +33,6 @@ def calculateBDDt( speciesList, factor ):
     return dt
 
 class BDSimulatorCoreBase( object ):
-    
     '''
     BDSimulatorCore borrows the following from the main simulator:
     - speciesList
@@ -43,7 +41,6 @@ class BDSimulatorCoreBase( object ):
     '''
 
     def __init__( self, main ):
-
         self.main = weakref.proxy( main )
 
         self.particleList = []
@@ -66,7 +63,6 @@ class BDSimulatorCoreBase( object ):
 
         self.P_acct = {}
 
-
     def initialize( self ):
         self.determineDt()
 
@@ -79,7 +75,6 @@ class BDSimulatorCoreBase( object ):
     def removeFromParticleList( self, particle ):
         self.particleList.remove( particle )
 
-
     def getNextTime( self ):
         return self.t + self.dt
 
@@ -88,15 +83,11 @@ class BDSimulatorCoreBase( object ):
         self.t = t
 
     def determineDt( self ):
-
         self.dt = calculateBDDt( self.speciesList.values(), self.dtFactor )
 
-
     def getP_acct( self, rt, D, sigma ):
-
         try:
             return self.P_acct[ rt ]
-
         except KeyError:
             I = _gfrd.I_bd( sigma, self.dt, D )
             p = rt.k * self.dt / ( I * 4.0 * numpy.pi )
@@ -107,9 +98,7 @@ class BDSimulatorCoreBase( object ):
             self.P_acct[ rt ] = p
             return p
 
-
     def step( self ):
-
         self.stepCounter += 1
         self.lastReaction = None
 
@@ -117,9 +106,7 @@ class BDSimulatorCoreBase( object ):
 
         self.t += self.dt
 
-
     def propagate( self ):
-        
         self.particlesToStep = self.particleList[:]
 
         random.shuffle( self.particlesToStep )
@@ -127,9 +114,7 @@ class BDSimulatorCoreBase( object ):
             particle = self.particlesToStep.pop() # take the last one
             self.propagateParticle( particle )
 
-
     def propagateParticle( self, particle ):
-
         species = particle.species
 
         rt1 = self.attemptSingleReactions( species )
@@ -195,10 +180,7 @@ class BDSimulatorCoreBase( object ):
             if __debug__:
                 log.info( 'propagation move rejected.' )
 
-
-
     def attemptSingleReactions( self, species ):
-
         reactionTypes = self.getReactionType1( species )
         if not reactionTypes:
             return None  # no reaction
@@ -222,9 +204,7 @@ class BDSimulatorCoreBase( object ):
 
         return reactionTypes[i]
 
-
     def fireReaction1( self, particle, rt ):
-        
         oldpos = particle.pos.copy()
 
         if len( rt.products ) == 0:
@@ -312,11 +292,7 @@ class BDSimulatorCoreBase( object ):
 
         self.reactionEvents += 1
 
-
-
-
     def fireReaction2( self, particle1, particle2, rt ):
-
         pos1 = particle1.pos.copy()
         pos2 = particle2.pos.copy()
 
@@ -357,9 +333,7 @@ class BDSimulatorCoreBase( object ):
             raise NotImplementedError,\
                 'num products >= 2 not supported.'
 
-
     def check( self ):
-
         # particles don't overlap
 
         for particle in self.particleList:
@@ -367,12 +341,8 @@ class BDSimulatorCoreBase( object ):
                                       ignore=[particle,] )
 
 
-
 class BDSimulatorCore( BDSimulatorCoreBase ):
-    
-
     def __init__( self, main ):
-
         BDSimulatorCoreBase.__init__( self, main )
 
         self.checkOverlap = self.main.checkOverlap
@@ -384,14 +354,12 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
         self.getParticlesWithinRadiusNoSort = main.getParticlesWithinRadiusNoSort
         #self.getClosestParticle = main.getClosestParticle
 
-        
     def initialize( self ):
         BDSimulatorCoreBase.initialize( self )
 
         self.updateParticleList()
 
     def updateParticleList( self ):
-
         self.clearParticleList()
 
         for s in self.speciesList.values():
@@ -410,49 +378,40 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
         particle = self.main.createParticle( species, pos )
         self.addToParticleList( particle )
 
-
-    # This method is a customization point for implementing
-    # BD in protective domains.
-
     def clearVolume( self, pos, radius, ignore=[] ):
-        
+        '''
+        This method is a customization point for implementing
+        BD in protective domains.
+        '''
         pass
 
 
-
 class BDSimulator( ParticleSimulatorBase ):
-    
     def __init__( self ):
-
         ParticleSimulatorBase.__init__( self )
-
         self.core = BDSimulatorCore( self )
         self.isDirty = True
 
-    def gett( self ):
+    @property
+    def t( self ):
         return self.core.t
 
-    def sett( self, t ):
+    @t.setter
+    def x( self, t ):
         self.core.t = t
 
-    def getDt( self ):
+    @property
+    def dt( self ):
         return self.core.dt
 
-    def getStepCounter( self ):
+    @property
+    def stepCounter( self ):
         return self.core.stepCounter
 
-    t = property( gett, sett )
-    dt = property( getDt )
-    stepCounter = property( getStepCounter )
-
     def initialize( self ):
-
         self.setAllRepulsive()
-
         self.core.initialize()
-
         self.isDirty = False
-
 
     def getNextTime( self ):
         return self.core.t + self.core.dt
@@ -466,7 +425,6 @@ class BDSimulator( ParticleSimulatorBase ):
         self.core.stop( t )
 
     def step( self ):
-
         self.reactionType = None
 
         if self.isDirty:
