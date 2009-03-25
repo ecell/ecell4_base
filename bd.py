@@ -347,7 +347,7 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
     def updateParticleList( self ):
         self.clearParticleList()
 
-        for s in self.speciesList.values():
+        for s in self.main.speciesList.values():
             for i in range( s.pool.size ):
                 self.addToParticleList( Particle( s, index = i ) )
 
