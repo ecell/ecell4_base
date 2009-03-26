@@ -314,18 +314,18 @@ import glob
 import fnmatch
 import os
 
-#model = 'mapk5'
-model = 'mapk6'
+model = 'mapk5'
+#model = 'mapk6'
 V_str = '1e-15'
 D_ratio_str = '1'
 #N_KK_str = 
 N_P_str = '30'
 N_K_total_str = '120'
-#ti_str = '1e-2'
+ti_str = '1e-2'
 #ti_str = '0'
-ti_str = '1e-6'
-theory = numpy.array(theory_m6)
-#theory = numpy.array(theory_m2)
+#ti_str = '1e-6'
+#theory = numpy.array(theory_m6)
+theory = numpy.array(theory_m2)
 theory_processive = numpy.array(theory_processive)
 
 T = '60'
@@ -334,8 +334,8 @@ T = '60'
 skip = float(T) #*0.95
 
 #dir = sys.argv[1]
-#dir = '13/data'
-dir = '15/data'
+dir = '13/data'
+#dir = '15/data'
 #outdir = sys.argv[2]
 #pattern = sys.argv[2]
 #globpattern = pattern.replace('ALL','*') + '_*.dat'
@@ -346,6 +346,7 @@ lines=[]
 #for ti_str in ['0','1e-6','1e-4','1e-2']:
 #for D_ratio_str in ['0.03125','0.0625','0.125','0.25','0.5','1','2','4']:
 for D_ratio_str in ['0.03125','0.0625','0.25','1','4']:
+#for D_ratio_str in ['0.03125']:
 
     x = []
     mean = []
@@ -413,8 +414,77 @@ ptx, pty = theory_processive[:,0], theory_processive[:,1]
 
 # main
 axes([.14,.14,.8,.8])
-lines.append( semilogx( tx, ty, 'k-', linewidth=1.5 ) )
-lines.append( semilogx( ptx, pty, 'k--', linewidth=1.5 ) )
+
+#processive
+D_ratio_str = '0.03125'
+
+dir='15/data'
+model='mapk6'
+
+x = []
+mean = []
+std_err = []
+
+
+for N_KK in range( 1, 60 ):
+    globpattern = \
+        '_'.join( ( model, V_str, D_ratio_str, str( N_KK ), '*',\
+                    N_K_total_str, ti_str,\
+                        '*' ) ) +\
+                        '_tc.dat'
+
+    filelist = glob.glob( dir + os.sep + globpattern )
+
+    print globpattern
+
+    if not filelist:
+        continue
+        
+    for N_P in range( 1,60 ):
+
+        fnpattern = \
+            '_'.join( ( model, V_str, D_ratio_str, str( N_KK ), str( N_P ),\
+                        N_K_total_str, ti_str,\
+                            '*' ) ) +\
+                            '_tc.dat'
+        filelist2 = fnmatch.filter( filelist, dir + os.sep + fnpattern )
+        if not filelist2:
+            continue
+
+        data = []
+
+        for file in filelist2:
+            print file
+            res = file_mean( file, skip )
+
+            data.append( res )
+
+        data = numpy.array( data )
+        data /= int( N_K_total_str )
+            
+        x.append( float(N_KK)/float(N_P) )
+        mean.append( data.mean() )
+        std_err.append( data.std()/math.sqrt(len(data)) )
+
+        print x, mean, std_err
+
+        break
+
+
+axes([.14,.14,.8,.8])
+line=semilogx( x, mean, 'b--', linewidth=2 )
+lines.append(line)
+axes([.62,.20,.29,.29])
+plot( x, mean, 'b--', lw=2 )
+
+#ODE
+axes([.14,.14,.8,.8])
+lines.append( semilogx( ptx, pty, 'k--', linewidth=2 ) )
+lines.append( semilogx( tx, ty, 'k-', linewidth=2 ) )
+
+
+axes([.14,.14,.8,.8])
+
 xlim( [0.005,200] )
 ylim( [-0.02, 1.01] )
 xticks( [1e-2, 1e-1, 1, 1e1, 1e2], ['0.01', '0.1', '1', '10', '100'], size=22 )
@@ -429,22 +499,24 @@ leg =legend( lines, (r'$D=0.03 \ \ {\rm \mu m^2 / s}$',
               r'$D=0.25 \ \  {\rm \mu m^2 / s}$',
               r'$D=1.0 \ \  {\rm \mu m^2 / s}$',
               r'$D=4.0 \ \  {\rm \mu m^2 / s}$',
-              r'ODE (distributive)',
-              r'ODE (processive)'
+              r'Processive $(D=0.03)$',
+              r'Processive ODE$(D=1)$',
+              r'Distributive ODE$(D=1)$',
               ),
              loc=2,
              shadow=True,
-             pad=0.05
+             pad=0.05,
+             labelsep=0
              )
 for l in leg.get_lines():
-    l.set_linewidth(1.5)  # the legend line width
+    l.set_linewidth(2)  # the legend line width
 
 
 
 # inset
 axes([.62,.20,.29,.29])
-plot( tx, ty, 'k-', linewidth=1.5 )
-plot( ptx, pty, 'k--', linewidth=1.5 )
+plot( ptx, pty, 'k--', linewidth=2 )
+plot( tx, ty, 'k-', linewidth=2 )
 xlim( [0.001,1] )
 ylim( [-0.02,0.4] )
 xticks( [.1,.5,1],size=18 )

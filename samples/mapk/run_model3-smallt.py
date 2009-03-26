@@ -126,7 +126,7 @@ def singlerun( D_factor, ti, T ):
     #s.throwInParticles( P, N_P, box1 )
     
     s.placeParticle( Kp, [0,0,0] )
-    s.placeParticle( KK, [0,0,sigma+1e-20] )
+    s.placeParticle( KKi, [0,0,sigma+1e-20] )
 
     s.throwInParticles( KK, N_KK-1, box1 )
 

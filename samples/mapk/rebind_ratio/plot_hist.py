@@ -7,29 +7,29 @@
 
 # t_half = 1e-6
 
-# rfiles = [ 'mapk3_1e-15_0.03125_fixed_1e-6_normal_ALL_reactions.rebind',
-#            'mapk3_1e-15_0.0625_fixed_1e-6_normal_ALL_reactions.rebind',
-#            'mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_reactions.rebind',
-#            'mapk3_1e-15_1_fixed_1e-6_normal_ALL_reactions.rebind',
-#            'mapk3_1e-15_4_fixed_1e-6_normal_ALL_reactions.rebind' ] 
-# sfiles = []
+rfiles = [ 'mapk3_1e-15_0.03125_fixed_1e-6_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_0.0625_fixed_1e-6_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_1_fixed_1e-6_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_4_fixed_1e-6_normal_ALL_reactions.rebind' ] 
+sfiles = []
 
 
 # t_half = 1e-2
 
-rfiles = [ 'mapk3_1e-15_0.03125_fixed_1e-2_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_0.0625_fixed_1e-2_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_4_fixed_1e-2_normal_ALL_reactions.rebind' ]
+# rfiles = [ 'mapk3_1e-15_0.03125_fixed_1e-2_normal_ALL_reactions.rebind',
+#            'mapk3_1e-15_0.0625_fixed_1e-2_normal_ALL_reactions.rebind',
+#            'mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_reactions.rebind',
+#            'mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind',
+#            'mapk3_1e-15_4_fixed_1e-2_normal_ALL_reactions.rebind' ]
 
-sdir = 's01/data/'
+# sdir = 's01/data/'
 
-sfiles = [ 'model3-smallt_0.03125_1e-2_ALL_t.dat',
-           'model3-smallt_0.0625_1e-2_ALL_t.dat',
-           'model3-smallt_0.25_1e-2_ALL_t.dat',
-           'model3-smallt_1_1e-2_ALL_t.dat',
-           'model3-smallt_4_1e-2_ALL_t.dat' ]
+# sfiles = [ 'model3-smallt_0.03125_1e-2_ALL_t.dat',
+#            'model3-smallt_0.0625_1e-2_ALL_t.dat',
+#            'model3-smallt_0.25_1e-2_ALL_t.dat',
+#            'model3-smallt_1_1e-2_ALL_t.dat',
+#            'model3-smallt_4_1e-2_ALL_t.dat' ]
 
 
 
@@ -80,7 +80,7 @@ def plot_hist( filename, xmin, xmax, BINS, pattern=None, factor=1.0,
     if sfile != None:
         thr = 1e-5
     else:
-        thr = 0
+        thr = 1e-20
 
     file = open( filename )
 
@@ -100,32 +100,9 @@ def plot_hist( filename, xmin, xmax, BINS, pattern=None, factor=1.0,
 
     data = numpy.array(data)
     N = len(data)
-    weights = numpy.ones(len(data))
-
-    sN = 0
-    if sfile != None:
-        print sfile
-        sdata, sN = load_sfile( sfile )
-        sdata = numpy.array(sdata)
-        weights = numpy.concatenate((weights,
-                                     numpy.ones(len(sdata)) * len(sdata)/float(sN)))
-#                                     (float(N) / (N+sN))))
-
-        data = numpy.concatenate( ( data, numpy.array(sdata) ) )
-
-
-    #    xmin = data.min()
-    #xmax = data.max()
-    logxmin = math.log10(xmin)
-    logxmax = math.log10(xmax)
-    
-    print N
-    
     n, bins = numpy.histogram(numpy.log10(data), 
-                              #range=(numpy.log10(thr),numpy.log10(data.max())),
-                              weights=weights,
-                              bins=BINS, new=True)
-    print n
+                              range=(numpy.log10(thr),numpy.log10(data.max())),
+                              bins=BINS/2, new=True)
     n = n.astype(numpy.floating)
     n /= float(N)
     n *= factor
@@ -134,9 +111,30 @@ def plot_hist( filename, xmin, xmax, BINS, pattern=None, factor=1.0,
     x = (10**bins[1:] + 10**bins[:-1]) / 2
     dx = (10**bins[1:]- 10**bins[:-1])
     y = n / dx    #  n+1e-10
-    print x, y
-    print (y*dx).sum()
 
+    print x, y
+    if sfile != None:
+        print sfile
+        sdata, sN = load_sfile( sfile )
+        sdata = numpy.array(sdata)
+
+        sn, sbins = numpy.histogram(numpy.log10(sdata), 
+                                    range=(numpy.log10(sdata.min()),
+                                           numpy.log10(thr)),
+                                    bins=BINS/2, new=True)
+        sn = sn.astype(numpy.floating)
+        sn /= float(sN)
+        sn *= 3
+        sn *= factor
+
+        sx = (10**sbins[1:] + 10**sbins[:-1]) / 2
+        sdx = (10**sbins[1:]- 10**sbins[:-1])
+        sy = sn / sdx    #  n+1e-10
+
+        x = numpy.concatenate( (sx, x ) )
+        y = numpy.concatenate( (sy, y ) )
+
+        print N, sN, len(sdata)
     return loglog( x, y  )#, label=filename )
 
 
@@ -186,13 +184,13 @@ if __name__ == '__main__':
 
     import numpy
 
-    BINS=30
+    BINS=200
 
 
     #pattern = re.compile( sys.argv[1] )
     
     #xmin = 1e-12
-    xmin = 1e-8
+    xmin = 1e-7
     xmax = 50
     
     axes([.16,.16,.8,.8])
@@ -207,6 +205,8 @@ if __name__ == '__main__':
 
         if len(sfiles) >= 1:
             sfile = sfiles[n]
+        else:
+            sfile = None
 
         #         sigma = 5e-9
         #         kD = 4 * numpy.pi * sigma * D
@@ -233,7 +233,7 @@ if __name__ == '__main__':
     yticks( size=18 )
     
     xlim( xmin, xmax )
-    #ylim( 2e-4, 5e5 )
+    ylim( 2e-4, 5e5 )
 
     leg = legend( lines, (r'$D=0.03 \ \ {\rm \mu m^2 / s}$',
                          r'$D=0.06 \ \  {\rm \mu m^2 / s}$',
@@ -242,10 +242,11 @@ if __name__ == '__main__':
                           r'$D=1.0 \ \  {\rm \mu m^2 / s}$',
                           r'$D=4.0 \ \  {\rm \mu m^2 / s}$',
                          ),
-                 loc=3,
-                 shadow=True,
-                 pad=0.05
-                 )
+                  loc=1,
+                  shadow=True,
+                  pad=0.05,
+                  labelsep=0
+                  )
     for l in leg.get_lines():
         l.set_linewidth(1.5)  # the legend line width
 
