@@ -20,7 +20,7 @@ def run( outfilename, D_factor, ti, T, N ):
 
     for i in range( N ):
         t = singlerun( D_factor, ti, T )
-        #print t
+        #print i, t
 
         if t != -1:
             outfile_t.write( '%g\n' % t )
@@ -36,7 +36,6 @@ def run( outfilename, D_factor, ti, T, N ):
 
 
 def singlerun( D_factor, ti, T ):
-    D_mode = 'fixed'
 
     V = 1e-15
     #V = 1e-16
@@ -52,10 +51,7 @@ def singlerun( D_factor, ti, T ):
 
     D_move = D_ref * D_factor
 
-    if D_mode == 'normal':
-        D_react = D_move
-    elif D_mode == 'fixed':
-        D_react = D_ref
+    D_react = D_ref
 
     # V in liter, L in meter
     L = math.pow( V * 1e-3, 1.0 / 3.0 )
@@ -72,32 +68,32 @@ def singlerun( D_factor, ti, T ):
 
     radius = 2.5e-9
 
-    K = Species( 'K', D_move, radius )
-    s.addSpecies( K )
+#     K = Species( 'K', D_move, radius )
+#     s.addSpecies( K )
     KK = Species( 'KK', D_move, radius )
     s.addSpecies( KK )
-    P = Species( 'P', D_move, radius )
-    s.addSpecies( P )
+#     P = Species( 'P', D_move, radius )
+#     s.addSpecies( P )
     Kp = Species( 'Kp', D_move, radius )
     s.addSpecies( Kp )
-    Kpp = Species( 'Kpp', D_move, radius )
-    s.addSpecies( Kpp )
-    K_KK = Species( 'K_KK', D_move, radius )
-    s.addSpecies( K_KK )
+#     Kpp = Species( 'Kpp', D_move, radius )
+#     s.addSpecies( Kpp )
+#     K_KK = Species( 'K_KK', D_move, radius )
+#     s.addSpecies( K_KK )
     Kp_KK = Species( 'Kp_KK', D_move, radius )
     s.addSpecies( Kp_KK )
-    Kpp_KK = Species( 'Kpp_KK', D_move, radius )
-    s.addSpecies( Kpp_KK )
-    Kpp_P = Species( 'Kpp_P', D_move, radius )
-    s.addSpecies( Kpp_P )
-    Kp_P = Species( 'Kp_P', D_move, radius )
-    s.addSpecies( Kp_P )
+#     Kpp_KK = Species( 'Kpp_KK', D_move, radius )
+#     s.addSpecies( Kpp_KK )
+#     Kpp_P = Species( 'Kpp_P', D_move, radius )
+#     s.addSpecies( Kpp_P )
+#     Kp_P = Species( 'Kp_P', D_move, radius )
+#     s.addSpecies( Kp_P )
 
     # inactive forms
     KKi = Species( 'KKi', D_move, radius )
     s.addSpecies( KKi )
-    Pi = Species( 'Pi', D_move, radius )
-    s.addSpecies( Pi )
+#     Pi = Species( 'Pi', D_move, radius )
+#     s.addSpecies( Pi )
 
 
 
@@ -144,12 +140,12 @@ def singlerun( D_factor, ti, T ):
 #             break
 
 #     s.reset()
-    k1 = k_a( Mtom3( 0.02e9 ), kD )
-    k2 = k_d( 1.0, Mtom3( 0.02e9 ), kD )
-    k3 = 1.5
+#     k1 = k_a( Mtom3( 0.02e9 ), kD )
+#     k2 = k_d( 1.0, Mtom3( 0.02e9 ), kD )
+#     k3 = 1.5
     k4 = k_a( Mtom3( 0.032e9 ), kD )
-    k5 = k_d( 1.0, Mtom3( 0.032e9 ), kD )
-    k6 = 15.0
+#     k5 = k_d( 1.0, Mtom3( 0.032e9 ), kD )
+#     k6 = 15.0
 
 #     r1 = BindingReactionType( K, KK, K_KK, k1 )
 #     s.addReactionType( r1 )
@@ -160,10 +156,10 @@ def singlerun( D_factor, ti, T ):
 
     r4 = BindingReactionType( Kp, KK, Kp_KK, k4 )
     s.addReactionType( r4 )
-    r5 = UnbindingReactionType( Kp_KK, Kp, KK, k5 )
-    s.addReactionType( r5 )
-    r6 = UnbindingReactionType( Kp_KK, Kpp, KKi, k6 )
-    s.addReactionType( r6 )
+#     r5 = UnbindingReactionType( Kp_KK, Kp, KK, k5 )
+#     s.addReactionType( r5 )
+#     r6 = UnbindingReactionType( Kp_KK, Kpp, KKi, k6 )
+#     s.addReactionType( r6 )
 
 
 #     r7 = BindingReactionType( Kpp, P, Kpp_P, k1 )
@@ -199,11 +195,14 @@ def singlerun( D_factor, ti, T ):
         if s.lastReaction:
             r = s.lastReaction
             for p in r.products:
-                if p.species == Kpp:
+#                if p.species == Kpp:
+                if p.species == Kp_KK:
                     if s.t <= T:
                         return s.t
                     else:
                         return -1
+        if s.getNextTime() > T:
+            return -1
 
     return -1
 

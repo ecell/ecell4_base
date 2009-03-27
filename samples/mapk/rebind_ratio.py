@@ -58,7 +58,7 @@ def rebind_ratio( reactions ):
         # unbinding
         if len( r.reactants ) == 1 and len( r.products ) == 2:
 
-            # K_KK -> Kp + KKi, Kp 
+            # K_KK -> Kp + KKi
             # Kp first site phosphorylated.
             if r.reactants[0].speciesName == 'K_KK':
 
@@ -115,16 +115,33 @@ def rebind_ratio( reactions ):
 
                             #print r.reactants[0], '->', Kpp, KKi
 
+                            originalKp=None
+                            originalKK=None
+
+                            if CurrentFormKK.has_key(Kp_KK):
+                                originalKK = CurrentFormKK[Kp_KK]
+                                del KKCurrentForm[originalKK]
+                                del CurrentFormKK[Kp_KK]
+
                             if CurrentFormKp.has_key( Kp_KK ):
 
                                 originalKp = CurrentFormKp[Kp_KK]
                                 del KpCurrentForm[originalKp]
                                 del CurrentFormKp[Kp_KK]
 
-                            if CurrentFormKK.has_key(Kp_KK):
-                                originalKK = CurrentFormKK[Kp_KK]
-                                del KKCurrentForm[originalKK]
-                                del CurrentFormKK[Kp_KK]
+                                #print originalKp
+
+                                t_create = KpCreated[originalKp]
+                                t = r.t - t_create
+                                partner = KpKK[originalKp]
+
+
+                                if originalKK is not None and originalKK == partner:
+                                    outfile.write( '%.18g\trebinding\n' % t )
+                                else:
+                                    outfile.write( '%.18g\tdiffusion\n' % t )
+
+
 
                             
 
@@ -160,17 +177,17 @@ def rebind_ratio( reactions ):
                             originalKK = None
 
                         if KpCreated.has_key(originalKp):
+                            pass
+#                             t_create = KpCreated[originalKp]
+#                             t = r.t - t_create
+#                             partner = KpKK[originalKp]
+#                             if originalKK is not None and originalKK == partner:
+#                                 outfile.write( '%.18g\trebinding\n' % t )
+#                             else:
+#                                 outfile.write( '%.18g\tdiffusion\n' % t )
 
-                            t_create = KpCreated[originalKp]
-                            t = r.t - t_create
-                            partner = KpKK[originalKp]
-                            if originalKK is not None and originalKK == partner:
-                                outfile.write( '%.18g\trebinding\n' % t )
-                            else:
-                                outfile.write( '%.18g\tdiffusion\n' % t )
-
-                            del KpCreated[originalKp]
-                            del KpKK[originalKp]
+                          #   del KpCreated[originalKp]
+#                             del KpKK[originalKp]
 
                         
                         
