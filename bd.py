@@ -391,13 +391,23 @@ class BDSimulator( ParticleSimulatorBase ):
 
     t = property(t, sett)
 
-    @property
-    def dt( self ):
+#     @property
+#     def dt( self ):
+#         return self.core.dt
+
+#     @property
+#     def stepCounter( self ):
+#         return self.core.stepCounter
+
+    def getDt( self ):
         return self.core.dt
 
-    @property
-    def stepCounter( self ):
+    def getStepCounter( self ):
         return self.core.stepCounter
+
+    dt = property( getDt )
+    stepCounter = property( getStepCounter )
+
 
     def initialize( self ):
         self.setAllRepulsive()

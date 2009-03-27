@@ -11,9 +11,9 @@ s = EGFRDSimulator()
 #s = BDSimulator()
 
 #L = 5e-6
-#L = 2e-6
+L = 2e-6
 #L = 5e-8
-L = 3e-7
+#L = 3e-7
 s.setWorldSize( L )
 s.setMatrixSize( 10 )
 
@@ -55,16 +55,16 @@ def profrun():
         #logging.info( s.dumpPopulation() )
 
 
-#try:
-#    import cProfile as profile
-#except:
-#    import profile
-#profile.run('profrun()', 'fooprof')
-profrun()
+try:
+    import cProfile as profile
+except:
+    import profile
+profile.run('profrun()', 'fooprof')
+#profrun()
 
-#import pstats
-#pstats.Stats('fooprof').sort_stats('time').print_stats(40)
-#
+import pstats
+pstats.Stats('fooprof').sort_stats('time').print_stats(40)
+
 
 sys.exit(1)
 
