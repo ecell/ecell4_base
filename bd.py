@@ -44,8 +44,8 @@ class BDSimulatorCoreBase( object ):
     def initialize( self ):
         self.determineDt()
 
-    @staticmethod
-    def calculateBDDt( speciesList, factor ):
+    #@staticmethod  # requires python 2.4 or later.
+    def calculateBDDt( self, speciesList, factor ):
         D_list = []
         radius_list = []
         for species in speciesList:
