@@ -2282,17 +2282,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return neighbors + [DummySingle()], numpy.concatenate( [ distances,
                                                                  [INF] ] )
 
-    def getClosestShell( self, pos, ignore=[] ):
-
-        neighbors, distances = self.getNeighborShells( pos )
-
-        for i, neighbor in enumerate( neighbors ):
-            if neighbor not in ignore:
-                return neighbor, distances[i]
-
-        return None, INF
-
-
     def getClosestObj( self, pos, ignore=[] ):
 
         shells, distances = self.getNeighborShells( pos )
