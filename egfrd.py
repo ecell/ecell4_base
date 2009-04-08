@@ -150,32 +150,10 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
         return not n
 
-    '''
-    def getNeighborParticles( self, pos, n=None ):
-
-        n, d = self.particleMatrix.getNeighbors( pos, n )
-        neighbors = [ Particle( i[0], i[1] ) for i in n ]
-        return neighbors, d
-    '''
-
     def getParticlesWithinRadiusNoSort( self, pos, radius, ignore=[] ):
         neighbors, _ = \
             self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
         return [ n for n in neighbors if n not in ignore ]
-
-
-    def getClosestParticle( self, pos, ignore=[] ):
-
-        neighbors, distances =\
-            self.particleMatrix.getNeighbors( pos, len( ignore ) + 1 )
-
-        for i, neighbor in enumerate( neighbors ):
-            particle = Particle( neighbor[0], neighbor[1] )
-            if particle not in ignore:
-                return particle, distances[i]
-
-        # default case: none left.
-        return None, INF
 
 
     def check( self ):

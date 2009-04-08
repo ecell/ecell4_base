@@ -592,47 +592,6 @@ class ParticleSimulatorBase( object ):
         self.dt = self.dtLimit
 
 
-        
-    '''
-    Get closest n Particles.
-
-    When the optional argument speciesList is given, only Particles of
-    species in the list are considered.  When speciesList is not given
-    or is None, all species in the simulator are considered.
-    
-    This method returns a tuple ( neighbors, distances ), where neighbors
-    is a list of Particle objects.
-    '''
-
-
-    def getNeighborParticles( self, pos, n=None ):
-        n, d = self.particleMatrix.getNeighbors( pos, n )
-        neighbors = [ Particle( i[0], i[1] ) for i in n ]
-        return neighbors, d
-
-    def getNeighborParticlesNoSort( self, pos, n=None ):
-        n, d = self.particleMatrix.getNeighborsNoSort( pos, n )
-        neighbors = [ Particle( i[0], i[1] ) for i in n ]
-        return neighbors, d
-
-
-    def getClosestParticle( self, pos, ignore=[] ):
-
-        neighbors, distances =\
-            self.getNeighborParticles( pos, len( ignore ) + 1 )
-
-        for i in range( len( neighbors ) ): 
-            if neighbors[i] not in ignore:
-                closest, distance = neighbors[i], distances[i]
-
-                #assert not closest in ignore
-                return closest, distance
-
-        # default case: none left.
-        return None, INF
-        #return DummyParticle(), INF
-
-
     def checkSurfaces( self, speciesIndex1, particleIndex ):
 
         speciesList = self.speciesList.values()
