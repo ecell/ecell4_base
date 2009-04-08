@@ -393,7 +393,7 @@ class Single( object ):
     def check( self ):
         pass
 
-    def __str__( self ):
+    def __repr__( self ):
         return 'Single' + str( self.particle )
 
 
@@ -870,7 +870,7 @@ class Pair( object ):
     def check( self ):
         pass
 
-    def __str__( self ):
+    def __repr__( self ):
         buf = 'Pair( ' + str(self.single1.particle) +\
               ', ' + str(self.single2.particle) + ' )'
 
@@ -919,7 +919,7 @@ class Multi( object ):
         self.sim.check()
 
 
-    def __str__( self ):
+    def __repr__( self ):
 
         if len( self.sim.particleList ) == 0:
             return 'Multi()'
@@ -953,7 +953,7 @@ class DummySingle( object ):
     pos = property( getPos )
 
 
-    def __str__( self ):
+    def __repr__( self ):
         return 'DummySingle()'
 
 
