@@ -39,6 +39,9 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+
 //#define HAVE_TR1_UNORDERED_MAP
 
 #if HAVE_UNORDERED_MAP
@@ -120,8 +123,8 @@ public:
 
         if( i == this->indexMap.end() )
         {
-            throw std::out_of_range( "PersistentIDPolicy::getIndex():"
-				     " Key not found." );
+            throw std::out_of_range(
+                ( boost::format( "%s: Key not found (%s)" ) % __PRETTY_FUNCTION__ % boost::lexical_cast< std::string >( id ) ).str() );
         }
 
         return (*i).second;
