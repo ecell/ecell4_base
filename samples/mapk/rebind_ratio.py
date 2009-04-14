@@ -52,8 +52,13 @@ def rebind_ratio( reactions ):
     KKCurrentForm = {}
     CurrentFormKK = {}
 
+    counter = 0
+    lasttime = 0
+
     for r in reactions:
         #print r.t, r.reactants, r.products
+
+        lasttime = r.t
 
         # unbinding
         if len( r.reactants ) == 1 and len( r.products ) == 2:
@@ -131,15 +136,15 @@ def rebind_ratio( reactions ):
 
                                 #print originalKp
 
-                                t_create = KpCreated[originalKp]
-                                t = r.t - t_create
-                                partner = KpKK[originalKp]
+#                                 t_create = KpCreated[originalKp]
+#                                 t = r.t - t_create
+#                                 partner = KpKK[originalKp]
 
 
-                                if originalKK is not None and originalKK == partner:
-                                    outfile.write( '%.18g\trebinding\n' % t )
-                                else:
-                                    outfile.write( '%.18g\tdiffusion\n' % t )
+#                                 if originalKK is not None and originalKK == partner:
+#                                     outfile.write( '%.18g\trebinding\n' % t )
+#                                 else:
+#                                     outfile.write( '%.18g\tdiffusion\n' % t )
 
 
 
@@ -148,6 +153,7 @@ def rebind_ratio( reactions ):
 
         # binding
         elif len( r.reactants ) == 2 and len( r.products ) == 1:
+
 
             # Kp + KK -> Kp_KK
             for i, p in enumerate( r.reactants ):
@@ -177,20 +183,47 @@ def rebind_ratio( reactions ):
                             originalKK = None
 
                         if KpCreated.has_key(originalKp):
-                            pass
-#                             t_create = KpCreated[originalKp]
-#                             t = r.t - t_create
-#                             partner = KpKK[originalKp]
-#                             if originalKK is not None and originalKK == partner:
-#                                 outfile.write( '%.18g\trebinding\n' % t )
-#                             else:
-#                                 outfile.write( '%.18g\tdiffusion\n' % t )
+#                             pass
+                            t_create = KpCreated[originalKp]
+                            t = r.t - t_create
+                            partner = KpKK[originalKp]
+                            if originalKK is not None and originalKK == partner:
+                                outfile.write( '%.18g\trebinding\n' % t )
+                            else:
+                                outfile.write( '%.18g\tdiffusion\n' % t )
+                            counter += 1
+                            del KpCreated[originalKp]
+                            del KpKK[originalKp]
 
-                          #   del KpCreated[originalKp]
+                        
+                        break 
+
+
+#             # Kp + P -> Kp_P
+#             for i, p in enumerate( r.reactants ):
+#                 if p.speciesName == 'Kp':
+#                     Kp = p
+#                     P = r.reactants[ 1 - i ]
+#                     if P.speciesName == 'P':
+#                         Kp_P = r.products[0]
+#                         assert Kp_P.speciesName == 'Kp_P'
+
+#                         if not CurrentFormKp.has_key( Kp ):
+#                             break
+
+#                         originalKp = CurrentFormKp[Kp]
+#                         KpCurrentForm[originalKp] = Kp_P
+#                         del CurrentFormKp[Kp]
+#                         CurrentFormKp[Kp_P] = originalKp
+
+#                         if KpCreated.has_key(originalKp):
+# #                             pass
+#                             del KpCreated[originalKp]
 #                             del KpKK[originalKp]
 
                         
-                        
+#                         break 
+
 
 
         # monomolecular
@@ -201,6 +234,14 @@ def rebind_ratio( reactions ):
                 del CurrentFormKK[ r.reactants[0] ]
                 CurrentFormKK[ r.products[0] ] = originalform
                 #print 'transition', r.reactants[0], '->', r.products[0]
+
+    import numpy
+    nonreactions = [ t for t in KpCreated.values() if lasttime-t > 10]
+    print 'reactions: ', counter, 'non-reactions', len(nonreactions)
+    for t in nonreactions:
+        #if t > 60:
+        outfile.write( '%.18g\tno-reaction\n' % numpy.inf )
+    
                                   
         
 

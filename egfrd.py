@@ -1125,12 +1125,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
         # assert if not too many successive dt=0 steps occur.
-        if self.dt == 0:
-            self.zeroSteps += 1
-            if self.zeroSteps >= max( self.scheduler.getSize() * 3, 10 ):
-                raise RuntimeError, 'too many dt=zero steps.  simulator halted?'
-        else:
-            self.zeroSteps = 0
+        if __debug__:
+            if self.dt == 0:
+                self.zeroSteps += 1
+                if self.zeroSteps >= max( self.scheduler.getSize() * 3, 10 ):
+                    raise RuntimeError, 'too many dt=zero steps.  simulator halted?'
+            else:
+                self.zeroSteps = 0
 
 
         assert self.scheduler.getSize() != 0

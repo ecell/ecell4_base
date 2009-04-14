@@ -10,7 +10,7 @@ import sys
 s = EGFRDSimulator()
 #s = BDSimulator()
 
-#L = 5e-6
+L = 5e-6
 L = 2e-6
 #L = 5e-8
 #L = 3e-7
@@ -55,15 +55,20 @@ def profrun():
         #logging.info( s.dumpPopulation() )
 
 
-try:
-    import cProfile as profile
-except:
-    import profile
-profile.run('profrun()', 'fooprof')
-#profrun()
+PROFMODE=True
 
-import pstats
-pstats.Stats('fooprof').sort_stats('time').print_stats(40)
+if PROFMODE:
+    try:
+        import cProfile as profile
+    except:
+        import profile
+    profile.run('profrun()', 'fooprof')
+    import pstats
+    pstats.Stats('fooprof').sort_stats('time').print_stats(40)
+
+else:
+    profrun()
+
 
 
 sys.exit(1)

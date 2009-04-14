@@ -15,10 +15,11 @@
 #include <boost/python/module.hpp>
 #include <boost/python/refcount.hpp>
 
-
 #include <numpy/arrayobject.h>
 
 #include "distance.hpp"
+
+//#include "peer/numpy/ndarray_converters.hpp"
 
 #include "wrapped_multi_array.hpp"
 
@@ -184,6 +185,8 @@ BOOST_PYTHON_MODULE( _gfrd )
     register_ndarray_wrapped_multi_array_converter<npy_double, 1>();
     register_ndarray_wrapped_multi_array_converter<npy_double, 2>();
     register_ndarray_wrapped_multi_array_converter<npy_double, 3>();
+
+//    peer::util::register_multi_array_converter<boost::multi_array<double,1,peer::util::pyarray_backed_allocator<double> > >();
 
 
 //    to_python_converter<PyEvent, PyEvent_to_python>();
@@ -403,5 +406,6 @@ BOOST_PYTHON_MODULE( _gfrd )
     def( "distance", &distance );
     def( "distanceSq_Cyclic", &distanceSq_Cyclic );
     def( "distance_Cyclic", &distance_Cyclic );
+//    def( "cyclicTranspose", &cyclicTranspose );
 
 }

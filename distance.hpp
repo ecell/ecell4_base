@@ -1,3 +1,6 @@
+
+#include <boost/multi_array.hpp>
+
 #include <gsl/gsl_math.h>
 
 
@@ -56,11 +59,37 @@ const double _distanceSq_Cyclic( const double* const p1,
 }
 
 const double _distance_Cyclic( const double* const p1, 
-                              const double* const p2,
-                              const double worldSize )
+                               const double* const p2,
+                               const double worldSize )
 {
     return std::sqrt( _distanceSq_Cyclic( p1, p2, worldSize ) );
 }
+
+
+// #include "peer/numpy/pyarray_backed_allocator.hpp"
+// void
+// _cyclicTranspose( double* const p1, 
+//                   const double* const p2,
+//                   const double worldSize )
+// {
+//     const double halfWorldSize( worldSize * .5 );
+
+//     for( unsigned int i( 0 ); i <= 2; ++i )
+//     {
+//         const double diff( p2[i] - p1[i] );
+
+//         if( diff > halfWorldSize )
+//         {
+//             p1[i] += worldSize;
+//         }
+//         else if( diff < - halfWorldSize )
+//         {
+//             p1[i] -= worldSize;
+//         }
+//     }
+
+// }
+
 
 
 #include "wrapped_multi_array.hpp"
@@ -105,9 +134,19 @@ distanceSq_Cyclic( const wrapped_multi_array<double, 1>& a1,
 
 const double 
 distance_Cyclic( 
-const wrapped_multi_array<double, 1>& a1,
-                 const wrapped_multi_array<double, 1>& a2,
-                 const double worldSize )
+    const wrapped_multi_array<double, 1>& a1,
+    const wrapped_multi_array<double, 1>& a2,
+    const double worldSize )
 {
     return _distance_Cyclic( a1.data(), a2.data(), worldSize );
 }
+
+
+// void
+// cyclicTranspose( 
+//     const wrapped_multi_array<double, 1>& a1,
+//     const wrapped_multi_array<double, 1>& a2,
+//     const double worldSize )
+// {
+//     _cyclicTranspose( const_cast<double*>(a1.data()), a2.data(), worldSize );
+// }

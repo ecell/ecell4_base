@@ -3,8 +3,14 @@
 import numpy
 
 import sys
+import glob
 
-file = open( sys.argv[1] )
+
+filepattern = open( sys.argv[1] )
+
+filepattern.replace( 'ALL', '*' )
+filelist = glob.glob( filepattern )
+print filelist
 
 
 events = {}

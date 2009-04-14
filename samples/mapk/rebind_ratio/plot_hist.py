@@ -17,19 +17,19 @@ sfiles = []
 
 # t_half = 1e-2
 
-# rfiles = [ 'mapk3_1e-15_0.03125_fixed_1e-2_normal_ALL_reactions.rebind',
-#            'mapk3_1e-15_0.0625_fixed_1e-2_normal_ALL_reactions.rebind',
-#            'mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_reactions.rebind',
-#            'mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind',
-#            'mapk3_1e-15_4_fixed_1e-2_normal_ALL_reactions.rebind' ]
+rfiles = [ 'mapk3_1e-15_0.03125_fixed_1e-2_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_0.0625_fixed_1e-2_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind',
+           'mapk3_1e-15_4_fixed_1e-2_normal_ALL_reactions.rebind' ]
+sfiles=[]
+sdir = 's02/data/'
 
-# sdir = 's01/data/'
-
-# sfiles = [ 'model3-smallt_0.03125_1e-2_ALL_t.dat',
-#            'model3-smallt_0.0625_1e-2_ALL_t.dat',
-#            'model3-smallt_0.25_1e-2_ALL_t.dat',
-#            'model3-smallt_1_1e-2_ALL_t.dat',
-#            'model3-smallt_4_1e-2_ALL_t.dat' ]
+sfiles = [ 'model3-smallt_0.03125_1e-2_ALL_t.dat',
+           'model3-smallt_0.0625_1e-2_ALL_t.dat',
+           'model3-smallt_0.25_1e-2_ALL_t.dat',
+           'model3-smallt_1_1e-2_ALL_t.dat',
+           'model3-smallt_4_1e-2_ALL_t.dat' ]
 
 
 
@@ -49,7 +49,7 @@ def load_sfile( sfile ):
     sfile = sfile.replace( 'ALL', '*' )
 
     filelist = glob.glob( sdir + sfile )
-
+    print filelist
     N = 0
     data = []
 
@@ -100,6 +100,7 @@ def plot_hist( filename, xmin, xmax, BINS, pattern=None, factor=1.0,
 
     data = numpy.array(data)
     N = len(data)
+    data = data.compress(data != numpy.inf)
     n, bins = numpy.histogram(numpy.log10(data), 
                               range=(numpy.log10(thr),numpy.log10(data.max())),
                               bins=BINS/2, new=True)
@@ -117,14 +118,13 @@ def plot_hist( filename, xmin, xmax, BINS, pattern=None, factor=1.0,
         print sfile
         sdata, sN = load_sfile( sfile )
         sdata = numpy.array(sdata)
-
+        #sdata = numpy.compress(sdata <= thr,sdata)
         sn, sbins = numpy.histogram(numpy.log10(sdata), 
                                     range=(numpy.log10(sdata.min()),
                                            numpy.log10(thr)),
-                                    bins=BINS/2, new=True)
+                                    bins=BINS/3, new=True)
         sn = sn.astype(numpy.floating)
         sn /= float(sN)
-        sn *= 3
         sn *= factor
 
         sx = (10**sbins[1:] + 10**sbins[:-1]) / 2
@@ -184,14 +184,14 @@ if __name__ == '__main__':
 
     import numpy
 
-    BINS=200
+    BINS=50
 
 
     #pattern = re.compile( sys.argv[1] )
     
     #xmin = 1e-12
-    xmin = 1e-7
-    xmax = 50
+    xmin = 1e-8
+    xmax = 100
     
     axes([.16,.16,.8,.8])
 
@@ -208,9 +208,9 @@ if __name__ == '__main__':
         else:
             sfile = None
 
-        #         sigma = 5e-9
-        #         kD = 4 * numpy.pi * sigma * D
-        #         k_a = 9.2e-20#1.6e9 / (1000*6e23)
+        sigma = 5e-9
+        kD = 4 * numpy.pi * sigma * D
+        k_a = 9.2e-20#1.6e9 / (1000*6e23)
         #factor = D * ( 1 + (k_a / kD ) )
 
         factor = 1
@@ -219,7 +219,7 @@ if __name__ == '__main__':
         lines.append(line)
 
 
-    xlabel( 'Second phosphorylation times', size=26 )
+    xlabel( 'Second association times', size=26 )
     ylabel( 'Relative frequency', size=26 )
     #ylabel( r'$p(t) \cdot D ( 1 + (k_a / kD))$', size=26 )
 
@@ -233,7 +233,7 @@ if __name__ == '__main__':
     yticks( size=18 )
     
     xlim( xmin, xmax )
-    ylim( 2e-4, 5e5 )
+    ylim( 5e-5, 5e5 )
 
     leg = legend( lines, (r'$D=0.03 \ \ {\rm \mu m^2 / s}$',
                          r'$D=0.06 \ \  {\rm \mu m^2 / s}$',
@@ -242,7 +242,7 @@ if __name__ == '__main__':
                           r'$D=1.0 \ \  {\rm \mu m^2 / s}$',
                           r'$D=4.0 \ \  {\rm \mu m^2 / s}$',
                          ),
-                  loc=1,
+                  loc=3,
                   shadow=True,
                   pad=0.05,
                   labelsep=0

@@ -321,11 +321,10 @@ D_ratio_str = '1'
 #N_KK_str = 
 N_P_str = '30'
 N_K_total_str = '120'
-ti_str = '1e-2'
-#ti_str = '0'
-#ti_str = '1e-6'
-#theory = numpy.array(theory_m6)
-theory = numpy.array(theory_m2)
+#ti_str = '1e-2'
+ti_str = '1e-6'
+theory = numpy.array(theory_m6)
+#theory = numpy.array(theory_m2)
 theory_processive = numpy.array(theory_processive)
 
 T = '60'
@@ -404,8 +403,8 @@ for D_ratio_str in ['0.03125','0.0625','0.25','1','4']:
     lines.append(line)
     errorbar( x, mean, yerr=std_err, fmt='k+' )
 
-    axes([.62,.20,.29,.29])
-    plot( x, mean )
+#     axes([.62,.20,.29,.29])
+#     plot( x, mean )
 
     #errorbar( x2, mean2, yerr=std_err, fmt='k+' )
 
@@ -474,8 +473,8 @@ for N_KK in range( 1, 60 ):
 axes([.14,.14,.8,.8])
 line=semilogx( x, mean, 'b--', linewidth=2 )
 lines.append(line)
-axes([.62,.20,.29,.29])
-plot( x, mean, 'b--', lw=2 )
+# axes([.62,.20,.29,.29])
+# plot( x, mean, 'b--', lw=2 )
 
 #ODE
 axes([.14,.14,.8,.8])
@@ -491,7 +490,9 @@ xticks( [1e-2, 1e-1, 1, 1e1, 1e2], ['0.01', '0.1', '1', '10', '100'], size=22 )
 yticks( [0,0.5,1],size=22 )
 xlabel(r'$\rm{[KK] / [P]}$', size=28 )
 ylabel(r'$\rm{[Kpp] / [K]_{total}}$', size=28 )
-grid()
+
+
+#grid()
 
 leg =legend( lines, (r'$D=0.03 \ \ {\rm \mu m^2 / s}$',
               r'$D=0.06 \ \  {\rm \mu m^2 / s}$',
@@ -514,13 +515,13 @@ for l in leg.get_lines():
 
 
 # inset
-axes([.62,.20,.29,.29])
-plot( ptx, pty, 'k--', linewidth=2 )
-plot( tx, ty, 'k-', linewidth=2 )
-xlim( [0.001,1] )
-ylim( [-0.02,0.4] )
-xticks( [.1,.5,1],size=18 )
-yticks( [0,.1,.2,.3,.4,.5],size=18 )
+# axes([.62,.20,.29,.29])
+# plot( ptx, pty, 'k--', linewidth=2 )
+# plot( tx, ty, 'k-', linewidth=2 )
+# xlim( [0.001,1] )
+# ylim( [-0.02,0.4] )
+# xticks( [.1,.5,1],size=18 )
+# yticks( [0,.1,.2,.3,.4,.5],size=18 )
 show()
 #savefig( outdir + '/' + figtitle + '.png', dpi=80 )
 
