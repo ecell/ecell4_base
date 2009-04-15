@@ -394,7 +394,7 @@ class Single( object ):
         pass
 
     def __repr__( self ):
-        return 'Single[%s: eventID=%d]' % ( self.particle, self.eventID )
+        return 'Single[%s: eventID=%s]' % ( self.particle, self.eventID )
 
 
 '''
@@ -870,7 +870,7 @@ class Pair( object ):
         pass
 
     def __repr__( self ):
-        return 'Pair[%s, %s: eventID=%d]' % (
+        return 'Pair[%s, %s: eventID=%s]' % (
             self.single1.particle,
             self.single2.particle,
             self.eventID )
@@ -918,7 +918,7 @@ class Multi( object ):
         self.sim.check()
 
     def __repr__( self ):
-        return 'Multi[%s: eventID=%d]' % (
+        return 'Multi[%s: eventID=%s]' % (
             ', '.join( repr( p ) for p in self.particles ),
             self.eventID )
 
