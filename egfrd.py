@@ -919,7 +919,7 @@ class Multi( object ):
 
     def __repr__( self ):
         return 'Multi[%s: eventID=%s]' % (
-            ', '.join( repr( p ) for p in self.particles ),
+            ', '.join( repr( p ) for p in self.sim.particleList ),
             self.eventID )
 
 
@@ -1206,7 +1206,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                  pair )
         if __debug__:
             log.info( 'addPairEvent: #%d (t=%g)' % (
-                eventID, self.t + single.dt ) )
+                eventID, self.t + pair.dt ) )
         pair.eventID = eventID
 
     def addMultiEvent( self, multi ):
@@ -1215,7 +1215,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                  multi )
         if __debug__:
             log.info( 'addMultiEvent: #%d (t=%g)' % (
-                eventID, self.t + single.dt ) )
+                eventID, self.t + multi.dt ) )
         multi.eventID = eventID
 
 
