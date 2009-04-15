@@ -394,8 +394,7 @@ class Single( object ):
         pass
 
     def __repr__( self ):
-        return 'Single' + str( self.particle )
-
+        return 'Single[%s: eventID=%d]' % ( self.particle, self.eventID )
 
 
 '''
@@ -871,10 +870,10 @@ class Pair( object ):
         pass
 
     def __repr__( self ):
-        buf = 'Pair( ' + str(self.single1.particle) +\
-              ', ' + str(self.single2.particle) + ' )'
-
-        return buf
+        return 'Pair[%s, %s: eventID=%d]' % (
+            self.single1.particle,
+            self.single2.particle,
+            self.eventID )
 
 
 class Multi( object ):
@@ -918,19 +917,10 @@ class Multi( object ):
 
         self.sim.check()
 
-
     def __repr__( self ):
-
-        if len( self.sim.particleList ) == 0:
-            return 'Multi()'
-
-        buf = 'Multi( '
-        buf += str( self.sim.particleList[0] )
-        for particle in self.sim.particleList[1:]:
-            buf += ', ' + str( particle )
-        buf += ' )'
-
-        return buf
+        return 'Multi[%s: eventID=%d]' % (
+            ', '.join( repr( p ) for p in self.particles ),
+            self.eventID )
 
 
 class DummySingle( object ):
@@ -1200,33 +1190,44 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         return self.scheduler.addEvent( t, func, arg )
 
+
     def addSingleEvent( self, single ):
         eventID = self.addEvent( self.t + single.dt, 
                                  Delegate( self, EGFRDSimulator.fireSingle ), 
                                  single )
+        if __debug__:
+            log.info( 'addSingleEvent: #%d (t=%g)' % (
+                eventID, self.t + single.dt ) )
         single.eventID = eventID
 
     def addPairEvent( self, pair ):
-
         eventID = self.addEvent( self.t + pair.dt, 
                                  Delegate( self, EGFRDSimulator.firePair ), 
                                  pair )
+        if __debug__:
+            log.info( 'addPairEvent: #%d (t=%g)' % (
+                eventID, self.t + single.dt ) )
         pair.eventID = eventID
 
     def addMultiEvent( self, multi ):
-
         eventID = self.addEvent( self.t + multi.dt, 
                                  Delegate( self, EGFRDSimulator.fireMulti ), 
                                  multi )
+        if __debug__:
+            log.info( 'addMultiEvent: #%d (t=%g)' % (
+                eventID, self.t + single.dt ) )
         multi.eventID = eventID
 
 
     def removeEvent( self, event ):
-
+        if __debug__:
+            log.info( 'removeEvent: #%d' % event.eventID )
         self.scheduler.removeEvent( event.eventID )
 
 
     def updateEvent( self, t, event ):
+        if __debug__:
+            log.info( 'updateEvent: #%d (t=%g)' % ( event.eventID, t ) )
         self.scheduler.updateEventTime( event.eventID, t )
 
 
@@ -1396,7 +1397,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
     def propagateSingle( self, single, r ):
-
+        if __debug__:
+            print "single.dt=%f, single.lastTime=%f, self.t=%f" % (
+                single.dt, single.lastTime, self.t )
         assert abs( single.dt + single.lastTime - self.t ) <= 1e-18 * self.t
         
         displacement = randomVector( r )
@@ -1460,7 +1463,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         closeNeighbors, distances = self.getNeighbors( single.pos, minShell,
                                                        ignore=[single,] )
-
+        if __debug__:
+            print "closeNeighbors: ", closeNeighbors
         # This is a bit tricky, but the last one in closeNeighbors
         # is the closest object to this Single.
         # getNeighbors() returns closeNeighbors within minShell *plus* one.
