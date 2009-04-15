@@ -8,7 +8,7 @@
 
 BOOST_AUTO_TEST_CASE(insert)
 {
-    typedef object_container<double, int> oc_type;
+    typedef object_container< sphere< double >, int> oc_type;
     typedef oc_type::position_type pos;
     oc_type oc(1.0, 10);
     BOOST_CHECK_CLOSE(0.1, oc.cell_size(), 0.001);

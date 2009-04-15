@@ -9,8 +9,8 @@
 
 #include "peer/ObjectContainer.hpp"
 
-
-typedef position<double> position_type;
+typedef double length_type;
+typedef position<length_type> position_type;
 
 struct position_to_ndarray_converter
 {
@@ -102,6 +102,50 @@ struct seq_to_position_converter
     }
 };
 
+struct sphere_to_python_converter
+{
+    typedef sphere<length_type> native_type;
+
+    static PyObject* convert(native_type const& v)
+    {
+        return boost::python::incref(
+            boost::python::object(boost::make_tuple(
+                v.position, v.radius)).ptr());
+    }
+};
+
+struct python_to_sphere_converter
+{
+    typedef sphere<length_type> native_type;
+
+    static void* convertible(PyObject* pyo)
+    {
+        if (!PyTuple_Check(pyo))
+        {
+            return 0;
+        }
+        if (PyTuple_Size(pyo) != 2)
+        {
+            return 0;
+        }
+        return pyo;
+    }
+
+    static void construct(PyObject* pyo, 
+                          boost::python::converter::rvalue_from_python_stage1_data* data)
+    {
+        PyObject* items[] = { PyTuple_GetItem(pyo, 0), PyTuple_GetItem(pyo, 1) };
+        void* storage(reinterpret_cast<
+            boost::python::converter::rvalue_from_python_storage<
+                native_type >*
+            >(data)->storage.bytes);
+        new (storage) native_type (
+            boost::python::extract<
+                native_type::position_type>(items[0]),
+            PyFloat_AsDouble(items[1]));
+        data->convertible = storage;
+    }
+};
 
 
 BOOST_PYTHON_MODULE(object_matrix)
@@ -110,6 +154,10 @@ BOOST_PYTHON_MODULE(object_matrix)
 
     to_python_converter<position_type,
         position_to_ndarray_converter>();
+    to_python_converter<sphere<length_type>,
+        sphere_to_python_converter>();
+    peer::util::to_native_converter<sphere<length_type>,
+        python_to_sphere_converter>();
     peer::util::to_native_converter<position_type,
         ndarray_to_position_converter>();
     peer::util::to_native_converter<position_type,

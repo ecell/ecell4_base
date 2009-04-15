@@ -1,21 +1,27 @@
 #ifndef OBJECTMATRIX_PEER_OBJECTCONTAINER_HPP
 #define OBJECTMATRIX_PEER_OBJECTCONTAINER_HPP
 
+#include "../../../config.h"
+
 #include <functional>
 #include <string>
 #include <vector>
 
+#if HAVE_UNORDERED_MAP
+#include <unordered_map>
+#elif HAVE_TR1_UNORDERED_MAP
+#include <tr1/unordered_map>
+#elif HAVE_EXT_HASH_MAP
+#include <ext/hash_map>
+#else
+#include <map>
+#endif /* HAVE_UNORDERED_MAP */
+
 #include <boost/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/type_traits.hpp>
-#include <boost/mpl/if.hpp>
-#include <boost/type_traits/is_const.hpp>
-#include <boost/type_traits/add_const.hpp>
-#include <boost/iterator/transform_iterator.hpp>
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
-#include <boost/python/iterator.hpp>
-#include <boost/python/copy_const_reference.hpp>
 #include <numpy/arrayobject.h>
 
 #include "peer/utils.hpp"
@@ -26,16 +32,31 @@
 #include "peer/numpy/ndarray_converters.hpp"
 
 #include "position.hpp"
-#include "sphere.hpp"
 #include "filters.hpp"
-
-#include "get_mapper_mf.hpp"
+#include "sphere.hpp"
+#include "object_container.hpp"
 
 #if OBJECTMATRIX_USE_ITERATOR
 #include <boost/coroutine/generator.hpp>
 #include <boost/bind.hpp>
 #include "peer/generator_support.hpp"
 #endif /* OBJECTMATRIX_USE_ITERATOR */
+
+namespace peer {
+
+template<typename Tkey_, typename Tval_>
+struct get_mapper_mf
+{
+#if HAVE_UNORDERED_MAP
+    typedef std::unordered_map<Tkey_, Tval_> type;
+#elif HAVE_TR1_UNORDERED_MAP
+    typedef std::tr1::unordered_map<Tkey_, Tval_> type;
+#elif HAVE_EXT_HASH_MAP
+    typedef __gnu_cxx::hash_map<Tkey_, Tval_> type;
+#else 
+    typedef std::map<Tkey_, Tval_> type;
+#endif
+};
 
 template<typename Tval_>
 struct get_mapper_mf<boost::python::object, Tval_>
@@ -53,6 +74,7 @@ struct get_mapper_mf<boost::python::object, Tval_>
     };
 #endif
 
+
 #if HAVE_UNORDERED_MAP
     typedef std::unordered_map<boost::python::object, Tval_, hasher> type;
 #elif HAVE_TR1_UNORDERED_MAP
@@ -64,42 +86,16 @@ struct get_mapper_mf<boost::python::object, Tval_>
 #endif
 };
 
-namespace peer {
-
-struct ObjectContainerBase
-{
-    template<typename T_, typename Tref_>
-    struct add_const_if:
-        boost::mpl::if_<boost::is_const<Tref_>,
-            typename boost::add_const<T_>::type, T_> {};
-
-    template<typename Tpair_>
-    struct select1st
-        : public std::unary_function<
-                Tpair_&,
-                typename add_const_if<
-                    typename Tpair_::first_type, Tpair_>::type&>
-    {
-        typename add_const_if<
-            typename Tpair_::first_type, Tpair_>::type&
-        operator()(Tpair_& pair) const
-        {
-            return pair.first;
-        }
-    };
-};
-
-template<typename Timpl_>
-class ObjectContainer: public ObjectContainerBase
+class ObjectContainer
 {
 public:
-    typedef Timpl_ impl_type;
-    typedef typename impl_type::key_type key_type;
-    typedef typename impl_type::mapped_type mapped_type;
-    typedef typename impl_type::position_type position_type;
-    typedef typename impl_type::length_type length_type;
-    typedef typename impl_type::size_type size_type;
-    typedef typename impl_type::matrix_type::size_type matrix_size_type;
+    typedef boost::python::object key_type;
+    typedef ::object_container< sphere< double >, key_type, get_mapper_mf> impl_type;
+    typedef impl_type::mapped_type mapped_type;
+    typedef impl_type::position_type position_type;
+    typedef impl_type::length_type length_type;
+    typedef impl_type::size_type size_type;
+    typedef impl_type::matrix_type::size_type matrix_size_type;
 
 #ifdef OBJECTMATRIX_USE_ITERATOR
     class Generators
@@ -132,7 +128,8 @@ public:
                 last_.second = d;
                 self_.yield(&last_);
             }
-private:
+
+        private:
             generator_type::self& self_;
             Generators::result_type last_;
         };
@@ -184,27 +181,29 @@ private:
     class Builders
     {
     public:
-        typedef std::vector<typename impl_type::key_type> key_array_type;
-        typedef std::vector<length_type, util::pyarray_backed_allocator<length_type> >
+        typedef std::vector<impl_type::iterator> sphere_ref_array_type;
+        typedef std::vector<impl_type::key_type> key_array_type;
+        typedef std::vector<double, util::pyarray_backed_allocator<double> >
                 distance_array_type;
+        //typedef boost::tuple<sphere_ref_array_type, distance_array_type>
+//                result_type;
         typedef boost::tuple<key_array_type, distance_array_type>
                 result_type;
 
         struct collector: public std::binary_function<
-                typename impl_type::reference,
-                typename position_type::value_type, void>
+                impl_type::reference, position_type::value_type, void>
         {
-            typedef typename impl_type::iterator first_argument_type;
-            typedef typename position_type::value_type second_argument_type;
+            typedef impl_type::iterator first_argument_type;
+            typedef position_type::value_type second_argument_type;
             typedef void result_type;
         public:
-            inline collector(typename Builders::result_type& result)
+            inline collector(Builders::result_type& result)
                 : //sa_(boost::get<0>(result)),
                 ka_(boost::get<0>(result)),
                 da_(boost::get<1>(result)) {}
 
-            inline void operator()(typename impl_type::iterator i,
-                    const typename position_type::value_type& d)
+            inline void operator()(impl_type::iterator i,
+                    const position_type::value_type& d)
             {
                 //sa_.push_back(i);
                 ka_.push_back((*i).first);
@@ -212,43 +211,45 @@ private:
             }
 
         private:
+            //sphere_ref_array_type& sa_;
             key_array_type& ka_;
             distance_array_type& da_;
         };
 
         struct all_neighbors_collector: public std::binary_function<
-                typename impl_type::reference, typename position_type::value_type, void>
+                impl_type::reference, position_type::value_type, void>
         {
-            typedef typename impl_type::iterator first_argument_type;
-            typedef typename position_type::value_type second_argument_type;
+            typedef impl_type::iterator first_argument_type;
+            typedef position_type::value_type second_argument_type;
             typedef void result_type;
         public:
-            inline all_neighbors_collector(typename Builders::result_type& result,
+            inline all_neighbors_collector(Builders::result_type& result,
                     const position_type& pos)
                 : //sa_(boost::get<0>(result)),
                 ka_(boost::get<0>(result)),
                       da_(boost::get<1>(result)),
                       pos_(pos) {}
 
-            inline void operator()(typename impl_type::iterator i)
+            inline void operator()(impl_type::iterator i)
             {
                 //sa_.push_back(i);
                 ka_.push_back((*i).first);
-                da_.push_back(pos_.distance((*i).second.position()) 
-                              - (*i).second.radius());
+                da_.push_back(pos_.distance((*i).second.position) 
+                              - (*i).second.radius);
 
             }
 
-            inline void operator()(typename impl_type::iterator i,
+            inline void operator()(impl_type::iterator i,
                     const position_type& d)
             {
                 //sa_.push_back(i);
                 ka_.push_back((*i).first);
-                da_.push_back(pos_.distance((*i).second.position() + d)
-                              - (*i).second.radius());
+                da_.push_back(pos_.distance((*i).second.position + d)
+                              - (*i).second.radius);
             }
 
         private:
+            //sphere_ref_array_type& sa_;
             key_array_type& ka_;
             distance_array_type& da_;
             position_type pos_;
@@ -258,8 +259,7 @@ private:
     public:
         inline static void
         build_neighbors_array(result_type& retval,
-                              ObjectContainer& cntnr,
-                              const ::sphere<length_type>& sphere)
+                              ObjectContainer& cntnr, const mapped_type& sphere)
         {
             collector col(retval);
             take_neighbor(cntnr.impl_, col, sphere);
@@ -267,7 +267,7 @@ private:
 
         inline static void
         build_neighbors_array_cyclic(result_type& retval,
-                ObjectContainer& cntnr, const ::sphere<length_type>& sphere)
+                ObjectContainer& cntnr, const mapped_type& sphere)
         {
             collector col(retval);
             take_neighbor_cyclic(cntnr.impl_, col, sphere);
@@ -294,101 +294,106 @@ private:
     };
 
 public:
-    ObjectContainer(typename impl_type::length_type world_size,
-            typename impl_type::matrix_type::size_type size)
-            : impl_(world_size, size) {}
+    ObjectContainer() {}
 
-    size_type __len__() const
+    ObjectContainer(length_type world_size, matrix_size_type size)
+        : impl_(world_size, size) {}
+
+    size_type size() const
     {
         return impl_.size();
     }
 
-    size_type getMatrixSize() const
+    size_type matrix_size() const
     {
         return impl_.matrix_size();
     }
 
-    length_type getWorldSize() const
+    length_type world_size() const
     {
         return impl_.world_size();
     }
 
-    length_type getCellSize() const
+    length_type cell_size() const
     {
         return impl_.cell_size();
     }
 
 #if OBJECTMATRIX_USE_ITERATOR
     Enumerator<const Generators::result_type&>* iterneighbors(
-            const sphere<length_type>& sphere)
+            const sphere<double>& sphere)
     {
         return Generators::enumerate_neighbors(*this, sphere);
     }
 
     Enumerator<const Generators::result_type&>* iterneighbors_cyclic(
-            const sphere<length_type>& sphere)
+            const sphere<double>& sphere)
     {
         return Generators::enumerate_neighbors_cyclic(*this, sphere);
     }
 #endif /* OBJECTMATRIX_USE_ITERATOR */
 
-    typename impl_type::const_iterator __iter__begin() const
+    boost::shared_ptr<Builders::result_type>
+    //neighbors_array(const sphere& sphere)
+    neighbors_array(const position_type& pos, const double radius)
     {
-        return impl_.begin();
+        Builders::distance_array_type::allocator_type alloc;
+
+        boost::shared_ptr<Builders::result_type> retval(
+            new Builders::result_type(
+                boost::tuples::element<0, Builders::result_type>::type(),
+                boost::tuples::element<1, Builders::result_type>::type(alloc)));
+        Builders::build_neighbors_array(*retval, *this,
+                                        sphere<double>( pos, radius ) );
+
+        // take over the ownership of the arrays to the Numpy facility
+        alloc.giveup_ownership();
+        return retval;
     }
 
-    typename impl_type::const_iterator __iter__end()
+    boost::shared_ptr<Builders::result_type>
+    //neighbors_array_cyclic(const sphere& sphere)
+    neighbors_array_cyclic(const position_type& pos, const double radius)
     {
-        return impl_.end();
-    }
+        Builders::distance_array_type::allocator_type alloc;
 
-    typename boost::transform_iterator<
-        select1st<const typename impl_type::const_iterator::value_type>,
-        typename impl_type::const_iterator> iterkeys_begin()
-    {
-        return boost::make_transform_iterator(impl_.begin(),
-            select1st<const typename impl_type::const_iterator::value_type>());
-    }
-
-    typename boost::transform_iterator<
-        select1st<const typename impl_type::const_iterator::value_type>,
-        typename impl_type::const_iterator> iterkeys_end()
-    {
-        return boost::make_transform_iterator(impl_.end(),
-            select1st<const typename impl_type::const_iterator::value_type>());
-    }
-
-    boost::shared_ptr<typename Builders::result_type>
-    getNeighborsWithinRadiusNoSort(const position_type& pos, length_type radius)
-    {
-        typename Builders::distance_array_type::allocator_type alloc;
-
-        if (radius >= impl_.cell_size() / 2)
-        {
-            throw std::runtime_error("Radius must be smaller than the half of the cell size");
-        }
-
-        boost::shared_ptr<typename Builders::result_type> retval(
-            new typename Builders::result_type(
-                typename boost::tuples::element<0, typename Builders::result_type>::type(),
-                typename boost::tuples::element<1, typename Builders::result_type>::type(alloc)));
+        boost::shared_ptr<Builders::result_type> retval(
+            new Builders::result_type(
+                boost::tuples::element<0, Builders::result_type>::type(),
+                boost::tuples::element<1, Builders::result_type>::type(alloc)));
         Builders::build_neighbors_array_cyclic(*retval, *this,
-                ::sphere<length_type>( pos, radius ) );
+                                               sphere<double>( pos, radius ) );
 
         // give away the ownership of the arrays to the Numpy facility
         alloc.giveup_ownership();
         return retval;
     }
 
-    boost::shared_ptr<typename Builders::result_type>
-    getNeighborsCyclicNoSort(const position_type& pos)
+    boost::shared_ptr<Builders::result_type>
+    all_neighbors_array(const position_type& pos)
     {
-        typename Builders::distance_array_type::allocator_type alloc;
+        Builders::distance_array_type::allocator_type alloc;
 
-        boost::shared_ptr<typename Builders::result_type> retval(
-            new typename Builders::result_type(
-                typename boost::tuples::element<0, typename Builders::result_type>::type(),
-                typename boost::tuples::element<1, typename Builders::result_type>::type(alloc)));
+        boost::shared_ptr<Builders::result_type> retval(
+            new Builders::result_type(
+                boost::tuples::element<0, Builders::result_type>::type(),
+                boost::tuples::element<1, Builders::result_type>::type(alloc)));
+        Builders::build_all_neighbors_array(*retval, *this, pos);
+
+        // take over the ownership of the arrays to the Numpy facility
+        alloc.giveup_ownership();
+        return retval;
+    }
+
+    boost::shared_ptr<Builders::result_type>
+    all_neighbors_array_cyclic(const position_type& pos)
+    {
+        Builders::distance_array_type::allocator_type alloc;
+
+        boost::shared_ptr<Builders::result_type> retval(
+            new Builders::result_type(
+                boost::tuples::element<0, Builders::result_type>::type(),
+                boost::tuples::element<1, Builders::result_type>::type(alloc)));
         Builders::build_all_neighbors_array_cyclic(*retval, *this, pos);
 
         // give away the ownership of the arrays to the Numpy facility
@@ -396,47 +401,74 @@ public:
         return retval;
     }
 
-    const bool contains(const key_type& k)
+    bool contains( const key_type& k )
     {
-        return impl_.find(k) != impl_.end();
-    }
-
-    const mapped_type& __getitem__(const key_type& k)
-    {
-        typename impl_type::iterator i(impl_.find(k));
+        impl_type::iterator i(impl_.find(k));
         if (i == impl_.end())
         {
-            PyErr_SetObject(PyExc_KeyError,
-                    boost::python::incref(boost::python::object(k).ptr()));
-            boost::python::throw_error_already_set();
+            return false;
+        }
+        return true;
+    }
+
+
+    mapped_type const& get( const key_type& k )
+    {
+        impl_type::iterator i(impl_.find(k));
+        if (i == impl_.end())
+        {
+            throw std::runtime_error( "key not found." );
         }
 
         return (*i).second;
     }
 
-    bool __setitem__(const key_type& key, mapped_type const& val)
+
+    void insert( const key_type& key, const position_type& p, const double r )
     {
-        return impl_.insert(typename impl_type::value_type(key, val)).second;
+        impl_.insert(impl_type::value_type(key, sphere<double>(p,r)));
     }
 
-    void __delitem__(const key_type& key)
+    void update( const key_type& key, const position_type& p, const double r )
+    {
+        impl_.insert(impl_type::value_type(key, sphere<double>(p,r)));
+    }
+
+
+    void erase(const key_type& key)
     {
         impl_.erase(key);
     }
 
-    void check()
+    impl_type::const_iterator __iter__begin() const
     {
-        // do nothing
+        return impl_.begin();
     }
 
-    inline static void __register_class(char const* class_name)
+    impl_type::const_iterator __iter__end() const
+    {
+        return impl_.end();
+    }
+
+    operator impl_type&()
+    {
+        return impl_;
+    }
+
+    operator const impl_type&() const
+    {
+        return impl_;
+    }
+
+    inline static void __register_class()
     {
         using namespace boost::python;
 
-        util::register_tuple_converter<typename impl_type::value_type>();
+        util::register_tuple_converter<impl_type::value_type>();
+        util::register_tuple_converter<boost::tuple<position_type,double> >();
 
 #if OBJECTMATRIX_USE_ITERATOR
-        util::register_tuple_converter<typename Generators::result_type>();
+        util::register_tuple_converter<Generators::result_type>();
 
         util::register_enumerator<
                 const Generators::result_type&,
@@ -445,41 +477,39 @@ public:
 #endif /* OBJECTMATRIX_USE_ITERATOR */
 
         util::register_multi_array_converter<
-            typename boost::tuples::element<0, typename Builders::result_type>::type>();
+            boost::tuples::element<0, Builders::result_type>::type>();
         util::register_multi_array_converter<
-            typename boost::tuples::element<1, typename Builders::result_type>::type>();
+            boost::tuples::element<1, Builders::result_type>::type>();
         // the following conversion is the same as the previous
         // util::register_multi_array_converter<boost::tuples::element<2, Builders::result_type>::type>();
 
-        util::register_tuple_converter<typename Builders::result_type>();
+        util::register_tuple_converter<Builders::result_type>();
 
-        class_<ObjectContainer>(class_name, init<length_type, size_type>())
+        class_<ObjectContainer>("ObjectContainer")
+            .def(init<length_type, matrix_size_type>())
 #if OBJECTMATRIX_USE_ITERATOR
             .def("iterneighbors", &ObjectContainer::iterneighbors,
                     return_value_policy<manage_new_object>())
             .def("iterneighbors_cyclic", &ObjectContainer::iterneighbors_cyclic,
                     return_value_policy<manage_new_object>())
 #endif /* OBJECTMATRIX_USE_ITERATOR */
-            .add_property("cellSize", &ObjectContainer::getCellSize)
-            .add_property("worldSize", &ObjectContainer::getWorldSize)
-            .add_property("matrixSize", &ObjectContainer::getMatrixSize)
-            .def("getNeighborsWithinRadiusNoSort", &ObjectContainer::getNeighborsWithinRadiusNoSort)
-            .def("getNeighborsCyclicNoSort", &ObjectContainer::getNeighborsCyclicNoSort)
-            .def("getNeighborsNoSort", &ObjectContainer::getNeighborsCyclicNoSort)
-            .def("__len__", &ObjectContainer::__len__)
+            .add_property("cell_size", &ObjectContainer::cell_size)
+            .add_property("world_size", &ObjectContainer::world_size)
+            .add_property("matrix_size", &ObjectContainer::matrix_size)
+            .def("neighbors_array", &ObjectContainer::neighbors_array)
+            .def("neighbors_array_cyclic", &ObjectContainer::neighbors_array_cyclic)
+            .def("all_neighbors_array", &ObjectContainer::all_neighbors_array)
+            .def("all_neighbors_array_cyclic", &ObjectContainer::all_neighbors_array_cyclic)
+            .def("size", &ObjectContainer::size)
+            .def("contains", &ObjectContainer::contains)
+            .def("insert", &ObjectContainer::insert)
+            .def("update", &ObjectContainer::update)
+            .def("get", &ObjectContainer::get,
+                    return_value_policy<copy_const_reference>())
             .def("__iter__", range(
                     &ObjectContainer::__iter__begin,
                     &ObjectContainer::__iter__end))
-            .def("iterkeys", range(
-                    &ObjectContainer::iterkeys_begin,
-                    &ObjectContainer::iterkeys_end))
-            .def("contains", &ObjectContainer::contains)
-            .def("__setitem__", &ObjectContainer::__setitem__)
-            .def("__getitem__", &ObjectContainer::__getitem__,
-                    return_value_policy<copy_const_reference>())
-            .def("__delitem__", &ObjectContainer::__delitem__)
-            .def("check", &ObjectContainer::check)
-            ;
+            .def("erase", &ObjectContainer::erase);
     }
 
 private:
