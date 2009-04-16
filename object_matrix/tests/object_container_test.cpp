@@ -153,11 +153,11 @@ BOOST_AUTO_TEST_CASE(each_neighbor2)
     typedef object_container<double, int> oc_type;
     typedef oc_type::position_type pos;
 
-    for (double r = 0.01; r < 0.5; r += 0.1)
+    for (double r = 0.01; r < 0.1; r += 0.01)
     {
         std::cout << "*";
         std::cout.flush();
-        for (double o = 0.0; o < 1.0; o += .001)
+        for (double o = 0.0; o < 0.9; o += .001)
         {
             oc_type oc(1.0, 10);
             BOOST_CHECK_CLOSE(0.1, oc.cell_size(), 0.001);
@@ -182,11 +182,11 @@ BOOST_AUTO_TEST_CASE(each_neighbor2)
     }
     std::cout << std::endl;
 
-    for (double r = 0.01; r < 0.5; r += 0.1)
+    for (double r = 0.01; r < 0.1; r += 0.01)
     {
         std::cout << "*";
         std::cout.flush();
-        for (double o = 0.0; o < 1.0; o += .01)
+        for (double o = 0.0; o < 0.9; o += .01)
         {
             oc_type oc(1.0, 10);
             BOOST_CHECK_CLOSE(0.1, oc.cell_size(), 0.001);
