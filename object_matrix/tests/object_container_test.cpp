@@ -6,12 +6,11 @@
 #include <set>
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
-#include "sphere.hpp"
 #include "object_container.hpp"
 
 BOOST_AUTO_TEST_CASE(insert)
 {
-    typedef object_container<sphere<double>, int> oc_type;
+    typedef object_container<double, int> oc_type;
     typedef oc_type::position_type pos;
     oc_type oc(1.0, 10);
     BOOST_CHECK_CLOSE(0.1, oc.cell_size(), 0.001);
@@ -63,7 +62,7 @@ template<typename Toc_>
 struct collector2
 {
     void operator()(typename Toc_::iterator i,
-            const typename Toc_::position_type& pos_off)
+            const typename Toc_::position_type&)
     {
         result.insert((*i).first);
     }
@@ -73,7 +72,7 @@ struct collector2
 
 BOOST_AUTO_TEST_CASE(each_neighbor)
 {
-    typedef object_container<sphere<double>, int> oc_type;
+    typedef object_container<double, int> oc_type;
     typedef oc_type::position_type pos;
     oc_type oc(1.0, 10);
     BOOST_CHECK_CLOSE(0.1, oc.cell_size(), 0.001);
@@ -136,28 +135,80 @@ struct collector3
     int count;
 };
 
+template<typename Toc_>
+struct collector4
+{
+    collector4(): count(0) {}
+
+    void operator()(typename Toc_::iterator i, typename Toc_::position_type const&)
+    {
+        ++count;
+    }
+
+    int count;
+};
+
 BOOST_AUTO_TEST_CASE(each_neighbor2)
 {
-    typedef object_container<sphere<double>, int> oc_type;
+    typedef object_container<double, int> oc_type;
     typedef oc_type::position_type pos;
-    oc_type oc(1.0, 10);
-    BOOST_CHECK_CLOSE(0.1, oc.cell_size(), 0.001);
 
-    pos centre(0.55, 0.55, 0.55);
-    double radius = 0.02;
+    for (double r = 0.01; r < 0.5; r += 0.1)
+    {
+        std::cout << "*";
+        std::cout.flush();
+        for (double o = 0.0; o < 1.0; o += .001)
+        {
+            oc_type oc(1.0, 10);
+            BOOST_CHECK_CLOSE(0.1, oc.cell_size(), 0.001);
 
-    for (int i = 0; i < 10000; ++i) {
-        double t1(M_PI * 2 * (i % 100) / 100.), t2(M_PI * 2 * (i / 100) / 100.);
-        const double _x = cos(t1) * radius;
-        const pos p(centre.x() + _x * cos(t2),
-                    centre.y() + sin(t1) * radius,
-                    centre.z() + _x * sin(t2));
-        oc.insert(std::make_pair(i, oc_type::mapped_type(p, radius)));
+            pos centre(o, o, o);
+
+            for (int i = 0; i < 100; ++i)
+            {
+                double t1(M_PI * 2 * (i % 10) / 10.), t2(M_PI * 2 * (i / 10) / 10.);
+                const double _x = cos(t1) * r;
+                const pos p(centre.x() + _x * cos(t2),
+                            centre.y() + sin(t1) * r,
+                            centre.z() + _x * sin(t2));
+                oc.insert(std::make_pair(i, oc_type::mapped_type(p, r)));
 
 
-        collector3<oc_type> col;
-        oc.each_neighbor(oc.index(centre), col);
-        BOOST_CHECK_EQUAL(col.count, i + 1);
+                collector3<oc_type> col;
+                oc.each_neighbor(oc.index(centre), col);
+                BOOST_CHECK_EQUAL(col.count, i + 1);
+            }
+        }
     }
+    std::cout << std::endl;
+
+    for (double r = 0.01; r < 0.5; r += 0.1)
+    {
+        std::cout << "*";
+        std::cout.flush();
+        for (double o = 0.0; o < 1.0; o += .01)
+        {
+            oc_type oc(1.0, 10);
+            BOOST_CHECK_CLOSE(0.1, oc.cell_size(), 0.001);
+
+            pos centre(o, o, o);
+
+            for (int i = 0; i < 100; ++i)
+            {
+                double t1(M_PI * 2 * (i % 10) / 10.), t2(M_PI * 2 * (i / 10) / 10.);
+                const double _x = cos(t1) * r;
+                const pos p(centre.x() + _x * cos(t2),
+                            centre.y() + sin(t1) * r,
+                            centre.z() + _x * sin(t2));
+                oc.insert(std::make_pair(i, oc_type::mapped_type(p, r)));
+
+
+                collector4<oc_type> col;
+                oc.each_neighbor_cyclic(oc.index(centre), col);
+                BOOST_CHECK_EQUAL(col.count, i + 1);
+            }
+        }
+    }
+    std::cout << std::endl;
 }
 
