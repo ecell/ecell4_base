@@ -527,7 +527,7 @@ private:
     template<typename Tcollect_>
     inline void each_neighbor_loops(const std::size_t depth,
             cell_offset_type& off, const cell_index_type& idx,
-            Tcollect_ collector) const
+            Tcollect_& collector) const
     {
         if (depth > 0)
         {
@@ -553,7 +553,7 @@ private:
     template<typename Tcollect_>
     inline void each_neighbor_loops(const std::size_t depth,
             cell_offset_type& off, const cell_index_type& idx,
-            Tcollect_ collector)
+            Tcollect_& collector)
     {
         if (depth > 0)
         {
@@ -579,7 +579,7 @@ private:
     template<typename Tcollect_>
     inline void each_neighbor_cyclic_loops(const std::size_t depth,
             cell_offset_type& off, const cell_index_type& idx,
-            Tcollect_ collector) const
+            Tcollect_& collector) const
     {
         if (depth > 0)
         {
@@ -603,7 +603,7 @@ private:
     template<typename Tcollect_>
     inline void each_neighbor_cyclic_loops(const std::size_t depth,
             cell_offset_type& off, const cell_index_type& idx,
-            Tcollect_ collector)
+            Tcollect_& collector)
     {
         if (depth > 0)
         {
