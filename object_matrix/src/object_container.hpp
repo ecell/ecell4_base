@@ -362,7 +362,7 @@ public:
     inline void each_neighbor(const cell_index_type& idx, Tcollect_& collector)
     {
         cell_offset_type _off;
-        each_neighbor_loops<Tcollect_&>(3, _off, idx, collector);
+        each_neighbor_loops<Tcollect_>(3, _off, idx, collector);
     }
 
     template<typename Tcollect_>
@@ -370,7 +370,7 @@ public:
                               const Tcollect_& collector)
     {
         cell_offset_type _off;
-        each_neighbor_loops<const Tcollect_&>(3, _off, idx, collector);
+        each_neighbor_loops<const Tcollect_>(3, _off, idx, collector);
     }
 
     template<typename Tcollect_>
@@ -378,7 +378,7 @@ public:
             Tcollect_& collector)
     {
         cell_offset_type _off;
-        each_neighbor_cyclic_loops<Tcollect_&>(3, _off, idx, collector);
+        each_neighbor_cyclic_loops<Tcollect_>(3, _off, idx, collector);
     }
 
     template<typename Tcollect_>
@@ -386,7 +386,7 @@ public:
             const Tcollect_& collector)
     {
         cell_offset_type _off;
-        each_neighbor_cyclic_loops<const Tcollect_&>(3, _off, idx, collector);
+        each_neighbor_cyclic_loops<const Tcollect_>(3, _off, idx, collector);
     }
 
 private:
