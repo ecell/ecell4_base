@@ -384,7 +384,7 @@ public:
         if( getSize() <= 1 )
         {
             throw std::out_of_range( "DynamicPriorityQueue::peekSecondIndex():"
-				     " Item count less than 2." );
+                                     " Item count less than 2." );
         }
 
         const Index index1( this->heap[1] );
@@ -395,7 +395,8 @@ public:
         }
 
         const Index index2( this->heap[2] );
-        if( this->comp( this->itemVector[ index1 ], this->itemVector[ index2 ] ) )
+        if( this->comp( this->itemVector[ index1 ], 
+                        this->itemVector[ index2 ] ) )
         {
             return index1;
         }
