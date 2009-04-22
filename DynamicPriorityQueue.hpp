@@ -38,6 +38,7 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include <iostream>
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
@@ -395,14 +396,13 @@ public:
         }
 
         const Index index2( this->heap[2] );
-        if( this->comp( this->itemVector[ this->heap[ index1 ] ],
-                        this->itemVector[ this->heap[ index2 ] ] ) )
+        if( this->comp( this->itemVector[ index1 ], this->itemVector[ index2 ] ) )
         {
-            return index2;
+            return index1;
         }
         else
         {
-            return index1;
+            return index2;
         }
     }
 
