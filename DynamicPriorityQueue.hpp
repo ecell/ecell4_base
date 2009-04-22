@@ -38,7 +38,6 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
-#include <iostream>
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
