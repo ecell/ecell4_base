@@ -78,7 +78,7 @@ public:
         const double dist(
             // FIXME: something's wrong
             const_cast<position<double>& >(cmp_.position)
-            .distance(item.second.position+p)
+            .distance(item.second.position + p)
             - item.second.radius);
         if (dist < cmp_.radius)
         {
