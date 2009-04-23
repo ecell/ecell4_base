@@ -7,6 +7,63 @@
 #include "SphericalBesselGenerator.hpp"
 
 
+/* The modified version of cspline_eval below assumes
+   constant interval of samples, and skips bisection search
+   at the beginning of the interpolation.  */
+
+/* Taken and adopted from interpolation/cspline.c in GSL */
+
+/*
+typedef struct
+{
+  double * c;
+  double * g;
+  double * diag;
+  double * offdiag;
+} cspline_state_t;
+
+static inline void
+coeff_calc (const double c_array[], double dy, double dx, size_t index,  
+            double * b, double * c, double * d)
+{
+  const double c_i = c_array[index];
+  const double c_ip1 = c_array[index + 1];
+  *b = (dy / dx) - dx * (c_ip1 + 2.0 * c_i) / 3.0;
+  *c = c_i;
+  *d = (c_ip1 - c_i) / (3.0 * dx);
+}
+
+
+static
+int
+my_cspline_eval (const void * vstate,
+                 const double x_array[], const double y_array[], size_t size,
+                 double x,
+                 gsl_interp_accel * a,
+                 double *y)
+{
+  const cspline_state_t *state = (const cspline_state_t *) vstate;
+
+  const double x0 = x_array[0];
+  const double dx = x_array[1] - x0;
+
+  const size_t index = floor((x - x0) / dx);
+
+  const double x_lo = x_array[index];
+
+  const double y_lo = y_array[index];
+  const double y_hi = y_array[index + 1];
+  const double dy = y_hi - y_lo;
+  const double delx = x - x_lo;
+  double b_i, c_i, d_i; 
+  coeff_calc(state->c, dy, dx, index,  &b_i, &c_i, &d_i);
+  *y = y_lo + delx * (b_i + delx * (c_i + delx * d_i));
+  return GSL_SUCCESS;
+}
+*/
+
+
+
 const SphericalBesselGenerator& SphericalBesselGenerator::instance()
 {
     static const SphericalBesselGenerator sphericalBesselGenerator;
@@ -19,6 +76,10 @@ inline static const Real interp( const gsl_interp* interpolator,
 {
     const Real y( gsl_interp_eval( interpolator, xTable, yTable, x, 0 ) );
     
+/*    Real y;
+    my_cspline_eval( interpolator->state, xTable, yTable,
+                     interpolator->size, x, 0, &y );
+*/  
     return y;
 }
 
@@ -117,13 +178,8 @@ SphericalBesselGenerator::j( const UnsignedInteger n, const Real z ) const
     //const Real minz( 1.0 * n );
     const Real maxz( table->x[table->N - 3] );
     
-    if( z < minz )
+    if( z > minz && z < maxz )
     {
-        return this->_j( n, z );
-    }
-    else if( z < maxz )
-    {
-        // table
         return this->_j_table( n, z );
     }
     else
@@ -147,13 +203,8 @@ SphericalBesselGenerator::y( const UnsignedInteger n, const Real z ) const
     //const Real minz( 1.0 * n );
     const Real maxz( table->x[table->N - 3] );
     
-    if( z < minz )
+    if( z > minz && z < maxz )
     {
-        return this->_y( n, z );
-    }
-    else if( z < maxz )
-    {
-        // table
         return this->_y_table( n, z );
     }
     else
