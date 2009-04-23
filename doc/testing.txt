@@ -22,6 +22,19 @@ How to test EPDP code
      the concentration is fairly low, and BD-related methods will come
      on the top when concentration is high.)
 
+   * Optionally, let it run for a night or more and check that it does not
+     crash.  To make it run longer, change the following::
+
+       def profrun():
+           for _ in xrange( 15000 ):
+
+     to::
+
+       def profrun():
+           for _ in xrange( 50000000 ):
+
+     or something.  Do not put the -O flag.
+
 
 #. Radial distribution function test
 
