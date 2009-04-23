@@ -60,7 +60,7 @@ class ObjectMatrix( object ):
         assert radius < self.cellSize * .5
         assert not self.impl.contains( key )
 
-        self.impl.insert( key, pos, radius )
+        self.impl.update( key, pos, radius )
 
 
     def remove( self, key ):

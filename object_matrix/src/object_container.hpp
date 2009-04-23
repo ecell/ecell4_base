@@ -274,7 +274,7 @@ public:
         return size_;
     }
 
-    inline std::pair<iterator, bool> insert(const value_type& v)
+    inline std::pair<iterator, bool> update(const value_type& v)
     {
         cell_type& c(cell(index(v.second.position)));
         typename key_to_cell_mapper_type::iterator kci(rmap_.find(v.first));

@@ -425,20 +425,15 @@ public:
     }
 
 
-    void insert( const key_type& key, const position_type& p, const double r )
-    {
-        impl_.insert(impl_type::value_type(key, sphere<double>(p,r)));
-    }
-
     void update( const key_type& key, const position_type& p, const double r )
     {
-        impl_.insert(impl_type::value_type(key, sphere<double>(p,r)));
+        impl_.update(impl_type::value_type(key, sphere<double>(p,r)));
     }
 
 
-    void erase(const key_type& key)
+    bool erase(const key_type& key)
     {
-        impl_.erase(key);
+        return impl_.erase(key);
     }
 
     operator impl_type&()
@@ -492,7 +487,6 @@ public:
             .def("all_neighbors_array_cyclic", &ObjectContainer::all_neighbors_array_cyclic)
             .def("size", &ObjectContainer::size)
             .def("contains", &ObjectContainer::contains)
-            .def("insert", &ObjectContainer::insert)
             .def("update", &ObjectContainer::update)
             .def("get", &ObjectContainer::get)
             .def("erase", &ObjectContainer::erase);

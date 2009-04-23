@@ -20,10 +20,10 @@ class object_matrixTestCase( unittest.TestCase ):
         self.assertEqual( 10, c.matrix_size )
         self.assertEqual( 0.1, c.cell_size )
         self.assertEqual( 0, c.size() )
-        c.insert( 0, numpy.array([0.5, 0.3, 0.2]), 0.1 )
+        c.update( 0, numpy.array([0.5, 0.3, 0.2]), 0.1 )
         self.assertEqual( 1, c.size() )
         #self.assertEqual( None, c.get( 1 ) )
-        c.insert( 1, numpy.array([0.0,0.3,0.9]), 0.1)
+        c.update( 1, numpy.array([0.0,0.3,0.9]), 0.1)
         self.assertEqual( 2, c.size() )
 
         self.assertAlmostEqual( c.get(1)[0][0], 0.0 )
