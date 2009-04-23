@@ -1398,8 +1398,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def propagateSingle( self, single, r ):
         if __debug__:
-            print "single.dt=%f, single.lastTime=%f, self.t=%f" % (
-                single.dt, single.lastTime, self.t )
+            log.debug( "single.dt=%f, single.lastTime=%f, self.t=%f" % (
+                single.dt, single.lastTime, self.t ) )
         assert abs( single.dt + single.lastTime - self.t ) <= 1e-18 * self.t
         
         displacement = randomVector( r )
@@ -1464,7 +1464,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         closeNeighbors, distances = self.getNeighbors( single.pos, minShell,
                                                        ignore=[single,] )
         if __debug__:
-            print "closeNeighbors: ", closeNeighbors
+            log.debug( "closeNeighbors: %s" % closeNeighbors )
         # This is a bit tricky, but the last one in closeNeighbors
         # is the closest object to this Single.
         # getNeighbors() returns closeNeighbors within minShell *plus* one.
