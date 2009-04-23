@@ -90,7 +90,7 @@ class ObjectContainer
 {
 public:
     typedef boost::python::object key_type;
-    typedef ::object_container<double, key_type, get_mapper_mf> impl_type;
+    typedef ::object_container< sphere< double >, key_type, get_mapper_mf> impl_type;
     typedef impl_type::mapped_type mapped_type;
     typedef impl_type::position_type position_type;
     typedef impl_type::length_type length_type;
@@ -364,7 +364,7 @@ public:
         Builders::build_neighbors_array_cyclic(*retval, *this,
                                                sphere<double>( pos, radius ) );
 
-        // take over the ownership of the arrays to the Numpy facility
+        // give away the ownership of the arrays to the Numpy facility
         alloc.giveup_ownership();
         return retval;
     }
@@ -396,12 +396,12 @@ public:
                 boost::tuples::element<1, Builders::result_type>::type(alloc)));
         Builders::build_all_neighbors_array_cyclic(*retval, *this, pos);
 
-        // take over the ownership of the arrays to the Numpy facility
+        // give away the ownership of the arrays to the Numpy facility
         alloc.giveup_ownership();
         return retval;
     }
 
-    const bool contains( const key_type& k )
+    bool contains( const key_type& k )
     {
         impl_type::iterator i(impl_.find(k));
         if (i == impl_.end())
@@ -412,7 +412,7 @@ public:
     }
 
 
-    const boost::tuple<position_type,double> get( const key_type& k )
+    mapped_type const& get( const key_type& k )
     {
         impl_type::iterator i(impl_.find(k));
         if (i == impl_.end())
@@ -420,8 +420,7 @@ public:
             throw std::runtime_error( "key not found." );
         }
 
-        return boost::make_tuple( (*i).second.position, 
-                                  (*i).second.radius );
+        return (*i).second;
     }
 
 
@@ -434,6 +433,16 @@ public:
     bool erase(const key_type& key)
     {
         return impl_.erase(key);
+    }
+
+    impl_type::const_iterator __iter__begin() const
+    {
+        return impl_.begin();
+    }
+
+    impl_type::const_iterator __iter__end() const
+    {
+        return impl_.end();
     }
 
     operator impl_type&()
@@ -450,6 +459,7 @@ public:
     {
         using namespace boost::python;
 
+        util::register_tuple_converter<impl_type::value_type>();
         util::register_tuple_converter<boost::tuple<position_type,double> >();
 
 #if OBJECTMATRIX_USE_ITERATOR
@@ -488,7 +498,11 @@ public:
             .def("size", &ObjectContainer::size)
             .def("contains", &ObjectContainer::contains)
             .def("update", &ObjectContainer::update)
-            .def("get", &ObjectContainer::get)
+            .def("get", &ObjectContainer::get,
+                    return_value_policy<copy_const_reference>())
+            .def("__iter__", range(
+                    &ObjectContainer::__iter__begin,
+                    &ObjectContainer::__iter__end))
             .def("erase", &ObjectContainer::erase);
     }
 
