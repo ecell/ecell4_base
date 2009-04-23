@@ -1232,23 +1232,26 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
     def burstObj( self, obj ):
-        
         if __debug__:
-            log.info( 'bursting %s' % str( obj ) )
+            log.info( 'burstObj: bursting %s' % obj )
 
         if isinstance( obj, Single ):
             self.burstSingle( obj )
-            return [obj,]
+            bursted = [obj,]
         elif isinstance( obj, Pair ):  # Pair
             single1, single2 = self.burstPair( obj )
             self.removeEvent( obj )
             self.addSingleEvent( single1 )
             self.addSingleEvent( single2 )
-            return [ single1, single2 ]
+            bursted = [ single1, single2 ]
         else:  # Multi
             bursted = self.burstMulti( obj )
             self.removeEvent( obj )
-            return bursted
+
+        if __debug__:
+            log.info( 'burstObj: bursted=%s' % bursted )
+
+        return bursted
 
 
     def burstObjs( self, objs ):
