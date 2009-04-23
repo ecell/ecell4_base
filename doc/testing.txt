@@ -77,9 +77,9 @@ How to test EPDP code
 
      % python plot.py
 
-   Check if the constant concentration case scales linearly for the
+   Check if the constant concentration case scales linearly to the
    number of particles, the constant volume case scale according to 
-   N^(5/3) for up to about uM range, and it scales N^(2/3) for the
+   N^(5/3) for up to about uM range, and it scales with N^(2/3) for the
    changing concentration case (inset).
    
 
