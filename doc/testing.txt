@@ -22,7 +22,7 @@ How to test EPDP code
      the concentration is fairly low, and BD-related methods will come
      on the top when concentration is high.)
 
-   * Optionally, let it run for a night or more and check that it does not
+   * Optionally, let it run for a night or more and ensure that it does not
      crash.  To make it run longer, change the following::
 
        def profrun():
