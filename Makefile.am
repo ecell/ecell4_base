@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS=-I m4
+
 SUBDIRS = doc test object_matrix # samples
 
 TOPSRCDIR=${top_srcdir}
