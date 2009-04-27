@@ -136,15 +136,17 @@ def rebind_ratio( reactions ):
 
                                 #print originalKp
 
-#                                 t_create = KpCreated[originalKp]
-#                                 t = r.t - t_create
-#                                 partner = KpKK[originalKp]
+                                # second *phosphorylation*
+
+                                t_create = KpCreated[originalKp]
+                                t = r.t - t_create
+                                partner = KpKK[originalKp]
 
 
-#                                 if originalKK is not None and originalKK == partner:
-#                                     outfile.write( '%.18g\trebinding\n' % t )
-#                                 else:
-#                                     outfile.write( '%.18g\tdiffusion\n' % t )
+                                if originalKK is not None and originalKK == partner:
+                                    outfile.write( '%.18g\trebinding\n' % t )
+                                else:
+                                    outfile.write( '%.18g\tdiffusion\n' % t )
 
 
 
@@ -183,17 +185,19 @@ def rebind_ratio( reactions ):
                             originalKK = None
 
                         if KpCreated.has_key(originalKp):
-#                             pass
-                            t_create = KpCreated[originalKp]
-                            t = r.t - t_create
-                            partner = KpKK[originalKp]
-                            if originalKK is not None and originalKK == partner:
-                                outfile.write( '%.18g\trebinding\n' % t )
-                            else:
-                                outfile.write( '%.18g\tdiffusion\n' % t )
-                            counter += 1
-                            del KpCreated[originalKp]
-                            del KpKK[originalKp]
+                             pass
+
+                            # # second *association*
+                            # t_create = KpCreated[originalKp]
+                            # t = r.t - t_create
+                            # partner = KpKK[originalKp]
+                            # if originalKK is not None and originalKK == partner:
+                            #     outfile.write( '%.18g\trebinding\n' % t )
+                            # else:
+                            #     outfile.write( '%.18g\tdiffusion\n' % t )
+                            # counter += 1
+                            # del KpCreated[originalKp]
+                            # del KpKK[originalKp]
 
                         
                         break 

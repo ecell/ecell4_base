@@ -98,9 +98,11 @@ N_Sp = N_S_total - N_S
 
 Dtot = D1 + D2
 
+Dtot_ref = 2e-12
+
 #ka = k_a( kon, k_D( Dtot, sigma ) )
 #ka = 9e9 / N_A / 1e3 # 1/M s -> m^3/s
-kD = k_D( Dtot, sigma )
+kD = k_D( Dtot_ref, sigma )
 
 kon = Mtom3( 0.02e9 )
 ka = k_a( kon, kD )
