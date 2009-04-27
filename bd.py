@@ -13,6 +13,10 @@ from surface import *
 from gfrdbase import *
 import _gfrd
 
+import logging
+
+log = logging.getLogger( 'pdpp' )
+
 DEFAULT_DT_FACTOR = 1e-5
 
 class BDSimulatorCoreBase( object ):

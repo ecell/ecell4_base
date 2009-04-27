@@ -19,11 +19,10 @@ import os
 import logging
 import logging.handlers
 
+log = logging.getLogger( 'pdpp' )
 
 def setupLogging():
     global log 
-
-    log = logging.getLogger( 'pdpp' )
 
     if 'LOGFILE' in os.environ:
         if 'LOGSIZE' in os.environ and int( os.environ[ 'LOGSIZE' ] ) != 0:

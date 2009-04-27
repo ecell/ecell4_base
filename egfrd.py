@@ -16,6 +16,9 @@ from surface import *
 from gfrdbase import *
 from bd import *
 
+import logging
+
+log = logging.getLogger( 'pdpp' )
 
 SAFETY = 1.0 + 1e-5
 
