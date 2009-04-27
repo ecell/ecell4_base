@@ -24,7 +24,7 @@ koff_ratio = .1
 
 Keq = 0.03
 
-kon = 0.02e9
+kon = 0.03e9
 
 #{C2N( 249e-9 )};
 NS = 200

@@ -59,12 +59,10 @@ print 'matrixSize=', matrixSize
 s.setMatrixSize( matrixSize )
 
 #s.setDtFactor( 1e-5 )
-
 print V, L
 
 print C2N( 498e-9, V )
 
-#sys.exit(0)
 
 
 box1 = CuboidalSurface( [0,0,0],[L,L,L] )
@@ -98,14 +96,18 @@ N_Sp = N_S_total - N_S
 
 Dtot = D1 + D2
 
-Dtot_ref = 2e-12
+#Dtot_ref = 1e-12
 
 #ka = k_a( kon, k_D( Dtot, sigma ) )
 #ka = 9e9 / N_A / 1e3 # 1/M s -> m^3/s
-kD = k_D( Dtot_ref, sigma )
 
-kon = Mtom3( 0.02e9 )
-ka = k_a( kon, kD )
+kD = k_D( Dtot, sigma )
+#ka = k_a( kon, kD )
+#kon = Mtom3( 0.03e9 )
+
+ka = 7e-19
+kon = k_on( ka, kD )
+
 
 Keq_S = Keq * S_conc
 
@@ -134,6 +136,13 @@ print 'koff2 1/s ', koff2
 print 'kcat2 1/s ', kcat2
 
 assert koff2 >= 0
+
+
+
+print 'S mol conc', S_conc / 1e3 / N_A
+
+print (koff1 + kcat1)/kon/S_conc
+
 
 #sys.exit(0)
 
