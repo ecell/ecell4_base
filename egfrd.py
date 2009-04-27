@@ -18,7 +18,7 @@ from bd import *
 
 import logging
 
-log = logging.getLogger( 'pdpp' )
+log = logging.getLogger( 'epdp' )
 
 SAFETY = 1.0 + 1e-5
 

@@ -15,7 +15,7 @@ import _gfrd
 
 import logging
 
-log = logging.getLogger( 'pdpp' )
+log = logging.getLogger( 'epdp' )
 
 DEFAULT_DT_FACTOR = 1e-5
 

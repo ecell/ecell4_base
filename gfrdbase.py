@@ -19,7 +19,7 @@ import os
 import logging
 import logging.handlers
 
-log = logging.getLogger( 'pdpp' )
+log = logging.getLogger( 'epdp' )
 
 def setupLogging():
     global log 
