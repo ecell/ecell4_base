@@ -4,7 +4,11 @@ import re
 #import logging
 import numpy
 
+import logging
+
 INF = numpy.inf
+
+log = logging.getLogger( 'epdp' )
 
 
 class Logger:
