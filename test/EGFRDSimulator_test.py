@@ -14,114 +14,86 @@ from egfrd import *
 class EGFRDSimulatorTestCase( unittest.TestCase ):
 
     def setUp(self):
-        pass
+        self.s = EGFRDSimulator()
+        self.s.setWorldSize( 1e-5 )
+        self.S = Species( 'S', 2e-11, 5e-8 )
+        self.s.addSpecies( self.S )
+        self.SS = Species( 'SS', 1e-12, 5e-9 )
+        self.s.addSpecies( self.SS )
+        self.A = Species( 'A', 0, 1e-8 )
+        self.s.addSpecies( self.A )
+        self.B = Species( 'B', 2e-11, 5e-9 )
+        self.s.addSpecies( self.B )
 
     def tearDown(self):
         pass
     
     def test_instantiation( self ):
-        s = EGFRDSimulator()
-        self.failIf( s == None )
+        self.failIf( self.s == None )
 
     
     def test_OneParticle( self ):
-        s = EGFRDSimulator()
-        s.setWorldSize( 1e-5 )
-        S = Species( 'S', 2e-11, 5e-8 )
-        s.addSpecies( S )
-        s.placeParticle( S, [0.0,0.0,0.0] )
+        self.s.placeParticle( self.S, [0.0,0.0,0.0] )
 
-        t = s.t
+        t = self.s.t
         for i in range( 5 ):
-            s.step()
-        self.failIf( t == s.t )
+            self.s.step()
+        self.failIf( t == self.s.t )
 
     def test_TwoParticles( self ):
-        s = EGFRDSimulator()
-        s.setWorldSize( 1e-5 )
-        S = Species( 'S', 2e-11, 5e-8 )
-        s.addSpecies( S )
-        s.placeParticle( S, [0.0,0.0,0.0] )
-        s.placeParticle( S, [5e-6,5e-6,5e-6] )
+        self.s.placeParticle( self.S, [0.0,0.0,0.0] )
+        self.s.placeParticle( self.S, [5e-6,5e-6,5e-6] )
 
-        t = s.t
+        t = self.s.t
         for i in range( 5 ):
-            s.step()
-        self.failIf( t == s.t )
+            self.s.step()
+        self.failIf( t == self.s.t )
 
     def test_ThreeParticles( self ):
-        s = EGFRDSimulator()
-        s.setWorldSize( 1e-5 )
-        S = Species( 'S', 2e-11, 5e-8 )
-        s.addSpecies( S )
-        s.placeParticle( S, [0.0,0.0,0.0] )
-        s.placeParticle( S, [5e-6,5e-6,5e-6] )
-        s.placeParticle( S, [1e-7,1e-7,1e-7] )
+        self.s.placeParticle( self.S, [0.0,0.0,0.0] )
+        self.s.placeParticle( self.S, [5e-6,5e-6,5e-6] )
+        self.s.placeParticle( self.S, [1e-7,1e-7,1e-7] )
 
-        t = s.t
+        t = self.s.t
         for i in range( 5 ):
-            s.step()
-        self.failIf( t == s.t )
+            self.s.step()
+        self.failIf( t == self.s.t )
 
 
     def test_ThreeParticlesInContact( self ):
-        s = EGFRDSimulator()
-        s.setWorldSize( 1e-5 )
-        S = Species( 'S', 2e-11, 5e-8 )
-        s.addSpecies( S )
-        s.placeParticle( S, [0.0,0.0,0.0] )
-        s.placeParticle( S, [1e-7,0.0,0.0] )
+        self.s.placeParticle( self.S, [0.0,0.0,0.0] )
+        self.s.placeParticle( self.S, [1e-7,0.0,0.0] )
 
         # dummy
-        s.placeParticle( S, [2e-7,0.0,0.0] )
+        self.s.placeParticle( self.S, [2e-7,0.0,0.0] )
 
-        t = s.t
+        t = self.s.t
         for i in range( 5 ):
-            s.step()
-        self.failIf( t == s.t )
+            self.s.step()
+        self.failIf( t == self.s.t )
 
     def test_FourParticlesClose( self ):
+        self.s.placeParticle( self.SS, [ 2e-8,0.0,0.0 ] )
+        self.s.placeParticle( self.SS, [ 3.003e-8,0.0,0.0 ] )
 
-        #log.setLevel( logging.DEBUG )
+        self.s.placeParticle( self.SS, [ 0.994e-8-5e-10, 0.0, 0.0 ] )
 
-        s = EGFRDSimulator()
-        s.setWorldSize( 1e-5 )
-        S = Species( 'S', 1e-12, 5e-9 )
-        s.addSpecies( S )
-
-        s.placeParticle( S, [ 2e-8,0.0,0.0 ] )
-        s.placeParticle( S, [ 3.003e-8,0.0,0.0 ] )
-
-        s.placeParticle( S, [ 0.994e-8-5e-10, 0.0, 0.0 ] )
-        #s.placeParticle( S, [ 0, 2e-8, 0.0 ] )
-
-
-        t = s.t
+        t = self.s.t
         for i in range( 10 ):
-            s.step()
-        self.failIf( t == s.t )
-
-        #log.setLevel( logging.WARNING )
-
+            self.s.step()
+        self.failIf( t == self.s.t )
 
     def test_immobile_is_immobile( self ):
-        s = EGFRDSimulator()
-        s.setWorldSize( 1e-5 )
-        A = Species( 'A', 0, 1e-8 )
-        s.addSpecies( A )
-        B = Species( 'B', 2e-11, 5e-9 )
-        s.addSpecies( B )
-
-        particleA = s.placeParticle( A, [0.0,0.0,0.0] )
-        s.placeParticle( B, [1.5000001e-8,0.0,0.0] )
+        particleA = self.s.placeParticle( self.A, [0.0,0.0,0.0] )
+        self.s.placeParticle( self.B, [1.5000001e-8,0.0,0.0] )
 
         initialPosition = particleA.getPos().copy()
 
         for i in range( 10 ):
-            s.step()
+            self.s.step()
         
         newPosition = particleA.getPos().copy()
-        dist = s.distance( initialPosition, newPosition )
+        dist = self.s.distance( initialPosition, newPosition )
 
         self.failIf( dist != 0, 'initial pos: %s,\tnew pos: %s' %
                      ( initialPosition, newPosition ) )
