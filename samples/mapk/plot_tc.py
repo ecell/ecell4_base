@@ -53,7 +53,7 @@ def plot_file( filename ):
 
     #psd( y )
     #ylim( 1, 5e4 )
-    xlim(0,120)
+    #xlim(0,120)
 
 
 import glob

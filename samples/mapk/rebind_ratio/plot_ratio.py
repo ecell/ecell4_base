@@ -67,14 +67,13 @@ data_em1=[
 
 axes([.13,.13,.8,.8])
 
-semilogx( D, data_em1, 'o:', label=r'$\tau_{\rm rel}=100 \  {\rm ms}$' )
-semilogx( D, data_em2, 'o:', label=r'$\tau_{\rm rel}=10 \ {\rm ms}$' )
-semilogx( D, data_em3, 'o:', label=r'$\tau_{\rm rel}=1 \ {\rm ms}$' )
-semilogx( D, data_em4, 'o:', label=r'$\tau_{\rm rel}=100 \ {\rm \mu s}$' )
-semilogx( D, data_em5, 'o:', label=r'$\tau_{\rm rel}=10 \ {\rm \mu s}$' )
-semilogx( D, data_em6, 'o:', label=r'$\tau_{\rm rel}=1 \ {\rm \mu s}$' )
 semilogx( D, data_0, 'o:', label=r'$\tau_{\rm rel}=0$' )
-
+semilogx( D, data_em6, 'o:', label=r'$\tau_{\rm rel}=1 \ {\rm \mu s}$' )
+semilogx( D, data_em5, 'o:', label=r'$\tau_{\rm rel}=10 \ {\rm \mu s}$' )
+semilogx( D, data_em4, 'o:', label=r'$\tau_{\rm rel}=100 \ {\rm \mu s}$' )
+semilogx( D, data_em3, 'o:', label=r'$\tau_{\rm rel}=1 \ {\rm ms}$' )
+semilogx( D, data_em2, 'o:', label=r'$\tau_{\rm rel}=10 \ {\rm ms}$' )
+semilogx( D, data_em1, 'o:', label=r'$\tau_{\rm rel}=100 \  {\rm ms}$' )
 
 
 

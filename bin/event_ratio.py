@@ -6,14 +6,15 @@ import sys
 import glob
 
 
-filepattern = open( sys.argv[1] )
+file = open( sys.argv[1] )
 
-filepattern.replace( 'ALL', '*' )
-filelist = glob.glob( filepattern )
-print filelist
+# filepattern.replace( 'ALL', '*' )
+# filelist = glob.glob( filepattern )
+# print filelist
 
 
 events = {}
+
 
 for line in file.readlines():
     line = line.split()

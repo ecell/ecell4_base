@@ -163,7 +163,7 @@ if __name__ == '__main__':
                   ),
                  loc=4,
                  shadow=True,
-                 pad=0.05
+                 borderpad=0.05
                  )
     for l in leg.get_lines():
         l.set_linewidth(1.5)  # the legend line width
