@@ -395,14 +395,6 @@ class BDSimulator( ParticleSimulatorBase ):
 
     t = property(t, sett)
 
-#     @property
-#     def dt( self ):
-#         return self.core.dt
-
-#     @property
-#     def stepCounter( self ):
-#         return self.core.stepCounter
-
     def getDt( self ):
         return self.core.dt
 
@@ -434,9 +426,6 @@ class BDSimulator( ParticleSimulatorBase ):
 
         if self.isDirty:
             self.initialize()
-
-        #if self.stepCounter % 10000 == 0:
-        #    self.check()
 
         self.core.step()
 
