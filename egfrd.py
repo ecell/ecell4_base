@@ -145,9 +145,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
 
 class Single( object ):
-
     def __init__( self, particle, reactiontypes ):
-
         self.multiplicity = 1
 
         self.particle = particle
@@ -167,16 +165,11 @@ class Single( object ):
 
         self.updatek_tot()
 
-
     def getD( self ):
-
         return self.particle.species.D
 
-
     def getPos( self ):
-
         return self.shellList[0].pos
-
 
     def setPos( self, pos ):
         self.shellList[0].pos = pos
