@@ -1333,8 +1333,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         
         if closeNeighbors:
             bursted = self.burstNonMultis( closeNeighbors )
-            obj, b = self.formPairOrMulti( single, bursted )
-            bursted.extend( b )
+            obj = self.formPairOrMulti( single, bursted )
 
             if obj:
                 single.dt = -INF # remove by rescheduling to past.
@@ -1744,13 +1743,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def formPairOrMulti( self, single, neighbors ):
         assert neighbors
 
-        bursted = []
-
         # Try forming a Pair.
         if isinstance( neighbors[0], Single ):
             obj = self.formPair( single, neighbors[0], neighbors[1:] )
             if obj:
-                return obj, neighbors[1:]
+                return obj
 
 
         # Then, a Multi.
@@ -1760,7 +1757,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                       ( neighborDists <= minShell ).nonzero()[0] ]
 
         if not neighbors:
-            return None, bursted
+            return None
 
         closest = neighbors[0]
 
@@ -1777,7 +1774,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.addToShellMatrix( multi )
             self.addMultiEvent( multi )
 
-            return multi, bursted
+            return multi
 
         elif isinstance( closest, Multi ):
 
@@ -1797,7 +1794,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.addToShellMatrix( multi )
             self.updateEvent( self.t + multi.dt, multi )
 
-            return multi, bursted
+            return multi
 
 
         assert False, 'do not reach here'
