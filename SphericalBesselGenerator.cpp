@@ -13,7 +13,7 @@
 
 /* Taken and adopted from interpolation/cspline.c in GSL */
 
-/*
+
 typedef struct
 {
   double * c;
@@ -34,7 +34,7 @@ coeff_calc (const double c_array[], double dy, double dx, size_t index,
 }
 
 
-static
+static inline
 int
 my_cspline_eval (const void * vstate,
                  const double x_array[], const double y_array[], size_t size,
@@ -47,9 +47,10 @@ my_cspline_eval (const void * vstate,
   const double x0 = x_array[0];
   const double dx = x_array[1] - x0;
 
-  const size_t index = floor((x - x0) / dx);
+  const size_t index = trunc((x - x0) / dx);
 
-  const double x_lo = x_array[index];
+  //const double x_lo = x_array[index];
+  const double x_lo = x0 + dx * index;
 
   const double y_lo = y_array[index];
   const double y_hi = y_array[index + 1];
@@ -60,7 +61,7 @@ my_cspline_eval (const void * vstate,
   *y = y_lo + delx * (b_i + delx * (c_i + delx * d_i));
   return GSL_SUCCESS;
 }
-*/
+
 
 
 
@@ -74,12 +75,12 @@ inline static const Real interp( const gsl_interp* interpolator,
                                  const Real* xTable, const Real* yTable,
                                  const Real x )
 {
-    const Real y( gsl_interp_eval( interpolator, xTable, yTable, x, 0 ) );
+//    const Real y( gsl_interp_eval( interpolator, xTable, yTable, x, 0 ) );
     
-/*    Real y;
+    Real y;
     my_cspline_eval( interpolator->state, xTable, yTable,
                      interpolator->size, x, 0, &y );
-*/  
+
     return y;
 }
 
