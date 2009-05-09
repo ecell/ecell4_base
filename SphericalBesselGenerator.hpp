@@ -69,8 +69,10 @@ private:
 
     const Real _j_table( const UnsignedInteger n, const Real z ) const;
     const Real _y_table( const UnsignedInteger n, const Real z ) const;
-     
 
+    static const Real _j_smalln( const UnsignedInteger n, const Real z );
+    static const Real _y_smalln( const UnsignedInteger n, const Real z );
+     
 private:
 
     const gsl_interp_type* interpType;

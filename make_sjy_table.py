@@ -10,13 +10,20 @@ import string
 
 
 def minz_j( n ):
-
-    return math.sqrt( 10. * ( n + 0.5 ) / numpy.e )
-
+    
+    # This is where GSL switches from taylor expansion to
+    # continued fraction;
+    #return math.sqrt( 10. * ( n + 0.5 ) / numpy.e )
+    #
+    # However...
+    # We can start table interpolation from zero because there is
+    # no singularity in bessel_j for z>=0.
+    return 0
 
 def minz_y( n ):
 
-    return max( 3., n )
+    #return max( 3., n )
+    return .5
 
 
 def maxz_j( n ):
@@ -24,17 +31,22 @@ def maxz_j( n ):
     z = ( n * n + n + 1 ) / 1.221e-4
 
     if z >= 1000:
-        z = max( 1001, n * n )
+        z = max( 1000, n * n )
 
     return z
 
 
 def maxz_y( n ):
 
+    # from gsl/special/bessel_y.c:
+    #  else if(GSL_ROOT3_DBL_EPSILON * x > (l*l + l + 1.0)) {
+    #     int status = gsl_sf_bessel_Ynu_asympx_e(l + 0.5, x, result);
+    #     ...
     z = ( n * n + n + 1 ) / 6.06e-6
 
-    if z >= 1000:
-        z = max( 1001, n * n )
+    # ... but this is usually too big.
+    if z >= 2000:
+        z = max( 2000, n * n )
 
     return z
 
@@ -42,7 +54,7 @@ def maxz_y( n ):
 def jnyn( n, resolution ):
 
     delta = numpy.pi / resolution
-    zTable = numpy.mgrid[delta:max( maxz_j(n), maxz_y(n) ):delta]
+    zTable = numpy.mgrid[min(minz_j(n),minz_y(n)):max( maxz_j(n), maxz_y(n) ):delta]
 
     jTable = numpy.zeros( ( len( zTable ), n+1 ) )
     yTable = numpy.zeros( ( len( zTable ), n+1 ) )
@@ -106,7 +118,8 @@ namespace sb_table
 struct Table
 {
     const unsigned int N;
-    const double* const x;
+    const double x_start;
+    const double delta_x;
     const double* const y;
 };
 '''
@@ -162,14 +175,14 @@ static const double %s[%d + 1] =
     file.write( foot_template )
 
 
-def writeTable( file, name, N ):
+def writeTable( file, name, N, x_start, delta_x ):
 
     struct_template = '''
-static const Table %s = { %d, %s_z, %s_f };
+static const Table %s = { %d, %.18f, %.18f, %s_f };
 
 '''
 
-    file.write( struct_template % ( name, N, name, name ) )
+    file.write( struct_template % ( name, N, x_start, delta_x, name ) )
 
 
 
@@ -181,7 +194,7 @@ if __name__ == '__main__':
 
     file = open( filename, 'w' )
 
-    minn_j = 3
+    minn_j = 4
     # this should be larger (than maxn_y), but the table bloats.
     maxn_j = 51
 
@@ -196,6 +209,7 @@ if __name__ == '__main__':
     writeHeader( file )
 
     zTable, jTable, yTable = jnyn( max( maxn_j, maxn_y ), resolution )
+    delta_z = zTable[1]-zTable[0]
 
     # j
     for n in range( minn_j, maxn_j + 1 ):
@@ -208,15 +222,15 @@ if __name__ == '__main__':
 
         start = numpy.searchsorted( zTable, minz_j( n ) )
         end = numpy.searchsorted( zTable, maxz_j( n ) )
-        z = zTable[start:end]
+        z_start = zTable[start]
         j = jTable[n][start:end]
-        writeArray( file, 'sj_table%d_z' % n, z )
+        #writeArray( file, 'sj_table%d_z' % n, z )
         writeArray( file, 'sj_table%d_f' % n, j )
-        writeTable( file, 'sj_table%d' % n, end-start )
-        print 'j', n, len( z )
+        writeTable( file, 'sj_table%d' % n, end-start, z_start, delta_z )
+        print 'j', n, len( j )
 
     # y
-    for n in range( minn_j, maxn_y + 1 ):
+    for n in range( minn_y, maxn_y + 1 ):
 
         #zTable, yTable = make_table( special.sph_yn, n, 
         #                             minz_y(n), maxz_y(n), tolerance )
@@ -226,13 +240,14 @@ if __name__ == '__main__':
 
         start = numpy.searchsorted( zTable, minz_y( n ) )
         end = numpy.searchsorted( zTable, maxz_y( n ) )
-        z = zTable[start:end]
+        #z = zTable[start:end]
+        z_start = zTable[start]
         y = yTable[n][start:end]
-        writeArray( file, 'sy_table%d_z' % n, z )
+        #writeArray( file, 'sy_table%d_z' % n, z )
         writeArray( file, 'sy_table%d_f' % n, y )
-        writeTable( file, 'sy_table%d' % n, end-start )
+        writeTable( file, 'sy_table%d' % n, end-start, z_start, delta_z )
 
-        print 'y', n, len( z )
+        print 'y', n, len( y )
 
     writeTableArray( file, 'sj_table', minn_j, maxn_j )
     writeTableArray( file, 'sy_table', minn_y, maxn_y )

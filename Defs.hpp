@@ -7,8 +7,8 @@
 #include <cmath>
 
 typedef double Real;
-typedef int Integer;
-typedef unsigned int UnsignedInteger;
+typedef long int Integer;
+typedef unsigned long int UnsignedInteger;
 typedef size_t Index;
 
 

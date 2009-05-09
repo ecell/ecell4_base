@@ -64,6 +64,7 @@ BOOST_AUTO_TEST_CASE( testY )
     const UnsignedInteger resolution( 300 );
     const Real maxz( std::max( 1000., static_cast<Real>( maxn * maxn ) ) * 2 );
 
+    // it is unstable around z==0, so we test for i in [1...resolution]
     for( UnsignedInteger i( 1 ); i <= resolution; ++i )
     {
         const Real z( maxz * i / resolution );
