@@ -9,11 +9,11 @@
 #include <limits.h>
 #endif
 
-#if !defined( HAVE_DECL_INFINITY )
+#if !HAVE_DECL_INFINITY
 #if defined( __cplusplus )
 #    define INFINITY ( std::numeric_limits< double >::infinity() )
 #else
-#    if defined( HAVE_DECL_HUGE_VAL )
+#    if HAVE_DECL_HUGE_VAL
 #        define INFINITY ( HUGE_VAL )
 #    else
 #        error could not define the constant 'INFINITY'
