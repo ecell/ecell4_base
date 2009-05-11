@@ -58,7 +58,7 @@ dnl
 AM_CHECK_PYTHON_HEADERS()
 dnl
 dnl
-AC_CHECK_HEADERS([unordered_map tr1/unordered_map ext/hash_map])
+AC_CHECK_HEADERS([unordered_map tr1/unordered_map boost/unordered_map.hpp])
 dnl
 dnl checks for types
 dnl
