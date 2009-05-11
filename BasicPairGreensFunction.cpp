@@ -2,27 +2,22 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-//#define NDEBUG
-//#define BOOST_DISABLE_ASSERTS
-
 #include <exception>
 #include <vector>
 #include <sstream>
 #include <cmath>
 
-#include <boost/bind.hpp>
+#include "compat.h"
 
+#include <boost/bind.hpp>
 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_bessel.h>
-//#include <gsl/gsl_sf_erf.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_roots.h>
-
-//#include "bessel.hpp"
 
 #include "freeFunctions.hpp"
 
@@ -189,7 +184,7 @@ BasicPairGreensFunction::p_corr_R( const Real alpha,
 
     //printf("%g %g %g %g %g %g\n", result, alpha, num, den, R1, R2 );
 
-    assert( std::isfinite( result ) );
+    assert( isfinite( result ) );
 
     return result;
 }

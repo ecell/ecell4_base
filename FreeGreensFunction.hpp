@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+#include "compat.h"
+
 #include <gsl/gsl_integration.h>
 
 #include "GreensFunction.hpp"

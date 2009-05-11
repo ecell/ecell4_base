@@ -2,17 +2,12 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-//#define NDEBUG
-//#define BOOST_DISABLE_ASSERTS
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif /* HAVE_CONFIG_H */
-
 #include <iostream>
 #include <stdexcept>
 #include <vector>
 #include <sstream>
+
+#include "compat.h"
 
 #include <boost/bind.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -2581,7 +2576,7 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
     {
 	Real p_n( this->p_n( n, r, r0, t ) * factor );
 
-	if( ! std::isfinite( p_n ) )
+	if( ! isfinite( p_n ) )
 	{
 	    std::cerr << "makep_nTable: invalid value; " <<
 		p_n << "( n= " << n << ")." << std::endl;
@@ -2715,7 +2710,7 @@ FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
     {
 	Real p_n( this->dp_n_at_a( n, r0, t ) * factor );
 
-	if( ! std::isfinite( p_n ) )
+	if( ! isfinite( p_n ) )
 	{
 	    std::cerr << "makedp_n_at_aTable: invalid value; " <<
 		p_n << "( n= " << n << ")." << std::endl;

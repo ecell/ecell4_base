@@ -95,7 +95,10 @@ fi
 dnl
 dnl checks for library functions
 dnl
-AC_CHECK_FUNC(sincos,AC_DEFINE(HAVE_SINCOS))
+AC_CHECK_FUNCS([sincos isfinite])
+AC_CHECK_DECLS([INFINITY HUGE_VAL],,,[
+#include <math.h>
+])
 dnl
 dnl
 dnl no checks for system services

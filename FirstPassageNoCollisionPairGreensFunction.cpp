@@ -11,6 +11,8 @@
 #include <sstream>
 #include <algorithm>
 
+#include "compat.h"
+
 #include <boost/bind.hpp>
 
 #include <gsl/gsl_errno.h>
@@ -27,7 +29,6 @@
 #include "SphericalBesselGenerator.hpp"
 
 #include "FirstPassageNoCollisionPairGreensFunction.hpp"
-
 
 
 FirstPassageNoCollisionPairGreensFunction::
@@ -255,7 +256,7 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
     {
 	Real p_n( this->p_n( n, r, r0, t ) * factor );
 
-	if( ! std::isfinite( p_n ) )
+	if( ! isfinite( p_n ) )
 	{
 	    std::cerr << "makep_nTable: invalid value; " <<
 		p_n << "( n= " << n << ")." << std::endl;
@@ -524,7 +525,7 @@ makedp_nTable( RealVector& p_nTable,
     {
 	Real p_n( this->dp_n( n, r0, t ) * factor );
 
-	if( ! std::isfinite( p_n ) )
+	if( ! isfinite( p_n ) )
 	{
 	    std::cerr << "makedp_nTable: invalid value; " <<
 		p_n << "( n= " << n << ")." << std::endl;

@@ -7,6 +7,8 @@
 #include <exception>
 #include <vector>
 
+#include "compat.h"
+
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_trig.h>
 #include <gsl/gsl_sum.h>
@@ -17,10 +19,7 @@
 #include <gsl/gsl_roots.h>
 
 #include "findRoot.hpp"
-
 #include "FirstPassageGreensFunction.hpp"
-
-
 
 /**
   EllipticTheta[4,0,q]
