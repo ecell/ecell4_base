@@ -96,7 +96,7 @@ dnl
 dnl checks for library functions
 dnl
 AC_CHECK_FUNCS([sincos isfinite])
-AC_CHECK_DECLS([INFINITY HUGE_VAL],,,[
+AC_CHECK_DECLS([INFINITY, HUGE_VAL],,,[
 #include <math.h>
 ])
 dnl

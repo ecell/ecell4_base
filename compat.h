@@ -9,17 +9,17 @@
 #include <limits.h>
 #endif
 
-#if !defined( HAVE_INFINITY )
+#if !defined( HAVE_DECL_INFINITY )
 #if defined( __cplusplus )
 #    define INFINITY ( std::numeric_limits< double >::infinity() )
 #else
-#    if defined( HAVE_HUGE_VAL )
+#    if defined( HAVE_DECL_HUGE_VAL )
 #        define INFINITY ( HUGE_VAL )
 #    else
-#        error could not define the constant `INFINITY'
+#        error could not define the constant 'INFINITY'
 #    endif
 #endif
-#endif /* HAVE_INFINITY */
+#endif /* HAVE_DECL_INFINITY */
 
 #if !defined( HAVE_SINCOS )
 inline void sincos( double x, double* s, double* c )
