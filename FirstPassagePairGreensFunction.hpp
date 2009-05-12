@@ -130,9 +130,10 @@ public:
                           const Real t ) const;
 
     const Real p_n( const Integer n, const Real r, 
-		    const Real r0, const Real t ) const;
+                    const Real r0, const Real t, const Real max_alpha ) const;
 
-    const Real dp_n_at_a( const Integer n, const Real r0, const Real t ) const;
+    const Real dp_n_at_a( const Integer n, const Real r0, const Real t,
+                          const Real max_alpha ) const;
 
 
     const Real p_n_alpha( const unsigned int i,
@@ -359,9 +360,9 @@ protected:
                              const RealVector& pleaveFactorTable ) const;
 
     void makep_nTable( RealVector& p_nTable,
-		       const Real r, 
-		       const Real r0, 
-		       const Real t ) const;
+                       const Real r, 
+                       const Real r0, 
+                       const Real t ) const;
     
     void makedp_n_at_aTable( RealVector& p_nTable,
 			     const Real r0, 

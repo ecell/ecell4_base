@@ -2528,15 +2528,39 @@ const Real FirstPassagePairGreensFunction::p_n_alpha( const unsigned int i,
 
 const Real 
 FirstPassagePairGreensFunction::p_n( const Integer n,
-				     const Real r,
-				     const Real r0, 
-				     const Real t ) const
+                                     const Real r,
+                                     const Real r0, 
+                                     const Real t,
+                                     const Real max_alpha) const
 {
-    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					p_n_alpha,
-					this,
-					_1, n, r, r0, t ),
-			   MAX_ALPHA_SEQ, THETA_TOLERANCE ) );
+    const unsigned int min_i(2);
+
+    Real p(0.0);
+    
+    Integer i(0);
+    while(true)
+    {
+        const Real alpha(getAlpha(n,i));
+
+        const Real p_i(p_n_alpha(i, n, r, r0, t));
+        //printf("p_i %g\n", p_i);
+        p += p_i;
+
+        if(alpha >= max_alpha && i >= min_i)
+        {
+            break;
+        }
+
+        if(i == MAX_ALPHA_SEQ)
+        {
+            break;
+        }
+
+        ++i;
+    }
+
+//    printf("p_n n %d i %d p %g\n", n,i,p);
+
     return p;
 }
 
@@ -2546,54 +2570,58 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 					      const Real r0, 
 					      const Real t ) const
 {
-    const Real sigma( this->getSigma() );
-    const Real a( this->geta() );
+    const Real sigma(this->getSigma());
+    const Real a(this->geta());
 
     p_nTable.clear();
 
-    const Real factor( a * sigma / ( M_PI * 2 ) );
+    const Real factor(a * sigma / (M_PI * 2));
 
-    const Real p_0( this->p_n( 0, r, r0, t ) * factor );
+    const Real Dt(this->getD() * t);
+    const Real alpha00(this->getAlpha(0, 0));
+
+    const Real max_alpha(sqrt(Dt * alpha00 * alpha00 - 
+                              log(THETA_TOLERANCE * 1e-1) / Dt ));
+
+
+    const Real p_0(this->p_n(0, r, r0, t, max_alpha) * factor);
     //const Real p_0( this->p_0(t, r, r0) ); // not good
 
-    p_nTable.push_back( p_0 );
+    p_nTable.push_back(p_0);
 
-    if( p_0 == 0 )
+    if(p_0 == 0)
     {
         return;
     }
 
-    const Real tolerance( THETA_TOLERANCE ); 
-    const Real threshold( fabs( tolerance * p_0  ) );
+    const Real threshold(fabs(THETA_TOLERANCE * p_0));
 
-    Real p_n_prev_abs( fabs( p_0 ) );
-    unsigned int n( 1 );
-    while( true )
+    Real p_n_prev_abs(fabs(p_0));
+    unsigned int n(1);
+    while(true)
     {
-	Real p_n( this->p_n( n, r, r0, t ) * factor );
+        if(getAlpha(n, 0) >= max_alpha)
+        {
+            break;
+        }
 
-	if( ! isfinite( p_n ) )
-	{
-	    std::cerr << "makep_nTable: invalid value; " <<
-		p_n << "( n= " << n << ")." << std::endl;
-//	    p_n = 0.0;
-	    break;
-	}
+        Real p_n(this->p_n(n, r, r0, t, max_alpha) * factor);
+        
+        //assert(std::isfinite(p_n));
 
-	p_nTable.push_back( p_n );
+        p_nTable.push_back(p_n);
         
         //std::cerr << n << " " << p_n << " " << threshold << std::endl;
 
-	const Real p_n_abs( fabs( p_n ) );
-	// truncate when converged enough.
-	if( p_n_abs < threshold &&
-            p_n_prev_abs < threshold &&
-	    p_n_abs <= p_n_prev_abs )
+        const Real p_n_abs(fabs(p_n));
+        // truncate when converged enough.
+        if(p_n_abs < threshold &&
+           p_n_prev_abs < threshold &&
+           p_n_abs <= p_n_prev_abs)
 	{
 	    break;
         }
 	
-
 	if( n >= this->MAX_ORDER )
 	{
 	    //std::cerr << "p_n didn't converge." << std::endl;
@@ -2603,7 +2631,6 @@ FirstPassagePairGreensFunction::makep_nTable( RealVector& p_nTable,
 	++n;
 	p_n_prev_abs = p_n_abs;
     }
-
 }
 
 
@@ -2663,14 +2690,37 @@ FirstPassagePairGreensFunction::dp_n_alpha_at_a( const unsigned int i,
 
 const Real 
 FirstPassagePairGreensFunction::dp_n_at_a( const Integer n,
-					   const Real r0, 
-					   const Real t ) const
+                                           const Real r0, 
+                                           const Real t,
+                                           const Real max_alpha ) const
 {
-    const Real p( funcSum( boost::bind( &FirstPassagePairGreensFunction::
-					dp_n_alpha_at_a,
-					this,
-					_1, n, r0, t ),
-			   MAX_ALPHA_SEQ, THETA_TOLERANCE ) );
+    const unsigned int min_i(2);
+
+    Real p(0.0);
+    
+    Integer i(0);
+    while(true)
+    {
+        const Real alpha(getAlpha(n,i));
+
+        const Real p_i(dp_n_alpha_at_a(i, n, r0, t));
+        //printf("p_i %g\n", p_i);
+        p += p_i;
+
+        if(alpha >= max_alpha && i >= min_i)
+        {
+            break;
+        }
+
+        if(i == MAX_ALPHA_SEQ)
+        {
+            break;
+        }
+
+        ++i;
+    }
+
+//    printf("dp_n n %d i %d p %g\n", n,i,p);
 
     return p;
 }
@@ -2678,58 +2728,63 @@ FirstPassagePairGreensFunction::dp_n_at_a( const Integer n,
 
 void
 FirstPassagePairGreensFunction::makedp_n_at_aTable( RealVector& p_nTable,
-						    const Real r0, 
-						    const Real t ) const
+                                                    const Real r0, 
+                                                    const Real t ) const
 {
-    const Real sigma( this->getSigma() );
-    const Real a( this->geta() );
+    const Real sigma(this->getSigma());
+    const Real a(this->geta());
 
     p_nTable.clear();
 
-    const Real factor( getD() * sigma / ( 2.0 * a * M_PI ) );
+    const Real factor(this->getD() * sigma / (a * M_PI * 2));
 
-    const Real p_0( this->dp_n_at_a( 0, r0, t ) * factor );
-    p_nTable.push_back( p_0 );
+    const Real Dt(this->getD() * t);
+    const Real alpha00(this->getAlpha(0, 0));
 
-    if( p_0 == 0 )
+    const Real max_alpha(sqrt(Dt * alpha00 * alpha00 - 
+                              log(THETA_TOLERANCE * 1e-1) / Dt ));
+
+
+    const Real p_0(this->dp_n_at_a(0, r0, t, max_alpha) * factor);
+
+    p_nTable.push_back(p_0);
+
+    if(p_0 == 0)
     {
         return;
     }
 
-    const Real tolerance( THETA_TOLERANCE );
-    const Real threshold( fabs( tolerance * p_0  ) );
+    const Real threshold(fabs(THETA_TOLERANCE * p_0));
 
-    //printf("p_0 %g\n",p_0 );
-    Real p_n_prev_abs( fabs( p_0 ) );
-    unsigned int n( 1 );
-    while( true )
+    Real p_n_prev_abs(fabs(p_0));
+    unsigned int n(1);
+    while(true)
     {
-	Real p_n( this->dp_n_at_a( n, r0, t ) * factor );
+        if(getAlpha(n, 0) >= max_alpha)
+        {
+            break;
+        }
 
-	if( ! isfinite( p_n ) )
+        Real p_n(this->dp_n_at_a(n, r0, t, max_alpha) * factor);
+        
+        //assert(std::isfinite(p_n));
+
+        p_nTable.push_back(p_n);
+        
+        //std::cerr << n << " " << p_n << " " << threshold << std::endl;
+
+        const Real p_n_abs(fabs(p_n));
+        // truncate when converged enough.
+        if(p_n_abs < threshold &&
+           p_n_prev_abs < threshold &&
+           p_n_abs <= p_n_prev_abs)
 	{
-	    std::cerr << "makedp_n_at_aTable: invalid value; " <<
-		p_n << "( n= " << n << ")." << std::endl;
-//	    p_n = 0.0;
 	    break;
-	}
-	//printf("dp_n %g\n",p_n );
-
-	p_nTable.push_back( p_n );
-
-	const Real p_n_abs( fabs( p_n ) );
-	// truncate when converged enough.
-	if( p_n_abs < threshold &&
-            p_n_prev_abs < threshold &&
-	    p_n_abs < p_n_prev_abs )
-	{
-	    break;
-	}
+        }
 	
-
 	if( n >= this->MAX_ORDER )
 	{
-	    //std::cerr << "dp_n_at_a didn't converge." << std::endl;
+	    //std::cerr << "p_n didn't converge." << std::endl;
 	    break;
 	}
 	
