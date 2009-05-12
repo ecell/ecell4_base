@@ -1205,26 +1205,22 @@ FirstPassagePairGreensFunction::guess_maxi( const Real t ) const
         return safety;
     }
 
-    const Real D( getD() );
-    const Real sigma( getSigma() );
-    const Real a( geta() );
+    const Real D( this->getD() );
+    const Real sigma( this->getSigma() );
+    const Real a( this->geta() );
 
-    const Real alpha0( getAlpha0( 0 ) );
+    const Real alpha0( this->getAlpha0( 0 ) );
     const Real Dt( D * t );
-    const Real thr( ( exp( - Dt * alpha0 * alpha0 ) / alpha0 ) * 
-                    this->TOLERANCE * 1e-1 );
-    const Real thrsq( thr * thr );
-    //printf("w %g %g\n", thr, 2 * Dt / thrsq );
-    //printf("w0 %g\n", gsl_sf_lambert_W0( 2 * Dt / thrsq ) );
 
-    if( thrsq <= 0.0 )
+    const Real thr( exp( - Dt * alpha0 * alpha0 ) * this->TOLERANCE * 1e-1 );
+
+    if( thr <= 0.0 )
     {
         return this->MAX_ALPHA_SEQ;
     }
 
-    const Real max_alpha( 1.0 /
-                          ( sqrt( exp( gsl_sf_lambert_W0( 2 * Dt / thrsq ) ) *
-                                  thrsq ) ) );
+    const Real max_alpha( sqrt( Dt * alpha0 * alpha0 - log( thr ) / Dt ) );
+
     const unsigned int 
         maxi( safety + 
               static_cast<unsigned int>( max_alpha * ( a - sigma ) / M_PI ) );
