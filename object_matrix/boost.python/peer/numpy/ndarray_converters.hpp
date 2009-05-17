@@ -132,8 +132,13 @@ namespace util
     template<typename Tarray_>
     void register_multi_array_converter()
     {
-        boost::python::to_python_converter<
-            Tarray_, detail::to_ndarray_converter<Tarray_> >();
+        static bool registered = false;
+        if (!registered)
+        {
+            boost::python::to_python_converter<
+                Tarray_, detail::to_ndarray_converter<Tarray_> >();
+            registered = true;
+        }
     }
 } // namespace util
 

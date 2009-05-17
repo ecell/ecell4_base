@@ -71,11 +71,16 @@ namespace util
     template<typename Ttuple_>
     void register_tuple_converter()
     {
-        boost::python::to_python_converter<
-            Ttuple_, detail::tuple_to_tuple_converter<Ttuple_> >();
-        boost::python::to_python_converter<
-            boost::shared_ptr<Ttuple_>,
-            detail::tuple_to_tuple_converter<boost::shared_ptr<Ttuple_> > >();
+        static bool registered = false;
+        if (!registered)
+        {
+            boost::python::to_python_converter<
+                Ttuple_, detail::tuple_to_tuple_converter<Ttuple_> >();
+            boost::python::to_python_converter<
+                boost::shared_ptr<Ttuple_>,
+                detail::tuple_to_tuple_converter<boost::shared_ptr<Ttuple_> > >();
+            registered = true;
+        }
     }
 
 } // namespace util
