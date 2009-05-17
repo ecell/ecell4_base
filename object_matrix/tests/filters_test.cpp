@@ -22,10 +22,10 @@ BOOST_AUTO_TEST_CASE(basic)
     typedef oc_type::position_type pos;
     oc_type oc(1.0, 10);
 
-    oc.insert(std::make_pair(0, oc_type::mapped_type(pos(0.2, 0.6, 0.4), 0.15)));
-    oc.insert(std::make_pair(1, oc_type::mapped_type(pos(0.2, 0.7, 0.5), 0.05)));
-    oc.insert(std::make_pair(2, oc_type::mapped_type(pos(0.9, 0.1, 0.4), 0.07)));
-    oc.insert(std::make_pair(3, oc_type::mapped_type(pos(0.9, 0.95, 0.4), 0.1)));
+    oc.update(std::make_pair(0, oc_type::mapped_type(pos(0.2, 0.6, 0.4), 0.15)));
+    oc.update(std::make_pair(1, oc_type::mapped_type(pos(0.2, 0.7, 0.5), 0.05)));
+    oc.update(std::make_pair(2, oc_type::mapped_type(pos(0.9, 0.1, 0.4), 0.07)));
+    oc.update(std::make_pair(3, oc_type::mapped_type(pos(0.9, 0.95, 0.4), 0.1)));
 
     collector<oc_type> col;
     oc_type::const_iterator f(oc.find(1));
