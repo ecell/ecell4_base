@@ -1,8 +1,6 @@
 #ifndef OBJECTMATRIX_PEER_OBJECTCONTAINER_HPP
 #define OBJECTMATRIX_PEER_OBJECTCONTAINER_HPP
 
-#include "../../../config.h"
-
 #include <functional>
 #include <string>
 #include <vector>
