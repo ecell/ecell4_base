@@ -13,22 +13,13 @@
 class SphericalBesselGenerator
 {
 
-    typedef gsl_interp Interpolator;
-
-    typedef std::vector<Interpolator*> InterpolatorVector;
-
     typedef UnsignedInteger Index;
-
 
 public:
 
     SphericalBesselGenerator()
-	:
-        interpType( gsl_interp_cspline ),
-        //interpType( gsl_interp_akima ),
-        interpMinSize( 5 ) // gsl_interp_min_size( ) ),
     {
-// 	fillTables();
+        ; // do nothing
     }
 
     ~SphericalBesselGenerator()
@@ -36,9 +27,9 @@ public:
         ; // do nothing
     }
 
-    const Real j( const UnsignedInteger n, const Real z ) const;
+    const Real j(const UnsignedInteger n, const Real z) const;
 
-    const Real y( const UnsignedInteger n, const Real z ) const;
+    const Real y(const UnsignedInteger n, const Real z) const;
 
     static const UnsignedInteger getMinNJ();
     static const UnsignedInteger getMinNY();
@@ -49,39 +40,22 @@ public:
 
 private:
 
-//     void fillTables();
-
-
-    /*
-    static const sb_table::Table* getSJTable( const UnsignedInteger n );
-    static const sb_table::Table* getSYTable( const UnsignedInteger n );
-    */
-
-    static const Real _j( const UnsignedInteger n, const Real z )
+    static const Real _j(const UnsignedInteger n, const Real z)
     {
-        return gsl_sf_bessel_jl( n, z );
+        return gsl_sf_bessel_jl(n, z);
     }
 
-    static const Real _y( const UnsignedInteger n, const Real z )
+    static const Real _y(const UnsignedInteger n, const Real z)
     {
-        return gsl_sf_bessel_yl( n, z );
+        return gsl_sf_bessel_yl(n, z);
     }
 
-    const Real _j_table( const UnsignedInteger n, const Real z ) const;
-    const Real _y_table( const UnsignedInteger n, const Real z ) const;
+    const Real _j_table(const UnsignedInteger n, const Real z) const;
+    const Real _y_table(const UnsignedInteger n, const Real z) const;
 
-    static const Real _j_smalln( const UnsignedInteger n, const Real z );
-    static const Real _y_smalln( const UnsignedInteger n, const Real z );
+    static const Real _j_smalln(const UnsignedInteger n, const Real z);
+    static const Real _y_smalln(const UnsignedInteger n, const Real z);
      
-private:
-
-    const gsl_interp_type* interpType;
-
-    const UnsignedInteger interpMinSize;
-
-    InterpolatorVector sjInterpolatorVector;
-    InterpolatorVector syInterpolatorVector;
-
 };
 
 
