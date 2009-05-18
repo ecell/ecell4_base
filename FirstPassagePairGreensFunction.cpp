@@ -34,7 +34,6 @@ const unsigned int FirstPassagePairGreensFunction::MAX_ORDER;
 const unsigned int FirstPassagePairGreensFunction::MAX_ALPHA_SEQ;
 
 
-
 FirstPassagePairGreensFunction::
 FirstPassagePairGreensFunction( const Real D, 
 				const Real kf, 
@@ -795,7 +794,6 @@ FirstPassagePairGreensFunction::leavea_i( const Real alpha,
 
     return result;
 }
-
 
 const Real 
 FirstPassagePairGreensFunction::leaves_i( const Real alpha,

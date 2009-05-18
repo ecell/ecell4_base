@@ -14,41 +14,75 @@
 /* Taken and adopted from interpolation/cspline.c in GSL */
 
 
-typedef struct
+// typedef struct
+// {
+//   double * c;
+//   double * g;
+//   double * diag;
+//   double * offdiag;
+// } cspline_state_t;
+
+// static inline
+// double
+// my_cspline_eval (const double x,
+//                  const double x0,
+//                  const double dx, const double* y_array, 
+//                  const double* c_array)
+// {
+//   const size_t index = trunc((x - x0) / dx);
+
+//   const double y_lo = y_array[index];
+//   const double y_hi = y_array[index + 1];
+//   const double c_i = c_array[index];
+//   const double c_ip1 = c_array[index + 1];
+
+//   const double x_lo = x0 + dx * index;
+//   const double delx = x - x_lo;
+
+//   const double dy = y_hi - y_lo;
+
+//   const double b = (dy / dx) - dx * (c_ip1 + 2.0 * c_i) / 3.0;
+//   const double d = (c_ip1 - c_i) / (3.0 * dx);
+
+//   return y_lo + delx * (b + delx * (c_i + delx * d));
+// }
+
+// inline static const Real interp( const gsl_interp* interpolator, 
+//                                  const Real x_start, const Real delta_x,
+//                                  const Real* yTable,
+//                                  const Real x )
+// {
+//     return my_cspline_eval(x, x_start, delta_x, yTable,
+//                            ((cspline_state_t*)interpolator->state)->c); 
+// }
+
+static inline double hermite_interp( const double x, 
+				     const double x0, const double dx, 
+				     const double* y_array )
 {
-  double * c;
-  double * g;
-  double * diag;
-  double * offdiag;
-} cspline_state_t;
+  const double hinv = 1.0 / dx;
 
-static inline
-double
-my_cspline_eval (const double x,
-                 const double x0,
-                 const double dx, const double* y_array, 
-                 const double* c_array)
-{
-  const size_t index = trunc((x - x0) / dx);
+  const size_t i = trunc( ( x - x0 ) * hinv );
+  const size_t index = i * 2;
 
-  const double y_lo = y_array[index];
-  const double y_hi = y_array[index + 1];
-  const double c_i = c_array[index];
-  const double c_ip1 = c_array[index + 1];
+  const double x_lo = ( x - x0 ) * hinv - i;
+  const double x_hi =  1.0 - x_lo;
 
-  const double x_lo = x0 + dx * index;
-  const double delx = x - x_lo;
+  const double y_lo = y_array[ index ];
+  const double ydot_lo = y_array[ index+1 ] * dx;
+  const double y_hi = y_array[ index+2 ];
+  const double ydot_hi = y_array[ index+3 ] * dx;
 
-  const double dy = y_hi - y_lo;
-
-  const double b = (dy / dx) - dx * (c_ip1 + 2.0 * c_i) / 3.0;
-  const double d = (c_ip1 - c_i) / (3.0 * dx);
-
-  return y_lo + delx * (b + delx * (c_i + delx * d));
+  //  return y_hi + ( y_hi - y_lo ) * x_hi;
+  return x_hi * x_hi * ( y_lo + x_lo * ( 2 * y_lo + ydot_lo ) ) 
+    + x_lo * x_lo * ( y_hi + x_hi * ( 2 * y_hi - ydot_hi ) );
 }
 
-
-
+inline static const Real interp( const Real x_start, const Real delta_x,
+                                 const Real* yTable, const Real x )
+{
+  return hermite_interp( x, x_start, delta_x, yTable );
+}
 
 const SphericalBesselGenerator& SphericalBesselGenerator::instance()
 {
@@ -56,42 +90,32 @@ const SphericalBesselGenerator& SphericalBesselGenerator::instance()
     return sphericalBesselGenerator;
 }
 
-inline static const Real interp( const gsl_interp* interpolator, 
-                                 const Real x_start, const Real delta_x,
-                                 const Real* yTable,
-                                 const Real x )
-{
-    return my_cspline_eval(x, x_start, delta_x, yTable,
-                           ((cspline_state_t*)interpolator->state)->c); 
-}
-
-
-static void 
-fillInterpolatorVector( std::vector<gsl_interp*>& interpolatorVector,
-                        const sb_table::Table* const table[],
-                        const UnsignedInteger minn,
-                        const UnsignedInteger maxn,
-                        const gsl_interp_type* interpType )
-{
-    interpolatorVector.resize( maxn + 1 );
-    for( UnsignedInteger n( minn ); n <= maxn; ++n )
-    {
-        const sb_table::Table* tablen( table[n] ); 
-        size_t N(tablen->N);
-        gsl_interp* interp = gsl_interp_alloc(interpType, N);
-        std::vector<Real> x(N);
-        for(size_t i(0); i!= N; ++i)
-        {
-            x[i] = tablen->x_start + tablen->delta_x * i;
-        }
+// static void 
+// fillInterpolatorVector( std::vector<gsl_interp*>& interpolatorVector,
+//                         const sb_table::Table* const table[],
+//                         const UnsignedInteger minn,
+//                         const UnsignedInteger maxn,
+//                         const gsl_interp_type* interpType )
+// {
+//     interpolatorVector.resize( maxn + 1 );
+//     for( UnsignedInteger n( minn ); n <= maxn; ++n )
+//     {
+//         const sb_table::Table* tablen( table[n] ); 
+//         size_t N(tablen->N);
+//         gsl_interp* interp = gsl_interp_alloc(interpType, N);
+//         std::vector<Real> x(N);
+//         for(size_t i(0); i!= N; ++i)
+//         {
+//             x[i] = tablen->x_start + tablen->delta_x * i;
+//         }
         
-        gsl_interp_init( interp, &x[0], tablen->y, tablen->N );
+//         gsl_interp_init( interp, &x[0], tablen->y, tablen->N );
         
-        interpolatorVector[n] = interp;
+//         interpolatorVector[n] = interp;
         
-        //printf("n i %d %d\n",n,tablen.size());
-    }
-}
+//         //printf("n i %d %d\n",n,tablen.size());
+//     }
+// }
 
 
 const UnsignedInteger
@@ -136,8 +160,9 @@ inline const Real SphericalBesselGenerator::_j_table( const UnsignedInteger n,
 {
     const sb_table::Table* tablen( getSJTable( n ) );
 
-    return interp( this->sjInterpolatorVector[n],
-                   tablen->x_start, tablen->delta_x, tablen->y, z );
+    return interp( tablen->x_start, tablen->delta_x, tablen->y, z );
+//     return interp( this->sjInterpolatorVector[n],
+//                    tablen->x_start, tablen->delta_x, tablen->y, z );
 }
 
 inline const Real SphericalBesselGenerator::_y_table( const UnsignedInteger n, 
@@ -145,8 +170,9 @@ inline const Real SphericalBesselGenerator::_y_table( const UnsignedInteger n,
 {
     const sb_table::Table* tablen( getSYTable( n ) );
 
-    return interp( this->syInterpolatorVector[n],
-                   tablen->x_start, tablen->delta_x, tablen->y, z );
+    return interp( tablen->x_start, tablen->delta_x, tablen->y, z );
+//     return interp( this->syInterpolatorVector[n],
+//                    tablen->x_start, tablen->delta_x, tablen->y, z );
 }
 
 inline const Real SphericalBesselGenerator::_j_smalln( const UnsignedInteger n,
@@ -282,11 +308,11 @@ SphericalBesselGenerator::y( const UnsignedInteger n, const Real z ) const
     }
 }
 
-void SphericalBesselGenerator::fillTables()
-{
-    fillInterpolatorVector( this->sjInterpolatorVector, sb_table::sj_table,
-                            getMinNJ(), getMaxNJ(), this->interpType );
-    fillInterpolatorVector( this->syInterpolatorVector, sb_table::sy_table,
-                            getMinNY(), getMaxNY(), this->interpType );
-}
+// void SphericalBesselGenerator::fillTables()
+// {
+//     fillInterpolatorVector( this->sjInterpolatorVector, sb_table::sj_table,
+//                             getMinNJ(), getMaxNJ(), this->interpType );
+//     fillInterpolatorVector( this->syInterpolatorVector, sb_table::sy_table,
+//                             getMinNY(), getMaxNY(), this->interpType );
+// }
 

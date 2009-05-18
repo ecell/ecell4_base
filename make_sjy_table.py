@@ -57,13 +57,19 @@ def jnyn( n, resolution ):
     zTable = numpy.mgrid[min(minz_j(n),minz_y(n)):max( maxz_j(n), maxz_y(n) ):delta]
 
     jTable = numpy.zeros( ( len( zTable ), n+1 ) )
+    jdotTable = numpy.zeros( ( len( zTable ), n+1 ) )
     yTable = numpy.zeros( ( len( zTable ), n+1 ) )
+    ydotTable = numpy.zeros( ( len( zTable ), n+1 ) )
+
     for i, z in enumerate( zTable ):
-        jTable[i], _, yTable[i], _ = special.sph_jnyn( n, z )
+        jTable[i], jdotTable[i], yTable[i], ydotTable[i] \
+            = special.sph_jnyn( n, z )
 
     jTable = jTable.transpose()
+    jdotTable = jdotTable.transpose()
     yTable = yTable.transpose()
-    return zTable, jTable, yTable
+    ydotTable = ydotTable.transpose()
+    return zTable, jTable, jdotTable, yTable, ydotTable
 
 def make_table( func, n, z0, z1, tol ):
 
@@ -174,6 +180,31 @@ static const double %s[%d + 1] =
 
     file.write( foot_template )
 
+def writeArrays( file, name, table1, table2 ):
+
+    #    head_template = '''
+    #static const double %s[2][%d + 1] =
+    #{\n'''
+
+    head_template = '''
+static const double %s[%d + 1] =
+{\n'''
+
+    #array_template = '''{\n%s\n}'''
+    number_template = '''    %.18e, %.18e'''
+    foot_template = '''};\n'''
+
+    # check if len( table1 ) == len( table2 )
+    N = len( table1 )
+
+    file.write( head_template % ( name, N * 2 ) )
+
+    #file.write( '    {\n' )
+    file.write( ',\n'.join( [ number_template % ( value, table2[ i ] ) for i, value in enumerate( table1 ) ] ) )
+    #file.write( '    },\n' )
+
+    file.write( foot_template )
+
 
 def writeTable( file, name, N, x_start, delta_x ):
 
@@ -208,7 +239,9 @@ if __name__ == '__main__':
 
     writeHeader( file )
 
-    zTable, jTable, yTable = jnyn( max( maxn_j, maxn_y ), resolution )
+    zTable, jTable, jdotTable, yTable, ydotTable \
+        = jnyn( max( maxn_j, maxn_y ), resolution )
+
     delta_z = zTable[1]-zTable[0]
 
     # j
@@ -224,8 +257,10 @@ if __name__ == '__main__':
         end = numpy.searchsorted( zTable, maxz_j( n ) )
         z_start = zTable[start]
         j = jTable[n][start:end]
+        jdot = jdotTable[n][start:end]
         #writeArray( file, 'sj_table%d_z' % n, z )
-        writeArray( file, 'sj_table%d_f' % n, j )
+        #writeArray( file, 'sj_table%d_f' % n, j )
+        writeArrays( file, 'sj_table%d_f' % n, j, jdot )
         writeTable( file, 'sj_table%d' % n, end-start, z_start, delta_z )
         print 'j', n, len( j )
 
@@ -243,8 +278,10 @@ if __name__ == '__main__':
         #z = zTable[start:end]
         z_start = zTable[start]
         y = yTable[n][start:end]
+        ydot = ydotTable[n][start:end]
         #writeArray( file, 'sy_table%d_z' % n, z )
-        writeArray( file, 'sy_table%d_f' % n, y )
+        #writeArray( file, 'sy_table%d_f' % n, y )
+        writeArrays( file, 'sy_table%d_f' % n, y, ydot )
         writeTable( file, 'sy_table%d' % n, end-start, z_start, delta_z )
 
         print 'y', n, len( y )
