@@ -352,8 +352,12 @@ public:
             {
                 ir.first = c.find(v.first);
                 BOOST_ASSERT(c.end() != ir.first);
-                c.erase(ir.first);
-                ir.first = c.insert(ir.first, v);
+                if (v.first == (*ir.first).first) {
+                    ir.first->second = v.second;
+                } else {
+                    c.erase(ir.first);
+                    ir.first = c.insert(v).first;
+                }
             }
             return std::make_pair(iterator(&c, cell_range(), ir.first), false);
         }
