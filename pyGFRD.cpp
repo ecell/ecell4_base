@@ -32,6 +32,7 @@
 #include "FirstPassagePairGreensFunction.hpp"
 #include "FirstPassageNoCollisionPairGreensFunction.hpp"
 
+#include "array_cast.hpp"
 
 
 using namespace boost::python;
@@ -61,9 +62,6 @@ void* extract_pyarray(PyObject* x)
 {
     return PyObject_TypeCheck(x, &PyArray_Type) ? x : 0;
 }
-
-
-
 
 
 
@@ -135,10 +133,60 @@ public:
     }
 };
 
+
+template<typename T_>
+class seq_wrapped_multi_array_converter
+{
+public:
+    typedef python_array_lifecycle_manager<T_> lcmgr_type;
+    typedef wrapped_multi_array<T_, 1> native_type;
+
+public:
+    static void* convertible(PyObject* ptr)
+    {
+        if (!PySequence_Check(ptr))
+        {
+            return NULL;
+        }
+
+        return ptr;
+    }
+
+    static void construct(PyObject* ptr,
+            boost::python::converter::rvalue_from_python_storage<native_type>* data)
+    {
+        PyObject* array_obj = PyArray_FromObject(
+            static_cast<PyObject*>(data->stage1.convertible),
+            get_numpy_typecode<T_>::value, 1, 1);
+        static typename native_type::index_list ma_strides = { { 1 } };
+
+        data->stage1.convertible = new(data->storage.bytes) native_type(
+                new lcmgr_type(reinterpret_cast<PyArrayObject *>(array_obj)),
+                *reinterpret_cast<boost::array<npy_intp, 1>*>(
+                    PyArray_DIMS(array_obj)),
+                ma_strides,
+                static_cast<boost::general_storage_order<1> >(
+                        boost::c_storage_order()));
+    }
+};
+
+
 template<typename T_, std::size_t Ndims_>
 void register_ndarray_wrapped_multi_array_converter()
 {
     typedef ndarray_wrapped_multi_array_converter<T_, Ndims_> Converter;
+    boost::python::converter::registry::push_back(
+        &Converter::convertible,
+        reinterpret_cast<boost::python::converter::constructor_function>(
+            &Converter::construct),
+        boost::python::type_id<typename Converter::native_type>());
+}
+
+
+template<typename T_>
+void register_seq_wrapped_multi_array_converter()
+{
+    typedef seq_wrapped_multi_array_converter<T_> Converter;
     boost::python::converter::registry::push_back(
         &Converter::convertible,
         reinterpret_cast<boost::python::converter::constructor_function>(
@@ -174,21 +222,23 @@ void __gsl_error_handler( const char* reason,
 const double 
 lengthSq( const wrapped_multi_array<double, 1>& r )
 {
-    return _lengthSq( r.data() );
+    return _lengthSq( array_cast< double const[3] >( r ) );
 }
 
 
 const double 
 length( const wrapped_multi_array<double, 1>& r )
 {
-    return _length( r.data() );
+    return _length( array_cast< double const[3] >( r ) );
 }
 
 const double 
 distanceSq( const wrapped_multi_array<double, 1>& a1,
             const wrapped_multi_array<double, 1>& a2 )
 {
-    return _distanceSq( a1.data(), a2.data() );
+    return _distanceSq(
+        array_cast< double const[3] >( a1 ),
+        array_cast< double const[3] >( a2 ) );
 }
 
 
@@ -196,7 +246,8 @@ const double
 distance( const wrapped_multi_array<double, 1>& a1,
           const wrapped_multi_array<double, 1>& a2 )
 {
-    return _distance( a1.data(), a2.data() );
+    return _distance( array_cast< double const[3] >( a1 ),
+                      array_cast< double const[3] >( a2 ) );
 }
 
 
@@ -205,7 +256,9 @@ distanceSq_Cyclic( const wrapped_multi_array<double, 1>& a1,
                    const wrapped_multi_array<double, 1>& a2,
                    const double worldSize )
 {
-    return _distanceSq_Cyclic( a1.data(), a2.data(), worldSize );
+    return _distanceSq_Cyclic(
+            array_cast< double const[3] >( a1 ),
+            array_cast< double const[3] >( a2 ), worldSize );
 }
 
 
@@ -215,7 +268,9 @@ distance_Cyclic(
     const wrapped_multi_array<double, 1>& a2,
     const double worldSize )
 {
-    return _distance_Cyclic( a1.data(), a2.data(), worldSize );
+    return _distance_Cyclic(
+            array_cast< double const[3] >( a1 ),
+            array_cast< double const[3] >( a2 ), worldSize );
 }
 
 BOOST_PYTHON_MODULE( _gfrd )
@@ -229,7 +284,8 @@ BOOST_PYTHON_MODULE( _gfrd )
     register_exception_translator<std::exception>( &translateException );
 
 
-    register_ndarray_wrapped_multi_array_converter<npy_double, 1>();
+    register_seq_wrapped_multi_array_converter<npy_double>();
+    // register_ndarray_wrapped_multi_array_converter<npy_double, 1>();
     register_ndarray_wrapped_multi_array_converter<npy_double, 2>();
     register_ndarray_wrapped_multi_array_converter<npy_double, 3>();
 
