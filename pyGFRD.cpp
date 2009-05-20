@@ -171,6 +171,53 @@ void __gsl_error_handler( const char* reason,
 }
 
 
+const double 
+lengthSq( const wrapped_multi_array<double, 1>& r )
+{
+    return _lengthSq( r.data() );
+}
+
+
+const double 
+length( const wrapped_multi_array<double, 1>& r )
+{
+    return _length( r.data() );
+}
+
+const double 
+distanceSq( const wrapped_multi_array<double, 1>& a1,
+            const wrapped_multi_array<double, 1>& a2 )
+{
+    return _distanceSq( a1.data(), a2.data() );
+}
+
+
+const double 
+distance( const wrapped_multi_array<double, 1>& a1,
+          const wrapped_multi_array<double, 1>& a2 )
+{
+    return _distance( a1.data(), a2.data() );
+}
+
+
+const double 
+distanceSq_Cyclic( const wrapped_multi_array<double, 1>& a1,
+                   const wrapped_multi_array<double, 1>& a2,
+                   const double worldSize )
+{
+    return _distanceSq_Cyclic( a1.data(), a2.data(), worldSize );
+}
+
+
+const double 
+distance_Cyclic( 
+    const wrapped_multi_array<double, 1>& a1,
+    const wrapped_multi_array<double, 1>& a2,
+    const double worldSize )
+{
+    return _distance_Cyclic( a1.data(), a2.data(), worldSize );
+}
+
 BOOST_PYTHON_MODULE( _gfrd )
 {
     import_array();
