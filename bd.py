@@ -145,7 +145,7 @@ class BDSimulatorCoreBase( object ):
                 closest = neighbors[0]
                 species2 = closest.species
 
-                rt = self.main.getReactionType2( species, species2 )
+                rt = self.main.getReactionRule2( species, species2 )
 
                 if rt.k != 0.0:
                     radius12 = species.radius + species2.radius
@@ -179,7 +179,7 @@ class BDSimulatorCoreBase( object ):
                     log.info( 'propagation move rejected.' )
 
     def attemptSingleReactions( self, species ):
-        reactionTypes = self.main.getReactionType1( species )
+        reactionTypes = self.main.getReactionRule1( species )
         if not reactionTypes:
             return None  # no reaction
 

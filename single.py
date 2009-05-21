@@ -14,11 +14,11 @@ s.addSpecies( P )
 SP = Species( 'SP', 0.0, 7e-8 )
 s.addSpecies( SP )
 
-r1 = BindingReactionType( S, P, SP, 1e18 / N_A )
-s.addReactionType( r1 )
-#r2 = UnimolecularReactionType( P, S, 1e3 )
-r2 = UnbindingReactionType( SP, S, P, 5e1 )
-s.addReactionType( r2 )
+r1 = BindingReactionRule( S, P, SP, 1e18 / N_A )
+s.addReactionRule( r1 )
+#r2 = UnimolecularReactionRule( P, S, 1e3 )
+r2 = UnbindingReactionRule( SP, S, P, 5e1 )
+s.addReactionRule( r2 )
 
 #s.setAllRepulsive()
 

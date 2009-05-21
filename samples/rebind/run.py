@@ -114,11 +114,11 @@ def singlerun( T_list, D_factor, N_B, N_X ):
 
     s.reset()
 
-    r1 = BindingReactionType( A, B, C, kf )
-    s.addReactionType( r1 )
+    r1 = BindingReactionRule( A, B, C, kf )
+    s.addReactionRule( r1 )
 
-    r2 = UnbindingReactionType( C, A, B, 1e3 )
-    s.addReactionType( r2 )
+    r2 = UnbindingReactionRule( C, A, B, 1e3 )
+    s.addReactionRule( r2 )
 
     A_pos = [0,0,0]
     B_pos = [(A.radius + B.radius)+1e-23,0,0]

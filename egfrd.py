@@ -335,7 +335,7 @@ class Single( object ):
             self.k_tot += rt.k
 
 
-    def drawReactionType( self ):
+    def drawReactionRule( self ):
 
         k_array = [ rt.k for rt in self.reactiontypes ]
         k_array = numpy.add.accumulate( k_array )
@@ -1016,7 +1016,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.scheduler.getSize() != 0
 
     def createSingle( self, particle ):
-        rt = self.getReactionType1( particle.species )
+        rt = self.getReactionRule1( particle.species )
         single = Single( particle, rt )
         single.initialize( self.t )
 
@@ -1149,7 +1149,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         reactantSpecies = single.particle.species
         oldpos = single.particle.pos.copy()
         
-        rt = single.drawReactionType()
+        rt = single.drawReactionRule()
 
         if len( rt.products ) == 0:
             

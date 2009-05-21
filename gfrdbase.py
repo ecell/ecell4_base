@@ -100,7 +100,7 @@ class Species( object ):
         self.pool.removeBySerial( serial )
 
 
-class ReactionType( object ):
+class ReactionRule( object ):
     def __init__( self, reactants=[], products=[], k=0.0 ):
         self.reactants = reactants
         self.products = products
@@ -138,34 +138,34 @@ class ReactionType( object ):
         return s
 
 
-class UnimolecularReactionType( ReactionType ):
+class UnimolecularReactionRule( ReactionRule ):
     def __init__( self, s1, p1, k ):
-        ReactionType.__init__( self, [ s1, ], [ p1, ], k )
+        ReactionRule.__init__( self, [ s1, ], [ p1, ], k )
 
 
-class DecayReactionType( ReactionType ):
+class DecayReactionRule( ReactionRule ):
     def __init__( self, s1, k ):
-        ReactionType.__init__( self, [ s1, ], [], k )
+        ReactionRule.__init__( self, [ s1, ], [], k )
 
 
-class BindingReactionType( ReactionType ):
+class BindingReactionRule( ReactionRule ):
     def __init__( self, s1, s2, p1, k ):
-        ReactionType.__init__( self, [ s1, s2 ], [ p1, ], k )
+        ReactionRule.__init__( self, [ s1, s2 ], [ p1, ], k )
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
 
 
-class RepulsionReactionType( ReactionType ):
+class RepulsionReactionRule( ReactionRule ):
     def __init__( self, s1, s2 ):
-        ReactionType.__init__( self, [ s1, s2 ], [], 0.0 )
+        ReactionRule.__init__( self, [ s1, s2 ], [], 0.0 )
 
         D = s1.D + s2.D
         sigma = s1.radius + s2.radius
 
 
-class UnbindingReactionType( ReactionType ):
+class UnbindingReactionRule( ReactionRule ):
     def __init__( self, s1, p1, p2, k ):
-        ReactionType.__init__( self, [ s1, ], [ p1, p2 ], k )
+        ReactionRule.__init__( self, [ s1, ], [ p1, p2 ], k )
 
 
 class Reaction:
@@ -403,10 +403,10 @@ class ParticleSimulatorBase( object ):
     def applyBoundary( self, pos ):
         pos %= self.worldSize
 
-    def getReactionType1( self, species ):
+    def getReactionRule1( self, species ):
         return self.reactionTypeMap1.get( species, None )
 
-    def getReactionType2( self, species1, species2 ):
+    def getReactionRule2( self, species1, species2 ):
         return self.reactionTypeMap2.get( ( species1, species2 ), None )
 
     def getSpeciesByIndex( self, i ):
@@ -431,7 +431,7 @@ class ParticleSimulatorBase( object ):
     def addSpecies( self, species ):
         self.speciesList[ species.id ] = species
 
-    def addReactionType( self, rt ):
+    def addReactionRule( self, rt ):
         numReactants = len( rt.reactants )
 
         if numReactants == 1:
@@ -462,7 +462,7 @@ class ParticleSimulatorBase( object ):
                 self.reactionTypeMap2[ (species2,species1) ] = rt
 
         else:
-            raise RuntimeError, 'Invalid ReactionType.'
+            raise RuntimeError, 'Invalid ReactionRule.'
 
     def setAllRepulsive( self ):
         for species1 in self.speciesList.values():
@@ -471,7 +471,7 @@ class ParticleSimulatorBase( object ):
                     _ = self.reactionTypeMap2[ ( species1, species2 ) ]
                 except:
                     self.reactionTypeMap2[ ( species1, species2 ) ] =\
-                                            RepulsionReactionType( species1,\
+                                            RepulsionReactionRule( species1,\
                                                                    species2 )
         
     def throwInParticles( self, species, n, surface=[] ):

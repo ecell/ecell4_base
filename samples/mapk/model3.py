@@ -129,40 +129,40 @@ k4 = k_a( Mtom3( 0.032e9 ), kD )
 k5 = k_d( 1.0, Mtom3( 0.032e9 ), kD )
 k6 = 15.0
 
-r1 = BindingReactionType( K, KK, K_KK, k1 )
-s.addReactionType( r1 )
-r2 = UnbindingReactionType( K_KK, K, KK, k2 )
-s.addReactionType( r2 )
-r3 = UnbindingReactionType( K_KK, Kp, KKi, k3 )
-s.addReactionType( r3 )
+r1 = BindingReactionRule( K, KK, K_KK, k1 )
+s.addReactionRule( r1 )
+r2 = UnbindingReactionRule( K_KK, K, KK, k2 )
+s.addReactionRule( r2 )
+r3 = UnbindingReactionRule( K_KK, Kp, KKi, k3 )
+s.addReactionRule( r3 )
 
-r4 = BindingReactionType( Kp, KK, Kp_KK, k4 )
-s.addReactionType( r4 )
-r5 = UnbindingReactionType( Kp_KK, Kp, KK, k5 )
-s.addReactionType( r5 )
-r6 = UnbindingReactionType( Kp_KK, Kpp, KKi, k6 )
-s.addReactionType( r6 )
-
-
-r7 = BindingReactionType( Kpp, P, Kpp_P, k1 )
-s.addReactionType( r7 )
-r8 = UnbindingReactionType( Kpp_P, Kpp, P, k2 )
-s.addReactionType( r8 )
-r9 = UnbindingReactionType( Kpp_P, Kp, Pi, k3 )
-s.addReactionType( r9 )
-
-r10 = BindingReactionType( Kp, P, Kp_P, k4 )
-s.addReactionType( r10 )
-r11 = UnbindingReactionType( Kp_P, Kp, P, k5 )
-s.addReactionType( r11 )
-r12 = UnbindingReactionType( Kp_P, K, Pi, k6 )
-s.addReactionType( r12 )
+r4 = BindingReactionRule( Kp, KK, Kp_KK, k4 )
+s.addReactionRule( r4 )
+r5 = UnbindingReactionRule( Kp_KK, Kp, KK, k5 )
+s.addReactionRule( r5 )
+r6 = UnbindingReactionRule( Kp_KK, Kpp, KKi, k6 )
+s.addReactionRule( r6 )
 
 
-r13 = UnimolecularReactionType( KKi, KK, ki )
-s.addReactionType( r13 )
-r14 = UnimolecularReactionType( Pi, P, ki )
-s.addReactionType( r14 )
+r7 = BindingReactionRule( Kpp, P, Kpp_P, k1 )
+s.addReactionRule( r7 )
+r8 = UnbindingReactionRule( Kpp_P, Kpp, P, k2 )
+s.addReactionRule( r8 )
+r9 = UnbindingReactionRule( Kpp_P, Kp, Pi, k3 )
+s.addReactionRule( r9 )
+
+r10 = BindingReactionRule( Kp, P, Kp_P, k4 )
+s.addReactionRule( r10 )
+r11 = UnbindingReactionRule( Kp_P, Kp, P, k5 )
+s.addReactionRule( r11 )
+r12 = UnbindingReactionRule( Kp_P, K, Pi, k6 )
+s.addReactionRule( r12 )
+
+
+r13 = UnimolecularReactionRule( KKi, KK, ki )
+s.addReactionRule( r13 )
+r14 = UnimolecularReactionRule( Pi, P, ki )
+s.addReactionRule( r14 )
 
 
 logname = model + '_' + '_'.join( sys.argv[1:6] ) + '_' +\

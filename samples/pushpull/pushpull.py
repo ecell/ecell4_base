@@ -190,18 +190,18 @@ s.reset()
 #  6   PSp     -> P + S
 
 
-r1 = BindingReactionType( S, K, KS, ka )
-s.addReactionType( r1 )
-r2 = UnbindingReactionType( KS, S, K, kd1 )
-s.addReactionType( r2 )
-r3 = UnbindingReactionType( KS, K, Sp, kcat1 )
-s.addReactionType( r3 )
-r4 = BindingReactionType( Sp, P, PSp, ka )
-s.addReactionType( r4 )
-r5 = UnbindingReactionType( PSp, Sp, P, kd2 )
-s.addReactionType( r5 )
-r6 = UnbindingReactionType( PSp, P, S, kcat2 )
-s.addReactionType( r6 )
+r1 = BindingReactionRule( S, K, KS, ka )
+s.addReactionRule( r1 )
+r2 = UnbindingReactionRule( KS, S, K, kd1 )
+s.addReactionRule( r2 )
+r3 = UnbindingReactionRule( KS, K, Sp, kcat1 )
+s.addReactionRule( r3 )
+r4 = BindingReactionRule( Sp, P, PSp, ka )
+s.addReactionRule( r4 )
+r5 = UnbindingReactionRule( PSp, Sp, P, kd2 )
+s.addReactionRule( r5 )
+r6 = UnbindingReactionRule( PSp, P, S, kcat2 )
+s.addReactionRule( r6 )
 
 
 

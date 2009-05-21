@@ -33,8 +33,8 @@ def singlerun( T ):
     C = Species( 'C', D/2, sigma/2 )
     s.addSpecies( C )
     
-    r1 = BindingReactionType( A, B, C, kf )
-    s.addReactionType( r1 )
+    r1 = BindingReactionRule( A, B, C, kf )
+    s.addReactionRule( r1 )
     
     particleA = s.placeParticle( A, [0,0,0] )
     particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
