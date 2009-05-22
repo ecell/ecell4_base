@@ -104,5 +104,5 @@ dnl
 dnl no checks for system services
 dnl
 AM_CONFIG_HEADER([config.h])
-AC_CONFIG_FILES([Makefile test/Makefile doc/Makefile object_matrix/Makefile object_matrix/boost.python/Makefile])
+AC_CONFIG_FILES([Makefile test/Makefile doc/Makefile])
 AC_OUTPUT([])
