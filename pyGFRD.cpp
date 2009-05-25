@@ -138,7 +138,7 @@ struct sphere_to_python_converter
     {
         return boost::python::incref(
             boost::python::object(boost::make_tuple(
-                v.position, v.radius)).ptr());
+                v.position(), v.radius())).ptr());
     }
 };
 

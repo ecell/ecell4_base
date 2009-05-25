@@ -333,7 +333,7 @@ public:
 
     inline std::pair<iterator, bool> update(const value_type& v)
     {
-        cell_type& c(cell(index(v.second.position)));
+        cell_type& c(cell(index(v.second.position())));
         typename key_to_cell_mapper_type::iterator kci(rmap_.find(v.first));
         std::pair<typename cell_type::iterator, bool> ir;
         if (rmap_.end() != kci)

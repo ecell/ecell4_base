@@ -25,9 +25,9 @@ public:
         }
 
         const double dist(
-            distance(cmp_.position, item.second.position)
-            - item.second.radius);
-        if (dist < cmp_.radius)
+            distance(cmp_.position(), item.second.position())
+            - item.second.radius());
+        if (dist < cmp_.radius())
         {
             next_(i, dist);
         }
@@ -42,7 +42,7 @@ template<typename Toc_, typename Tfun_>
 inline void take_neighbor(Toc_& oc, Tfun_& fun,
         const typename Toc_::mapped_type& cmp)
 {
-    oc.each_neighbor(oc.index(cmp.position),
+    oc.each_neighbor(oc.index(cmp.position()),
                      neighbor_filter<Toc_, Tfun_>(fun, cmp));
 }
 
@@ -73,9 +73,9 @@ public:
         }
 
         const double dist(
-            distance(cmp_.position, item.second.position + p)
-            - item.second.radius);
-        if (dist < cmp_.radius)
+            distance(cmp_.position(), item.second.position() + p)
+            - item.second.radius());
+        if (dist < cmp_.radius())
         {
             next_(i, dist);
         }
@@ -90,7 +90,7 @@ template<typename Toc_, typename Tfun_>
 inline void take_neighbor_cyclic(Toc_& oc, Tfun_& fun,
          const typename Toc_::mapped_type& cmp)
 {
-    oc.each_neighbor_cyclic(oc.index(cmp.position),
+    oc.each_neighbor_cyclic(oc.index(cmp.position()),
             cyclic_neighbor_filter<Toc_, Tfun_>(fun, cmp));
 }
 

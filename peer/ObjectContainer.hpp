@@ -231,8 +231,8 @@ public:
             {
                 //sa_.push_back(i);
                 ka_.push_back((*i).first);
-                da_.push_back(distance(pos_, (*i).second.position) 
-                              - (*i).second.radius);
+                da_.push_back(distance(pos_, (*i).second.position())
+                              - (*i).second.radius());
 
             }
 
@@ -241,8 +241,8 @@ public:
             {
                 //sa_.push_back(i);
                 ka_.push_back((*i).first);
-                da_.push_back(distance(pos_, (*i).second.position + d)
-                              - (*i).second.radius);
+                da_.push_back(distance(pos_, (*i).second.position() + d)
+                              - (*i).second.radius());
             }
 
         private:
