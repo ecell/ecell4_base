@@ -29,7 +29,6 @@
 #include "peer/numpy/pyarray_backed_allocator.hpp"
 #include "peer/numpy/ndarray_converters.hpp"
 
-#include "position.hpp"
 #include "filters.hpp"
 #include "sphere.hpp"
 #include "object_container.hpp"
@@ -232,7 +231,7 @@ public:
             {
                 //sa_.push_back(i);
                 ka_.push_back((*i).first);
-                da_.push_back(pos_.distance((*i).second.position) 
+                da_.push_back(distance(pos_, (*i).second.position) 
                               - (*i).second.radius);
 
             }
@@ -242,7 +241,7 @@ public:
             {
                 //sa_.push_back(i);
                 ka_.push_back((*i).first);
-                da_.push_back(pos_.distance((*i).second.position + d)
+                da_.push_back(distance(pos_, (*i).second.position + d)
                               - (*i).second.radius);
             }
 

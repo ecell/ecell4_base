@@ -11,7 +11,6 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/list/at.hpp>
 #include "array_helper.hpp"
-#include "position.hpp"
 #include "utils.hpp"
 
 template<typename Tobj_, typename Tkey_,
@@ -24,7 +23,7 @@ public:
     typedef Tkey_ key_type;
     typedef Tobj_ mapped_type;
     typedef std::pair<const key_type, mapped_type> value_type;
-    typedef position<length_type> position_type;
+    typedef vector3<length_type> position_type;
     typedef typename MFget_mapper_<Tkey_, mapped_type>::type cell_type;
     typedef boost::multi_array<cell_type, 3> matrix_type;
     typedef typename cell_type::size_type size_type;
@@ -192,20 +191,18 @@ public:
     {
         return array_gen<typename matrix_type::size_type>(
             static_cast<typename matrix_type::size_type>(
-                trunc( pos.x() / cell_size_ ) ) % matrix_.shape()[0],
+                pos[0] / cell_size_ ) % matrix_.shape()[0],
             static_cast<typename matrix_type::size_type>(
-                trunc( pos.y() / cell_size_ ) ) % matrix_.shape()[1],
+                pos[1] / cell_size_ ) % matrix_.shape()[1],
             static_cast<typename matrix_type::size_type>(
-                trunc( pos.z() / cell_size_ ) ) % matrix_.shape()[2] );
+                pos[2] / cell_size_ ) % matrix_.shape()[2] );
     }
 
     inline cell_offset_type offset(const position_type& pos,
             double t = 1e-10) const
     {
         return array_gen<typename matrix_type::difference_type>(
-            trunc( pos.x() / cell_size ),
-            trunc( pos.y() / cell_size ),
-            trunc( pos.z() / cell_size ) );
+            pos[0] / cell_size, pos[1] / cell_size, pos[2] / cell_size);
     }
 
     inline bool offset_index(

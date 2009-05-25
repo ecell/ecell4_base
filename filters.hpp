@@ -3,7 +3,6 @@
 
 #include <functional>
 #include <cmath>
-#include "position.hpp"
 
 template<typename Toc_, typename Tfun_>
 class neighbor_filter
@@ -26,9 +25,7 @@ public:
         }
 
         const double dist(
-            // FIXME: something's wrong
-            const_cast<position<double>& >(cmp_.position)
-            .distance(item.second.position)
+            distance(cmp_.position, item.second.position)
             - item.second.radius);
         if (dist < cmp_.radius)
         {
@@ -76,9 +73,7 @@ public:
         }
 
         const double dist(
-            // FIXME: something's wrong
-            const_cast<position<double>& >(cmp_.position)
-            .distance(item.second.position + p)
+            distance(cmp_.position, item.second.position + p)
             - item.second.radius);
         if (dist < cmp_.radius)
         {

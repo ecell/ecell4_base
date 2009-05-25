@@ -40,7 +40,7 @@ noinst_PYTHON = \
 	dimer.py  
 
 
-lib_LTLIBRARIES = _gfrd.la object_matrix.la
+lib_LTLIBRARIES = _gfrd.la
 
 noinst_HEADERS = \
 	BasicPairGreensFunction.hpp\
@@ -57,10 +57,9 @@ noinst_HEADERS = \
 	PairGreensFunction.hpp\
 	PyEventScheduler.hpp\
 	SphericalBesselGenerator.hpp\
-	array_cast.hpp\
+	array_traits.hpp\
 	array_helper.hpp\
 	bessel.hpp\
-	distance.hpp\
 	factorial.hpp\
 	filters.hpp\
 	findRoot.hpp\
@@ -72,12 +71,12 @@ noinst_HEADERS = \
 	sphere.hpp\
 	utils.hpp\
 	vmap.hpp\
-	wrapped_multi_array.hpp\
 	peer/ObjectContainer.hpp\
 	peer/enumerator.hpp\
 	peer/generator_support.hpp\
 	peer/tuple_converters.hpp\
 	peer/utils.hpp\
+	peer/numpy/wrapped_multi_array.hpp\
 	peer/numpy/ndarray_converters.hpp\
 	peer/numpy/pyarray_backed_allocator.hpp\
 	peer/numpy/type_mappings.hpp
@@ -93,16 +92,12 @@ _gfrd_la_SOURCES=\
 	FreePairGreensFunction.cpp\
 	FirstPassagePairGreensFunction.cpp\
 	FirstPassageNoCollisionPairGreensFunction.cpp\
-	pyGFRD.cpp
+	pyGFRD.cpp\
+	utils.cpp
 
 
 _gfrd_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
 _gfrd_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
-
-object_matrix_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
-object_matrix_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
-object_matrix_la_SOURCES = object_matrix_module.cpp
-
 
 nodist__gfrd_la_SOURCES = \
 	SphericalBesselTable.hpp
@@ -117,13 +112,10 @@ SphericalBesselTable.hpp: make_sjy_table.py
 	$(PYTHON) make_sjy_table.py SphericalBesselTable.hpp
 
 
-object_matrix.so: object_matrix.la
-	ln -sf .libs/object_matrix.so ./object_matrix.so
-
 _gfrd.so: _gfrd.la 
 	ln -sf .libs/_gfrd.so ./_gfrd.so
 
-all-local: _gfrd.so object_matrix.so
+all-local: _gfrd.so
 
 clean-local:
 	rm -f _gfrd.so

@@ -2,13 +2,13 @@
 #define SPHERE_HPP
 
 #include <ostream>
-#include "position.hpp"
+#include "vector3.hpp"
 
 template<typename T_>
 struct sphere
 {
     typedef T_ value_type;
-    typedef ::position<T_> position_type;
+    typedef vector3<T_> position_type;
     typedef T_ length_type;
 
     sphere()

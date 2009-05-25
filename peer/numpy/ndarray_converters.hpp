@@ -81,8 +81,8 @@ namespace util
         };
 
 
-      template<typename T_, typename Talloc_>
-      struct to_ndarray_converter<std::vector<T_, Talloc_> >
+        template<typename T_, typename Talloc_>
+        struct to_ndarray_converter<std::vector<T_, Talloc_> >
         {
             typedef std::vector<T_, Talloc_> source_type;
 

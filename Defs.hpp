@@ -12,12 +12,9 @@ typedef unsigned long int UnsignedInteger;
 typedef size_t Index;
 
 typedef std::vector< Real > RealVector;
-typedef boost::multi_array<Real, 2>
-Real2DArray;
-typedef boost::multi_array<Real, 3>
-Real3DArray;
-typedef boost::multi_array<Real, 4>
-Real4DArray;
+typedef boost::multi_array<Real, 2> Real2DArray;
+typedef boost::multi_array<Real, 3> Real3DArray;
+typedef boost::multi_array<Real, 4> Real4DArray;
 
 // stringifiers.  see preprocessor manual
 #define XSTR( S ) STR( S )

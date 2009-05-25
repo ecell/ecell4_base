@@ -1,10 +1,13 @@
 #ifndef OBJECTMATRIX_PEER_UTILS_HPP
 #define OBJECTMATRIX_PEER_UTILS_HPP
 
-#include <boost/python/object.hpp>
 #include <functional>
 #include <string>
+
 #include <Python.h>
+
+#include <boost/python/object.hpp>
+#include <boost/python/exception_translator.hpp>
 
 namespace peer {
 
@@ -82,7 +85,7 @@ namespace util
     } // namespace functor
 
     template<typename Tnative_, typename Tconverter_>
-    void to_native_converter()
+    inline void to_native_converter()
     {
         boost::python::converter::registry::push_back(
                 &Tconverter_::convertible,
@@ -91,6 +94,18 @@ namespace util
                             &Tconverter_::construct),
                 boost::python::type_id<Tnative_>());
     }
+
+    static void std_exception_translator( const std::exception& exc )
+    {
+      PyErr_SetString( PyExc_RuntimeError, exc.what() );
+    }
+
+    inline void register_std_exception_translator()
+    {
+        boost::python::register_exception_translator< std::exception >(
+            std_exception_translator );
+    }
+
 } // namespace util
 
 } // namespace peer

@@ -3,7 +3,7 @@
 
 import numpy
 
-import object_matrix
+import _gfrd
 
 from utils import *
 
@@ -46,7 +46,7 @@ class ObjectMatrix( object ):
 
     def initialize( self ):
 
-        self.impl = object_matrix.ObjectContainer( self.worldSize, 
+        self.impl = _gfrd.ObjectContainer( self.worldSize, 
                                                    self.matrixSize )
 
 
