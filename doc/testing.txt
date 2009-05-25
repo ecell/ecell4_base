@@ -6,14 +6,15 @@ How to test EPDP code
 
 #. Run dimer.py
    
-   * Make sure PROFMODE is set to True in the last part of dimer.py.
+   * Run the model in debug mode as follows.
 
    ::
 
      % cd topdir
-     % python dimer.py
+     % LOGLEVEL=DEBUG python dimer.py
 
-   * Check if it does not crash.  Then, run in the optimized mode again::
+   * Check if it does not crash.  Then, run in the optimized mode again.
+     (Make sure that PROFMODE is set to True in the last part of dimer.py)::
 
        % python -O dimer.py
 
@@ -42,13 +43,13 @@ How to test EPDP code
 
    #. Run the following set of scripts::
         
-        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.3.out 1.25e-2 5000000 &
-        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.2.out 1.25e-3 4000000 &
-        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.1.out 1.25e-4 2000000 &
-        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.0.out 1.25e-5 2000000 &
-        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-1.out 1.25e-6 2000000 &
-        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-2.out 1.25e-7 2000000 &
-        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-3.out 1.25e-8 1000000 &
+        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.3.out 1.25e-2 20000000 &
+        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.2.out 1.25e-3 20000000 &
+        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.1.out 1.25e-4 7000000 &
+        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.0.out 1.25e-5 5000000 &
+        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-1.out 1.25e-6 2000000 &
+        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-2.out 1.25e-7 2000000 &
+        LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-3.out 1.25e-8 1000000 &
 
    #. This will take a while.  When all is done, run the following and
       visually verify that the simulation results coincide with the
