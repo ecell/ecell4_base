@@ -30,24 +30,15 @@ object_matrix_test.py
 #%.py:
 #	$(TESTS_ENVIRONMENT) $(PYTHON) $<
 
-DynamicPriorityQueue_test_CXXFLAGS = -DBOOST_TEST_DYN_LINK
-DynamicPriorityQueue_test_LDFLAGS = -L$(libdir) 
-DynamicPriorityQueue_test_LDADD   = -lboost_unit_test_framework
-
-SphericalBesselGenerator_test_CXXFLAGS = -DBOOST_TEST_DYN_LINK
-SphericalBesselGenerator_test_LDFLAGS = -L$(libdir) $(GSL_LIBS)
-SphericalBesselGenerator_test_LDADD   = -lboost_unit_test_framework  ../SphericalBesselGenerator.lo
-
 INCLUDES = -I$(top_srcdir)
+AM_CXXFLAGS = @CXXFLAGS@ @GSL_CFLAGS@ -Wall -g
 
 check_PROGRAMS = $(CPP_TESTS)
 
 DynamicPriorityQueue_test_SOURCES = \
 DynamicPriorityQueue_test.cpp
 
+SphericalBesselGenerator_test_LDADD = $(GSL_LIBS)
 SphericalBesselGenerator_test_SOURCES = \
-SphericalBesselGenerator_test.cpp
-
-
-
+SphericalBesselGenerator_test.cpp ../SphericalBesselGenerator.cpp
 

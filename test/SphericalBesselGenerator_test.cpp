@@ -1,10 +1,8 @@
-#define BOOST_AUTO_TEST_MAIN
-
-#define BOOST_TEST_MODULE SphericalBesselGenerator
+#define BOOST_TEST_MODULE "SphericalBesselGenerator"
 
 #include <boost/mpl/list.hpp>
+#include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
-#include <boost/test/auto_unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
 #include "SphericalBesselGenerator.hpp"

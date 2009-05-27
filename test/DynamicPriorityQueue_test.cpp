@@ -1,10 +1,8 @@
-#define BOOST_AUTO_TEST_MAIN
+#define BOOST_TEST_MODULE "DynamicPriorityQueue"
 
 #include <boost/mpl/list.hpp>
-//#include <boost/test/included/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
-#include <boost/test/auto_unit_test.hpp>
-
 
 #include "DynamicPriorityQueue.hpp"
 
