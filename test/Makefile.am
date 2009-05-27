@@ -7,7 +7,8 @@ SphericalBesselGenerator_test\
 array_helper_test\
 filters_test\
 object_container_test\
-vmap_test
+vmap_test\
+model_test
 
 PYTHON_TESTS = alltests.py
 
@@ -58,3 +59,4 @@ object_container_test_SOURCES = object_container_test.cpp
 
 vmap_test_SOURCES = vmap_test.cpp
 
+model_test_SOURCES = model_test.cpp ../model.cpp ../network_rules.cpp
