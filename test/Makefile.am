@@ -3,7 +3,11 @@ PYTHON = @PYTHON@
 
 CPP_TESTS =\
 DynamicPriorityQueue_test\
-SphericalBesselGenerator_test
+SphericalBesselGenerator_test\
+array_helper_test\
+filters_test\
+object_container_test\
+vmap_test
 
 PYTHON_TESTS = alltests.py
 
@@ -15,6 +19,10 @@ TESTS_ENVIRONMENT = PYTHONPATH=$(top_srcdir)
 EXTRA_DIST=\
 AllTests.cpp\
 DynamicPriorityQueue_test.cpp\
+array_helper_test.cpp\
+filters_test.cpp\
+object_container_test.cpp\
+vmap_test.cpp\
 alltests.py\
 utils_test.py\
 freeFunctions_test.py\
@@ -41,4 +49,12 @@ DynamicPriorityQueue_test.cpp
 SphericalBesselGenerator_test_LDADD = $(GSL_LIBS)
 SphericalBesselGenerator_test_SOURCES = \
 SphericalBesselGenerator_test.cpp ../SphericalBesselGenerator.cpp
+
+array_helper_test_SOURCES = array_helper_test.cpp
+
+filters_test_SOURCES = filters_test.cpp
+
+object_container_test_SOURCES = object_container_test.cpp
+
+vmap_test_SOURCES = vmap_test.cpp
 
