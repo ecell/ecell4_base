@@ -10,6 +10,7 @@
 #include <boost/type_traits/add_const.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/list/at.hpp>
+#include "vector3.hpp"
 #include "array_helper.hpp"
 #include "utils.hpp"
 
