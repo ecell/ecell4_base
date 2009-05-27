@@ -67,6 +67,7 @@ noinst_HEADERS = \
 	funcSum.hpp\
 	get_mapper_mf.hpp\
 	object_container.hpp\
+	vector3.hpp\
 	sphere.hpp\
 	utils.hpp\
 	vmap.hpp\
