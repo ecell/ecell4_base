@@ -4,7 +4,7 @@ import unittest
 
 import numpy
 
-from object_matrix import *
+from _gfrd import *
 
 class object_matrixTestCase( unittest.TestCase ):
 
