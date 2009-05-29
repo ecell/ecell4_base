@@ -59,4 +59,4 @@ object_container_test_SOURCES = object_container_test.cpp
 
 vmap_test_SOURCES = vmap_test.cpp
 
-model_test_SOURCES = model_test.cpp ../model.cpp ../network_rules.cpp
+model_test_SOURCES = model_test.cpp ../model.cpp ../network_rules.cpp ../basic_network_rules_impl.cpp

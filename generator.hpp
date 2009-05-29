@@ -37,6 +37,24 @@ struct abstract_generator
 };
 
 
+template<typename Tretval_>
+struct abstract_limited_generator: public abstract_generator<Tretval_>
+{
+    virtual ~abstract_limited_generator() {}
+
+    virtual bool valid() const = 0;
+
+    virtual Tretval_ operator()() = 0;
+};
+
+
+template<typename Tretval_>
+bool valid(abstract_limited_generator<Tretval_> const& gen)
+{
+    return gen.valid();
+}
+
+
 template<typename Trange_>
 class range_generator
     : public abstract_generator<typename boost::range_value<Trange_>::type>

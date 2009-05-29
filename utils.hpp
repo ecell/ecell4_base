@@ -3,6 +3,10 @@
 
 #include <map>
 #include <vector>
+#include <boost/range/size.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
+#include <algorithm>
 
 namespace get_default_impl
 {
@@ -169,6 +173,31 @@ struct delete_ptr
         delete ptr;
     }
 };
+
+template<typename Tlhs_, typename Trhs_>
+inline int memberwise_compare(Tlhs_ const& lhs, Trhs_ const& rhs)
+{
+    if (boost::size(lhs) <= boost::size(rhs))
+    {
+        std::pair<typename Tlhs_::iterator, typename Trhs_::iterator> pair(
+            std::mismatch(lhs.begin(), lhs.end(), rhs.begin()));
+        if (pair.first == lhs.end())
+            return boost::size(lhs) - boost::size(rhs);
+        return *pair.first < *pair.second ?  -1:
+                *pair.first > *pair.second ? 1: 0;
+    }
+    else if (boost::size(lhs) > boost::size(rhs))
+    {
+        std::pair<typename Trhs_::iterator, typename Tlhs_::iterator> pair(
+            std::mismatch(rhs.begin(), rhs.end(), lhs.begin()));
+        if (pair.first == rhs.end())
+            return 1;
+        return *pair.first < *pair.second ? 1:
+                *pair.first > *pair.second ? -1: 0;
+    }
+    return 0;
+}
+
 
 
 void gsl_error_handler( char const* reason, char const* file, int line, int gsl_errno );

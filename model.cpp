@@ -8,7 +8,12 @@
 #include "utils.hpp"
 
 #include "species_type.hpp"
+#include "basic_network_rules_impl.hpp"
 #include "model.hpp"
+
+model::model(): network_rules_(new basic_network_rules_impl())
+{
+}
 
 model::~model()
 {
@@ -16,6 +21,7 @@ model::~model()
             compose_unary(
                 delete_ptr<boost::remove_pointer<species_type_map_type::mapped_type>::type>(),
                 select_second<species_type_map_type::value_type>()));
+    delete network_rules_;
 }
 
 species_type* model::new_species_type()

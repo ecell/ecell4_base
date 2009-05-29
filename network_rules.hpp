@@ -7,21 +7,14 @@
 
 class network_rules
 {
-    typedef std::map<reaction_rule_id, reaction_rule*> reaction_rule_map;
-
 public:
-    typedef reaction_rule_map::const_iterator reaction_rule_iterator;
-    typedef boost::iterator_range<reaction_rule_iterator> reaction_rule_range;
+    virtual void add_reaction_rule(reaction_rule const&) = 0;
 
-public:
-    void add_reaction_rule(reaction_rule* reaction_rule);
+    virtual reaction_rule_generator* query_reaction_rule(species_type const* r1) = 0;
 
-    network_rules();
+    virtual reaction_rule_generator* query_reaction_rule(species_type const* r1, species_type const* r2) = 0;
 
-private:
-    reaction_rule_map reaction_rules_;
-    reaction_rule_id last_id_;
+    virtual ~network_rules() = 0;
 };
-
 
 #endif /* NETWORK_RULES_HPP */

@@ -14,18 +14,18 @@ private:
     typedef std::map<species_type_id, species_type*> species_type_map_type;
 
 public:
-    model() {}
+    model();
 
     ~model();
 
     class network_rules& network_rules()
     {
-        return network_rules_;
+        return *network_rules_;
     }
 
     class network_rules const& network_rules() const
     {
-        return network_rules_;
+        return *network_rules_;
     }
 
     species_type* new_species_type();
@@ -33,7 +33,7 @@ public:
 public:
     species_type_id_generator_type species_type_id_generator_;
     species_type_map_type species_type_map_;
-    class network_rules network_rules_;
+    class network_rules *network_rules_;
 };
 
 

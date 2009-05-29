@@ -41,7 +41,7 @@ public:
         return attrs_[name];
     }
 
-    attributes_range attributes()
+    attributes_range attributes() const
     {
         return attributes_range(attrs_.begin(), attrs_.end());
     }
@@ -66,18 +66,22 @@ private:
     string_map_type attrs_;
 };
 
-template<typename Tstrm_>
-inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
-        const species_type& v)
+template<typename Tchar_, typename Ttraits_>
+inline std::basic_ostream<Tchar_>&
+operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, const species_type& v)
 {
-    strm << "species_type(id=" << v.id() << ", attributes={";
+    bool first = true;
+    out << "species_type(id=" << v.id() << ", attributes={";
     BOOST_FOREACH(species_type::string_map_iterator::value_type pair,
             v.attributes())
     {
-        strm << pair.first << ":" << pair.second << ", ";
+        if (!first)
+            out << ", ";
+        out << pair.first << ":" << pair.second;
+        first = false;
     }
-    strm << "})";
-    return strm;
+    out << "})";
+    return out;
 }
 
 #endif /* SPECIES_TYPE_HPP */

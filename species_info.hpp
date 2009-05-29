@@ -59,9 +59,9 @@ private:
     length_type radius_;
 };
 
-template<typename Tstrm_, typename T_>
-inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
-        const species<T_>& v)
+template<typename Tchar_, typename Ttraits_ typename T_>
+inline std::basic_ostream<Tchar_, Ttraits_>&
+operator<<(std::basic_ostream<Tchar_, Ttraits_>& strm, const species<T_>& v)
 {
     strm << "species_info(type=" << v.type() << ", D=" << v.D() << ", radius=" << v.radius() << ")";
     return strm;
