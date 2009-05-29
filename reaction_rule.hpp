@@ -25,7 +25,7 @@ public:
     class reactants
     {
     private:
-        typedef boost::array<species_type*, 2> containing_type;
+        typedef boost::array<species_type const*, 2> containing_type;
     public:
         typedef containing_type::value_type value_type;
         typedef containing_type::reference reference;
@@ -51,7 +51,7 @@ public:
                 ++idx_;
             }
 
-            species_type*& dereference() const
+            species_type const*& dereference() const
             {
                 return cntnr_[idx_];
             }
@@ -84,7 +84,7 @@ public:
                 ++idx_;
             }
 
-            species_type* const& dereference() const
+            species_type const* const& dereference() const
             {
                 return cntnr_[idx_];
             }
@@ -108,14 +108,14 @@ public:
             items_[1] = 0;
         }
 
-        reactants(species_type* one)
+        reactants(species_type const* one)
         {
             BOOST_ASSERT(one);
             items_[0] = one;
             items_[1] = 0;
         }
 
-        reactants(species_type* one, species_type* two)
+        reactants(species_type const* one, species_type const* two)
         {
             BOOST_ASSERT(one);
             BOOST_ASSERT(two);
@@ -156,14 +156,36 @@ public:
             return const_iterator(*this, size());
         }
 
-        species_type*& operator[](std::size_t idx)
+        species_type const*& operator[](std::size_t idx)
         {
             return items_[idx];
         }
 
-        species_type* const& operator[](std::size_t idx) const
+        species_type const* const& operator[](std::size_t idx) const
         {
             return items_[idx];
+        }
+
+        bool operator==(reactants const& rhs) const
+        {
+            if (rhs.size() != size())
+                return false;
+            switch (size())
+            {
+            case 0:
+                return true;
+            case 1:
+                return items_[0] == rhs[0];
+            case 2:
+                return items_[0] == rhs[0] && items_[1] == rhs[1];
+            }
+            /* never get here */
+            return false;
+        }
+
+        bool operator!=(reactants const& rhs) const
+        {
+            return !operator==(rhs);
         }
 
     protected:
@@ -221,9 +243,6 @@ inline bool operator<(reaction_rule::reactants const& lhs, reaction_rule::reacta
 
 inline bool operator<(reaction_rule const& lhs, reaction_rule const& rhs)
 {
-    if (lhs.k() < rhs.k())
-        return true;
-
     int tmp = memberwise_compare(lhs.get_reactants(), rhs.get_reactants());
     if (tmp > 0)
     {
@@ -236,8 +255,19 @@ inline bool operator<(reaction_rule const& lhs, reaction_rule const& rhs)
     return memberwise_compare(lhs.get_products(), rhs.get_products()) < 0;
 }
 
+inline bool operator==(reaction_rule const& lhs, reaction_rule const& rhs)
+{
+    return lhs.get_reactants() == rhs.get_reactants() &&
+            memberwise_compare(lhs.get_products(), rhs.get_products()) == 0;
+}
+
+inline bool operator!=(reaction_rule const& lhs, reaction_rule const& rhs)
+{
+    return !(lhs == rhs);
+}
+
 template<typename T2_>
-inline reaction_rule new_reaction_rule(species_type* r1, T2_ const& products, Real k)
+inline reaction_rule new_reaction_rule(species_type const* r1, T2_ const& products, Real k)
 {
     reaction_rule retval((reaction_rule::reactants(r1)));
     retval.k() = k;
@@ -247,7 +277,7 @@ inline reaction_rule new_reaction_rule(species_type* r1, T2_ const& products, Re
 }
 
 template<typename T2_>
-inline reaction_rule new_reaction_rule(species_type* r1, species_type* r2, T2_ const& products, Real k)
+inline reaction_rule new_reaction_rule(species_type const* r1, species_type const* r2, T2_ const& products, Real k)
 {
     reaction_rule retval(reaction_rule::reactants(r1, r2));
     retval.k() = k;
@@ -263,7 +293,7 @@ operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, reaction_rule const& r)
     bool first;
     out << "reaction_rule(reactants={";
     first = true;
-    BOOST_FOREACH (species_type* s, r.get_reactants())
+    BOOST_FOREACH (species_type const* s, r.get_reactants())
     {
         if (!first)
         {
@@ -274,7 +304,7 @@ operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, reaction_rule const& r)
     }
     out << "}, products={";
     first = true;
-    BOOST_FOREACH (species_type* s, r.get_products())
+    BOOST_FOREACH (species_type const* s, r.get_products())
     {
         if (!first)
         {

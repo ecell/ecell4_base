@@ -6,6 +6,9 @@
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
+#include <boost/range/iterator.hpp>
+#include <boost/range/iterator_range.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 #include <algorithm>
 
 namespace get_default_impl
@@ -198,7 +201,57 @@ inline int memberwise_compare(Tlhs_ const& lhs, Trhs_ const& rhs)
     return 0;
 }
 
+template<typename T_>
+struct get_select_first_iterator
+{
+    typedef boost::transform_iterator<
+        select_first<typename T_::value_type>, T_> type;
+};
 
+template<typename T_>
+struct get_select_second_iterator
+{
+    typedef boost::transform_iterator<
+        select_second<typename T_::value_type>, T_> type;
+};
+
+template<typename T_>
+inline typename get_select_first_iterator<T_>::type
+make_select_first_iterator(T_ const& iter)
+{
+    return typename get_select_first_iterator<T_>::type(iter,
+        select_first<typename T_::value_type>());
+        
+}
+
+template<typename T_>
+inline typename get_select_second_iterator<T_>::type
+make_select_second_iterator(T_ const& iter)
+{
+    return typename get_select_second_iterator<T_>::type(iter,
+        select_second<typename T_::value_type>());
+        
+}
+
+template<typename Trange_>
+inline boost::iterator_range<typename get_select_first_iterator<
+    typename boost::range_iterator<Trange_>::type >::type>
+make_select_first_range(Trange_ const& range)
+{
+    return boost::iterator_range<typename get_select_first_iterator<
+        typename boost::range_iterator<Trange_>::type >::type>(
+            boost::begin(range), boost::end(range));
+}
+
+template<typename Trange_>
+inline boost::iterator_range<typename get_select_second_iterator<
+    typename boost::range_iterator<Trange_>::type >::type>
+make_select_second_range(Trange_ const& range)
+{
+    return boost::iterator_range<typename get_select_second_iterator<
+        typename boost::range_iterator<Trange_>::type >::type>(
+            boost::begin(range), boost::end(range));
+}
 
 void gsl_error_handler( char const* reason, char const* file, int line, int gsl_errno );
 

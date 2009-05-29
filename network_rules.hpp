@@ -4,9 +4,13 @@
 #include <map>
 #include <boost/range/iterator_range.hpp>
 #include "reaction_rule.hpp"
+#include "generator.hpp"
 
 class network_rules
 {
+public:
+    typedef abstract_limited_generator<reaction_rule> reaction_rule_generator;
+
 public:
     virtual void add_reaction_rule(reaction_rule const&) = 0;
 

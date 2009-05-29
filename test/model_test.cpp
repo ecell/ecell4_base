@@ -5,6 +5,7 @@
 #define BOOST_TEST_MODULE "model"
 
 #include <boost/test/included/unit_test.hpp>
+#include <memory>
 #include "model.hpp"
 #include "array_helper.hpp"
 #include "species_type.hpp"
@@ -70,7 +71,7 @@ BOOST_AUTO_TEST_CASE(basic)
 
 }
 
-BOOST_AUTO_TEST_CASE(query_reaction)
+BOOST_AUTO_TEST_CASE(query_reaction_rule)
 {
     model m;
 
@@ -90,8 +91,25 @@ BOOST_AUTO_TEST_CASE(query_reaction)
     m.network_rules().add_reaction_rule(
         new_reaction_rule(s1, array_gen(s2), .2));
 
+    m.network_rules().add_reaction_rule(
+        new_reaction_rule(s2, array_gen<species_type*>(), .2));
 
-    std::cout << m.network_rules().query_reaction(
-        reaction_rule::reactant(s1));
+    {
+        std::auto_ptr<network_rules::reaction_rule_generator> gen(
+                m.network_rules().query_reaction_rule(s1));
+        BOOST_CHECK(cue(*gen, new_reaction_rule(s1, array_gen<species_type*>(), .2)));
+    }
+
+    {
+        std::auto_ptr<network_rules::reaction_rule_generator> gen(
+                m.network_rules().query_reaction_rule(s1));
+        BOOST_CHECK(cue(*gen, new_reaction_rule(s1, array_gen(s2), .2)));
+    }
+
+    {
+        std::auto_ptr<network_rules::reaction_rule_generator> gen(
+                m.network_rules().query_reaction_rule(s1));
+        BOOST_CHECK(!cue(*gen, new_reaction_rule(s1, array_gen(s1), .2)));
+    }
 }
 

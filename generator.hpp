@@ -25,6 +25,40 @@ std::size_t count(Tgen_ const& t)
     throw std::domain_error();
 }
 
+template<typename Tgen_, typename Tpred_>
+bool drop_while(Tgen_& gen, Tpred_& pred)
+{
+    do
+    {
+        if (!valid(gen))
+            return false;
+    } while (pred(gen()));
+    return true;
+}
+
+template<typename Tgen_, typename Tpred_>
+bool drop_until(Tgen_& gen, Tpred_& pred)
+{
+    do
+    {
+        if (!valid(gen))
+            return false;
+    } while (!pred(gen()));
+    return true;
+}
+
+template<typename Tgen_>
+bool cue(Tgen_& gen,
+    typename boost::call_traits<typename Tgen_::result_type>::param_type val)
+{
+    do
+    {
+        if (!valid(gen))
+            return false;
+    } while (val != gen());
+
+    return true;
+}
 
 template<typename Tretval_>
 struct abstract_generator
@@ -57,7 +91,7 @@ bool valid(abstract_limited_generator<Tretval_> const& gen)
 
 template<typename Trange_>
 class range_generator
-    : public abstract_generator<typename boost::range_value<Trange_>::type>
+    : public abstract_limited_generator<typename boost::range_value<Trange_>::type>
 {
     template<typename T_> friend bool ::valid(range_generator<T_> const& gen);
 
@@ -91,7 +125,7 @@ public:
         return boost::size(std::make_pair(i_, end_));
     }
 
-    bool valid() const
+    virtual bool valid() const
     {
         return i_ != end_;
     }
@@ -100,10 +134,11 @@ private:
     range_iterator i_, end_;
 };
 
-template<typename Trange_>
-bool valid(range_generator<Trange_> const& gen)
+template<typename T_>
+inline abstract_limited_generator<typename T_::value_type>*
+make_range_generator(T_ const& range)
 {
-    return gen.valid();
+    return new range_generator<T_>(range);
 }
 
 template<typename Trange_>
