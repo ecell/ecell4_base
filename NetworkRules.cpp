@@ -2,8 +2,8 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include "network_rules.hpp"
+#include "NetworkRules.hpp"
 
-network_rules::~network_rules()
+NetworkRules::~NetworkRules()
 {
 }

@@ -66,14 +66,19 @@ noinst_HEADERS = \
 	freeFunctions.hpp\
 	funcSum.hpp\
 	get_mapper_mf.hpp\
-	object_container.hpp\
-	vector3.hpp\
-	sphere.hpp\
+	MatrixSpace.hpp\
+	Vector3.hpp\
+	Sphere.hpp\
+	NetworkRules.hpp\
+	ReactionRule.hpp\
+	BasicNetworkRulesImpl.hpp\
+	Identifier.hpp\
+	Model.hpp\
 	utils.hpp\
 	vmap.hpp\
-	peer/ObjectContainer.hpp\
-	peer/enumerator.hpp\
-	peer/generator_support.hpp\
+	peer/MatrixSpace.hpp\
+	peer/Enumerator.hpp\
+	peer/GeneratorEnumeratorAdapter.hpp\
 	peer/tuple_converters.hpp\
 	peer/utils.hpp\
 	peer/numpy/wrapped_multi_array.hpp\

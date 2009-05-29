@@ -5,27 +5,27 @@
 #include <boost/lexical_cast.hpp>
 #include "utils.hpp"
 #include "exceptions.hpp"
-#include "basic_network_rules_impl.hpp"
+#include "BasicNetworkRulesImpl.hpp"
 
-basic_network_rules_impl::~basic_network_rules_impl()
+BasicNetworkRulesImpl::~BasicNetworkRulesImpl()
 {
 }
 
-basic_network_rules_impl::basic_network_rules_impl()
+BasicNetworkRulesImpl::BasicNetworkRulesImpl()
 {
 }
 
-void basic_network_rules_impl::add_reaction_rule(reaction_rule const& r)
+void BasicNetworkRulesImpl::add_reaction_rule(ReactionRule const& r)
 {
     if (!reaction_rules_map_[r.get_reactants()].insert(r).second)
         throw already_exists(boost::lexical_cast<std::string>(r));
 }
     
-basic_network_rules_impl::reaction_rule_generator*
-basic_network_rules_impl::query_reaction_rule(species_type const* r1)
+BasicNetworkRulesImpl::reaction_rule_generator*
+BasicNetworkRulesImpl::query_reaction_rule(SpeciesType const* r1)
 {
     reaction_rules_map::const_iterator i(
-            reaction_rules_map_.find(reaction_rule::reactants(r1)));
+            reaction_rules_map_.find(ReactionRule::Reactants(r1)));
     if (i == reaction_rules_map_.end())
     {
         return 0;
@@ -33,11 +33,11 @@ basic_network_rules_impl::query_reaction_rule(species_type const* r1)
     return make_range_generator((*i).second);
 }
 
-basic_network_rules_impl::reaction_rule_generator*
-basic_network_rules_impl::query_reaction_rule(species_type const* r1, species_type const* r2)
+BasicNetworkRulesImpl::reaction_rule_generator*
+BasicNetworkRulesImpl::query_reaction_rule(SpeciesType const* r1, SpeciesType const* r2)
 {
     reaction_rules_map::const_iterator i(
-            reaction_rules_map_.find(reaction_rule::reactants(r1, r2)));
+            reaction_rules_map_.find(ReactionRule::Reactants(r1, r2)));
     if (i == reaction_rules_map_.end())
     {
         return 0;

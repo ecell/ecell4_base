@@ -2,29 +2,29 @@
 #define SPHERE_HPP
 
 #include <ostream>
-#include "vector3.hpp"
+#include "Vector3.hpp"
 
 template<typename T_>
-class sphere
+class Sphere
 {
 public:
     typedef T_ value_type;
-    typedef vector3<T_> position_type;
+    typedef Vector3<T_> position_type;
     typedef T_ length_type;
 
 public:
-    sphere()
+    Sphere()
         : position_(), radius_(0) {}
 
-    sphere(const position_type& position, const length_type& radius)
+    Sphere(const position_type& position, const length_type& radius)
         : position_(position), radius_(radius) {}
 
-    bool operator==(const sphere& rhs) const
+    bool operator==(const Sphere& rhs) const
     {
         return position_ == rhs.position_ && radius_ == rhs.radius_;
     }
 
-    bool operator!=(const sphere& rhs) const
+    bool operator!=(const Sphere& rhs) const
     {
         return !operator==(rhs);
     }
@@ -56,7 +56,7 @@ private:
 
 template<typename Tstrm_, typename T_>
 inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
-        const sphere<T_>& v)
+        const Sphere<T_>& v)
 {
     strm << "{" << v.position() <<  ", " << v.radius() << "}";
     return strm;

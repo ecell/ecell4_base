@@ -9,13 +9,13 @@
 #elif defined(BOOST_FUNCTIONAL_HASH_HPP)
 #include <boost/functional/hash.hpp>
 #endif
-#include "identifier.hpp"
+#include "Identifier.hpp"
 
-struct species_type_id: public identifier<species_type_id, unsigned long long, int>
+struct SpeciesTypeID: public Identifier<SpeciesTypeID, unsigned long long, int>
 {
-    typedef identifier<species_type_id, unsigned long long, int> base_type;
+    typedef Identifier<SpeciesTypeID, unsigned long long, int> base_type;
 
-    species_type_id(value_type const& value = value_type(0, 0))
+    SpeciesTypeID(value_type const& value = value_type(0, 0))
         : base_type(value) {}
 };
 
@@ -28,9 +28,9 @@ namespace boost {
 #endif
 
 template<>
-struct hash<species_type_id>
+struct hash<SpeciesTypeID>
 {
-    std::size_t operator()(species_type_id const& val)
+    std::size_t operator()(SpeciesTypeID const& val)
     {
         return static_cast<std::size_t>(val().first ^ val().second);
     }
@@ -46,9 +46,9 @@ struct hash<species_type_id>
 
 template<typename Tstrm_>
 inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
-        const species_type_id& v)
+        const SpeciesTypeID& v)
 {
-    strm << "species_type_id(" << v().first << ":" << v().second << ")";
+    strm << "SpeciesTypeID(" << v().first << ":" << v().second << ")";
     return strm;
 }
 

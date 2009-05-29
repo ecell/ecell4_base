@@ -14,18 +14,18 @@
 
 #include "Defs.hpp"
 #include "utils.hpp"
-#include "species_type.hpp"
+#include "SpeciesType.hpp"
 
-class reaction_rule
+class ReactionRule
 {
 private:
-    typedef std::set<species_type*> species_type_set;
+    typedef std::set<SpeciesType*> SpeciesType_set;
 
 public:
-    class reactants
+    class Reactants
     {
     private:
-        typedef boost::array<species_type const*, 2> containing_type;
+        typedef boost::array<SpeciesType const*, 2> containing_type;
     public:
         typedef containing_type::value_type value_type;
         typedef containing_type::reference reference;
@@ -51,19 +51,19 @@ public:
                 ++idx_;
             }
 
-            species_type const*& dereference() const
+            SpeciesType const*& dereference() const
             {
                 return cntnr_[idx_];
             }
 
         public:
-            iterator(reactants& cntnr, size_type idx)
+            iterator(Reactants& cntnr, size_type idx)
                 : cntnr_(cntnr), idx_(idx) {}
 
             iterator(const_iterator const&);
 
         private:
-            reactants& cntnr_;
+            Reactants& cntnr_;
             size_type idx_;
         };
  
@@ -84,38 +84,38 @@ public:
                 ++idx_;
             }
 
-            species_type const* const& dereference() const
+            SpeciesType const* const& dereference() const
             {
                 return cntnr_[idx_];
             }
 
         public:
-            const_iterator(reactants const& cntnr, size_type idx)
+            const_iterator(Reactants const& cntnr, size_type idx)
                 : cntnr_(cntnr), idx_(idx) {}
 
             const_iterator(iterator const& that)
                 : cntnr_(that.cntnr_), idx_(that.idx_) {}
 
         private:
-            reactants const& cntnr_;
+            Reactants const& cntnr_;
             size_type idx_;
         };
 
     public:
-        reactants()
+        Reactants()
         {
             items_[0] = 0;
             items_[1] = 0;
         }
 
-        reactants(species_type const* one)
+        Reactants(SpeciesType const* one)
         {
             BOOST_ASSERT(one);
             items_[0] = one;
             items_[1] = 0;
         }
 
-        reactants(species_type const* one, species_type const* two)
+        Reactants(SpeciesType const* one, SpeciesType const* two)
         {
             BOOST_ASSERT(one);
             BOOST_ASSERT(two);
@@ -156,17 +156,17 @@ public:
             return const_iterator(*this, size());
         }
 
-        species_type const*& operator[](std::size_t idx)
+        SpeciesType const*& operator[](std::size_t idx)
         {
             return items_[idx];
         }
 
-        species_type const* const& operator[](std::size_t idx) const
+        SpeciesType const* const& operator[](std::size_t idx) const
         {
             return items_[idx];
         }
 
-        bool operator==(reactants const& rhs) const
+        bool operator==(Reactants const& rhs) const
         {
             if (rhs.size() != size())
                 return false;
@@ -183,7 +183,7 @@ public:
             return false;
         }
 
-        bool operator!=(reactants const& rhs) const
+        bool operator!=(Reactants const& rhs) const
         {
             return !operator==(rhs);
         }
@@ -192,22 +192,22 @@ public:
         containing_type items_;
     };
 
-    typedef species_type_set::const_iterator species_type_iterator;
-    typedef boost::iterator_range<species_type_iterator> species_type_range;
+    typedef SpeciesType_set::const_iterator SpeciesType_iterator;
+    typedef boost::iterator_range<SpeciesType_iterator> SpeciesType_range;
 
 public:
-    reactants const& get_reactants() const
+    Reactants const& get_reactants() const
     {
         return reactants_;
     }
 
-    void add_product(species_type* s)
+    void add_product(SpeciesType* s)
     {
         if (!products_.insert(s).second)
             throw already_exists(boost::lexical_cast<std::string>(*s));
     }
 
-    species_type_range get_products() const
+    SpeciesType_range get_products() const
     {
         return products_;
     }
@@ -222,26 +222,26 @@ public:
         return k_;
     }
 
-    explicit reaction_rule(class reactants const& _reactants)
+    explicit ReactionRule(Reactants const& _reactants)
         : reactants_(_reactants) {}
 
 private:
-    reactants reactants_;
-    species_type_set products_;
+    Reactants reactants_;
+    SpeciesType_set products_;
     Real k_;
 };
 
-inline reaction_rule::reactants::iterator::iterator(const_iterator const& that)
-    : cntnr_(const_cast<reactants&>(that.cntnr_)), idx_(that.idx_)
+inline ReactionRule::Reactants::iterator::iterator(const_iterator const& that)
+    : cntnr_(const_cast<Reactants&>(that.cntnr_)), idx_(that.idx_)
 {
 }
 
-inline bool operator<(reaction_rule::reactants const& lhs, reaction_rule::reactants const& rhs)
+inline bool operator<(ReactionRule::Reactants const& lhs, ReactionRule::Reactants const& rhs)
 {
     return memberwise_compare(lhs, rhs) < 0;
 }
 
-inline bool operator<(reaction_rule const& lhs, reaction_rule const& rhs)
+inline bool operator<(ReactionRule const& lhs, ReactionRule const& rhs)
 {
     int tmp = memberwise_compare(lhs.get_reactants(), rhs.get_reactants());
     if (tmp > 0)
@@ -255,45 +255,45 @@ inline bool operator<(reaction_rule const& lhs, reaction_rule const& rhs)
     return memberwise_compare(lhs.get_products(), rhs.get_products()) < 0;
 }
 
-inline bool operator==(reaction_rule const& lhs, reaction_rule const& rhs)
+inline bool operator==(ReactionRule const& lhs, ReactionRule const& rhs)
 {
     return lhs.get_reactants() == rhs.get_reactants() &&
             memberwise_compare(lhs.get_products(), rhs.get_products()) == 0;
 }
 
-inline bool operator!=(reaction_rule const& lhs, reaction_rule const& rhs)
+inline bool operator!=(ReactionRule const& lhs, ReactionRule const& rhs)
 {
     return !(lhs == rhs);
 }
 
 template<typename T2_>
-inline reaction_rule new_reaction_rule(species_type const* r1, T2_ const& products, Real k)
+inline ReactionRule new_reaction_rule(SpeciesType const* r1, T2_ const& products, Real k)
 {
-    reaction_rule retval((reaction_rule::reactants(r1)));
+    ReactionRule retval((ReactionRule::Reactants(r1)));
     retval.k() = k;
     std::for_each(boost::begin(products), boost::end(products),
-            boost::bind(&reaction_rule::add_product, &retval, _1));
+            boost::bind(&ReactionRule::add_product, &retval, _1));
     return retval;
 }
 
 template<typename T2_>
-inline reaction_rule new_reaction_rule(species_type const* r1, species_type const* r2, T2_ const& products, Real k)
+inline ReactionRule new_reaction_rule(SpeciesType const* r1, SpeciesType const* r2, T2_ const& products, Real k)
 {
-    reaction_rule retval(reaction_rule::reactants(r1, r2));
+    ReactionRule retval(ReactionRule::Reactants(r1, r2));
     retval.k() = k;
     std::for_each(boost::begin(products), boost::end(products),
-            boost::bind(&reaction_rule::add_product, &retval, _1));
+            boost::bind(&ReactionRule::add_product, &retval, _1));
     return retval;
 }
 
 template<typename Tchar_, typename Ttraits_>
 inline std::basic_ostream<Tchar_, Ttraits_>&
-operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, reaction_rule const& r)
+operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, ReactionRule const& r)
 {
     bool first;
-    out << "reaction_rule(reactants={";
+    out << "ReactionRule(reactants={";
     first = true;
-    BOOST_FOREACH (species_type const* s, r.get_reactants())
+    BOOST_FOREACH (SpeciesType const* s, r.get_reactants())
     {
         if (!first)
         {
@@ -304,7 +304,7 @@ operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, reaction_rule const& r)
     }
     out << "}, products={";
     first = true;
-    BOOST_FOREACH (species_type const* s, r.get_products())
+    BOOST_FOREACH (SpeciesType const* s, r.get_products())
     {
         if (!first)
         {

@@ -1,8 +1,8 @@
 #define BOOST_TEST_MODULE "filters_test"
 
 #include <boost/test/included/unit_test.hpp>
-#include "object_container.hpp"
-#include "sphere.hpp"
+#include "MatrixSpace.hpp"
+#include "Sphere.hpp"
 #include "filters.hpp"
 
 template<typename Toc_>
@@ -18,7 +18,7 @@ struct collector
 
 BOOST_AUTO_TEST_CASE(basic)
 {
-    typedef object_container<sphere<double>, int> oc_type;
+    typedef MatrixSpace<Sphere<double>, int> oc_type;
     typedef oc_type::position_type pos;
     oc_type oc(1.0, 10);
 

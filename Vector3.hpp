@@ -133,28 +133,28 @@ distance_cyclic( T1_ const& p1, T1_ const& p2,
 
 
 template<typename T_>
-struct vector3: public boost::array<T_, 3>
+struct Vector3: public boost::array<T_, 3>
 {
     typedef boost::array<T_, 3> base_type;
     typedef typename base_type::value_type value_type;
     typedef typename base_type::size_type size_type;
 
-    vector3()
+    Vector3()
     {
         (*this)[0] = 0;
         (*this)[1] = 0;
         (*this)[2] = 0;
     }
 
-    vector3(const T_ (&a)[3]): base_type(
+    Vector3(const T_ (&a)[3]): base_type(
             *reinterpret_cast<const base_type*>(&a)) {}
 
-    vector3(const T_ a[3]): base_type(
+    Vector3(const T_ a[3]): base_type(
             *reinterpret_cast<const base_type*>(a)) {}
 
-    vector3(const base_type& a): base_type(a) {}
+    Vector3(const base_type& a): base_type(a) {}
 
-    vector3(value_type p0, value_type p1, value_type p2)
+    Vector3(value_type p0, value_type p1, value_type p2)
     {
         (*this)[0] = p0;
         (*this)[1] = p1;
@@ -163,20 +163,20 @@ struct vector3: public boost::array<T_, 3>
 };
 
 template< typename T_ >
-vector3< T_ > operator+(vector3< T_ > const& lhs, vector3< T_ > const& rhs)
+Vector3< T_ > operator+(Vector3< T_ > const& lhs, Vector3< T_ > const& rhs)
 {
     return add( lhs, rhs );
 }
 
 template< typename T_ >
-vector3< T_ > operator-(vector3< T_ > const& lhs, vector3< T_ > const& rhs)
+Vector3< T_ > operator-(Vector3< T_ > const& lhs, Vector3< T_ > const& rhs)
 {
     return subtract( lhs, rhs );
 }
 
 template<typename Tstrm_, typename T_>
 inline std::basic_ostream<Tstrm_>&
-operator<<(std::basic_ostream< Tstrm_ >& strm, const vector3< T_ >& v)
+operator<<(std::basic_ostream< Tstrm_ >& strm, const Vector3< T_ >& v)
 {
     strm << "(" << v[0] <<  ", " << v[1] <<  ", " << v[2] << ")";
     return strm;
@@ -184,7 +184,7 @@ operator<<(std::basic_ostream< Tstrm_ >& strm, const vector3< T_ >& v)
 
 namespace detail {
     template< typename T_ >
-    struct element_type_of< vector3< T_ > >
+    struct element_type_of< Vector3< T_ > >
     {
         typedef T_ type;
     };

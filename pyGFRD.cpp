@@ -27,16 +27,16 @@
 #include "FirstPassageNoCollisionPairGreensFunction.hpp"
 
 #include "array_traits.hpp"
-#include "vector3.hpp"
+#include "Vector3.hpp"
 #include "utils.hpp"
 
 #include "peer/utils.hpp"
 #include "peer/tuple_converters.hpp"
 #include "peer/numpy/wrapped_multi_array.hpp"
-#include "peer/ObjectContainer.hpp"
+#include "peer/MatrixSpace.hpp"
 
 typedef Real length_type;
-typedef vector3<length_type> position_type;
+typedef Vector3<length_type> position_type;
 
 struct position_to_ndarray_converter
 {
@@ -132,7 +132,7 @@ struct seq_to_position_converter
 
 struct sphere_to_python_converter
 {
-    typedef sphere<length_type> native_type;
+    typedef Sphere<length_type> native_type;
 
     static PyObject* convert(native_type const& v)
     {
@@ -144,7 +144,7 @@ struct sphere_to_python_converter
 
 struct python_to_sphere_converter
 {
-    typedef sphere<length_type> native_type;
+    typedef Sphere<length_type> native_type;
 
     static void* convertible(PyObject* pyo)
     {
@@ -180,7 +180,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 {
     using namespace boost::python;
     typedef Real length_type;
-    typedef vector3< length_type > vector_type;
+    typedef Vector3< length_type > vector_type;
 
     import_array();
 
@@ -401,9 +401,9 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     to_python_converter<position_type,
         position_to_ndarray_converter>();
-    to_python_converter<sphere<length_type>,
+    to_python_converter<Sphere<length_type>,
         sphere_to_python_converter>();
-    peer::util::to_native_converter<sphere<length_type>,
+    peer::util::to_native_converter<Sphere<length_type>,
         python_to_sphere_converter>();
     peer::util::to_native_converter<position_type,
         ndarray_to_position_converter>();
@@ -413,5 +413,5 @@ BOOST_PYTHON_MODULE( _gfrd )
 #if OBJECTMATRIX_USE_ITERATOR
     peer::util::register_stop_iteration_exc_translator();
 #endif
-    peer::ObjectContainer::__register_class();
+    peer::MatrixSpace::__register_class();
 }

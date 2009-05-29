@@ -3,73 +3,73 @@
 
 #include <utility>
 
-struct default_lot
+struct DefaultLot
 {
-    default_lot& operator=(default_lot const&) {
+    DefaultLot& operator=(DefaultLot const&) {
         return *this;
     }
 
     bool operator!() const { return true; }
 
-    default_lot& operator++()
+    DefaultLot& operator++()
     {
         return *this;
     }
 
-    default_lot operator++(int)
+    DefaultLot operator++(int)
     {
-        return default_lot();
+        return DefaultLot();
     }
 
-    default_lot& operator--()
+    DefaultLot& operator--()
     {
         return *this;
     }
 
-    default_lot operator--(int)
+    DefaultLot operator--(int)
     {
-        return default_lot();
+        return DefaultLot();
     }
 
-    bool operator==(default_lot const& rhs) const
+    bool operator==(DefaultLot const& rhs) const
     {
         return true;
     }
 
-    bool operator!=(default_lot const& rhs) const
+    bool operator!=(DefaultLot const& rhs) const
     {
         return false;
     }
 
-    bool operator<(default_lot const& rhs) const
+    bool operator<(DefaultLot const& rhs) const
     {
         return false;
     }
 
-    bool operator>=(default_lot const& rhs) const
+    bool operator>=(DefaultLot const& rhs) const
     {
         return false;
     }
 
-    bool operator>(default_lot const& rhs) const
+    bool operator>(DefaultLot const& rhs) const
     {
         return false;
     }
 
-    bool operator<=(default_lot const& rhs) const
+    bool operator<=(DefaultLot const& rhs) const
     {
         return false;
     }
 };
 
-template<typename Tbase_, typename Tserial_, typename Tlot_ = default_lot>
-struct identifier
+template<typename Tbase_, typename Tserial_, typename Tlot_ = DefaultLot>
+struct Identifier
 {
     typedef Tlot_ lot_type;
     typedef Tserial_ serial_type;
     typedef std::pair<lot_type, serial_type> value_type;
 
-    identifier(value_type const& value)
+    Identifier(value_type const& value)
         : value_(value) {}
 
     Tbase_ lot_add(lot_type const& rhs) const

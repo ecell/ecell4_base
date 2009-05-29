@@ -6,30 +6,30 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include <memory>
-#include "model.hpp"
+#include "Model.hpp"
 #include "array_helper.hpp"
-#include "species_type.hpp"
+#include "SpeciesType.hpp"
 
 BOOST_AUTO_TEST_CASE(basic)
 {
-    model m;
+    Model m;
 
-    species_type* s1 = m.new_species_type();
+    SpeciesType* s1 = m.new_species_type();
     (*s1)["name"] = "S";
     (*s1)["D"] = "1.5e-12";
     (*s1)["radius"] = "5e-9";
 
-    species_type* s2 = m.new_species_type();
+    SpeciesType* s2 = m.new_species_type();
     (*s2)["name"] = "P";
     (*s2)["D"] = "1e-12";
     (*s2)["radius"] = "7e-9";
 
     m.network_rules().add_reaction_rule(
-        new_reaction_rule(s1, array_gen<species_type*>(), .2));
+        new_reaction_rule(s1, array_gen<SpeciesType*>(), .2));
 
     BOOST_CHECK_THROW(
         m.network_rules().add_reaction_rule(
-            new_reaction_rule(s1, array_gen<species_type*>(), .2)),
+            new_reaction_rule(s1, array_gen<SpeciesType*>(), .2)),
         already_exists);
 
     m.network_rules().add_reaction_rule(
@@ -73,41 +73,41 @@ BOOST_AUTO_TEST_CASE(basic)
 
 BOOST_AUTO_TEST_CASE(query_reaction_rule)
 {
-    model m;
+    Model m;
 
-    species_type* s1 = m.new_species_type();
+    SpeciesType* s1 = m.new_species_type();
     (*s1)["name"] = "S";
     (*s1)["D"] = "1.5e-12";
     (*s1)["radius"] = "5e-9";
 
-    species_type* s2 = m.new_species_type();
+    SpeciesType* s2 = m.new_species_type();
     (*s2)["name"] = "P";
     (*s2)["D"] = "1e-12";
     (*s2)["radius"] = "7e-9";
 
     m.network_rules().add_reaction_rule(
-        new_reaction_rule(s1, array_gen<species_type*>(), .2));
+        new_reaction_rule(s1, array_gen<SpeciesType*>(), .2));
 
     m.network_rules().add_reaction_rule(
         new_reaction_rule(s1, array_gen(s2), .2));
 
     m.network_rules().add_reaction_rule(
-        new_reaction_rule(s2, array_gen<species_type*>(), .2));
+        new_reaction_rule(s2, array_gen<SpeciesType*>(), .2));
 
     {
-        std::auto_ptr<network_rules::reaction_rule_generator> gen(
+        std::auto_ptr<NetworkRules::reaction_rule_generator> gen(
                 m.network_rules().query_reaction_rule(s1));
-        BOOST_CHECK(cue(*gen, new_reaction_rule(s1, array_gen<species_type*>(), .2)));
+        BOOST_CHECK(cue(*gen, new_reaction_rule(s1, array_gen<SpeciesType*>(), .2)));
     }
 
     {
-        std::auto_ptr<network_rules::reaction_rule_generator> gen(
+        std::auto_ptr<NetworkRules::reaction_rule_generator> gen(
                 m.network_rules().query_reaction_rule(s1));
         BOOST_CHECK(cue(*gen, new_reaction_rule(s1, array_gen(s2), .2)));
     }
 
     {
-        std::auto_ptr<network_rules::reaction_rule_generator> gen(
+        std::auto_ptr<NetworkRules::reaction_rule_generator> gen(
                 m.network_rules().query_reaction_rule(s1));
         BOOST_CHECK(!cue(*gen, new_reaction_rule(s1, array_gen(s1), .2)));
     }

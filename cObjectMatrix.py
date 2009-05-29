@@ -46,7 +46,7 @@ class ObjectMatrix( object ):
 
     def initialize( self ):
 
-        self.impl = _gfrd.ObjectContainer( self.worldSize, 
+        self.impl = _gfrd.MatrixSpace( self.worldSize, 
                                                    self.matrixSize )
 
 

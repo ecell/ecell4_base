@@ -6,16 +6,16 @@
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <species_type_id.hpp>
+#include <SpeciesTypeID.hpp>
 
 #include "exceptions.hpp"
 #include "get_mapper_mf.hpp"
 
-class model;
+class Model;
 
-class species_type
+class SpeciesType
 {
-    friend class model;
+    friend class Model;
 private:
     typedef get_mapper_mf<std::string, std::string>::type string_map_type;
 
@@ -24,7 +24,7 @@ public:
     typedef boost::iterator_range<string_map_iterator> attributes_range;
 
 public:
-    species_type_id const& id() const
+    SpeciesTypeID const& id() const
     {
         return id_;
     }
@@ -46,33 +46,33 @@ public:
         return attributes_range(attrs_.begin(), attrs_.end());
     }
 
-    class model* model() const
+    Model* model() const
     {
         return model_;
     }
 
-    species_type(species_type_id const& id): id_(id) {}
+    SpeciesType(SpeciesTypeID const& id): id_(id) {}
  
 protected:
-    class model*& model()
+    class Model*& model()
     {
         return model_;
     }
 
 private:
-    class model* model_;
-    species_type_id id_;
+    class Model* model_;
+    SpeciesTypeID id_;
     std::string name_;
     string_map_type attrs_;
 };
 
 template<typename Tchar_, typename Ttraits_>
 inline std::basic_ostream<Tchar_>&
-operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, const species_type& v)
+operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, const SpeciesType& v)
 {
     bool first = true;
-    out << "species_type(id=" << v.id() << ", attributes={";
-    BOOST_FOREACH(species_type::string_map_iterator::value_type pair,
+    out << "SpeciesType(id=" << v.id() << ", attributes={";
+    BOOST_FOREACH(SpeciesType::string_map_iterator::value_type pair,
             v.attributes())
     {
         if (!first)

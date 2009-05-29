@@ -1,5 +1,5 @@
-#ifndef OBJECT_CONTAINER_HPP
-#define OBJECT_CONTAINER_HPP
+#ifndef MATRIX_SPACE_HPP
+#define MATRIX_SPACE_HPP
 
 #include <cstddef>
 #include <algorithm>
@@ -10,21 +10,21 @@
 #include <boost/type_traits/add_const.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/list/at.hpp>
-#include "vector3.hpp"
+#include "Vector3.hpp"
 #include "array_helper.hpp"
 #include "utils.hpp"
 
 template<typename Tobj_, typename Tkey_,
         template<typename, typename> class MFget_mapper_ =
             get_default_impl::std::template map>
-class object_container
+class MatrixSpace
 {
 public:
     typedef typename Tobj_::length_type length_type;
     typedef Tkey_ key_type;
     typedef Tobj_ mapped_type;
     typedef std::pair<const key_type, mapped_type> value_type;
-    typedef vector3<length_type> position_type;
+    typedef Vector3<length_type> position_type;
     typedef typename MFget_mapper_<Tkey_, mapped_type>::type cell_type;
     typedef boost::multi_array<cell_type, 3> matrix_type;
     typedef typename cell_type::size_type size_type;
@@ -46,7 +46,7 @@ public:
             public boost::is_const<
                     typename boost::remove_reference<Treftype_>::type> {};
     public:
-        typedef typename object_container::value_type value_type;
+        typedef typename MatrixSpace::value_type value_type;
         typedef Treftype_ reference;
         typedef const Treftype_ const_reference;
         typedef std::bidirectional_iterator_tag iterator_category;
@@ -178,7 +178,7 @@ public:
     };
 
 public:
-    object_container(length_type world_size = 1.0,
+    MatrixSpace(length_type world_size = 1.0,
             typename matrix_type::size_type size = 1)
         : world_size_(world_size),
           cell_size_(world_size / size),
@@ -647,11 +647,11 @@ private:
 
 template<typename T_, typename Tkey_,
         template<typename, typename> class MFget_mapper_>
-static inline typename object_container<T_, Tkey_, MFget_mapper_>::cell_index_type&
+static inline typename MatrixSpace<T_, Tkey_, MFget_mapper_>::cell_index_type&
 operator+=(
-       typename object_container<T_,
+       typename MatrixSpace<T_,
                 Tkey_, MFget_mapper_>::cell_index_type& lhs,
-       const typename object_container<T_,
+       const typename MatrixSpace<T_,
                 Tkey_, MFget_mapper_>::cell_offset_type& rhs)
 {
     rhs[0] += lhs[0];
@@ -661,4 +661,4 @@ operator+=(
 }
 
 
-#endif /* OBJECT_CONTAINER_HPP */
+#endif /* MATRIX_SPACE_HPP */

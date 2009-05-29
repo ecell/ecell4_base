@@ -7,15 +7,15 @@
 
 #include "utils.hpp"
 
-#include "species_type.hpp"
-#include "basic_network_rules_impl.hpp"
-#include "model.hpp"
+#include "SpeciesType.hpp"
+#include "BasicNetworkRulesImpl.hpp"
+#include "Model.hpp"
 
-model::model(): network_rules_(new basic_network_rules_impl())
+Model::Model(): network_rules_(new BasicNetworkRulesImpl())
 {
 }
 
-model::~model()
+Model::~Model()
 {
     std::for_each(species_type_map_.begin(), species_type_map_.end(),
             compose_unary(
@@ -24,9 +24,9 @@ model::~model()
     delete network_rules_;
 }
 
-species_type* model::new_species_type()
+SpeciesType* Model::new_species_type()
 {
-    species_type* retval = new species_type(species_type_id_generator_());
+    SpeciesType* retval = new SpeciesType(species_type_id_generator_());
     species_type_map_.insert(std::make_pair(retval->id(), retval));
     return retval;
 }

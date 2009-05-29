@@ -6,7 +6,7 @@ DynamicPriorityQueue_test\
 SphericalBesselGenerator_test\
 array_helper_test\
 filters_test\
-object_container_test\
+MatrixSpace_test\
 vmap_test\
 model_test
 
@@ -22,7 +22,7 @@ AllTests.cpp\
 DynamicPriorityQueue_test.cpp\
 array_helper_test.cpp\
 filters_test.cpp\
-object_container_test.cpp\
+MatrixSpace_test.cpp\
 vmap_test.cpp\
 alltests.py\
 utils_test.py\
@@ -55,8 +55,8 @@ array_helper_test_SOURCES = array_helper_test.cpp
 
 filters_test_SOURCES = filters_test.cpp
 
-object_container_test_SOURCES = object_container_test.cpp
+MatrixSpace_test_SOURCES = MatrixSpace_test.cpp
 
 vmap_test_SOURCES = vmap_test.cpp
 
-model_test_SOURCES = model_test.cpp ../model.cpp ../network_rules.cpp ../basic_network_rules_impl.cpp
+model_test_SOURCES = model_test.cpp ../Model.cpp ../NetworkRules.cpp ../BasicNetworkRulesImpl.cpp
