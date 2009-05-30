@@ -19,7 +19,7 @@
 class ReactionRule
 {
 private:
-    typedef std::set<SpeciesType*> SpeciesType_set;
+    typedef std::set<SpeciesType const*> species_type_set;
 
 public:
     class Reactants
@@ -192,8 +192,8 @@ public:
         containing_type items_;
     };
 
-    typedef SpeciesType_set::const_iterator SpeciesType_iterator;
-    typedef boost::iterator_range<SpeciesType_iterator> SpeciesType_range;
+    typedef species_type_set::const_iterator species_type_iterator;
+    typedef boost::iterator_range<species_type_iterator> species_type_range;
 
 public:
     Reactants const& get_reactants() const
@@ -201,13 +201,13 @@ public:
         return reactants_;
     }
 
-    void add_product(SpeciesType* s)
+    void add_product(SpeciesType const* s)
     {
         if (!products_.insert(s).second)
             throw already_exists(boost::lexical_cast<std::string>(*s));
     }
 
-    SpeciesType_range get_products() const
+    species_type_range get_products() const
     {
         return products_;
     }
@@ -222,12 +222,20 @@ public:
         return k_;
     }
 
-    explicit ReactionRule(Reactants const& _reactants)
-        : reactants_(_reactants) {}
+    explicit ReactionRule(Reactants const& _reactants, Real k = .0)
+        : reactants_(_reactants), k_(k) {}
+
+    template<typename Trange_>
+    ReactionRule(Reactants const& _reactants, Trange_ const& products, Real k = .0)
+        : reactants_(_reactants), k_(k)
+    {
+        std::for_each(boost::begin(products), boost::end(products),
+                boost::bind(&ReactionRule::add_product, this, _1));
+    }
 
 private:
     Reactants reactants_;
-    SpeciesType_set products_;
+    species_type_set products_;
     Real k_;
 };
 

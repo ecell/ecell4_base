@@ -1,13 +1,15 @@
 #ifndef MODEL_HPP
 #define MODEL_HPP
 
+#include <boost/noncopyable.hpp>
+
 #include "SerialIDGenerator.hpp"
 #include "SpeciesTypeID.hpp"
 #include "NetworkRules.hpp"
 
 class SpeciesType;
 
-class Model
+class Model: private boost::noncopyable
 {
 private:
     typedef SerialIDGenerator<SpeciesTypeID> species_type_id_generator_type;
@@ -18,12 +20,7 @@ public:
 
     ~Model();
 
-    class NetworkRules& network_rules()
-    {
-        return *network_rules_;
-    }
-
-    NetworkRules const& network_rules() const
+    NetworkRules& network_rules() const
     {
         return *network_rules_;
     }

@@ -4,6 +4,9 @@
 #include <cstddef>
 #include <stdexcept>
 #include <functional>
+
+#include <boost/utility/enable_if.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/range/value_type.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
@@ -11,6 +14,8 @@
 #include <boost/range/size_type.hpp>
 #include <boost/range/iterator.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <boost/iterator/iterator_traits.hpp>
+#include <boost/iterator/is_readable_iterator.hpp>
 
 template<typename Tgen_>
 bool valid(Tgen_ const& t)
@@ -22,7 +27,7 @@ bool valid(Tgen_ const& t)
 template<typename Tgen_>
 std::size_t count(Tgen_ const& t)
 {
-    throw std::domain_error();
+    throw std::domain_error("generation is not limited");
 }
 
 template<typename Tgen_, typename Tpred_>
@@ -89,16 +94,57 @@ bool valid(abstract_limited_generator<Tretval_> const& gen)
 }
 
 
-template<typename Trange_>
-class range_generator
-    : public abstract_limited_generator<typename boost::range_value<Trange_>::type>
+template<typename Timpl_, typename Tholder_ = boost::shared_ptr<Timpl_> >
+class ptr_generator
+{
+public:
+    typedef typename Timpl_::result_type result_type;
+
+private:
+    typedef Tholder_ holder_type;
+
+public:
+    ptr_generator(Timpl_* impl): impl_(impl) {}
+
+    bool valid() const
+    {
+        return ::valid(*impl_);
+    }
+
+    result_type operator()()
+    {
+        return (*impl_)();
+    }
+
+    holder_type ptr()
+    {
+        return impl_;
+    }
+
+private:
+    ptr_generator& operator=(ptr_generator const&) { return *this; }
+
+private:
+    holder_type impl_;
+    int refcount_;
+};
+
+template<typename Timpl_>
+bool valid(ptr_generator<Timpl_> const& gen)
+{
+    return gen.valid();
+}
+
+
+template<typename Trange_, typename Tresult_ = typename boost::iterator_reference<typename boost::range_iterator<Trange_>::type>::type>
+class range_generator: public abstract_limited_generator<Tresult_>
 {
     template<typename T_> friend bool ::valid(range_generator<T_> const& gen);
 
 private:
     typedef typename boost::range_iterator<Trange_>::type range_iterator;
 public:
-    typedef typename boost::range_value<Trange_>::type result_type;
+    typedef Tresult_ result_type;
 
 public:
     range_generator(Trange_ const& range)
@@ -134,11 +180,18 @@ private:
     range_iterator i_, end_;
 };
 
-template<typename T_>
-inline abstract_limited_generator<typename T_::value_type>*
+template<bool, typename T_>
+inline abstract_limited_generator<typename boost::iterator_reference<typename boost::range_iterator<T_>::type>::type>*
 make_range_generator(T_ const& range)
 {
-    return new range_generator<T_>(range);
+    return new range_generator<T_, typename boost::iterator_reference<typename boost::range_iterator<T_>::type>::type>(range);
+}
+
+template<typename Tresult_, typename T_>
+inline abstract_limited_generator<Tresult_>*
+make_range_generator(T_ const& range)
+{
+    return new range_generator<T_, Tresult_>(range);
 }
 
 template<typename Trange_>

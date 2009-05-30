@@ -77,8 +77,7 @@ noinst_HEADERS = \
 	utils.hpp\
 	vmap.hpp\
 	peer/MatrixSpace.hpp\
-	peer/Enumerator.hpp\
-	peer/GeneratorEnumeratorAdapter.hpp\
+	peer/GeneratorIteratorWrapper.hpp\
 	peer/tuple_converters.hpp\
 	peer/utils.hpp\
 	peer/numpy/wrapped_multi_array.hpp\
@@ -98,6 +97,9 @@ _gfrd_la_SOURCES=\
 	FirstPassagePairGreensFunction.cpp\
 	FirstPassageNoCollisionPairGreensFunction.cpp\
 	pyGFRD.cpp\
+	Model.cpp\
+	BasicNetworkRulesImpl.cpp\
+	NetworkRules.cpp\
 	utils.cpp
 
 

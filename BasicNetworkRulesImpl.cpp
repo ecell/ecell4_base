@@ -30,7 +30,7 @@ BasicNetworkRulesImpl::query_reaction_rule(SpeciesType const* r1)
     {
         return 0;
     }
-    return make_range_generator((*i).second);
+    return make_range_generator<ReactionRule>((*i).second);
 }
 
 BasicNetworkRulesImpl::reaction_rule_generator*
@@ -42,5 +42,5 @@ BasicNetworkRulesImpl::query_reaction_rule(SpeciesType const* r1, SpeciesType co
     {
         return 0;
     }
-    return make_range_generator((*i).second);
+    return make_range_generator<ReactionRule>((*i).second);
 }

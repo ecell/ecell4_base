@@ -6,7 +6,8 @@
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <SpeciesTypeID.hpp>
+
+#include "SpeciesTypeID.hpp"
 
 #include "exceptions.hpp"
 #include "get_mapper_mf.hpp"

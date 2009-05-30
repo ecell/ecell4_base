@@ -6,6 +6,10 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
+#include <boost/range/size.hpp>
+#include <boost/range/const_iterator.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
 
 namespace peer {
 
@@ -66,6 +70,24 @@ namespace util
                         *val);
             }
         };
+
+        template<typename Trange_>
+        struct range_to_pytuple_converter
+        {
+            typedef Trange_ native_type;
+            
+            static PyObject* convert(const native_type& p)
+            {
+                using namespace boost::python;
+                PyObject* retval = PyTuple_New(boost::size(p));
+                Py_ssize_t idx = 0;
+                for (typename boost::range_const_iterator<native_type>::type i(boost::begin(p)), e(boost::end(p)); i != e; ++i)
+                {
+                    PyTuple_SetItem(retval, idx, incref(object(*i).ptr()));
+                }
+                return retval;
+            }
+        };
     } // namespace detail
 
     template<typename Ttuple_>
@@ -79,6 +101,19 @@ namespace util
             boost::python::to_python_converter<
                 boost::shared_ptr<Ttuple_>,
                 detail::tuple_to_tuple_converter<boost::shared_ptr<Ttuple_> > >();
+            registered = true;
+        }
+    }
+
+
+    template<typename Trange_>
+    void register_range_to_tuple_converter()
+    {
+        static bool registered = false;
+        if (!registered)
+        {
+            boost::python::to_python_converter<
+                Trange_, detail::range_to_pytuple_converter<Trange_> >();
             registered = true;
         }
     }

@@ -14,6 +14,9 @@
 #include <boost/python/tuple.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python/refcount.hpp>
+#include <boost/python/return_value_policy.hpp>
+#include <boost/python/return_internal_reference.hpp>
+#include <boost/python/return_by_value.hpp>
 
 #include <numpy/arrayobject.h>
 
@@ -29,11 +32,16 @@
 #include "array_traits.hpp"
 #include "Vector3.hpp"
 #include "utils.hpp"
+#include "Model.hpp"
 
 #include "peer/utils.hpp"
 #include "peer/tuple_converters.hpp"
 #include "peer/numpy/wrapped_multi_array.hpp"
 #include "peer/MatrixSpace.hpp"
+#include "peer/SpeciesType.hpp"
+#include "peer/Identifier.hpp"
+#include "peer/ReactionRule.hpp"
+#include "peer/GeneratorIteratorWrapper.hpp"
 
 typedef Real length_type;
 typedef Vector3<length_type> position_type;
@@ -414,4 +422,23 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::register_stop_iteration_exc_translator();
 #endif
     peer::MatrixSpace::__register_class();
+    peer::SpeciesType::__register_class();
+
+    class_<Model, boost::noncopyable>("Model")
+        .add_property("network_rules",
+            make_function(&Model::network_rules, return_internal_reference<>()))
+        .def("new_species_type", &Model::new_species_type,
+                return_internal_reference<>())
+        ;
+
+    peer::ReactionRule::__register_class();
+
+    peer::IdentifierWrapper<SpeciesTypeID>::__register_class("SpeciesTypeID");
+    peer::util::GeneratorIteratorWrapper<ptr_generator<NetworkRules::reaction_rule_generator> >::__register_class("reaction_rule_geneator");
+
+    class_<NetworkRules, boost::noncopyable>("NetworkRules", no_init)
+        .def("add_reaction_rule", &NetworkRules::add_reaction_rule)
+        .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesType const*)>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
+        .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesType const*, SpeciesType const*)>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
+        ;
 }
