@@ -5,6 +5,7 @@
 #include <ostream>
 #include <iostream>
 
+#include <boost/array.hpp>
 #include <boost/bind.hpp>
 #include <boost/range/size.hpp>
 #include <boost/lexical_cast.hpp>
