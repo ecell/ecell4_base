@@ -16,7 +16,7 @@ class object_matrixTestCase( unittest.TestCase ):
 
     def test1( self ):
 
-        c = ObjectContainer(1.0, 10)
+        c = MatrixSpace(1.0, 10)
         self.assertEqual( 10, c.matrix_size )
         self.assertEqual( 0.1, c.cell_size )
         self.assertEqual( 0, c.size() )
