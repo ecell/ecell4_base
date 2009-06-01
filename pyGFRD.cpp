@@ -418,9 +418,6 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::to_native_converter<position_type,
         seq_to_position_converter>();
 
-#if OBJECTMATRIX_USE_ITERATOR
-    peer::util::register_stop_iteration_exc_translator();
-#endif
     peer::MatrixSpace::__register_class();
     peer::SpeciesType::__register_class();
 
