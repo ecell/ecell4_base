@@ -434,7 +434,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::ReactionRule::__register_class();
 
     peer::IdentifierWrapper<SpeciesTypeID>::__register_class("SpeciesTypeID");
-    peer::util::GeneratorIteratorWrapper<ptr_generator<NetworkRules::reaction_rule_generator> >::__register_class("reaction_rule_geneator");
+    peer::util::GeneratorIteratorWrapper<ptr_generator<NetworkRules::reaction_rule_generator> >::__register_class("ReactionRuleGenerator");
 
     class_<NetworkRules, boost::noncopyable>("NetworkRules", no_init)
         .def("add_reaction_rule", &NetworkRules::add_reaction_rule)
