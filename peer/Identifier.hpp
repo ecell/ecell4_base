@@ -220,7 +220,9 @@ protected:
 
     void* operator new(size_t)
     {
-        return PyObject_GC_New(IdentifierWrapper, &__class__);
+        PyObject* retval = PyObject_GC_New(PyObject, &__class__);
+        _PyObject_GC_TRACK(retval);
+        return retval;
     }
 
     void operator delete(void* ptr)
