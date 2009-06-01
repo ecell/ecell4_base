@@ -104,6 +104,17 @@ public:
         return boost::lexical_cast<std::string>(*impl);
     }
 
+    static bool __eq__(PyObject* self, PyObject* rhs)
+    {
+        using namespace boost::python;
+        impl_type *impl = extract<impl_type*>(object(borrowed(self)));
+        if (!PyObject_TypeCheck(rhs, self->ob_type))
+        {
+            return false;
+        }
+        return *impl == *extract<impl_type*>(object(borrowed(rhs)));
+    }
+
     static impl_type::species_type_iterator get_products_begin(impl_type *impl)
     {
         return impl->get_products().begin();
@@ -136,6 +147,7 @@ public:
                       &ReactionRule::get_products_begin,
                       &ReactionRule::get_products_end))
             .def("__str__", &ReactionRule::__str__)
+            .def("__eq__", &ReactionRule::__eq__)
             ;
     }
 };

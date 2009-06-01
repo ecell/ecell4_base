@@ -42,6 +42,7 @@
 #include "peer/Identifier.hpp"
 #include "peer/ReactionRule.hpp"
 #include "peer/GeneratorIteratorWrapper.hpp"
+#include "peer/Exception.hpp"
 
 typedef Real length_type;
 typedef Vector3<length_type> position_type;
@@ -432,6 +433,9 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::IdentifierWrapper<SpeciesTypeID>::__register_class("SpeciesTypeID");
     peer::util::GeneratorIteratorWrapper<ptr_generator<NetworkRules::reaction_rule_generator> >::__register_class("ReactionRuleGenerator");
+
+    peer::util::ExceptionWrapper<not_found, peer::util::PyExcTraits<&PyExc_LookupError> >::__register_class("NotFound");
+    peer::util::ExceptionWrapper<already_exists, peer::util::PyExcTraits<&PyExc_StandardError> >::__register_class("AlreadyExists");
 
     class_<NetworkRules, boost::noncopyable>("NetworkRules", no_init)
         .def("add_reaction_rule", &NetworkRules::add_reaction_rule)

@@ -76,6 +76,7 @@ noinst_HEADERS = \
 	Model.hpp\
 	utils.hpp\
 	vmap.hpp\
+	peer/Exception.hpp\
 	peer/MatrixSpace.hpp\
 	peer/GeneratorIteratorWrapper.hpp\
 	peer/tuple_converters.hpp\
