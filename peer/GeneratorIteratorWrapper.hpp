@@ -114,11 +114,12 @@ public:
 public:
     void* operator new(size_t)
     {
-        return PyObject_New(GeneratorIteratorWrapper, &__class__);
+        return PyObject_GC_New(GeneratorIteratorWrapper, &__class__);
     }
 
     void operator delete(void* ptr)
     {
+        _PyObject_GC_UNTRACK(ptr);
         reinterpret_cast<PyObject*>(ptr)->ob_type->tp_free(reinterpret_cast<PyObject*>(ptr));
     }
 
@@ -225,7 +226,7 @@ PyTypeObject GeneratorIteratorWrapper<Tgen_>::__class__ = {
 	PyObject_GenericGetAttr,		/* tp_getattro */
 	0,					/* tp_setattro */
 	0,					/* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER, /* tp_flags */
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_HAVE_ITER, /* tp_flags */
 	0,					/* tp_doc */
 	0,              	/* tp_traverse */
 	0,					/* tp_clear */
