@@ -184,6 +184,15 @@ struct python_to_sphere_converter
     }
 };
 
+static Model::species_type_iterator Model_get_species_types_begin(Model& self)
+{
+    return self.get_species_types().begin();
+}
+
+static Model::species_type_iterator Model_get_species_types_end(Model& self)
+{
+    return self.get_species_types().end();
+}
 
 BOOST_PYTHON_MODULE( _gfrd )
 {
@@ -428,8 +437,11 @@ BOOST_PYTHON_MODULE( _gfrd )
                 return_value_policy<reference_existing_object>()))
         .def("new_species_type", &Model::new_species_type,
                 return_value_policy<reference_existing_object>())
-        .def("get_species_by_id", &Model::get_species_by_id,
+        .def("get_species_type_by_id", &Model::get_species_type_by_id,
                 return_value_policy<reference_existing_object>())
+        .add_property("species_types",
+            range<return_value_policy<reference_existing_object> >(
+                &Model_get_species_types_begin, &Model_get_species_types_end))
         ;
 
     peer::ReactionRule::__register_class();

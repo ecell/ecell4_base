@@ -32,7 +32,7 @@ SpeciesType* Model::new_species_type()
     return retval;
 }
 
-SpeciesType* Model::get_species_by_id(SpeciesTypeID const& id) const
+SpeciesType* Model::get_species_type_by_id(SpeciesTypeID const& id) const
 {
     species_type_map_type::const_iterator i(species_type_map_.find(id));
     if (species_type_map_.end() == i)
@@ -41,4 +41,11 @@ SpeciesType* Model::get_species_by_id(SpeciesTypeID const& id) const
     }
 
     return (*i).second;
+}
+
+Model::species_type_range Model::get_species_types() const
+{
+    return species_type_range(
+        species_type_iterator(species_type_map_.begin(), second_selector_type()),
+        species_type_iterator(species_type_map_.end(), second_selector_type()));
 }
