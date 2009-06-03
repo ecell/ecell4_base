@@ -220,14 +220,12 @@ protected:
 
     void* operator new(size_t)
     {
-        PyObject* retval = PyObject_GC_New(PyObject, &__class__);
-        _PyObject_GC_TRACK(retval);
+        PyObject* retval = PyObject_New(PyObject, &__class__);
         return retval;
     }
 
     void operator delete(void* ptr)
     {
-        _PyObject_GC_UNTRACK(ptr);
         reinterpret_cast<PyObject*>(ptr)->ob_type->tp_free(reinterpret_cast<PyObject*>(ptr));
     }
 
@@ -294,7 +292,7 @@ PyTypeObject IdentifierWrapper<Timpl_>::__class__ = {
 	PyObject_GenericGetAttr,		/* tp_getattro */
 	0,					/* tp_setattro */
 	0,					/* tp_as_buffer */
-	Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_HAVE_RICHCOMPARE,/* tp_flags */
+	Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_RICHCOMPARE,/* tp_flags */
 	0,					/* tp_doc */
 	0,              	/* tp_traverse */
 	0,					/* tp_clear */
