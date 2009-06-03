@@ -27,6 +27,8 @@ public:
 
     SpeciesType* new_species_type();
 
+    SpeciesType* get_species_by_id(SpeciesTypeID const& id) const;
+
 public:
     species_type_id_generator_type species_type_id_generator_;
     species_type_map_type species_type_map_;

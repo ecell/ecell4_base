@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <boost/type_traits/remove_pointer.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "utils.hpp"
 
@@ -31,3 +32,13 @@ SpeciesType* Model::new_species_type()
     return retval;
 }
 
+SpeciesType* Model::get_species_by_id(SpeciesTypeID const& id) const
+{
+    species_type_map_type::const_iterator i(species_type_map_.find(id));
+    if (species_type_map_.end() == i)
+    {
+        throw not_found(boost::lexical_cast<std::string>(id));
+    }
+
+    return (*i).second;
+}

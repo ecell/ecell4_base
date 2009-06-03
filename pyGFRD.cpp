@@ -15,7 +15,7 @@
 #include <boost/python/module.hpp>
 #include <boost/python/refcount.hpp>
 #include <boost/python/return_value_policy.hpp>
-#include <boost/python/return_internal_reference.hpp>
+#include <boost/python/reference_existing_object.hpp>
 #include <boost/python/return_by_value.hpp>
 
 #include <numpy/arrayobject.h>
@@ -424,9 +424,12 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     class_<Model, boost::noncopyable>("Model")
         .add_property("network_rules",
-            make_function(&Model::network_rules, return_internal_reference<>()))
+            make_function(&Model::network_rules,
+                return_value_policy<reference_existing_object>()))
         .def("new_species_type", &Model::new_species_type,
-                return_internal_reference<>())
+                return_value_policy<reference_existing_object>())
+        .def("get_species_by_id", &Model::get_species_by_id,
+                return_value_policy<reference_existing_object>())
         ;
 
     peer::ReactionRule::__register_class();
