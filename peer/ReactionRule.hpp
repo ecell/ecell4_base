@@ -137,13 +137,14 @@ public:
             iterable_to_stlcontainer_converter<
                 std::vector< ::SpeciesType const*> > >();
 
-        class_<impl_type>("ReactionRule",
+        class_<impl_type, impl_type*>("ReactionRule",
                 init<impl_type::Reactants const&, std::vector< ::SpeciesType const*>, Real>())
             .add_property("k", static_cast<Real(impl_type::*)() const>(&impl_type::k))
-            .def("get_reactants", &impl_type::get_reactants,
-                    return_value_policy<copy_const_reference>())
-            .def("get_products",
-                range<return_value_policy<return_by_value>, impl_type*>(
+            .add_property("reactants",  
+                make_function(&impl_type::get_reactants,
+                    return_value_policy<copy_const_reference>()))
+            .add_property("products",
+                range<return_value_policy<reference_existing_object>, impl_type*>(
                       &ReactionRule::get_products_begin,
                       &ReactionRule::get_products_end))
             .def("__str__", &ReactionRule::__str__)
