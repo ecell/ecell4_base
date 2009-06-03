@@ -409,9 +409,6 @@ class ParticleSimulatorBase( object ):
     def getReactionRule2( self, species1, species2 ):
         return self.reactionTypeMap2.get( ( species1, species2 ), None )
 
-    def getSpeciesByIndex( self, i ):
-        return self.speciesList.values()[i]
-
     def distanceSq( self, position1, position2 ):
         return self._distanceSq( position1, position2, self.worldSize )
 
