@@ -81,7 +81,7 @@ namespace util
                 using namespace boost::python;
                 PyObject* retval = PyTuple_New(boost::size(p));
                 Py_ssize_t idx = 0;
-                for (typename boost::range_const_iterator<native_type>::type i(boost::begin(p)), e(boost::end(p)); i != e; ++i)
+                for (typename boost::range_const_iterator<native_type>::type i(boost::begin(p)), e(boost::end(p)); i != e; ++i, ++idx)
                 {
                     PyTuple_SetItem(retval, idx, incref(object(*i).ptr()));
                 }
