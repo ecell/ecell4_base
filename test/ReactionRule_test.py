@@ -39,6 +39,7 @@ class ReactionRuleTestCase(unittest.TestCase):
                 _gfrd.ReactionRule([], [s1, s2], .0), _gfrd.ReactionRule)))
 
     def test_comparison(self):
+        s1, s2 = self.s1, self.s2
         self.assertEqual(
             _gfrd.ReactionRule([s1], [], .0),
             _gfrd.ReactionRule([s1], [], .0))
