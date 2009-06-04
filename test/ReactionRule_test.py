@@ -64,22 +64,22 @@ class ReactionRuleTestCase(unittest.TestCase):
         self.assertNotEqual(
             _gfrd.ReactionRule([s1], [], .0),
             _gfrd.ReactionRule([s2], [], .0))
-        self.assertEqual(
+        self.assertNotEqual(
             _gfrd.ReactionRule([s1], [s1], .0),
             _gfrd.ReactionRule([s2], [s1], .0))
-        self.assertEqual(
+        self.assertNotEqual(
             _gfrd.ReactionRule([s1], [s2], .0),
             _gfrd.ReactionRule([s2], [s2], .0))
-        self.assertEqual(
+        self.assertNotEqual(
             _gfrd.ReactionRule([s1], [s1, s2], .0),
             _gfrd.ReactionRule([s2], [s1, s2], .0))
-        self.assertEqual(
+        self.assertNotEqual(
             _gfrd.ReactionRule([s1], [s2, s1], .0),
             _gfrd.ReactionRule([s2], [s2, s1], .0))
-        self.assertEqual(
+        self.assertNotEqual(
             _gfrd.ReactionRule([s1], [s1, s2], .0),
             _gfrd.ReactionRule([s2], [s2, s1], .0))
-        self.assertEqual(
+        self.assertNotEqual(
             _gfrd.ReactionRule([s1], [s2, s1], .0),
             _gfrd.ReactionRule([s2], [s1, s2], .0))
 
