@@ -3,7 +3,7 @@
 
 #include <set>
 #include <ostream>
-#include <iostream>
+#include <algorithm>
 
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
@@ -20,7 +20,7 @@
 class ReactionRule
 {
 private:
-    typedef std::set<SpeciesType const*> species_type_set;
+    typedef std::vector<SpeciesType const*> species_type_vector;
 
 public:
     class Reactants
@@ -193,7 +193,7 @@ public:
         containing_type items_;
     };
 
-    typedef species_type_set::const_iterator species_type_iterator;
+    typedef species_type_vector::const_iterator species_type_iterator;
     typedef boost::iterator_range<species_type_iterator> species_type_range;
 
 public:
@@ -204,8 +204,9 @@ public:
 
     void add_product(SpeciesType const* s)
     {
-        if (!products_.insert(s).second)
-            throw already_exists(boost::lexical_cast<std::string>(*s));
+        products_.insert(
+            std::lower_bound(products_.begin(), products_.end(), s),
+            s);
     }
 
     species_type_range get_products() const
@@ -232,11 +233,12 @@ public:
     {
         std::for_each(boost::begin(products), boost::end(products),
                 boost::bind(&ReactionRule::add_product, this, _1));
+        std::stable_sort(products_.begin(), products_.end());
     }
 
 private:
     Reactants reactants_;
-    species_type_set products_;
+    species_type_vector products_;
     Real k_;
 };
 
