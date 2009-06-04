@@ -64,7 +64,9 @@ struct converter_pair<Twrapper_, ptr_generator<Tgen_> >
     {
         static PyObject* convert(Tgen_* impl)
         {
-            return self_type::create(ptr_generator<Tgen_>(impl));
+            return impl ?
+                self_type::create(ptr_generator<Tgen_>(impl)):
+                boost::python::incref(Py_None);
         }
 
         static PyTypeObject* get_pytype()
