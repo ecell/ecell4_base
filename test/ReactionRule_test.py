@@ -38,7 +38,7 @@ class ReactionRuleTestCase(unittest.TestCase):
             self.assertTrue(isinstance(
                 _gfrd.ReactionRule([], [s1, s2], .0), _gfrd.ReactionRule)))
 
-    def tesT_comparison(self):
+    def test_comparison(self):
         self.assertEqual(
             _gfrd.ReactionRule([s1], [], .0),
             _gfrd.ReactionRule([s1], [], .0))
