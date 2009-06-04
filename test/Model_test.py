@@ -20,6 +20,16 @@ class ModelTestCase(unittest.TestCase):
         self.assertNotEqual(None, s2)
         self.assertNotEqual(s1, s2)
 
+    def test_get_species_type_by_id(self):
+        s1 = self.m.new_species_type()
+        s2 = self.m.new_species_type()
+        self.assertNotEqual(s1, s2)
+        self.assertNotEqual(s1.id, s2.id)
+        self.assertTrue(self.m.get_species_type_by_id(s1.id), s1)
+        self.assertTrue(self.m.get_species_type_by_id(s2.id), s2)
+        self.assertTrue(self.m.get_species_type_by_id(s1.id).id, s1.id)
+        self.assertTrue(self.m.get_species_type_by_id(s2.id).id, s2.id)
+
 if __name__ == "__main__":
     unittest.main()
 
