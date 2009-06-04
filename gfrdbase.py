@@ -80,18 +80,23 @@ class NoSpace( Exception ):
 
 
 class Species( object ):
-    def __init__( self, id, D, radius ):
-        self.id = id
-        self.D = D
-        self.radius = radius
+    def __init__( self, type, D, radius ):
+        self.type = type
+        self.D = float(D)
+        self.radius = float(radius)
         self.pool = ParticlePool()
 
+    @property
+    def serial( self ):
+        return self.type.id
+
+    @property
+    def id( self ):
+        return self.type["id"]
 
     def newParticle( self, position ):
-
         serial = self.pool.newParticle( position )
         return serial
-
 
     def removeParticleByIndex( self, index ):
         self.pool.removeByIndex( index )
@@ -99,73 +104,48 @@ class Species( object ):
     def removeParticleBySerial( self, serial ):
         self.pool.removeBySerial( serial )
 
+    def __str__(self):
+        return str(self.type)
 
-class ReactionRule( object ):
-    def __init__( self, reactants=[], products=[], k=0.0 ):
-        self.reactants = reactants
+
+class ReactionRuleCache(object):
+    def __init__(self, rt, products, k):
+        self.rt = rt
         self.products = products
         self.k = k
-        self.check()
 
 
-    def check( self ):
-        if len( self.reactants ) == 1 and len( self.products ) <= 2:
-            totalProductRadii = 0.0
-            for product in self.products:
-                totalProductRadii += product.radius
-            if totalProductRadii > self.reactants[0].radius * 2:
-                raise ValueError, \
-                    'total product radii must be smaller than ' \
-                    + 'reactant radius * 2'
-        if self.k < 0:
-            raise ValueError, 'k < 0'
+class ParticleModel( Model ):
+    def new_species_type( self, id, D, radius ):
+        st = Model.new_species_type( self )
+        st[ "id" ] = str( id )
+        st[ "D" ] = str( D )
+        st[ "radius" ] = str( radius )
+        return st
 
-    def order( self ):
-        return len( self.reactants )
-
-    def __str__( self ):
-        s = ''
-        for i in self.reactants:
-            s += i.id
-            s += ' '
-
-        s += '-> '
-
-        for i in self.products:
-            s += i.id
-            s += ' '
-
-        return s
+    def set_all_repulsive( self ):
+        nr = self.network_rules
+        for species1 in self.species_types:
+            for species2 in self.species_types:
+                if nr.query_reaction_rule(species1, species2) is None:
+                    nr.add_reaction_rule(
+                        ReactionRule([species1, species2], [], 0.))
 
 
-class UnimolecularReactionRule( ReactionRule ):
-    def __init__( self, s1, p1, k ):
-        ReactionRule.__init__( self, [ s1, ], [ p1, ], k )
+def createUnimolecularReactionRule( s1, p1, k ):
+    return ReactionRule( [ s1, ], [ p1, ], k )
 
 
-class DecayReactionRule( ReactionRule ):
-    def __init__( self, s1, k ):
-        ReactionRule.__init__( self, [ s1, ], [], k )
+def createDecayReactionRule( s1, k ):
+    return ReactionRule( [ s1, ], [], k )
 
 
-class BindingReactionRule( ReactionRule ):
-    def __init__( self, s1, s2, p1, k ):
-        ReactionRule.__init__( self, [ s1, s2 ], [ p1, ], k )
-        D = s1.D + s2.D
-        sigma = s1.radius + s2.radius
+def createBindingReactionRule( s1, s2, p1, k ):
+    return ReactionRule( [ s1, s2 ], [ p1, ], k )
 
 
-class RepulsionReactionRule( ReactionRule ):
-    def __init__( self, s1, s2 ):
-        ReactionRule.__init__( self, [ s1, s2 ], [], 0.0 )
-
-        D = s1.D + s2.D
-        sigma = s1.radius + s2.radius
-
-
-class UnbindingReactionRule( ReactionRule ):
-    def __init__( self, s1, p1, p2, k ):
-        ReactionRule.__init__( self, [ s1, ], [ p1, p2 ], k )
+def createUnbindingReactionRule( s1, p1, p2, k ):
+    return ReactionRule( [ s1, ], [ p1, p2 ], k )
 
 
 class Reaction:
@@ -336,8 +316,7 @@ class ParticlePool( object ):
 class ParticleSimulatorBase( object ):
     def __init__( self ):
         self.speciesList = {}
-        self.reactionTypeMap1 = {}
-        self.reactionTypeMap2 = {}
+        self.reactionRuleCache = {}
 
         self.surfaceList = []
 
@@ -360,6 +339,15 @@ class ParticleSimulatorBase( object ):
         self.setWorldSize( INF )
 
         self.lastReaction = None
+
+        self.model = None
+
+    def setModel( self, model ):
+        self.speciesList.clear()
+        self.reactionRuleCache.clear()
+        for st in model.species_types:
+            self.speciesList[st.id] = Species( st, st["D"], st["radius"] )
+        self.model = model
 
     def initialize( self ):
         pass
@@ -404,10 +392,51 @@ class ParticleSimulatorBase( object ):
         pos %= self.worldSize
 
     def getReactionRule1( self, species ):
-        return self.reactionTypeMap1.get( species, None )
+        k = (species,)
+        try:
+            retval = self.reactionRuleCache[k]
+        except:
+            gen = self.model.network_rules.query_reaction_rule( species.type )
+            if gen is None:
+                retval = None
+            else:
+                retval = []
+                for rt in gen:
+                    products = [ self.speciesList[st.id] for st in rt.products ]
+                    species1 = self.speciesList[rt.reactants[0].id]
+                    if len( products ) == 1:
+                        if species1.radius * 2 < products[0].radius:
+                            raise RuntimeError,\
+                                'radius of product must be smaller ' \
+                                + 'than radius of reactant.'
+                    elif len( products ) == 2:
+                        if species1.radius < products[0].radius or\
+                                species1.radius < products[1].radius:
+                            raise RuntimeError,\
+                                'radii of both products must be smaller than ' \
+                                + 'reactant.radius.'
+                    retval.append(ReactionRuleCache(rt, products, rt.k))
+            self.reactionRuleCache[k] = retval
+        return retval
 
     def getReactionRule2( self, species1, species2 ):
-        return self.reactionTypeMap2.get( ( species1, species2 ), None )
+        k = (species2.id, species1.id) if species2.id < species1.id else (species1.id, species2.id)
+        try:
+            retval = self.reactionRuleCache[k]
+        except:
+            gen = self.model.network_rules.query_reaction_rule( species1.type, species2.type )
+            if gen is None:
+                retval = None
+            else:
+                retval = []
+                for rt in gen:
+                    retval.append(
+                        ReactionRuleCache(
+                            rt,
+                            [ self.speciesList[st.id] for st in rt.products ],
+                            rt.k))
+            self.reactionRuleCache[k] = retval
+        return retval
 
     def distanceSq( self, position1, position2 ):
         return self._distanceSq( position1, position2, self.worldSize )
@@ -425,53 +454,12 @@ class ParticleSimulatorBase( object ):
     def addSurface( self, surface ):
         self.surfaceList.append( surface )
 
-    def addSpecies( self, species ):
-        self.speciesList[ species.id ] = species
-
-    def addReactionRule( self, rt ):
-        numReactants = len( rt.reactants )
-
-        if numReactants == 1:
-            species1 = rt.reactants[0]
-
-            if len( rt.products ) == 1:
-                if species1.radius * 2 < rt.products[0].radius:
-                    raise RuntimeError,\
-                        'radius of product must be smaller ' \
-                        + 'than radius of reactant.'
-            elif len( rt.products ) == 2:
-                if species1.radius < rt.products[0].radius or\
-                        species1.radius < rt.products[1].radius:
-                    raise RuntimeError,\
-                        'radii of both products must be smaller than ' \
-                        + 'reactant.radius.'
-
-            if self.reactionTypeMap1.has_key( species1 ):
-                self.reactionTypeMap1[species1].append( rt )
-            else:
-                self.reactionTypeMap1[species1] = [ rt, ]
-
-        elif numReactants == 2:
-            species1 = rt.reactants[0]
-            species2 = rt.reactants[1]
-            self.reactionTypeMap2[ (species1,species2) ] = rt
-            if species1 != species2:
-                self.reactionTypeMap2[ (species2,species1) ] = rt
-
-        else:
-            raise RuntimeError, 'Invalid ReactionRule.'
-
     def setAllRepulsive( self ):
-        for species1 in self.speciesList.values():
-            for species2 in self.speciesList.values():
-                try:
-                    _ = self.reactionTypeMap2[ ( species1, species2 ) ]
-                except:
-                    self.reactionTypeMap2[ ( species1, species2 ) ] =\
-                                            RepulsionReactionRule( species1,\
-                                                                   species2 )
+        # TODO
+        pass
         
-    def throwInParticles( self, species, n, surface=[] ):
+    def throwInParticles( self, st, n, surface=[] ):
+        species = self.speciesList[st.id]
         if __debug__:
             log.info( 'throwing in %s %s particles' % ( n, species.id ) )
 
@@ -487,7 +475,8 @@ class ParticleSimulatorBase( object ):
             
             self.createParticle( species, position )
 
-    def placeParticle( self, species, pos ):
+    def placeParticle( self, st, pos ):
+        species = self.speciesList[st.id]
         pos = numpy.array( pos )
         radius = species.radius
 

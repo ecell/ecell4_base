@@ -14,16 +14,15 @@ from egfrd import *
 class EGFRDSimulatorTestCase( unittest.TestCase ):
 
     def setUp(self):
+        self.m = ParticleModel()
+        self.S = self.m.new_species_type( 'S', 2e-11, 5e-8 )
+        self.SS = self.m.new_species_type( 'SS', 1e-12, 5e-9 )
+        self.A = self.m.new_species_type( 'A', 0, 1e-8 )
+        self.B = self.m.new_species_type( 'B', 2e-11, 5e-9 )
+        self.m.set_all_repulsive()
         self.s = EGFRDSimulator()
+        self.s.setModel( self.m )
         self.s.setWorldSize( 1e-5 )
-        self.S = Species( 'S', 2e-11, 5e-8 )
-        self.s.addSpecies( self.S )
-        self.SS = Species( 'SS', 1e-12, 5e-9 )
-        self.s.addSpecies( self.SS )
-        self.A = Species( 'A', 0, 1e-8 )
-        self.s.addSpecies( self.A )
-        self.B = Species( 'B', 2e-11, 5e-9 )
-        self.s.addSpecies( self.B )
 
     def tearDown(self):
         pass

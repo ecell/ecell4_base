@@ -145,7 +145,7 @@ class BDSimulatorCoreBase( object ):
                 closest = neighbors[0]
                 species2 = closest.species
 
-                rt = self.main.getReactionRule2( species, species2 )
+                rt = self.main.getReactionRule2( species, species2 )[0]
 
                 if rt.k != 0.0:
                     radius12 = species.radius + species2.radius
@@ -406,7 +406,6 @@ class BDSimulator( ParticleSimulatorBase ):
 
 
     def initialize( self ):
-        self.setAllRepulsive()
         self.core.initialize()
         self.isDirty = False
 

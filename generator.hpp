@@ -105,7 +105,10 @@ private:
     typedef Tholder_ holder_type;
 
 public:
-    ptr_generator(Timpl_* impl): impl_(impl) {}
+    ptr_generator(Timpl_* impl): impl_(impl)
+    {
+        BOOST_ASSERT(impl);
+    }
 
     bool valid() const
     {

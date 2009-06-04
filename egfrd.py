@@ -924,8 +924,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def initialize( self ):
         ParticleSimulatorBase.initialize( self )
 
-        self.setAllRepulsive()
-
         self.scheduler.clear()
         self.shellMatrix.clear()
 
@@ -1030,7 +1028,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         species1 = single1.particle.species
         species2 = single2.particle.species
-        rt = self.reactionTypeMap2.get( ( species1, species2 ) )
+        rt = self.getReactionRule2( species1, species2 )[ 0 ]
 
         pair = Pair( single1, single2, rt, 
                      Delegate( self, EGFRDSimulator.distance ),
