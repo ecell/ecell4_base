@@ -14,9 +14,9 @@ public:
 public:
     virtual void add_reaction_rule(ReactionRule const&) = 0;
 
-    virtual reaction_rule_generator* query_reaction_rule(SpeciesType const* r1) = 0;
+    virtual reaction_rule_generator* query_reaction_rule(SpeciesType const* r1) const = 0;
 
-    virtual reaction_rule_generator* query_reaction_rule(SpeciesType const* r1, SpeciesType const* r2) = 0;
+    virtual reaction_rule_generator* query_reaction_rule(SpeciesType const* r1, SpeciesType const* r2) const = 0;
 
     virtual ~NetworkRules() = 0;
 };

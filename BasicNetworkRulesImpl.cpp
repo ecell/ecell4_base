@@ -22,7 +22,7 @@ void BasicNetworkRulesImpl::add_reaction_rule(ReactionRule const& r)
 }
     
 BasicNetworkRulesImpl::reaction_rule_generator*
-BasicNetworkRulesImpl::query_reaction_rule(SpeciesType const* r1)
+BasicNetworkRulesImpl::query_reaction_rule(SpeciesType const* r1) const
 {
     reaction_rules_map::const_iterator i(
             reaction_rules_map_.find(ReactionRule::Reactants(r1)));
@@ -34,7 +34,7 @@ BasicNetworkRulesImpl::query_reaction_rule(SpeciesType const* r1)
 }
 
 BasicNetworkRulesImpl::reaction_rule_generator*
-BasicNetworkRulesImpl::query_reaction_rule(SpeciesType const* r1, SpeciesType const* r2)
+BasicNetworkRulesImpl::query_reaction_rule(SpeciesType const* r1, SpeciesType const* r2) const
 {
     reaction_rules_map::const_iterator i(
             reaction_rules_map_.find(ReactionRule::Reactants(r1, r2)));
