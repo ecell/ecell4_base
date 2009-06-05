@@ -9,6 +9,8 @@ struct DefaultLot
         return *this;
     }
 
+    operator bool() const { return false; }
+
     bool operator!() const { return true; }
 
     DefaultLot& operator++()
@@ -120,6 +122,11 @@ struct Identifier
     {
         value_.first = rhs.value_.first;
         value_.second = rhs.value_.second;
+    }
+
+    operator bool() const
+    {
+        return value_.second != 0;
     }
 
     bool operator!() const

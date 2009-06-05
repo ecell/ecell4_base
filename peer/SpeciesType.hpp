@@ -30,10 +30,10 @@ public:
     }
 
 public:
-    static void __register_class()
+    static boost::python::objects::class_base __register_class()
     {
         using namespace boost::python;
-        class_<impl_type, impl_type*>("SpeciesType", no_init)
+        return class_<impl_type, impl_type*>("SpeciesType", no_init)
             .add_property("id",
                     make_function(&impl_type::id,
                         return_value_policy<copy_const_reference>()))

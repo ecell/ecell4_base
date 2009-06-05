@@ -47,6 +47,8 @@
 typedef Real length_type;
 typedef Vector3<length_type> position_type;
 
+static boost::python::object species_type_class;
+
 struct position_to_ndarray_converter
 {
     typedef position_type native_type;
@@ -193,6 +195,32 @@ static Model::species_type_iterator Model_get_species_types_end(Model& self)
 {
     return self.get_species_types().end();
 }
+
+struct species_type_to_species_type_id_converter
+{
+    typedef ::SpeciesTypeID native_type;
+
+    static void* convertible(PyObject* pyo)
+    {
+        if (!PyObject_TypeCheck(pyo, reinterpret_cast<PyTypeObject*>(
+                species_type_class.ptr())))
+        {
+            return 0;
+        }
+        return pyo;
+    }
+
+    static void construct(PyObject* pyo, 
+                          boost::python::converter::rvalue_from_python_stage1_data* data)
+    {
+        using namespace boost::python;
+        void* storage(reinterpret_cast<
+            converter::rvalue_from_python_storage<native_type>* >(
+                data)->storage.bytes);
+        new (storage) native_type(static_cast<SpeciesType*>(extract<SpeciesType*>(object(borrowed(pyo))))->id());
+        data->convertible = storage;
+    }
+};
 
 BOOST_PYTHON_MODULE( _gfrd )
 {
@@ -429,7 +457,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         seq_to_position_converter>();
 
     peer::MatrixSpace::__register_class();
-    peer::SpeciesType::__register_class();
+    species_type_class = peer::SpeciesType::__register_class();
 
     class_<Model, boost::noncopyable>("Model")
         .add_property("network_rules",
@@ -447,6 +475,8 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::ReactionRule::__register_class();
 
     peer::IdentifierWrapper<SpeciesTypeID>::__register_class("SpeciesTypeID");
+    peer::util::to_native_converter<SpeciesTypeID, species_type_to_species_type_id_converter>();
+
     peer::util::GeneratorIteratorWrapper<ptr_generator<NetworkRules::reaction_rule_generator> >::__register_class("ReactionRuleGenerator");
 
     peer::util::ExceptionWrapper<not_found, peer::util::PyExcTraits<&PyExc_LookupError> >::__register_class("NotFound");
@@ -454,7 +484,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     class_<NetworkRules, boost::noncopyable>("NetworkRules", no_init)
         .def("add_reaction_rule", &NetworkRules::add_reaction_rule)
-        .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesType const*) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
-        .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesType const*, SpeciesType const*) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
+        .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
+        .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&, SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         ;
 }

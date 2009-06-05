@@ -15,18 +15,18 @@
 
 #include "Defs.hpp"
 #include "utils.hpp"
-#include "SpeciesType.hpp"
+#include "SpeciesTypeID.hpp"
 
 class ReactionRule
 {
 private:
-    typedef std::vector<SpeciesType const*> species_type_vector;
+    typedef std::vector<SpeciesTypeID> species_type_vector;
 
 public:
     class Reactants
     {
     private:
-        typedef boost::array<SpeciesType const*, 2> containing_type;
+        typedef boost::array<SpeciesTypeID, 2> containing_type;
     public:
         typedef containing_type::value_type value_type;
         typedef containing_type::reference reference;
@@ -52,7 +52,7 @@ public:
                 ++idx_;
             }
 
-            SpeciesType const*& dereference() const
+            SpeciesTypeID& dereference() const
             {
                 return cntnr_[idx_];
             }
@@ -85,7 +85,7 @@ public:
                 ++idx_;
             }
 
-            SpeciesType const* const& dereference() const
+            SpeciesTypeID const& dereference() const
             {
                 return cntnr_[idx_];
             }
@@ -105,18 +105,18 @@ public:
     public:
         Reactants()
         {
-            items_[0] = 0;
-            items_[1] = 0;
+            items_[0] = SpeciesTypeID();
+            items_[1] = SpeciesTypeID();
         }
 
-        Reactants(SpeciesType const* one)
+        Reactants(SpeciesTypeID const& one)
         {
             BOOST_ASSERT(one);
             items_[0] = one;
-            items_[1] = 0;
+            items_[1] = SpeciesTypeID();
         }
 
-        Reactants(SpeciesType const* one, SpeciesType const* two)
+        Reactants(SpeciesTypeID const& one, SpeciesTypeID const& two)
         {
             BOOST_ASSERT(one);
             BOOST_ASSERT(two);
@@ -157,12 +157,12 @@ public:
             return const_iterator(*this, size());
         }
 
-        SpeciesType const*& operator[](std::size_t idx)
+        SpeciesTypeID& operator[](std::size_t idx)
         {
             return items_[idx];
         }
 
-        SpeciesType const* const& operator[](std::size_t idx) const
+        SpeciesTypeID const& operator[](std::size_t idx) const
         {
             return items_[idx];
         }
@@ -202,7 +202,7 @@ public:
         return reactants_;
     }
 
-    void add_product(SpeciesType const* s)
+    void add_product(SpeciesTypeID const& s)
     {
         products_.insert(
             std::lower_bound(products_.begin(), products_.end(), s),
@@ -278,7 +278,7 @@ inline bool operator!=(ReactionRule const& lhs, ReactionRule const& rhs)
 }
 
 template<typename T2_>
-inline ReactionRule new_reaction_rule(SpeciesType const* r1, T2_ const& products, Real k)
+inline ReactionRule new_reaction_rule(SpeciesTypeID const& r1, T2_ const& products, Real k)
 {
     ReactionRule retval((ReactionRule::Reactants(r1)));
     retval.k() = k;
@@ -288,7 +288,7 @@ inline ReactionRule new_reaction_rule(SpeciesType const* r1, T2_ const& products
 }
 
 template<typename T2_>
-inline ReactionRule new_reaction_rule(SpeciesType const* r1, SpeciesType const* r2, T2_ const& products, Real k)
+inline ReactionRule new_reaction_rule(SpeciesTypeID const& r1, SpeciesTypeID const& r2, T2_ const& products, Real k)
 {
     ReactionRule retval(ReactionRule::Reactants(r1, r2));
     retval.k() = k;
@@ -304,24 +304,24 @@ operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, ReactionRule const& r)
     bool first;
     out << "ReactionRule(reactants={";
     first = true;
-    BOOST_FOREACH (SpeciesType const* s, r.get_reactants())
+    BOOST_FOREACH (SpeciesTypeID const& s, r.get_reactants())
     {
         if (!first)
         {
             out << ", ";
         }
-        out << *s;
+        out << s;
         first = false;
     }
     out << "}, products={";
     first = true;
-    BOOST_FOREACH (SpeciesType const* s, r.get_products())
+    BOOST_FOREACH (SpeciesTypeID const& s, r.get_products())
     {
         if (!first)
         {
             out << ", ";
         }
-        out << *s;
+        out << s;
         first = false;
     }
     out << "})";

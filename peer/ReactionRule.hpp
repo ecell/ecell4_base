@@ -43,14 +43,14 @@ struct seq_to_reactants_converter
         {
         case 1:
             data->stage1.convertible = new(data->storage.bytes) native_type(
-                extract< ::SpeciesType const*>(
+                extract<native_type::value_type>(
                     object(borrowed(PySequence_GetItem(ptr, 0)))));
             break;
         case 2:
             data->stage1.convertible = new(data->storage.bytes) native_type(
-                extract< ::SpeciesType const*>(
+                extract<native_type::value_type>(
                     object(borrowed(PySequence_GetItem(ptr, 0)))),
-                extract< ::SpeciesType const*>(
+                extract<native_type::value_type>(
                     object(borrowed(PySequence_GetItem(ptr, 1)))));
             break;
         default:
@@ -133,12 +133,12 @@ public:
         peer::util::to_native_converter<impl_type::Reactants,
             seq_to_reactants_converter>();
         peer::util::register_range_to_tuple_converter<impl_type::Reactants>();
-        peer::util::to_native_converter<std::vector< ::SpeciesType const*>,
+        peer::util::to_native_converter<std::vector< ::SpeciesTypeID>,
             iterable_to_stlcontainer_converter<
-                std::vector< ::SpeciesType const*> > >();
+                std::vector< ::SpeciesTypeID> > >();
 
         class_<impl_type, impl_type*>("ReactionRule",
-                init<impl_type::Reactants const&, std::vector< ::SpeciesType const*>, Real>())
+                init<impl_type::Reactants const&, std::vector< ::SpeciesTypeID>, Real>())
             .add_property("k", static_cast<Real(impl_type::*)() const>(&impl_type::k))
             .add_property("reactants",  
                 make_function(&impl_type::get_reactants,
