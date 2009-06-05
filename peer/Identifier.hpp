@@ -215,6 +215,21 @@ public:
         boost::python::to_python_converter<Timpl_, to_python_converter>();
     }
 
+    static PyTypeObject* get_class()
+    {
+        return &__class__;
+    }
+
+    Timpl_& wrapped()
+    {
+        return impl_;
+    }
+
+    Timpl_ const& wrapped() const
+    {
+        return impl_;
+    }
+
 protected:
     IdentifierWrapper(Timpl_ const& impl): impl_(impl) {}
 
