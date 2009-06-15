@@ -68,83 +68,83 @@ namespace libecs
 
     class EventBase
     {
-	
+        
     public:
-	
-	EventBase( const double time )
-	    :
-	    time( time )
-	{
-	    ; // do nothing
-	}
+        
+        EventBase( const double time )
+            :
+            time( time )
+        {
+            ; // do nothing
+        }
 
-	void setTime( const double time )
-	{
-	    this->time = time;
-	}
+        void setTime( const double time )
+        {
+            this->time = time;
+        }
 
-	const double getTime() const
-	{
-	    return this->time;
-	}
+        const double getTime() const
+        {
+            return this->time;
+        }
    
 
-	const bool operator<= ( const EventBase& rhs ) const
-	{
-	    if( getTime() <= rhs.getTime() )
-	    {
-		return true;
-	    }
-	    else
-	    {
-		return false;
-	    }
-	}
+        const bool operator<= ( const EventBase& rhs ) const
+        {
+            if( getTime() <= rhs.getTime() )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-	const bool operator< ( const EventBase& rhs ) const
-	{
-	    if( getTime() < rhs.getTime() )
-	    {
-		return true;
-	    }
-	    else
-	    {
-		return false;
-	    }
-	}
-
-
-	const bool operator== ( const EventBase& rhs ) const
-	{
-	    if( getTime() == rhs.getTime() )
-	    {
-		return true;
-	    }
-	    else
-	    {
-		return false;
-	    }
-	}
-
-	const bool operator!= ( const EventBase& rhs ) const
-	{
-	    return ! this->operator==( rhs );
-	}
+        const bool operator< ( const EventBase& rhs ) const
+        {
+            if( getTime() < rhs.getTime() )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
 
+        const bool operator== ( const EventBase& rhs ) const
+        {
+            if( getTime() == rhs.getTime() )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-	// dummy, because DynamicPriorityQueue requires this. better without.
-	EventBase()
+        const bool operator!= ( const EventBase& rhs ) const
+        {
+            return ! this->operator==( rhs );
+        }
+
+
+
+        // dummy, because DynamicPriorityQueue requires this. better without.
+        EventBase()
             :
             time( -1.0 )
-	{
-	    ; // do nothing
-	}
+        {
+            ; // do nothing
+        }
 
 
     private:
 
-	double             time;
+        double             time;
     };
 
 
@@ -159,187 +159,187 @@ namespace libecs
     template <class Event_>
     class EventScheduler
     {
-	  
+          
     public:
 
-	typedef Event_ Event;
-	typedef DynamicPriorityQueue<Event> EventPriorityQueue;
+        typedef Event_ Event;
+        typedef DynamicPriorityQueue<Event> EventPriorityQueue;
 
-	typedef typename DynamicPriorityQueue<Event>::Index EventIndex;
-	typedef typename DynamicPriorityQueue<Event>::ID EventID;
+        typedef typename DynamicPriorityQueue<Event>::Index EventIndex;
+        typedef typename DynamicPriorityQueue<Event>::ID EventID;
 
-//	typedef std::vector<EventIndex> EventIndexVector;
-//	typedef std::vector<EventIndexVector> EventIndexVectorVector;
-
-
-	EventScheduler()
-	    :
-	    time( 0.0 )
-	{
-	    ; // do nothing
-	}
-
-	~EventScheduler()
-	{
-	    ; // do nothing
-	}
+//      typedef std::vector<EventIndex> EventIndexVector;
+//      typedef std::vector<EventIndexVector> EventIndexVectorVector;
 
 
-	const double getTime() const
-	{
-	    return time;
-	}
+        EventScheduler()
+            :
+            time( 0.0 )
+        {
+            ; // do nothing
+        }
 
-	const double getTopTime() const
-	{
+        ~EventScheduler()
+        {
+            ; // do nothing
+        }
+
+
+        const double getTime() const
+        {
+            return time;
+        }
+
+        const double getTopTime() const
+        {
             assert( this->getSize() != 0 );  // FIXME: use exception
 
-	    return getTopEvent().getTime();
-	}
+            return getTopEvent().getTime();
+        }
 
-	const EventIndex getSize() const
-	{
-	    return this->eventPriorityQueue.getSize();
-	}
+        const EventIndex getSize() const
+        {
+            return this->eventPriorityQueue.getSize();
+        }
 
-	const Event& getTopEvent() const
-	{
-	    return this->eventPriorityQueue.getTop();
-	}
+        const Event& getTopEvent() const
+        {
+            return this->eventPriorityQueue.getTop();
+        }
 
-	EventID getTopID() const
-	{
-	    return this->eventPriorityQueue.getTopID();
-	}
+        EventID getTopID() const
+        {
+            return this->eventPriorityQueue.getTopID();
+        }
 
-	const Event& peekSecondEvent() const
-	{
-	    return this->eventPriorityQueue.peekSecond();
-	}
+        const Event& peekSecondEvent() const
+        {
+            return this->eventPriorityQueue.peekSecond();
+        }
 
-	const Event& getEvent( const EventID id ) const
-	{
-	    return this->eventPriorityQueue.get( id );
-	}
+        const Event& getEvent( const EventID id ) const
+        {
+            return this->eventPriorityQueue.get( id );
+        }
 
-	const Event& getEventByIndex( const EventIndex index ) const
-	{
-	    return this->eventPriorityQueue.getByIndex( index );
-	}
+        const Event& getEventByIndex( const EventIndex index ) const
+        {
+            return this->eventPriorityQueue.getByIndex( index );
+        }
 
-	void step()
-	{
+        void step()
+        {
 
-	    // Here I copy construct the top event and use its event
-	    // ID to reschedule it.  This is necessary if events can
-	    // be created or deleted within fire() and the dynamic
-	    // priority queue can reallocate internal data structures.
-	    // Most of the cost of using this is optimized away when
-	    // the dynamic priority queue has a VolatileIDPolicy.
-	    Event topEvent( getTopEvent() );
-	    const EventID ID( this->eventPriorityQueue.getTopID() );
-	    this->time = topEvent.getTime();
+            // Here I copy construct the top event and use its event
+            // ID to reschedule it.  This is necessary if events can
+            // be created or deleted within fire() and the dynamic
+            // priority queue can reallocate internal data structures.
+            // Most of the cost of using this is optimized away when
+            // the dynamic priority queue has a VolatileIDPolicy.
+            Event topEvent( getTopEvent() );
+            const EventID ID( this->eventPriorityQueue.getTopID() );
+            this->time = topEvent.getTime();
 
-	    // Fire top
-	    topEvent.fire();
+            // Fire top
+            topEvent.fire();
 
-	    // If the event is rescheduled into the past, remove it.
-	    // Otherwise, reuse the event.
-	    if( topEvent.getTime() >= getTime() )
-	    {
-		this->eventPriorityQueue.replace( ID, topEvent );
-	    }
-	    else
-	    {
-		this->eventPriorityQueue.pop( ID );
-	    }
+            // If the event is rescheduled into the past, remove it.
+            // Otherwise, reuse the event.
+            if( topEvent.getTime() >= getTime() )
+            {
+                this->eventPriorityQueue.replace( ID, topEvent );
+            }
+            else
+            {
+                this->eventPriorityQueue.pop( ID );
+            }
 
-//	    assert( getNextTime() >= getTime() );
+//          assert( getNextTime() >= getTime() );
 
-	    // update dependent events
-//	    const EventIndexVector&
-//		anEventIndexVector( this->eventDependencyArray[ topEventIndex ] );
-
-/*
-	    for( typename EventIndexVector::const_iterator 
-		     i( anEventIndexVector.begin() );
-		 i != anEventIndexVector.end(); ++i )
-	    {
-		const EventIndex anIndex( *i );
-
-		updateEvent( anIndex, currentTime );
-	    }
-*/
-	}
+            // update dependent events
+//          const EventIndexVector&
+//              anEventIndexVector( this->eventDependencyArray[ topEventIndex ] );
 
 /*
-	void updateAllEvents( const double aCurrentTime )
-	{
-	    const EventIndex aSize( getSize() );
-	    for( EventIndex anIndex( 0 ); anIndex != aSize; ++anIndex )
-	    {
-		updateEvent( anIndex, aCurrentTime );
-	    }
-	}
+            for( typename EventIndexVector::const_iterator 
+                     i( anEventIndexVector.begin() );
+                 i != anEventIndexVector.end(); ++i )
+            {
+                const EventIndex anIndex( *i );
 
-	void updateEvent( const EventIndex anIndex, const double aCurrentTime )
-	{
-	    Event& anEvent( this->eventPriorityQueue.getIndex( anIndex ) );
-	    const double anOldTime( anEvent.getTime() );
-	    anEvent.update( aCurrentTime );
-	    const double aNewTime( anEvent.getTime() );
+                updateEvent( anIndex, currentTime );
+            }
+*/
+        }
 
-	    // this->eventPriorityQueue.move( anIndex );
-	    if( aNewTime >= anOldTime )
-	    {
-		this->eventPriorityQueue.moveDown( anIndex );
-	    }
-	    else
-	    {
-		this->eventPriorityQueue.moveUp( anIndex );
-	    }
-	}
+/*
+        void updateAllEvents( const double aCurrentTime )
+        {
+            const EventIndex aSize( getSize() );
+            for( EventIndex anIndex( 0 ); anIndex != aSize; ++anIndex )
+            {
+                updateEvent( anIndex, aCurrentTime );
+            }
+        }
+
+        void updateEvent( const EventIndex anIndex, const double aCurrentTime )
+        {
+            Event& anEvent( this->eventPriorityQueue.getIndex( anIndex ) );
+            const double anOldTime( anEvent.getTime() );
+            anEvent.update( aCurrentTime );
+            const double aNewTime( anEvent.getTime() );
+
+            // this->eventPriorityQueue.move( anIndex );
+            if( aNewTime >= anOldTime )
+            {
+                this->eventPriorityQueue.moveDown( anIndex );
+            }
+            else
+            {
+                this->eventPriorityQueue.moveUp( anIndex );
+            }
+        }
 */
 
-//	void updateAllEventDependency();  // update all
+//      void updateAllEventDependency();  // update all
 
-//	void updateEventDependency( const EventIndex anIndex );
+//      void updateEventDependency( const EventIndex anIndex );
     
-	void clear()
-	{
+        void clear()
+        {
             time = 0.0;
-	    this->eventPriorityQueue.clear();
-//	    this->eventDependencyArray.clear();
-	}
+            this->eventPriorityQueue.clear();
+//          this->eventDependencyArray.clear();
+        }
 
-	const EventID addEvent( const Event& event )
-	{
-	    return this->eventPriorityQueue.push( event );
-	}
+        const EventID addEvent( const Event& event )
+        {
+            return this->eventPriorityQueue.push( event );
+        }
 
-	void removeEvent( const EventID id )
-	{
-	    this->eventPriorityQueue.pop( id );
-	}
+        void removeEvent( const EventID id )
+        {
+            this->eventPriorityQueue.pop( id );
+        }
 
 
-	void updateEventTime( const EventID id, const double t )
-	{
+        void updateEventTime( const EventID id, const double t )
+        {
             const EventIndex index( this->eventPriorityQueue.getIndex( id ) );
             Event& event( this->eventPriorityQueue.getByIndex( index ) );
 
             event.setTime( t );
-	    this->eventPriorityQueue.move( index );
-	}
+            this->eventPriorityQueue.move( index );
+        }
 
 
 
-	// this is here for DiscreteEventStepper::log().
-	// should be removed in future. 
-//	const EventIndexVector& getDependencyVector( const EventIndex anIndex )
-//	{
-//	    return this->eventDependencyArray[ anIndex ] ;
-//	}
+        // this is here for DiscreteEventStepper::log().
+        // should be removed in future. 
+//      const EventIndexVector& getDependencyVector( const EventIndex anIndex )
+//      {
+//          return this->eventDependencyArray[ anIndex ] ;
+//      }
 
         const bool check() const
         {
@@ -348,11 +348,11 @@ namespace libecs
 
     private:
 
-	EventPriorityQueue       eventPriorityQueue;
+        EventPriorityQueue       eventPriorityQueue;
 
-//	EventIndexVectorVector   eventDependencyArray;
+//      EventIndexVectorVector   eventDependencyArray;
 
-	double                   time;
+        double                   time;
 
 
     };
@@ -363,40 +363,40 @@ namespace libecs
     template < class Event >
     void EventScheduler<Event>::updateAllEventDependency()
     {
-	this->eventDependencyArray.resize( this->eventPriorityQueue.getSize() );
+        this->eventDependencyArray.resize( this->eventPriorityQueue.getSize() );
     
-	for( EventIndex i1( 0 ); i1 != this->eventPriorityQueue.getSize(); ++i1 )
-	{
-	    updateEventDependency( i1 );
-	}
+        for( EventIndex i1( 0 ); i1 != this->eventPriorityQueue.getSize(); ++i1 )
+        {
+            updateEventDependency( i1 );
+        }
     }
 
     template < class Event >
     void EventScheduler<Event>::
     updateEventDependency( const EventIndex i1 )
     {
-	const Event& anEvent1( this->eventPriorityQueue[ i1 ] );
+        const Event& anEvent1( this->eventPriorityQueue[ i1 ] );
 
-	EventIndexVector& anEventIndexVector( this->eventDependencyArray[ i1 ] );
-	anEventIndexVector.clear();
+        EventIndexVector& anEventIndexVector( this->eventDependencyArray[ i1 ] );
+        anEventIndexVector.clear();
 
-	for( EventIndex i2( 0 ); i2 < this->eventPriorityQueue.getSize(); ++i2 )
-	{
-	    if( i1 == i2 )
-	    {
-		// don't include itself
-		continue;
-	    }
-	
-	    const Event& anEvent2( this->eventPriorityQueue[ i2 ] );
-	
-	    if( anEvent2.isDependentOn( anEvent1 ) )
-	    {
-		anEventIndexVector.push_back( i2 );
-	    }
-	}
+        for( EventIndex i2( 0 ); i2 < this->eventPriorityQueue.getSize(); ++i2 )
+        {
+            if( i1 == i2 )
+            {
+                // don't include itself
+                continue;
+            }
+        
+            const Event& anEvent2( this->eventPriorityQueue[ i2 ] );
+        
+            if( anEvent2.isDependentOn( anEvent1 ) )
+            {
+                anEventIndexVector.push_back( i2 );
+            }
+        }
     
-	std::sort( anEventIndexVector.begin(), anEventIndexVector.end() );
+        std::sort( anEventIndexVector.begin(), anEventIndexVector.end() );
     }
 */
 

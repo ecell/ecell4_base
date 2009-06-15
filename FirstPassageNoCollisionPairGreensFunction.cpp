@@ -180,10 +180,10 @@ FirstPassageNoCollisionPairGreensFunction::guess_maxi( const Real t ) const
 
 const Real 
 FirstPassageNoCollisionPairGreensFunction::p_n_alpha( const unsigned int i,
-						      const unsigned int n,
-						      const Real r,
-						      const Real r0, 
-						      const Real t ) const
+                                                      const unsigned int n,
+                                                      const Real r,
+                                                      const Real r0, 
+                                                      const Real t ) const
 {
     const Real a( this->geta() );
 
@@ -254,37 +254,37 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
     unsigned int n( 1 );
     while( true )
     {
-	Real p_n( this->p_n( n, r, r0, t ) * factor );
+        Real p_n( this->p_n( n, r, r0, t ) * factor );
 
-	if( ! isfinite( p_n ) )
-	{
-	    std::cerr << "makep_nTable: invalid value; " <<
-		p_n << "( n= " << n << ")." << std::endl;
-//	    p_n = 0.0;
-	    break;
-	}
-	//printf("%d p_n %18.18g\n", n, p_n );
-
-	p_nTable.push_back( p_n );
-
-	const Real p_n_abs( fabs( p_n ) );
-	// truncate when converged enough.
-	if( p_n_abs <= threshold &&
-            p_n_prev_abs <= threshold &&
-	    p_n_abs <= p_n_prev_abs )
-	{
-	    break;
+        if( ! isfinite( p_n ) )
+        {
+            std::cerr << "makep_nTable: invalid value; " <<
+                p_n << "( n= " << n << ")." << std::endl;
+//          p_n = 0.0;
+            break;
         }
-	
+        //printf("%d p_n %18.18g\n", n, p_n );
 
-	if( n >= this->MAX_ORDER )
-	{
-	    //std::cerr << "nocol: p_n didn't converge." << std::endl;
-	    break;
-	}
-	
-	++n;
-	p_n_prev_abs = p_n_abs;
+        p_nTable.push_back( p_n );
+
+        const Real p_n_abs( fabs( p_n ) );
+        // truncate when converged enough.
+        if( p_n_abs <= threshold &&
+            p_n_prev_abs <= threshold &&
+            p_n_abs <= p_n_prev_abs )
+        {
+            break;
+        }
+        
+
+        if( n >= this->MAX_ORDER )
+        {
+            //std::cerr << "nocol: p_n didn't converge." << std::endl;
+            break;
+        }
+        
+        ++n;
+        p_n_prev_abs = p_n_abs;
     }
 
 }
@@ -294,7 +294,7 @@ FirstPassageNoCollisionPairGreensFunction::makep_nTable( RealVector& p_nTable,
 const Real 
 FirstPassageNoCollisionPairGreensFunction::
 p_theta_i( const unsigned int n,
-	   const RealVector& p_nTable, const RealVector& lgndTable ) const
+           const RealVector& p_nTable, const RealVector& lgndTable ) const
 {
     return p_nTable[n] * lgndTable[n] * ( 2 * n + 1 );
 }
@@ -302,10 +302,10 @@ p_theta_i( const unsigned int n,
 const Real
 FirstPassageNoCollisionPairGreensFunction::
 p_theta_table( const Real theta,
-	       const Real r, 
-	       const Real r0, 
-	       const Real t, 
-	       const RealVector& p_nTable ) const
+               const Real r, 
+               const Real r0, 
+               const Real t, 
+               const RealVector& p_nTable ) const
 {
     const unsigned int tableSize( p_nTable.size() );
 
@@ -334,17 +334,17 @@ FirstPassageNoCollisionPairGreensFunction::p_theta( const Real theta,
                                                     const Real t ) const 
 {
     {
-	const Real a( this->geta() );
-	
-	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
-	THROW_UNLESS( std::invalid_argument, r >= 0 && r < a );
-	THROW_UNLESS( std::invalid_argument, r0 >= 0 && r0 < a );
-	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+        const Real a( this->geta() );
+        
+        THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        THROW_UNLESS( std::invalid_argument, r >= 0 && r < a );
+        THROW_UNLESS( std::invalid_argument, r0 >= 0 && r0 < a );
+        THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
 
     if( t == 0.0 )
     {
-	return 0.0;
+        return 0.0;
     }
 
     
@@ -366,18 +366,18 @@ FirstPassageNoCollisionPairGreensFunction::ip_theta( const Real theta,
                                                      const Real t ) const
 {
     {
-	const Real a( this->geta() );
-	
-	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        const Real a( this->geta() );
+        
+        THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
         // r \in ( sigma, a )
-	THROW_UNLESS( std::invalid_argument, r >= 0.0 && r < a );
-	THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
-	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+        THROW_UNLESS( std::invalid_argument, r >= 0.0 && r < a );
+        THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
+        THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
 
     if( t == 0.0 || theta == 0.0 )
     {
-	return 0.0;
+        return 0.0;
     }
 
     RealVector p_nTable;
@@ -392,8 +392,8 @@ FirstPassageNoCollisionPairGreensFunction::ip_theta( const Real theta,
 const Real 
 FirstPassageNoCollisionPairGreensFunction::
 ip_theta_i( const unsigned int n,
-	    const RealVector& p_nTable, 
-	    const RealVector& lgndTable1 ) const
+            const RealVector& p_nTable, 
+            const RealVector& lgndTable1 ) const
 {
     // lgndTable1 is offset by 1; lgndTable1[0] is for n=-1.
 
@@ -407,10 +407,10 @@ ip_theta_i( const unsigned int n,
 const Real 
 FirstPassageNoCollisionPairGreensFunction::
 ip_theta_table( const Real theta,
-		const Real r, 
-		const Real r0, 
-		const Real t,	 
-		const RealVector& p_nTable ) const
+                const Real r, 
+                const Real r0, 
+                const Real t,    
+                const RealVector& p_nTable ) const
 {
     const unsigned int tableSize( p_nTable.size() );
 
@@ -432,7 +432,7 @@ ip_theta_table( const Real theta,
                                ip_theta_i,
                                this,
                                _1, p_nTable, lgndTable1 ),
-			   tableSize ) );
+                           tableSize ) );
 
     return p;
 }
@@ -523,37 +523,37 @@ makedp_nTable( RealVector& p_nTable,
     unsigned int n( 1 );
     while( true )
     {
-	Real p_n( this->dp_n( n, r0, t ) * factor );
+        Real p_n( this->dp_n( n, r0, t ) * factor );
 
-	if( ! isfinite( p_n ) )
-	{
-	    std::cerr << "makedp_nTable: invalid value; " <<
-		p_n << "( n= " << n << ")." << std::endl;
-//	    p_n = 0.0;
-	    break;
-	}
-	//printf("dp_n %g\n",p_n );
+        if( ! isfinite( p_n ) )
+        {
+            std::cerr << "makedp_nTable: invalid value; " <<
+                p_n << "( n= " << n << ")." << std::endl;
+//          p_n = 0.0;
+            break;
+        }
+        //printf("dp_n %g\n",p_n );
 
-	p_nTable.push_back( p_n );
+        p_nTable.push_back( p_n );
 
-	const Real p_n_abs( fabs( p_n ) );
-	// truncate when converged enough.
-	if( p_n_abs <= threshold &&
+        const Real p_n_abs( fabs( p_n ) );
+        // truncate when converged enough.
+        if( p_n_abs <= threshold &&
             p_n_prev_abs <= threshold &&
-	    p_n_abs <= p_n_prev_abs )
-	{
-	    break;
-	}
-	
+            p_n_abs <= p_n_prev_abs )
+        {
+            break;
+        }
+        
 
-	if( n >= this->MAX_ORDER )
-	{
-	    //std::cerr << "dp_n didn't converge." << std::endl;
-	    break;
-	}
-	
-	++n;
-	p_n_prev_abs = p_n_abs;
+        if( n >= this->MAX_ORDER )
+        {
+            //std::cerr << "dp_n didn't converge." << std::endl;
+            break;
+        }
+        
+        ++n;
+        p_n_prev_abs = p_n_abs;
     }
 
 }
@@ -565,20 +565,20 @@ FirstPassageNoCollisionPairGreensFunction::dp_theta( const Real theta,
                                                      const Real t ) const 
 {
     {
-	const Real a( this->geta() );
-	
-	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        const Real a( this->geta() );
+        
+        THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
 
         // r \in [ sigma, a ]  ;  unlike p_theta,
         // defined at r == sigma and r == a.
-	THROW_UNLESS( std::invalid_argument, r >= 0.0 && r <= a );
-	THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
-	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+        THROW_UNLESS( std::invalid_argument, r >= 0.0 && r <= a );
+        THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
+        THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
 
     if( t == 0.0 )
     {
-	return 0.0;
+        return 0.0;
     }
 
     RealVector p_nTable;
@@ -597,18 +597,18 @@ FirstPassageNoCollisionPairGreensFunction::idp_theta( const Real theta,
                                                       const Real t ) const
 {
     {
-	const Real a( this->geta() );
-	
-	THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        const Real a( this->geta() );
+        
+        THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
         // r \in [ sigma, a ]
-	THROW_UNLESS( std::invalid_argument, r >= 0.0 && r <= a );
-	THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
-	THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+        THROW_UNLESS( std::invalid_argument, r >= 0.0 && r <= a );
+        THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
+        THROW_UNLESS( std::invalid_argument, t >= 0.0 );
     }
 
     if( t == 0.0 || theta == 0.0 )
     {
-	return 0.0;
+        return 0.0;
     }
 
     RealVector p_nTable;
@@ -648,35 +648,35 @@ FirstPassageNoCollisionPairGreensFunction::drawTime( const Real rnd,
     // adjust high and low to make sure that f( low ) and f( high ) straddle.
     while( GSL_FN_EVAL( &F, high ) < 0.0 )
     {
-	high *= 10;
-	printf( "drawTime: adjusting high: %g\n", high );
-	if( fabs( high ) >= 1e10 )
-	{
-	    std::cerr << "Couldn't adjust high. F(" << high <<
-		") = " << GSL_FN_EVAL( &F, high ) << "; r0 = " << r0 << 
-		", " << dump() << std::endl;
-	    throw std::exception();
-	}
+        high *= 10;
+        printf( "drawTime: adjusting high: %g\n", high );
+        if( fabs( high ) >= 1e10 )
+        {
+            std::cerr << "Couldn't adjust high. F(" << high <<
+                ") = " << GSL_FN_EVAL( &F, high ) << "; r0 = " << r0 << 
+                ", " << dump() << std::endl;
+            throw std::exception();
+        }
     }
 
     Real low_value( GSL_FN_EVAL( &F, low ) );
     while( low_value > 0.0 )
     {
-	low *= .1;
+        low *= .1;
 
         const Real low_value_new( GSL_FN_EVAL( &F, low ) );
 
-	printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value_new );
+        printf( "drawTime: adjusting low: %g, F = %g\n", low, low_value_new );
 
-	if( fabs( low ) <= this->MIN_T || 
+        if( fabs( low ) <= this->MIN_T || 
             fabs( low_value - low_value_new ) < TOLERANCE ) 
-	{
-	    std::cerr << "Couldn't adjust low.  Returning MIN_T (= "
-		      << this->MIN_T << "); F(" << low <<
-		") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
-		      << dump() << std::endl;
-	    return this->MIN_T;
-	}
+        {
+            std::cerr << "Couldn't adjust low.  Returning MIN_T (= "
+                      << this->MIN_T << "); F(" << low <<
+                ") = " << GSL_FN_EVAL( &F, low ) << "; r0 = " << r0 << ", "
+                      << dump() << std::endl;
+            return this->MIN_T;
+        }
 
         low_value = low_value_new;
     }
@@ -690,28 +690,28 @@ FirstPassageNoCollisionPairGreensFunction::drawTime( const Real rnd,
     unsigned int i( 0 );
     while( true )
     {
-	gsl_root_fsolver_iterate( solver );
-	low = gsl_root_fsolver_x_lower( solver );
-	high = gsl_root_fsolver_x_upper( solver );
+        gsl_root_fsolver_iterate( solver );
+        low = gsl_root_fsolver_x_lower( solver );
+        high = gsl_root_fsolver_x_upper( solver );
 
-	const int status( gsl_root_test_interval( low, high, this->MIN_T, 
-						  this->TOLERANCE ) );
+        const int status( gsl_root_test_interval( low, high, this->MIN_T, 
+                                                  this->TOLERANCE ) );
 
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawTime: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
+        if( status == GSL_CONTINUE )
+        {
+            if( i >= maxIter )
+            {
+                gsl_root_fsolver_free( solver );
+                std::cerr << "drawTime: failed to converge." << std::endl;
+                throw std::exception();
+            }
+        }
+        else
+        {
+            break;
+        }
 
-	++i;
+        ++i;
     }
   
     // printf("%d\n", i );
@@ -737,7 +737,7 @@ FirstPassageNoCollisionPairGreensFunction::drawR( const Real rnd,
 
     if( t == 0.0 )
     {
-	return r0;
+        return r0;
     }
 
     const Real psurv( p_survival( t, r0 ) );
@@ -745,10 +745,10 @@ FirstPassageNoCollisionPairGreensFunction::drawR( const Real rnd,
     p_int_r_params params = { this, t, r0, rnd * psurv };
 
     gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &p_int_r_F ),
-	    &params 
-	};
+        {
+            reinterpret_cast<typeof(F.function)>( &p_int_r_F ),
+            &params 
+        };
 
     Real low( 0.0 );
     Real high( a );
@@ -761,8 +761,8 @@ FirstPassageNoCollisionPairGreensFunction::drawR( const Real rnd,
 
     if( highvalue < 0.0 )
     {
-	printf( "drawR: highvalue < 0.0 (%g). returning a.\n", highvalue );
-	return a;
+        printf( "drawR: highvalue < 0.0 (%g). returning a.\n", highvalue );
+        return a;
     }
 
 
@@ -775,27 +775,27 @@ FirstPassageNoCollisionPairGreensFunction::drawR( const Real rnd,
     unsigned int i( 0 );
     while( true )
     {
-	gsl_root_fsolver_iterate( solver );
-	low = gsl_root_fsolver_x_lower( solver );
-	high = gsl_root_fsolver_x_upper( solver );
-	const int status( gsl_root_test_interval( low, high, 1e-15,
-						  this->TOLERANCE ) );
+        gsl_root_fsolver_iterate( solver );
+        low = gsl_root_fsolver_x_lower( solver );
+        high = gsl_root_fsolver_x_upper( solver );
+        const int status( gsl_root_test_interval( low, high, 1e-15,
+                                                  this->TOLERANCE ) );
 
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawR: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
+        if( status == GSL_CONTINUE )
+        {
+            if( i >= maxIter )
+            {
+                gsl_root_fsolver_free( solver );
+                std::cerr << "drawR: failed to converge." << std::endl;
+                throw std::exception();
+            }
+        }
+        else
+        {
+            break;
+        }
 
-	++i;
+        ++i;
     }
   
     //printf("%d\n", i );
@@ -825,19 +825,19 @@ FirstPassageNoCollisionPairGreensFunction::drawTheta( const Real rnd,
     // t == 0 means no move.
     if( t == 0.0 )
     {
-	return 0.0;
+        return 0.0;
     }
 
     RealVector p_nTable;
 
     if( r == geta() || r < 0.0 )
     {
-	//puts("dp");
-	makedp_nTable( p_nTable, r0, t );
+        //puts("dp");
+        makedp_nTable( p_nTable, r0, t );
     }
     else
     {
-	makep_nTable( p_nTable, r, r0, t );
+        makep_nTable( p_nTable, r, r0, t );
     }
 
     // root finding with the integrand form.
@@ -847,10 +847,10 @@ FirstPassageNoCollisionPairGreensFunction::drawTheta( const Real rnd,
     ip_theta_params params = { this, r, r0, t, p_nTable, rnd * ip_theta_pi };
 
     gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &ip_theta_F ),
-	    &params 
-	};
+        {
+            reinterpret_cast<typeof(F.function)>( &ip_theta_F ),
+            &params 
+        };
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -861,27 +861,27 @@ FirstPassageNoCollisionPairGreensFunction::drawTheta( const Real rnd,
     unsigned int i( 0 );
     while( true )
     {
-	gsl_root_fsolver_iterate( solver );
-	const Real low( gsl_root_fsolver_x_lower( solver ) );
-	const Real high( gsl_root_fsolver_x_upper( solver ) );
-	const int status( gsl_root_test_interval( low, high, 1e-11,
-						  THETA_TOLERANCE ) );
+        gsl_root_fsolver_iterate( solver );
+        const Real low( gsl_root_fsolver_x_lower( solver ) );
+        const Real high( gsl_root_fsolver_x_upper( solver ) );
+        const int status( gsl_root_test_interval( low, high, 1e-11,
+                                                  THETA_TOLERANCE ) );
 
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawTheta: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
+        if( status == GSL_CONTINUE )
+        {
+            if( i >= maxIter )
+            {
+                gsl_root_fsolver_free( solver );
+                std::cerr << "drawTheta: failed to converge." << std::endl;
+                throw std::exception();
+            }
+        }
+        else
+        {
+            break;
+        }
 
-	++i;
+        ++i;
     }
   
     //printf("%d\n", i );
@@ -903,6 +903,6 @@ const std::string FirstPassageNoCollisionPairGreensFunction::dump() const
 {
     std::ostringstream ss;
     ss << "D = " << this->getD() <<
-	", a = " << this->geta() << std::endl;
+        ", a = " << this->geta() << std::endl;
     return ss.str();
 }    

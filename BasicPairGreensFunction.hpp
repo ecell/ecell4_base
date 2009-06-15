@@ -37,23 +37,23 @@ public:
     const Real drawTime( const Real rnd, const Real r0 ) const;
     
     const Real drawR( const Real rnd, 
-		      const Real r0, 
-		      const Real t ) const;
+                      const Real r0, 
+                      const Real t ) const;
     
     const Real drawTheta( const Real rnd,
-			  const Real r, 
-			  const Real r0, 
-			  const Real t ) const;
+                          const Real r, 
+                          const Real r0, 
+                          const Real t ) const;
     
 
     const Real getkD() const
     {
-	return this->kD;
+        return this->kD;
     }
     
     const Real getalpha() const
     {
-	return this->alpha;
+        return this->alpha;
     }
     
     const Real p_reaction( const Real t, const Real r0 ) const;
@@ -72,7 +72,7 @@ public:
                          const Real time ) const;
 
     const Real p_free( const Real theta, const Real r, const Real r0, 
-		       const Real t ) const;
+                       const Real t ) const;
 
     const Real ip_free( const Real theta, 
                         const Real r, 
@@ -80,7 +80,7 @@ public:
                         const Real t ) const;
     
     const Real p_corr( const Real theta, const Real r, const Real r0, 
-		       const Real t ) const;
+                       const Real t ) const;
 
     const Real ip_corr( const Real theta, const Real r, const Real r0, 
                         const Real t ) const;
@@ -91,53 +91,53 @@ private:
     
     struct p_reaction_params 
     { 
-	const BasicPairGreensFunction* const gf;
-	const Real r0;
-	const Real rnd;
+        const BasicPairGreensFunction* const gf;
+        const Real r0;
+        const Real rnd;
     };
 
     struct p_int_r_params 
     { 
-	const BasicPairGreensFunction* const gf;
-	const Real t;
-	const Real r0;
-	const Real rnd;
+        const BasicPairGreensFunction* const gf;
+        const Real t;
+        const Real r0;
+        const Real rnd;
     };
 
     struct p_theta_params 
     { 
-	const BasicPairGreensFunction* const gf;
-	const Real r;
-	const Real r0;
-	const Real t;
+        const BasicPairGreensFunction* const gf;
+        const Real r;
+        const Real r0;
+        const Real t;
         const RealVector& RnTable;
-	const Real value;
+        const Real value;
     };
     
     struct p_corr_R_params 
     { 
-	const BasicPairGreensFunction* const gf;
-	unsigned int n;
-	const Real r;
-	const Real r0; 
-	const Real t; 
+        const BasicPairGreensFunction* const gf;
+        unsigned int n;
+        const Real r;
+        const Real r0; 
+        const Real t; 
     };
     
     struct p_corr_R2_params 
     { 
-	int order;
-	int order_max;
-	const Real r;
-	const Real r0; 
-	const Real theta;
-	const Real t; 
-	const Real Sigma; 
-	const Real D;
-	const Real kf;
+        int order;
+        int order_max;
+        const Real r;
+        const Real r0; 
+        const Real theta;
+        const Real t; 
+        const Real Sigma; 
+        const Real D;
+        const Real kf;
     };
 
     static const Real p_reaction_F( const Real tsqrt, 
-				    const p_reaction_params* params );
+                                    const p_reaction_params* params );
 
     static const Real ip_theta_F( const Real theta,
                                   const p_theta_params* params );
@@ -148,7 +148,7 @@ private:
     static const Real p_corr_R_F( const Real alpha, 
                                   const p_corr_R_params* const params );
 //    static const Real p_corr_R2( const Real alpha, 
-//				 const p_corr_R2_params* const params );
+//                               const p_corr_R2_params* const params );
 
 
     const Real p_corr_R( const Real alpha,
@@ -192,7 +192,7 @@ private:
 
     const Real 
     Rn( const unsigned int order, const Real r, const Real r0, const Real t,
-	gsl_integration_workspace* const workspace, const Real tol ) const;
+        gsl_integration_workspace* const workspace, const Real tol ) const;
     
     
 private:

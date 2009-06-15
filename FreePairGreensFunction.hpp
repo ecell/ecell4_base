@@ -44,19 +44,19 @@ public:
     
     
     const Real drawTime( const Real rnd, const Real r0,
-			 const Real maxt ) const
+                         const Real maxt ) const
     {
         return INFINITY;
     }
     
     const Real drawR( const Real rnd, 
-		      const Real r0, 
-		      const Real t ) const;
+                      const Real r0, 
+                      const Real t ) const;
     
     const Real drawTheta( const Real rnd,
-			  const Real r, 
-			  const Real r0, 
-			  const Real t ) const;
+                          const Real r, 
+                          const Real r0, 
+                          const Real t ) const;
 
     const Real p_r( const Real r, 
                     const Real r0, 
@@ -85,10 +85,10 @@ private:
 
     struct ip_r_params
     { 
-	const FreePairGreensFunction* const gf;
-	const Real r0;
-	const Real t;
-	const Real value;
+        const FreePairGreensFunction* const gf;
+        const Real r0;
+        const Real t;
+        const Real value;
     };
 
 
@@ -98,11 +98,11 @@ private:
 
     struct ip_theta_params
     { 
-	const FreePairGreensFunction* const gf;
-	const Real r;
-	const Real r0;
-	const Real t;
-	const Real value;
+        const FreePairGreensFunction* const gf;
+        const Real r;
+        const Real r0;
+        const Real t;
+        const Real value;
     };
 
 

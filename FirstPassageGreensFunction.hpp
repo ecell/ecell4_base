@@ -13,21 +13,21 @@ class FirstPassageGreensFunction
 public:
 
     FirstPassageGreensFunction( const Real D )
-	:
-	D( D ),
+        :
+        D( D ),
         a( 0.0 )
     {
-	;
+        ;
     }
 
     virtual ~FirstPassageGreensFunction()
     {
-	;
+        ;
     }
 
     const Real getD() const
     {
-	return this->D;
+        return this->D;
     }
 
     void seta( const Real a )
@@ -59,25 +59,25 @@ private:
 
     struct p_survival_params
     {
-	const FirstPassageGreensFunction* const gf;
-	const Real rnd;
+        const FirstPassageGreensFunction* const gf;
+        const Real rnd;
     };
 
     static const Real p_survival_F( const Real t, 
-				    const p_survival_params* params );
+                                    const p_survival_params* params );
 
     struct p_r_params
     {
-	const FirstPassageGreensFunction* const gf;
-	const Real t;
-	const Real target;
+        const FirstPassageGreensFunction* const gf;
+        const Real t;
+        const Real target;
     };
 
     static const Real p_r_free_F( const Real r, 
                                   const p_r_params* params );
 
     static const Real p_r_F( const Real r, 
-			     const p_r_params* params );
+                             const p_r_params* params );
 
 
 private:

@@ -35,7 +35,7 @@ public:
 
     const Real geta() const
     {
-	return this->a;
+        return this->a;
     }
 
     void seta( const Real a );
@@ -43,37 +43,37 @@ public:
     const Real drawTime( const Real rnd, const Real r0 ) const;
 
     const EventType drawEventType( const Real rnd, 
-				   const Real r0, 
-				   const Real t ) const;
+                                   const Real r0, 
+                                   const Real t ) const;
     
     const Real drawR( const Real rnd, 
-		      const Real r0, 
-		      const Real t ) const;
+                      const Real r0, 
+                      const Real t ) const;
     
     const Real drawTheta( const Real rnd,
-			  const Real r, 
-			  const Real r0, 
-			  const Real t ) const;
+                          const Real r, 
+                          const Real r0, 
+                          const Real t ) const;
     
     const Real p_survival( const Real t,
-			   const Real r0 ) const;
+                           const Real r0 ) const;
 
     const Real dp_survival( const Real t,
-			    const Real r0 ) const;
+                            const Real r0 ) const;
 
     const Real p_int_r( const Real r,
-			const Real t,
-			const Real r0 ) const;
+                        const Real t,
+                        const Real r0 ) const;
 
     const Real p_theta( const Real theta,
-			const Real r, 
-			const Real r0, 
-			const Real t ) const;
+                        const Real r, 
+                        const Real r0, 
+                        const Real t ) const;
 
     const Real ip_theta( const Real theta,
-			 const Real r, 
-			 const Real r0, 
-			 const Real t ) const;
+                         const Real r, 
+                         const Real r0, 
+                         const Real t ) const;
 
     const Real dp_theta( const Real theta,
                          const Real r, 
@@ -87,16 +87,16 @@ public:
 
 
     const Real p_n( const Integer n, const Real r, 
-		    const Real r0, const Real t ) const;
+                    const Real r0, const Real t ) const;
 
     const Real dp_n( const Integer n, const Real r0, const Real t ) const;
 
 
     const Real p_n_alpha( const unsigned int i,
-			  const unsigned int n,
-			  const Real r, 
-			  const Real r0,
-			  const Real t ) const;
+                          const unsigned int n,
+                          const Real r, 
+                          const Real r0,
+                          const Real t ) const;
 
     const Real dp_n_alpha( const unsigned int i,
                            const unsigned int n,
@@ -113,73 +113,73 @@ protected:
 
 
     const Real p_theta_table( const Real theta,
-			      const Real r, 
-			      const Real r0, 
-			      const Real t, 
-			      const RealVector& p_nTable ) const;
+                              const Real r, 
+                              const Real r0, 
+                              const Real t, 
+                              const RealVector& p_nTable ) const;
 
     const Real ip_theta_table( const Real theta,
-			       const Real r, 
-			       const Real r0, 
-			       const Real t,
-			       const RealVector& p_nTable ) const;
+                               const Real r, 
+                               const Real r0, 
+                               const Real t,
+                               const RealVector& p_nTable ) const;
 
     void makep_nTable( RealVector& p_nTable,
-		       const Real r, 
-		       const Real r0, 
-		       const Real t ) const;
+                       const Real r, 
+                       const Real r0, 
+                       const Real t ) const;
     
     void makedp_nTable( RealVector& p_nTable,
                         const Real r0, 
                         const Real t ) const;
 
     const Real p_theta_i( const unsigned int n,
-			  const RealVector& p_nTable, 
-			  const RealVector& lgndTable ) const;
+                          const RealVector& p_nTable, 
+                          const RealVector& lgndTable ) const;
 
     const Real ip_theta_i( const unsigned int n,
-			   const RealVector& p_nTable, 
-			   const RealVector& lgndTable1 ) const;
+                           const RealVector& p_nTable, 
+                           const RealVector& lgndTable1 ) const;
 
     
     struct p_survival_params
     { 
-	const FirstPassageNoCollisionPairGreensFunction* const gf;
-	const Real r0;
-	const Real rnd;
+        const FirstPassageNoCollisionPairGreensFunction* const gf;
+        const Real r0;
+        const Real rnd;
     };
 
     static const Real 
     p_survival_F( const Real t,
-		  const p_survival_params* const params );
+                  const p_survival_params* const params );
 
 
     struct p_int_r_params
     { 
-	const FirstPassageNoCollisionPairGreensFunction* const gf;
-	const Real t;
-	const Real r0;
-//	const RealVector& num_r0Table;
-	const Real rnd;
+        const FirstPassageNoCollisionPairGreensFunction* const gf;
+        const Real t;
+        const Real r0;
+//      const RealVector& num_r0Table;
+        const Real rnd;
     };
 
     static const Real 
     p_int_r_F( const Real r,
-	       const p_int_r_params* const params );
+               const p_int_r_params* const params );
 
     struct ip_theta_params
     { 
-	const FirstPassageNoCollisionPairGreensFunction* const gf;
-	const Real r;
-	const Real r0;
-	const Real t;
-	const RealVector& p_nTable;
-	const Real value;
+        const FirstPassageNoCollisionPairGreensFunction* const gf;
+        const Real r;
+        const Real r0;
+        const Real t;
+        const RealVector& p_nTable;
+        const Real value;
     };
 
     static const Real 
     ip_theta_F( const Real theta,
-		const ip_theta_params* const params );
+                const ip_theta_params* const params );
 
 
 private:

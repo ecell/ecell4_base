@@ -26,26 +26,26 @@ const Real expxsq_erfc( const Real x )
     const Real xsq( x * x );
     if( x > 26.0 )
     {
-	const Real M_1_SQRTPI( M_2_SQRTPI * 0.5 ); 
+        const Real M_1_SQRTPI( M_2_SQRTPI * 0.5 ); 
 
-	const Real x2sq_r( 1.0 / ( 2.0 * xsq ) );  // 2 / (2 x)^2
+        const Real x2sq_r( 1.0 / ( 2.0 * xsq ) );  // 2 / (2 x)^2
 
-	/*
-	  up to second term in the expansion.
-	  abs err ~= 9e-8 at x == 20, 3e-8 at x == 25
+        /*
+          up to second term in the expansion.
+          abs err ~= 9e-8 at x == 20, 3e-8 at x == 25
 
-	  the third term 
-	  - ( 8 / ( x2sq * x2sq * x2sq ) )       
-	  and beyond doesn't have a major contribution for large x.
-	*/
+          the third term 
+          - ( 8 / ( x2sq * x2sq * x2sq ) )       
+          and beyond doesn't have a major contribution for large x.
+        */
 
-	result = ( M_1_SQRTPI / x ) * 
-	    ( 1.0 - x2sq_r +      // term 1
-	      x2sq_r * x2sq_r );  // term 2
+        result = ( M_1_SQRTPI / x ) * 
+            ( 1.0 - x2sq_r +      // term 1
+              x2sq_r * x2sq_r );  // term 2
     }
     else
     {
-	result = exp( xsq ) * erfc( x );
+        result = exp( xsq ) * erfc( x );
     }
 
     return result;
@@ -80,7 +80,7 @@ __p_irr( const Real r,
     const Real num1( exp( - gsl_pow_2( r - r0 ) / Dt4 ) );
     const Real num2( exp( - gsl_pow_2( r_plus_r0_minus_2sigma ) / Dt4 ) );
     const Real num3( W( r_plus_r0_minus_2sigma / sqrt( Dt4 ), 
-			alpha * sqrt( t ) ) );
+                        alpha * sqrt( t ) ) );
 
     const Real num( ( num1 + num2 ) / sqrt( 4.0 * M_PI * t ) -  alpha * num3 );
 
@@ -130,7 +130,7 @@ __p_reaction_irr( const Real t, const Real r0,
     const Real sqrtD( sqrt( D ) );
 
     const Real r0_m_sigma_over_sqrt4D_t( ( r0 - sigma ) 
-					 / ( ( sqrtD + sqrtD ) * sqrtt ) );
+                                         / ( ( sqrtD + sqrtD ) * sqrtt ) );
 
     const Real Wf( W( r0_m_sigma_over_sqrt4D_t, alpha * sqrtt ) );
     const Real factor( sigma * kf / ( r0 * ( kf + kD ) ) );
@@ -260,22 +260,22 @@ const Real p_survival_irr_deriv( const Real tsqrt,
     const Real sqrtPI( sqrt( M_PI ) );
 
     const Real r0_m_Sigma_t_over_sqrt4D( ( r0 - Sigma ) * tsqrt / 
-					 ( sqrtD + sqrtD ) );
+                                         ( sqrtD + sqrtD ) );
     const Real Wf( W( r0_m_Sigma_t_over_sqrt4D, alpha * tsqrt ) );
 
     const Real num1( sqrtD * exp( - gsl_pow_2( r0_m_Sigma_t_over_sqrt4D ) ) );
     const Real num2( ( sqrtPI * tsqrt * ( alpha * sqrtD + r0 - Sigma ) ) * Wf );
 
     const Real factor( ( alpha + alpha ) * kf * Sigma /
-		       ( sqrtPI * sqrtD * r0 * ( kf + kD ) ) );
+                       ( sqrtPI * sqrtD * r0 * ( kf + kD ) ) );
   
     return ( num1 - num2 ) * factor;
 }
 
 void
 p_survival_irr_fdf( const Real tsqrt, 
-					 const Real r0,
-					 Real* const f, Real* const df ) const
+                                         const Real r0,
+                                         Real* const f, Real* const df ) const
 {
     const Real kD( this->getkD() );
     const Real kf( this->getkf() );
@@ -289,25 +289,25 @@ p_survival_irr_fdf( const Real tsqrt,
     const Real factor( Sigma * kf / ( r0 * ( kf + kD ) ) );
 
     {
-	const Real r0_m_Sigma_over_sqrt4D_t( r0_m_Sigma_over_sqrt4D / tsqrt );
-	const Real Wf( W( r0_m_Sigma_over_sqrt4D_t, alpha * tsqrt ) );
+        const Real r0_m_Sigma_over_sqrt4D_t( r0_m_Sigma_over_sqrt4D / tsqrt );
+        const Real Wf( W( r0_m_Sigma_over_sqrt4D_t, alpha * tsqrt ) );
 
-	*f = factor * ( erfc( r0_m_Sigma_over_sqrt4D_t ) - Wf );
+        *f = factor * ( erfc( r0_m_Sigma_over_sqrt4D_t ) - Wf );
     }
 
     {
-	const Real r0_m_Sigma_t_over_sqrt4D( r0_m_Sigma_over_sqrt4D * tsqrt );
-	const Real Wdf( W( r0_m_Sigma_t_over_sqrt4D, alpha * tsqrt ) );
-	const Real sqrtPI( sqrt( M_PI ) );
+        const Real r0_m_Sigma_t_over_sqrt4D( r0_m_Sigma_over_sqrt4D * tsqrt );
+        const Real Wdf( W( r0_m_Sigma_t_over_sqrt4D, alpha * tsqrt ) );
+        const Real sqrtPI( sqrt( M_PI ) );
 
-	const Real dfnum1( sqrtD * 
-			   exp( - gsl_pow_2( r0_m_Sigma_t_over_sqrt4D ) ) );
-	const Real dfnum2( ( sqrtPI * tsqrt * ( alpha * sqrtD + r0 - Sigma ) ) 
-			   * Wdf );
+        const Real dfnum1( sqrtD * 
+                           exp( - gsl_pow_2( r0_m_Sigma_t_over_sqrt4D ) ) );
+        const Real dfnum2( ( sqrtPI * tsqrt * ( alpha * sqrtD + r0 - Sigma ) ) 
+                           * Wdf );
     
-	const Real dffactor( ( alpha * M_2_SQRTPI / sqrtD ) * factor );
+        const Real dffactor( ( alpha * M_2_SQRTPI / sqrtD ) * factor );
     
-	*df = ( dfnum1 - dfnum2 ) * dffactor;
+        *df = ( dfnum1 - dfnum2 ) * dffactor;
     }
 }
 */
@@ -487,27 +487,27 @@ const Real drawR_gbd( const Real rnd, const Real sigma,
     unsigned int i( 0 );
     while( true )
     {
-	gsl_root_fsolver_iterate( solver );
+        gsl_root_fsolver_iterate( solver );
 
-	low = gsl_root_fsolver_x_lower( solver );
-	high = gsl_root_fsolver_x_upper( solver );
-	int status( gsl_root_test_interval( low, high, 1e-18, 1e-12 ) );
+        low = gsl_root_fsolver_x_lower( solver );
+        high = gsl_root_fsolver_x_upper( solver );
+        int status( gsl_root_test_interval( low, high, 1e-18, 1e-12 ) );
 
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawR_gbd: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
+        if( status == GSL_CONTINUE )
+        {
+            if( i >= maxIter )
+            {
+                gsl_root_fsolver_free( solver );
+                std::cerr << "drawR_gbd: failed to converge." << std::endl;
+                throw std::exception();
+            }
+        }
+        else
+        {
+            break;
+        }
 
-	++i;
+        ++i;
     }
   
     gsl_root_fsolver_free( solver );

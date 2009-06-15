@@ -30,8 +30,8 @@
 
 
 BasicPairGreensFunction::BasicPairGreensFunction( const Real D, 
-						  const Real kf, 
-						  const Real Sigma )
+                                                  const Real kf, 
+                                                  const Real Sigma )
     :
     PairGreensFunction( D, kf, Sigma ),
     kD( 4.0 * M_PI * getSigma() * getD() ),
@@ -51,7 +51,7 @@ BasicPairGreensFunction::~BasicPairGreensFunction()
 #if 0 
 const Real 
 BasicPairGreensFunction::p_corr_R2( const Real alpha, 
-				    const p_corr_R2_params* const params )
+                                    const p_corr_R2_params* const params )
 {
     const Real SIGMA2KFp1( 2.0 * params->Sigma * params->kf + 1.0 );
     const Real SIGMA2U( 2.0 * alpha * params->Sigma );
@@ -67,57 +67,57 @@ BasicPairGreensFunction::p_corr_R2( const Real alpha,
     Real result( 0.0 );
     for( int order( order_min ); order <= order_max; ++order )
     {
-	const Real js( us.j( order ) );
-	const Real ys( us.y( order ) );
-	const Real jps( us.jp( order ) );
-	const Real yps( us.yp( order ) );
-	const Real jr( ur.j( order ) );
-	const Real yr( ur.y( order ) );
-	const Real jr0( ur0.j( order ) );
-	const Real yr0( ur0.y( order ) );
-	
-	
-	// R1 / ( R1^2 + R2^2 ) * ( R1 F2 + R2 F2 )
-	
-	// below I rewrote the equation in the way that 
-	// (1) j and y are multiplied first, before j^2 or y^2 occurs,
-	//     of which absolute values of exponents can be huge 
-	//    (either positive or negative).
-	// (2) avoid roundoff error caused by j? - j?.
-	//     (including j? - jp? etc.)  assumed y? - y? is ok (?).
-	
-	const Real R1a( SIGMA2KFp1 * js );
-	const Real R1b( SIGMA2U * jps );
-	
-	const Real R1F1( ( ( R1a * jr ) * jr0 - ( R1a * yr ) * yr0 ) + 
-			 ( R1b * yr ) * yr0 - ( R1b * jr ) * jr0 );
-	
-	const Real R2( SIGMA2KFp1 * ys - SIGMA2U * yps ); 
-	const Real F2( jr * yr0 + jr0 * yr );
-	
-	const Real R1F1_plus_R2F2( R1F1 + R2 * F2 );
-	const Real num( R1a * R1F1_plus_R2F2 - R1b * R1F1_plus_R2F2 );
-	
-	// R1^2 + R2^2, roundoff error here wouldn't be a big problem, though.
-	const Real den( R2 * R2 + R1a * R1a - 2.0 * R1a * R1b + R1b * R1b );
-	
-	const Real lgnd( gsl_sf_legendre_Pl( order, costheta ) );
-	const Real coeff_corr( order + order + 1.0 );
-	
-	/*
-	  const double _R1( SIGMA2KFp1 * js - SIGMA2U * jps );
-	  const double _R2( SIGMA2KFp1 * ys - SIGMA2U * yps );
-	  
-	  const double _R1F1( jr*jr0*_R1 - (_R1*yr)*yr0 );
-	  const double _F2( yr0*jr + jr0*yr );
-	  
-	  const double result2( (_R1 * _R1F1+ (_R1*_R2)*_F2) / (_R1*_R1+_R2*_R2) );
-	*/
-	
-	result += (num/den) * lgnd * coeff_corr;
-	
-	//      printf("%g %g\n",((num/den)-result2),result2);
-	
+        const Real js( us.j( order ) );
+        const Real ys( us.y( order ) );
+        const Real jps( us.jp( order ) );
+        const Real yps( us.yp( order ) );
+        const Real jr( ur.j( order ) );
+        const Real yr( ur.y( order ) );
+        const Real jr0( ur0.j( order ) );
+        const Real yr0( ur0.y( order ) );
+        
+        
+        // R1 / ( R1^2 + R2^2 ) * ( R1 F2 + R2 F2 )
+        
+        // below I rewrote the equation in the way that 
+        // (1) j and y are multiplied first, before j^2 or y^2 occurs,
+        //     of which absolute values of exponents can be huge 
+        //    (either positive or negative).
+        // (2) avoid roundoff error caused by j? - j?.
+        //     (including j? - jp? etc.)  assumed y? - y? is ok (?).
+        
+        const Real R1a( SIGMA2KFp1 * js );
+        const Real R1b( SIGMA2U * jps );
+        
+        const Real R1F1( ( ( R1a * jr ) * jr0 - ( R1a * yr ) * yr0 ) + 
+                         ( R1b * yr ) * yr0 - ( R1b * jr ) * jr0 );
+        
+        const Real R2( SIGMA2KFp1 * ys - SIGMA2U * yps ); 
+        const Real F2( jr * yr0 + jr0 * yr );
+        
+        const Real R1F1_plus_R2F2( R1F1 + R2 * F2 );
+        const Real num( R1a * R1F1_plus_R2F2 - R1b * R1F1_plus_R2F2 );
+        
+        // R1^2 + R2^2, roundoff error here wouldn't be a big problem, though.
+        const Real den( R2 * R2 + R1a * R1a - 2.0 * R1a * R1b + R1b * R1b );
+        
+        const Real lgnd( gsl_sf_legendre_Pl( order, costheta ) );
+        const Real coeff_corr( order + order + 1.0 );
+        
+        /*
+          const double _R1( SIGMA2KFp1 * js - SIGMA2U * jps );
+          const double _R2( SIGMA2KFp1 * ys - SIGMA2U * yps );
+          
+          const double _R1F1( jr*jr0*_R1 - (_R1*yr)*yr0 );
+          const double _F2( yr0*jr + jr0*yr );
+          
+          const double result2( (_R1 * _R1F1+ (_R1*_R2)*_F2) / (_R1*_R1+_R2*_R2) );
+        */
+        
+        result += (num/den) * lgnd * coeff_corr;
+        
+        //      printf("%g %g\n",((num/den)-result2),result2);
+        
     }
 
     const Real exp_term( exp( - params->D * alpha * alpha * params->t ) * alpha );
@@ -128,10 +128,10 @@ BasicPairGreensFunction::p_corr_R2( const Real alpha,
     
     if( isnan( result ) )
     {
-	std::cerr << "NaN in p_corr_R" << std::endl;
-	std::cerr << alpha << ' ' << order_min << ' ' << exp_term << std::endl;
-	//      std::cerr << "R1F1 " << R1F1 << " R2 F2" << R2 << ' ' << F2 << " result" << result <<std::endl;
-	throw std::exception(); //("NaN in p_corr_R");
+        std::cerr << "NaN in p_corr_R" << std::endl;
+        std::cerr << alpha << ' ' << order_min << ' ' << exp_term << std::endl;
+        //      std::cerr << "R1F1 " << R1F1 << " R2 F2" << R2 << ' ' << F2 << " result" << result <<std::endl;
+        throw std::exception(); //("NaN in p_corr_R");
     }
     
     return result;
@@ -228,7 +228,7 @@ BasicPairGreensFunction::ip_corr( const Real theta, const Real r,
 
 const Real 
 BasicPairGreensFunction::p_free( const Real theta, const Real r, const Real r0, 
-				 const Real t ) const
+                                 const Real t ) const
 {
     return p_theta_free( theta, r, r0, t, getD() );
 }
@@ -255,7 +255,7 @@ BasicPairGreensFunction::p_reaction( const Real t, const Real r0 ) const
 
 const Real 
 BasicPairGreensFunction::p_reaction_F( const Real t,
-				       const p_reaction_params* const params )
+                                       const p_reaction_params* const params )
 {
     const BasicPairGreensFunction* const gf( params->gf ); 
     const Real kf( gf->getkf() );
@@ -362,7 +362,7 @@ BasicPairGreensFunction::p_int_r_max( const Real t,
 
 
 const Real BasicPairGreensFunction::drawTime( const Real rnd, 
-					      const Real r0 ) const
+                                              const Real r0 ) const
 {
     const Real sigma( this->getSigma() );
 
@@ -373,21 +373,21 @@ const Real BasicPairGreensFunction::drawTime( const Real rnd,
     Real high( 100 );
 
     {
-	const Real maxp( p_reaction( INFINITY, r0 ) );
+        const Real maxp( p_reaction( INFINITY, r0 ) );
 
-	if( rnd >= maxp )
-	{
-	    return INFINITY;
-	}
+        if( rnd >= maxp )
+        {
+            return INFINITY;
+        }
     }
 
     p_reaction_params params = { this, r0, rnd };
 
     gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &p_reaction_F ),
-	    &params 
-	};
+        {
+            reinterpret_cast<typeof(F.function)>( &p_reaction_F ),
+            &params 
+        };
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -398,27 +398,27 @@ const Real BasicPairGreensFunction::drawTime( const Real rnd,
     unsigned int i( 0 );
     while( true )
     {
-	gsl_root_fsolver_iterate( solver );
+        gsl_root_fsolver_iterate( solver );
 
-	low = gsl_root_fsolver_x_lower( solver );
-	high = gsl_root_fsolver_x_upper( solver );
-	int status( gsl_root_test_interval( low, high, 1e-18, 1e-12 ) );
+        low = gsl_root_fsolver_x_lower( solver );
+        high = gsl_root_fsolver_x_upper( solver );
+        int status( gsl_root_test_interval( low, high, 1e-18, 1e-12 ) );
 
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawTime: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
+        if( status == GSL_CONTINUE )
+        {
+            if( i >= maxIter )
+            {
+                gsl_root_fsolver_free( solver );
+                std::cerr << "drawTime: failed to converge." << std::endl;
+                throw std::exception();
+            }
+        }
+        else
+        {
+            break;
+        }
 
-	++i;
+        ++i;
     }
   
     const Real r( gsl_root_fsolver_root( solver ) );
@@ -431,8 +431,8 @@ const Real BasicPairGreensFunction::drawTime( const Real rnd,
 
 
 const Real BasicPairGreensFunction::drawR( const Real rnd, 
-					   const Real r0, 
-					   const Real t ) const
+                                           const Real r0, 
+                                           const Real t ) const
 {
     const Real sigma( this->getSigma() );
     const Real D( this->getD() );
@@ -443,7 +443,7 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
 
     if( t == 0.0 )
     {
-	return r0;
+        return r0;
     }
 
     const Real psurv( p_survival( t, r0 ) );
@@ -451,10 +451,10 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
     p_int_r_params params = { this, t, r0, rnd * psurv };
 
     gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &p_int_r_F ),
-	    &params 
-	};
+        {
+            reinterpret_cast<typeof(F.function)>( &p_int_r_F ),
+            &params 
+        };
 
 
     // adjust low and high starting from r0.
@@ -534,27 +534,27 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
     unsigned int i( 0 );
     while( true )
     {
-	gsl_root_fsolver_iterate( solver );
-	low = gsl_root_fsolver_x_lower( solver );
-	high = gsl_root_fsolver_x_upper( solver );
-	const int status( gsl_root_test_interval( low, high, 1e-15,
-						  this->TOLERANCE ) );
+        gsl_root_fsolver_iterate( solver );
+        low = gsl_root_fsolver_x_lower( solver );
+        high = gsl_root_fsolver_x_upper( solver );
+        const int status( gsl_root_test_interval( low, high, 1e-15,
+                                                  this->TOLERANCE ) );
 
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawR: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
+        if( status == GSL_CONTINUE )
+        {
+            if( i >= maxIter )
+            {
+                gsl_root_fsolver_free( solver );
+                std::cerr << "drawR: failed to converge." << std::endl;
+                throw std::exception();
+            }
+        }
+        else
+        {
+            break;
+        }
 
-	++i;
+        ++i;
     }
   
     //printf("%d\n", i );
@@ -569,28 +569,28 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
 
 const Real 
 BasicPairGreensFunction::Rn( const unsigned int n, const Real r, const Real r0,
-			     const Real t,
-			     gsl_integration_workspace* const workspace,
-			     const Real tol ) const
+                             const Real t,
+                             gsl_integration_workspace* const workspace,
+                             const Real tol ) const
 {
     Real integral;
     Real error;
 
     p_corr_R_params params = { this, n, r, r0, t };
     gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &p_corr_R_F ),
-	    &params
-	};
+        {
+            reinterpret_cast<typeof(F.function)>( &p_corr_R_F ),
+            &params
+        };
 
     const Real umax( sqrt( 40.0 / ( this->getD() * t ) ) ); 
 
     gsl_integration_qag( &F, 0.0,
-			 umax,
-			 tol,
+                         umax,
+                         tol,
                          THETA_TOLERANCE,
-			 2000, GSL_INTEG_GAUSS61,
-			 workspace, &integral, &error );
+                         2000, GSL_INTEG_GAUSS61,
+                         workspace, &integral, &error );
 
 /*
     gsl_integration_qagiu( &F, 1e-10,
@@ -794,11 +794,11 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
     {
         const Real Rn( this->Rn( n, r, r0, t, workspace, 
                                  integrationTolerance ) );
-	
+        
         RnTable.push_back( Rn );
-	
+        
         //printf("%d %g %g %g\n",n, Rn*RnFactor, pfreemax, integrationTolerance);
-	
+        
         // truncate when converged enough.
         const Real absRn( fabs( Rn ) );
         if( absRn * RnFactor < truncationTolerance &&
@@ -813,9 +813,9 @@ void BasicPairGreensFunction::makeRnTable( RealVector& RnTable,
                       << std::endl;
             break;
         }
-	
+        
         Rn_prev = fabs( Rn );
-	
+        
         ++n;
     }
 //    printf("%d \n",n);
@@ -837,9 +837,9 @@ const Real BasicPairGreensFunction::ip_theta_F( const Real theta,
 
 
 const Real BasicPairGreensFunction::drawTheta( const Real rnd,
-					       const Real r, 
-					       const Real r0, 
-					       const Real t ) const
+                                               const Real r, 
+                                               const Real r0, 
+                                               const Real t ) const
 {
     Real theta;
 
@@ -854,7 +854,7 @@ const Real BasicPairGreensFunction::drawTheta( const Real rnd,
     // t == 0 means no move.
     if( t == 0.0 )
     {
-	return 0.0;
+        return 0.0;
     }
 
     RealVector RnTable;
@@ -868,10 +868,10 @@ const Real BasicPairGreensFunction::drawTheta( const Real rnd,
     p_theta_params params = { this, r, r0, t, RnTable, rnd * ip_theta_pi };
 
     gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &ip_theta_F ),
-	    &params 
-	};
+        {
+            reinterpret_cast<typeof(F.function)>( &ip_theta_F ),
+            &params 
+        };
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -882,27 +882,27 @@ const Real BasicPairGreensFunction::drawTheta( const Real rnd,
     unsigned int i( 0 );
     while( true )
     {
-	gsl_root_fsolver_iterate( solver );
-	const Real low( gsl_root_fsolver_x_lower( solver ) );
-	const Real high( gsl_root_fsolver_x_upper( solver ) );
-	const int status( gsl_root_test_interval( low, high, 1e-15,
-						  THETA_TOLERANCE ) );
+        gsl_root_fsolver_iterate( solver );
+        const Real low( gsl_root_fsolver_x_lower( solver ) );
+        const Real high( gsl_root_fsolver_x_upper( solver ) );
+        const int status( gsl_root_test_interval( low, high, 1e-15,
+                                                  THETA_TOLERANCE ) );
 
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawTheta: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
+        if( status == GSL_CONTINUE )
+        {
+            if( i >= maxIter )
+            {
+                gsl_root_fsolver_free( solver );
+                std::cerr << "drawTheta: failed to converge." << std::endl;
+                throw std::exception();
+            }
+        }
+        else
+        {
+            break;
+        }
 
-	++i;
+        ++i;
     }
   
     theta = gsl_root_fsolver_root( solver );
@@ -921,8 +921,8 @@ const std::string BasicPairGreensFunction::dump() const
 {
     std::ostringstream ss;
     ss << "D = " << this->getD() << ", sigma = " << this->getSigma() <<
-	", kf = " << this->getkf() <<
-	", kD = " << this->getkD() <<
-	", alpha = " << this->getalpha() << std::endl;
+        ", kf = " << this->getkf() <<
+        ", kD = " << this->getkD() <<
+        ", alpha = " << this->getalpha() << std::endl;
     return ss.str();
 }    

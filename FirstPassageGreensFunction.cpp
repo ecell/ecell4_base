@@ -113,10 +113,10 @@ FirstPassageGreensFunction::p_survival( const Real t ) const
         //printf("%g %g\n", value, term1-term2);
 
         if( fabs( term ) < threshold )
-	{
-	    // normal exit.
-	    return value * 2;
-	}
+        {
+            // normal exit.
+            return value * 2;
+        }
     }
 
     std::cerr << "WARNING: p_survival didn't converge." << std::endl;
@@ -150,7 +150,7 @@ FirstPassageGreensFunction::p_int_r( const Real r,
     // p_int_r is always smaller than p_free.
     if( fabs( p_free ) < CUTOFF )
     {
-	return 0.0;
+        return 0.0;
     }
 
     const Real D( getD() );
@@ -179,17 +179,17 @@ FirstPassageGreensFunction::p_int_r( const Real r,
 
     for( int n( 1 ); n <= N; ++n )
     {
-	const Real term1( exp( - n * n * DtPIsq_asq ) );
+        const Real term1( exp( - n * n * DtPIsq_asq ) );
       
-	const Real angle_n( n * PIr_a );
-	Real sin_n;
-	Real cos_n;
-	sincos( angle_n, &sin_n, &cos_n );
-	const Real term2( a * sin_n );
-	const Real term3( n * PIr * cos_n );
+        const Real angle_n( n * PIr_a );
+        Real sin_n;
+        Real cos_n;
+        sincos( angle_n, &sin_n, &cos_n );
+        const Real term2( a * sin_n );
+        const Real term3( n * PIr * cos_n );
 
-	const Real term( term1 * ( term2 - term3 ) / n );
-	value += term;
+        const Real term( term1 * ( term2 - term3 ) / n );
+        value += term;
     }
 
     return value * factor;
@@ -214,36 +214,36 @@ FirstPassageGreensFunction::p_r_fourier( const Real r, const Real t ) const
     long int n( 1 );
     while( true )
     {
-	const Real term1( exp( - ( PIsq * r * r + asq * n*n ) / 
-			       ( 4.0 * D * PIsq * t ) ) );
+        const Real term1( exp( - ( PIsq * r * r + asq * n*n ) / 
+                               ( 4.0 * D * PIsq * t ) ) );
 
-	const Real term2( M_PI * r * 
-			  exp( gsl_sf_lncosh( a * r * n / 
-					      ( 2.0 * D * M_PI * t ) ) ) );
+        const Real term2( M_PI * r * 
+                          exp( gsl_sf_lncosh( a * r * n / 
+                                              ( 2.0 * D * M_PI * t ) ) ) );
 
-	const Real term3( a * n *
-			  exp( gsl_sf_lnsinh( a * r * n / 
-					      ( 2.0 * D * M_PI * t ) ) ) );
+        const Real term3( a * n *
+                          exp( gsl_sf_lnsinh( a * r * n / 
+                                              ( 2.0 * D * M_PI * t ) ) ) );
 
 
-	const Real term( term1 * r * ( term2 - term3 ) );
-	value += term;
+        const Real term( term1 * r * ( term2 - term3 ) );
+        value += term;
 
-	//      printf("%d %g %g %g %g\n", n, value, term, term2, term3 );
+        //      printf("%d %g %g %g %g\n", n, value, term, term2, term3 );
 
-	if( fabs( value ) * 1e-8 > fabs( term ) )
-	{
-	    break;
-	}
+        if( fabs( value ) * 1e-8 > fabs( term ) )
+        {
+            break;
+        }
 
-	if( n > N )
-	{
-	    std::cerr << "p_r_fourier: didn't converge; " << n << " " << value 
-		      << std::endl;
-	    break;
-	}
+        if( n > N )
+        {
+            std::cerr << "p_r_fourier: didn't converge; " << n << " " << value 
+                      << std::endl;
+            break;
+        }
 
-	++n;
+        ++n;
     }
 
     const Real factor( 1.0 / ( sqrt( 2 ) * PIsq * pow(D * t, 1.5) ) );
@@ -254,7 +254,7 @@ FirstPassageGreensFunction::p_r_fourier( const Real r, const Real t ) const
 
 const Real
 FirstPassageGreensFunction::p_survival_F( const Real t,
-					  const p_survival_params* params )
+                                          const p_survival_params* params )
 {
     const FirstPassageGreensFunction* const gf( params->gf ); 
     const Real rnd( params->rnd );
@@ -278,16 +278,16 @@ FirstPassageGreensFunction::drawTime( const Real rnd ) const
 
     if( a == 0.0 )
     {
-	return 0.0;
+        return 0.0;
     }
 
     p_survival_params params = { this, rnd };
 
     gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &p_survival_F ),
-	    &params 
-	};
+        {
+            reinterpret_cast<typeof(F.function)>( &p_survival_F ),
+            &params 
+        };
 
     const Real t_guess( a * a / ( 6. * D ) );
 
@@ -373,7 +373,7 @@ FirstPassageGreensFunction::p_r_free_F( const Real r,
 
 const Real
 FirstPassageGreensFunction::p_r_F( const Real r,
-				   const p_r_params* params )
+                                   const p_r_params* params )
 {
     const FirstPassageGreensFunction* const gf( params->gf ); 
     const Real t( params->t );

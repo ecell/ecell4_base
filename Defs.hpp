@@ -20,11 +20,11 @@ typedef boost::multi_array<Real, 4> Real4DArray;
 #define XSTR( S ) STR( S )
 #define STR( S ) #S
 
-#define THROW_UNLESS( CLASS, EXPRESSION )	\
+#define THROW_UNLESS( CLASS, EXPRESSION )       \
     if( ! ( EXPRESSION ) )\
     {\
-	throw CLASS( "Check [" + std::string( STR( EXPRESSION ) ) +\
-		     "] failed." );\
+        throw CLASS( "Check [" + std::string( STR( EXPRESSION ) ) +\
+                     "] failed." );\
     }\
 
 

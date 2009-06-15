@@ -71,16 +71,16 @@ FreeGreensFunction::drawR( const Real rnd, const Real t ) const
     // t == 0 or D == 0 means no move.
     if( t == 0.0 || getD() == 0.0 )
     {
-	return 0.0;
+        return 0.0;
     }
 
     ip_r_params params = { this, t, rnd };
 
     gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &ip_r_F ),
-	    &params 
-	};
+        {
+            reinterpret_cast<typeof(F.function)>( &ip_r_F ),
+            &params 
+        };
 
     Real max_r( 4.0 * sqrt( 6.0 * getD() * t ) );
 
@@ -98,27 +98,27 @@ FreeGreensFunction::drawR( const Real rnd, const Real t ) const
     unsigned int i( 0 );
     while( true )
     {
-	gsl_root_fsolver_iterate( solver );
-	const Real low( gsl_root_fsolver_x_lower( solver ) );
-	const Real high( gsl_root_fsolver_x_upper( solver ) );
-	const int status( gsl_root_test_interval( low, high, 1e-15, 
-						  this->TOLERANCE ) );
+        gsl_root_fsolver_iterate( solver );
+        const Real low( gsl_root_fsolver_x_lower( solver ) );
+        const Real high( gsl_root_fsolver_x_upper( solver ) );
+        const int status( gsl_root_test_interval( low, high, 1e-15, 
+                                                  this->TOLERANCE ) );
 
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawR: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
+        if( status == GSL_CONTINUE )
+        {
+            if( i >= maxIter )
+            {
+                gsl_root_fsolver_free( solver );
+                std::cerr << "drawR: failed to converge." << std::endl;
+                throw std::exception();
+            }
+        }
+        else
+        {
+            break;
+        }
 
-	++i;
+        ++i;
     }
   
     //printf("%d\n", i );

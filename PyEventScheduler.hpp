@@ -11,7 +11,7 @@ class PyEvent
 {
     
 public:
-	
+        
     PyEvent( const double time, 
              const boost::python::object& obj,
              const boost::python::object& arg )
@@ -20,35 +20,35 @@ public:
         obj( obj ),
         arg( arg )
     {
-	; // do nothing
+        ; // do nothing
     }
 
     ~PyEvent()
     {
-	; // do nothing
+        ; // do nothing
     }
     
 
     const boost::python::object& getObj() const
     {
-	return this->obj;
+        return this->obj;
     }
 
     const boost::python::object& getArg() const
     {
-	return this->arg;
+        return this->arg;
     }
 
     void fire()
     {
-	boost::python::object ret( this->obj( this->arg ) );
-	this->setTime( this->getTime() + 
+        boost::python::object ret( this->obj( this->arg ) );
+        this->setTime( this->getTime() + 
                        boost::python::extract<double>( ret ) );
     }
 
     PyEvent() // dummy
     {
-	; // do nothing
+        ; // do nothing
     }
 
 private:
@@ -69,26 +69,26 @@ public:
     
     PyEventScheduler()
     {
-	; // do nothing
+        ; // do nothing
     }
     
     ~PyEventScheduler()
     {
-	; // do nothing
+        ; // do nothing
     }
     
     const EventID addEvent( const double t, 
-			    const boost::python::object& func,
-			    const boost::python::object& arg )
+                            const boost::python::object& func,
+                            const boost::python::object& arg )
     {
-	return libecs::EventScheduler<PyEvent>::
+        return libecs::EventScheduler<PyEvent>::
             addEvent( PyEvent( t, func, arg ) );
     }
 
 
     void updateEventTime( const EventID id, const double t ) 
     {
-	libecs::EventScheduler<PyEvent>::updateEventTime( id, t );
+        libecs::EventScheduler<PyEvent>::updateEventTime( id, t );
     }
 
 
@@ -105,8 +105,8 @@ public:
   convert( const PyEvent& value )
   {
       return PyTuple_Pack( 2, 
-			   PyFloat_FromDouble( value.getTime() ),
-			   value.getObj().ptr() );
+                           PyFloat_FromDouble( value.getTime() ),
+                           value.getObj().ptr() );
   }
 
 };

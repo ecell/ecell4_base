@@ -105,16 +105,16 @@ FreePairGreensFunction::drawR( const Real rnd,
     // t == 0 means no move.
     if( t == 0.0 )
     {
-	return r0;
+        return r0;
     }
 
     ip_r_params params = { this, r0, t, rnd };
 
     gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &ip_r_F ),
-	    &params 
-	};
+        {
+            reinterpret_cast<typeof(F.function)>( &ip_r_F ),
+            &params 
+        };
 
     const Real r_range( this->H * sqrt( 6.0 * getD() * t ) );
 
@@ -142,27 +142,27 @@ FreePairGreensFunction::drawR( const Real rnd,
     unsigned int i( 0 );
     while( true )
     {
-	gsl_root_fsolver_iterate( solver );
-	const Real low( gsl_root_fsolver_x_lower( solver ) );
-	const Real high( gsl_root_fsolver_x_upper( solver ) );
-	const int status( gsl_root_test_interval( low, high, 1e-15, 
-						  this->TOLERANCE ) );
+        gsl_root_fsolver_iterate( solver );
+        const Real low( gsl_root_fsolver_x_lower( solver ) );
+        const Real high( gsl_root_fsolver_x_upper( solver ) );
+        const int status( gsl_root_test_interval( low, high, 1e-15, 
+                                                  this->TOLERANCE ) );
 
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawR: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
+        if( status == GSL_CONTINUE )
+        {
+            if( i >= maxIter )
+            {
+                gsl_root_fsolver_free( solver );
+                std::cerr << "drawR: failed to converge." << std::endl;
+                throw std::exception();
+            }
+        }
+        else
+        {
+            break;
+        }
 
-	++i;
+        ++i;
     }
   
     //printf("%d\n", i );
@@ -203,7 +203,7 @@ FreePairGreensFunction::drawTheta( const Real rnd,
     // t == 0 means no move.
     if( t == 0.0 )
     {
-	return 0.0;
+        return 0.0;
     }
 
     const Real ip_theta_pi( ip_theta( M_PI, r, r0, t ) );
@@ -211,10 +211,10 @@ FreePairGreensFunction::drawTheta( const Real rnd,
     ip_theta_params params = { this, r, r0, t, rnd * ip_theta_pi };
 
     gsl_function F = 
-	{
-	    reinterpret_cast<typeof(F.function)>( &ip_theta_F ),
-	    &params 
-	};
+        {
+            reinterpret_cast<typeof(F.function)>( &ip_theta_F ),
+            &params 
+        };
 
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
@@ -226,27 +226,27 @@ FreePairGreensFunction::drawTheta( const Real rnd,
     unsigned int i( 0 );
     while( true )
     {
-	gsl_root_fsolver_iterate( solver );
-	const Real low( gsl_root_fsolver_x_lower( solver ) );
-	const Real high( gsl_root_fsolver_x_upper( solver ) );
-	const int status( gsl_root_test_interval( low, high, 1e-15, 
-						  this->TOLERANCE ) );
+        gsl_root_fsolver_iterate( solver );
+        const Real low( gsl_root_fsolver_x_lower( solver ) );
+        const Real high( gsl_root_fsolver_x_upper( solver ) );
+        const int status( gsl_root_test_interval( low, high, 1e-15, 
+                                                  this->TOLERANCE ) );
 
-	if( status == GSL_CONTINUE )
-	{
-	    if( i >= maxIter )
-	    {
-		gsl_root_fsolver_free( solver );
-		std::cerr << "drawTheta: failed to converge." << std::endl;
-		throw std::exception();
-	    }
-	}
-	else
-	{
-	    break;
-	}
+        if( status == GSL_CONTINUE )
+        {
+            if( i >= maxIter )
+            {
+                gsl_root_fsolver_free( solver );
+                std::cerr << "drawTheta: failed to converge." << std::endl;
+                throw std::exception();
+            }
+        }
+        else
+        {
+            break;
+        }
 
-	++i;
+        ++i;
     }
   
     //printf("%d\n", i );

@@ -53,16 +53,16 @@ public:
 
 /*
   const Real drawTime( const Real rnd, const Real r0,
-			       const Real maxt ) const = 0;
+                               const Real maxt ) const = 0;
 
   const Real drawR( const Real rnd, 
-			    const Real r0, 
-			    const Real t ) const = 0;
+                            const Real r0, 
+                            const Real t ) const = 0;
 
   const Real drawTheta( const Real rnd,
-				const Real r, 
-				const Real r0, 
-				const Real t ) const = 0;
+                                const Real r, 
+                                const Real r0, 
+                                const Real t ) const = 0;
 */
 
 private:

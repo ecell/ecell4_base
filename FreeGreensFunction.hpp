@@ -63,9 +63,9 @@ private:
 
     struct ip_r_params
     { 
-	const FreeGreensFunction* const gf;
-	const Real t;
-	const Real value;
+        const FreeGreensFunction* const gf;
+        const Real t;
+        const Real value;
     };
 
 

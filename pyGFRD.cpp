@@ -62,7 +62,7 @@ struct position_to_ndarray_converter
         PyObject* array( PyArray_New( &PyArray_Type, 1, 
                                       const_cast<npy_intp*>( dims ),
                                       peer::util::get_numpy_typecode<
-											position_type::value_type >
+                                                                                        position_type::value_type >
                                       ::value, NULL,
                                       data, 0, NPY_CARRAY, NULL ) );
         reinterpret_cast<PyArrayObject*>( array )->flags |= NPY_OWNDATA;
@@ -85,7 +85,7 @@ struct ndarray_to_position_converter
                              reinterpret_cast<PyArrayObject*>(ptr),
                              PyArray_DescrFromType(
                                  peer::util::get_numpy_typecode<
-										position_type::value_type >::value ),
+                                                                                position_type::value_type >::value ),
                                  0) );
         if (!retval)
         {
