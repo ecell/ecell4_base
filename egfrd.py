@@ -390,13 +390,13 @@ class Pair( object ):
         self.D1, self.D2 = particle1.species.D, particle2.species.D
 
         self.D_tot = self.D1 + self.D2
-        self.D_geom = math.sqrt( self.D1 * self.D2 )  # geometric mean
+        self.D_R = ( self.D1 * self.D2 ) / self.D_tot
 
         #self.minRadius = max( particle1.species.radius,
         #                      particle2.species.radius )
         self.sigma = particle1.species.radius + particle2.species.radius
 
-        self.sgf = FirstPassageGreensFunction( self.D_geom )
+        self.sgf = FirstPassageGreensFunction( self.D_R )
         self.pgf = FirstPassagePairGreensFunction( self.D_tot, 
                                                    rt.k, self.sigma )
 
@@ -553,13 +553,10 @@ class Pair( object ):
         D1 = self.D1
         D2 = self.D2
 
-        D1_factor = D1 / self.D_tot
-        D2_factor = D2 / self.D_tot
-
         shellSize = self.radius / SAFETY  # FIXME:
 
-        sqrtD_tot = math.sqrt( self.D_tot )
-        sqrtD_geom = math.sqrt( self.D_geom )
+        D_tot = D1 + D2
+        D_geom = math.sqrt(D1 * D2)
 
         r0 = self.distance( single1.pos, single2.pos )
 
@@ -567,58 +564,42 @@ class Pair( object ):
             '%s;  r0 %g < sigma %g' % ( self, r0, self.sigma )
 
         # equalize expected mean t_r and t_R.
-
-        qrrtD1D25 = ( D1    * D2**5 ) ** 0.25
-        qrrtD15D2 = ( D1**5 * D2 ) ** 0.25
-
-        if qrrtD15D2 * r0 + ( qrrtD15D2 + qrrtD1D25 ) * radius1 \
-                + D1 * ( sqrtD_tot * ( shellSize - radius2 ) 
-                         - sqrtD_geom * radius2 )\
-                - D2 * ( sqrtD_geom * r0 + sqrtD_tot * 
-                         ( shellSize - radius1 ) )\
-                         - qrrtD1D25 * radius2 >= 0:
-
-            den1 = qrrtD1D25 + D1 * ( sqrtD_geom + sqrtD_tot )
-
-            a_R_1 = sqrtD_geom * ( D2 * ( shellSize - radius1) + 
-                                   D1 * ( shellSize - r0 - radius1 ) ) / den1
-
-            a_r_1 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
-                                   ( shellSize - radius1 ) ) / den1
-
-            assert a_R_1 + a_r_1 * D1_factor + radius1 >= \
-                a_R_1 + a_r_1 * D2_factor + radius2
-
-            assert abs( a_R_1 + a_r_1 * D1_factor + radius1 - shellSize ) \
-                < 1e-12 * shellSize
-
-            self.a_r = a_r_1
-            self.a_R = a_R_1
+        if ((D_geom - D2) * r0) / D_tot + shellSize +\
+                math.sqrt(D2 / D1) * (radius1 - shellSize) - radius2 >= 0:
+            Da = D1
+            Db = D2
+            radiusa = radius1
+            radiusb = radius2
         else:
-            den2 = qrrtD15D2 + D2 * ( sqrtD_geom + sqrtD_tot )
+            Da = D2
+            Db = D1
+            radiusa = radius2
+            radiusb = radius1
 
-            a_R_2 = sqrtD_geom * ( D1 * ( shellSize - radius2 ) + 
-                                   D2 * ( shellSize - r0 - radius2 ) ) / den2
 
-            a_r_2 = self.D_tot * ( sqrtD_geom * r0 + sqrtD_tot * 
-                                   ( shellSize - radius2 ) ) / den2
+        #aR
+        self.a_R = (D_geom * (Db * (shellSize - radiusa) + \
+                               Da * (shellSize - r0 - radiusa))) /\
+                               (Da * Da + Da * Db + D_geom * D_tot)
 
-            assert a_R_2 + a_r_2 * D2_factor + radius2 >= \
-                a_R_2 + a_r_2 * D1_factor + radius1
+        #ar
+        self.a_r = (D_geom * r0 + D_tot * (shellSize - radiusa)) /\
+            (Da + D_geom)
 
-            assert abs( a_R_2 + a_r_2 * D2_factor + radius2 - shellSize ) \
-                < 1e-12 * shellSize
+        assert self.a_R + self.a_r * Da / D_tot + radius1 >= \
+            self.a_R + self.a_r * Db / D_tot + radius2
 
-            self.a_r = a_r_2
-            self.a_R = a_R_2
+        assert abs( self.a_R + self.a_r * Da / D_tot + radiusa - shellSize ) \
+            < 1e-12 * shellSize
 
-        #if __debug__:
-        #   log.debug( 'a %g, r %g, R %g r0 %g' % 
-        #           ( shellSize, self.a_r, self.a_R, r0 ) )
-        #if __debug__:
-        #   log.debug( 'tr %g, tR %g' % 
-        #           ( ( ( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
-        #                 (self.a_R / math.sqrt( 6*self.D_geom ))**2 ) )
+
+        if __debug__:
+          log.debug( 'a %g, r %g, R %g r0 %g' % 
+                  ( shellSize, self.a_r, self.a_R, r0 ) )
+        if __debug__:
+          log.debug( 'tr %g, tR %g' % 
+                  ( ( ( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
+                        (self.a_R / math.sqrt( 6*self.D_R ))**2 ) )
         assert self.a_r > 0
         assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
         assert self.a_R > 0 or ( self.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
@@ -653,9 +634,9 @@ class Pair( object ):
         self.dt = min( self.t_R, self.t_r, self.t_single_reaction )
 
         assert self.dt >= 0
-        #if __debug__:
-        #   log.debug( 'dt %g, t_R %g, t_r %g' % 
-        #           ( self.dt, self.t_R, self.t_r ) )
+        if __debug__:
+            log.debug( 'dt %g, t_R %g, t_r %g' % 
+                     ( self.dt, self.t_R, self.t_r ) )
 
         if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
             try:
