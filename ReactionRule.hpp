@@ -20,7 +20,7 @@
 class ReactionRule
 {
 private:
-    typedef std::vector<SpeciesTypeID> species_type_vector;
+    typedef std::vector<SpeciesTypeID> species_type_id_vector;
 
 public:
     class Reactants
@@ -193,8 +193,8 @@ public:
         containing_type items_;
     };
 
-    typedef species_type_vector::const_iterator species_type_iterator;
-    typedef boost::iterator_range<species_type_iterator> species_type_range;
+    typedef species_type_id_vector::const_iterator species_type_id_iterator;
+    typedef boost::iterator_range<species_type_id_iterator> species_type_id_range;
 
 public:
     Reactants const& get_reactants() const
@@ -209,7 +209,7 @@ public:
             s);
     }
 
-    species_type_range get_products() const
+    species_type_id_range get_products() const
     {
         return products_;
     }
@@ -238,7 +238,7 @@ public:
 
 private:
     Reactants reactants_;
-    species_type_vector products_;
+    species_type_id_vector products_;
     Real k_;
 };
 

@@ -115,12 +115,12 @@ public:
         return *impl == *extract<impl_type*>(object(borrowed(rhs)));
     }
 
-    static impl_type::species_type_iterator get_products_begin(impl_type *impl)
+    static impl_type::species_type_id_iterator get_products_begin(impl_type *impl)
     {
         return impl->get_products().begin();
     }
 
-    static impl_type::species_type_iterator get_products_end(impl_type *impl)
+    static impl_type::species_type_id_iterator get_products_end(impl_type *impl)
     {
         return impl->get_products().end();
     }
@@ -144,7 +144,7 @@ public:
                 make_function(&impl_type::get_reactants,
                     return_value_policy<copy_const_reference>()))
             .add_property("products",
-                range<return_value_policy<reference_existing_object>, impl_type*>(
+                range<return_value_policy<return_by_value>, impl_type*>(
                       &ReactionRule::get_products_begin,
                       &ReactionRule::get_products_end))
             .def("__str__", &ReactionRule::__str__)

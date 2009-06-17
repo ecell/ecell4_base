@@ -402,8 +402,9 @@ class ParticleSimulatorBase( object ):
             else:
                 retval = []
                 for rt in gen:
-                    products = [ self.speciesList[st.id] for st in rt.products ]
-                    species1 = self.speciesList[rt.reactants[0].id]
+                    for i in rt.products: print i
+                    products = [ self.speciesList[st] for st in rt.products ]
+                    species1 = self.speciesList[rt.reactants[0]]
                     if len( products ) == 1:
                         if species1.radius * 2 < products[0].radius:
                             raise RuntimeError,\
@@ -433,7 +434,7 @@ class ParticleSimulatorBase( object ):
                     retval.append(
                         ReactionRuleCache(
                             rt,
-                            [ self.speciesList[st.id] for st in rt.products ],
+                            [ self.speciesList[st] for st in rt.products ],
                             rt.k))
             self.reactionRuleCache[k] = retval
         return retval
