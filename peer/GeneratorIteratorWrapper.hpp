@@ -3,6 +3,7 @@
 
 #include <Python.h>
 #include "generator.hpp"
+#include "peer/utils.hpp"
 
 namespace peer { namespace util {
 
