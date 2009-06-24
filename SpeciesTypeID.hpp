@@ -6,7 +6,7 @@
 #include <tr1/functional>
 #elif HAVE_STD_HASH
 #include <functional>
-#elif defined(BOOST_FUNCTIONAL_HASH_HPP)
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 #include <boost/functional/hash.hpp>
 #endif
 #include "Identifier.hpp"
