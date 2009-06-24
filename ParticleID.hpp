@@ -4,7 +4,7 @@
 #include <ostream>
 #if defined(HAVE_TR1_FUNCTIONAL)
 #include <tr1/functional>
-#elif HAVE_STD_HASH
+#elif defined(HAVE_STD_HASH)
 #include <functional>
 #elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 #include <boost/functional/hash.hpp>
@@ -21,7 +21,7 @@ struct ParticleID: public identifier<ParticleID, unsigned long long, int>
 
 #if defined(HAVE_TR1_FUNCTIONAL)
 namespace std { namespace tr1 {
-#elif HAVE_STD_HASH
+#elif defined(HAVE_STD_HASH)
 namespace std {
 #elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 namespace boost {
@@ -38,7 +38,7 @@ struct hash<ParticleID>
 
 #if defined(HAVE_TR1_FUNCTIONAL)
 } } // namespace std::tr1
-#elif HAVE_STD_HASH
+#elif defined(HAVE_STD_HASH)
 } // namespace std
 #elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 } // namespace boost
