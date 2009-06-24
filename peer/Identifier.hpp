@@ -3,7 +3,13 @@
 
 #include <cstddef>
 #include <string>
+#if defined(HAVE_TR1_FUNCTIONAL)
 #include <tr1/functional>
+#elif HAVE_STD_HASH
+#include <functional>
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+#include <boost/functional/hash.hpp>
+#endif
 #include <boost/python.hpp>
 #include <boost/python/scope.hpp>
 #include <boost/python/object/function.hpp>
@@ -160,7 +166,14 @@ public:
 
     static long __hash__(IdentifierWrapper* self)
     {
-        return static_cast<long>(std::tr1::hash<Timpl_>()(self->impl_));
+#if defined(HAVE_TR1_FUNCTIONAL)
+        using namespace std::tr1;
+#elif HAVE_STD_HASH
+        using namespace std;
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+        using namespace boost;
+#endif
+        return static_cast<long>(hash<Timpl_>()(self->impl_));
     }
 
     static PyObject* __richcmp__(IdentifierWrapper* self, PyObject* rhs, int op)
