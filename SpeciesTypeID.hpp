@@ -23,7 +23,7 @@ struct SpeciesTypeID: public Identifier<SpeciesTypeID, unsigned long long, int>
 namespace std { namespace tr1 {
 #elif HAVE_STD_HASH
 namespace std {
-#elif defined(BOOST_FUNCTIONAL_HASH_HPP)
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 namespace boost {
 #endif
 
@@ -40,7 +40,7 @@ struct hash<SpeciesTypeID>
 } } // namespace std::tr1
 #elif HAVE_STD_HASH
 } // namespace std
-#elif defined(BOOST_FUNCTIONAL_HASH_HPP)
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 } // namespace boost
 #endif
 
