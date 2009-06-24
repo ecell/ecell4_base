@@ -11,11 +11,11 @@
 #endif
 #include "identifier.hpp"
 
-struct particle_id: public identifier<particle_id, unsigned long long, int>
+struct ParticleID: public identifier<ParticleID, unsigned long long, int>
 {
-    typedef identifier<particle_id, unsigned long long, int> base_type;
+    typedef identifier<ParticleID, unsigned long long, int> base_type;
 
-    particle_id(value_type const& value = value_type(0, 0))
+    ParticleID(value_type const& value = value_type(0, 0))
         : base_type(value) {}
 };
 
@@ -28,9 +28,9 @@ namespace boost {
 #endif
 
 template<>
-struct hash<particle_id>
+struct hash<ParticleID>
 {
-    std::size_t operator()(particle_id const& val)
+    std::size_t operator()(ParticleID const& val)
     {
         return static_cast<std::size_t>(val().first ^ val().second);
     }
@@ -46,9 +46,9 @@ struct hash<particle_id>
 
 template<typename Tstrm_>
 inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
-        const particle_id& v)
+        const ParticleID& v)
 {
-    strm << "particle_id(" << v().first << ":" << v().second << ")";
+    strm << "ParticleID(" << v().first << ":" << v().second << ")";
     return strm;
 }
 
