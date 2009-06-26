@@ -161,8 +161,6 @@ class Single( object ):
 
         self.eventID = None
 
-        self.gf = FirstPassageGreensFunction( particle.species.D )
-
         self.updatek_tot()
 
     def getD( self ):
@@ -264,13 +262,14 @@ class Single( object ):
         assert dt >= 0
 
         rnd = numpy.random.uniform()
-        self.gf.seta( self.getMobilityRadius() )
+        gf = FirstPassageGreensFunction( self.particle.species.D )
+        gf.seta( self.getMobilityRadius() )
 
         try:
-            r = self.gf.drawR( rnd , dt )
+            r = gf.drawR( rnd , dt )
         except Exception, e:
             raise Exception, 'gf.drawR failed; %s; rnd=%g, t=%g, %s' %\
-                ( str( e ), rnd, dt, self.gf.dump() )
+                ( str( e ), rnd, dt, gf.dump() )
 
         return r
 
@@ -313,13 +312,14 @@ class Single( object ):
         
         rnd = numpy.random.uniform()
 
-        self.gf.seta( self.getMobilityRadius() )
+        gf = FirstPassageGreensFunction( self.particle.species.D )
+        gf.seta( self.getMobilityRadius() )
 
         try:
-            dt = self.gf.drawTime( rnd )
+            dt = gf.drawTime( rnd )
         except Exception, e:
             raise Exception, 'gf.drawTime() failed; %s; rnd=%g, %s' %\
-                ( str( e ), rnd, self.gf.dump() )
+                ( str( e ), rnd, gf.dump() )
 
         return dt
 
@@ -395,10 +395,6 @@ class Pair( object ):
         #self.minRadius = max( particle1.species.radius,
         #                      particle2.species.radius )
         self.sigma = particle1.species.radius + particle2.species.radius
-
-        self.sgf = FirstPassageGreensFunction( self.D_R )
-        self.pgf = FirstPassagePairGreensFunction( self.D_tot, 
-                                                   rt.k, self.sigma )
 
         self.eventID = None
 
@@ -482,7 +478,10 @@ class Pair( object ):
                 # use FirstPassagePairGreensFunction
                 if __debug__:
                     log.debug( 'GF: normal' )
-                return self.pgf
+                pgf = FirstPassagePairGreensFunction( self.D_tot, 
+                                                      self.rt.k, self.sigma )
+
+                return pgf
             else:
                 # near sigma; use BasicPairGreensFunction
                 if __debug__:
@@ -490,7 +489,6 @@ class Pair( object ):
                 pgf = BasicPairGreensFunction( self.D_tot, self.rt.k, 
                                                self.sigma )
                 return pgf
-                #return self.pgf
         else:
             if distanceFromShell < thresholdDistance:
                 # near a;
@@ -604,20 +602,28 @@ class Pair( object ):
         assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
         assert self.a_R > 0 or ( self.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
 
+        sgf = FirstPassageGreensFunction(self.D_R)
+        sgf.seta(self.a_R)
+
+
         # draw t_R
         try:
-            self.t_R = self.drawTime_single( self.a_R )
+            self.t_R = self.drawTime_single( sgf )
         except Exception, e:
             raise Exception, 'sgf.drawTime() failed; %s; %s' %\
-                ( str( e ), self.sgf.dump() )
+                ( str( e ), sgf.dump() )
+
+        pgf = FirstPassagePairGreensFunction( self.D_tot, 
+                                              self.rt.k, self.sigma )
+        pgf.seta( self.a_r )
 
         # draw t_r
         try:
-            self.t_r = self.drawTime_pair( r0, self.a_r )
+            self.t_r = self.drawTime_pair(pgf, r0)
         except Exception, e:
             raise Exception, \
                 'pgf.drawTime() failed; %s; r0=%g, %s' % \
-                ( str( e ), r0, self.pgf.dump() )
+                ( str( e ), r0, pgf.dump() )
 
 
         # draw t_reaction
@@ -640,11 +646,11 @@ class Pair( object ):
 
         if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
             try:
-                self.eventType = self.drawEventType( r0, self.t_r, self.a_r )
+                self.eventType = self.drawEventType(pgf, r0, self.t_r)
             except Exception, e:
                 raise Exception,\
                     'pgf.drawEventType() failed; %s; r0=%g, %s' %\
-                    ( str( e ), r0, self.pgf.dump() )
+                    ( str( e ), r0, pgf.dump() )
 
         elif self.dt == self.t_R: # type = ESCAPE_R (2)
             self.eventType = 2
@@ -653,38 +659,33 @@ class Pair( object ):
         else:
             raise AssertionError, "Never get here"
 
-    def drawTime_single( self, a ):
-        self.sgf.seta( a )
+    def drawTime_single( self, sgf ):
         rnd = numpy.random.uniform()
-        return self.sgf.drawTime( rnd )
+        return sgf.drawTime( rnd )
 
-    def drawTime_pair( self, r0, a ):
-        self.pgf.seta( a )
+    def drawTime_pair( self, pgf, r0 ):
         rnd = numpy.random.uniform()
         #print 'r0 = ', r0, ', rnd = ', rnd[1],\
-        #    self.pgf.dump()
-        return self.pgf.drawTime( rnd, r0 )
+        #    pgf.dump()
+        return pgf.drawTime( rnd, r0 )
 
-    def drawEventType( self, r0, t, a ):
+    def drawEventType( self, pgf, r0, t ):
         rnd = numpy.random.uniform()
-        self.pgf.seta( a )
-        return self.pgf.drawEventType( rnd, r0, t )
+        return pgf.drawEventType( rnd, r0, t )
 
-    def drawR_single( self, t, a ):
-        self.sgf.seta( a )
-
+    def drawR_single( self, sgf, t ):
         rnd = numpy.random.uniform()
         try:
-            r = self.sgf.drawR( rnd, t )
+            r = sgf.drawR( rnd, t )
             while r > self.a_R: # redraw; shouldn't happen often
                 if __debug__:
                     log.info( 'drawR_single: redraw' )
                 rnd = numpy.random.uniform()
-                r = self.sgf.drawR( rnd, t )
+                r = sgf.drawR( rnd, t )
         except Exception, e:
             raise Exception,\
                 'gf.drawR_single() failed; %s; rnd= %g, t= %g, %s' %\
-                ( str( e ), rnd[2], t, self.sgf.dump() )
+                ( str( e ), rnd, t, sgf.dump() )
 
         return r
 
@@ -1447,7 +1448,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
                 # calculate new R
             
-                r_R = pair.drawR_single( pair.dt, pair.a_R )
+                sgf = FirstPassageGreensFunction(pair.D_R)
+                sgf.seta(pair.a_R)
+
+                r_R = pair.drawR_single( sgf, pair.dt )
             
                 displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
@@ -1502,7 +1506,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             # calculate new R
             
-            r_R = pair.drawR_single( pair.dt, pair.a_R )
+            sgf = FirstPassageGreensFunction(pair.D_R)
+            sgf.seta(pair.a_R)
+
+            r_R = pair.drawR_single( sgf, pair.dt )
                 
             displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
@@ -1677,8 +1684,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             
             rnd = numpy.random.uniform( size = 4 )
 
+            sgf = FirstPassageGreensFunction(pair.D_R)
+            sgf.seta(pair.a_R)
+
             # calculate new CoM
-            r_R = pair.drawR_single( dt, pair.a_R )
+            r_R = pair.drawR_single( sgf, dt )
             
             displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
@@ -1830,7 +1840,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                               single2.particle ) ) )
             return None
 
-        # Here, we have to take into account of the bursted Singles in
+        # Here, we have to take into account of the burst Singles in
         # this step.  The simple check for closest below could miss
         # some of them, because sizes of these Singles for this
         # distance check has to include SINGLE_SHELL_FACTOR, while
