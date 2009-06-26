@@ -1498,10 +1498,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 1 Escaping through a_r.
         if pair.eventType == EventType.ESCAPE:
 
-            if __debug__:
-                log.debug( 'r0 = %g, dt = %g, %s' %
-                           ( r0, pair.dt, pair.pgf.dump() ) )
-            
             rnd = numpy.random.uniform( size=4 )
 
             # calculate new R
@@ -1534,9 +1530,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             rnd = numpy.random.uniform( size = 4 )
 
             # calculate new r
-            if __debug__:
-                log.debug( 'r0 = %g, dt = %g, %s' %
-                           ( r0, pair.dt, pair.pgf.dump() ) )
             r = pair.drawR_pair( r0, pair.dt, pair.a_r )
             if __debug__:
                 log.debug( 'new r = %g' % r )
