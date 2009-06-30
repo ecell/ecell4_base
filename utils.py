@@ -16,7 +16,7 @@ ZEROPOS = numpy.array( [ 0., 0., 0. ] )
 NOWHERE = numpy.array( ( INF, INF, INF ) )
 
 def Mtom3( rate ):
-    return rate * N_A / 1000
+    return rate / ( 1000 * N_A )
 
 def meanArrivalTime( r, D ):
     return ( r * r ) / ( 6.0 * D )
