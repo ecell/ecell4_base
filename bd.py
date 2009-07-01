@@ -122,25 +122,25 @@ class BDSimulatorCoreBase( object ):
                 except NoSpace:
                     if __debug__:
                         log.info( 'fireReaction1 rejected.' )
-                return
+                continue
 
             D = species.D
             if D == 0.0:
-                return
+                continue
 
             displacement = drawR_free( self.dt, D )
 
             newpos = particle.pos + displacement
             newpos %= self.main.worldSize
 
-            neighbors = self.main.getParticlesWithinRadiusNoSort(
+            neighbors = self.getParticlesWithinRadiusNoSort(
                 newpos, species.radius, ignore=[particle] )
             if neighbors:
 
                 if len( neighbors ) >= 2:
                     if __debug__:
                         log.info( 'collision two or more particles; move rejected' )
-                    return
+                    continue
 
                 closest = neighbors[0]
                 species2 = closest.species
@@ -163,13 +163,13 @@ class BDSimulatorCoreBase( object ):
                         except NoSpace:
                             if __debug__:
                                 log.info( 'fireReaction2 move rejected' )
-                        return
+                        continue
 
                 else:
                     if __debug__:
                         log.info( 'collision move rejected' )
 
-                return
+                continue
 
             try:
                 self.clearVolume( newpos, particle.radius, ignore=[particle] )
@@ -342,6 +342,13 @@ class BDSimulatorCoreBase( object ):
 class BDSimulatorCore( BDSimulatorCoreBase ):
     def __init__( self, main ):
         BDSimulatorCoreBase.__init__( self, main )
+
+
+    def getParticlesWithinRadius( self, pos, radius, ignore=[] ):
+        return self.main.getParticlesWithinRadius( pos, radius, ignore )
+
+    def getParticlesWithinRadiusNoSort( self, pos, radius, ignore=[] ): 
+        return self.main.getParticlesWithinRadiusNoSort( pos, radius, ignore )
 
     def initialize( self ):
         BDSimulatorCoreBase.initialize( self )
