@@ -226,7 +226,7 @@ public:
     }
 
     inline position_type offset_index_cyclic(cell_index_type& i,
-                                             const cell_offset_type& o)
+                                             const cell_offset_type& o) const
     {
         position_type retval;
 
@@ -521,7 +521,7 @@ public:
             Tcollect_ const& collector) const
     {
         cell_offset_type _off;
-        each_neighbor_cyclic_loops<Tcollect_>(3, _off, idx, collector);
+        each_neighbor_cyclic_loops<Tcollect_ const>(3, _off, idx, collector);
     }
 
 private:
@@ -555,7 +555,7 @@ private:
             if (!offset_index(_idx, off)) {
                 return;
             }
-            cell_type& c(cell(_idx));
+            cell_type const& c(cell(_idx));
             for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
             {
                 collector(const_iterator(&c, cell_range(), i));
@@ -605,7 +605,7 @@ private:
         {
             cell_index_type _idx(idx);
             const position_type pos_off(offset_index_cyclic(_idx, off));
-            cell_type& c(cell(_idx));
+            cell_type const& c(cell(_idx));
             for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
             {
                 collector(const_iterator(&c, cell_range(), i), pos_off);
