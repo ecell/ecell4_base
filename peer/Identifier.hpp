@@ -5,7 +5,7 @@
 #include <string>
 #if defined(HAVE_TR1_FUNCTIONAL)
 #include <tr1/functional>
-#elif HAVE_STD_HASH
+#elif defined(HAVE_STD_HASH)
 #include <functional>
 #elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 #include <boost/functional/hash.hpp>
@@ -14,6 +14,9 @@
 #include <boost/python/scope.hpp>
 #include <boost/python/object/function.hpp>
 #include <boost/format.hpp>
+
+#include <unistd.h>
+#include <iostream>
 
 #include "pickle_support.hpp"
 
@@ -65,7 +68,7 @@ public:
             return pyo;
         }
 
-        static void construct(PyObject* pyo, 
+        static void construct(PyObject* pyo,
                               boost::python::converter::rvalue_from_python_stage1_data* data)
         {
             void* storage(reinterpret_cast<
@@ -168,7 +171,7 @@ public:
     {
 #if defined(HAVE_TR1_FUNCTIONAL)
         using namespace std::tr1;
-#elif HAVE_STD_HASH
+#elif defined(HAVE_STD_HASH)
         using namespace std;
 #elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
         using namespace boost;
@@ -179,13 +182,39 @@ public:
     static PyObject* __richcmp__(IdentifierWrapper* self, PyObject* rhs, int op)
     {
         PyObject* retval = Py_None;
-        if (!PyObject_TypeCheck(rhs, &__class__))
+        switch (op)
         {
-            PyErr_SetString(PyExc_TypeError, "Comparison is not feasible");
-            Py_RETURN_NONE;
-        }
-        else
-        {
+        case Py_EQ:
+            if (!PyObject_TypeCheck(rhs, &__class__))
+            {
+                retval = Py_False;
+                Py_INCREF(retval);
+            }
+            else
+            {
+                IdentifierWrapper* const _rhs = reinterpret_cast<IdentifierWrapper*>(rhs);
+
+                retval = PyBool_FromLong(self->impl_ == _rhs->impl_);
+            }
+            break;
+        case Py_NE:
+            if (!PyObject_TypeCheck(rhs, &__class__))
+            {
+                retval = Py_True;
+                Py_INCREF(retval);
+            }
+            else
+            {
+                IdentifierWrapper* const _rhs = reinterpret_cast<IdentifierWrapper*>(rhs);
+                retval = PyBool_FromLong(self->impl_ != _rhs->impl_);
+            }
+            break;
+        default:
+            if (!PyObject_TypeCheck(rhs, &__class__))
+            {
+                PyErr_SetString(PyExc_TypeError, "Comparison is not feasible");
+                Py_RETURN_NONE;
+            }
             IdentifierWrapper* const _rhs = reinterpret_cast<IdentifierWrapper*>(rhs);
             switch (op)
             {
@@ -196,12 +225,6 @@ public:
                 break;
             case Py_LE:
                 retval = PyBool_FromLong(self->impl_ <= _rhs->impl_);
-                break;
-            case Py_EQ:
-                retval = PyBool_FromLong(self->impl_ == _rhs->impl_);
-                break;
-            case Py_NE:
-                retval = PyBool_FromLong(self->impl_ != _rhs->impl_);
                 break;
             case Py_GT:
                 retval = PyBool_FromLong(self->impl_ > _rhs->impl_);
