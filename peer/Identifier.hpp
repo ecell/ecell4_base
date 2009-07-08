@@ -13,6 +13,7 @@
 #include <boost/python.hpp>
 #include <boost/python/scope.hpp>
 #include <boost/python/object/function.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 
 #include <unistd.h>
@@ -21,24 +22,6 @@
 #include "pickle_support.hpp"
 
 namespace peer {
-
-static std::string dump_hex(void const* obj, std::size_t sz)
-{
-    unsigned char const *p = reinterpret_cast<unsigned char const*>(obj);
-    unsigned char const* e = p + sz;
-    std::stringstream s;
-    s.flags(std::ios::hex | std::ios::right);
-    s.fill('0');
-
-    while (p < e)
-    {
-        s.width(2);
-        s << (int)*p;
-        ++p;
-    }
-
-    return s.str();
-}
 
 template<typename Timpl_>
 class IdentifierWrapper
@@ -130,7 +113,7 @@ public:
 
     static PyObject* __str__(IdentifierWrapper* self)
     {
-        std::string retval(std::string(reinterpret_cast<PyObject*>(self)->ob_type->tp_name) + ":" + dump_hex(&self->impl_, sizeof(self->impl_)));
+        std::string retval(boost::lexical_cast<std::string>(self->impl_));
         return PyString_FromStringAndSize(retval.data(), retval.size());
     }
 
