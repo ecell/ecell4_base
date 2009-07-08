@@ -101,16 +101,16 @@ public:
     static PyObject* __new__(PyTypeObject* klass, PyObject* arg, PyObject* kwarg)
     try
     {
-        if (!PySequence_Check(arg) || PySequence_Size(arg) != 2)
+        if (!PyTuple_Check(arg) || PyTuple_Size(arg) != 2)
         {
-            PyErr_SetString(PyExc_TypeError, "argument 1 must be a sequence of size 2");
+            PyErr_SetString(PyExc_TypeError, "the number of arguments must be 2");
             return NULL;
         }
 
         return create(Timpl_(
             typename Timpl_::value_type(
-                boost::python::extract<typename Timpl_::lot_type>(PySequence_GetItem(arg, 0)),
-                boost::python::extract<typename Timpl_::serial_type>(PySequence_GetItem(arg, 1))
+                boost::python::extract<typename Timpl_::lot_type>(PyTuple_GetItem(arg, 0)),
+                boost::python::extract<typename Timpl_::serial_type>(PyTuple_GetItem(arg, 1))
             )));
     }
     catch (boost::python::error_already_set const&)
