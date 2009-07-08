@@ -174,9 +174,9 @@ Vector3< T_ > operator-(Vector3< T_ > const& lhs, Vector3< T_ > const& rhs)
     return subtract( lhs, rhs );
 }
 
-template<typename Tstrm_, typename T_>
-inline std::basic_ostream<Tstrm_>&
-operator<<(std::basic_ostream< Tstrm_ >& strm, const Vector3< T_ >& v)
+template<typename Tstrm_, typename Ttraits_, typename T_>
+inline std::basic_ostream<Tstrm_, Ttraits_>&
+operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Vector3<T_>& v)
 {
     strm << "(" << v[0] <<  ", " << v[1] <<  ", " << v[2] << ")";
     return strm;

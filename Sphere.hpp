@@ -54,8 +54,8 @@ private:
     length_type radius_;
 };
 
-template<typename Tstrm_, typename T_>
-inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
+template<typename Tstrm_, typename Ttraits_, typename T_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
         const Sphere<T_>& v)
 {
     strm << "{" << v.position() <<  ", " << v.radius() << "}";

@@ -68,7 +68,7 @@ private:
 };
 
 template<typename Tchar_, typename Ttraits_>
-inline std::basic_ostream<Tchar_>&
+inline std::basic_ostream<Tchar_, Ttraits_>&
 operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, const SpeciesType& v)
 {
     bool first = true;

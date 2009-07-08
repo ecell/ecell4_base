@@ -44,8 +44,8 @@ struct hash<SpeciesTypeID>
 } // namespace boost
 #endif
 
-template<typename Tstrm_>
-inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
         const SpeciesTypeID& v)
 {
     strm << "SpeciesTypeID(" << v().first << ":" << v().second << ")";
