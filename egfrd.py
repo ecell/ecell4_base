@@ -356,7 +356,7 @@ class Single( object ):
 
 def calculatePairCoM( pos1, pos2, D1, D2, worldSize ):
     '''
-    Just a free func ver of Pair.getCoM().
+    Calculate and return the center-of-mass of a Pair.
     '''
     pos2t = cyclicTranspose( pos2, pos1, worldSize )
     return ( ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 ) ) % worldSize
@@ -449,20 +449,11 @@ class Pair( object ):
         return minRadius
 
     def getCoM( self ):
-        '''
-        Calculate and return the "Center of Mass" (== CoM) of this pair.
-        '''
-        particle1 = self.single1.particle
-        particle2 = self.single2.particle
-        
-        pos1 = particle1.pos
-        pos2 = particle2.pos
 
-        pos2t = cyclicTranspose( pos2, pos1, self.worldSize ) #FIXME:
-        
-        com = ( pos1 * self.D2 + pos2t * self.D1 ) / self.D_tot
+        return calculatePairCoM(self.single1.particle.pos,
+                                self.single2.particle.pos,
+                                self.D1, self.D2, self.worldSize)
 
-        return com % self.worldSize
 
     def choosePairGreensFunction( self, r0, t ):
         distanceFromSigma = r0 - self.sigma
