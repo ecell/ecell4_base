@@ -4,7 +4,8 @@
 #include <ostream>
 #include <string>
 #include <boost/format.hpp>
-#include <boost/foreach.hpp>
+#include <boost/range/value_type.hpp>
+#include <boost/range/const_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
 
 #include "SpeciesTypeID.hpp"
@@ -73,9 +74,14 @@ operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, const SpeciesType& v)
 {
     bool first = true;
     out << "SpeciesType(id=" << v.id() << ", attributes={";
-    BOOST_FOREACH(SpeciesType::string_map_iterator::value_type pair,
-            v.attributes())
+
+    typename SpeciesType::attributes_range attributes(v.attributes());
+    for (typename boost::range_const_iterator<
+        typename SpeciesType::attributes_range>::type
+            i(attributes.begin()), e(attributes.end()); i != e; ++i)
     {
+        typename boost::range_value<typename SpeciesType::attributes_range>::type
+                const& pair(*i);
         if (!first)
             out << ", ";
         out << pair.first << ":" << pair.second;

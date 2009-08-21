@@ -8,8 +8,8 @@
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
 #include <boost/range/size.hpp>
+#include <boost/range/const_iterator.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 
@@ -304,8 +304,12 @@ operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, ReactionRule const& r)
     bool first;
     out << "ReactionRule(reactants={";
     first = true;
-    BOOST_FOREACH (SpeciesTypeID const& s, r.get_reactants())
+
+    typename ReactionRule::Reactants const& reactants(r.get_reactants());
+    for (ReactionRule::Reactants::const_iterator
+            i(reactants.begin()), e(reactants.end()); i != e; ++i)
     {
+        SpeciesTypeID const& s(*i);
         if (!first)
         {
             out << ", ";
@@ -315,8 +319,14 @@ operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, ReactionRule const& r)
     }
     out << "}, products={";
     first = true;
-    BOOST_FOREACH (SpeciesTypeID const& s, r.get_products())
+
+    typename ReactionRule::species_type_id_range products(r.get_products());
+
+    for (typename boost::range_const_iterator<
+            typename ReactionRule::species_type_id_range>::type
+                i(products.begin()), e(products.end()); i != e; ++i)
     {
+        SpeciesTypeID const& s(*i);
         if (!first)
         {
             out << ", ";
