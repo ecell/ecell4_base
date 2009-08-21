@@ -39,7 +39,7 @@ for dir in .
   do 
   echo -n Running autotools for $dir ...
   (cd $dir; \
-  { echo -n ' aclocal '; aclocal -I m4; } && \
+  { echo -n ' aclocal '; aclocal; } && \
   { echo -n 'autoheader '; autoheader -f ; } && \
   { echo -n 'automake ';  automake --add-missing $am_opt; } && \
   { echo -n 'autoconf '; autoconf; } && \

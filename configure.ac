@@ -3,7 +3,6 @@ dnl
 dnl
 AC_INIT
 AC_CONFIG_SRCDIR([autogen.sh])
-AC_CONFIG_MACRO_DIR([m4])
 dnl
 AM_PROG_LIBTOOL
 dnl AC_CONFIG_AUX_DIR()
