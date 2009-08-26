@@ -26,11 +26,20 @@ struct PyExcTraits<&PyExc_##PTR> \
 \
 PyTypeObject* PyExcTraits<&PyExc_##PTR>::pytype_object = reinterpret_cast<PyTypeObject*>(PyExc_##PTR);
 
+#ifdef HAVE_PYBASEEXCEPTIONOBJECT
+#define PYEXC_DICT_MEMBER_NAME dict
 SPECIALIZE_PYEXC_TRAITS(BaseException, PyBaseExceptionObject)
 SPECIALIZE_PYEXC_TRAITS(Exception, PyBaseExceptionObject)
 SPECIALIZE_PYEXC_TRAITS(StandardError, PyBaseExceptionObject)
 SPECIALIZE_PYEXC_TRAITS(LookupError, PyBaseExceptionObject)
 SPECIALIZE_PYEXC_TRAITS(RuntimeError, PyBaseExceptionObject)
+#else
+#define PYEXC_DICT_MEMBER_NAME in_dict
+SPECIALIZE_PYEXC_TRAITS(Exception, PyInstanceObject)
+SPECIALIZE_PYEXC_TRAITS(StandardError, PyInstanceObject)
+SPECIALIZE_PYEXC_TRAITS(LookupError, PyInstanceObject)
+SPECIALIZE_PYEXC_TRAITS(RuntimeError, PyInstanceObject)
+#endif
 
 #undef SPECIALIZE_PYEXC_TRAITS
 
@@ -60,17 +69,15 @@ public:
 
     ExceptionWrapper(Texc_ const& impl): impl_(impl)
     {
-        PyObject* args = PyTuple_New(0);
+        boost::python::tuple t(impl_.what());
         if ((*base_traits::pytype_object->tp_init)(
-                reinterpret_cast<PyObject*>(this), args, NULL) == -1)
+                reinterpret_cast<PyObject*>(this), t.ptr(), NULL) == -1)
         {
-            Py_XDECREF(args);
             throw std::runtime_error("Failed to initialize the base class");
         }
-        Py_XDECREF(args);
 
-        Py_INCREF(Py_None);
-        base_type::message = Py_None;
+        this->message = boost::python::incref(
+            static_cast<boost::python::object>(t[0]).ptr());
     }
 
     ~ExceptionWrapper()
@@ -80,13 +87,6 @@ public:
 
     static PyObject* __get_message__(ExceptionWrapper* self)
     {
-        if (self->message == Py_None)
-        {
-            Py_XDECREF(self->message);
-            self->message = PyString_FromString(self->impl_.what());
-            Py_INCREF(self->message);
-        }
-        Py_INCREF(self->message);
         return self->message;
     }
 
@@ -101,7 +101,7 @@ public:
         __name__ = static_cast<std::string>(
             extract<std::string>(object(borrowed(mod)).attr("__name__")))
             + "." + name;
-        __class__.tp_name = __name__.c_str();
+        __class__.tp_name = const_cast< char* >( __name__.c_str() );
         PyType_Ready(&__class__);
         return &__class__;
     }
@@ -130,6 +130,9 @@ public:
     static PyGetSetDef __getsets__[];
     static std::string __name__;
     Texc_ impl_;
+#ifndef HAVE_PYBASEEXCEPTIONOBJECT
+    PyObject* message;
+#endif 
 };
 
 
@@ -190,7 +193,7 @@ PyTypeObject ExceptionWrapper<Texc_, TbaseTraits_>::__class__ = {
     0,                  /* tp_dict */
     0,                  /* tp_descr_get */
     0,                  /* tp_descr_set */
-    offsetof(typename ExceptionWrapper::base_type, dict) /* tp_dictoffset */,
+    offsetof(typename ExceptionWrapper::base_type, PYEXC_DICT_MEMBER_NAME) /* tp_dictoffset */,
     0,                  /* tp_init */
     0,                  /* tp_alloc */
     &ExceptionWrapper::__new__    /* tp_new */

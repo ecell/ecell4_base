@@ -55,6 +55,16 @@ dnl
 ECELL_CHECK_NUMPY
 dnl
 AM_CHECK_PYTHON_HEADERS()
+ac_save_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $PYTHON_INCLUDES"
+AC_CHECK_TYPES([PyBaseExceptionObject],[],[],[
+#include <Python.h>
+#include <pyerrors.h>
+])
+CPPFLAGS="$ac_save_CPPFLAGS"
+AC_CHECK_FUNCS([PyInt_FromSize_t],[],[],[
+#include <Python.h>
+])
 dnl
 dnl
 AC_CHECK_HEADERS([unordered_map tr1/unordered_map boost/unordered_map.hpp boost/functional/hash.hpp])

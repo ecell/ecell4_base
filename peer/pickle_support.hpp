@@ -71,9 +71,9 @@ static inline void register_reconstructor()
     static bool registered = false;
     if (!registered) {
         static PyMethodDef def = {
-            reconstruct_func_name,
+            const_cast<char*>(reconstruct_func_name),
             &reconstruct,
-            METH_VARARGS, ""
+            METH_VARARGS, const_cast<char*>("")
         };
         scope().attr(reconstruct_func_name) = borrowed(PyCFunction_NewEx(
             &def, NULL, getattr(scope(), "__name__").ptr()));

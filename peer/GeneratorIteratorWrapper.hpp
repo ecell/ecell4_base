@@ -157,7 +157,17 @@ public:
     {
         try
         {
+#ifdef HAVE_PYINT_FROMSIZE_T
             return PyInt_FromSize_t(count(self->impl_));
+#else
+            std::size_t i(count(self->impl_));
+            if (i >= static_cast<std::size_t>(LONG_MIN) &&
+                    i <= static_cast<std::size_t>(LONG_MAX))
+            {
+                return PyInt_FromLong((long)i);
+            }
+            return PyLong_FromUnsignedLongLong(i);
+#endif
         }
         catch (std::exception const&) {}
 
@@ -171,7 +181,7 @@ public:
         __name__ = static_cast<std::string>(
             extract<std::string>(object(borrowed(mod)).attr("__name__")))
             + "." + name;
-        __class__.tp_name = __name__.c_str();
+        __class__.tp_name = const_cast<char*>(__name__.c_str());
         PyType_Ready(&__class__);
         return &__class__;
     }
