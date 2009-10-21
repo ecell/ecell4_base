@@ -301,7 +301,7 @@ class BDSimulatorCoreBase( object ):
             D1 = particle1.species.D
             D2 = particle2.species.D
 
-            pos2t = cyclicTranspose( pos2, pos1, self.main.worldSize )
+            pos2t = cyclic_transpose( pos2, pos1, self.main.worldSize )
             newPos = ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 )
             self.main.applyBoundary( newPos )
 

@@ -26,7 +26,7 @@ def uniq( l ):
     map( nset.__setitem__, l, [] )
     return nset.keys()
 
-def cyclicTranspose( pos1, pos2, fsize ):
+def cyclic_transpose(pos1, pos2, world_size):
     '''
     Transpose the position pos1 so that it can be used with another 
     position pos2.
@@ -37,14 +37,17 @@ def cyclicTranspose( pos1, pos2, fsize ):
     Both of given pos1 and pos2 must be within the cyclic boundary.  However,
     note that the returned transposed pos1 may not be within the cyclic boundary.
     '''
-    halfsize = fsize * 0.5
+    return _gfrd.cyclic_transpose(pos1, pos2, world_size)
 
-    diff = pos2 - pos1
+# def cyclicTranspose( pos1, pos2, fsize ):
+#     halfsize = fsize * 0.5
+
+#     diff = pos2 - pos1
     
-    reloc = numpy.greater( diff, halfsize ) * fsize - \
-        numpy.less( diff, - halfsize ) * fsize
+#     reloc = numpy.greater( diff, halfsize ) * fsize - \
+#         numpy.less( diff, - halfsize ) * fsize
 
-    return pos1 + reloc
+#     return pos1 + reloc
 
 def distanceSq_Simple( position1, position2, fsize = None ):
     return _gfrd.distanceSq( position1, position2 )
@@ -96,17 +99,20 @@ def randomUnitVectorS():
 
 def randomUnitVector():
     v = numpy.random.uniform( -1, 1, 3 )
-    return v / _gfrd.length( v )
+    return _gfrd.normalize(v, 1)
+    #return v / _gfrd.length( v )
 
 def randomVector( r ):
     v = numpy.random.uniform( -1, 1, 3 )
-    return v * ( r / _gfrd.length( v ) )
+    return _gfrd.normalize(v, r)
+    #return v * ( r / _gfrd.length( v ) )
 
 def length( a ):
     return _gfrd.length( a )
 
-def normalize( a ):
-    return a / length( a )
+def normalize( a, l=1 ):
+    return _gfrd.normalize( a, l )
+    #return a / length( a )
 
 def vectorAngle( a, b ):
     cosangle = numpy.dot( a, b ) / ( length( a ) * length( b ) )
@@ -146,6 +152,9 @@ def rotateVector( v, r, alpha ):
                          cosalpha + cosalphac * r[2] * r[2] ] ] )
 
     return numpy.dot( M,v )
+
+def calculate_pair_CoM( pos1, pos2, D1, D2, world_size ):
+    return _gfrd.calculate_pair_CoM(pos1, pos2, D1, D2, world_size);
 
 def permutate(seq):
     """permutate a sequence and return a list of the permutations"""

@@ -354,12 +354,13 @@ class Single( object ):
         return 'Single[%s: eventID=%s]' % ( self.particle, self.eventID )
 
 
-def calculatePairCoM( pos1, pos2, D1, D2, worldSize ):
-    '''
-    Calculate and return the center-of-mass of a Pair.
-    '''
-    pos2t = cyclicTranspose( pos2, pos1, worldSize )
-    return ( ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 ) ) % worldSize
+# def calculatePairCoM( pos1, pos2, D1, D2, worldSize ):
+#     '''
+#     Calculate and return the center-of-mass of a Pair.
+#     '''
+#     #pos2t = cyclicTranspose( pos2, pos1, worldSize )
+#     pos2t = cyclic_transpose( pos2, pos1, worldSize )
+#     return ( ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 ) ) % worldSize
 
 
 class Pair( object ):
@@ -450,9 +451,9 @@ class Pair( object ):
 
     def getCoM( self ):
 
-        return calculatePairCoM(self.single1.particle.pos,
-                                self.single2.particle.pos,
-                                self.D1, self.D2, self.worldSize)
+        return calculate_pair_CoM(self.single1.particle.pos,
+                                  self.single2.particle.pos,
+                                  self.D1, self.D2, self.worldSize)
 
 
     def choosePairGreensFunction( self, r0, t ):
@@ -1810,8 +1811,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             shellSizeMargin = shellSizeMargin2
 
         # 1. Shell cannot be larger than max shell size or sim cell size.
-        com = calculatePairCoM( single1.pos, single2.pos, D1, D2,
-                                self.getWorldSize() )
+        com = calculate_pair_CoM( single1.pos, single2.pos, D1, D2,
+                                  self.getWorldSize() )
         self.applyBoundary( com )
         minShellSizeWithMargin = minShellSize + shellSizeMargin
         maxShellSize = min( self.getMaxShellSize(),

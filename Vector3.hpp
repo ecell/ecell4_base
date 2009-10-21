@@ -31,6 +31,7 @@ inline T_ subtract( T_ const& p1, T_ const& p2 )
     return retval;
 }
 
+
 template< typename T_ >
 inline typename detail::element_type_of< T_ >::type length_sq( T_ const& r )
 {
@@ -42,6 +43,7 @@ inline typename detail::element_type_of< T_ >::type length( T_ const& r )
 {
     return std::sqrt( length_sq( r ) );
 }
+
 
 template< typename T1_, typename T2_ >
 inline typename detail::element_type_of< T1_ >::type distance_sq(
@@ -93,6 +95,7 @@ distance_sq_cyclic( T1_ const& p1, T2_ const& p2,
         std::pow( diff[2], 2 );
 }
 
+
 template< typename T1_,typename T2_ >
 typename detail::element_type_of< T1_ >::type
 distance_cyclic( T1_ const& p1, T2_ const& p2,
@@ -130,6 +133,81 @@ distance_cyclic( T1_ const& p1, T1_ const& p2,
 {
     return distance_cyclic< T1_, T1_ >( p1, p2, world_size );
 }
+
+template< typename T1_ >
+inline T1_ normalize( T1_ const& p, 
+                      typename detail::element_type_of< T1_ >::type const& r )
+{
+    typedef typename element_type_of< T1_ >::type element_type;
+
+    T1_ retval;
+    element_type factor(r / length<T1_>(p));
+    retval[0] = p[0] * factor;
+    retval[1] = p[1] * factor;
+    retval[2] = p[2] * factor;
+
+    return retval;
+}
+
+// cyclic_transpose() and calculatePairCoM are placed here
+// temporarily.  should be moved to somewhere else later.
+
+template< typename T1_ >
+inline T1_ 
+cyclic_transpose( T1_ const& p1, 
+                  T1_ const& p2, 
+                  typename detail::element_type_of< T1_ >::type const& 
+                  world_size )
+{
+    T1_ retval;
+
+    typedef typename element_type_of< T1_ >::type element_type;   
+    const element_type half_world_size(world_size * .5);
+
+    for(unsigned int i(0); i <= 2; ++i)
+    {
+        const element_type diff(p2[i] - p1[i]);
+        retval[i] = p1[i];
+        if(diff > half_world_size)
+        {
+            retval[i] += world_size;
+        }
+        else if(diff < - half_world_size)
+        {
+            retval[i] -= world_size;
+        }
+    }
+
+    return retval;
+}
+
+template< typename T1_ >
+inline T1_ 
+calculate_pair_CoM( T1_ const& p1, 
+                    T1_ const& p2, 
+                    typename detail::element_type_of< T1_ >::type const& D1,
+                    typename detail::element_type_of< T1_ >::type const& D2,
+                    typename detail::element_type_of< T1_ >::type const& 
+                    world_size )
+{
+    typedef typename element_type_of< T1_ >::type element_type;   
+
+    T1_ retval;
+
+    const T1_ p2t(cyclic_transpose<T1_>(p2,p1,world_size));
+
+    const element_type rD1pD2(1.0/(D1 + D2));
+    const element_type fD1(D1 * rD1pD2);
+    const element_type fD2(D2 * rD1pD2);
+    for(unsigned int i(0); i <= 2; ++i)
+    {
+        retval[i] = fmod((fD2 * p1[i] + fD1 * p2t[i]), world_size);
+    }
+    
+    return retval;
+}
+
+
 
 
 template<typename T_>
