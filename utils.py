@@ -100,19 +100,16 @@ def randomUnitVectorS():
 def randomUnitVector():
     v = numpy.random.uniform( -1, 1, 3 )
     return _gfrd.normalize(v, 1)
-    #return v / _gfrd.length( v )
 
 def randomVector( r ):
     v = numpy.random.uniform( -1, 1, 3 )
     return _gfrd.normalize(v, r)
-    #return v * ( r / _gfrd.length( v ) )
 
 def length( a ):
     return _gfrd.length( a )
 
 def normalize( a, l=1 ):
     return _gfrd.normalize( a, l )
-    #return a / length( a )
 
 def vectorAngle( a, b ):
     cosangle = numpy.dot( a, b ) / ( length( a ) * length( b ) )
@@ -155,6 +152,9 @@ def rotateVector( v, r, alpha ):
 
 def calculate_pair_CoM( pos1, pos2, D1, D2, world_size ):
     return _gfrd.calculate_pair_CoM(pos1, pos2, D1, D2, world_size);
+
+def apply_boundary(pos, world_size):
+    return _gfrd.apply_boundary(pos, world_size)
 
 def permutate(seq):
     """permutate a sequence and return a list of the permutations"""

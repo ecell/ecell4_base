@@ -448,6 +448,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     def( "normalize", &normalize<vector_type> );
     def( "cyclic_transpose", &cyclic_transpose<vector_type> );
     def( "calculate_pair_CoM", &calculate_pair_CoM<vector_type> );
+    def( "apply_boundary", &apply_boundary<vector_type> );
 
     to_python_converter<position_type,
         position_to_ndarray_converter>();

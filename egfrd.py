@@ -310,18 +310,15 @@ class Single( object ):
 
     def drawEscapeTime( self ):
         
-        rnd = numpy.random.uniform()
-
         gf = FirstPassageGreensFunction( self.particle.species.D )
         gf.seta( self.getMobilityRadius() )
 
         try:
-            dt = gf.drawTime( rnd )
+            rnd = numpy.random.uniform()
+            return gf.drawTime( rnd )
         except Exception, e:
             raise Exception, 'gf.drawTime() failed; %s; rnd=%g, %s' %\
                 ( str( e ), rnd, gf.dump() )
-
-        return dt
 
 
     def updatek_tot( self ):

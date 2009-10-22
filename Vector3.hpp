@@ -149,7 +149,7 @@ inline T1_ normalize( T1_ const& p,
     return retval;
 }
 
-// cyclic_transpose() and calculatePairCoM are placed here
+// cyclic_transpose(), calculatePairCoM() and apply_boundary() are placed here
 // temporarily.  should be moved to somewhere else later.
 
 template< typename T1_ >
@@ -201,10 +201,21 @@ calculate_pair_CoM( T1_ const& p1,
     const element_type fD2(D2 * rD1pD2);
     for(unsigned int i(0); i <= 2; ++i)
     {
-        retval[i] = fmod((fD2 * p1[i] + fD1 * p2t[i]), world_size);
+        retval[i] = std::fmod((fD2 * p1[i] + fD1 * p2t[i]), world_size);
     }
     
     return retval;
+}
+
+
+template< typename T1_ >
+inline T1_ 
+apply_boundary(T1_ const& p1, 
+               typename detail::element_type_of< T1_ >::type const& world_size)
+{
+    return T1_(std::fmod(p1[0], world_size),
+               std::fmod(p1[1], world_size),
+               std::fmod(p1[2], world_size));
 }
 
 

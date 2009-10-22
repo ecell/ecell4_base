@@ -389,7 +389,7 @@ class ParticleSimulatorBase( object ):
             self.particleMatrix.setMatrixSize( max( size, self.maxMatrixSize ) )
 
     def applyBoundary( self, pos ):
-        pos %= self.worldSize
+        pos = apply_boundary(pos, self.worldSize)
 
     def getReactionRule1( self, species ):
         k = (species,)
