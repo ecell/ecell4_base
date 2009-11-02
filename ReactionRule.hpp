@@ -17,12 +17,16 @@
 #include "utils.hpp"
 #include "SpeciesTypeID.hpp"
 
+class NetworkRules;
+
 class ReactionRule
 {
 private:
     typedef std::vector<SpeciesTypeID> species_type_id_vector;
 
 public:
+    typedef int identifier_type; 
+
     class Reactants
     {
     private:
@@ -41,6 +45,11 @@ public:
         {
             friend class const_iterator;
             friend class boost::iterator_core_access;
+
+            std::ptrdiff_t distance_to(iterator const& that) const
+            {
+                return that.idx_ - idx_;
+            }
 
             bool equal(iterator const& that) const
             {
@@ -74,6 +83,11 @@ public:
         {
             friend class iterator;
             friend class boost::iterator_core_access;
+
+            std::ptrdiff_t distance_to(const_iterator const& that) const
+            {
+                return that.idx_ - idx_;
+            }
 
             bool equal(const_iterator const& that) const
             {
@@ -224,12 +238,23 @@ public:
         return k_;
     }
 
+    identifier_type const& id() const
+    {
+        return id_;
+    }
+
+    identifier_type const& set_id(identifier_type const& val) const
+    {
+        id_ = val;
+        return id_;
+    }
+
     explicit ReactionRule(Reactants const& _reactants, Real k = .0)
-        : reactants_(_reactants), k_(k) {}
+        : id_(), reactants_(_reactants), k_(k) {}
 
     template<typename Trange_>
     ReactionRule(Reactants const& _reactants, Trange_ const& products, Real k = .0)
-        : reactants_(_reactants), k_(k)
+        : id_(), reactants_(_reactants), k_(k)
     {
         std::for_each(boost::begin(products), boost::end(products),
                 boost::bind(&ReactionRule::add_product, this, _1));
@@ -237,6 +262,7 @@ public:
     }
 
 private:
+    mutable identifier_type id_;
     Reactants reactants_;
     species_type_id_vector products_;
     Real k_;
@@ -302,7 +328,7 @@ inline std::basic_ostream<Tchar_, Ttraits_>&
 operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, ReactionRule const& r)
 {
     bool first;
-    out << "ReactionRule(reactants={";
+    out << "ReactionRule(id=" << r.id() << ", reactants={";
     first = true;
 
     typename ReactionRule::Reactants const& reactants(r.get_reactants());
