@@ -40,7 +40,16 @@ AC_PROG_CXX
 AC_LANG_CPLUSPLUS
 dnl
 dnl
-AC_CHECK_LIB(boost_python,main,,AC_MSG_ERROR([could not find libboost_python.]),-lpython${PYTHON_VERSION})
+
+BOOST_PYTHON_LIBNAME=boost_python
+
+AC_ARG_WITH(boost-python-libname,
+  AC_HELP_STRING([--with-boost-python-libname=LIBNAME],
+                 [specify the library name of Boost.Python [[boost_python]]]
+                ),
+  [BOOST_PYTHON_LIBNAME=$withval]
+)
+AC_CHECK_LIB($BOOST_PYTHON_LIBNAME,main,,AC_MSG_ERROR([could not find libboost_python.]),-lpython${PYTHON_VERSION})
 dnl
 dnl
 AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])
