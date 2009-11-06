@@ -50,6 +50,7 @@ AC_ARG_WITH(boost-python-libname,
   [BOOST_PYTHON_LIBNAME=$withval]
 )
 AC_CHECK_LIB($BOOST_PYTHON_LIBNAME,main,,AC_MSG_ERROR([could not find libboost_python.]),-lpython${PYTHON_VERSION})
+AC_SUBST(BOOST_PYTHON_LIBNAME)
 dnl
 dnl
 AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])
