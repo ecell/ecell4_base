@@ -41,7 +41,7 @@ for dir in .
   (cd $dir; \
   { echo -n ' aclocal '; aclocal; } && \
   { echo -n 'autoheader '; autoheader -f ; } && \
-  { echo -n 'automake ';  automake --add-missing $am_opt; } && \
+  { echo -n 'automake ';  automake --copy --add-missing $am_opt; } && \
   { echo -n 'autoconf '; autoconf; } && \
   echo )
   
