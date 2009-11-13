@@ -421,7 +421,10 @@ class ParticleSimulatorBase( object ):
         return retval
 
     def getReactionRule2( self, species1, species2 ):
-        k = (species2.id, species1.id) if species2.id < species1.id else (species1.id, species2.id)
+        if species2.id < species1.id
+            k = (species2.id, species1.id)
+        else
+            k = (species1.id, species2.id)
         try:
             retval = self.reactionRuleCache[k]
         except:
