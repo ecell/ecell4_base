@@ -48,19 +48,19 @@ def singlerun( T ):
     kf = 100 * sigma * D_tot
     koff = 0.1 / tau
 
+    m = ParticleModel()
 
-    A = Species( 'A', D, sigma/2 )
-    s.addSpecies( A )
-    B = Species( 'B', D, sigma/2 )
-    s.addSpecies( B )
-    C = Species( 'C', D, sigma/2 )
-    s.addSpecies( C )
+    A = m.new_species_type( 'A', D, sigma/2 )
+    B = m.new_species_type( 'B', D, sigma/2 )
+    C = m.new_species_type( 'C', D, sigma/2 )
 
-    r1 = BindingReactionRule( A, B, C, kf )
-    s.addReactionRule( r1 )
+    r1 = createBindingReactionRule( A, B, C, kf )
+    m.network_rules.add_reaction_rule( r1 )
 
-    r2 = UnbindingReactionRule( C, A, B, koff )
-    s.addReactionRule( r2 )
+    r2 = createUnbindingReactionRule( C, A, B, koff )
+    m.network_rules.add_reaction_rule( r2 )
+
+    s.setModel( m )
 
     s.placeParticle( A, [0,0,0] )
     s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )

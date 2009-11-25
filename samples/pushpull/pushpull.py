@@ -71,19 +71,14 @@ plain2 = CuboidalSurface( [L/2,0,0],[L/2,L,L] )
 # not supported yet
 #s.addSurface( box1 )
 
+m = ParticleModel()
 
-S = Species( 'S', D1, radius )
-s.addSpecies( S )
-P = Species( 'P', D2, radius )
-s.addSpecies( P )
-K = Species( 'K', D2, radius )
-s.addSpecies( K )
-KS = Species( 'KS', D2, radius )
-s.addSpecies( KS )
-Sp = Species( 'Sp', D1, radius )
-s.addSpecies( Sp )
-PSp = Species( 'PSp', D2, radius )
-s.addSpecies( PSp )
+S = m.new_species_type( 'S', D1, radius )
+P = m.new_species_type( 'P', D2, radius )
+K = m.new_species_type( 'K', D2, radius )
+KS = m.new_species_type( 'KS', D2, radius )
+Sp = m.new_species_type( 'Sp', D1, radius )
+PSp = m.new_species_type( 'PSp', D2, radius )
 
 #fracS = fraction_S( N_K, N_P, Keq )
 fracS = 1
@@ -146,6 +141,8 @@ print (koff1 + kcat1)/kon/S_conc
 
 #sys.exit(0)
 
+s.setModel( m )
+
 if mode == 'normal' or mode == 'immobile':
     s.throwInParticles( K, N_K, box1 )
     s.throwInParticles( P, N_P, box1 )
@@ -190,18 +187,18 @@ s.reset()
 #  6   PSp     -> P + S
 
 
-r1 = BindingReactionRule( S, K, KS, ka )
-s.addReactionRule( r1 )
-r2 = UnbindingReactionRule( KS, S, K, kd1 )
-s.addReactionRule( r2 )
-r3 = UnbindingReactionRule( KS, K, Sp, kcat1 )
-s.addReactionRule( r3 )
-r4 = BindingReactionRule( Sp, P, PSp, ka )
-s.addReactionRule( r4 )
-r5 = UnbindingReactionRule( PSp, Sp, P, kd2 )
-s.addReactionRule( r5 )
-r6 = UnbindingReactionRule( PSp, P, S, kcat2 )
-s.addReactionRule( r6 )
+r1 = createBindingReactionRule( S, K, KS, ka )
+m.network_rules.add_reaction_rule( r1 )
+r2 = createUnbindingReactionRule( KS, S, K, kd1 )
+m.network_rules.add_reaction_rule( r2 )
+r3 = createUnbindingReactionRule( KS, K, Sp, kcat1 )
+m.network_rules.add_reaction_rule( r3 )
+r4 = createBindingReactionRule( Sp, P, PSp, ka )
+m.network_rules.add_reaction_rule( r4 )
+r5 = createUnbindingReactionRule( PSp, Sp, P, kd2 )
+m.network_rules.add_reaction_rule( r5 )
+r6 = createUnbindingReactionRule( PSp, P, S, kcat2 )
+m.network_rules.add_reaction_rule( r6 )
 
 
 

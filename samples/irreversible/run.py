@@ -45,16 +45,17 @@ def singlerun1( T ):
     D_tot = D
     kf = 10 * sigma * D_tot
 
-    A = Species( 'A', 0.0, sigma/2 )
-    s.addSpecies( A )
-    B = Species( 'B', D, sigma/2 )
-    s.addSpecies( B )
-    C = Species( 'C', 0.0, sigma/2 )
-    s.addSpecies( C )
+    m = ParticleModel()
 
-    r1 = BindingReactionRule( A, B, C, kf )
-    s.addReactionRule( r1 )
-    
+    A = m.new_species_type( 'A', 0.0, sigma/2 )
+    B = m.new_species_type( 'B', D, sigma/2 )
+    C = m.new_species_type( 'C', 0.0, sigma/2 )
+
+    r1 = createBindingReactionRule( A, B, C, kf )
+    m.network_rules.add_reaction_rule( r1 )
+
+    s.setModel( m )
+
     particleA = s.placeParticle( A, [0,0,0] )
     particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
 
@@ -91,16 +92,17 @@ def singlerun2( T ):
 
     kf = 100 * sigma * D_tot
 
-    A = Species( 'A', D, sigma/2 )
-    s.addSpecies( A )
-    B = Species( 'B', D, sigma/2 )
-    s.addSpecies( B )
-    C = Species( 'C', D, sigma/2 )
-    s.addSpecies( C )
+    m = ParticleModel()
 
-    r1 = BindingReactionRule( A, B, C, kf )
-    s.addReactionRule( r1 )
-    
+    A = m.new_species_type( 'A', D, sigma/2 )
+    B = m.new_species_type( 'B', D, sigma/2 )
+    C = m.new_species_type( 'C', D, sigma/2 )
+
+    r1 = createBindingReactionRule( A, B, C, kf )
+    m.network_rules.add_reaction_rule( r1 )
+
+    s.setModel( m )
+
     particleA = s.placeParticle( A, [0,0,0] )
     particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
 

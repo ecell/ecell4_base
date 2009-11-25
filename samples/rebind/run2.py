@@ -86,18 +86,19 @@ def singlerun( T_list, D_factor, kf_factor ):
     # 1e9 [ 1 / (M s) ] -> 1e9 / 1000 / N_A [ m^3 / s ]
     kf = 0.092e-18 * kf_factor
 
-    A = Species( 'A', D, radius )
-    s.addSpecies( A )
-    B = Species( 'B', D, radius )
-    s.addSpecies( B )
-    C = Species( 'C', D, radius )
-    s.addSpecies( C )
+    m = ParticleModel()
 
-    r1 = BindingReactionRule( A, B, C, kf )
-    s.addReactionRule( r1 )
+    A = m.new_species_type( 'A', D, radius )
+    B = m.new_species_type( 'B', D, radius )
+    C = m.new_species_type( 'C', D, radius )
 
-    r2 = UnbindingReactionRule( C, A, B, 1e3 )
-    s.addReactionRule( r2 )
+    r1 = createBindingReactionRule( A, B, C, kf )
+    m.network_rules.add_reaction_rule( r1 )
+
+    r2 = createUnbindingReactionRule( C, A, B, 1e3 )
+    m.network_rules.add_reaction_rule( r2 )
+
+    s.setModel( m )
 
     A_pos = [0,0,0]
     B_pos = [(A.radius + B.radius)+1e-23,0,0]

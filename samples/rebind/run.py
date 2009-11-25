@@ -88,17 +88,17 @@ def singlerun( T_list, D_factor, N_B, N_X ):
     # 1e9 [ 1 / (M s) ] -> 1e9 / 1000 / N_A [ m^3 / s ]
     kf = 0.092e-18
 
-    A = Species( 'A', D, radius )
-    s.addSpecies( A )
-    B = Species( 'B', D, radius )
-    s.addSpecies( B )
-    C = Species( 'C', D, radius )
-    s.addSpecies( C )
+    m = ParticleModel()
+
+    A = m.new_species_type( 'A', D, radius )
+    B = m.new_species_type( 'B', D, radius )
+    C = m.new_species_type( 'C', D, radius )
 
     DX = D * DX_factor
 
-    X = Species( 'X', DX, radius )
-    s.addSpecies( X )
+    X = m.new_species_type( 'X', DX, radius )
+
+    s.setModel( m )
 
     if N_X != 0:
         s.throwInParticles( X, N_X, box1 )
@@ -114,11 +114,11 @@ def singlerun( T_list, D_factor, N_B, N_X ):
 
     s.reset()
 
-    r1 = BindingReactionRule( A, B, C, kf )
-    s.addReactionRule( r1 )
+    r1 = createBindingReactionRule( A, B, C, kf )
+    m.network_rules.add_reaction_rule( r1 )
 
-    r2 = UnbindingReactionRule( C, A, B, 1e3 )
-    s.addReactionRule( r2 )
+    r2 = createUnbindingReactionRule( C, A, B, 1e3 )
+    m.network_rules.add_reaction_rule( r2 )
 
     A_pos = [0,0,0]
     B_pos = [(A.radius + B.radius)+1e-23,0,0]

@@ -26,15 +26,16 @@ def singlerun( T ):
     D = 1e-12
     kf = 10 * sigma * D
 
-    A = Species( 'A', D/2, sigma/2 )
-    s.addSpecies( A )
-    B = Species( 'B', D/2, sigma/2 )
-    s.addSpecies( B )
-    C = Species( 'C', D/2, sigma/2 )
-    s.addSpecies( C )
+    m = ParticleModel()
+
+    A = m.new_species_type( 'A', D/2, sigma/2 )
+    B = m.new_species_type( 'B', D/2, sigma/2 )
+    C = m.new_species_type( 'C', D/2, sigma/2 )
     
-    r1 = BindingReactionRule( A, B, C, kf )
-    s.addReactionRule( r1 )
+    r1 = createBindingReactionRule( A, B, C, kf )
+    s.newwork_rules.add_reaction_rule( r1 )
+
+    s.setModel( m )
     
     particleA = s.placeParticle( A, [0,0,0] )
     particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )

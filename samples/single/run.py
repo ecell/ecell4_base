@@ -31,9 +31,12 @@ def singlerun( T, S ):
 
     s.setUserMaxShellSize( S )
 
-    A = Species( 'A', 1e-12, 5e-9 )
-    s.addSpecies( A )
-    
+    m = ParticleModel()
+
+    A = m.new_species_type( 'A', 1e-12, 5e-9 )
+
+    s.setModel( m )
+
     particleA = s.placeParticle( A, [0,0,0] )
 
     endTime = T

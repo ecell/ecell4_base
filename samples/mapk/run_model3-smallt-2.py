@@ -68,32 +68,22 @@ def singlerun( D_factor, ti, T ):
 
     radius = 2.5e-9
 
-#     K = Species( 'K', D_move, radius )
-#     s.addSpecies( K )
-    KK = Species( 'KK', D_move, radius )
-    s.addSpecies( KK )
-#     P = Species( 'P', D_move, radius )
-#     s.addSpecies( P )
-    Kp = Species( 'Kp', D_move, radius )
-    s.addSpecies( Kp )
-#     Kpp = Species( 'Kpp', D_move, radius )
-#     s.addSpecies( Kpp )
-#     K_KK = Species( 'K_KK', D_move, radius )
-#     s.addSpecies( K_KK )
-    Kp_KK = Species( 'Kp_KK', D_move, radius )
-    s.addSpecies( Kp_KK )
-#     Kpp_KK = Species( 'Kpp_KK', D_move, radius )
-#     s.addSpecies( Kpp_KK )
-#     Kpp_P = Species( 'Kpp_P', D_move, radius )
-#     s.addSpecies( Kpp_P )
-#     Kp_P = Species( 'Kp_P', D_move, radius )
-#     s.addSpecies( Kp_P )
+    m = ParticleModel()
+
+#     K = m.new_species_type( 'K', D_move, radius )
+    KK = m.new_species_type( 'KK', D_move, radius )
+#     P = m.new_species_type( 'P', D_move, radius )
+    Kp = m.new_species_type( 'Kp', D_move, radius )
+#     Kpp = m.new_species_type( 'Kpp', D_move, radius )
+#     K_KK = m.new_species_type( 'K_KK', D_move, radius )
+    Kp_KK = m.new_species_type( 'Kp_KK', D_move, radius )
+#     Kpp_KK = m.new_species_type( 'Kpp_KK', D_move, radius )
+#     Kpp_P = m.new_species_type( 'Kpp_P', D_move, radius )
+#     Kp_P = m.new_species_type( 'Kp_P', D_move, radius )
 
     # inactive forms
-    KKi = Species( 'KKi', D_move, radius )
-    s.addSpecies( KKi )
-#     Pi = Species( 'Pi', D_move, radius )
-#     s.addSpecies( Pi )
+    KKi = m.new_species_type( 'KKi', D_move, radius )
+#     Pi = m.new_species_type( 'Pi', D_move, radius )
 
 
 
@@ -147,46 +137,48 @@ def singlerun( D_factor, ti, T ):
 #     k5 = k_d( 1.0, Mtom3( 0.032e9 ), kD )
 #     k6 = 15.0
 
-#     r1 = BindingReactionRule( K, KK, K_KK, k1 )
-#     s.addReactionRule( r1 )
-#     r2 = UnbindingReactionRule( K_KK, K, KK, k2 )
-#     s.addReactionRule( r2 )
-#     r3 = UnbindingReactionRule( K_KK, Kp, KKi, k3 )
-#     s.addReactionRule( r3 )
+#     r1 = createBindingReactionRule( K, KK, K_KK, k1 )
+#     m.network_rules.add_reaction_rule( r1 )
+#     r2 = createUnbindingReactionRule( K_KK, K, KK, k2 )
+#     m.network_rules.add_reaction_rule( r2 )
+#     r3 = createUnbindingReactionRule( K_KK, Kp, KKi, k3 )
+#     m.network_rules.add_reaction_rule( r3 )
 
-    r4 = BindingReactionRule( Kp, KK, Kp_KK, k4 )
-    s.addReactionRule( r4 )
-#     r5 = UnbindingReactionRule( Kp_KK, Kp, KK, k5 )
-#     s.addReactionRule( r5 )
-#     r6 = UnbindingReactionRule( Kp_KK, Kpp, KKi, k6 )
-#     s.addReactionRule( r6 )
+    r4 = createcreateBindingReactionRule( Kp, KK, Kp_KK, k4 )
+    m.network_rules.add_reaction_rule( r4 )
+#     r5 = createUnbindingReactionRule( Kp_KK, Kp, KK, k5 )
+#     m.network_rules.add_reaction_rule( r5 )
+#     r6 = createUnbindingReactionRule( Kp_KK, Kpp, KKi, k6 )
+#     m.network_rules.add_reaction_rule( r6 )
 
 
-#     r7 = BindingReactionRule( Kpp, P, Kpp_P, k1 )
-#     s.addReactionRule( r7 )
-#     r8 = UnbindingReactionRule( Kpp_P, Kpp, P, k2 )
-#     s.addReactionRule( r8 )
-#     r9 = UnbindingReactionRule( Kpp_P, Kp, Pi, k3 )
-#     s.addReactionRule( r9 )
+#     r7 = createBindingReactionRule( Kpp, P, Kpp_P, k1 )
+#     m.network_rules.add_reaction_rule( r7 )
+#     r8 = createUnbindingReactionRule( Kpp_P, Kpp, P, k2 )
+#     m.network_rules.add_reaction_rule( r8 )
+#     r9 = createUnbindingReactionRule( Kpp_P, Kp, Pi, k3 )
+#     m.network_rules.add_reaction_rule( r9 )
     
-#     r10 = BindingReactionRule( Kp, P, Kp_P, k4 )
-#     s.addReactionRule( r10 )
-#     r11 = UnbindingReactionRule( Kp_P, Kp, P, k5 )
-#     s.addReactionRule( r11 )
-#     r12 = UnbindingReactionRule( Kp_P, K, Pi, k6 )
-#     s.addReactionRule( r12 )
+#     r10 = createBindingReactionRule( Kp, P, Kp_P, k4 )
+#     m.network_rules.add_reaction_rule( r10 )
+#     r11 = createUnbindingReactionRule( Kp_P, Kp, P, k5 )
+#     m.network_rules.add_reaction_rule( r11 )
+#     r12 = createUnbindingReactionRule( Kp_P, K, Pi, k6 )
+#     m.network_rules.add_reaction_rule( r12 )
 
 
-    r13 = UnimolecularReactionRule( KKi, KK, ki )
-    s.addReactionRule( r13 )
-#     r14 = UnimolecularReactionRule( Pi, P, ki )
-#     s.addReactionRule( r14 )
+    r13 = createUnimolecularReactionRule( KKi, KK, ki )
+    m.network_rules.add_reaction_rule( r13 )
+#     r14 = createUnimolecularReactionRule( Pi, P, ki )
+#     m.network_rules.add_reaction_rule( r14 )
 
 
 #     logname = model + '_' + '_'.join( sys.argv[1:6] ) + '_' +\
 #         os.environ[ 'SGE_TASK_ID' ]
 
 #     outfile = open( 'data/' + logname + '_t.dat', 'w' )
+
+    s.setModel(m)
 
 
     while s.t < T:

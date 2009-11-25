@@ -27,8 +27,11 @@ def run_single( T, V, N ):
 
     D = 1e-12
 
-    A = Species( 'A', D, 2.5e-9 )
-    s.addSpecies( A )
+    m = ParticleModel()
+
+    A = m.new_species_type( 'A', D, 2.5e-9 )
+
+    s.setModel( m )
     
     s.throwInParticles( A, N, box1 )
     print 'stir'
