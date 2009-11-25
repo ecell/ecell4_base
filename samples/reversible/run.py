@@ -63,7 +63,7 @@ def singlerun( T ):
     s.setModel( m )
 
     s.placeParticle( A, [0,0,0] )
-    s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
+    s.placeParticle( B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0] )
 
     endTime = T
     s.step()
@@ -75,10 +75,11 @@ def singlerun( T ):
             break
         s.step()
 
-    if C.pool.size != 0:
+    
+    if s.speciesList[C.id].pool.size != 0:
         return 0, s.t
 
-    distance = s.distance( A.pool.positions[0], B.pool.positions[0] )
+    distance = s.distance(s.speciesList[A.id].pool.positions[0], s.speciesList[B.id].pool.positions[0] )
 
     return distance, s.t
     
