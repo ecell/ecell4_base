@@ -17,6 +17,15 @@ class ObjectMatrix( object ):
         self.initialize()
 
 
+    def initialize( self ):
+
+        self.impl = _gfrd.MatrixSpace( self.worldSize, 
+                                       self.matrixSize )
+
+    def __iter__(self):
+        return self.impl.__iter__()
+
+
     def setWorldSize( self, size ):
         self.worldSize = size
         self.initialize()
@@ -44,23 +53,8 @@ class ObjectMatrix( object ):
     cellSize = property( getCellSize )
 
 
-    def initialize( self ):
-
-        self.impl = _gfrd.MatrixSpace( self.worldSize, 
-                                                   self.matrixSize )
-
-
-
     def clear( self ):
         self.initialize()
-
-
-    def add( self, key, pos, radius ):
-
-        assert radius < self.cellSize * .5
-        assert not self.impl.contains( key )
-
-        self.impl.update( key, pos, radius )
 
 
     def remove( self, key ):
@@ -70,11 +64,9 @@ class ObjectMatrix( object ):
         self.impl.erase( key )
 
 
-
     def update( self, key, pos, radius ):
 
         assert radius < self.cellSize * .5
-        assert self.impl.contains( key )
 
         self.impl.update( key, pos, radius )
 

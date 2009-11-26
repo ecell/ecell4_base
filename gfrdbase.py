@@ -357,8 +357,8 @@ class ParticleSimulatorBase( object ):
         for species in self.speciesList.values():
             for i in range( species.pool.size ):
                 particle = Particle( species, index=i )
-                self.particleMatrix.add( particle,
-                                         particle.pos, species.radius )
+                self.particleMatrix.update( particle,
+                                            particle.pos, species.radius )
 
     def setWorldSize( self, size ):
         if isinstance( size, list ) or isinstance( size, tuple ):
@@ -505,8 +505,8 @@ class ParticleSimulatorBase( object ):
         self.updateOnParticleMatrix( particle, newpos )
 
     def addToParticleMatrix( self, particle, pos ):
-        self.particleMatrix.add( particle,
-                                 pos, particle.species.radius )
+        self.particleMatrix.update( particle,
+                                    pos, particle.species.radius )
 
     def removeFromParticleMatrix( self, particle ):
         self.particleMatrix.remove( particle )
