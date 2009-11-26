@@ -144,7 +144,8 @@ class Single( object ):
         self.dt = 0.0
         self.eventType = None
 
-        self.shellIDList = [ (self, 0) ]
+        self.shellID = (self, 0)
+        self.shellIDList = [self.shellID]
 
         self.eventID = None
 
@@ -289,7 +290,7 @@ class Pair( object ):
     # 5.6: ~1e-8, 6.0: ~1e-9
     CUTOFF_FACTOR = 5.6
 
-    def __init__( self, single1, single2, rt, distFunc, worldSize ):
+    def __init__(self, single1, single2, rt):
         self.multiplicity = 2
 
         # Order single1 and single2 so that D1 < D2.
@@ -300,9 +301,6 @@ class Pair( object ):
 
         self.rt = rt
 
-        self.distance = distFunc
-        self.worldSize = worldSize
-        
         particle1 = self.single1.particle
         particle2 = self.single2.particle
 
@@ -321,7 +319,8 @@ class Pair( object ):
         self.dt = 0.0
         self.eventType = None
 
-        self.shellIDList = [(self, 0)]
+        self.shellID = (self, 0)
+        self.shellIDList = [self.shellID]
 
     def __del__( self ):
         if __debug__:
@@ -335,12 +334,6 @@ class Pair( object ):
 
     def getD( self ):
         return self.D_tot #FIXME: is this correct?
-
-    def getCoM( self ):
-
-        return calculate_pair_CoM(self.single1.particle.pos,
-                                  self.single2.particle.pos,
-                                  self.D1, self.D2, self.worldSize)
 
     def choosePairGreensFunction( self, r0, t ):
         distanceFromSigma = r0 - self.sigma
@@ -493,38 +486,6 @@ class Pair( object ):
                 ( str( e ), rnd, r, r0, t, gf.dump() )
 
         return theta
-
-    def checkNewpos( self, pos1, pos2, com, radius ):
-        species1 = self.single1.particle.species
-        species2 = self.single2.particle.species
-
-        oldCoM = com
-        
-        # debug: check if the new positions are valid:
-        newDistance = distance_Simple( pos1, pos2 )
-        particleRadius12 = species1.radius + species2.radius
-
-        # check 1: particles don't overlap.
-        if newDistance <= particleRadius12:
-            if __debug__:
-                log.info( 'rejected move: radii %g, particle distance %g',
-                          ( species1.radius + species2.radius, newDistance ) )
-            if __debug__:
-                log.debug( 'DEBUG: dt %g, pos1 %s, pos2 %s' %
-                           ( self.dt, str( pos1 ), str( pos2 ) ) )
-            raise RuntimeError, 'New particles overlap'
-
-        # check 2: particles within mobility radius.
-        d1 = self.distance( oldCoM, pos1 ) + species1.radius
-        d2 = self.distance( oldCoM, pos2 ) + species2.radius
-        if d1 > radius or d2 > radius:
-            raise RuntimeError, \
-                'New particle(s) out of protective sphere. %s' % \
-                'radius = %g, d1 = %g, d2 = %g ' % ( radius, d1, d2 )
-                
-        
-
-        return True
 
     def check( self ):
         pass
@@ -725,7 +686,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.initialize()
             
         #if self.stepCounter % 100 == 0:
-            #self.check()
+        #self.check()
         
         self.stepCounter += 1
 
@@ -759,8 +720,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         rt = self.getReactionRule1( particle.species )
         single = Single( particle, rt )
         single.initialize( self.t )
-        self.moveSingle(single, particle.pos, single.particle.species.radius)
-
+        self.moveShell(single.shellID, particle.pos,\
+                           single.particle.species.radius)
+ 
         return single
 
 
@@ -796,17 +758,21 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         species2 = single2.particle.species
         rt = self.getReactionRule2( species1, species2 )[ 0 ]
 
-        pair = Pair( single1, single2, rt, 
-                     Delegate( self, EGFRDSimulator.distance ),
-                     self.getWorldSize() )
+        pair = Pair( single1, single2, rt ) 
         pair.initialize( self.t )
 
-        self.moveShell(pair.shellIDList[0], pair.getCoM(), shellSize)
+        self.moveShell(pair.shellID, self.calculatePairCoM(pair),\
+                           shellSize)
 
         return pair
 
+    def calculatePairCoM(self, pair):
+        return calculate_pair_CoM(pair.single1.particle.pos,
+                                  pair.single2.particle.pos,
+                                  pair.D1, pair.D2, self.worldSize)
 
-    def determinePairEvent(self, pair, t, shellSize):
+
+    def determinePairEvent(self, pair, t, pos1, pos2, shellSize):
         pair.lastTime = t
 
         single1 = pair.single1
@@ -822,8 +788,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         D_tot = D1 + D2
         D_geom = math.sqrt(D1 * D2)
 
-        pos1 = self.getShell(single1.shellIDList[0])[0]
-        pos2 = self.getShell(single2.shellIDList[0])[0]
         r0 = self.distance(pos1, pos2)
 
         assert r0 >= pair.sigma, \
@@ -935,9 +899,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return multi
 
     def moveSingle(self, single, pos, radius):
-        single.particle.pos = pos
-        self.moveShell(single.shellIDList[0], pos, radius)
-        self.updateOnParticleMatrix(single.particle, pos)
+        self.moveShell(single.shellID, pos, radius)
+        self.moveParticle(single.particle, pos)
 
     def removeFromShellMatrix( self, obj ):
         for shellID in obj.shellIDList:
@@ -950,7 +913,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.shellMatrix.update(shellID, pos, radius)
 
     def calculateSingleMobilityRadius(self, single):
-        radius = self.shellMatrix.get(single.shellIDList[0])[1]
+        radius = self.shellMatrix.get(single.shellID)[1]
         return radius - single.particle.species.radius
 
     def addEvent( self, t, func, arg ):
@@ -1168,12 +1131,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.moveSingle(single, newpos, single.particle.species.radius)
 
+        return newpos
 
 
     def fireSingle( self, single ):
 
-        shellSize = self.getShell(single.shellIDList[0])[1]
-        a = shellSize - single.particle.species.radius
+        shellSize = self.getShell(single.shellID)[1]
 
         # Reaction.
         if single.eventType == EventType.REACTION:
@@ -1199,7 +1162,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         # Propagate, if not reaction.
 
-        shellSize = self.getShell(single.shellIDList[0])[1]
         # Handle immobile case first.
         if single.getD() == 0:
             # no propagation, just calculate next reaction time.
@@ -1208,14 +1170,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             return
         
         # Propagate this particle to the exit point on the shell.
-        
-        self.propagateSingle(single, a)
+        a = shellSize - single.particle.species.radius
+        singlepos = self.propagateSingle(single, a)
 
         # (2) Clear volume.
 
         minShell = single.particle.species.radius * ( 1.0 + SINGLE_SHELL_FACTOR )
 
-        singlepos = self.getShell(single.shellIDList[0])[0]
         closeNeighbors, distances = self.getNeighbors( singlepos, minShell,
                                                        ignore=[single,] )
         if __debug__:
@@ -1239,7 +1200,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             closest, closestShellDistance = \
                 self.getClosestObj( singlepos, ignore = [ single, ] )
 
-        self.updateSingle( single, closest, closestShellDistance )
+        self.updateSingle( single, singlepos, closest, closestShellDistance )
 
         bursted = uniq( bursted )
         burstedSingles = [ s for s in bursted if isinstance( s, Single ) ]
@@ -1247,7 +1208,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             
         if __debug__:
             log.info( 'single shell %s dt %g.' %\
-                          ( self.getShell(single.shellIDList[0]), single.dt ) )
+                          ( self.getShell(single.shellID), single.dt ) )
 
         self.addSingleEvent(single)
         return
@@ -1255,10 +1216,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def restoreSingleShells( self, singles ):
         for single in singles:
             assert single.isReset()
-            singlepos, singleradius = self.getShell(single.shellIDList[0])
+            singlepos, singleradius = self.getShell(single.shellID)
             c, d = self.getClosestObj( singlepos, ignore = [single,] )
 
-            self.updateSingle( single, c, d )
+            self.updateSingle( single, singlepos, c, d )
             self.updateEvent( self.t + single.dt, single )
             if __debug__:
                 log.debug( 'restore shell %s %g dt %g closest %s %g' %
@@ -1287,10 +1248,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         return shellSize
 
-    def updateSingle( self, single, closest, distanceToShell ): 
-        singlepos = self.getShell(single.shellIDList[0])[0]
+    def updateSingle( self, single, singlepos, closest, distanceToShell ): 
         if isinstance( closest, Single ):
-            closestpos = self.getShell(closest.shellIDList[0])[0]
+            closestpos = self.getShell(closest.shellID)[0]
             distanceToClosest = self.distance(singlepos, closestpos)
             shellSize = self.calculateSingleShellSize( single, closest, 
                                                        distanceToClosest,
@@ -1302,7 +1262,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         shellSize = min( shellSize, self.getMaxShellSize() )
 
         self.determineSingleEvent(single, self.t, shellSize)
-        self.moveSingle(single, singlepos, shellSize)
+        self.moveShell(single.shellID, singlepos, shellSize)
 
     def firePair( self, pair ):
         assert self.checkObj( pair )
@@ -1314,7 +1274,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         particle2 = pair.single2.particle
         
         oldInterParticle = particle2.pos - particle1.pos
-        oldCoM = pair.getCoM()
+        oldCoM = self.calculatePairCoM(pair)
         self.applyBoundary( oldCoM )
 
         # Three cases:
@@ -1379,7 +1339,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 newCoM = oldCoM + displacement_R
                 
                 if __debug__:
-                    shellSize = self.getShell(pair.shellIDList[0])[1]
+                    shellSize = self.getShell(pair.shellID)[1]
                     assert self.distance( oldCoM, newCoM ) + species3.radius <\
                         shellSize
 
@@ -1477,8 +1437,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         # this has to be done before the following clearVolume()
 
-        assert pair.checkNewpos( newpos1, newpos2, oldCoM,\
-                                     self.getShell(pair.shellIDList[0])[1] )
+        assert self.checkPairPos(pair, newpos1, newpos2, oldCoM,\
+                                     self.getShell(pair.shellID)[1] )
 
         self.removeFromShellMatrix( pair )
 
@@ -1557,9 +1517,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         dt = self.t - single.lastTime
 
         particleRadius = single.particle.species.radius
-        oldpos = single.particle.pos # .copy()
 
-        shellSize = self.getShell(single.shellIDList[0])[1]
+        oldpos, shellSize = self.getShell(single.shellID)
         r = single.drawR(dt, shellSize)
         displacement = randomVector( r )
 
@@ -1596,8 +1555,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             pos2 = particle2.pos
 
             oldInterParticle = pos2 - pos1
-            oldCoM = pair.getCoM()
-            r0 = pair.distance(pos1, pos2)
+            oldCoM = self.calculatePairCoM(pair)
+            r0 = self.distance(pos1, pos2)
             
             rnd = uniform( size = 4 )
 
@@ -1629,10 +1588,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                       ignore = [ particle1, particle2 ] )
                                       
             if __debug__:
-                shellSize = self.getShell(pair.shellIDList[0])[1]
-                assert pair.checkNewpos(newpos1, newpos2, oldCoM, shellSize)
-            self.moveSingle(single1, newpos1, single1.particle.species.radius)
-            self.moveSingle(single2, newpos2, single2.particle.species.radius)
+                shellSize = self.getShell(pair.shellID)[1]
+                assert self.checkPairPos(pair, newpos1, newpos2, oldCoM,\
+                                             shellSize)
 
 
         return pair.single1, pair.single2
@@ -1653,7 +1611,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         # Try forming a Pair.
         if isinstance( neighbors[0], Single ):
-            obj = self.formPair( single, neighbors[0], neighbors[1:] )
+            obj = self.formPair( single, singlepos, neighbors[0], neighbors[1:] )
             if obj:
                 return obj
 
@@ -1707,11 +1665,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         assert False, 'do not reach here'
 
-    def formPair( self, single1, single2, bursted ):
-        #if __debug__:
-        #    log.debug( 'trying to form %s' %
-        #           'Pair( %s, %s )' % ( single1.particle, 
-        #                                single2.particle ) )
+    def formPair( self, single1, pos1, single2, bursted ):
+        if __debug__:
+           log.debug( 'trying to form %s' %
+                  'Pair( %s, %s )' % ( single1.particle, 
+                                       single2.particle ) )
 
         assert single1.isReset()
         assert single2.isReset()
@@ -1726,8 +1684,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         D1, D2 = species1.D, species2.D
         D12 = D1 + D2
 
-        pos1 = self.getShell(single1.shellIDList[0])[0]
-        pos2 = self.getShell(single2.shellIDList[0])[0]
+        assert (pos1 - self.getShell(single1.shellID)[0]).sum() == 0
+        pos2 = self.getShell(single2.shellID)[0]
         pairDistance = self.distance(pos1, pos2)
         r0 = pairDistance - sigma
         assert r0 >= 0, 'r0 (pair gap) between %s and %s = %g < 0' \
@@ -1764,13 +1722,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # this step.  The simple check for closest below could miss
         # some of them, because sizes of these Singles for this
         # distance check has to include SINGLE_SHELL_FACTOR, while
-        # these bursted objects have zero mobility radii.  This is not
+        # these burst objects have zero mobility radii.  This is not
         # beautiful, a cleaner framework may be possible.
 
         closest, closestShellDistance = DummySingle(), numpy.inf
         for b in bursted:
             if isinstance( b, Single ):
-                bpos = self.getShell(b.shellIDList[0])[0]
+                bpos = self.getShell(b.shellID)[0]
                 d = self.distance( com, bpos ) \
                     - b.particle.species.radius * ( 1.0 + self.SINGLE_SHELL_FACTOR )
                 if d < closestShellDistance:
@@ -1778,12 +1736,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         if closestShellDistance <= minShellSizeWithMargin:
             if __debug__:
-                log.debug( '%s not formed: squeezed by bursted neighbor %s' %
+                log.debug( '%s not formed: squeezed by burst neighbor %s' %
                        ( 'Pair( %s, %s )' % ( single1.particle, 
                                               single2.particle ), closest ) )
             return None
 
-
+        assert closestShellDistance > 0
         c, d = self.getClosestObj( com, ignore=[ single1, single2 ] )
         if d < closestShellDistance:
             closest, closestShellDistance = c, d
@@ -1791,6 +1749,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if __debug__:
             log.debug( 'Pair closest neighbor: %s %g, minShellWithMargin %g' %
                    ( closest, closestShellDistance, minShellSizeWithMargin ) )
+
+        assert closestShellDistance > 0
 
         if isinstance( closest, Single ):
 
@@ -1842,13 +1802,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         pair = self.createPair(single1, single2, shellSize)
 
-        self.determinePairEvent(pair, self.t, shellSize)
+        self.determinePairEvent(pair, self.t, pos1, pos2, shellSize)
 
         self.removeFromShellMatrix( single1 )
         self.removeFromShellMatrix( single2 )
 
         self.addPairEvent( pair )
-        # single1 will be removed at the end of this step.
+        # single1 will be removed by the scheduler.
         self.removeEvent( single2 )
 
         assert closestShellDistance == numpy.inf or shellSize < closestShellDistance
@@ -1870,7 +1830,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             if obj.particle in multi.sim.particleList:  # Already in the Multi.
                 return
             assert obj.isReset()
-            objpos = self.getShell(obj.shellIDList[0])[0]
+            objpos = self.getShell(obj.shellID)[0]
             
             self.addToMulti( obj, multi )
             self.removeFromShellMatrix( obj )
@@ -2015,9 +1975,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         for shellID in obj.shellIDList:
 
-            shell = self.getShell(shellID)
-            shellpos = shell[0]
-            radius = shell[1]
+            shellpos, radius = self.getShell(shellID)
 
             closest, distance = self.getClosestObj( shellpos,
                                                     ignore = [obj] )
@@ -2071,6 +2029,41 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 'num shells != self.shellMatrix.size'
         
         self.shellMatrix.check()
+
+
+    def checkPairPos( self, pair, pos1, pos2, com, radius ):
+        species1 = pair.single1.particle.species
+        species2 = pair.single2.particle.species
+
+        oldCoM = com
+        
+        # debug: check if the new positions are valid:
+        newDistance = distance_Simple( pos1, pos2 )
+        particleRadius12 = species1.radius + species2.radius
+
+        # check 1: particles don't overlap.
+        if newDistance <= particleRadius12:
+            if __debug__:
+                log.info( 'rejected move: radii %g, particle distance %g',
+                          ( species1.radius + species2.radius, newDistance ) )
+            if __debug__:
+                log.debug( 'DEBUG: pair.dt %g, pos1 %s, pos2 %s' %
+                           ( pair.dt, str( pos1 ), str( pos2 ) ) )
+            raise RuntimeError, 'New particles overlap'
+
+        # check 2: particles within mobility radius.
+        d1 = self.distance( oldCoM, pos1 ) + species1.radius
+        d2 = self.distance( oldCoM, pos2 ) + species2.radius
+        if d1 > radius or d2 > radius:
+            raise RuntimeError, \
+                'New particle(s) out of protective sphere. %s' % \
+                'radius = %g, d1 = %g, d2 = %g ' % ( radius, d1, d2 )
+                
+        
+
+        return True
+
+
 
 
     def check( self ):
