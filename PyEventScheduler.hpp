@@ -41,9 +41,7 @@ public:
 
     void fire()
     {
-        boost::python::object ret( this->obj( this->arg ) );
-        this->setTime( this->getTime() + 
-                       boost::python::extract<double>( ret ) );
+        this->obj( this->arg );
     }
 
     PyEvent() // dummy

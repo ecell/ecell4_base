@@ -1,20 +1,20 @@
 #!/usr/env python
 
 
-import weakref
-
+from weakref import ref
 import math
 
 import numpy
-#import scipy
-#import scipy.optimize
 
+from _gfrd import EventScheduler, FirstPassageGreensFunction, FirstPassagePairGreensFunction, FirstPassageNoCollisionPairGreensFunction, BasicPairGreensFunction, FreePairGreensFunction, EventType
 
 from utils import *
-from surface import *
+from surface import CuboidalSurface
 
 from gfrdbase import *
-from bd import *
+from bd import BDSimulatorCoreBase
+
+from numpy.random import uniform
 
 import logging
 
@@ -22,20 +22,22 @@ log = logging.getLogger( 'epdp' )
 
 SAFETY = 1.0 + 1e-5
 
+MULTI_SHELL_FACTOR = 0.05
+SINGLE_SHELL_FACTOR = 0.1
 
 class Delegate( object ):
     def __init__( self, obj, method ):
-        self.ref = weakref.ref( obj )
+        self.ref = ref( obj )
         self.method = method
 
     def __call__( self, *arg ):
         return self.method( self.ref(), *arg )
 
-
 class Shell( object ):
     def __init__( self, pos, radius ):
         self.pos = pos.copy()
         self.radius = radius
+
 
 
 class MultiBDCore( BDSimulatorCoreBase ):
@@ -47,7 +49,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
         BDSimulatorCoreBase.__init__( self, main )
 
         # this has to be ref, not proxy, since it is used for comparison.
-        self.multiref = weakref.ref( multi )
+        self.multiref = ref( multi )
 
         self.particleMatrix = ObjectMatrix()
         self.particleMatrix.setWorldSize( self.main.worldSize )
@@ -1261,16 +1263,15 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             try:
                 self.removeFromShellMatrix( single )
                 self.fireSingleReaction( single )
+                return
             except NoSpace:
                 if __debug__:
                     log.info( 'single reaction; placing product failed.' )
                 self.addToShellMatrix( single )
                 self.rejectedMoves += 1
                 single.reset()
-                return single.dt
-
-            single.dt = -INF  # remove this Single from the Scheduler
-            return single.dt
+                self.addSingleEvent(single)
+                return
 
         # Propagate, if not reaction.
 
@@ -1278,7 +1279,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if single.getD() == 0:
             # no propagation, just calculate next reaction time.
             single.determineNextEvent( self.t ) 
-            return single.dt
+            self.addSingleEvent(single)
+            return
         
         # Propagate this particle to the exit point on the shell.
         
@@ -1286,7 +1288,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         # (2) Clear volume.
 
-        minShell = single.getMinRadius() * ( 1.0 + self.SINGLE_SHELL_FACTOR )
+        minShell = single.getMinRadius() * ( 1.0 + SINGLE_SHELL_FACTOR )
 
         closeNeighbors, distances = self.getNeighbors( single.pos, minShell,
                                                        ignore=[single,] )
@@ -1305,8 +1307,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             obj = self.formPairOrMulti( single, bursted )
 
             if obj:
-                single.dt = -INF # remove by rescheduling to past.
-                return single.dt
+                return
 
             # if nothing was formed, recheck closest and restore shells.
             closest, closestShellDistance = \
@@ -1321,7 +1322,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if __debug__:
             log.info( 'single shell %g dt %g.' % ( single.radius, single.dt ) )
 
-        return single.dt
+        self.addSingleEvent(single)
+        return
 
     def restoreSingleShells( self, singles ):
         for single in singles:
@@ -1416,8 +1418,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 reactingsingle.dt = 0
                 self.addSingleEvent( reactingsingle )
 
-            pair.dt = -INF
-            return pair.dt
+            return
         
 
 
@@ -1474,8 +1475,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             self.removeFromShellMatrix( pair )
 
-            pair.dt = -INF
-            return pair.dt
+            return
 
 
         #
@@ -1570,8 +1570,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.checkObj( single1 )
         assert self.checkObj( single2 )
 
-        pair.dt = -INF
-        return pair.dt
+        return
 
     def fireMulti( self, multi ):
         sim = multi.sim
@@ -1586,20 +1585,22 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.breakUpMulti( multi )
             self.reactionEvents += 1
             self.lastReaction = sim.lastReaction
-            return -INF
+            return
 
         if sim.escaped:
             if __debug__:
                 log.info( 'multi particle escaped.' )
 
             self.breakUpMulti( multi )
-            return -INF
+            return
 
         #if __debug__:
         #   log.info( 'multi stepped %d steps, duration %g, dt = %g' %
         #          ( additionalSteps + 1, sim.t - startT + sim.dt, dt ) )
 
-        return multi.dt
+        self.addMultiEvent(multi)
+        return
+
 
     def breakUpMulti( self, multi ):
         self.removeFromShellMatrix( multi )

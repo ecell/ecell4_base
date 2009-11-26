@@ -42,28 +42,11 @@ namespace libecs
     /**
        EventBase
        
-       A subclass must define three customization points;
-    
        void fire()
        {
-       (1) do what this event is supposed to do.
-       (2) setTime( next scheduled time of this event );
+         // do what this event is supposed to do.
        }
 
-       void update( const Event& anEvent )
-       {
-       Given the last fired Event (anEvent) that this Event
-       depends on,
-
-       (1) recalculate scheduled time (if necessary).
-       (2) setTime( new scheduled time ).
-       }
-
-       const bool isDependentOn( const Event& anEvent )
-       {
-       Return true if this Event must be updated when the
-       given Event (anEvent) fired.  Otherwise return false;
-       }
     */
 
     class EventBase
@@ -207,6 +190,13 @@ namespace libecs
             return this->eventPriorityQueue.getTop();
         }
 
+        const Event popTopEvent()
+        {
+            const Event topEvent(getTopEvent());
+            this->eventPriorityQueue.popTop();
+            return topEvent;
+        }
+
         EventID getTopID() const
         {
             return this->eventPriorityQueue.getTopID();
@@ -229,87 +219,16 @@ namespace libecs
 
         void step()
         {
-
-            // Here I copy construct the top event and use its event
-            // ID to reschedule it.  This is necessary if events can
-            // be created or deleted within fire() and the dynamic
-            // priority queue can reallocate internal data structures.
-            // Most of the cost of using this is optimized away when
-            // the dynamic priority queue has a VolatileIDPolicy.
-            Event topEvent( getTopEvent() );
-            const EventID ID( this->eventPriorityQueue.getTopID() );
+            Event topEvent( popTopEvent() );
             this->time = topEvent.getTime();
 
-            // Fire top
             topEvent.fire();
-
-            // If the event is rescheduled into the past, remove it.
-            // Otherwise, reuse the event.
-            if( topEvent.getTime() >= getTime() )
-            {
-                this->eventPriorityQueue.replace( ID, topEvent );
-            }
-            else
-            {
-                this->eventPriorityQueue.pop( ID );
-            }
-
-//          assert( getNextTime() >= getTime() );
-
-            // update dependent events
-//          const EventIndexVector&
-//              anEventIndexVector( this->eventDependencyArray[ topEventIndex ] );
-
-/*
-            for( typename EventIndexVector::const_iterator 
-                     i( anEventIndexVector.begin() );
-                 i != anEventIndexVector.end(); ++i )
-            {
-                const EventIndex anIndex( *i );
-
-                updateEvent( anIndex, currentTime );
-            }
-*/
         }
 
-/*
-        void updateAllEvents( const double aCurrentTime )
-        {
-            const EventIndex aSize( getSize() );
-            for( EventIndex anIndex( 0 ); anIndex != aSize; ++anIndex )
-            {
-                updateEvent( anIndex, aCurrentTime );
-            }
-        }
-
-        void updateEvent( const EventIndex anIndex, const double aCurrentTime )
-        {
-            Event& anEvent( this->eventPriorityQueue.getIndex( anIndex ) );
-            const double anOldTime( anEvent.getTime() );
-            anEvent.update( aCurrentTime );
-            const double aNewTime( anEvent.getTime() );
-
-            // this->eventPriorityQueue.move( anIndex );
-            if( aNewTime >= anOldTime )
-            {
-                this->eventPriorityQueue.moveDown( anIndex );
-            }
-            else
-            {
-                this->eventPriorityQueue.moveUp( anIndex );
-            }
-        }
-*/
-
-//      void updateAllEventDependency();  // update all
-
-//      void updateEventDependency( const EventIndex anIndex );
-    
         void clear()
         {
             time = 0.0;
             this->eventPriorityQueue.clear();
-//          this->eventDependencyArray.clear();
         }
 
         const EventID addEvent( const Event& event )
@@ -332,15 +251,6 @@ namespace libecs
             this->eventPriorityQueue.move( index );
         }
 
-
-
-        // this is here for DiscreteEventStepper::log().
-        // should be removed in future. 
-//      const EventIndexVector& getDependencyVector( const EventIndex anIndex )
-//      {
-//          return this->eventDependencyArray[ anIndex ] ;
-//      }
-
         const bool check() const
         {
             return this->eventPriorityQueue.check();
@@ -350,58 +260,10 @@ namespace libecs
 
         EventPriorityQueue       eventPriorityQueue;
 
-//      EventIndexVectorVector   eventDependencyArray;
-
         double                   time;
 
 
     };
-
-  
-/*
-
-    template < class Event >
-    void EventScheduler<Event>::updateAllEventDependency()
-    {
-        this->eventDependencyArray.resize( this->eventPriorityQueue.getSize() );
-    
-        for( EventIndex i1( 0 ); i1 != this->eventPriorityQueue.getSize(); ++i1 )
-        {
-            updateEventDependency( i1 );
-        }
-    }
-
-    template < class Event >
-    void EventScheduler<Event>::
-    updateEventDependency( const EventIndex i1 )
-    {
-        const Event& anEvent1( this->eventPriorityQueue[ i1 ] );
-
-        EventIndexVector& anEventIndexVector( this->eventDependencyArray[ i1 ] );
-        anEventIndexVector.clear();
-
-        for( EventIndex i2( 0 ); i2 < this->eventPriorityQueue.getSize(); ++i2 )
-        {
-            if( i1 == i2 )
-            {
-                // don't include itself
-                continue;
-            }
-        
-            const Event& anEvent2( this->eventPriorityQueue[ i2 ] );
-        
-            if( anEvent2.isDependentOn( anEvent1 ) )
-            {
-                anEventIndexVector.push_back( i2 );
-            }
-        }
-    
-        std::sort( anEventIndexVector.begin(), anEventIndexVector.end() );
-    }
-*/
-
-
-
 
     /*@}*/
 
