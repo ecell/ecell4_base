@@ -1,6 +1,7 @@
 
 import math
 import numpy
+from numpy.random import uniform
 import scipy
 
 import _gfrd
@@ -93,16 +94,16 @@ def sphericalToCartesian( s ):
                           r * math.cos( theta ) ] )
 
 def randomUnitVectorS():
-    s = numpy.array( [ 1.0, numpy.random.uniform( 0, Pi ),
-                       numpy.random.uniform( 0, Pi2 ) ] )
+    s = numpy.array( [ 1.0, uniform( 0, Pi ),
+                       uniform( 0, Pi2 ) ] )
     return s
 
 def randomUnitVector():
-    v = numpy.random.uniform( -1, 1, 3 )
+    v = uniform( -1, 1, 3 )
     return _gfrd.normalize(v, 1)
 
 def randomVector( r ):
-    v = numpy.random.uniform( -1, 1, 3 )
+    v = uniform( -1, 1, 3 )
     return _gfrd.normalize(v, r)
 
 def length( a ):

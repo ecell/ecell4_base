@@ -263,7 +263,7 @@ class Single( object ):
     def drawR( self, dt ):
         assert dt >= 0
 
-        rnd = numpy.random.uniform()
+        rnd = uniform()
         gf = FirstPassageGreensFunction( self.particle.species.D )
         gf.seta( self.getMobilityRadius() )
 
@@ -304,7 +304,7 @@ class Single( object ):
         if self.k_tot == INF:
             return 0.0
 
-        rnd = numpy.random.uniform()
+        rnd = uniform()
         dt = ( 1.0 / self.k_tot ) * math.log( 1.0 / rnd )
 
         return dt
@@ -316,7 +316,7 @@ class Single( object ):
         gf.seta( self.getMobilityRadius() )
 
         try:
-            rnd = numpy.random.uniform()
+            rnd = uniform()
             return gf.drawTime( rnd )
         except Exception, e:
             raise Exception, 'gf.drawTime() failed; %s; rnd=%g, %s' %\
@@ -340,7 +340,7 @@ class Single( object ):
         k_array = numpy.add.accumulate( k_array )
         k_max = k_array[-1]
 
-        rnd = numpy.random.uniform()
+        rnd = uniform()
         i = numpy.searchsorted( k_array, rnd * k_max )
 
         return self.reactiontypes[i]
@@ -651,27 +651,27 @@ class Pair( object ):
             raise AssertionError, "Never get here"
 
     def drawTime_single( self, sgf ):
-        rnd = numpy.random.uniform()
+        rnd = uniform()
         return sgf.drawTime( rnd )
 
     def drawTime_pair( self, pgf, r0 ):
-        rnd = numpy.random.uniform()
+        rnd = uniform()
         #print 'r0 = ', r0, ', rnd = ', rnd[1],\
         #    pgf.dump()
         return pgf.drawTime( rnd, r0 )
 
     def drawEventType( self, pgf, r0, t ):
-        rnd = numpy.random.uniform()
+        rnd = uniform()
         return pgf.drawEventType( rnd, r0, t )
 
     def drawR_single( self, sgf, t ):
-        rnd = numpy.random.uniform()
+        rnd = uniform()
         try:
             r = sgf.drawR( rnd, t )
             while r > self.a_R: # redraw; shouldn't happen often
                 if __debug__:
                     log.info( 'drawR_single: redraw' )
-                rnd = numpy.random.uniform()
+                rnd = uniform()
                 r = sgf.drawR( rnd, t )
         except Exception, e:
             raise Exception,\
@@ -689,7 +689,7 @@ class Pair( object ):
         if hasattr( gf, 'seta' ):  # FIXME: not clean
             gf.seta( a )
 
-        rnd = numpy.random.uniform()
+        rnd = uniform()
         try:
             r = gf.drawR( rnd, r0, t )
             # redraw; shouldn't happen often
@@ -697,7 +697,7 @@ class Pair( object ):
                 if __debug__:
                     log.info( 'drawR_pair: redraw' )
                 #self.sim.rejectedMoves += 1  #FIXME:
-                rnd = numpy.random.uniform()
+                rnd = uniform()
                 r = gf.drawR( rnd, r0, t )
         except Exception, e:
             raise Exception,\
@@ -1434,7 +1434,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 
                 species3 = pair.rt.products[0]
 
-                rnd = numpy.random.uniform( size=2 )
+                rnd = uniform( size=2 )
 
                 # calculate new R
             
@@ -1487,7 +1487,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 1 Escaping through a_r.
         if pair.eventType == EventType.ESCAPE:
 
-            rnd = numpy.random.uniform( size=4 )
+            rnd = uniform( size=4 )
 
             # calculate new R
             
@@ -1516,7 +1516,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 2 escaping through a_R.
         elif pair.eventType == 2:
 
-            rnd = numpy.random.uniform( size = 4 )
+            rnd = uniform( size = 4 )
 
             # calculate new r
             r = pair.drawR_pair( r0, pair.dt, pair.a_r )
@@ -1665,7 +1665,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             oldCoM = pair.getCoM()
             r0 = pair.distance( single1.pos, single2.pos )
             
-            rnd = numpy.random.uniform( size = 4 )
+            rnd = uniform( size = 4 )
 
             sgf = FirstPassageGreensFunction(pair.D_R)
             sgf.seta(pair.a_R)
