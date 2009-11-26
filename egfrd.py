@@ -1472,7 +1472,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return
 
     def fireMulti( self, multi ):
-        multi.check()
+
         sim = multi.sim
 
         sim.step()
@@ -1499,7 +1499,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         #          ( additionalSteps + 1, sim.t - startT + sim.dt, dt ) )
 
         self.addMultiEvent(multi)
-        multi.check()
+
         return
 
 
