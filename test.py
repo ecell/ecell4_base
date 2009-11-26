@@ -171,21 +171,21 @@ def test_f_alpha():
 
 def test_drawTheta():
 
-    t = 1e-2
+    t = 1e-7
     D = 1e-12
-    Sigma = 1e-8
-    kf = 1e-8
+    Sigma = 5e-9
+    kf = 1e-13
 
-    r = 2e-8
-    r0 = 2e-8
-    a = 5e-7
+    r = 1.05e-8
+    r0 = 1.05e-8
+    a = 1.1e-8
     
     gf = _gfrd.FirstPassagePairGreensFunction( D, kf, Sigma )
     gf.seta( a )
     
-#    for i in range(200):
-#        rnd = random.random()
-#        theta = gf.drawTheta( rnd, r, r0, t )
+    for i in range(20000):
+        rnd = random.random()
+        theta = gf.drawTheta( rnd, r, r0, t )
 
     theta = gf.drawTheta( 0.5, r, r0, t )
     print theta
@@ -221,7 +221,7 @@ def test_drawTheta_at_a():
 
 
 #test_p_survival()
-test_drawTime()
+#test_drawTime()
 #test_drawR()
 
 #test_drawTime_single()
@@ -231,7 +231,7 @@ test_drawTime()
 
 
 
-#test_drawTheta()
+test_drawTheta()
 #test_drawTheta_at_a()
 
 #test_alpha()

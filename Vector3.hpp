@@ -202,7 +202,6 @@ calculate_pair_CoM( T1_ const& p1,
     for(unsigned int i(0); i <= 2; ++i)
     {
         retval[i] = std::fmod((fD2 * p1[i] + fD1 * p2t[i]), world_size);
-        //retval[i] = remainder((fD2 * p1[i] + fD1 * p2t[i]), world_size);
     }
     
     return retval;
@@ -214,9 +213,16 @@ inline T1_
 apply_boundary(T1_ const& p1, 
                typename detail::element_type_of< T1_ >::type const& world_size)
 {
-    return T1_(std::fmod(p1[0], world_size),
-               std::fmod(p1[1], world_size),
-               std::fmod(p1[2], world_size));
+    typedef typename element_type_of< T1_ >::type element_type;   
+
+    T1_ retval;
+
+    for(unsigned int i(0); i <= 2; ++i)
+    {
+        const element_type mod(std::fmod(p1[i], world_size));
+        retval[i] = mod >= 0 ? mod : mod + world_size;
+    }
+    return retval;
 }
 
 
