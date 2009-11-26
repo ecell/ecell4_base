@@ -202,6 +202,7 @@ calculate_pair_CoM( T1_ const& p1,
     for(unsigned int i(0); i <= 2; ++i)
     {
         retval[i] = std::fmod((fD2 * p1[i] + fD1 * p2t[i]), world_size);
+        //retval[i] = remainder((fD2 * p1[i] + fD1 * p2t[i]), world_size);
     }
     
     return retval;

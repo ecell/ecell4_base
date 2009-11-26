@@ -532,6 +532,14 @@ class Multi( object ):
     def check( self ):
         self.sim.check()
 
+        for shellID in self.shellIDList:
+            try:
+                self.sim.main.shellMatrix.get(shellID)
+            except:
+                raise RuntimeError,\
+                    'self.sim.main.shellMatrix does not contain %s'\
+                    % str(shellID)
+
     def __repr__( self ):
         return 'Multi[%s: eventID=%s]' % (
             ', '.join( repr( p ) for p in self.sim.particleList ),
@@ -1464,6 +1472,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return
 
     def fireMulti( self, multi ):
+        multi.check()
         sim = multi.sim
 
         sim.step()
@@ -1490,6 +1499,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         #          ( additionalSteps + 1, sim.t - startT + sim.dt, dt ) )
 
         self.addMultiEvent(multi)
+        multi.check()
         return
 
 
@@ -1637,7 +1647,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             multi.initialize( self.t )
             
-            #self.addToShellMatrix( multi )
             self.addMultiEvent( multi )
 
             return multi
@@ -1648,8 +1657,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             if __debug__:
                 log.info( 'multi merge %s %s' % ( single, multi ) )
 
-            self.removeFromShellMatrix( multi )
-
             self.addToMulti( single, multi )
             self.removeFromShellMatrix( single )
             for neighbor in neighbors[1:]:
@@ -1657,7 +1664,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             multi.initialize( self.t )
 
-            #self.addToShellMatrix( multi )
             self.updateEvent( self.t + multi.dt, multi )
 
             return multi
@@ -1886,7 +1892,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             shell = self.getShell(shellID)
             multi2.addShell( shell[0], shell[1] )
 
-        multi2.initialize( self.t )
 
     def getNeighborShells( self, pos, n=None ):
         '''
