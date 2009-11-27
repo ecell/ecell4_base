@@ -29,7 +29,7 @@
 #include "FirstPassagePairGreensFunction.hpp"
 #include "FirstPassageNoCollisionPairGreensFunction.hpp"
 
-#include "array_traits.hpp"
+#include "utils/array_traits.hpp"
 #include "Vector3.hpp"
 #include "utils.hpp"
 #include "Model.hpp"

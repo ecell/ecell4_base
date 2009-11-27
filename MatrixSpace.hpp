@@ -11,7 +11,7 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/list/at.hpp>
 #include "Vector3.hpp"
-#include "array_helper.hpp"
+#include "utils/array_helper.hpp"
 #include "utils/get_default_impl.hpp"
 
 template<typename Tobj_, typename Tkey_,

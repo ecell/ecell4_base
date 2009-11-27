@@ -57,8 +57,6 @@ noinst_HEADERS = \
 	PairGreensFunction.hpp\
 	PyEventScheduler.hpp\
 	SphericalBesselGenerator.hpp\
-	array_traits.hpp\
-	array_helper.hpp\
 	bessel.hpp\
 	factorial.hpp\
 	filters.hpp\
@@ -93,7 +91,9 @@ noinst_HEADERS = \
 	utils/pair.hpp\
 	utils/pointer_preds.hpp\
 	utils/range.hpp\
-	utils/reference_or_instance.hpp
+	utils/reference_or_instance.hpp\
+	utils/array_traits.hpp\
+	utils/array_helper.hpp
 
 _gfrd_la_SOURCES=\
 	funcSum.cpp\

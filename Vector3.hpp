@@ -21,7 +21,7 @@
 #include <boost/functional/hash.hpp>
 #endif
 
-#include "array_traits.hpp"
+#include "utils/array_traits.hpp"
 
 template<typename T_>
 inline T_ add( T_ const& p1, T_ const& p2, typename boost::enable_if<boost::is_arithmetic<T_> >::type* = 0)
