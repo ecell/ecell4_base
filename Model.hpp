@@ -8,6 +8,8 @@
 #include "SerialIDGenerator.hpp"
 #include "SpeciesTypeID.hpp"
 #include "NetworkRules.hpp"
+#include "utils/get_mapper_mf.hpp"
+#include "utils/pair.hpp"
 
 class SpeciesType;
 

@@ -23,7 +23,7 @@
 #include "filters.hpp"
 #include "Sphere.hpp"
 #include "../MatrixSpace.hpp"
-#include "get_mapper_mf.hpp"
+#include "utils/get_mapper_mf.hpp"
 
 namespace peer {
 

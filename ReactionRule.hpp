@@ -16,6 +16,8 @@
 #include "Defs.hpp"
 #include "utils.hpp"
 #include "SpeciesTypeID.hpp"
+#include "twofold_container.hpp"
+#include "utils/memberwise_compare.hpp"
 
 class NetworkRules;
 
@@ -27,188 +29,10 @@ private:
 public:
     typedef int identifier_type; 
 
-    class Reactants
-    {
-    private:
-        typedef boost::array<SpeciesTypeID, 2> containing_type;
-    public:
-        typedef containing_type::value_type value_type;
-        typedef containing_type::reference reference;
-        typedef containing_type::const_reference const_reference;
-        typedef containing_type::size_type size_type;
-        typedef containing_type::difference_type difference_type;
- 
-        class const_iterator;
-        class iterator
-            : public boost::iterator_facade<
-                iterator, value_type, boost::forward_traversal_tag>
-        {
-            friend class const_iterator;
-            friend class boost::iterator_core_access;
-
-            std::ptrdiff_t distance_to(iterator const& that) const
-            {
-                return that.idx_ - idx_;
-            }
-
-            bool equal(iterator const& that) const
-            {
-                return &cntnr_ == &that.cntnr_ && idx_ == that.idx_;
-            }
-
-            void increment()
-            {
-                ++idx_;
-            }
-
-            SpeciesTypeID& dereference() const
-            {
-                return cntnr_[idx_];
-            }
-
-        public:
-            iterator(Reactants& cntnr, size_type idx)
-                : cntnr_(cntnr), idx_(idx) {}
-
-            iterator(const_iterator const&);
-
-        private:
-            Reactants& cntnr_;
-            size_type idx_;
-        };
- 
-        class const_iterator
-            : public boost::iterator_facade<
-                const_iterator, const value_type, boost::forward_traversal_tag>
-        {
-            friend class iterator;
-            friend class boost::iterator_core_access;
-
-            std::ptrdiff_t distance_to(const_iterator const& that) const
-            {
-                return that.idx_ - idx_;
-            }
-
-            bool equal(const_iterator const& that) const
-            {
-                return &cntnr_ == &that.cntnr_ && idx_ == that.idx_;
-            }
-
-            void increment()
-            {
-                ++idx_;
-            }
-
-            SpeciesTypeID const& dereference() const
-            {
-                return cntnr_[idx_];
-            }
-
-        public:
-            const_iterator(Reactants const& cntnr, size_type idx)
-                : cntnr_(cntnr), idx_(idx) {}
-
-            const_iterator(iterator const& that)
-                : cntnr_(that.cntnr_), idx_(that.idx_) {}
-
-        private:
-            Reactants const& cntnr_;
-            size_type idx_;
-        };
-
-    public:
-        Reactants()
-        {
-            items_[0] = SpeciesTypeID();
-            items_[1] = SpeciesTypeID();
-        }
-
-        Reactants(SpeciesTypeID const& one)
-        {
-            BOOST_ASSERT(one);
-            items_[0] = one;
-            items_[1] = SpeciesTypeID();
-        }
-
-        Reactants(SpeciesTypeID const& one, SpeciesTypeID const& two)
-        {
-            BOOST_ASSERT(one);
-            BOOST_ASSERT(two);
-            if (one <= two)
-            {
-                items_[0] = one;
-                items_[1] = two;
-            }
-            else
-            {
-                items_[0] = two;
-                items_[1] = one;
-            }
-        }
-
-        size_type size() const
-        {
-            return items_[0] ? items_[1] ? 2: 1: 0;
-        }
-
-        iterator begin()
-        {
-            return iterator(*this, 0);
-        }
-
-        iterator end()
-        {
-            return iterator(*this, size());
-        }
-
-        const_iterator begin() const
-        {
-            return const_iterator(*this, 0);
-        }
-
-        const_iterator end() const
-        {
-            return const_iterator(*this, size());
-        }
-
-        SpeciesTypeID& operator[](std::size_t idx)
-        {
-            return items_[idx];
-        }
-
-        SpeciesTypeID const& operator[](std::size_t idx) const
-        {
-            return items_[idx];
-        }
-
-        bool operator==(Reactants const& rhs) const
-        {
-            if (rhs.size() != size())
-                return false;
-            switch (size())
-            {
-            case 0:
-                return true;
-            case 1:
-                return items_[0] == rhs[0];
-            case 2:
-                return items_[0] == rhs[0] && items_[1] == rhs[1];
-            }
-            /* never get here */
-            return false;
-        }
-
-        bool operator!=(Reactants const& rhs) const
-        {
-            return !operator==(rhs);
-        }
-
-    protected:
-        containing_type items_;
-    };
-
     typedef species_type_id_vector::const_iterator species_type_id_iterator;
     typedef boost::iterator_range<species_type_id_iterator> species_type_id_range;
+
+    typedef twofold_container<SpeciesTypeID> Reactants;
 
 public:
     Reactants const& get_reactants() const
@@ -267,11 +91,6 @@ private:
     species_type_id_vector products_;
     Real k_;
 };
-
-inline ReactionRule::Reactants::iterator::iterator(const_iterator const& that)
-    : cntnr_(const_cast<Reactants&>(that.cntnr_)), idx_(that.idx_)
-{
-}
 
 inline bool operator<(ReactionRule::Reactants const& lhs, ReactionRule::Reactants const& rhs)
 {

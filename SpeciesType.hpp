@@ -11,7 +11,7 @@
 #include "SpeciesTypeID.hpp"
 
 #include "exceptions.hpp"
-#include "get_mapper_mf.hpp"
+#include "utils/get_mapper_mf.hpp"
 
 class Model;
 

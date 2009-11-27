@@ -1,7 +1,7 @@
 #ifndef PY_HASH_SUPPORT_HPP
 #define PY_HASH_SUPPORT_HPP
 
-#include "get_mapper_mf.hpp"
+#include "utils/get_mapper_mf.hpp"
 
 template<typename Tval_>
 struct get_mapper_mf<boost::python::object, Tval_>
