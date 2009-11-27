@@ -27,7 +27,7 @@ def uniq( l ):
     map( nset.__setitem__, l, [] )
     return nset.keys()
 
-def cyclic_transpose(pos1, pos2, world_size):
+def _cyclic_transpose(pos1, pos2, world_size):
     '''
     Transpose the position pos1 so that it can be used with another 
     position pos2.
@@ -40,15 +40,15 @@ def cyclic_transpose(pos1, pos2, world_size):
     '''
     return _gfrd.cyclic_transpose(pos1, pos2, world_size)
 
-# def cyclicTranspose( pos1, pos2, fsize ):
-#     halfsize = fsize * 0.5
+def cyclic_transpose( pos1, pos2, fsize ):
+    halfsize = fsize * 0.5
 
-#     diff = pos2 - pos1
-    
-#     reloc = numpy.greater( diff, halfsize ) * fsize - \
-#         numpy.less( diff, - halfsize ) * fsize
+    diff = pos2 - pos1
+  
+    reloc = numpy.greater( diff, halfsize ) * fsize - \
+        numpy.less( diff, - halfsize ) * fsize
 
-#     return pos1 + reloc
+    return pos1 + reloc
 
 def distanceSq_Simple( position1, position2, fsize = None ):
     return _gfrd.distanceSq( position1, position2 )
@@ -151,11 +151,24 @@ def rotateVector( v, r, alpha ):
 
     return numpy.dot( M,v )
 
-def calculate_pair_CoM( pos1, pos2, D1, D2, world_size ):
+def _calculate_pair_CoM( pos1, pos2, D1, D2, world_size ):
     return _gfrd.calculate_pair_CoM(pos1, pos2, D1, D2, world_size);
 
-def apply_boundary(pos, world_size):
+def calculate_pair_CoM( pos1, pos2, D1, D2, world_size ):
+    '''
+    Just a free func ver of Pair.getCoM().
+    '''
+    pos2t = cyclic_transpose( pos2, pos1, world_size )
+    retval = ( ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 ) ) % world_size
+    #cpp_result = _calculate_pair_CoM( pos1, pos2, D1, D2, world_size )
+    #assert retval == cpp_result, "%g:%g" % ( retval, cpp_result )
+    return retval
+
+def _apply_boundary(pos, world_size):
     return _gfrd.apply_boundary(pos, world_size)
+
+def apply_boundary(pos, world_size):
+    return pos % world_size
 
 def permutate(seq):
     """permutate a sequence and return a list of the permutations"""
