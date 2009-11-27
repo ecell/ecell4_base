@@ -65,7 +65,6 @@ noinst_HEADERS = \
 	findRoot.hpp\
 	freeFunctions.hpp\
 	funcSum.hpp\
-	get_mapper_mf.hpp\
 	MatrixSpace.hpp\
 	Vector3.hpp\
 	Sphere.hpp\
@@ -85,6 +84,16 @@ noinst_HEADERS = \
 	peer/numpy/ndarray_converters.hpp\
 	peer/numpy/pyarray_backed_allocator.hpp\
 	peer/numpy/type_mappings.hpp
+	utils/get_mapper_mf.hpp\
+	utils/fun_composition.hpp\
+	utils/fun_wrappers.hpp\
+	utils/get_default_impl.hpp\
+	utils/get_mapper_mf.hpp\
+	utils/memberwise_compare.hpp\
+	utils/pair.hpp\
+	utils/pointer_preds.hpp\
+	utils/range.hpp\
+	utils/reference_or_instance.hpp
 
 _gfrd_la_SOURCES=\
 	funcSum.cpp\
