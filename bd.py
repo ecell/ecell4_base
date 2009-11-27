@@ -4,9 +4,9 @@ import weakref
 
 import math
 
-import numpy
 import random
-from numpy.random import uniform
+import numpy
+
 
 from utils import *
 from surface import *
@@ -154,7 +154,7 @@ class BDSimulatorCoreBase( object ):
 
                     p = self.getP_acct( rt, D12, radius12 )
 
-                    rnd = uniform()
+                    rnd = numpy.uniform()
 
                     if p > rnd:
                         if __debug__:
@@ -184,7 +184,7 @@ class BDSimulatorCoreBase( object ):
         if not reactionTypes:
             return None  # no reaction
 
-        rnd = uniform() / self.dt
+        rnd = numpy.uniform() / self.dt
 
         # handle the most common case efficiently.
         if len( reactionTypes ) == 1:  
@@ -246,7 +246,7 @@ class BDSimulatorCoreBase( object ):
 
             for i in range( 100 ):
 
-                rnd = uniform()
+                rnd = numpy.uniform()
                 pairDistance = drawR_gbd( rnd, radius12, self.dt, D12 )
 
                 unitVector = randomUnitVector()
