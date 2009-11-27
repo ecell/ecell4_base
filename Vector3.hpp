@@ -215,9 +215,9 @@ distance_sq_cyclic( T1_ const& p1, T2_ const& p2,
         diff[2] -= world_size;
     }
 
-    return std::pow( diff[0], 2 ) +
-        std::pow( diff[1], 2 ) +
-        std::pow( diff[2], 2 );
+    return gsl_pow_2( diff[0] ) +
+        gsl_pow_2( diff[1] ) +
+        gsl_pow_2( diff[2] );
 }
 
 template< typename T1_,typename T2_ >
@@ -229,34 +229,12 @@ distance_cyclic( T1_ const& p1, T2_ const& p2,
 }
 
 template< typename T1_ >
-inline typename detail::element_type_of< T1_ >::type
-distance_sq_cyclic( T1_ const& p1, T1_ const& p2,
-        typename element_type_of< T1_ >::type const& world_size )
-{
-    return distance_sq_cyclic< T1_, T1_ >( p1, p2, world_size );
-}
-
-template< typename T1_ >
-inline typename detail::element_type_of< T1_ >::type
-distance_cyclic( T1_ const& p1, T1_ const& p2,
-        typename element_type_of< T1_ >::type const& world_size )
-{
-    return distance_cyclic< T1_, T1_ >( p1, p2, world_size );
-}
-
-template< typename T1_ >
 inline T1_ normalize( T1_ const& p, 
                       typename detail::element_type_of< T1_ >::type const& r )
 {
     typedef typename element_type_of< T1_ >::type element_type;
 
-    T1_ retval;
-    element_type factor(r / length<T1_>(p));
-    retval[0] = p[0] * factor;
-    retval[1] = p[1] * factor;
-    retval[2] = p[2] * factor;
-
-    return retval;
+    return multiply(p, r / length(p));
 }
 
 // cyclic_transpose(), calculatePairCoM() and apply_boundary() are placed here
