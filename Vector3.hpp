@@ -171,20 +171,6 @@ inline typename detail::element_type_of< T1_ >::type distance(
     return std::sqrt( distance_sq( p1, p2 ) );
 }
 
-template< typename T1_ >
-inline typename detail::element_type_of< T1_ >::type
-distance( T1_ const& p1, T1_ const& p2 )
-{
-    return distance< T1_, T1_ >( p1, p2 );
-}
-
-template< typename T1_ >
-inline typename detail::element_type_of< T1_ >::type
-distance_sq( T1_ const& p1, T1_ const& p2 )
-{
-    return distance_sq< T1_, T1_ >( p1, p2 );
-}
-
 #if 1 // shafi
 template< typename T1_, typename T2_ >
 inline typename detail::element_type_of< T1_ >::type
@@ -284,11 +270,11 @@ calculate_pair_CoM( T1_ const& p1,
 
     const T1_ p2t(cyclic_transpose<T1_>(p2, p1, world_size));
 
-    const element_type rD1pD2(1.0/(D1 + D2));
-    const element_type fD1(D1 * rD1pD2);
-    const element_type fD2(D2 * rD1pD2);
-
-    return modulo(add(multiply(p1, fD2), multiply(p2t, fD1)), world_size);
+    return modulo(
+        divide(
+            add(multiply(p1, D2), multiply(p2t, D1)),
+            add(D1, D2)),
+        world_size);
 }
 
 
