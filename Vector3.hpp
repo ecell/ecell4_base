@@ -304,7 +304,7 @@ calculate_pair_CoM( T1_ const& p1,
 
     T1_ retval;
 
-    const T1_ p2t(cyclic_transpose<T1_>(p2,p1,world_size));
+    const T1_ p2t(cyclic_transpose<T1_>(p2, p1, world_size));
 
     const element_type rD1pD2(1.0/(D1 + D2));
     const element_type fD1(D1 * rD1pD2);
