@@ -92,11 +92,6 @@ private:
     Real k_;
 };
 
-inline bool operator<(ReactionRule::Reactants const& lhs, ReactionRule::Reactants const& rhs)
-{
-    return memberwise_compare(lhs, rhs) < 0;
-}
-
 inline bool operator<(ReactionRule const& lhs, ReactionRule const& rhs)
 {
     int tmp = memberwise_compare(lhs.get_reactants(), rhs.get_reactants());
