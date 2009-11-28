@@ -152,6 +152,22 @@ public:
         return const_iterator(*this, size());
     }
 
+    void push_back(value_type const& item)
+    {
+        if (!items_[0])
+        {
+            items_[0] = item;
+        }
+        else if (!items_[1])
+        {
+            items_[1] = item;
+        }
+        else
+        {
+            BOOST_ASSERT(false);
+        }
+    }
+
     value_type& operator[](std::size_t idx)
     {
         return items_[idx];
