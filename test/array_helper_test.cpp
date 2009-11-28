@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE "array_helper_test"
 
 #include <boost/test/included/unit_test.hpp>
-#include "array_helper.hpp"
+#include "utils/array_helper.hpp"
 
 BOOST_AUTO_TEST_CASE(basic)
 {
