@@ -7,7 +7,6 @@ SphericalBesselGenerator_test\
 array_helper_test\
 filters_test\
 MatrixSpace_test\
-vmap_test\
 model_test
 
 PYTHON_TESTS = alltests.py
