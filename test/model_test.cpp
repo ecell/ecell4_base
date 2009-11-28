@@ -7,7 +7,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <memory>
 #include "Model.hpp"
-#include "array_helper.hpp"
+#include "utils/array_helper.hpp"
 #include "SpeciesType.hpp"
 
 BOOST_AUTO_TEST_CASE(basic)
