@@ -132,7 +132,7 @@ class BDSimulatorCoreBase( object ):
             displacement = drawR_free( self.dt, D )
 
             newpos = particle.pos + displacement
-            self.main.applyBoundary(newpos)
+            newpos = self.main.applyBoundary(newpos)
 
             neighbors = self.getParticlesWithinRadiusNoSort(
                 newpos, species.radius, ignore=[particle] )
@@ -259,8 +259,8 @@ class BDSimulatorCoreBase( object ):
                 newpos2 = oldpos - vector * ( D2 / D12 )
                 #FIXME: check surfaces here
             
-                self.main.applyBoundary( newpos1 )
-                self.main.applyBoundary( newpos2 )
+                newpos1 = self.main.applyBoundary( newpos1 )
+                newpos2 = self.main.applyBoundary( newpos2 )
 
                 # accept the new positions if there is enough space.
                 if self.checkOverlap( newpos1, radius1,
@@ -304,7 +304,7 @@ class BDSimulatorCoreBase( object ):
 
             pos2t = cyclic_transpose( pos2, pos1, self.main.worldSize )
             newPos = ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 )
-            self.main.applyBoundary( newPos )
+            newPos = self.main.applyBoundary( newPos )
 
             if not self.checkOverlap( newPos, productSpecies.radius,
                                       ignore=[ particle1, particle2 ] ):

@@ -164,11 +164,8 @@ def calculate_pair_CoM( pos1, pos2, D1, D2, world_size ):
     #assert retval == cpp_result, "%g:%g" % ( retval, cpp_result )
     return retval
 
-def _apply_boundary(pos, world_size):
-    return _gfrd.apply_boundary(pos, world_size)
-
 def apply_boundary(pos, world_size):
-    return pos % world_size
+    return _gfrd.apply_boundary(pos, world_size) 
 
 def permutate(seq):
     """permutate a sequence and return a list of the permutations"""

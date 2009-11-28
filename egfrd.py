@@ -1078,8 +1078,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 while 1:
                     newpos1 = oldpos + vector * ( D1 / D12 )
                     newpos2 = oldpos - vector * ( D2 / D12 )
-                    self.applyBoundary( newpos1 )
-                    self.applyBoundary( newpos2 )
+                    newpos1 = self.applyBoundary( newpos1 )
+                    newpos2 = self.applyBoundary( newpos2 )
 
                     if self.distance( newpos1, newpos2 ) >= particleRadius12:
                         break
@@ -1131,7 +1131,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert abs( length( displacement ) - r ) <= 1e-15 * r
             
         newpos = single.particle.pos + displacement
-        self.applyBoundary( newpos )
+        newpos = self.applyBoundary( newpos )
             
         assert self.checkOverlap( newpos, single.particle.species.radius,\
                                   ignore = [ single.particle, ] )
@@ -1284,7 +1284,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         
         oldInterParticle = particle2.pos - particle1.pos
         oldCoM = self.calculatePairCoM(pair)
-        self.applyBoundary( oldCoM )
+        oldCoM = self.applyBoundary( oldCoM )
 
         # Three cases:
         #  0. Reaction
@@ -1353,7 +1353,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                         shellSize
 
                 #FIXME: SURFACE
-                self.applyBoundary( newCoM )
+                newCoM = self.applyBoundary( newCoM )
 
                 self.removeParticle( particle1 )
                 self.removeParticle( particle2 )
@@ -1410,8 +1410,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 
             newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                   oldInterParticle )
-            self.applyBoundary( newpos1 )
-            self.applyBoundary( newpos2 )
+            newpos1 = self.applyBoundary( newpos1 )
+            newpos2 = self.applyBoundary( newpos2 )
 
 
         # 2 escaping through a_R.
@@ -1438,8 +1438,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 
             newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                   oldInterParticle )
-            self.applyBoundary( newpos1 )
-            self.applyBoundary( newpos2 )
+            newpos1 = self.applyBoundary( newpos1 )
+            newpos2 = self.applyBoundary( newpos2 )
 
         else:
             raise SystemError, 'Bug: invalid eventType.'
@@ -1535,7 +1535,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         newpos = oldpos + displacement
 
-        self.applyBoundary( newpos )
+        newpos = self.applyBoundary( newpos )
 
         assert self.distance( newpos, oldpos ) <=\
             self.calculateSingleMobilityRadius(single)
@@ -1590,8 +1590,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                   oldInterParticle )
-            self.applyBoundary( newpos1 )
-            self.applyBoundary( newpos2 )
+            newpos1 = self.applyBoundary( newpos1 )
+            newpos2 = self.applyBoundary( newpos2 )
             assert self.checkOverlap( newpos1, particle1.species.radius,
                                       ignore = [ particle1, particle2 ] )
                                       
@@ -1713,7 +1713,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         # 1. Shell cannot be larger than max shell size or sim cell size.
         com = calculate_pair_CoM( pos1, pos2, D1, D2, self.getWorldSize() )
-        self.applyBoundary( com )
+        com = self.applyBoundary( com )
         minShellSizeWithMargin = minShellSize + shellSizeMargin
         maxShellSize = min( self.getMaxShellSize(),
                             r0 * 100 + sigma + shellSizeMargin )
