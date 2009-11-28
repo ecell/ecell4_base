@@ -12,6 +12,8 @@
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
+#include "utils/pair.hpp"
+
 template<typename Trange_, typename Tfun_>
 struct get_transformed_range
 {
