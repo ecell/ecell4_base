@@ -132,7 +132,7 @@ class BDSimulatorCoreBase( object ):
             displacement = drawR_free( self.dt, D )
 
             newpos = particle.pos + displacement
-            newpos %= self.main.worldSize
+            self.main.applyBoundary(newpos)
 
             neighbors = self.getParticlesWithinRadiusNoSort(
                 newpos, species.radius, ignore=[particle] )
