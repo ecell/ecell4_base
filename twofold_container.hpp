@@ -162,22 +162,22 @@ public:
         return items_[idx];
     }
 
-    bool operator<(twofold_container const& rhs)
+    bool operator<(twofold_container const& rhs) const
     {
         return memberwise_compare(*this, rhs) < 0;
     }
 
-    bool operator>=(twofold_container const& rhs)
+    bool operator>=(twofold_container const& rhs) const
     {
         return !operator<(rhs);
     }
 
-    bool operator>(twofold_container const& rhs)
+    bool operator>(twofold_container const& rhs) const
     {
         return memberwise_compare(*this, rhs) > 0;
     }
 
-    bool operator<=(twofold_container const& rhs)
+    bool operator<=(twofold_container const& rhs) const
     {
         return !operator>(rhs);
     }
