@@ -1174,7 +1174,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # Handle immobile case first.
         if single.getD() == 0:
             # no propagation, just calculate next reaction time.
-            self.determineSingleEvent(single.self.t, shellSize) 
+            self.determineSingleEvent(single, self.t, shellSize) 
             self.addSingleEvent(single)
             return
         
