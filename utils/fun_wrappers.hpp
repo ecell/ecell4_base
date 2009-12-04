@@ -2,6 +2,7 @@
 #define FUN_WRAPPERS_HPP
 
 #include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_reference.hpp>
 #include "utils/fun_composition.hpp"
 
 template < typename T_ >
