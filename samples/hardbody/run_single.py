@@ -30,6 +30,7 @@ def run_single( T, V, N ):
     m = ParticleModel()
 
     A = m.new_species_type( 'A', D, 2.5e-9 )
+    m.set_all_repulsive()
 
     s.setModel( m )
     
