@@ -1,6 +1,5 @@
 #ifndef PAIR_HPP
 #define PAIR_HPP
-
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
@@ -8,6 +7,7 @@
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/type_traits/remove_const.hpp>
 
 template < typename T_ >
 struct select_first
@@ -165,5 +165,12 @@ make_select_second_range(Trange_ const& range)
 {
     return select_second_range<Trange_>(range);
 }
+
+template<typename Tpair_>
+struct remove_const_first
+{
+    typedef std::pair<typename boost::remove_const<typename Tpair_::first_type>::type,
+                      typename Tpair_::second_type> type;
+};
 
 #endif /* PAIR_HPP */

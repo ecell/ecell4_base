@@ -9,11 +9,11 @@
 #elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 #include <boost/functional/hash.hpp>
 #endif
-#include "identifier.hpp"
+#include "Identifier.hpp"
 
-struct ParticleID: public identifier<ParticleID, unsigned long long, int>
+struct ParticleID: public Identifier<ParticleID, unsigned long long, int>
 {
-    typedef identifier<ParticleID, unsigned long long, int> base_type;
+    typedef Identifier<ParticleID, unsigned long long, int> base_type;
 
     ParticleID(value_type const& value = value_type(0, 0))
         : base_type(value) {}
@@ -30,7 +30,7 @@ namespace boost {
 template<>
 struct hash<ParticleID>
 {
-    std::size_t operator()(ParticleID const& val)
+    std::size_t operator()(ParticleID const& val) const
     {
         return static_cast<std::size_t>(val().first ^ val().second);
     }

@@ -30,7 +30,7 @@ namespace boost {
 template<>
 struct hash<SpeciesTypeID>
 {
-    std::size_t operator()(SpeciesTypeID const& val)
+    std::size_t operator()(SpeciesTypeID const& val) const
     {
         return static_cast<std::size_t>(val().first ^ val().second);
     }

@@ -70,16 +70,16 @@ class Logger:
         self.timecourseFile.write( '#' + s + '\n' )
 
     def writeTimecourse( self ):
+        data = [
+            ]
 
-        data = [ str( i.pool.size )\
-                 for i in self.sim.speciesList.values() ]
-            
         self.timecourseFile.write( '%g' % self.sim.t + '\t' )
-        self.timecourseFile.write( '\t'.join( data ) + '\n' )
+        self.timecourseFile.write( '\t'.join(
+            str(len(self.sim.getParticlePool(i.type.id))) \
+            for i in self.sim.getSpecies()) + '\n' )
         self.timecourseFile.flush()
 
     def writeParticles( self ):
-
         filename = self.logname + '_' + \
             str( self.fileCounter ).zfill(4) + '.dat'
 

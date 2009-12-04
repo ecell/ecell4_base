@@ -10,7 +10,7 @@ import scipy
 
 
 #from surface import *
-from _gfrd import *
+import _gfrd
 from utils import *
 
 from cObjectMatrix import *
@@ -33,9 +33,6 @@ __all__ = [
     'createBindingReactionRule',
     'createUnbindingReactionRule',
     'Reaction',
-    'Particle',
-    'DummyParticle',
-    'ParticlePool',
     'ParticleSimulatorBase',
     ]
 
@@ -104,7 +101,6 @@ class Species( object ):
         self.type = type
         self.D = float(D)
         self.radius = float(radius)
-        self.pool = ParticlePool()
 
     @property
     def serial( self ):
@@ -113,16 +109,6 @@ class Species( object ):
     @property
     def id( self ):
         return self.type["id"]
-
-    def newParticle( self, position ):
-        serial = self.pool.newParticle( position )
-        return serial
-
-    def removeParticleByIndex( self, index ):
-        self.pool.removeByIndex( index )
-
-    def removeParticleBySerial( self, serial ):
-        self.pool.removeBySerial( serial )
 
     def __str__(self):
         return str(self.type)
@@ -135,9 +121,9 @@ class ReactionRuleCache(object):
         self.k = k
 
 
-class ParticleModel( Model ):
+class ParticleModel( _gfrd.Model ):
     def new_species_type( self, id, D, radius ):
-        st = Model.new_species_type( self )
+        st = _gfrd.Model.new_species_type( self )
         st[ "id" ] = str( id )
         st[ "D" ] = str( D )
         st[ "radius" ] = str( radius )
@@ -149,23 +135,23 @@ class ParticleModel( Model ):
             for species2 in self.species_types:
                 if nr.query_reaction_rule(species1, species2) is None:
                     nr.add_reaction_rule(
-                        ReactionRule([species1, species2], [], 0.))
+                        _gfrd.ReactionRule([species1, species2], [], 0.))
 
 
 def createUnimolecularReactionRule( s1, p1, k ):
-    return ReactionRule( [ s1, ], [ p1, ], k )
+    return _gfrd.ReactionRule( [ s1, ], [ p1, ], k )
 
 
 def createDecayReactionRule( s1, k ):
-    return ReactionRule( [ s1, ], [], k )
+    return _gfrd.ReactionRule( [ s1, ], [], k )
 
 
 def createBindingReactionRule( s1, s2, p1, k ):
-    return ReactionRule( [ s1, s2 ], [ p1, ], k )
+    return _gfrd.ReactionRule( [ s1, s2 ], [ p1, ], k )
 
 
 def createUnbindingReactionRule( s1, p1, p2, k ):
-    return ReactionRule( [ s1, ], [ p1, p2 ], k )
+    return _gfrd.ReactionRule( [ s1, ], [ p1, p2 ], k )
 
 
 class Reaction:
@@ -179,163 +165,10 @@ class Reaction:
             + ', ' + str( self.products ) + ' )'
 
 
-class Particle( object ):
-    __slots__ = ( 'species', 'serial', 'hash', 'pos', 'radius' )
-
-
-    def __init__( self, species, serial=None, index=None ):
-
-        self.species = species
-
-        if not serial is None:
-            self.serial = serial
-        elif not index is None:
-            self.serial = species.pool.getSerialByIndex( index )
-        else:
-            raise ValueError, 'give either serial or index.'
-
-        self.hash = hash( self.species ) ^ self.serial
-
-
-    def __str__( self ):
-
-        return "( '" + self.species.id + "', " + str( self.serial ) + ' )'
-
-    def __repr__( self ):
-
-        return self.__str__()
-
-
-    def __eq__( self, other ):
-
-        return self.species == other.species and self.serial == other.serial
-
-    def __ne__( self, other ):
-
-        return self.species != other.species or self.serial != other.serial
-
-    def __cmp__( self, other ):
-
-        if self.species == other.species:
-            return self.serial - other.serial
-        elif self.species < other.species:
-            return -1
-        else:
-            return 1
-
-
-    def __hash__( self ):
-
-        return self.hash
-
-
-    def getPos( self ):
-        pool = self.species.pool
-        return pool.positions[ pool.indexMap[ self.serial ] ]
-
-    def setPos( self, newpos ):
-        pool = self.species.pool
-        pool.positions[ pool.indexMap[ self.serial ] ] = newpos
-
-    pos = property( getPos, setPos )
-
-    def getRadius( self ):
-        return self.species.radius
-
-    radius = property( getRadius )
-
-
-    def getIndex( self ):
-        return self.species.pool.indexMap[ self.serial ]
-
-
-class DummyParticle( object ):
-    def __init__( self ):
-        self.species = None
-        self.serial = -1
-
-
-class ParticlePool( object ):
-
-    def __init__( self ):
-
-        self.indexMap = {}
-        self.serialCounter = 0
-
-        self.serials = numpy.array( [], numpy.integer )
-
-        self.positions = numpy.array( [], numpy.floating )
-        self.positions.shape = ( 0, 3 )
-
-        self.size = 0
-
-
-    def newParticle( self, position ):
-
-        newindex = self.size
-        newserial = self.serialCounter
-        
-        self.size += 1
-        self.serialCounter += 1
-
-        self.__resizeArrays( self.size )
-
-        self.indexMap[ newserial ] = newindex
-        self.serials[ newindex ] = newserial
-        self.positions[ newindex ] = position
-
-        return newserial
-    
-
-    def __resizeArrays( self, newsize ):
-
-        self.serials.resize( newsize )
-        self.positions.resize( ( newsize, 3 ) )
-
-
-    def removeBySerial( self, serial ):
-
-        index = self.getIndex( serial )
-        self.removeByIndex( index )
-
-
-    def removeByIndex( self, index ):
-
-        self.size -= 1
-
-        if self.size == 0:
-            self.indexMap = {}
-            self.__resizeArrays( self.size )
-            return
-
-        serialOfRemovedItem = self.serials[ index ]
-        serialOfMovedItem = self.serials[ self.size ]
-
-        # swap items at index and the end, and discard the item
-        # to be removed, which is now at the end, by shrinking
-        # the arrays by one.
-        self.serials[ index ] = self.serials[ self.size ]
-        self.positions[ index ] = self.positions[ self.size ]
-        self.__resizeArrays( self.size )
-
-        # book keeping
-        del self.indexMap[ serialOfRemovedItem ]
-        self.indexMap[ serialOfMovedItem ] = index
-
-
-
-    def getSerialByIndex( self, index ):
-        
-        return self.serials[index]
-
-    def getIndex( self, serial ):
-
-        return self.indexMap[ serial ]
-
-
 class ParticleSimulatorBase( object ):
     def __init__( self ):
         self.speciesList = {}
+        self.particlePool = {}
         self.reactionRuleCache = {}
 
         self.surfaceList = []
@@ -352,33 +185,33 @@ class ParticleSimulatorBase( object ):
         self.rejectedMoves = 0
         self.reactionEvents = 0
 
-        self.particleMatrix = ObjectMatrix()
+        self.particleMatrix = None
 
         self.maxMatrixSize = 0
 
-        self.setWorldSize( INF )
+        self.worldSize = 1.0
+        self.matrixSize = 10
+
+        self._distanceSq = None
+        self._disatnceSqArray = None
 
         self.lastReaction = None
 
         self.model = None
 
+        self.particleIDGenerator = _gfrd.ParticleIDGenerator(0)
+
     def setModel( self, model ):
         self.speciesList.clear()
+        self.particlePool.clear()
         self.reactionRuleCache.clear()
         for st in model.species_types:
             self.speciesList[st.id] = Species( st, st["D"], st["radius"] )
+            self.particlePool[st.id] = _gfrd.ParticleIDSet()
         self.model = model
 
     def initialize( self ):
         pass
-
-    def reconstructParticleMatrix( self ):
-        self.particleMatrix.clear()
-        for species in self.speciesList.values():
-            for i in range( species.pool.size ):
-                particle = Particle( species, index=i )
-                self.particleMatrix.update( particle,
-                                            particle.pos, species.radius )
 
     def setWorldSize( self, size ):
         if isinstance( size, list ) or isinstance( size, tuple ):
@@ -386,7 +219,8 @@ class ParticleSimulatorBase( object ):
 
         self.worldSize = size
 
-        self.particleMatrix.setWorldSize( size )
+        self.particleMatrix = _gfrd.ParticleContainer(
+                self.worldSize, self.matrixSize )
 
         if isinstance( size, float ) and size == INF:
             self._distance = distance_Simple
@@ -404,9 +238,11 @@ class ParticleSimulatorBase( object ):
 
     def setMatrixSize( self, size ):
         if self.maxMatrixSize == 0:
-            self.particleMatrix.setMatrixSize( size )
+            self.matrixSize = size
         else:
-            self.particleMatrix.setMatrixSize( max( size, self.maxMatrixSize ) )
+            self.matrixSize = max( size, self.maxMatrixSize )
+        self.particleMatrix = _gfrd.ParticleContainer(
+                self.worldSize, self.matrixSize )
 
     def applyBoundary( self, pos ):
         return apply_boundary(pos, self.worldSize)
@@ -416,7 +252,7 @@ class ParticleSimulatorBase( object ):
         try:
             retval = self.reactionRuleCache[k]
         except:
-            gen = self.model.network_rules.query_reaction_rule( species.type )
+            gen = self.model.network_rules.query_reaction_rule( species )
             if gen is None:
                 retval = None
             else:
@@ -441,14 +277,14 @@ class ParticleSimulatorBase( object ):
         return retval
 
     def getReactionRule2( self, species1, species2 ):
-        if species2.id < species1.id:
-            k = (species2.id, species1.id)
+        if species2 < species1:
+            k = (species2, species1)
         else:
-            k = (species1.id, species2.id)
+            k = (species1, species2)
         try:
             retval = self.reactionRuleCache[k]
         except:
-            gen = self.model.network_rules.query_reaction_rule( species1.type, species2.type )
+            gen = self.model.network_rules.query_reaction_rule( species1, species2 )
             if gen is None:
                 retval = None
             else:
@@ -461,6 +297,12 @@ class ParticleSimulatorBase( object ):
                             rt.k))
             self.reactionRuleCache[k] = retval
         return retval
+
+    def getSpecies(self):
+        return self.speciesList.itervalues()
+
+    def getParticlePool(self, sid):
+        return self.particlePool[sid]
 
     def distanceSq( self, position1, position2 ):
         return self._distanceSq( position1, position2, self.worldSize )
@@ -497,7 +339,7 @@ class ParticleSimulatorBase( object ):
                     if __debug__:
                         log.info( '%d-th particle rejected.' %i )
             
-            self.createParticle( species, position )
+            self.createParticle(st.id, position)
 
     def placeParticle( self, st, pos ):
         species = self.speciesList[st.id]
@@ -510,42 +352,37 @@ class ParticleSimulatorBase( object ):
         particle = self.createParticle( species, pos )
         return particle
 
-    def createParticle( self, species, pos ):
-        newserial = species.newParticle( pos )
-        newparticle = Particle( species, serial=newserial )
-        self.addToParticleMatrix( newparticle, pos )
-        return newparticle
+    def createParticle(self, sid, pos):
+        pid = self.particleIDGenerator()
+        species = self.speciesList[sid]
+        newParticle = _gfrd.Particle(pos, species.radius, species.D, sid)
+        return self.addToParticleMatrix(pid, newParticle)
 
-    def removeParticle( self, particle ):
-        particle.species.pool.removeBySerial( particle.serial )
-        self.removeFromParticleMatrix( particle )
+    def removeParticle(self, pid_particle_pair):
+        self.particlePool[pid_particle_pair[1].sid].remove(pid_particle_pair[0])
+        del self.particleMatrix[pid_particle_pair[0]]
 
-    def moveParticle( self, particle, newpos ):
-        particle.pos = newpos
-        self.updateOnParticleMatrix( particle, newpos )
+    def moveParticle( self, pid_particle_pair ):
+        self.particleMatrix.update(pid_particle_pair)
+        self.updateOnParticleMatrix(pid_particle_pair)
 
-    def addToParticleMatrix( self, particle, pos ):
-        self.particleMatrix.update( particle,
-                                    pos, particle.species.radius )
+    def addToParticleMatrix(self, pid, particle):
+        assert isinstance(pid, _gfrd.ParticleID)
+        assert isinstance(particle, _gfrd.Particle)
+        self.particleMatrix[pid] = particle
+        self.particlePool[particle.sid].add(pid)
+        return (pid, particle)
 
-    def removeFromParticleMatrix( self, particle ):
-        self.particleMatrix.remove( particle )
-
-    def updateOnParticleMatrix( self, particle, pos ):
-        self.particleMatrix.update( particle,
-                                    pos, particle.species.radius )
+    def updateOnParticleMatrix( self, pid_particle_pair ):
+        self.particleMatrix.update(pid_particle_pair)
 
     def checkOverlap( self, pos, radius, ignore=[] ):
-        
-        particles, _ = \
-            self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
-        if len( particles ) == 0:
-            return True
-
-        if [ p for p in particles if p not in ignore ]:
-            return False
-        else:
-            return True
+        pid_particle_pairs, _ = \
+            self.particleMatrix.get_neighbors_within_radius( pos, radius )
+        for pid, _ in pid_particle_pairs:
+            if pid not in ignore:
+                return False
+        return True
 
     def getParticlesWithinRadius( self, pos, radius, ignore=[] ):
         particles, _ =\

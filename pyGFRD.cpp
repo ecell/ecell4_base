@@ -31,12 +31,22 @@
 
 #include "utils/array_traits.hpp"
 #include "Vector3.hpp"
+#include "Particle.hpp"
+#include "Shell.hpp"
+#include "ParticleID.hpp"
+#include "ShellID.hpp"
+#include "DomainID.hpp"
 #include "utils.hpp"
 #include "Model.hpp"
+#include "MatrixSpace.hpp"
 
 #include "peer/utils.hpp"
+#include "peer/py_hash_support.hpp"
 #include "peer/tuple_converters.hpp"
+#include "peer/set_indexing_suite.hpp"
 #include "peer/numpy/wrapped_multi_array.hpp"
+#include "peer/Particle.hpp"
+#include "peer/Shell.hpp"
 #include "peer/MatrixSpace.hpp"
 #include "peer/SpeciesType.hpp"
 #include "peer/Identifier.hpp"
@@ -45,7 +55,15 @@
 #include "peer/Exception.hpp"
 
 typedef Real length_type;
+typedef Real D_type;
 typedef Vector3<length_type> position_type;
+typedef SpeciesTypeID species_id_type;
+typedef ParticleID particle_id_type;
+typedef Particle<length_type, D_type, species_id_type> particle_type;
+typedef Sphere<length_type> sphere_type;
+typedef DomainID domain_id_type;
+typedef Shell<length_type, domain_id_type> shell_type;
+typedef ShellID shell_id_type;
 
 static boost::python::object species_type_class;
 
@@ -62,9 +80,8 @@ struct position_to_ndarray_converter
         PyObject* array( PyArray_New( &PyArray_Type, 1, 
                                       const_cast<npy_intp*>( dims ),
                                       peer::util::get_numpy_typecode<
-                                                                                        position_type::value_type >
-                                      ::value, NULL,
-                                      data, 0, NPY_CARRAY, NULL ) );
+                                          position_type::value_type >::value,
+                                      NULL, data, 0, NPY_CARRAY, NULL ) );
         reinterpret_cast<PyArrayObject*>( array )->flags |= NPY_OWNDATA;
         return array;
     }
@@ -221,6 +238,16 @@ struct species_type_to_species_type_id_converter
         data->convertible = storage;
     }
 };
+
+template<typename T_>
+void register_id_generator(char const* class_name)
+{
+    using namespace boost::python;
+
+    class_<SerialIDGenerator<T_> >(class_name, init<int>())
+        .def("__call__", &SerialIDGenerator<T_>::operator())
+        ;
+}
 
 BOOST_PYTHON_MODULE( _gfrd )
 {
@@ -461,8 +488,14 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::to_native_converter<position_type,
         seq_to_position_converter>();
 
-    peer::MatrixSpace::__register_class();
+    peer::MatrixSpace<MatrixSpace<sphere_type, object, get_mapper_mf> >::__register_class("ObjectContainer");
+    peer::MatrixSpace< MatrixSpace<shell_type, shell_id_type> >::__register_class("ShellContainer");
+    peer::MatrixSpace<MatrixSpace<particle_type, particle_id_type, get_mapper_mf> >::__register_class("ParticleContainer");
     species_type_class = peer::SpeciesType::__register_class();
+
+    class_<std::set<particle_id_type> >("ParticleIDSet")
+        .def(peer::util::set_indexing_suite<std::set<particle_id_type> >())
+        ;
 
     class_<Model, boost::noncopyable>("Model")
         .add_property("network_rules",
@@ -486,6 +519,17 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::util::ExceptionWrapper<not_found, peer::util::PyExcTraits<&PyExc_LookupError> >::__register_class("NotFound");
     peer::util::ExceptionWrapper<already_exists, peer::util::PyExcTraits<&PyExc_StandardError> >::__register_class("AlreadyExists");
+
+    peer::IdentifierWrapper<particle_id_type>::__register_class("ParticleID");
+    register_id_generator<particle_id_type>("ParticleIDGenerator");
+    peer::ParticleWrapper<particle_type>::__register_class("Particle");
+
+    peer::IdentifierWrapper<shell_id_type>::__register_class("ShellID");
+    register_id_generator<shell_id_type>("ShellIDGenerator");
+    peer::ShellWrapper<shell_type>::__register_class("Shell");
+
+    peer::IdentifierWrapper<domain_id_type>::__register_class("DomainID");
+    register_id_generator<domain_id_type>("DomainIDGenerator");
 
     class_<NetworkRules, boost::noncopyable>("NetworkRules", no_init)
         .def("add_reaction_rule", &NetworkRules::add_reaction_rule)
