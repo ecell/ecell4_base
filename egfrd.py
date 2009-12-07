@@ -65,10 +65,9 @@ class MultiBDCore( BDSimulatorCoreBase ):
         self.escaped = False
         BDSimulatorCoreBase.step( self )
 
-    def addParticle( self, particle ):
-        self.addToParticleList( particle )
-        self.particleMatrix.update( particle,
-                                    particle.pos, particle.radius )
+    def addParticle(self, pid_particle_pair):
+        self.addToParticleList(pid_particle_pair)
+        self.particleMatrix.update(pid_particle_pair)
 
     def removeParticle( self, particle ):
         self.main.removeParticle( particle )
@@ -506,7 +505,7 @@ class Multi( object ):
     def addParticle( self, particle ):
         self.sim.addParticle( particle )
 
-    def addShell( self, shellid_shell_pair ):
+    def addShell(self, shellid_shell_pair):
         self.sim.main.shellMatrix.update(shellid_shell_pair)
         self.sim.shellMatrix.update(shellid_shell_pair)
 
@@ -1848,8 +1847,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         shellSize = single.pid_particle_pair[1].radius * \
             ( 1.0 + self.MULTI_SHELL_FACTOR )
-        multi.addParticle( single.particle )
-        multi.addShell( single.particle.pos, shellSize )
+        shell_id_shell_pair = (
+            single.shell[0],
+            Shell(single.pid_particle_pair[1].position,
+                  shellSize,
+                  single.domain_id))
+        multi.addParticle(single.pid_particle_pair)
+        multi.addShell(shell_id_shell_pair)
 
     def mergeMultis( self, multi1, multi2 ):
         '''
