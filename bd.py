@@ -31,7 +31,7 @@ class BDSimulatorCoreBase( object ):
     def __init__( self, main ):
         self.main = weakref.proxy( main )
 
-        self.particleList = []
+        self.particleList = set()
 
         self.t = 0.0
         self.dt = 0.0
