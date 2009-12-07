@@ -54,7 +54,7 @@ class BDSimulatorCoreBase( object ):
         D_list = []
         radius_list = []
         for species in speciesList:
-            if species.pool.size != 0:
+            if self.main.particlePool[species.serial]:
                 D_list.append( species.D )
                 radius_list.append( species.radius )
         D_max = max( D_list ) * 2  # max relative diffusion speed
@@ -69,13 +69,13 @@ class BDSimulatorCoreBase( object ):
 
 
     def clearParticleList( self ):
-        self.particleList = []
+        self.particleList = set()
 
-    def addToParticleList( self, particle ):
-        self.particleList.append( particle )
+    def addToParticleList( self, pid ):
+        self.particleList.add( pid )
 
-    def removeFromParticleList( self, particle ):
-        self.particleList.remove( particle )
+    def removeFromParticleList( self, pid ):
+        self.particleList.remove( pid )
 
     def getNextTime( self ):
         return self.t + self.dt
@@ -109,14 +109,14 @@ class BDSimulatorCoreBase( object ):
         self.t += self.dt
 
     def propagate( self ):
-        self.particlesToStep = self.particleList[:]
-
-        random.shuffle( self.particlesToStep )
+        self.particlesToStep = list(self.particleList)
+        random.shuffle(self.particlesToStep)
         while self.particlesToStep:
-            particle = self.particlesToStep.pop() # take the last one
-            species = particle.species
+            pid = self.particlesToStep.pop() # take the last one
+            pid_particle_pair = (pid, self.main.particleMatrix[pid])
+            sid = pid_particle_pair[1].sid
 
-            rt1 = self.attemptSingleReactions( species )
+            rt1 = self.attemptSingleReactions(sid)
             if rt1:
                 try:
                     self.fireReaction1( particle, rt1 )
@@ -125,17 +125,18 @@ class BDSimulatorCoreBase( object ):
                         log.info( 'fireReaction1 rejected.' )
                 continue
 
-            D = species.D
+            D = pid_particle_pair[1].D
             if D == 0.0:
                 continue
 
             displacement = drawR_free( self.dt, D )
 
-            newpos = particle.pos + displacement
+            newpos = pid_particle_pair[1].position + displacement
             newpos = self.main.applyBoundary(newpos)
 
             neighbors = self.getParticlesWithinRadiusNoSort(
-                newpos, species.radius, ignore=[particle] )
+                newpos, pid_particle_pair[1].radius,
+                ignore=[pid_particle_pair[0]] )
             if neighbors:
 
                 if len( neighbors ) >= 2:
@@ -144,13 +145,12 @@ class BDSimulatorCoreBase( object ):
                     continue
 
                 closest = neighbors[0]
-                species2 = closest.species
 
-                rt = self.main.getReactionRule2( species, species2 )[0]
+                rt = self.main.getReactionRule2(sid, closest[1].sid)[0]
 
                 if rt.k != 0.0:
-                    radius12 = species.radius + species2.radius
-                    D12 = D + species2.D
+                    radius12 = pid_particle_pair[1].radius + closest[1].radius
+                    D12 = D + closest[1].D
 
                     p = self.getP_acct( rt, D12, radius12 )
 
@@ -173,14 +173,18 @@ class BDSimulatorCoreBase( object ):
                 continue
 
             try:
-                self.clearVolume( newpos, particle.radius, ignore=[particle] )
-                self.moveParticle( particle, newpos )
+                self.clearVolume(newpos, pid_particle_pair[1].radius, ignore=[pid_particle_pair[0]])
+                self.moveParticle((pid_particle_pair[0],
+                                   _gfrd.Particle(newpos,
+                                            pid_particle_pair[1].radius,
+                                            pid_particle_pair[1].D,
+                                            pid_particle_pair[1].sid)))
             except NoSpace:
                 if __debug__:
                     log.info( 'propagation move rejected.' )
 
-    def attemptSingleReactions( self, species ):
-        reactionTypes = self.main.getReactionRule1( species )
+    def attemptSingleReactions(self, sid):
+        reactionTypes = self.main.getReactionRule1(sid)
         if not reactionTypes:
             return None  # no reaction
 
@@ -291,40 +295,41 @@ class BDSimulatorCoreBase( object ):
 
         self.reactionEvents += 1
 
-    def fireReaction2( self, particle1, particle2, rt ):
-        pos1 = particle1.pos.copy()
-        pos2 = particle2.pos.copy()
-
-        if len( rt.products ) == 1:
-                
+    def fireReaction2( self, pid_particle_pair1, pid_particle_pair2, rt ):
+        if len(rt.products) == 1:
             productSpecies = rt.products[0]
 
-            D1 = particle1.species.D
-            D2 = particle2.species.D
+            D1 = pid_particle_pair1[1].D
+            D2 = pid_particle_pair2[1].D
 
-            pos2t = cyclic_transpose( pos2, pos1, self.main.worldSize )
-            newPos = ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 )
-            newPos = self.main.applyBoundary( newPos )
+            pos2t = cyclic_transpose(pid_particle_pair1[1].position,
+                                     pid_particle_pair2[1].position,
+                                     self.main.worldSize )
+            newPos = (D2 * pos1 + D1 * pos2t) / (D1 + D2)
+            newPos = self.main.applyBoundary(newPos)
 
-            if not self.checkOverlap( newPos, productSpecies.radius,
-                                      ignore=[ particle1, particle2 ] ):
+            if not self.checkOverlap(newPos, productSpecies.radius,
+                                     ignore=[pid_particle_pair1[0],
+                                             pid_particle_pair2[0]]):
                 raise NoSpace()
-            self.clearVolume( newPos, productSpecies.radius,
-                              ignore=[ particle1, particle2 ] )
+            self.clearVolume(newPos, productSpecies.radius,
+                             ignore=[pid_particle_pair1[0],
+                                     pid_particle_pair2[0]])
 
-            self.removeParticle( particle1 )
-            self.removeParticle( particle2 )
-            newparticle = self.createParticle( productSpecies, newPos )
+            self.removeParticle(pid_particle_pair1)
+            self.removeParticle(pid_particle_pair2)
+            newparticle = self.createParticle(productSpecies.serial, newPos)
 
             try:
-                self.particlesToStep.remove( particle2 )
+                self.particlesToStep.remove(pid_particle_pair2[0])
             except ValueError:  
                 pass     # particle2 already stepped, which is fine.
 
             self.reactionEvents += 1
 
-            self.lastReaction = Reaction( rt, [particle1, particle2], 
-                                          [newparticle] )
+            self.lastReaction = Reaction(
+                rt, [pid_particle_pair1, pid_particle_pair2], 
+                [newparticle])
 
             return
         
@@ -358,26 +363,25 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
 
     def updateParticleList( self ):
         self.clearParticleList()
+        for s in self.main.speciesList.itervalues():
+            for pid in self.main.particlePool[s.serial]:
+                self.addToParticleList(pid) 
 
-        for s in self.main.speciesList.values():
-            for i in range( s.pool.size ):
-                self.addToParticleList( Particle( s, index = i ) )
+    def addParticle(self, pid_particle_pair):
+        self.main.addParticle(pid_particle_pair)
+        self.addToParticleList(pid_particle_pair[0])
 
-    def addParticle( self, particle ):
-        self.main.addParticle( particle )
-        self.addToParticleList( particle )
-
-    def moveParticle( self, particle, newpos ):
-        return self.main.moveParticle( particle, newpos )
+    def moveParticle(self, pid_particle_pair):
+        return self.main.moveParticle(pid_particle_pair)
 
     def checkOverlap( self, pos, radius, ignore=() ):
         return self.main.checkOverlap( pos, radius, ignore )
 
-    def removeParticle( self, particle ):
-        self.main.removeParticle( particle )
-        self.removeFromParticleList( particle )
+    def removeParticle(self, pid_particle_pair):
+        self.main.removeParticle(pid_particle_pair)
+        self.removeFromParticleList(pid_particle_pair[0])
 
-    def createParticle( self, species, pos ):
+    def createParticle(self, species, pos):
         particle = self.main.createParticle( species, pos )
         self.addToParticleList( particle )
 

@@ -384,67 +384,33 @@ class ParticleSimulatorBase( object ):
                 return False
         return True
 
-    def getParticlesWithinRadius( self, pos, radius, ignore=[] ):
-        particles, _ =\
-            self.particleMatrix.getNeighborsWithinRadius( pos, radius )
+    def getParticlesWithinRadius(self, pos, radius, ignore=[]):
+        pid_particle_pairs, distances =\
+            self.particleMatrix.get_neighbors_within_radius(pos, radius)
+        topargs = distances.argsort()
+        pid_particle_pairs = numpy.take(pid_particle_pairs, topargs, 0)
+        return [ p for p in pid_particle_pairs if p[0] not in ignore ]
 
-        return [ p for p in particles if p not in ignore ]
-
-    def getParticlesWithinRadiusNoSort( self, pos, radius, ignore=[] ): 
-        particles, _ =\
-            self.particleMatrix.getNeighborsWithinRadiusNoSort( pos, radius )
-
-        return [ p for p in particles if p not in ignore ]
+    def getParticlesWithinRadiusNoSort(self, pos, radius, ignore=[]): 
+        pid_particle_pairs, _ =\
+            self.particleMatrix.get_neighbors_within_radius( pos, radius )
+        return [ p for p in pid_particle_pairs if p[0] not in ignore ]
 
     def clear( self ):
         self.dtMax = self.dtLimit
         self.dt = self.dtLimit
 
-    def checkSurfaces( self, speciesIndex1, particleIndex ):
-        speciesList = self.speciesList.values()
-
-        species = speciesList[ speciesIndex1 ]
-        pos = species.pool.positions[ particleIndex ].copy()
-
-        dist = [ surface.distance( pos ) for surface in self.surfaceList ]
-
-        if len( dist ) == 0:
-            return -1, 0.0
-
-        idx = numpy.argmin( dist )
-        dist = dist[idx]
-
-        dt = ( dist - species.radius ) ** 2 / \
-                ( self.H * self.H * 6.0 * species.D ) 
-        
-        return dt, idx
-        
     def checkParticleMatrix( self ):
         if self.worldSize != self.particleMatrix.worldSize:
             raise RuntimeError,\
                 'self.worldSize != self.particleMatrix.worldSize'
 
-
-        total = numpy.array( [ species.pool.size for species 
-                               in self.speciesList.values() ] ).sum()
-
+        total = sum(len(pool) for pool in self.particlePoolu.itervalues())
 
         if total != self.particleMatrix.size:
             raise RuntimeError,\
                 'total number of particles %d != self.particleMatrix.size %d'\
                 % ( total, self.particleMatrix.size )
-
-        for species in self.speciesList.values():
-            for i in range( species.pool.size ):
-                particle = Particle( species, index=i )
-                pos, radius = self.particleMatrix.get( particle )
-
-                if ( particle.pos - pos ).sum() != 0:
-                    raise RuntimeError,\
-                        'particleMatrix positions consistency broken'
-                if particle.species.radius != radius:
-                    raise RuntimeError,\
-                        'particleMatrix radii consistency broken'
 
     def check( self ):
         self.checkParticleMatrix()
