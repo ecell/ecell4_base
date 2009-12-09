@@ -4,7 +4,7 @@
 #include <boost/array.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_categories.hpp>
-#include "utils.hpp"
+#include "utils/memberwise_compare.hpp"
 
 template<typename T_>
 class twofold_container
