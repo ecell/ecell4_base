@@ -518,7 +518,7 @@ class Multi( object ):
 
         for shell_id_shell_pair in self.shell_list:
             try:
-                self.sim.main.shellMatrix.get(shell_id_shell_pair[0])
+                self.sim.main.shellMatrix[shell_id_shell_pair[0]]
             except:
                 raise RuntimeError,\
                     'self.sim.main.shellMatrix does not contain %s'\
@@ -1183,7 +1183,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             # if nothing was formed, recheck closest and restore shells.
             closest, closestShellDistance = \
-                self.getClosestObj( singlepos, ignore = [ single.shell[0], ] )
+                self.getClosestObj( singlepos, ignore = [ single.domain_id, ] )
 
         self.updateSingle( single, singlepos, closest, closestShellDistance )
 
@@ -1201,7 +1201,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def restoreSingleShells( self, singles ):
         for single in singles:
             assert single.isReset()
-            c, d = self.getClosestObj( single.shell[1].position, ignore = [single.shell[0],] )
+            c, d = self.getClosestObj( single.shell[1].position, ignore = [single.domain_id,] )
 
             self.updateSingle( single, single.shell[1].position, c, d )
             self.updateEvent( self.t + single.dt, single )
@@ -1739,7 +1739,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             return None
 
         assert closestShellDistance > 0
-        c, d = self.getClosestObj( com, ignore=[ single1.shell[0], single2.shell[0] ] )
+        c, d = self.getClosestObj( com, ignore=[ single1.domain_id, single2.domain_id ] )
         if d < closestShellDistance:
             closest, closestShellDistance = c, d
 
@@ -1837,7 +1837,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             radius = obj.pid_particle_pair[1].radius *\
                 ( 1.0 + self.MULTI_SHELL_FACTOR )
             neighbors = self.getNeighborsWithinRadiusNoSort( objpos, radius,
-                                                             ignore=[obj,] )
+                                                             ignore=[obj.domain_id] )
+
             bursted = self.burstNonMultis( neighbors )
             neighborDists = self.objDistanceArray( objpos, bursted )
             neighbors = [ bursted[i] for i in 
@@ -1907,10 +1908,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return neighbors + [None], numpy.concatenate( [ distances, [numpy.inf] ] )
 
     def getClosestObj( self, pos, ignore=[] ):
+        '''
+        ignore: domain ids.
+        '''
+
         result = self.shellMatrix.get_neighbors_cyclic(pos)
 
-        for i, item in enumerate(result):
-            if item[0][0] not in ignore:
+        for item in result:
+            if item[0][1].did not in ignore:
                 return self.domains[item[0][1].did], item[1]
 
         return None, numpy.inf
@@ -1935,7 +1940,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         for shell_id, shell in obj.shell_list:
             closest, distance = self.getClosestObj( shell.position,
-                                                    ignore = [shell_id] )
+                                                    ignore = [obj.domain_id] )
 
             assert shell.radius <= self.getUserMaxShellSize(),\
                 '%s shell size larger than user-set max shell size' % \
