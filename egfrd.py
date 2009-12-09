@@ -1964,7 +1964,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         if shellPopulation != len(self.shellMatrix):
             raise RuntimeError,\
-                'num shells != self.shellMatrix.size'
+                'num shells (%d) != self.shellMatrix.size (%d)' % (shellPopulation, len(self.shellMatrix))
         
         self.shellMatrix.check()
 
