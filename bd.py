@@ -160,7 +160,7 @@ class BDSimulatorCoreBase( object ):
                         if __debug__:
                             log.info( 'fire reaction2' )
                         try:
-                            self.fireReaction2( particle, closest, rt )
+                            self.fireReaction2( pid_particle_pair, closest, rt )
                         except NoSpace:
                             if __debug__:
                                 log.info( 'fireReaction2 move rejected' )
