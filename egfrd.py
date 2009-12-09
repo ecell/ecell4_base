@@ -62,7 +62,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
         BDSimulatorCoreBase.step( self )
 
     def addParticle(self, pid_particle_pair):
-        self.addToParticleList(pid_particle_pair)
+        self.addToParticleList(pid_particle_pair[0])
         self.particleMatrix.update(pid_particle_pair)
 
     def removeParticle( self, particle ):
@@ -498,8 +498,8 @@ class Multi( object ):
 
     multiplicity = property( getMultiplicity )
 
-    def addParticle( self, particle ):
-        self.sim.addParticle( particle )
+    def addParticle(self, pid_particle_pair):
+        self.sim.addParticle(pid_particle_pair)
 
     def addShell(self, shellid_shell_pair):
         self.sim.main.shellMatrix.update(shellid_shell_pair)
