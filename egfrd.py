@@ -89,17 +89,15 @@ class MultiBDCore( BDSimulatorCoreBase ):
             raise NoSpace()
 
     def withinShell( self, pos, radius ):
-        n, _ = self.shellMatrix.get_Neighbors_within_radius( pos, - radius )
-        return n
+        result = self.shellMatrix.get_Neighbors_within_radius( pos, - radius )
+        return bool(result)
         
     def checkOverlap( self, pos, radius, ignore=[] ):
-        n, _ = self.particleMatrix.get_neighbors_within_radius( pos, radius )
-
-        for particle in ignore:
-            if particle in n:
-                n.remove( particle )
-
-        return not n
+        result = self.particleMatrix.get_neighbors_within_radius( pos, radius )
+        for item in result:
+            if item[0][0] not in ignore:
+                return True
+        return False
 
     def getParticlesWithinRadiusNoSort( self, pos, radius, ignore=[] ):
         result = self.particleMatrix.get_neighbors_within_radius( pos, radius )
