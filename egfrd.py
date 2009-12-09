@@ -1860,12 +1860,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         assert not multi1.sim.particleList[0] in multi2.sim.particleList
 
-        for particle in multi1.sim.particleList:
+        for pid in multi1.sim.particleList:
             # FIXME: shells should be renewed
-            multi2.addParticle( particle )
+            multi2.addParticle(multi1.sim.particleMatrix[pid])
 
         for shell in multi1.shell_list:
-            multi2.addShell( shell )
+            multi2.addShell(shell)
 
     def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
         result = self.shellMatrix.get_neighbors_within_radius(pos, radius)
