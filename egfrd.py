@@ -522,7 +522,7 @@ class Multi( object ):
             except:
                 raise RuntimeError,\
                     'self.sim.main.shellMatrix does not contain %s'\
-                    % str(shell_id_shell_pair)
+                    % str(shell_id_shell_pair[0])
 
     def __repr__( self ):
         return 'Multi[%s: %s: eventID=%s]' % (
@@ -1710,8 +1710,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if minShellSizeWithMargin >= maxShellSize:
             if __debug__:
                 log.debug( '%s not formed: minShellSize >= maxShellSize' %
-                       ( 'Pair( %s, %s )' % ( single1.pid_particle_pair, 
-                                              single2.pid_particle_pair ) ) )
+                       ( 'Pair( %s, %s )' % ( single1.pid_particle_pair[0], 
+                                              single2.pid_particle_pair[0] ) ) )
             return None
 
         # Here, we have to take into account of the burst Singles in
@@ -1733,8 +1733,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if closestShellDistance <= minShellSizeWithMargin:
             if __debug__:
                 log.debug( '%s not formed: squeezed by burst neighbor %s' %
-                       ( 'Pair( %s, %s )' % ( single1.pid_particle_pair, 
-                                              single2.pid_particle_pair), closest ) )
+                       ( 'Pair( %s, %s )' % ( single1.pid_particle_pair[0], 
+                                              single2.pid_particle_pair[0]),
+                         closest ) )
             return None
 
         assert closestShellDistance > 0
@@ -1775,8 +1776,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if shellSize <= minShellSizeWithMargin:
             if __debug__:
                 log.debug( '%s not formed: squeezed by %s' %
-                       ( 'Pair( %s, %s )' % ( single1.pid_particle_pair, 
-                                              single2.pid_particle_pair), closest ) )
+                       ( 'Pair( %s, %s )' % ( single1.pid_particle_pair[0], 
+                                              single2.pid_particle_pair[0]),
+                         closest ) )
             return None
 
 
@@ -1789,8 +1791,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                 ( 1.0 + self.SINGLE_SHELL_FACTOR ) ) * 1.3:
             if __debug__:
                 log.debug( '%s not formed: singles are better' %
-                       'Pair( %s, %s )' % ( single1.pid_particle_pair, 
-                                            single2.pid_particle_pair ) )
+                       'Pair( %s, %s )' % ( single1.pid_particle_pair[0], 
+                                            single2.pid_particle_pair[0] ) )
             return None
 
         # 3. Ok, Pair makes sense.  Create one.
