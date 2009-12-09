@@ -221,8 +221,8 @@ class BDSimulatorCoreBase( object ):
             productSpecies = rt.products[0]
             radius = productSpecies.radius
 
-            if not self.checkOverlap( oldpos, radius,
-                                      ignore = [ particle, ] ):
+            if self.checkOverlap( oldpos, radius,
+                                  ignore = [ particle, ] ):
                 if __debug__:
                     log.info( 'no space for product particle.' )
                 raise NoSpace()
@@ -267,11 +267,10 @@ class BDSimulatorCoreBase( object ):
                 newpos2 = self.main.applyBoundary( newpos2 )
 
                 # accept the new positions if there is enough space.
-                if self.checkOverlap( newpos1, radius1,
-                                      ignore = [ particle, ]) and \
-                                      self.checkOverlap( newpos2, radius2,
-                                                         ignore = 
-                                                         [ particle, ]):
+                if (not self.checkOverlap( newpos1, radius1,
+                                          ignore = [ particle, ])) and \
+                   (not self.checkOverlap( newpos2, radius2,
+                                          ignore = [ particle, ])):
                     break
             else:
                 if __debug__:
@@ -308,9 +307,9 @@ class BDSimulatorCoreBase( object ):
             newPos = (D2 * pid_particle_pair1[1].position + D1 * pos2t) / (D1 + D2)
             newPos = self.main.applyBoundary(newPos)
 
-            if not self.checkOverlap(newPos, productSpecies.radius,
-                                     ignore=[pid_particle_pair1[0],
-                                             pid_particle_pair2[0]]):
+            if self.checkOverlap(newPos, productSpecies.radius,
+                                 ignore=[pid_particle_pair1[0],
+                                         pid_particle_pair2[0]]):
                 raise NoSpace()
             self.clearVolume(newPos, productSpecies.radius,
                              ignore=[pid_particle_pair1[0],
@@ -342,8 +341,8 @@ class BDSimulatorCoreBase( object ):
 
         for pid in self.particleList:
             particle = self.main.particleMatrix[pid]
-            assert self.checkOverlap( particle.position, particle.radius,
-                                      ignore=[pid,] )
+            assert not self.checkOverlap( particle.position, particle.radius,
+                                          ignore=[pid,] )
 
 
 class BDSimulatorCore( BDSimulatorCoreBase ):

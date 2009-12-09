@@ -86,7 +86,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def clearOuterVolume( self, pos, radius, ignore=[] ):
         self.main.clearVolume( pos, radius, ignore=[self.multiref(),] )
-        if not self.main.checkOverlap( pos, radius, ignore ):
+        if self.main.checkOverlap( pos, radius, ignore ):
             raise NoSpace()
 
     def withinShell( self, pos, radius ):
@@ -97,8 +97,8 @@ class MultiBDCore( BDSimulatorCoreBase ):
         result = self.particleMatrix.get_neighbors_within_radius( pos, radius )
         for item in result:
             if item[0][0] not in ignore:
-                return True
-        return False
+                return item
+        return None
 
     def getParticlesWithinRadiusNoSort( self, pos, radius, ignore=[] ):
         result = self.particleMatrix.get_neighbors_within_radius( pos, radius )
@@ -1002,8 +1002,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             if reactantSpeciesRadius < productSpecies.radius:
                 self.clearVolume( oldpos, productSpecies.radius )
 
-            if not self.checkOverlap( oldpos, productSpecies.radius,
-                                      ignore = [ single.pid_particle_pair[0], ] ):
+            if self.checkOverlap( oldpos, productSpecies.radius,
+                                  ignore = [ single.pid_particle_pair[0], ] ):
                 if __debug__:
                     log.info( 'no space for product particle.' )
                 raise NoSpace()
@@ -1059,10 +1059,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
                 # accept the new positions if there is enough space.
-                if ( self.checkOverlap( newpos1, particleRadius1,
-                                        ignore = [ single.pid_particle_pair[0], ] ) and
-                     self.checkOverlap( newpos2, particleRadius2,
-                                        ignore = [ single.pid_particle_pair[0], ] ) ):
+                if (not self.checkOverlap(newpos1, particleRadius1,
+                                          ignore=[single.pid_particle_pair[0]])) and \
+                   (not self.checkOverlap(newpos2, particleRadius2,
+                                          ignore=[single.pid_particle_pair[0]])):
                     break
             else:
                 if __debug__:
@@ -1071,10 +1071,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             self.removeParticle( single.pid_particle_pair )
 
-            particle1 = self.createParticle( productSpecies1.serial, newpos1 )
-            particle2 = self.createParticle( productSpecies2.serial, newpos2 )
-            newsingle1 = self.createSingle( particle1 )
-            newsingle2 = self.createSingle( particle2 )
+            particle1 = self.createParticle(productSpecies1.serial, newpos1)
+            particle2 = self.createParticle(productSpecies2.serial, newpos2)
+            newsingle1 = self.createSingle(particle1)
+            newsingle2 = self.createSingle(particle2)
 
             self.addSingleEvent( newsingle1 )
             self.addSingleEvent( newsingle2 )
@@ -1106,8 +1106,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         if __debug__:
             log.debug( "propagate %s: %s => %s" % ( single, single.pid_particle_pair[1].position, newpos ) )
-        assert self.checkOverlap( newpos, single.pid_particle_pair[1].radius,\
-                                  ignore = [ single.pid_particle_pair[0], ] )
+        assert not self.checkOverlap(newpos,
+                                     single.pid_particle_pair[1].radius,
+                                     ignore=[single.pid_particle_pair[0]])
 
         single.initialize( self.t )
 
@@ -1424,10 +1425,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.removeFromShellMatrix( pair )
 
-        assert self.checkOverlap( newpos1, particle1[1].radius,
-                                  ignore = [ particle1[0], particle2[0] ] )
-        assert self.checkOverlap( newpos2, particle2[1].radius,
-                                  ignore = [ particle1[0], particle2[0] ] )
+        assert not self.checkOverlap(newpos1, particle1[1].radius,
+                                     ignore=[particle1[0], particle2[0]])
+        assert not self.checkOverlap(newpos2, particle2[1].radius,
+                                     ignore=[particle1[0], particle2[0]])
 
         single1, single2 = pair.single1, pair.single2
 
@@ -1520,8 +1521,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.distance( newpos, oldpos ) <=\
             self.calculateSingleMobilityRadius(single)
         assert self.distance( newpos, oldpos ) - r <= r * 1e-6
-        assert self.checkOverlap( newpos, particleRadius,\
-                                  ignore = [ single.pid_particle_pair[0], ] )
+        assert not self.checkOverlap(newpos, particleRadius,
+                                     ignore=[single.pid_particle_pair[0]])
 
         single.initialize( self.t )
 
@@ -1570,13 +1571,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
                                                   oldInterParticle )
-            newpos1 = self.applyBoundary( newpos1 )
-            newpos2 = self.applyBoundary( newpos2 )
-            assert self.checkOverlap( newpos1, particle1.species.radius,
-                                      ignore = [ particle1, particle2 ] )
+            newpos1 = self.applyBoundary(newpos1)
+            newpos2 = self.applyBoundary(newpos2)
+            assert not self.checkOverlap(newpos1, particle1.species.radius,
+                                         ignore=[particle1, particle2])
                                       
-            assert self.checkOverlap( newpos2, particle2.species.radius,
-                                      ignore = [ particle1, particle2 ] )
+            assert not self.checkOverlap(newpos2, particle2.species.radius,
+                                         ignore=[particle1, particle2])
                                       
             if __debug__:
                 shellSize = pair.shell[1].radius

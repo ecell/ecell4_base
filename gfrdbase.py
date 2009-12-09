@@ -333,7 +333,7 @@ class ParticleSimulatorBase( object ):
             while 1:
                 #position= numpy.random.uniform( 0, self.worldSize, 3 )
                 position = surface.randomPosition()
-                if self.checkOverlap( position, species.radius ):
+                if not self.checkOverlap( position, species.radius ):
                     break
                 else:
                     if __debug__:
@@ -346,7 +346,7 @@ class ParticleSimulatorBase( object ):
         pos = numpy.array( pos )
         radius = species.radius
 
-        if not self.checkOverlap( pos, radius ):
+        if self.checkOverlap( pos, radius ):
             raise NoSpace, 'overlap check failed'
             
         particle = self.createParticle( species, pos )
@@ -376,8 +376,8 @@ class ParticleSimulatorBase( object ):
         result = self.particleMatrix.get_neighbors_within_radius( pos, radius )
         for i in result:
             if i[0][0] not in ignore:
-                return False
-        return True
+                return i
+        return None
 
     def getParticlesWithinRadius(self, pos, radius, ignore=[]):
         result = self.particleMatrix.get_neighbors_within_radius(pos, radius)
