@@ -69,7 +69,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
     def removeParticle( self, pid_particle_pair):
         self.main.removeParticle(pid_particle_pair)
         self.removeFromParticleList(pid_particle_pair[0])
-        del self.particleMatrix[pid_particle[0]]
+        del self.particleMatrix[pid_particle_pair[0]]
 
     def createParticle( self, species, pos ):
         particle = self.main.createParticle( species, pos )
@@ -117,7 +117,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
                 d = i
             assert d is not None
             assert d[1] - shell[1].radius < 0.0,\
-                'shells of %s are not contiguous.' % str(self.multi())
+                'shells of %s are not contiguous.' % str(self.multiref())
 
         # all particles within the shell.
         for pid in self.particleList:
