@@ -516,13 +516,13 @@ class Multi( object ):
     def check( self ):
         self.sim.check()
 
-        for shell_id in self.shell_list:
+        for shell_id_shell_pair in self.shell_list:
             try:
-                self.sim.main.shellMatrix.get(shell_id)
+                self.sim.main.shellMatrix.get(shell_id_shell_pair[0])
             except:
                 raise RuntimeError,\
                     'self.sim.main.shellMatrix does not contain %s'\
-                    % str(shell_id)
+                    % str(shell_id_shell_pair)
 
     def __repr__( self ):
         return 'Multi[%s: %s: eventID=%s]' % (
