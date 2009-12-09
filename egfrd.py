@@ -52,7 +52,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def updateParticle( self, pid_particle_pair ):
         self.particleMatrix.update( pid_particle_pair )
-        self.main.updateOnParticleMatrix( pid_particle_pair )
+        self.main.moveParticle( pid_particle_pair )
 
     def initialize( self ):
         BDSimulatorCoreBase.initialize( self )

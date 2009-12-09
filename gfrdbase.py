@@ -364,7 +364,6 @@ class ParticleSimulatorBase( object ):
 
     def moveParticle( self, pid_particle_pair ):
         self.particleMatrix.update(pid_particle_pair)
-        self.updateOnParticleMatrix(pid_particle_pair)
 
     def addToParticleMatrix(self, pid, particle):
         assert isinstance(pid, _gfrd.ParticleID)
@@ -372,9 +371,6 @@ class ParticleSimulatorBase( object ):
         self.particleMatrix[pid] = particle
         self.particlePool[particle.sid].add(pid)
         return (pid, particle)
-
-    def updateOnParticleMatrix( self, pid_particle_pair ):
-        self.particleMatrix.update(pid_particle_pair)
 
     def checkOverlap( self, pos, radius, ignore=[] ):
         result = self.particleMatrix.get_neighbors_within_radius( pos, radius )
