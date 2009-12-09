@@ -1084,7 +1084,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def propagateSingle(self, single, r):
         if __debug__:
-            log.debug( "single.dt=%f, single.lastTime=%f, self.t=%f" % (
+            log.debug( "single.dt=%g, single.lastTime=%g, self.t=%g" % (
                 single.dt, single.lastTime, self.t ) )
         assert abs( single.dt + single.lastTime - self.t ) <= 1e-18 * self.t
         
@@ -1096,7 +1096,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         newpos = self.applyBoundary( newpos )
 
         if __debug__:
-            log.debug( "%s: %s => %s" % ( single, single.pid_particle_pair[1].position, newpos ) )
+            log.debug( "propagate %s: %s => %s" % ( single, single.pid_particle_pair[1].position, newpos ) )
         assert self.checkOverlap( newpos, single.pid_particle_pair[1].radius,\
                                   ignore = [ single.pid_particle_pair[0], ] )
 
@@ -1839,7 +1839,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def addToMulti( self, single, multi ):
         if __debug__:
             log.info( 'adding %s to %s' % ( single, multi ) )
-
         shellSize = single.pid_particle_pair[1].radius * \
             ( 1.0 + self.MULTI_SHELL_FACTOR )
         shell_id_shell_pair = (
