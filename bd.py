@@ -305,7 +305,7 @@ class BDSimulatorCoreBase( object ):
             pos2t = cyclic_transpose(pid_particle_pair1[1].position,
                                      pid_particle_pair2[1].position,
                                      self.main.worldSize )
-            newPos = (D2 * pos1 + D1 * pos2t) / (D1 + D2)
+            newPos = (D2 * pid_particle_pair1[1].position + D1 * pos2t) / (D1 + D2)
             newPos = self.main.applyBoundary(newPos)
 
             if not self.checkOverlap(newPos, productSpecies.radius,
