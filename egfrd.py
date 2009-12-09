@@ -1437,6 +1437,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if __debug__:
             log.debug("firePair: #1 { %s: %s => %s } #2 { %s: %s => %s }" % (single1, particle1[1].position, newpos1, single2, particle2[1].position, newpos2))
 
+        self.domains[single1.domain_id] = single1
+        self.domains[single2.domain_id] = single2
+
         self.moveSingle(single1, newpos1)
         self.moveSingle(single2, newpos2)
             
