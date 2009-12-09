@@ -18,6 +18,7 @@ from bd import BDSimulatorCoreBase
 from numpy.random import uniform
 
 import logging
+import os
 
 log = logging.getLogger( 'epdp' )
 
@@ -519,7 +520,7 @@ class Multi( object ):
             self.eventID )
 
     def getShellList(self):
-        return iter(self.sim.shellMatrix)
+        return self.sim.shellMatrix
     shell_list = property(getShellList)
 
 
@@ -646,8 +647,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if self.isDirty:
             self.initialize()
             
-        #if self.stepCounter % 100 == 0:
-        #self.check()
+        if __debug__:
+            if int("0" + os.environ.get("EPDP_CHECK", ""), 10):
+                self.check()
         
         self.stepCounter += 1
 
@@ -1938,8 +1940,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def checkEventStoichiometry( self ):
         population = 0
-        for species in self.speciesList.values():
-            population += species.pool.size
+        for pool in self.particlePool.itervalues():
+            population += len(pool)
 
         eventPopulation = 0
         for i in range( self.scheduler.getSize() ):
@@ -1951,16 +1953,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                   ( population, eventPopulation )
 
     def checkShellMatrix( self ):
-        if self.worldSize != self.shellMatrix.worldSize:
+        if self.worldSize != self.shellMatrix.world_size:
             raise RuntimeError,\
                 'self.worldSize != self.shellMatrix.worldSize'
 
         shellPopulation = 0
         for i in range( self.scheduler.getSize() ):
             obj = self.scheduler.getEventByIndex(i).getArg()
-            shellPopulation += len( obj.shell_list )
+            shellPopulation += len(obj.shell_list)
 
-        if shellPopulation != self.shellMatrix.size:
+        if shellPopulation != len(self.shellMatrix):
             raise RuntimeError,\
                 'num shells != self.shellMatrix.size'
         

@@ -391,13 +391,13 @@ class ParticleSimulatorBase( object ):
         self.dt = self.dtLimit
 
     def checkParticleMatrix( self ):
-        if self.worldSize != self.particleMatrix.worldSize:
+        if self.worldSize != self.particleMatrix.world_size:
             raise RuntimeError,\
                 'self.worldSize != self.particleMatrix.worldSize'
 
-        total = sum(len(pool) for pool in self.particlePoolu.itervalues())
+        total = sum(len(pool) for pool in self.particlePool.itervalues())
 
-        if total != self.particleMatrix.size:
+        if total != len(self.particleMatrix):
             raise RuntimeError,\
                 'total number of particles %d != self.particleMatrix.size %d'\
                 % ( total, self.particleMatrix.size )
@@ -407,7 +407,7 @@ class ParticleSimulatorBase( object ):
 
     def dumpPopulation( self ):
         buf = ''
-        for species in self.speciesList.values():
-            buf += species.id + ':' + str( species.pool.size ) + '\t'
+        for sid, pool in self.particlePool.iteritems():
+            buf += sid + ':' + str(pool) + '\t'
 
         return buf
