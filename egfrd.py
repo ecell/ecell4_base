@@ -499,9 +499,12 @@ class Multi( object ):
     def addParticle(self, pid_particle_pair):
         self.sim.addParticle(pid_particle_pair)
 
-    def addShell(self, shellid_shell_pair):
-        self.sim.main.shellMatrix.update(shellid_shell_pair)
-        self.sim.shellMatrix.update(shellid_shell_pair)
+    def addShell(self, position, size):
+        shell_id_shell_pair = (
+            self.sim.main.shellIDGenerator(),
+            Shell(position, size, self.domain_id) )
+        self.sim.main.shellMatrix.update(shell_id_shell_pair)
+        self.sim.shellMatrix.update(shell_id_shell_pair)
 
     def check( self ):
         self.sim.check()
@@ -1826,10 +1829,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.addToMultiRecursive( obj, multi )
 
         elif isinstance( obj, Multi ):
-            if not obj.sim.particleList[0] in multi.sim.particleList:
-                self.mergeMultis( obj, multi )
-                self.removeFromShellMatrix( obj )
-                self.removeEvent( obj )
+            if obj.sim.particleList.isdisjoint(multi.sim.particleList):
+                self.mergeMultis(obj, multi)
+                self.removeFromShellMatrix(obj)
+                self.removeEvent(obj)
             else:
                 if __debug__:
                     log.debug( '%s already added. skipping.' % obj )
@@ -1841,13 +1844,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             log.info( 'adding %s to %s' % ( single, multi ) )
         shellSize = single.pid_particle_pair[1].radius * \
             ( 1.0 + self.MULTI_SHELL_FACTOR )
-        shell_id_shell_pair = (
-            single.shell[0],
-            Shell(single.pid_particle_pair[1].position,
-                  shellSize,
-                  single.domain_id))
         multi.addParticle(single.pid_particle_pair)
-        multi.addShell(shell_id_shell_pair)
+        multi.addShell(single.pid_particle_pair[1].position, shellSize)
 
     def mergeMultis( self, multi1, multi2 ):
         '''
@@ -1863,7 +1861,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             multi2.addParticle(multi1.sim.particleMatrix[pid])
 
         for shell in multi1.shell_list:
-            multi2.addShell(shell)
+            multi2.addShell(shell[1].position, shell[1].radius)
 
     def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
         result = self.shellMatrix.get_neighbors_within_radius(pos, radius)
