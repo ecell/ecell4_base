@@ -340,9 +340,10 @@ class BDSimulatorCoreBase( object ):
     def check( self ):
         # particles don't overlap
 
-        for particle in self.particleList:
-            assert self.checkOverlap( particle.pos, particle.radius,
-                                      ignore=[particle,] )
+        for pid in self.particleList:
+            particle = self.main.particleMatrix[pid]
+            assert self.checkOverlap( particle.position, particle.radius,
+                                      ignore=[pid,] )
 
 
 class BDSimulatorCore( BDSimulatorCoreBase ):
