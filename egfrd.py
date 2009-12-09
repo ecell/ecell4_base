@@ -1805,7 +1805,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     
     def addToMultiRecursive( self, obj, multi ):
         if isinstance( obj, Single ):
-            if obj.particle in multi.sim.particleList:  # Already in the Multi.
+            if obj.pid_particle_pair[0] in multi.sim.particleList:  # Already in the Multi.
                 return
             assert obj.isReset()
             objpos = self.getShell(obj.shell_id)[0]
