@@ -1808,7 +1808,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             if obj.pid_particle_pair[0] in multi.sim.particleList:  # Already in the Multi.
                 return
             assert obj.isReset()
-            objpos = self.getShell(obj.shell_id)[0]
+            objpos = obj.shell[1].position
             
             self.addToMulti( obj, multi )
             self.removeFromShellMatrix( obj )
@@ -1886,7 +1886,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                     distances.append(item[1])
                     if item[1] > radius:
                         return neighbors, distances
-
         return neighbors + [None], numpy.concatenate( [ distances, [numpy.inf] ] )
 
     def getClosestObj( self, pos, ignore=[] ):
