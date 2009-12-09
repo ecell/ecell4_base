@@ -881,6 +881,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.moveParticle(new_pid_particle_pair)
 
     def removeFromShellMatrix( self, obj ):
+        del self.domains[obj.domain_id]
         for shell_id, _ in obj.shell_list:
             del self.shellMatrix[shell_id]
     
