@@ -242,7 +242,7 @@ class Single( object ):
         pass
 
     def __repr__( self ):
-        return 'Single[%s: eventID=%s]' % ( self.pid_particle_pair, self.eventID )
+        return 'Single[%s: eventID=%s]' % ( self.pid_particle_pair[0], self.eventID )
 
 
 # def calculatePairCoM( pos1, pos2, D1, D2, worldSize ):
@@ -469,8 +469,8 @@ class Pair( object ):
 
     def __repr__( self ):
         return 'Pair[%s, %s: eventID=%s]' % (
-            self.single1.pid_particle_pair,
-            self.single2.pid_particle_pair,
+            self.single1.pid_particle_pair[0],
+            self.single2.pid_particle_pair[0],
             self.eventID )
 
 
