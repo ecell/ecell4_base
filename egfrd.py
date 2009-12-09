@@ -89,7 +89,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
             raise NoSpace()
 
     def withinShell( self, pos, radius ):
-        result = self.shellMatrix.get_Neighbors_within_radius( pos, - radius )
+        result = self.shellMatrix.get_neighbors_within_radius( pos, - radius )
         return bool(result)
         
     def checkOverlap( self, pos, radius, ignore=[] ):
