@@ -116,12 +116,13 @@ class MultiBDCore( BDSimulatorCoreBase ):
                     continue
                 d = i
             assert d is not None
-            assert d[1] - radius < 0.0,\
+            assert d[1] - shell[1].radius < 0.0,\
                 'shells of %s are not contiguous.' % str(self.multi())
 
         # all particles within the shell.
-        for p in self.particleList:
-            assert self.withinShell( p.pos, p.species.radius ),\
+        for pid in self.particleList:
+            p = self.main.particleMatrix[pid] 
+            assert self.withinShell( p.position, p.radius ),\
                 'not all particles within the shell.'
 
 
