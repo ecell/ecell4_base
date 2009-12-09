@@ -90,6 +90,7 @@ noinst_HEADERS = \
 	utils/pair.hpp\
 	utils/pointer_preds.hpp\
 	utils/range.hpp\
+	utils/range_support.hpp\
 	utils/reference_or_instance.hpp\
 	utils/array_traits.hpp\
 	utils/array_helper.hpp
