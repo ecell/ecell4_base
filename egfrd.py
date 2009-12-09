@@ -1722,11 +1722,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # beautiful, a cleaner framework may be possible.
 
         closest, closestShellDistance = None, numpy.inf
-        for d in bursted:
-            if isinstance( d, Single ):
-                bpos = d.shell[1].position
+        for b in bursted:
+            if isinstance( b, Single ):
+                bpos = b.shell[1].position
                 d = self.distance( com, bpos ) \
-                    - d.pid_particle_pair[1].radius * ( 1.0 + self.SINGLE_SHELL_FACTOR )
+                    - b.pid_particle_pair[1].radius * ( 1.0 + self.SINGLE_SHELL_FACTOR )
                 if d < closestShellDistance:
                     closest, closestShellDistance = b, d
 
