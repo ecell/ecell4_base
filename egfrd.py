@@ -66,10 +66,10 @@ class MultiBDCore( BDSimulatorCoreBase ):
         self.addToParticleList(pid_particle_pair[0])
         self.particleMatrix.update(pid_particle_pair)
 
-    def removeParticle( self, particle ):
-        self.main.removeParticle( particle )
-        self.removeFromParticleList( particle )
-        self.particleMatrix.remove( particle )
+    def removeParticle( self, pid_particle_pair):
+        self.main.removeParticle(pid_particle_pair)
+        self.removeFromParticleList(pid_particle_pair[0])
+        del self.particleMatrix[pid_particle[0]]
 
     def createParticle( self, species, pos ):
         particle = self.main.createParticle( species, pos )
@@ -996,7 +996,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         if len( rt.products ) == 0:
             
-            self.removeParticle( single.particle )
+            self.removeParticle(single.pid_particle_pair)
 
             self.lastReaction = Reaction( rt, [single.particle], [] )
 
@@ -1014,7 +1014,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                     log.info( 'no space for product particle.' )
                 raise NoSpace()
 
-            self.removeParticle( single.particle )
+            self.removeParticle(single.pid_particle_pair)
             newparticle = self.createParticle( productSpecies, oldpos )
             newsingle = self.createSingle( newparticle )
             self.addSingleEvent( newsingle )
@@ -1075,7 +1075,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                     log.info( 'no space for product particles.' )
                 raise NoSpace()
 
-            self.removeParticle( single.pid_particle_pair )
+            self.removeParticle(single.pid_particle_pair)
 
             particle1 = self.createParticle(productSpecies1.serial, newpos1)
             particle2 = self.createParticle(productSpecies2.serial, newpos2)
@@ -1336,8 +1336,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 #FIXME: SURFACE
                 newCoM = self.applyBoundary( newCoM )
 
-                self.removeParticle( particle1 )
-                self.removeParticle( particle2 )
+                self.removeParticle(pair.single1.pid_particle_pair)
+                self.removeParticle(pair.single2.pid_particle_pair)
 
                 particle = self.createParticle( species3.serial, newCoM )
                 newsingle = self.createSingle( particle )
