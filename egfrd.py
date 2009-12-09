@@ -1435,7 +1435,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         single2.initialize(self.t)
 
         if __debug__:
-            log.debug("firePair: #1 { %s: %s => %s } #2 { %s: %s => %s }" % (single1, particle1[1].position, newpos1, single1, particle2[1].position, newpos2))
+            log.debug("firePair: #1 { %s: %s => %s } #2 { %s: %s => %s }" % (single1, particle1[1].position, newpos1, single2, particle2[1].position, newpos2))
 
         self.moveSingle(single1, newpos1)
         self.moveSingle(single2, newpos2)
