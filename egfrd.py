@@ -85,7 +85,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
             self.clearOuterVolume( pos, radius, ignore )
 
     def clearOuterVolume( self, pos, radius, ignore=[] ):
-        self.main.clearVolume( pos, radius, ignore=[self.multiref(),] )
+        self.main.clearVolume( pos, radius, ignore=[self.multiref().domain_id,] )
         if self.main.checkOverlap( pos, radius, ignore ):
             raise NoSpace()
 
@@ -1882,8 +1882,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             multi2.addShell(shell[1].position, shell[1].radius)
 
     def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
+        '''
+        Get neighbor domains within given radius.
+        '''
+
         result = self.shellMatrix.get_neighbors_within_radius(pos, radius)
-        return [self.domains[did] for did in uniq(s[0][1].did for s in result if s[0][0] not in ignore)]
+        return [self.domains[did] for did in uniq(s[0][1].did for s in result) if did not in ignore]
 
     def getNeighbors( self, pos, radius=numpy.inf, ignore=[] ):
         result = self.shellMatrix.get_neighbors_cyclic(pos)
