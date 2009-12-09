@@ -242,7 +242,7 @@ class Single( object ):
         pass
 
     def __repr__( self ):
-        return 'Single[%s: eventID=%s]' % ( self.pid_particle_pair[0], self.eventID )
+        return 'Single[%s: %s: eventID=%s]' % ( self.domain_id, self.pid_particle_pair[0], self.eventID )
 
 
 # def calculatePairCoM( pos1, pos2, D1, D2, worldSize ):
@@ -468,7 +468,8 @@ class Pair( object ):
         pass
 
     def __repr__( self ):
-        return 'Pair[%s, %s: eventID=%s]' % (
+        return 'Pair[%s: %s, %s: eventID=%s]' % (
+            self.domain_id,
             self.single1.pid_particle_pair[0],
             self.single2.pid_particle_pair[0],
             self.eventID )
@@ -518,7 +519,8 @@ class Multi( object ):
                     % str(shell_id)
 
     def __repr__( self ):
-        return 'Multi[%s: eventID=%s]' % (
+        return 'Multi[%s: %s: eventID=%s]' % (
+            self.domain_id,
             ', '.join( repr( p ) for p in self.sim.particleList ),
             self.eventID )
 
