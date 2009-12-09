@@ -662,9 +662,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.t, self.lastEvent = event.getTime(), event.getArg()
 
         if __debug__:
-            log.info( '\n%d: t=%g dt=%g\nevent=%s reactions=%d rejectedmoves=%d' 
-                      % ( self.stepCounter, self.t, self.dt, self.lastEvent, 
-                          self.reactionEvents, self.rejectedMoves ) )
+            domain_counts = self.count_domains()
+            log.info( '\n%d: t=%g dt=%g\tSingles: %d, Pairs: %d, Multis: %d'
+                      % (( self.stepCounter, self.t, self.dt ) + domain_counts ))
+            log.info( 'event=%s reactions=%d rejectedmoves=%d' 
+                      % ( self.lastEvent, self.reactionEvents, 
+                          self.rejectedMoves ) )
         
         self.scheduler.step()
 
@@ -1968,6 +1971,20 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         
         self.shellMatrix.check()
 
+    def check_domains(self):
+        domains = set(self.domains.itervalues())
+        for i in range(self.scheduler.getSize()):
+            obj = self.scheduler.getEventByIndex(i).getArg()
+            if obj not in domains:
+                raise RuntimeError,\
+                    '%s in EventScheduler not in self.domains' % obj
+            domains.remove(obj)
+
+        # self.domains always include a None  --> this can change in future
+        if not (len(domains) == 1 and None in domains):
+            raise RuntimeError,\
+                'following domains in self.domains not in Event Scheduler: %s' \
+                % str(tuple(domains))
 
     def checkPairPos( self, pair, pos1, pos2, com, radius ):
         particle1 = pair.single1.pid_particle_pair[1]
@@ -2013,7 +2030,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.dt >= 0.0
 
         self.checkShellMatrix()
-
+        self.check_domains()
         self.checkEventStoichiometry()
         
         self.checkObjForAll()
@@ -2034,5 +2051,24 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             event = scheduler.getEventByIndex(i)
             print i, event.getTime(), event.getArg(), event.getArg().pos
 
+    def count_domains(self):
+        '''
+        Returns a tuple (# Singles, # Pairs, # Multis).
+        '''
 
+        numSingles = 0
+        numPairs = 0
+        numMultis = 0
+        for d in self.domains.itervalues():
+            if isinstance(d, Single):
+                numSingles += 1
+            elif isinstance(d, Pair):
+                numPairs += 1
+            elif isinstance(d, Multi):
+                numMultis += 1
+            elif d == None:
+                pass
+            else:
+                raise RuntimeError, 'NO NOT GET HERE'
 
+        return (numSingles, numPairs, numMultis)
