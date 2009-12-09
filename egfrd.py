@@ -1473,8 +1473,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.removeFromShellMatrix( multi )
 
         singles = []
-        for particle in multi.sim.particleList:
-            single = self.createSingle( particle )
+        for pid in multi.sim.particleList:
+            single = self.createSingle((pid, multi.sim.particleMatrix[pid]))
             self.addSingleEvent( single )
             singles.append( single )
 
