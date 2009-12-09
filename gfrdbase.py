@@ -402,8 +402,19 @@ class ParticleSimulatorBase( object ):
                 'total number of particles %d != self.particleMatrix.size %d'\
                 % ( total, self.particleMatrix.size )
 
+    def checkParticles(self):
+        for i in self.particleMatrix:
+            pid = i[0]
+            pos = i[1].position
+            if (pos >= self.worldSize).any() or (pos < 0.0).any():
+                raise RuntimeError,\
+                    '%s at position %s out of the world (worldSize=%g).' %\
+                    (pid, pos, self.worldSize)
+
+
     def check( self ):
         self.checkParticleMatrix()
+        self.checkParticles()
 
     def dumpPopulation( self ):
         buf = ''
