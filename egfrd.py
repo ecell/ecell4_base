@@ -1176,7 +1176,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             # if nothing was formed, recheck closest and restore shells.
             closest, closestShellDistance = \
-                self.getClosestObj( singlepos, ignore = [ single, ] )
+                self.getClosestObj( singlepos, ignore = [ single.shell[0], ] )
 
         self.updateSingle( single, singlepos, closest, closestShellDistance )
 
