@@ -1814,7 +1814,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.removeFromShellMatrix( obj )
             self.removeEvent( obj )
 
-            radius = obj.particle.species.radius *\
+            radius = obj.pid_particle_pair[1].radius *\
                 ( 1.0 + self.MULTI_SHELL_FACTOR )
             neighbors = self.getNeighborsWithinRadiusNoSort( objpos, radius,
                                                              ignore=[obj,] )
