@@ -50,6 +50,7 @@ namespace util
         DEFINE_NUMPY_TYPECODE_ASSOC(
             std::complex<npy_longdouble>, NPY_CLONGDOUBLE);
         DEFINE_NUMPY_TYPECODE_ASSOC(boost::python::object, NPY_OBJECT);
+        DEFINE_NUMPY_TYPECODE_ASSOC(PyObject*,             NPY_OBJECT);
         DEFINE_NUMPY_TYPECODE_ASSOC(std::string,           NPY_STRING);
 #   define TMP std::basic_string<wchar_t, std::char_traits<wchar_t> >
         DEFINE_NUMPY_TYPECODE_ASSOC(TMP, NPY_UNICODE);

@@ -6,7 +6,7 @@ import math
 
 import numpy
 
-from _gfrd import EventScheduler, FirstPassageGreensFunction, FirstPassagePairGreensFunction, FirstPassageNoCollisionPairGreensFunction, BasicPairGreensFunction, FreePairGreensFunction, EventType, Particle, Shell, ShellContainer, DomainIDGenerator, ShellIDGenerator, DomainID
+from _gfrd import EventScheduler, FirstPassageGreensFunction, FirstPassagePairGreensFunction, FirstPassageNoCollisionPairGreensFunction, BasicPairGreensFunction, FreePairGreensFunction, EventType, Particle, Shell, ShellContainer, DomainIDGenerator, ShellIDGenerator, DomainID, ParticleContainer, ShellContainer
 
 from surface import CuboidalSurface
 
@@ -46,12 +46,8 @@ class MultiBDCore( BDSimulatorCoreBase ):
         # this has to be ref, not proxy, since it is used for comparison.
         self.multiref = ref( multi )
 
-        self.particleMatrix = ObjectMatrix()
-        self.particleMatrix.setWorldSize( self.main.worldSize )
-
-        self.shellMatrix = ObjectMatrix()
-        self.shellMatrix.setWorldSize( self.main.worldSize )
-
+        self.particleMatrix = ParticleContainer(self.main.worldSize, self.main.matrixSize)
+        self.shellMatrix = ShellContainer(self.main.worldSize, self.main.matrixSize)
         self.escaped = False
 
     def updateParticle( self, pid_particle_pair ):
@@ -1871,51 +1867,34 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         for shell in multi1.shell_list:
             multi2.addShell( shell )
 
-    def getNeighborShells( self, pos, n=None ):
-        '''
-        Find closest n shells.
-
-        This method returns a tuple ( neighbors, distances ).
-        '''
-        neighbors, distances = self.shellMatrix.get_neighbors_cyclic( pos )
-        topargs = distances.argsort()[:n]
-        return numpy.take(neighbors, topargs, 0), numpy.take(distances, topargs)
-
-    def getNeighborsWithinRadius( self, pos, radius, ignore=[] ):
-        shells, _ =\
-            self.shellMatrix.getNeighborsWithinRadius( pos, radius )
-        return [self.domains[did] for did in uniq(s[1].did for s in shells if s[0] not in ignore)]
-
     def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
-        shells, _ =\
-            self.shellMatrix.get_neighbors_within_radius( pos, radius )
-        return [self.domains[did] for did in uniq(s[1].did for s in shells if s[0] not in ignore)]
+        result = self.shellMatrix.get_neighbors_within_radius(pos, radius)
+        return [self.domains[did] for did in uniq(s[0][1].did for s in result if s[0][0] not in ignore)]
 
     def getNeighbors( self, pos, radius=numpy.inf, ignore=[] ):
-        shells, dists = self.getNeighborShells(pos)
+        result = self.shellMatrix.get_neighbors_cyclic(pos)
 
-        seen = set( ignore )
+        seen = set(ignore)
         neighbors = []
         distances = []
 
-        if len(shells):
-            for i, shell in enumerate( shells ):
-                if not shell[0] in seen:
-                    seen.add(shell[0])
-                    neighbors.append(self.domains[shell[1].did])
-                    distances.append(dists[i])
-                    if dists[i] > radius:
+        if len(result):
+            for i, item in enumerate(result):
+                if not item[0][0] in seen:
+                    seen.add(item[0][0])
+                    neighbors.append(self.domains[item[0][1].did])
+                    distances.append(item[1])
+                    if item[1] > radius:
                         return neighbors, distances
 
-        return neighbors + [None], numpy.concatenate( [ distances,
-                                                                 [numpy.inf] ] )
+        return neighbors + [None], numpy.concatenate( [ distances, [numpy.inf] ] )
 
     def getClosestObj( self, pos, ignore=[] ):
-        shells, distances = self.getNeighborShells( pos )
+        result = self.shellMatrix.get_neighbors_cyclic(pos)
 
-        for i, shell in enumerate( shells ):
-            if shell[0] not in ignore:
-                return self.domains[shell[1].did], distances[i]
+        for i, item in enumerate(result):
+            if item[0][0] not in ignore:
+                return self.domains[item[0][1].did], item[1]
 
         return None, numpy.inf
 

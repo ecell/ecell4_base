@@ -488,7 +488,6 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::to_native_converter<position_type,
         seq_to_position_converter>();
 
-    peer::MatrixSpace<MatrixSpace<sphere_type, object, get_mapper_mf> >::__register_class("ObjectContainer");
     peer::MatrixSpace< MatrixSpace<shell_type, shell_id_type> >::__register_class("ShellContainer");
     peer::MatrixSpace<MatrixSpace<particle_type, particle_id_type, get_mapper_mf> >::__register_class("ParticleContainer");
     species_type_class = peer::SpeciesType::__register_class();

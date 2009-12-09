@@ -377,24 +377,18 @@ class ParticleSimulatorBase( object ):
         self.particleMatrix.update(pid_particle_pair)
 
     def checkOverlap( self, pos, radius, ignore=[] ):
-        pid_particle_pairs, _ = \
-            self.particleMatrix.get_neighbors_within_radius( pos, radius )
-        for pid, _ in pid_particle_pairs:
-            if pid not in ignore:
+        result = self.particleMatrix.get_neighbors_within_radius( pos, radius )
+        for i in result:
+            if i[0][0] not in ignore:
                 return False
         return True
 
     def getParticlesWithinRadius(self, pos, radius, ignore=[]):
-        pid_particle_pairs, distances =\
-            self.particleMatrix.get_neighbors_within_radius(pos, radius)
-        topargs = distances.argsort()
-        pid_particle_pairs = numpy.take(pid_particle_pairs, topargs, 0)
-        return [ p for p in pid_particle_pairs if p[0] not in ignore ]
+        result = self.particleMatrix.get_neighbors_within_radius(pos, radius)
+        return [ p[0] for p in result if p[0][0] not in ignore ]
 
-    def getParticlesWithinRadiusNoSort(self, pos, radius, ignore=[]): 
-        pid_particle_pairs, _ =\
-            self.particleMatrix.get_neighbors_within_radius( pos, radius )
-        return [ p for p in pid_particle_pairs if p[0] not in ignore ]
+    def getParticlesWithinRadiusNoSort(self, pos, radius, ignore=[]):
+        return self.getParticlesWithinRadius(pos, radius, ignore)
 
     def clear( self ):
         self.dtMax = self.dtLimit

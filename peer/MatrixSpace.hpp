@@ -1,6 +1,7 @@
 #ifndef OBJECTMATRIX_PEER_MATRIXSPACE_HPP
 #define OBJECTMATRIX_PEER_MATRIXSPACE_HPP
 
+#include <cstddef>
 #include <functional>
 #include <string>
 #include <vector>
@@ -16,6 +17,7 @@
 #include <boost/python/object.hpp>
 #include <boost/python/iterator.hpp>
 #include <boost/python/copy_const_reference.hpp>
+#include <boost/type_traits/alignment_of.hpp>
 #include <numpy/arrayobject.h>
 
 #include "peer/utils.hpp"
@@ -51,7 +53,81 @@ struct MatrixSpaceBase
             return pair.first;
         }
     };
+
+    template<typename Tlength_>
+    class CollectorResultConverter
+    {
+    public:
+        typedef Tlength_ length_type;
+        typedef std::pair<PyObject*, length_type> result_element;
+        typedef std::vector<result_element, util::pyarray_backed_allocator<result_element> > result_type;
+
+    private:
+        struct to_ndarray_converter
+        {
+            static PyObject* convert(const result_type& val)
+            {
+                const npy_intp dims[1] = { val.size() };
+                boost::python::incref(reinterpret_cast<PyObject*>(result_type_descr_));
+                PyObject* retval = PyArray_NewFromDescr(&PyArray_Type,
+                        result_type_descr_,
+                        1, const_cast<npy_intp*>(dims), NULL,
+                        &const_cast<result_type&>(val)[0],
+                        NPY_CARRAY, NULL);
+                if (!retval)
+                    return NULL;
+                reinterpret_cast<PyArrayObject*>(retval)->flags |= NPY_OWNDATA;
+                return retval;
+            }
+        };
+
+
+    public:
+        static void __register_converter()
+        {
+            if (!result_type_descr_)
+            {
+                init_result_type_descr();
+                boost::python::to_python_converter<result_type, to_ndarray_converter>();
+            }
+        }
+
+    private:
+        static void init_result_type_descr()
+        {
+            namespace py = boost::python;
+            py::dict fields;
+            py::str _pair("pair");
+            py::str _distance("distance");
+            fields[_pair] = py::make_tuple(
+                py::object(
+                    py::detail::new_reference(
+                        reinterpret_cast<PyObject*>(PyArray_DescrFromType(
+                        util::get_numpy_typecode<
+                            typename result_element::first_type>::value)))),
+                offsetof(result_element, first));
+            fields[_distance] = py::make_tuple(
+                py::object(
+                    py::detail::new_reference(
+                        reinterpret_cast<PyObject*>(PyArray_DescrFromType(
+                            util::get_numpy_typecode<
+                                typename result_element::second_type>::value)))),
+                offsetof(result_element, second));
+            result_type_descr_ = PyArray_DescrNewFromType(PyArray_VOID);
+            result_type_descr_->hasobject = NPY_ITEM_HASOBJECT; 
+            result_type_descr_->fields = py::incref(fields.ptr());
+            result_type_descr_->names = py::incref(py::make_tuple(_pair, _distance).ptr());
+            result_type_descr_->elsize = sizeof(result_element);
+            result_type_descr_->alignment = boost::alignment_of<std::size_t>::value;
+        }
+
+    private:
+        static PyArray_Descr* result_type_descr_;
+    };
 };
+
+template<typename Tlength_>
+PyArray_Descr* MatrixSpaceBase::CollectorResultConverter<Tlength_>::result_type_descr_(0);
 
 template<typename Timpl_>
 class MatrixSpace: public MatrixSpaceBase
@@ -68,12 +144,10 @@ public:
     class Builders
     {
     public:
+        typedef CollectorResultConverter<length_type> collector_result_converter_type; 
+        typedef typename collector_result_converter_type::result_element result_element;
+        typedef typename collector_result_converter_type::result_type result_type;
         typedef typename remove_const_first<typename impl_type::value_type>::type value_type;
-        typedef boost::python::list value_array_type;
-        typedef std::vector<length_type, util::pyarray_backed_allocator<length_type> >
-                distance_array_type;
-        typedef boost::tuple<value_array_type, distance_array_type>
-                result_type;
 
         struct collector: public std::binary_function<
                 typename impl_type::reference,
@@ -83,20 +157,25 @@ public:
             typedef typename position_type::value_type second_argument_type;
             typedef void result_type;
         public:
-            inline collector(typename Builders::result_type& result)
-                : sa_(boost::get<0>(result)),
-                  da_(boost::get<1>(result)) {}
+            inline collector(Builders::result_type& result)
+                : result_(result) {}
 
-            inline void operator()(typename impl_type::iterator i,
+            inline void operator()(typename impl_type::iterator const& i,
                     const typename position_type::value_type& d)
             {
-                sa_.append(boost::python::object(*i));
-                da_.push_back(d);
+                result_.push_back(result_element(
+                    boost::python::incref(boost::python::object(*i).ptr()), d));
+            }
+
+            inline void operator()(typename impl_type::const_iterator const& i,
+                    const typename position_type::value_type& d)
+            {
+                result_.push_back(result_element(
+                    boost::python::incref(boost::python::object(*i).ptr()), d));
             }
 
         private:
-            value_array_type& sa_;
-            distance_array_type& da_;
+            Builders::result_type& result_;
         };
 
         struct all_neighbors_collector: public std::binary_function<
@@ -106,72 +185,110 @@ public:
             typedef typename position_type::value_type second_argument_type;
             typedef void result_type;
         public:
-            inline all_neighbors_collector(typename Builders::result_type& result,
+            inline all_neighbors_collector(Builders::result_type& result,
                     const position_type& pos)
-                : sa_(boost::get<0>(result)),
-                  da_(boost::get<1>(result)),
+                : result_(result),
                   pos_(pos) {}
 
             inline void operator()(typename impl_type::iterator i)
             {
-                sa_.append(boost::python::object(*i));
-                da_.push_back(distance(pos_, (*i).second.position()) 
-                              - (*i).second.radius());
+                result_.push_back(result_element(
+                    boost::python::incref(boost::python::object(*i).ptr()),
+                    distance(pos_, (*i).second.position())
+                        - (*i).second.radius()));
+            }
 
+            inline void operator()(typename impl_type::const_iterator const& i)
+            {
+                result_.push_back(result_element(
+                    boost::python::incref(boost::python::object(*i).ptr()),
+                    distance(pos_, (*i).second.position())
+                        - (*i).second.radius()));
             }
 
             inline void operator()(typename impl_type::iterator i,
                     const position_type& d)
             {
-                sa_.append(boost::python::object(*i));
-                da_.push_back(distance(pos_, (*i).second.position() + d)
-                              - (*i).second.radius());
+                result_.push_back(result_element(
+                    boost::python::incref(boost::python::object(*i).ptr()),
+                    distance(pos_, (*i).second.position() + d)
+                        - (*i).second.radius()));
+            }
+
+            inline void operator()(typename impl_type::const_iterator const& i,
+                    const position_type& d)
+            {
+                result_.push_back(result_element(
+                    boost::python::incref(boost::python::object(*i).ptr()),
+                    distance(pos_, (*i).second.position() + d)
+                        - (*i).second.radius()));
             }
 
         private:
-            value_array_type& sa_;
-            distance_array_type& da_;
+            Builders::result_type& result_;
             position_type pos_;
         };
 
+        struct distance_comparator:
+                public std::binary_function<result_element, result_element, bool> {
+
+            bool operator()(result_element const& lhs, result_element const& rhs) const
+            {
+                return lhs.second < rhs.second;
+            }
+        };
 
     public:
         inline static void
         build_neighbors_array(result_type& retval,
-                              MatrixSpace& cntnr,
+                              impl_type const& cntnr,
                               const ::Sphere<length_type>& sphere)
         {
             collector col(retval);
-            take_neighbor(cntnr.impl_, col, sphere);
+            take_neighbor(cntnr, col, sphere);
+            std::sort(retval.begin(), retval.end(), distance_comparator());
         }
 
         inline static void
         build_neighbors_array_cyclic(result_type& retval,
-                MatrixSpace& cntnr, const ::Sphere<length_type>& sphere)
+                impl_type const& cntnr, const ::Sphere<length_type>& sphere)
         {
             collector col(retval);
-            take_neighbor_cyclic(cntnr.impl_, col, sphere);
+            take_neighbor_cyclic(cntnr, col, sphere);
+            std::sort(retval.begin(), retval.end(), distance_comparator());
         }
 
         inline static void
         build_all_neighbors_array(result_type& retval,
-                MatrixSpace& cntnr, const position_type& pos)
+                impl_type const& cntnr, const position_type& pos)
         {
             all_neighbors_collector col(retval, pos);
-            cntnr.impl_.each_neighbor(cntnr.impl_.index(pos), col);
+            cntnr.each_neighbor(cntnr.index(pos), col);
+            std::sort(retval.begin(), retval.end(), distance_comparator());
         }
 
         inline static void
         build_all_neighbors_array_cyclic(result_type& retval,
-                MatrixSpace& cntnr, const position_type& pos)
+                impl_type const& cntnr, const position_type& pos)
         {
             all_neighbors_collector col(retval, pos);
-            cntnr.impl_.each_neighbor_cyclic(cntnr.impl_.index(pos), col);
+            cntnr.each_neighbor_cyclic(cntnr.index(pos), col);
+            std::sort(retval.begin(), retval.end(), distance_comparator());
+        }
+
+        static void __register_converter()
+        {
+            collector_result_converter_type::__register_converter();
+            util::register_tuple_converter<value_type>();
+            util::register_tuple_converter<typename impl_type::value_type>();
         }
 
     private:
         Builders() {}
+
+    private:
     };
+
 
 public:
     MatrixSpace(typename impl_type::length_type world_size,
@@ -227,17 +344,16 @@ public:
     typename Builders::result_type
     get_neighbors_within_radius(const position_type& pos, length_type radius)
     {
-        typename Builders::distance_array_type::allocator_type alloc;
+        typename Builders::result_type::allocator_type alloc;
 
         if (radius >= impl_.cell_size() / 2)
         {
             throw std::runtime_error("Radius must be smaller than the half of the cell size");
         }
 
-        typename Builders::result_type retval(
-            (typename boost::tuples::element<0, typename Builders::result_type>::type)typename boost::tuples::element<0, typename Builders::result_type>::type(),
-            typename boost::tuples::element<1, typename Builders::result_type>::type(alloc));
-        Builders::build_neighbors_array_cyclic(retval, *this,
+        typename Builders::result_type retval(alloc);
+
+        Builders::build_neighbors_array_cyclic(retval, impl_,
                 ::Sphere<length_type>( pos, radius ) );
 
         // take over the ownership of the arrays to the Numpy facility
@@ -248,12 +364,10 @@ public:
     typename Builders::result_type
     get_neighbors_cyclic(const position_type& pos)
     {
-        typename Builders::distance_array_type::allocator_type alloc;
+        typename Builders::result_type::allocator_type alloc;
+        typename Builders::result_type retval(alloc);
 
-       typename Builders::result_type retval(
-            (typename boost::tuples::element<0, typename Builders::result_type>::type)typename boost::tuples::element<0, typename Builders::result_type>::type(),
-            typename boost::tuples::element<1, typename Builders::result_type>::type(alloc));
-        Builders::build_all_neighbors_array_cyclic(retval, *this, pos);
+        Builders::build_all_neighbors_array_cyclic(retval, impl_, pos);
 
         // take over the ownership of the arrays to the Numpy facility
         alloc.giveup_ownership();
@@ -302,18 +416,9 @@ public:
     {
         using namespace boost::python;
 
+        Builders::__register_converter();
+
         util::register_tuple_converter<typename impl_type::value_type>();
-
-        util::register_tuple_converter<typename Builders::value_type>();
-
-        //util::register_multi_array_converter<
-        //    typename boost::tuples::element<0, typename Builders::result_type>::type>();
-        util::register_multi_array_converter<
-            typename boost::tuples::element<1, typename Builders::result_type>::type>();
-        // the following conversion is the same as the previous
-        // util::register_multi_array_converter<boost::tuples::element<2, Builders::result_type>::type>();
-
-        util::register_tuple_converter<typename Builders::result_type>();
 
         class_<MatrixSpace>(class_name, init<length_type, size_type>())
             .add_property("cell_size", &MatrixSpace::get_cell_size)
