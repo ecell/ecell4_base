@@ -1163,7 +1163,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         minShell = single.pid_particle_pair[1].radius * ( 1.0 + SINGLE_SHELL_FACTOR )
 
         closeNeighbors, distances = self.getNeighbors( singlepos, minShell,
-                                                       ignore=[single.shell[0],] )
+                                                       ignore=[single.domain_id,] )
         if __debug__:
             log.debug( "closeNeighbors: %s" % closeNeighbors )
         # This is a bit tricky, but the last one in closeNeighbors
@@ -1885,12 +1885,17 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
         '''
         Get neighbor domains within given radius.
+
+        ignore: domain ids.
         '''
 
         result = self.shellMatrix.get_neighbors_within_radius(pos, radius)
         return [self.domains[did] for did in uniq(s[0][1].did for s in result) if did not in ignore]
 
     def getNeighbors( self, pos, radius=numpy.inf, ignore=[] ):
+        '''
+        ignore: domain ids
+        '''
         result = self.shellMatrix.get_neighbors_cyclic(pos)
 
         seen = set(ignore)
@@ -1898,10 +1903,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         distances = []
 
         if len(result):
-            for i, item in enumerate(result):
-                if not item[0][0] in seen:
+            for item in result:
+                did = item[0][1].did
+                if not did in seen:
                     seen.add(item[0][0])
-                    neighbors.append(self.domains[item[0][1].did])
+                    neighbors.append(self.domains[did])
                     distances.append(item[1])
                     if item[1] > radius:
                         return neighbors, distances
