@@ -10,12 +10,14 @@ import sys
 s = EGFRDSimulator()
 #s = BDSimulator()
 
+N = 300
+
 L = 5e-6
 #L = 2e-6
 #L = 5e-8
 #L = 3e-7
 s.setWorldSize( L )
-s.setMatrixSize( 10 )
+s.setMatrixSize(int((N * 6) ** (1. / 3.)))
 
 box1 = CuboidalSurface( [0,0,0], [L,L,L] )
 # not supported yet
@@ -32,8 +34,8 @@ m.set_all_repulsive()
 
 s.setModel( m )
 
-s.throwInParticles( S, 150, box1 )
-s.throwInParticles( P, 150, box1 )
+s.throwInParticles( S, N / 2, box1 )
+s.throwInParticles( P, N / 2, box1 )
 
 l = Logger( s, 'dimer' )
 l.setParticleOutInterval( 1e-7 )
