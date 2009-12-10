@@ -1192,10 +1192,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             log.debug( "intruders: %s, closest: %s (dist=%g)" %\
                            (intruders, closest, closestDistance) )
 
-        bursted = []
+        burst = []
         if intruders:
-            bursted = self.burstNonMultis(intruders)
-            obj = self.formPairOrMulti(single, singlepos, bursted)
+            burst = self.burstNonMultis(intruders)
+
+            # make sure burst[0] is the closest.
+            if len(burst) >= 2:
+                dists = self.objDistanceArray(singlepos, burst)
+                burst = numpy.take(burst,dists.argsort())
+
+            obj = self.formPairOrMulti(single, singlepos, burst)
 
             if obj:
                 return
@@ -1206,9 +1212,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.updateSingle( single, singlepos, closest, closestDistance )
 
-        bursted = uniq( bursted )
-        burstedSingles = [ s for s in bursted if isinstance( s, Single ) ]
-        self.restoreSingleShells( burstedSingles )
+        burst = uniq( burst )
+        burstSingles = [ s for s in burst if isinstance( s, Single ) ]
+        self.restoreSingleShells( burstSingles )
             
         if __debug__:
             log.info( 'single shell %s dt %g.' %\
@@ -1681,7 +1687,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         assert False, 'do not reach here'
 
-    def formPair( self, single1, pos1, single2, bursted ):
+    def formPair( self, single1, pos1, single2, burst ):
         if __debug__:
            log.debug( 'trying to form %s' %
                   'Pair( %s, %s )' % ( single1.pid_particle_pair, 
@@ -1740,7 +1746,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # beautiful, a cleaner framework may be possible.
 
         closest, closestShellDistance = None, numpy.inf
-        for b in bursted:
+        for b in burst:
             if isinstance( b, Single ):
                 bpos = b.shell[1].position
                 d = self.distance( com, bpos ) \
@@ -1857,9 +1863,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             neighbors = self.getNeighborsWithinRadiusNoSort( objpos, radius,
                                                              ignore=[obj.domain_id] )
 
-            bursted = self.burstNonMultis( neighbors )
-            neighborDists = self.objDistanceArray( objpos, bursted )
-            neighbors = [ bursted[i] for i in 
+            burst = self.burstNonMultis( neighbors )
+            neighborDists = self.objDistanceArray( objpos, burst )
+            neighbors = [ burst[i] for i in 
                           ( neighborDists <= radius ).nonzero()[0] ]
 
             for obj in neighbors:
@@ -1874,7 +1880,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 if __debug__:
                     log.debug( '%s already added. skipping.' % obj )
         else:
-            assert False, 'do not reach here.'  # Pairs are bursted
+            assert False, 'do not reach here.'  # Pairs are burst
 
     def addToMulti( self, single, multi ):
         if __debug__:
