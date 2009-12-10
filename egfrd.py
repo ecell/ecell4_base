@@ -1914,7 +1914,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             for item in result:
                 did = item[0][1].did
                 if not did in seen:
-                    seen.add(item[0][0])
+                    seen.add(did)
                     neighbors.append(self.domains[did])
                     distances.append(item[1])
                     if item[1] > radius:
