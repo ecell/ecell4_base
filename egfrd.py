@@ -555,6 +555,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.domains = { None: None }
 
+        if __debug__:
+            self.event_count = dict(
+                single=0,
+                pair=0,
+                multi=0)
         self.reset()
 
     def setWorldSize( self, size ):
@@ -1122,8 +1127,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         return newpos
 
-
     def fireSingle( self, single ):
+        if __debug__:
+            self.event_count['single'] += 1
+            log.info('fireSingle: (%d) eventType %s' % (
+                self.event_count['single'], single.eventType))
+
         # Reaction.
         if single.eventType == EventType.REACTION:
             if __debug__:
@@ -1250,10 +1259,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                         Shell(singlepos, shellSize, single.domain_id)))
 
     def firePair( self, pair ):
-        assert self.checkObj( pair )
-
         if __debug__:
-            log.info( 'fire: %s eventType %s' % ( pair, pair.eventType ) )
+            self.event_count['pair'] += 1
+            log.info('firePair: (%d) eventType %s' % (
+                self.event_count['pair'], pair.eventType))
+
+        assert self.checkObj( pair )
 
         particle1 = pair.single1.pid_particle_pair
         particle2 = pair.single2.pid_particle_pair
@@ -1307,7 +1318,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 0. Reaction
         #
         if pair.eventType == EventType.REACTION:
-
             if __debug__:
                 log.info( 'reaction' )
 
@@ -1442,7 +1452,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         single2.initialize(self.t)
 
         if __debug__:
-            log.debug("firePair: #1 { %s: %s => %s } #2 { %s: %s => %s }" % (single1, particle1[1].position, newpos1, single2, particle2[1].position, newpos2))
+            log.debug("firePair: #1 { %s: %s => %s }" % (single1, particle1[1].position, newpos1))
+            log.debug("firePair: #2 { %s: %s => %s }" % (single2, particle2[1].position, newpos2))
 
         self.domains[single1.domain_id] = single1
         self.domains[single2.domain_id] = single2
@@ -1459,36 +1470,33 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return
 
     def fireMulti( self, multi ):
+        if __debug__:
+            self.event_count['multi'] += 1
+            event_type = ''
+            if multi.sim.lastReaction:
+                event_type = 'reaction'
+            elif multi.sim.escaped:
+                event_type = 'escaped'
+            log.info('fireMulti: (%d) %s' % (
+                self.event_count['multi'], event_type))
 
         sim = multi.sim
 
         sim.step()
-        #sim.sync()
 
         if sim.lastReaction:
-            if __debug__:
-                log.info( 'bd reaction' )
-
             self.breakUpMulti( multi )
             self.reactionEvents += 1
             self.lastReaction = sim.lastReaction
             return
 
         if sim.escaped:
-            if __debug__:
-                log.info( 'multi particle escaped.' )
-
             self.breakUpMulti( multi )
             return
-
-        #if __debug__:
-        #   log.info( 'multi stepped %d steps, duration %g, dt = %g' %
-        #          ( additionalSteps + 1, sim.t - startT + sim.dt, dt ) )
 
         self.addMultiEvent(multi)
 
         return
-
 
     def breakUpMulti( self, multi ):
         self.removeFromShellMatrix( multi )
