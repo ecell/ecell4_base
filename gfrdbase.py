@@ -18,7 +18,7 @@ import os
 import logging
 import logging.handlers
 
-import myrandom as rng
+import myrandom
 
 __all__ = [
     'log',
@@ -90,7 +90,7 @@ def p_free( r, t, D ):
 
 def drawR_free( t, D ):
     ro = math.sqrt( 2.0 * D * t )
-    return rng.normal( 0.0, ro, 3 )
+    return myrandom.normal( 0.0, ro, 3 )
 
 
 class NoSpace( Exception ):
@@ -339,7 +339,9 @@ class ParticleSimulatorBase( object ):
                     if __debug__:
                         log.info( '%d-th particle rejected.' %i )
             
-            self.createParticle(st.id, position)
+            p = self.createParticle(st.id, position)
+            if __debug__:
+                log.info(p)
 
     def placeParticle( self, st, pos ):
         species = self.speciesList[st.id]
