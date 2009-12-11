@@ -14,8 +14,7 @@ from gfrdbase import *
 from utils import *
 from cObjectMatrix import ObjectMatrix
 from bd import BDSimulatorCoreBase
-
-from numpy.random import uniform
+import myrandom
 
 import logging
 import os
@@ -192,7 +191,7 @@ class Single( object ):
     def drawR( self, dt, shellSize):
         assert dt >= 0
         a = shellSize - self.pid_particle_pair[1].radius
-        rnd = uniform()
+        rnd = myrandom.uniform()
         gf = FirstPassageGreensFunction( self.pid_particle_pair[1].D )
         gf.seta(a)
         try:
@@ -207,7 +206,7 @@ class Single( object ):
             return numpy.inf
         if self.k_tot == numpy.inf:
             return 0.0
-        rnd = uniform()
+        rnd = myrandom.uniform()
         dt = ( 1.0 / self.k_tot ) * math.log( 1.0 / rnd )
         return dt
 
@@ -215,8 +214,8 @@ class Single( object ):
         gf = FirstPassageGreensFunction( self.pid_particle_pair[1].D )
         gf.seta(a)
 
+        rnd = myrandom.uniform()
         try:
-            rnd = uniform()
             return gf.drawTime( rnd )
         except Exception, e:
             raise Exception, 'gf.drawTime() failed; %s; rnd=%g, %s' %\
@@ -238,7 +237,7 @@ class Single( object ):
         k_array = numpy.add.accumulate( k_array )
         k_max = k_array[-1]
 
-        rnd = uniform()
+        rnd = myrandom.uniform()
         i = numpy.searchsorted( k_array, rnd * k_max )
 
         return self.reactiontypes[i]
@@ -396,27 +395,27 @@ class Pair( object ):
 
 
     def drawTime_single( self, sgf ):
-        rnd = uniform()
+        rnd = myrandom.uniform()
         return sgf.drawTime( rnd )
 
     def drawTime_pair( self, pgf, r0 ):
-        rnd = uniform()
+        rnd = myrandom.uniform()
         #print 'r0 = ', r0, ', rnd = ', rnd[1],\
         #    pgf.dump()
         return pgf.drawTime( rnd, r0 )
 
     def drawEventType( self, pgf, r0, t ):
-        rnd = uniform()
+        rnd = myrandom.uniform()
         return pgf.drawEventType( rnd, r0, t )
 
     def drawR_single( self, sgf, t ):
-        rnd = uniform()
+        rnd = myrandom.uniform()
         try:
             r = sgf.drawR( rnd, t )
             while r > self.a_R: # redraw; shouldn't happen often
                 if __debug__:
                     log.info( 'drawR_single: redraw' )
-                rnd = uniform()
+                rnd = myrandom.uniform()
                 r = sgf.drawR( rnd, t )
         except Exception, e:
             raise Exception,\
@@ -434,7 +433,7 @@ class Pair( object ):
         if hasattr( gf, 'seta' ):  # FIXME: not clean
             gf.seta( a )
 
-        rnd = uniform()
+        rnd = myrandom.uniform()
         try:
             r = gf.drawR( rnd, r0, t )
             # redraw; shouldn't happen often
@@ -442,7 +441,7 @@ class Pair( object ):
                 if __debug__:
                     log.info( 'drawR_pair: redraw' )
                 #self.sim.rejectedMoves += 1  #FIXME:
-                rnd = uniform()
+                rnd = myrandom.uniform()
                 r = gf.drawR( rnd, r0, t )
         except Exception, e:
             raise Exception,\
@@ -1341,7 +1340,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 
                 species3 = pair.rt.products[0]
 
-                rnd = uniform( size=2 )
+                rnd = myrandom.uniform( size=2 )
 
                 # calculate new R
             
@@ -1395,7 +1394,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 1 Escaping through a_r.
         if pair.eventType == EventType.ESCAPE:
 
-            rnd = uniform( size=4 )
+            rnd = myrandom.uniform( size=4 )
 
             # calculate new R
             
@@ -1424,7 +1423,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 2 escaping through a_R.
         elif pair.eventType == 2:
 
-            rnd = uniform( size = 4 )
+            rnd = myrandom.uniform( size = 4 )
 
             # calculate new r
             r = pair.drawR_pair( r0, pair.dt, pair.a_r )
@@ -1580,7 +1579,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             oldCoM = self.calculatePairCoM(pair)
             r0 = self.distance(pos1, pos2)
             
-            rnd = uniform( size = 4 )
+            rnd = myrandom.uniform( size = 4 )
 
             sgf = FirstPassageGreensFunction(pair.D_R)
             sgf.seta(pair.a_R)

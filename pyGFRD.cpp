@@ -17,6 +17,7 @@
 #include <boost/python/return_value_policy.hpp>
 #include <boost/python/reference_existing_object.hpp>
 #include <boost/python/return_by_value.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 #include <numpy/arrayobject.h>
 
@@ -45,6 +46,7 @@
 #include "peer/tuple_converters.hpp"
 #include "peer/set_indexing_suite.hpp"
 #include "peer/numpy/wrapped_multi_array.hpp"
+#include "peer/numpy/scalar_converters.hpp"
 #include "peer/Particle.hpp"
 #include "peer/Shell.hpp"
 #include "peer/MatrixSpace.hpp"
@@ -53,6 +55,7 @@
 #include "peer/ReactionRule.hpp"
 #include "peer/GeneratorIteratorWrapper.hpp"
 #include "peer/Exception.hpp"
+#include "peer/RandomNumberGenerator.hpp"
 
 typedef Real length_type;
 typedef Real D_type;
@@ -535,4 +538,8 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&, SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         ;
+
+    RandomNumberGenerator<boost::mt19937>::__register_class("RandomNumberGenerator");
+
+    peer::util::register_scalar_to_native_converters();
 }

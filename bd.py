@@ -4,9 +4,7 @@ import weakref
 
 import math
 
-import random
 import numpy
-from numpy.random import uniform
 
 from utils import *
 from surface import *
@@ -15,6 +13,8 @@ from gfrdbase import *
 import _gfrd
 
 import logging
+
+import myrandom as rng
 
 log = logging.getLogger( 'epdp' )
 
@@ -110,7 +110,7 @@ class BDSimulatorCoreBase( object ):
 
     def propagate( self ):
         self.particlesToStep = list(self.particleList)
-        random.shuffle(self.particlesToStep)
+        rng.shuffle(self.particlesToStep)
         while self.particlesToStep:
             pid = self.particlesToStep.pop() # take the last one
             pid_particle_pair = (pid, self.main.particleMatrix[pid])

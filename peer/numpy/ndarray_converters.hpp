@@ -130,7 +130,7 @@ namespace util
     } // namespace detail
 
     template<typename Tarray_>
-    void register_multi_array_converter()
+    inline void register_multi_array_converter()
     {
         static bool registered = false;
         if (!registered)

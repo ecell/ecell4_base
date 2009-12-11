@@ -2,7 +2,6 @@
 
 
 import math
-import random
 import sys
 
 import numpy
@@ -18,6 +17,8 @@ from cObjectMatrix import *
 import os
 import logging
 import logging.handlers
+
+import myrandom as rng
 
 __all__ = [
     'log',
@@ -89,7 +90,7 @@ def p_free( r, t, D ):
 
 def drawR_free( t, D ):
     ro = math.sqrt( 2.0 * D * t )
-    return numpy.random.normal( 0.0, ro, 3 )
+    return rng.normal( 0.0, ro, 3 )
 
 
 class NoSpace( Exception ):
@@ -331,7 +332,6 @@ class ParticleSimulatorBase( object ):
 
         for i in range( int( n ) ):
             while 1:
-                #position= numpy.random.uniform( 0, self.worldSize, 3 )
                 position = surface.randomPosition()
                 if not self.checkOverlap( position, species.radius ):
                     break
