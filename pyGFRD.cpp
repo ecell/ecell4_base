@@ -539,7 +539,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&, SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         ;
 
-    RandomNumberGenerator<boost::mt19937>::__register_class("RandomNumberGenerator");
+    peer::RandomNumberGenerator<boost::mt19937>::__register_class("RandomNumberGenerator");
 
     peer::util::register_scalar_to_native_converters();
 }
