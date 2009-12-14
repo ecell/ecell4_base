@@ -2,7 +2,7 @@
 from utils import *
 import math
 import numpy
-import myrandom as rng
+import myrandom
 
 class Surface:
     def __init__( self ):
@@ -93,9 +93,9 @@ class CuboidalSurface( Surface ):
         return dists[i]
 
     def randomPosition( self ):
-        return numpy.array( [ rng.uniform( self.origin[0], self.size[0] ),
-                              rng.uniform( self.origin[1], self.size[1] ),
-                              rng.uniform( self.origin[2], self.size[2] ) ]
+        return numpy.array( [ myrandom.uniform( self.origin[0], self.size[0] ),
+                              myrandom.uniform( self.origin[1], self.size[1] ),
+                              myrandom.uniform( self.origin[2], self.size[2] ) ]
                             )
 
     

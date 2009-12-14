@@ -14,7 +14,7 @@ import _gfrd
 
 import logging
 
-import myrandom as rng
+import myrandom
 
 log = logging.getLogger( 'epdp' )
 
@@ -110,7 +110,7 @@ class BDSimulatorCoreBase( object ):
 
     def propagate( self ):
         self.particlesToStep = list(self.particleList)
-        rng.shuffle(self.particlesToStep)
+        myrandom.shuffle(self.particlesToStep)
         while self.particlesToStep:
             pid = self.particlesToStep.pop() # take the last one
             pid_particle_pair = (pid, self.main.particleMatrix[pid])
@@ -154,7 +154,7 @@ class BDSimulatorCoreBase( object ):
 
                     p = self.getP_acct( rt, D12, radius12 )
 
-                    rnd = uniform()
+                    rnd = myrandom.uniform()
 
                     if p > rnd:
                         if __debug__:
@@ -188,7 +188,7 @@ class BDSimulatorCoreBase( object ):
         if not reactionTypes:
             return None  # no reaction
 
-        rnd = uniform() / self.dt
+        rnd = myrandom.uniform() / self.dt
 
         # handle the most common case efficiently.
         if len( reactionTypes ) == 1:  
@@ -250,7 +250,7 @@ class BDSimulatorCoreBase( object ):
 
             for i in range( 100 ):
 
-                rnd = uniform()
+                rnd = myrandom.uniform()
                 pairDistance = drawR_gbd( rnd, radius12, self.dt, D12 )
 
                 unitVector = randomUnitVector()

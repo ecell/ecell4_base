@@ -2,7 +2,7 @@
 import math
 import numpy
 import scipy
-import myrandom as rng
+import myrandom
 
 import _gfrd
 
@@ -84,16 +84,16 @@ def sphericalToCartesian( s ):
                           r * math.cos( theta ) ] )
 
 def randomUnitVectorS():
-    s = numpy.array( [ 1.0, rng.uniform( 0, Pi ),
-                       rng.uniform( 0, Pi2 ) ] )
+    s = numpy.array( [ 1.0, myrandom.uniform( 0, Pi ),
+                       myrandom.uniform( 0, Pi2 ) ] )
     return s
 
 def randomUnitVector():
-    v = rng.uniform( -1, 1, 3 )
+    v = myrandom.uniform( -1, 1, 3 )
     return _gfrd.normalize(v, 1)
 
 def randomVector( r ):
-    v = rng.uniform( -1, 1, 3 )
+    v = myrandom.uniform( -1, 1, 3 )
     return _gfrd.normalize(v, r)
 
 def length( a ):
