@@ -17,7 +17,7 @@ def uniform(min=0.0, max=1.0, size=None):
     retval = numpy.ndarray(dtype=numpy.float64, shape=size)
     f = retval.flat
     for i in range(len(f)):
-        f[i] = uniform(min, max)
+        f[i] = rng.uniform(min, max)
     return retval
 
 normal = rng.normal
