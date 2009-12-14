@@ -8,6 +8,8 @@
 #include <boost/random/normal_distribution.hpp>
 #include "utils/reference_or_instance.hpp"
 
+namespace peer {
+
 template<typename Trng_>
 struct RandomNumberGenerator
 {
@@ -105,5 +107,7 @@ struct RandomNumberGenerator
 
     reference_or_instance<Trng_> rng_;
 };
+
+} // namespace peer
 
 #endif /* PEER_RANDOMNUMBERGENERATOR_HPP */
