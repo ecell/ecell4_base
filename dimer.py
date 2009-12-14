@@ -48,6 +48,8 @@ l.log()
 #s.dumpPopulation()
 #l.log()
 
+import myrandom
+myrandom.seed(0)
 
 
 def profrun():
@@ -56,6 +58,9 @@ def profrun():
         s.step()
         #l.log()
         #logging.info( s.dumpPopulation() )
+    if __debug__:
+        for k, v in s.event_count.iteritems():
+            print k, v
 
 
 PROFMODE=True
