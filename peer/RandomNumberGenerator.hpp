@@ -6,7 +6,7 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/normal_distribution.hpp>
-#include "utils.hpp"
+#include "utils/reference_or_instance.hpp"
 
 template<typename Trng_>
 struct RandomNumberGenerator
