@@ -554,11 +554,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.domains = {}
 
-        if __debug__:
-            self.event_count = dict(
-                single=0,
-                pair=0,
-                multi=0)
+        self.event_count = dict(
+            single=0,
+            pair=0,
+            multi=0)
         self.reset()
 
     def setWorldSize( self, size ):
@@ -592,6 +591,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.t = 0.0
         self.dt = 0.0
         self.stepCounter = 0
+        self.single_steps = {EventType.ESCAPE:0, EventType.REACTION:0}
+        self.pair_steps = {0:0,1:0,2:0,3:0}
+        self.multi_steps = {EventType.ESCAPE:0, EventType.REACTION:0}
         self.zeroSteps = 0
         self.rejectedMoves = 0
         self.reactionEvents = 0
@@ -1127,8 +1129,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return newpos
 
     def fireSingle( self, single ):
+
+        self.event_count['single'] += 1
+        self.single_steps[single.eventType] += 1
+
         if __debug__:
-            self.event_count['single'] += 1
             log.info('fireSingle: (%d) eventType %s' % (
                 self.event_count['single'], single.eventType))
 
@@ -1274,8 +1279,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                         Shell(singlepos, shellSize, single.domain_id)))
 
     def firePair( self, pair ):
+        self.event_count['pair'] += 1
+        self.pair_steps[pair.eventType] += 1
+
         if __debug__:
-            self.event_count['pair'] += 1
             log.info('firePair: (%d) eventType %s' % (
                 self.event_count['pair'], pair.eventType))
 
@@ -1293,7 +1300,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.worldSize)
         oldCoM = self.applyBoundary( oldCoM )
 
-        # Three cases:
+        # Four cases:
         #  0. Reaction
         #  1. Escaping through a_r.
         #  2. Escaping through a_R.
@@ -1485,8 +1492,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return
 
     def fireMulti( self, multi ):
+        self.event_count['multi'] += 1
+            
+        sim = multi.sim
+
+        sim.step()
+
         if __debug__:
-            self.event_count['multi'] += 1
             event_type = ''
             if multi.sim.lastReaction:
                 event_type = 'reaction'
@@ -1495,18 +1507,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             log.info('fireMulti: (%d) %s' % (
                 self.event_count['multi'], event_type))
 
-        sim = multi.sim
-
-        sim.step()
-
         if sim.lastReaction:
             self.breakUpMulti( multi )
             self.reactionEvents += 1
             self.lastReaction = sim.lastReaction
+            self.multi_steps[EventType.REACTION] += 1
             return
 
         if sim.escaped:
             self.breakUpMulti( multi )
+            self.multi_steps[EventType.ESCAPE] += 1
             return
 
         self.addMultiEvent(multi)
@@ -1959,6 +1969,38 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         dists = numpy.array( [ self.objDistance( pos, obj ) for obj in objs ] )
         return dists
             
+
+    #
+    # statistics reporter
+    #
+
+    def print_report(self, out=None):
+        report = '''
+t = %g
+steps = %d 
+\tSingle:\t%d\t(escape: %d, reaction: %d)
+\tPair:\t%d\t(escape r: %d, R: %d, reaction pair: %d, single: %d)
+\tMulti:\t%d\t(escape: %d, reaction: %d)
+total reactions = %d
+rejected moves = %d
+'''\
+            % (self.t, self.stepCounter,
+               self.event_count['single'],
+               self.single_steps[EventType.ESCAPE],
+               self.single_steps[EventType.REACTION],
+               self.event_count['pair'],
+               self.pair_steps[1],
+               self.pair_steps[2],
+               self.pair_steps[0],
+               self.pair_steps[3],
+               self.event_count['multi'],
+               self.multi_steps[EventType.ESCAPE],
+               self.multi_steps[EventType.REACTION],
+               self.reactionEvents,
+               self.rejectedMoves
+               )
+
+        print >> out, report
 
     #
     # consistency checkers

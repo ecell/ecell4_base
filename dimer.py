@@ -58,10 +58,6 @@ def profrun():
         s.step()
         #l.log()
         #logging.info( s.dumpPopulation() )
-    if __debug__:
-        for k, v in s.event_count.iteritems():
-            print k, v
-
 
 PROFMODE=True
 
@@ -71,11 +67,14 @@ if PROFMODE:
     except:
         import profile
     profile.run('profrun()', 'fooprof')
+    s.print_report()
+
     import pstats
     pstats.Stats('fooprof').sort_stats('time').print_stats(40)
 
 else:
     profrun()
+    s.print_report()
 
 
 
