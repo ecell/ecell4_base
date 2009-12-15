@@ -1571,9 +1571,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             particle2 = pair.single2.pid_particle_pair
 
             pos1 = particle1[1].position
-            pos2 = particle2[2].position
+            pos2 = particle2[1].position
             D1 = particle1[1].D
-            D2 = particle2[2].D
+            D2 = particle2[1].D
 
             oldInterParticle = pos2 - pos1
             oldCoM = calculate_pair_CoM(pos1, pos2, D1, D2, self.worldSize)
