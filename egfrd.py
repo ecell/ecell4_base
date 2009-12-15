@@ -552,7 +552,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.userMaxShellSize = numpy.inf
 
-        self.domains = { None: None }
+        self.domains = {}
 
         if __debug__:
             self.event_count = dict(
@@ -2031,7 +2031,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             domains.remove(obj)
 
         # self.domains always include a None  --> this can change in future
-        if not (len(domains) == 1 and None in domains):
+        if len(domains):
             raise RuntimeError,\
                 'following domains in self.domains not in Event Scheduler: %s' \
                 % str(tuple(domains))
@@ -2116,8 +2116,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 numPairs += 1
             elif isinstance(d, Multi):
                 numMultis += 1
-            elif d == None:
-                pass
             else:
                 raise RuntimeError, 'NO NOT GET HERE'
 
