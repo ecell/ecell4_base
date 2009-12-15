@@ -554,10 +554,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.domains = {}
 
-        self.event_count = dict(
-            single=0,
-            pair=0,
-            multi=0)
         self.reset()
 
     def setWorldSize( self, size ):
@@ -1130,12 +1126,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def fireSingle( self, single ):
 
-        self.event_count['single'] += 1
         self.single_steps[single.eventType] += 1
 
         if __debug__:
-            log.info('fireSingle: (%d) eventType %s' % (
-                self.event_count['single'], single.eventType))
+            log.info('fireSingle: eventType %s' % single.eventType)
 
         # Reaction.
         if single.eventType == EventType.REACTION:
@@ -1279,12 +1273,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                         Shell(singlepos, shellSize, single.domain_id)))
 
     def firePair( self, pair ):
-        self.event_count['pair'] += 1
         self.pair_steps[pair.eventType] += 1
 
         if __debug__:
-            log.info('firePair: (%d) eventType %s' % (
-                self.event_count['pair'], pair.eventType))
+            log.info('firePair: eventType %s' % pair.eventType)
 
         assert self.checkObj( pair )
 
@@ -1492,7 +1484,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return
 
     def fireMulti( self, multi ):
-        self.event_count['multi'] += 1
             
         sim = multi.sim
 
@@ -1504,8 +1495,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 event_type = 'reaction'
             elif multi.sim.escaped:
                 event_type = 'escaped'
-            log.info('fireMulti: (%d) %s' % (
-                self.event_count['multi'], event_type))
+            log.info('fireMulti: %s' % event_type)
 
         if sim.lastReaction:
             self.breakUpMulti( multi )
@@ -1985,15 +1975,15 @@ total reactions = %d
 rejected moves = %d
 '''\
             % (self.t, self.stepCounter,
-               self.event_count['single'],
+               numpy.array(self.single_steps.values()).sum(),
                self.single_steps[EventType.ESCAPE],
                self.single_steps[EventType.REACTION],
-               self.event_count['pair'],
+               numpy.array(self.pair_steps.values()).sum(),
                self.pair_steps[1],
                self.pair_steps[2],
                self.pair_steps[0],
                self.pair_steps[3],
-               self.event_count['multi'],
+               numpy.array(self.multi_steps.values()).sum(),
                self.multi_steps[EventType.ESCAPE],
                self.multi_steps[EventType.REACTION],
                self.reactionEvents,
