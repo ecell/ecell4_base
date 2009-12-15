@@ -1567,16 +1567,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         if dt > 0.0:
 
-            single1 = pair.single1
-            single2 = pair.single2
-            particle1 = single1.particle
-            particle2 = single2.particle
+            particle1 = pair.single1.pid_particle_pair
+            particle2 = pair.single2.pid_particle_pair
 
-            pos1 = particle1.pos
-            pos2 = particle2.pos
+            pos1 = particle1[1].position
+            pos2 = particle2[2].position
+            D1 = particle1[1].D
+            D2 = particle2[2].D
 
             oldInterParticle = pos2 - pos1
-            oldCoM = self.calculatePairCoM(pair)
+            oldCoM = calculate_pair_CoM(pos1, pos2, D1, D2, self.worldSize)
             r0 = self.distance(pos1, pos2)
             
             rnd = myrandom.uniform( size = 4 )
@@ -1603,10 +1603,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             newpos1 = self.applyBoundary(newpos1)
             newpos2 = self.applyBoundary(newpos2)
             assert not self.checkOverlap(newpos1, particle1.species.radius,
-                                         ignore=[particle1, particle2])
+                                         ignore=[particle1[0], particle2[0]])
                                       
             assert not self.checkOverlap(newpos2, particle2.species.radius,
-                                         ignore=[particle1, particle2])
+                                         ignore=[particle1[0], particle2[0]])
                                       
             if __debug__:
                 shellSize = pair.shell[1].radius
