@@ -1632,9 +1632,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         # sort burst neighbors by distance
         dists = self.objDistanceArray(singlepos, neighbors)
-        n = dists.argsort()
-        dists = numpy.take(dists, n)
-        neighbors = numpy.take(neighbors, n)
+        if len(dists) >= 2:
+            n = dists.argsort()
+            dists = dists.take(n)
+            neighbors = numpy.take(neighbors, n)
 
         # First, try forming a Pair.
         if isinstance(neighbors[0], Single):
