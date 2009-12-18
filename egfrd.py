@@ -211,7 +211,12 @@ class Single( object ):
         return dt
 
     def drawEscapeTime(self, a):
-        gf = FirstPassageGreensFunction( self.pid_particle_pair[1].D )
+        D = self.pid_particle_pair[1].D
+
+        if D == 0:
+            return numpy.inf
+
+        gf = FirstPassageGreensFunction(D)
         gf.seta(a)
 
         rnd = myrandom.uniform()
@@ -710,18 +715,15 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def determineSingleEvent(self, single, t, shellSize):
         a = shellSize - single.pid_particle_pair[1].radius
-        if single.getD() == 0:
-            firstPassageTime = numpy.inf
-        else:
-            firstPassageTime = single.drawEscapeTime(a)
+        escape_time = single.drawEscapeTime(a)
             
-        reactionTime = single.drawReactionTime()
+        reaction_time = single.drawReactionTime()
 
-        if firstPassageTime <= reactionTime:
-            single.dt = firstPassageTime
+        if escape_time <= reaction_time:
+            single.dt = escape_time
             single.eventType = EventType.ESCAPE
         else:
-            single.dt = reactionTime
+            single.dt = reaction_time
             single.eventType = EventType.REACTION
 
         single.lastTime = t
