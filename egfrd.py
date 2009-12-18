@@ -1196,11 +1196,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if intruders:
             burst = self.burstNonMultis(intruders)
 
-            # make sure burst[0] is the closest.
-            if len(burst) >= 2:
-                dists = self.objDistanceArray(singlepos, burst)
-                burst = numpy.take(burst,dists.argsort())
-
             obj = self.formPairOrMulti(single, singlepos, burst)
 
             if obj:
@@ -1635,57 +1630,23 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def formPairOrMulti( self, single, singlepos, neighbors ):
         assert neighbors
 
-        # Try forming a Pair.
-        if isinstance( neighbors[0], Single ):
-            obj = self.formPair( single, singlepos, neighbors[0], neighbors[1:] )
+        # sort burst neighbors by distance
+        dists = self.objDistanceArray(singlepos, neighbors)
+        n = dists.argsort()
+        dists = numpy.take(dists, n)
+        neighbors = numpy.take(neighbors, n)
+
+        # First, try forming a Pair.
+        if isinstance(neighbors[0], Single):
+            obj = self.formPair(single, singlepos, neighbors[0], neighbors[1:])
             if obj:
                 return obj
 
+        # If a Pair is not formed, then try forming a Multi.
+        obj = self.formMulti(single, neighbors, dists)
+        if obj:
+            return obj
 
-        # Then, a Multi.
-        minShell = single.pid_particle_pair[1].radius * ( 1.0 + self.MULTI_SHELL_FACTOR )
-        neighborDists = self.objDistanceArray( singlepos, neighbors )
-        neighbors = [ neighbors[i] for i in 
-                      ( neighborDists <= minShell ).nonzero()[0] ]
-
-        if not neighbors:
-            return None
-
-        closest = neighbors[0]
-
-        if isinstance( closest, Single ):
-
-            multi = self.createMulti()
-            self.addToMulti( single, multi )
-            self.removeFromShellMatrix( single )
-            for neighbor in neighbors:
-                self.addToMultiRecursive( neighbor, multi )
-
-            multi.initialize( self.t )
-            
-            self.addMultiEvent( multi )
-
-            return multi
-
-        elif isinstance( closest, Multi ):
-
-            multi = closest
-            if __debug__:
-                log.info( 'multi merge %s %s' % ( single, multi ) )
-
-            self.addToMulti( single, multi )
-            self.removeFromShellMatrix( single )
-            for neighbor in neighbors[1:]:
-                self.addToMultiRecursive( neighbor, multi )
-
-            multi.initialize( self.t )
-
-            self.updateEvent( self.t + multi.dt, multi )
-
-            return multi
-
-
-        assert False, 'do not reach here'
 
     def formPair( self, single1, pos1, single2, burst ):
         if __debug__:
@@ -1847,6 +1808,53 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         return pair
     
+
+    def formMulti(self, single, neighbors, dists):
+
+        # Then, a Multi.
+        minShell = single.pid_particle_pair[1].radius * ( 1.0 + self.MULTI_SHELL_FACTOR )
+        if dists[0] > minShell:
+            return None
+
+        neighbors = [neighbors[i] for i in (dists <= minShell).nonzero()[0]]
+
+        closest = neighbors[0]
+
+        if isinstance( closest, Single ):
+
+            multi = self.createMulti()
+            self.addToMulti( single, multi )
+            self.removeFromShellMatrix( single )
+            for neighbor in neighbors:
+                self.addToMultiRecursive( neighbor, multi )
+
+            multi.initialize( self.t )
+            
+            self.addMultiEvent( multi )
+
+            return multi
+
+        elif isinstance( closest, Multi ):
+
+            multi = closest
+            if __debug__:
+                log.info( 'multi merge %s %s' % ( single, multi ) )
+
+            self.addToMulti( single, multi )
+            self.removeFromShellMatrix( single )
+            for neighbor in neighbors[1:]:
+                self.addToMultiRecursive( neighbor, multi )
+
+            multi.initialize( self.t )
+
+            self.updateEvent( self.t + multi.dt, multi )
+
+            return multi
+
+
+        assert False, 'do not reach here'
+
+
     def addToMultiRecursive( self, obj, multi ):
         if isinstance( obj, Single ):
             if obj.pid_particle_pair[0] in multi.sim.particleList:  # Already in the Multi.
