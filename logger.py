@@ -8,7 +8,7 @@ import logging
 
 INF = numpy.inf
 
-log = logging.getLogger( 'epdp' )
+log = logging.getLogger('ecell')
 
 
 class Logger:

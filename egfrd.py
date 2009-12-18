@@ -19,7 +19,7 @@ import myrandom
 import logging
 import os
 
-log = logging.getLogger( 'epdp' )
+log = logging.getLogger('ecell')
 
 SAFETY = 1.0 + 1e-5
 

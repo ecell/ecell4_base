@@ -16,7 +16,7 @@ import logging
 
 import myrandom
 
-log = logging.getLogger( 'epdp' )
+log = logging.getLogger('ecell')
 
 DEFAULT_DT_FACTOR = 1e-5
 

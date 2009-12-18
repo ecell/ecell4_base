@@ -37,7 +37,7 @@ __all__ = [
     'ParticleSimulatorBase',
     ]
 
-log = logging.getLogger( 'epdp' )
+log = logging.getLogger('ecell')
 
 def setupLogging():
     global log 
