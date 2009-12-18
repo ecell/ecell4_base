@@ -1811,7 +1811,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def formMulti(self, single, neighbors, dists):
 
-        # Then, a Multi.
         minShell = single.pid_particle_pair[1].radius * ( 1.0 + self.MULTI_SHELL_FACTOR )
         if dists[0] > minShell:
             return None
@@ -1820,6 +1819,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         closest = neighbors[0]
 
+        # if the closest to this Single is a Single, create a new Multi
         if isinstance( closest, Single ):
 
             multi = self.createMulti()
@@ -1834,6 +1834,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             return multi
 
+        # if the closest to this Single is a Multi, reuse the Multi.
         elif isinstance( closest, Multi ):
 
             multi = closest
