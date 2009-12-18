@@ -1249,9 +1249,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             
         shellSize = min( sqrtD1 / ( sqrtD1 + math.sqrt( D2 ) )
                          * ( distance - minRadius12 ) + minRadius1,
-                         shellDistance )
-        shellSize /= SAFETY
-        shellSize = max( shellSize, minRadius1 ) # not smaller than the radius
+                         shellDistance / SAFETY )
+        assert shellSize >= minRadius1
 
         return shellSize
 
