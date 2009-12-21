@@ -23,9 +23,6 @@ log = logging.getLogger('ecell')
 
 SAFETY = 1.0 + 1e-5
 
-MULTI_SHELL_FACTOR = 0.05
-SINGLE_SHELL_FACTOR = 0.1
-
 class Delegate( object ):
     def __init__( self, obj, method ):
         self.ref = ref( obj )
@@ -1167,7 +1164,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         # (2) Clear volume.
 
-        minShell = single.pid_particle_pair[1].radius * ( 1.0 + SINGLE_SHELL_FACTOR )
+        minShell = single.pid_particle_pair[1].radius * ( 1.0 + self.SINGLE_SHELL_FACTOR )
 
         intruders = []   # intruders are domains within minShell
         closest = None   # closest is the closest domain, excluding intruders.
