@@ -557,7 +557,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.stepCounter = 0
         self.single_steps = {EventType.ESCAPE:0, EventType.REACTION:0}
         self.pair_steps = {0:0,1:0,2:0,3:0}
-        self.multi_steps = {EventType.ESCAPE:0, EventType.REACTION:0}
+        self.multi_steps = {EventType.ESCAPE:0, EventType.REACTION:0, 2:0}
         self.zeroSteps = 0
         self.rejectedMoves = 0
         self.reactionEvents = 0
@@ -1483,6 +1483,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             
         sim = multi.sim
 
+        self.multi_steps[2] += 1  # multi_steps[2]: total multi steps
         sim.step()
 
         if __debug__:
@@ -1995,7 +1996,7 @@ rejected moves = %d
                self.pair_steps[2],
                self.pair_steps[0],
                self.pair_steps[3],
-               numpy.array(self.multi_steps.values()).sum(),
+               self.multi_steps[2], # total multi steps
                self.multi_steps[EventType.ESCAPE],
                self.multi_steps[EventType.REACTION],
                self.reactionEvents,
