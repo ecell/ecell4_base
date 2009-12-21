@@ -362,43 +362,6 @@ class Pair( object ):
                 pgf = FreePairGreensFunction( self.D_tot )
                 return pgf
 
-    def newPositions( self, CoM, newInterParticle, oldInterParticle ):
-        '''
-        Calculate new positions of the pair particles using
-        a new center-of-mass, a new inter-particle vector, and
-        an old inter-particle vector.
-        '''
-        #FIXME: need better handling of angles near zero and pi.
-
-        # I rotate the new interparticle vector along the
-        # rotation axis that is perpendicular to both the
-        # z-axis and the original interparticle vector for
-        # the angle between these.
-        
-        # the rotation axis is a normalized cross product of
-        # the z-axis and the original vector.
-        # rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
-
-        angle = vectorAngleAgainstZAxis( oldInterParticle )
-        if angle % numpy.pi != 0.0:
-            rotationAxis = crossproductAgainstZAxis( oldInterParticle )
-            rotationAxis = normalize( rotationAxis )
-            rotated = rotateVector( newInterParticle,
-                                    rotationAxis,
-                                    angle )
-        elif angle == 0.0:
-            rotated = newInterParticle
-        else:
-            rotated = numpy.array( [ newInterParticle[0], newInterParticle[1],
-                                     - newInterParticle[2] ] )
-            #rotated = newInterParticle * numpy.array( [ 1, 1, -1 ] )
-
-        newpos1 = CoM - rotated * ( self.single1.pid_particle_pair[1].D / self.D_tot )
-        newpos2 = CoM + rotated * ( self.single2.pid_particle_pair[1].D / self.D_tot )
-
-        return newpos1, newpos2
-
-
     def drawTime_single( self, sgf ):
         rnd = myrandom.uniform()
         return sgf.drawTime( rnd )
@@ -873,6 +836,41 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             pair.eventType = 3 
         else:
             raise AssertionError, "Never get here"
+
+    def calculatePairPos(self, pair, CoM, newInterParticle, oldInterParticle):
+        '''
+        Calculate new positions of the particles in the Pair using
+        a new center-of-mass, a new inter-particle vector, and
+        an old inter-particle vector.
+        '''
+        #FIXME: need better handling of angles near zero and pi.
+
+        # I rotate the new interparticle vector along the
+        # rotation axis that is perpendicular to both the
+        # z-axis and the original interparticle vector for
+        # the angle between these.
+        
+        # the rotation axis is a normalized cross product of
+        # the z-axis and the original vector.
+        # rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
+
+        angle = vectorAngleAgainstZAxis(oldInterParticle)
+        if angle % numpy.pi != 0.0:
+            rotationAxis = crossproductAgainstZAxis(oldInterParticle)
+            rotationAxis = normalize(rotationAxis)
+            rotated = rotateVector(newInterParticle, rotationAxis, angle)
+        elif angle == 0.0:
+            rotated = newInterParticle
+        else:
+            rotated = numpy.array([newInterParticle[0], newInterParticle[1],
+                                   - newInterParticle[2]])
+
+        D1 = pair.single1.pid_particle_pair[1].D
+        D2 = pair.single2.pid_particle_pair[1].D
+        newpos1 = CoM - rotated * (D1 / (D1 + D2))
+        newpos2 = CoM + rotated * (D2 / (D1 + D2))
+
+        return newpos1, newpos2
 
     def createMulti( self ):
         domain_id = self.domainIDGenerator()
@@ -1409,8 +1407,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
                 
-            newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
-                                                  oldInterParticle )
+            newpos1, newpos2 = self.calculatePairPos(pair, newCoM,
+                                                     newInterParticle,
+                                                     oldInterParticle)
             newpos1 = self.applyBoundary( newpos1 )
             newpos2 = self.applyBoundary( newpos2 )
 
@@ -1437,8 +1436,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             
             newCoM = oldCoM + displacement_R
                 
-            newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
-                                                  oldInterParticle )
+            newpos1, newpos2 = self.calculatePairPos(pair, newCoM, 
+                                                     newInterParticle,
+                                                     oldInterParticle)
             newpos1 = self.applyBoundary( newpos1 )
             newpos2 = self.applyBoundary( newpos2 )
 
@@ -1594,8 +1594,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
 
-            newpos1, newpos2 = pair.newPositions( newCoM, newInterParticle,
-                                                  oldInterParticle )
+            newpos1, newpos2 = self.calculatePairPos(pair, newCoM, 
+                                                     newInterParticle,
+                                                     oldInterParticle)
             newpos1 = self.applyBoundary(newpos1)
             newpos2 = self.applyBoundary(newpos2)
             assert not self.checkOverlap(newpos1, particle1.species.radius,
