@@ -10,7 +10,7 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-2.out 1.25e-7 2000000 &
 LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-3.out 1.25e-8 1000000 &
 '''
 
-
+import sys
 from egfrd import *
 from bd import *
 
@@ -76,10 +76,10 @@ def singlerun( T ):
         s.step()
 
     
-    if s.speciesList[C.id].pool.size != 0:
+    if len(s.particlePool[C.id]) != 0:
         return 0, s.t
 
-    distance = s.distance(s.speciesList[A.id].pool.positions[0], s.speciesList[B.id].pool.positions[0] )
+    distance = s.distance(s.particleMatrix[iter(s.particlePool[A.id]).next()].position, s.particleMatrix[iter(s.particlePool[B.id]).next()].position )
 
     return distance, s.t
     
