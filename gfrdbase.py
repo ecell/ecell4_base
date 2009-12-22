@@ -351,7 +351,7 @@ class ParticleSimulatorBase( object ):
         if self.checkOverlap( pos, radius ):
             raise NoSpace, 'overlap check failed'
             
-        particle = self.createParticle( species, pos )
+        particle = self.createParticle( st.id, pos )
         return particle
 
     def createParticle(self, sid, pos):
