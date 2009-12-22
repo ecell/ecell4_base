@@ -10,7 +10,7 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-2.out 1.25e-7 2000000 &
 LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-3.out 1.25e-8 1000000 &
 '''
 
-
+import sys
 from egfrd import *
 #from bd import *
 
@@ -57,7 +57,7 @@ def singlerun1( T ):
     s.setModel( m )
 
     particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
+    particleB = s.placeParticle( B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0] )
 
     endTime = T
     s.step()
@@ -72,7 +72,7 @@ def singlerun1( T ):
             print 'reaction'
             return 0.0, s.t
 
-    distance = s.distance( particleB.getPos(), particleA.getPos() )
+    distance = s.distance( s.particleMatrix[ particleB[0] ], s.particleMatrix[ particleA[ 0 ] ] )
 
     return distance, s.t
 
@@ -104,7 +104,7 @@ def singlerun2( T ):
     s.setModel( m )
 
     particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
+    particleB = s.placeParticle( B, [float(A['radius']) + float(B['radius'])+1e-23,0,0] )
 
     endTime = T
 
@@ -119,7 +119,7 @@ def singlerun2( T ):
             s.stop( endTime )
             break
 
-    distance = s.distance( particleB.getPos(), particleA.getPos() )
+    distance = s.distance( s.particleMatrix[ particleB[0] ], s.particleMatrix[ particleA[ 0 ] ] )
 
     return distance, s.t
 
