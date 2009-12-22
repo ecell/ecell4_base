@@ -1143,7 +1143,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             except NoSpace:
                 if __debug__:
                     log.info( 'single reaction; placing product failed.' )
-                self.addToShellMatrix( single )
+                self.shellMatrix.update( single.shell )
                 self.rejectedMoves += 1
                 single.reset()
                 self.addSingleEvent(single)
@@ -1310,7 +1310,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.removeDomain( reactingsingle )
                 self.fireSingleReaction( reactingsingle )
             except NoSpace:
-                self.addToShellMatrix( reactingsingle )
+                self.shellMatrix.update( reactingsingle.shell )
                 self.rejectedMoves += 1
                 reactingsingle.dt = 0
                 self.addSingleEvent( reactingsingle )
