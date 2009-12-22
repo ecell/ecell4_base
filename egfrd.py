@@ -890,7 +890,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.moveShell(new_sid_shell_pair)
         self.moveParticle(new_pid_particle_pair)
 
-    def removeFromShellMatrix( self, obj ):
+    def removeDomain( self, obj ):
         del self.domains[obj.domain_id]
         for shell_id, _ in obj.shell_list:
             del self.shellMatrix[shell_id]
@@ -1137,7 +1137,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.propagateSingle( single, r )
 
             try:
-                self.removeFromShellMatrix( single )
+                self.removeDomain( single )
                 self.fireSingleReaction( single )
                 return
             except NoSpace:
@@ -1307,7 +1307,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.addSingleEvent( theothersingle )
 
             try:
-                self.removeFromShellMatrix( reactingsingle )
+                self.removeDomain( reactingsingle )
                 self.fireSingleReaction( reactingsingle )
             except NoSpace:
                 self.addToShellMatrix( reactingsingle )
@@ -1370,7 +1370,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 raise NotImplementedError,\
                       'num products >= 2 not supported.'
 
-            self.removeFromShellMatrix( pair )
+            self.removeDomain( pair )
 
             return
 
@@ -1446,7 +1446,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         assert self.checkPairPos(pair, newpos1, newpos2, oldCoM, pair.shell[1].radius)
 
-        self.removeFromShellMatrix( pair )
+        self.removeDomain( pair )
 
         assert not self.checkOverlap(newpos1, particle1[1].radius,
                                      ignore=[particle1[0], particle2[0]])
@@ -1508,7 +1508,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return
 
     def breakUpMulti( self, multi ):
-        self.removeFromShellMatrix( multi )
+        self.removeDomain( multi )
 
         singles = []
         for pid in multi.sim.particleList:
@@ -1618,7 +1618,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         single1.initialize( self.t )
         single2.initialize( self.t )
         
-        self.removeFromShellMatrix( pair )
+        self.removeDomain( pair )
         assert self.shellMatrix[single1.shell[0]].radius == single1.shell[1].radius
         assert self.shellMatrix[single2.shell[0]].radius == single2.shell[1].radius
         self.moveSingle(single1, single1.pid_particle_pair[1].position)
@@ -1787,8 +1787,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.determinePairEvent(pair, self.t, pos1, pos2, shellSize)
 
-        self.removeFromShellMatrix( single1 )
-        self.removeFromShellMatrix( single2 )
+        self.removeDomain( single1 )
+        self.removeDomain( single2 )
 
         self.addPairEvent( pair )
         # single1 will be removed by the scheduler.
@@ -1824,7 +1824,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             multi = self.createMulti()
             self.addToMulti( single, multi )
-            self.removeFromShellMatrix( single )
+            self.removeDomain( single )
             for neighbor in neighbors:
                 self.addToMultiRecursive( neighbor, multi )
 
@@ -1842,7 +1842,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 log.info( 'multi merge %s %s' % ( single, multi ) )
 
             self.addToMulti( single, multi )
-            self.removeFromShellMatrix( single )
+            self.removeDomain( single )
             for neighbor in neighbors[1:]:
                 self.addToMultiRecursive( neighbor, multi )
 
@@ -1864,7 +1864,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             objpos = obj.shell[1].position
             
             self.addToMulti( obj, multi )
-            self.removeFromShellMatrix( obj )
+            self.removeDomain( obj )
             self.removeEvent( obj )
 
             radius = obj.pid_particle_pair[1].radius *\
@@ -1883,7 +1883,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         elif isinstance( obj, Multi ):
             if obj.sim.particleList.isdisjoint(multi.sim.particleList):
                 self.mergeMultis(obj, multi)
-                self.removeFromShellMatrix(obj)
+                self.removeDomain(obj)
                 self.removeEvent(obj)
             else:
                 if __debug__:
