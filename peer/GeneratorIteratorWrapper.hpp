@@ -258,7 +258,7 @@ PyTypeObject GeneratorIteratorWrapper<Tgen_>::__class__ = {
     0,                  /* tp_init */
     0,                  /* tp_alloc */
     0,                  /* tp_new */
-    PyObject_Del        /* tp_free */
+    0                   /* tp_free */
 };
 
 } } // namespace peer::util

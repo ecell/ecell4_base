@@ -44,14 +44,14 @@ struct seq_to_reactants_converter
         case 1:
             data->stage1.convertible = new(data->storage.bytes) native_type(
                 extract<native_type::value_type>(
-                    object(borrowed(PySequence_GetItem(ptr, 0)))));
+                    object(handle<>(PySequence_GetItem(ptr, 0)))));
             break;
         case 2:
             data->stage1.convertible = new(data->storage.bytes) native_type(
                 extract<native_type::value_type>(
-                    object(borrowed(PySequence_GetItem(ptr, 0)))),
+                    object(handle<>(PySequence_GetItem(ptr, 0)))),
                 extract<native_type::value_type>(
-                    object(borrowed(PySequence_GetItem(ptr, 1)))));
+                    object(handle<>(PySequence_GetItem(ptr, 1)))));
             break;
         default:
             // never get here 
@@ -85,7 +85,7 @@ struct iterable_to_stlcontainer_converter
         std::insert_iterator<native_type> inserter(*retval, retval->begin());
         for (PyObject* item; (item = PyIter_Next(iter));) {
             *inserter = extract<typename native_type::value_type>(
-                object(borrowed(item)));
+                object(handle<>(item)));
             ++inserter;
         }
         Py_XDECREF(iter);

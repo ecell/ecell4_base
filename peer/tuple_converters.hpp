@@ -93,7 +93,7 @@ namespace util
         };
 
 #define TUPLE_CONVERTERS_PYTUPLE_TO_TUPLE_TEMPLATE_EXTRACT(__z__, __n__, __v__) \
-        boost::python::extract<BOOST_PP_CAT(__v__,__n__)>(PySequence_GetItem(pyo, __n__))
+        boost::python::extract<BOOST_PP_CAT(__v__,__n__)>(boost::python::handle<>(PySequence_GetItem(pyo, __n__)).get())
 
 #define TUPLE_CONVERTERS_PYTUPLE_TO_TUPLE_TEMPLATE(__z__, __n__, __v__) \
         template<BOOST_PP_ENUM_PARAMS(__n__, typename T)> \
@@ -157,8 +157,8 @@ namespace util
                 void* storage(reinterpret_cast<
                     boost::python::converter::rvalue_from_python_storage<native_type>*>(data)->storage.bytes);
                 data->convertible = new (storage) native_type(
-                    boost::python::extract<Tfirst_>(PySequence_GetItem(pyo, 0)),
-                    boost::python::extract<Tsecond_>(PySequence_GetItem(pyo, 1)));
+                    boost::python::extract<Tfirst_>(boost::python::handle<>(PySequence_GetItem(pyo, 0)).get()),
+                    boost::python::extract<Tsecond_>(boost::python::handle<>(PySequence_GetItem(pyo, 1)).get()));
             }
         };
 

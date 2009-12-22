@@ -174,10 +174,18 @@ public:
             return -1;
         }
 
+        PyObject* items[3] = {
+            PySequence_GetItem(val, 0),
+            PySequence_GetItem(val, 1),
+            PySequence_GetItem(val, 2)
+        };
         const typename Timpl_::position_type tmp(
-            PyFloat_AsDouble(PySequence_GetItem(val, 0)),
-            PyFloat_AsDouble(PySequence_GetItem(val, 1)),
-            PyFloat_AsDouble(PySequence_GetItem(val, 2)));
+            PyFloat_AsDouble(items[0]),
+            PyFloat_AsDouble(items[1]),
+            PyFloat_AsDouble(items[2]));
+        Py_XDECREF(items[0]);
+        Py_XDECREF(items[1]);
+        Py_XDECREF(items[2]);
         if (PyErr_Occurred())
             return -1;
         self->impl_.position() = tmp;
@@ -468,7 +476,7 @@ PyTypeObject ParticleWrapper<Timpl_>::__class__ = {
     0,                  /* tp_init */
     0,                  /* tp_alloc */
     ParticleWrapper::__new__,  /*tp_new */
-    PyObject_Del        /* tp_free */
+    0                   /* tp_free */
 };
 
 } //namespace peer

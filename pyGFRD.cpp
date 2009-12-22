@@ -155,9 +155,9 @@ struct seq_to_position_converter
                           boost::python::converter::rvalue_from_python_storage<native_type>* data)
     {
         data->stage1.convertible = new(data->storage.bytes) native_type(
-            PyFloat_AsDouble(PySequence_GetItem(ptr, 0)),
-            PyFloat_AsDouble(PySequence_GetItem(ptr, 1)),
-            PyFloat_AsDouble(PySequence_GetItem(ptr, 2)));
+            PyFloat_AsDouble(boost::python::handle<>(PySequence_GetItem(ptr, 0)).get()),
+            PyFloat_AsDouble(boost::python::handle<>(PySequence_GetItem(ptr, 1)).get()),
+            PyFloat_AsDouble(boost::python::handle<>(PySequence_GetItem(ptr, 2)).get()));
     }
 };
 
