@@ -1330,8 +1330,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 
                 species3 = pair.rt.products[0]
 
-                rnd = myrandom.uniform( size=2 )
-
                 # calculate new R
             
                 sgf = FirstPassageGreensFunction(pair.D_R)
@@ -1339,7 +1337,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
                 r_R = pair.drawR_single( sgf, pair.dt )
             
-                displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
+                displacement_R_S = [ r_R, myrandom.uniform() * Pi,
+                                     myrandom.uniform() * 2 * Pi ]
                 displacement_R = sphericalToCartesian( displacement_R_S )
                 newCoM = oldCoM + displacement_R
                 
@@ -1384,8 +1383,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 1 Escaping through a_r.
         if pair.eventType == EventType.ESCAPE:
 
-            rnd = myrandom.uniform( size=4 )
-
             # calculate new R
             
             sgf = FirstPassageGreensFunction(pair.D_R)
@@ -1393,14 +1390,15 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             r_R = pair.drawR_single( sgf, pair.dt )
                 
-            displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
+            displacement_R_S = [r_R, myrandom.uniform() * Pi, 
+                                myrandom.uniform() * 2 * Pi]
             displacement_R = sphericalToCartesian( displacement_R_S )
             newCoM = oldCoM + displacement_R
 
             # calculate new r
-            theta_r = pair.drawTheta_pair( rnd[2], pair.a_r, r0, pair.dt, 
-                                           pair.a_r )
-            phi_r = rnd[3] * 2 * Pi
+            theta_r = pair.drawTheta_pair(myrandom.uniform(), pair.a_r, 
+                                          r0, pair.dt, pair.a_r )
+            phi_r = myrandom.uniform() * 2 * Pi
             newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
                 
@@ -1414,21 +1412,21 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 2 escaping through a_R.
         elif pair.eventType == 2:
 
-            rnd = myrandom.uniform( size = 4 )
-
             # calculate new r
             r = pair.drawR_pair( r0, pair.dt, pair.a_r )
             if __debug__:
                 log.debug( 'new r = %g' % r )
             #assert r >= pair.sigma
             
-            theta_r = pair.drawTheta_pair( rnd[0], r, r0, pair.dt, pair.a_r )
-            phi_r = rnd[1] * 2*Pi
+            theta_r = pair.drawTheta_pair(myrandom.uniform(), r, r0, pair.dt, 
+                                          pair.a_r)
+            phi_r = myrandom.uniform() * 2*Pi
             newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
                 
             # calculate new R
-            displacement_R_S = [ pair.a_R, rnd[2] * Pi, rnd[3] * 2 * Pi ]
+            displacement_R_S = [ pair.a_R, myrandom.uniform() * Pi, 
+                                 myrandom.uniform() * 2 * Pi ]
             displacement_R = sphericalToCartesian( displacement_R_S )
             
             newCoM = oldCoM + displacement_R
@@ -1573,22 +1571,22 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             oldCoM = calculate_pair_CoM(pos1, pos2, D1, D2, self.worldSize)
             r0 = self.distance(pos1, pos2)
             
-            rnd = myrandom.uniform( size = 4 )
-
             sgf = FirstPassageGreensFunction(pair.D_R)
             sgf.seta(pair.a_R)
 
             # calculate new CoM
             r_R = pair.drawR_single( sgf, dt )
             
-            displacement_R_S = [ r_R, rnd[0] * Pi, rnd[1] * 2 * Pi ]
+            displacement_R_S = [r_R, myrandom.uniform() * Pi, 
+                                 myrandom.uniform() * 2 * Pi]
             displacement_R = sphericalToCartesian( displacement_R_S )
             newCoM = oldCoM + displacement_R
             
             # calculate new interparticle
             r_r = pair.drawR_pair( r0, dt, pair.a_r )
-            theta_r = pair.drawTheta_pair( rnd[2], r_r, r0, dt, pair.a_r )
-            phi_r = rnd[3] * 2 * Pi
+            theta_r = pair.drawTheta_pair(myrandom.uniform(), r_r, r0, dt, 
+                                          pair.a_r)
+            phi_r = myrandom.uniform() * 2 * Pi
             newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
 

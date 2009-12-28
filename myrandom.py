@@ -11,14 +11,8 @@ __all__ = (
 rng = RandomNumberGenerator()
 
 def uniform(min=0.0, max=1.0, size=None):
-    global rng
-    if size is None:
-        return rng.uniform(min, max)
-    retval = numpy.ndarray(dtype=numpy.float64, shape=size)
-    f = retval.flat
-    for i in range(len(f)):
-        f[i] = rng.uniform(min, max)
-    return retval
+     global rng
+     return rng.uniform(min, max)
 
 normal = rng.normal
 seed = rng.seed

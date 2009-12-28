@@ -84,16 +84,15 @@ def sphericalToCartesian( s ):
                           r * math.cos( theta ) ] )
 
 def randomUnitVectorS():
-    s = numpy.array( [ 1.0, myrandom.uniform( 0, Pi ),
-                       myrandom.uniform( 0, Pi2 ) ] )
+    s = numpy.array([1.0, myrandom.uniform(0, Pi), myrandom.uniform(0, Pi2 )])
     return s
 
 def randomUnitVector():
-    v = myrandom.uniform( -1, 1, 3 )
+    v = [myrandom.uniform(), myrandom.uniform(), myrandom.uniform()]
     return _gfrd.normalize(v, 1)
 
 def randomVector( r ):
-    v = myrandom.uniform( -1, 1, 3 )
+    v = [myrandom.uniform(), myrandom.uniform(), myrandom.uniform()]
     return _gfrd.normalize(v, r)
 
 def length( a ):
