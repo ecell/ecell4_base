@@ -898,9 +898,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def moveShell(self, shell_id_shell_pair):
         self.shellMatrix.update(shell_id_shell_pair)
 
-    def calculateSingleMobilityRadius(self, single):
-        return single.shell[1].radius - single.pid_particle_pair[1].radius
-
     def addEvent( self, t, func, arg ):
         return self.scheduler.addEvent( t, func, arg )
 
@@ -1540,7 +1537,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         newpos = self.applyBoundary( newpos )
 
         assert self.distance( newpos, oldpos ) <=\
-            self.calculateSingleMobilityRadius(single)
+            single.shell[1].radius - single.pid_particle_pair[1].radius
         assert self.distance( newpos, oldpos ) - r <= r * 1e-6
         assert not self.checkOverlap(newpos, particleRadius,
                                      ignore=[single.pid_particle_pair[0]])
