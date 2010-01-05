@@ -1,15 +1,22 @@
 from egfrd import Single, Pair, Multi
 __all__ = [
+    'dump_species',
     'dump_particles',
+    'dump_particles_by_sid',
     'dump_domains',
     ]
 
+def dump_species(sim):
+    return sim.speciesList.iteritems()
+
+def dump_particles_by_sid(sim, sid):
+    species = sim.speciesList[sid]
+    for pid in pid_set:
+        particle = sim.particleMatrix[pid]
+        yield (pid, particle)
+
 def dump_particles(sim):
-    for sid, pid_set in sim.iteritems():
-        species = sim.speciesList[sid]
-        for pid in pid_set:
-            particle = sim.particleMatrix[pid]
-            yield (sid, (pid, particle))
+    return sim.particleMatrix
 
 def dump_domains(egfrdsim):
     for did, domain in egfrdsim.domains.iteritems():
