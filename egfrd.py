@@ -1592,10 +1592,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                                      oldInterParticle)
             newpos1 = self.applyBoundary(newpos1)
             newpos2 = self.applyBoundary(newpos2)
-            assert not self.checkOverlap(newpos1, particle1.species.radius,
+            assert not self.checkOverlap(newpos1, particle1[1].radius,
                                          ignore=[particle1[0], particle2[0]])
                                       
-            assert not self.checkOverlap(newpos2, particle2.species.radius,
+            assert not self.checkOverlap(newpos2, particle2[1].radius,
                                          ignore=[particle1[0], particle2[0]])
                                       
             if __debug__:
