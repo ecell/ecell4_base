@@ -421,6 +421,6 @@ class ParticleSimulatorBase( object ):
     def dumpPopulation( self ):
         buf = ''
         for sid, pool in self.particlePool.iteritems():
-            buf += sid + ':' + str(pool) + '\t'
+            buf += str(sid) + ':' + str(pool) + '\t'
 
         return buf
