@@ -91,11 +91,13 @@ class Logger:
         file.write( '#@ worldSize = %f\n' % float( self.sim.getWorldSize() ) )
         file.write( '#--------\n' )
 
-        for speciesName in self.sim.speciesList.keys():
-            species = self.sim.speciesList[ speciesName ]
-            for i in species.pool.positions:
+        for sid in self.sim.speciesList.keys():
+            pid_list = self.sim.particlePool[ sid ]
+            for i in pid_list:
+                particle = self.sim.particleMatrix[i]
+                species = self.sim.speciesList[ sid ]
                 file.write( '%s\t%20.14g %20.14g %20.14g %.15g\n' % 
-                            ( speciesName, i[0], i[1], i[2], species.radius ) )
+                            ( species.id, particle.position[0], particle.position[1], particle.position[2], species.radius ) )
 
             file.write( '#\n' )
 
