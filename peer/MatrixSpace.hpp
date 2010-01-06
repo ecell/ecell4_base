@@ -157,7 +157,7 @@ public:
             typedef typename position_type::value_type second_argument_type;
             typedef void result_type;
         public:
-            inline collector(Builders::result_type& result)
+            inline collector(typename Builders::result_type& result)
                 : result_(result) {}
 
             inline void operator()(typename impl_type::iterator const& i,
@@ -175,7 +175,7 @@ public:
             }
 
         private:
-            Builders::result_type& result_;
+            typename Builders::result_type& result_;
         };
 
         struct all_neighbors_collector: public std::binary_function<
@@ -185,7 +185,7 @@ public:
             typedef typename position_type::value_type second_argument_type;
             typedef void result_type;
         public:
-            inline all_neighbors_collector(Builders::result_type& result,
+            inline all_neighbors_collector(typename Builders::result_type& result,
                     const position_type& pos)
                 : result_(result),
                   pos_(pos) {}
@@ -225,7 +225,7 @@ public:
             }
 
         private:
-            Builders::result_type& result_;
+            typename Builders::result_type& result_;
             position_type pos_;
         };
 
