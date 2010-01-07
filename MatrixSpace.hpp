@@ -660,5 +660,30 @@ operator+=(
     return rhs;
 }
 
+namespace boost {
+
+template<typename T_, typename Tkey_,
+        template<typename, typename> class MFget_mapper_>
+struct range_iterator<MatrixSpace<T_, Tkey_, MFget_mapper_> >
+{
+    typedef typename MatrixSpace<T_, Tkey_, MFget_mapper_>::iterator type;
+};
+
+template<typename T_, typename Tkey_,
+        template<typename, typename> class MFget_mapper_>
+struct range_iterator<const MatrixSpace<T_, Tkey_, MFget_mapper_> >
+{
+    typedef typename MatrixSpace<T_, Tkey_, MFget_mapper_>::const_iterator type;
+};
+
+template<typename T_, typename Tkey_,
+        template<typename, typename> class MFget_mapper_>
+struct range_const_iterator<MatrixSpace<T_, Tkey_, MFget_mapper_> >
+{
+    typedef typename MatrixSpace<T_, Tkey_, MFget_mapper_>::const_iterator type;
+};
+
+} // namespace boost
+
 
 #endif /* MATRIX_SPACE_HPP */
