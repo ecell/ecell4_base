@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <boost/range/size.hpp>
+#include <boost/range/difference_type.hpp>
 
 #if defined(HAVE_UNORDERED_MAP)
 #include <unordered_map>
