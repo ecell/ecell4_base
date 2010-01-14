@@ -1239,7 +1239,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         shellSize = min( sqrtD1 / ( sqrtD1 + math.sqrt( D2 ) )
                          * ( distance - minRadius12 ) + minRadius1,
                          shellDistance / SAFETY )
-        assert shellSize >= minRadius1
+        if shellSize < minRadius1:
+            shellSize = minRadius1
 
         return shellSize
 
@@ -1257,8 +1258,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         shellSize = min( shellSize, self.getMaxShellSize() )
 
         self.determineSingleEvent(single, self.t, shellSize)
-        self.moveShell((single.shell[0],
-                        Shell(singlepos, shellSize, single.domain_id)))
+        new_shellid_shell_pair = (single.shell[0],
+                                  Shell(singlepos, shellSize, single.domain_id))
+        single.shell = new_shellid_shell_pair
+        self.moveShell(new_shellid_shell_pair)
 
     def firePair( self, pair ):
         self.pair_steps[pair.eventType] += 1
@@ -1460,6 +1463,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.domains[single1.domain_id] = single1
         self.domains[single2.domain_id] = single2
 
+        single1.shell[1].radius = single1.pid_particle_pair[1].radius
+        single2.shell[1].radius = single2.pid_particle_pair[1].radius
         self.moveSingle(single1, newpos1)
         self.moveSingle(single2, newpos2)
             
@@ -1548,16 +1553,22 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.updateEvent( self.t, single )
 
-    def breakUpPair( self, pair ):
+    def burstPair( self, pair ):
+        if __debug__:
+            log.debug('burstPair: %s', pair)
+
         assert self.t >= pair.lastTime
         assert self.t <= pair.lastTime + pair.dt
+
+        single1 = pair.single1
+        single2 = pair.single2
 
         dt = self.t - pair.lastTime 
 
         if dt > 0.0:
 
-            particle1 = pair.single1.pid_particle_pair
-            particle2 = pair.single2.pid_particle_pair
+            particle1 = single1.pid_particle_pair
+            particle2 = single2.pid_particle_pair
 
             pos1 = particle1[1].position
             pos2 = particle2[1].position
@@ -1594,34 +1605,24 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             newpos2 = self.applyBoundary(newpos2)
             assert not self.checkOverlap(newpos1, particle1[1].radius,
                                          ignore=[particle1[0], particle2[0]])
-                                      
             assert not self.checkOverlap(newpos2, particle2[1].radius,
                                          ignore=[particle1[0], particle2[0]])
-                                      
-            if __debug__:
-                shellSize = pair.shell[1].radius
-                assert self.checkPairPos(pair, newpos1, newpos2, oldCoM,\
-                                             shellSize)
+            assert self.checkPairPos(pair, newpos1, newpos2, oldCoM,\
+                                         pair.shell[1].radius)
 
-
-        return pair.single1, pair.single2
-
-    def burstPair( self, pair ):
-        if __debug__:
-            log.debug('burstPair: %s', pair)
-        single1, single2 = self.breakUpPair( pair )
         single1.initialize( self.t )
         single2.initialize( self.t )
         
         self.removeDomain( pair )
-        assert self.shellMatrix[single1.shell[0]].radius == single1.shell[1].radius
-        assert self.shellMatrix[single2.shell[0]].radius == single2.shell[1].radius
         assert single1.domain_id not in self.domains
         assert single2.domain_id not in self.domains
         self.domains[single1.domain_id] = single1
         self.domains[single2.domain_id] = single2
         self.moveSingle(single1, single1.pid_particle_pair[1].position)
         self.moveSingle(single2, single2.pid_particle_pair[1].position)
+
+        assert self.shellMatrix[single1.shell[0]].radius == single1.shell[1].radius
+        assert self.shellMatrix[single2.shell[0]].radius == single2.shell[1].radius
 
         return single1, single2
 
