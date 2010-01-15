@@ -88,11 +88,11 @@ def randomUnitVectorS():
     return s
 
 def randomUnitVector():
-    v = [myrandom.uniform(), myrandom.uniform(), myrandom.uniform()]
+    v = [myrandom.uniform(-1,1), myrandom.uniform(-1,1), myrandom.uniform(-1,1)]
     return _gfrd.normalize(v, 1)
 
 def randomVector( r ):
-    v = [myrandom.uniform(), myrandom.uniform(), myrandom.uniform()]
+    v = [myrandom.uniform(-1,1), myrandom.uniform(-1,1), myrandom.uniform(-1,1)]
     return _gfrd.normalize(v, r)
 
 def length( a ):
