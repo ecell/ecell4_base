@@ -6,6 +6,7 @@
 #include <iostream>
 #include <exception>
 #include <vector>
+#include <boost/format.hpp>
 
 #include "compat.h"
 
@@ -29,8 +30,11 @@
 
 static const Real ellipticTheta4Zero( const Real q )
 {
-    THROW_UNLESS( std::invalid_argument, fabs( q ) <= 1.0 );
-    
+    if ( fabs( q ) > 1.0 )
+    {
+        throw std::invalid_argument( ( boost::format( "fabs( %g ) <= 1.0" ) % q ).str() );
+    }
+
     // et4z( 1 - 1e4 ) ~= 7.2e-23
     // et4z( 1e-15 ) ~= 1 - 2e-15
     // et4z( 1e-16 ) ~= 1 - 2.2e-16
@@ -267,7 +271,10 @@ FirstPassageGreensFunction::p_survival_F( const Real t,
 const Real 
 FirstPassageGreensFunction::drawTime( const Real rnd ) const
 {
-    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
+    if ( rnd >= 1.0 || rnd < 0.0 )
+    {
+        throw std::invalid_argument( ( boost::format( "0.0 <= %g < 1.0" ) % rnd ).str() );
+    }
 
     const Real a( geta() );
 
@@ -387,8 +394,15 @@ FirstPassageGreensFunction::p_r_F( const Real r,
 const Real 
 FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const 
 {
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    if ( rnd >= 1.0 || rnd < 0.0 )
+    {
+        throw std::invalid_argument( ( boost::format( "0.0 <= %g < 1.0" ) % rnd ).str() );
+    }
+
+    if ( t < 0.0 )
+    {
+        throw std::invalid_argument( ( boost::format( "%g < 0.0" ) % t ).str() );
+    }
 
     const Real a( geta() );
     const Real D( getD() );
