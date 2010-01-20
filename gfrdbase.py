@@ -259,7 +259,6 @@ class ParticleSimulatorBase( object ):
             else:
                 retval = []
                 for rt in gen:
-                    for i in rt.products:
                     products = [ self.speciesList[st] for st in rt.products ]
                     species1 = self.speciesList[rt.reactants[0]]
                     if len( products ) == 1:
