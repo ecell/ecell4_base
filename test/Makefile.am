@@ -22,7 +22,6 @@ DynamicPriorityQueue_test.cpp\
 array_helper_test.cpp\
 filters_test.cpp\
 MatrixSpace_test.cpp\
-vmap_test.cpp\
 alltests.py\
 utils_test.py\
 freeFunctions_test.py\
