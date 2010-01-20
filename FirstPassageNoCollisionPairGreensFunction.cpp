@@ -14,6 +14,7 @@
 #include "compat.h"
 
 #include <boost/bind.hpp>
+#include <boost/format.hpp>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
@@ -48,7 +49,11 @@ FirstPassageNoCollisionPairGreensFunction::
 
 void FirstPassageNoCollisionPairGreensFunction::seta( const Real a )
 {
-    THROW_UNLESS( std::invalid_argument, a >= 0.0 );
+    if ( !(a >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "a >= 0.0 : a=%g" ) % a ).str() );
+    }
+
 
     this->a = a;
 }
@@ -336,10 +341,26 @@ FirstPassageNoCollisionPairGreensFunction::p_theta( const Real theta,
     {
         const Real a( this->geta() );
         
-        THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
-        THROW_UNLESS( std::invalid_argument, r >= 0 && r < a );
-        THROW_UNLESS( std::invalid_argument, r0 >= 0 && r0 < a );
-        THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+        if ( !(theta >= 0.0 && theta <= M_PI ) )
+        {
+            throw std::invalid_argument( ( boost::format( "theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g" ) % theta % M_PI ).str() );
+        }
+
+        if ( !(r >= 0 && r < a ) )
+        {
+            throw std::invalid_argument( ( boost::format( "r >= 0 && r < a : r=%g, a=%g" ) % r % a ).str() );
+        }
+
+        if ( !(r0 >= 0 && r0 < a ) )
+        {
+            throw std::invalid_argument( ( boost::format( "r0 >= 0 && r0 < a : r0=%g, a=%g" ) % r0 % a ).str() );
+        }
+
+        if ( !(t >= 0.0 ) )
+        {
+            throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+        }
+
     }
 
     if( t == 0.0 )
@@ -368,11 +389,27 @@ FirstPassageNoCollisionPairGreensFunction::ip_theta( const Real theta,
     {
         const Real a( this->geta() );
         
-        THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        if ( !(theta >= 0.0 && theta <= M_PI ) )
+        {
+            throw std::invalid_argument( ( boost::format( "theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g" ) % theta % M_PI ).str() );
+        }
+
         // r \in ( sigma, a )
-        THROW_UNLESS( std::invalid_argument, r >= 0.0 && r < a );
-        THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
-        THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+        if ( !(r >= 0.0 && r < a ) )
+        {
+            throw std::invalid_argument( ( boost::format( "r >= 0.0 && r < a : r=%g, a=%g" ) % r % a ).str() );
+        }
+
+        if ( !(r0 >= 0.0 && r0 < a ) )
+        {
+            throw std::invalid_argument( ( boost::format( "r0 >= 0.0 && r0 < a : r0=%g, a=%g" ) % r0 % a ).str() );
+        }
+
+        if ( !(t >= 0.0 ) )
+        {
+            throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+        }
+
     }
 
     if( t == 0.0 || theta == 0.0 )
@@ -567,13 +604,29 @@ FirstPassageNoCollisionPairGreensFunction::dp_theta( const Real theta,
     {
         const Real a( this->geta() );
         
-        THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        if ( !(theta >= 0.0 && theta <= M_PI ) )
+        {
+            throw std::invalid_argument( ( boost::format( "theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g" ) % theta % M_PI ).str() );
+        }
+
 
         // r \in [ sigma, a ]  ;  unlike p_theta,
         // defined at r == sigma and r == a.
-        THROW_UNLESS( std::invalid_argument, r >= 0.0 && r <= a );
-        THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
-        THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+        if ( !(r >= 0.0 && r <= a ) )
+        {
+            throw std::invalid_argument( ( boost::format( "r >= 0.0 && r <= a : r=%g, a=%g" ) % r % a ).str() );
+        }
+
+        if ( !(r0 >= 0.0 && r0 < a ) )
+        {
+            throw std::invalid_argument( ( boost::format( "r0 >= 0.0 && r0 < a : r0=%g, a=%g" ) % r0 % a ).str() );
+        }
+
+        if ( !(t >= 0.0 ) )
+        {
+            throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+        }
+
     }
 
     if( t == 0.0 )
@@ -599,11 +652,27 @@ FirstPassageNoCollisionPairGreensFunction::idp_theta( const Real theta,
     {
         const Real a( this->geta() );
         
-        THROW_UNLESS( std::invalid_argument, theta >= 0.0 && theta <= M_PI );
+        if ( !(theta >= 0.0 && theta <= M_PI ) )
+        {
+            throw std::invalid_argument( ( boost::format( "theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g" ) % theta % M_PI ).str() );
+        }
+
         // r \in [ sigma, a ]
-        THROW_UNLESS( std::invalid_argument, r >= 0.0 && r <= a );
-        THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
-        THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+        if ( !(r >= 0.0 && r <= a ) )
+        {
+            throw std::invalid_argument( ( boost::format( "r >= 0.0 && r <= a : r=%g, a=%g" ) % r % a ).str() );
+        }
+
+        if ( !(r0 >= 0.0 && r0 < a ) )
+        {
+            throw std::invalid_argument( ( boost::format( "r0 >= 0.0 && r0 < a : r0=%g, a=%g" ) % r0 % a ).str() );
+        }
+
+        if ( !(t >= 0.0 ) )
+        {
+            throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+        }
+
     }
 
     if( t == 0.0 || theta == 0.0 )
@@ -626,8 +695,16 @@ FirstPassageNoCollisionPairGreensFunction::drawTime( const Real rnd,
 {
    const Real a( this->geta() );
 
-   THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-   THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 <= a );
+   if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
+   {
+       throw std::invalid_argument( ( boost::format( "rnd <= 1.0 && rnd >= 0.0 : rnd=%g" ) % rnd ).str() );
+   }
+
+   if ( !(r0 >= 0.0 && r0 <= a ) )
+   {
+       throw std::invalid_argument( ( boost::format( "r0 >= 0.0 && r0 <= a : r0=%g, a=%g" ) % r0 % a ).str() );
+   }
+
 
    if( r0 == a || a == 0.0 )
    {
@@ -732,8 +809,16 @@ FirstPassageNoCollisionPairGreensFunction::drawR( const Real rnd,
 {
     const Real a( this->geta() );
 
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
+    if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "rnd <= 1.0 && rnd >= 0.0 : rnd=%g" ) % rnd ).str() );
+    }
+
+    if ( !(r0 >= 0.0 && r0 < a ) )
+    {
+        throw std::invalid_argument( ( boost::format( "r0 >= 0.0 && r0 < a : r0=%g, a=%g" ) % r0 % a ).str() );
+    }
+
 
     if( t == 0.0 )
     {
@@ -817,10 +902,26 @@ FirstPassageNoCollisionPairGreensFunction::drawTheta( const Real rnd,
     const Real a( this->geta() );
 
     // input parameter range checks.
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 >= 0.0 && r0 < a );
-    THROW_UNLESS( std::invalid_argument, r >= 0.0 && r <= a );
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "rnd <= 1.0 && rnd >= 0.0 : rnd=%g" ) % rnd ).str() );
+    }
+
+    if ( !(r0 >= 0.0 && r0 < a ) )
+    {
+        throw std::invalid_argument( ( boost::format( "r0 >= 0.0 && r0 < a : r0=%g, a=%g" ) % r0 % a ).str() );
+    }
+
+    if ( !(r >= 0.0 && r <= a ) )
+    {
+        throw std::invalid_argument( ( boost::format( "r >= 0.0 && r <= a : r=%g, a=%g" ) % r % a ).str() );
+    }
+
+    if ( !(t >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+    }
+
 
     // t == 0 means no move.
     if( t == 0.0 )

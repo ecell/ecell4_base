@@ -10,6 +10,7 @@
 #include "compat.h"
 
 #include <boost/bind.hpp>
+#include <boost/format.hpp>
 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
@@ -366,8 +367,16 @@ const Real BasicPairGreensFunction::drawTime( const Real rnd,
 {
     const Real sigma( this->getSigma() );
 
-    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 >= sigma );
+    if ( !(rnd < 1.0 && rnd >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "rnd < 1.0 && rnd >= 0.0 : rnd=%g" ) % rnd ).str() );
+    }
+
+    if ( !(r0 >= sigma ) )
+    {
+        throw std::invalid_argument( ( boost::format( "r0 >= sigma : r0=%g, sigma=%g" ) % r0 % sigma ).str() );
+    }
+
 
     Real low( 1e-100 );
     Real high( 100 );
@@ -437,9 +446,21 @@ const Real BasicPairGreensFunction::drawR( const Real rnd,
     const Real sigma( this->getSigma() );
     const Real D( this->getD() );
 
-    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 >= sigma );
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    if ( !(rnd < 1.0 && rnd >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "rnd < 1.0 && rnd >= 0.0 : rnd=%g" ) % rnd ).str() );
+    }
+
+    if ( !(r0 >= sigma ) )
+    {
+        throw std::invalid_argument( ( boost::format( "r0 >= sigma : r0=%g, sigma=%g" ) % r0 % sigma ).str() );
+    }
+
+    if ( !(t >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+    }
+
 
     if( t == 0.0 )
     {
@@ -846,10 +867,26 @@ const Real BasicPairGreensFunction::drawTheta( const Real rnd,
     const Real sigma( this->getSigma() );
 
     // input parameter range checks.
-    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r >= sigma );
-    THROW_UNLESS( std::invalid_argument, r0 >= sigma );
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    if ( !(rnd < 1.0 && rnd >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "rnd < 1.0 && rnd >= 0.0 : rnd=%g" ) % rnd ).str() );
+    }
+
+    if ( !(r >= sigma ) )
+    {
+        throw std::invalid_argument( ( boost::format( "r >= sigma : r=%g, sigma=%g" ) % r % sigma ).str() );
+    }
+
+    if ( !(r0 >= sigma ) )
+    {
+        throw std::invalid_argument( ( boost::format( "r0 >= sigma : r0=%g, sigma=%g" ) % r0 % sigma ).str() );
+    }
+
+    if ( !(t >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+    }
+
 
     // t == 0 means no move.
     if( t == 0.0 )

@@ -5,6 +5,8 @@
 #include <sstream>
 #include <iostream>
 
+#include <boost/format.hpp>
+
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_roots.h>
 
@@ -98,9 +100,21 @@ FreePairGreensFunction::drawR( const Real rnd,
                                const Real t ) const
 {
     // input parameter range checks.
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "rnd <= 1.0 && rnd >= 0.0 : rnd=%g" ) % rnd ).str() );
+    }
+
+    if ( !(r0 >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "r0 >= 0.0 : r0=%g" ) % r0 ).str() );
+    }
+
+    if ( !(t >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+    }
+
 
     // t == 0 means no move.
     if( t == 0.0 )
@@ -195,10 +209,26 @@ FreePairGreensFunction::drawTheta( const Real rnd,
                                    const Real t ) const
 {
     // input parameter range checks.
-    THROW_UNLESS( std::invalid_argument, rnd <= 1.0 && rnd >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, r0 >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "rnd <= 1.0 && rnd >= 0.0 : rnd=%g" ) % rnd ).str() );
+    }
+
+    if ( !(r >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "r >= 0.0 : r=%g" ) % r ).str() );
+    }
+
+    if ( !(r0 >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "r0 >= 0.0 : r0=%g" ) % r0 ).str() );
+    }
+
+    if ( !(t >= 0.0 ) )
+    {
+        throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+    }
+
 
     // t == 0 means no move.
     if( t == 0.0 )
