@@ -5,6 +5,7 @@ syntax: glob
 *.lo
 *.o
 *.so
+*.pyo
 *.pyc
 .libs
 .deps
