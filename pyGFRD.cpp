@@ -55,7 +55,7 @@
 #include "peer/ReactionRule.hpp"
 #include "peer/GeneratorIteratorWrapper.hpp"
 #include "peer/Exception.hpp"
-#include "peer/RandomNumberGenerator.hpp"
+#include "peer/GSLRandomNumberGenerator.hpp"
 
 typedef Real length_type;
 typedef Real D_type;
@@ -539,7 +539,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&, SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         ;
 
-    peer::RandomNumberGenerator<boost::mt19937>::__register_class("RandomNumberGenerator");
+    peer::GSLRandomNumberGenerator::__register_class<gsl_rng_mt19937>("RandomNumberGenerator");
 
     peer::util::register_scalar_to_native_converters();
 }

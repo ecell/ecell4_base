@@ -1,23 +1,24 @@
-#ifndef PEER_RANDOMNUMBERGENERATOR_HPP
-#define PEER_RANDOMNUMBERGENERATOR_HPP
+#ifndef PEER_GSLRANDOMNUMBERGENERATOR_HPP
+#define PEER_GSLRANDOMNUMBERGENERATOR_HPP
 
 #include <boost/python.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include "utils/reference_or_instance.hpp"
+#include <boost/shared_ptr.hpp>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 
 namespace peer {
 
-template<typename Trng_>
-struct RandomNumberGenerator
+struct GSLRandomNumberGenerator
 {
+    typedef boost::shared_ptr<gsl_rng> rng_handle;
+
+    virtual ~GSLRandomNumberGenerator() {}
+
     PyObject* normal(Real loc, Real scale, boost::python::object size)
     {
-        boost::normal_distribution<Real> dist(loc, scale);
         if (size.ptr() == Py_None) {
-            return boost::python::incref(boost::python::object(dist(*this)).ptr());
+            return boost::python::incref(boost::python::object(
+                gsl_ran_gaussian(rng_.get(), scale) + loc).ptr());
         } else {
             ssize_t len = 0;
             std::size_t num_samples = 1;
@@ -63,7 +64,7 @@ struct RandomNumberGenerator
             Real* data(reinterpret_cast<Real*>(PyArray_DATA(retval)));
             for (std::size_t i = 0; i < num_samples; ++i)
             {
-                data[i] = dist(*this);
+                data[i] = gsl_ran_gaussian(rng_.get(), scale) + loc;
             }
             return retval;
         }
@@ -71,48 +72,52 @@ struct RandomNumberGenerator
 
     Real uniform(Real min, Real max)
     {
-        return boost::uniform_real<Real>(min, max)(static_cast<Trng_&>(rng_));
+        return gsl_rng_uniform(rng_.get()) * (max - min) + min;
     }
 
     int uniform_int(int min, int max)
     {
-        return boost::uniform_int<int>(min, max)(static_cast<Trng_&>(rng_));
+        return gsl_rng_uniform_int(rng_.get(), max - min + 1) + min;
     }
 
     Real operator()()
     {
-        return uniform(0.0, 1.0);
+        return gsl_rng_uniform(rng_.get());
     }
 
-    void seed(typename Trng_::result_type val)
+    void seed(unsigned long int val)
     {
-        static_cast<Trng_&>(rng_).seed(val);
+        gsl_rng_set(rng_.get(), val);
     }
 
-    static RandomNumberGenerator create()
+    GSLRandomNumberGenerator(gsl_rng* rng): rng_(rng, gsl_rng_free) {}
+
+    template<gsl_rng_type const*& Prng_>
+    static GSLRandomNumberGenerator create()
     {
-        return RandomNumberGenerator(Trng_());
+        return GSLRandomNumberGenerator(gsl_rng_alloc(Prng_));
     }
 
-    RandomNumberGenerator(Trng_& rng): rng_(rng) {}
-
+    template<gsl_rng_type const*& Prng_>
     static void __register_class(const char* name)
     {
         using namespace boost::python;
-        class_<RandomNumberGenerator>(name, no_init)
-            .def("create", &RandomNumberGenerator::create,
+        class_<GSLRandomNumberGenerator>(name, no_init)
+            .def("create", &GSLRandomNumberGenerator::create<Prng_>,
                            return_value_policy<return_by_value>())
-            .def("normal", &RandomNumberGenerator::normal)
-            .def("seed", &RandomNumberGenerator::seed)
-            .def("uniform", &RandomNumberGenerator::uniform)
-            .def("uniform_int", &RandomNumberGenerator::uniform_int)
-            .def("__call__", &RandomNumberGenerator::operator())
+            .staticmethod("create")
+            .def("normal", &GSLRandomNumberGenerator::normal)
+            .def("seed", &GSLRandomNumberGenerator::seed)
+            .def("uniform", &GSLRandomNumberGenerator::uniform)
+            .def("uniform_int", &GSLRandomNumberGenerator::uniform_int)
+            .def("__call__", &GSLRandomNumberGenerator::operator())
             ;
+
     }
 
-    reference_or_instance<Trng_> rng_;
+    rng_handle rng_;
 };
 
 } // namespace peer
 
-#endif /* PEER_RANDOMNUMBERGENERATOR_HPP */
+#endif /* PEER_GSLRANDOMNUMBERGENERATOR_HPP */

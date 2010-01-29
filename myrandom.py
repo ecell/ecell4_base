@@ -8,7 +8,7 @@ __all__ = (
     'seed',
     )
 
-rng = RandomNumberGenerator()
+rng = RandomNumberGenerator.create()
 
 def uniform(min=0.0, max=1.0, size=None):
      global rng
