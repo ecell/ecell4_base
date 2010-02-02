@@ -192,36 +192,36 @@ public:
 
             inline void operator()(typename impl_type::iterator i)
             {
+                mapped_type object = (*i).second;
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(pos_, (*i).second.position())
-                        - (*i).second.radius()));
+                    object.calculateDistanceToSelf(pos_)));
             }
 
             inline void operator()(typename impl_type::const_iterator const& i)
             {
+                mapped_type object = (*i).second;
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(pos_, (*i).second.position())
-                        - (*i).second.radius()));
+                    object.calculateDistanceToSelf(pos_)));
             }
 
             inline void operator()(typename impl_type::iterator i,
                     const position_type& d)
             {
+                mapped_type object = (*i).second;
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(pos_, (*i).second.position() + d)
-                        - (*i).second.radius()));
+                    object.calculateDistanceToSelfWithOffset(pos_, d)));
             }
 
             inline void operator()(typename impl_type::const_iterator const& i,
                     const position_type& d)
             {
+                mapped_type object = (*i).second;
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(pos_, (*i).second.position() + d)
-                        - (*i).second.radius()));
+                    object.calculateDistanceToSelfWithOffset(pos_, d)));
             }
 
         private:
