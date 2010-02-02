@@ -95,7 +95,7 @@ public:
         switch (PyTuple_Size(arg))
         {
         default:
-            PyErr_SetString(PyExc_TypeError, "the number of arguments must be either 0 or 3");
+            PyErr_SetString(PyExc_TypeError, "the number of arguments must be either 0 or 4");
             return NULL;
 
         case 4:
@@ -275,12 +275,12 @@ public:
 
     static Py_ssize_t __sq_len__(PyObject *self)
     {
-        return 3;
+        return 4;
     }
 
     static PyObject* __sq_item__(PyObject *self, Py_ssize_t idx)
     {
-        if (idx < 0 || idx >= 3)
+        if (idx < 0 || idx >= 4)
         {
             PyErr_SetString(PyExc_IndexError, "index out of range");
             return NULL;
