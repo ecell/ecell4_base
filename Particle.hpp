@@ -26,6 +26,17 @@ struct Particle
     Particle(species_id_type const& species_id, sphere_type const& sphere)
         : sphere_(sphere), species_id_(species_id), D_(0.) {}
 
+    length_type calculateDistanceToSelf(position_type pos)
+    {
+        return sphere_.calculateDistanceToSelf(pos);
+    }
+
+    length_type calculateDistanceToSelfWithOffset(position_type pos, 
+                                                  position_type offset)
+    {
+        return sphere_.calculateDistanceToSelfWithOffset(pos, offset);
+    }
+
     position_type& position()
     {
         return sphere_.position();

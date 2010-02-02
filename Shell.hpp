@@ -25,6 +25,17 @@ struct Shell
     Shell(domain_id_type const& domain_id, sphere_type const& sphere)
         : sphere_(sphere), domain_id_(domain_id) {}
 
+    length_type calculateDistanceToSelf(position_type pos)
+    {
+        return sphere_.calculateDistanceToSelf(pos);
+    }
+
+    length_type calculateDistanceToSelfWithOffset(position_type pos, 
+                                                  position_type offset)
+    {
+        return sphere_.calculateDistanceToSelfWithOffset(pos, offset);
+    }
+
     position_type& position()
     {
         return sphere_.position();

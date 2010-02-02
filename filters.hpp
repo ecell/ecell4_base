@@ -30,9 +30,10 @@ public:
             return;
         }
 */
+        typename Toc_::mapped_type object = item.second;
         const typename sphere_type::length_type dist(
-            distance(cmp_.position(), item.second.position())
-            - item.second.radius());
+            (object).calculateDistanceToSelf(cmp_.position()));
+
         if (dist < cmp_.radius())
         {
             next_(i, dist);
@@ -86,9 +87,10 @@ public:
             return;
         }
 */
+        typename Toc_::mapped_type object = item.second;
+
         const typename sphere_type::length_type dist(
-            distance(cmp_.position(), item.second.position() + p)
-            - item.second.radius());
+            (object).calculateDistanceToSelfWithOffset(cmp_.position(), p));
         if (dist < cmp_.radius())
         {
             next_(i, dist);

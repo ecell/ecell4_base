@@ -19,6 +19,20 @@ public:
     Sphere(const position_type& position, const length_type& radius)
         : position_(position), radius_(radius) {}
 
+    length_type calculateDistanceToSelf(position_type pos)
+    {
+        return distance(pos, position_) - radius_;
+    }
+
+    length_type calculateDistanceToSelfWithOffset(position_type pos, 
+                                                  position_type offset)
+    {
+        // Because this sphere is on the other side of one of the periodic 
+        // boundaries compared to pos, add offset (for example (-L, 0, 0) to 
+        // position before calculating distance between this sphere and pos. 
+        return distance(pos, position_ + offset) - radius_;
+    }
+
     bool operator==(const Sphere& rhs) const
     {
         return position_ == rhs.position_ && radius_ == rhs.radius_;
