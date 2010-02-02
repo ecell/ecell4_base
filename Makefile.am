@@ -65,6 +65,7 @@ noinst_HEADERS = \
 	MatrixSpace.hpp\
 	Vector3.hpp\
 	Sphere.hpp\
+	Cylinder.hpp\
 	NetworkRules.hpp\
 	ReactionRule.hpp\
 	BasicNetworkRulesImpl.hpp\

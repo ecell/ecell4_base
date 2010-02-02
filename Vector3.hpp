@@ -143,6 +143,14 @@ inline T_ negate(T_ const& v, typename boost::enable_if<is_vector3<T_> >::type* 
     return retval;
 }
 
+template<typename T_>
+inline typename T_::value_type dot_product(T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+{
+    return multiply(p1[0], p2[0])
+           + multiply(p1[1], p2[1])
+           + multiply(p1[2], p2[2]);
+}
+
 template< typename T_ >
 inline typename detail::element_type_of< T_ >::type length_sq( T_ const& r )
 {

@@ -11,39 +11,40 @@
 #endif
 
 #include "Sphere.hpp"
+#include "Shape.hpp"
 
 template<typename T_, typename Td_, typename Tsid_>
 struct Particle
 {
-    typedef Sphere<T_> sphere_type;
+    typedef Sphere<T_> shape_type;
     typedef Td_ D_type;
     typedef Tsid_ species_id_type;
-    typedef typename sphere_type::position_type position_type;
-    typedef typename sphere_type::length_type length_type;
+    typedef typename shape_type::position_type position_type;
+    typedef typename shape_type::length_type length_type;
 
-    Particle(): sphere_(), species_id_() {}
+    Particle(): shape_(), species_id_() {}
 
-    Particle(species_id_type const& species_id, sphere_type const& sphere)
-        : sphere_(sphere), species_id_(species_id), D_(0.) {}
+    Particle(species_id_type const& species_id, shape_type const& shape)
+        : shape_(shape), species_id_(species_id), D_(0.) {}
 
     position_type& position()
     {
-        return sphere_.position();
+        return shape_.position();
     }
 
     position_type const& position() const
     {
-        return sphere_.position();
+        return shape_.position();
     }
 
     length_type& radius()
     {
-        return sphere_.radius();
+        return shape_.radius();
     }
 
     length_type const& radius() const
     {
-        return sphere_.radius();
+        return shape_.radius();
     }
 
     D_type& D()
@@ -56,14 +57,14 @@ struct Particle
         return D_;
     }
 
-    sphere_type& as_sphere()
+    shape_type& shape()
     {
-        return sphere_;
+        return shape_;
     }
 
-    sphere_type const& as_sphere() const
+    shape_type const& shape() const
     {
-        return sphere_;
+        return shape_;
     }
 
     species_id_type const& sid() const
@@ -78,7 +79,7 @@ struct Particle
 
     bool operator==(Particle const& rhs) const
     {
-        return species_id_ == rhs.sid() && sphere_ == rhs.as_sphere();
+        return species_id_ == rhs.sid() && shape_ == rhs.shape();
     }
 
     bool operator!=(Particle const& rhs) const
@@ -87,7 +88,7 @@ struct Particle
     }
 
 private:
-    sphere_type sphere_;
+    shape_type shape_;
     species_id_type species_id_;
     D_type D_;
 };
@@ -95,7 +96,7 @@ private:
 template<typename Tstrm_, typename Ttraits_, typename T_, typename Td_, typename Tsid_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle<T_, Td_, Tsid_>& v)
 {
-    strm << "Particle(" << v.as_sphere() << ", D=" << v.D() << ", " << v.sid() << ")";
+    strm << "Particle(" << v.shape() << ", D=" << v.D() << ", " << v.sid() << ")";
     return strm;
 }
 

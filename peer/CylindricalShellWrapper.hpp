@@ -1,5 +1,5 @@
-#ifndef PEER_SHELL_HPP
-#define PEER_SHELL_HPP
+#ifndef PEER_CYLINDRICAL_SHELL_WRAPPER_HPP
+#define PEER_CYLINDRICAL_SHELL_WRAPPER_HPP
 
 #include <cstddef>
 #include <string>
@@ -24,22 +24,25 @@
 #include "numpy/type_mappings.hpp"
 #include "pickle_support.hpp"
 
+/* This file is a modified version of peer/SphericalShellWrapper.hpp.
+ * It tried to move the methods that they share into a common base class, but 
+ * this failed because of all the static method pointers. */
 namespace peer {
 
 template<typename Timpl_>
-class ShellWrapper
+class CylindricalShellWrapper
 {
 public:
     struct to_python_converter
     {
         static PyObject* convert(Timpl_ const& impl)
         {
-            return ShellWrapper::create(impl);
+            return CylindricalShellWrapper::create(impl);
         }
 
         static PyTypeObject* get_pytype()
         {
-            return &ShellWrapper::__class__;
+            return &CylindricalShellWrapper::__class__;
         }
     };
 
@@ -47,7 +50,7 @@ public:
     {
         static void* convertible(PyObject* pyo)
         {
-            if (!PyObject_TypeCheck(pyo, &ShellWrapper::__class__))
+            if (!PyObject_TypeCheck(pyo, &CylindricalShellWrapper::__class__))
             {
                 return 0;
             }
@@ -60,7 +63,7 @@ public:
             void* storage(reinterpret_cast<
                 boost::python::converter::rvalue_from_python_storage<Timpl_>* >(
                     data)->storage.bytes);
-            new (storage) Timpl_(reinterpret_cast<ShellWrapper*>(pyo)->impl_);
+            new (storage) Timpl_(reinterpret_cast<CylindricalShellWrapper*>(pyo)->impl_);
             data->convertible = storage;
         }
     };
@@ -81,12 +84,12 @@ public:
 
     static PyObject* create()
     {
-        return reinterpret_cast<PyObject*>(new ShellWrapper());
+        return reinterpret_cast<PyObject*>(new CylindricalShellWrapper());
     }
 
     static PyObject* create(Timpl_ const& impl)
     {
-        return reinterpret_cast<PyObject*>(new ShellWrapper(impl));
+        return reinterpret_cast<PyObject*>(new CylindricalShellWrapper(impl));
     }
 
     static PyObject* __new__(PyTypeObject* klass, PyObject* arg, PyObject* kwarg)
@@ -95,19 +98,23 @@ public:
         switch (PyTuple_Size(arg))
         {
         default:
-            PyErr_SetString(PyExc_TypeError, "the number of arguments must be either 0 or 3");
+            PyErr_SetString(PyExc_TypeError, "the number of arguments must be either 0 or 5");
             return NULL;
 
-        case 3:
+        case 5:
             retval = create();
-            if (set_position(reinterpret_cast<ShellWrapper*>(retval), 
+            if (set_position(reinterpret_cast<CylindricalShellWrapper*>(retval), 
                         PyTuple_GetItem(arg, 0), 0)
-                || set_radius(reinterpret_cast<ShellWrapper*>(retval), 
+                || set_radius(reinterpret_cast<CylindricalShellWrapper*>(retval), 
                         PyTuple_GetItem(arg, 1), 0)
-                || set_did(reinterpret_cast<ShellWrapper*>(retval), 
-                        PyTuple_GetItem(arg, 2), 0))
+                || set_orientation(reinterpret_cast<CylindricalShellWrapper*>(retval), 
+                        PyTuple_GetItem(arg, 2), 0)
+                || set_size(reinterpret_cast<CylindricalShellWrapper*>(retval), 
+                        PyTuple_GetItem(arg, 3), 0)
+                || set_did(reinterpret_cast<CylindricalShellWrapper*>(retval), 
+                        PyTuple_GetItem(arg, 4), 0))
             {
-                ShellWrapper::operator delete(retval);
+                CylindricalShellWrapper::operator delete(retval);
                 return NULL;
             }
             break;
@@ -125,23 +132,23 @@ public:
         return reinterpret_cast<PyObject*>(retval);
     }
 
-    static PyObject* __str__(ShellWrapper* self)
+    static PyObject* __str__(CylindricalShellWrapper* self)
     {
         std::string retval(boost::lexical_cast<std::string>(self->impl_));
         return PyString_FromStringAndSize(retval.data(), retval.size());
     }
 
-    static PyObject* __repr__(ShellWrapper* self)
+    static PyObject* __repr__(CylindricalShellWrapper* self)
     {
         return __str__(self);
     }
 
-    static void __dealloc__(ShellWrapper* self)
+    static void __dealloc__(CylindricalShellWrapper* self)
     {
         delete self;
     }
 
-    static PyObject* get_position(ShellWrapper* self)
+    static PyObject* get_position(CylindricalShellWrapper* self)
     {
         typename Timpl_::position_type const& pos(self->impl_.position());
         const npy_intp dims[1] = { boost::size(pos) };
@@ -158,7 +165,7 @@ public:
         return retval;
     }
 
-    static int set_position(ShellWrapper* self, PyObject* val, void *)
+    static int set_position(CylindricalShellWrapper* self, PyObject* val, void *)
     {
         if (!PySequence_Check(val))
         {
@@ -190,12 +197,12 @@ public:
         return 0;
     }
 
-    static PyObject* get_radius(ShellWrapper* self)
+    static PyObject* get_radius(CylindricalShellWrapper* self)
     {
         return PyFloat_FromDouble(self->impl_.radius());
     }
 
-    static int set_radius(ShellWrapper* self, PyObject* val, void *)
+    static int set_radius(CylindricalShellWrapper* self, PyObject* val, void *)
     {
         const double tmp(PyFloat_AsDouble(val));
         if (PyErr_Occurred())
@@ -204,13 +211,76 @@ public:
         return 0;
     }
 
-    static PyObject* get_did(ShellWrapper* self)
+    static PyObject* get_orientation(CylindricalShellWrapper* self)
+    {
+        typename Timpl_::position_type const& orientation(self->impl_.orientation());
+        const npy_intp dims[1] = { boost::size(orientation) };
+        PyObject* retval = PyArray_New(&PyArray_Type, 1,
+                const_cast<npy_intp*>(dims),
+                util::get_numpy_typecode<typename Timpl_::length_type>::value,
+                NULL,
+                NULL,
+                0, NPY_CARRAY, NULL);
+        if (retval == NULL)
+            return NULL;
+        std::memmove(PyArray_DATA(retval), &orientation[0],
+                sizeof(typename Timpl_::length_type) * boost::size(orientation));
+        return retval;
+    }
+
+    static int set_orientation(CylindricalShellWrapper* self, PyObject* val, void *)
+    {
+        if (!PySequence_Check(val))
+        {
+            PyErr_SetString(PyExc_TypeError, "argument must be a sequence");
+            return -1;
+        }
+        
+        if (PySequence_Size(val) != 3)
+        {
+            PyErr_SetString(PyExc_ValueError, "argument must be a sequence of 3 elements");
+            return -1;
+        }
+
+        PyObject* items[3] = {
+            PySequence_GetItem(val, 0),
+            PySequence_GetItem(val, 1),
+            PySequence_GetItem(val, 2)
+        };
+        const typename Timpl_::position_type tmp(
+            PyFloat_AsDouble(items[0]),
+            PyFloat_AsDouble(items[1]),
+            PyFloat_AsDouble(items[2]));
+        Py_XDECREF(items[0]);
+        Py_XDECREF(items[1]);
+        Py_XDECREF(items[2]);
+        if (PyErr_Occurred())
+            return -1;
+        self->impl_.orientation() = tmp;
+        return 0;
+    }
+
+    static PyObject* get_size(CylindricalShellWrapper* self)
+    {
+        return PyFloat_FromDouble(self->impl_.size());
+    }
+
+    static int set_size(CylindricalShellWrapper* self, PyObject* val, void *)
+    {
+        const double tmp(PyFloat_AsDouble(val));
+        if (PyErr_Occurred())
+            return -1;
+        self->impl_.size() = tmp;
+        return 0;
+    }
+
+    static PyObject* get_did(CylindricalShellWrapper* self)
     {
         return boost::python::incref(
             boost::python::object(self->impl_.did()).ptr());
     }
 
-    static int set_did(ShellWrapper* self, PyObject* val, void *)
+    static int set_did(CylindricalShellWrapper* self, PyObject* val, void *)
     try
     {
         self->impl_.did() = boost::python::extract<typename Timpl_::domain_id_type>(val);
@@ -221,13 +291,15 @@ public:
         return -1;
     }
 
-    static PyObject* __getstate__(ShellWrapper* self)
+    static PyObject* __getstate__(CylindricalShellWrapper* self)
     try
     {
         return boost::python::incref(
             boost::python::make_tuple(
                 boost::python::borrowed(get_position(self)),
                 boost::python::borrowed(get_radius(self)),
+                boost::python::borrowed(get_orientation(self)),
+                boost::python::borrowed(get_size(self)),
                 boost::python::borrowed(get_did(self))).ptr());
     }
     catch (boost::python::error_already_set const&)
@@ -235,17 +307,17 @@ public:
         return NULL;
     }
 
-    static PyObject* __reduce__(ShellWrapper* self)
+    static PyObject* __reduce__(CylindricalShellWrapper* self)
     {
         return pickle::reduce(reinterpret_cast<PyObject*>(self));
     }
 
-    static PyObject* __reduce_ex__(ShellWrapper* self, PyObject* arg)
+    static PyObject* __reduce_ex__(CylindricalShellWrapper* self, PyObject* arg)
     {
         return pickle::reduce(reinterpret_cast<PyObject*>(self));
     }
 
-    static long __hash__(ShellWrapper* self)
+    static long __hash__(CylindricalShellWrapper* self)
     {
 #if defined(HAVE_TR1_FUNCTIONAL)
         using namespace std::tr1;
@@ -259,12 +331,12 @@ public:
 
     static Py_ssize_t __sq_len__(PyObject *self)
     {
-        return 3;
+        return 5;
     }
 
     static PyObject* __sq_item__(PyObject *self, Py_ssize_t idx)
     {
-        if (idx < 0 || idx >= 3)
+        if (idx < 0 || idx >= 5)
         {
             PyErr_SetString(PyExc_IndexError, "index out of range");
             return NULL;
@@ -273,18 +345,22 @@ public:
         switch (idx)
         {
         case 0:
-            return get_position(reinterpret_cast<ShellWrapper*>(self));
+            return get_position(reinterpret_cast<CylindricalShellWrapper*>(self));
         case 1:
-            return get_radius(reinterpret_cast<ShellWrapper*>(self));
+            return get_radius(reinterpret_cast<CylindricalShellWrapper*>(self));
         case 2:
-            return get_did(reinterpret_cast<ShellWrapper*>(self));
+            return get_orientation(reinterpret_cast<CylindricalShellWrapper*>(self));
+        case 3:
+            return get_size(reinterpret_cast<CylindricalShellWrapper*>(self));
+        case 4:
+            return get_did(reinterpret_cast<CylindricalShellWrapper*>(self));
         }
         return NULL; // never get here
     }
 
     static int __sq_ass_item__(PyObject *self, Py_ssize_t idx, PyObject *val)
     {
-        if (idx < 0 || idx >= 3)
+        if (idx < 0 || idx >= 5)
         {
             PyErr_SetString(PyExc_IndexError, "index out of range");
             return -1;
@@ -293,11 +369,15 @@ public:
         switch (idx)
         {
         case 0:
-            return set_position(reinterpret_cast<ShellWrapper*>(self), val, 0);
+            return set_position(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
         case 1:
-            return set_radius(reinterpret_cast<ShellWrapper*>(self), val, 0);
+            return set_radius(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
         case 2:
-            return set_did(reinterpret_cast<ShellWrapper*>(self), val, 0);
+            return set_orientation(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
+        case 3:
+            return set_size(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
+        case 4:
+            return set_did(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
         }
 
         return -1; // never get here
@@ -309,7 +389,7 @@ public:
     {
         using namespace boost::python;
         pickle::register_reconstructor();
-        PyTypeObject* klass(ShellWrapper::__class_init__(name, reinterpret_cast<PyObject*>(scope().ptr())));
+        PyTypeObject* klass(CylindricalShellWrapper::__class_init__(name, reinterpret_cast<PyObject*>(scope().ptr())));
         Py_INCREF(klass);
         scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
         util::to_native_converter<Timpl_, to_native_converter>();
@@ -332,9 +412,9 @@ public:
     }
 
 protected:
-    ShellWrapper(): impl_() {}
+    CylindricalShellWrapper(): impl_() {}
 
-    ShellWrapper(Timpl_ const& impl): impl_(impl) {}
+    CylindricalShellWrapper(Timpl_ const& impl): impl_(impl) {}
 
     void* operator new(size_t)
     {
@@ -347,7 +427,7 @@ protected:
         reinterpret_cast<PyObject*>(ptr)->ob_type->tp_free(reinterpret_cast<PyObject*>(ptr));
     }
 
-    ~ShellWrapper() {}
+    ~CylindricalShellWrapper() {}
 
 protected:
     PyObject_VAR_HEAD
@@ -361,47 +441,59 @@ protected:
 };
 
 template<typename Timpl_>
-std::string ShellWrapper<Timpl_>::__name__;
+std::string CylindricalShellWrapper<Timpl_>::__name__;
 
 template<typename Timpl_>
-PyMethodDef ShellWrapper<Timpl_>::__methods__[] = {
-    { "__getstate__", (PyCFunction)ShellWrapper::__getstate__, METH_NOARGS, "" },
-    { "__reduce__", (PyCFunction)ShellWrapper::__reduce__, METH_NOARGS, "" },
-    { "__reduce_ex__", (PyCFunction)ShellWrapper::__reduce_ex__, METH_O, "" },
+PyMethodDef CylindricalShellWrapper<Timpl_>::__methods__[] = {
+    { "__getstate__", (PyCFunction)CylindricalShellWrapper::__getstate__, METH_NOARGS, "" },
+    { "__reduce__", (PyCFunction)CylindricalShellWrapper::__reduce__, METH_NOARGS, "" },
+    { "__reduce_ex__", (PyCFunction)CylindricalShellWrapper::__reduce_ex__, METH_O, "" },
     { NULL, NULL }
 };
 
 template<typename Timpl_>
-PyGetSetDef ShellWrapper<Timpl_>::__getsets__[] = {
+PyGetSetDef CylindricalShellWrapper<Timpl_>::__getsets__[] = {
     {
         const_cast<char*>("position"),
-        (getter)ShellWrapper::get_position,
-        (setter)ShellWrapper::set_position,
+        (getter)CylindricalShellWrapper::get_position,
+        (setter)CylindricalShellWrapper::set_position,
         const_cast<char*>("")
     },
     {
         const_cast<char*>("radius"),
-        (getter)ShellWrapper::get_radius,
-        (setter)ShellWrapper::set_radius,
+        (getter)CylindricalShellWrapper::get_radius,
+        (setter)CylindricalShellWrapper::set_radius,
+        const_cast<char*>("")
+    },
+    {
+        const_cast<char*>("orientation"),
+        (getter)CylindricalShellWrapper::get_orientation,
+        (setter)CylindricalShellWrapper::set_orientation,
+        const_cast<char*>("")
+    },
+    {
+        const_cast<char*>("size"),
+        (getter)CylindricalShellWrapper::get_size,
+        (setter)CylindricalShellWrapper::set_size,
         const_cast<char*>("")
     },
     {
         const_cast<char*>("did"),
-        (getter)ShellWrapper::get_did,
-        (setter)ShellWrapper::set_did,
+        (getter)CylindricalShellWrapper::get_did,
+        (setter)CylindricalShellWrapper::set_did,
         const_cast<char*>("")
     },
     { NULL }
 };
 
 template<typename Timpl_>
-PySequenceMethods ShellWrapper<Timpl_>::__sequence_methods__ = {
-    (lenfunc) &ShellWrapper::__sq_len__,             /* sq_length */
+PySequenceMethods CylindricalShellWrapper<Timpl_>::__sequence_methods__ = {
+    (lenfunc) &CylindricalShellWrapper::__sq_len__,             /* sq_length */
     (binaryfunc) 0,                                     /* sq_concat */
     (ssizeargfunc) 0,                                   /* sq_repeat */
-    (ssizeargfunc) &ShellWrapper::__sq_item__,       /* sq_item */
+    (ssizeargfunc) &CylindricalShellWrapper::__sq_item__,       /* sq_item */
     (ssizessizeargfunc) 0,                              /* sq_slice */
-    (ssizeobjargproc) &ShellWrapper::__sq_ass_item__,    /* sq_ass_item */
+    (ssizeobjargproc) &CylindricalShellWrapper::__sq_ass_item__,    /* sq_ass_item */
     (ssizessizeobjargproc) 0,                           /* sq_ass_slice */
     (objobjproc) 0,                                     /* sq_contains */
     (binaryfunc) 0,                                     /* sq_inplace_concat */
@@ -409,39 +501,39 @@ PySequenceMethods ShellWrapper<Timpl_>::__sequence_methods__ = {
 };
 
 template<typename Timpl_>
-PyTypeObject ShellWrapper<Timpl_>::__class__ = {
-	PyObject_HEAD_INIT(&PyType_Type)
-	0,					/* ob_size */
-	0,                  /* tp_name */
-	sizeof(ShellWrapper), /* tp_basicsize */
-	0,					/* tp_itemsize */
-	/* methods */
-	(destructor)&ShellWrapper::__dealloc__, /* tp_dealloc */
-	0,					/* tp_print */
-	0,					/* tp_getattr */
-	0,					/* tp_setattr */
-	0,					/* tp_compare */
-	(reprfunc)&ShellWrapper::__repr__,					/* tp_repr */
-	0,					/* tp_as_number */
-	&ShellWrapper::__sequence_methods__,	/* tp_as_sequence */
-	0,					/* tp_as_mapping */
-	(hashfunc)&ShellWrapper::__hash__,					/* tp_hash */
-	0,					/* tp_call */
-	(reprfunc)&ShellWrapper::__str__,					/* tp_str */
-	PyObject_GenericGetAttr,		/* tp_getattro */
-	0,					/* tp_setattro */
-	0,					/* tp_as_buffer */
-	Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_RICHCOMPARE,/* tp_flags */
-	0,					/* tp_doc */
-	0,              	/* tp_traverse */
-	0,					/* tp_clear */
-	0,                  /* tp_richcompare */
-	0,					/* tp_weaklistoffset */
-	0,                  /* tp_iter */
-	0,                  /* tp_iternext */
-	ShellWrapper::__methods__,		        	/* tp_methods */
-	0,					/* tp_members */
-    ShellWrapper::__getsets__, /* tp_getset */
+PyTypeObject CylindricalShellWrapper<Timpl_>::__class__ = {
+    PyObject_HEAD_INIT(&PyType_Type)
+    0,                  /* ob_size */
+    0,                  /* tp_name */
+    sizeof(CylindricalShellWrapper), /* tp_basicsize */
+    0,                  /* tp_itemsize */
+    /* methods */
+    (destructor)&CylindricalShellWrapper::__dealloc__,  /* tp_dealloc */
+    0,                  /* tp_print */
+    0,                  /* tp_getattr */
+    0,                  /* tp_setattr */
+    0,                  /* tp_compare */
+    (reprfunc)&CylindricalShellWrapper::__repr__,       /* tp_repr */
+    0,                  /* tp_as_number */
+    &CylindricalShellWrapper::__sequence_methods__,     /* tp_as_sequence */
+    0,                  /* tp_as_mapping */
+    (hashfunc)&CylindricalShellWrapper::__hash__,       /* tp_hash */
+    0,                  /* tp_call */
+    (reprfunc)&CylindricalShellWrapper::__str__,        /* tp_str */
+    PyObject_GenericGetAttr,        /* tp_getattro */
+    0,                  /* tp_setattro */
+    0,                  /* tp_as_buffer */
+    Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_RICHCOMPARE,/* tp_flags */
+    0,                  /* tp_doc */
+    0,                  /* tp_traverse */
+    0,                  /* tp_clear */
+    0,                  /* tp_richcompare */
+    0,                  /* tp_weaklistoffset */
+    0,                  /* tp_iter */
+    0,                  /* tp_iternext */
+    CylindricalShellWrapper::__methods__,               /* tp_methods */
+    0,                  /* tp_members */
+    CylindricalShellWrapper::__getsets__, /* tp_getset */
     &PyBaseObject_Type, /* tp_base */
     0,                  /* tp_dict */
     0,                  /* tp_descr_get */
@@ -449,10 +541,10 @@ PyTypeObject ShellWrapper<Timpl_>::__class__ = {
     0,                  /* tp_dictoffset */
     0,                  /* tp_init */
     0,                  /* tp_alloc */
-    ShellWrapper::__new__,  /*tp_new */
+    CylindricalShellWrapper::__new__,  /*tp_new */
     0                   /* tp_free */
 };
 
 } //namespace peer
 
-#endif /* PEER_SHELL_HPP */
+#endif /* PEER_CYLINDRICAL_SHELL_WRAPPER_HPP */
