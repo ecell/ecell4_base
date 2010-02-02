@@ -119,11 +119,14 @@ BOOST_AUTO_TEST_CASE(each_neighbor)
         collector2<oc_type> col2;
         oc.each_neighbor_cyclic(oc.index(pos(0.0, 0.1, 0.4)), col2);
         BOOST_CHECK_EQUAL(col2.result.size(), 1);
+        BOOST_CHECK(col2.result.find(2) != col2.result.end());
     }
     {
         collector2<oc_type> col2;
         oc.each_neighbor_cyclic(oc.index(pos(0.9, 0.0, 0.4)), col2);
         BOOST_CHECK_EQUAL(col2.result.size(), 2);
+        BOOST_CHECK(col2.result.find(2) != col2.result.end());
+        BOOST_CHECK(col2.result.find(3) != col2.result.end());
     }
 }
 
