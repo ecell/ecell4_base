@@ -107,7 +107,7 @@ public:
                         PyTuple_GetItem(arg, 0), 0)
                 || set_radius(reinterpret_cast<CylindricalShellWrapper*>(retval), 
                         PyTuple_GetItem(arg, 1), 0)
-                || set_orientationZ(reinterpret_cast<CylindricalShellWrapper*>(retval), 
+                || set_orientation(reinterpret_cast<CylindricalShellWrapper*>(retval), 
                         PyTuple_GetItem(arg, 2), 0)
                 || set_size(reinterpret_cast<CylindricalShellWrapper*>(retval), 
                         PyTuple_GetItem(arg, 3), 0)
@@ -211,10 +211,10 @@ public:
         return 0;
     }
 
-    static PyObject* get_orientationZ(CylindricalShellWrapper* self)
+    static PyObject* get_orientation(CylindricalShellWrapper* self)
     {
-        typename Timpl_::position_type const& orientationZ(self->impl_.orientationZ());
-        const npy_intp dims[1] = { boost::size(orientationZ) };
+        typename Timpl_::position_type const& orientation(self->impl_.orientation());
+        const npy_intp dims[1] = { boost::size(orientation) };
         PyObject* retval = PyArray_New(&PyArray_Type, 1,
                 const_cast<npy_intp*>(dims),
                 util::get_numpy_typecode<typename Timpl_::length_type>::value,
@@ -223,12 +223,12 @@ public:
                 0, NPY_CARRAY, NULL);
         if (retval == NULL)
             return NULL;
-        std::memmove(PyArray_DATA(retval), &orientationZ[0],
-                sizeof(typename Timpl_::length_type) * boost::size(orientationZ));
+        std::memmove(PyArray_DATA(retval), &orientation[0],
+                sizeof(typename Timpl_::length_type) * boost::size(orientation));
         return retval;
     }
 
-    static int set_orientationZ(CylindricalShellWrapper* self, PyObject* val, void *)
+    static int set_orientation(CylindricalShellWrapper* self, PyObject* val, void *)
     {
         if (!PySequence_Check(val))
         {
@@ -256,7 +256,7 @@ public:
         Py_XDECREF(items[2]);
         if (PyErr_Occurred())
             return -1;
-        self->impl_.orientationZ() = tmp;
+        self->impl_.orientation() = tmp;
         return 0;
     }
 
@@ -298,7 +298,7 @@ public:
             boost::python::make_tuple(
                 boost::python::borrowed(get_position(self)),
                 boost::python::borrowed(get_radius(self)),
-                boost::python::borrowed(get_orientationZ(self)),
+                boost::python::borrowed(get_orientation(self)),
                 boost::python::borrowed(get_size(self)),
                 boost::python::borrowed(get_did(self))).ptr());
     }
@@ -349,7 +349,7 @@ public:
         case 1:
             return get_radius(reinterpret_cast<CylindricalShellWrapper*>(self));
         case 2:
-            return get_orientationZ(reinterpret_cast<CylindricalShellWrapper*>(self));
+            return get_orientation(reinterpret_cast<CylindricalShellWrapper*>(self));
         case 3:
             return get_size(reinterpret_cast<CylindricalShellWrapper*>(self));
         case 4:
@@ -373,7 +373,7 @@ public:
         case 1:
             return set_radius(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
         case 2:
-            return set_orientationZ(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
+            return set_orientation(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
         case 3:
             return set_size(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
         case 4:
@@ -466,9 +466,9 @@ PyGetSetDef CylindricalShellWrapper<Timpl_>::__getsets__[] = {
         const_cast<char*>("")
     },
     {
-        const_cast<char*>("orientationZ"),
-        (getter)CylindricalShellWrapper::get_orientationZ,
-        (setter)CylindricalShellWrapper::set_orientationZ,
+        const_cast<char*>("orientation"),
+        (getter)CylindricalShellWrapper::get_orientation,
+        (setter)CylindricalShellWrapper::set_orientation,
         const_cast<char*>("")
     },
     {
@@ -502,37 +502,37 @@ PySequenceMethods CylindricalShellWrapper<Timpl_>::__sequence_methods__ = {
 
 template<typename Timpl_>
 PyTypeObject CylindricalShellWrapper<Timpl_>::__class__ = {
-	PyObject_HEAD_INIT(&PyType_Type)
-	0,					/* ob_size */
-	0,                  /* tp_name */
-	sizeof(CylindricalShellWrapper), /* tp_basicsize */
-	0,					/* tp_itemsize */
-	/* methods */
-	(destructor)&CylindricalShellWrapper::__dealloc__, /* tp_dealloc */
-	0,					/* tp_print */
-	0,					/* tp_getattr */
-	0,					/* tp_setattr */
-	0,					/* tp_compare */
-	(reprfunc)&CylindricalShellWrapper::__repr__,					/* tp_repr */
-	0,					/* tp_as_number */
-	&CylindricalShellWrapper::__sequence_methods__,	/* tp_as_sequence */
-	0,					/* tp_as_mapping */
-	(hashfunc)&CylindricalShellWrapper::__hash__,					/* tp_hash */
-	0,					/* tp_call */
-	(reprfunc)&CylindricalShellWrapper::__str__,					/* tp_str */
-	PyObject_GenericGetAttr,		/* tp_getattro */
-	0,					/* tp_setattro */
-	0,					/* tp_as_buffer */
-	Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_RICHCOMPARE,/* tp_flags */
-	0,					/* tp_doc */
-	0,              	/* tp_traverse */
-	0,					/* tp_clear */
-	0,                  /* tp_richcompare */
-	0,					/* tp_weaklistoffset */
-	0,                  /* tp_iter */
-	0,                  /* tp_iternext */
-	CylindricalShellWrapper::__methods__,		        	/* tp_methods */
-	0,					/* tp_members */
+    PyObject_HEAD_INIT(&PyType_Type)
+    0,                  /* ob_size */
+    0,                  /* tp_name */
+    sizeof(CylindricalShellWrapper), /* tp_basicsize */
+    0,                  /* tp_itemsize */
+    /* methods */
+    (destructor)&CylindricalShellWrapper::__dealloc__,  /* tp_dealloc */
+    0,                  /* tp_print */
+    0,                  /* tp_getattr */
+    0,                  /* tp_setattr */
+    0,                  /* tp_compare */
+    (reprfunc)&CylindricalShellWrapper::__repr__,       /* tp_repr */
+    0,                  /* tp_as_number */
+    &CylindricalShellWrapper::__sequence_methods__,     /* tp_as_sequence */
+    0,                  /* tp_as_mapping */
+    (hashfunc)&CylindricalShellWrapper::__hash__,       /* tp_hash */
+    0,                  /* tp_call */
+    (reprfunc)&CylindricalShellWrapper::__str__,        /* tp_str */
+    PyObject_GenericGetAttr,        /* tp_getattro */
+    0,                  /* tp_setattro */
+    0,                  /* tp_as_buffer */
+    Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_RICHCOMPARE,/* tp_flags */
+    0,                  /* tp_doc */
+    0,                  /* tp_traverse */
+    0,                  /* tp_clear */
+    0,                  /* tp_richcompare */
+    0,                  /* tp_weaklistoffset */
+    0,                  /* tp_iter */
+    0,                  /* tp_iternext */
+    CylindricalShellWrapper::__methods__,               /* tp_methods */
+    0,                  /* tp_members */
     CylindricalShellWrapper::__getsets__, /* tp_getset */
     &PyBaseObject_Type, /* tp_base */
     0,                  /* tp_dict */

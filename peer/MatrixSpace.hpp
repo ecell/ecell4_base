@@ -27,8 +27,8 @@
 #include "peer/numpy/pyarray_backed_allocator.hpp"
 #include "peer/numpy/ndarray_converters.hpp"
 
-#include "filters.hpp"
 #include "utils/pair.hpp"
+#include "filters.hpp"
 
 namespace peer {
 
@@ -192,36 +192,32 @@ public:
 
             inline void operator()(typename impl_type::iterator i)
             {
-                mapped_type object = (*i).second;
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    object.calculateDistanceToSelf(pos_)));
+                    distance(shape((*i).second), pos_)));
             }
 
             inline void operator()(typename impl_type::const_iterator const& i)
             {
-                mapped_type object = (*i).second;
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    object.calculateDistanceToSelf(pos_)));
+                    distance(shape((*i).second.position())), pos_));
             }
 
             inline void operator()(typename impl_type::iterator i,
                     const position_type& d)
             {
-                mapped_type object = (*i).second;
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    object.calculateDistanceToSelfWithOffset(pos_, d)));
+                    distance(offset(shape((*i).second), d), pos_)));
             }
 
             inline void operator()(typename impl_type::const_iterator const& i,
                     const position_type& d)
             {
-                mapped_type object = (*i).second;
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    object.calculateDistanceToSelfWithOffset(pos_, d)));
+                    distance(offset(shape((*i).second), d), pos_)));
             }
 
         private:

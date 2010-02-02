@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include "Vector3.hpp"
+#include "Shape.hpp"
 
 template<typename T_>
 class Sphere
@@ -18,20 +19,6 @@ public:
 
     Sphere(const position_type& position, const length_type& radius)
         : position_(position), radius_(radius) {}
-
-    length_type calculateDistanceToSelf(position_type pos)
-    {
-        return distance(pos, position_) - radius_;
-    }
-
-    length_type calculateDistanceToSelfWithOffset(position_type pos, 
-                                                  position_type offset)
-    {
-        // Because this sphere is on the other side of one of the periodic 
-        // boundaries compared to pos, add offset (for example (-L, 0, 0) to 
-        // position before calculating distance between this sphere and pos. 
-        return distance(pos, position_ + offset) - radius_;
-    }
 
     bool operator==(const Sphere& rhs) const
     {
@@ -75,5 +62,52 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm
     strm << "{" << v.position() <<  ", " << v.radius() << "}";
     return strm;
 }
+
+template<typename T_>
+inline typename Sphere<T_>::length_type
+distance(Sphere<T_> const& obj, typename Sphere<T_>::position_type const& pos)
+{
+    return distance(pos, obj.position()) - obj.radius();
+}
+
+template<typename T_>
+inline Sphere<T_> const& shape(Sphere<T_> const& shape)
+{
+    return shape;
+}
+
+template<typename T_>
+inline Sphere<T_>& shape(Sphere<T_>& shape)
+{
+    return shape;
+}
+
+#if defined(HAVE_TR1_FUNCTIONAL)
+namespace std { namespace tr1 {
+#elif defined(HAVE_STD_HASH)
+namespace std {
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+namespace boost {
+#endif
+
+template<typename T_>
+struct hash<Sphere<T_> >
+{
+    typedef Sphere<T_> argument_type;
+
+    std::size_t operator()(argument_type const& val)
+    {
+        return hash<typename argument_type::position_type>()(val.position()) ^
+            hash<typename argument_type::length_type>()(val.radius());
+    }
+};
+
+#if defined(HAVE_TR1_FUNCTIONAL)
+} } // namespace std::tr1
+#elif defined(HAVE_STD_HASH)
+} // namespace std
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+} // namespace boost
+#endif
 
 #endif /* SPHERE_HPP */

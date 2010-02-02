@@ -1,5 +1,5 @@
-#ifndef PEER_SPHERICAL_SHELL_WRAPPER_HPP
-#define PEER_SPHERICAL_SHELL_WRAPPER_HPP
+#ifndef PEER_SHELL_HPP
+#define PEER_SHELL_HPP
 
 #include <cstddef>
 #include <string>
@@ -410,37 +410,37 @@ PySequenceMethods SphericalShellWrapper<Timpl_>::__sequence_methods__ = {
 
 template<typename Timpl_>
 PyTypeObject SphericalShellWrapper<Timpl_>::__class__ = {
-	PyObject_HEAD_INIT(&PyType_Type)
-	0,					/* ob_size */
-	0,                  /* tp_name */
-	sizeof(SphericalShellWrapper), /* tp_basicsize */
-	0,					/* tp_itemsize */
-	/* methods */
-	(destructor)&SphericalShellWrapper::__dealloc__, /* tp_dealloc */
-	0,					/* tp_print */
-	0,					/* tp_getattr */
-	0,					/* tp_setattr */
-	0,					/* tp_compare */
-	(reprfunc)&SphericalShellWrapper::__repr__,					/* tp_repr */
-	0,					/* tp_as_number */
-	&SphericalShellWrapper::__sequence_methods__,	/* tp_as_sequence */
-	0,					/* tp_as_mapping */
-	(hashfunc)&SphericalShellWrapper::__hash__,					/* tp_hash */
-	0,					/* tp_call */
-	(reprfunc)&SphericalShellWrapper::__str__,					/* tp_str */
-	PyObject_GenericGetAttr,		/* tp_getattro */
-	0,					/* tp_setattro */
-	0,					/* tp_as_buffer */
-	Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_RICHCOMPARE,/* tp_flags */
-	0,					/* tp_doc */
-	0,              	/* tp_traverse */
-	0,					/* tp_clear */
-	0,                  /* tp_richcompare */
-	0,					/* tp_weaklistoffset */
-	0,                  /* tp_iter */
-	0,                  /* tp_iternext */
-	SphericalShellWrapper::__methods__,		        	/* tp_methods */
-	0,					/* tp_members */
+    PyObject_HEAD_INIT(&PyType_Type)
+    0,                  /* ob_size */
+    0,                  /* tp_name */
+    sizeof(SphericalShellWrapper), /* tp_basicsize */
+    0,                  /* tp_itemsize */
+    /* methods */
+    (destructor)&SphericalShellWrapper::__dealloc__, /* tp_dealloc */
+    0,                  /* tp_print */
+    0,                  /* tp_getattr */
+    0,                  /* tp_setattr */
+    0,                  /* tp_compare */
+    (reprfunc)&SphericalShellWrapper::__repr__,                    /* tp_repr */
+    0,                  /* tp_as_number */
+    &SphericalShellWrapper::__sequence_methods__,    /* tp_as_sequence */
+    0,                  /* tp_as_mapping */
+    (hashfunc)&SphericalShellWrapper::__hash__,                    /* tp_hash */
+    0,                  /* tp_call */
+    (reprfunc)&SphericalShellWrapper::__str__,                    /* tp_str */
+    PyObject_GenericGetAttr,        /* tp_getattro */
+    0,                  /* tp_setattro */
+    0,                  /* tp_as_buffer */
+    Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_RICHCOMPARE,/* tp_flags */
+    0,                  /* tp_doc */
+    0,                  /* tp_traverse */
+    0,                  /* tp_clear */
+    0,                  /* tp_richcompare */
+    0,                  /* tp_weaklistoffset */
+    0,                  /* tp_iter */
+    0,                  /* tp_iternext */
+    SphericalShellWrapper::__methods__,                    /* tp_methods */
+    0,                  /* tp_members */
     SphericalShellWrapper::__getsets__, /* tp_getset */
     &PyBaseObject_Type, /* tp_base */
     0,                  /* tp_dict */
@@ -455,4 +455,4 @@ PyTypeObject SphericalShellWrapper<Timpl_>::__class__ = {
 
 } //namespace peer
 
-#endif /* PEER_SPHERICAL_SHELL_WRAPPER_HPP */
+#endif /* PEER_SHELL_HPP */

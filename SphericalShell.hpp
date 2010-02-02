@@ -1,5 +1,5 @@
-#ifndef SPHERICAL_SHELL_HPP
-#define SPHERICAL_SHELL_HPP
+#ifndef SHELL_HPP
+#define SHELL_HPP
 
 #include <ostream>
 #if defined(HAVE_TR1_FUNCTIONAL)
@@ -15,26 +15,15 @@
 template<typename T_, typename Tdid_>
 struct SphericalShell
 {
-    typedef Sphere<T_> sphere_type;
+    typedef Sphere<T_> shape_type;
     typedef Tdid_ domain_id_type;
-    typedef typename sphere_type::position_type position_type;
-    typedef typename sphere_type::length_type length_type;
+    typedef typename shape_type::position_type position_type;
+    typedef typename shape_type::length_type length_type;
 
     SphericalShell(): sphere_(), domain_id_() {}
 
-    SphericalShell(domain_id_type const& domain_id, sphere_type const& sphere)
+    SphericalShell(domain_id_type const& domain_id, shape_type const& sphere)
         : sphere_(sphere), domain_id_(domain_id) {}
-
-    length_type calculateDistanceToSelf(position_type pos)
-    {
-        return sphere_.calculateDistanceToSelf(pos);
-    }
-
-    length_type calculateDistanceToSelfWithOffset(position_type pos, 
-                                                  position_type offset)
-    {
-        return sphere_.calculateDistanceToSelfWithOffset(pos, offset);
-    }
 
     position_type& position()
     {
@@ -56,12 +45,12 @@ struct SphericalShell
         return sphere_.radius();
     }
 
-    sphere_type& as_sphere()
+    shape_type& shape()
     {
         return sphere_;
     }
 
-    sphere_type const& as_sphere() const
+    shape_type const& shape() const
     {
         return sphere_;
     }
@@ -78,7 +67,7 @@ struct SphericalShell
 
     bool operator==(SphericalShell const& rhs) const
     {
-        return domain_id_ == rhs.did() && sphere_ == rhs.as_sphere();
+        return domain_id_ == rhs.did() && sphere_ == rhs.shape();
     }
 
     bool operator!=(SphericalShell const& rhs) const
@@ -87,14 +76,14 @@ struct SphericalShell
     }
 
 private:
-    sphere_type sphere_;
+    shape_type sphere_;
     domain_id_type domain_id_;
 };
 
 template<typename Tstrm_, typename Ttraits_, typename T_, typename Tdid_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const SphericalShell<T_, Tdid_>& v)
 {
-    strm << "SphericalShell(" << v.as_sphere() << ", " << v.did() << ")";
+    strm << "SphericalShell(" << v.shape() << ", " << v.did() << ")";
     return strm;
 }
 
@@ -127,4 +116,4 @@ struct hash<SphericalShell<T_, Tdid_> >
 } // namespace boost
 #endif
 
-#endif /* SPHERICAL_SHELL_HPP */
+#endif /* SHELL_HPP */

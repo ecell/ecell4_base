@@ -15,14 +15,15 @@
 template<typename T_, typename Tdid_>
 struct CylindricalShell
 {
-    typedef Cylinder<T_> cylinder_type;
+    typedef Cylinder<T_> shape_type;
     typedef Tdid_ domain_id_type;
-    typedef typename cylinder_type::position_type position_type;
-    typedef typename cylinder_type::length_type length_type;
+    typedef typename shape_type::position_type position_type;
+    typedef typename shape_type::length_type length_type;
 
     CylindricalShell(): cylinder_(), domain_id_() {}
 
-    CylindricalShell(domain_id_type const& domain_id, cylinder_type const& cylinder)
+    CylindricalShell(domain_id_type const& domain_id,
+                     shape_type const& cylinder)
         : cylinder_(cylinder), domain_id_(domain_id) {}
 
     length_type calculateDistanceToSelf(position_type pos)
@@ -56,14 +57,14 @@ struct CylindricalShell
         return cylinder_.radius();
     }
 
-    position_type& orientationZ()
+    position_type& orientation()
     {
-        return cylinder_.orientationZ();
+        return cylinder_.orientation();
     }
 
-    position_type const& orientationZ() const
+    position_type const& orientation() const
     {
-        return cylinder_.orientationZ();
+        return cylinder_.orientation();
     }
 
     length_type& size()
@@ -77,12 +78,12 @@ struct CylindricalShell
     }
 
 
-    cylinder_type& as_cylinder()
+    shape_type& shape()
     {
         return cylinder_;
     }
 
-    cylinder_type const& as_cylinder() const
+    shape_type const& shape() const
     {
         return cylinder_;
     }
@@ -99,7 +100,7 @@ struct CylindricalShell
 
     bool operator==(CylindricalShell const& rhs) const
     {
-        return domain_id_ == rhs.did() && cylinder_ == rhs.as_cylinder();
+        return domain_id_ == rhs.did() && cylinder_ == rhs.shape();
     }
 
     bool operator!=(CylindricalShell const& rhs) const
@@ -108,14 +109,14 @@ struct CylindricalShell
     }
 
 private:
-    cylinder_type cylinder_;
+    shape_type cylinder_;
     domain_id_type domain_id_;
 };
 
 template<typename Tstrm_, typename Ttraits_, typename T_, typename Tdid_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const CylindricalShell<T_, Tdid_>& v)
 {
-    strm << "CylindricalShell(" << v.as_cylinder() << ", " << v.did() << ")";
+    strm << "CylindricalShell(" << v.shape() << ", " << v.did() << ")";
     return strm;
 }
 
@@ -136,7 +137,7 @@ struct hash<CylindricalShell<T_, Tdid_> >
     {
         return hash<typename argument_type::position_type>()(val.position()) ^
             hash<typename argument_type::length_type>()(val.radius()) ^
-            hash<typename argument_type::position_type>()(val.orientationZ()) ^
+            hash<typename argument_type::position_type>()(val.orientation()) ^
             hash<typename argument_type::length_type>()(val.size()) ^
             hash<typename argument_type::domain_id_type>()(val.did());
     }
