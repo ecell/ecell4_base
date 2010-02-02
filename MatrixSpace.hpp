@@ -35,8 +35,7 @@ public:
     typedef typename cell_type::reference reference;
     typedef typename cell_type::const_reference const_reference;
     typedef typename MFget_mapper_<key_type, cell_type*>::type
-            id_to_cell_mapper_type;
-    typedef id_to_cell_mapper_type key_to_cell_mapper_type;
+            key_to_cell_mapper_type;
 
     template<typename Thost_, typename Treftype_, typename Tciter_>
     class iterator_base
@@ -641,7 +640,7 @@ private:
     const length_type world_size_;
     const length_type cell_size_;
     matrix_type matrix_;
-    id_to_cell_mapper_type rmap_;
+    key_to_cell_mapper_type rmap_;
     size_type size_;
 };
 
@@ -662,25 +661,25 @@ operator+=(
 
 namespace boost {
 
-template<typename T_, typename Tkey_,
+template<typename Tobj_, typename Tkey_,
         template<typename, typename> class MFget_mapper_>
-struct range_iterator<MatrixSpace<T_, Tkey_, MFget_mapper_> >
+struct range_iterator<MatrixSpace<Tobj_, Tkey_, MFget_mapper_> >
 {
-    typedef typename MatrixSpace<T_, Tkey_, MFget_mapper_>::iterator type;
+    typedef typename MatrixSpace<Tobj_, Tkey_, MFget_mapper_>::iterator type;
 };
 
-template<typename T_, typename Tkey_,
+template<typename Tobj_, typename Tkey_,
         template<typename, typename> class MFget_mapper_>
-struct range_iterator<const MatrixSpace<T_, Tkey_, MFget_mapper_> >
+struct range_iterator<const MatrixSpace<Tobj_, Tkey_, MFget_mapper_> >
 {
-    typedef typename MatrixSpace<T_, Tkey_, MFget_mapper_>::const_iterator type;
+    typedef typename MatrixSpace<Tobj_, Tkey_, MFget_mapper_>::const_iterator type;
 };
 
-template<typename T_, typename Tkey_,
+template<typename Tobj_, typename Tkey_,
         template<typename, typename> class MFget_mapper_>
-struct range_const_iterator<MatrixSpace<T_, Tkey_, MFget_mapper_> >
+struct range_const_iterator<MatrixSpace<Tobj_, Tkey_, MFget_mapper_> >
 {
-    typedef typename MatrixSpace<T_, Tkey_, MFget_mapper_>::const_iterator type;
+    typedef typename MatrixSpace<Tobj_, Tkey_, MFget_mapper_>::const_iterator type;
 };
 
 } // namespace boost
