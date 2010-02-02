@@ -149,13 +149,8 @@ public:
         typedef typename collector_result_converter_type::result_type result_type;
         typedef typename remove_const_first<typename impl_type::value_type>::type value_type;
 
-        struct collector: public std::binary_function<
-                typename impl_type::reference,
-                typename position_type::value_type, void>
+        struct collector
         {
-            typedef typename impl_type::iterator first_argument_type;
-            typedef typename position_type::value_type second_argument_type;
-            typedef void result_type;
         public:
             inline collector(typename Builders::result_type& result)
                 : result_(result) {}
@@ -178,12 +173,8 @@ public:
             typename Builders::result_type& result_;
         };
 
-        struct all_neighbors_collector: public std::binary_function<
-                typename impl_type::reference, typename position_type::value_type, void>
+        struct all_neighbors_collector
         {
-            typedef typename impl_type::iterator first_argument_type;
-            typedef typename position_type::value_type second_argument_type;
-            typedef void result_type;
         public:
             inline all_neighbors_collector(typename Builders::result_type& result,
                     const position_type& pos)
