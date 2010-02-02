@@ -86,12 +86,12 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         particleA = self.s.placeParticle( self.A, [0.0,0.0,0.0] )
         self.s.placeParticle( self.B, [1.5000001e-8,0.0,0.0] )
 
-        initialPosition = particleA.getPos().copy()
+        initialPosition = particleA[1].position
 
         for i in range( 10 ):
             self.s.step()
         
-        newPosition = particleA.getPos().copy()
+        newPosition = particleA[1].position
         dist = self.s.distance( initialPosition, newPosition )
 
         self.failIf( dist != 0, 'initial pos: %s,\tnew pos: %s' %
