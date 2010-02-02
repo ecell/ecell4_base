@@ -12,7 +12,6 @@ from surface import CuboidalSurface
 
 from gfrdbase import *
 from utils import *
-from cObjectMatrix import ObjectMatrix
 from bd import BDSimulatorCoreBase
 import myrandom
 

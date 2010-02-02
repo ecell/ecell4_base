@@ -12,8 +12,6 @@ import scipy
 import _gfrd
 from utils import *
 
-from cObjectMatrix import *
-
 import os
 import logging
 import logging.handlers

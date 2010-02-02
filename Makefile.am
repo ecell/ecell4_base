@@ -28,7 +28,6 @@ PYCHECKER_FLAGS = --limit 0
 
 noinst_PYTHON = \
 	bd.py\
-	cObjectMatrix.py\
 	gfrdbase.py\
 	logger.py\
 	gfrdbase.py\
