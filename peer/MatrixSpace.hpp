@@ -27,8 +27,8 @@
 #include "peer/numpy/pyarray_backed_allocator.hpp"
 #include "peer/numpy/ndarray_converters.hpp"
 
-#include "utils/pair.hpp"
 #include "filters.hpp"
+#include "utils/pair.hpp"
 
 namespace peer {
 
@@ -194,14 +194,16 @@ public:
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(shape((*i).second), pos_)));
+                    distance(pos_, (*i).second.position())
+                        - (*i).second.radius()));
             }
 
             inline void operator()(typename impl_type::const_iterator const& i)
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(shape((*i).second.position())), pos_));
+                    distance(pos_, (*i).second.position())
+                        - (*i).second.radius()));
             }
 
             inline void operator()(typename impl_type::iterator i,
@@ -209,7 +211,8 @@ public:
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(offset(shape((*i).second), d), pos_)));
+                    distance(pos_, (*i).second.position() + d)
+                        - (*i).second.radius()));
             }
 
             inline void operator()(typename impl_type::const_iterator const& i,
@@ -217,7 +220,8 @@ public:
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(offset(shape((*i).second), d), pos_)));
+                    distance(pos_, (*i).second.position() + d)
+                        - (*i).second.radius()));
             }
 
         private:

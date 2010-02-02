@@ -32,8 +32,7 @@ BasicPairGreensFunction_test.py\
 FirstPassageGreensFunction_test.py\
 FirstPassagePairGreensFunction_test.py\
 EGFRDSimulator_test.py\
-SphericalShellContainer_test.py\
-CylindricalShellContainer_test.py\
+object_matrix_test.py\
 Model_test.py\
 NetworkRules_test.py\
 ReactionRule_test.py
