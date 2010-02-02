@@ -6,7 +6,7 @@ import math
 
 import numpy
 
-from _gfrd import EventScheduler, FirstPassageGreensFunction, FirstPassagePairGreensFunction, FirstPassageNoCollisionPairGreensFunction, BasicPairGreensFunction, FreePairGreensFunction, EventType, Particle, Shell, ShellContainer, DomainIDGenerator, ShellIDGenerator, DomainID, ParticleContainer, ShellContainer
+from _gfrd import EventScheduler, FirstPassageGreensFunction, FirstPassagePairGreensFunction, FirstPassageNoCollisionPairGreensFunction, BasicPairGreensFunction, FreePairGreensFunction, EventType, Particle, SphericalShell, SphericalShellContainer, DomainIDGenerator, ShellIDGenerator, DomainID, ParticleContainer
 
 from surface import CuboidalSurface
 
@@ -43,7 +43,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
         self.multiref = ref( multi )
 
         self.particleMatrix = ParticleContainer(self.main.worldSize, self.main.matrixSize)
-        self.shellMatrix = ShellContainer(self.main.worldSize, self.main.matrixSize)
+        self.shellMatrix = SphericalShellContainer(self.main.worldSize, self.main.matrixSize)
         self.escaped = False
 
     def updateParticle( self, pid_particle_pair ):
@@ -472,7 +472,7 @@ class Multi( object ):
     def addShell(self, position, size):
         shell_id_shell_pair = (
             self.sim.main.shellIDGenerator(),
-            Shell(position, size, self.domain_id) )
+            SphericalShell(position, size, self.domain_id) )
         self.sim.main.shellMatrix.update(shell_id_shell_pair)
         self.sim.shellMatrix.update(shell_id_shell_pair)
 
@@ -522,11 +522,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def setWorldSize( self, size ):
         ParticleSimulatorBase.setWorldSize( self, size )
-        self.shellContainer = ShellContainer( self.worldSize, self.matrixSize )
+        self.shellContainer = SphericalShellContainer( self.worldSize, self.matrixSize )
 
     def setMatrixSize( self, size ):
         ParticleSimulatorBase.setMatrixSize( self, size )
-        self.shellContainer = ShellContainer( self.worldSize, self.matrixSize )
+        self.shellContainer = SphericalShellContainer( self.worldSize, self.matrixSize )
 
     def getMatrixCellSize( self ):
         return self.shellMatrix.cell_size
@@ -567,7 +567,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         ParticleSimulatorBase.initialize( self )
 
         self.scheduler.clear()
-        self.shellMatrix = ShellContainer(self.worldSize, self.matrixSize)
+        self.shellMatrix = SphericalShellContainer(self.worldSize, self.matrixSize)
 
         singles = []
         for pid_particle_pair in self.particleMatrix:
@@ -663,9 +663,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         rt = self.getReactionRule1(pid_particle_pair[1].sid)
         domain_id = self.domainIDGenerator()
         shell_id_shell_pair = (self.shellIDGenerator(),
-                               Shell(pid_particle_pair[1].position,
-                                     pid_particle_pair[1].radius,
-                                     domain_id))
+                               SphericalShell(pid_particle_pair[1].position,
+                                              pid_particle_pair[1].radius,
+                                              domain_id))
         single = Single(domain_id, pid_particle_pair, shell_id_shell_pair, rt)
         single.initialize(self.t)
         self.moveShell(shell_id_shell_pair)
@@ -699,7 +699,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         domain_id = self.domainIDGenerator()
         shell_id_shell_pair = (self.shellIDGenerator(),
-                               Shell(calculate_pair_CoM(
+                               SphericalShell(
+                                     calculate_pair_CoM(
                                         single1.pid_particle_pair[1].position,
                                         single2.pid_particle_pair[1].position,
                                         single1.pid_particle_pair[1].D,
@@ -878,7 +879,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if radius is None:
             radius = single.shell[1].radius
         new_sid_shell_pair = (single.shell[0],
-                Shell(position, radius, single.domain_id))
+                SphericalShell(position, radius, single.domain_id))
         new_pid_particle_pair = (single.pid_particle_pair[0],
                           Particle(position,
                                    single.pid_particle_pair[1].radius,
@@ -1257,8 +1258,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         new_shell_size = min( new_shell_size, self.getMaxShellSize() )
 
         self.determineSingleEvent(single, self.t, new_shell_size)
-        new_sid_shell_pair = (single.shell[0],
-                              Shell(singlepos, new_shell_size, single.domain_id))
+        new_sid_shell_pair = (single.shell[0], SphericalShell(singlepos, 
+                                                              new_shell_size, 
+                                                              single.domain_id))
         single.shell = new_sid_shell_pair
         self.moveShell(new_sid_shell_pair)
 

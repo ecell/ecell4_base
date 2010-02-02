@@ -1,5 +1,5 @@
-#ifndef SHELL_HPP
-#define SHELL_HPP
+#ifndef SPHERICAL_SHELL_HPP
+#define SPHERICAL_SHELL_HPP
 
 #include <ostream>
 #if defined(HAVE_TR1_FUNCTIONAL)
@@ -13,16 +13,16 @@
 #include "Sphere.hpp"
 
 template<typename T_, typename Tdid_>
-struct Shell
+struct SphericalShell
 {
     typedef Sphere<T_> sphere_type;
     typedef Tdid_ domain_id_type;
     typedef typename sphere_type::position_type position_type;
     typedef typename sphere_type::length_type length_type;
 
-    Shell(): sphere_(), domain_id_() {}
+    SphericalShell(): sphere_(), domain_id_() {}
 
-    Shell(domain_id_type const& domain_id, sphere_type const& sphere)
+    SphericalShell(domain_id_type const& domain_id, sphere_type const& sphere)
         : sphere_(sphere), domain_id_(domain_id) {}
 
     length_type calculateDistanceToSelf(position_type pos)
@@ -76,12 +76,12 @@ struct Shell
         return domain_id_;
     }
 
-    bool operator==(Shell const& rhs) const
+    bool operator==(SphericalShell const& rhs) const
     {
         return domain_id_ == rhs.did() && sphere_ == rhs.as_sphere();
     }
 
-    bool operator!=(Shell const& rhs) const
+    bool operator!=(SphericalShell const& rhs) const
     {
         return !operator==(rhs);
     }
@@ -92,9 +92,9 @@ private:
 };
 
 template<typename Tstrm_, typename Ttraits_, typename T_, typename Tdid_>
-inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Shell<T_, Tdid_>& v)
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const SphericalShell<T_, Tdid_>& v)
 {
-    strm << "Shell(" << v.as_sphere() << ", " << v.did() << ")";
+    strm << "SphericalShell(" << v.as_sphere() << ", " << v.did() << ")";
     return strm;
 }
 
@@ -107,9 +107,9 @@ namespace boost {
 #endif
 
 template<typename T_, typename Tdid_>
-struct hash<Shell<T_, Tdid_> >
+struct hash<SphericalShell<T_, Tdid_> >
 {
-    typedef Shell<T_, Tdid_> argument_type;
+    typedef SphericalShell<T_, Tdid_> argument_type;
 
     std::size_t operator()(argument_type const& val)
     {
@@ -127,4 +127,4 @@ struct hash<Shell<T_, Tdid_> >
 } // namespace boost
 #endif
 
-#endif /* SHELL_HPP */
+#endif /* SPHERICAL_SHELL_HPP */

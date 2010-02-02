@@ -33,7 +33,7 @@
 #include "utils/array_traits.hpp"
 #include "Vector3.hpp"
 #include "Particle.hpp"
-#include "Shell.hpp"
+#include "SphericalShell.hpp"
 #include "ParticleID.hpp"
 #include "ShellID.hpp"
 #include "DomainID.hpp"
@@ -48,7 +48,7 @@
 #include "peer/numpy/wrapped_multi_array.hpp"
 #include "peer/numpy/scalar_converters.hpp"
 #include "peer/Particle.hpp"
-#include "peer/Shell.hpp"
+#include "peer/SphericalShellWrapper.hpp"
 #include "peer/MatrixSpace.hpp"
 #include "peer/SpeciesType.hpp"
 #include "peer/Identifier.hpp"
@@ -65,7 +65,7 @@ typedef ParticleID particle_id_type;
 typedef Particle<length_type, D_type, species_id_type> particle_type;
 typedef Sphere<length_type> sphere_type;
 typedef DomainID domain_id_type;
-typedef Shell<length_type, domain_id_type> shell_type;
+typedef SphericalShell<length_type, domain_id_type> spherical_shell_type;
 typedef ShellID shell_id_type;
 
 static boost::python::object species_type_class;
@@ -491,7 +491,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::to_native_converter<position_type,
         seq_to_position_converter>();
 
-    peer::MatrixSpace< MatrixSpace<shell_type, shell_id_type> >::__register_class("ShellContainer");
+    peer::MatrixSpace< MatrixSpace<spherical_shell_type, shell_id_type> >::__register_class("SphericalShellContainer");
     peer::MatrixSpace<MatrixSpace<particle_type, particle_id_type, get_mapper_mf> >::__register_class("ParticleContainer");
     species_type_class = peer::SpeciesType::__register_class();
 
@@ -528,7 +528,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::IdentifierWrapper<shell_id_type>::__register_class("ShellID");
     register_id_generator<shell_id_type>("ShellIDGenerator");
-    peer::ShellWrapper<shell_type>::__register_class("Shell");
+    peer::SphericalShellWrapper<spherical_shell_type>::__register_class("SphericalShell");
 
     peer::IdentifierWrapper<domain_id_type>::__register_class("DomainID");
     register_id_generator<domain_id_type>("DomainIDGenerator");
