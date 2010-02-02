@@ -71,6 +71,13 @@ distance(Sphere<T_> const& obj, typename Sphere<T_>::position_type const& pos)
 }
 
 template<typename T_>
+inline typename Sphere<T_>::length_type
+distance_cyclic(Sphere<T_> const& obj, typename Sphere<T_>::position_type const& pos, typename Sphere<T_>::length_type const& world_size)
+{
+    return distance_cyclic(pos, obj.position(), world_size) - obj.radius();
+}
+
+template<typename T_>
 inline Sphere<T_> const& shape(Sphere<T_> const& shape)
 {
     return shape;

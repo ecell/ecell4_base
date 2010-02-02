@@ -142,6 +142,13 @@ distance(Cylinder<T_> const& obj,
 }
 
 template<typename T_>
+inline typename Cylinder<T_>::length_type
+distance_cyclic(Cylinder<T_> const& obj, typename Cylinder<T_>::position_type const& pos, typename Cylinder<T_>::length_type const& world_size)
+{
+    return distance(obj, pos);
+}
+
+template<typename T_>
 inline Cylinder<T_> const& shape(Cylinder<T_> const& shape)
 {
     return shape;

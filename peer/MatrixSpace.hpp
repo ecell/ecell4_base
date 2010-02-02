@@ -156,14 +156,14 @@ public:
                 : result_(result) {}
 
             inline void operator()(typename impl_type::iterator const& i,
-                    const typename position_type::value_type& d)
+                    const typename position_type::value_type& d) const
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()), d));
             }
 
             inline void operator()(typename impl_type::const_iterator const& i,
-                    const typename position_type::value_type& d)
+                    const typename position_type::value_type& d) const
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()), d));
@@ -173,47 +173,50 @@ public:
             typename Builders::result_type& result_;
         };
 
+        template<typename TdistFun_>
         struct all_neighbors_collector
         {
         public:
+            typedef TdistFun_ distance_functor;
+        public:
             inline all_neighbors_collector(typename Builders::result_type& result,
-                    const position_type& pos)
+                    const distance_functor& distance)
                 : result_(result),
-                  pos_(pos) {}
+                  distance_(distance) {}
 
-            inline void operator()(typename impl_type::iterator i)
+            inline void operator()(typename impl_type::iterator i) const
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(shape((*i).second), pos_)));
+                    distance_(shape((*i).second))));
             }
 
-            inline void operator()(typename impl_type::const_iterator const& i)
+            inline void operator()(typename impl_type::const_iterator const& i) const
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(shape((*i).second.position())), pos_));
+                    distance_(shape((*i).second.position()))));
             }
 
             inline void operator()(typename impl_type::iterator i,
-                    const position_type& d)
+                    const position_type& d) const
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(offset(shape((*i).second), d), pos_)));
+                    distance_(offset(shape((*i).second), d))));
             }
 
             inline void operator()(typename impl_type::const_iterator const& i,
-                    const position_type& d)
+                    const position_type& d) const
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance(offset(shape((*i).second), d), pos_)));
+                    distance_(offset(shape((*i).second), d))));
             }
 
         private:
             typename Builders::result_type& result_;
-            position_type pos_;
+            distance_functor const& distance_;
         };
 
         struct distance_comparator:
@@ -223,6 +226,35 @@ public:
             {
                 return lhs.second < rhs.second;
             }
+        };
+
+        struct distance_calculator
+        {
+            distance_calculator(position_type const& pos): pos_(pos) {}
+
+            template<typename Tshape_>
+            length_type operator()(Tshape_ const& shape) const
+            {
+                return distance(shape, pos_);
+            }
+
+        private:
+            position_type pos_;
+        };
+
+        struct cyclic_distance_calculator
+        {
+            cyclic_distance_calculator(position_type const& pos, length_type const& world_size): pos_(pos), world_size_(world_size) {}
+
+            template<typename Tshape_>
+            length_type operator()(Tshape_ const& shape) const
+            {
+                return distance_cyclic(shape, pos_, world_size_);
+            }
+
+        private:
+            position_type pos_;
+            length_type world_size_;
         };
 
     public:
@@ -249,7 +281,8 @@ public:
         build_all_neighbors_array(result_type& retval,
                 impl_type const& cntnr, const position_type& pos)
         {
-            all_neighbors_collector col(retval, pos);
+            distance_calculator distance(pos);
+            all_neighbors_collector<distance_calculator> col(retval, distance);
             cntnr.each_neighbor(cntnr.index(pos), col);
             std::sort(retval.begin(), retval.end(), distance_comparator());
         }
@@ -258,7 +291,8 @@ public:
         build_all_neighbors_array_cyclic(result_type& retval,
                 impl_type const& cntnr, const position_type& pos)
         {
-            all_neighbors_collector col(retval, pos);
+            cyclic_distance_calculator distance(pos, cntnr.world_size());
+            all_neighbors_collector<cyclic_distance_calculator> col(retval, distance);
             cntnr.each_neighbor_cyclic(cntnr.index(pos), col);
             std::sort(retval.begin(), retval.end(), distance_comparator());
         }
