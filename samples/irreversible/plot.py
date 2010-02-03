@@ -59,7 +59,7 @@ def plot_hist( data, T, i ):
     print 'max', max( nonreactions )
     hist, r = numpy.histogram( numpy.log( nonreactions ), 
                                bins=bins )
-
+    r = r[:-1]
     histsum = hist.sum()
     S_sim = float( len( nonreactions ) ) / len( data )
     print 'S_sim', S_sim
