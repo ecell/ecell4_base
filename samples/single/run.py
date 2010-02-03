@@ -7,6 +7,7 @@
 
 
 from egfrd import *
+import sys
 
 def run( outfilename, T, S, N ):
     print outfilename

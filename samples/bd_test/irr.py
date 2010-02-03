@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from bd import *
+import sys
 
 def run( outfilename, T, N ):
 
