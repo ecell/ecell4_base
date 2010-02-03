@@ -75,7 +75,7 @@ class SphericalShellContainerTestCase( unittest.TestCase ):
 
         # Distance to sphere from x=660 should be 40.
         d = c.get_neighbors_cyclic( [660, 500, 500] )
-        self.assertAlmostEqual( 40, d[0][1] ) # Bug. Returns 360.
+        self.assertAlmostEqual( 40, d[0][1] )
 
 
 if __name__ == "__main__":
