@@ -27,7 +27,7 @@ public:
 
     bool operator==(const Cylinder& rhs) const
     {
-        return position_ == rhs.position() && radius_ == rhs.radius() && ori_ == rhs.orientatin() && size_ == rhs.size();
+        return position_ == rhs.position() && radius_ == rhs.radius() && ori_ == rhs.orientation() && size_ == rhs.size();
     }
 
     bool operator!=(const Cylinder& rhs) const

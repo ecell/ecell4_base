@@ -7,6 +7,7 @@ SphericalBesselGenerator_test\
 array_helper_test\
 filters_test\
 MatrixSpace_test\
+MatrixSpaceWithCylinders_test\
 model_test
 
 PYTHON_TESTS = alltests.py
@@ -58,6 +59,8 @@ array_helper_test_SOURCES = array_helper_test.cpp
 filters_test_SOURCES = filters_test.cpp
 
 MatrixSpace_test_SOURCES = MatrixSpace_test.cpp
+
+MatrixSpaceWithCylinders_test_SOURCES = MatrixSpaceWithCylinders_test.cpp
 
 vmap_test_SOURCES = vmap_test.cpp
 
