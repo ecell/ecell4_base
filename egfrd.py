@@ -607,7 +607,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             raise RuntimeError, 'Stop time < current time.'
 
         self.t = t
-        print 'stop'
+
         scheduler = self.scheduler
         
         nonSingleList = []
@@ -1605,7 +1605,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             
             # calculate new interparticle
             r_r = pair.drawR_pair( r0, dt, pair.a_r )
-            print r_r
+
             theta_r = pair.drawTheta_pair(myrandom.uniform(), r_r, r0, dt, 
                                           pair.a_r)
             phi_r = myrandom.uniform() * 2 * Pi
