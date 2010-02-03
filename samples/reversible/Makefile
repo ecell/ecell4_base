@@ -1,8 +1,13 @@
 LOGLEVEL = ERROR
-PYTHONPATH = ../..
+PYTHONPATH = ../../epdp
 PYTHON = python
 
-all: rev.3.out rev.2.out rev.1.out rev.0.out rev.-1.out rev.-2.out rev.-3.out
+OUTFILES=rev.3.out rev.2.out rev.1.out rev.0.out rev.-1.out rev.-2.out rev.-3.out
+
+all: $(OUTFILES)
+
+clean:
+	rm -f $(OUTFILES)
 
 rev.3.out:
 	env PYTHONPATH=$(PYTHONPATH) LOGLEVEL=$(LOGLEVEL) $(PYTHON) -O run.py rev.3.out 1.25e-2 10000000
