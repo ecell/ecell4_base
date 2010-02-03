@@ -145,7 +145,7 @@ template<typename T_>
 inline typename Cylinder<T_>::length_type
 distance_cyclic(Cylinder<T_> const& obj, typename Cylinder<T_>::position_type const& pos, typename Cylinder<T_>::length_type const& world_size)
 {
-    return distance(obj, pos);
+    return distance(obj, cyclic_transpose(pos, obj.position(), world_size));
 }
 
 template<typename T_>
