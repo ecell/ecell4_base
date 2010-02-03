@@ -26,8 +26,10 @@ from _gfrd import (
 from surface import CuboidalSurface
 
 from gfrdbase import *
+from single import *
+from pair import *
+from multi import *
 from utils import *
-from bd import BDSimulatorCoreBase
 import myrandom
 
 import logging
