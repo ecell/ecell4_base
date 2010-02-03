@@ -70,11 +70,11 @@ class SphericalShellContainerTestCase( unittest.TestCase ):
         c.update( ( shellId0, SphericalShell( [0, 500, 500], 300, DomainID(0, 0) ) ) )
 
         # Distance to sphere from x=670 should be 30.
-        d = c.get_neighbors_cyclic( [670, 500, 500] )
+        d = c.get_neighbors( [670, 500, 500] )
         self.assertAlmostEqual( 30, d[0][1] ) # Ok.
 
         # Distance to sphere from x=660 should be 40.
-        d = c.get_neighbors_cyclic( [660, 500, 500] )
+        d = c.get_neighbors( [660, 500, 500] )
         self.assertAlmostEqual( 40, d[0][1] )
 
 

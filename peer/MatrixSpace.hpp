@@ -363,7 +363,8 @@ public:
     }
 
     typename Builders::result_type
-    get_neighbors_within_radius(const position_type& pos, length_type radius)
+    get_neighbors_within_radius_cyclic(const position_type& pos,
+                                       length_type radius)
     {
         typename Builders::result_type::allocator_type alloc;
 
@@ -445,7 +446,8 @@ public:
             .add_property("cell_size", &MatrixSpace::get_cell_size)
             .add_property("world_size", &MatrixSpace::get_world_size)
             .add_property("matrix_size", &MatrixSpace::get_matrix_size)
-            .def("get_neighbors_within_radius", &MatrixSpace::get_neighbors_within_radius)
+            .def("get_neighbors_within_radius_cyclic", &MatrixSpace::get_neighbors_within_radius_cyclic)
+            .def("get_neighbors_within_radius", &MatrixSpace::get_neighbors_within_radius_cyclic)
             .def("get_neighbors_cyclic", &MatrixSpace::get_neighbors_cyclic)
             .def("get_neighbors", &MatrixSpace::get_neighbors_cyclic)
             .def("__len__", &MatrixSpace::__len__)
