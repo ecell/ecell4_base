@@ -607,7 +607,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             raise RuntimeError, 'Stop time < current time.'
 
         self.t = t
-        
+        print 'stop'
         scheduler = self.scheduler
         
         nonSingleList = []
@@ -1605,15 +1605,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             
             # calculate new interparticle
             r_r = pair.drawR_pair( r0, dt, pair.a_r )
+            print r_r
             theta_r = pair.drawTheta_pair(myrandom.uniform(), r_r, r0, dt, 
                                           pair.a_r)
             phi_r = myrandom.uniform() * 2 * Pi
             newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
             newInterParticle = sphericalToCartesian( newInterParticleS )
-
             newpos1, newpos2 = self.calculatePairPos(pair, newCoM, 
                                                      newInterParticle,
                                                      oldInterParticle)
+
             newpos1 = self.applyBoundary(newpos1)
             newpos2 = self.applyBoundary(newpos2)
             assert not self.checkOverlap(newpos1, particle1[1].radius,
@@ -1631,8 +1632,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert single2.domain_id not in self.domains
         self.domains[single1.domain_id] = single1
         self.domains[single2.domain_id] = single2
-        self.moveSingle(single1, single1.pid_particle_pair[1].position)
-        self.moveSingle(single2, single2.pid_particle_pair[1].position)
+        self.moveSingle(single1, newpos1)
+        self.moveSingle(single2, newpos2)
 
         assert self.shellMatrix[single1.shell[0]].radius == single1.shell[1].radius
         assert self.shellMatrix[single2.shell[0]].radius == single2.shell[1].radius
