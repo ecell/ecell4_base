@@ -72,7 +72,7 @@ def singlerun1( T ):
             print 'reaction'
             return 0.0, s.t
 
-    distance = s.distance( s.particleMatrix[ particleB[0] ], s.particleMatrix[ particleA[ 0 ] ] )
+    distance = s.distance( s.particleMatrix[particleB[0]].position, s.particleMatrix[ particleA[ 0 ] ] )
 
     return distance, s.t
 
@@ -119,7 +119,7 @@ def singlerun2( T ):
             s.stop( endTime )
             break
 
-    distance = s.distance( s.particleMatrix[ particleB[0] ], s.particleMatrix[ particleA[ 0 ] ] )
+    distance = s.distance( s.particleMatrix[particleB[0]].position, s.particleMatrix[ particleA[ 0 ] ].position )
 
     return distance, s.t
 
