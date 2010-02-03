@@ -195,7 +195,7 @@ public:
             {
                 result_.push_back(result_element(
                     boost::python::incref(boost::python::object(*i).ptr()),
-                    distance_(shape((*i).second.position()))));
+                    distance_(shape((*i).second))));
             }
 
             inline void operator()(typename impl_type::iterator i,
