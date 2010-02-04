@@ -543,7 +543,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             
             self.removeParticle(single.pid_particle_pair)
 
-            self.lastReaction = Reaction( rt, [single.particle], [] )
+            self.lastReaction = Reaction( rt, [single.pid_particle_pair[1]], [] )
 
             
         elif len( rt.products ) == 1:
@@ -564,7 +564,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             newsingle = self.createSingle( newparticle )
             self.addSingleEvent( newsingle )
 
-            self.lastReaction = Reaction( rt, [single.particle], [newparticle] )
+            self.lastReaction = Reaction( rt, [single.pid_particle_pair[1]], [newparticle] )
 
             if __debug__:
                 log.info( 'product; %s' % str( newsingle ) )
@@ -630,7 +630,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.addSingleEvent( newsingle1 )
             self.addSingleEvent( newsingle2 )
 
-            self.lastReaction = Reaction( rt, [single.pid_particle_pair], 
+            self.lastReaction = Reaction( rt, [single.pid_particle_pair[1]], 
                                           [particle1, particle2] )
 
             if __debug__:
