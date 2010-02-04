@@ -210,7 +210,7 @@ class BDSimulatorCoreBase( object ):
         return reactionTypes[i]
 
     def fireReaction1( self, particle, rt ):
-        oldpos = particle.pos.copy()
+        oldpos = particle.position
 
         if len( rt.products ) == 0:
             
