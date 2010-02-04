@@ -39,7 +39,7 @@ def singlerun( T ):
     s.setModel( m )
     
     particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [(A.radius + B.radius)+1e-23,0,0] )
+    particleB = s.placeParticle( B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0] )
 
     endTime = T
     #s.initialize()
@@ -50,14 +50,22 @@ def singlerun( T ):
             break
         s.step()
 
-        if s.lastReaction:
+        if s.core.lastReaction:
             print 'reaction'
             return 0.0, s.t
 
-    distance = s.distance( particleB.getPos(), particleA.getPos() )
+    distance = s.distance(s.particleMatrix[first(s.particlePool[A.id])].position,
+                          s.particleMatrix[first(s.particlePool[B.id])].position)
 
     return distance, s.t
 
+
+def first(x):
+    x = iter(x)
+    try:
+        return x.next()
+    except StopIteration, e:
+        return None
     
 
 if __name__ == '__main__':
