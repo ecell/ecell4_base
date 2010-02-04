@@ -70,12 +70,11 @@ class CylindricalShellContainerTestCase( unittest.TestCase ):
         c.update( ( shellId0, CylindricalShell([0, 0, 0], 100, [0,0,1], 100, DomainID(0,0) ) ) )
 
         d = c.get_neighbors( [700, 0, 0] )
-        self.assertAlmostEqual( 200, d[0][1] ) # Ok.
+        self.assertAlmostEqual( 200, d[0][1] )
 
-        # Todo. Bug?
+        # Todo.
         d = c.get_neighbors( [600, 0, 0] )
-        #self.assertAlmostEqual( 300, d[0][1] ) # Fail.
-        self.assertAlmostEqual( 500, d[0][1] ) # Not Ok!
+        self.assertAlmostEqual( 300, d[0][1] )
 
 
 if __name__ == "__main__":

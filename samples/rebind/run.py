@@ -10,6 +10,7 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py 1 1 100 10
 
 from egfrd import *
 from bd import *
+import sys
 
 def run( outfilename, D_factor, N_B, N_X, N ):
     print outfilename

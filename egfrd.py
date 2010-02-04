@@ -1940,7 +1940,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return [self.domains[did] for did in uniq(s[0][1].did for s in result) if did not in ignore]
 
     def getNeighbors(self, pos):
-        return self.shellMatrix.get_neighbors_cyclic(pos)
+        return self.shellMatrix.get_neighbors(pos)
 
     def getNeighborsWithinRadius( self, pos, radius=numpy.inf, ignore=[] ):
         '''
@@ -1965,7 +1965,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         ignore: domain ids.
         '''
 
-        result = self.shellMatrix.get_neighbors_cyclic(pos)
+        result = self.shellMatrix.get_neighbors(pos)
 
         for item in result:
             if item[0][1].did not in ignore:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from bd import *
+import sys
 
 def run( outfilename, T, N ):
 
@@ -33,7 +34,7 @@ def singlerun( T ):
     C = m.new_species_type( 'C', D/2, sigma/2 )
     
     r1 = createBindingReactionRule( A, B, C, kf )
-    s.newwork_rules.add_reaction_rule( r1 )
+    m.network_rules.add_reaction_rule( r1 )
 
     s.setModel( m )
     
