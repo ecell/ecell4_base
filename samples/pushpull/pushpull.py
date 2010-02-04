@@ -65,9 +65,9 @@ print C2N( 498e-9, V )
 
 
 
-box1 = CuboidalSurface( [0,0,0],[L,L,L] )
-plain1 = CuboidalSurface( [0,0,0],[0,L,L] )
-plain2 = CuboidalSurface( [L/2,0,0],[L/2,L,L] )
+box1 = CuboidalRegion( [0,0,0],[L,L,L] )
+plain1 = CuboidalRegion( [0,0,0],[0,L,L] )
+plain2 = CuboidalRegion( [L/2,0,0],[L/2,L,L] )
 # not supported yet
 #s.addSurface( box1 )
 

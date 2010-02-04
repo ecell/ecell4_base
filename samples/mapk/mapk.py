@@ -8,7 +8,7 @@ import sys
 s = EGFRDSimulator()
 s.setWorldSize( 1e-5 )
 
-box1 = CuboidalSurface( [0,0,0],[1e-5,1e-5,1e-5] )
+box1 = CuboidalRegion( [0,0,0],[1e-5,1e-5,1e-5] )
 # not supported yet
 #s.addSurface( box1 )
 

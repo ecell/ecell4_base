@@ -10,7 +10,7 @@ size = 1e-6
 s.setWorldSize( size )
 
 
-box1 = CuboidalSurface( [0,0,0],[size,size,size])
+box1 = CuboidalRegion( [0,0,0],[size,size,size])
 # not supported yet
 #s.addSurface( box1 )
 
