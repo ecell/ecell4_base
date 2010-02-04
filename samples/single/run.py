@@ -18,7 +18,7 @@ def run( outfilename, T, S, N ):
         d, t = singlerun( T, S )
         outfile.write( '%g\n' % d )
 
-        print i
+        #print i
         assert t == T
 
     outfile.close()
@@ -50,10 +50,17 @@ def singlerun( T, S ):
             break
         s.step()
 
-    distance = s.distance( [0,0,0], particleA.pos )
-
+    distance = s.distance( [0,0,0], s.particleMatrix[first(s.particlePool[A.id])].position )
     return distance, s.t
     
+def first(x):
+    x = iter(x)
+    try:
+        return x.next()
+    except StopIteration, e:
+        return None
+
 if __name__ == '__main__':
     run( sys.argv[1], float( sys.argv[2] ), float( sys.argv[3] ),
          int( sys.argv[4] ) )
+

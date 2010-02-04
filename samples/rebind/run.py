@@ -99,8 +99,6 @@ def singlerun( T_list, D_factor, N_B, N_X ):
 
     X = m.new_species_type( 'X', DX, radius )
 
-    s.setModel( m )
-
     if N_X != 0:
         s.throwInParticles( X, N_X, box1 )
 
@@ -121,11 +119,13 @@ def singlerun( T_list, D_factor, N_B, N_X ):
     r2 = createUnbindingReactionRule( C, A, B, 1e3 )
     m.network_rules.add_reaction_rule( r2 )
 
+    s.setModel( m )
+
     A_pos = [0,0,0]
-    B_pos = [(A.radius + B.radius)+1e-23,0,0]
+    B_pos = [(float(A['radius']) + float(B['radius']))+1e-23,0,0]
 
     while 1:
-        pp = s.getParticlesWithinRadius( A_pos, A.radius )
+        pp = s.getParticlesWithinRadius( A_pos, float(A['radius']) )
         if not pp:
             break
         for p in pp:
@@ -135,7 +135,7 @@ def singlerun( T_list, D_factor, N_B, N_X ):
     s.placeParticle( A, A_pos )
 
     while 1:
-        pp = s.getParticlesWithinRadius( B_pos, B.radius )
+        pp = s.getParticlesWithinRadius( B_pos, float(B['radius']) )
         if not pp:
             break
         for p in pp:
@@ -156,10 +156,11 @@ def singlerun( T_list, D_factor, N_B, N_X ):
     nextStop = T_list[0]
 
     i_T = 0
+
     while 1:
         if s.lastReaction:
             print s.lastReaction
-            if C.pool.size == 0:  #A,B
+            if len(s.particlePool[C.id]) == 0:  #A,B
                 print 'set t_last', s.t
                 t_last = s.t  # set t_last
             else:    # C
@@ -170,11 +171,12 @@ def singlerun( T_list, D_factor, N_B, N_X ):
         if nextTime > nextStop:
             print 'stop', i_T, nextStop
             s.stop( nextStop )
-            if C.pool.size != 0:
+            if len(s.particlePool[C.id]) != 0:  #A,B
                 r_list.append( 0 )
             else:
-                r_list.append( s.distance( A.pool.positions[0], 
-                                           B.pool.positions[0] ) )
+                r_list.append(s.distance(
+                    s.particleMatrix[first(s.particlePool[A.id])].position,
+                    s.particleMatrix[first(s.particlePool[B.id])].position))
 
             i_T += 1
             nextStop = T_list[i_T]
@@ -187,11 +189,19 @@ def singlerun( T_list, D_factor, N_B, N_X ):
 
     return r_list, t_list
     
+def first(x):
+    x = iter(x)
+    try:
+        return x.next()
+    except StopIteration, e:
+        return None
+
+
 if __name__ == '__main__':
 
     import os
 
     outfilename = 'data/rebind_' + '_'.join( sys.argv[1:4] ) +\
-        '_' + os.environ['SGE_TASK_ID']
+        '_' #+ os.environ['SGE_TASK_ID']
     run( outfilename, float( sys.argv[1] ), 
          int( sys.argv[2] ), int( sys.argv[3] ), int( sys.argv[4] ) )
