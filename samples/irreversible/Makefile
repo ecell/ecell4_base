@@ -2,7 +2,7 @@ LOGLEVEL = ERROR
 PYTHONPATH = ../..
 PYTHON = python
 
-OUTFILES=irr.3.out irr.2.out irr.1.out irr.0.out irr.-1.out irr.-2.out irr.-3.out
+OUTFILES=irr.3.out irr.2.out irr.1.out irr.0.out irr.-1.out irr.-2.out #irr.-3.out
 
 all: $(OUTFILES)
 
