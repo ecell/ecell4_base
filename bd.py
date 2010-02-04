@@ -72,6 +72,7 @@ class BDSimulatorCoreBase( object ):
         self.particleList = set()
 
     def addToParticleList( self, pid ):
+        assert type( pid ).__name__ == 'ParticleID'
         self.particleList.add( pid )
 
     def removeFromParticleList( self, pid ):
@@ -383,7 +384,7 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
 
     def createParticle(self, sid, pos):
         particle = self.main.createParticle( sid, pos )
-        self.addToParticleList( particle )
+        self.addToParticleList( particle[0] )
 
     def clearVolume( self, pos, radius, ignore=[] ):
         '''
