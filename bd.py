@@ -114,7 +114,8 @@ class BDSimulatorCoreBase( object ):
         myrandom.shuffle(self.particlesToStep)
         while self.particlesToStep:
             pid = self.particlesToStep.pop() # take the last one
-            pid_particle_pair = (pid, self.main.particleMatrix[pid])
+            particle = self.main.particleMatrix[pid]
+            pid_particle_pair = (pid, particle)
             sid = pid_particle_pair[1].sid
 
             rt1 = self.attemptSingleReactions(sid)
