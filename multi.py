@@ -42,8 +42,8 @@ class MultiBDCore( BDSimulatorCoreBase ):
         self.removeFromParticleList(pid_particle_pair[0])
         del self.particleMatrix[pid_particle_pair[0]]
 
-    def createParticle( self, species, pos ):
-        particle = self.main.createParticle( species, pos )
+    def createParticle( self, sid, pos ):
+        particle = self.main.createParticle( sid, pos )
         self.addParticle( particle )
         return particle
 

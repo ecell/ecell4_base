@@ -230,7 +230,7 @@ class BDSimulatorCoreBase( object ):
             self.clearVolume( oldpos, radius, ignore = [ particle ] )
                 
             self.removeParticle( particle )
-            newparticle = self.createParticle( productSpecies, oldpos )
+            newparticle = self.createParticle( productSpecies.serial, oldpos )
 
             self.lastReaction = Reaction( rt, [particle], [newparticle] )
 
@@ -283,8 +283,8 @@ class BDSimulatorCoreBase( object ):
             # move accepted
             self.removeParticle( particle )
 
-            newparticle1 = self.createParticle( productSpecies1, newpos1 )
-            newparticle2 = self.createParticle( productSpecies2, newpos2 )
+            newparticle1 = self.createParticle( productSpecies1.serial, newpos1 )
+            newparticle2 = self.createParticle( productSpecies2.serial, newpos2 )
 
             self.lastReaction = Reaction( rt, [particle], 
                                           [newparticle1, newparticle2] )
@@ -381,8 +381,8 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
         self.main.removeParticle(pid_particle_pair)
         self.removeFromParticleList(pid_particle_pair[0])
 
-    def createParticle(self, species, pos):
-        particle = self.main.createParticle( species, pos )
+    def createParticle(self, sid, pos):
+        particle = self.main.createParticle( sid, pos )
         self.addToParticleList( particle )
 
     def clearVolume( self, pos, radius, ignore=[] ):

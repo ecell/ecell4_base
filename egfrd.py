@@ -560,7 +560,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 raise NoSpace()
 
             self.removeParticle(single.pid_particle_pair)
-            newparticle = self.createParticle( productSpecies, oldpos )
+            newparticle = self.createParticle( productSpecies.serial, oldpos )
             newsingle = self.createSingle( newparticle )
             self.addSingleEvent( newsingle )
 
