@@ -201,6 +201,7 @@ class ParticleSimulatorBase( object ):
         self.particleIDGenerator = _gfrd.ParticleIDGenerator(0)
 
     def setModel( self, model ):
+        model.set_all_repulsive()
         self.speciesList.clear()
         self.particlePool.clear()
         self.reactionRuleCache.clear()
