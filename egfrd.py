@@ -118,6 +118,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.scheduler.clear()
         self.shellMatrix = SphericalShellContainer(self.worldSize, self.matrixSize)
+        self.domains = {}
 
         singles = []
         for pid_particle_pair in self.particleMatrix:
