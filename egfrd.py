@@ -664,7 +664,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         single.initialize( self.t )
 
-        self.moveSingle(single, newpos)
+        self.moveSingle(single, newpos, single.pid_particle_pair[1].radius)
 
     def fireSingle( self, single ):
 
@@ -1098,9 +1098,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         single.initialize( self.t )
 
-        self.moveSingle( single, newpos )
+        self.moveSingle( single, newpos, particleRadius )
 
         self.updateEvent( self.t, single )
+
+        assert single.shell[1].radius == particleRadius
 
     def burstPair( self, pair ):
         if __debug__:
@@ -1114,10 +1116,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         dt = self.t - pair.lastTime 
 
-        if dt > 0.0:
+        particle1 = single1.pid_particle_pair
+        particle2 = single2.pid_particle_pair
 
-            particle1 = single1.pid_particle_pair
-            particle2 = single2.pid_particle_pair
+        if dt > 0.0:
 
             pos1 = particle1[1].position
             pos2 = particle2[1].position
@@ -1168,11 +1170,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert single2.domain_id not in self.domains
         self.domains[single1.domain_id] = single1
         self.domains[single2.domain_id] = single2
-        self.moveSingle(single1, newpos1)
-        self.moveSingle(single2, newpos2)
+        self.moveSingle(single1, newpos1, particle1[1].radius)
+        self.moveSingle(single2, newpos2, particle2[1].radius)
 
         assert self.shellMatrix[single1.shell[0]].radius == single1.shell[1].radius
         assert self.shellMatrix[single2.shell[0]].radius == single2.shell[1].radius
+        assert single1.shell[1].radius == particle1[1].radius
+        assert single2.shell[1].radius == particle2[1].radius
 
         return single1, single2
 
