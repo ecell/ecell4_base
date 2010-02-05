@@ -5,12 +5,23 @@ from _gfrd import *
 
 from utils import *
 import myrandom
+from shape import *
+from coordinate import *
 
 import logging
 
 log = logging.getLogger('ecell')
 
+
 class Single( object ):
+    """There are 2 main types of Singles:
+        * NonInteractionSingle
+        * InteractionSingle (when the particle is nearby a surface)
+
+    Each type of Single defines a list of coordinates, see coordinate.py. For each 
+    coordinate the Green's function is specified.
+
+    """
     def __init__( self, domain_id, pid_particle_pair, shell_id_shell_pair, reactiontypes ):
         self.multiplicity = 1
 
@@ -72,45 +83,49 @@ class Single( object ):
 
     def isReset( self ):
         return self.dt == 0.0 and self.eventType == EventType.ESCAPE
-        
-    def drawR( self, dt, shellSize):
-        assert dt >= 0
-        a = shellSize - self.pid_particle_pair[1].radius
-        rnd = myrandom.uniform()
-        gf = FirstPassageGreensFunction( self.pid_particle_pair[1].D )
-        gf.seta(a)
-        try:
-            r = gf.drawR(rnd , dt)
-        except Exception, e:
-            raise Exception, 'gf.drawR failed; %s; rnd=%g, t=%g, %s' %\
-                (str(e), rnd, dt, gf.dump())
-        return r
 
     def drawReactionTime( self ):
+        """Return a (reactionTime, eventType, activeCoordinate=None)-tuple.
+
+        """
         if self.k_tot == 0:
-            return numpy.inf
-        if self.k_tot == numpy.inf:
-            return 0.0
-        rnd = myrandom.uniform()
-        dt = ( 1.0 / self.k_tot ) * math.log( 1.0 / rnd )
-        return dt
+            dt = numpy.inf
+        elif self.k_tot == numpy.inf:
+            dt = 0.0
+        else:
+            dt = (1.0 / self.k_tot) * math.log(1.0 / myrandom.uniform())
+        return dt, EventType.REACTION, None
 
-    def drawEscapeTime(self, a):
-        D = self.pid_particle_pair[1].D
+    def drawEscapeOrInteractionTime(self):
+        """Return an (escapeTime, eventType, activeCoordinate)-tuple.
+        Handles also all interaction events.
 
-        if D == 0:
-            return numpy.inf
+        """
+        if self.getD() == 0:
+            return INF, EventType.ESCAPE, None
+        else:
+            # Note: we are not calling coordinate.drawEventType() just yet, 
+            # but postpone it to the very last minute (when this event is 
+            # executed in fireSingle), and memorize the activeCoordinate like 
+            # this.
 
-        gf = FirstPassageGreensFunction(D)
-        gf.seta(a)
+            # So this can still be an interaction or an escape.
 
-        rnd = myrandom.uniform()
-        try:
-            return gf.drawTime( rnd )
-        except Exception, e:
-            raise Exception, 'gf.drawTime() failed; %s; rnd=%g, %s' %\
-                ( str( e ), rnd, gf.dump() )
+            # Also note that in case this single will get a reaction event 
+            # instead of this escape event (its dt is smaller in 
+            # determineNextEvent), and even though activeCoordinate is set, it 
+            # won't be used at all, since reaction events are taken care of 
+            # before escape events in fireSingle.
+            return min((c.drawTime(), EventType.ESCAPE, c)
+                       for c in self.coordinates)
 
+    def determineNextEvent(self):
+        """Return an (escapeTime, eventType, activeCoordinate)-tuple.
+        By returning the arguments it is a pure function. 
+
+        """
+        return min(self.drawEscapeOrInteractionTime(), 
+                   self.drawReactionTime()) 
 
     def updatek_tot( self ):
         self.k_tot = 0
@@ -140,13 +155,71 @@ class Single( object ):
         return 'Single[%s: %s: eventID=%s]' % ( self.domain_id, self.pid_particle_pair[0], self.eventID )
 
 
-# def calculatePairCoM( pos1, pos2, D1, D2, worldSize ):
-#     '''
-#     Calculate and return the center-of-mass of a Pair.
-#     '''
-#     #pos2t = cyclicTranspose( pos2, pos1, worldSize )
-#     pos2t = cyclic_transpose( pos2, pos1, worldSize )
-#     return ( ( D2 * pos1 + D1 * pos2t ) / ( D1 + D2 ) ) % worldSize
+class NonInteractionSingle(Single):
+    """1 Particle inside a shell, no other particles around. 
 
+    There are 3 types of NonInteractionSingles:
+        * SphericalSingle: spherical shell, 3D movement.
+        * PlanarSurfaceSingle: cylindrical shell, 2D movement.
+        * CylindricalSurfaceSingle: cylindrical shell, 1D movement.
+
+    """
+    def __init__(self, domain_id, pid_particle_pair, shell_id_shell_pair, 
+                 reactiontypes):
+        Single.__init__(self, domain_id, pid_particle_pair, shell_id_shell_pair,
+                        reactiontypes)
+
+    def drawNewPosition(self, dt, isEscape):
+        if isEscape:
+            # Escape through this coordinate. We already know the new r.
+            r = self.coordinates[0].a
+        else:
+            # Maybe a single reaction, maybe a burst, who knows. Draw r.
+            r = self.coordinates[0].drawDisplacement(dt)
+        displacement = self.displacement(r)
+        assert abs(length(displacement) - abs(r)) <= 1e-15 * abs(r)
+        return self.pid_particle_pair[1].position + displacement
+
+
+class SphericalSingle(NonInteractionSingle):
+    """1 Particle inside a (spherical) shell not on any surface.
+
+        * Particle coordinate inside shell: r, theta, phi.
+        * Coordinate: radial r.
+        * Initial position: r = 0.
+        * Selected randomly when drawing displacement vector: theta, phi.
+
+    """
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes):
+        # Create shell.
+        position = pid_particle_pair[1].position
+        radius = pid_particle_pair[1].radius
+        shell = self.createNewShell(position, radius, domain_id)
+        shell_id_shell_pair = (shell_id, shell)
+        
+        NonInteractionSingle.__init__(self, domain_id, pid_particle_pair, 
+                                      shell_id_shell_pair, reactiontypes)
+
+        # Create a radial coordinate of size mobilityRadius = 0.
+        mobilityRadius = 0.0
+        gf = FirstPassageGreensFunction(self.getD())
+        self.coordinates = [RCoordinate(gf, mobilityRadius)]
+
+    def createNewShell(self, position, radius, domain_id):
+        '''Always call rescaleCoordinates after this as well.
+
+        '''
+        return SphericalShell(position, radius, domain_id)
+
+    def rescaleCoordinates(self, radius):
+        # Rescale size of coordinate.
+        mobilityRadius = radius - self.getMinRadius()
+        self.coordinates[0].a = mobilityRadius
+
+    def displacement(self, r):
+        return randomVector(r)
+
+    def __str__(self):
+        return 'SphericalSingle' + Single.__str__(self)
 
 
