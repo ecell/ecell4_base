@@ -72,11 +72,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def setWorldSize( self, size ):
         ParticleSimulatorBase.setWorldSize( self, size )
-        self.shellContainer = SphericalShellContainer( self.worldSize, self.matrixSize )
+        self.shellMatrix = SphericalShellContainer( self.worldSize, self.matrixSize )
 
     def setMatrixSize( self, size ):
         ParticleSimulatorBase.setMatrixSize( self, size )
-        self.shellContainer = SphericalShellContainer( self.worldSize, self.matrixSize )
+        self.shellMatrix = SphericalShellContainer( self.worldSize, self.matrixSize )
 
     def getMatrixCellSize( self ):
         return self.shellMatrix.cell_size
