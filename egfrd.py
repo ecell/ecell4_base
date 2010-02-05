@@ -1366,6 +1366,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def formMulti(self, single, neighbors, dists):
 
         minShell = single.pid_particle_pair[1].radius * ( 1.0 + self.MULTI_SHELL_FACTOR )
+        # Multis shells need to be contiguous.
         if dists[0] > minShell:
             return None
 

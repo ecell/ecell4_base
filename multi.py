@@ -87,11 +87,8 @@ class MultiBDCore( BDSimulatorCoreBase ):
                     continue
                 d = i
             assert d is not None
-            # Shells are not necessarily contiguous for a multi that was 
-            # formed because of squeezing in formPair, since 
-            # MULTI_SHELL_FACTOR < SINGLE_SHELL_FACTOR.
-            #assert d[1] - shell[1].radius < 0.0,\
-            #    'shells of %s are not contiguous.' % str(self.multiref())
+            assert d[1] - shell[1].radius < 0.0,\
+                'shells of %s are not contiguous.' % str(self.multiref())
 
         # all particles within the shell.
         for pid in self.particleList:
