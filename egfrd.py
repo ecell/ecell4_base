@@ -1451,8 +1451,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             log.info( 'adding %s to %s' % ( single, multi ) )
         shellSize = single.pid_particle_pair[1].radius * \
             ( 1.0 + self.MULTI_SHELL_FACTOR )
-        multi.addParticle(single.pid_particle_pair)
-        multi.addShell(single.pid_particle_pair[1].position, shellSize)
+        multi.addParticleAndShell(single.pid_particle_pair, shellSize)
 
     def mergeMultis( self, multi1, multi2 ):
         '''
@@ -1463,12 +1462,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         assert not multi1.sim.particleList[0] in multi2.sim.particleList
 
-        for pid in multi1.sim.particleList:
+        for pid, sid in multi1.pid_shell_id_map.iteritems():
             # FIXME: shells should be renewed
-            multi2.addParticle(multi1.sim.particleMatrix[pid])
-
-        for shell in multi1.shell_list:
-            multi2.addShell(shell[1].position, shell[1].radius)
+            multi2.addParticleAndShell(
+                multi1.sim.particleMatrix[pid],
+                multi1.sim.shellMatrix[sid].radius)
 
     def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
         '''

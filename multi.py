@@ -102,6 +102,7 @@ class Multi( object ):
         self.domain_id = domain_id
         self.eventID = None
         self.sim = MultiBDCore( main, self )
+        # self.pid_shell_id_map = {}
 
     def initialize( self, t ):
         self.lastTime = t
@@ -119,15 +120,23 @@ class Multi( object ):
 
     multiplicity = property( getMultiplicity )
 
-    def addParticle(self, pid_particle_pair):
+    def __addParticle(self, pid_particle_pair):
         self.sim.addParticle(pid_particle_pair)
+        return pid_particle_pair
 
-    def addShell(self, position, size):
+    def __addShell(self, position, size):
         shell_id_shell_pair = (
             self.sim.main.shellIDGenerator(),
             SphericalShell(position, size, self.domain_id) )
         self.sim.main.shellMatrix.update(shell_id_shell_pair)
         self.sim.shellMatrix.update(shell_id_shell_pair)
+        return shell_id_shell_pair
+
+    def addParticleAndShell(self, pid_particle_pair, shellSize):
+        self.__addParticle(pid_particle_pair)
+        shell_id_shell_pair = self.__addShell(pid_particle_pair[1].position, shellSize)
+        # self.pid_shell_id_map[pid_particle_pair[0]] = shell_id_shell_pair[0]
+        return pid_particle_pair, shell_id_shell_pair
 
     def check( self ):
         self.sim.check()
