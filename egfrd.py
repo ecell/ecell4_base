@@ -1161,6 +1161,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                          ignore=[particle1[0], particle2[0]])
             assert self.checkPairPos(pair, newpos1, newpos2, oldCoM,\
                                          pair.shell[1].radius)
+        else:
+            newpos1 = particle1[1].position
+            newpos2 = particle2[1].position
 
         single1.initialize( self.t )
         single2.initialize( self.t )
