@@ -92,7 +92,7 @@ struct GSLRandomNumberGenerator
 
     GSLRandomNumberGenerator(rng_handle hdl): rng_(hdl)
     {
-        BOOST_ASSERT(boost::get_deleter<void>(hdl) == &gsl_rng_free);
+        BOOST_ASSERT(*boost::get_deleter<void(*)(gsl_rng*)>(hdl) == &gsl_rng_free);
     }
 
     GSLRandomNumberGenerator(gsl_rng* rng): rng_(rng, &gsl_rng_free) {}

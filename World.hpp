@@ -124,6 +124,7 @@ public:
     typedef typename traits_type::particle_id_type particle_id_type;
     typedef typename traits_type::particle_id_generator particle_id_generator;
     typedef typename traits_type::species_id_type species_id_type;
+    typedef typename traits_type::species_type_id_type species_type_id_type;
     typedef typename traits_type::sphere_type sphere_type;
     typedef typename traits_type::size_type size_type;
     typedef MatrixSpace<particle_type, particle_id_type> particle_matrix_type;

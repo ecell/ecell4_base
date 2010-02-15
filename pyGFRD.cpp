@@ -112,8 +112,7 @@ struct ndarray_to_position_converter
                              reinterpret_cast<PyArrayObject*>(ptr),
                              PyArray_DescrFromType(
                                  peer::util::get_numpy_typecode<
-                                                                                position_type::value_type >::value ),
-                                 0) );
+                                     position_type::value_type >::value ), 0) );
         if (!retval)
         {
             return NULL;
@@ -369,12 +368,25 @@ struct SimulationState
 
     SimulationState(PyObject* self)
         : self_(boost::python::borrowed(self)),
-          rng_(boost::shared_ptr<gsl_rng>(gsl_rng_alloc(gsl_rng_mt19937), gsl_rng_free))
+          rng_(boost::shared_ptr<gsl_rng>(gsl_rng_alloc(gsl_rng_mt19937),
+                                          gsl_rng_free))
         {}
 
 private:
     boost::python::object self_;
     boost::shared_ptr<gsl_rng> rng_;
+};
+
+
+struct gsl_rng_to_python_converter
+{
+    typedef boost::shared_ptr<gsl_rng> native_type;
+
+    static PyObject* convert(native_type const& v)
+    {
+        return boost::python::incref(
+            boost::python::object(peer::GSLRandomNumberGenerator(v)).ptr());
+    }
 };
 
 
@@ -384,58 +396,6 @@ template<typename Ttraits_>
 struct has_back_reference<SimulationState<Ttraits_> >: boost::mpl::true_ {};
 
 } } // namespace boost::python
-
-struct native_to_GSLRandomNumberGenerator_policy
-    : boost::python::with_custodian_and_ward_postcall<0, 1, boost::python::default_call_policies>
-{
-    struct result_converter
-    {
-        template<typename Trvalue_type_>
-        struct to_python
-        {
-            typedef typename boost::remove_reference<Trvalue_type_>::type native_type;
-
-            PyObject* operator()(native_type const& ref) const
-            {
-                return execute(const_cast<native_type&>(ref), boost::is_pointer<native_type>());
-            }
-
-            PyTypeObject const* get_pytype() const
-            {
-                return boost::python::converter::registered<Trvalue_type_>::converters.to_python_target_type();
-            }
-
-            PyObject* execute(native_type* ptr, boost::mpl::true_) const
-            {
-                if (ptr == 0)
-                {
-                    return boost::python::detail::none();
-                }
-                else
-                {
-                    return execute(*ptr, boost::mpl::false_());
-                }
-            }
-
-            PyObject* execute(native_type& x, boost::mpl::false_) const
-            {
-                using namespace boost::python;
-                typedef peer::GSLRandomNumberGenerator wrapper_type;
-                typedef std::auto_ptr<wrapper_type> smart_pointer_type;
-                smart_pointer_type ptr(new wrapper_type(x));
-                return objects::make_ptr_instance<wrapper_type,
-                        objects::pointer_holder<smart_pointer_type,
-                            wrapper_type> >::execute(ptr);
-            }
-        };
-
-        template<typename Trvalue_type_>
-        struct apply
-        {
-            typedef to_python<Trvalue_type_> type;
-        };
-    };
-};
 
 template<typename Twrapper_>
 struct MatrixSpace_to_select_second_range_converter
@@ -817,10 +777,13 @@ BOOST_PYTHON_MODULE( _gfrd )
     typedef SimulationStateTraits<CyclicWorld> simulation_state_traits_type;
     typedef SimulationState<simulation_state_traits_type> simulation_state_type;
     class_<simulation_state_type, boost::noncopyable>("SimulationState")
-        .add_property("rng", make_function(&simulation_state_type::get_rng, native_to_GSLRandomNumberGenerator_policy()))
+        .add_property("rng", &simulation_state_type::get_rng)
         ;
 
     peer::GSLRandomNumberGenerator::__register_class<gsl_rng_mt19937>("RandomNumberGenerator");
+
+    to_python_converter<boost::shared_ptr<gsl_rng>,
+            gsl_rng_to_python_converter>();
 
     peer::util::register_scalar_to_native_converters();
 }
