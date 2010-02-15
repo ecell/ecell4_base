@@ -16,20 +16,23 @@
 #include "Particle.hpp"
 #include "ParticleID.hpp"
 #include "SpeciesID.hpp"
+#include "SpeciesTypeID.hpp"
 #include "SpeciesInfo.hpp"
 #include "SerialIDGenerator.hpp"
 #include "Transaction.hpp"
 
-template<typename Tlength_type_>
+template<typename Tlen_, typename TD_>
 struct WorldTraitsBase
 {
     typedef std::size_t size_type;
-    typedef Tlength_type_ length_type;
+    typedef Tlen_ length_type;
+    typedef TD_ D_type;
     typedef ParticleID particle_id_type;
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef SpeciesID species_id_type;
-    typedef Particle<length_type, Real, species_id_type> particle_type;
-    typedef SpeciesInfo<species_id_type, length_type> species_type;
+    typedef SpeciesTypeID species_type_id_type;
+    typedef Particle<length_type, D_type, species_id_type> particle_type;
+    typedef SpeciesInfo<species_id_type, species_type_id_type, D_type, length_type> species_type;
     typedef typename particle_type::shape_type sphere_type;
     typedef typename sphere_type::position_type position_type;
 
@@ -58,11 +61,11 @@ struct WorldTraitsBase
     }
 };
 
-template<typename Tlength_type_>
-struct CyclicWorldTraits: public WorldTraitsBase<Tlength_type_>
+template<typename Tlen_, typename TD_>
+struct CyclicWorldTraits: public WorldTraitsBase<Tlen_, TD_>
 {
 protected:
-    typedef WorldTraitsBase<Tlength_type_> base_type;
+    typedef WorldTraitsBase<Tlen_, TD_> base_type;
 public:
     typedef typename base_type::length_type length_type;
     typedef typename base_type::position_type position_type;

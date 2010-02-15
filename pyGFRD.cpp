@@ -31,6 +31,7 @@
 #include "FirstPassageNoCollisionPairGreensFunction.hpp"
 
 #include "utils/array_traits.hpp"
+#include "MatrixSpace.hpp"
 #include "Vector3.hpp"
 #include "Particle.hpp"
 #include "SphericalShell.hpp"
@@ -40,7 +41,9 @@
 #include "DomainID.hpp"
 #include "utils.hpp"
 #include "Model.hpp"
-#include "MatrixSpace.hpp"
+#include "World.hpp"
+#include "NetworkRulesWrapper.hpp"
+#include "ReactionRuleInfo.hpp"
 
 #include "peer/utils.hpp"
 #include "peer/py_hash_support.hpp"
@@ -62,7 +65,8 @@
 typedef Real length_type;
 typedef Real D_type;
 typedef Vector3<length_type> position_type;
-typedef SpeciesTypeID species_id_type;
+typedef SpeciesID species_id_type;
+typedef SpeciesTypeID species_type_id_type;
 typedef ParticleID particle_id_type;
 typedef Particle<length_type, D_type, species_id_type> particle_type;
 typedef Sphere<length_type> sphere_type;
@@ -244,6 +248,228 @@ struct species_type_to_species_type_id_converter
         data->convertible = storage;
     }
 };
+
+static void Model___setitem__(Model* model, std::string const& key, std::string const& value)
+{
+    (*model)[key] = value;
+}
+
+template<typename T_>
+struct world_get_species
+{
+    typedef typename T_::species_iterator iterator;
+
+    static iterator begin(T_& impl)
+    {
+        return impl.get_species().begin();
+    }
+
+    static iterator end(T_& impl)
+    {
+        return impl.get_species().end();
+    }
+};
+
+
+template<typename T_>
+static void register_world_class(char const* name)
+{
+    using namespace boost::python;
+    typedef T_ world_type;
+
+    class_<world_type>(name, init<typename world_type::length_type,
+                                  typename world_type::size_type>())
+        .add_property("num_particles", &world_type::num_particles)
+        .add_property("world_size", &world_type::world_size)
+        .add_property("cell_size", &world_type::cell_size)
+        .add_property("matrix_size", &world_type::matrix_size)
+        .add_property("species",
+            range<return_value_policy<return_by_value>, world_type const&>(
+                &world_get_species<world_type const>::begin,
+                &world_get_species<world_type const>::end))
+        .def("add_species", &world_type::add_species)
+        .def("get_species",
+            (typename world_type::species_type const&(world_type::*)(typename world_type::species_id_type const&) const)&world_type::get_species,
+            return_internal_reference<>())
+        .def("distance", &world_type::distance)
+        .def("distance_sq", &world_type::distance_sq)
+        .def("apply_boundary", (typename world_type::position_type(world_type::*)(typename world_type::position_type const&) const)&world_type::apply_boundary)
+        .def("apply_boundary", (typename world_type::length_type(world_type::*)(typename world_type::length_type const&) const)&world_type::apply_boundary)
+        .def("cyclic_transpose", (typename world_type::position_type(world_type::*)(typename world_type::position_type const&, typename world_type::position_type const&) const)&world_type::cyclic_transpose)
+        .def("cyclic_transpose", (typename world_type::length_type(world_type::*)(typename world_type::length_type const&, typename world_type::length_type const&) const)&world_type::cyclic_transpose)
+        .def("new_particle", &world_type::new_particle)
+        .def("check_overlap", (typename world_type::particle_id_pair_list*(world_type::*)(typename world_type::particle_id_pair const&) const)&world_type::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (typename world_type::particle_id_pair_list*(world_type::*)(typename world_type::sphere_type const&, typename world_type::particle_id_type const&) const)&world_type::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (typename world_type::particle_id_pair_list*(world_type::*)(typename world_type::sphere_type const&) const)&world_type::check_overlap, return_value_policy<manage_new_object>())
+        .def("update_particle", &world_type::update_particle)
+        .def("remove_particle", &world_type::remove_particle)
+        .def("get_particle", &world_type::get_particle)
+        .def("create_transaction", &world_type::create_transaction,
+                return_value_policy<manage_new_object>())
+        .def("__iter__", &world_type::get_particles,
+                return_value_policy<return_by_value>())
+        ;
+
+    typedef typename world_type::traits_type::species_type species_type;
+
+    class_<species_type>("SpeciesInfo",
+            init<typename species_type::identifier_type, species_type_id_type>())
+        .def(init<typename species_type::identifier_type, species_type_id_type, typename species_type::length_type, typename species_type::D_type>())
+        .add_property("id",
+            make_function(&species_type::id,
+                return_value_policy<return_by_value>()))
+        .add_property("type_id",
+            make_function(&species_type::type_id,
+                return_value_policy<return_by_value>()))
+        .add_property("radius",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    species_type, length_type,
+                    &species_type::radius,
+                    &species_type::radius>::get,
+                return_value_policy<return_by_value>()),
+            &peer::util::reference_accessor_wrapper<
+                species_type, Real,
+                &species_type::radius,
+                &species_type::radius>::set)
+        ;
+}
+
+
+template<typename Tworld_>
+struct SimulationStateTraits
+{
+    typedef Tworld_ world_type;
+    typedef NetworkRulesWrapper<
+            NetworkRules,
+            ReactionRuleInfo<
+                typename ReactionRule::identifier_type,
+                SpeciesID,
+                Real> > network_rules_type;
+};
+
+
+template<typename Ttraits_>
+struct SimulationState
+{
+    Real get_dt() const
+    {
+        return boost::python::extract<Real>(self_.attr("dt"));
+    }
+
+    typename boost::shared_ptr<gsl_rng> get_rng()
+    {
+        return rng_;
+    }
+
+    typename Ttraits_::network_rules_type const& get_network_rules() const
+    {
+        return boost::python::extract<typename Ttraits_::network_rules_type const&>(self_.attr("network_rules"));
+    }
+
+    SimulationState(PyObject* self)
+        : self_(boost::python::borrowed(self)),
+          rng_(boost::shared_ptr<gsl_rng>(gsl_rng_alloc(gsl_rng_mt19937), gsl_rng_free))
+        {}
+
+private:
+    boost::python::object self_;
+    boost::shared_ptr<gsl_rng> rng_;
+};
+
+
+namespace boost { namespace python {
+
+template<typename Ttraits_>
+struct has_back_reference<SimulationState<Ttraits_> >: boost::mpl::true_ {};
+
+} } // namespace boost::python
+
+struct native_to_GSLRandomNumberGenerator_policy
+    : boost::python::with_custodian_and_ward_postcall<0, 1, boost::python::default_call_policies>
+{
+    struct result_converter
+    {
+        template<typename Trvalue_type_>
+        struct to_python
+        {
+            typedef typename boost::remove_reference<Trvalue_type_>::type native_type;
+
+            PyObject* operator()(native_type const& ref) const
+            {
+                return execute(const_cast<native_type&>(ref), boost::is_pointer<native_type>());
+            }
+
+            PyTypeObject const* get_pytype() const
+            {
+                return boost::python::converter::registered<Trvalue_type_>::converters.to_python_target_type();
+            }
+
+            PyObject* execute(native_type* ptr, boost::mpl::true_) const
+            {
+                if (ptr == 0)
+                {
+                    return boost::python::detail::none();
+                }
+                else
+                {
+                    return execute(*ptr, boost::mpl::false_());
+                }
+            }
+
+            PyObject* execute(native_type& x, boost::mpl::false_) const
+            {
+                using namespace boost::python;
+                typedef peer::GSLRandomNumberGenerator wrapper_type;
+                typedef std::auto_ptr<wrapper_type> smart_pointer_type;
+                smart_pointer_type ptr(new wrapper_type(x));
+                return objects::make_ptr_instance<wrapper_type,
+                        objects::pointer_holder<smart_pointer_type,
+                            wrapper_type> >::execute(ptr);
+            }
+        };
+
+        template<typename Trvalue_type_>
+        struct apply
+        {
+            typedef to_python<Trvalue_type_> type;
+        };
+    };
+};
+
+template<typename Twrapper_>
+struct MatrixSpace_to_select_second_range_converter
+{
+    typedef Twrapper_ wrapper_type;
+    typedef typename Twrapper_::impl_type impl_type;
+    typedef select_first_range<const impl_type> native_type;
+
+    static void* convertible(PyObject* ptr)
+    {
+        if (!PyObject_TypeCheck(ptr, wrapper_type::__class__))
+        {
+            return NULL;
+        }
+
+        return ptr;
+    }
+    
+    static void construct(PyObject* ptr,
+                          boost::python::converter::rvalue_from_python_storage<native_type>* data)
+    {
+        Twrapper_& wrapper(boost::python::extract<Twrapper_&>(
+            static_cast<PyObject*>(data->stage1.convertible)));
+        data->stage1.convertible = new(data->storage.bytes) native_type(
+            static_cast<impl_type&>(wrapper));
+    }
+
+    static void __register()
+    {
+        peer::util::to_native_converter<native_type,
+            MatrixSpace_to_select_second_range_converter>();
+    }
+};
+
 
 template<typename T_>
 void register_id_generator(char const* class_name)
@@ -511,9 +737,17 @@ BOOST_PYTHON_MODULE( _gfrd )
                 return_value_policy<reference_existing_object>())
         .def("get_species_type_by_id", &Model::get_species_type_by_id,
                 return_value_policy<reference_existing_object>())
+        .def("__getitem__", (std::string const&(Model::*)(std::string const&) const)
+                &Model::operator[], return_value_policy<copy_const_reference>())
+        .def("__setitem__", &Model___setitem__)
+        .add_property("attributes",
+                peer::util::range_from_range<
+                    Model::attributes_range, Model, &Model::attributes>())
         .add_property("species_types",
-            range<return_value_policy<reference_existing_object> >(
-                &Model_get_species_types_begin, &Model_get_species_types_end))
+                peer::util::range_from_range<
+                    Model::species_type_range,
+                    Model, &Model::get_species_types,
+                    return_value_policy<reference_existing_object> >());
         ;
 
     peer::ReactionRule::__register_class();
@@ -542,6 +776,48 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("add_reaction_rule", &NetworkRules::add_reaction_rule)
         .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&, SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
+        ;
+
+    typedef CyclicWorldTraits<length_type, D_type> world_traits_type;
+    typedef World<world_traits_type> CyclicWorld;
+    typedef CyclicWorld::transaction_type transaction_type;
+
+
+    peer::util::register_tuple_converter<CyclicWorld::particle_id_pair>();
+
+    peer::util::GeneratorIteratorWrapper<ptr_generator<CyclicWorld::particle_id_pair_generator> >::__register_class("ParticleIDPairGenerator");
+
+    class_<transaction_type, boost::noncopyable>("Transaction", no_init)
+        .add_property("num_particles", &transaction_type::num_particles)
+        .add_property("added_particles",
+            make_function(&transaction_type::get_added_particles,
+                return_value_policy<return_by_value>()))
+        .add_property("removed_particles",
+            make_function(&transaction_type::get_removed_particles,
+                return_value_policy<return_by_value>()))
+        .add_property("modified_particles",
+            make_function(&transaction_type::get_modified_particles,
+                return_value_policy<return_by_value>()))
+        .def("new_particle", &transaction_type::new_particle)
+        .def("update_particle", &transaction_type::update_particle)
+        .def("remove_particle", &transaction_type::remove_particle)
+        .def("get_particle", &transaction_type::get_particle)
+        .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::particle_id_pair const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::sphere_type const&, transaction_type::particle_id_type const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::sphere_type const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
+        .def("create_transaction", &transaction_type::create_transaction,
+                return_value_policy<manage_new_object>())
+        .def("rollback", &transaction_type::rollback)
+        .def("__iter__", &transaction_type::get_particles,
+                return_value_policy<return_by_value>())
+        ;
+
+    register_world_class<CyclicWorld>("CyclicWorld");
+
+    typedef SimulationStateTraits<CyclicWorld> simulation_state_traits_type;
+    typedef SimulationState<simulation_state_traits_type> simulation_state_type;
+    class_<simulation_state_type, boost::noncopyable>("SimulationState")
+        .add_property("rng", make_function(&simulation_state_type::get_rng, native_to_GSLRandomNumberGenerator_policy()))
         ;
 
     peer::GSLRandomNumberGenerator::__register_class<gsl_rng_mt19937>("RandomNumberGenerator");

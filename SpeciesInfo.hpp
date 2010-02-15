@@ -6,15 +6,22 @@
 #include <ostream>
 #include "Defs.hpp"
 
-template<typename Tid_, typename T_>
+template<typename Tid_, typename Tstid_, typename TD_, typename Tlen_>
 struct SpeciesInfo
 {
     typedef Tid_ identifier_type;
-    typedef T_ length_type;
+    typedef Tstid_ species_type_id_type;
+    typedef TD_ D_type;
+    typedef Tlen_ length_type;
 
     identifier_type const& id() const
     {
         return id_;
+    }
+
+    species_type_id_type const& type_id() const
+    {
+        return stid_;
     }
 
     length_type const& radius() const
@@ -27,12 +34,12 @@ struct SpeciesInfo
         return radius_;
     }
 
-    Real const& D() const
+    D_type const& D() const
     {
         return diffusion_coef_;
     }
 
-    Real& D()
+    D_type& D()
     {
         return diffusion_coef_;
     }
@@ -48,23 +55,24 @@ struct SpeciesInfo
         return !operator==(rhs);
     }
 
-    SpeciesInfo(identifier_type const& id, Real const& D = 0.,
-            length_type const& r = 0.) 
-        : id_(id), diffusion_coef_(D), radius_(r) {}
+    SpeciesInfo(identifier_type const& id, species_type_id_type const& stid,
+            D_type const& D = 0., length_type const& r = 0.) 
+        : id_(id), stid_(stid), diffusion_coef_(D), radius_(r) {}
 
     SpeciesInfo() {}
 
 private:
     identifier_type id_;
-    Real diffusion_coef_;
+    species_type_id_type stid_;
+    D_type diffusion_coef_;
     length_type radius_;
 };
 
-template<typename Tchar_, typename Ttraits_, typename Tid_, typename T_>
+template<typename Tchar_, typename Ttraits_, typename Tid_, typename Tstid_, typename TD_, typename Tlen_>
 inline std::basic_ostream<Tchar_, Ttraits_>&
-operator<<(std::basic_ostream<Tchar_, Ttraits_>& strm, const SpeciesInfo<Tid_, T_>& v)
+operator<<(std::basic_ostream<Tchar_, Ttraits_>& strm, const SpeciesInfo<Tid_, Tstid_, TD_, Tlen_>& v)
 {
-    strm << "SpeciesInfo(id=" << v.id() << ", D=" << v.D() << ", radius=" << v.radius() << ")";
+    strm << "SpeciesInfo(id=" << v.id() << ", SpeciesTypeID=" << v.type_id() <<  ", D=" << v.D() << ", radius=" << v.radius() << ")";
     return strm;
 }
 

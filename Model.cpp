@@ -49,3 +49,16 @@ Model::species_type_range Model::get_species_types() const
         species_type_iterator(species_type_map_.begin(), second_selector_type()),
         species_type_iterator(species_type_map_.end(), second_selector_type()));
 }
+
+std::string const& Model::operator[](std::string const& name) const
+{
+    string_map_type::const_iterator i(attrs_.find(name));
+    if (i == attrs_.end())
+        throw not_found((boost::format("key %s not found") % name).str());
+    return (*i).second;
+}
+
+std::string& Model::operator[](std::string const& name)
+{
+    return attrs_[name];
+}

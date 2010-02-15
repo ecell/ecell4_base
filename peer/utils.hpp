@@ -106,6 +106,84 @@ namespace util
             std_exception_translator );
     }
 
+    template<typename T_, typename Tval_,
+            Tval_ const&(T_::*Vgetter_)() const,
+            Tval_ &(T_::*Vsetter_)()>
+    struct reference_accessor_wrapper
+    {
+        Tval_ const& get(T_ const& impl)
+        {
+            return (impl.*Vgetter_)();
+        }
+
+        void set(T_& impl, Tval_ const& v)
+        {
+            (impl.*Vsetter_)() = v;
+        }
+    };
+
+    namespace detail {
+        template<typename T1_, typename T2_, T1_(T2_::*Vfun_)()>
+        struct range_from_range
+        {
+            static typename T1_::iterator begin(T2_& inst)
+            {
+                return (inst.*Vfun_)().begin();
+            }
+
+            static typename T1_::iterator end(T2_& inst)
+            {
+                return (inst.*Vfun_)().end();
+            }
+        };
+
+        template<typename T1_, typename T2_, T1_(T2_::*Vfun_)() const>
+        struct range_from_range<T1_, const T2_, Vfun_>
+        {
+            static typename T1_::const_iterator begin(T2_ const& inst)
+            {
+                return (inst.*Vfun_)().begin();
+            }
+
+            static typename T1_::const_iterator end(T2_ const& inst)
+            {
+                return (inst.*Vfun_)().end();
+            }
+        };
+    } // namespace detail
+
+    template<typename T1_, typename T2_, T1_(T2_::*Vfun_)() const>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range(
+            &detail::range_from_range<T1_, const T2_, Vfun_>::begin,
+            &detail::range_from_range<T1_, const T2_, Vfun_>::end);
+    }
+
+    template<typename T1_, typename T2_, T1_(T2_::*Vfun_)()>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range(
+            &detail::range_from_range<T1_, T2_, Vfun_>::begin,
+            &detail::range_from_range<T1_, T2_, Vfun_>::end);
+    }
+ 
+    template<typename T1_, typename T2_, T1_(T2_::*Vfun_)() const, typename Tpol_>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range<Tpol_>(
+            &detail::range_from_range<T1_, const T2_, Vfun_>::begin,
+            &detail::range_from_range<T1_, const T2_, Vfun_>::end);
+    }
+
+    template<typename T1_, typename T2_, T1_(T2_::*Vfun_)(), typename Tpol_>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range<Tpol_>(
+            &detail::range_from_range<T1_, T2_, Vfun_>::begin,
+            &detail::range_from_range<T1_, T2_, Vfun_>::end);
+    }
+
 } // namespace util
 
 } // namespace peer
