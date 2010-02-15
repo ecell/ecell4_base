@@ -176,6 +176,8 @@ class ParticleSimulatorBase( object ):
         #self.t = 0.0
 
         self.H = 3.0
+
+        self.dissociation_retry_moves = 1
         
         self.dtLimit = 1e-3
         self.dtMax = self.dtLimit
