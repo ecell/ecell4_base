@@ -250,7 +250,7 @@ class BDSimulatorCoreBase( object ):
             radius2 = productSpecies2.radius
             radius12 = radius1 + radius2
 
-            for i in range( 100 ):
+            for i in range(self.main.dissociation_retry_moves):
 
                 rnd = myrandom.uniform()
                 pairDistance = _gfrd.drawR_gbd( rnd, radius12, self.dt, D12 )
