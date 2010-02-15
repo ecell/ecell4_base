@@ -14,7 +14,8 @@
 
 BOOST_AUTO_TEST_CASE(add_species)
 {
-    typedef World<CyclicWorldTraits<Real> > world_type;
+    typedef World<CyclicWorldTraits<Real, Real> > world_type;
+    typedef world_type::species_type_id_type species_type_id_type;
     typedef world_type::species_id_type species_id;
     typedef world_type::species_type species;
     typedef SerialIDGenerator<species_id> id_generator;
@@ -22,9 +23,9 @@ BOOST_AUTO_TEST_CASE(add_species)
 
     world_type i;
     id_generator gen;
-    species s1(species(gen(), .3, .05));
-    species s2(species(gen(), .2, .03));
-    species s3(species(gen(), .1, .02));
+    species s1(species(gen(), species_type_id_type(), .3, .05));
+    species s2(species(gen(), species_type_id_type(), .2, .03));
+    species s3(species(gen(), species_type_id_type(), .1, .02));
 
     BOOST_CHECK_EQUAL(boost::size(i.get_species()), 0);
     i.add_species(s1);
@@ -41,8 +42,9 @@ BOOST_AUTO_TEST_CASE(add_species)
 
 BOOST_AUTO_TEST_CASE(new_particles)
 {
-    typedef World<CyclicWorldTraits<Real> > world_type;
+    typedef World<CyclicWorldTraits<Real, Real> > world_type;
     typedef world_type::species_id_type species_id;
+    typedef world_type::species_type_id_type species_type_id_type;
     typedef world_type::species_type species;
     typedef world_type::position_type position_type;
     typedef world_type::particle_id_pair particle_id_pair;
@@ -51,8 +53,8 @@ BOOST_AUTO_TEST_CASE(new_particles)
 
     world_type i;
     id_generator gen;
-    species s1(species(gen(), .3, .05));
-    species s2(species(gen(), .3, .08));
+    species s1(species(gen(), species_type_id_type(), .3, .05));
+    species s2(species(gen(), species_type_id_type(), .3, .08));
     i.add_species(s1);
     i.add_species(s2);
 
@@ -92,8 +94,9 @@ BOOST_AUTO_TEST_CASE(new_particles)
 
 BOOST_AUTO_TEST_CASE(get_particle)
 {
-    typedef World<CyclicWorldTraits<Real> > world_type;
+    typedef World<CyclicWorldTraits<Real, Real> > world_type;
     typedef world_type::species_id_type species_id;
+    typedef world_type::species_type_id_type species_type_id_type;
     typedef world_type::species_type species;
     typedef world_type::position_type position_type;
     typedef world_type::particle_id_pair particle_id_pair;
@@ -102,8 +105,8 @@ BOOST_AUTO_TEST_CASE(get_particle)
 
     world_type i;
     id_generator gen;
-    species s1(species(gen(), .3, .05));
-    species s2(species(gen(), .3, .08));
+    species s1(species(gen(), species_type_id_type(), .3, .05));
+    species s2(species(gen(), species_type_id_type(), .3, .08));
     i.add_species(s1);
     i.add_species(s2);
 
@@ -116,8 +119,9 @@ BOOST_AUTO_TEST_CASE(get_particle)
 
 BOOST_AUTO_TEST_CASE(transaction_1)
 {
-    typedef World<CyclicWorldTraits<Real> > world_type;
+    typedef World<CyclicWorldTraits<Real, Real> > world_type;
     typedef world_type::species_id_type species_id;
+    typedef world_type::species_type_id_type species_type_id_type;
     typedef world_type::species_type species;
     typedef world_type::position_type position_type;
     typedef world_type::particle_id_pair particle_id_pair;
@@ -126,8 +130,8 @@ BOOST_AUTO_TEST_CASE(transaction_1)
 
     world_type i;
     id_generator gen;
-    species s1(species(gen(), .3, .05));
-    species s2(species(gen(), .3, .08));
+    species s1(species(gen(), species_type_id_type(), .3, .05));
+    species s2(species(gen(), species_type_id_type(), .3, .08));
     i.add_species(s1);
     i.add_species(s2);
 
@@ -154,8 +158,9 @@ BOOST_AUTO_TEST_CASE(transaction_1)
 
 BOOST_AUTO_TEST_CASE(transaction_2)
 {
-    typedef World<CyclicWorldTraits<Real> > world_type;
+    typedef World<CyclicWorldTraits<Real, Real> > world_type;
     typedef world_type::species_id_type species_id;
+    typedef world_type::species_type_id_type species_type_id_type;
     typedef world_type::species_type species;
     typedef world_type::position_type position_type;
     typedef world_type::particle_id_pair particle_id_pair;
@@ -164,8 +169,8 @@ BOOST_AUTO_TEST_CASE(transaction_2)
 
     world_type i;
     id_generator gen;
-    species s1(species(gen(), .3, .05));
-    species s2(species(gen(), .3, .08));
+    species s1(species(gen(), species_type_id_type(), .3, .05));
+    species s2(species(gen(), species_type_id_type(), .3, .08));
     i.add_species(s1);
     i.add_species(s2);
 
@@ -190,8 +195,9 @@ BOOST_AUTO_TEST_CASE(transaction_2)
 
 BOOST_AUTO_TEST_CASE(transaction_3)
 {
-    typedef World<CyclicWorldTraits<Real> > world_type;
+    typedef World<CyclicWorldTraits<Real, Real> > world_type;
     typedef world_type::species_id_type species_id;
+    typedef world_type::species_type_id_type species_type_id_type;
     typedef world_type::species_type species;
     typedef world_type::position_type position_type;
     typedef world_type::particle_id_pair particle_id_pair;
@@ -200,8 +206,8 @@ BOOST_AUTO_TEST_CASE(transaction_3)
 
     world_type i;
     id_generator gen;
-    species s1(species(gen(), .3, .05));
-    species s2(species(gen(), .3, .08));
+    species s1(species(gen(), species_type_id_type(), .3, .05));
+    species s2(species(gen(), species_type_id_type(), .3, .08));
     i.add_species(s1);
     i.add_species(s2);
 
