@@ -33,15 +33,11 @@
 #include "utils/array_traits.hpp"
 #include "MatrixSpace.hpp"
 #include "Vector3.hpp"
-#include "Particle.hpp"
-#include "SphericalShell.hpp"
-#include "CylindricalShell.hpp"
-#include "ParticleID.hpp"
-#include "ShellID.hpp"
-#include "DomainID.hpp"
+#include "Sphere.hpp"
 #include "utils.hpp"
 #include "Model.hpp"
 #include "World.hpp"
+#include "EGFRDSimulator.hpp"
 #include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
 
@@ -62,35 +58,27 @@
 #include "peer/Exception.hpp"
 #include "peer/GSLRandomNumberGenerator.hpp"
 
-typedef Real length_type;
-typedef Real D_type;
-typedef Vector3<length_type> position_type;
-typedef SpeciesID species_id_type;
-typedef SpeciesTypeID species_type_id_type;
-typedef ParticleID particle_id_type;
-typedef Particle<length_type, D_type, species_id_type> particle_type;
-typedef Sphere<length_type> sphere_type;
-typedef DomainID domain_id_type;
-typedef SphericalShell<length_type, domain_id_type> spherical_shell_type;
-typedef CylindricalShell<length_type, domain_id_type> cylindrical_shell_type;
-typedef ShellID shell_id_type;
+typedef CyclicWorldTraits<Real, Real> world_traits_type;
+typedef World<world_traits_type> CyclicWorld;
+typedef CyclicWorld::transaction_type transaction_type;
+typedef EGFRDSimulatorTraitsBase<CyclicWorld> egfrd_simulator_traits_type;
 
 static boost::python::object species_type_class;
 
 struct position_to_ndarray_converter
 {
-    typedef position_type native_type;
+    typedef world_traits_type::position_type native_type;
     
     static PyObject* convert( const native_type& p )
     {
         static const npy_intp dims[1] = { native_type::size() };
-        void* data( PyDataMem_NEW( native_type::size() * sizeof( position_type::value_type ) ) );
+        void* data( PyDataMem_NEW( native_type::size() * sizeof( native_type::value_type ) ) );
         memcpy( data, static_cast<const void*>( p.data() ),
-                native_type::size() * sizeof( position_type::value_type ) );
+                native_type::size() * sizeof( native_type::value_type ) );
         PyObject* array( PyArray_New( &PyArray_Type, 1, 
                                       const_cast<npy_intp*>( dims ),
                                       peer::util::get_numpy_typecode<
-                                          position_type::value_type >::value,
+                                          native_type::value_type >::value,
                                       NULL, data, 0, NPY_CARRAY, NULL ) );
         reinterpret_cast<PyArrayObject*>( array )->flags |= NPY_OWNDATA;
         return array;
@@ -99,7 +87,7 @@ struct position_to_ndarray_converter
 
 struct ndarray_to_position_converter
 {
-    typedef position_type native_type;
+    typedef world_traits_type::position_type native_type;
     
     static void* convertible(PyObject* ptr)
     {
@@ -112,7 +100,7 @@ struct ndarray_to_position_converter
                              reinterpret_cast<PyArrayObject*>(ptr),
                              PyArray_DescrFromType(
                                  peer::util::get_numpy_typecode<
-                                     position_type::value_type >::value ), 0) );
+                                     native_type::value_type >::value ), 0) );
         if (!retval)
         {
             return NULL;
@@ -133,14 +121,14 @@ struct ndarray_to_position_converter
         PyArrayObject* array_obj = static_cast<PyArrayObject*>(
             data->stage1.convertible);
         data->stage1.convertible = new(data->storage.bytes) native_type(
-            reinterpret_cast<position_type::value_type*>(PyArray_DATA(array_obj)));
+            reinterpret_cast<native_type::value_type*>(PyArray_DATA(array_obj)));
         boost::python::decref(reinterpret_cast<PyObject*>(array_obj));
     }
 };
 
 struct seq_to_position_converter
 {
-    typedef position_type native_type;
+    typedef world_traits_type::position_type native_type;
     
     static void* convertible(PyObject* ptr)
     {
@@ -169,7 +157,7 @@ struct seq_to_position_converter
 
 struct sphere_to_python_converter
 {
-    typedef Sphere<length_type> native_type;
+    typedef Sphere<world_traits_type::length_type> native_type;
 
     static PyObject* convert(native_type const& v)
     {
@@ -181,7 +169,7 @@ struct sphere_to_python_converter
 
 struct python_to_sphere_converter
 {
-    typedef Sphere<length_type> native_type;
+    typedef Sphere<world_traits_type::length_type> native_type;
 
     static void* convertible(PyObject* pyo)
     {
@@ -224,7 +212,7 @@ static Model::species_type_iterator Model_get_species_types_end(Model& self)
 
 struct species_type_to_species_type_id_converter
 {
-    typedef ::SpeciesTypeID native_type;
+    typedef world_traits_type::species_type_id_type native_type;
 
     static void* convertible(PyObject* pyo)
     {
@@ -244,6 +232,32 @@ struct species_type_to_species_type_id_converter
             converter::rvalue_from_python_storage<native_type>* >(
                 data)->storage.bytes);
         new (storage) native_type(static_cast<SpeciesType*>(extract<SpeciesType*>(object(borrowed(pyo))))->id());
+        data->convertible = storage;
+    }
+};
+
+struct species_info_to_species_id_converter
+{
+    typedef world_traits_type::species_type::identifier_type native_type;
+
+    static void* convertible(PyObject* pyo)
+    {
+        if (!PyObject_TypeCheck(pyo, reinterpret_cast<PyTypeObject*>(
+                species_type_class.ptr())))
+        {
+            return 0;
+        }
+        return pyo;
+    }
+
+    static void construct(PyObject* pyo, 
+                          boost::python::converter::rvalue_from_python_stage1_data* data)
+    {
+        using namespace boost::python;
+        void* storage(reinterpret_cast<
+            converter::rvalue_from_python_storage<native_type>* >(
+                data)->storage.bytes);
+        new (storage) native_type(static_cast<world_traits_type::species_type*>(extract<world_traits_type::species_type*>(object(borrowed(pyo))))->id());
         data->convertible = storage;
     }
 };
@@ -268,72 +282,6 @@ struct world_get_species
         return impl.get_species().end();
     }
 };
-
-
-template<typename T_>
-static void register_world_class(char const* name)
-{
-    using namespace boost::python;
-    typedef T_ world_type;
-
-    class_<world_type>(name, init<typename world_type::length_type,
-                                  typename world_type::size_type>())
-        .add_property("num_particles", &world_type::num_particles)
-        .add_property("world_size", &world_type::world_size)
-        .add_property("cell_size", &world_type::cell_size)
-        .add_property("matrix_size", &world_type::matrix_size)
-        .add_property("species",
-            range<return_value_policy<return_by_value>, world_type const&>(
-                &world_get_species<world_type const>::begin,
-                &world_get_species<world_type const>::end))
-        .def("add_species", &world_type::add_species)
-        .def("get_species",
-            (typename world_type::species_type const&(world_type::*)(typename world_type::species_id_type const&) const)&world_type::get_species,
-            return_internal_reference<>())
-        .def("distance", &world_type::distance)
-        .def("distance_sq", &world_type::distance_sq)
-        .def("apply_boundary", (typename world_type::position_type(world_type::*)(typename world_type::position_type const&) const)&world_type::apply_boundary)
-        .def("apply_boundary", (typename world_type::length_type(world_type::*)(typename world_type::length_type const&) const)&world_type::apply_boundary)
-        .def("cyclic_transpose", (typename world_type::position_type(world_type::*)(typename world_type::position_type const&, typename world_type::position_type const&) const)&world_type::cyclic_transpose)
-        .def("cyclic_transpose", (typename world_type::length_type(world_type::*)(typename world_type::length_type const&, typename world_type::length_type const&) const)&world_type::cyclic_transpose)
-        .def("new_particle", &world_type::new_particle)
-        .def("check_overlap", (typename world_type::particle_id_pair_list*(world_type::*)(typename world_type::particle_id_pair const&) const)&world_type::check_overlap, return_value_policy<manage_new_object>())
-        .def("check_overlap", (typename world_type::particle_id_pair_list*(world_type::*)(typename world_type::sphere_type const&, typename world_type::particle_id_type const&) const)&world_type::check_overlap, return_value_policy<manage_new_object>())
-        .def("check_overlap", (typename world_type::particle_id_pair_list*(world_type::*)(typename world_type::sphere_type const&) const)&world_type::check_overlap, return_value_policy<manage_new_object>())
-        .def("update_particle", &world_type::update_particle)
-        .def("remove_particle", &world_type::remove_particle)
-        .def("get_particle", &world_type::get_particle)
-        .def("create_transaction", &world_type::create_transaction,
-                return_value_policy<manage_new_object>())
-        .def("__iter__", &world_type::get_particles,
-                return_value_policy<return_by_value>())
-        ;
-
-    typedef typename world_type::traits_type::species_type species_type;
-
-    class_<species_type>("SpeciesInfo",
-            init<typename species_type::identifier_type, species_type_id_type>())
-        .def(init<typename species_type::identifier_type, species_type_id_type, typename species_type::length_type, typename species_type::D_type>())
-        .add_property("id",
-            make_function(&species_type::id,
-                return_value_policy<return_by_value>()))
-        .add_property("type_id",
-            make_function(&species_type::type_id,
-                return_value_policy<return_by_value>()))
-        .add_property("radius",
-            make_function(
-                &peer::util::reference_accessor_wrapper<
-                    species_type, length_type,
-                    &species_type::radius,
-                    &species_type::radius>::get,
-                return_value_policy<return_by_value>()),
-            &peer::util::reference_accessor_wrapper<
-                species_type, Real,
-                &species_type::radius,
-                &species_type::radius>::set)
-        ;
-}
-
 
 template<typename Tworld_>
 struct SimulationStateTraits
@@ -669,24 +617,26 @@ BOOST_PYTHON_MODULE( _gfrd )
     def( "calculate_pair_CoM", &calculate_pair_CoM<vector_type> );
     def( "apply_boundary", &apply_boundary<vector_type> );
 
-    to_python_converter<position_type,
+    to_python_converter<world_traits_type::position_type,
         position_to_ndarray_converter>();
-    to_python_converter<Sphere<length_type>,
+    to_python_converter<Sphere<world_traits_type::length_type>,
         sphere_to_python_converter>();
-    peer::util::to_native_converter<Sphere<length_type>,
+    peer::util::to_native_converter<Sphere<world_traits_type::length_type>,
         python_to_sphere_converter>();
-    peer::util::to_native_converter<position_type,
+    peer::util::to_native_converter<world_traits_type::position_type,
         ndarray_to_position_converter>();
-    peer::util::to_native_converter<position_type,
+    peer::util::to_native_converter<world_traits_type::position_type,
         seq_to_position_converter>();
 
-    peer::MatrixSpace< MatrixSpace<spherical_shell_type, shell_id_type> >::__register_class("SphericalShellContainer");
-    peer::MatrixSpace< MatrixSpace<cylindrical_shell_type, shell_id_type> >::__register_class("CylindricalShellContainer");
-    peer::MatrixSpace<MatrixSpace<particle_type, particle_id_type, get_mapper_mf> >::__register_class("ParticleContainer");
+    peer::MatrixSpace< MatrixSpace<egfrd_simulator_traits_type::spherical_shell_type, egfrd_simulator_traits_type::shell_id_type> >::__register_class("SphericalShellContainer");
+    peer::MatrixSpace< MatrixSpace<egfrd_simulator_traits_type::cylindrical_shell_type, egfrd_simulator_traits_type::shell_id_type> >::__register_class("CylindricalShellContainer");
+    peer::MatrixSpace<MatrixSpace<
+        world_traits_type::particle_type,
+        world_traits_type::particle_id_type, get_mapper_mf> >::__register_class("ParticleContainer");
     species_type_class = peer::SpeciesType::__register_class();
 
-    class_<std::set<particle_id_type> >("ParticleIDSet")
-        .def(peer::util::set_indexing_suite<std::set<particle_id_type> >())
+    class_<std::set<world_traits_type::particle_id_type> >("ParticleIDSet")
+        .def(peer::util::set_indexing_suite<std::set<world_traits_type::particle_id_type> >())
         ;
 
     class_<Model, boost::noncopyable>("Model")
@@ -712,36 +662,33 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::ReactionRule::__register_class();
 
-    peer::IdentifierWrapper<SpeciesTypeID>::__register_class("SpeciesTypeID");
-    peer::util::to_native_converter<SpeciesTypeID, species_type_to_species_type_id_converter>();
+    peer::IdentifierWrapper<world_traits_type::species_type_id_type>::__register_class("SpeciesTypeID");
+    peer::util::to_native_converter<world_traits_type::species_type_id_type, species_type_to_species_type_id_converter>();
+
+    peer::IdentifierWrapper<world_traits_type::species_id_type>::__register_class("SpeciesID");
 
     peer::util::GeneratorIteratorWrapper<ptr_generator<NetworkRules::reaction_rule_generator> >::__register_class("ReactionRuleGenerator");
 
     peer::util::ExceptionWrapper<not_found, peer::util::PyExcTraits<&PyExc_LookupError> >::__register_class("NotFound");
     peer::util::ExceptionWrapper<already_exists, peer::util::PyExcTraits<&PyExc_StandardError> >::__register_class("AlreadyExists");
 
-    peer::IdentifierWrapper<particle_id_type>::__register_class("ParticleID");
-    register_id_generator<particle_id_type>("ParticleIDGenerator");
-    peer::ParticleWrapper<particle_type>::__register_class("Particle");
+    peer::IdentifierWrapper<world_traits_type::particle_id_type>::__register_class("ParticleID");
+    register_id_generator<world_traits_type::particle_id_type>("ParticleIDGenerator");
+    peer::ParticleWrapper<world_traits_type::particle_type>::__register_class("Particle");
 
-    peer::IdentifierWrapper<shell_id_type>::__register_class("ShellID");
-    register_id_generator<shell_id_type>("ShellIDGenerator");
-    peer::SphericalShellWrapper<spherical_shell_type>::__register_class("SphericalShell");
-    peer::CylindricalShellWrapper<cylindrical_shell_type>::__register_class("CylindricalShell");
+    peer::IdentifierWrapper<egfrd_simulator_traits_type::shell_id_type>::__register_class("ShellID");
+    register_id_generator<egfrd_simulator_traits_type::shell_id_type>("ShellIDGenerator");
+    peer::SphericalShellWrapper<egfrd_simulator_traits_type::spherical_shell_type>::__register_class("SphericalShell");
+    peer::CylindricalShellWrapper<egfrd_simulator_traits_type::cylindrical_shell_type>::__register_class("CylindricalShell");
 
-    peer::IdentifierWrapper<domain_id_type>::__register_class("DomainID");
-    register_id_generator<domain_id_type>("DomainIDGenerator");
+    peer::IdentifierWrapper<egfrd_simulator_traits_type::domain_id_type>::__register_class("DomainID");
+    register_id_generator<egfrd_simulator_traits_type::domain_id_type>("DomainIDGenerator");
 
     class_<NetworkRules, boost::noncopyable>("NetworkRules", no_init)
         .def("add_reaction_rule", &NetworkRules::add_reaction_rule)
         .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&, SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         ;
-
-    typedef CyclicWorldTraits<length_type, D_type> world_traits_type;
-    typedef World<world_traits_type> CyclicWorld;
-    typedef CyclicWorld::transaction_type transaction_type;
-
 
     peer::util::register_tuple_converter<CyclicWorld::particle_id_pair>();
 
@@ -772,7 +719,64 @@ BOOST_PYTHON_MODULE( _gfrd )
                 return_value_policy<return_by_value>())
         ;
 
-    register_world_class<CyclicWorld>("CyclicWorld");
+    class_<CyclicWorld>("World", init<CyclicWorld::length_type,
+                                  CyclicWorld::size_type>())
+        .add_property("num_particles", &CyclicWorld::num_particles)
+        .add_property("world_size", &CyclicWorld::world_size)
+        .add_property("cell_size", &CyclicWorld::cell_size)
+        .add_property("matrix_size", &CyclicWorld::matrix_size)
+        .add_property("species",
+            range<return_value_policy<return_by_value>, CyclicWorld const&>(
+                &world_get_species<CyclicWorld const>::begin,
+                &world_get_species<CyclicWorld const>::end))
+        .def("add_species", &CyclicWorld::add_species)
+        .def("get_species",
+            (CyclicWorld::species_type const&(CyclicWorld::*)(CyclicWorld::species_id_type const&) const)&CyclicWorld::get_species,
+            return_internal_reference<>())
+        .def("distance", &CyclicWorld::distance)
+        .def("distance_sq", &CyclicWorld::distance_sq)
+        .def("apply_boundary", (CyclicWorld::position_type(CyclicWorld::*)(CyclicWorld::position_type const&) const)&CyclicWorld::apply_boundary)
+        .def("apply_boundary", (CyclicWorld::length_type(CyclicWorld::*)(CyclicWorld::length_type const&) const)&CyclicWorld::apply_boundary)
+        .def("cyclic_transpose", (CyclicWorld::position_type(CyclicWorld::*)(CyclicWorld::position_type const&, CyclicWorld::position_type const&) const)&CyclicWorld::cyclic_transpose)
+        .def("cyclic_transpose", (CyclicWorld::length_type(CyclicWorld::*)(CyclicWorld::length_type const&, CyclicWorld::length_type const&) const)&CyclicWorld::cyclic_transpose)
+        .def("new_particle", &CyclicWorld::new_particle)
+        .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::particle_id_pair const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::sphere_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::sphere_type const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
+        .def("update_particle", &CyclicWorld::update_particle)
+        .def("remove_particle", &CyclicWorld::remove_particle)
+        .def("get_particle", &CyclicWorld::get_particle)
+        .def("create_transaction", &CyclicWorld::create_transaction,
+                return_value_policy<manage_new_object>())
+        .def("__iter__", &CyclicWorld::get_particles,
+                return_value_policy<return_by_value>())
+        ;
+
+    typedef world_traits_type::species_type species_type;
+
+    class_<species_type>("SpeciesInfo",
+            init<species_type::identifier_type, species_type::species_type_id_type>())
+        .def(init<species_type::identifier_type, species_type::species_type_id_type, species_type::length_type, species_type::D_type>())
+        .add_property("id",
+            make_function(&species_type::id,
+                return_value_policy<return_by_value>()))
+        .add_property("type_id",
+            make_function(&species_type::type_id,
+                return_value_policy<return_by_value>()))
+        .add_property("radius",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    species_type, length_type,
+                    &species_type::radius,
+                    &species_type::radius>::get,
+                return_value_policy<return_by_value>()),
+            &peer::util::reference_accessor_wrapper<
+                species_type, Real,
+                &species_type::radius,
+                &species_type::radius>::set)
+        ;
+
+    peer::util::to_native_converter<world_traits_type::species_id_type, species_info_to_species_id_converter>();
 
     typedef SimulationStateTraits<CyclicWorld> simulation_state_traits_type;
     typedef SimulationState<simulation_state_traits_type> simulation_state_type;
