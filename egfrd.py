@@ -590,7 +590,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             self.clearVolume( oldpos, rad )
 
-            for _ in range( 100 ):
+            for _ in range(self.dissociation_retry_moves):
                 unitVector = randomUnitVector()
                 vector = unitVector * particleRadius12 * ( 1.0 + 1e-7 )
             
