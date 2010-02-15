@@ -8,6 +8,7 @@ array_helper_test\
 filters_test\
 MatrixSpace_test\
 MatrixSpaceWithCylinders_test\
+World_test\
 model_test
 
 PYTHON_TESTS = alltests.py
