@@ -229,6 +229,11 @@ class ParticleSimulatorBase( object ):
             self._distanceSq = distanceSq_Cyclic
             self._distanceSqArray = distanceSqArray_Cyclic
 
+        # Particles of a Species whose surface is not specified will be added 
+        # to the world. Dimensions don't matter, except for visualization.
+        self.defaultSurface = \
+            CuboidalRegion([0, 0, 0], [size, size, size], 'world')
+
     def getWorldSize( self ):
         return self.worldSize
 
