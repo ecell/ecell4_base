@@ -16,6 +16,14 @@ INF = numpy.inf
 ZEROPOS = numpy.array( [ 0., 0., 0. ] )
 NOWHERE = numpy.array( ( INF, INF, INF ) )
 
+# Tolerance used for float comparison functions. Oversimplifying: two floats a 
+# and b are considered to be equal if abs( a - b ) < TOLERANCE * abs( a ).
+TOLERANCE = 1e-8
+
+# Multiplication factor used for seperating 2 particles or a particle and a 
+# surface after unbinding.
+MINIMAL_SEPERATION_FACTOR = 1.0 + TOLERANCE
+
 def Mtom3( rate ):
     return rate / ( 1000 * N_A )
 

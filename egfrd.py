@@ -23,7 +23,7 @@ from _gfrd import (
     ParticleContainer
     )
 
-from surface import CuboidalSurface
+from surface import CuboidalRegion
 
 from gfrdbase import *
 from single import *
