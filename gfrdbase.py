@@ -220,6 +220,47 @@ class ParticleSimulatorBase( object ):
     def initialize( self ):
         pass
 
+    def getClosestSurface(self, pos, ignore):
+        """Return sorted list of tuples with:
+            - distance to surface
+            - surface itself
+
+        We can not use matrixSpace, it would miss a surface if the origin of the 
+        surface would not be in the same or neighboring cells as pos.
+
+        """
+        surfaces = [None]
+        distances = [numpy.inf]
+
+        ignoreSurfaces = []
+        for obj in ignore:
+            if isinstance(obj.surface, Surface):
+                # For example ignore surface that particle is currently on.
+                ignoreSurfaces.append(obj.surface)
+
+        for surface in self.surfaceList.itervalues():
+            if surface not in ignoreSurfaces:
+                posTransposed = cyclic_transpose(pos, surface.origin, 
+                                                 self.worldSize)
+                distanceToSurface = surface.signedDistanceTo(posTransposed)
+                distances.append(distanceToSurface)
+                surfaces.append(surface)
+
+        return min(zip(distances, surfaces))
+
+    def getClosestSurfaceWithinRadius(self, pos, radius, ignore):
+        """Return sorted list of tuples with:
+            - distance to surface
+            - surface itself
+
+        """
+        distanceToSurface, closestSurface = self.getClosestSurface(pos, 
+                                                                   ignore ) 
+        if distanceToSurface < radius:
+            return distanceToSurface, closestSurface
+        else:
+            return numpy.inf, None
+
     def setWorldSize( self, size ):
         if isinstance( size, list ) or isinstance( size, tuple ):
             size = numpy.array( size )
@@ -389,23 +430,47 @@ class ParticleSimulatorBase( object ):
         # TODO
         pass
         
-    def throwInParticles( self, st, n, surface=[] ):
+    def throwInParticles(self, st, n, surface=None):
         species = self.speciesList[st.id]
+        if surface == None:
+            surface = self.getSurface(species)
+
         if __debug__:
             log.info( 'throwing in %s %s particles' % ( n, species.id ) )
 
-        for i in range( int( n ) ):
-            while 1:
-                position = surface.randomPosition()
-                if not self.checkOverlap( position, species.radius ):
-                    break
-                else:
+        log.info('\tthrowing in %s %s particles to %s' % (n, species.id, 
+                                                          surface))
+
+        # This is a bit messy, but it works.
+        i = 0
+        while i < int(n):
+            position = surface.randomPosition()
+
+            # Check overlap.
+            if not self.checkOverlap(position, species.radius):
+                create = True
+                # Check if not too close to a neighbouring surfaces for 
+                # particles added to the world, or added to a self-defined 
+                # box.
+                if surface == self.defaultSurface or \
+                   (surface != self.defaultSurface and 
+                    isinstance( surface, CuboidalRegion)):
+                    distance, closestSurface = self.getClosestSurface(position,
+                                                                      [])
+                    if (closestSurface and
+                        distance < closestSurface.minimalDistanceFromSurface( 
+                                    species.radius)):
+                        log.info('\t%d-th particle rejected. To close to '
+                                 'surface. I will keep trying.' % i)
+                        create = False
+                if create:
+                    # All checks passed. Create particle.
+                    p = self.createParticle(st.id, position)
+                    i += 1
                     if __debug__:
-                        log.info( '%d-th particle rejected.' %i )
-            
-            p = self.createParticle(st.id, position)
-            if __debug__:
-                log.info(p)
+                        log.info(p)
+            else:
+                log.info('\t%d-th particle rejected. I will keep trying.' % i)
 
     def placeParticle( self, st, pos ):
         species = self.speciesList[st.id]
