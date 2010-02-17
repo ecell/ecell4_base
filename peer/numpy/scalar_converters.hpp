@@ -24,7 +24,7 @@ namespace util
 
             static void* convertible(PyObject* pyo)
             {
-                return pyo;
+                return PyArray_CheckScalar(pyo) ? pyo: 0;
             }
 
             static void construct(PyObject* pyo,
