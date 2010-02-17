@@ -10,13 +10,13 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
 #include "peer/tuple_converters.hpp"
-#include "../ReactionRule.hpp"
+#include "ReactionRule.hpp"
 
 namespace peer {
 
 struct seq_to_reactants_converter
 {
-    typedef ::ReactionRule::Reactants native_type;
+    typedef ReactionRule::Reactants native_type;
     
     static void* convertible(PyObject* ptr)
     {
@@ -125,21 +125,30 @@ public:
         return impl->get_products().end();
     }
 
+    static std::string const& __getitem__(impl_type* impl, std::string const& key)
+    {
+        return (*impl)[key];
+    }
+
+    static void __setitem__(impl_type* impl, std::string const& key, std::string const& val)
+    {
+        (*impl)[key] = val;
+    }
+
 public:
     static void __register_class()
     {
         using namespace boost::python;
 
+        typedef std::vector<impl_type::species_type_id_type> species_type_id_vector;
         peer::util::to_native_converter<impl_type::Reactants,
             seq_to_reactants_converter>();
         peer::util::register_range_to_tuple_converter<impl_type::Reactants>();
-        peer::util::to_native_converter<std::vector< ::SpeciesTypeID>,
-            iterable_to_stlcontainer_converter<
-                std::vector< ::SpeciesTypeID> > >();
+        peer::util::to_native_converter<species_type_id_vector,
+            iterable_to_stlcontainer_converter<species_type_id_vector> >();
 
         class_<impl_type, impl_type*>("ReactionRule",
-                init<impl_type::Reactants const&, std::vector< ::SpeciesTypeID>, Real>())
-            .add_property("k", static_cast<Real(impl_type::*)() const>(&impl_type::k))
+                init<impl_type::Reactants const&, species_type_id_vector>())
             .add_property("reactants",  
                 make_function(&impl_type::get_reactants,
                     return_value_policy<copy_const_reference>()))
@@ -147,6 +156,9 @@ public:
                 range<return_value_policy<return_by_value>, impl_type*>(
                       &ReactionRule::get_products_begin,
                       &ReactionRule::get_products_end))
+            .def("__getitem__", &ReactionRule::__getitem__,
+                    return_value_policy<copy_const_reference>())
+            .def("__setitem__", &ReactionRule::__setitem__)
             .def("__str__", &ReactionRule::__str__)
             .def("__eq__", &ReactionRule::__eq__)
             ;

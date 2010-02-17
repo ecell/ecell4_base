@@ -113,12 +113,12 @@ namespace util
             Tval_ &(T_::*Vsetter_)()>
     struct reference_accessor_wrapper
     {
-        Tval_ const& get(T_ const& impl)
+        static Tval_ const& get(T_ const& impl)
         {
             return (impl.*Vgetter_)();
         }
 
-        void set(T_& impl, Tval_ const& v)
+        static void set(T_& impl, Tval_ const& v)
         {
             (impl.*Vsetter_)() = v;
         }

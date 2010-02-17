@@ -4,7 +4,9 @@
 #include <map>
 #include <vector>
 #include <boost/scoped_ptr.hpp>
+#include <boost/bind.hpp>
 #include "twofold_container.hpp"
+#include "utils/range.hpp"
 #include "ReactionRuleInfo.hpp"
 
 template<typename T_, typename Trri_>
@@ -14,11 +16,7 @@ public:
     typedef T_ backend_type;
     typedef Trri_ reaction_rule_type;
     typedef typename reaction_rule_type::species_id_type species_id_type;
-
-private:
     typedef std::vector<reaction_rule_type> reaction_rule_vector;
-
-public:
     typedef reaction_rule_vector reaction_rules;
     typedef std::map<species_id_type, reaction_rule_vector> first_order_reaction_rule_vector_map;
     typedef std::map<std::pair<species_id_type, species_id_type>, reaction_rule_vector> second_order_reaction_rule_vector_map;
@@ -67,7 +65,7 @@ public:
                     std::make_pair(std::make_pair(r1, r2),
                                    reaction_rule_vector())));
             boost::scoped_ptr<typename backend_type::reaction_rule_generator>
-                gen(backend_.query_reaction_rule(r1));
+                gen(backend_.query_reaction_rule(r1, r2));
             if (gen)
             {
                 while (::valid(*gen))
@@ -91,7 +89,7 @@ public:
 private:
     mutable first_order_reaction_rule_vector_map first_order_cache_;
     mutable second_order_reaction_rule_vector_map second_order_cache_;
-    backend_type& backend_;
+    backend_type const& backend_;
 };
 
 #endif /* NETWORK_RULES_WRAPPER_HPP */

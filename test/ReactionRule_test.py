@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import _gfrd
 import unittest
 
@@ -13,86 +14,90 @@ class ReactionRuleTestCase(unittest.TestCase):
     def test_instantiation(self):
         s1, s2 = self.s1, self.s2
         self.assertTrue(isinstance(
-            _gfrd.ReactionRule([s1], [], .0), _gfrd.ReactionRule))
+            _gfrd.ReactionRule([s1], []), _gfrd.ReactionRule))
         self.assertTrue(isinstance(
-            _gfrd.ReactionRule([s1, s2], [], .0), _gfrd.ReactionRule))
+            _gfrd.ReactionRule([s1, s2], []), _gfrd.ReactionRule))
         self.assertTrue(isinstance(
-            _gfrd.ReactionRule([s1], [s1], .0), _gfrd.ReactionRule))
+            _gfrd.ReactionRule([s1], [s1]), _gfrd.ReactionRule))
         self.assertTrue(isinstance(
-            _gfrd.ReactionRule([s1, s1], [s1], .0), _gfrd.ReactionRule))
+            _gfrd.ReactionRule([s1, s1], [s1]), _gfrd.ReactionRule))
         self.assertTrue(isinstance(
-            _gfrd.ReactionRule([s1], [s2], .0), _gfrd.ReactionRule))
+            _gfrd.ReactionRule([s1], [s2]), _gfrd.ReactionRule))
         self.assertTrue(isinstance(
-            _gfrd.ReactionRule([s1, s1], [s2], .0), _gfrd.ReactionRule))
+            _gfrd.ReactionRule([s1, s1], [s2]), _gfrd.ReactionRule))
         self.assertTrue(isinstance(
-            _gfrd.ReactionRule([s1, s1], [s1, s1], .0), _gfrd.ReactionRule))
+            _gfrd.ReactionRule([s1, s1], [s1, s1]), _gfrd.ReactionRule))
         self.assertTrue(isinstance(
-            _gfrd.ReactionRule([s1, s1], [s2, s2], .0), _gfrd.ReactionRule))
+            _gfrd.ReactionRule([s1, s1], [s2, s2]), _gfrd.ReactionRule))
         self.assertRaises(TypeError, lambda:
             self.assertTrue(isinstance(
-                 _gfrd.ReactionRule([], [], .0), _gfrd.ReactionRule)))
+                 _gfrd.ReactionRule([], []), _gfrd.ReactionRule)))
         self.assertRaises(TypeError, lambda:
             self.assertTrue(isinstance(
-                _gfrd.ReactionRule([], [s1], .0), _gfrd.ReactionRule)))
+                _gfrd.ReactionRule([], [s1]), _gfrd.ReactionRule)))
         self.assertRaises(TypeError, lambda:
             self.assertTrue(isinstance(
-                _gfrd.ReactionRule([], [s1, s2], .0), _gfrd.ReactionRule)))
+                _gfrd.ReactionRule([], [s1, s2]), _gfrd.ReactionRule)))
 
     def test_comparison(self):
         s1, s2 = self.s1, self.s2
         self.assertEqual(
-            _gfrd.ReactionRule([s1], [], .0),
-            _gfrd.ReactionRule([s1], [], .0))
+            _gfrd.ReactionRule([s1], []),
+            _gfrd.ReactionRule([s1], []))
         self.assertEqual(
-            _gfrd.ReactionRule([s1], [s1], .0),
-            _gfrd.ReactionRule([s1], [s1], .0))
+            _gfrd.ReactionRule([s1], [s1]),
+            _gfrd.ReactionRule([s1], [s1]))
         self.assertEqual(
-            _gfrd.ReactionRule([s1], [s2], .0),
-            _gfrd.ReactionRule([s1], [s2], .0))
+            _gfrd.ReactionRule([s1], [s2]),
+            _gfrd.ReactionRule([s1], [s2]))
         self.assertEqual(
-            _gfrd.ReactionRule([s1], [s1, s2], .0),
-            _gfrd.ReactionRule([s1], [s1, s2], .0))
+            _gfrd.ReactionRule([s1], [s1, s2]),
+            _gfrd.ReactionRule([s1], [s1, s2]))
         self.assertEqual(
-            _gfrd.ReactionRule([s1], [s2, s1], .0),
-            _gfrd.ReactionRule([s1], [s2, s1], .0))
+            _gfrd.ReactionRule([s1], [s2, s1]),
+            _gfrd.ReactionRule([s1], [s2, s1]))
         self.assertEqual(
-            _gfrd.ReactionRule([s1], [s1, s2], .0),
-            _gfrd.ReactionRule([s1], [s2, s1], .0))
+            _gfrd.ReactionRule([s1], [s1, s2]),
+            _gfrd.ReactionRule([s1], [s2, s1]))
         self.assertEqual(
-            _gfrd.ReactionRule([s1], [s2, s1], .0),
-            _gfrd.ReactionRule([s1], [s1, s2], .0))
+            _gfrd.ReactionRule([s1], [s2, s1]),
+            _gfrd.ReactionRule([s1], [s1, s2]))
         self.assertNotEqual(
-            _gfrd.ReactionRule([s1], [], .0),
-            _gfrd.ReactionRule([s2], [], .0))
+            _gfrd.ReactionRule([s1], []),
+            _gfrd.ReactionRule([s2], []))
         self.assertNotEqual(
-            _gfrd.ReactionRule([s1], [s1], .0),
-            _gfrd.ReactionRule([s2], [s1], .0))
+            _gfrd.ReactionRule([s1], [s1]),
+            _gfrd.ReactionRule([s2], [s1]))
         self.assertNotEqual(
-            _gfrd.ReactionRule([s1], [s2], .0),
-            _gfrd.ReactionRule([s2], [s2], .0))
+            _gfrd.ReactionRule([s1], [s2]),
+            _gfrd.ReactionRule([s2], [s2]))
         self.assertNotEqual(
-            _gfrd.ReactionRule([s1], [s1, s2], .0),
-            _gfrd.ReactionRule([s2], [s1, s2], .0))
+            _gfrd.ReactionRule([s1], [s1, s2]),
+            _gfrd.ReactionRule([s2], [s1, s2]))
         self.assertNotEqual(
-            _gfrd.ReactionRule([s1], [s2, s1], .0),
-            _gfrd.ReactionRule([s2], [s2, s1], .0))
+            _gfrd.ReactionRule([s1], [s2, s1]),
+            _gfrd.ReactionRule([s2], [s2, s1]))
         self.assertNotEqual(
-            _gfrd.ReactionRule([s1], [s1, s2], .0),
-            _gfrd.ReactionRule([s2], [s2, s1], .0))
+            _gfrd.ReactionRule([s1], [s1, s2]),
+            _gfrd.ReactionRule([s2], [s2, s1]))
         self.assertNotEqual(
-            _gfrd.ReactionRule([s1], [s2, s1], .0),
-            _gfrd.ReactionRule([s2], [s1, s2], .0))
+            _gfrd.ReactionRule([s1], [s2, s1]),
+            _gfrd.ReactionRule([s2], [s1, s2]))
 
-    def test_get_k(self):
-        self.assertAlmostEqual(.0, _gfrd.ReactionRule([self.s1], [], .0).k)
-        self.assertAlmostEqual(.5, _gfrd.ReactionRule([self.s1], [], .5).k)
-        self.assertAlmostEqual(1., _gfrd.ReactionRule([self.s1], [], 1.).k)
+    def test_get_attribute(self):
+        rr = _gfrd.ReactionRule([self.s1], [])
+        rr['k'] = '0.0'
+        self.assertEqual('0.0', rr['k'])
+        rr['k'] = '0.5'
+        self.assertEqual('0.5', rr['k'])
+        rr['name'] = 'R1'
+        self.assertEqual('R1', rr['name'])
 
     def test_get_reactants_and_get_products(self):
         s1, s2 = self.s1, self.s2
         for reactants in [(s1, ), (s2, ), (s1, s2),]:
             for products in [(), (s1, ), (s2, ), (s1, s2),]:
-                r = _gfrd.ReactionRule(reactants, products, .0)
+                r = _gfrd.ReactionRule(reactants, products)
                 self.assertEqual(reactants, tuple(reactants))
                 self.assertEqual(products, tuple(products))
 

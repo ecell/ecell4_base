@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import _gfrd
 import math
 import random

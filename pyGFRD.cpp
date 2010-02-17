@@ -38,8 +38,6 @@
 #include "Model.hpp"
 #include "World.hpp"
 #include "EGFRDSimulator.hpp"
-#include "NetworkRulesWrapper.hpp"
-#include "ReactionRuleInfo.hpp"
 
 #include "peer/utils.hpp"
 #include "peer/py_hash_support.hpp"
@@ -60,10 +58,12 @@
 
 typedef CyclicWorldTraits<Real, Real> world_traits_type;
 typedef World<world_traits_type> CyclicWorld;
+typedef Model model_type;
 typedef CyclicWorld::transaction_type transaction_type;
-typedef EGFRDSimulatorTraitsBase<CyclicWorld> egfrd_simulator_traits_type;
+typedef EGFRDSimulatorTraitsBase<CyclicWorld, model_type> egfrd_simulator_traits_type;
 
 static boost::python::object species_type_class;
+static boost::python::object species_info_class;
 
 struct position_to_ndarray_converter
 {
@@ -200,19 +200,9 @@ struct python_to_sphere_converter
     }
 };
 
-static Model::species_type_iterator Model_get_species_types_begin(Model& self)
+struct species_type_to_species_id_converter
 {
-    return self.get_species_types().begin();
-}
-
-static Model::species_type_iterator Model_get_species_types_end(Model& self)
-{
-    return self.get_species_types().end();
-}
-
-struct species_type_to_species_type_id_converter
-{
-    typedef world_traits_type::species_type_id_type native_type;
+    typedef world_traits_type::species_id_type native_type;
 
     static void* convertible(PyObject* pyo)
     {
@@ -243,7 +233,7 @@ struct species_info_to_species_id_converter
     static void* convertible(PyObject* pyo)
     {
         if (!PyObject_TypeCheck(pyo, reinterpret_cast<PyTypeObject*>(
-                species_type_class.ptr())))
+                species_info_class.ptr())))
         {
             return 0;
         }
@@ -291,7 +281,7 @@ struct SimulationStateTraits
             NetworkRules,
             ReactionRuleInfo<
                 typename ReactionRule::identifier_type,
-                SpeciesID,
+                SpeciesTypeID,
                 Real> > network_rules_type;
 };
 
@@ -324,7 +314,6 @@ private:
     boost::python::object self_;
     boost::shared_ptr<gsl_rng> rng_;
 };
-
 
 struct gsl_rng_to_python_converter
 {
@@ -639,33 +628,32 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def(peer::util::set_indexing_suite<std::set<world_traits_type::particle_id_type> >())
         ;
 
-    class_<Model, boost::noncopyable>("Model")
+    class_<model_type, boost::noncopyable>("Model")
         .add_property("network_rules",
-            make_function(&Model::network_rules,
+            make_function(&model_type::network_rules,
                 return_value_policy<reference_existing_object>()))
-        .def("new_species_type", &Model::new_species_type,
+        .def("new_species_type", &model_type::new_species_type,
                 return_value_policy<reference_existing_object>())
-        .def("get_species_type_by_id", &Model::get_species_type_by_id,
+        .def("get_species_type_by_id", &model_type::get_species_type_by_id,
                 return_value_policy<reference_existing_object>())
-        .def("__getitem__", (std::string const&(Model::*)(std::string const&) const)
-                &Model::operator[], return_value_policy<copy_const_reference>())
+        .def("__getitem__", (std::string const&(model_type::*)(std::string const&) const)
+                &model_type::operator[], return_value_policy<copy_const_reference>())
         .def("__setitem__", &Model___setitem__)
         .add_property("attributes",
                 peer::util::range_from_range<
-                    Model::attributes_range, Model, &Model::attributes>())
+                    model_type::attributes_range,
+                    model_type, &model_type::attributes>())
         .add_property("species_types",
                 peer::util::range_from_range<
-                    Model::species_type_range,
-                    Model, &Model::get_species_types,
+                    model_type::species_type_range,
+                    model_type, &model_type::get_species_types,
                     return_value_policy<reference_existing_object> >());
         ;
 
     peer::ReactionRule::__register_class();
 
-    peer::IdentifierWrapper<world_traits_type::species_type_id_type>::__register_class("SpeciesTypeID");
-    peer::util::to_native_converter<world_traits_type::species_type_id_type, species_type_to_species_type_id_converter>();
-
-    peer::IdentifierWrapper<world_traits_type::species_id_type>::__register_class("SpeciesID");
+    peer::IdentifierWrapper<world_traits_type::species_id_type>::__register_class("SpeciesTypeID");
+    peer::util::to_native_converter<world_traits_type::species_id_type, species_type_to_species_id_converter>();
 
     peer::util::GeneratorIteratorWrapper<ptr_generator<NetworkRules::reaction_rule_generator> >::__register_class("ReactionRuleGenerator");
 
@@ -686,9 +674,36 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     class_<NetworkRules, boost::noncopyable>("NetworkRules", no_init)
         .def("add_reaction_rule", &NetworkRules::add_reaction_rule)
-        .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
-        .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(SpeciesTypeID const&, SpeciesTypeID const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
+        .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(world_traits_type::species_id_type const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
+        .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(world_traits_type::species_id_type const&, world_traits_type::species_id_type const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         ;
+
+
+    typedef egfrd_simulator_traits_type::reaction_rule_type reaction_rule_info_type;
+    class_<reaction_rule_info_type>("ReactionRuleInfo", no_init)
+        .add_property("id", 
+            make_function(&reaction_rule_info_type::id,
+                          return_value_policy<return_by_value>()))
+        .add_property("k", make_function(&reaction_rule_info_type::k))
+        .add_property("products",
+                peer::util::range_from_range<
+                    reaction_rule_info_type::species_id_range,
+                    reaction_rule_info_type,
+                    &reaction_rule_info_type::get_products>())
+        .add_property("reactants",
+                peer::util::range_from_range<
+                    twofold_container<reaction_rule_info_type::species_id_type>,
+                    reaction_rule_info_type,
+                    &reaction_rule_info_type::get_reactants>());
+
+    typedef egfrd_simulator_traits_type::network_rules_type network_rules_wrapper_type;
+    class_<network_rules_wrapper_type, boost::noncopyable>("NetworkRulesWrapper", init<NetworkRules const&>())
+        .def("query_reaction_rule", (network_rules_wrapper_type::reaction_rule_vector const&(network_rules_wrapper_type::*)(network_rules_wrapper_type::species_id_type const&) const)&network_rules_wrapper_type::query_reaction_rule,
+            return_value_policy<return_by_value>())
+        .def("query_reaction_rule", (network_rules_wrapper_type::reaction_rule_vector const&(network_rules_wrapper_type::*)(network_rules_wrapper_type::species_id_type const&, network_rules_wrapper_type::species_id_type const&) const)&network_rules_wrapper_type::query_reaction_rule,
+            return_value_policy<return_by_value>())
+        ;
+    peer::util::register_range_to_tuple_converter<network_rules_wrapper_type::reaction_rule_vector>();
 
     peer::util::register_tuple_converter<CyclicWorld::particle_id_pair>();
 
@@ -754,26 +769,34 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     typedef world_traits_type::species_type species_type;
 
-    class_<species_type>("SpeciesInfo",
-            init<species_type::identifier_type, species_type::species_type_id_type>())
-        .def(init<species_type::identifier_type, species_type::species_type_id_type, species_type::length_type, species_type::D_type>())
+    species_info_class = class_<species_type>("SpeciesInfo",
+            init<species_type::identifier_type>())
+        .def(init<species_type::identifier_type, species_type::length_type, species_type::D_type>())
         .add_property("id",
             make_function(&species_type::id,
-                return_value_policy<return_by_value>()))
-        .add_property("type_id",
-            make_function(&species_type::type_id,
                 return_value_policy<return_by_value>()))
         .add_property("radius",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    species_type, length_type,
+                    species_type, species_type::length_type,
                     &species_type::radius,
                     &species_type::radius>::get,
                 return_value_policy<return_by_value>()),
             &peer::util::reference_accessor_wrapper<
-                species_type, Real,
+                species_type, species_type::length_type,
                 &species_type::radius,
                 &species_type::radius>::set)
+        .add_property("D",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    species_type, species_type::D_type,
+                    &species_type::D,
+                    &species_type::D>::get,
+                return_value_policy<return_by_value>()),
+            &peer::util::reference_accessor_wrapper<
+                species_type, species_type::D_type,
+                &species_type::D,
+                &species_type::D>::set)
         ;
 
     peer::util::to_native_converter<world_traits_type::species_id_type, species_info_to_species_id_converter>();

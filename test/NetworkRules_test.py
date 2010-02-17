@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import _gfrd
 import unittest
 
@@ -12,23 +13,23 @@ class NetworkRulesTestCase(unittest.TestCase):
 
     def test_add_reaction_rule(self):
         self.m.network_rules.add_reaction_rule(
-            _gfrd.ReactionRule([self.s1], [self.s1, self.s2], .2))
+            _gfrd.ReactionRule([self.s1], [self.s1, self.s2]))
         self.assertTrue(True)
 
         self.m.network_rules.add_reaction_rule(
-            _gfrd.ReactionRule([self.s2], [self.s1, self.s2], .2))
+            _gfrd.ReactionRule([self.s2], [self.s1, self.s2]))
         self.assertTrue(True)
 
         self.assertRaises(_gfrd.AlreadyExists,
                 lambda: self.m.network_rules.add_reaction_rule(
-                    _gfrd.ReactionRule([self.s1], [self.s1, self.s2], .2)))
+                    _gfrd.ReactionRule([self.s1], [self.s1, self.s2])))
 
         self.assertRaises(_gfrd.AlreadyExists,
                 lambda: self.m.network_rules.add_reaction_rule(
-                    _gfrd.ReactionRule([self.s2], [self.s1, self.s2], .2)))
+                    _gfrd.ReactionRule([self.s2], [self.s1, self.s2])))
 
     def test_query_reaction_rule(self):
-        r1 = _gfrd.ReactionRule([self.s1], [self.s1, self.s2], .2)
+        r1 = _gfrd.ReactionRule([self.s1], [self.s1, self.s2])
         self.m.network_rules.add_reaction_rule(r1)
         a = self.m.network_rules.query_reaction_rule(self.s1)
         self.assertTrue(iter(a) != None)
@@ -36,7 +37,7 @@ class NetworkRulesTestCase(unittest.TestCase):
         self.assertEqual(1, len(a))
         self.assertTrue(r1 in a)
 
-        r2 = _gfrd.ReactionRule([self.s1], [self.s1], .2)
+        r2 = _gfrd.ReactionRule([self.s1], [self.s1])
         self.m.network_rules.add_reaction_rule(r2)
         a = self.m.network_rules.query_reaction_rule(self.s1)
         self.assertTrue(iter(a) != None)

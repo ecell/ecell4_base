@@ -15,7 +15,6 @@
 #include "abstract_set.hpp"
 #include "Particle.hpp"
 #include "ParticleID.hpp"
-#include "SpeciesID.hpp"
 #include "SpeciesTypeID.hpp"
 #include "SpeciesInfo.hpp"
 #include "SerialIDGenerator.hpp"
@@ -29,10 +28,9 @@ struct WorldTraitsBase
     typedef TD_ D_type;
     typedef ParticleID particle_id_type;
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
-    typedef SpeciesID species_id_type;
-    typedef SpeciesTypeID species_type_id_type;
+    typedef SpeciesTypeID species_id_type;
     typedef Particle<length_type, D_type, species_id_type> particle_type;
-    typedef SpeciesInfo<species_id_type, species_type_id_type, D_type, length_type> species_type;
+    typedef SpeciesInfo<species_id_type, D_type, length_type> species_type;
     typedef typename particle_type::shape_type sphere_type;
     typedef typename sphere_type::position_type position_type;
 
@@ -124,7 +122,6 @@ public:
     typedef typename traits_type::particle_id_type particle_id_type;
     typedef typename traits_type::particle_id_generator particle_id_generator;
     typedef typename traits_type::species_id_type species_id_type;
-    typedef typename traits_type::species_type_id_type species_type_id_type;
     typedef typename traits_type::sphere_type sphere_type;
     typedef typename traits_type::size_type size_type;
     typedef MatrixSpace<particle_type, particle_id_type> particle_matrix_type;
