@@ -8,6 +8,8 @@
 
 #include <boost/python/object.hpp>
 #include <boost/python/exception_translator.hpp>
+#include <boost/type_traits/is_const.hpp>
+#include <boost/mpl/if.hpp>
 
 namespace peer {
 
@@ -123,29 +125,21 @@ namespace util
     };
 
     namespace detail {
-        template<typename T1_, typename T2_, T1_(T2_::*Vfun_)()>
+        template<typename T1_, typename T2_, typename T3_, T3_(T2_::*Vfun_)()>
         struct range_from_range
         {
-            static typename T1_::iterator begin(T2_& inst)
+            typedef typename boost::mpl::if_<
+                boost::is_const<T2_>,
+                typename boost::range_const_iterator<T1_>::type,
+                typename boost::range_iterator<T1_>::type>::type
+                result_type;
+
+            static result_type begin(T2_& inst)
             {
                 return (inst.*Vfun_)().begin();
             }
 
-            static typename T1_::iterator end(T2_& inst)
-            {
-                return (inst.*Vfun_)().end();
-            }
-        };
-
-        template<typename T1_, typename T2_, T1_(T2_::*Vfun_)() const>
-        struct range_from_range<T1_, const T2_, Vfun_>
-        {
-            static typename T1_::const_iterator begin(T2_ const& inst)
-            {
-                return (inst.*Vfun_)().begin();
-            }
-
-            static typename T1_::const_iterator end(T2_ const& inst)
+            static result_type end(T2_& inst)
             {
                 return (inst.*Vfun_)().end();
             }
@@ -156,32 +150,96 @@ namespace util
     inline boost::python::object range_from_range()
     {
         return boost::python::range(
-            &detail::range_from_range<T1_, const T2_, Vfun_>::begin,
-            &detail::range_from_range<T1_, const T2_, Vfun_>::end);
+            &detail::range_from_range<T1_, const T2_, T1_, Vfun_>::begin,
+            &detail::range_from_range<T1_, const T2_, T1_, Vfun_>::end);
     }
 
     template<typename T1_, typename T2_, T1_(T2_::*Vfun_)()>
     inline boost::python::object range_from_range()
     {
         return boost::python::range(
-            &detail::range_from_range<T1_, T2_, Vfun_>::begin,
-            &detail::range_from_range<T1_, T2_, Vfun_>::end);
+            &detail::range_from_range<T1_, T2_, T1_, Vfun_>::begin,
+            &detail::range_from_range<T1_, T2_, T1_, Vfun_>::end);
     }
- 
+
+    template<typename T1_, typename T2_, T1_ const(T2_::*Vfun_)() const>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range(
+            &detail::range_from_range<T1_, const T2_, T1_ const, Vfun_>::begin,
+            &detail::range_from_range<T1_, const T2_, T1_ const, Vfun_>::end);
+    }
+
+    template<typename T1_, typename T2_, T1_ const(T2_::*Vfun_)()>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range(
+            &detail::range_from_range<T1_, T2_, T1_ const, Vfun_>::begin,
+            &detail::range_from_range<T1_, T2_, T1_ const, Vfun_>::end);
+    }
+
+    template<typename T1_, typename T2_, T1_ const&(T2_::*Vfun_)() const>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range(
+            &detail::range_from_range<T1_, const T2_, T1_ const&, Vfun_>::begin,
+            &detail::range_from_range<T1_, const T2_, T1_ const&, Vfun_>::end);
+    }
+
+    template<typename T1_, typename T2_, T1_ const&(T2_::*Vfun_)()>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range(
+            &detail::range_from_range<T1_, T2_, T1_ const&, Vfun_>::begin,
+            &detail::range_from_range<T1_, T2_, T1_ const&, Vfun_>::end);
+    }
+
     template<typename T1_, typename T2_, T1_(T2_::*Vfun_)() const, typename Tpol_>
     inline boost::python::object range_from_range()
     {
         return boost::python::range<Tpol_>(
-            &detail::range_from_range<T1_, const T2_, Vfun_>::begin,
-            &detail::range_from_range<T1_, const T2_, Vfun_>::end);
+            &detail::range_from_range<T1_, const T2_, T1_, Vfun_>::begin,
+            &detail::range_from_range<T1_, const T2_, T1_, Vfun_>::end);
     }
 
     template<typename T1_, typename T2_, T1_(T2_::*Vfun_)(), typename Tpol_>
     inline boost::python::object range_from_range()
     {
         return boost::python::range<Tpol_>(
-            &detail::range_from_range<T1_, T2_, Vfun_>::begin,
-            &detail::range_from_range<T1_, T2_, Vfun_>::end);
+            &detail::range_from_range<T1_, T2_, T1_, Vfun_>::begin,
+            &detail::range_from_range<T1_, T2_, T1_, Vfun_>::end);
+    }
+
+    template<typename T1_, typename T2_, T1_ const(T2_::*Vfun_)() const, typename Tpol_>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range<Tpol_>(
+            &detail::range_from_range<T1_, const T2_, T1_ const, Vfun_>::begin,
+            &detail::range_from_range<T1_, const T2_, T1_ const, Vfun_>::end);
+    }
+
+    template<typename T1_, typename T2_, T1_ const(T2_::*Vfun_)(), typename Tpol_>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range<Tpol_>(
+            &detail::range_from_range<T1_, T2_, T1_ const, Vfun_>::begin,
+            &detail::range_from_range<T1_, T2_, T1_ const, Vfun_>::end);
+    }
+
+    template<typename T1_, typename T2_, T1_ const&(T2_::*Vfun_)() const, typename Tpol_>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range<Tpol_>(
+            &detail::range_from_range<T1_, const T2_, T1_ const&, Vfun_>::begin,
+            &detail::range_from_range<T1_, const T2_, T1_ const&, Vfun_>::end);
+    }
+
+    template<typename T1_, typename T2_, T1_ const&(T2_::*Vfun_)(), typename Tpol_>
+    inline boost::python::object range_from_range()
+    {
+        return boost::python::range<Tpol_>(
+            &detail::range_from_range<T1_, T2_, T1_ const&, Vfun_>::begin,
+            &detail::range_from_range<T1_, T2_, T1_ const&, Vfun_>::end);
     }
 
 } // namespace util
