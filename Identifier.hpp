@@ -174,7 +174,7 @@ struct Identifier
                 value_.first <= rhs.value_.first);
     }
 
-    operator value_type()
+    operator value_type() const
     {
         return value_;
     }
