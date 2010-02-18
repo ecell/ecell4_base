@@ -55,6 +55,7 @@
 #include "peer/GeneratorIteratorWrapper.hpp"
 #include "peer/Exception.hpp"
 #include "peer/GSLRandomNumberGenerator.hpp"
+#include "peer/STLIteratorWrapper.hpp"
 
 typedef CyclicWorldTraits<Real, Real> world_traits_type;
 typedef World<world_traits_type> CyclicWorld;
@@ -686,15 +687,13 @@ BOOST_PYTHON_MODULE( _gfrd )
                           return_value_policy<return_by_value>()))
         .add_property("k", make_function(&reaction_rule_info_type::k))
         .add_property("products",
-                peer::util::range_from_range<
-                    reaction_rule_info_type::species_id_range,
-                    reaction_rule_info_type,
-                    &reaction_rule_info_type::get_products>())
+            make_function(&reaction_rule_info_type::get_products,
+                          return_value_policy<return_by_value>()))
         .add_property("reactants",
-                peer::util::range_from_range<
-                    twofold_container<reaction_rule_info_type::species_id_type>,
-                    reaction_rule_info_type,
-                    &reaction_rule_info_type::get_reactants>());
+            make_function(&reaction_rule_info_type::get_reactants,
+                          return_value_policy<return_by_value>()));
+
+    peer::util::register_range_to_tuple_converter<reaction_rule_info_type::species_id_range>();
 
     typedef egfrd_simulator_traits_type::network_rules_type network_rules_wrapper_type;
     class_<network_rules_wrapper_type, boost::noncopyable>("NetworkRulesWrapper", init<NetworkRules const&>())
@@ -703,7 +702,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("query_reaction_rule", (network_rules_wrapper_type::reaction_rule_vector const&(network_rules_wrapper_type::*)(network_rules_wrapper_type::species_id_type const&, network_rules_wrapper_type::species_id_type const&) const)&network_rules_wrapper_type::query_reaction_rule,
             return_value_policy<return_by_value>())
         ;
-    peer::util::register_range_to_tuple_converter<network_rules_wrapper_type::reaction_rule_vector>();
+    peer::util::register_stl_iterator_range_converter<network_rules_wrapper_type::reaction_rule_vector>();
 
     peer::util::register_tuple_converter<CyclicWorld::particle_id_pair>();
 
