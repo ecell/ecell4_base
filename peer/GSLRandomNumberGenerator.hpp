@@ -90,7 +90,12 @@ struct GSLRandomNumberGenerator
         gsl_rng_set(rng_.get(), val);
     }
 
-    GSLRandomNumberGenerator(gsl_rng* rng): rng_(rng, gsl_rng_free) {}
+    GSLRandomNumberGenerator(rng_handle hdl): rng_(hdl)
+    {
+        BOOST_ASSERT(*boost::get_deleter<void(*)(gsl_rng*)>(hdl) == &gsl_rng_free);
+    }
+
+    GSLRandomNumberGenerator(gsl_rng* rng): rng_(rng, &gsl_rng_free) {}
 
     template<gsl_rng_type const*& Prng_>
     static GSLRandomNumberGenerator create()

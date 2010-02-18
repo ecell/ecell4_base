@@ -24,7 +24,6 @@ __all__ = [
     'p_free',
     'drawR_free',
     'NoSpace',
-    'Species',
     'ReactionRuleCache',
     'ParticleModel',
     'createUnimolecularReactionRule',
@@ -95,24 +94,6 @@ class NoSpace( Exception ):
     pass
 
 
-class Species( object ):
-    def __init__( self, type, D, radius ):
-        self.type = type
-        self.D = float(D)
-        self.radius = float(radius)
-
-    @property
-    def serial( self ):
-        return self.type.id
-
-    @property
-    def id( self ):
-        return self.type["id"]
-
-    def __str__(self):
-        return str(self.type)
-
-
 class ReactionRuleCache(object):
     def __init__(self, rt, products, k):
         self.rt = rt
@@ -133,24 +114,33 @@ class ParticleModel( _gfrd.Model ):
         for species1 in self.species_types:
             for species2 in self.species_types:
                 if nr.query_reaction_rule(species1, species2) is None:
-                    nr.add_reaction_rule(
-                        _gfrd.ReactionRule([species1, species2], [], 0.))
+                    rr = _gfrd.ReactionRule([species1, species2], [])
+                    rr['k'] = '0.0'
+                    nr.add_reaction_rule(rr)
 
 
 def createUnimolecularReactionRule( s1, p1, k ):
-    return _gfrd.ReactionRule( [ s1, ], [ p1, ], k )
+    rr = _gfrd.ReactionRule( [ s1, ], [ p1, ] )
+    rr['k'] = str(k)
+    return rr
 
 
 def createDecayReactionRule( s1, k ):
-    return _gfrd.ReactionRule( [ s1, ], [], k )
+    rr = _gfrd.ReactionRule( [ s1, ], [] )
+    rr['k'] = str(k)
+    return rr
 
 
 def createBindingReactionRule( s1, s2, p1, k ):
-    return _gfrd.ReactionRule( [ s1, s2 ], [ p1, ], k )
+    rr = _gfrd.ReactionRule( [ s1, s2 ], [ p1, ] )
+    rr['k'] = str(k)
+    return rr
 
 
 def createUnbindingReactionRule( s1, p1, p2, k ):
-    return _gfrd.ReactionRule( [ s1, ], [ p1, p2 ], k )
+    rr = _gfrd.ReactionRule( [ s1, ], [ p1, p2 ] )
+    rr['k'] = str(k)
+    return rr
 
 
 class Reaction:
@@ -200,6 +190,8 @@ class ParticleSimulatorBase( object ):
 
         self.model = None
 
+        self.network_rules = None
+
         self.particleIDGenerator = _gfrd.ParticleIDGenerator(0)
 
     def setModel( self, model ):
@@ -207,9 +199,11 @@ class ParticleSimulatorBase( object ):
         self.speciesList.clear()
         self.particlePool.clear()
         self.reactionRuleCache.clear()
+
         for st in model.species_types:
-            self.speciesList[st.id] = Species( st, st["D"], st["radius"] )
+            self.speciesList[st.id] = _gfrd.SpeciesInfo( st.id, float(st["D"]), float(st["radius"]) )
             self.particlePool[st.id] = _gfrd.ParticleIDSet()
+        self.network_rules = _gfrd.NetworkRulesWrapper(model.network_rules)
         self.model = model
 
     def initialize( self ):
@@ -254,7 +248,7 @@ class ParticleSimulatorBase( object ):
         try:
             retval = self.reactionRuleCache[k]
         except:
-            gen = self.model.network_rules.query_reaction_rule( species )
+            gen = self.network_rules.query_reaction_rule( species )
             if gen is None:
                 retval = None
             else:
@@ -285,7 +279,7 @@ class ParticleSimulatorBase( object ):
         try:
             retval = self.reactionRuleCache[k]
         except:
-            gen = self.model.network_rules.query_reaction_rule( species1, species2 )
+            gen = self.network_rules.query_reaction_rule( species1, species2 )
             if gen is None:
                 retval = None
             else:

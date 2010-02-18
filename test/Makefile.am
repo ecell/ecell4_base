@@ -8,9 +8,26 @@ array_helper_test\
 filters_test\
 MatrixSpace_test\
 MatrixSpaceWithCylinders_test\
+World_test\
 model_test
 
-PYTHON_TESTS = alltests.py
+PYTHON_TESTS = \
+	BDSimulator_test.py \
+	BasicPairGreensFunction_test.py \
+	CylindricalShellContainer_test.py \
+	EGFRDSimulator_test.py \
+	FirstPassageNoCollisionPairGreensFunction_test.py \
+	FirstPassagePairGreensFunction_test.py \
+	FreeGreensFunction_test.py \
+	FreePairGreensFunction_test.py \
+	Model_test.py \
+	NetworkRules_test.py \
+	NetworkRulesWrapper_test.py \
+	ReactionRule_test.py \
+	SphericalShellContainer_test.py \
+	freeFunctions_test.py \
+	test.py \
+	utils_test.py
 
 TESTS = $(CPP_TESTS) $(PYTHON_TESTS)
 

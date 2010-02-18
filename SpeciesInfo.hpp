@@ -1,20 +1,21 @@
-#ifndef SPECIES_HPP
-#define SPECIES_HPP
+#ifndef SPECIES_INFO_HPP
+#define SPECIES_INFO_HPP
 
 #include <set>
 #include <string>
 #include <ostream>
 #include "Defs.hpp"
-#include "species_type_id.hpp"
 
-template<typename T_>
-struct species_info
+template<typename Tid_, typename TD_, typename Tlen_>
+struct SpeciesInfo
 {
-    typedef T_ length_type;
+    typedef Tid_ identifier_type;
+    typedef TD_ D_type;
+    typedef Tlen_ length_type;
 
-    species_type const* type() const
+    identifier_type const& id() const
     {
-        return type_;
+        return id_;
     }
 
     length_type const& radius() const
@@ -27,44 +28,45 @@ struct species_info
         return radius_;
     }
 
-    Real const& D() const
+    D_type const& D() const
     {
-        return diffusion_constant_;
+        return diffusion_coef_;
     }
 
-    Real& D()
+    D_type& D()
     {
-        return diffusion_constant_;
+        return diffusion_coef_;
     }
 
-    bool operator==(species const& rhs) const
+    bool operator==(SpeciesInfo const& rhs) const
     {
-        return id_ == rhs.id() && name_ == rhs.name() &&
-            diffusion_constant_ == rhs.D() && radius_ == rhs.radius();
+        return id_ == rhs.id() && diffusion_coef_ == rhs.D() &&
+                radius_ == rhs.radius();
     }
 
-    bool operator!=(species const& rhs) const
+    bool operator!=(SpeciesInfo const& rhs) const
     {
         return !operator==(rhs);
     }
 
-    species_info(species_type const* type)
-        : type_(type), diffusion_constant_(
-            boost::lexical_cast<Real>((*type)["D"])),
-          radius_(boost::lexical_cast<Real>((*type)["radius"])) {}
+    SpeciesInfo(identifier_type const& id, D_type const& D = 0.,
+                length_type const& r = 0.) 
+        : id_(id), diffusion_coef_(D), radius_(r) {}
+
+    SpeciesInfo() {}
 
 private:
-    const species_type const* type_;
-    double diffusion_constant_;
+    identifier_type id_;
+    D_type diffusion_coef_;
     length_type radius_;
 };
 
-template<typename Tchar_, typename Ttraits_ typename T_>
+template<typename Tchar_, typename Ttraits_, typename Tid_, typename TD_, typename Tlen_>
 inline std::basic_ostream<Tchar_, Ttraits_>&
-operator<<(std::basic_ostream<Tchar_, Ttraits_>& strm, const species<T_>& v)
+operator<<(std::basic_ostream<Tchar_, Ttraits_>& strm, const SpeciesInfo<Tid_, TD_, Tlen_>& v)
 {
-    strm << "species_info(type=" << v.type() << ", D=" << v.D() << ", radius=" << v.radius() << ")";
+    strm << "SpeciesInfo(id=" << v.id() << ", SpeciesTypeID=" << v.type_id() <<  ", D=" << v.D() << ", radius=" << v.radius() << ")";
     return strm;
 }
 
-#endif /* SPECIES_HPP */
+#endif /* SPECIES_INFO_HPP */

@@ -54,7 +54,7 @@ class BDSimulatorCoreBase( object ):
         D_list = []
         radius_list = []
         for species in speciesList:
-            if self.main.particlePool[species.serial]:
+            if self.main.particlePool[species.id]:
                 D_list.append( species.D )
                 radius_list.append( species.radius )
         D_max = max( D_list ) * 2  # max relative diffusion speed
@@ -232,7 +232,7 @@ class BDSimulatorCoreBase( object ):
             self.clearVolume( oldpos, radius, ignore = [ particle ] )
                 
             self.removeParticle( particle )
-            newparticle = self.createParticle( productSpecies.serial, oldpos )
+            newparticle = self.createParticle( productSpecies.id, oldpos )
 
             self.lastReaction = Reaction( rt, [particle], [newparticle] )
 
@@ -285,8 +285,8 @@ class BDSimulatorCoreBase( object ):
             # move accepted
             self.removeParticle( particle )
 
-            newparticle1 = self.createParticle( productSpecies1.serial, newpos1 )
-            newparticle2 = self.createParticle( productSpecies2.serial, newpos2 )
+            newparticle1 = self.createParticle( productSpecies1.id, newpos1 )
+            newparticle2 = self.createParticle( productSpecies2.id, newpos2 )
 
             self.lastReaction = Reaction( rt, [particle], 
                                           [newparticle1, newparticle2] )
@@ -319,7 +319,7 @@ class BDSimulatorCoreBase( object ):
 
             self.removeParticle(pid_particle_pair1)
             self.removeParticle(pid_particle_pair2)
-            newparticle = self.createParticle(productSpecies.serial, newPos)
+            newparticle = self.createParticle(productSpecies.id, newPos)
 
             try:
                 self.particlesToStep.remove(pid_particle_pair2[0])
@@ -366,7 +366,7 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
     def updateParticleList( self ):
         self.clearParticleList()
         for s in self.main.speciesList.itervalues():
-            for pid in self.main.particlePool[s.serial]:
+            for pid in self.main.particlePool[s.id]:
                 self.addToParticleList(pid) 
 
     def addParticle(self, pid_particle_pair):

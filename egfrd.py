@@ -561,7 +561,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 raise NoSpace()
 
             self.removeParticle(single.pid_particle_pair)
-            newparticle = self.createParticle( productSpecies.serial, oldpos )
+            newparticle = self.createParticle( productSpecies.id, oldpos )
             newsingle = self.createSingle( newparticle )
             self.addSingleEvent( newsingle )
 
@@ -623,8 +623,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             self.removeParticle(single.pid_particle_pair)
 
-            particle1 = self.createParticle(productSpecies1.serial, newpos1)
-            particle2 = self.createParticle(productSpecies2.serial, newpos2)
+            particle1 = self.createParticle(productSpecies1.id, newpos1)
+            particle2 = self.createParticle(productSpecies2.id, newpos2)
             newsingle1 = self.createSingle(particle1)
             newsingle2 = self.createSingle(particle2)
 
@@ -904,7 +904,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.removeParticle(pair.single1.pid_particle_pair)
                 self.removeParticle(pair.single2.pid_particle_pair)
 
-                particle = self.createParticle( species3.serial, newCoM )
+                particle = self.createParticle( species3.id, newCoM )
                 newsingle = self.createSingle( particle )
                 self.addSingleEvent( newsingle )
 
