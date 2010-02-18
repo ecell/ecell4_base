@@ -75,7 +75,7 @@ class Logger:
 
         self.timecourseFile.write( '%g' % self.sim.t + '\t' )
         self.timecourseFile.write( '\t'.join(
-            str(len(self.sim.getParticlePool(i.type.id))) \
+            str(len(self.sim.getParticlePool(i.id))) \
             for i in self.sim.getSpecies()) + '\n' )
         self.timecourseFile.flush()
 
