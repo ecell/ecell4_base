@@ -22,6 +22,7 @@ PYTHON_TESTS = \
 	FreePairGreensFunction_test.py \
 	Model_test.py \
 	NetworkRules_test.py \
+	NetworkRulesWrapper_test.py \
 	ReactionRule_test.py \
 	SphericalShellContainer_test.py \
 	freeFunctions_test.py \
