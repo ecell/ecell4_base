@@ -10,9 +10,6 @@
 #include "generator.hpp"
 #include "utils/unassignable_adapter.hpp"
 
-#include <cstdlib>
-#include <boost/foreach.hpp>
-
 template<typename Ttraits_>
 class Transaction: public ParticleContainer<Ttraits_>
 {
@@ -74,15 +71,6 @@ public:
 
     virtual void update_particle(particle_id_pair const& pi_pair)
     {
-        typename particle_id_list_type::iterator i(removed_particles_.find(pi_pair.first));
-        if (removed_particles_.end() != i)
-        {
-            BOOST_FOREACH(particle_id_type j, removed_particles_)
-            {
-                std::cout << j << std::endl;
-            }
-            std::exit(0);
-        }
         BOOST_ASSERT(removed_particles_.end() ==
                 removed_particles_.find(pi_pair.first));
         std::pair<typename particle_id_pair_set_type::iterator, bool> r(
