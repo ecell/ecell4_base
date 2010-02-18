@@ -62,7 +62,7 @@ public:
         if ( self->theIdx == self->theEnd )
             return NULL;
 
-        return py::incref( py::object( *self->theIdx ).ptr() );
+        return boost::python::incref( boost::python::object( *self->theIdx ).ptr() );
     }
 };
 
@@ -111,6 +111,8 @@ PyTypeObject STLIteratorWrapper< Titer_ >::__class__ = {
 	PyObject_Del,			/* tp_free */
 };
 
+namespace util {
+
 namespace detail {
 
 template<typename Trange_>
@@ -120,17 +122,19 @@ struct stl_iterator_range_converter
 
     static PyObject* convert(native_type const& v)
     {
-        return STLIteratorWrapper<typename native_type::const_iterator>::create(v);
+        return reinterpret_cast<PyObject*>(STLIteratorWrapper<typename native_type::const_iterator>::create(v));
     }
 };
 
 } // namespace detail
 
 template<typename Trange_>
-inline register_stl_iterator_range_converter()
+inline void register_stl_iterator_range_converter()
 {
     boost::python::to_python_converter<Trange_, detail::stl_iterator_range_converter<Trange_> >();
 }
+
+} // namespace util
 
 } // namespace peer
 
