@@ -6,6 +6,8 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
+#include "peer/compat.h"
+
 namespace peer {
 
 struct GSLRandomNumberGenerator

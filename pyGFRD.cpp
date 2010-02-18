@@ -740,7 +740,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .add_property("cell_size", &CyclicWorld::cell_size)
         .add_property("matrix_size", &CyclicWorld::matrix_size)
         .add_property("species",
-            range<return_value_policy<return_by_value>, CyclicWorld const&>(
+            range<return_value_policy<return_by_value>, CyclicWorld const>(
                 &world_get_species<CyclicWorld const>::begin,
                 &world_get_species<CyclicWorld const>::end))
         .def("add_species", &CyclicWorld::add_species)

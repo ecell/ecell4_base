@@ -21,6 +21,8 @@
 #include <unistd.h>
 #include <iostream>
 
+#include "peer/compat.h"
+
 #include "numpy/type_mappings.hpp"
 #include "pickle_support.hpp"
 
@@ -73,7 +75,7 @@ public:
         __name__ = static_cast<std::string>(
             extract<std::string>(object(borrowed(mod)).attr("__name__")))
             + "." + name;
-        __class__.tp_name = __name__.c_str();
+        __class__.tp_name = const_cast<char*>(__name__.c_str());
         PyType_Ready(&__class__);
         dict(borrowed(__class__.tp_dict))["__safe_for_unpickling__"] = object(true);
         return &__class__;
