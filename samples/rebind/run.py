@@ -74,7 +74,7 @@ def singlerun( T_list, D_factor, N_B, N_X ):
     print 'matrixSize=', matrixSize
     s.setMatrixSize( matrixSize )
 
-    box1 = CuboidalSurface( [0,0,0],[L,L,L] )
+    box1 = CuboidalRegion( [0,0,0],[L,L,L] )
 
     radius = 2.5e-9
     sigma = radius * 2

@@ -8,7 +8,7 @@ import sys
 s = EGFRDSimulator()
 s.setWorldSize( 1e-6 )
 
-box1 = CuboidalSurface( [0,0,0],[1e-6,1e-6,1e-6] )
+box1 = CuboidalRegion( [0,0,0],[1e-6,1e-6,1e-6] )
 
 m = ParticleModel()
 O = m.new_species_type( 'O', 0, 1e-8 )

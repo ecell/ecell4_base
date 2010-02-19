@@ -8,9 +8,11 @@
 #include <boost/format.hpp>
 #include <boost/bind.hpp>
 #include <boost/range/size.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
+#include <boost/range/const_iterator.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <boost/foreach.hpp>
 
 #include "Defs.hpp"
 #include "utils/get_mapper_mf.hpp"
@@ -169,24 +171,31 @@ operator<<(std::basic_ostream<Tchar_, Ttraits_>& out, ReactionRule const& r)
     bool first;
     out << "ReactionRule(id=" << r.id() << ", reactants={";
     first = true;
-    BOOST_FOREACH (SpeciesTypeID const& s, r.get_reactants())
+    ReactionRule::Reactants const& reactants(r.get_reactants());
+    ReactionRule::species_type_id_range products(r.get_products());
+    for (typename boost::range_const_iterator<ReactionRule::Reactants>::type
+            i(boost::begin(reactants)), e(boost::end(reactants));
+         i != e; ++i)
     {
         if (!first)
         {
             out << ", ";
         }
-        out << s;
+        out << *i;
         first = false;
     }
     out << "}, products={";
     first = true;
-    BOOST_FOREACH (SpeciesTypeID const& s, r.get_products())
+    for (typename boost::range_const_iterator<
+            ReactionRule::species_type_id_range>::type
+                i(boost::begin(products)), e(boost::end(products));
+         i != e; ++i)
     {
         if (!first)
         {
             out << ", ";
         }
-        out << s;
+        out << *i;
         first = false;
     }
     out << "})";

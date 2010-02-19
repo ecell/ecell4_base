@@ -64,7 +64,7 @@ def singlerun( D_factor, ti, T ):
     s.setMatrixSize( matrixSize )
 
 
-    box1 = CuboidalSurface( [0,0,0],[L,L,L] )
+    box1 = CuboidalRegion( [0,0,0],[L,L,L] )
 
     radius = 2.5e-9
 

@@ -23,7 +23,7 @@ def run_single( T, V, N ):
     print 'matrixSize=', matrixSize
     s.setMatrixSize( matrixSize )
     
-    box1 = CuboidalSurface( [0,0,0],[L,L,L] )
+    box1 = CuboidalRegion( [0,0,0],[L,L,L] )
 
     D = 1e-12
 

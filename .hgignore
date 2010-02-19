@@ -7,8 +7,11 @@ syntax: glob
 *.so
 *.pyo
 *.pyc
+*.orig
+*.rej
 .libs
 .deps
+.*_history*
 m4
 Makefile.in
 depcomp

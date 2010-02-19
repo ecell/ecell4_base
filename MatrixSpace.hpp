@@ -11,6 +11,7 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/list/at.hpp>
 #include <boost/range/size.hpp>
+#include <boost/range/difference_type.hpp>
 #include "Vector3.hpp"
 #include "utils/array_helper.hpp"
 #include "utils/get_default_impl.hpp"

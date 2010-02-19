@@ -8,7 +8,7 @@ import numpy
 import scipy
 
 
-#from surface import *
+from surface import *
 import _gfrd
 from utils import *
 
@@ -160,7 +160,7 @@ class ParticleSimulatorBase( object ):
         self.particlePool = {}
         self.reactionRuleCache = {}
 
-        self.surfaceList = []
+        self.surfaceList = {}
 
         #self.dt = 1e-7
         #self.t = 0.0
@@ -193,6 +193,11 @@ class ParticleSimulatorBase( object ):
         self.network_rules = None
 
         self.particleIDGenerator = _gfrd.ParticleIDGenerator(0)
+    
+        # Particles of a Species whose surface is not specified will be added 
+        # to the world. Dimensions don't matter, except for visualization.
+        self.defaultSurface = \
+            CuboidalRegion([0, 0, 0], [1.0, 1.0, 1.0], 'world')
 
     def setModel( self, model ):
         model.set_all_repulsive()
@@ -201,13 +206,60 @@ class ParticleSimulatorBase( object ):
         self.reactionRuleCache.clear()
 
         for st in model.species_types:
-            self.speciesList[st.id] = _gfrd.SpeciesInfo( st.id, float(st["D"]), float(st["radius"]) )
+            if st["surface"] == "":
+                st["surface"] = self.defaultSurface.name
+
+            self.speciesList[st.id] = _gfrd.SpeciesInfo(st.id, 
+                                                        float(st["D"]), 
+                                                        float(st["radius"]), 
+                                                        st["surface"])
             self.particlePool[st.id] = _gfrd.ParticleIDSet()
         self.network_rules = _gfrd.NetworkRulesWrapper(model.network_rules)
         self.model = model
 
     def initialize( self ):
         pass
+
+    def getClosestSurface(self, pos, ignore):
+        """Return sorted list of tuples with:
+            - distance to surface
+            - surface itself
+
+        We can not use matrixSpace, it would miss a surface if the origin of the 
+        surface would not be in the same or neighboring cells as pos.
+
+        """
+        surfaces = [None]
+        distances = [numpy.inf]
+
+        ignoreSurfaces = []
+        for obj in ignore:
+            if isinstance(obj.surface, Surface):
+                # For example ignore surface that particle is currently on.
+                ignoreSurfaces.append(obj.surface)
+
+        for surface in self.surfaceList.itervalues():
+            if surface not in ignoreSurfaces:
+                posTransposed = cyclic_transpose(pos, surface.origin, 
+                                                 self.worldSize)
+                distanceToSurface = surface.signedDistanceTo(posTransposed)
+                distances.append(distanceToSurface)
+                surfaces.append(surface)
+
+        return min(zip(distances, surfaces))
+
+    def getClosestSurfaceWithinRadius(self, pos, radius, ignore):
+        """Return sorted list of tuples with:
+            - distance to surface
+            - surface itself
+
+        """
+        distanceToSurface, closestSurface = self.getClosestSurface(pos, 
+                                                                   ignore ) 
+        if distanceToSurface < radius:
+            return distanceToSurface, closestSurface
+        else:
+            return numpy.inf, None
 
     def setWorldSize( self, size ):
         if isinstance( size, list ) or isinstance( size, tuple ):
@@ -224,6 +276,11 @@ class ParticleSimulatorBase( object ):
         else:
             self._distance = distance_cyclic
             self._distance_sq = distance_sq_cyclic
+
+        # Particles of a Species whose surface is not specified will be added 
+        # to the world. Dimensions don't matter, except for visualization.
+        self.defaultSurface = \
+            CuboidalRegion([0, 0, 0], [size, size, size], 'world')
 
     def getWorldSize( self ):
         return self.worldSize
@@ -301,30 +358,108 @@ class ParticleSimulatorBase( object ):
     def distance( self, position1, position2 ):
         return self._distance( position1, position2, self.worldSize )
         
+    def addPlanarSurface(self, name, origin, vectorX, vectorY, Lx, Ly, Lz=0):
+        """Add a planar surface.
+
+        name -- a descriptive name, should not be omitted.
+
+        origin -- [x0, y0, z0] is the *center* of the planar surface.
+        vectorX -- [x1, y1, z1] and
+        vectorY -- [x2, y2, z2] are 2 perpendicular vectors that don't have 
+        to be normalized that span the plane. For example [1,0,0] and [0,1,0]
+        for a plane at z=0.
+
+        Lx -- lx and 
+        Ly -- ly are the distances from the origin of the plane along vectorX 
+            or vectorY *to an edge* of the plane. PlanarSurfaces are finite.
+        Lz -- dz, the thickness of the planar surface, can be omitted for Lz=0.
+
+        """
+        return self.addSurface(PlanarSurface(name, origin, vectorX, vectorY,
+                                             Lx, Ly, Lz))
+
+    def addCylindricalSurface(self, name, origin, radius, orientation, size):
+        """Add a cylindrical surface.
+
+        name -- a descriptive name, should not be omitted.
+
+        origin -- [x0, y0, z0] is the *center* of the cylindrical surface.
+        radius -- r is the radis of the cylinder.
+        orientation -- [x1, y1, z1] is a vector that doesn't have to
+            normalized that defines the orienation of the cylinder. For 
+            example [0,0,1] for a for a cylinder along the z-axis.
+        size -- lz is the distances from the origin of the cylinder along 
+            the oriention vector to the end of the cylinder. So effectively
+            the *half-length*. CylindricalSurfaces are finite.
+
+        """
+        return self.addSurface(CylindricalSurface(name, origin, radius, 
+                                                  orientation, size))
+
     def addSurface( self, surface ):
-        self.surfaceList.append( surface )
+        if(not isinstance(surface, Surface) or
+           isinstance(surface, CuboidalRegion)):
+            raise RuntimeError(str(surface) + ' is not a surface.')
+
+        self.surfaceList[surface.name] = surface
+        return surface
+
+    def getSurface(self, species): 
+        nameOfSurface = species.surface
+        if nameOfSurface != self.defaultSurface.name:
+            surface = self.surfaceList[nameOfSurface]
+        else:
+            # Default surface is not stored in surfaceList, because it's not 
+            # really a surface, and should not be found in getClosestSurface 
+            # searches.
+            surface = self.defaultSurface
+        return surface
 
     def setAllRepulsive( self ):
         # TODO
         pass
         
-    def throwInParticles( self, st, n, surface=[] ):
+    def throwInParticles(self, st, n, surface=None):
         species = self.speciesList[st.id]
+        if surface == None:
+            surface = self.getSurface(species)
+
         if __debug__:
             log.info( 'throwing in %s %s particles' % ( n, species.id ) )
 
-        for i in range( int( n ) ):
-            while 1:
-                position = surface.randomPosition()
-                if not self.checkOverlap( position, species.radius ):
-                    break
-                else:
+        log.info('\tthrowing in %s %s particles to %s' % (n, species.id, 
+                                                          surface))
+
+        # This is a bit messy, but it works.
+        i = 0
+        while i < int(n):
+            position = surface.randomPosition()
+
+            # Check overlap.
+            if not self.checkOverlap(position, species.radius):
+                create = True
+                # Check if not too close to a neighbouring surfaces for 
+                # particles added to the world, or added to a self-defined 
+                # box.
+                if surface == self.defaultSurface or \
+                   (surface != self.defaultSurface and 
+                    isinstance( surface, CuboidalRegion)):
+                    distance, closestSurface = self.getClosestSurface(position,
+                                                                      [])
+                    if (closestSurface and
+                        distance < closestSurface.minimalDistanceFromSurface( 
+                                    species.radius)):
+                        log.info('\t%d-th particle rejected. To close to '
+                                 'surface. I will keep trying.' % i)
+                        create = False
+                if create:
+                    # All checks passed. Create particle.
+                    p = self.createParticle(st.id, position)
+                    i += 1
                     if __debug__:
-                        log.info( '%d-th particle rejected.' %i )
-            
-            p = self.createParticle(st.id, position)
-            if __debug__:
-                log.info(p)
+                        log.info(p)
+            else:
+                log.info('\t%d-th particle rejected. I will keep trying.' % i)
 
     def placeParticle( self, st, pos ):
         species = self.speciesList[st.id]
