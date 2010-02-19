@@ -160,7 +160,7 @@ class ParticleSimulatorBase( object ):
         self.particlePool = {}
         self.reactionRuleCache = {}
 
-        self.surfaceList = []
+        self.surfaceList = {}
 
         #self.dt = 1e-7
         #self.t = 0.0
@@ -201,6 +201,9 @@ class ParticleSimulatorBase( object ):
         self.reactionRuleCache.clear()
 
         for st in model.species_types:
+            if st["surface"] == "":
+                st["surface"] = self.defaultSurface.name
+
             self.speciesList[st.id] = _gfrd.SpeciesInfo(st.id, 
                                                         float(st["D"]), 
                                                         float(st["radius"]), 
@@ -359,7 +362,23 @@ class ParticleSimulatorBase( object ):
                                                   orientation, size))
 
     def addSurface( self, surface ):
-        self.surfaceList.append( surface )
+        if(not isinstance(surface, Surface) or
+           isinstance(surface, CuboidalRegion)):
+            raise RuntimeError(str(surface) + ' is not a surface.')
+
+        self.surfaceList[surface.name] = surface
+        return surface
+
+    def getSurface(self, species): 
+        nameOfSurface = species.surface
+        if nameOfSurface != self.defaultSurface.name:
+            surface = self.surfaceList[nameOfSurface]
+        else:
+            # Default surface is not stored in surfaceList, because it's not 
+            # really a surface, and should not be found in getClosestSurface 
+            # searches.
+            surface = self.defaultSurface
+        return surface
 
     def setAllRepulsive( self ):
         # TODO
