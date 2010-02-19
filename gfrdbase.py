@@ -194,6 +194,11 @@ class ParticleSimulatorBase( object ):
 
         self.particleIDGenerator = _gfrd.ParticleIDGenerator(0)
 
+        # Particles of a Species whose surface is not specified will be added 
+        # to the world. Dimensions don't matter, except for visualization.
+        self.defaultSurface = \
+            CuboidalRegion([0, 0, 0], [1.0, 1.0, 1.0], 'world')
+
     def setModel( self, model ):
         model.set_all_repulsive()
         self.speciesList.clear()
