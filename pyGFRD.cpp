@@ -770,7 +770,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     species_info_class = class_<species_type>("SpeciesInfo",
             init<species_type::identifier_type>())
-        .def(init<species_type::identifier_type, species_type::length_type, species_type::D_type>())
+        .def(init<species_type::identifier_type, species_type::length_type, species_type::D_type, species_type::surface_type>())
         .add_property("id",
             make_function(&species_type::id,
                 return_value_policy<return_by_value>()))
@@ -785,6 +785,17 @@ BOOST_PYTHON_MODULE( _gfrd )
                 species_type, species_type::length_type,
                 &species_type::radius,
                 &species_type::radius>::set)
+        .add_property("surface",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    species_type, species_type::surface_type,
+                    &species_type::surface,
+                    &species_type::surface>::get,
+                return_value_policy<return_by_value>()),
+            &peer::util::reference_accessor_wrapper<
+                species_type, species_type::surface_type,
+                &species_type::surface,
+                &species_type::surface>::set)
         .add_property("D",
             make_function(
                 &peer::util::reference_accessor_wrapper<

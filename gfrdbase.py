@@ -201,7 +201,10 @@ class ParticleSimulatorBase( object ):
         self.reactionRuleCache.clear()
 
         for st in model.species_types:
-            self.speciesList[st.id] = _gfrd.SpeciesInfo( st.id, float(st["D"]), float(st["radius"]) )
+            self.speciesList[st.id] = _gfrd.SpeciesInfo(st.id, 
+                                                        float(st["D"]), 
+                                                        float(st["radius"]), 
+                                                        st["surface"])
             self.particlePool[st.id] = _gfrd.ParticleIDSet()
         self.network_rules = _gfrd.NetworkRulesWrapper(model.network_rules)
         self.model = model
