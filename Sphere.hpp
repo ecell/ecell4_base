@@ -72,9 +72,9 @@ distance(Sphere<T_> const& obj, typename Sphere<T_>::position_type const& pos)
 
 template<typename T_>
 inline typename Sphere<T_>::length_type
-distance_cyclic(Sphere<T_> const& obj, typename Sphere<T_>::position_type const& pos, typename Sphere<T_>::length_type const& world_size)
+distance_sq(Sphere<T_> const& obj, typename Sphere<T_>::position_type const& pos)
 {
-    return distance_cyclic(pos, obj.position(), world_size) - obj.radius();
+    return gsl_pow_2(distance(obj, pos));
 }
 
 template<typename T_>
@@ -88,6 +88,14 @@ inline Sphere<T_>& shape(Sphere<T_>& shape)
 {
     return shape;
 }
+
+template<typename T_>
+struct is_shape<Sphere<T_> >: public boost::mpl::true_ {};
+
+template<typename T_>
+struct shape_position_type<Sphere<T_> > {
+    typedef typename Sphere<T_>::position_type type;
+};
 
 #if defined(HAVE_TR1_FUNCTIONAL)
 namespace std { namespace tr1 {

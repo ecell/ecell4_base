@@ -7,6 +7,7 @@
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_const.hpp>
 #include "Shape.hpp"
+#include "geometry.hpp"
 
 template<typename Toc_, typename Tfun_, typename Tshape_>
 class neighbor_filter

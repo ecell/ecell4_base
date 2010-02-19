@@ -19,6 +19,10 @@
 #include "SpeciesInfo.hpp"
 #include "SerialIDGenerator.hpp"
 #include "Transaction.hpp"
+#include "Sphere.hpp"
+#include "Cylinder.hpp"
+#include "Point.hpp"
+#include "geometry.hpp"
 
 template<typename Tlen_, typename TD_>
 struct WorldTraitsBase
@@ -32,6 +36,7 @@ struct WorldTraitsBase
     typedef Particle<length_type, D_type, species_id_type> particle_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type> species_type;
     typedef typename particle_type::shape_type sphere_type;
+    typedef Cylinder<length_type> cylinder_type;
     typedef typename sphere_type::position_type position_type;
 
     template<typename Tval_>
@@ -44,6 +49,18 @@ struct WorldTraitsBase
     static Tval_ cyclic_transpose(Tval_ const& p0, Tval_ const& p1, length_type const& world_size)
     {
         return p0;
+    }
+
+    template<typename T1_, typename T2_>
+    static length_type distance(T1_ const& p0, T2_ const& p1, length_type const& world_size)
+    {
+        return ::distance(p0, p1);
+    }
+
+    template<typename T1_, typename T2_>
+    static length_type distance_sq(T1_ const& p0, T2_ const& p1, length_type const& world_size)
+    {
+        return ::distance_sq(p0, p1);
     }
 
     template<typename Toc_, typename Tfun_, typename Tsphere_>
@@ -71,30 +88,29 @@ public:
     template<typename Tval_>
     static Tval_ apply_boundary(Tval_ const& v, length_type const& world_size)
     {
-        return modulo(v, world_size);
+        return ::apply_boundary(v, world_size);
     }
 
     static length_type cyclic_transpose(length_type const& p0, length_type const& p1, length_type const& world_size)
     {
-        const length_type diff(p1 - p0), half(world_size / 2);
-        if (diff > half)
-        {
-            return p0 + half;
-        }
-        else if (diff < -half)
-        {
-            return p0 - half;
-        }
-        return p0;
+        return ::cyclic_transpose(p0, p1, world_size);
     }
 
     static position_type cyclic_transpose(position_type const& p0, position_type const& p1, length_type const& world_size)
     {
-        return position_type(
-            cyclic_transpose(p0[0], p1[0], world_size),
-            cyclic_transpose(p0[1], p1[1], world_size),
-            cyclic_transpose(p0[2], p1[2], world_size)
-        );
+        return ::cyclic_transpose(p0, p1, world_size);
+    }
+
+    template<typename T1_, typename T2_>
+    static length_type distance(T1_ const& p0, T2_ const& p1, length_type const& world_size)
+    {
+        return distance_cyclic(p0, p1, world_size);
+    }
+
+    template<typename T1_, typename T2_>
+    static length_type distance_sq(T1_ const& p0, T2_ const& p1, length_type const& world_size)
+    {
+        return distance_sq_cyclic(p0, p1, world_size);
     }
 
     template<typename Toc_, typename Tfun_, typename Tsphere_>
@@ -250,14 +266,16 @@ public:
             species_map_.size());
     }
 
-    length_type distance(position_type const& lhs, position_type const& rhs)
+    template<typename T_>
+    length_type distance(T_ const& lhs, position_type const& rhs) const
     {
-        return distance(cyclic_transpose(lhs, rhs), rhs);
+        return traits_type::distance(lhs, rhs, world_size());
     }
 
-    length_type distance_sq(position_type const& lhs, position_type const& rhs)
+    template<typename T_>
+    length_type distance_sq(T_ const& lhs, position_type const& rhs) const
     {
-        return distance_sq(cyclic_transpose(lhs, rhs), rhs);
+        return traits_type::distance_sq(lhs, rhs, world_size());
     }
 
     position_type apply_boundary(position_type const& v) const
@@ -278,6 +296,25 @@ public:
     length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
     {
         return traits_type::cyclic_transpose(p0, p1, world_size());
+    }
+
+    template<typename T1_>
+    T1_ calculate_pair_CoM(
+        T1_ const& p1, T1_ const& p2, 
+        typename element_type_of<T1_>::type const& D1,
+        typename element_type_of<T1_>::type const& D2)
+    {
+        typedef typename element_type_of< T1_ >::type element_type;   
+
+        T1_ retval;
+
+        const T1_ p2t(cyclic_transpose(p2, p1));
+
+        return modulo(
+            divide(
+                add(multiply(p1, D2), multiply(p2t, D1)),
+                add(D1, D2)),
+            world_size());
     }
 
     particle_id_pair new_particle(species_id_type const& sid,

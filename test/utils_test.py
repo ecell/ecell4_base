@@ -30,25 +30,25 @@ class UtilsTestCase( unittest.TestCase ):
         self.failIf( not ( pos[0] == pos[2] == 11 and pos[1] == -2 ) )
 
     
-    def test_distanceSq_Cyclic( self ):
+    def test_distance_sq_cyclic( self ):
 
-        distance = distanceSq_Cyclic( numpy.array([1.,1.,1.]),
+        distance = distance_sq_cyclic( numpy.array([1.,1.,1.]),
                                       numpy.array([3.,3.,3.]), 10 )
         self.assertAlmostEqual( numpy.sqrt( 12. ), numpy.sqrt( distance ) )
 
-        distance = distanceSq_Cyclic( numpy.array([1.,1.,1.]),
+        distance = distance_sq_cyclic( numpy.array([1.,1.,1.]),
                                       numpy.array([9.,9.,9.]), 10 )
         self.assertAlmostEqual( numpy.sqrt( 12. ), numpy.sqrt( distance ) )
 
-        distance = distanceSq_Cyclic( numpy.array([9.,9.,9.]),
+        distance = distance_sq_cyclic( numpy.array([9.,9.,9.]),
                                       numpy.array([1.,1.,1.]), 10 )
         self.assertAlmostEqual( numpy.sqrt( 12. ), numpy.sqrt( distance ) )
 
-        distance = distanceSq_Cyclic( numpy.array([9.,1.,9.]),
+        distance = distance_sq_cyclic( numpy.array([9.,1.,9.]),
                                       numpy.array([1.,9.,1.]), 10 )
         self.assertAlmostEqual( numpy.sqrt( 12. ), numpy.sqrt( distance ) )
 
-        distance = distanceSq_Cyclic( numpy.array([0,0,0]),
+        distance = distance_sq_cyclic( numpy.array([0,0,0]),
                                       numpy.array([5,5,5]), 10 )
         self.assertAlmostEqual( numpy.sqrt( 75. ), numpy.sqrt( distance ) )
 

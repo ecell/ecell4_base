@@ -31,13 +31,16 @@
 #include "FirstPassageNoCollisionPairGreensFunction.hpp"
 
 #include "utils/array_traits.hpp"
+#include "utils.hpp"
 #include "MatrixSpace.hpp"
 #include "Vector3.hpp"
 #include "Sphere.hpp"
-#include "utils.hpp"
+#include "Cylinder.hpp"
+#include "Point.hpp"
 #include "Model.hpp"
 #include "World.hpp"
 #include "EGFRDSimulator.hpp"
+#include "geometry.hpp"
 
 #include "peer/utils.hpp"
 #include "peer/py_hash_support.hpp"
@@ -370,7 +373,7 @@ struct MatrixSpace_to_select_second_range_converter
 
 
 template<typename T_>
-void register_id_generator(char const* class_name)
+static void register_id_generator(char const* class_name)
 {
     using namespace boost::python;
 
@@ -379,11 +382,31 @@ void register_id_generator(char const* class_name)
         ;
 }
 
+template<typename T_>
+inline T_ 
+calculate_pair_CoM(T_ const& p1, 
+                   T_ const& p2, 
+                   typename element_type_of< T_ >::type const& D1,
+                   typename element_type_of< T_ >::type const& D2,
+                   typename element_type_of< T_ >::type const& world_size)
+{
+    typedef typename element_type_of<T_>::type element_type;   
+
+    T_ retval;
+
+    const T_ p2t(cyclic_transpose<T_>(p2, p1, world_size));
+
+    return modulo(
+        divide(
+            add(multiply(p1, D2), multiply(p2t, D1)),
+            add(D1, D2)),
+        world_size);
+}
+
+
 BOOST_PYTHON_MODULE( _gfrd )
 {
     using namespace boost::python;
-    typedef Real length_type;
-    typedef Vector3< length_type > vector_type;
 
     import_array();
 
@@ -393,10 +416,10 @@ BOOST_PYTHON_MODULE( _gfrd )
   
     peer::util::register_std_exception_translator();
 
-    peer::util::register_seq_wrapped_multi_array_converter<length_type>();
+    peer::util::register_seq_wrapped_multi_array_converter<world_traits_type::length_type>();
     // peer::util::register_ndarray_wrapped_multi_array_converter<length_type, 1>();
-    peer::util::register_ndarray_wrapped_multi_array_converter<length_type, 2>();
-    peer::util::register_ndarray_wrapped_multi_array_converter<length_type, 3>();
+    peer::util::register_ndarray_wrapped_multi_array_converter<world_traits_type::length_type, 2>();
+    peer::util::register_ndarray_wrapped_multi_array_converter<world_traits_type::length_type, 3>();
 
     peer::util::register_tuple_converter< boost::tuple< Real, EventType > >();
 
@@ -595,17 +618,17 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def( "dump", &FirstPassageNoCollisionPairGreensFunction::dump )
         ;
 
-    def( "lengthSq", &length_sq< vector_type > );
-    def( "length", &length< vector_type > );
-    def( "distanceSq", &distance_sq< vector_type, vector_type > );
-    def( "distance", &distance< vector_type, vector_type > );
-    def( "distanceSq_Cyclic", &distance_sq_cyclic< vector_type, vector_type > );
-    def( "distance_Cyclic", &distance_cyclic< vector_type, vector_type > );
+    def( "length_sq", &length_sq< world_traits_type::position_type > );
+    def( "length", &length< world_traits_type::position_type > );
+    def( "distance_sq", &distance_sq<world_traits_type::position_type, world_traits_type::position_type> );
+    def( "distance", &distance<world_traits_type::position_type, world_traits_type::position_type> );
+    def( "distance_sq_cyclic", &distance_sq_cyclic<world_traits_type::position_type, world_traits_type::position_type> );
+    def( "distance_cyclic", &distance_cyclic<world_traits_type::position_type, world_traits_type::position_type> );
+    def( "apply_boundary", &apply_boundary<world_traits_type::position_type, world_traits_type::length_type> );
+    def( "calculate_pair_CoM", &calculate_pair_CoM<world_traits_type::position_type> );
 
-    def( "normalize", &normalize<vector_type> );
-    def( "cyclic_transpose", &cyclic_transpose<vector_type> );
-    def( "calculate_pair_CoM", &calculate_pair_CoM<vector_type> );
-    def( "apply_boundary", &apply_boundary<vector_type> );
+    def( "normalize", &normalize<world_traits_type::position_type> );
+    def( "cyclic_transpose", &cyclic_transpose<world_traits_type::position_type, element_type_of<world_traits_type::position_type>::type> );
 
     to_python_converter<world_traits_type::position_type,
         position_to_ndarray_converter>();
@@ -747,12 +770,17 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("get_species",
             (CyclicWorld::species_type const&(CyclicWorld::*)(CyclicWorld::species_id_type const&) const)&CyclicWorld::get_species,
             return_internal_reference<>())
-        .def("distance", &CyclicWorld::distance)
-        .def("distance_sq", &CyclicWorld::distance_sq)
+        .def("distance", &CyclicWorld::distance<world_traits_type::sphere_type>)
+        .def("distance_sq", &CyclicWorld::distance_sq<world_traits_type::sphere_type>)
+        .def("distance", &CyclicWorld::distance_sq<world_traits_type::cylinder_type>)
+        .def("distance_sq", &CyclicWorld::distance_sq<world_traits_type::cylinder_type>)
+        .def("distance", &CyclicWorld::distance<CyclicWorld::position_type>)
+        .def("distance_sq", &CyclicWorld::distance_sq<CyclicWorld::position_type>)
         .def("apply_boundary", (CyclicWorld::position_type(CyclicWorld::*)(CyclicWorld::position_type const&) const)&CyclicWorld::apply_boundary)
         .def("apply_boundary", (CyclicWorld::length_type(CyclicWorld::*)(CyclicWorld::length_type const&) const)&CyclicWorld::apply_boundary)
         .def("cyclic_transpose", (CyclicWorld::position_type(CyclicWorld::*)(CyclicWorld::position_type const&, CyclicWorld::position_type const&) const)&CyclicWorld::cyclic_transpose)
         .def("cyclic_transpose", (CyclicWorld::length_type(CyclicWorld::*)(CyclicWorld::length_type const&, CyclicWorld::length_type const&) const)&CyclicWorld::cyclic_transpose)
+        .def("calculate_pair_CoM", &CyclicWorld::calculate_pair_CoM<CyclicWorld::position_type>)
         .def("new_particle", &CyclicWorld::new_particle)
         .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::particle_id_pair const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
         .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::sphere_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())

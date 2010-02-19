@@ -29,6 +29,7 @@
 
 #include "utils/pair.hpp"
 #include "filters.hpp"
+#include "Shape.hpp"
 
 namespace peer {
 

@@ -152,148 +152,16 @@ inline typename T_::value_type dot_product(T_ const& p1, T_ const& p2, typename 
 }
 
 template< typename T_ >
-inline typename detail::element_type_of< T_ >::type length_sq( T_ const& r )
+inline typename element_type_of< T_ >::type length_sq( T_ const& r )
 {
     return gsl_pow_2( r[0] ) + gsl_pow_2( r[1] ) + gsl_pow_2( r[2] );
 }
 
 template< typename T_ >
-inline typename detail::element_type_of< T_ >::type length( T_ const& r )
+inline typename element_type_of< T_ >::type length( T_ const& r )
 {
     return std::sqrt( length_sq( r ) );
 }
-
-template< typename T1_, typename T2_ >
-inline typename detail::element_type_of< T1_ >::type distance_sq(
-        T1_ const& p1, T2_ const p2 )
-{
-    return gsl_pow_2( p1[0] - p2[0] )
-        + gsl_pow_2( p1[1] - p2[1] ) 
-        + gsl_pow_2( p1[2] - p2[2] );
-}
-
-template< typename T1_, typename T2_ >
-inline typename detail::element_type_of< T1_ >::type distance(
-        T1_ const& p1, T2_ const& p2 )
-{
-    return std::sqrt( distance_sq( p1, p2 ) );
-}
-
-#if 1 // shafi
-template< typename T1_, typename T2_ >
-inline typename detail::element_type_of< T1_ >::type
-distance_sq_cyclic( T1_ const& p1, T2_ const& p2,
-        typename element_type_of< T1_ >::type const& world_size )
-{
-    typedef typename element_type_of< T1_ >::type element_type;
-    const element_type half_world_size( world_size * .5 );
-
-    element_type diff[3] = {
-        std::fabs( p1[0] - p2[0] ),
-        std::fabs( p1[1] - p2[1] ),
-        std::fabs( p1[2] - p2[2] )
-    };
-
-    if( diff[0] > half_world_size )
-    {
-        diff[0] -= world_size;
-    }
-
-    if( diff[1] > half_world_size )
-    {
-        diff[1] -= world_size;
-    }
-
-    if( diff[2] > half_world_size )
-    {
-        diff[2] -= world_size;
-    }
-
-    return gsl_pow_2( diff[0] ) +
-        gsl_pow_2( diff[1] ) +
-        gsl_pow_2( diff[2] );
-}
-
-template< typename T1_,typename T2_ >
-typename detail::element_type_of< T1_ >::type
-distance_cyclic( T1_ const& p1, T2_ const& p2,
-        typename detail::element_type_of< T1_ >::type const& world_size )
-{
-    return std::sqrt( distance_sq_cyclic( p1, p2, world_size ) );
-}
-
-template< typename T1_ >
-inline T1_ normalize( T1_ const& p, 
-                      typename detail::element_type_of< T1_ >::type const& r )
-{
-    typedef typename element_type_of< T1_ >::type element_type;
-
-    return multiply(p, r / length(p));
-}
-
-// cyclic_transpose(), calculatePairCoM() and apply_boundary() are placed here
-// temporarily.  should be moved to somewhere else later.
-
-template< typename T1_ >
-inline T1_ 
-cyclic_transpose( T1_ const& p1, 
-                  T1_ const& p2, 
-                  typename detail::element_type_of< T1_ >::type const& 
-                  world_size )
-{
-    T1_ retval;
-
-    typedef typename element_type_of< T1_ >::type element_type;   
-    const element_type half_world_size(world_size * .5);
-
-    for(unsigned int i(0); i <= 2; ++i)
-    {
-        const element_type diff(p2[i] - p1[i]);
-        retval[i] = p1[i];
-        if(diff > half_world_size)
-        {
-            retval[i] += world_size;
-        }
-        else if(diff < - half_world_size)
-        {
-            retval[i] -= world_size;
-        }
-    }
-
-    return retval;
-}
-
-template< typename T1_ >
-inline T1_ 
-calculate_pair_CoM( T1_ const& p1, 
-                    T1_ const& p2, 
-                    typename detail::element_type_of< T1_ >::type const& D1,
-                    typename detail::element_type_of< T1_ >::type const& D2,
-                    typename detail::element_type_of< T1_ >::type const& 
-                    world_size )
-{
-    typedef typename element_type_of< T1_ >::type element_type;   
-
-    T1_ retval;
-
-    const T1_ p2t(cyclic_transpose<T1_>(p2, p1, world_size));
-
-    return modulo(
-        divide(
-            add(multiply(p1, D2), multiply(p2t, D1)),
-            add(D1, D2)),
-        world_size);
-}
-
-
-template< typename T1_ >
-inline T1_ 
-apply_boundary(T1_ const& p1, 
-               typename detail::element_type_of< T1_ >::type const& world_size)
-{
-    return modulo(p1, world_size);
-}
-#endif
 
 template<typename T_>
 struct Vector3: public boost::array<T_, 3>
@@ -386,13 +254,11 @@ operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Vector3<T_>& v)
 template<typename T_>
 struct is_vector3<Vector3<T_> >: public boost::mpl::true_ {};
 
-namespace detail {
-    template< typename T_ >
-    struct element_type_of< Vector3< T_ > >
-    {
-        typedef T_ type;
-    };
-}
+template< typename T_ >
+struct element_type_of< Vector3< T_ > >
+{
+    typedef T_ type;
+};
 
 #if defined(HAVE_TR1_FUNCTIONAL)
 namespace std { namespace tr1 {

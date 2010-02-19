@@ -27,24 +27,7 @@ def uniq( l ):
     map( nset.__setitem__, l, [] )
     return nset.keys()
 
-def cyclic_transpose(pos1, pos2, world_size):
-    '''
-    Transpose the position pos1 so that it can be used with another 
-    position pos2.
-
-    pos1 is transposed into one of mirror images of the cyclic boundary
-    condition so that the distance between pos1 and pos2 is smallest.
-
-    Both of given pos1 and pos2 must be within the cyclic boundary.  However,
-    note that the returned transposed pos1 may not be within the cyclic boundary.
-    '''
-    return _gfrd.cyclic_transpose(pos1, pos2, world_size)
-
-def distanceSq_Simple( position1, position2, fsize = None ):
-    return _gfrd.distanceSq( position1, position2 )
-
-def distance_Simple( position1, position2, fsize = 0 ):
-    return _gfrd.distance( position1, position2 )
+cyclic_transpose = _gfrd.cyclic_transpose
 
 def distanceSqArray_Simple( position1, positions, fsize = None ):
     return numpy.square( positions - position1 ).sum( 1 )
@@ -52,11 +35,13 @@ def distanceSqArray_Simple( position1, positions, fsize = None ):
 def distanceArray_Simple( position1, positions, fsize = None ):
     return numpy.sqrt( distanceSqArray_Simple( position1, positions ) )
 
-def distanceSq_Cyclic( position1, position2, fsize ):
-    return _gfrd.distanceSq_Cyclic( position1, position2, fsize )
+distance = _gfrd.distance
 
-def distance_Cyclic( position1, position2, fsize ):
-    return _gfrd.distance_Cyclic( position1, position2, fsize )
+distance_sq = _gfrd.distance_sq
+
+distance_sq_cyclic = _gfrd.distance_sq_cyclic
+
+distance_cyclic = _gfrd.distance_cyclic
 
 def distanceSqArray_Cyclic( position1, positions, fsize ):
     diff = numpy.abs( positions - position1 )
@@ -143,8 +128,7 @@ def rotateVector( v, r, alpha ):
 def calculate_pair_CoM( pos1, pos2, D1, D2, world_size ):
     return _gfrd.calculate_pair_CoM(pos1, pos2, D1, D2, world_size);
 
-def apply_boundary(pos, world_size):
-    return _gfrd.apply_boundary(pos, world_size) 
+apply_boundary = _gfrd.apply_boundary
 
 def permutate(seq):
     """permutate a sequence and return a list of the permutations"""

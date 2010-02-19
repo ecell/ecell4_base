@@ -9,7 +9,8 @@ filters_test\
 MatrixSpace_test\
 MatrixSpaceWithCylinders_test\
 World_test\
-model_test
+model_test\
+Vector3_test
 
 PYTHON_TESTS = \
 	BDSimulator_test.py \
@@ -79,6 +80,7 @@ MatrixSpace_test_SOURCES = MatrixSpace_test.cpp
 
 MatrixSpaceWithCylinders_test_SOURCES = MatrixSpaceWithCylinders_test.cpp
 
-vmap_test_SOURCES = vmap_test.cpp
-
 model_test_SOURCES = model_test.cpp ../Model.cpp ../NetworkRules.cpp ../BasicNetworkRulesImpl.cpp
+
+Vector3_test_SOURCES = Vector3_test.cpp ../Vector3.hpp
+

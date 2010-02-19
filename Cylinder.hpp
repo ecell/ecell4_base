@@ -143,9 +143,10 @@ distance(Cylinder<T_> const& obj,
 
 template<typename T_>
 inline typename Cylinder<T_>::length_type
-distance_cyclic(Cylinder<T_> const& obj, typename Cylinder<T_>::position_type const& pos, typename Cylinder<T_>::length_type const& world_size)
+distance_sq(Cylinder<T_> const& obj,
+         typename Cylinder<T_>::position_type const& pos)
 {
-    return distance(obj, cyclic_transpose(pos, obj.position(), world_size));
+    return gsl_pow_2(distance(obj, pos));
 }
 
 template<typename T_>
@@ -159,6 +160,14 @@ inline Cylinder<T_>& shape(Cylinder<T_>& shape)
 {
     return shape;
 }
+
+template<typename T_>
+struct is_shape<Cylinder<T_> >: public boost::mpl::true_ {};
+
+template<typename T_>
+struct shape_position_type<Cylinder<T_> > {
+    typedef typename Cylinder<T_>::position_type type;
+};
 
 #if defined(HAVE_TR1_FUNCTIONAL)
 namespace std { namespace tr1 {
