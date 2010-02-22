@@ -68,9 +68,12 @@ class Pair( object ):
     def getD( self ):
         return self.D_tot #FIXME: is this correct?
 
-    def determinePairEvent(self, t, r0, shellSize):
-        self.lastTime = t
+    def determineRadii(self, r0, shellSize):
+        """Determine a_r and a_R.
 
+        Todo. Make dimension (1D/2D/3D) specific someday. Optimization only.
+
+        """
         single1 = self.single1
         single2 = self.single2
         radius1 = single1.pid_particle_pair[1].radius
@@ -127,6 +130,11 @@ class Pair( object ):
         assert self.a_r > 0
         assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
         assert self.a_R > 0 or ( self.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
+
+    def determinePairEvent(self, t, r0, shellSize):
+        self.lastTime = t
+
+        self.determineRadii(r0, shellSize)
 
         sgf = FirstPassageGreensFunction(self.D_R)
         sgf.seta(self.a_R)
