@@ -110,36 +110,35 @@ class Pair( object ):
 
 
         #aR
-        self.a_R = (D_geom * (Db * (shellSize - radiusa) + \
-                               Da * (shellSize - r0 - radiusa))) /\
-                               (Da * Da + Da * Db + D_geom * D_tot)
+        a_R = (D_geom * (Db * (shellSize - radiusa) + \
+                         Da * (shellSize - r0 - radiusa))) /\
+              (Da * Da + Da * Db + D_geom * D_tot)
 
         #ar
-        self.a_r = (D_geom * r0 + D_tot * (shellSize - radiusa)) /\
-            (Da + D_geom)
+        a_r = (D_geom * r0 + D_tot * (shellSize - radiusa)) / (Da + D_geom)
 
-        assert self.a_R + self.a_r * Da / D_tot + radius1 >= \
-            self.a_R + self.a_r * Db / D_tot + radius2
+        assert a_R + a_r * Da / D_tot + radius1 >= \
+               a_R + a_r * Db / D_tot + radius2
 
-        assert abs( self.a_R + self.a_r * Da / D_tot + radiusa - shellSize ) \
+        assert abs(a_R + a_r * Da / D_tot + radiusa - shellSize ) \
             < 1e-12 * shellSize
 
 
         if __debug__:
           log.debug( 'a %g, r %g, R %g r0 %g' % 
-                  ( shellSize, self.a_r, self.a_R, r0 ) )
+                  ( shellSize, a_r, a_R, r0 ) )
         if __debug__:
           log.debug( 'tr %g, tR %g' % 
-                     ( ( ( self.a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
-                           (self.a_R / math.sqrt( 6*self.D_R ))**2 ) )
-        assert self.a_r > 0
-        assert self.a_r > r0, '%g %g' % ( self.a_r, r0 )
-        assert self.a_R > 0 or ( self.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
+                     ( ( ( a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
+                           (a_R / math.sqrt( 6*self.D_R ))**2 ) )
+        assert a_r > 0
+        assert a_r > r0, '%g %g' % ( a_r, r0 )
+        assert a_R > 0 or ( a_R == 0 and ( D1 == 0 or D2 == 0 ) )
 
-    def determinePairEvent(self, t, r0, shellSize):
+        return a_R, a_r
+
+    def determinePairEvent(self, t, r0):
         self.lastTime = t
-
-        self.determineRadii(r0, shellSize)
 
         sgf = FirstPassageGreensFunction(self.D_R)
         sgf.seta(self.a_R)
@@ -202,11 +201,14 @@ class SphericalPair(Pair):
     """2 Particles inside a (spherical) shell not on any surface.
 
     """
-    def __init__(self, domain_id, CoM, single1, single2, shell_id, shellSize, rt):
+    def __init__(self, domain_id, CoM, single1, single2, shell_id,
+                 r0, shellSize, rt):
         shell = self.createNewShell(CoM, shellSize, domain_id)
         shell_id_shell_pair = (shell_id, shell)
 
         Pair.__init__(self, domain_id, single1, single2, shell_id_shell_pair, rt)
+
+        self.a_R, self.a_r = self.determineRadii(r0, shellSize)
 
     def createNewShell(self, position, radius, domain_id):
         return SphericalShell(position, radius, domain_id)

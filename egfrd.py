@@ -242,6 +242,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                  single1.pid_particle_pair[1].D,
                                  single2.pid_particle_pair[1].D,
                                  self.worldSize)
+
+        pos1 = single1.shell[1].position
+        pos2 = single2.shell[1].position
+        r0 = self.distance(pos1, pos2)
+
         # Get surface.
         species = self.speciesList[single1.pid_particle_pair[1].sid]
         surface = self.getSurface(species)
@@ -251,7 +256,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # PlanarSurfacePair, or CylindricalSurfacePair.
         TypeOfPair = surface.DefaultPair
         pair = TypeOfPair(domain_id, CoM, single1, single2, shell_id, 
-                          shellSize, rt)
+                          r0, shellSize, rt)
 
         pair.initialize( self.t )
 
@@ -1209,7 +1214,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         pair = self.createPair(single1, single2, shellSize)
 
         r0 = self.distance(pos1, pos2)
-        pair.determinePairEvent(self.t, r0, shellSize)
+        pair.determinePairEvent(self.t, r0)
 
         self.removeDomain( single1 )
         self.removeDomain( single2 )
