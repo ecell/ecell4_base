@@ -37,8 +37,6 @@ import os
 
 log = logging.getLogger('ecell')
 
-SAFETY = 1.0 + 1e-5
-
 class Delegate( object ):
     def __init__( self, obj, method ):
         self.ref = ref( obj )
@@ -252,125 +250,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.moveShell(shell_id_shell_pair)
         self.domains[domain_id] = pair
         return pair
-
-    def determinePairEvent(self, pair, t, pos1, pos2, shellSize):
-        pair.lastTime = t
-
-        single1 = pair.single1
-        single2 = pair.single2
-        radius1 = single1.pid_particle_pair[1].radius
-        radius2 = single2.pid_particle_pair[1].radius
-
-        D1 = single1.pid_particle_pair[1].D
-        D2 = single2.pid_particle_pair[1].D
-
-        shellSize /= SAFETY  # FIXME:
-
-        D_tot = D1 + D2
-        D_geom = math.sqrt(D1 * D2)
-
-        r0 = self.distance(pos1, pos2)
-
-        assert r0 >= pair.sigma, \
-            '%s;  r0 %g < sigma %g' % ( pair, r0, pair.sigma )
-
-        # equalize expected mean t_r and t_R.
-        if ((D_geom - D2) * r0) / D_tot + shellSize +\
-                math.sqrt(D2 / D1) * (radius1 - shellSize) - radius2 >= 0:
-            Da = D1
-            Db = D2
-            radiusa = radius1
-            radiusb = radius2
-        else:
-            Da = D2
-            Db = D1
-            radiusa = radius2
-            radiusb = radius1
-
-
-        #aR
-        pair.a_R = (D_geom * (Db * (shellSize - radiusa) + \
-                               Da * (shellSize - r0 - radiusa))) /\
-                               (Da * Da + Da * Db + D_geom * D_tot)
-
-        #ar
-        pair.a_r = (D_geom * r0 + D_tot * (shellSize - radiusa)) /\
-            (Da + D_geom)
-
-        assert pair.a_R + pair.a_r * Da / D_tot + radius1 >= \
-            pair.a_R + pair.a_r * Db / D_tot + radius2
-
-        assert abs( pair.a_R + pair.a_r * Da / D_tot + radiusa - shellSize ) \
-            < 1e-12 * shellSize
-
-
-        if __debug__:
-          log.debug( 'a %g, r %g, R %g r0 %g' % 
-                  ( shellSize, pair.a_r, pair.a_R, r0 ) )
-        if __debug__:
-          log.debug( 'tr %g, tR %g' % 
-                     ( ( ( pair.a_r - r0 ) / math.sqrt(6 * pair.D_tot))**2,\
-                           (pair.a_R / math.sqrt( 6*pair.D_R ))**2 ) )
-        assert pair.a_r > 0
-        assert pair.a_r > r0, '%g %g' % ( pair.a_r, r0 )
-        assert pair.a_R > 0 or ( pair.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
-
-        sgf = FirstPassageGreensFunction(pair.D_R)
-        sgf.seta(pair.a_R)
-
-
-        # draw t_R
-        try:
-            pair.t_R = pair.drawTime_single( sgf )
-        except Exception, e:
-            raise Exception, 'sgf.drawTime() failed; %s; %s' %\
-                ( str( e ), sgf.dump() )
-
-        pgf = FirstPassagePairGreensFunction( pair.D_tot, 
-                                              pair.rt.k, pair.sigma )
-        pgf.seta( pair.a_r )
-
-        # draw t_r
-        try:
-            pair.t_r = pair.drawTime_pair(pgf, r0)
-        except Exception, e:
-            raise Exception, \
-                'pgf.drawTime() failed; %s; r0=%g, %s' % \
-                ( str( e ), r0, pgf.dump() )
-
-
-        # draw t_reaction
-        t_reaction1 = pair.single1.drawReactionTime()
-        t_reaction2 = pair.single2.drawReactionTime()
-
-        if t_reaction1 < t_reaction2:
-            pair.t_single_reaction = t_reaction1
-            pair.reactingsingle = pair.single1
-        else:
-            pair.t_single_reaction = t_reaction2
-            pair.reactingsingle = pair.single2
-
-        pair.dt = min( pair.t_R, pair.t_r, pair.t_single_reaction )
-
-        assert pair.dt >= 0
-        if __debug__:
-            log.debug( 'dt %g, t_R %g, t_r %g' % 
-                     ( pair.dt, pair.t_R, pair.t_r ) )
-
-        if pair.dt == pair.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
-            try:
-                pair.eventType = pair.drawEventType(pgf, r0, pair.t_r)
-            except Exception, e:
-                raise Exception,\
-                    'pgf.drawEventType() failed; %s; r0=%g, %s' %\
-                    ( str( e ), r0, pgf.dump() )
-
-        elif pair.dt == pair.t_R: # type = ESCAPE_R (2)
-            pair.eventType = 2
-        elif pair.dt == pair.t_single_reaction:  # type = single reaction (3)
-            pair.eventType = 3 
-        else:
-            raise AssertionError, "Never get here"
 
     def createMulti( self ):
         domain_id = self.domainIDGenerator()
@@ -1321,7 +1200,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         pair = self.createPair(single1, single2, shellSize)
 
-        self.determinePairEvent(pair, self.t, pos1, pos2, shellSize)
+        r0 = self.distance(pos1, pos2)
+        pair.determinePairEvent(self.t, r0, shellSize)
 
         self.removeDomain( single1 )
         self.removeDomain( single2 )
