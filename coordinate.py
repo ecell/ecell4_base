@@ -79,6 +79,11 @@ class RCoordinate(Coordinate):
             rnd = myrandom.uniform()
             log.debug('        *Radial drawR. ') #+ str(self.gf))
             r = self.gf.drawR(rnd, dt)
+            while r > self.a: # redraw; shouldn't happen often
+                if __debug__:
+                    log.debug('        *Radial drawR: redraw')
+                rnd = myrandom.uniform()
+                r = self.gf.drawR(rnd, dt)
         except Exception, e:
             raise Exception('gf.drawR failed, %s, rnd = %g, dt = %g, a = %g, '
                             '%s' % (str(e), rnd, dt, self.a, gf.dump()))
