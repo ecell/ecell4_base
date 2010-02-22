@@ -99,9 +99,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.t = 0.0
         self.dt = 0.0
         self.stepCounter = 0
-        self.single_steps = {EventType.ESCAPE:0, EventType.REACTION:0}
-        self.pair_steps = {0:0,1:0,2:0,3:0}
-        self.multi_steps = {EventType.ESCAPE:0, EventType.REACTION:0, 2:0}
+        self.single_steps = {EventType.SINGLE_ESCAPE:0,
+                             EventType.SINGLE_REACTION:0}
+        self.pair_steps = {EventType.SINGLE_REACTION:0,
+                           EventType.PAIR_REACTION:0,
+                           EventType.IV_ESCAPE:0,
+                           EventType.COM_ESCAPE:0}
+        self.multi_steps = {EventType.MULTI_ESCAPE:0,
+                            EventType.MULTI_REACTION:0, 2:0}
         self.zeroSteps = 0
         self.rejectedMoves = 0
         self.reactionEvents = 0
@@ -536,7 +541,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                              ignore=[single.pid_particle_pair[0]]):
             raise RuntimeError('propagateSingle: checkOverlap failed.')
 
-        if single.eventType == EventType.REACTION and isBurst == False:
+        if single.eventType == EventType.SINGLE_REACTION and isBurst == False:
             # SINGLE_REACTION, and not a burst. No need to update, single is 
             # removed anyway.
             pass
@@ -546,14 +551,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.moveSingle(single, newpos, single.pid_particle_pair[1].radius)
 
     def fireSingle( self, single ):
-
-        self.single_steps[single.eventType] += 1
-
-        if __debug__:
-            log.info('fireSingle: eventType %s' % single.eventType)
-
         # Reaction.
-        if single.eventType == EventType.REACTION:
+        if single.eventType == EventType.SINGLE_REACTION:
+            if __debug__:
+                log.info('fireSingle: eventType %s' % single.eventType)
+
+            self.single_steps[single.eventType] += 1
+
             if __debug__:
                 log.info( 'single reaction %s' % str( single ) )
 
@@ -572,6 +576,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.addSingleEvent(single)
                 return
 
+        # Propagate, if not reaction.
+        single.eventType = EventType.SINGLE_ESCAPE
+        if __debug__:
+            log.info('fireSingle: eventType %s' % single.eventType)
+        self.single_steps[single.eventType] += 1
+
         # Handle immobile case first.
         if single.getD() == 0:
             # no propagation, just calculate next reaction time.
@@ -581,7 +591,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.addSingleEvent(single)
             return
         
-        # Propagate, if not reaction.
         if single.dt != 0.0:
             # Propagate this particle to the exit point on the shell.
             self.propagateSingle(single, isEscape=True)
@@ -724,7 +733,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         #  3. Single reaction 
 
         # First handle single reaction case.
-        if pair.eventType == 3:
+        if pair.eventType == EventType.SINGLE_REACTION:
 
             reactingsingle = pair.reactingsingle
 
@@ -756,7 +765,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         #
         # 0. Reaction
         #
-        if pair.eventType == EventType.REACTION:
+        if pair.eventType == EventType.PAIR_REACTION:
             if __debug__:
                 log.info( 'reaction' )
 
@@ -815,7 +824,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         r0 = self.distance( particle1[1].position, particle2[1].position )
 
         # 1 Escaping through a_r.
-        if pair.eventType == EventType.ESCAPE:
+        if pair.eventType == EventType.IV_ESCAPE:
 
             # calculate new R
             
@@ -844,7 +853,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
         # 2 escaping through a_R.
-        elif pair.eventType == 2:
+        elif pair.eventType == EventType.COM_ESCAPE:
 
             # calculate new r
             r = pair.drawR_pair( r0, pair.dt, pair.a_r )
@@ -927,12 +936,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.breakUpMulti( multi )
             self.reactionEvents += 1
             self.lastReaction = sim.lastReaction
-            self.multi_steps[EventType.REACTION] += 1
+            self.multi_steps[EventType.MULTI_REACTION] += 1
             return
 
         if sim.escaped:
             self.breakUpMulti( multi )
-            self.multi_steps[EventType.ESCAPE] += 1
+            self.multi_steps[EventType.MULTI_ESCAPE] += 1
             return
 
         self.addMultiEvent(multi)
@@ -1414,16 +1423,16 @@ rejected moves = %d
 '''\
             % (self.t, self.stepCounter,
                numpy.array(self.single_steps.values()).sum(),
-               self.single_steps[EventType.ESCAPE],
-               self.single_steps[EventType.REACTION],
+               self.single_steps[EventType.SINGLE_ESCAPE],
+               self.single_steps[EventType.SINGLE_REACTION],
                numpy.array(self.pair_steps.values()).sum(),
-               self.pair_steps[1],
-               self.pair_steps[2],
-               self.pair_steps[0],
-               self.pair_steps[3],
+               self.pair_steps[EventType.IV_ESCAPE],
+               self.pair_steps[EventType.COM_ESCAPE],
+               self.pair_steps[EventType.PAIR_REACTION],
+               self.pair_steps[EventType.SINGLE_REACTION],
                self.multi_steps[2], # total multi steps
-               self.multi_steps[EventType.ESCAPE],
-               self.multi_steps[EventType.REACTION],
+               self.multi_steps[EventType.MULTI_ESCAPE],
+               self.multi_steps[EventType.MULTI_REACTION],
                self.reactionEvents,
                self.rejectedMoves
                )

@@ -130,13 +130,14 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t = gf.drawTime( 0.5, r0 )
         eventType = gf.drawEventType( 0.5, r0, t )
-        self.failIf( eventType != 0 and eventType != 1 and eventType != 2 )
+        self.failIf(eventType != mod.EventType.PAIR_REACTION and
+                    eventType != mod.EventType.IV_ESCAPE )
 
         eventType = gf.drawEventType( 0.0, r0, t )
-        self.assertEqual( eventType, 0 )
+        self.assertEqual( eventType, mod.EventType.PAIR_REACTION )
 
         eventType = gf.drawEventType( 0.999999, r0, t )
-        self.assertEqual( eventType, 1 )
+        self.assertEqual( eventType, mod.EventType.IV_ESCAPE )
 
 
     def no_test_DrawEventType_smallt( self ):
@@ -152,13 +153,14 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         t = gf.drawTime( 0.999, r0 )
 
         eventType = gf.drawEventType( 0.5, r0, t )
-        self.failIf( eventType != 0 and eventType != 1 and eventType != 2 )
+        self.failIf(eventType != mod.EventType.PAIR_REACTION and
+                    eventType != mod.EventType.IV_ESCAPE )
 
         eventType = gf.drawEventType( 0.0, r0, t )
-        self.assertEqual( eventType, 0 )
+        self.assertEqual(eventType, mod.EventType.PAIR_REACTION)
 
         eventType = gf.drawEventType( 0.9999, r0, t )
-        #self.assertEqual( eventType, 1 )
+        #self.assertEqual(eventType, mod.EventType.IV_ESCAPE)
 
 
     '''
@@ -204,7 +206,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t, et = gf.drawTime2( 0.5, 0.5, r0 )
         self.assertEqual( 0.0, t )
-        self.assertEqual( et, mod.EventType.ESCAPE )
+        self.assertEqual( et, mod.EventType.IV_ESCAPE )
 
     def test_DrawTime2_squeezed( self ):
         D = 1e-12
@@ -231,7 +233,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t, et = gf.drawTime2( 0.5, 0.5, r0 )
         self.assertEqual( 0.0, t )
-        self.assertEqual( et, mod.EventType.ESCAPE )
+        self.assertEqual( et, mod.EventType.IV_ESCAPE )
 
 
     def test_DrawTime2_r0_equal_sigma_kf_zero( self ):
@@ -246,7 +248,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t, et = gf.drawTime2( 0.5, 0.5, r0 )
         self.failIf( t < 0.0 or t >= numpy.inf )
-        self.assertEqual( et, mod.EventType.ESCAPE )
+        self.assertEqual( et, mod.EventType.IV_ESCAPE )
 
         # when kf == 0, pleavea == psurvival
         t2 = gf.drawTime( 0.5, r0 )
@@ -270,7 +272,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         print 't',t, 't2', t2, 'et', et, 'et2', et2
 
         self.failIf( t < 0.0 or t >= numpy.inf )
-        self.assertEqual( et, mod.EventType.REACTION )
+        self.assertEqual( et, mod.EventType.PAIR_REACTION )
 
         self.assertAlmostEqual( t, t2 )
 

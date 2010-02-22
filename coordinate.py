@@ -131,7 +131,7 @@ class RThetaCoordinates(Coordinate):
                             'r0 = %g, a = %g, dt = %g, %s' %
                             (str(e), self.sigma, self.r0, self.a, dt,
                              gf.dump()))
-        return eventType     # 0 (REACTION) or 1 (ESCAPE r)
+        return eventType     # (PAIR_REACTION or IV_ESCAPE)
 
     def drawDisplacement(self, gf, dt):
         r = self.drawR_pair(gf, dt)

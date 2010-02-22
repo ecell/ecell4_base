@@ -9,8 +9,21 @@
 
 enum EventType
 {
-    REACTION = 0,
-    ESCAPE = 1
+    SINGLE_REACTION = 10,
+    NOT_A_SINGLE_REACTION = 11,
+    SINGLE_ESCAPE = 12,
+
+    COM_ESCAPE = 12, // Same as SINGLE_ESCAPE
+
+    IV_ESCAPE = 13,
+    PAIR_REACTION = 14,
+
+    INTERACTION = 15,
+
+    BURST = 16,
+
+    MULTI_ESCAPE = 17,
+    MULTI_REACTION = 18
 };
 
 

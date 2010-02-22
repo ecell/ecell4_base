@@ -523,8 +523,16 @@ BOOST_PYTHON_MODULE( _gfrd )
         ;
 
     enum_<EventType>( "EventType" )
-        .value( "REACTION", REACTION )
-        .value( "ESCAPE", ESCAPE )
+        .value( "SINGLE_REACTION", SINGLE_REACTION )
+        .value( "NOT_A_SINGLE_REACTION", NOT_A_SINGLE_REACTION )
+        .value( "SINGLE_ESCAPE", SINGLE_ESCAPE )
+        .value( "COM_ESCAPE", COM_ESCAPE )
+        .value( "IV_ESCAPE", IV_ESCAPE )
+        .value( "PAIR_REACTION", PAIR_REACTION )
+        .value( "INTERACTION", INTERACTION )
+        .value( "BURST", BURST )
+        .value( "MULTI_ESCAPE", MULTI_ESCAPE )
+        .value( "MULTI_REACTION", MULTI_REACTION )
         ;
 
     class_<FirstPassagePairGreensFunction>( "FirstPassagePairGreensFunction",

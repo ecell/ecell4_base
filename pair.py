@@ -184,7 +184,7 @@ class Pair( object ):
             log.debug( 'dt %g, t_R %g, t_r %g' % 
                      ( self.dt, self.t_R, self.t_r ) )
 
-        if self.dt == self.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
+        if self.dt == self.t_r:  # (PAIR_REACTION or IV_ESCAPE)
             try:
                 self.eventType = self.drawEventType(pgf, r0, self.t_r)
             except Exception, e:
@@ -192,10 +192,10 @@ class Pair( object ):
                     'pgf.drawEventType() failed; %s; r0=%g, %s' %\
                     ( str( e ), r0, pgf.dump() )
 
-        elif self.dt == self.t_R: # type = ESCAPE_R (2)
-            self.eventType = 2
-        elif self.dt == self.t_single_reaction:  # type = single reaction (3)
-            self.eventType = 3 
+        elif self.dt == self.t_R:
+            self.eventType = EventType.COM_ESCAPE
+        elif self.dt == self.t_single_reaction:
+            self.eventType = EventType.SINGLE_REACTION
         else:
             raise AssertionError, "Never get here"
 
