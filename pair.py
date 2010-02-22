@@ -23,7 +23,7 @@ class Pair( object ):
     # 5.6: ~1e-8, 6.0: ~1e-9
     CUTOFF_FACTOR = 5.6
 
-    def __init__(self, domain_id, single1, single2, shell_id_shell_pair, rt):
+    def __init__(self, domain_id, CoM, single1, single2, shell_id_shell_pair, rt):
         self.multiplicity = 2
 
         # Order single1 and single2 so that D1 < D2.
@@ -51,6 +51,8 @@ class Pair( object ):
 
         self.shell_list = [shell_id_shell_pair, ]
         self.domain_id = domain_id
+
+        self.CoM = CoM
 
     def __del__( self ):
         if __debug__:
@@ -206,7 +208,8 @@ class SphericalPair(Pair):
         shell = self.createNewShell(CoM, shellSize, domain_id)
         shell_id_shell_pair = (shell_id, shell)
 
-        Pair.__init__(self, domain_id, single1, single2, shell_id_shell_pair, rt)
+        Pair.__init__(self, domain_id, CoM, single1, single2, 
+                      shell_id_shell_pair, rt)
 
         self.a_R, self.a_r = self.determineRadii(r0, shellSize)
 
