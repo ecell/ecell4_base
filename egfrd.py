@@ -213,34 +213,22 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def createSingle( self, pid_particle_pair ):
         rt = self.getReactionRule1(pid_particle_pair[1].sid)
         domain_id = self.domainIDGenerator()
-        shell_id_shell_pair = (self.shellIDGenerator(),
-                               SphericalShell(pid_particle_pair[1].position,
-                                              pid_particle_pair[1].radius,
-                                              domain_id))
-        single = Single(domain_id, pid_particle_pair, shell_id_shell_pair, rt)
+        shell_id = self.shellIDGenerator()
+
+        # Get surface.
+        species = self.speciesList[pid_particle_pair[1].sid]
+        surface = self.getSurface(species)
+
+        # Create single. The type of the single that will be created depends 
+        # on the surface this particle is on. Either SphericalSingle, 
+        # PlanarSurfaceSingle, or CylindricalSurfaceSingle.
+        TypeOfSingle = surface.DefaultSingle
+        single = TypeOfSingle(domain_id, pid_particle_pair, shell_id, rt)
+
         single.initialize(self.t)
-        self.moveShell(shell_id_shell_pair)
+        self.moveShell(single.shell)
         self.domains[domain_id] = single
         return single
-
-    def determineSingleEvent(self, single, t, shellSize):
-        a = shellSize - single.pid_particle_pair[1].radius
-        escape_time = single.drawEscapeTime(a)
-            
-        reaction_time = single.drawReactionTime()
-
-        if escape_time <= reaction_time:
-            single.dt = escape_time
-            single.eventType = EventType.ESCAPE
-        else:
-            single.dt = reaction_time
-            single.eventType = EventType.REACTION
-
-        single.lastTime = t
-
-        if __debug__:
-            log.info( "determineSingleEvent: type=%s, dt=%g" %\
-                          ( single.eventType, single.dt ) )
 
     def createPair(self, single1, single2, shellSize):
         assert single1.dt == 0.0
@@ -426,18 +414,36 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return multi
 
     def moveSingle(self, single, position, radius=None):
+        self.moveSingleShell(single, position, radius)
+        self.moveSingleParticle(single, position)
+
+    def moveSingleShell(self, single, position, radius):
         if radius is None:
+            # Shrink single to particle radius by default.
             radius = single.shell[1].radius
-        new_sid_shell_pair = (single.shell[0],
-                SphericalShell(position, radius, single.domain_id))
+
+        # Reuse shell_id and domain_id.
+        shell_id = single.shell[0]
+        domain_id = single.domain_id
+
+        # Replace shell.
+        shell = single.createNewShell(position, radius, domain_id)
+        new_sid_shell_pair = (shell_id, shell) 
+
+        single.shell = new_sid_shell_pair
+        self.moveShell(new_sid_shell_pair)
+
+        # Rescale domains of single.
+        single.rescaleCoordinates(radius)
+
+    def moveSingleParticle(self, single, position):
         new_pid_particle_pair = (single.pid_particle_pair[0],
                           Particle(position,
                                    single.pid_particle_pair[1].radius,
                                    single.pid_particle_pair[1].D,
                                    single.pid_particle_pair[1].sid))
-        single.shell = new_sid_shell_pair
         single.pid_particle_pair = new_pid_particle_pair
-        self.moveShell(new_sid_shell_pair)
+
         self.moveParticle(new_pid_particle_pair)
 
     def removeDomain( self, obj ):
@@ -493,6 +499,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             log.info( 'burstObj: bursting %s' % obj )
 
         if isinstance( obj, Single ):
+            # TODO. Compare with gfrd.
             self.burstSingle( obj )
             bursted = [obj,]
         elif isinstance( obj, Pair ):  # Pair
@@ -643,28 +650,43 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.reactionEvents += 1
 
-    def propagateSingle(self, single, r):
+    def propagateSingle(self, single, isEscape=False, isBurst=False):
+        """The difference between a burst and a propagate is that a burst 
+        always takes place before the actual scheduled event for the single, 
+        while propagateSingle can be called for an escape event.
+
+        Another subtle difference is that burstSingle always reschedules 
+        (updateEvent) the single, while just calling propagate does not. 
+        So whoever calls propagateSingle directly should reschedule the single 
+        afterwards.
+
+        """
         if __debug__:
             log.debug( "single.dt=%g, single.lastTime=%g, self.t=%g" % (
                 single.dt, single.lastTime, self.t ) )
-        assert abs( single.dt + single.lastTime - self.t ) <= 1e-18 * self.t
-        
-        displacement = randomVector( r )
 
-        assert abs( length( displacement ) - r ) <= 1e-15 * r
-            
-        newpos = single.pid_particle_pair[1].position + displacement
-        newpos = self.applyBoundary( newpos )
+        if not isBurst:
+            assert abs(single.dt + single.lastTime - self.t) <= 1e-18 * self.t
+        
+        newpos = single.drawNewPosition(self.t - single.lastTime, isEscape) 
+        newpos = self.applyBoundary(newpos)
 
         if __debug__:
             log.debug( "propagate %s: %s => %s" % ( single, single.pid_particle_pair[1].position, newpos ) )
-        assert not self.checkOverlap(newpos,
-                                     single.pid_particle_pair[1].radius,
-                                     ignore=[single.pid_particle_pair[0]])
 
-        single.initialize( self.t )
+        if self.checkOverlap(newpos,
+                             single.pid_particle_pair[1].radius,
+                             ignore=[single.pid_particle_pair[0]]):
+            raise RuntimeError('propagateSingle: checkOverlap failed.')
 
-        self.moveSingle(single, newpos, single.pid_particle_pair[1].radius)
+        if single.eventType == EventType.REACTION and isBurst == False:
+            # SINGLE_REACTION, and not a burst. No need to update, single is 
+            # removed anyway.
+            pass
+        else:
+            # Todo. if isinstance(single, InteractionSingle):
+            single.initialize(self.t)
+            self.moveSingle(single, newpos, single.pid_particle_pair[1].radius)
 
     def fireSingle( self, single ):
 
@@ -677,9 +699,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if single.eventType == EventType.REACTION:
             if __debug__:
                 log.info( 'single reaction %s' % str( single ) )
-            r = single.drawR( single.dt, single.shell[1].radius )
 
-            self.propagateSingle( single, r )
+            self.propagateSingle(single, isEscape=False)
 
             try:
                 self.removeDomain( single )
@@ -694,18 +715,20 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.addSingleEvent(single)
                 return
 
-        # Propagate, if not reaction.
-
         # Handle immobile case first.
         if single.getD() == 0:
             # no propagation, just calculate next reaction time.
-            self.determineSingleEvent(single, self.t, single.shell[1].radius) 
+            single.dt, single.eventType, single.activeCoordinate = \
+                single.determineNextEvent() 
+            single.lastTime = self.t
             self.addSingleEvent(single)
             return
         
-        # Propagate this particle to the exit point on the shell.
-        a = single.shell[1].radius - single.pid_particle_pair[1].radius
-        self.propagateSingle(single, a)
+        # Propagate, if not reaction.
+        if single.dt != 0.0:
+            # Propagate this particle to the exit point on the shell.
+            self.propagateSingle(single, isEscape=True)
+
         singlepos = single.shell[1].position
 
         # (2) Clear volume.
@@ -794,6 +817,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return shellSize
 
     def updateSingle( self, single, closest, distanceToShell ): 
+        # Todo. assert not isinstance(single, InteractionSingle)
+
         singlepos = single.shell[1].position
         if isinstance( closest, Single ):
             closestpos = closest.shell[1].position
@@ -807,12 +832,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         new_shell_size = min( new_shell_size, self.getMaxShellSize() )
 
-        self.determineSingleEvent(single, self.t, new_shell_size)
-        new_sid_shell_pair = (single.shell[0],
-                              SphericalShell(singlepos, new_shell_size,
-                                             single.domain_id))
-        single.shell = new_sid_shell_pair
-        self.moveShell(new_sid_shell_pair)
+        # Resize shell, don't change position.
+        # Note: this should be done before determineNextEvent.
+        self.moveSingleShell(single, singlepos, new_shell_size)        
+
+        single.dt, single.eventType, single.activeCoordinate = \
+            single.determineNextEvent()
+        single.lastTime = self.t
 
     def firePair( self, pair ):
         self.pair_steps[pair.eventType] += 1
@@ -1078,28 +1104,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.t >= single.lastTime
         assert self.t <= single.lastTime + single.dt
 
-        dt = self.t - single.lastTime
-
+        oldpos, oldRadius, _ = single.shell[1]
         particleRadius = single.pid_particle_pair[1].radius
 
-        oldpos, shellSize, _ = single.shell[1]
-        r = single.drawR(dt, shellSize)
-        displacement = randomVector( r )
+        self.propagateSingle(single, isEscape=False, isBurst=True)
 
-        newpos = oldpos + displacement
+        newpos = single.pid_particle_pair[1].position
+        assert self.distance(newpos, oldpos) <= oldRadius - particleRadius
+        # Displacement check is in NonInteractionSingle.drawNewPosition.
 
-        newpos = self.applyBoundary( newpos )
-
-        assert self.distance( newpos, oldpos ) <=\
-            single.shell[1].radius - single.pid_particle_pair[1].radius
-        assert self.distance( newpos, oldpos ) - r <= r * 1e-6
-        assert not self.checkOverlap(newpos, particleRadius,
-                                     ignore=[single.pid_particle_pair[0]])
-
-        single.initialize( self.t )
-
-        self.moveSingle( single, newpos, particleRadius )
-
+        # Todo. if isinstance(single, InteractionSingle):
         self.updateEvent( self.t, single )
 
         assert single.shell[1].radius == particleRadius

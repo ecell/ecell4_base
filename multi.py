@@ -81,13 +81,11 @@ class MultiBDCore( BDSimulatorCoreBase ):
         # shells are contiguous
         for shell in self.multiref().shell_list:
             result = self.shellMatrix.get_neighbors(shell[1].position)
-            d = None
-            for i in result:
-                if i[0][0] == shell[0]:
-                    continue
-                d = i
-            assert d is not None
-            assert d[1] - shell[1].radius < 0.0,\
+            # Check contiguity with nearest neighbor only (get_neighbors 
+            # returns a sorted list).
+            nearest = result[1]
+            distance = nearest[1]
+            assert distance - shell[1].radius < 0.0,\
                 'shells of %s are not contiguous.' % str(self.multiref())
 
         # all particles within the shell.

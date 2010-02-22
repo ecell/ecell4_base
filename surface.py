@@ -7,7 +7,6 @@ from single import *
 #from pair import *
 from utils import *
 
-SphericalSingle=None
 PlanarSurfaceSingle=None
 CylindricalSurfaceSingle=None
 SphericalPair=None
