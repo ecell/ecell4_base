@@ -1,4 +1,4 @@
-import math
+
 import numpy
 
 from _gfrd import *
@@ -193,4 +193,38 @@ class Pair( object ):
             self.single2.pid_particle_pair[0],
             self.eventID )
 
+    def calculatePairPos(self, CoM, newInterParticle, oldInterParticle):
+        '''
+        Calculate new positions of the particles in the Pair using
+        a new center-of-mass, a new inter-particle vector, and
+        an old inter-particle vector.
+        '''
+        #FIXME: need better handling of angles near zero and pi.
+
+        # I rotate the new interparticle vector along the
+        # rotation axis that is perpendicular to both the
+        # z-axis and the original interparticle vector for
+        # the angle between these.
+        
+        # the rotation axis is a normalized cross product of
+        # the z-axis and the original vector.
+        # rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
+
+        angle = vectorAngleAgainstZAxis(oldInterParticle)
+        if angle % numpy.pi != 0.0:
+            rotationAxis = crossproductAgainstZAxis(oldInterParticle)
+            rotationAxis = normalize(rotationAxis)
+            rotated = rotateVector(newInterParticle, rotationAxis, angle)
+        elif angle == 0.0:
+            rotated = newInterParticle
+        else:
+            rotated = numpy.array([newInterParticle[0], newInterParticle[1],
+                                   - newInterParticle[2]])
+
+        D1 = self.single1.pid_particle_pair[1].D
+        D2 = self.single2.pid_particle_pair[1].D
+        newpos1 = CoM - rotated * (D1 / (D1 + D2))
+        newpos2 = CoM + rotated * (D2 / (D1 + D2))
+
+        return newpos1, newpos2
 
