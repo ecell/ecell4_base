@@ -235,19 +235,27 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         rt = self.getReactionRule2(single1.pid_particle_pair[1].sid, single2.pid_particle_pair[1].sid)[ 0 ]
 
         domain_id = self.domainIDGenerator()
-        shell_id_shell_pair = (self.shellIDGenerator(),
-                               SphericalShell(calculate_pair_CoM(
-                                              single1.pid_particle_pair[1].position,
-                                              single2.pid_particle_pair[1].position,
-                                              single1.pid_particle_pair[1].D,
-                                              single2.pid_particle_pair[1].D,
-                                              self.worldSize),
-                                     shellSize,
-                                     domain_id))
-        pair = Pair( domain_id, single1, single2, shell_id_shell_pair, rt ) 
+        shell_id = self.shellIDGenerator()
+
+        CoM = calculate_pair_CoM(single1.pid_particle_pair[1].position,
+                                 single2.pid_particle_pair[1].position,
+                                 single1.pid_particle_pair[1].D,
+                                 single2.pid_particle_pair[1].D,
+                                 self.worldSize)
+        # Get surface.
+        species = self.speciesList[single1.pid_particle_pair[1].sid]
+        surface = self.getSurface(species)
+
+        # Create pair. The type of the pair that will be created depends on 
+        # the surface the particles are on. Either SphericalPair, 
+        # PlanarSurfacePair, or CylindricalSurfacePair.
+        TypeOfPair = surface.DefaultPair
+        pair = TypeOfPair(domain_id, CoM, single1, single2, shell_id, 
+                          shellSize, rt)
+
         pair.initialize( self.t )
 
-        self.moveShell(shell_id_shell_pair)
+        self.moveShell(pair.shell)
         self.domains[domain_id] = pair
         return pair
 

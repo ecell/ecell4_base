@@ -11,7 +11,12 @@ import logging
 log = logging.getLogger('ecell')
 
 class Pair( object ):
-    
+    """There are 3 types of pairs:
+        * SphericalPair
+        * PlanarSurfacePair
+        * CylindricalSurfacePair
+
+    """
     # CUTOFF_FACTOR is a threshold to choose between the real and approximate
     # Green's functions.
     # H = 4.0: ~3e-5, 4.26: ~1e-6, 5.0: ~3e-7, 5.2: ~1e-7,
@@ -192,6 +197,19 @@ class Pair( object ):
             self.eventType = 3 
         else:
             raise AssertionError, "Never get here"
+
+class SphericalPair(Pair):
+    """2 Particles inside a (spherical) shell not on any surface.
+
+    """
+    def __init__(self, domain_id, CoM, single1, single2, shell_id, shellSize, rt):
+        shell = self.createNewShell(CoM, shellSize, domain_id)
+        shell_id_shell_pair = (shell_id, shell)
+
+        Pair.__init__(self, domain_id, single1, single2, shell_id_shell_pair, rt)
+
+    def createNewShell(self, position, radius, domain_id):
+        return SphericalShell(position, radius, domain_id)
 
     def choosePairGreensFunction( self, r0, t ):
         distanceFromSigma = r0 - self.sigma
