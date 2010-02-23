@@ -223,7 +223,7 @@ class SphericalPair(Pair):
                     log.debug( 'GF: normal' )
                 pgf = FirstPassagePairGreensFunction( self.D_tot, 
                                                       self.rt.k, self.sigma )
-
+                pgf.seta(self.a_r)
                 return pgf
             else:
                 # near sigma; use BasicPairGreensFunction
@@ -238,6 +238,7 @@ class SphericalPair(Pair):
                 if __debug__:
                     log.debug( 'GF: only a' )
                 pgf = FirstPassageNoCollisionPairGreensFunction( self.D_tot )
+                pgf.seta(self.a_r)
                 return pgf
                 
             else:
@@ -332,12 +333,14 @@ class SphericalPair(Pair):
             self.single2.pid_particle_pair[0],
             self.eventID )
 
-    def calculatePairPos(self, CoM, newInterParticle, oldInterParticle):
+    def calculatePairPos(self, dt, oldInterParticle, eventType):
         '''
         Calculate new positions of the particles in the Pair using
         a new center-of-mass, a new inter-particle vector, and
         an old inter-particle vector.
         '''
+        CoM = self.drawNewCoM(dt, eventType)
+        newInterParticle = self.drawNewIV(dt, eventType)
         #FIXME: need better handling of angles near zero and pi.
 
         # I rotate the new interparticle vector along the
