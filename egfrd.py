@@ -710,7 +710,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         particle1 = pair.single1.pid_particle_pair
         particle2 = pair.single2.pid_particle_pair
         
-        oldInterParticle = particle2[1].position - particle1[1].position
         oldCoM = calculate_pair_CoM(
             particle1[1].position,
             particle2[1].position,
@@ -819,65 +818,17 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             return
 
-
         #
         # 2b. Escaping through a_r.
+        # 2c. Escaping through a_R.
         #
-        if pair.eventType == EventType.IV_ESCAPE:
+        elif(pair.eventType == EventType.IV_ESCAPE or
+             pair.eventType == EventType.COM_ESCAPE):
             dt = pair.dt
             eventType = pair.eventType
-            newpos1, newpos2 = pair.calculatePairPos(dt,
-                                                     oldInterParticle,
-                                                     eventType)
-            newpos1 = self.applyBoundary( newpos1 )
-            newpos2 = self.applyBoundary( newpos2 )
-        
-        #
-        # 2c. escaping through a_R.
-        #
-        elif pair.eventType == EventType.COM_ESCAPE:
-            dt = pair.dt
-            eventType = pair.eventType
-            newpos1, newpos2 = pair.calculatePairPos(dt, 
-                                                     oldInterParticle,
-                                                     eventType)
-            newpos1 = self.applyBoundary( newpos1 )
-            newpos2 = self.applyBoundary( newpos2 )
-
+            single1, single2 = self.propagatePair(pair, dt, eventType)
         else:
             raise SystemError, 'Bug: invalid eventType.'
-
-        # this has to be done before the following clearVolume()
-
-        assert self.checkPairPos(pair, newpos1, newpos2, oldCoM, pair.shell[1].radius)
-
-        self.removeDomain( pair )
-
-        assert not self.checkOverlap(newpos1, particle1[1].radius,
-                                     ignore=[particle1[0], particle2[0]])
-        assert not self.checkOverlap(newpos2, particle2[1].radius,
-                                     ignore=[particle1[0], particle2[0]])
-
-        single1, single2 = pair.single1, pair.single2
-
-        single1.initialize(self.t)
-        single2.initialize(self.t)
-
-        if __debug__:
-            log.debug("firePair: #1 { %s: %s => %s }" % (single1, particle1[1].position, newpos1))
-            log.debug("firePair: #2 { %s: %s => %s }" % (single2, particle2[1].position, newpos2))
-
-        self.domains[single1.domain_id] = single1
-        self.domains[single2.domain_id] = single2
-
-        self.moveSingle(single1, newpos1, single1.pid_particle_pair[1].radius)
-        self.moveSingle(single2, newpos2, single2.pid_particle_pair[1].radius)
-            
-        self.addSingleEvent( single1 )
-        self.addSingleEvent( single2 )
-
-        assert self.checkObj( single1 )
-        assert self.checkObj( single2 )
 
         return
 
@@ -969,9 +920,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         particle1 = single1.pid_particle_pair
         particle2 = single2.pid_particle_pair
 
+        pos1 = particle1[1].position
+        pos2 = particle2[1].position
+
         if dt > 0.0:
-            pos1 = particle1[1].position
-            pos2 = particle2[1].position
             D1 = particle1[1].D
             D2 = particle2[1].D
 
@@ -994,6 +946,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             newpos1 = particle1[1].position
             newpos2 = particle2[1].position
 
+        if __debug__:
+            log.debug("firePair: #1 { %s: %s => %s }" % (single1, pos1, newpos1))
+            log.debug("firePair: #2 { %s: %s => %s }" % (single2, pos2, newpos2))
+
         single1.initialize( self.t )
         single2.initialize( self.t )
         
@@ -1012,6 +968,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.addSingleEvent(single1)
         self.addSingleEvent(single2)
+
+        assert self.checkObj(single1)
+        assert self.checkObj(single2)
 
         return single1, single2
 
