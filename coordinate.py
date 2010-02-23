@@ -137,8 +137,13 @@ class RThetaCoordinates(Coordinate):
                              gf.dump()))
         return eventType     # (PAIR_REACTION or IV_ESCAPE)
 
-    def drawDisplacement(self, gf, dt):
-        r = self.drawR_pair(gf, dt)
+    def drawDisplacement(self, gf, dt, eventType):
+        if eventType == EventType.PAIR_REACTION:
+            r = self.sigma
+        elif eventType == EventType.IV_ESCAPE:
+            r = self.a
+        else:
+            r = self.drawR_pair(gf, dt)
         theta = self.drawTheta_pair(gf, r, dt)
         return r, theta
 
