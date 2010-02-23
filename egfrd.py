@@ -233,7 +233,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.domains[domain_id] = single
         return single
 
-    def createPair(self, single1, single2, shellSize):
+    def createPair(self, single1, single2, CoM, shellSize):
         assert single1.dt == 0.0
         assert single2.dt == 0.0
 
@@ -241,12 +241,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         domain_id = self.domainIDGenerator()
         shell_id = self.shellIDGenerator()
-
-        CoM = calculate_pair_CoM(single1.pid_particle_pair[1].position,
-                                 single2.pid_particle_pair[1].position,
-                                 single1.pid_particle_pair[1].D,
-                                 single2.pid_particle_pair[1].D,
-                                 self.worldSize)
 
         pos1 = single1.shell[1].position
         pos2 = single2.shell[1].position
@@ -710,13 +704,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         particle1 = pair.single1.pid_particle_pair
         particle2 = pair.single2.pid_particle_pair
         
-        oldCoM = calculate_pair_CoM(
-            particle1[1].position,
-            particle2[1].position,
-            particle1[1].D,
-            particle2[1].D,
-            self.worldSize)
-        oldCoM = self.applyBoundary( oldCoM )
+        oldCoM = pair.CoM
 
         # Two cases:
         #  1. Single reaction
@@ -928,7 +916,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             D2 = particle2[1].D
 
             oldInterParticle = pos2 - pos1
-            oldCoM = calculate_pair_CoM(pos1, pos2, D1, D2, self.worldSize)
+            oldCoM = pair.CoM
 
             newpos1, newpos2 = pair.calculatePairPos(dt, 
                                                      oldInterParticle, 
@@ -1131,7 +1119,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 3. Ok, Pair makes sense.  Create one.
         shellSize = min( shellSize, maxShellSize )
 
-        pair = self.createPair(single1, single2, shellSize)
+        pair = self.createPair(single1, single2, com, shellSize)
 
         r0 = self.distance(pos1, pos2)
 
