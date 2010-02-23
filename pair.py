@@ -367,3 +367,16 @@ class SphericalPair(Pair):
 
         return newpos1, newpos2
 
+    def drawNewCoM(self, dt, eventType):
+        comCoordinate = self.coordinates[0]
+        r_R = comCoordinate.drawDisplacement(dt, eventType)
+        return self.CoM + randomVector(r_R)
+
+    def drawNewIV(self, dt, eventType): 
+        ivCoordinates = self.coordinates[1]
+        gf = self.choosePairGreensFunction(self.pairDistance, dt)
+        r, theta = ivCoordinates.drawDisplacement(gf, dt, eventType)
+        newInterParticleS = numpy.array([r, theta, 
+                                         myrandom.uniform() * 2 * Pi])
+        return sphericalToCartesian(newInterParticleS)
+
