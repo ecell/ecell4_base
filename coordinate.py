@@ -83,6 +83,10 @@ class RCoordinate(Coordinate):
                             (str(e), rnd, self.a, gf.dump()))
         return dt
 
+    def drawEventType(self, dt):
+        # Either SINGLE_ESCAPE or COM_ESCAPE, doesn't matter.
+        return EventType.COM_ESCAPE
+
     def drawDisplacement(self, dt):
         try:
             rnd = myrandom.uniform()
