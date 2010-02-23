@@ -87,7 +87,12 @@ class RCoordinate(Coordinate):
         # Either SINGLE_ESCAPE or COM_ESCAPE, doesn't matter.
         return EventType.COM_ESCAPE
 
-    def drawDisplacement(self, dt):
+    def drawDisplacement(self, dt, eventType):
+        if(eventType == EventType.COM_ESCAPE or
+           eventType == EventType.SINGLE_ESCAPE):
+            # Escape through this coordinate. We already know the new r.
+            return self.a
+
         try:
             rnd = myrandom.uniform()
             log.debug('        *Radial drawR. ') #+ str(self.gf))

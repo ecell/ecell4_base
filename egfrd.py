@@ -504,7 +504,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.reactionEvents += 1
 
-    def propagateSingle(self, single, isEscape=False, isBurst=False):
+    def propagateSingle(self, single, isBurst=False):
         """The difference between a burst and a propagate is that a burst 
         always takes place before the actual scheduled event for the single, 
         while propagateSingle can be called for an escape event.
@@ -519,10 +519,17 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             log.debug( "single.dt=%g, single.lastTime=%g, self.t=%g" % (
                 single.dt, single.lastTime, self.t ) )
 
-        if not isBurst:
+        if isBurst == False:
             assert abs(single.dt + single.lastTime - self.t) <= 1e-18 * self.t
+
+        if isBurst == True:
+            # Override eventType. Always call gf.drawR on BURST.
+            eventType = EventType.BURST
+        else:
+            # Only call gf.drawR when SINGLE_REACTION, not when SINGLE_ESCAPE.
+            eventType = single.eventType
         
-        newpos = single.drawNewPosition(self.t - single.lastTime, isEscape) 
+        newpos = single.drawNewPosition(self.t - single.lastTime, eventType) 
         newpos = self.applyBoundary(newpos)
 
         if __debug__:
@@ -553,7 +560,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             if __debug__:
                 log.info( 'single reaction %s' % str( single ) )
 
-            self.propagateSingle(single, isEscape=False)
+            self.propagateSingle(single)
 
             try:
                 self.removeDomain( single )
@@ -585,7 +592,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         
         if single.dt != 0.0:
             # Propagate this particle to the exit point on the shell.
-            self.propagateSingle(single, isEscape=True)
+            self.propagateSingle(single)
 
         singlepos = single.shell[1].position
 
@@ -876,7 +883,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         oldpos, oldRadius, _ = single.shell[1]
         particleRadius = single.pid_particle_pair[1].radius
 
-        self.propagateSingle(single, isEscape=False, isBurst=True)
+        self.propagateSingle(single, isBurst=True)
 
         newpos = single.pid_particle_pair[1].position
         assert self.distance(newpos, oldpos) <= oldRadius - particleRadius

@@ -170,13 +170,8 @@ class NonInteractionSingle(Single):
         Single.__init__(self, domain_id, pid_particle_pair, shell_id_shell_pair,
                         reactiontypes)
 
-    def drawNewPosition(self, dt, isEscape):
-        if isEscape:
-            # Escape through this coordinate. We already know the new r.
-            r = self.coordinates[0].a
-        else:
-            # Maybe a single reaction, maybe a burst, who knows. Draw r.
-            r = self.coordinates[0].drawDisplacement(dt)
+    def drawNewPosition(self, dt, eventType):
+        r = self.coordinates[0].drawDisplacement(dt, eventType)
         displacement = self.displacement(r)
         assert abs(length(displacement) - abs(r)) <= 1e-15 * abs(r)
         return self.pid_particle_pair[1].position + displacement
