@@ -367,8 +367,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         elif isinstance( obj, Pair ):  # Pair
             single1, single2 = self.burstPair( obj )
             self.removeEvent( obj )
-            self.addSingleEvent( single1 )
-            self.addSingleEvent( single2 )
             bursted = [ single1, single2 ]
         else:  # Multi
             bursted = self.burstMulti( obj )
@@ -957,10 +955,16 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.t >= pair.lastTime
         assert self.t <= pair.lastTime + pair.dt
 
+        dt = self.t - pair.lastTime 
+        # Override eventType. Always call sgf.drawR and pgf.drawR on BURST.
+        eventType = EventType.BURST
+        single1, single2 = self.propagatePair(pair, dt, eventType)
+
+        return single1, single2
+
+    def propagatePair(self, pair, dt, eventType):
         single1 = pair.single1
         single2 = pair.single2
-
-        dt = self.t - pair.lastTime 
 
         particle1 = single1.pid_particle_pair
         particle2 = single2.pid_particle_pair
@@ -974,8 +978,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             oldInterParticle = pos2 - pos1
             oldCoM = calculate_pair_CoM(pos1, pos2, D1, D2, self.worldSize)
 
-            # Overrid eventType. Always call sgf.drawR and pgf.drawR on BURST.
-            eventType = EventType.BURST
             newpos1, newpos2 = pair.calculatePairPos(dt, 
                                                      oldInterParticle, 
                                                      eventType)
@@ -1007,6 +1009,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.shellMatrix[single2.shell[0]].radius == single2.shell[1].radius
         assert single1.shell[1].radius == particle1[1].radius
         assert single2.shell[1].radius == particle2[1].radius
+
+        self.addSingleEvent(single1)
+        self.addSingleEvent(single2)
 
         return single1, single2
 
