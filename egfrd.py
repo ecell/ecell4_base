@@ -922,7 +922,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             oldInterParticle = pos2 - pos1
             oldCoM = pair.CoM
 
-            newpos1, newpos2 = pair.calculatePairPos(dt, 
+            newpos1, newpos2 = pair.drawNewPositions(dt, 
                                                      oldInterParticle, 
                                                      eventType)
 

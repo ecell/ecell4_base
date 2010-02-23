@@ -257,7 +257,7 @@ class SphericalPair(Pair):
             self.single2.pid_particle_pair[0],
             self.eventID )
 
-    def calculatePairPos(self, dt, oldInterParticle, eventType):
+    def drawNewPositions(self, dt, oldInterParticle, eventType):
         '''
         Calculate new positions of the particles in the Pair using
         a new center-of-mass, a new inter-particle vector, and
