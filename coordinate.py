@@ -80,7 +80,7 @@ class RCoordinate(Coordinate):
             dt = self.gf.drawTime(rnd)
         except Exception, e:
             raise Exception('gf.drawTime() failed, %s, rnd = %g, a = %g, %s' %
-                            (str(e), rnd, self.a, gf.dump()))
+                            (str(e), rnd, self.a, self.gf.dump()))
         return dt
 
     def drawEventType(self, dt):
@@ -104,7 +104,7 @@ class RCoordinate(Coordinate):
                 r = self.gf.drawR(rnd, dt)
         except Exception, e:
             raise Exception('gf.drawR failed, %s, rnd = %g, dt = %g, a = %g, '
-                            '%s' % (str(e), rnd, dt, self.a, gf.dump()))
+                            '%s' % (str(e), rnd, dt, self.a, self.gf.dump()))
 
         return r
 
@@ -127,7 +127,7 @@ class RThetaCoordinates(Coordinate):
             raise Exception('gf.drawTime() failed, %s, rnd = %g, sigma = %g, '
                             'r0 = %g, a = %g, %s' %
                             (str(e), rnd, self.sigma, self.r0, self.a,
-                             gf.dump()))
+                             self.gf.dump()))
         return dt
 
     def drawEventType(self, dt):
@@ -139,7 +139,7 @@ class RThetaCoordinates(Coordinate):
             raise Exception('gf.drawEventType() failed, %s, sigma = %g,'
                             'r0 = %g, a = %g, dt = %g, %s' %
                             (str(e), self.sigma, self.r0, self.a, dt,
-                             gf.dump()))
+                             self.gf.dump()))
         return eventType     # (PAIR_REACTION or IV_ESCAPE)
 
     def drawDisplacement(self, gf, dt, eventType):
@@ -158,7 +158,7 @@ class RThetaCoordinates(Coordinate):
         """
         try:
             rnd = myrandom.uniform()
-            log.debug('        *Radial2D drawR_pair. ') #+ str(self.gf))
+            log.debug('        *Radial2D drawR_pair. ') #+ str(gf))
             r = gf.drawR(rnd, self.r0, dt)
             # redraw; shouldn't happen often
             while r >= self.a or r <= self.sigma: 
@@ -180,7 +180,7 @@ class RThetaCoordinates(Coordinate):
         """
         try:
             rnd = myrandom.uniform()
-            log.debug('        *Radial2D drawTheta_pair. ')#+ str(self.gf))
+            log.debug('        *Radial2D drawTheta_pair. ')#+ str(gf))
             theta = gf.drawTheta(rnd, r, self.r0, dt)
         except Exception, e:
             raise Exception('gf.drawTheta() failed, %s, rnd = %g, r = %g, '
