@@ -788,23 +788,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 species3 = pair.rt.products[0]
 
                 # calculate new R
-            
-                sgf = FirstPassageGreensFunction(pair.D_R)
-                sgf.seta(pair.a_R)
-
-                r_R = pair.drawR_single( sgf, pair.dt )
-            
-                displacement_R_S = [ r_R, myrandom.uniform() * Pi,
-                                     myrandom.uniform() * 2 * Pi ]
-                displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R
+                eventType = pair.eventType
+                newCoM = pair.drawNewCoM(pair.dt, eventType)
                 
                 if __debug__:
                     shellSize = pair.shell[1].radius
                     assert self.distance( oldCoM, newCoM ) + species3.radius <\
                         shellSize
 
-                #FIXME: SURFACE
                 newCoM = self.applyBoundary( newCoM )
 
                 self.removeParticle(pair.single1.pid_particle_pair)
