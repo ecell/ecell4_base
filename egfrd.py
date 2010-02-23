@@ -920,6 +920,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             D2 = particle2[1].D
 
             oldInterParticle = pos2 - pos1
+            assert feq(pair.pairDistance, length(oldInterParticle))
+
             oldCoM = pair.CoM
 
             newpos1, newpos2 = pair.drawNewPositions(dt, 
