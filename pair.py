@@ -7,6 +7,7 @@ from utils import *
 import myrandom
 
 import logging
+from coordinate import *
 
 log = logging.getLogger('ecell')
 
@@ -31,6 +32,7 @@ class Pair( object ):
             self.single1, self.single2 = single1, single2 
         else:
             self.single1, self.single2 = single2, single1 
+        self.singles = [self.single1, self.single2]
 
         self.rt = rt
 
@@ -139,65 +141,39 @@ class Pair( object ):
 
         return a_R, a_r
 
-    def determinePairEvent(self, t, r0):
-        self.lastTime = t
+    def drawEscapeOrPairReactionTime( self ):
+        """Returns a (dt, eventType, None, activeCoordinate) tuple.
 
-        sgf = FirstPassageGreensFunction(self.D_R)
-        sgf.seta(self.a_R)
+        Note: we are not deciding yet if this is an escape or a pair 
+        reaction, since we aren't calling domain.drawEventType() yet. We 
+        postpone it to the very last minute (when this event is executed 
+        in firePair), and memorize the activeCoordinate (CoM or IV) like this.
 
+        Also note that in case the dt for single reaction is actually smaller 
+        below, and this single will get a single reaction event, 
+        self.activeDomain won't be used at all, since reaction events are 
+        taken care of before escape events in firePair.
 
-        # draw t_R
-        try:
-            self.t_R = self.drawTime_single( sgf )
-        except Exception, e:
-            raise Exception, 'sgf.drawTime() failed; %s; %s' %\
-                ( str( e ), sgf.dump() )
+        """
+        eventType = EventType.NOT_A_SINGLE_REACTION
+        return min((c.drawTime(), eventType, None, c) for c in self.coordinates)
 
-        pgf = FirstPassagePairGreensFunction( self.D_tot, 
-                                              self.rt.k, self.sigma )
-        pgf.seta( self.a_r )
+    def drawSingleReactionTime( self ):
+        """Return a (dt, eventType, reactingSingle, None) tuple.
 
-        # draw t_r
-        try:
-            self.t_r = self.drawTime_pair(pgf, r0)
-        except Exception, e:
-            raise Exception, \
-                'pgf.drawTime() failed; %s; r0=%g, %s' % \
-                ( str( e ), r0, pgf.dump() )
+        """
+        eventType = EventType.SINGLE_REACTION
+        return min((single.drawReactionTime(), eventType, single, None) 
+                   for single in self.singles)
 
+    def determinePairEvent(self):
+        """Return a (dt, eventType, reactingSingle, activeCoordinate)-tuple.
+        By returning the arguments it is a pure function. 
 
-        # draw t_reaction
-        t_reaction1 = self.single1.drawReactionTime()
-        t_reaction2 = self.single2.drawReactionTime()
+        """
+        return min(self.drawEscapeOrPairReactionTime(), 
+                   self.drawSingleReactionTime()) 
 
-        if t_reaction1 < t_reaction2:
-            self.t_single_reaction = t_reaction1
-            self.reactingsingle = self.single1
-        else:
-            self.t_single_reaction = t_reaction2
-            self.reactingsingle = self.single2
-
-        self.dt = min( self.t_R, self.t_r, self.t_single_reaction )
-
-        assert self.dt >= 0
-        if __debug__:
-            log.debug( 'dt %g, t_R %g, t_r %g' % 
-                     ( self.dt, self.t_R, self.t_r ) )
-
-        if self.dt == self.t_r:  # (PAIR_REACTION or IV_ESCAPE)
-            try:
-                self.eventType = self.drawEventType(pgf, r0, self.t_r)
-            except Exception, e:
-                raise Exception,\
-                    'pgf.drawEventType() failed; %s; r0=%g, %s' %\
-                    ( str( e ), r0, pgf.dump() )
-
-        elif self.dt == self.t_R:
-            self.eventType = EventType.COM_ESCAPE
-        elif self.dt == self.t_single_reaction:
-            self.eventType = EventType.SINGLE_REACTION
-        else:
-            raise AssertionError, "Never get here"
 
 class SphericalPair(Pair):
     """2 Particles inside a (spherical) shell not on any surface.
@@ -212,6 +188,19 @@ class SphericalPair(Pair):
                       shell_id_shell_pair, rt)
 
         self.a_R, self.a_r = self.determineRadii(r0, shellSize)
+
+        # Green's function for centre of mass inside absorbing sphere.
+        sgf = FirstPassageGreensFunction(self.D_R)
+        comCoordinate = RCoordinate(sgf, self.a_R)
+
+        # Green's function for interparticle vector inside absorbing sphere.  
+        # This exact solution is used for drawing times.
+        self.pgf = FirstPassagePairGreensFunction(self.D_tot, self.rt.k, 
+                                                  self.sigma)
+        ivCoordinates = RThetaCoordinates(self.pgf, self.sigma,
+                                          r0, self.a_r)
+
+        self.coordinates = [comCoordinate, ivCoordinates]
 
     def createNewShell(self, position, radius, domain_id):
         return SphericalShell(position, radius, domain_id)

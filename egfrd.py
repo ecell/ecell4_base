@@ -707,11 +707,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         single.lastTime = self.t
 
     def firePair( self, pair ):
-        self.pair_steps[pair.eventType] += 1
-
-        if __debug__:
-            log.info('firePair: eventType %s' % pair.eventType)
-
         assert self.checkObj( pair )
 
         particle1 = pair.single1.pid_particle_pair
@@ -726,14 +721,17 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.worldSize)
         oldCoM = self.applyBoundary( oldCoM )
 
-        # Four cases:
-        #  0. Reaction
-        #  1. Escaping through a_r.
-        #  2. Escaping through a_R.
-        #  3. Single reaction 
+        # Two cases:
+        #  1. Single reaction
+        #  2. Not a single reaction
 
-        # First handle single reaction case.
+        #
+        # 1. Single reaction
+        #
         if pair.eventType == EventType.SINGLE_REACTION:
+            self.pair_steps[pair.eventType] += 1
+            if __debug__:
+                log.info('firePair: eventType %s' % pair.eventType)
 
             reactingsingle = pair.reactingsingle
 
@@ -760,10 +758,26 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             return
         
+        #
+        # 2. Not a single reaction
+        #
 
+        # When this pair was initialized, pair.determineNextEvent() was called 
+        # and the pair.activeCoordinate we use here was set.
+        #
+        # Possibilities if the IV coordinate is active:
+        #   2a. Pair reaction
+        #   2b. IV escape
+        #
+        # Possiblities if the CoM coordinate is active:
+        #   2c. CoM escape
+        pair.eventType = pair.activeCoordinate.drawEventType(pair.dt)
+        self.pair_steps[pair.eventType] += 1
+        if __debug__:
+            log.info('firePair: eventType %s' % pair.eventType)
 
         #
-        # 0. Reaction
+        # 2a. Pair reaction
         #
         if pair.eventType == EventType.PAIR_REACTION:
             if __debug__:
@@ -817,13 +831,11 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             return
 
 
-        #
-        # Escape 
-        #
-
         r0 = self.distance( particle1[1].position, particle2[1].position )
 
-        # 1 Escaping through a_r.
+        #
+        # 2b. Escaping through a_r.
+        #
         if pair.eventType == EventType.IV_ESCAPE:
 
             # calculate new R
@@ -850,9 +862,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                                      oldInterParticle)
             newpos1 = self.applyBoundary( newpos1 )
             newpos2 = self.applyBoundary( newpos2 )
-
-
-        # 2 escaping through a_R.
+        
+        #
+        # 2c. escaping through a_R.
+        #
         elif pair.eventType == EventType.COM_ESCAPE:
 
             # calculate new r
@@ -1223,7 +1236,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         pair = self.createPair(single1, single2, shellSize)
 
         r0 = self.distance(pos1, pos2)
-        pair.determinePairEvent(self.t, r0)
+
+        pair.dt, pair.eventType, pair.reactingSingle, pair.activeCoordinate = \
+            pair.determinePairEvent()
+        assert pair.dt >= 0
+
+        self.lastTime = self.t
 
         self.removeDomain( single1 )
         self.removeDomain( single2 )
