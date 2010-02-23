@@ -221,8 +221,7 @@ class SphericalPair(Pair):
                 # use FirstPassagePairGreensFunction
                 if __debug__:
                     log.debug( 'GF: normal' )
-                pgf = FirstPassagePairGreensFunction( self.D_tot, 
-                                                      self.rt.k, self.sigma )
+                pgf = self.pgf
                 pgf.seta(self.a_r)
                 return pgf
             else:
