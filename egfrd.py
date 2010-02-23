@@ -519,7 +519,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             log.debug( "single.dt=%g, single.lastTime=%g, self.t=%g" % (
                 single.dt, single.lastTime, self.t ) )
 
-        newpos = single.drawNewPosition(self.t - single.lastTime, single.eventType) 
+        newpos = single.drawNewPosition(single.dt, single.eventType) 
         newpos = self.applyBoundary(newpos)
 
         if __debug__:
@@ -876,6 +876,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         oldpos, oldRadius, _ = single.shell[1]
         particleRadius = single.pid_particle_pair[1].radius
 
+        # Override dt, burst happens before single's scheduled event.
+        single.dt = self.t - single.lastTime
         # Override eventType. Always call gf.drawR on BURST.
         single.eventType = EventType.BURST
         self.propagateSingle(single)
