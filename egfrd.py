@@ -197,9 +197,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         
         self.scheduler.step()
 
+        if __debug__:
+            if self.scheduler.getSize() == 0:
+                raise RuntimeError('Zero particles left.')
+
         nextTime = self.scheduler.getTopTime()
         self.dt = nextTime - self.t
-
 
         # assert if not too many successive dt=0 steps occur.
         if __debug__:
@@ -209,9 +212,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                     raise RuntimeError, 'too many dt=zero steps.  simulator halted?'
             else:
                 self.zeroSteps = 0
-
-
-        assert self.scheduler.getSize() != 0
 
     def createSingle( self, pid_particle_pair ):
         rt = self.getReactionRule1(pid_particle_pair[1].sid)
