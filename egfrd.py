@@ -919,7 +919,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             D1 = particle1[1].D
             D2 = particle2[1].D
 
-            oldInterParticle = pos2 - pos1
+            pos2t = cyclic_transpose(pos2, pos1, self.worldSize)
+            oldInterParticle = pos2t - pos1
             assert feq(pair.pairDistance, length(oldInterParticle))
 
             oldCoM = pair.CoM
