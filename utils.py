@@ -25,6 +25,61 @@ TOLERANCE = 1e-8
 # Multiplication factor used for seperating 2 particles or a particle and a 
 # surface after unbinding.
 MINIMAL_SEPERATION_FACTOR = 1.0 + TOLERANCE
+  
+# Float comparison functions.
+def feq(a, b, typical=1, tolerance=TOLERANCE):
+    """Return True if a and b are equal, subject to given tolerances. Float 
+    comparison.
+
+    Also see numpy.allclose().
+
+    The (relative) tolerance must be positive and << 1.0
+
+    Instead of specifying an absolute tolerance, you can speciy a typical 
+    value for a or b. The absolute tolerance is then the relative tolerance 
+    multipied by this typical value, and will be used when comparing a value 
+    to zero. By default, the typical value is 1.
+
+    """
+    return abs(a - b) < tolerance * (typical + min(abs(a), abs(b)))
+
+
+def fgreater(a, b, typical=1, tolerance=TOLERANCE):
+    """Return True if a is greater than b, subject to given tolerances. Float 
+    comparison.
+
+    """
+    return a - b > tolerance * (typical + min(abs(a), abs(b)))
+
+
+def fless(a, b, typical=1, tolerance=TOLERANCE):
+    """Return True if a is less than b, subject to given tolerances. Float 
+    comparison.
+
+    """
+    return b - a > tolerance * (typical + min(abs(a), abs(b)))
+
+
+def fgeq(a, b, typical=1, tolerance=TOLERANCE):
+    """Return True if a is greater or equal than b, subject to given 
+    tolerances. Float comparison.
+
+    """
+    diff = a - b
+    barrier = tolerance * (typical + min(abs(a), abs(b)))
+    # Try both 'greater than' and equality.
+    return diff > barrier or abs(diff) < barrier
+
+
+def fleq(a, b, typical=1, tolerance=TOLERANCE):
+    """Return True if a is less than or equal than b, subject to given 
+    tolerances. Float comparison.
+
+    """
+    diff = b - a
+    barrier = tolerance * (typical + min(abs(a), abs(b)))
+    # Try both 'less than' and equality.
+    return diff > barrier or abs(diff) < barrier
 
 def Mtom3( rate ):
     return rate / ( 1000 * N_A )
