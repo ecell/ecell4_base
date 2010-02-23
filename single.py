@@ -5,12 +5,7 @@ from _gfrd import *
 
 from utils import *
 import myrandom
-from shape import *
 from coordinate import *
-
-import logging
-
-log = logging.getLogger('ecell')
 
 
 class Single( object ):
