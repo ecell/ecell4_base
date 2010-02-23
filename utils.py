@@ -45,10 +45,6 @@ def distanceArray_Simple( position1, positions, fsize = None ):
 
 distance = _gfrd.distance
 
-distance_sq = _gfrd.distance_sq
-
-distance_sq_cyclic = _gfrd.distance_sq_cyclic
-
 distance_cyclic = _gfrd.distance_cyclic
 
 def distanceSqArray_Cyclic( position1, positions, fsize ):

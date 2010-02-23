@@ -57,14 +57,14 @@ struct CylindricalShell
         return cylinder_.radius();
     }
 
-    position_type& orientation()
+    position_type& unit_z()
     {
-        return cylinder_.orientation();
+        return cylinder_.unit_z();
     }
 
-    position_type const& orientation() const
+    position_type const& unit_z() const
     {
-        return cylinder_.orientation();
+        return cylinder_.unit_z();
     }
 
     length_type& size()
@@ -137,7 +137,7 @@ struct hash<CylindricalShell<T_, Tdid_> >
     {
         return hash<typename argument_type::position_type>()(val.position()) ^
             hash<typename argument_type::length_type>()(val.radius()) ^
-            hash<typename argument_type::position_type>()(val.orientation()) ^
+            hash<typename argument_type::position_type>()(val.unit_z()) ^
             hash<typename argument_type::length_type>()(val.size()) ^
             hash<typename argument_type::domain_id_type>()(val.did());
     }

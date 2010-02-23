@@ -272,10 +272,8 @@ class ParticleSimulatorBase( object ):
 
         if isinstance( size, float ) and size == INF:
             self._distance = distance
-            self._distance_sq = distance_sq
         else:
             self._distance = distance_cyclic
-            self._distance_sq = distance_sq_cyclic
 
         # Particles of a Species whose surface is not specified will be added 
         # to the world. Dimensions don't matter, except for visualization.

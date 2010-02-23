@@ -107,7 +107,7 @@ public:
                         PyTuple_GetItem(arg, 0), 0)
                 || set_radius(reinterpret_cast<CylindricalShellWrapper*>(retval), 
                         PyTuple_GetItem(arg, 1), 0)
-                || set_orientation(reinterpret_cast<CylindricalShellWrapper*>(retval), 
+                || set_unit_z(reinterpret_cast<CylindricalShellWrapper*>(retval), 
                         PyTuple_GetItem(arg, 2), 0)
                 || set_size(reinterpret_cast<CylindricalShellWrapper*>(retval), 
                         PyTuple_GetItem(arg, 3), 0)
@@ -211,10 +211,10 @@ public:
         return 0;
     }
 
-    static PyObject* get_orientation(CylindricalShellWrapper* self)
+    static PyObject* get_unit_z(CylindricalShellWrapper* self)
     {
-        typename Timpl_::position_type const& orientation(self->impl_.orientation());
-        const npy_intp dims[1] = { boost::size(orientation) };
+        typename Timpl_::position_type const& unit_z(self->impl_.unit_z());
+        const npy_intp dims[1] = { boost::size(unit_z) };
         PyObject* retval = PyArray_New(&PyArray_Type, 1,
                 const_cast<npy_intp*>(dims),
                 util::get_numpy_typecode<typename Timpl_::length_type>::value,
@@ -223,12 +223,12 @@ public:
                 0, NPY_CARRAY, NULL);
         if (retval == NULL)
             return NULL;
-        std::memmove(PyArray_DATA(retval), &orientation[0],
-                sizeof(typename Timpl_::length_type) * boost::size(orientation));
+        std::memmove(PyArray_DATA(retval), &unit_z[0],
+                sizeof(typename Timpl_::length_type) * boost::size(unit_z));
         return retval;
     }
 
-    static int set_orientation(CylindricalShellWrapper* self, PyObject* val, void *)
+    static int set_unit_z(CylindricalShellWrapper* self, PyObject* val, void *)
     {
         if (!PySequence_Check(val))
         {
@@ -256,7 +256,7 @@ public:
         Py_XDECREF(items[2]);
         if (PyErr_Occurred())
             return -1;
-        self->impl_.orientation() = tmp;
+        self->impl_.unit_z() = tmp;
         return 0;
     }
 
@@ -298,7 +298,7 @@ public:
             boost::python::make_tuple(
                 boost::python::borrowed(get_position(self)),
                 boost::python::borrowed(get_radius(self)),
-                boost::python::borrowed(get_orientation(self)),
+                boost::python::borrowed(get_unit_z(self)),
                 boost::python::borrowed(get_size(self)),
                 boost::python::borrowed(get_did(self))).ptr());
     }
@@ -349,7 +349,7 @@ public:
         case 1:
             return get_radius(reinterpret_cast<CylindricalShellWrapper*>(self));
         case 2:
-            return get_orientation(reinterpret_cast<CylindricalShellWrapper*>(self));
+            return get_unit_z(reinterpret_cast<CylindricalShellWrapper*>(self));
         case 3:
             return get_size(reinterpret_cast<CylindricalShellWrapper*>(self));
         case 4:
@@ -373,7 +373,7 @@ public:
         case 1:
             return set_radius(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
         case 2:
-            return set_orientation(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
+            return set_unit_z(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
         case 3:
             return set_size(reinterpret_cast<CylindricalShellWrapper*>(self), val, 0);
         case 4:
@@ -466,9 +466,9 @@ PyGetSetDef CylindricalShellWrapper<Timpl_>::__getsets__[] = {
         const_cast<char*>("")
     },
     {
-        const_cast<char*>("orientation"),
-        (getter)CylindricalShellWrapper::get_orientation,
-        (setter)CylindricalShellWrapper::set_orientation,
+        const_cast<char*>("unit_z"),
+        (getter)CylindricalShellWrapper::get_unit_z,
+        (setter)CylindricalShellWrapper::set_unit_z,
         const_cast<char*>("")
     },
     {

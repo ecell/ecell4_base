@@ -21,6 +21,7 @@
 #include "Transaction.hpp"
 #include "Sphere.hpp"
 #include "Cylinder.hpp"
+#include "Box.hpp"
 #include "Point.hpp"
 #include "geometry.hpp"
 
@@ -37,6 +38,8 @@ struct WorldTraitsBase
     typedef SpeciesInfo<species_id_type, D_type, length_type> species_type;
     typedef typename particle_type::shape_type sphere_type;
     typedef Cylinder<length_type> cylinder_type;
+    typedef Box<length_type> box_type;
+    typedef Vector3<length_type> point_type;
     typedef typename sphere_type::position_type position_type;
 
     template<typename Tval_>
@@ -55,12 +58,6 @@ struct WorldTraitsBase
     static length_type distance(T1_ const& p0, T2_ const& p1, length_type const& world_size)
     {
         return ::distance(p0, p1);
-    }
-
-    template<typename T1_, typename T2_>
-    static length_type distance_sq(T1_ const& p0, T2_ const& p1, length_type const& world_size)
-    {
-        return ::distance_sq(p0, p1);
     }
 
     template<typename Toc_, typename Tfun_, typename Tsphere_>
@@ -105,12 +102,6 @@ public:
     static length_type distance(T1_ const& p0, T2_ const& p1, length_type const& world_size)
     {
         return distance_cyclic(p0, p1, world_size);
-    }
-
-    template<typename T1_, typename T2_>
-    static length_type distance_sq(T1_ const& p0, T2_ const& p1, length_type const& world_size)
-    {
-        return distance_sq_cyclic(p0, p1, world_size);
     }
 
     template<typename Toc_, typename Tfun_, typename Tsphere_>
@@ -270,12 +261,6 @@ public:
     length_type distance(T_ const& lhs, position_type const& rhs) const
     {
         return traits_type::distance(lhs, rhs, world_size());
-    }
-
-    template<typename T_>
-    length_type distance_sq(T_ const& lhs, position_type const& rhs) const
-    {
-        return traits_type::distance_sq(lhs, rhs, world_size());
     }
 
     position_type apply_boundary(position_type const& v) const

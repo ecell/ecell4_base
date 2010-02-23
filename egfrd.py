@@ -1655,7 +1655,7 @@ rejected moves = %d
         oldCoM = com
         
         # debug: check if the new positions are valid:
-        newDistance = distance_Simple( pos1, pos2 )
+        newDistance = distance( pos1, pos2 )
         particleRadius12 = particle1.radius + particle2.radius
 
         # check 1: particles don't overlap.

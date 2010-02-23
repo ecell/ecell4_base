@@ -18,16 +18,16 @@ public:
 
 public:
     Cylinder()
-        : position_(), radius_(0), ori_(), size_(0) {}
+        : position_(), radius_(0), unit_z_(), size_(0) {}
 
     Cylinder(position_type const& position, length_type const& radius,
-             position_type const& ori_z, length_type const& size )
-        : position_(position), radius_(radius), ori_(ori_z),
+             position_type const& unit_z, length_type const& size )
+        : position_(position), radius_(radius), unit_z_(unit_z),
           size_(size) {}
 
     bool operator==(const Cylinder& rhs) const
     {
-        return position_ == rhs.position() && radius_ == rhs.radius() && ori_ == rhs.orientation() && size_ == rhs.size();
+        return position_ == rhs.position() && radius_ == rhs.radius() && unit_z_ == rhs.unit_z() && size_ == rhs.size();
     }
 
     bool operator!=(const Cylinder& rhs) const
@@ -55,14 +55,14 @@ public:
         return radius_;
     }
 
-    position_type const& orientation() const
+    position_type const& unit_z() const
     {
-        return ori_;
+        return unit_z_;
     }
 
-    position_type& orientation()
+    position_type& unit_z()
     {
-        return ori_;
+        return unit_z_;
     }
 
     length_type const& size() const
@@ -78,7 +78,7 @@ public:
 private:
     position_type position_; // centre.
     length_type radius_;
-    position_type ori_; // Z-orientation. should be normalized.
+    position_type unit_z_; // Z-unit_z. should be normalized.
     length_type size_; // half length.
 };
 
@@ -86,36 +86,61 @@ template<typename Tstrm_, typename T_>
 inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
         const Cylinder<T_>& v)
 {
-    strm << "{" << v.position() <<  ", " << v.radius() << ", " << v.orientation() << ", " << v.size() << "}";
+    strm << "{" << v.position() <<  ", " << v.radius() << ", " << v.unit_z() << ", " << v.size() << "}";
     return strm;
+}
+
+template<typename T_>
+inline std::pair<typename Cylinder<T_>::length_type,
+                 typename Cylinder<T_>::length_type>
+to_internal(Cylinder<T_> const& obj, typename Cylinder<T_>::position_type const& pos)
+{
+    typedef typename Cylinder<T_>::position_type position_type;
+    typedef typename Cylinder<T_>::length_type length_type;
+
+    const position_type pos_vector(subtract(pos, obj.position()));
+    const length_type z(dot_product(pos_vector, obj.unit_z())); // can be < 0
+    const length_type r(length(pos_vector - multiply(obj.unit_z(), z))); // always >= 0
+
+    return std::make_pair(r, z);
+}
+
+template<typename T_>
+inline std::pair<typename Cylinder<T_>::position_type,
+                 typename Cylinder<T_>::length_type>
+projected_point(Cylinder<T_> const& obj,
+                typename Cylinder<T_>::position_type const& pos)
+{
+    typedef typename Cylinder<T_>::length_type length_type;
+
+    std::pair<length_type, length_type> r_z(to_internal(obj, pos));\
+    return std::make_pair(
+        add(obj.position(), multiply(obj.unit_z(), r_z.second)),
+        r_z.first);
 }
 
 template<typename T_>
 inline typename Cylinder<T_>::length_type
 distance(Cylinder<T_> const& obj,
-         typename Cylinder<T_>::position_type const& pos)
+                typename Cylinder<T_>::position_type const& pos)
 {
     typedef typename Cylinder<T_>::position_type position_type;
     typedef typename Cylinder<T_>::length_type length_type;
 
     /* First compute the (z,r) components of pos in a coordinate system 
-     * defined by the vectors unitR and orientation, where unitR is
-     * choosen such that unitR and orientation define a plane in which
+     * defined by the vectors unitR and unit_z, where unitR is
+     * choosen such that unitR and unit_z define a plane in which
      * pos lies. */
-    const position_type v = pos - obj.position();
-    const length_type z = dot_product(v, obj.orientation()); // Can be <0.
-    const position_type pos_z = multiply(obj.orientation(), z);
-    const position_type pos_r = v - pos_z;
-    const length_type r = length(pos_r);
+    const std::pair<length_type, length_type> r_z(to_internal(obj, pos));
 
     /* Then compute distance to cylinder. */
-    const length_type dz = std::fabs(z) - obj.size();
-    const length_type dr = r - obj.radius();
+    const length_type dz(std::fabs(r_z.second) - obj.size());
+    const length_type dr(r_z.first - obj.radius());
     length_type distance;
     if (dz > 0)
     {
         // pos is (either) to the right or to the left of the cylinder.
-        if (r > obj.radius())
+        if (r_z.first > obj.radius())
         {
             // Compute distance to edge.
             distance = std::sqrt( dz * dz + dr * dr );
@@ -139,14 +164,6 @@ distance(Cylinder<T_> const& obj,
         }
     }
     return distance;
-}
-
-template<typename T_>
-inline typename Cylinder<T_>::length_type
-distance_sq(Cylinder<T_> const& obj,
-         typename Cylinder<T_>::position_type const& pos)
-{
-    return gsl_pow_2(distance(obj, pos));
 }
 
 template<typename T_>
@@ -186,7 +203,7 @@ struct hash<Cylinder<T_> >
     {
         return hash<typename argument_type::position_type>()(val.position()) ^
             hash<typename argument_type::length_type>()(val.radius()) ^
-            hash<typename argument_type::position_type>()(val.orientation()) ^
+            hash<typename argument_type::position_type>()(val.unit_z()) ^
             hash<typename argument_type::length_type>()(val.size());
     }
 };

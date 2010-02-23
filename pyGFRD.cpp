@@ -69,25 +69,29 @@ typedef EGFRDSimulatorTraitsBase<CyclicWorld, model_type> egfrd_simulator_traits
 static boost::python::object species_type_class;
 static boost::python::object species_info_class;
 
-struct position_to_ndarray_converter
+template<typename T_>
+struct array_to_ndarray_converter
 {
-    typedef world_traits_type::position_type native_type;
+    typedef T_ native_type;
     
     static PyObject* convert( const native_type& p )
     {
+        typedef typename boost::range_value<native_type>::type value_type;
         static const npy_intp dims[1] = { native_type::size() };
-        void* data( PyDataMem_NEW( native_type::size() * sizeof( native_type::value_type ) ) );
-        memcpy( data, static_cast<const void*>( p.data() ),
-                native_type::size() * sizeof( native_type::value_type ) );
+        void* data( PyDataMem_NEW( boost::size(p) * sizeof( value_type ) ) );
+        memcpy( data, static_cast<const void*>( &p[0] ),
+                native_type::size() * sizeof( value_type ) );
         PyObject* array( PyArray_New( &PyArray_Type, 1, 
                                       const_cast<npy_intp*>( dims ),
                                       peer::util::get_numpy_typecode<
-                                          native_type::value_type >::value,
+                                          value_type >::value,
                                       NULL, data, 0, NPY_CARRAY, NULL ) );
         reinterpret_cast<PyArrayObject*>( array )->flags |= NPY_OWNDATA;
         return array;
     }
 };
+
+typedef array_to_ndarray_converter<world_traits_type::position_type> position_to_ndarray_converter;
 
 struct ndarray_to_position_converter
 {
@@ -403,6 +407,23 @@ calculate_pair_CoM(T_ const& p1,
         world_size);
 }
 
+template<typename T_>
+inline boost::python::object Sphere___getitem__(T_ const& obj, int index)
+{
+    switch (index)
+    {
+    default:
+        PyErr_SetString(PyExc_IndexError, "index out of range");
+        boost::python::throw_error_already_set();
+        break;
+    case 0:
+        return boost::python::object(obj.position());
+    case 1:
+        return boost::python::object(obj.radius());
+    }
+
+    return boost::python::object();
+}
 
 BOOST_PYTHON_MODULE( _gfrd )
 {
@@ -620,9 +641,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     def( "length_sq", &length_sq< world_traits_type::position_type > );
     def( "length", &length< world_traits_type::position_type > );
-    def( "distance_sq", &distance_sq<world_traits_type::position_type, world_traits_type::position_type> );
-    def( "distance", &distance<world_traits_type::position_type, world_traits_type::position_type> );
-    def( "distance_sq_cyclic", &distance_sq_cyclic<world_traits_type::position_type, world_traits_type::position_type> );
+    def( "distance", (world_traits_type::length_type(*)(world_traits_type::position_type const&, world_traits_type::position_type const&))&distance<world_traits_type::position_type> );
     def( "distance_cyclic", &distance_cyclic<world_traits_type::position_type, world_traits_type::position_type> );
     def( "apply_boundary", &apply_boundary<world_traits_type::position_type, world_traits_type::length_type> );
     def( "calculate_pair_CoM", &calculate_pair_CoM<world_traits_type::position_type> );
@@ -632,8 +651,10 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     to_python_converter<world_traits_type::position_type,
         position_to_ndarray_converter>();
+#if 0
     to_python_converter<Sphere<world_traits_type::length_type>,
         sphere_to_python_converter>();
+#endif
     peer::util::to_native_converter<Sphere<world_traits_type::length_type>,
         python_to_sphere_converter>();
     peer::util::to_native_converter<world_traits_type::position_type,
@@ -771,11 +792,9 @@ BOOST_PYTHON_MODULE( _gfrd )
             (CyclicWorld::species_type const&(CyclicWorld::*)(CyclicWorld::species_id_type const&) const)&CyclicWorld::get_species,
             return_internal_reference<>())
         .def("distance", &CyclicWorld::distance<world_traits_type::sphere_type>)
-        .def("distance_sq", &CyclicWorld::distance_sq<world_traits_type::sphere_type>)
-        .def("distance", &CyclicWorld::distance_sq<world_traits_type::cylinder_type>)
-        .def("distance_sq", &CyclicWorld::distance_sq<world_traits_type::cylinder_type>)
+        .def("distance", &CyclicWorld::distance<world_traits_type::cylinder_type>)
+        .def("distance", &CyclicWorld::distance<world_traits_type::box_type>)
         .def("distance", &CyclicWorld::distance<CyclicWorld::position_type>)
-        .def("distance_sq", &CyclicWorld::distance_sq<CyclicWorld::position_type>)
         .def("apply_boundary", (CyclicWorld::position_type(CyclicWorld::*)(CyclicWorld::position_type const&) const)&CyclicWorld::apply_boundary)
         .def("apply_boundary", (CyclicWorld::length_type(CyclicWorld::*)(CyclicWorld::length_type const&) const)&CyclicWorld::apply_boundary)
         .def("cyclic_transpose", (CyclicWorld::position_type(CyclicWorld::*)(CyclicWorld::position_type const&, CyclicWorld::position_type const&) const)&CyclicWorld::cyclic_transpose)
@@ -836,6 +855,169 @@ BOOST_PYTHON_MODULE( _gfrd )
                 &species_type::D,
                 &species_type::D>::set)
         ;
+
+    class_<world_traits_type::sphere_type>("Sphere")
+        .add_property("position",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::sphere_type,
+                    world_traits_type::sphere_type::position_type,
+                    &world_traits_type::sphere_type::position,
+                    &world_traits_type::sphere_type::position>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::sphere_type,
+                    world_traits_type::sphere_type::position_type,
+                    &world_traits_type::sphere_type::position,
+                    &world_traits_type::sphere_type::position>::set))
+        .add_property("radius",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::sphere_type,
+                    world_traits_type::sphere_type::length_type,
+                    &world_traits_type::sphere_type::radius,
+                    &world_traits_type::sphere_type::radius>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::sphere_type,
+                    world_traits_type::sphere_type::length_type,
+                    &world_traits_type::sphere_type::radius,
+                    &world_traits_type::sphere_type::radius>::set))
+        .def("__getitem__", &Sphere___getitem__<world_traits_type::sphere_type>);
+
+    class_<world_traits_type::cylinder_type>("Cylinder")
+        .add_property("position",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::cylinder_type,
+                    world_traits_type::cylinder_type::position_type,
+                    &world_traits_type::cylinder_type::position,
+                    &world_traits_type::cylinder_type::position>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::cylinder_type,
+                    world_traits_type::cylinder_type::position_type,
+                    &world_traits_type::cylinder_type::position,
+                    &world_traits_type::cylinder_type::position>::set))
+        .add_property("radius",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::cylinder_type,
+                    world_traits_type::cylinder_type::length_type,
+                    &world_traits_type::cylinder_type::radius,
+                    &world_traits_type::cylinder_type::radius>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::cylinder_type,
+                    world_traits_type::cylinder_type::length_type,
+                    &world_traits_type::cylinder_type::radius,
+                    &world_traits_type::cylinder_type::radius>::set))
+        .add_property("size",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::cylinder_type,
+                    world_traits_type::cylinder_type::length_type,
+                    &world_traits_type::cylinder_type::size,
+                    &world_traits_type::cylinder_type::size>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::cylinder_type,
+                    world_traits_type::cylinder_type::length_type,
+                    &world_traits_type::cylinder_type::size,
+                    &world_traits_type::cylinder_type::size>::set))
+        .add_property("unit_z",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::cylinder_type,
+                    world_traits_type::cylinder_type::position_type,
+                    &world_traits_type::cylinder_type::unit_z,
+                    &world_traits_type::cylinder_type::unit_z>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::cylinder_type,
+                    world_traits_type::cylinder_type::position_type,
+                    &world_traits_type::cylinder_type::unit_z,
+                    &world_traits_type::cylinder_type::unit_z>::set));
+
+    to_python_converter<boost::array<world_traits_type::box_type::length_type, 3>, array_to_ndarray_converter<boost::array<world_traits_type::box_type::length_type, 3> > >();
+
+    class_<world_traits_type::box_type>("Box")
+        .add_property("position",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::box_type,
+                    world_traits_type::box_type::position_type,
+                    &world_traits_type::box_type::position,
+                    &world_traits_type::box_type::position>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::box_type,
+                    world_traits_type::box_type::position_type,
+                    &world_traits_type::box_type::position,
+                    &world_traits_type::box_type::position>::set))
+        .add_property("extent",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::box_type,
+                    boost::array<world_traits_type::box_type::length_type, 3>,
+                    &world_traits_type::box_type::extent,
+                    &world_traits_type::box_type::extent>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::box_type,
+                    boost::array<world_traits_type::box_type::length_type, 3>,
+                    &world_traits_type::box_type::extent,
+                    &world_traits_type::box_type::extent>::set))
+        .add_property("unit_x",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::box_type,
+                    world_traits_type::box_type::position_type,
+                    &world_traits_type::box_type::unit_x,
+                    &world_traits_type::box_type::unit_x>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::box_type,
+                    world_traits_type::box_type::position_type,
+                    &world_traits_type::box_type::unit_x,
+                    &world_traits_type::box_type::unit_x>::set))
+        .add_property("unit_y",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::box_type,
+                    world_traits_type::box_type::position_type,
+                    &world_traits_type::box_type::unit_y,
+                    &world_traits_type::box_type::unit_y>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::box_type,
+                    world_traits_type::box_type::position_type,
+                    &world_traits_type::box_type::unit_y,
+                    &world_traits_type::box_type::unit_y>::set))
+        .add_property("unit_z",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::box_type,
+                    world_traits_type::box_type::position_type,
+                    &world_traits_type::box_type::unit_z,
+                    &world_traits_type::box_type::unit_z>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    world_traits_type::box_type,
+                    world_traits_type::box_type::position_type,
+                    &world_traits_type::box_type::unit_z,
+                    &world_traits_type::box_type::unit_z>::set));
 
     peer::util::to_native_converter<world_traits_type::species_id_type, species_info_to_species_id_converter>();
 

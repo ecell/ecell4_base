@@ -4,14 +4,6 @@
 #include <ostream>
 #include <functional>
 #include <algorithm>
-#include <cmath>
-#include <gsl/gsl_pow_int.h>
-#include <boost/mpl/bool.hpp>
-#include <boost/type_traits/is_arithmetic.hpp>
-#include <boost/utility/enable_if.hpp>
-#include <boost/array.hpp>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
 
 #if defined(HAVE_TR1_FUNCTIONAL)
 #include <tr1/functional>
@@ -21,147 +13,9 @@
 #include <boost/functional/hash.hpp>
 #endif
 
+#include <boost/array.hpp>
 #include "utils/array_traits.hpp"
-
-template<typename T_>
-inline T_ add( T_ const& p1, T_ const& p2, typename boost::enable_if<boost::is_arithmetic<T_> >::type* = 0)
-{
-    return p1 + p2;
-}
-
-template<typename T_>
-inline T_ subtract( T_ const& p1, T_ const& p2, typename boost::enable_if<boost::is_arithmetic<T_> >::type* = 0)
-{
-    return p1 - p2;
-}
-
-template<typename T_>
-inline T_ multiply( T_ const& p1, T_ const& p2, typename boost::enable_if<boost::is_arithmetic<T_> >::type* = 0)
-{
-    return p1 * p2;
-}
-
-template<typename T_>
-inline T_ divide( T_ const& p1, T_ const& p2, typename boost::enable_if<boost::is_arithmetic<T_> >::type* = 0)
-{
-    return p1 / p2;
-}
-
-template<typename T_>
-inline T_ modulo( T_ const& p1, T_ const& p2 )
-{
-    T_ r = p1 % p2;
-    if (r != 0 && (r > 0) == (p2 < 0))
-        r += p2;
-    return r;
-}
-
-template<>
-inline float modulo( float const& p1, float const& p2 )
-{
-    float r = std::fmod(p1, p2);
-    if (r != 0 && (r > 0) == (p2 < 0))
-        r += p2;
-    return r;
-}
-
-template<>
-inline double modulo( double const& p1, double const& p2 )
-{
-    double r = std::fmod(p1, p2);
-    if (r != 0 && (r > 0) == (p2 < 0))
-        r += p2;
-    return r;
-}
-
-template<typename T_>
-inline T_ negate(T_ const& v, typename boost::enable_if<boost::is_arithmetic<T_> >::type* = 0)
-{
-    return -v;
-}
-
-template<typename T_>
-struct is_vector3: public boost::mpl::false_ {};
-
-template< typename T_ >
-inline T_ add( T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0 )
-{
-    T_ retval;
-    retval[0] = add(p1[0], p2[0]);
-    retval[1] = add(p1[1], p2[1]);
-    retval[2] = add(p1[2], p2[2]);
-    return retval;
-}
-
-template< typename T_ >
-inline T_ subtract( T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0 )
-{
-    T_ retval;
-    retval[0] = subtract(p1[0], p2[0]);
-    retval[1] = subtract(p1[1], p2[1]);
-    retval[2] = subtract(p1[2], p2[2]);
-    return retval;
-}
-
-template<typename T_>
-inline T_ divide( T_ const& p1, typename T_::value_type p2, typename boost::enable_if<is_vector3<T_> >::type* = 0 )
-{
-    T_ retval;
-    retval[0] = divide(p1[0], p2);
-    retval[1] = divide(p1[1], p2);
-    retval[2] = divide(p1[2], p2);
-    return retval;
-}
-
-template<typename T_>
-inline T_ multiply( T_ const& p1, typename T_::value_type p2, typename boost::enable_if<is_vector3<T_> >::type* = 0 )
-{
-    T_ retval;
-    retval[0] = multiply(p1[0], p2);
-    retval[1] = multiply(p1[1], p2);
-    retval[2] = multiply(p1[2], p2);
-    return retval;
-}
-
-template<typename T_>
-inline T_ modulo( T_ const& p1, typename T_::value_type p2, typename boost::enable_if<is_vector3<T_> >::type* = 0 )
-{
-    T_ retval;
-    retval[0] = modulo(p1[0], p2);
-    retval[1] = modulo(p1[1], p2);
-    retval[2] = modulo(p1[2], p2);
-    return retval;
-}
-
-template<typename T_>
-inline T_ negate(T_ const& v, typename boost::enable_if<is_vector3<T_> >::type* = 0)
-{
-    T_ retval;
-    retval[0] = -v[0];
-    retval[1] = -v[1];
-    retval[2] = -v[2];
-    return retval;
-}
-
-template<typename T_>
-inline typename T_::value_type dot_product(T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
-{
-    return multiply(p1[0], p2[0])
-           + multiply(p1[1], p2[1])
-           + multiply(p1[2], p2[2]);
-}
-
-template< typename T_ >
-inline typename element_type_of< T_ >::type length_sq( T_ const& r )
-{
-    return gsl_pow_2( r[0] ) + gsl_pow_2( r[1] ) + gsl_pow_2( r[2] );
-}
-
-template< typename T_ >
-inline typename element_type_of< T_ >::type length( T_ const& r )
-{
-    return std::sqrt( length_sq( r ) );
-}
+#include "linear_algebra.hpp"
 
 template<typename T_>
 struct Vector3: public boost::array<T_, 3>
@@ -252,7 +106,7 @@ operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Vector3<T_>& v)
 }
 
 template<typename T_>
-struct is_vector3<Vector3<T_> >: public boost::mpl::true_ {};
+struct is_vector<Vector3<T_>, 3>: public boost::mpl::true_ {};
 
 template< typename T_ >
 struct element_type_of< Vector3< T_ > >

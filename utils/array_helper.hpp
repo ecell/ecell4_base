@@ -26,4 +26,20 @@ BOOST_PP_REPEAT_FROM_TO(0, BOOST_PP_LIMIT_REPEAT, ARRAY_HELPER_TPL, )
 #undef ARRAY_HELPER_TPL
 #undef ARRAY_HELPER_INNER_TPL
 
+template<std::size_t Nfrom_, typename std::size_t Nto_, typename T_, std::size_t Ncap_>
+inline ::boost::array<T_, Nto_ - Nfrom_>&
+array_slice(::boost::array<T_, Ncap_>& arr)
+{
+    BOOST_STATIC_ASSERT((Nto_ <= Ncap_ && Nto_ >= Nfrom_));
+    return *reinterpret_cast< ::boost::array<T_, Nto_ - Nfrom_>*>(&arr[Nfrom_]);
+}
+
+template<std::size_t Nto_, typename T_, std::size_t Nfrom_>
+inline ::boost::array<T_, Nto_> const&
+array_slice(::boost::array<T_, Nfrom_> const& arr)
+{
+    BOOST_STATIC_ASSERT((Nto_ <= Nfrom_));
+    return *reinterpret_cast< ::boost::array<T_, Nto_> const*>(&arr);
+}
+
 #endif /* ARRAY_HELPER_HPP */

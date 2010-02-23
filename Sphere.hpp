@@ -71,13 +71,6 @@ distance(Sphere<T_> const& obj, typename Sphere<T_>::position_type const& pos)
 }
 
 template<typename T_>
-inline typename Sphere<T_>::length_type
-distance_sq(Sphere<T_> const& obj, typename Sphere<T_>::position_type const& pos)
-{
-    return gsl_pow_2(distance(obj, pos));
-}
-
-template<typename T_>
 inline Sphere<T_> const& shape(Sphere<T_> const& shape)
 {
     return shape;
