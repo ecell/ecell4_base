@@ -504,7 +504,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.reactionEvents += 1
 
-    def propagateSingle(self, single, isBurst=False):
+    def propagateSingle(self, single):
         """The difference between a burst and a propagate is that a burst 
         always takes place before the actual scheduled event for the single, 
         while propagateSingle can be called for an escape event.
@@ -519,17 +519,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             log.debug( "single.dt=%g, single.lastTime=%g, self.t=%g" % (
                 single.dt, single.lastTime, self.t ) )
 
-        if isBurst == False:
-            assert abs(single.dt + single.lastTime - self.t) <= 1e-18 * self.t
-
-        if isBurst == True:
-            # Override eventType. Always call gf.drawR on BURST.
-            eventType = EventType.BURST
-        else:
-            # Only call gf.drawR when SINGLE_REACTION, not when SINGLE_ESCAPE.
-            eventType = single.eventType
-        
-        newpos = single.drawNewPosition(self.t - single.lastTime, eventType) 
+        newpos = single.drawNewPosition(self.t - single.lastTime, single.eventType) 
         newpos = self.applyBoundary(newpos)
 
         if __debug__:
@@ -540,7 +530,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                              ignore=[single.pid_particle_pair[0]]):
             raise RuntimeError('propagateSingle: checkOverlap failed.')
 
-        if single.eventType == EventType.SINGLE_REACTION and isBurst == False:
+        if(single.eventType == EventType.SINGLE_REACTION and
+           single.eventType != EventType.BURST):
             # SINGLE_REACTION, and not a burst. No need to update, single is 
             # removed anyway.
             pass
@@ -550,6 +541,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.moveSingle(single, newpos, single.pid_particle_pair[1].radius)
 
     def fireSingle( self, single ):
+        assert abs(single.dt + single.lastTime - self.t) <= 1e-18 * self.t
+
         # Reaction.
         if single.eventType == EventType.SINGLE_REACTION:
             if __debug__:
@@ -883,7 +876,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         oldpos, oldRadius, _ = single.shell[1]
         particleRadius = single.pid_particle_pair[1].radius
 
-        self.propagateSingle(single, isBurst=True)
+        # Override eventType. Always call gf.drawR on BURST.
+        single.eventType = EventType.BURST
+        self.propagateSingle(single)
 
         newpos = single.pid_particle_pair[1].position
         assert self.distance(newpos, oldpos) <= oldRadius - particleRadius
