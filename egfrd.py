@@ -37,8 +37,6 @@ import os
 
 log = logging.getLogger('ecell')
 
-SAFETY = 1.0 + 1e-5
-
 class Delegate( object ):
     def __init__( self, obj, method ):
         self.ref = ref( obj )
@@ -101,9 +99,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.t = 0.0
         self.dt = 0.0
         self.stepCounter = 0
-        self.single_steps = {EventType.ESCAPE:0, EventType.REACTION:0}
-        self.pair_steps = {0:0,1:0,2:0,3:0}
-        self.multi_steps = {EventType.ESCAPE:0, EventType.REACTION:0, 2:0}
+        self.single_steps = {EventType.SINGLE_ESCAPE:0,
+                             EventType.SINGLE_REACTION:0}
+        self.pair_steps = {EventType.SINGLE_REACTION:0,
+                           EventType.PAIR_REACTION:0,
+                           EventType.IV_ESCAPE:0,
+                           EventType.COM_ESCAPE:0}
+        self.multi_steps = {EventType.MULTI_ESCAPE:0,
+                            EventType.MULTI_REACTION:0, 2:0}
         self.zeroSteps = 0
         self.rejectedMoves = 0
         self.reactionEvents = 0
@@ -230,182 +233,35 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.domains[domain_id] = single
         return single
 
-    def createPair(self, single1, single2, shellSize):
+    def createPair(self, single1, single2, CoM, shellSize):
         assert single1.dt == 0.0
         assert single2.dt == 0.0
 
         rt = self.getReactionRule2(single1.pid_particle_pair[1].sid, single2.pid_particle_pair[1].sid)[ 0 ]
 
         domain_id = self.domainIDGenerator()
-        shell_id_shell_pair = (self.shellIDGenerator(),
-                               SphericalShell(calculate_pair_CoM(
-                                              single1.pid_particle_pair[1].position,
-                                              single2.pid_particle_pair[1].position,
-                                              single1.pid_particle_pair[1].D,
-                                              single2.pid_particle_pair[1].D,
-                                              self.worldSize),
-                                     shellSize,
-                                     domain_id))
-        pair = Pair( domain_id, single1, single2, shell_id_shell_pair, rt ) 
-        pair.initialize( self.t )
+        shell_id = self.shellIDGenerator()
 
-        self.moveShell(shell_id_shell_pair)
-        self.domains[domain_id] = pair
-        return pair
-
-    def determinePairEvent(self, pair, t, pos1, pos2, shellSize):
-        pair.lastTime = t
-
-        single1 = pair.single1
-        single2 = pair.single2
-        radius1 = single1.pid_particle_pair[1].radius
-        radius2 = single2.pid_particle_pair[1].radius
-
-        D1 = single1.pid_particle_pair[1].D
-        D2 = single2.pid_particle_pair[1].D
-
-        shellSize /= SAFETY  # FIXME:
-
-        D_tot = D1 + D2
-        D_geom = math.sqrt(D1 * D2)
-
+        pos1 = single1.shell[1].position
+        pos2 = single2.shell[1].position
         r0 = self.distance(pos1, pos2)
 
-        assert r0 >= pair.sigma, \
-            '%s;  r0 %g < sigma %g' % ( pair, r0, pair.sigma )
+        # Get surface.
+        species = self.speciesList[single1.pid_particle_pair[1].sid]
+        surface = self.getSurface(species)
 
-        # equalize expected mean t_r and t_R.
-        if ((D_geom - D2) * r0) / D_tot + shellSize +\
-                math.sqrt(D2 / D1) * (radius1 - shellSize) - radius2 >= 0:
-            Da = D1
-            Db = D2
-            radiusa = radius1
-            radiusb = radius2
-        else:
-            Da = D2
-            Db = D1
-            radiusa = radius2
-            radiusb = radius1
+        # Create pair. The type of the pair that will be created depends on 
+        # the surface the particles are on. Either SphericalPair, 
+        # PlanarSurfacePair, or CylindricalSurfacePair.
+        TypeOfPair = surface.DefaultPair
+        pair = TypeOfPair(domain_id, CoM, single1, single2, shell_id, 
+                          r0, shellSize, rt)
 
+        pair.initialize( self.t )
 
-        #aR
-        pair.a_R = (D_geom * (Db * (shellSize - radiusa) + \
-                               Da * (shellSize - r0 - radiusa))) /\
-                               (Da * Da + Da * Db + D_geom * D_tot)
-
-        #ar
-        pair.a_r = (D_geom * r0 + D_tot * (shellSize - radiusa)) /\
-            (Da + D_geom)
-
-        assert pair.a_R + pair.a_r * Da / D_tot + radius1 >= \
-            pair.a_R + pair.a_r * Db / D_tot + radius2
-
-        assert abs( pair.a_R + pair.a_r * Da / D_tot + radiusa - shellSize ) \
-            < 1e-12 * shellSize
-
-
-        if __debug__:
-          log.debug( 'a %g, r %g, R %g r0 %g' % 
-                  ( shellSize, pair.a_r, pair.a_R, r0 ) )
-        if __debug__:
-          log.debug( 'tr %g, tR %g' % 
-                     ( ( ( pair.a_r - r0 ) / math.sqrt(6 * pair.D_tot))**2,\
-                           (pair.a_R / math.sqrt( 6*pair.D_R ))**2 ) )
-        assert pair.a_r > 0
-        assert pair.a_r > r0, '%g %g' % ( pair.a_r, r0 )
-        assert pair.a_R > 0 or ( pair.a_R == 0 and ( D1 == 0 or D2 == 0 ) )
-
-        sgf = FirstPassageGreensFunction(pair.D_R)
-        sgf.seta(pair.a_R)
-
-
-        # draw t_R
-        try:
-            pair.t_R = pair.drawTime_single( sgf )
-        except Exception, e:
-            raise Exception, 'sgf.drawTime() failed; %s; %s' %\
-                ( str( e ), sgf.dump() )
-
-        pgf = FirstPassagePairGreensFunction( pair.D_tot, 
-                                              pair.rt.k, pair.sigma )
-        pgf.seta( pair.a_r )
-
-        # draw t_r
-        try:
-            pair.t_r = pair.drawTime_pair(pgf, r0)
-        except Exception, e:
-            raise Exception, \
-                'pgf.drawTime() failed; %s; r0=%g, %s' % \
-                ( str( e ), r0, pgf.dump() )
-
-
-        # draw t_reaction
-        t_reaction1 = pair.single1.drawReactionTime()
-        t_reaction2 = pair.single2.drawReactionTime()
-
-        if t_reaction1 < t_reaction2:
-            pair.t_single_reaction = t_reaction1
-            pair.reactingsingle = pair.single1
-        else:
-            pair.t_single_reaction = t_reaction2
-            pair.reactingsingle = pair.single2
-
-        pair.dt = min( pair.t_R, pair.t_r, pair.t_single_reaction )
-
-        assert pair.dt >= 0
-        if __debug__:
-            log.debug( 'dt %g, t_R %g, t_r %g' % 
-                     ( pair.dt, pair.t_R, pair.t_r ) )
-
-        if pair.dt == pair.t_r:  # type = 0 (REACTION) or 1 (ESCAPE_r)
-            try:
-                pair.eventType = pair.drawEventType(pgf, r0, pair.t_r)
-            except Exception, e:
-                raise Exception,\
-                    'pgf.drawEventType() failed; %s; r0=%g, %s' %\
-                    ( str( e ), r0, pgf.dump() )
-
-        elif pair.dt == pair.t_R: # type = ESCAPE_R (2)
-            pair.eventType = 2
-        elif pair.dt == pair.t_single_reaction:  # type = single reaction (3)
-            pair.eventType = 3 
-        else:
-            raise AssertionError, "Never get here"
-
-    def calculatePairPos(self, pair, CoM, newInterParticle, oldInterParticle):
-        '''
-        Calculate new positions of the particles in the Pair using
-        a new center-of-mass, a new inter-particle vector, and
-        an old inter-particle vector.
-        '''
-        #FIXME: need better handling of angles near zero and pi.
-
-        # I rotate the new interparticle vector along the
-        # rotation axis that is perpendicular to both the
-        # z-axis and the original interparticle vector for
-        # the angle between these.
-        
-        # the rotation axis is a normalized cross product of
-        # the z-axis and the original vector.
-        # rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
-
-        angle = vectorAngleAgainstZAxis(oldInterParticle)
-        if angle % numpy.pi != 0.0:
-            rotationAxis = crossproductAgainstZAxis(oldInterParticle)
-            rotationAxis = normalize(rotationAxis)
-            rotated = rotateVector(newInterParticle, rotationAxis, angle)
-        elif angle == 0.0:
-            rotated = newInterParticle
-        else:
-            rotated = numpy.array([newInterParticle[0], newInterParticle[1],
-                                   - newInterParticle[2]])
-
-        D1 = pair.single1.pid_particle_pair[1].D
-        D2 = pair.single2.pid_particle_pair[1].D
-        newpos1 = CoM - rotated * (D1 / (D1 + D2))
-        newpos2 = CoM + rotated * (D2 / (D1 + D2))
-
-        return newpos1, newpos2
+        self.moveShell(pair.shell)
+        self.domains[domain_id] = pair
+        return pair
 
     def createMulti( self ):
         domain_id = self.domainIDGenerator()
@@ -505,8 +361,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         elif isinstance( obj, Pair ):  # Pair
             single1, single2 = self.burstPair( obj )
             self.removeEvent( obj )
-            self.addSingleEvent( single1 )
-            self.addSingleEvent( single2 )
             bursted = [ single1, single2 ]
         else:  # Multi
             bursted = self.burstMulti( obj )
@@ -679,7 +533,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                              ignore=[single.pid_particle_pair[0]]):
             raise RuntimeError('propagateSingle: checkOverlap failed.')
 
-        if single.eventType == EventType.REACTION and isBurst == False:
+        if single.eventType == EventType.SINGLE_REACTION and isBurst == False:
             # SINGLE_REACTION, and not a burst. No need to update, single is 
             # removed anyway.
             pass
@@ -689,14 +543,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.moveSingle(single, newpos, single.pid_particle_pair[1].radius)
 
     def fireSingle( self, single ):
-
-        self.single_steps[single.eventType] += 1
-
-        if __debug__:
-            log.info('fireSingle: eventType %s' % single.eventType)
-
         # Reaction.
-        if single.eventType == EventType.REACTION:
+        if single.eventType == EventType.SINGLE_REACTION:
+            if __debug__:
+                log.info('fireSingle: eventType %s' % single.eventType)
+
+            self.single_steps[single.eventType] += 1
+
             if __debug__:
                 log.info( 'single reaction %s' % str( single ) )
 
@@ -715,6 +568,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.addSingleEvent(single)
                 return
 
+        # Propagate, if not reaction.
+        single.eventType = EventType.SINGLE_ESCAPE
+        if __debug__:
+            log.info('fireSingle: eventType %s' % single.eventType)
+        self.single_steps[single.eventType] += 1
+
         # Handle immobile case first.
         if single.getD() == 0:
             # no propagation, just calculate next reaction time.
@@ -724,7 +583,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.addSingleEvent(single)
             return
         
-        # Propagate, if not reaction.
         if single.dt != 0.0:
             # Propagate this particle to the exit point on the shell.
             self.propagateSingle(single, isEscape=True)
@@ -841,33 +699,24 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         single.lastTime = self.t
 
     def firePair( self, pair ):
-        self.pair_steps[pair.eventType] += 1
-
-        if __debug__:
-            log.info('firePair: eventType %s' % pair.eventType)
-
         assert self.checkObj( pair )
 
         particle1 = pair.single1.pid_particle_pair
         particle2 = pair.single2.pid_particle_pair
         
-        oldInterParticle = particle2[1].position - particle1[1].position
-        oldCoM = calculate_pair_CoM(
-            particle1[1].position,
-            particle2[1].position,
-            particle1[1].D,
-            particle2[1].D,
-            self.worldSize)
-        oldCoM = self.applyBoundary( oldCoM )
+        oldCoM = pair.CoM
 
-        # Four cases:
-        #  0. Reaction
-        #  1. Escaping through a_r.
-        #  2. Escaping through a_R.
-        #  3. Single reaction 
+        # Two cases:
+        #  1. Single reaction
+        #  2. Not a single reaction
 
-        # First handle single reaction case.
-        if pair.eventType == 3:
+        #
+        # 1. Single reaction
+        #
+        if pair.eventType == EventType.SINGLE_REACTION:
+            self.pair_steps[pair.eventType] += 1
+            if __debug__:
+                log.info('firePair: eventType %s' % pair.eventType)
 
             reactingsingle = pair.reactingsingle
 
@@ -894,12 +743,28 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             return
         
+        #
+        # 2. Not a single reaction
+        #
 
+        # When this pair was initialized, pair.determineNextEvent() was called 
+        # and the pair.activeCoordinate we use here was set.
+        #
+        # Possibilities if the IV coordinate is active:
+        #   2a. Pair reaction
+        #   2b. IV escape
+        #
+        # Possiblities if the CoM coordinate is active:
+        #   2c. CoM escape
+        pair.eventType = pair.activeCoordinate.drawEventType(pair.dt)
+        self.pair_steps[pair.eventType] += 1
+        if __debug__:
+            log.info('firePair: eventType %s' % pair.eventType)
 
         #
-        # 0. Reaction
+        # 2a. Pair reaction
         #
-        if pair.eventType == EventType.REACTION:
+        if pair.eventType == EventType.PAIR_REACTION:
             if __debug__:
                 log.info( 'reaction' )
 
@@ -908,23 +773,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 species3 = pair.rt.products[0]
 
                 # calculate new R
-            
-                sgf = FirstPassageGreensFunction(pair.D_R)
-                sgf.seta(pair.a_R)
-
-                r_R = pair.drawR_single( sgf, pair.dt )
-            
-                displacement_R_S = [ r_R, myrandom.uniform() * Pi,
-                                     myrandom.uniform() * 2 * Pi ]
-                displacement_R = sphericalToCartesian( displacement_R_S )
-                newCoM = oldCoM + displacement_R
+                eventType = pair.eventType
+                newCoM = pair.drawNewCoM(pair.dt, eventType)
                 
                 if __debug__:
                     shellSize = pair.shell[1].radius
                     assert self.distance( oldCoM, newCoM ) + species3.radius <\
                         shellSize
 
-                #FIXME: SURFACE
                 newCoM = self.applyBoundary( newCoM )
 
                 self.removeParticle(pair.single1.pid_particle_pair)
@@ -950,104 +806,17 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             return
 
-
         #
-        # Escape 
+        # 2b. Escaping through a_r.
+        # 2c. Escaping through a_R.
         #
-
-        r0 = self.distance( particle1[1].position, particle2[1].position )
-
-        # 1 Escaping through a_r.
-        if pair.eventType == EventType.ESCAPE:
-
-            # calculate new R
-            
-            sgf = FirstPassageGreensFunction(pair.D_R)
-            sgf.seta(pair.a_R)
-
-            r_R = pair.drawR_single( sgf, pair.dt )
-                
-            displacement_R_S = [r_R, myrandom.uniform() * Pi, 
-                                myrandom.uniform() * 2 * Pi]
-            displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = oldCoM + displacement_R
-
-            # calculate new r
-            theta_r = pair.drawTheta_pair(myrandom.uniform(), pair.a_r, 
-                                          r0, pair.dt, pair.a_r )
-            phi_r = myrandom.uniform() * 2 * Pi
-            newInterParticleS = numpy.array( [ pair.a_r, theta_r, phi_r ] )
-            newInterParticle = sphericalToCartesian( newInterParticleS )
-                
-            newpos1, newpos2 = self.calculatePairPos(pair, newCoM,
-                                                     newInterParticle,
-                                                     oldInterParticle)
-            newpos1 = self.applyBoundary( newpos1 )
-            newpos2 = self.applyBoundary( newpos2 )
-
-
-        # 2 escaping through a_R.
-        elif pair.eventType == 2:
-
-            # calculate new r
-            r = pair.drawR_pair( r0, pair.dt, pair.a_r )
-            if __debug__:
-                log.debug( 'new r = %g' % r )
-            #assert r >= pair.sigma
-            
-            theta_r = pair.drawTheta_pair(myrandom.uniform(), r, r0, pair.dt, 
-                                          pair.a_r)
-            phi_r = myrandom.uniform() * 2*Pi
-            newInterParticleS = numpy.array( [ r, theta_r, phi_r ] )
-            newInterParticle = sphericalToCartesian( newInterParticleS )
-                
-            # calculate new R
-            displacement_R_S = [ pair.a_R, myrandom.uniform() * Pi, 
-                                 myrandom.uniform() * 2 * Pi ]
-            displacement_R = sphericalToCartesian( displacement_R_S )
-            
-            newCoM = oldCoM + displacement_R
-                
-            newpos1, newpos2 = self.calculatePairPos(pair, newCoM, 
-                                                     newInterParticle,
-                                                     oldInterParticle)
-            newpos1 = self.applyBoundary( newpos1 )
-            newpos2 = self.applyBoundary( newpos2 )
-
+        elif(pair.eventType == EventType.IV_ESCAPE or
+             pair.eventType == EventType.COM_ESCAPE):
+            dt = pair.dt
+            eventType = pair.eventType
+            single1, single2 = self.propagatePair(pair, dt, eventType)
         else:
             raise SystemError, 'Bug: invalid eventType.'
-
-        # this has to be done before the following clearVolume()
-
-        assert self.checkPairPos(pair, newpos1, newpos2, oldCoM, pair.shell[1].radius)
-
-        self.removeDomain( pair )
-
-        assert not self.checkOverlap(newpos1, particle1[1].radius,
-                                     ignore=[particle1[0], particle2[0]])
-        assert not self.checkOverlap(newpos2, particle2[1].radius,
-                                     ignore=[particle1[0], particle2[0]])
-
-        single1, single2 = pair.single1, pair.single2
-
-        single1.initialize(self.t)
-        single2.initialize(self.t)
-
-        if __debug__:
-            log.debug("firePair: #1 { %s: %s => %s }" % (single1, particle1[1].position, newpos1))
-            log.debug("firePair: #2 { %s: %s => %s }" % (single2, particle2[1].position, newpos2))
-
-        self.domains[single1.domain_id] = single1
-        self.domains[single2.domain_id] = single2
-
-        self.moveSingle(single1, newpos1, single1.pid_particle_pair[1].radius)
-        self.moveSingle(single2, newpos2, single2.pid_particle_pair[1].radius)
-            
-        self.addSingleEvent( single1 )
-        self.addSingleEvent( single2 )
-
-        assert self.checkObj( single1 )
-        assert self.checkObj( single2 )
 
         return
 
@@ -1070,12 +839,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.breakUpMulti( multi )
             self.reactionEvents += 1
             self.lastReaction = sim.lastReaction
-            self.multi_steps[EventType.REACTION] += 1
+            self.multi_steps[EventType.MULTI_REACTION] += 1
             return
 
         if sim.escaped:
             self.breakUpMulti( multi )
-            self.multi_steps[EventType.ESCAPE] += 1
+            self.multi_steps[EventType.MULTI_ESCAPE] += 1
             return
 
         self.addMultiEvent(multi)
@@ -1125,47 +894,33 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.t >= pair.lastTime
         assert self.t <= pair.lastTime + pair.dt
 
+        dt = self.t - pair.lastTime 
+        # Override eventType. Always call sgf.drawR and pgf.drawR on BURST.
+        eventType = EventType.BURST
+        single1, single2 = self.propagatePair(pair, dt, eventType)
+
+        return single1, single2
+
+    def propagatePair(self, pair, dt, eventType):
         single1 = pair.single1
         single2 = pair.single2
-
-        dt = self.t - pair.lastTime 
 
         particle1 = single1.pid_particle_pair
         particle2 = single2.pid_particle_pair
 
-        if dt > 0.0:
+        pos1 = particle1[1].position
+        pos2 = particle2[1].position
 
-            pos1 = particle1[1].position
-            pos2 = particle2[1].position
+        if dt > 0.0:
             D1 = particle1[1].D
             D2 = particle2[1].D
 
             oldInterParticle = pos2 - pos1
-            oldCoM = calculate_pair_CoM(pos1, pos2, D1, D2, self.worldSize)
-            r0 = self.distance(pos1, pos2)
-            
-            sgf = FirstPassageGreensFunction(pair.D_R)
-            sgf.seta(pair.a_R)
+            oldCoM = pair.CoM
 
-            # calculate new CoM
-            r_R = pair.drawR_single( sgf, dt )
-            
-            displacement_R_S = [r_R, myrandom.uniform() * Pi, 
-                                 myrandom.uniform() * 2 * Pi]
-            displacement_R = sphericalToCartesian( displacement_R_S )
-            newCoM = oldCoM + displacement_R
-            
-            # calculate new interparticle
-            r_r = pair.drawR_pair( r0, dt, pair.a_r )
-
-            theta_r = pair.drawTheta_pair(myrandom.uniform(), r_r, r0, dt, 
-                                          pair.a_r)
-            phi_r = myrandom.uniform() * 2 * Pi
-            newInterParticleS = numpy.array( [ r_r, theta_r, phi_r ] )
-            newInterParticle = sphericalToCartesian( newInterParticleS )
-            newpos1, newpos2 = self.calculatePairPos(pair, newCoM, 
-                                                     newInterParticle,
-                                                     oldInterParticle)
+            newpos1, newpos2 = pair.calculatePairPos(dt, 
+                                                     oldInterParticle, 
+                                                     eventType)
 
             newpos1 = self.applyBoundary(newpos1)
             newpos2 = self.applyBoundary(newpos2)
@@ -1178,6 +933,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         else:
             newpos1 = particle1[1].position
             newpos2 = particle2[1].position
+
+        if __debug__:
+            log.debug("firePair: #1 { %s: %s => %s }" % (single1, pos1, newpos1))
+            log.debug("firePair: #2 { %s: %s => %s }" % (single2, pos2, newpos2))
 
         single1.initialize( self.t )
         single2.initialize( self.t )
@@ -1194,6 +953,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.shellMatrix[single2.shell[0]].radius == single2.shell[1].radius
         assert single1.shell[1].radius == particle1[1].radius
         assert single2.shell[1].radius == particle2[1].radius
+
+        self.addSingleEvent(single1)
+        self.addSingleEvent(single2)
+
+        assert self.checkObj(single1)
+        assert self.checkObj(single2)
 
         return single1, single2
 
@@ -1354,9 +1119,15 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 3. Ok, Pair makes sense.  Create one.
         shellSize = min( shellSize, maxShellSize )
 
-        pair = self.createPair(single1, single2, shellSize)
+        pair = self.createPair(single1, single2, com, shellSize)
 
-        self.determinePairEvent(pair, self.t, pos1, pos2, shellSize)
+        r0 = self.distance(pos1, pos2)
+
+        pair.dt, pair.eventType, pair.reactingSingle, pair.activeCoordinate = \
+            pair.determinePairEvent()
+        assert pair.dt >= 0
+
+        self.lastTime = self.t
 
         self.removeDomain( single1 )
         self.removeDomain( single2 )
@@ -1556,16 +1327,16 @@ rejected moves = %d
 '''\
             % (self.t, self.stepCounter,
                numpy.array(self.single_steps.values()).sum(),
-               self.single_steps[EventType.ESCAPE],
-               self.single_steps[EventType.REACTION],
+               self.single_steps[EventType.SINGLE_ESCAPE],
+               self.single_steps[EventType.SINGLE_REACTION],
                numpy.array(self.pair_steps.values()).sum(),
-               self.pair_steps[1],
-               self.pair_steps[2],
-               self.pair_steps[0],
-               self.pair_steps[3],
+               self.pair_steps[EventType.IV_ESCAPE],
+               self.pair_steps[EventType.COM_ESCAPE],
+               self.pair_steps[EventType.PAIR_REACTION],
+               self.pair_steps[EventType.SINGLE_REACTION],
                self.multi_steps[2], # total multi steps
-               self.multi_steps[EventType.ESCAPE],
-               self.multi_steps[EventType.REACTION],
+               self.multi_steps[EventType.MULTI_ESCAPE],
+               self.multi_steps[EventType.MULTI_REACTION],
                self.reactionEvents,
                self.rejectedMoves
                )

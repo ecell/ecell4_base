@@ -1657,13 +1657,13 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
 
     if( kf == 0 )
     {
-        return ESCAPE;
+        return IV_ESCAPE;
     }
     
     // First, check if r0 is close only either to a or sigma relative
-    // to Dt.  In such cases, the event type is always ESCAPE or REACTION,
-    // respectively.   This avoids numerical instability in calculating
-    // leavea() and/or leaves().
+    // to Dt.  In such cases, the event type is always IV_ESCAPE or 
+    // PAIR_REACTION, respectively. This avoids numerical instability in 
+    // calculating leavea() and/or leaves().
 
     // Here, use a rather large threshold for safety.
     const unsigned int H( 6 ); 
@@ -1676,14 +1676,14 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
     {
         if( s_dist < max_dist )
         {
-            return REACTION;
+            return PAIR_REACTION;
         }
     }
     else // a_dist < max_dist
     {
         if( s_dist > max_dist )
         {
-            return ESCAPE;
+            return IV_ESCAPE;
         }
     }
 
@@ -1709,11 +1709,11 @@ FirstPassagePairGreensFunction::drawEventType( const Real rnd,
 
     if( rnd <= value )  
     {
-        return REACTION;   // leaves
+        return PAIR_REACTION;   // leaves
     }
     else 
     {
-        return ESCAPE;     // leavea
+        return IV_ESCAPE;     // leavea
     }
 }
 
@@ -1746,7 +1746,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
 
     if( r0 == a || a == sigma )
     {
-        return boost::make_tuple( 0.0, ESCAPE );
+        return boost::make_tuple( 0.0, IV_ESCAPE );
     }
 
     RealVector pleaveFactorTable;
@@ -1785,7 +1785,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
         return boost::make_tuple( findRoot( Fa, solver, low, high, 0,
                                             this->TOLERANCE,
                                             "drawTime2: escape" ),
-                                  ESCAPE );
+                                  IV_ESCAPE );
     }
     */
 
@@ -1851,7 +1851,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                                                                0.,
                                                                this->TOLERANCE,
                                                                "drawTime2: s" ),
-                                                     REACTION ) );
+                                                     PAIR_REACTION ) );
                         gsl_root_fsolver_free( solver );
                         return ret;
                     }
@@ -1863,7 +1863,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                                                               0.,
                                                                this->TOLERANCE,
                                                               "drawTime2: a" ),
-                                                    ESCAPE ) );
+                                                    IV_ESCAPE ) );
                         gsl_root_fsolver_free( solver );
                         return ret;
                     }
@@ -1888,7 +1888,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                               << dump() << std::endl;
 
                     gsl_root_fsolver_free( solver );
-                    return boost::make_tuple( minT, ESCAPE ); // FIXME
+                    return boost::make_tuple( minT, IV_ESCAPE ); // FIXME
                 }
 
                 this->updateAlphaTable0( low );
@@ -1909,7 +1909,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                                                           0.,
                                                           this->TOLERANCE,
                                                           "drawTime2: s" ),
-                                                ESCAPE ) );
+                                                IV_ESCAPE ) );
                     gsl_root_fsolver_free( solver );
                     return ret;
                 }
@@ -1936,7 +1936,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                     gsl_root_fsolver_free( solver );
                     return boost::make_tuple( minT, 
                                               value_s > value_a ?
-                                              REACTION : ESCAPE ); // FIXME
+                                              PAIR_REACTION : IV_ESCAPE ); // FIXME
                 }
 
                 this->updateAlphaTable0( low );
@@ -1965,7 +1965,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                                                               0.,
                                                                this->TOLERANCE,
                                                               "drawTime2: s" ),
-                                                    REACTION ) );
+                                                    PAIR_REACTION ) );
                         gsl_root_fsolver_free( solver );
                         return ret;
                     }
@@ -1977,7 +1977,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                                                               0.,
                                                                this->TOLERANCE,
                                                               "drawTime2: a" ),
-                                                    ESCAPE ) );
+                                                    IV_ESCAPE ) );
                         gsl_root_fsolver_free( solver );
                         return ret;
                     }
@@ -2010,7 +2010,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                                                           0.,
                                                           this->TOLERANCE,
                                                           "drawTime2: s" ),
-                                                REACTION ) );
+                                                PAIR_REACTION ) );
                     gsl_root_fsolver_free( solver );
                     return ret;
                 }
@@ -2025,7 +2025,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                               << dump() << std::endl;
 
                     gsl_root_fsolver_free( solver );
-                    return boost::make_tuple( minT, REACTION );
+                    return boost::make_tuple( minT, PAIR_REACTION );
                 }
             }
         }
@@ -2041,11 +2041,11 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
     boost::tuple<Real,EventType> ret;
     if( t_escape <= t_reaction )
     {
-        ret = boost::make_tuple( t_escape, ESCAPE );
+        ret = boost::make_tuple( t_escape, IV_ESCAPE );
     }
     else
     {
-        ret = boost::make_tuple( t_reaction, REACTION );
+        ret = boost::make_tuple( t_reaction, PAIR_REACTION );
     }
 
     gsl_root_fsolver_free( solver );
@@ -2083,7 +2083,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
 
     if( r0 == a || a == sigma )
     {
-        return boost::make_tuple( 0.0, ESCAPE );
+        return boost::make_tuple( 0.0, IV_ESCAPE );
     }
 
     //const Real minT( std::min( sigma * sigma / D * this->MIN_T_FACTOR,
@@ -2128,7 +2128,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
                                 pleaveaTable );
 
         gsl_root_fsolver_free( solver );
-        return boost::make_tuple( t_escape, ESCAPE );
+        return boost::make_tuple( t_escape, IV_ESCAPE );
     }
 
     const Real dist_s( r0 - sigma );
@@ -2155,7 +2155,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
             if( value_s <= 0.0 )
             {
                 gsl_root_fsolver_free( solver );
-                return boost::make_tuple( t_escape, ESCAPE );
+                return boost::make_tuple( t_escape, IV_ESCAPE );
             }
         }
 
@@ -2183,7 +2183,7 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
             if( value_a <= 0.0 )
             {
                 gsl_root_fsolver_free( solver );
-                return boost::make_tuple( t_reaction, REACTION );
+                return boost::make_tuple( t_reaction, PAIR_REACTION );
             }
         }
 
@@ -2197,11 +2197,11 @@ FirstPassagePairGreensFunction::drawTime2( const Real rnd1,
     boost::tuple<Real,EventType> ret;
     if( t_escape <= t_reaction )
     {
-        ret = boost::make_tuple( t_escape, ESCAPE );
+        ret = boost::make_tuple( t_escape, IV_ESCAPE );
     }
     else
     {
-        ret = boost::make_tuple( t_reaction, REACTION );
+        ret = boost::make_tuple( t_reaction, PAIR_REACTION );
     }
 
     gsl_root_fsolver_free( solver );

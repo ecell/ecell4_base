@@ -22,3 +22,8 @@ def shuffle(seq):
         j = rng.uniform_int(0, i)
         seq[i], seq[j] = seq[j], seq[i]
 
+def choice(a, b):
+    '''Return a or b with 50% probability each.
+
+    '''
+    return uniform() > 0.5 and a or b

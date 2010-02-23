@@ -79,10 +79,10 @@ class Single( object ):
         after calling this method.
         '''
         self.dt = 0.0
-        self.eventType = EventType.ESCAPE
+        self.eventType = EventType.SINGLE_ESCAPE
 
     def isReset( self ):
-        return self.dt == 0.0 and self.eventType == EventType.ESCAPE
+        return self.dt == 0.0 and self.eventType == EventType.SINGLE_ESCAPE
 
     def drawReactionTime( self ):
         """Return a (reactionTime, eventType, activeCoordinate=None)-tuple.
@@ -94,15 +94,16 @@ class Single( object ):
             dt = 0.0
         else:
             dt = (1.0 / self.k_tot) * math.log(1.0 / myrandom.uniform())
-        return dt, EventType.REACTION, None
+        return dt, EventType.SINGLE_REACTION, None
 
     def drawEscapeOrInteractionTime(self):
         """Return an (escapeTime, eventType, activeCoordinate)-tuple.
         Handles also all interaction events.
 
         """
+        eventType = EventType.NOT_A_SINGLE_REACTION
         if self.getD() == 0:
-            return INF, EventType.ESCAPE, None
+            return INF, eventType, None
         else:
             # Note: we are not calling coordinate.drawEventType() just yet, 
             # but postpone it to the very last minute (when this event is 
@@ -116,7 +117,7 @@ class Single( object ):
             # determineNextEvent), and even though activeCoordinate is set, it 
             # won't be used at all, since reaction events are taken care of 
             # before escape events in fireSingle.
-            return min((c.drawTime(), EventType.ESCAPE, c)
+            return min((c.drawTime(), eventType, c)
                        for c in self.coordinates)
 
     def determineNextEvent(self):

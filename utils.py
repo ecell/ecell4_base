@@ -16,6 +16,8 @@ INF = numpy.inf
 ZEROPOS = numpy.array( [ 0., 0., 0. ] )
 NOWHERE = numpy.array( ( INF, INF, INF ) )
 
+SAFETY = 1.0 + 1e-5
+
 # Tolerance used for float comparison functions. Oversimplifying: two floats a 
 # and b are considered to be equal if abs( a - b ) < TOLERANCE * abs( a ).
 TOLERANCE = 1e-8

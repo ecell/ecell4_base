@@ -4,12 +4,11 @@ import myrandom
 
 from shape import *
 from single import *
-#from pair import *
+from pair import *
 from utils import *
 
 PlanarSurfaceSingle=None
 CylindricalSurfaceSingle=None
-SphericalPair=None
 PlanarSurfacePair=None
 CylindricalSurfacePair=None
 PlanarSurfaceInteraction=None

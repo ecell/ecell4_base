@@ -187,7 +187,8 @@ the implementation.
 \paragraph{Properties}
 
 \begin{itemize}
-\item[eventType] the time of the next event, either REACTION or ESCAPE.
+\item[eventType] the time of the next event, either SINGLE_REACTION or 
+  SINGLE_ESCAPE.
 \item[dt] the time to the next event from the lastTime.
 \item[lastTime] the last time this Single was updated.
 \item[mobilityRadius] $shellSize - particle.radius$.  This
@@ -224,7 +225,7 @@ the implementation.
 \item[propagate( r, t )] This method displaces the particle to a
   random point on the spherical surface of distance r from the
   original position, set lastTime to t, then reset the shell size to
-  the radius of the particle, dt to zero, and eventType to ESCAPE.
+  the radius of the particle, dt to zero, and eventType to SINGLE_ESCAPE.
 
 \end{itemize}
 
@@ -248,8 +249,8 @@ the implementation.
 
 \item[single1, single2] the pair of singles this Pair is responsible for.
 
-\item[eventType] the type of the next event, one of REACTION,
-  ESCAPE1, or ESCAPE2.
+\item[eventType] the type of the next event, one of SINGLE_REACTION,
+  PAIR_REACTION, IV_ESCAPE, or COM_ESCAPE.
 
 \item[lastTime] the last time this Pair was updated.
 
