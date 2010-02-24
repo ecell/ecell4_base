@@ -200,9 +200,9 @@ class SphericalPair(Pair):
 
         # Green's function for interparticle vector inside absorbing sphere.  
         # This exact solution is used for drawing times.
-        self.pgf = FirstPassagePairGreensFunction(self.D_tot, self.rt.k, 
-                                                  self.sigma)
-        ivCoordinates = RThetaCoordinates(self.pgf, self.sigma,
+        pgf = FirstPassagePairGreensFunction(self.D_tot, self.rt.k, 
+                                             self.sigma)
+        ivCoordinates = RThetaCoordinates(pgf, self.sigma,
                                           r0, self.a_r)
 
         self.coordinates = [comCoordinate, ivCoordinates]
@@ -224,7 +224,8 @@ class SphericalPair(Pair):
                 # use FirstPassagePairGreensFunction
                 if __debug__:
                     log.debug( 'GF: normal' )
-                pgf = self.pgf
+                pgf = FirstPassagePairGreensFunction(self.D_tot, self.rt.k, 
+                                                     self.sigma)
                 pgf.seta(self.a_r)
                 return pgf
             else:
