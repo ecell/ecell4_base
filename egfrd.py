@@ -684,15 +684,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             try:
                 self.removeDomain( single )
                 self.fireSingleReaction( single )
-                return
             except NoSpace:
-                if __debug__:
-                    log.info( 'single reaction; placing product failed.' )
-                self.shellMatrix.update( single.shell )
-                self.rejectedMoves += 1
-                single.reset()
-                self.addSingleEvent(single)
-                return
+                self.reject_single_reaction(single)
+
+            return
 
         # Propagate, if not reaction.
 
@@ -758,6 +753,15 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.addSingleEvent(single)
         return
+
+    def reject_single_reaction(self, single):
+        if __debug__:
+            log.info( 'single reaction; placing product failed.' )
+        self.domains[single.domain_id] = single
+        self.shellMatrix.update(single.shell)
+        self.rejectedMoves += 1
+        single.reset()
+        self.addSingleEvent(single)
 
     def restoreSingleShells( self, singles ):
         for single in singles:
@@ -861,10 +865,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 self.removeDomain( reactingsingle )
                 self.fireSingleReaction( reactingsingle )
             except NoSpace:
-                self.shellMatrix.update( reactingsingle.shell )
-                self.rejectedMoves += 1
-                reactingsingle.dt = 0
-                self.addSingleEvent( reactingsingle )
+                self.reject_single_reaction(reactingsingle)
 
             return
         
