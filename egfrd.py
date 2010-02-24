@@ -928,7 +928,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             pos2t = cyclic_transpose(pos2, pos1, self.worldSize)
             oldInterParticle = pos2t - pos1
-            assert feq(pair.pairDistance, length(oldInterParticle))
+            assert feq(pair.r0, length(oldInterParticle))
 
             oldCoM = pair.CoM
 
@@ -1014,14 +1014,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         assert (pos1 - single1.shell[1].position).sum() == 0
         pos2 = single2.shell[1].position
-        pairDistance = self.distance(pos1, pos2)
-        distanceFromSigma = pairDistance - sigma
+        r0 = self.distance(pos1, pos2)
+        distanceFromSigma = r0 - sigma
         assert distanceFromSigma >= 0, \
             ('distanceFromSigma (pair gap) between %s and %s = %g < 0' %
              (single1, single2, distanceFromSigma))
 
-        shellSize1 = pairDistance * D1 / D12 + radius1
-        shellSize2 = pairDistance * D2 / D12 + radius2
+        shellSize1 = r0 * D1 / D12 + radius1
+        shellSize2 = r0 * D2 / D12 + radius2
         shellSizeMargin1 = radius1 * 2 #* self.SINGLE_SHELL_FACTOR
         shellSizeMargin2 = radius2 * 2 #* self.SINGLE_SHELL_FACTOR
         shellSizeWithMargin1 = shellSize1 + shellSizeMargin1
@@ -1154,8 +1154,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert shellSize <= maxShellSize
 
         if __debug__:
-            log.info( '%s, dt=%g, pairDistance=%g, shell=%g,' %
-                  ( pair, pair.dt, pairDistance, shellSize ) + 
+            log.info( '%s, dt=%g, r0=%g, shell=%g,' %
+                  ( pair, pair.dt, r0, shellSize ) + 
                   'closest=%s, closestShellDistance=%g' %
                   ( closest, closestShellDistance ) )
 
