@@ -76,7 +76,8 @@ class RCoordinate(Coordinate):
     def drawTime(self):
         try:
             rnd = myrandom.uniform()
-            log.debug('        *Radial drawTime. ') #+ str(self.gf))
+            if __debug__:
+                log.debug('        *Radial drawTime. ') #+ str(self.gf))
             dt = self.gf.drawTime(rnd)
         except Exception, e:
             raise Exception('gf.drawTime() failed, %s, rnd = %g, a = %g, %s' %
@@ -95,7 +96,8 @@ class RCoordinate(Coordinate):
 
         try:
             rnd = myrandom.uniform()
-            log.debug('        *Radial drawR. ') #+ str(self.gf))
+            if __debug__:
+                log.debug('        *Radial drawR. ') #+ str(self.gf))
             r = self.gf.drawR(rnd, dt)
             while r > self.a: # redraw; shouldn't happen often
                 if __debug__:
@@ -121,7 +123,8 @@ class RThetaCoordinates(Coordinate):
     def drawTime(self):
         try:
             rnd = myrandom.uniform()
-            log.debug('        *Radial2D drawTime. ') #+ str(self.gf))
+            if __debug__:
+                log.debug('        *Radial2D drawTime. ') #+ str(self.gf))
             dt = self.gf.drawTime(rnd, self.r0)
         except Exception, e:
             raise Exception('gf.drawTime() failed, %s, rnd = %g, sigma = %g, '
@@ -133,7 +136,8 @@ class RThetaCoordinates(Coordinate):
     def drawEventType(self, dt):
         try:
             rnd = myrandom.uniform()
-            log.debug('        *Radial2D drawEventType. ') #+ str(self.gf))
+            if __debug__:
+                log.debug('        *Radial2D drawEventType. ') #+ str(self.gf))
             eventType = self.gf.drawEventType(rnd, self.r0, dt)
         except Exception, e:
             raise Exception('gf.drawEventType() failed, %s, sigma = %g,'
@@ -158,7 +162,8 @@ class RThetaCoordinates(Coordinate):
         """
         try:
             rnd = myrandom.uniform()
-            log.debug('        *Radial2D drawR_pair. ') #+ str(gf))
+            if __debug__:
+                log.debug('        *Radial2D drawR_pair. ') #+ str(gf))
             r = gf.drawR(rnd, self.r0, dt)
             # redraw; shouldn't happen often
             while r >= self.a or r <= self.sigma: 
@@ -180,7 +185,8 @@ class RThetaCoordinates(Coordinate):
         """
         try:
             rnd = myrandom.uniform()
-            log.debug('        *Radial2D drawTheta_pair. ')#+ str(gf))
+            if __debug__:
+                log.debug('        *Radial2D drawTheta_pair. ')#+ str(gf))
             theta = gf.drawTheta(rnd, r, self.r0, dt)
         except Exception, e:
             raise Exception('gf.drawTheta() failed, %s, rnd = %g, r = %g, '
