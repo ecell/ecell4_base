@@ -17,6 +17,15 @@ RCoordinate                 |---------------------------------------|-------|
                                                                            of
                                                                           shell
 
+
+                    radii of particles                               radius of
+                  (or particle+surface)                              particle
+                            |                                           |
+                            V                                           v
+RThetaCoordinates   |--------------|-------------|------------------|-------|
+(radial part)       0            sigma           r0                 a      end
+                                                                           of
+                                                                          shell
 '''
 
 
@@ -71,18 +80,115 @@ class RCoordinate(Coordinate):
             dt = self.gf.drawTime(rnd)
         except Exception, e:
             raise Exception('gf.drawTime() failed, %s, rnd = %g, a = %g, %s' %
-                            (str(e), rnd, self.a, gf.dump()))
+                            (str(e), rnd, self.a, self.gf.dump()))
         return dt
 
-    def drawDisplacement(self, dt):
+    def drawEventType(self, dt):
+        # Either SINGLE_ESCAPE or COM_ESCAPE, doesn't matter.
+        return EventType.COM_ESCAPE
+
+    def drawDisplacement(self, dt, eventType):
+        if(eventType == EventType.COM_ESCAPE or
+           eventType == EventType.SINGLE_ESCAPE):
+            # Escape through this coordinate. We already know the new r.
+            return self.a
+
         try:
             rnd = myrandom.uniform()
             log.debug('        *Radial drawR. ') #+ str(self.gf))
             r = self.gf.drawR(rnd, dt)
+            while r > self.a: # redraw; shouldn't happen often
+                if __debug__:
+                    log.debug('        *Radial drawR: redraw')
+                rnd = myrandom.uniform()
+                r = self.gf.drawR(rnd, dt)
         except Exception, e:
             raise Exception('gf.drawR failed, %s, rnd = %g, dt = %g, a = %g, '
-                            '%s' % (str(e), rnd, dt, self.a, gf.dump()))
+                            '%s' % (str(e), rnd, dt, self.a, self.gf.dump()))
 
         return r
 
+
+class RThetaCoordinates(Coordinate):
+    """Used for PairGreensFunctions (3D as well as 2D).
+
+    """
+    def __init__(self, gf, sigma, r0, a):
+        Coordinate.__init__(self, gf, a)    # Greens function holds D, sigma, k.
+        self.sigma = sigma                  # Inner radius.
+        self.r0 = r0                        # Starting position.
+
+    def drawTime(self):
+        try:
+            rnd = myrandom.uniform()
+            log.debug('        *Radial2D drawTime. ') #+ str(self.gf))
+            dt = self.gf.drawTime(rnd, self.r0)
+        except Exception, e:
+            raise Exception('gf.drawTime() failed, %s, rnd = %g, sigma = %g, '
+                            'r0 = %g, a = %g, %s' %
+                            (str(e), rnd, self.sigma, self.r0, self.a,
+                             self.gf.dump()))
+        return dt
+
+    def drawEventType(self, dt):
+        try:
+            rnd = myrandom.uniform()
+            log.debug('        *Radial2D drawEventType. ') #+ str(self.gf))
+            eventType = self.gf.drawEventType(rnd, self.r0, dt)
+        except Exception, e:
+            raise Exception('gf.drawEventType() failed, %s, sigma = %g,'
+                            'r0 = %g, a = %g, dt = %g, %s' %
+                            (str(e), self.sigma, self.r0, self.a, dt,
+                             self.gf.dump()))
+        return eventType     # (PAIR_REACTION or IV_ESCAPE)
+
+    def drawDisplacement(self, gf, dt, eventType):
+        if eventType == EventType.PAIR_REACTION:
+            r = self.sigma
+        elif eventType == EventType.IV_ESCAPE:
+            r = self.a
+        else:
+            r = self.drawR_pair(gf, dt)
+        theta = self.drawTheta_pair(gf, r, dt)
+        return r, theta
+
+    def drawR_pair(self, gf, dt):
+        """Draw r for the pair inter-particle vector.
+
+        """
+        try:
+            rnd = myrandom.uniform()
+            log.debug('        *Radial2D drawR_pair. ') #+ str(gf))
+            r = gf.drawR(rnd, self.r0, dt)
+            # redraw; shouldn't happen often
+            while r >= self.a or r <= self.sigma: 
+                if __debug__:
+                    log.info('    drawR_pair: redraw')
+                #self.sim.rejectedMoves += 1  #FIXME:
+                rnd = myrandom.uniform()
+                r = gf.drawR(rnd, self.r0, dt)
+        except Exception, e:
+            raise Exception('gf.drawR_pair() failed, %s, rnd = %g, sigma = %g, '
+                            'r0 = %g, a = %g, dt = %g, %s' %
+                            (str(e), rnd, self.sigma, self.r0, self.a, dt,
+                             gf.dump()))
+        return r
+
+    def drawTheta_pair(self, gf, r, dt):
+        """Draw theta for the pair inter-particle vector.
+
+        """
+        try:
+            rnd = myrandom.uniform()
+            log.debug('        *Radial2D drawTheta_pair. ')#+ str(gf))
+            theta = gf.drawTheta(rnd, r, self.r0, dt)
+        except Exception, e:
+            raise Exception('gf.drawTheta() failed, %s, rnd = %g, r = %g, '
+                            'sigma = %g, r0 = %g, a = %g, dt = %g' %
+                            (str(e), rnd, r, self.sigma, self.r0, 
+                             self.a, dt))#, gf.dump()))
+
+        # Heads up. For cylinders theta should be between [-pi, pi]. For 
+        # spheres it doesn't matter.
+        return myrandom.choice(-1, 1) * theta
 

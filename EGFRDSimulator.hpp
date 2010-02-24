@@ -7,6 +7,7 @@
 #include "CylindricalShell.hpp"
 #include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
+#include "GSLRandomNumberGenerator.hpp"
 
 template<typename Tworld_, typename Tmodel_>
 struct EGFRDSimulatorTraitsBase
@@ -16,7 +17,11 @@ struct EGFRDSimulatorTraitsBase
     typedef ShellID shell_id_type;
     typedef DomainID domain_id_type;
     typedef Real rate_type;
+    typedef Real time_type;
     typedef int reaction_rule_id_type;
+    typedef Sphere<typename world_type::length_type> sphere_type;
+    typedef Cylinder<typename world_type::length_type> cylinder_type;
+    typedef Box<typename world_type::length_type> box_type;
     typedef SphericalShell<typename world_type::length_type,
                            domain_id_type> spherical_shell_type;
     typedef CylindricalShell<typename world_type::length_type,
@@ -27,6 +32,7 @@ struct EGFRDSimulatorTraitsBase
             rate_type> reaction_rule_type;
     typedef NetworkRulesWrapper<typename model_type::network_rules_type,
                                 reaction_rule_type> network_rules_type;
+    typedef GSLRandomNumberGenerator rng_type;
 };
 
 #endif /* EGFRDSIMULATOR_HPP */

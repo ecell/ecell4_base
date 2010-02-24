@@ -14,7 +14,7 @@ class ParticleContainer
 public:
     typedef Ttraits_ traits_type;
     typedef typename traits_type::particle_type particle_type;
-    typedef typename traits_type::sphere_type sphere_type;
+    typedef typename particle_type::shape_type particle_shape_type;
     typedef typename traits_type::species_type species_type;
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::position_type position_type;
@@ -42,9 +42,9 @@ public:
 
     virtual particle_id_pair_list* check_overlap(particle_id_pair const& s) const = 0;
 
-    virtual particle_id_pair_list* check_overlap(sphere_type const& s) const = 0;
+    virtual particle_id_pair_list* check_overlap(particle_shape_type const& s) const = 0;
 
-    virtual particle_id_pair_list* check_overlap(sphere_type const& s, particle_id_type const& ignore) const = 0;
+    virtual particle_id_pair_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const = 0;
 
     virtual particle_id_pair_generator* get_particles() const = 0;
 

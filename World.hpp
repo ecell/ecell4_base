@@ -36,11 +36,8 @@ struct WorldTraitsBase
     typedef SpeciesTypeID species_id_type;
     typedef Particle<length_type, D_type, species_id_type> particle_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type> species_type;
-    typedef typename particle_type::shape_type sphere_type;
-    typedef Cylinder<length_type> cylinder_type;
-    typedef Box<length_type> box_type;
     typedef Vector3<length_type> point_type;
-    typedef typename sphere_type::position_type position_type;
+    typedef typename particle_type::shape_type::position_type position_type;
 
     template<typename Tval_>
     static Tval_ apply_boundary(Tval_ const& v, length_type const& world_size)
@@ -129,7 +126,7 @@ public:
     typedef typename traits_type::particle_id_type particle_id_type;
     typedef typename traits_type::particle_id_generator particle_id_generator;
     typedef typename traits_type::species_id_type species_id_type;
-    typedef typename traits_type::sphere_type sphere_type;
+    typedef typename traits_type::particle_type::shape_type particle_shape_type;
     typedef typename traits_type::size_type size_type;
     typedef MatrixSpace<particle_type, particle_id_type> particle_matrix_type;
     typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
@@ -306,7 +303,7 @@ public:
             position_type const& pos)
     {
         particle_id_pair retval(pidgen_(),
-            particle_type(sid, sphere_type(pos, get_species(sid).radius())));
+            particle_type(sid, particle_shape_type(pos, get_species(sid).radius())));
         pmat_.update(retval);
         return retval;
     }
@@ -326,14 +323,14 @@ public:
         return oc.result();
     }
 
-    virtual particle_id_pair_list* check_overlap(sphere_type const& s, particle_id_type const& ignore) const
+    virtual particle_id_pair_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
     {
         return check_overlap(s, array_gen(ignore));
     }
 
-    virtual particle_id_pair_list* check_overlap(sphere_type const& s) const
+    virtual particle_id_pair_list* check_overlap(particle_shape_type const& s) const
     {
-        return check_overlap<sphere_type>(s);
+        return check_overlap<particle_shape_type>(s);
     }
 
     template<typename Tsph_, typename Tset_>

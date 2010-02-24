@@ -2,14 +2,12 @@ import math
 import numpy
 import myrandom
 
-from shape import *
 from single import *
-#from pair import *
+from pair import *
 from utils import *
 
 PlanarSurfaceSingle=None
 CylindricalSurfaceSingle=None
-SphericalPair=None
 PlanarSurfacePair=None
 CylindricalSurfacePair=None
 PlanarSurfaceInteraction=None
@@ -22,6 +20,7 @@ class Surface(object):
     """
     def __init__(self, name):
         self.name = name
+        self.shape = None
 
     def distanceTo(self, pos):
         """Compute the absolute distance between pos and a closest point on 
@@ -33,13 +32,13 @@ class Surface(object):
         position is inside.
 
         """
-        return abs(self.signedDistanceTo(pos))
-   
+        return abs(self.shape.distance(pos))
+  
     def __str__(self):
         return self.name
 
 
-class PlanarSurface(Surface, Box):
+class PlanarSurface(Surface):
     """For example a membrane.
 
     Movement in 2D.
@@ -56,7 +55,7 @@ class PlanarSurface(Surface, Box):
         assert numpy.dot(vectorX, vectorY) == 0.0
         # Orientation of surface is decided here.
         vectorZ = numpy.cross(vectorX, vectorY)
-        Box.__init__(self, origin, vectorX, vectorY, vectorZ, Lx, Ly, Lz) 
+        self.shape = Box(origin, vectorX, vectorY, vectorZ, Lx, Ly, Lz) 
         self.DefaultSingle = PlanarSurfaceSingle
         self.DefaultPair = PlanarSurfacePair
         self.DefaultInteractionSingle = PlanarSurfaceInteraction
@@ -65,18 +64,18 @@ class PlanarSurface(Surface, Box):
         r = math.sqrt(2.0 * D * dt)
         # Draw 2 numbers from normal distribution.
         x, y = myrandom.normal(0.0, r, 2)
-        return x * self.unitX + y * self.unitY
+        return x * self.shape.unit_x + y * self.shape.unit_y
 
     def randomVector(self, r):
         x, y = randomVector2D(r)
-        return x * self.unitX + y * self.unitY
+        return x * self.shape.unit_x + y * self.shape.unit_y
 
     def randomPosition(self):
         """Only uniform if vectorX and vectorY have same length.
 
         """
-        return self.origin + myrandom.uniform(-1, 1) * self.vectorX + \
-                             myrandom.uniform(-1, 1) * self.vectorY
+        return self.origin + myrandom.uniform(-1, 1) * self.shape.unit_x * self.shape.extent[0] + \
+                             myrandom.uniform(-1, 1) * self.shape.unit_y * self.shape.extent[1]
 
     def minimalDistanceFromSurface(self, radius):
         """A particle that is not on this surface has to be at least this far 
@@ -84,14 +83,14 @@ class PlanarSurface(Surface, Box):
         0 plane of the surface).
 
         """
-        return (self.Lz + radius) * MINIMAL_SEPERATION_FACTOR
+        return (self.shape.extent[2] + radius) * MINIMAL_SEPERATION_FACTOR
 
     def randomUnbindingSite(self, pos, radius):
         return pos + myrandom.choice([-1, 1]) * \
-                     self.minimalDistanceFromSurface(radius)  * self.unitZ
+                     self.minimalDistanceFromSurface(radius)  * self.shape.unit_z
 
 
-class CylindricalSurface(Surface, Cylinder):
+class CylindricalSurface(Surface):
     """For example the DNA.
 
     Movement in 1D.
@@ -104,7 +103,7 @@ class CylindricalSurface(Surface, Cylinder):
 
         """
         Surface.__init__(self, name)
-        Cylinder.__init__(self, origin, radius, orientation, size)
+        self.shape = Cylinder(self, origin, radius, orientation, size)
         self.DefaultSingle = CylindricalSurfaceSingle
         self.DefaultPair = CylindricalSurfacePair
         self.DefaultInteractionSingle = CylindricalSurfaceInteraction
@@ -113,13 +112,13 @@ class CylindricalSurface(Surface, Cylinder):
         r = math.sqrt(2.0 * D * dt)
         # Draw 1 number from normal distribution.
         z = myrandom.normal(0.0, r, 1)
-        return z * self.unitZ
+        return z * self.shape.unit_z
 
     def randomVector(self, r):
-        return myrandom.choice([-1, 1]) * r * self.unitZ
+        return myrandom.choice([-1, 1]) * r * self.shape.unit_z
 
     def randomPosition(self):
-        return self.origin + myrandom.uniform(-1, 1) * self.vectorZ
+        return self.origin + myrandom.uniform(-1, 1) * self.shape.unit_z * self.shape.size
 
     def minimalDistanceFromSurface(self, radius):
         """A particle that is not on this surface has to be at least this far 
@@ -127,14 +126,14 @@ class CylindricalSurface(Surface, Cylinder):
         the central axis of the surface.
 
         """
-        return (self.radius + radius) * MINIMAL_SEPERATION_FACTOR
+        return (self.shape.radius + radius) * MINIMAL_SEPERATION_FACTOR
 
     def randomUnbindingSite(self, pos, radius):
         x, y = randomVector2D(self.minimalDistanceFromSurface(radius))
         return pos + x * self.unitX + y * self.unitY
 
 
-class CuboidalRegion(Surface, Box):
+class CuboidalRegion(Surface):
     """
     A region that is (and can be) used for throwing in particles.
 
@@ -160,7 +159,7 @@ class CuboidalRegion(Surface, Box):
         Lx = size[0]
         Ly = size[1]
         Lz = size[2]
-        Box.__init__(self, corner + self.size / 2., [Lx, 0, 0], [0, Ly, 0],
+        self.shape = Box(corner + self.size / 2., [Lx, 0, 0], [0, Ly, 0],
                      [0, 0, Lz], Lx / 2., Ly / 2., Lz / 2.) 
         self.DefaultSingle = SphericalSingle
         self.DefaultPair = SphericalPair
@@ -194,26 +193,22 @@ class CuboidalRegion(Surface, Box):
         See also signedDistanceTo().
 
         """
-        corner = self.origin - self.size / 2.
+        corner = self.shape.position - self.size / 2.
         return numpy.array([myrandom.uniform(corner[0], self.size[0]),
                             myrandom.uniform(corner[1], self.size[1]),
                             myrandom.uniform(corner[2], self.size[2])])
 
 
-class SphericalSurface( Surface ):
+class SphericalSurface(Surface):
     '''
     origin -- = [ x0, y0, z0 ] is the origin and
     radius -- the radius of the sphere.
 
     ( x - x0 )^2 + ( y - y0 )^2 + ( z - z0 )^2 = r^2
     '''
-    def __init__( self, origin, radius ):
-
-        self.setParams( origin, radius )
-
-    def signedDistance( self, pos ):
-        
-        return math.sqrt( ( ( pos - self.origin ) ** 2 ).sum() ) - self.radius
+    def __init__(self, name, origin, radius):
+        Surface.__init__(self, name)
+        self.shape = Sphere(origin, radius)
 
     def randomPosition( self ):
         pos = randomUnitVectorS()

@@ -2,22 +2,20 @@
 #define PEER_RANDOMNUMBERGENERATOR_HPP
 
 #include <boost/python.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include "utils/reference_or_instance.hpp"
+#include "peer/compat.h"
 
 namespace peer {
 
-template<typename Trng_>
+template<typename Timpl_>
 struct RandomNumberGenerator
 {
-    PyObject* normal(Real loc, Real scale, boost::python::object size)
+    typedef Timpl_ impl_type;
+
+    static PyObject* normal(impl_type& impl, Real loc, Real scale, boost::python::object size)
     {
-        boost::normal_distribution<Real> dist(loc, scale);
         if (size.ptr() == Py_None) {
-            return boost::python::incref(boost::python::object(dist(*this)).ptr());
+            return boost::python::incref(boost::python::object(
+                impl.normal(loc, scale)).ptr());
         } else {
             ssize_t len = 0;
             std::size_t num_samples = 1;
@@ -63,54 +61,24 @@ struct RandomNumberGenerator
             Real* data(reinterpret_cast<Real*>(PyArray_DATA(retval)));
             for (std::size_t i = 0; i < num_samples; ++i)
             {
-                data[i] = dist(*this);
+                data[i] = impl.normal(loc, scale);
             }
             return retval;
         }
     }
 
-    Real uniform(Real min, Real max)
-    {
-        return boost::uniform_real<Real>(min, max)(static_cast<Trng_&>(rng_));
-    }
-
-    int uniform_int(int min, int max)
-    {
-        return boost::uniform_int<int>(min, max)(static_cast<Trng_&>(rng_));
-    }
-
-    Real operator()()
-    {
-        return uniform(0.0, 1.0);
-    }
-
-    void seed(typename Trng_::result_type val)
-    {
-        static_cast<Trng_&>(rng_).seed(val);
-    }
-
-    static RandomNumberGenerator create()
-    {
-        return RandomNumberGenerator(Trng_());
-    }
-
-    RandomNumberGenerator(Trng_& rng): rng_(rng) {}
-
     static void __register_class(const char* name)
     {
         using namespace boost::python;
-        class_<RandomNumberGenerator>(name, no_init)
-            .def("create", &RandomNumberGenerator::create,
-                           return_value_policy<return_by_value>())
+        class_<impl_type>(name, no_init)
             .def("normal", &RandomNumberGenerator::normal)
-            .def("seed", &RandomNumberGenerator::seed)
-            .def("uniform", &RandomNumberGenerator::uniform)
-            .def("uniform_int", &RandomNumberGenerator::uniform_int)
-            .def("__call__", &RandomNumberGenerator::operator())
+            .def("normal", &impl_type::normal)
+            .def("seed", &impl_type::seed)
+            .def("uniform", &impl_type::uniform)
+            .def("uniform_int", &impl_type::uniform_int)
+            .def("__call__", &impl_type::operator())
             ;
     }
-
-    reference_or_instance<Trng_> rng_;
 };
 
 } // namespace peer

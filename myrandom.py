@@ -1,4 +1,4 @@
-from _gfrd import RandomNumberGenerator
+from _gfrd import RandomNumberGenerator, create_gsl_rng
 import numpy
 
 __all__ = (
@@ -8,7 +8,7 @@ __all__ = (
     'seed',
     )
 
-rng = RandomNumberGenerator.create()
+rng = create_gsl_rng()
 
 def uniform(min=0.0, max=1.0, size=None):
      global rng
@@ -22,3 +22,8 @@ def shuffle(seq):
         j = rng.uniform_int(0, i)
         seq[i], seq[j] = seq[j], seq[i]
 
+def choice(a, b):
+    '''Return a or b with 50% probability each.
+
+    '''
+    return uniform() > 0.5 and a or b

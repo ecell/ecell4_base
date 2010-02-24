@@ -5,7 +5,6 @@ from _gfrd import *
 
 from utils import *
 import myrandom
-from shape import *
 from coordinate import *
 
 import logging
@@ -79,10 +78,10 @@ class Single( object ):
         after calling this method.
         '''
         self.dt = 0.0
-        self.eventType = EventType.ESCAPE
+        self.eventType = EventType.SINGLE_ESCAPE
 
     def isReset( self ):
-        return self.dt == 0.0 and self.eventType == EventType.ESCAPE
+        return self.dt == 0.0 and self.eventType == EventType.SINGLE_ESCAPE
 
     def drawReactionTime( self ):
         """Return a (reactionTime, eventType, activeCoordinate=None)-tuple.
@@ -94,15 +93,16 @@ class Single( object ):
             dt = 0.0
         else:
             dt = (1.0 / self.k_tot) * math.log(1.0 / myrandom.uniform())
-        return dt, EventType.REACTION, None
+        return dt, EventType.SINGLE_REACTION, None
 
     def drawEscapeOrInteractionTime(self):
         """Return an (escapeTime, eventType, activeCoordinate)-tuple.
         Handles also all interaction events.
 
         """
+        eventType = EventType.NOT_A_SINGLE_REACTION
         if self.getD() == 0:
-            return INF, EventType.ESCAPE, None
+            return INF, eventType, None
         else:
             # Note: we are not calling coordinate.drawEventType() just yet, 
             # but postpone it to the very last minute (when this event is 
@@ -116,7 +116,7 @@ class Single( object ):
             # determineNextEvent), and even though activeCoordinate is set, it 
             # won't be used at all, since reaction events are taken care of 
             # before escape events in fireSingle.
-            return min((c.drawTime(), EventType.ESCAPE, c)
+            return min((c.drawTime(), eventType, c)
                        for c in self.coordinates)
 
     def determineNextEvent(self):
@@ -169,13 +169,8 @@ class NonInteractionSingle(Single):
         Single.__init__(self, domain_id, pid_particle_pair, shell_id_shell_pair,
                         reactiontypes)
 
-    def drawNewPosition(self, dt, isEscape):
-        if isEscape:
-            # Escape through this coordinate. We already know the new r.
-            r = self.coordinates[0].a
-        else:
-            # Maybe a single reaction, maybe a burst, who knows. Draw r.
-            r = self.coordinates[0].drawDisplacement(dt)
+    def drawNewPosition(self, dt, eventType):
+        r = self.coordinates[0].drawDisplacement(dt, eventType)
         displacement = self.displacement(r)
         assert abs(length(displacement) - abs(r)) <= 1e-15 * abs(r)
         return self.pid_particle_pair[1].position + displacement

@@ -32,6 +32,7 @@
 
 #include "utils/array_traits.hpp"
 #include "utils.hpp"
+#include "geometry.hpp"
 #include "MatrixSpace.hpp"
 #include "Vector3.hpp"
 #include "Sphere.hpp"
@@ -39,8 +40,8 @@
 #include "Point.hpp"
 #include "Model.hpp"
 #include "World.hpp"
+#include "GSLRandomNumberGenerator.hpp"
 #include "EGFRDSimulator.hpp"
-#include "geometry.hpp"
 
 #include "peer/utils.hpp"
 #include "peer/py_hash_support.hpp"
@@ -57,7 +58,7 @@
 #include "peer/ReactionRule.hpp"
 #include "peer/GeneratorIteratorWrapper.hpp"
 #include "peer/Exception.hpp"
-#include "peer/GSLRandomNumberGenerator.hpp"
+#include "peer/RandomNumberGenerator.hpp"
 #include "peer/STLIteratorWrapper.hpp"
 
 typedef CyclicWorldTraits<Real, Real> world_traits_type;
@@ -281,59 +282,35 @@ struct world_get_species
     }
 };
 
-template<typename Tworld_>
-struct SimulationStateTraits
-{
-    typedef Tworld_ world_type;
-    typedef NetworkRulesWrapper<
-            NetworkRules,
-            ReactionRuleInfo<
-                typename ReactionRule::identifier_type,
-                SpeciesTypeID,
-                Real> > network_rules_type;
-};
-
-
 template<typename Ttraits_>
 struct SimulationState
 {
-    Real get_dt() const
+    typedef typename Ttraits_::time_type time_type;
+    typedef typename Ttraits_::rng_type rng_type;
+    typedef typename Ttraits_::network_rules_type network_rules_type;
+
+    time_type get_dt() const
     {
         return boost::python::extract<Real>(self_.attr("dt"));
     }
 
-    typename boost::shared_ptr<gsl_rng> get_rng()
+    rng_type get_rng()
     {
         return rng_;
     }
 
-    typename Ttraits_::network_rules_type const& get_network_rules() const
+    network_rules_type const& get_network_rules() const
     {
         return boost::python::extract<typename Ttraits_::network_rules_type const&>(self_.attr("network_rules"));
     }
 
     SimulationState(PyObject* self)
-        : self_(boost::python::borrowed(self)),
-          rng_(boost::shared_ptr<gsl_rng>(gsl_rng_alloc(gsl_rng_mt19937),
-                                          gsl_rng_free))
-        {}
+        : self_(boost::python::borrowed(self)) {}
 
 private:
     boost::python::object self_;
-    boost::shared_ptr<gsl_rng> rng_;
+    rng_type rng_;
 };
-
-struct gsl_rng_to_python_converter
-{
-    typedef boost::shared_ptr<gsl_rng> native_type;
-
-    static PyObject* convert(native_type const& v)
-    {
-        return boost::python::incref(
-            boost::python::object(peer::GSLRandomNumberGenerator(v)).ptr());
-    }
-};
-
 
 namespace boost { namespace python {
 
@@ -387,7 +364,7 @@ static void register_id_generator(char const* class_name)
 }
 
 template<typename T_>
-inline T_ 
+static T_ 
 calculate_pair_CoM(T_ const& p1, 
                    T_ const& p2, 
                    typename element_type_of< T_ >::type const& D1,
@@ -408,7 +385,7 @@ calculate_pair_CoM(T_ const& p1,
 }
 
 template<typename T_>
-inline boost::python::object Sphere___getitem__(T_ const& obj, int index)
+static boost::python::object Sphere___getitem__(T_ const& obj, int index)
 {
     switch (index)
     {
@@ -423,6 +400,12 @@ inline boost::python::object Sphere___getitem__(T_ const& obj, int index)
     }
 
     return boost::python::object();
+}
+
+template<gsl_rng_type const*& Prng_>
+static GSLRandomNumberGenerator create_gsl_rng()
+{
+    return GSLRandomNumberGenerator(gsl_rng_alloc(Prng_));
 }
 
 BOOST_PYTHON_MODULE( _gfrd )
@@ -567,8 +550,16 @@ BOOST_PYTHON_MODULE( _gfrd )
         ;
 
     enum_<EventType>( "EventType" )
-        .value( "REACTION", REACTION )
-        .value( "ESCAPE", ESCAPE )
+        .value( "SINGLE_REACTION", SINGLE_REACTION )
+        .value( "NOT_A_SINGLE_REACTION", NOT_A_SINGLE_REACTION )
+        .value( "SINGLE_ESCAPE", SINGLE_ESCAPE )
+        .value( "COM_ESCAPE", COM_ESCAPE )
+        .value( "IV_ESCAPE", IV_ESCAPE )
+        .value( "PAIR_REACTION", PAIR_REACTION )
+        .value( "INTERACTION", INTERACTION )
+        .value( "BURST", BURST )
+        .value( "MULTI_ESCAPE", MULTI_ESCAPE )
+        .value( "MULTI_REACTION", MULTI_REACTION )
         ;
 
     class_<FirstPassagePairGreensFunction>( "FirstPassagePairGreensFunction",
@@ -768,8 +759,8 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("remove_particle", &transaction_type::remove_particle)
         .def("get_particle", &transaction_type::get_particle)
         .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::particle_id_pair const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
-        .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::sphere_type const&, transaction_type::particle_id_type const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
-        .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::sphere_type const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&, transaction_type::particle_id_type const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
         .def("create_transaction", &transaction_type::create_transaction,
                 return_value_policy<manage_new_object>())
         .def("rollback", &transaction_type::rollback)
@@ -791,9 +782,9 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("get_species",
             (CyclicWorld::species_type const&(CyclicWorld::*)(CyclicWorld::species_id_type const&) const)&CyclicWorld::get_species,
             return_internal_reference<>())
-        .def("distance", &CyclicWorld::distance<world_traits_type::sphere_type>)
-        .def("distance", &CyclicWorld::distance<world_traits_type::cylinder_type>)
-        .def("distance", &CyclicWorld::distance<world_traits_type::box_type>)
+        .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::sphere_type>)
+        .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::cylinder_type>)
+        .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::box_type>)
         .def("distance", &CyclicWorld::distance<CyclicWorld::position_type>)
         .def("apply_boundary", (CyclicWorld::position_type(CyclicWorld::*)(CyclicWorld::position_type const&) const)&CyclicWorld::apply_boundary)
         .def("apply_boundary", (CyclicWorld::length_type(CyclicWorld::*)(CyclicWorld::length_type const&) const)&CyclicWorld::apply_boundary)
@@ -802,8 +793,8 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("calculate_pair_CoM", &CyclicWorld::calculate_pair_CoM<CyclicWorld::position_type>)
         .def("new_particle", &CyclicWorld::new_particle)
         .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::particle_id_pair const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
-        .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::sphere_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
-        .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::sphere_type const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
         .def("update_particle", &CyclicWorld::update_particle)
         .def("remove_particle", &CyclicWorld::remove_particle)
         .def("get_particle", &CyclicWorld::get_particle)
@@ -856,181 +847,185 @@ BOOST_PYTHON_MODULE( _gfrd )
                 &species_type::D>::set)
         ;
 
-    class_<world_traits_type::sphere_type>("Sphere")
+    class_<egfrd_simulator_traits_type::sphere_type>("Sphere")
         .add_property("position",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::sphere_type,
-                    world_traits_type::sphere_type::position_type,
-                    &world_traits_type::sphere_type::position,
-                    &world_traits_type::sphere_type::position>::get,
+                    egfrd_simulator_traits_type::sphere_type,
+                    egfrd_simulator_traits_type::sphere_type::position_type,
+                    &egfrd_simulator_traits_type::sphere_type::position,
+                    &egfrd_simulator_traits_type::sphere_type::position>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::sphere_type,
-                    world_traits_type::sphere_type::position_type,
-                    &world_traits_type::sphere_type::position,
-                    &world_traits_type::sphere_type::position>::set))
+                    egfrd_simulator_traits_type::sphere_type,
+                    egfrd_simulator_traits_type::sphere_type::position_type,
+                    &egfrd_simulator_traits_type::sphere_type::position,
+                    &egfrd_simulator_traits_type::sphere_type::position>::set))
         .add_property("radius",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::sphere_type,
-                    world_traits_type::sphere_type::length_type,
-                    &world_traits_type::sphere_type::radius,
-                    &world_traits_type::sphere_type::radius>::get,
+                    egfrd_simulator_traits_type::sphere_type,
+                    egfrd_simulator_traits_type::sphere_type::length_type,
+                    &egfrd_simulator_traits_type::sphere_type::radius,
+                    &egfrd_simulator_traits_type::sphere_type::radius>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::sphere_type,
-                    world_traits_type::sphere_type::length_type,
-                    &world_traits_type::sphere_type::radius,
-                    &world_traits_type::sphere_type::radius>::set))
-        .def("__getitem__", &Sphere___getitem__<world_traits_type::sphere_type>);
+                    egfrd_simulator_traits_type::sphere_type,
+                    egfrd_simulator_traits_type::sphere_type::length_type,
+                    &egfrd_simulator_traits_type::sphere_type::radius,
+                    &egfrd_simulator_traits_type::sphere_type::radius>::set))
+        .def("__getitem__", &Sphere___getitem__<egfrd_simulator_traits_type::sphere_type>);
 
-    class_<world_traits_type::cylinder_type>("Cylinder")
+    class_<egfrd_simulator_traits_type::cylinder_type>("Cylinder")
         .add_property("position",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::cylinder_type,
-                    world_traits_type::cylinder_type::position_type,
-                    &world_traits_type::cylinder_type::position,
-                    &world_traits_type::cylinder_type::position>::get,
+                    egfrd_simulator_traits_type::cylinder_type,
+                    egfrd_simulator_traits_type::cylinder_type::position_type,
+                    &egfrd_simulator_traits_type::cylinder_type::position,
+                    &egfrd_simulator_traits_type::cylinder_type::position>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::cylinder_type,
-                    world_traits_type::cylinder_type::position_type,
-                    &world_traits_type::cylinder_type::position,
-                    &world_traits_type::cylinder_type::position>::set))
+                    egfrd_simulator_traits_type::cylinder_type,
+                    egfrd_simulator_traits_type::cylinder_type::position_type,
+                    &egfrd_simulator_traits_type::cylinder_type::position,
+                    &egfrd_simulator_traits_type::cylinder_type::position>::set))
         .add_property("radius",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::cylinder_type,
-                    world_traits_type::cylinder_type::length_type,
-                    &world_traits_type::cylinder_type::radius,
-                    &world_traits_type::cylinder_type::radius>::get,
+                    egfrd_simulator_traits_type::cylinder_type,
+                    egfrd_simulator_traits_type::cylinder_type::length_type,
+                    &egfrd_simulator_traits_type::cylinder_type::radius,
+                    &egfrd_simulator_traits_type::cylinder_type::radius>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::cylinder_type,
-                    world_traits_type::cylinder_type::length_type,
-                    &world_traits_type::cylinder_type::radius,
-                    &world_traits_type::cylinder_type::radius>::set))
+                    egfrd_simulator_traits_type::cylinder_type,
+                    egfrd_simulator_traits_type::cylinder_type::length_type,
+                    &egfrd_simulator_traits_type::cylinder_type::radius,
+                    &egfrd_simulator_traits_type::cylinder_type::radius>::set))
         .add_property("size",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::cylinder_type,
-                    world_traits_type::cylinder_type::length_type,
-                    &world_traits_type::cylinder_type::size,
-                    &world_traits_type::cylinder_type::size>::get,
+                    egfrd_simulator_traits_type::cylinder_type,
+                    egfrd_simulator_traits_type::cylinder_type::length_type,
+                    &egfrd_simulator_traits_type::cylinder_type::size,
+                    &egfrd_simulator_traits_type::cylinder_type::size>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::cylinder_type,
-                    world_traits_type::cylinder_type::length_type,
-                    &world_traits_type::cylinder_type::size,
-                    &world_traits_type::cylinder_type::size>::set))
+                    egfrd_simulator_traits_type::cylinder_type,
+                    egfrd_simulator_traits_type::cylinder_type::length_type,
+                    &egfrd_simulator_traits_type::cylinder_type::size,
+                    &egfrd_simulator_traits_type::cylinder_type::size>::set))
         .add_property("unit_z",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::cylinder_type,
-                    world_traits_type::cylinder_type::position_type,
-                    &world_traits_type::cylinder_type::unit_z,
-                    &world_traits_type::cylinder_type::unit_z>::get,
+                    egfrd_simulator_traits_type::cylinder_type,
+                    egfrd_simulator_traits_type::cylinder_type::position_type,
+                    &egfrd_simulator_traits_type::cylinder_type::unit_z,
+                    &egfrd_simulator_traits_type::cylinder_type::unit_z>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::cylinder_type,
-                    world_traits_type::cylinder_type::position_type,
-                    &world_traits_type::cylinder_type::unit_z,
-                    &world_traits_type::cylinder_type::unit_z>::set));
+                    egfrd_simulator_traits_type::cylinder_type,
+                    egfrd_simulator_traits_type::cylinder_type::position_type,
+                    &egfrd_simulator_traits_type::cylinder_type::unit_z,
+                    &egfrd_simulator_traits_type::cylinder_type::unit_z>::set));
 
-    to_python_converter<boost::array<world_traits_type::box_type::length_type, 3>, array_to_ndarray_converter<boost::array<world_traits_type::box_type::length_type, 3> > >();
+    to_python_converter<boost::array<egfrd_simulator_traits_type::box_type::length_type, 3>, array_to_ndarray_converter<boost::array<egfrd_simulator_traits_type::box_type::length_type, 3> > >();
 
-    class_<world_traits_type::box_type>("Box")
+    class_<egfrd_simulator_traits_type::box_type>("Box")
+        .def(init<egfrd_simulator_traits_type::box_type::position_type, 
+                  egfrd_simulator_traits_type::box_type::position_type, 
+                  egfrd_simulator_traits_type::box_type::position_type, 
+                  egfrd_simulator_traits_type::box_type::position_type, 
+                  egfrd_simulator_traits_type::box_type::length_type,
+                  egfrd_simulator_traits_type::box_type::length_type, 
+                  egfrd_simulator_traits_type::box_type::length_type>())
         .add_property("position",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::box_type,
-                    world_traits_type::box_type::position_type,
-                    &world_traits_type::box_type::position,
-                    &world_traits_type::box_type::position>::get,
+                    egfrd_simulator_traits_type::box_type,
+                    egfrd_simulator_traits_type::box_type::position_type,
+                    &egfrd_simulator_traits_type::box_type::position,
+                    &egfrd_simulator_traits_type::box_type::position>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::box_type,
-                    world_traits_type::box_type::position_type,
-                    &world_traits_type::box_type::position,
-                    &world_traits_type::box_type::position>::set))
+                    egfrd_simulator_traits_type::box_type,
+                    egfrd_simulator_traits_type::box_type::position_type,
+                    &egfrd_simulator_traits_type::box_type::position,
+                    &egfrd_simulator_traits_type::box_type::position>::set))
         .add_property("extent",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::box_type,
-                    boost::array<world_traits_type::box_type::length_type, 3>,
-                    &world_traits_type::box_type::extent,
-                    &world_traits_type::box_type::extent>::get,
+                    egfrd_simulator_traits_type::box_type,
+                    boost::array<egfrd_simulator_traits_type::box_type::length_type, 3>,
+                    &egfrd_simulator_traits_type::box_type::extent,
+                    &egfrd_simulator_traits_type::box_type::extent>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::box_type,
-                    boost::array<world_traits_type::box_type::length_type, 3>,
-                    &world_traits_type::box_type::extent,
-                    &world_traits_type::box_type::extent>::set))
+                    egfrd_simulator_traits_type::box_type,
+                    boost::array<egfrd_simulator_traits_type::box_type::length_type, 3>,
+                    &egfrd_simulator_traits_type::box_type::extent,
+                    &egfrd_simulator_traits_type::box_type::extent>::set))
         .add_property("unit_x",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::box_type,
-                    world_traits_type::box_type::position_type,
-                    &world_traits_type::box_type::unit_x,
-                    &world_traits_type::box_type::unit_x>::get,
+                    egfrd_simulator_traits_type::box_type,
+                    egfrd_simulator_traits_type::box_type::position_type,
+                    &egfrd_simulator_traits_type::box_type::unit_x,
+                    &egfrd_simulator_traits_type::box_type::unit_x>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::box_type,
-                    world_traits_type::box_type::position_type,
-                    &world_traits_type::box_type::unit_x,
-                    &world_traits_type::box_type::unit_x>::set))
+                    egfrd_simulator_traits_type::box_type,
+                    egfrd_simulator_traits_type::box_type::position_type,
+                    &egfrd_simulator_traits_type::box_type::unit_x,
+                    &egfrd_simulator_traits_type::box_type::unit_x>::set))
         .add_property("unit_y",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::box_type,
-                    world_traits_type::box_type::position_type,
-                    &world_traits_type::box_type::unit_y,
-                    &world_traits_type::box_type::unit_y>::get,
+                    egfrd_simulator_traits_type::box_type,
+                    egfrd_simulator_traits_type::box_type::position_type,
+                    &egfrd_simulator_traits_type::box_type::unit_y,
+                    &egfrd_simulator_traits_type::box_type::unit_y>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::box_type,
-                    world_traits_type::box_type::position_type,
-                    &world_traits_type::box_type::unit_y,
-                    &world_traits_type::box_type::unit_y>::set))
+                    egfrd_simulator_traits_type::box_type,
+                    egfrd_simulator_traits_type::box_type::position_type,
+                    &egfrd_simulator_traits_type::box_type::unit_y,
+                    &egfrd_simulator_traits_type::box_type::unit_y>::set))
         .add_property("unit_z",
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::box_type,
-                    world_traits_type::box_type::position_type,
-                    &world_traits_type::box_type::unit_z,
-                    &world_traits_type::box_type::unit_z>::get,
+                    egfrd_simulator_traits_type::box_type,
+                    egfrd_simulator_traits_type::box_type::position_type,
+                    &egfrd_simulator_traits_type::box_type::unit_z,
+                    &egfrd_simulator_traits_type::box_type::unit_z>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
-                    world_traits_type::box_type,
-                    world_traits_type::box_type::position_type,
-                    &world_traits_type::box_type::unit_z,
-                    &world_traits_type::box_type::unit_z>::set));
+                    egfrd_simulator_traits_type::box_type,
+                    egfrd_simulator_traits_type::box_type::position_type,
+                    &egfrd_simulator_traits_type::box_type::unit_z,
+                    &egfrd_simulator_traits_type::box_type::unit_z>::set));
 
     peer::util::to_native_converter<world_traits_type::species_id_type, species_info_to_species_id_converter>();
 
-    typedef SimulationStateTraits<CyclicWorld> simulation_state_traits_type;
-    typedef SimulationState<simulation_state_traits_type> simulation_state_type;
+    typedef SimulationState<egfrd_simulator_traits_type> simulation_state_type;
     class_<simulation_state_type, boost::noncopyable>("SimulationState")
         .add_property("rng", &simulation_state_type::get_rng)
         ;
 
-    peer::GSLRandomNumberGenerator::__register_class<gsl_rng_mt19937>("RandomNumberGenerator");
-
-    to_python_converter<boost::shared_ptr<gsl_rng>,
-            gsl_rng_to_python_converter>();
+    peer::RandomNumberGenerator<GSLRandomNumberGenerator>::__register_class("RandomNumberGenerator");
+    def("create_gsl_rng", &create_gsl_rng<gsl_rng_mt19937>);
 
     peer::util::register_scalar_to_native_converters();
 }
