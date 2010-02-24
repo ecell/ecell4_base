@@ -529,10 +529,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if __debug__:
             log.debug( "propagate %s: %s => %s" % ( single, single.pid_particle_pair[1].position, newpos ) )
 
-        if self.checkOverlap(newpos,
-                             single.pid_particle_pair[1].radius,
-                             ignore=[single.pid_particle_pair[0]]):
-            raise RuntimeError('propagateSingle: checkOverlap failed.')
+            if self.checkOverlap(newpos,
+                                 single.pid_particle_pair[1].radius,
+                                 ignore=[single.pid_particle_pair[0]]):
+                raise RuntimeError('propagateSingle: checkOverlap failed.')
 
         if(single.eventType == EventType.SINGLE_REACTION and
            single.eventType != EventType.BURST):
