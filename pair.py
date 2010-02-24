@@ -171,7 +171,7 @@ class Pair( object ):
         return min((single.drawReactionTime()[0], eventType, single, None) 
                    for single in self.singles)
 
-    def determinePairEvent(self):
+    def determineNextEvent(self):
         """Return a (dt, eventType, reactingSingle, activeCoordinate)-tuple.
         By returning the arguments it is a pure function. 
 
