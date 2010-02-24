@@ -928,11 +928,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             pos2t = cyclic_transpose(pos2, pos1, self.worldSize)
             oldInterParticle = pos2t - pos1
-            assert feq(pair.r0, length(oldInterParticle))
+            r0 = self.distance(pos1, pos2)
+            assert feq(r0, length(oldInterParticle))
 
             oldCoM = pair.CoM
 
-            newpos1, newpos2 = pair.drawNewPositions(dt, 
+            newpos1, newpos2 = pair.drawNewPositions(dt, r0, 
                                                      oldInterParticle, 
                                                      eventType)
 
@@ -1132,8 +1133,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         shellSize = min( shellSize, maxShellSize )
 
         pair = self.createPair(single1, single2, com, shellSize)
-
-        r0 = self.distance(pos1, pos2)
 
         pair.dt, pair.eventType, pair.reactingsingle, pair.activeCoordinate = \
             pair.determineNextEvent()

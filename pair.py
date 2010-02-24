@@ -24,8 +24,7 @@ class Pair( object ):
     # 5.6: ~1e-8, 6.0: ~1e-9
     CUTOFF_FACTOR = 5.6
 
-    def __init__(self, domain_id, single1, single2, shell_id_shell_pair, 
-                 r0, rt):
+    def __init__(self, domain_id, single1, single2, shell_id_shell_pair, rt):
         self.multiplicity = 2
 
         # Order single1 and single2 so that D1 < D2.
@@ -54,8 +53,6 @@ class Pair( object ):
 
         self.shell_list = [shell_id_shell_pair, ]
         self.domain_id = domain_id
-
-        self.r0 = r0
 
     def __del__( self ):
         if __debug__:
@@ -190,7 +187,7 @@ class SphericalPair(Pair):
         shell_id_shell_pair = (shell_id, shell)
 
         Pair.__init__(self, domain_id, single1, single2, 
-                      shell_id_shell_pair, r0, rt)
+                      shell_id_shell_pair, rt)
 
         self.a_R, self.a_r = self.determineRadii(r0, shellSize)
 
@@ -261,14 +258,14 @@ class SphericalPair(Pair):
             self.single2.pid_particle_pair[0],
             self.eventID )
 
-    def drawNewPositions(self, dt, oldInterParticle, eventType):
+    def drawNewPositions(self, dt, r0, oldInterParticle, eventType):
         '''
         Calculate new positions of the particles in the Pair using
         a new center-of-mass, a new inter-particle vector, and
         an old inter-particle vector.
         '''
         CoM = self.drawNewCoM(dt, eventType)
-        newInterParticle = self.drawNewIV(dt, eventType)
+        newInterParticle = self.drawNewIV(dt, r0, eventType)
         #FIXME: need better handling of angles near zero and pi.
 
         # I rotate the new interparticle vector along the
@@ -303,9 +300,9 @@ class SphericalPair(Pair):
         r_R = comCoordinate.drawDisplacement(dt, eventType)
         return self.CoM + randomVector(r_R)
 
-    def drawNewIV(self, dt, eventType): 
+    def drawNewIV(self, dt, r0, eventType): 
         ivCoordinates = self.coordinates[1]
-        gf = self.choosePairGreensFunction(self.r0, dt)
+        gf = self.choosePairGreensFunction(r0, dt)
         r, theta = ivCoordinates.drawDisplacement(gf, dt, eventType)
         newInterParticleS = numpy.array([r, theta, 
                                          myrandom.uniform() * 2 * Pi])
