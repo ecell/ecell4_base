@@ -1130,8 +1130,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         r0 = self.distance(pos1, pos2)
 
-        pair.dt, pair.eventType, pair.reactingSingle, pair.activeCoordinate = \
+        pair.dt, pair.eventType, pair.reactingsingle, pair.activeCoordinate = \
             pair.determinePairEvent()
+
         assert pair.dt >= 0
 
         self.lastTime = self.t
