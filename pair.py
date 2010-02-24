@@ -165,7 +165,7 @@ class Pair( object ):
 
         """
         eventType = EventType.SINGLE_REACTION
-        return min((single.drawReactionTime(), eventType, single, None) 
+        return min((single.drawReactionTime()[0], eventType, single, None) 
                    for single in self.singles)
 
     def determinePairEvent(self):
