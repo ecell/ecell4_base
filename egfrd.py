@@ -360,6 +360,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             bursted = [obj,]
         elif isinstance( obj, Pair ):  # Pair
             single1, single2 = self.burstPair( obj )
+            # Don't schedule events in burst/propagatePair, because scheduling 
+            # is different after a single reaction in firePair.
+            self.addSingleEvent(single1)
+            self.addSingleEvent(single2)
             self.removeEvent( obj )
             bursted = [ single1, single2 ]
         else:  # Multi
@@ -815,6 +819,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             dt = pair.dt
             eventType = pair.eventType
             single1, single2 = self.propagatePair(pair, dt, eventType)
+            self.addSingleEvent(single1)
+            self.addSingleEvent(single2)
         else:
             raise SystemError, 'Bug: invalid eventType.'
 
@@ -960,9 +966,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.shellMatrix[single2.shell[0]].radius == single2.shell[1].radius
         assert single1.shell[1].radius == particle1[1].radius
         assert single2.shell[1].radius == particle2[1].radius
-
-        self.addSingleEvent(single1)
-        self.addSingleEvent(single2)
 
         assert self.checkObj(single1)
         assert self.checkObj(single2)
