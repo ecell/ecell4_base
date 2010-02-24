@@ -1015,9 +1015,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert (pos1 - single1.shell[1].position).sum() == 0
         pos2 = single2.shell[1].position
         pairDistance = self.distance(pos1, pos2)
-        r0 = pairDistance - sigma
-        assert r0 >= 0, 'r0 (pair gap) between %s and %s = %g < 0' \
-            % ( single1, single2, r0 )
+        distanceFromSigma = pairDistance - sigma
+        assert distanceFromSigma >= 0, \
+            ('distanceFromSigma (pair gap) between %s and %s = %g < 0' %
+             (single1, single2, distanceFromSigma))
 
         shellSize1 = pairDistance * D1 / D12 + radius1
         shellSize2 = pairDistance * D2 / D12 + radius2
@@ -1037,7 +1038,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         com = self.applyBoundary( com )
         minShellSizeWithMargin = minShellSize + shellSizeMargin
         maxShellSize = min( self.getMaxShellSize(),
-                            r0 * 100 + sigma + shellSizeMargin )
+                            distanceFromSigma * 100 + sigma + shellSizeMargin )
 
         if minShellSizeWithMargin >= maxShellSize:
             if __debug__:
