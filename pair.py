@@ -189,11 +189,11 @@ class SphericalPair(Pair):
         Pair.__init__(self, domain_id, single1, single2, 
                       shell_id_shell_pair, rt)
 
-        self.a_R, self.a_r = self.determineRadii(r0, shellSize)
+        a_R, self.a_r = self.determineRadii(r0, shellSize)
 
         # Green's function for centre of mass inside absorbing sphere.
         sgf = FirstPassageGreensFunction(self.D_R)
-        comCoordinate = RCoordinate(sgf, self.a_R)
+        comCoordinate = RCoordinate(sgf, a_R)
 
         # Green's function for interparticle vector inside absorbing sphere.  
         # This exact solution is used for drawing times.
