@@ -10,15 +10,15 @@
 enum EventType
 {
     SINGLE_REACTION = 10,
-    NOT_A_SINGLE_REACTION = 11,
-    SINGLE_ESCAPE = 12,
+    SINGLE_ESCAPE = 11,
 
-    COM_ESCAPE = 12, // Same as SINGLE_ESCAPE
+    COM_ESCAPE = 11, // Same as SINGLE_ESCAPE
 
+    IV_EVENT = 12,
     IV_ESCAPE = 13,
-    PAIR_REACTION = 14,
+    IV_REACTION = 14,
 
-    INTERACTION = 15,
+    IV_INTERACTION = 15,
 
     BURST = 16,
 

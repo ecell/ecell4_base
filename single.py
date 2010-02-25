@@ -1,12 +1,5 @@
-import math
-import numpy
-
 from _gfrd import *
-
-from utils import *
-import myrandom
-from coordinate import *
-
+from greens_function_wrapper import *
 
 class Single( object ):
     """There are 2 main types of Singles:
@@ -47,10 +40,8 @@ class Single( object ):
 
     def getShell(self):
         return self.shell_list[0]
-
     def setShell(self, value):
         self.shell_list[0] = value
-
     shell = property(getShell, setShell)
 
     def initialize( self, t ):
@@ -79,8 +70,8 @@ class Single( object ):
     def isReset( self ):
         return self.dt == 0.0 and self.eventType == EventType.SINGLE_ESCAPE
 
-    def drawReactionTime( self ):
-        """Return a (reactionTime, eventType, activeCoordinate=None)-tuple.
+    def draw_reaction_time_tuple( self ):
+        """Return a (reaction time, event type)-tuple.
 
         """
         if self.k_tot == 0:
@@ -89,39 +80,39 @@ class Single( object ):
             dt = 0.0
         else:
             dt = (1.0 / self.k_tot) * math.log(1.0 / myrandom.uniform())
-        return dt, EventType.SINGLE_REACTION, None
+        return dt, EventType.SINGLE_REACTION
 
-    def drawEscapeOrInteractionTime(self):
-        """Return an (escapeTime, eventType, activeCoordinate)-tuple.
-        Handles also all interaction events.
+    def draw_interaction_time(self):
+        """Todo.
+        
+        Note: we are not calling single.drawEventType() just yet, but 
+        postpone it to the very last minute (when this event is executed in 
+        fireSingle). So IV_EVENT can still be an iv escape or an iv 
+        interaction.
 
         """
-        eventType = EventType.NOT_A_SINGLE_REACTION
+        pass
+
+    def draw_escape_or_interaction_time_tuple(self):
+        """Return an (escape or interaction time, event type)-tuple.
+
+        Handles also all interaction events.
+        
+        """
         if self.getD() == 0:
-            return INF, eventType, None
+            dt = numpy.inf
         else:
-            # Note: we are not calling coordinate.drawEventType() just yet, 
-            # but postpone it to the very last minute (when this event is 
-            # executed in fireSingle), and memorize the activeCoordinate like 
-            # this.
+            dt = draw_time_wrapper(self.greens_function())
 
-            # So this can still be an interaction or an escape.
-
-            # Also note that in case this single will get a reaction event 
-            # instead of this escape event (its dt is smaller in 
-            # determineNextEvent), and even though activeCoordinate is set, it 
-            # won't be used at all, since reaction events are taken care of 
-            # before escape events in fireSingle.
-            return min((c.drawTime(), eventType, c)
-                       for c in self.coordinates)
+        event_type = EventType.SINGLE_ESCAPE
+        return dt, event_type
 
     def determineNextEvent(self):
-        """Return an (escapeTime, eventType, activeCoordinate)-tuple.
-        By returning the arguments it is a pure function. 
+        """Return an (event time, event type)-tuple.
 
         """
-        return min(self.drawEscapeOrInteractionTime(), 
-                   self.drawReactionTime()) 
+        return min(self.draw_escape_or_interaction_time_tuple(),
+                   self.draw_reaction_time_tuple())
 
     def updatek_tot( self ):
         self.k_tot = 0
@@ -132,7 +123,6 @@ class Single( object ):
         for rt in self.reactiontypes:
             self.k_tot += rt.k
 
-
     def drawReactionRule( self ):
         k_array = [ rt.k for rt in self.reactiontypes ]
         k_array = numpy.add.accumulate( k_array )
@@ -142,7 +132,6 @@ class Single( object ):
         i = numpy.searchsorted( k_array, rnd * k_max )
 
         return self.reactiontypes[i]
-
 
     def check( self ):
         pass
@@ -165,8 +154,13 @@ class NonInteractionSingle(Single):
         Single.__init__(self, domain_id, pid_particle_pair, shell_id_shell_pair,
                         reactiontypes)
 
+    def getMobilityRadius(self):
+        return self.shell[1].radius - self.pid_particle_pair[1].radius
+
     def drawNewPosition(self, dt, eventType):
-        r = self.coordinates[0].drawDisplacement(dt, eventType)
+        gf = self.greens_function()
+        a = self.getMobilityRadius()
+        r = draw_displacement_wrapper(gf, dt, eventType, a)
         displacement = self.displacement(r)
         assert abs(length(displacement) - abs(r)) <= 1e-15 * abs(r)
         return self.pid_particle_pair[1].position + displacement
@@ -191,26 +185,20 @@ class SphericalSingle(NonInteractionSingle):
         NonInteractionSingle.__init__(self, domain_id, pid_particle_pair, 
                                       shell_id_shell_pair, reactiontypes)
 
-        # Create a radial coordinate of size mobilityRadius = 0.
-        mobilityRadius = 0.0
+    def greens_function(self):
         gf = FirstPassageGreensFunction(self.getD())
-        self.coordinates = [RCoordinate(gf, mobilityRadius)]
+        a = self.getMobilityRadius()
+        gf.seta(a)
+        return gf
 
     def createNewShell(self, position, radius, domain_id):
-        '''Always call rescaleCoordinates after this as well.
-
-        '''
         return SphericalShell(position, radius, domain_id)
-
-    def rescaleCoordinates(self, radius):
-        # Rescale size of coordinate.
-        mobilityRadius = radius - self.getMinRadius()
-        self.coordinates[0].a = mobilityRadius
 
     def displacement(self, r):
         return randomVector(r)
 
     def __str__(self):
         return 'SphericalSingle' + Single.__str__(self)
+
 
 

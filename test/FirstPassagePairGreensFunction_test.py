@@ -130,11 +130,11 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
 
         t = gf.drawTime( 0.5, r0 )
         eventType = gf.drawEventType( 0.5, r0, t )
-        self.failIf(eventType != mod.EventType.PAIR_REACTION and
+        self.failIf(eventType != mod.EventType.IV_REACTION and
                     eventType != mod.EventType.IV_ESCAPE )
 
         eventType = gf.drawEventType( 0.0, r0, t )
-        self.assertEqual( eventType, mod.EventType.PAIR_REACTION )
+        self.assertEqual( eventType, mod.EventType.IV_REACTION )
 
         eventType = gf.drawEventType( 0.999999, r0, t )
         self.assertEqual( eventType, mod.EventType.IV_ESCAPE )
@@ -153,11 +153,11 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         t = gf.drawTime( 0.999, r0 )
 
         eventType = gf.drawEventType( 0.5, r0, t )
-        self.failIf(eventType != mod.EventType.PAIR_REACTION and
+        self.failIf(eventType != mod.EventType.IV_REACTION and
                     eventType != mod.EventType.IV_ESCAPE )
 
         eventType = gf.drawEventType( 0.0, r0, t )
-        self.assertEqual(eventType, mod.EventType.PAIR_REACTION)
+        self.assertEqual(eventType, mod.EventType.IV_REACTION)
 
         eventType = gf.drawEventType( 0.9999, r0, t )
         #self.assertEqual(eventType, mod.EventType.IV_ESCAPE)
@@ -272,7 +272,7 @@ class FirstPassagePairGreensFunctionTestCase( unittest.TestCase ):
         print 't',t, 't2', t2, 'et', et, 'et2', et2
 
         self.failIf( t < 0.0 or t >= numpy.inf )
-        self.assertEqual( et, mod.EventType.PAIR_REACTION )
+        self.assertEqual( et, mod.EventType.IV_REACTION )
 
         self.assertAlmostEqual( t, t2 )
 

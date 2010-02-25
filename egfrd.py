@@ -102,7 +102,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.single_steps = {EventType.SINGLE_ESCAPE:0,
                              EventType.SINGLE_REACTION:0}
         self.pair_steps = {EventType.SINGLE_REACTION:0,
-                           EventType.PAIR_REACTION:0,
+                           EventType.IV_REACTION:0,
                            EventType.IV_ESCAPE:0,
                            EventType.COM_ESCAPE:0}
         self.multi_steps = {EventType.MULTI_ESCAPE:0,
@@ -233,7 +233,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.domains[domain_id] = single
         return single
 
-    def createPair(self, single1, single2, CoM, shellSize):
+    def createPair(self, single1, single2, CoM, r0, shellSize):
         assert single1.dt == 0.0
         assert single2.dt == 0.0
 
@@ -244,7 +244,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         pos1 = single1.shell[1].position
         pos2 = single2.shell[1].position
-        r0 = self.distance(pos1, pos2)
 
         # Get surface.
         species = self.speciesList[single1.pid_particle_pair[1].sid]
@@ -288,9 +287,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         single.shell = new_sid_shell_pair
         self.moveShell(new_sid_shell_pair)
-
-        # Rescale domains of single.
-        single.rescaleCoordinates(radius)
 
     def moveSingleParticle(self, single, position):
         new_pid_particle_pair = (single.pid_particle_pair[0],
@@ -576,8 +572,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # Handle immobile case first.
         if single.getD() == 0:
             # no propagation, just calculate next reaction time.
-            single.dt, single.eventType, single.activeCoordinate = \
-                single.determineNextEvent() 
+            single.dt, single.eventType = single.determineNextEvent() 
             single.lastTime = self.t
             self.addSingleEvent(single)
             return
@@ -702,39 +697,51 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # Note: this should be done before determineNextEvent.
         self.moveSingleShell(single, singlepos, new_shell_size)        
 
-        single.dt, single.eventType, single.activeCoordinate = \
-            single.determineNextEvent()
+        single.dt, single.eventType = single.determineNextEvent()
         single.lastTime = self.t
 
     def firePair( self, pair ):
         assert self.checkObj( pair )
 
-        particle1 = pair.single1.pid_particle_pair
-        particle2 = pair.single2.pid_particle_pair
+        single1 = pair.single1
+        single2 = pair.single2
+        particle1 = single1.pid_particle_pair
+        particle2 = single2.pid_particle_pair
+        pos1 = particle1[1].position
+        pos2 = particle2[1].position
         
+        if pair.eventType == EventType.IV_EVENT:
+            # Draw actual pair event for iv at very last minute.
+            r0 = self.distance(pos1, pos2)
+            pair.eventType = pair.draw_iv_event_type(r0)
+
+        self.pair_steps[pair.eventType] += 1
+
+        if __debug__:
+            log.info('firePair: eventType %s' % pair.eventType)
+
+
         oldCoM = pair.CoM
 
-        # Two cases:
+        # Four cases:
         #  1. Single reaction
-        #  2. Not a single reaction
+        #  2. Pair reaction
+        #  3a. IV escape
+        #  3b. CoM escape
 
         #
         # 1. Single reaction
         #
         if pair.eventType == EventType.SINGLE_REACTION:
-            self.pair_steps[pair.eventType] += 1
-            if __debug__:
-                log.info('firePair: eventType %s' % pair.eventType)
-
             reactingsingle = pair.reactingsingle
 
             if __debug__:
                 log.info( 'pair: single reaction %s' % str( reactingsingle ) )
 
-            if reactingsingle == pair.single1:
-                theothersingle = pair.single2
+            if reactingsingle == single1:
+                theothersingle = single2
             else:
-                theothersingle = pair.single1
+                theothersingle = single1
 
             self.burstPair( pair )
 
@@ -749,27 +756,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             return
         
         #
-        # 2. Not a single reaction
+        # 2. Pair reaction
         #
-
-        # When this pair was initialized, pair.determineNextEvent() was called 
-        # and the pair.activeCoordinate we use here was set.
-        #
-        # Possibilities if the IV coordinate is active:
-        #   2a. Pair reaction
-        #   2b. IV escape
-        #
-        # Possiblities if the CoM coordinate is active:
-        #   2c. CoM escape
-        pair.eventType = pair.activeCoordinate.drawEventType(pair.dt)
-        self.pair_steps[pair.eventType] += 1
-        if __debug__:
-            log.info('firePair: eventType %s' % pair.eventType)
-
-        #
-        # 2a. Pair reaction
-        #
-        if pair.eventType == EventType.PAIR_REACTION:
+        if pair.eventType == EventType.IV_REACTION:
             if __debug__:
                 log.info( 'reaction' )
 
@@ -788,8 +777,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
                 newCoM = self.applyBoundary( newCoM )
 
-                self.removeParticle(pair.single1.pid_particle_pair)
-                self.removeParticle(pair.single2.pid_particle_pair)
+                self.removeParticle(single1.pid_particle_pair)
+                self.removeParticle(single2.pid_particle_pair)
 
                 particle = self.createParticle( species3.id, newCoM )
                 newsingle = self.createSingle( particle )
@@ -812,8 +801,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             return
 
         #
-        # 2b. Escaping through a_r.
-        # 2c. Escaping through a_R.
+        # 3a. Escaping through a_r.
+        # 3b. Escaping through a_R.
         #
         elif(pair.eventType == EventType.IV_ESCAPE or
              pair.eventType == EventType.COM_ESCAPE):
@@ -1132,10 +1121,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # 3. Ok, Pair makes sense.  Create one.
         shellSize = min( shellSize, maxShellSize )
 
-        pair = self.createPair(single1, single2, com, shellSize)
+        pair = self.createPair(single1, single2, com, r0, shellSize)
 
-        pair.dt, pair.eventType, pair.reactingsingle, pair.activeCoordinate = \
-            pair.determineNextEvent()
+        pair.dt, pair.eventType, pair.reactingsingle = \
+            pair.determineNextEvent(r0)
 
         assert pair.dt >= 0
 
@@ -1344,7 +1333,7 @@ rejected moves = %d
                numpy.array(self.pair_steps.values()).sum(),
                self.pair_steps[EventType.IV_ESCAPE],
                self.pair_steps[EventType.COM_ESCAPE],
-               self.pair_steps[EventType.PAIR_REACTION],
+               self.pair_steps[EventType.IV_REACTION],
                self.pair_steps[EventType.SINGLE_REACTION],
                self.multi_steps[2], # total multi steps
                self.multi_steps[EventType.MULTI_ESCAPE],

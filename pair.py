@@ -1,15 +1,5 @@
-
-import numpy
-
 from _gfrd import *
-
-from utils import *
-import myrandom
-
-import logging
-from coordinate import *
-
-log = logging.getLogger('ecell')
+from greens_function_wrapper import *
 
 class Pair( object ):
     """There are 3 types of pairs:
@@ -32,18 +22,8 @@ class Pair( object ):
             self.single1, self.single2 = single1, single2 
         else:
             self.single1, self.single2 = single2, single1 
-        self.singles = [self.single1, self.single2]
 
         self.rt = rt
-
-        D1 = self.single1.pid_particle_pair[1].D
-        D2 = self.single2.pid_particle_pair[1].D
-
-        self.D_tot = D1 + D2
-        self.D_R = ( D1 * D2 ) / self.D_tot
-
-        self.sigma = self.single1.pid_particle_pair[1].radius + \
-                     self.single2.pid_particle_pair[1].radius
 
         self.eventID = None
 
@@ -67,17 +47,31 @@ class Pair( object ):
 
     def setShell(self, value):
         self.shell_list[0] = value
-
     shell = property(getShell, setShell)
 
-    def initialize( self, t ):
+    def get_D1(self):
+        return self.single1.pid_particle_pair[1].D
+    
+    def get_D2(self):
+        return self.single2.pid_particle_pair[1].D
 
+    def get_D_tot( self ):
+        return self.get_D1() + self.get_D2()
+    D_tot = property(get_D_tot)
+
+    def get_D_R(self):
+        return (self.get_D1() * self.get_D2()) / self.D_tot
+    D_R = property(get_D_R)
+
+    def get_sigma(self):
+        return self.single1.pid_particle_pair[1].radius + \
+               self.single2.pid_particle_pair[1].radius
+    sigma = property(get_sigma)
+
+    def initialize( self, t ):
         self.lastTime = t
         self.dt = 0
         self.eventType = None
-
-    def getD( self ):
-        return self.D_tot #FIXME: is this correct?
 
     def determineRadii(self, r0, shellSize):
         """Determine a_r and a_R.
@@ -143,38 +137,42 @@ class Pair( object ):
 
         return a_R, a_r
 
-    def drawEscapeOrPairReactionTime( self ):
-        """Returns a (dt, eventType, None, activeCoordinate) tuple.
+    def draw_com_escape_or_iv_event_time_tuple(self, r0):
+        """Returns a (event time, event type, reactingsingle=None) tuple.
+        
+        """
+        dt_com = draw_time_wrapper(self.com_greens_function())
+        dt_iv = draw_time_wrapper(self.iv_greens_function(), r0)
+        if dt_com < dt_iv:
+            return dt_com, EventType.COM_ESCAPE, None
+        else:
+            # Note: we are not calling pair.draw_iv_event_type yet, but 
+            # postpone it to the very last minute (when this event is executed 
+            # in firePair). So IV_EVENT can still be a iv event or a iv 
+            # reaction.
+            return dt_iv, EventType.IV_EVENT, None
 
-        Note: we are not deciding yet if this is an escape or a pair 
-        reaction, since we aren't calling domain.drawEventType() yet. We 
-        postpone it to the very last minute (when this event is executed 
-        in firePair), and memorize the activeCoordinate (CoM or IV) like this.
-
-        Also note that in case the dt for single reaction is actually smaller 
-        below, and this single will get a single reaction event, 
-        self.activeDomain won't be used at all, since reaction events are 
-        taken care of before escape events in firePair.
+    def draw_single_reaction_time_tuple( self ):
+        """Return a (reaction time, event type, reactingsingle)-tuple.
 
         """
-        eventType = EventType.NOT_A_SINGLE_REACTION
-        return min((c.drawTime(), eventType, None, c) for c in self.coordinates)
+        dt_reaction1, event_type1 = self.single1.draw_reaction_time_tuple()
+        dt_reaction2, event_type2 = self.single2.draw_reaction_time_tuple()
+        if dt_reaction1 < dt_reaction2:
+            return dt_reaction1, event_type1, self.single1
+        else:
+            return dt_reaction2, event_type2, self.single2
 
-    def drawSingleReactionTime( self ):
-        """Return a (dt, eventType, reactingSingle, None) tuple.
-
-        """
-        eventType = EventType.SINGLE_REACTION
-        return min((single.drawReactionTime()[0], eventType, single, None) 
-                   for single in self.singles)
-
-    def determineNextEvent(self):
-        """Return a (dt, eventType, reactingSingle, activeCoordinate)-tuple.
-        By returning the arguments it is a pure function. 
+    def determineNextEvent(self, r0):
+        """Return a (event time, event type, reactingsingle)-tuple.
 
         """
-        return min(self.drawEscapeOrPairReactionTime(), 
-                   self.drawSingleReactionTime()) 
+        return min(self.draw_com_escape_or_iv_event_time_tuple(r0), 
+                   self.draw_single_reaction_time_tuple()) 
+
+    def draw_iv_event_type(self, r0):
+        gf = self.iv_greens_function()
+        return draw_eventtype_wrapper(gf, self.dt, r0)
 
 
 class SphericalPair(Pair):
@@ -189,20 +187,20 @@ class SphericalPair(Pair):
         Pair.__init__(self, domain_id, single1, single2, 
                       shell_id_shell_pair, rt)
 
-        a_R, self.a_r = self.determineRadii(r0, shellSize)
+        self.a_R, self.a_r = self.determineRadii(r0, shellSize)
 
+    def com_greens_function(self):
         # Green's function for centre of mass inside absorbing sphere.
-        sgf = FirstPassageGreensFunction(self.D_R)
-        comCoordinate = RCoordinate(sgf, a_R)
+        gf = FirstPassageGreensFunction(self.D_R)
+        gf.seta(self.a_R)
+        return gf
 
+    def iv_greens_function(self):
         # Green's function for interparticle vector inside absorbing sphere.  
         # This exact solution is used for drawing times.
-        pgf = FirstPassagePairGreensFunction(self.D_tot, self.rt.k, 
-                                             self.sigma)
-        ivCoordinates = RThetaCoordinates(pgf, self.sigma,
-                                          r0, self.a_r)
-
-        self.coordinates = [comCoordinate, ivCoordinates]
+        gf = FirstPassagePairGreensFunction(self.D_tot, self.rt.k, self.sigma)
+        gf.seta(self.a_r)
+        return gf
 
     def createNewShell(self, position, radius, domain_id):
         return SphericalShell(position, radius, domain_id)
@@ -221,10 +219,7 @@ class SphericalPair(Pair):
                 # use FirstPassagePairGreensFunction
                 if __debug__:
                     log.debug( 'GF: normal' )
-                pgf = FirstPassagePairGreensFunction(self.D_tot, self.rt.k, 
-                                                     self.sigma)
-                pgf.seta(self.a_r)
-                return pgf
+                return self.iv_greens_function()
             else:
                 # near sigma; use BasicPairGreensFunction
                 if __debug__:
@@ -296,14 +291,14 @@ class SphericalPair(Pair):
         return newpos1, newpos2
 
     def drawNewCoM(self, dt, eventType):
-        comCoordinate = self.coordinates[0]
-        r_R = comCoordinate.drawDisplacement(dt, eventType)
+        gf = self.com_greens_function()
+        r_R = draw_displacement_wrapper(gf, dt, eventType, self.a_R)
         return self.CoM + randomVector(r_R)
 
     def drawNewIV(self, dt, r0, eventType): 
-        ivCoordinates = self.coordinates[1]
         gf = self.choosePairGreensFunction(r0, dt)
-        r, theta = ivCoordinates.drawDisplacement(gf, dt, eventType)
+        r, theta = draw_displacement_iv_wrapper(gf, r0, dt, eventType,
+                                                self.a_r, self.sigma)
         newInterParticleS = numpy.array([r, theta, 
                                          myrandom.uniform() * 2 * Pi])
         return sphericalToCartesian(newInterParticleS)
