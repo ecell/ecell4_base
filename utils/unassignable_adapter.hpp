@@ -27,17 +27,28 @@ private:
 public:
     typedef typename TT_<placeholder>::type container_type;
     typedef T_ value_type;
-    typedef typename boost::range_size<container_type>::type size_type;
-    typedef typename boost::range_difference<container_type>::type difference_type;
-    typedef typename boost::range_iterator<container_type>::type iterator;
-    typedef typename boost::range_const_iterator<container_type>::type const_iterator;
-    typedef typename boost::range_reverse_iterator<container_type>::type reverse_iterator;
-    typedef typename boost::range_const_reverse_iterator<container_type>::type const_reverse_iterator;
 
     typedef value_type* pointer;
     typedef value_type const* const_pointer;
     typedef value_type& reference;
     typedef value_type const& const_reference;
+
+private:
+    typedef reinterpret_caster<reference, typename container_type::value_type&> caster;
+    typedef reinterpret_caster<const_reference, typename container_type::value_type const&> const_caster;
+
+public:
+
+    typedef typename boost::range_size<container_type>::type size_type;
+    typedef typename boost::range_difference<container_type>::type difference_type;
+    typedef typename boost::transform_iterator<caster,
+        typename boost::range_iterator<container_type>::type> iterator;
+    typedef typename boost::transform_iterator<const_caster,
+        typename boost::range_const_iterator<container_type>::type> const_iterator;
+    typedef typename boost::transform_iterator<caster,
+        typename boost::range_reverse_iterator<container_type>::type> reverse_iterator;
+    typedef typename boost::transform_iterator<const_caster,
+        typename boost::range_const_reverse_iterator<container_type>::type> const_reverse_iterator;
 
     size_type size() const
     {
@@ -46,42 +57,42 @@ public:
 
     iterator begin()
     {
-        return boost::begin(cntnr_);
+        return iterator(boost::begin(cntnr_), caster());
     }
 
     const_iterator begin() const
     {
-        return boost::begin(cntnr_);
+        return const_iterator(boost::begin(cntnr_), const_caster());
     }
 
     iterator end()
     {
-        return boost::end(cntnr_);
+        return iterator(boost::end(cntnr_), caster());
     }
 
     const_iterator end() const
     {
-        return boost::end(cntnr_);
+        return const_iterator(boost::end(cntnr_), const_caster());
     }
 
     reverse_iterator rbegin()
     {
-        return boost::rbegin(cntnr_);
+        return reverse_iterator(boost::rbegin(cntnr_), caster());
     }
 
     const_reverse_iterator rbegin() const
     {
-        return boost::rbegin(cntnr_);
+        return const_reverse_iterator(boost::rbegin(cntnr_), caster());
     }
 
     reverse_iterator rend()
     {
-        return boost::rend(cntnr_);
+        return reverse_iterator(boost::rend(cntnr_), caster());
     }
 
     const_reverse_iterator rend() const
     {
-        return boost::end(cntnr_);
+        return const_reverse_iterator(boost::rend(cntnr_), const_caster());
     }
 
     void clear()
@@ -109,9 +120,9 @@ public:
         return reinterpret_cast<value_type const&>(cntnr_[pos]);
     }
 
-    value_type& operator[](size_type const& pos)
+    void set(size_type const& pos, value_type const& v)
     {
-        return reinterpret_cast<value_type&>(cntnr_[pos]);
+        cntnr_[pos] = reinterpret_cast<typename container_type::value_type const&>(v);
     }
 
     void insert(iterator const& pos, value_type const& v)
@@ -127,9 +138,9 @@ public:
     template<typename Titer_>
     void insert(iterator const& pos, Titer_ const& b, Titer_ const& e)
     {
-        typedef reinterpret_caster<typename container_type::value_type const&, reference> caster;
-        typedef boost::transform_iterator<Titer_, caster> transform_iterator;
-        cntnr_.insert(pos, transform_iterator(b, caster()), transform_iterator(e, caster()));
+        typedef reinterpret_caster<typename container_type::value_type const&, const_reference> reverse_caster;
+        typedef boost::transform_iterator<reverse_caster, Titer_> transform_iterator;
+        cntnr_.insert(pos, transform_iterator(b, reverse_caster()), transform_iterator(e, caster()));
     }
 
     void push_front(value_type const& v)
