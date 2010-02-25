@@ -436,10 +436,8 @@ class ParticleSimulatorBase( object ):
             surface = self.getSurface(species)
 
         if __debug__:
-            log.info( 'throwing in %s %s particles' % ( n, species.id ) )
-
-        log.info('\tthrowing in %s %s particles to %s' % (n, species.id, 
-                                                          surface))
+            log.info('\tthrowing in %s %s particles to %s' % (n, species.id,
+                                                              surface))
 
         # This is a bit messy, but it works.
         i = 0
@@ -460,8 +458,9 @@ class ParticleSimulatorBase( object ):
                     if (closestSurface and
                         distance < closestSurface.minimalDistanceFromSurface( 
                                     species.radius)):
-                        log.info('\t%d-th particle rejected. To close to '
-                                 'surface. I will keep trying.' % i)
+                        if __debug__:
+                            log.info('\t%d-th particle rejected. Too close to '
+                                     'surface. I will keep trying.' % i)
                         create = False
                 if create:
                     # All checks passed. Create particle.
@@ -469,7 +468,7 @@ class ParticleSimulatorBase( object ):
                     i += 1
                     if __debug__:
                         log.info(p)
-            else:
+            elif __debug__:
                 log.info('\t%d-th particle rejected. I will keep trying.' % i)
 
     def placeParticle( self, st, pos ):

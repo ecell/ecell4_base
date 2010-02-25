@@ -197,9 +197,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         
         self.scheduler.step()
 
+        if __debug__:
+            if self.scheduler.getSize() == 0:
+                raise RuntimeError('Zero particles left.')
+
         nextTime = self.scheduler.getTopTime()
         self.dt = nextTime - self.t
-
 
         # assert if not too many successive dt=0 steps occur.
         if __debug__:
@@ -209,9 +212,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                     raise RuntimeError, 'too many dt=zero steps.  simulator halted?'
             else:
                 self.zeroSteps = 0
-
-
-        assert self.scheduler.getSize() != 0
 
     def createSingle( self, pid_particle_pair ):
         rt = self.getReactionRule1(pid_particle_pair[1].sid)
@@ -529,10 +529,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if __debug__:
             log.debug( "propagate %s: %s => %s" % ( single, single.pid_particle_pair[1].position, newpos ) )
 
-        if self.checkOverlap(newpos,
-                             single.pid_particle_pair[1].radius,
-                             ignore=[single.pid_particle_pair[0]]):
-            raise RuntimeError('propagateSingle: checkOverlap failed.')
+            if self.checkOverlap(newpos,
+                                 single.pid_particle_pair[1].radius,
+                                 ignore=[single.pid_particle_pair[0]]):
+                raise RuntimeError('propagateSingle: checkOverlap failed.')
 
         if(single.eventType == EventType.SINGLE_REACTION and
            single.eventType != EventType.BURST):
@@ -928,11 +928,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             pos2t = cyclic_transpose(pos2, pos1, self.worldSize)
             oldInterParticle = pos2t - pos1
-            assert feq(pair.pairDistance, length(oldInterParticle))
+            r0 = self.distance(pos1, pos2)
+            assert feq(r0, length(oldInterParticle))
 
             oldCoM = pair.CoM
 
-            newpos1, newpos2 = pair.drawNewPositions(dt, 
+            newpos1, newpos2 = pair.drawNewPositions(dt, r0, 
                                                      oldInterParticle, 
                                                      eventType)
 
@@ -1014,13 +1015,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         assert (pos1 - single1.shell[1].position).sum() == 0
         pos2 = single2.shell[1].position
-        pairDistance = self.distance(pos1, pos2)
-        r0 = pairDistance - sigma
-        assert r0 >= 0, 'r0 (pair gap) between %s and %s = %g < 0' \
-            % ( single1, single2, r0 )
+        r0 = self.distance(pos1, pos2)
+        distanceFromSigma = r0 - sigma
+        assert distanceFromSigma >= 0, \
+            ('distanceFromSigma (pair gap) between %s and %s = %g < 0' %
+             (single1, single2, distanceFromSigma))
 
-        shellSize1 = pairDistance * D1 / D12 + radius1
-        shellSize2 = pairDistance * D2 / D12 + radius2
+        shellSize1 = r0 * D1 / D12 + radius1
+        shellSize2 = r0 * D2 / D12 + radius2
         shellSizeMargin1 = radius1 * 2 #* self.SINGLE_SHELL_FACTOR
         shellSizeMargin2 = radius2 * 2 #* self.SINGLE_SHELL_FACTOR
         shellSizeWithMargin1 = shellSize1 + shellSizeMargin1
@@ -1037,7 +1039,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         com = self.applyBoundary( com )
         minShellSizeWithMargin = minShellSize + shellSizeMargin
         maxShellSize = min( self.getMaxShellSize(),
-                            r0 * 100 + sigma + shellSizeMargin )
+                            distanceFromSigma * 100 + sigma + shellSizeMargin )
 
         if minShellSizeWithMargin >= maxShellSize:
             if __debug__:
@@ -1132,10 +1134,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         pair = self.createPair(single1, single2, com, shellSize)
 
-        r0 = self.distance(pos1, pos2)
-
         pair.dt, pair.eventType, pair.reactingsingle, pair.activeCoordinate = \
-            pair.determinePairEvent()
+            pair.determineNextEvent()
 
         assert pair.dt >= 0
 
@@ -1153,8 +1153,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert shellSize <= maxShellSize
 
         if __debug__:
-            log.info( '%s, dt=%g, pairDistance=%g, shell=%g,' %
-                  ( pair, pair.dt, pairDistance, shellSize ) + 
+            log.info( '%s, dt=%g, r0=%g, shell=%g,' %
+                  ( pair, pair.dt, r0, shellSize ) + 
                   'closest=%s, closestShellDistance=%g' %
                   ( closest, closestShellDistance ) )
 
