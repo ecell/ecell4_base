@@ -1040,9 +1040,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         if minShellSizeWithMargin >= maxShellSize:
             if __debug__:
-                log.debug( '%s not formed: minShellSize >= maxShellSize' %
-                       ( 'Pair( %s, %s )' % ( single1.pid_particle_pair[0], 
-                                              single2.pid_particle_pair[0] ) ) )
+                log.debug('%s not formed: minShellSize %g >= maxShellSize %g' %
+                          ('Pair( %s, %s )' % (single1.pid_particle_pair[0], 
+                                               single2.pid_particle_pair[0]),
+                           minShellSizeWithMargin, maxShellSize))
             return None
 
         # Here, we have to take into account of the burst Singles in

@@ -11,7 +11,7 @@ def draw_time_wrapper(gf, r0=None):
     rnd = myrandom.uniform()
 
     if __debug__:
-        log.debug('        *drawTime. ') #+ str(gf))
+        log.debug('        *drawTime. ' + gf.__class__.__name__)
     try:
         if r0 == None:
             # Todo. Let gf handle this.
@@ -28,7 +28,7 @@ def draw_eventtype_wrapper(gf, dt, r0):
     rnd = myrandom.uniform()
 
     if __debug__:
-        log.debug('        *drawEventType. ') #+ str(gf))
+        log.debug('        *drawEventType. ' + gf.__class__.__name__)
     try:
         eventType = gf.drawEventType(rnd, r0, dt)
     except Exception, e:
@@ -52,7 +52,7 @@ def draw_displacement_wrapper(gf, dt, eventType, a, r0=None, sigma=None):
     rnd = myrandom.uniform()
 
     if __debug__:
-        log.debug('        *drawR. ') #+ str(gf))
+        log.debug('        *drawR. ' + gf.__class__.__name__)
     try:
         if r0 == None:
             r = gf.drawR(rnd, dt)
@@ -83,7 +83,7 @@ def draw_displacement_iv_wrapper(gf, r0, dt, eventType, a, sigma):
         rnd = myrandom.uniform()
 
         if __debug__:
-            log.debug('        *drawTheta. ')#+ str(gf))
+            log.debug('        *drawTheta. ' + gf.__class__.__name__)
         try:
             theta = gf.drawTheta(rnd, r, r0, dt)
         except Exception, e:
