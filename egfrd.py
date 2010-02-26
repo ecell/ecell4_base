@@ -60,8 +60,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.isDirty = True
         self.scheduler = EventScheduler()
 
-        self.smallT = 1e-8  # FIXME: is this ok?
-
         self.userMaxShellSize = numpy.inf
 
         self.domains = {}
