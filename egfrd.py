@@ -598,22 +598,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         minShell = single.pid_particle_pair[1].radius * ( 1.0 + self.SINGLE_SHELL_FACTOR )
 
-        intruders = []   # intruders are domains within minShell
-        closest = None   # closest is the closest domain, excluding intruders.
-        closestDistance = numpy.inf # distance to the shell of the closet.
-        
-        neighbors = self.getNeighbors(singlepos)
-        seen = set([single.domain_id,])
-        for n in neighbors:
-            did = n[0][1].did
-            distance = n[1]
-            if distance > minShell:
-                closest = self.domains[did]
-                closestDistance = distance
-                break
-            elif did not in seen:
-                seen.add(did)
-                intruders.append(self.domains[did])
+        intruders, closest, closestDistance = \
+            self.get_intruders(singlepos, minShell, ignore=[single.domain_id, ])
 
         if __debug__:
             log.debug( "intruders: %s, closest: %s (dist=%g)" %\
@@ -1299,8 +1285,38 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                                      if did not in ignore)
         return neighbors
 
-    def getNeighbors(self, pos):
-        return self.containers[0].get_neighbors(pos)
+    def get_intruders(self, position, radius, ignore):
+        intruders = []   # intruders are domains within radius
+        closest_domain = None   # closest domain, excluding intruders.
+        closest_distance = numpy.inf # distance to the shell of the closest.
+
+        seen = set(ignore)
+        for container in self.containers:
+            neighbors = container.get_neighbors(position)
+            for n in neighbors:
+                domain_id = n[0][1].did
+                distance = n[1]
+                if distance > radius:
+                    if distance < closest_distance:
+                        # This is domain (the first one for this container) 
+                        # that has a shell that is more than radius away from 
+                        # pos.  If it is closer than the closest such one we 
+                        # found so far: store it. Always break out of the 
+                        # inner for loop and check the other containers.
+                        closest_domain = self.domains[domain_id]
+                        closest_distance = distance
+                        break
+                    else:
+                        break
+                elif domain_id not in seen:
+                    # Since a domain can have more than 1 shell (multis for 
+                    # example), and for each shell there is an entry in the 
+                    # shell container, we make sure each domain occurs only 
+                    # once in the returned list here.
+                    seen.add(domain_id)
+                    intruders.append(self.domains[domain_id])
+
+        return intruders, closest_domain, closest_distance
 
     def getClosestObj( self, pos, ignore=[] ):
         '''
