@@ -79,13 +79,13 @@ class MultiBDCore( BDSimulatorCoreBase ):
         BDSimulatorCoreBase.check( self )
 
         # shells are contiguous
-        for shell in self.multiref().shell_list:
-            result = self.sphere_container.get_neighbors(shell[1].position)
+        for (_, shell) in self.multiref().shell_list:
+            result = self.sphere_container.get_neighbors(shell.position)
             # Check contiguity with nearest neighbor only (get_neighbors 
             # returns a sorted list).
             nearest = result[1]
             distance = nearest[1]
-            assert distance - shell[1].radius < 0.0,\
+            assert distance - shell.radius < 0.0,\
                 'shells of %s are not contiguous.' % str(self.multiref())
 
         # all particles within the shell.
@@ -139,14 +139,14 @@ class Multi( object ):
     def check( self ):
         self.sim.check()
 
-        for shell_id_shell_pair in self.shell_list:
+        for (shell_id, shell) in self.shell_list:
             try:
-                container = self.sim.main.get_container(shell_id_shell_pair[1])
-                container[shell_id_shell_pair[0]]
+                container = self.sim.main.get_container(shell)
+                container[shell_id]
             except:
                 raise RuntimeError,\
                     'self.sim.main.sphere_container does not contain %s'\
-                    % str(shell_id_shell_pair[0])
+                    % str(shell_id)
 
     def __repr__( self ):
         return 'Multi[%s: %s: eventID=%s]' % (

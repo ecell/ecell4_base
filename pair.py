@@ -38,9 +38,8 @@ class Pair( object ):
 
         # Create shell.
         shell = self.createNewShell(CoM, shellSize, domain_id)
-        shell_id_shell_pair = (shell_id, shell)
 
-        self.shell_list = [shell_id_shell_pair, ]
+        self.shell_list = [(shell_id, shell), ]
         self.domain_id = domain_id
 
     def __del__( self ):
@@ -51,12 +50,20 @@ class Pair( object ):
         return self.shell_list[0][1].position
     CoM = property(getCoM)
 
-    def getShell(self):
-        return self.shell_list[0]
+    def get_shell_id(self):
+        return self.shell_list[0][0]
+    shell_id = property(get_shell_id)
 
-    def setShell(self, value):
+    def get_shell(self):
+        return self.shell_list[0][1]
+    shell = property(get_shell)
+
+    def get_shell_id_shell_pair(self):
+        return self.shell_list[0]
+    def set_shell_id_shell_pair(self, value):
         self.shell_list[0] = value
-    shell = property(getShell, setShell)
+    shell_id_shell_pair = property(get_shell_id_shell_pair, 
+                                   set_shell_id_shell_pair)
 
     def get_D_tot( self ):
         return self.single1.pid_particle_pair[1].D + \

@@ -29,9 +29,8 @@ class Single( object ):
         position = pid_particle_pair[1].position
         radius = pid_particle_pair[1].radius
         shell = self.createNewShell(position, radius, domain_id)
-        shell_id_shell_pair = (shell_id, shell)
 
-        self.shell_list = [shell_id_shell_pair, ]
+        self.shell_list = [(shell_id, shell), ]
 
         self.eventID = None
 
@@ -43,11 +42,20 @@ class Single( object ):
         return self.pid_particle_pair[1].D
     D = property( getD )
 
-    def getShell(self):
+    def get_shell_id(self):
+        return self.shell_list[0][0]
+    shell_id = property(get_shell_id)
+
+    def get_shell(self):
+        return self.shell_list[0][1]
+    shell = property(get_shell)
+
+    def get_shell_id_shell_pair(self):
         return self.shell_list[0]
-    def setShell(self, value):
+    def set_shell_id_shell_pair(self, value):
         self.shell_list[0] = value
-    shell = property(getShell, setShell)
+    shell_id_shell_pair = property(get_shell_id_shell_pair, 
+                                   set_shell_id_shell_pair)
 
     def initialize( self, t ):
         '''
@@ -160,7 +168,7 @@ class NonInteractionSingle(Single):
                         reactiontypes, surface)
 
     def getMobilityRadius(self):
-        return self.shell[1].radius - self.pid_particle_pair[1].radius
+        return self.shell.radius - self.pid_particle_pair[1].radius
 
     def drawNewPosition(self, dt, eventType):
         gf = self.greens_function()
