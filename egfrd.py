@@ -1288,24 +1288,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def getNeighbors(self, pos):
         return self.containers[0].get_neighbors(pos)
 
-    def getNeighborsWithinRadius( self, pos, radius=numpy.inf, ignore=[] ):
-        '''
-        ignore: domain ids
-        '''
-        result = self.containers[0].get_neighbors_within_radius(pos, radius)
-
-        seen = set(ignore)
-        neighbors = []
-        distances = []
-
-        for item in result:
-            did = item[0][1].did
-            if not did in seen:
-                seen.add(did)
-                neighbors.append(self.domains[did])
-                distances.append(item[1])
-        return neighbors, distances
-
     def getClosestObj( self, pos, ignore=[] ):
         '''
         ignore: domain ids.
