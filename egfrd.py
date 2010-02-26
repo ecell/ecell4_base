@@ -1278,14 +1278,26 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 multi1.sim.sphere_container[sid].radius)
 
     def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
-        '''
-        Get neighbor domains within given radius.
+        """Get neighbor domains within given radius.
 
         ignore: domain ids.
-        '''
 
-        result = self.containers[0].get_neighbors_within_radius(pos, radius)
-        return [self.domains[did] for did in uniq(s[0][1].did for s in result) if did not in ignore]
+        Only returns neighbors, not the distances towards their shells. Can 
+        for example be used to try to clear all objects from a certain volume.
+
+        """
+        neighbors = []
+        for container in self.containers:
+            result = container.get_neighbors_within_radius(pos, radius)
+            # result = [((shell_id_shell_pair), distance), ]
+            # Since a domain can have more than 1 shell (multis for example), 
+            # and for each shell there is an entry in the shell container, we 
+            # make sure each domain occurs only once in the returned list 
+            # here.
+            neighbors.extend(self.domains[did]
+                             for did in uniq(s[0][1].did for s in result)
+                                     if did not in ignore)
+        return neighbors
 
     def getNeighbors(self, pos):
         return self.containers[0].get_neighbors(pos)
