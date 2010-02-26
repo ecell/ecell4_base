@@ -8,9 +8,7 @@ from pair import *
 from utils import *
 
 PlanarSurfaceSingle=None
-CylindricalSurfaceSingle=None
 PlanarSurfacePair=None
-CylindricalSurfacePair=None
 PlanarSurfaceInteraction=None
 CylindricalSurfaceInteraction=None
 

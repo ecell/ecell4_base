@@ -302,3 +302,80 @@ class SphericalPair(Pair):
                                          myrandom.uniform() * 2 * Pi])
         return sphericalToCartesian(newInterParticleS)
 
+    def __str__(self):
+        return 'Spherical' + Pair.__str__(self)
+
+class CylindricalSurfacePair( Pair ):
+    """2 Particles inside a (cylindrical) shell on a CylindricalSurface. 
+    (Rods).
+
+    """
+    def __init__(self, domain_id, CoM, single1, single2, shell_id,
+                 r0, shellSize, rt, surface):
+        Pair.__init__(self, domain_id, CoM, single1, single2, shell_id,
+                      r0, shellSize, rt, surface)
+
+    def com_greens_function(self):
+        # Todo. 1D gf Abs Abs  should be -a to a.
+        #gf = FirstPassageGreensFunction1D(self.D_R)
+        gf = FirstPassageGreensFunction(self.D_R)
+        gf.seta(self.a_R)
+        return gf
+
+    def iv_greens_function(self):
+        # Todo. 1D gf Rad Abs  should be sigma to a.
+        #gf = FirstPassageGreensFunction1DRad(self.D_tot, self.rt.k)
+        # This exact solution is used for drawing times.
+        gf = FirstPassagePairGreensFunction(self.D_tot, self.rt.k, self.sigma)
+        gf.seta(self.a_r)
+        return gf
+
+    def createNewShell(self, position, size, domain_id):
+        # The radius of a rod is not more than it has to be (namely the radius 
+        # of the biggest particle), so if the particle undergoes an unbinding 
+        # reaction we still have to clear the target volume and the move may 
+        # be rejected (NoSpace error).
+        radius = max(self.single1.pid_particle_pair[1].radius,
+                     self.single2.pid_particle_pair[1].radius)
+        orientation = self.surface.unitZ
+        return CylindricalShell(position, radius, orientation, size, domain_id)
+
+    def drawNewPositions(self, dt, r0, old_iv, eventType):
+        new_com = self.drawNewCoM(dt, eventType)
+        new_iv = self.drawNewIV(dt, r0, old_iv, eventType)
+
+        D1 = self.single1.pid_particle_pair[1].D
+        D2 = self.single2.pid_particle_pair[1].D
+
+        newpos1 = new_com - new_iv * (D1 / self.D_tot)
+        newpos2 = new_com + new_iv * (D2 / self.D_tot)
+        return newpos1, newpos2
+
+    def drawNewCoM(self, dt, eventType):
+        gf = self.com_greens_function()
+        # Draw displacement (not absolute position).
+        r_R = draw_displacement_wrapper(gf, dt, eventType, self.a_R) # Todo.
+        return self.CoM + r_R * self.surface.unitZ
+
+    def drawNewIV(self, dt, r0, old_iv, eventType): 
+        # Todo.
+        #gf = self.choosePairGreensFunction(r0, dt)
+        gf = self.iv_greens_function()
+
+        r = draw_displacement_wrapper(gf, dt, eventType, self.a_r, r0, 
+                                      self.sigma)
+        assert r > self.sigma and r <= self.a_r
+
+        # Note: using self.surface.unitZ here might accidently interchange the 
+        # particles.
+        return r * normalize(old_iv)
+
+    def get_shell_size(self):
+        # Heads up.
+        return self.shell_list[0][1].size
+
+    def __str__(self):
+        return 'CylindricalSurface' + Pair.__str__(self)
+
+
+

@@ -198,7 +198,57 @@ class SphericalSingle(NonInteractionSingle):
         return randomVector(r)
 
     def __str__(self):
-        return 'SphericalSingle' + Single.__str__(self)
+        return 'Spherical' + Single.__str__(self)
 
+
+class CylindricalSurfaceSingle(NonInteractionSingle):
+    """1 Particle inside a (cylindrical) shell on a CylindricalSurface. 
+    (Rods).
+
+        * Particle coordinates on surface: z.
+        * Domain: cartesian z.
+        * Initial position: z = 0.
+        * Selected randomly when drawing displacement vector: none.
+
+    """
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
+                 surface):
+        NonInteractionSingle.__init__(self, domain_id, pid_particle_pair, 
+                                      shell_id, reactiontypes, surface)
+
+    def greens_function(self):
+        # Todo. 1D gf Abs Abs.
+        #gf = FirstPassageGreensFunction1D(self.getD())
+        gf = FirstPassageGreensFunction(self.getD())
+        a = self.get_mobility_radius()
+        gf.seta(a)
+        return gf
+
+    def createNewShell(self, position, size, domain_id):
+        # Heads up. The cylinder's *size*, not radius, is changed when you 
+        # make the cylinder bigger, because of the redefinition of setRadius.
+
+        # The radius of a rod is not more than it has to be (namely the radius 
+        # of the particle), so if the particle undergoes an unbinding reaction 
+        # we still have to clear the target volume and the move may be 
+        # rejected (NoSpace error).
+        radius = self.pid_particle_pair[1].radius
+        orientation = self.surface.unitZ
+        return CylindricalShell(position, radius, orientation, size, domain_id)
+
+    def displacement(self, z):
+        # z can be pos or min.
+        return z * self.shell_list[0][1].orientation
+
+    def get_mobility_radius(self):
+        # Heads up.
+        return self.shell_list[0][1].size - self.pid_particle_pair[1].radius
+
+    def get_shell_size(self):
+        # Heads up.
+        return self.shell_list[0][1].size
+
+    def __str__(self):
+        return 'CylindricalSurface' + Single.__str__(self)
 
 
