@@ -10,7 +10,8 @@ class Single( object ):
     coordinate the Green's function is specified.
 
     """
-    def __init__( self, domain_id, pid_particle_pair, shell_id_shell_pair, reactiontypes ):
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
+                 surface):
         self.multiplicity = 1
 
         self.pid_particle_pair = pid_particle_pair
@@ -21,6 +22,14 @@ class Single( object ):
         self.lastTime = 0.0
         self.dt = 0.0
         self.eventType = None
+
+        self.surface = surface
+
+        # Create shell.
+        position = pid_particle_pair[1].position
+        radius = pid_particle_pair[1].radius
+        shell = self.createNewShell(position, radius, domain_id)
+        shell_id_shell_pair = (shell_id, shell)
 
         self.shell_list = [shell_id_shell_pair, ]
 
@@ -33,10 +42,6 @@ class Single( object ):
     def getD( self ):
         return self.pid_particle_pair[1].D
     D = property( getD )
-
-    def getMinRadius(self):
-        return self.pid_particle_pair[1].radius
-    minRadius = property(getMinRadius)
 
     def getShell(self):
         return self.shell_list[0]
@@ -136,7 +141,7 @@ class Single( object ):
     def check( self ):
         pass
 
-    def __repr__( self ):
+    def __str__(self):
         return 'Single[%s: %s: eventID=%s]' % ( self.domain_id, self.pid_particle_pair[0], self.eventID )
 
 
@@ -149,10 +154,10 @@ class NonInteractionSingle(Single):
         * CylindricalSurfaceSingle: cylindrical shell, 1D movement.
 
     """
-    def __init__(self, domain_id, pid_particle_pair, shell_id_shell_pair, 
-                 reactiontypes):
-        Single.__init__(self, domain_id, pid_particle_pair, shell_id_shell_pair,
-                        reactiontypes)
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
+                 surface):
+        Single.__init__(self, domain_id, pid_particle_pair, shell_id,
+                        reactiontypes, surface)
 
     def getMobilityRadius(self):
         return self.shell[1].radius - self.pid_particle_pair[1].radius
@@ -175,15 +180,10 @@ class SphericalSingle(NonInteractionSingle):
         * Selected randomly when drawing displacement vector: theta, phi.
 
     """
-    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes):
-        # Create shell.
-        position = pid_particle_pair[1].position
-        radius = pid_particle_pair[1].radius
-        shell = self.createNewShell(position, radius, domain_id)
-        shell_id_shell_pair = (shell_id, shell)
-        
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
+                 surface):
         NonInteractionSingle.__init__(self, domain_id, pid_particle_pair, 
-                                      shell_id_shell_pair, reactiontypes)
+                                      shell_id, reactiontypes, surface)
 
     def greens_function(self):
         gf = FirstPassageGreensFunction(self.getD())

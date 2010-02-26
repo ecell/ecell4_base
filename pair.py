@@ -14,7 +14,8 @@ class Pair( object ):
     # 5.6: ~1e-8, 6.0: ~1e-9
     CUTOFF_FACTOR = 5.6
 
-    def __init__(self, domain_id, single1, single2, shell_id_shell_pair, rt):
+    def __init__(self, domain_id, CoM, single1, single2, shell_id, r0, 
+                 shellSize, rt, surface):
         self.multiplicity = 2
 
         # Order single1 and single2 so that D1 < D2.
@@ -23,6 +24,8 @@ class Pair( object ):
         else:
             self.single1, self.single2 = single2, single1 
 
+        self.a_R, self.a_r = self.determineRadii(r0, shellSize)
+
         self.rt = rt
 
         self.eventID = None
@@ -30,6 +33,12 @@ class Pair( object ):
         self.lastTime = 0.0
         self.dt = 0.0
         self.eventType = None
+
+        self.surface = surface
+
+        # Create shell.
+        shell = self.createNewShell(CoM, shellSize, domain_id)
+        shell_id_shell_pair = (shell_id, shell)
 
         self.shell_list = [shell_id_shell_pair, ]
         self.domain_id = domain_id
@@ -49,18 +58,14 @@ class Pair( object ):
         self.shell_list[0] = value
     shell = property(getShell, setShell)
 
-    def get_D1(self):
-        return self.single1.pid_particle_pair[1].D
-    
-    def get_D2(self):
-        return self.single2.pid_particle_pair[1].D
-
     def get_D_tot( self ):
-        return self.get_D1() + self.get_D2()
+        return self.single1.pid_particle_pair[1].D + \
+               self.single2.pid_particle_pair[1].D
     D_tot = property(get_D_tot)
 
     def get_D_R(self):
-        return (self.get_D1() * self.get_D2()) / self.D_tot
+        return (self.single1.pid_particle_pair[1].D *
+                self.single2.pid_particle_pair[1].D) / self.D_tot
     D_R = property(get_D_R)
 
     def get_sigma(self):
@@ -174,20 +179,24 @@ class Pair( object ):
         gf = self.iv_greens_function()
         return draw_eventtype_wrapper(gf, self.dt, r0)
 
+    def check( self ):
+        pass
+
+    def __str__(self):
+        return 'Pair[%s: %s, %s: eventID=%s]' % (
+            self.domain_id,
+            self.single1.pid_particle_pair[0],
+            self.single2.pid_particle_pair[0],
+            self.eventID)
 
 class SphericalPair(Pair):
     """2 Particles inside a (spherical) shell not on any surface.
 
     """
     def __init__(self, domain_id, CoM, single1, single2, shell_id,
-                 r0, shellSize, rt):
-        shell = self.createNewShell(CoM, shellSize, domain_id)
-        shell_id_shell_pair = (shell_id, shell)
-
-        Pair.__init__(self, domain_id, single1, single2, 
-                      shell_id_shell_pair, rt)
-
-        self.a_R, self.a_r = self.determineRadii(r0, shellSize)
+                 r0, shellSize, rt, surface):
+        Pair.__init__(self, domain_id, CoM, single1, single2, shell_id,
+                      r0, shellSize, rt, surface)
 
     def com_greens_function(self):
         # Green's function for centre of mass inside absorbing sphere.
@@ -242,16 +251,6 @@ class SphericalPair(Pair):
                     log.debug( 'GF: free' )
                 pgf = FreePairGreensFunction( self.D_tot )
                 return pgf
-
-    def check( self ):
-        pass
-
-    def __repr__( self ):
-        return 'Pair[%s: %s, %s: eventID=%s]' % (
-            self.domain_id,
-            self.single1.pid_particle_pair[0],
-            self.single2.pid_particle_pair[0],
-            self.eventID )
 
     def drawNewPositions(self, dt, r0, oldInterParticle, eventType):
         '''

@@ -169,13 +169,13 @@ public:
     {
         if (!PySequence_Check(val))
         {
-            PyErr_SetString(PyExc_TypeError, "argument must be a sequence");
+            PyErr_SetString(PyExc_TypeError, "position must be a sequence");
             return -1;
         }
         
         if (PySequence_Size(val) != 3)
         {
-            PyErr_SetString(PyExc_ValueError, "argument must be a sequence of 3 elements");
+            PyErr_SetString(PyExc_ValueError, "position must be a sequence of 3 elements");
             return -1;
         }
 
@@ -232,13 +232,13 @@ public:
     {
         if (!PySequence_Check(val))
         {
-            PyErr_SetString(PyExc_TypeError, "argument must be a sequence");
+            PyErr_SetString(PyExc_TypeError, "orientation must be a sequence");
             return -1;
         }
         
         if (PySequence_Size(val) != 3)
         {
-            PyErr_SetString(PyExc_ValueError, "argument must be a sequence of 3 elements");
+            PyErr_SetString(PyExc_ValueError, "orientation must be a sequence of 3 elements");
             return -1;
         }
 

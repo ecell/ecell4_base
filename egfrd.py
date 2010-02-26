@@ -224,7 +224,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # on the surface this particle is on. Either SphericalSingle, 
         # PlanarSurfaceSingle, or CylindricalSurfaceSingle.
         TypeOfSingle = surface.DefaultSingle
-        single = TypeOfSingle(domain_id, pid_particle_pair, shell_id, rt)
+        single = TypeOfSingle(domain_id, pid_particle_pair, shell_id, rt, 
+                              surface)
 
         single.initialize(self.t)
         self.moveShell(single.shell)
@@ -252,7 +253,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # PlanarSurfacePair, or CylindricalSurfacePair.
         TypeOfPair = surface.DefaultPair
         pair = TypeOfPair(domain_id, CoM, single1, single2, shell_id, 
-                          r0, shellSize, rt)
+                          r0, shellSize, rt, surface)
 
         pair.initialize( self.t )
 
@@ -270,9 +271,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.moveSingleShell(single, position, radius)
         self.moveSingleParticle(single, position)
 
-    def moveSingleShell(self, single, position, radius):
-        if radius is None:
-            # Shrink single to particle radius by default.
+    def moveSingleShell(self, single, position, radius=None):
+        if radius == None:
+            # By default, don't change radius.
             radius = single.shell[1].radius
 
         # Reuse shell_id and domain_id.
