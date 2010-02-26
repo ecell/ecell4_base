@@ -1273,7 +1273,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             # FIXME: shells should be renewed
             multi2.addParticleAndShell(
                 multi1.sim.particleMatrix[pid],
-                multi1.sim.shellMatrix[sid].radius)
+                multi1.sim.sphere_container[sid].radius)
 
     def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
         '''
