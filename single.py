@@ -167,12 +167,15 @@ class NonInteractionSingle(Single):
         Single.__init__(self, domain_id, pid_particle_pair, shell_id,
                         reactiontypes, surface)
 
-    def getMobilityRadius(self):
-        return self.shell.radius - self.pid_particle_pair[1].radius
+    def get_mobility_radius(self):
+        return self.shell_list[0][1].radius - self.pid_particle_pair[1].radius
+
+    def get_shell_size(self):
+        return self.shell_list[0][1].radius
 
     def drawNewPosition(self, dt, eventType):
         gf = self.greens_function()
-        a = self.getMobilityRadius()
+        a = self.get_mobility_radius()
         r = draw_displacement_wrapper(gf, dt, eventType, a)
         displacement = self.displacement(r)
         assert abs(length(displacement) - abs(r)) <= 1e-15 * abs(r)
@@ -195,7 +198,7 @@ class SphericalSingle(NonInteractionSingle):
 
     def greens_function(self):
         gf = FirstPassageGreensFunction(self.getD())
-        a = self.getMobilityRadius()
+        a = self.get_mobility_radius()
         gf.seta(a)
         return gf
 

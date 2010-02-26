@@ -24,7 +24,7 @@ from _gfrd import (
     ParticleContainer
     )
 
-from surface import CuboidalRegion
+from surface import *
 
 from gfrdbase import *
 from single import *
@@ -782,7 +782,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 newCoM = pair.drawNewCoM(pair.dt, eventType)
                 
                 if __debug__:
-                    shellSize = pair.shell.radius
+                    shellSize = pair.get_shell_size()
                     assert self.distance( oldCoM, newCoM ) + species3.radius <\
                         shellSize
 
@@ -880,7 +880,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.t >= single.lastTime
         assert self.t <= single.lastTime + single.dt
 
-        oldpos, oldRadius, _ = single.shell
+        oldpos = single.shell.position
+        old_shell_size = single.get_shell_size()
+
         particleRadius = single.pid_particle_pair[1].radius
 
         # Override dt, burst happens before single's scheduled event.
@@ -890,7 +892,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.propagateSingle(single)
 
         newpos = single.pid_particle_pair[1].position
-        assert self.distance(newpos, oldpos) <= oldRadius - particleRadius
+        assert self.distance(newpos, oldpos) <= old_shell_size - particleRadius
         # Displacement check is in NonInteractionSingle.drawNewPosition.
 
         # Todo. if isinstance(single, InteractionSingle):
@@ -944,7 +946,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             assert not self.checkOverlap(newpos2, particle2[1].radius,
                                          ignore=[particle1[0], particle2[0]])
             assert self.checkPairPos(pair, newpos1, newpos2, oldCoM,\
-                                         pair.shell.radius)
+                                         pair.get_shell_size())
         else:
             newpos1 = particle1[1].position
             newpos2 = particle2[1].position
@@ -1354,20 +1356,24 @@ rejected moves = %d
         for shell_id, shell in obj.shell_list:
             closest, distance = self.getClosestObj( shell.position,
                                                     ignore = [obj.domain_id] )
+            if(type(obj) == CylindricalSurfaceSingle or
+               type(obj) == CylindricalSurfacePair):
+                shell_size = shell.size
+            else:
+                shell_size = shell.radius
 
-            assert shell.radius <= self.getUserMaxShellSize(),\
+            assert shell_size <= self.getUserMaxShellSize(),\
                 '%s shell size larger than user-set max shell size' % \
                 str( shell_id )
 
-            assert shell.radius <= self.getMaxShellSize(),\
+            assert shell_size <= self.getMaxShellSize(),\
                 '%s shell size larger than simulator cell size / 2' % \
                 str( shell_id )
 
-            # Todo for cylinders.
-            assert distance - shell.radius >= 0.0,\
+            assert distance - shell_size >= 0.0,\
                 '%s overlaps with %s. (shell: %g, dist: %g, diff: %g.' \
-                % ( str( obj ), str( closest ), shell.radius, distance,\
-                        distance - shell.radius )
+                % ( str( obj ), str( closest ), shell_size, distance,\
+                        distance - shell_size )
 
         return True
 

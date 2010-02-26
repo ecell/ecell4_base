@@ -65,6 +65,9 @@ class Pair( object ):
     shell_id_shell_pair = property(get_shell_id_shell_pair, 
                                    set_shell_id_shell_pair)
 
+    def get_shell_size(self):
+        return self.shell_list[0][1].radius
+
     def get_D_tot( self ):
         return self.single1.pid_particle_pair[1].D + \
                self.single2.pid_particle_pair[1].D
