@@ -22,7 +22,6 @@ __all__ = [
     'log',
     'setupLogging',
     'p_free',
-    'drawR_free',
     'NoSpace',
     'ReactionRuleCache',
     'ParticleModel',
@@ -84,11 +83,6 @@ def p_free( r, t, D ):
 
     return p * jacobian
     
-
-def drawR_free( t, D ):
-    ro = math.sqrt( 2.0 * D * t )
-    return myrandom.normal( 0.0, ro, 3 )
-
 
 class NoSpace( Exception ):
     pass

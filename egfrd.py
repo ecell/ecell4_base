@@ -409,6 +409,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def fireSingleReaction( self, single ):
         reactantSpeciesRadius = single.pid_particle_pair[1].radius
         oldpos = single.pid_particle_pair[1].position
+        currentSurface = single.surface
         
         rt = single.drawReactionRule()
 
@@ -463,8 +464,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.clearVolume( oldpos, rad )
 
             for _ in range(self.dissociation_retry_moves):
-                unitVector = randomUnitVector()
-                vector = unitVector * particleRadius12 * ( 1.0 + 1e-7 )
+                vector = \
+                    currentSurface.randomVector(particleRadius12 *
+                                                MINIMAL_SEPERATION_FACTOR)
             
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.
