@@ -1293,15 +1293,25 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def getClosestObj( self, pos, ignore=[] ):
         '''
         ignore: domain ids.
+
         '''
+        closest_domain = None
+        closest_distance = numpy.inf
 
-        result = self.containers[0].get_neighbors(pos)
+        for container in self.containers:
+            result = container.get_neighbors(pos)
 
-        for item in result:
-            if item[0][1].did not in ignore:
-                return self.domains[item[0][1].did], item[1]
+            for shell_id_shell_pair, distance in result:
+                domain_id = shell_id_shell_pair[1].did 
 
-        return None, numpy.inf
+                if domain_id not in ignore and distance < closest_distance:
+                    domain = self.domains[domain_id]
+                    closest_domain, closest_distance = domain, distance
+                    # Found yet a closer domain. Break out of inner for loop 
+                    # and check other containers.
+                    break   
+
+        return closest_domain, closest_distance
 
     def objDistance( self, pos, obj ):
         dists = numpy.zeros( len( obj.shell_list ) )
