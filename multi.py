@@ -126,7 +126,7 @@ class Multi( object ):
         shell_id_shell_pair = (
             self.sim.main.shellIDGenerator(),
             SphericalShell(position, size, self.domain_id) )
-        self.sim.main.shellMatrix.update(shell_id_shell_pair)
+        self.sim.main.moveShell(shell_id_shell_pair)
         self.sim.shellMatrix.update(shell_id_shell_pair)
         return shell_id_shell_pair
 
@@ -141,7 +141,8 @@ class Multi( object ):
 
         for shell_id_shell_pair in self.shell_list:
             try:
-                self.sim.main.shellMatrix[shell_id_shell_pair[0]]
+                container = self.sim.main.get_container(shell_id_shell_pair[1])
+                container[shell_id_shell_pair[0]]
             except:
                 raise RuntimeError,\
                     'self.sim.main.shellMatrix does not contain %s'\

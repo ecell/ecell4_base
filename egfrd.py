@@ -17,6 +17,7 @@ from _gfrd import (
     Particle,
     SphericalShell,
     SphericalShellContainer,
+    CylindricalShellContainer,
     DomainIDGenerator,
     ShellIDGenerator,
     DomainID,
@@ -48,7 +49,6 @@ class Delegate( object ):
 
 class EGFRDSimulator( ParticleSimulatorBase ):
     def __init__( self ):
-        self.shellMatrix = None
         self.domainIDGenerator = DomainIDGenerator(0)
         self.shellIDGenerator = ShellIDGenerator(0)
 
@@ -68,14 +68,14 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
     def setWorldSize( self, size ):
         ParticleSimulatorBase.setWorldSize( self, size )
-        self.shellMatrix = SphericalShellContainer( self.worldSize, self.matrixSize )
+        self.isDirty = True
 
     def setMatrixSize( self, size ):
         ParticleSimulatorBase.setMatrixSize( self, size )
-        self.shellMatrix = SphericalShellContainer( self.worldSize, self.matrixSize )
+        self.isDirty = True
 
     def getMatrixCellSize( self ):
-        return self.shellMatrix.cell_size
+        return self.containers[0].cell_size
 
     def getNextTime( self ):
         if self.scheduler.getSize() == 0:
@@ -118,7 +118,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         ParticleSimulatorBase.initialize( self )
 
         self.scheduler.clear()
-        self.shellMatrix = SphericalShellContainer(self.worldSize, self.matrixSize)
+        self.containers = [SphericalShellContainer(self.worldSize, 
+                                                   self.matrixSize),
+                           CylindricalShellContainer(self.worldSize, 
+                                                     self.matrixSize)]
         self.domains = {}
 
         singles = []
@@ -297,13 +300,21 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         self.moveParticle(new_pid_particle_pair)
 
+    def get_container(self, shell):
+        if type(shell).__name__ == 'SphericalShell':
+            return self.containers[0]
+        elif type(shell).__name__ == 'CylindricalShell':
+            return self.containers[1]
+
     def removeDomain( self, obj ):
         del self.domains[obj.domain_id]
-        for shell_id, _ in obj.shell_list:
-            del self.shellMatrix[shell_id]
-    
+        for shell_id, shell in obj.shell_list:
+            container = self.get_container(shell)
+            del container[shell_id]
+
     def moveShell(self, shell_id_shell_pair):
-        self.shellMatrix.update(shell_id_shell_pair)
+        container = self.get_container(shell_id_shell_pair[1])
+        container.update(shell_id_shell_pair)
 
     def addEvent( self, t, func, arg ):
         return self.scheduler.addEvent( t, func, arg )
@@ -637,7 +648,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if __debug__:
             log.info( 'single reaction; placing product failed.' )
         self.domains[single.domain_id] = single
-        self.shellMatrix.update(single.shell)
+        container = self.get_container(single.shell[1])
+        container.update(single.shell)
         self.rejectedMoves += 1
         single.reset()
         self.addSingleEvent(single)
@@ -952,8 +964,15 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.moveSingle(single1, newpos1, particle1[1].radius)
         self.moveSingle(single2, newpos2, particle2[1].radius)
 
-        assert self.shellMatrix[single1.shell[0]].radius == single1.shell[1].radius
-        assert self.shellMatrix[single2.shell[0]].radius == single2.shell[1].radius
+        if __debug__:
+            container = self.get_container(single1.shell[1])
+            assert container[single1.shell[0]].radius == single1.shell[1].radius
+            assert container[single2.shell[0]].radius == single2.shell[1].radius
+
+            if type(single1.shell[1]).__name__ == 'CylindricalShell':
+                assert container[single1.shell[0]].size == single1.shell[1].size
+                assert container[single2.shell[0]].size == single2.shell[1].size
+
         assert single1.shell[1].radius == particle1[1].radius
         assert single2.shell[1].radius == particle2[1].radius
 
@@ -1263,17 +1282,17 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         ignore: domain ids.
         '''
 
-        result = self.shellMatrix.get_neighbors_within_radius(pos, radius)
+        result = self.containers[0].get_neighbors_within_radius(pos, radius)
         return [self.domains[did] for did in uniq(s[0][1].did for s in result) if did not in ignore]
 
     def getNeighbors(self, pos):
-        return self.shellMatrix.get_neighbors(pos)
+        return self.containers[0].get_neighbors(pos)
 
     def getNeighborsWithinRadius( self, pos, radius=numpy.inf, ignore=[] ):
         '''
         ignore: domain ids
         '''
-        result = self.shellMatrix.get_neighbors_within_radius(pos, radius)
+        result = self.containers[0].get_neighbors_within_radius(pos, radius)
 
         seen = set(ignore)
         neighbors = []
@@ -1292,7 +1311,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         ignore: domain ids.
         '''
 
-        result = self.shellMatrix.get_neighbors(pos)
+        result = self.containers[0].get_neighbors(pos)
 
         for item in result:
             if item[0][1].did not in ignore:
@@ -1362,6 +1381,7 @@ rejected moves = %d
                 '%s shell size larger than simulator cell size / 2' % \
                 str( shell_id )
 
+            # Todo for cylinders.
             assert distance - shell.radius >= 0.0,\
                 '%s overlaps with %s. (shell: %g, dist: %g, diff: %g.' \
                 % ( str( obj ), str( closest ), shell.radius, distance,\
@@ -1389,20 +1409,24 @@ rejected moves = %d
                   ( population, eventPopulation )
 
     def checkShellMatrix( self ):
-        if self.worldSize != self.shellMatrix.world_size:
-            raise RuntimeError,\
-                'self.worldSize != self.shellMatrix.worldSize'
+        for container in self.containers:
+            if self.worldSize != container.world_size:
+                raise RuntimeError,\
+                    'self.worldSize != container.world_size'
 
         shellPopulation = 0
         for i in range( self.scheduler.getSize() ):
             obj = self.scheduler.getEventByIndex(i).getArg()
             shellPopulation += len(obj.shell_list)
-
-        if shellPopulation != len(self.shellMatrix):
-            raise RuntimeError,\
-                'num shells (%d) != self.shellMatrix.size (%d)' % (shellPopulation, len(self.shellMatrix))
+  
+        matrix_population = sum(len(container) for container in self.containers)
+        if shellPopulation != matrix_population:
+            raise RuntimeError(
+                'num shells (%d) != matrix population (%d)' % 
+                (shellPopulation, matrix_population))
         
-        self.shellMatrix.check()
+        for container in self.containers:
+            container.check()
 
     def check_domains(self):
         domains = set(self.domains.itervalues())
