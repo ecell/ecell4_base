@@ -20,7 +20,7 @@ SAFETY = 1.0 + 1e-5
 
 # Tolerance used for float comparison functions. Oversimplifying: two floats a 
 # and b are considered to be equal if abs( a - b ) < TOLERANCE * abs( a ).
-TOLERANCE = 1e-8
+TOLERANCE = 1e-7
 
 # Multiplication factor used for seperating 2 particles or a particle and a 
 # surface after unbinding.

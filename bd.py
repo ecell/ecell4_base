@@ -131,7 +131,9 @@ class BDSimulatorCoreBase( object ):
             if D == 0.0:
                 continue
 
-            displacement = drawR_free( self.dt, D )
+            species = self.main.speciesList[particle.sid]
+            surface = self.main.getSurface(species)
+            displacement = surface.drawBDdisplacement(self.dt, D)
 
             newpos = pid_particle_pair[1].position + displacement
             newpos = self.main.applyBoundary(newpos)

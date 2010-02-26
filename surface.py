@@ -8,9 +8,7 @@ from pair import *
 from utils import *
 
 PlanarSurfaceSingle=None
-CylindricalSurfaceSingle=None
 PlanarSurfacePair=None
-CylindricalSurfacePair=None
 PlanarSurfaceInteraction=None
 CylindricalSurfaceInteraction=None
 
@@ -86,7 +84,7 @@ class PlanarSurface(Surface, Box):
         return (self.Lz + radius) * MINIMAL_SEPERATION_FACTOR
 
     def randomUnbindingSite(self, pos, radius):
-        return pos + myrandom.choice([-1, 1]) * \
+        return pos + myrandom.choice(-1, 1) * \
                      self.minimalDistanceFromSurface(radius)  * self.unitZ
 
 
@@ -115,7 +113,7 @@ class CylindricalSurface(Surface, Cylinder):
         return z * self.unitZ
 
     def randomVector(self, r):
-        return myrandom.choice([-1, 1]) * r * self.unitZ
+        return myrandom.choice(-1, 1) * r * self.unitZ
 
     def randomPosition(self):
         return self.origin + myrandom.uniform(-1, 1) * self.vectorZ
