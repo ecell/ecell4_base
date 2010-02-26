@@ -37,55 +37,45 @@ def draw_eventtype_wrapper(gf, dt, r0):
                         (str(e), rnd, r0, dt, gf.dump()))
     return eventType
 
-def draw_displacement_wrapper(gf, dt, eventType, a):
+# Todo. Returns r, not displacement.
+def draw_displacement_wrapper(gf, dt, eventType, a, r0=None, sigma=None):
     if(eventType == EventType.COM_ESCAPE or
-       eventType == EventType.SINGLE_ESCAPE):
+       eventType == EventType.SINGLE_ESCAPE or
+       eventType == EventType.IV_ESCAPE):
         # Escape through this coordinate. We already know the new r.
         # Todo. Let gf handle this.
         return a
+    elif eventType == EventType.IV_REACTION and sigma != None:
+        # Todo. Let gf handle this.
+        return sigma
 
     rnd = myrandom.uniform()
 
     if __debug__:
         log.debug('        *drawR. ') #+ str(gf))
     try:
-        r = gf.drawR(rnd, dt)
-        while r > a: # redraw; shouldn't happen often
+        if r0 == None:
+            r = gf.drawR(rnd, dt)
+        else:
+            r = gf.drawR(rnd, r0, dt)
+        while r > a or r <= sigma: # redraw; shouldn't happen often
             if __debug__:
                 log.debug('        *drawR: redraw')
+            #self.sim.rejectedMoves += 1  #FIXME:
             rnd = myrandom.uniform()
-            r = gf.drawR(rnd, dt)
+            if r0 == None:
+                r = gf.drawR(rnd, dt)
+            else:
+                r = gf.drawR(rnd, r0, dt)
     except Exception, e:
         raise Exception('gf.drawR() failed, '
-                        '%s, rnd = %g, dt = %g, %s' %
-                        (str(e), rnd, dt, gf.dump()))
+                        '%s, rnd = %g, r0 = %s, dt = %g, %s' %
+                        (str(e), rnd, r0, dt, gf.dump()))
 
     return r
 
+# Todo. Returns (r,theta), not displacement.
 def draw_displacement_iv_wrapper(gf, r0, dt, eventType, a, sigma):
-    def draw_r_wrapper(gf, r0, dt, a, sigma):
-        """Draw r for the inter-particle vector.
-
-        """
-        rnd = myrandom.uniform()
-
-        if __debug__:
-            log.debug('        *drawR_pair. ') #+ str(gf))
-        try:
-            r = gf.drawR(rnd, r0, dt)
-            # redraw; shouldn't happen often
-            while r >= a or r <= sigma: 
-                if __debug__:
-                    log.info('    drawR_pair: redraw')
-                #self.sim.rejectedMoves += 1  #FIXME:
-                rnd = myrandom.uniform()
-                r = gf.drawR(rnd, r0, dt)
-        except Exception, e:
-            raise Exception('gf.drawR_pair() failed, '
-                            '%s, rnd = %g, r0 = %g, dt = %g, %s' %
-                            (str(e), rnd, r0, dt, gf.dump()))
-        return r
-
     def draw_theta_wrapper(gf, r, r0, dt):
         """Draw theta for the inter-particle vector.
 
@@ -105,14 +95,7 @@ def draw_displacement_iv_wrapper(gf, r0, dt, eventType, a, sigma):
         # spheres it doesn't matter.
         return myrandom.choice(-1, 1) * theta
 
-    if eventType == EventType.IV_REACTION:
-        # Todo. Let gf handle this.
-        r = sigma
-    elif eventType == EventType.IV_ESCAPE:
-        # Todo. Let gf handle this.
-        r = a
-    else:
-        r = draw_r_wrapper(gf, r0, dt, a, sigma)
+    r = draw_displacement_wrapper(gf, dt, eventType, a, r0, sigma)
     theta = draw_theta_wrapper(gf, r, r0, dt)
     return r, theta
 
