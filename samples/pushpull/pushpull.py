@@ -219,7 +219,7 @@ l = Logger( s,
             '#@ ka=%g; kd1=%g; kd2=%g\n' %
             ( ka, kd1, kd2 ) )
 #l.setParticleOutput( ('K','P') )
-#l.setInterval( 1e-3 )
+#l.setParticleOutInterval( 1e-3 )
 #l.writeParticles()
 l.log()
 

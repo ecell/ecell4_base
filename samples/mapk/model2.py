@@ -170,7 +170,7 @@ l = Logger( s,
 
 
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
-l.setInterval( 1e-0 )
+l.setParticleOutInterval( 1e-0 )
 l.log()
 
 while s.t < T:
