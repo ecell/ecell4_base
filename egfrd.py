@@ -649,7 +649,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.domains[single.domain_id] = single
         self.moveShell(single.shell_id_shell_pair)
         self.rejectedMoves += 1
-        single.reset()
+        single.initialize(self.t)
         self.addSingleEvent(single)
 
     def restoreSingleShells( self, singles ):
