@@ -212,6 +212,47 @@ class SphericalSingle(NonInteractionSingle):
         return 'Spherical' + Single.__str__(self)
 
 
+class PlanarSurfaceSingle(NonInteractionSingle):
+    """1 Particle inside a (cylindrical) shell on a PlanarSurface. (Hockey 
+    pucks).
+
+        * Particle coordinates on surface: x, y.
+        * Domain: radial r. (determines x and y together with theta).
+        * Initial position: r = 0.
+        * Selected randomly when drawing displacement vector: theta.
+
+    """
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
+                 surface):
+        NonInteractionSingle.__init__(self, domain_id, pid_particle_pair, 
+                                      shell_id, reactiontypes, surface)
+
+    def greens_function(self):
+        # Todo. 2D gf Abs Sym.
+        #gf = FirstPassageGreensFunction2D(self.getD())
+
+        gf = FirstPassageGreensFunction(self.getD())
+        a = self.get_mobility_radius()
+        gf.seta(a)
+        return gf
+
+    def createNewShell(self, position, radius, domain_id):
+        # The size (thickness) of a hockey puck is not more than it has to be 
+        # (namely the radius of the particle), so if the particle undergoes an 
+        # unbinding reaction we still have to clear the target volume and the 
+        # move may be rejected (NoSpace error).
+        orientation = self.surface.unitZ
+        size = self.pid_particle_pair[1].radius
+        return CylindricalShell(position, radius, orientation, size, domain_id)
+
+    def displacement(self, r):
+        x, y = randomVector2D(r)
+        return x * self.surface.unitX + y * self.surface.unitY
+
+    def __str__(self):
+        return 'PlanarSurface' + Single.__str__(self)
+
+
 class CylindricalSurfaceSingle(NonInteractionSingle):
     """1 Particle inside a (cylindrical) shell on a CylindricalSurface. 
     (Rods).

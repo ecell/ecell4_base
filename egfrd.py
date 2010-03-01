@@ -185,6 +185,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         
         self.stepCounter += 1
 
+        if __debug__:
+            if self.scheduler.getSize() == 0:
+                raise RuntimeError('No particles in scheduler.')
+
         event = self.scheduler.getTopEvent()
         self.t, self.lastEvent = event.getTime(), event.getArg()
 
