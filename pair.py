@@ -278,14 +278,19 @@ class SphericalPair(Pair):
                 pgf = FreePairGreensFunction( self.D_tot )
                 return pgf
 
-    def drawNewPositions(self, dt, r0, oldInterParticle, eventType):
-        '''
-        Calculate new positions of the particles in the Pair using
-        a new center-of-mass, a new inter-particle vector, and
-        an old inter-particle vector.
-        '''
-        CoM = self.drawNewCoM(dt, eventType)
-        newInterParticle = self.drawNewIV(dt, r0, eventType)
+    def drawNewCoM(self, dt, eventType):
+        gf = self.com_greens_function()
+        r_R = draw_displacement_wrapper(gf, dt, eventType, self.a_R)
+        return self.CoM + randomVector(r_R)
+
+    def drawNewIV(self, dt, r0, old_iv, eventType): 
+        gf = self.choosePairGreensFunction(r0, dt)
+        r, theta = draw_displacement_iv_wrapper(gf, r0, dt, eventType,
+                                                self.a_r, self.sigma)
+        newInterParticleS = numpy.array([r, theta, 
+                                         myrandom.uniform() * 2 * Pi])
+        new_iv = sphericalToCartesian(newInterParticleS)
+
         #FIXME: need better handling of angles near zero and pi.
 
         # I rotate the new interparticle vector along the
@@ -296,37 +301,16 @@ class SphericalPair(Pair):
         # the rotation axis is a normalized cross product of
         # the z-axis and the original vector.
         # rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
-
-        angle = vectorAngleAgainstZAxis(oldInterParticle)
+        angle = vectorAngleAgainstZAxis(old_iv)
         if angle % numpy.pi != 0.0:
-            rotationAxis = crossproductAgainstZAxis(oldInterParticle)
+            rotationAxis = crossproductAgainstZAxis(old_iv)
             rotationAxis = normalize(rotationAxis)
-            rotated = rotateVector(newInterParticle, rotationAxis, angle)
+            rotated = rotateVector(new_iv, rotationAxis, angle)
         elif angle == 0.0:
-            rotated = newInterParticle
+            rotated = new_iv
         else:
-            rotated = numpy.array([newInterParticle[0], newInterParticle[1],
-                                   - newInterParticle[2]])
-
-        D1 = self.single1.pid_particle_pair[1].D
-        D2 = self.single2.pid_particle_pair[1].D
-        newpos1 = CoM - rotated * (D1 / (D1 + D2))
-        newpos2 = CoM + rotated * (D2 / (D1 + D2))
-
-        return newpos1, newpos2
-
-    def drawNewCoM(self, dt, eventType):
-        gf = self.com_greens_function()
-        r_R = draw_displacement_wrapper(gf, dt, eventType, self.a_R)
-        return self.CoM + randomVector(r_R)
-
-    def drawNewIV(self, dt, r0, eventType): 
-        gf = self.choosePairGreensFunction(r0, dt)
-        r, theta = draw_displacement_iv_wrapper(gf, r0, dt, eventType,
-                                                self.a_r, self.sigma)
-        newInterParticleS = numpy.array([r, theta, 
-                                         myrandom.uniform() * 2 * Pi])
-        return sphericalToCartesian(newInterParticleS)
+            rotated = numpy.array([new_iv[0], new_iv[1], - new_iv[2]])
+        return rotated
 
     def __str__(self):
         return 'Spherical' + Pair.__str__(self)
