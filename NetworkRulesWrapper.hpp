@@ -38,7 +38,7 @@ public:
             {
                 while (::valid(*gen))
                 {
-                    typename backend_type::reaction_rule_type r((*gen)());
+                    typename backend_type::reaction_rule_type const r((*gen)());
                     (*x.first).second.push_back(reaction_rule_type(
                         r.id(),
                         boost::lexical_cast<
@@ -70,7 +70,7 @@ public:
             {
                 while (::valid(*gen))
                 {
-                    typename backend_type::reaction_rule_type r((*gen)());
+                    typename backend_type::reaction_rule_type const r((*gen)());
                     (*x.first).second.push_back(reaction_rule_type(
                         r.id(),
                         boost::lexical_cast<
