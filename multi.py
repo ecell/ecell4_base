@@ -1,4 +1,4 @@
-from bd import BDSimulatorCoreBase
+from bd import BDSimulatorCoreBase, DEFAULT_DT_FACTOR
 from weakref import ref
 
 from _gfrd import *

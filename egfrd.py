@@ -272,6 +272,12 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         domain_id = self.domainIDGenerator()
         multi = Multi( domain_id, self )
         self.domains[domain_id] = multi
+        if __debug__:
+            try:
+                # Option to make multis run faster for nicer visualization.
+                multi.sim.dtFactor = DEFAULT_DT_FACTOR * self.bd_dt_factor
+            except AttributeError:
+                multi.sim.dtFactor = DEFAULT_DT_FACTOR 
         return multi
 
     def moveSingle(self, single, position, radius=None):
