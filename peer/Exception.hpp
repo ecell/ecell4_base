@@ -69,7 +69,7 @@ public:
 
     ExceptionWrapper(Texc_ const& impl): impl_(impl)
     {
-        boost::python::tuple t(impl_.what());
+        boost::python::tuple t(boost::python::make_tuple(impl_.what()));
         if ((*base_traits::pytype_object->tp_init)(
                 reinterpret_cast<PyObject*>(this), t.ptr(), NULL) == -1)
         {
