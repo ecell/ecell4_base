@@ -160,6 +160,16 @@ def randomVector( r ):
     v = [myrandom.uniform(-1,1), myrandom.uniform(-1,1), myrandom.uniform(-1,1)]
     return _gfrd.normalize(v, r)
 
+def randomVector2D(r):
+    """Return a random 2D cartesian vector of length r.
+
+    """
+    v = [myrandom.uniform(-1,1), myrandom.uniform(-1,1)]
+    # Todo. return _gfrd.normalize(v, r)
+    v = numpy.array(v)
+    norm = numpy.linalg.norm(v)
+    return v * (r / norm)
+
 def length( a ):
     return _gfrd.length( a )
 

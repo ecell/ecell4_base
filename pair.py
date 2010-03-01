@@ -189,6 +189,22 @@ class Pair( object ):
         gf = self.iv_greens_function()
         return draw_eventtype_wrapper(gf, self.dt, r0)
 
+    def drawNewPositions(self, dt, r0, old_iv, eventType):
+        """Calculate new positions of the pair particles using a new 
+        center-of-mass, a new inter-particle vector, and an old inter-particle 
+        vector.
+
+        """
+        new_com = self.drawNewCoM(dt, eventType)
+        new_iv = self.drawNewIV(dt, r0, old_iv, eventType)
+
+        D1 = self.single1.pid_particle_pair[1].D
+        D2 = self.single2.pid_particle_pair[1].D
+
+        newpos1 = new_com - new_iv * (D1 / self.D_tot)
+        newpos2 = new_com + new_iv * (D2 / self.D_tot)
+        return newpos1, newpos2
+
     def check( self ):
         pass
 
@@ -315,6 +331,71 @@ class SphericalPair(Pair):
     def __str__(self):
         return 'Spherical' + Pair.__str__(self)
 
+
+class PlanarSurfacePair( Pair ):
+    """2 Particles inside a (cylindrical) shell on a PlanarSurface. (Hockey 
+    pucks).
+
+    """
+    def __init__(self, domain_id, CoM, single1, single2, shell_id,
+                 r0, shellSize, rt, surface):
+        Pair.__init__(self, domain_id, CoM, single1, single2, shell_id,
+                      r0, shellSize, rt, surface)
+
+    def com_greens_function(self):
+        # Todo. 2D gf Abs Sym.
+        gf = FirstPassageGreensFunction(self.D_R)
+        gf.seta(self.a_R)
+        return gf
+
+    def iv_greens_function(self):
+        # Todo. 2D gf Rad Abs.
+        # This exact solution is used for drawing times.
+        gf = FirstPassagePairGreensFunction(self.D_tot, self.rt.k, self.sigma)
+        gf.seta(self.a_r)
+        return gf
+
+    def createNewShell(self, position, radius, domain_id):
+        # The size (thickness) of a hockey puck is not more than it has to be 
+        # (namely the radius of the particle), so if the particle undergoes an 
+        # unbinding reaction we still have to clear the target volume and the 
+        # move may be rejected (NoSpace error).
+        orientation = self.surface.unitZ
+        size = max(self.single1.pid_particle_pair[1].radius,
+                   self.single2.pid_particle_pair[1].radius)
+        return CylindricalShell(position, radius, orientation, size, domain_id)
+
+        a_R, a_r = self.determineRadii()
+
+    def drawNewCoM(self, dt, eventType):
+        gf = self.com_greens_function()
+        r_R = draw_displacement_wrapper(gf, dt, eventType, self.a_R)
+        x, y = randomVector2D(r_R)
+        return self.CoM + x * self.surface.unitX + y * self.surface.unitY
+
+    def drawNewIV(self, dt, r0, old_iv, eventType): 
+        # Todo.
+        #gf = self.choosePairGreensFunction(r0, dt)
+        gf = self.iv_greens_function()
+        r, theta = draw_displacement_iv_wrapper(gf, r0, dt, eventType,
+                                                self.a_r, self.sigma)
+        assert r > self.sigma and r <= self.a_r
+
+        unitX = self.surface.unitX
+        unitY = self.surface.unitY
+        angle = vectorAngle(unitX, old_iv)
+        # Todo. Test if nothing changes when theta == 0.
+        new_angle = angle + theta
+
+        new_iv = r * math.cos(new_angle) * unitX + \
+                 r * math.sin(new_angle) * unitY
+
+        return new_iv
+
+    def __str__(self):
+        return 'PlanarSurface' + Pair.__str__(self)
+
+
 class CylindricalSurfacePair( Pair ):
     """2 Particles inside a (cylindrical) shell on a CylindricalSurface. 
     (Rods).
@@ -349,17 +430,6 @@ class CylindricalSurfacePair( Pair ):
                      self.single2.pid_particle_pair[1].radius)
         orientation = self.surface.unitZ
         return CylindricalShell(position, radius, orientation, size, domain_id)
-
-    def drawNewPositions(self, dt, r0, old_iv, eventType):
-        new_com = self.drawNewCoM(dt, eventType)
-        new_iv = self.drawNewIV(dt, r0, old_iv, eventType)
-
-        D1 = self.single1.pid_particle_pair[1].D
-        D2 = self.single2.pid_particle_pair[1].D
-
-        newpos1 = new_com - new_iv * (D1 / self.D_tot)
-        newpos2 = new_com + new_iv * (D2 / self.D_tot)
-        return newpos1, newpos2
 
     def drawNewCoM(self, dt, eventType):
         gf = self.com_greens_function()

@@ -7,8 +7,6 @@ from single import *
 from pair import *
 from utils import *
 
-PlanarSurfaceSingle=None
-PlanarSurfacePair=None
 PlanarSurfaceInteraction=None
 CylindricalSurfaceInteraction=None
 
