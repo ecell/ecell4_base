@@ -133,7 +133,8 @@ public:
     typedef Transaction<traits_type> transaction_type;
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
     typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
-    typedef unassignable_adapter<particle_id_pair, get_default_impl::std::vector> particle_id_pair_list;
+    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
+    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
 
 protected:
     typedef std::map<species_id_type, species_type> species_map;
@@ -145,26 +146,26 @@ protected:
         overlap_checker(Tset_ const& ignore = Tset_()): ignore_(ignore), result_(0) {}
 
         template<typename Titer_>
-        void operator()(Titer_ const& i, length_type const&)
+        void operator()(Titer_ const& i, length_type const& dist)
         {
             if (!contains(ignore_, (*i).first))
             {
                 if (!result_)
                 {
-                    result_ = new particle_id_pair_list();
+                    result_ = new particle_id_pair_and_distance_list();
                 }
-                result_->push_back(*i);
+                result_->push_back(std::make_pair(*i, dist));
             }
         }
 
-        particle_id_pair_list* result() const
+        particle_id_pair_and_distance_list* result() const
         {
             return result_;
         }
 
     private:
         Tset_ const& ignore_;
-        particle_id_pair_list* result_;
+        particle_id_pair_and_distance_list* result_;
     };
 
     template<typename Tset_>
@@ -176,19 +177,19 @@ protected:
             : id_(id), ignore_(ignore), result_(0) {}
 
         template<typename Titer_>
-        void operator()(Titer_ const& i, length_type const&)
+        void operator()(Titer_ const& i, length_type const& dist)
         {
             if ((*i).first != id_ && !contains(ignore_, (*i).first))
             {
                 if (!result_)
                 {
-                    result_ = new particle_id_pair_list();
+                    result_ = new particle_id_pair_and_distance_list();
                 }
-                result_->push_back(*i);
+                result_->push_back(std::make_pair(*i, dist));
             }
         }
 
-        particle_id_pair_list* result() const
+        particle_id_pair_and_distance_list* result() const
         {
             return result_;
         }
@@ -196,7 +197,7 @@ protected:
     private:
         set_value_type const& id_;
         Tset_ const& ignore_;
-        particle_id_pair_list* result_;
+        particle_id_pair_and_distance_list* result_;
     };
 
 
@@ -309,32 +310,32 @@ public:
     }
 
     template<typename Tset_>
-    particle_id_pair_list* check_overlap(particle_id_pair const& s, Tset_ const& ignore) const
+    particle_id_pair_and_distance_list* check_overlap(particle_id_pair const& s, Tset_ const& ignore) const
     {
         particle_overlap_checker<Tset_> oc(s.first, ignore);
-        traits_type::take_neighbor(pmat_, oc, s.second.shape());
+        traits_type::take_neighbor(pmat_, oc, shape(s.second));
         return oc.result();
     }
 
-    virtual particle_id_pair_list* check_overlap(particle_id_pair const& s) const
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_id_pair const& s) const
     {
         particle_overlap_checker<boost::array<particle_id_type, 0> > oc(s.first);
-        traits_type::take_neighbor(pmat_, oc, s.second.shape());
+        traits_type::take_neighbor(pmat_, oc, shape(s.second));
         return oc.result();
     }
 
-    virtual particle_id_pair_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
     {
         return check_overlap(s, array_gen(ignore));
     }
 
-    virtual particle_id_pair_list* check_overlap(particle_shape_type const& s) const
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
     {
         return check_overlap<particle_shape_type>(s);
     }
 
     template<typename Tsph_, typename Tset_>
-    particle_id_pair_list* check_overlap(Tsph_ const& s, Tset_ const& ignore,
+    particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore,
         typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* =0) const
     {
         overlap_checker<Tset_> oc(ignore);
@@ -343,7 +344,7 @@ public:
     }
 
     template<typename Tsph_>
-    particle_id_pair_list* check_overlap(Tsph_ const& s,
+    particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s,
         typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* =0) const
     {
         overlap_checker<boost::array<particle_id_type, 0> > oc;

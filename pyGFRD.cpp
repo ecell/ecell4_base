@@ -59,7 +59,7 @@
 #include "peer/GeneratorIteratorWrapper.hpp"
 #include "peer/Exception.hpp"
 #include "peer/RandomNumberGenerator.hpp"
-#include "peer/STLIteratorWrapper.hpp"
+#include "peer/STLContainerWrapper.hpp"
 
 typedef CyclicWorldTraits<Real, Real> world_traits_type;
 typedef World<world_traits_type> CyclicWorld;
@@ -408,6 +408,115 @@ static GSLRandomNumberGenerator create_gsl_rng()
     return GSLRandomNumberGenerator(gsl_rng_alloc(Prng_));
 }
 
+struct reaction_rule_vector_converter
+{
+    typedef egfrd_simulator_traits_type::network_rules_type::reaction_rule_vector native_type;
+
+    struct instance_holder
+    {
+        instance_holder(native_type const& instance): instance_(instance) {}
+
+        native_type const& operator*() const
+        {
+            return instance_;
+        }
+
+        native_type const* operator->() const
+        {
+            return &(**this);
+        }
+
+        native_type& operator*()
+        {
+            PyErr_SetString(PyExc_RuntimeError, "object is immutable");
+            boost::python::throw_error_already_set();
+            return *static_cast<native_type*>(0);
+        }
+
+        native_type* operator->()
+        {
+            return &(**this);
+        }
+
+        native_type const& instance_;
+    };
+
+    typedef peer::STLContainerWrapper<native_type, instance_holder> wrapper_type;
+    static PyObject* convert(native_type const& v)
+    {
+        return reinterpret_cast<PyObject*>(wrapper_type::create(instance_holder(v)));
+    }
+
+    static void __register()
+    {
+        wrapper_type::__class_init__("ReactionRuleVector", boost::python::scope().ptr());
+        boost::python::to_python_converter<native_type, reaction_rule_vector_converter>();
+    }
+};
+
+struct particle_id_pair_and_distance_list_converter
+{
+    typedef CyclicWorld::particle_id_pair_and_distance_list native_type;
+
+    template<typename T_>
+    struct policy
+    {
+        typedef typename boost::range_size<T_>::type size_type;
+        typedef typename boost::range_value<T_>::type value_type;
+        typedef value_type& reference;
+        typedef value_type const& const_reference;
+        typedef typename boost::range_iterator<T_>::type iterator;
+        typedef typename boost::range_const_iterator<T_>::type const_iterator;
+
+        static size_type size(T_ const& c)
+        {
+            return boost::size(c);
+        }
+
+        static void set(T_& c, size_type i, const_reference v)
+        {
+            c.set(i, v);
+        }
+
+        static const_reference get(T_ const& c, size_type i)
+        {
+            return c.at(i);
+        }
+
+        static iterator begin(T_& c)
+        {
+            return boost::begin(c);
+        }
+
+        static const_iterator begin(T_ const& c)
+        {
+            return boost::begin(c);
+        }
+
+        static iterator end(T_& c)
+        {
+            return boost::end(c);
+        }
+
+        static const_iterator end(T_ const& c)
+        {
+            return boost::end(c);
+        }
+    };
+
+    typedef peer::STLContainerWrapper<native_type, std::auto_ptr<native_type>, policy > wrapper_type;
+    static PyObject* convert(native_type* v)
+    {
+        return reinterpret_cast<PyObject*>(wrapper_type::create(std::auto_ptr<native_type>(v ? v: new native_type())));
+    }
+
+    static void __register()
+    {
+        wrapper_type::__class_init__("ParticleIDAndDistanceVector", boost::python::scope().ptr());
+        boost::python::to_python_converter<native_type*, particle_id_pair_and_distance_list_converter>();
+    }
+};
+
 BOOST_PYTHON_MODULE( _gfrd )
 {
     using namespace boost::python;
@@ -737,9 +846,12 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("query_reaction_rule", (network_rules_wrapper_type::reaction_rule_vector const&(network_rules_wrapper_type::*)(network_rules_wrapper_type::species_id_type const&, network_rules_wrapper_type::species_id_type const&) const)&network_rules_wrapper_type::query_reaction_rule,
             return_value_policy<return_by_value>())
         ;
-    peer::util::register_stl_iterator_range_converter<network_rules_wrapper_type::reaction_rule_vector>();
+
+    reaction_rule_vector_converter::wrapper_type::__class_init__("NetworkRulesWrapper.ReactionRuleVector", scope().ptr());
+    reaction_rule_vector_converter::__register();
 
     peer::util::register_tuple_converter<CyclicWorld::particle_id_pair>();
+    peer::util::register_tuple_converter<CyclicWorld::particle_id_pair_and_distance>();
 
     peer::util::GeneratorIteratorWrapper<ptr_generator<CyclicWorld::particle_id_pair_generator> >::__register_class("ParticleIDPairGenerator");
 
@@ -758,15 +870,17 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("update_particle", &transaction_type::update_particle)
         .def("remove_particle", &transaction_type::remove_particle)
         .def("get_particle", &transaction_type::get_particle)
-        .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::particle_id_pair const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
-        .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&, transaction_type::particle_id_type const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
-        .def("check_overlap", (transaction_type::particle_id_pair_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&) const)&transaction_type::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_id_pair const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
+        .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&, transaction_type::particle_id_type const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
+        .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
         .def("create_transaction", &transaction_type::create_transaction,
                 return_value_policy<manage_new_object>())
         .def("rollback", &transaction_type::rollback)
         .def("__iter__", &transaction_type::get_particles,
                 return_value_policy<return_by_value>())
         ;
+
+    particle_id_pair_and_distance_list_converter::__register();
 
     class_<CyclicWorld>("World", init<CyclicWorld::length_type,
                                   CyclicWorld::size_type>())
@@ -792,9 +906,9 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("cyclic_transpose", (CyclicWorld::length_type(CyclicWorld::*)(CyclicWorld::length_type const&, CyclicWorld::length_type const&) const)&CyclicWorld::cyclic_transpose)
         .def("calculate_pair_CoM", &CyclicWorld::calculate_pair_CoM<CyclicWorld::position_type>)
         .def("new_particle", &CyclicWorld::new_particle)
-        .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::particle_id_pair const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
-        .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
-        .def("check_overlap", (CyclicWorld::particle_id_pair_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&) const)&CyclicWorld::check_overlap, return_value_policy<manage_new_object>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_id_pair const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
         .def("update_particle", &CyclicWorld::update_particle)
         .def("remove_particle", &CyclicWorld::remove_particle)
         .def("get_particle", &CyclicWorld::get_particle)

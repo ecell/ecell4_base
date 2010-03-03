@@ -55,6 +55,11 @@ public:
 
     ReactionRuleInfo(): id_(), k_(), reactants_(), products_() {}
 
+    bool operator==(ReactionRuleInfo const& rhs) const
+    {
+        return id_ == rhs.id();
+    }
+
 private:
     identifier_type id_;
     rate_type k_;

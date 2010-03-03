@@ -19,11 +19,13 @@ public:
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::position_type position_type;
     typedef typename traits_type::particle_id_type particle_id_type;
+    typedef typename traits_type::length_type length_type;
     typedef typename traits_type::size_type size_type;
     typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
     typedef Transaction<traits_type> transaction_type;
     typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
-    typedef unassignable_adapter<particle_id_pair, get_default_impl::std::vector> particle_id_pair_list;
+    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
+    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
 
     virtual ~ParticleContainer() {};
 
@@ -40,11 +42,11 @@ public:
 
     virtual particle_id_pair get_particle(particle_id_type const& id) const = 0;
 
-    virtual particle_id_pair_list* check_overlap(particle_id_pair const& s) const = 0;
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_id_pair const& s) const = 0;
 
-    virtual particle_id_pair_list* check_overlap(particle_shape_type const& s) const = 0;
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const = 0;
 
-    virtual particle_id_pair_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const = 0;
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const = 0;
 
     virtual particle_id_pair_generator* get_particles() const = 0;
 
