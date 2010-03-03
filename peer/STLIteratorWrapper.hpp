@@ -79,7 +79,14 @@ public:
         if (self->i_ == self->end_)
             return NULL;
 
-        return boost::python::incref(boost::python::object(*self->i_ ++).ptr());
+        try
+        {
+            return boost::python::incref(boost::python::object(*self->i_ ++).ptr());
+        }
+        catch (boost::python::error_already_set const&)
+        {
+            return NULL;
+        }
     }
 };
 
