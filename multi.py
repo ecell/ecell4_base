@@ -19,7 +19,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
         self.multiref = ref( multi )
 
         self.particleMatrix = ParticleContainer(self.main.worldSize, self.main.matrixSize)
-        self.shellMatrix = SphericalShellContainer(self.main.worldSize, self.main.matrixSize)
+        self.sphere_container = SphericalShellContainer(self.main.worldSize, self.main.matrixSize)
         self.escaped = False
 
     def updateParticle( self, pid_particle_pair ):
@@ -61,7 +61,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
             raise NoSpace()
 
     def withinShell( self, pos, radius ):
-        result = self.shellMatrix.get_neighbors_within_radius( pos, - radius )
+        result = self.sphere_container.get_neighbors_within_radius( pos, - radius )
         return bool(result)
         
     def checkOverlap( self, pos, radius, ignore=[] ):
@@ -79,13 +79,13 @@ class MultiBDCore( BDSimulatorCoreBase ):
         BDSimulatorCoreBase.check( self )
 
         # shells are contiguous
-        for shell in self.multiref().shell_list:
-            result = self.shellMatrix.get_neighbors(shell[1].position)
+        for (_, shell) in self.multiref().shell_list:
+            result = self.sphere_container.get_neighbors(shell.position)
             # Check contiguity with nearest neighbor only (get_neighbors 
             # returns a sorted list).
             nearest = result[1]
             distance = nearest[1]
-            assert distance - shell[1].radius < 0.0,\
+            assert distance - shell.radius < 0.0,\
                 'shells of %s are not contiguous.' % str(self.multiref())
 
         # all particles within the shell.
@@ -126,8 +126,8 @@ class Multi( object ):
         shell_id_shell_pair = (
             self.sim.main.shellIDGenerator(),
             SphericalShell(position, size, self.domain_id) )
-        self.sim.main.shellMatrix.update(shell_id_shell_pair)
-        self.sim.shellMatrix.update(shell_id_shell_pair)
+        self.sim.main.moveShell(shell_id_shell_pair)
+        self.sim.sphere_container.update(shell_id_shell_pair)
         return shell_id_shell_pair
 
     def addParticleAndShell(self, pid_particle_pair, shellSize):
@@ -139,13 +139,14 @@ class Multi( object ):
     def check( self ):
         self.sim.check()
 
-        for shell_id_shell_pair in self.shell_list:
+        for (shell_id, shell) in self.shell_list:
             try:
-                self.sim.main.shellMatrix[shell_id_shell_pair[0]]
+                container = self.sim.main.get_container(shell)
+                container[shell_id]
             except:
                 raise RuntimeError,\
-                    'self.sim.main.shellMatrix does not contain %s'\
-                    % str(shell_id_shell_pair[0])
+                    'self.sim.main.sphere_container does not contain %s'\
+                    % str(shell_id)
 
     def __repr__( self ):
         return 'Multi[%s: %s: eventID=%s]' % (
@@ -154,7 +155,7 @@ class Multi( object ):
             self.eventID )
 
     def getShellList(self):
-        return self.sim.shellMatrix
+        return self.sim.sphere_container
     shell_list = property(getShellList)
 
 

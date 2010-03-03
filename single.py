@@ -1,16 +1,5 @@
-import math
-import numpy
-
 from _gfrd import *
-
-from utils import *
-import myrandom
-from coordinate import *
-
-import logging
-
-log = logging.getLogger('ecell')
-
+from greens_function_wrapper import *
 
 class Single( object ):
     """There are 2 main types of Singles:
@@ -21,7 +10,8 @@ class Single( object ):
     coordinate the Green's function is specified.
 
     """
-    def __init__( self, domain_id, pid_particle_pair, shell_id_shell_pair, reactiontypes ):
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
+                 surface):
         self.multiplicity = 1
 
         self.pid_particle_pair = pid_particle_pair
@@ -33,7 +23,14 @@ class Single( object ):
         self.dt = 0.0
         self.eventType = None
 
-        self.shell_list = [shell_id_shell_pair, ]
+        self.surface = surface
+
+        # Create shell.
+        position = pid_particle_pair[1].position
+        radius = pid_particle_pair[1].radius
+        shell = self.createNewShell(position, radius, domain_id)
+
+        self.shell_list = [(shell_id, shell), ]
 
         self.eventID = None
 
@@ -45,17 +42,20 @@ class Single( object ):
         return self.pid_particle_pair[1].D
     D = property( getD )
 
-    def getMinRadius(self):
-        return self.pid_particle_pair[1].radius
-    minRadius = property(getMinRadius)
+    def get_shell_id(self):
+        return self.shell_list[0][0]
+    shell_id = property(get_shell_id)
 
-    def getShell(self):
+    def get_shell(self):
+        return self.shell_list[0][1]
+    shell = property(get_shell)
+
+    def get_shell_id_shell_pair(self):
         return self.shell_list[0]
-
-    def setShell(self, value):
+    def set_shell_id_shell_pair(self, value):
         self.shell_list[0] = value
-
-    shell = property(getShell, setShell)
+    shell_id_shell_pair = property(get_shell_id_shell_pair, 
+                                   set_shell_id_shell_pair)
 
     def initialize( self, t ):
         '''
@@ -83,8 +83,8 @@ class Single( object ):
     def isReset( self ):
         return self.dt == 0.0 and self.eventType == EventType.SINGLE_ESCAPE
 
-    def drawReactionTime( self ):
-        """Return a (reactionTime, eventType, activeCoordinate=None)-tuple.
+    def draw_reaction_time_tuple( self ):
+        """Return a (reaction time, event type)-tuple.
 
         """
         if self.k_tot == 0:
@@ -93,39 +93,39 @@ class Single( object ):
             dt = 0.0
         else:
             dt = (1.0 / self.k_tot) * math.log(1.0 / myrandom.uniform())
-        return dt, EventType.SINGLE_REACTION, None
+        return dt, EventType.SINGLE_REACTION
 
-    def drawEscapeOrInteractionTime(self):
-        """Return an (escapeTime, eventType, activeCoordinate)-tuple.
-        Handles also all interaction events.
+    def draw_interaction_time(self):
+        """Todo.
+        
+        Note: we are not calling single.drawEventType() just yet, but 
+        postpone it to the very last minute (when this event is executed in 
+        fireSingle). So IV_EVENT can still be an iv escape or an iv 
+        interaction.
 
         """
-        eventType = EventType.NOT_A_SINGLE_REACTION
+        pass
+
+    def draw_escape_or_interaction_time_tuple(self):
+        """Return an (escape or interaction time, event type)-tuple.
+
+        Handles also all interaction events.
+        
+        """
         if self.getD() == 0:
-            return INF, eventType, None
+            dt = numpy.inf
         else:
-            # Note: we are not calling coordinate.drawEventType() just yet, 
-            # but postpone it to the very last minute (when this event is 
-            # executed in fireSingle), and memorize the activeCoordinate like 
-            # this.
+            dt = draw_time_wrapper(self.greens_function())
 
-            # So this can still be an interaction or an escape.
-
-            # Also note that in case this single will get a reaction event 
-            # instead of this escape event (its dt is smaller in 
-            # determineNextEvent), and even though activeCoordinate is set, it 
-            # won't be used at all, since reaction events are taken care of 
-            # before escape events in fireSingle.
-            return min((c.drawTime(), eventType, c)
-                       for c in self.coordinates)
+        event_type = EventType.SINGLE_ESCAPE
+        return dt, event_type
 
     def determineNextEvent(self):
-        """Return an (escapeTime, eventType, activeCoordinate)-tuple.
-        By returning the arguments it is a pure function. 
+        """Return an (event time, event type)-tuple.
 
         """
-        return min(self.drawEscapeOrInteractionTime(), 
-                   self.drawReactionTime()) 
+        return min(self.draw_escape_or_interaction_time_tuple(),
+                   self.draw_reaction_time_tuple())
 
     def updatek_tot( self ):
         self.k_tot = 0
@@ -135,7 +135,6 @@ class Single( object ):
 
         for rt in self.reactiontypes:
             self.k_tot += rt.k
-
 
     def drawReactionRule( self ):
         k_array = [ rt.k for rt in self.reactiontypes ]
@@ -147,11 +146,10 @@ class Single( object ):
 
         return self.reactiontypes[i]
 
-
     def check( self ):
         pass
 
-    def __repr__( self ):
+    def __str__(self):
         return 'Single[%s: %s: eventID=%s]' % ( self.domain_id, self.pid_particle_pair[0], self.eventID )
 
 
@@ -164,13 +162,21 @@ class NonInteractionSingle(Single):
         * CylindricalSurfaceSingle: cylindrical shell, 1D movement.
 
     """
-    def __init__(self, domain_id, pid_particle_pair, shell_id_shell_pair, 
-                 reactiontypes):
-        Single.__init__(self, domain_id, pid_particle_pair, shell_id_shell_pair,
-                        reactiontypes)
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
+                 surface):
+        Single.__init__(self, domain_id, pid_particle_pair, shell_id,
+                        reactiontypes, surface)
+
+    def get_mobility_radius(self):
+        return self.shell_list[0][1].radius - self.pid_particle_pair[1].radius
+
+    def get_shell_size(self):
+        return self.shell_list[0][1].radius
 
     def drawNewPosition(self, dt, eventType):
-        r = self.coordinates[0].drawDisplacement(dt, eventType)
+        gf = self.greens_function()
+        a = self.get_mobility_radius()
+        r = draw_displacement_wrapper(gf, dt, eventType, a)
         displacement = self.displacement(r)
         assert abs(length(displacement) - abs(r)) <= 1e-15 * abs(r)
         return self.pid_particle_pair[1].position + displacement
@@ -185,36 +191,116 @@ class SphericalSingle(NonInteractionSingle):
         * Selected randomly when drawing displacement vector: theta, phi.
 
     """
-    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes):
-        # Create shell.
-        position = pid_particle_pair[1].position
-        radius = pid_particle_pair[1].radius
-        shell = self.createNewShell(position, radius, domain_id)
-        shell_id_shell_pair = (shell_id, shell)
-        
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
+                 surface):
         NonInteractionSingle.__init__(self, domain_id, pid_particle_pair, 
-                                      shell_id_shell_pair, reactiontypes)
+                                      shell_id, reactiontypes, surface)
 
-        # Create a radial coordinate of size mobilityRadius = 0.
-        mobilityRadius = 0.0
+    def greens_function(self):
         gf = FirstPassageGreensFunction(self.getD())
-        self.coordinates = [RCoordinate(gf, mobilityRadius)]
+        a = self.get_mobility_radius()
+        gf.seta(a)
+        return gf
 
     def createNewShell(self, position, radius, domain_id):
-        '''Always call rescaleCoordinates after this as well.
-
-        '''
         return SphericalShell(position, radius, domain_id)
-
-    def rescaleCoordinates(self, radius):
-        # Rescale size of coordinate.
-        mobilityRadius = radius - self.getMinRadius()
-        self.coordinates[0].a = mobilityRadius
 
     def displacement(self, r):
         return randomVector(r)
 
     def __str__(self):
-        return 'SphericalSingle' + Single.__str__(self)
+        return 'Spherical' + Single.__str__(self)
+
+
+class PlanarSurfaceSingle(NonInteractionSingle):
+    """1 Particle inside a (cylindrical) shell on a PlanarSurface. (Hockey 
+    pucks).
+
+        * Particle coordinates on surface: x, y.
+        * Domain: radial r. (determines x and y together with theta).
+        * Initial position: r = 0.
+        * Selected randomly when drawing displacement vector: theta.
+
+    """
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
+                 surface):
+        NonInteractionSingle.__init__(self, domain_id, pid_particle_pair, 
+                                      shell_id, reactiontypes, surface)
+
+    def greens_function(self):
+        # Todo. 2D gf Abs Sym.
+        #gf = FirstPassageGreensFunction2D(self.getD())
+
+        gf = FirstPassageGreensFunction(self.getD())
+        a = self.get_mobility_radius()
+        gf.seta(a)
+        return gf
+
+    def createNewShell(self, position, radius, domain_id):
+        # The size (thickness) of a hockey puck is not more than it has to be 
+        # (namely the radius of the particle), so if the particle undergoes an 
+        # unbinding reaction we still have to clear the target volume and the 
+        # move may be rejected (NoSpace error).
+        orientation = self.surface.unitZ
+        size = self.pid_particle_pair[1].radius
+        return CylindricalShell(position, radius, orientation, size, domain_id)
+
+    def displacement(self, r):
+        x, y = randomVector2D(r)
+        return x * self.surface.unitX + y * self.surface.unitY
+
+    def __str__(self):
+        return 'PlanarSurface' + Single.__str__(self)
+
+
+class CylindricalSurfaceSingle(NonInteractionSingle):
+    """1 Particle inside a (cylindrical) shell on a CylindricalSurface. 
+    (Rods).
+
+        * Particle coordinates on surface: z.
+        * Domain: cartesian z.
+        * Initial position: z = 0.
+        * Selected randomly when drawing displacement vector: none.
+
+    """
+    def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
+                 surface):
+        NonInteractionSingle.__init__(self, domain_id, pid_particle_pair, 
+                                      shell_id, reactiontypes, surface)
+
+    def greens_function(self):
+        # Todo. 1D gf Abs Abs.
+        #gf = FirstPassageGreensFunction1D(self.getD())
+        gf = FirstPassageGreensFunction(self.getD())
+        a = self.get_mobility_radius()
+        gf.seta(a)
+        return gf
+
+    def createNewShell(self, position, size, domain_id):
+        # Heads up. The cylinder's *size*, not radius, is changed when you 
+        # make the cylinder bigger, because of the redefinition of setRadius.
+
+        # The radius of a rod is not more than it has to be (namely the radius 
+        # of the particle), so if the particle undergoes an unbinding reaction 
+        # we still have to clear the target volume and the move may be 
+        # rejected (NoSpace error).
+        radius = self.pid_particle_pair[1].radius
+        orientation = self.surface.unitZ
+        return CylindricalShell(position, radius, orientation, size, domain_id)
+
+    def displacement(self, z):
+        # z can be pos or min.
+        return z * self.shell_list[0][1].orientation
+
+    def get_mobility_radius(self):
+        # Heads up.
+        return self.shell_list[0][1].size - self.pid_particle_pair[1].radius
+
+    def get_shell_size(self):
+        # Heads up.
+        return self.shell_list[0][1].size
+
+    def __str__(self):
+        return 'CylindricalSurface' + Single.__str__(self)
 
 

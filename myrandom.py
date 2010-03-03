@@ -17,6 +17,16 @@ def uniform(min=0.0, max=1.0, size=None):
 normal = rng.normal
 seed = rng.seed
 
+# By default seed is 0.
+myseed = 0
+
+# Choose seed at random.
+#import random
+#myseed = int(1e3 * random.random())
+
+# Set seed.
+seed(myseed)
+
 def shuffle(seq):
     for i in reversed(range(0, len(seq))):
         j = rng.uniform_int(0, i)
