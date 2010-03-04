@@ -158,9 +158,9 @@ public:
     static PyObject* __iter__(STLContainerWrapper const* self)
     {
         return iterator_wrapper_type::create(*self->impl_,
-            boost::python::handle<>(
+            boost::python::handle<>(boost::python::borrowed(
                 const_cast<PyObject*>(
-                    reinterpret_cast<PyObject const*>(self))));
+                    reinterpret_cast<PyObject const*>(self)))));
     }
 
     static PyTypeObject* __class_init__(const char* name, PyObject* mod)
