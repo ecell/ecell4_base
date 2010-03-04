@@ -523,8 +523,8 @@ class ParticleSimulatorBase( object ):
 
         if total != len(self.particleMatrix):
             raise RuntimeError,\
-                'total number of particles %d != self.particleMatrix.size %d'\
-                % ( total, self.particleMatrix.size )
+                'total number of particles %d != len(self.particleMatrix) %d'\
+                % (total, len(self.particleMatrix))
 
     def checkParticles(self):
         for i in self.particleMatrix:
