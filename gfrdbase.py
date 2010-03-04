@@ -195,19 +195,23 @@ class ParticleSimulatorBase( object ):
 
     def setModel( self, model ):
         model.set_all_repulsive()
-        self.speciesList.clear()
-        self.particlePool.clear()
         self.reactionRuleCache.clear()
 
         for st in model.species_types:
             if st["surface"] == "":
                 st["surface"] = self.defaultSurface.name
 
-            self.speciesList[st.id] = _gfrd.SpeciesInfo(st.id, 
-                                                        float(st["D"]), 
-                                                        float(st["radius"]), 
-                                                        st["surface"])
-            self.particlePool[st.id] = _gfrd.ParticleIDSet()
+            if not self.speciesList.has_key(st.id):
+                self.speciesList[st.id] = _gfrd.SpeciesInfo(st.id, 
+                                                            float(st["D"]), 
+                                                            float(st["radius"]), 
+                                                            st["surface"])
+            # else: keep species info for this species.
+
+            if not self.particlePool.has_key(st.id):
+                self.particlePool[st.id] = _gfrd.ParticleIDSet()
+            # else: keep particle data for this species.
+
         self.network_rules = _gfrd.NetworkRulesWrapper(model.network_rules)
         self.model = model
 
