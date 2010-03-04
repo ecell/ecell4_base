@@ -550,3 +550,52 @@ class ParticleSimulatorBase( object ):
             buf += str(sid) + ':' + str(pool) + '\t'
 
         return buf
+
+    def dump_reaction_rule(self, reaction_rule):
+        '''Pretty print reaction rule.
+
+        ReactionRule.__str__ would be good, but we are actually getting a 
+        ReactionRuleInfo or ReactionRuleCache object.
+
+        This method needs access to self.model.
+
+        '''
+        buf = ''
+        for index, sid in enumerate(reaction_rule.rt.reactants):
+            if index != 0:
+                buf += ' + '
+            reactant = self.model.get_species_type_by_id(sid)
+            buf += reactant['id'].ljust(25)
+        buf += '-> '
+
+        for index, sid in enumerate(reaction_rule.products):
+            if index != 0:
+                buf += ' + '
+            product = self.model.get_species_type_by_id(sid)
+            buf += product['id'].ljust(25)
+        buf += '\n'
+
+        return buf
+
+    def dump_reaction_rules(self):
+        reaction_rules_1 = []
+        reaction_rules_2 = []
+        for sid1 in self.speciesList:
+            for reaction_rule_cache in self.getReactionRule1(sid1):
+                string = self.dump_reaction_rule(reaction_rule_cache)
+                reaction_rules_1.append(string)
+            for sid2 in self.speciesList:
+                for reaction_rule_cache in self.getReactionRule2(sid1, sid2):
+                    # Ignore reflecting.
+                    if reaction_rule_cache.k > 0:
+                        string = self.dump_reaction_rule(reaction_rule_cache)
+                        reaction_rules_2.append(string)
+
+        reaction_rules_1 = uniq(reaction_rules_1)
+        reaction_rules_1.sort()
+        reaction_rules_2 = uniq(reaction_rules_2)
+        reaction_rules_2.sort()
+
+        return 'Monomolecular reaction rules:\n' + ''.join(reaction_rules_1) +\
+               '\nBimolecular reaction rules:\n' + ''.join(reaction_rules_2)
+
