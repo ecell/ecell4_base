@@ -163,6 +163,7 @@ m.network_rules.add_reaction_rule( r12b )
 #r14 = UnimolecularReactionRule( Kp, K, 1e-1 )
 #s.addReactionRule( r14 )
 
+s.setModel(m)
 
 l = Logger( s, 
             logname = model + '_' + '_'.join( sys.argv[1:7] ) )

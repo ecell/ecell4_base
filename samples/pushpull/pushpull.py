@@ -201,6 +201,8 @@ r6 = createUnbindingReactionRule( PSp, P, S, kcat2 )
 m.network_rules.add_reaction_rule( r6 )
 
 
+s.setModel( m )
+
 
 model = 'pushpull'
 
