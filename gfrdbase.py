@@ -346,6 +346,13 @@ class ParticleSimulatorBase( object ):
                             [ self.speciesList[st] for st in rt.products ],
                             rt.k))
             self.reactionRuleCache[k] = retval
+        if __debug__:
+            if len(retval) > 1:
+                name1 = self.model.get_species_type_by_id(species1)['id']
+                name2 = self.model.get_species_type_by_id(species2)['id']
+                raise RuntimeError('More than 1 bimolecular reaction rule '
+                                   'defined for %s + %s: %s' %
+                                   (name1, name2, retval))
         return retval
 
     def getSpecies(self):
