@@ -21,6 +21,11 @@ void BasicNetworkRulesImpl::add_reaction_rule(ReactionRule const& r)
     if (!reaction_rules_map_[r.get_reactants()].insert(r).second)
         throw already_exists(boost::lexical_cast<std::string>(r));
 }
+
+void BasicNetworkRulesImpl::remove_reaction_rule(ReactionRule const& r)
+{
+    reaction_rules_map_[r.get_reactants()].erase(r);
+}
     
 BasicNetworkRulesImpl::reaction_rule_generator*
 BasicNetworkRulesImpl::query_reaction_rule(SpeciesTypeID const& r1) const

@@ -24,7 +24,7 @@ s.throwInParticles( P, 60, box1 )
 
 l = Logger( s, 'simple' )
 l.setParticleOutput( ('P',) )
-l.setInterval( 3.33e-4 )
+l.setParticleOutInterval( 3.33e-4 )
 l.log()
 
 while s.t < .1:

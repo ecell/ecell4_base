@@ -105,9 +105,21 @@ class ParticleModel( _gfrd.Model ):
 
     def set_all_repulsive( self ):
         nr = self.network_rules
+        # Maybe the user has defined a reaction rule for any 2 species since a 
+        # previous call to this method, so remove *all* repulsive reaction 
+        # rules first.
         for species1 in self.species_types:
             for species2 in self.species_types:
-                if nr.query_reaction_rule(species1, species2) is None:
+                gen = nr.query_reaction_rule(species1, species2)
+                if gen is not None:
+                    for reaction_rule in gen:
+                        if float(reaction_rule['k']) == 0.0:
+                            nr.remove_reaction_rule(reaction_rule)
+
+        for species1 in self.species_types:
+            for species2 in self.species_types:
+                gen = nr.query_reaction_rule(species1, species2)
+                if gen is None or len(set(gen)) == 0:
                     rr = _gfrd.ReactionRule([species1, species2], [])
                     rr['k'] = '0.0'
                     nr.add_reaction_rule(rr)
@@ -195,19 +207,23 @@ class ParticleSimulatorBase( object ):
 
     def setModel( self, model ):
         model.set_all_repulsive()
-        self.speciesList.clear()
-        self.particlePool.clear()
         self.reactionRuleCache.clear()
 
         for st in model.species_types:
             if st["surface"] == "":
                 st["surface"] = self.defaultSurface.name
 
-            self.speciesList[st.id] = _gfrd.SpeciesInfo(st.id, 
-                                                        float(st["D"]), 
-                                                        float(st["radius"]), 
-                                                        st["surface"])
-            self.particlePool[st.id] = _gfrd.ParticleIDSet()
+            if not self.speciesList.has_key(st.id):
+                self.speciesList[st.id] = _gfrd.SpeciesInfo(st.id, 
+                                                            float(st["D"]), 
+                                                            float(st["radius"]), 
+                                                            st["surface"])
+            # else: keep species info for this species.
+
+            if not self.particlePool.has_key(st.id):
+                self.particlePool[st.id] = _gfrd.ParticleIDSet()
+            # else: keep particle data for this species.
+
         self.network_rules = _gfrd.NetworkRulesWrapper(model.network_rules)
         self.model = model
 
@@ -342,6 +358,13 @@ class ParticleSimulatorBase( object ):
                             [ self.speciesList[st] for st in rt.products ],
                             rt.k))
             self.reactionRuleCache[k] = retval
+        if __debug__:
+            if len(retval) > 1:
+                name1 = self.model.get_species_type_by_id(species1)['id']
+                name2 = self.model.get_species_type_by_id(species2)['id']
+                raise RuntimeError('More than 1 bimolecular reaction rule '
+                                   'defined for %s + %s: %s' %
+                                   (name1, name2, retval))
         return retval
 
     def getSpecies(self):
@@ -523,8 +546,8 @@ class ParticleSimulatorBase( object ):
 
         if total != len(self.particleMatrix):
             raise RuntimeError,\
-                'total number of particles %d != self.particleMatrix.size %d'\
-                % ( total, self.particleMatrix.size )
+                'total number of particles %d != len(self.particleMatrix) %d'\
+                % (total, len(self.particleMatrix))
 
     def checkParticles(self):
         for i in self.particleMatrix:
@@ -546,3 +569,61 @@ class ParticleSimulatorBase( object ):
             buf += str(sid) + ':' + str(pool) + '\t'
 
         return buf
+
+    def dump_reaction_rule(self, reaction_rule):
+        '''Pretty print reaction rule.
+
+        ReactionRule.__str__ would be good, but we are actually getting a 
+        ReactionRuleInfo or ReactionRuleCache object.
+
+        This method needs access to self.model.
+
+        '''
+        buf = ('k=%.3g' % reaction_rule.k + ': ').ljust(15)
+        for index, sid in enumerate(reaction_rule.rt.reactants):
+            if index != 0:
+                buf += ' + '
+            reactant = self.model.get_species_type_by_id(sid)
+            buf += reactant['id'].ljust(15)
+        if len(reaction_rule.products) == 0:
+            if reaction_rule.k != 0:
+                buf += '..decays'
+        else:
+            buf += '-> '
+
+        for index, sid in enumerate(reaction_rule.products):
+            if index != 0:
+                buf += ' + '
+            product = self.model.get_species_type_by_id(sid)
+            buf += product['id'].ljust(15)
+
+        return buf + '\n'
+
+    def dump_reaction_rules(self):
+        reaction_rules_1 = []
+        reaction_rules_2 = []
+        reflective_reaction_rules = []
+        for sid1 in self.speciesList:
+            for reaction_rule_cache in self.getReactionRule1(sid1):
+                string = self.dump_reaction_rule(reaction_rule_cache)
+                reaction_rules_1.append(string)
+            for sid2 in self.speciesList:
+                for reaction_rule_cache in self.getReactionRule2(sid1, sid2):
+                    string = self.dump_reaction_rule(reaction_rule_cache)
+                    if reaction_rule_cache.k > 0:
+                        reaction_rules_2.append(string)
+                    else:
+                        reflective_reaction_rules.append(string)
+
+        reaction_rules_1 = uniq(reaction_rules_1)
+        reaction_rules_1.sort()
+        reaction_rules_2 = uniq(reaction_rules_2)
+        reaction_rules_2.sort()
+        reflective_reaction_rules = uniq(reflective_reaction_rules)
+        reflective_reaction_rules.sort()
+
+        return('\nMonomolecular reaction rules:\n' + ''.join(reaction_rules_1) +
+               '\nBimolecular reaction rules:\n' + ''.join(reaction_rules_2) +
+               '\nReflective bimolecular reaction rules:\n' +
+               ''.join(reflective_reaction_rules))
+

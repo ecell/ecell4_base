@@ -66,7 +66,6 @@ Kp = m.new_species_type( 'Kp', D, radius )
 Kpp = m.new_species_type( 'Kpp', D, radius )
 K_KK = m.new_species_type( 'K_KK', D, radius )
 Kp_KK = m.new_species_type( 'Kp_KK', D, radius )
-Kpp_KK = m.new_species_type( 'Kpp_KK', D, radius )
 Kpp_P = m.new_species_type( 'Kpp_P', D, radius )
 Kp_P = m.new_species_type( 'Kp_P', D, radius )
 
@@ -140,6 +139,8 @@ m.network_rules.add_reaction_rule( r12 )
 #r14 = createUnimolecularReactionRule( Kp, K, 1e-1 )
 #m.network_rules.add_reaction_rule( r14 )
 
+s.setModel(m)
+
 
 l = Logger( s, 
             logname = model + '_' + '_'.join( sys.argv[1:6] ) )
@@ -147,7 +148,7 @@ l = Logger( s,
 
 
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
-l.setInterval( 1e-0 )
+l.setParticleOutInterval( 1e-0 )
 l.log()
 
 while s.t < 30:
