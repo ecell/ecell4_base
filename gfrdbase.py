@@ -570,7 +570,7 @@ class ParticleSimulatorBase( object ):
 
         return buf
 
-    def dump_reaction_rule(self, reaction_rule):
+    def dump_reaction_rule(self, reaction_rule, reflective=''):
         '''Pretty print reaction rule.
 
         ReactionRule.__str__ would be good, but we are actually getting a 
@@ -592,29 +592,37 @@ class ParticleSimulatorBase( object ):
                 buf += ' + '
             product = self.model.get_species_type_by_id(sid)
             buf += product['id'].ljust(25)
-        buf += '\n'
+        buf += reflective + '\n'
 
         return buf
 
     def dump_reaction_rules(self):
         reaction_rules_1 = []
         reaction_rules_2 = []
+        reflective_reaction_rules = []
         for sid1 in self.speciesList:
             for reaction_rule_cache in self.getReactionRule1(sid1):
                 string = self.dump_reaction_rule(reaction_rule_cache)
                 reaction_rules_1.append(string)
             for sid2 in self.speciesList:
                 for reaction_rule_cache in self.getReactionRule2(sid1, sid2):
-                    # Ignore reflecting.
                     if reaction_rule_cache.k > 0:
                         string = self.dump_reaction_rule(reaction_rule_cache)
                         reaction_rules_2.append(string)
+                    else:
+                        string = self.dump_reaction_rule(reaction_rule_cache,
+                                                         'reflective')
+                        reflective_reaction_rules.append(string)
 
         reaction_rules_1 = uniq(reaction_rules_1)
         reaction_rules_1.sort()
         reaction_rules_2 = uniq(reaction_rules_2)
         reaction_rules_2.sort()
+        reflective_reaction_rules = uniq(reflective_reaction_rules)
+        reflective_reaction_rules.sort()
 
-        return 'Monomolecular reaction rules:\n' + ''.join(reaction_rules_1) +\
-               '\nBimolecular reaction rules:\n' + ''.join(reaction_rules_2)
+        return('\nMonomolecular reaction rules:\n' + ''.join(reaction_rules_1) +
+               '\nBimolecular reaction rules:\n' + ''.join(reaction_rules_2) +
+               '\nReflective bimolecular reaction rules:\n' +
+               ''.join(reflective_reaction_rules))
 
