@@ -17,6 +17,7 @@
 #include <boost/python/object.hpp>
 #include <boost/python/iterator.hpp>
 #include <boost/python/copy_const_reference.hpp>
+#include <boost/python/back_reference.hpp>
 #include <boost/type_traits/alignment_of.hpp>
 #include <numpy/arrayobject.h>
 
@@ -26,8 +27,10 @@
 #include "peer/tuple_converters.hpp"
 #include "peer/numpy/pyarray_backed_allocator.hpp"
 #include "peer/numpy/ndarray_converters.hpp"
+#include "peer/STLIteratorWrapper.hpp"
 
 #include "utils/pair.hpp"
+#include "utils/range.hpp"
 #include "filters.hpp"
 #include "Shape.hpp"
 
@@ -311,6 +314,9 @@ public:
     private:
     };
 
+    typedef boost::transform_iterator<
+        select1st<const typename impl_type::const_iterator::value_type>,
+        typename impl_type::const_iterator> key_iterator;
 
 public:
     MatrixSpace(typename impl_type::length_type world_size,
@@ -337,30 +343,27 @@ public:
         return impl_.cell_size();
     }
 
-    typename impl_type::const_iterator __iter__begin() const
+    static boost::python::object __iter__(boost::python::back_reference<MatrixSpace const&> self)
     {
-        return impl_.begin();
+        using namespace boost::python;
+        return object(handle<>(
+            STLIteratorWrapper<typename impl_type::const_iterator,
+                               boost::python::object>::create(
+                std::make_pair(self.get().impl_.begin(),
+                               self.get().impl_.end()),
+                               self.source())));
     }
 
-    typename impl_type::const_iterator __iter__end()
+    static boost::python::object iterkeys(boost::python::back_reference<MatrixSpace const&> self)
     {
-        return impl_.end();
-    }
-
-    typename boost::transform_iterator<
-        select1st<const typename impl_type::const_iterator::value_type>,
-        typename impl_type::const_iterator> iterkeys_begin()
-    {
-        return boost::make_transform_iterator(impl_.begin(),
-            select1st<const typename impl_type::const_iterator::value_type>());
-    }
-
-    typename boost::transform_iterator<
-        select1st<const typename impl_type::const_iterator::value_type>,
-        typename impl_type::const_iterator> iterkeys_end()
-    {
-        return boost::make_transform_iterator(impl_.end(),
-            select1st<const typename impl_type::const_iterator::value_type>());
+        using namespace boost::python;
+        return object(handle<>(
+            STLIteratorWrapper<key_iterator, boost::python::object>::create(
+                make_transform_iterator_range(
+                    std::make_pair(self.get().impl_.begin(),
+                                   self.get().impl_.end()),
+                    select1st<const typename impl_type::const_iterator::value_type>()),
+                self.source())));
     }
 
     typename Builders::result_type
@@ -442,6 +445,11 @@ public:
         Builders::__register_converter();
 
         util::register_tuple_converter<typename impl_type::value_type>();
+        STLIteratorWrapper<typename impl_type::const_iterator,
+                           boost::python::object>::__class_init__(
+            "MatrixSpace.iterator");
+        STLIteratorWrapper<key_iterator, boost::python::object>::__class_init__(
+            "MatrixSpace.keyiterator");
 
         class_<MatrixSpace>(class_name, init<length_type, size_type>())
             .add_property("cell_size", &MatrixSpace::get_cell_size)
@@ -452,12 +460,8 @@ public:
             .def("get_neighbors_cyclic", &MatrixSpace::get_neighbors_cyclic)
             .def("get_neighbors", &MatrixSpace::get_neighbors_cyclic)
             .def("__len__", &MatrixSpace::__len__)
-            .def("__iter__", range(
-                    &MatrixSpace::__iter__begin,
-                    &MatrixSpace::__iter__end))
-            .def("iterkeys", range(
-                    &MatrixSpace::iterkeys_begin,
-                    &MatrixSpace::iterkeys_end))
+            .def("__iter__", &MatrixSpace::__iter__)
+            .def("iterkeys", &MatrixSpace::iterkeys)
             .def("contains", &MatrixSpace::contains)
             .def("update", &MatrixSpace::update)
             .def("__setitem__", &MatrixSpace::__setitem__)

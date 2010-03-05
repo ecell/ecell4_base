@@ -44,14 +44,17 @@ public:
     }
 
 public:
-    static PyTypeObject* __class_init__(const char* name, PyObject* mod)
+    static PyTypeObject* __class_init__(const char* name, PyObject* mod = 0)
     {
-        using namespace boost::python;
-        __name__ = static_cast<std::string>(
-            extract<std::string>(object(borrowed(mod)).attr("__name__")))
-            + "." + name;
-        __class__.tp_name = const_cast<char*>(__name__.c_str());
-        PyType_Ready(&__class__);
+        if (__name__.empty())
+        {
+            using namespace boost::python;
+            __name__ = (mod && PyModule_Check(mod) ?
+                extract<std::string>(object(borrowed(mod)).attr("__name__"))()
+                + ".": std::string()) + name;
+            __class__.tp_name = const_cast<char*>(__name__.c_str());
+            PyType_Ready(&__class__);
+        }
         return &__class__;
     }
 
@@ -63,8 +66,8 @@ public:
         scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
     }
 
-    template<typename Trange_>
-    static PyObject* create(Trange_ const& range, Tholder_ holder = Tholder_())
+    template<typename Trange>
+    static PyObject* create(Trange const& range, Tholder_ holder = Tholder_())
     {
         return reinterpret_cast<PyObject*>(new STLIteratorWrapper(range, holder));
     }
@@ -159,6 +162,15 @@ template<typename Trange_>
 inline void register_stl_iterator_range_converter()
 {
     boost::python::to_python_converter<Trange_, detail::stl_iterator_range_converter<Trange_> >();
+}
+
+template<typename Trange, typename Tholder>
+inline PyObject*
+make_stl_iterator_wrapper(Trange const& range, Tholder holder = Tholder())
+{
+    typedef STLIteratorWrapper<typename boost::range_const_iterator<Trange>::type, Tholder> wrapper_type;
+    wrapper_type::__class_init__(typeid(wrapper_type).name(), boost::python::scope().ptr());
+    return wrapper_type::create(range, holder);
 }
 
 } // namespace util
