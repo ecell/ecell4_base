@@ -105,9 +105,21 @@ class ParticleModel( _gfrd.Model ):
 
     def set_all_repulsive( self ):
         nr = self.network_rules
+        # Maybe the user has defined a reaction rule for any 2 species since a 
+        # previous call to this method, so remove *all* repulsive reaction 
+        # rules first.
         for species1 in self.species_types:
             for species2 in self.species_types:
-                if nr.query_reaction_rule(species1, species2) is None:
+                gen = nr.query_reaction_rule(species1, species2)
+                if gen is not None:
+                    for reaction_rule in gen:
+                        if float(reaction_rule['k']) == 0.0:
+                            nr.remove_reaction_rule(reaction_rule)
+
+        for species1 in self.species_types:
+            for species2 in self.species_types:
+                gen = nr.query_reaction_rule(species1, species2)
+                if gen is None or len(set(gen)) == 0:
                     rr = _gfrd.ReactionRule([species1, species2], [])
                     rr['k'] = '0.0'
                     nr.add_reaction_rule(rr)
