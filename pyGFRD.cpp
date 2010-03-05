@@ -266,22 +266,6 @@ static void Model___setitem__(Model* model, std::string const& key, std::string 
     (*model)[key] = value;
 }
 
-template<typename T_>
-struct world_get_species
-{
-    typedef typename T_::species_iterator iterator;
-
-    static iterator begin(T_& impl)
-    {
-        return impl.get_species().begin();
-    }
-
-    static iterator end(T_& impl)
-    {
-        return impl.get_species().end();
-    }
-};
-
 template<typename Ttraits_>
 struct SimulationState
 {
@@ -514,6 +498,125 @@ struct particle_id_pair_and_distance_list_converter
     {
         wrapper_type::__class_init__("ParticleIDAndDistanceVector", boost::python::scope().ptr());
         boost::python::to_python_converter<native_type*, particle_id_pair_and_distance_list_converter>();
+    }
+};
+
+struct species_range_converter: public boost::python::default_call_policies
+{
+    typedef CyclicWorld::species_range native_type;
+
+    template<typename T_>
+    struct policy
+    {
+        typedef typename boost::range_size<T_>::type size_type;
+        typedef typename boost::range_value<T_>::type value_type;
+        typedef value_type& reference;
+        typedef value_type const& const_reference;
+        typedef typename boost::range_iterator<T_>::type iterator;
+        typedef typename boost::range_const_iterator<T_>::type const_iterator;
+
+        static size_type size(T_ const& c)
+        {
+            return boost::size(c);
+        }
+
+        static void set(T_& c, size_type i, const_reference v)
+        {
+            PyErr_SetString(PyExc_TypeError, "object does not support indexing");
+            boost::python::throw_error_already_set();
+        }
+
+        static const_reference get(T_ const& c, size_type i)
+        {
+            PyErr_SetString(PyExc_TypeError, "object does not support indexing");
+            boost::python::throw_error_already_set();
+            throw 0;
+        }
+
+        static iterator begin(T_& c)
+        {
+            return boost::begin(c);
+        }
+
+        static const_iterator begin(T_ const& c)
+        {
+            return boost::begin(c);
+        }
+
+        static iterator end(T_& c)
+        {
+            return boost::end(c);
+        }
+
+        static const_iterator end(T_ const& c)
+        {
+            return boost::end(c);
+        }
+    };
+
+    struct instance_holder
+    {
+        instance_holder(native_type const& instance,
+                        boost::python::handle<> owner)
+            : instance_(instance), owner_(owner) {}
+
+        native_type const& operator*() const
+        {
+            return instance_;
+        }
+
+        native_type const* operator->() const
+        {
+            return &(**this);
+        }
+
+        native_type& operator*()
+        {
+            PyErr_SetString(PyExc_RuntimeError, "object is immutable");
+            boost::python::throw_error_already_set();
+            return *static_cast<native_type*>(0);
+        }
+
+        native_type* operator->()
+        {
+            return &(**this);
+        }
+
+        native_type instance_;
+        boost::python::handle<> owner_;
+    };
+
+    typedef peer::STLContainerWrapper<native_type, instance_holder, policy> wrapper_type;
+
+    struct result_converter
+    {
+        template<typename T_>
+        struct apply
+        {
+            struct type {
+                PyObject* operator()(native_type const& val) const
+                {
+                    return wrapper_type::create(instance_holder(val, boost::python::handle<>()));
+                }
+
+                PyTypeObject const* get_pytype() const
+                {
+                    return &wrapper_type::__class__;
+                }
+            };
+        };
+    };
+
+    template<typename Targs>
+    static PyObject* postcall(Targs const& arg, PyObject* result)
+    {
+        reinterpret_cast<wrapper_type*>(result)->ptr().owner_ = boost::python::handle<>(boost::python::borrowed(PyTuple_GET_ITEM(arg, 0)));
+        return result;
+    }
+
+    static void __register()
+    {
+        wrapper_type::__class_init__("SpeciesRange", boost::python::scope().ptr());
     }
 };
 
@@ -881,6 +984,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         ;
 
     particle_id_pair_and_distance_list_converter::__register();
+    species_range_converter::__register();
 
     class_<CyclicWorld>("World", init<CyclicWorld::length_type,
                                   CyclicWorld::size_type>())
@@ -889,9 +993,8 @@ BOOST_PYTHON_MODULE( _gfrd )
         .add_property("cell_size", &CyclicWorld::cell_size)
         .add_property("matrix_size", &CyclicWorld::matrix_size)
         .add_property("species",
-            range<return_value_policy<return_by_value>, CyclicWorld const>(
-                &world_get_species<CyclicWorld const>::begin,
-                &world_get_species<CyclicWorld const>::end))
+            make_function(
+                (CyclicWorld::species_range(CyclicWorld::*)() const)&CyclicWorld::get_species, species_range_converter()))
         .def("add_species", &CyclicWorld::add_species)
         .def("get_species",
             (CyclicWorld::species_type const&(CyclicWorld::*)(CyclicWorld::species_id_type const&) const)&CyclicWorld::get_species,

@@ -93,6 +93,16 @@ public:
         reinterpret_cast<PyObject*>(ptr)->ob_type->tp_free(reinterpret_cast< PyObject*>(ptr));
     }
 
+    Tholder_ const& ptr() const
+    {
+        return impl_;
+    }
+
+    Tholder_& ptr()
+    {
+        return impl_;
+    }
+
     // STLContainerWrapper(Tholder_ const& impl): impl_(impl) {}
 
     STLContainerWrapper(Tholder_ impl): impl_(impl) {}
@@ -185,9 +195,9 @@ public:
         scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
     }
 
-    static STLContainerWrapper* create(Tholder_ impl)
+    static PyObject* create(Tholder_ impl)
     {
-        return new STLContainerWrapper(impl);
+        return reinterpret_cast<PyObject*>(new STLContainerWrapper(impl));
     }
 
     static void __dealloc__(STLContainerWrapper* self)
