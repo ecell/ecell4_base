@@ -7,16 +7,18 @@
 
 namespace peer {
 
-template< typename Titer_ >
+template<typename Titer_, typename Tholder_ = void*>
 class STLIteratorWrapper
 {
 protected:
     PyObject_VAR_HEAD
     Titer_ i_;
-    Titer_ end_; 
+    Titer_ end_;
+    Tholder_ holder_;
 
 public:
     static PyTypeObject __class__;
+    static std::string __name__;
 
 public:
     void* operator new(size_t)
@@ -29,28 +31,45 @@ public:
         reinterpret_cast<PyObject*>(ptr)->ob_type->tp_free(reinterpret_cast< PyObject*>(ptr));
     }
 
-    template< typename Trange_ >
-    STLIteratorWrapper(Trange_ const& range)
-        : i_(boost::begin(range )), end_(boost::end(range)) {}
+    template<typename Trange>
+    STLIteratorWrapper(Trange const& range, Tholder_ holder = Tholder_())
+        : i_(boost::begin(range)), end_(boost::end(range)), holder_(holder) {}
 
-    STLIteratorWrapper(Titer_ const& begin, Titer_ const& end)
-        : i_(begin), end_(end) {}
+    template<typename Titer>
+    STLIteratorWrapper(Titer const& begin, Titer const& end, Tholder_ holder = Tholder_())
+        : i_(begin), end_(end), holder_(holder) {}
 
     ~STLIteratorWrapper()
     {
     }
 
 public:
-    static PyTypeObject* __class_init__()
+    static PyTypeObject* __class_init__(const char* name, PyObject* mod = 0)
     {
-        PyType_Ready(&__class__);
+        if (__name__.empty())
+        {
+            using namespace boost::python;
+            __name__ = (mod && PyModule_Check(mod) ?
+                extract<std::string>(object(borrowed(mod)).attr("__name__"))()
+                + ".": std::string()) + name;
+            __class__.tp_name = const_cast<char*>(__name__.c_str());
+            PyType_Ready(&__class__);
+        }
         return &__class__;
     }
 
-    template<typename Trange_>
-    static STLIteratorWrapper* create(Trange_ const& range)
+    static void __register_class(char const* name)
     {
-        return new STLIteratorWrapper(range);
+        using namespace boost::python;
+        PyTypeObject* klass(STLIteratorWrapper::__class_init__(name, reinterpret_cast<PyObject*>(scope().ptr())));
+        Py_INCREF(klass);
+        scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
+    }
+
+    template<typename Trange>
+    static PyObject* create(Trange const& range, Tholder_ holder = Tholder_())
+    {
+        return reinterpret_cast<PyObject*>(new STLIteratorWrapper(range, holder));
     }
 
     static void __dealloc__(STLIteratorWrapper* self)
@@ -60,19 +79,29 @@ public:
 
     static PyObject* __next__(STLIteratorWrapper* self)
     {
-        if ( self->i_ == self->end_ )
+        if (self->i_ == self->end_)
             return NULL;
 
-        return boost::python::incref(boost::python::object(*self->i_ ++).ptr());
+        try
+        {
+            return boost::python::incref(boost::python::object(*self->i_ ++).ptr());
+        }
+        catch (boost::python::error_already_set const&)
+        {
+            return NULL;
+        }
     }
 };
 
-template< typename Titer_ >
-PyTypeObject STLIteratorWrapper< Titer_ >::__class__ = {
-    PyObject_HEAD_INIT( &PyType_Type )
+template<typename Titer_, typename Tholder_>
+std::string STLIteratorWrapper<Titer_, Tholder_>::__name__;
+
+template<typename Titer_, typename Tholder_>
+PyTypeObject STLIteratorWrapper<Titer_, Tholder_>::__class__ = {
+    PyObject_HEAD_INIT(&PyType_Type)
     0,                    /* ob_size */
-    "ecell._ecs.STLIteratorWrapper", /* tp_name */
-    sizeof( STLIteratorWrapper ), /* tp_basicsize */
+    0,                    /* tp_name */
+    sizeof(STLIteratorWrapper), /* tp_basicsize */
     0,                    /* tp_itemsize */
     /* methods */
     (destructor)&STLIteratorWrapper::__dealloc__, /* tp_dealloc */
@@ -90,7 +119,7 @@ PyTypeObject STLIteratorWrapper< Titer_ >::__class__ = {
     PyObject_GenericGetAttr,        /* tp_getattro */
     0,                    /* tp_setattro */
     0,                    /* tp_as_buffer */
-    Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_ITER,/* tp_flags */
+    Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_ITER,/* tp_flags */
     0,                    /* tp_doc */
     0,                    /* tp_traverse */
     0,                    /* tp_clear */
@@ -116,14 +145,14 @@ namespace util {
 
 namespace detail {
 
-template<typename Trange_>
+template<typename Trange_, typename Tholder_ = void*>
 struct stl_iterator_range_converter
 {
     typedef Trange_ native_type;
 
     static PyObject* convert(native_type const& v)
     {
-        return reinterpret_cast<PyObject*>(STLIteratorWrapper<typename native_type::const_iterator>::create(v));
+        return reinterpret_cast<PyObject*>(STLIteratorWrapper<typename boost::range_const_iterator<native_type>::type, Tholder_>::create(v));
     }
 };
 
@@ -133,6 +162,15 @@ template<typename Trange_>
 inline void register_stl_iterator_range_converter()
 {
     boost::python::to_python_converter<Trange_, detail::stl_iterator_range_converter<Trange_> >();
+}
+
+template<typename Trange, typename Tholder>
+inline PyObject*
+make_stl_iterator_wrapper(Trange const& range, Tholder holder = Tholder())
+{
+    typedef STLIteratorWrapper<typename boost::range_const_iterator<Trange>::type, Tholder> wrapper_type;
+    wrapper_type::__class_init__(typeid(wrapper_type).name(), boost::python::scope().ptr());
+    return wrapper_type::create(range, holder);
 }
 
 } // namespace util
