@@ -557,7 +557,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
            single.eventType != EventType.BURST):
             # SINGLE_REACTION, and not a burst. No need to update, single is 
             # removed anyway.
-            pass
+            self.moveSingleParticle(single, newpos)
         else:
             # Todo. if isinstance(single, InteractionSingle):
             single.initialize(self.t)
