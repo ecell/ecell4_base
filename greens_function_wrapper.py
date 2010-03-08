@@ -39,9 +39,9 @@ def draw_eventtype_wrapper(gf, dt, r0):
 
 # Todo. Returns r, not displacement.
 def draw_displacement_wrapper(gf, dt, eventType, a, r0=None, sigma=None):
-    if(eventType == EventType.COM_ESCAPE or
-       eventType == EventType.SINGLE_ESCAPE or
-       eventType == EventType.IV_ESCAPE):
+    if(((eventType == EventType.COM_ESCAPE or
+         eventType == EventType.SINGLE_ESCAPE) and sigma == None) or
+       (eventType == EventType.IV_ESCAPE and sigma != None)):
         # Escape through this coordinate. We already know the new r.
         # Todo. Let gf handle this.
         return a

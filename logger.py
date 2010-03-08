@@ -38,10 +38,6 @@ class Logger:
         self.prepareTimecourseFile( comment )
         self.writeTimecourse()
 
-
-    def setInterval( self, interval ):
-        self.interval = interval
-
     def setParticleOutPattern( self, pattern ):
         self.particleOutPattern = re.compile( pattern )
 

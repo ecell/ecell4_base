@@ -39,10 +39,26 @@ public:
                 while (::valid(*gen))
                 {
                     typename backend_type::reaction_rule_type const r((*gen)());
+                    typedef typename reaction_rule_type::rate_type rate_type;
+                    rate_type rate;
+                    try{
+                        rate = boost::lexical_cast<rate_type>(r["k"]);
+                    }
+                    catch (boost::bad_lexical_cast &) 
+                    // There is no standard textual representation of infinity 
+                    // in the C++ standard, so boost throws a bad_lexical_cast 
+                    // for 'inf', just like for any other non-numerical text. 
+                    {
+                        if(r["k"].compare("inf") == 0){
+                            rate = std::numeric_limits<rate_type>::infinity(); 
+                        }
+                        else{
+                            throw;
+                        }
+                    }
                     (*x.first).second.push_back(reaction_rule_type(
                         r.id(),
-                        boost::lexical_cast<
-                            typename reaction_rule_type::rate_type>(r["k"]),
+                        rate,
                         r.get_reactants(),
                         r.get_products()));
                 }
@@ -71,10 +87,26 @@ public:
                 while (::valid(*gen))
                 {
                     typename backend_type::reaction_rule_type const r((*gen)());
+                    typedef typename reaction_rule_type::rate_type rate_type;
+                    rate_type rate;
+                    try{
+                        rate = boost::lexical_cast<rate_type>(r["k"]);
+                    }
+                    catch (boost::bad_lexical_cast &) 
+                    // There is no standard textual representation of infinity 
+                    // in the C++ standard, so boost throws a bad_lexical_cast 
+                    // for 'inf', just like for any other non-numerical text. 
+                    {
+                        if(r["k"].compare("inf") == 0){
+                            rate = std::numeric_limits<rate_type>::infinity(); 
+                        }
+                        else{
+                            throw;
+                        }
+                    }
                     (*x.first).second.push_back(reaction_rule_type(
                         r.id(),
-                        boost::lexical_cast<
-                            typename reaction_rule_type::rate_type>(r["k"]),
+                        rate,
                         r.get_reactants(),
                         r.get_products()));
                 }

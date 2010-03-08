@@ -71,7 +71,6 @@ Kp = m.new_species_type( 'Kp', D_move, radius )
 Kpp = m.new_species_type( 'Kpp', D_move, radius )
 K_KK = m.new_species_type( 'K_KK', D_move, radius )
 Kp_KK = m.new_species_type( 'Kp_KK', D_move, radius )
-Kpp_KK = m.new_species_type( 'Kpp_KK', D_move, radius )
 Kpp_P = m.new_species_type( 'Kpp_P', D_move, radius )
 Kp_P = m.new_species_type( 'Kp_P', D_move, radius )
 
@@ -181,7 +180,7 @@ rfile = open( 'data/' + logname + '_reactions.dat', 'w' )
 
 
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
-l.setInterval( 1e-0 )
+l.setParticleOutInterval( 1e-0 )
 l.log()
 
 while s.t < T:

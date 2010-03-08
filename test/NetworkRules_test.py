@@ -28,6 +28,23 @@ class NetworkRulesTestCase(unittest.TestCase):
                 lambda: self.m.network_rules.add_reaction_rule(
                     _gfrd.ReactionRule([self.s2], [self.s1, self.s2])))
 
+    def test_remove_reaction_rule_1(self):
+        # Start with None.
+        assert self.m.network_rules.query_reaction_rule(self.s1) == None
+
+        # Add 1.
+        rr = _gfrd.ReactionRule([self.s1], [self.s1, self.s2])
+        rr['k'] = '0.1'
+        self.m.network_rules.add_reaction_rule(rr)
+
+        rules = set(self.m.network_rules.query_reaction_rule(self.s1))
+        self.assertEqual(1, len(rules))
+
+        # Remove 1 to get 0.
+        self.m.network_rules.remove_reaction_rule(rr)
+        gen = self.m.network_rules.query_reaction_rule(self.s1)
+        assert len(set(gen)) == 0
+
     def test_query_reaction_rule(self):
         r1 = _gfrd.ReactionRule([self.s1], [self.s1, self.s2])
         self.m.network_rules.add_reaction_rule(r1)

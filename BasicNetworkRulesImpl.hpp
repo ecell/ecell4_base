@@ -14,6 +14,7 @@ class BasicNetworkRulesImpl: public NetworkRules
 
 public:
     virtual void add_reaction_rule(ReactionRule const&);
+    virtual void remove_reaction_rule(ReactionRule const&);
 
     virtual reaction_rule_generator* query_reaction_rule(SpeciesTypeID const& r1) const;
 

@@ -75,7 +75,7 @@ s.placeParticle( O, [0,0,0] )
 
 l = Logger( s, 'pushpull' )
 #l.setParticleOutput( ('Ea','X','EaX','Xp','Xpp','EaI') )
-l.setInterval( 1e-3 )
+l.setParticleOutInterval( 1e-3 )
 l.log()
 
 

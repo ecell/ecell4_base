@@ -77,7 +77,6 @@ def singlerun( D_factor, ti, T ):
 #     Kpp = m.new_species_type( 'Kpp', D_move, radius )
 #     K_KK = m.new_species_type( 'K_KK', D_move, radius )
     Kp_KK = m.new_species_type( 'Kp_KK', D_move, radius )
-#     Kpp_KK = m.new_species_type( 'Kpp_KK', D_move, radius )
 #     Kpp_P = m.new_species_type( 'Kpp_P', D_move, radius )
 #     Kp_P = m.new_species_type( 'Kp_P', D_move, radius )
 
@@ -171,6 +170,8 @@ def singlerun( D_factor, ti, T ):
     m.network_rules.add_reaction_rule( r13 )
 #     r14 = createUnimolecularReactionRule( Pi, P, ki )
 #     m.network_rules.add_reaction_rule( r14 )
+
+    s.setModel( m )
 
 
 #     logname = model + '_' + '_'.join( sys.argv[1:6] ) + '_' +\

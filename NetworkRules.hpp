@@ -14,6 +14,7 @@ public:
 
 public:
     virtual void add_reaction_rule(ReactionRule const&) = 0;
+    virtual void remove_reaction_rule(ReactionRule const&) = 0;
 
     virtual reaction_rule_generator* query_reaction_rule(SpeciesTypeID const& r1) const = 0;
 

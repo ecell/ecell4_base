@@ -59,18 +59,6 @@ class Single( object ):
 
     def initialize( self, t ):
         '''
-        Initialize this Single.
-
-        The radius (shell size) is shrunken to the radius of the particle
-        it represents.   
-        self.lastTime is reset to the current time, and self.dt
-        is set to zero.
-        '''
-        self.reset()
-        self.lastTime = t
-
-    def reset( self ):
-        '''
         Reset the Single.
 
         Radius (shell size) is shrunken to the actual radius of the particle.
@@ -78,6 +66,7 @@ class Single( object ):
         after calling this method.
         '''
         self.dt = 0.0
+        self.lastTime = t
         self.eventType = EventType.SINGLE_ESCAPE
 
     def isReset( self ):

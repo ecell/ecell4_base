@@ -13,19 +13,6 @@ class Shape(object):
         return abs(self.signedDistanceTo(pos))
 
 
-class Sphere(Shape):
-    def __init__(self, origin, radius):
-        Shape.__init__(self) 
-        self.origin = numpy.array(origin)
-        self.radius = radius
-
-    def signedDistanceTo(self, pos):
-        """Note: cyclicTranspose 'pos' before you use this.
-         
-        """
-        return length(pos - self.origin) - self.radius
-
-
 class Cylinder(Shape):
     def __init__(self, origin, radius, orientation, size):
         Shape.__init__(self)

@@ -72,13 +72,6 @@ System System( / )
                 # 16e-9
         }
 
-        Variable Variable( Kpp_KK )
-        {
-                Value   0;      
-                # 0
-                
-        }
-
         Variable Variable( Kpp_P )
         {
                 Value   0;

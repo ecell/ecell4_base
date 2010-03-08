@@ -922,6 +922,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     class_<NetworkRules, boost::noncopyable>("NetworkRules", no_init)
         .def("add_reaction_rule", &NetworkRules::add_reaction_rule)
+        .def("remove_reaction_rule", &NetworkRules::remove_reaction_rule)
         .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(world_traits_type::species_id_type const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         .def("query_reaction_rule", static_cast<NetworkRules::reaction_rule_generator*(NetworkRules::*)(world_traits_type::species_id_type const&, world_traits_type::species_id_type const&) const>(&NetworkRules::query_reaction_rule), return_value_policy<return_by_value>())
         ;
