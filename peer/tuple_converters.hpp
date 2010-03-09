@@ -188,12 +188,12 @@ namespace util
  
             static void* convertible(PyObject* pyo)
             {
-                if (!PyType_HasFeature(pyo->ob_type, Py_TPFLAGS_HAVE_ITER)
-                    || !pyo->ob_type->tp_iter)
+                PyObject* const retval(PyObject_GetIter(pyo));
+                if (!retval)
                 {
-                    return 0;
+                    PyErr_Clear();
                 }
-                return pyo;
+                return retval;
             }
 
             static void construct(PyObject* pyo,
@@ -201,12 +201,14 @@ namespace util
             {
                 void* storage(reinterpret_cast<
                     boost::python::converter::rvalue_from_python_storage<native_type>*>(data)->storage.bytes);
+                boost::python::handle<> iter(
+                        reinterpret_cast<PyObject*>(data->convertible));
+
                 data->convertible = new (storage) native_type();
                 native_type& retval(*reinterpret_cast<native_type*>(data->convertible));
-                boost::python::handle<> iter(PyObject_GetIter(pyo));
                 for (;;)
                 {
-                    boost::python::handle<> i(PyIter_Next(iter.get()));
+                    boost::python::handle<> i(boost::python::allow_null(PyIter_Next(iter.get())));
                     if (!i)
                     {
                         if (PyErr_Occurred())
