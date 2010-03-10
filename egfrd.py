@@ -216,7 +216,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         # Get surface.
         species = self.world.get_species(pid_particle_pair[1].sid)
-        surface = self.getSurface(species)
+        surface = self.model.getSurface(species)
 
         # Create single. The type of the single that will be created depends 
         # on the surface this particle is on. Either SphericalSingle, 
@@ -244,7 +244,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         # Get surface.
         species = self.world.get_species(single1.pid_particle_pair[1].sid)
-        surface = self.getSurface(species)
+        surface = self.model.getSurface(species)
 
         # Create pair. The type of the pair that will be created depends on 
         # the surface the particles are on. Either SphericalPair, 
