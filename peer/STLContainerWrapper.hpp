@@ -176,11 +176,16 @@ public:
     static PyTypeObject* __class_init__(const char* name, PyObject* mod)
     {
         using namespace boost::python;
-        __name__ = static_cast<std::string>(
-            extract<std::string>(object(borrowed(mod)).attr("__name__")))
-            + "." + name;
-        __class__.tp_name = const_cast<char*>(__name__.c_str());
-        PyType_Ready(&__class__);
+        iterator_wrapper_type::__class_init__(
+                (std::string(name) + ".Iterator").c_str(), mod);
+        if (__name__.empty())
+        {
+            __name__ = static_cast<std::string>(
+                extract<std::string>(object(borrowed(mod)).attr("__name__")))
+                + "." + name;
+            __class__.tp_name = const_cast<char*>(__name__.c_str());
+            PyType_Ready(&__class__);
+        }
         return &__class__;
     }
 
@@ -188,8 +193,6 @@ public:
     {
         using namespace boost::python;
         PyObject* mod(scope().ptr());
-        iterator_wrapper_type::__class_init__(
-                (std::string(name) + ".Iterator").c_str(), mod);
         PyTypeObject* klass(STLContainerWrapper::__class_init__(name, mod));
         Py_INCREF(klass);
         scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));

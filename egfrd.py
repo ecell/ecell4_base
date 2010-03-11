@@ -48,16 +48,16 @@ class Delegate( object ):
 
 
 class EGFRDSimulator( ParticleSimulatorBase ):
-    def __init__( self ):
+    def __init__(self, world):
+        ParticleSimulatorBase.__init__(self, world)
+
         self.domainIDGenerator = DomainIDGenerator(0)
         self.shellIDGenerator = ShellIDGenerator(0)
-
-        ParticleSimulatorBase.__init__( self )
 
         self.MULTI_SHELL_FACTOR = 0.05
         self.SINGLE_SHELL_FACTOR = 0.1
 
-        self.isDirty = True
+        self.isDirty = False 
         self.scheduler = EventScheduler()
 
         self.userMaxShellSize = numpy.inf
@@ -65,14 +65,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.domains = {}
 
         self.reset()
-
-    def setWorldSize( self, size ):
-        ParticleSimulatorBase.setWorldSize( self, size )
-        self.isDirty = True
-
-    def setMatrixSize( self, size ):
-        ParticleSimulatorBase.setMatrixSize( self, size )
-        self.isDirty = True
 
     def getMatrixCellSize( self ):
         return self.containers[0].cell_size
@@ -112,22 +104,21 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.lastReaction = None
 
         self.isDirty = True
-        #self.initialize()
 
     def initialize( self ):
         ParticleSimulatorBase.initialize( self )
 
         self.scheduler.clear()
-        self.containers = [SphericalShellContainer(self.worldSize, 
-                                                   self.matrixSize),
-                           CylindricalShellContainer(self.worldSize, 
-                                                     self.matrixSize)]
+        self.containers = [SphericalShellContainer(self.world.world_size, 
+                                                   self.world.matrix_size),
+                           CylindricalShellContainer(self.world.world_size, 
+                                                     self.world.matrix_size)]
         self.domains = {}
 
         singles = []
-        for pid_particle_pair in self.particleMatrix:
+        for pid_particle_pair in self.world:
             singles.append(self.createSingle(pid_particle_pair))
-        assert len(singles) == len(self.particleMatrix)
+        assert len(singles) == self.world.num_particles
         for single in singles:
             self.addSingleEvent( single )
 
@@ -224,7 +215,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         shell_id = self.shellIDGenerator()
 
         # Get surface.
-        species = self.speciesList[pid_particle_pair[1].sid]
+        species = self.world.get_species(pid_particle_pair[1].sid)
         surface = self.getSurface(species)
 
         # Create single. The type of the single that will be created depends 
@@ -252,7 +243,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         pos2 = single2.shell.position
 
         # Get surface.
-        species = self.speciesList[single1.pid_particle_pair[1].sid]
+        species = self.world.get_species(single1.pid_particle_pair[1].sid)
         surface = self.getSurface(species)
 
         # Create pair. The type of the pair that will be created depends on 
@@ -437,7 +428,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             if reactantSpeciesRadius < productSpecies.radius:
                 self.clearVolume( oldpos, productSpecies.radius )
 
-            if self.checkOverlap( oldpos, productSpecies.radius,
+            if self.getParticlesWithinRadius( oldpos, productSpecies.radius,
                                   ignore = [ single.pid_particle_pair[0], ] ):
                 if __debug__:
                     log.info( 'no space for product particle.' )
@@ -495,9 +486,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
 
                 # accept the new positions if there is enough space.
-                if (not self.checkOverlap(newpos1, particleRadius1,
+                if (not self.getParticlesWithinRadius(newpos1, particleRadius1,
                                           ignore=[single.pid_particle_pair[0]])) and \
-                   (not self.checkOverlap(newpos2, particleRadius2,
+                   (not self.getParticlesWithinRadius(newpos2, particleRadius2,
                                           ignore=[single.pid_particle_pair[0]])):
                     break
             else:
@@ -548,7 +539,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if __debug__:
             log.debug( "propagate %s: %s => %s" % ( single, single.pid_particle_pair[1].position, newpos ) )
 
-            if self.checkOverlap(newpos,
+            if self.getParticlesWithinRadius(newpos,
                                  single.pid_particle_pair[1].radius,
                                  ignore=[single.pid_particle_pair[0]]):
                 raise RuntimeError('propagateSingle: checkOverlap failed.')
@@ -926,7 +917,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             D1 = particle1[1].D
             D2 = particle2[1].D
 
-            pos2t = cyclic_transpose(pos2, pos1, self.worldSize)
+            pos2t = self.world.cyclic_transpose(pos2, pos1)
             oldInterParticle = pos2t - pos1
             r0 = self.distance(pos1, pos2)
             assert feq(r0, length(oldInterParticle))
@@ -939,9 +930,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
             newpos1 = self.applyBoundary(newpos1)
             newpos2 = self.applyBoundary(newpos2)
-            assert not self.checkOverlap(newpos1, particle1[1].radius,
+            assert not self.getParticlesWithinRadius(newpos1, particle1[1].radius,
                                          ignore=[particle1[0], particle2[0]])
-            assert not self.checkOverlap(newpos2, particle2[1].radius,
+            assert not self.getParticlesWithinRadius(newpos2, particle2[1].radius,
                                          ignore=[particle1[0], particle2[0]])
             assert self.checkPairPos(pair, newpos1, newpos2, oldCoM,\
                                          pair.get_shell_size())
@@ -1042,7 +1033,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             shellSizeMargin = shellSizeMargin2
 
         # 1. Shell cannot be larger than max shell size or sim cell size.
-        com = calculate_pair_CoM( pos1, pos2, D1, D2, self.getWorldSize() )
+        com = self.world.calculate_pair_CoM( pos1, pos2, D1, D2 )
         com = self.applyBoundary( com )
         minShellSizeWithMargin = minShellSize + shellSizeMargin
         maxShellSize = min( self.getMaxShellSize(),
@@ -1456,9 +1447,9 @@ rejected moves = %d
 
     def checkShellMatrix( self ):
         for container in self.containers:
-            if self.worldSize != container.world_size:
+            if self.world.world_size != container.world_size:
                 raise RuntimeError,\
-                    'self.worldSize != container.world_size'
+                    'self.world.world_size != container.world_size'
 
         shellPopulation = 0
         for i in range( self.scheduler.getSize() ):

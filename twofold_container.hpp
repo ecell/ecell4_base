@@ -25,6 +25,7 @@ public:
             iterator, value_type, boost::forward_traversal_tag>
     {
         friend class const_iterator;
+        friend class twofold_container;
         friend class boost::iterator_core_access;
 
         std::ptrdiff_t distance_to(iterator const& that) const
@@ -63,6 +64,7 @@ public:
             const_iterator, const value_type, boost::forward_traversal_tag>
     {
         friend class iterator;
+        friend class twofold_container;
         friend class boost::iterator_core_access;
 
         std::ptrdiff_t distance_to(const_iterator const& that) const
@@ -166,6 +168,36 @@ public:
         {
             BOOST_ASSERT(false);
         }
+    }
+
+    iterator insert(iterator pos, value_type const& item)
+    {
+        switch (pos.idx_)
+        {
+        case 0:
+            switch (size())
+            {
+            case 0:
+                items_[0] = item;
+                return pos;
+            case 1:
+                items_[1] = items_[0];
+                items_[0] = item;
+                return pos;
+            default:
+                break;
+            }
+        case 1:
+            switch (size())
+            {
+            case 1:
+                items_[1] = item;
+                return pos;
+            default:
+                break;
+            }
+        }
+        BOOST_ASSERT(0);
     }
 
     value_type& operator[](std::size_t idx)

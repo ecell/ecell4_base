@@ -620,6 +620,15 @@ struct species_range_converter: public boost::python::default_call_policies
     }
 };
 
+template<typename T_>
+typename T_::particle_id_pair_and_distance_list* World_check_overlap(
+    T_& world,
+    typename T_::particle_shape_type const& s,
+    twofold_container<typename T_::particle_id_type> const& ignore)
+{
+    return world.check_overlap(s, ignore);
+}
+
 BOOST_PYTHON_MODULE( _gfrd )
 {
     using namespace boost::python;
@@ -986,6 +995,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     particle_id_pair_and_distance_list_converter::__register();
     species_range_converter::__register();
+    peer::util::register_range_to_tuple_converter<twofold_container<CyclicWorld::particle_id_type> >();
 
     class_<CyclicWorld>("World", init<CyclicWorld::length_type,
                                   CyclicWorld::size_type>())
@@ -1013,6 +1023,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_id_pair const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
         .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
         .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
+        .def("check_overlap", &World_check_overlap<CyclicWorld>, return_value_policy<return_by_value>())
         .def("update_particle", &CyclicWorld::update_particle)
         .def("remove_particle", &CyclicWorld::remove_particle)
         .def("get_particle", &CyclicWorld::get_particle)

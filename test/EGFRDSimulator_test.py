@@ -20,9 +20,9 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         self.A = self.m.new_species_type( 'A', 0, 1e-8 )
         self.B = self.m.new_species_type( 'B', 2e-11, 5e-9 )
         self.m.set_all_repulsive()
-        self.s = EGFRDSimulator()
+        world = World( 1e-5, 10 ) 
+        self.s = EGFRDSimulator( world )
         self.s.setModel( self.m )
-        self.s.setWorldSize( 1e-5 )
 
     def tearDown(self):
         pass

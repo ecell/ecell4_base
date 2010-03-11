@@ -10,6 +10,7 @@
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
+#include <boost/range/value_type.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/arithmetic/sub.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
@@ -93,7 +94,7 @@ namespace util
         };
 
 #define TUPLE_CONVERTERS_PYTUPLE_TO_TUPLE_TEMPLATE_EXTRACT(__z__, __n__, __v__) \
-        boost::python::extract<BOOST_PP_CAT(__v__,__n__)>(boost::python::handle<>(PySequence_GetItem(pyo, __n__)).get())
+        (boost::python::extract<BOOST_PP_CAT(__v__,__n__)>(boost::python::handle<>(PySequence_GetItem(pyo, __n__)).get()))()
 
 #define TUPLE_CONVERTERS_PYTUPLE_TO_TUPLE_TEMPLATE(__z__, __n__, __v__) \
         template<BOOST_PP_ENUM_PARAMS(__n__, typename T)> \
@@ -157,8 +158,8 @@ namespace util
                 void* storage(reinterpret_cast<
                     boost::python::converter::rvalue_from_python_storage<native_type>*>(data)->storage.bytes);
                 data->convertible = new (storage) native_type(
-                    boost::python::extract<Tfirst_>(boost::python::handle<>(PySequence_GetItem(pyo, 0)).get()),
-                    boost::python::extract<Tsecond_>(boost::python::handle<>(PySequence_GetItem(pyo, 1)).get()));
+                    boost::python::extract<Tfirst_>(boost::python::handle<>(PySequence_GetItem(pyo, 0)).get())(),
+                    boost::python::extract<Tsecond_>(boost::python::handle<>(PySequence_GetItem(pyo, 1)).get())());
             }
         };
 
@@ -177,6 +178,50 @@ namespace util
                     PyTuple_SetItem(retval, idx, incref(object(*i).ptr()));
                 }
                 return retval;
+            }
+        };
+
+        template<typename Trange_>
+        struct pytuple_to_range_converter
+        {
+            typedef Trange_ native_type;
+ 
+            static void* convertible(PyObject* pyo)
+            {
+                PyObject* const retval(PyObject_GetIter(pyo));
+                if (!retval)
+                {
+                    PyErr_Clear();
+                }
+                return retval;
+            }
+
+            static void construct(PyObject* pyo,
+                                  boost::python::converter::rvalue_from_python_stage1_data* data)
+            {
+                void* storage(reinterpret_cast<
+                    boost::python::converter::rvalue_from_python_storage<native_type>*>(data)->storage.bytes);
+                boost::python::handle<> iter(
+                        reinterpret_cast<PyObject*>(data->convertible));
+
+                data->convertible = new (storage) native_type();
+                native_type& retval(*reinterpret_cast<native_type*>(data->convertible));
+                for (;;)
+                {
+                    boost::python::handle<> i(boost::python::allow_null(PyIter_Next(iter.get())));
+                    if (!i)
+                    {
+                        if (PyErr_Occurred())
+                        {
+                            boost::python::throw_error_already_set();
+                        }
+                        break;
+                    }
+                    retval.insert(boost::end(retval),
+                        boost::python::extract<
+                            typename boost::range_value<native_type>::type>(
+                                i.get())());
+                }
             }
         };
     } // namespace detail
@@ -206,6 +251,7 @@ namespace util
         {
             boost::python::to_python_converter<
                 Trange_, detail::range_to_pytuple_converter<Trange_> >();
+            to_native_converter<Trange_, detail::pytuple_to_range_converter<Trange_> >();
             registered = true;
         }
     }

@@ -57,7 +57,7 @@ class Logger:
         self.writeTimecourseComment( comment )
 
         speciesNameList = '\'' +\
-            "\', \'".join( str(i) for i in self.sim.speciesList.keys()  ) + '\''
+            "\', \'".join(str(si.id) for si in self.sim.getSpecies()) + '\''
         columns = '[ \'t\', ' + speciesNameList + ']'
         self.writeTimecourseComment( '@ columns= ' + columns )
 

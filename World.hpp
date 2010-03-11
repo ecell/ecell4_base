@@ -140,6 +140,24 @@ protected:
     typedef std::map<species_id_type, species_type> species_map;
     typedef select_second<typename species_map::value_type> second_selector_type;
 
+    struct distance_comparator:
+            public std::binary_function<
+                typename particle_id_pair_and_distance_list::placeholder,
+                typename particle_id_pair_and_distance_list::placeholder,
+                bool>
+    {
+        typedef typename particle_id_pair_and_distance_list::placeholder
+                first_argument_type;
+        typedef typename particle_id_pair_and_distance_list::const_caster const_caster;
+        bool operator()(first_argument_type const& lhs,
+                        first_argument_type const& rhs) const
+        {
+            return c_(lhs).second < c_(rhs).second;
+        }
+
+        const_caster c_;
+    };
+
     template<typename Tset_>
     struct overlap_checker
     {
@@ -160,6 +178,10 @@ protected:
 
         particle_id_pair_and_distance_list* result() const
         {
+            if (result_)
+            {
+                std::sort(result_->pbegin(), result_->pend(), distance_comparator());
+            }
             return result_;
         }
 
@@ -191,6 +213,10 @@ protected:
 
         particle_id_pair_and_distance_list* result() const
         {
+            if (result_)
+            {
+                std::sort(result_->pbegin(), result_->pend(), distance_comparator());
+            }
             return result_;
         }
 
@@ -303,8 +329,10 @@ public:
     particle_id_pair new_particle(species_id_type const& sid,
             position_type const& pos)
     {
+        species_type const& species(get_species(sid));
         particle_id_pair retval(pidgen_(),
-            particle_type(sid, particle_shape_type(pos, get_species(sid).radius())));
+            particle_type(sid, particle_shape_type(pos, species.radius()),
+                          species.D()));
         pmat_.update(retval);
         return retval;
     }

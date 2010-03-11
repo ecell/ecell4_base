@@ -7,8 +7,6 @@ from gfrdbase import *
 from logger import *
 import sys
 
-s = EGFRDSimulator()
-#s = BDSimulator()
 
 N = 300
 
@@ -16,8 +14,11 @@ L = 5e-6
 #L = 2e-6
 #L = 5e-8
 #L = 3e-7
-s.setWorldSize( L )
-s.setMatrixSize(int((N * 6) ** (1. / 3.)))
+
+w = World(L, int((N * 6) ** (1. / 3.)))
+s = EGFRDSimulator(w)
+#s = BDSimulator()
+
 
 box1 = CuboidalRegion( [0,0,0], [L,L,L] )
 # not supported yet
