@@ -158,9 +158,9 @@ struct tuple_to_position_converter
                           boost::python::converter::rvalue_from_python_storage<native_type>* data)
     {
         data->stage1.convertible = new(data->storage.bytes) native_type(
-            PyFloat_AsDouble(boost::python::handle<>(PyTuple_GET_ITEM(ptr, 0)).get()),
-            PyFloat_AsDouble(boost::python::handle<>(PyTuple_GET_ITEM(ptr, 1)).get()),
-            PyFloat_AsDouble(boost::python::handle<>(PyTuple_GET_ITEM(ptr, 2)).get()));
+            PyFloat_AsDouble(PyTuple_GET_ITEM(ptr, 0)),
+            PyFloat_AsDouble(PyTuple_GET_ITEM(ptr, 1)),
+            PyFloat_AsDouble(PyTuple_GET_ITEM(ptr, 2)));
     }
 };
 
@@ -187,9 +187,9 @@ struct list_to_position_converter
                           boost::python::converter::rvalue_from_python_storage<native_type>* data)
     {
         data->stage1.convertible = new(data->storage.bytes) native_type(
-            PyFloat_AsDouble(boost::python::handle<>(PyList_GET_ITEM(ptr, 0)).get()),
-            PyFloat_AsDouble(boost::python::handle<>(PyList_GET_ITEM(ptr, 1)).get()),
-            PyFloat_AsDouble(boost::python::handle<>(PyList_GET_ITEM(ptr, 2)).get()));
+            PyFloat_AsDouble(PyList_GET_ITEM(ptr, 0)),
+            PyFloat_AsDouble(PyList_GET_ITEM(ptr, 1)),
+            PyFloat_AsDouble(PyList_GET_ITEM(ptr, 2)));
     }
 };
 

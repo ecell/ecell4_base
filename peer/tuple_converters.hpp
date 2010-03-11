@@ -192,6 +192,7 @@ namespace util
                 if (!retval)
                 {
                     PyErr_Clear();
+                    return 0;
                 }
                 return retval;
             }
