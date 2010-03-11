@@ -24,8 +24,9 @@ struct Particle
 
     Particle(): shape_(), species_id_() {}
 
-    Particle(species_id_type const& species_id, shape_type const& shape)
-        : shape_(shape), species_id_(species_id), D_(0.) {}
+    Particle(species_id_type const& species_id, shape_type const& shape,
+             D_type const& D)
+        : shape_(shape), species_id_(species_id), D_(D) {}
 
     position_type& position()
     {

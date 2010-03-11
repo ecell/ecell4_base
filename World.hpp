@@ -283,8 +283,10 @@ public:
     particle_id_pair new_particle(species_id_type const& sid,
             position_type const& pos)
     {
+        species_type const& species(get_species(sid));
         particle_id_pair retval(pidgen_(),
-            particle_type(sid, sphere_type(pos, get_species(sid).radius())));
+            particle_type(sid, sphere_type(pos, species.radius()),
+                          species.D()));
         pmat_.update(retval);
         return retval;
     }
