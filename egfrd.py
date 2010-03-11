@@ -1364,7 +1364,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
                 shell_size = shell.radius
             dists[i] = self.distance(pos, shell.position) - shell_size
             # Todo. Why is this so slow:
-            #dists[i] = self.distance(shell, pos)
+            dist2 = self.distance(shell, pos)
+            assert dists[i] == dist2
         return min( dists )
 
     def objDistanceArray( self, pos, objs ):

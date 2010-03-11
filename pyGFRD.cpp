@@ -127,18 +127,18 @@ struct ndarray_to_position_converter
     }
 };
 
-struct seq_to_position_converter
+struct tuple_to_position_converter
 {
     typedef world_traits_type::position_type native_type;
     
     static void* convertible(PyObject* ptr)
     {
-        if (!PySequence_Check(ptr))
+        if (!PyTuple_Check(ptr))
         {
             return NULL;
         }
         
-        if (PySequence_Size(ptr) != 3)
+        if (PyTuple_GET_SIZE(ptr) != 3)
         {
             return NULL;
         }
@@ -150,9 +150,38 @@ struct seq_to_position_converter
                           boost::python::converter::rvalue_from_python_storage<native_type>* data)
     {
         data->stage1.convertible = new(data->storage.bytes) native_type(
-            PyFloat_AsDouble(boost::python::handle<>(PySequence_GetItem(ptr, 0)).get()),
-            PyFloat_AsDouble(boost::python::handle<>(PySequence_GetItem(ptr, 1)).get()),
-            PyFloat_AsDouble(boost::python::handle<>(PySequence_GetItem(ptr, 2)).get()));
+            PyFloat_AsDouble(boost::python::handle<>(PyTuple_GET_ITEM(ptr, 0)).get()),
+            PyFloat_AsDouble(boost::python::handle<>(PyTuple_GET_ITEM(ptr, 1)).get()),
+            PyFloat_AsDouble(boost::python::handle<>(PyTuple_GET_ITEM(ptr, 2)).get()));
+    }
+};
+
+struct list_to_position_converter
+{
+    typedef world_traits_type::position_type native_type;
+    
+    static void* convertible(PyObject* ptr)
+    {
+        if (!PyList_Check(ptr))
+        {
+            return NULL;
+        }
+        
+        if (PyList_GET_SIZE(ptr) != 3)
+        {
+            return NULL;
+        }
+        
+        return ptr;
+    }
+    
+    static void construct(PyObject* ptr,
+                          boost::python::converter::rvalue_from_python_storage<native_type>* data)
+    {
+        data->stage1.convertible = new(data->storage.bytes) native_type(
+            PyFloat_AsDouble(boost::python::handle<>(PyList_GET_ITEM(ptr, 0)).get()),
+            PyFloat_AsDouble(boost::python::handle<>(PyList_GET_ITEM(ptr, 1)).get()),
+            PyFloat_AsDouble(boost::python::handle<>(PyList_GET_ITEM(ptr, 2)).get()));
     }
 };
 
@@ -624,7 +653,9 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::to_native_converter<world_traits_type::position_type,
         ndarray_to_position_converter>();
     peer::util::to_native_converter<world_traits_type::position_type,
-        seq_to_position_converter>();
+        tuple_to_position_converter>();
+    peer::util::to_native_converter<world_traits_type::position_type,
+        list_to_position_converter>();
 
     peer::MatrixSpace< MatrixSpace<egfrd_simulator_traits_type::spherical_shell_type, egfrd_simulator_traits_type::shell_id_type> >::__register_class("SphericalShellContainer");
     peer::MatrixSpace< MatrixSpace<egfrd_simulator_traits_type::cylindrical_shell_type, egfrd_simulator_traits_type::shell_id_type> >::__register_class("CylindricalShellContainer");
