@@ -57,7 +57,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.MULTI_SHELL_FACTOR = 0.05
         self.SINGLE_SHELL_FACTOR = 0.1
 
-        self.isDirty = False 
+        self.isDirty = True
         self.scheduler = EventScheduler()
 
         self.userMaxShellSize = numpy.inf
