@@ -24,7 +24,7 @@
 #include "numpy/type_mappings.hpp"
 #include "pickle_support.hpp"
 
-/* This file is a modified version of peer/SphericalShellWrapper.hpp.
+/* This file is a modified version of peer/CylindricalShellWrapper.hpp.
  * It tried to move the methods that they share into a common base class, but 
  * this failed because of all the static method pointers. */
 namespace peer {
@@ -68,6 +68,27 @@ public:
         }
     };
 
+    struct to_shape_converter
+    {
+        static void* convertible(PyObject* pyo)
+        {
+            if (!PyObject_TypeCheck(pyo, &CylindricalShellWrapper::__class__))
+            {
+                return 0;
+            }
+            return pyo;
+        }
+
+        static void construct(PyObject* pyo,
+                              boost::python::converter::rvalue_from_python_stage1_data* data)
+        {
+            void* storage(reinterpret_cast<
+                boost::python::converter::rvalue_from_python_storage<typename Timpl_::shape_type>* >(
+                    data)->storage.bytes);
+            new (storage) typename Timpl_::shape_type(reinterpret_cast<CylindricalShellWrapper*>(pyo)->impl_.shape());
+            data->convertible = storage;
+        }
+    };
 
 public:
     static PyTypeObject* __class_init__(const char* name, PyObject* mod)
@@ -393,6 +414,7 @@ public:
         Py_INCREF(klass);
         scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
         util::to_native_converter<Timpl_, to_native_converter>();
+        util::to_native_converter<typename Timpl_::shape_type, to_shape_converter>();
         boost::python::to_python_converter<Timpl_, to_python_converter>();
     }
 

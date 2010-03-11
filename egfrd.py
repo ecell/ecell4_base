@@ -1346,17 +1346,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return closest_domain, closest_distance
 
     def objDistance( self, pos, obj ):
-        dists = numpy.zeros( len( obj.shell_list ) )
-        for i, (_, shell) in enumerate(obj.shell_list):
-            if(type(obj).__name__ == CylindricalSurfaceSingle or
-               type(obj).__name__ == CylindricalSurfacePair):
-                shell_size = shell.size
-            else:
-                shell_size = shell.radius
-            dists[i] = self.distance(pos, shell.position) - shell_size
-            # Todo. Why is this so slow:
-            #dists[i] = self.distance(shell, pos)
-        return min( dists )
+        return min(self.world.distance(shell, pos) for i, (_, shell) in enumerate(obj.shell_list))
 
     def objDistanceArray( self, pos, objs ):
         dists = numpy.array( [ self.objDistance( pos, obj ) for obj in objs ] )
