@@ -4,6 +4,7 @@ import unittest
 
 import numpy
 
+from _gfrd import World
 from bd import *
 
 class BDSimulatorTestCase( unittest.TestCase ):
@@ -14,9 +15,9 @@ class BDSimulatorTestCase( unittest.TestCase ):
         self.A = self.m.new_species_type( 'A', 0, 1e-8 )
         self.B = self.m.new_species_type( 'B', 2e-11, 5e-9 )
         self.m.set_all_repulsive()
-        self.s = BDSimulator()
+        world = World(1e-5, 10)
+        self.s = BDSimulator(world)
         self.s.setModel(self.m)
-        self.s.setWorldSize( 1e-5 )
 
     def tearDown(self):
         pass

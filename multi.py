@@ -18,8 +18,8 @@ class MultiBDCore( BDSimulatorCoreBase ):
         # this has to be ref, not proxy, since it is used for comparison.
         self.multiref = ref( multi )
 
-        self.particleMatrix = ParticleContainer(self.main.worldSize, self.main.matrixSize)
-        self.sphere_container = SphericalShellContainer(self.main.worldSize, self.main.matrixSize)
+        self.particleMatrix = ParticleContainer(self.main.world.world_size, self.main.world.matrix_size)
+        self.sphere_container = SphericalShellContainer(self.main.world.world_size, self.main.world.matrix_size)
         self.escaped = False
 
     def updateParticle( self, pid_particle_pair ):
@@ -71,9 +71,9 @@ class MultiBDCore( BDSimulatorCoreBase ):
                 return item
         return None
 
-    def getParticlesWithinRadiusNoSort( self, pos, radius, ignore=[] ):
+    def getParticlesWithinRadius( self, pos, radius, ignore=[] ):
         result = self.particleMatrix.get_neighbors_within_radius( pos, radius )
-        return [ n[0] for n in result if n[0][0] not in ignore ]
+        return [ n for n in result if n[0][0] not in ignore ]
 
     def check( self ):
         BDSimulatorCoreBase.check( self )

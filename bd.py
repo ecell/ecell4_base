@@ -86,7 +86,7 @@ class BDSimulatorCoreBase( object ):
         self.t = t
 
     def determineDt( self ):
-        self.dt = self.calculateBDDt( self.main.speciesList.itervalues(), self.dtFactor )
+        self.dt = self.calculateBDDt( self.main.world.species, self.dtFactor )
 
     def getP_acct( self, rt, D, sigma ):
         try:
@@ -114,8 +114,7 @@ class BDSimulatorCoreBase( object ):
         myrandom.shuffle(self.particlesToStep)
         while self.particlesToStep:
             pid = self.particlesToStep.pop() # take the last one
-            particle = self.main.particleMatrix[pid]
-            pid_particle_pair = (pid, particle)
+            pid_particle_pair = self.main.world.get_particle(pid)
             sid = pid_particle_pair[1].sid
 
             rt1 = self.attemptSingleReactions(sid)
@@ -131,14 +130,14 @@ class BDSimulatorCoreBase( object ):
             if D == 0.0:
                 continue
 
-            species = self.main.speciesList[particle.sid]
+            species = self.main.world.get_species(sid)
             surface = self.main.getSurface(species)
             displacement = surface.drawBDdisplacement(self.dt, D)
 
             newpos = pid_particle_pair[1].position + displacement
             newpos = self.main.applyBoundary(newpos)
 
-            neighbors = self.getParticlesWithinRadiusNoSort(
+            neighbors = self.getParticlesWithinRadius(
                 newpos, pid_particle_pair[1].radius,
                 ignore=[pid_particle_pair[0]] )
             if neighbors:
@@ -148,8 +147,7 @@ class BDSimulatorCoreBase( object ):
                         log.info( 'collision two or more particles; move rejected' )
                     continue
 
-                closest = neighbors[0]
-
+                closest = neighbors[0][0]
                 rt = self.main.getReactionRule2(sid, closest[1].sid)[0]
 
                 if rt.k != 0.0:
@@ -353,12 +351,8 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
     def __init__( self, main ):
         BDSimulatorCoreBase.__init__( self, main )
 
-
-    def getParticlesWithinRadius( self, pos, radius, ignore=[] ):
+    def getParticlesWithinRadius( self, pos, radius, ignore=[] ): 
         return self.main.getParticlesWithinRadius( pos, radius, ignore )
-
-    def getParticlesWithinRadiusNoSort( self, pos, radius, ignore=[] ): 
-        return self.main.getParticlesWithinRadiusNoSort( pos, radius, ignore )
 
     def initialize( self ):
         BDSimulatorCoreBase.initialize( self )
@@ -367,7 +361,7 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
 
     def updateParticleList( self ):
         self.clearParticleList()
-        for s in self.main.speciesList.itervalues():
+        for s in self.main.world.species:
             for pid in self.main.particlePool[s.id]:
                 self.addToParticleList(pid) 
 
@@ -398,9 +392,9 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
 
 
 class BDSimulator( ParticleSimulatorBase ):
-    def __init__( self ):
-        ParticleSimulatorBase.__init__( self )
-        self.core = BDSimulatorCore( self )
+    def __init__(self, world):
+        ParticleSimulatorBase.__init__(self, world)
+        self.core = BDSimulatorCore(self)
         self.isDirty = True
 
     def t( self ):
