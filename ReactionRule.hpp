@@ -101,6 +101,7 @@ public:
     ReactionRule(Reactants const& _reactants, Trange_ const& products)
         : id_(), reactants_(_reactants)
     {
+        BOOST_ASSERT(reactants_.size() > 0);
         std::for_each(boost::begin(products), boost::end(products),
                 boost::bind(&ReactionRule::add_product, this, _1));
         std::stable_sort(products_.begin(), products_.end());
