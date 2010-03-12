@@ -97,6 +97,20 @@ class EGFRDSimulatorTestCase( unittest.TestCase ):
         self.failIf( dist != 0, 'initial pos: %s,\tnew pos: %s' %
                      ( initialPosition, newPosition ) )
 
+    def test_pair_with_immobile(self):
+        self.s.placeParticle(self.A, [0.0, 0.0, 0.0])
+        self.s.placeParticle(self.B, [1.51e-8, 0.0, 0.0])
+
+        for i in range(2):
+            self.s.step()
+
+    def test_pair_with_immobile_switched_order(self):
+        self.s.placeParticle(self.B, [1.51e-8, 0.0, 0.0])
+        self.s.placeParticle(self.A, [0.0, 0.0, 0.0])
+
+        for i in range(2):
+            self.s.step()
+
 
 '''Alternative user interface.
 
