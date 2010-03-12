@@ -305,7 +305,7 @@ class BDSimulatorCoreBase( object ):
 
             pos2t = cyclic_transpose(pid_particle_pair1[1].position,
                                      pid_particle_pair2[1].position,
-                                     self.main.worldSize )
+                                     self.main.world.world_size )
             newPos = (D2 * pid_particle_pair1[1].position + D1 * pos2t) / (D1 + D2)
             newPos = self.main.applyBoundary(newPos)
 
@@ -341,8 +341,7 @@ class BDSimulatorCoreBase( object ):
     def check( self ):
         # particles don't overlap
 
-        for pid in self.particleList:
-            particle = self.main.particleMatrix[pid]
+        for pid, particle in self.main.world:
             assert not self.checkOverlap( particle.position, particle.radius,
                                           ignore=[pid,] )
 

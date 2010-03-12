@@ -236,7 +236,7 @@ class PlanarSurfaceSingle(NonInteractionSingle):
 
     def displacement(self, r):
         x, y = randomVector2D(r)
-        return x * self.surface.shape.unit_x + y * self.surface.shape.unit_x
+        return x * self.surface.shape.unit_x + y * self.surface.shape.unit_y
 
     def __str__(self):
         return 'PlanarSurface' + Single.__str__(self)

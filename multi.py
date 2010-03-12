@@ -90,7 +90,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
         # all particles within the shell.
         for pid in self.particleList:
-            p = self.main.particleMatrix[pid] 
+            p = self.main.world.get_particle(pid)[1]
             assert self.withinShell( p.position, p.radius ),\
                 'not all particles within the shell.'
 

@@ -249,8 +249,9 @@ class ParticleSimulatorBase( object ):
 
         for surface in self.surfaceList.itervalues():
             if surface not in ignoreSurfaces:
-                posTransposed = world.cyclic_transpose(pos, surface.origin)
-                distanceToSurface = surface.signedDistanceTo(posTransposed)
+                posTransposed = \
+                    self.world.cyclic_transpose(pos, surface.shape.position)
+                distanceToSurface = self.distance(surface.shape, posTransposed)
                 distances.append(distanceToSurface)
                 surfaces.append(surface)
 
@@ -492,7 +493,7 @@ class ParticleSimulatorBase( object ):
             pos = pid_particle_pair[1].position
             if (pos >= self.world.world_size).any() or (pos < 0.0).any():
                 raise RuntimeError,\
-                    '%s at position %s out of the world (worldSize=%g).' %\
+                    '%s at position %s out of the world (world size=%g).' %\
                     (pid, pos, self.world.world_size)
 
 
