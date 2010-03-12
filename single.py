@@ -167,7 +167,11 @@ class NonInteractionSingle(Single):
         a = self.get_mobility_radius()
         r = draw_displacement_wrapper(gf, dt, eventType, a)
         displacement = self.displacement(r)
-        assert abs(length(displacement) - abs(r)) <= 1e-15 * abs(r)
+        if __debug__:
+            scale = self.pid_particle_pair[1].radius
+            if feq(length(displacement), abs(r), typical=scale) == False:
+                raise AssertionError('displacement != abs(r): %g != %g.' % 
+                                     (length(displacement), abs(r)))
         return self.pid_particle_pair[1].position + displacement
 
 
