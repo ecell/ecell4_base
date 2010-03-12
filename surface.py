@@ -99,7 +99,7 @@ class CylindricalSurface(Surface):
 
         """
         Surface.__init__(self, name)
-        self.shape = Cylinder(self, origin, radius, orientation, size)
+        self.shape = Cylinder(origin, radius, orientation, size)
         self.DefaultSingle = CylindricalSurfaceSingle
         self.DefaultPair = CylindricalSurfacePair
         self.DefaultInteractionSingle = CylindricalSurfaceInteraction
