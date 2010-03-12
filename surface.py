@@ -48,10 +48,12 @@ class PlanarSurface(Surface):
         """
         Surface.__init__(self, name)
 
-        assert numpy.dot(vectorX, vectorY) == 0.0
+        unit_x = normalize(vectorX)
+        unit_y = normalize(vectorY)
+        assert numpy.dot(unit_x, unit_y) == 0.0
         # Orientation of surface is decided here.
-        vectorZ = numpy.cross(vectorX, vectorY)
-        self.shape = Box(origin, vectorX, vectorY, vectorZ, Lx, Ly, Lz) 
+        unit_z = numpy.cross(unit_x, unit_y)
+        self.shape = Box(origin, unit_x, unit_y, unit_z, Lx, Ly, Lz) 
         self.DefaultSingle = PlanarSurfaceSingle
         self.DefaultPair = PlanarSurfacePair
         self.DefaultInteractionSingle = PlanarSurfaceInteraction
@@ -99,6 +101,7 @@ class CylindricalSurface(Surface):
 
         """
         Surface.__init__(self, name)
+        orientation = normalize(orientation)
         self.shape = Cylinder(origin, radius, orientation, size)
         self.DefaultSingle = CylindricalSurfaceSingle
         self.DefaultPair = CylindricalSurfacePair
@@ -156,8 +159,8 @@ class CuboidalRegion(Surface):
         Lx = size[0]
         Ly = size[1]
         Lz = size[2]
-        self.shape = Box(corner + self.size / 2., [Lx, 0, 0], [0, Ly, 0],
-                     [0, 0, Lz], Lx / 2., Ly / 2., Lz / 2.) 
+        self.shape = Box(corner + self.size / 2., [1, 0, 0], [0, 1, 0],
+                         [0, 0, 1], Lx / 2., Ly / 2., Lz / 2.) 
         self.DefaultSingle = SphericalSingle
         self.DefaultPair = SphericalPair
 
