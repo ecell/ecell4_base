@@ -452,6 +452,26 @@ class ParticleSimulatorBase( object ):
     def getParticlePool(self, sid):
         return self.particlePool[sid]
 
+    def get_first_pid(self, sid):
+        return iter(self.particlePool[sid]).next()
+
+    def get_position(self, object):
+        if type(object) is tuple and type(object[0]) is _gfrd.ParticleID:
+            pid = object[0]
+        elif type(object) is _gfrd.ParticleID:
+            pid = object
+        elif type(object) is _gfrd.Particle:
+            pid = self.get_first_pid(object.sid)
+        elif type(object) is _gfrd.SpeciesTypeID:
+            pid = self.get_first_pid(object)
+
+        return self.world.get_particle(pid)[1].position
+
+    def distance_between_particles(self, object1, object2):
+        pos1 = self.get_position(object1) 
+        pos2 = self.get_position(object2)
+        return self.distance(pos1, pos2)
+
     def distance( self, position1, position2 ):
         return self.world.distance( position1, position2 )
         
