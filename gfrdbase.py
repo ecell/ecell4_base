@@ -32,6 +32,7 @@ __all__ = [
     'createUnbindingReactionRule',
     'Reaction',
     'ParticleSimulatorBase',
+    'Species',
     ]
 
 World = _gfrd.World
@@ -98,6 +99,28 @@ class ReactionRuleCache(object):
         self.k = k
 
 
+class DummySpecies( object ):
+    """This is needed internally during initialization for the virtual product 
+    of a decay or surface absorption reaction.
+
+    For alternative user interface.
+    """
+    def __init__(self, surface):
+        self.radius = 0
+        self.surface = surface
+
+
+class Species(object):
+    """For alternative user interface.
+
+    """
+    def __init__(self, name, D=None, radius=None, surface=None):
+        self.name = name
+        self.D = D
+        self.radius = radius
+        self.surface = surface
+
+
 class ParticleModel( _gfrd.Model ):
     def new_species_type( self, id, D, radius ):
         st = _gfrd.Model.new_species_type( self )
@@ -126,6 +149,91 @@ class ParticleModel( _gfrd.Model ):
                     rr = _gfrd.ReactionRule([species1, species2], [])
                     rr['k'] = '0.0'
                     nr.add_reaction_rule(rr)
+
+
+    '''
+    Methods for alternative user interface.
+    '''
+    def addSpecies(self, species, surface=None, D=None, radius=None):
+        """Add a new species.
+
+        A species is a type of particles. By default the species is added to 
+        the 'world'. If a surface is specified, it is added to that surface. Per 
+        surface a different diffusion constant D and radius can be specified. 
+        By default the ones for the 'world' are used.
+
+        species -- a species created with Species().
+        surface -- the surface this species can exist on.
+        D       -- the diffusion constant of the particles.
+        radius  -- the radii of the particles.
+
+        """
+        if surface == None:
+            name = species.name
+            surface = self.defaultSurface
+        else:
+            assert any(surface == s for s in self.surfaceList.itervalues()), \
+                   '%s not in surfaceList.' % (surface)
+
+            # Construct new name if species lives on a surface.
+            name = '(' + species.name + ',' + str(surface) + ')'
+
+        if D == None:
+            assert species.D != None, \
+                   'Diffusion constant of species %s not specified.' % species
+            D = species.D
+
+        if radius == None:
+            assert species.radius != None, \
+                   'Radius of species %s not specified.' % species
+            radius = species.radius
+
+        # Create a species type for internal use. Don't use the user defined 
+        # species at all. The new name is a concatenation of the user defined 
+        # name and the surface this species exists on.
+        species_type = self.new_species_type(name, D, radius)
+        species_type['surface'] = surface.name
+
+        return species_type
+
+    def get_species_type(self, key):
+        """Return species type.
+
+        """
+        if isinstance(key, SpeciesType):
+            return key
+        elif isinstance(key, Species):
+            name = key.name
+        else:
+            # Unpack (species, surface)-key.
+            species = key[0]
+            surface = key[1]
+
+            if species == 0:
+                # This is the virtual product of a decay or surface absorption 
+                # reaction.
+                species = DummySpecies(surface)
+
+            # Note: see addSpecies for how name is constructed. 
+            name = '(' + species.name + ',' + str(surface) + ')'
+
+        return self.get_species_type_by_name(name)
+
+    def get_species_type_by_name(self, name):
+        for species_type in self.species_types:
+            if species_type['id'] == name:
+                return species_type
+
+        raise RuntimeError('Species type %s does not exist.' % (name))
+
+    def addReaction(self, reactants, products, k): 
+        reactants = map(self.get_species_type, reactants)
+        products  = map(self.get_species_type, products)
+
+        rr = _gfrd.ReactionRule(reactants, products)
+        rr['k'] = str(k)
+        self.network_rules.add_reaction_rule(rr)
+        return rr
 
 
 def createUnimolecularReactionRule( s1, p1, k ):
@@ -409,6 +517,14 @@ class ParticleSimulatorBase( object ):
         pass
         
     def throwInParticles(self, st, n, surface=None):
+        if surface == None or isinstance(surface, CuboidalRegion):
+            # Look up species_type.
+            # For alternative user interface.
+            st = self.model.get_species_type(st)
+        else:
+            # Look up species_type, given a species and a surface.
+            # For alternative user interface.
+            st = self.model.get_species_type((st, surface))
         species = self.world.get_species(st.id)
         if surface == None:
             surface = self.getSurface(species)
