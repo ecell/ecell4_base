@@ -230,13 +230,13 @@ class PlanarSurfaceSingle(NonInteractionSingle):
         # (namely the radius of the particle), so if the particle undergoes an 
         # unbinding reaction we still have to clear the target volume and the 
         # move may be rejected (NoSpace error).
-        orientation = self.surface.unitZ
+        orientation = self.surface.shape.unit_z
         size = self.pid_particle_pair[1].radius
         return CylindricalShell(position, radius, orientation, size, domain_id)
 
     def displacement(self, r):
         x, y = randomVector2D(r)
-        return x * self.surface.unitX + y * self.surface.unitY
+        return x * self.surface.shape.unit_x + y * self.surface.shape.unit_x
 
     def __str__(self):
         return 'PlanarSurface' + Single.__str__(self)
@@ -274,7 +274,7 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
         # we still have to clear the target volume and the move may be 
         # rejected (NoSpace error).
         radius = self.pid_particle_pair[1].radius
-        orientation = self.surface.unitZ
+        orientation = self.surface.shape.unit_z
         return CylindricalShell(position, radius, orientation, size, domain_id)
 
     def displacement(self, z):

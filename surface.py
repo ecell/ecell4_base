@@ -70,7 +70,7 @@ class PlanarSurface(Surface):
         """Only uniform if vectorX and vectorY have same length.
 
         """
-        return self.origin + myrandom.uniform(-1, 1) * self.shape.unit_x * self.shape.extent[0] + \
+        return self.shape.position + myrandom.uniform(-1, 1) * self.shape.unit_x * self.shape.extent[0] + \
                              myrandom.uniform(-1, 1) * self.shape.unit_y * self.shape.extent[1]
 
     def minimalDistanceFromSurface(self, radius):
