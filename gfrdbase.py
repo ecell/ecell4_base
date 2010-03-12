@@ -487,9 +487,9 @@ class ParticleSimulatorBase( object ):
                 % (total, self.world.num_particles)
 
     def checkParticles(self):
-        for i in self.particleMatrix:
-            pid = i[0]
-            pos = i[1].position
+        for pid_particle_pair in self.world:
+            pid = pid_particle_pair[0]
+            pos = pid_particle_pair[1].position
             if (pos >= self.world.world_size).any() or (pos < 0.0).any():
                 raise RuntimeError,\
                     '%s at position %s out of the world (worldSize=%g).' %\
