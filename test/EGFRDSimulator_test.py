@@ -8,6 +8,7 @@ import numpy
 
 from egfrd import *
 
+log.setLevel( logging.WARNING )
 
 
 class EGFRDSimulatorTestCase( unittest.TestCase ):

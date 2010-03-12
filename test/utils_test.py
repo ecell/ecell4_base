@@ -20,7 +20,7 @@ class UtilsTestCase( unittest.TestCase ):
         self.failIf( not pos[0] == pos[1] == pos[2] == 1 )
 
         pos = cyclic_transpose( numpy.array([8,8,8]), numpy.array([1,1,1]), 10 )
-        print pos
+        #print pos
         self.failIf( not pos[0] == pos[1] == pos[2] == -2 )
 
         pos = cyclic_transpose( numpy.array([1,1,1]), numpy.array([8,8,8]), 10 )

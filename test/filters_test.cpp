@@ -13,11 +13,14 @@
 template<typename Toc_>
 struct collector
 {
-    void operator()(typename Toc_::iterator i,
-            typename Toc_::position_type::value_type dist)
+    typedef typename Toc_::position_type::value_type distance_type;
+    collector(): result() {}
+
+    void operator()(typename Toc_::iterator i, distance_type dist)
     {
-        std::cout << (*i).second << ", " << dist << std::endl;
+        result.insert(std::make_pair((*i).first, dist));
     }
+    std::map<typename Toc_::key_type, distance_type> result;
 };
 
 
@@ -32,13 +35,21 @@ BOOST_AUTO_TEST_CASE(spheres)
     oc.update(std::make_pair(2, oc_type::mapped_type(pos(0.9, 0.1, 0.4), 0.07)));
     oc.update(std::make_pair(3, oc_type::mapped_type(pos(0.9, 0.95, 0.4), 0.1)));
 
+    // Collect all spheres from oc who (partly) lie within the radius of 
+    // sphere 1.
     collector<oc_type> col;
     oc_type::const_iterator f(oc.find(1));
     take_neighbor(oc, col, (*f).second);
-    // Output should be.
-    //{(0.2, 0.6, 0.4), 0.15}, -0.00857864
-    //{(0.2, 0.7, 0.5), 0.05}, -0.05
 
+    BOOST_CHECK_EQUAL(col.result.size(), 2);
+    // Sphere 0 overlaps with sphere 1.
+    BOOST_CHECK(std::fabs(std::sqrt(0.1 * 0.1 * 2) - 0.15 - col.result[0]) <
+                1e-8);
+    // Distance to shell of sphere 1.
+    BOOST_CHECK(std::fabs(-0.05 - col.result[1]) < 1e-8);
+
+    BOOST_CHECK(col.result.end() == col.result.find(2));
+    BOOST_CHECK(col.result.end() == col.result.find(3));
 }
 
 BOOST_AUTO_TEST_CASE(cylinders)
@@ -64,12 +75,10 @@ BOOST_AUTO_TEST_CASE(cylinders)
     // sphere s.
     sphere_type s = sphere_type(pos(0.2, 0.7, 0.5), 0.05);
     take_neighbor(oc, col, s);
-    // Distance to cylinder 0 should be 0.05.
-    // Note that the distance to cylinder 1 is not correct because the point 
-    // lies inside the cylinder. It should compute the distance to the caps, 
-    // but it computes the distance to the radial edge.
+    BOOST_CHECK(std::fabs(0.05 - col.result[0]) < 1e-8);
+    // pos lies within cylinder 1.
+    BOOST_CHECK(std::fabs(-0.05 - col.result[1]) < 1e-8);
 
-    // Output should be:
-    //{(0.2, 0.7, 0.5), 0.5, (0, 0, 1), 0.05}, -0.05
-    //{(0.2, 0.7, 0.7), 0.15, (0, 0, 1), 0.15}, 0.05
+    BOOST_CHECK(col.result.end() == col.result.find(2));
+    BOOST_CHECK(col.result.end() == col.result.find(3));
 }

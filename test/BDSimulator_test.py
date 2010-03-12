@@ -7,6 +7,9 @@ import numpy
 from _gfrd import World
 from bd import *
 
+log.setLevel( logging.WARNING )
+
+
 class BDSimulatorTestCase( unittest.TestCase ):
 
     def setUp(self):
@@ -61,7 +64,7 @@ class BDSimulatorTestCase( unittest.TestCase ):
 
         for i in range( 10 ):
             self.s.step()
-            print particleA[1].position
+            #print particleA[1].position
         
         newPosition = particleA[1].position
         dist = self.s.distance( initialPosition, newPosition )
