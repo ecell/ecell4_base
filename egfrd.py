@@ -171,8 +171,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             self.initialize()
             
         if __debug__:
-            if int("0" + os.environ.get("ECELL_CHECK", ""), 10):
-                self.check()
+            self.check()
         
         self.stepCounter += 1
 
