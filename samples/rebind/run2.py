@@ -49,11 +49,6 @@ def run( outfilename, D_factor, kf_factor, seq, N ):
 
 def singlerun( T_list, D_factor, kf_factor ):
 
-    s = EGFRDSimulator()
-    #s.setUserMaxShellSize( 1e-6 )
-    #s = BDSimulator()
-
-
     # 100 nM = 100e-9 * N_A * 100 / m^3 = 6.02e19
     # V = 1 / 6.02e19 = 1.66e-20 m^3
     # L = 2.55e-7 m
@@ -65,7 +60,10 @@ def singlerun( T_list, D_factor, kf_factor ):
     V = 40e-18 # m^3
     L = V ** (1.0/3.0) 
 
-    s.setWorldSize( L )
+    w = World(L, 3)
+    s = EGFRDSimulator(w)
+    #s.setUserMaxShellSize( 1e-6 )
+    #s = BDSimulator(w)
 
     #matrixSize = min( max( 3, int( (9 * N_X) ** (1.0/3.0) ) ), 60 )
     #print 'matrixSize=', matrixSize

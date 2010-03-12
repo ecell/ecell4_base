@@ -15,14 +15,12 @@ def run_single( T, V, N ):
 
     L = math.pow( V * 1e-3, 1.0 / 3.0 )
 
-    s = EGFRDSimulator()
-    #s = BDSimulator()
-    s.setWorldSize( L )
-
     matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 120 )
-    print 'matrixSize=', matrixSize
-    s.setMatrixSize( matrixSize )
     
+    w = World(L, matrixSize)
+    s = EGFRDSimulator(w)
+    #s = BDSimulator(w)
+
     box1 = CuboidalRegion( [0,0,0],[L,L,L] )
 
     D = 1e-12

@@ -5,9 +5,9 @@ from egfrd import *
 from logger import *
 import sys
 
-s = EGFRDSimulator()
 size = 1e-6
-s.setWorldSize( size )
+w = World(size, 3)
+s = EGFRDSimulator(w)
 
 
 box1 = CuboidalRegion( [0,0,0],[size,size,size])

@@ -19,8 +19,8 @@ def run( outfilename, T, N ):
 
 def singlerun( T ):
 
-    s = BDSimulator()
-    s.setWorldSize( 1e-3 )
+    w = World(1e-3, 3)
+    s = BDSimulator(w)
 
     sigma = 5e-9
     r0 = sigma
@@ -54,8 +54,7 @@ def singlerun( T ):
             print 'reaction'
             return 0.0, s.t
 
-    distance = s.distance(s.particleMatrix[first(s.particlePool[A.id])].position,
-                          s.particleMatrix[first(s.particlePool[B.id])].position)
+    distance = s.distance_between_particles(particleA[1], particleB[1])
 
     return distance, s.t
 

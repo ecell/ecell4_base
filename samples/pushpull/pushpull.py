@@ -50,13 +50,12 @@ else:
 L = ( V * 1e-3 ) ** ( 1.0 / 3.0 )
 
 
-s = EGFRDSimulator()
-s.setWorldSize( L )
-
 N = N_S_total * 1.1
 matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 60 )
 print 'matrixSize=', matrixSize
-s.setMatrixSize( matrixSize )
+
+w = World(L, matrixSize)
+s = EGFRDSimulator(w)
 
 #s.setDtFactor( 1e-5 )
 print V, L
