@@ -114,7 +114,8 @@ class CylindricalSurface(Surface):
         return myrandom.choice(-1, 1) * r * self.shape.unit_z
 
     def randomPosition(self):
-        return self.origin + myrandom.uniform(-1, 1) * self.shape.unit_z * self.shape.size
+        return(self.shape.position + myrandom.uniform(-1, 1) *
+                                     self.shape.unit_z * self.shape.size)
 
     def minimalDistanceFromSurface(self, radius):
         """A particle that is not on this surface has to be at least this far 

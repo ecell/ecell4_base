@@ -344,7 +344,7 @@ class PlanarSurfacePair( Pair ):
         # (namely the radius of the particle), so if the particle undergoes an 
         # unbinding reaction we still have to clear the target volume and the 
         # move may be rejected (NoSpace error).
-        orientation = self.surface.unitZ
+        orientation = self.surface.shape.unit_z
         size = max(self.single1.pid_particle_pair[1].radius,
                    self.single2.pid_particle_pair[1].radius)
         return CylindricalShell(position, radius, orientation, size, domain_id)
@@ -412,14 +412,14 @@ class CylindricalSurfacePair( Pair ):
         # be rejected (NoSpace error).
         radius = max(self.single1.pid_particle_pair[1].radius,
                      self.single2.pid_particle_pair[1].radius)
-        orientation = self.surface.unitZ
+        orientation = self.surface.shape.unit_z
         return CylindricalShell(position, radius, orientation, size, domain_id)
 
     def drawNewCoM(self, dt, eventType):
         gf = self.com_greens_function()
         # Draw displacement (not absolute position).
         r_R = draw_displacement_wrapper(gf, dt, eventType, self.a_R) # Todo.
-        return self.CoM + r_R * self.surface.unitZ
+        return self.CoM + r_R * self.surface.shape.unit_z
 
     def drawNewIV(self, dt, r0, old_iv, eventType): 
         # Todo.
@@ -430,8 +430,8 @@ class CylindricalSurfacePair( Pair ):
                                       self.sigma)
         assert r > self.sigma and r <= self.a_r
 
-        # Note: using self.surface.unitZ here might accidently interchange the 
-        # particles.
+        # Note: using self.surface.shape.unit_z here might accidently 
+        # interchange the particles.
         return r * normalize(old_iv)
 
     def get_shell_size(self):
