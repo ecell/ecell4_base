@@ -57,7 +57,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def clearOuterVolume( self, pos, radius, ignore=[] ):
         self.main.clearVolume( pos, radius, ignore=[self.multiref().domain_id,] )
-        if self.main.checkOverlap( pos, radius, ignore ):
+        if self.main.getParticlesWithinRadius(pos, radius, ignore):
             raise NoSpace()
 
     def withinShell( self, pos, radius ):

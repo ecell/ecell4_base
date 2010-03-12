@@ -372,7 +372,7 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
         return self.main.moveParticle(pid_particle_pair)
 
     def checkOverlap( self, pos, radius, ignore=() ):
-        return self.main.checkOverlap( pos, radius, ignore )
+        return self.main.getParticlesWithinRadius(pos, radius, ignore)
 
     def removeParticle(self, pid_particle_pair):
         self.main.removeParticle(pid_particle_pair)
