@@ -355,7 +355,8 @@ class PlanarSurfacePair( Pair ):
         gf = self.com_greens_function()
         r_R = draw_displacement_wrapper(gf, dt, eventType, self.a_R)
         x, y = randomVector2D(r_R)
-        return self.CoM + x * self.surface.unitX + y * self.surface.unitY
+        return(self.CoM + x * self.surface.shape.unit_x
+                        + y * self.surface.shape.unit_y)
 
     def drawNewIV(self, dt, r0, old_iv, eventType): 
         # Todo.
@@ -365,8 +366,8 @@ class PlanarSurfacePair( Pair ):
                                                 self.a_r, self.sigma)
         assert r > self.sigma and r <= self.a_r
 
-        unitX = self.surface.unitX
-        unitY = self.surface.unitY
+        unitX = self.surface.shape.unit_x
+        unitY = self.surface.shape.unit_y
         angle = vectorAngle(unitX, old_iv)
         # Todo. Test if nothing changes when theta == 0.
         new_angle = angle + theta

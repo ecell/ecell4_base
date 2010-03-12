@@ -127,7 +127,7 @@ class CylindricalSurface(Surface):
 
     def randomUnbindingSite(self, pos, radius):
         x, y = randomVector2D(self.minimalDistanceFromSurface(radius))
-        return pos + x * self.unitX + y * self.unitY
+        return pos + x * self.shape.unit_x + y * self.shape.unit_y
 
 
 class CuboidalRegion(Surface):
