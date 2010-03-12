@@ -302,9 +302,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         self.moveParticle(new_pid_particle_pair)
 
     def get_container(self, shell):
-        if type(shell).__name__ == 'SphericalShell':
+        if type(shell) is SphericalShell:
             return self.containers[0]
-        elif type(shell).__name__ == 'CylindricalShell':
+        elif type(shell) is CylindricalShell:
             return self.containers[1]
 
     def removeDomain( self, obj ):
@@ -960,7 +960,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             assert container[single1.shell_id].radius == single1.shell.radius
             assert container[single2.shell_id].radius == single2.shell.radius
 
-            if type(single1.shell).__name__ == 'CylindricalShell':
+            if type(single1.shell) is CylindricalShell:
                 assert container[single1.shell_id].size == single1.shell.size
                 assert container[single2.shell_id].size == single2.shell.size
 
@@ -1395,8 +1395,8 @@ rejected moves = %d
         for shell_id, shell in obj.shell_list:
             closest, distance = self.getClosestObj( shell.position,
                                                     ignore = [obj.domain_id] )
-            if(type(obj) == CylindricalSurfaceSingle or
-               type(obj) == CylindricalSurfacePair):
+            if(type(obj) is CylindricalSurfaceSingle or
+               type(obj) is CylindricalSurfacePair):
                 shell_size = shell.size
             else:
                 shell_size = shell.radius

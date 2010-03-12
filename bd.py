@@ -72,7 +72,7 @@ class BDSimulatorCoreBase( object ):
         self.particleList = set()
 
     def addToParticleList( self, pid ):
-        assert type( pid ).__name__ == 'ParticleID'
+        assert type( pid ) is ParticleID
         self.particleList.add( pid )
 
     def removeFromParticleList( self, pid ):
