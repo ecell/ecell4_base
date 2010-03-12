@@ -84,14 +84,13 @@ class Logger:
         file.write( '#@ name = \'%s\'\n' % str( self.logname ) )
         file.write( '#@ count = %d\n' % int( self.fileCounter ) )
         file.write( '#@ t = %s\n' % '%g' % self.sim.t )
-        file.write( '#@ worldSize = %f\n' % float( self.sim.getWorldSize() ) )
+        file.write( '#@ world size = %f\n' % float( self.sim.world.world_size ) )
         file.write( '#--------\n' )
 
-        for sid in self.sim.speciesList.keys():
-            pid_list = self.sim.particlePool[ sid ]
-            for i in pid_list:
-                particle = self.sim.particleMatrix[i]
-                species = self.sim.speciesList[ sid ]
+        for sid, pid_list in self.sim.particlePool.items():
+            for pid in pid_list:
+                particle = self.sim.world.get_particle(pid)[1]
+                species = self.sim.world.get_species(sid)
                 file.write( '%s\t%20.14g %20.14g %20.14g %.15g\n' % 
                             ( species.id, particle.position[0], particle.position[1], particle.position[2], species.radius ) )
 
