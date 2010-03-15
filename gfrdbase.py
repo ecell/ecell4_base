@@ -330,32 +330,32 @@ class ParticleModel( _gfrd.Model ):
         products  = map(self.get_species_type, products)
 
         rr = _gfrd.ReactionRule(reactants, products)
-        rr['k'] = str(k)
+        rr['k'] = '%.16g' % k
         self.network_rules.add_reaction_rule(rr)
         return rr
 
 
 def createUnimolecularReactionRule( s1, p1, k ):
     rr = _gfrd.ReactionRule( [ s1, ], [ p1, ] )
-    rr['k'] = str(k)
+    rr['k'] = '%.16g' % k
     return rr
 
 
 def createDecayReactionRule( s1, k ):
     rr = _gfrd.ReactionRule( [ s1, ], [] )
-    rr['k'] = str(k)
+    rr['k'] = '%.16g' % k
     return rr
 
 
 def createBindingReactionRule( s1, s2, p1, k ):
     rr = _gfrd.ReactionRule( [ s1, s2 ], [ p1, ] )
-    rr['k'] = str(k)
+    rr['k'] = '%.16g' % k
     return rr
 
 
 def createUnbindingReactionRule( s1, p1, p2, k ):
     rr = _gfrd.ReactionRule( [ s1, ], [ p1, p2 ] )
-    rr['k'] = str(k)
+    rr['k'] = '%.16g' % k
     return rr
 
 
