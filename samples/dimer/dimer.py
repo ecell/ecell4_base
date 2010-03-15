@@ -76,8 +76,3 @@ if PROFMODE:
 else:
     profrun()
     s.print_report()
-
-
-
-sys.exit(1)
-
