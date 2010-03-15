@@ -119,7 +119,7 @@ class Logger:
         file.write('#@ name = \'%s\'\n' % str(self.logname))
         file.write('#@ count = %d\n' % int(self.fileCounter))
         file.write('#@ t = %s\n' % '%g' % self.sim.t)
-        file.write('#@ worldSize = %f\n' % float(self.sim.getWorldSize()))
+        file.write('#@ worldSize = %f\n' % float(self.sim.world.world_size))
         file.write('#--------\n')
 
         for sid in self.sim.speciesList.keys():
@@ -140,7 +140,7 @@ class Logger:
         if self.HDF5_file is None:
             return
         data_group = self.HDF5_file.create_group('data')
-        data_group.attrs['world_size'] = self.sim.getWorldSize()
+        data_group.attrs['world_size'] = self.sim.world.world_size
         return data_group
 
     def writeSpeciesByHDF5(self):
@@ -200,7 +200,7 @@ class Logger:
             return
 
         data_group = self.HDF5_file['data']        
-        data_group.attrs['world_size'] = self.sim.getWorldSize()
+        data_group.attrs['world_size'] = self.sim.world.world_size
 
         # Require time group
         time_group = data_group.require_group(unicode(self.nextTime))
