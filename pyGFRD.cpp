@@ -416,12 +416,6 @@ static boost::python::object Sphere___getitem__(T_ const& obj, int index)
     return boost::python::object();
 }
 
-template<gsl_rng_type const*& Prng_>
-static GSLRandomNumberGenerator create_gsl_rng()
-{
-    return GSLRandomNumberGenerator(gsl_rng_alloc(Prng_));
-}
-
 struct reaction_rule_vector_converter
 {
     typedef egfrd_simulator_traits_type::network_rules_type::reaction_rule_vector native_type;
@@ -669,7 +663,7 @@ struct static_gsl_rng: public gsl_rng_base<static_gsl_rng>
 
     void set(unsigned long int seed)
     {
-        idx_ = std::min(seed, PyObject_Size(seq_.ptr()));
+        idx_ = std::min(seed, static_cast<unsigned long int>(PyObject_Size(seq_.ptr())));
     }
 
     unsigned long int get()
@@ -696,14 +690,27 @@ struct static_gsl_rng: public gsl_rng_base<static_gsl_rng>
     }
 
     static_gsl_rng(boost::python::object seq)
-        : seq(seq_), idx_(0) {}
+        : seq_(seq), idx_(0) {}
 
 private:
     boost::python::object seq_;
     Py_ssize_t idx_;
 };
 
-const char[] static_gsl_rng::name = "static_gsl_rng";
+const char static_gsl_rng::name[] = "static_gsl_rng";
+
+template<gsl_rng_type const*& Prng_>
+static GSLRandomNumberGenerator create_gsl_rng()
+{
+    return GSLRandomNumberGenerator(gsl_rng_alloc(Prng_));
+}
+
+static GSLRandomNumberGenerator create_static_gsl_rng(boost::python::object seq)
+{
+    return GSLRandomNumberGenerator(
+            GSLRandomNumberGenerator::rng_handle(new static_gsl_rng(seq)));
+}
+
 
 BOOST_PYTHON_MODULE( _gfrd )
 {
@@ -1339,7 +1346,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::RandomNumberGenerator<GSLRandomNumberGenerator>::__register_class("RandomNumberGenerator");
     def("create_gsl_rng", &create_gsl_rng<gsl_rng_mt19937>);
-    def("create_static_gsl_rng", &create_gsl_rng<static_gsl_rng>);
+    def("create_static_gsl_rng", &create_static_gsl_rng);
 
     peer::util::register_scalar_to_native_converters();
 }

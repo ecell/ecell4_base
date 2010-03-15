@@ -37,7 +37,6 @@ public:
 
     GSLRandomNumberGenerator(rng_handle hdl): rng_(hdl)
     {
-        BOOST_ASSERT(*boost::get_deleter<void(*)(gsl_rng*)>(hdl) == &gsl_rng_free);
     }
 
     GSLRandomNumberGenerator(gsl_rng* rng = gsl_rng_alloc(gsl_rng_mt19937)): rng_(rng, &gsl_rng_free) {}
