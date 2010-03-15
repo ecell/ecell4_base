@@ -122,11 +122,11 @@ class Logger:
         file.write('#@ worldSize = %f\n' % float(self.sim.world.world_size))
         file.write('#--------\n')
 
-        for sid in self.sim.speciesList.keys():
-            pid_list = self.sim.particlePool[ sid ]
-            for i in pid_list:
-                particle = self.sim.particleMatrix[i]
-                species = self.sim.speciesList[ sid ]
+        for species in self.sim.world.species:
+            pid_list = self.sim.particlePool[species.id]
+            for pid in pid_list:
+                pid, particle = self.sim.world.get_particle(pid)
+                species = self.sim.world.get_species(species.id)
                 file.write('%s\t%20.14g %20.14g %20.14g %.15g\n' %
                             (species.id, particle.position[0], particle.position[1], particle.position[2], species.radius))
 
@@ -149,13 +149,13 @@ class Logger:
 
         # Create species dataset on top level of HDF5 hierarchy
 
-        num_species = len(self.sim.speciesList)
+        num_species = len(self.sim.world.species)
 
         species_dset = self.HDF5_file.create_dataset('species', (num_species,), SPECIES_SCHEMA)
         count = 0
-        for species in self.sim.speciesList.itervalues():
-            species_dset[count] = (species.type.id.serial,
-                                   species.type['id'],
+        for species in self.sim.world.species:
+            species_dset[count] = (species.id.serial,
+                                   str(species.id),
                                    species.radius,
                                    species.D)
             count += 1
@@ -176,8 +176,8 @@ class Logger:
         # Create particles dataset on the time group
 
         num_particles = 0
-        for sid in self.sim.speciesList.keys():
-            pid_list = self.sim.particlePool[ sid ]
+        for species in self.sim.world.species:
+            pid_list = self.sim.particlePool[species.id]
             num_particles += len(pid_list)
 
         x = numpy.zeros((num_particles,),
@@ -186,8 +186,8 @@ class Logger:
         count = 0
         for sid, pid_set in self.sim.particlePool.iteritems():
             for pid in pid_set:
-                particle = self.sim.particleMatrix[pid]
-                species = self.sim.speciesList[sid]
+                pid, particle = self.sim.world.get_particle(pid)
+                species = self.sim.world.get_species(sid)
                 x['id'][count] = pid.serial
                 x['species_id'][count] = sid.serial
                 x['position'][count] = particle.position
