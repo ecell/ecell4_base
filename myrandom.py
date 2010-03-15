@@ -14,6 +14,8 @@ def uniform(min=0.0, max=1.0, size=None):
      global rng
      return rng.uniform(min, max)
 
+get = rng.get
+random = rng
 normal = rng.normal
 seed = rng.seed
 

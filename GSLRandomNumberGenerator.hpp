@@ -15,6 +15,11 @@ public:
         return gsl_ran_gaussian(rng_.get(), scale) + loc;
     }
 
+    unsigned long int get_raw()
+    {
+        return gsl_rng_get(rng_.get());
+    }
+
     double uniform(double min, double max)
     {
         return gsl_rng_uniform(rng_.get()) * (max - min) + min;

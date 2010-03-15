@@ -74,6 +74,7 @@ struct RandomNumberGenerator
             .def("normal", &RandomNumberGenerator::normal)
             .def("normal", &impl_type::normal)
             .def("seed", &impl_type::seed)
+            .def("get_raw", &impl_type::get_raw)
             .def("uniform", &impl_type::uniform)
             .def("uniform_int", &impl_type::uniform_int)
             .def("__call__", &impl_type::operator())
