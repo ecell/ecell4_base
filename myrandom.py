@@ -1,14 +1,20 @@
-from _gfrd import RandomNumberGenerator, create_gsl_rng
+from _gfrd import RandomNumberGenerator, create_gsl_rng, create_static_gsl_rng
 import numpy
+import os
 
 __all__ = (
     'shuffle',
     'uniform',
     'normal',
     'seed',
+    'get_raw'
     )
 
-rng = create_gsl_rng()
+rng_number_file = os.environ.get('ECELL_STATIC_RNG', None)
+if rng_number_file is not None:
+    rng = create_static_gsl_rng([int(l.strip()) for l in file(rng_number_file)])
+else:
+    rng = create_gsl_rng()
 
 def uniform(min=0.0, max=1.0, size=None):
      global rng
