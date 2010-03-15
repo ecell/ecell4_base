@@ -117,7 +117,10 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         singles = []
         for pid_particle_pair in self.world:
-            singles.append(self.createSingle(pid_particle_pair))
+            single = self.createSingle(pid_particle_pair)
+            if __debug__:
+                log.debug("%s as single %s", pid_particle_pair[0], single.domain_id)
+            singles.append(single)
         assert len(singles) == self.world.num_particles
         for single in singles:
             self.addSingleEvent( single )
