@@ -9,6 +9,7 @@
 #include "exceptions.hpp"
 #include "MatrixSpace.hpp"
 #include "utils/range.hpp"
+#include "utils/get_mapper_mf.hpp"
 #include "utils/unassignable_adapter.hpp"
 #include "generator.hpp"
 #include "filters.hpp"
@@ -128,7 +129,7 @@ public:
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::particle_type::shape_type particle_shape_type;
     typedef typename traits_type::size_type size_type;
-    typedef MatrixSpace<particle_type, particle_id_type> particle_matrix_type;
+    typedef MatrixSpace<particle_type, particle_id_type, get_mapper_mf> particle_matrix_type;
     typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
     typedef Transaction<traits_type> transaction_type;
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
