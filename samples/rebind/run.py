@@ -50,11 +50,6 @@ def run( outfilename, D_factor, N_B, N_X, N ):
 
 def singlerun( T_list, D_factor, N_B, N_X ):
 
-    s = EGFRDSimulator()
-    #s.setUserMaxShellSize( 1e-6 )
-    #s = BDSimulator()
-
-
     # 100 nM = 100e-9 * N_A * 100 / m^3 = 6.02e19
     # V = 1 / 6.02e19 = 1.66e-20 m^3
     # L = 2.55e-7 m
@@ -68,11 +63,13 @@ def singlerun( T_list, D_factor, N_B, N_X ):
     V = 1e-18 # m^3
     L = V ** (1.0/3.0) 
 
-    s.setWorldSize( L )
-
     matrixSize = min( max( 3, int( (9 * (N_X+N_B)) ** (1.0/3.0) ) ), 60 )
     print 'matrixSize=', matrixSize
-    s.setMatrixSize( matrixSize )
+
+    w = World(L, matrixSize)
+    s = EGFRDSimulator(w)
+    #s.setUserMaxShellSize( 1e-6 )
+    #s = BDSimulator(w)
 
     box1 = CuboidalRegion( [0,0,0],[L,L,L] )
 
@@ -174,9 +171,7 @@ def singlerun( T_list, D_factor, N_B, N_X ):
             if len(s.particlePool[C.id]) != 0:  #A,B
                 r_list.append( 0 )
             else:
-                r_list.append(s.distance(
-                    s.particleMatrix[first(s.particlePool[A.id])].position,
-                    s.particleMatrix[first(s.particlePool[B.id])].position))
+                r_list.append(s.distance_between_particles(A.id, B.id))
 
             i_T += 1
             nextStop = T_list[i_T]
@@ -189,13 +184,6 @@ def singlerun( T_list, D_factor, N_B, N_X ):
 
     return r_list, t_list
     
-def first(x):
-    x = iter(x)
-    try:
-        return x.next()
-    except StopIteration, e:
-        return None
-
 
 if __name__ == '__main__':
 

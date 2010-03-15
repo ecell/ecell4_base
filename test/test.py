@@ -232,7 +232,7 @@ def test_drawTheta_at_a():
 
 
 
-test_drawTheta()
+#test_drawTheta()
 #test_drawTheta_at_a()
 
 #test_alpha()

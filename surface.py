@@ -6,10 +6,6 @@ from single import *
 from pair import *
 from utils import *
 
-PlanarSurfaceSingle=None
-CylindricalSurfaceSingle=None
-PlanarSurfacePair=None
-CylindricalSurfacePair=None
 PlanarSurfaceInteraction=None
 CylindricalSurfaceInteraction=None
 
@@ -52,10 +48,12 @@ class PlanarSurface(Surface):
         """
         Surface.__init__(self, name)
 
-        assert numpy.dot(vectorX, vectorY) == 0.0
+        unit_x = normalize(vectorX)
+        unit_y = normalize(vectorY)
+        assert numpy.dot(unit_x, unit_y) == 0.0
         # Orientation of surface is decided here.
-        vectorZ = numpy.cross(vectorX, vectorY)
-        self.shape = Box(origin, vectorX, vectorY, vectorZ, Lx, Ly, Lz) 
+        unit_z = numpy.cross(unit_x, unit_y)
+        self.shape = Box(origin, unit_x, unit_y, unit_z, Lx, Ly, Lz) 
         self.DefaultSingle = PlanarSurfaceSingle
         self.DefaultPair = PlanarSurfacePair
         self.DefaultInteractionSingle = PlanarSurfaceInteraction
@@ -74,7 +72,7 @@ class PlanarSurface(Surface):
         """Only uniform if vectorX and vectorY have same length.
 
         """
-        return self.origin + myrandom.uniform(-1, 1) * self.shape.unit_x * self.shape.extent[0] + \
+        return self.shape.position + myrandom.uniform(-1, 1) * self.shape.unit_x * self.shape.extent[0] + \
                              myrandom.uniform(-1, 1) * self.shape.unit_y * self.shape.extent[1]
 
     def minimalDistanceFromSurface(self, radius):
@@ -86,7 +84,7 @@ class PlanarSurface(Surface):
         return (self.shape.extent[2] + radius) * MINIMAL_SEPERATION_FACTOR
 
     def randomUnbindingSite(self, pos, radius):
-        return pos + myrandom.choice([-1, 1]) * \
+        return pos + myrandom.choice(-1, 1) * \
                      self.minimalDistanceFromSurface(radius)  * self.shape.unit_z
 
 
@@ -103,7 +101,8 @@ class CylindricalSurface(Surface):
 
         """
         Surface.__init__(self, name)
-        self.shape = Cylinder(self, origin, radius, orientation, size)
+        orientation = normalize(orientation)
+        self.shape = Cylinder(origin, radius, orientation, size)
         self.DefaultSingle = CylindricalSurfaceSingle
         self.DefaultPair = CylindricalSurfacePair
         self.DefaultInteractionSingle = CylindricalSurfaceInteraction
@@ -115,10 +114,11 @@ class CylindricalSurface(Surface):
         return z * self.shape.unit_z
 
     def randomVector(self, r):
-        return myrandom.choice([-1, 1]) * r * self.shape.unit_z
+        return myrandom.choice(-1, 1) * r * self.shape.unit_z
 
     def randomPosition(self):
-        return self.origin + myrandom.uniform(-1, 1) * self.shape.unit_z * self.shape.size
+        return(self.shape.position + myrandom.uniform(-1, 1) *
+                                     self.shape.unit_z * self.shape.size)
 
     def minimalDistanceFromSurface(self, radius):
         """A particle that is not on this surface has to be at least this far 
@@ -130,7 +130,7 @@ class CylindricalSurface(Surface):
 
     def randomUnbindingSite(self, pos, radius):
         x, y = randomVector2D(self.minimalDistanceFromSurface(radius))
-        return pos + x * self.unitX + y * self.unitY
+        return pos + x * self.shape.unit_x + y * self.shape.unit_y
 
 
 class CuboidalRegion(Surface):
@@ -159,8 +159,8 @@ class CuboidalRegion(Surface):
         Lx = size[0]
         Ly = size[1]
         Lz = size[2]
-        self.shape = Box(corner + self.size / 2., [Lx, 0, 0], [0, Ly, 0],
-                     [0, 0, Lz], Lx / 2., Ly / 2., Lz / 2.) 
+        self.shape = Box(corner + self.size / 2., [1, 0, 0], [0, 1, 0],
+                         [0, 0, 1], Lx / 2., Ly / 2., Lz / 2.) 
         self.DefaultSingle = SphericalSingle
         self.DefaultPair = SphericalPair
 

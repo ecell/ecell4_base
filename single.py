@@ -167,7 +167,11 @@ class NonInteractionSingle(Single):
         a = self.get_mobility_radius()
         r = draw_displacement_wrapper(gf, dt, eventType, a)
         displacement = self.displacement(r)
-        assert abs(length(displacement) - abs(r)) <= 1e-15 * abs(r)
+        if __debug__:
+            scale = self.pid_particle_pair[1].radius
+            if feq(length(displacement), abs(r), typical=scale) == False:
+                raise AssertionError('displacement != abs(r): %g != %g.' % 
+                                     (length(displacement), abs(r)))
         return self.pid_particle_pair[1].position + displacement
 
 
@@ -230,13 +234,13 @@ class PlanarSurfaceSingle(NonInteractionSingle):
         # (namely the radius of the particle), so if the particle undergoes an 
         # unbinding reaction we still have to clear the target volume and the 
         # move may be rejected (NoSpace error).
-        orientation = self.surface.unitZ
+        orientation = self.surface.shape.unit_z
         size = self.pid_particle_pair[1].radius
         return CylindricalShell(position, radius, orientation, size, domain_id)
 
     def displacement(self, r):
         x, y = randomVector2D(r)
-        return x * self.surface.unitX + y * self.surface.unitY
+        return x * self.surface.shape.unit_x + y * self.surface.shape.unit_y
 
     def __str__(self):
         return 'PlanarSurface' + Single.__str__(self)
@@ -274,12 +278,12 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
         # we still have to clear the target volume and the move may be 
         # rejected (NoSpace error).
         radius = self.pid_particle_pair[1].radius
-        orientation = self.surface.unitZ
+        orientation = self.surface.shape.unit_z
         return CylindricalShell(position, radius, orientation, size, domain_id)
 
     def displacement(self, z):
         # z can be pos or min.
-        return z * self.shell_list[0][1].orientation
+        return z * self.shell_list[0][1].unit_z
 
     def get_mobility_radius(self):
         # Heads up.

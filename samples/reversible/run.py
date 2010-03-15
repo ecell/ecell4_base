@@ -32,11 +32,10 @@ def run( outfilename, T, N ):
 
 def singlerun( T ):
 
-    s = EGFRDSimulator()
+    w = World(1e-3, 3)
+    s = EGFRDSimulator(w)
     #s.setUserMaxShellSize( 1e-6 )
-    #s = BDSimulator()
-
-    s.setWorldSize( 1e-3 )
+    #s = BDSimulator(w)
 
     sigma = 5e-9
     r0 = sigma
@@ -79,7 +78,7 @@ def singlerun( T ):
     if len(s.particlePool[C.id]) != 0:
         return 0, s.t
 
-    distance = s.distance(s.particleMatrix[iter(s.particlePool[A.id]).next()].position, s.particleMatrix[iter(s.particlePool[B.id]).next()].position )
+    distance = s.distance_between_particles(A.id, B.id)
 
     return distance, s.t
     

@@ -27,8 +27,8 @@ def run( outfilename, T, S, N ):
 
 def singlerun( T, S ):
 
-    s = EGFRDSimulator()
-    s.setWorldSize( 1e-3 )
+    w = World(1e-3, 3)
+    s = EGFRDSimulator(w)
 
     s.setUserMaxShellSize( S )
 
@@ -50,7 +50,8 @@ def singlerun( T, S ):
             break
         s.step()
 
-    distance = s.distance( [0,0,0], s.particleMatrix[first(s.particlePool[A.id])].position )
+    pos = s.get_position(A.id)
+    distance = s.distance([0,0,0], pos)
     return distance, s.t
     
 def first(x):

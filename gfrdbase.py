@@ -32,6 +32,7 @@ __all__ = [
     'createUnbindingReactionRule',
     'Reaction',
     'ParticleSimulatorBase',
+    'Species',
     ]
 
 World = _gfrd.World
@@ -98,7 +99,45 @@ class ReactionRuleCache(object):
         self.k = k
 
 
+class DummySpecies( object ):
+    """This is needed internally during initialization for the virtual product 
+    of a decay or surface absorption reaction.
+
+    For alternative user interface.
+    """
+    def __init__(self, surface):
+        self.radius = 0
+        self.surface = surface
+
+
+class Species(object):
+    """For alternative user interface.
+
+    """
+    def __init__(self, name, D=None, radius=None, surface=None):
+        self.name = name
+        self.D = D
+        self.radius = radius
+        self.surface = surface
+
+
 class ParticleModel( _gfrd.Model ):
+    def __init__(self):
+        _gfrd.Model.__init__(self)
+
+        self.surfaceList = {}
+
+        # Particles of a Species whose surface is not specified will be added 
+        # to the world. Dimensions don't matter, except for visualization.
+        self.defaultSurface = \
+            CuboidalRegion([0, 0, 0], [1.0, 1.0, 1.0], 'world')
+
+    def set_default_surface_size(self, size):
+        # Particles of a Species whose surface is not specified will be added 
+        # to the world. Dimensions don't matter, except for visualization.
+        self.defaultSurface = \
+            CuboidalRegion([0, 0, 0], [size, size, size], 'world')
+
     def new_species_type( self, id, D, radius ):
         st = _gfrd.Model.new_species_type( self )
         st[ "id" ] = str( id )
@@ -126,6 +165,174 @@ class ParticleModel( _gfrd.Model ):
                     rr = _gfrd.ReactionRule([species1, species2], [])
                     rr['k'] = '0.0'
                     nr.add_reaction_rule(rr)
+
+    def addPlanarSurface(self, name, origin, vectorX, vectorY, Lx, Ly, Lz=0):
+        """Add a planar surface.
+
+        name -- a descriptive name, should not be omitted.
+
+        origin -- [x0, y0, z0] is the *center* of the planar surface.
+        vectorX -- [x1, y1, z1] and
+        vectorY -- [x2, y2, z2] are 2 perpendicular vectors that don't have 
+        to be normalized that span the plane. For example [1,0,0] and [0,1,0]
+        for a plane at z=0.
+
+        Lx -- lx and 
+        Ly -- ly are the distances from the origin of the plane along vectorX 
+            or vectorY *to an edge* of the plane. PlanarSurfaces are finite.
+        Lz -- dz, the thickness of the planar surface, can be omitted for Lz=0.
+
+        """
+        return self.addSurface(PlanarSurface(name, origin, vectorX, vectorY,
+                                             Lx, Ly, Lz))
+
+    def addCylindricalSurface(self, name, origin, radius, orientation, size):
+        """Add a cylindrical surface.
+
+        name -- a descriptive name, should not be omitted.
+
+        origin -- [x0, y0, z0] is the *center* of the cylindrical surface.
+        radius -- r is the radis of the cylinder.
+        orientation -- [x1, y1, z1] is a vector that doesn't have to
+            normalized that defines the orienation of the cylinder. For 
+            example [0,0,1] for a for a cylinder along the z-axis.
+        size -- lz is the distances from the origin of the cylinder along 
+            the oriention vector to the end of the cylinder. So effectively
+            the *half-length*. CylindricalSurfaces are finite.
+
+        """
+        return self.addSurface(CylindricalSurface(name, origin, radius, 
+                                                  orientation, size))
+
+    def addSurface( self, surface ):
+        if(not isinstance(surface, Surface) or
+           isinstance(surface, CuboidalRegion)):
+            raise RuntimeError(str(surface) + ' is not a surface.')
+
+        self.surfaceList[surface.name] = surface
+        return surface
+
+    def getSurface(self, species): 
+        nameOfSurface = species.surface
+        if nameOfSurface != self.defaultSurface.name:
+            surface = self.surfaceList[nameOfSurface]
+        else:
+            # Default surface is not stored in surfaceList, because it's not 
+            # really a surface, and should not be found in getClosestSurface 
+            # searches.
+            surface = self.defaultSurface
+        return surface
+
+    def dump_reaction_rule(self, reaction_rule):
+        '''Pretty print reaction rule.
+
+        ReactionRule.__str__ would be good, but we are actually getting a 
+        ReactionRuleInfo or ReactionRuleCache object.
+
+        '''
+        buf = ('k=%.3g' % reaction_rule.k + ': ').ljust(15)
+        for index, sid in enumerate(reaction_rule.rt.reactants):
+            if index != 0:
+                buf += ' + '
+            reactant = self.get_species_type_by_id(sid)
+            buf += reactant['id'].ljust(15)
+        if len(reaction_rule.products) == 0:
+            if reaction_rule.k != 0:
+                buf += '..decays'
+        else:
+            buf += '-> '
+
+        for index, sid in enumerate(reaction_rule.products):
+            if index != 0:
+                buf += ' + '
+            product = self.get_species_type_by_id(sid)
+            buf += product['id'].ljust(15)
+
+        return buf + '\n'
+
+    '''
+    Methods for alternative user interface.
+    '''
+    def addSpecies(self, species, surface=None, D=None, radius=None):
+        """Add a new species.
+
+        A species is a type of particles. By default the species is added to 
+        the 'world'. If a surface is specified, it is added to that surface. Per 
+        surface a different diffusion constant D and radius can be specified. 
+        By default the ones for the 'world' are used.
+
+        species -- a species created with Species().
+        surface -- the surface this species can exist on.
+        D       -- the diffusion constant of the particles.
+        radius  -- the radii of the particles.
+
+        """
+        if surface == None:
+            name = species.name
+            surface = self.defaultSurface
+        else:
+            assert any(surface == s for s in self.surfaceList.itervalues()), \
+                   '%s not in surfaceList.' % (surface)
+
+            # Construct new name if species lives on a surface.
+            name = '(' + species.name + ',' + str(surface) + ')'
+
+        if D == None:
+            assert species.D != None, \
+                   'Diffusion constant of species %s not specified.' % species
+            D = species.D
+
+        if radius == None:
+            assert species.radius != None, \
+                   'Radius of species %s not specified.' % species
+            radius = species.radius
+
+        # Create a species type for internal use. Don't use the user defined 
+        # species at all. The new name is a concatenation of the user defined 
+        # name and the surface this species exists on.
+        species_type = self.new_species_type(name, D, radius)
+        species_type['surface'] = surface.name
+
+        return species_type
+
+    def get_species_type(self, key):
+        """Return species type.
+
+        """
+        if isinstance(key, SpeciesType):
+            return key
+        elif isinstance(key, Species):
+            name = key.name
+        else:
+            # Unpack (species, surface)-key.
+            species = key[0]
+            surface = key[1]
+
+            if species == 0:
+                # This is the virtual product of a decay or surface absorption 
+                # reaction.
+                species = DummySpecies(surface)
+
+            # Note: see addSpecies for how name is constructed. 
+            name = '(' + species.name + ',' + str(surface) + ')'
+
+        return self.get_species_type_by_name(name)
+
+    def get_species_type_by_name(self, name):
+        for species_type in self.species_types:
+            if species_type['id'] == name:
+                return species_type
+
+        raise RuntimeError('Species type %s does not exist.' % (name))
+
+    def addReaction(self, reactants, products, k): 
+        reactants = map(self.get_species_type, reactants)
+        products  = map(self.get_species_type, products)
+
+        rr = _gfrd.ReactionRule(reactants, products)
+        rr['k'] = str(k)
+        self.network_rules.add_reaction_rule(rr)
+        return rr
 
 
 def createUnimolecularReactionRule( s1, p1, k ):
@@ -168,8 +375,6 @@ class ParticleSimulatorBase( object ):
         self.particlePool = {}
         self.reactionRuleCache = {}
 
-        self.surfaceList = {}
-
         #self.dt = 1e-7
         #self.t = 0.0
 
@@ -193,22 +398,18 @@ class ParticleSimulatorBase( object ):
 
         self.lastReaction = None
 
-        self.model = None
+        self.model = ParticleModel()
 
         self.network_rules = None
-    
-        # Particles of a Species whose surface is not specified will be added 
-        # to the world. Dimensions don't matter, except for visualization.
-        self.defaultSurface = \
-            CuboidalRegion([0, 0, 0], [self.world.world_size] * 3, 'world')
 
     def setModel( self, model ):
         model.set_all_repulsive()
+        model.set_default_surface_size(self.world.world_size)
         self.reactionRuleCache.clear()
 
         for st in model.species_types:
             if st["surface"] == "":
-                st["surface"] = self.defaultSurface.name
+                st["surface"] = self.model.defaultSurface.name
 
             try:
                 self.world.get_species(st.id)
@@ -247,10 +448,11 @@ class ParticleSimulatorBase( object ):
                 # For example ignore surface that particle is currently on.
                 ignoreSurfaces.append(obj.surface)
 
-        for surface in self.surfaceList.itervalues():
+        for surface in self.model.surfaceList.itervalues():
             if surface not in ignoreSurfaces:
-                posTransposed = world.cyclic_transpose(pos, surface.origin)
-                distanceToSurface = surface.signedDistanceTo(posTransposed)
+                posTransposed = \
+                    self.world.cyclic_transpose(pos, surface.shape.position)
+                distanceToSurface = self.distance(surface.shape, posTransposed)
                 distances.append(distanceToSurface)
                 surfaces.append(surface)
 
@@ -273,9 +475,6 @@ class ParticleSimulatorBase( object ):
             self._distance = distance
         else:
             self._distance = distance_cyclic
-
-        # Particles of a Species whose surface is not specified will be added 
-        # to the world. Dimensions don't matter, except for visualization.
 
     def applyBoundary( self, pos ):
         return self.world.apply_boundary(pos)
@@ -343,74 +542,45 @@ class ParticleSimulatorBase( object ):
     def getParticlePool(self, sid):
         return self.particlePool[sid]
 
+    def get_first_pid(self, sid):
+        return iter(self.particlePool[sid]).next()
+
+    def get_position(self, object):
+        if type(object) is tuple and type(object[0]) is _gfrd.ParticleID:
+            pid = object[0]
+        elif type(object) is _gfrd.ParticleID:
+            pid = object
+        elif type(object) is _gfrd.Particle:
+            pid = self.get_first_pid(object.sid)
+        elif type(object) is _gfrd.SpeciesTypeID:
+            pid = self.get_first_pid(object)
+
+        return self.world.get_particle(pid)[1].position
+
+    def distance_between_particles(self, object1, object2):
+        pos1 = self.get_position(object1) 
+        pos2 = self.get_position(object2)
+        return self.distance(pos1, pos2)
+
     def distance( self, position1, position2 ):
         return self.world.distance( position1, position2 )
         
-    def addPlanarSurface(self, name, origin, vectorX, vectorY, Lx, Ly, Lz=0):
-        """Add a planar surface.
-
-        name -- a descriptive name, should not be omitted.
-
-        origin -- [x0, y0, z0] is the *center* of the planar surface.
-        vectorX -- [x1, y1, z1] and
-        vectorY -- [x2, y2, z2] are 2 perpendicular vectors that don't have 
-        to be normalized that span the plane. For example [1,0,0] and [0,1,0]
-        for a plane at z=0.
-
-        Lx -- lx and 
-        Ly -- ly are the distances from the origin of the plane along vectorX 
-            or vectorY *to an edge* of the plane. PlanarSurfaces are finite.
-        Lz -- dz, the thickness of the planar surface, can be omitted for Lz=0.
-
-        """
-        return self.addSurface(PlanarSurface(name, origin, vectorX, vectorY,
-                                             Lx, Ly, Lz))
-
-    def addCylindricalSurface(self, name, origin, radius, orientation, size):
-        """Add a cylindrical surface.
-
-        name -- a descriptive name, should not be omitted.
-
-        origin -- [x0, y0, z0] is the *center* of the cylindrical surface.
-        radius -- r is the radis of the cylinder.
-        orientation -- [x1, y1, z1] is a vector that doesn't have to
-            normalized that defines the orienation of the cylinder. For 
-            example [0,0,1] for a for a cylinder along the z-axis.
-        size -- lz is the distances from the origin of the cylinder along 
-            the oriention vector to the end of the cylinder. So effectively
-            the *half-length*. CylindricalSurfaces are finite.
-
-        """
-        return self.addSurface(CylindricalSurface(name, origin, radius, 
-                                                  orientation, size))
-
-    def addSurface( self, surface ):
-        if(not isinstance(surface, Surface) or
-           isinstance(surface, CuboidalRegion)):
-            raise RuntimeError(str(surface) + ' is not a surface.')
-
-        self.surfaceList[surface.name] = surface
-        return surface
-
-    def getSurface(self, species): 
-        nameOfSurface = species.surface
-        if nameOfSurface != self.defaultSurface.name:
-            surface = self.surfaceList[nameOfSurface]
-        else:
-            # Default surface is not stored in surfaceList, because it's not 
-            # really a surface, and should not be found in getClosestSurface 
-            # searches.
-            surface = self.defaultSurface
-        return surface
-
     def setAllRepulsive( self ):
         # TODO
         pass
         
     def throwInParticles(self, st, n, surface=None):
+        if surface == None or isinstance(surface, CuboidalRegion):
+            # Look up species_type.
+            # For alternative user interface.
+            st = self.model.get_species_type(st)
+        else:
+            # Look up species_type, given a species and a surface.
+            # For alternative user interface.
+            st = self.model.get_species_type((st, surface))
         species = self.world.get_species(st.id)
         if surface == None:
-            surface = self.getSurface(species)
+            surface = self.model.getSurface(species)
 
         if __debug__:
             log.info('\tthrowing in %s %s particles to %s' % (n, species.id,
@@ -427,11 +597,11 @@ class ParticleSimulatorBase( object ):
                 # Check if not too close to a neighbouring surfaces for 
                 # particles added to the world, or added to a self-defined 
                 # box.
-                if surface == self.defaultSurface or \
-                   (surface != self.defaultSurface and 
+                if surface == self.model.defaultSurface or \
+                   (surface != self.model.defaultSurface and 
                     isinstance( surface, CuboidalRegion)):
-                    distance, closestSurface = self.getClosestSurface(position,
-                                                                      [])
+                    distance, closestSurface = \
+                        self.getClosestSurface(position, [])
                     if (closestSurface and
                         distance < closestSurface.minimalDistanceFromSurface( 
                                     species.radius)):
@@ -487,12 +657,12 @@ class ParticleSimulatorBase( object ):
                 % (total, self.world.num_particles)
 
     def checkParticles(self):
-        for i in self.particleMatrix:
-            pid = i[0]
-            pos = i[1].position
+        for pid_particle_pair in self.world:
+            pid = pid_particle_pair[0]
+            pos = pid_particle_pair[1].position
             if (pos >= self.world.world_size).any() or (pos < 0.0).any():
                 raise RuntimeError,\
-                    '%s at position %s out of the world (worldSize=%g).' %\
+                    '%s at position %s out of the world (world size=%g).' %\
                     (pid, pos, self.world.world_size)
 
 
@@ -507,46 +677,17 @@ class ParticleSimulatorBase( object ):
 
         return buf
 
-    def dump_reaction_rule(self, reaction_rule):
-        '''Pretty print reaction rule.
-
-        ReactionRule.__str__ would be good, but we are actually getting a 
-        ReactionRuleInfo or ReactionRuleCache object.
-
-        This method needs access to self.model.
-
-        '''
-        buf = ('k=%.3g' % reaction_rule.k + ': ').ljust(15)
-        for index, sid in enumerate(reaction_rule.rt.reactants):
-            if index != 0:
-                buf += ' + '
-            reactant = self.model.get_species_type_by_id(sid)
-            buf += reactant['id'].ljust(15)
-        if len(reaction_rule.products) == 0:
-            if reaction_rule.k != 0:
-                buf += '..decays'
-        else:
-            buf += '-> '
-
-        for index, sid in enumerate(reaction_rule.products):
-            if index != 0:
-                buf += ' + '
-            product = self.model.get_species_type_by_id(sid)
-            buf += product['id'].ljust(15)
-
-        return buf + '\n'
-
     def dump_reaction_rules(self):
         reaction_rules_1 = []
         reaction_rules_2 = []
         reflective_reaction_rules = []
         for si1 in self.world.species:
             for reaction_rule_cache in self.getReactionRule1(si1.id):
-                string = self.dump_reaction_rule(reaction_rule_cache)
+                string = self.model.dump_reaction_rule(reaction_rule_cache)
                 reaction_rules_1.append(string)
             for si2 in self.world.species:
                 for reaction_rule_cache in self.getReactionRule2(si1.id, si2.id):
-                    string = self.dump_reaction_rule(reaction_rule_cache)
+                    string = self.model.dump_reaction_rule(reaction_rule_cache)
                     if reaction_rule_cache.k > 0:
                         reaction_rules_2.append(string)
                     else:
@@ -563,4 +704,5 @@ class ParticleSimulatorBase( object ):
                '\nBimolecular reaction rules:\n' + ''.join(reaction_rules_2) +
                '\nReflective bimolecular reaction rules:\n' +
                ''.join(reflective_reaction_rules))
+
 

@@ -19,7 +19,7 @@ def run( outfilename, T, N ):
     outfile = open( outfilename, 'w' )
 
     for i in range( N ):
-        d, t = singlerun2( T )
+        d, t = singlerun1( T )
         outfile.write( '%.18g\n' % d )
         outfile.flush()
         #print i
@@ -33,8 +33,8 @@ def run( outfilename, T, N ):
 
 def singlerun1( T ):
 
-    s = BDSimulator()
-    s.setWorldSize( 1e-3 )
+    w = World(1e-3, 3)
+    s = BDSimulator(w)
 
     #s.setMaxShellSize( 1e-6 )
 
@@ -72,15 +72,15 @@ def singlerun1( T ):
             print 'reaction'
             return 0.0, s.t
 
-    distance = s.distance( s.particleMatrix[particleB[0]].position, s.particleMatrix[ particleA[ 0 ] ] )
+    distance = s.distance_between_particles(particleB, particleA)
 
     return distance, s.t
 
 
 def singlerun2( T ):
 
-    s = EGFRDSimulator()
-    s.setWorldSize( 1e-3 )
+    w = World(1e-3, 3)
+    s = EGFRDSimulator(w)
 
     #s.setUserMaxShellSize( 1e-7 )
     #s.setUserMaxShellSize( 1e-3 )
@@ -119,7 +119,7 @@ def singlerun2( T ):
             s.stop( endTime )
             break
 
-    distance = s.distance( s.particleMatrix[particleB[0]].position, s.particleMatrix[ particleA[ 0 ] ].position )
+    distance = s.distance_between_particles(particleA, particleB) 
 
     return distance, s.t
 

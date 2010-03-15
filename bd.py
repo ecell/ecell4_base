@@ -72,7 +72,7 @@ class BDSimulatorCoreBase( object ):
         self.particleList = set()
 
     def addToParticleList( self, pid ):
-        assert type( pid ).__name__ == 'ParticleID'
+        assert type( pid ) is ParticleID
         self.particleList.add( pid )
 
     def removeFromParticleList( self, pid ):
@@ -131,7 +131,7 @@ class BDSimulatorCoreBase( object ):
                 continue
 
             species = self.main.world.get_species(sid)
-            surface = self.main.getSurface(species)
+            surface = self.main.model.getSurface(species)
             displacement = surface.drawBDdisplacement(self.dt, D)
 
             newpos = pid_particle_pair[1].position + displacement
@@ -305,7 +305,7 @@ class BDSimulatorCoreBase( object ):
 
             pos2t = cyclic_transpose(pid_particle_pair1[1].position,
                                      pid_particle_pair2[1].position,
-                                     self.main.worldSize )
+                                     self.main.world.world_size )
             newPos = (D2 * pid_particle_pair1[1].position + D1 * pos2t) / (D1 + D2)
             newPos = self.main.applyBoundary(newPos)
 
@@ -341,8 +341,7 @@ class BDSimulatorCoreBase( object ):
     def check( self ):
         # particles don't overlap
 
-        for pid in self.particleList:
-            particle = self.main.particleMatrix[pid]
+        for pid, particle in self.main.world:
             assert not self.checkOverlap( particle.position, particle.radius,
                                           ignore=[pid,] )
 
@@ -373,7 +372,7 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
         return self.main.moveParticle(pid_particle_pair)
 
     def checkOverlap( self, pos, radius, ignore=() ):
-        return self.main.checkOverlap( pos, radius, ignore )
+        return self.main.getParticlesWithinRadius(pos, radius, ignore)
 
     def removeParticle(self, pid_particle_pair):
         self.main.removeParticle(pid_particle_pair)

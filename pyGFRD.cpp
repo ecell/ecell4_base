@@ -1155,6 +1155,8 @@ BOOST_PYTHON_MODULE( _gfrd )
         ;
 
     class_<egfrd_simulator_traits_type::sphere_type>("Sphere")
+        .def(init<egfrd_simulator_traits_type::sphere_type::position_type, 
+                  egfrd_simulator_traits_type::sphere_type::length_type>())
         .add_property("position",
             make_function(
                 &peer::util::reference_accessor_wrapper<
@@ -1186,6 +1188,10 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("__getitem__", &Sphere___getitem__<egfrd_simulator_traits_type::sphere_type>);
 
     class_<egfrd_simulator_traits_type::cylinder_type>("Cylinder")
+        .def(init<egfrd_simulator_traits_type::cylinder_type::position_type, 
+                  egfrd_simulator_traits_type::cylinder_type::length_type,
+                  egfrd_simulator_traits_type::cylinder_type::position_type, 
+                  egfrd_simulator_traits_type::cylinder_type::length_type>())
         .add_property("position",
             make_function(
                 &peer::util::reference_accessor_wrapper<

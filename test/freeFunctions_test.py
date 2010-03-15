@@ -75,12 +75,12 @@ class FreeFunctionsTestCase( unittest.TestCase ):
         r0 = 1e-9
 
         ibd = mod.I_bd( sigma, t, D )
-        print ibd
+        #print ibd
         result = scipy.integrate.quad( mod.g_bd, sigma, 
                                        sigma + 6 * math.sqrt( 6 * D * t ),
                                        args=( sigma, t, D ) )
         igbd = result[0]
-        print igbd
+        #print igbd
         self.failIf( ibd == 0 )
         self.assertAlmostEqual( 0.0, (ibd-igbd)/ibd )
 
@@ -95,12 +95,12 @@ class FreeFunctionsTestCase( unittest.TestCase ):
         r0 = 1e-9
 
         ibd = mod.I_bd( sigma, t, D )
-        print ibd
+        #print ibd
         result = scipy.integrate.quad( mod.g_bd, sigma, sigma + 
                                        6 * math.sqrt( 6 * D * t ),
                                        args=( sigma, t, D ) )
         igbd = result[0]
-        print igbd
+        #print igbd
         self.failIf( ibd == 0 )
         self.assertAlmostEqual( 0.0, (ibd-igbd)/ibd )
 
@@ -114,7 +114,7 @@ class FreeFunctionsTestCase( unittest.TestCase ):
 
         ibd = mod.I_bd( sigma, t, D )
         ibdr = mod.I_bd_r( sigma + 6 * math.sqrt( 6 * D * t ), sigma, t, D )
-        print ibd, ibdr
+        #print ibd, ibdr
 
         self.assertAlmostEqual( 0.0, (ibd-ibdr)/ibd )
 
@@ -180,7 +180,7 @@ class FreeFunctionsTestCase( unittest.TestCase ):
         pr = mod.p_reaction_irr( t, r0, kf, D, sigma, alpha, kD )
         prinf = mod.p_reaction_irr_t_inf( r0, kf, sigma, kD )
 
-        print pr, prinf
+        #print pr, prinf
 
         self.assertAlmostEqual( pr, prinf )
 

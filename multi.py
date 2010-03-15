@@ -57,7 +57,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
     def clearOuterVolume( self, pos, radius, ignore=[] ):
         self.main.clearVolume( pos, radius, ignore=[self.multiref().domain_id,] )
-        if self.main.checkOverlap( pos, radius, ignore ):
+        if self.main.getParticlesWithinRadius(pos, radius, ignore):
             raise NoSpace()
 
     def withinShell( self, pos, radius ):
@@ -90,7 +90,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
         # all particles within the shell.
         for pid in self.particleList:
-            p = self.main.particleMatrix[pid] 
+            p = self.main.world.get_particle(pid)[1]
             assert self.withinShell( p.position, p.radius ),\
                 'not all particles within the shell.'
 
