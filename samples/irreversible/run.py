@@ -12,14 +12,14 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py irr.-3.out 1.25e-8 1000000 &
 
 import sys
 from egfrd import *
-#from bd import *
+from bd import *
 
 def run( outfilename, T, N ):
 
     outfile = open( outfilename, 'w' )
 
     for i in range( N ):
-        d, t = singlerun1( T )
+        d, t = singlerun2( T )
         outfile.write( '%.18g\n' % d )
         outfile.flush()
         #print i
