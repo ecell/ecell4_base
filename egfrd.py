@@ -1270,7 +1270,6 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             assert some_particle_of_multi1 not in multi2.sim.particleList
 
         for pid, sid in multi1.pid_shell_id_map.iteritems():
-            # FIXME: shells should be renewed
             multi2.addParticleAndShell(
                 (pid, multi1.sim.particleMatrix[pid]),
                 multi1.sim.sphere_container[sid].shape.radius)

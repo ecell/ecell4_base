@@ -61,7 +61,6 @@ def draw_displacement_wrapper(gf, dt, eventType, a, r0=None, sigma=None):
         while r > a or r <= sigma: # redraw; shouldn't happen often
             if __debug__:
                 log.debug('        *drawR: redraw')
-            #self.sim.rejectedMoves += 1  #FIXME:
             rnd = myrandom.uniform()
             if r0 == None:
                 r = gf.drawR(rnd, dt)

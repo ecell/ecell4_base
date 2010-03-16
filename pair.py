@@ -102,7 +102,7 @@ class Pair( object ):
         D1 = single1.pid_particle_pair[1].D
         D2 = single2.pid_particle_pair[1].D
 
-        shellSize /= SAFETY  # FIXME:
+        shellSize /= SAFETY
 
         D_tot = D1 + D2
         D_geom = math.sqrt(D1 * D2)
@@ -367,6 +367,7 @@ class PlanarSurfacePair( Pair ):
                                                 self.a_r, self.sigma)
         assert r > self.sigma and r <= self.a_r
 
+        #FIXME: need better handling of angles near zero and pi?
         unitX = self.surface.shape.unit_x
         unitY = self.surface.shape.unit_y
         angle = vectorAngle(unitX, old_iv)

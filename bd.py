@@ -263,7 +263,6 @@ class BDSimulatorCoreBase( object ):
                 # FIXME: what if D1 == D2 == 0?
                 newpos1 = oldpos + vector * ( D1 / D12 )
                 newpos2 = oldpos - vector * ( D2 / D12 )
-                #FIXME: check surfaces here
             
                 newpos1 = self.main.applyBoundary( newpos1 )
                 newpos2 = self.main.applyBoundary( newpos2 )
