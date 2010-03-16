@@ -1262,12 +1262,17 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         if __debug__:
             log.info( 'merging %s to %s' % ( multi1, multi2 ) )
 
-        assert not multi1.sim.particleList[0] in multi2.sim.particleList
+            some_particle_of_multi1 = None
+            try:
+                some_particle_of_multi1 = iter(multi1.sim.particleList).next()
+            except:
+                pass
+            assert some_particle_of_multi1 not in multi2.sim.particleList
 
         for pid, sid in multi1.pid_shell_id_map.iteritems():
             # FIXME: shells should be renewed
             multi2.addParticleAndShell(
-                multi1.sim.particleMatrix[pid],
+                (pid, multi1.sim.particleMatrix[pid]),
                 multi1.sim.sphere_container[sid].radius)
 
     def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
