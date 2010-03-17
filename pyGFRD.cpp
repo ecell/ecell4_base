@@ -51,8 +51,7 @@
 #include "peer/numpy/wrapped_multi_array.hpp"
 #include "peer/numpy/scalar_converters.hpp"
 #include "peer/Particle.hpp"
-#include "peer/SphericalShellWrapper.hpp"
-#include "peer/CylindricalShellWrapper.hpp"
+#include "peer/ShellWrapper.hpp"
 #include "peer/MatrixSpace.hpp"
 #include "peer/SpeciesType.hpp"
 #include "peer/Identifier.hpp"
@@ -1008,8 +1007,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::IdentifierWrapper<egfrd_simulator_traits_type::shell_id_type>::__register_class("ShellID");
     register_id_generator<egfrd_simulator_traits_type::shell_id_type>("ShellIDGenerator");
-    peer::SphericalShellWrapper<egfrd_simulator_traits_type::spherical_shell_type>::__register_class("SphericalShell");
-    peer::CylindricalShellWrapper<egfrd_simulator_traits_type::cylindrical_shell_type>::__register_class("CylindricalShell");
+    peer::ShellWrapper<egfrd_simulator_traits_type::spherical_shell_type>::__register_class("SphericalShell");
+    peer::ShellWrapper<egfrd_simulator_traits_type::cylindrical_shell_type>::__register_class("CylindricalShell");
 
     peer::IdentifierWrapper<egfrd_simulator_traits_type::domain_id_type>::__register_class("DomainID");
     register_id_generator<egfrd_simulator_traits_type::domain_id_type>("DomainIDGenerator");

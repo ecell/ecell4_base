@@ -242,8 +242,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         domain_id = self.domainIDGenerator()
         shell_id = self.shellIDGenerator()
 
-        pos1 = single1.shell.position
-        pos2 = single2.shell.position
+        pos1 = single1.shell.shape.position
+        pos2 = single2.shell.shape.position
 
         # Get surface.
         species = self.world.get_species(single1.pid_particle_pair[1].sid)
@@ -281,7 +281,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def moveSingleShell(self, single, position, radius=None):
         if radius == None:
             # By default, don't change radius.
-            radius = single.shell.radius
+            radius = single.shell.shape.radius
 
         # Reuse shell_id and domain_id.
         shell_id = single.shell_id
@@ -598,7 +598,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             # Propagate this particle to the exit point on the shell.
             self.propagateSingle(single)
 
-        singlepos = single.shell.position
+        singlepos = single.shell.shape.position
 
         # (2) Clear volume.
 
@@ -649,13 +649,13 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def restoreSingleShells( self, singles ):
         for single in singles:
             assert single.isReset()
-            c, d = self.getClosestObj( single.shell.position, ignore = [single.domain_id,] )
+            c, d = self.getClosestObj( single.shell.shape.position, ignore = [single.domain_id,] )
 
             self.updateSingle( single, c, d )
             self.updateEvent( self.t + single.dt, single )
             if __debug__:
                 log.debug( 'restore shell %s %g dt %g closest %s %g' %
-                       ( single, single.shell.radius, single.dt, c, d ) )
+                       ( single, single.shell.shape.radius, single.dt, c, d ) )
 
     def calculateSingleShellSize( self, single, closest, 
                                   distance, shellDistance ):
@@ -683,9 +683,9 @@ class EGFRDSimulator( ParticleSimulatorBase ):
     def updateSingle( self, single, closest, distanceToShell ): 
         # Todo. assert not isinstance(single, InteractionSingle)
 
-        singlepos = single.shell.position
+        singlepos = single.shell.shape.position
         if isinstance( closest, Single ):
-            closestpos = closest.shell.position
+            closestpos = closest.shell.shape.position
             distanceToClosest = self.distance(singlepos, closestpos)
             new_shell_size = self.calculateSingleShellSize( single, closest, 
                                                        distanceToClosest,
@@ -872,7 +872,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         assert self.t >= single.lastTime
         assert self.t <= single.lastTime + single.dt
 
-        oldpos = single.shell.position
+        oldpos = single.shell.shape.position
         old_shell_size = single.get_shell_size()
 
         particleRadius = single.pid_particle_pair[1].radius
@@ -890,7 +890,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         # Todo. if isinstance(single, InteractionSingle):
         self.updateEvent( self.t, single )
 
-        assert single.shell.radius == particleRadius
+        assert single.shell.shape.radius == particleRadius
 
     def burstPair( self, pair ):
         if __debug__:
@@ -960,15 +960,15 @@ class EGFRDSimulator( ParticleSimulatorBase ):
 
         if __debug__:
             container = self.get_container(single1.shell)
-            assert container[single1.shell_id].radius == single1.shell.radius
-            assert container[single2.shell_id].radius == single2.shell.radius
+            assert container[single1.shell_id].shape.radius == single1.shell.shape.radius
+            assert container[single2.shell_id].shape.radius == single2.shell.shape.radius
 
             if type(single1.shell) is CylindricalShell:
-                assert container[single1.shell_id].size == single1.shell.size
-                assert container[single2.shell_id].size == single2.shell.size
+                assert container[single1.shell_id].shape.size == single1.shell.shape.size
+                assert container[single2.shell_id].shape.size == single2.shell.shape.size
 
-        assert single1.shell.radius == particle1[1].radius
-        assert single2.shell.radius == particle2[1].radius
+        assert single1.shell.shape.radius == particle1[1].radius
+        assert single2.shell.shape.radius == particle2[1].radius
 
         assert self.checkObj(single1)
         assert self.checkObj(single2)
@@ -1014,8 +1014,8 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         D1, D2 = single1.pid_particle_pair[1].D, single2.pid_particle_pair[1].D
         D12 = D1 + D2
 
-        assert (pos1 - single1.shell.position).sum() == 0
-        pos2 = single2.shell.position
+        assert (pos1 - single1.shell.shape.position).sum() == 0
+        pos2 = single2.shell.shape.position
         r0 = self.distance(pos1, pos2)
         distanceFromSigma = r0 - sigma
         assert distanceFromSigma >= 0, \
@@ -1060,7 +1060,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         closest, closestShellDistance = None, numpy.inf
         for b in burst:
             if isinstance( b, Single ):
-                bpos = b.shell.position
+                bpos = b.shell.shape.position
                 d = self.distance( com, bpos ) \
                     - b.pid_particle_pair[1].radius * ( 1.0 + self.SINGLE_SHELL_FACTOR )
                 if d < closestShellDistance:
@@ -1218,7 +1218,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             if obj.pid_particle_pair[0] in multi.sim.particleList:  # Already in the Multi.
                 return
             assert obj.isReset()
-            objpos = obj.shell.position
+            objpos = obj.shell.shape.position
             
             self.addToMulti( obj, multi )
             self.removeDomain( obj )
@@ -1354,7 +1354,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
         return closest_domain, closest_distance
 
     def objDistance( self, pos, obj ):
-        return min(self.world.distance(shell, pos) for i, (_, shell) in enumerate(obj.shell_list))
+        return min(self.world.distance(shell.shape, pos) for i, (_, shell) in enumerate(obj.shell_list))
 
     def objDistanceArray( self, pos, objs ):
         dists = numpy.array( [ self.objDistance( pos, obj ) for obj in objs ] )
@@ -1401,13 +1401,13 @@ rejected moves = %d
         obj.check()
 
         for shell_id, shell in obj.shell_list:
-            closest, distance = self.getClosestObj( shell.position,
+            closest, distance = self.getClosestObj( shell.shape.position,
                                                     ignore = [obj.domain_id] )
             if(type(obj) is CylindricalSurfaceSingle or
                type(obj) is CylindricalSurfacePair):
-                shell_size = shell.size
+                shell_size = shell.shape.size
             else:
-                shell_size = shell.radius
+                shell_size = shell.shape.radius
 
             assert shell_size <= self.getUserMaxShellSize(),\
                 '%s shell size larger than user-set max shell size' % \

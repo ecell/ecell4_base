@@ -3,8 +3,9 @@
 
 #include "ShellID.hpp"
 #include "DomainID.hpp"
-#include "SphericalShell.hpp"
-#include "CylindricalShell.hpp"
+#include "Shell.hpp"
+#include "Cylinder.hpp"
+#include "Sphere.hpp"
 #include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
 #include "GSLRandomNumberGenerator.hpp"
@@ -22,10 +23,8 @@ struct EGFRDSimulatorTraitsBase
     typedef Sphere<typename world_type::length_type> sphere_type;
     typedef Cylinder<typename world_type::length_type> cylinder_type;
     typedef Box<typename world_type::length_type> box_type;
-    typedef SphericalShell<typename world_type::length_type,
-                           domain_id_type> spherical_shell_type;
-    typedef CylindricalShell<typename world_type::length_type,
-                             domain_id_type> cylindrical_shell_type;
+    typedef Shell<sphere_type, domain_id_type> spherical_shell_type;
+    typedef Shell<cylinder_type, domain_id_type> cylindrical_shell_type;
     typedef ReactionRuleInfo<
             reaction_rule_id_type,
             typename world_type::traits_type::species_id_type,

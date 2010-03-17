@@ -26,9 +26,7 @@ class Single( object ):
         self.surface = surface
 
         # Create shell.
-        position = pid_particle_pair[1].position
-        radius = pid_particle_pair[1].radius
-        shell = self.createNewShell(position, radius, domain_id)
+        shell = self.createNewShell(pid_particle_pair[1].position, pid_particle_pair[1].radius, domain_id)
 
         self.shell_list = [(shell_id, shell), ]
 
@@ -157,10 +155,10 @@ class NonInteractionSingle(Single):
                         reactiontypes, surface)
 
     def get_mobility_radius(self):
-        return self.shell_list[0][1].radius - self.pid_particle_pair[1].radius
+        return self.shell_list[0][1].shape.radius - self.pid_particle_pair[1].radius
 
     def get_shell_size(self):
-        return self.shell_list[0][1].radius
+        return self.shell_list[0][1].shape.radius
 
     def drawNewPosition(self, dt, eventType):
         gf = self.greens_function()
@@ -196,7 +194,7 @@ class SphericalSingle(NonInteractionSingle):
         return gf
 
     def createNewShell(self, position, radius, domain_id):
-        return SphericalShell(position, radius, domain_id)
+        return SphericalShell(domain_id, Sphere(position, radius))
 
     def displacement(self, r):
         return randomVector(r)
@@ -235,7 +233,7 @@ class PlanarSurfaceSingle(NonInteractionSingle):
         # unbinding reaction we still have to clear the target volume and the 
         # move may be rejected (NoSpace error).
         orientation = self.surface.shape.unit_z
-        size = self.pid_particle_pair[1].radius
+        size = self.pid_particle_pair[1].shape.radius
         return CylindricalShell(position, radius, orientation, size, domain_id)
 
     def displacement(self, r):

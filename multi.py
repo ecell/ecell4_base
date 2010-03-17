@@ -125,7 +125,7 @@ class Multi( object ):
     def __addShell(self, position, size):
         shell_id_shell_pair = (
             self.sim.main.shellIDGenerator(),
-            SphericalShell(position, size, self.domain_id) )
+            SphericalShell(self.domain_id, Sphere(position, size)) )
         self.sim.main.moveShell(shell_id_shell_pair)
         self.sim.sphere_container.update(shell_id_shell_pair)
         return shell_id_shell_pair

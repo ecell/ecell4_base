@@ -47,7 +47,7 @@ class Pair( object ):
             log.debug( 'del %s' % str( self ) )
 
     def getCoM(self):
-        return self.shell_list[0][1].position
+        return self.shell_list[0][1].shape.position
     CoM = property(getCoM)
 
     def get_shell_id(self):
@@ -66,7 +66,7 @@ class Pair( object ):
                                    set_shell_id_shell_pair)
 
     def get_shell_size(self):
-        return self.shell_list[0][1].radius
+        return self.shell_list[0][1].shape.radius
 
     def get_D_tot( self ):
         return self.single1.pid_particle_pair[1].D + \
@@ -238,7 +238,7 @@ class SphericalPair(Pair):
         return gf
 
     def createNewShell(self, position, radius, domain_id):
-        return SphericalShell(position, radius, domain_id)
+        return SphericalShell(domain_id, Sphere(position, radius))
 
     def choosePairGreensFunction( self, r0, t ):
         distanceFromSigma = r0 - self.sigma

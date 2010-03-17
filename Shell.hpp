@@ -10,19 +10,17 @@
 #include <boost/functional/hash.hpp>
 #endif
 
-#include "Sphere.hpp"
-
-template<typename T_, typename Tdid_>
-struct SphericalShell
+template<typename Tshape_, typename Tdid_>
+struct Shell
 {
-    typedef Sphere<T_> shape_type;
+    typedef Tshape_ shape_type;
     typedef Tdid_ domain_id_type;
     typedef typename shape_type::position_type position_type;
     typedef typename shape_type::length_type length_type;
 
-    SphericalShell(): sphere_(), domain_id_() {}
+    Shell(): sphere_(), domain_id_() {}
 
-    SphericalShell(domain_id_type const& domain_id, shape_type const& sphere)
+    Shell(domain_id_type const& domain_id, shape_type const& sphere)
         : sphere_(sphere), domain_id_(domain_id) {}
 
     position_type& position()
@@ -65,12 +63,12 @@ struct SphericalShell
         return domain_id_;
     }
 
-    bool operator==(SphericalShell const& rhs) const
+    bool operator==(Shell const& rhs) const
     {
         return domain_id_ == rhs.did() && sphere_ == rhs.shape();
     }
 
-    bool operator!=(SphericalShell const& rhs) const
+    bool operator!=(Shell const& rhs) const
     {
         return !operator==(rhs);
     }
@@ -80,10 +78,10 @@ private:
     domain_id_type domain_id_;
 };
 
-template<typename Tstrm_, typename Ttraits_, typename T_, typename Tdid_>
-inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const SphericalShell<T_, Tdid_>& v)
+template<typename Tstrm_, typename Ttraits_, typename Tshape_, typename Tdid_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Shell<Tshape_, Tdid_>& v)
 {
-    strm << "SphericalShell(" << v.shape() << ", " << v.did() << ")";
+    strm << "Shell(" << v.shape() << ", " << v.did() << ")";
     return strm;
 }
 
@@ -95,10 +93,10 @@ namespace std {
 namespace boost {
 #endif
 
-template<typename T_, typename Tdid_>
-struct hash<SphericalShell<T_, Tdid_> >
+template<typename Tshape_, typename Tdid_>
+struct hash<Shell<Tshape_, Tdid_> >
 {
-    typedef SphericalShell<T_, Tdid_> argument_type;
+    typedef Shell<Tshape_, Tdid_> argument_type;
 
     std::size_t operator()(argument_type const& val)
     {
