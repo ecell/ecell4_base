@@ -212,8 +212,7 @@ class ParticleModel( _gfrd.Model ):
         self.surfaceList[surface.name] = surface
         return surface
 
-    def getSurface(self, species): 
-        nameOfSurface = species.surface
+    def getSurface(self, nameOfSurface): 
         if nameOfSurface != self.defaultSurface.name:
             surface = self.surfaceList[nameOfSurface]
         else:
@@ -580,7 +579,7 @@ class ParticleSimulatorBase( object ):
             st = self.model.get_species_type((st, surface))
         species = self.world.get_species(st.id)
         if surface == None:
-            surface = self.model.getSurface(species)
+            surface = self.model.getSurface(species.surface_id)
 
         if __debug__:
             log.info('\tthrowing in %s %s particles to %s' % (n, species.id,

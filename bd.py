@@ -131,7 +131,7 @@ class BDSimulatorCoreBase( object ):
                 continue
 
             species = self.main.world.get_species(sid)
-            surface = self.main.model.getSurface(species)
+            surface = self.main.model.getSurface(species.surface_id)
             displacement = surface.drawBDdisplacement(self.dt, D)
 
             newpos = pid_particle_pair[1].position + displacement

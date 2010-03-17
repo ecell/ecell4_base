@@ -24,6 +24,7 @@
 #include "Cylinder.hpp"
 #include "Box.hpp"
 #include "Point.hpp"
+#include "Surface.hpp"
 #include "geometry.hpp"
 
 template<typename Tlen_, typename TD_>
@@ -36,9 +37,11 @@ struct WorldTraitsBase
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef SpeciesTypeID species_id_type;
     typedef Particle<length_type, D_type, species_id_type> particle_type;
-    typedef SpeciesInfo<species_id_type, D_type, length_type> species_type;
+    typedef std::string surface_id_type;
+    typedef SpeciesInfo<species_id_type, D_type, length_type, surface_id_type> species_type;
     typedef Vector3<length_type> point_type;
     typedef typename particle_type::shape_type::position_type position_type;
+    typedef Surface<surface_id_type, position_type, length_type> surface_type;
 
     template<typename Tval_>
     static Tval_ apply_boundary(Tval_ const& v, length_type const& world_size)
@@ -129,6 +132,8 @@ public:
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::particle_type::shape_type particle_shape_type;
     typedef typename traits_type::size_type size_type;
+    typedef typename traits_type::surface_id_type surface_id_type;
+    typedef typename traits_type::surface_type surface_type;
     typedef MatrixSpace<particle_type, particle_id_type, get_mapper_mf> particle_matrix_type;
     typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
     typedef Transaction<traits_type> transaction_type;
@@ -139,6 +144,7 @@ public:
 
 protected:
     typedef std::map<species_id_type, species_type> species_map;
+    typedef std::map<surface_id_type, surface_type> surface_map;
     typedef select_second<typename species_map::value_type> second_selector_type;
 
     struct distance_comparator:
@@ -231,7 +237,10 @@ protected:
 public:
     typedef boost::transform_iterator<second_selector_type,
             typename species_map::const_iterator> species_iterator;
+    typedef boost::transform_iterator<second_selector_type,
+            typename surface_map::const_iterator> surface_iterator;
     typedef sized_iterator_range<species_iterator> species_range;
+    typedef sized_iterator_range<surface_iterator> surfaces_range;
 
 public:
     World(length_type world_size = 1., size_type size = 1)
@@ -391,6 +400,24 @@ public:
         pmat_.erase(id);
     }
 
+    virtual surface_type const& get_surface(surface_id_type const& id) const
+    {
+        typename surface_map::const_iterator i(surface_map_.find(id));
+        if (surface_map_.end() == i)
+        {
+            throw not_found(std::string("Unknown surface (id=") + boost::lexical_cast<std::string>(id) + ")");
+        }
+        return (*i).second;
+    }
+
+    surfaces_range get_surfaces() const
+    {
+        return surfaces_range(
+            surfaces_iterator(surface_map_.begin(), second_selector_type()),
+            surfaces_iterator(surface_map_.end(), second_selector_type()),
+            surface_map_.size());
+    }
+
     particle_id_pair get_particle(particle_id_type const& id) const
     {
         typename particle_matrix_type::const_iterator i(pmat_.find(id));
@@ -420,6 +447,7 @@ private:
     particle_matrix_type pmat_;
     particle_id_generator pidgen_;
     species_map species_map_;
+    surface_map surface_map_;
 };
 
 #endif /* WORLD_HPP */
