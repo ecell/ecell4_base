@@ -41,7 +41,7 @@ public:
         Tarray_ const& extent)
         : position_(position), vx_(vx), vy_(vy), vz_(vz)
     {
-        std::copy(boost::begin(extent_), boost::end(extent_), boost::begin(extent));
+        std::copy(boost::begin(extent), boost::end(extent), boost::begin(extent_));
     }
 
     Box(position_type const& position,
