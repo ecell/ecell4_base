@@ -225,6 +225,61 @@ namespace util
                 }
             }
         };
+
+        template<typename Trange_, std::size_t N_>
+        struct pytuple_to_ra_container_converter
+        {
+            typedef Trange_ native_type;
+ 
+            static void* convertible(PyObject* pyo)
+            {
+                PyObject* const retval(PyObject_GetIter(pyo));
+                if (!retval)
+                {
+                    PyErr_Clear();
+                    return 0;
+                }
+                return retval;
+            }
+
+            static void construct(PyObject* pyo,
+                                  boost::python::converter::rvalue_from_python_stage1_data* data)
+            {
+                void* storage(reinterpret_cast<
+                    boost::python::converter::rvalue_from_python_storage<native_type>*>(data)->storage.bytes);
+                boost::python::handle<> iter(
+                        reinterpret_cast<PyObject*>(data->convertible));
+
+                data->convertible = new (storage) native_type();
+                native_type& retval(*reinterpret_cast<native_type*>(data->convertible));
+                std::size_t idx(0);
+                for (;;)
+                {
+                    boost::python::handle<> i(boost::python::allow_null(PyIter_Next(iter.get())));
+                    if (!i)
+                    {
+                        if (PyErr_Occurred())
+                        {
+                            boost::python::throw_error_already_set();
+                        }
+                        break;
+                    }
+                    if (idx >= N_)
+                    {
+                        PyErr_Format(PyExc_ValueError, "iterable generated more than %zd items", N_);
+                        boost::python::throw_error_already_set();
+                    }
+                    retval[idx++] = boost::python::extract<
+                            typename boost::range_value<native_type>::type>(
+                                i.get())();
+                }
+                if (idx < N_)
+                {
+                    PyErr_Format(PyExc_ValueError, "iterable generated less than %zd items", N_);
+                    boost::python::throw_error_already_set();
+                }
+            }
+        };
     } // namespace detail
 
     template<typename Ttuple_>
@@ -252,7 +307,28 @@ namespace util
         {
             boost::python::to_python_converter<
                 Trange_, detail::range_to_pytuple_converter<Trange_> >();
+            registered = true;
+        }
+    }
+
+    template<typename Trange_>
+    void register_tuple_to_range_converter()
+    {
+        static bool registered = false;
+        if (!registered)
+        {
             to_native_converter<Trange_, detail::pytuple_to_range_converter<Trange_> >();
+            registered = true;
+        }
+    }
+
+    template<typename Trange_, std::size_t N_>
+    void register_tuple_to_ra_container_converter()
+    {
+        static bool registered = false;
+        if (!registered)
+        {
+            to_native_converter<Trange_, detail::pytuple_to_ra_container_converter<Trange_, N_> >();
             registered = true;
         }
     }

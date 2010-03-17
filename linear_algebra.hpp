@@ -5,6 +5,7 @@
 #include <cmath>
 #include <gsl/gsl_pow_int.h>
 #include <boost/mpl/bool.hpp>
+#include <boost/mpl/and.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/array.hpp>
@@ -92,20 +93,20 @@ inline T_ abs(T_ const& v, typename boost::enable_if<is_scalar<T_> >::type* = 0)
     return std::fabs(v);
 }
 
-template< typename T_ >
-inline T_ add( T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0 )
+template<typename T1_, typename T2_>
+inline T1_ add(T1_ const& p1, T2_ const& p2, typename boost::enable_if<boost::mpl::and_<is_vector3<T1_>, is_vector3<T2_> > >::type* = 0)
 {
-    T_ retval;
+    T1_ retval;
     retval[0] = add(p1[0], p2[0]);
     retval[1] = add(p1[1], p2[1]);
     retval[2] = add(p1[2], p2[2]);
     return retval;
 }
 
-template< typename T_ >
-inline T_ subtract( T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0 )
+template<typename T1_, typename T2_>
+inline T1_ subtract(T1_ const& p1, T2_ const& p2, typename boost::enable_if<boost::mpl::and_<is_vector3<T1_>, is_vector3<T2_> > >::type* = 0)
 {
-    T_ retval;
+    T1_ retval;
     retval[0] = subtract(p1[0], p2[0]);
     retval[1] = subtract(p1[1], p2[1]);
     retval[2] = subtract(p1[2], p2[2]);
@@ -113,7 +114,7 @@ inline T_ subtract( T_ const& p1, T_ const& p2, typename boost::enable_if<is_vec
 }
 
 template<typename T_>
-inline T_ divide( T_ const& p1, typename T_::value_type p2, typename boost::enable_if<is_vector3<T_> >::type* = 0 )
+inline T_ divide(T_ const& p1, typename element_type_of<T_>::type const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
 {
     T_ retval;
     retval[0] = divide(p1[0], p2);
@@ -123,7 +124,7 @@ inline T_ divide( T_ const& p1, typename T_::value_type p2, typename boost::enab
 }
 
 template<typename T_>
-inline T_ multiply( T_ const& p1, typename T_::value_type p2, typename boost::enable_if<is_vector3<T_> >::type* = 0 )
+inline T_ multiply(T_ const& p1, typename element_type_of<T_>::type const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
 {
     T_ retval;
     retval[0] = multiply(p1[0], p2);
@@ -133,7 +134,7 @@ inline T_ multiply( T_ const& p1, typename T_::value_type p2, typename boost::en
 }
 
 template<typename T_>
-inline T_ modulo( T_ const& p1, typename T_::value_type p2, typename boost::enable_if<is_vector3<T_> >::type* = 0 )
+inline T_ modulo(T_ const& p1, typename element_type_of<T_>::type const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
 {
     T_ retval;
     retval[0] = modulo(p1[0], p2);
@@ -168,6 +169,16 @@ inline typename element_type_of<T_>::type dot_product(T_ const& p1, T_ const& p2
     return multiply(p1[0], p2[0])
            + multiply(p1[1], p2[1])
            + multiply(p1[2], p2[2]);
+}
+
+template<typename T_>
+inline T_ cross_product(T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+{
+    T_ retval;
+    retval[0] = subtract(multiply(p1[1], p2[2]), multiply(p1[2], p2[1]));
+    retval[1] = subtract(multiply(p1[2], p2[0]), multiply(p1[0], p2[2]));
+    retval[2] = subtract(multiply(p1[0], p2[1]), multiply(p1[1], p2[0]));
+    return retval;
 }
 
 template<typename T_>

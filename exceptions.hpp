@@ -36,4 +36,20 @@ private:
     std::string str_;
 };
 
+class unsupported: public std::exception
+{
+public:
+    unsupported(std::string const& str): str_(str) {}
+
+    virtual ~unsupported() throw() {}
+
+    virtual const char* what() const throw()
+    {
+        return str_.c_str();
+    }
+
+private:
+    std::string str_;
+};
+
 #endif /* EXCEPTIONS_HPP */

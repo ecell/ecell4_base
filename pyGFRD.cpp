@@ -43,6 +43,7 @@
 #include "World.hpp"
 #include "GSLRandomNumberGenerator.hpp"
 #include "EGFRDSimulator.hpp"
+#include "StructureUtils.hpp"
 
 #include "peer/utils.hpp"
 #include "peer/py_hash_support.hpp"
@@ -65,7 +66,7 @@ typedef CyclicWorldTraits<Real, Real> world_traits_type;
 typedef World<world_traits_type> CyclicWorld;
 typedef Model model_type;
 typedef CyclicWorld::transaction_type transaction_type;
-typedef EGFRDSimulatorTraitsBase<CyclicWorld, model_type> egfrd_simulator_traits_type;
+typedef EGFRDSimulatorTraitsBase<CyclicWorld> egfrd_simulator_traits_type;
 
 static boost::python::object species_type_class;
 static boost::python::object species_info_class;
@@ -710,6 +711,10 @@ static GSLRandomNumberGenerator create_static_gsl_rng(boost::python::object seq)
             GSLRandomNumberGenerator::rng_handle(new static_gsl_rng(seq)));
 }
 
+world_traits_type::position_type draw_bd_displacement(world_traits_type::surface_type const& surface, world_traits_type::length_type const& length, egfrd_simulator_traits_type::rng_type& rng)
+{
+    return StructureUtils<egfrd_simulator_traits_type>::draw_bd_displacement(surface, length, rng);
+}
 
 BOOST_PYTHON_MODULE( _gfrd )
 {
@@ -940,7 +945,8 @@ BOOST_PYTHON_MODULE( _gfrd )
     def( "apply_boundary", &apply_boundary<world_traits_type::position_type, world_traits_type::length_type> );
     def( "calculate_pair_CoM", &calculate_pair_CoM<world_traits_type::position_type> );
 
-    def( "normalize", &normalize<world_traits_type::position_type> );
+    def( "normalize", (world_traits_type::position_type(*)(world_traits_type::position_type const&))&normalize<world_traits_type::position_type> );
+    def( "normalize", (world_traits_type::position_type(*)(world_traits_type::position_type const&, world_traits_type::length_type const&))&normalize<world_traits_type::position_type> );
     def( "cyclic_transpose", &cyclic_transpose<world_traits_type::position_type, element_type_of<world_traits_type::position_type>::type> );
 
     to_python_converter<world_traits_type::position_type,
@@ -1036,6 +1042,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::util::register_range_to_tuple_converter<reaction_rule_info_type::species_id_range>();
 
+    peer::util::register_tuple_to_range_converter<reaction_rule_info_type::species_id_range>();
+
     typedef egfrd_simulator_traits_type::network_rules_type network_rules_wrapper_type;
     class_<network_rules_wrapper_type, boost::noncopyable>("NetworkRulesWrapper", init<NetworkRules const&>())
         .def("query_reaction_rule", (network_rules_wrapper_type::reaction_rule_vector const&(network_rules_wrapper_type::*)(network_rules_wrapper_type::species_id_type const&) const)&network_rules_wrapper_type::query_reaction_rule,
@@ -1080,6 +1088,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     particle_id_pair_and_distance_list_converter::__register();
     species_range_converter::__register();
     peer::util::register_range_to_tuple_converter<twofold_container<CyclicWorld::particle_id_type> >();
+    peer::util::register_tuple_to_range_converter<twofold_container<CyclicWorld::particle_id_type> >();
 
     class_<CyclicWorld>("World", init<CyclicWorld::length_type,
                                   CyclicWorld::size_type>())
@@ -1335,6 +1344,59 @@ BOOST_PYTHON_MODULE( _gfrd )
                     egfrd_simulator_traits_type::box_type::position_type,
                     &egfrd_simulator_traits_type::box_type::unit_z,
                     &egfrd_simulator_traits_type::box_type::unit_z>::set));
+
+    class_<world_traits_type::surface_type>("Structure", no_init)
+        .add_property("id", 
+            make_function(&reaction_rule_info_type::id,
+                          return_value_policy<return_by_value>()))
+        ;
+
+    typedef egfrd_simulator_traits_type::planar_surface_type PlanarSurface;
+    class_<PlanarSurface,
+           bases<world_traits_type::surface_type> >(
+           "_PlanarSurface", init<PlanarSurface::identifier_type, PlanarSurface::shape_type>())
+        .add_property("shape",
+            make_function((PlanarSurface::shape_type const&(PlanarSurface::*)()const)&PlanarSurface::shape,
+                          return_value_policy<return_by_value>()))
+        ;
+
+    typedef egfrd_simulator_traits_type::spherical_surface_type SphericalSurface;
+    class_<SphericalSurface,
+           bases<world_traits_type::surface_type> >("_SphericalSurface", init<SphericalSurface::identifier_type, SphericalSurface::shape_type>())
+        .add_property("shape",
+            make_function((SphericalSurface::shape_type const&(SphericalSurface::*)()const)&SphericalSurface::shape,
+                          return_value_policy<return_by_value>()))
+        ;
+
+    typedef egfrd_simulator_traits_type::cylindrical_surface_type CylindricalSurface;
+    class_<CylindricalSurface,
+           bases<world_traits_type::surface_type> >("_CylindricalSurface", init<CylindricalSurface::identifier_type, CylindricalSurface::shape_type>())
+        .add_property("shape",
+            make_function((CylindricalSurface::shape_type const&(CylindricalSurface::*)()const)&CylindricalSurface::shape,
+                          return_value_policy<return_by_value>()))
+        ;
+
+    typedef egfrd_simulator_traits_type::cuboidal_region_type CuboidalRegion;
+    class_<CuboidalRegion,
+           bases<world_traits_type::surface_type> >("_CuboidalRegion", init<CuboidalRegion::identifier_type, CuboidalRegion::shape_type>())
+        .add_property("shape",
+            make_function((CuboidalRegion::shape_type const&(CuboidalRegion::*)()const)&CuboidalRegion::shape,
+                          return_value_policy<return_by_value>()))
+        ;
+
+
+    peer::util::register_tuple_to_ra_container_converter<boost::array<world_traits_type::length_type, 3>, 3>();
+
+    typedef StructureUtils<egfrd_simulator_traits_type> _StructureUtils;
+    def("create_planar_surface", &_StructureUtils::create_planar_surface,
+            return_value_policy<manage_new_object>());
+    def("create_spherical_surface", &_StructureUtils::create_spherical_surface,
+            return_value_policy<manage_new_object>());
+    def("create_cylindrical_surface", &_StructureUtils::create_cylindrical_surface,
+            return_value_policy<manage_new_object>());
+    def("create_cuboidal_region", &_StructureUtils::create_cuboidal_region,
+            return_value_policy<manage_new_object>());
+    def("draw_bd_displacement", &draw_bd_displacement);
 
     peer::util::to_native_converter<world_traits_type::species_id_type, species_info_to_species_id_converter>();
 

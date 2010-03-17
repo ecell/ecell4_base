@@ -27,11 +27,15 @@ inline typename element_type_of<T_>::type distance(T_ const& p1, T_ const& p2)
 }
 
 template<typename T_>
+inline T_ normalize(T_ const& p)
+{
+    return divide(p, length(p));
+}
+
+template<typename T_>
 inline T_ normalize(T_ const& p, 
                      typename element_type_of< T_ >::type const& r)
 {
-    typedef typename element_type_of< T_ >::type element_type;
-
     return multiply(p, r / length(p));
 }
 

@@ -24,7 +24,7 @@
 #include "Cylinder.hpp"
 #include "Box.hpp"
 #include "Point.hpp"
-#include "Surface.hpp"
+#include "Structure.hpp"
 #include "geometry.hpp"
 
 template<typename Tlen_, typename TD_>
@@ -41,7 +41,7 @@ struct WorldTraitsBase
     typedef SpeciesInfo<species_id_type, D_type, length_type, surface_id_type> species_type;
     typedef Vector3<length_type> point_type;
     typedef typename particle_type::shape_type::position_type position_type;
-    typedef Surface<surface_id_type, position_type, length_type> surface_type;
+    typedef Structure<surface_id_type> surface_type;
 
     template<typename Tval_>
     static Tval_ apply_boundary(Tval_ const& v, length_type const& world_size)
@@ -144,7 +144,7 @@ public:
 
 protected:
     typedef std::map<species_id_type, species_type> species_map;
-    typedef std::map<surface_id_type, surface_type> surface_map;
+    typedef std::map<surface_id_type, surface_type*> surface_map;
     typedef select_second<typename species_map::value_type> second_selector_type;
 
     struct distance_comparator:
@@ -233,11 +233,19 @@ protected:
         particle_id_pair_and_distance_list* result_;
     };
 
+    struct surface_second_selector
+    {
+        surface_type const& operator()(
+                typename surface_map::value_type const& v) const
+        {
+            return *v.second;
+        }
+    };
 
 public:
     typedef boost::transform_iterator<second_selector_type,
             typename species_map::const_iterator> species_iterator;
-    typedef boost::transform_iterator<second_selector_type,
+    typedef boost::transform_iterator<surface_second_selector,
             typename surface_map::const_iterator> surface_iterator;
     typedef sized_iterator_range<species_iterator> species_range;
     typedef sized_iterator_range<surface_iterator> surfaces_range;
@@ -407,7 +415,7 @@ public:
         {
             throw not_found(std::string("Unknown surface (id=") + boost::lexical_cast<std::string>(id) + ")");
         }
-        return (*i).second;
+        return *(*i).second;
     }
 
     surfaces_range get_surfaces() const

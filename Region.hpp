@@ -1,5 +1,5 @@
-#ifndef SURFACE_HPP
-#define SURFACE_HPP
+#ifndef REGION_HPP
+#define REGION_HPP
 
 #include <ostream>
 #if defined(HAVE_TR1_FUNCTIONAL)
@@ -14,7 +14,7 @@
 #include "Structure.hpp"
 
 template<typename Tid_, typename Tshape_>
-class Surface: public Structure<Tid_>
+class Region: public Structure<Tid_>
 {
 public:
     typedef Structure<Tid_> base_type;
@@ -22,7 +22,7 @@ public:
     typedef Tshape_ shape_type;
 
 public:
-    virtual ~Surface() {}
+    virtual ~Region() {}
 
     identifier_type const& id() const
     {
@@ -44,12 +44,12 @@ public:
         return shape_;
     }
 
-    bool operator==(Surface const& rhs) const
+    bool operator==(Region const& rhs) const
     {
         return id_ == rhs.id() && shape_ == rhs.shape();
     }
 
-    bool operator!=(Surface const& rhs) const
+    bool operator!=(Region const& rhs) const
     {
         return !operator==(rhs);
     }
@@ -69,10 +69,10 @@ public:
     virtual std::string as_string() const
     {
         std::ostringstream out;
-        out << "Surface(" << id() << ":" << shape() << ")";
+        out << "Region(" << id() << ":" << shape() << ")";
         return out.str(); }
 
-    Surface(identifier_type const& id, shape_type const& shape)
+    Region(identifier_type const& id, shape_type const& shape)
         : base_type(id), shape_(shape) {}
 
 protected:
@@ -80,4 +80,4 @@ protected:
     shape_type shape_;
 };
 
-#endif /* SURFACE_HPP */
+#endif /* REGION_HPP */
