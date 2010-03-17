@@ -234,6 +234,15 @@ struct shape_position_type<Box<T_> > {
     typedef typename Box<T_>::position_type type;
 };
 
+template<typename Tstrm_, typename Ttraits_, typename T_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
+        const Box<T_>& v)
+{
+    strm << "{" << v.position() <<  ", " << v.unit_x() << ", " << v.unit_y() << ", " << v.unit_z() << "," << v.Lx() << ", " << v.Ly() << ", " << v.Lz() << "}";
+    return strm;
+}
+
+
 #if defined(HAVE_TR1_FUNCTIONAL)
 namespace std { namespace tr1 {
 #elif defined(HAVE_STD_HASH)
@@ -250,10 +259,12 @@ struct hash<Box<T_> >
     std::size_t operator()(argument_type const& val)
     {
         return hash<typename argument_type::position_type>()(val.position()) ^
-            hash<typename argument_type::length_type>()(val.unit_x()) ^
-            hash<typename argument_type::length_type>()(val.unit_y()) ^
-            hash<typename argument_type::length_type>()(val.unit_z()) ^
-            hash<typename argument_type::length_type>()(val.extent());
+            hash<typename argument_type::position_type>()(val.unit_x()) ^
+            hash<typename argument_type::position_type>()(val.unit_y()) ^
+            hash<typename argument_type::position_type>()(val.unit_z()) ^
+            hash<typename argument_type::length_type>()(val.extent()[0]) ^
+            hash<typename argument_type::length_type>()(val.extent()[1]) ^
+            hash<typename argument_type::length_type>()(val.extent()[2]);
     }
 };
 
