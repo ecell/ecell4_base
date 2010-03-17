@@ -18,39 +18,29 @@ struct Shell
     typedef typename shape_type::position_type position_type;
     typedef typename shape_type::length_type length_type;
 
-    Shell(): sphere_(), domain_id_() {}
+    Shell(): shape_(), domain_id_() {}
 
-    Shell(domain_id_type const& domain_id, shape_type const& sphere)
-        : sphere_(sphere), domain_id_(domain_id) {}
+    Shell(domain_id_type const& domain_id, shape_type const& shape)
+        : shape_(shape), domain_id_(domain_id) {}
 
     position_type& position()
     {
-        return sphere_.position();
+        return shape_.position();
     }
 
     position_type const& position() const
     {
-        return sphere_.position();
-    }
-
-    length_type& radius()
-    {
-        return sphere_.radius();
-    }
-
-    length_type const& radius() const
-    {
-        return sphere_.radius();
+        return shape_.position();
     }
 
     shape_type& shape()
     {
-        return sphere_;
+        return shape_;
     }
 
     shape_type const& shape() const
     {
-        return sphere_;
+        return shape_;
     }
 
     domain_id_type const& did() const
@@ -65,7 +55,7 @@ struct Shell
 
     bool operator==(Shell const& rhs) const
     {
-        return domain_id_ == rhs.did() && sphere_ == rhs.shape();
+        return domain_id_ == rhs.did() && shape_ == rhs.shape();
     }
 
     bool operator!=(Shell const& rhs) const
@@ -74,7 +64,7 @@ struct Shell
     }
 
 private:
-    shape_type sphere_;
+    shape_type shape_;
     domain_id_type domain_id_;
 };
 
@@ -100,8 +90,7 @@ struct hash<Shell<Tshape_, Tdid_> >
 
     std::size_t operator()(argument_type const& val)
     {
-        return hash<typename argument_type::position_type>()(val.position()) ^
-            hash<typename argument_type::length_type>()(val.radius()) ^
+        return hash<typename argument_type::shape_type>()(val.shape()) ^
             hash<typename argument_type::domain_id_type>()(val.did());
     }
 };
