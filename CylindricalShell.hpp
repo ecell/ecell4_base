@@ -26,17 +26,6 @@ struct CylindricalShell
                      shape_type const& cylinder)
         : cylinder_(cylinder), domain_id_(domain_id) {}
 
-    length_type calculateDistanceToSelf(position_type pos)
-    {
-        return cylinder_.calculateDistanceToSelf(pos);
-    }
-
-    length_type calculateDistanceToSelfWithOffset(position_type pos, 
-                                                  position_type offset)
-    {
-        return cylinder_.calculateDistanceToSelfWithOffset(pos, offset);
-    }
-
     position_type& position()
     {
         return cylinder_.position();
@@ -76,7 +65,6 @@ struct CylindricalShell
     {
         return cylinder_.size();
     }
-
 
     shape_type& shape()
     {
