@@ -1273,7 +1273,7 @@ class EGFRDSimulator( ParticleSimulatorBase ):
             # FIXME: shells should be renewed
             multi2.addParticleAndShell(
                 (pid, multi1.sim.particleMatrix[pid]),
-                multi1.sim.sphere_container[sid].radius)
+                multi1.sim.sphere_container[sid].shape.radius)
 
     def getNeighborsWithinRadiusNoSort( self, pos, radius, ignore=[] ):
         """Get neighbor domains within given radius.
