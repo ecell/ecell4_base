@@ -40,7 +40,7 @@ public:
     virtual particle_id_pair new_particle(species_id_type const& sid,
             position_type const& pos) = 0;
 
-    virtual void update_particle(particle_id_pair const& pi_pair) = 0;
+    virtual bool update_particle(particle_id_pair const& pi_pair) = 0;
 
     virtual void remove_particle(particle_id_type const& id) = 0;
 
@@ -56,5 +56,6 @@ public:
 
     virtual transaction_type* create_transaction() = 0;
 };
+
 
 #endif /* PARTICLE_CONTAINER_HPP */

@@ -42,58 +42,113 @@ noinst_PYTHON = \
 lib_LTLIBRARIES = _gfrd.la
 
 noinst_HEADERS = \
+	abstract_set.hpp\
+	BasicNetworkRulesImpl.hpp\
 	BasicPairGreensFunction.hpp\
-	Defs.hpp\
-	DynamicPriorityQueue.hpp\
-	EventScheduler.hpp\
-	FirstPassageGreensFunction.hpp\
-	FirstPassageNoCollisionPairGreensFunction.hpp\
-	FirstPassagePairGreensFunction.hpp\
-	FreeGreensFunction.hpp\
-	FreePairGreensFunction.hpp\
-	GreensFunction.hpp\
-	HalfOrderBesselGenerator.hpp\
-	PairGreensFunction.hpp\
-	PyEventScheduler.hpp\
-	SphericalBesselGenerator.hpp\
+	BDPropagator.hpp\
+	BDSimulator.hpp\
 	bessel.hpp\
+	Box.hpp\
+	Cylinder.hpp\
+	Defs.hpp\
+	DomainFactory.hpp\
+	Domain.hpp\
+	DomainID.hpp\
+	DynamicPriorityQueue.hpp\
+	EGFRDSimulator.hpp\
+	EventScheduler.hpp\
+	exceptions.hpp\
 	factorial.hpp\
 	filters.hpp\
 	findRoot.hpp\
+	FirstPassageGreensFunction.hpp\
+	FirstPassageNoCollisionPairGreensFunction.hpp\
+	FirstPassagePairGreensFunction.hpp\
 	freeFunctions.hpp\
+	FreeGreensFunction.hpp\
+	FreePairGreensFunction.hpp\
 	funcSum.hpp\
-	MatrixSpace.hpp\
-	Vector3.hpp\
-	Sphere.hpp\
-	Cylinder.hpp\
-	NetworkRules.hpp\
-	ReactionRule.hpp\
-	BasicNetworkRulesImpl.hpp\
+	generator.hpp\
+	geometry.hpp\
+	GreensFunction.hpp\
+	GSLRandomNumberGenerator.hpp\
+	gsl_rng_base.hpp\
+	HalfOrderBesselGenerator.hpp\
 	Identifier.hpp\
+	linear_algebra.hpp\
+	Logger.hpp\
+	MatrixSpace.hpp\
 	Model.hpp\
-	utils.hpp\
+	Multi.hpp\
+	NetworkRules.hpp\
+	NetworkRulesWrapper.hpp\
+	PairGreensFunction.hpp\
+	Pair.hpp\
+	ParticleContainerBase.hpp\
+	ParticleContainer.hpp\
+	Particle.hpp\
+	ParticleID.hpp\
+	ParticleSimulator.hpp\
+	PlanarSurface.hpp\
+	Point.hpp\
+	PyEventScheduler.hpp\
+	ReactionRule.hpp\
+	ReactionRuleInfo.hpp\
+	Region.hpp\
+	SerialIDGenerator.hpp\
+	Shape.hpp\
+	Shell.hpp\
+	ShellID.hpp\
+	Single.hpp\
+	sorted_list.hpp\
+	SpeciesInfo.hpp\
+	SpeciesType.hpp\
+	SpeciesTypeID.hpp\
+	Sphere.hpp\
+	SphericalBesselGenerator.hpp\
+	SphericalBesselTable.hpp\
+	Structure.hpp\
+	StructureUtils.hpp\
+	Surface.hpp\
+	Transaction.hpp\
+	twofold_container.hpp\
+	Vector3.hpp\
+	World.hpp\
 	peer/Exception.hpp\
-	peer/MatrixSpace.hpp\
 	peer/GeneratorIteratorWrapper.hpp\
-	peer/tuple_converters.hpp\
-	peer/utils.hpp\
-	peer/numpy/wrapped_multi_array.hpp\
+	peer/Identifier.hpp\
+	peer/MatrixSpace.hpp\
 	peer/numpy/ndarray_converters.hpp\
 	peer/numpy/pyarray_backed_allocator.hpp\
-	peer/numpy/type_mappings.hpp
-	utils/get_mapper_mf.hpp\
+	peer/numpy/scalar_converters.hpp\
+	peer/numpy/type_mappings.hpp\
+	peer/numpy/wrapped_multi_array.hpp\
+	peer/Particle.hpp\
+	peer/pickle_support.hpp\
+	peer/py_hash_support.hpp\
+	peer/RandomNumberGenerator.hpp\
+	peer/ReactionRule.hpp\
+	peer/set_indexing_suite.hpp\
+	peer/ShellWrapper.hpp\
+	peer/SpeciesType.hpp\
+	peer/STLContainerWrapper.hpp\
+	peer/STLIteratorWrapper.hpp\
+	peer/tuple_converters.hpp\
+	peer/utils.hpp\
+	utils/array_helper.hpp\
+	utils/array_traits.hpp\
 	utils/fun_composition.hpp\
 	utils/fun_wrappers.hpp\
 	utils/get_default_impl.hpp\
 	utils/get_mapper_mf.hpp\
+	utils.hpp\
 	utils/memberwise_compare.hpp\
 	utils/pair.hpp\
 	utils/pointer_preds.hpp\
 	utils/range.hpp\
 	utils/range_support.hpp\
 	utils/reference_or_instance.hpp\
-	utils/array_traits.hpp\
-	utils/array_helper.hpp
+	utils/unassignable_adapter.hpp
 
 _gfrd_la_SOURCES=\
 	funcSum.cpp\

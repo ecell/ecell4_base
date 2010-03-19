@@ -77,7 +77,7 @@ public:
         return retval;
     }
 
-    virtual void update_particle(particle_id_pair const& pi_pair)
+    virtual bool update_particle(particle_id_pair const& pi_pair)
     {
         BOOST_ASSERT(removed_particles_.end() ==
                 removed_particles_.find(pi_pair.first));
@@ -91,7 +91,7 @@ public:
             particle_type _v(pc_.get_particle(pi_pair.first).second);
             std::swap((*r.first).second, _v);
         }
-        pc_.update_particle(pi_pair);
+        return pc_.update_particle(pi_pair);
     }
 
     virtual void remove_particle(particle_id_type const& id)
