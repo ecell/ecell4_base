@@ -206,8 +206,7 @@ s.set_model(m)
 model = 'pushpull'
 
 # 'pushpull-Keq-koff_ratio-N_K-N_P-V-mode.dat'
-l = Logger(s, 
-           logname = model + '_' + '_'.join(sys.argv[1:8]) + '_' +\
+l = Logger(logname = model + '_' + '_'.join(sys.argv[1:8]) + '_' +\
                os.environ['SGE_TASK_ID'],
            comment = '@ model=\'%s\'; Keq=%s; koff_ratio=%s\n' %
            (model, Keq_str, koff_ratio_str) +

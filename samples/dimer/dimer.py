@@ -39,7 +39,7 @@ s.throw_in_particles(S, N / 2, box1)
 s.throw_in_particles(P, N / 2, box1)
 
 
-#l = Logger(s, 'dimer')
+#l = Logger('dimer')
 l = None
 interrupter = None
 

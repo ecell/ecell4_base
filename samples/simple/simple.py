@@ -22,7 +22,7 @@ s.set_all_repulsive()
 
 s.throw_in_particles(P, 60, box1)
 
-l = Logger(s, 'simple')
+l = Logger('simple')
 interrupter = FixedIntervalInterrupter(s, 3.33e-4, l)
 
 l.start(s)

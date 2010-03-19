@@ -164,7 +164,7 @@ m.network_rules.add_reaction_rule(r12b)
 
 s.set_model(m)
 
-l = Logger(s, logname=model + '_' + '_'.join(sys.argv[1:7]))
+l = Logger(logname=model + '_' + '_'.join(sys.argv[1:7]))
 interrupter = FixedIntervalInterrupter(s, 1e-0, l)
 
 l.start(s)

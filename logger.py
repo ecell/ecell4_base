@@ -59,30 +59,39 @@ class FixedIntervalInterrupter(object):
 
 
 class HDF5Logger(object):
-    def __init__(self, logname, directory, split=False):
+    def __init__(self, logname, directory='data', split=False):
         self.logname = logname
         self.directory = directory
         self.split = split
         self.file_counter = 0
         self.hdf5_file = None
 
-    def new_hdf5_file(self):
-        if self.hdf5_file is not None:
-            self.hdf5_file.close()
-
-        if not os.path.exists(self.directory):
-            os.mkdir(self.directory)
-
+    def new_hdf5_file(self, sim):
         if self.split:
+            if self.hdf5_file is not None:
+                self.hdf5_file.close()
+
+            if not os.path.exists(self.directory):
+                os.mkdir(self.directory)
+
             hdf5_filename = '%s_%04d.hdf5' % (self.logname, self.file_counter)
+            hdf5_path = os.path.join(self.directory, hdf5_filename)
+            # HDF5 file must be removed before log_particles
+            if os.path.exists(hdf5_path):
+                os.remove(hdf5_path)
+            self.hdf5_file = h5py.File(hdf5_path)
+            self.file_counter += 1
         else:
-            hdf5_filename = '%s.hdf5' % self.logname
-        hdf5_path = os.path.join(self.directory, hdf5_filename)
-        # HDF5 file must be removed before log_particles
-        if os.path.exists(hdf5_path):
-            os.remove(hdf5_path)
-        self.hdf5_file = h5py.File(hdf5_path)
-        self.file_counter += 1
+            if self.hdf5_file is None:
+                hdf5_filename = '%s.hdf5' % self.logname
+                hdf5_path = os.path.join(self.directory, hdf5_filename)
+                # HDF5 file must be removed before log_particles
+                if os.path.exists(hdf5_path):
+                    os.remove(hdf5_path)
+                self.hdf5_file = h5py.File(hdf5_path)
+
+        self.create_data_group(sim)
+        self.write_species(sim)
 
     def create_data_group(self, sim):
         data_group = self.hdf5_file.create_group('data')
@@ -160,6 +169,9 @@ class HDF5Logger(object):
                 x['radius'][count] = shell.shape.radius
                 x['position'][count] = shell.shape.position
                 count += 1
+
+        if len(x) == 0:
+            return
 
         dummy = time_group.create_dataset('shells', data = x)
 
@@ -260,20 +272,18 @@ class HDF5Logger(object):
         dummy = time_group.create_dataset('domains', data = x)
 
     def log(self, sim, time):
-        self.new_hdf5_file()
+        self.new_hdf5_file(sim)
         self.write_domains(sim)
         self.write_particles(sim)
 
     def start(self, sim):
-        self.create_data_group()
-        self.write_species(sim)
-        self.write_particles(sim)
+        self.new_hdf5_file(sim)
+        self.write_domains(sim)
         self.write_particles(sim)
 
 
 class Logger(object):
-    def __init__(self, sim, logname='log', directory='data', comment=''):
-        self.sim = sim
+    def __init__(self, logname='log', directory='data', comment=''):
         self.logname = logname
         self.file_counter = 0
         self.directory = directory

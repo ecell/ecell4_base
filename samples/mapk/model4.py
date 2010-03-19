@@ -163,8 +163,7 @@ s.set_model(m)
 
 
 logname = model + '_' + '_'.join(sys.argv[1:9])
-l = Logger(s, 
-           logname = logname,
+l = Logger(logname = logname,
            comment = '@ model=\'%s\'; D_move=%g; D_react=%g\n' %
            (model, D_move, D_react) +
            '#@ V=%s; N_K_total=%d; N_K=%d; N_Kpp=%d; N_KK=%d; N_P=%d;\n' % 

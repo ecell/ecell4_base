@@ -146,8 +146,7 @@ m.network_rules.add_reaction_rule(r8)
 
 logname = model + '_' + '_'.join(sys.argv[1:7])  + '_' +\
           os.environ['SGE_TASK_ID']
-l = Logger(s, 
-           logname = logname,
+l = Logger(logname = logname,
            comment = '@ model=\'%s\'; D_move=%g; D_react=%g\n' %
            (model, D_move, D_react) +
            '#@ V=%s; N_K_total=%d; N_K=%d; N_Kpp=%d; N_KK=%d; N_P=%d;\n' % 

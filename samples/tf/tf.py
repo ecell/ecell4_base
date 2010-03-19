@@ -73,7 +73,7 @@ s.place_particle(O, [0,0,0])
 #s.throw_in_particles(R, 50, box1)
 
 
-l = Logger(s, 'pushpull')
+l = Logger('pushpull')
 interrupter = FixedIntervalInterrupter(s, 1e-3, l)
 
 l.start(s)
