@@ -14,23 +14,23 @@ log = logging.getLogger('ecell')
 
 PARTICLES_SCHEMA = \
     [
-        ('id', 'u8',),
-        ('species_id', 'u8',),
-        ('position', 'f8', (3,))
+        ('id', 'u8', ),
+        ('species_id', 'u8', ),
+        ('position', 'f8', (3, ))
         ]
 
 SHELLS_SCHEMA = \
     [
-        ('id', 'u8',),
+        ('id', 'u8', ),
         ('radius', 'f8'),
-        ('position', 'f8', (3,)),
+        ('position', 'f8', (3, )),
         ]
 
 SPECIES_SCHEMA = \
     [
-        ('id', 'u8',),
-        ('name', 'S32',),
-        ('radius', 'f8',),
+        ('id', 'u8', ),
+        ('name', 'S32', ),
+        ('radius', 'f8', ),
         ('D', 'f8'), # diffusion coefficient
         ]
 
@@ -95,7 +95,7 @@ class Logger:
 
         speciesNameList = '\'' + \
             "\', \'".join(str(i) for i in self.sim.world.species) + '\''
-        columns = '[ \'t\', ' + speciesNameList + ']'
+        columns = '[\'t\', ' + speciesNameList + ']'
         self.writeTimecourseComment('@ columns= ' + columns)
 
 
@@ -151,7 +151,7 @@ class Logger:
 
         num_species = len(self.sim.world.species)
 
-        species_dset = self.HDF5_file.create_dataset('species', (num_species,), SPECIES_SCHEMA)
+        species_dset = self.HDF5_file.create_dataset('species', (num_species, ), SPECIES_SCHEMA)
         count = 0
         for species in self.sim.world.species:
             species_dset[count] = (species.id.serial,
@@ -180,7 +180,7 @@ class Logger:
             pid_list = self.sim.particlePool[species.id]
             num_particles += len(pid_list)
 
-        x = numpy.zeros((num_particles,),
+        x = numpy.zeros((num_particles, ),
                         dtype = numpy.dtype(PARTICLES_SCHEMA))
 
         count = 0
@@ -212,7 +212,7 @@ class Logger:
         for domain in self.sim.domains.itervalues():
             num_shells += len(domain.shell_list)
 
-        x = numpy.zeros((num_shells,), dtype = numpy.dtype(SHELLS_SCHEMA))
+        x = numpy.zeros((num_shells, ), dtype = numpy.dtype(SHELLS_SCHEMA))
 
         count = 0
         for did, domain in self.sim.domains.iteritems():
@@ -244,7 +244,7 @@ class Logger:
             ]
 
         dtype_obj = numpy.dtype(shell_particle_association_schema)
-        x = numpy.zeros((num_assocs,), dtype = dtype_obj)
+        x = numpy.zeros((num_assocs, ), dtype = dtype_obj)
 
         count = 0
         for did, domain in self.sim.domains.iteritems():
@@ -278,12 +278,12 @@ class Logger:
 
         domain_shell_association_schema = \
             [
-                ('shell_id', 'u8',),
-                ('domain_id', 'u8',),
+                ('shell_id', 'u8', ),
+                ('domain_id', 'u8', ),
             ]
 
         dtype_obj = numpy.dtype(domain_shell_association_schema)
-        x = numpy.zeros((num_shells,), dtype = dtype_obj)
+        x = numpy.zeros((num_shells, ), dtype = dtype_obj)
 
         count = 0
         for did, domain in self.sim.domains.iteritems():
@@ -299,14 +299,14 @@ class Logger:
 
         domains_schema = \
             [
-                ('id', 'u8',),
-                ('kind', 'u4',),
+                ('id', 'u8', ),
+                ('kind', 'u4', ),
             ]
 
         num_domains = len(self.sim.domains.keys())
 
         dtype_obj = numpy.dtype(domains_schema)
-        x = numpy.zeros((num_domains,), dtype = dtype_obj)
+        x = numpy.zeros((num_domains, ), dtype = dtype_obj)
 
         count = 0
         for did, domain in self.sim.domains.iteritems():

@@ -8,31 +8,31 @@ import sys
 import time
 
 
-def run_single( T, V, N ):
+def run_single(T, V, N):
 
     print 'T =', T, '; V= ', V, '; N=', N
     
 
-    L = math.pow( V * 1e-3, 1.0 / 3.0 )
+    L = math.pow(V * 1e-3, 1.0 / 3.0)
 
-    matrixSize = min( max( 3, int( (3 * N) ** (1.0/3.0) ) ), 120 )
+    matrixSize = min(max(3, int((3 * N) ** (1.0/3.0))), 120)
     
     w = World(L, matrixSize)
     s = EGFRDSimulator(w)
     #s = BDSimulator(w)
 
-    box1 = CuboidalRegion( [0,0,0],[L,L,L] )
+    box1 = CuboidalRegion([0,0,0],[L,L,L])
 
     D = 1e-12
 
     m = ParticleModel()
 
-    A = m.new_species_type( 'A', D, 2.5e-9 )
+    A = m.new_species_type('A', D, 2.5e-9)
     m.set_all_repulsive()
 
-    s.setModel( m )
+    s.setModel(m)
     
-    s.throwInParticles( A, N, box1 )
+    s.throwInParticles(A, N, box1)
     print 'stir'
 
     stirTime = T * .1
@@ -40,7 +40,7 @@ def run_single( T, V, N ):
         s.step()
         nextTime = s.getNextTime()
         if nextTime > stirTime:
-            s.stop( stirTime )
+            s.stop(stirTime)
             break
     print 'reset'
     s.reset()
@@ -60,9 +60,9 @@ def run_single( T, V, N ):
 
 if __name__ == '__main__':
     
-    T = float( sys.argv[1] )
-    V = float( sys.argv[2] )
-    N = int( sys.argv[3] )
+    T = float(sys.argv[1])
+    V = float(sys.argv[2])
+    N = int(sys.argv[3])
 
-    run_single( T, V, N )
+    run_single(T, V, N)
 

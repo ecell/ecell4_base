@@ -6,10 +6,10 @@ import sys
 import glob
 
 
-file = open( sys.argv[1] )
+file = open(sys.argv[1])
 
-# filepattern.replace( 'ALL', '*' )
-# filelist = glob.glob( filepattern )
+# filepattern.replace('ALL', '*')
+# filelist = glob.glob(filepattern)
 # print filelist
 
 
@@ -20,12 +20,12 @@ for line in file.readlines():
     line = line.split()
     eventType = line[1]
     t = float(line[0])
-    if events.has_key( eventType ):
+    if events.has_key(eventType):
         events[eventType].append(t)
     else:
         events[eventType] = [t]
 
-total = numpy.sum( [len(v) for v in events.values() ] )
+total = numpy.sum([len(v) for v in events.values()])
 
 print 'total', total
 for e in events.keys():

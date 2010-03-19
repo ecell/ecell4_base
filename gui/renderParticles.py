@@ -11,61 +11,61 @@ import datafile
 zoom = 1e6
 
 class Particles:
-    def __init__( self ):
+    def __init__(self):
         self.pos = numpy.array([[]])
-        self.pos.shape = ( 0, 3 )
+        self.pos.shape = (0, 3)
         self.radii = numpy.array([])
     
 
-colors = [ (1, .2, .2 ),  ( .2,.2,1 ), ( .8, .8, .3 )]
+colors = [(1, .2, .2),  (.2,.2,1), (.8, .8, .3)]
 
 
-def addParticles( ren, positions, radii, n ):
+def addParticles(ren, positions, radii, n):
 
     for pos in positions:
         
-        addParticle( ren, pos, radii[n], colors[n] )
+        addParticle(ren, pos, radii[n], colors[n])
 
 
 
-def addParticle( ren, pos, radius, color ):
+def addParticle(ren, pos, radius, color):
     vpos = pos * zoom
     sphere = vtk.vtkSphereSource()
-    sphere.SetCenter( vpos ) #vpos[0],vpos[1],vpos[2] ) )
-    sphere.SetRadius( radius * zoom )
+    sphere.SetCenter(vpos) #vpos[0],vpos[1],vpos[2] ) )
+    sphere.SetRadius(radius * zoom)
     sphereMapper = vtk.vtkPolyDataMapper()
-    sphereMapper.SetInputConnection( sphere.GetOutputPort() )
+    sphereMapper.SetInputConnection(sphere.GetOutputPort())
     
     sphereActor = vtk.vtkActor()
-    sphereActor.SetMapper( sphereMapper )
-    sphereActor.GetProperty().SetColor( color )
+    sphereActor.SetMapper(sphereMapper)
+    sphereActor.GetProperty().SetColor(color)
     
-    ren.AddActor( sphereActor )
+    ren.AddActor(sphereActor)
 
 
-def writeFrame( particles, renWin, header ):
+def writeFrame(particles, renWin, header):
 
     ren = vtk.vtkRenderer()
-    ren.SetBackground( 1, 1, 1 )
+    ren.SetBackground(1, 1, 1)
 
     size = header['worldSize'] * zoom
 
     cube = vtk.vtkCubeSource()
     cube.SetBounds(0,size,0,size,0,size)
     cubeMapper = vtk.vtkPolyDataMapper()
-    cubeMapper.SetInputConnection( cube.GetOutputPort() )
+    cubeMapper.SetInputConnection(cube.GetOutputPort())
     cubeActor = vtk.vtkActor()
-    cubeActor.SetMapper( cubeMapper )
+    cubeActor.SetMapper(cubeMapper)
 
     cubeActor.GetProperty().SetRepresentationToWireframe()
 #    cubeActor.GetProperty().EdgeVisibilityOn()
-#     cubeActor.GetProperty().SetEdgeColor( 1.,1.,0.)
-    cubeActor.GetProperty().SetOpacity( 0.1 )    
-    ren.AddActor( cubeActor )
+#     cubeActor.GetProperty().SetEdgeColor(1.,1.,0.)
+    cubeActor.GetProperty().SetOpacity(0.1)    
+    ren.AddActor(cubeActor)
     
 
-    renWin.AddRenderer( ren )
-    renWin.SetSize( 400, 400 )
+    renWin.AddRenderer(ren)
+    renWin.SetSize(400, 400)
 
     #iren = vtk.vtkRenderWindowInteractor()
     #iren.SetRenderWindow(renWin)
@@ -73,23 +73,23 @@ def writeFrame( particles, renWin, header ):
     #iren.SetInteractorStyle(style)
     #iren.Initialize()
 
-    for n, id in enumerate( particlePools.keys() ):
+    for n, id in enumerate(particlePools.keys()):
         particles = particlePools[id]
-        addParticles( ren, particles.pos, particles.radii, n )
+        addParticles(ren, particles.pos, particles.radii, n)
         print n
 
     text = vtk.vtkTextActor()
-    text.SetInput( 't = %10.9f' % float(header['t']) )
+    text.SetInput('t = %10.9f' % float(header['t']))
     text.GetTextProperty().SetColor(0,0,0)
-    text.SetDisplayPosition( 300, 385 )
-    ren.AddActor2D( text )
+    text.SetDisplayPosition(300, 385)
+    ren.AddActor2D(text)
 
 
     ren.ResetCamera(0,size,0,size,0,size)
     camera = ren.GetActiveCamera()
     camera.Zoom(1.4)
     pos = camera.GetPosition()
-    camera.SetPosition(pos[0]*1.6, pos[1]*1.4, pos[2] )
+    camera.SetPosition(pos[0]*1.6, pos[1]*1.4, pos[2])
     #camera.Dolly(1.5)
     #camera.SetDistance(.1)
 
@@ -97,23 +97,23 @@ def writeFrame( particles, renWin, header ):
     renWin.Render()
 
     w2if = vtk.vtkWindowToImageFilter()
-    w2if.SetInput( renWin )
+    w2if.SetInput(renWin)
 
-    outfilename = header['name'] + '_' + str( header['count'] ).zfill(4) + '.png'
+    outfilename = header['name'] + '_' + str(header['count']).zfill(4) + '.png'
         
     wr = vtk.vtkPNGWriter()
-    wr.SetInputConnection( w2if.GetOutputPort() )
-    wr.SetFileName( outfilename )
+    wr.SetInputConnection(w2if.GetOutputPort())
+    wr.SetFileName(outfilename)
     wr.Write()
 
-    renWin.RemoveRenderer( ren )
+    renWin.RemoveRenderer(ren)
 
 
 
 
-def loadParticles( filename ):
+def loadParticles(filename):
 
-    file = open( filename )
+    file = open(filename)
 
     particlePools = {}
 
@@ -129,11 +129,11 @@ def loadParticles( filename ):
 
         pool = particlePools[id]
         
-        pool.pos = numpy.append( pool.pos, 
-                                 [[ float(x), float(y), float(z) ]],
-                                 axis=0 )
+        pool.pos = numpy.append(pool.pos, 
+                                [[float(x), float(y), float(z)]],
+                                axis=0)
 
-        pool.radii = numpy.append( pool.radii, float( r ) )
+        pool.radii = numpy.append(pool.radii, float(r))
 
 
     file.close()
@@ -148,7 +148,7 @@ if __name__ == '__main__':
 
     inpattern = sys.argv[1]
 
-    infiles = glob.glob( inpattern )
+    infiles = glob.glob(inpattern)
     print infiles
 
     renWin = vtk.vtkRenderWindow()
@@ -157,11 +157,11 @@ if __name__ == '__main__':
 
     for infile in infiles:
 
-        header = datafile.loadHeader( infile )
+        header = datafile.loadHeader(infile)
         print header
 
-        particlePools = loadParticles( infile )
+        particlePools = loadParticles(infile)
 
-        writeFrame( particlePools, renWin, header )
+        writeFrame(particlePools, renWin, header)
 
 

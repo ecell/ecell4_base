@@ -95,8 +95,8 @@ class ReactionRuleTestCase(unittest.TestCase):
 
     def test_get_reactants_and_get_products(self):
         s1, s2 = self.s1, self.s2
-        for reactants in [(s1, ), (s2, ), (s1, s2),]:
-            for products in [(), (s1, ), (s2, ), (s1, s2),]:
+        for reactants in [(s1, ), (s2, ), (s1, s2), ]:
+            for products in [(), (s1, ), (s2, ), (s1, s2), ]:
                 r = _gfrd.ReactionRule(reactants, products)
                 self.assertEqual(reactants, tuple(reactants))
                 self.assertEqual(products, tuple(products))

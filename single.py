@@ -1,7 +1,7 @@
 from _gfrd import *
 from greens_function_wrapper import *
 
-class Single( object ):
+class Single(object):
     """There are 2 main types of Singles:
         * NonInteractionSingle
         * InteractionSingle (when the particle is nearby a surface)
@@ -36,9 +36,9 @@ class Single( object ):
 
         self.updatek_tot()
 
-    def getD( self ):
+    def getD(self):
         return self.pid_particle_pair[1].D
-    D = property( getD )
+    D = property(getD)
 
     def get_shell_id(self):
         return self.shell_list[0][0]
@@ -55,7 +55,7 @@ class Single( object ):
     shell_id_shell_pair = property(get_shell_id_shell_pair, 
                                    set_shell_id_shell_pair)
 
-    def initialize( self, t ):
+    def initialize(self, t):
         '''
         Reset the Single.
 
@@ -67,10 +67,10 @@ class Single( object ):
         self.lastTime = t
         self.eventType = EventType.SINGLE_ESCAPE
 
-    def isReset( self ):
+    def isReset(self):
         return self.dt == 0.0 and self.eventType == EventType.SINGLE_ESCAPE
 
-    def draw_reaction_time_tuple( self ):
+    def draw_reaction_time_tuple(self):
         """Return a (reaction time, event type)-tuple.
 
         """
@@ -114,7 +114,7 @@ class Single( object ):
         return min(self.draw_escape_or_interaction_time_tuple(),
                    self.draw_reaction_time_tuple())
 
-    def updatek_tot( self ):
+    def updatek_tot(self):
         self.k_tot = 0
 
         if not self.reactiontypes:
@@ -123,21 +123,21 @@ class Single( object ):
         for rt in self.reactiontypes:
             self.k_tot += rt.k
 
-    def drawReactionRule( self ):
-        k_array = [ rt.k for rt in self.reactiontypes ]
-        k_array = numpy.add.accumulate( k_array )
+    def drawReactionRule(self):
+        k_array = [rt.k for rt in self.reactiontypes]
+        k_array = numpy.add.accumulate(k_array)
         k_max = k_array[-1]
 
         rnd = myrandom.uniform()
-        i = numpy.searchsorted( k_array, rnd * k_max )
+        i = numpy.searchsorted(k_array, rnd * k_max)
 
         return self.reactiontypes[i]
 
-    def check( self ):
+    def check(self):
         pass
 
     def __str__(self):
-        return 'Single[%s: %s: eventID=%s]' % ( self.domain_id, self.pid_particle_pair[0], self.eventID )
+        return 'Single[%s: %s: eventID=%s]' % (self.domain_id, self.pid_particle_pair[0], self.eventID)
 
 
 class NonInteractionSingle(Single):

@@ -23,21 +23,21 @@ N_K = 120
         
 cwd = os.getcwd()
 
-for ti_str in [ '1e-2', '1e-6' ]:
+for ti_str in ['1e-2', '1e-6']:
 
-    ti = float( ti_str )
+    ti = float(ti_str)
 
     if ti == 0:
         MODEL_FILE = MODEL_FILE0
         KI='invalid'
     else:
         MODEL_FILE = MODEL_FILE1
-        KI = math.log( 2 ) / ti
+        KI = math.log(2) / ti
 
 
-    for D_str in [ '%.3g'% 10 ** e for e in numpy.mgrid[-2:2.1:.1] ]:
+    for D_str in ['%.3g'% 10 ** e for e in numpy.mgrid[-2:2.1:.1]]:
 
-        D = float( D_str )
+        D = float(D_str)
 
         OUTFILE = '%s/Kpp_ODE_%s_%s.ecd' % (cwd,D_str,ti_str)
 
@@ -48,8 +48,8 @@ for ti_str in [ '1e-2', '1e-6' ]:
                           'N_KK': N_KK, 'N_P': N_P,
                           'N_KPP': N_KPP, 'N_K': N_K, 'KI': KI }
         
-        jobID = registerEcellSession( ESS_FILE, parameterDict, [ MODEL_FILE, ])
-        #jobs[ jobID ] = [ float(N_KK)/N_P, kpp_ratio ]
+        jobID = registerEcellSession(ESS_FILE, parameterDict, [MODEL_FILE, ])
+        #jobs[jobID] = [float(N_KK)/N_P, kpp_ratio]
 
 run()
 
@@ -59,4 +59,4 @@ run()
 
 #     #print " --- job id = %s ---" % jobID
 #     sys.stdout.write( '[%s, %s],' % ( jobs[jobID][0],
-#                                   getStdout( jobID ) ) )
+#                                   getStdout(jobID) ) )

@@ -23,14 +23,14 @@ ti_str = '1e-2'
 #ti_str = '1e-6'
 #ti_str = '0'
 
-ti = float( ti_str )
+ti = float(ti_str)
 
 if ti == 0:
     MODEL_FILE = MODEL_FILE0
     KI='invalid'
 else:
     MODEL_FILE = MODEL_FILE1
-    KI = math.log( 2 ) / ti
+    KI = math.log(2) / ti
 
 kpp_ratio = 0.5
 for N_KK in N_KK_list:
@@ -44,8 +44,8 @@ for N_KK in N_KK_list:
                       'N_KK': N_KK, 'N_P': N_P,
                       'N_KPP': N_KPP, 'N_K': N_K, 'KI': KI }
         
-    jobID = registerEcellSession( ESS_FILE, parameterDict, [ MODEL_FILE, ])
-    jobs[ jobID ] = [ float(N_KK)/N_P, kpp_ratio ]
+    jobID = registerEcellSession(ESS_FILE, parameterDict, [MODEL_FILE, ])
+    jobs[jobID] = [float(N_KK)/N_P, kpp_ratio]
 
 run()
 
@@ -54,5 +54,5 @@ import sys
 for jobID in jobs.keys():
 
     #print " --- job id = %s ---" % jobID
-    sys.stdout.write( '[%s, %s],' % ( jobs[jobID][0],
-                                  getStdout( jobID ) ) )
+    sys.stdout.write('[%s, %s],' % (jobs[jobID][0],
+                                getStdout(jobID)))

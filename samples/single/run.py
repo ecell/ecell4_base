@@ -9,14 +9,14 @@
 from egfrd import *
 import sys
 
-def run( outfilename, T, S, N ):
+def run(outfilename, T, S, N):
     print outfilename
 
-    outfile = open( outfilename, 'w' )
+    outfile = open(outfilename, 'w')
 
-    for i in range( N ):
-        d, t = singlerun( T, S )
-        outfile.write( '%g\n' % d )
+    for i in range(N):
+        d, t = singlerun(T, S)
+        outfile.write('%g\n' % d)
 
         #print i
         assert t == T
@@ -25,20 +25,20 @@ def run( outfilename, T, S, N ):
 
 
 
-def singlerun( T, S ):
+def singlerun(T, S):
 
     w = World(1e-3, 3)
     s = EGFRDSimulator(w)
 
-    s.setUserMaxShellSize( S )
+    s.setUserMaxShellSize(S)
 
     m = ParticleModel()
 
-    A = m.new_species_type( 'A', 1e-12, 5e-9 )
+    A = m.new_species_type('A', 1e-12, 5e-9)
 
-    s.setModel( m )
+    s.setModel(m)
 
-    particleA = s.placeParticle( A, [0,0,0] )
+    particleA = s.placeParticle(A, [0,0,0])
 
     endTime = T
     s.step()
@@ -46,7 +46,7 @@ def singlerun( T, S ):
     while 1:
         nextTime = s.getNextTime()
         if nextTime > endTime:
-            s.stop( endTime )
+            s.stop(endTime)
             break
         s.step()
 
@@ -62,6 +62,6 @@ def first(x):
         return None
 
 if __name__ == '__main__':
-    run( sys.argv[1], float( sys.argv[2] ), float( sys.argv[3] ),
-         int( sys.argv[4] ) )
+    run(sys.argv[1], float(sys.argv[2]), float(sys.argv[3]),
+        int(sys.argv[4]))
 

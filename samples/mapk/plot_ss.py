@@ -266,14 +266,14 @@ theory_0 = [
 ],[59.0, 0.991700720896],
 ]
 
-def file_mean( filename, skip ):
-    ycolumns = [1,]
+def file_mean(filename, skip):
+    ycolumns = [1, ]
     #ycolumns = [2,6]
     #ycolumns = [3,5]
     #ycolumns = [2,6,3,5]
 
-    f = open( filename )
-    f.seek( -1000, os.SEEK_END )
+    f = open(filename)
+    f.seek(-1000, os.SEEK_END)
     lines = f.readlines()
 
     lastline = lines[-1]
@@ -282,16 +282,16 @@ def file_mean( filename, skip ):
     if lastlinedata[0] < skip-1:
             raise 'oops'
 
-    y = float( lastlinedata[1] )
+    y = float(lastlinedata[1])
 
     return y
 
     
-#     data = load( filename )
+#     data = load(filename)
 #     x = data[:,0]
 #     y = data[:,ycolumns[0]]
 
-#     start = x.searchsorted( skip ) - 1
+#     start = x.searchsorted(skip) - 1
 #     if len(x)<=start:
 #         return None
 
@@ -303,7 +303,7 @@ def file_mean( filename, skip ):
 
 #     xdiff = x[1:] - x[:-1] 
 #     yscaled = y[:-1] * xdiff
-#     yscaledmean = yscaled.sum() / ( x[-1] - x[0] )
+#     yscaledmean = yscaled.sum() / (x[-1] - x[0])
 #     print yscaledmean, y.mean()
 #     #return y.mean()
 #     return yscaledmean
@@ -351,28 +351,28 @@ for D_ratio_str in ['0.03125','0.0625','0.25','1','4']:
     mean = []
     std_err = []
 
-    for N_KK in range( 1, 60 ):
+    for N_KK in range(1, 60):
         globpattern = \
-            '_'.join( ( model, V_str, D_ratio_str, str( N_KK ), '*',
-                        N_K_total_str, ti_str,\
-                            '*' ) ) +\
+            '_'.join((model, V_str, D_ratio_str, str(N_KK), '*',
+                      N_K_total_str, ti_str,\
+                          '*')) +\
                             '_tc.dat'
 
-        filelist = glob.glob( dir + os.sep + globpattern )
+        filelist = glob.glob(dir + os.sep + globpattern)
 
         print globpattern
 
         if not filelist:
             continue
         
-        for N_P in range( 60 ):
+        for N_P in range(60):
 
             fnpattern = \
-                '_'.join( ( model, V_str, D_ratio_str, str( N_KK ), str( N_P ),
-                            N_K_total_str, ti_str,\
-                                '*' ) ) +\
+                '_'.join((model, V_str, D_ratio_str, str(N_KK), str(N_P),
+                          N_K_total_str, ti_str,\
+                              '*')) +\
                                 '_tc.dat'
-            filelist2 = fnmatch.filter( filelist, dir + os.sep + fnpattern )
+            filelist2 = fnmatch.filter(filelist, dir + os.sep + fnpattern)
             if not filelist2:
                 continue
             #print filelist2
@@ -382,16 +382,16 @@ for D_ratio_str in ['0.03125','0.0625','0.25','1','4']:
 
             for file in filelist2:
                 print file
-                res = file_mean( file, skip )
+                res = file_mean(file, skip)
 
-                data.append( res )
+                data.append(res)
 
-            data = numpy.array( data )
-            data /= int( N_K_total_str )
+            data = numpy.array(data)
+            data /= int(N_K_total_str)
             
-            x.append( float(N_KK)/float(N_P) )
-            mean.append( data.mean() )
-            std_err.append( data.std()/math.sqrt(len(data)) )
+            x.append(float(N_KK)/float(N_P))
+            mean.append(data.mean())
+            std_err.append(data.std()/math.sqrt(len(data)))
 
             print x, mean, std_err
 
@@ -399,14 +399,14 @@ for D_ratio_str in ['0.03125','0.0625','0.25','1','4']:
 
 
     axes([.14,.14,.8,.8])
-    line=semilogx( x, mean )
+    line=semilogx(x, mean)
     lines.append(line)
-    errorbar( x, mean, yerr=std_err, fmt='k+' )
+    errorbar(x, mean, yerr=std_err, fmt='k+')
 
 #     axes([.62,.20,.29,.29])
-#     plot( x, mean )
+#     plot(x, mean)
 
-    #errorbar( x2, mean2, yerr=std_err, fmt='k+' )
+    #errorbar(x2, mean2, yerr=std_err, fmt='k+')
 
 tx, ty = theory[:,0], theory[:,1]
 ptx, pty = theory_processive[:,0], theory_processive[:,1]
@@ -425,28 +425,28 @@ mean = []
 std_err = []
 
 
-for N_KK in range( 1, 60 ):
+for N_KK in range(1, 60):
     globpattern = \
-        '_'.join( ( model, V_str, D_ratio_str, str( N_KK ), '*',\
-                    N_K_total_str, ti_str,\
-                        '*' ) ) +\
+        '_'.join((model, V_str, D_ratio_str, str(N_KK), '*',\
+                  N_K_total_str, ti_str,\
+                      '*')) +\
                         '_tc.dat'
 
-    filelist = glob.glob( dir + os.sep + globpattern )
+    filelist = glob.glob(dir + os.sep + globpattern)
 
     print globpattern
 
     if not filelist:
         continue
         
-    for N_P in range( 1,60 ):
+    for N_P in range(1,60):
 
         fnpattern = \
-            '_'.join( ( model, V_str, D_ratio_str, str( N_KK ), str( N_P ),\
-                        N_K_total_str, ti_str,\
-                            '*' ) ) +\
+            '_'.join((model, V_str, D_ratio_str, str(N_KK), str(N_P),\
+                      N_K_total_str, ti_str,\
+                          '*')) +\
                             '_tc.dat'
-        filelist2 = fnmatch.filter( filelist, dir + os.sep + fnpattern )
+        filelist2 = fnmatch.filter(filelist, dir + os.sep + fnpattern)
         if not filelist2:
             continue
 
@@ -454,16 +454,16 @@ for N_KK in range( 1, 60 ):
 
         for file in filelist2:
             print file
-            res = file_mean( file, skip )
+            res = file_mean(file, skip)
 
-            data.append( res )
+            data.append(res)
 
-        data = numpy.array( data )
-        data /= int( N_K_total_str )
+        data = numpy.array(data)
+        data /= int(N_K_total_str)
             
-        x.append( float(N_KK)/float(N_P) )
-        mean.append( data.mean() )
-        std_err.append( data.std()/math.sqrt(len(data)) )
+        x.append(float(N_KK)/float(N_P))
+        mean.append(data.mean())
+        std_err.append(data.std()/math.sqrt(len(data)))
 
         print x, mean, std_err
 
@@ -471,25 +471,25 @@ for N_KK in range( 1, 60 ):
 
 
 axes([.14,.14,.8,.8])
-line=semilogx( x, mean, 'b--', linewidth=2 )
+line=semilogx(x, mean, 'b--', linewidth=2)
 lines.append(line)
 # axes([.62,.20,.29,.29])
-# plot( x, mean, 'b--', lw=2 )
+# plot(x, mean, 'b--', lw=2)
 
 #ODE
 axes([.14,.14,.8,.8])
-lines.append( semilogx( ptx, pty, 'k--', linewidth=2 ) )
-lines.append( semilogx( tx, ty, 'k-', linewidth=2 ) )
+lines.append(semilogx(ptx, pty, 'k--', linewidth=2))
+lines.append(semilogx(tx, ty, 'k-', linewidth=2))
 
 
 axes([.14,.14,.8,.8])
 
-xlim( [0.005,200] )
-ylim( [-0.02, 1.01] )
-xticks( [1e-2, 1e-1, 1, 1e1, 1e2], ['0.01', '0.1', '1', '10', '100'], size=22 )
-yticks( [0,0.5,1],size=22 )
-xlabel(r'$\rm{[KK] / [P]}$', size=28 )
-ylabel(r'$\rm{[Kpp] / [K]_{total}}$', size=28 )
+xlim([0.005,200])
+ylim([-0.02, 1.01])
+xticks([1e-2, 1e-1, 1, 1e1, 1e2], ['0.01', '0.1', '1', '10', '100'], size=22)
+yticks([0,0.5,1],size=22)
+xlabel(r'$\rm{[KK] / [P]}$', size=28)
+ylabel(r'$\rm{[Kpp] / [K]_{total}}$', size=28)
 
 
 #grid()
@@ -516,12 +516,12 @@ for l in leg.get_lines():
 
 # inset
 # axes([.62,.20,.29,.29])
-# plot( ptx, pty, 'k--', linewidth=2 )
-# plot( tx, ty, 'k-', linewidth=2 )
-# xlim( [0.001,1] )
-# ylim( [-0.02,0.4] )
-# xticks( [.1,.5,1],size=18 )
-# yticks( [0,.1,.2,.3,.4,.5],size=18 )
+# plot(ptx, pty, 'k--', linewidth=2)
+# plot(tx, ty, 'k-', linewidth=2)
+# xlim([0.001,1])
+# ylim([-0.02,0.4])
+# xticks([.1,.5,1],size=18)
+# yticks([0,.1,.2,.3,.4,.5],size=18)
 show()
-#savefig( outdir + '/' + figtitle + '.png', dpi=80 )
+#savefig(outdir + '/' + figtitle + '.png', dpi=80)
 

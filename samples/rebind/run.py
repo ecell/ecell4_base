@@ -12,7 +12,7 @@ from egfrd import *
 from bd import *
 import sys
 
-def run( outfilename, D_factor, N_B, N_X, N ):
+def run(outfilename, D_factor, N_B, N_X, N):
     print outfilename
 
     radius = 2.5e-9
@@ -23,32 +23,32 @@ def run( outfilename, D_factor, N_B, N_X, N ):
     tau = sigma**2 / D_tot
     print 'tau=', tau
 
-    #T_list = [ tau * .1, INF ]
-    T_list = [ INF ]
+    #T_list = [tau * .1, INF]
+    T_list = [INF]
 
-    outfile_t = open( outfilename + '_t.dat', 'w' )
-    #outfile_r_list = [ open( outfilename + '_r_-1.dat', 'w' ) ] 
+    outfile_t = open(outfilename + '_t.dat', 'w')
+    #outfile_r_list = [open(outfilename + '_r_-1.dat', 'w')] 
 
-    for i in range( N ):
-        r_list, t_list = singlerun( T_list, D_factor, N_B, N_X )
+    for i in range(N):
+        r_list, t_list = singlerun(T_list, D_factor, N_B, N_X)
 
         for t in t_list:
-            outfile_t.write( '%g\n' % t )
+            outfile_t.write('%g\n' % t)
 
-        #for j in range( len( r_list ) ):
-        #    outfile_r_list[j].write( '%g\n' % r_list[j] )
+        #for j in range(len(r_list)):
+        #    outfile_r_list[j].write('%g\n' % r_list[j])
 
         print i, r_list, t_list
         outfile_t.flush()
-        #[ outfile_r.flush() for outfile_r in outfile_r_list ]
+        #[outfile_r.flush() for outfile_r in outfile_r_list]
 
 
     outfile_t.close()
-    #[ outfile_r.close() for outfile_r in outfile_r_list ]
+    #[outfile_r.close() for outfile_r in outfile_r_list]
 
 
 
-def singlerun( T_list, D_factor, N_B, N_X ):
+def singlerun(T_list, D_factor, N_B, N_X):
 
     # 100 nM = 100e-9 * N_A * 100 / m^3 = 6.02e19
     # V = 1 / 6.02e19 = 1.66e-20 m^3
@@ -63,15 +63,15 @@ def singlerun( T_list, D_factor, N_B, N_X ):
     V = 1e-18 # m^3
     L = V ** (1.0/3.0) 
 
-    matrixSize = min( max( 3, int( (9 * (N_X+N_B)) ** (1.0/3.0) ) ), 60 )
+    matrixSize = min(max(3, int((9 * (N_X+N_B)) ** (1.0/3.0))), 60)
     print 'matrixSize=', matrixSize
 
     w = World(L, matrixSize)
     s = EGFRDSimulator(w)
-    #s.setUserMaxShellSize( 1e-6 )
+    #s.setUserMaxShellSize(1e-6)
     #s = BDSimulator(w)
 
-    box1 = CuboidalRegion( [0,0,0],[L,L,L] )
+    box1 = CuboidalRegion([0,0,0],[L,L,L])
 
     radius = 2.5e-9
     sigma = radius * 2
@@ -83,66 +83,66 @@ def singlerun( T_list, D_factor, N_B, N_X ):
 
     #kf = 1000 * sigma * D_tot
 
-    # 1e9 [ 1 / (M s) ] -> 1e9 / 1000 / N_A [ m^3 / s ]
+    # 1e9 [1 / (M s)] -> 1e9 / 1000 / N_A [m^3 / s]
     kf = 0.092e-18
 
     m = ParticleModel()
 
-    A = m.new_species_type( 'A', D, radius )
-    B = m.new_species_type( 'B', D, radius )
-    C = m.new_species_type( 'C', D, radius )
+    A = m.new_species_type('A', D, radius)
+    B = m.new_species_type('B', D, radius)
+    C = m.new_species_type('C', D, radius)
 
     DX = D * DX_factor
 
-    X = m.new_species_type( 'X', DX, radius )
+    X = m.new_species_type('X', DX, radius)
 
     if N_X != 0:
-        s.throwInParticles( X, N_X, box1 )
+        s.throwInParticles(X, N_X, box1)
 
         endTime = tau * 1
         while 1:
             s.step()
             nextTime = s.getNextTime()
             if nextTime > endTime:
-                s.stop( endTime )
+                s.stop(endTime)
                 break
 
 
     s.reset()
 
-    r1 = createBindingReactionRule( A, B, C, kf )
-    m.network_rules.add_reaction_rule( r1 )
+    r1 = createBindingReactionRule(A, B, C, kf)
+    m.network_rules.add_reaction_rule(r1)
 
-    r2 = createUnbindingReactionRule( C, A, B, 1e3 )
-    m.network_rules.add_reaction_rule( r2 )
+    r2 = createUnbindingReactionRule(C, A, B, 1e3)
+    m.network_rules.add_reaction_rule(r2)
 
-    s.setModel( m )
+    s.setModel(m)
 
     A_pos = [0,0,0]
     B_pos = [(float(A['radius']) + float(B['radius']))+1e-23,0,0]
 
     while 1:
-        pp = s.getParticlesWithinRadius( A_pos, float(A['radius']) )
+        pp = s.getParticlesWithinRadius(A_pos, float(A['radius']))
         if not pp:
             break
         for p in pp:
-            s.removeParticle( p )
-        s.throwInParticles( X, len( pp ), box1 )
+            s.removeParticle(p)
+        s.throwInParticles(X, len(pp), box1)
 
-    s.placeParticle( A, A_pos )
+    s.placeParticle(A, A_pos)
 
     while 1:
-        pp = s.getParticlesWithinRadius( B_pos, float(B['radius']) )
+        pp = s.getParticlesWithinRadius(B_pos, float(B['radius']))
         if not pp:
             break
         for p in pp:
-            s.removeParticle( p )
-        s.throwInParticles( X, len( pp ), box1 )    
+            s.removeParticle(p)
+        s.throwInParticles(X, len(pp), box1)    
 
-    s.placeParticle( B, B_pos )
+    s.placeParticle(B, B_pos)
 
     if N_B > 1:
-        s.throwInParticles( B, N_B-1, box1 )
+        s.throwInParticles(B, N_B-1, box1)
 
     r_list = []
     t_list = []
@@ -162,21 +162,21 @@ def singlerun( T_list, D_factor, N_B, N_X ):
                 t_last = s.t  # set t_last
             else:    # C
                 print 'reaction: ', s.t - t_last
-                t_list.append( s.t - t_last )
+                t_list.append(s.t - t_last)
 
         nextTime = s.getNextTime()
         if nextTime > nextStop:
             print 'stop', i_T, nextStop
-            s.stop( nextStop )
+            s.stop(nextStop)
             if len(s.particlePool[C.id]) != 0:  #A,B
-                r_list.append( 0 )
+                r_list.append(0)
             else:
                 r_list.append(s.distance_between_particles(A.id, B.id))
 
             i_T += 1
             nextStop = T_list[i_T]
         
-        if nextStop == INF and len( t_list ) != 0:
+        if nextStop == INF and len(t_list) != 0:
             print 'break', s.t
             break
 
@@ -189,7 +189,7 @@ if __name__ == '__main__':
 
     import os
 
-    outfilename = 'data/rebind_' + '_'.join( sys.argv[1:4] ) +\
+    outfilename = 'data/rebind_' + '_'.join(sys.argv[1:4]) +\
         '_' #+ os.environ['SGE_TASK_ID']
-    run( outfilename, float( sys.argv[1] ), 
-         int( sys.argv[2] ), int( sys.argv[3] ), int( sys.argv[4] ) )
+    run(outfilename, float(sys.argv[1]), 
+        int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]))

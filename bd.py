@@ -20,7 +20,7 @@ log = logging.getLogger('ecell')
 
 DEFAULT_DT_FACTOR = 1e-5
 
-class BDSimulatorCoreBase( object ):
+class BDSimulatorCoreBase(object):
     '''
     BDSimulatorCore borrows the following from the main simulator:
     - speciesList
@@ -28,8 +28,8 @@ class BDSimulatorCoreBase( object ):
     
     '''
 
-    def __init__( self, main ):
-        self.main = weakref.proxy( main )
+    def __init__(self, main):
+        self.main = weakref.proxy(main)
 
         self.particleList = set()
 
@@ -46,62 +46,62 @@ class BDSimulatorCoreBase( object ):
 
         self.P_acct = {}
 
-    def initialize( self ):
+    def initialize(self):
         self.determineDt()
 
     #@staticmethod  # requires python 2.4 or later.
-    def calculateBDDt( self, speciesList, factor ):
+    def calculateBDDt(self, speciesList, factor):
         D_list = []
         radius_list = []
         for species in speciesList:
             if self.main.particlePool[species.id]:
-                D_list.append( species.D )
-                radius_list.append( species.radius )
-        D_max = max( D_list ) * 2  # max relative diffusion speed
-        radius_min = min( radius_list )
+                D_list.append(species.D)
+                radius_list.append(species.radius)
+        D_max = max(D_list) * 2  # max relative diffusion speed
+        radius_min = min(radius_list)
         sigma_min = radius_min * 2
 
         dt = factor * sigma_min ** 2 / D_max  
         if __debug__:
-            log.debug( 'bd dt = %g' % dt )
+            log.debug('bd dt = %g' % dt)
 
         return dt
 
 
-    def clearParticleList( self ):
+    def clearParticleList(self):
         self.particleList = set()
 
-    def addToParticleList( self, pid ):
-        assert type( pid ) is ParticleID
-        self.particleList.add( pid )
+    def addToParticleList(self, pid):
+        assert type(pid) is ParticleID
+        self.particleList.add(pid)
 
-    def removeFromParticleList( self, pid ):
-        self.particleList.remove( pid )
+    def removeFromParticleList(self, pid):
+        self.particleList.remove(pid)
 
-    def getNextTime( self ):
+    def getNextTime(self):
         return self.t + self.dt
 
-    def stop( self, t ):
+    def stop(self, t):
         # dummy
         self.t = t
 
-    def determineDt( self ):
-        self.dt = self.calculateBDDt( self.main.world.species, self.dtFactor )
+    def determineDt(self):
+        self.dt = self.calculateBDDt(self.main.world.species, self.dtFactor)
 
-    def getP_acct( self, rt, D, sigma ):
+    def getP_acct(self, rt, D, sigma):
         try:
-            return self.P_acct[ rt ]
+            return self.P_acct[rt]
         except KeyError:
-            I = _gfrd.I_bd( sigma, self.dt, D )
-            p = rt.k * self.dt / ( I * 4.0 * numpy.pi )
+            I = _gfrd.I_bd(sigma, self.dt, D)
+            p = rt.k * self.dt / (I * 4.0 * numpy.pi)
             if not 0.0 <= p < 1.0:
                 raise RuntimeError,\
                     'Invalid acceptance ratio (%s) for reaction %s.' \
-                    % ( p, rt )
-            self.P_acct[ rt ] = p
+                    % (p, rt)
+            self.P_acct[rt] = p
             return p
 
-    def step( self ):
+    def step(self):
         self.stepCounter += 1
         self.lastReaction = None
 
@@ -109,7 +109,7 @@ class BDSimulatorCoreBase( object ):
 
         self.t += self.dt
 
-    def propagate( self ):
+    def propagate(self):
         self.particlesToStep = list(self.particleList)
         myrandom.shuffle(self.particlesToStep)
         while self.particlesToStep:
@@ -120,10 +120,10 @@ class BDSimulatorCoreBase( object ):
             rt1 = self.attemptSingleReactions(sid)
             if rt1:
                 try:
-                    self.fireReaction1( particle, rt1 )
+                    self.fireReaction1(particle, rt1)
                 except NoSpace:
                     if __debug__:
-                        log.info( 'fireReaction1 rejected.' )
+                        log.info('fireReaction1 rejected.')
                 continue
 
             D = pid_particle_pair[1].D
@@ -139,12 +139,12 @@ class BDSimulatorCoreBase( object ):
 
             neighbors = self.getParticlesWithinRadius(
                 newpos, pid_particle_pair[1].radius,
-                ignore=[pid_particle_pair[0]] )
+                ignore=[pid_particle_pair[0]])
             if neighbors:
 
-                if len( neighbors ) >= 2:
+                if len(neighbors) >= 2:
                     if __debug__:
-                        log.info( 'collision two or more particles; move rejected' )
+                        log.info('collision two or more particles; move rejected')
                     continue
 
                 closest = neighbors[0][0]
@@ -154,23 +154,23 @@ class BDSimulatorCoreBase( object ):
                     radius12 = pid_particle_pair[1].radius + closest[1].radius
                     D12 = D + closest[1].D
 
-                    p = self.getP_acct( rt, D12, radius12 )
+                    p = self.getP_acct(rt, D12, radius12)
 
                     rnd = myrandom.uniform()
 
                     if p > rnd:
                         if __debug__:
-                            log.info( 'fire reaction2' )
+                            log.info('fire reaction2')
                         try:
-                            self.fireReaction2( pid_particle_pair, closest, rt )
+                            self.fireReaction2(pid_particle_pair, closest, rt)
                         except NoSpace:
                             if __debug__:
-                                log.info( 'fireReaction2 move rejected' )
+                                log.info('fireReaction2 move rejected')
                         continue
 
                 else:
                     if __debug__:
-                        log.info( 'collision move rejected' )
+                        log.info('collision move rejected')
 
                 continue
 
@@ -183,7 +183,7 @@ class BDSimulatorCoreBase( object ):
                                             pid_particle_pair[1].sid)))
             except NoSpace:
                 if __debug__:
-                    log.info( 'propagation move rejected.' )
+                    log.info('propagation move rejected.')
 
     def attemptSingleReactions(self, sid):
         reactionTypes = self.main.getReactionRule1(sid)
@@ -193,51 +193,51 @@ class BDSimulatorCoreBase( object ):
         rnd = myrandom.uniform() / self.dt
 
         # handle the most common case efficiently.
-        if len( reactionTypes ) == 1:  
+        if len(reactionTypes) == 1:  
             if reactionTypes[0].k >= rnd:
                 return reactionTypes[0]
             else:
                 return None
 
         # if there are more than one possible reaction types..
-        k_array = numpy.add.accumulate( [ rt.k for rt in reactionTypes ] )
+        k_array = numpy.add.accumulate([rt.k for rt in reactionTypes])
 
         if k_array[-1] < rnd:
             return None
 
-        i = numpy.searchsorted( k_array, rnd )
+        i = numpy.searchsorted(k_array, rnd)
 
         return reactionTypes[i]
 
-    def fireReaction1( self, particle, rt ):
+    def fireReaction1(self, particle, rt):
         oldpos = particle.position
 
-        if len( rt.products ) == 0:
+        if len(rt.products) == 0:
             
-            self.removeParticle( particle )
+            self.removeParticle(particle)
 
-            self.lastReaction = Reaction( rt, [particle], [] )
+            self.lastReaction = Reaction(rt, [particle], [])
             
-        elif len( rt.products ) == 1:
+        elif len(rt.products) == 1:
             
             productSpecies = rt.products[0]
             radius = productSpecies.radius
 
-            if self.checkOverlap( oldpos, radius,
-                                  ignore = [ particle, ] ):
+            if self.checkOverlap(oldpos, radius,
+                                 ignore = [particle, ]):
                 if __debug__:
-                    log.info( 'no space for product particle.' )
+                    log.info('no space for product particle.')
                 raise NoSpace()
 
-            self.clearVolume( oldpos, radius, ignore = [ particle ] )
+            self.clearVolume(oldpos, radius, ignore = [particle])
                 
-            self.removeParticle( particle )
-            newparticle = self.createParticle( productSpecies.id, oldpos )
+            self.removeParticle(particle)
+            newparticle = self.createParticle(productSpecies.id, oldpos)
 
-            self.lastReaction = Reaction( rt, [particle], [newparticle] )
+            self.lastReaction = Reaction(rt, [particle], [newparticle])
 
             
-        elif len( rt.products ) == 2:
+        elif len(rt.products) == 2:
             
             productSpecies1 = rt.products[0]
             productSpecies2 = rt.products[1]
@@ -253,7 +253,7 @@ class BDSimulatorCoreBase( object ):
             for i in range(self.main.dissociation_retry_moves):
 
                 rnd = myrandom.uniform()
-                pairDistance = _gfrd.drawR_gbd( rnd, radius12, self.dt, D12 )
+                pairDistance = _gfrd.drawR_gbd(rnd, radius12, self.dt, D12)
 
                 unitVector = randomUnitVector()
                 vector = unitVector * pairDistance # * (1.0 + 1e-10) # safety
@@ -261,41 +261,41 @@ class BDSimulatorCoreBase( object ):
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.
                 # FIXME: what if D1 == D2 == 0?
-                newpos1 = oldpos + vector * ( D1 / D12 )
-                newpos2 = oldpos - vector * ( D2 / D12 )
+                newpos1 = oldpos + vector * (D1 / D12)
+                newpos2 = oldpos - vector * (D2 / D12)
             
-                newpos1 = self.main.applyBoundary( newpos1 )
-                newpos2 = self.main.applyBoundary( newpos2 )
+                newpos1 = self.main.applyBoundary(newpos1)
+                newpos2 = self.main.applyBoundary(newpos2)
 
                 # accept the new positions if there is enough space.
-                if (not self.checkOverlap( newpos1, radius1,
-                                          ignore = [ particle, ])) and \
-                   (not self.checkOverlap( newpos2, radius2,
-                                          ignore = [ particle, ])):
+                if (not self.checkOverlap(newpos1, radius1,
+                                         ignore = [particle, ])) and \
+                   (not self.checkOverlap(newpos2, radius2,
+                                         ignore = [particle, ])):
                     break
             else:
                 if __debug__:
-                    log.info( 'no space for product particles.' )
+                    log.info('no space for product particles.')
                 raise NoSpace()
 
-            self.clearVolume( newpos1, radius1, ignore = [ particle ] )
-            self.clearVolume( newpos2, radius2, ignore = [ particle ] )
+            self.clearVolume(newpos1, radius1, ignore = [particle])
+            self.clearVolume(newpos2, radius2, ignore = [particle])
 
             # move accepted
-            self.removeParticle( particle )
+            self.removeParticle(particle)
 
-            newparticle1 = self.createParticle( productSpecies1.id, newpos1 )
-            newparticle2 = self.createParticle( productSpecies2.id, newpos2 )
+            newparticle1 = self.createParticle(productSpecies1.id, newpos1)
+            newparticle2 = self.createParticle(productSpecies2.id, newpos2)
 
-            self.lastReaction = Reaction( rt, [particle], 
-                                          [newparticle1, newparticle2] )
+            self.lastReaction = Reaction(rt, [particle], 
+                                         [newparticle1, newparticle2])
 
         else:
             raise RuntimeError, 'num products >= 3 not supported.'
 
         self.reactionEvents += 1
 
-    def fireReaction2( self, pid_particle_pair1, pid_particle_pair2, rt ):
+    def fireReaction2(self, pid_particle_pair1, pid_particle_pair2, rt):
         if len(rt.products) == 1:
             productSpecies = rt.products[0]
 
@@ -304,7 +304,7 @@ class BDSimulatorCoreBase( object ):
 
             pos2t = cyclic_transpose(pid_particle_pair1[1].position,
                                      pid_particle_pair2[1].position,
-                                     self.main.world.world_size )
+                                     self.main.world.world_size)
             newPos = (D2 * pid_particle_pair1[1].position + D1 * pos2t) / (D1 + D2)
             newPos = self.main.applyBoundary(newPos)
 
@@ -337,27 +337,27 @@ class BDSimulatorCoreBase( object ):
             raise NotImplementedError,\
                 'num products >= 2 not supported.'
 
-    def check( self ):
+    def check(self):
         # particles don't overlap
 
         for pid, particle in self.main.world:
-            assert not self.checkOverlap( particle.position, particle.radius,
-                                          ignore=[pid,] )
+            assert not self.checkOverlap(particle.position, particle.radius,
+                                         ignore=[pid, ])
 
 
-class BDSimulatorCore( BDSimulatorCoreBase ):
-    def __init__( self, main ):
-        BDSimulatorCoreBase.__init__( self, main )
+class BDSimulatorCore(BDSimulatorCoreBase):
+    def __init__(self, main):
+        BDSimulatorCoreBase.__init__(self, main)
 
-    def getParticlesWithinRadius( self, pos, radius, ignore=[] ): 
-        return self.main.getParticlesWithinRadius( pos, radius, ignore )
+    def getParticlesWithinRadius(self, pos, radius, ignore=[]): 
+        return self.main.getParticlesWithinRadius(pos, radius, ignore)
 
-    def initialize( self ):
-        BDSimulatorCoreBase.initialize( self )
+    def initialize(self):
+        BDSimulatorCoreBase.initialize(self)
 
         self.updateParticleList()
 
-    def updateParticleList( self ):
+    def updateParticleList(self):
         self.clearParticleList()
         for s in self.main.world.species:
             for pid in self.main.particlePool[s.id]:
@@ -370,7 +370,7 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
     def moveParticle(self, pid_particle_pair):
         return self.main.moveParticle(pid_particle_pair)
 
-    def checkOverlap( self, pos, radius, ignore=() ):
+    def checkOverlap(self, pos, radius, ignore=()):
         return self.main.getParticlesWithinRadius(pos, radius, ignore)
 
     def removeParticle(self, pid_particle_pair):
@@ -378,10 +378,10 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
         self.removeFromParticleList(pid_particle_pair[0])
 
     def createParticle(self, sid, pos):
-        particle = self.main.createParticle( sid, pos )
-        self.addToParticleList( particle[0] )
+        particle = self.main.createParticle(sid, pos)
+        self.addToParticleList(particle[0])
 
-    def clearVolume( self, pos, radius, ignore=[] ):
+    def clearVolume(self, pos, radius, ignore=[]):
         '''
         This method is a customization point for implementing
         BD in protective domains.
@@ -389,46 +389,46 @@ class BDSimulatorCore( BDSimulatorCoreBase ):
         pass
 
 
-class BDSimulator( ParticleSimulatorBase ):
+class BDSimulator(ParticleSimulatorBase):
     def __init__(self, world):
         ParticleSimulatorBase.__init__(self, world)
         self.core = BDSimulatorCore(self)
         self.isDirty = True
 
-    def t( self ):
+    def t(self):
         return self.core.t
 
-    def sett( self, t ):
+    def sett(self, t):
         self.core.t = t
 
     t = property(t, sett)
 
-    def getDt( self ):
+    def getDt(self):
         return self.core.dt
 
-    def getStepCounter( self ):
+    def getStepCounter(self):
         return self.core.stepCounter
 
-    dt = property( getDt )
-    stepCounter = property( getStepCounter )
+    dt = property(getDt)
+    stepCounter = property(getStepCounter)
 
 
-    def initialize( self ):
+    def initialize(self):
         self.core.initialize()
         self.isDirty = False
 
-    def getNextTime( self ):
+    def getNextTime(self):
         return self.core.t + self.core.dt
 
-    def reset( self ):
+    def reset(self):
         # DUMMY
         self.core.t=0
 
-    def stop( self, t ):
+    def stop(self, t):
         # dummy
-        self.core.stop( t )
+        self.core.stop(t)
 
-    def step( self ):
+    def step(self):
         self.reactionType = None
 
         if self.isDirty:
@@ -437,9 +437,9 @@ class BDSimulator( ParticleSimulatorBase ):
         self.core.step()
 
         if __debug__:
-            log.info( '%d: t=%g dt=%g, reactions=%d, rejectedMoves=%d' %
-                  ( self.stepCounter, self.t, self.dt, self.reactionEvents,
-                    self.rejectedMoves ) )
+            log.info('%d: t=%g dt=%g, reactions=%d, rejectedMoves=%d' %
+                 (self.stepCounter, self.t, self.dt, self.reactionEvents,
+                  self.rejectedMoves))
 
-    def check( self ):
+    def check(self):
         pass

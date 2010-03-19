@@ -1,7 +1,7 @@
 from _gfrd import *
 from greens_function_wrapper import *
 
-class Pair( object ):
+class Pair(object):
     """There are 3 types of pairs:
         * SphericalPair
         * PlanarSurfacePair
@@ -42,9 +42,9 @@ class Pair( object ):
         self.shell_list = [(shell_id, shell), ]
         self.domain_id = domain_id
 
-    def __del__( self ):
+    def __del__(self):
         if __debug__:
-            log.debug( 'del %s' % str( self ) )
+            log.debug('del %s' % str(self))
 
     def getCoM(self):
         return self.shell_list[0][1].shape.position
@@ -68,7 +68,7 @@ class Pair( object ):
     def get_shell_size(self):
         return self.shell_list[0][1].shape.radius
 
-    def get_D_tot( self ):
+    def get_D_tot(self):
         return self.single1.pid_particle_pair[1].D + \
                self.single2.pid_particle_pair[1].D
     D_tot = property(get_D_tot)
@@ -83,7 +83,7 @@ class Pair( object ):
                self.single2.pid_particle_pair[1].radius
     sigma = property(get_sigma)
 
-    def initialize( self, t ):
+    def initialize(self, t):
         self.lastTime = t
         self.dt = 0
         self.eventType = None
@@ -108,7 +108,7 @@ class Pair( object ):
         D_geom = math.sqrt(D1 * D2)
 
         assert r0 >= self.sigma, \
-            '%s;  r0 %g < sigma %g' % ( self, r0, self.sigma )
+            '%s;  r0 %g < sigma %g' % (self, r0, self.sigma)
 
         # equalize expected mean t_r and t_R.
         if ((D_geom - D2) * r0) / D_tot + shellSize +\
@@ -135,20 +135,20 @@ class Pair( object ):
         assert a_R + a_r * Da / D_tot + radius1 >= \
                a_R + a_r * Db / D_tot + radius2
 
-        assert abs(a_R + a_r * Da / D_tot + radiusa - shellSize ) \
+        assert abs(a_R + a_r * Da / D_tot + radiusa - shellSize) \
             < 1e-12 * shellSize
 
 
         if __debug__:
-          log.debug( 'a %g, r %g, R %g r0 %g' % 
-                  ( shellSize, a_r, a_R, r0 ) )
+          log.debug('a %g, r %g, R %g r0 %g' % 
+                 (shellSize, a_r, a_R, r0))
         if __debug__:
-          log.debug( 'tr %g, tR %g' % 
-                     ( ( ( a_r - r0 ) / math.sqrt(6 * self.D_tot))**2,\
-                           (a_R / math.sqrt( 6*self.D_R ))**2 ) )
+          log.debug('tr %g, tR %g' % 
+                    (((a_r - r0) / math.sqrt(6 * self.D_tot))**2,\
+                         (a_R / math.sqrt(6*self.D_R))**2))
         assert a_r > 0
-        assert a_r > r0, '%g %g' % ( a_r, r0 )
-        assert a_R > 0 or ( a_R == 0 and ( D1 == 0 or D2 == 0 ) )
+        assert a_r > r0, '%g %g' % (a_r, r0)
+        assert a_R > 0 or (a_R == 0 and (D1 == 0 or D2 == 0))
 
         return a_R, a_r
 
@@ -167,7 +167,7 @@ class Pair( object ):
             # reaction.
             return dt_iv, EventType.IV_EVENT, None
 
-    def draw_single_reaction_time_tuple( self ):
+    def draw_single_reaction_time_tuple(self):
         """Return a (reaction time, event type, reactingsingle)-tuple.
 
         """
@@ -205,7 +205,7 @@ class Pair( object ):
         newpos2 = new_com + new_iv * (D2 / self.D_tot)
         return newpos1, newpos2
 
-    def check( self ):
+    def check(self):
         pass
 
     def __str__(self):
@@ -240,12 +240,12 @@ class SphericalPair(Pair):
     def createNewShell(self, position, radius, domain_id):
         return SphericalShell(domain_id, Sphere(position, radius))
 
-    def choosePairGreensFunction( self, r0, t ):
+    def choosePairGreensFunction(self, r0, t):
         distanceFromSigma = r0 - self.sigma
         distanceFromShell = self.a_r - r0
 
         thresholdDistance = Pair.CUTOFF_FACTOR * \
-            math.sqrt( 6.0 * self.D_tot * t )
+            math.sqrt(6.0 * self.D_tot * t)
 
         if distanceFromSigma < thresholdDistance:
         
@@ -253,29 +253,29 @@ class SphericalPair(Pair):
                 # near both a and sigma;
                 # use FirstPassagePairGreensFunction
                 if __debug__:
-                    log.debug( 'GF: normal' )
+                    log.debug('GF: normal')
                 return self.iv_greens_function()
             else:
                 # near sigma; use BasicPairGreensFunction
                 if __debug__:
-                    log.debug( 'GF: only sigma' )
-                pgf = BasicPairGreensFunction( self.D_tot, self.rt.k, 
-                                               self.sigma )
+                    log.debug('GF: only sigma')
+                pgf = BasicPairGreensFunction(self.D_tot, self.rt.k, 
+                                              self.sigma)
                 return pgf
         else:
             if distanceFromShell < thresholdDistance:
                 # near a;
                 if __debug__:
-                    log.debug( 'GF: only a' )
-                pgf = FirstPassageNoCollisionPairGreensFunction( self.D_tot )
+                    log.debug('GF: only a')
+                pgf = FirstPassageNoCollisionPairGreensFunction(self.D_tot)
                 pgf.seta(self.a_r)
                 return pgf
                 
             else:
                 # distant from both a and sigma; 
                 if __debug__:
-                    log.debug( 'GF: free' )
-                pgf = FreePairGreensFunction( self.D_tot )
+                    log.debug('GF: free')
+                pgf = FreePairGreensFunction(self.D_tot)
                 return pgf
 
     def drawNewCoM(self, dt, eventType):
@@ -300,7 +300,7 @@ class SphericalPair(Pair):
         
         # the rotation axis is a normalized cross product of
         # the z-axis and the original vector.
-        # rotationAxis = crossproduct( [ 0,0,1 ], interParticle )
+        # rotationAxis = crossproduct([0,0,1], interParticle)
         angle = vectorAngleAgainstZAxis(old_iv)
         if angle % numpy.pi != 0.0:
             rotationAxis = crossproductAgainstZAxis(old_iv)
@@ -316,7 +316,7 @@ class SphericalPair(Pair):
         return 'Spherical' + Pair.__str__(self)
 
 
-class PlanarSurfacePair( Pair ):
+class PlanarSurfacePair(Pair):
     """2 Particles inside a (cylindrical) shell on a PlanarSurface. (Hockey 
     pucks).
 
@@ -383,7 +383,7 @@ class PlanarSurfacePair( Pair ):
         return 'PlanarSurface' + Pair.__str__(self)
 
 
-class CylindricalSurfacePair( Pair ):
+class CylindricalSurfacePair(Pair):
     """2 Particles inside a (cylindrical) shell on a CylindricalSurface. 
     (Rods).
 

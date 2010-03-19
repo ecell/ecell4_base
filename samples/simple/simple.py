@@ -10,21 +10,21 @@ w = World(size, 3)
 s = EGFRDSimulator(w)
 
 
-box1 = CuboidalRegion( [0,0,0],[size,size,size])
+box1 = CuboidalRegion([0,0,0],[size,size,size])
 # not supported yet
-#s.addSurface( box1 )
+#s.addSurface(box1)
 
-#P = Species( 'P', 1e-12, 5e-8 )
-P = Species( 'P', 1e-12, 3e-9 ) #hemo
-s.addSpecies( P )
+#P = Species('P', 1e-12, 5e-8)
+P = Species('P', 1e-12, 3e-9) #hemo
+s.addSpecies(P)
 
 s.setAllRepulsive()
 
-s.throwInParticles( P, 60, box1 )
+s.throwInParticles(P, 60, box1)
 
-l = Logger( s, 'simple' )
-l.setParticleOutput( ('P',) )
-l.setParticleOutInterval( 3.33e-4 )
+l = Logger(s, 'simple')
+l.setParticleOutput(('P', ))
+l.setParticleOutInterval(3.33e-4)
 l.log()
 
 while s.t < .1:
@@ -34,7 +34,7 @@ while s.t < .1:
 
 
 # def profrun():
-#     for i in range( 100 ):
+#     for i in range(100):
 #         s.step()
 
 # import profile

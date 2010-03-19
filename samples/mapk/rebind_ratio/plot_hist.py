@@ -7,29 +7,29 @@
 
 # t_half = 1e-6
 
-rfiles = [ 'mapk3_1e-15_0.03125_fixed_1e-6_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_0.0625_fixed_1e-6_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_1_fixed_1e-6_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_4_fixed_1e-6_normal_ALL_reactions.rebind' ] 
+rfiles = ['mapk3_1e-15_0.03125_fixed_1e-6_normal_ALL_reactions.rebind',
+          'mapk3_1e-15_0.0625_fixed_1e-6_normal_ALL_reactions.rebind',
+          'mapk3_1e-15_0.25_fixed_1e-6_normal_ALL_reactions.rebind',
+          'mapk3_1e-15_1_fixed_1e-6_normal_ALL_reactions.rebind',
+          'mapk3_1e-15_4_fixed_1e-6_normal_ALL_reactions.rebind'] 
 sfiles = []
 
 
 # t_half = 1e-2
 
-rfiles = [ 'mapk3_1e-15_0.03125_fixed_1e-2_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_0.0625_fixed_1e-2_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind',
-           'mapk3_1e-15_4_fixed_1e-2_normal_ALL_reactions.rebind' ]
+rfiles = ['mapk3_1e-15_0.03125_fixed_1e-2_normal_ALL_reactions.rebind',
+          'mapk3_1e-15_0.0625_fixed_1e-2_normal_ALL_reactions.rebind',
+          'mapk3_1e-15_0.25_fixed_1e-2_normal_ALL_reactions.rebind',
+          'mapk3_1e-15_1_fixed_1e-2_normal_ALL_reactions.rebind',
+          'mapk3_1e-15_4_fixed_1e-2_normal_ALL_reactions.rebind']
 sfiles=[]
 sdir = 's02/data/'
 
-sfiles = [ 'model3-smallt_0.03125_1e-2_ALL_t.dat',
-           'model3-smallt_0.0625_1e-2_ALL_t.dat',
-           'model3-smallt_0.25_1e-2_ALL_t.dat',
-           'model3-smallt_1_1e-2_ALL_t.dat',
-           'model3-smallt_4_1e-2_ALL_t.dat' ]
+sfiles = ['model3-smallt_0.03125_1e-2_ALL_t.dat',
+          'model3-smallt_0.0625_1e-2_ALL_t.dat',
+          'model3-smallt_0.25_1e-2_ALL_t.dat',
+          'model3-smallt_1_1e-2_ALL_t.dat',
+          'model3-smallt_4_1e-2_ALL_t.dat']
 
 
 
@@ -44,28 +44,28 @@ import re
 
 import glob
 
-def load_sfile( sfile ):
+def load_sfile(sfile):
 
-    sfile = sfile.replace( 'ALL', '*' )
+    sfile = sfile.replace('ALL', '*')
 
-    filelist = glob.glob( sdir + sfile )
+    filelist = glob.glob(sdir + sfile)
     print filelist
     N = 0
     data = []
 
     for fname in filelist:
 
-        f = open( fname )
+        f = open(fname)
 
         firstline = f.readline()
         n = int(firstline)
         #print 'N', n
 
-        d = [ float(line) for line in f.readlines() ]
+        d = [float(line) for line in f.readlines()]
         f.close()
 
         N += n
-        data.extend( d )
+        data.extend(d)
 
 
     print 'supplementary data:', N, '(', len(data), ')'
@@ -74,15 +74,15 @@ def load_sfile( sfile ):
 
 
 
-def plot_hist( filename, xmin, xmax, BINS, pattern=None, factor=1.0, 
-               sfile=None ):
+def plot_hist(filename, xmin, xmax, BINS, pattern=None, factor=1.0, 
+              sfile=None):
 
     if sfile != None:
         thr = 1e-5
     else:
         thr = 1e-20
 
-    file = open( filename )
+    file = open(filename)
 
     data=[]
 
@@ -93,8 +93,8 @@ def plot_hist( filename, xmin, xmax, BINS, pattern=None, factor=1.0,
         if t == 0:
             print 'skip zero'
             continue 
-        if pattern == None or pattern.match( eventType ):
-            data.append( t )
+        if pattern == None or pattern.match(eventType):
+            data.append(t)
 
     file.close()
 
@@ -116,7 +116,7 @@ def plot_hist( filename, xmin, xmax, BINS, pattern=None, factor=1.0,
     print x, y
     if sfile != None:
         print sfile
-        sdata, sN = load_sfile( sfile )
+        sdata, sN = load_sfile(sfile)
         sdata = numpy.array(sdata)
         #sdata = numpy.compress(sdata <= thr,sdata)
         sn, sbins = numpy.histogram(numpy.log10(sdata), 
@@ -131,16 +131,16 @@ def plot_hist( filename, xmin, xmax, BINS, pattern=None, factor=1.0,
         sdx = (10**sbins[1:]- 10**sbins[:-1])
         sy = sn / sdx    #  n+1e-10
 
-        x = numpy.concatenate( (sx, x ) )
-        y = numpy.concatenate( (sy, y ) )
+        x = numpy.concatenate((sx, x))
+        y = numpy.concatenate((sy, y))
 
         print N, sN, len(sdata)
-    return loglog( x, y  )#, label=filename )
+    return loglog(x, y)#, label=filename )
 
 
-def plot_hist2( filename, xmin, xmax, N, pattern=None, factor=1.0 ):
+def plot_hist2(filename, xmin, xmax, N, pattern=None, factor=1.0):
 
-    file = open( filename )
+    file = open(filename)
 
     data=[]
 
@@ -151,8 +151,8 @@ def plot_hist2( filename, xmin, xmax, N, pattern=None, factor=1.0 ):
         if t == 0:
             print 'skip zero'
             continue 
-        if pattern == None or pattern.match( eventType ):
-            data.append( t )
+        if pattern == None or pattern.match(eventType):
+            data.append(t)
 
     data = numpy.array(data)
 
@@ -175,7 +175,7 @@ def plot_hist2( filename, xmin, xmax, N, pattern=None, factor=1.0 ):
     y /= float(len(data))
     y *= factor
 
-    return loglog( x, y  )#, label=filename )
+    return loglog(x, y)#, label=filename )
 
 
 
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     BINS=50
 
 
-    #pattern = re.compile( sys.argv[1] )
+    #pattern = re.compile(sys.argv[1])
     
     #xmin = 1e-12
     xmin = 1e-8
@@ -199,7 +199,7 @@ if __name__ == '__main__':
 
     lines=[]
 
-    for n, filename in enumerate( rfiles ):
+    for n, filename in enumerate(rfiles):
 
         D = Dlist[n]
 
@@ -211,29 +211,29 @@ if __name__ == '__main__':
         sigma = 5e-9
         kD = 4 * numpy.pi * sigma * D
         k_a = 9.2e-20#1.6e9 / (1000*6e23)
-        #factor = D * ( 1 + (k_a / kD ) )
+        #factor = D * (1 + (k_a / kD))
 
         factor = 1
         print 'factor', factor
-        line = plot_hist( filename, xmin, xmax, BINS, None, factor, sfile = sfile )
+        line = plot_hist(filename, xmin, xmax, BINS, None, factor, sfile = sfile)
         lines.append(line)
 
 
-    xlabel( 'Second association times', size=26 )
-    ylabel( 'Relative frequency', size=26 )
-    #ylabel( r'$p(t) \cdot D ( 1 + (k_a / kD))$', size=26 )
+    xlabel('Second association times', size=26)
+    ylabel('Relative frequency', size=26)
+    #ylabel(r'$p(t) \cdot D (1 + (k_a / kD))$', size=26)
 
-    xticks( [1e-12, 1e-9, 1e-6, 1e-3, 1], 
-            [r'${\rm 1 ps}$',
-             r'${\rm 1 ns}$',
-             r'${\rm 1 \mu s}$',
-             r'${\rm 1 ms}$',
-             r'${\rm 1 s}$'],
-            size=24 )
-    yticks( size=18 )
+    xticks([1e-12, 1e-9, 1e-6, 1e-3, 1], 
+           [r'${\rm 1 ps}$',
+            r'${\rm 1 ns}$',
+            r'${\rm 1 \mu s}$',
+            r'${\rm 1 ms}$',
+            r'${\rm 1 s}$'],
+           size=24)
+    yticks(size=18)
     
-    xlim( xmin, xmax )
-    ylim( 5e-5, 5e5 )
+    xlim(xmin, xmax)
+    ylim(5e-5, 5e5)
 
     leg = legend( lines, (r'$D=0.03 \ \ {\rm \mu m^2 / s}$',
                          r'$D=0.06 \ \  {\rm \mu m^2 / s}$',

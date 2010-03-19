@@ -1,17 +1,17 @@
 
 
 
-loadModel( MODEL_FILE )
+loadModel(MODEL_FILE)
 
-Kpp = createEntityStub( 'Variable:/:Kpp' ) 
-K = createEntityStub( 'Variable:/:K' ) 
-KK = createEntityStub( 'Variable:/:KK' ) 
-P = createEntityStub( 'Variable:/:P' ) 
+Kpp = createEntityStub('Variable:/:Kpp') 
+K = createEntityStub('Variable:/:K') 
+KK = createEntityStub('Variable:/:KK') 
+P = createEntityStub('Variable:/:P') 
 
-Kpp[ 'Value' ] = N_KPP
-K[ 'Value' ] = N_K
-KK[ 'Value' ] = N_KK
-P[ 'Value' ] = N_P
+Kpp['Value'] = N_KPP
+K['Value'] = N_K
+KK['Value'] = N_KK
+P['Value'] = N_P
 
 sigma = 5e-9
 D_tot = 1e-12 * float(D) * 2
@@ -39,45 +39,45 @@ message(k2_net)
 message(k4_net)
 message(k5_net)
 
-R1 = createEntityStub( 'Process:/:R1' ) 
-R2 = createEntityStub( 'Process:/:R2' ) 
-R4 = createEntityStub( 'Process:/:R4' ) 
-R5 = createEntityStub( 'Process:/:R5' ) 
-R7 = createEntityStub( 'Process:/:R7' ) 
-R8 = createEntityStub( 'Process:/:R8' ) 
-R10 = createEntityStub( 'Process:/:R10' ) 
-R11 = createEntityStub( 'Process:/:R11' ) 
+R1 = createEntityStub('Process:/:R1') 
+R2 = createEntityStub('Process:/:R2') 
+R4 = createEntityStub('Process:/:R4') 
+R5 = createEntityStub('Process:/:R5') 
+R7 = createEntityStub('Process:/:R7') 
+R8 = createEntityStub('Process:/:R8') 
+R10 = createEntityStub('Process:/:R10') 
+R11 = createEntityStub('Process:/:R11') 
 
-R1[ 'k' ] = k1_net
-R2[ 'k' ] = k2_net
-R4[ 'k' ] = k4_net
-R5[ 'k' ] = k5_net
-R7[ 'k' ] = k1_net
-R8[ 'k' ] = k2_net
-R10[ 'k' ] = k4_net
-R11[ 'k' ] = k5_net
+R1['k'] = k1_net
+R2['k'] = k2_net
+R4['k'] = k4_net
+R5['k'] = k5_net
+R7['k'] = k1_net
+R8['k'] = k2_net
+R10['k'] = k4_net
+R11['k'] = k5_net
 
 
 if MODEL_FILE == 'model4-0.eml':
     pass
 else:
     try:
-        R13 = createEntityStub( 'Process:/:R13' ) 
-        R14 = createEntityStub( 'Process:/:R14' ) 
-        R13[ 'k' ] = KI
-        R14[ 'k' ] = KI
+        R13 = createEntityStub('Process:/:R13') 
+        R14 = createEntityStub('Process:/:R14') 
+        R13['k'] = KI
+        R14['k'] = KI
         #print KI
     except:
         # processive model doesn't have R13, 14
         pass
 
 
-lkpp = createLoggerStub( 'Variable:/:Kpp:Value' )
+lkpp = createLoggerStub('Variable:/:Kpp:Value')
 lkpp.create()
 
-run( DURATION )
+run(DURATION)
 
 from ecell.ECDDataFile import *
 message(OUTFILE)
-ECDDataFile( lkpp.getData() ).save( OUTFILE )
+ECDDataFile(lkpp.getData()).save(OUTFILE)
 message(lkpp.getData())

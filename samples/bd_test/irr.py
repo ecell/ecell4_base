@@ -3,13 +3,13 @@
 from bd import *
 import sys
 
-def run( outfilename, T, N ):
+def run(outfilename, T, N):
 
-    outfile = open( outfilename, 'w' )
+    outfile = open(outfilename, 'w')
 
-    for i in range( N ):
-        d, t = singlerun( T )
-        outfile.write( '%g\n' % d )
+    for i in range(N):
+        d, t = singlerun(T)
+        outfile.write('%g\n' % d)
 
         print d, t
         #assert d == 0 or t == T
@@ -17,7 +17,7 @@ def run( outfilename, T, N ):
     outfile.close()
 
 
-def singlerun( T ):
+def singlerun(T):
 
     w = World(1e-3, 3)
     s = BDSimulator(w)
@@ -29,17 +29,17 @@ def singlerun( T ):
 
     m = ParticleModel()
 
-    A = m.new_species_type( 'A', D/2, sigma/2 )
-    B = m.new_species_type( 'B', D/2, sigma/2 )
-    C = m.new_species_type( 'C', D/2, sigma/2 )
+    A = m.new_species_type('A', D/2, sigma/2)
+    B = m.new_species_type('B', D/2, sigma/2)
+    C = m.new_species_type('C', D/2, sigma/2)
     
-    r1 = createBindingReactionRule( A, B, C, kf )
-    m.network_rules.add_reaction_rule( r1 )
+    r1 = createBindingReactionRule(A, B, C, kf)
+    m.network_rules.add_reaction_rule(r1)
 
-    s.setModel( m )
+    s.setModel(m)
     
-    particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0] )
+    particleA = s.placeParticle(A, [0,0,0])
+    particleB = s.placeParticle(B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0])
 
     endTime = T
     #s.initialize()
@@ -68,4 +68,4 @@ def first(x):
     
 
 if __name__ == '__main__':
-    run( sys.argv[1], float( sys.argv[2] ), int( sys.argv[3] ) )
+    run(sys.argv[1], float(sys.argv[2]), int(sys.argv[3]))

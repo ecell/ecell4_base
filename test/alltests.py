@@ -7,7 +7,7 @@ import glob
 def suite():
 
     test_files = glob.glob('*_test.py')
-    modules_to_test = [ os.path.splitext( file )[0] for file in test_files ]
+    modules_to_test = [os.path.splitext(file)[0] for file in test_files]
 
     alltests = unittest.TestSuite()
 

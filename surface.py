@@ -201,23 +201,23 @@ class CuboidalRegion(Surface):
 
 class SphericalSurface(Surface):
     '''
-    origin -- = [ x0, y0, z0 ] is the origin and
+    origin -- = [x0, y0, z0] is the origin and
     radius -- the radius of the sphere.
 
-    ( x - x0 )^2 + ( y - y0 )^2 + ( z - z0 )^2 = r^2
+    (x - x0)^2 + (y - y0)^2 + (z - z0)^2 = r^2
     '''
     def __init__(self, name, origin, radius):
         Surface.__init__(self, name)
         self.shape = Sphere(origin, radius)
 
-    def randomPosition( self ):
+    def randomPosition(self):
         pos = randomUnitVectorS()
         pos[0] *= self.radius
-        return sphericalToCartesian( pos )
+        return sphericalToCartesian(pos)
 
-    def setParams( self, origin, radius ):
-        self.origin = numpy.array( origin )
+    def setParams(self, origin, radius):
+        self.origin = numpy.array(origin)
         self.radius = radius
 
-    def getParams( self ):
+    def getParams(self):
         return self.params

@@ -14,13 +14,13 @@ import sys
 from egfrd import *
 from bd import *
 
-def run( outfilename, T, N ):
+def run(outfilename, T, N):
 
-    outfile = open( outfilename, 'w' )
+    outfile = open(outfilename, 'w')
 
-    for i in range( N ):
-        d, t = singlerun2( T )
-        outfile.write( '%.18g\n' % d )
+    for i in range(N):
+        d, t = singlerun2(T)
+        outfile.write('%.18g\n' % d)
         outfile.flush()
         #print i
         #print d, t
@@ -31,12 +31,12 @@ def run( outfilename, T, N ):
 
 
 
-def singlerun1( T ):
+def singlerun1(T):
 
     w = World(1e-3, 3)
     s = BDSimulator(w)
 
-    #s.setMaxShellSize( 1e-6 )
+    #s.setMaxShellSize(1e-6)
 
 
     sigma = 5e-9
@@ -47,17 +47,17 @@ def singlerun1( T ):
 
     m = ParticleModel()
 
-    A = m.new_species_type( 'A', 0.0, sigma/2 )
-    B = m.new_species_type( 'B', D, sigma/2 )
-    C = m.new_species_type( 'C', 0.0, sigma/2 )
+    A = m.new_species_type('A', 0.0, sigma/2)
+    B = m.new_species_type('B', D, sigma/2)
+    C = m.new_species_type('C', 0.0, sigma/2)
 
-    r1 = createBindingReactionRule( A, B, C, kf )
-    m.network_rules.add_reaction_rule( r1 )
+    r1 = createBindingReactionRule(A, B, C, kf)
+    m.network_rules.add_reaction_rule(r1)
 
-    s.setModel( m )
+    s.setModel(m)
 
-    particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0] )
+    particleA = s.placeParticle(A, [0,0,0])
+    particleB = s.placeParticle(B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0])
 
     endTime = T
     s.step()
@@ -65,7 +65,7 @@ def singlerun1( T ):
     while 1:
         nextTime = s.getNextTime()
         if nextTime > endTime:
-            s.stop( endTime )
+            s.stop(endTime)
             break
         s.step()
         if s.lastReaction:
@@ -77,13 +77,13 @@ def singlerun1( T ):
     return distance, s.t
 
 
-def singlerun2( T ):
+def singlerun2(T):
 
     w = World(1e-3, 3)
     s = EGFRDSimulator(w)
 
-    #s.setUserMaxShellSize( 1e-7 )
-    #s.setUserMaxShellSize( 1e-3 )
+    #s.setUserMaxShellSize(1e-7)
+    #s.setUserMaxShellSize(1e-3)
 
     sigma = 5e-9
     r0 = sigma
@@ -94,17 +94,17 @@ def singlerun2( T ):
 
     m = ParticleModel()
 
-    A = m.new_species_type( 'A', D, sigma/2 )
-    B = m.new_species_type( 'B', D, sigma/2 )
-    C = m.new_species_type( 'C', D, sigma/2 )
+    A = m.new_species_type('A', D, sigma/2)
+    B = m.new_species_type('B', D, sigma/2)
+    C = m.new_species_type('C', D, sigma/2)
 
-    r1 = createBindingReactionRule( A, B, C, kf )
-    m.network_rules.add_reaction_rule( r1 )
+    r1 = createBindingReactionRule(A, B, C, kf)
+    m.network_rules.add_reaction_rule(r1)
 
-    s.setModel( m )
+    s.setModel(m)
 
-    particleA = s.placeParticle( A, [0,0,0] )
-    particleB = s.placeParticle( B, [float(A['radius']) + float(B['radius'])+1e-23,0,0] )
+    particleA = s.placeParticle(A, [0,0,0])
+    particleB = s.placeParticle(B, [float(A['radius']) + float(B['radius'])+1e-23,0,0])
 
     endTime = T
 
@@ -116,7 +116,7 @@ def singlerun2( T ):
 
         nextTime = s.getNextTime()
         if nextTime > endTime:
-            s.stop( endTime )
+            s.stop(endTime)
             break
 
     distance = s.distance_between_particles(particleA, particleB) 
@@ -126,4 +126,4 @@ def singlerun2( T ):
     
 
 if __name__ == '__main__':
-    run( sys.argv[1], float( sys.argv[2] ), int( sys.argv[3] ) )
+    run(sys.argv[1], float(sys.argv[2]), int(sys.argv[3]))
