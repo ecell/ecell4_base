@@ -41,27 +41,27 @@ class Logger:
                   comment = '', hdf5=False):
         self.sim = sim
         self.logname = logname
-        self.fileCounter = 0
+        self.file_counter = 0
         self.directory = directory
         try:
             os.mkdir(directory)
         except:
             pass
 
-        self.particleOutInterval = INF
+        self.particle_out_interval = INF
 
-        self.lastTime = 0.0
-        self.nextTime = INF
+        self.last_time = 0.0
+        self.next_time = INF
 
-        self.particleOutPattern = re.compile('')
-        self.prepareTimecourseFile(comment)
-        self.writeTimecourse()
+        self.particle_out_pattern = re.compile('')
+        self.prepare_timecourse_file(comment)
+        self.write_timecourse()
 
         # Added by sakurai@advancesoft.jp
         if hdf5:
             HDF5_filename = self.logname + '.hdf5'
             HDF5_path = self.directory + os.sep + HDF5_filename
-            # HDF5 file must be removed before logParticles
+            # HDF5 file must be removed before log_particles
             if os.path.exists(HDF5_path):
                 os.remove(HDF5_path)
             self.HDF5_file = h5py.File(HDF5_path)
@@ -73,57 +73,57 @@ class Logger:
         #if self.HDF5_file is not None:
         #    self.HDF5_file.close()
 
-    def setInterval(self, interval):
+    def set_interval(self, interval):
         self.interval = interval
 
-    def setParticleOutPattern(self, pattern):
-        self.particleOutPattern = re.compile(pattern)
+    def set_particle_out_pattern(self, pattern):
+        self.particle_out_pattern = re.compile(pattern)
 
-    def getParticleOutPattern(self):
-        return self.particleOutPattern.pattern
+    def get_particle_out_pattern(self):
+        return self.particle_out_pattern.pattern
 
-    def setParticleOutInterval(self, interval):
-        self.particleOutInterval = interval
-        self.lastTime = self.sim.t
-        self.nextTime = self.lastTime + self.particleOutInterval
+    def set_particle_out_interval(self, interval):
+        self.particle_out_interval = interval
+        self.last_time = self.sim.t
+        self.next_time = self.last_time + self.particle_out_interval
 
-    def prepareTimecourseFile(self, comment):
-        self.timecourseFilename = self.logname + '_tc' + '.dat'
-        self.timecourseFile = open(self.directory + os.sep + \
-                                    self.timecourseFilename, 'w')
-        self.writeTimecourseComment(comment)
+    def prepare_timecourse_file(self, comment):
+        self.timecourse_filename = self.logname + '_tc' + '.dat'
+        self.timecourse_file = open(self.directory + os.sep + \
+                                    self.timecourse_filename, 'w')
+        self.write_timecourse_comment(comment)
 
-        speciesNameList = '\'' + \
+        species_name_list = '\'' + \
             "\', \'".join(str(i) for i in self.sim.world.species) + '\''
-        columns = '[\'t\', ' + speciesNameList + ']'
-        self.writeTimecourseComment('@ columns= ' + columns)
+        columns = '[\'t\', ' + species_name_list + ']'
+        self.write_timecourse_comment('@ columns= ' + columns)
 
 
-    def writeTimecourseComment(self, s):
-        self.timecourseFile.write('#' + s + '\n')
+    def write_timecourse_comment(self, s):
+        self.timecourse_file.write('#' + s + '\n')
 
-    def writeTimecourse(self):
+    def write_timecourse(self):
         data = []
-        self.timecourseFile.write('%g' % self.sim.t + '\t')
-        self.timecourseFile.write('\t'.join(
-            str(len(self.sim.getParticlePool(i.id))) \
-            for i in self.sim.getSpecies()) + '\n')
-        self.timecourseFile.flush()
+        self.timecourse_file.write('%g' % self.sim.t + '\t')
+        self.timecourse_file.write('\t'.join(
+            str(len(self.sim.get_particle_pool(i.id))) \
+            for i in self.sim.get_species()) + '\n')
+        self.timecourse_file.flush()
 
-    def writeParticles(self):
+    def write_particles(self):
         filename = self.logname + '_' + \
-            str(self.fileCounter).zfill(4) + '.dat'
+            str(self.file_counter).zfill(4) + '.dat'
 
         file = open(self.directory + os.sep + filename, 'w')
 
         file.write('#@ name = \'%s\'\n' % str(self.logname))
-        file.write('#@ count = %d\n' % int(self.fileCounter))
+        file.write('#@ count = %d\n' % int(self.file_counter))
         file.write('#@ t = %s\n' % '%g' % self.sim.t)
-        file.write('#@ worldSize = %f\n' % float(self.sim.world.world_size))
+        file.write('#@ world_size = %f\n' % float(self.sim.world.world_size))
         file.write('#--------\n')
 
         for species in self.sim.world.species:
-            pid_list = self.sim.particlePool[species.id]
+            pid_list = self.sim.particle_pool[species.id]
             for pid in pid_list:
                 pid, particle = self.sim.world.get_particle(pid)
                 species = self.sim.world.get_species(species.id)
@@ -134,16 +134,16 @@ class Logger:
 
         file.close()
 
-        self.fileCounter += 1
+        self.file_counter += 1
 
-    def createDataGroup(self):
+    def create_data_group(self):
         if self.HDF5_file is None:
             return
         data_group = self.HDF5_file.create_group('data')
         data_group.attrs['world_size'] = self.sim.world.world_size
         return data_group
 
-    def writeSpeciesByHDF5(self):
+    def write_species_byHDF5(self):
         if self.HDF5_file is None:
             return
 
@@ -160,31 +160,31 @@ class Logger:
                                    species.D)
             count += 1
 
-    def writeParticlesByHDF5(self):
+    def write_particles_byHDF5(self):
         "This function was created by sakurai@advancesoft.jp"
         if self.HDF5_file is None:
             return
 
         data_group = self.HDF5_file['data']
 
-        group_name = unicode(self.nextTime)
+        group_name = unicode(self.next_time)
         if group_name in data_group:
             return
         time_group = data_group.create_group(group_name)
-        time_group.attrs['t'] = self.nextTime
+        time_group.attrs['t'] = self.next_time
 
         # Create particles dataset on the time group
 
         num_particles = 0
         for species in self.sim.world.species:
-            pid_list = self.sim.particlePool[species.id]
+            pid_list = self.sim.particle_pool[species.id]
             num_particles += len(pid_list)
 
         x = numpy.zeros((num_particles, ),
                         dtype = numpy.dtype(PARTICLES_SCHEMA))
 
         count = 0
-        for sid, pid_set in self.sim.particlePool.iteritems():
+        for sid, pid_set in self.sim.particle_pool.iteritems():
             for pid in pid_set:
                 pid, particle = self.sim.world.get_particle(pid)
                 species = self.sim.world.get_species(sid)
@@ -195,7 +195,7 @@ class Logger:
 
         dummy = time_group.create_dataset('particles', data = x)
 
-    def writeDomainsByHDF5(self):
+    def write_domains_byHDF5(self):
         if self.HDF5_file is None:
             return
 
@@ -203,8 +203,8 @@ class Logger:
         data_group.attrs['world_size'] = self.sim.world.world_size
 
         # Require time group
-        time_group = data_group.require_group(unicode(self.nextTime))
-        time_group.attrs['t'] = self.nextTime
+        time_group = data_group.require_group(unicode(self.next_time))
+        time_group.attrs['t'] = self.next_time
 
         # Create shell dataset on the time group
 
@@ -322,24 +322,24 @@ class Logger:
         dummy = time_group.create_dataset('domains', data = x)
 
     def log(self):
-        self.logTimeCourse()
-        self.logParticles()
+        self.log_time_course()
+        self.log_particles()
 
-    def logTimeCourse(self):
-        if self.sim.lastReaction:
-            self.writeTimecourse()
+    def log_time_course(self):
+        if self.sim.last_reaction:
+            self.write_timecourse()
 
-    def logParticles(self):
+    def log_particles(self):
         sim = self.sim
-        if self.nextTime <= sim.t + sim.dt:
-            self.writeDomainsByHDF5()
-            sim.stop(self.nextTime)
-            self.writeParticles()
-            self.writeParticlesByHDF5()
-            self.nextTime += self.particleOutInterval
+        if self.next_time <= sim.t + sim.dt:
+            self.write_domains_byHDF5()
+            sim.stop(self.next_time)
+            self.write_particles()
+            self.write_particles_byHDF5()
+            self.next_time += self.particle_out_interval
 
     def start(self):
-        self.createDataGroup()
-        self.writeSpeciesByHDF5()
-        self.writeParticles()
-        self.writeParticlesByHDF5()
+        self.create_data_group()
+        self.write_species_byHDF5()
+        self.write_particles()
+        self.write_particles_byHDF5()

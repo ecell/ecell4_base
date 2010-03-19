@@ -51,13 +51,13 @@ L = (V * 1e-3) ** (1.0 / 3.0)
 
 
 N = N_S_total * 1.1
-matrixSize = min(max(3, int((3 * N) ** (1.0/3.0))), 60)
-print 'matrixSize=', matrixSize
+matrix_size = min(max(3, int((3 * N) ** (1.0/3.0))), 60)
+print 'matrix_size=', matrix_size
 
-w = World(L, matrixSize)
+w = World(L, matrix_size)
 s = EGFRDSimulator(w)
 
-#s.setDtFactor(1e-5)
+#s.set_dt_factor(1e-5)
 print V, L
 
 print C2N(498e-9, V)
@@ -68,7 +68,7 @@ box1 = CuboidalRegion([0,0,0],[L,L,L])
 plain1 = CuboidalRegion([0,0,0],[0,L,L])
 plain2 = CuboidalRegion([L/2,0,0],[L/2,L,L])
 # not supported yet
-#s.addSurface(box1)
+#s.add_surface(box1)
 
 m = ParticleModel()
 
@@ -140,42 +140,42 @@ print (koff1 + kcat1)/kon/S_conc
 
 #sys.exit(0)
 
-s.setModel(m)
+s.set_model(m)
 
 if mode == 'normal' or mode == 'immobile':
-    s.throwInParticles(K, N_K, box1)
-    s.throwInParticles(P, N_P, box1)
+    s.throw_in_particles(K, N_K, box1)
+    s.throw_in_particles(P, N_P, box1)
 elif mode == 'localized':
-    s.throwInParticles(K, N_K, plain1)
-    s.throwInParticles(P, N_P, plain2)
+    s.throw_in_particles(K, N_K, plain1)
+    s.throw_in_particles(P, N_P, plain2)
 elif mode == 'single':
     x = L/2
     yz = L/2
     tl = L/4
-    s.placeParticle(K, [tl, tl, tl])
-    s.placeParticle(K, [tl, tl, yz+tl])
-    s.placeParticle(K, [tl, yz+tl, tl])
-    s.placeParticle(K, [tl, yz+tl, yz+tl])
-    s.placeParticle(P, [x+tl, tl, tl])
-    s.placeParticle(P, [x+tl, tl, yz+tl])
-    s.placeParticle(P, [x+tl, yz+tl, tl])
-    s.placeParticle(P, [x+tl, yz+tl, yz+tl])
+    s.place_particle(K, [tl, tl, tl])
+    s.place_particle(K, [tl, tl, yz+tl])
+    s.place_particle(K, [tl, yz+tl, tl])
+    s.place_particle(K, [tl, yz+tl, yz+tl])
+    s.place_particle(P, [x+tl, tl, tl])
+    s.place_particle(P, [x+tl, tl, yz+tl])
+    s.place_particle(P, [x+tl, yz+tl, tl])
+    s.place_particle(P, [x+tl, yz+tl, yz+tl])
 else:
     assert False
 
 
 
-s.throwInParticles(Sp, N_Sp, box1)
-s.throwInParticles(S, N_S, box1)
+s.throw_in_particles(Sp, N_Sp, box1)
+s.throw_in_particles(S, N_S, box1)
 
 # Stir before actually start the sim.
 
-stirTime = 1e-7
+stir_time = 1e-7
 while 1:
     s.step()
-    nextTime = s.scheduler.getTopTime()
-    if nextTime > stirTime:
-        s.stop(stirTime)
+    next_time = s.scheduler.getTopTime()
+    if next_time > stir_time:
+        s.stop(stir_time)
         break
 
 s.reset()
@@ -186,21 +186,21 @@ s.reset()
 #  6   PSp     -> P + S
 
 
-r1 = createBindingReactionRule(S, K, KS, ka)
+r1 = create_binding_reaction_rule(S, K, KS, ka)
 m.network_rules.add_reaction_rule(r1)
-r2 = createUnbindingReactionRule(KS, S, K, kd1)
+r2 = create_unbinding_reaction_rule(KS, S, K, kd1)
 m.network_rules.add_reaction_rule(r2)
-r3 = createUnbindingReactionRule(KS, K, Sp, kcat1)
+r3 = create_unbinding_reaction_rule(KS, K, Sp, kcat1)
 m.network_rules.add_reaction_rule(r3)
-r4 = createBindingReactionRule(Sp, P, PSp, ka)
+r4 = create_binding_reaction_rule(Sp, P, PSp, ka)
 m.network_rules.add_reaction_rule(r4)
-r5 = createUnbindingReactionRule(PSp, Sp, P, kd2)
+r5 = create_unbinding_reaction_rule(PSp, Sp, P, kd2)
 m.network_rules.add_reaction_rule(r5)
-r6 = createUnbindingReactionRule(PSp, P, S, kcat2)
+r6 = create_unbinding_reaction_rule(PSp, P, S, kcat2)
 m.network_rules.add_reaction_rule(r6)
 
 
-s.setModel(m)
+s.set_model(m)
 
 
 model = 'pushpull'
@@ -219,17 +219,17 @@ l = Logger(s,
            (kcat1, kcat2) +
            '#@ ka=%g; kd1=%g; kd2=%g\n' %
            (ka, kd1, kd2))
-#l.setParticleOutput(('K','P'))
-#l.setParticleOutInterval(1e-3)
-#l.writeParticles()
+#l.set_particle_output(('K','P'))
+#l.set_particle_out_interval(1e-3)
+#l.write_particles()
 l.log()
 
 
 while s.t < T:
     s.step()
 
-    if s.lastReaction:
-        #log.info(s.dumpPopulation())
+    if s.last_reaction:
+        #log.info(s.dump_population())
         l.log()
     
 

@@ -33,24 +33,24 @@ def singlerun(T):
     B = m.new_species_type('B', D/2, sigma/2)
     C = m.new_species_type('C', D/2, sigma/2)
     
-    r1 = createBindingReactionRule(A, B, C, kf)
+    r1 = create_binding_reaction_rule(A, B, C, kf)
     m.network_rules.add_reaction_rule(r1)
 
-    s.setModel(m)
+    s.set_model(m)
     
-    particleA = s.placeParticle(A, [0,0,0])
-    particleB = s.placeParticle(B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0])
+    particleA = s.place_particle(A, [0,0,0])
+    particleB = s.place_particle(B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0])
 
-    endTime = T
+    end_time = T
     #s.initialize()
 
     while 1:
-        nextTime = s.t + s.dt
-        if nextTime > endTime:
+        next_time = s.t + s.dt
+        if next_time > end_time:
             break
         s.step()
 
-        if s.core.lastReaction:
+        if s.core.last_reaction:
             print 'reaction'
             return 0.0, s.t
 

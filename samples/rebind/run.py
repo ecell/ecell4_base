@@ -63,12 +63,12 @@ def singlerun(T_list, D_factor, N_B, N_X):
     V = 1e-18 # m^3
     L = V ** (1.0/3.0) 
 
-    matrixSize = min(max(3, int((9 * (N_X+N_B)) ** (1.0/3.0))), 60)
-    print 'matrixSize=', matrixSize
+    matrix_size = min(max(3, int((9 * (N_X+N_B)) ** (1.0/3.0))), 60)
+    print 'matrix_size=', matrix_size
 
-    w = World(L, matrixSize)
+    w = World(L, matrix_size)
     s = EGFRDSimulator(w)
-    #s.setUserMaxShellSize(1e-6)
+    #s.set_user_max_shell_size(1e-6)
     #s = BDSimulator(w)
 
     box1 = CuboidalRegion([0,0,0],[L,L,L])
@@ -97,52 +97,52 @@ def singlerun(T_list, D_factor, N_B, N_X):
     X = m.new_species_type('X', DX, radius)
 
     if N_X != 0:
-        s.throwInParticles(X, N_X, box1)
+        s.throw_in_particles(X, N_X, box1)
 
-        endTime = tau * 1
+        end_time = tau * 1
         while 1:
             s.step()
-            nextTime = s.getNextTime()
-            if nextTime > endTime:
-                s.stop(endTime)
+            next_time = s.get_next_time()
+            if next_time > end_time:
+                s.stop(end_time)
                 break
 
 
     s.reset()
 
-    r1 = createBindingReactionRule(A, B, C, kf)
+    r1 = create_binding_reaction_rule(A, B, C, kf)
     m.network_rules.add_reaction_rule(r1)
 
-    r2 = createUnbindingReactionRule(C, A, B, 1e3)
+    r2 = create_unbinding_reaction_rule(C, A, B, 1e3)
     m.network_rules.add_reaction_rule(r2)
 
-    s.setModel(m)
+    s.set_model(m)
 
     A_pos = [0,0,0]
     B_pos = [(float(A['radius']) + float(B['radius']))+1e-23,0,0]
 
     while 1:
-        pp = s.getParticlesWithinRadius(A_pos, float(A['radius']))
+        pp = s.get_particles_within_radius(A_pos, float(A['radius']))
         if not pp:
             break
         for p in pp:
-            s.removeParticle(p)
-        s.throwInParticles(X, len(pp), box1)
+            s.remove_particle(p)
+        s.throw_in_particles(X, len(pp), box1)
 
-    s.placeParticle(A, A_pos)
+    s.place_particle(A, A_pos)
 
     while 1:
-        pp = s.getParticlesWithinRadius(B_pos, float(B['radius']))
+        pp = s.get_particles_within_radius(B_pos, float(B['radius']))
         if not pp:
             break
         for p in pp:
-            s.removeParticle(p)
-        s.throwInParticles(X, len(pp), box1)    
+            s.remove_particle(p)
+        s.throw_in_particles(X, len(pp), box1)    
 
-    s.placeParticle(B, B_pos)
+    s.place_particle(B, B_pos)
 
     if N_B > 1:
-        s.throwInParticles(B, N_B-1, box1)
+        s.throw_in_particles(B, N_B-1, box1)
 
     r_list = []
     t_list = []
@@ -150,33 +150,33 @@ def singlerun(T_list, D_factor, N_B, N_X):
 
     s.step()
 
-    nextStop = T_list[0]
+    next_stop = T_list[0]
 
     i_T = 0
 
     while 1:
-        if s.lastReaction:
-            print s.lastReaction
-            if len(s.particlePool[C.id]) == 0:  #A,B
+        if s.last_reaction:
+            print s.last_reaction
+            if len(s.particle_pool[C.id]) == 0:  #A,B
                 print 'set t_last', s.t
                 t_last = s.t  # set t_last
             else:    # C
                 print 'reaction: ', s.t - t_last
                 t_list.append(s.t - t_last)
 
-        nextTime = s.getNextTime()
-        if nextTime > nextStop:
-            print 'stop', i_T, nextStop
-            s.stop(nextStop)
-            if len(s.particlePool[C.id]) != 0:  #A,B
+        next_time = s.get_next_time()
+        if next_time > next_stop:
+            print 'stop', i_T, next_stop
+            s.stop(next_stop)
+            if len(s.particle_pool[C.id]) != 0:  #A,B
                 r_list.append(0)
             else:
                 r_list.append(s.distance_between_particles(A.id, B.id))
 
             i_T += 1
-            nextStop = T_list[i_T]
+            next_stop = T_list[i_T]
         
-        if nextStop == INF and len(t_list) != 0:
+        if next_stop == INF and len(t_list) != 0:
             print 'break', s.t
             break
 

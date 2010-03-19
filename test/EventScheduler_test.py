@@ -89,17 +89,17 @@ class EventSchedulerTestCase(unittest.TestCase):
     def tearDown(self):
         pass
     
-    def testInstantiation(self):
+    def test_instantiation(self):
         scheduler = mod.EventScheduler()
         self.failIf(scheduler == None)
 
-    def testEmptyState(self):
+    def test_empty_state(self):
         scheduler = mod.EventScheduler()
         self.failIf(scheduler.getSize() != 0)
         self.failIf(scheduler.getTime() != 0.0)
         # what if getTopEvent() are called here?
 
-    def testOneEvent(self):
+    def test_one_event(self):
         scheduler = mod.EventScheduler()
 
         event = TestEvent()
@@ -111,7 +111,7 @@ class EventSchedulerTestCase(unittest.TestCase):
         scheduler.step()
         self.failIf(scheduler.getSize() != 0)
 
-    # def testTwoEventsSameTime1(self):
+    # def test_two_events_same_time1(self):
     #     scheduler = mod.EventScheduler()
 
     #     event1 = TestEvent()
@@ -135,7 +135,7 @@ class EventSchedulerTestCase(unittest.TestCase):
     #     self.failIf(scheduler.getTopID() != id2)
 
 
-    # def testTwoEventsSameTime2(self):
+    # def test_two_events_same_time2(self):
     #     scheduler = mod.EventScheduler()
 
     #     event1 = TestEvent4(scheduler)
@@ -157,7 +157,7 @@ class EventSchedulerTestCase(unittest.TestCase):
 
 
 
-    # def testEventPop(self):
+    # def test_event_pop(self):
     #     scheduler = mod.EventScheduler()
 
     #     event1 = TestEvent()
@@ -172,7 +172,7 @@ class EventSchedulerTestCase(unittest.TestCase):
     #     self.failIf(scheduler.getTime() != 0.0)
 
         
-    # def testEventPop2(self):
+    # def test_event_pop2(self):
 
     #     scheduler = mod.EventScheduler()
 
@@ -195,7 +195,7 @@ class EventSchedulerTestCase(unittest.TestCase):
     #     self.failIf(scheduler.getTopTime() != 1.0)
 
 
-    # def testEventCreationDuringStepping(self):
+    # def test_event_creation_during_stepping(self):
 
     #     scheduler = mod.EventScheduler()
 
@@ -219,7 +219,7 @@ class EventSchedulerTestCase(unittest.TestCase):
     #     self.failIf(scheduler.getTopTime() != 0.5)
 
 
-    # def testEventCreationDuringSteppingWithPop(self):
+    # def test_event_creation_during_stepping_with_pop(self):
 
     #     scheduler = mod.EventScheduler()
 
@@ -243,7 +243,7 @@ class EventSchedulerTestCase(unittest.TestCase):
     #     self.failIf(scheduler.getTopTime() != 0.5)
 
 
-    # def testEventUpdateDuringStepping(self):
+    # def test_event_update_during_stepping(self):
 
     #     scheduler = mod.EventScheduler()
 
@@ -272,7 +272,7 @@ class EventSchedulerTestCase(unittest.TestCase):
 
 
 
-    def testPeekSecondEvent(self):
+    def test_peek_second_event(self):
 
         scheduler = mod.EventScheduler()
 
@@ -288,7 +288,7 @@ class EventSchedulerTestCase(unittest.TestCase):
                                  event2)
         self.assertEqual(2, scheduler.getSize())
 
-        second = scheduler.peekSecondEvent()
+        second = scheduler.peek_second_event()
 
         self.assertEqual(0.5, second.getTime())
         self.assertEqual(event2, second.getArg())

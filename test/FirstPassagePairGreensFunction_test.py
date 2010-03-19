@@ -20,7 +20,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
     def tearDown(self):
         pass
     
-    def test_Instantiation(self):
+    def test_instantiation(self):
         D = 1e-12
         kf = 1e8
         sigma = 1e-8
@@ -31,7 +31,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         gf.seta(a)
 
 
-    def test_DrawTime(self):
+    def test_draw_time(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -51,7 +51,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(t <= 0.0 or t >= numpy.inf)
 
 
-    def test_DrawTime_a_equal_sigma(self):
+    def test_draw_time_a_equal_sigma(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -64,7 +64,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         t = gf.drawTime(0.5, r0)
         self.assertEqual(0.0, t)
 
-    def test_DrawTime_a_near_sigma(self):
+    def test_draw_time_a_near_sigma(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -77,7 +77,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         t = gf.drawTime(0.5, r0)
         self.failIf(t <= 0.0 or t >= numpy.inf)
 
-    def test_DrawTime_r0_equal_a(self):
+    def test_draw_time_r0_equal_a(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -90,7 +90,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         t = gf.drawTime(0.5, r0)
         self.assertEqual(0.0, t)
 
-    def test_DrawTime_r0_equal_sigma_kf_zero(self):
+    def test_draw_time_r0_equal_sigma_kf_zero(self):
         D = 1e-12
         kf = 0.0 # note this
         sigma = 1e-8
@@ -104,7 +104,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(t < 0.0 or t >= numpy.inf)
 
 
-    def no_test_DrawTime_r0_equal_sigma_kf_large(self):
+    def no_test_draw_time_r0_equal_sigma_kf_large(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -118,7 +118,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(t < 0.0 or t >= numpy.inf)
 
 
-    def test_DrawEventType(self):
+    def test_draw_event_type(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -129,18 +129,18 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         gf.seta(a)
 
         t = gf.drawTime(0.5, r0)
-        eventType = gf.drawEventType(0.5, r0, t)
-        self.failIf(eventType != mod.EventType.IV_REACTION and
-                    eventType != mod.EventType.IV_ESCAPE)
+        event_type = gf.drawEventType(0.5, r0, t)
+        self.failIf(event_type != mod.EventType.IV_REACTION and
+                    event_type != mod.EventType.IV_ESCAPE)
 
-        eventType = gf.drawEventType(0.0, r0, t)
-        self.assertEqual(eventType, mod.EventType.IV_REACTION)
+        event_type = gf.drawEventType(0.0, r0, t)
+        self.assertEqual(event_type, mod.EventType.IV_REACTION)
 
-        eventType = gf.drawEventType(0.999999, r0, t)
-        self.assertEqual(eventType, mod.EventType.IV_ESCAPE)
+        event_type = gf.drawEventType(0.999999, r0, t)
+        self.assertEqual(event_type, mod.EventType.IV_ESCAPE)
 
 
-    def no_test_DrawEventType_smallt(self):
+    def no_test_draw_event_type_smallt(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -152,19 +152,19 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 
         t = gf.drawTime(0.999, r0)
 
-        eventType = gf.drawEventType(0.5, r0, t)
-        self.failIf(eventType != mod.EventType.IV_REACTION and
-                    eventType != mod.EventType.IV_ESCAPE)
+        event_type = gf.drawEventType(0.5, r0, t)
+        self.failIf(event_type != mod.EventType.IV_REACTION and
+                    event_type != mod.EventType.IV_ESCAPE)
 
-        eventType = gf.drawEventType(0.0, r0, t)
-        self.assertEqual(eventType, mod.EventType.IV_REACTION)
+        event_type = gf.drawEventType(0.0, r0, t)
+        self.assertEqual(event_type, mod.EventType.IV_REACTION)
 
-        eventType = gf.drawEventType(0.9999, r0, t)
-        #self.assertEqual(eventType, mod.EventType.IV_ESCAPE)
+        event_type = gf.drawEventType(0.9999, r0, t)
+        #self.assertEqual(event_type, mod.EventType.IV_ESCAPE)
 
 
     '''
-    def test_DrawTime2(self):
+    def test_draw_time2(self):
         D = 1e-12
         kf = 1e-18
         #kf = 0
@@ -194,7 +194,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         print t, et
         print '==============================================='
 
-    def test_DrawTime2_a_equal_sigma(self):
+    def test_draw_time2_a_equal_sigma(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -208,7 +208,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.assertEqual(0.0, t)
         self.assertEqual(et, mod.EventType.IV_ESCAPE)
 
-    def test_DrawTime2_squeezed(self):
+    def test_draw_time2_squeezed(self):
         D = 1e-12
         kf = 1e-10
         sigma = 1e-8 
@@ -221,7 +221,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         t, et = gf.drawTime2(0.5, 0.5, r0)
         self.failIf(t <= 0.0 or t >= numpy.inf)
 
-    def test_DrawTime2_r0_equal_a(self):
+    def test_draw_time2_r0_equal_a(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -236,7 +236,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.assertEqual(et, mod.EventType.IV_ESCAPE)
 
 
-    def test_DrawTime2_r0_equal_sigma_kf_zero(self):
+    def test_draw_time2_r0_equal_sigma_kf_zero(self):
         D = 1e-12
         kf = 0.0 # note this
         sigma = 1e-8
@@ -255,7 +255,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.assertAlmostEqual(t, t2)
 
 
-    def test_DrawTime2_r0_near_sigma(self):
+    def test_draw_time2_r0_near_sigma(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -277,7 +277,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.assertAlmostEqual(t, t2)
 
 
-    def no_test_DrawTime2_r0_equal_sigma_kf_large(self):
+    def no_test_draw_time2_r0_equal_sigma_kf_large(self):
         D = 1e-12
         kf = 1e-5
         sigma = 1e-8
@@ -292,7 +292,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         '''
 
 
-    def test_DrawR(self):
+    def test_drawR(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -317,7 +317,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.assertAlmostEqual(r2, a)
 
 
-    def test_DrawR_zerot(self):
+    def test_drawR_zerot(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -333,7 +333,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.assertEqual(r0, r)
 
 
-    def test_DrawR_r0_equal_sigma(self):
+    def test_drawR_r0_equal_sigma(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -348,7 +348,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         r = gf.drawR(0.5, r0, t)
         self.failIf(r < sigma or r > a)
 
-    def test_DrawR_squeezed(self):
+    def test_drawR_squeezed(self):
 
         D = 1e-12
         kf = 1e-8
@@ -376,7 +376,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(r < sigma or r > a)
 
 
-    def test_DrawTheta(self):
+    def test_draw_theta(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -387,7 +387,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         gf.seta(a)
 
         t = gf.drawTime(0.5, r0)
-        eventType = gf.drawEventType(0.5, r0, t)
+        event_type = gf.drawEventType(0.5, r0, t)
         r = gf.drawR(0.5, r0, t)
 
         theta = gf.drawTheta(0.5, r, r0, t)
@@ -400,7 +400,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
 
-    def test_DrawTheta_zerot(self):
+    def test_draw_theta_zerot(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -415,7 +415,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         theta = gf.drawTheta(0.5, r0, r0, t)
         self.assertEqual(0.0, theta)
 
-    def test_DrawTheta_smallt(self):
+    def test_draw_theta_smallt(self):
 
         D = 1e-12
         kf = 1e-8
@@ -433,7 +433,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
 
-    def test_DrawTheta_squeezed(self):
+    def test_draw_theta_squeezed(self):
 
         D = 1e-12
         kf = 1e-8
@@ -482,7 +482,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         ip = gf.ip_theta(1, r, r0, t)
 
 
-    def test_DrawTheta_r0_equal_sigma(self):
+    def test_draw_theta_r0_equal_sigma(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -498,7 +498,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         theta = gf.drawTheta(0.5, r, r0, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
-    def test_DrawTheta_r_equal_a(self):
+    def test_draw_theta_r_equal_a(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -514,7 +514,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         theta = gf.drawTheta(0.5, r, r0, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
-    def test_DrawTheta_1(self):
+    def test_draw_theta_1(self):
         r0 =  1.0206416181e-07
         t =  4.41358538629e-08
         D = 4e-11
@@ -531,7 +531,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
 
-    def test_Alpha0(self):
+    def test_alpha0(self):
 
         D = 1e-12
         sigma = 1e-8
@@ -853,7 +853,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 '''
 
 '''
-    def test_Alphan(self):
+    def test_alphan(self):
 
         D = 1e-12
         sigma = 1e-8

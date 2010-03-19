@@ -45,7 +45,7 @@ class FirstPassageGreensFunctionTestCase(unittest.TestCase):
         self.assertEqual(0.0, r)
 
 
-    def test_drawTime(self):
+    def test_draw_time(self):
         D = 1e-12
         a = 1e-7
         gf = mod.FirstPassageGreensFunction(D)

@@ -30,23 +30,23 @@ def singlerun(T, S):
     w = World(1e-3, 3)
     s = EGFRDSimulator(w)
 
-    s.setUserMaxShellSize(S)
+    s.set_user_max_shell_size(S)
 
     m = ParticleModel()
 
     A = m.new_species_type('A', 1e-12, 5e-9)
 
-    s.setModel(m)
+    s.set_model(m)
 
-    particleA = s.placeParticle(A, [0,0,0])
+    particleA = s.place_particle(A, [0,0,0])
 
-    endTime = T
+    end_time = T
     s.step()
 
     while 1:
-        nextTime = s.getNextTime()
-        if nextTime > endTime:
-            s.stop(endTime)
+        next_time = s.get_next_time()
+        if next_time > end_time:
+            s.stop(end_time)
             break
         s.step()
 

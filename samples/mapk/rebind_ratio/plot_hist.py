@@ -89,11 +89,11 @@ def plot_hist(filename, xmin, xmax, BINS, pattern=None, factor=1.0,
     for line in file.readlines():
         line = line.split()
         t = float(line[0])
-        eventType = line[1]
+        event_type = line[1]
         if t == 0:
             print 'skip zero'
             continue 
-        if pattern == None or pattern.match(eventType):
+        if pattern == None or pattern.match(event_type):
             data.append(t)
 
     file.close()
@@ -147,11 +147,11 @@ def plot_hist2(filename, xmin, xmax, N, pattern=None, factor=1.0):
     for line in file.readlines():
         line = line.split()
         t = float(line[0])
-        eventType = line[1]
+        event_type = line[1]
         if t == 0:
             print 'skip zero'
             continue 
-        if pattern == None or pattern.match(eventType):
+        if pattern == None or pattern.match(event_type):
             data.append(t)
 
     data = numpy.array(data)

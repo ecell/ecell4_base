@@ -54,22 +54,22 @@ def maxz_y(n):
 def jnyn(n, resolution):
 
     delta = numpy.pi / resolution
-    zTable = numpy.mgrid[min(minz_j(n),minz_y(n)):max(maxz_j(n), maxz_y(n)):delta]
+    z_table = numpy.mgrid[min(minz_j(n),minz_y(n)):max(maxz_j(n), maxz_y(n)):delta]
 
-    jTable = numpy.zeros((len(zTable), n+1))
-    jdotTable = numpy.zeros((len(zTable), n+1))
-    yTable = numpy.zeros((len(zTable), n+1))
-    ydotTable = numpy.zeros((len(zTable), n+1))
+    j_table = numpy.zeros((len(z_table), n+1))
+    jdot_table = numpy.zeros((len(z_table), n+1))
+    y_table = numpy.zeros((len(z_table), n+1))
+    ydot_table = numpy.zeros((len(z_table), n+1))
 
-    for i, z in enumerate(zTable):
-        jTable[i], jdotTable[i], yTable[i], ydotTable[i] \
+    for i, z in enumerate(z_table):
+        j_table[i], jdot_table[i], y_table[i], ydot_table[i] \
             = special.sph_jnyn(n, z)
 
-    jTable = jTable.transpose()
-    jdotTable = jdotTable.transpose()
-    yTable = yTable.transpose()
-    ydotTable = ydotTable.transpose()
-    return zTable, jTable, jdotTable, yTable, ydotTable
+    j_table = j_table.transpose()
+    jdot_table = jdot_table.transpose()
+    y_table = y_table.transpose()
+    ydot_table = ydot_table.transpose()
+    return z_table, j_table, jdot_table, y_table, ydot_table
 
 def make_table(func, n, z0, z1, tol):
 
@@ -82,8 +82,8 @@ def make_table(func, n, z0, z1, tol):
     jp_prev = jp[n]
     jpp_prev = 0
 
-    zTable = numpy.array([z, ])
-    yTable = numpy.array([j[n], ])
+    z_table = numpy.array([z, ])
+    y_table = numpy.array([j[n], ])
 
     while z < z1:
         j, jp = func(n, z + dz)
@@ -95,8 +95,8 @@ def make_table(func, n, z0, z1, tol):
 
         z += dz
 
-        zTable = numpy.append(zTable, z)
-        yTable = numpy.append(yTable, j[n])
+        z_table = numpy.append(z_table, z)
+        y_table = numpy.append(y_table, j[n])
 
         if abs_jpp_norm < tol * .5:
             dz *= 2
@@ -105,14 +105,14 @@ def make_table(func, n, z0, z1, tol):
         jp_prev = jp[n]
         #j_prev = j[n]
 
-        #print z, yTable[-1]
+        #print z, y_table[-1]
 
-    assert len(zTable) == len(yTable)
+    assert len(z_table) == len(y_table)
 
-    return zTable, yTable
+    return z_table, y_table
 
 
-def writeHeader(file):
+def write_header(file):
 
     template = '''
 
@@ -132,7 +132,7 @@ struct Table
 
     file.write(template)
 
-def writeFooter(file):
+def write_footer(file):
 
     template = '''
 }  // namespace sbjy_table
@@ -140,7 +140,7 @@ def writeFooter(file):
 
     file.write(template)
 
-def writeTableArray(file, name, minn, maxn):
+def write_table_array(file, name, minn, maxn):
 
     file.write('static const unsigned int %s_min(%d);\n' % (name, minn)) 
     file.write('static const unsigned int %s_max(%d);\n' % (name, maxn)) 
@@ -156,7 +156,7 @@ def writeTableArray(file, name, minn, maxn):
     file.write('};\n\n')
 
 
-def writeArray(file, name, table):
+def write_array(file, name, table):
 
     #    head_template = '''
     #static const double %s[2][%d + 1] =
@@ -180,7 +180,7 @@ static const double %s[%d + 1] =
 
     file.write(foot_template)
 
-def writeArrays(file, name, table1, table2):
+def write_arrays(file, name, table1, table2):
 
     #    head_template = '''
     #static const double %s[2][%d + 1] =
@@ -206,7 +206,7 @@ static const double %s[%d + 1] =
     file.write(foot_template)
 
 
-def writeTable(file, name, N, x_start, delta_x):
+def write_table(file, name, N, x_start, delta_x):
 
     struct_template = '''
 static const Table %s = { %d, %.18f, %.18f, %s_f };
@@ -237,59 +237,59 @@ if __name__ == '__main__':
     #tolerance = 5e-5
     resolution = 35
 
-    writeHeader(file)
+    write_header(file)
 
-    zTable, jTable, jdotTable, yTable, ydotTable \
+    z_table, j_table, jdot_table, y_table, ydot_table \
         = jnyn(max(maxn_j, maxn_y), resolution)
 
-    delta_z = zTable[1]-zTable[0]
+    delta_z = z_table[1]-z_table[0]
 
     # j
     for n in range(minn_j, maxn_j + 1):
 
-        #zTable, jTable = make_table(special.sph_jn, n, 
+        #z_table, j_table = make_table(special.sph_jn, n, 
        #                             minz_j(n), maxz_j(n), tolerance)
-        #writeArray(file, 'sj_table%d_z' % n, zTable)
-        #writeArray(file, 'sj_table%d_f' % n, jTable)
-        #writeTable(file, 'sj_table%d' % n, len(zTable))
+        #write_array(file, 'sj_table%d_z' % n, z_table)
+        #write_array(file, 'sj_table%d_f' % n, j_table)
+        #write_table(file, 'sj_table%d' % n, len(z_table))
 
-        start = numpy.searchsorted(zTable, minz_j(n))
-        end = numpy.searchsorted(zTable, maxz_j(n))
-        z_start = zTable[start]
-        j = jTable[n][start:end]
-        jdot = jdotTable[n][start:end]
-        #writeArray(file, 'sj_table%d_z' % n, z)
-        #writeArray(file, 'sj_table%d_f' % n, j)
-        writeArrays(file, 'sj_table%d_f' % n, j, jdot)
-        writeTable(file, 'sj_table%d' % n, end-start, z_start, delta_z)
+        start = numpy.searchsorted(z_table, minz_j(n))
+        end = numpy.searchsorted(z_table, maxz_j(n))
+        z_start = z_table[start]
+        j = j_table[n][start:end]
+        jdot = jdot_table[n][start:end]
+        #write_array(file, 'sj_table%d_z' % n, z)
+        #write_array(file, 'sj_table%d_f' % n, j)
+        write_arrays(file, 'sj_table%d_f' % n, j, jdot)
+        write_table(file, 'sj_table%d' % n, end-start, z_start, delta_z)
         print 'j', n, len(j)
 
     # y
     for n in range(minn_y, maxn_y + 1):
 
-        #zTable, yTable = make_table(special.sph_yn, n, 
+        #z_table, y_table = make_table(special.sph_yn, n, 
        #                             minz_y(n), maxz_y(n), tolerance)
-        #writeArray(file, 'sy_table%d_z' % n, zTable)
-        #writeArray(file, 'sy_table%d_f' % n, yTable)
-        #writeTable(file, 'sy_table%d' % n, len(zTable))
+        #write_array(file, 'sy_table%d_z' % n, z_table)
+        #write_array(file, 'sy_table%d_f' % n, y_table)
+        #write_table(file, 'sy_table%d' % n, len(z_table))
 
-        start = numpy.searchsorted(zTable, minz_y(n))
-        end = numpy.searchsorted(zTable, maxz_y(n))
-        #z = zTable[start:end]
-        z_start = zTable[start]
-        y = yTable[n][start:end]
-        ydot = ydotTable[n][start:end]
-        #writeArray(file, 'sy_table%d_z' % n, z)
-        #writeArray(file, 'sy_table%d_f' % n, y)
-        writeArrays(file, 'sy_table%d_f' % n, y, ydot)
-        writeTable(file, 'sy_table%d' % n, end-start, z_start, delta_z)
+        start = numpy.searchsorted(z_table, minz_y(n))
+        end = numpy.searchsorted(z_table, maxz_y(n))
+        #z = z_table[start:end]
+        z_start = z_table[start]
+        y = y_table[n][start:end]
+        ydot = ydot_table[n][start:end]
+        #write_array(file, 'sy_table%d_z' % n, z)
+        #write_array(file, 'sy_table%d_f' % n, y)
+        write_arrays(file, 'sy_table%d_f' % n, y, ydot)
+        write_table(file, 'sy_table%d' % n, end-start, z_start, delta_z)
 
         print 'y', n, len(y)
 
-    writeTableArray(file, 'sj_table', minn_j, maxn_j)
-    writeTableArray(file, 'sy_table', minn_y, maxn_y)
+    write_table_array(file, 'sj_table', minn_j, maxn_j)
+    write_table_array(file, 'sy_table', minn_y, maxn_y)
 
-    writeFooter(file)
+    write_footer(file)
 
     file.write('\n')
 

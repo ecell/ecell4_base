@@ -20,13 +20,13 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
     def tearDown(self):
         pass
     
-    def test_Instantiation(self):
+    def test_instantiation(self):
         D = 1e-12
 
         gf = mod.FreePairGreensFunction(D)
         self.failIf(gf == None)
 
-    def test_DrawR(self):
+    def test_drawR(self):
         D = 1e-12
         r0 = 2e-8
         
@@ -43,7 +43,7 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
         r = gf.drawR(1.0, r0, t)
         self.failIf(r < 0.0)
 
-    def test_DrawR_zerot_is_r0(self):
+    def test_drawR_zerot_is_r0(self):
         D = 1e-12
         r0 = 2e-8
         
@@ -60,7 +60,7 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
         r = gf.drawR(1.0, r0, t)
         self.assertEqual(r, r0)
 
-    def test_DrawR_smallt(self):
+    def test_drawR_smallt(self):
         D = 1e-12
         r0 = 2e-8
         
@@ -82,7 +82,7 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
 
 
 
-    def test_DrawTheta(self):
+    def test_draw_theta(self):
         D = 1e-12
         r0 = 5e-8
         t = 1e-4

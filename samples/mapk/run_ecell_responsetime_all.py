@@ -41,14 +41,14 @@ for ti_str in ['1e-2', '1e-6']:
 
         OUTFILE = '%s/Kpp_ODE_%s_%s.ecd' % (cwd,D_str,ti_str)
 
-        parameterDict = { 'MODEL_FILE': MODEL_FILE,
+        parameter_dict = { 'MODEL_FILE': MODEL_FILE,
                           'DURATION': DURATION,
                           'OUTFILE': OUTFILE,
                           'D': D_str,
                           'N_KK': N_KK, 'N_P': N_P,
                           'N_KPP': N_KPP, 'N_K': N_K, 'KI': KI }
         
-        jobID = registerEcellSession(ESS_FILE, parameterDict, [MODEL_FILE, ])
+        jobID = registerEcellSession(ESS_FILE, parameter_dict, [MODEL_FILE, ])
         #jobs[jobID] = [float(N_KK)/N_P, kpp_ratio]
 
 run()

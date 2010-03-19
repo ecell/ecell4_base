@@ -20,7 +20,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
     def tearDown(self):
         pass
     
-    def test_Instantiation(self):
+    def test_instantiation(self):
         D = 1e-12
         kf = 1e8
         sigma = 1e-8
@@ -31,7 +31,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         gf.seta(a)
 
 
-    def test_DrawTime(self):
+    def test_draw_time(self):
         D = 1e-12
         a = 1e-7
         r0 = 5e-8
@@ -48,7 +48,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         t = gf.drawTime(1.0, r0)
         self.failIf(t <= 0.0 or t >= numpy.inf)
 
-    def test_DrawTime_r0_equal_a(self):
+    def test_draw_time_r0_equal_a(self):
         D = 1e-12
 
         a = 1e-7
@@ -60,7 +60,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         t = gf.drawTime(0.5, r0)
         self.assertEqual(0.0, t)
 
-    def test_DrawR(self):
+    def test_drawR(self):
         D = 1e-12
 
         a = 1e-7
@@ -83,7 +83,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(abs(r1) > 1e-15)
         self.assertAlmostEqual(abs(r2 - a), 0)
 
-    def test_DrawR_zerot(self):
+    def test_drawR_zerot(self):
         D = 1e-12
         a = 1e-7
         r0 = 2e-8
@@ -97,7 +97,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         self.assertEqual(r0, r)
 
 
-    def test_DrawR_squeezed(self):
+    def test_drawR_squeezed(self):
 
         D = 1e-12
         a = 1.01e-8
@@ -123,7 +123,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(r < 0.0 or r > a)
 
 
-    def test_DrawTheta(self):
+    def test_draw_theta(self):
         D = 1e-12
         a = 1e-7
         r0 = 5e-8
@@ -144,7 +144,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
 
-    def test_DrawTheta_zerot(self):
+    def test_draw_theta_zerot(self):
         D = 1e-12
 
         a = 1e-7
@@ -158,7 +158,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         theta = gf.drawTheta(0.5, r0, r0, t)
         self.assertEqual(0.0, theta)
 
-    def test_DrawTheta_smallt(self):
+    def test_draw_theta_smallt(self):
 
         D = 1e-12
 
@@ -173,7 +173,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         theta = gf.drawTheta(0.5, r, r0, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
-    def test_DrawTheta_large_t(self):
+    def test_draw_theta_large_t(self):
 
         D = 1e-12
 
@@ -190,7 +190,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
 
 
 
-    def test_DrawTheta_near_a(self):
+    def test_draw_theta_near_a(self):
 
         D = 1e-12
         #a = 1.01e-8  # this is a better test but currently fails
@@ -207,7 +207,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         theta = gf.drawTheta(0.5, r, r0, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
-    def test_DrawTheta_r_equal_a(self):
+    def test_draw_theta_r_equal_a(self):
         D = 1e-12
         a = 1e-7
         r0 = 9e-8
@@ -222,7 +222,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
 
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
-    def test_DrawTheta_r0_near_a_r_equal_a(self):
+    def test_draw_theta_r0_near_a_r_equal_a(self):
         D = 1e-12
         a = 1e-7
         r0 = a - 1e-9

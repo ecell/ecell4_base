@@ -20,13 +20,13 @@ class FreeGreensFunctionTestCase(unittest.TestCase):
     def tearDown(self):
         pass
     
-    def test_Instantiation(self):
+    def test_instantiation(self):
         D = 1e-12
 
         gf = mod.FreeGreensFunction(D)
         self.failIf(gf == None)
 
-    def test_DrawR(self):
+    def test_drawR(self):
         D = 1e-12
         
         gf = mod.FreeGreensFunction(D)
@@ -42,7 +42,7 @@ class FreeGreensFunctionTestCase(unittest.TestCase):
         r = gf.drawR(1.0, t)
         self.failIf(r < 0.0)
 
-    def test_DrawR_zerot_is_zero(self):
+    def test_drawR_zerot_is_zero(self):
 
         D = 1e-12
         

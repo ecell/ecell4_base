@@ -40,11 +40,11 @@ for N_KK in N_KK_list:
     N_KPP = N_K_total * kpp_ratio
     N_K = N_K_total - N_KPP
 
-    parameterDict = { 'MODEL_FILE': MODEL_FILE,
+    parameter_dict = { 'MODEL_FILE': MODEL_FILE,
                       'N_KK': N_KK, 'N_P': N_P,
                       'N_KPP': N_KPP, 'N_K': N_K, 'KI': KI }
         
-    jobID = registerEcellSession(ESS_FILE, parameterDict, [MODEL_FILE, ])
+    jobID = registerEcellSession(ESS_FILE, parameter_dict, [MODEL_FILE, ])
     jobs[jobID] = [float(N_KK)/N_P, kpp_ratio]
 
 run()

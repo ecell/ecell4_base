@@ -57,17 +57,17 @@ else:
 L = math.pow(V * 1e-3, 1.0 / 3.0)
 
 s = EGFRDSimulator()
-s.setWorldSize(L)
+s.set_world_size(L)
 
 N = 300
-matrixSize = min(max(3, int((3 * N) ** (1.0/3.0))), 60)
-print 'matrixSize=', matrixSize
-s.setMatrixSize(matrixSize)
+matrix_size = min(max(3, int((3 * N) ** (1.0/3.0))), 60)
+print 'matrix_size=', matrix_size
+s.set_matrix_size(matrix_size)
 
 
 box1 = CuboidalRegion([0,0,0],[L,L,L])
 # not supported yet
-#s.addSurface(box1)
+#s.add_surface(box1)
 
 radius = 2.5e-9
 
@@ -98,22 +98,22 @@ Pi = m.new_species_type('Pi', D_move, radius)
 sigma = radius * 2
 kD = k_D(D_react * 2, sigma)
 
-s.throwInParticles(Kpp, N_Kpp, box1)
-s.throwInParticles(K, N_K, box1)
-s.throwInParticles(KK, N_KK, box1)
-s.throwInParticles(P, N_P, box1)
+s.throw_in_particles(Kpp, N_Kpp, box1)
+s.throw_in_particles(K, N_K, box1)
+s.throw_in_particles(KK, N_KK, box1)
+s.throw_in_particles(P, N_P, box1)
 
 # print kD
 # print k_a(Mtom3(0.02e9), kD)
 # print k_a(Mtom3(0.032e9), kD)
 # sys.exit(0)
 
-endTime = 5
+end_time = 5
 while 1:
     s.step()
-    nextTime = s.scheduler.getTopTime()
-    if nextTime > endTime:
-        s.stop(endTime)
+    next_time = s.scheduler.getTopTime()
+    if next_time > end_time:
+        s.stop(end_time)
         break
 
 s.reset()
@@ -124,23 +124,23 @@ k4 = k_a(Mtom3(0.032e9), kD)
 k5 = k_d(1.0, Mtom3(0.032e9), kD)
 k6 = 15.0
 
-r1 = createBindingReactionRule(K, KK, K_KK, k1)
+r1 = create_binding_reaction_rule(K, KK, K_KK, k1)
 m.network_rules.add_reaction_rule(r1)
-r2 = createUnbindingReactionRule(K_KK, K, KK, k2)
+r2 = create_unbinding_reaction_rule(K_KK, K, KK, k2)
 m.network_rules.add_reaction_rule(r2)
-r3 = createUnimolecularReactionRule(K_KK, Kp_KK, k3)
+r3 = create_unimolecular_reaction_rule(K_KK, Kp_KK, k3)
 m.network_rules.add_reaction_rule(r3)
-r4 = createUnbindingReactionRule(Kp_KK, Kpp, KK, k6)
+r4 = create_unbinding_reaction_rule(Kp_KK, Kpp, KK, k6)
 m.network_rules.add_reaction_rule(r4)
 
 
-r5 = createBindingReactionRule(Kpp, P, Kpp_P, k1)
+r5 = create_binding_reaction_rule(Kpp, P, Kpp_P, k1)
 m.network_rules.add_reaction_rule(r5)
-r6 = createUnbindingReactionRule(Kpp_P, Kpp, P, k2)
+r6 = create_unbinding_reaction_rule(Kpp_P, Kpp, P, k2)
 m.network_rules.add_reaction_rule(r6)
-r7 = createUnimolecularReactionRule(Kpp_P, Kp_P,k3)
+r7 = create_unimolecular_reaction_rule(Kpp_P, Kp_P,k3)
 m.network_rules.add_reaction_rule(r7)
-r8 = createUnbindingReactionRule(Kp_P, K, P, k6)
+r8 = create_unbinding_reaction_rule(Kp_P, K, P, k6)
 m.network_rules.add_reaction_rule(r8)
 
 
@@ -160,15 +160,15 @@ l = Logger(s,
 rfile = open('data/' + logname + '_reactions.dat', 'w')
 
 
-#l.setParticleOutput(('Ea','X','EaX','Xp','Xpp','EaI'))
-l.setParticleOutInterval(1e-0)
+#l.set_particle_output(('Ea','X','EaX','Xp','Xpp','EaI'))
+l.set_particle_out_interval(1e-0)
 l.log()
 
 while s.t < T:
     s.step()
 
-    if s.lastReaction:
-        r = s.lastReaction
+    if s.last_reaction:
+        r = s.last_reaction
         line = '(%18.18g,\t%s,\t%s)\n' % (s.t, r.reactants, r.products)
         #print line
         rfile.write(line)

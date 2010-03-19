@@ -62,12 +62,12 @@ def singlerun(T_list, D_factor, kf_factor):
 
     w = World(L, 3)
     s = EGFRDSimulator(w)
-    #s.setUserMaxShellSize(1e-6)
+    #s.set_user_max_shell_size(1e-6)
     #s = BDSimulator(w)
 
-    #matrixSize = min(max(3, int((9 * N_X) ** (1.0/3.0))), 60)
-    #print 'matrixSize=', matrixSize
-    #s.setMatrixSize(matrixSize)
+    #matrix_size = min(max(3, int((9 * N_X) ** (1.0/3.0))), 60)
+    #print 'matrix_size=', matrix_size
+    #s.set_matrix_size(matrix_size)
 
     box1 = CuboidalRegion([0,0,0],[L,L,L])
 
@@ -90,19 +90,19 @@ def singlerun(T_list, D_factor, kf_factor):
     B = m.new_species_type('B', D, radius)
     C = m.new_species_type('C', D, radius)
 
-    r1 = createBindingReactionRule(A, B, C, kf)
+    r1 = create_binding_reaction_rule(A, B, C, kf)
     m.network_rules.add_reaction_rule(r1)
 
-    r2 = createUnbindingReactionRule(C, A, B, 1e3)
+    r2 = create_unbinding_reaction_rule(C, A, B, 1e3)
     m.network_rules.add_reaction_rule(r2)
 
-    s.setModel(m)
+    s.set_model(m)
 
     A_pos = [0,0,0]
     B_pos = [(A.radius + B.radius)+1e-23,0,0]
 
-    s.placeParticle(A, A_pos)
-    s.placeParticle(B, B_pos)
+    s.place_particle(A, A_pos)
+    s.place_particle(B, B_pos)
 
     r_list = []
     t_list = []
@@ -110,12 +110,12 @@ def singlerun(T_list, D_factor, kf_factor):
 
     s.step()
 
-    nextStop = T_list[0]
+    next_stop = T_list[0]
 
     i_T = 0
     while 1:
-        if s.lastReaction:
-            print s.lastReaction
+        if s.last_reaction:
+            print s.last_reaction
             if C.pool.size == 0:  #A,B
                 print 'set t_last', s.t
                 t_last = s.t  # set t_last
@@ -123,10 +123,10 @@ def singlerun(T_list, D_factor, kf_factor):
                 print 'reaction: ', s.t - t_last
                 t_list.append(s.t - t_last)
 
-        nextTime = s.getNextTime()
-        if nextTime > nextStop:
-            print 'stop', i_T, nextStop
-            s.stop(nextStop)
+        next_time = s.get_next_time()
+        if next_time > next_stop:
+            print 'stop', i_T, next_stop
+            s.stop(next_stop)
             if C.pool.size != 0:
                 r_list.append(0)
             else:
@@ -134,9 +134,9 @@ def singlerun(T_list, D_factor, kf_factor):
                                          B.pool.positions[0]))
 
             i_T += 1
-            nextStop = T_list[i_T]
+            next_stop = T_list[i_T]
         
-        if nextStop == INF and len(t_list) != 0:
+        if next_stop == INF and len(t_list) != 0:
             print 'break', s.t
             break
 

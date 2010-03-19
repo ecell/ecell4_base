@@ -20,7 +20,7 @@ class BDSimulatorTestCase(unittest.TestCase):
         self.m.set_all_repulsive()
         world = World(1e-5, 10)
         self.s = BDSimulator(world)
-        self.s.setModel(self.m)
+        self.s.set_model(self.m)
 
     def tearDown(self):
         pass
@@ -29,27 +29,27 @@ class BDSimulatorTestCase(unittest.TestCase):
         self.failIf(self.s == None)
 
     
-    def test_OneParticle(self):
-        self.s.placeParticle(self.S, [0.0,0.0,0.0])
+    def test_one_particle(self):
+        self.s.place_particle(self.S, [0.0,0.0,0.0])
 
         t = self.s.t
         for i in range(5):
             self.s.step()
         self.failIf(t == self.s.t)
 
-    def test_TwoParticles(self):
-        self.s.placeParticle(self.S, [0.0,0.0,0.0])
-        self.s.placeParticle(self.S, [5e-6,5e-6,5e-6])
+    def test_two_particles(self):
+        self.s.place_particle(self.S, [0.0,0.0,0.0])
+        self.s.place_particle(self.S, [5e-6,5e-6,5e-6])
 
         t = self.s.t
         for i in range(5):
             self.s.step()
         self.failIf(t == self.s.t)
 
-    def test_ThreeParticles(self):
-        self.s.placeParticle(self.S, [0.0,0.0,0.0])
-        self.s.placeParticle(self.S, [5e-6,5e-6,5e-6])
-        self.s.placeParticle(self.S, [1e-7,1e-7,1e-7])
+    def test_three_particles(self):
+        self.s.place_particle(self.S, [0.0,0.0,0.0])
+        self.s.place_particle(self.S, [5e-6,5e-6,5e-6])
+        self.s.place_particle(self.S, [1e-7,1e-7,1e-7])
 
         t = self.s.t
         for i in range(5):
@@ -57,20 +57,20 @@ class BDSimulatorTestCase(unittest.TestCase):
         self.failIf(t == self.s.t)
 
     def test_immobile_is_immobile(self):
-        particleA = self.s.placeParticle(self.A, [0.0,0.0,0.0])
-        self.s.placeParticle(self.B, [1.5000001e-8,0.0,0.0])
+        particleA = self.s.place_particle(self.A, [0.0,0.0,0.0])
+        self.s.place_particle(self.B, [1.5000001e-8,0.0,0.0])
 
-        initialPosition = particleA[1].position
+        initial_position = particleA[1].position
 
         for i in range(10):
             self.s.step()
             #print particleA[1].position
         
-        newPosition = particleA[1].position
-        dist = self.s.distance(initialPosition, newPosition)
+        new_position = particleA[1].position
+        dist = self.s.distance(initial_position, new_position)
 
         self.failIf(dist != 0, 'initial pos: %s,\tnew pos: %s' %
-                    (initialPosition, newPosition))
+                    (initial_position, new_position))
 
 
 

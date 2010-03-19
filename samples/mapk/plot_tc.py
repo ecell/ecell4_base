@@ -25,7 +25,7 @@ def add_columns(data, ycolumns):
 
     return y
 
-def get_data(filename):
+def getData(filename):
     ycolumns = [1, ]
     #ycolumns = [2,6]
     #ycolumns = [3,5]
@@ -46,7 +46,7 @@ def get_data(filename):
 
 def plot_file(filename):
 
-    x, y = get_data(filename)
+    x, y = getData(filename)
 
     #plot_theory(N_K, N_P, Keq, x[-1])
     plot(x, y, '-')

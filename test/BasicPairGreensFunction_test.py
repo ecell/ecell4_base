@@ -21,7 +21,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
     def tearDown(self):
         pass
     
-    def test_Instantiation(self):
+    def test_instantiation(self):
         D = 1e-12
         kf = 1e8
         sigma = 1e-8
@@ -31,7 +31,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(gf == None)
 
 
-    def test_DrawTime(self):
+    def test_draw_time(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -49,7 +49,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(t <= 0.0)
 
 
-    def test_DrawTime_r0_equal_sigma_kf_zero(self):
+    def test_draw_time_r0_equal_sigma_kf_zero(self):
         D = 1e-12
         kf = 0.0 # note this
         sigma = 1e-8
@@ -60,7 +60,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
         t = gf.drawTime(0.5, r0)
         self.failIf(t < 0.0)
 
-    def test_DrawR(self):
+    def test_drawR(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -82,7 +82,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(abs(r1 - sigma) > 1e-15)
 
 
-    def test_DrawR_zerot(self):
+    def test_drawR_zerot(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -95,7 +95,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
         r = gf.drawR(0.5, r0, t)
         self.assertEqual(r0, r)
 
-    def test_DrawR_smallt(self):
+    def test_drawR_smallt(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -111,7 +111,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
 
 
 
-    def test_DrawR_r0_equal_sigma(self):
+    def test_drawR_r0_equal_sigma(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -125,7 +125,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(r < sigma)
 
 
-    def test_DrawTheta(self):
+    def test_draw_theta(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -145,7 +145,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
     '''
-    def test_DrawTheta2(self):
+    def test_draw_theta2(self):
         D = 2e-12
         kf = 0
         sigma = 5e-9
@@ -165,7 +165,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
 '''
 
 
-    def test_DrawTheta_zerot(self):
+    def test_draw_theta_zerot(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8
@@ -178,7 +178,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
         theta = gf.drawTheta(0.5, r0, r0, t)
         self.assertEqual(0.0, theta)
 
-    def test_DrawTheta_smallt(self):
+    def test_draw_theta_smallt(self):
 
         D = 1e-12
         kf = 1e-8
@@ -197,7 +197,7 @@ class BasicPairGreensFunctionTestCase(unittest.TestCase):
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
 
-    def test_DrawTheta_r0_equal_sigma(self):
+    def test_draw_theta_r0_equal_sigma(self):
         D = 1e-12
         kf = 1e-8
         sigma = 1e-8

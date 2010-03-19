@@ -29,18 +29,18 @@ class UtilsTestCase(unittest.TestCase):
         self.failIf(not (pos[0] == pos[2] == 11 and pos[1] == -2))
 
     
-    def test_randomUnitVector(self):
+    def test_random_unit_vector(self):
 
         for i in range(1000):
-            v = randomUnitVector()
+            v = random_unit_vector()
             self.assertAlmostEqual(length(v), 1.0, 15)
 
 
-    def test_randomVector(self):
+    def test_random_vector(self):
 
         for i in range(1000):
             r = numpy.random.uniform() * 1e3
-            v = randomVector(r)
+            v = random_vector(r)
             self.assertAlmostEqual(length(v), r, 12)
 
     def test_normalize(self):
@@ -56,17 +56,17 @@ class UtilsTestCase(unittest.TestCase):
 
         for i in range(1000):
             r = numpy.random.uniform() * 1e3
-            v = randomVector(r)
-            v2 = sphericalToCartesian(cartesianToSpherical(v))
+            v = random_vector(r)
+            v2 = spherical_to_cartesian(cartesian_to_spherical(v))
             diff = abs(v - v2).sum()
             self.assertAlmostEqual(diff, 0, 10)
 
     def test_cartesian_spherical(self):
 
         for i in range(1000):
-            v = randomUnitVectorS()
+            v = random_unit_vector_s()
             v[0] *= 1e3
-            v2 = cartesianToSpherical(sphericalToCartesian(v))
+            v2 = cartesian_to_spherical(spherical_to_cartesian(v))
             diff = abs(v - v2).sum()
             self.assertAlmostEqual(diff, 0, 10)
             
@@ -74,9 +74,9 @@ class UtilsTestCase(unittest.TestCase):
 
         #FIXME: more serious test is needed.
 
-        def _calculatePairCoM(pos1, pos2, D1, D2, worldSize):
-            pos2t = cyclic_transpose(pos2, pos1, worldSize)
-            return ((D2 * pos1 + D1 * pos2t) / (D1 + D2)) % worldSize
+        def _calculate_pair_com(pos1, pos2, D1, D2, world_size):
+            pos2t = cyclic_transpose(pos2, pos1, world_size)
+            return ((D2 * pos1 + D1 * pos2t) / (D1 + D2)) % world_size
 
         for i in range(1000):
             pos1 = numpy.random.uniform(size=3)
@@ -85,7 +85,7 @@ class UtilsTestCase(unittest.TestCase):
             D2 = numpy.random.uniform()
             wsize = 10
             com1 = calculate_pair_CoM(pos1, pos2, D1, D2, wsize)
-            com2 = _calculatePairCoM(pos1, pos2, D1, D2, wsize)
+            com2 = _calculate_pair_com(pos1, pos2, D1, D2, wsize)
             diff = abs(com1 - com2).sum()
             self.assertAlmostEqual(diff, 0, 10)
 

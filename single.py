@@ -19,18 +19,18 @@ class Single(object):
 
         self.k_tot = 0
 
-        self.lastTime = 0.0
+        self.last_time = 0.0
         self.dt = 0.0
-        self.eventType = None
+        self.event_type = None
 
         self.surface = surface
 
         # Create shell.
-        shell = self.createNewShell(pid_particle_pair[1].position, pid_particle_pair[1].radius, domain_id)
+        shell = self.create_new_shell(pid_particle_pair[1].position, pid_particle_pair[1].radius, domain_id)
 
         self.shell_list = [(shell_id, shell), ]
 
-        self.eventID = None
+        self.event_id = None
 
         self.domain_id = domain_id
 
@@ -64,11 +64,11 @@ class Single(object):
         after calling this method.
         '''
         self.dt = 0.0
-        self.lastTime = t
-        self.eventType = EventType.SINGLE_ESCAPE
+        self.last_time = t
+        self.event_type = EventType.SINGLE_ESCAPE
 
-    def isReset(self):
-        return self.dt == 0.0 and self.eventType == EventType.SINGLE_ESCAPE
+    def is_reset(self):
+        return self.dt == 0.0 and self.event_type == EventType.SINGLE_ESCAPE
 
     def draw_reaction_time_tuple(self):
         """Return a (reaction time, event type)-tuple.
@@ -87,7 +87,7 @@ class Single(object):
         
         Note: we are not calling single.drawEventType() just yet, but 
         postpone it to the very last minute (when this event is executed in 
-        fireSingle). So IV_EVENT can still be an iv escape or an iv 
+        fire_single). So IV_EVENT can still be an iv escape or an iv 
         interaction.
 
         """
@@ -102,12 +102,12 @@ class Single(object):
         if self.getD() == 0:
             dt = numpy.inf
         else:
-            dt = draw_time_wrapper(self.greens_function())
+            dt = drawTime_wrapper(self.greens_function())
 
         event_type = EventType.SINGLE_ESCAPE
         return dt, event_type
 
-    def determineNextEvent(self):
+    def determine_next_event(self):
         """Return an (event time, event type)-tuple.
 
         """
@@ -123,7 +123,7 @@ class Single(object):
         for rt in self.reactiontypes:
             self.k_tot += rt.k
 
-    def drawReactionRule(self):
+    def draw_reaction_rule(self):
         k_array = [rt.k for rt in self.reactiontypes]
         k_array = numpy.add.accumulate(k_array)
         k_max = k_array[-1]
@@ -137,7 +137,7 @@ class Single(object):
         pass
 
     def __str__(self):
-        return 'Single[%s: %s: eventID=%s]' % (self.domain_id, self.pid_particle_pair[0], self.eventID)
+        return 'Single[%s: %s: event_id=%s]' % (self.domain_id, self.pid_particle_pair[0], self.event_id)
 
 
 class NonInteractionSingle(Single):
@@ -160,10 +160,10 @@ class NonInteractionSingle(Single):
     def get_shell_size(self):
         return self.shell_list[0][1].shape.radius
 
-    def drawNewPosition(self, dt, eventType):
+    def draw_new_position(self, dt, event_type):
         gf = self.greens_function()
         a = self.get_mobility_radius()
-        r = draw_displacement_wrapper(gf, dt, eventType, a)
+        r = draw_displacement_wrapper(gf, dt, event_type, a)
         displacement = self.displacement(r)
         if __debug__:
             scale = self.pid_particle_pair[1].radius
@@ -193,11 +193,11 @@ class SphericalSingle(NonInteractionSingle):
         gf.seta(a)
         return gf
 
-    def createNewShell(self, position, radius, domain_id):
+    def create_new_shell(self, position, radius, domain_id):
         return SphericalShell(domain_id, Sphere(position, radius))
 
     def displacement(self, r):
-        return randomVector(r)
+        return random_vector(r)
 
     def __str__(self):
         return 'Spherical' + Single.__str__(self)
@@ -227,7 +227,7 @@ class PlanarSurfaceSingle(NonInteractionSingle):
         gf.seta(a)
         return gf
 
-    def createNewShell(self, position, radius, domain_id):
+    def create_new_shell(self, position, radius, domain_id):
         # The size (thickness) of a hockey puck is not more than it has to be 
         # (namely the radius of the particle), so if the particle undergoes an 
         # unbinding reaction we still have to clear the target volume and the 
@@ -237,7 +237,7 @@ class PlanarSurfaceSingle(NonInteractionSingle):
         return CylindricalShell(domain_id, Cylinder(position, radius, orientation, size))
 
     def displacement(self, r):
-        x, y = randomVector2D(r)
+        x, y = random_vector2D(r)
         return x * self.surface.shape.unit_x + y * self.surface.shape.unit_y
 
     def __str__(self):
@@ -267,9 +267,9 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
         gf.seta(a)
         return gf
 
-    def createNewShell(self, position, size, domain_id):
+    def create_new_shell(self, position, size, domain_id):
         # Heads up. The cylinder's *size*, not radius, is changed when you 
-        # make the cylinder bigger, because of the redefinition of setRadius.
+        # make the cylinder bigger, because of the redefinition of set_radius.
 
         # The radius of a rod is not more than it has to be (namely the radius 
         # of the particle), so if the particle undergoes an unbinding reaction 

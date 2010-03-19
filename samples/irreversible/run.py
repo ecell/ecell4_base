@@ -36,7 +36,7 @@ def singlerun1(T):
     w = World(1e-3, 3)
     s = BDSimulator(w)
 
-    #s.setMaxShellSize(1e-6)
+    #s.set_max_shell_size(1e-6)
 
 
     sigma = 5e-9
@@ -51,24 +51,24 @@ def singlerun1(T):
     B = m.new_species_type('B', D, sigma/2)
     C = m.new_species_type('C', 0.0, sigma/2)
 
-    r1 = createBindingReactionRule(A, B, C, kf)
+    r1 = create_binding_reaction_rule(A, B, C, kf)
     m.network_rules.add_reaction_rule(r1)
 
-    s.setModel(m)
+    s.set_model(m)
 
-    particleA = s.placeParticle(A, [0,0,0])
-    particleB = s.placeParticle(B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0])
+    particleA = s.place_particle(A, [0,0,0])
+    particleB = s.place_particle(B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0])
 
-    endTime = T
+    end_time = T
     s.step()
 
     while 1:
-        nextTime = s.getNextTime()
-        if nextTime > endTime:
-            s.stop(endTime)
+        next_time = s.get_next_time()
+        if next_time > end_time:
+            s.stop(end_time)
             break
         s.step()
-        if s.lastReaction:
+        if s.last_reaction:
             print 'reaction'
             return 0.0, s.t
 
@@ -82,8 +82,8 @@ def singlerun2(T):
     w = World(1e-3, 3)
     s = EGFRDSimulator(w)
 
-    #s.setUserMaxShellSize(1e-7)
-    #s.setUserMaxShellSize(1e-3)
+    #s.set_user_max_shell_size(1e-7)
+    #s.set_user_max_shell_size(1e-3)
 
     sigma = 5e-9
     r0 = sigma
@@ -98,25 +98,25 @@ def singlerun2(T):
     B = m.new_species_type('B', D, sigma/2)
     C = m.new_species_type('C', D, sigma/2)
 
-    r1 = createBindingReactionRule(A, B, C, kf)
+    r1 = create_binding_reaction_rule(A, B, C, kf)
     m.network_rules.add_reaction_rule(r1)
 
-    s.setModel(m)
+    s.set_model(m)
 
-    particleA = s.placeParticle(A, [0,0,0])
-    particleB = s.placeParticle(B, [float(A['radius']) + float(B['radius'])+1e-23,0,0])
+    particleA = s.place_particle(A, [0,0,0])
+    particleB = s.place_particle(B, [float(A['radius']) + float(B['radius'])+1e-23,0,0])
 
-    endTime = T
+    end_time = T
 
     while 1:
         s.step()
-        if s.lastReaction:
+        if s.last_reaction:
             #print 'reaction'
             return 0.0, s.t
 
-        nextTime = s.getNextTime()
-        if nextTime > endTime:
-            s.stop(endTime)
+        next_time = s.get_next_time()
+        if next_time > end_time:
+            s.stop(end_time)
             break
 
     distance = s.distance_between_particles(particleA, particleB) 

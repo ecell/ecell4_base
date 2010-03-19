@@ -84,7 +84,7 @@ def fleq(a, b, typical=1, tolerance=TOLERANCE):
 def Mtom3(rate):
     return rate / (1000 * N_A)
 
-def meanArrivalTime(r, D):
+def mean_arrival_time(r, D):
     return (r * r) / (6.0 * D)
 
 def uniq(l):
@@ -94,25 +94,25 @@ def uniq(l):
 
 cyclic_transpose = _gfrd.cyclic_transpose
 
-def distanceSqArray_Simple(position1, positions, fsize = None):
+def distance_sq_array_simple(position1, positions, fsize = None):
     return numpy.square(positions - position1).sum(1)
 
-def distanceArray_Simple(position1, positions, fsize = None):
-    return numpy.sqrt(distanceSqArray_Simple(position1, positions))
+def distance_array_simple(position1, positions, fsize = None):
+    return numpy.sqrt(distance_sq_array_simple(position1, positions))
 
 distance = _gfrd.distance
 
 distance_cyclic = _gfrd.distance_cyclic
 
-def distanceSqArray_Cyclic(position1, positions, fsize):
+def distance_sq_array_cyclic(position1, positions, fsize):
     diff = numpy.abs(positions - position1)
     diff -= numpy.greater(diff, fsize * 0.5) * fsize # transpose
     return numpy.square(diff).sum(1)
 
-def distanceArray_Cyclic(position1, positions, fsize = 0):
-    return numpy.sqrt(distanceSqArray_Cyclic(position1, positions, fsize))
+def distance_array_cyclic(position1, positions, fsize = 0):
+    return numpy.sqrt(distance_sq_array_cyclic(position1, positions, fsize))
 
-def cartesianToSpherical(c):
+def cartesian_to_spherical(c):
     # x, y, z = c
     r = length(c)
     theta = math.acos(c[2] / r)
@@ -121,7 +121,7 @@ def cartesianToSpherical(c):
         phi += 2.0 * Pi
     return numpy.array([r, theta, phi])
 
-def sphericalToCartesian(s):
+def spherical_to_cartesian(s):
     #FIXME: it's possible that the below is a source of some bias.
     r, theta, phi = s
     sintheta = math.sin(theta)
@@ -129,19 +129,19 @@ def sphericalToCartesian(s):
                         r * math.sin(phi) * sintheta,
                         r * math.cos(theta)])
 
-def randomUnitVectorS():
+def random_unit_vector_s():
     s = numpy.array([1.0, myrandom.uniform(0, Pi), myrandom.uniform(0, Pi2)])
     return s
 
-def randomUnitVector():
+def random_unit_vector():
     v = [myrandom.uniform(-1,1), myrandom.uniform(-1,1), myrandom.uniform(-1,1)]
     return _gfrd.normalize(v, 1)
 
-def randomVector(r):
+def random_vector(r):
     v = [myrandom.uniform(-1,1), myrandom.uniform(-1,1), myrandom.uniform(-1,1)]
     return _gfrd.normalize(v, r)
 
-def randomVector2D(r):
+def random_vector2D(r):
     """Return a random 2D cartesian vector of length r.
 
     """
@@ -157,11 +157,11 @@ def length(a):
 def normalize(a, l=1):
     return _gfrd.normalize(a, l)
 
-def vectorAngle(a, b):
+def vector_angle(a, b):
     cosangle = numpy.dot(a, b) / (length(a) * length(b))
     return math.acos(cosangle)
 
-def vectorAngleAgainstZAxis(b):
+def vector_angle_against_z_axis(b):
     cosangle = b[2] / length(b)
     return math.acos(cosangle)
 
@@ -171,10 +171,10 @@ def crossproduct(a, b):
                      [- a[1],   a[0],    0.0]])
     return numpy.dot(M, b)
 
-def crossproductAgainstZAxis(a):
+def crossproduct_against_z_axis(a):
     return numpy.array([- a[1], a[0], 0.0])
 
-def rotateVector(v, r, alpha):
+def rotate_vector(v, r, alpha):
     '''
     v: vector to rotate
     r: normalized rotation axis

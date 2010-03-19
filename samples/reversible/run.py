@@ -34,7 +34,7 @@ def singlerun(T):
 
     w = World(1e-3, 3)
     s = EGFRDSimulator(w)
-    #s.setUserMaxShellSize(1e-6)
+    #s.set_user_max_shell_size(1e-6)
     #s = BDSimulator(w)
 
     sigma = 5e-9
@@ -53,29 +53,29 @@ def singlerun(T):
     B = m.new_species_type('B', D, sigma/2)
     C = m.new_species_type('C', D, sigma/2)
 
-    r1 = createBindingReactionRule(A, B, C, kf)
+    r1 = create_binding_reaction_rule(A, B, C, kf)
     m.network_rules.add_reaction_rule(r1)
 
-    r2 = createUnbindingReactionRule(C, A, B, koff)
+    r2 = create_unbinding_reaction_rule(C, A, B, koff)
     m.network_rules.add_reaction_rule(r2)
 
-    s.setModel(m)
+    s.set_model(m)
 
-    s.placeParticle(A, [0,0,0])
-    s.placeParticle(B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0])
+    s.place_particle(A, [0,0,0])
+    s.place_particle(B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0])
 
-    endTime = T
+    end_time = T
     s.step()
 
     while 1:
-        nextTime = s.getNextTime()
-        if nextTime > endTime:
-            s.stop(endTime)
+        next_time = s.get_next_time()
+        if next_time > end_time:
+            s.stop(end_time)
             break
         s.step()
 
     
-    if len(s.particlePool[C.id]) != 0:
+    if len(s.particle_pool[C.id]) != 0:
         return 0, s.t
 
     distance = s.distance_between_particles(A.id, B.id)

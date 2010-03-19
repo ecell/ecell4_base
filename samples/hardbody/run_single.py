@@ -15,9 +15,9 @@ def run_single(T, V, N):
 
     L = math.pow(V * 1e-3, 1.0 / 3.0)
 
-    matrixSize = min(max(3, int((3 * N) ** (1.0/3.0))), 120)
+    matrix_size = min(max(3, int((3 * N) ** (1.0/3.0))), 120)
     
-    w = World(L, matrixSize)
+    w = World(L, matrix_size)
     s = EGFRDSimulator(w)
     #s = BDSimulator(w)
 
@@ -30,17 +30,17 @@ def run_single(T, V, N):
     A = m.new_species_type('A', D, 2.5e-9)
     m.set_all_repulsive()
 
-    s.setModel(m)
+    s.set_model(m)
     
-    s.throwInParticles(A, N, box1)
+    s.throw_in_particles(A, N, box1)
     print 'stir'
 
-    stirTime = T * .1
+    stir_time = T * .1
     while 1:
         s.step()
-        nextTime = s.getNextTime()
-        if nextTime > stirTime:
-            s.stop(stirTime)
+        next_time = s.get_next_time()
+        if next_time > stir_time:
+            s.stop(stir_time)
             break
     print 'reset'
     s.reset()

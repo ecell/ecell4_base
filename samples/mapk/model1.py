@@ -36,17 +36,17 @@ elif D_mode == 'fixed':
 L = math.pow(V * 1e-3, 1.0 / 3.0)
 
 s = EGFRDSimulator()
-s.setWorldSize(L)
+s.set_world_size(L)
 
 N = 200
-matrixSize = min(max(3, int((3 * N) ** (1.0/3.0))), 60)
-print 'matrixSize=', matrixSize
-s.setMatrixSize(matrixSize)
+matrix_size = min(max(3, int((3 * N) ** (1.0/3.0))), 60)
+print 'matrix_size=', matrix_size
+s.set_matrix_size(matrix_size)
 
 
 box1 = CuboidalRegion([0,0,0],[L,L,L])
 # not supported yet
-#s.addSurface(box1)
+#s.add_surface(box1)
 
 model='mapk1'
 
@@ -81,65 +81,65 @@ Kp_P = m.new_species_type('Kp_P', D, radius)
 # 13     Kpp     -> Kp
 # 14     Kp      -> K
 
-s.setModel(m)
+s.set_model(m)
 
 sigma = radius * 2
 kD = k_D(D_react * 2, sigma)
 
 
-s.throwInParticles(K, C2N(200e-9, V), box1)
-s.throwInParticles(KK, C2N(50e-9, V), box1)
-s.throwInParticles(P, C2N(50e-9, V), box1)
+s.throw_in_particles(K, C2N(200e-9, V), box1)
+s.throw_in_particles(KK, C2N(50e-9, V), box1)
+s.throw_in_particles(P, C2N(50e-9, V), box1)
 
-#endTime = .5
-endTime = 0
+#end_time = .5
+end_time = 0
 while 1:
     s.step()
-    nextTime = s.scheduler.getTopTime()
-    if nextTime > endTime:
-        s.stop(endTime)
+    next_time = s.scheduler.getTopTime()
+    if next_time > end_time:
+        s.stop(end_time)
         break
 
 s.reset()
 
-r1 = createBindingReactionRule(K, KK, K_KK, k_a(Mtom3(0.02e9), kD))
+r1 = create_binding_reaction_rule(K, KK, K_KK, k_a(Mtom3(0.02e9), kD))
 m.network_rules.add_reaction_rule(r1)
-r2 = createUnbindingReactionRule(K_KK, K, KK, k_d(1.0, Mtom3(0.02e9), kD))
+r2 = create_unbinding_reaction_rule(K_KK, K, KK, k_d(1.0, Mtom3(0.02e9), kD))
 m.network_rules.add_reaction_rule(r2)
-#r3 = createUnbindingReactionRule(K_KK, Kp, KK, k_d(1.5, Mtom3(0.02e9), kD))
-r3 = createUnbindingReactionRule(K_KK, Kp, KK, 1.5)
+#r3 = create_unbinding_reaction_rule(K_KK, Kp, KK, k_d(1.5, Mtom3(0.02e9), kD))
+r3 = create_unbinding_reaction_rule(K_KK, Kp, KK, 1.5)
 m.network_rules.add_reaction_rule(r3)
 
-r4 = createBindingReactionRule(Kp, KK, Kp_KK, k_a(Mtom3(0.032e9), kD))
+r4 = create_binding_reaction_rule(Kp, KK, Kp_KK, k_a(Mtom3(0.032e9), kD))
 m.network_rules.add_reaction_rule(r4)
-r5 = createUnbindingReactionRule(Kp_KK, Kp, KK, k_d(1.0, Mtom3(0.032e9), kD))
+r5 = create_unbinding_reaction_rule(Kp_KK, Kp, KK, k_d(1.0, Mtom3(0.032e9), kD))
 m.network_rules.add_reaction_rule(r5)
-#r6 = createUnbindingReactionRule(Kp_KK, Kpp, KK, k_d(15.0, Mtom3(0.032e9), kD))
-r6 = createUnbindingReactionRule(Kp_KK, Kpp, KK, 15.0)
+#r6 = create_unbinding_reaction_rule(Kp_KK, Kpp, KK, k_d(15.0, Mtom3(0.032e9), kD))
+r6 = create_unbinding_reaction_rule(Kp_KK, Kpp, KK, 15.0)
 m.network_rules.add_reaction_rule(r6)
 
-r7 = createBindingReactionRule(Kpp, P, Kpp_P, k_a(Mtom3(0.02e9), kD))
+r7 = create_binding_reaction_rule(Kpp, P, Kpp_P, k_a(Mtom3(0.02e9), kD))
 m.network_rules.add_reaction_rule(r7)
-r8 = createUnbindingReactionRule(Kpp_P, Kpp, P, k_d(1.0, Mtom3(0.02e9), kD))
+r8 = create_unbinding_reaction_rule(Kpp_P, Kpp, P, k_d(1.0, Mtom3(0.02e9), kD))
 m.network_rules.add_reaction_rule(r8)
-#r9 = createUnbindingReactionRule(Kpp_P, Kp, P, k_d(1.5, Mtom3(0.02e9), kD))
-r9 = createUnbindingReactionRule(Kpp_P, Kp, P, 1.5)
+#r9 = create_unbinding_reaction_rule(Kpp_P, Kp, P, k_d(1.5, Mtom3(0.02e9), kD))
+r9 = create_unbinding_reaction_rule(Kpp_P, Kp, P, 1.5)
 m.network_rules.add_reaction_rule(r9)
 
-r10 = createBindingReactionRule(Kp, P, Kp_P, k_a(Mtom3(0.032e9), kD))
+r10 = create_binding_reaction_rule(Kp, P, Kp_P, k_a(Mtom3(0.032e9), kD))
 m.network_rules.add_reaction_rule(r10)
-r11 = createUnbindingReactionRule(Kp_P, Kp, P, k_d(1.0, Mtom3(0.032e9), kD))
+r11 = create_unbinding_reaction_rule(Kp_P, Kp, P, k_d(1.0, Mtom3(0.032e9), kD))
 m.network_rules.add_reaction_rule(r11)
-#r12 = createUnbindingReactionRule(Kp_P, K, P, k_d(15.0, Mtom3(0.032e9), kD))
-r12 = createUnbindingReactionRule(Kp_P, K, P, 15.0)
+#r12 = create_unbinding_reaction_rule(Kp_P, K, P, k_d(15.0, Mtom3(0.032e9), kD))
+r12 = create_unbinding_reaction_rule(Kp_P, K, P, 15.0)
 m.network_rules.add_reaction_rule(r12)
 
-#r13 = createUnimolecularReactionRule(Kpp, Kp, 1e-1)
+#r13 = create_unimolecular_reaction_rule(Kpp, Kp, 1e-1)
 #m.network_rules.add_reaction_rule(r13)
-#r14 = createUnimolecularReactionRule(Kp, K, 1e-1)
+#r14 = create_unimolecular_reaction_rule(Kp, K, 1e-1)
 #m.network_rules.add_reaction_rule(r14)
 
-s.setModel(m)
+s.set_model(m)
 
 
 l = Logger(s, 
@@ -147,13 +147,13 @@ l = Logger(s,
 
 
 
-#l.setParticleOutput(('Ea','X','EaX','Xp','Xpp','EaI'))
-l.setParticleOutInterval(1e-0)
+#l.set_particle_output(('Ea','X','EaX','Xp','Xpp','EaI'))
+l.set_particle_out_interval(1e-0)
 l.log()
 
 while s.t < 30:
     s.step()
-    #s.dumpPopulation()
+    #s.dump_population()
     #s.check()
     l.log()
 

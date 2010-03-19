@@ -22,31 +22,31 @@ s = EGFRDSimulator(w)
 
 box1 = CuboidalRegion([0,0,0], [L,L,L])
 # not supported yet
-#s.addSurface(box1)
+#s.add_surface(box1)
 
 m = ParticleModel()
 S = m.new_species_type('S', 1.5e-12, 5e-9)
 P = m.new_species_type('P', 1e-12, 7e-9)
-r1 = createBindingReactionRule(S, S, P, 1e7 / N_A)
-r2 = createUnbindingReactionRule(P, S, S, 1e3)
+r1 = create_binding_reaction_rule(S, S, P, 1e7 / N_A)
+r2 = create_unbinding_reaction_rule(P, S, S, 1e3)
 m.network_rules.add_reaction_rule(r1)
 m.network_rules.add_reaction_rule(r2)
 m.set_all_repulsive()
 
-s.setModel(m)
+s.set_model(m)
 
-s.throwInParticles(S, N / 2, box1)
-s.throwInParticles(P, N / 2, box1)
+s.throw_in_particles(S, N / 2, box1)
+s.throw_in_particles(P, N / 2, box1)
 
 l = Logger(s, 'dimer')
-l.setParticleOutInterval(1e-7)
+l.set_particle_out_interval(1e-7)
 l.log()
 
 
 #while s.t < 100:
 #    s.step()
 
-#s.dumpPopulation()
+#s.dump_population()
 #l.log()
 
 import myrandom
@@ -54,11 +54,11 @@ myrandom.seed(0)
 
 
 def profrun():
-    #while s.stepCounter < 6000:
+    #while s.step_counter < 6000:
     for _ in xrange(15000):
         s.step()
         #l.log()
-        #logging.info(s.dumpPopulation())
+        #logging.info(s.dump_population())
 
 PROFMODE=True
 

@@ -12,19 +12,19 @@ s = EGFRDSimulator(w)
 
 box1 = CuboidalRegion([0,0,0],[size,size,size])
 # not supported yet
-#s.addSurface(box1)
+#s.add_surface(box1)
 
 #P = Species('P', 1e-12, 5e-8)
 P = Species('P', 1e-12, 3e-9) #hemo
-s.addSpecies(P)
+s.add_species(P)
 
-s.setAllRepulsive()
+s.set_all_repulsive()
 
-s.throwInParticles(P, 60, box1)
+s.throw_in_particles(P, 60, box1)
 
 l = Logger(s, 'simple')
-l.setParticleOutput(('P', ))
-l.setParticleOutInterval(3.33e-4)
+l.set_particle_output(('P', ))
+l.set_particle_out_interval(3.33e-4)
 l.log()
 
 while s.t < .1:

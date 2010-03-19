@@ -20,16 +20,16 @@ import myrandom
 
 __all__ = [
     'log',
-    'setupLogging',
+    'setup_logging',
     'p_free',
     'NoSpace',
     'ReactionRuleCache',
     'ParticleModel',
     'World',
-    'createUnimolecularReactionRule',
-    'createDecayReactionRule',
-    'createBindingReactionRule',
-    'createUnbindingReactionRule',
+    'create_unimolecular_reaction_rule',
+    'create_decay_reaction_rule',
+    'create_binding_reaction_rule',
+    'create_unbinding_reaction_rule',
     'Reaction',
     'ParticleSimulatorBase',
     'Species',
@@ -39,7 +39,7 @@ World = _gfrd.World
 
 log = logging.getLogger('ecell')
 
-def setupLogging():
+def setup_logging():
     global log 
 
     if 'LOGFILE' in os.environ:
@@ -73,7 +73,7 @@ def setupLogging():
             log.setLevel(logging.INFO)
 
 
-setupLogging()
+setup_logging()
 
 
 def p_free(r, t, D):
@@ -125,17 +125,17 @@ class ParticleModel(_gfrd.Model):
     def __init__(self):
         _gfrd.Model.__init__(self)
 
-        self.surfaceList = {}
+        self.surface_list = {}
 
         # Particles of a Species whose surface is not specified will be added 
         # to the world. Dimensions don't matter, except for visualization.
-        self.defaultSurface = \
+        self.default_surface = \
             CuboidalRegion([0, 0, 0], [1.0, 1.0, 1.0], 'world')
 
     def set_default_surface_size(self, size):
         # Particles of a Species whose surface is not specified will be added 
         # to the world. Dimensions don't matter, except for visualization.
-        self.defaultSurface = \
+        self.default_surface = \
             CuboidalRegion([0, 0, 0], [size, size, size], 'world')
 
     def new_species_type(self, id, D, radius):
@@ -166,27 +166,27 @@ class ParticleModel(_gfrd.Model):
                     rr['k'] = '0.0'
                     nr.add_reaction_rule(rr)
 
-    def addPlanarSurface(self, name, origin, vectorX, vectorY, Lx, Ly, Lz=0):
+    def add_planar_surface(self, name, origin, vector_x, vector_y, Lx, Ly, Lz=0):
         """Add a planar surface.
 
         name -- a descriptive name, should not be omitted.
 
         origin -- [x0, y0, z0] is the *center* of the planar surface.
-        vectorX -- [x1, y1, z1] and
-        vectorY -- [x2, y2, z2] are 2 perpendicular vectors that don't have 
+        vector_x -- [x1, y1, z1] and
+        vector_y -- [x2, y2, z2] are 2 perpendicular vectors that don't have 
         to be normalized that span the plane. For example [1,0,0] and [0,1,0]
         for a plane at z=0.
 
         Lx -- lx and 
-        Ly -- ly are the distances from the origin of the plane along vectorX 
-            or vectorY *to an edge* of the plane. PlanarSurfaces are finite.
+        Ly -- ly are the distances from the origin of the plane along vector_x 
+            or vector_y *to an edge* of the plane. PlanarSurfaces are finite.
         Lz -- dz, the thickness of the planar surface, can be omitted for Lz=0.
 
         """
-        return self.addSurface(PlanarSurface(name, origin, vectorX, vectorY,
+        return self.add_surface(PlanarSurface(name, origin, vector_x, vector_y,
                                              Lx, Ly, Lz))
 
-    def addCylindricalSurface(self, name, origin, radius, orientation, size):
+    def add_cylindrical_surface(self, name, origin, radius, orientation, size):
         """Add a cylindrical surface.
 
         name -- a descriptive name, should not be omitted.
@@ -201,25 +201,25 @@ class ParticleModel(_gfrd.Model):
             the *half-length*. CylindricalSurfaces are finite.
 
         """
-        return self.addSurface(CylindricalSurface(name, origin, radius, 
+        return self.add_surface(CylindricalSurface(name, origin, radius, 
                                                   orientation, size))
 
-    def addSurface(self, surface):
+    def add_surface(self, surface):
         if(not isinstance(surface, Surface) or
            isinstance(surface, CuboidalRegion)):
             raise RuntimeError(str(surface) + ' is not a surface.')
 
-        self.surfaceList[surface.name] = surface
+        self.surface_list[surface.name] = surface
         return surface
 
-    def getSurface(self, nameOfSurface): 
-        if nameOfSurface != self.defaultSurface.name:
-            surface = self.surfaceList[nameOfSurface]
+    def get_surface(self, name_of_surface): 
+        if name_of_surface != self.default_surface.name:
+            surface = self.surface_list[name_of_surface]
         else:
-            # Default surface is not stored in surfaceList, because it's not 
-            # really a surface, and should not be found in getClosestSurface 
+            # Default surface is not stored in surface_list, because it's not 
+            # really a surface, and should not be found in get_closest_surface 
             # searches.
-            surface = self.defaultSurface
+            surface = self.default_surface
         return surface
 
     def dump_reaction_rule(self, reaction_rule):
@@ -252,7 +252,7 @@ class ParticleModel(_gfrd.Model):
     '''
     Methods for alternative user interface.
     '''
-    def addSpecies(self, species, surface=None, D=None, radius=None):
+    def add_species(self, species, surface=None, D=None, radius=None):
         """Add a new species.
 
         A species is a type of particles. By default the species is added to 
@@ -268,10 +268,10 @@ class ParticleModel(_gfrd.Model):
         """
         if surface == None:
             name = species.name
-            surface = self.defaultSurface
+            surface = self.default_surface
         else:
-            assert any(surface == s for s in self.surfaceList.itervalues()), \
-                   '%s not in surfaceList.' % (surface)
+            assert any(surface == s for s in self.surface_list.itervalues()), \
+                   '%s not in surface_list.' % (surface)
 
             # Construct new name if species lives on a surface.
             name = '(' + species.name + ',' + str(surface) + ')'
@@ -312,7 +312,7 @@ class ParticleModel(_gfrd.Model):
                 # reaction.
                 species = DummySpecies(surface)
 
-            # Note: see addSpecies for how name is constructed. 
+            # Note: see add_species for how name is constructed. 
             name = '(' + species.name + ',' + str(surface) + ')'
 
         return self.get_species_type_by_name(name)
@@ -324,7 +324,7 @@ class ParticleModel(_gfrd.Model):
 
         raise RuntimeError('Species type %s does not exist.' % (name))
 
-    def addReaction(self, reactants, products, k): 
+    def add_reaction(self, reactants, products, k): 
         reactants = map(self.get_species_type, reactants)
         products  = map(self.get_species_type, products)
 
@@ -334,25 +334,25 @@ class ParticleModel(_gfrd.Model):
         return rr
 
 
-def createUnimolecularReactionRule(s1, p1, k):
+def create_unimolecular_reaction_rule(s1, p1, k):
     rr = _gfrd.ReactionRule([s1, ], [p1, ])
     rr['k'] = '%.16g' % k
     return rr
 
 
-def createDecayReactionRule(s1, k):
+def create_decay_reaction_rule(s1, k):
     rr = _gfrd.ReactionRule([s1, ], [])
     rr['k'] = '%.16g' % k
     return rr
 
 
-def createBindingReactionRule(s1, s2, p1, k):
+def create_binding_reaction_rule(s1, s2, p1, k):
     rr = _gfrd.ReactionRule([s1, s2], [p1, ])
     rr['k'] = '%.16g' % k
     return rr
 
 
-def createUnbindingReactionRule(s1, p1, p2, k):
+def create_unbinding_reaction_rule(s1, p1, p2, k):
     rr = _gfrd.ReactionRule([s1, ], [p1, p2])
     rr['k'] = '%.16g' % k
     return rr
@@ -371,8 +371,8 @@ class Reaction:
 
 class ParticleSimulatorBase(object):
     def __init__(self, world):
-        self.particlePool = {}
-        self.reactionRuleCache = {}
+        self.particle_pool = {}
+        self.reaction_rule_cache = {}
 
         #self.dt = 1e-7
         #self.t = 0.0
@@ -381,34 +381,34 @@ class ParticleSimulatorBase(object):
 
         self.dissociation_retry_moves = 1
         
-        self.dtLimit = 1e-3
-        self.dtMax = self.dtLimit
+        self.dt_limit = 1e-3
+        self.dt_max = self.dt_limit
 
         # counters
-        self.rejectedMoves = 0
-        self.reactionEvents = 0
+        self.rejected_moves = 0
+        self.reaction_events = 0
 
         self.world = world
 
-        self.maxMatrixSize = 0
+        self.max_matrix_size = 0
 
-        self._distanceSq = None
-        self._disatnceSqArray = None
+        self._distance_sq = None
+        self._disatnce_sq_array = None
 
-        self.lastReaction = None
+        self.last_reaction = None
 
         self.model = ParticleModel()
 
         self.network_rules = None
 
-    def setModel(self, model):
+    def set_model(self, model):
         model.set_all_repulsive()
         model.set_default_surface_size(self.world.world_size)
-        self.reactionRuleCache.clear()
+        self.reaction_rule_cache.clear()
 
         for st in model.species_types:
             if st["surface"] == "":
-                st["surface"] = self.model.defaultSurface.name
+                st["surface"] = self.model.default_surface.name
 
             try:
                 self.world.get_species(st.id)
@@ -419,8 +419,8 @@ class ParticleSimulatorBase(object):
                                                    st["surface"]))
             # else: keep species info for this species.
 
-            if not self.particlePool.has_key(st.id):
-                self.particlePool[st.id] = _gfrd.ParticleIDSet()
+            if not self.particle_pool.has_key(st.id):
+                self.particle_pool[st.id] = _gfrd.ParticleIDSet()
             # else: keep particle data for this species.
 
         self.network_rules = _gfrd.NetworkRulesWrapper(model.network_rules)
@@ -429,44 +429,44 @@ class ParticleSimulatorBase(object):
     def initialize(self):
         pass
 
-    def getClosestSurface(self, pos, ignore):
+    def get_closest_surface(self, pos, ignore):
         """Return sorted list of tuples with:
             - distance to surface
             - surface itself
 
-        We can not use matrixSpace, it would miss a surface if the origin of the 
+        We can not use matrix_space, it would miss a surface if the origin of the 
         surface would not be in the same or neighboring cells as pos.
 
         """
         surfaces = [None]
         distances = [numpy.inf]
 
-        ignoreSurfaces = []
+        ignore_surfaces = []
         for obj in ignore:
             if isinstance(obj.surface, Surface):
                 # For example ignore surface that particle is currently on.
-                ignoreSurfaces.append(obj.surface)
+                ignore_surfaces.append(obj.surface)
 
-        for surface in self.model.surfaceList.itervalues():
-            if surface not in ignoreSurfaces:
-                posTransposed = \
+        for surface in self.model.surface_list.itervalues():
+            if surface not in ignore_surfaces:
+                pos_transposed = \
                     self.world.cyclic_transpose(pos, surface.shape.position)
-                distanceToSurface = self.distance(surface.shape, posTransposed)
-                distances.append(distanceToSurface)
+                distance_to_surface = self.distance(surface.shape, pos_transposed)
+                distances.append(distance_to_surface)
                 surfaces.append(surface)
 
         return min(zip(distances, surfaces))
 
-    def getClosestSurfaceWithinRadius(self, pos, radius, ignore):
+    def get_closest_surface_within_radius(self, pos, radius, ignore):
         """Return sorted list of tuples with:
             - distance to surface
             - surface itself
 
         """
-        distanceToSurface, closestSurface = self.getClosestSurface(pos, 
+        distance_to_surface, closest_surface = self.get_closest_surface(pos, 
                                                                    ignore) 
-        if distanceToSurface < radius:
-            return distanceToSurface, closestSurface
+        if distance_to_surface < radius:
+            return distance_to_surface, closest_surface
         else:
             return numpy.inf, None
 
@@ -475,13 +475,13 @@ class ParticleSimulatorBase(object):
         else:
             self._distance = distance_cyclic
 
-    def applyBoundary(self, pos):
+    def apply_boundary(self, pos):
         return self.world.apply_boundary(pos)
 
-    def getReactionRule1(self, species):
+    def get_reaction_rule1(self, species):
         k = (species, )
         try:
-            retval = self.reactionRuleCache[k]
+            retval = self.reaction_rule_cache[k]
         except:
             gen = self.network_rules.query_reaction_rule(species)
             if gen is None:
@@ -503,16 +503,16 @@ class ParticleSimulatorBase(object):
                                 'radii of both products must be smaller than ' \
                                 + 'reactant.radius.'
                     retval.append(ReactionRuleCache(rt, products, rt.k))
-            self.reactionRuleCache[k] = retval
+            self.reaction_rule_cache[k] = retval
         return retval
 
-    def getReactionRule2(self, species1, species2):
+    def get_reaction_rule2(self, species1, species2):
         if species2 < species1:
             k = (species2, species1)
         else:
             k = (species1, species2)
         try:
-            retval = self.reactionRuleCache[k]
+            retval = self.reaction_rule_cache[k]
         except:
             gen = self.network_rules.query_reaction_rule(species1, species2)
             if gen is None:
@@ -525,7 +525,7 @@ class ParticleSimulatorBase(object):
                             rt,
                             [self.world.get_species(sid) for sid in rt.products],
                             rt.k))
-            self.reactionRuleCache[k] = retval
+            self.reaction_rule_cache[k] = retval
         if __debug__:
             if len(retval) > 1:
                 name1 = self.model.get_species_type_by_id(species1)['id']
@@ -535,14 +535,14 @@ class ParticleSimulatorBase(object):
                                    (name1, name2, retval))
         return retval
 
-    def getSpecies(self):
+    def get_species(self):
         return self.world.species
 
-    def getParticlePool(self, sid):
-        return self.particlePool[sid]
+    def get_particle_pool(self, sid):
+        return self.particle_pool[sid]
 
     def get_first_pid(self, sid):
-        return iter(self.particlePool[sid]).next()
+        return iter(self.particle_pool[sid]).next()
 
     def get_position(self, object):
         if type(object) is tuple and type(object[0]) is _gfrd.ParticleID:
@@ -564,11 +564,11 @@ class ParticleSimulatorBase(object):
     def distance(self, position1, position2):
         return self.world.distance(position1, position2)
         
-    def setAllRepulsive(self):
+    def set_all_repulsive(self):
         # TODO
         pass
         
-    def throwInParticles(self, st, n, surface=None):
+    def throw_in_particles(self, st, n, surface=None):
         if surface == None or isinstance(surface, CuboidalRegion):
             # Look up species_type.
             # For alternative user interface.
@@ -579,7 +579,7 @@ class ParticleSimulatorBase(object):
             st = self.model.get_species_type((st, surface))
         species = self.world.get_species(st.id)
         if surface == None:
-            surface = self.model.getSurface(species.surface_id)
+            surface = self.model.get_surface(species.surface_id)
 
         if __debug__:
             log.info('\tthrowing in %s %s particles to %s' % (n, species.id,
@@ -588,21 +588,21 @@ class ParticleSimulatorBase(object):
         # This is a bit messy, but it works.
         i = 0
         while i < int(n):
-            position = surface.randomPosition()
+            position = surface.random_position()
 
             # Check overlap.
-            if not self.getParticlesWithinRadius(position, species.radius):
+            if not self.get_particles_within_radius(position, species.radius):
                 create = True
                 # Check if not too close to a neighbouring surfaces for 
                 # particles added to the world, or added to a self-defined 
                 # box.
-                if surface == self.model.defaultSurface or \
-                   (surface != self.model.defaultSurface and 
+                if surface == self.model.default_surface or \
+                   (surface != self.model.default_surface and 
                     isinstance(surface, CuboidalRegion)):
-                    distance, closestSurface = \
-                        self.getClosestSurface(position, [])
-                    if (closestSurface and
-                        distance < closestSurface.minimalDistanceFromSurface(
+                    distance, closest_surface = \
+                        self.get_closest_surface(position, [])
+                    if (closest_surface and
+                        distance < closest_surface.minimal_distance_from_surface(
                                    species.radius)):
                         if __debug__:
                             log.info('\t%d-th particle rejected. Too close to '
@@ -610,52 +610,52 @@ class ParticleSimulatorBase(object):
                         create = False
                 if create:
                     # All checks passed. Create particle.
-                    p = self.createParticle(st.id, position)
+                    p = self.create_particle(st.id, position)
                     i += 1
                     if __debug__:
                         log.info(p)
             elif __debug__:
                 log.info('\t%d-th particle rejected. I will keep trying.' % i)
 
-    def placeParticle(self, st, pos):
+    def place_particle(self, st, pos):
         species = self.world.get_species(st.id)
         pos = numpy.array(pos)
         radius = species.radius
 
-        if self.getParticlesWithinRadius(pos, radius):
+        if self.get_particles_within_radius(pos, radius):
             raise NoSpace, 'overlap check failed'
             
-        particle = self.createParticle(st.id, pos)
+        particle = self.create_particle(st.id, pos)
         return particle
 
-    def createParticle(self, sid, pos):
+    def create_particle(self, sid, pos):
         pid_particle_pair = self.world.new_particle(sid, pos)
-        self.particlePool[sid].add(pid_particle_pair[0])
+        self.particle_pool[sid].add(pid_particle_pair[0])
         return pid_particle_pair
 
-    def removeParticle(self, pid_particle_pair):
-        self.particlePool[pid_particle_pair[1].sid].remove(pid_particle_pair[0])
+    def remove_particle(self, pid_particle_pair):
+        self.particle_pool[pid_particle_pair[1].sid].remove(pid_particle_pair[0])
         self.world.remove_particle(pid_particle_pair[0])
 
-    def moveParticle(self, pid_particle_pair):
+    def move_particle(self, pid_particle_pair):
         self.world.update_particle(pid_particle_pair)
 
-    def getParticlesWithinRadius(self, pos, radius, ignore=[]):
+    def get_particles_within_radius(self, pos, radius, ignore=[]):
         return self.world.check_overlap((pos, radius), ignore)
 
     def clear(self):
-        self.dtMax = self.dtLimit
-        self.dt = self.dtLimit
+        self.dt_max = self.dt_limit
+        self.dt = self.dt_limit
 
-    def checkParticleMatrix(self):
-        total = sum(len(pool) for pool in self.particlePool.itervalues())
+    def check_particle_matrix(self):
+        total = sum(len(pool) for pool in self.particle_pool.itervalues())
 
         if total != self.world.num_particles:
             raise RuntimeError,\
                 'total number of particles %d != self.world.num_particles %d'\
                 % (total, self.world.num_particles)
 
-    def checkParticles(self):
+    def check_particles(self):
         for pid_particle_pair in self.world:
             pid = pid_particle_pair[0]
             pos = pid_particle_pair[1].position
@@ -666,12 +666,12 @@ class ParticleSimulatorBase(object):
 
 
     def check(self):
-        self.checkParticleMatrix()
-        self.checkParticles()
+        self.check_particle_matrix()
+        self.check_particles()
 
-    def dumpPopulation(self):
+    def dump_population(self):
         buf = ''
-        for sid, pool in self.particlePool.iteritems():
+        for sid, pool in self.particle_pool.iteritems():
             buf += str(sid) + ':' + str(pool) + '\t'
 
         return buf
@@ -681,11 +681,11 @@ class ParticleSimulatorBase(object):
         reaction_rules_2 = []
         reflective_reaction_rules = []
         for si1 in self.world.species:
-            for reaction_rule_cache in self.getReactionRule1(si1.id):
+            for reaction_rule_cache in self.get_reaction_rule1(si1.id):
                 string = self.model.dump_reaction_rule(reaction_rule_cache)
                 reaction_rules_1.append(string)
             for si2 in self.world.species:
-                for reaction_rule_cache in self.getReactionRule2(si1.id, si2.id):
+                for reaction_rule_cache in self.get_reaction_rule2(si1.id, si2.id):
                     string = self.model.dump_reaction_rule(reaction_rule_cache)
                     if reaction_rule_cache.k > 0:
                         reaction_rules_2.append(string)

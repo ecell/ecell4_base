@@ -5,9 +5,9 @@ import random
 
 import numpy
 
-#print gfrd.distanceSq(numpy.array((1.,2.,3.)), numpy.array((4.,5.,6., )))
+#print gfrd.distance_sq(numpy.array((1.,2.,3.)), numpy.array((4.,5.,6., )))
 
-def test_drawTime_single():
+def test_draw_time_single():
 
     D = 1e-12
 
@@ -108,7 +108,7 @@ def test_p_survival():
 
 
 
-def test_drawTime():
+def test_draw_time():
 
     D = 1e-12
     Sigma = 1e-8
@@ -170,7 +170,7 @@ def test_f_alpha():
         print f
 
 
-def test_drawTheta():
+def test_draw_theta():
 
     t = 1e-7
     D = 1e-12
@@ -192,7 +192,7 @@ def test_drawTheta():
     print theta
 
 
-def test_drawTheta_at_a():
+def test_draw_theta_at_a():
     
     t = 1e-3
     D = 1e-12
@@ -222,18 +222,18 @@ def test_drawTheta_at_a():
 
 
 #test_p_survival()
-#test_drawTime()
+#test_draw_time()
 #test_drawR()
 
-#test_drawTime_single()
+#test_draw_time_single()
 #test_drawR_single()
 
 #test_f_alpha()
 
 
 
-#test_drawTheta()
-#test_drawTheta_at_a()
+#test_draw_theta()
+#test_draw_theta_at_a()
 
 #test_alpha()
 

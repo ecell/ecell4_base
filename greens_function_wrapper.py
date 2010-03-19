@@ -7,7 +7,7 @@ import logging
 log = logging.getLogger('ecell')
 
 
-def draw_time_wrapper(gf, r0=None):
+def drawTime_wrapper(gf, r0=None):
     rnd = myrandom.uniform()
 
     if __debug__:
@@ -30,22 +30,22 @@ def draw_eventtype_wrapper(gf, dt, r0):
     if __debug__:
         log.debug('        *drawEventType. ' + gf.__class__.__name__)
     try:
-        eventType = gf.drawEventType(rnd, r0, dt)
+        event_type = gf.drawEventType(rnd, r0, dt)
     except Exception, e:
         raise Exception('gf.drawEventType() failed, '
                         '%s, rnd = %g, r0 = %g, dt = %g, %s' %
                         (str(e), rnd, r0, dt, gf.dump()))
-    return eventType
+    return event_type
 
 # Todo. Returns r, not displacement.
-def draw_displacement_wrapper(gf, dt, eventType, a, r0=None, sigma=None):
-    if(((eventType == EventType.COM_ESCAPE or
-         eventType == EventType.SINGLE_ESCAPE) and sigma == None) or
-       (eventType == EventType.IV_ESCAPE and sigma != None)):
+def draw_displacement_wrapper(gf, dt, event_type, a, r0=None, sigma=None):
+    if(((event_type == EventType.COM_ESCAPE or
+         event_type == EventType.SINGLE_ESCAPE) and sigma == None) or
+       (event_type == EventType.IV_ESCAPE and sigma != None)):
         # Escape through this coordinate. We already know the new r.
         # Todo. Let gf handle this.
         return a
-    elif eventType == EventType.IV_REACTION and sigma != None:
+    elif event_type == EventType.IV_REACTION and sigma != None:
         # Todo. Let gf handle this.
         return sigma
 
@@ -74,8 +74,8 @@ def draw_displacement_wrapper(gf, dt, eventType, a, r0=None, sigma=None):
     return r
 
 # Todo. Returns (r,theta), not displacement.
-def draw_displacement_iv_wrapper(gf, r0, dt, eventType, a, sigma):
-    def draw_theta_wrapper(gf, r, r0, dt):
+def draw_displacement_iv_wrapper(gf, r0, dt, event_type, a, sigma):
+    def drawTheta_wrapper(gf, r, r0, dt):
         """Draw theta for the inter-particle vector.
 
         """
@@ -94,7 +94,7 @@ def draw_displacement_iv_wrapper(gf, r0, dt, eventType, a, sigma):
         # spheres it doesn't matter.
         return myrandom.choice(-1, 1) * theta
 
-    r = draw_displacement_wrapper(gf, dt, eventType, a, r0, sigma)
-    theta = draw_theta_wrapper(gf, r, r0, dt)
+    r = draw_displacement_wrapper(gf, dt, event_type, a, r0, sigma)
+    theta = drawTheta_wrapper(gf, r, r0, dt)
     return r, theta
 

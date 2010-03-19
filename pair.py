@@ -14,8 +14,8 @@ class Pair(object):
     # 5.6: ~1e-8, 6.0: ~1e-9
     CUTOFF_FACTOR = 5.6
 
-    def __init__(self, domain_id, CoM, single1, single2, shell_id, r0, 
-                 shellSize, rt, surface):
+    def __init__(self, domain_id, com, single1, single2, shell_id, r0, 
+                 shell_size, rt, surface):
         self.multiplicity = 2
 
         # Order single1 and single2 so that D1 < D2.
@@ -24,20 +24,20 @@ class Pair(object):
         else:
             self.single1, self.single2 = single2, single1 
 
-        self.a_R, self.a_r = self.determineRadii(r0, shellSize)
+        self.a_R, self.a_r = self.determine_radii(r0, shell_size)
 
         self.rt = rt
 
-        self.eventID = None
+        self.event_id = None
 
-        self.lastTime = 0.0
+        self.last_time = 0.0
         self.dt = 0.0
-        self.eventType = None
+        self.event_type = None
 
         self.surface = surface
 
         # Create shell.
-        shell = self.createNewShell(CoM, shellSize, domain_id)
+        shell = self.create_new_shell(com, shell_size, domain_id)
 
         self.shell_list = [(shell_id, shell), ]
         self.domain_id = domain_id
@@ -46,9 +46,9 @@ class Pair(object):
         if __debug__:
             log.debug('del %s' % str(self))
 
-    def getCoM(self):
+    def get_com(self):
         return self.shell_list[0][1].shape.position
-    CoM = property(getCoM)
+    com = property(get_com)
 
     def get_shell_id(self):
         return self.shell_list[0][0]
@@ -78,17 +78,17 @@ class Pair(object):
                 self.single2.pid_particle_pair[1].D) / self.D_tot
     D_R = property(get_D_R)
 
-    def get_sigma(self):
+    def getSigma(self):
         return self.single1.pid_particle_pair[1].radius + \
                self.single2.pid_particle_pair[1].radius
-    sigma = property(get_sigma)
+    sigma = property(getSigma)
 
     def initialize(self, t):
-        self.lastTime = t
+        self.last_time = t
         self.dt = 0
-        self.eventType = None
+        self.event_type = None
 
-    def determineRadii(self, r0, shellSize):
+    def determine_radii(self, r0, shell_size):
         """Determine a_r and a_R.
 
         Todo. Make dimension (1D/2D/3D) specific someday. Optimization only.
@@ -102,7 +102,7 @@ class Pair(object):
         D1 = single1.pid_particle_pair[1].D
         D2 = single2.pid_particle_pair[1].D
 
-        shellSize /= SAFETY
+        shell_size /= SAFETY
 
         D_tot = D1 + D2
         D_geom = math.sqrt(D1 * D2)
@@ -111,8 +111,8 @@ class Pair(object):
             '%s;  r0 %g < sigma %g' % (self, r0, self.sigma)
 
         # equalize expected mean t_r and t_R.
-        if ((D_geom - D2) * r0) / D_tot + shellSize +\
-                math.sqrt(D2 / D1) * (radius1 - shellSize) - radius2 >= 0:
+        if ((D_geom - D2) * r0) / D_tot + shell_size +\
+                math.sqrt(D2 / D1) * (radius1 - shell_size) - radius2 >= 0:
             Da = D1
             Db = D2
             radiusa = radius1
@@ -125,23 +125,23 @@ class Pair(object):
 
 
         #aR
-        a_R = (D_geom * (Db * (shellSize - radiusa) + \
-                         Da * (shellSize - r0 - radiusa))) /\
+        a_R = (D_geom * (Db * (shell_size - radiusa) + \
+                         Da * (shell_size - r0 - radiusa))) /\
               (Da * Da + Da * Db + D_geom * D_tot)
 
         #ar
-        a_r = (D_geom * r0 + D_tot * (shellSize - radiusa)) / (Da + D_geom)
+        a_r = (D_geom * r0 + D_tot * (shell_size - radiusa)) / (Da + D_geom)
 
         assert a_R + a_r * Da / D_tot + radius1 >= \
                a_R + a_r * Db / D_tot + radius2
 
-        assert abs(a_R + a_r * Da / D_tot + radiusa - shellSize) \
-            < 1e-12 * shellSize
+        assert abs(a_R + a_r * Da / D_tot + radiusa - shell_size) \
+            < 1e-12 * shell_size
 
 
         if __debug__:
           log.debug('a %g, r %g, R %g r0 %g' % 
-                 (shellSize, a_r, a_R, r0))
+                 (shell_size, a_r, a_R, r0))
         if __debug__:
           log.debug('tr %g, tR %g' % 
                     (((a_r - r0) / math.sqrt(6 * self.D_tot))**2,\
@@ -156,14 +156,14 @@ class Pair(object):
         """Returns a (event time, event type, reactingsingle=None) tuple.
         
         """
-        dt_com = draw_time_wrapper(self.com_greens_function())
-        dt_iv = draw_time_wrapper(self.iv_greens_function(), r0)
+        dt_com = drawTime_wrapper(self.com_greens_function())
+        dt_iv = drawTime_wrapper(self.iv_greens_function(), r0)
         if dt_com < dt_iv:
             return dt_com, EventType.COM_ESCAPE, None
         else:
             # Note: we are not calling pair.draw_iv_event_type yet, but 
             # postpone it to the very last minute (when this event is executed 
-            # in firePair). So IV_EVENT can still be a iv event or a iv 
+            # in fire_pair). So IV_EVENT can still be a iv event or a iv 
             # reaction.
             return dt_iv, EventType.IV_EVENT, None
 
@@ -178,7 +178,7 @@ class Pair(object):
         else:
             return dt_reaction2, event_type2, self.single2
 
-    def determineNextEvent(self, r0):
+    def determine_next_event(self, r0):
         """Return a (event time, event type, reactingsingle)-tuple.
 
         """
@@ -189,14 +189,14 @@ class Pair(object):
         gf = self.iv_greens_function()
         return draw_eventtype_wrapper(gf, self.dt, r0)
 
-    def drawNewPositions(self, dt, r0, old_iv, eventType):
+    def draw_new_positions(self, dt, r0, old_iv, event_type):
         """Calculate new positions of the pair particles using a new 
         center-of-mass, a new inter-particle vector, and an old inter-particle 
         vector.
 
         """
-        new_com = self.drawNewCoM(dt, eventType)
-        new_iv = self.drawNewIV(dt, r0, old_iv, eventType)
+        new_com = self.draw_new_com(dt, event_type)
+        new_iv = self.draw_new_iv(dt, r0, old_iv, event_type)
 
         D1 = self.single1.pid_particle_pair[1].D
         D2 = self.single2.pid_particle_pair[1].D
@@ -209,20 +209,20 @@ class Pair(object):
         pass
 
     def __str__(self):
-        return 'Pair[%s: %s, %s: eventID=%s]' % (
+        return 'Pair[%s: %s, %s: event_id=%s]' % (
             self.domain_id,
             self.single1.pid_particle_pair[0],
             self.single2.pid_particle_pair[0],
-            self.eventID)
+            self.event_id)
 
 class SphericalPair(Pair):
     """2 Particles inside a (spherical) shell not on any surface.
 
     """
-    def __init__(self, domain_id, CoM, single1, single2, shell_id,
-                 r0, shellSize, rt, surface):
-        Pair.__init__(self, domain_id, CoM, single1, single2, shell_id,
-                      r0, shellSize, rt, surface)
+    def __init__(self, domain_id, com, single1, single2, shell_id,
+                 r0, shell_size, rt, surface):
+        Pair.__init__(self, domain_id, com, single1, single2, shell_id,
+                      r0, shell_size, rt, surface)
 
     def com_greens_function(self):
         # Green's function for centre of mass inside absorbing sphere.
@@ -237,19 +237,19 @@ class SphericalPair(Pair):
         gf.seta(self.a_r)
         return gf
 
-    def createNewShell(self, position, radius, domain_id):
+    def create_new_shell(self, position, radius, domain_id):
         return SphericalShell(domain_id, Sphere(position, radius))
 
-    def choosePairGreensFunction(self, r0, t):
-        distanceFromSigma = r0 - self.sigma
-        distanceFromShell = self.a_r - r0
+    def choose_pair_greens_function(self, r0, t):
+        distance_from_sigma = r0 - self.sigma
+        distance_from_shell = self.a_r - r0
 
-        thresholdDistance = Pair.CUTOFF_FACTOR * \
+        threshold_distance = Pair.CUTOFF_FACTOR * \
             math.sqrt(6.0 * self.D_tot * t)
 
-        if distanceFromSigma < thresholdDistance:
+        if distance_from_sigma < threshold_distance:
         
-            if distanceFromShell < thresholdDistance:
+            if distance_from_shell < threshold_distance:
                 # near both a and sigma;
                 # use FirstPassagePairGreensFunction
                 if __debug__:
@@ -263,7 +263,7 @@ class SphericalPair(Pair):
                                               self.sigma)
                 return pgf
         else:
-            if distanceFromShell < thresholdDistance:
+            if distance_from_shell < threshold_distance:
                 # near a;
                 if __debug__:
                     log.debug('GF: only a')
@@ -278,18 +278,18 @@ class SphericalPair(Pair):
                 pgf = FreePairGreensFunction(self.D_tot)
                 return pgf
 
-    def drawNewCoM(self, dt, eventType):
+    def draw_new_com(self, dt, event_type):
         gf = self.com_greens_function()
-        r_R = draw_displacement_wrapper(gf, dt, eventType, self.a_R)
-        return self.CoM + randomVector(r_R)
+        r_R = draw_displacement_wrapper(gf, dt, event_type, self.a_R)
+        return self.com + random_vector(r_R)
 
-    def drawNewIV(self, dt, r0, old_iv, eventType): 
-        gf = self.choosePairGreensFunction(r0, dt)
-        r, theta = draw_displacement_iv_wrapper(gf, r0, dt, eventType,
+    def draw_new_iv(self, dt, r0, old_iv, event_type): 
+        gf = self.choose_pair_greens_function(r0, dt)
+        r, theta = draw_displacement_iv_wrapper(gf, r0, dt, event_type,
                                                 self.a_r, self.sigma)
-        newInterParticleS = numpy.array([r, theta, 
+        new_inter_particle_s = numpy.array([r, theta, 
                                          myrandom.uniform() * 2 * Pi])
-        new_iv = sphericalToCartesian(newInterParticleS)
+        new_iv = spherical_to_cartesian(new_inter_particle_s)
 
         #FIXME: need better handling of angles near zero and pi.
 
@@ -300,12 +300,12 @@ class SphericalPair(Pair):
         
         # the rotation axis is a normalized cross product of
         # the z-axis and the original vector.
-        # rotationAxis = crossproduct([0,0,1], interParticle)
-        angle = vectorAngleAgainstZAxis(old_iv)
+        # rotation_axis = crossproduct([0,0,1], inter_particle)
+        angle = vector_angle_against_z_axis(old_iv)
         if angle % numpy.pi != 0.0:
-            rotationAxis = crossproductAgainstZAxis(old_iv)
-            rotationAxis = normalize(rotationAxis)
-            rotated = rotateVector(new_iv, rotationAxis, angle)
+            rotation_axis = crossproduct_against_z_axis(old_iv)
+            rotation_axis = normalize(rotation_axis)
+            rotated = rotate_vector(new_iv, rotation_axis, angle)
         elif angle == 0.0:
             rotated = new_iv
         else:
@@ -321,10 +321,10 @@ class PlanarSurfacePair(Pair):
     pucks).
 
     """
-    def __init__(self, domain_id, CoM, single1, single2, shell_id,
-                 r0, shellSize, rt, surface):
-        Pair.__init__(self, domain_id, CoM, single1, single2, shell_id,
-                      r0, shellSize, rt, surface)
+    def __init__(self, domain_id, com, single1, single2, shell_id,
+                 r0, shell_size, rt, surface):
+        Pair.__init__(self, domain_id, com, single1, single2, shell_id,
+                      r0, shell_size, rt, surface)
 
     def com_greens_function(self):
         # Todo. 2D gf Abs Sym.
@@ -339,7 +339,7 @@ class PlanarSurfacePair(Pair):
         gf.seta(self.a_r)
         return gf
 
-    def createNewShell(self, position, radius, domain_id):
+    def create_new_shell(self, position, radius, domain_id):
         # The size (thickness) of a hockey puck is not more than it has to be 
         # (namely the radius of the particle), so if the particle undergoes an 
         # unbinding reaction we still have to clear the target volume and the 
@@ -350,32 +350,32 @@ class PlanarSurfacePair(Pair):
         return CylindricalShell(domain_id,
                                 Cylinder(position, radius, orientation, size))
 
-        a_R, a_r = self.determineRadii()
+        a_R, a_r = self.determine_radii()
 
-    def drawNewCoM(self, dt, eventType):
+    def draw_new_com(self, dt, event_type):
         gf = self.com_greens_function()
-        r_R = draw_displacement_wrapper(gf, dt, eventType, self.a_R)
-        x, y = randomVector2D(r_R)
-        return(self.CoM + x * self.surface.shape.unit_x
+        r_R = draw_displacement_wrapper(gf, dt, event_type, self.a_R)
+        x, y = random_vector2D(r_R)
+        return(self.com + x * self.surface.shape.unit_x
                         + y * self.surface.shape.unit_y)
 
-    def drawNewIV(self, dt, r0, old_iv, eventType): 
+    def draw_new_iv(self, dt, r0, old_iv, event_type): 
         # Todo.
-        #gf = self.choosePairGreensFunction(r0, dt)
+        #gf = self.choose_pair_greens_function(r0, dt)
         gf = self.iv_greens_function()
-        r, theta = draw_displacement_iv_wrapper(gf, r0, dt, eventType,
+        r, theta = draw_displacement_iv_wrapper(gf, r0, dt, event_type,
                                                 self.a_r, self.sigma)
         assert r > self.sigma and r <= self.a_r
 
         #FIXME: need better handling of angles near zero and pi?
-        unitX = self.surface.shape.unit_x
-        unitY = self.surface.shape.unit_y
-        angle = vectorAngle(unitX, old_iv)
+        unit_x = self.surface.shape.unit_x
+        unit_y = self.surface.shape.unit_y
+        angle = vector_angle(unit_x, old_iv)
         # Todo. Test if nothing changes when theta == 0.
         new_angle = angle + theta
 
-        new_iv = r * math.cos(new_angle) * unitX + \
-                 r * math.sin(new_angle) * unitY
+        new_iv = r * math.cos(new_angle) * unit_x + \
+                 r * math.sin(new_angle) * unit_y
 
         return new_iv
 
@@ -388,10 +388,10 @@ class CylindricalSurfacePair(Pair):
     (Rods).
 
     """
-    def __init__(self, domain_id, CoM, single1, single2, shell_id,
-                 r0, shellSize, rt, surface):
-        Pair.__init__(self, domain_id, CoM, single1, single2, shell_id,
-                      r0, shellSize, rt, surface)
+    def __init__(self, domain_id, com, single1, single2, shell_id,
+                 r0, shell_size, rt, surface):
+        Pair.__init__(self, domain_id, com, single1, single2, shell_id,
+                      r0, shell_size, rt, surface)
 
     def com_greens_function(self):
         # Todo. 1D gf Abs Abs  should be -a to a.
@@ -408,7 +408,7 @@ class CylindricalSurfacePair(Pair):
         gf.seta(self.a_r)
         return gf
 
-    def createNewShell(self, position, size, domain_id):
+    def create_new_shell(self, position, size, domain_id):
         # The radius of a rod is not more than it has to be (namely the radius 
         # of the biggest particle), so if the particle undergoes an unbinding 
         # reaction we still have to clear the target volume and the move may 
@@ -419,18 +419,18 @@ class CylindricalSurfacePair(Pair):
         return CylindricalShell(domain_id,
                                 Cylinder(position, radius, orientation, size))
 
-    def drawNewCoM(self, dt, eventType):
+    def draw_new_com(self, dt, event_type):
         gf = self.com_greens_function()
         # Draw displacement (not absolute position).
-        r_R = draw_displacement_wrapper(gf, dt, eventType, self.a_R) # Todo.
-        return self.CoM + r_R * self.surface.shape.unit_z
+        r_R = draw_displacement_wrapper(gf, dt, event_type, self.a_R) # Todo.
+        return self.com + r_R * self.surface.shape.unit_z
 
-    def drawNewIV(self, dt, r0, old_iv, eventType): 
+    def draw_new_iv(self, dt, r0, old_iv, event_type): 
         # Todo.
-        #gf = self.choosePairGreensFunction(r0, dt)
+        #gf = self.choose_pair_greens_function(r0, dt)
         gf = self.iv_greens_function()
 
-        r = draw_displacement_wrapper(gf, dt, eventType, self.a_r, r0, 
+        r = draw_displacement_wrapper(gf, dt, event_type, self.a_r, r0, 
                                       self.sigma)
         assert r > self.sigma and r <= self.a_r
 

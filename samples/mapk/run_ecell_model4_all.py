@@ -36,13 +36,13 @@ for ti_str in ['0', '1e-7', '3e-7',
         N_K = N_K_total - N_KPP
 
         if ti != 0:
-            parameterDict = { 'MODEL_FILE': MODEL_FILE,
+            parameter_dict = { 'MODEL_FILE': MODEL_FILE,
                               'N_KPP': N_KPP, 'N_K': N_K, 'KI': KI }
         else:
-            parameterDict = { 'MODEL_FILE': MODEL_FILE,
+            parameter_dict = { 'MODEL_FILE': MODEL_FILE,
                               'N_KPP': N_KPP, 'N_K': N_K }
         
-        jobID = registerEcellSession(ESS_FILE, parameterDict, [MODEL_FILE, ])
+        jobID = registerEcellSession(ESS_FILE, parameter_dict, [MODEL_FILE, ])
         jobs[jobID] = [ti_str, kpp_ratio]
 
 run()

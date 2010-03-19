@@ -1,5 +1,5 @@
 
-def loadHeader(filename):
+def load_header(filename):
     file = open(filename)
     lines = []
     for line in file.readlines():

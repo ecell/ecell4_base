@@ -34,8 +34,8 @@ Mribo = m.new_species_type('Mribo', 1e-12, 1e-8)
 
 k_fR = 6e9 * 1000 / N_A
 k_bR = 0.1  # 1 - 0.01
-k_fRp = 38
-k_bRp = 0.5
+k_f_rp = 38
+k_b_rp = 0.5
 k_OC = 1 # 0.3 - 3
 t_clear = 1  # should not be poisson
 t_elon = 50 # 50-100
@@ -45,43 +45,43 @@ k_dp = 2.4e-4
 t_trans = 30
 
 
-r1 = createBindingReactionRule(O, R, OR, k_fR)
+r1 = create_binding_reaction_rule(O, R, OR, k_fR)
 m.network_rules.add_reaction_rule(r1)
-r2 = createUnbindingReactionRule(OR, O, R, k_bR)
+r2 = create_unbinding_reaction_rule(OR, O, R, k_bR)
 m.network_rules.add_reaction_rule(r2)
-r3 = createUnimolecularReactionRule(O, ORp, k_fRp)
+r3 = create_unimolecular_reaction_rule(O, ORp, k_f_rp)
 m.network_rules.add_reaction_rule(r3)
-r4 = createUnimolecularReactionRule(ORp, O, k_bRp)
+r4 = create_unimolecular_reaction_rule(ORp, O, k_b_rp)
 m.network_rules.add_reaction_rule(r4)
-r5 = createUnimolecularReactionRule(ORp, ORpa, k_OC)
+r5 = create_unimolecular_reaction_rule(ORp, ORpa, k_OC)
 m.network_rules.add_reaction_rule(r5)
-r6 = createUnbindingReactionRule(ORpa, T, O, 1/t_clear)
+r6 = create_unbinding_reaction_rule(ORpa, T, O, 1/t_clear)
 m.network_rules.add_reaction_rule(r6)
-r7 = createDecayReactionRule(M, k_dm)
+r7 = create_decay_reaction_rule(M, k_dm)
 m.network_rules.add_reaction_rule(r7)
-r8 = createUnbindingReactionRule(M, M, Mribo, k_ribo)
+r8 = create_unbinding_reaction_rule(M, M, Mribo, k_ribo)
 m.network_rules.add_reaction_rule(r8)
-r9 = createUnimolecularReactionRule(Mribo, P, 1/t_trans)
+r9 = create_unimolecular_reaction_rule(Mribo, P, 1/t_trans)
 m.network_rules.add_reaction_rule(r9)
-r10 = createDecayReactionRule(P, k_dp)
+r10 = create_decay_reaction_rule(P, k_dp)
 m.network_rules.add_reaction_rule(r10)
 
-s.setModel(m)
+s.set_model(m)
 
-s.placeParticle(O, [0,0,0])
+s.place_particle(O, [0,0,0])
 
-#s.throwInParticles(R, 50, box1)
+#s.throw_in_particles(R, 50, box1)
 
 
 l = Logger(s, 'pushpull')
-#l.setParticleOutput(('Ea','X','EaX','Xp','Xpp','EaI'))
-l.setParticleOutInterval(1e-3)
+#l.set_particle_output(('Ea','X','EaX','Xp','Xpp','EaI'))
+l.set_particle_out_interval(1e-3)
 l.log()
 
 
 while s.t < 1000:
     s.step()
-    s.dumpPopulation()
+    s.dump_population()
 
 #    l.log()
     

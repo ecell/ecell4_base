@@ -57,11 +57,11 @@ def singlerun(D_factor, ti, T):
     L = math.pow(V * 1e-3, 1.0 / 3.0)
 
     s = EGFRDSimulator()
-    s.setWorldSize(L)
+    s.set_world_size(L)
 
     N = 180
-    matrixSize = min(max(3, int((3 * N) ** (1.0/3.0))), 60)
-    s.setMatrixSize(matrixSize)
+    matrix_size = min(max(3, int((3 * N) ** (1.0/3.0))), 60)
+    s.set_matrix_size(matrix_size)
 
 
     box1 = CuboidalRegion([0,0,0],[L,L,L])
@@ -84,7 +84,7 @@ def singlerun(D_factor, ti, T):
     KKi = m.new_species_type('KKi', D_move, radius)
 #     Pi = m.new_species_type('Pi', D_move, radius)
 
-    s.setModel(m)
+    s.set_model(m)
 
     #  1 2   K + KK   <-> K_KK
     #  3     K_KK       -> Kp + KKi
@@ -106,26 +106,26 @@ def singlerun(D_factor, ti, T):
     N_P = C2N(50e-9, V)
 
     #print N_KK
-    #s.throwInParticles(K, N_K, box1)
-    #s.throwInParticles(KK, N_KK, box1)
-    #s.throwInParticles(P, N_P, box1)
+    #s.throw_in_particles(K, N_K, box1)
+    #s.throw_in_particles(KK, N_KK, box1)
+    #s.throw_in_particles(P, N_P, box1)
     
-    s.placeParticle(Kp, [0,0,0])
-    s.placeParticle(KKi, [0,0,sigma+1e-20])
+    s.place_particle(Kp, [0,0,0])
+    s.place_particle(KKi, [0,0,sigma+1e-20])
 
-    s.throwInParticles(KK, N_KK-1, box1)
+    s.throw_in_particles(KK, N_KK-1, box1)
 
     # print kD
     # print k_a(Mtom3(0.02e9), kD)
     # print k_a(Mtom3(0.032e9), kD)
     # sys.exit(0)
 
-#     endTime = 0
+#     end_time = 0
 #     while 1:
 #         s.step()
-#         nextTime = s.scheduler.getTopTime()
-#         if nextTime > endTime:
-#             s.stop(endTime)
+#         next_time = s.scheduler.getTopTime()
+#         if next_time > end_time:
+#             s.stop(end_time)
 #             break
 
 #     s.reset()
@@ -136,42 +136,42 @@ def singlerun(D_factor, ti, T):
 #     k5 = k_d(1.0, Mtom3(0.032e9), kD)
 #     k6 = 15.0
 
-#     r1 = createBindingReactionRule(K, KK, K_KK, k1)
+#     r1 = create_binding_reaction_rule(K, KK, K_KK, k1)
 #     m.network_rules.add_reaction_rule(r1)
-#     r2 = createUnbindingReactionRule(K_KK, K, KK, k2)
+#     r2 = create_unbinding_reaction_rule(K_KK, K, KK, k2)
 #     m.network_rules.add_reaction_rule(r2)
-#     r3 = createUnbindingReactionRule(K_KK, Kp, KKi, k3)
+#     r3 = create_unbinding_reaction_rule(K_KK, Kp, KKi, k3)
 #     m.network_rules.add_reaction_rule(r3)
 
-    r4 = createBindingReactionRule(Kp, KK, Kp_KK, k4)
+    r4 = create_binding_reaction_rule(Kp, KK, Kp_KK, k4)
     m.network_rules.add_reaction_rule(r4)
-#     r5 = createUnbindingReactionRule(Kp_KK, Kp, KK, k5)
+#     r5 = create_unbinding_reaction_rule(Kp_KK, Kp, KK, k5)
 #     m.network_rules.add_reaction_rule(r5)
-#     r6 = createUnbindingReactionRule(Kp_KK, Kpp, KKi, k6)
+#     r6 = create_unbinding_reaction_rule(Kp_KK, Kpp, KKi, k6)
 #     m.network_rules.add_reaction_rule(r6)
 
 
-#     r7 = createBindingReactionRule(Kpp, P, Kpp_P, k1)
+#     r7 = create_binding_reaction_rule(Kpp, P, Kpp_P, k1)
 #     m.network_rules.add_reaction_rule(r7)
-#     r8 = createUnbindingReactionRule(Kpp_P, Kpp, P, k2)
+#     r8 = create_unbinding_reaction_rule(Kpp_P, Kpp, P, k2)
 #     m.network_rules.add_reaction_rule(r8)
-#     r9 = createUnbindingReactionRule(Kpp_P, Kp, Pi, k3)
+#     r9 = create_unbinding_reaction_rule(Kpp_P, Kp, Pi, k3)
 #     m.network_rules.add_reaction_rule(r9)
     
-#     r10 = createBindingReactionRule(Kp, P, Kp_P, k4)
+#     r10 = create_binding_reaction_rule(Kp, P, Kp_P, k4)
 #     m.network_rules.add_reaction_rule(r10)
-#     r11 = createUnbindingReactionRule(Kp_P, Kp, P, k5)
+#     r11 = create_unbinding_reaction_rule(Kp_P, Kp, P, k5)
 #     m.network_rules.add_reaction_rule(r11)
-#     r12 = createUnbindingReactionRule(Kp_P, K, Pi, k6)
+#     r12 = create_unbinding_reaction_rule(Kp_P, K, Pi, k6)
 #     m.network_rules.add_reaction_rule(r12)
 
 
-    r13 = createUnimolecularReactionRule(KKi, KK, ki)
+    r13 = create_unimolecular_reaction_rule(KKi, KK, ki)
     m.network_rules.add_reaction_rule(r13)
-#     r14 = createUnimolecularReactionRule(Pi, P, ki)
+#     r14 = create_unimolecular_reaction_rule(Pi, P, ki)
 #     m.network_rules.add_reaction_rule(r14)
 
-    s.setModel(m)
+    s.set_model(m)
 
 
 #     logname = model + '_' + '_'.join(sys.argv[1:6]) + '_' +\
@@ -183,8 +183,8 @@ def singlerun(D_factor, ti, T):
     while s.t < T:
         s.step()
 
-        if s.lastReaction:
-            r = s.lastReaction
+        if s.last_reaction:
+            r = s.last_reaction
             for p in r.products:
 #                if p.species == Kpp:
                 if p.species == Kp_KK:
@@ -192,7 +192,7 @@ def singlerun(D_factor, ti, T):
                         return s.t
                     else:
                         return -1
-        if s.getNextTime() > T:
+        if s.get_next_time() > T:
             return -1
 
     return -1
