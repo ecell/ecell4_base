@@ -281,7 +281,7 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
 
     def displacement(self, z):
         # z can be pos or min.
-        return z * self.shell_list[0][1].shape().unit_z
+        return z * self.shell_list[0][1].shape.unit_z
 
     def get_mobility_radius(self):
         # Heads up.
