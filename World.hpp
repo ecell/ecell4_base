@@ -1,18 +1,16 @@
 #ifndef WORLD_HPP
 #define WORLD_HPP
 
+#include "ParticleContainerBase.hpp"
+
 #include <map>
 #include <boost/lexical_cast.hpp>
 #include <boost/array.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include "exceptions.hpp"
-#include "utils/range.hpp"
-#include "utils/get_mapper_mf.hpp"
-#include "utils/unassignable_adapter.hpp"
 #include "generator.hpp"
 #include "filters.hpp"
-#include "abstract_set.hpp"
 #include "Particle.hpp"
 #include "ParticleID.hpp"
 #include "SpeciesTypeID.hpp"
@@ -21,7 +19,6 @@
 #include "Transaction.hpp"
 #include "Structure.hpp"
 #include "geometry.hpp"
-#include "ParticleContainerBase.hpp"
 
 template<typename Tlen_, typename TD_>
 struct WorldTraitsBase

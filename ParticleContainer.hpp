@@ -3,6 +3,7 @@
 
 #include <utility>
 #include "generator.hpp"
+#include "utils/get_default_impl.hpp"
 #include "utils/unassignable_adapter.hpp"
 
 template<typename Ttraits_>

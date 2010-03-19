@@ -233,7 +233,7 @@ class PlanarSurfaceSingle(NonInteractionSingle):
         # unbinding reaction we still have to clear the target volume and the 
         # move may be rejected (NoSpace error).
         orientation = self.surface.shape.unit_z
-        size = self.pid_particle_pair[1].shape.radius
+        size = self.pid_particle_pair[1].radius
         return CylindricalShell(position, radius, orientation, size, domain_id)
 
     def displacement(self, r):
@@ -277,7 +277,7 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
         # rejected (NoSpace error).
         radius = self.pid_particle_pair[1].radius
         orientation = self.surface.shape.unit_z
-        return CylindricalShell(position, radius, orientation, size, domain_id)
+        return CylindricalShell(domain_id, Cylinder(position, radius, orientation, size))
 
     def displacement(self, z):
         # z can be pos or min.
@@ -285,11 +285,11 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
 
     def get_mobility_radius(self):
         # Heads up.
-        return self.shell_list[0][1].size - self.pid_particle_pair[1].radius
+        return self.shell_list[0][1].shape.size - self.pid_particle_pair[1].radius
 
     def get_shell_size(self):
         # Heads up.
-        return self.shell_list[0][1].size
+        return self.shell_list[0][1].shape.size
 
     def __str__(self):
         return 'CylindricalSurface' + Single.__str__(self)

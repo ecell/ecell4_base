@@ -1,8 +1,14 @@
 #ifndef PARTICLE_CONTAINER_BASE_HPP
 #define PARTICLE_CONTAINER_BASE_HPP
 
-#include "ParticleContainer.hpp"
+#include "utils/range.hpp"
+#include "utils/get_mapper_mf.hpp"
+#include "utils/unassignable_adapter.hpp"
 #include "MatrixSpace.hpp"
+#include "abstract_set.hpp"
+#include "generator.hpp"
+#include "exceptions.hpp"
+#include "ParticleContainer.hpp"
 #include "Transaction.hpp"
 
 template<typename Tderived_, typename Ttraits_ = typename Tderived_::traits_type>
