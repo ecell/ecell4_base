@@ -219,17 +219,13 @@ l = Logger(s,
            (kcat1, kcat2) +
            '#@ ka=%g; kd1=%g; kd2=%g\n' %
            (ka, kd1, kd2))
-#l.set_particle_output(('K','P'))
-#l.set_particle_out_interval(1e-3)
-#l.write_particles()
-l.log()
 
+interrupter = FixedIntervalInterrupter(s, 1e-7, l)
 
+l.start(s)
 while s.t < T:
-    s.step()
+    interrupter.step()
 
     if s.last_reaction:
         #log.info(s.dump_population())
-        l.log()
-    
-
+        l.log(s, s.t)

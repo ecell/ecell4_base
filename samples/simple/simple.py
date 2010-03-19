@@ -23,25 +23,8 @@ s.set_all_repulsive()
 s.throw_in_particles(P, 60, box1)
 
 l = Logger(s, 'simple')
-l.set_particle_output(('P', ))
-l.set_particle_out_interval(3.33e-4)
-l.log()
+interrupter = FixedIntervalInterrupter(s, 3.33e-4, l)
 
+l.start(s)
 while s.t < .1:
-    s.step()
-    l.log()
-    
-
-
-# def profrun():
-#     for i in range(100):
-#         s.step()
-
-# import profile
-# profile.run('profrun()', 'fooprof')
-# import pstats
-# pstats.Stats('fooprof').sort_stats('time').print_stats(30)
-
-
-# sys.exit(1)
-
+    interrupter.step()

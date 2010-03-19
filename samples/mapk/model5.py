@@ -180,13 +180,11 @@ l = Logger(s,
 
 rfile = open('data/' + logname + '_reactions.dat', 'w')
 
+interrupter = FixedIntervalInterrupter(s, 1e-0, l)
 
-#l.set_particle_output(('Ea','X','EaX','Xp','Xpp','EaI'))
-l.set_particle_out_interval(1e-0)
-l.log()
-
+l.start(s)
 while s.t < T:
-    s.step()
+    interrupter.step()
 
     if s.last_reaction:
         r = s.last_reaction
@@ -195,5 +193,5 @@ while s.t < T:
         rfile.write(line)
         rfile.flush()
 
-        l.log()
+        l.log(s, s.t)
 

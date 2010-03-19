@@ -142,18 +142,10 @@ m.network_rules.add_reaction_rule(r12)
 s.set_model(m)
 
 
-l = Logger(s, 
-           logname = model + '_' + '_'.join(sys.argv[1:6]))
+l = Logger(s, logname=model + '_' + '_'.join(sys.argv[1:6]))
+interrupter = FixedIntervalInterrupter(s, 1e-0, l)
 
-
-
-#l.set_particle_output(('Ea','X','EaX','Xp','Xpp','EaI'))
-l.set_particle_out_interval(1e-0)
-l.log()
-
+l.start(s)
 while s.t < 30:
-    s.step()
-    #s.dump_population()
-    #s.check()
-    l.log()
+    interrupter.step()
 

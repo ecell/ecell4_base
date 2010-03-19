@@ -74,15 +74,9 @@ s.place_particle(O, [0,0,0])
 
 
 l = Logger(s, 'pushpull')
-#l.set_particle_output(('Ea','X','EaX','Xp','Xpp','EaI'))
-l.set_particle_out_interval(1e-3)
-l.log()
+interrupter = FixedIntervalInterrupter(s, 1e-3, l)
 
-
+l.start(s)
 while s.t < 1000:
-    s.step()
+    interrupter.step()
     s.dump_population()
-
-#    l.log()
-    
-

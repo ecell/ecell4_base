@@ -38,29 +38,28 @@ s.set_model(m)
 s.throw_in_particles(S, N / 2, box1)
 s.throw_in_particles(P, N / 2, box1)
 
-l = Logger(s, 'dimer')
-l.set_particle_out_interval(1e-7)
-l.log()
 
+#l = Logger(s, 'dimer')
+l = None
+interrupter = None
 
-#while s.t < 100:
-#    s.step()
-
-#s.dump_population()
-#l.log()
+if l is not None:
+    interrupter = FixedIntervalInterrupter(s, 1e-7, l.log)
 
 import myrandom
 myrandom.seed(0)
 
 
 def profrun():
-    #while s.step_counter < 6000:
+    if l is not None:
+        l.start(s)
     for _ in xrange(15000):
-        s.step()
-        #l.log()
-        #logging.info(s.dump_population())
+        if interrupter is not None:
+            interrupter.step()
+        else:
+            s.step()
 
-PROFMODE=True
+PROFMODE = True
 
 if PROFMODE:
     try:
