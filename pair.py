@@ -347,7 +347,8 @@ class PlanarSurfacePair( Pair ):
         orientation = self.surface.shape.unit_z
         size = max(self.single1.pid_particle_pair[1].radius,
                    self.single2.pid_particle_pair[1].radius)
-        return CylindricalShell(position, radius, orientation, size, domain_id)
+        return CylindricalShell(domain_id,
+                                Cylinder(position, radius, orientation, size))
 
         a_R, a_r = self.determineRadii()
 
@@ -414,7 +415,8 @@ class CylindricalSurfacePair( Pair ):
         radius = max(self.single1.pid_particle_pair[1].radius,
                      self.single2.pid_particle_pair[1].radius)
         orientation = self.surface.shape.unit_z
-        return CylindricalShell(position, radius, orientation, size, domain_id)
+        return CylindricalShell(domain_id,
+                                Cylinder(position, radius, orientation, size))
 
     def drawNewCoM(self, dt, eventType):
         gf = self.com_greens_function()
@@ -437,7 +439,7 @@ class CylindricalSurfacePair( Pair ):
 
     def get_shell_size(self):
         # Heads up.
-        return self.shell_list[0][1].size
+        return self.shell_list[0][1].shape.size
 
     def __str__(self):
         return 'CylindricalSurface' + Pair.__str__(self)

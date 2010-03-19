@@ -219,8 +219,8 @@ class Logger:
             shell_list = domain.shell_list
             for shell_id, shell in shell_list:
                 x['id'][count] = shell_id.serial
-                x['radius'][count] = shell.radius
-                x['position'][count] = shell.position
+                x['radius'][count] = shell.shape.radius
+                x['position'][count] = shell.shape.position
                 count += 1
 
         dummy = time_group.create_dataset('shells', data = x)

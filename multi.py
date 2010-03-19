@@ -85,7 +85,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
             # returns a sorted list).
             nearest = result[1]
             distance = nearest[1]
-            assert distance - shell.radius < 0.0,\
+            assert distance - shell.shape.radius < 0.0,\
                 'shells of %s are not contiguous.' % str(self.multiref())
 
         # all particles within the shell.
