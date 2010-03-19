@@ -234,7 +234,7 @@ class PlanarSurfaceSingle(NonInteractionSingle):
         # move may be rejected (NoSpace error).
         orientation = self.surface.shape.unit_z
         size = self.pid_particle_pair[1].radius
-        return CylindricalShell(position, radius, orientation, size, domain_id)
+        return CylindricalShell(domain_id, Cylinder(position, radius, orientation, size))
 
     def displacement(self, r):
         x, y = randomVector2D(r)
@@ -281,7 +281,7 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
 
     def displacement(self, z):
         # z can be pos or min.
-        return z * self.shell_list[0][1].unit_z
+        return z * self.shell_list[0][1].shape().unit_z
 
     def get_mobility_radius(self):
         # Heads up.

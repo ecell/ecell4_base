@@ -80,7 +80,7 @@ class MultiBDCore( BDSimulatorCoreBase ):
 
         # shells are contiguous
         for (_, shell) in self.multiref().shell_list:
-            result = self.sphere_container.get_neighbors(shell.position)
+            result = self.sphere_container.get_neighbors(shell.shape.position)
             # Check contiguity with nearest neighbor only (get_neighbors 
             # returns a sorted list).
             nearest = result[1]
