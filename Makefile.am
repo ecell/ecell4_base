@@ -89,7 +89,6 @@ noinst_HEADERS = \
 	Particle.hpp\
 	ParticleID.hpp\
 	ParticleSimulator.hpp\
-	PlanarSurface.hpp\
 	Point.hpp\
 	PyEventScheduler.hpp\
 	ReactionRule.hpp\
