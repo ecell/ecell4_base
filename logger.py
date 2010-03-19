@@ -35,8 +35,7 @@ SPECIES_SCHEMA = \
         ]
 
 
-class Logger:
-
+class Logger(object):
     def __init__(self, sim, logname = 'log', directory = 'data',
                   comment = '', hdf5=False):
         self.sim = sim
@@ -97,7 +96,6 @@ class Logger:
             "\', \'".join(str(i) for i in self.sim.world.species) + '\''
         columns = '[\'t\', ' + species_name_list + ']'
         self.write_timecourse_comment('@ columns= ' + columns)
-
 
     def write_timecourse_comment(self, s):
         self.timecourse_file.write('#' + s + '\n')
