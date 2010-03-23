@@ -5,14 +5,14 @@ import math
 
 import run_single
 
-outfile = open(sys.argv[1], 'w')
+prefix = 'out-'
 
 T = 11.696
 
 REPEAT = 3
 
 
-def run_set(name, V_list, N_list, T_list):
+def run_set(outfile, name, V_list, N_list, T_list):
     
     outfile.write('%s = [\n' % name)
     for i in range(len(V_list)):
@@ -65,8 +65,17 @@ N3000 = [3000, ] * 8
 T3000 = [1e7 / math.pow(1.0/V, 2.0 / 3.0) for V in V3000]
 
 
-run_set('data_V', Vv, Nv, Tv); outfile.write('\n\n')
-run_set('data_C', Vc, Nc, Tc); outfile.write('\n\n')
-run_set('data_N300', V300, N300, T300); outfile.write('\n\n')
-run_set('data_N3000', V3000, N3000, T3000); outfile.write('\n\n')
+mode = sys.argv[1]
+outfile = open(prefix+mode+'.py','w'); 
+dataname = 'data_' + mode
+if mode == 'V':
+    run_set(outfile, dataname, Vv, Nv, Tv); outfile.write('\n\n')
+elif mode == 'C':
+    run_set(outfile, dataname, Vc, Nc, Tc); outfile.write('\n\n')
+elif mode == 'N300':
+    run_set(outfile, dataname, V300, N300, T300); outfile.write('\n\n')
+elif mode == 'N3000':
+    run_set(outfile, dataname, V3000, N3000, T3000); outfile.write('\n\n')
+else:
+    raise 'invalid argument'
 
