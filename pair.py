@@ -18,11 +18,8 @@ class Pair(object):
                  shell_size, rt, surface):
         self.multiplicity = 2
 
-        # Order single1 and single2 so that D1 < D2.
-        if single1.pid_particle_pair[1].D <= single2.pid_particle_pair[1].D:
-            self.single1, self.single2 = single1, single2 
-        else:
-            self.single1, self.single2 = single2, single1 
+        self.single1 = single1
+        self.single2 = single2 
 
         self.a_R, self.a_r = self.determine_radii(r0, shell_size)
 
@@ -102,6 +99,10 @@ class Pair(object):
         D1 = single1.pid_particle_pair[1].D
         D2 = single2.pid_particle_pair[1].D
 
+        # Make sure that D1 != 0 to avoid division by zero in the followings.
+        if D1 == 0:
+            D1, D2 = D2, D1
+
         shell_size /= SAFETY
 
         D_tot = D1 + D2
@@ -143,9 +144,14 @@ class Pair(object):
           log.debug('a %g, r %g, R %g r0 %g' % 
                  (shell_size, a_r, a_R, r0))
         if __debug__:
-          log.debug('tr %g, tR %g' % 
-                    (((a_r - r0) / math.sqrt(6 * self.D_tot))**2,\
-                         (a_R / math.sqrt(6*self.D_R))**2))
+            tr = ((a_r - r0) / math.sqrt(6 * self.D_tot))**2
+            if self.D_R == 0:
+                tR = numpy.inf 
+            else:
+                tR = (a_R / math.sqrt(6*self.D_R))**2
+            log.debug('tr %g, tR %g' % (tr, tR))
+
+
         assert a_r > 0
         assert a_r > r0, '%g %g' % (a_r, r0)
         assert a_R > 0 or (a_R == 0 and (D1 == 0 or D2 == 0))
