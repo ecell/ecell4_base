@@ -114,10 +114,7 @@ class HDF5Logger(object):
         "This function was created by sakurai@advancesoft.jp"
         data_group = self.hdf5_file['data']
 
-        group_name = unicode(sim.t)
-        if group_name in data_group:
-            return
-        time_group = data_group.create_group(group_name)
+        time_group = data_group.require_group(unicode(sim.t))
         time_group.attrs['t'] = sim.t
 
         # Create particles dataset on the time group
@@ -147,7 +144,6 @@ class HDF5Logger(object):
             return
 
         data_group = self.hdf5_file['data']        
-        data_group.attrs['world_size'] = sim.world.world_size
 
         # Require time group
         time_group = data_group.require_group(unicode(sim.t))
