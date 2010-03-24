@@ -11,21 +11,15 @@ public:
     typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
     typedef typename traits_type::world_type::surface_id_type surface_id_type;
     typedef typename traits_type::shell_id_type shell_id_type;
-    typedef typename traits_type::domain_id_type domain_id_type;
-    typedef typename traits_type::network_rules_type network_rules_type;
     typedef typename traits_type::event_id_type event_id_type;
+    typedef typename traits_type::event_kind_type event_kind_type;
     typedef typename traits_type::time_type time_type;
 
 public:
     virtual ~Domain() {}
 
-    Domain(domain_id_type const& id, surface_id_type const& surface_id)
-        : id_(id), surface_id_(surface_id) {}
-
-    domain_id_type const& id() const
-    {
-        return id_;
-    }
+    Domain(surface_id_type const& surface_id)
+        : surface_id_(surface_id) {}
 
     surface_id_type const& surface_id() const
     {
@@ -73,7 +67,6 @@ public:
     }
 
 protected:
-    domain_id_type id_;
     surface_id_type surface_id_;
     event_id_type event_id_;
     time_type last_time_;

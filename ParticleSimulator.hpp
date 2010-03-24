@@ -1,6 +1,7 @@
 #ifndef PARTICLE_SIMULATOR_HPP
 #define PARTICLE_SIMULATOR_HPP
 
+#include <boost/shared_ptr.hpp>
 #include "Sphere.hpp"
 #include "Cylinder.hpp"
 #include "Box.hpp"
@@ -36,6 +37,62 @@ struct ParticleSimulatorTraitsBase
     typedef NetworkRulesWrapper<NetworkRules,
                                 reaction_rule_type> network_rules_type;
     typedef GSLRandomNumberGenerator rng_type;
+};
+
+template<typename Ttraits_>
+class ParticleSimulator
+{
+public:
+    typedef Ttraits_ traits_type;
+    typedef typename traits_type::world_type world_type;
+    typedef typename traits_type::network_rules_type network_rules_type;
+    typedef typename traits_type::rng_type rng_type;
+    typedef typename traits_type::time_type time_type;
+
+public:
+    virtual ~ParticleSimulator() {}
+
+    ParticleSimulator(world_type& world,
+                      rng_type& rng,
+                      network_rules_type const& network_rules)
+        : world_(world), rng_(rng), network_rules_(network_rules),
+          t_(0.), dt_(0.) {}
+
+    boost::shared_ptr<world_type> world() const
+    {
+        return world_;
+    }
+
+    boost::shared_ptr<network_rules_type> network_rules() const
+    {
+        return network_rules_;
+    }
+
+    boost::shared_ptr<rng_type> rng() const
+    {
+        return rng_;
+    }
+
+    time_type t() const
+    {
+        return t_;
+    }
+
+    time_type dt() const
+    {
+        return dt_;
+    }
+
+    virtual void initialize() = 0;
+
+    virtual void step() = 0;
+
+protected:
+    world_type& world_;
+    rng_type& rng_;
+    network_rules_type const& network_rules_;
+    time_type t_;
+    time_type dt_;
 };
 
 #endif /* PARTICLE_SIMULATOR_HPP */

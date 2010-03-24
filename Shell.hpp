@@ -18,10 +18,10 @@ struct Shell
     typedef typename shape_type::position_type position_type;
     typedef typename shape_type::length_type length_type;
 
-    Shell(): shape_(), domain_id_() {}
+    Shell(): domain_id_(), shape_() {}
 
     Shell(domain_id_type const& domain_id, shape_type const& shape)
-        : shape_(shape), domain_id_(domain_id) {}
+        : domain_id_(domain_id), shape_(shape) {}
 
     position_type& position()
     {
@@ -64,8 +64,8 @@ struct Shell
     }
 
 private:
-    shape_type shape_;
     domain_id_type domain_id_;
+    shape_type shape_;
 };
 
 template<typename Tstrm_, typename Ttraits_, typename Tshape_, typename Tdid_>

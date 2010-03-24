@@ -34,6 +34,7 @@ private:
     typedef std::vector<particle_id_type> particle_id_vector_type;
     typedef typename world_type::particle_id_pair_generator particle_id_pair_generator;
     typedef typename world_type::particle_id_pair_list particle_id_pair_list;
+    typedef typename world_type::surface_type surface_type;
     typedef typename Ttraits_::random_number_engine random_number_engine;
     typedef typename Ttraits_::network_rules_type network_rules_type;
     typedef typename network_rules_type::reaction_rules reaction_rules;
@@ -48,13 +49,9 @@ private:
 
 public:
     template<typename Tstate_, typename Trange_>
-    BDPropagator(world_type const& world, Tstate_& state, transaction_type& tx, Trange_ const& particles)
-        : world_(world),
-          tx_(tx),
-          rules_(state.get_network_rules()),
-          dt_(state.get_dt()),
-          rng_(state.get_rng()),
-          queue_(),
+    BDPropagator(world_type const& world, transaction_type& tx, Tstate_& state, Trange_ const& particles)
+        : world_(world), tx_(tx), rules_(state.get_network_rules()),
+          dt_(state.dt()), rng_(state.rng()), queue_(),
           rejected_move_count_(0)
     {
         queue_.reserve(boost::size(particles));
@@ -95,7 +92,7 @@ public:
 
         position_type new_pos(
             world_.apply_boundary(
-                add(pp.second.position(), drawR_free(species.D()))));
+                add(pp.second.position(), drawR_free(species))));
         particle_id_pair particle_to_update(
                 pp.first, particle_type(species.id(),
                 sphere_type(new_pos, species.radius())));
@@ -143,10 +140,11 @@ public:
     }
 
 private:
-    position_type drawR_free(Real D)
+    position_type drawR_free(species_type const& species)
     {
-        boost::normal_distribution<Real> dist(0.0, std::sqrt(2.0 * D * dt_));
-        return position_type(dist(ur_), dist(ur_), dist(ur_));
+        surface_type const& surface(world_.get_surface(species.surface_id()));
+        return StructureUtils::draw_bd_displacement(
+                surface, std::sqrt(2.0 * species.D() * dt_), rng_);
     }
 
     Real getP_acct(Real k, Real D, Real sigma)

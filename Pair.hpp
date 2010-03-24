@@ -2,10 +2,10 @@
 #define PAIR_HPP
 
 #include <cmath>
+#include <boost/array.hpp>
 #include "Domain.hpp"
-#include "twofold_container.hpp"
 
-template<typename Ttraits_>
+template<typename Ttraits_, typename Tshell_>
 class Pair: public Domain<Ttraits_>
 {
 public:
@@ -15,9 +15,8 @@ public:
     typedef typename traits_type::world_type::position_type position_type;
     typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
     typedef typename traits_type::world_type::surface_id_type surface_id_type;
-    typedef typename traits_type::world_type::D_type D_type;
+    typedef typename traits_type::world_type::traits_type::D_type D_type;
     typedef typename traits_type::shell_id_type shell_id_type;
-    typedef typename traits_type::domain_id_type domain_id_type;
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef Tshell_ shell_type;
     typedef std::pair<shell_id_type, shell_type> shell_id_pair;
@@ -27,14 +26,14 @@ public:
 public:
     virtual ~Pair() {}
 
-    Pair(domain_id_type const& id, surface_id_type const& surface_id,
+    Pair(surface_id_type const& surface_id,
          shell_id_pair const& shell, position_type const& com,
          particle_id_pair const& p0, particle_id_pair const& p1,
          length_type const& r0, length_type const& rt)
-        : base_type(id, surface_id), shell_(shell),
+        : base_type(surface_id), shell_(shell),
           r0_(r0), rt_(rt)
     {
-        if (p0.D() < p1.D())
+        if (p0.second.D() < p1.second.D())
         {
             new(&particles_[0]) particle_id_pair(p0);
             new(&particles_[1]) particle_id_pair(p1);
@@ -44,36 +43,33 @@ public:
             new(&particles_[0]) particle_id_pair(p1);
             new(&particles_[1]) particle_id_pair(p0);
         }
-
-        D_tot_ = D0 + D1;
-        D_geom_ = std::sqrt(D0 * D1);
-        sigma_ = R0 + R1;
-
         // determine a_r and a_R
         {
-            D_type D0(particles_[0].D);
-            D_type D1(particles_[1].D);
-            length_type R0(particles_[0].radius);
-            length_type R1(particles_[1].radius);
-            const length_type shell_size(shape(shell).radius() / SAFETY)
-            BOOST_ASSERT(r0 >= sigma_);
-            if (((D_geom_ - D1) * r0) / D_tot_ + shell_size
-                + std::sqrt(D1 / D0) * (R0 - shell_size) - R1 < 0)
+            D_type D0(particles_[0].second.D());
+            D_type D1(particles_[1].second.D());
+            length_type R0(particles_[0].second.radius());
+            length_type R1(particles_[1].second.radius());
+            const length_type sigma(R0 + R1);
+            const length_type D_tot(D0 + D1);
+            const length_type D_geom(std::sqrt(D0 * D1));
+            const length_type shell_size(shape(shell.second).radius() / SAFETY);
+            BOOST_ASSERT(r0 >= sigma);
+            if (((D_geom - D0) * r0) / D_tot + shell_size
+                + std::sqrt(D0 / D1) * (R1 - shell_size) - R0 < 0)
             {
                 std::swap(D0, D1);
                 std::swap(R0, R1);
             }
-            a_R_ = D_geom_ * (D1 * (shell_size - R0)
-                              + D0 * (shell_size - r0 - R0)) /
-                   (D0 * D0 + D0 * D1 + D_geom_ * D_tot_);
-            a_r_ = (D_geom_ * r0 + D_tot * (shell_size - R0)) /
-                   (D0 + D_geom_);
+            a_R_ = D_geom * (D0 * (shell_size - R1)
+                              + D1 * (shell_size - r0 - R1)) /
+                   (D1 * D1 + D1 * D0 + D_geom * D_tot);
+            a_r_ = (D_geom * r0 + D_tot * (shell_size - R1)) / (D1 + D_geom);
             BOOST_ASSERT(a_r_ > 0);
             BOOST_ASSERT(a_r_ > r0);
-            BOOST_ASSERT(a_R_ > 0 || (a_R_ == 0. && (D0 == 0. || D1 == 0.)));
-            BOOST_ASSERT(a_R_ + a_r_ * D0 / D_tot + R0 >=
-                         a_R_ + a_r_ * D1 / D_tot + R1);
-            BOOST_ASSERT(std::abs(a_R_ + a_r_ * D0 / D_tot + R0 - shell_size) <
+            BOOST_ASSERT(a_R_ > 0 || (a_R_ == 0. && (D1 == 0. || D0 == 0.)));
+            BOOST_ASSERT(a_R_ + a_r_ * D1 / D_tot + R1 >=
+                         a_R_ + a_r_ * D0 / D_tot + R0);
+            BOOST_ASSERT(std::abs(a_R_ + a_r_ * D1 / D_tot + R1 - shell_size) <
                          1e-12 * shell_size);
         }
     }
@@ -100,44 +96,41 @@ public:
 
     length_type const& a_R() const
     {
-        return a_R;
+        return a_R_;
     }
 
     length_type const& a_r() const
     {
-        return a_r;
+        return a_r_;
     }
 
-    length_type const& sigma() const
+    length_type sigma() const
     {
-        return sigma_;
+        return particles_[0].second.radius() + particles_[1].second.radius();
     }
 
-    D_type const& D_tot() const
+    D_type D_tot() const
     {
-        return D_tot_;
+        return particles_[0].second.D() + particles_[1].second.D();
     }
 
-    D_type const& D_geom() const
+    D_type D_geom() const
     {
-        return D_geom_;
+        return std::sqrt(particles_[0].second.D() * particles_[1].second.D());
     }
 
-    D_type const& D_R() const
+    D_type D_R() const
     {
-        return particles_[0].D() * particles_[1].D() / D_tot_;
+        return particles_[0].second.D() * particles_[1].second.D() / D_tot();
     }
 
 protected:
-    const particle_array_type particles_;
     const shell_id_pair shell_;
+    mutable particle_array_type particles_;
     const length_type r0_;
     const length_type rt_;
-    const length_type a_R_;
-    const length_type a_r_;
-    const length_type sigma_;
-    const D_type D_tot_;
-    const D_type D_geom_;
+    mutable length_type a_R_;
+    mutable length_type a_r_;
     static const double SAFETY = 1.0 + 1e-5;
 };
 

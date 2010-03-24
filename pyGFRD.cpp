@@ -17,7 +17,7 @@
 #include <boost/python/return_value_policy.hpp>
 #include <boost/python/reference_existing_object.hpp>
 #include <boost/python/return_by_value.hpp>
-#include <boost/random/mersenne_twister.hpp>
+#include <boost/python/wrapper.hpp>
 
 #include <numpy/arrayobject.h>
 
@@ -44,6 +44,8 @@
 #include "GSLRandomNumberGenerator.hpp"
 #include "EGFRDSimulator.hpp"
 #include "StructureUtils.hpp"
+#include "Single.hpp"
+#include "Pair.hpp"
 
 #include "peer/utils.hpp"
 #include "peer/py_hash_support.hpp"
@@ -296,43 +298,6 @@ static void Model___setitem__(Model* model, std::string const& key, std::string 
     (*model)[key] = value;
 }
 
-template<typename Ttraits_>
-struct SimulationState
-{
-    typedef typename Ttraits_::time_type time_type;
-    typedef typename Ttraits_::rng_type rng_type;
-    typedef typename Ttraits_::network_rules_type network_rules_type;
-
-    time_type get_dt() const
-    {
-        return boost::python::extract<Real>(self_.attr("dt"));
-    }
-
-    rng_type get_rng()
-    {
-        return rng_;
-    }
-
-    network_rules_type const& get_network_rules() const
-    {
-        return boost::python::extract<typename Ttraits_::network_rules_type const&>(self_.attr("network_rules"));
-    }
-
-    SimulationState(PyObject* self)
-        : self_(boost::python::borrowed(self)) {}
-
-private:
-    boost::python::object self_;
-    rng_type rng_;
-};
-
-namespace boost { namespace python {
-
-template<typename Ttraits_>
-struct has_back_reference<SimulationState<Ttraits_> >: boost::mpl::true_ {};
-
-} } // namespace boost::python
-
 template<typename Twrapper_>
 struct MatrixSpace_to_select_second_range_converter
 {
@@ -450,15 +415,33 @@ struct reaction_rule_vector_converter
     };
 
     typedef peer::STLContainerWrapper<native_type, instance_holder> wrapper_type;
-    static PyObject* convert(native_type const& v)
+
+    struct to_python_converter
     {
-        return reinterpret_cast<PyObject*>(wrapper_type::create(instance_holder(v)));
-    }
+        static PyObject* convert(native_type const& v)
+        {
+            return reinterpret_cast<PyObject*>(wrapper_type::create(instance_holder(v)));
+        }
+    };
+
+    struct to_native_converter
+    {
+        static void* convert(PyObject* ptr)
+        {
+            return const_cast<native_type*>(&*reinterpret_cast<wrapper_type const*>(ptr)->ptr());
+        }
+
+        static PyTypeObject const* expected_pytype()
+        {
+            return &wrapper_type::__class__;
+        }
+    };
 
     static void __register()
     {
         wrapper_type::__class_init__("ReactionRuleVector", boost::python::scope().ptr());
-        boost::python::to_python_converter<native_type, reaction_rule_vector_converter>();
+        boost::python::to_python_converter<native_type, to_python_converter>();
+        peer::util::to_native_lvalue_converter<native_type, to_native_converter>();
     }
 };
 
@@ -715,6 +698,24 @@ world_traits_type::position_type draw_bd_displacement(world_traits_type::surface
 {
     return StructureUtils<egfrd_simulator_traits_type>::draw_bd_displacement(surface, length, rng);
 }
+
+class _EGFRDSimulator: public EGFRDSimulator<egfrd_simulator_traits_type>, public boost::python::wrapper<EGFRDSimulator<egfrd_simulator_traits_type> >
+{
+    typedef EGFRDSimulator<egfrd_simulator_traits_type> base_type;
+    typedef base_type::world_type world_type;
+    typedef base_type::network_rules_type network_rules_type;
+    typedef base_type::rng_type rng_type;
+
+public:
+    _EGFRDSimulator(world_type& world, rng_type& rng,
+                    network_rules_type const& network_rules)
+        : base_type(world, rng, network_rules) {}
+
+    virtual void step()
+    {
+        get_override("step")();
+    }
+};
 
 BOOST_PYTHON_MODULE( _gfrd )
 {
@@ -1028,7 +1029,11 @@ BOOST_PYTHON_MODULE( _gfrd )
 
 
     typedef egfrd_simulator_traits_type::reaction_rule_type reaction_rule_info_type;
-    class_<reaction_rule_info_type>("ReactionRuleInfo", no_init)
+    class_<reaction_rule_info_type>("ReactionRuleInfo",
+        init<reaction_rule_info_type::identifier_type,
+             reaction_rule_info_type::rate_type,
+             twofold_container<world_traits_type::species_id_type>,
+             std::vector<world_traits_type::species_id_type> >())
         .add_property("id", 
             make_function(&reaction_rule_info_type::id,
                           return_value_policy<return_by_value>()))
@@ -1044,11 +1049,11 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::util::register_tuple_to_range_converter<reaction_rule_info_type::species_id_range>();
 
-    typedef egfrd_simulator_traits_type::network_rules_type network_rules_wrapper_type;
-    class_<network_rules_wrapper_type, boost::noncopyable>("NetworkRulesWrapper", init<NetworkRules const&>())
-        .def("query_reaction_rule", (network_rules_wrapper_type::reaction_rule_vector const&(network_rules_wrapper_type::*)(network_rules_wrapper_type::species_id_type const&) const)&network_rules_wrapper_type::query_reaction_rule,
+    typedef egfrd_simulator_traits_type::network_rules_type NetworkRulesWrapper;
+    class_<NetworkRulesWrapper, boost::noncopyable>("NetworkRulesWrapper", init<NetworkRules const&>())
+        .def("query_reaction_rule", (NetworkRulesWrapper::reaction_rule_vector const&(NetworkRulesWrapper::*)(NetworkRulesWrapper::species_id_type const&) const)&NetworkRulesWrapper::query_reaction_rule,
             return_value_policy<return_by_value>())
-        .def("query_reaction_rule", (network_rules_wrapper_type::reaction_rule_vector const&(network_rules_wrapper_type::*)(network_rules_wrapper_type::species_id_type const&, network_rules_wrapper_type::species_id_type const&) const)&network_rules_wrapper_type::query_reaction_rule,
+        .def("query_reaction_rule", (NetworkRulesWrapper::reaction_rule_vector const&(NetworkRulesWrapper::*)(NetworkRulesWrapper::species_id_type const&, NetworkRulesWrapper::species_id_type const&) const)&NetworkRulesWrapper::query_reaction_rule,
             return_value_policy<return_by_value>())
         ;
 
@@ -1384,6 +1389,186 @@ BOOST_PYTHON_MODULE( _gfrd )
                           return_value_policy<return_by_value>()))
         ;
 
+    typedef Domain<egfrd_simulator_traits_type> Domain;
+    class_<Domain>("_Domain", no_init)
+        .add_property("surface_id", 
+            make_function(&Domain::surface_id,
+                return_value_policy<return_by_value>()))
+        .add_property("event_id", 
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    Domain, Domain::event_id_type,
+                    &Domain::event_id, &Domain::event_id>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    Domain, Domain::event_id_type,
+                    &Domain::event_id, &Domain::event_id>::set))
+        .add_property("last_time", 
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    Domain, Domain::time_type,
+                    &Domain::last_time, &Domain::last_time>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    Domain, Domain::time_type,
+                    &Domain::last_time, &Domain::last_time>::set))
+        .add_property("event_kind", 
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    Domain, Domain::event_kind_type,
+                    &Domain::event_kind, &Domain::event_kind>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    Domain, Domain::event_kind_type,
+                    &Domain::event_kind, &Domain::event_kind>::set))
+        ;
+
+    typedef Single<egfrd_simulator_traits_type, egfrd_simulator_traits_type::spherical_shell_type> SphericalSingle;
+    class_<SphericalSingle, bases<Domain> >(
+        "_SphericalSingle",
+        init<SphericalSingle::surface_id_type,
+             SphericalSingle::shell_id_pair,
+             SphericalSingle::particle_id_pair,
+             SphericalSingle::reaction_rule_vector const&>())
+        .add_property("particle",
+            make_function(&SphericalSingle::particle,
+                return_value_policy<return_by_value>()))
+        .add_property("shell",
+            make_function(&SphericalSingle::shell,
+                return_value_policy<return_by_value>()))
+        .add_property("reactions",
+            make_function(&SphericalSingle::reactions,
+                return_value_policy<return_by_value>()))
+        .add_property("k_tot",
+            make_function(&SphericalSingle::k_tot,
+                return_value_policy<return_by_value>()))
+        ;
+
+    typedef Single<egfrd_simulator_traits_type, egfrd_simulator_traits_type::cylindrical_shell_type> CylindricalSingle;
+    class_<CylindricalSingle, bases<Domain> >(
+        "_CylindricalSingle",
+        init<CylindricalSingle::surface_id_type,
+             CylindricalSingle::shell_id_pair,
+             CylindricalSingle::particle_id_pair,
+             CylindricalSingle::reaction_rule_vector const&>())
+        .add_property("particle",
+            make_function(&CylindricalSingle::particle,
+                return_value_policy<return_by_value>()))
+        .add_property("shell",
+            make_function(&CylindricalSingle::shell,
+                return_value_policy<return_by_value>()))
+        .add_property("reactions",
+            make_function(&CylindricalSingle::reactions,
+                return_value_policy<return_by_value>()))
+        .add_property("k_tot",
+            make_function(&CylindricalSingle::k_tot,
+                return_value_policy<return_by_value>()))
+        ;
+
+    typedef Pair<egfrd_simulator_traits_type, egfrd_simulator_traits_type::spherical_shell_type> SphericalPair;
+    class_<SphericalPair, bases<Domain> >(
+        "_SphericalPair",
+        init<SphericalPair::surface_id_type,
+             SphericalPair::shell_id_pair,
+             SphericalPair::position_type,
+             SphericalPair::particle_id_pair,
+             SphericalPair::particle_id_pair,
+             SphericalPair::length_type,
+             SphericalPair::length_type>())
+        .add_property("particles",
+            make_function(&SphericalPair::particles,
+                return_value_policy<return_by_value>()))
+        .add_property("shell",
+            make_function(&SphericalPair::shell,
+                return_value_policy<return_by_value>()))
+        .add_property("r0",
+            make_function(&SphericalPair::r0,
+                return_value_policy<return_by_value>()))
+        .add_property("rt",
+            make_function(&SphericalPair::rt,
+                return_value_policy<return_by_value>()))
+        .add_property("a_R",
+            make_function(&SphericalPair::a_R,
+                return_value_policy<return_by_value>()))
+        .add_property("a_r",
+            make_function(&SphericalPair::a_r,
+                return_value_policy<return_by_value>()))
+        .add_property("sigma",
+            make_function(&SphericalPair::sigma,
+                return_value_policy<return_by_value>()))
+        .add_property("D_tot",
+            make_function(&SphericalPair::D_tot,
+                return_value_policy<return_by_value>()))
+        .add_property("D_geom",
+            make_function(&SphericalPair::D_geom,
+                return_value_policy<return_by_value>()))
+        .add_property("D_R",
+            make_function(&SphericalPair::D_R,
+                return_value_policy<return_by_value>()));
+    peer::util::register_range_to_tuple_converter<SphericalPair::particle_array_type>();
+
+    typedef Pair<egfrd_simulator_traits_type, egfrd_simulator_traits_type::cylindrical_shell_type> CylindricalPair;
+    class_<CylindricalPair, bases<Domain> >(
+        "_CylindricalPair",
+        init<CylindricalPair::surface_id_type,
+             CylindricalPair::shell_id_pair,
+             CylindricalPair::position_type,
+             CylindricalPair::particle_id_pair,
+             CylindricalPair::particle_id_pair,
+             CylindricalPair::length_type,
+             CylindricalPair::length_type>())
+        .add_property("particles",
+            make_function(&CylindricalPair::particles,
+                return_value_policy<return_by_value>()))
+        .add_property("shell",
+            make_function(&CylindricalPair::shell,
+                return_value_policy<return_by_value>()))
+        .add_property("r0",
+            make_function(&CylindricalPair::r0,
+                return_value_policy<return_by_value>()))
+        .add_property("rt",
+            make_function(&CylindricalPair::rt,
+                return_value_policy<return_by_value>()))
+        .add_property("a_R",
+            make_function(&CylindricalPair::a_R,
+                return_value_policy<return_by_value>()))
+        .add_property("a_r",
+            make_function(&CylindricalPair::a_r,
+                return_value_policy<return_by_value>()))
+        .add_property("sigma",
+            make_function(&CylindricalPair::sigma,
+                return_value_policy<return_by_value>()))
+        .add_property("D_tot",
+            make_function(&CylindricalPair::D_tot,
+                return_value_policy<return_by_value>()))
+        .add_property("D_geom",
+            make_function(&CylindricalPair::D_geom,
+                return_value_policy<return_by_value>()))
+        .add_property("D_R",
+            make_function(&CylindricalPair::D_R,
+                return_value_policy<return_by_value>()));
+    peer::util::register_range_to_tuple_converter<CylindricalPair::particle_array_type>();
+
+    class_<_EGFRDSimulator, boost::noncopyable>("_EGFRDSimulator",
+            init<CyclicWorld&,
+                 GSLRandomNumberGenerator&,
+                 NetworkRulesWrapper const&>())
+        .def("new_spherical_shell", &_EGFRDSimulator::new_spherical_shell)
+        .def("new_cylindrical_shell", &_EGFRDSimulator::new_spherical_shell)
+        .def("get_spherical_shell",
+            &_EGFRDSimulator::new_spherical_shell,
+            return_value_policy<return_by_value>())
+        .def("get_cylindrical_shell",
+            &_EGFRDSimulator::new_spherical_shell,
+            return_value_policy<return_by_value>())
+        .def("get_domain", &_EGFRDSimulator::get_domain,
+                return_value_policy<reference_existing_object>())
+        .def("add_domain", &_EGFRDSimulator::add_domain)
+        ;
+    peer::util::register_tuple_converter<egfrd_simulator_traits_type::domain_id_pair>();
 
     peer::util::register_tuple_to_ra_container_converter<boost::array<world_traits_type::length_type, 3>, 3>();
 
@@ -1399,11 +1584,6 @@ BOOST_PYTHON_MODULE( _gfrd )
     def("draw_bd_displacement", &draw_bd_displacement);
 
     peer::util::to_native_converter<world_traits_type::species_id_type, species_info_to_species_id_converter>();
-
-    typedef SimulationState<egfrd_simulator_traits_type> simulation_state_type;
-    class_<simulation_state_type, boost::noncopyable>("SimulationState")
-        .add_property("rng", &simulation_state_type::get_rng)
-        ;
 
     peer::RandomNumberGenerator<GSLRandomNumberGenerator>::__register_class("RandomNumberGenerator");
     def("create_gsl_rng", &create_gsl_rng<gsl_rng_mt19937>);

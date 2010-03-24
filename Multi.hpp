@@ -5,15 +5,15 @@
 #include "Domain.hpp"
 #include "ParticleContainer.hpp"
 #include "Sphere.hpp"
+#include "utils/range.hpp"
 
 template<typename Tsim_>
-class Multi: public Domain<typename Tsim_::traits_type>, public ParticleContainerBase<Multi<Tsim_> >
+class Multi: public Domain<typename Tsim_::traits_type>
 {
 public:
     typedef Tsim_ simulator_type;
     typedef typename simulator_type::traits_type traits_type;
     typedef Domain<traits_type> base_type;
-    typedef ParticleContainerBase<Multi> particle_container_base_type;
     typedef typename traits_type::particle_type particle_type;
     typedef typename particle_type::shape_type particle_shape_type;
     typedef typename traits_type::species_type species_type;
@@ -24,8 +24,8 @@ public:
     typedef typename traits_type::size_type size_type;
     typedef typename traits_type::surface_id_type surface_id_type;
     typedef typename traits_type::surface_type surface_type;
-    typedef typename traits_type:;spherical_shell_type spherical_shell_type;
-    typedef typename traits_type:;spherical_shell_id_pair spherical_shell_id_pair;
+    typedef typename traits_type::spherical_shell_type spherical_shell_type;
+    typedef typename traits_type::spherical_shell_id_pair spherical_shell_id_pair;
     typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
     typedef Transaction<traits_type> transaction_type;
     typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
@@ -37,6 +37,7 @@ public:
     typedef typename traits_type::sphere_type sphere_type;
     typedef MatrixSpace<particle_type, particle_id_type, get_mapper_mf> particle_matrix_type;
     typedef std::map<shell_id_type, particle_id_type> shell_particle_id_map;
+    typedef sized_iterator_range<typename shell_particle_id_map::const_iterator> shell_particle_id_pair_range;
 
 public:
     virtual ~Multi() {}
@@ -44,62 +45,24 @@ public:
     Multi(domain_id_type const& id, surface_id_type const& surface_id,
           simulator_type& main)
         : base_type(id, surface_id),
-          particle_container_base_type(main.world().world_size(),
-                                       main.world().matrix_size()),
           main_(main), shell_ids_(), escaped_(false) {}
 
-    virtual size_type num_particles() const
+    spherical_shell_id_pair
+    add_particle_and_shell(domain_id_type const& id,
+                           particle_id_pair const& pp,
+                           length_type const& shell_size)
     {
-        return pmat_.size();
+        BOOST_ASSERT(main_.world().update_particle(pp));
+        spherical_shell_id_pair ssp(
+            main_.new_spherical_shell(
+                id, sphere_type(pp.second.position(), shell_size)));
+        shell_ids_[ssp.first] = pp.first;
+        return ssp;
     }
 
-    virtual species_type const& get_species(species_id_type const& id) const
+    shell_particle_id_pair_range get_shell_particle_pairs() const
     {
-        return main_.get_species(id);
-    }
-
-    virtual surface_type const& get_surface(surface_id_type const& id) const
-    {
-        return main_.get_surface(id);
-    }
-
-    virtual particle_id_pair new_particle(species_id_type const& sid,
-            position_type const& pos)
-    {
-        particle_id_pair pi_pair(main_.new_particle(sid, pos));
-        BOOST_ASSERT(particle_container_base_type::update_particle(pi_pair));
-        spherical_shell_id_pair si_pair(main_.create_spherical_shell(pi_pair.second.shape()));
-        shell_ids_[si_pair.first] = pi_pair.first;
-        return pi_pair;
-    }
-
-    virtual bool update_particle(particle_id_pair const& pi_pair)
-    {
-        particle_container_base_type::update_particle(pi_pair);
-        if (main_.update_particle(pi_pair))
-        {
-            spherical_shell_id_pair si_pair(main_.create_spherical_shell(pi_pair.second.shape()));
-            shell_ids_[si_pair.first] = pi_pair.first;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    bool update_particle_and_shell(particle_id_pair const& pi_pair, length_type const& shell_size)
-    {
-        particle_container_base_type::update_particle(pi_pair);
-        main_.update_particle(pi_pair);
-        spherical_shell_id_pair si_pair(main_.create_spherical_shell(sphere_type(pi_pair.second.position(), shell_size)));
-        shell_ids_[si_pair.first] = pi_pair.first;
-    }
-
-    virtual void remove_particle(particle_id_type const& id)
-    {
-        main_.remove_particle(id);
-        particle_container_base_type::remove_particle(id);
+        return shell_particle_id_pair_range(shell_ids_);
     }
 
     template<typename Tset_>
@@ -116,12 +79,12 @@ public:
 protected:
     bool within_shell(particle_shape_type const& sphere) const
     {
-        for (shell_id_set_type::const_iterator i(shell_ids_.begin()),
-                                               e(shell_ids_.end());
+        for (typename shell_particle_id_map::const_iterator
+                i(shell_ids_.begin()), e(shell_ids_.end());
              i != e; ++i)
         {
             spherical_shell_type shell(main_.get_spherical_shell((*i).first));
-            position_type ppos(main_.cyclic_transpose(sphere.position(), shell.position()));
+            position_type ppos(main_.world().cyclic_transpose(sphere.position(), shell.position()));
             if (distance(ppos, shell.position()) < shell.radius())
             {
                 return true;
@@ -133,7 +96,7 @@ protected:
     template<typename Tset_>
     void clear_outer_volume(particle_shape_type const& sphere, Tset_ const& ignore)
     {
-        main_.clear_volume(sphere, array_gen(domain_id_));
+        main_.clear_volume(sphere, ignore);
         if (std::auto_ptr<particle_id_pair_and_distance_list>(main_.world().check_overlap(sphere, ignore)).get())
         {
             throw no_space(__FUNCTION__);
