@@ -3,6 +3,7 @@
 
 #include <string>
 #include <exception>
+#include <stdexcept>
 
 class not_found: public std::exception
 {
