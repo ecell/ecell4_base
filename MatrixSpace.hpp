@@ -383,6 +383,19 @@ public:
         return true;
     }
 
+    inline void clear()
+    {
+        for (typename matrix_type::element *p(matrix_.data()),
+                                           *e(matrix_.data()
+                                              + matrix_.num_elements());
+             p != e; ++p)
+        {
+            (*p).clear();
+        }
+        rmap_.clear();
+        size_ = 0;
+    }
+
     inline iterator begin()
     {
         BOOST_ASSERT(matrix_.num_elements() > 0);
