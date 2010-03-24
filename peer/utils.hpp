@@ -97,6 +97,15 @@ namespace util
                 boost::python::type_id<Tnative_>());
     }
 
+    template<typename Tnative_, typename Tconverter_>
+    inline void to_native_lvalue_converter()
+    {
+        boost::python::converter::registry::insert(
+                &Tconverter_::convert,
+                boost::python::type_id<Tnative_>(),
+                &Tconverter_::expected_pytype);
+    }
+
     static void std_exception_translator( const std::exception& exc )
     {
       PyErr_SetString( PyExc_RuntimeError, exc.what() );
