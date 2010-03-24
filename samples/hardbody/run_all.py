@@ -5,7 +5,7 @@ import math
 
 import run_single
 
-prefix = 'out-'
+prefix = 'out_'
 
 T = 11.696
 
