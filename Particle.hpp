@@ -22,7 +22,7 @@ struct Particle
     typedef typename shape_type::position_type position_type;
     typedef typename shape_type::length_type length_type;
 
-    Particle(): shape_(), species_id_() {}
+    Particle(): shape_(), species_id_(), D_(0.) {}
 
     Particle(species_id_type const& species_id, shape_type const& shape,
              D_type const& D)
