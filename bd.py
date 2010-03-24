@@ -120,7 +120,7 @@ class BDSimulatorCoreBase(object):
             rt1 = self.attempt_single_reactions(sid)
             if rt1:
                 try:
-                    self.fire_reaction1(particle, rt1)
+                    self.fire_reaction1(pid_particle_pair, rt1)
                 except NoSpace:
                     if __debug__:
                         log.info('fire_reaction1 rejected.')
@@ -209,14 +209,14 @@ class BDSimulatorCoreBase(object):
 
         return reaction_types[i]
 
-    def fire_reaction1(self, particle, rt):
-        oldpos = particle.position
+    def fire_reaction1(self, pid_particle_pair, rt):
+        oldpos = pid_particle_pair[1].position
 
         if len(rt.products) == 0:
             
-            self.remove_particle(particle)
+            self.remove_particle(pid_particle_pair)
 
-            self.last_reaction = Reaction(rt, [particle], [])
+            self.last_reaction = Reaction(rt, [pid_particle_pair], [])
             
         elif len(rt.products) == 1:
             
@@ -224,17 +224,17 @@ class BDSimulatorCoreBase(object):
             radius = product_species.radius
 
             if self.check_overlap(oldpos, radius,
-                                 ignore = [particle, ]):
+                                 ignore=[pid_particle_pair[0]]):
                 if __debug__:
                     log.info('no space for product particle.')
                 raise NoSpace()
 
-            self.clear_volume(oldpos, radius, ignore = [particle])
+            self.clear_volume(oldpos, radius, ignore=[pid_particle_pair[0]])
                 
-            self.remove_particle(particle)
+            self.remove_particle(pid_particle_pair)
             newparticle = self.create_particle(product_species.id, oldpos)
 
-            self.last_reaction = Reaction(rt, [particle], [newparticle])
+            self.last_reaction = Reaction(rt, [pid_particle_pair], [newparticle])
 
             
         elif len(rt.products) == 2:
@@ -269,25 +269,25 @@ class BDSimulatorCoreBase(object):
 
                 # accept the new positions if there is enough space.
                 if (not self.check_overlap(newpos1, radius1,
-                                         ignore = [particle, ])) and \
+                                         ignore=[pid_particle_pair[0]])) and \
                    (not self.check_overlap(newpos2, radius2,
-                                         ignore = [particle, ])):
+                                         ignore=[pid_particle_pair[0]])):
                     break
             else:
                 if __debug__:
                     log.info('no space for product particles.')
                 raise NoSpace()
 
-            self.clear_volume(newpos1, radius1, ignore = [particle])
-            self.clear_volume(newpos2, radius2, ignore = [particle])
+            self.clear_volume(newpos1, radius1, ignore=[pid_particle_pair[0]])
+            self.clear_volume(newpos2, radius2, ignore=[pid_particle_pair[0]])
 
             # move accepted
-            self.remove_particle(particle)
+            self.remove_particle(pid_particle_pair)
 
             newparticle1 = self.create_particle(product_species1.id, newpos1)
             newparticle2 = self.create_particle(product_species2.id, newpos2)
 
-            self.last_reaction = Reaction(rt, [particle], 
+            self.last_reaction = Reaction(rt, [pid_particle_pair], 
                                          [newparticle1, newparticle2])
 
         else:
