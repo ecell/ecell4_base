@@ -1,5 +1,5 @@
-#ifndef PAIR_HPP
-#define PAIR_HPP
+#ifndef UTILS_PAIR_HPP
+#define UTILS_PAIR_HPP
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
@@ -173,4 +173,4 @@ struct remove_const_first
                       typename Tpair_::second_type> type;
 };
 
-#endif /* PAIR_HPP */
+#endif /* UTILS_PAIR_HPP */
