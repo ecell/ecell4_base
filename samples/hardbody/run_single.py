@@ -15,7 +15,9 @@ def run_single(T, V, N):
 
     L = math.pow(V * 1e-3, 1.0 / 3.0)
 
-    matrix_size = min(max(3, int((3 * N) ** (1.0/3.0))), 120)
+    matrix_size = max(3, int((3 * N) ** (1.0/3.0)))
+
+    print 'matrix_size=', matrix_size
     
     w = World(L, matrix_size)
     s = EGFRDSimulator(w)

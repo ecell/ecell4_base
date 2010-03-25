@@ -18,8 +18,8 @@ class MultiBDCore(BDSimulatorCoreBase):
         # this has to be ref, not proxy, since it is used for comparison.
         self.multiref = ref(multi)
 
-        self.particle_matrix = ParticleContainer(self.main.world.world_size, self.main.world.matrix_size)
-        self.sphere_container = SphericalShellContainer(self.main.world.world_size, self.main.world.matrix_size)
+        self.particle_matrix = ParticleContainer(self.main.world.world_size, 3)
+        self.sphere_container = SphericalShellContainer(self.main.world.world_size, 3)
         self.escaped = False
 
     def update_particle(self, pid_particle_pair):
