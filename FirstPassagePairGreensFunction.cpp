@@ -35,41 +35,25 @@ const unsigned int FirstPassagePairGreensFunction::MAX_ORDER;
 const unsigned int FirstPassagePairGreensFunction::MAX_ALPHA_SEQ;
 
 
-FirstPassagePairGreensFunction::
-FirstPassagePairGreensFunction( const Real D, 
-                                const Real kf, 
-                                const Real Sigma )
-    :
-    PairGreensFunction( D, kf, Sigma ),
-//    alphaTable( this->MAX_ORDER+1 ),
-    h( kf / ( 4.0 * M_PI * Sigma * Sigma * D ) ),
-    hsigma_p_1( 1.0 + h * Sigma ),
-    a( INFINITY )
-//    alpha0_threshold( 0.0 )
+FirstPassagePairGreensFunction::FirstPassagePairGreensFunction(
+    Real D, Real kf, Real Sigma, Real a)
+    : PairGreensFunction( D, kf, Sigma ),
+      h( kf / ( 4.0 * M_PI * Sigma * Sigma * D ) ),
+      hsigma_p_1( 1.0 + h * Sigma ),
+      a(a)
 {
-    ; // do nothing
+    const Real sigma( this->getSigma() );
+
+    if ( a < sigma )
+    {
+        throw std::invalid_argument((boost::format( "a >= sigma : a=%g, sigma=%g" ) % a % sigma).str());
+    }
+    clearAlphaTable();
 }
 
 FirstPassagePairGreensFunction::~FirstPassagePairGreensFunction()
 {
     ; // do nothing
-}
-
-void FirstPassagePairGreensFunction::seta( const Real a )
-{
-    const Real sigma( this->getSigma() );
-
-    if ( !(a >= sigma ) )
-    {
-        throw std::invalid_argument( ( boost::format( "a >= sigma : a=%g, sigma=%g" ) % a % sigma ).str() );
-    }
-
-
-    if( this->a != a )
-    {
-        this->a = a;
-        clearAlphaTable();
-    }
 }
 
 //

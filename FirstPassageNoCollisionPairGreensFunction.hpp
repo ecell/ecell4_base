@@ -29,7 +29,7 @@ class FirstPassageNoCollisionPairGreensFunction
 
 public:
     
-    FirstPassageNoCollisionPairGreensFunction( const Real D ); 
+    FirstPassageNoCollisionPairGreensFunction(Real D, Real a); 
     
     ~FirstPassageNoCollisionPairGreensFunction();
 
@@ -38,8 +38,6 @@ public:
         return this->a;
     }
 
-    void seta( const Real a );
-    
     const Real drawTime( const Real rnd, const Real r0 ) const;
 
     const EventType drawEventType( const Real rnd, 

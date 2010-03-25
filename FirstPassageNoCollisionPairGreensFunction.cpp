@@ -33,12 +33,13 @@
 
 
 FirstPassageNoCollisionPairGreensFunction::
-FirstPassageNoCollisionPairGreensFunction( const Real D ) 
-    :
-    PairGreensFunction( D, 0, 0 ),
-    a( INFINITY )
+FirstPassageNoCollisionPairGreensFunction(Real D, Real a) 
+    : PairGreensFunction(D, 0, 0), a(a)
 {
-    ; // do nothing
+    if (a < 0.0)
+    {
+        throw std::invalid_argument( ( boost::format( "a >= 0.0 : a=%g" ) % a ).str() );
+    }
 }
 
 FirstPassageNoCollisionPairGreensFunction::
@@ -46,18 +47,6 @@ FirstPassageNoCollisionPairGreensFunction::
 {
     ; // do nothing
 }
-
-void FirstPassageNoCollisionPairGreensFunction::seta( const Real a )
-{
-    if ( !(a >= 0.0 ) )
-    {
-        throw std::invalid_argument( ( boost::format( "a >= 0.0 : a=%g" ) % a ).str() );
-    }
-
-
-    this->a = a;
-}
-
 
 const Real
 FirstPassageNoCollisionPairGreensFunction::p_survival( const Real t,

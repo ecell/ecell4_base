@@ -39,12 +39,6 @@ public:
         ; // do nothing
     }
 
-    void seta( const Real ) const // don't have any effect
-    {
-        ; // do nothing
-    }
-    
-    
     const Real drawTime( const Real ) const
     {
         return INFINITY;

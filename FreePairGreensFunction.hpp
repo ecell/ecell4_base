@@ -29,7 +29,7 @@ private:
     
 public:
     
-    FreePairGreensFunction( const Real D )
+    FreePairGreensFunction(Real D)
         :
         PairGreensFunction( D, 0.0, 0.0 )
     {

@@ -30,9 +30,7 @@ class FirstPassagePairGreensFunction
 
 public:
     
-    FirstPassagePairGreensFunction( const Real D, 
-                                    const Real kf, 
-                                    const Real Sigma );
+    FirstPassagePairGreensFunction(Real D, Real kf, Real Sigma, Real a);
     
     ~FirstPassagePairGreensFunction();
 
@@ -511,8 +509,7 @@ private:
     mutable boost::array<Integer,MAX_ORDER+1> alphaOffsetTable;
     mutable boost::array<RealVector,MAX_ORDER+1> alphaTable;
 
-    Real a;
-
+    const Real a;
 };
 
 

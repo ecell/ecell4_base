@@ -29,7 +29,7 @@ class BasicPairGreensFunction
     
 public:
     
-    BasicPairGreensFunction( const Real D, const Real kf, const Real Sigma );
+    BasicPairGreensFunction(Real D, Real kf, Real Sigma);
     
     ~BasicPairGreensFunction();
     

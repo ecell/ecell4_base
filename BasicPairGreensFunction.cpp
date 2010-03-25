@@ -30,9 +30,7 @@
 
 
 
-BasicPairGreensFunction::BasicPairGreensFunction( const Real D, 
-                                                  const Real kf, 
-                                                  const Real Sigma )
+BasicPairGreensFunction::BasicPairGreensFunction(Real D, Real kf, Real Sigma)
     :
     PairGreensFunction( D, kf, Sigma ),
     kD( 4.0 * M_PI * getSigma() * getD() ),

@@ -33,7 +33,7 @@ class PairGreensFunction
 
 public:
 
-  PairGreensFunction( const Real D, const Real kf, const Real Sigma )
+  PairGreensFunction(Real D, Real kf, Real Sigma)
     :
     D( D ),
     kf( kf ),

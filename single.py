@@ -188,10 +188,7 @@ class SphericalSingle(NonInteractionSingle):
                                       shell_id, reactiontypes, surface)
 
     def greens_function(self):
-        gf = FirstPassageGreensFunction(self.getD())
-        a = self.get_mobility_radius()
-        gf.seta(a)
-        return gf
+        return FirstPassageGreensFunction(self.getD(),self.get_mobility_radius())
 
     def create_new_shell(self, position, radius, domain_id):
         return SphericalShell(domain_id, Sphere(position, radius))
@@ -221,11 +218,7 @@ class PlanarSurfaceSingle(NonInteractionSingle):
     def greens_function(self):
         # Todo. 2D gf Abs Sym.
         #gf = FirstPassageGreensFunction2D(self.getD())
-
-        gf = FirstPassageGreensFunction(self.getD())
-        a = self.get_mobility_radius()
-        gf.seta(a)
-        return gf
+        return FirstPassageGreensFunction(self.getD(), self.get_mobility_radius())
 
     def create_new_shell(self, position, radius, domain_id):
         # The size (thickness) of a hockey puck is not more than it has to be 
@@ -261,11 +254,8 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
 
     def greens_function(self):
         # Todo. 1D gf Abs Abs.
-        #gf = FirstPassageGreensFunction1D(self.getD())
-        gf = FirstPassageGreensFunction(self.getD())
-        a = self.get_mobility_radius()
-        gf.seta(a)
-        return gf
+        #gf = FirstPassageGreensFunction1D(self.getD(), )
+        return FirstPassageGreensFunction(self.getD(), self.get_mobility_radius())
 
     def create_new_shell(self, position, size, domain_id):
         # Heads up. The cylinder's *size*, not radius, is changed when you 

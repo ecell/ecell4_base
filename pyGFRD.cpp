@@ -790,10 +790,8 @@ BOOST_PYTHON_MODULE( _gfrd )
         ;
 
 
-    class_<FreeGreensFunction>( "FreeGreensFunction",
-                                init<const Real>() )
+    class_<FreeGreensFunction>("FreeGreensFunction", init<Real>())
         .def( "getD", &FreeGreensFunction::getD )
-        .def( "seta", &FreeGreensFunction::seta )
         .def( "drawTime", &FreeGreensFunction::drawTime )
         .def( "drawR", &FreeGreensFunction::drawR )
         .def( "p_r", &FreeGreensFunction::p_r )
@@ -801,10 +799,9 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def( "dump", &FreeGreensFunction::dump )
         ;
 
-    class_<FirstPassageGreensFunction>( "FirstPassageGreensFunction",
-                                        init<const Real>() )
+    class_<FirstPassageGreensFunction>("FirstPassageGreensFunction",
+                                       init<Real, Real>())
         .def( "getD", &FirstPassageGreensFunction::getD )
-        .def( "seta", &FirstPassageGreensFunction::seta )
         .def( "geta", &FirstPassageGreensFunction::geta )
         .def( "drawTime", &FirstPassageGreensFunction::drawTime )
         .def( "drawR", &FirstPassageGreensFunction::drawR )
@@ -817,10 +814,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 
 
 
-    class_<BasicPairGreensFunction>( "BasicPairGreensFunction",
-                                     init<const Real, 
-                                     const Real, 
-                                     const Real>() )
+    class_<BasicPairGreensFunction>("BasicPairGreensFunction",
+                                    init<Real, Real, Real>())
         .def( "getD", &BasicPairGreensFunction::getD )
         .def( "getkf", &BasicPairGreensFunction::getkf )
         .def( "getSigma", &BasicPairGreensFunction::getSigma )
@@ -841,8 +836,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def( "dump", &BasicPairGreensFunction::dump )
         ;
 
-    class_<FreePairGreensFunction>( "FreePairGreensFunction",
-                                    init<const Real>() )
+    class_<FreePairGreensFunction>("FreePairGreensFunction", init<Real>())
         .def( "getD", &FreePairGreensFunction::getD )
         .def( "getkf", &FreePairGreensFunction::getkf )
         .def( "getSigma", &FreePairGreensFunction::getSigma )
@@ -872,10 +866,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         ;
 
     class_<FirstPassagePairGreensFunction>( "FirstPassagePairGreensFunction",
-                                            init<const Real, 
-                                            const Real,
-                                            const Real>() )
-        .def( "seta", &FirstPassagePairGreensFunction::seta )
+                                            init<Real, Real, Real, Real>() )
         .def( "geta", &FirstPassagePairGreensFunction::geta )
         .def( "getD", &FirstPassagePairGreensFunction::getD )
         .def( "getkf", &BasicPairGreensFunction::getkf )
@@ -917,8 +908,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
 
     class_<FirstPassageNoCollisionPairGreensFunction>
-        ( "FirstPassageNoCollisionPairGreensFunction", init<const Real>() ) 
-        .def( "seta", &FirstPassageNoCollisionPairGreensFunction::seta )
+        ( "FirstPassageNoCollisionPairGreensFunction", init<Real, Real>() ) 
         .def( "geta", &FirstPassageNoCollisionPairGreensFunction::geta )
         .def( "getD", &FirstPassageNoCollisionPairGreensFunction::getD )
         .def( "drawTime", &FirstPassageNoCollisionPairGreensFunction::drawTime )
