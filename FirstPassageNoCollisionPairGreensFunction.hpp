@@ -31,7 +31,7 @@ public:
     
     FirstPassageNoCollisionPairGreensFunction( const Real D ); 
     
-    virtual ~FirstPassageNoCollisionPairGreensFunction();
+    ~FirstPassageNoCollisionPairGreensFunction();
 
     const Real geta() const
     {

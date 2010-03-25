@@ -20,7 +20,7 @@ public:
         ;
     }
 
-    virtual ~FirstPassageGreensFunction()
+    ~FirstPassageGreensFunction()
     {
         ;
     }

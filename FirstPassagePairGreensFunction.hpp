@@ -34,7 +34,7 @@ public:
                                     const Real kf, 
                                     const Real Sigma );
     
-    virtual ~FirstPassagePairGreensFunction();
+    ~FirstPassagePairGreensFunction();
 
     const Real geth() const
     {
