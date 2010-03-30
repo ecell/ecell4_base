@@ -40,6 +40,23 @@ SPECIES_SCHEMA = \
         ('D', 'f8'), # diffusion coefficient
         ]
 
+SHELL_PARTICLE_ASSOCIATION_SCHEMA = \
+    [
+        ('shell_id', 'u8'),
+        ('particle_id', 'u8'),
+        ]
+
+DOMAINS_SCHEMA = \
+    [
+        ('id', 'u8', ),
+        ('kind', 'u4', ),
+        ]
+
+DOMAIN_SHELL_ASSOCIATION_SCHEMA = \
+    [
+        ('shell_id', 'u8', ),
+        ('domain_id', 'u8', ),
+        ]
 
 class FixedIntervalInterrupter(object):
     def __init__(self, sim, interval, callback):
@@ -179,13 +196,7 @@ class HDF5Logger(object):
                 assert getattr(domain, 'pid_shell_id_map', None), 'Cannot access pid_shell_id_map'
                 num_assocs += len(domain.pid_shell_id_map)
 
-        shell_particle_association_schema = \
-            [
-                ('shell_id', 'u8'),
-                ('particle_id', 'u8'),
-            ]
-
-        dtype_obj = numpy.dtype(shell_particle_association_schema)
+        dtype_obj = numpy.dtype(SHELL_PARTICLE_ASSOCIATION_SCHEMA)
         x = numpy.zeros((num_assocs, ), dtype = dtype_obj)
 
         count = 0
@@ -217,14 +228,7 @@ class HDF5Logger(object):
         dummy = time_group.create_dataset('shell_particle_association', data = x)
 
         # Create domain_shell_association dataset on the time group
-
-        domain_shell_association_schema = \
-            [
-                ('shell_id', 'u8', ),
-                ('domain_id', 'u8', ),
-            ]
-
-        dtype_obj = numpy.dtype(domain_shell_association_schema)
+        dtype_obj = numpy.dtype(DOMAIN_SHELL_ASSOCIATION_SCHEMA)
         x = numpy.zeros((num_shells, ), dtype = dtype_obj)
 
         count = 0
@@ -238,16 +242,9 @@ class HDF5Logger(object):
         dummy = time_group.create_dataset('domain_shell_association', data = x)
 
         # Create domain dataset on the time group
-
-        domains_schema = \
-            [
-                ('id', 'u8', ),
-                ('kind', 'u4', ),
-            ]
-
         num_domains = len(sim.domains)
 
-        dtype_obj = numpy.dtype(domains_schema)
+        dtype_obj = numpy.dtype(DOMAINS_SCHEMA)
         x = numpy.zeros((num_domains, ), dtype = dtype_obj)
 
         count = 0
