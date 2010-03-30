@@ -75,20 +75,16 @@ class HDF5Logger(object):
                 os.mkdir(self.directory)
 
             hdf5_filename = '%s_%04d.hdf5' % (self.logname, self.file_counter)
-            hdf5_path = os.path.join(self.directory, hdf5_filename)
-            # HDF5 file must be removed before log_particles
-            if os.path.exists(hdf5_path):
-                os.remove(hdf5_path)
-            self.hdf5_file = h5py.File(hdf5_path)
             self.file_counter += 1
         else:
-            if self.hdf5_file is None:
-                hdf5_filename = '%s.hdf5' % self.logname
-                hdf5_path = os.path.join(self.directory, hdf5_filename)
-                # HDF5 file must be removed before log_particles
-                if os.path.exists(hdf5_path):
-                    os.remove(hdf5_path)
-                self.hdf5_file = h5py.File(hdf5_path)
+            if self.hdf5_file is not None:
+                return
+            hdf5_filename = '%s.hdf5' % self.logname
+        hdf5_path = os.path.join(self.directory, hdf5_filename)
+        # HDF5 file must be removed before log_particles
+        if os.path.exists(hdf5_path):
+            os.remove(hdf5_path)
+        self.hdf5_file = h5py.File(hdf5_path)
 
         self.create_data_group(sim)
         self.write_species(sim)
