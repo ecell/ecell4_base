@@ -37,3 +37,9 @@ test/World_test
 test/array_helper_test
 test/filters_test
 test/model_test
+test/DynamicPriorityQueue_test
+test/MatrixSpaceWithCylinders_test
+test/MatrixSpace_test
+test/SphericalBesselGenerator_test
+test/Vector3_test
+test/unittest
