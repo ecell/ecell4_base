@@ -834,6 +834,11 @@ public:
     }
 };
 
+void _BDPropagator_propagate_all(_BDPropagator& self)
+{
+    while (self());
+}
+
 BOOST_PYTHON_MODULE( _gfrd )
 {
     using namespace boost::python;
@@ -1189,6 +1194,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("get_particle", &transaction_type::get_particle)
         .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_id_pair const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
         .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&, transaction_type::particle_id_type const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
+        .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&, transaction_type::particle_id_type const&, transaction_type::particle_id_type const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
         .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
         .def("create_transaction", &transaction_type::create_transaction,
                 return_value_policy<manage_new_object>())
@@ -1233,6 +1239,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("new_particle", &CyclicWorld::new_particle)
         .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_id_pair const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
         .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&, CyclicWorld::particle_id_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
         .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
         .def("check_overlap", &World_check_overlap<CyclicWorld>, return_value_policy<return_by_value>())
         .def("update_particle", &CyclicWorld::update_particle)
@@ -1692,7 +1699,9 @@ BOOST_PYTHON_MODULE( _gfrd )
             egfrd_simulator_traits_type::rng_type&,
             egfrd_simulator_traits_type::time_type,
             peer::util::py_range_wrapper<world_traits_type::particle_id_type> >())
-        .def("__call__", &_BDPropagator::operator());
+        .def("__call__", &_BDPropagator::operator())
+        .def("propagate_all", &_BDPropagator_propagate_all)
+        ;
 
     peer::util::register_py_range_wrapper_converter<world_traits_type::particle_id_type>();
 

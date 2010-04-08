@@ -132,6 +132,11 @@ public:
         return pc_.check_overlap(s, ignore);
     }
 
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    {
+        return pc_.check_overlap(s, ignore1, ignore2);
+    }
+
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
     {
         return pc_.check_overlap(s);

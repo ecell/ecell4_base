@@ -152,178 +152,152 @@ private:
                 surface, std::sqrt(2.0 * species.D() * dt_), rng_);
     }
 
-    Real getP_acct(Real k, Real D, Real sigma)
-    {
-        const Real p(k * dt_ / (I_bd(sigma, dt_, D) * 4.0 * M_PI));
-        BOOST_ASSERT(p >= 0.);
-        if (p >= 1.0)
-        {
-            throw propagation_error(
-                "invalid acceptance ratio ("
-                + boost::lexical_cast<std::string>(p)
-                + ") for reaction rate "
-                + boost::lexical_cast<std::string>(k)
-                + ".");
-        }
-        return p;
-    }
 
     bool attempt_reaction(particle_id_pair const& pp)
     {
-        reaction_rule_type r(determine_reaction(pp.second.sid()));
-        if (::valid(r))
+        const Real rnd(rng_() / dt_);
+        Real prob = 0;
+
+        reaction_rules const& rules(rules_.query_reaction_rule(pp.second.sid()));
+        for (typename boost::range_const_iterator<reaction_rules>::type
+                i(rules.begin()), e(rules.end()); i != e; ++i)
         {
-            typename reaction_rule_type::species_id_range products(
-                    r.get_products());
-            switch (boost::size(products))
+            reaction_rule_type const& r(*i);
+            prob += r.k();
+            if (prob >= rnd)
             {
-            case 0:
-                remove_particle(pp.first);
-                break;
-
-            case 1:
+                typename reaction_rule_type::species_id_range products(
+                        r.get_products());
+                switch (boost::size(products))
                 {
-                    const species_type s0(tx_.get_species(products[0]));
-                    const particle_id_pair new_p(
-                        pp.first, particle_type(products[0],
-                            particle_shape_type(pp.second.position(),
-                                                s0.radius()),
-                                                s0.D()));
-                    if (boost::scoped_ptr<particle_id_pair_and_distance_list>(tx_.check_overlap(new_p)))
+                case 0:
+                    remove_particle(pp.first);
+                    break;
+
+                case 1:
                     {
-                        throw propagation_error("no space");
-                    }
-
-                    tx_.update_particle(new_p);
-                }
-                break;
-
-            case 2:
-                {
-                    const species_type s0(tx_.get_species(products[0])),
-                            s1(tx_.get_species(products[1]));
-                    const Real D01(s0.D() + s1.D());
-                    const length_type r01(s0.radius() + s1.radius());
-                    int i = max_retry_count;
-
-                    for (;;)
-                    {
-                        if (--i < 0)
+                        const species_type s0(tx_.get_species(products[0]));
+                        const particle_id_pair new_p(
+                            pp.first, particle_type(products[0],
+                                particle_shape_type(pp.second.position(),
+                                                    s0.radius()),
+                                                    s0.D()));
+                        if (boost::scoped_ptr<particle_id_pair_and_distance_list>(tx_.check_overlap(new_p)))
                         {
                             throw propagation_error("no space");
                         }
 
-                        const Real rnd(rng_());
-                        length_type pair_distance(
-                            drawR_gbd(rnd, r01, dt_, D01));
-                        const position_type m(random_unit_vector() * pair_distance);
-                        const position_type np0(
-                            world_.apply_boundary(pp.second.position()
-                                + m * (s0.D() / D01)));
-                        const position_type np1(
-                            world_.apply_boundary(pp.second.position()
-                                + m * (s1.D() / D01)));
-                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s0(
-                            tx_.check_overlap(
-                                particle_shape_type(np0, s0.radius()),
-                                pp.first));
-                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s1(
-                            tx_.check_overlap(
-                                particle_shape_type(np1, s1.radius()),
-                                pp.first));
-                        if (!overlapped_s0 && !overlapped_s1)
-                            break;
+                        tx_.update_particle(new_p);
                     }
+                    break;
+
+                case 2:
+                    {
+                        const species_type s0(tx_.get_species(products[0])),
+                                s1(tx_.get_species(products[1]));
+                        const Real D01(s0.D() + s1.D());
+                        const length_type r01(s0.radius() + s1.radius());
+                        int i = max_retry_count;
+
+                        for (;;)
+                        {
+                            if (--i < 0)
+                            {
+                                throw propagation_error("no space");
+                            }
+
+                            const Real rnd(rng_());
+                            length_type pair_distance(
+                                drawR_gbd(rnd, r01, dt_, D01));
+                            const position_type m(random_unit_vector() * pair_distance);
+                            const position_type np0(
+                                world_.apply_boundary(pp.second.position()
+                                    + m * (s0.D() / D01)));
+                            const position_type np1(
+                                world_.apply_boundary(pp.second.position()
+                                    + m * (s1.D() / D01)));
+                            boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s0(
+                                tx_.check_overlap(
+                                    particle_shape_type(np0, s0.radius()),
+                                    pp.first));
+                            boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s1(
+                                tx_.check_overlap(
+                                    particle_shape_type(np1, s1.radius()),
+                                    pp.first));
+                            if (!overlapped_s0 && !overlapped_s1)
+                                break;
+                        }
+                    }
+                    break;
+                default:
+                    throw not_implemented("reactions that produces more than three products are not supported");
                 }
-                break;
-            default:
-                throw not_implemented("reactions that produces more than three products are not supported");
+                reactions_occurred_.push_back(r);
+                return true;
             }
-            reactions_occurred_.push_back(r);
-            return true;
         }
         return false;
     }
 
     bool attempt_reaction(particle_id_pair const& pp0, particle_id_pair const& pp1)
     {
-        reaction_rule_type r(determine_reaction(pp0.second.sid(), pp1.second.sid()));
-        if (::valid(r))
+        const species_type s0(tx_.get_species(pp0.second.sid())),
+                s1(tx_.get_species(pp1.second.sid()));
+        const Real D01(s0.D() + s1.D());
+        const length_type r01(s0.radius() + s1.radius());
+        const Real rnd(rng_() / dt_);
+        Real prob = 0;
+
+        reaction_rules const& rules(rules_.query_reaction_rule(pp0.second.sid(), pp1.second.sid()));
+        for (typename boost::range_const_iterator<reaction_rules>::type
+                i(rules.begin()), e(rules.end()); i != e; ++i)
         {
-            const species_type s0(tx_.get_species(pp0.second.sid())),
-                    s1(tx_.get_species(pp1.second.sid()));
-            const Real D01(s0.D() + s1.D());
-            const length_type r01(s0.radius() + s1.radius());
-            const Real p(getP_acct(r.k(), D01, r01));
-            const Real rnd(rng_());
-            if (p < rnd)
+            reaction_rule_type const& r(*i);
+            const Real p(r.k() / (I_bd(r01, dt_, D01) * 4.0 * M_PI));
+            BOOST_ASSERT(p >= 0.);
+            prob += p;
+            if (prob * dt_ >= 1.)
             {
-                return false;
+                throw propagation_error(
+                    "invalid acceptance ratio ("
+                    + boost::lexical_cast<std::string>(p * dt_)
+                    + ") for reaction rate "
+                    + boost::lexical_cast<std::string>(r.k())
+                    + ".");
             }
-
-            LOG_DEBUG(("fire reaction"));
-            const typename reaction_rule_type::species_id_range products(
-                r.get_products());
-            BOOST_ASSERT(boost::size(products) == 1);
-            const species_id_type product(products[0]);
-
-            const position_type new_pos(
-                world_.apply_boundary(
-                    divide(
-                        add(multiply(pp0.second.position(), s1.D()),
-                            multiply(world_.cyclic_transpose(
-                                pp1.second.position(),
-                                pp0.second.position()), s0.D())),
-                        D01)));
-            if (boost::scoped_ptr<particle_id_pair_and_distance_list>(tx_.check_overlap(particle_shape_type(new_pos, product))))
+            if (prob >= rnd)
             {
-                throw propagation_error("no space");
+                LOG_DEBUG(("fire reaction"));
+                const typename reaction_rule_type::species_id_range products(
+                    r.get_products());
+                BOOST_ASSERT(boost::size(products) == 1);
+                const species_id_type product(products[0]);
+                const species_type sp(tx_.get_species(product));
+
+                const position_type new_pos(
+                    world_.apply_boundary(
+                        divide(
+                            add(multiply(pp0.second.position(), s1.D()),
+                                multiply(world_.cyclic_transpose(
+                                    pp1.second.position(),
+                                    pp0.second.position()), s0.D())),
+                            D01)));
+                if (boost::scoped_ptr<particle_id_pair_and_distance_list>(
+                    tx_.check_overlap(particle_shape_type(new_pos, sp.radius()),
+                                      pp0.first, pp1.first)))
+                {
+                    throw propagation_error("no space");
+                }
+
+                remove_particle(pp0.first);
+                remove_particle(pp1.first);
+                tx_.new_particle(product, new_pos);
+
+                reactions_occurred_.push_back(r);
+                return true;
             }
-
-            remove_particle(pp0.first);
-            remove_particle(pp1.first);
-            tx_.new_particle(product, new_pos);
-
-            reactions_occurred_.push_back(r);
-            return true;
         }
         return false;
-    }
-
-    reaction_rule_type const& determine_reaction(species_id_type const& sid)
-    {
-        const Real rnd(rng_() / dt_);
-        Real prob = 0;
-
-        reaction_rules const& rules(rules_.query_reaction_rule(sid));
-        for (typename boost::range_const_iterator<reaction_rules>::type
-                i(rules.begin()), e(rules.end()); i != e; ++i)
-        {
-            reaction_rule_type const& r(*i);
-            prob += r.k();
-            if (prob >= rnd)
-                return r;
-        }
-
-        return empty_reaction_rule_;
-    }
-
-    reaction_rule_type const& determine_reaction(species_id_type const& sid0, species_id_type const& sid1)
-    {
-        const Real rnd(rng_() / dt_);
-        Real prob = 0;
-
-        reaction_rules const& rules(rules_.query_reaction_rule(sid0, sid1));
-        for (typename boost::range_const_iterator<reaction_rules>::type
-                i(rules.begin()), e(rules.end()); i != e; ++i)
-        {
-            reaction_rule_type const& r(*i);
-            prob += r.k();
-            if (prob >= rnd)
-                return r;
-        }
-
-        return empty_reaction_rule_;
     }
 
     void remove_particle(particle_id_type const& pid)

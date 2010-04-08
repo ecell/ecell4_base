@@ -213,6 +213,11 @@ public:
         return check_overlap(s, array_gen(ignore));
     }
 
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    {
+        return check_overlap(s, array_gen(ignore1, ignore2));
+    }
+
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
     {
         return check_overlap<particle_shape_type>(s);

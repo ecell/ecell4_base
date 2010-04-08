@@ -67,4 +67,10 @@ private:
     species_id_vector products_;
 };
 
+template<typename Tid, typename Tsid, typename Trate>
+inline bool valid(ReactionRuleInfo<Tid, Tsid, Trate> const& r)
+{
+    return r.get_reactants().size() != 0;
+}
+
 #endif /* REACTION_RULE_INFO_HPP */
