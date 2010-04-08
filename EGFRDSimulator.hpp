@@ -13,8 +13,8 @@
 #include "PairGreensFunction.hpp"
 #include "ParticleSimulator.hpp"
 #include "MatrixSpace.hpp"
-#include "Single.hpp"
-#include "Pair.hpp"
+#include "AnalyticalSingle.hpp"
+#include "AnalyticalPair.hpp"
 #include "Multi.hpp"
 
 template<typename Tworld_>
@@ -58,16 +58,19 @@ public:
     typedef typename traits_type::domain_type domain_type;
     typedef typename traits_type::domain_id_pair domain_id_pair;
 
-    typedef Single<traits_type, spherical_shell_type> spherical_single_type;
-    typedef Single<traits_type, cylindrical_shell_type> cylindrical_single_type;
-    typedef Pair<traits_type, spherical_shell_type> spherical_pair_type;
-    typedef Pair<traits_type, cylindrical_shell_type> cylindrical_pair_type;
+    typedef AnalyticalSingle<traits_type, spherical_shell_type> spherical_single_type;
+    typedef AnalyticalSingle<traits_type, cylindrical_shell_type> cylindrical_single_type;
+    typedef AnalyticalPair<traits_type, spherical_shell_type> spherical_pair_type;
+    typedef AnalyticalPair<traits_type, cylindrical_shell_type> cylindrical_pair_type;
     typedef Multi<EGFRDSimulator> multi_type;
 
 protected:
     typedef MatrixSpace<spherical_shell_type, shell_id_type, get_mapper_mf> spherical_shell_matrix_type;
     typedef MatrixSpace<cylindrical_shell_type, shell_id_type, get_mapper_mf> cylindrical_shell_matrix_type;
     typedef typename get_mapper_mf<domain_id_type, domain_type*>::type domain_map;
+
+public:
+    typedef abstract_limited_generator<domain_id_pair> domain_id_pair_generator;
 
 public:
     virtual ~EGFRDSimulator()
@@ -126,9 +129,24 @@ public:
         return (*i).second;
     }
 
-    bool add_domain(domain_id_pair const& dp)
+    bool update_domain(domain_id_pair const& dp)
     {
-        return domains_.insert(domains_.end(), dp) != domains_.end();
+        typename domain_map::iterator i(domains_.find(dp.first));
+        if (domains_.end() != i)
+        {
+            (*i).second = dp.second;
+            return false;
+        }
+        else
+        {
+            domains_.insert(dp);
+            return true;
+        }
+    }
+
+    domain_id_pair_generator* get_domains() const
+    {
+        return make_range_generator<domain_id_pair>(domains_);
     }
 
     virtual void initialize()

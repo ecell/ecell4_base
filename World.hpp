@@ -133,21 +133,13 @@ public:
 protected:
     typedef std::map<species_id_type, species_type> species_map;
     typedef std::map<surface_id_type, surface_type*> surface_map;
-    typedef select_second<typename species_map::value_type> second_selector_type;
-
-    struct surface_second_selector
-    {
-        surface_type const& operator()(
-                typename surface_map::value_type const& v) const
-        {
-            return *v.second;
-        }
-    };
+    typedef select_second<typename species_map::value_type> species_second_selector_type;
+    typedef select_second<typename surface_map::value_type> surface_second_selector_type;
 
 public:
-    typedef boost::transform_iterator<second_selector_type,
+    typedef boost::transform_iterator<species_second_selector_type,
             typename species_map::const_iterator> species_iterator;
-    typedef boost::transform_iterator<surface_second_selector,
+    typedef boost::transform_iterator<surface_second_selector_type,
             typename surface_map::const_iterator> surface_iterator;
     typedef sized_iterator_range<species_iterator> species_range;
     typedef sized_iterator_range<surface_iterator> surfaces_range;
@@ -185,9 +177,14 @@ public:
     species_range get_species() const
     {
         return species_range(
-            species_iterator(species_map_.begin(), second_selector_type()),
-            species_iterator(species_map_.end(), second_selector_type()),
+            species_iterator(species_map_.begin(), species_second_selector_type()),
+            species_iterator(species_map_.end(), species_second_selector_type()),
             species_map_.size());
+    }
+
+    bool add_surface(surface_type* surface)
+    {
+        return surface_map_.insert(std::make_pair(surface->id(), surface)).second;
     }
 
     virtual surface_type const& get_surface(surface_id_type const& id) const
@@ -203,8 +200,8 @@ public:
     surfaces_range get_surfaces() const
     {
         return surfaces_range(
-            surfaces_iterator(surface_map_.begin(), second_selector_type()),
-            surfaces_iterator(surface_map_.end(), second_selector_type()),
+            surface_iterator(surface_map_.begin(), surface_second_selector_type()),
+            surface_iterator(surface_map_.end(), surface_second_selector_type()),
             surface_map_.size());
     }
 

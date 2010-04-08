@@ -35,6 +35,7 @@
 #include "gsl_rng_base.hpp"
 #include "geometry.hpp"
 #include "MatrixSpace.hpp"
+#include "peer/range_converters.hpp"
 #include "Vector3.hpp"
 #include "Sphere.hpp"
 #include "Cylinder.hpp"
@@ -43,9 +44,10 @@
 #include "World.hpp"
 #include "GSLRandomNumberGenerator.hpp"
 #include "EGFRDSimulator.hpp"
+#include "BDPropagator.hpp"
 #include "StructureUtils.hpp"
-#include "Single.hpp"
-#include "Pair.hpp"
+#include "AnalyticalSingle.hpp"
+#include "AnalyticalPair.hpp"
 
 #include "peer/utils.hpp"
 #include "peer/py_hash_support.hpp"
@@ -69,6 +71,7 @@ typedef World<world_traits_type> CyclicWorld;
 typedef Model model_type;
 typedef CyclicWorld::transaction_type transaction_type;
 typedef EGFRDSimulatorTraitsBase<CyclicWorld> egfrd_simulator_traits_type;
+typedef BDPropagator<egfrd_simulator_traits_type> _BDPropagator;
 
 static boost::python::object species_type_class;
 static boost::python::object species_info_class;
@@ -454,9 +457,9 @@ struct particle_id_pair_and_distance_list_converter
     {
         typedef typename boost::range_size<T_>::type size_type;
         typedef typename boost::range_value<T_>::type value_type;
-        typedef value_type& reference;
+        typedef value_type const& reference;
         typedef value_type const& const_reference;
-        typedef typename boost::range_iterator<T_>::type iterator;
+        typedef typename boost::range_const_iterator<T_>::type iterator;
         typedef typename boost::range_const_iterator<T_>::type const_iterator;
 
         static size_type size(T_ const& c)
@@ -469,27 +472,17 @@ struct particle_id_pair_and_distance_list_converter
             c.set(i, v);
         }
 
-        static const_reference get(T_ const& c, size_type i)
+        static reference get(T_ const& c, size_type i)
         {
             return c.at(i);
         }
 
-        static iterator begin(T_& c)
+        static iterator begin(T_ const& c)
         {
             return boost::begin(c);
         }
 
-        static const_iterator begin(T_ const& c)
-        {
-            return boost::begin(c);
-        }
-
-        static iterator end(T_& c)
-        {
-            return boost::end(c);
-        }
-
-        static const_iterator end(T_ const& c)
+        static iterator end(T_ const& c)
         {
             return boost::end(c);
         }
@@ -517,9 +510,9 @@ struct species_range_converter: public boost::python::default_call_policies
     {
         typedef typename boost::range_size<T_>::type size_type;
         typedef typename boost::range_value<T_>::type value_type;
-        typedef value_type& reference;
+        typedef value_type const& reference;
         typedef value_type const& const_reference;
-        typedef typename boost::range_iterator<T_>::type iterator;
+        typedef typename boost::range_const_iterator<T_>::type iterator;
         typedef typename boost::range_const_iterator<T_>::type const_iterator;
 
         static size_type size(T_ const& c)
@@ -533,29 +526,19 @@ struct species_range_converter: public boost::python::default_call_policies
             boost::python::throw_error_already_set();
         }
 
-        static const_reference get(T_ const& c, size_type i)
+        static reference get(T_ const& c, size_type i)
         {
             PyErr_SetString(PyExc_TypeError, "object does not support indexing");
             boost::python::throw_error_already_set();
             throw 0;
         }
 
-        static iterator begin(T_& c)
+        static iterator begin(T_ const& c)
         {
             return boost::begin(c);
         }
 
-        static const_iterator begin(T_ const& c)
-        {
-            return boost::begin(c);
-        }
-
-        static iterator end(T_& c)
-        {
-            return boost::end(c);
-        }
-
-        static const_iterator end(T_ const& c)
+        static iterator end(T_ const& c)
         {
             return boost::end(c);
         }
@@ -624,6 +607,139 @@ struct species_range_converter: public boost::python::default_call_policies
     static void __register()
     {
         wrapper_type::__class_init__("SpeciesRange", boost::python::scope().ptr());
+    }
+};
+
+struct surfaces_range_converter: public boost::python::default_call_policies
+{
+    typedef CyclicWorld::surfaces_range native_type;
+
+    template<typename T_>
+    struct policy
+    {
+        typedef typename boost::range_size<T_>::type size_type;
+        typedef typename boost::range_value<T_>::type value_type;
+        typedef value_type const& reference;
+        typedef value_type const& const_reference;
+        typedef typename boost::range_const_iterator<T_>::type iterator;
+        typedef typename boost::range_const_iterator<T_>::type const_iterator;
+
+        static size_type size(T_ const& c)
+        {
+            return boost::size(c);
+        }
+
+        static void set(T_& c, size_type i, const_reference v)
+        {
+            PyErr_SetString(PyExc_TypeError, "object does not support indexing");
+            boost::python::throw_error_already_set();
+        }
+
+        static reference get(T_ const& c, size_type i)
+        {
+            PyErr_SetString(PyExc_TypeError, "object does not support indexing");
+            boost::python::throw_error_already_set();
+            throw 0;
+        }
+
+        static iterator begin(T_ const& c)
+        {
+            return boost::begin(c);
+        }
+
+        static iterator end(T_ const& c)
+        {
+            return boost::end(c);
+        }
+    };
+
+    struct instance_holder
+    {
+        instance_holder(native_type const& instance,
+                        boost::python::handle<> owner)
+            : instance_(instance), owner_(owner) {}
+
+        native_type const& operator*() const
+        {
+            return instance_;
+        }
+
+        native_type const* operator->() const
+        {
+            return &(**this);
+        }
+
+        native_type& operator*()
+        {
+            PyErr_SetString(PyExc_RuntimeError, "object is immutable");
+            boost::python::throw_error_already_set();
+            return *static_cast<native_type*>(0);
+        }
+
+        native_type* operator->()
+        {
+            return &(**this);
+        }
+
+        native_type instance_;
+        boost::python::handle<> owner_;
+    };
+
+    typedef peer::STLContainerWrapper<native_type, instance_holder, policy, boost::python::reference_existing_object> wrapper_type;
+
+    struct result_converter
+    {
+        template<typename T_>
+        struct apply
+        {
+            struct type {
+                PyObject* operator()(native_type const& val) const
+                {
+                    return wrapper_type::create(instance_holder(val, boost::python::handle<>()));
+                }
+
+                PyTypeObject const* get_pytype() const
+                {
+                    return &wrapper_type::__class__;
+                }
+            };
+        };
+    };
+
+    template<typename Targs>
+    static PyObject* postcall(Targs const& arg, PyObject* result)
+    {
+        reinterpret_cast<wrapper_type*>(result)->ptr().owner_ = boost::python::handle<>(boost::python::borrowed(PyTuple_GET_ITEM(arg, 0)));
+        return result;
+    }
+
+    static void __register()
+    {
+        wrapper_type::__class_init__("SurfacesRange", boost::python::scope().ptr());
+    }
+};
+
+struct domain_id_pair_converter
+{
+    typedef egfrd_simulator_traits_type::domain_id_pair native_type;
+
+    struct to_python_converter
+    {
+        static PyObject* convert(native_type const& v)
+        {
+            return boost::python::incref(boost::python::make_tuple(
+                v.first,
+                boost::python::handle<>(
+                    boost::python::reference_existing_object::apply<
+                        native_type::second_type>::type()(v.second))).ptr());
+        }
+    };
+
+    static void __register()
+    {
+        boost::python::to_python_converter<native_type, to_python_converter>();
+        peer::util::to_native_converter<native_type,
+            peer::util::detail::pytuple_to_tuple_converter<native_type> >();
     }
 };
 
@@ -705,6 +821,7 @@ class _EGFRDSimulator: public EGFRDSimulator<egfrd_simulator_traits_type>, publi
     typedef base_type::world_type world_type;
     typedef base_type::network_rules_type network_rules_type;
     typedef base_type::rng_type rng_type;
+    typedef base_type::domain_id_pair_generator domain_id_pair_generator;
 
 public:
     _EGFRDSimulator(world_type& world, rng_type& rng,
@@ -993,7 +1110,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::IdentifierWrapper<world_traits_type::species_id_type>::__register_class("SpeciesTypeID");
     peer::util::to_native_converter<world_traits_type::species_id_type, species_type_to_species_id_converter>();
 
-    peer::util::GeneratorIteratorWrapper<ptr_generator<NetworkRules::reaction_rule_generator> >::__register_class("ReactionRuleGenerator");
+    peer::util::GeneratorIteratorWrapper<ptr_generator<NetworkRules::reaction_rule_generator, std::auto_ptr<NetworkRules::reaction_rule_generator> > >::__register_class("ReactionRuleGenerator");
 
     peer::util::ExceptionWrapper<not_found, peer::util::PyExcTraits<&PyExc_LookupError> >::__register_class("NotFound");
     peer::util::ExceptionWrapper<already_exists, peer::util::PyExcTraits<&PyExc_StandardError> >::__register_class("AlreadyExists");
@@ -1037,7 +1154,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::util::register_range_to_tuple_converter<reaction_rule_info_type::species_id_range>();
 
-    peer::util::register_tuple_to_range_converter<reaction_rule_info_type::species_id_range>();
+    peer::util::register_iterable_to_range_converter<reaction_rule_info_type::species_id_range>();
 
     typedef egfrd_simulator_traits_type::network_rules_type NetworkRulesWrapper;
     class_<NetworkRulesWrapper, boost::noncopyable>("NetworkRulesWrapper", init<NetworkRules const&>())
@@ -1053,7 +1170,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::register_tuple_converter<CyclicWorld::particle_id_pair>();
     peer::util::register_tuple_converter<CyclicWorld::particle_id_pair_and_distance>();
 
-    peer::util::GeneratorIteratorWrapper<ptr_generator<CyclicWorld::particle_id_pair_generator> >::__register_class("ParticleIDPairGenerator");
+    peer::util::GeneratorIteratorWrapper<ptr_generator<CyclicWorld::particle_id_pair_generator, std::auto_ptr<CyclicWorld::particle_id_pair_generator> > >::__register_class("ParticleIDPairGenerator");
 
     class_<transaction_type, boost::noncopyable>("Transaction", no_init)
         .add_property("num_particles", &transaction_type::num_particles)
@@ -1083,7 +1200,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     particle_id_pair_and_distance_list_converter::__register();
     species_range_converter::__register();
     peer::util::register_range_to_tuple_converter<twofold_container<CyclicWorld::particle_id_type> >();
-    peer::util::register_tuple_to_range_converter<twofold_container<CyclicWorld::particle_id_type> >();
+    peer::util::register_iterable_to_range_converter<twofold_container<CyclicWorld::particle_id_type> >();
 
     class_<CyclicWorld>("World", init<CyclicWorld::length_type,
                                   CyclicWorld::size_type>())
@@ -1094,10 +1211,16 @@ BOOST_PYTHON_MODULE( _gfrd )
         .add_property("species",
             make_function(
                 (CyclicWorld::species_range(CyclicWorld::*)() const)&CyclicWorld::get_species, species_range_converter()))
+        .add_property("surfaces",
+            make_function(
+                (CyclicWorld::surfaces_range(CyclicWorld::*)() const)&CyclicWorld::get_surfaces, surfaces_range_converter()))
         .def("add_species", &CyclicWorld::add_species)
         .def("get_species",
             (CyclicWorld::species_type const&(CyclicWorld::*)(CyclicWorld::species_id_type const&) const)&CyclicWorld::get_species,
             return_internal_reference<>())
+        .def("add_surface", &CyclicWorld::add_surface)
+        .def("get_surface", &CyclicWorld::get_surface,
+                return_value_policy<reference_existing_object>())
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::sphere_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::cylinder_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::box_type>)
@@ -1416,12 +1539,12 @@ BOOST_PYTHON_MODULE( _gfrd )
                     &Domain::event_kind, &Domain::event_kind>::set))
         ;
 
-    typedef Single<egfrd_simulator_traits_type, egfrd_simulator_traits_type::spherical_shell_type> SphericalSingle;
+    typedef _EGFRDSimulator::spherical_single_type SphericalSingle;
     class_<SphericalSingle, bases<Domain> >(
         "_SphericalSingle",
         init<SphericalSingle::surface_id_type,
-             SphericalSingle::shell_id_pair,
              SphericalSingle::particle_id_pair,
+             SphericalSingle::shell_id_pair,
              SphericalSingle::reaction_rule_vector const&>())
         .add_property("particle",
             make_function(&SphericalSingle::particle,
@@ -1437,12 +1560,12 @@ BOOST_PYTHON_MODULE( _gfrd )
                 return_value_policy<return_by_value>()))
         ;
 
-    typedef Single<egfrd_simulator_traits_type, egfrd_simulator_traits_type::cylindrical_shell_type> CylindricalSingle;
+    typedef _EGFRDSimulator::cylindrical_single_type CylindricalSingle;
     class_<CylindricalSingle, bases<Domain> >(
         "_CylindricalSingle",
         init<CylindricalSingle::surface_id_type,
-             CylindricalSingle::shell_id_pair,
              CylindricalSingle::particle_id_pair,
+             CylindricalSingle::shell_id_pair,
              CylindricalSingle::reaction_rule_vector const&>())
         .add_property("particle",
             make_function(&CylindricalSingle::particle,
@@ -1458,14 +1581,13 @@ BOOST_PYTHON_MODULE( _gfrd )
                 return_value_policy<return_by_value>()))
         ;
 
-    typedef Pair<egfrd_simulator_traits_type, egfrd_simulator_traits_type::spherical_shell_type> SphericalPair;
+    typedef _EGFRDSimulator::spherical_pair_type SphericalPair;
     class_<SphericalPair, bases<Domain> >(
         "_SphericalPair",
         init<SphericalPair::surface_id_type,
+             SphericalPair::particle_id_pair,
+             SphericalPair::particle_id_pair,
              SphericalPair::shell_id_pair,
-             SphericalPair::position_type,
-             SphericalPair::particle_id_pair,
-             SphericalPair::particle_id_pair,
              SphericalPair::length_type,
              SphericalPair::length_type>())
         .add_property("particles",
@@ -1500,14 +1622,13 @@ BOOST_PYTHON_MODULE( _gfrd )
                 return_value_policy<return_by_value>()));
     peer::util::register_range_to_tuple_converter<SphericalPair::particle_array_type>();
 
-    typedef Pair<egfrd_simulator_traits_type, egfrd_simulator_traits_type::cylindrical_shell_type> CylindricalPair;
+    typedef _EGFRDSimulator::cylindrical_pair_type CylindricalPair;
     class_<CylindricalPair, bases<Domain> >(
         "_CylindricalPair",
         init<CylindricalPair::surface_id_type,
+             CylindricalPair::particle_id_pair,
+             CylindricalPair::particle_id_pair,
              CylindricalPair::shell_id_pair,
-             CylindricalPair::position_type,
-             CylindricalPair::particle_id_pair,
-             CylindricalPair::particle_id_pair,
              CylindricalPair::length_type,
              CylindricalPair::length_type>())
         .add_property("particles",
@@ -1556,11 +1677,28 @@ BOOST_PYTHON_MODULE( _gfrd )
             return_value_policy<return_by_value>())
         .def("get_domain", &_EGFRDSimulator::get_domain,
                 return_value_policy<reference_existing_object>())
-        .def("add_domain", &_EGFRDSimulator::add_domain)
+        .def("update_domain", &_EGFRDSimulator::update_domain)
+        .def("__iter__", &_EGFRDSimulator::get_domains,
+                return_value_policy<return_by_value>())
         ;
-    peer::util::register_tuple_converter<egfrd_simulator_traits_type::domain_id_pair>();
 
-    peer::util::register_tuple_to_ra_container_converter<boost::array<world_traits_type::length_type, 3>, 3>();
+    peer::util::GeneratorIteratorWrapper<ptr_generator<_EGFRDSimulator::domain_id_pair_generator, std::auto_ptr<_EGFRDSimulator::domain_id_pair_generator> > >::__register_class("DomainIDPairGenerator");
+
+    class_<_BDPropagator, boost::noncopyable>(
+        "BDPropagator", init<
+            egfrd_simulator_traits_type::world_type const&, 
+            egfrd_simulator_traits_type::world_type::transaction_type&,
+            egfrd_simulator_traits_type::network_rules_type const&,
+            egfrd_simulator_traits_type::rng_type&,
+            egfrd_simulator_traits_type::time_type,
+            peer::util::py_range_wrapper<world_traits_type::particle_id_type> >())
+        .def("__call__", &_BDPropagator::operator());
+
+    peer::util::register_py_range_wrapper_converter<world_traits_type::particle_id_type>();
+
+    domain_id_pair_converter::__register();
+
+    peer::util::register_iterable_to_ra_container_converter<boost::array<world_traits_type::length_type, 3>, 3>();
 
     typedef StructureUtils<egfrd_simulator_traits_type> _StructureUtils;
     def("create_planar_surface", &_StructureUtils::create_planar_surface,

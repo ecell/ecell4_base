@@ -11,8 +11,8 @@
 #include "utils/pair.hpp"
 #include "utils/fun_composition.hpp"
 #include "utils/fun_wrappers.hpp"
-#include "assoc_container_traits.hpp"
-#include "map_adapter.hpp"
+#include "utils/assoc_container_traits.hpp"
+#include "utils/map_adapter.hpp"
 
 struct map_adapter_handler
 {

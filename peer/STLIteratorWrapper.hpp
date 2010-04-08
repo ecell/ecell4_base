@@ -2,14 +2,18 @@
 #define PEER_STLITERATORWRAPPER_HPP
 
 #include <boost/python.hpp>
+#include <boost/iterator/iterator_traits.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 
 namespace peer {
 
-template<typename Titer_, typename Tholder_ = void*>
+template<typename Titer_, typename Tholder_ = void*, typename Trcg_ = boost::python::return_by_value>
 class STLIteratorWrapper
 {
+    typedef typename boost::iterator_reference<Titer_>::type iterator_reference;
+    typedef typename Trcg_::template apply<iterator_reference>::type result_converter_type;
+
 protected:
     PyObject_VAR_HEAD
     Titer_ i_;
@@ -84,7 +88,7 @@ public:
 
         try
         {
-            return boost::python::incref(boost::python::object(*self->i_ ++).ptr());
+            return result_converter_type()(*self->i_ ++);
         }
         catch (boost::python::error_already_set const&)
         {
@@ -93,11 +97,11 @@ public:
     }
 };
 
-template<typename Titer_, typename Tholder_>
-std::string STLIteratorWrapper<Titer_, Tholder_>::__name__;
+template<typename Titer_, typename Tholder_, typename Trcg_>
+std::string STLIteratorWrapper<Titer_, Tholder_, Trcg_>::__name__;
 
-template<typename Titer_, typename Tholder_>
-PyTypeObject STLIteratorWrapper<Titer_, Tholder_>::__class__ = {
+template<typename Titer_, typename Tholder_, typename Trcg_>
+PyTypeObject STLIteratorWrapper<Titer_, Tholder_, Trcg_>::__class__ = {
     PyObject_HEAD_INIT(&PyType_Type)
     0,                    /* ob_size */
     0,                    /* tp_name */
@@ -145,30 +149,30 @@ namespace util {
 
 namespace detail {
 
-template<typename Trange_, typename Tholder_ = void*>
+template<typename Trange_, typename Tholder_ = void*, typename Trcg_ = boost::python::return_by_value>
 struct stl_iterator_range_converter
 {
     typedef Trange_ native_type;
 
     static PyObject* convert(native_type const& v)
     {
-        return reinterpret_cast<PyObject*>(STLIteratorWrapper<typename boost::range_const_iterator<native_type>::type, Tholder_>::create(v));
+        return reinterpret_cast<PyObject*>(STLIteratorWrapper<typename boost::range_const_iterator<native_type>::type, Tholder_, Trcg_>::create(v));
     }
 };
 
 } // namespace detail
 
-template<typename Trange_>
+template<typename Trange, typename Tholder, typename Trcg>
 inline void register_stl_iterator_range_converter()
 {
-    boost::python::to_python_converter<Trange_, detail::stl_iterator_range_converter<Trange_> >();
+    boost::python::to_python_converter<Trange, detail::stl_iterator_range_converter<Trange, Tholder, Trcg> >();
 }
 
-template<typename Trange, typename Tholder>
+template<typename Trange, typename Tholder, typename Trcg>
 inline PyObject*
-make_stl_iterator_wrapper(Trange const& range, Tholder holder = Tholder())
+make_stl_iterator_wrapper(Trange const& range, Tholder holder = Tholder(), Trcg const& rcg = boost::python::return_by_value())
 {
-    typedef STLIteratorWrapper<typename boost::range_const_iterator<Trange>::type, Tholder> wrapper_type;
+    typedef STLIteratorWrapper<typename boost::range_const_iterator<Trange>::type, Tholder, Trcg> wrapper_type;
     wrapper_type::__class_init__(typeid(wrapper_type).name(), boost::python::scope().ptr());
     return wrapper_type::create(range, holder);
 }

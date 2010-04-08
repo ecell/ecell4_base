@@ -20,6 +20,7 @@ LIBPYTHON = -lpython$(PYTHON_VERSION)
 INCLUDES = ${PYTHON_INCLUDES} -I${NUMPY_INCLUDE_DIR}
 AM_CXXFLAGS = @CXXFLAGS@ @GSL_CFLAGS@ -Wall -g
 LIBBOOSTPYTHON = -l@BOOST_PYTHON_LIBNAME@
+LIBBOOSTDATE = -l@BOOST_DATE_TIME_LIBNAME@
 
 CFLAGS = @GSL_CFLAGS@
 
@@ -164,11 +165,12 @@ _gfrd_la_SOURCES=\
 	Model.cpp\
 	BasicNetworkRulesImpl.cpp\
 	NetworkRules.cpp\
+	Logger.cpp\
 	utils.cpp
 
 
 _gfrd_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
-_gfrd_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
+_gfrd_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBBOOSTDATE) $(LIBPYTHON) $(GSL_LIBS)
 
 nodist__gfrd_la_SOURCES = \
 	SphericalBesselTable.hpp

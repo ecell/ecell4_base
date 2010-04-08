@@ -15,17 +15,19 @@
 #include "freeFunctions.hpp"
 #include "utils.hpp"
 #include "Logger.hpp"
-#include "unassignable_adapter.hpp"
+#include "StructureUtils.hpp"
+#include "utils/unassignable_adapter.hpp"
 
 template<typename Ttraits_>
 class BDPropagator
 {
 private:
+    typedef Ttraits_ traits_type;
     typedef typename Ttraits_::world_type world_type;
     typedef typename world_type::transaction_type transaction_type;
     typedef typename world_type::species_id_type species_id_type;
     typedef typename world_type::position_type position_type;
-    typedef typename world_type::sphere_type sphere_type;
+    typedef typename world_type::particle_shape_type particle_shape_type;
     typedef typename world_type::species_type species_type;
     typedef typename world_type::length_type length_type;
     typedef typename world_type::particle_id_type particle_id_type;
@@ -33,9 +35,11 @@ private:
     typedef typename world_type::particle_id_pair particle_id_pair;
     typedef std::vector<particle_id_type> particle_id_vector_type;
     typedef typename world_type::particle_id_pair_generator particle_id_pair_generator;
-    typedef typename world_type::particle_id_pair_list particle_id_pair_list;
+    typedef typename world_type::particle_id_pair_and_distance particle_id_pair_and_distance;
+    typedef typename world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
     typedef typename world_type::surface_type surface_type;
-    typedef typename Ttraits_::random_number_engine random_number_engine;
+    typedef typename Ttraits_::rng_type rng_type;
+    typedef typename Ttraits_::time_type time_type;
     typedef typename Ttraits_::network_rules_type network_rules_type;
     typedef typename network_rules_type::reaction_rules reaction_rules;
     typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
@@ -48,10 +52,10 @@ private:
     static const int max_retry_count = 100;
 
 public:
-    template<typename Tstate_, typename Trange_>
-    BDPropagator(world_type const& world, transaction_type& tx, Tstate_& state, Trange_ const& particles)
-        : world_(world), tx_(tx), rules_(state.get_network_rules()),
-          dt_(state.dt()), rng_(state.rng()), queue_(),
+    template<typename Trange_>
+    BDPropagator(world_type const& world, transaction_type& tx, network_rules_type const& rules, rng_type& rng, time_type const& dt, Trange_ const& particles)
+        : world_(world), tx_(tx), rules_(rules),
+          rng_(rng), dt_(dt), queue_(),
           rejected_move_count_(0)
     {
         queue_.reserve(boost::size(particles));
@@ -95,8 +99,9 @@ public:
                 add(pp.second.position(), drawR_free(species))));
         particle_id_pair particle_to_update(
                 pp.first, particle_type(species.id(),
-                sphere_type(new_pos, species.radius())));
-        boost::scoped_ptr<particle_id_pair_list> overlapped(
+                    particle_shape_type(new_pos, species.radius()),
+                    species.D()));
+        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
             tx_.check_overlap(particle_to_update));
         if (overlapped)
         {
@@ -104,10 +109,10 @@ public:
             {
             case 1:
                 {
-                    particle_id_pair const& closest(overlapped->at(0));
+                    particle_id_pair_and_distance const& closest(overlapped->at(0));
                     try
                     {
-                        if (attempt_reaction(pp, closest))
+                        if (attempt_reaction(pp, closest.first))
                             return true;
                     }
                     catch (propagation_error const& reason)
@@ -143,7 +148,7 @@ private:
     position_type drawR_free(species_type const& species)
     {
         surface_type const& surface(world_.get_surface(species.surface_id()));
-        return StructureUtils::draw_bd_displacement(
+        return StructureUtils<traits_type>::draw_bd_displacement(
                 surface, std::sqrt(2.0 * species.D() * dt_), rng_);
     }
 
@@ -168,7 +173,7 @@ private:
         reaction_rule_type r(determine_reaction(pp.second.sid()));
         if (::valid(r))
         {
-            typename reaction_rule_type::species_type_id_range products(
+            typename reaction_rule_type::species_id_range products(
                     r.get_products());
             switch (boost::size(products))
             {
@@ -181,8 +186,10 @@ private:
                     const species_type s0(tx_.get_species(products[0]));
                     const particle_id_pair new_p(
                         pp.first, particle_type(products[0],
-                            sphere_type(pp.second.position(), s0.radius())));
-                    if (boost::scoped_ptr<particle_id_pair_list>(tx_.check_overlap(new_p)))
+                            particle_shape_type(pp.second.position(),
+                                                s0.radius()),
+                                                s0.D()));
+                    if (boost::scoped_ptr<particle_id_pair_and_distance_list>(tx_.check_overlap(new_p)))
                     {
                         throw propagation_error("no space");
                     }
@@ -206,7 +213,7 @@ private:
                             throw propagation_error("no space");
                         }
 
-                        const Real rnd(ur_());
+                        const Real rnd(rng_());
                         length_type pair_distance(
                             drawR_gbd(rnd, r01, dt_, D01));
                         const position_type m(random_unit_vector() * pair_distance);
@@ -216,13 +223,13 @@ private:
                         const position_type np1(
                             world_.apply_boundary(pp.second.position()
                                 + m * (s1.D() / D01)));
-                        boost::scoped_ptr<particle_id_pair_list> overlapped_s0(
+                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s0(
                             tx_.check_overlap(
-                                sphere_type(np0, s0.radius()),
+                                particle_shape_type(np0, s0.radius()),
                                 pp.first));
-                        boost::scoped_ptr<particle_id_pair_list> overlapped_s1(
+                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s1(
                             tx_.check_overlap(
-                                sphere_type(np1, s1.radius()),
+                                particle_shape_type(np1, s1.radius()),
                                 pp.first));
                         if (!overlapped_s0 && !overlapped_s1)
                             break;
@@ -248,14 +255,14 @@ private:
             const Real D01(s0.D() + s1.D());
             const length_type r01(s0.radius() + s1.radius());
             const Real p(getP_acct(r.k(), D01, r01));
-            const Real rnd(ur_());
+            const Real rnd(rng_());
             if (p < rnd)
             {
                 return false;
             }
 
             LOG_DEBUG(("fire reaction"));
-            const typename reaction_rule_type::species_type_id_range products(
+            const typename reaction_rule_type::species_id_range products(
                 r.get_products());
             BOOST_ASSERT(boost::size(products) == 1);
             const species_id_type product(products[0]);
@@ -268,7 +275,7 @@ private:
                                 pp1.second.position(),
                                 pp0.second.position()), s0.D())),
                         D01)));
-            if (boost::scoped_ptr<particle_id_pair_list>(tx_.check_overlap(sphere_type(new_pos, product))))
+            if (boost::scoped_ptr<particle_id_pair_and_distance_list>(tx_.check_overlap(particle_shape_type(new_pos, product))))
             {
                 throw propagation_error("no space");
             }
@@ -285,7 +292,7 @@ private:
 
     reaction_rule_type const& determine_reaction(species_id_type const& sid)
     {
-        const Real rnd(ur_() / dt_);
+        const Real rnd(rng_() / dt_);
         Real prob = 0;
 
         reaction_rules const& rules(rules_.query_reaction_rule(sid));
@@ -303,7 +310,7 @@ private:
 
     reaction_rule_type const& determine_reaction(species_id_type const& sid0, species_id_type const& sid1)
     {
-        const Real rnd(ur_() / dt_);
+        const Real rnd(rng_() / dt_);
         Real prob = 0;
 
         reaction_rules const& rules(rules_.query_reaction_rule(sid0, sid1));
@@ -332,7 +339,7 @@ private:
 private:
     position_type random_unit_vector()
     {
-        position_type v(ur_() - .5, ur_() - .5, ur_() - .5);
+        position_type v(rng_() - .5, rng_() - .5, rng_() - .5);
         return v / length(v);
     }
 
@@ -340,8 +347,8 @@ private:
     world_type const& world_;
     transaction_type& tx_;
     network_rules_type const& rules_;
+    rng_type& rng_;
     Real const dt_;
-    random_number_engine& rng_;
     particle_id_vector_type queue_;
     reaction_rule_list_type reactions_occurred_;
     reaction_rule_type empty_reaction_rule_;

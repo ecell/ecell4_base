@@ -2,6 +2,7 @@
 #define PEER_GENERATOR_ITERATOR_WRAPPER_HPP
 
 #include <Python.h>
+#include <iostream>
 #include "generator.hpp"
 #include "peer/utils.hpp"
 
@@ -13,6 +14,7 @@ template<typename Twrapper_, typename Tgen_ = typename Twrapper_::generator_type
 struct converter_pair
 {
     typedef Twrapper_ self_type;
+    typedef Tgen_ generator_type;
 
     struct to_python_converter
     {
@@ -56,18 +58,22 @@ struct converter_pair
     }
 };
 
-template<typename Twrapper_, typename Tgen_>
-struct converter_pair<Twrapper_, ptr_generator<Tgen_> >
+template<typename Twrapper_, typename Tgen_, typename Tholder_>
+struct converter_pair<Twrapper_, ptr_generator<Tgen_, Tholder_> >
 {
     typedef Twrapper_ self_type;
+    typedef ptr_generator<Tgen_, Tholder_> generator_type;
 
     struct to_python_converter
     {
         static PyObject* convert(Tgen_* impl)
         {
-            return impl ?
-                self_type::create(ptr_generator<Tgen_>(impl)):
-                boost::python::incref(Py_None);
+            if (impl)
+            {
+                Tholder_ ptr(impl);
+                return self_type::create(generator_type(ptr));
+            }
+            return boost::python::incref(Py_None);
         }
 
         static PyTypeObject* get_pytype()
@@ -78,41 +84,33 @@ struct converter_pair<Twrapper_, ptr_generator<Tgen_> >
 
     struct to_native_converter
     {
-        static void* convertible(PyObject* pyo)
+        static void* convert(PyObject* pyo)
         {
-            if (!PyObject_TypeCheck(pyo, &self_type::__class__))
-            {
-                return 0;
-            }
-            return pyo;
+            return reinterpret_cast<self_type*>(pyo)->impl_.ptr().get();
         }
 
-        static void construct(PyObject* pyo, 
-                              boost::python::converter::rvalue_from_python_stage1_data* data)
+        static PyTypeObject const* expected_pytype()
         {
-            void* storage(reinterpret_cast<
-                boost::python::converter::rvalue_from_python_storage<Tgen_*>* >(
-                    data)->storage.bytes);
-            new (storage) Tgen_*(reinterpret_cast<self_type*>(pyo)->impl_.ptr().get());
-            data->convertible = storage;
+            return &self_type::__class__;
         }
     };
 
     static void __register_converter()
     {
-        util::to_native_converter<Tgen_*, to_native_converter>();
+        util::to_native_lvalue_converter<Tgen_*, to_native_converter>();
         boost::python::to_python_converter<Tgen_*, to_python_converter>();
     }
 };
 
 } // namespace detail
 
-template<typename Tgen_>
+template<typename Tgen_, typename Trcg_ = boost::python::return_by_value >
 class GeneratorIteratorWrapper
 {
     template<template<class>class TT1_, typename T1_> friend class detail::converter_pair;
 public:
     typedef Tgen_ generator_type;
+    typedef typename Trcg_::template apply<typename generator_type::result_type>::type result_converter_type;
 
 public:
     void* operator new(size_t)
@@ -149,7 +147,7 @@ public:
             PyErr_SetNone(PyExc_StopIteration);
             return NULL;
         }
-        return incref(object(self->impl_()).ptr());
+        return result_converter_type()(self->impl_());
     }
 
 
@@ -196,8 +194,8 @@ protected:
     Tgen_ impl_;
 };
 
-template<typename Tgen_>
-inline void GeneratorIteratorWrapper<Tgen_>::__register_class(const char* name)
+template<typename Tgen_, typename Trcg_>
+inline void GeneratorIteratorWrapper<Tgen_, Trcg_>::__register_class(const char* name)
 {
     typedef detail::converter_pair<GeneratorIteratorWrapper> base_type;
     using namespace boost::python;
@@ -207,17 +205,17 @@ inline void GeneratorIteratorWrapper<Tgen_>::__register_class(const char* name)
     base_type::__register_converter(); 
 }
 
-template<typename Tgen_>
-std::string GeneratorIteratorWrapper<Tgen_>::__name__;
+template<typename Tgen_, typename Trcg_>
+std::string GeneratorIteratorWrapper<Tgen_, Trcg_>::__name__;
 
-template<typename Tgen_>
-PyMethodDef GeneratorIteratorWrapper<Tgen_>::__methods__[] = {
+template<typename Tgen_, typename Trcg_>
+PyMethodDef GeneratorIteratorWrapper<Tgen_, Trcg_>::__methods__[] = {
     { "__length_hint__", (PyCFunction)GeneratorIteratorWrapper::__length_hint__, METH_NOARGS, "" },
     { NULL, NULL }
 };
 
-template<typename Tgen_>
-PyTypeObject GeneratorIteratorWrapper<Tgen_>::__class__ = {
+template<typename Tgen_, typename Trcg_>
+PyTypeObject GeneratorIteratorWrapper<Tgen_, Trcg_>::__class__ = {
     PyObject_HEAD_INIT(&PyType_Type)
     0,                  /* ob_size */
     0,                  /* tp_name */
