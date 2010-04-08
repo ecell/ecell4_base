@@ -37,7 +37,7 @@ w.add_surface(region)
 for s in [S0, S1, S2]:
     w.add_species(_gfrd.SpeciesInfo(s.id, float(s['D']), float(s['radius']), s['surface']))
 
-for i in xrange(0, 800):
+for i in xrange(0, 300):
     w.new_particle([S0, S1][i % 2],
                    [myrandom.uniform(), myrandom.uniform(), myrandom.uniform()])
 
@@ -48,26 +48,76 @@ int.SetRenderWindow(wn)
 r = vtk.vtkRenderer()
 wn.AddRenderer(r)
 
+actors = {}
+
+def create_actor(pp):
+    s = vtk.vtkSphereSource()
+    s.SetRadius(pp[1].radius)
+    s.SetCenter(pp[1].position)
+    m = vtk.vtkPolyDataMapper()
+    m.SetInput(s.GetOutput())
+    a = vtk.vtkActor()
+    a.GetProperty().SetColor(colors[pp[1].sid])
+    a.SetMapper(m)
+    r.AddActor(a)
+    actors[pp[0]] = (s, a)
+
+def update_actor(pp):
+    actors[pp[0]][0].SetCenter(pp[1].position)
+
+def remove_actor(pp):
+    r.RemoveActor(actors[pp[0]][1])
+    del actors[pp[0]]
+
+for pp in w:
+    create_actor(pp) 
+
+anim = []
+
 def callback(*arg):
     t = w.create_transaction()
     particle_id_list = [pair[0] for pair in w]
     propagator = _gfrd.BDPropagator(w, t, nrw, myrandom.rng, 1e-3, particle_id_list)
     propagator.propagate_all()
-    r.RemoveAllViewProps()
-    for id, p in w:
+    for pp in t.added_particles:
+        create_actor(pp)
         s = vtk.vtkSphereSource()
-        s.SetRadius(p.radius)
-        s.SetCenter(p.position)
+        s.SetCenter(pp[1].position)
+        s.SetRadius(.01)
         m = vtk.vtkPolyDataMapper()
         m.SetInput(s.GetOutput())
         a = vtk.vtkActor()
-        a.GetProperty().SetColor(colors[p.sid])
+        a.GetProperty().SetColor((1., 1., 1.))
+        a.GetProperty().SetOpacity(.2)
         a.SetMapper(m)
         r.AddActor(a)
+        anim.append((1, s, a))
+
+    for pp in t.removed_particles:
+        remove_actor(pp)
+
+    for pp in t.modified_particles:
+        update_actor(pp)
+
+    l = len(anim)
+    j = 0
+    while j < l:
+        i, s, a = anim[j]
+        if i >= 4:
+            r.RemoveActor(a)
+            del anim[j]
+            l -= 1
+            continue
+        s.SetRadius(0.04 * i)
+        a.GetProperty().SetOpacity(.3 - .05 * i)
+        anim[j] = (i + 1, s, a)
+        j += 1
+
     wn.Render()
+
     del t
 
-int.CreateRepeatingTimer(10)
+int.CreateRepeatingTimer(100)
 int.AddObserver('TimerEvent', callback, .0)
 int.Start()
 
