@@ -245,7 +245,7 @@ private:
                 s1(tx_.get_species(pp1.second.sid()));
         const Real D01(s0.D() + s1.D());
         const length_type r01(s0.radius() + s1.radius());
-        const Real rnd(rng_() / dt_);
+        const Real rnd(rng_());
         Real prob = 0;
 
         reaction_rules const& rules(rules_.query_reaction_rule(pp0.second.sid(), pp1.second.sid()));
@@ -253,14 +253,14 @@ private:
                 i(rules.begin()), e(rules.end()); i != e; ++i)
         {
             reaction_rule_type const& r(*i);
-            const Real p(r.k() / (I_bd(r01, dt_, D01) * 4.0 * M_PI));
+            const Real p(r.k() * dt_ / (I_bd(r01, dt_, D01) * 4.0 * M_PI));
             BOOST_ASSERT(p >= 0.);
             prob += p;
-            if (prob * dt_ >= 1.)
+            if (prob >= 1.)
             {
                 throw propagation_error(
                     "invalid acceptance ratio ("
-                    + boost::lexical_cast<std::string>(p * dt_)
+                    + boost::lexical_cast<std::string>(p)
                     + ") for reaction rate "
                     + boost::lexical_cast<std::string>(r.k())
                     + ".");
