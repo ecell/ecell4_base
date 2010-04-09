@@ -1,9 +1,6 @@
 #if !defined( __PAIRGREENSFUNCTION_HPP )
 #define __PAIRGREENSFUNCTION_HPP
 
-#include <vector>
-#include <boost/multi_array.hpp>
-
 #include "Defs.hpp"
 
 

@@ -21,6 +21,24 @@
 
 #include <numpy/arrayobject.h>
 
+#include "peer/utils.hpp"
+#include "peer/py_hash_support.hpp"
+#include "peer/tuple_converters.hpp"
+#include "peer/range_converters.hpp"
+#include "peer/set_indexing_suite.hpp"
+#include "peer/numpy/wrapped_multi_array.hpp"
+#include "peer/numpy/scalar_converters.hpp"
+#include "peer/Particle.hpp"
+#include "peer/ShellWrapper.hpp"
+#include "peer/MatrixSpace.hpp"
+#include "peer/SpeciesType.hpp"
+#include "peer/Identifier.hpp"
+#include "peer/ReactionRule.hpp"
+#include "peer/GeneratorIteratorWrapper.hpp"
+#include "peer/Exception.hpp"
+#include "peer/RandomNumberGenerator.hpp"
+#include "peer/STLContainerWrapper.hpp"
+
 #include "PyEventScheduler.hpp"
 #include "freeFunctions.hpp"
 #include "FreeGreensFunction.hpp"
@@ -35,7 +53,6 @@
 #include "gsl_rng_base.hpp"
 #include "geometry.hpp"
 #include "MatrixSpace.hpp"
-#include "peer/range_converters.hpp"
 #include "Vector3.hpp"
 #include "Sphere.hpp"
 #include "Cylinder.hpp"
@@ -48,23 +65,6 @@
 #include "StructureUtils.hpp"
 #include "AnalyticalSingle.hpp"
 #include "AnalyticalPair.hpp"
-
-#include "peer/utils.hpp"
-#include "peer/py_hash_support.hpp"
-#include "peer/tuple_converters.hpp"
-#include "peer/set_indexing_suite.hpp"
-#include "peer/numpy/wrapped_multi_array.hpp"
-#include "peer/numpy/scalar_converters.hpp"
-#include "peer/Particle.hpp"
-#include "peer/ShellWrapper.hpp"
-#include "peer/MatrixSpace.hpp"
-#include "peer/SpeciesType.hpp"
-#include "peer/Identifier.hpp"
-#include "peer/ReactionRule.hpp"
-#include "peer/GeneratorIteratorWrapper.hpp"
-#include "peer/Exception.hpp"
-#include "peer/RandomNumberGenerator.hpp"
-#include "peer/STLContainerWrapper.hpp"
 
 typedef CyclicWorldTraits<Real, Real> world_traits_type;
 typedef World<world_traits_type> CyclicWorld;

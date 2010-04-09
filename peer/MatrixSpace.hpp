@@ -33,6 +33,7 @@
 #include "utils/range.hpp"
 #include "filters.hpp"
 #include "Shape.hpp"
+#include "Sphere.hpp"
 
 namespace peer {
 

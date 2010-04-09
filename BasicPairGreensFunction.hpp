@@ -8,10 +8,14 @@
 
 #include "PairGreensFunction.hpp"
 
+#include <vector>
+
 class BasicPairGreensFunction
     :
     public PairGreensFunction
 {
+    typedef std::vector<Real> RealVector;
+
     // Error tolerance used by default.
     static const Real TOLERANCE = 1e-8;
 

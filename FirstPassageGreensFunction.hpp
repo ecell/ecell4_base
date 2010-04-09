@@ -1,9 +1,6 @@
 #if !defined( __FIRSTPASSAGEGREENSFUNCTION_HPP )
 #define __FIRSTPASSAGEGREENSFUNCTION_HPP
 
-#include <vector>
-#include <boost/multi_array.hpp>
-
 #include "Defs.hpp"
 
 

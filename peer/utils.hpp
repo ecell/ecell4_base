@@ -9,6 +9,8 @@
 #include <boost/python/object.hpp>
 #include <boost/python/exception_translator.hpp>
 #include <boost/type_traits/is_const.hpp>
+#include <boost/range/iterator.hpp>
+#include <boost/range/const_iterator.hpp>
 #include <boost/mpl/if.hpp>
 
 namespace peer {

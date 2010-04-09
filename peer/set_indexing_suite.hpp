@@ -5,8 +5,6 @@
 #include <boost/python/def_visitor.hpp>
 #include <boost/python/iterator.hpp>
 #include <boost/python/call_method.hpp>
-#include <boost/python/tuple.hpp>
-#include "peer/tuple_converters.hpp"
 
 namespace peer { namespace util {
 

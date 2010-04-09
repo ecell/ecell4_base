@@ -2,13 +2,15 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <iostream>
-
+#include <vector>
+#include <cmath>
 #include <boost/bind.hpp>
-
+#include <iostream>
 #include <gsl/gsl_sum.h>
 
 #include "funcSum.hpp"
+
+typedef std::vector<Real> RealVector;
 
 const Real 
 funcSum_all( boost::function<const Real( const unsigned int i )> f,

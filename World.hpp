@@ -19,6 +19,7 @@
 #include "Transaction.hpp"
 #include "Structure.hpp"
 #include "geometry.hpp"
+#include "utils/pair.hpp"
 
 template<typename Tlen_, typename TD_>
 struct WorldTraitsBase

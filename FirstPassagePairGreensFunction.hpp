@@ -1,6 +1,7 @@
 #if !defined( __FIRSTPASSAGEPAIRGREENSFUNCTION_HPP )
 #define __FIRSTPASSAGEPAIRGREENSFUNCTION_HPP 
 
+#include <vector>
 #include <boost/tuple/tuple.hpp>
 #include <boost/function.hpp>
 #include <boost/array.hpp>
@@ -14,6 +15,7 @@ class FirstPassagePairGreensFunction
     :
     public PairGreensFunction
 {
+    typedef std::vector<Real> RealVector;
 
     // Error tolerance used by default.
     static const Real TOLERANCE = 1e-8;

@@ -16,12 +16,12 @@ public:
     typedef T_ length_type;
 
 public:
-    Box(position_type const& position = position_type())
+    Box(position_type const& position = position_type(), length_type const& edge_len = 1.)
         : position_(position),
           vx_(create_vector<position_type>(1., 0., 0.)),
           vy_(create_vector<position_type>(0., 1., 0.)),
           vz_(create_vector<position_type>(0., 0., 1.)),
-          extent_(array_gen<length_type>(1., 1., 1.)) {}
+          extent_(array_gen<length_type>(edge_len, edge_len, edge_len)) {}
 
     Box(position_type const& position,
         position_type const& vx,

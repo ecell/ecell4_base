@@ -12,8 +12,6 @@
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
-#include "utils/pair.hpp"
-
 template<typename Trange_, typename Tfun_>
 struct get_transformed_range
 {
@@ -116,18 +114,6 @@ namespace boost {
 
 template<typename Titer_>
 typename boost::iterator_difference<Titer_>::type size(sized_iterator_range<Titer_> const& r)
-{
-    return r.size();
-}
-
-template<typename Trange_>
-typename boost::range_difference<Trange_>::type size(select_first_range<Trange_> const& r)
-{
-    return r.size();
-}
-
-template<typename Trange_>
-typename boost::range_difference<Trange_>::type size(select_second_range<Trange_> const& r)
 {
     return r.size();
 }

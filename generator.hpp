@@ -337,8 +337,8 @@ struct transform_generator: public abstract_limited_generator<typename Tfun_::re
 {
     typedef Tgen_ generator_type;
     typedef Tpointer_ pointer_type;
-    typedef Tfun_ transformer_type;
-    typedef typename Tfun_::result_type result_type;
+    typedef typename boost::remove_reference<Tfun_>::type transformer_type;
+    typedef typename transformer_type::result_type result_type;
 
     virtual ~transform_generator() {}
 
@@ -367,17 +367,12 @@ struct transform_generator: public abstract_limited_generator<typename Tfun_::re
         return fun_;
     }
 
-    transform_generator(Tgen_* gen, Tfun_ const& fun, int)
-        : gen_(gen), fun_(fun, 1) {}
-
-    transform_generator(Tgen_* gen, Tfun_ fun)
-        : gen_(gen), fun_(fun, 1) {}
-
-    transform_generator(Tgen_* gen, Tfun_& fun)
+    transform_generator(Tgen_* gen,
+                        typename boost::call_traits<Tfun_>::param_type fun)
         : gen_(gen), fun_(fun) {}
 
 public:
-    reference_or_instance<Tfun_> fun_;
+    Tfun_ fun_;
     Tpointer_ gen_;
 };
 
@@ -394,8 +389,14 @@ class generator_iterator:
         generator_iterator<Tgen_, Tpointer_>,
         typename boost::remove_reference<typename Tgen_::result_type>::type,
         boost::single_pass_traversal_tag,
-        typename Tgen_::result_type >
+        typename Tgen_::result_type>
 {
+    typedef boost::iterator_facade<
+        generator_iterator<Tgen_, Tpointer_>,
+        typename boost::remove_reference<typename Tgen_::result_type>::type,
+        boost::single_pass_traversal_tag,
+        typename Tgen_::result_type> base_type;
+
 public:
     typedef Tgen_ generator_type;
     typedef Tpointer_ pointer_type;
@@ -443,6 +444,12 @@ public:
         return (!gen_ && !rhs.gen_) || (gen_ && rhs.gen_ && *gen_ == *rhs.gen_);
     }
 
+    typename base_type::difference_type distance_to(
+            generator_iterator const& rhs) const
+    {
+        return (gen_ ? ::count(*gen_): 0) - (rhs.gen_ ? ::count(*rhs.gen_): 0);
+    }
+
 protected:
     Tpointer_ gen_;
     bool advanced_;
@@ -482,12 +489,6 @@ private:
 
 namespace std {
 
-template<typename Tgen, typename Tpointer>
-inline typename generator_range<Tgen, Tpointer>::difference_type
-distance(generator_range<Tgen, Tpointer> const& lhs, generator_range<Tgen, Tpointer> const& rhs)
-{
-    return ::count(*lhs.gen_);
-}
 
 } // namespace std
 

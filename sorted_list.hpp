@@ -15,7 +15,6 @@
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/reverse_iterator.hpp>
 #include <boost/range/const_reverse_iterator.hpp>
-#include "utils/reference_or_instance.hpp"
 #include "utils/fun_composition.hpp"
 
 template<typename Tcntnr_, typename TweakOrdering_ = std::less<typename Tcntnr_::value_type> >
@@ -171,15 +170,13 @@ public:
         cntnr_.clear();
     }
 
-    sorted_list(TweakOrdering_& ord): ord_(ord) {}
-
-    sorted_list(TweakOrdering_ ord): ord_(ord, 1) {}
+    sorted_list(typename boost::call_traits<TweakOrdering_>::param_type ord): ord_(ord) {}
 
     sorted_list(): ord_() {}
 
 private:
     container_type cntnr_;
-    reference_or_instance<TweakOrdering_> ord_;
+    TweakOrdering_ ord_;
 };
 
 #endif /* SORTED_LIST */
