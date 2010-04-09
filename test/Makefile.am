@@ -10,7 +10,8 @@ MatrixSpace_test\
 MatrixSpaceWithCylinders_test\
 World_test\
 model_test\
-Vector3_test
+Vector3_test\
+BDPropagator_test
 
 PYTHON_TESTS = \
 	BDSimulator_test.py \
@@ -84,3 +85,5 @@ model_test_SOURCES = model_test.cpp ../Model.cpp ../NetworkRules.cpp ../BasicNet
 
 Vector3_test_SOURCES = Vector3_test.cpp ../Vector3.hpp
 
+BDPropagator_test_SOURCES = BDPropagator_test.cpp ../BasicNetworkRulesImpl.cpp ../NetworkRules.cpp ../Logger.cpp ../freeFunctions.cpp ../BDPropagator.hpp
+BDPropagator_test_LDADD = $(GSL_LIBS)

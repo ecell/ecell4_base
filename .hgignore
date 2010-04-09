@@ -43,3 +43,5 @@ test/MatrixSpace_test
 test/SphericalBesselGenerator_test
 test/Vector3_test
 test/unittest
+test/BDPropagator_test
+test/BDSimulator_test

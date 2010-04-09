@@ -17,11 +17,12 @@
 #include <boost/range/iterator.hpp>
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <boost/mpl/or.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/is_readable_iterator.hpp>
-#include <boost/type_traits/is_same.hpp>
+#include <boost/type_traits/is_convertible.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include "utils/reset.hpp"
@@ -185,7 +186,10 @@ bool count(ptr_generator<Tgen, Tpointer> const& gen)
 template<typename Trange_,
          typename Titer_ = typename boost::range_iterator<Trange_>::type,
          typename Tresult_ = typename boost::iterator_reference<Titer_>::type,
-         bool Bra_ = boost::is_same<typename boost::BOOST_ITERATOR_CATEGORY<Titer_>::type, std::random_access_iterator_tag>::value >
+         bool Bra_ =
+            boost::is_convertible<
+                typename boost::BOOST_ITERATOR_CATEGORY<Titer_>::type,
+                boost::random_access_traversal_tag>::value>
 class range_generator: public abstract_limited_generator<Tresult_>
 {
     template<typename Trange, typename Titer, typename Tresult, bool Bra>
@@ -290,7 +294,7 @@ public:
         {
             return boost::get(count_);
         }
-        throw std::domain_error("indetermined");
+        throw std::domain_error("count not given through the constructor");
     }
 
     virtual bool valid() const
