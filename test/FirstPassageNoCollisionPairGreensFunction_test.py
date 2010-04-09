@@ -26,9 +26,8 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         sigma = 1e-8
         a = 1e-7
 
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
         self.failIf(gf == None)
-        gf.seta(a)
 
 
     def test_draw_time(self):
@@ -36,8 +35,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 5e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         t = gf.drawTime(0.5, r0)
         self.failIf(t <= 0.0 or t >= numpy.inf)
@@ -54,8 +52,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = a
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         t = gf.drawTime(0.5, r0)
         self.assertEqual(0.0, t)
@@ -66,8 +63,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 2e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         t = 1e-3
 
@@ -88,8 +84,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 2e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         t = 0.0
 
@@ -102,8 +97,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         D = 1e-12
         a = 1.01e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         t = 1e-6
         r0 = 1.005e-8
@@ -128,8 +122,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 5e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         t = gf.drawTime(0.5, r0)
         r = gf.drawR(0.5, r0, t)
@@ -151,8 +144,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         t = 0.0
         theta = gf.drawTheta(0.5, r0, r0, t)
@@ -166,8 +158,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         t = 1e-4  # not very small though..
         theta = gf.drawTheta(0.5, r, r0, t)
@@ -181,8 +172,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         t = 1e5 
         theta = gf.drawTheta(0.5, r, r0, t)
@@ -196,8 +186,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         #a = 1.01e-8  # this is a better test but currently fails
         a = 1.1e-8
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         t = 1e-5
 
@@ -215,8 +204,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         t = 1e-4
         r = a
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         theta = gf.drawTheta(0.5, r, r0, t)
 
@@ -230,8 +218,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         t = 1e-2
         r = a
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         theta = gf.drawTheta(0.5, r, r0, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
@@ -246,8 +233,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         r = r0
         pintr = gf.p_int_r(r, t, r0)
@@ -263,8 +249,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
         r = r0
         
         pintr = gf.p_int_r(a, t, r0)
@@ -280,8 +265,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
         r = r0
         
         pintr = gf.p_int_r(0.0, t, r0)
@@ -298,8 +282,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
         r = r0
 
         ip = gf.ip_theta(0.0, r, r0, t)
@@ -329,8 +312,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, kf, sigma)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, kf, sigma, a)
 
         ip = gf.ip_theta(numpy.pi, r, r0, t)
         p0 = gf.p_0(t, r, r0) * 2
@@ -350,8 +332,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         r = r0
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         pint = gf.ip_theta(numpy.pi, r, r0, t)
 
@@ -377,8 +358,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         r = r0
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         pint_prev = 0.0
 
@@ -398,8 +378,7 @@ class FirstPassageNoCollisionPairGreensFunctionTestCase(unittest.TestCase):
         r0 = 9e-8
         a = 1e-7
         
-        gf = mod.FirstPassageNoCollisionPairGreensFunction(D)
-        gf.seta(a)
+        gf = mod.FirstPassageNoCollisionPairGreensFunction(D, a)
 
         dp = gf.dp_survival(t, r0)
         iptheta = gf.idp_theta(numpy.pi, a, r0, t) * numpy.pi * a * a * 2
