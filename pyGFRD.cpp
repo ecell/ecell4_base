@@ -685,7 +685,7 @@ struct surfaces_range_converter: public boost::python::default_call_policies
         boost::python::handle<> owner_;
     };
 
-    typedef peer::STLContainerWrapper<native_type, instance_holder, policy, boost::python::reference_existing_object> wrapper_type;
+    typedef peer::STLContainerWrapper<native_type, instance_holder, policy> wrapper_type;
 
     struct result_converter
     {
@@ -728,10 +728,7 @@ struct domain_id_pair_converter
         static PyObject* convert(native_type const& v)
         {
             return boost::python::incref(boost::python::make_tuple(
-                v.first,
-                boost::python::handle<>(
-                    boost::python::reference_existing_object::apply<
-                        native_type::second_type>::type()(v.second))).ptr());
+                v.first, v.second).ptr());
         }
     };
 
@@ -1225,8 +1222,7 @@ BOOST_PYTHON_MODULE( _gfrd )
             (CyclicWorld::species_type const&(CyclicWorld::*)(CyclicWorld::species_id_type const&) const)&CyclicWorld::get_species,
             return_internal_reference<>())
         .def("add_surface", &CyclicWorld::add_surface)
-        .def("get_surface", &CyclicWorld::get_surface,
-                return_value_policy<reference_existing_object>())
+        .def("get_surface", &CyclicWorld::get_surface)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::sphere_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::cylinder_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::box_type>)
@@ -1478,7 +1474,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     typedef egfrd_simulator_traits_type::planar_surface_type PlanarSurface;
     class_<PlanarSurface,
-           bases<world_traits_type::surface_type> >(
+           bases<world_traits_type::surface_type>,
+           boost::shared_ptr<PlanarSurface> >(
            "_PlanarSurface", init<PlanarSurface::identifier_type, PlanarSurface::shape_type>())
         .add_property("shape",
             make_function((PlanarSurface::shape_type const&(PlanarSurface::*)()const)&PlanarSurface::shape,
@@ -1487,7 +1484,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     typedef egfrd_simulator_traits_type::spherical_surface_type SphericalSurface;
     class_<SphericalSurface,
-           bases<world_traits_type::surface_type> >("_SphericalSurface", init<SphericalSurface::identifier_type, SphericalSurface::shape_type>())
+           bases<world_traits_type::surface_type>,
+           boost::shared_ptr<SphericalSurface> >("_SphericalSurface", init<SphericalSurface::identifier_type, SphericalSurface::shape_type>())
         .add_property("shape",
             make_function((SphericalSurface::shape_type const&(SphericalSurface::*)()const)&SphericalSurface::shape,
                           return_value_policy<return_by_value>()))
@@ -1495,7 +1493,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     typedef egfrd_simulator_traits_type::cylindrical_surface_type CylindricalSurface;
     class_<CylindricalSurface,
-           bases<world_traits_type::surface_type> >("_CylindricalSurface", init<CylindricalSurface::identifier_type, CylindricalSurface::shape_type>())
+           bases<world_traits_type::surface_type>,
+           boost::shared_ptr<CylindricalSurface> >("_CylindricalSurface", init<CylindricalSurface::identifier_type, CylindricalSurface::shape_type>())
         .add_property("shape",
             make_function((CylindricalSurface::shape_type const&(CylindricalSurface::*)()const)&CylindricalSurface::shape,
                           return_value_policy<return_by_value>()))
@@ -1503,7 +1502,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     typedef egfrd_simulator_traits_type::cuboidal_region_type CuboidalRegion;
     class_<CuboidalRegion,
-           bases<world_traits_type::surface_type> >("_CuboidalRegion", init<CuboidalRegion::identifier_type, CuboidalRegion::shape_type>())
+           bases<world_traits_type::surface_type>,
+           boost::shared_ptr<CuboidalRegion> >("_CuboidalRegion", init<CuboidalRegion::identifier_type, CuboidalRegion::shape_type>())
         .add_property("shape",
             make_function((CuboidalRegion::shape_type const&(CuboidalRegion::*)()const)&CuboidalRegion::shape,
                           return_value_policy<return_by_value>()))
@@ -1547,7 +1547,8 @@ BOOST_PYTHON_MODULE( _gfrd )
         ;
 
     typedef _EGFRDSimulator::spherical_single_type SphericalSingle;
-    class_<SphericalSingle, bases<Domain> >(
+    class_<SphericalSingle, bases<Domain>,
+           boost::shared_ptr<SphericalSingle> >(
         "_SphericalSingle",
         init<SphericalSingle::surface_id_type,
              SphericalSingle::particle_id_pair,
@@ -1568,7 +1569,8 @@ BOOST_PYTHON_MODULE( _gfrd )
         ;
 
     typedef _EGFRDSimulator::cylindrical_single_type CylindricalSingle;
-    class_<CylindricalSingle, bases<Domain> >(
+    class_<CylindricalSingle, bases<Domain>,
+           boost::shared_ptr<CylindricalSingle> >(
         "_CylindricalSingle",
         init<CylindricalSingle::surface_id_type,
              CylindricalSingle::particle_id_pair,
@@ -1589,7 +1591,8 @@ BOOST_PYTHON_MODULE( _gfrd )
         ;
 
     typedef _EGFRDSimulator::spherical_pair_type SphericalPair;
-    class_<SphericalPair, bases<Domain> >(
+    class_<SphericalPair, bases<Domain>,
+           boost::shared_ptr<SphericalPair> >(
         "_SphericalPair",
         init<SphericalPair::surface_id_type,
              SphericalPair::particle_id_pair,
@@ -1630,7 +1633,8 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::register_range_to_tuple_converter<SphericalPair::particle_array_type>();
 
     typedef _EGFRDSimulator::cylindrical_pair_type CylindricalPair;
-    class_<CylindricalPair, bases<Domain> >(
+    class_<CylindricalPair, bases<Domain>,
+           boost::shared_ptr<CylindricalPair> >(
         "_CylindricalPair",
         init<CylindricalPair::surface_id_type,
              CylindricalPair::particle_id_pair,
@@ -1682,8 +1686,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("get_cylindrical_shell",
             &_EGFRDSimulator::new_spherical_shell,
             return_value_policy<return_by_value>())
-        .def("get_domain", &_EGFRDSimulator::get_domain,
-                return_value_policy<reference_existing_object>())
+        .def("get_domain", &_EGFRDSimulator::get_domain)
         .def("update_domain", &_EGFRDSimulator::update_domain)
         .def("__iter__", &_EGFRDSimulator::get_domains,
                 return_value_policy<return_by_value>())

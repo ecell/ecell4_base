@@ -148,7 +148,7 @@ public:
         return new TransactionImpl<particle_container_type>(*this);
     }
 
-    virtual surface_type const& get_surface(surface_id_type const& id) const
+    virtual boost::shared_ptr<surface_type> get_surface(surface_id_type const& id) const
     {
         return pc_.get_surface(id);
     }

@@ -3,6 +3,7 @@
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
 #include "utils/get_mapper_mf.hpp"
 #include "utils/fun_composition.hpp"
 #include "utils/fun_wrappers.hpp"
@@ -30,7 +31,7 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
     typedef Shell<sphere_type, domain_id_type> spherical_shell_type;
     typedef Shell<cylinder_type, domain_id_type> cylindrical_shell_type;
     typedef Domain<EGFRDSimulatorTraitsBase> domain_type;
-    typedef std::pair<const domain_id_type, domain_type*> domain_id_pair;
+    typedef std::pair<const domain_id_type, boost::shared_ptr<domain_type> > domain_id_pair;
     typedef std::pair<const shell_id_type, spherical_shell_type> spherical_shell_id_pair;
     typedef std::pair<const shell_id_type, cylindrical_shell_type> cylindrical_shell_id_pair;
     typedef int event_id_type;
@@ -67,7 +68,7 @@ public:
 protected:
     typedef MatrixSpace<spherical_shell_type, shell_id_type, get_mapper_mf> spherical_shell_matrix_type;
     typedef MatrixSpace<cylindrical_shell_type, shell_id_type, get_mapper_mf> cylindrical_shell_matrix_type;
-    typedef typename get_mapper_mf<domain_id_type, domain_type*>::type domain_map;
+    typedef typename get_mapper_mf<domain_id_type, boost::shared_ptr<domain_type> >::type domain_map;
 
 public:
     typedef abstract_limited_generator<domain_id_pair> domain_id_pair_generator;
@@ -116,7 +117,7 @@ public:
         return csmat_[id];
     }
 
-    domain_type* get_domain(domain_id_type const& id) const
+    boost::shared_ptr<domain_type> get_domain(domain_id_type const& id) const
     {
         typename domain_map::const_iterator i(domains_.find(id));
 

@@ -133,7 +133,7 @@ public:
 
 protected:
     typedef std::map<species_id_type, species_type> species_map;
-    typedef std::map<surface_id_type, surface_type*> surface_map;
+    typedef std::map<surface_id_type, boost::shared_ptr<surface_type> > surface_map;
     typedef select_second<typename species_map::value_type> species_second_selector_type;
     typedef select_second<typename surface_map::value_type> surface_second_selector_type;
 
@@ -183,19 +183,19 @@ public:
             species_map_.size());
     }
 
-    bool add_surface(surface_type* surface)
+    bool add_surface(boost::shared_ptr<surface_type> surface)
     {
         return surface_map_.insert(std::make_pair(surface->id(), surface)).second;
     }
 
-    virtual surface_type const& get_surface(surface_id_type const& id) const
+    virtual boost::shared_ptr<surface_type> get_surface(surface_id_type const& id) const
     {
         typename surface_map::const_iterator i(surface_map_.find(id));
         if (surface_map_.end() == i)
         {
             throw not_found(std::string("Unknown surface (id=") + boost::lexical_cast<std::string>(id) + ")");
         }
-        return *(*i).second;
+        return (*i).second;
     }
 
     surfaces_range get_surfaces() const

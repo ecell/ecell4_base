@@ -147,9 +147,10 @@ public:
 private:
     position_type drawR_free(species_type const& species)
     {
-        surface_type const& surface(world_.get_surface(species.surface_id()));
+        boost::shared_ptr<surface_type> surface(
+            world_.get_surface(species.surface_id()));
         return StructureUtils<traits_type>::draw_bd_displacement(
-                surface, std::sqrt(2.0 * species.D() * dt_), rng_);
+                *surface, std::sqrt(2.0 * species.D() * dt_), rng_);
     }
 
 

@@ -2,6 +2,7 @@
 #define PARTICLE_CONTAINER_HPP
 
 #include <utility>
+#include <boost/shared_ptr.hpp>
 #include "generator.hpp"
 #include "utils/get_default_impl.hpp"
 #include "utils/unassignable_adapter.hpp"
@@ -36,7 +37,7 @@ public:
 
     virtual species_type const& get_species(species_id_type const& id) const = 0;
 
-    virtual surface_type const& get_surface(surface_id_type const& id) const = 0;
+    virtual boost::shared_ptr<surface_type> get_surface(surface_id_type const& id) const = 0;
 
     virtual particle_id_pair new_particle(species_id_type const& sid,
             position_type const& pos) = 0;
