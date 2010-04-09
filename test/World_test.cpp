@@ -249,4 +249,55 @@ BOOST_AUTO_TEST_CASE(transaction_3)
     BOOST_CHECK_THROW(i.get_particle(p3.first), not_found);
 }
 
+BOOST_AUTO_TEST_CASE(transaction_4)
+{
+    typedef World<CyclicWorldTraits<Real, Real> > world_type;
+    typedef world_type::species_id_type species_id;
+    typedef world_type::species_id_type species_id_type;
+    typedef world_type::species_type species;
+    typedef world_type::position_type position_type;
+    typedef world_type::particle_id_pair particle_id_pair;
+    typedef SerialIDGenerator<species_id> id_generator;
+    typedef world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
 
+    world_type i;
+    id_generator gen;
+    species s1(species(gen(), .3, .05));
+    species s2(species(gen(), .3, .08));
+    i.add_species(s1);
+    i.add_species(s2);
+
+    particle_id_pair p1(i.new_particle(s1.id(), position_type(.2, .2, .2)));
+    particle_id_pair p2(i.new_particle(s2.id(), position_type(.29, .27, .28)));
+
+    {
+        boost::scoped_ptr<world_type::transaction_type> tx(i.create_transaction());
+
+        BOOST_CHECK(tx->get_particle(p1.first).second == p1.second);
+        BOOST_CHECK(tx->get_particle(p2.first).second == p2.second);
+        BOOST_CHECK(i.get_particle(p1.first).second == p1.second);
+        BOOST_CHECK(i.get_particle(p2.first).second == p2.second);
+
+        {
+            particle_id_pair::second_type new_p(p2.second);
+            new_p.position() = position_type(.35, .30, .38);
+            tx->update_particle(particle_id_pair(p1.first, new_p));
+        }
+        tx->remove_particle(p1.first);
+        BOOST_CHECK_THROW(tx->get_particle(p1.first), not_found);
+        BOOST_CHECK(tx->get_particle(p2.first).second == p2.second);
+        BOOST_CHECK_THROW(i.get_particle(p1.first), not_found);
+
+        BOOST_CHECK(!cue(*boost::scoped_ptr<world_type::particle_id_pair_generator>(tx->get_added_particles()), p1));
+        BOOST_CHECK(!cue(*boost::scoped_ptr<world_type::particle_id_pair_generator>(tx->get_added_particles()), p2));
+        BOOST_CHECK(cue(*boost::scoped_ptr<world_type::particle_id_pair_generator>(tx->get_removed_particles()), p1));
+        BOOST_CHECK(!cue(*boost::scoped_ptr<world_type::particle_id_pair_generator>(tx->get_removed_particles()), p2));
+        BOOST_CHECK(!cue(*boost::scoped_ptr<world_type::particle_id_pair_generator>(tx->get_modified_particles()), p1));
+        BOOST_CHECK(!cue(*boost::scoped_ptr<world_type::particle_id_pair_generator>(tx->get_modified_particles()), p2));
+
+        tx->rollback();
+    }
+
+    BOOST_CHECK(i.get_particle(p1.first).second == p1.second);
+    BOOST_CHECK(i.get_particle(p2.first).second == p2.second);
+}

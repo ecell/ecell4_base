@@ -107,6 +107,7 @@ public:
 
         if (added_particles_.erase(id) == 0)
         {
+            modified_particles_.erase(id);
             const bool result(removed_particles_.push_no_duplicate(id));
             BOOST_ASSERT(result);
         }
