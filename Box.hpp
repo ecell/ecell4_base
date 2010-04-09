@@ -16,32 +16,35 @@ public:
     typedef T_ length_type;
 
 public:
-    Box(position_type const& position = position_type(), length_type const& edge_len = 1.)
+    Box(position_type const& position = position_type())
         : position_(position),
           vx_(create_vector<position_type>(1., 0., 0.)),
           vy_(create_vector<position_type>(0., 1., 0.)),
           vz_(create_vector<position_type>(0., 0., 1.)),
-          extent_(array_gen<length_type>(edge_len, edge_len, edge_len)) {}
-
-    Box(position_type const& position,
-        position_type const& vx,
-        position_type const& vy,
-        position_type const& vz)
-        : position_(position),
-          vx_(divide(vx, length(vx))),
-          vy_(divide(vy, length(vy))),
-          vz_(divide(vz, length(vz))),
           extent_(array_gen<length_type>(1., 1., 1.)) {}
+
+    template<typename Tarray_>
+    Box(position_type const& position,
+        Tarray_ const& extent = array_gen<length_type>(1., 1., 1.))
+        : position_(position),
+          vx_(create_vector<position_type>(1., 0., 0.)),
+          vy_(create_vector<position_type>(0., 1., 0.)),
+          vz_(create_vector<position_type>(0., 0., 1.))
+    {
+        std::copy(boost::begin(extent), boost::end(extent),
+                  boost::begin(extent_));
+    }
 
     template<typename Tarray_>
     Box(position_type const& position,
         position_type const& vx,
         position_type const& vy,
         position_type const& vz,
-        Tarray_ const& extent)
+        Tarray_ const& extent = array_gen<length_type>(1., 1., 1.))
         : position_(position), vx_(vx), vy_(vy), vz_(vz)
     {
-        std::copy(boost::begin(extent), boost::end(extent), boost::begin(extent_));
+        std::copy(boost::begin(extent), boost::end(extent),
+                  boost::begin(extent_));
     }
 
     Box(position_type const& position,
