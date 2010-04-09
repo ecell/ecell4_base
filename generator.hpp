@@ -6,7 +6,6 @@
 #include <functional>
 
 #include <boost/utility/enable_if.hpp>
-#include <boost/swap.hpp>
 #include <boost/call_traits.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/optional.hpp>
