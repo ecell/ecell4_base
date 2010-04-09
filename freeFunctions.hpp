@@ -1,3 +1,5 @@
+#ifndef FREE_FUNTIONS_HPP
+#define FREE_FUNTIONS_HPP
 
 #include "Defs.hpp"
 
@@ -47,3 +49,4 @@ const Real I_bd_r( const Real r, const Real sigma, const Real t, const Real D );
 const Real drawR_gbd( const Real rnd, const Real sigma, 
                       const Real t, const Real D );
 
+#endif /* FREE_FUNTIONS_HPP */
