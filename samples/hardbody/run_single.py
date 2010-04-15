@@ -37,6 +37,7 @@ def run_single(T, V, N):
     s.throw_in_particles(A, N, box1)
     print 'stir'
 
+    t = 0
     stir_time = T * .1
     while 1:
         s.step()
@@ -44,20 +45,27 @@ def run_single(T, V, N):
         if next_time > stir_time:
             s.stop(stir_time)
             break
+
     print 'reset'
     s.reset()
-    print 'reset finish'
 
     print 'run'
+    run_time = T
+
     start = time.time()
-    while s.t < T:
+    while s.t < run_time:
         s.step()
-        #l.log()
-
     end = time.time()
-    print 'TIMING:\n', end - start
 
-    return end - start
+    timing = end - start
+
+    steps = s.step_counter
+    stepspersec = float(steps) / timing
+    print 'steps (total)= ', steps
+    print 'steps/sec= ', stepspersec, ', steps/N= ', float(steps) / N
+    print 'TIMING:\n', timing, '\n'
+
+    return end - start, steps, stepspersec
 
 
 if __name__ == '__main__':
