@@ -18,6 +18,8 @@ import logging.handlers
 
 import myrandom
 
+import itertools
+
 __all__ = [
     'log',
     'setup_logging',
@@ -370,6 +372,13 @@ class Reaction:
 
 
 class ParticleSimulatorBase(object):
+    surface_conv_map = {
+        PlanarSurface:     _gfrd._PlanarSurface,
+        CylindricalSurface: _gfrd._CylindricalSurface,
+        CuboidalRegion:    _gfrd._CuboidalRegion,
+        SphericalSurface:  _gfrd._SphericalSurface
+        }
+
     def __init__(self, world):
         self.particle_pool = {}
         self.reaction_rule_cache = {}
@@ -422,6 +431,13 @@ class ParticleSimulatorBase(object):
             if not self.particle_pool.has_key(st.id):
                 self.particle_pool[st.id] = _gfrd.ParticleIDSet()
             # else: keep particle data for this species.
+
+        for surface in itertools.chain(model.surface_list, [model.default_surface]):
+            _surface_class = self.surface_conv_map.get(type(surface))
+            if _surface_class is None:
+                raise NotImplementedError("Unsupported surface type: %s" % surface)
+            _surface = _surface_class(surface.name, surface.shape)
+            self.world.add_surface(_surface)
 
         self.network_rules = _gfrd.NetworkRulesWrapper(model.network_rules)
         self.model = model

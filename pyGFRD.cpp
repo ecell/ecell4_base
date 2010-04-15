@@ -1402,7 +1402,6 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::cylinder_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::box_type>)
         .def("calculate_pair_CoM", &CyclicWorld::calculate_pair_CoM<CyclicWorld::position_type>)
-        .def("check_overlap", &World_check_overlap<CyclicWorld>, return_value_policy<return_by_value>())
         .def("__iter__", &CyclicWorld::get_particles,
                 return_value_policy<return_by_value>())
         ;
@@ -1861,6 +1860,7 @@ BOOST_PYTHON_MODULE( _gfrd )
             egfrd_simulator_traits_type::network_rules_type const&,
             egfrd_simulator_traits_type::rng_type&,
             egfrd_simulator_traits_type::time_type,
+            int,
             peer::util::py_range_wrapper<world_traits_type::particle_id_type> >())
         .def("__call__", &_BDPropagator::operator())
         .def("propagate_all", &_BDPropagator_propagate_all)

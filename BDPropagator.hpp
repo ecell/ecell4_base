@@ -48,14 +48,11 @@ private:
 public:
     typedef boost::iterator_range<typename reaction_rule_list_type::const_iterator> reaction_rules_range;
 
-private:
-    static const int max_retry_count = 100;
-
 public:
     template<typename Trange_>
-    BDPropagator(particle_container_type const& pc, transaction_type& tx, network_rules_type const& rules, rng_type& rng, time_type const& dt, Trange_ const& particles)
+    BDPropagator(particle_container_type const& pc, transaction_type& tx, network_rules_type const& rules, rng_type& rng, time_type const& dt, int max_retry_count, Trange_ const& particles)
         : pc_(pc), tx_(tx), rules_(rules),
-          rng_(rng), dt_(dt), queue_(),
+          rng_(rng), dt_(dt), max_retry_count_(max_retry_count), queue_(),
           rejected_move_count_(0)
     {
         queue_.reserve(boost::size(particles));
@@ -199,7 +196,7 @@ private:
                                 s1(tx_.get_species(products[1]));
                         const Real D01(s0.D() + s1.D());
                         const length_type r01(s0.radius() + s1.radius());
-                        int i = max_retry_count;
+                        int i = max_retry_count_;
 
                         for (;;)
                         {
@@ -326,6 +323,7 @@ private:
     network_rules_type const& rules_;
     rng_type& rng_;
     Real const dt_;
+    int const max_retry_count_;
     particle_id_vector_type queue_;
     reaction_rule_list_type reactions_occurred_;
     reaction_rule_type empty_reaction_rule_;
