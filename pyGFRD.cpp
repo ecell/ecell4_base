@@ -18,6 +18,7 @@
 #include <boost/python/reference_existing_object.hpp>
 #include <boost/python/return_by_value.hpp>
 #include <boost/python/wrapper.hpp>
+#include <boost/python/converter/object_manager.hpp>
 
 #include <numpy/arrayobject.h>
 
@@ -70,6 +71,7 @@ typedef CyclicWorldTraits<Real, Real> world_traits_type;
 typedef World<world_traits_type> CyclicWorld;
 typedef Model model_type;
 typedef CyclicWorld::transaction_type transaction_type;
+typedef CyclicWorld::base_type::base_type particle_container_type;
 typedef EGFRDSimulatorTraitsBase<CyclicWorld> egfrd_simulator_traits_type;
 typedef BDPropagator<egfrd_simulator_traits_type> _BDPropagator;
 
@@ -452,52 +454,103 @@ struct particle_id_pair_and_distance_list_converter
 {
     typedef CyclicWorld::particle_id_pair_and_distance_list native_type;
 
-    template<typename T_>
-    struct policy
+    struct to_python_converter
     {
-        typedef typename boost::range_size<T_>::type size_type;
-        typedef typename boost::range_value<T_>::type value_type;
-        typedef value_type const& reference;
-        typedef value_type const& const_reference;
-        typedef typename boost::range_const_iterator<T_>::type iterator;
-        typedef typename boost::range_const_iterator<T_>::type const_iterator;
-
-        static size_type size(T_ const& c)
+        template<typename T_>
+        struct policy
         {
-            return boost::size(c);
-        }
+            typedef typename boost::range_size<T_>::type size_type;
+            typedef typename boost::range_value<T_>::type value_type;
+            typedef value_type const& reference;
+            typedef value_type const& const_reference;
+            typedef typename boost::range_const_iterator<T_>::type iterator;
+            typedef typename boost::range_const_iterator<T_>::type const_iterator;
 
-        static void set(T_& c, size_type i, const_reference v)
-        {
-            c.set(i, v);
-        }
+            static size_type size(T_ const& c)
+            {
+                return boost::size(c);
+            }
 
-        static reference get(T_ const& c, size_type i)
-        {
-            return c.at(i);
-        }
+            static void set(T_& c, size_type i, const_reference v)
+            {
+                c.set(i, v);
+            }
 
-        static iterator begin(T_ const& c)
-        {
-            return boost::begin(c);
-        }
+            static reference get(T_ const& c, size_type i)
+            {
+                return c.at(i);
+            }
 
-        static iterator end(T_ const& c)
+            static iterator begin(T_ const& c)
+            {
+                return boost::begin(c);
+            }
+
+            static iterator end(T_ const& c)
+            {
+                return boost::end(c);
+            }
+        };
+
+        typedef peer::STLContainerWrapper<native_type, std::auto_ptr<native_type>, policy > wrapper_type;
+        static PyObject* convert(native_type* v)
         {
-            return boost::end(c);
+            return reinterpret_cast<PyObject*>(wrapper_type::create(std::auto_ptr<native_type>(v ? v: new native_type())));
         }
     };
 
-    typedef peer::STLContainerWrapper<native_type, std::auto_ptr<native_type>, policy > wrapper_type;
-    static PyObject* convert(native_type* v)
+    struct to_native_converter
     {
-        return reinterpret_cast<PyObject*>(wrapper_type::create(std::auto_ptr<native_type>(v ? v: new native_type())));
-    }
+        static PyTypeObject const* expected_pytype()
+        {
+            return &PyBaseObject_Type;
+        }
+
+        static void* convert(PyObject* pyo)
+        {
+            if (pyo == Py_None)
+            {
+                return 0;
+            }
+
+            Py_ssize_t hint(-1);
+            hint = PyObject_Size(pyo);
+            if (hint < 0)
+            {
+                PyErr_Clear();
+            }
+
+            boost::python::handle<> iter(PyObject_GetIter(pyo));
+            if (!iter)
+            {
+                boost::python::throw_error_already_set();
+            }
+
+            if (hint < 0)
+            {
+                hint = _PyObject_LengthHint(iter.get(), 0);
+                if (hint < 0)
+                {
+                    hint = 0;
+                }
+            }
+
+            native_type* obj(new native_type);
+            obj->reserve(hint);
+            while (PyObject* item = PyIter_Next(iter.get()))
+            {
+                obj->push_back(boost::python::extract<native_type::value_type>(item)());
+            }
+
+            return obj;
+        }
+    };
 
     static void __register()
     {
-        wrapper_type::__class_init__("ParticleIDAndDistanceVector", boost::python::scope().ptr());
-        boost::python::to_python_converter<native_type*, particle_id_pair_and_distance_list_converter>();
+        to_python_converter::wrapper_type::__class_init__("ParticleIDAndDistanceVector", boost::python::scope().ptr());
+        boost::python::to_python_converter<native_type*, to_python_converter>();
+        peer::util::to_native_lvalue_converter<native_type, to_native_converter>();
     }
 };
 
@@ -831,9 +884,120 @@ public:
     }
 };
 
-void _BDPropagator_propagate_all(_BDPropagator& self)
+class _ParticleContainer: public particle_container_type,
+                          public boost::python::wrapper<particle_container_type>
+{
+public:
+    virtual ~_ParticleContainer() {}
+
+    virtual size_type num_particles() const
+    {
+        return get_override("particles")();
+    }
+
+    virtual species_type const& get_species(species_id_type const& id) const
+    {
+        return get_override("get_species")(id);
+    }
+
+    virtual boost::shared_ptr<surface_type> get_surface(surface_id_type const& id) const
+    {
+        return get_override("get_surface")(id);
+    }
+
+    virtual particle_id_pair new_particle(species_id_type const& sid,
+            position_type const& pos)
+    {
+        return get_override("new_particle")(sid, pos);
+    }
+
+    virtual bool update_particle(particle_id_pair const& pi_pair)
+    {
+        return get_override("update_particle")(pi_pair);
+    }
+
+    virtual void remove_particle(particle_id_type const& id)
+    {
+        get_override("remove_particle")(id);
+    }
+
+    virtual particle_id_pair get_particle(particle_id_type const& id) const
+    {
+        return get_override("get_particle")(id);
+    }
+
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_id_pair const& s) const
+    {
+        return get_override("check_overlap")(
+                s.second.shape(), boost::python::make_tuple(s.first))
+                .unchecked<particle_id_pair_and_distance_list*>();
+    }
+
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
+    {
+        return get_override("check_overlap")(s, boost::python::tuple())
+                .unchecked<particle_id_pair_and_distance_list*>();
+    }
+
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    {
+        return get_override("check_overlap")(
+                s, boost::python::make_tuple(ignore))
+               .unchecked<particle_id_pair_and_distance_list*>();
+    }
+
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    {
+        return get_override("check_overlap")(
+                s, boost::python::make_tuple(ignore1, ignore2))
+               .unchecked<particle_id_pair_and_distance_list*>();
+    }
+
+    virtual particle_id_pair_generator* get_particles() const
+    {
+        return get_override("__iter__")();
+    }
+
+    virtual transaction_type* create_transaction()
+    {
+        return get_override("create_transaction")();
+    }
+
+    virtual length_type distance(position_type const& lhs,
+                                 position_type const& rhs) const
+    {
+        return get_override("distance")(lhs, rhs);
+    }
+
+    virtual position_type apply_boundary(position_type const& v) const
+    {
+        return get_override("apply_boundary")(v);
+    }
+
+    virtual length_type apply_boundary(length_type const& v) const
+    {
+        return get_override("apply_boundary")(v);
+    }
+
+    virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
+    {
+        return get_override("cyclic_transpose")(p0, p1);
+    }
+
+    virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    {
+        return get_override("cyclic_transpose")(p0, p1);
+    }
+};
+
+static void _BDPropagator_propagate_all(_BDPropagator& self)
 {
     while (self());
+}
+
+static particle_container_type::particle_id_pair_and_distance_list* do_check_overlap(particle_container_type const& pc, particle_container_type::particle_type::shape_type const& x)
+{
+    return pc.check_overlap(x);
 }
 
 BOOST_PYTHON_MODULE( _gfrd )
@@ -1174,8 +1338,32 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::util::GeneratorIteratorWrapper<ptr_generator<CyclicWorld::particle_id_pair_generator, std::auto_ptr<CyclicWorld::particle_id_pair_generator> > >::__register_class("ParticleIDPairGenerator");
 
-    class_<transaction_type, boost::noncopyable>("Transaction", no_init)
-        .add_property("num_particles", &transaction_type::num_particles)
+    class_<_ParticleContainer, boost::noncopyable>("ParticleContainer")
+        .add_property("num_particles", &particle_container_type::num_particles)
+        .def("get_species",
+            pure_virtual((particle_container_type::species_type const&(particle_container_type::*)(particle_container_type::species_id_type const&) const)&particle_container_type::get_species),
+            return_internal_reference<>())
+        .def("get_surface", pure_virtual(&particle_container_type::get_surface))
+        .def("new_particle", pure_virtual(&particle_container_type::new_particle))
+        .def("update_particle", pure_virtual(&particle_container_type::update_particle))
+        .def("remove_particle", pure_virtual(&particle_container_type::remove_particle))
+        .def("get_particle", pure_virtual(&particle_container_type::get_particle))
+        .def("check_overlap", pure_virtual((particle_container_type::particle_id_pair_and_distance_list*(particle_container_type::*)(particle_container_type::particle_id_pair const&) const)&particle_container_type::check_overlap), return_value_policy<return_by_value>())
+        .def("check_overlap", pure_virtual((particle_container_type::particle_id_pair_and_distance_list*(particle_container_type::*)(particle_container_type::particle_type::shape_type const&, particle_container_type::particle_id_type const&) const)&particle_container_type::check_overlap), return_value_policy<return_by_value>())
+        .def("check_overlap", pure_virtual((particle_container_type::particle_id_pair_and_distance_list*(particle_container_type::*)(particle_container_type::particle_type::shape_type const&, particle_container_type::particle_id_type const&, particle_container_type::particle_id_type const&) const)&particle_container_type::check_overlap), return_value_policy<return_by_value>())
+        .def("check_overlap", pure_virtual((particle_container_type::particle_id_pair_and_distance_list*(particle_container_type::*)(particle_container_type::particle_type::shape_type const&) const)&particle_container_type::check_overlap), return_value_policy<return_by_value>())
+        .def("create_transaction", pure_virtual(&particle_container_type::create_transaction),
+                return_value_policy<manage_new_object>())
+        .def("distance", pure_virtual(&particle_container_type::distance))
+        .def("apply_boundary", pure_virtual((particle_container_type::position_type(particle_container_type::*)(particle_container_type::position_type const&) const)&particle_container_type::apply_boundary))
+        .def("apply_boundary", pure_virtual((particle_container_type::length_type(particle_container_type::*)(particle_container_type::length_type const&) const)&particle_container_type::apply_boundary))
+        .def("cyclic_transpose", pure_virtual((particle_container_type::position_type(particle_container_type::*)(particle_container_type::position_type const&, particle_container_type::position_type const&) const)&particle_container_type::cyclic_transpose))
+        .def("cyclic_transpose", pure_virtual((particle_container_type::length_type(particle_container_type::*)(particle_container_type::length_type const&, particle_container_type::length_type const&) const)&particle_container_type::cyclic_transpose))
+        .def("__iter__", pure_virtual(&particle_container_type::get_particles),
+                return_value_policy<return_by_value>())
+        ;
+
+    class_<transaction_type, bases<particle_container_type>, boost::noncopyable>("Transaction", no_init)
         .add_property("added_particles",
             make_function(&transaction_type::get_added_particles,
                 return_value_policy<return_by_value>()))
@@ -1185,29 +1373,20 @@ BOOST_PYTHON_MODULE( _gfrd )
         .add_property("modified_particles",
             make_function(&transaction_type::get_modified_particles,
                 return_value_policy<return_by_value>()))
-        .def("new_particle", &transaction_type::new_particle)
-        .def("update_particle", &transaction_type::update_particle)
-        .def("remove_particle", &transaction_type::remove_particle)
-        .def("get_particle", &transaction_type::get_particle)
-        .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_id_pair const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
-        .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&, transaction_type::particle_id_type const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
-        .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&, transaction_type::particle_id_type const&, transaction_type::particle_id_type const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
-        .def("check_overlap", (transaction_type::particle_id_pair_and_distance_list*(transaction_type::*)(transaction_type::particle_type::shape_type const&) const)&transaction_type::check_overlap, return_value_policy<return_by_value>())
-        .def("create_transaction", &transaction_type::create_transaction,
-                return_value_policy<manage_new_object>())
-        .def("rollback", &transaction_type::rollback)
-        .def("__iter__", &transaction_type::get_particles,
-                return_value_policy<return_by_value>())
+        .def("rollback", pure_virtual(&transaction_type::rollback))
         ;
+
+    class_<TransactionImpl<particle_container_type>,
+           bases<transaction_type>, boost::noncopyable>(
+           "TransactionImpl", init<particle_container_type&>());
 
     particle_id_pair_and_distance_list_converter::__register();
     species_range_converter::__register();
     peer::util::register_range_to_tuple_converter<twofold_container<CyclicWorld::particle_id_type> >();
     peer::util::register_iterable_to_range_converter<twofold_container<CyclicWorld::particle_id_type> >();
 
-    class_<CyclicWorld>("World", init<CyclicWorld::length_type,
-                                  CyclicWorld::size_type>())
-        .add_property("num_particles", &CyclicWorld::num_particles)
+    class_<CyclicWorld, bases<particle_container_type> >(
+        "World", init<CyclicWorld::length_type, CyclicWorld::size_type>())
         .add_property("world_size", &CyclicWorld::world_size)
         .add_property("cell_size", &CyclicWorld::cell_size)
         .add_property("matrix_size", &CyclicWorld::matrix_size)
@@ -1218,31 +1397,12 @@ BOOST_PYTHON_MODULE( _gfrd )
             make_function(
                 (CyclicWorld::surfaces_range(CyclicWorld::*)() const)&CyclicWorld::get_surfaces, surfaces_range_converter()))
         .def("add_species", &CyclicWorld::add_species)
-        .def("get_species",
-            (CyclicWorld::species_type const&(CyclicWorld::*)(CyclicWorld::species_id_type const&) const)&CyclicWorld::get_species,
-            return_internal_reference<>())
         .def("add_surface", &CyclicWorld::add_surface)
-        .def("get_surface", &CyclicWorld::get_surface)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::sphere_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::cylinder_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::box_type>)
-        .def("distance", &CyclicWorld::distance<CyclicWorld::position_type>)
-        .def("apply_boundary", (CyclicWorld::position_type(CyclicWorld::*)(CyclicWorld::position_type const&) const)&CyclicWorld::apply_boundary)
-        .def("apply_boundary", (CyclicWorld::length_type(CyclicWorld::*)(CyclicWorld::length_type const&) const)&CyclicWorld::apply_boundary)
-        .def("cyclic_transpose", (CyclicWorld::position_type(CyclicWorld::*)(CyclicWorld::position_type const&, CyclicWorld::position_type const&) const)&CyclicWorld::cyclic_transpose)
-        .def("cyclic_transpose", (CyclicWorld::length_type(CyclicWorld::*)(CyclicWorld::length_type const&, CyclicWorld::length_type const&) const)&CyclicWorld::cyclic_transpose)
         .def("calculate_pair_CoM", &CyclicWorld::calculate_pair_CoM<CyclicWorld::position_type>)
-        .def("new_particle", &CyclicWorld::new_particle)
-        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_id_pair const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
-        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
-        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&, CyclicWorld::particle_id_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
-        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_shape_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
         .def("check_overlap", &World_check_overlap<CyclicWorld>, return_value_policy<return_by_value>())
-        .def("update_particle", &CyclicWorld::update_particle)
-        .def("remove_particle", &CyclicWorld::remove_particle)
-        .def("get_particle", &CyclicWorld::get_particle)
-        .def("create_transaction", &CyclicWorld::create_transaction,
-                return_value_policy<manage_new_object>())
         .def("__iter__", &CyclicWorld::get_particles,
                 return_value_policy<return_by_value>())
         ;
@@ -1468,7 +1628,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     class_<world_traits_type::surface_type>("Structure", no_init)
         .add_property("id", 
-            make_function(&reaction_rule_info_type::id,
+            make_function(&world_traits_type::surface_type::id,
                           return_value_policy<return_by_value>()))
         ;
 
@@ -1696,7 +1856,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     class_<_BDPropagator, boost::noncopyable>(
         "BDPropagator", init<
-            egfrd_simulator_traits_type::world_type const&, 
+            egfrd_simulator_traits_type::world_type::particle_container_type const&, 
             egfrd_simulator_traits_type::world_type::transaction_type&,
             egfrd_simulator_traits_type::network_rules_type const&,
             egfrd_simulator_traits_type::rng_type&,
@@ -1728,6 +1888,8 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::RandomNumberGenerator<GSLRandomNumberGenerator>::__register_class("RandomNumberGenerator");
     def("create_gsl_rng", &create_gsl_rng<gsl_rng_mt19937>);
     def("create_static_gsl_rng", &create_static_gsl_rng);
+
+    def("do_check_overlap", &do_check_overlap, return_value_policy<return_by_value>());
 
     peer::util::register_scalar_to_native_converters();
 }

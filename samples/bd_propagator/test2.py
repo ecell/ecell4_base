@@ -27,9 +27,77 @@ rr['k'] = '.01'
 m.network_rules.add_reaction_rule(rr)
 
 nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
-print nrw.query_reaction_rule(S0, S1)[0].products
 
-w = _gfrd.World(1., 10)
+class MyParticleContainer(_gfrd.ParticleContainer):
+    def __init__(self, world_size):
+        _gfrd.ParticleContainer.__init__(self)
+        self.particles = {}
+        self.surfaces = {}
+        self.species = {}
+        self.pidgen = _gfrd.ParticleIDGenerator(0)
+        self.world_size = world_size
+
+    def add_surface(self, surface):
+        self.surfaces[surface.id] = surface
+
+    def add_species(self, species):
+        self.species[species.id] = species
+
+    def get_surface(self, id):
+        return self.surfaces[id]
+
+    def get_species(self, id):
+        if isinstance(id, _gfrd.SpeciesType):
+            id = id.id
+        return self.species[id]
+
+    def new_particle(self, species_id, position):
+        new_pid = self.pidgen()
+        species = self.get_species(species_id)
+        retval = (new_pid, _gfrd.Particle(position, species.radius, species.D, species.id))
+        self.update_particle(retval)
+        return retval
+
+    def update_particle(self, pid_particle_pair):
+        self.particles[pid_particle_pair[0]] = pid_particle_pair[1]
+        return False
+
+    def remove_particle(self, pid):
+        del self.particles[pid]
+
+    def get_particle(self, pid):
+        p = self.particles.get(pid, None)
+        if p is None:
+            raise NotFound
+        return pid, p
+
+    def check_overlap(self, sphere, ignores):
+        retval = []
+        for pp in self.particles.iteritems():
+            if pp[0] in ignores:
+                continue
+            dist = _gfrd.distance(pp[1].position, sphere.position) - pp[1].radius
+            if dist < sphere.radius:
+                retval.append((pp, dist))
+        retval.sort(lambda a, b: cmp(a[1], b[1]))
+        return retval
+
+    def distance(self, x, y):
+        return _gfrd.distance_cyclic(x, y, self.world_size)
+
+    def apply_boundary(self, x):
+        return _gfrd.apply_boundary(x, self.world_size)
+
+    def cyclic_transpose(self, x, y):
+        return _gfrd.cyclic_transpose(x, y, self.world_size)
+
+    def __iter__(self):
+        return self.particles.iteritems()
+
+    def create_transaction(self):
+        return _gfrd.TransactionImpl(self)
+
+w = MyParticleContainer(1.0)
 region = _gfrd._CuboidalRegion("default",
         _gfrd.Box((.5, .5, .5), (1., 0., 0.), (0., 1., 0.), (0., 0., 1.), 1., 1., .1))
 w.add_surface(region)

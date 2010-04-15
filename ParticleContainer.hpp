@@ -59,6 +59,18 @@ public:
     virtual particle_id_pair_generator* get_particles() const = 0;
 
     virtual transaction_type* create_transaction() = 0;
+
+    virtual length_type distance(position_type const& lhs,
+                                 position_type const& rhs) const = 0;
+
+    virtual position_type apply_boundary(position_type const& v) const = 0;
+
+    virtual length_type apply_boundary(length_type const& v) const = 0;
+
+    virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const = 0;
+
+    virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const = 0;
+
 };
 
 

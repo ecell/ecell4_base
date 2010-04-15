@@ -23,21 +23,21 @@ class BDPropagator
 {
 private:
     typedef Ttraits_ traits_type;
-    typedef typename Ttraits_::world_type world_type;
-    typedef typename world_type::transaction_type transaction_type;
-    typedef typename world_type::species_id_type species_id_type;
-    typedef typename world_type::position_type position_type;
-    typedef typename world_type::particle_shape_type particle_shape_type;
-    typedef typename world_type::species_type species_type;
-    typedef typename world_type::length_type length_type;
-    typedef typename world_type::particle_id_type particle_id_type;
-    typedef typename world_type::particle_type particle_type;
-    typedef typename world_type::particle_id_pair particle_id_pair;
+    typedef typename Ttraits_::world_type::particle_container_type particle_container_type;
+    typedef typename particle_container_type::transaction_type transaction_type;
+    typedef typename particle_container_type::species_id_type species_id_type;
+    typedef typename particle_container_type::position_type position_type;
+    typedef typename particle_container_type::particle_shape_type particle_shape_type;
+    typedef typename particle_container_type::species_type species_type;
+    typedef typename particle_container_type::length_type length_type;
+    typedef typename particle_container_type::particle_id_type particle_id_type;
+    typedef typename particle_container_type::particle_type particle_type;
+    typedef typename particle_container_type::particle_id_pair particle_id_pair;
     typedef std::vector<particle_id_type> particle_id_vector_type;
-    typedef typename world_type::particle_id_pair_generator particle_id_pair_generator;
-    typedef typename world_type::particle_id_pair_and_distance particle_id_pair_and_distance;
-    typedef typename world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
-    typedef typename world_type::surface_type surface_type;
+    typedef typename particle_container_type::particle_id_pair_generator particle_id_pair_generator;
+    typedef typename particle_container_type::particle_id_pair_and_distance particle_id_pair_and_distance;
+    typedef typename particle_container_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
+    typedef typename particle_container_type::surface_type surface_type;
     typedef typename Ttraits_::rng_type rng_type;
     typedef typename Ttraits_::time_type time_type;
     typedef typename Ttraits_::network_rules_type network_rules_type;
@@ -53,8 +53,8 @@ private:
 
 public:
     template<typename Trange_>
-    BDPropagator(world_type const& world, transaction_type& tx, network_rules_type const& rules, rng_type& rng, time_type const& dt, Trange_ const& particles)
-        : world_(world), tx_(tx), rules_(rules),
+    BDPropagator(particle_container_type const& pc, transaction_type& tx, network_rules_type const& rules, rng_type& rng, time_type const& dt, Trange_ const& particles)
+        : pc_(pc), tx_(tx), rules_(rules),
           rng_(rng), dt_(dt), queue_(),
           rejected_move_count_(0)
     {
@@ -95,7 +95,7 @@ public:
             return true;
 
         position_type new_pos(
-            world_.apply_boundary(
+            pc_.apply_boundary(
                 add(pp.second.position(), drawR_free(species))));
         particle_id_pair particle_to_update(
                 pp.first, particle_type(species.id(),
@@ -103,32 +103,32 @@ public:
                     species.D()));
         boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
             tx_.check_overlap(particle_to_update));
-        if (overlapped)
+        switch (overlapped ? overlapped->size(): 0)
         {
-            switch (overlapped->size())
-            {
-            case 1:
-                {
-                    particle_id_pair_and_distance const& closest(overlapped->at(0));
-                    try
-                    {
-                        if (attempt_reaction(pp, closest.first))
-                            return true;
-                    }
-                    catch (propagation_error const& reason)
-                    {
-                        log_.info("second-order reaction rejected (reason: %s)", reason.what());
-                        ++rejected_move_count_;
-                        return true;
-                    }
-                }
-                break;
+        case 0:
+            break;
 
-            default:
-                log_.info("collision involving two or more particles; move rejected");
-                ++rejected_move_count_;
-                return true;
+        case 1:
+            {
+                particle_id_pair_and_distance const& closest(overlapped->at(0));
+                try
+                {
+                    if (attempt_reaction(pp, closest.first))
+                        return true;
+                }
+                catch (propagation_error const& reason)
+                {
+                    log_.info("second-order reaction rejected (reason: %s)", reason.what());
+                    ++rejected_move_count_;
+                    return true;
+                }
             }
+            break;
+
+        default:
+            log_.info("collision involving two or more particles; move rejected");
+            ++rejected_move_count_;
+            return true;
         }
         tx_.update_particle(particle_to_update);
         return true;
@@ -148,7 +148,7 @@ private:
     position_type drawR_free(species_type const& species)
     {
         boost::shared_ptr<surface_type> surface(
-            world_.get_surface(species.surface_id()));
+            pc_.get_surface(species.surface_id()));
         return StructureUtils<traits_type>::draw_bd_displacement(
                 *surface, std::sqrt(2.0 * species.D() * dt_), rng_);
     }
@@ -183,7 +183,8 @@ private:
                                 particle_shape_type(pp.second.position(),
                                                     s0.radius()),
                                                     s0.D()));
-                        if (boost::scoped_ptr<particle_id_pair_and_distance_list>(tx_.check_overlap(new_p)))
+                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(tx_.check_overlap(new_p));
+                        if (overlapped && overlapped->size() > 0)
                         {
                             throw propagation_error("no space");
                         }
@@ -212,10 +213,10 @@ private:
                                 drawR_gbd(rnd, r01, dt_, D01));
                             const position_type m(random_unit_vector() * pair_distance);
                             const position_type np0(
-                                world_.apply_boundary(pp.second.position()
+                                pc_.apply_boundary(pp.second.position()
                                     + m * (s0.D() / D01)));
                             const position_type np1(
-                                world_.apply_boundary(pp.second.position()
+                                pc_.apply_boundary(pp.second.position()
                                     + m * (s1.D() / D01)));
                             boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s0(
                                 tx_.check_overlap(
@@ -225,7 +226,7 @@ private:
                                 tx_.check_overlap(
                                     particle_shape_type(np1, s1.radius()),
                                     pp.first));
-                            if (!overlapped_s0 && !overlapped_s1)
+                            if (!(overlapped_s0 && overlapped_s0->size() > 0) && !(overlapped_s1 && overlapped_s1->size() > 0))
                                 break;
                         }
                     }
@@ -276,16 +277,17 @@ private:
                 const species_type sp(tx_.get_species(product));
 
                 const position_type new_pos(
-                    world_.apply_boundary(
+                    pc_.apply_boundary(
                         divide(
                             add(multiply(pp0.second.position(), s1.D()),
-                                multiply(world_.cyclic_transpose(
+                                multiply(pc_.cyclic_transpose(
                                     pp1.second.position(),
                                     pp0.second.position()), s0.D())),
                             D01)));
-                if (boost::scoped_ptr<particle_id_pair_and_distance_list>(
+                boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
                     tx_.check_overlap(particle_shape_type(new_pos, sp.radius()),
-                                      pp0.first, pp1.first)))
+                                      pp0.first, pp1.first));
+                if (overlapped && overlapped->size() > 0)
                 {
                     throw propagation_error("no space");
                 }
@@ -319,7 +321,7 @@ private:
     }
 
 private:
-    world_type const& world_;
+    particle_container_type const& pc_;
     transaction_type& tx_;
     network_rules_type const& rules_;
     rng_type& rng_;

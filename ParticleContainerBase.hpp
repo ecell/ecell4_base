@@ -15,6 +15,7 @@ template<typename Tderived_, typename Ttraits_ = typename Tderived_::traits_type
 struct ParticleContainerBase: public ParticleContainer<Ttraits_>
 {
 public:
+    typedef ParticleContainer<Ttraits_> base_type;
     typedef Ttraits_ traits_type;
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::species_type species_type;
@@ -154,22 +155,28 @@ public:
         return traits_type::distance(lhs, rhs, world_size());
     }
 
-    position_type apply_boundary(position_type const& v) const
+    virtual length_type distance(position_type const& lhs,
+                                 position_type const& rhs) const
+    {
+        return traits_type::distance(lhs, rhs, world_size());
+    }
+
+    virtual position_type apply_boundary(position_type const& v) const
     {
         return traits_type::apply_boundary(v, world_size());
     }
 
-    length_type apply_boundary(length_type const& v) const
+    virtual length_type apply_boundary(length_type const& v) const
     {
         return traits_type::apply_boundary(v, world_size());
     }
 
-    position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
+    virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
     {
         return traits_type::cyclic_transpose(p0, p1, world_size());
     }
 
-    length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
     {
         return traits_type::cyclic_transpose(p0, p1, world_size());
     }

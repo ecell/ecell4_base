@@ -27,7 +27,11 @@ template<typename Tshape_>
 struct is_shape: public boost::mpl::false_ {};
 
 template<typename T_>
-struct shape_position_type {};
+struct shape_position_type
+{
+    struct argument_is_not_a_shape;
+    static const std::size_t x = sizeof(argument_is_not_a_shape);
+};
 
 template<typename T_>
 struct shape_length_type
@@ -45,7 +49,8 @@ template< typename T1_, typename T2_ >
 inline typename shape_length_type<T1_>::type
 distance_cyclic(
         T1_ const& p1, T2_ const& p2,
-        typename shape_length_type<T1_>::type const& world_size)
+        typename shape_length_type<T1_>::type const& world_size,
+        typename boost::enable_if<is_shape<T1_> >::type* = 0)
 {
     return distance(p1, cyclic_transpose(p2, shape_position(p1), world_size));
 }

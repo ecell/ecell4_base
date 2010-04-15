@@ -12,7 +12,7 @@ inline typename element_type_of< T1_ >::type distance(
         typename boost::enable_if<
             typename boost::mpl::and_<
                 is_vector3<T1_>,
-                is_vector3<T2_> >::type>::type* = 0)
+                is_vector3<T2_> > >::type* = 0)
 {
     return std::sqrt(
         gsl_pow_2( p1[0] - p2[0] )
@@ -102,6 +102,26 @@ template<typename T1_, typename T2_>
 inline T1_ apply_boundary(T1_ const& p1, T2_ const& world_size)
 {
     return apply_boundary(p1, world_size, (void*)0);
+}
+
+template<typename T1_, typename T2_>
+inline typename element_type_of<T1_>::type distance_cyclic(
+        T1_ const& p1, T2_ const& p2,
+        typename element_type_of<T1_>::type const& world_size,
+        typename boost::enable_if<
+            typename boost::mpl::and_<
+                is_vector3<T1_>,
+                is_vector3<T2_> > >::type* = 0)
+{
+    return distance(p1, cyclic_transpose(p2, p1, world_size));
+}
+
+template<typename T_>
+inline typename element_type_of<T_>::type
+distance_cyclic(T_ const& p1, T_ const& p2,
+                typename element_type_of<T_>::type const& world_size)
+{
+    return distance_cyclic(p1, p2, world_size, (void*)0);
 }
 
 #endif /* GEOMETRY_HPP */

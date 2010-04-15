@@ -33,23 +33,6 @@ class MultiBDCore(BDSimulatorCoreBase):
         self.escaped = False
         BDSimulatorCoreBase.step(self)
 
-    def add_particle(self, pid_particle_pair):
-        self.add_to_particle_list(pid_particle_pair[0])
-        self.particle_matrix.update(pid_particle_pair)
-
-    def remove_particle(self, pid_particle_pair):
-        self.main.remove_particle(pid_particle_pair)
-        self.remove_from_particle_list(pid_particle_pair[0])
-        del self.particle_matrix[pid_particle_pair[0]]
-
-    def create_particle(self, sid, pos):
-        particle = self.main.create_particle(sid, pos)
-        self.add_particle(particle)
-        return particle
-
-    def move_particle(self, pid_particle_pair):
-        self.update_particle(pid_particle_pair)
-
     def clear_volume(self, pos, radius, ignore=[]):
         if not self.within_shell(pos, radius):
             self.escaped = True

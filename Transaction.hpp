@@ -211,6 +211,32 @@ public:
         orig_particles_.clear();
     }
 
+    virtual length_type distance(position_type const& lhs,
+                                 position_type const& rhs) const
+    {
+        return pc_.distance(lhs, rhs);
+    }
+
+    virtual position_type apply_boundary(position_type const& v) const
+    {
+        return pc_.apply_boundary(v);
+    }
+
+    virtual length_type apply_boundary(length_type const& v) const
+    {
+        return pc_.apply_boundary(v);
+    }
+
+    virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
+    {
+        return pc_.cyclic_transpose(p0, p1);
+    }
+
+    virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    {
+        return pc_.cyclic_transpose(p0, p1);
+    }
+
     virtual ~TransactionImpl() {}
 
     TransactionImpl(particle_container_type& world): pc_(world) {}

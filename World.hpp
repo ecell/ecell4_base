@@ -118,6 +118,7 @@ class World: public ParticleContainerBase<World<Ttraits_>, Ttraits_>
 public:
     typedef Ttraits_ traits_type;
     typedef ParticleContainerBase<World> base_type;
+    typedef ParticleContainer<traits_type> particle_container_type;
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::species_type species_type;
     typedef typename traits_type::position_type position_type;

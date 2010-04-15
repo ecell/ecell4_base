@@ -148,6 +148,16 @@ public:
         cntnr_.resize(n, reinterpret_cast<typename container_type::value_type const&>(v));
     }
 
+    void reserve(size_type n)
+    {
+        cntnr_.reserve(n);
+    }
+
+    size_type capacity()
+    {
+        return cntnr_.capacity();
+    }
+
     value_type const& at(size_type const& pos) const
     {
         return reinterpret_cast<value_type const&>(cntnr_.at(pos));
