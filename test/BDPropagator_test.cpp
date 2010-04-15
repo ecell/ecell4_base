@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(instantiation)
     Traits::world_type w;
     boost::scoped_ptr<Traits::world_type::transaction_type> tx(
             w.create_transaction());
-    BDPropagator<Traits> bdp(w, *tx, nrw, rng, .01,
+    BDPropagator<Traits> bdp(w, *tx, nrw, rng, .01, 100,
             make_select_first_range(w.get_particles_range()));
 }
 
@@ -116,10 +116,11 @@ BOOST_AUTO_TEST_CASE(basic)
     w.add_species(S1);
     w.add_species(S2);
 
-    boost::scoped_ptr<Traits::world_type::surface_type> default_surface(
+    boost::shared_ptr<Traits::world_type::surface_type> default_surface(
         new Traits::cuboidal_region_type("default",
-            Traits::box_type(position_type(1e-5 / 2, 1e-5 / 2, 1e-5 / 2), 1e-5)));
-    w.add_surface(default_surface.get());
+            Traits::box_type(position_type(1e-5 / 2, 1e-5 / 2, 1e-5 / 2),
+                             array_gen(1e-5, 1e-5, 1e-5))));
+    w.add_surface(default_surface);
 
     nr.add_reaction_rule(new_reaction_rule(S0.id(), S1.id(), array_gen(S2.id()), 1e-9));
 
@@ -131,7 +132,7 @@ BOOST_AUTO_TEST_CASE(basic)
 
     for (int i = 1000; --i >= 0; ) {
         boost::scoped_ptr<Traits::world_type::transaction_type> tx(w.create_transaction());
-        BDPropagator<Traits> prpg(w, *tx, nrw, rng, 5e-11, make_select_first_range(w.get_particles_range()));
+        BDPropagator<Traits> prpg(w, *tx, nrw, rng, 5e-11, 100, make_select_first_range(w.get_particles_range()));
         while (prpg());
         boost::scoped_ptr<particle_id_pair_generator> added_particles(tx->get_added_particles());
         boost::scoped_ptr<particle_id_pair_generator> removed_particles(tx->get_removed_particles());
