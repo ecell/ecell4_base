@@ -25,9 +25,8 @@ from out_V import *
 from out_N300 import *
 from out_N3000 import *
 
+from run_all import Nv, Nc, V300, N300, V3000, N3000
 
-Nv = numpy.array([30,100,300,1000,3000,10000,30000,100000,300000,1000000])
-Nc = numpy.array([30,100,300,1000,3000,10000,30000,100000,300000,1000000])
 
 # (40e-18 ** (1/3.0))**2 / 1e-12
 # = 11.69607095285148
@@ -48,7 +47,7 @@ data_bd_5 = numpy.array([\
 data_bd_5 *=  11.696/ 1e-8
 data_bd_6 = data_bd_5 * 10
 
-X = numpy.array([5,100,300,1000,3000,10000,30000,100000,5e6])
+X = numpy.array([30,100,300,1000,3000,10000,30000,100000,1e8])
 
 
 axes([.12,.14,.86,.83])
@@ -56,17 +55,17 @@ axes([.12,.14,.86,.83])
 #for i in range(len(Nv)):
 plot_data(Nv, data_V,'kx')
 
-loglog(X, 0.04* X**(5.0/3), 'k--')
+loglog(X, 0.005* X**(5.0/3), 'k--')
 
-figtext(.25, .18, r'(2) V = 40 fL')
+figtext(.25, .18, r'(2) V = 1 pL')
 figtext(.82, .7, r'$t \ \propto \ N^{5/3}$', color='k')
 
 
 #for i in range(len(Nc)):
 plot_data(Nc, data_C,'ko')
-loglog(X, 9* X, 'k-')
+loglog(X, 4* X, 'k-')
 
-figtext(.14, .37, r'(1) C = 100 nM')
+figtext(.14, .37, r'(1) C = 50 nM')
 figtext(.8, .59, r'$t \  \propto \ N$', color='k')
 
 #plot_data(Nb, data_bd_6,'k.')
@@ -86,8 +85,11 @@ xlabel('N [# particles]', size=22)
 #xlabel('Concentration [M]')
 #ylabel('time [s]', size=22)
 #legend()
-xlim(4,9e6)
-ylim(1.1,2e11)
+# xlim(4,9e6)
+# ylim(1.1,2e11)
+
+xlim(40,9e7)
+ylim(0,2e11)
 
 xticks(size=18)
 yticks([60,3600,3600*24,3600*24*30, 3600*24*30*12],
@@ -95,29 +97,34 @@ yticks([60,3600,3600*24,3600*24*30, 3600*24*30*12],
 
 #grid()
 
-Cx3000=numpy.array([
-#    9.35e-11,
-    9.35e-10,
-    9.35e-9,
-    9.35e-8,#N=3000,V=40e-15
-    9.35e-7,#N=3000,V=40e-16
-    9.35e-6,#N=3000,V=40e-17
-    9.35e-5,#N=3000,V=40e-18
-    9.35e-4
+C300 = numpy.array(N300) / (numpy.array(V300)*N_A)
+C3000 = numpy.array(N3000) / (numpy.array(V3000)*N_A)
+print C300, C3000
+# Cx3000=numpy.array([
+# #    9.35e-11,
+#     9.35e-10,
+#     9.35e-9,
+#     9.35e-8,#N=3000,V=40e-15
+#     9.35e-7,#N=3000,V=40e-16
+#     9.35e-6,#N=3000,V=40e-17
+#     9.35e-5,#N=3000,V=40e-18
+#     9.35e-4,
+#     9.35e-4*3
 
-    ])
+#     ])
 
-Cx300=numpy.array([
-    9.35e-10,#N=300,V=40e-14
-    9.35e-9,#N=300,V=40e-15
-    9.35e-8,#16
-    9.35e-7,#17
-    9.35e-6,#18
-    9.35e-5,#19
-    9.35e-4,#20
-#    3.74e-3,#1e-21
-#    9.35e-3,#4e-21
-    ])
+# Cx300=numpy.array([
+#     9.35e-10,#N=300,V=40e-14
+#     9.35e-9,#N=300,V=40e-15
+#     9.35e-8,#16
+#     9.35e-7,#17
+#     9.35e-6,#18
+#     9.35e-5,#19
+#     9.35e-4,#20
+#     9.35e-4*3
+# #    3.74e-3,#1e-21
+# #    9.35e-3,#4e-21
+#     ])
 
 #data_N3000 *= 11696
 #data_N300 *= 11696
@@ -125,21 +132,22 @@ Cx300=numpy.array([
 axes([.63,.19,.33,.31])
 
 # M-> uM
-Cx300 *= 1e6
-Cx3000 *= 1e6
+C300 *= 1e6
+C3000 *= 1e6
 
-for i in range(len(Cx3000)):
-    plot_data(Cx3000, data_N3000,'k+')
-#loglog(Cx3000, 5e1** Cx3000, 'b:')
+for i in range(len(C3000)):
+    plot_data(C3000, data_N3000,'k+')
+#loglog(C3000, 5e1** C3000, 'b:')
 bd3000 = numpy.array([17.1796619892,17.4832251072,17.5032970905]).mean()
 bd3000 *= 11.69607 / 1e-9
 loglog([1e-4,1e4],[bd3000,bd3000], 'b:')
 
 
-for i in range(len(Cx300)):
-    plot_data(Cx300, data_N300,'kd')
-loglog(Cx300, 1.5e4* Cx300**(2.0/3.0), 'k-.', label='C^(2/3)')
-#loglog(Cx300, 2.5e4* Cx300**(4.0/3.0), 'k-.', label='C^(4/3)')
+for i in range(len(C300)):
+    plot_data(C300, data_N300,'kd')
+loglog(C300, 1.0e4* C300**(2.0/3.0), 'k-.', label='C^(2/3)')
+#loglog(C300, 1e5* C300, 'k-.', label='C^1')
+#loglog(C300, 2.5e4* C300**(4.0/3.0), 'k-.', label='C^(4/3)')
 
 figtext(.75, .195, r'(3a) N = 300')
 figtext(.84, .25, r'$t \ \propto \ C^{2/3}$', color='k')
