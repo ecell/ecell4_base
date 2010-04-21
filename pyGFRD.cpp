@@ -1338,7 +1338,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     peer::util::GeneratorIteratorWrapper<ptr_generator<CyclicWorld::particle_id_pair_generator, std::auto_ptr<CyclicWorld::particle_id_pair_generator> > >::__register_class("ParticleIDPairGenerator");
 
-    class_<_ParticleContainer, boost::noncopyable>("ParticleContainer")
+    class_<_ParticleContainer, boost::noncopyable>("_ParticleContainer")
         .add_property("num_particles", &particle_container_type::num_particles)
         .def("get_species",
             pure_virtual((particle_container_type::species_type const&(particle_container_type::*)(particle_container_type::species_id_type const&) const)&particle_container_type::get_species),
@@ -1398,11 +1398,15 @@ BOOST_PYTHON_MODULE( _gfrd )
                 (CyclicWorld::surfaces_range(CyclicWorld::*)() const)&CyclicWorld::get_surfaces, surfaces_range_converter()))
         .def("add_species", &CyclicWorld::add_species)
         .def("add_surface", &CyclicWorld::add_surface)
+        .def("distance", (CyclicWorld::length_type(CyclicWorld::*)(CyclicWorld::position_type const&, CyclicWorld::position_type const&) const)&CyclicWorld::distance)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::sphere_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::cylinder_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::box_type>)
         .def("calculate_pair_CoM", &CyclicWorld::calculate_pair_CoM<CyclicWorld::position_type>)
         .def("check_overlap", &World_check_overlap<CyclicWorld>, return_value_policy<return_by_value>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_type::shape_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_type::shape_type const&, CyclicWorld::particle_id_type const&, CyclicWorld::particle_id_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
+        .def("check_overlap", (CyclicWorld::particle_id_pair_and_distance_list*(CyclicWorld::*)(CyclicWorld::particle_type::shape_type const&) const)&CyclicWorld::check_overlap, return_value_policy<return_by_value>())
         .def("__iter__", &CyclicWorld::get_particles,
                 return_value_policy<return_by_value>())
         ;
