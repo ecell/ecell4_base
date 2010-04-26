@@ -1915,6 +1915,10 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("propagate_all", &_BDPropagator_propagate_all)
         ;
 
+    class_<MultiParticleContainer<egfrd_simulator_traits_type>,
+           bases<particle_container_type>, boost::noncopyable>(
+        "_MultiParticleContainer", init<CyclicWorld&>());
+
     peer::util::register_py_range_wrapper_converter<world_traits_type::particle_id_type>();
 
     domain_id_pair_converter::__register();

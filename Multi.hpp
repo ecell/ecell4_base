@@ -4,8 +4,164 @@
 #include "exceptions.hpp"
 #include "Domain.hpp"
 #include "ParticleContainer.hpp"
+#include "ParticleContainerBase.hpp"
 #include "Sphere.hpp"
+#include "utils/array_helper.hpp"
 #include "utils/range.hpp"
+
+template<typename Ttraits_>
+class MultiParticleContainer
+    : public Ttraits_::world_type::particle_container_type
+{
+public:
+    typedef ParticleContainerUtils<typename Ttraits_::world_type::traits_type> utils;
+    typedef typename Ttraits_::world_type world_type;
+    typedef typename world_type::traits_type traits_type;
+    typedef typename traits_type::particle_type particle_type;
+    typedef typename particle_type::shape_type particle_shape_type;
+    typedef typename traits_type::species_type species_type;
+    typedef typename traits_type::species_id_type species_id_type;
+    typedef typename traits_type::position_type position_type;
+    typedef typename traits_type::particle_id_type particle_id_type;
+    typedef typename traits_type::length_type length_type;
+    typedef typename traits_type::size_type size_type;
+    typedef typename traits_type::surface_id_type surface_id_type;
+    typedef typename traits_type::surface_type surface_type;
+    typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
+    typedef Transaction<traits_type> transaction_type;
+    typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
+    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
+    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
+    typedef std::map<particle_id_type, particle_type> particle_map;
+
+    virtual ~MultiParticleContainer() {}
+
+    virtual size_type num_particles() const
+    {
+        return particles_.size();
+    }
+
+    virtual length_type world_size() const
+    {
+        return world_.world_size();
+    }
+
+    virtual species_type const& get_species(species_id_type const& id) const
+    {
+        return world_.get_species(id);
+    }
+
+    virtual boost::shared_ptr<surface_type> get_surface(surface_id_type const& id) const
+    {
+        return world_.get_surface(id);
+    }
+
+    virtual particle_id_pair new_particle(species_id_type const& sid,
+            position_type const& pos)
+    {
+        particle_id_pair const retval(world_.new_particle(sid, pos));
+        particles_.insert(retval);
+        return retval;
+    }
+
+    virtual bool update_particle(particle_id_pair const& pi_pair)
+    {
+        bool const retval(world_.update_particle(pi_pair));
+        particles_[pi_pair.first] = pi_pair.second;
+        return retval;
+    }
+
+    virtual bool remove_particle(particle_id_type const& id)
+    {
+        world_.remove_particle(id);
+        return particles_.erase(id);
+    }
+
+    virtual particle_id_pair get_particle(particle_id_type const& id) const
+    {
+        typename particle_map::const_iterator i(particles_.find(id));
+        if (particles_.end() == i)
+        {
+            throw not_found(std::string("No such particle: id=")
+                    + boost::lexical_cast<std::string>(id));
+        }
+        return *i;
+    }
+
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
+    {
+        return check_overlap(s, array_gen<particle_id_type>());
+    }
+
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    {
+        return check_overlap(s, array_gen(ignore));
+    }
+
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    {
+        return check_overlap(s, array_gen(ignore1, ignore2));
+    }
+
+    template<typename Tsph_, typename Tset_>
+    particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore) const
+    {
+        typename utils::template overlap_checker<Tset_> checker(ignore);
+        for (typename particle_map::const_iterator i(particles_.begin()),
+                                                   e(particles_.end());
+             i != e; ++i)
+        {
+            length_type const dist(world_.distance(shape((*i).second), s.position()));
+            if (dist < s.radius())
+            {
+                checker(i, dist);
+            }
+        }
+        return checker.result();
+    }
+
+    virtual particle_id_pair_generator* get_particles() const
+    {
+        return make_range_generator<particle_id_pair>(particles_);
+    }
+
+    virtual transaction_type* create_transaction()
+    {
+        return new TransactionImpl<MultiParticleContainer>(*this);
+    }
+
+    virtual length_type distance(position_type const& lhs,
+                                 position_type const& rhs) const
+    {
+        return world_.distance(lhs, rhs);
+    }
+
+    virtual position_type apply_boundary(position_type const& v) const
+    {
+        return world_.apply_boundary(v);
+    }
+
+    virtual length_type apply_boundary(length_type const& v) const
+    {
+        return world_.apply_boundary(v);
+    }
+
+    virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
+    {
+        return world_.cyclic_transpose(p0, p1);
+    }
+
+    virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    {
+        return world_.cyclic_transpose(p0, p1);
+    }
+
+    MultiParticleContainer(world_type& world): world_(world) {}
+
+private:
+    world_type& world_;
+    particle_map particles_;
+};
 
 template<typename Tsim_>
 class Multi: public Domain<typename Tsim_::traits_type>

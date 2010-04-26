@@ -9,9 +9,9 @@ import _gfrd
 
 import os
 
-BDPropagator = eval(os.environ.get("BDPropagator", "bd.BDPropagator"))
+BDPropagator = eval(os.environ.get("BDPropagator", "_gfrd._BDPropagator"))
 
-class MultiParticleContainer(_gfrd._ParticleContainer):
+class _MultiParticleContainer(_gfrd._ParticleContainer):
     def __init__(self, world):
         _gfrd._ParticleContainer.__init__(self)
         self.world = world
@@ -20,12 +20,6 @@ class MultiParticleContainer(_gfrd._ParticleContainer):
     def num_particles(self):
         return len(self.particles)
     num_particles = property(num_particles)
-
-    def add_surface(self, surface):
-        self.world.add_surface(surface) 
-
-    def add_species(self, species):
-        self._species[species.id] = species
 
     def get_surface(self, id):
         return self.world.get_surface(id)
@@ -93,6 +87,8 @@ class MultiParticleContainer(_gfrd._ParticleContainer):
     def create_transaction(self):
         return _gfrd.TransactionImpl(self)
 
+
+MultiParticleContainer = _gfrd._MultiParticleContainer
 
 class Multi(object):
     def __init__(self, domain_id, main, dt_factor):

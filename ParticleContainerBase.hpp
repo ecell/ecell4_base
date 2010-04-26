@@ -11,34 +11,17 @@
 #include "ParticleContainer.hpp"
 #include "Transaction.hpp"
 
-template<typename Tderived_, typename Ttraits_ = typename Tderived_::traits_type>
-struct ParticleContainerBase: public ParticleContainer<Ttraits_>
+template<typename Ttraits_>
+struct ParticleContainerUtils
 {
-public:
-    typedef ParticleContainer<Ttraits_> base_type;
     typedef Ttraits_ traits_type;
     typedef typename traits_type::length_type length_type;
-    typedef typename traits_type::species_type species_type;
-    typedef typename traits_type::position_type position_type;
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_id_type particle_id_type;
-    typedef typename traits_type::particle_id_generator particle_id_generator;
-    typedef typename traits_type::species_id_type species_id_type;
-    typedef typename traits_type::particle_type::shape_type particle_shape_type;
-    typedef typename traits_type::size_type size_type;
-    typedef typename traits_type::surface_id_type surface_id_type;
-    typedef typename traits_type::surface_type surface_type;
     typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
-    typedef Transaction<traits_type> transaction_type;
-
-    typedef MatrixSpace<particle_type, particle_id_type, get_mapper_mf> particle_matrix_type;
-    typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
     typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
-    typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
-
     typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
 
-protected:
     struct distance_comparator:
             public std::binary_function<
                 typename particle_id_pair_and_distance_list::placeholder,
@@ -88,7 +71,38 @@ protected:
         Tset_ const& ignore_;
         particle_id_pair_and_distance_list* result_;
     };
+};
 
+template<typename Tderived_, typename Ttraits_ = typename Tderived_::traits_type>
+class ParticleContainerBase
+    : public ParticleContainer<Ttraits_>
+{
+public:
+    typedef ParticleContainerUtils<Ttraits_> utils;
+    typedef ParticleContainer<Ttraits_> base_type;
+    typedef Ttraits_ traits_type;
+    typedef typename traits_type::length_type length_type;
+    typedef typename traits_type::species_type species_type;
+    typedef typename traits_type::position_type position_type;
+    typedef typename traits_type::particle_type particle_type;
+    typedef typename traits_type::particle_id_type particle_id_type;
+    typedef typename traits_type::particle_id_generator particle_id_generator;
+    typedef typename traits_type::species_id_type species_id_type;
+    typedef typename traits_type::particle_type::shape_type particle_shape_type;
+    typedef typename traits_type::size_type size_type;
+    typedef typename traits_type::surface_id_type surface_id_type;
+    typedef typename traits_type::surface_type surface_type;
+    typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
+    typedef Transaction<traits_type> transaction_type;
+
+    typedef MatrixSpace<particle_type, particle_id_type, get_mapper_mf> particle_matrix_type;
+    typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
+    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
+    typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
+
+    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
+
+protected:
 public:
     ParticleContainerBase(length_type world_size, size_type size)
         : pmat_(world_size, size) {}
@@ -183,7 +197,7 @@ public:
     particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore,
         typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* =0) const
     {
-        overlap_checker<Tset_> oc(ignore);
+        typename utils::template overlap_checker<Tset_> oc(ignore);
         traits_type::take_neighbor(pmat_, oc, s);
         return oc.result();
     }
@@ -192,7 +206,7 @@ public:
     particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s,
         typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* =0) const
     {
-        overlap_checker<boost::array<particle_id_type, 0> > oc;
+        typename utils::template overlap_checker<boost::array<particle_id_type, 0> > oc;
         traits_type::take_neighbor(pmat_, oc, s);
         return oc.result();
     }
