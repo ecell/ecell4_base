@@ -77,7 +77,7 @@ template<typename Tchar_, typename Ttraits_, typename Tid_, typename TD_, typena
 inline std::basic_ostream<Tchar_, Ttraits_>&
 operator<<(std::basic_ostream<Tchar_, Ttraits_>& strm, const SpeciesInfo<Tid_, TD_, Tlen_, Tsurface_id_>& v)
 {
-    strm << "SpeciesInfo(id=" << v.id() << ", SpeciesTypeID=" << v.type_id() <<  ", D=" << v.D() << ", radius=" << v.radius() << ", surface=" << v.surface() << ")";
+    strm << "SpeciesInfo(id=" << v.id() << ", D=" << v.D() << ", radius=" << v.radius() << ", surface=" << v.surface_id() << ")";
     return strm;
 }
 
