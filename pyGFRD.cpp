@@ -492,7 +492,7 @@ struct particle_id_pair_and_distance_list_converter
             }
         };
 
-        typedef peer::STLContainerWrapper<native_type, std::auto_ptr<native_type>, policy > wrapper_type;
+        typedef peer::STLContainerWrapper<native_type, std::auto_ptr<native_type>, peer::detail::default_policy_generator<policy> > wrapper_type;
         static PyObject* convert(native_type* v)
         {
             return reinterpret_cast<PyObject*>(wrapper_type::create(std::auto_ptr<native_type>(v ? v: new native_type())));
@@ -629,7 +629,7 @@ struct species_range_converter: public boost::python::default_call_policies
         boost::python::handle<> owner_;
     };
 
-    typedef peer::STLContainerWrapper<native_type, instance_holder, policy> wrapper_type;
+    typedef peer::STLContainerWrapper<native_type, instance_holder, peer::detail::default_policy_generator<policy> > wrapper_type;
 
     struct result_converter
     {
@@ -738,7 +738,7 @@ struct surfaces_range_converter: public boost::python::default_call_policies
         boost::python::handle<> owner_;
     };
 
-    typedef peer::STLContainerWrapper<native_type, instance_holder, policy> wrapper_type;
+    typedef peer::STLContainerWrapper<native_type, instance_holder, peer::detail::default_policy_generator<policy> > wrapper_type;
 
     struct result_converter
     {
@@ -790,6 +790,37 @@ struct domain_id_pair_converter
         boost::python::to_python_converter<native_type, to_python_converter>();
         peer::util::to_native_converter<native_type,
             peer::util::detail::pytuple_to_tuple_converter<native_type> >();
+    }
+};
+
+struct particle_id_pair_generator_converter
+{
+    typedef CyclicWorld::particle_id_pair_generator native_type;
+
+    struct to_native_converter
+    {
+        static void* convert(PyObject* ptr)
+        {
+            boost::python::handle<> iter(
+                boost::python::allow_null(PyObject_GetIter(ptr)));
+            if (!iter)
+            {
+                boost::python::throw_error_already_set();
+            }
+            return new peer::util::detail::pyiterator_generator<
+                    native_type::result_type>(iter);
+        }
+
+        static PyTypeObject const* expected_pytype()
+        {
+            return &PyBaseObject_Type;
+        }
+    };
+
+    static void __register()
+    {
+        peer::util::GeneratorIteratorWrapper<ptr_generator<native_type, std::auto_ptr<native_type> > >::__register_class("ParticleIDPairGenerator");
+        peer::util::to_native_lvalue_converter<native_type, to_native_converter>();
     }
 };
 
@@ -892,12 +923,27 @@ public:
 
     virtual size_type num_particles() const
     {
-        return get_override("particles")();
+        boost::python::handle<> retval(
+            boost::python::allow_null(
+                PyObject_GetAttrString(
+                    boost::python::detail::wrapper_base_::get_owner(*this),
+                    "num_particles")));
+        return boost::python::extract<size_type>(retval.get())();
+    }
+
+    virtual length_type world_size() const
+    {
+        boost::python::handle<> retval(
+            boost::python::allow_null(
+                PyObject_GetAttrString(
+                    boost::python::detail::wrapper_base_::get_owner(*this),
+                    "world_size")));
+        return boost::python::extract<length_type>(retval.get())();
     }
 
     virtual species_type const& get_species(species_id_type const& id) const
     {
-        return get_override("get_species")(id);
+        return get_override("get_species")(id).unchecked<species_type const&>();
     }
 
     virtual boost::shared_ptr<surface_type> get_surface(surface_id_type const& id) const
@@ -916,9 +962,9 @@ public:
         return get_override("update_particle")(pi_pair);
     }
 
-    virtual void remove_particle(particle_id_type const& id)
+    virtual bool remove_particle(particle_id_type const& id)
     {
-        get_override("remove_particle")(id);
+        return get_override("remove_particle")(id);
     }
 
     virtual particle_id_pair get_particle(particle_id_type const& id) const
@@ -955,12 +1001,12 @@ public:
 
     virtual particle_id_pair_generator* get_particles() const
     {
-        return get_override("__iter__")();
+        return get_override("__iter__")().unchecked<particle_id_pair_generator*>();
     }
 
     virtual transaction_type* create_transaction()
     {
-        return get_override("create_transaction")();
+        return get_override("create_transaction")().unchecked<transaction_type*>();
     }
 
     virtual length_type distance(position_type const& lhs,
@@ -1268,7 +1314,7 @@ BOOST_PYTHON_MODULE( _gfrd )
                 peer::util::range_from_range<
                     model_type::species_type_range,
                     model_type, &model_type::get_species_types,
-                    return_value_policy<reference_existing_object> >());
+                    reference_existing_object>());
         ;
 
     peer::ReactionRule::__register_class();
@@ -1336,10 +1382,11 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::register_tuple_converter<CyclicWorld::particle_id_pair>();
     peer::util::register_tuple_converter<CyclicWorld::particle_id_pair_and_distance>();
 
-    peer::util::GeneratorIteratorWrapper<ptr_generator<CyclicWorld::particle_id_pair_generator, std::auto_ptr<CyclicWorld::particle_id_pair_generator> > >::__register_class("ParticleIDPairGenerator");
+    particle_id_pair_generator_converter::__register();
 
-    class_<_ParticleContainer, boost::noncopyable>("ParticleContainer")
+    class_<_ParticleContainer, boost::noncopyable>("_ParticleContainer")
         .add_property("num_particles", &particle_container_type::num_particles)
+        .add_property("world_size", &particle_container_type::world_size)
         .def("get_species",
             pure_virtual((particle_container_type::species_type const&(particle_container_type::*)(particle_container_type::species_id_type const&) const)&particle_container_type::get_species),
             return_internal_reference<>())
@@ -1348,7 +1395,6 @@ BOOST_PYTHON_MODULE( _gfrd )
         .def("update_particle", pure_virtual(&particle_container_type::update_particle))
         .def("remove_particle", pure_virtual(&particle_container_type::remove_particle))
         .def("get_particle", pure_virtual(&particle_container_type::get_particle))
-        .def("check_overlap", pure_virtual((particle_container_type::particle_id_pair_and_distance_list*(particle_container_type::*)(particle_container_type::particle_id_pair const&) const)&particle_container_type::check_overlap), return_value_policy<return_by_value>())
         .def("check_overlap", pure_virtual((particle_container_type::particle_id_pair_and_distance_list*(particle_container_type::*)(particle_container_type::particle_type::shape_type const&, particle_container_type::particle_id_type const&) const)&particle_container_type::check_overlap), return_value_policy<return_by_value>())
         .def("check_overlap", pure_virtual((particle_container_type::particle_id_pair_and_distance_list*(particle_container_type::*)(particle_container_type::particle_type::shape_type const&, particle_container_type::particle_id_type const&, particle_container_type::particle_id_type const&) const)&particle_container_type::check_overlap), return_value_policy<return_by_value>())
         .def("check_overlap", pure_virtual((particle_container_type::particle_id_pair_and_distance_list*(particle_container_type::*)(particle_container_type::particle_type::shape_type const&) const)&particle_container_type::check_overlap), return_value_policy<return_by_value>())
@@ -1373,11 +1419,10 @@ BOOST_PYTHON_MODULE( _gfrd )
         .add_property("modified_particles",
             make_function(&transaction_type::get_modified_particles,
                 return_value_policy<return_by_value>()))
-        .def("rollback", pure_virtual(&transaction_type::rollback))
+        .def("rollback", &transaction_type::rollback)
         ;
 
-    class_<TransactionImpl<particle_container_type>,
-           bases<transaction_type>, boost::noncopyable>(
+    class_<TransactionImpl<particle_container_type>, bases<transaction_type>, boost::noncopyable>(
            "TransactionImpl", init<particle_container_type&>());
 
     particle_id_pair_and_distance_list_converter::__register();
@@ -1387,7 +1432,6 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     class_<CyclicWorld, bases<particle_container_type> >(
         "World", init<CyclicWorld::length_type, CyclicWorld::size_type>())
-        .add_property("world_size", &CyclicWorld::world_size)
         .add_property("cell_size", &CyclicWorld::cell_size)
         .add_property("matrix_size", &CyclicWorld::matrix_size)
         .add_property("species",
@@ -1398,13 +1442,12 @@ BOOST_PYTHON_MODULE( _gfrd )
                 (CyclicWorld::surfaces_range(CyclicWorld::*)() const)&CyclicWorld::get_surfaces, surfaces_range_converter()))
         .def("add_species", &CyclicWorld::add_species)
         .def("add_surface", &CyclicWorld::add_surface)
+		.def("get_particle_ids", &CyclicWorld::get_particle_ids)
+        .def("distance", &CyclicWorld::distance<CyclicWorld::position_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::sphere_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::cylinder_type>)
         .def("distance", &CyclicWorld::distance<egfrd_simulator_traits_type::box_type>)
         .def("calculate_pair_CoM", &CyclicWorld::calculate_pair_CoM<CyclicWorld::position_type>)
-        .def("check_overlap", &World_check_overlap<CyclicWorld>, return_value_policy<return_by_value>())
-        .def("__iter__", &CyclicWorld::get_particles,
-                return_value_policy<return_by_value>())
         ;
 
     typedef world_traits_type::species_type species_type;
@@ -1855,13 +1898,19 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::GeneratorIteratorWrapper<ptr_generator<_EGFRDSimulator::domain_id_pair_generator, std::auto_ptr<_EGFRDSimulator::domain_id_pair_generator> > >::__register_class("DomainIDPairGenerator");
 
     class_<_BDPropagator, boost::noncopyable>(
-        "BDPropagator", init<
-            egfrd_simulator_traits_type::world_type::particle_container_type const&, 
-            egfrd_simulator_traits_type::world_type::transaction_type&,
+        "_BDPropagator", init<
+            egfrd_simulator_traits_type::world_type::particle_container_type&,
             egfrd_simulator_traits_type::network_rules_type const&,
             egfrd_simulator_traits_type::rng_type&,
             egfrd_simulator_traits_type::time_type,
+            int,
             peer::util::py_range_wrapper<world_traits_type::particle_id_type> >())
+        .add_property("reactions",
+            peer::util::range_from_range<
+                _BDPropagator::reaction_rules_range,
+                _BDPropagator, &_BDPropagator::get_reactions>())
+        .add_property("rejected_move_count",
+            &_BDPropagator::get_rejected_move_count)
         .def("__call__", &_BDPropagator::operator())
         .def("propagate_all", &_BDPropagator_propagate_all)
         ;

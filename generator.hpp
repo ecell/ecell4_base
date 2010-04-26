@@ -188,7 +188,9 @@ template<typename Trange_,
          typename Tresult_ = typename boost::iterator_reference<Titer_>::type,
          bool Bra_ =
             boost::is_convertible<
-                typename boost::BOOST_ITERATOR_CATEGORY<Titer_>::type,
+                typename boost::iterator_category_to_traversal<
+                    typename boost::BOOST_ITERATOR_CATEGORY<Titer_>::type
+                    >::type,
                 boost::random_access_traversal_tag>::value>
 class range_generator: public abstract_limited_generator<Tresult_>
 {

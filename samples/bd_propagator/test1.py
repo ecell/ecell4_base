@@ -76,7 +76,7 @@ anim = []
 def callback(*arg):
     t = w.create_transaction()
     particle_id_list = [pair[0] for pair in w]
-    propagator = _gfrd.BDPropagator(w, t, nrw, myrandom.rng, 1e-3, particle_id_list)
+    propagator = _gfrd._BDPropagator(w, t, nrw, myrandom.rng, 1e-3, 100, particle_id_list)
     propagator.propagate_all()
     for pp in t.added_particles:
         create_actor(pp)

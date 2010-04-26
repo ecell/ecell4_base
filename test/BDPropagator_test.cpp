@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(instantiation)
     Traits::world_type w;
     boost::scoped_ptr<Traits::world_type::transaction_type> tx(
             w.create_transaction());
-    BDPropagator<Traits> bdp(w, *tx, nrw, rng, .01, 100,
+    BDPropagator<Traits> bdp(*tx, nrw, rng, .01, 100,
             make_select_first_range(w.get_particles_range()));
 }
 
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(basic)
 
     for (int i = 1000; --i >= 0; ) {
         boost::scoped_ptr<Traits::world_type::transaction_type> tx(w.create_transaction());
-        BDPropagator<Traits> prpg(w, *tx, nrw, rng, 5e-11, 100, make_select_first_range(w.get_particles_range()));
+        BDPropagator<Traits> prpg(*tx, nrw, rng, 5e-11, 100, make_select_first_range(w.get_particles_range()));
         while (prpg());
         boost::scoped_ptr<particle_id_pair_generator> added_particles(tx->get_added_particles());
         boost::scoped_ptr<particle_id_pair_generator> removed_particles(tx->get_removed_particles());

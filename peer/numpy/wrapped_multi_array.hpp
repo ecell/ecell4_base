@@ -148,13 +148,6 @@ public:
             return NULL;
         }
 
-#ifdef DEBUG
-        if (retval != ptr)
-        {
-            std::cerr << "copy performed" << std::endl;
-        }
-#endif
-
         return retval;
     }
 

@@ -14,6 +14,7 @@
 #include "exceptions.hpp"
 #include "freeFunctions.hpp"
 #include "utils.hpp"
+#include "utils/random.hpp"
 #include "Logger.hpp"
 #include "StructureUtils.hpp"
 #include "utils/unassignable_adapter.hpp"
@@ -24,7 +25,6 @@ class BDPropagator
 private:
     typedef Ttraits_ traits_type;
     typedef typename Ttraits_::world_type::particle_container_type particle_container_type;
-    typedef typename particle_container_type::transaction_type transaction_type;
     typedef typename particle_container_type::species_id_type species_id_type;
     typedef typename particle_container_type::position_type position_type;
     typedef typename particle_container_type::particle_shape_type particle_shape_type;
@@ -48,23 +48,23 @@ private:
 public:
     typedef boost::iterator_range<typename reaction_rule_list_type::const_iterator> reaction_rules_range;
 
-private:
-    static const int max_retry_count = 100;
-
 public:
     template<typename Trange_>
-    BDPropagator(particle_container_type const& pc, transaction_type& tx, network_rules_type const& rules, rng_type& rng, time_type const& dt, Trange_ const& particles)
-        : pc_(pc), tx_(tx), rules_(rules),
-          rng_(rng), dt_(dt), queue_(),
+    BDPropagator(particle_container_type& tx, network_rules_type const& rules, rng_type& rng, time_type const& dt, int max_retry_count, Trange_ const& particles)
+        : tx_(tx), rules_(rules),
+          rng_(rng), dt_(dt), max_retry_count_(max_retry_count), queue_(),
           rejected_move_count_(0)
     {
-        queue_.reserve(boost::size(particles));
+        call_with_size_if_randomly_accessible(
+            boost::bind(&particle_id_vector_type::reserve, queue_, _1),
+            particles);
         for (typename boost::range_const_iterator<Trange_>::type
                 i(boost::begin(particles)),
                 e(boost::end(particles)); i != e; ++i)
         {
             queue_.push_back(*i);
         }
+        shuffle(rng, queue_);
     }
 
     bool operator()()
@@ -94,15 +94,18 @@ public:
         if (species.D() == 0.)
             return true;
 
-        position_type new_pos(
-            pc_.apply_boundary(
-                add(pp.second.position(), drawR_free(species))));
+        position_type const displacement(drawR_free(species));
+        position_type const new_pos(
+            tx_.apply_boundary(
+                add(pp.second.position(), displacement)));
+
         particle_id_pair particle_to_update(
                 pp.first, particle_type(species.id(),
                     particle_shape_type(new_pos, species.radius()),
                     species.D()));
         boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-            tx_.check_overlap(particle_to_update));
+            tx_.check_overlap(particle_to_update.second.shape(),
+                              particle_to_update.first));
         switch (overlapped ? overlapped->size(): 0)
         {
         case 0:
@@ -113,17 +116,16 @@ public:
                 particle_id_pair_and_distance const& closest(overlapped->at(0));
                 try
                 {
-                    if (attempt_reaction(pp, closest.first))
-                        return true;
+                    attempt_reaction(pp, closest.first);
                 }
                 catch (propagation_error const& reason)
                 {
                     log_.info("second-order reaction rejected (reason: %s)", reason.what());
                     ++rejected_move_count_;
-                    return true;
                 }
             }
-            break;
+            /* reject the move even if the reaction has not occurred */
+            return true;
 
         default:
             log_.info("collision involving two or more particles; move rejected");
@@ -134,12 +136,12 @@ public:
         return true;
     }
 
-    reaction_rules_range get_reactions()
+    reaction_rules_range get_reactions() const
     {
         return reaction_rules_range(reactions_occurred_);
     }
 
-    std::size_t get_rejected_move_count()
+    std::size_t get_rejected_move_count() const
     {
         return rejected_move_count_;
     }
@@ -148,24 +150,28 @@ private:
     position_type drawR_free(species_type const& species)
     {
         boost::shared_ptr<surface_type> surface(
-            pc_.get_surface(species.surface_id()));
+            tx_.get_surface(species.surface_id()));
         return StructureUtils<traits_type>::draw_bd_displacement(
                 *surface, std::sqrt(2.0 * species.D() * dt_), rng_);
     }
 
-
     bool attempt_reaction(particle_id_pair const& pp)
     {
-        const Real rnd(rng_() / dt_);
-        Real prob = 0;
-
         reaction_rules const& rules(rules_.query_reaction_rule(pp.second.sid()));
+        if (boost::size(rules) == 0)
+        {
+            return false;
+        }
+
+        const Real rnd(rng_() / dt_);
+        Real prob = 0.;
+
         for (typename boost::range_const_iterator<reaction_rules>::type
-                i(rules.begin()), e(rules.end()); i != e; ++i)
+                i(boost::begin(rules)), e(boost::end(rules)); i != e; ++i)
         {
             reaction_rule_type const& r(*i);
             prob += r.k();
-            if (prob >= rnd)
+            if (prob > rnd)
             {
                 typename reaction_rule_type::species_id_range products(
                         r.get_products());
@@ -183,7 +189,7 @@ private:
                                 particle_shape_type(pp.second.position(),
                                                     s0.radius()),
                                                     s0.D()));
-                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(tx_.check_overlap(new_p));
+                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(tx_.check_overlap(new_p.second.shape(), new_p.first));
                         if (overlapped && overlapped->size() > 0)
                         {
                             throw propagation_error("no space");
@@ -199,7 +205,7 @@ private:
                                 s1(tx_.get_species(products[1]));
                         const Real D01(s0.D() + s1.D());
                         const length_type r01(s0.radius() + s1.radius());
-                        int i = max_retry_count;
+                        int i = max_retry_count_;
 
                         for (;;)
                         {
@@ -213,10 +219,10 @@ private:
                                 drawR_gbd(rnd, r01, dt_, D01));
                             const position_type m(random_unit_vector() * pair_distance);
                             const position_type np0(
-                                pc_.apply_boundary(pp.second.position()
+                                tx_.apply_boundary(pp.second.position()
                                     + m * (s0.D() / D01)));
                             const position_type np1(
-                                pc_.apply_boundary(pp.second.position()
+                                tx_.apply_boundary(pp.second.position()
                                     + m * (s1.D() / D01)));
                             boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s0(
                                 tx_.check_overlap(
@@ -243,16 +249,22 @@ private:
 
     bool attempt_reaction(particle_id_pair const& pp0, particle_id_pair const& pp1)
     {
+        reaction_rules const& rules(rules_.query_reaction_rule(pp0.second.sid(), pp1.second.sid()));
+        if (boost::size(rules) == 0)
+        {
+            return false;
+        }
+
         const species_type s0(tx_.get_species(pp0.second.sid())),
                 s1(tx_.get_species(pp1.second.sid()));
         const Real D01(s0.D() + s1.D());
         const length_type r01(s0.radius() + s1.radius());
+
         const Real rnd(rng_());
         Real prob = 0;
 
-        reaction_rules const& rules(rules_.query_reaction_rule(pp0.second.sid(), pp1.second.sid()));
         for (typename boost::range_const_iterator<reaction_rules>::type
-                i(rules.begin()), e(rules.end()); i != e; ++i)
+                i(boost::begin(rules)), e(boost::end(rules)); i != e; ++i)
         {
             reaction_rule_type const& r(*i);
             const Real p(r.k() * dt_ / (I_bd(r01, dt_, D01) * 4.0 * M_PI));
@@ -267,7 +279,7 @@ private:
                     + boost::lexical_cast<std::string>(r.k())
                     + ".");
             }
-            if (prob >= rnd)
+            if (prob > rnd)
             {
                 LOG_DEBUG(("fire reaction"));
                 const typename reaction_rule_type::species_id_range products(
@@ -277,12 +289,12 @@ private:
                 const species_type sp(tx_.get_species(product));
 
                 const position_type new_pos(
-                    pc_.apply_boundary(
+                    tx_.apply_boundary(
                         divide(
                             add(multiply(pp0.second.position(), s1.D()),
-                                multiply(pc_.cyclic_transpose(
-                                    pp1.second.position(),
-                                    pp0.second.position()), s0.D())),
+                                multiply(tx_.cyclic_transpose(
+                                    pp0.second.position(),
+                                    pp1.second.position()), s0.D())),
                             D01)));
                 boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
                     tx_.check_overlap(particle_shape_type(new_pos, sp.radius()),
@@ -321,14 +333,13 @@ private:
     }
 
 private:
-    particle_container_type const& pc_;
-    transaction_type& tx_;
+    particle_container_type& tx_;
     network_rules_type const& rules_;
     rng_type& rng_;
     Real const dt_;
+    int const max_retry_count_;
     particle_id_vector_type queue_;
     reaction_rule_list_type reactions_occurred_;
-    reaction_rule_type empty_reaction_rule_;
     int rejected_move_count_;
     static Logger& log_;
 };

@@ -67,8 +67,8 @@ BOOST_AUTO_TEST_CASE(new_particles)
     BOOST_CHECK(!boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p1.second.shape(), array_gen(p1.first))));
     BOOST_CHECK(!boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p2.second.shape(), array_gen(p2.first))));
 
-    BOOST_CHECK(!i.check_overlap(p1));
-    BOOST_CHECK(!i.check_overlap(p2));
+    BOOST_CHECK(!i.check_overlap(p1.second.shape(), p1.first));
+    BOOST_CHECK(!i.check_overlap(p2.second.shape(), p2.first));
 
     particle_id_pair p3(i.new_particle(s1.id(), position_type(.35, .32, .34)));
     BOOST_CHECK(p3.first != p1.first);
@@ -82,13 +82,13 @@ BOOST_AUTO_TEST_CASE(new_particles)
     BOOST_CHECK(!boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p3.second.shape(), array_gen(p2.first, p3.first))));
     BOOST_CHECK(boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p3.second.shape(), array_gen(p1.first, p3.first))));
 
-    BOOST_CHECK(!i.check_overlap(p1));
-    BOOST_CHECK(i.check_overlap(p2));
-    BOOST_CHECK(boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p2, array_gen(p1.first))));
-    BOOST_CHECK(!boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p2, array_gen(p3.first))));
-    BOOST_CHECK(i.check_overlap(p3));
-    BOOST_CHECK(!boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p3, array_gen(p2.first))));
-    BOOST_CHECK(boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p3, array_gen(p1.first))));
+    BOOST_CHECK(!i.check_overlap(p1.second.shape(), p1.first));
+    BOOST_CHECK(i.check_overlap(p2.second.shape(), p2.first));
+    BOOST_CHECK(boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p2.second.shape(), array_gen(p1.first, p2.first))));
+    BOOST_CHECK(!boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p2.second.shape(), array_gen(p3.first, p2.first))));
+    BOOST_CHECK(i.check_overlap(p3.second.shape(), p3.first));
+    BOOST_CHECK(!boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p3.second.shape(), array_gen(p2.first, p3.first))));
+    BOOST_CHECK(boost::scoped_ptr<particle_id_pair_and_distance_list>(i.check_overlap(p3.second.shape(), array_gen(p1.first, p3.first))));
 }
 
 BOOST_AUTO_TEST_CASE(get_particle)
@@ -300,4 +300,34 @@ BOOST_AUTO_TEST_CASE(transaction_4)
 
     BOOST_CHECK(i.get_particle(p1.first).second == p1.second);
     BOOST_CHECK(i.get_particle(p2.first).second == p2.second);
+}
+
+BOOST_AUTO_TEST_CASE(particle_pool)
+{
+    typedef World<CyclicWorldTraits<Real, Real> > world_type;
+    typedef world_type::species_id_type species_id;
+    typedef world_type::species_id_type species_id_type;
+    typedef world_type::species_type species;
+    typedef world_type::position_type position_type;
+    typedef world_type::particle_id_pair particle_id_pair;
+    typedef SerialIDGenerator<species_id> id_generator;
+    typedef world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
+
+    world_type i;
+    id_generator gen;
+    species s1(species(gen(), .3, .05));
+    species s2(species(gen(), .3, .08));
+    i.add_species(s1);
+    i.add_species(s2);
+
+    BOOST_CHECK(contains(i.get_species(), s1));
+    BOOST_CHECK(contains(i.get_species(), s2));
+
+    particle_id_pair p1(i.new_particle(s1.id(), position_type(.2, .2, .2)));
+    particle_id_pair p2(i.new_particle(s1.id(), position_type(.2, .2, .2)));
+    particle_id_pair p3(i.new_particle(s2.id(), position_type(.29, .27, .28)));
+    BOOST_CHECK_EQUAL(i.num_particles(), 3);
+    BOOST_CHECK(contains(i.get_particle_ids(s1.id()), p1.first));
+    BOOST_CHECK(contains(i.get_particle_ids(s1.id()), p2.first));
+    BOOST_CHECK(!contains(i.get_particle_ids(s1.id()), p3.first));
 }

@@ -94,7 +94,7 @@ public:
         return pc_.update_particle(pi_pair);
     }
 
-    virtual void remove_particle(particle_id_type const& id)
+    virtual bool remove_particle(particle_id_type const& id)
     {
         std::pair<typename particle_id_pair_set_type::iterator, bool> r(
                 orig_particles_.insert(particle_id_pair(
@@ -115,7 +115,7 @@ public:
         {
             orig_particles_.erase(id);
         }
-        pc_.remove_particle(id);
+        return pc_.remove_particle(id);
     }
 
     virtual particle_id_pair get_particle(particle_id_type const& id) const
@@ -123,7 +123,7 @@ public:
         return pc_.get_particle(id);
     }
 
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_id_pair const& s) const
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
     {
         return pc_.check_overlap(s);
     }
@@ -136,11 +136,6 @@ public:
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
     {
         return pc_.check_overlap(s, ignore1, ignore2);
-    }
-
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
-    {
-        return pc_.check_overlap(s);
     }
 
     virtual Transaction<traits_type>* create_transaction()
@@ -161,6 +156,11 @@ public:
     virtual size_type num_particles() const
     {
         return pc_.num_particles();
+    }
+
+    virtual length_type world_size() const
+    {
+        return pc_.world_size();
     }
 
     virtual particle_id_pair_generator* get_particles() const
@@ -187,7 +187,7 @@ public:
     {
         return make_range_generator<true>(
             make_transform_iterator_range(modified_particles_,
-                boost::bind(&TransactionImpl::get_original_particle, this, _1)));
+                boost::bind(&TransactionImpl::get_particle, this, _1)));
     }
 
     virtual void rollback()

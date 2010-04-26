@@ -136,6 +136,8 @@ public:
 protected:
     typedef std::map<species_id_type, species_type> species_map;
     typedef std::map<surface_id_type, boost::shared_ptr<surface_type> > surface_map;
+    typedef std::set<particle_id_type> particle_id_set;
+    typedef std::map<species_id_type, particle_id_set> per_species_particle_id_set;
     typedef select_second<typename species_map::value_type> species_second_selector_type;
     typedef select_second<typename surface_map::value_type> surface_second_selector_type;
 
@@ -151,20 +153,44 @@ public:
     World(length_type world_size = 1., size_type size = 1)
         : base_type(world_size, size) {}
 
-    particle_id_pair new_particle(species_id_type const& sid,
+    virtual particle_id_pair new_particle(species_id_type const& sid,
             position_type const& pos)
     {
         species_type const& species(get_species(sid));
         particle_id_pair retval(pidgen_(),
             particle_type(sid, particle_shape_type(pos, species.radius()),
                           species.D()));
-        base_type::pmat_.update(retval);
+        update_particle(retval);
         return retval;
+    }
+
+    virtual bool update_particle(particle_id_pair const& pi_pair)
+    {
+        if (base_type::update_particle(pi_pair))
+        {
+            particle_pool_[pi_pair.second.sid()].insert(pi_pair.first);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool remove_particle(particle_id_type const& id)
+    {
+        bool found(false);
+        particle_id_pair pp(get_particle(id, found));
+        if (!found)
+        {
+            return false;
+        }
+        particle_pool_[pp.second.sid()].erase(id);
+        base_type::remove_particle(id);
+        return true;
     }
 
     void add_species(species_type const& species)
     {
         species_map_[species.id()] = species;
+        particle_pool_[species.id()] = particle_id_set();
     }
 
     virtual species_type const& get_species(species_id_type const& id) const
@@ -208,10 +234,22 @@ public:
             surface_map_.size());
     }
 
+    particle_id_set get_particle_ids(species_id_type const& sid) const
+    {
+        typename per_species_particle_id_set::const_iterator i(
+            particle_pool_.find(sid));
+        if (i == particle_pool_.end())
+        {
+            throw not_found(std::string("Unknown species (id=") + boost::lexical_cast<std::string>(sid) + ")");
+        }
+        return (*i).second;
+    }
+
 private:
     particle_id_generator pidgen_;
     species_map species_map_;
     surface_map surface_map_;
+    per_species_particle_id_set particle_pool_;
 };
 
 #endif /* WORLD_HPP */

@@ -1,5 +1,5 @@
-#ifndef RANGE_HPP
-#define RANGE_HPP
+#ifndef UTILS_RANGE_HPP
+#define UTILS_RANGE_HPP
 
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
@@ -7,10 +7,11 @@
 #include <boost/range/iterator.hpp>
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/iterator/iterator_traits.hpp>
+#include <boost/iterator/iterator_categories.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/utility/enable_if.hpp>
 
 template<typename Trange_, typename Tfun_>
 struct get_transformed_range
@@ -31,14 +32,16 @@ struct get_transformed_range<const Trange_, Tfun_>
 
 template<typename Trange_>
 struct range_iterator_category
-    : public boost::iterator_category<typename boost::range_iterator<Trange_>::type>
+    : public boost::BOOST_ITERATOR_CATEGORY<typename boost::range_iterator<Trange_>::type>
 {
 };
 
 template<typename Trange_, typename Ticat_>
 struct check_range_iterator_category
-    : public boost::is_same<
-        typename range_iterator_category<Trange_>::type, Ticat_> {};
+    : public boost::is_convertible<
+        typename boost::iterator_category_to_traversal<
+            typename range_iterator_category<Trange_>::type >::type,
+        typename boost::iterator_category_to_traversal<Ticat_>::type > {};
 
 template<typename Trange_, typename Tfun_>
 inline boost::iterator_range<
@@ -110,6 +113,44 @@ private:
     typename base_type::size_type size_;
 };
 
+template<typename Tfn, typename Trange>
+inline void call_with_size_if_randomly_accessible(
+    Tfn& fn, Trange const &range,
+    typename boost::enable_if<
+        check_range_iterator_category<
+            Trange, boost::random_access_traversal_tag> >::type* = 0)
+{
+    fn(boost::size(range));
+}
+
+template<typename Tfn, typename Trange>
+inline void call_with_size_if_randomly_accessible(
+    Tfn& fn, Trange const &range,
+    typename boost::disable_if<
+        check_range_iterator_category<
+            Trange, boost::random_access_traversal_tag> >::type* = 0)
+{
+}
+
+template<typename Tfn, typename Trange>
+inline void call_with_size_if_randomly_accessible(
+    Tfn const& fn, Trange const &range,
+    typename boost::enable_if<
+        check_range_iterator_category<
+            Trange, boost::random_access_traversal_tag> >::type* = 0)
+{
+    fn(boost::size(range));
+}
+
+template<typename Tfn, typename Trange>
+inline void call_with_size_if_randomly_accessible(
+    Tfn const& fn, Trange const &range,
+    typename boost::disable_if<
+        check_range_iterator_category<
+            Trange, boost::random_access_traversal_tag> >::type* = 0)
+{
+}
+
 namespace boost {
 
 template<typename Titer_>
@@ -120,4 +161,4 @@ typename boost::iterator_difference<Titer_>::type size(sized_iterator_range<Tite
 
 } // namespace boost
 
-#endif /* RANGE_HPP */
+#endif /* UTILS_RANGE_HPP */

@@ -11,7 +11,8 @@ MatrixSpaceWithCylinders_test\
 World_test\
 model_test\
 Vector3_test\
-BDPropagator_test
+BDPropagator_test\
+range_support_test
 
 PYTHON_TESTS = \
 	BDSimulator_test.py \
@@ -87,3 +88,6 @@ Vector3_test_SOURCES = Vector3_test.cpp ../Vector3.hpp
 
 BDPropagator_test_SOURCES = BDPropagator_test.cpp ../BasicNetworkRulesImpl.cpp ../NetworkRules.cpp ../Logger.cpp ../freeFunctions.cpp ../BDPropagator.hpp
 BDPropagator_test_LDADD = $(GSL_LIBS)
+
+range_support_test_SOURCES = range_support_test.cpp ../utils/range.hpp ../utils/range_support.hpp
+

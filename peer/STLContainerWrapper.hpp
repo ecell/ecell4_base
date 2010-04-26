@@ -4,6 +4,7 @@
 #include <boost/python.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
+#include <boost/range/size.hpp>
 #include <boost/range/size_type.hpp>
 #include <boost/range/value_type.hpp>
 #include <boost/range/iterator.hpp>
@@ -15,6 +16,43 @@
 namespace peer {
 
 namespace detail {
+
+template<typename T_>
+struct default_immutable_container_wrapper_policy
+{
+    typedef typename boost::range_size<T_>::type size_type;
+    typedef typename boost::range_value<T_>::type value_type;
+    typedef value_type const& reference;
+    typedef value_type const& const_reference;
+    typedef typename boost::range_const_iterator<T_>::type iterator;
+    typedef typename boost::range_const_iterator<T_>::type const_iterator;
+
+    static size_type size(T_ const& c)
+    {
+        return boost::size(c);
+    }
+
+    static void set(T_ const&, size_type, const_reference)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "object is immutable");
+        boost::python::throw_error_already_set();
+    }
+
+    static const_reference get(T_ const& c, size_type i)
+    {
+        return c[i];
+    }
+
+    static const_iterator begin(T_ const& c)
+    {
+        return boost::begin(c);
+    }
+
+    static const_iterator end(T_ const& c)
+    {
+        return boost::end(c);
+    }
+};
 
 template<typename T_>
 struct default_container_wrapper_policy
@@ -52,14 +90,24 @@ struct default_container_wrapper_policy
     }
 };
 
+template<template<typename> class TTpolicy_>
+struct default_policy_generator
+{
+    template<typename T_>
+    struct apply
+    {
+        typedef TTpolicy_<T_> type;
+    };
+};
+
 } // namespace detail
 
-template<typename Timpl_, typename Tholder_, template<typename> class TTpolicy_ = detail::default_container_wrapper_policy, typename Trcg_ = boost::python::return_by_value>
+template<typename Timpl_, typename Tholder_, typename Tpolgen_ = detail::default_policy_generator<detail::default_container_wrapper_policy>, typename Trcg_ = boost::python::return_by_value>
 class STLContainerWrapper
 {
 private:
     typedef Timpl_ impl_type;
-    typedef TTpolicy_<impl_type> policy_type;
+    typedef typename Tpolgen_::template apply<Timpl_>::type policy_type;
     typedef STLIteratorWrapper<
             typename policy_type::const_iterator,
             boost::python::handle<>, Trcg_> iterator_wrapper_type;
@@ -111,6 +159,10 @@ public:
 
     static PyObject* __sq_item__(STLContainerWrapper const* self, Py_ssize_t idx)
     {
+        if (idx < 0)
+        {
+            idx += policy_type::size(*self->impl_);
+        }
         if (idx < 0 || idx >= static_cast<Py_ssize_t>(policy_type::size(*self->impl_)))
         {
             PyErr_Format(PyExc_IndexError, "index out of range: %zd", idx);
@@ -165,16 +217,16 @@ public:
                     reinterpret_cast<PyObject const*>(self)))));
     }
 
-    static PyTypeObject* __class_init__(const char* name, PyObject* mod)
+    static PyTypeObject* __class_init__(const char* name, PyObject* mod = 0)
     {
         using namespace boost::python;
         iterator_wrapper_type::__class_init__(
                 (std::string(name) + ".Iterator").c_str(), mod);
         if (__name__.empty())
         {
-            __name__ = static_cast<std::string>(
-                extract<std::string>(object(borrowed(mod)).attr("__name__")))
-                + "." + name;
+            __name__ = (mod && PyModule_Check(mod) ?
+                extract<std::string>(object(borrowed(mod)).attr("__name__"))()
+                + ".": std::string()) + name;
             __class__.tp_name = const_cast<char*>(__name__.c_str());
             PyType_Ready(&__class__);
         }
@@ -201,8 +253,8 @@ public:
     }
 };
 
-template<typename Timpl_, typename Tholder_, template<typename>class TTpolicy_, typename Trcg_>
-PySequenceMethods STLContainerWrapper<Timpl_, Tholder_, TTpolicy_, Trcg_>::__sequence_methods__ = {
+template<typename Timpl_, typename Tholder_, typename Tpolgen_, typename Trcg_>
+PySequenceMethods STLContainerWrapper<Timpl_, Tholder_, Tpolgen_, Trcg_>::__sequence_methods__ = {
     (lenfunc) &STLContainerWrapper::__sq_len__,         /* sq_length */
     (binaryfunc) 0,                                     /* sq_concat */
     (ssizeargfunc) 0,                                   /* sq_repeat */
@@ -215,11 +267,11 @@ PySequenceMethods STLContainerWrapper<Timpl_, Tholder_, TTpolicy_, Trcg_>::__seq
     (ssizeargfunc) 0,                                   /* sq_inplace_repeat */
 };
 
-template<typename Titer_, typename Tholder_, template<typename>class TTpolicy_, typename Trcg_>
-std::string STLContainerWrapper<Titer_, Tholder_, TTpolicy_, Trcg_>::__name__;
+template<typename Titer_, typename Tholder_, typename Tpolgen_, typename Trcg_>
+std::string STLContainerWrapper<Titer_, Tholder_, Tpolgen_, Trcg_>::__name__;
 
-template<typename Titer_, typename Tholder_, template<typename>class TTpolicy_, typename Trcg_>
-PyTypeObject STLContainerWrapper<Titer_, Tholder_, TTpolicy_, Trcg_>::__class__ = {
+template<typename Titer_, typename Tholder_, typename Tpolgen_, typename Trcg_>
+PyTypeObject STLContainerWrapper<Titer_, Tholder_, Tpolgen_, Trcg_>::__class__ = {
     PyObject_HEAD_INIT(&PyType_Type)
     0,                    /* ob_size */
     0,                    /* tp_name */

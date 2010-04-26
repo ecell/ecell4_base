@@ -1,85 +1,168 @@
-from bd import BDSimulatorCoreBase, DEFAULT_DT_FACTOR
+import bd
 from weakref import ref
 
-from _gfrd import *
 from gfrdbase import *
-
 from utils import *
+import itertools
 
+import _gfrd
 
-class MultiBDCore(BDSimulatorCoreBase):
-    '''
-    Used internally by Multi.
-    '''
-    def __init__(self, main, multi):
+import os
 
-        BDSimulatorCoreBase.__init__(self, main)
+BDPropagator = eval(os.environ.get("BDPropagator", "bd.BDPropagator"))
 
-        # this has to be ref, not proxy, since it is used for comparison.
-        self.multiref = ref(multi)
+class MultiParticleContainer(_gfrd._ParticleContainer):
+    def __init__(self, world):
+        _gfrd._ParticleContainer.__init__(self)
+        self.world = world
+        self.particles = {}
 
-        self.particle_matrix = ParticleContainer(self.main.world.world_size, 3)
-        self.sphere_container = SphericalShellContainer(self.main.world.world_size, 3)
-        self.escaped = False
+    def num_particles(self):
+        return len(self.particles)
+    num_particles = property(num_particles)
+
+    def add_surface(self, surface):
+        self.world.add_surface(surface) 
+
+    def add_species(self, species):
+        self._species[species.id] = species
+
+    def get_surface(self, id):
+        return self.world.get_surface(id)
+
+    def get_species(self, id):
+        return self.world.get_species(id)
+
+    def species(self):
+        return self.world.species
+    species = property(species)
+
+    def new_particle(self, species_id, position):
+        retval = self.world.new_particle(species_id, position)
+        self.particles[retval[0]] = retval[1]
+        return retval
 
     def update_particle(self, pid_particle_pair):
-        self.particle_matrix.update(pid_particle_pair)
-        self.main.move_particle(pid_particle_pair)
+        self.particles[pid_particle_pair[0]] = pid_particle_pair[1]
+        return self.world.update_particle(pid_particle_pair)
 
-    def initialize(self):
-        BDSimulatorCoreBase.initialize(self)
+    def remove_particle(self, pid):
+        del self.particles[pid]
+        self.world.remove_particle(pid)
+
+    def get_particle(self, pid):
+        p = self.particles.get(pid, None)
+        if p is None:
+            raise NotFound
+        return pid, p
+
+    def check_overlap(self, sphere, *arg):
+        if len(arg) == 0:
+            ignores = ()
+        elif len(arg) == 1:
+            if isinstance(arg[0], _gfrd.ParticleID):
+                ignores = (arg[0],)
+            else:
+                ignores = arg[0]
+        elif len(arg) == 2:
+            assert all(isinstance(a, _gfrd.ParticleID) for a in arg)
+            ignores = arg
+
+        retval = []
+        for pp in self.particles.iteritems():
+            if pp[0] in ignores:
+                continue
+            dist = _gfrd.distance(pp[1].position, sphere[0]) - pp[1].radius
+            if dist < sphere[1]:
+                retval.append((pp, dist))
+        retval.sort(lambda a, b: cmp(a[1], b[1]))
+        return retval
+
+    def distance(self, x, y):
+        return self.world.distance(x, y)
+
+    def apply_boundary(self, x):
+        return self.world.apply_boundary(x)
+
+    def cyclic_transpose(self, x, y):
+        return self.world.cyclic_transpose(x, y)
+
+    def __iter__(self):
+        return self.particles.iteritems()
+
+    def create_transaction(self):
+        return _gfrd.TransactionImpl(self)
+
+
+class Multi(object):
+    def __init__(self, domain_id, main, dt_factor):
+        self.main = ref(main)
+        self.domain_id = domain_id
+        self.event_id = None
+        self.last_event = None
+        self.sphere_container = _gfrd.SphericalShellContainer(main.world.world_size, 3)
+        self.particle_container = MultiParticleContainer(main.world)
+        self.escaped = False
+        self.dt_factor = dt_factor
+        self.last_reaction = None
+
+    def initialize(self, t):
+        self.last_time = t
+        self.start_time = t
+        main = self.main()
+        self.dt = self.dt_factor * bd.calculate_bd_dt(main.world.get_species(sid) for sid in main.world.species)
+
+    def get_multiplicity(self):
+        return self.particle_container.num_particles
+    multiplicity = property(get_multiplicity)
+
+    def within_shell(self, pp):
+        return bool(self.sphere_container.get_neighbors_within_radius(pp[1].position, -pp[1].radius))
+
+    def add_shell(self, shell_id_shell_pair):
+        self.sphere_container.update(shell_id_shell_pair)
+
+    def add_particle(self, pid_particle_pair):
+        if __debug__:
+            log.info("add_particle: %s\n", pid_particle_pair)
+        self.particle_container.update_particle(pid_particle_pair)
 
     def step(self):
         self.escaped = False
-        BDSimulatorCoreBase.step(self)
+        tx = self.particle_container.create_transaction()
+        main = self.main()
+        ppg = BDPropagator(tx, main.network_rules,
+                     myrandom.rng, self.dt, main.dissociation_retry_moves,
+                     [pid for pid, _ in self.particle_container])
 
-    def add_particle(self, pid_particle_pair):
-        self.add_to_particle_list(pid_particle_pair[0])
-        self.particle_matrix.update(pid_particle_pair)
+        self.last_event = None
+        while ppg():
+            if ppg.reactions:
+                self.last_event = _gfrd.EventType.MULTI_REACTION
+                self.last_reaction = ppg.reactions[-1]
+                break
 
-    def remove_particle(self, pid_particle_pair):
-        self.main.remove_particle(pid_particle_pair)
-        self.remove_from_particle_list(pid_particle_pair[0])
-        del self.particle_matrix[pid_particle_pair[0]]
+        for pid_particle_pair in itertools.chain(
+                tx.modified_particles, tx.added_particles):
+            overlapped = main.world.check_overlap(pid_particle_pair[1].shape, pid_particle_pair[0])
+            if overlapped:
+                if __debug__:
+                    log.info("collision occurred between particles of a multi and the outside: %s - %s.  moves will be rolled back." % (pid_particle_pair, list(overlapped)))
+                tx.rollback()
+                self.step()
+                return
 
-    def create_particle(self, sid, pos):
-        particle = self.main.create_particle(sid, pos)
-        self.add_particle(particle)
-        return particle
-
-    def move_particle(self, pid_particle_pair):
-        self.update_particle(pid_particle_pair)
-
-    def clear_volume(self, pos, radius, ignore=[]):
-        if not self.within_shell(pos, radius):
-            self.escaped = True
-            self.clear_outer_volume(pos, radius, ignore)
-
-    def clear_outer_volume(self, pos, radius, ignore=[]):
-        self.main.clear_volume(pos, radius, ignore=[self.multiref().domain_id, ])
-        if self.main.get_particles_within_radius(pos, radius, ignore):
-            raise NoSpace()
-
-    def within_shell(self, pos, radius):
-        result = self.sphere_container.get_neighbors_within_radius(pos, - radius)
-        return bool(result)
-        
-    def check_overlap(self, pos, radius, ignore=[]):
-        result = self.particle_matrix.get_neighbors_within_radius(pos, radius)
-        for item in result:
-            if item[0][0] not in ignore:
-                return item
-        return None
-
-    def get_particles_within_radius(self, pos, radius, ignore=[]):
-        result = self.particle_matrix.get_neighbors_within_radius(pos, radius)
-        return [n for n in result if n[0][0] not in ignore]
+            if not self.within_shell(pid_particle_pair):
+                self.last_event = _gfrd.EventType.MULTI_ESCAPE
+                main.clear_volume(
+                    pid_particle_pair[1].position,
+                    pid_particle_pair[1].radius, ignore=[self.domain_id, ])
 
     def check(self):
-        BDSimulatorCoreBase.check(self)
-
         # shells are contiguous
-        for (_, shell) in self.multiref().shell_list:
+        # FIXME: this code cannot detect a pair of shells that are isolated
+        #        from others.
+        for _, shell in self.shell_list:
             result = self.sphere_container.get_neighbors(shell.shape.position)
             # Check contiguity with nearest neighbor only (get_neighbors 
             # returns a sorted list).
@@ -89,59 +172,14 @@ class MultiBDCore(BDSimulatorCoreBase):
                 'shells of %s are not contiguous.' % str(self.multiref())
 
         # all particles within the shell.
-        for pid in self.particle_list:
-            p = self.main.world.get_particle(pid)[1]
-            assert self.within_shell(p.position, p.radius),\
+        for pid_particle_pair in self.particle_container:
+            assert self.within_shell(pid_particle_pair),\
                 'not all particles within the shell.'
 
-
-class Multi(object):
-    def __init__(self, domain_id, main):
-        self.domain_id = domain_id
-        self.event_id = None
-        self.sim = MultiBDCore(main, self)
-        self.pid_shell_id_map = {}
-
-    def initialize(self, t):
-        self.last_time = t
-        self.start_time = t
-
-        self.sim.initialize() # ??
-
-    def get_dt(self):
-        return self.sim.dt
-
-    dt = property(get_dt)
-
-    def get_multiplicity(self):
-        return len(self.sim.particle_list)
-
-    multiplicity = property(get_multiplicity)
-
-    def __add_particle(self, pid_particle_pair):
-        self.sim.add_particle(pid_particle_pair)
-        return pid_particle_pair
-
-    def __add_shell(self, position, size):
-        shell_id_shell_pair = (
-            self.sim.main.shell_id_generator(),
-            SphericalShell(self.domain_id, Sphere(position, size)))
-        self.sim.main.move_shell(shell_id_shell_pair)
-        self.sim.sphere_container.update(shell_id_shell_pair)
-        return shell_id_shell_pair
-
-    def add_particle_and_shell(self, pid_particle_pair, shell_size):
-        self.__add_particle(pid_particle_pair)
-        shell_id_shell_pair = self.__add_shell(pid_particle_pair[1].position, shell_size)
-        self.pid_shell_id_map[pid_particle_pair[0]] = shell_id_shell_pair[0]
-        return pid_particle_pair, shell_id_shell_pair
-
-    def check(self):
-        self.sim.check()
-
-        for (shell_id, shell) in self.shell_list:
+        main = self.main()
+        for shell_id, shell in self.shell_list:
             try:
-                container = self.sim.main.get_container(shell)
+                container = main.get_container(shell)
                 container[shell_id]
             except:
                 raise RuntimeError,\
@@ -149,13 +187,27 @@ class Multi(object):
                     % str(shell_id)
 
     def __repr__(self):
-        return 'Multi[%s: %s: event_id=%s]' % (
-            self.domain_id,
-            ', '.join(repr(p) for p in self.sim.particle_list),
-            self.event_id)
+        return 'Multi[domain_id=%s, event_id=%s: %s: %s]' % (
+            self.domain_id, self.event_id,
+            ', '.join('(%s, %s)' % (p[0], repr(p[1])) for p in self.particle_container),
+            ', '.join('(%s, %s)' % (s[0], repr(s[1])) for s in self.sphere_container)
+            )
 
-    def get_shell_list(self):
-        return self.sim.sphere_container
-    shell_list = property(get_shell_list)
+    def has_particle(self, pid):
+        try:
+            self.particle_container.get_particle(pid)
+            return True
+        except:
+            return False
 
+    def particles(self):
+        return iter(self.particle_container)
+    particles = property(particles)
 
+    def num_shells(self):
+        return len(self.sphere_container)
+    num_shells = property(num_shells)    
+
+    def shell_list(self):
+        return iter(self.sphere_container)
+    shell_list = property(shell_list)

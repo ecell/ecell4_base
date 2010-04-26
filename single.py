@@ -13,6 +13,7 @@ class Single(object):
     def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
                  surface):
         self.multiplicity = 1
+        self.num_shells = 1
 
         self.pid_particle_pair = pid_particle_pair
         self.reactiontypes = reactiontypes

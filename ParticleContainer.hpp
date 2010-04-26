@@ -35,6 +35,8 @@ public:
 
     virtual size_type num_particles() const = 0;
 
+    virtual length_type world_size() const = 0;
+
     virtual species_type const& get_species(species_id_type const& id) const = 0;
 
     virtual boost::shared_ptr<surface_type> get_surface(surface_id_type const& id) const = 0;
@@ -44,11 +46,9 @@ public:
 
     virtual bool update_particle(particle_id_pair const& pi_pair) = 0;
 
-    virtual void remove_particle(particle_id_type const& id) = 0;
+    virtual bool remove_particle(particle_id_type const& id) = 0;
 
     virtual particle_id_pair get_particle(particle_id_type const& id) const = 0;
-
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_id_pair const& s) const = 0;
 
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const = 0;
 

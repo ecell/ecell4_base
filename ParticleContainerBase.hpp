@@ -89,42 +89,6 @@ protected:
         particle_id_pair_and_distance_list* result_;
     };
 
-    template<typename Tset_>
-    struct particle_overlap_checker
-    {
-        typedef typename collection_value<Tset_>::type set_value_type;
-        particle_overlap_checker(set_value_type const& id,
-            Tset_ const& ignore = Tset_())
-            : id_(id), ignore_(ignore), result_(0) {}
-
-        template<typename Titer_>
-        void operator()(Titer_ const& i, length_type const& dist)
-        {
-            if ((*i).first != id_ && !contains(ignore_, (*i).first))
-            {
-                if (!result_)
-                {
-                    result_ = new particle_id_pair_and_distance_list();
-                }
-                result_->push_back(std::make_pair(*i, dist));
-            }
-        }
-
-        particle_id_pair_and_distance_list* result() const
-        {
-            if (result_)
-            {
-                std::sort(result_->pbegin(), result_->pend(), distance_comparator());
-            }
-            return result_;
-        }
-
-    private:
-        set_value_type const& id_;
-        Tset_ const& ignore_;
-        particle_id_pair_and_distance_list* result_;
-    };
-
 public:
     ParticleContainerBase(length_type world_size, size_type size)
         : pmat_(world_size, size) {}
@@ -134,7 +98,7 @@ public:
         return pmat_.size();
     }
 
-    length_type world_size() const
+    virtual length_type world_size() const
     {
         return pmat_.world_size();
     }
@@ -200,19 +164,9 @@ public:
             world_size());
     }
 
-    template<typename Tset_>
-    particle_id_pair_and_distance_list* check_overlap(particle_id_pair const& s, Tset_ const& ignore) const
+    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
     {
-        particle_overlap_checker<Tset_> oc(s.first, ignore);
-        traits_type::take_neighbor(pmat_, oc, shape(s.second));
-        return oc.result();
-    }
-
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_id_pair const& s) const
-    {
-        particle_overlap_checker<boost::array<particle_id_type, 0> > oc(s.first);
-        traits_type::take_neighbor(pmat_, oc, shape(s.second));
-        return oc.result();
+        return check_overlap<particle_shape_type>(s);
     }
 
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
@@ -223,11 +177,6 @@ public:
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
     {
         return check_overlap(s, array_gen(ignore1, ignore2));
-    }
-
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
-    {
-        return check_overlap<particle_shape_type>(s);
     }
 
     template<typename Tsph_, typename Tset_>
@@ -248,7 +197,18 @@ public:
         return oc.result();
     }
 
-    particle_id_pair get_particle(particle_id_type const& id) const
+    particle_id_pair get_particle(particle_id_type const& id, bool& found) const
+    {
+        typename particle_matrix_type::const_iterator i(pmat_.find(id));
+        if (pmat_.end() == i) {
+            found = false;
+            return particle_id_pair();
+        }
+        found = true;
+        return *i;
+    }
+
+    virtual particle_id_pair get_particle(particle_id_type const& id) const
     {
         typename particle_matrix_type::const_iterator i(pmat_.find(id));
         if (pmat_.end() == i) {
@@ -258,9 +218,9 @@ public:
         return *i;
     }
 
-    transaction_type* create_transaction();
+    virtual transaction_type* create_transaction();
 
-    particle_id_pair_generator* get_particles() const
+    virtual particle_id_pair_generator* get_particles() const
     {
         return make_range_generator<particle_id_pair>(pmat_);
     }
@@ -270,14 +230,14 @@ public:
         return particle_id_pair_range(pmat_.begin(), pmat_.end(), pmat_.size());
     }
 
-    bool update_particle(particle_id_pair const& pi_pair)
+    virtual bool update_particle(particle_id_pair const& pi_pair)
     {
         return pmat_.update(pi_pair).second;
     }
 
-    void remove_particle(particle_id_type const& id)
+    virtual bool remove_particle(particle_id_type const& id)
     {
-        pmat_.erase(id);
+        return pmat_.erase(id);
     }
 
 protected:

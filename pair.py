@@ -17,6 +17,7 @@ class Pair(object):
     def __init__(self, domain_id, com, single1, single2, shell_id, r0, 
                  shell_size, rt, surface):
         self.multiplicity = 2
+        self.num_shells = 1
 
         self.single1 = single1
         self.single2 = single2 

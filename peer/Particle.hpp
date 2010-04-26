@@ -208,6 +208,12 @@ public:
         return 0;
     }
 
+    static PyObject* get_shape(ParticleWrapper* self)
+    {
+        return boost::python::incref(
+            boost::python::object(self->impl_.shape()).ptr());
+    }
+
     static PyObject* get_D(ParticleWrapper* self)
     {
         return PyFloat_FromDouble(self->impl_.D());
@@ -405,6 +411,12 @@ PyGetSetDef ParticleWrapper<Timpl_>::__getsets__[] = {
         const_cast<char*>("radius"),
         (getter)ParticleWrapper::get_radius,
         (setter)ParticleWrapper::set_radius,
+        const_cast<char*>("")
+    },
+    {
+        const_cast<char*>("shape"),
+        (getter)ParticleWrapper::get_shape,
+        NULL,
         const_cast<char*>("")
     },
     {
