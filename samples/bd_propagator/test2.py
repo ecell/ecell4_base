@@ -28,9 +28,9 @@ m.network_rules.add_reaction_rule(rr)
 
 nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
 
-class MyParticleContainer(_gfrd.ParticleContainer):
+class MyParticleContainer(_gfrd._ParticleContainer):
     def __init__(self, world_size):
-        _gfrd.ParticleContainer.__init__(self)
+        _gfrd._ParticleContainer.__init__(self)
         self.particles = {}
         self.surfaces = {}
         self.species = {}
