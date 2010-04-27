@@ -226,8 +226,8 @@ class BDPropagator(object):
             D1 = pid_particle_pair1[1].D
             D2 = pid_particle_pair2[1].D
 
-            pos2t = self.tx.cyclic_transpose(pid_particle_pair1[1].position,
-                                                pid_particle_pair2[1].position)
+            pos2t = self.tx.cyclic_transpose(pid_particle_pair2[1].position,
+                                                pid_particle_pair1[1].position)
             new_pos = self.tx.apply_boundary(
                 (D2 * pid_particle_pair1[1].position + D1 * pos2t) / (D1 + D2))
 

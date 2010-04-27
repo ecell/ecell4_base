@@ -293,8 +293,8 @@ private:
                         divide(
                             add(multiply(pp0.second.position(), s1.D()),
                                 multiply(tx_.cyclic_transpose(
-                                    pp0.second.position(),
-                                    pp1.second.position()), s0.D())),
+                                    pp1.second.position(),
+                                    pp0.second.position()), s0.D())),
                             D01)));
                 boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
                     tx_.check_overlap(particle_shape_type(new_pos, sp.radius()),
