@@ -1898,7 +1898,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::GeneratorIteratorWrapper<ptr_generator<_EGFRDSimulator::domain_id_pair_generator, std::auto_ptr<_EGFRDSimulator::domain_id_pair_generator> > >::__register_class("DomainIDPairGenerator");
 
     class_<_BDPropagator, boost::noncopyable>(
-        "_BDPropagator", init<
+        "BDPropagator", init<
             egfrd_simulator_traits_type::world_type::particle_container_type&,
             egfrd_simulator_traits_type::network_rules_type const&,
             egfrd_simulator_traits_type::rng_type&,
@@ -1917,7 +1917,7 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     class_<MultiParticleContainer<egfrd_simulator_traits_type>,
            bases<particle_container_type>, boost::noncopyable>(
-        "_MultiParticleContainer", init<CyclicWorld&>());
+        "MultiParticleContainer", init<CyclicWorld&>());
 
     peer::util::register_py_range_wrapper_converter<world_traits_type::particle_id_type>();
 

@@ -9,87 +9,6 @@ import _gfrd
 
 import os
 
-BDPropagator = eval(os.environ.get("BDPropagator", "_gfrd._BDPropagator"))
-
-class _MultiParticleContainer(_gfrd._ParticleContainer):
-    def __init__(self, world):
-        _gfrd._ParticleContainer.__init__(self)
-        self.world = world
-        self.particles = {}
-
-    def num_particles(self):
-        return len(self.particles)
-    num_particles = property(num_particles)
-
-    def get_surface(self, id):
-        return self.world.get_surface(id)
-
-    def get_species(self, id):
-        return self.world.get_species(id)
-
-    def species(self):
-        return self.world.species
-    species = property(species)
-
-    def new_particle(self, species_id, position):
-        retval = self.world.new_particle(species_id, position)
-        self.particles[retval[0]] = retval[1]
-        return retval
-
-    def update_particle(self, pid_particle_pair):
-        self.particles[pid_particle_pair[0]] = pid_particle_pair[1]
-        return self.world.update_particle(pid_particle_pair)
-
-    def remove_particle(self, pid):
-        del self.particles[pid]
-        self.world.remove_particle(pid)
-
-    def get_particle(self, pid):
-        p = self.particles.get(pid, None)
-        if p is None:
-            raise NotFound
-        return pid, p
-
-    def check_overlap(self, sphere, *arg):
-        if len(arg) == 0:
-            ignores = ()
-        elif len(arg) == 1:
-            if isinstance(arg[0], _gfrd.ParticleID):
-                ignores = (arg[0],)
-            else:
-                ignores = arg[0]
-        elif len(arg) == 2:
-            assert all(isinstance(a, _gfrd.ParticleID) for a in arg)
-            ignores = arg
-
-        retval = []
-        for pp in self.particles.iteritems():
-            if pp[0] in ignores:
-                continue
-            dist = _gfrd.distance(pp[1].position, sphere[0]) - pp[1].radius
-            if dist < sphere[1]:
-                retval.append((pp, dist))
-        retval.sort(lambda a, b: cmp(a[1], b[1]))
-        return retval
-
-    def distance(self, x, y):
-        return self.world.distance(x, y)
-
-    def apply_boundary(self, x):
-        return self.world.apply_boundary(x)
-
-    def cyclic_transpose(self, x, y):
-        return self.world.cyclic_transpose(x, y)
-
-    def __iter__(self):
-        return self.particles.iteritems()
-
-    def create_transaction(self):
-        return _gfrd.TransactionImpl(self)
-
-
-MultiParticleContainer = _gfrd._MultiParticleContainer
-
 class Multi(object):
     def __init__(self, domain_id, main, dt_factor):
         self.main = ref(main)
@@ -97,7 +16,7 @@ class Multi(object):
         self.event_id = None
         self.last_event = None
         self.sphere_container = _gfrd.SphericalShellContainer(main.world.world_size, 3)
-        self.particle_container = MultiParticleContainer(main.world)
+        self.particle_container = _gfrd.MultiParticleContainer(main.world)
         self.escaped = False
         self.dt_factor = dt_factor
         self.last_reaction = None
@@ -127,7 +46,7 @@ class Multi(object):
         self.escaped = False
         tx = self.particle_container.create_transaction()
         main = self.main()
-        ppg = BDPropagator(tx, main.network_rules,
+        ppg = _gfrd.BDPropagator(tx, main.network_rules,
                      myrandom.rng, self.dt, main.dissociation_retry_moves,
                      [pid for pid, _ in self.particle_container])
 
