@@ -19,8 +19,10 @@ PYTHON_TESTS = \
 	BasicPairGreensFunction_test.py \
 	CylindricalShellContainer_test.py \
 	EGFRDSimulator_test.py \
+	EventScheduler_test.py \
 	FirstPassageNoCollisionPairGreensFunction_test.py \
 	FirstPassagePairGreensFunction_test.py \
+	FirstPassageGreensFunction_test.py \
 	FreeGreensFunction_test.py \
 	FreePairGreensFunction_test.py \
 	Model_test.py \
@@ -29,7 +31,6 @@ PYTHON_TESTS = \
 	ReactionRule_test.py \
 	SphericalShellContainer_test.py \
 	freeFunctions_test.py \
-	test.py \
 	utils_test.py
 
 TESTS = $(CPP_TESTS) $(PYTHON_TESTS)

@@ -95,3 +95,5 @@ class FreeGreensFunctionTestCase(unittest.TestCase):
             self.assertAlmostEqual(0.0, (np-ip)/ip)
 
 
+if __name__ == "__main__":
+    unittest.main()
