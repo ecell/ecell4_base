@@ -83,6 +83,8 @@ MatrixSpace_test_SOURCES = MatrixSpace_test.cpp
 
 MatrixSpaceWithCylinders_test_SOURCES = MatrixSpaceWithCylinders_test.cpp
 
+World_test_SOURCES = World_test.cpp
+
 model_test_SOURCES = model_test.cpp ../Model.cpp ../NetworkRules.cpp ../BasicNetworkRulesImpl.cpp
 
 Vector3_test_SOURCES = Vector3_test.cpp ../Vector3.hpp
