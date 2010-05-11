@@ -41,6 +41,8 @@ AC_LANG_CPLUSPLUS
 dnl
 dnl
 
+AX_BOOST_BASE([1.37],,AC_MSG_ERROR([could not find required version of BOOST.]))
+
 BOOST_PYTHON_LIBNAME=boost_python
 
 AC_ARG_WITH(boost-python-libname,
