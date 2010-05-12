@@ -8,12 +8,6 @@ import numpy
 
 from _gfrd import (
     EventScheduler,
-    FirstPassageGreensFunction,
-    FirstPassagePairGreensFunction,
-    FirstPassageNoCollisionPairGreensFunction,
-    BasicPairGreensFunction,
-    FreePairGreensFunction,
-    EventType,
     Particle,
     SphericalShell,
     SphericalShellContainer,
@@ -23,6 +17,8 @@ from _gfrd import (
     DomainID,
     ParticleContainer
     )
+
+from _greens_functions import EventType
 
 from surface import *
 

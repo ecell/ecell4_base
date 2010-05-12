@@ -6,6 +6,7 @@ import logging
 import os
 
 from _gfrd import * # FIX ME
+from _greens_functions import EventType # FIX ME
 import utils
 import logger
 import myrandom

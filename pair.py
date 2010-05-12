@@ -1,4 +1,5 @@
 from _gfrd import *
+from _greens_functions import *
 from greens_function_wrapper import *
 
 class Pair(object):

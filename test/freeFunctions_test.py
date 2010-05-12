@@ -7,7 +7,7 @@ __copyright__ = 'Copyright The Molecular Sciences Institute 2006-2007'
 
 import unittest
 
-import _gfrd as mod
+import _greens_functions as mod
 
 import math
 import numpy

@@ -6,6 +6,7 @@ from utils import *
 import itertools
 
 import _gfrd
+from _greens_functions import EventType
 
 import os
 
@@ -53,7 +54,7 @@ class Multi(object):
         self.last_event = None
         while ppg():
             if ppg.reactions:
-                self.last_event = _gfrd.EventType.MULTI_REACTION
+                self.last_event = EventType.MULTI_REACTION
                 self.last_reaction = ppg.reactions[-1]
                 break
 
@@ -68,7 +69,7 @@ class Multi(object):
                 return
 
             if not self.within_shell(pid_particle_pair):
-                self.last_event = _gfrd.EventType.MULTI_ESCAPE
+                self.last_event = EventType.MULTI_ESCAPE
                 main.clear_volume(
                     pid_particle_pair[1].position,
                     pid_particle_pair[1].radius, ignore=[self.domain_id, ])

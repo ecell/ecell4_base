@@ -1,6 +1,6 @@
 import numpy
 import myrandom
-from _gfrd import EventType
+from _greens_functions import EventType
 from utils import *
 
 import logging

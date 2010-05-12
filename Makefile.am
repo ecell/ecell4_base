@@ -40,7 +40,7 @@ noinst_PYTHON = \
 	dimer.py  
 
 
-lib_LTLIBRARIES = _gfrd.la
+lib_LTLIBRARIES = _gfrd.la _greens_functions.la
 
 noinst_HEADERS = \
 	abstract_set.hpp\
@@ -151,16 +151,7 @@ noinst_HEADERS = \
 	utils/unassignable_adapter.hpp
 
 _gfrd_la_SOURCES=\
-	funcSum.cpp\
-	findRoot.cpp\
 	freeFunctions.cpp\
-	SphericalBesselGenerator.cpp\
-	FreeGreensFunction.cpp\
-	FirstPassageGreensFunction.cpp\
-	BasicPairGreensFunction.cpp\
-	FreePairGreensFunction.cpp\
-	FirstPassagePairGreensFunction.cpp\
-	FirstPassageNoCollisionPairGreensFunction.cpp\
 	pyGFRD.cpp\
 	Model.cpp\
 	BasicNetworkRulesImpl.cpp\
@@ -168,11 +159,29 @@ _gfrd_la_SOURCES=\
 	Logger.cpp\
 	utils.cpp
 
+_greens_functions_la_SOURCES=\
+	findRoot.cpp\
+	funcSum.cpp\
+	greens_functions.cpp\
+	SphericalBesselGenerator.cpp\
+	freeFunctions.cpp\
+	FreeGreensFunction.cpp\
+	FirstPassageGreensFunction.cpp\
+	BasicPairGreensFunction.cpp\
+	FreePairGreensFunction.cpp\
+	FirstPassagePairGreensFunction.cpp\
+	FirstPassageNoCollisionPairGreensFunction.cpp
 
 _gfrd_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
 _gfrd_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBBOOSTDATE) $(LIBPYTHON) $(GSL_LIBS)
 
-nodist__gfrd_la_SOURCES = \
+_greens_functions_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
+_greens_functions_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBBOOSTDATE) $(LIBPYTHON) $(GSL_LIBS)
+
+#nodist__gfrd_la_SOURCES = \
+#	SphericalBesselTable.hpp
+
+nodist__greens_functions_la_SOURCES = \
 	SphericalBesselTable.hpp
 
 BUILT_SOURCES = \
@@ -188,10 +197,13 @@ SphericalBesselTable.hpp: make_sjy_table.py
 _gfrd.so: _gfrd.la 
 	ln -sf .libs/_gfrd.so ./_gfrd.so
 
-all-local: _gfrd.so
+_greens_functions.so: _greens_functions.la
+	ln -sf .libs/_greens_functions.so ./_greens_functions.so
+
+all-local: _gfrd.so _greens_functions.so
 
 clean-local:
-	rm -f _gfrd.so
+	rm -f _gfrd.so _greens_functions.so
 
 
 pycheck:

@@ -4,7 +4,7 @@ import unittest
 
 import numpy
 
-import _gfrd as mod
+import _greens_functions as mod
 
 class FirstPassageGreensFunctionTestCase(unittest.TestCase):
 
