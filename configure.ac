@@ -30,7 +30,7 @@ dnl
 dnl checks for libraries
 dnl
 dnl
-AX_PATH_GSL([1.11],,AC_MSG_ERROR([could not find required version of GSL.]))
+AM_PATH_GSL([1.11],,AC_MSG_ERROR([could not find required version of GSL.]))
 dnl
 AC_CHECK_LIB(m,exp,,AC_MSG_ERROR([could not find libm.]))
 dnl
@@ -40,6 +40,8 @@ AC_PROG_CXX
 AC_LANG_CPLUSPLUS
 dnl
 dnl
+
+AX_BOOST_BASE([1.37],,AC_MSG_ERROR([could not find required version of BOOST.]))
 
 BOOST_PYTHON_LIBNAME=boost_python
 

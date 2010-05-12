@@ -12,9 +12,9 @@ def suite():
     alltests = unittest.TestSuite()
 
     for module in map(__import__, modules_to_test):
-        alltests.add_test(unittest.find_test_cases(module))
+        alltests.addTest(unittest.findTestCases(module))
 
     return alltests
 
 if __name__ == '__main__':
-    unittest.main(default_test='suite')
+    unittest.main(defaultTest='suite')

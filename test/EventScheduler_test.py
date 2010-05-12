@@ -288,7 +288,7 @@ class EventSchedulerTestCase(unittest.TestCase):
                                  event2)
         self.assertEqual(2, scheduler.getSize())
 
-        second = scheduler.peek_second_event()
+        second = scheduler.peekSecondEvent()
 
         self.assertEqual(0.5, second.getTime())
         self.assertEqual(event2, second.getArg())
