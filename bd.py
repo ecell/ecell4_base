@@ -114,6 +114,14 @@ class BDSimulator(ParticleSimulatorBase):
     dt = property(get_dt)
     step_counter = property(get_step_counter)
 
+    def set_dt_factor(self, dt_factor):
+        self.core.dt_factor = dt_factor
+
+    def get_dt_factor(self):
+        return self.core.dt_factor
+
+    dt_factor = property(get_dt_factor, set_dt_factor)
+
 
     def initialize(self):
         self.core.initialize()
