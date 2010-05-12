@@ -1,7 +1,5 @@
 #!/usr/env python
 
-import weakref
-
 import math
 
 import numpy
@@ -33,15 +31,17 @@ def calculate_bd_dt(species_list):
             radius_min = species.radius
     return (radius_min * 2) ** 2 / (D_max * 2)
 
-class BDSimulatorCoreBase(object):
+class BDSimulatorCore(object):
     '''
     BDSimulatorCore borrows the following from the main simulator:
     - species_list
     - reaction_types list (both 1 and 2)
     
     '''
-    def __init__(self, main):
-        self.main = weakref.proxy(main)
+    def __init__(self, world, network_rules, dissociation_retry_moves):
+        self.world = world
+        self.network_rules = network_rules
+        self.dissociation_retry_moves = dissociation_retry_moves
 
         self.t = 0.0
         self.dt = 0.0
@@ -63,17 +63,17 @@ class BDSimulatorCoreBase(object):
 
     def determine_dt(self):
         self.dt = self.dt_factor * \
-               calculate_bd_dt(self.main.world.species)
+               calculate_bd_dt(self.world.species)
         if __debug__:
             log.debug('bd dt = %g' % self.dt)
 
     def step(self):
         self.step_counter += 1
 
-        tx = self.main.world.create_transaction()
-        ppg = BDPropagator(tx, self.main.network_rules,
-                     myrandom.rng, self.dt, self.main.dissociation_retry_moves,
-                     [pid for pid, _ in self.main.world])
+        tx = self.world.create_transaction()
+        ppg = BDPropagator(tx, self.network_rules,
+                     myrandom.rng, self.dt, self.dissociation_retry_moves,
+                     [pid for pid, _ in self.world])
         while ppg():
             pass
 
@@ -84,18 +84,15 @@ class BDSimulatorCoreBase(object):
         for pp in self.tx:
             assert not self.tx.check_overlap(pp)
 
-class BDSimulatorCore(BDSimulatorCoreBase):
-    def __init__(self, main):
-        BDSimulatorCoreBase.__init__(self, main)
-
-    def initialize(self):
-        BDSimulatorCoreBase.initialize(self)
-
 class BDSimulator(ParticleSimulatorBase):
     def __init__(self, world):
         ParticleSimulatorBase.__init__(self, world)
-        self.core = BDSimulatorCore(self)
         self.is_dirty = True
+
+    def set_model(self, model):
+        ParticleSimulatorBase.set_model(self, model)
+        self.core = BDSimulatorCore(self.world, self.network_rules,
+                                    self.dissociation_retry_moves)
 
     def t(self):
         return self.core.t
