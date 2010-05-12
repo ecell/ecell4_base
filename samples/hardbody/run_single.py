@@ -81,7 +81,6 @@ def run_single_bd(T, V, N, dt_factor):
     
     w = World(L, matrix_size)
     s = BDSimulator(w)
-    s.dt_factor = dt_factor
 
     box1 = CuboidalRegion([0,0,0],[L,L,L])
 
@@ -93,6 +92,7 @@ def run_single_bd(T, V, N, dt_factor):
     m.set_all_repulsive()
 
     s.set_model(m)
+    s.dt_factor = dt_factor
     
     s.throw_in_particles(A, N, box1)
     print 'stir'
