@@ -56,7 +56,7 @@ public:
           rejected_move_count_(0)
     {
         call_with_size_if_randomly_accessible(
-            boost::bind(&particle_id_vector_type::reserve, queue_, _1),
+            boost::bind(&particle_id_vector_type::reserve, &queue_, _1),
             particles);
         for (typename boost::range_const_iterator<Trange_>::type
                 i(boost::begin(particles)),
