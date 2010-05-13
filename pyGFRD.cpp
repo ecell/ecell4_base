@@ -27,6 +27,7 @@
 #include "peer/tuple_converters.hpp"
 #include "peer/range_converters.hpp"
 #include "peer/set_indexing_suite.hpp"
+#include "peer/numpy/ndarray_converters.hpp"
 #include "peer/numpy/wrapped_multi_array.hpp"
 #include "peer/numpy/scalar_converters.hpp"
 #include "peer/Particle.hpp"
@@ -71,29 +72,7 @@ typedef BDPropagator<egfrd_simulator_traits_type> _BDPropagator;
 static boost::python::object species_type_class;
 static boost::python::object species_info_class;
 
-template<typename T_>
-struct array_to_ndarray_converter
-{
-    typedef T_ native_type;
-    
-    static PyObject* convert( const native_type& p )
-    {
-        typedef typename boost::range_value<native_type>::type value_type;
-        static const npy_intp dims[1] = { native_type::size() };
-        void* data( PyDataMem_NEW( boost::size(p) * sizeof( value_type ) ) );
-        memcpy( data, static_cast<const void*>( &p[0] ),
-                native_type::size() * sizeof( value_type ) );
-        PyObject* array( PyArray_New( &PyArray_Type, 1, 
-                                      const_cast<npy_intp*>( dims ),
-                                      peer::util::get_numpy_typecode<
-                                          value_type >::value,
-                                      NULL, data, 0, NPY_CARRAY, NULL ) );
-        reinterpret_cast<PyArrayObject*>( array )->flags |= NPY_OWNDATA;
-        return array;
-    }
-};
-
-typedef array_to_ndarray_converter<world_traits_type::position_type> position_to_ndarray_converter;
+typedef peer::util::detail::array_to_ndarray_converter<world_traits_type::position_type, world_traits_type::position_type::value_type, 3> position_to_ndarray_converter;
 
 struct ndarray_to_position_converter
 {
@@ -1430,7 +1409,7 @@ BOOST_PYTHON_MODULE( _gfrd )
                     &egfrd_simulator_traits_type::cylinder_type::unit_z,
                     &egfrd_simulator_traits_type::cylinder_type::unit_z>::set));
 
-    to_python_converter<boost::array<egfrd_simulator_traits_type::box_type::length_type, 3>, array_to_ndarray_converter<boost::array<egfrd_simulator_traits_type::box_type::length_type, 3> > >();
+    to_python_converter<boost::array<egfrd_simulator_traits_type::box_type::length_type, 3>, peer::util::detail::to_ndarray_converter<boost::array<egfrd_simulator_traits_type::box_type::length_type, 3> > >();
 
     class_<egfrd_simulator_traits_type::box_type>("Box")
         .def(init<egfrd_simulator_traits_type::box_type::position_type, 

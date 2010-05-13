@@ -5,6 +5,7 @@
 #include <complex>
 #include <vector>
 #include <boost/python.hpp>
+#include <boost/array.hpp>
 #include <boost/multi_array.hpp>
 #include <numpy/arrayobject.h>
 #include "peer/utils.hpp"
@@ -127,6 +128,36 @@ namespace util
                  return retval;
             }
         };
+
+        template<typename T_, typename Telem_, std::size_t N_>
+        struct array_to_ndarray_converter
+        {
+            typedef T_ native_type;
+            
+            static PyObject* convert( const native_type& p )
+            {
+                static const npy_intp dims[1] = { N_ };
+                void* data(PyDataMem_NEW(N_ * sizeof(Telem_)));
+                memcpy(data, static_cast<const void*>( &p[0] ),
+                       N_ * sizeof(Telem_));
+                PyObject* array( PyArray_New(&PyArray_Type, 1, 
+                                             const_cast<npy_intp*>(dims),
+                                             peer::util::get_numpy_typecode<
+                                                 Telem_>::value,
+                                             NULL, data, 0, NPY_CARRAY, NULL));
+                reinterpret_cast<PyArrayObject*>(array)->flags |= NPY_OWNDATA;
+                return array;
+            }
+        };
+
+        template<typename T_, std::size_t N_>
+        struct to_ndarray_converter<boost::array<T_, N_> >
+            : array_to_ndarray_converter<boost::array<T_, N_>, T_, N_> {};
+
+        template<typename T_, std::size_t N_>
+        struct to_ndarray_converter<T_[N_]>
+            : array_to_ndarray_converter<T_[N_], T_, N_> {};
+
     } // namespace detail
 
     template<typename Tarray_>
