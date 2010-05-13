@@ -15,6 +15,7 @@
 #include "Vector3.hpp"
 #include "utils/array_helper.hpp"
 #include "utils/get_default_impl.hpp"
+#include "utils/range.hpp"
 
 template<typename Tobj_, typename Tkey_,
         template<typename, typename> class MFget_mapper_ =
@@ -704,8 +705,10 @@ inline typename boost::range_difference<MatrixSpace<T_, Tkey_, MFget_mapper_> >:
     return that.size();
 }
 
-
 } // namespace boost
 
+template<typename T_, typename Tkey_,
+        template<typename, typename> class MFget_mapper_>
+struct is_sized<MatrixSpace<T_, Tkey_, MFget_mapper_> >: boost::mpl::true_ {};
 
 #endif /* MATRIX_SPACE_HPP */

@@ -13,6 +13,21 @@
 #include "Sphere.hpp"
 #include "MatrixSpace.hpp"
 
+BOOST_AUTO_TEST_CASE(sized)
+{
+    typedef MatrixSpace<Sphere<double>, int> oc_type;
+    typedef oc_type::position_type pos;
+    BOOST_CHECK((is_sized<oc_type>::value));
+    oc_type oc(1.0, 10);
+    BOOST_CHECK_EQUAL(boost::size(oc), 0);
+    oc.update(std::make_pair(0, Sphere<double>(pos(0.2, 0.6, 0.4), 0.05)));
+    BOOST_CHECK_EQUAL(boost::size(oc), 1);
+    oc.update(std::make_pair(1, Sphere<double>(pos(0.2, 0.6, 0.4), 0.05)));
+    BOOST_CHECK_EQUAL(boost::size(oc), 2);
+    oc.update(std::make_pair(1, Sphere<double>(pos(0.1, 0.2, 0.3), 0.05)));
+    BOOST_CHECK_EQUAL(boost::size(oc), 2);
+}
+
 BOOST_AUTO_TEST_CASE(update)
 {
     typedef MatrixSpace<Sphere<double>, int> oc_type;

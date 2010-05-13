@@ -8,6 +8,7 @@
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/type_traits/is_convertible.hpp>
+#include <boost/mpl/bool.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/iterator/transform_iterator.hpp>
@@ -113,12 +114,22 @@ private:
     typename base_type::size_type size_;
 };
 
+
+template<typename Trange_>
+struct is_sized
+    : check_range_iterator_category<Trange_, boost::random_access_traversal_tag>
+{
+};
+
+template<typename Titer_>
+struct is_sized<sized_iterator_range<Titer_> >: boost::mpl::true_
+{
+};
+
 template<typename Tfn, typename Trange>
 inline void call_with_size_if_randomly_accessible(
     Tfn& fn, Trange const &range,
-    typename boost::enable_if<
-        check_range_iterator_category<
-            Trange, boost::random_access_traversal_tag> >::type* = 0)
+    typename boost::enable_if<is_sized<Trange> >::type* = 0)
 {
     fn(boost::size(range));
 }
@@ -126,18 +137,14 @@ inline void call_with_size_if_randomly_accessible(
 template<typename Tfn, typename Trange>
 inline void call_with_size_if_randomly_accessible(
     Tfn& fn, Trange const &range,
-    typename boost::disable_if<
-        check_range_iterator_category<
-            Trange, boost::random_access_traversal_tag> >::type* = 0)
+    typename boost::disable_if<is_sized<Trange> >::type* = 0)
 {
 }
 
 template<typename Tfn, typename Trange>
 inline void call_with_size_if_randomly_accessible(
     Tfn const& fn, Trange const &range,
-    typename boost::enable_if<
-        check_range_iterator_category<
-            Trange, boost::random_access_traversal_tag> >::type* = 0)
+    typename boost::enable_if<is_sized<Trange> >::type* = 0)
 {
     fn(boost::size(range));
 }
@@ -145,9 +152,7 @@ inline void call_with_size_if_randomly_accessible(
 template<typename Tfn, typename Trange>
 inline void call_with_size_if_randomly_accessible(
     Tfn const& fn, Trange const &range,
-    typename boost::disable_if<
-        check_range_iterator_category<
-            Trange, boost::random_access_traversal_tag> >::type* = 0)
+    typename boost::disable_if<is_sized<Trange> >::type* = 0)
 {
 }
 
