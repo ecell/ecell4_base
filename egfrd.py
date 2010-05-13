@@ -1270,11 +1270,11 @@ class EGFRDSimulator(ParticleSimulatorBase):
             assert some_particle_of_multi1 not in multi2.world
 
         for sid_shell_pair in multi1.shell_list:
-            sid_shell_pair[1].domain_id = multi2.domain_id
+            sid_shell_pair[1].did = multi2.domain_id
             multi2.add_shell(sid_shell_pair)
 
-        for pid_particle_pair in multi1.world:
-            multi2.world.add_particle(pid_particle_pair)
+        for pid_particle_pair in multi1.particles:
+            multi2.add_particle(pid_particle_pair)
 
     def get_neighbors_within_radius_no_sort(self, pos, radius, ignore=[]):
         """Get neighbor domains within given radius.
