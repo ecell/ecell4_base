@@ -19,7 +19,6 @@
 #include <numpy/arrayobject.h>
 
 #include <unistd.h>
-#include <iostream>
 
 #include "numpy/type_mappings.hpp"
 #include "pickle_support.hpp"
