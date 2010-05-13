@@ -103,6 +103,7 @@ T3000 = [2e6 / math.pow(1.0/V, 2.0 / 3.0) for V in V3000]
 
 VBD = [1e-12] * 4
 NBD = [100,1000,10000,100000]
+#NBD = [100,1000,100000]
 TBD = [1e-4 / N for N in NBD]
 
 TBD2 = [1e-2 / N for N in NBD]
@@ -124,6 +125,11 @@ if __name__ == '__main__':
         run_set_bd(outfile, dataname, VBD, NBD, TBD, 1e-5); outfile.write('\n\n')
     elif mode == 'BD2':
         run_set_bd(outfile, dataname, VBD, NBD, TBD2, 1e-3); outfile.write('\n\n')
+
+    # just for large # particles stress test
+    elif mode == 'NE7':
+        run_set(outfile, dataname, [3.3e-10], [1e7], [1e-9]); outfile.write('\n\n')
+
     else:
         raise 'invalid argument'
 
