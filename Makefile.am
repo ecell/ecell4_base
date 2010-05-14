@@ -114,26 +114,39 @@ noinst_HEADERS = \
 	twofold_container.hpp\
 	Vector3.hpp\
 	World.hpp\
-	peer/Exception.hpp\
-	peer/GeneratorIteratorWrapper.hpp\
-	peer/Identifier.hpp\
+	peer/ShellWrapper.hpp\
 	peer/MatrixSpace.hpp\
+	peer/numpy/scalar_converters.hpp\
 	peer/numpy/ndarray_converters.hpp\
 	peer/numpy/pyarray_backed_allocator.hpp\
-	peer/numpy/scalar_converters.hpp\
 	peer/numpy/type_mappings.hpp\
 	peer/numpy/wrapped_multi_array.hpp\
-	peer/Particle.hpp\
-	peer/pickle_support.hpp\
-	peer/py_hash_support.hpp\
-	peer/RandomNumberGenerator.hpp\
-	peer/ReactionRule.hpp\
 	peer/set_indexing_suite.hpp\
-	peer/ShellWrapper.hpp\
+	peer/RandomNumberGenerator.hpp\
 	peer/SpeciesType.hpp\
-	peer/STLContainerWrapper.hpp\
-	peer/STLIteratorWrapper.hpp\
-	peer/tuple_converters.hpp\
+	peer/ReactionRule.hpp\
+	peer/Exception.hpp\
+	peer/compat.h\
+	peer/pickle_support.hpp\
+	peer/converters/sequence.hpp\
+	peer/converters/tuple.hpp\
+	peer/converters/tuple/to_python.hpp\
+	peer/converters/tuple/from_python.hpp\
+	peer/converters/iterator.hpp\
+	peer/converters/generator/to_python.hpp\
+	peer/converters/generator/from_python.hpp\
+	peer/converters/iterator/to_python.hpp\
+	peer/converters/sequence/to_python.hpp\
+	peer/converters/sequence/from_python.hpp\
+	peer/Particle.hpp\
+	peer/wrappers/range/pyiterable_range.hpp\
+	peer/wrappers/range/stl_container_wrapper.hpp\
+	peer/wrappers/generator/generator_wrapper.hpp\
+	peer/wrappers/iterator/pyiterator_generator.hpp\
+	peer/wrappers/iterator/pyseq_iterator.hpp\
+	peer/wrappers/iterator/stl_iterator_wrapper.hpp\
+	peer/py_hash_support.hpp\
+	peer/Identifier.hpp\
 	peer/utils.hpp\
 	utils/array_helper.hpp\
 	utils/array_traits.hpp\
