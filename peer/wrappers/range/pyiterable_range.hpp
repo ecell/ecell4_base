@@ -9,7 +9,7 @@
 #include "generator.hpp"
 #include "utils/range.hpp"
 
-#include "peer/wrappers/iterator/pyiterator_generator.hpp"
+#include "peer/wrappers/generator/pyiterator_generator.hpp"
 
 namespace peer { namespace wrappers {
 

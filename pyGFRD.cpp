@@ -39,7 +39,7 @@
 #include "peer/RandomNumberGenerator.hpp"
 #include "peer/wrappers/range/stl_container_wrapper.hpp"
 #include "peer/wrappers/generator/generator_wrapper.hpp"
-
+#include "peer/converters/generator/to_python.hpp"
 #include "PyEventScheduler.hpp"
 
 #include "utils/array_traits.hpp"
@@ -793,6 +793,12 @@ struct particle_id_pair_generator_converter
         peer::wrappers::generator_wrapper<
                 ptr_generator<native_type, std::auto_ptr<native_type> > >
                 ::__register_class("ParticleIDPairGenerator");
+        boost::python::to_python_converter<
+                native_type*,
+                peer::converters::ptr_generator_to_pyiterator_converter<
+                    native_type, std::auto_ptr<native_type> > >();
+                    
+
         peer::util::to_native_lvalue_converter<native_type, to_native_converter>();
     }
 };
@@ -1145,6 +1151,11 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::util::to_native_converter<world_traits_type::species_id_type, species_type_to_species_id_converter>();
 
     peer::wrappers::generator_wrapper<ptr_generator<NetworkRules::reaction_rule_generator, std::auto_ptr<NetworkRules::reaction_rule_generator> > >::__register_class("ReactionRuleGenerator");
+    boost::python::to_python_converter<
+            NetworkRules::reaction_rule_generator*,
+            peer::converters::ptr_generator_to_pyiterator_converter<
+                NetworkRules::reaction_rule_generator,
+                std::auto_ptr<NetworkRules::reaction_rule_generator> > >();
 
     peer::util::ExceptionWrapper<not_found, peer::util::PyExcTraits<&PyExc_LookupError> >::__register_class("NotFound");
     peer::util::ExceptionWrapper<already_exists, peer::util::PyExcTraits<&PyExc_StandardError> >::__register_class("AlreadyExists");
