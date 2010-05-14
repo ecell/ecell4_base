@@ -16,8 +16,8 @@
 #include <boost/mpl/if.hpp>
 #include "utils/range.hpp"
 
-#include "peer/STLIteratorWrapper.hpp"
-#include "peer/STLContainerWrapper.hpp"
+#include "peer/wrappers/iterator/stl_iterator_wrapper.hpp"
+#include "peer/wrappers/range/stl_container_wrapper.hpp"
 
 namespace peer {
 
@@ -152,7 +152,7 @@ namespace util
                 typename boost::range_iterator<range_type>::type>::type
                     result_type;
 
-            typedef STLIteratorWrapper<result_type, boost::python::object, Trcg_> wrapper_type;
+            typedef peer::wrappers::stl_iterator_wrapper<result_type, boost::python::object, Trcg_> wrapper_type;
 
             static PyObject* create_wrapper(boost::python::back_reference<T2_&> backref)
             {
@@ -191,12 +191,12 @@ namespace util
                 boost::python::object py_;
             };
 
-            typedef STLContainerWrapper<
+            typedef peer::wrappers::stl_container_wrapper<
                     range_type, holder,
                     typename boost::mpl::if_<
                         boost::is_const<T2_>,
-                        peer::detail::default_policy_generator<peer::detail::default_immutable_container_wrapper_policy>,
-                        peer::detail::default_policy_generator<peer::detail::default_container_wrapper_policy> >::type,
+                        peer::wrappers::default_policy_generator<peer::wrappers::default_immutable_container_wrapper_policy>,
+                        peer::wrappers::default_policy_generator<peer::wrappers::default_container_wrapper_policy> >::type,
                     Trcg_> wrapper_type;
 
 

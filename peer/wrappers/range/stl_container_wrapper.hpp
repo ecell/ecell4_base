@@ -1,7 +1,8 @@
-#ifndef PEER_STLCONTAINERWRAPPER_HPP
-#define PEER_STLCONTAINERWRAPPER_HPP
+#ifndef PEER_WRAPPERS_RANGE_STL_CONTAINER_WRAPPER_HPP
+#define PEER_WRAPPERS_RANGE_STL_CONTAINER_WRAPPER_HPP
 
 #include <boost/python.hpp>
+
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 #include <boost/range/size.hpp>
@@ -11,11 +12,9 @@
 #include <boost/range/reference.hpp>
 #include <boost/range/const_iterator.hpp>
 
-#include "peer/STLIteratorWrapper.hpp"
+#include "peer/wrappers/iterator/stl_iterator_wrapper.hpp"
 
-namespace peer {
-
-namespace detail {
+namespace peer { namespace wrappers {
 
 template<typename T_>
 struct default_immutable_container_wrapper_policy
@@ -100,15 +99,13 @@ struct default_policy_generator
     };
 };
 
-} // namespace detail
-
-template<typename Timpl_, typename Tholder_, typename Tpolgen_ = detail::default_policy_generator<detail::default_container_wrapper_policy>, typename Trcg_ = boost::python::return_by_value>
-class STLContainerWrapper
+template<typename Timpl_, typename Tholder_, typename Tpolgen_ = default_policy_generator<default_container_wrapper_policy>, typename Trcg_ = boost::python::return_by_value>
+class stl_container_wrapper
 {
 private:
     typedef Timpl_ impl_type;
     typedef typename Tpolgen_::template apply<Timpl_>::type policy_type;
-    typedef STLIteratorWrapper<
+    typedef stl_iterator_wrapper<
             typename policy_type::const_iterator,
             boost::python::handle<>, Trcg_> iterator_wrapper_type;
     typedef typename Trcg_::template apply<typename policy_type::reference>::type result_converter_type;
@@ -125,7 +122,7 @@ public:
 public:
     void* operator new(size_t)
     {
-        return PyObject_New(STLContainerWrapper, &__class__);
+        return PyObject_New(stl_container_wrapper, &__class__);
     }
 
     void operator delete(void* ptr)
@@ -143,21 +140,21 @@ public:
         return impl_;
     }
 
-    // STLContainerWrapper(Tholder_ const& impl): impl_(impl) {}
+    // stl_container_wrapper(Tholder_ const& impl): impl_(impl) {}
 
-    STLContainerWrapper(Tholder_ impl): impl_(impl) {}
+    stl_container_wrapper(Tholder_ impl): impl_(impl) {}
 
-    ~STLContainerWrapper()
+    ~stl_container_wrapper()
     {
     }
 
 public:
-    static Py_ssize_t __sq_len__(STLContainerWrapper const* self)
+    static Py_ssize_t __sq_len__(stl_container_wrapper const* self)
     {
         return policy_type::size(*self->impl_);
     }
 
-    static PyObject* __sq_item__(STLContainerWrapper const* self, Py_ssize_t idx)
+    static PyObject* __sq_item__(stl_container_wrapper const* self, Py_ssize_t idx)
     {
         if (idx < 0)
         {
@@ -178,7 +175,7 @@ public:
         return NULL;
     }
 
-    static int __sq_ass_item__(STLContainerWrapper* self, Py_ssize_t idx, PyObject *val)
+    static int __sq_ass_item__(stl_container_wrapper* self, Py_ssize_t idx, PyObject *val)
     {
         if (idx < 0 || idx >= static_cast<Py_ssize_t>(policy_type::size(*self->impl_)))
         {
@@ -197,7 +194,7 @@ public:
         return 0;
     }
 
-    static int __sq_contains__(STLContainerWrapper const* self, PyObject *val)
+    static int __sq_contains__(stl_container_wrapper const* self, PyObject *val)
     {
         boost::python::extract<typename policy_type::value_type> _val(val);
         if (!_val.check())
@@ -209,7 +206,7 @@ public:
         return e != std::find(policy_type::begin(static_cast<impl_type const&>(*self->impl_)), e, _val());
     }
 
-    static PyObject* __iter__(STLContainerWrapper const* self)
+    static PyObject* __iter__(stl_container_wrapper const* self)
     {
         return iterator_wrapper_type::create(*self->impl_,
             boost::python::handle<>(boost::python::borrowed(
@@ -237,55 +234,55 @@ public:
     {
         using namespace boost::python;
         PyObject* mod(scope().ptr());
-        PyTypeObject* klass(STLContainerWrapper::__class_init__(name, mod));
+        PyTypeObject* klass(stl_container_wrapper::__class_init__(name, mod));
         Py_INCREF(klass);
         scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
     }
 
     static PyObject* create(Tholder_ impl)
     {
-        return reinterpret_cast<PyObject*>(new STLContainerWrapper(impl));
+        return reinterpret_cast<PyObject*>(new stl_container_wrapper(impl));
     }
 
-    static void __dealloc__(STLContainerWrapper* self)
+    static void __dealloc__(stl_container_wrapper* self)
     {
         delete self;
     }
 };
 
 template<typename Timpl_, typename Tholder_, typename Tpolgen_, typename Trcg_>
-PySequenceMethods STLContainerWrapper<Timpl_, Tholder_, Tpolgen_, Trcg_>::__sequence_methods__ = {
-    (lenfunc) &STLContainerWrapper::__sq_len__,         /* sq_length */
+PySequenceMethods stl_container_wrapper<Timpl_, Tholder_, Tpolgen_, Trcg_>::__sequence_methods__ = {
+    (lenfunc) &stl_container_wrapper::__sq_len__,         /* sq_length */
     (binaryfunc) 0,                                     /* sq_concat */
     (ssizeargfunc) 0,                                   /* sq_repeat */
-    (ssizeargfunc) &STLContainerWrapper::__sq_item__,   /* sq_item */
+    (ssizeargfunc) &stl_container_wrapper::__sq_item__,   /* sq_item */
     (ssizessizeargfunc) 0,                              /* sq_slice */
-    (ssizeobjargproc) &STLContainerWrapper::__sq_ass_item__,    /* sq_ass_item */
+    (ssizeobjargproc) &stl_container_wrapper::__sq_ass_item__,    /* sq_ass_item */
     (ssizessizeobjargproc) 0,                           /* sq_ass_slice */
-    (objobjproc) &STLContainerWrapper::__sq_contains__, /* sq_contains */
+    (objobjproc) &stl_container_wrapper::__sq_contains__, /* sq_contains */
     (binaryfunc) 0,                                     /* sq_inplace_concat */
     (ssizeargfunc) 0,                                   /* sq_inplace_repeat */
 };
 
 template<typename Titer_, typename Tholder_, typename Tpolgen_, typename Trcg_>
-std::string STLContainerWrapper<Titer_, Tholder_, Tpolgen_, Trcg_>::__name__;
+std::string stl_container_wrapper<Titer_, Tholder_, Tpolgen_, Trcg_>::__name__;
 
 template<typename Titer_, typename Tholder_, typename Tpolgen_, typename Trcg_>
-PyTypeObject STLContainerWrapper<Titer_, Tholder_, Tpolgen_, Trcg_>::__class__ = {
+PyTypeObject stl_container_wrapper<Titer_, Tholder_, Tpolgen_, Trcg_>::__class__ = {
     PyObject_HEAD_INIT(&PyType_Type)
     0,                    /* ob_size */
     0,                    /* tp_name */
-    sizeof(STLContainerWrapper), /* tp_basicsize */
+    sizeof(stl_container_wrapper), /* tp_basicsize */
     0,                    /* tp_itemsize */
     /* methods */
-    (destructor)&STLContainerWrapper::__dealloc__, /* tp_dealloc */
+    (destructor)&stl_container_wrapper::__dealloc__, /* tp_dealloc */
     0,                    /* tp_print */
     0,                    /* tp_getattr */
     0,                    /* tp_setattr */
     0,                    /* tp_compare */
     0,                    /* tp_repr */
     0,                    /* tp_as_number */
-    &STLContainerWrapper::__sequence_methods__,  /* tp_as_sequence */
+    &stl_container_wrapper::__sequence_methods__,  /* tp_as_sequence */
     0,                    /* tp_as_mapping */
     0,                    /* tp_hash */
     0,                    /* tp_call */
@@ -299,7 +296,7 @@ PyTypeObject STLContainerWrapper<Titer_, Tholder_, Tpolgen_, Trcg_>::__class__ =
     0,                    /* tp_clear */
     0,                    /* tp_richcompare */
     0,                    /* tp_weaklistoffset */
-    (getiterfunc)&STLContainerWrapper::__iter__, /* tp_iter */
+    (getiterfunc)&stl_container_wrapper::__iter__, /* tp_iter */
     0,                    /* tp_iternext */
     0,                    /* tp_methods */
     0,                    /* tp_members */
@@ -315,6 +312,6 @@ PyTypeObject STLContainerWrapper<Titer_, Tholder_, Tpolgen_, Trcg_>::__class__ =
     PyObject_Del,         /* tp_free */
 };
 
-} // namespace peer
+} } // namespace peer::wrappers
 
-#endif /* PEER_STLCONTAINERWRAPPER_HPP */
+#endif /* PEER_WRAPPERS_RANGE_STL_CONTAINER_WRAPPER_HPP */

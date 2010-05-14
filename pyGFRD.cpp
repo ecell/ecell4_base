@@ -10,7 +10,6 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/python.hpp>
-#include <boost/python/numeric.hpp>
 #include <boost/python/tuple.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python/refcount.hpp>
@@ -24,8 +23,8 @@
 
 #include "peer/utils.hpp"
 #include "peer/py_hash_support.hpp"
-#include "peer/tuple_converters.hpp"
-#include "peer/range_converters.hpp"
+#include "peer/converters/tuple.hpp"
+#include "peer/converters/sequence.hpp"
 #include "peer/set_indexing_suite.hpp"
 #include "peer/numpy/ndarray_converters.hpp"
 #include "peer/numpy/wrapped_multi_array.hpp"
@@ -36,10 +35,10 @@
 #include "peer/SpeciesType.hpp"
 #include "peer/Identifier.hpp"
 #include "peer/ReactionRule.hpp"
-#include "peer/GeneratorIteratorWrapper.hpp"
 #include "peer/Exception.hpp"
 #include "peer/RandomNumberGenerator.hpp"
-#include "peer/STLContainerWrapper.hpp"
+#include "peer/wrappers/range/stl_container_wrapper.hpp"
+#include "peer/wrappers/generator/generator_wrapper.hpp"
 
 #include "PyEventScheduler.hpp"
 
@@ -391,7 +390,7 @@ struct reaction_rule_vector_converter
         native_type const& instance_;
     };
 
-    typedef peer::STLContainerWrapper<native_type, instance_holder> wrapper_type;
+    typedef peer::wrappers::stl_container_wrapper<native_type, instance_holder> wrapper_type;
 
     struct to_python_converter
     {
@@ -464,7 +463,7 @@ struct particle_id_pair_and_distance_list_converter
             }
         };
 
-        typedef peer::STLContainerWrapper<native_type, std::auto_ptr<native_type>, peer::detail::default_policy_generator<policy> > wrapper_type;
+        typedef peer::wrappers::stl_container_wrapper<native_type, std::auto_ptr<native_type>, peer::wrappers::default_policy_generator<policy> > wrapper_type;
         static PyObject* convert(native_type* v)
         {
             return reinterpret_cast<PyObject*>(wrapper_type::create(std::auto_ptr<native_type>(v ? v: new native_type())));
@@ -601,7 +600,7 @@ struct species_range_converter: public boost::python::default_call_policies
         boost::python::handle<> owner_;
     };
 
-    typedef peer::STLContainerWrapper<native_type, instance_holder, peer::detail::default_policy_generator<policy> > wrapper_type;
+    typedef peer::wrappers::stl_container_wrapper<native_type, instance_holder, peer::wrappers::default_policy_generator<policy> > wrapper_type;
 
     struct result_converter
     {
@@ -710,7 +709,7 @@ struct surfaces_range_converter: public boost::python::default_call_policies
         boost::python::handle<> owner_;
     };
 
-    typedef peer::STLContainerWrapper<native_type, instance_holder, peer::detail::default_policy_generator<policy> > wrapper_type;
+    typedef peer::wrappers::stl_container_wrapper<native_type, instance_holder, peer::wrappers::default_policy_generator<policy> > wrapper_type;
 
     struct result_converter
     {
@@ -761,7 +760,7 @@ struct domain_id_pair_converter
     {
         boost::python::to_python_converter<native_type, to_python_converter>();
         peer::util::to_native_converter<native_type,
-            peer::util::detail::pytuple_to_tuple_converter<native_type> >();
+            peer::converters::pytuple_to_tuple_converter<native_type> >();
     }
 };
 
@@ -779,7 +778,7 @@ struct particle_id_pair_generator_converter
             {
                 boost::python::throw_error_already_set();
             }
-            return new peer::util::detail::pyiterator_generator<
+            return new peer::wrappers::pyiterator_generator<
                     native_type::result_type>(iter);
         }
 
@@ -791,7 +790,9 @@ struct particle_id_pair_generator_converter
 
     static void __register()
     {
-        peer::util::GeneratorIteratorWrapper<ptr_generator<native_type, std::auto_ptr<native_type> > >::__register_class("ParticleIDPairGenerator");
+        peer::wrappers::generator_wrapper<
+                ptr_generator<native_type, std::auto_ptr<native_type> > >
+                ::__register_class("ParticleIDPairGenerator");
         peer::util::to_native_lvalue_converter<native_type, to_native_converter>();
     }
 };
@@ -1143,7 +1144,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     peer::IdentifierWrapper<world_traits_type::species_id_type>::__register_class("SpeciesTypeID");
     peer::util::to_native_converter<world_traits_type::species_id_type, species_type_to_species_id_converter>();
 
-    peer::util::GeneratorIteratorWrapper<ptr_generator<NetworkRules::reaction_rule_generator, std::auto_ptr<NetworkRules::reaction_rule_generator> > >::__register_class("ReactionRuleGenerator");
+    peer::wrappers::generator_wrapper<ptr_generator<NetworkRules::reaction_rule_generator, std::auto_ptr<NetworkRules::reaction_rule_generator> > >::__register_class("ReactionRuleGenerator");
 
     peer::util::ExceptionWrapper<not_found, peer::util::PyExcTraits<&PyExc_LookupError> >::__register_class("NotFound");
     peer::util::ExceptionWrapper<already_exists, peer::util::PyExcTraits<&PyExc_StandardError> >::__register_class("AlreadyExists");
@@ -1185,9 +1186,9 @@ BOOST_PYTHON_MODULE( _gfrd )
             make_function(&reaction_rule_info_type::get_reactants,
                           return_value_policy<return_by_value>()));
 
-    peer::util::register_range_to_tuple_converter<reaction_rule_info_type::species_id_range>();
+    peer::converters::register_range_to_tuple_converter<reaction_rule_info_type::species_id_range>();
 
-    peer::util::register_iterable_to_range_converter<reaction_rule_info_type::species_id_range>();
+    peer::converters::register_iterable_to_range_converter<reaction_rule_info_type::species_id_range>();
 
     typedef egfrd_simulator_traits_type::network_rules_type NetworkRulesWrapper;
     class_<NetworkRulesWrapper, boost::noncopyable>("NetworkRulesWrapper", init<NetworkRules const&>())
@@ -1200,8 +1201,8 @@ BOOST_PYTHON_MODULE( _gfrd )
     reaction_rule_vector_converter::wrapper_type::__class_init__("NetworkRulesWrapper.ReactionRuleVector", scope().ptr());
     reaction_rule_vector_converter::__register();
 
-    peer::util::register_tuple_converter<CyclicWorld::particle_id_pair>();
-    peer::util::register_tuple_converter<CyclicWorld::particle_id_pair_and_distance>();
+    peer::converters::register_tuple_converter<CyclicWorld::particle_id_pair>();
+    peer::converters::register_tuple_converter<CyclicWorld::particle_id_pair_and_distance>();
 
     particle_id_pair_generator_converter::__register();
 
@@ -1248,8 +1249,8 @@ BOOST_PYTHON_MODULE( _gfrd )
 
     particle_id_pair_and_distance_list_converter::__register();
     species_range_converter::__register();
-    peer::util::register_range_to_tuple_converter<twofold_container<CyclicWorld::particle_id_type> >();
-    peer::util::register_iterable_to_range_converter<twofold_container<CyclicWorld::particle_id_type> >();
+    peer::converters::register_range_to_tuple_converter<twofold_container<CyclicWorld::particle_id_type> >();
+    peer::converters::register_iterable_to_range_converter<twofold_container<CyclicWorld::particle_id_type> >();
 
     class_<CyclicWorld, bases<particle_container_type> >(
         "World", init<CyclicWorld::length_type, CyclicWorld::size_type>())
@@ -1654,7 +1655,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .add_property("D_R",
             make_function(&SphericalPair::D_R,
                 return_value_policy<return_by_value>()));
-    peer::util::register_range_to_tuple_converter<SphericalPair::particle_array_type>();
+    peer::converters::register_range_to_tuple_converter<SphericalPair::particle_array_type>();
 
     typedef _EGFRDSimulator::cylindrical_pair_type CylindricalPair;
     class_<CylindricalPair, bases<Domain>,
@@ -1696,7 +1697,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .add_property("D_R",
             make_function(&CylindricalPair::D_R,
                 return_value_policy<return_by_value>()));
-    peer::util::register_range_to_tuple_converter<CylindricalPair::particle_array_type>();
+    peer::converters::register_range_to_tuple_converter<CylindricalPair::particle_array_type>();
 
     class_<_EGFRDSimulator, boost::noncopyable>("_EGFRDSimulator",
             init<CyclicWorld&,
@@ -1716,7 +1717,7 @@ BOOST_PYTHON_MODULE( _gfrd )
                 return_value_policy<return_by_value>())
         ;
 
-    peer::util::GeneratorIteratorWrapper<ptr_generator<_EGFRDSimulator::domain_id_pair_generator, std::auto_ptr<_EGFRDSimulator::domain_id_pair_generator> > >::__register_class("DomainIDPairGenerator");
+    peer::wrappers::generator_wrapper<ptr_generator<_EGFRDSimulator::domain_id_pair_generator, std::auto_ptr<_EGFRDSimulator::domain_id_pair_generator> > >::__register_class("DomainIDPairGenerator");
 
     class_<_BDPropagator, boost::noncopyable>(
         "BDPropagator", init<
@@ -1725,7 +1726,7 @@ BOOST_PYTHON_MODULE( _gfrd )
             egfrd_simulator_traits_type::rng_type&,
             egfrd_simulator_traits_type::time_type,
             int,
-            peer::util::py_range_wrapper<world_traits_type::particle_id_type> >())
+            peer::wrappers::pyiterable_range<world_traits_type::particle_id_type> >())
         .add_property("reactions",
             peer::util::range_from_range<
                 _BDPropagator::reaction_rules_range,
@@ -1740,11 +1741,11 @@ BOOST_PYTHON_MODULE( _gfrd )
            bases<particle_container_type>, boost::noncopyable>(
         "MultiParticleContainer", init<CyclicWorld&>());
 
-    peer::util::register_py_range_wrapper_converter<world_traits_type::particle_id_type>();
+    peer::converters::register_pyiterable_range_converter<world_traits_type::particle_id_type>();
 
     domain_id_pair_converter::__register();
 
-    peer::util::register_iterable_to_ra_container_converter<boost::array<world_traits_type::length_type, 3>, 3>();
+    peer::converters::register_iterable_to_ra_container_converter<boost::array<world_traits_type::length_type, 3>, 3>();
 
     typedef StructureUtils<egfrd_simulator_traits_type> _StructureUtils;
     def("create_planar_surface", &_StructureUtils::create_planar_surface,

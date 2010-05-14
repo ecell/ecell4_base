@@ -9,8 +9,8 @@
 #include <boost/python/return_by_value.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
-#include "peer/tuple_converters.hpp"
-#include "peer/range_converters.hpp"
+#include "peer/converters/tuple.hpp"
+#include "peer/converters/sequence.hpp"
 #include "../ReactionRule.hpp"
 
 namespace peer {
@@ -144,7 +144,7 @@ public:
         typedef std::vector<impl_type::species_type_id_type> species_type_id_vector;
         peer::util::to_native_converter<impl_type::Reactants,
             seq_to_reactants_converter>();
-        peer::util::register_range_to_tuple_converter<impl_type::Reactants>();
+        converters::register_range_to_tuple_converter<impl_type::Reactants>();
         peer::util::to_native_converter<species_type_id_vector,
             iterable_to_stlcontainer_converter<species_type_id_vector> >();
 

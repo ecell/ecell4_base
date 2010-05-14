@@ -1,15 +1,15 @@
-#ifndef PEER_STLITERATORWRAPPER_HPP
-#define PEER_STLITERATORWRAPPER_HPP
+#ifndef PEER_WRAPPERS_ITERATOR_STL_ITERATOR_WRAPPER_HPP
+#define PEER_WRAPPERS_ITERATOR_STL_ITERATOR_WRAPPER_HPP
 
 #include <boost/python.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 
-namespace peer {
+namespace peer { namespace wrappers {
 
 template<typename Titer_, typename Tholder_ = void*, typename Trcg_ = boost::python::return_by_value>
-class STLIteratorWrapper
+class stl_iterator_wrapper
 {
     typedef typename boost::iterator_reference<Titer_>::type iterator_reference;
     typedef typename Trcg_::template apply<iterator_reference>::type result_converter_type;
@@ -27,7 +27,7 @@ public:
 public:
     void* operator new(size_t)
     {
-        return PyObject_New(STLIteratorWrapper, &__class__);
+        return PyObject_New(stl_iterator_wrapper, &__class__);
     }
 
     void operator delete(void* ptr)
@@ -36,14 +36,14 @@ public:
     }
 
     template<typename Trange>
-    STLIteratorWrapper(Trange const& range, Tholder_ holder = Tholder_())
+    stl_iterator_wrapper(Trange const& range, Tholder_ holder = Tholder_())
         : i_(boost::begin(range)), end_(boost::end(range)), holder_(holder) {}
 
     template<typename Titer>
-    STLIteratorWrapper(Titer const& begin, Titer const& end, Tholder_ holder = Tholder_())
+    stl_iterator_wrapper(Titer const& begin, Titer const& end, Tholder_ holder = Tholder_())
         : i_(begin), end_(end), holder_(holder) {}
 
-    ~STLIteratorWrapper()
+    ~stl_iterator_wrapper()
     {
     }
 
@@ -65,7 +65,7 @@ public:
     static void __register_class(char const* name)
     {
         using namespace boost::python;
-        PyTypeObject* klass(STLIteratorWrapper::__class_init__(name, reinterpret_cast<PyObject*>(scope().ptr())));
+        PyTypeObject* klass(stl_iterator_wrapper::__class_init__(name, reinterpret_cast<PyObject*>(scope().ptr())));
         Py_INCREF(klass);
         scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
     }
@@ -73,15 +73,15 @@ public:
     template<typename Trange>
     static PyObject* create(Trange const& range, Tholder_ holder = Tholder_())
     {
-        return reinterpret_cast<PyObject*>(new STLIteratorWrapper(range, holder));
+        return reinterpret_cast<PyObject*>(new stl_iterator_wrapper(range, holder));
     }
 
-    static void __dealloc__(STLIteratorWrapper* self)
+    static void __dealloc__(stl_iterator_wrapper* self)
     {
         delete self;
     }
 
-    static PyObject* __next__(STLIteratorWrapper* self)
+    static PyObject* __next__(stl_iterator_wrapper* self)
     {
         if (self->i_ == self->end_)
             return NULL;
@@ -98,17 +98,17 @@ public:
 };
 
 template<typename Titer_, typename Tholder_, typename Trcg_>
-std::string STLIteratorWrapper<Titer_, Tholder_, Trcg_>::__name__;
+std::string stl_iterator_wrapper<Titer_, Tholder_, Trcg_>::__name__;
 
 template<typename Titer_, typename Tholder_, typename Trcg_>
-PyTypeObject STLIteratorWrapper<Titer_, Tholder_, Trcg_>::__class__ = {
+PyTypeObject stl_iterator_wrapper<Titer_, Tholder_, Trcg_>::__class__ = {
     PyObject_HEAD_INIT(&PyType_Type)
     0,                    /* ob_size */
     0,                    /* tp_name */
-    sizeof(STLIteratorWrapper), /* tp_basicsize */
+    sizeof(stl_iterator_wrapper), /* tp_basicsize */
     0,                    /* tp_itemsize */
     /* methods */
-    (destructor)&STLIteratorWrapper::__dealloc__, /* tp_dealloc */
+    (destructor)&stl_iterator_wrapper::__dealloc__, /* tp_dealloc */
     0,                    /* tp_print */
     0,                    /* tp_getattr */
     0,                    /* tp_setattr */
@@ -130,7 +130,7 @@ PyTypeObject STLIteratorWrapper<Titer_, Tholder_, Trcg_>::__class__ = {
     0,                    /* tp_richcompare */
     0,                    /* tp_weaklistoffset */
     PyObject_SelfIter,  /* tp_iter */
-    (iternextfunc)&STLIteratorWrapper::__next__,        /* tp_iternext */
+    (iternextfunc)&stl_iterator_wrapper::__next__,        /* tp_iternext */
     0,                    /* tp_methods */
     0,                    /* tp_members */
     0,                    /* tp_getset */
@@ -145,40 +145,15 @@ PyTypeObject STLIteratorWrapper<Titer_, Tholder_, Trcg_>::__class__ = {
     PyObject_Del,         /* tp_free */
 };
 
-namespace util {
-
-namespace detail {
-
-template<typename Trange_, typename Tholder_ = void*, typename Trcg_ = boost::python::return_by_value>
-struct stl_iterator_range_converter
-{
-    typedef Trange_ native_type;
-
-    static PyObject* convert(native_type const& v)
-    {
-        return reinterpret_cast<PyObject*>(STLIteratorWrapper<typename boost::range_const_iterator<native_type>::type, Tholder_, Trcg_>::create(v));
-    }
-};
-
-} // namespace detail
-
-template<typename Trange, typename Tholder, typename Trcg>
-inline void register_stl_iterator_range_converter()
-{
-    boost::python::to_python_converter<Trange, detail::stl_iterator_range_converter<Trange, Tholder, Trcg> >();
-}
-
 template<typename Trange, typename Tholder, typename Trcg>
 inline PyObject*
 make_stl_iterator_wrapper(Trange const& range, Tholder holder = Tholder(), Trcg const& rcg = boost::python::return_by_value())
 {
-    typedef STLIteratorWrapper<typename boost::range_const_iterator<Trange>::type, Tholder, Trcg> wrapper_type;
+    typedef stl_iterator_wrapper<typename boost::range_const_iterator<Trange>::type, Tholder, Trcg> wrapper_type;
     wrapper_type::__class_init__(typeid(wrapper_type).name(), boost::python::scope().ptr());
     return wrapper_type::create(range, holder);
 }
 
-} // namespace util
+} } // namespace peer::wrappers
 
-} // namespace peer
-
-#endif /* PEER_STLITERATORWRAPPER_HPP */
+#endif /* PEER_WRAPPERS_ITERATOR_STL_ITERATOR_WRAPPER_HPP */

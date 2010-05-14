@@ -24,10 +24,10 @@
 #include "peer/utils.hpp"
 #include "peer/numpy/type_mappings.hpp"
 
-#include "peer/tuple_converters.hpp"
+#include "peer/converters/tuple.hpp"
 #include "peer/numpy/pyarray_backed_allocator.hpp"
 #include "peer/numpy/ndarray_converters.hpp"
-#include "peer/STLIteratorWrapper.hpp"
+#include "peer/wrappers/iterator/stl_iterator_wrapper.hpp"
 
 #include "utils/pair.hpp"
 #include "utils/range.hpp"
@@ -305,8 +305,8 @@ public:
         static void __register_converter()
         {
             collector_result_converter_type::__register_converter();
-            util::register_tuple_converter<value_type>();
-            util::register_tuple_converter<typename impl_type::value_type>();
+            converters::register_tuple_converter<value_type>();
+            converters::register_tuple_converter<typename impl_type::value_type>();
         }
 
     private:
@@ -348,8 +348,9 @@ public:
     {
         using namespace boost::python;
         return object(handle<>(
-            STLIteratorWrapper<typename impl_type::const_iterator,
-                               boost::python::object>::create(
+            wrappers::stl_iterator_wrapper<
+                    typename impl_type::const_iterator,
+                    boost::python::object>::create(
                 std::make_pair(self.get().impl_.begin(),
                                self.get().impl_.end()),
                                self.source())));
@@ -359,7 +360,8 @@ public:
     {
         using namespace boost::python;
         return object(handle<>(
-            STLIteratorWrapper<key_iterator, boost::python::object>::create(
+            wrappers::stl_iterator_wrapper<
+                    key_iterator, boost::python::object>::create(
                 make_transform_iterator_range(
                     std::make_pair(self.get().impl_.begin(),
                                    self.get().impl_.end()),
@@ -445,11 +447,14 @@ public:
 
         Builders::__register_converter();
 
-        util::register_tuple_converter<typename impl_type::value_type>();
-        STLIteratorWrapper<typename impl_type::const_iterator,
-                           boost::python::object>::__class_init__(
+        converters::register_tuple_converter<typename impl_type::value_type>();
+        wrappers::stl_iterator_wrapper<
+                typename impl_type::const_iterator,
+                boost::python::object>::__class_init__(
             "MatrixSpace.iterator");
-        STLIteratorWrapper<key_iterator, boost::python::object>::__class_init__(
+        wrappers::stl_iterator_wrapper<
+                key_iterator,
+                boost::python::object>::__class_init__(
             "MatrixSpace.keyiterator");
 
         class_<MatrixSpace>(class_name, init<length_type, size_type>())
