@@ -142,7 +142,7 @@ noinst_HEADERS = \
 	peer/wrappers/range/pyiterable_range.hpp\
 	peer/wrappers/range/stl_container_wrapper.hpp\
 	peer/wrappers/generator/generator_wrapper.hpp\
-	peer/wrappers/iterator/pyiterator_generator.hpp\
+	peer/wrappers/generator/pyiterator_generator.hpp\
 	peer/wrappers/iterator/pyseq_iterator.hpp\
 	peer/wrappers/iterator/stl_iterator_wrapper.hpp\
 	peer/py_hash_support.hpp\
