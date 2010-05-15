@@ -73,6 +73,30 @@ static boost::python::object species_info_class;
 
 typedef peer::util::detail::array_to_ndarray_converter<world_traits_type::position_type, world_traits_type::position_type::value_type, 3> position_to_ndarray_converter;
 
+/* {{{ explicit specialization */
+
+namespace boost {
+
+template<>
+inline std::size_t
+size(MatrixSpace<egfrd_simulator_traits_type::spherical_shell_type, egfrd_simulator_traits_type::shell_id_type> const&);
+
+template<>
+inline std::size_t
+size(MatrixSpace<egfrd_simulator_traits_type::cylindrical_shell_type, egfrd_simulator_traits_type::shell_id_type> const&);
+
+template<>
+inline std::size_t
+size(MatrixSpace<world_traits_type::particle_type, world_traits_type::particle_id_type, get_mapper_mf> const&);
+
+template<>
+inline std::size_t
+size(peer::wrappers::pyiterable_range<world_traits_type::particle_id_type> const&);
+
+} // namespace boost
+
+/* }}} */
+
 struct ndarray_to_position_converter
 {
     typedef world_traits_type::position_type native_type;

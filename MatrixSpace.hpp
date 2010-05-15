@@ -700,7 +700,7 @@ struct range_const_iterator<MatrixSpace<Tobj_, Tkey_, MFget_mapper_> >
 
 template<typename T_, typename Tkey_,
         template<typename, typename> class MFget_mapper_>
-inline typename boost::range_difference<MatrixSpace<T_, Tkey_, MFget_mapper_> >::type size(MatrixSpace<T_, Tkey_, MFget_mapper_> const& that)
+inline typename std::size_t size(MatrixSpace<T_, Tkey_, MFget_mapper_> const& that)
 {
     return that.size();
 }
