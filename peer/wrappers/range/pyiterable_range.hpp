@@ -80,8 +80,8 @@ protected:
 namespace boost
 {
 
-template<typename Tvalue>
-struct range_difference<peer::wrappers::pyiterable_range<Tvalue> >
+template<typename Tvalue_>
+struct range_difference<peer::wrappers::pyiterable_range<Tvalue_> >
 {
     typedef std::size_t type;
 };
