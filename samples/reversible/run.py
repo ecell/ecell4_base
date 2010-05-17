@@ -75,7 +75,7 @@ def singlerun(T):
         s.step()
 
     
-    if len(s.particle_pool[C.id]) != 0:
+    if len(s.world.get_particle_ids(C.id)) != 0:
         return 0, s.t
 
     distance = s.distance_between_particles(A.id, B.id)

@@ -157,7 +157,7 @@ def singlerun(T_list, D_factor, N_B, N_X):
     while 1:
         if s.last_reaction:
             print s.last_reaction
-            if len(s.particle_pool[C.id]) == 0:  #A,B
+            if len(s.world.get_particle_ids(C.id)) == 0:  #A,B
                 print 'set t_last', s.t
                 t_last = s.t  # set t_last
             else:    # C
@@ -168,7 +168,7 @@ def singlerun(T_list, D_factor, N_B, N_X):
         if next_time > next_stop:
             print 'stop', i_T, next_stop
             s.stop(next_stop)
-            if len(s.particle_pool[C.id]) != 0:  #A,B
+            if len(s.world.get_particle_ids(C.id)) != 0:  #A,B
                 r_list.append(0)
             else:
                 r_list.append(s.distance_between_particles(A.id, B.id))
