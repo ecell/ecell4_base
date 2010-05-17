@@ -275,39 +275,6 @@ static void Model___setitem__(Model* model, std::string const& key, std::string 
     (*model)[key] = value;
 }
 
-template<typename Twrapper_>
-struct MatrixSpace_to_select_second_range_converter
-{
-    typedef Twrapper_ wrapper_type;
-    typedef typename Twrapper_::impl_type impl_type;
-    typedef select_first_range<const impl_type> native_type;
-
-    static void* convertible(PyObject* ptr)
-    {
-        if (!PyObject_TypeCheck(ptr, wrapper_type::__class__))
-        {
-            return NULL;
-        }
-
-        return ptr;
-    }
-    
-    static void construct(PyObject* ptr,
-                          boost::python::converter::rvalue_from_python_storage<native_type>* data)
-    {
-        Twrapper_& wrapper(boost::python::extract<Twrapper_&>(
-            static_cast<PyObject*>(data->stage1.convertible)));
-        data->stage1.convertible = new(data->storage.bytes) native_type(
-            static_cast<impl_type&>(wrapper));
-    }
-
-    static void __register()
-    {
-        peer::util::to_native_converter<native_type,
-            MatrixSpace_to_select_second_range_converter>();
-    }
-};
-
 
 template<typename T_>
 static void register_id_generator(char const* class_name)
@@ -523,6 +490,110 @@ struct particle_id_pair_and_distance_list_converter
         to_python_converter::wrapper_type::__class_init__("ParticleIDAndDistanceVector", boost::python::scope().ptr());
         boost::python::to_python_converter<native_type*, to_python_converter>();
         peer::util::to_native_lvalue_converter<native_type, to_native_converter>();
+    }
+};
+
+struct particle_id_pair_range_select_first_converter
+{
+    typedef get_select_first_range<CyclicWorld::particle_id_pair_range>::type native_type;
+
+    struct holder
+    {
+        holder(native_type const& val): val_(val) {}
+
+        operator native_type const*() const
+        {
+            return &val_;
+        }
+
+        operator native_type*() const
+        {
+            // this should never be called actually
+            return &const_cast<holder*>(this)->val_;
+        }
+
+        native_type const& operator*() const
+        {
+            return val_;
+        }
+
+    private:
+        native_type val_;
+    };
+
+    template<typename T_>
+    struct policy
+    {
+        typedef typename boost::range_size<T_>::type size_type;
+        typedef typename boost::range_value<T_>::type value_type;
+        typedef value_type const& reference;
+        typedef value_type const& const_reference;
+        typedef typename boost::range_const_iterator<T_>::type iterator;
+        typedef typename boost::range_const_iterator<T_>::type const_iterator;
+
+        static size_type size(T_ const& c)
+        {
+            return ::size(c);
+        }
+
+        static void set(T_ const& c, size_type i, const_reference v)
+        {
+            PyErr_SetString(PyExc_TypeError, "object does not support indexing");
+            boost::python::throw_error_already_set();
+        }
+
+        static value_type get(T_ const& c, size_type i)
+        {
+            PyErr_SetString(PyExc_TypeError, "object does not support indexing");
+            boost::python::throw_error_already_set();
+            throw 0; // dummy
+        }
+
+        static iterator begin(T_ const& c)
+        {
+            return boost::begin(c);
+        }
+
+        static iterator end(T_ const& c)
+        {
+            return boost::end(c);
+        }
+    };
+
+    typedef peer::wrappers::stl_container_wrapper<native_type, holder, peer::wrappers::default_policy_generator<policy> > wrapper_type;
+
+    struct to_python_converter
+    {
+        static PyObject* convert(native_type const& v)
+        {
+            return reinterpret_cast<PyObject*>(wrapper_type::create(v));
+        }
+    };
+
+    struct to_native_converter
+    {
+        static void* convertible(PyObject* ptr)
+        {
+            if (Py_TYPE(ptr) != &wrapper_type::__class__)
+            {
+                return NULL;
+            }
+            return ptr;
+        }
+        
+        static void construct(PyObject* ptr,
+                              boost::python::converter::rvalue_from_python_storage<native_type>* data)
+        {
+            data->stage1.convertible = new(data->storage.bytes) native_type(
+                *reinterpret_cast<wrapper_type*>(data->stage1.convertible)->ptr());
+        }
+    };
+
+    static void __register()
+    {
+        wrapper_type::__class_init__("ParticleIDRange", boost::python::scope().ptr());
+        boost::python::to_python_converter<native_type, to_python_converter>();
+        peer::util::to_native_converter<native_type, to_native_converter>();
     }
 };
 
@@ -804,13 +875,20 @@ struct particle_id_pair_generator_converter
     }
 };
 
-template<typename T_>
-typename T_::particle_id_pair_and_distance_list* World_check_overlap(
-    T_& world,
-    typename T_::particle_shape_type const& s,
-    twofold_container<typename T_::particle_id_type> const& ignore)
+template<typename T>
+static typename T::particle_id_pair_and_distance_list* World_check_overlap(
+    T const& world,
+    typename T::particle_shape_type const& s,
+    twofold_container<typename T::particle_id_type> const& ignore)
 {
     return world.check_overlap(s, ignore);
+}
+
+template<typename T>
+static typename get_select_first_range<typename T::particle_id_pair_range>::type
+World_get_particle_ids(T const& world)
+{
+    return make_select_first_range(world.get_particles_range());
 }
 
 struct static_gsl_rng: public gsl_rng_base<static_gsl_rng>
@@ -1263,6 +1341,7 @@ BOOST_PYTHON_MODULE( _gfrd )
     species_range_converter::__register();
     peer::converters::register_range_to_tuple_converter<twofold_container<CyclicWorld::particle_id_type> >();
     peer::converters::register_iterable_to_range_converter<twofold_container<CyclicWorld::particle_id_type> >();
+    particle_id_pair_range_select_first_converter::__register();
 
     class_<CyclicWorld, bases<particle_container_type> >(
         "World", init<CyclicWorld::length_type, CyclicWorld::size_type>())
@@ -1274,6 +1353,7 @@ BOOST_PYTHON_MODULE( _gfrd )
         .add_property("surfaces",
             make_function(
                 (CyclicWorld::surfaces_range(CyclicWorld::*)() const)&CyclicWorld::get_surfaces, surfaces_range_converter()))
+        .add_property("particle_ids", &World_get_particle_ids<CyclicWorld>)
         .def("add_species", &CyclicWorld::add_species)
         .def("add_surface", &CyclicWorld::add_surface)
 		.def("get_particle_ids", &CyclicWorld::get_particle_ids)
@@ -1739,6 +1819,13 @@ BOOST_PYTHON_MODULE( _gfrd )
             egfrd_simulator_traits_type::time_type,
             int,
             peer::wrappers::pyiterable_range<world_traits_type::particle_id_type> >())
+        .def(init<
+            egfrd_simulator_traits_type::world_type::particle_container_type&,
+            egfrd_simulator_traits_type::network_rules_type const&,
+            egfrd_simulator_traits_type::rng_type&,
+            egfrd_simulator_traits_type::time_type,
+            int,
+            get_select_first_range<CyclicWorld::particle_id_pair_range>::type>())
         .add_property("reactions",
             peer::util::range_from_range<
                 _BDPropagator::reaction_rules_range,

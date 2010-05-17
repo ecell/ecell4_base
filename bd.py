@@ -73,7 +73,7 @@ class BDSimulatorCore(object):
         tx = self.world.create_transaction()
         ppg = BDPropagator(tx, self.network_rules,
                      myrandom.rng, self.dt, self.dissociation_retry_moves,
-                     [pid for pid, _ in self.world])
+                     self.world.particle_ids)
         while ppg():
             pass
 
