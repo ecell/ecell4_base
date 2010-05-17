@@ -81,7 +81,13 @@ namespace boost
 {
 
 template<typename Tvalue>
-inline typename std::size_t
+struct range_difference<peer::wrappers::pyiterable_range<Tvalue> >
+{
+    typedef std::size_t type;
+};
+
+template<typename Tvalue>
+inline typename range_difference<peer::wrappers::pyiterable_range<Tvalue> >::type
 size(peer::wrappers::pyiterable_range<Tvalue> const& w)
 {
     return w.size();

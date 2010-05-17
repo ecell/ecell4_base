@@ -176,14 +176,22 @@ struct remove_const_first
 namespace boost {
 
 template<typename Trange_>
-inline typename boost::range_difference<Trange_>::type
+struct range_difference<select_first_range<Trange_> >
+        : range_difference<Trange_>::type {};
+
+template<typename Trange_>
+struct range_difference<select_second_range<Trange_> >
+        : range_difference<Trange_>::type {};
+
+template<typename Trange_>
+inline typename range_difference<select_first_range<Trange_> >::type
 size(select_first_range<Trange_> const& r)
 {
     return r.size();
 }
 
 template<typename Trange_>
-inline typename boost::range_difference<Trange_>::type
+inline typename range_difference<select_second_range<Trange_> >::type
 size(select_second_range<Trange_> const& r)
 {
     return r.size();

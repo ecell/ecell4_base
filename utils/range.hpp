@@ -159,7 +159,13 @@ inline void call_with_size_if_randomly_accessible(
 namespace boost {
 
 template<typename Titer_>
-inline typename boost::iterator_difference<Titer_>::type
+struct range_difference<sized_iterator_range<Titer_> >
+{
+    typedef typename iterator_difference<Titer_>::type type;
+};
+
+template<typename Titer_>
+inline typename boost::range_difference<sized_iterator_range<Titer_> >::type
 size(sized_iterator_range<Titer_> const& r)
 {
     return r.size();
