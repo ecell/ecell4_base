@@ -37,6 +37,7 @@
 #include "peer/ReactionRule.hpp"
 #include "peer/Exception.hpp"
 #include "peer/RandomNumberGenerator.hpp"
+#include "peer/wrappers/range/pyiterable_range.hpp"
 #include "peer/wrappers/range/stl_container_wrapper.hpp"
 #include "peer/wrappers/generator/generator_wrapper.hpp"
 #include "peer/converters/generator/to_python.hpp"
@@ -72,30 +73,6 @@ static boost::python::object species_type_class;
 static boost::python::object species_info_class;
 
 typedef peer::util::detail::array_to_ndarray_converter<world_traits_type::position_type, world_traits_type::position_type::value_type, 3> position_to_ndarray_converter;
-
-/* {{{ explicit specialization */
-
-namespace boost {
-
-template<>
-inline std::size_t
-size(MatrixSpace<egfrd_simulator_traits_type::spherical_shell_type, egfrd_simulator_traits_type::shell_id_type> const&);
-
-template<>
-inline std::size_t
-size(MatrixSpace<egfrd_simulator_traits_type::cylindrical_shell_type, egfrd_simulator_traits_type::shell_id_type> const&);
-
-template<>
-inline std::size_t
-size(MatrixSpace<world_traits_type::particle_type, world_traits_type::particle_id_type, get_mapper_mf> const&);
-
-template<>
-inline std::size_t
-size(peer::wrappers::pyiterable_range<world_traits_type::particle_id_type> const&);
-
-} // namespace boost
-
-/* }}} */
 
 struct ndarray_to_position_converter
 {
@@ -463,7 +440,7 @@ struct particle_id_pair_and_distance_list_converter
 
             static size_type size(T_ const& c)
             {
-                return boost::size(c);
+                return ::size(c);
             }
 
             static void set(T_& c, size_type i, const_reference v)
@@ -565,7 +542,7 @@ struct species_range_converter: public boost::python::default_call_policies
 
         static size_type size(T_ const& c)
         {
-            return boost::size(c);
+            return ::size(c);
         }
 
         static void set(T_& c, size_type i, const_reference v)
@@ -674,7 +651,7 @@ struct surfaces_range_converter: public boost::python::default_call_policies
 
         static size_type size(T_ const& c)
         {
-            return boost::size(c);
+            return ::size(c);
         }
 
         static void set(T_& c, size_type i, const_reference v)

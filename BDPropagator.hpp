@@ -158,7 +158,7 @@ private:
     bool attempt_reaction(particle_id_pair const& pp)
     {
         reaction_rules const& rules(rules_.query_reaction_rule(pp.second.sid()));
-        if (boost::size(rules) == 0)
+        if (::size(rules) == 0)
         {
             return false;
         }
@@ -175,7 +175,7 @@ private:
             {
                 typename reaction_rule_type::species_id_range products(
                         r.get_products());
-                switch (boost::size(products))
+                switch (::size(products))
                 {
                 case 0:
                     remove_particle(pp.first);
@@ -250,7 +250,7 @@ private:
     bool attempt_reaction(particle_id_pair const& pp0, particle_id_pair const& pp1)
     {
         reaction_rules const& rules(rules_.query_reaction_rule(pp0.second.sid(), pp1.second.sid()));
-        if (boost::size(rules) == 0)
+        if (::size(rules) == 0)
         {
             return false;
         }
@@ -284,7 +284,7 @@ private:
                 LOG_DEBUG(("fire reaction"));
                 const typename reaction_rule_type::species_id_range products(
                     r.get_products());
-                BOOST_ASSERT(boost::size(products) == 1);
+                BOOST_ASSERT(::size(products) == 1);
                 const species_id_type product(products[0]);
                 const species_type sp(tx_.get_species(product));
 

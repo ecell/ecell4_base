@@ -675,40 +675,28 @@ operator+=(
     return rhs;
 }
 
-namespace boost {
-
-template<typename Tobj_, typename Tkey_,
-        template<typename, typename> class MFget_mapper_>
-struct range_iterator<MatrixSpace<Tobj_, Tkey_, MFget_mapper_> >
-{
-    typedef typename MatrixSpace<Tobj_, Tkey_, MFget_mapper_>::iterator type;
-};
-
-template<typename Tobj_, typename Tkey_,
-        template<typename, typename> class MFget_mapper_>
-struct range_iterator<const MatrixSpace<Tobj_, Tkey_, MFget_mapper_> >
-{
-    typedef typename MatrixSpace<Tobj_, Tkey_, MFget_mapper_>::const_iterator type;
-};
-
-template<typename Tobj_, typename Tkey_,
-        template<typename, typename> class MFget_mapper_>
-struct range_const_iterator<MatrixSpace<Tobj_, Tkey_, MFget_mapper_> >
-{
-    typedef typename MatrixSpace<Tobj_, Tkey_, MFget_mapper_>::const_iterator type;
-};
-
-template<typename T_, typename Tkey_,
-        template<typename, typename> class MFget_mapper_>
-inline typename std::size_t size(MatrixSpace<T_, Tkey_, MFget_mapper_> const& that)
-{
-    return that.size();
-}
-
-} // namespace boost
-
 template<typename T_, typename Tkey_,
         template<typename, typename> class MFget_mapper_>
 struct is_sized<MatrixSpace<T_, Tkey_, MFget_mapper_> >: boost::mpl::true_ {};
+
+template<typename T_, typename Tkey_,
+        template<typename, typename> class MFget_mapper_>
+struct range_size<MatrixSpace<T_, Tkey_, MFget_mapper_> >
+{
+    typedef typename MatrixSpace<T_, Tkey_, MFget_mapper_>::size_type type;
+};
+
+template<typename T_, typename Tkey_,
+        template<typename, typename> class MFget_mapper_>
+struct range_size_retriever<MatrixSpace<T_, Tkey_, MFget_mapper_> >
+{
+    typedef MatrixSpace<T_, Tkey_, MFget_mapper_> argument_type;
+    typedef typename range_size<argument_type>::type result_type;
+
+    result_type operator()(argument_type const& range) const
+    {
+        return range.size();
+    }
+};
 
 #endif /* MATRIX_SPACE_HPP */

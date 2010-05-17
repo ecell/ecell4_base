@@ -1,5 +1,6 @@
 #ifndef UTILS_PAIR_HPP
 #define UTILS_PAIR_HPP
+
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
@@ -8,6 +9,7 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/type_traits/remove_const.hpp>
+#include "utils/range.hpp"
 
 template < typename T_ >
 struct select_first
@@ -113,20 +115,7 @@ class select_first_range: public detail::select_first_range_impl<Trange_>::type
 
 public:
     select_first_range(Trange_ const& range)
-        : base_type(boost::begin(range), boost::end(range)),
-          size_(boost::size(range)) {}
-
-    select_first_range(Trange_ const& range,
-            typename base_type::size_type size)
-        : base_type(boost::begin(range), boost::end(range)), size_(size) {}
-
-    typename base_type::size_type size() const
-    {
-        return size_;
-    }
-
-private:
-    typename base_type::size_type size_;
+        : base_type(boost::begin(range), boost::end(range)) {}
 };
 
 template<typename Trange_>
@@ -136,20 +125,7 @@ class select_second_range: public detail::select_second_range_impl<Trange_>::typ
 
 public:
     select_second_range(Trange_ const& range)
-        : base_type(boost::begin(range), boost::end(range)),
-          size_(boost::size(range)) {}
-
-    select_second_range(Trange_ const& range,
-            typename base_type::size_type size)
-        : base_type(boost::begin(range), boost::end(range)), size_(size) {}
-
-    typename base_type::size_type size() const
-    {
-        return size_;
-    }
-
-private:
-    typename base_type::size_type size_;
+        : base_type(boost::begin(range), boost::end(range)) {}
 };
 
 template<typename Trange_>
@@ -173,30 +149,16 @@ struct remove_const_first
                       typename Tpair_::second_type> type;
 };
 
-namespace boost {
+template<typename Trange_>
+struct range_size<select_first_range<Trange_> >: range_size<Trange_> {};
 
 template<typename Trange_>
-struct range_difference<select_first_range<Trange_> >
-        : range_difference<Trange_>::type {};
+struct range_size_retriever<select_first_range<Trange_> >: range_size_retriever<Trange_> {};
 
 template<typename Trange_>
-struct range_difference<select_second_range<Trange_> >
-        : range_difference<Trange_>::type {};
+struct range_size<select_second_range<Trange_> >: range_size<Trange_> {};
 
 template<typename Trange_>
-inline typename range_difference<select_first_range<Trange_> >::type
-size(select_first_range<Trange_> const& r)
-{
-    return r.size();
-}
-
-template<typename Trange_>
-inline typename range_difference<select_second_range<Trange_> >::type
-size(select_second_range<Trange_> const& r)
-{
-    return r.size();
-}
-
-} // namespace boost
+struct range_size_retriever<select_second_range<Trange_> >: range_size_retriever<Trange_> {};
 
 #endif /* UTILS_PAIR_HPP */

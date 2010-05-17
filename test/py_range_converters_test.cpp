@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(pyiterable_range_test)
         pylist.append(3);
         peer::wrappers::pyiterable_range<int> wrapper(pylist);
 
-        BOOST_CHECK_EQUAL(boost::size(wrapper), boost::python::len(pylist));
+        BOOST_CHECK_EQUAL(size(wrapper), boost::python::len(pylist));
     }
     Py_Finalize();
 }

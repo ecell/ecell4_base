@@ -86,11 +86,11 @@ public:
 
     template<typename Trange_>
     sized_iterator_range(Trange_ const& r)
-        : base_type(r), size_(boost::size(r)) {}
+        : base_type(r), size_(size(r)) {}
 
     template<typename Trange_>
     sized_iterator_range(Trange_& r)
-        : base_type(r), size_(boost::size(r)) {}
+        : base_type(r), size_(size(r)) {}
 
     template<typename Taiter_>
     sized_iterator_range(Taiter_ begin, Taiter_ end,
@@ -126,12 +126,34 @@ struct is_sized<sized_iterator_range<Titer_> >: boost::mpl::true_
 {
 };
 
+template<typename Trange_>
+struct range_size: boost::range_difference<Trange_> {};
+
+template<typename Trange_>
+struct range_size_retriever
+{
+    typedef Trange_ argument_type;
+    typedef typename range_size<Trange_>::type result_type;
+
+    result_type operator()(argument_type const& range) const
+    {
+        return boost::size(range);
+    }
+};
+
+template<typename Trange_>
+inline typename range_size<Trange_>::type
+size(Trange_ const& r)
+{
+    return range_size_retriever<Trange_>()(r);
+}
+
 template<typename Tfn, typename Trange>
 inline void call_with_size_if_randomly_accessible(
     Tfn& fn, Trange const &range,
     typename boost::enable_if<is_sized<Trange> >::type* = 0)
 {
-    fn(boost::size(range));
+    fn(size(range));
 }
 
 template<typename Tfn, typename Trange>
@@ -146,7 +168,7 @@ inline void call_with_size_if_randomly_accessible(
     Tfn const& fn, Trange const &range,
     typename boost::enable_if<is_sized<Trange> >::type* = 0)
 {
-    fn(boost::size(range));
+    fn(size(range));
 }
 
 template<typename Tfn, typename Trange>
@@ -155,22 +177,23 @@ inline void call_with_size_if_randomly_accessible(
     typename boost::disable_if<is_sized<Trange> >::type* = 0)
 {
 }
-
-namespace boost {
 
 template<typename Titer_>
-struct range_difference<sized_iterator_range<Titer_> >
+struct range_size<sized_iterator_range<Titer_> >
 {
-    typedef typename iterator_difference<Titer_>::type type;
+    typedef std::size_t type;
 };
 
 template<typename Titer_>
-inline typename boost::range_difference<sized_iterator_range<Titer_> >::type
-size(sized_iterator_range<Titer_> const& r)
+struct range_size_retriever<sized_iterator_range<Titer_> >
 {
-    return r.size();
-}
+    typedef sized_iterator_range<Titer_> argument_type;
+    typedef typename range_size<argument_type>::type result_type;
 
-} // namespace boost
+    result_type operator()(argument_type const& range) const
+    {
+        return range.size();
+    }
+};
 
 #endif /* UTILS_RANGE_HPP */

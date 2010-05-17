@@ -77,23 +77,23 @@ protected:
 
 } } // namespace peer::wrappers
 
-namespace boost
-{
-
 template<typename Tvalue_>
-struct range_difference<peer::wrappers::pyiterable_range<Tvalue_> >
+struct range_size<peer::wrappers::pyiterable_range<Tvalue_> >
 {
     typedef std::size_t type;
 };
 
-template<typename Tvalue>
-inline typename range_difference<peer::wrappers::pyiterable_range<Tvalue> >::type
-size(peer::wrappers::pyiterable_range<Tvalue> const& w)
+template<typename Tvalue_>
+struct range_size_retriever<peer::wrappers::pyiterable_range<Tvalue_> >
 {
-    return w.size();
-}
+    typedef peer::wrappers::pyiterable_range<Tvalue_> argument_type;
+    typedef typename range_size<argument_type>::type result_type;
 
-} // namespace boost
+    result_type operator()(argument_type const& range) const
+    {
+        return range.size();
+    }
+};
 
 template<typename Tvalue_>
 struct is_sized<peer::wrappers::pyiterable_range<Tvalue_> >: public boost::mpl::true_

@@ -25,6 +25,7 @@
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/remove_const.hpp>
+#include "utils/range.hpp"
 #include "utils/reset.hpp"
 #include "utils/reference_or_instance.hpp"
 
@@ -207,15 +208,15 @@ public:
     template<typename Tanother_range_>
     range_generator(Tanother_range_ const& range)
         : i_(boost::begin(range)), end_(boost::end(range)),
-          count_(boost::size(range)) {}
+          count_(::size(range)) {}
 
     template<typename Tanother_range_>
     range_generator(Tanother_range_& range)
         : i_(boost::begin(range)), end_(boost::end(range)),
-          count_(boost::size(range)) {}
+          count_(::size(range)) {}
 
     range_generator(range_iterator const& begin, range_iterator const& end)
-        : i_(begin), end_(end), count_(boost::size(begin, end)) {}
+        : i_(begin), end_(end), count_(::size(std::make_pair(begin, end))) {}
 
     virtual ~range_generator() {}
 

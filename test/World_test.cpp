@@ -7,6 +7,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/scoped_ptr.hpp>
+#include "utils/range.hpp"
 #include "Defs.hpp"
 #include "World.hpp"
 #include "SerialIDGenerator.hpp"
@@ -26,14 +27,14 @@ BOOST_AUTO_TEST_CASE(add_species)
     species s2(species(gen(), .2, .03));
     species s3(species(gen(), .1, .02));
 
-    BOOST_CHECK_EQUAL(boost::size(i.get_species()), 0);
+    BOOST_CHECK_EQUAL(::size(i.get_species()), 0);
     i.add_species(s1);
-    BOOST_CHECK_EQUAL(boost::size(i.get_species()), 1);
+    BOOST_CHECK_EQUAL(::size(i.get_species()), 1);
     BOOST_CHECK(contains(i.get_species(), s1));
     BOOST_CHECK(!contains(i.get_species(), s2));
     BOOST_CHECK(!contains(i.get_species(), s3));
     i.add_species(s2);
-    BOOST_CHECK_EQUAL(boost::size(i.get_species()), 2);
+    BOOST_CHECK_EQUAL(::size(i.get_species()), 2);
     BOOST_CHECK(contains(i.get_species(), s1));
     BOOST_CHECK(contains(i.get_species(), s2));
     BOOST_CHECK(!contains(i.get_species(), s3));
