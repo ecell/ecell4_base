@@ -4,6 +4,7 @@ dnl
 AC_INIT
 AC_CONFIG_SRCDIR([autogen.sh])
 dnl
+AC_DISABLE_STATIC
 AM_PROG_LIBTOOL
 dnl AC_CONFIG_AUX_DIR()
 dnl
