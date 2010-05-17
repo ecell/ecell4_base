@@ -470,7 +470,7 @@ class ParticleSimulatorBase(object):
         return self.world.species
 
     def get_first_pid(self, sid):
-        return iter(self.get_particle_ids(sid)).next()
+        return iter(self.world.get_particle_ids(sid)).next()
 
     def get_position(self, object):
         if type(object) is tuple and type(object[0]) is _gfrd.ParticleID:
