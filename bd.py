@@ -70,12 +70,10 @@ class BDSimulatorCore(object):
     def step(self):
         self.step_counter += 1
 
-        tx = self.world.create_transaction()
-        ppg = BDPropagator(tx, self.network_rules,
+        ppg = BDPropagator(self.world, self.network_rules,
                      myrandom.rng, self.dt, self.dissociation_retry_moves,
                      self.world.particle_ids)
-        while ppg():
-            pass
+        ppg.propagate_all()
 
         self.reaction_events += len(ppg.reactions)
         self.t += self.dt
