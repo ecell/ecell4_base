@@ -37,6 +37,8 @@ struct ParticleContainerUtils
             return c_(lhs).second < c_(rhs).second;
         }
 
+        distance_comparator(): c_() {}
+
         const_caster c_;
     };
 
