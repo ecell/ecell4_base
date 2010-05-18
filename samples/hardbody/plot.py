@@ -24,28 +24,14 @@ from out_C import *
 from out_V import *
 from out_N300 import *
 from out_N3000 import *
+from out_BD import *
+from out_BD2 import *
 
-from run_all import Nv, Nc, V300, N300, V3000, N3000
+from run_all import Nv, Nc, V300, N300, V3000, N3000, VBD, NBD, TBD, TBD2
 
 
 # (40e-18 ** (1/3.0))**2 / 1e-12
 # = 11.69607095285148
-
-Nb = numpy.array([10,30,100,300,1000,3000,10000])#,30000,100000])
-data_bd_5 = numpy.array([\
-        #t=1e-8, dt = 1e-5 tau
-        [0.0485391616821,0.0476109981537,0.0482919216156],
-        [0.138695001602,0.139840841293,0.139472007751],
-        [0.45738196373,0.454463005066,0.458449840546],
-        [1.35839486122,1.36714601517,1.36983513832],
-        [4.74575400352,4.73176693916,4.71269416809],
-        [14.96296978,14.7860958576,14.9349989891],
-        [50.471544981,51.1204040051,51.8594009876],
-#        [0,0,0],
-#        [0,0,0]]
-        ])
-data_bd_5 *=  11.696/ 1e-8
-data_bd_6 = data_bd_5 * 10
 
 X = numpy.array([30,100,300,1000,3000,10000,30000,100000,1e8])
 
@@ -55,7 +41,7 @@ axes([.12,.14,.86,.83])
 #for i in range(len(Nv)):
 plot_data(Nv, data_V,'kx')
 
-loglog(X, 0.005* X**(5.0/3), 'k--')
+loglog(X, 0.004* X**(5.0/3), 'k--')
 
 figtext(.25, .18, r'(2) V = 1 pL')
 figtext(.82, .7, r'$t \ \propto \ N^{5/3}$', color='k')
@@ -68,10 +54,12 @@ loglog(X, 4* X, 'k-')
 figtext(.14, .37, r'(1) C = 50 nM')
 figtext(.8, .59, r'$t \  \propto \ N$', color='k')
 
-#plot_data(Nb, data_bd_6,'k.')
+# plot BD data
+plot_data(NBD, data_BD2,'k.')
+plot_data(NBD, data_BD,'k.')
 
-loglog(X, 5e7* X, 'b:') # 1e-6 tau
-loglog(X, 5e4* X, 'b:') # 1e-3 tau
+loglog(X, 3e6* X, 'b:') # 1e-6 tau
+loglog(X, 3e4* X, 'b:') # 1e-4 tau
 
 figtext(.2, .82, r'BD', color='k')
 
@@ -138,8 +126,7 @@ C3000 *= 1e6
 for i in range(len(C3000)):
     plot_data(C3000, data_N3000,'k+')
 #loglog(C3000, 5e1** C3000, 'b:')
-bd3000 = numpy.array([17.1796619892,17.4832251072,17.5032970905]).mean()
-bd3000 *= 11.69607 / 1e-9
+bd3000 = numpy.array(data_BD[3]).mean()
 loglog([1e-4,1e4],[bd3000,bd3000], 'b:')
 
 
@@ -154,8 +141,7 @@ figtext(.84, .25, r'$t \ \propto \ C^{2/3}$', color='k')
 figtext(.66, .32, r'(3b) N = 3000')
 
 #bd 300
-bd300 = numpy.array([1.62390208244,1.62284588814,1.63388109207]).mean()
-bd300 *= 11.69607 / 1e-9
+bd300 = numpy.array(data_BD[1]).mean()
 loglog([1e-5,1e5],[bd300,bd300], 'b:')
 
 figtext(.65, .455, r'BD', color='k')

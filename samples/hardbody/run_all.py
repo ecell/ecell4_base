@@ -37,6 +37,7 @@ def run_set(outfile, name, V_list, N_list, T_list):
 
 def run_set_bd(outfile, name, V_list, N_list, T_list, dt_factor):
     
+    outfile.write('# dt_factor = %g\n' % dt_factor)
     outfile.write('%s = [\n' % name)
     for i in range(len(V_list)):
         outfile.write('# T=%g, N=%g, V=%g\n' % 
@@ -101,12 +102,12 @@ N3000 = [3000, ] * 8
 T3000 = [2e6 / math.pow(1.0/V, 2.0 / 3.0) for V in V3000]
 
 
-VBD = [1e-12] * 4
-NBD = [100,1000,10000,100000]
+VBD = [1e-12] * 7
+NBD = [100,300,1000,3000,10000,30000,100000]
 #NBD = [100,1000,100000]
-TBD = [1e-4 / N for N in NBD]
+TBD = [1e-5 / N for N in NBD]
 
-TBD2 = [1e-2 / N for N in NBD]
+TBD2 = [1e-3 / N for N in NBD]
 
 
 if __name__ == '__main__':
@@ -122,13 +123,17 @@ if __name__ == '__main__':
     elif mode == 'N3000':
         run_set(outfile, dataname, V3000, N3000, T3000); outfile.write('\n\n')
     elif mode == 'BD':
-        run_set_bd(outfile, dataname, VBD, NBD, TBD, 1e-5); outfile.write('\n\n')
+        run_set_bd(outfile, dataname, VBD, NBD, TBD, 1e-6); outfile.write('\n\n')
     elif mode == 'BD2':
-        run_set_bd(outfile, dataname, VBD, NBD, TBD2, 1e-3); outfile.write('\n\n')
+        run_set_bd(outfile, dataname, VBD, NBD, TBD2, 1e-4); outfile.write('\n\n')
 
-    # just for large # particles stress test
+    # just for large # particles stress tests
     elif mode == 'NE7':
         run_set(outfile, dataname, [3.3e-10], [1e7], [1e-9]); outfile.write('\n\n')
+    elif mode == 'NE5BD':
+        run_set_bd(outfile, dataname, [1e-12], [1e5], [1e-10], 1e-6); outfile.write('\n\n')
+
+
 
     else:
         raise 'invalid argument'
