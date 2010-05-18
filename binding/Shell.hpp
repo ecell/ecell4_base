@@ -20,10 +20,11 @@
 
 #include <unistd.h>
 
-#include "numpy/type_mappings.hpp"
-#include "pickle_support.hpp"
+#include "peer/utils.hpp"
+#include "peer/numpy/type_mappings.hpp"
+#include "peer/pickle_support.hpp"
 
-namespace peer {
+namespace binding {
 
 template<typename Timpl_>
 class ShellWrapper
@@ -185,12 +186,12 @@ public:
 
     static PyObject* __reduce__(ShellWrapper* self)
     {
-        return pickle::reduce(reinterpret_cast<PyObject*>(self));
+        return peer::pickle::reduce(reinterpret_cast<PyObject*>(self));
     }
 
     static PyObject* __reduce_ex__(ShellWrapper* self, PyObject* arg)
     {
-        return pickle::reduce(reinterpret_cast<PyObject*>(self));
+        return peer::pickle::reduce(reinterpret_cast<PyObject*>(self));
     }
 
     static long __hash__(ShellWrapper* self)
@@ -210,11 +211,11 @@ public:
     static void __register_class(char const* name)
     {
         using namespace boost::python;
-        pickle::register_reconstructor();
+        peer::pickle::register_reconstructor();
         PyTypeObject* klass(ShellWrapper::__class_init__(name, reinterpret_cast<PyObject*>(scope().ptr())));
         Py_INCREF(klass);
         scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
-        util::to_native_converter<Timpl_, to_native_converter>();
+        peer::util::to_native_converter<Timpl_, to_native_converter>();
         boost::python::to_python_converter<Timpl_, to_python_converter>();
     }
 
@@ -335,6 +336,6 @@ PyTypeObject ShellWrapper<Timpl_>::__class__ = {
     0                   /* tp_free */
 };
 
-} //namespace peer
+} //namespace binding
 
 #endif /* PEER_SHELL_WRAPPER_HPP */

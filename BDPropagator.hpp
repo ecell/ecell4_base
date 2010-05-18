@@ -22,7 +22,7 @@
 template<typename Ttraits_>
 class BDPropagator
 {
-private:
+public:
     typedef Ttraits_ traits_type;
     typedef typename Ttraits_::world_type::particle_container_type particle_container_type;
     typedef typename particle_container_type::species_id_type species_id_type;

@@ -1,5 +1,5 @@
-#ifndef OBJECTMATRIX_PEER_IDENTIFIER_HPP
-#define OBJECTMATRIX_PEER_IDENTIFIER_HPP
+#ifndef BINDING_IDENTIFIER_HPP
+#define BINDING_IDENTIFIER_HPP
 
 #include <cstddef>
 #include <string>
@@ -19,9 +19,10 @@
 #include <unistd.h>
 #include <iostream>
 
-#include "pickle_support.hpp"
+#include "peer/pickle_support.hpp"
+#include "peer/utils.hpp"
 
-namespace peer {
+namespace binding {
 
 template<typename Timpl_>
 class IdentifierWrapper
@@ -142,12 +143,12 @@ public:
 
     static PyObject* __reduce__(IdentifierWrapper* self)
     {
-        return pickle::reduce(reinterpret_cast<PyObject*>(self));
+        return peer::pickle::reduce(reinterpret_cast<PyObject*>(self));
     }
 
     static PyObject* __reduce_ex__(IdentifierWrapper* self, PyObject* arg)
     {
-        return pickle::reduce(reinterpret_cast<PyObject*>(self));
+        return peer::pickle::reduce(reinterpret_cast<PyObject*>(self));
     }
 
     static long __hash__(IdentifierWrapper* self)
@@ -226,11 +227,11 @@ public:
     static void __register_class(char const* name)
     {
         using namespace boost::python;
-        pickle::register_reconstructor();
+        peer::pickle::register_reconstructor();
         PyTypeObject* klass(IdentifierWrapper::__class_init__(name, reinterpret_cast<PyObject*>(scope().ptr())));
         Py_INCREF(klass);
         scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
-        util::to_native_converter<Timpl_, to_native_converter>();
+        peer::util::to_native_converter<Timpl_, to_native_converter>();
         boost::python::to_python_converter<Timpl_, to_python_converter>();
     }
 
@@ -347,6 +348,6 @@ PyTypeObject IdentifierWrapper<Timpl_>::__class__ = {
     IdentifierWrapper::__new__  /*tp_new */
 };
 
-} //namespace peer
+} //namespace binding
 
-#endif /* OBJECTMATRIX_PEER_IDENTIFIER_HPP */
+#endif /* BINDING_IDENTIFIER_HPP */

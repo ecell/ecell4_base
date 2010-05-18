@@ -1,5 +1,5 @@
-#ifndef OBJECTMATRIX_PEER_MATRIXSPACE_HPP
-#define OBJECTMATRIX_PEER_MATRIXSPACE_HPP
+#ifndef BINDING_MATRIXSPACE_HPP
+#define BINDING_MATRIXSPACE_HPP
 
 #include <cstddef>
 #include <functional>
@@ -29,15 +29,15 @@
 #include "peer/numpy/ndarray_converters.hpp"
 #include "peer/wrappers/iterator/stl_iterator_wrapper.hpp"
 
-#include "utils/pair.hpp"
-#include "utils/range.hpp"
-#include "filters.hpp"
-#include "Shape.hpp"
-#include "Sphere.hpp"
+#include "../utils/pair.hpp"
+#include "../utils/range.hpp"
+#include "../filters.hpp"
+#include "../Shape.hpp"
+#include "../Sphere.hpp"
 
-namespace peer {
+namespace binding {
 
-struct MatrixSpaceBase
+struct MatrixSpaceExtrasBase
 {
     template<typename T_, typename Tref_>
     struct add_const_if:
@@ -65,7 +65,7 @@ struct MatrixSpaceBase
     public:
         typedef Tlength_ length_type;
         typedef std::pair<PyObject*, length_type> result_element;
-        typedef std::vector<result_element, util::pyarray_backed_allocator<result_element> > result_type;
+        typedef std::vector<result_element, peer::util::pyarray_backed_allocator<result_element> > result_type;
 
     private:
         struct to_ndarray_converter
@@ -108,14 +108,14 @@ struct MatrixSpaceBase
                 py::object(
                     py::detail::new_reference(
                         reinterpret_cast<PyObject*>(PyArray_DescrFromType(
-                        util::get_numpy_typecode<
+                        peer::util::get_numpy_typecode<
                             typename result_element::first_type>::value)))),
                 offsetof(result_element, first));
             fields[_distance] = py::make_tuple(
                 py::object(
                     py::detail::new_reference(
                         reinterpret_cast<PyObject*>(PyArray_DescrFromType(
-                            util::get_numpy_typecode<
+                            peer::util::get_numpy_typecode<
                                 typename result_element::second_type>::value)))),
                 offsetof(result_element, second));
             result_type_descr_ = PyArray_DescrNewFromType(PyArray_VOID);
@@ -132,10 +132,10 @@ struct MatrixSpaceBase
 };
 
 template<typename Tlength_>
-PyArray_Descr* MatrixSpaceBase::CollectorResultConverter<Tlength_>::result_type_descr_(0);
+PyArray_Descr* MatrixSpaceExtrasBase::CollectorResultConverter<Tlength_>::result_type_descr_(0);
 
 template<typename Timpl_>
-class MatrixSpace: public MatrixSpaceBase
+class MatrixSpaceExtras: public MatrixSpaceExtrasBase
 {
 public:
     typedef Timpl_ impl_type;
@@ -266,7 +266,7 @@ public:
         inline static void
         build_neighbors_array(result_type& retval,
                               impl_type const& cntnr,
-                              const ::Sphere<length_type>& sphere)
+                              ::Sphere<length_type> const& sphere)
         {
             collector col(retval);
             take_neighbor(cntnr, col, sphere);
@@ -305,8 +305,8 @@ public:
         static void __register_converter()
         {
             collector_result_converter_type::__register_converter();
-            converters::register_tuple_converter<value_type>();
-            converters::register_tuple_converter<typename impl_type::value_type>();
+            peer::converters::register_tuple_converter<value_type>();
+            peer::converters::register_tuple_converter<typename impl_type::value_type>();
         }
 
     private:
@@ -320,69 +320,46 @@ public:
         typename impl_type::const_iterator> key_iterator;
 
 public:
-    MatrixSpace(typename impl_type::length_type world_size,
-            typename impl_type::matrix_type::size_type size)
-            : impl_(world_size, size) {}
-
-    size_type __len__() const
-    {
-        return impl_.size();
-    }
-
-    size_type get_matrix_size() const
-    {
-        return impl_.matrix_size();
-    }
-
-    length_type get_world_size() const
-    {
-        return impl_.world_size();
-    }
-
-    length_type get_cell_size() const
-    {
-        return impl_.cell_size();
-    }
-
-    static boost::python::object __iter__(boost::python::back_reference<MatrixSpace const&> self)
+    static boost::python::object __iter__(boost::python::back_reference<impl_type const&> self)
     {
         using namespace boost::python;
         return object(handle<>(
-            wrappers::stl_iterator_wrapper<
+            peer::wrappers::stl_iterator_wrapper<
                     typename impl_type::const_iterator,
                     boost::python::object>::create(
-                std::make_pair(self.get().impl_.begin(),
-                               self.get().impl_.end()),
+                std::make_pair(self.get().begin(),
+                               self.get().end()),
                                self.source())));
     }
 
-    static boost::python::object iterkeys(boost::python::back_reference<MatrixSpace const&> self)
+    static boost::python::object iterkeys(boost::python::back_reference<impl_type const&> self)
     {
         using namespace boost::python;
         return object(handle<>(
-            wrappers::stl_iterator_wrapper<
+            peer::wrappers::stl_iterator_wrapper<
                     key_iterator, boost::python::object>::create(
                 make_transform_iterator_range(
-                    std::make_pair(self.get().impl_.begin(),
-                                   self.get().impl_.end()),
+                    std::make_pair(self.get().begin(),
+                                   self.get().end()),
                     select1st<const typename impl_type::const_iterator::value_type>()),
                 self.source())));
     }
 
     typename Builders::result_type
-    get_neighbors_within_radius_cyclic(const position_type& pos,
-                                       length_type radius)
+    static get_neighbors_within_radius_cyclic(impl_type const& impl,
+                                              const position_type& pos,
+                                              length_type radius)
     {
         typename Builders::result_type::allocator_type alloc;
 
-        if (radius >= impl_.cell_size() / 2)
+        if (radius >= impl.cell_size() / 2)
         {
             throw std::runtime_error("Radius must be smaller than the half of the cell size");
         }
 
         typename Builders::result_type retval(alloc);
 
-        Builders::build_neighbors_array_cyclic(retval, impl_,
+        Builders::build_neighbors_array_cyclic(retval, impl,
                 ::Sphere<length_type>( pos, radius ) );
 
         // take over the ownership of the arrays to the Numpy facility
@@ -391,32 +368,32 @@ public:
     }
 
     typename Builders::result_type
-    get_neighbors_cyclic(const position_type& pos)
+    static get_neighbors_cyclic(impl_type const& impl, const position_type& pos)
     {
         typename Builders::result_type::allocator_type alloc;
         typename Builders::result_type retval(alloc);
 
-        Builders::build_all_neighbors_array_cyclic(retval, impl_, pos);
+        Builders::build_all_neighbors_array_cyclic(retval, impl, pos);
 
         // take over the ownership of the arrays to the Numpy facility
         alloc.giveup_ownership();
         return retval;
     }
 
-    const bool contains(const key_type& k)
+    static const bool contains(impl_type const& impl, const key_type& k)
     {
-        return impl_.find(k) != impl_.end();
+        return impl.find(k) != impl.end();
     }
 
-    bool update(typename impl_type::value_type const& pair)
+    static bool update(impl_type& impl, typename impl_type::value_type const& pair)
     {
-        return impl_.update(pair).second;
+        return impl.update(pair).second;
     }
 
-    const mapped_type& __getitem__(const key_type& k)
+    static const mapped_type& __getitem__(impl_type const& impl, key_type const& k)
     {
-        typename impl_type::iterator i(impl_.find(k));
-        if (i == impl_.end())
+        typename impl_type::const_iterator i(impl.find(k));
+        if (i == impl.end())
         {
             PyErr_SetObject(PyExc_KeyError,
                     boost::python::incref(boost::python::object(k).ptr()));
@@ -426,62 +403,66 @@ public:
         return (*i).second;
     }
 
-    bool __setitem__(const key_type& key, mapped_type const& val)
+    static bool __setitem__(impl_type& impl, key_type const& key, mapped_type const& val)
     {
-        return impl_.update(typename impl_type::value_type(key, val)).second;
+        return impl.update(typename impl_type::value_type(key, val)).second;
     }
 
-    void __delitem__(const key_type& key)
+    static void __delitem__(impl_type& impl, key_type const& key)
     {
-        impl_.erase(key);
+        impl.erase(key);
     }
 
-    void check()
+    static void check()
     {
         // do nothing
     }
-
-    inline static void __register_class(char const* class_name)
-    {
-        using namespace boost::python;
-
-        Builders::__register_converter();
-
-        converters::register_tuple_converter<typename impl_type::value_type>();
-        wrappers::stl_iterator_wrapper<
-                typename impl_type::const_iterator,
-                boost::python::object>::__class_init__(
-            "MatrixSpace.iterator");
-        wrappers::stl_iterator_wrapper<
-                key_iterator,
-                boost::python::object>::__class_init__(
-            "MatrixSpace.keyiterator");
-
-        class_<MatrixSpace>(class_name, init<length_type, size_type>())
-            .add_property("cell_size", &MatrixSpace::get_cell_size)
-            .add_property("world_size", &MatrixSpace::get_world_size)
-            .add_property("matrix_size", &MatrixSpace::get_matrix_size)
-            .def("get_neighbors_within_radius_cyclic", &MatrixSpace::get_neighbors_within_radius_cyclic)
-            .def("get_neighbors_within_radius", &MatrixSpace::get_neighbors_within_radius_cyclic)
-            .def("get_neighbors_cyclic", &MatrixSpace::get_neighbors_cyclic)
-            .def("get_neighbors", &MatrixSpace::get_neighbors_cyclic)
-            .def("__len__", &MatrixSpace::__len__)
-            .def("__iter__", &MatrixSpace::__iter__)
-            .def("iterkeys", &MatrixSpace::iterkeys)
-            .def("contains", &MatrixSpace::contains)
-            .def("update", &MatrixSpace::update)
-            .def("__setitem__", &MatrixSpace::__setitem__)
-            .def("__getitem__", &MatrixSpace::__getitem__,
-                    return_value_policy<copy_const_reference>())
-            .def("__delitem__", &MatrixSpace::__delitem__)
-            .def("check", &MatrixSpace::check)
-            ;
-    }
-
-private:
-    impl_type impl_;
 };
 
-} // namespace peer
+template<typename Timpl_>
+inline void register_matrix_space_class(char const* class_name)
+{
+    typedef Timpl_ impl_type;
+    typedef MatrixSpaceExtras<impl_type> extras_type;
+    using namespace boost::python;
 
-#endif /* OBJECTMATRIX_PEER_MATRIXSPACE_HPP */
+    extras_type::Builders::__register_converter();
+
+    std::string const _class_name(class_name);
+    peer::converters::register_tuple_converter<
+            typename extras_type::impl_type::value_type>();
+    peer::wrappers::stl_iterator_wrapper<
+            typename extras_type::impl_type::const_iterator,
+            boost::python::object>::__class_init__((_class_name + ".iterator").c_str());
+    peer::wrappers::stl_iterator_wrapper<
+            typename extras_type::key_iterator,
+            boost::python::object>::__class_init__((_class_name + ".keyiterator").c_str());
+
+    class_<impl_type>(class_name,
+            init<typename impl_type::length_type,
+                 typename impl_type::size_type>())
+        .add_property("cell_size", &impl_type::cell_size)
+        .add_property("world_size", &impl_type::world_size)
+        .add_property("matrix_size", &impl_type::matrix_size)
+        .def("get_neighbors_within_radius_cyclic",
+             &extras_type::get_neighbors_within_radius_cyclic)
+        .def("get_neighbors_within_radius",
+             &extras_type::get_neighbors_within_radius_cyclic)
+        .def("get_neighbors_cyclic", &extras_type::get_neighbors_cyclic)
+        .def("get_neighbors", &extras_type::get_neighbors_cyclic)
+        .def("__len__", &impl_type::size)
+        .def("__iter__", &extras_type::__iter__)
+        .def("iterkeys", &extras_type::iterkeys)
+        .def("contains", &extras_type::contains)
+        .def("update", &extras_type::update)
+        .def("__setitem__", &extras_type::__setitem__)
+        .def("__getitem__", &extras_type::__getitem__,
+                return_value_policy<copy_const_reference>())
+        .def("__delitem__", &extras_type::__delitem__)
+        .def("check", &extras_type::check)
+        ;
+}
+
+} // namespace binding
+
+#endif /* BINDING_MATRIXSPACE_HPP */

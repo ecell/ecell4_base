@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS=-I m4
 
-SUBDIRS = doc test
+SUBDIRS = binding doc test 
 
 TOPSRCDIR = ${top_srcdir}
 
@@ -114,40 +114,33 @@ noinst_HEADERS = \
 	twofold_container.hpp\
 	Vector3.hpp\
 	World.hpp\
-	peer/ShellWrapper.hpp\
-	peer/MatrixSpace.hpp\
-	peer/numpy/scalar_converters.hpp\
-	peer/numpy/ndarray_converters.hpp\
-	peer/numpy/pyarray_backed_allocator.hpp\
-	peer/numpy/type_mappings.hpp\
-	peer/numpy/wrapped_multi_array.hpp\
-	peer/set_indexing_suite.hpp\
-	peer/RandomNumberGenerator.hpp\
-	peer/SpeciesType.hpp\
-	peer/ReactionRule.hpp\
-	peer/Exception.hpp\
-	peer/compat.h\
-	peer/pickle_support.hpp\
-	peer/converters/sequence.hpp\
-	peer/converters/tuple.hpp\
-	peer/converters/tuple/to_python.hpp\
-	peer/converters/tuple/from_python.hpp\
-	peer/converters/iterator.hpp\
-	peer/converters/generator/to_python.hpp\
-	peer/converters/generator/from_python.hpp\
-	peer/converters/iterator/to_python.hpp\
-	peer/converters/sequence/to_python.hpp\
-	peer/converters/sequence/from_python.hpp\
-	peer/Particle.hpp\
-	peer/wrappers/range/pyiterable_range.hpp\
-	peer/wrappers/range/stl_container_wrapper.hpp\
-	peer/wrappers/generator/generator_wrapper.hpp\
-	peer/wrappers/generator/pyiterator_generator.hpp\
-	peer/wrappers/iterator/pyseq_iterator.hpp\
-	peer/wrappers/iterator/stl_iterator_wrapper.hpp\
-	peer/py_hash_support.hpp\
-	peer/Identifier.hpp\
-	peer/utils.hpp\
+	peer/numpy/scalar_converters.hpp \
+	peer/numpy/ndarray_converters.hpp \
+	peer/numpy/pyarray_backed_allocator.hpp \
+	peer/numpy/type_mappings.hpp \
+	peer/numpy/wrapped_multi_array.hpp \
+	peer/set_indexing_suite.hpp \
+	peer/compat.h \
+	peer/pickle_support.hpp \
+	peer/converters/sequence.hpp \
+	peer/converters/tuple.hpp \
+	peer/converters/tuple/to_python.hpp \
+	peer/converters/tuple/from_python.hpp \
+	peer/converters/iterator.hpp \
+	peer/converters/generator/to_python.hpp \
+	peer/converters/generator/from_python.hpp \
+	peer/converters/iterator/to_python.hpp \
+	peer/converters/sequence/to_python.hpp \
+	peer/converters/sequence/from_python.hpp \
+	peer/wrappers/range/pyiterable_range.hpp \
+	peer/wrappers/range/stl_container_wrapper.hpp \
+	peer/wrappers/exception/exception_wrapper.hpp \
+	peer/wrappers/generator/pyiterator_generator.hpp \
+	peer/wrappers/generator/generator_wrapper.hpp \
+	peer/wrappers/iterator/pyseq_iterator.hpp \
+	peer/wrappers/iterator/stl_iterator_wrapper.hpp \
+	peer/py_hash_support.hpp \
+	peer/utils.hpp \
 	utils/array_helper.hpp\
 	utils/array_traits.hpp\
 	utils/fun_composition.hpp\
@@ -162,6 +155,8 @@ noinst_HEADERS = \
 	utils/range_support.hpp\
 	utils/reference_or_instance.hpp\
 	utils/unassignable_adapter.hpp
+
+_gfrd_la_CPPFLAGS = -DPY_ARRAY_UNIQUE_SYMBOL=PyArray_API
 
 _gfrd_la_SOURCES=\
 	freeFunctions.cpp\
@@ -186,7 +181,8 @@ _greens_functions_la_SOURCES=\
 	FirstPassageNoCollisionPairGreensFunction.cpp
 
 _gfrd_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
-_gfrd_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBBOOSTDATE) $(LIBPYTHON) $(GSL_LIBS)
+_gfrd_la_LIBADD = binding/libbinding_utils.la
+_gfrd_la_LIBADD += $(LIBBOOSTPYTHON) $(LIBBOOSTDATE) $(LIBPYTHON) $(GSL_LIBS)
 
 _greens_functions_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
 _greens_functions_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBBOOSTDATE) $(LIBPYTHON) $(GSL_LIBS)

@@ -16,17 +16,17 @@
 #include <boost/python/object/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
+#include <boost/range/size.hpp>
 #include <numpy/arrayobject.h>
 
 #include <unistd.h>
-#include <iostream>
 
 #include "peer/compat.h"
+#include "peer/utils.hpp"
+#include "peer/numpy/type_mappings.hpp"
+#include "peer/pickle_support.hpp"
 
-#include "numpy/type_mappings.hpp"
-#include "pickle_support.hpp"
-
-namespace peer {
+namespace binding {
 
 template<typename Timpl_>
 class ParticleWrapper
@@ -151,7 +151,7 @@ public:
         const npy_intp dims[1] = { boost::size(pos) };
         PyObject* retval = PyArray_New(&PyArray_Type, 1,
                 const_cast<npy_intp*>(dims),
-                util::get_numpy_typecode<typename Timpl_::length_type>::value,
+                peer::util::get_numpy_typecode<typename Timpl_::length_type>::value,
                 NULL,
                 NULL,
                 0, NPY_CARRAY, NULL);
@@ -261,12 +261,12 @@ public:
 
     static PyObject* __reduce__(ParticleWrapper* self)
     {
-        return pickle::reduce(reinterpret_cast<PyObject*>(self));
+        return peer::pickle::reduce(reinterpret_cast<PyObject*>(self));
     }
 
     static PyObject* __reduce_ex__(ParticleWrapper* self, PyObject* arg)
     {
-        return pickle::reduce(reinterpret_cast<PyObject*>(self));
+        return peer::pickle::reduce(reinterpret_cast<PyObject*>(self));
     }
 
     static long __hash__(ParticleWrapper* self)
@@ -336,11 +336,11 @@ public:
     static void __register_class(char const* name)
     {
         using namespace boost::python;
-        pickle::register_reconstructor();
+        peer::pickle::register_reconstructor();
         PyTypeObject* klass(ParticleWrapper::__class_init__(name, reinterpret_cast<PyObject*>(scope().ptr())));
         Py_INCREF(klass);
         scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
-        util::to_native_converter<Timpl_, to_native_converter>();
+        peer::util::to_native_converter<Timpl_, to_native_converter>();
         boost::python::to_python_converter<Timpl_, to_python_converter>();
     }
 
@@ -493,6 +493,6 @@ PyTypeObject ParticleWrapper<Timpl_>::__class__ = {
     0                   /* tp_free */
 };
 
-} //namespace peer
+} //namespace binding
 
 #endif /* PEER_PARTICLE_HPP */

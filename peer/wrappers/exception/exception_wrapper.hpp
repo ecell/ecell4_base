@@ -7,10 +7,10 @@
 #include <Python.h>
 #include <pyerrors.h>
 
-namespace peer { namespace util {
+namespace peer { namespace wrappers {
 
 template<PyObject** Vpytype_object_>
-struct PyExcTraits
+struct py_exc_traits
 {
     struct unsupported_python_exception_type;
     enum { DUMMY = sizeof(unsupported_python_exception_type) };
@@ -18,13 +18,13 @@ struct PyExcTraits
 
 #define SPECIALIZE_PYEXC_TRAITS(PTR, TYPE) \
 template<> \
-struct PyExcTraits<&PyExc_##PTR> \
+struct py_exc_traits<&PyExc_##PTR> \
 { \
     typedef TYPE type; \
     static PyTypeObject* pytype_object; \
 }; \
 \
-PyTypeObject* PyExcTraits<&PyExc_##PTR>::pytype_object = reinterpret_cast<PyTypeObject*>(PyExc_##PTR);
+PyTypeObject* py_exc_traits<&PyExc_##PTR>::pytype_object = reinterpret_cast<PyTypeObject*>(PyExc_##PTR);
 
 #ifdef HAVE_PYBASEEXCEPTIONOBJECT
 #define PYEXC_DICT_MEMBER_NAME dict
@@ -43,8 +43,8 @@ SPECIALIZE_PYEXC_TRAITS(RuntimeError, PyInstanceObject)
 
 #undef SPECIALIZE_PYEXC_TRAITS
 
-template<typename Texc_, typename TbaseTraits_ = PyExcTraits<&PyExc_StandardError> >
-class ExceptionWrapper: TbaseTraits_::type
+template<typename Texc_, typename TbaseTraits_ = py_exc_traits<&PyExc_StandardError> >
+class exception_wrapper: TbaseTraits_::type
 {
 public:
     typedef Texc_ wrapped_type;
@@ -64,10 +64,10 @@ public:
 
     static PyObject* create(wrapped_type const& exc)
     {
-        return reinterpret_cast<PyObject*>(new ExceptionWrapper(exc));
+        return reinterpret_cast<PyObject*>(new exception_wrapper(exc));
     }
 
-    ExceptionWrapper(Texc_ const& impl): impl_(impl)
+    exception_wrapper(Texc_ const& impl): impl_(impl)
     {
         boost::python::tuple t(boost::python::make_tuple(impl_.what()));
         if ((*base_traits::pytype_object->tp_init)(
@@ -80,19 +80,19 @@ public:
             static_cast<boost::python::object>(t[0]).ptr());
     }
 
-    ~ExceptionWrapper()
+    ~exception_wrapper()
     {
         base_traits::pytype_object->tp_clear(reinterpret_cast<PyObject*>(this));
     }
 
-    static PyObject* __get_message__(ExceptionWrapper* self)
+    static PyObject* __get_message__(exception_wrapper* self)
     {
         return self->message;
     }
 
     static void translate_exception(wrapped_type const& type)
     {
-        PyErr_SetObject(reinterpret_cast<PyObject*>(&ExceptionWrapper::__class__), create(type));
+        PyErr_SetObject(reinterpret_cast<PyObject*>(&exception_wrapper::__class__), create(type));
     }
 
     static PyTypeObject* __class_init__(const char* name, PyObject* mod)
@@ -106,7 +106,7 @@ public:
         return &__class__;
     }
 
-    static void __dealloc__(ExceptionWrapper* self)
+    static void __dealloc__(exception_wrapper* self)
     {
         delete self;
     }
@@ -117,7 +117,7 @@ public:
         return NULL;
     }
 
-    static int __traverse__(ExceptionWrapper* self, visitproc visit, void *arg)
+    static int __traverse__(exception_wrapper* self, visitproc visit, void *arg)
     {
         return (*base_traits::pytype_object->tp_traverse)(
             reinterpret_cast<PyObject*>(self), visit, arg);
@@ -137,33 +137,33 @@ public:
 
 
 template<typename Texc_, typename TbaseTraits_>
-inline void ExceptionWrapper<Texc_, TbaseTraits_>::__register_class(const char* name)
+inline void exception_wrapper<Texc_, TbaseTraits_>::__register_class(const char* name)
 {
     using namespace boost::python;
-    PyTypeObject* klass(ExceptionWrapper::__class_init__(name, reinterpret_cast<PyObject*>(scope().ptr())));
+    PyTypeObject* klass(exception_wrapper::__class_init__(name, reinterpret_cast<PyObject*>(scope().ptr())));
     Py_INCREF(klass);
     scope().attr(name) = object(borrowed(reinterpret_cast<PyObject*>(klass)));
-    register_exception_translator<Texc_>(&ExceptionWrapper::translate_exception);
+    register_exception_translator<Texc_>(&exception_wrapper::translate_exception);
 }
 
 template<typename Texc_, typename TbaseTraits_>
-std::string ExceptionWrapper<Texc_, TbaseTraits_>::__name__;
+std::string exception_wrapper<Texc_, TbaseTraits_>::__name__;
 
 template<typename Texc_, typename TbaseTraits_>
-PyGetSetDef ExceptionWrapper<Texc_, TbaseTraits_>::__getsets__[] = {
-    { const_cast<char*>("message"), (getter)&ExceptionWrapper::__get_message__, NULL },
+PyGetSetDef exception_wrapper<Texc_, TbaseTraits_>::__getsets__[] = {
+    { const_cast<char*>("message"), (getter)&exception_wrapper::__get_message__, NULL },
     { NULL }
 };
 
 template<typename Texc_, typename TbaseTraits_>
-PyTypeObject ExceptionWrapper<Texc_, TbaseTraits_>::__class__ = {
+PyTypeObject exception_wrapper<Texc_, TbaseTraits_>::__class__ = {
 	PyObject_HEAD_INIT(NULL)
 	0,					/* ob_size */
 	0,                  /* tp_name */
-	sizeof(ExceptionWrapper), /* tp_basicsize */
+	sizeof(exception_wrapper), /* tp_basicsize */
 	0,					/* tp_itemsize */
 	/* methods */
-	(destructor)&ExceptionWrapper::__dealloc__, /* tp_dealloc */
+	(destructor)&exception_wrapper::__dealloc__, /* tp_dealloc */
 	0,					/* tp_print */
 	0,					/* tp_getattr */
 	0,					/* tp_setattr */
@@ -180,7 +180,7 @@ PyTypeObject ExceptionWrapper<Texc_, TbaseTraits_>::__class__ = {
 	0,					/* tp_as_buffer */
 	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_BASETYPE, /* tp_flags */
 	0,					/* tp_doc */
-	(traverseproc)&ExceptionWrapper::__traverse__,              	/* tp_traverse */
+	(traverseproc)&exception_wrapper::__traverse__,              	/* tp_traverse */
 	0,					/* tp_clear */
 	0,                  /* tp_richcompare */
 	0,					/* tp_weaklistoffset */
@@ -188,17 +188,17 @@ PyTypeObject ExceptionWrapper<Texc_, TbaseTraits_>::__class__ = {
 	0,                  /* tp_iternext */
     0,                  /* tp_methods */
     0,                  /* tp_members */
-    ExceptionWrapper::__getsets__,  /* tp_getset */
+    exception_wrapper::__getsets__,  /* tp_getset */
     reinterpret_cast<PyTypeObject*>(base_traits::pytype_object), /* tp_base */
     0,                  /* tp_dict */
     0,                  /* tp_descr_get */
     0,                  /* tp_descr_set */
-    offsetof(typename ExceptionWrapper::base_type, PYEXC_DICT_MEMBER_NAME) /* tp_dictoffset */,
+    offsetof(typename exception_wrapper::base_type, PYEXC_DICT_MEMBER_NAME) /* tp_dictoffset */,
     0,                  /* tp_init */
     0,                  /* tp_alloc */
-    &ExceptionWrapper::__new__    /* tp_new */
+    &exception_wrapper::__new__    /* tp_new */
 };
 
-} }
+} } // namespace peer::wrappers
 
 #endif /* PEER_EXCEPTION_HPP */
