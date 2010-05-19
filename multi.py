@@ -65,7 +65,6 @@ class Multi(object):
                 if __debug__:
                     log.info("collision occurred between particles of a multi and the outside: %s - %s.  moves will be rolled back." % (pid_particle_pair, list(overlapped)))
                 tx.rollback()
-                self.step()
                 return
 
             if not self.within_shell(pid_particle_pair):
