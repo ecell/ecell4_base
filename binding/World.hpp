@@ -1,12 +1,14 @@
 #ifndef BINDING_WORLD_HPP
 #define BINDING_WORLD_HPP
 
+#include <set>
 #include <boost/python.hpp>
 #include <boost/range/size_type.hpp>
 #include <boost/range/value_type.hpp>
 #include <boost/range/const_iterator.hpp>
 
 #include "peer/utils.hpp"
+#include "peer/set_indexing_suite.hpp"
 #include "utils/range.hpp"
 #include "utils/pair.hpp"
 
@@ -248,6 +250,13 @@ inline boost::python::objects::class_base register_world_class(char const* name)
     typedef species_range_converter<typename impl_type::species_range> species_range_converter_type;
     typedef surfaces_range_converter<typename impl_type::surfaces_range> surfaces_range_converter_type;
 
+    species_range_converter_type::__register();
+    surfaces_range_converter_type::__register();
+
+    class_<std::set<typename impl_type::particle_id_type> >("ParticleIDSet")
+        .def(peer::util::set_indexing_suite<std::set<typename impl_type::particle_id_type> >())
+        ;
+
     return class_<impl_type, bases<Tbase_> >(
         "World", init<typename impl_type::length_type, typename impl_type::size_type>())
         .add_property("cell_size", &impl_type::cell_size)
@@ -268,8 +277,6 @@ inline boost::python::objects::class_base register_world_class(char const* name)
         .def("distance", &impl_type::template distance<typename Ttraits_::box_type>)
         .def("calculate_pair_CoM", &impl_type::template calculate_pair_CoM<typename impl_type::position_type>)
         ;
-    species_range_converter_type::__register();
-    surfaces_range_converter_type::__register();
 }
 
 } // namespace binding
