@@ -479,7 +479,7 @@ class ParticleSimulatorBase(object):
             pid = object
         elif type(object) is _gfrd.Particle:
             pid = self.get_first_pid(object.sid)
-        elif type(object) is _gfrd.SpeciesTypeID:
+        elif type(object) is _gfrd.SpeciesID:
             pid = self.get_first_pid(object)
 
         return self.world.get_particle(pid)[1].position
