@@ -18,21 +18,18 @@ Model::Model(): network_rules_(new BasicNetworkRulesImpl())
 
 Model::~Model()
 {
-    std::for_each(species_type_map_.begin(), species_type_map_.end(),
-            compose_unary(
-                delete_ptr<boost::remove_pointer<species_type_map_type::mapped_type>::type>(),
-                select_second<species_type_map_type::value_type>()));
     delete network_rules_;
 }
 
-SpeciesType* Model::new_species_type()
+void Model::add_species_type(boost::shared_ptr<species_type_type> const& species)
 {
-    SpeciesType* retval = new SpeciesType(species_type_id_generator_());
-    species_type_map_.insert(std::make_pair(retval->id(), retval));
-    return retval;
+    species->bind_to_model(this, species_type_id_generator_());
+    species_type_map_.insert(std::make_pair(species->id(), species));
 }
 
-SpeciesType* Model::get_species_type_by_id(SpeciesTypeID const& id) const
+void Model::add_species_type(boost::shared_ptr<species_type_type> const& species);
+
+boost::shared_ptr<Model::species_type_type> Model::get_species_type_by_id(SpeciesTypeID const& id) const
 {
     species_type_map_type::const_iterator i(species_type_map_.find(id));
     if (species_type_map_.end() == i)

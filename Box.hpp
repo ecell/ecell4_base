@@ -2,10 +2,12 @@
 #define BOX_HPP
 
 #include <boost/array.hpp>
+#include <boost/multi_array.hpp>
 #include <utility>
 #include <algorithm>
 #include "utils/array_helper.hpp"
 #include "Shape.hpp"
+#include "linear_algebra.hpp"
 
 template<typename T_>
 class Box
@@ -18,19 +20,31 @@ public:
 public:
     Box(position_type const& position = position_type())
         : position_(position),
-          vx_(create_vector<position_type>(1., 0., 0.)),
-          vy_(create_vector<position_type>(0., 1., 0.)),
-          vz_(create_vector<position_type>(0., 0., 1.)),
+          units_(array_gen(
+            create_vector<position_type>(1., 0., 0.),
+            create_vector<position_type>(0., 1., 0.),
+            create_vector<position_type>(0., 0., 1.))),
           extent_(array_gen<length_type>(1., 1., 1.)) {}
 
     template<typename Tarray_>
-    Box(position_type const& position,
-        Tarray_ const& extent = array_gen<length_type>(1., 1., 1.))
+    Box(position_type const& position, Tarray_ const& extent)
         : position_(position),
-          vx_(create_vector<position_type>(1., 0., 0.)),
-          vy_(create_vector<position_type>(0., 1., 0.)),
-          vz_(create_vector<position_type>(0., 0., 1.))
+          units_(array_gen(
+            create_vector<position_type>(1., 0., 0.),
+            create_vector<position_type>(0., 1., 0.),
+            create_vector<position_type>(0., 0., 1.)))
     {
+        std::copy(boost::begin(extent), boost::end(extent),
+                  boost::begin(extent_));
+    }
+
+    template<typename Tarray1, typename Tarray2>
+    Box(position_type const& position,
+        Tarray1 const& units, Tarray2 const& extent)
+        : position_(position)
+    {
+        std::copy(boost::begin(units), boost::end(units),
+                  boost::begin(units_));
         std::copy(boost::begin(extent), boost::end(extent),
                   boost::begin(extent_));
     }
@@ -41,7 +55,7 @@ public:
         position_type const& vy,
         position_type const& vz,
         Tarray_ const& extent = array_gen<length_type>(1., 1., 1.))
-        : position_(position), vx_(vx), vy_(vy), vz_(vz)
+        : position_(position), units_(array_gen(vx, vy, vz))
     {
         std::copy(boost::begin(extent), boost::end(extent),
                   boost::begin(extent_));
@@ -54,7 +68,7 @@ public:
         length_type const& lx,
         length_type const& ly,
         length_type const& lz)
-        : position_(position), vx_(vx), vy_(vy), vz_(vz),
+        : position_(position), units_(array_gen(vx, vy, vz)),
           extent_(array_gen<length_type>(lx, ly, lz)) {}
 
     position_type const& position() const
@@ -69,32 +83,42 @@ public:
 
     position_type const& unit_x() const
     {
-        return vx_;
+        return units_[0];
     }
 
     position_type& unit_x()
     {
-        return vx_;
+        return units_[0];
     }
 
     position_type const& unit_y() const
     {
-        return vy_;
+        return units_[1];
     }
 
     position_type& unit_y()
     {
-        return vy_;
+        return units_[1];
     }
 
     position_type const& unit_z() const
     {
-        return vz_;
+        return units_[2];
     }
 
     position_type& unit_z()
     {
-        return vz_;
+        return units_[2];
+    }
+
+    boost::array<position_type, 3> const& units() const
+    {
+        return units_;
+    }
+
+    boost::array<position_type, 3>& units()
+    {
+        return units_;
     }
 
     length_type const& Lx() const
@@ -137,9 +161,20 @@ public:
         return extent_;
     }
 
+    bool operator==(const Box& rhs) const
+    {
+        return position_ == rhs.position_ && units_ == rhs.units_ &&
+               extent_ == rhs.extent_;
+    }
+
+    bool operator!=(const Box& rhs) const
+    {
+        return !operator==(rhs);
+    }
+
 protected:
     position_type position_;
-    position_type vx_, vy_, vz_;
+    boost::array<position_type, 3> units_;
     boost::array<length_type, 3> extent_;
 };
 
@@ -229,11 +264,39 @@ distance(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
     }
 }
 
+template<typename T, typename Trng>
+inline typename Box<T>::position_type
+random_position(Box<T> const& shape, Trng& rng)
+{
+    boost::const_multi_array_ref<T, 2> mat(&shape.units()[0][0], boost::extents[3][3]);
+    return add(
+        shape.position(),
+        multiply(
+            create_vector<typename Box<T>::position_type>(
+                shape.extent()[0] * rng(),
+                shape.extent()[1] * rng(),
+                shape.extent()[2] * rng()),
+            mat));
+}
+
+template<typename T>
+inline Box<T> const& shape(Box<T> const& shape)
+{
+    return shape;
+}
+
+template<typename T>
+inline Box<T>& shape(Box<T>& shape)
+{
+    return shape;
+}
+
 template<typename T_>
 struct is_shape<Box<T_> >: public boost::mpl::true_ {};
 
 template<typename T_>
-struct shape_position_type<Box<T_> > {
+struct shape_position_type<Box<T_> >
+{
     typedef typename Box<T_>::position_type type;
 };
 

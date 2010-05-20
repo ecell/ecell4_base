@@ -10,14 +10,14 @@ public:
     typedef Domain<Ttraits_> base_type;
     typedef Ttraits_ traits_type;
     typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
-    typedef typename traits_type::world_type::surface_id_type surface_id_type;
+    typedef typename traits_type::world_type::structure_id_type structure_id_type;
 
 public:
     virtual ~Single() {}
 
-    Single(surface_id_type const& surface_id,
+    Single(structure_id_type const& structure_id,
            particle_id_pair const& particle)
-        : base_type(surface_id), particle_(particle) {}
+        : base_type(structure_id), particle_(particle) {}
 
     particle_id_pair const& particle() const
     {

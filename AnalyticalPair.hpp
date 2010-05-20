@@ -14,7 +14,7 @@ public:
     typedef typename traits_type::world_type::length_type length_type;
     typedef typename traits_type::world_type::position_type position_type;
     typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
-    typedef typename traits_type::world_type::surface_id_type surface_id_type;
+    typedef typename traits_type::world_type::structure_id_type structure_id_type;
     typedef typename traits_type::world_type::traits_type::D_type D_type;
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::network_rules_type network_rules_type;
@@ -24,11 +24,11 @@ public:
 public:
     virtual ~AnalyticalPair() {}
 
-    AnalyticalPair(surface_id_type const& surface_id,
+    AnalyticalPair(structure_id_type const& structure_id,
                    particle_id_pair const& p0, particle_id_pair const& p1,
                    shell_id_pair const& shell,
                    length_type const& r0, length_type const& rt)
-        : base_type(surface_id, p0, p1), shell_(shell),
+        : base_type(structure_id, p0, p1), shell_(shell),
           r0_(r0), rt_(rt)
     {
         // determine a_r and a_R

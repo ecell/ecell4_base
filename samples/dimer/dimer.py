@@ -2,9 +2,10 @@
 
 from egfrd import *
 from bd import *
-from surface import *
 from gfrdbase import *
 from logger import *
+import _gfrd
+import model
 import sys
 
 
@@ -15,28 +16,24 @@ L = 5e-6
 #L = 5e-8
 #L = 3e-7
 
-w = World(L, int((N * 6) ** (1. / 3.)))
-s = EGFRDSimulator(w)
-#s = BDSimulator()
-
-
-box1 = CuboidalRegion([0,0,0], [L,L,L])
-# not supported yet
-#s.add_surface(box1)
-
-m = ParticleModel()
-S = m.new_species_type('S', 1.5e-12, 5e-9)
-P = m.new_species_type('P', 1e-12, 7e-9)
-r1 = create_binding_reaction_rule(S, S, P, 1e7 / N_A)
-r2 = create_unbinding_reaction_rule(P, S, S, 1e3)
+m = model.ParticleModel(L)
+S = model.Species('S', 1.5e-12, 5e-9)
+P = model.Species('P', 1e-12, 7e-9)
+m.add_species_type(S)
+m.add_species_type(P)
+r1 = model.create_binding_reaction_rule(S, S, P, 1e7 / N_A)
+r2 = model.create_unbinding_reaction_rule(P, S, S, 1e3)
 m.network_rules.add_reaction_rule(r1)
 m.network_rules.add_reaction_rule(r2)
 m.set_all_repulsive()
 
-s.set_model(m)
+world = create_world(m, int((N * 6) ** (1. / 3.)))
+nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
+s = EGFRDSimulator(world, myrandom.rng, nrw)
+#s = BDSimulator(world. myrandom.rng, nrw)
 
-s.throw_in_particles(S, N / 2, box1)
-s.throw_in_particles(P, N / 2, box1)
+throw_in_particles(s.world, S, N / 2)
+throw_in_particles(s.world, P, N / 2)
 
 
 #l = Logger('dimer')

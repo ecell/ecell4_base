@@ -6,13 +6,13 @@
 #include <ostream>
 #include "Defs.hpp"
 
-template<typename Tid_, typename TD_, typename Tlen_, typename Tsurface_id_>
+template<typename Tid_, typename TD_, typename Tlen_, typename Tstructure_id_>
 struct SpeciesInfo
 {
     typedef Tid_ identifier_type;
     typedef TD_ D_type;
     typedef Tlen_ length_type;
-    typedef Tsurface_id_ surface_id_type;
+    typedef Tstructure_id_ structure_id_type;
 
     identifier_type const& id() const
     {
@@ -29,14 +29,14 @@ struct SpeciesInfo
         return radius_;
     }
 
-    surface_id_type const& surface_id() const
+    structure_id_type const& structure_id() const
     {
-        return surface_id_;
+        return structure_id_;
     }
 
-    surface_id_type& surface_id()
+    structure_id_type& structure_id()
     {
-        return surface_id_;
+        return structure_id_;
     }
 
     D_type const& D() const
@@ -52,7 +52,7 @@ struct SpeciesInfo
     bool operator==(SpeciesInfo const& rhs) const
     {
         return id_ == rhs.id() && diffusion_coef_ == rhs.D() &&
-                radius_ == rhs.radius() && surface_id_ == rhs.surface_id();
+                radius_ == rhs.radius() && structure_id_ == rhs.structure_id();
     }
 
     bool operator!=(SpeciesInfo const& rhs) const
@@ -61,8 +61,8 @@ struct SpeciesInfo
     }
 
     SpeciesInfo(identifier_type const& id, D_type const& D = 0.,
-                length_type const& r = 0., surface_id_type const& s = "") 
-        : id_(id), diffusion_coef_(D), radius_(r), surface_id_(s) {}
+                length_type const& r = 0., structure_id_type const& s = "") 
+        : id_(id), diffusion_coef_(D), radius_(r), structure_id_(s) {}
 
     SpeciesInfo() {}
 
@@ -70,14 +70,14 @@ private:
     identifier_type id_;
     D_type diffusion_coef_;
     length_type radius_;
-    surface_id_type surface_id_;
+    structure_id_type structure_id_;
 };
 
-template<typename Tchar_, typename Ttraits_, typename Tid_, typename TD_, typename Tlen_, typename Tsurface_id_>
+template<typename Tchar_, typename Ttraits_, typename Tid_, typename TD_, typename Tlen_, typename Tstructure_id_>
 inline std::basic_ostream<Tchar_, Ttraits_>&
-operator<<(std::basic_ostream<Tchar_, Ttraits_>& strm, const SpeciesInfo<Tid_, TD_, Tlen_, Tsurface_id_>& v)
+operator<<(std::basic_ostream<Tchar_, Ttraits_>& strm, const SpeciesInfo<Tid_, TD_, Tlen_, Tstructure_id_>& v)
 {
-    strm << "SpeciesInfo(id=" << v.id() << ", D=" << v.D() << ", radius=" << v.radius() << ", surface=" << v.surface_id() << ")";
+    strm << "SpeciesInfo(id=" << v.id() << ", D=" << v.D() << ", radius=" << v.radius() << ", surface=" << v.structure_id() << ")";
     return strm;
 }
 

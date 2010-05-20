@@ -92,8 +92,8 @@ public:
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::particle_type::shape_type particle_shape_type;
     typedef typename traits_type::size_type size_type;
-    typedef typename traits_type::surface_id_type surface_id_type;
-    typedef typename traits_type::surface_type surface_type;
+    typedef typename traits_type::structure_id_type structure_id_type;
+    typedef typename traits_type::structure_type structure_type;
     typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
     typedef Transaction<traits_type> transaction_type;
 

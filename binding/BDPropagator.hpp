@@ -24,7 +24,7 @@ inline boost::python::objects::class_base register_bd_propagator_class(char cons
     typedef typename simulator_traits_type::world_type world_type;
     typedef typename world_type::particle_id_type particle_id_type;
     typedef typename simulator_traits_type::network_rules_type network_rules_type;
-    typedef typename simulator_traits_type::rng_type rng_type;
+    typedef typename world_type::traits_type::rng_type rng_type;
     typedef typename simulator_traits_type::time_type time_type;
     typedef typename world_type::particle_container_type particle_container_type;
 

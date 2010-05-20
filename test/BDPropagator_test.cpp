@@ -15,6 +15,7 @@
 #include "Box.hpp"
 #include "Surface.hpp"
 #include "Region.hpp"
+#include "Plane.hpp"
 #include "BDPropagator.hpp"
 #include "NetworkRules.hpp"
 #include "Transaction.hpp"
@@ -23,30 +24,10 @@
 #include "BasicNetworkRulesImpl.hpp"
 #include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
+#include "ParticleSimulator.hpp"
 
-struct Traits
-{
-    typedef World<CyclicWorldTraits<Real, Real> > world_type;
-    typedef Real rate_type;
-    typedef Real time_type;
-    typedef int reaction_rule_id_type;
-    typedef Sphere<world_type::length_type> sphere_type;
-    typedef Cylinder<world_type::length_type> cylinder_type;
-    typedef Box<world_type::length_type> box_type;
-    typedef Surface<world_type::surface_id_type,
-                    sphere_type> spherical_surface_type;
-    typedef Surface<world_type::surface_id_type,
-                    cylinder_type> cylindrical_surface_type;
-    typedef Surface<world_type::surface_id_type,
-                    box_type> planar_surface_type;
-    typedef Region<world_type::surface_id_type,
-                    box_type> cuboidal_region_type;
-    typedef GSLRandomNumberGenerator rng_type;
-    typedef ReactionRuleInfo<reaction_rule_id_type, SpeciesTypeID, rate_type>
-            reaction_rule_type;
-    typedef NetworkRulesWrapper<NetworkRules, reaction_rule_type>
-            network_rules_type;
-};
+struct Traits: ParticleSimulatorTraitsBase<World<CyclicWorldTraits<Real, Real> > >
+{};
 
 template<typename Tworld_, typename Trng_, typename Tpid_list_>
 void inject_particles(Tworld_& world, Trng_& rng, Tpid_list_& pid_list, typename Tworld_::species_id_type const& sid, int n)
@@ -85,7 +66,7 @@ void inject_particles(Tworld_& world, Trng_& rng, Tpid_list_& pid_list, typename
 
 BOOST_AUTO_TEST_CASE(instantiation)
 {
-    Traits::rng_type rng;
+    Traits::world_type::traits_type::rng_type rng;
     BasicNetworkRulesImpl nr;
     Traits::network_rules_type nrw(nr);
     Traits::world_type w;
@@ -104,7 +85,7 @@ BOOST_AUTO_TEST_CASE(basic)
     typedef Traits::network_rules_type::reaction_rule_type reaction_rule_type;
     typedef Traits::world_type::position_type position_type;
     SerialIDGenerator<species_id> sidgen;
-    Traits::rng_type rng;
+    Traits::world_type::traits_type::rng_type rng;
     BasicNetworkRulesImpl nr;
     Traits::network_rules_type nrw(nr);
     Traits::world_type w(1e-5, 10);
@@ -116,11 +97,11 @@ BOOST_AUTO_TEST_CASE(basic)
     w.add_species(S1);
     w.add_species(S2);
 
-    boost::shared_ptr<Traits::world_type::surface_type> default_surface(
+    boost::shared_ptr<Traits::world_type::structure_type> default_surface(
         new Traits::cuboidal_region_type("default",
             Traits::box_type(position_type(1e-5 / 2, 1e-5 / 2, 1e-5 / 2),
                              array_gen(1e-5, 1e-5, 1e-5))));
-    w.add_surface(default_surface);
+    w.add_structure(default_surface);
 
     nr.add_reaction_rule(new_reaction_rule(S0.id(), S1.id(), array_gen(S2.id()), 1e-9));
 

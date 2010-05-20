@@ -52,7 +52,7 @@ public:
     typedef typename traits_type::shell_id_generator shell_id_generator;
     typedef typename traits_type::domain_id_generator domain_id_generator;
     typedef typename traits_type::network_rules_type network_rules_type;
-    typedef typename traits_type::rng_type rng_type;
+    typedef typename world_type::traits_type::rng_type rng_type;
 
     typedef typename traits_type::spherical_shell_type spherical_shell_type;
     typedef typename traits_type::cylindrical_shell_type cylindrical_shell_type;

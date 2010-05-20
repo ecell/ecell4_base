@@ -27,11 +27,6 @@ calculate_pair_CoM(Position const& p1,
         world_size);
 }
 
-Position draw_bd_displacement(Structure const& surface, Length const& length, GSLRandomNumberGenerator& rng)
-{
-    return StructureUtils::draw_bd_displacement(surface, length, rng);
-}
-
 void register_module_functions()
 {
     using namespace boost::python;
@@ -53,7 +48,8 @@ void register_module_functions()
             return_value_policy<manage_new_object>());
     def("create_cuboidal_region", &StructureUtils::create_cuboidal_region,
             return_value_policy<manage_new_object>());
-    def("draw_bd_displacement", &draw_bd_displacement);
+    def("_random_vector", (Position(*)(Structure const&, Length const&, GSLRandomNumberGenerator&))&StructureUtils::random_vector);
+    def("random_position", (Position(*)(Structure const&, GSLRandomNumberGenerator&))&StructureUtils::random_position);
 }
 
 } // namespace binding

@@ -13,7 +13,7 @@ inline boost::python::objects::class_base register_spherical_pair_class(char con
 
     return class_<impl_type, bases<typename impl_type::base_type>,
            boost::shared_ptr<impl_type> >(name,
-        init<typename impl_type::surface_id_type,
+        init<typename impl_type::structure_id_type,
              typename impl_type::particle_id_pair,
              typename impl_type::particle_id_pair,
              typename impl_type::shell_id_pair,

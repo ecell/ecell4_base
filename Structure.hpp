@@ -11,12 +11,17 @@
 #endif
 
 #include <sstream>
+#include "Vector3.hpp"
 
-template<typename Tid_>
+template<typename Ttraits_>
 class Structure
 {
 public:
-    typedef Tid_ identifier_type;
+    typedef Ttraits_ traits_type;
+    typedef typename traits_type::rng_type rng_type;
+    typedef typename traits_type::structure_id_type identifier_type;
+    typedef typename traits_type::length_type length_type;
+    typedef typename traits_type::position_type position_type;
 
 public:
     virtual ~Structure() {}
@@ -26,7 +31,7 @@ public:
         return id_;
     }
 
-    bool operator==(Structure const& rhs) const
+    virtual bool operator==(Structure const& rhs) const
     {
         return id_ == rhs.id();
     }
@@ -35,6 +40,12 @@ public:
     {
         return !operator==(rhs);
     }
+
+    virtual position_type random_position(rng_type& rng) const = 0;
+
+    virtual position_type random_vector(length_type const& r, rng_type& rng) const = 0;
+
+    virtual position_type bd_displacement(length_type const& r, rng_type& rng) const = 0;
 
     virtual std::size_t hash() const
     {
@@ -62,8 +73,8 @@ protected:
     identifier_type id_;
 };
 
-template<typename Tstrm_, typename Ttraits_, typename Tid_>
-inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Structure<Tid_>& v)
+template<typename Tstrm, typename Ttraits, typename T_traits>
+inline std::basic_ostream<Tstrm, Ttraits>& operator<<(std::basic_ostream<Tstrm, Ttraits>& strm, const Structure<T_traits>& v)
 {
     strm << v.as_string(); 
     return strm;
@@ -77,10 +88,10 @@ namespace std {
 namespace boost {
 #endif
 
-template<typename Tid_>
-struct hash<Structure<Tid_> >
+template<typename Ttraits>
+struct hash<Structure<Ttraits> >
 {
-    typedef Structure<Tid_> argument_type;
+    typedef Structure<Ttraits> argument_type;
 
     std::size_t operator()(argument_type const& val)
     {

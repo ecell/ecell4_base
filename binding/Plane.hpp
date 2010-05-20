@@ -1,5 +1,5 @@
-#ifndef BINDING_BOX_HPP
-#define BINDING_BOX_HPP
+#ifndef BINDING_PLANE_HPP
+#define BINDING_PLANE_HPP
 
 #include <boost/python.hpp>
 #include "peer/utils.hpp"
@@ -9,27 +9,25 @@
 namespace binding {
 
 template<typename Timpl>
-inline boost::python::objects::class_base register_box_class(char const* name)
+inline boost::python::objects::class_base register_plane_class(char const* name)
 {
     using namespace boost::python;
     typedef Timpl impl_type;
 
-    to_python_converter<boost::array<typename impl_type::length_type, 3>,
+    to_python_converter<boost::array<typename impl_type::length_type, 2>,
             peer::util::detail::to_ndarray_converter<
-                boost::array<typename impl_type::length_type, 3> > >();
+                boost::array<typename impl_type::length_type, 2> > >();
     peer::converters::register_iterable_to_ra_container_converter<
-            boost::array<typename impl_type::length_type, 3>, 3>();
+            boost::array<typename impl_type::length_type, 2>, 2>();
 
     return class_<impl_type>(name)
         .def(init<typename impl_type::position_type, 
                   typename impl_type::position_type, 
                   typename impl_type::position_type, 
-                  typename impl_type::position_type, 
                   typename impl_type::length_type,
-                  typename impl_type::length_type, 
                   typename impl_type::length_type>())
         .def(init<typename impl_type::position_type, 
-                  boost::array<typename impl_type::length_type, 3> >())
+                  boost::array<typename impl_type::length_type, 2> >())
         .add_property("position",
             make_function(
                 &peer::util::reference_accessor_wrapper<
@@ -48,14 +46,14 @@ inline boost::python::objects::class_base register_box_class(char const* name)
             make_function(
                 &peer::util::reference_accessor_wrapper<
                     impl_type,
-                    boost::array<typename impl_type::length_type, 3>,
+                    boost::array<typename impl_type::length_type, 2>,
                     &impl_type::extent,
                     &impl_type::extent>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
                     impl_type,
-                    boost::array<typename impl_type::length_type, 3>,
+                    boost::array<typename impl_type::length_type, 2>,
                     &impl_type::extent,
                     &impl_type::extent>::set))
         .add_property("unit_x",
@@ -85,23 +83,10 @@ inline boost::python::objects::class_base register_box_class(char const* name)
                     impl_type,
                     typename impl_type::position_type,
                     &impl_type::unit_y,
-                    &impl_type::unit_y>::set))
-        .add_property("unit_z",
-            make_function(
-                &peer::util::reference_accessor_wrapper<
-                    impl_type,
-                    typename impl_type::position_type,
-                    &impl_type::unit_z,
-                    &impl_type::unit_z>::get,
-                return_value_policy<return_by_value>()),
-            make_function(
-                &peer::util::reference_accessor_wrapper<
-                    impl_type,
-                    typename impl_type::position_type,
-                    &impl_type::unit_z,
-                    &impl_type::unit_z>::set));
+                    &impl_type::unit_y>::set));
+
 }
 
 } // namespace binding
 
-#endif /* BINDING_BOX_HPP */
+#endif /* BINDING_PLANE_HPP */

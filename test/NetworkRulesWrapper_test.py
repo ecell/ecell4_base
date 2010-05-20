@@ -5,12 +5,14 @@ import unittest
 class NetworkRulesWrapperTestCase(unittest.TestCase):
     def setUp(self):
         self.m = _gfrd.Model()
-        self.s1 = self.m.new_species_type()
+        self.s1 = _gfrd.SpeciesType()
         self.s1['radius'] = '0.1'
         self.s1['D'] = '0.2'
-        self.s2 = self.m.new_species_type()
+        self.m.add_species_type(self.s1)
+        self.s2 = _gfrd.SpeciesType()
         self.s2['radius'] = '0.3'
         self.s2['D'] = '0.4'
+        self.m.add_species_type(self.s2)
         self.nr = _gfrd.NetworkRulesWrapper(self.m.network_rules)
 
     def tearDown(self):

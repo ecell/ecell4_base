@@ -13,26 +13,29 @@
 #include <sstream>
 #include "Structure.hpp"
 
-template<typename Tid_, typename Tshape_>
-class Region: public Structure<Tid_>
+template<typename Ttraits_>
+class Region: public Structure<Ttraits_>
 {
 public:
-    typedef Structure<Tid_> base_type;
-    typedef Tid_ identifier_type;
-    typedef Tshape_ shape_type;
+    typedef Structure<Ttraits_> base_type;
+    typedef typename Ttraits_::structure_id_type identifier_type;
 
 public:
     virtual ~Region() {}
 
-    identifier_type const& id() const
-    {
-        return id_;
-    }
+    Region(identifier_type const& id): base_type(id) {}
+};
 
-    identifier_type& id()
-    {
-        return id_;
-    }
+template<typename Ttraits_, typename Tshape_>
+class BasicRegionImpl: public Region<Ttraits_>
+{
+public:
+    typedef Region<Ttraits_> base_type;
+    typedef typename Ttraits_::structure_id_type identifier_type;
+    typedef Tshape_ shape_type;
+
+public:
+    virtual ~BasicRegionImpl() {}
 
     shape_type& shape()
     {
@@ -44,14 +47,10 @@ public:
         return shape_;
     }
 
-    bool operator==(Region const& rhs) const
+    virtual bool operator==(Structure<Ttraits_> const& rhs) const
     {
-        return id_ == rhs.id() && shape_ == rhs.shape();
-    }
-
-    bool operator!=(Region const& rhs) const
-    {
-        return !operator==(rhs);
+        BasicRegionImpl const* _rhs(dynamic_cast<BasicRegionImpl const*>(&rhs));
+        return _rhs && base_type::id_ == rhs.id() && shape_ == _rhs->shape();
     }
 
     virtual std::size_t hash() const
@@ -63,20 +62,20 @@ public:
 #elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
         using boost::hash;
 #endif
-        return hash<identifier_type>()(id()) ^ hash<shape_type>()(shape());
+        return hash<identifier_type>()(base_type::id_) ^ hash<shape_type>()(shape());
     }
 
     virtual std::string as_string() const
     {
         std::ostringstream out;
-        out << "Region(" << id() << ":" << shape() << ")";
-        return out.str(); }
+        out << "Region(" << base_type::id_ << ":" << shape() << ")";
+        return out.str();
+    }
 
-    Region(identifier_type const& id, shape_type const& shape)
+    BasicRegionImpl(identifier_type const& id, shape_type const& shape)
         : base_type(id), shape_(shape) {}
 
 protected:
-    identifier_type id_;
     shape_type shape_;
 };
 

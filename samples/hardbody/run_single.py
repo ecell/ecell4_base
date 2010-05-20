@@ -6,7 +6,10 @@ from bd import *
 from logger import *
 import sys
 import time
-
+import model
+import gfrdbase
+import _gfrd
+import myrandom
 
 def run_single(T, V, N):
 
@@ -19,22 +22,18 @@ def run_single(T, V, N):
 
     print 'matrix_size=', matrix_size
     
-    w = World(L, matrix_size)
-    s = EGFRDSimulator(w)
-    #s = BDSimulator(w)
-
-    box1 = CuboidalRegion([0,0,0],[L,L,L])
-
     D = 1e-12
 
-    m = ParticleModel()
-
-    A = m.new_species_type('A', D, 2.5e-9)
+    m = model.ParticleModel(L)
+    A = model.Species('A', D, 2.5e-9)
+    m.add_species_type(A)
     m.set_all_repulsive()
 
-    s.set_model(m)
+    w = gfrdbase.create_world(m)
+    nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
+    s = EGFRDSimulator(w, myrandom.rng, nrw)
     
-    s.throw_in_particles(A, N, box1)
+    gfrdbase.throw_in_particles(w, A, N)
     print 'stir'
 
     t = 0
@@ -79,22 +78,20 @@ def run_single_bd(T, V, N, dt_factor):
 
     print 'matrix_size=', matrix_size
     
-    w = World(L, matrix_size)
-    s = BDSimulator(w)
-
-    box1 = CuboidalRegion([0,0,0],[L,L,L])
-
     D = 1e-12
 
-    m = ParticleModel()
-
-    A = m.new_species_type('A', D, 2.5e-9)
+    m = model.ParticleModel(L)
+    A = model.Species('A', D, 2.5e-9)
+    m.add_species_type(A)
     m.set_all_repulsive()
 
-    s.set_model(m)
+    w = gfrdbase.create_world(m)
+    nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
+    s = BDSimulator(w, myrandom.rng, nrw)
+
     s.dt_factor = dt_factor
     
-    s.throw_in_particles(A, N, box1)
+    gfrdbase.throw_in_particles(w, A, N)
     print 'stir'
 
     t = 0

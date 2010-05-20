@@ -5,6 +5,22 @@
 #include <exception>
 #include <stdexcept>
 
+class illegal_state: public std::exception
+{
+public:
+    illegal_state(std::string const& str): str_(str) {}
+
+    virtual ~illegal_state() throw() {}
+
+    virtual const char* what() const throw()
+    {
+        return str_.c_str();
+    }
+
+private:
+    std::string str_;
+};
+
 class not_found: public std::exception
 {
 public:

@@ -5,8 +5,10 @@ import unittest
 class ReactionRuleTestCase(unittest.TestCase):
     def setUp(self):
         self.m = _gfrd.Model()
-        self.s1 = self.m.new_species_type()
-        self.s2 = self.m.new_species_type()
+        self.s1 = _gfrd.SpeciesType()
+        self.m.add_species_type(self.s1)
+        self.s2 = _gfrd.SpeciesType()
+        self.m.add_species_type(self.s2)
 
     def tearDown(self):
         pass

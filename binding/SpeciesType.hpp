@@ -1,6 +1,7 @@
 #ifndef BINDING_SPECIES_TYPE_HPP
 #define BINDING_SPECIES_TYPE_HPP
 
+#include <boost/shared_ptr.hpp>
 #include <boost/python.hpp>
 #include <boost/python/copy_const_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
@@ -37,10 +38,13 @@ static boost::python::objects::class_base register_species_type_class(
     typedef Timpl_ impl_type;
     typedef SpeciesTypeExtras<impl_type> extras_type;
 
-    return class_<impl_type, impl_type*>(name, no_init)
+    return class_<impl_type, boost::shared_ptr<impl_type> >(name, init<>())
         .add_property("id",
-                make_function(&impl_type::id,
+                make_function((typename impl_type::identifier_type const&(impl_type::*)() const)&impl_type::id,
                     return_value_policy<copy_const_reference>()))
+        .add_property("model",
+                make_function((Model*(impl_type::*)() const)&impl_type::model,
+                    return_value_policy<reference_existing_object>()))
         .def("__str__", &extras_type::__str__)
         .def("__getitem__", &extras_type::__getitem__,
                 return_value_policy<copy_const_reference>())

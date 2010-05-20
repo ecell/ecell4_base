@@ -125,7 +125,7 @@ struct species_range_converter: public boost::python::default_call_policies
 };
 
 template<typename Timpl_>
-struct surfaces_range_converter: public boost::python::default_call_policies
+struct structures_range_converter: public boost::python::default_call_policies
 {
     typedef Timpl_ native_type;
 
@@ -248,10 +248,10 @@ inline boost::python::objects::class_base register_world_class(char const* name)
     using namespace boost::python;
     typedef Timpl_ impl_type;
     typedef species_range_converter<typename impl_type::species_range> species_range_converter_type;
-    typedef surfaces_range_converter<typename impl_type::surfaces_range> surfaces_range_converter_type;
+    typedef structures_range_converter<typename impl_type::structures_range> structures_range_converter_type;
 
     species_range_converter_type::__register();
-    surfaces_range_converter_type::__register();
+    structures_range_converter_type::__register();
 
     class_<std::set<typename impl_type::particle_id_type> >("ParticleIDSet")
         .def(peer::util::set_indexing_suite<std::set<typename impl_type::particle_id_type> >())
@@ -264,12 +264,12 @@ inline boost::python::objects::class_base register_world_class(char const* name)
         .add_property("species",
             make_function(
                 (typename impl_type::species_range(impl_type::*)() const)&impl_type::get_species, species_range_converter_type()))
-        .add_property("surfaces",
+        .add_property("structures",
             make_function(
-                (typename impl_type::surfaces_range(impl_type::*)() const)&impl_type::get_surfaces, surfaces_range_converter_type()))
+                (typename impl_type::structures_range(impl_type::*)() const)&impl_type::get_structures, structures_range_converter_type()))
         .add_property("particle_ids", &World_get_particle_ids<impl_type>)
         .def("add_species", &impl_type::add_species)
-        .def("add_surface", &impl_type::add_surface)
+        .def("add_structure", &impl_type::add_structure)
 		.def("get_particle_ids", &impl_type::get_particle_ids)
         .def("distance", &impl_type::template distance<typename impl_type::position_type>)
         .def("distance", &impl_type::template distance<typename Ttraits_::sphere_type>)

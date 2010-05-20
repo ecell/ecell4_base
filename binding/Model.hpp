@@ -22,10 +22,8 @@ inline void register_model_class(char const* name)
         .add_property("network_rules",
             make_function(&impl_type::network_rules,
                 return_value_policy<reference_existing_object>()))
-        .def("new_species_type", &impl_type::new_species_type,
-                return_value_policy<reference_existing_object>())
-        .def("get_species_type_by_id", &impl_type::get_species_type_by_id,
-                return_value_policy<reference_existing_object>())
+        .def("add_species_type", &impl_type::add_species_type)
+        .def("get_species_type_by_id", &impl_type::get_species_type_by_id)
         .def("__getitem__", (std::string const&(impl_type::*)(std::string const&) const)
                 &impl_type::operator[], return_value_policy<copy_const_reference>())
         .def("__setitem__", &Model___setitem__<Tmodel_>)
@@ -36,8 +34,7 @@ inline void register_model_class(char const* name)
         .add_property("species_types",
                 peer::util::range_from_range<
                     typename impl_type::species_type_range,
-                    impl_type, &impl_type::get_species_types,
-                    reference_existing_object>());
+                    impl_type, &impl_type::get_species_types>());
         ;
 }
 

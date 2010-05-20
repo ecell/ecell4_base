@@ -13,8 +13,8 @@ inline boost::python::objects::class_base register_domain_class(char const* name
     typedef Timpl impl_type;
 
     return class_<impl_type>(name, no_init)
-        .add_property("surface_id", 
-            make_function(&impl_type::surface_id,
+        .add_property("structure_id", 
+            make_function(&impl_type::structure_id,
                 return_value_policy<return_by_value>()))
         .add_property("event_id", 
             make_function(

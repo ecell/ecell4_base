@@ -13,26 +13,32 @@
 #include <sstream>
 #include "Structure.hpp"
 
-template<typename Tid_, typename Tshape_>
-class Surface: public Structure<Tid_>
+template<typename Ttraits_>
+class Surface: public Structure<Ttraits_>
 {
 public:
-    typedef Structure<Tid_> base_type;
-    typedef Tid_ identifier_type;
-    typedef Tshape_ shape_type;
+    typedef Structure<Ttraits_> base_type;
+    typedef typename Ttraits_::structure_id_type identifier_type;
+    typedef typename base_type::length_type length_type;
 
 public:
     virtual ~Surface() {}
 
-    identifier_type const& id() const
-    {
-        return id_;
-    }
+    Surface(identifier_type const& id): base_type(id) {}
 
-    identifier_type& id()
-    {
-        return id_;
-    }
+    virtual length_type minimal_distance(length_type const& radius) const = 0;
+};
+
+template<typename Ttraits_, typename Tshape_>
+class BasicSurfaceImpl: public Surface<Ttraits_>
+{
+public:
+    typedef Surface<Ttraits_> base_type;
+    typedef typename Ttraits_::structure_id_type identifier_type;
+    typedef Tshape_ shape_type;
+
+public:
+    virtual ~BasicSurfaceImpl() {}
 
     shape_type& shape()
     {
@@ -44,16 +50,12 @@ public:
         return shape_;
     }
 
-    bool operator==(Surface const& rhs) const
+    virtual bool operator==(Structure<Ttraits_> const& rhs) const
     {
-        return id_ == rhs.id() && shape_ == rhs.shape();
+        BasicSurfaceImpl const* _rhs(dynamic_cast<BasicSurfaceImpl const*>(&rhs));
+        return _rhs && base_type::id_ == rhs.id() && shape_ == _rhs->shape();
     }
-
-    bool operator!=(Surface const& rhs) const
-    {
-        return !operator==(rhs);
-    }
-
+    
     virtual std::size_t hash() const
     {
 #if defined(HAVE_TR1_FUNCTIONAL)
@@ -63,20 +65,20 @@ public:
 #elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
         using boost::hash;
 #endif
-        return hash<identifier_type>()(id()) ^ hash<shape_type>()(shape());
+        return hash<identifier_type>()(base_type::id_) ^ hash<shape_type>()(shape());
     }
 
     virtual std::string as_string() const
     {
         std::ostringstream out;
-        out << "Surface(" << id() << ":" << shape() << ")";
-        return out.str(); }
+        out << "Surface(" << base_type::id_ << ":" << shape() << ")";
+        return out.str();
+    }
 
-    Surface(identifier_type const& id, shape_type const& shape)
+    BasicSurfaceImpl(identifier_type const& id, shape_type const& shape)
         : base_type(id), shape_(shape) {}
 
 protected:
-    identifier_type id_;
     shape_type shape_;
 };
 

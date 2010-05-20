@@ -1,6 +1,7 @@
 #ifndef MODEL_HPP
 #define MODEL_HPP
 
+#include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -17,12 +18,12 @@
 class Model: private boost::noncopyable
 {
 public:
-    typedef SpeciesTypeID species_type_id_type;
+    typedef SpeciesTypeID species_id_type;
     typedef SpeciesType species_type_type;
 
 private:
-    typedef SerialIDGenerator<species_type_id_type> species_type_id_generator_type;
-    typedef std::map<species_type_id_type, species_type_type*> species_type_map_type;
+    typedef SerialIDGenerator<species_id_type> species_type_id_generator_type;
+    typedef std::map<species_id_type, boost::shared_ptr<species_type_type> > species_type_map_type;
     typedef select_second<species_type_map_type::value_type> second_selector_type;
     typedef get_mapper_mf<std::string, std::string>::type string_map_type;
 
@@ -44,9 +45,9 @@ public:
         return *network_rules_;
     }
 
-    SpeciesType* new_species_type();
+    void add_species_type(boost::shared_ptr<species_type_type> const& species);
 
-    SpeciesType* get_species_type_by_id(SpeciesTypeID const& id) const;
+    boost::shared_ptr<species_type_type> get_species_type_by_id(species_id_type const& id) const;
 
     species_type_range get_species_types() const;
 

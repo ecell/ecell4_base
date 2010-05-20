@@ -102,6 +102,7 @@ noinst_HEADERS = \
 	Single.hpp\
 	sorted_list.hpp\
 	SpeciesInfo.hpp\
+	SpeciesType.cpp\
 	SpeciesType.hpp\
 	SpeciesTypeID.hpp\
 	Sphere.hpp\
@@ -162,6 +163,7 @@ _gfrd_la_SOURCES=\
 	freeFunctions.cpp\
 	pyGFRD.cpp\
 	Model.cpp\
+	SpeciesType.cpp\
 	BasicNetworkRulesImpl.cpp\
 	NetworkRules.cpp\
 	Logger.cpp\

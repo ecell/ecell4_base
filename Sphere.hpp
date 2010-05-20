@@ -82,6 +82,17 @@ inline Sphere<T_>& shape(Sphere<T_>& shape)
     return shape;
 }
 
+template<typename T, typename Trng>
+inline typename Sphere<T>::position_type
+random_position(Sphere<T> const& shape, Trng& rng)
+{
+    return add(shape.position(),
+                create_vector<typename Sphere<T>::position_type>(
+                    shape.size() * rng(),
+                    shape.size() * rng(),
+                    shape.size() * rng())); 
+}
+
 template<typename T_>
 struct is_shape<Sphere<T_> >: public boost::mpl::true_ {};
 

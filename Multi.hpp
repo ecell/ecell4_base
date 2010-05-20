@@ -25,8 +25,8 @@ public:
     typedef typename traits_type::particle_id_type particle_id_type;
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::size_type size_type;
-    typedef typename traits_type::surface_id_type surface_id_type;
-    typedef typename traits_type::surface_type surface_type;
+    typedef typename traits_type::structure_id_type structure_id_type;
+    typedef typename traits_type::structure_type structure_type;
     typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
     typedef Transaction<traits_type> transaction_type;
     typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
@@ -51,9 +51,9 @@ public:
         return world_.get_species(id);
     }
 
-    virtual boost::shared_ptr<surface_type> get_surface(surface_id_type const& id) const
+    virtual boost::shared_ptr<structure_type> get_structure(structure_id_type const& id) const
     {
-        return world_.get_surface(id);
+        return world_.get_structure(id);
     }
 
     virtual particle_id_pair new_particle(species_id_type const& sid,
@@ -178,8 +178,8 @@ public:
     typedef typename traits_type::particle_id_type particle_id_type;
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::size_type size_type;
-    typedef typename traits_type::surface_id_type surface_id_type;
-    typedef typename traits_type::surface_type surface_type;
+    typedef typename traits_type::structure_id_type structure_id_type;
+    typedef typename traits_type::structure_type structure_type;
     typedef typename traits_type::spherical_shell_type spherical_shell_type;
     typedef typename traits_type::spherical_shell_id_pair spherical_shell_id_pair;
     typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
@@ -198,9 +198,9 @@ public:
 public:
     virtual ~Multi() {}
 
-    Multi(domain_id_type const& id, surface_id_type const& surface_id,
+    Multi(domain_id_type const& id, structure_id_type const& structure_id,
           simulator_type& main)
-        : base_type(id, surface_id),
+        : base_type(id, structure_id),
           main_(main), shell_ids_(), escaped_(false) {}
 
     spherical_shell_id_pair

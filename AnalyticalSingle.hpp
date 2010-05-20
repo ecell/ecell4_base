@@ -12,7 +12,7 @@ public:
     typedef typename traits_type::world_type::length_type length_type;
     typedef typename traits_type::world_type::position_type position_type;
     typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
-    typedef typename traits_type::world_type::surface_id_type surface_id_type;
+    typedef typename traits_type::world_type::structure_id_type structure_id_type;
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef Tshell_ shell_type;
@@ -23,11 +23,11 @@ public:
 public:
     virtual ~AnalyticalSingle() {}
 
-    AnalyticalSingle(surface_id_type const& surface_id,
+    AnalyticalSingle(structure_id_type const& structure_id,
                      particle_id_pair const& particle,
                      shell_id_pair const& shell,
                      reaction_rule_vector const& reactions)
-        : base_type(surface_id, particle), shell_(shell),
+        : base_type(structure_id, particle), shell_(shell),
           reactions_(reactions), k_tot_(calculate_k_tot(reactions)) {}
 
     shell_id_pair const& shell() const

@@ -17,6 +17,7 @@
 #include "../Sphere.hpp"
 #include "../Cylinder.hpp"
 #include "../Box.hpp"
+#include "../Plane.hpp"
 #include "../Point.hpp"
 #include "../Model.hpp"
 #include "../World.hpp"
@@ -35,17 +36,20 @@ namespace binding {
 
 typedef ::not_found NotFound;
 typedef ::already_exists AlreadyExists;
+typedef ::illegal_state IllegalState;
 typedef ::GSLRandomNumberGenerator GSLRandomNumberGenerator;
 typedef ::PyEvent PyEvent;
 typedef ::PyEventScheduler PyEventScheduler;
 typedef ::CyclicWorldTraits<Real, Real> WorldTraits;
 typedef WorldTraits::particle_type Particle;
-typedef WorldTraits::surface_id_type StructureID;
+typedef WorldTraits::structure_id_type StructureID;
 typedef WorldTraits::species_id_type SpeciesID;
 typedef WorldTraits::species_type SpeciesInfo;
-typedef WorldTraits::surface_type Structure;
+typedef WorldTraits::structure_type Structure;
 typedef WorldTraits::length_type Length;
 typedef WorldTraits::position_type Position;
+typedef WorldTraits::surface_type Surface;
+typedef WorldTraits::region_type Region;
 typedef ::World<WorldTraits> World;
 typedef ::Model Model;
 typedef ::NetworkRules NetworkRules;
@@ -59,6 +63,7 @@ typedef ::MultiParticleContainer<EGFRDSimulatorTraits> MultiParticleContainer;
 typedef EGFRDSimulatorTraits::box_type Box;
 typedef EGFRDSimulatorTraits::sphere_type Sphere;
 typedef EGFRDSimulatorTraits::cylinder_type Cylinder;
+typedef EGFRDSimulatorTraits::plane_type Plane;
 typedef ::BDPropagator<EGFRDSimulatorTraits> BDPropagator;
 typedef EGFRDSimulatorTraits::shell_id_type ShellID;
 typedef EGFRDSimulatorTraits::domain_id_type DomainID;
@@ -76,7 +81,6 @@ typedef EGFRDSimulator::cylindrical_pair_type CylindricalPair;
 typedef ::MatrixSpace<SphericalShell, ShellID> SphericalShellContainer;
 typedef ::MatrixSpace<CylindricalShell, ShellID> CylindricalShellContainer;
 typedef ::StructureUtils<EGFRDSimulatorTraits> StructureUtils;
-typedef WorldTraits::surface_type Structure;
 typedef EGFRDSimulatorTraits::planar_surface_type PlanarSurface;
 typedef EGFRDSimulatorTraits::spherical_surface_type SphericalSurface;
 typedef EGFRDSimulatorTraits::cylindrical_surface_type CylindricalSurface;

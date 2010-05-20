@@ -33,7 +33,7 @@ struct species_type_to_species_id_converter
         void* storage(reinterpret_cast<
             converter::rvalue_from_python_storage<native_type>* >(
                 data)->storage.bytes);
-        new (storage) native_type(static_cast<species_type_type*>(extract<species_type_type*>(object(borrowed(pyo))))->id());
+        new (storage) native_type(extract<species_type_type const*>(object(borrowed(pyo)))()->id());
         data->convertible = storage;
     }
 };

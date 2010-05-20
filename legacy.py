@@ -10,8 +10,8 @@ class MultiParticleContainer(_gfrd._ParticleContainer):
         return len(self.particles)
     num_particles = property(num_particles)
 
-    def get_surface(self, id):
-        return self.world.get_surface(id)
+    def get_structure(self, id):
+        return self.world.get_structure(id)
 
     def get_species(self, id):
         return self.world.get_species(id)
@@ -123,8 +123,8 @@ class BDPropagator(object):
             return True
 
         species = self.tx.get_species(sid)
-        surface = self.tx.get_surface(species.surface_id)
-        displacement = _gfrd.draw_bd_displacement(surface, math.sqrt(2.0 * D * self.dt), self.rng)
+        surface = self.tx.get_structure(species.structure_id)
+        displacement = surface.bd_displacement(math.sqrt(2.0 * D * self.dt), self.rng)
         newpos = self.tx.apply_boundary(pid_particle_pair[1].position + displacement)
         neighbors = self.tx.check_overlap(
             (newpos, pid_particle_pair[1].radius), pid_particle_pair[0])

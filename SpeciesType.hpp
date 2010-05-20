@@ -22,49 +22,36 @@ private:
     typedef get_mapper_mf<std::string, std::string>::type string_map_type;
 
 public:
+    typedef SpeciesTypeID identifier_type;
     typedef string_map_type::const_iterator string_map_iterator;
     typedef boost::iterator_range<string_map_iterator> attributes_range;
 
 public:
-    SpeciesTypeID const& id() const
-    {
-        return id_;
-    }
+    identifier_type const& id() const;
 
-    std::string const& operator[](std::string const& name) const
-    {
-        string_map_type::const_iterator i(attrs_.find(name));
-        if (i == attrs_.end())
-            throw not_found((boost::format("key %s not found") % name).str());
-    }
+    std::string const& operator[](std::string const& name) const;
 
-    std::string& operator[](std::string const& name)
-    {
-        return attrs_[name];
-    }
+    std::string& operator[](std::string const& name);
 
-    attributes_range attributes() const
-    {
-        return attributes_range(attrs_.begin(), attrs_.end());
-    }
+    attributes_range attributes() const;
 
     Model* model() const
     {
         return model_;
     }
 
-    SpeciesType(SpeciesTypeID const& id): id_(id) {}
+    SpeciesType(): model_(0) {}
  
 protected:
-    class Model*& model()
+    void bind_to_model(Model* model, identifier_type const& id)
     {
-        return model_;
+        model_ = model; 
+        id_ = id;
     }
 
 private:
-    class Model* model_;
-    SpeciesTypeID id_;
-    std::string name_;
+    Model* model_;
+    identifier_type id_;
     string_map_type attrs_;
 };
 

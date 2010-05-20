@@ -6,7 +6,13 @@ import unittest
 
 import numpy
 
+import _gfrd
+
 from egfrd import *
+
+import model
+import gfrdbase
+import myrandom
 
 log.setLevel(logging.WARNING)
 
@@ -14,15 +20,19 @@ log.setLevel(logging.WARNING)
 class EGFRDSimulatorTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.m = ParticleModel()
-        self.S = self.m.new_species_type('S', 2e-11, 5e-8)
-        self.SS = self.m.new_species_type('SS', 1e-12, 5e-9)
-        self.A = self.m.new_species_type('A', 0, 1e-8)
-        self.B = self.m.new_species_type('B', 2e-11, 5e-9)
+        self.m = model.ParticleModel(1e-5)
+        self.S = model.Species('S', 2e-11, 5e-8)
+        self.SS = model.Species('SS', 1e-12, 5e-9)
+        self.A = model.Species('A', 0, 1e-8)
+        self.B = model.Species('B', 2e-11, 5e-9)
+        self.m.add_species_type(self.S)
+        self.m.add_species_type(self.SS)
+        self.m.add_species_type(self.A)
+        self.m.add_species_type(self.B)
         self.m.set_all_repulsive()
-        world = World(1e-5, 10) 
-        self.s = EGFRDSimulator(world)
-        self.s.set_model(self.m)
+        self.w = gfrdbase.create_world(self.m)
+        self.nrw = NetworkRulesWrapper(self.m.network_rules)
+        self.s = EGFRDSimulator(self.w, myrandom.rng, self.nrw)
 
     def tearDown(self):
         pass
@@ -32,7 +42,7 @@ class EGFRDSimulatorTestCase(unittest.TestCase):
 
 
     def test_one_particle(self):
-        self.s.place_particle(self.S, [0.0,0.0,0.0])
+        place_particle(self.s.world, self.S, [0.0,0.0,0.0])
 
         t = self.s.t
         for i in range(5):
@@ -40,8 +50,8 @@ class EGFRDSimulatorTestCase(unittest.TestCase):
         self.failIf(t == self.s.t)
 
     def test_two_particles(self):
-        self.s.place_particle(self.S, [0.0,0.0,0.0])
-        self.s.place_particle(self.S, [5e-6,5e-6,5e-6])
+        place_particle(self.s.world, self.S, [0.0,0.0,0.0])
+        place_particle(self.s.world, self.S, [5e-6,5e-6,5e-6])
 
         t = self.s.t
         for i in range(5):
@@ -49,9 +59,9 @@ class EGFRDSimulatorTestCase(unittest.TestCase):
         self.failIf(t == self.s.t)
 
     def test_three_particles(self):
-        self.s.place_particle(self.S, [0.0,0.0,0.0])
-        self.s.place_particle(self.S, [5e-6,5e-6,5e-6])
-        self.s.place_particle(self.S, [1e-7,1e-7,1e-7])
+        place_particle(self.s.world, self.S, [0.0,0.0,0.0])
+        place_particle(self.s.world, self.S, [5e-6,5e-6,5e-6])
+        place_particle(self.s.world, self.S, [1e-7,1e-7,1e-7])
 
         t = self.s.t
         for i in range(5):
@@ -60,11 +70,11 @@ class EGFRDSimulatorTestCase(unittest.TestCase):
 
 
     def test_three_particles_in_contact(self):
-        self.s.place_particle(self.S, [0.0,0.0,0.0])
-        self.s.place_particle(self.S, [1e-7,0.0,0.0])
+        place_particle(self.s.world, self.S, [0.0,0.0,0.0])
+        place_particle(self.s.world, self.S, [1e-7,0.0,0.0])
 
         # dummy
-        self.s.place_particle(self.S, [2e-7,0.0,0.0])
+        place_particle(self.s.world, self.S, [2e-7,0.0,0.0])
 
         t = self.s.t
         for i in range(5):
@@ -72,10 +82,10 @@ class EGFRDSimulatorTestCase(unittest.TestCase):
         self.failIf(t == self.s.t)
 
     def test_four_particles_close(self):
-        self.s.place_particle(self.SS, [2e-8,0.0,0.0])
-        self.s.place_particle(self.SS, [3.003e-8,0.0,0.0])
+        place_particle(self.s.world, self.SS, [2e-8,0.0,0.0])
+        place_particle(self.s.world, self.SS, [3.003e-8,0.0,0.0])
 
-        self.s.place_particle(self.SS, [0.994e-8-5e-10, 0.0, 0.0])
+        place_particle(self.s.world, self.SS, [0.994e-8-5e-10, 0.0, 0.0])
 
         t = self.s.t
         for i in range(10):
@@ -83,8 +93,8 @@ class EGFRDSimulatorTestCase(unittest.TestCase):
         self.failIf(t == self.s.t)
 
     def test_immobile_is_immobile(self):
-        particleA = self.s.place_particle(self.A, [0.0,0.0,0.0])
-        self.s.place_particle(self.B, [1.5000001e-8,0.0,0.0])
+        particleA = place_particle(self.s.world, self.A, [0.0,0.0,0.0])
+        place_particle(self.s.world, self.B, [1.5000001e-8,0.0,0.0])
 
         initial_position = particleA[1].position
 
@@ -92,21 +102,21 @@ class EGFRDSimulatorTestCase(unittest.TestCase):
             self.s.step()
         
         new_position = particleA[1].position
-        dist = self.s.distance(initial_position, new_position)
+        dist = self.w.distance(initial_position, new_position)
 
         self.failIf(dist != 0, 'initial pos: %s,\tnew pos: %s' %
                     (initial_position, new_position))
 
     def test_pair_with_immobile(self):
-        self.s.place_particle(self.A, [0.0, 0.0, 0.0])
-        self.s.place_particle(self.B, [1.51e-8, 0.0, 0.0])
+        place_particle(self.s.world, self.A, [0.0, 0.0, 0.0])
+        place_particle(self.s.world, self.B, [1.51e-8, 0.0, 0.0])
 
         for i in range(2):
             self.s.step()
 
     def test_pair_with_immobile_switched_order(self):
-        self.s.place_particle(self.B, [1.51e-8, 0.0, 0.0])
-        self.s.place_particle(self.A, [0.0, 0.0, 0.0])
+        place_particle(self.s.world, self.B, [1.51e-8, 0.0, 0.0])
+        place_particle(self.s.world, self.A, [0.0, 0.0, 0.0])
 
         for i in range(2):
             self.s.step()
@@ -122,17 +132,24 @@ class EGFRDSimulatorTestCaseBase(unittest.TestCase):
         self.D = 1e-12
         self.radius = 5e-9
 
-        self.A = Species('A', self.D, self.radius)
-        self.B = Species('B', self.D, self.radius)
-        self.C = Species('C', self.D, self.radius)
+        self.m = model.ParticleModel(1.)
+
+        self.A = model.Species('A', self.D, self.radius)
+        self.B = model.Species('B', self.D, self.radius)
+        self.C = model.Species('C', self.D, self.radius)
+        self.m.add_species_type(self.A)
+        self.m.add_species_type(self.B)
+        self.m.add_species_type(self.C)
 
         self.kf_1 = 4000
         self.kf_2 = 5e-19
         self.kb_1 = 4000
         self.kb_2 = 4000
 
-        w = World(self.L, 10) 
-        self.s = EGFRDSimulator(w)
+    def setUpPost(self):
+        self.w = create_world(self.m)
+        self.nrw = _gfrd.NetworkRulesWrapper(self.m.network_rules)
+        self.s = EGFRDSimulator(self.w, myrandom.rng, self.nrw)
 
     def tearDown(self):
         pass
@@ -140,17 +157,11 @@ class EGFRDSimulatorTestCaseBase(unittest.TestCase):
 
 class EGFRDSimulatorCytosoleTestCase(EGFRDSimulatorTestCaseBase):
     def setUp(self):
-        EGFRDSimulatorTestCaseBase.setUpBase(self)
-
-        self.m = ParticleModel()
+        self.setUpBase()
 
         A = self.A
         B = self.B
         C = self.C
-
-        self.m.add_species(A)
-        self.m.add_species(B)
-        self.m.add_species(C)
 
         self.m.add_reaction([A],    [B],    self.kf_1)
         self.m.add_reaction([B],    [A],    self.kb_1)
@@ -158,10 +169,10 @@ class EGFRDSimulatorCytosoleTestCase(EGFRDSimulatorTestCaseBase):
         self.m.add_reaction([C],    [A, B], self.kb_2)
         self.m.add_reaction([C],    [],     self.kf_1)
 
-        self.s.set_model(self.m)
+        self.setUpPost() 
 
-        self.s.throw_in_particles(A, 2)
-        self.s.throw_in_particles(B, 2)
+        throw_in_particles(self.w, A, 2)
+        throw_in_particles(self.w, B, 2)
 
     def test_run(self):
         for i in range(10):
@@ -170,38 +181,35 @@ class EGFRDSimulatorCytosoleTestCase(EGFRDSimulatorTestCaseBase):
 
 class EGFRDSimulatorMembraneTestCase(EGFRDSimulatorTestCaseBase):
     def setUp(self):
-        EGFRDSimulatorTestCaseBase.setUpBase(self)
-
-        self.m = ParticleModel()
+        self.setUpBase()
 
         A = self.A
         B = self.B
         C = self.C
 
         L = self.L
-        thickness = self.radius
 
         m1 = self.m.add_planar_surface(origin=[L/2, L/2, 2*L/10],
-                                     vector_x=[1, 0, 0],
-                                     vector_y=[0, 1, 0],
+                                     unit_x=[1, 0, 0],
+                                     unit_y=[0, 1, 0],
                                      Lx=L/2,
                                      Ly=L/2,
-                                     Lz=thickness,
-                                     name='m1')
-        self.m.add_species(A, m1)
-        self.m.add_species(B, m1)
-        self.m.add_species(C, m1)
+                                     id='m1')
 
-        self.m.add_reaction([(A, m1)],          [(B, m1)],          self.kf_1)
-        self.m.add_reaction([(B, m1)],          [(A, m1)],          self.kb_1)
-        self.m.add_reaction([(A, m1), (B, m1)], [(C, m1)],          self.kf_2)
-        self.m.add_reaction([(C, m1)],          [(A, m1), (B, m1)], self.kb_2)
-        self.m.add_reaction([(C, m1)],          [],                 self.kf_1)
+        A["surface"] = "m1"
+        B["surface"] = "m1"
+        C["surface"] = "m1"
 
-        self.s.set_model(self.m)
+        self.m.add_reaction([A],    [B],    self.kf_1)
+        self.m.add_reaction([B],    [A],    self.kb_1)
+        self.m.add_reaction([A, B], [C],    self.kf_2)
+        self.m.add_reaction([C],    [A, B], self.kb_2)
+        self.m.add_reaction([C],    [],     self.kf_1)
 
-        self.s.throw_in_particles(A, 2, m1)
-        self.s.throw_in_particles(B, 2, m1)
+        self.setUpPost()
+
+        throw_in_particles(self.w, A, 2)
+        throw_in_particles(self.w, B, 2)
 
     def test_run(self):
         for i in range(10):
@@ -210,9 +218,7 @@ class EGFRDSimulatorMembraneTestCase(EGFRDSimulatorTestCaseBase):
 
 class EGFRDSimulatorDnaTestCase(EGFRDSimulatorTestCaseBase):
     def setUp(self):
-        EGFRDSimulatorTestCaseBase.setUpBase(self)
-
-        self.m = ParticleModel()
+        self.setUpBase()
 
         A = self.A
         B = self.B
@@ -225,22 +231,18 @@ class EGFRDSimulatorDnaTestCase(EGFRDSimulatorTestCaseBase):
                                          radius=radius,
                                          orientation=[0, 1, 0],
                                          size=L/2,
-                                         name='d')
+                                         id='d')
 
-        self.m.add_species(A, d)
-        self.m.add_species(B, d)
-        self.m.add_species(C, d)
+        self.m.add_reaction([A],    [B],    self.kf_1)
+        self.m.add_reaction([B],    [A],    self.kb_1)
+        self.m.add_reaction([A, B], [C],    self.kf_2)
+        self.m.add_reaction([C],    [A, B], self.kb_2)
+        self.m.add_reaction([C],    [],     self.kf_1)
 
-        self.m.add_reaction([(A, d)],         [(B, d)],         self.kf_1)
-        self.m.add_reaction([(B, d)],         [(A, d)],         self.kb_1)
-        self.m.add_reaction([(A, d), (B, d)], [(C, d)],         self.kf_2)
-        self.m.add_reaction([(C, d)],         [(A, d), (B, d)], self.kb_2)
-        self.m.add_reaction([(C, d)],         [],               self.kf_1)
+        self.setUpPost()
 
-        self.s.set_model(self.m)
-
-        self.s.throw_in_particles(A, 2, d)
-        self.s.throw_in_particles(B, 2, d)
+        throw_in_particles(self.w, A, 2)
+        throw_in_particles(self.w, B, 2)
 
     def test_run(self):
         for i in range(10):

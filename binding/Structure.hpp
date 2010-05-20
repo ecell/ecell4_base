@@ -11,10 +11,14 @@ inline boost::python::objects::class_base register_structure_class(char const *n
     using namespace boost::python;
     typedef Timpl impl_type;
 
-    return class_<impl_type>(name, no_init)
+    return class_<impl_type, boost::shared_ptr<impl_type>,
+                  boost::noncopyable>(name, no_init)
         .add_property("id", 
             make_function(&impl_type::id,
                           return_value_policy<return_by_value>()))
+        .def("random_position", &impl_type::random_position)
+        .def("random_vector", &impl_type::random_vector)
+        .def("bd_displacement", &impl_type::bd_displacement)
         ;
 }
 

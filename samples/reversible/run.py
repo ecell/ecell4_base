@@ -13,6 +13,9 @@ LOGLEVEL=ERROR PYTHONPATH=../.. python -O run.py rev.-3.out 1.25e-8 1000000 &
 import sys
 from egfrd import *
 from bd import *
+import model
+import gfrdbase
+import _gfrd
 
 def run(outfilename, T, N):
     print outfilename
@@ -32,11 +35,6 @@ def run(outfilename, T, N):
 
 def singlerun(T):
 
-    w = World(1e-3, 3)
-    s = EGFRDSimulator(w)
-    #s.set_user_max_shell_size(1e-6)
-    #s = BDSimulator(w)
-
     sigma = 5e-9
     r0 = sigma
     D = 1e-12
@@ -47,22 +45,28 @@ def singlerun(T):
     kf = 100 * sigma * D_tot
     koff = 0.1 / tau
 
-    m = ParticleModel()
+    m = model.ParticleModel(1e-3)
 
-    A = m.new_species_type('A', D, sigma/2)
-    B = m.new_species_type('B', D, sigma/2)
-    C = m.new_species_type('C', D, sigma/2)
+    A = model.Species('A', D, sigma/2)
+    B = model.Species('B', D, sigma/2)
+    C = model.Species('C', D, sigma/2)
 
-    r1 = create_binding_reaction_rule(A, B, C, kf)
+    m.add_species_type(A)
+    m.add_species_type(B)
+    m.add_species_type(C)
+
+    r1 = model.create_binding_reaction_rule(A, B, C, kf)
     m.network_rules.add_reaction_rule(r1)
 
-    r2 = create_unbinding_reaction_rule(C, A, B, koff)
+    r2 = model.create_unbinding_reaction_rule(C, A, B, koff)
     m.network_rules.add_reaction_rule(r2)
 
-    s.set_model(m)
+    w = gfrdbase.create_world(m, 3)
+    nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
+    s = EGFRDSimulator(w, myrandom.rng, nrw)
 
-    s.place_particle(A, [0,0,0])
-    s.place_particle(B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0])
+    place_particle(w, A, [0,0,0])
+    place_particle(w, B, [(float(A['radius']) + float(B['radius']))+1e-23,0,0])
 
     end_time = T
     s.step()
@@ -78,7 +82,7 @@ def singlerun(T):
     if len(s.world.get_particle_ids(C.id)) != 0:
         return 0, s.t
 
-    distance = s.distance_between_particles(A.id, B.id)
+    distance = w.distance(s.get_position(A.id), s.get_position(B.id))
 
     return distance, s.t
     

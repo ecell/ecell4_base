@@ -11,8 +11,8 @@ inline boost::python::objects::class_base register_planar_surface_class(char con
     using namespace boost::python;
     typedef Timpl impl_type;
 
-    return class_<impl_type, bases<typename impl_type::base_type>,
-           boost::shared_ptr<impl_type> >(
+    return class_<impl_type, bases<typename impl_type::base_type::base_type>,
+           boost::shared_ptr<impl_type>, boost::noncopyable>(
             name, init<typename impl_type::identifier_type,
                        typename impl_type::shape_type>())
         .add_property("shape",

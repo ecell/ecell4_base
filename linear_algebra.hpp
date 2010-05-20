@@ -4,21 +4,52 @@
 #include <algorithm>
 #include <cmath>
 #include <gsl/gsl_pow_int.h>
+#include <boost/preprocessor/tuple/elem.hpp>
+#include <boost/preprocessor/repetition/repeat.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/array.hpp>
+#include <boost/multi_array.hpp>
 
 #include "utils/array_traits.hpp"
 
 #define CREATE_VECTOR_LIMIT_REPEAT 16
+#define POPULATE_MATRIX_BY_VECTORS_LIMIT_REPEAT 16
 
 template<typename T_, std::size_t N_>
 struct is_vector: public boost::mpl::false_ {};
 
 template<typename T_, std::size_t N_>
 struct is_vector<boost::array<T_, N_>, N_>: public boost::mpl::true_ {};
+
+template<typename T_, std::size_t N_>
+struct is_matrix: public boost::mpl::false_ {};
+
+template<typename T_, std::size_t N_, typename Talloc_>
+struct is_matrix<boost::multi_array<T_, N_, Talloc_>, N_>: public boost::mpl::true_ {};
+
+template<typename T_, std::size_t N_>
+struct is_matrix<boost::detail::multi_array::sub_array<T_, N_>, N_>: public boost::mpl::true_ {};
+
+template<typename T_, std::size_t N_>
+struct is_matrix<boost::detail::multi_array::const_sub_array<T_, N_>, N_>: public boost::mpl::true_ {};
+
+template<typename T_, std::size_t N_>
+struct is_matrix<boost::detail::multi_array::multi_array_view<T_, N_>, N_>: public boost::mpl::true_ {};
+
+template<typename T_, std::size_t N_>
+struct is_matrix<boost::detail::multi_array::const_multi_array_view<T_, N_>, N_>: public boost::mpl::true_ {};
+
+template<typename T_, std::size_t N_>
+struct is_matrix<boost::multi_array_ref<T_, N_>, N_>: public boost::mpl::true_ {};
+
+template<typename T_, std::size_t N_, typename Tptr_>
+struct is_matrix<boost::const_multi_array_ref<T_, N_, Tptr_>, N_>: public boost::mpl::true_ {};
+
 
 template<typename T_>
 struct is_scalar: public boost::is_arithmetic<T_> {};
@@ -29,6 +60,107 @@ struct is_vector2: public is_vector<T_, 2> {};
 template<typename T_>
 struct is_vector3: public is_vector<T_, 3> {};
 
+template<typename T_>
+struct matrix_adapter
+{
+};
+
+template<typename T_, std::size_t N_, typename Talloc_>
+struct matrix_adapter<boost::multi_array<T_, N_, Talloc_> >
+{
+    typedef boost::multi_array<T_, N_, Talloc_> matrix_type;
+    typedef typename matrix_type::size_type matrix_size_type;
+
+    static matrix_size_type get_extent(matrix_type const& first,
+                                       std::size_t idx)
+    {
+        return first.shape()[idx];
+    }
+};
+
+template<typename T_, std::size_t N_>
+struct matrix_adapter<boost::detail::multi_array::sub_array<T_, N_> >
+{
+    typedef boost::detail::multi_array::sub_array<T_, N_> matrix_type;
+    typedef typename matrix_type::size_type matrix_size_type;
+
+    static matrix_size_type get_extent(matrix_type const& first,
+                                       std::size_t idx)
+    {
+        return first.shape()[idx];
+    }
+};
+
+template<typename T_, std::size_t N_>
+struct matrix_adapter<boost::detail::multi_array::const_sub_array<T_, N_> >
+{
+    typedef boost::detail::multi_array::const_sub_array<T_, N_> matrix_type;
+    typedef typename matrix_type::size_type matrix_size_type;
+
+    static matrix_size_type get_extent(matrix_type const& first,
+                                       std::size_t idx)
+    {
+        return first.shape()[idx];
+    }
+};
+
+template<typename T_, std::size_t N_>
+struct matrix_adapter<boost::detail::multi_array::multi_array_view<T_, N_> >
+{
+    typedef boost::detail::multi_array::multi_array_view<T_, N_> matrix_type;
+    typedef typename matrix_type::size_type matrix_size_type;
+
+    static matrix_size_type get_extent(matrix_type const& first,
+                                       std::size_t idx)
+    {
+        return first.shape()[idx];
+    }
+};
+
+template<typename T_, std::size_t N_>
+struct matrix_adapter<boost::detail::multi_array::const_multi_array_view<T_, N_> >
+{
+    typedef boost::detail::multi_array::const_multi_array_view<T_, N_> matrix_type;
+    typedef typename matrix_type::size_type matrix_size_type;
+
+    matrix_size_type get_extent(matrix_type const& first,
+                                std::size_t idx)
+    {
+        return first.shape()[idx];
+    }
+};
+
+template<typename T_, std::size_t N_>
+struct matrix_adapter<boost::multi_array_ref<T_, N_> >
+{
+    typedef boost::multi_array_ref<T_, N_> matrix_type;
+    typedef typename matrix_type::size_type matrix_size_type;
+
+    static matrix_size_type get_extent(matrix_type const& first,
+                                       std::size_t idx)
+    {
+        return first.shape()[idx];
+    }
+};
+
+template<typename T_, std::size_t N_, typename Tptr_>
+struct matrix_adapter<boost::const_multi_array_ref<T_, N_, Tptr_> >
+{
+    typedef boost::const_multi_array_ref<T_, N_, Tptr_> matrix_type;
+    typedef typename matrix_type::size_type matrix_size_type;
+
+    static matrix_size_type get_extent(matrix_type const& first,
+                                       std::size_t idx)
+    {
+        return first.shape()[idx];
+    }
+};
+
+template<typename Tmat>
+inline std::size_t matrix_extent(Tmat const& mat, std::size_t dim)
+{
+    return matrix_adapter<Tmat>::get_extent(mat, dim);
+}
 
 template<typename T_>
 inline T_ add( T_ const& p1, T_ const& p2, typename boost::enable_if<is_scalar<T_> >::type* = 0)
@@ -130,6 +262,24 @@ inline T_ multiply(T_ const& p1, typename element_type_of<T_>::type const& p2, t
     retval[0] = multiply(p1[0], p2);
     retval[1] = multiply(p1[1], p2);
     retval[2] = multiply(p1[2], p2);
+    return retval;
+}
+
+template<typename T_, typename M_>
+inline T_ multiply(T_ const& p1, M_ const& p2, typename boost::enable_if<
+    boost::mpl::and_<is_vector3<T_>, is_matrix<M_, 2> > >::type* = 0)
+{
+    BOOST_ASSERT(matrix_extent(p2, 0) == 3 && matrix_extent(p2, 1) == 3);
+    T_ retval;
+    retval[0] = multiply(p1[0], p2[0][0])
+                + multiply(p1[1], p2[1][0])
+                + multiply(p1[2], p2[2][0]);
+    retval[1] = multiply(p1[0], p2[0][1])
+                + multiply(p1[1], p2[1][1])
+                + multiply(p1[2], p2[2][1]);
+    retval[2] = multiply(p1[0], p2[0][2])
+                + multiply(p1[1], p2[1][2])
+                + multiply(p1[2], p2[2][2]);
     return retval;
 }
 

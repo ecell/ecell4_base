@@ -18,11 +18,14 @@
 #include "SerialIDGenerator.hpp"
 #include "Transaction.hpp"
 #include "Structure.hpp"
+#include "Surface.hpp"
+#include "Region.hpp"
 #include "geometry.hpp"
+#include "GSLRandomNumberGenerator.hpp"
 #include "Point.hpp" // XXX: workaround. should be removed later.
 #include "utils/pair.hpp"
 
-template<typename Tlen_, typename TD_>
+template<typename Tderived_, typename Tlen_, typename TD_>
 struct WorldTraitsBase
 {
     typedef std::size_t size_type;
@@ -32,11 +35,25 @@ struct WorldTraitsBase
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef SpeciesTypeID species_id_type;
     typedef Particle<length_type, D_type, species_id_type> particle_type;
-    typedef std::string surface_id_type;
-    typedef SpeciesInfo<species_id_type, D_type, length_type, surface_id_type> species_type;
+    typedef std::string structure_id_type;
+    typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;
     typedef Vector3<length_type> point_type;
     typedef typename particle_type::shape_type::position_type position_type;
-    typedef Structure<surface_id_type> surface_type;
+    typedef GSLRandomNumberGenerator rng_type;
+    typedef Structure<Tderived_> structure_type;
+    typedef Surface<Tderived_> surface_type;
+    typedef Region<Tderived_> region_type;
+
+    static const Real MINIMAL_SEPARATION_FACTOR = 1.0;
+};
+
+template<typename Tlen_, typename TD_>
+struct WorldTraits: public WorldTraitsBase<WorldTraits<Tlen_, TD_>, Tlen_, TD_>
+{
+public:
+    typedef WorldTraitsBase<WorldTraits<Tlen_, TD_>, Tlen_, TD_> base_type;
+    typedef typename base_type::length_type length_type;
+    typedef typename base_type::position_type position_type;
 
     template<typename Tval_>
     static Tval_ apply_boundary(Tval_ const& v, length_type const& world_size)
@@ -70,11 +87,10 @@ struct WorldTraitsBase
 };
 
 template<typename Tlen_, typename TD_>
-struct CyclicWorldTraits: public WorldTraitsBase<Tlen_, TD_>
+struct CyclicWorldTraits: public WorldTraitsBase<CyclicWorldTraits<Tlen_, TD_>, Tlen_, TD_>
 {
-protected:
-    typedef WorldTraitsBase<Tlen_, TD_> base_type;
 public:
+    typedef WorldTraitsBase<CyclicWorldTraits<Tlen_, TD_>, Tlen_, TD_> base_type;
     typedef typename base_type::length_type length_type;
     typedef typename base_type::position_type position_type;
 
@@ -129,25 +145,25 @@ public:
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::particle_type::shape_type particle_shape_type;
     typedef typename traits_type::size_type size_type;
-    typedef typename traits_type::surface_id_type surface_id_type;
-    typedef typename traits_type::surface_type surface_type;
+    typedef typename traits_type::structure_id_type structure_id_type;
+    typedef typename traits_type::structure_type structure_type;
     typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
 
 protected:
     typedef std::map<species_id_type, species_type> species_map;
-    typedef std::map<surface_id_type, boost::shared_ptr<surface_type> > surface_map;
+    typedef std::map<structure_id_type, boost::shared_ptr<structure_type> > structure_map;
     typedef std::set<particle_id_type> particle_id_set;
     typedef std::map<species_id_type, particle_id_set> per_species_particle_id_set;
     typedef select_second<typename species_map::value_type> species_second_selector_type;
-    typedef select_second<typename surface_map::value_type> surface_second_selector_type;
+    typedef select_second<typename structure_map::value_type> surface_second_selector_type;
 
 public:
     typedef boost::transform_iterator<species_second_selector_type,
             typename species_map::const_iterator> species_iterator;
     typedef boost::transform_iterator<surface_second_selector_type,
-            typename surface_map::const_iterator> surface_iterator;
+            typename structure_map::const_iterator> surface_iterator;
     typedef sized_iterator_range<species_iterator> species_range;
-    typedef sized_iterator_range<surface_iterator> surfaces_range;
+    typedef sized_iterator_range<surface_iterator> structures_range;
 
 public:
     World(length_type world_size = 1., size_type size = 1)
@@ -211,27 +227,27 @@ public:
             species_map_.size());
     }
 
-    bool add_surface(boost::shared_ptr<surface_type> surface)
+    bool add_structure(boost::shared_ptr<structure_type> surface)
     {
-        return surface_map_.insert(std::make_pair(surface->id(), surface)).second;
+        return structure_map_.insert(std::make_pair(surface->id(), surface)).second;
     }
 
-    virtual boost::shared_ptr<surface_type> get_surface(surface_id_type const& id) const
+    virtual boost::shared_ptr<structure_type> get_structure(structure_id_type const& id) const
     {
-        typename surface_map::const_iterator i(surface_map_.find(id));
-        if (surface_map_.end() == i)
+        typename structure_map::const_iterator i(structure_map_.find(id));
+        if (structure_map_.end() == i)
         {
             throw not_found(std::string("Unknown surface (id=") + boost::lexical_cast<std::string>(id) + ")");
         }
         return (*i).second;
     }
 
-    surfaces_range get_surfaces() const
+    structures_range get_structures() const
     {
-        return surfaces_range(
-            surface_iterator(surface_map_.begin(), surface_second_selector_type()),
-            surface_iterator(surface_map_.end(), surface_second_selector_type()),
-            surface_map_.size());
+        return structures_range(
+            surface_iterator(structure_map_.begin(), surface_second_selector_type()),
+            surface_iterator(structure_map_.end(), surface_second_selector_type()),
+            structure_map_.size());
     }
 
     particle_id_set get_particle_ids(species_id_type const& sid) const
@@ -248,7 +264,7 @@ public:
 private:
     particle_id_generator pidgen_;
     species_map species_map_;
-    surface_map surface_map_;
+    structure_map structure_map_;
     per_species_particle_id_set particle_pool_;
 };
 

@@ -14,15 +14,18 @@ BOOST_AUTO_TEST_CASE(basic)
 {
     Model m;
 
-    SpeciesType* s1 = m.new_species_type();
+    boost::shared_ptr<SpeciesType> s1(new SpeciesType());
     (*s1)["name"] = "S";
     (*s1)["D"] = "1.5e-12";
     (*s1)["radius"] = "5e-9";
 
-    SpeciesType* s2 = m.new_species_type();
+    boost::shared_ptr<SpeciesType> s2(new SpeciesType());
     (*s2)["name"] = "P";
     (*s2)["D"] = "1e-12";
     (*s2)["radius"] = "7e-9";
+
+    m.add_species_type(s1);
+    m.add_species_type(s2);
 
     m.network_rules().add_reaction_rule(
         new_reaction_rule(s1->id(), array_gen<SpeciesTypeID>(), .2));
@@ -75,15 +78,19 @@ BOOST_AUTO_TEST_CASE(query_reaction_rule)
 {
     Model m;
 
-    SpeciesType* s1 = m.new_species_type();
+    boost::shared_ptr<SpeciesType> s1(new SpeciesType());
     (*s1)["name"] = "S";
     (*s1)["D"] = "1.5e-12";
     (*s1)["radius"] = "5e-9";
 
-    SpeciesType* s2 = m.new_species_type();
+    m.add_species_type(s1);
+
+    boost::shared_ptr<SpeciesType> s2(new SpeciesType());
     (*s2)["name"] = "P";
     (*s2)["D"] = "1e-12";
     (*s2)["radius"] = "7e-9";
+
+    m.add_species_type(s2);
 
     m.network_rules().add_reaction_rule(
         new_reaction_rule(s1->id(), array_gen<SpeciesTypeID>(), .2));

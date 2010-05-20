@@ -42,6 +42,7 @@
 #include "binding/particle_class.hpp"
 #include "binding/particle_container_class.hpp"
 #include "binding/particle_id_class.hpp"
+#include "binding/plane_class.hpp"
 #include "binding/py_event_classes.hpp"
 #include "binding/shell_classes.hpp"
 #include "binding/shell_id_class.hpp"
@@ -75,6 +76,7 @@ BOOST_PYTHON_MODULE(_gfrd)
     b::register_domain_classes();
     b::register_exception_classes();
     b::register_spherical_shell_container_class();
+    b::register_plane_class();
     b::register_cylinder_class();
     b::register_cylindrical_shell_container_class();
     b::register_network_rules_class();

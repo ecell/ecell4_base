@@ -40,6 +40,7 @@ noinst_HEADERS = \
 	particle_container_class.hpp \
 	position_converters.hpp \
 	PlanarSurface.hpp \
+	plane_class.hpp \
 	py_event_classes.hpp \
 	PyEvent.hpp \
 	PyEventScheduler.hpp \
@@ -82,6 +83,7 @@ libbinding_utils_la_SOURCES = \
 	particle_class.cpp \
 	particle_container_class.cpp \
 	particle_id_class.cpp \
+	plane_class.cpp \
 	position_converters.cpp \
 	py_event_classes.cpp \
 	random_number_generator_class.cpp \

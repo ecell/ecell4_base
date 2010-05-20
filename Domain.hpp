@@ -9,7 +9,7 @@ public:
     typedef typename traits_type::world_type::length_type length_type;
     typedef typename traits_type::world_type::position_type position_type;
     typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
-    typedef typename traits_type::world_type::surface_id_type surface_id_type;
+    typedef typename traits_type::world_type::structure_id_type structure_id_type;
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::event_id_type event_id_type;
     typedef typename traits_type::event_kind_type event_kind_type;
@@ -18,12 +18,12 @@ public:
 public:
     virtual ~Domain() {}
 
-    Domain(surface_id_type const& surface_id)
-        : surface_id_(surface_id) {}
+    Domain(structure_id_type const& structure_id)
+        : structure_id_(structure_id) {}
 
-    surface_id_type const& surface_id() const
+    structure_id_type const& structure_id() const
     {
-        return surface_id_;
+        return structure_id_;
     }
 
     event_id_type const& event_id() const
@@ -67,7 +67,7 @@ public:
     }
 
 protected:
-    surface_id_type surface_id_;
+    structure_id_type structure_id_;
     event_id_type event_id_;
     time_type last_time_;
     time_type dt_;

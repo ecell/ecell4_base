@@ -55,4 +55,11 @@ distance_cyclic(
     return distance(p1, cyclic_transpose(p2, shape_position(p1), world_size));
 }
 
+template<typename T, typename Trng>
+inline typename shape_position_type<T>::type
+random_position(T const& shape, Trng const& rng)
+{
+    return random_position(shape, const_cast<Trng&>(rng));
+}
+
 #endif /* SHAPE_HPP */

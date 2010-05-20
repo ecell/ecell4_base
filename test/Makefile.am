@@ -13,7 +13,9 @@ model_test\
 Vector3_test\
 BDPropagator_test\
 range_support_test\
-py_range_converters_test
+py_range_converters_test \
+linear_algebra_test\
+StructureUtils_test
 
 PYTHON_TESTS = \
 	BDSimulator_test.py \
@@ -86,7 +88,7 @@ MatrixSpaceWithCylinders_test_SOURCES = MatrixSpaceWithCylinders_test.cpp
 
 World_test_SOURCES = World_test.cpp
 
-model_test_SOURCES = model_test.cpp ../Model.cpp ../NetworkRules.cpp ../BasicNetworkRulesImpl.cpp
+model_test_SOURCES = model_test.cpp ../Model.cpp ../NetworkRules.cpp ../BasicNetworkRulesImpl.cpp ../SpeciesType.cpp
 
 Vector3_test_SOURCES = Vector3_test.cpp ../Vector3.hpp
 
@@ -95,4 +97,8 @@ BDPropagator_test_LDADD = $(GSL_LIBS)
 
 range_support_test_SOURCES = range_support_test.cpp ../utils/range.hpp ../utils/range_support.hpp
 
+linear_algebra_test_SOURCES = linear_algebra_test.cpp ../linear_algebra.hpp
+
+StructureUtils_test_SOURCES = StructureUtils_test.cpp ../StructureUtils.hpp
+StructureUtils_test_LDADD = $(GSL_LIBS)
 py_range_converters_test_SOURCES = py_range_converters_test.cpp ../peer/range_converters.hpp 

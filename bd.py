@@ -5,13 +5,11 @@ import math
 import numpy
 
 from utils import *
-from surface import *
 
 from gfrdbase import *
 import _gfrd
 
 import logging
-import myrandom
 
 import itertools
 
@@ -38,8 +36,9 @@ class BDSimulatorCore(object):
     - reaction_types list (both 1 and 2)
     
     '''
-    def __init__(self, world, network_rules, dissociation_retry_moves):
+    def __init__(self, world, rng, network_rules, dissociation_retry_moves):
         self.world = world
+        self.rng = rng
         self.network_rules = network_rules
         self.dissociation_retry_moves = dissociation_retry_moves
 
@@ -70,8 +69,8 @@ class BDSimulatorCore(object):
     def step(self):
         self.step_counter += 1
 
-        ppg = BDPropagator(self.world, self.network_rules,
-                     myrandom.rng, self.dt, self.dissociation_retry_moves,
+        ppg = _gfrd.BDPropagator(self.world, self.network_rules,
+                     self.rng, self.dt, self.dissociation_retry_moves,
                      self.world.particle_ids)
         ppg.propagate_all()
 
@@ -83,13 +82,10 @@ class BDSimulatorCore(object):
             assert not self.tx.check_overlap(pp)
 
 class BDSimulator(ParticleSimulatorBase):
-    def __init__(self, world):
-        ParticleSimulatorBase.__init__(self, world)
+    def __init__(self, world, rng, network_rules):
+        ParticleSimulatorBase.__init__(self, world, rng, network_rules)
         self.is_dirty = True
-
-    def set_model(self, model):
-        ParticleSimulatorBase.set_model(self, model)
-        self.core = BDSimulatorCore(self.world, self.network_rules,
+        self.core = BDSimulatorCore(self.world, self.rng, self.network_rules,
                                     self.dissociation_retry_moves)
 
     def t(self):

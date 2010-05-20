@@ -15,19 +15,20 @@ from _gfrd import (
     DomainIDGenerator,
     ShellIDGenerator,
     DomainID,
-    ParticleContainer
+    ParticleContainer,
+    CuboidalRegion,
+    CylindricalSurface,
+    PlanarSurface,
+    _random_vector
     )
 
 from _greens_functions import EventType
-
-from surface import *
 
 from gfrdbase import *
 from single import *
 from pair import *
 from multi import *
 from utils import *
-import myrandom
 
 import logging
 import os
@@ -35,6 +36,24 @@ import os
 from bd import DEFAULT_DT_FACTOR
 
 log = logging.getLogger('ecell')
+
+def create_default_single(domain_id, pid_particle_pair, shell_id, rt, surface):
+    if isinstance(surface, CuboidalRegion):
+        return SphericalSingle(domain_id, pid_particle_pair, shell_id, rt, surface)
+    elif isinstance(surface, CylindricalSurface):
+        return CylindricalSurfaceSingle(domain_id, pid_particle_pair, shell_id, rt, surface)
+    elif isinstance(surface, PlanarSurface):
+        return PlanarSurfaceSingle(domain_id, pid_particle_pair, shell_id, rt, surface)
+
+def create_default_pair(domain_id, com, single1, single2, shell_id, 
+                        r0, shell_size, rt, surface):
+    if isinstance(surface, CuboidalRegion):
+        return SphericalPair(domain_id, com, single1, single2, shell_id, r0, shell_size, rt, surface)
+    elif isinstance(surface, CylindricalSurface):
+        return CylindricalSurfacePair(domain_id, com, single1, single2, shell_id, r0, shell_size, rt, surface)
+    elif isinstance(surface, PlanarSurface):
+        return PlanarSurfacePair(domain_id, com, single1, single2, shell_id, r0, shell_size, rt, surface)
+
 
 class Delegate(object):
     def __init__(self, obj, method):
@@ -46,8 +65,8 @@ class Delegate(object):
 
 
 class EGFRDSimulator(ParticleSimulatorBase):
-    def __init__(self, world):
-        ParticleSimulatorBase.__init__(self, world)
+    def __init__(self, world, rng, network_rules):
+        ParticleSimulatorBase.__init__(self, world, rng, network_rules)
 
         self.domain_id_generator = DomainIDGenerator(0)
         self.shell_id_generator = ShellIDGenerator(0)
@@ -217,14 +236,12 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         # Get surface.
         species = self.world.get_species(pid_particle_pair[1].sid)
-        surface = self.model.get_surface(species.surface_id)
+        surface = self.world.get_structure(species.structure_id)
 
         # Create single. The type of the single that will be created depends 
         # on the surface this particle is on. Either SphericalSingle, 
         # PlanarSurfaceSingle, or CylindricalSurfaceSingle.
-        TypeOfSingle = surface.DefaultSingle
-        single = TypeOfSingle(domain_id, pid_particle_pair, shell_id, rt, 
-                              surface)
+        single = create_default_single(domain_id, pid_particle_pair, shell_id, rt, surface)
 
         single.initialize(self.t)
         self.move_shell(single.shell_id_shell_pair)
@@ -245,14 +262,13 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         # Get surface.
         species = self.world.get_species(single1.pid_particle_pair[1].sid)
-        surface = self.model.get_surface(species.surface_id)
+        surface = self.world.get_structure(species.structure_id)
 
         # Create pair. The type of the pair that will be created depends on 
         # the surface the particles are on. Either SphericalPair, 
         # PlanarSurfacePair, or CylindricalSurfacePair.
-        TypeOfPair = surface.DefaultPair
-        pair = TypeOfPair(domain_id, com, single1, single2, shell_id, 
-                          r0, shell_size, rt, surface)
+        pair = create_default_pair(domain_id, com, single1, single2, shell_id, 
+                                   r0, shell_size, rt, surface)
 
         pair.initialize(self.t)
 
@@ -469,9 +485,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
             self.clear_volume(oldpos, rad)
 
             for _ in range(self.dissociation_retry_moves):
-                vector = \
-                    current_surface.random_vector(particle_radius12 *
-                                                MINIMAL_SEPERATION_FACTOR)
+                vector = _random_vector(current_surface, particle_radius12 *
+                                       MINIMAL_SEPERATION_FACTOR, self.rng)
             
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.
@@ -480,10 +495,10 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 while 1:
                     newpos1 = oldpos + vector * (D1 / D12)
                     newpos2 = oldpos - vector * (D2 / D12)
-                    newpos1 = self.apply_boundary(newpos1)
-                    newpos2 = self.apply_boundary(newpos2)
+                    newpos1 = self.world.apply_boundary(newpos1)
+                    newpos2 = self.world.apply_boundary(newpos2)
 
-                    if self.distance(newpos1, newpos2) >= particle_radius12:
+                    if self.world.distance(newpos1, newpos2) >= particle_radius12:
                         break
 
                     vector *= 1.0 + 1e-7
@@ -538,7 +553,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
                single.dt, single.last_time, self.t))
 
         newpos = single.draw_new_position(single.dt, single.event_type) 
-        newpos = self.apply_boundary(newpos)
+        newpos = self.world.apply_boundary(newpos)
 
         if __debug__:
             log.debug("propagate %s: %s => %s" % (single, single.pid_particle_pair[1].position, newpos))
@@ -687,7 +702,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         singlepos = single.shell.shape.position
         if isinstance(closest, Single):
             closestpos = closest.shell.shape.position
-            distance_to_closest = self.distance(singlepos, closestpos)
+            distance_to_closest = self.world.distance(singlepos, closestpos)
             new_shell_size = self.calculate_single_shell_size(single, closest, 
                                                       distance_to_closest,
                                                       distance_to_shell)
@@ -716,7 +731,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         
         if pair.event_type == EventType.IV_EVENT:
             # Draw actual pair event for iv at very last minute.
-            r0 = self.distance(pos1, pos2)
+            r0 = self.world.distance(pos1, pos2)
             pair.event_type = pair.draw_iv_event_type(r0)
 
         self.pair_steps[pair.event_type] += 1
@@ -776,10 +791,10 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 
                 if __debug__:
                     shell_size = pair.get_shell_size()
-                    assert self.distance(old_com, new_com) + species3.radius <\
+                    assert self.world.distance(old_com, new_com) + species3.radius <\
                         shell_size
 
-                new_com = self.apply_boundary(new_com)
+                new_com = self.world.apply_boundary(new_com)
 
                 self.world.remove_particle(single1.pid_particle_pair[0])
                 self.world.remove_particle(single2.pid_particle_pair[0])
@@ -871,7 +886,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.propagate_single(single)
 
         newpos = single.pid_particle_pair[1].position
-        assert self.distance(newpos, oldpos) <= old_shell_size - particle_radius
+        assert self.world.distance(newpos, oldpos) <= old_shell_size - particle_radius
         # Displacement check is in NonInteractionSingle.draw_new_position.
 
         # Todo. if isinstance(single, InteractionSingle):
@@ -909,7 +924,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
             pos2t = self.world.cyclic_transpose(pos2, pos1)
             old_inter_particle = pos2t - pos1
-            r0 = self.distance(pos1, pos2)
+            r0 = self.world.distance(pos1, pos2)
             assert feq(r0, length(old_inter_particle))
 
             old_com = pair.com
@@ -918,8 +933,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
                                                      old_inter_particle, 
                                                      event_type)
 
-            newpos1 = self.apply_boundary(newpos1)
-            newpos2 = self.apply_boundary(newpos2)
+            newpos1 = self.world.apply_boundary(newpos1)
+            newpos2 = self.world.apply_boundary(newpos2)
             assert not self.world.check_overlap((newpos1, particle1[1].radius),
                                                 particle1[0], particle2[0])
             assert not self.world.check_overlap((newpos2, particle2[1].radius),
@@ -1003,7 +1018,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         assert (pos1 - single1.shell.shape.position).sum() == 0
         pos2 = single2.shell.shape.position
-        r0 = self.distance(pos1, pos2)
+        r0 = self.world.distance(pos1, pos2)
         distance_from_sigma = r0 - sigma
         assert distance_from_sigma >= 0, \
             ('distance_from_sigma (pair gap) between %s and %s = %g < 0' %
@@ -1024,7 +1039,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         # 1. Shell cannot be larger than max shell size or sim cell size.
         com = self.world.calculate_pair_CoM(pos1, pos2, D1, D2)
-        com = self.apply_boundary(com)
+        com = self.world.apply_boundary(com)
         min_shell_size_with_margin = min_shell_size + shell_size_margin
         max_shell_size = min(self.get_max_shell_size(),
                            distance_from_sigma * 100 + sigma + shell_size_margin)
@@ -1048,7 +1063,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         for b in burst:
             if isinstance(b, Single):
                 bpos = b.shell.shape.position
-                d = self.distance(com, bpos) \
+                d = self.world.distance(com, bpos) \
                     - b.pid_particle_pair[1].radius * (1.0 + self.SINGLE_SHELL_FACTOR)
                 if d < closest_shell_distance:
                     closest, closest_shell_distance = b, d
@@ -1076,7 +1091,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
             D_closest = closest.pid_particle_pair[1].D
             D_tot = D_closest + D12
-            closest_distance = self.distance(com, closest.pid_particle_pair[1].position) ##??
+            closest_distance = self.world.distance(com, closest.pid_particle_pair[1].position) ##??
 
             closest_min_radius = closest.pid_particle_pair[1].radius
             closest_min_shell = closest_min_radius * \
@@ -1105,8 +1120,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
             return None
 
 
-        d1 = self.distance(com, pos1)
-        d2 = self.distance(com, pos2)
+        d1 = self.world.distance(com, pos1)
+        d2 = self.world.distance(com, pos2)
 
         if shell_size < max(d1 + single1.pid_particle_pair[1].radius *
                            (1.0 + self.SINGLE_SHELL_FACTOR), \
@@ -1482,7 +1497,7 @@ rejected moves = %d
         old_com = com
         
         # debug: check if the new positions are valid:
-        new_distance = distance(pos1, pos2)
+        new_distance = self.world.distance(pos1, pos2)
         particle_radius12 = particle1.radius + particle2.radius
 
         # check 1: particles don't overlap.
@@ -1496,8 +1511,8 @@ rejected moves = %d
             raise RuntimeError, 'New particles overlap'
 
         # check 2: particles within mobility radius.
-        d1 = self.distance(old_com, pos1) + particle1.radius
-        d2 = self.distance(old_com, pos2) + particle2.radius
+        d1 = self.world.distance(old_com, pos1) + particle1.radius
+        d2 = self.world.distance(old_com, pos2) + particle2.radius
         if d1 > radius or d2 > radius:
             raise RuntimeError, \
                 'New particle(s) out of protective sphere. %s' % \

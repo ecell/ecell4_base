@@ -171,8 +171,8 @@ public:
     typedef typename wrapped_type::position_type position_type;
     typedef typename wrapped_type::species_id_type species_id_type;
     typedef typename wrapped_type::species_type species_type;
-    typedef typename wrapped_type::surface_id_type surface_id_type;
-    typedef typename wrapped_type::surface_type surface_type;
+    typedef typename wrapped_type::structure_id_type structure_id_type;
+    typedef typename wrapped_type::structure_type structure_type;
     typedef typename wrapped_type::particle_id_pair particle_id_pair;
     typedef typename wrapped_type::transaction_type transaction_type;
     typedef typename wrapped_type::particle_id_pair_generator particle_id_pair_generator;
@@ -206,9 +206,9 @@ public:
         return py_wrapper_type::get_override("get_species")(id).template unchecked<species_type const&>();
     }
 
-    virtual boost::shared_ptr<surface_type> get_surface(surface_id_type const& id) const
+    virtual boost::shared_ptr<structure_type> get_structure(structure_id_type const& id) const
     {
-        return py_wrapper_type::get_override("get_surface")(id);
+        return py_wrapper_type::get_override("get_structure")(id);
     }
 
     virtual particle_id_pair new_particle(species_id_type const& sid,
@@ -317,7 +317,7 @@ inline boost::python::objects::class_base register_particle_container_class(
         .def("get_species",
             pure_virtual((typename impl_type::species_type const&(impl_type::*)(typename impl_type::species_id_type const&) const)&impl_type::get_species),
             return_internal_reference<>())
-        .def("get_surface", pure_virtual(&impl_type::get_surface))
+        .def("get_structure", pure_virtual(&impl_type::get_structure))
         .def("new_particle", pure_virtual(&impl_type::new_particle))
         .def("update_particle", pure_virtual(&impl_type::update_particle))
         .def("remove_particle", pure_virtual(&impl_type::remove_particle))

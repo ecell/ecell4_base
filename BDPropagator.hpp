@@ -37,8 +37,8 @@ public:
     typedef typename particle_container_type::particle_id_pair_generator particle_id_pair_generator;
     typedef typename particle_container_type::particle_id_pair_and_distance particle_id_pair_and_distance;
     typedef typename particle_container_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
-    typedef typename particle_container_type::surface_type surface_type;
-    typedef typename Ttraits_::rng_type rng_type;
+    typedef typename particle_container_type::structure_type structure_type;
+    typedef typename Ttraits_::world_type::traits_type::rng_type rng_type;
     typedef typename Ttraits_::time_type time_type;
     typedef typename Ttraits_::network_rules_type network_rules_type;
     typedef typename network_rules_type::reaction_rules reaction_rules;
@@ -149,10 +149,7 @@ public:
 private:
     position_type drawR_free(species_type const& species)
     {
-        boost::shared_ptr<surface_type> surface(
-            tx_.get_surface(species.surface_id()));
-        return StructureUtils<traits_type>::draw_bd_displacement(
-                *surface, std::sqrt(2.0 * species.D() * dt_), rng_);
+        return tx_.get_structure(species.structure_id())->bd_displacement(std::sqrt(2.0 * species.D() * dt_), rng_);
     }
 
     bool attempt_reaction(particle_id_pair const& pp)

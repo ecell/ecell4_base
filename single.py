@@ -1,6 +1,7 @@
 from _gfrd import *
 from _greens_functions import *
 from greens_function_wrapper import *
+import utils
 
 class Single(object):
     """There are 2 main types of Singles:
@@ -227,7 +228,9 @@ class PlanarSurfaceSingle(NonInteractionSingle):
         # (namely the radius of the particle), so if the particle undergoes an 
         # unbinding reaction we still have to clear the target volume and the 
         # move may be rejected (NoSpace error).
-        orientation = self.surface.shape.unit_z
+        orientation = normalize(
+            utils.crossproduct(self.surface.shape.unit_x,
+                               self.surface.shape.unit_y))
         size = self.pid_particle_pair[1].radius
         return CylindricalShell(domain_id, Cylinder(position, radius, orientation, size))
 

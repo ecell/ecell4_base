@@ -12,15 +12,15 @@ public:
     typedef Domain<Ttraits_> base_type;
     typedef Ttraits_ traits_type;
     typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
-    typedef typename traits_type::world_type::surface_id_type surface_id_type;
+    typedef typename traits_type::world_type::structure_id_type structure_id_type;
     typedef boost::array<particle_id_pair, 2> particle_array_type;
 
 public:
     virtual ~Pair() {}
 
-    Pair(surface_id_type const& surface_id,
+    Pair(structure_id_type const& structure_id,
          particle_id_pair const& p0, particle_id_pair const& p1)
-        : base_type(surface_id)
+        : base_type(structure_id)
     {
         if (p0.second.D() < p1.second.D())
         {

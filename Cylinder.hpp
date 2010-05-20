@@ -166,6 +166,14 @@ distance(Cylinder<T_> const& obj,
     return distance;
 }
 
+template<typename T, typename Trng>
+inline typename Cylinder<T>::position_type
+random_position(Cylinder<T> const& shape, Trng& rng)
+{
+    return add(shape.position(),
+               multiply(shape.unit_z(), rng() * shape.size()));
+}
+
 template<typename T_>
 inline Cylinder<T_> const& shape(Cylinder<T_> const& shape)
 {
@@ -182,7 +190,8 @@ template<typename T_>
 struct is_shape<Cylinder<T_> >: public boost::mpl::true_ {};
 
 template<typename T_>
-struct shape_position_type<Cylinder<T_> > {
+struct shape_position_type<Cylinder<T_> >
+{
     typedef typename Cylinder<T_>::position_type type;
 };
 
