@@ -29,8 +29,7 @@ const Real abs_tol( 1e-11 );
                          << " z " << z                            \
                         << " abs error " << abs_error           \
                          << " rel error " << rel_error );\
-} //                                                      \
-
+}
 
 
 BOOST_AUTO_TEST_CASE( testJ )
