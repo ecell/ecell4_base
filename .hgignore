@@ -49,3 +49,4 @@ test/BDPropagator_test
 test/BDSimulator_test
 test/range_support_test
 test/py_range_converters_test
+samples/*/*.out
