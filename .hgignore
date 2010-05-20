@@ -1,4 +1,5 @@
 syntax: glob
+*~
 *.a
 *.la
 *.lai
@@ -13,12 +14,13 @@ syntax: glob
 .deps
 .*_history*
 m4
+Makefile
 Makefile.in
 depcomp
 config.h
+config.h.in
 ltmain.sh
 .deps
-Makefile
 config.status
 config.h.in
 libtool
@@ -45,3 +47,5 @@ test/Vector3_test
 test/unittest
 test/BDPropagator_test
 test/BDSimulator_test
+test/range_support_test
+test/py_range_converters_test
