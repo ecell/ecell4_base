@@ -20,6 +20,7 @@ dnl
 dnl checks for programs
 dnl
 AM_PATH_PYTHON(2.4)
+
 dnl
 dnl
 dnl checks for libraries
@@ -35,6 +36,29 @@ AC_PROG_CXX
 AC_LANG_CPLUSPLUS
 dnl
 dnl
+
+DEBUG=
+AC_ARG_ENABLE([debug],
+  AC_HELP_STRING([--enable-debug],
+                 [inhibit any optimization options]),
+  [ DEBUG=1 ]
+)
+
+if test -n "$DEBUG"; then
+  CFLAGS=""
+  CXXFLAGS=""
+  CPPFLAGS="-DDEBUG=1"
+fi
+
+if test "$GXX" = "yes"; then
+  CXXFLAGS="$CXXFLAGS -Wall -Wstrict-aliasing=0 -Wno-invalid-offsetof"
+  CFLAGS="$CFLAGS -Wall"
+fi
+
+AC_SUBST(DEBUG)
+
+CXXFLAGS="$CXXFLAGS -g"
+CFLAGS="$CFLAGS -g"
 
 AX_BOOST_BASE([1.37],,AC_MSG_ERROR([could not find required version of BOOST.]))
 
