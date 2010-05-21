@@ -20,12 +20,6 @@ dnl
 dnl checks for programs
 dnl
 AM_PATH_PYTHON(2.3)
-AC_CHECK_PROGS(PYCHECKER, [pychecker], [no])
-if test "$PYCHECKER" == no ; then
-   AC_MSG_WARN([pychecker not found.])
-dnl   AC_MSG_WARN([Python source checking is disabled.])
-dnl   AC_MSG_ERROR([])
-fi
 dnl
 dnl
 dnl checks for libraries
