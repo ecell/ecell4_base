@@ -19,7 +19,7 @@ AC_PROG_MAKE_SET
 dnl
 dnl checks for programs
 dnl
-AM_PATH_PYTHON(2.3)
+AM_PATH_PYTHON(2.4)
 dnl
 dnl
 dnl checks for libraries
