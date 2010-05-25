@@ -281,6 +281,9 @@ class ParticleSimulatorBase(object):
         self.check_particle_matrix()
         self.check_particles()
 
+    def print_report(self):
+        pass
+
     def dump_population(self):
         buf = ''
         for species in self.world.species:
