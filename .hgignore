@@ -51,4 +51,5 @@ test/range_support_test
 test/py_range_converters_test
 test/StructureUtils_test
 test/linear_algebra_test
+samples/benchmark/hardbody
 samples/*/*.out

@@ -50,10 +50,10 @@ public:
     virtual ~ParticleSimulator() {}
 
     ParticleSimulator(world_type& world,
-                      rng_type& rng,
-                      network_rules_type const& network_rules)
-        : world_(world), rng_(rng), network_rules_(network_rules),
-          t_(0.), dt_(0.) {}
+                      network_rules_type const& network_rules,
+                      rng_type& rng)
+        : world_(world), network_rules_(network_rules), rng_(rng),
+          t_(0.), dt_(0.), num_steps_(0), num_reactions_(0) {}
 
     boost::shared_ptr<world_type> world() const
     {
@@ -80,16 +80,29 @@ public:
         return dt_;
     }
 
-    virtual void initialize() = 0;
+    int num_steps() const
+    {
+        return num_steps_;
+    }
+
+    int num_reactions() const
+    {
+        return num_reactions_;
+    }
 
     virtual void step() = 0;
 
+    virtual bool step(time_type const& upto) = 0;
+
 protected:
     world_type& world_;
-    rng_type& rng_;
     network_rules_type const& network_rules_;
+    rng_type& rng_;
     time_type t_;
     time_type dt_;
+    int num_steps_;
+    int num_reactions_;
+
 };
 
 #endif /* PARTICLE_SIMULATOR_HPP */

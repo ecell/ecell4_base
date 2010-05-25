@@ -9,6 +9,7 @@
 #include "BDPropagator.hpp"
 #include "World.hpp"
 #include "ParticleSimulator.hpp"
+#include "utils/pair.hpp"
 
 template<typename Tworld_>
 struct BDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
@@ -22,13 +23,13 @@ public:
     typedef Ttraits_ traits_type;
     typedef ParticleSimulator<Ttraits_> base_type;
     typedef typename traits_type::world_type world_type;
-    typedef typename traits_type::random_number_engine random_number_engine;
+    typedef typename world_type::traits_type::rng_type rng_type;
+    typedef typename world_type::species_id_type species_id_type;
+    typedef typename world_type::species_type species_type;
+    typedef typename traits_type::time_type time_type;
     typedef typename traits_type::network_rules_type network_rules_type;
-    typedef typename traits_type::world_type::species_id_type species_id_type;
-    typedef typename traits_type::world_type::species_type species_type;
-    typedef typename traits_type::rate_type rate_type;
     typedef typename traits_type::reaction_rule_type reaction_rule_type;
-    typedef typename traits_type::network_rules_type network_rules_type;
+    typedef typename traits_type::rate_type rate_type;
 
 public:
     Real const& dt_factor()
@@ -38,12 +39,13 @@ public:
 
     virtual ~BDSimulator() {}
 
-    BDSimulator(world_type& world, rng_type& rng,
-                network_rules_type const& network_rules)
-        : base_type(world, rng, network_rules),
-          num_steps_(0), num_reactions_(0), dt_factor(1e-5) {}
-
-    virtual void initialize()
+    BDSimulator(world_type& world, 
+                network_rules_type const& network_rules,
+                rng_type& rng,
+                Real dt_factor = .5,
+                int dissociation_retry_moves = 1)
+        : base_type(world, network_rules, rng),
+          dt_factor_(dt_factor), num_retrys_(dissociation_retry_moves)
     {
         determine_dt();
         LOG_DEBUG(("dt=%f", dt_));
@@ -51,16 +53,24 @@ public:
 
     virtual void step()
     {
+        step(base_type::dt_);
+    }
+
+    virtual bool step(time_type const& upto)
+    {
+        time_type const lt(upto - base_type::t_);
+        if (lt <= 0.)
+            return false;
+        if (base_type::dt_ < lt)
         {
-            boost::scoped_ptr<typename world_type::transaction_type> tx(
-                    world_.create_transaction());
-            BDPropagator<traits_type> propagator(world_, *tx, *this);
-            while (propagator());
-            num_reactions_ += propagator.get_reactions().size();
-            LOG_DEBUG(("%d: t=%lg, dt=%lg, reactions=%d", num_steps_, t_, dt_, num_reactions_));
+            _step(base_type::dt_);
         }
-        ++num_steps_;
-        t_ += dt_;
+        else
+        {
+            _step(lt);
+            base_type::t_ = upto;
+        }
+        return true;
     }
 
 protected:
@@ -68,20 +78,36 @@ protected:
     {
         Real D_max(0.), radius_min(std::numeric_limits<Real>::max());
 
-        BOOST_FOREACH(species_type s, world_.get_species())
+        BOOST_FOREACH(species_type s, base_type::world_.get_species())
         {
             if (D_max < s.D())
                 D_max = s.D();
             if (radius_min > s.radius())
                 radius_min = s.radius();
         }
-        dt_ = dt_factor_ * gsl_pow_2(radius_min * 2) / D_max * 2;
+        base_type::dt_ = dt_factor_ * gsl_pow_2(radius_min * 2) / (D_max * 2);
+    }
+
+    void _step(time_type const& dt)
+    {
+        {
+            BDPropagator<traits_type> propagator(
+                base_type::world_,
+                base_type::network_rules_,
+                base_type::rng_,
+                dt, num_retrys_,
+                make_select_first_range(base_type::world_.get_particles_range()));
+            while (propagator());
+            base_type::num_reactions_ += propagator.get_reactions().size();
+            LOG_DEBUG(("%d: t=%lg, dt=%lg, reactions=%d", base_type::num_steps_, t_, dt, base_type::num_reactions_));
+        }
+        ++base_type::num_steps_;
+        base_type::t_ += dt;
     }
 
 private:
-    int num_steps_;
-    int num_reactions_;
-    Real dt_factor_;
+    Real const dt_factor_;
+    int const num_retrys_;
     static Logger& log_;
 };
 

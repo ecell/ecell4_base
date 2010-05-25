@@ -81,9 +81,10 @@ public:
         //                  select_second<typename domain_map::value_type>()));
     }
 
-    EGFRDSimulator(world_type& world, rng_type& rng,
-                   network_rules_type const& network_rules)
-        : base_type(world, rng, network_rules),
+    EGFRDSimulator(world_type& world,
+                   network_rules_type const& network_rules,
+                   rng_type& rng)
+        : base_type(world, network_rules, rng),
           ssmat_(world.world_size(), world.matrix_size()),
           csmat_(world.world_size(), world.matrix_size()) {}
 
