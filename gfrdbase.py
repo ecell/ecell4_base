@@ -152,7 +152,7 @@ def throw_in_particles(world, sid, n):
     # This is a bit messy, but it works.
     i = 0
     while i < int(n):
-        position = _gfrd.random_position(surface, myrandom.rng)
+        position = surface.random_position(myrandom.rng)
 
         # Check overlap.
         if not world.check_overlap((position, species.radius)):
