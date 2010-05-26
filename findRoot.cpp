@@ -8,8 +8,6 @@
 #include "Logger.hpp"
 #include "findRoot.hpp"
 
-static Logger& _log(Logger::get_logger("findRoot"));
-
 Real findRoot(gsl_function const& F, gsl_root_fsolver* solver, Real low,
               Real high, Real tol_abs, Real tol_rel, char const* funcName)
 {
@@ -35,8 +33,7 @@ Real findRoot(gsl_function const& F, gsl_root_fsolver* solver, Real low,
             if (i >= maxIter)
             {
                 gsl_root_fsolver_free(solver);
-                _log.error("%s: failed to converge.", funcName);
-                throw std::exception();
+                throw std::runtime_error(std::string(funcName) + ": failed to converge");
             }
         }
         else

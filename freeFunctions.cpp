@@ -5,14 +5,13 @@
 #include "compat.h"
 
 #include <algorithm>
+#include <stdexcept>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_roots.h>
 #include <gsl/gsl_errno.h>
 
 #include "Logger.hpp"
 #include "freeFunctions.hpp"
-
-static Logger& _log(Logger::get_logger("freeFunctions"));
 
 /**
    Calculates std::exp(x^2) * erfc(x)
@@ -390,8 +389,7 @@ Real drawR_gbd(Real rnd, Real sigma, Real t, Real D)
             if(i >= maxIter)
             {
                 gsl_root_fsolver_free(solver);
-                _log.error("drawR_gbd: failed to converge");
-                throw std::exception();
+                throw std::runtime_error("drawR_gbd: failed to converge");
             }
         }
         else
