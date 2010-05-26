@@ -420,11 +420,13 @@ FirstPassageGreensFunction::drawR( const Real rnd, const Real t ) const
     if( a <= thresholdDistance )
     {
         psurv = p_survival( t );
-        //psurv = p_int_r( a, t );
-        //printf("dr %g %g\n",psurv, p_survival( t ));
-        //assert( fabs(psurv - p_int_r( a, t )) < psurv * 1e-8 );
 
-        assert( psurv > 0.0 );
+        if(psurv == 0.0)
+        {
+            return a;
+        }
+
+        assert( psurv >= 0.0 );
 
         F.function = reinterpret_cast<typeof(F.function)>( &p_r_F );
     }
