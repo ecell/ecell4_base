@@ -10,8 +10,7 @@ def dump_species(sim):
     return sim.world.species
 
 def dump_particles_by_sid(sim, sid):
-    pid_set = sim.particle_pool[sid]
-    for pid in pid_set:
+    for pid in sim.world.get_particle_ids(sid):
         particle = sim.world.get_particle(pid)[1]
         yield (pid, particle)
 
