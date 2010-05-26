@@ -2,6 +2,7 @@ import _gfrd
 import numpy
 
 __all__ = [
+    'Species',
     'ParticleModel',
     'create_unimolecular_reaction_rule',
     'create_decay_reaction_rule',
