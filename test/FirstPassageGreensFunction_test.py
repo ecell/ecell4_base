@@ -50,7 +50,7 @@ class FirstPassageGreensFunctionTestCase(unittest.TestCase):
 
         t = gf.drawTime(0.0)
         t = gf.drawTime(0.5)
-        t = gf.drawTime(1.0 - 1e-8)
+        t = gf.drawTime(1.0 - 1e-16)
 
     def test_drawR(self):
         D = 1e-12
@@ -99,7 +99,7 @@ class FirstPassageGreensFunctionTestCase(unittest.TestCase):
         D = 1e-12
         a = 1e-6
         gf = mod.FirstPassageGreensFunction(D, a)
-        t = gf.drawTime(1.0 - 1e-16)
+        t = gf.drawTime(0.0)
         r = gf.drawR(0.5, t)
 
         self.failIf(r <= 0.0)

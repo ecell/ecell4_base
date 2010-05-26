@@ -2,46 +2,40 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <iostream>
-
+#include <stdexcept>
 #include <gsl/gsl_errno.h>
 
+#include "Logger.hpp"
 #include "findRoot.hpp"
 
+static Logger& _log(Logger::get_logger("findRoot"));
 
-
-const Real 
-findRoot( gsl_function& F,
-          gsl_root_fsolver* solver,
-          const Real low,
-          const Real high,
-          const Real tol_abs,
-          const Real tol_rel,
-          std::string funcName )
+Real findRoot(gsl_function const& F, gsl_root_fsolver* solver, Real low,
+              Real high, Real tol_abs, Real tol_rel, char const* funcName)
 {
-    Real l( low );
-    Real h( high );
+    Real l(low);
+    Real h(high);
 
-    gsl_root_fsolver_set( solver, &F, l, h );
+    gsl_root_fsolver_set(solver, const_cast<gsl_function*>(&F), l, h);
 
-    const unsigned int maxIter( 100 );
+    const unsigned int maxIter(100);
 
-    unsigned int i( 0 );
-    while( true )
+    unsigned int i(0);
+    for (;;)
     {
-        gsl_root_fsolver_iterate( solver );
-        l = gsl_root_fsolver_x_lower( solver );
-        h = gsl_root_fsolver_x_upper( solver );
+        gsl_root_fsolver_iterate(solver);
+        l = gsl_root_fsolver_x_lower(solver);
+        h = gsl_root_fsolver_x_upper(solver);
 
-        const int status( gsl_root_test_interval( l, h, tol_abs,
-                                                  tol_rel ) );
+        const int status(gsl_root_test_interval(l, h, tol_abs,
+                                                  tol_rel));
 
-        if( status == GSL_CONTINUE )
+        if (status == GSL_CONTINUE)
         {
-            if( i >= maxIter )
+            if (i >= maxIter)
             {
-                gsl_root_fsolver_free( solver );
-                std::cerr << funcName << ": failed to converge." << std::endl;
+                gsl_root_fsolver_free(solver);
+                _log.error("%s: failed to converge.", funcName);
                 throw std::exception();
             }
         }
@@ -54,7 +48,7 @@ findRoot( gsl_function& F,
     }
   
 
-    const Real root( gsl_root_fsolver_root( solver ) );
+    const Real root(gsl_root_fsolver_root(solver));
 
     return root;
 }

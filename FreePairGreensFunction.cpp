@@ -3,24 +3,14 @@
 #endif /* HAVE_CONFIG_H */
 
 #include <sstream>
-#include <iostream>
-
 #include <boost/format.hpp>
-
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_roots.h>
 
 #include "freeFunctions.hpp"
-
 #include "FreePairGreensFunction.hpp"
 
-
-
-
-const Real 
-FreePairGreensFunction::p_r( const Real r, 
-                             const Real r0, 
-                             const Real t ) const
+Real FreePairGreensFunction::p_r(Real r, Real r0, Real t) const
 {
     const Real D( getD() );
     const Real Dt( D * t );
@@ -39,10 +29,7 @@ FreePairGreensFunction::p_r( const Real r,
     return jacobian * ( - num1 + num2 ) / den;
 }
 
-const Real 
-FreePairGreensFunction::ip_r( const Real r, 
-                              const Real r0, 
-                              const Real t ) const
+Real FreePairGreensFunction::ip_r(Real r, Real r0, Real t) const
 {
     const Real D( getD() );
     const Real Dt4( 4.0 * D * t );
@@ -62,42 +49,30 @@ FreePairGreensFunction::ip_r( const Real r,
     return ( term1 + term2 + term3 ) * .5;
 }
     
-const Real 
-FreePairGreensFunction::p_theta( const Real theta,
-                                 const Real r,
-                                 const Real r0,
-                                 const Real t ) const
+Real FreePairGreensFunction::p_theta(Real theta, Real r, Real r0, Real t) const
 {
     return p_theta_free( theta, r, r0, t, getD() );
 }
 
-const Real 
-FreePairGreensFunction::ip_theta( const Real theta,
-                                  const Real r,
-                                  const Real r0,
-                                  const Real t ) const
+Real FreePairGreensFunction::ip_theta(Real theta, Real r, Real r0, Real t) const
 {
     return ip_theta_free( theta, r, r0, t, getD() );
 }
 
-const Real
-FreePairGreensFunction::ip_r_F( const Real r,
-                                const ip_r_params* params )
-{
-    const FreePairGreensFunction* const gf( params->gf ); 
-    const Real r0( params->r0 );
-    const Real t( params->t );
-    const Real value( params->value );
+struct ip_r_params
+{ 
+    FreePairGreensFunction const* const gf;
+    const Real r0;
+    const Real t;
+    const Real value;
+};
 
-    return gf->ip_r( r, r0, t ) - value;
+static Real ip_r_F(Real r, ip_r_params const* params )
+{
+    return params->gf->ip_r(r, params->r0, params->t) - params->value;
 }
 
-
-
-const Real 
-FreePairGreensFunction::drawR( const Real rnd, 
-                               const Real r0, 
-                               const Real t ) const
+Real FreePairGreensFunction::drawR(Real rnd, Real r0, Real t) const
 {
     // input parameter range checks.
     if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
@@ -133,7 +108,6 @@ FreePairGreensFunction::drawR( const Real rnd,
     const Real r_range( this->H * sqrt( 6.0 * getD() * t ) );
 
     const Real low_r( std::max( r0 - r_range, 0.0 ) );
-    //const Real low_r( 0 );
     const Real max_r( r0 + r_range );
 
 
@@ -167,8 +141,7 @@ FreePairGreensFunction::drawR( const Real rnd,
             if( i >= maxIter )
             {
                 gsl_root_fsolver_free( solver );
-                std::cerr << "drawR: failed to converge." << std::endl;
-                throw std::exception();
+                throw std::runtime_error("drawR: failed to converge");
             }
         }
         else
@@ -179,34 +152,27 @@ FreePairGreensFunction::drawR( const Real rnd,
         ++i;
     }
   
-    //printf("%d\n", i );
-
     const Real r( gsl_root_fsolver_root( solver ) );
     gsl_root_fsolver_free( solver );
     
     return r;
 }
 
-const Real
-FreePairGreensFunction::ip_theta_F( const Real theta,
-                                    const ip_theta_params* params )
-{
-    const FreePairGreensFunction* const gf( params->gf ); 
-    const Real r( params->r );
-    const Real r0( params->r0 );
-    const Real t( params->t );
-    const Real value( params->value );
+struct ip_theta_params
+{ 
+    FreePairGreensFunction const* const gf;
+    const Real r;
+    const Real r0;
+    const Real t;
+    const Real value;
+};
 
-    return gf->ip_theta( theta, r, r0, t ) - value;
+static Real ip_theta_F(Real theta, ip_theta_params const* params)
+{
+    return params->gf->ip_theta(theta, params->r, params->r0, params->t) - params->value;
 }
 
-
-
-const Real 
-FreePairGreensFunction::drawTheta( const Real rnd,
-                                   const Real r, 
-                                   const Real r0, 
-                                   const Real t ) const
+Real FreePairGreensFunction::drawTheta(Real rnd, Real r, Real r0, Real t) const
 {
     // input parameter range checks.
     if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
@@ -267,8 +233,7 @@ FreePairGreensFunction::drawTheta( const Real rnd,
             if( i >= maxIter )
             {
                 gsl_root_fsolver_free( solver );
-                std::cerr << "drawTheta: failed to converge." << std::endl;
-                throw std::exception();
+                throw std::runtime_error("drawTheta: failed to converge");
             }
         }
         else
@@ -279,8 +244,6 @@ FreePairGreensFunction::drawTheta( const Real rnd,
         ++i;
     }
   
-    //printf("%d\n", i );
-
     const Real theta( gsl_root_fsolver_root( solver ) );
     gsl_root_fsolver_free( solver );
     
@@ -289,9 +252,13 @@ FreePairGreensFunction::drawTheta( const Real rnd,
 }
 
 
-const std::string FreePairGreensFunction::dump() const
+std::string FreePairGreensFunction::dump() const
 {
     std::ostringstream ss;
     ss << "D = " << this->getD() << std::endl;
     return ss.str();
-}    
+}
+
+Logger& FreePairGreensFunction::log_(
+    Logger::get_logger("FreePairGreensFunction"));
+
