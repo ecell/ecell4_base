@@ -29,7 +29,7 @@ def run_single(T, V, N):
     m.add_species_type(A)
     m.set_all_repulsive()
 
-    w = gfrdbase.create_world(m)
+    w = gfrdbase.create_world(m, matrix_size)
     nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
     s = EGFRDSimulator(w, myrandom.rng, nrw)
     
@@ -85,7 +85,7 @@ def run_single_bd(T, V, N, dt_factor):
     m.add_species_type(A)
     m.set_all_repulsive()
 
-    w = gfrdbase.create_world(m)
+    w = gfrdbase.create_world(m, matrix_size)
     nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
     s = BDSimulator(w, myrandom.rng, nrw)
 
