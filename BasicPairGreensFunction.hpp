@@ -1,21 +1,23 @@
-#if !defined( __PLAINPAIRGREENSFUNCTION )
+#if !defined(__PLAINPAIRGREENSFUNCTION)
 #define __PLAINPAIRGREENSFUNCTION 
 
-#include <iostream>
 #include <cmath>
-
+#include <vector>
 #include <gsl/gsl_integration.h>
 
+#include "Logger.hpp"
 #include "PairGreensFunction.hpp"
 
-#include <vector>
-
-class BasicPairGreensFunction
-    :
-    public PairGreensFunction
+class BasicPairGreensFunction: public PairGreensFunction
 {
+public:
     typedef std::vector<Real> RealVector;
 
+private:
+    struct p_corr_R_params;
+    struct p_theta_params;
+
+private:
     // Error tolerance used by default.
     static const Real TOLERANCE = 1e-8;
 
@@ -38,172 +40,80 @@ public:
     ~BasicPairGreensFunction();
     
     
-    const Real drawTime( const Real rnd, const Real r0 ) const;
+    Real drawTime(Real rnd, Real r0) const;
     
-    const Real drawR( const Real rnd, 
-                      const Real r0, 
-                      const Real t ) const;
+    Real drawR(Real rnd, Real r0, Real t) const;
     
-    const Real drawTheta( const Real rnd,
-                          const Real r, 
-                          const Real r0, 
-                          const Real t ) const;
+    Real drawTheta(Real rnd, Real r, Real r0, Real t) const;
     
-
-    const Real getkD() const
+    Real getkD() const
     {
         return this->kD;
     }
     
-    const Real getalpha() const
+    Real getalpha() const
     {
         return this->alpha;
     }
     
-    const Real p_reaction( const Real t, const Real r0 ) const;
-    const Real p_survival( const Real t, const Real r0 ) const;
-    const Real p_int_r( const Real r, 
-                        const Real t, 
-                        const Real r0 ) const;
+    Real p_reaction(Real t, Real r0) const;
+    Real p_survival(Real t, Real r0) const;
+    Real p_int_r(Real r, Real t, Real r0) const;
 
-//    const Real p_int_r_max( const Real t, const Real r0 ) const;
+//    const Real p_int_r_max(const Real t, const Real r0) const;
 
     
-    const Real p_theta( const Real theta, const Real r, const Real r0, 
-                        const Real time ) const;
+    Real p_theta(Real theta, Real r, Real r0, Real time) const;
 
-    const Real ip_theta( const Real theta, const Real r, const Real r0, 
-                         const Real time ) const;
+    Real ip_theta(Real theta, Real r, Real r0, Real time) const;
 
-    const Real p_free( const Real theta, const Real r, const Real r0, 
-                       const Real t ) const;
+    Real p_free(Real theta, Real r, Real r0, Real t) const;
 
-    const Real ip_free( const Real theta, 
-                        const Real r, 
-                        const Real r0, 
-                        const Real t ) const;
+    Real ip_free(Real theta, Real r, Real r0, Real t) const;
     
-    const Real p_corr( const Real theta, const Real r, const Real r0, 
-                       const Real t ) const;
+    Real p_corr(Real theta, Real r, Real r0, Real t) const;
 
-    const Real ip_corr( const Real theta, const Real r, const Real r0, 
-                        const Real t ) const;
+    Real ip_corr(Real theta, Real r, Real r0, Real t) const;
 
-    const std::string dump() const;
+    std::string dump() const;
 
 private:
-    
-    struct p_reaction_params 
-    { 
-        const BasicPairGreensFunction* const gf;
-        const Real r0;
-        const Real rnd;
-    };
-
-    struct p_int_r_params 
-    { 
-        const BasicPairGreensFunction* const gf;
-        const Real t;
-        const Real r0;
-        const Real rnd;
-    };
-
-    struct p_theta_params 
-    { 
-        const BasicPairGreensFunction* const gf;
-        const Real r;
-        const Real r0;
-        const Real t;
-        const RealVector& RnTable;
-        const Real value;
-    };
-    
-    struct p_corr_R_params 
-    { 
-        const BasicPairGreensFunction* const gf;
-        unsigned int n;
-        const Real r;
-        const Real r0; 
-        const Real t; 
-    };
-    
-    struct p_corr_R2_params 
-    { 
-        int order;
-        int order_max;
-        const Real r;
-        const Real r0; 
-        const Real theta;
-        const Real t; 
-        const Real Sigma; 
-        const Real D;
-        const Real kf;
-    };
-
-    static const Real p_reaction_F( const Real tsqrt, 
-                                    const p_reaction_params* params );
-
-    static const Real ip_theta_F( const Real theta,
-                                  const p_theta_params* params );
-
-    static const Real p_int_r_F( const Real r,
-                                 const p_int_r_params* const params );
-
-    static const Real p_corr_R_F( const Real alpha, 
-                                  const p_corr_R_params* const params );
-//    static const Real p_corr_R2( const Real alpha, 
-//                               const p_corr_R2_params* const params );
-
-
-    const Real p_corr_R( const Real alpha,
-                         const unsigned int n,
-                         const Real r,
-                         const Real r0,
-                         const Real t ) const;
+    Real p_corr_R(Real alpha, unsigned int n, Real r, Real r0, Real t) const;
 
     
-    const Real p_corr_n( const unsigned int n, const RealVector& RnTable, 
-                         const RealVector& lgndTable ) const;
+    Real p_corr_n(unsigned int n, RealVector const& RnTable, RealVector const& lgndTable) const;
 
-    const Real ip_corr_n( const unsigned int n, const RealVector& RnTable, 
-                          const RealVector& lgndTable ) const;
+    Real ip_corr_n(unsigned int n, RealVector const& RnTable, RealVector const& lgndTable) const;
 
-    const Real 
-    p_corr_table( const Real theta, const Real r, const Real r0,
-                   const Real t, const RealVector& RnTable ) const;
+    Real p_corr_table(Real theta, Real r, Real r0, Real t, RealVector const& RnTable) const;
 
-    const Real 
-    ip_corr_table( const Real theta, const Real r, const Real r0,
-                   const Real t, const RealVector& RnTable ) const;
+    Real 
+    ip_corr_table(Real theta, Real r, Real r0, Real t, RealVector const& RnTable) const;
     
-    const Real p_theta_table( const Real r, const Real r0, 
-                              const Real theta, const Real time,
-                              const RealVector& RnTable ) const;
+    Real p_theta_table(Real r, Real r0, Real theta, Real time,
+                       RealVector const& RnTable) const;
 
-    const Real ip_theta_table( const Real r, const Real r0, 
-                               const Real theta, const Real time,
-                               const RealVector& RnTable ) const;
+    Real ip_theta_table(Real r, Real r0, Real theta, Real time,
+                        RealVector const& RnTable) const;
 
-    const Real 
-    p_corr_table( const Real theta, const Real r, const Real r0,
-                  const Real t, const RealVector& RnTable );
+    Real 
+    p_corr_table(Real theta, Real r, Real r0, Real t, RealVector const& RnTable);
     
 
-    void makeRnTable( RealVector& RnTable,
-                      const Real r,
-                      const Real r0,
-                      const Real t ) const;
+    void makeRnTable(RealVector& RnTable, Real r, Real r0, Real t) const;
 
-    const Real 
-    Rn( const unsigned int order, const Real r, const Real r0, const Real t,
-        gsl_integration_workspace* const workspace, const Real tol ) const;
-    
+    Real Rn(unsigned int order, Real r, Real r0, Real t,
+            gsl_integration_workspace* workspace, Real tol) const;
+
+private:
+    static Real p_corr_R_F(Real, p_corr_R_params*);
+    static Real ip_theta_F(Real theta, p_theta_params* params);
     
 private:
-    
     const Real kD;
     const Real alpha;
-    
+   
+    static Logger& log_;
 };
 
 

@@ -3,13 +3,7 @@
 #include "Defs.hpp"
 
 
-const Real 
-findRoot( gsl_function& F,
-          gsl_root_fsolver* solver,
-          const Real low,
-          const Real high,
-          const Real tol_abs,
-          const Real tol_rel,
-          std::string funcName );
+Real findRoot(gsl_function const& F, gsl_root_fsolver* solver, Real low,
+              Real high, Real tol_abs, Real tol_rel, char const* funcName);
 
 

@@ -3,50 +3,36 @@
 
 #include "Defs.hpp"
 
-const Real expxsq_erfc( const Real x );
-const Real W( const Real a, const Real b );
+Real expxsq_erfc(Real x);
 
-const Real p_irr( const Real r, const Real r0, const Real t,
-                  const Real kf, const Real D, const Real sigma );
+Real W(Real a, Real b);
 
-const Real __p_irr( const Real r, const Real r0, const Real t,
-                    const Real kf, const Real D, const Real sigma, 
-                    const Real alpha );
+Real p_irr(Real r, Real r0, Real t, Real kf, Real D, Real sigma);
 
-const Real p_free( const Real r, const Real r0, 
-                   const Real theta, const Real t );
+Real __p_irr(Real r, Real r0, Real t, Real kf, Real D, Real sigma, Real alpha);
 
-const Real p_survival_irr( const Real t, const Real r0,
-                  const Real kf, const Real D, const Real sigma );
+Real p_free(Real r, Real r0, Real theta, Real t); 
 
-const Real __p_reaction_irr( const Real t, const Real r0,
-                             const Real kf, const Real D, const Real sigma,
-                             const Real alpha, const Real kD );
+Real p_survival_irr(Real t, Real r0, Real kf, Real D, Real sigma);
 
-const Real __p_reaction_irr_t_inf( const Real r0, const Real kf, 
-                                   const Real sigma, const Real kD );
+Real __p_reaction_irr(Real t, Real r0, Real kf, Real D, Real sigma, Real alpha, Real kD);
 
-const Real p_survival_nocollision( const Real t,
-                                   const Real r0,
-                                   const Real D, const Real a );
+Real __p_reaction_irr_t_inf(Real r0, Real kf, Real sigma, Real kD);
 
-const Real dp_survival_nocollision( const Real t,
-                                    const Real r0,
-                                    const Real D, const Real a );
+Real p_survival_nocollision(Real t, Real r0, Real D, Real a);
 
-const Real p_theta_free( const Real theta, const Real r, const Real r0, 
-                         const Real t, const Real D );
+Real dp_survival_nocollision(Real t, Real r0, Real D, Real a);
 
-const Real ip_theta_free( const Real theta, const Real r, const Real r0,
-                          const Real t, const Real D );
+Real p_theta_free(Real theta, Real r, Real r0, Real t, Real D);
 
-const Real g_bd( const Real r0, const Real sigma, const Real t, const Real D );
+Real ip_theta_free(Real theta, Real r, Real r0, Real t, Real D);
 
-const Real I_bd( const Real sigma, const Real t, const Real D );
+Real g_bd(Real r0, Real sigma, Real t, Real D);
 
-const Real I_bd_r( const Real r, const Real sigma, const Real t, const Real D );
+Real I_bd(Real sigma, Real t, Real D);
 
-const Real drawR_gbd( const Real rnd, const Real sigma, 
-                      const Real t, const Real D );
+Real I_bd_r(Real r, Real sigma, Real t, Real D);
+
+Real drawR_gbd(Real rnd, Real sigma, Real t, Real D);
 
 #endif /* FREE_FUNTIONS_HPP */

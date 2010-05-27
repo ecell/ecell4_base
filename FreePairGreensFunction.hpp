@@ -7,6 +7,7 @@
 
 #include <gsl/gsl_integration.h>
 
+#include "Logger.hpp"
 #include "PairGreensFunction.hpp"
 
 /**
@@ -43,74 +44,29 @@ public:
     }
     
     
-    const Real drawTime( const Real rnd, const Real r0,
-                         const Real maxt ) const
+    Real drawTime(Real rnd, Real r0, Real maxt) const
     {
         return INFINITY;
     }
     
-    const Real drawR( const Real rnd, 
-                      const Real r0, 
-                      const Real t ) const;
+    Real drawR(Real rnd, Real r0, Real t) const;
     
-    const Real drawTheta( const Real rnd,
-                          const Real r, 
-                          const Real r0, 
-                          const Real t ) const;
+    Real drawTheta(Real rnd, Real r, Real r0, Real t) const;
 
-    const Real p_r( const Real r, 
-                    const Real r0, 
-                    const Real t ) const;
+    Real p_r(Real r, Real r0, Real t) const;
 
-    const Real ip_r( const Real r, 
-                     const Real r0, 
-                     const Real t ) const;
+    Real ip_r(Real r, Real r0, Real t ) const;
     
 
-    const Real p_theta( const Real theta,
-                        const Real r, 
-                        const Real r0, 
-                        const Real t ) const;
+    Real p_theta(Real theta, Real r, Real r0, Real t) const;
 
-    const Real ip_theta( const Real theta,
-                         const Real r, 
-                         const Real r0, 
-                         const Real t ) const;
+    Real ip_theta(Real theta, Real r, Real r0, Real t ) const;
 
-
-    const std::string dump() const;
-    
+    std::string dump() const;
 
 private:
-
-    struct ip_r_params
-    { 
-        const FreePairGreensFunction* const gf;
-        const Real r0;
-        const Real t;
-        const Real value;
-    };
-
-
-    static const Real ip_r_F( const Real r,
-                              const ip_r_params* params );
-
-
-    struct ip_theta_params
-    { 
-        const FreePairGreensFunction* const gf;
-        const Real r;
-        const Real r0;
-        const Real t;
-        const Real value;
-    };
-
-
-    static const Real ip_theta_F( const Real theta,
-                                  const ip_theta_params* params );
-    
+    static Logger& log_;
 };
-
 
 
 #endif // __PLAINPAIRGREENSFUNCTION 

@@ -36,8 +36,9 @@ void inject_particles(Tworld_& world, Trng_& rng, Tpid_list_& pid_list, typename
     typedef typename Tworld_::particle_shape_type particle_shape_type;
     typedef typename Tworld_::position_type position_type;
     typedef typename Tworld_::species_type species_type;
-
+    typedef typename Tworld_::structure_type structure_type;
     species_type const& s(world.get_species(sid));
+    boost::shared_ptr<structure_type> structure(world.get_structure(s.structure_id()));
  
     for (int i = 0; i < n; ++i)
     {
@@ -45,10 +46,7 @@ void inject_particles(Tworld_& world, Trng_& rng, Tpid_list_& pid_list, typename
 
         for (;;)
         {
-            p.position() = position_type(
-                rng.uniform(0, world.world_size()),
-                rng.uniform(0, world.world_size()),
-                rng.uniform(0, world.world_size()));
+            p.position() = structure->random_position(rng);
             if (boost::scoped_ptr<particle_id_pair_list>(
                 world.check_overlap(p)) == 0)
             {
@@ -88,7 +86,7 @@ void do_benchmark(Real volume, std::size_t n, Traits::time_type t, Real dt_facto
         new Traits::cuboidal_region_type("default",
             Traits::box_type(
                 position_type(world_size / 2, world_size / 2, world_size / 2),
-                 array_gen(world_size, world_size, world_size))));
+                 array_gen(world_size / 2, world_size / 2, world_size / 2))));
     w.add_structure(default_surface);
 
     std::vector<particle_id> A_particles;

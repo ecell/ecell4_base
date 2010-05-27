@@ -2,23 +2,17 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
+#include <stdexcept>
 #include <sstream>
-#include <iostream>
 
 #include <boost/format.hpp>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_roots.h>
 
-
 #include "FreeGreensFunction.hpp"
 
-
-
-
-const Real 
-FreeGreensFunction::p_r( const Real r, 
-                         const Real t ) const
+Real FreeGreensFunction::p_r(Real r, Real t) const
 {
     const Real D( getD() );
     const Real Dt( D * t );
@@ -34,9 +28,7 @@ FreeGreensFunction::p_r( const Real r,
     return jacobian * term1 * term2;
 }
 
-const Real 
-FreeGreensFunction::ip_r( const Real r, 
-                          const Real t ) const
+Real FreeGreensFunction::ip_r(Real r, Real t) const
 {
     const Real D( getD() );
     const Real Dt( D * t );
@@ -50,9 +42,15 @@ FreeGreensFunction::ip_r( const Real r,
     return term2 - term1;
 }
 
-const Real
-FreeGreensFunction::ip_r_F( const Real r,
-                            const ip_r_params* params )
+struct ip_r_params
+{ 
+    FreeGreensFunction const* const gf;
+    const Real t;
+    const Real value;
+};
+
+
+static Real ip_r_F(Real r, ip_r_params const* params)
 {
     const FreeGreensFunction* const gf( params->gf ); 
     const Real t( params->t );
@@ -62,9 +60,7 @@ FreeGreensFunction::ip_r_F( const Real r,
 }
 
 
-
-const Real 
-FreeGreensFunction::drawR( const Real rnd, const Real t ) const
+Real FreeGreensFunction::drawR(Real rnd, Real t) const
 {
     // input parameter range checks.
     if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
@@ -119,8 +115,7 @@ FreeGreensFunction::drawR( const Real rnd, const Real t ) const
             if( i >= maxIter )
             {
                 gsl_root_fsolver_free( solver );
-                std::cerr << "drawR: failed to converge." << std::endl;
-                throw std::exception();
+                throw std::runtime_error("drawR: failed to converge");
             }
         }
         else
@@ -140,9 +135,13 @@ FreeGreensFunction::drawR( const Real rnd, const Real t ) const
 }
 
 
-const std::string FreeGreensFunction::dump() const
+std::string FreeGreensFunction::dump() const
 {
     std::ostringstream ss;
     ss << "D = " << this->getD() << std::endl;
     return ss.str();
-}    
+}
+
+
+Logger& FreeGreensFunction::log_(
+        Logger::get_logger("FreeGreensFunction"));

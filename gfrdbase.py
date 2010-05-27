@@ -111,6 +111,7 @@ def get_closest_surface(world, pos, ignore):
         return None
 
 def create_world(m, matrix_size=10):
+    m.set_all_repulsive()
     world_region = m.get_structure("world")
     if not isinstance(world_region, _gfrd.CuboidalRegion):
         raise TypeError("the world should be a CuboidalRegion")
@@ -136,6 +137,7 @@ def create_world(m, matrix_size=10):
     for r in m.regions.itervalues():
         world.add_structure(r)
 
+    world.model = m
     return world
    
 def create_network_rules_wrapper(model):
@@ -152,7 +154,7 @@ def throw_in_particles(world, sid, n):
     # This is a bit messy, but it works.
     i = 0
     while i < int(n):
-        position = _gfrd.random_position(surface, myrandom.rng)
+        position = surface.random_position(myrandom.rng)
 
         # Check overlap.
         if not world.check_overlap((position, species.radius)):
@@ -297,13 +299,15 @@ class ParticleSimulatorBase(object):
         reaction_rules_2 = []
         reflective_reaction_rules = []
         for si1 in self.world.species:
-            for reaction_rule_cache in self.get_reaction_rule1(si1.id):
-                string = self.model.dump_reaction_rule(reaction_rule_cache)
+            rri_vector = self.network_rules.query_reaction_rule(si1)
+            for rr_info in rri_vector:
+                string = self.world.model.dump_reaction_rule(rr_info)
                 reaction_rules_1.append(string)
             for si2 in self.world.species:
-                for reaction_rule_cache in self.get_reaction_rule2(si1.id, si2.id):
-                    string = self.model.dump_reaction_rule(reaction_rule_cache)
-                    if reaction_rule_cache.k > 0:
+                rri_vector = self.network_rules.query_reaction_rule(si1, si2)
+                for rr_info in rri_vector:
+                    string = self.world.model.dump_reaction_rule(rr_info)
+                    if rr_info.k > 0:
                         reaction_rules_2.append(string)
                     else:
                         reflective_reaction_rules.append(string)

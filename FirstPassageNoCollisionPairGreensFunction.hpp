@@ -8,14 +8,15 @@
 
 #include <gsl/gsl_roots.h>
 
+#include "Logger.hpp"
 #include "PairGreensFunction.hpp"
 
-class FirstPassageNoCollisionPairGreensFunction
-    :
-    public PairGreensFunction
+class FirstPassageNoCollisionPairGreensFunction: public PairGreensFunction
 {
+public:
     typedef std::vector<Real> RealVector;
 
+private:
     // Error tolerance used by default.
     static const Real TOLERANCE = 1e-8;
 
@@ -35,152 +36,62 @@ public:
     
     ~FirstPassageNoCollisionPairGreensFunction();
 
-    const Real geta() const
+    Real geta() const
     {
         return this->a;
     }
 
-    const Real drawTime( const Real rnd, const Real r0 ) const;
+    Real drawTime(Real rnd, Real r0) const;
 
-    const EventType drawEventType( const Real rnd, 
-                                   const Real r0, 
-                                   const Real t ) const;
+    EventType drawEventType(Real rnd, Real r0, Real t) const;
     
-    const Real drawR( const Real rnd, 
-                      const Real r0, 
-                      const Real t ) const;
+    Real drawR(Real rnd, Real r0, Real t) const;
     
-    const Real drawTheta( const Real rnd,
-                          const Real r, 
-                          const Real r0, 
-                          const Real t ) const;
+    Real drawTheta(Real rnd, Real r, Real r0, Real t) const;
     
-    const Real p_survival( const Real t,
-                           const Real r0 ) const;
+    Real p_survival(Real t, Real r0) const;
 
-    const Real dp_survival( const Real t,
-                            const Real r0 ) const;
+    Real dp_survival(Real t, Real r0) const;
 
-    const Real p_int_r( const Real r,
-                        const Real t,
-                        const Real r0 ) const;
+    Real p_int_r(Real r, Real t, Real r0) const;
 
-    const Real p_theta( const Real theta,
-                        const Real r, 
-                        const Real r0, 
-                        const Real t ) const;
+    Real p_theta(Real theta, Real r, Real r0, Real t) const;
 
-    const Real ip_theta( const Real theta,
-                         const Real r, 
-                         const Real r0, 
-                         const Real t ) const;
+    Real ip_theta(Real theta, Real r, Real r0, Real t) const;
 
-    const Real dp_theta( const Real theta,
-                         const Real r, 
-                         const Real r0, 
-                         const Real t ) const;
+    Real dp_theta(Real theta, Real r, Real r0, Real t) const;
 
-    const Real idp_theta( const Real theta,
-                          const Real r, 
-                          const Real r0, 
-                          const Real t ) const;
+    Real idp_theta(Real theta, Real r, Real r0, Real t) const;
 
 
-    const Real p_n( const Integer n, const Real r, 
-                    const Real r0, const Real t ) const;
+    Real p_n(Integer n, Real r, Real r0, Real t) const;
 
-    const Real dp_n( const Integer n, const Real r0, const Real t ) const;
+    Real dp_n(Integer n, Real r0, Real t ) const;
 
 
-    const Real p_n_alpha( const unsigned int i,
-                          const unsigned int n,
-                          const Real r, 
-                          const Real r0,
-                          const Real t ) const;
+    Real p_n_alpha(unsigned int i, unsigned int n, Real r, Real r0, Real t ) const;
 
-    const Real dp_n_alpha( const unsigned int i,
-                           const unsigned int n,
-                           const Real r0,
-                           const Real t ) const;
-    
-//    const unsigned int guess_maxi( const Real t ) const;
+    Real dp_n_alpha(unsigned int i, unsigned int n, Real r0, Real t) const;
 
     // methods below are kept public for debugging purpose.
 
-    const std::string dump() const;
+    std::string dump() const;
 
 protected:
 
+    Real p_theta_table(Real theta, Real r, Real r0, Real t, 
+                       RealVector const& p_nTable ) const;
 
-    const Real p_theta_table( const Real theta,
-                              const Real r, 
-                              const Real r0, 
-                              const Real t, 
-                              const RealVector& p_nTable ) const;
+    Real ip_theta_table(Real theta, Real r, Real r0, Real t,
+                        RealVector const& p_nTable ) const;
 
-    const Real ip_theta_table( const Real theta,
-                               const Real r, 
-                               const Real r0, 
-                               const Real t,
-                               const RealVector& p_nTable ) const;
-
-    void makep_nTable( RealVector& p_nTable,
-                       const Real r, 
-                       const Real r0, 
-                       const Real t ) const;
+    void makep_nTable(RealVector& p_nTable,
+                      Real r, Real r0, Real t) const;
     
-    void makedp_nTable( RealVector& p_nTable,
-                        const Real r0, 
-                        const Real t ) const;
+    void makedp_nTable(RealVector& p_nTable, Real r0, Real t) const;
 
-    const Real p_theta_i( const unsigned int n,
-                          const RealVector& p_nTable, 
-                          const RealVector& lgndTable ) const;
-
-    const Real ip_theta_i( const unsigned int n,
-                           const RealVector& p_nTable, 
-                           const RealVector& lgndTable1 ) const;
-
-    
-    struct p_survival_params
-    { 
-        const FirstPassageNoCollisionPairGreensFunction* const gf;
-        const Real r0;
-        const Real rnd;
-    };
-
-    static const Real 
-    p_survival_F( const Real t,
-                  const p_survival_params* const params );
-
-
-    struct p_int_r_params
-    { 
-        const FirstPassageNoCollisionPairGreensFunction* const gf;
-        const Real t;
-        const Real r0;
-//      const RealVector& num_r0Table;
-        const Real rnd;
-    };
-
-    static const Real 
-    p_int_r_F( const Real r,
-               const p_int_r_params* const params );
-
-    struct ip_theta_params
-    { 
-        const FirstPassageNoCollisionPairGreensFunction* const gf;
-        const Real r;
-        const Real r0;
-        const Real t;
-        const RealVector& p_nTable;
-        const Real value;
-    };
-
-    static const Real 
-    ip_theta_F( const Real theta,
-                const ip_theta_params* const params );
-
+    struct ip_theta_params;
+    static Real ip_theta_F(Real theta, ip_theta_params const* params);
 
 private:
     
@@ -190,8 +101,7 @@ private:
 
     Real a;
 
+    static Logger& log_;
 };
-
-
 
 #endif // __FIRSTPASSAGEPAIRGREENSFUNCTION 
