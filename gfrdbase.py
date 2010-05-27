@@ -111,6 +111,7 @@ def get_closest_surface(world, pos, ignore):
         return None
 
 def create_world(m, matrix_size=10):
+    m.set_all_repulsive()
     world_region = m.get_structure("world")
     if not isinstance(world_region, _gfrd.CuboidalRegion):
         raise TypeError("the world should be a CuboidalRegion")
