@@ -50,12 +50,12 @@ public:
 public:
     static PyTypeObject* __class_init__(const char* name, PyObject* mod = 0)
     {
+        using namespace boost::python;
         if (__name__.empty())
         {
-            using namespace boost::python;
-            __name__ = (mod && PyModule_Check(mod) ?
+            __name__ = mod && PyModule_Check(mod) ?
                 extract<std::string>(object(borrowed(mod)).attr("__name__"))()
-                + ".": std::string()) + name;
+                + "." + name: std::string(name);
             __class__.tp_name = const_cast<char*>(__name__.c_str());
             PyType_Ready(&__class__);
         }

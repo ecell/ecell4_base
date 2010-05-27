@@ -221,9 +221,9 @@ public:
                 (std::string(name) + ".Iterator").c_str(), mod);
         if (__name__.empty())
         {
-            __name__ = (mod && PyModule_Check(mod) ?
+            __name__ = mod && PyModule_Check(mod) ?
                 extract<std::string>(object(borrowed(mod)).attr("__name__"))()
-                + ".": std::string()) + name;
+                + "." + name: std::string(name);
             __class__.tp_name = const_cast<char*>(__name__.c_str());
             PyType_Ready(&__class__);
         }
