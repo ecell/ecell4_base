@@ -136,6 +136,7 @@ def create_world(m, matrix_size=10):
     for r in m.regions.itervalues():
         world.add_structure(r)
 
+    world.model = m
     return world
    
 def create_network_rules_wrapper(model):
