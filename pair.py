@@ -340,7 +340,8 @@ class PlanarSurfacePair(Pair):
         # (namely the radius of the particle), so if the particle undergoes an 
         # unbinding reaction we still have to clear the target volume and the 
         # move may be rejected (NoSpace error).
-        orientation = self.surface.shape.unit_z
+        orientation = crossproduct(self.surface.shape.unit_x,
+                                   self.surface.shape.unit_y)
         size = max(self.single1.pid_particle_pair[1].radius,
                    self.single2.pid_particle_pair[1].radius)
         return CylindricalShell(domain_id,
