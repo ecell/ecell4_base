@@ -30,7 +30,7 @@ def dump_domains(egfrdsim):
                 domain.single2.pid_particle_pair]
         elif isinstance(domain, Multi):
             pid_particle_pair_list = []
-            for pid_particle_pair in domain.sim.world:
+            for pid_particle_pair in domain.particle_container:
                 pid_particle_pair_list.append(pid_particle_pair)
 
         yield ((did, domain), pid_particle_pair_list, shell_list) 
