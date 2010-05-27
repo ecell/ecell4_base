@@ -150,7 +150,7 @@ PyTypeObject generator_wrapper<Tgen_, Trcg_>::__class__ = {
     PyObject_GenericGetAttr,        /* tp_getattro */
     0,                  /* tp_setattro */
     0,                  /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER, /* tp_flags */
+    Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_ITER, /* tp_flags */
     0,                  /* tp_doc */
     0,                  /* tp_traverse */
     0,                  /* tp_clear */
@@ -169,7 +169,7 @@ PyTypeObject generator_wrapper<Tgen_, Trcg_>::__class__ = {
     0,                  /* tp_init */
     0,                  /* tp_alloc */
     0,                  /* tp_new */
-    0                   /* tp_free */
+    PyObject_Del        /* tp_free */
 };
 
 } } // namespace peer::util
