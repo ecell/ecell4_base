@@ -203,6 +203,7 @@ private:
                         const Real D01(s0.D() + s1.D());
                         const length_type r01(s0.radius() + s1.radius());
                         int i = max_retry_count_;
+                        position_type np0, np1;
 
                         for (;;)
                         {
@@ -215,12 +216,10 @@ private:
                             length_type pair_distance(
                                 drawR_gbd(rnd, r01, dt_, D01));
                             const position_type m(random_unit_vector() * pair_distance);
-                            const position_type np0(
-                                tx_.apply_boundary(pp.second.position()
-                                    + m * (s0.D() / D01)));
-                            const position_type np1(
-                                tx_.apply_boundary(pp.second.position()
-                                    + m * (s1.D() / D01)));
+                            np0 = tx_.apply_boundary(pp.second.position()
+                                    + m * (s0.D() / D01));
+                            np1 = tx_.apply_boundary(pp.second.position()
+                                    + m * (s1.D() / D01));
                             boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s0(
                                 tx_.check_overlap(
                                     particle_shape_type(np0, s0.radius()),
@@ -232,6 +231,11 @@ private:
                             if (!(overlapped_s0 && overlapped_s0->size() > 0) && !(overlapped_s1 && overlapped_s1->size() > 0))
                                 break;
                         }
+
+                        tx_.remove_particle(pp.first);
+                        const particle_id_pair
+                            npp0(tx_.new_particle(s0.id(), np0)),
+                            npp1(tx_.new_particle(s1.id(), np1));
                     }
                     break;
                 default:
