@@ -39,7 +39,7 @@ bool valid(Tgen_ const& t)
 template<typename Tgen_>
 std::size_t count(Tgen_ const& t)
 {
-    throw std::domain_error("generation is not limited");
+    throw std::runtime_error("generation is not limited");
 }
 
 template<typename Tgen_, typename Tpred_>
@@ -95,7 +95,7 @@ struct abstract_limited_generator: public abstract_generator<Tretval_>
 
     virtual std::size_t count() const
     {
-        throw std::domain_error("indetermined");
+        throw std::runtime_error("indetermined");
     }
 
     virtual bool valid() const = 0;
@@ -297,7 +297,7 @@ public:
         {
             return boost::get(count_);
         }
-        throw std::domain_error("count not given through the constructor");
+        throw std::runtime_error("count not given through the constructor");
     }
 
     virtual bool valid() const
