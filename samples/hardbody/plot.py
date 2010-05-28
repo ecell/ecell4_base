@@ -25,7 +25,7 @@ from out_V import *
 from out_N300 import *
 from out_N3000 import *
 from out_BD import *
-from out_BD2 import *
+#from out_BD2 import *
 
 from run_all import Nv, Nc, V300, N300, V3000, N3000, VBD, NBD, TBD, TBD2
 
@@ -44,26 +44,28 @@ plot_data(Nv, data_V,'kx')
 loglog(X, 0.004* X**(5.0/3), 'k--')
 
 figtext(.25, .18, r'(2) V = 1 pL')
-figtext(.82, .7, r'$t \ \propto \ N^{5/3}$', color='k')
+figtext(.82, .85, r'$t \ \propto \ N^{5/3}$', color='k')
 
 
 #for i in range(len(Nc)):
 plot_data(Nc, data_C,'ko')
 loglog(X, 4* X, 'k-')
 
-figtext(.14, .37, r'(1) C = 50 nM')
+figtext(.14, .4, r'(1) C = 50 nM')
 figtext(.8, .59, r'$t \  \propto \ N$', color='k')
 
 # plot BD data
-plot_data(NBD, data_BD2,'k.')
+#plot_data(NBD, data_BD2,'k.')
 plot_data(NBD, data_BD,'k.')
 
-loglog(X, 3e6* X, 'b:') # 1e-6 tau
-loglog(X, 3e4* X, 'b:') # 1e-4 tau
+# loglog(X, 2e6* X, 'b:') # 1e-6 tau
+# loglog(X, 2e4* X, 'b:') # 1e-4 tau
+loglog(X, 2e5* X, 'b:') # 1e-5 tau
 
-figtext(.2, .82, r'BD', color='k')
+#figtext(.2, .82, r'BD', color='k')
+#figtext(.19, .64, r'BD (relaxed)', color='k')
 
-figtext(.19, .64, r'BD (relaxed)', color='k')
+figtext(.19, .64, r'BD', color='k')
 
 #loglog(data1[0] , data1[1], 'o-', label='Vol. = 1e-15 L')
 #loglog(data2[0] , data2[1], 'o-', label='# particles = 600')
