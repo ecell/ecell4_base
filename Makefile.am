@@ -180,7 +180,8 @@ _greens_functions_la_SOURCES=\
 	BasicPairGreensFunction.cpp\
 	FreePairGreensFunction.cpp\
 	FirstPassagePairGreensFunction.cpp\
-	FirstPassageNoCollisionPairGreensFunction.cpp
+	FirstPassageNoCollisionPairGreensFunction.cpp\
+	Logger.cpp
 
 _gfrd_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
 _gfrd_la_LIBADD = binding/libbinding_utils.la

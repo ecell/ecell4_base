@@ -2,6 +2,7 @@ import _gfrd
 import numpy
 
 __all__ = [
+    'Species',
     'ParticleModel',
     'create_unimolecular_reaction_rule',
     'create_decay_reaction_rule',
@@ -114,14 +115,16 @@ class ParticleModel(_gfrd.Model):
 
         '''
         buf = ('k=%.3g' % reaction_rule.k + ': ').ljust(15)
-        for index, sid in enumerate(reaction_rule.rt.reactants):
+        for index, sid in enumerate(reaction_rule.reactants):
             if index != 0:
                 buf += ' + '
             reactant = self.get_species_type_by_id(sid)
-            buf += reactant['id'].ljust(15)
+            buf += reactant['name'].ljust(15)
         if len(reaction_rule.products) == 0:
             if reaction_rule.k != 0:
                 buf += '..decays'
+            else:
+                buf += '..reflective'
         else:
             buf += '-> '
 
@@ -129,7 +132,7 @@ class ParticleModel(_gfrd.Model):
             if index != 0:
                 buf += ' + '
             product = self.get_species_type_by_id(sid)
-            buf += product['id'].ljust(15)
+            buf += product['name'].ljust(15)
 
         return buf + '\n'
 

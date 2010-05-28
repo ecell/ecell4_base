@@ -1,12 +1,12 @@
 #if !defined( __FREEGREENSFUNCTION )
 #define __FREEGREENSFUNCTION 
 
-#include <cmath>
-
 #include "compat.h"
 
+#include <cmath>
 #include <gsl/gsl_integration.h>
 
+#include "Logger.hpp"
 #include "GreensFunction.hpp"
 
 /**
@@ -39,33 +39,23 @@ public:
         ; // do nothing
     }
 
-    const Real drawTime( const Real ) const
+    Real drawTime( const Real ) const
     {
         return INFINITY;
     }
     
-    const Real drawR( const Real rnd, const Real t ) const;
+    Real drawR( const Real rnd, const Real t ) const;
     
-    const Real p_r( const Real r, const Real t ) const;
+    Real p_r( const Real r, const Real t ) const;
 
-    const Real ip_r( const Real r, const Real t ) const;
+    Real ip_r( const Real r, const Real t ) const;
     
 
-    const std::string dump() const;
+    std::string dump() const;
 
 private:
 
-    struct ip_r_params
-    { 
-        const FreeGreensFunction* const gf;
-        const Real t;
-        const Real value;
-    };
-
-
-    static const Real ip_r_F( const Real r,
-                              const ip_r_params* params );
-
+    static Logger& log_;
 };
 
 
