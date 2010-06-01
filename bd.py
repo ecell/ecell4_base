@@ -15,7 +15,7 @@ import itertools
 
 log = logging.getLogger('ecell')
 
-DEFAULT_DT_FACTOR = 1e-6
+DEFAULT_DT_FACTOR = 1e-5
 
 def calculate_bd_dt(species_list):
     D_list = []

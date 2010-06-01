@@ -1571,6 +1571,6 @@ rejected moves = %d
             elif isinstance(d, Multi):
                 num_multis += 1
             else:
-                raise RuntimeError, 'NO NOT GET HERE'
+                raise RuntimeError, 'DO NOT GET HERE'
 
         return (num_singles, num_pairs, num_multis)
