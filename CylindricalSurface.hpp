@@ -19,9 +19,7 @@ public:
 
     virtual position_type random_position(rng_type& rng) const
     {
-        return add(
-            base_type::shape().position(),
-            base_type::shape().unit_z() * rng.uniform(-1., 1.));
+        return ::random_position(base_type::shape(), boost::bind(&rng_type::uniform, rng, -1., 1.));
     }
 
     virtual position_type random_vector(length_type const& r, rng_type& rng) const
