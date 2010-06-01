@@ -120,7 +120,7 @@ inline void register_reaction_rule_class(const char* name)
     peer::converters::register_iterable_to_range_converter<
             species_type_id_vector>();
 
-    class_<impl_type, impl_type*>(name,
+    class_<impl_type>(name,
             init<typename impl_type::Reactants const&, species_type_id_vector>())
         .add_property("reactants",  
             make_function(&impl_type::get_reactants,
