@@ -196,9 +196,9 @@ template<typename Trange_,
 class range_generator: public abstract_limited_generator<Tresult_>
 {
     template<typename Trange, typename Titer, typename Tresult, bool Bra>
-    friend bool ::valid(range_generator<Trange, Titer, Tresult, Bra> const& gen);
+    friend bool valid(range_generator<Trange, Titer, Tresult, Bra> const& gen);
     template<typename Trange, typename Titer, typename Tresult, bool Bra>
-    friend std::size_t ::count(range_generator<Trange, Titer, Tresult, Bra> const& gen);
+    friend std::size_t count(range_generator<Trange, Titer, Tresult, Bra> const& gen);
 
 public:
     typedef Titer_ range_iterator;
@@ -246,9 +246,9 @@ class range_generator<Trange_, Titer_, Tresult_, false>
     : public abstract_limited_generator<Tresult_>
 {
     template<typename Trange, typename Titer, typename Tresult, bool Bra>
-    friend bool ::valid(range_generator<Trange, Titer, Tresult, Bra> const& gen);
+    friend bool valid(range_generator<Trange, Titer, Tresult, Bra> const& gen);
     template<typename Trange, typename Titer, typename Tresult, bool Bra>
-    friend std::size_t ::count(range_generator<Trange, Titer, Tresult, Bra> const& gen);
+    friend std::size_t count(range_generator<Trange, Titer, Tresult, Bra> const& gen);
 
 public:
     typedef Titer_ range_iterator;
