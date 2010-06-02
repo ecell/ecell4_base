@@ -5,6 +5,7 @@
 #include <boost/python/tuple.hpp>
 #include <boost/python/override.hpp>
 #include <boost/python/wrapper.hpp>
+#include "peer/compat.h"
 #include "peer/wrappers/generator/pyiterator_generator.hpp"
 #include "peer/wrappers/generator/generator_wrapper.hpp"
 #include "peer/converters/tuple.hpp"
@@ -131,7 +132,7 @@ struct particle_id_pair_and_distance_list_converter
 
             if (hint < 0)
             {
-                hint = _PyObject_LengthHint(iter.get(), 0);
+                hint = compat_PyObject_LengthHint(iter.get());
                 if (hint < 0)
                 {
                     hint = 0;

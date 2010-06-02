@@ -22,6 +22,17 @@ static Py_ssize_t PyNumber_AsSsize_t(PyObject *item, PyObject* err)
     return retval;
 }
 
+static Py_ssize_t _PyObject_LengthHint(PyObject *obj)
+{
+    return -1;
+}
+
 #endif /* PY_VERSION_HEX < 0x02050000 */
+
+#if PY_VERSION_HEX < 0x02060000
+#define compat_PyObject_LengthHint(a) _PyObject_LengthHint(a)
+#else
+#define compat_PyObject_LengthHint(a) _PyObject_LengthHint(a, -1)
+#endif
 
 #endif /* PEER_COMPAT_H */
