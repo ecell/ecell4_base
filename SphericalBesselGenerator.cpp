@@ -4,8 +4,8 @@
 
 #include <cassert>
 
+#include "compat.h"
 #include "SphericalBesselTable.hpp"
-
 #include "SphericalBesselGenerator.hpp"
 
 
