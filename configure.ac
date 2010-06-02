@@ -110,7 +110,26 @@ AC_CHECK_FUNCS([PyInt_FromSize_t],[],[],[
 ])
 dnl
 dnl
-AC_CHECK_HEADERS([unordered_map tr1/unordered_map boost/unordered_map.hpp boost/functional/hash.hpp])
+AC_CHECK_HEADERS([unordered_map boost/unordered_map.hpp boost/functional/hash.hpp])
+AC_CHECK_HEADER([tr1/unordered_map], [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_MSG_CHECKING([for a stupid bug in tr1/unordered_map])
+  AC_TRY_COMPILE([
+#include <tr1/unordered_map>
+  ], [
+std::tr1::unordered_map<int, int> a, b(a);
+  ], [
+    AC_MSG_RESULT([ok])
+    AC_DEFINE([HAVE_TR1_UNORDERED_MAP], 1, [Define to 1 if you have usable <tr1/unordered_map> header file])
+  ], [
+    AC_MSG_RESULT([buggy])
+  ])
+  AC_LANG_RESTORE
+], [
+  AC_MSG_RESULT([buggy])
+])
+
 AC_CHECK_TYPES([std::hash<int>],[],[],[
 #include <functional>
 ])
