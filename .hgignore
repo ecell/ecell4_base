@@ -4,6 +4,7 @@ syntax: glob
 *.la
 *.lai
 *.lo
+*.loT
 *.o
 *.so
 *.pyo
