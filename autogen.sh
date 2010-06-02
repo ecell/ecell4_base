@@ -7,13 +7,19 @@ DIE=0
 
 PROJECT="brown"
 
+libtoolize=libtoolize
+
+if which -s glibtoolize; then
+    libtoolize=glibtoolize
+fi
+
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
         echo
         echo "You must have autoconf installed to compile $PROJECT."
         DIE=1
 }
 
-(glibtoolize --version) < /dev/null > /dev/null 2>&1 || {
+($libtoolize --version) < /dev/null > /dev/null 2>&1 || {
         echo
         echo "You must have libtool installed to compile $PROJECT."
         DIE=1
@@ -29,7 +35,7 @@ if test "$DIE" -eq 1; then
         exit 1
 fi
 
-glibtoolize -c --force --automake
+$libtoolize -c --force --automake
 
 case $CC in
 *xlc | *xlc\ * | *lcc | *lcc\ *) am_opt=--include-deps;;
@@ -39,7 +45,7 @@ for dir in .
   do 
   echo -n Running autotools for $dir ...
   (cd $dir; \
-  { echo -n ' aclocal '; aclocal -I m4 -I /Library/Frameworks/GSL.framework/Versions/Current/share/aclocal; } && \
+  { echo -n ' aclocal '; aclocal -I m4 ; } && \
   { echo -n 'autoheader '; autoheader -f ; } && \
   { echo -n 'automake ';  automake --copy --add-missing $am_opt; } && \
   { echo -n 'autoconf '; autoconf; } && \
