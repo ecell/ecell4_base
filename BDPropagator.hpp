@@ -258,7 +258,6 @@ private:
 
         const species_type s0(tx_.get_species(pp0.second.sid())),
                 s1(tx_.get_species(pp1.second.sid()));
-        const Real D01(s0.D() + s1.D());
         const length_type r01(s0.radius() + s1.radius());
 
         const Real rnd(rng_());
@@ -268,7 +267,7 @@ private:
                 i(boost::begin(rules)), e(boost::end(rules)); i != e; ++i)
         {
             reaction_rule_type const& r(*i);
-            const Real p(r.k() * dt_ / (I_bd(r01, dt_, D01) * 4.0 * M_PI));
+            const Real p(r.k() * dt_ / ((I_bd(r01, dt_, s0.D()) + I_bd(r01, dt_, s1.D())) * 4.0 * M_PI));
             BOOST_ASSERT(p >= 0.);
             prob += p;
             if (prob >= 1.)
@@ -296,7 +295,7 @@ private:
                                 multiply(tx_.cyclic_transpose(
                                     pp1.second.position(),
                                     pp0.second.position()), s0.D())),
-                            D01)));
+                            (s0.D() + s1.D()))));
                 boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
                     tx_.check_overlap(particle_shape_type(new_pos, sp.radius()),
                                       pp0.first, pp1.first));
