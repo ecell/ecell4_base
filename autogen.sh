@@ -9,7 +9,7 @@ PROJECT="brown"
 
 libtoolize=libtoolize
 
-if which -s glibtoolize; then
+if which glibtoolize >/dev/null 2>&1; then
     libtoolize=glibtoolize
 fi
 
