@@ -26,7 +26,7 @@ dnl
 dnl checks for libraries
 dnl
 dnl
-AM_PATH_GSL([1.11],,AC_MSG_ERROR([could not find required version of GSL.]))
+AX_PATH_GSL([1.11],,AC_MSG_ERROR([could not find required version of GSL.]))
 dnl
 AC_CHECK_LIB(m,exp,,AC_MSG_ERROR([could not find libm.]))
 dnl
