@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-#  PYTHONPATH=../.. python plot.py irr.-3.out 0.0000000125 irr.-2.out 0.000000125  irr.-1.out 0.00000125  irr.0.out 0.0000125 irr.1.out 0.000125 irr.2.out 0.00125 irr.3.out 0.0125
+#  PYTHONPATH=../.. python plot.py irr.-2.out 0.000000125  irr.-1.out 0.00000125  irr.0.out 0.0000125 irr.1.out 0.000125 irr.2.out 0.00125 irr.3.out 0.0125
+
+# irr.-3.out 0.0000000125 
 
 
 import sys
