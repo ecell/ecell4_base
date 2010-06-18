@@ -194,16 +194,22 @@ _greens_functions_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBBOOSTDATE) $(LIBPYTHON) $(G
 #	SphericalBesselTable.hpp
 
 nodist__greens_functions_la_SOURCES = \
-	SphericalBesselTable.hpp
+	SphericalBesselTable.hpp\
+	CylindricalBesselTable.hpp
 
 BUILT_SOURCES = \
-	SphericalBesselTable.hpp
+	SphericalBesselTable.hpp\
+	CylindricalBesselTable.hpp
 
 CLEANFILES = \
-	SphericalBesselTable.hpp
+	SphericalBesselTable.hpp\
+	CylindricalBesselTable.hpp
 
 SphericalBesselTable.hpp: make_sjy_table.py
 	$(PYTHON) make_sjy_table.py SphericalBesselTable.hpp
+
+CylindricalBesselTable.hpp: make_cjy_table.py
+	$(PYTHON) make_cjy_table.py CylindricalBesselTable.hpp
 
 
 _gfrd.so: _gfrd.la 
