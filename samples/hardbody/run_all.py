@@ -63,8 +63,8 @@ def run_set_bd(outfile, name, V_list, N_list, T_list, dt_factor):
 
 
 #Vv = [40e-15, ] * 12
-Vv = [1e-12, ] * 10
-Nv = [100,300,1000,3000,10000,30000,100000,300000,1000000,3000000]#,10000000]#,30000000]
+Vv = [1e-12, ] * 11
+Nv = [100,300,1000,3000,10000,30000,100000,300000,1000000,3000000,10000000]#,30000000]
 #Tv = [1e-0, 1e-1, 1e-1, 1e-2, 1e-3, 1e-3, 1e-4, 1e-4, 1e-5,1e-6]
 
 # Tv = [max(1e-3,
@@ -79,9 +79,9 @@ Tv = [max(1e-5,
 
 # Vc = [40e-17, 13e-16, 40e-16, 13e-15, 40e-15, 13e-14, 40e-14, 13e-13, 40e-13,
 #       13e-12,40e-12,13e-11,40e-12]
-Vc = [3.33e-15,1e-14, 3.33e-14,1e-13, 3.33e-13,1e-12, 3.33e-12,1e-11, 3.33e-11,1e-10]#, 3.33e-10]#,1e-9]
+Vc = [3.33e-15,1e-14, 3.33e-14,1e-13, 3.33e-13,1e-12, 3.33e-12,1e-11, 3.33e-11,1e-10, 3.33e-10,1e-9]#,3.33e-9]
 
-Nc = [100,      300,   1000,    3000,  10000,  30000,100000,300000,1000000,3000000]#,10000000]#,30000000]
+Nc = [100,      300,   1000,    3000,  10000,  30000,100000,300000,1000000,3000000,10000000,30000000]#,100000000]
 #Tc = [1e-1, 1e-2, 1e-2, 1e-3, 1e-3, 1e-3, 1e-3, 1e-4, 1e-4, 1e-4]#,1e-5
 
 Tc = [max(1e-3,
@@ -111,6 +111,12 @@ TBD = [1e-4 / N for N in NBD]
 TBD2 = [1e-3 / N for N in NBD]
 
 
+VBD300 = V300
+NBD300 = N300
+TBD300 = [5e-7] * len(VBD300)
+
+BD_DTFACTOR = 1e-5
+
 if __name__ == '__main__':
     mode = sys.argv[1]
     outfile = open(prefix+mode+'.py','w'); 
@@ -124,13 +130,20 @@ if __name__ == '__main__':
     elif mode == 'N3000':
         run_set(outfile, dataname, V3000, N3000, T3000); outfile.write('\n\n')
     elif mode == 'BD':
-        run_set_bd(outfile, dataname, VBD, NBD, TBD, 1e-5); outfile.write('\n\n')
+        run_set_bd(outfile, dataname, VBD, NBD, TBD, BD_DTFACTOR); outfile.write('\n\n')
+
+    elif mode == 'BD300':
+        run_set_bd(outfile, dataname, VBD300, NBD300, TBD300, BD_DTFACTOR); outfile.write('\n\n')
     # elif mode == 'BD2':
     #     run_set_bd(outfile, dataname, VBD, NBD, TBD2, 1e-4); outfile.write('\n\n')
 
     # just for large # particles stress tests
+    elif mode == 'NE6':
+        run_set(outfile, dataname, [3.3e-9], [1e6], [1e-3]); outfile.write('\n\n')
+    elif mode == 'N3E6':
+        run_set(outfile, dataname, [1e-10], [3e6], [1e-3]); outfile.write('\n\n')
     elif mode == 'NE7':
-        run_set(outfile, dataname, [3.3e-10], [1e7], [1e-9]); outfile.write('\n\n')
+        run_set(outfile, dataname, [3.3e-10], [1e7], [1e-3]); outfile.write('\n\n')
     elif mode == 'NE5BD':
         run_set_bd(outfile, dataname, [1e-12], [1e5], [1e-9], 1e-5); outfile.write('\n\n')
 

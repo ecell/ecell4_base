@@ -15,6 +15,9 @@ def run_single(T, V, N):
 
     print 'T =', T, '; V= ', V, '; N=', N
     
+    # disable gc
+    import gc
+    gc.disable()
 
     L = math.pow(V * 1e-3, 1.0 / 3.0)
 
@@ -55,7 +58,6 @@ def run_single(T, V, N):
     while s.t < run_time:
         s.step()
     end = time.time()
-
     timing = end - start
 
     steps = s.step_counter
@@ -64,6 +66,9 @@ def run_single(T, V, N):
     print 'steps/sec= ', stepspersec, ', steps/N= ', float(steps) / N
     print 'TIMING:\n', timing, '\n'
 
+    gc.collect()
+    gc.enable()
+
     return end - start, steps, stepspersec
 
 
@@ -71,6 +76,9 @@ def run_single_bd(T, V, N, dt_factor):
 
     print 'T =', T, '; V= ', V, '; N=', N
     
+    # disable gc
+    import gc
+    gc.disable()
 
     L = math.pow(V * 1e-3, 1.0 / 3.0)
 
@@ -121,6 +129,9 @@ def run_single_bd(T, V, N, dt_factor):
     print 'steps (total)= ', steps
     print 'steps/sec= ', stepspersec, ', steps/N= ', float(steps) / N
     print 'TIMING:\n', timing, '\n'
+
+    gc.collect()
+    gc.enable()
 
     return end - start, steps, stepspersec
 
