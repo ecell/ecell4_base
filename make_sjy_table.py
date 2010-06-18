@@ -142,8 +142,8 @@ def write_footer(file):
 
 def write_table_array(file, name, minn, maxn):
 
-    file.write('static const unsigned int %s_min(%d);\n' % (name, minn)) 
-    file.write('static const unsigned int %s_max(%d);\n' % (name, maxn)) 
+    file.write('static unsigned int %s_min(%d);\n' % (name, minn)) 
+    file.write('static unsigned int %s_max(%d);\n' % (name, maxn)) 
     file.write('static const Table* %s[%d + 1] =\n{\n' % (name, maxn)) 
     #file.write('boost::array<const double**, %d + 1>%s =\n{\n' % (N, name)) 
 

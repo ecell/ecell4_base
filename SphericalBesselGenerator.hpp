@@ -27,35 +27,16 @@ public:
         ; // do nothing
     }
 
-    const Real j(const UnsignedInteger n, const Real z) const;
+    Real j(UnsignedInteger n, Real z) const;
 
-    const Real y(const UnsignedInteger n, const Real z) const;
+    Real y(UnsignedInteger n, Real z) const;
 
-    static const UnsignedInteger getMinNJ();
-    static const UnsignedInteger getMinNY();
-    static const UnsignedInteger getMaxNJ();
-    static const UnsignedInteger getMaxNY();
+    static UnsignedInteger getMinNJ();
+    static UnsignedInteger getMinNY();
+    static UnsignedInteger getMaxNJ();
+    static UnsignedInteger getMaxNY();
 
-    static const SphericalBesselGenerator& instance();
-
-private:
-
-    static const Real _j(const UnsignedInteger n, const Real z)
-    {
-        return gsl_sf_bessel_jl(n, z);
-    }
-
-    static const Real _y(const UnsignedInteger n, const Real z)
-    {
-        return gsl_sf_bessel_yl(n, z);
-    }
-
-    const Real _j_table(const UnsignedInteger n, const Real z) const;
-    const Real _y_table(const UnsignedInteger n, const Real z) const;
-
-    static const Real _j_smalln(const UnsignedInteger n, const Real z);
-    static const Real _y_smalln(const UnsignedInteger n, const Real z);
-     
+    static SphericalBesselGenerator const& instance();
 };
 
 

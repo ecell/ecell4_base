@@ -9,9 +9,9 @@
 #include "SphericalBesselGenerator.hpp"
 
 
-static inline double hermite_interp(const double x, 
-                                    const double x0, const double dx, 
-                                    const double* y_array)
+static inline double hermite_interp(double x, 
+                                    double x0, double dx, 
+                                    double const* y_array)
 {
     const double hinv = 1.0 / dx;
 
@@ -30,13 +30,23 @@ static inline double hermite_interp(const double x,
         + x_lo * x_lo * (y_hi + x_hi * (2 * y_hi - ydot_hi));
 }
 
-inline static const Real interp(const Real x_start, const Real delta_x,
-                                const Real* yTable, const Real x)
+inline static Real interp(Real x_start, Real delta_x,
+                          Real const* yTable, Real x)
 {
     return hermite_interp(x, x_start, delta_x, yTable);
 }
 
-const SphericalBesselGenerator& SphericalBesselGenerator::instance()
+static Real _j(UnsignedInteger n, Real z)
+{
+    return gsl_sf_bessel_jl(n, z);
+}
+
+static Real _y(UnsignedInteger n, Real z)
+{
+    return gsl_sf_bessel_yl(n, z);
+}
+
+SphericalBesselGenerator const& SphericalBesselGenerator::instance()
 {
     static const SphericalBesselGenerator sphericalBesselGenerator;
     return sphericalBesselGenerator;
@@ -44,59 +54,52 @@ const SphericalBesselGenerator& SphericalBesselGenerator::instance()
 
 
 
-const UnsignedInteger
-SphericalBesselGenerator::getMinNJ()
+UnsignedInteger SphericalBesselGenerator::getMinNJ()
 {
     return sb_table::sj_table_min;
 }
 
-const UnsignedInteger
-SphericalBesselGenerator::getMinNY()
+UnsignedInteger SphericalBesselGenerator::getMinNY()
 {
     return sb_table::sy_table_min;
 }
 
-const UnsignedInteger
-SphericalBesselGenerator::getMaxNJ()
+UnsignedInteger SphericalBesselGenerator::getMaxNJ()
 {
     return sb_table::sj_table_max;
 }
 
-const UnsignedInteger
-SphericalBesselGenerator::getMaxNY()
+UnsignedInteger SphericalBesselGenerator::getMaxNY()
 {
     return sb_table::sy_table_max;
 }
 
-static const sb_table::Table* getSJTable(const UnsignedInteger n)
+static sb_table::Table const* getSJTable(UnsignedInteger n)
 {
     return sb_table::sj_table[n];
 }
 
 
-static const sb_table::Table* getSYTable(const UnsignedInteger n)
+static sb_table::Table const* getSYTable(UnsignedInteger n)
 {
     return sb_table::sy_table[n];
 }
 
-inline const Real SphericalBesselGenerator::_j_table(const UnsignedInteger n,
-                                                     const Real z) const
+static inline Real _j_table(UnsignedInteger n, Real z)
 {
-    const sb_table::Table* tablen(getSJTable(n));
+    sb_table::Table const* tablen(getSJTable(n));
 
     return interp(tablen->x_start, tablen->delta_x, tablen->y, z);
 }
 
-inline const Real SphericalBesselGenerator::_y_table(const UnsignedInteger n, 
-                                                     const Real z) const
+static inline Real _y_table(UnsignedInteger n, Real z)
 {
-    const sb_table::Table* tablen(getSYTable(n));
+    sb_table::Table const* tablen(getSYTable(n));
 
     return interp(tablen->x_start, tablen->delta_x, tablen->y, z);
 }
 
-inline const Real SphericalBesselGenerator::_j_smalln(const UnsignedInteger n,
-                                                      const Real z)
+static inline Real _j_smalln(UnsignedInteger n, Real z)
 {
     assert(n <= 3 && n >= 0);
 
@@ -141,8 +144,7 @@ inline const Real SphericalBesselGenerator::_j_smalln(const UnsignedInteger n,
 
 }
 
-inline const Real SphericalBesselGenerator::_y_smalln(const UnsignedInteger n, 
-                                                      const Real z)
+static inline Real _y_smalln(UnsignedInteger n, Real z)
 {
     assert(n <= 2 && n >= 0);
 
@@ -170,8 +172,7 @@ inline const Real SphericalBesselGenerator::_y_smalln(const UnsignedInteger n,
 
 
 
-const Real 
-SphericalBesselGenerator::j(const UnsignedInteger n, const Real z) const
+Real SphericalBesselGenerator::j(UnsignedInteger n, Real z) const
 {
     if(n <= 3)
     {
@@ -180,7 +181,7 @@ SphericalBesselGenerator::j(const UnsignedInteger n, const Real z) const
 
     if(n > getMaxNJ())
     {
-        return this->_j(n, z);
+        return _j(n, z);
     }
     
     const sb_table::Table* table(getSJTable(n));
@@ -191,16 +192,15 @@ SphericalBesselGenerator::j(const UnsignedInteger n, const Real z) const
     
     if(z >= minz && z < maxz)
     {
-        return this->_j_table(n, z);
+        return _j_table(n, z);
     }
     else
     {
-        return this->_j(n, z);
+        return _j(n, z);
     }
 }
 
-const Real 
-SphericalBesselGenerator::y(const UnsignedInteger n, const Real z) const
+Real SphericalBesselGenerator::y(const UnsignedInteger n, const Real z) const
 {
     if(n <= 2)
     {
@@ -209,7 +209,7 @@ SphericalBesselGenerator::y(const UnsignedInteger n, const Real z) const
 
     if(n > getMaxNY())
     {
-        return this->_y(n, z);
+        return _y(n, z);
     }
     
     const sb_table::Table* table(getSYTable(n));
@@ -220,11 +220,11 @@ SphericalBesselGenerator::y(const UnsignedInteger n, const Real z) const
     
     if(z >= minz && z < maxz)
     {
-        return this->_y_table(n, z);
+        return _y_table(n, z);
     }
     else
     {
-        return this->_y(n, z);
+        return _y(n, z);
     }
 }
 
