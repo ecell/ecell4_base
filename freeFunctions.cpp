@@ -348,7 +348,7 @@ static Real I_gbd_r_F(Real r, const g_bd_params* params)
 {
     const Real sigma(params->sigma);
     const Real t(params->t);
-    const Real D(params->sigma);
+    const Real D(params->D);
     const Real target(params->target);
 
     return I_bd_r(r, sigma, t, D) - target;
