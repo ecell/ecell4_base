@@ -3,8 +3,8 @@
 
 namespace binding {
 
-void register_py_event_class();
-void register_py_event_scheduler_class();
+void register_event_class();
+void register_event_scheduler_class();
 
 } //namespace binding
 

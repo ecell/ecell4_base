@@ -28,7 +28,7 @@
 #include "../StructureUtils.hpp"
 #include "../AnalyticalSingle.hpp"
 #include "../AnalyticalPair.hpp"
-#include "../PyEventScheduler.hpp"
+#include "../EventScheduler.hpp"
 
 #include "peer/wrappers/range/pyiterable_range.hpp"
 
@@ -38,8 +38,6 @@ typedef ::not_found NotFound;
 typedef ::already_exists AlreadyExists;
 typedef ::illegal_state IllegalState;
 typedef ::GSLRandomNumberGenerator GSLRandomNumberGenerator;
-typedef ::PyEvent PyEvent;
-typedef ::PyEventScheduler PyEventScheduler;
 typedef ::CyclicWorldTraits<Real, Real> WorldTraits;
 typedef WorldTraits::particle_type Particle;
 typedef WorldTraits::structure_id_type StructureID;

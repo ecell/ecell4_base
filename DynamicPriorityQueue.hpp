@@ -11,6 +11,7 @@
 #include <functional>
 #include <vector>
 #include <algorithm>
+#include <utility>
 #include <stdexcept>
 
 #include <boost/format.hpp>
@@ -32,345 +33,223 @@
 #include <iostream>
 #endif
 
+#include "utils/swap.hpp"
 
-class PersistentIDPolicy
+template<typename Tid_>
+struct default_id_generator
 {
-    
-public:
-    
-    typedef long long unsigned int ID;
-    
-    typedef std::vector< ID >      IDVector;
-    typedef IDVector::size_type    Index;
+    typedef Tid_ identifier_type;
 
-#if HAVE_UNORDERED_MAP || HAVE_TR1_UNORDERED_MAP || HAVE_BOOST_UNORDERED_MAP_HPP
+    default_id_generator(): next_() {}
 
-    class IDHasher
-        : 
-        public std::unary_function<ID, std::size_t>
+    default_id_generator(identifier_type const& first): next_(first) {}
+
+    identifier_type operator()()
     {
+        return ++next_;
+    }
 
-    public:
+protected:
+    identifier_type next_;
+};
 
-        std::size_t operator()( ID value ) const
+
+template<typename Tid_ = unsigned long long,
+         typename Tindex_ = std::size_t,
+         typename Tidgen_ = default_id_generator<Tid_> >
+class persistent_id_policy
+{
+public:
+    typedef Tid_ identifier_type;
+    typedef Tindex_ index_type;
+    typedef Tidgen_ identifier_generator;
+
+protected:
+    struct hasher
+        : public std::unary_function<identifier_type, std::size_t>
+    {
+        std::size_t operator()(identifier_type value) const
         {
-            return static_cast<std::size_t>( value ) ^
-                static_cast<std::size_t>( value >> ( sizeof( ID ) * 8 / 2 ) );
+            return static_cast<std::size_t>(value) ^
+                static_cast<std::size_t>(
+                    value >> (sizeof(identifier_type) * 8 / 2));
         }
-
     };
-
-#endif // HAVE_UNORDERED_MAP || HAVE_TR1_UNORDERED_MAP || HAVE_BOOST_UNORDERED_MAP_HPP
-
 #if HAVE_UNORDERED_MAP
-    typedef std::unordered_map<const ID, Index, IDHasher> IndexMap;
+    typedef std::unordered_map<identifier_type, index_type, hasher> index_map;
 #elif HAVE_TR1_UNORDERED_MAP
-    typedef std::tr1::unordered_map<const ID, Index, IDHasher> IndexMap;
+    typedef std::tr1::unordered_map<identifier_type, index_type, hasher> index_map;
 #elif HAVE_BOOST_UNORDERED_MAP_HPP
-    typedef boost::unordered_map<const ID, Index, IDHasher> IndexMap;
+    typedef boost::unordered_map<identifier_type, index_type, hasher> index_map;
 #else 
-    typedef std::map<const ID, Index> IndexMap;
+    typedef std::map<identifier_type, index_type> index_map;
 #endif
 
-
-    PersistentIDPolicy()
-        :
-        idCounter( 0 )
+public:
+    index_type index(identifier_type const& id) const
     {
-        ; // do nothing
-    }
-    
-    void reset()
-    {
-        idCounter = 0;
-    }
-
-    void clear()
-    {
-        this->idVector.clear();
-        this->indexMap.clear();
-    }
-
-    const Index getIndex( const ID id ) const
-    {
-        IndexMap::const_iterator i = this->indexMap.find( id );
-
-        if( i == this->indexMap.end() )
+        typename index_map::const_iterator i(index_map_.find(id));
+        if (i == index_map_.end())
         {
-            throw std::out_of_range(
-                ( boost::format( "%s: Key not found (%s)" ) % __PRETTY_FUNCTION__ % boost::lexical_cast< std::string >( id ) ).str() );
+            throw std::out_of_range((boost::format("%s: Key not found (%s)") % __PRETTY_FUNCTION__ % boost::lexical_cast<std::string>(id)).str());
         }
-
         return (*i).second;
     }
 
-    const ID getIDByIndex( const Index index ) const
+    identifier_type push(index_type index)
     {
-        return this->idVector[ index ];
-    }
-
-    const ID push( const Index index )
-    {
-        const ID id( this->idCounter );
-        ++this->idCounter;
-
-        this->indexMap.insert( IndexMap::value_type( id, index ) );
-        this->idVector.push_back( id );
-
+        const identifier_type id(idgen_());
+        index_map_.insert(typename index_map::value_type(id, index));
         return id;
     }
 
-    void pop( const Index index )
+    void pop(index_type index, identifier_type id, identifier_type last_item_id)
     {
-        // update the idVector and the indexMap.
-        const ID removedID( this->idVector[ index ] );
-        const ID movedID( this->idVector.back() );
-        this->idVector[ index ] = movedID;
-        this->idVector.pop_back();
-        
-        this->indexMap[ movedID ] = index;
-        this->indexMap.erase( removedID );
-    }
-
-    const bool check( const Index size ) const
-    {
-        if( this->idVector.size() != size )
-        {
-            return false;
-        }
-
-        if( this->indexMap.size() != size )
-        {
-            return false;
-        }
-
-        // assert correct mapping between the indexMap and the idVector.
-        for( Index i( 0 ); i < size; ++i )
-        {
-            const ID id( this->idVector[i] );
-
-            if (id >= this->idCounter)
-            {
-                return false;
-            }
-
-            IndexMap::const_iterator iter = this->indexMap.find( id );
-            if (iter == this->indexMap.end())
-            {
-                return false;
-            }
-
-            if ((*iter).second != i)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-private:
-
-    // map itemVector index to id.
-    IDVector      idVector;
-    // map id to itemVector index.
-    IndexMap      indexMap;
-
-    ID   idCounter;
-
-};
-
-class VolatileIDPolicy
-{
-public:
-
-
-    typedef size_t    Index;
-    typedef Index     ID;
-
-    void reset()
-    {
-        ; // do nothing
+        index_map_[last_item_id] = index;
+        index_map_.erase(id);
     }
 
     void clear()
     {
-        ; // do nothing
+        index_map_.clear();
     }
 
-    const Index getIndex( const ID id ) const
+private:
+    index_map index_map_;
+    identifier_generator idgen_;
+};
+
+template<typename Tindex_ = std::size_t>
+class volatile_id_policy
+{
+public:
+    typedef Tindex_ identifier_type;
+    typedef Tindex_ index_type;
+
+    index_type index(identifier_type const& id) const
     {
         return id;
     }
 
-    const ID getIDByIndex( const Index index ) const
+    identifier_type push(index_type index)
     {
         return index;
     }
 
-    const ID push( const Index index )
-    {
-        return index;
-    }
+    void pop(index_type, identifier_type, identifier_type) {}
 
-    void pop( const Index index )
-    {
-        ; // do nothing
-    }
-
-    const bool check( const Index size ) const
-    {
-        return true;
-    }
-
-
+    void clear() {}
 };
 
 
 /**
-   Dynamic priority queue for items of type Item.
+   Dynamic priority queue for items of type Titem_.
 
-   When IDPolicy template parameter is PersistentIDPolicy, IDs assigned
+   When Tpolicy_ template parameter is persistent_id_policy, identifier_types assigned
    to pushed items are persistent for the life time of this priority
    queue.
 
-   When VolatileIDPolicy template parameter is used as the IDPolicy,
-   IDs are valid only until the next call of pop or push methods.
-   However, VolatileIDPolicy saves some memory and eliminates the
+   When Volatileidentifier_typePolicy template parameter is used as the Tpolicy_,
+   identifier_types are valid only until the next call of pop or push methods.
+   However, Volatileidentifier_typePolicy saves some memory and eliminates the
    overhead incurred in pop/push methods.
 */
 
-template < typename Item, class IDPolicy = PersistentIDPolicy >
-class DynamicPriorityQueue
-    :
-    private IDPolicy
+template<typename Titem_, typename Tcomparator = std::less_equal<Titem_>, class Tpolicy_ = persistent_id_policy<> >
+class DynamicPriorityQueue: private Tpolicy_
 {
+public:
+    typedef Tpolicy_ policy_type;
+    typedef typename policy_type::identifier_type identifier_type;
+    typedef typename policy_type::index_type index_type;
+    typedef Titem_ element_type;
+    typedef std::pair<identifier_type, element_type> value_type;
+    typedef Tcomparator comparator_type;
+
+protected:
+    typedef std::vector<value_type> value_vector;
+    typedef std::vector<index_type> index_vector;
 
 public:
+    typedef typename value_vector::size_type size_type;
 
-    typedef typename IDPolicy::ID    ID;
-    typedef typename IDPolicy::Index Index;
-
-    typedef std::vector< Item >      ItemVector;
-    typedef std::vector< Index >     IndexVector;
-
-
-    DynamicPriorityQueue();
-  
-    const bool isEmpty() const
+public:
+    bool empty() const
     {
-        return this->itemVector.empty();
+        return items_.empty();
     }
 
-    const Index getSize() const
+    size_type size() const
     {
-        return this->itemVector.size();
+        return items_.size();
     }
 
     void clear();
 
-    Item& getTop()
+    value_type const& top() const
     {
-        return this->itemVector[ getTopIndex() ];
+        return items_[top_index()];
     }
 
-    const Item& getTop() const
+    value_type const& second() const
     {
-        return this->itemVector[ getTopIndex() ];
+        return items_[second_index()];
     }
 
-
-    const Item& peekSecond() const
+    element_type const& get(identifier_type id) const
     {
-        return this->itemVector[ peekSecondIndex() ];
+        return items_[policy_type::index(id)].second;
     }
 
-
-    Item& get( const ID id )
+    void pop()
     {
-        return this->itemVector[ getIndex( id ) ];
+        pop_by_index(top_index());
     }
 
-    const Item& get( const ID id ) const
+    void pop(identifier_type id)
     {
-        return this->itemVector[ getIndex( id ) ];
+        pop_by_index(policy_type::index(id));
     }
 
-    ID getTopID() const
+    void replace(value_type const& item);
+
+    identifier_type push(element_type const& item);
+
+    element_type const& operator[](identifier_type id) const
     {
-        return IDPolicy::getIDByIndex( getTopIndex() );
+        return get(id);
     }
 
-    void popTop()
+    // self-diagnostic methods
+    bool check() const; // check all
+    bool check_size() const;
+    bool check_position_mapping() const;
+    bool check_heap() const;
+
+
+protected:
+    index_type top_index() const 
     {
-        popByIndex( getTopIndex() );
+        return heap_[0];
     }
 
-    void pop( const ID id )
+    index_type second_index() const 
     {
-        popByIndex( getIndex( id ) );
-    }
-
-    void replaceTop( const Item& item );
-
-    void replace( const ID id, const Item& item );
-
-    inline const ID push( const Item& item );
-
-
-    Item& operator[]( const ID id )
-    {
-        return get( id );
-    }
-
-    const Item& operator[]( const ID id ) const
-    {
-        return get( id );
-    }
-
-
-    // Note:  Methods below are not part of the recommended public
-    // interface but provided here for cases where directly accessing them
-    // can improve performance.
-
-    const Index getIndex( const ID id ) const
-    {
-        return IDPolicy::getIndex( id );
-    }
-
-    const Item& getByIndex( const Index index ) const
-    {
-        return this->itemVector[ index ];
-    }
-
-    Item& getByIndex( const Index index )
-    {
-        return this->itemVector[ index ];
-    }
-
-    const Index getTopIndex() const 
-    {
-        return this->heap[0];
-    }
-
-    const Index peekSecondIndex() const 
-    {
-        if( getSize() <= 1 )
+        if (size() <= 1)
         {
-            throw std::out_of_range( "DynamicPriorityQueue::peekSecondIndex():"
-                                     " Item count less than 2." );
+            throw std::out_of_range("DynamicPriorityQueue::second_index():"
+                                     " item count less than 2.");
         }
 
-        const Index index1( this->heap[1] );
+        const index_type index1(heap_[1]);
 
-        if ( getSize() == 2 )
+        if (size() == 2)
         {
             return index1;
         }
 
-        const Index index2( this->heap[2] );
-        if( this->comp( this->itemVector[ index1 ], 
-                        this->itemVector[ index2 ] ) )
+        const index_type index2(heap_[2]);
+        if (comp(items_[index1].second, items_[index2].second))
         {
             return index1;
         }
@@ -380,407 +259,305 @@ public:
         }
     }
 
-    inline void popByIndex( const Index index );
+    inline void pop_by_index(index_type index);
 
-    void move( const Index index )
+    void move(index_type index)
     {
-        const Index pos( this->positionVector[ index ] );
-        movePos( pos );
+        const index_type pos(position_vector_[index]);
+        move_pos(pos);
     }
 
-    void moveTop()
+    void move_top()
     {
-        moveDownPos( 0 );
+        move_down_pos(0);
     }
 
-    // self-diagnostic methods
-    const bool check() const; // check all
-    const bool checkSize() const;
-    const bool checkPositionMapping() const;
-    const bool checkHeap() const;
-    const bool checkIDPolicy() const;
+    inline void move_pos(index_type pos);
 
-#ifdef DEBUG
-    void dump() const;
-#endif
+    void move_up(index_type index)
+    {
+        const index_type position(position_vector_[index]);
+        move_up_pos(position);
+    }
+
+    void move_down(index_type index)
+    {
+        const index_type position(position_vector_[index]);
+        move_down_pos(position);
+    }
+
+
+    inline void move_up_pos(index_type position, index_type start = 0);
+    inline void move_down_pos(index_type position);
+
+    inline void move_up_pos_impl(index_type position, index_type start = 0);
+    inline void move_down_pos_impl(index_type position); 
 
 private:
+    value_vector items_;
+    index_vector heap_;
+    index_vector position_vector_;
 
-    inline void movePos( const Index pos );
-
-    void moveUp( const Index index )
-    {
-        const Index position( this->positionVector[ index ] );
-        moveUpPos( position );
-    }
-
-    void moveDown( const Index index )
-    {
-        const Index position( this->positionVector[ index ] );
-        moveDownPos( position );
-    }
-
-
-    inline void moveUpPos( const Index position, const Index start = 0 );
-    inline void moveDownPos( const Index position );
-
-    inline void moveUpPosImpl( const Index position, const Index start = 0 );
-    inline void moveDownPosImpl( const Index position ); 
-
-private:
-
-    ItemVector    itemVector;
-    IndexVector   heap;
-
-    // maps itemVector index to heap position.
-    IndexVector   positionVector;
-
-
-    std::less_equal< const Item > comp;
+    comparator_type comp;
 };
 
-
-
-
-template < typename Item, class IDPolicy >
-DynamicPriorityQueue< Item, IDPolicy >::DynamicPriorityQueue()
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::clear()
 {
-    ; // do nothing
+    items_.clear();
+    heap_.clear();
+    position_vector_.clear();
+    policy_type::clear();
 }
 
 
-template < typename Item, class IDPolicy >
-void DynamicPriorityQueue< Item, IDPolicy >::clear()
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_pos(index_type pos)
 {
-    this->itemVector.clear();
-    this->heap.clear();
-    this->positionVector.clear();
-    IDPolicy::clear();
-}
-
-
-template < typename Item, class IDPolicy >
-void DynamicPriorityQueue< Item, IDPolicy >::
-movePos( const Index pos )
-{
-    const Index index( this->heap[ pos ] );
-    const Item& item( this->itemVector[ index ] );
-
-    const Index size( getSize() );
-
-    const Index succ( 2 * pos + 1 );
-    if( succ < size )
+    const index_type index(heap_[pos]);
+    const value_type& item(items_[index]);
+    const index_type succ(2 * pos + 1);
+    if (succ < size())
     {
-        if( this->comp( this->itemVector[ this->heap[ succ ] ], item ) ||
-            ( succ + 1 < size && 
-              this->comp( this->itemVector[ this->heap[ succ + 1 ] ], item ) ) )
+        if (comp(items_[heap_[succ]].second, item.second) || (succ + 1 < size() && comp(items_[heap_[succ + 1]].second, item.second)))
         {
-            moveDownPosImpl( pos );
+            move_down_pos_impl(pos);
             return;
         }
     }
 
-    moveUpPos( pos );
+    move_up_pos(pos);
 }
 
-template < typename Item, class IDPolicy >
-void DynamicPriorityQueue< Item, IDPolicy >::moveUpPos( const Index position, 
-                                                        const Index start )
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_up_pos(index_type position, index_type start)
 {
-    //assert( position >= 0 );
-
-    if( position == 0 )
-    {
+    if (position == 0)
         return;
-    }
 
-    const Index index( this->heap[ position ] );
-    const Item& item( this->itemVector[ index ] );
+    const index_type index(heap_[position]);
+    const value_type& item(items_[index]);
 
-    const Index pred( ( position - 1 ) / 2 );
-    const Index predIndex( this->heap[ pred ] );
+    const index_type pred((position - 1) / 2);
+    const index_type predindex_type(heap_[pred]);
 
-    if( this->comp( item, this->itemVector[ predIndex ] ) )
+    if (comp(item.second, items_[predindex_type].second))
     {
-        this->moveUpPosImpl( position, start );
+        move_up_pos_impl(position, start);
     }
 }
 
 
-template < typename Item, class IDPolicy >
-void 
-DynamicPriorityQueue< Item, IDPolicy >::moveDownPos( const Index position )
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_down_pos(index_type position)
 {
-    const Index index( this->heap[ position ] );
-    const Item& item( this->itemVector[ index ] );
+    const index_type index(heap_[position]);
+    const value_type& item(items_[index]);
 
-    const Index size( getSize() );
-
-    const Index succ( 2 * position + 1 );
-    if( succ < size )
+    const index_type succ(2 * position + 1);
+    if (succ < size())
     {
-        if( this->comp( this->itemVector[ this->heap[ succ ] ], item ) ||
-            ( succ + 1 < size && 
-              this->comp( this->itemVector[ this->heap[ succ + 1 ] ], 
-                          item ) ) )
+        if (comp(items_[heap_[succ]].second, item.second) || (succ + 1 < size() && comp(items_[heap_[succ + 1]].second, item.second)))
         {
-            this->moveDownPosImpl( position );
+            move_down_pos_impl(position);
         }
     }
 }
 
-template < typename Item, class IDPolicy >
-void DynamicPriorityQueue< Item, IDPolicy >:: 
-moveUpPosImpl( const Index position, const Index start )
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_up_pos_impl(index_type position, index_type start)
 {
-    const Index index( this->heap[ position ] );
-    const Item& item( this->itemVector[ index ] );
+    const index_type index(heap_[position]);
+    const value_type& item(items_[index]);
 
-    if( position <= start )
+    if (position <= start)
     {
         return;
     }
 
-    Index pos( position );
-    Index pred( ( pos - 1 ) / 2 );
-    Index predIndex( this->heap[ pred ] );
+    index_type pos(position);
+    index_type pred((pos - 1) / 2);
+    index_type predindex_type(heap_[pred]);
 
     do
     {
-        this->heap[ pos ] = predIndex;
-        this->positionVector[ predIndex ] = pos;
+        heap_[pos] = predindex_type;
+        position_vector_[predindex_type] = pos;
         pos = pred;
 
-        if( pos <= start )
+        if (pos <= start)
         {
             break;
         }
 
-        pred = ( pos - 1 ) / 2;
-        predIndex = this->heap[ pred ];
+        pred = (pos - 1) / 2;
+        predindex_type = heap_[pred];
 
-    } while( ! this->comp( this->itemVector[ predIndex ], item ) );
+    } while (! comp(items_[predindex_type].second, item.second));
 
-    this->heap[ pos ] = index;
-    this->positionVector[ index ] = pos;
+    heap_[pos] = index;
+    position_vector_[index] = pos;
 }
 
 
-template < typename Item, class IDPolicy >
-void 
-DynamicPriorityQueue< Item, IDPolicy >::
-moveDownPosImpl( const Index position )
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_down_pos_impl(index_type position)
 {
-    const Index index( this->heap[ position ] );
+    const index_type index(heap_[position]);
 
-    const Index size( this->getSize() );
-    
-    Index succ( 2 * position + 1 );
-    Index pos( position );
-    while( succ < size )
+    index_type succ(2 * position + 1);
+    index_type pos(position);
+    while (succ < size())
     {
-        const Index rightPos( succ + 1 );
-        if( rightPos < size && 
-            ! this->comp( this->itemVector[ this->heap[ succ ] ],
-                          this->itemVector[ this->heap[ rightPos ] ] ) )
+        const index_type right_pos(succ + 1);
+        if (right_pos < size() && !comp(items_[heap_[succ]].second, items_[heap_[right_pos]].second))
         {
-            succ = rightPos;
+            succ = right_pos;
         }
 
-        this->heap[ pos ] = this->heap[ succ ];
-        this->positionVector[ this->heap[ pos ] ] = pos;
+        heap_[pos] = heap_[succ];
+        position_vector_[heap_[pos]] = pos;
         pos = succ;
         succ = 2 * pos + 1;
     }
 
-    this->heap[ pos ] = index;
-    this->positionVector[ index ] = pos;
+    heap_[pos] = index;
+    position_vector_[index] = pos;
 
-    moveUpPos( pos, position );
+    move_up_pos(pos, position);
 }
 
 
 
-template < typename Item, class IDPolicy >
-const typename DynamicPriorityQueue< Item, IDPolicy >::ID
-DynamicPriorityQueue< Item, IDPolicy >::push( const Item& item )
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+typename DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::identifier_type
+DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::push(const Titem_& item)
 {
-    const Index index( getSize() );
-    
-    this->itemVector.push_back( item );
+    const index_type index(items_.size());
+    const identifier_type id(policy_type::push(index));
+    items_.push_back(value_type(id, item));
     // index == pos at this time.
-    this->heap.push_back( index );
-    this->positionVector.push_back( index );
-
-    const ID id( IDPolicy::push( index ) );
-
-    moveUpPos( index ); 
-
-    // assert( check() );
-
+    heap_.push_back(index);
+    position_vector_.push_back(index);
+    move_up_pos(index); 
     return id;
 }
 
 
-template < typename Item, class IDPolicy >
-void DynamicPriorityQueue< Item, IDPolicy >::popByIndex( const Index index )
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::pop_by_index(const index_type index)
 {
-    // 1. pop the item from the itemVector.
-    this->itemVector[ index ] = this->itemVector.back();
-    this->itemVector.pop_back();
+    value_type& item(items_[index]);
+    // 1. update index<->identifier_type mapping.
+    policy_type::pop(index, item.first, items_.back().first);
 
-    // 2. update index<->ID mapping.
-    IDPolicy::pop( index );
+    // 2. pop the item from the items_.
+    blit_swap(item, items_.back());
+    items_.pop_back();
 
-    const Index removedPos( this->positionVector[ index ] );
-    const Index movedPos( this->positionVector.back() );
+    const index_type removed_pos(position_vector_[index]);
+    const index_type moved_pos(position_vector_.back());
 
-    // 3. swap positionVector[ end ] and positionVector[ index ]
-    this->positionVector[ index ] = movedPos;
-    this->heap[ movedPos ] = index;
+    // 3. swap position_vector_[end] and position_vector_[index]
+    position_vector_[index] = moved_pos;
+    heap_[moved_pos] = index;
 
-    // 4. if heap[ end ] and heap[ removed ] do not overlap,
-    //    swap these, pop back, and update the heap.
-    if( removedPos != this->heap.size() - 1 )
+    // 4. if heap_[end] and heap_[removed] do not overlap,
+    //    swap these, pop back, and update the heap_.
+    if (removed_pos != heap_.size() - 1)
     {
-        this->heap[ removedPos ] = this->heap.back();
-        this->positionVector[ this->heap.back() ] = removedPos;
+        heap_[removed_pos] = heap_.back();
+        position_vector_[heap_.back()] = removed_pos;
 
-        this->positionVector.pop_back();
-        this->heap.pop_back();
+        position_vector_.pop_back();
+        heap_.pop_back();
 
-        movePos( removedPos );
+        move_pos(removed_pos);
     }
-    else  // if heap[ end ] and heap[ removed ] are the same, simply pop back.
+    else  // if heap_[end] and heap_[removed] are the same, simply pop back.
     {
-        this->positionVector.pop_back();
-        this->heap.pop_back();
-    }
-
-    //    assert( check() );
-}
-
-
-
-template < typename Item, class IDPolicy >
-void DynamicPriorityQueue< Item, IDPolicy >::replaceTop( const Item& item )
-{
-    this->itemVector[ this->heap[0] ] = item;
-    moveTop();
-    
-    // assert( check() );
-}
-
-template < typename Item, class IDPolicy >
-void DynamicPriorityQueue< Item, IDPolicy >::
-replace( const ID id, const Item& item )
-{
-    const Index index( getIndex( id ) );
-    this->itemVector[ index ] = item;
-    move( index );
-    
-    // assert( check() );
-}
-
-
-#ifdef DEBUG
-template < typename Item, class IDPolicy >
-void DynamicPriorityQueue< Item, IDPolicy >::dump() const
-{
-    for( Index i( 0 ); i < heap.size(); ++i )
-    {
-        std::cerr << "heap\t" << i << " " << heap[i] << std::endl;
-    }
-    for( Index i( 0 ); i < positionVector.size(); ++i )
-    {
-        std::cerr << "pos\t" << i << " " << positionVector[i] << std::endl;
+        position_vector_.pop_back();
+        heap_.pop_back();
     }
 }
-#endif
 
-
-template < typename Item, class IDPolicy >
-const bool DynamicPriorityQueue< Item, IDPolicy >::check() const
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::replace(value_type const& value)
 {
-    bool result( true );
+    const index_type index(policy_type::index(value.first));
+    items_[index].second = value.second;
+    move(index);
+}
 
-    result = result && this->checkSize();
-    result = result && this->checkPositionMapping();
-    result = result && this->checkHeap();
-    result = result && this->checkIDPolicy();
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check() const
+{
+    bool result(true);
+
+    result = result && check_size();
+    result = result && check_position_mapping();
+    result = result && check_heap();
 
     return result;
 }
 
 
-template < typename Item, class IDPolicy >
-const bool DynamicPriorityQueue< Item, IDPolicy >::checkSize() const
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_size() const
 {
-    bool result( true );
+    bool result(true);
 
     // check sizes of data structures.
-    result = result && this->itemVector.size() == getSize();
-    result = result && this->heap.size() == getSize();
-    result = result && this->positionVector.size() == getSize();
+    result = result && items_.size() == size();
+    result = result && heap_.size() == size();
+    result = result && position_vector_.size() == size();
 
     return result;
 }
 
 
-template < typename Item, class IDPolicy >
-const bool DynamicPriorityQueue< Item, IDPolicy >::checkPositionMapping() const
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_position_mapping() const
 {
-    bool result( true );
+    bool result(true);
 
-    // assert correct mapping between the heap and the positionVector.
-    for( Index i( 0 ); i < getSize(); ++i )
+    // assert correct mapping between the heap_ and the position_vector_.
+    for (index_type i(0); i < size(); ++i)
     {
-        result = result && this->heap[ i ] < getSize();
-        result = result && this->positionVector[ i ] < getSize();
-        result = result && this->heap[ this->positionVector[i] ] == i;
+        result = result && heap_[i] < size();
+        result = result && position_vector_[i] < size();
+        result = result && heap_[position_vector_[i]] == i;
     }
 
     return result;
 }
 
-template < typename Item, class IDPolicy >
-const bool DynamicPriorityQueue< Item, IDPolicy >::checkHeap() const
+template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
+bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_heap() const
 {
-    bool result( true );
+    bool result(true);
 
-    // assert correct ordering of items in the heap.
+    // assert correct ordering of items in the heap_.
 
-    for( Index pos( 0 ); pos < getSize(); ++pos )
+    for (index_type pos(0); pos < size(); ++pos)
     {
-        const Item& item( this->itemVector[ this->heap[ pos ] ] );
+        const value_type& item(items_[heap_[pos]]);
 
-        const Index succ( pos * 2 + 1 );
-        if( succ < getSize() )
+        const index_type succ(pos * 2 + 1);
+        if (succ < size())
         {
             result = result && 
-                this->comp( item, this->itemVector[ this->heap[ succ ] ] );
+                comp(item.second, items_[heap_[succ]].second);
 
-            const Index rightPos( succ + 1 );
-            if( rightPos < getSize() )
+            const index_type right_pos(succ + 1);
+            if (right_pos < size())
             {
-                result = result &&  
-                    this->comp( item, 
-                                this->itemVector[ this->heap[ rightPos ] ] );
+                result = result && comp(item.second, items_[heap_[right_pos]].second);
             }
         }
 
     }
 
-    return result;
-}
-
-
-template < typename Item, class IDPolicy >
-const bool DynamicPriorityQueue< Item, IDPolicy >::checkIDPolicy() const
-{
-    bool result( true );
-
-    result = result && IDPolicy::check( getSize() );
     return result;
 }
 

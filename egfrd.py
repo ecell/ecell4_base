@@ -7,6 +7,7 @@ import math
 import numpy
 
 from _gfrd import (
+    Event,
     EventScheduler,
     Particle,
     SphericalShell,
@@ -56,12 +57,13 @@ def create_default_pair(domain_id, com, single1, single2, shell_id,
 
 
 class Delegate(object):
-    def __init__(self, obj, method):
+    def __init__(self, obj, method, arg):
         self.ref = ref(obj)
         self.method = method
+        self.arg = arg
 
-    def __call__(self, *arg):
-        return self.method(self.ref(), *arg)
+    def __call__(self):
+        return self.method(self.ref(), self.arg)
 
 
 class EGFRDSimulator(ParticleSimulatorBase):
@@ -87,10 +89,10 @@ class EGFRDSimulator(ParticleSimulatorBase):
         return self.containers[0].cell_size
 
     def get_next_time(self):
-        if self.scheduler.getSize() == 0:
+        if self.scheduler.size == 0:
             return self.t
 
-        return self.scheduler.getTopTime()
+        return self.scheduler.top[1].time
 
     def set_user_max_shell_size(self, size):
         self.user_max_shell_size = size
@@ -151,7 +153,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         if self.t == t:
             return
 
-        if t >= self.scheduler.getTopEvent().getTime():
+        if t >= self.scheduler.top[1].time:
             raise RuntimeError, 'Stop time >= next event time.'
 
         if t < self.t:
@@ -200,8 +202,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
             if self.scheduler.getSize() == 0:
                 raise RuntimeError('No particles in scheduler.')
 
-        event = self.scheduler.getTopEvent()
-        self.t, self.last_event = event.getTime(), event.getArg()
+        event = self.scheduler.top[1]
+        self.t, self.last_event = event.time, event
 
         if __debug__:
             domain_counts = self.count_domains()
@@ -217,7 +219,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
             if self.scheduler.getSize() == 0:
                 raise RuntimeError('Zero particles left.')
 
-        next_time = self.scheduler.getTopTime()
+        next_time = self.scheduler.top[1].time
         self.dt = next_time - self.t
 
         # assert if not too many successive dt=0 steps occur.
@@ -339,31 +341,29 @@ class EGFRDSimulator(ParticleSimulatorBase):
         container = self.get_container(shell)
         container.update(shell_id_shell_pair)
 
-    def addEvent(self, t, func, arg):
-        return self.scheduler.addEvent(t, func, arg)
-
     def add_single_event(self, single):
-        event_id = self.addEvent(self.t + single.dt, 
-                                Delegate(self, EGFRDSimulator.fire_single), 
-                                single)
+        event_id = self.scheduler.add(
+            Event(self.t + single.dt,
+                        lambda: self.fire_single(single)))
         if __debug__:
             log.info('add_single_event: #%d (t=%g)' % (
                event_id, self.t + single.dt))
         single.event_id = event_id
 
     def add_pair_event(self, pair):
-        event_id = self.addEvent(self.t + pair.dt, 
-                                Delegate(self, EGFRDSimulator.fire_pair), 
-                                pair)
+        event_id = self.scheduler.add(
+            Event(self.t + pair.dt, 
+                        lambda: self.fire_pair(pair)))
         if __debug__:
             log.info('add_pair_event: #%d (t=%g)' % (
                event_id, self.t + pair.dt))
         pair.event_id = event_id
 
     def add_multi_event(self, multi):
-        event_id = self.addEvent(self.t + multi.dt, 
-                                Delegate(self, EGFRDSimulator.fire_multi), 
-                                multi)
+        event_id = self.scheduler.add(
+            Event(self.t + multi.dt, 
+                        Delegate(self, EGFRDSimulator.fire_multi, multi)))
+
         if __debug__:
             log.info('add_multi_event: #%d (t=%g)' % (
                event_id, self.t + multi.dt))
@@ -372,12 +372,17 @@ class EGFRDSimulator(ParticleSimulatorBase):
     def removeEvent(self, event):
         if __debug__:
             log.info('removeEvent: #%d' % event.event_id)
-        self.scheduler.removeEvent(event.event_id)
+        del self.scheduler[event.event_id]
 
-    def update_event(self, t, event):
+    def update_single_event(self, t, single):
         if __debug__:
             log.info('update_event: #%d (t=%g)' % (event.event_id, t))
-        self.scheduler.updateEventTime(event.event_id, t)
+        self.scheduler.update((single.event_id, Event(t, lambda: self.fire_single(single))))
+
+    def update_multi_event(self, t, multi):
+        if __debug__:
+            log.info('update_event: #%d (t=%g)' % (event.event_id, t))
+        self.scheduler.update((multi.event_id, Event(t, Delegate(self, EGFRDSimulator.fire_multi, multi))))
 
     def burst_obj(self, obj):
         if __debug__:
@@ -668,7 +673,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
             c, d = self.get_closest_obj(single.shell.shape.position, ignore = [single.domain_id, ])
 
             self.update_single(single, c, d)
-            self.update_event(self.t + single.dt, single)
+            self.update_single_event(self.t + single.dt, single)
             if __debug__:
                 log.debug('restore shell %s %g dt %g closest %s %g' %
                       (single, single.shell.shape.radius, single.dt, c, d))
@@ -890,7 +895,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         # Displacement check is in NonInteractionSingle.draw_new_position.
 
         # Todo. if isinstance(single, InteractionSingle):
-        self.update_event(self.t, single)
+        self.update_single_event(self.t, single)
 
         assert single.shell.shape.radius == particle_radius
 
@@ -1207,7 +1212,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
             multi.initialize(self.t)
 
-            self.update_event(self.t + multi.dt, multi)
+            self.update_multi_event(self.t + multi.dt, multi)
 
             return multi
 

@@ -43,7 +43,7 @@
 #include "binding/particle_container_class.hpp"
 #include "binding/particle_id_class.hpp"
 #include "binding/plane_class.hpp"
-#include "binding/py_event_classes.hpp"
+#include "binding/event_classes.hpp"
 #include "binding/shell_classes.hpp"
 #include "binding/shell_id_class.hpp"
 #include "binding/species_id_class.hpp"
@@ -84,8 +84,8 @@ BOOST_PYTHON_MODULE(_gfrd)
     b::register_particle_class();
     b::register_particle_id_class();
     b::register_position_converters();
-    b::register_py_event_class();
-    b::register_py_event_scheduler_class();
+    b::register_event_class();
+    b::register_event_scheduler_class();
     b::register_random_number_generator_class();
     b::register_sphere_class();
     b::register_sphere_converters();
