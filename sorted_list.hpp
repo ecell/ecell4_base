@@ -17,7 +17,7 @@
 #include <boost/range/const_reverse_iterator.hpp>
 #include "utils/fun_composition.hpp"
 
-template<typename Tcntnr_, typename TweakOrdering_ = std::less<typename Tcntnr_::value_type> >
+template<typename Tcntnr_, typename TweakOrdering_ = std::less<typename boost::range_value<Tcntnr_>::type> >
 class sorted_list
 {
 public:
