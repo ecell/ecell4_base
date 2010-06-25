@@ -632,7 +632,6 @@ class EGFRDSimulator(ParticleSimulatorBase):
             log.debug("intruders: %s, closest: %s (dist=%g)" %\
                           (', '.join(str(i) for i in intruders), closest, closest_distance))
 
-        burst = []
         if intruders:
             burst = self.burst_non_multis(intruders)
 
@@ -642,14 +641,25 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 return
 
             # if nothing was formed, recheck closest and restore shells.
+            burst = uniq(burst)
+
             closest, closest_distance = \
                 self.get_closest_obj(singlepos, ignore = [single.domain_id, ])
+            self.update_single(single, closest, closest_distance)
+            for s in burst:
+                if not isinstance(s, Single):
+                    continue
+                assert s.is_reset()
+                closest, closest_distance = self.get_closest_obj(
+                    s.shell.shape.position, ignore = [s.domain_id, ])
 
-        self.update_single(single, closest, closest_distance)
-
-        burst = uniq(burst)
-        burst_singles = [s for s in burst if isinstance(s, Single)]
-        self.restore_single_shells(burst_singles)
+                self.update_single(s, closest, closest_distance)
+                self.update_single_event(self.t + s.dt, s)
+                if __debug__:
+                    log.debug('restore shell %s %g dt %g closest %s %g' %
+                          (s, s.shell.shape.radius, s.dt, closest, closest_distance))
+        else:
+            self.update_single(single, closest, closest_distance)
             
         if __debug__:
             log.info('single shell %s dt %g.' %\
@@ -666,17 +676,6 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.rejected_moves += 1
         single.initialize(self.t)
         self.add_single_event(single)
-
-    def restore_single_shells(self, singles):
-        for single in singles:
-            assert single.is_reset()
-            c, d = self.get_closest_obj(single.shell.shape.position, ignore = [single.domain_id, ])
-
-            self.update_single(single, c, d)
-            self.update_single_event(self.t + single.dt, single)
-            if __debug__:
-                log.debug('restore shell %s %g dt %g closest %s %g' %
-                      (single, single.shell.shape.radius, single.dt, c, d))
 
     def calculate_single_shell_size(self, single, closest, 
                                  distance, shell_distance):
