@@ -306,7 +306,7 @@ class GillespieSimulator(GillespieSimulatorBase):
         GillespieSimulatorBase.reset(self)
 
     def get_next_time(self):
-        if self.scheduler.getSize() == 0:
+        if self.scheduler.size == 0:
             return self.t
 
         return self.scheduler.getTopTime()
@@ -330,7 +330,7 @@ class GillespieSimulator(GillespieSimulatorBase):
         self.t = t
 
     def step(self):
-        if self.scheduler.getSize() == 0:
+        if self.scheduler.size == 0:
             self.t = utils.INF
             self.dt = utils.INF
             self.last_event = None
@@ -422,7 +422,7 @@ class GillespieSimulator(GillespieSimulatorBase):
 
         self.update_event_dependency(rr)
 
-        for i in range(self.scheduler.getSize()):
+        for i in range(self.scheduler.size):
             rr2 = self.scheduler.getEventByIndex(i).getArg()
             if rr == rr2:
                 continue
@@ -456,7 +456,7 @@ class GillespieSimulator(GillespieSimulatorBase):
         self.scheduler.updateEventTime(rr.eventID, t)
 
 #     def update_all_event_time(self):
-#         for i in range(self.scheduler.getSize()):
+#         for i in range(self.scheduler.size):
 #             event = self.scheduler.getEventByIndex(i)
 #             rr = event.getArg()
 
@@ -470,7 +470,7 @@ class GillespieSimulator(GillespieSimulatorBase):
     def update_event_dependency(self, rr1):
         self.dependencies[rr1] = []
 
-        for j in range(self.scheduler.getSize()):
+        for j in range(self.scheduler.size):
             rr2 = self.scheduler.getEventByIndex(j).getArg()
             if rr1 == rr2:
                 continue
@@ -483,7 +483,7 @@ class GillespieSimulator(GillespieSimulatorBase):
     def update_all_event_dependency(self):
         self.dependencies = {}
 
-        for i in range(self.scheduler.getSize()):
+        for i in range(self.scheduler.size):
             rr = self.scheduler.getEventByIndex(i).getArg()
             self.update_event_dependency(rr)
 
@@ -511,7 +511,7 @@ class GillespieSimulator(GillespieSimulatorBase):
             return False
 
         rr1 = self.create_reaction_rule_cache(rr)
-        for i in range(self.scheduler.getSize()):
+        for i in range(self.scheduler.size):
             event = self.scheduler.getEventByIndex(i)
             rr2 = event.getArg()
             if rr2.is_dependent_on(rr1):
@@ -530,7 +530,7 @@ class GillespieSimulator(GillespieSimulatorBase):
         assert self.t >= 0.0
 
     def dump_scheduler(self):
-        for i in range(self.scheduler.getSize()):
+        for i in range(self.scheduler.size):
             event = self.scheduler.getEventByIndex(i)
             print i, event.getTime(), event.getArg()
 

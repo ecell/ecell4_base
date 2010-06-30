@@ -95,7 +95,7 @@ class EventSchedulerTestCase(unittest.TestCase):
 
     def test_empty_state(self):
         scheduler = mod.EventScheduler()
-        self.failIf(scheduler.getSize() != 0)
+        self.failIf(scheduler.size != 0)
         self.failIf(scheduler.getTime() != 0.0)
         # what if getTopEvent() are called here?
 
@@ -109,7 +109,7 @@ class EventSchedulerTestCase(unittest.TestCase):
         self.failIf(scheduler.getTopID() != id)
         
         scheduler.step()
-        self.failIf(scheduler.getSize() != 0)
+        self.failIf(scheduler.size != 0)
 
     # def test_two_events_same_time1(self):
     #     scheduler = mod.EventScheduler()
@@ -120,7 +120,7 @@ class EventSchedulerTestCase(unittest.TestCase):
     #     event2.dt = 0.5
     #     scheduler.addEvent(0.0, Delegate(event1, TestEvent.fire), ())
     #     id2 = scheduler.addEvent(0.0, Delegate(event2, TestEvent.fire), ())
-    #     self.assertEqual(2, scheduler.getSize())
+    #     self.assertEqual(2, scheduler.size)
     #     self.failIf(scheduler.getTime() != 0.0)
     #     self.failIf(scheduler.getTopTime() != 0.0)
         
@@ -141,12 +141,12 @@ class EventSchedulerTestCase(unittest.TestCase):
     #     event1 = TestEvent4(scheduler)
     #     event1.dt = 0.5
     #     id1 = scheduler.addEvent(0.0, Delegate(event1, TestEvent4.fire), ())
-    #     self.assertEqual(1, scheduler.getSize())
+    #     self.assertEqual(1, scheduler.size)
     #     self.failIf(scheduler.getTime() != 0.0)
     #     self.failIf(scheduler.getTopTime() != 0.0)
         
     #     scheduler.step()
-    #     self.assertEqual(3, scheduler.getSize())
+    #     self.assertEqual(3, scheduler.size)
     #     self.failIf(scheduler.getTime() != 0.0)
     #     self.failIf(scheduler.getTopTime() != 0.0)
 
@@ -164,11 +164,11 @@ class EventSchedulerTestCase(unittest.TestCase):
     #     event1.dt = - 1.0
 
     #     scheduler.addEvent(0.0, Delegate(event1, TestEvent.fire), ())
-    #     self.failIf(scheduler.getSize() != 1)
+    #     self.failIf(scheduler.size != 1)
         
     #     scheduler.step()
 
-    #     self.failIf(scheduler.getSize() != 0)
+    #     self.failIf(scheduler.size != 0)
     #     self.failIf(scheduler.getTime() != 0.0)
 
         
@@ -183,14 +183,14 @@ class EventSchedulerTestCase(unittest.TestCase):
 
     #     id1 = scheduler.addEvent(0.0, Delegate(event1, TestEvent.fire), ())
     #     scheduler.addEvent(0.5, Delegate(event2, TestEvent.fire), ())
-    #     self.failIf(scheduler.getSize() != 2)
+    #     self.failIf(scheduler.size != 2)
         
     #     scheduler.step()
     #     self.failIf(scheduler.getTime() != 0.0)
     #     scheduler.step()
 
     #     self.failIf(scheduler.getTime() != 0.5)
-    #     self.failIf(scheduler.getSize() != 1)
+    #     self.failIf(scheduler.size != 1)
     #     self.failIf(scheduler.getTopID() != id1)
     #     self.failIf(scheduler.getTopTime() != 1.0)
 
@@ -206,14 +206,14 @@ class EventSchedulerTestCase(unittest.TestCase):
 
     #     id1 = scheduler.addEvent(0.0, Delegate(event1, TestEvent.fire), ())
     #     id2 = scheduler.addEvent(0.5, Delegate(event2, TestEvent2.fire), ())
-    #     self.failIf(scheduler.getSize() != 2)
+    #     self.failIf(scheduler.size != 2)
         
     #     scheduler.step()
     #     self.failIf(scheduler.getTime() != 0.0)
     #     scheduler.step()
 
     #     self.failIf(scheduler.getTime() != 0.5)
-    #     self.failIf(scheduler.getSize() != 3)
+    #     self.failIf(scheduler.size != 3)
     #     self.failIf(scheduler.getTopID() == id1 or
    #                  scheduler.getTopID() == id2)
     #     self.failIf(scheduler.getTopTime() != 0.5)
@@ -230,14 +230,14 @@ class EventSchedulerTestCase(unittest.TestCase):
 
     #     id1 = scheduler.addEvent(0.0, Delegate(event1, TestEvent.fire), ())
     #     id2 = scheduler.addEvent(0.5, Delegate(event2, TestEvent2.fire), ())
-    #     self.failIf(scheduler.getSize() != 2)
+    #     self.failIf(scheduler.size != 2)
         
     #     scheduler.step()
     #     self.failIf(scheduler.getTime() != 0.0)
     #     scheduler.step()
 
     #     self.failIf(scheduler.getTime() != 0.5)
-    #     self.failIf(scheduler.getSize() != 2)
+    #     self.failIf(scheduler.size != 2)
     #     self.failIf(scheduler.getTopID() == id1 or
    #                  scheduler.getTopID() == id2)
     #     self.failIf(scheduler.getTopTime() != 0.5)
@@ -255,7 +255,7 @@ class EventSchedulerTestCase(unittest.TestCase):
     #     event1.id = scheduler.addEvent(0.0, Delegate(event1, TestEvent.fire), ())
 
     #     id2 = scheduler.addEvent(0.5, Delegate(event2, TestEvent3.fire), ())
-    #     self.assertEqual(2, scheduler.getSize())
+    #     self.assertEqual(2, scheduler.size)
         
     #     self.failIf(scheduler.getTopID() != event1.id)
     #     scheduler.step()
@@ -266,7 +266,7 @@ class EventSchedulerTestCase(unittest.TestCase):
     #     scheduler.step()
 
     #     self.assertEqual(0.5, scheduler.getTime())
-    #     self.assertEqual(2, scheduler.getSize())
+    #     self.assertEqual(2, scheduler.size)
     #     self.failIf(scheduler.getTopID() != event1.id)
     #     self.failIf(scheduler.getTopTime() != 0.5)
 
@@ -286,7 +286,7 @@ class EventSchedulerTestCase(unittest.TestCase):
 
         id2 = scheduler.addEvent(0.5, Delegate(event2, TestEvent3.fire), 
                                  event2)
-        self.assertEqual(2, scheduler.getSize())
+        self.assertEqual(2, scheduler.size)
 
         second = scheduler.peekSecondEvent()
 

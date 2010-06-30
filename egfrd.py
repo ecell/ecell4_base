@@ -166,7 +166,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         non_single_list = []
 
         # first burst all Singles.
-        for i in range(scheduler.getSize()):
+        for i in range(scheduler.size):
             obj = scheduler.getEventByIndex(i).getArg()
             if isinstance(obj, Pair) or isinstance(obj, Multi):
                 non_single_list.append(obj)
@@ -199,7 +199,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.step_counter += 1
 
         if __debug__:
-            if self.scheduler.getSize() == 0:
+            if self.scheduler.size == 0:
                 raise RuntimeError('No particles in scheduler.')
 
         event = self.scheduler.top[1]
@@ -216,7 +216,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.scheduler.step()
 
         if __debug__:
-            if self.scheduler.getSize() == 0:
+            if self.scheduler.size == 0:
                 raise RuntimeError('Zero particles left.')
 
         next_time = self.scheduler.top[1].time
@@ -226,7 +226,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         if __debug__:
             if self.dt == 0:
                 self.zero_steps += 1
-                if self.zero_steps >= max(self.scheduler.getSize() * 3, 10):
+                if self.zero_steps >= max(self.scheduler.size * 3, 10):
                     raise RuntimeError, 'too many dt=zero steps.  simulator halted?'
             else:
                 self.zero_steps = 0
@@ -376,12 +376,12 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def update_single_event(self, t, single):
         if __debug__:
-            log.info('update_event: #%d (t=%g)' % (event.event_id, t))
+            log.info('update_event: #%d (t=%g)' % (single.event_id, t))
         self.scheduler.update((single.event_id, Event(t, lambda: self.fire_single(single))))
 
     def update_multi_event(self, t, multi):
         if __debug__:
-            log.info('update_event: #%d (t=%g)' % (event.event_id, t))
+            log.info('update_event: #%d (t=%g)' % (multi.event_id, t))
         self.scheduler.update((multi.event_id, Event(t, Delegate(self, EGFRDSimulator.fire_multi, multi))))
 
     def burst_obj(self, obj):
@@ -1445,13 +1445,13 @@ rejected moves = %d
         return True
 
     def check_obj_for_all(self):
-        for i in range(self.scheduler.getSize()):
+        for i in range(self.scheduler.size):
             obj = self.scheduler.getEventByIndex(i).getArg()
             self.check_obj(obj)
 
     def check_event_stoichiometry(self):
         event_population = 0
-        for i in range(self.scheduler.getSize()):
+        for i in range(self.scheduler.size):
             obj = self.scheduler.getEventByIndex(i).getArg()
             event_population += obj.multiplicity
 
@@ -1466,7 +1466,7 @@ rejected moves = %d
                     'self.world.world_size != container.world_size'
 
         shell_population = 0
-        for i in range(self.scheduler.getSize()):
+        for i in range(self.scheduler.size):
             obj = self.scheduler.getEventByIndex(i).getArg()
             shell_population += obj.num_shells
   
@@ -1481,7 +1481,7 @@ rejected moves = %d
 
     def check_domains(self):
         domains = set(self.domains.itervalues())
-        for i in range(self.scheduler.getSize()):
+        for i in range(self.scheduler.size):
             obj = self.scheduler.getEventByIndex(i).getArg()
             if obj not in domains:
                 raise RuntimeError,\
@@ -1549,13 +1549,13 @@ rejected moves = %d
 
     def dump_scheduler(self):
         scheduler = self.scheduler
-        for i in range(scheduler.getSize()):
+        for i in range(scheduler.size):
             event = scheduler.getEventByIndex(i)
             print i, event.getTime(), event.getArg()
 
     def dump(self):
         scheduler = self.scheduler
-        for i in range(scheduler.getSize()):
+        for i in range(scheduler.size):
             event = scheduler.getEventByIndex(i)
             print i, event.getTime(), event.getArg(), event.getArg().pos
 
