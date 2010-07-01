@@ -288,7 +288,8 @@ class Logger(object):
         self.write_timecourse_comment(self.comment)
 
         species_name_list = '\'' + \
-            "\', \'".join(str(i) for i in sim.world.species) + '\''
+            "\', \'".join(sim.world.model.get_species_type_by_id(i.id)['name']
+                          for i in sim.world.species) + '\''
         columns = '[\'t\', ' + species_name_list + ']'
         self.write_timecourse_comment('@ columns= ' + columns)
 
@@ -299,7 +300,7 @@ class Logger(object):
         data = []
         self.timecourse_file.write('%g' % sim.t + '\t')
         self.timecourse_file.write('\t'.join(
-            str(len(sim.get_particle_pool(i.id))) \
+            str(len(sim.world.get_particle_ids(i.id))) \
             for i in sim.get_species()) + '\n')
         self.timecourse_file.flush()
 
@@ -316,12 +317,14 @@ class Logger(object):
         file.write('#--------\n')
 
         for species in sim.world.species:
-            pid_list = sim.particle_pool[species.id]
+            pid_list = sim.world.get_particle_ids(species.id)
             for pid in pid_list:
                 pid, particle = sim.world.get_particle(pid)
-                species = sim.world.get_species(species.id)
+                st = sim.world.model.get_species_type_by_id(species.id)
                 file.write('%s\t%20.14g %20.14g %20.14g %.15g\n' %
-                            (species.id, particle.position[0], particle.position[1], particle.position[2], species.radius))
+                           (st['name'], particle.position[0], 
+                            particle.position[1], particle.position[2],
+                            species.radius))
 
             file.write('#\n')
 
