@@ -5,6 +5,7 @@
 #include <boost/python/tuple.hpp>
 #include <boost/python/override.hpp>
 #include <boost/python/wrapper.hpp>
+#include "../exceptions.hpp"
 #include "peer/compat.h"
 #include "peer/wrappers/generator/pyiterator_generator.hpp"
 #include "peer/wrappers/generator/generator_wrapper.hpp"
@@ -157,6 +158,21 @@ struct particle_id_pair_and_distance_list_converter
         peer::util::to_native_lvalue_converter<native_type, to_native_converter>();
     }
 };
+
+template<typename Timpl>
+bool particle_container_has_particle(Timpl const& self,
+                                     typename Timpl::particle_id_type const& id)
+{
+    try
+    {
+        self.get_particle(id);
+        return true;
+    }
+    catch (not_found const&)
+    {
+    }
+    return false;
+}
 
 template<typename Tbase_>
 class ParticleContainerWrapper
@@ -333,6 +349,7 @@ inline boost::python::objects::class_base register_particle_container_class(
         .def("apply_boundary", pure_virtual((typename impl_type::length_type(impl_type::*)(typename impl_type::length_type const&) const)&impl_type::apply_boundary))
         .def("cyclic_transpose", pure_virtual((typename impl_type::position_type(impl_type::*)(typename impl_type::position_type const&, typename impl_type::position_type const&) const)&impl_type::cyclic_transpose))
         .def("cyclic_transpose", pure_virtual((typename impl_type::length_type(impl_type::*)(typename impl_type::length_type const&, typename impl_type::length_type const&) const)&impl_type::cyclic_transpose))
+        .def("__contains__", &particle_container_has_particle<impl_type>)
         .def("__iter__", pure_virtual(&impl_type::get_particles),
                 return_value_policy<return_by_value>())
         ;

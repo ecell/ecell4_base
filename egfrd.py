@@ -1279,12 +1279,11 @@ class EGFRDSimulator(ParticleSimulatorBase):
         if __debug__:
             log.info('merging %s to %s' % (multi1, multi2))
 
-            some_particle_of_multi1 = None
             try:
-                some_particle_of_multi1 = iter(multi1.world).next()
+                some_particle_of_multi1 = iter(multi1.particle_container).next()
+                assert some_particle_of_multi1[0] not in multi2.particle_container
             except:
                 pass
-            assert some_particle_of_multi1 not in multi2.world
 
         for sid_shell_pair in multi1.shell_list:
             sid_shell_pair[1].did = multi2.domain_id
