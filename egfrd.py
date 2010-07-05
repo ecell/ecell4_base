@@ -164,7 +164,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
         non_single_list = []
 
         # first burst all Singles.
-        for id, obj in self.scheduler:
+        for id, event in self.scheduler:
+            obj = event.data
             if isinstance(obj, Pair) or isinstance(obj, Multi):
                 non_single_list.append(obj)
             elif isinstance(obj, Single):
@@ -1442,13 +1443,13 @@ rejected moves = %d
         return True
 
     def check_obj_for_all(self):
-        for id, obj in self.scheduler:
-            self.check_obj(obj)
+        for id, event in self.scheduler:
+            self.check_obj(event.data)
 
     def check_event_stoichiometry(self):
         event_population = 0
-        for id, obj in self.scheduler:
-            event_population += obj.multiplicity
+        for id, event in self.scheduler:
+            event_population += event.data.multiplicity
 
         if self.world.num_particles != event_population:
             raise RuntimeError, 'population %d != event_population %d' %\
@@ -1461,8 +1462,8 @@ rejected moves = %d
                     'self.world.world_size != container.world_size'
 
         shell_population = 0
-        for id, obj in self.scheduler:
-            shell_population += obj.num_shells
+        for id, event in self.scheduler:
+            shell_population += event.data.num_shells
   
         matrix_population = sum(len(container) for container in self.containers)
         if shell_population != matrix_population:
@@ -1475,10 +1476,10 @@ rejected moves = %d
 
     def check_domains(self):
         event_ids = set(domain.event_id for domain in self.domains.iteritems())
-        for id, obj in self.scheduler:
+        for id, event in self.scheduler:
             if id not in event_ids:
                 raise RuntimeError,\
-                    '%s in EventScheduler not in self.domains' % obj
+                    '%s in EventScheduler not in self.domains' % event.data
             event_ids.remove(id)
 
         # self.domains always include a None  --> this can change in future
@@ -1546,7 +1547,7 @@ rejected moves = %d
 
     def dump(self):
         for id, event in self.scheduler:
-            print id, event, event.object
+            print id, event, event.data
 
     def count_domains(self):
         '''
