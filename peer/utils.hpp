@@ -114,15 +114,25 @@ namespace util
                 &Tconverter_::expected_pytype);
     }
 
-    static void std_exception_translator( const std::exception& exc )
+    namespace detail
     {
-      PyErr_SetString( PyExc_RuntimeError, exc.what() );
+        template<PyObject* const& pyexc,  typename Texc>
+        static void std_exception_translator(Texc const& exc)
+        {
+            PyErr_SetString(pyexc, exc.what());
+        }
+    }
+
+    template<PyObject* const& pyexc, typename Texc>
+    inline void register_std_exception_translator()
+    {
+        boost::python::register_exception_translator<Texc>(
+            &detail::std_exception_translator<pyexc, Texc>);
     }
 
     inline void register_std_exception_translator()
     {
-        boost::python::register_exception_translator< std::exception >(
-            std_exception_translator );
+        register_std_exception_translator<PyExc_RuntimeError, std::exception>();
     }
 
     template<typename T_, typename Tval_,
