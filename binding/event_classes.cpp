@@ -15,29 +15,24 @@ public:
     typedef Ttime_ time_type;
 
 public:
-    Event(time_type time, boost::python::object const& callback)
-        : time_(time), callback_(callback) {}
+    Event(time_type time, boost::python::object data)
+        : time_(time), data_(data) {}
 
     time_type const& time() const
     {
         return time_;
     }
 
-    boost::python::object const& callback() const
+    boost::python::object const& data() const
     {
-        return callback_;
-    }
-
-    void fire()
-    {
-        callback_();
+        return data_;
     }
 
     Event() {}
 
 private:
     time_type time_;
-    boost::python::object callback_;
+    boost::python::object data_;
 };
 
 typedef Event<EGFRDSimulatorTraits::time_type> EventImpl;

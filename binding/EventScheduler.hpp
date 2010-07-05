@@ -3,6 +3,7 @@
 
 #include <boost/python.hpp>
 #include "peer/converters/tuple.hpp"
+#include "peer/converters/iterator.hpp"
 
 namespace binding {
 
@@ -12,6 +13,12 @@ register_event_scheduler_class(char const* name)
 {
     using namespace boost::python;
     typedef Timpl impl_type;
+
+    peer::converters::register_tuple_converter<
+            typename impl_type::value_type>();
+
+    peer::converters::register_stl_iterator_range_converter<
+            typename impl_type::events_range, void*, return_by_value>();
 
     peer::converters::register_tuple_converter<
             typename impl_type::value_type>();
@@ -28,13 +35,14 @@ register_event_scheduler_class(char const* name)
         .def("update", &impl_type::update)
         .def("pop", &impl_type::pop,
             return_value_policy<return_by_value>())
-        .def("step", &impl_type::step)
         .def("clear", &impl_type::clear)
         .def("add", &impl_type::add)
         .def("check", &impl_type::check)
         .def("__getitem__", &impl_type::get,
             return_value_policy<return_by_value>())
         .def("__delitem__", &impl_type::remove)
+        .def("__iter__", &impl_type::events,
+            return_value_policy<return_by_value>())
         ;
 }
 

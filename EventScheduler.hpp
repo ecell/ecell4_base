@@ -7,6 +7,7 @@
 #define __EVENTSCHEDULER_HPP
 
 #include "DynamicPriorityQueue.hpp"
+#include <stdexcept>
 
 /**
    Event scheduler.
@@ -38,6 +39,7 @@ public:
     typedef typename EventPriorityQueue::size_type size_type;
     typedef typename EventPriorityQueue::identifier_type identifier_type;
     typedef typename EventPriorityQueue::value_type value_type;
+    typedef boost::iterator_range<typename EventPriorityQueue::const_iterator> events_range;
 
 public:
 
@@ -64,6 +66,10 @@ public:
 
     value_type pop()
     {
+        if (eventPriorityQueue_.empty())
+        {
+            throw std::out_of_range("queue is empty");
+        }
         const value_type top(eventPriorityQueue_.top());
         eventPriorityQueue_.pop();
         return top;
@@ -77,13 +83,6 @@ public:
     event_type const& get(identifier_type const& id) const
     {
         return eventPriorityQueue_.get(id);
-    }
-
-    void step()
-    {
-        value_type topEvent(pop());
-        time_ = topEvent.second.time();
-        topEvent.second.fire();
     }
 
     void clear()
@@ -110,6 +109,12 @@ public:
     bool check() const
     {
         return eventPriorityQueue_.check();
+    }
+
+    events_range events() const
+    {
+        return boost::make_iterator_range(eventPriorityQueue_.begin(),
+                                          eventPriorityQueue_.end());
     }
 
 private:

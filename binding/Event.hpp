@@ -13,7 +13,10 @@ inline boost::python::object register_event_class(char const* name)
         .add_property("time",
             make_function(
                 &Timpl::time, return_value_policy<copy_const_reference>()))
-        .def("callback", &Timpl::callback, return_value_policy<copy_const_reference>());
+        .add_property("data",
+            make_function(&Timpl::data,
+                          return_value_policy<copy_const_reference>()))
+        ;
 }
 
 } // namespace binding

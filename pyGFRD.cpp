@@ -69,6 +69,8 @@ BOOST_PYTHON_MODULE(_gfrd)
 
     peer::util::register_std_exception_translator();
 
+    peer::util::register_std_exception_translator<PyExc_IndexError, std::out_of_range>();
+
     b::register_model_class();
     b::register_bd_propagator_class();
     b::register_box_class();

@@ -161,13 +161,10 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         self.t = t
 
-        scheduler = self.scheduler
-        
         non_single_list = []
 
         # first burst all Singles.
-        for i in range(scheduler.size):
-            obj = scheduler.getEventByIndex(i).getArg()
+        for id, obj in self.scheduler:
             if isinstance(obj, Pair) or isinstance(obj, Multi):
                 non_single_list.append(obj)
             elif isinstance(obj, Single):
@@ -212,8 +209,11 @@ class EGFRDSimulator(ParticleSimulatorBase):
             log.info('event=%s reactions=%d rejectedmoves=%d' 
                      % (self.last_event, self.reaction_events, 
                         self.rejected_moves))
-        
-        self.scheduler.step()
+       
+        id, event = self.scheduler.pop()
+        for klass, f in self.dispatch:
+            if isinstance(event.data, klass):
+                f(self, event.data)
 
         if __debug__:
             if self.scheduler.size == 0:
@@ -343,8 +343,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def add_single_event(self, single):
         event_id = self.scheduler.add(
-            Event(self.t + single.dt,
-                        lambda: self.fire_single(single)))
+            Event(self.t + single.dt, single))
         if __debug__:
             log.info('add_single_event: #%d (t=%g)' % (
                event_id, self.t + single.dt))
@@ -352,8 +351,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def add_pair_event(self, pair):
         event_id = self.scheduler.add(
-            Event(self.t + pair.dt, 
-                        lambda: self.fire_pair(pair)))
+            Event(self.t + pair.dt, pair))
         if __debug__:
             log.info('add_pair_event: #%d (t=%g)' % (
                event_id, self.t + pair.dt))
@@ -361,8 +359,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def add_multi_event(self, multi):
         event_id = self.scheduler.add(
-            Event(self.t + multi.dt, 
-                        Delegate(self, EGFRDSimulator.fire_multi, multi)))
+            Event(self.t + multi.dt, multi))
 
         if __debug__:
             log.info('add_multi_event: #%d (t=%g)' % (
@@ -377,12 +374,12 @@ class EGFRDSimulator(ParticleSimulatorBase):
     def update_single_event(self, t, single):
         if __debug__:
             log.info('update_event: #%d (t=%g)' % (single.event_id, t))
-        self.scheduler.update((single.event_id, Event(t, lambda: self.fire_single(single))))
+        self.scheduler.update((single.event_id, Event(t, single)))
 
     def update_multi_event(self, t, multi):
         if __debug__:
             log.info('update_event: #%d (t=%g)' % (multi.event_id, t))
-        self.scheduler.update((multi.event_id, Event(t, Delegate(self, EGFRDSimulator.fire_multi, multi))))
+        self.scheduler.update((multi.event_id, Event(t, multi)))
 
     def burst_obj(self, obj):
         if __debug__:
@@ -1445,14 +1442,12 @@ rejected moves = %d
         return True
 
     def check_obj_for_all(self):
-        for i in range(self.scheduler.size):
-            obj = self.scheduler.getEventByIndex(i).getArg()
+        for id, obj in self.scheduler:
             self.check_obj(obj)
 
     def check_event_stoichiometry(self):
         event_population = 0
-        for i in range(self.scheduler.size):
-            obj = self.scheduler.getEventByIndex(i).getArg()
+        for id, obj in self.scheduler:
             event_population += obj.multiplicity
 
         if self.world.num_particles != event_population:
@@ -1466,8 +1461,7 @@ rejected moves = %d
                     'self.world.world_size != container.world_size'
 
         shell_population = 0
-        for i in range(self.scheduler.size):
-            obj = self.scheduler.getEventByIndex(i).getArg()
+        for id, obj in self.scheduler:
             shell_population += obj.num_shells
   
         matrix_population = sum(len(container) for container in self.containers)
@@ -1480,19 +1474,18 @@ rejected moves = %d
             container.check()
 
     def check_domains(self):
-        domains = set(self.domains.itervalues())
-        for i in range(self.scheduler.size):
-            obj = self.scheduler.getEventByIndex(i).getArg()
-            if obj not in domains:
+        event_ids = set(domain.event_id for domain in self.domains.iteritems())
+        for id, obj in self.scheduler:
+            if id not in event_ids:
                 raise RuntimeError,\
                     '%s in EventScheduler not in self.domains' % obj
-            domains.remove(obj)
+            event_ids.remove(id)
 
         # self.domains always include a None  --> this can change in future
-        if len(domains):
+        if event_ids:
             raise RuntimeError,\
                 'following domains in self.domains not in Event Scheduler: %s' \
-                % str(tuple(domains))
+                % str(tuple(event_ids))
 
     def check_pair_pos(self, pair, pos1, pos2, com, radius):
         particle1 = pair.single1.pid_particle_pair[1]
@@ -1548,16 +1541,12 @@ rejected moves = %d
     #
 
     def dump_scheduler(self):
-        scheduler = self.scheduler
-        for i in range(scheduler.size):
-            event = scheduler.getEventByIndex(i)
-            print i, event.getTime(), event.getArg()
+        for id, event in self.scheduler:
+            print id, event
 
     def dump(self):
-        scheduler = self.scheduler
-        for i in range(scheduler.size):
-            event = scheduler.getEventByIndex(i)
-            print i, event.getTime(), event.getArg(), event.getArg().pos
+        for id, event in self.scheduler:
+            print id, event, event.object
 
     def count_domains(self):
         '''
@@ -1578,3 +1567,11 @@ rejected moves = %d
                 raise RuntimeError, 'DO NOT GET HERE'
 
         return (num_singles, num_pairs, num_multis)
+
+    dispatch = [
+        (Single, fire_single),
+        (Pair, fire_pair),
+        (Multi, fire_multi)
+        ]
+
+

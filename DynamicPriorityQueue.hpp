@@ -172,6 +172,8 @@ protected:
 
 public:
     typedef typename value_vector::size_type size_type;
+    typedef typename value_vector::const_iterator iterator;
+    typedef typename value_vector::const_iterator const_iterator;
 
 public:
     bool empty() const
@@ -218,6 +220,16 @@ public:
     element_type const& operator[](identifier_type id) const
     {
         return get(id);
+    }
+
+    const_iterator begin() const
+    {
+        return items_.begin();
+    }
+
+    const_iterator end() const
+    {
+        return items_.end();
     }
 
     // self-diagnostic methods
