@@ -1249,8 +1249,6 @@ class EGFRDSimulator(ParticleSimulatorBase):
                     break
             else:
                 self.merge_multis(obj, multi)
-                self.remove_domain(obj)
-                self.removeEvent(obj)
         else:
             assert False, 'do not reach here.'  # Pairs are burst
 
@@ -1263,7 +1261,9 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def add_to_multi(self, single, multi):
         if __debug__:
-            log.info('adding %s to %s' % (single, multi))
+            log.info('adding %s to %s' % (single.domain_id, multi.domain_id))
+            log.info(single)
+            log.info(multi)
         sid_shell_pair = self.new_spherical_shell(
             multi.domain_id,
             single.pid_particle_pair[1].position,
@@ -1274,10 +1274,12 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def merge_multis(self, multi1, multi2):
         '''
-        merge multi1 into multi2
+        merge multi1 into multi2. multi1 will be removed.
         '''
         if __debug__:
-            log.info('merging %s to %s' % (multi1, multi2))
+            log.info('merging %s to %s' % (multi1.domain_id, multi2.domain_id))
+            log.info(multi1)
+            log.info(multi2)
 
             try:
                 some_particle_of_multi1 = iter(multi1.particle_container).next()
@@ -1287,10 +1289,14 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         for sid_shell_pair in multi1.shell_list:
             sid_shell_pair[1].did = multi2.domain_id
+            self.move_shell(sid_shell_pair)
             multi2.add_shell(sid_shell_pair)
 
         for pid_particle_pair in multi1.particles:
             multi2.add_particle(pid_particle_pair)
+
+        del self.domains[multi1.domain_id]
+        self.removeEvent(multi1)
 
     def get_neighbors_within_radius_no_sort(self, pos, radius, ignore=[]):
         """Get neighbor domains within given radius.
@@ -1455,15 +1461,27 @@ rejected moves = %d
                   (population, event_population)
 
     def check_shell_matrix(self):
+        did_map = {}
+        shell_map = {}
         for container in self.containers:
             if self.world.world_size != container.world_size:
                 raise RuntimeError,\
                     'self.world.world_size != container.world_size'
+            for shell_id, shell in container:
+                did_map.setdefault(shell.did, []).append(shell_id)
+                shell_map[shell_id] = shell
 
         shell_population = 0
         for id, event in self.scheduler:
             shell_population += event.data.num_shells
-  
+            shell_ids = did_map[event.data.domain_id]
+            if len(shell_ids) != event.data.num_shells:
+                diff = set(sid for sid, _ in event.data.shell_list).difference(shell_ids)
+                for sid in diff:
+                    print shell_map.get(sid, None)
+
+                raise RuntimeError("number of shells are inconsistent (%d != %d; %s) - %s" % (len(shell_ids), event.data.num_shells, event.data.domain_id, diff))
+
         matrix_population = sum(len(container) for container in self.containers)
         if shell_population != matrix_population:
             raise RuntimeError(
