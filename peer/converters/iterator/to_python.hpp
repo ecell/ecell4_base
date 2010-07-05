@@ -13,7 +13,7 @@ struct stl_iterator_range_converter
 
     static PyObject* convert(native_type const& v)
     {
-        return reinterpret_cast<PyObject*>(stl_iterator_wrapper<typename boost::range_const_iterator<native_type>::type, Tholder_, Trcg_>::create(v));
+        return reinterpret_cast<PyObject*>(peer::wrappers::stl_iterator_wrapper<typename boost::range_const_iterator<native_type>::type, Tholder_, Trcg_>::create(v));
     }
 };
 

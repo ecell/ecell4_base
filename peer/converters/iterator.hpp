@@ -8,7 +8,7 @@ namespace peer { namespace converters {
 template<typename Trange, typename Tholder, typename Trcg>
 inline void register_stl_iterator_range_converter()
 {
-    boost::python::to_python_converter<Trange, detail::stl_iterator_range_converter<Trange, Tholder, Trcg> >();
+    boost::python::to_python_converter<Trange, stl_iterator_range_converter<Trange, Tholder, Trcg> >();
 }
 
 } } // namespace peer::converters
