@@ -1469,12 +1469,9 @@ rejected moves = %d
             raise RuntimeError(
                 'num shells (%d) != matrix population (%d)' % 
                 (shell_population, matrix_population))
-        
-        for container in self.containers:
-            container.check()
 
     def check_domains(self):
-        event_ids = set(domain.event_id for domain in self.domains.iteritems())
+        event_ids = set(domain.event_id for domain in self.domains.itervalues())
         for id, event in self.scheduler:
             if id not in event_ids:
                 raise RuntimeError,\
