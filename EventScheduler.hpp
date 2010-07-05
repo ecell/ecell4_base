@@ -72,6 +72,7 @@ public:
         }
         const value_type top(eventPriorityQueue_.top());
         eventPriorityQueue_.pop();
+        time_ = top.second.time();
         return top;
     }
 
