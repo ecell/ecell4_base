@@ -18,11 +18,6 @@ class Delegate(object):
 
 
 
-def callback1():
-    pass
-
-    
-
 class EventSchedulerTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -44,13 +39,13 @@ class EventSchedulerTestCase(unittest.TestCase):
     def test_one_event(self):
         scheduler = mod.EventScheduler()
 
-        event = mod.Event(1.0, callback1)
+        event = mod.Event(1.0, 1)
         id = scheduler.add(event)
         self.failIf(scheduler.time != 0.0)
         self.failIf(scheduler.top[1].time != 1.0)
         self.failIf(scheduler.top[0] != id)
-        
-        scheduler.step()
+
+        self.assertEqual((id, event), scheduler.pop())
         self.failIf(scheduler.size != 0)
         self.failIf(scheduler.time != 1.0)
 
@@ -59,8 +54,8 @@ class EventSchedulerTestCase(unittest.TestCase):
 
         scheduler = mod.EventScheduler()
 
-        event1 = mod.Event(1.0, callback1)
-        event2 = mod.Event(0.5, callback1)
+        event1 = mod.Event(1.0, 1)
+        event2 = mod.Event(0.5, 2)
 
         event1_id = scheduler.add(event1)
 

@@ -16,6 +16,7 @@ inline boost::python::object register_event_class(char const* name)
         .add_property("data",
             make_function(&Timpl::data,
                           return_value_policy<copy_const_reference>()))
+        .def("__eq__", &Timpl::operator==);
         ;
 }
 

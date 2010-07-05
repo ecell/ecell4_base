@@ -28,6 +28,16 @@ public:
         return data_;
     }
 
+    bool operator==(Event const& rhs) const
+    {
+        return time_ == rhs.time_ && data_ == rhs.data_;
+    }
+
+    bool operator!=(Event const& rhs) const
+    {
+        return !operator==(rhs);
+    }
+
     Event() {}
 
 private:
