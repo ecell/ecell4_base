@@ -36,6 +36,8 @@ class Multi(object):
         return bool(self.sphere_container.get_neighbors_within_radius(pp[1].position, -pp[1].radius))
 
     def add_shell(self, shell_id_shell_pair):
+        if __debug__:
+            log.info("add_shell: %s\n", shell_id_shell_pair)
         self.sphere_container.update(shell_id_shell_pair)
 
     def add_particle(self, pid_particle_pair):
@@ -93,13 +95,17 @@ class Multi(object):
 
         main = self.main()
         for shell_id, shell in self.shell_list:
-            try:
-                container = main.get_container(shell)
-                container[shell_id]
-            except:
+            container = main.get_container(shell)
+            if not container.contains(shell_id):
                 raise RuntimeError,\
                     'self.sim.main.sphere_container does not contain %s'\
                     % str(shell_id)
+        for shell_id, shell in main.containers[0]:
+            if shell.did == self.domain_id:
+                if not self.sphere_container.contains(shell_id):
+                    raise RuntimeError,\
+                        'self.sphere_container does not contain %s'\
+                        % str(shell_id)
 
     def __repr__(self):
         return 'Multi[domain_id=%s, event_id=%s: %s: %s]' % (
