@@ -10,7 +10,7 @@
 #include "freeFunctions.hpp"
 #include "FreePairGreensFunction.hpp"
 
-Real FreePairGreensFunction::p_r(Real r, Real r0, Real t) const
+Real FreePairGreensFunction::p_r(Real r, Real t) const
 {
     const Real D( getD() );
     const Real Dt( D * t );
@@ -29,7 +29,7 @@ Real FreePairGreensFunction::p_r(Real r, Real r0, Real t) const
     return jacobian * ( - num1 + num2 ) / den;
 }
 
-Real FreePairGreensFunction::ip_r(Real r, Real r0, Real t) const
+Real FreePairGreensFunction::ip_r(Real r, Real t) const
 {
     const Real D( getD() );
     const Real Dt4( 4.0 * D * t );
@@ -49,12 +49,12 @@ Real FreePairGreensFunction::ip_r(Real r, Real r0, Real t) const
     return ( term1 + term2 + term3 ) * .5;
 }
     
-Real FreePairGreensFunction::p_theta(Real theta, Real r, Real r0, Real t) const
+Real FreePairGreensFunction::p_theta(Real theta, Real r, Real t) const
 {
     return p_theta_free( theta, r, r0, t, getD() );
 }
 
-Real FreePairGreensFunction::ip_theta(Real theta, Real r, Real r0, Real t) const
+Real FreePairGreensFunction::ip_theta(Real theta, Real r, Real t) const
 {
     return ip_theta_free( theta, r, r0, t, getD() );
 }
@@ -62,17 +62,16 @@ Real FreePairGreensFunction::ip_theta(Real theta, Real r, Real r0, Real t) const
 struct ip_r_params
 { 
     FreePairGreensFunction const* const gf;
-    const Real r0;
     const Real t;
     const Real value;
 };
 
 static Real ip_r_F(Real r, ip_r_params const* params )
 {
-    return params->gf->ip_r(r, params->r0, params->t) - params->value;
+    return params->gf->ip_r(r, params->t) - params->value;
 }
 
-Real FreePairGreensFunction::drawR(Real rnd, Real r0, Real t) const
+Real FreePairGreensFunction::drawR(Real rnd, Real t) const
 {
     // input parameter range checks.
     if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
@@ -97,7 +96,7 @@ Real FreePairGreensFunction::drawR(Real rnd, Real r0, Real t) const
         return r0;
     }
 
-    ip_r_params params = { this, r0, t, rnd };
+    ip_r_params params = { this, t, rnd };
 
     gsl_function F = 
         {
@@ -162,17 +161,16 @@ struct ip_theta_params
 { 
     FreePairGreensFunction const* const gf;
     const Real r;
-    const Real r0;
     const Real t;
     const Real value;
 };
 
 static Real ip_theta_F(Real theta, ip_theta_params const* params)
 {
-    return params->gf->ip_theta(theta, params->r, params->r0, params->t) - params->value;
+    return params->gf->ip_theta(theta, params->r, params->t) - params->value;
 }
 
-Real FreePairGreensFunction::drawTheta(Real rnd, Real r, Real r0, Real t) const
+Real FreePairGreensFunction::drawTheta(Real rnd, Real r, Real t) const
 {
     // input parameter range checks.
     if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
@@ -202,9 +200,9 @@ Real FreePairGreensFunction::drawTheta(Real rnd, Real r, Real r0, Real t) const
         return 0.0;
     }
 
-    const Real ip_theta_pi( ip_theta( M_PI, r, r0, t ) );
+    const Real ip_theta_pi( ip_theta( M_PI, r, t ) );
 
-    ip_theta_params params = { this, r, r0, t, rnd * ip_theta_pi };
+    ip_theta_params params = { this, r, t, rnd * ip_theta_pi };
 
     gsl_function F = 
         {

@@ -25,8 +25,8 @@ enum EventType
 class PairGreensFunction
 {
 public:
-    PairGreensFunction(Real D, Real kf, Real Sigma)
-      : D(D), kf(kf), Sigma(Sigma) {}
+    PairGreensFunction(Real D, Real kf, Real r0, Real Sigma)
+      : D(D), kf(kf), r0(r0), Sigma(Sigma) {}
     
     ~PairGreensFunction() {}
     
@@ -45,9 +45,15 @@ public:
         return this->Sigma;
     }
 
-private:
+    Real getr0() const
+    {
+        return this->r0;
+    }
+
+protected:
   const Real D;
   const Real kf;
+  const Real r0;
   const Real Sigma;
 };
 

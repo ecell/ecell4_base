@@ -26,8 +26,8 @@
 
 typedef FirstPassageNoCollisionPairGreensFunction FPNCPGF;
 
-FPNCPGF::FirstPassageNoCollisionPairGreensFunction(Real D, Real a) 
-    : PairGreensFunction(D, 0, 0), a(a)
+FPNCPGF::FirstPassageNoCollisionPairGreensFunction(Real D, Real r0, Real a) 
+    : PairGreensFunction(D, 0., r0, 0.), a(a)
 {
     if (a < 0.0)
     {
@@ -41,7 +41,7 @@ FPNCPGF::~FirstPassageNoCollisionPairGreensFunction()
 }
 
 Real
-FPNCPGF::p_survival(Real t, Real r0) const
+FPNCPGF::p_survival(Real t) const
 {
     const Real D(getD());
     const Real a(geta());
@@ -51,7 +51,7 @@ FPNCPGF::p_survival(Real t, Real r0) const
 
 
 Real
-FPNCPGF::dp_survival(Real t, Real r0) const
+FPNCPGF::dp_survival(Real t) const
 {
     const Real D(getD());
     const Real a(geta());
@@ -60,7 +60,7 @@ FPNCPGF::dp_survival(Real t, Real r0) const
 }
 
 Real
-FPNCPGF::p_int_r(Real r, Real t, Real r0) const
+FPNCPGF::p_int_r(Real r, Real t) const
 {
     const Real D(getD());
     const Real a(geta());
@@ -117,7 +117,6 @@ FPNCPGF::p_int_r(Real r, Real t, Real r0) const
 struct p_survival_params
 { 
     const FPNCPGF* const gf;
-    const Real r0;
     const Real rnd;
 };
 
@@ -125,17 +124,15 @@ Real
 static p_survival_F(Real t, p_survival_params const* params)
 {
     const FPNCPGF* const gf(params->gf); 
-    const Real r0(params->r0);
     const Real rnd(params->rnd);
 
-    return rnd - gf->p_survival(t, r0);
+    return rnd - gf->p_survival(t);
 }
 
 struct p_int_r_params
 { 
     const FPNCPGF* const gf;
     const Real t;
-    const Real r0;
     const Real rnd;
 };
 
@@ -143,14 +140,13 @@ static Real p_int_r_F(Real r, p_int_r_params const* params)
 {
     const FPNCPGF* const gf(params->gf); 
     const Real t(params->t);
-    const Real r0(params->r0);
     const Real rnd(params->rnd);
 
-    return gf->p_int_r(r, t, r0) - rnd;
+    return gf->p_int_r(r, t) - rnd;
 }
 
 Real 
-FPNCPGF::p_n_alpha(unsigned int i, unsigned int n, Real r, Real r0, Real t) const
+FPNCPGF::p_n_alpha(unsigned int i, unsigned int n, Real r, Real t) const
 {
     const Real a(geta());
 
@@ -179,20 +175,16 @@ FPNCPGF::p_n_alpha(unsigned int i, unsigned int n, Real r, Real r0, Real t) cons
 
 
 Real 
-FPNCPGF::p_n(Integer n, Real r, Real r0, Real t) const
+FPNCPGF::p_n(Integer n, Real r, Real t) const
 {
-    const Real p(funcSum(
-                      boost::bind(&FPNCPGF::
-                                   p_n_alpha,
-                                   this,
-                                   _1, n, r, r0, t),
-                      MAX_ALPHA_SEQ));
+    const Real p(funcSum(boost::bind(&FPNCPGF::p_n_alpha, this, _1, n, r, t),
+                         MAX_ALPHA_SEQ));
 
     return p;
 }
 
 void
-FPNCPGF::makep_nTable(RealVector& p_nTable, Real r, Real r0, Real t) const
+FPNCPGF::makep_nTable(RealVector& p_nTable, Real r, Real t) const
 {
     const Real a(geta());
 
@@ -200,7 +192,7 @@ FPNCPGF::makep_nTable(RealVector& p_nTable, Real r, Real r0, Real t) const
 
     const Real factor(1.0 / (2.0 * M_PI * gsl_pow_3(a))); 
 
-    const Real p_0(p_n(0, r, r0, t) * factor);
+    const Real p_0(p_n(0, r, t) * factor);
     p_nTable.push_back(p_0);
 
     if (p_0 == 0)
@@ -214,7 +206,7 @@ FPNCPGF::makep_nTable(RealVector& p_nTable, Real r, Real r0, Real t) const
     unsigned int n(1);
     for (;;) 
     {
-        Real p_n(this->p_n(n, r, r0, t) * factor);
+        Real p_n(this->p_n(n, r, t) * factor);
 
         if (! isfinite(p_n))
         {
@@ -255,7 +247,7 @@ p_theta_i(unsigned int n,
     return p_nTable[n] * lgndTable[n] * (2 * n + 1);
 }
 
-Real FPNCPGF::p_theta_table(Real theta, Real r, Real r0, Real t, RealVector const& p_nTable) const
+Real FPNCPGF::p_theta_table(Real theta, Real r, Real t, RealVector const& p_nTable) const
 {
     const unsigned int tableSize(p_nTable.size());
 
@@ -272,7 +264,7 @@ Real FPNCPGF::p_theta_table(Real theta, Real r, Real r0, Real t, RealVector cons
 }
 
 
-Real FPNCPGF::p_theta(Real theta, Real r, Real r0, Real t) const 
+Real FPNCPGF::p_theta(Real theta, Real r, Real t) const 
 {
     {
         const Real a(geta());
@@ -307,16 +299,16 @@ Real FPNCPGF::p_theta(Real theta, Real r, Real r0, Real t) const
     
     RealVector p_nTable;
 
-    makep_nTable(p_nTable, r, r0, t);
+    makep_nTable(p_nTable, r, t);
 
-    const Real p(p_theta_table(theta, r, r0, t, p_nTable));
+    const Real p(p_theta_table(theta, r, t, p_nTable));
 
     return p;
 }
 
 
 
-Real FPNCPGF::ip_theta(Real theta, Real r, Real r0, Real t) const
+Real FPNCPGF::ip_theta(Real theta, Real r, Real t) const
 {
     {
         const Real a(geta());
@@ -351,9 +343,9 @@ Real FPNCPGF::ip_theta(Real theta, Real r, Real r0, Real t) const
 
     RealVector p_nTable;
 
-    makep_nTable(p_nTable, r, r0, t);
+    makep_nTable(p_nTable, r, t);
 
-    const Real p(ip_theta_table(theta, r, r0, t, p_nTable));
+    const Real p(ip_theta_table(theta, r, t, p_nTable));
 
     return p;
 }
@@ -374,7 +366,7 @@ ip_theta_i(unsigned int n,
 
 Real 
 FPNCPGF::ip_theta_table(
-    Real theta, Real r, Real r0, Real t, RealVector const& p_nTable) const
+    Real theta, Real r, Real t, RealVector const& p_nTable) const
 {
     const unsigned int tableSize(p_nTable.size());
 
@@ -400,7 +392,6 @@ struct FPNCPGF::ip_theta_params
 { 
     FPNCPGF const* const gf;
     const Real r;
-    const Real r0;
     const Real t;
     RealVector const& p_nTable;
     const Real value;
@@ -410,17 +401,16 @@ Real FPNCPGF::ip_theta_F(Real theta, ip_theta_params const* params)
 {
     const FPNCPGF* const gf(params->gf); 
     const Real r(params->r);
-    const Real r0(params->r0);
     const Real t(params->t);
     const RealVector& p_nTable(params->p_nTable);
     const Real value(params->value);
 
-    return gf->ip_theta_table(theta, r, r0, t, p_nTable) - value;
+    return gf->ip_theta_table(theta, r, t, p_nTable) - value;
 }
 
 
 Real 
-FPNCPGF::dp_n_alpha(unsigned int i, unsigned int n, Real r0, Real t) const
+FPNCPGF::dp_n_alpha(unsigned int i, unsigned int n, Real t) const
 {
     const Real a(geta());
 
@@ -445,26 +435,23 @@ FPNCPGF::dp_n_alpha(unsigned int i, unsigned int n, Real r0, Real t) const
 
 
 Real 
-FPNCPGF::dp_n(Integer n, Real r0, Real t) const
+FPNCPGF::dp_n(Integer n, Real t) const
 {
     const Real 
-        p(funcSum(boost::bind(&FPNCPGF::
-                                 dp_n_alpha,
-                                 this,
-                                 _1, n, r0, t),
-                    MAX_ALPHA_SEQ));
+        p(funcSum(boost::bind(&FPNCPGF::dp_n_alpha, this, _1, n, t),
+                  MAX_ALPHA_SEQ));
 
     return p;
 }
 
 
-void FPNCPGF::makedp_nTable(RealVector& p_nTable, const Real r0, const Real t) const
+void FPNCPGF::makedp_nTable(RealVector& p_nTable, Real t) const
 {
     p_nTable.clear();
 
     const Real factor(- getD() / (2.0 * M_PI * gsl_pow_3(a)));
 
-    const Real p_0(dp_n(0, r0, t) * factor);
+    const Real p_0(dp_n(0, t) * factor);
     p_nTable.push_back(p_0);
 
     if (p_0 == 0)
@@ -478,7 +465,7 @@ void FPNCPGF::makedp_nTable(RealVector& p_nTable, const Real r0, const Real t) c
     unsigned int n(1);
     for (;;)
     {
-        Real p_n(dp_n(n, r0, t) * factor);
+        Real p_n(dp_n(n, t) * factor);
 
         if (! isfinite(p_n))
         {
@@ -510,7 +497,7 @@ void FPNCPGF::makedp_nTable(RealVector& p_nTable, const Real r0, const Real t) c
 }
 
 Real 
-FPNCPGF::dp_theta(Real theta, Real r, Real r0, Real t) const 
+FPNCPGF::dp_theta(Real theta, Real r, Real t) const 
 {
     {
         const Real a(geta());
@@ -547,18 +534,15 @@ FPNCPGF::dp_theta(Real theta, Real r, Real r0, Real t) const
 
     RealVector p_nTable;
 
-    makedp_nTable(p_nTable, r0, t);
+    makedp_nTable(p_nTable, t);
 
-    const Real p(p_theta_table(theta, r, r0, t, p_nTable));
+    const Real p(p_theta_table(theta, r, t, p_nTable));
 
     return p;
 }
 
 Real 
-FPNCPGF::idp_theta(Real theta,
-                                                     Real r, 
-                                                     Real r0, 
-                                                     Real t) const
+FPNCPGF::idp_theta(Real theta, Real r, Real t) const
 {
     {
         const Real a(geta());
@@ -593,15 +577,15 @@ FPNCPGF::idp_theta(Real theta,
 
     RealVector p_nTable;
 
-    makedp_nTable(p_nTable, r0, t);
+    makedp_nTable(p_nTable, t);
 
-    const Real p(ip_theta_table(theta, r, r0, t, p_nTable));
+    const Real p(ip_theta_table(theta, r, t, p_nTable));
 
     return p;
 }
 
 Real 
-FPNCPGF::drawTime(Real rnd, Real r0) const
+FPNCPGF::drawTime(Real rnd) const
 {
    const Real a(geta());
 
@@ -624,7 +608,7 @@ FPNCPGF::drawTime(Real rnd, Real r0) const
    Real low(1e-6);
    Real high(1.0);
 
-   p_survival_params params = { this, r0, rnd };
+   p_survival_params params = { this, rnd };
 
    gsl_function F = {
        reinterpret_cast<typeof(F.function)>(&p_survival_F),
@@ -704,7 +688,7 @@ FPNCPGF::drawTime(Real rnd, Real r0) const
 }
 
 Real 
-FPNCPGF::drawR(Real rnd, Real r0, Real t) const
+FPNCPGF::drawR(Real rnd, Real t) const
 {
     const Real a(geta());
 
@@ -724,9 +708,9 @@ FPNCPGF::drawR(Real rnd, Real r0, Real t) const
         return r0;
     }
 
-    const Real psurv(p_survival(t, r0));
+    const Real psurv(p_survival(t));
 
-    p_int_r_params params = { this, t, r0, rnd * psurv };
+    p_int_r_params params = { this, t, rnd * psurv };
 
     gsl_function F = {
         reinterpret_cast<typeof(F.function)>(&p_int_r_F),
@@ -787,8 +771,7 @@ FPNCPGF::drawR(Real rnd, Real r0, Real t) const
 }
     
 Real 
-FPNCPGF::drawTheta(Real rnd, Real r, 
-                                                     Real r0, Real t) const
+FPNCPGF::drawTheta(Real rnd, Real r, Real t) const
 {
     Real theta;
 
@@ -826,18 +809,18 @@ FPNCPGF::drawTheta(Real rnd, Real r,
 
     if (r == geta() || r < 0.0)
     {
-        makedp_nTable(p_nTable, r0, t);
+        makedp_nTable(p_nTable, t);
     }
     else
     {
-        makep_nTable(p_nTable, r, r0, t);
+        makep_nTable(p_nTable, r, t);
     }
 
     // root finding with the integrand form.
 
-    const Real ip_theta_pi(ip_theta_table(M_PI, r, r0, t, p_nTable));
+    const Real ip_theta_pi(ip_theta_table(M_PI, r, t, p_nTable));
 
-    ip_theta_params params = { this, r, r0, t, p_nTable, rnd * ip_theta_pi };
+    ip_theta_params params = { this, r, t, p_nTable, rnd * ip_theta_pi };
 
     gsl_function F = {
         reinterpret_cast<typeof(F.function)>(&ip_theta_F),

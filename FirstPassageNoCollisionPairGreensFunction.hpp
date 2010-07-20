@@ -32,7 +32,7 @@ private:
 
 public:
     
-    FirstPassageNoCollisionPairGreensFunction(Real D, Real a); 
+    FirstPassageNoCollisionPairGreensFunction(Real D, Real r0, Real a); 
     
     ~FirstPassageNoCollisionPairGreensFunction();
 
@@ -41,37 +41,37 @@ public:
         return this->a;
     }
 
-    Real drawTime(Real rnd, Real r0) const;
+    Real drawTime(Real rnd) const;
 
-    EventType drawEventType(Real rnd, Real r0, Real t) const;
+    EventType drawEventType(Real rnd, Real t) const;
     
-    Real drawR(Real rnd, Real r0, Real t) const;
+    Real drawR(Real rnd, Real t) const;
     
-    Real drawTheta(Real rnd, Real r, Real r0, Real t) const;
+    Real drawTheta(Real rnd, Real r, Real t) const;
     
-    Real p_survival(Real t, Real r0) const;
+    Real p_survival(Real t) const;
 
-    Real dp_survival(Real t, Real r0) const;
+    Real dp_survival(Real t) const;
 
-    Real p_int_r(Real r, Real t, Real r0) const;
+    Real p_int_r(Real r, Real t) const;
 
-    Real p_theta(Real theta, Real r, Real r0, Real t) const;
+    Real p_theta(Real theta, Real r, Real t) const;
 
-    Real ip_theta(Real theta, Real r, Real r0, Real t) const;
+    Real ip_theta(Real theta, Real r, Real t) const;
 
-    Real dp_theta(Real theta, Real r, Real r0, Real t) const;
+    Real dp_theta(Real theta, Real r, Real t) const;
 
-    Real idp_theta(Real theta, Real r, Real r0, Real t) const;
-
-
-    Real p_n(Integer n, Real r, Real r0, Real t) const;
-
-    Real dp_n(Integer n, Real r0, Real t ) const;
+    Real idp_theta(Real theta, Real r, Real t) const;
 
 
-    Real p_n_alpha(unsigned int i, unsigned int n, Real r, Real r0, Real t ) const;
+    Real p_n(Integer n, Real r, Real t) const;
 
-    Real dp_n_alpha(unsigned int i, unsigned int n, Real r0, Real t) const;
+    Real dp_n(Integer n, Real t ) const;
+
+
+    Real p_n_alpha(unsigned int i, unsigned int n, Real r, Real t ) const;
+
+    Real dp_n_alpha(unsigned int i, unsigned int n, Real t) const;
 
     // methods below are kept public for debugging purpose.
 
@@ -79,16 +79,15 @@ public:
 
 protected:
 
-    Real p_theta_table(Real theta, Real r, Real r0, Real t, 
+    Real p_theta_table(Real theta, Real r, Real t, 
                        RealVector const& p_nTable ) const;
 
-    Real ip_theta_table(Real theta, Real r, Real r0, Real t,
+    Real ip_theta_table(Real theta, Real r, Real t,
                         RealVector const& p_nTable ) const;
 
-    void makep_nTable(RealVector& p_nTable,
-                      Real r, Real r0, Real t) const;
+    void makep_nTable(RealVector& p_nTable, Real r, Real t) const;
     
-    void makedp_nTable(RealVector& p_nTable, Real r0, Real t) const;
+    void makedp_nTable(RealVector& p_nTable, Real t) const;
 
     struct ip_theta_params;
     static Real ip_theta_F(Real theta, ip_theta_params const* params);

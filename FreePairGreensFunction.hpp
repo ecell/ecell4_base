@@ -30,9 +30,8 @@ private:
     
 public:
     
-    FreePairGreensFunction(Real D)
-        :
-        PairGreensFunction( D, 0.0, 0.0 )
+    FreePairGreensFunction(Real D, Real r0)
+        : PairGreensFunction(D, 0.0, r0, 0.0)
     {
         ; // do nothing
     }
@@ -44,23 +43,23 @@ public:
     }
     
     
-    Real drawTime(Real rnd, Real r0, Real maxt) const
+    Real drawTime(Real rnd, Real maxt) const
     {
         return INFINITY;
     }
     
-    Real drawR(Real rnd, Real r0, Real t) const;
+    Real drawR(Real rnd, Real t) const;
     
-    Real drawTheta(Real rnd, Real r, Real r0, Real t) const;
+    Real drawTheta(Real rnd, Real r, Real t) const;
 
-    Real p_r(Real r, Real r0, Real t) const;
+    Real p_r(Real r, Real t) const;
 
-    Real ip_r(Real r, Real r0, Real t ) const;
+    Real ip_r(Real r, Real t ) const;
     
 
-    Real p_theta(Real theta, Real r, Real r0, Real t) const;
+    Real p_theta(Real theta, Real r, Real t) const;
 
-    Real ip_theta(Real theta, Real r, Real r0, Real t ) const;
+    Real ip_theta(Real theta, Real r, Real t ) const;
 
     std::string dump() const;
 

@@ -30,11 +30,10 @@
 
 
 
-BasicPairGreensFunction::BasicPairGreensFunction(Real D, Real kf, Real Sigma)
-    :
-    PairGreensFunction(D, kf, Sigma),
-    kD(4.0 * M_PI * getSigma() * getD()),
-    alpha((1.0 + (getkf() / getkD())) * (sqrt(getD()) / getSigma()))
+BasicPairGreensFunction::BasicPairGreensFunction(Real D, Real kf, Real r0, Real Sigma)
+    : PairGreensFunction(D, kf, r0, Sigma),
+      kD(4.0 * M_PI * getSigma() * getD()),
+      alpha((1.0 + (getkf() / getkD())) * (sqrt(getD()) / getSigma()))
 {
     ; // do nothing
 }
@@ -45,8 +44,7 @@ BasicPairGreensFunction::~BasicPairGreensFunction()
 }
 
 Real 
-BasicPairGreensFunction::p_corr_R(Real alpha, unsigned int n, Real r, Real r0,
-                                  Real t) const
+BasicPairGreensFunction::p_corr_R(Real alpha, unsigned int n, Real r, Real t) const
 {
     const Real D(this->getD());
     const Real sigma(this->getSigma());
@@ -95,7 +93,6 @@ struct BasicPairGreensFunction::p_corr_R_params
     const BasicPairGreensFunction* const gf;
     unsigned int n;
     const Real r;
-    const Real r0; 
     const Real t; 
 };
 
@@ -105,46 +102,41 @@ Real BasicPairGreensFunction::p_corr_R_F(Real alpha, p_corr_R_params* params)
 
     const unsigned int n(params->n);
     const Real r(params->r);
-    const Real r0(params->r0);
     const Real t(params->t);
 
-    return gf->p_corr_R(alpha, n, r, r0, t);
+    return gf->p_corr_R(alpha, n, r, t);
 }
 
 
-Real BasicPairGreensFunction::p_corr(Real theta, Real r, Real r0, Real t) const
+Real BasicPairGreensFunction::p_corr(Real theta, Real r, Real t) const
 {
     RealVector RnTable;
-    makeRnTable(RnTable, r, r0, t);
+    makeRnTable(RnTable, r, t);
 
-    return p_corr_table(theta, r, r0, t, RnTable);
+    return p_corr_table(theta, r, t, RnTable);
 }
 
-Real 
-BasicPairGreensFunction::ip_corr(Real theta, Real r, Real r0, Real t) const
+Real BasicPairGreensFunction::ip_corr(Real theta, Real r, Real t) const
 {
     RealVector RnTable;
-    makeRnTable(RnTable, r, r0, t);
+    makeRnTable(RnTable, r, t);
 
-    return ip_corr_table(theta, r, r0, t, RnTable);
+    return ip_corr_table(theta, r, t, RnTable);
 }
 
 
-Real 
-BasicPairGreensFunction::p_free(Real theta, Real r, Real r0, Real t) const
+Real BasicPairGreensFunction::p_free(Real theta, Real r, Real t) const
 {
     return p_theta_free(theta, r, r0, t, getD());
 }
 
-Real 
-BasicPairGreensFunction::p_survival(Real t, Real r0) const
+Real BasicPairGreensFunction::p_survival(Real t) const
 {
-    return 1.0 - p_reaction(t, r0);
+    return 1.0 - p_reaction(t);
 }
 
 
-Real 
-BasicPairGreensFunction::p_reaction(Real t, Real r0) const
+Real BasicPairGreensFunction::p_reaction(Real t) const
 {
     const Real kf(getkf());
     const Real D(getD());
@@ -152,13 +144,12 @@ BasicPairGreensFunction::p_reaction(Real t, Real r0) const
     const Real alpha(getalpha());
     const Real kD(getkD());
 
-    return __p_reaction_irr(t, r0, kf, D, sigma, alpha, kD );
+    return __p_reaction_irr(t, r0, kf, D, sigma, alpha, kD);
 }
 
 struct p_reaction_params 
 { 
     const BasicPairGreensFunction* const gf;
-    const Real r0;
     const Real rnd;
 };
 
@@ -171,7 +162,7 @@ static Real p_reaction_F(Real t, p_reaction_params* params)
     const Real alpha(gf->getalpha());
     const Real kD(gf->getkD());
 
-    const Real r0(params->r0);
+    const Real r0(gf->getr0());
     const Real rnd(params->rnd);
 
     return __p_reaction_irr(t, r0, kf, D, sigma, alpha, kD ) - rnd;
@@ -179,7 +170,7 @@ static Real p_reaction_F(Real t, p_reaction_params* params)
 
 
 Real 
-BasicPairGreensFunction::p_int_r(Real r, Real t, Real r0) const
+BasicPairGreensFunction::p_int_r(Real r, Real t) const
 {
     const Real kf(getkf());
     const Real D(getD());
@@ -223,7 +214,6 @@ struct p_int_r_params
 { 
     const BasicPairGreensFunction* const gf;
     const Real t;
-    const Real r0;
     const Real rnd;
 };
 
@@ -232,14 +222,13 @@ static Real p_int_r_F(Real r, p_int_r_params* params)
     const BasicPairGreensFunction* const gf(params->gf); 
 
     const Real t(params->t);
-    const Real r0(params->r0);
     const Real rnd(params->rnd);
 
-    return gf->p_int_r(r, t, r0) - rnd;
+    return gf->p_int_r(r, t) - rnd;
 }
 
 
-Real BasicPairGreensFunction::drawTime(Real rnd, Real r0) const
+Real BasicPairGreensFunction::drawTime(Real rnd) const
 {
     const Real sigma(this->getSigma());
 
@@ -258,7 +247,7 @@ Real BasicPairGreensFunction::drawTime(Real rnd, Real r0) const
     Real high(100);
 
     {
-        const Real maxp(p_reaction(INFINITY, r0));
+        const Real maxp(p_reaction(INFINITY));
 
         if(rnd >= maxp)
         {
@@ -266,7 +255,7 @@ Real BasicPairGreensFunction::drawTime(Real rnd, Real r0) const
         }
     }
 
-    p_reaction_params params = { this, r0, rnd };
+    p_reaction_params params = { this, rnd };
 
     gsl_function F = 
         {
@@ -314,7 +303,7 @@ Real BasicPairGreensFunction::drawTime(Real rnd, Real r0) const
 
 
 
-Real BasicPairGreensFunction::drawR(Real rnd, Real r0, Real t) const
+Real BasicPairGreensFunction::drawR(Real rnd, Real t) const
 {
     const Real sigma(this->getSigma());
     const Real D(this->getD());
@@ -340,9 +329,9 @@ Real BasicPairGreensFunction::drawR(Real rnd, Real r0, Real t) const
         return r0;
     }
 
-    const Real psurv(p_survival(t, r0));
+    const Real psurv(p_survival(t));
 
-    p_int_r_params params = { this, t, r0, rnd * psurv };
+    p_int_r_params params = { this, t, rnd * psurv };
 
     gsl_function F = 
         {
@@ -456,14 +445,14 @@ Real BasicPairGreensFunction::drawR(Real rnd, Real r0, Real t) const
 
 
 Real 
-BasicPairGreensFunction::Rn(unsigned int n, Real r, Real r0, Real t,
+BasicPairGreensFunction::Rn(unsigned int n, Real r, Real t,
                             gsl_integration_workspace* workspace,
                             Real tol) const
 {
     Real integral;
     Real error;
 
-    p_corr_R_params params = { this, n, r, r0, t };
+    p_corr_R_params params = { this, n, r, t };
     gsl_function F = 
         {
             reinterpret_cast<typeof(F.function)>(&p_corr_R_F),
@@ -499,7 +488,7 @@ Real BasicPairGreensFunction::ip_corr_n(unsigned int n, RealVector const& RnTabl
 }
 
 
-Real BasicPairGreensFunction::p_corr_table(Real theta, Real r, Real r0, Real t, RealVector const& RnTable) const
+Real BasicPairGreensFunction::p_corr_table(Real theta, Real r, Real t, RealVector const& RnTable) const
 {
     const Index tableSize(RnTable.size());
     if(tableSize == 0)
@@ -532,7 +521,7 @@ Real BasicPairGreensFunction::p_corr_table(Real theta, Real r, Real r0, Real t, 
 }
 
 
-Real BasicPairGreensFunction::ip_corr_table(Real theta, Real r, Real r0,
+Real BasicPairGreensFunction::ip_corr_table(Real theta, Real r,
                                             Real t, RealVector const& RnTable) const
 {
     const Index tableSize(RnTable.size());
@@ -560,43 +549,43 @@ Real BasicPairGreensFunction::ip_corr_table(Real theta, Real r, Real r0,
 }
 
 Real 
-BasicPairGreensFunction::ip_free(Real theta, Real r, Real r0, Real t) const
+BasicPairGreensFunction::ip_free(Real theta, Real r, Real t) const
 {
     return ip_theta_free(theta, r, r0, t, getD());
 }
 
 
-Real BasicPairGreensFunction::p_theta(Real theta, Real r, Real r0, Real t) const
+Real BasicPairGreensFunction::p_theta(Real theta, Real r, Real t) const
 {
     RealVector RnTable;
-    makeRnTable(RnTable, r, r0, t);
+    makeRnTable(RnTable, r, t);
 
-    return p_theta_table(theta, r, r0, t, RnTable);
+    return p_theta_table(theta, r, t, RnTable);
 }
 
-Real BasicPairGreensFunction::ip_theta(Real theta, Real r, Real r0, Real t) const
+Real BasicPairGreensFunction::ip_theta(Real theta, Real r, Real t) const
 {
     RealVector RnTable;
-    makeRnTable(RnTable, r, r0, t);
+    makeRnTable(RnTable, r, t);
 
-    return ip_theta_table(theta, r, r0, t, RnTable);
+    return ip_theta_table(theta, r, t, RnTable);
 }
 
 
-Real BasicPairGreensFunction::p_theta_table(Real theta, Real r, Real r0,
+Real BasicPairGreensFunction::p_theta_table(Real theta, Real r,
                                             Real t, RealVector const& RnTable) const
 {
-    const Real p_free(this->p_free(theta, r, r0, t));
-    const Real p_corr(this->p_corr_table(theta, r, r0, t, RnTable)); 
+    const Real p_free(this->p_free(theta, r, t));
+    const Real p_corr(this->p_corr_table(theta, r, t, RnTable)); 
 
 //    return p_free;
     return (p_free + p_corr);
 }
 
-Real BasicPairGreensFunction::ip_theta_table(Real theta, Real r, Real r0, Real t, RealVector const& RnTable) const
+Real BasicPairGreensFunction::ip_theta_table(Real theta, Real r, Real t, RealVector const& RnTable) const
 {
-    const Real p_free(this->ip_free(theta, r, r0, t));
-    const Real p_corr(this->ip_corr_table(theta, r, r0, t, RnTable)); 
+    const Real p_free(this->ip_free(theta, r, t));
+    const Real p_corr(this->ip_corr_table(theta, r, t, RnTable)); 
 
     return (p_free + p_corr);
 }
@@ -613,7 +602,7 @@ static const Real p_free_max(Real r, Real r0, Real t, Real D)
 }
 
 void BasicPairGreensFunction::makeRnTable(RealVector& RnTable,
-                                          Real r, Real r0, Real t) const
+                                          Real r, Real t) const
 {
     RnTable.clear();
 
@@ -624,8 +613,8 @@ void BasicPairGreensFunction::makeRnTable(RealVector& RnTable,
     {  
         // First, estimate the size of p_corr, and if it's small enough,
         // we don't need to calculate it in the first place.
-        const Real pirr(p_irr(r, t, r0, kf, D, sigma));
-        const Real ipfree_max(ip_free(M_PI, r, r0, t) * 2 * M_PI * r * r);
+        const Real pirr(p_irr(r, r0, t, kf, D, sigma));
+        const Real ipfree_max(ip_free(M_PI, r, t) * 2 * M_PI * r * r);
         
         if(fabs((pirr - ipfree_max) / ipfree_max) < 1e-8)
         {
@@ -648,7 +637,7 @@ void BasicPairGreensFunction::makeRnTable(RealVector& RnTable,
     unsigned int n(0);
     for (;;) 
     {
-        const Real Rn(this->Rn(n, r, r0, t, workspace, 
+        const Real Rn(this->Rn(n, r, t, workspace, 
                                  integrationTolerance));
         
         RnTable.push_back(Rn);
@@ -679,7 +668,6 @@ struct BasicPairGreensFunction::p_theta_params
 { 
     const BasicPairGreensFunction* const gf;
     const Real r;
-    const Real r0;
     const Real t;
     BasicPairGreensFunction::RealVector const& RnTable;
     const Real value;
@@ -689,16 +677,15 @@ Real BasicPairGreensFunction::ip_theta_F(Real theta, p_theta_params* params)
 {
     const BasicPairGreensFunction* const gf(params->gf); 
     const Real r(params->r);
-    const Real r0(params->r0);
     const Real t(params->t);
     BasicPairGreensFunction::RealVector const& RnTable(params->RnTable);
     const Real value(params->value);
 
-    return gf->ip_theta_table(theta, r, r0, t, RnTable) - value;
+    return gf->ip_theta_table(theta, r, t, RnTable) - value;
 }
 
 
-Real BasicPairGreensFunction::drawTheta(Real rnd, Real r, Real r0, Real t) const
+Real BasicPairGreensFunction::drawTheta(Real rnd, Real r, Real t) const
 {
     Real theta;
 
@@ -733,14 +720,14 @@ Real BasicPairGreensFunction::drawTheta(Real rnd, Real r, Real r0, Real t) const
     }
 
     RealVector RnTable;
-    makeRnTable(RnTable, r, r0, t);
+    makeRnTable(RnTable, r, t);
 
 
     // root finding with the integrand form.
 
-    const Real ip_theta_pi(ip_theta_table(M_PI, r, r0, t, RnTable));
+    const Real ip_theta_pi(ip_theta_table(M_PI, r, t, RnTable));
 
-    p_theta_params params = { this, r, r0, t, RnTable, rnd * ip_theta_pi };
+    p_theta_params params = { this, r, t, RnTable, rnd * ip_theta_pi };
 
     gsl_function F = 
         {

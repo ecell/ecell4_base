@@ -165,7 +165,7 @@ class Pair(object):
         
         """
         dt_com = drawTime_wrapper(self.com_greens_function())
-        dt_iv = drawTime_wrapper(self.iv_greens_function(), r0)
+        dt_iv = drawTime_wrapper(self.iv_greens_function(r0))
         if dt_com < dt_iv:
             return dt_com, EventType.COM_ESCAPE, None
         else:
@@ -194,8 +194,8 @@ class Pair(object):
                    self.draw_single_reaction_time_tuple()) 
 
     def draw_iv_event_type(self, r0):
-        gf = self.iv_greens_function()
-        return draw_eventtype_wrapper(gf, self.dt, r0)
+        gf = self.iv_greens_function(r0)
+        return draw_eventtype_wrapper(gf, self.dt)
 
     def draw_new_positions(self, dt, r0, old_iv, event_type):
         """Calculate new positions of the pair particles using a new 
@@ -236,10 +236,10 @@ class SphericalPair(Pair):
         # Green's function for centre of mass inside absorbing sphere.
         return FirstPassageGreensFunction(self.D_R, self.a_R)
 
-    def iv_greens_function(self):
+    def iv_greens_function(self, r0):
         # Green's function for interparticle vector inside absorbing sphere.  
         # This exact solution is used for drawing times.
-        return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, self.sigma, self.a_r)
+        return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, r0, self.sigma, self.a_r)
 
     def create_new_shell(self, position, radius, domain_id):
         return SphericalShell(domain_id, Sphere(position, radius))
@@ -258,25 +258,25 @@ class SphericalPair(Pair):
                 # use FirstPassagePairGreensFunction
                 if __debug__:
                     log.debug('GF: normal')
-                return self.iv_greens_function()
+                return self.iv_greens_function(r0)
             else:
                 # near sigma; use BasicPairGreensFunction
                 if __debug__:
                     log.debug('GF: only sigma')
-                return BasicPairGreensFunction(self.D_tot, self.rt.k, 
+                return BasicPairGreensFunction(self.D_tot, self.rt.k, r0,
                                                self.sigma)
         else:
             if distance_from_shell < threshold_distance:
                 # near a;
                 if __debug__:
                     log.debug('GF: only a')
-                return FirstPassageNoCollisionPairGreensFunction(self.D_tot, self.a_r)
+                return FirstPassageNoCollisionPairGreensFunction(self.D_tot, r0, self.a_r)
                 
             else:
                 # distant from both a and sigma; 
                 if __debug__:
                     log.debug('GF: free')
-                return FreePairGreensFunction(self.D_tot)
+                return FreePairGreensFunction(self.D_tot, r0)
 
     def draw_new_com(self, dt, event_type):
         gf = self.com_greens_function()
@@ -285,7 +285,7 @@ class SphericalPair(Pair):
 
     def draw_new_iv(self, dt, r0, old_iv, event_type): 
         gf = self.choose_pair_greens_function(r0, dt)
-        r, theta = draw_displacement_iv_wrapper(gf, r0, dt, event_type,
+        r, theta = draw_displacement_iv_wrapper(gf, dt, event_type,
                                                 self.a_r, self.sigma)
         new_inter_particle_s = numpy.array([r, theta, 
                                          myrandom.uniform() * 2 * Pi])
@@ -330,10 +330,10 @@ class PlanarSurfacePair(Pair):
         # Todo. 2D gf Abs Sym.
         return FirstPassageGreensFunction(self.D_R, self.a_R)
 
-    def iv_greens_function(self):
+    def iv_greens_function(self, r0):
         # Todo. 2D gf Rad Abs.
         # This exact solution is used for drawing times.
-        return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, self.sigma, self.a_r)
+        return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, r0, self.sigma, self.a_r)
 
     def create_new_shell(self, position, radius, domain_id):
         # The size (thickness) of a hockey puck is not more than it has to be 
@@ -395,11 +395,11 @@ class CylindricalSurfacePair(Pair):
         #gf = FirstPassageGreensFunction1D(self.D_R)
         return FirstPassageGreensFunction(self.D_R, self.a_R)
 
-    def iv_greens_function(self):
+    def iv_greens_function(self, r0):
         # Todo. 1D gf Rad Abs  should be sigma to a.
         #gf = FirstPassageGreensFunction1DRad(self.D_tot, self.rt.k)
         # This exact solution is used for drawing times.
-        return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, self.sigma, self.a_r)
+        return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, r0, self.sigma, self.a_r)
 
     def create_new_shell(self, position, size, domain_id):
         # The radius of a rod is not more than it has to be (namely the radius 

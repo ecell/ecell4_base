@@ -34,7 +34,7 @@ private:
 
 public:
     
-    FirstPassagePairGreensFunction(Real D, Real kf, Real Sigma, Real a);
+    FirstPassagePairGreensFunction(Real D, Real kf, Real r0, Real Sigma, Real a);
     
     ~FirstPassagePairGreensFunction();
 
@@ -48,16 +48,16 @@ public:
         return this->a;
     }
     
-    Real drawTime(Real rnd, Real r0 ) const;
+    Real drawTime(Real rnd) const;
 
     std::pair<Real, EventType> 
-    drawTime2(Real rnd1, Real rnd2, Real r0) const;
+    drawTime2(Real rnd1, Real rnd2) const;
 
-    EventType drawEventType(Real rnd, Real r0, Real t) const;
+    EventType drawEventType(Real rnd, Real t) const;
     
-    Real drawR(Real rnd, Real r0, Real t) const;
+    Real drawR(Real rnd, Real t) const;
     
-    Real drawTheta(Real rnd, Real r, Real r0, Real t) const;
+    Real drawTheta(Real rnd, Real r, Real t) const;
     
     Real f_alpha0(Real alpha) const;
     Real f_alpha0_aux(Real alpha) const;
@@ -65,43 +65,43 @@ public:
     Real f_alpha(Real alpha, Integer n) const;
     Real f_alpha_aux(Real alpha, Integer n) const;
 
-    Real p_0(Real t, Real r, Real r0) const;
+    Real p_0(Real t, Real r) const;
     
-    Real p_survival(Real t, Real r0) const;
+    Real p_survival(Real t) const;
 
-    Real p_survival_table(Real t, Real r0, RealVector& table) const;
+    Real p_survival_table(Real t, RealVector& table) const;
 
-    Real p_leave_table(Real t, Real r0, RealVector const& table) const;
-
-
-    Real dp_survival(Real t, Real r0) const;
-
-    Real leaves(Real t, Real r0) const;
-
-    Real leavea(Real t, Real r0) const;
-
-    Real p_leaves(Real t, Real r0) const;
-
-    Real p_leavea(Real t, Real r0) const;
-
-    Real p_int_r(Real r, Real t, Real r0) const;
-
-    Real p_theta(Real theta, Real r, Real r0, Real t) const;
-
-    Real ip_theta(Real theta, Real r, Real r0, Real t) const;
-
-    Real dp_theta(Real theta, Real r, Real r0, Real t) const;
-
-    Real idp_theta(Real theta, Real r, Real r0, Real t) const;
-
-    Real p_n(Integer n, Real r, Real r0, Real t, Real max_alpha) const;
-
-    Real dp_n_at_a(Integer n, Real r0, Real t, Real max_alpha) const;
+    Real p_leave_table(Real t, RealVector const& table) const;
 
 
-    Real p_n_alpha(unsigned int i, unsigned int n, Real r, Real r0, Real t) const;
+    Real dp_survival(Real t) const;
 
-    Real dp_n_alpha_at_a(unsigned int i, unsigned int n, Real r0, Real t) const;
+    Real leaves(Real t) const;
+
+    Real leavea(Real t) const;
+
+    Real p_leaves(Real t) const;
+
+    Real p_leavea(Real t) const;
+
+    Real p_int_r(Real r, Real t) const;
+
+    Real p_theta(Real theta, Real r, Real t) const;
+
+    Real ip_theta(Real theta, Real r, Real t) const;
+
+    Real dp_theta(Real theta, Real r, Real t) const;
+
+    Real idp_theta(Real theta, Real r, Real t) const;
+
+    Real p_n(Integer n, Real r, Real t, Real max_alpha) const;
+
+    Real dp_n_at_a(Integer n, Real t, Real max_alpha) const;
+
+
+    Real p_n_alpha(unsigned int i, unsigned int n, Real r, Real t) const;
+
+    Real dp_n_alpha_at_a(unsigned int i, unsigned int n, Real t) const;
 
     // methods below are kept public for debugging purpose.
 
@@ -113,32 +113,32 @@ public:
 
     Real alpha_i(Integer i, Integer n, gsl_root_fsolver* solver ) const;
 
-    Real p_survival_i(Real alpha, Real r0) const;
+    Real p_survival_i(Real alpha) const;
 
-    Real p_0_i(Real alpha, Real r, Real r0) const;
+    Real p_0_i(Real alpha, Real r) const;
 
-    Real dp_survival_i(Real alpha, Real r0) const;
+    Real dp_survival_i(Real alpha) const;
 
-    Real leavea_i(Real alpha, Real r0) const;
+    Real leavea_i(Real alpha) const;
 
-    Real leaves_i(Real alpha, Real r0) const;
+    Real leaves_i(Real alpha) const;
 
-    Real p_leavea_i(Real alpha, Real r0, Real pleave_factor) const;
+    Real p_leavea_i(Real alpha, Real pleave_factor) const;
 
-    Real p_leaves_i(Real alpha, Real r0, Real pleave_factor) const;
+    Real p_leaves_i(Real alpha, Real pleave_factor) const;
 
-    Real p_survival_den(Real alpha, Real r0) const;
+    Real p_survival_den(Real alpha) const;
 
-    Real p_int_r_i(Real r, Real alpha, Real r0, Real num_r0) const;
+    Real p_int_r_i(Real r, Real alpha, Real num_r0) const;
 
-    Real p_0_i_exp(unsigned int i, Real t, Real r, Real r0) const;
+    Real p_0_i_exp(unsigned int i, Real t, Real r) const;
 
-    Real p_survival_i_exp(unsigned int i, Real t, Real r0) const;
+    Real p_survival_i_exp(unsigned int i, Real t) const;
 
-    Real p_survival_i_alpha(Real alpha, Real t, Real r0) const;
+    Real p_survival_i_alpha(Real alpha, Real t) const;
 
 
-    Real p_survival_2i_exp(unsigned int i, Real t, Real r0) const;
+    Real p_survival_2i_exp(unsigned int i, Real t) const;
 
 
 protected:
@@ -195,66 +195,65 @@ protected:
     }
 
 
-    Real p_int_r_table(Real r, Real t, Real r0,
+    Real p_int_r_table(Real r, Real t,
                        RealVector const& num_r0Table) const;
 
-    Real ip_theta_table(Real theta, Real r, Real r0, Real t,
+    Real ip_theta_table(Real theta, Real r, Real t,
                         RealVector const& p_nTable) const;
 
-    Real dp_theta_at_a(Real theta, Real r0, Real t ) const;
+    Real dp_theta_at_a(Real theta, Real t ) const;
 
 
-    Real p_theta_table(Real theta, Real r, Real r0, Real t, 
+    Real p_theta_table(Real theta, Real r, Real t, 
                        RealVector const& p_nTable ) const;
 
-    void make_p_thetaTable( RealVector& pTable, Real r, Real r0, Real t,
+    void make_p_thetaTable( RealVector& pTable, Real r, Real t,
                             unsigned int n, RealVector const& p_nTable ) const;
 
-    Real p_survival_i_exp_table(unsigned int i, Real t, Real r0,
+    Real p_survival_i_exp_table(unsigned int i, Real t,
                                 RealVector const& table ) const;
 
-    Real p_leave_i_exp_table(unsigned int i, Real t, Real r0,
+    Real p_leave_i_exp_table(unsigned int i, Real t,
                              RealVector const& table ) const;
 
 
-    Real dp_survival_i_exp(unsigned int i, Real alpha, Real r0) const;
+    Real dp_survival_i_exp(unsigned int i, Real alpha) const;
 
-    Real leavea_i_exp(unsigned int i, Real alpha, Real r0) const;
+    Real leavea_i_exp(unsigned int i, Real alpha) const;
 
-    Real leaves_i_exp(unsigned int i, Real alpha, Real r0) const;
+    Real leaves_i_exp(unsigned int i, Real alpha) const;
 
-    Real p_leavea_i_exp(unsigned int i, Real alpha, Real r0) const;
+    Real p_leavea_i_exp(unsigned int i, Real alpha) const;
 
-    Real p_leaves_i_exp(unsigned int i, Real alpha, Real r0) const;
+    Real p_leaves_i_exp(unsigned int i, Real alpha) const;
 
-    Real p_int_r_i_exp(unsigned int i, Real t, Real r, Real r0) const;
+    Real p_int_r_i_exp(unsigned int i, Real t, Real r) const;
 
-    Real p_int_r_i_exp_table(unsigned int i, Real t, Real r, Real r0,
+    Real p_int_r_i_exp_table(unsigned int i, Real t, Real r,
                              RealVector& num_r0Table ) const;
 
     void initializeAlphaTable(unsigned int n) const;
     void updateAlphaTable0(Real t) const;
     void updateAlphaTable(unsigned int n, Real t) const; 
 
-    void createPsurvTable(RealVector& table, Real r0) const; 
-    void createNum_r0Table(RealVector& table, Real r0) const;
+    void createPsurvTable(RealVector& table) const; 
+    void createNum_r0Table(RealVector& table) const;
 
-    void createPleaveFactorTable(RealVector& table, Real r0) const;
-    void createPleavesTable(RealVector& table, Real r0,
+    void createPleaveFactorTable(RealVector& table) const;
+    void createPleavesTable(RealVector& table,
                             RealVector const& pleaveFactorTable) const;
-    void createPleaveaTable(RealVector& table, Real r0,
+    void createPleaveaTable(RealVector& table,
                             RealVector const& pleaveFactorTable) const;
 
-    void makep_nTable(RealVector& p_nTable, Real r, Real r0, Real t) const;
+    void makep_nTable(RealVector& p_nTable, Real r, Real t) const;
     
-    void makedp_n_at_aTable(RealVector& p_nTable, Real r0, Real t) const;
+    void makedp_n_at_aTable(RealVector& p_nTable, Real t) const;
 
     unsigned int guess_maxi(Real t) const;
 
     Real 
     drawPleaves(gsl_function const& F,
                 gsl_root_fsolver* solver,
-                Real r0,
                 Real t_guess,
                 RealVector& pleaveFactorTable,
                 RealVector& pleavesTable) const;
@@ -262,15 +261,14 @@ protected:
     Real 
     drawPleavea(gsl_function const& F,
                 gsl_root_fsolver* solver,
-                Real r0,
                 Real t_guess,
                 RealVector& pleaveFactorTable,
                 RealVector& pleavesTable) const;
 
     
-    Real num_r0(Real alpha, Real r0) const;
+    Real num_r0(Real alpha) const;
 
-    Real pleaveFactor(Real alpha, Real r0) const;
+    Real pleaveFactor(Real alpha) const;
 
     struct ip_theta_params;
     static Real ip_theta_F(Real, ip_theta_params const*);
