@@ -443,7 +443,7 @@ inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_down_pos_
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
 inline typename DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::identifier_type
-DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::push(const Titem_& item)
+DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::push(Titem_ const& item)
 {
     const index_type index(items_.size());
     const identifier_type id(policy_type::push(index));
@@ -457,7 +457,7 @@ DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::push(const Titem_& item)
 
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::pop_by_index(const index_type index)
+inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::pop_by_index(index_type index)
 {
     value_type& item(items_[index]);
     // 1. update index<->identifier_type mapping.
