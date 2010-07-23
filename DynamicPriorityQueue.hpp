@@ -271,7 +271,7 @@ protected:
         }
     }
 
-    inline void pop_by_index(index_type index);
+    void pop_by_index(index_type index);
 
     void move(index_type index)
     {
