@@ -284,7 +284,7 @@ protected:
         move_down_pos(0);
     }
 
-    inline void move_pos(index_type pos);
+    void move_pos(index_type pos);
 
     void move_up(index_type index)
     {
@@ -299,11 +299,11 @@ protected:
     }
 
 
-    inline void move_up_pos(index_type position, index_type start = 0);
-    inline void move_down_pos(index_type position);
+    void move_up_pos(index_type position, index_type start = 0);
+    void move_down_pos(index_type position);
 
-    inline void move_up_pos_impl(index_type position, index_type start = 0);
-    inline void move_down_pos_impl(index_type position); 
+    void move_up_pos_impl(index_type position, index_type start = 0);
+    void move_down_pos_impl(index_type position); 
 
 private:
     value_vector items_;
@@ -314,7 +314,7 @@ private:
 };
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::clear()
+inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::clear()
 {
     items_.clear();
     heap_.clear();
@@ -324,7 +324,7 @@ void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::clear()
 
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_pos(index_type pos)
+inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_pos(index_type pos)
 {
     const index_type index(heap_[pos]);
     const value_type& item(items_[index]);
@@ -342,7 +342,7 @@ void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_pos(index_type p
 }
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_up_pos(index_type position, index_type start)
+inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_up_pos(index_type position, index_type start)
 {
     if (position == 0)
         return;
@@ -361,7 +361,7 @@ void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_up_pos(index_typ
 
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_down_pos(index_type position)
+inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_down_pos(index_type position)
 {
     const index_type index(heap_[position]);
     const value_type& item(items_[index]);
@@ -377,7 +377,7 @@ void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_down_pos(index_t
 }
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_up_pos_impl(index_type position, index_type start)
+inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_up_pos_impl(index_type position, index_type start)
 {
     const index_type index(heap_[position]);
     const value_type& item(items_[index]);
@@ -413,7 +413,7 @@ void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_up_pos_impl(inde
 
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_down_pos_impl(index_type position)
+inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_down_pos_impl(index_type position)
 {
     const index_type index(heap_[position]);
 
@@ -442,7 +442,7 @@ void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::move_down_pos_impl(in
 
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-typename DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::identifier_type
+inline typename DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::identifier_type
 DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::push(const Titem_& item)
 {
     const index_type index(items_.size());
@@ -457,7 +457,7 @@ DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::push(const Titem_& item)
 
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::pop_by_index(const index_type index)
+inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::pop_by_index(const index_type index)
 {
     value_type& item(items_[index]);
     // 1. update index<->identifier_type mapping.
@@ -494,7 +494,7 @@ void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::pop_by_index(const in
 }
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::replace(value_type const& value)
+inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::replace(value_type const& value)
 {
     const index_type index(policy_type::index(value.first));
     items_[index].second = value.second;
@@ -502,7 +502,7 @@ void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::replace(value_type co
 }
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check() const
+inline bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check() const
 {
     bool result(true);
 
@@ -515,7 +515,7 @@ bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check() const
 
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_size() const
+inline bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_size() const
 {
     bool result(true);
 
@@ -529,7 +529,7 @@ bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_size() const
 
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_position_mapping() const
+inline bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_position_mapping() const
 {
     bool result(true);
 
@@ -545,7 +545,7 @@ bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_position_mappin
 }
 
 template<typename Titem_, typename Tcomparator_, typename Tpolicy_>
-bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_heap() const
+inline bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_heap() const
 {
     bool result(true);
 
