@@ -56,6 +56,12 @@ def create_default_pair(domain_id, com, single1, single2, shell_id,
         return PlanarSurfacePair(domain_id, com, single1, single2, shell_id, r0, shell_size, rt, surface)
 
 
+class DomainEvent(Event):
+    __slot__ = ['data']
+    def __init__(self, time, domain):
+        Event.__init__(self, time)
+        self.data = domain
+
 class Delegate(object):
     def __init__(self, obj, method, arg):
         self.ref = ref(obj)
@@ -344,7 +350,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def add_single_event(self, single):
         event_id = self.scheduler.add(
-            Event(self.t + single.dt, single))
+            DomainEvent(self.t + single.dt, single))
         if __debug__:
             log.info('add_single_event: #%d (t=%g)' % (
                event_id, self.t + single.dt))
@@ -352,7 +358,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def add_pair_event(self, pair):
         event_id = self.scheduler.add(
-            Event(self.t + pair.dt, pair))
+            DomainEvent(self.t + pair.dt, pair))
         if __debug__:
             log.info('add_pair_event: #%d (t=%g)' % (
                event_id, self.t + pair.dt))
@@ -360,7 +366,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def add_multi_event(self, multi):
         event_id = self.scheduler.add(
-            Event(self.t + multi.dt, multi))
+            DomainEvent(self.t + multi.dt, multi))
 
         if __debug__:
             log.info('add_multi_event: #%d (t=%g)' % (
@@ -375,12 +381,12 @@ class EGFRDSimulator(ParticleSimulatorBase):
     def update_single_event(self, t, single):
         if __debug__:
             log.info('update_event: #%d (t=%g)' % (single.event_id, t))
-        self.scheduler.update((single.event_id, Event(t, single)))
+        self.scheduler.update((single.event_id, DomainEvent(t, single)))
 
     def update_multi_event(self, t, multi):
         if __debug__:
             log.info('update_event: #%d (t=%g)' % (multi.event_id, t))
-        self.scheduler.update((multi.event_id, Event(t, multi)))
+        self.scheduler.update((multi.event_id, DomainEvent(t, multi)))
 
     def burst_obj(self, obj):
         if __debug__:

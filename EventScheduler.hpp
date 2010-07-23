@@ -7,6 +7,7 @@
 #define __EVENTSCHEDULER_HPP
 
 #include "DynamicPriorityQueue.hpp"
+#include <boost/shared_ptr.hpp>
 #include <stdexcept>
 
 /**
@@ -17,23 +18,40 @@
 
 */
 
-template <class Tevent_>
+template<typename Ttime_>
 class EventScheduler
 {
 public:
-    typedef Tevent_ event_type;
-    typedef typename event_type::time_type time_type;
+    typedef Ttime_ time_type;
+
+    struct Event
+    {
+        typedef Ttime_ time_type;
+
+        Event(time_type const& time): time_(time) {}
+
+        virtual ~Event() {}
+
+        time_type const& time() const
+        {
+            return time_;
+        }
+
+    protected:
+        const time_type time_;
+    };
 
 protected:
     struct event_comparator
     {
-        bool operator()(event_type const& lhs, event_type const& rhs) const
+        bool operator()(boost::shared_ptr<Event> const& lhs,
+                        boost::shared_ptr<Event> const& rhs) const
         {
-            return lhs.time() <= rhs.time();
+            return lhs->time() <= rhs->time();
         }
     };
 
-    typedef DynamicPriorityQueue<event_type, event_comparator> EventPriorityQueue;
+    typedef DynamicPriorityQueue<boost::shared_ptr<Event>, event_comparator> EventPriorityQueue;
 
 public:
     typedef typename EventPriorityQueue::size_type size_type;
@@ -44,8 +62,7 @@ public:
 public:
 
 
-    EventScheduler()
-        : time_( 0.0 ) {}
+    EventScheduler(): time_( 0.0 ) {}
 
     ~EventScheduler() {}
 
@@ -72,7 +89,7 @@ public:
         }
         const value_type top(eventPriorityQueue_.top());
         eventPriorityQueue_.pop();
-        time_ = top.second.time();
+        time_ = top.second->time();
         return top;
     }
 
@@ -81,7 +98,7 @@ public:
         return eventPriorityQueue_.second();
     }
 
-    event_type const& get(identifier_type const& id) const
+    boost::shared_ptr<Event> get(identifier_type const& id) const
     {
         return eventPriorityQueue_.get(id);
     }
@@ -92,7 +109,7 @@ public:
         eventPriorityQueue_.clear();
     }
 
-    identifier_type add(event_type const& event)
+    identifier_type add(boost::shared_ptr<Event> const& event)
     {
         return eventPriorityQueue_.push(event);
     }
