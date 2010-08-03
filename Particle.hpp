@@ -18,15 +18,20 @@ struct Particle
 {
     typedef Sphere<T_> shape_type;
     typedef Td_ D_type;
+    typedef Td_ v_type;	// the drift v has the same type as diffusion constant D for now, may be generalized at a later stage
     typedef Tsid_ species_id_type;
     typedef typename shape_type::position_type position_type;
     typedef typename shape_type::length_type length_type;
 
-    Particle(): shape_(), species_id_(), D_(0.) {}
+    Particle(): shape_(), species_id_(), D_(0.), v_(0.) {}
 
     Particle(species_id_type const& species_id, shape_type const& shape,
              D_type const& D)
-        : shape_(shape), species_id_(species_id), D_(D) {}
+        : shape_(shape), species_id_(species_id), D_(D), v_(0.){}
+	
+    Particle(species_id_type const& species_id, shape_type const& shape,
+             D_type const& D, v_type const& v)
+        : shape_(shape), species_id_(species_id), D_(D), v_(v) {}
 
     position_type& position()
     {
@@ -56,6 +61,16 @@ struct Particle
     D_type const& D() const
     {
         return D_;
+    }
+    
+    v_type& v()
+    {
+        return v_;
+    }
+
+    v_type const& v() const
+    {
+        return v_;
     }
 
     shape_type& shape()
@@ -100,12 +115,13 @@ private:
     shape_type shape_;
     species_id_type species_id_;
     D_type D_;
+    v_type v_;
 };
 
 template<typename Tstrm_, typename Ttraits_, typename T_, typename Td_, typename Tsid_>
-inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle<T_, Td_, Tsid_>& v)
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle<T_, Td_, Tsid_>& p)
 {
-    strm << "Particle(" << v.shape() << ", D=" << v.D() << ", " << v.sid() << ")";
+    strm << "Particle(" << p.shape() << ", D=" << p.D() << ", v=" << p.v() << ", " << p.sid() << ")";
     return strm;
 }
 

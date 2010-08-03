@@ -31,6 +31,7 @@ struct WorldTraitsBase
     typedef std::size_t size_type;
     typedef Tlen_ length_type;
     typedef TD_ D_type;
+    typedef TD_ v_type;
     typedef ParticleID particle_id_type;
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef SpeciesTypeID species_id_type;
@@ -176,7 +177,7 @@ public:
         species_type const& species(get_species(sid));
         particle_id_pair retval(pidgen_(),
             particle_type(sid, particle_shape_type(pos, species.radius()),
-                          species.D()));
+                          species.D(), species.v() ));
         update_particle(retval);
         return retval;
     }

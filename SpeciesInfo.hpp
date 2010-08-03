@@ -11,6 +11,7 @@ struct SpeciesInfo
 {
     typedef Tid_ identifier_type;
     typedef TD_ D_type;
+    typedef TD_ v_type;
     typedef Tlen_ length_type;
     typedef Tstructure_id_ structure_id_type;
 
@@ -48,10 +49,20 @@ struct SpeciesInfo
     {
         return diffusion_coef_;
     }
+    
+    v_type const& v() const
+    {
+        return drift_velocity_;
+    }
+
+    v_type& v()
+    {
+        return drift_velocity_;
+    }
 
     bool operator==(SpeciesInfo const& rhs) const
     {
-        return id_ == rhs.id() && diffusion_coef_ == rhs.D() &&
+        return id_ == rhs.id() && diffusion_coef_ == rhs.D() && drift_velocity_ == rhs.v() &&
                 radius_ == rhs.radius() && structure_id_ == rhs.structure_id();
     }
 
@@ -60,24 +71,30 @@ struct SpeciesInfo
         return !operator==(rhs);
     }
 
+    SpeciesInfo() {}
+
+    SpeciesInfo(identifier_type const& id, D_type const& D = 0., v_type const& v = 0.,
+                length_type const& r = 0., structure_id_type const& s = "") 
+        : id_(id), diffusion_coef_(D), drift_velocity_(v), radius_(r), structure_id_(s) {}
+  
     SpeciesInfo(identifier_type const& id, D_type const& D = 0.,
                 length_type const& r = 0., structure_id_type const& s = "") 
-        : id_(id), diffusion_coef_(D), radius_(r), structure_id_(s) {}
+        : id_(id), diffusion_coef_(D), drift_velocity_(0.), radius_(r), structure_id_(s) {}
 
-    SpeciesInfo() {}
 
 private:
     identifier_type id_;
     D_type diffusion_coef_;
+    v_type drift_velocity_;
     length_type radius_;
     structure_id_type structure_id_;
 };
 
 template<typename Tchar_, typename Ttraits_, typename Tid_, typename TD_, typename Tlen_, typename Tstructure_id_>
 inline std::basic_ostream<Tchar_, Ttraits_>&
-operator<<(std::basic_ostream<Tchar_, Ttraits_>& strm, const SpeciesInfo<Tid_, TD_, Tlen_, Tstructure_id_>& v)
+operator<<(std::basic_ostream<Tchar_, Ttraits_>& strm, const SpeciesInfo<Tid_, TD_, Tlen_, Tstructure_id_>& s)
 {
-    strm << "SpeciesInfo(id=" << v.id() << ", D=" << v.D() << ", radius=" << v.radius() << ", surface=" << v.structure_id() << ")";
+    strm << "SpeciesInfo(id=" << s.id() << ", D=" << s.D() << ", v=" << s.v() << ", radius=" << s.radius() << ", surface=" << s.structure_id() << ")";
     return strm;
 }
 

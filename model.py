@@ -10,10 +10,13 @@ __all__ = [
     'create_unbinding_reaction_rule',
     ]
 
-def Species(name, D, radius, surface="world"):
+
+
+def Species(name, D, radius=0, surface="world", v=0):
     st = _gfrd.SpeciesType()
     st["name"] = str(name)
     st["D"] = str(D)
+    st["v"] = str(v)
     st["radius"] = str(radius)
     st["surface"] = surface
     return st
