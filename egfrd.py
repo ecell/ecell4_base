@@ -141,7 +141,12 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.domains = {}
 
         singles = []
-        for pid_particle_pair in self.world:
+
+        # Fix order of adding particles (always, or at least in debug mode).
+        pid_particle_pairs = list(self.world)
+        pid_particle_pairs.sort()
+
+        for pid_particle_pair in pid_particle_pairs:
             single = self.create_single(pid_particle_pair)
             if __debug__:
                 log.debug("%s as single %s", pid_particle_pair[0], single.domain_id)
@@ -206,18 +211,17 @@ class EGFRDSimulator(ParticleSimulatorBase):
             if self.scheduler.size == 0:
                 raise RuntimeError('No particles in scheduler.')
 
-        event = self.scheduler.top[1]
+        id, event = self.scheduler.pop()
         self.t, self.last_event = event.time, event
 
         if __debug__:
             domain_counts = self.count_domains()
             log.info('\n%d: t=%g dt=%g\tSingles: %d, Pairs: %d, Multis: %d'
                      % ((self.step_counter, self.t, self.dt) + domain_counts))
-            log.info('event=%s reactions=%d rejectedmoves=%d' 
-                     % (self.last_event, self.reaction_events, 
+            log.info('event=%d reactions=%d rejectedmoves=%d' 
+                     % (id, self.reaction_events, 
                         self.rejected_moves))
        
-        id, event = self.scheduler.pop()
         for klass, f in self.dispatch:
             if isinstance(event.data, klass):
                 f(self, event.data)
