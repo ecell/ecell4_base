@@ -359,8 +359,8 @@ class PlanarSurfacePair(Pair):
     def draw_new_iv(self, dt, r0, old_iv, event_type): 
         # Todo.
         #gf = self.choose_pair_greens_function(r0, dt)
-        gf = self.iv_greens_function()
-        r, theta = draw_displacement_iv_wrapper(gf, r0, dt, event_type,
+        gf = self.iv_greens_function(r0)
+        r, theta = draw_displacement_iv_wrapper(gf, dt, event_type,
                                                 self.a_r, self.sigma)
         assert r > self.sigma and r <= self.a_r
 
@@ -421,10 +421,9 @@ class CylindricalSurfacePair(Pair):
     def draw_new_iv(self, dt, r0, old_iv, event_type): 
         # Todo.
         #gf = self.choose_pair_greens_function(r0, dt)
-        gf = self.iv_greens_function()
+        gf = self.iv_greens_function(r0)
 
-        r = draw_displacement_wrapper(gf, dt, event_type, self.a_r, r0, 
-                                      self.sigma)
+        r = draw_displacement_wrapper(gf, dt, event_type, self.a_r, self.sigma)
         assert r > self.sigma and r <= self.a_r
 
         # Note: using self.surface.shape.unit_z here might accidently 
