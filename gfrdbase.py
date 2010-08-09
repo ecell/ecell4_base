@@ -1,5 +1,4 @@
- #!/usr/env python
-
+#!/usr/env python
 
 import math
 import sys
@@ -155,6 +154,7 @@ def throw_in_particles(world, sid, n):
     i = 0
     while i < int(n):
         position = surface.random_position(myrandom.rng)
+        position = apply_boundary(position, world.world_size)
 
         # Check overlap.
         if not world.check_overlap((position, species.radius)):

@@ -22,55 +22,15 @@ def Species(name, D, radius, surface="world"):
 class ParticleModel(_gfrd.Model):
     def __init__(self, world_size):
         _gfrd.Model.__init__(self)
+        self.world_size = world_size
         self.regions = {}
 
-        # Particles of a Species whose surface is not specified will be added 
-        # to the world. Dimensions don't matter, except for visualization.
+        # Particles of a Species whose surface is not specified will be 
+        # added to the "world". Dimensions don't matter, except for 
+        # visualization.
         x = numpy.repeat(world_size / 2, 3)
         region = _gfrd.CuboidalRegion('world', _gfrd.Box(x, x))
         self.add_structure(region)
-
-    def add_planar_surface(self, id, origin, unit_x, unit_y, Lx, Ly):
-        """Add a planar surface.
-
-        id -- a descriptive name, should not be omitted.
-
-        origin -- [x0, y0, z0] is the *center* of the planar surface.
-        vector_x -- [x1, y1, z1] and
-        vector_y -- [x2, y2, z2] are 2 perpendicular vectors that don't have 
-        to be normalized that span the plane. For example [1,0,0] and [0,1,0]
-        for a plane at z=0.
-
-        Lx -- lx and 
-        Ly -- ly are the distances from the origin of the plane along vector_x 
-            or vector_y *to an edge* of the plane. PlanarSurfaces are finite.
-        Lz -- dz, the thickness of the planar surface, can be omitted for Lz=0.
-
-        """
-        unit_x = _gfrd.normalize(unit_x, 1.)
-        unit_y = _gfrd.normalize(unit_y, 1.)
-        return self.add_structure(
-            _gfrd.PlanarSurface(id,
-                _gfrd.Plane(origin, unit_x, unit_y, Lx, Ly)))
-
-    def add_cylindrical_surface(self, id, origin, radius, orientation, size):
-        """Add a cylindrical surface.
-
-        id -- a descriptive name, should not be omitted.
-
-        origin -- [x0, y0, z0] is the *center* of the cylindrical surface.
-        radius -- r is the radis of the cylinder.
-        orientation -- [x1, y1, z1] is a vector that doesn't have to
-            normalized that defines the orienation of the cylinder. For 
-            example [0,0,1] for a for a cylinder along the z-axis.
-        size -- lz is the distances from the origin of the cylinder along 
-            the oriention vector to the end of the cylinder. So effectively
-            the *half-length*. CylindricalSurfaces are finite.
-
-        """
-        return self.add_structure(
-            _gfrd.CylindricalSurface(id,
-                _gfrd.Cylinder(origin, radius, orientation, size)))
 
     def add_structure(self, surface):
         assert isinstance(surface, _gfrd.Structure)
@@ -100,12 +60,6 @@ class ParticleModel(_gfrd.Model):
                     rr = _gfrd.ReactionRule([species1, species2], [])
                     rr['k'] = '0.0'
                     nr.add_reaction_rule(rr)
-
-    def add_reaction(self, reactants, products, k): 
-        rr = _gfrd.ReactionRule(reactants, products)
-        rr['k'] = '%.16g' % k
-        self.network_rules.add_reaction_rule(rr)
-        return rr
 
     def dump_reaction_rule(self, reaction_rule):
         '''Pretty print reaction rule.

@@ -368,4 +368,12 @@ BOOST_PP_REPEAT_FROM_TO(2, CREATE_VECTOR_LIMIT_REPEAT, CREATE_VECTOR_TPL, )
 #undef CREATE_VECTOR_TPL
 #undef CREATE_VECTOR_INNER_TPL
 
+template<typename T_>
+inline bool is_cartesian_versor(T_ const& vector, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+{
+    return (vector == create_vector<T_>(1, 0, 0) ||
+            vector == create_vector<T_>(0, 1, 0) ||
+            vector == create_vector<T_>(0, 0, 1));
+}
+
 #endif /* LINEAR_ALGEBRA_HPP */

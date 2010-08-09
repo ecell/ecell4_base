@@ -31,18 +31,25 @@ struct StructureUtils
  
     static planar_surface_type* create_planar_surface(
             structure_id_type const& id,
-            position_type const& pos,
-            position_type const& vector_x,
-            position_type const& vector_y,
+            position_type const& corner,
+            position_type const& unit_x,
+            position_type const& unit_y,
             length_type const& lx,
             length_type const& ly)
     {
-        BOOST_ASSERT(dot_product(vector_x, vector_y) == 0.);
-        const position_type unit_x(normalize(vector_x));
-        const position_type unit_y(normalize(vector_y));
+        BOOST_ASSERT(is_cartesian_versor(unit_x));
+        BOOST_ASSERT(is_cartesian_versor(unit_y));
+        BOOST_ASSERT(is_cartesian_versor(cross_product(unit_x, unit_y)));
+
+        const length_type half_lx(lx / 2);
+        const length_type half_ly(ly / 2);
+
+        const position_type pos(add(add(corner, multiply(unit_x, half_lx)),
+                                    multiply(unit_y, half_ly)));
 
         return new planar_surface_type(id,
-                                       plane_type(pos, unit_x, unit_y, lx, ly));
+                                       plane_type(pos, unit_x, unit_y,
+                                                  half_lx, half_ly));
     }
 
     static spherical_surface_type* create_spherical_surface(
@@ -55,13 +62,18 @@ struct StructureUtils
 
     static cylindrical_surface_type* create_cylindrical_surface(
             structure_id_type const& id,
-            position_type const& pos,
+            position_type const& corner,
             length_type const& radius,
             position_type const& unit_z,
-            length_type const& size)
+            length_type const& length)
     {
+        BOOST_ASSERT(is_cartesian_versor(unit_z));
+
+        const length_type half_length(length / 2);
+        const position_type pos(add(corner, multiply(unit_z, half_length)));
+
         return new cylindrical_surface_type(id,
-                cylinder_type(pos, radius, unit_z, size));
+                cylinder_type(pos, radius, unit_z, half_length));
     }
 
     static cuboidal_region_type* create_cuboidal_region(
