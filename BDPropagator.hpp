@@ -219,7 +219,7 @@ private:
                             np0 = tx_.apply_boundary(pp.second.position()
                                     + m * (s0.D() / D01));
                             np1 = tx_.apply_boundary(pp.second.position()
-                                    + m * (s1.D() / D01));
+                                    - m * (s1.D() / D01));
                             boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s0(
                                 tx_.check_overlap(
                                     particle_shape_type(np0, s0.radius()),
