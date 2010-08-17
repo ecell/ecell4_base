@@ -10,9 +10,9 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_roots.h>
 
-#include "FreeGreensFunction.hpp"
+#include "GreensFunction3DSym.hpp"
 
-Real FreeGreensFunction::p_r(Real r, Real t) const
+Real GreensFunction3DSym::p_r(Real r, Real t) const
 {
     const Real D( getD() );
     const Real Dt( D * t );
@@ -28,7 +28,7 @@ Real FreeGreensFunction::p_r(Real r, Real t) const
     return jacobian * term1 * term2;
 }
 
-Real FreeGreensFunction::ip_r(Real r, Real t) const
+Real GreensFunction3DSym::ip_r(Real r, Real t) const
 {
     const Real D( getD() );
     const Real Dt( D * t );
@@ -44,7 +44,7 @@ Real FreeGreensFunction::ip_r(Real r, Real t) const
 
 struct ip_r_params
 { 
-    FreeGreensFunction const* const gf;
+    GreensFunction3DSym const* const gf;
     const Real t;
     const Real value;
 };
@@ -52,7 +52,7 @@ struct ip_r_params
 
 static Real ip_r_F(Real r, ip_r_params const* params)
 {
-    const FreeGreensFunction* const gf( params->gf ); 
+    const GreensFunction3DSym* const gf( params->gf ); 
     const Real t( params->t );
     const Real value( params->value );
 
@@ -60,7 +60,7 @@ static Real ip_r_F(Real r, ip_r_params const* params)
 }
 
 
-Real FreeGreensFunction::drawR(Real rnd, Real t) const
+Real GreensFunction3DSym::drawR(Real rnd, Real t) const
 {
     // input parameter range checks.
     if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
@@ -135,7 +135,7 @@ Real FreeGreensFunction::drawR(Real rnd, Real t) const
 }
 
 
-std::string FreeGreensFunction::dump() const
+std::string GreensFunction3DSym::dump() const
 {
     std::ostringstream ss;
     ss << "D = " << this->getD() << std::endl;
@@ -143,5 +143,5 @@ std::string FreeGreensFunction::dump() const
 }
 
 
-Logger& FreeGreensFunction::log_(
-        Logger::get_logger("FreeGreensFunction"));
+Logger& GreensFunction3DSym::log_(
+        Logger::get_logger("GreensFunction3DSym"));

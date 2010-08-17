@@ -13,7 +13,7 @@
 #include "PairGreensFunction.hpp"
 
 
-class FirstPassagePairGreensFunction: public PairGreensFunction
+class GreensFunction3DRadAbs: public PairGreensFunction
 {
 public:
     typedef std::vector<Real> RealVector;
@@ -34,9 +34,9 @@ private:
 
 public:
     
-    FirstPassagePairGreensFunction(Real D, Real kf, Real r0, Real Sigma, Real a);
+    GreensFunction3DRadAbs(Real D, Real kf, Real r0, Real Sigma, Real a);
     
-    ~FirstPassagePairGreensFunction();
+    ~GreensFunction3DRadAbs();
 
     Real geth() const
     {

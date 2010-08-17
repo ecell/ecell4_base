@@ -12,7 +12,7 @@ import _greens_functions as mod
 import numpy
 
 
-class FreeGreensFunctionTestCase(unittest.TestCase):
+class GreensFunction3DSymTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -23,13 +23,13 @@ class FreeGreensFunctionTestCase(unittest.TestCase):
     def test_instantiation(self):
         D = 1e-12
 
-        gf = mod.FreeGreensFunction(D)
+        gf = mod.GreensFunction3DSym(D)
         self.failIf(gf == None)
 
     def test_drawR(self):
         D = 1e-12
         
-        gf = mod.FreeGreensFunction(D)
+        gf = mod.GreensFunction3DSym(D)
 
         t = 1e-3
 
@@ -46,7 +46,7 @@ class FreeGreensFunctionTestCase(unittest.TestCase):
 
         D = 1e-12
         
-        gf = mod.FreeGreensFunction(D)
+        gf = mod.GreensFunction3DSym(D)
 
         t = 0.0
 
@@ -67,7 +67,7 @@ class FreeGreensFunctionTestCase(unittest.TestCase):
         t = 1e-5
         r = 2.5e-8
         
-        gf = mod.FreeGreensFunction(D)
+        gf = mod.GreensFunction3DSym(D)
         ip = gf.ip_r(numpy.inf, t)
         self.assertEqual(1.0, ip)
 
@@ -78,7 +78,7 @@ class FreeGreensFunctionTestCase(unittest.TestCase):
         D = 1e-12
         t = 1e-5
         
-        gf = mod.FreeGreensFunction(D)
+        gf = mod.GreensFunction3DSym(D)
 
         ip = gf.ip_r(0.0, t)
         self.assertEqual(0.0, ip)

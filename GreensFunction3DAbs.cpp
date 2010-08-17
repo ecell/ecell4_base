@@ -22,11 +22,11 @@
 #include "funcSum.hpp"
 #include "freeFunctions.hpp"
 #include "SphericalBesselGenerator.hpp"
-#include "FirstPassageNoCollisionPairGreensFunction.hpp"
+#include "GreensFunction3DAbs.hpp"
 
-typedef FirstPassageNoCollisionPairGreensFunction FPNCPGF;
+typedef GreensFunction3DAbs FPNCPGF;
 
-FPNCPGF::FirstPassageNoCollisionPairGreensFunction(Real D, Real r0, Real a) 
+FPNCPGF::GreensFunction3DAbs(Real D, Real r0, Real a) 
     : PairGreensFunction(D, 0., r0, 0.), a(a)
 {
     if (a < 0.0)
@@ -35,7 +35,7 @@ FPNCPGF::FirstPassageNoCollisionPairGreensFunction(Real D, Real r0, Real a)
     }
 }
 
-FPNCPGF::~FirstPassageNoCollisionPairGreensFunction()
+FPNCPGF::~GreensFunction3DAbs()
 {
     ; // do nothing
 }
@@ -879,5 +879,5 @@ std::string FPNCPGF::dump() const
     return ss.str();
 }
 
-Logger& FirstPassageNoCollisionPairGreensFunction::log_(
-    Logger::get_logger("FirstPassageNoCollisionPairGreensFunction"));
+Logger& GreensFunction3DAbs::log_(
+    Logger::get_logger("GreensFunction3DAbs"));

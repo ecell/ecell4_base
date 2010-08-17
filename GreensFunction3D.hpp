@@ -17,7 +17,7 @@
    kf == sigma == 0.
 */
 
-class FreePairGreensFunction
+class GreensFunction3D
     :
     public PairGreensFunction
 {
@@ -30,14 +30,14 @@ private:
     
 public:
     
-    FreePairGreensFunction(Real D, Real r0)
+    GreensFunction3D(Real D, Real r0)
         : PairGreensFunction(D, 0.0, r0, 0.0)
     {
         ; // do nothing
     }
     
     
-    ~FreePairGreensFunction()
+    ~GreensFunction3D()
     {
         ; // do nothing
     }

@@ -19,15 +19,15 @@ StructureUtils_test
 
 PYTHON_TESTS = \
 	BDSimulator_test.py \
-	BasicPairGreensFunction_test.py \
+	GreensFunction3DRadInf_test.py \
 	CylindricalShellContainer_test.py \
 	EGFRDSimulator_test.py \
 	EventScheduler_test.py \
-	FirstPassageNoCollisionPairGreensFunction_test.py \
-	FirstPassagePairGreensFunction_test.py \
-	FirstPassageGreensFunction_test.py \
-	FreeGreensFunction_test.py \
-	FreePairGreensFunction_test.py \
+	GreensFunction3DAbs_test.py \
+	GreensFunction3DRadAbs_test.py \
+	GreensFunction3DAbsSym_test.py \
+	GreensFunction3DSym_test.py \
+	GreensFunction3D_test.py \
 	Model_test.py \
 	NetworkRules_test.py \
 	NetworkRulesWrapper_test.py \
@@ -51,11 +51,11 @@ alltests.py\
 utils_test.py\
 freeFunctions_test.py\
 EventScheduler_test.py\
-FreeGreensFunction_test.py\
-FreePairGreensFunction_test.py\
-BasicPairGreensFunction_test.py\
-FirstPassageGreensFunction_test.py\
-FirstPassagePairGreensFunction_test.py\
+GreensFunction3DSym_test.py\
+GreensFunction3D_test.py\
+GreensFunction3DRadInf_test.py\
+GreensFunction3DAbsSym_test.py\
+GreensFunction3DRadAbs_test.py\
 EGFRDSimulator_test.py\
 SphericalShellContainer_test.py\
 CylindricalShellContainer_test.py\

@@ -12,7 +12,7 @@ import _greens_functions as mod
 import numpy
 
 
-class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
+class GreensFunction3DRadAbsTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -27,7 +27,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 5e-8
 
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         self.failIf(gf == None)
 
 
@@ -38,7 +38,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 5e-8
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = gf.drawTime(0.5)
         self.failIf(t <= 0.0 or t >= numpy.inf)
@@ -57,7 +57,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = sigma
         r0 = a
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = gf.drawTime(0.5)
         self.assertEqual(0.0, t)
@@ -69,7 +69,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = sigma + sigma * 1e-6
         r0 = (a + sigma) * .5
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = gf.drawTime(0.5)
         self.failIf(t <= 0.0 or t >= numpy.inf)
@@ -81,7 +81,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = a
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = gf.drawTime(0.5)
         self.assertEqual(0.0, t)
@@ -93,7 +93,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = sigma
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = gf.drawTime(0.5)
         self.failIf(t < 0.0 or t >= numpy.inf)
@@ -106,7 +106,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 10e-7
         r0 = sigma + 1e-12
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = gf.drawTime(0.5)
         self.failIf(t < 0.0 or t >= numpy.inf)
@@ -119,7 +119,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 5e-8
 
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = gf.drawTime(0.5)
         event_type = gf.drawEventType(0.5, t)
@@ -140,7 +140,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-6 #sigma + sigma * 0.001
         r0 = 1.1e-8 #sigma+(a-sigma)/2
 
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = gf.drawTime(0.999)
 
@@ -164,7 +164,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 9e-8
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         print '==============================================='
 
@@ -192,7 +192,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = sigma
         r0 = a
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t, et = gf.drawTime2(0.5, 0.5)
         self.assertEqual(0.0, t)
@@ -205,7 +205,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = sigma + sigma * 1e-6
         r0 = (a + sigma) * .5
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t, et = gf.drawTime2(0.5, 0.5)
         self.failIf(t <= 0.0 or t >= numpy.inf)
@@ -217,7 +217,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = a
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t, et = gf.drawTime2(0.5, 0.5)
         self.assertEqual(0.0, t)
@@ -231,7 +231,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = sigma
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t, et = gf.drawTime2(0.5, 0.5)
         self.failIf(t < 0.0 or t >= numpy.inf)
@@ -249,7 +249,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = sigma*1.1
         print '**************'
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t, et = gf.drawTime2(0.3, 0.3, r0)
         t2 = gf.drawTime(0.3, r0)
@@ -270,7 +270,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 10e-7
         r0 = sigma + 1e-12
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t, et = gf.drawTime2(0.5, 0.5, r0)
         self.failIf(t < 0.0 or t >= numpy.inf)
@@ -284,7 +284,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 2e-8
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = 1e-3
 
@@ -308,7 +308,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 2e-8
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = 0.0
 
@@ -325,7 +325,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 
         t = 1e-3
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         r = gf.drawR(0.5, t)
         self.failIf(r < sigma or r > a)
@@ -339,21 +339,21 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         
         t = 1e-6
         r0 = 1.005e-8
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         r = gf.drawR(0.5, t)
         self.failIf(r < sigma or r > a)
 
         # near s
         r = 1.0001e-8
         r0 = 1.0001e-8
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         r = gf.drawR(0.5, t)
         self.failIf(r < sigma or r > a)
 
         # near a
         r = 1.0099e-8
         r0 = 1.0099e-8
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         r = gf.drawR(0.5, t)
         self.failIf(r < sigma or r > a)
 
@@ -365,7 +365,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 5e-8
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = gf.drawTime(0.5)
         event_type = gf.drawEventType(0.5, t)
@@ -389,7 +389,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         r = 5e-8
         r0 = 5e-8
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = 0.0
         theta = gf.drawTheta(0.5, r0, t)
@@ -404,7 +404,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         r = 2e-8
         r0 = 2e-8
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         t = 1e-7  # well this is not *very* small..
         theta = gf.drawTheta(0.5, r, t)
@@ -422,21 +422,21 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         t = 1e-8
         r = 1.0001e-8
         r0 = 1.0001e-8
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         theta = gf.drawTheta(0.5, r, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
         # near s
         r = 1.00001e-8
         r0 = 1.00001e-8
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         theta = gf.drawTheta(0.5, r, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
         # near a
         r = 1.00099e-8
         r0 = 1.00099e-8
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         theta = gf.drawTheta(0.5, r, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
@@ -451,12 +451,12 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         t = 1e-10
         r = 1.00099e-8
         r0 = 1.00099e-8
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         ip = gf.ip_theta(1, r, t)
 
         r = 1.0000001e-8
         r0 = 1.0000001e-8
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         ip = gf.ip_theta(1, r, t)
 
 
@@ -470,7 +470,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         t = 1e-3
         r = r0
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         theta = gf.drawTheta(0.5, r, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
@@ -485,7 +485,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         t = 1e-3
         r = a
 
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         theta = gf.drawTheta(0.5, r, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
@@ -500,7 +500,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 
         r =  1.03421535312e-07
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         theta = gf.drawTheta(0.5, r, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
@@ -515,7 +515,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         a = 1e-7
         r0 = 5e-8
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         maxerror = 0.0
         
         for i in range(100):
@@ -537,7 +537,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         surv = gf.p_survival(t)
         pleaves = gf.p_leaves(t)
@@ -559,7 +559,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         dsurv = gf.dp_survival(t)
         leaves = gf.leaves(t) * 4.0 * numpy.pi * sigma * sigma
@@ -580,7 +580,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
 
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         for i in range(5):
             psurv = gf.p_survival(t)
@@ -602,7 +602,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         r = r0
         pintr = gf.p_int_r(r, t)
@@ -621,7 +621,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         r = r0
         
         pintr = gf.p_int_r(a, t)
@@ -639,7 +639,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
          
         pintr = gf.p_int_r(gf.getSigma(), t)
         self.assertEqual(0.0, pintr)
@@ -656,7 +656,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 
         a = 3e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         psurv = gf.p_survival(t)
 
@@ -684,7 +684,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         r = r0
 
         ip = gf.ip_theta(0.0, r, t)
@@ -712,7 +712,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
 
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         ip = gf.ip_theta(numpy.pi, r, t)
         p0 = gf.p_0(t, r) * 2
@@ -732,7 +732,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         r = r0
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         pint = gf.ip_theta(numpy.pi, r, t)
 
@@ -760,7 +760,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         r = r0
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         pint_prev = 0.0
 
@@ -782,7 +782,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         r0 = 9e-8
         a = 1e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         leavea = gf.leavea(t) * numpy.pi * a * a * 2
         iptheta = gf.idp_theta(numpy.pi, a, t) * numpy.pi * a * a
@@ -801,7 +801,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         r = 5e-7
         a = 1e-6
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         resolution = 20
         for i in range(1, resolution):
@@ -823,7 +823,7 @@ class FirstPassagePairGreensFunctionTestCase(unittest.TestCase):
         
         a = 2e-7
         
-        gf = mod.FirstPassagePairGreensFunction(D, kf, r0, sigma, a)
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
         maxerror = 0
         
         for n in range(100):

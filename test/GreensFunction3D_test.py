@@ -12,7 +12,7 @@ import _greens_functions as mod
 import numpy
 
 
-class FreePairGreensFunctionTestCase(unittest.TestCase):
+class GreensFunction3DTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -24,14 +24,14 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
         D = 1e-12
         r0 = 5e-8
 
-        gf = mod.FreePairGreensFunction(D, r0)
+        gf = mod.GreensFunction3D(D, r0)
         self.failIf(gf == None)
 
     def test_drawR(self):
         D = 1e-12
         r0 = 2e-8
         
-        gf = mod.FreePairGreensFunction(D, r0)
+        gf = mod.GreensFunction3D(D, r0)
 
         t = 1e-3
 
@@ -48,7 +48,7 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
         D = 1e-12
         r0 = 2e-8
         
-        gf = mod.FreePairGreensFunction(D, r0)
+        gf = mod.GreensFunction3D(D, r0)
 
         t = 0.0
 
@@ -65,7 +65,7 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
         D = 1e-12
         r0 = 2e-8
         
-        gf = mod.FreePairGreensFunction(D, r0)
+        gf = mod.GreensFunction3D(D, r0)
 
         t = 1e-4
 
@@ -88,7 +88,7 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
         r0 = 5e-8
         t = 1e-4
         
-        gf = mod.FreePairGreensFunction(D, r0)
+        gf = mod.GreensFunction3D(D, r0)
 
         #r = gf.drawR(0.5, r0, t)
         r = r0
@@ -113,7 +113,7 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
         r0 = 5e-8
         r = 2.5e-8
         
-        gf = mod.FreePairGreensFunction(D, r0)
+        gf = mod.GreensFunction3D(D, r0)
 
         ip = gf.ip_r(numpy.inf, t)
         self.assertEqual(1.0, ip)
@@ -129,7 +129,7 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
         r0 = 5e-8
         r = 2.5e-8
         
-        gf = mod.FreePairGreensFunction(D, r0)
+        gf = mod.GreensFunction3D(D, r0)
 
         ip = gf.ip_r(0.0, t)
         self.assertEqual(0.0, ip)
@@ -156,7 +156,7 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
         r0 = 5e-8
         r = 2.5e-8
         
-        gf = mod.FreePairGreensFunction(D, r0)
+        gf = mod.GreensFunction3D(D, r0)
 
         ip = gf.ip_theta(numpy.pi, r, t)
         result = scipy.integrate.quad(gf.p_theta, 0.0, numpy.pi,
@@ -182,7 +182,7 @@ class FreePairGreensFunctionTestCase(unittest.TestCase):
         r0 = 5e-8
         r = 2.5e-8
         
-        gf = mod.FreePairGreensFunction(D, r0)
+        gf = mod.GreensFunction3D(D, r0)
 
         ip = gf.ip_theta(0.0, r, t)
         self.assertEqual(0.0, ip)

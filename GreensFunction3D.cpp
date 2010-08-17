@@ -8,9 +8,9 @@
 #include <gsl/gsl_roots.h>
 
 #include "freeFunctions.hpp"
-#include "FreePairGreensFunction.hpp"
+#include "GreensFunction3D.hpp"
 
-Real FreePairGreensFunction::p_r(Real r, Real t) const
+Real GreensFunction3D::p_r(Real r, Real t) const
 {
     const Real D( getD() );
     const Real Dt( D * t );
@@ -29,7 +29,7 @@ Real FreePairGreensFunction::p_r(Real r, Real t) const
     return jacobian * ( - num1 + num2 ) / den;
 }
 
-Real FreePairGreensFunction::ip_r(Real r, Real t) const
+Real GreensFunction3D::ip_r(Real r, Real t) const
 {
     const Real D( getD() );
     const Real Dt4( 4.0 * D * t );
@@ -49,19 +49,19 @@ Real FreePairGreensFunction::ip_r(Real r, Real t) const
     return ( term1 + term2 + term3 ) * .5;
 }
     
-Real FreePairGreensFunction::p_theta(Real theta, Real r, Real t) const
+Real GreensFunction3D::p_theta(Real theta, Real r, Real t) const
 {
     return p_theta_free( theta, r, r0, t, getD() );
 }
 
-Real FreePairGreensFunction::ip_theta(Real theta, Real r, Real t) const
+Real GreensFunction3D::ip_theta(Real theta, Real r, Real t) const
 {
     return ip_theta_free( theta, r, r0, t, getD() );
 }
 
 struct ip_r_params
 { 
-    FreePairGreensFunction const* const gf;
+    GreensFunction3D const* const gf;
     const Real t;
     const Real value;
 };
@@ -71,7 +71,7 @@ static Real ip_r_F(Real r, ip_r_params const* params )
     return params->gf->ip_r(r, params->t) - params->value;
 }
 
-Real FreePairGreensFunction::drawR(Real rnd, Real t) const
+Real GreensFunction3D::drawR(Real rnd, Real t) const
 {
     // input parameter range checks.
     if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
@@ -159,7 +159,7 @@ Real FreePairGreensFunction::drawR(Real rnd, Real t) const
 
 struct ip_theta_params
 { 
-    FreePairGreensFunction const* const gf;
+    GreensFunction3D const* const gf;
     const Real r;
     const Real t;
     const Real value;
@@ -170,7 +170,7 @@ static Real ip_theta_F(Real theta, ip_theta_params const* params)
     return params->gf->ip_theta(theta, params->r, params->t) - params->value;
 }
 
-Real FreePairGreensFunction::drawTheta(Real rnd, Real r, Real t) const
+Real GreensFunction3D::drawTheta(Real rnd, Real r, Real t) const
 {
     // input parameter range checks.
     if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
@@ -250,13 +250,13 @@ Real FreePairGreensFunction::drawTheta(Real rnd, Real r, Real t) const
 }
 
 
-std::string FreePairGreensFunction::dump() const
+std::string GreensFunction3D::dump() const
 {
     std::ostringstream ss;
     ss << "D = " << this->getD() << std::endl;
     return ss.str();
 }
 
-Logger& FreePairGreensFunction::log_(
-    Logger::get_logger("FreePairGreensFunction"));
+Logger& GreensFunction3D::log_(
+    Logger::get_logger("GreensFunction3D"));
 

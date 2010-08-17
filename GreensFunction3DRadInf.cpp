@@ -26,11 +26,11 @@
 
 #include "SphericalBesselGenerator.hpp"
 
-#include "BasicPairGreensFunction.hpp"
+#include "GreensFunction3DRadInf.hpp"
 
 
 
-BasicPairGreensFunction::BasicPairGreensFunction(Real D, Real kf, Real r0, Real Sigma)
+GreensFunction3DRadInf::GreensFunction3DRadInf(Real D, Real kf, Real r0, Real Sigma)
     : PairGreensFunction(D, kf, r0, Sigma),
       kD(4.0 * M_PI * getSigma() * getD()),
       alpha((1.0 + (getkf() / getkD())) * (sqrt(getD()) / getSigma()))
@@ -38,13 +38,13 @@ BasicPairGreensFunction::BasicPairGreensFunction(Real D, Real kf, Real r0, Real 
     ; // do nothing
 }
 
-BasicPairGreensFunction::~BasicPairGreensFunction()
+GreensFunction3DRadInf::~GreensFunction3DRadInf()
 {
     ; // do nothing
 }
 
 Real 
-BasicPairGreensFunction::p_corr_R(Real alpha, unsigned int n, Real r, Real t) const
+GreensFunction3DRadInf::p_corr_R(Real alpha, unsigned int n, Real r, Real t) const
 {
     const Real D(this->getD());
     const Real sigma(this->getSigma());
@@ -88,17 +88,17 @@ BasicPairGreensFunction::p_corr_R(Real alpha, unsigned int n, Real r, Real t) co
     return result;
 }
 
-struct BasicPairGreensFunction::p_corr_R_params 
+struct GreensFunction3DRadInf::p_corr_R_params 
 { 
-    const BasicPairGreensFunction* const gf;
+    const GreensFunction3DRadInf* const gf;
     unsigned int n;
     const Real r;
     const Real t; 
 };
 
-Real BasicPairGreensFunction::p_corr_R_F(Real alpha, p_corr_R_params* params)
+Real GreensFunction3DRadInf::p_corr_R_F(Real alpha, p_corr_R_params* params)
 {
-    const BasicPairGreensFunction* const gf(params->gf); 
+    const GreensFunction3DRadInf* const gf(params->gf); 
 
     const unsigned int n(params->n);
     const Real r(params->r);
@@ -108,7 +108,7 @@ Real BasicPairGreensFunction::p_corr_R_F(Real alpha, p_corr_R_params* params)
 }
 
 
-Real BasicPairGreensFunction::p_corr(Real theta, Real r, Real t) const
+Real GreensFunction3DRadInf::p_corr(Real theta, Real r, Real t) const
 {
     RealVector RnTable;
     makeRnTable(RnTable, r, t);
@@ -116,7 +116,7 @@ Real BasicPairGreensFunction::p_corr(Real theta, Real r, Real t) const
     return p_corr_table(theta, r, t, RnTable);
 }
 
-Real BasicPairGreensFunction::ip_corr(Real theta, Real r, Real t) const
+Real GreensFunction3DRadInf::ip_corr(Real theta, Real r, Real t) const
 {
     RealVector RnTable;
     makeRnTable(RnTable, r, t);
@@ -125,18 +125,18 @@ Real BasicPairGreensFunction::ip_corr(Real theta, Real r, Real t) const
 }
 
 
-Real BasicPairGreensFunction::p_free(Real theta, Real r, Real t) const
+Real GreensFunction3DRadInf::p_free(Real theta, Real r, Real t) const
 {
     return p_theta_free(theta, r, r0, t, getD());
 }
 
-Real BasicPairGreensFunction::p_survival(Real t) const
+Real GreensFunction3DRadInf::p_survival(Real t) const
 {
     return 1.0 - p_reaction(t);
 }
 
 
-Real BasicPairGreensFunction::p_reaction(Real t) const
+Real GreensFunction3DRadInf::p_reaction(Real t) const
 {
     const Real kf(getkf());
     const Real D(getD());
@@ -149,13 +149,13 @@ Real BasicPairGreensFunction::p_reaction(Real t) const
 
 struct p_reaction_params 
 { 
-    const BasicPairGreensFunction* const gf;
+    const GreensFunction3DRadInf* const gf;
     const Real rnd;
 };
 
 static Real p_reaction_F(Real t, p_reaction_params* params)
 {
-    const BasicPairGreensFunction* const gf(params->gf); 
+    const GreensFunction3DRadInf* const gf(params->gf); 
     const Real kf(gf->getkf());
     const Real D(gf->getD());
     const Real sigma(gf->getSigma());
@@ -170,7 +170,7 @@ static Real p_reaction_F(Real t, p_reaction_params* params)
 
 
 Real 
-BasicPairGreensFunction::p_int_r(Real r, Real t) const
+GreensFunction3DRadInf::p_int_r(Real r, Real t) const
 {
     const Real kf(getkf());
     const Real D(getD());
@@ -212,14 +212,14 @@ BasicPairGreensFunction::p_int_r(Real r, Real t) const
 
 struct p_int_r_params 
 { 
-    const BasicPairGreensFunction* const gf;
+    const GreensFunction3DRadInf* const gf;
     const Real t;
     const Real rnd;
 };
 
 static Real p_int_r_F(Real r, p_int_r_params* params)
 {
-    const BasicPairGreensFunction* const gf(params->gf); 
+    const GreensFunction3DRadInf* const gf(params->gf); 
 
     const Real t(params->t);
     const Real rnd(params->rnd);
@@ -228,7 +228,7 @@ static Real p_int_r_F(Real r, p_int_r_params* params)
 }
 
 
-Real BasicPairGreensFunction::drawTime(Real rnd) const
+Real GreensFunction3DRadInf::drawTime(Real rnd) const
 {
     const Real sigma(this->getSigma());
 
@@ -303,7 +303,7 @@ Real BasicPairGreensFunction::drawTime(Real rnd) const
 
 
 
-Real BasicPairGreensFunction::drawR(Real rnd, Real t) const
+Real GreensFunction3DRadInf::drawR(Real rnd, Real t) const
 {
     const Real sigma(this->getSigma());
     const Real D(this->getD());
@@ -445,7 +445,7 @@ Real BasicPairGreensFunction::drawR(Real rnd, Real t) const
 
 
 Real 
-BasicPairGreensFunction::Rn(unsigned int n, Real r, Real t,
+GreensFunction3DRadInf::Rn(unsigned int n, Real r, Real t,
                             gsl_integration_workspace* workspace,
                             Real tol) const
 {
@@ -472,12 +472,12 @@ BasicPairGreensFunction::Rn(unsigned int n, Real r, Real t,
 }
 
 
-Real BasicPairGreensFunction::p_corr_n(unsigned int n, RealVector const& RnTable, RealVector const& lgndTable) const
+Real GreensFunction3DRadInf::p_corr_n(unsigned int n, RealVector const& RnTable, RealVector const& lgndTable) const
 {
     return RnTable[n] * lgndTable[n] * (2.0 * n + 1.0);
 }
 
-Real BasicPairGreensFunction::ip_corr_n(unsigned int n, RealVector const& RnTable, RealVector const& lgndTable) const
+Real GreensFunction3DRadInf::ip_corr_n(unsigned int n, RealVector const& RnTable, RealVector const& lgndTable) const
 {
     // lgndTable1 is offset by 1; lgndTable1[0] is for n=-1.
 
@@ -488,7 +488,7 @@ Real BasicPairGreensFunction::ip_corr_n(unsigned int n, RealVector const& RnTabl
 }
 
 
-Real BasicPairGreensFunction::p_corr_table(Real theta, Real r, Real t, RealVector const& RnTable) const
+Real GreensFunction3DRadInf::p_corr_table(Real theta, Real r, Real t, RealVector const& RnTable) const
 {
     const Index tableSize(RnTable.size());
     if(tableSize == 0)
@@ -507,7 +507,7 @@ Real BasicPairGreensFunction::p_corr_table(Real theta, Real r, Real t, RealVecto
     gsl_sf_legendre_Pl_array(tableSize-1, cos(theta), &lgndTable[0]);
 
 
-    const Real p(funcSum_all(boost::bind(&BasicPairGreensFunction::
+    const Real p(funcSum_all(boost::bind(&GreensFunction3DRadInf::
                                             p_corr_n,
                                             this,
                                             _1, RnTable, lgndTable),
@@ -521,7 +521,7 @@ Real BasicPairGreensFunction::p_corr_table(Real theta, Real r, Real t, RealVecto
 }
 
 
-Real BasicPairGreensFunction::ip_corr_table(Real theta, Real r,
+Real GreensFunction3DRadInf::ip_corr_table(Real theta, Real r,
                                             Real t, RealVector const& RnTable) const
 {
     const Index tableSize(RnTable.size());
@@ -538,7 +538,7 @@ Real BasicPairGreensFunction::ip_corr_table(Real theta, Real r,
     lgndTable[0] = 1.0; // n = -1
     gsl_sf_legendre_Pl_array(tableSize, cos_theta, &lgndTable[1]);
 
-    const Real p(funcSum_all(boost::bind(&BasicPairGreensFunction::
+    const Real p(funcSum_all(boost::bind(&GreensFunction3DRadInf::
                                             ip_corr_n,
                                             this,
                                             _1, RnTable, lgndTable),
@@ -549,13 +549,13 @@ Real BasicPairGreensFunction::ip_corr_table(Real theta, Real r,
 }
 
 Real 
-BasicPairGreensFunction::ip_free(Real theta, Real r, Real t) const
+GreensFunction3DRadInf::ip_free(Real theta, Real r, Real t) const
 {
     return ip_theta_free(theta, r, r0, t, getD());
 }
 
 
-Real BasicPairGreensFunction::p_theta(Real theta, Real r, Real t) const
+Real GreensFunction3DRadInf::p_theta(Real theta, Real r, Real t) const
 {
     RealVector RnTable;
     makeRnTable(RnTable, r, t);
@@ -563,7 +563,7 @@ Real BasicPairGreensFunction::p_theta(Real theta, Real r, Real t) const
     return p_theta_table(theta, r, t, RnTable);
 }
 
-Real BasicPairGreensFunction::ip_theta(Real theta, Real r, Real t) const
+Real GreensFunction3DRadInf::ip_theta(Real theta, Real r, Real t) const
 {
     RealVector RnTable;
     makeRnTable(RnTable, r, t);
@@ -572,7 +572,7 @@ Real BasicPairGreensFunction::ip_theta(Real theta, Real r, Real t) const
 }
 
 
-Real BasicPairGreensFunction::p_theta_table(Real theta, Real r,
+Real GreensFunction3DRadInf::p_theta_table(Real theta, Real r,
                                             Real t, RealVector const& RnTable) const
 {
     const Real p_free(this->p_free(theta, r, t));
@@ -582,7 +582,7 @@ Real BasicPairGreensFunction::p_theta_table(Real theta, Real r,
     return (p_free + p_corr);
 }
 
-Real BasicPairGreensFunction::ip_theta_table(Real theta, Real r, Real t, RealVector const& RnTable) const
+Real GreensFunction3DRadInf::ip_theta_table(Real theta, Real r, Real t, RealVector const& RnTable) const
 {
     const Real p_free(this->ip_free(theta, r, t));
     const Real p_corr(this->ip_corr_table(theta, r, t, RnTable)); 
@@ -601,7 +601,7 @@ static const Real p_free_max(Real r, Real r0, Real t, Real D)
     return term1 * term2;
 }
 
-void BasicPairGreensFunction::makeRnTable(RealVector& RnTable,
+void GreensFunction3DRadInf::makeRnTable(RealVector& RnTable,
                                           Real r, Real t) const
 {
     RnTable.clear();
@@ -652,7 +652,7 @@ void BasicPairGreensFunction::makeRnTable(RealVector& RnTable,
 
         if(n >= this->MAX_ORDER)
         {
-            log_.info("BasicPairGreensFunction: Rn didn't converge");
+            log_.info("GreensFunction3DRadInf: Rn didn't converge");
             break;
         }
         
@@ -664,28 +664,28 @@ void BasicPairGreensFunction::makeRnTable(RealVector& RnTable,
     gsl_integration_workspace_free(workspace);
 }
 
-struct BasicPairGreensFunction::p_theta_params 
+struct GreensFunction3DRadInf::p_theta_params 
 { 
-    const BasicPairGreensFunction* const gf;
+    const GreensFunction3DRadInf* const gf;
     const Real r;
     const Real t;
-    BasicPairGreensFunction::RealVector const& RnTable;
+    GreensFunction3DRadInf::RealVector const& RnTable;
     const Real value;
 };
     
-Real BasicPairGreensFunction::ip_theta_F(Real theta, p_theta_params* params)
+Real GreensFunction3DRadInf::ip_theta_F(Real theta, p_theta_params* params)
 {
-    const BasicPairGreensFunction* const gf(params->gf); 
+    const GreensFunction3DRadInf* const gf(params->gf); 
     const Real r(params->r);
     const Real t(params->t);
-    BasicPairGreensFunction::RealVector const& RnTable(params->RnTable);
+    GreensFunction3DRadInf::RealVector const& RnTable(params->RnTable);
     const Real value(params->value);
 
     return gf->ip_theta_table(theta, r, t, RnTable) - value;
 }
 
 
-Real BasicPairGreensFunction::drawTheta(Real rnd, Real r, Real t) const
+Real GreensFunction3DRadInf::drawTheta(Real rnd, Real r, Real t) const
 {
     Real theta;
 
@@ -778,7 +778,7 @@ Real BasicPairGreensFunction::drawTheta(Real rnd, Real r, Real t) const
 // debug
 //
 
-std::string BasicPairGreensFunction::dump() const
+std::string GreensFunction3DRadInf::dump() const
 {
     std::ostringstream ss;
     ss << "D = " << this->getD() << ", sigma = " << this->getSigma() <<
@@ -788,6 +788,6 @@ std::string BasicPairGreensFunction::dump() const
     return ss.str();
 }
 
-Logger& BasicPairGreensFunction::log_(
-        Logger::get_logger("BasicPairGreensFunction"));
+Logger& GreensFunction3DRadInf::log_(
+        Logger::get_logger("GreensFunction3DRadInf"));
 
