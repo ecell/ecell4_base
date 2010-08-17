@@ -37,12 +37,14 @@ class Multi(object):
 
     def add_shell(self, shell_id_shell_pair):
         if __debug__:
-            log.info("add_shell: %s\n", shell_id_shell_pair)
+            log.info("add shell to multi:\n  (%s,\n   %s)" %
+                     (shell_id_shell_pair[0], shell_id_shell_pair[1]))
         self.sphere_container.update(shell_id_shell_pair)
 
     def add_particle(self, pid_particle_pair):
         if __debug__:
-            log.info("add_particle: %s\n", pid_particle_pair)
+            log.info("add particle to multi:\n  (%s,\n   %s)" % 
+                     (pid_particle_pair[0], pid_particle_pair[1]))
         self.particle_container.update_particle(pid_particle_pair)
 
     def step(self):
@@ -108,10 +110,10 @@ class Multi(object):
                         % str(shell_id)
 
     def __repr__(self):
-        return 'Multi[domain_id=%s, event_id=%s: %s: %s]' % (
+        return 'Multi[domain_id=%s, event_id=%s,\n    %s,\n    %s]' % (
             self.domain_id, self.event_id,
-            ', '.join('(%s, %s)' % (p[0], repr(p[1])) for p in self.particle_container),
-            ', '.join('(%s, %s)' % (s[0], repr(s[1])) for s in self.sphere_container)
+            ',\n    '.join('(%s,\n     %s)' % (p[0], repr(p[1])) for p in self.particle_container),
+            ',\n    '.join('(%s,\n     %s)' % (s[0], repr(s[1])) for s in self.sphere_container)
             )
 
     def has_particle(self, pid):

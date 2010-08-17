@@ -89,8 +89,8 @@ def get_closest_surface(world, pos, ignore):
         - distance to surface
         - surface itself
 
-    We can not use matrix_space, it would miss a surface if the origin of the 
-    surface would not be in the same or neighboring cells as pos.
+    We can not use matrix_space, it would miss a surface if the origin 
+    of the surface would not be in the same or neighboring cells as pos.
 
     """
     structures = []
@@ -115,7 +115,8 @@ def create_world(m, matrix_size=10):
     if not isinstance(world_region, _gfrd.CuboidalRegion):
         raise TypeError("the world should be a CuboidalRegion")
 
-    if not numpy.all(world_region.shape.extent == world_region.shape.extent[0]):
+    if not numpy.all(world_region.shape.extent ==
+                     world_region.shape.extent[0]):
         raise NotImplementedError("non-cuboidal world is not supported")
 
     world_size = world_region.shape.extent[0] * 2
@@ -144,16 +145,19 @@ def create_network_rules_wrapper(model):
 
 def throw_in_particles(world, sid, n):
     species = world.get_species(sid)
-    surface = world.get_structure(species.structure_id)
+    structure = world.get_structure(species.structure_id)
 
     if __debug__:
-        log.info('\tthrowing in %s %s particles to %s' % (n, species.id,
-                                                          surface.id))
+        name = world.model.get_species_type_by_id(sid)["name"]
+        if name[0] != '(':
+            name = '(' + name + ')'
+        log.info('\n\tthrowing in %s particles of type %s to %s' %
+                 (n, name, structure.id))
 
     # This is a bit messy, but it works.
     i = 0
     while i < int(n):
-        position = surface.random_position(myrandom.rng)
+        position = structure.random_position(myrandom.rng)
         position = apply_boundary(position, world.world_size)
 
         # Check overlap.
@@ -162,11 +166,12 @@ def throw_in_particles(world, sid, n):
             # Check if not too close to a neighbouring structures for 
             # particles added to the world, or added to a self-defined 
             # box.
-            if isinstance(surface, _gfrd.CuboidalRegion):
+            if isinstance(structure, _gfrd.CuboidalRegion):
                 tmp = get_closest_surface(world, position, [])
                 if tmp is not None:
                     distance, closest_surface = tmp
-                    if distance < closest_surface.minimal_distance(species.radius):
+                    if(distance < 
+                       closest_surface.minimal_distance(species.radius)):
                         if __debug__:
                             log.info('\t%d-th particle rejected. Too close to '
                                      'surface. I will keep trying.' % i)
@@ -176,7 +181,7 @@ def throw_in_particles(world, sid, n):
                 p = world.new_particle(sid, position)
                 i += 1
                 if __debug__:
-                    log.info(p)
+                    log.info('(%s,\n %s' % (p[0], p[1]))
         elif __debug__:
             log.info('\t%d-th particle rejected. I will keep trying.' % i)
 
@@ -226,17 +231,11 @@ class ParticleSimulatorBase(object):
             - surface itself
 
         """
-        distance_to_surface, closest_surface = self.get_closest_surface(pos, 
-                                                                   ignore) 
-        if distance_to_surface < radius:
-            return distance_to_surface, closest_surface
+        distance, closest_surface = self.get_closest_surface(pos, ignore) 
+        if distance < radius:
+            return distance, closest_surface
         else:
             return numpy.inf, None
-
-        if isinstance(size, float) and size == INF:
-            self._distance = distance
-        else:
-            self._distance = distance_cyclic
 
     def get_species(self):
         return self.world.species
@@ -262,21 +261,22 @@ class ParticleSimulatorBase(object):
         self.dt = self.dt_limit
 
     def check_particle_matrix(self):
-        total = sum(len(self.world.get_particle_ids(s.id)) for s in self.world.species)
+        total = sum(len(self.world.get_particle_ids(s.id))
+                    for s in self.world.species)
 
         if total != self.world.num_particles:
-            raise RuntimeError,\
-                'total number of particles %d != self.world.num_particles %d'\
-                % (total, self.world.num_particles)
+            raise RuntimeError('total number of particles %d != '
+                               'self.world.num_particles %d' %
+                               (total, self.world.num_particles))
 
     def check_particles(self):
         for pid_particle_pair in self.world:
             pid = pid_particle_pair[0]
             pos = pid_particle_pair[1].position
             if (pos >= self.world.world_size).any() or (pos < 0.0).any():
-                raise RuntimeError,\
-                    '%s at position %s out of the world (world size=%g).' %\
-                    (pid, pos, self.world.world_size)
+                raise RuntimeError('%s at position %s out of the world '
+                                   '(world size=%g).' %
+                                   (pid, pos, self.world.world_size))
 
 
     def check(self):
@@ -319,8 +319,10 @@ class ParticleSimulatorBase(object):
         reflective_reaction_rules = uniq(reflective_reaction_rules)
         reflective_reaction_rules.sort()
 
-        return('\nMonomolecular reaction rules:\n' + ''.join(reaction_rules_1) +
-               '\nBimolecular reaction rules:\n' + ''.join(reaction_rules_2) +
+        return('\nMonomolecular reaction rules:\n' +
+               ''.join(reaction_rules_1) +
+               '\nBimolecular reaction rules:\n' +
+               ''.join(reaction_rules_2) +
                '\nReflective bimolecular reaction rules:\n' +
                ''.join(reflective_reaction_rules))
 

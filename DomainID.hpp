@@ -48,7 +48,7 @@ template<typename Tstrm_>
 inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
         const DomainID& v)
 {
-    strm << "DomainID(" << v().first << ":" << v().second << ")";
+    strm << "DID(" << v().first << ":" << v().second << ")";
     return strm;
 }
 

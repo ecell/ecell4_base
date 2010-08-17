@@ -172,6 +172,14 @@ public:
         return !operator==(rhs);
     }
 
+    std::string show(int precision)
+    {
+        std::ostringstream strm;
+        strm.precision(precision);
+        strm << *this;
+        return strm.str();
+    }
+
 protected:
     position_type position_;
     boost::array<position_type, 3> units_;

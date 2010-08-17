@@ -38,22 +38,32 @@ from bd import DEFAULT_DT_FACTOR
 
 log = logging.getLogger('ecell')
 
+if __debug__:
+    PRECISION = 3
+    FORMAT_DOUBLE = '%.' + str(PRECISION) + 'g'
+
 def create_default_single(domain_id, pid_particle_pair, shell_id, rt, surface):
     if isinstance(surface, CuboidalRegion):
-        return SphericalSingle(domain_id, pid_particle_pair, shell_id, rt, surface)
+        return SphericalSingle(domain_id, pid_particle_pair,
+                               shell_id, rt, surface)
     elif isinstance(surface, CylindricalSurface):
-        return CylindricalSurfaceSingle(domain_id, pid_particle_pair, shell_id, rt, surface)
+        return CylindricalSurfaceSingle(domain_id, pid_particle_pair, 
+                                        shell_id, rt, surface)
     elif isinstance(surface, PlanarSurface):
-        return PlanarSurfaceSingle(domain_id, pid_particle_pair, shell_id, rt, surface)
+        return PlanarSurfaceSingle(domain_id, pid_particle_pair, 
+                                   shell_id, rt, surface)
 
 def create_default_pair(domain_id, com, single1, single2, shell_id, 
                         r0, shell_size, rt, surface):
     if isinstance(surface, CuboidalRegion):
-        return SphericalPair(domain_id, com, single1, single2, shell_id, r0, shell_size, rt, surface)
+        return SphericalPair(domain_id, com, single1, single2,
+                             shell_id, r0, shell_size, rt, surface)
     elif isinstance(surface, CylindricalSurface):
-        return CylindricalSurfacePair(domain_id, com, single1, single2, shell_id, r0, shell_size, rt, surface)
+        return CylindricalSurfacePair(domain_id, com, single1, single2,
+                                      shell_id, r0, shell_size, rt, surface)
     elif isinstance(surface, PlanarSurface):
-        return PlanarSurfacePair(domain_id, com, single1, single2, shell_id, r0, shell_size, rt, surface)
+        return PlanarSurfacePair(domain_id, com, single1, single2,
+                                 shell_id, r0, shell_size, rt, surface)
 
 
 class DomainEvent(Event):
@@ -149,7 +159,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
         for pid_particle_pair in pid_particle_pairs:
             single = self.create_single(pid_particle_pair)
             if __debug__:
-                log.debug("%s as single %s", pid_particle_pair[0], single.domain_id)
+                log.debug('%s as single %s' %
+                          (pid_particle_pair[0], single.domain_id))
             singles.append(single)
         assert len(singles) == self.world.num_particles
         for single in singles:
@@ -159,16 +170,16 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def stop(self, t):
         if __debug__:
-            log.info('stop at %g' % t)
+            log.info('stop at %s' % (FORMAT_DOUBLE % t))
 
         if self.t == t:
             return
 
         if t >= self.scheduler.top[1].time:
-            raise RuntimeError, 'Stop time >= next event time.'
+            raise RuntimeError('Stop time >= next event time.')
 
         if t < self.t:
-            raise RuntimeError, 'Stop time < current time.'
+            raise RuntimeError('Stop time < current time.')
 
         self.t = t
 
@@ -181,8 +192,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 non_single_list.append(obj)
             elif isinstance(obj, Single):
                 if __debug__:
-                    log.debug('burst %s, last_time= %g' % 
-                          (str(obj), obj.last_time))
+                    log.debug('burst %s, last_time= %s' % 
+                              (obj, FORMAT_DOUBLE % obj.last_time))
                 self.burst_single(obj)
             else:
                 assert False, 'do not reach here'
@@ -216,11 +227,12 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         if __debug__:
             domain_counts = self.count_domains()
-            log.info('\n%d: t=%g dt=%g\tSingles: %d, Pairs: %d, Multis: %d'
-                     % ((self.step_counter, self.t, self.dt) + domain_counts))
-            log.info('event=%d reactions=%d rejectedmoves=%d' 
-                     % (id, self.reaction_events, 
-                        self.rejected_moves))
+            log.info('\n%d: t=%s dt=%s\t' %
+                     (self.step_counter, FORMAT_DOUBLE % self.t,
+                      FORMAT_DOUBLE % self.dt) + 
+                     'Singles: %d, Pairs: %d, Multis: %d\n' % domain_counts + 
+                     'event=#%d reactions=%d rejectedmoves=%d' %
+                     (id, self.reaction_events, self.rejected_moves))
        
         for klass, f in self.dispatch:
             if isinstance(event.data, klass):
@@ -238,7 +250,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
             if self.dt == 0:
                 self.zero_steps += 1
                 if self.zero_steps >= max(self.scheduler.size * 3, 10):
-                    raise RuntimeError, 'too many dt=zero steps.  simulator halted?'
+                    raise RuntimeError('too many dt=zero steps. '
+                                       'Simulator halted?')
             else:
                 self.zero_steps = 0
 
@@ -251,21 +264,29 @@ class EGFRDSimulator(ParticleSimulatorBase):
         species = self.world.get_species(pid_particle_pair[1].sid)
         surface = self.world.get_structure(species.structure_id)
 
-        # Create single. The type of the single that will be created depends 
-        # on the surface this particle is on. Either SphericalSingle, 
-        # PlanarSurfaceSingle, or CylindricalSurfaceSingle.
-        single = create_default_single(domain_id, pid_particle_pair, shell_id, rt, surface)
+        # Create single. The type of the single that will be created 
+        # depends on the surface this particle is on. Either 
+        # SphericalSingle, PlanarSurfaceSingle, or 
+        # CylindricalSurfaceSingle.
+        single = create_default_single(domain_id, pid_particle_pair, 
+                                       shell_id, rt, surface)
 
         single.initialize(self.t)
         self.move_shell(single.shell_id_shell_pair)
         self.domains[domain_id] = single
+
+        if __debug__:
+            # Used in __str__.
+            single.world = self.world
         return single
 
     def create_pair(self, single1, single2, com, r0, shell_size):
         assert single1.dt == 0.0
         assert single2.dt == 0.0
 
-        rt = self.network_rules.query_reaction_rule(single1.pid_particle_pair[1].sid, single2.pid_particle_pair[1].sid)[0]
+        rt = self.network_rules.query_reaction_rule(
+                single1.pid_particle_pair[1].sid,
+                single2.pid_particle_pair[1].sid)[0]
 
         domain_id = self.domain_id_generator()
         shell_id = self.shell_id_generator()
@@ -277,8 +298,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
         species = self.world.get_species(single1.pid_particle_pair[1].sid)
         surface = self.world.get_structure(species.structure_id)
 
-        # Create pair. The type of the pair that will be created depends on 
-        # the surface the particles are on. Either SphericalPair, 
+        # Create pair. The type of the pair that will be created depends
+        # on the surface the particles are on. Either SphericalPair, 
         # PlanarSurfacePair, or CylindricalSurfacePair.
         pair = create_default_pair(domain_id, com, single1, single2, shell_id, 
                                    r0, shell_size, rt, surface)
@@ -287,6 +308,11 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         self.move_shell(pair.shell_id_shell_pair)
         self.domains[domain_id] = pair
+
+        if __debug__:
+            # Used in __str__.
+            pair.world = self.world
+
         return pair
 
     def create_multi(self):
@@ -341,7 +367,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def remove_domain(self, obj):
         if __debug__:
-            log.info("remove_domain: %s" % obj)
+            log.info("remove: %s" % obj)
         del self.domains[obj.domain_id]
         for shell_id, shell in obj.shell_list:
             container = self.get_container(shell)
@@ -356,16 +382,18 @@ class EGFRDSimulator(ParticleSimulatorBase):
         event_id = self.scheduler.add(
             DomainEvent(self.t + single.dt, single))
         if __debug__:
-            log.info('add_single_event: #%d (t=%g)' % (
-               event_id, self.t + single.dt))
+            log.info('add_event: %s, event=#%d, t=%s' %
+                     (single.domain_id, event_id,
+                      FORMAT_DOUBLE % (self.t + single.dt)))
         single.event_id = event_id
 
     def add_pair_event(self, pair):
         event_id = self.scheduler.add(
             DomainEvent(self.t + pair.dt, pair))
         if __debug__:
-            log.info('add_pair_event: #%d (t=%g)' % (
-               event_id, self.t + pair.dt))
+            log.info('add_event: %s, event=#%d, t=%s' %
+                     (pair.domain_id, event_id,
+                      FORMAT_DOUBLE % (self.t + pair.dt)))
         pair.event_id = event_id
 
     def add_multi_event(self, multi):
@@ -373,28 +401,31 @@ class EGFRDSimulator(ParticleSimulatorBase):
             DomainEvent(self.t + multi.dt, multi))
 
         if __debug__:
-            log.info('add_multi_event: #%d (t=%g)' % (
-               event_id, self.t + multi.dt))
+            log.info('add_event: %s, event=#%d, t=%s' %
+                     (multi.domain_id, event_id,
+                      FORMAT_DOUBLE % (self.t + multi.dt)))
         multi.event_id = event_id
 
-    def removeEvent(self, event):
+    def remove_event(self, event):
         if __debug__:
-            log.info('removeEvent: #%d' % event.event_id)
+            log.info('remove_event: event=#%d' % event.event_id)
         del self.scheduler[event.event_id]
 
     def update_single_event(self, t, single):
         if __debug__:
-            log.info('update_event: #%d (t=%g)' % (single.event_id, t))
+            log.info('update_event: %s, event=#%d, t=%s' %
+                     (single.domain_id, single.event_id, FORMAT_DOUBLE % t))
         self.scheduler.update((single.event_id, DomainEvent(t, single)))
 
     def update_multi_event(self, t, multi):
         if __debug__:
-            log.info('update_event: #%d (t=%g)' % (multi.event_id, t))
+            log.info('update_event: %s, event=#%d, t=%s' %
+                     (multi.domain_id, multi.event_id, FORMAT_DOUBLE % t))
         self.scheduler.update((multi.event_id, DomainEvent(t, multi)))
 
     def burst_obj(self, obj):
         if __debug__:
-            log.info('burst_obj: bursting %s' % obj)
+            log.info('burst_obj: %s' % obj)
 
         if isinstance(obj, Single):
             # TODO. Compare with gfrd.
@@ -402,18 +433,19 @@ class EGFRDSimulator(ParticleSimulatorBase):
             bursted = [obj, ]
         elif isinstance(obj, Pair):  # Pair
             single1, single2 = self.burst_pair(obj)
-            # Don't schedule events in burst/propagate_pair, because scheduling 
-            # is different after a single reaction in fire_pair.
+            # Don't schedule events in burst/propagate_pair, because 
+            # scheduling is different after a single reaction in 
+            # fire_pair.
             self.add_single_event(single1)
             self.add_single_event(single2)
-            self.removeEvent(obj)
+            self.remove_event(obj)
             bursted = [single1, single2]
         else:  # Multi
             bursted = self.burst_multi(obj)
-            self.removeEvent(obj)
+            self.remove_event(obj)
 
         if __debug__:
-            log.info('burst_obj: bursted=%s' % ', '.join(str(i) for i in bursted))
+            log.info('bursted = %s' % ',\n\t  '.join(str(i) for i in bursted))
 
         return bursted
 
@@ -426,7 +458,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
         return bursted
 
     def clear_volume(self, pos, radius, ignore=[]):
-        neighbors = self.get_neighbors_within_radius_no_sort(pos, radius, ignore)
+        neighbors = self.get_neighbors_within_radius_no_sort(pos, radius,
+                                                             ignore)
         return self.burst_objs(neighbors)
 
     def burst_non_multis(self, neighbors):
@@ -471,12 +504,13 @@ class EGFRDSimulator(ParticleSimulatorBase):
             self.world.remove_particle(single.pid_particle_pair[0])
             newparticle = self.world.new_particle(product_species.id, oldpos)
             newsingle = self.create_single(newparticle)
+            if __debug__:
+                log.info('product = %s' % newsingle)
             self.add_single_event(newsingle)
 
-            self.last_reaction = (rt, (single.pid_particle_pair[1], None), [newparticle])
+            self.last_reaction = (rt, (single.pid_particle_pair[1], None),
+                                  [newparticle])
 
-            if __debug__:
-                log.info('product; %s' % str(newsingle))
 
             
         elif len(rt.products) == 2:
@@ -511,16 +545,18 @@ class EGFRDSimulator(ParticleSimulatorBase):
                     newpos1 = self.world.apply_boundary(newpos1)
                     newpos2 = self.world.apply_boundary(newpos2)
 
-                    if self.world.distance(newpos1, newpos2) >= particle_radius12:
+                    if(self.world.distance(newpos1, newpos2) >= 
+                       particle_radius12):
                         break
 
                     vector *= 1.0 + 1e-7
 
 
                 # accept the new positions if there is enough space.
-                if (not self.world.check_overlap((newpos1, particle_radius1),
-                                                 single.pid_particle_pair[0])) and \
-                   (not self.world.check_overlap((newpos2, particle_radius2),
+                if(not self.world.check_overlap((newpos1, particle_radius1),
+                                                 single.pid_particle_pair[0])
+                   and
+                   not self.world.check_overlap((newpos2, particle_radius2),
                                                  single.pid_particle_pair[0])):
                     break
             else:
@@ -535,41 +571,43 @@ class EGFRDSimulator(ParticleSimulatorBase):
             newsingle1 = self.create_single(particle1)
             newsingle2 = self.create_single(particle2)
 
+            if __debug__:
+                log.info('product1 = %s\nproduct2 = %s' % 
+                     (newsingle1, newsingle2))
+
             self.add_single_event(newsingle1)
             self.add_single_event(newsingle2)
 
             self.last_reaction = (rt, (single.pid_particle_pair[1], None),
                                   [particle1, particle2])
 
-            if __debug__:
-                log.info('products; %s %s' % 
-                     (str(newsingle1), str(newsingle2)))
 
         else:
-            raise RuntimeError, 'num products >= 3 not supported.'
+            raise RuntimeError('num products >= 3 not supported.')
 
         self.reaction_events += 1
 
     def propagate_single(self, single):
-        """The difference between a burst and a propagate is that a burst 
-        always takes place before the actual scheduled event for the single, 
-        while propagate_single can be called for an escape event.
+        # The difference between a burst and a propagate is that a burst 
+        # always takes place before the actual scheduled event for the 
+        # single, while propagate_single can be called for an escape event.
 
-        Another subtle difference is that burst_single always reschedules 
-        (update_event) the single, while just calling propagate does not. 
-        So whoever calls propagate_single directly should reschedule the single 
-        afterwards.
-
-        """
+        # Another subtle difference is that burst_single always 
+        # reschedules (update_event) the single, while just calling 
+        # propagate does not.  So whoever calls propagate_single 
+        # directly should reschedule the single afterwards.
         if __debug__:
-            log.debug("single.dt=%g, single.last_time=%g, self.t=%g" % (
-               single.dt, single.last_time, self.t))
+            log.debug("single.dt=%s, single.last_time=%s, self.t=%s" %
+                      (FORMAT_DOUBLE % single.dt,
+                       FORMAT_DOUBLE % single.last_time,
+                       FORMAT_DOUBLE % self.t))
 
         newpos = single.draw_new_position(single.dt, single.event_type) 
         newpos = self.world.apply_boundary(newpos)
 
         if __debug__:
-            log.debug("propagate %s: %s => %s" % (single, single.pid_particle_pair[1].position, newpos))
+            log.debug("propagate %s: %s => %s" %
+                      (single, single.pid_particle_pair[1].position, newpos))
 
             if self.world.check_overlap((newpos,
                                         single.pid_particle_pair[1].radius),
@@ -584,7 +622,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
         else:
             # Todo. if isinstance(single, InteractionSingle):
             single.initialize(self.t)
-            self.move_single(single, newpos, single.pid_particle_pair[1].radius)
+            self.move_single(single, newpos,
+                             single.pid_particle_pair[1].radius)
 
     def fire_single(self, single):
         assert abs(single.dt + single.last_time - self.t) <= 1e-18 * self.t
@@ -592,12 +631,11 @@ class EGFRDSimulator(ParticleSimulatorBase):
         # Reaction.
         if single.event_type == EventType.SINGLE_REACTION:
             if __debug__:
-                log.info('fire_single: event_type %s' % single.event_type)
+                log.info('%s' % single.event_type)
+                log.info('reactant = %s' % single)
 
             self.single_steps[single.event_type] += 1
 
-            if __debug__:
-                log.info('single reaction %s' % str(single))
 
             self.propagate_single(single)
 
@@ -612,7 +650,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
         # Propagate, if not reaction.
         single.event_type = EventType.SINGLE_ESCAPE
         if __debug__:
-            log.info('fire_single: event_type %s' % single.event_type)
+            log.info('%s' % single.event_type)
+            log.info('single = %s' % single)
         self.single_steps[single.event_type] += 1
 
         # Handle immobile case first.
@@ -631,14 +670,17 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         # (2) Clear volume.
 
-        min_shell = single.pid_particle_pair[1].radius * (1.0 + self.SINGLE_SHELL_FACTOR)
+        min_shell = single.pid_particle_pair[1].radius * \
+                    (1.0 + self.SINGLE_SHELL_FACTOR)
 
         intruders, closest, closest_distance = \
-            self.get_intruders(singlepos, min_shell, ignore=[single.domain_id, ])
+            self.get_intruders(singlepos, min_shell,
+                               ignore=[single.domain_id, ])
 
         if __debug__:
-            log.debug("intruders: %s, closest: %s (dist=%g)" %\
-                          (', '.join(str(i) for i in intruders), closest, closest_distance))
+            log.debug("intruders: %s, closest: %s (dist=%s)" %
+                      (', '.join(str(i) for i in intruders),
+                       closest, FORMAT_DOUBLE % closest_distance))
 
         if intruders:
             burst = self.burst_non_multis(intruders)
@@ -664,14 +706,18 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 self.update_single(s, closest, closest_distance)
                 self.update_single_event(self.t + s.dt, s)
                 if __debug__:
-                    log.debug('restore shell %s %g dt %g closest %s %g' %
-                          (s, s.shell.shape.radius, s.dt, closest, closest_distance))
+                    log.debug('restore shell %s radius %s dt %s\n'
+                              'closest %s distance %s' %
+                              (s, FORMAT_DOUBLE % s.shell.shape.radius,
+                               FORMAT_DOUBLE % s.dt, closest,
+                               FORMAT_DOUBLE % closest_distance))
         else:
             self.update_single(single, closest, closest_distance)
             
         if __debug__:
-            log.info('single shell %s dt %g.' %\
-                         (single.shell_id_shell_pair, single.dt))
+            log.info('updated shell: (%s,\n  Shell(%s, %s)' %
+                     (single.shell_id, single.shell.did,
+                      single.shell.shape.show(PRECISION)))
 
         self.add_single_event(single)
         return
@@ -720,7 +766,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
                                                       distance_to_shell)
         else:  # Pair or Multi
             new_shell_size = distance_to_shell / SAFETY
-            new_shell_size = max(new_shell_size, single.pid_particle_pair[1].radius)
+            new_shell_size = max(new_shell_size,
+                                 single.pid_particle_pair[1].radius)
 
         new_shell_size = min(new_shell_size, self.get_max_shell_size())
 
@@ -749,7 +796,9 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.pair_steps[pair.event_type] += 1
 
         if __debug__:
-            log.info('fire_pair: event_type %s' % pair.event_type)
+            log.info('FIRE PAIR: %s' % pair.event_type)
+            log.info('single1 = %s' % pair.single1)
+            log.info('single2 = %s' % pair.single2)
 
 
         old_com = pair.com
@@ -766,9 +815,6 @@ class EGFRDSimulator(ParticleSimulatorBase):
         if pair.event_type == EventType.SINGLE_REACTION:
             reactingsingle = pair.reactingsingle
 
-            if __debug__:
-                log.info('pair: single reaction %s' % str(reactingsingle))
-
             if reactingsingle == single1:
                 theothersingle = single2
             else:
@@ -778,6 +824,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
             self.add_single_event(theothersingle)
 
+            if __debug__:
+                log.info('reactant = %s' % reactingsingle)
             try:
                 self.remove_domain(reactingsingle)
                 self.fire_single_reaction(reactingsingle)
@@ -790,9 +838,6 @@ class EGFRDSimulator(ParticleSimulatorBase):
         # 2. Pair reaction
         #
         if pair.event_type == EventType.IV_REACTION:
-            if __debug__:
-                log.info('reaction')
-
             if len(pair.rt.products) == 1:
                 
                 species3 = self.world.get_species(pair.rt.products[0])
@@ -803,8 +848,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 
                 if __debug__:
                     shell_size = pair.get_shell_size()
-                    assert self.world.distance(old_com, new_com) + species3.radius <\
-                        shell_size
+                    assert self.world.distance(old_com, new_com) < \
+                           shell_size - species3.radius
 
                 new_com = self.world.apply_boundary(new_com)
 
@@ -813,6 +858,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
                 particle = self.world.new_particle(species3.id, new_com)
                 newsingle = self.create_single(particle)
+                if __debug__:
+                    log.info('product = %s' % newsingle)
                 self.add_single_event(newsingle)
 
                 self.reaction_events += 1
@@ -820,12 +867,9 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 self.last_reaction = (pair.rt, (particle1, particle2),
                                       [particle])
 
-                if __debug__:
-                    log.info('product; %s' % str(newsingle))
 
             else:
-                raise NotImplementedError,\
-                      'num products >= 2 not supported.'
+                raise NotImplementedError('num products >= 2 not supported.')
 
             self.remove_domain(pair)
 
@@ -843,7 +887,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
             self.add_single_event(single1)
             self.add_single_event(single2)
         else:
-            raise SystemError, 'Bug: invalid event_type.'
+            raise SystemError('Bug: invalid event_type.')
 
         return
 
@@ -852,7 +896,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         multi.step()
 
         if __debug__:
-            log.info('fire_multi: %s' % multi.last_event)
+            log.info('FIRE MULTI: %s' % multi.last_event)
 
         if multi.last_event == EventType.MULTI_REACTION:
             self.reaction_events += 1
@@ -898,7 +942,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.propagate_single(single)
 
         newpos = single.pid_particle_pair[1].position
-        assert self.world.distance(newpos, oldpos) <= old_shell_size - particle_radius
+        assert self.world.distance(newpos, oldpos) <= \
+               old_shell_size - particle_radius
         # Displacement check is in NonInteractionSingle.draw_new_position.
 
         # Todo. if isinstance(single, InteractionSingle):
@@ -951,15 +996,17 @@ class EGFRDSimulator(ParticleSimulatorBase):
                                                 particle1[0], particle2[0])
             assert not self.world.check_overlap((newpos2, particle2[1].radius),
                                                 particle1[0], particle2[0])
-            assert self.check_pair_pos(pair, newpos1, newpos2, old_com,\
-                                         pair.get_shell_size())
+            assert self.check_pair_pos(pair, newpos1, newpos2, old_com,
+                                       pair.get_shell_size())
         else:
             newpos1 = particle1[1].position
             newpos2 = particle2[1].position
 
         if __debug__:
-            log.debug("fire_pair: #1 { %s: %s => %s }" % (single1, pos1, newpos1))
-            log.debug("fire_pair: #2 { %s: %s => %s }" % (single2, pos2, newpos2))
+            log.debug("fire_pair: #1 { %s: %s => %s }" %
+                      (single1, pos1, newpos1))
+            log.debug("fire_pair: #2 { %s: %s => %s }" %
+                      (single2, str(pos2), str(newpos2)))
 
         single1.initialize(self.t)
         single2.initialize(self.t)
@@ -974,12 +1021,16 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         if __debug__:
             container = self.get_container(single1.shell)
-            assert container[single1.shell_id].shape.radius == single1.shell.shape.radius
-            assert container[single2.shell_id].shape.radius == single2.shell.shape.radius
+            assert container[single1.shell_id].shape.radius == \
+                   single1.shell.shape.radius
+            assert container[single2.shell_id].shape.radius == \
+                   single2.shell.shape.radius
 
             if type(single1.shell) is CylindricalShell:
-                assert container[single1.shell_id].shape.size == single1.shell.shape.size
-                assert container[single2.shell_id].shape.size == single2.shell.shape.size
+                assert container[single1.shell_id].shape.size == \
+                       single1.shell.shape.size
+                assert container[single2.shell_id].shape.size == \
+                       single2.shell.shape.size
 
         assert single1.shell.shape.radius == particle1[1].radius
         assert single2.shell.shape.radius == particle2[1].radius
@@ -1001,7 +1052,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         # First, try forming a Pair.
         if isinstance(neighbors[0], Single):
-            obj = self.form_pair(single, singlepos, neighbors[0], neighbors[1:])
+            obj = self.form_pair(single, singlepos,
+                                 neighbors[0], neighbors[1:])
             if obj:
                 return obj
 
@@ -1013,9 +1065,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def form_pair(self, single1, pos1, single2, burst):
         if __debug__:
-           log.debug('trying to form %s' %
-                 'Pair(%s, %s)' % (single1.pid_particle_pair, 
-                                     single2.pid_particle_pair))
+           log.debug('trying to form Pair(%s, %s)' %
+                     (single1.pid_particle_pair, single2.pid_particle_pair))
 
         assert single1.is_reset()
         assert single2.is_reset()
@@ -1025,7 +1076,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         sigma = radius1 + radius2
 
-        D1, D2 = single1.pid_particle_pair[1].D, single2.pid_particle_pair[1].D
+        D1 = single1.pid_particle_pair[1].D
+        D2 = single2.pid_particle_pair[1].D
         D12 = D1 + D2
 
         assert (pos1 - single1.shell.shape.position).sum() == 0
@@ -1033,8 +1085,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
         r0 = self.world.distance(pos1, pos2)
         distance_from_sigma = r0 - sigma
         assert distance_from_sigma >= 0, \
-            ('distance_from_sigma (pair gap) between %s and %s = %g < 0' %
-             (single1, single2, distance_from_sigma))
+            'distance_from_sigma (pair gap) between %s and %s = %s < 0' % \
+            (single1, single2, FORMAT_DOUBLE % distance_from_sigma)
 
         shell_size1 = r0 * D1 / D12 + radius1
         shell_size2 = r0 * D2 / D12 + radius2
@@ -1054,14 +1106,17 @@ class EGFRDSimulator(ParticleSimulatorBase):
         com = self.world.apply_boundary(com)
         min_shell_size_with_margin = min_shell_size + shell_size_margin
         max_shell_size = min(self.get_max_shell_size(),
-                           distance_from_sigma * 100 + sigma + shell_size_margin)
+                             distance_from_sigma * 100 +
+                             sigma + shell_size_margin)
 
         if min_shell_size_with_margin >= max_shell_size:
             if __debug__:
-                log.debug('%s not formed: min_shell_size %g >= max_shell_size %g' %
+                log.debug('%s not formed: min_shell_size %s >='
+                          'max_shell_size %s' %
                           ('Pair(%s, %s)' % (single1.pid_particle_pair[0], 
-                                               single2.pid_particle_pair[0]),
-                           min_shell_size_with_margin, max_shell_size))
+                                             single2.pid_particle_pair[0]),
+                           FORMAT_DOUBLE % min_shell_size_with_margin,
+                           FORMAT_DOUBLE % max_shell_size))
             return None
 
         # Here, we have to take into account of the burst Singles in
@@ -1075,27 +1130,31 @@ class EGFRDSimulator(ParticleSimulatorBase):
         for b in burst:
             if isinstance(b, Single):
                 bpos = b.shell.shape.position
-                d = self.world.distance(com, bpos) \
-                    - b.pid_particle_pair[1].radius * (1.0 + self.SINGLE_SHELL_FACTOR)
+                d = self.world.distance(com, bpos) - \
+                    b.pid_particle_pair[1].radius * \
+                    (1.0 + self.SINGLE_SHELL_FACTOR)
                 if d < closest_shell_distance:
                     closest, closest_shell_distance = b, d
 
         if closest_shell_distance <= min_shell_size_with_margin:
             if __debug__:
                 log.debug('%s not formed: squeezed by burst neighbor %s' %
-                      ('Pair(%s, %s)' % (single1.pid_particle_pair[0], 
-                                           single2.pid_particle_pair[0]),
-                       closest))
+                          ('Pair(%s, %s)' % (single1.pid_particle_pair[0], 
+                                             single2.pid_particle_pair[0]),
+                           closest))
             return None
 
         assert closest_shell_distance > 0
-        c, d = self.get_closest_obj(com, ignore=[single1.domain_id, single2.domain_id])
+        c, d = self.get_closest_obj(com, ignore=[single1.domain_id,
+                                                 single2.domain_id])
         if d < closest_shell_distance:
             closest, closest_shell_distance = c, d
 
         if __debug__:
-            log.debug('Pair closest neighbor: %s %g, min_shell_with_margin %g' %
-                  (closest, closest_shell_distance, min_shell_size_with_margin))
+            log.debug('Pair closest neighbor: %s %s, '
+                      'min_shell_with_margin %s' %
+                      (closest, FORMAT_DOUBLE % closest_shell_distance,
+                       FORMAT_DOUBLE % min_shell_size_with_margin))
 
         assert closest_shell_distance > 0
 
@@ -1103,7 +1162,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
             D_closest = closest.pid_particle_pair[1].D
             D_tot = D_closest + D12
-            closest_distance = self.world.distance(com, closest.pid_particle_pair[1].position) ##??
+            closest_distance = self.world.distance(
+                    com, closest.pid_particle_pair[1].position) ##??
 
             closest_min_radius = closest.pid_particle_pair[1].radius
             closest_min_shell = closest_min_radius * \
@@ -1126,9 +1186,9 @@ class EGFRDSimulator(ParticleSimulatorBase):
         if shell_size <= min_shell_size_with_margin:
             if __debug__:
                 log.debug('%s not formed: squeezed by %s' %
-                      ('Pair(%s, %s)' % (single1.pid_particle_pair[0], 
-                                           single2.pid_particle_pair[0]),
-                       closest))
+                          ('Pair(%s, %s)' % (single1.pid_particle_pair[0], 
+                                             single2.pid_particle_pair[0]),
+                           closest))
             return None
 
 
@@ -1141,8 +1201,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
                                (1.0 + self.SINGLE_SHELL_FACTOR)) * 1.3:
             if __debug__:
                 log.debug('%s not formed: singles are better' %
-                      'Pair(%s, %s)' % (single1.pid_particle_pair[0], 
-                                          single2.pid_particle_pair[0]))
+                          'Pair(%s, %s)' % (single1.pid_particle_pair[0], 
+                                            single2.pid_particle_pair[0]))
             return None
 
         # 3. Ok, Pair makes sense.  Create one.
@@ -1160,28 +1220,31 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.remove_domain(single1)
         self.remove_domain(single2)
 
-        self.add_pair_event(pair)
         # single1 will be removed by the scheduler.
-        self.removeEvent(single2)
+        self.remove_event(single2)
 
-        assert closest_shell_distance == numpy.inf or shell_size < closest_shell_distance
+        assert closest_shell_distance == numpy.inf or \
+               shell_size < closest_shell_distance
         assert shell_size >= min_shell_size_with_margin
         assert shell_size <= max_shell_size
 
         if __debug__:
-            log.info('%s, dt=%g, r0=%g, shell=%g,' %
-                 (pair, pair.dt, r0, shell_size) + 
-                 'closest=%s, closest_shell_distance=%g' %
-                 (closest, closest_shell_distance))
+            log.info('%s,\ndt=%s, r0=%s, shell_size=%s, '
+                     'closest_distance=%s,\nclosest = %s' %
+                     (pair, FORMAT_DOUBLE % pair.dt, FORMAT_DOUBLE % r0, 
+                      FORMAT_DOUBLE % shell_size, 
+                      FORMAT_DOUBLE % closest_shell_distance, closest))
 
         assert self.check_obj(pair)
+        self.add_pair_event(pair)
 
         return pair
     
 
     def form_multi(self, single, neighbors, dists):
 
-        min_shell = single.pid_particle_pair[1].radius * (1.0 + self.MULTI_SHELL_FACTOR)
+        min_shell = single.pid_particle_pair[1].radius * \
+                    (1.0 + self.MULTI_SHELL_FACTOR)
         # Multis shells need to be contiguous.
         if dists[0] > min_shell:
             return None
@@ -1209,9 +1272,6 @@ class EGFRDSimulator(ParticleSimulatorBase):
         elif isinstance(closest, Multi):
 
             multi = closest
-            if __debug__:
-                log.info('multi merge %s %s' % (single, multi))
-
             self.add_to_multi(single, multi)
             self.remove_domain(single)
             for neighbor in neighbors[1:]:
@@ -1229,24 +1289,25 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def add_to_multi_recursive(self, obj, multi):
         if isinstance(obj, Single):
-            if multi.has_particle(obj.pid_particle_pair[0]):  # Already in the Multi.
+            if multi.has_particle(obj.pid_particle_pair[0]):
+                # Already in the Multi.
                 return
             assert obj.is_reset()
             objpos = obj.shell.shape.position
             
             self.add_to_multi(obj, multi)
             self.remove_domain(obj)
-            self.removeEvent(obj)
+            self.remove_event(obj)
 
-            radius = obj.pid_particle_pair[1].radius *\
+            radius = obj.pid_particle_pair[1].radius * \
                 (1.0 + self.MULTI_SHELL_FACTOR)
-            neighbors = self.get_neighbors_within_radius_no_sort(objpos, radius,
-                                                            ignore=[obj.domain_id])
+            neighbors = self.get_neighbors_within_radius_no_sort(
+                    objpos, radius, ignore=[obj.domain_id])
 
             burst = self.burst_non_multis(neighbors)
             neighbor_dists = self.obj_distance_array(objpos, burst)
-            neighbors = [burst[i] for i in 
-                         (neighbor_dists <= radius).nonzero()[0]]
+            neighbors = [burst[i] for i
+                                  in (neighbor_dists <= radius).nonzero()[0]]
 
             for obj in neighbors:
                 self.add_to_multi_recursive(obj, multi)
@@ -1271,9 +1332,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
     def add_to_multi(self, single, multi):
         if __debug__:
-            log.info('adding %s to %s' % (single.domain_id, multi.domain_id))
-            log.info(single)
-            log.info(multi)
+            log.info('add to multi:\n  %s\n  %s' % (single, multi))
+
         sid_shell_pair = self.new_spherical_shell(
             multi.domain_id,
             single.pid_particle_pair[1].position,
@@ -1283,17 +1343,16 @@ class EGFRDSimulator(ParticleSimulatorBase):
         multi.add_particle(single.pid_particle_pair)
 
     def merge_multis(self, multi1, multi2):
-        '''
-        merge multi1 into multi2. multi1 will be removed.
-        '''
+        # merge multi1 into multi2. multi1 will be removed.
         if __debug__:
             log.info('merging %s to %s' % (multi1.domain_id, multi2.domain_id))
-            log.info(multi1)
-            log.info(multi2)
+            log.info('  %s' % multi1)
+            log.info('  %s' % multi2)
 
             try:
-                some_particle_of_multi1 = iter(multi1.particle_container).next()
-                assert some_particle_of_multi1[0] not in multi2.particle_container
+                particle_of_multi1 = iter(multi1.particle_container).next()
+                assert particle_of_multi1[0] not in \
+                        multi2.particle_container
             except:
                 pass
 
@@ -1306,25 +1365,25 @@ class EGFRDSimulator(ParticleSimulatorBase):
             multi2.add_particle(pid_particle_pair)
 
         del self.domains[multi1.domain_id]
-        self.removeEvent(multi1)
+        self.remove_event(multi1)
 
     def get_neighbors_within_radius_no_sort(self, pos, radius, ignore=[]):
-        """Get neighbor domains within given radius.
+        # Get neighbor domains within given radius.
+        #
+        # ignore: domain ids.
+        #
+        # Only returns neighbors, not the distances towards their 
+        # shells. Can for example be used to try to clear all objects 
+        # from a certain volume.
 
-        ignore: domain ids.
-
-        Only returns neighbors, not the distances towards their shells. Can 
-        for example be used to try to clear all objects from a certain volume.
-
-        """
         neighbors = []
         for container in self.containers:
             result = container.get_neighbors_within_radius(pos, radius)
             # result = [((shell_id_shell_pair), distance), ]
-            # Since a domain can have more than 1 shell (multis for example), 
-            # and for each shell there is an entry in the shell container, we 
-            # make sure each domain occurs only once in the returned list 
-            # here.
+            # Since a domain can have more than 1 shell (multis for 
+            # example), and for each shell there is an entry in the 
+            # shell container, we make sure each domain occurs only once 
+            # in the returned list here.
             neighbors.extend(self.domains[did]
                              for did in uniq(s[0][1].did for s in result)
                                      if did not in ignore)
@@ -1343,31 +1402,29 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 distance = n[1]
                 if distance > radius:
                     if distance < closest_distance:
-                        # This is domain (the first one for this container) 
-                        # that has a shell that is more than radius away from 
-                        # pos.  If it is closer than the closest such one we 
-                        # found so far: store it. Always break out of the 
-                        # inner for loop and check the other containers.
+                        # This is domain (the first one for this 
+                        # container) that has a shell that is more than 
+                        # radius away from pos.  If it is closer than 
+                        # the closest such one we found so far: store 
+                        # it. Always break out of the inner for loop and 
+                        # check the other containers.
                         closest_domain = self.domains[domain_id]
                         closest_distance = distance
                         break
                     else:
                         break
                 elif domain_id not in seen:
-                    # Since a domain can have more than 1 shell (multis for 
-                    # example), and for each shell there is an entry in the 
-                    # shell container, we make sure each domain occurs only 
-                    # once in the returned list here.
+                    # Since a domain can have more than 1 shell (multis 
+                    # for example), and for each shell there is an entry 
+                    # in the shell container, we make sure each domain 
+                    # occurs only once in the returned list here.
                     seen.add(domain_id)
                     intruders.append(self.domains[domain_id])
 
         return intruders, closest_domain, closest_distance
 
     def get_closest_obj(self, pos, ignore=[]):
-        '''
-        ignore: domain ids.
-
-        '''
+        # ignore: domain ids.
         closest_domain = None
         closest_distance = numpy.inf
 
@@ -1380,14 +1437,15 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 if domain_id not in ignore and distance < closest_distance:
                     domain = self.domains[domain_id]
                     closest_domain, closest_distance = domain, distance
-                    # Found yet a closer domain. Break out of inner for loop 
-                    # and check other containers.
+                    # Found yet a closer domain. Break out of inner for 
+                    # loop and check other containers.
                     break   
 
         return closest_domain, closest_distance
 
     def obj_distance(self, pos, obj):
-        return min(self.world.distance(shell.shape, pos) for i, (_, shell) in enumerate(obj.shell_list))
+        return min(self.world.distance(shell.shape, pos)
+                   for i, (_, shell) in enumerate(obj.shell_list))
 
     def obj_distance_array(self, pos, objs):
         dists = numpy.array([self.obj_distance(pos, obj) for obj in objs])
@@ -1407,7 +1465,7 @@ steps = %d
 \tMulti:\t%d\t(escape: %d, reaction: %d)
 total reactions = %d
 rejected moves = %d
-'''\
+''' \
             % (self.t, self.step_counter,
                numpy.array(self.single_steps.values()).sum(),
                self.single_steps[EventType.SINGLE_ESCAPE],
@@ -1442,18 +1500,19 @@ rejected moves = %d
             else:
                 shell_size = shell.shape.radius
 
-            assert shell_size <= self.get_user_max_shell_size(),\
+            assert shell_size <= self.get_user_max_shell_size(), \
                 '%s shell size larger than user-set max shell size' % \
                 str(shell_id)
 
-            assert shell_size <= self.get_max_shell_size(),\
+            assert shell_size <= self.get_max_shell_size(), \
                 '%s shell size larger than simulator cell size / 2' % \
                 str(shell_id)
 
-            assert distance - shell_size >= 0.0,\
-                '%s overlaps with %s. (shell: %g, dist: %g, diff: %g.' \
-                % (str(obj), str(closest), shell_size, distance,\
-                       distance - shell_size)
+            assert distance - shell_size >= 0.0, \
+                '%s overlaps with %s. (shell: %s, dist: %s, diff: %s.' % \
+                (str(obj), str(closest), FORMAT_DOUBLE % shell_size,
+                 FORMAT_DOUBLE % distance,
+                 FORMAT_DOUBLE % (distance - shell_size))
 
         return True
 
@@ -1467,16 +1526,16 @@ rejected moves = %d
             event_population += event.data.multiplicity
 
         if self.world.num_particles != event_population:
-            raise RuntimeError, 'population %d != event_population %d' %\
-                  (population, event_population)
+            raise RuntimeError('population %d != event_population %d' %
+                               (population, event_population))
 
     def check_shell_matrix(self):
         did_map = {}
         shell_map = {}
         for container in self.containers:
             if self.world.world_size != container.world_size:
-                raise RuntimeError,\
-                    'self.world.world_size != container.world_size'
+                raise RuntimeError('self.world.world_size != '
+                                   'container.world_size')
             for shell_id, shell in container:
                 did_map.setdefault(shell.did, []).append(shell_id)
                 shell_map[shell_id] = shell
@@ -1486,31 +1545,35 @@ rejected moves = %d
             shell_population += event.data.num_shells
             shell_ids = did_map[event.data.domain_id]
             if len(shell_ids) != event.data.num_shells:
-                diff = set(sid for sid, _ in event.data.shell_list).difference(shell_ids)
+                diff = set(sid for (sid, _)
+                               in event.data.shell_list).difference(shell_ids)
                 for sid in diff:
                     print shell_map.get(sid, None)
 
-                raise RuntimeError("number of shells are inconsistent (%d != %d; %s) - %s" % (len(shell_ids), event.data.num_shells, event.data.domain_id, diff))
+                raise RuntimeError('number of shells are inconsistent '
+                                   '(%d != %d; %s) - %s' %
+                                   (len(shell_ids), event.data.num_shells, 
+                                    event.data.domain_id, diff))
 
-        matrix_population = sum(len(container) for container in self.containers)
+        matrix_population = sum(len(container)
+                                for container in self.containers)
         if shell_population != matrix_population:
-            raise RuntimeError(
-                'num shells (%d) != matrix population (%d)' % 
-                (shell_population, matrix_population))
+            raise RuntimeError('num shells (%d) != matrix population (%d)' %
+                               (shell_population, matrix_population))
 
     def check_domains(self):
-        event_ids = set(domain.event_id for domain in self.domains.itervalues())
+        event_ids = set(domain.event_id
+                        for domain in self.domains.itervalues())
         for id, event in self.scheduler:
             if id not in event_ids:
-                raise RuntimeError,\
-                    '%s in EventScheduler not in self.domains' % event.data
+                raise RuntimeError('%s in EventScheduler not in self.domains' %
+                                   event.data)
             event_ids.remove(id)
 
         # self.domains always include a None  --> this can change in future
         if event_ids:
-            raise RuntimeError,\
-                'following domains in self.domains not in Event Scheduler: %s' \
-                % str(tuple(event_ids))
+            raise RuntimeError('following domains in self.domains not in '
+                               'Event Scheduler: %s' % str(tuple(event_ids)))
 
     def check_pair_pos(self, pair, pos1, pos2, com, radius):
         particle1 = pair.single1.pid_particle_pair[1]
@@ -1525,22 +1588,23 @@ rejected moves = %d
         # check 1: particles don't overlap.
         if new_distance <= particle_radius12:
             if __debug__:
-                log.info('rejected move: radii %g, particle distance %g',
-                         (particle1.radius + particle2.radius, new_distance))
+                log.info('rejected move: radii %s, particle distance %s',
+                         (FORMAT_DOUBLE % particle1.radius + particle2.radius,
+                          FORMAT_DOUBLE % new_distance))
             if __debug__:
-                log.debug('DEBUG: pair.dt %g, pos1 %s, pos2 %s' %
-                          (pair.dt, str(pos1), str(pos2)))
-            raise RuntimeError, 'New particles overlap'
+                log.debug('DEBUG: pair.dt %s, pos1 %s, pos2 %s' %
+                          (FORMAT_DOUBLE % pair.dt, FORMAT_DOUBLE % pos1,
+                           FORMAT_DOUBLE % pos2))
+            raise RuntimeError('New particles overlap')
 
         # check 2: particles within mobility radius.
         d1 = self.world.distance(old_com, pos1) + particle1.radius
         d2 = self.world.distance(old_com, pos2) + particle2.radius
         if d1 > radius or d2 > radius:
-            raise RuntimeError, \
-                'New particle(s) out of protective sphere. %s' % \
-                'radius = %g, d1 = %g, d2 = %g ' % (radius, d1, d2)
-                
-        
+            raise RuntimeError('New particle(s) out of protective sphere. ' 
+                               'radius = %s, d1 = %s, d2 = %s ' %
+                               (FORMAT_DOUBLE % radius, FORMAT_DOUBLE % d1,
+                                FORMAT_DOUBLE % d2))
 
         return True
 
@@ -1574,9 +1638,7 @@ rejected moves = %d
             print id, event, event.data
 
     def count_domains(self):
-        '''
-        Returns a tuple (# Singles, # Pairs, # Multis).
-        '''
+        # Returns a tuple (# Singles, # Pairs, # Multis).
 
         num_singles = 0
         num_pairs = 0
@@ -1589,7 +1651,7 @@ rejected moves = %d
             elif isinstance(d, Multi):
                 num_multis += 1
             else:
-                raise RuntimeError, 'DO NOT GET HERE'
+                raise RuntimeError('DO NOT GET HERE')
 
         return (num_singles, num_pairs, num_multis)
 

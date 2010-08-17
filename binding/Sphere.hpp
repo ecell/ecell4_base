@@ -25,6 +25,12 @@ static boost::python::object Sphere___getitem__(Timpl_ const& obj, int index)
 }
 
 template<typename Timpl_>
+static std::string Sphere___str__(Timpl_* impl)
+{
+    return boost::lexical_cast<std::string>(*impl);
+}
+
+template<typename Timpl_>
 inline boost::python::objects::class_base register_sphere_class(char const *name)
 {
     using namespace boost::python;
@@ -61,7 +67,9 @@ inline boost::python::objects::class_base register_sphere_class(char const *name
                     typename impl_type::length_type,
                     &impl_type::radius,
                     &impl_type::radius>::set))
-        .def("__getitem__", &Sphere___getitem__<impl_type>);
+        .def("__getitem__", &Sphere___getitem__<impl_type>)
+        .def("__str__", &Sphere___str__<impl_type>)
+        .def("show", &impl_type::show);
 }
 
 } // namespace binding

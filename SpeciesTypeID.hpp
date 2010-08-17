@@ -48,7 +48,7 @@ template<typename Tstrm_, typename Ttraits_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
         const SpeciesTypeID& v)
 {
-    strm << "SpeciesTypeID(" << v().first << ":" << v().second << ")";
+    strm << "SID(" << v().first << ":" << v().second << ")";
     return strm;
 }
 

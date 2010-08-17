@@ -9,8 +9,8 @@ class Pair(object):
         * CylindricalSurfacePair
 
     """
-    # CUTOFF_FACTOR is a threshold to choose between the real and approximate
-    # Green's functions.
+    # CUTOFF_FACTOR is a threshold to choose between the real and 
+    # approximate Green's functions.
     # H = 4.0: ~3e-5, 4.26: ~1e-6, 5.0: ~3e-7, 5.2: ~1e-7,
     # 5.6: ~1e-8, 6.0: ~1e-9
     CUTOFF_FACTOR = 5.6
@@ -170,9 +170,9 @@ class Pair(object):
             return dt_com, EventType.COM_ESCAPE, None
         else:
             # Note: we are not calling pair.draw_iv_event_type yet, but 
-            # postpone it to the very last minute (when this event is executed 
-            # in fire_pair). So IV_EVENT can still be a iv event or a iv 
-            # reaction.
+            # postpone it to the very last minute (when this event is 
+            # executed in fire_pair). So IV_EVENT can still be a iv 
+            # event or a iv reaction.
             return dt_iv, EventType.IV_EVENT, None
 
     def draw_single_reaction_time_tuple(self):
@@ -199,8 +199,8 @@ class Pair(object):
 
     def draw_new_positions(self, dt, r0, old_iv, event_type):
         """Calculate new positions of the pair particles using a new 
-        center-of-mass, a new inter-particle vector, and an old inter-particle 
-        vector.
+        center-of-mass, a new inter-particle vector, and an old 
+        inter-particle vector.
 
         """
         new_com = self.draw_new_com(dt, event_type)
@@ -217,11 +217,15 @@ class Pair(object):
         pass
 
     def __str__(self):
-        return 'Pair[%s: %s, %s: event_id=%s]' % (
+        sid = self.single1.pid_particle_pair[1].sid
+        name = self.world.model.get_species_type_by_id(sid)["name"]
+        if name[0] != '(':
+            name = '(' + name + ')'
+        return 'Pair[%s: %s, %s, %s]' % (
             self.domain_id,
             self.single1.pid_particle_pair[0],
             self.single2.pid_particle_pair[0],
-            self.event_id)
+            name)
 
 class SphericalPair(Pair):
     """2 Particles inside a (spherical) shell not on any surface.
@@ -237,9 +241,10 @@ class SphericalPair(Pair):
         return FirstPassageGreensFunction(self.D_R, self.a_R)
 
     def iv_greens_function(self, r0):
-        # Green's function for interparticle vector inside absorbing sphere.  
-        # This exact solution is used for drawing times.
-        return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, r0, self.sigma, self.a_r)
+        # Green's function for interparticle vector inside absorbing 
+        # sphere.  This exact solution is used for drawing times.
+        return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, r0,
+                                              self.sigma, self.a_r)
 
     def create_new_shell(self, position, radius, domain_id):
         return SphericalShell(domain_id, Sphere(position, radius))
@@ -270,7 +275,8 @@ class SphericalPair(Pair):
                 # near a;
                 if __debug__:
                     log.debug('GF: only a')
-                return FirstPassageNoCollisionPairGreensFunction(self.D_tot, r0, self.a_r)
+                return FirstPassageNoCollisionPairGreensFunction(self.D_tot,
+                                                                 r0, self.a_r)
                 
             else:
                 # distant from both a and sigma; 
@@ -317,8 +323,8 @@ class SphericalPair(Pair):
 
 
 class PlanarSurfacePair(Pair):
-    """2 Particles inside a (cylindrical) shell on a PlanarSurface. (Hockey 
-    pucks).
+    """2 Particles inside a (cylindrical) shell on a PlanarSurface. 
+    (Hockey pucks).
 
     """
     def __init__(self, domain_id, com, single1, single2, shell_id,
@@ -333,19 +339,20 @@ class PlanarSurfacePair(Pair):
     def iv_greens_function(self, r0):
         # Todo. 2D gf Rad Abs.
         # This exact solution is used for drawing times.
-        return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, r0, self.sigma, self.a_r)
+        return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, r0,
+                                              self.sigma, self.a_r)
 
     def create_new_shell(self, position, radius, domain_id):
-        # The size (thickness) of a hockey puck is not more than it has to be 
-        # (namely the radius of the particle), so if the particle undergoes an 
-        # unbinding reaction we still have to clear the target volume and the 
-        # move may be rejected (NoSpace error).
+        # The size (thickness) of a hockey puck is not more than it has 
+        # to be (namely the radius of the particle), so if the particle 
+        # undergoes an unbinding reaction we still have to clear the 
+        # target volume and the move may be rejected (NoSpace error).
         orientation = crossproduct(self.surface.shape.unit_x,
                                    self.surface.shape.unit_y)
         size = max(self.single1.pid_particle_pair[1].radius,
                    self.single2.pid_particle_pair[1].radius)
-        return CylindricalShell(domain_id,
-                                Cylinder(position, radius, orientation, size))
+        return CylindricalShell(domain_id, Cylinder(position, radius, 
+                                                    orientation, size))
 
         a_R, a_r = self.determine_radii()
 
@@ -381,7 +388,7 @@ class PlanarSurfacePair(Pair):
 
 
 class CylindricalSurfacePair(Pair):
-    """2 Particles inside a (cylindrical) shell on a CylindricalSurface. 
+    """2 Particles inside a (cylindrical) shell on a CylindricalSurface.  
     (Rods).
 
     """
@@ -402,10 +409,10 @@ class CylindricalSurfacePair(Pair):
         return FirstPassagePairGreensFunction(self.D_tot, self.rt.k, r0, self.sigma, self.a_r)
 
     def create_new_shell(self, position, size, domain_id):
-        # The radius of a rod is not more than it has to be (namely the radius 
-        # of the biggest particle), so if the particle undergoes an unbinding 
-        # reaction we still have to clear the target volume and the move may 
-        # be rejected (NoSpace error).
+        # The radius of a rod is not more than it has to be (namely the 
+        # radius of the biggest particle), so if the particle undergoes 
+        # an unbinding reaction we still have to clear the target volume 
+        # and the move may be rejected (NoSpace error).
         radius = max(self.single1.pid_particle_pair[1].radius,
                      self.single2.pid_particle_pair[1].radius)
         orientation = self.surface.shape.unit_z
@@ -415,7 +422,7 @@ class CylindricalSurfacePair(Pair):
     def draw_new_com(self, dt, event_type):
         gf = self.com_greens_function()
         # Draw displacement (not absolute position).
-        r_R = draw_displacement_wrapper(gf, dt, event_type, self.a_R) # Todo.
+        r_R = draw_displacement_wrapper(gf, dt, event_type, self.a_R) # Todo?
         return self.com + r_R * self.surface.shape.unit_z
 
     def draw_new_iv(self, dt, r0, old_iv, event_type): 

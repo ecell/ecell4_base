@@ -8,8 +8,9 @@ class Single(object):
         * NonInteractionSingle
         * InteractionSingle (when the particle is nearby a surface)
 
-    Each type of Single defines a list of coordinates, see coordinate.py. For each 
-    coordinate the Green's function is specified.
+    Each type of Single defines a list of coordinates, see 
+    coordinate.py. For each coordinate the Green's function is 
+    specified.
 
     """
     def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
@@ -29,7 +30,8 @@ class Single(object):
         self.surface = surface
 
         # Create shell.
-        shell = self.create_new_shell(pid_particle_pair[1].position, pid_particle_pair[1].radius, domain_id)
+        shell = self.create_new_shell(pid_particle_pair[1].position,
+                                      pid_particle_pair[1].radius, domain_id)
 
         self.shell_list = [(shell_id, shell), ]
 
@@ -62,9 +64,9 @@ class Single(object):
         '''
         Reset the Single.
 
-        Radius (shell size) is shrunken to the actual radius of the particle.
-        self.dt is reset to 0.0.  Do not forget to reschedule this Single
-        after calling this method.
+        Radius (shell size) is shrunken to the actual radius of the 
+        particle.  self.dt is reset to 0.0.  Do not forget to reschedule 
+        this Single after calling this method.
         '''
         self.dt = 0.0
         self.last_time = t
@@ -89,8 +91,8 @@ class Single(object):
         """Todo.
         
         Note: we are not calling single.drawEventType() just yet, but 
-        postpone it to the very last minute (when this event is executed in 
-        fire_single). So IV_EVENT can still be an iv escape or an iv 
+        postpone it to the very last minute (when this event is executed 
+        in fire_single). So IV_EVENT can still be an iv escape or an iv 
         interaction.
 
         """
@@ -140,7 +142,12 @@ class Single(object):
         pass
 
     def __str__(self):
-        return 'Single[%s: %s: event_id=%s]' % (self.domain_id, self.pid_particle_pair[0], self.event_id)
+        pid = self.pid_particle_pair[0]
+        sid = self.pid_particle_pair[1].sid
+        name = self.world.model.get_species_type_by_id(sid)["name"]
+        if name[0] != '(':
+            name = '(' + name + ')'
+        return 'Single[%s: %s, ST%s]' % (self.domain_id, pid, name)
 
 
 class NonInteractionSingle(Single):
@@ -182,7 +189,8 @@ class SphericalSingle(NonInteractionSingle):
         * Particle coordinate inside shell: r, theta, phi.
         * Coordinate: radial r.
         * Initial position: r = 0.
-        * Selected randomly when drawing displacement vector: theta, phi.
+        * Selected randomly when drawing displacement vector:
+          theta, phi.
 
     """
     def __init__(self, domain_id, pid_particle_pair, shell_id, reactiontypes, 
@@ -191,7 +199,8 @@ class SphericalSingle(NonInteractionSingle):
                                       shell_id, reactiontypes, surface)
 
     def greens_function(self):
-        return FirstPassageGreensFunction(self.getD(),self.get_mobility_radius())
+        return FirstPassageGreensFunction(self.getD(),
+                                          self.get_mobility_radius())
 
     def create_new_shell(self, position, radius, domain_id):
         return SphericalShell(domain_id, Sphere(position, radius))
@@ -221,18 +230,20 @@ class PlanarSurfaceSingle(NonInteractionSingle):
     def greens_function(self):
         # Todo. 2D gf Abs Sym.
         #gf = FirstPassageGreensFunction2D(self.getD())
-        return FirstPassageGreensFunction(self.getD(), self.get_mobility_radius())
+        return FirstPassageGreensFunction(self.getD(),
+                                          self.get_mobility_radius())
 
     def create_new_shell(self, position, radius, domain_id):
-        # The size (thickness) of a hockey puck is not more than it has to be 
-        # (namely the radius of the particle), so if the particle undergoes an 
-        # unbinding reaction we still have to clear the target volume and the 
-        # move may be rejected (NoSpace error).
+        # The size (thickness) of a hockey puck is not more than it has 
+        # to be (namely the radius of the particle), so if the particle 
+        # undergoes an unbinding reaction we still have to clear the 
+        # target volume and the move may be rejected (NoSpace error).
         orientation = normalize(
             utils.crossproduct(self.surface.shape.unit_x,
                                self.surface.shape.unit_y))
         size = self.pid_particle_pair[1].radius
-        return CylindricalShell(domain_id, Cylinder(position, radius, orientation, size))
+        return CylindricalShell(domain_id,
+                                Cylinder(position, radius, orientation, size))
 
     def displacement(self, r):
         x, y = random_vector2D(r)
@@ -263,16 +274,18 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
         return FirstPassageGreensFunction(self.getD(), self.get_mobility_radius())
 
     def create_new_shell(self, position, size, domain_id):
-        # Heads up. The cylinder's *size*, not radius, is changed when you 
-        # make the cylinder bigger, because of the redefinition of set_radius.
+        # Heads up. The cylinder's *size*, not radius, is changed when 
+        # you make the cylinder bigger, because of the redefinition of 
+        # set_radius.
 
-        # The radius of a rod is not more than it has to be (namely the radius 
-        # of the particle), so if the particle undergoes an unbinding reaction 
-        # we still have to clear the target volume and the move may be 
-        # rejected (NoSpace error).
+        # The radius of a rod is not more than it has to be (namely the 
+        # radius of the particle), so if the particle undergoes an 
+        # unbinding reaction we still have to clear the target volume 
+        # and the move may be rejected (NoSpace error).
         radius = self.pid_particle_pair[1].radius
         orientation = self.surface.shape.unit_z
-        return CylindricalShell(domain_id, Cylinder(position, radius, orientation, size))
+        return CylindricalShell(domain_id,
+                                Cylinder(position, radius, orientation, size))
 
     def displacement(self, z):
         # z can be pos or min.
@@ -280,7 +293,8 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
 
     def get_mobility_radius(self):
         # Heads up.
-        return self.shell_list[0][1].shape.size - self.pid_particle_pair[1].radius
+        return self.shell_list[0][1].shape.size - \
+               self.pid_particle_pair[1].radius
 
     def get_shell_size(self):
         # Heads up.

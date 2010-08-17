@@ -8,6 +8,12 @@
 
 namespace binding {
 
+template<typename Timpl_>
+static std::string Box___str__(Timpl_* impl)
+{
+    return boost::lexical_cast<std::string>(*impl);
+}
+
 template<typename Timpl>
 inline boost::python::objects::class_base register_box_class(char const* name)
 {
@@ -99,7 +105,9 @@ inline boost::python::objects::class_base register_box_class(char const* name)
                     impl_type,
                     typename impl_type::position_type,
                     &impl_type::unit_z,
-                    &impl_type::unit_z>::set));
+                    &impl_type::unit_z>::set))
+        .def("__str__", &Box___str__<impl_type>)
+        .def("show", &impl_type::show);
 }
 
 } // namespace binding

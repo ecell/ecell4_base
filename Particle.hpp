@@ -88,6 +88,14 @@ struct Particle
         return !operator==(rhs);
     }
 
+    std::string show(int precision)
+    {
+        std::ostringstream strm;
+        strm.precision(precision);
+        strm << *this;
+        return strm.str();
+    }
+
 private:
     shape_type shape_;
     species_id_type species_id_;

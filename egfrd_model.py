@@ -295,7 +295,7 @@ class EGFRDModel(model.ParticleModel):
         if structure.id == "world":
             return particle_type.name
         else:
-            return '(' + particle_type.name + ',' + str(structure.id) + ')'
+            return '(' + particle_type.name + ', ' + str(structure.id) + ')'
 
     def _get_species_type(self, key):
         """Helper.

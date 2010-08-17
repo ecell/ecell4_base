@@ -7,6 +7,12 @@
 namespace binding {
 
 template<typename Timpl_>
+static std::string Cylinder___str__(Timpl_* impl)
+{
+    return boost::lexical_cast<std::string>(*impl);
+}
+
+template<typename Timpl_>
 inline boost::python::objects::class_base register_cylinder_class(char const* name)
 {
     using namespace boost::python;
@@ -72,7 +78,9 @@ inline boost::python::objects::class_base register_cylinder_class(char const* na
                     impl_type,
                     typename impl_type::position_type,
                     &impl_type::unit_z,
-                    &impl_type::unit_z>::set));
+                    &impl_type::unit_z>::set))
+        .def("__str__", &Cylinder___str__<impl_type>)
+        .def("show", &impl_type::show);
 
 }
 

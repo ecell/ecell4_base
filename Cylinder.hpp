@@ -75,6 +75,14 @@ public:
         return size_;
     }
 
+    std::string show(int precision)
+    {
+        std::ostringstream strm;
+        strm.precision(precision);
+        strm << *this;
+        return strm.str();
+    }
+
 private:
     position_type position_; // centre.
     length_type radius_;
