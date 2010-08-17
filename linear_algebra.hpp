@@ -373,7 +373,10 @@ inline bool is_cartesian_versor(T_ const& vector, typename boost::enable_if<is_v
 {
     return (vector == create_vector<T_>(1, 0, 0) ||
             vector == create_vector<T_>(0, 1, 0) ||
-            vector == create_vector<T_>(0, 0, 1));
+            vector == create_vector<T_>(0, 0, 1) ||
+            vector == create_vector<T_>(-1, 0, 0) ||
+            vector == create_vector<T_>(0, -1, 0) ||
+            vector == create_vector<T_>(0, 0, -1));
 }
 
 #endif /* LINEAR_ALGEBRA_HPP */
