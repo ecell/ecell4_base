@@ -43,7 +43,8 @@ public:
 
     virtual length_type minimal_distance(length_type const& radius) const
     {
-        return radius + traits_type::MINIMAL_SEPARATION_FACTOR;
+        // PlanarSurface has thickness of 0.
+        return radius * traits_type::MINIMAL_SEPARATION_FACTOR;
     }
 
     PlanarSurface(identifier_type const& id, shape_type const& shape)

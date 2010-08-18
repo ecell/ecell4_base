@@ -44,7 +44,8 @@ struct WorldTraitsBase
     typedef Surface<Tderived_> surface_type;
     typedef Region<Tderived_> region_type;
 
-    static const Real MINIMAL_SEPARATION_FACTOR = 1.0;
+    static const Real TOLERANCE = 1e-7;
+    static const Real MINIMAL_SEPARATION_FACTOR = (1.0 + 1e-7);
 };
 
 template<typename Tlen_, typename TD_>

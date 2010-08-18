@@ -533,7 +533,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
             for _ in range(self.dissociation_retry_moves):
                 vector = _random_vector(current_surface, particle_radius12 *
-                                       MINIMAL_SEPERATION_FACTOR, self.rng)
+                                        MINIMAL_SEPARATION_FACTOR, self.rng)
             
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.
