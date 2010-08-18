@@ -2,6 +2,8 @@
 #define BOX_HPP
 
 #include <boost/array.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
 #include <boost/multi_array.hpp>
 #include <utility>
 #include <algorithm>
@@ -206,12 +208,10 @@ inline std::pair<typename Box<T_>::position_type,
                  typename Box<T_>::length_type>
 projected_point(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
 {
-    boost::array<typename Box<T_>::length_type, 3> x_y_z(to_internal(obj, pos));
-    return std::make_pair(
-        add(
-            add(obj.position(), multiply(obj.unit_x(), x_y_z[0])),
-            multiply(obj.unit_y(), x_y_z[1])),
-        x_y_z[2]);
+    // Todo. If we ever need it.
+    // The projection of a point on a box.
+    return std::make_pair(typename Box<T_>::position_type(),
+                          typename Box<T_>::length_type());
 }
 
 template<typename T_>
