@@ -5,13 +5,13 @@
 
 #include "Logger.hpp"
 
-class GreensFunction3DAbsSym
+class FirstPassageGreensFunction
 {
 public:
-    GreensFunction3DAbsSym(Real D, Real a)
+    FirstPassageGreensFunction(Real D, Real a)
         : D( D), a( a) {}
 
-    ~GreensFunction3DAbsSym() {}
+    ~FirstPassageGreensFunction() {}
 
     Real getD() const
     {

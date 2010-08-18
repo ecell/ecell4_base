@@ -45,7 +45,7 @@ lib_LTLIBRARIES = _gfrd.la _greens_functions.la
 noinst_HEADERS = \
 	abstract_set.hpp\
 	BasicNetworkRulesImpl.hpp\
-	GreensFunction3DRadInf.hpp\
+	BasicPairGreensFunction.hpp\
 	BDPropagator.hpp\
 	BDSimulator.hpp\
 	bessel.hpp\
@@ -62,12 +62,12 @@ noinst_HEADERS = \
 	factorial.hpp\
 	filters.hpp\
 	findRoot.hpp\
-	GreensFunction3DAbsSym.hpp\
-	GreensFunction3DAbs.hpp\
-	GreensFunction3DRadAbs.hpp\
+	FirstPassageGreensFunction.hpp\
+	FirstPassageNoCollisionPairGreensFunction.hpp\
+	FirstPassagePairGreensFunction.hpp\
 	freeFunctions.hpp\
-	GreensFunction3DSym.hpp\
-	GreensFunction3D.hpp\
+	FreeGreensFunction.hpp\
+	FreePairGreensFunction.hpp\
 	funcSum.hpp\
 	generator.hpp\
 	geometry.hpp\
@@ -175,12 +175,12 @@ _greens_functions_la_SOURCES=\
 	greens_functions.cpp\
 	SphericalBesselGenerator.cpp\
 	freeFunctions.cpp\
-	GreensFunction3DSym.cpp\
-	GreensFunction3DAbsSym.cpp\
-	GreensFunction3DRadInf.cpp\
-	GreensFunction3D.cpp\
-	GreensFunction3DRadAbs.cpp\
-	GreensFunction3DAbs.cpp\
+	FreeGreensFunction.cpp\
+	FirstPassageGreensFunction.cpp\
+	BasicPairGreensFunction.cpp\
+	FreePairGreensFunction.cpp\
+	FirstPassagePairGreensFunction.cpp\
+	FirstPassageNoCollisionPairGreensFunction.cpp\
 	Logger.cpp
 
 _gfrd_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)

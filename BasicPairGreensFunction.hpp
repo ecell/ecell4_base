@@ -8,7 +8,7 @@
 #include "Logger.hpp"
 #include "PairGreensFunction.hpp"
 
-class GreensFunction3DRadInf: public PairGreensFunction
+class BasicPairGreensFunction: public PairGreensFunction
 {
 public:
     typedef std::vector<Real> RealVector;
@@ -35,9 +35,9 @@ private:
     
 public:
     
-    GreensFunction3DRadInf(Real D, Real kf, Real r0, Real Sigma);
+    BasicPairGreensFunction(Real D, Real kf, Real r0, Real Sigma);
     
-    ~GreensFunction3DRadInf();
+    ~BasicPairGreensFunction();
     
     
     Real drawTime(Real rnd) const;

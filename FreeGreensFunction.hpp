@@ -13,7 +13,7 @@
   Green's Function for a free diffusion particle.
 */
 
-class GreensFunction3DSym
+class FreeGreensFunction
     :
     public GreensFunction
 {
@@ -26,7 +26,7 @@ private:
     
 public:
     
-    GreensFunction3DSym( const Real D )
+    FreeGreensFunction( const Real D )
         :
         GreensFunction( D )
     {
@@ -34,7 +34,7 @@ public:
     }
     
     
-    ~GreensFunction3DSym()
+    ~FreeGreensFunction()
     {
         ; // do nothing
     }

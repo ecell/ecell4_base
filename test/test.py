@@ -13,7 +13,7 @@ def test_draw_time_single():
 
     a = 1e-7
 
-    gf = _gfrd.GreensFunction3DAbsSym(D)
+    gf = _gfrd.FirstPassageGreensFunction(D)
     #gf.seta(a)
     
     for i in range(150000):
@@ -31,7 +31,7 @@ def test_drawR_single():
 
     a = 1e-7
 
-    gf = _gfrd.GreensFunction3DAbsSym(D)
+    gf = _gfrd.FirstPassageGreensFunction(D)
     
     for i in range(50000):
         rnd = random.random()
@@ -51,7 +51,7 @@ def test_alpha0():
 
     a = 2e-7
 
-    gf = _gfrd.GreensFunction3DRadAbs(D, kf, Sigma)
+    gf = _gfrd.FirstPassagePairGreensFunction(D, kf, Sigma)
     gf.seta(a)
     maxerror = 0
 
@@ -72,7 +72,7 @@ def test_alpha():
 
     a = 2e-7
 
-    gf = _gfrd.GreensFunction3DRadAbs(D, kf, Sigma)
+    gf = _gfrd.FirstPassagePairGreensFunction(D, kf, Sigma)
     gf.seta(a)
     maxerror = 0
     
@@ -98,7 +98,7 @@ def test_p_survival():
     r0 = 5e-8
     a = 6e-8
 
-    gf = _gfrd.GreensFunction3DRadAbs(D, kf, Sigma)
+    gf = _gfrd.FirstPassagePairGreensFunction(D, kf, Sigma)
     gf.seta(a)
     
     for i in range(1000):
@@ -117,7 +117,7 @@ def test_draw_time():
     r0 = 5e-8
     a = 1e-5
 
-    gf = _gfrd.GreensFunction3DRadAbs(D, kf, Sigma)
+    gf = _gfrd.FirstPassagePairGreensFunction(D, kf, Sigma)
     gf.seta(a)
     
     #for i in range(20000):
@@ -140,7 +140,7 @@ def test_drawR():
     r0 = 5e-8
     a = 1e-7
 
-    gf = _gfrd.GreensFunction3DRadAbs(D, kf, Sigma)
+    gf = _gfrd.FirstPassagePairGreensFunction(D, kf, Sigma)
     gf.seta(a)
     
     for i in range(1000):
@@ -161,7 +161,7 @@ def test_f_alpha():
     r0 = 5e-8
     a = 1e-7
 
-    gf = _gfrd.GreensFunction3DRadAbs(D, kf, Sigma)
+    gf = _gfrd.FirstPassagePairGreensFunction(D, kf, Sigma)
     gf.seta(a)
     
     n = 0
@@ -181,7 +181,7 @@ def test_draw_theta():
     r0 = 1.05e-8
     a = 1.1e-8
     
-    gf = _gfrd.GreensFunction3DRadAbs(D, kf, Sigma)
+    gf = _gfrd.FirstPassagePairGreensFunction(D, kf, Sigma)
     gf.seta(a)
     
     for i in range(20000):
@@ -202,7 +202,7 @@ def test_draw_theta_at_a():
     r0 = 0.999e-7
     a = 1e-7
     
-    gf = _gfrd.GreensFunction3DRadAbs(D, kf, Sigma)
+    gf = _gfrd.FirstPassagePairGreensFunction(D, kf, Sigma)
     gf.seta(a)
     
 #    for i in range(200):

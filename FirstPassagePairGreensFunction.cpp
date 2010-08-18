@@ -22,15 +22,15 @@
 #include "findRoot.hpp"
 #include "freeFunctions.hpp"
 #include "SphericalBesselGenerator.hpp"
-#include "GreensFunction3DRadAbs.hpp"
+#include "FirstPassagePairGreensFunction.hpp"
 
-const Real GreensFunction3DRadAbs::TOLERANCE;
-const Real GreensFunction3DRadAbs::MIN_T_FACTOR;
-const unsigned int GreensFunction3DRadAbs::MAX_ORDER;
-const unsigned int GreensFunction3DRadAbs::MAX_ALPHA_SEQ;
+const Real FirstPassagePairGreensFunction::TOLERANCE;
+const Real FirstPassagePairGreensFunction::MIN_T_FACTOR;
+const unsigned int FirstPassagePairGreensFunction::MAX_ORDER;
+const unsigned int FirstPassagePairGreensFunction::MAX_ALPHA_SEQ;
 
 
-GreensFunction3DRadAbs::GreensFunction3DRadAbs(
+FirstPassagePairGreensFunction::FirstPassagePairGreensFunction(
     Real D, Real kf, Real r0, Real Sigma, Real a)
     : PairGreensFunction(D, kf, r0, Sigma),
       h(kf / (4.0 * M_PI * Sigma * Sigma * D)),
@@ -46,7 +46,7 @@ GreensFunction3DRadAbs::GreensFunction3DRadAbs(
     clearAlphaTable();
 }
 
-GreensFunction3DRadAbs::~GreensFunction3DRadAbs()
+FirstPassagePairGreensFunction::~FirstPassagePairGreensFunction()
 {
     ; // do nothing
 }
@@ -55,7 +55,7 @@ GreensFunction3DRadAbs::~GreensFunction3DRadAbs()
 // Alpha-related methods
 //
 
-void GreensFunction3DRadAbs::clearAlphaTable() const
+void FirstPassagePairGreensFunction::clearAlphaTable() const
 {
     std::for_each(this->alphaTable.begin(), this->alphaTable.end(),
                    boost::mem_fn(&RealVector::clear));
@@ -66,7 +66,7 @@ void GreensFunction3DRadAbs::clearAlphaTable() const
 }
 
 
-Real GreensFunction3DRadAbs::f_alpha0(Real alpha) const
+Real FirstPassagePairGreensFunction::f_alpha0(Real alpha) const
 {
     const Real a(geta());
     const Real sigma(getSigma());
@@ -88,7 +88,7 @@ Real GreensFunction3DRadAbs::f_alpha0(Real alpha) const
 
 
 Real 
-GreensFunction3DRadAbs::f_alpha0_aux(Real alpha) const
+FirstPassagePairGreensFunction::f_alpha0_aux(Real alpha) const
 {
     const Real a(this->geta());
     const Real sigma(this->getSigma());
@@ -105,7 +105,7 @@ GreensFunction3DRadAbs::f_alpha0_aux(Real alpha) const
 
 struct f_alpha0_aux_params
 { 
-    GreensFunction3DRadAbs const* const gf;
+    FirstPassagePairGreensFunction const* const gf;
     const Real value;
 };
 
@@ -115,7 +115,7 @@ static Real f_alpha0_aux_F(Real alpha, f_alpha0_aux_params const* params)
 }
 
 
-Real GreensFunction3DRadAbs::alpha0_i(Integer i) const
+Real FirstPassagePairGreensFunction::alpha0_i(Integer i) const
 {
     if (!(i >= 0))
     {
@@ -181,7 +181,7 @@ Real GreensFunction3DRadAbs::alpha0_i(Integer i) const
 
 
 void
-GreensFunction3DRadAbs::updateAlphaTable0(const Real t) const
+FirstPassagePairGreensFunction::updateAlphaTable0(const Real t) const
 {
     RealVector& alphaTable_0(this->getAlphaTable(0));
     alphaTable_0.clear();
@@ -216,7 +216,7 @@ GreensFunction3DRadAbs::updateAlphaTable0(const Real t) const
     }
 }
 
-Real GreensFunction3DRadAbs::f_alpha(Real alpha, Integer n) const
+Real FirstPassagePairGreensFunction::f_alpha(Real alpha, Integer n) const
 {
     const Real a(this->geta());
     const Real sigma(getSigma());
@@ -366,7 +366,7 @@ static std::pair<Real, Real> Q2(Integer n, Real x)
 }
 
 
-Real GreensFunction3DRadAbs::f_alpha_aux(Real alpha, Integer n) const
+Real FirstPassagePairGreensFunction::f_alpha_aux(Real alpha, Integer n) const
 {
     if (alpha == 0.0)
     {
@@ -422,7 +422,7 @@ Real GreensFunction3DRadAbs::f_alpha_aux(Real alpha, Integer n) const
 
 struct f_alpha_aux_params
 { 
-    GreensFunction3DRadAbs const* const gf;
+    FirstPassagePairGreensFunction const* const gf;
     const Integer n;
     const Real value;
 };
@@ -433,7 +433,7 @@ static Real f_alpha_aux_F(Real alpha, f_alpha_aux_params const* params)
 }
 
 Real 
-GreensFunction3DRadAbs::alpha_i(Integer i, Integer n, 
+FirstPassagePairGreensFunction::alpha_i(Integer i, Integer n, 
                                         gsl_root_fsolver* solver) const
 {
     const Real sigma(this->getSigma());
@@ -485,7 +485,7 @@ GreensFunction3DRadAbs::alpha_i(Integer i, Integer n,
 
 
 unsigned int
-GreensFunction3DRadAbs::alphaOffset(unsigned int n) const
+FirstPassagePairGreensFunction::alphaOffset(unsigned int n) const
 {
     if (this->alphaOffsetTable[n] >= 0)
     {
@@ -543,7 +543,7 @@ GreensFunction3DRadAbs::alphaOffset(unsigned int n) const
 
 
 void
-GreensFunction3DRadAbs::updateAlphaTable(const unsigned int n,
+FirstPassagePairGreensFunction::updateAlphaTable(const unsigned int n,
                                                   const Real t) const
 {
     if (!(n >= 0 && n <= this->MAX_ORDER))
@@ -610,7 +610,7 @@ GreensFunction3DRadAbs::updateAlphaTable(const unsigned int n,
 
 
 Real 
-GreensFunction3DRadAbs::p_0_i(Real alpha, Real r) const
+FirstPassagePairGreensFunction::p_0_i(Real alpha, Real r) const
 {
     const Real a(geta());
     const Real sigma(getSigma());
@@ -642,7 +642,7 @@ GreensFunction3DRadAbs::p_0_i(Real alpha, Real r) const
 
 
 Real 
-GreensFunction3DRadAbs::p_survival_i(Real alpha) const
+FirstPassagePairGreensFunction::p_survival_i(Real alpha) const
 {
     const Real a(geta());
     const Real sigma(getSigma());
@@ -673,7 +673,7 @@ GreensFunction3DRadAbs::p_survival_i(Real alpha) const
 
 
 Real 
-GreensFunction3DRadAbs::dp_survival_i(Real alpha) const
+FirstPassagePairGreensFunction::dp_survival_i(Real alpha) const
 {
     const Real a(geta());
     const Real sigma(getSigma());
@@ -703,7 +703,7 @@ GreensFunction3DRadAbs::dp_survival_i(Real alpha) const
 
 
 Real 
-GreensFunction3DRadAbs::leavea_i(Real alpha) const
+FirstPassagePairGreensFunction::leavea_i(Real alpha) const
 {
     const Real a(geta());
     const Real sigma(getSigma());
@@ -731,7 +731,7 @@ GreensFunction3DRadAbs::leavea_i(Real alpha) const
     return result;
 }
 
-Real GreensFunction3DRadAbs::leaves_i(Real alpha) const
+Real FirstPassagePairGreensFunction::leaves_i(Real alpha) const
 {
     const Real a(geta());
     const Real sigma(getSigma());
@@ -754,7 +754,7 @@ Real GreensFunction3DRadAbs::leaves_i(Real alpha) const
 }
 
 
-Real GreensFunction3DRadAbs::p_leavea_i(Real alpha,
+Real FirstPassagePairGreensFunction::p_leavea_i(Real alpha,
                                                 Real pleave_factor) const
 {
     const Real a(geta());
@@ -776,7 +776,7 @@ Real GreensFunction3DRadAbs::p_leavea_i(Real alpha,
 
 
 Real 
-GreensFunction3DRadAbs::p_leaves_i(Real alpha,
+FirstPassagePairGreensFunction::p_leaves_i(Real alpha,
                                            Real pleave_factor) const
 {
     const Real sigma(getSigma());
@@ -790,7 +790,7 @@ GreensFunction3DRadAbs::p_leaves_i(Real alpha,
 }
 
 Real 
-GreensFunction3DRadAbs::p_survival_den(Real alpha) const
+FirstPassagePairGreensFunction::p_survival_den(Real alpha) const
 {
     const Real a(geta());
     const Real sigma(getSigma());
@@ -808,7 +808,7 @@ GreensFunction3DRadAbs::p_survival_den(Real alpha) const
 
 
 
-Real GreensFunction3DRadAbs::num_r0(Real alpha) const
+Real FirstPassagePairGreensFunction::num_r0(Real alpha) const
 {
     const Real sigma(getSigma());
     const Real angle_r0(alpha * (r0 - sigma));
@@ -824,14 +824,14 @@ Real GreensFunction3DRadAbs::num_r0(Real alpha) const
 }
 
 
-Real GreensFunction3DRadAbs::pleaveFactor(Real alpha) const
+Real FirstPassagePairGreensFunction::pleaveFactor(Real alpha) const
 {
     return num_r0(alpha) / p_survival_den(alpha);
 }
 
 
 Real
-GreensFunction3DRadAbs::p_int_r_i(Real r, Real alpha,
+FirstPassagePairGreensFunction::p_int_r_i(Real r, Real alpha,
                                           Real num_r0) const
 {
     const Real sigma(getSigma());
@@ -866,7 +866,7 @@ GreensFunction3DRadAbs::p_int_r_i(Real r, Real alpha,
 
 
 void 
-GreensFunction3DRadAbs::createPsurvTable(RealVector& table) const
+FirstPassagePairGreensFunction::createPsurvTable(RealVector& table) const
 {
     const RealVector& alphaTable_0(this->getAlphaTable(0));
 
@@ -875,13 +875,13 @@ GreensFunction3DRadAbs::createPsurvTable(RealVector& table) const
 
     std::transform(alphaTable_0.begin(), alphaTable_0.end(),
                     std::back_inserter(table),
-                    boost::bind(&GreensFunction3DRadAbs::p_survival_i,
+                    boost::bind(&FirstPassagePairGreensFunction::p_survival_i,
                                  this, _1));
 }
 
 
 void 
-GreensFunction3DRadAbs::createNum_r0Table(RealVector& table) const
+FirstPassagePairGreensFunction::createNum_r0Table(RealVector& table) const
 {
     const RealVector& alphaTable_0(this->alphaTable[0]);
 
@@ -890,12 +890,12 @@ GreensFunction3DRadAbs::createNum_r0Table(RealVector& table) const
 
     std::transform(alphaTable_0.begin(), alphaTable_0.end(),
                     std::back_inserter(table),
-                    boost::bind(&GreensFunction3DRadAbs::num_r0,
+                    boost::bind(&FirstPassagePairGreensFunction::num_r0,
                                  this, _1));
 }
 
 void 
-GreensFunction3DRadAbs::createPleaveFactorTable(RealVector& table) const
+FirstPassagePairGreensFunction::createPleaveFactorTable(RealVector& table) const
 {
     const RealVector& alphaTable_0(this->alphaTable[0]);
 
@@ -904,13 +904,13 @@ GreensFunction3DRadAbs::createPleaveFactorTable(RealVector& table) const
 
     std::transform(alphaTable_0.begin(), alphaTable_0.end(),
                     std::back_inserter(table),
-                    boost::bind(&GreensFunction3DRadAbs::pleaveFactor,
+                    boost::bind(&FirstPassagePairGreensFunction::pleaveFactor,
                                  this, _1));
 }
 
 
 void 
-GreensFunction3DRadAbs::createPleavesTable(RealVector& table,
+FirstPassagePairGreensFunction::createPleavesTable(RealVector& table,
                                                    RealVector const& pleaveFactorTable) const
 {
     const RealVector& alphaTable_0(this->alphaTable[0]);
@@ -928,7 +928,7 @@ GreensFunction3DRadAbs::createPleavesTable(RealVector& table,
 }
 
 void 
-GreensFunction3DRadAbs::createPleaveaTable(RealVector& table,
+FirstPassagePairGreensFunction::createPleaveaTable(RealVector& table,
                                                    RealVector const& pleaveFactorTable) const
 {
     const RealVector& alphaTable_0(this->alphaTable[0]);
@@ -947,7 +947,7 @@ GreensFunction3DRadAbs::createPleaveaTable(RealVector& table,
 
 
 Real 
-GreensFunction3DRadAbs::p_0_i_exp(unsigned int i, Real t, Real r) const
+FirstPassagePairGreensFunction::p_0_i_exp(unsigned int i, Real t, Real r) const
 {
     const Real alpha(this->getAlpha0(i));
     return std::exp(- getD() * t * alpha * alpha) * p_0_i(alpha, r);
@@ -955,21 +955,21 @@ GreensFunction3DRadAbs::p_0_i_exp(unsigned int i, Real t, Real r) const
 
 
 Real 
-GreensFunction3DRadAbs::p_survival_i_exp(unsigned int i, Real t) const
+FirstPassagePairGreensFunction::p_survival_i_exp(unsigned int i, Real t) const
 {
     const Real alpha(this->getAlpha0(i));
     return p_survival_i_alpha(alpha, t);
 }
 
 Real 
-GreensFunction3DRadAbs::p_survival_i_alpha(Real alpha, Real t) const
+FirstPassagePairGreensFunction::p_survival_i_alpha(Real alpha, Real t) const
 {
     return std::exp(- getD() * t * alpha * alpha) * 
         p_survival_i(alpha);
 }
 
 Real 
-GreensFunction3DRadAbs::p_survival_2i_exp(unsigned int i,
+FirstPassagePairGreensFunction::p_survival_2i_exp(unsigned int i,
                                                   Real t) const
 {
     const Real Dt(getD() * t);
@@ -985,7 +985,7 @@ GreensFunction3DRadAbs::p_survival_2i_exp(unsigned int i,
 }
 
 Real 
-GreensFunction3DRadAbs::p_survival_i_exp_table(unsigned int i,
+FirstPassagePairGreensFunction::p_survival_i_exp_table(unsigned int i,
                                                        Real t,
                                                        RealVector const& table) const
 {
@@ -994,7 +994,7 @@ GreensFunction3DRadAbs::p_survival_i_exp_table(unsigned int i,
 }
 
 Real 
-GreensFunction3DRadAbs::p_leave_i_exp_table(unsigned int i, Real t, RealVector const& table) const
+FirstPassagePairGreensFunction::p_leave_i_exp_table(unsigned int i, Real t, RealVector const& table) const
 {
     const Real alpha(getAlpha0(i));
     return expm1(- getD() * t * alpha * alpha) * table[i];
@@ -1002,7 +1002,7 @@ GreensFunction3DRadAbs::p_leave_i_exp_table(unsigned int i, Real t, RealVector c
 
 
 Real 
-GreensFunction3DRadAbs::dp_survival_i_exp(unsigned int i, Real t) const
+FirstPassagePairGreensFunction::dp_survival_i_exp(unsigned int i, Real t) const
 {
     const Real alpha(this->getAlpha0(i));
     return std::exp(- getD() * t * alpha * alpha) * 
@@ -1010,14 +1010,14 @@ GreensFunction3DRadAbs::dp_survival_i_exp(unsigned int i, Real t) const
 }
 
 Real 
-GreensFunction3DRadAbs::leavea_i_exp(unsigned int i, Real t) const
+FirstPassagePairGreensFunction::leavea_i_exp(unsigned int i, Real t) const
 {
     const Real alpha(this->getAlpha0(i));
     return std::exp(- getD() * t * alpha * alpha) * leavea_i(alpha);
 }
 
 Real 
-GreensFunction3DRadAbs::leaves_i_exp(unsigned int i, Real t) const
+FirstPassagePairGreensFunction::leaves_i_exp(unsigned int i, Real t) const
 {
     const Real alpha(this->getAlpha0(i));
 
@@ -1025,7 +1025,7 @@ GreensFunction3DRadAbs::leaves_i_exp(unsigned int i, Real t) const
 }
 
 Real 
-GreensFunction3DRadAbs::p_leavea_i_exp(unsigned int i,
+FirstPassagePairGreensFunction::p_leavea_i_exp(unsigned int i,
                                                Real t) const
 {
     const Real alpha(this->getAlpha0(i));
@@ -1036,7 +1036,7 @@ GreensFunction3DRadAbs::p_leavea_i_exp(unsigned int i,
 }
 
 Real 
-GreensFunction3DRadAbs::p_leaves_i_exp(unsigned int i, Real t) const
+FirstPassagePairGreensFunction::p_leaves_i_exp(unsigned int i, Real t) const
 {
     const Real alpha(this->getAlpha0(i));
     const Real num_r0(this->num_r0(alpha)); 
@@ -1046,7 +1046,7 @@ GreensFunction3DRadAbs::p_leaves_i_exp(unsigned int i, Real t) const
 }
 
 Real 
-GreensFunction3DRadAbs::p_int_r_i_exp(unsigned int i,
+FirstPassagePairGreensFunction::p_int_r_i_exp(unsigned int i,
                                               Real t,
                                               Real r) const
 {
@@ -1057,7 +1057,7 @@ GreensFunction3DRadAbs::p_int_r_i_exp(unsigned int i,
 }
 
 Real 
-GreensFunction3DRadAbs::p_int_r_i_exp_table(unsigned int i,
+FirstPassagePairGreensFunction::p_int_r_i_exp_table(unsigned int i,
                                                     Real t,
                                                     Real r,
                                                     RealVector& num_r0Table) const
@@ -1068,9 +1068,9 @@ GreensFunction3DRadAbs::p_int_r_i_exp_table(unsigned int i,
 }
 
 Real 
-GreensFunction3DRadAbs::p_0(Real t, Real r) const
+FirstPassagePairGreensFunction::p_0(Real t, Real r) const
 {
-    const Real p(funcSum(boost::bind(&GreensFunction3DRadAbs::
+    const Real p(funcSum(boost::bind(&FirstPassagePairGreensFunction::
                                         p_0_i_exp,
                                         this,
                                         _1, t, r),
@@ -1080,7 +1080,7 @@ GreensFunction3DRadAbs::p_0(Real t, Real r) const
 
 
 unsigned int
-GreensFunction3DRadAbs::guess_maxi(Real t) const
+FirstPassagePairGreensFunction::guess_maxi(Real t) const
 {
     const unsigned int safety(2);
 
@@ -1113,7 +1113,7 @@ GreensFunction3DRadAbs::guess_maxi(Real t) const
 }
 
 
-Real GreensFunction3DRadAbs::p_survival(Real t) const
+Real FirstPassagePairGreensFunction::p_survival(Real t) const
 {
     RealVector psurvTable;
 
@@ -1123,7 +1123,7 @@ Real GreensFunction3DRadAbs::p_survival(Real t) const
 }
 
 Real 
-GreensFunction3DRadAbs::p_survival_table(Real t, RealVector& psurvTable) const
+FirstPassagePairGreensFunction::p_survival_table(Real t, RealVector& psurvTable) const
 {
     Real p;
 
@@ -1166,7 +1166,7 @@ GreensFunction3DRadAbs::p_survival_table(Real t, RealVector& psurvTable) const
                 this->createPsurvTable(psurvTable);
             }
 
-            p = funcSum_all(boost::bind(&GreensFunction3DRadAbs::
+            p = funcSum_all(boost::bind(&FirstPassagePairGreensFunction::
                                           p_survival_i_exp_table, 
                                           this,
                                           _1, t, psurvTable),
@@ -1178,75 +1178,75 @@ GreensFunction3DRadAbs::p_survival_table(Real t, RealVector& psurvTable) const
 }
 
 Real 
-GreensFunction3DRadAbs::p_leave_table(Real t, RealVector const& table) const
+FirstPassagePairGreensFunction::p_leave_table(Real t, RealVector const& table) const
 {
     return funcSum(
-        boost::bind(&GreensFunction3DRadAbs::p_leave_i_exp_table, 
+        boost::bind(&FirstPassagePairGreensFunction::p_leave_i_exp_table, 
                     this, _1, t, table),
         table.size());
 }
 
 
-Real GreensFunction3DRadAbs::dp_survival(Real t) const
+Real FirstPassagePairGreensFunction::dp_survival(Real t) const
 {
     return funcSum(
-        boost::bind(&GreensFunction3DRadAbs::dp_survival_i_exp, 
+        boost::bind(&FirstPassagePairGreensFunction::dp_survival_i_exp, 
                     this, _1, t),
         MAX_ALPHA_SEQ);
 }
 
 
-Real GreensFunction3DRadAbs::leaves(Real t) const
+Real FirstPassagePairGreensFunction::leaves(Real t) const
 {
     return funcSum(
-        boost::bind(&GreensFunction3DRadAbs::leaves_i_exp,
+        boost::bind(&FirstPassagePairGreensFunction::leaves_i_exp,
                     this, _1, t),
         MAX_ALPHA_SEQ);
 }
 
-Real GreensFunction3DRadAbs::leavea(Real t) const
+Real FirstPassagePairGreensFunction::leavea(Real t) const
 {
     return funcSum(
-        boost::bind(&GreensFunction3DRadAbs::leavea_i_exp,
+        boost::bind(&FirstPassagePairGreensFunction::leavea_i_exp,
                     this, _1, t),
         MAX_ALPHA_SEQ);
 }
 
-Real GreensFunction3DRadAbs::p_leaves(Real t) const
+Real FirstPassagePairGreensFunction::p_leaves(Real t) const
 {
     return funcSum_all(
-        boost::bind(&GreensFunction3DRadAbs::p_leaves_i_exp,
+        boost::bind(&FirstPassagePairGreensFunction::p_leaves_i_exp,
                     this, _1, t),
         guess_maxi(t));
 }
 
-Real GreensFunction3DRadAbs::p_leavea(Real t) const
+Real FirstPassagePairGreensFunction::p_leavea(Real t) const
 {
     return funcSum_all(
-        boost::bind(&GreensFunction3DRadAbs::p_leavea_i_exp,
+        boost::bind(&FirstPassagePairGreensFunction::p_leavea_i_exp,
                     this, _1, t),
         guess_maxi(t));
 }
 
-Real GreensFunction3DRadAbs::p_int_r(Real r, Real t) const
+Real FirstPassagePairGreensFunction::p_int_r(Real r, Real t) const
 {
     return funcSum(
-        boost::bind(&GreensFunction3DRadAbs::p_int_r_i_exp,
+        boost::bind(&FirstPassagePairGreensFunction::p_int_r_i_exp,
                     this, _1, t, r),
         MAX_ALPHA_SEQ);
 }
 
-Real GreensFunction3DRadAbs::p_int_r_table(Real r, Real t, RealVector const& num_r0Table) const
+Real FirstPassagePairGreensFunction::p_int_r_table(Real r, Real t, RealVector const& num_r0Table) const
 {
     return funcSum(
-        boost::bind(&GreensFunction3DRadAbs::p_int_r_i_exp_table,
+        boost::bind(&FirstPassagePairGreensFunction::p_int_r_i_exp_table,
                     this, _1, t, r, num_r0Table), num_r0Table.size());
 }
 
 struct p_survival_table_params
 { 
-    GreensFunction3DRadAbs const* const gf;
-    GreensFunction3DRadAbs::RealVector& table;
+    FirstPassagePairGreensFunction const* const gf;
+    FirstPassagePairGreensFunction::RealVector& table;
     const Real rnd;
 };
 
@@ -1257,7 +1257,7 @@ Real p_survival_table_F(Real t, p_survival_table_params const* params)
 
 struct p_survival_params
 { 
-    GreensFunction3DRadAbs const* const gf;
+    FirstPassagePairGreensFunction const* const gf;
     const Real rnd;
 };
 
@@ -1268,7 +1268,7 @@ static Real p_survival_F(Real t, p_survival_params const* params)
 
 struct p_survival_2i_params
 { 
-    GreensFunction3DRadAbs const* const gf;
+    FirstPassagePairGreensFunction const* const gf;
     const Real t;
 };
 
@@ -1280,7 +1280,7 @@ static Real p_survival_2i_F(Real ri, p_survival_2i_params const* params)
 
 struct p_survival_i_alpha_params
 { 
-    GreensFunction3DRadAbs const* const gf;
+    FirstPassagePairGreensFunction const* const gf;
     const Real t;
 };
 
@@ -1292,8 +1292,8 @@ static Real p_survival_i_alpha_F(Real alpha,
 
 struct p_leave_params
 { 
-    GreensFunction3DRadAbs const* const gf;
-    GreensFunction3DRadAbs::RealVector const& table;
+    FirstPassagePairGreensFunction const* const gf;
+    FirstPassagePairGreensFunction::RealVector const& table;
     const Real rnd;
 };
 
@@ -1304,7 +1304,7 @@ Real p_leave_F(Real t, p_leave_params const* params)
 
 struct p_int_r_params
 { 
-    GreensFunction3DRadAbs const* const gf;
+    FirstPassagePairGreensFunction const* const gf;
     const Real t;
     const Real rnd;
 };
@@ -1315,7 +1315,7 @@ static Real p_int_r_F(Real r, p_int_r_params const* params)
     return params->gf->p_int_r(r, params->t) - params->rnd;
 }
 
-Real GreensFunction3DRadAbs::drawTime(Real rnd) const
+Real FirstPassagePairGreensFunction::drawTime(Real rnd) const
 {
     const Real D(this->getD());
     const Real sigma(this->getSigma());
@@ -1437,7 +1437,7 @@ Real GreensFunction3DRadAbs::drawTime(Real rnd) const
 }
 
 EventType
-GreensFunction3DRadAbs::drawEventType(Real rnd, Real t) const
+FirstPassagePairGreensFunction::drawEventType(Real rnd, Real t) const
 {
     const Real D(this->getD());
     const Real sigma(this->getSigma());
@@ -1507,7 +1507,7 @@ GreensFunction3DRadAbs::drawEventType(Real rnd, Real t) const
 }
 
 Real 
-GreensFunction3DRadAbs::drawPleavea(gsl_function const& F,
+FirstPassagePairGreensFunction::drawPleavea(gsl_function const& F,
                                             gsl_root_fsolver* solver,
                                             Real t_guess,
                                             RealVector& pleaveFactorTable,
@@ -1587,7 +1587,7 @@ GreensFunction3DRadAbs::drawPleavea(gsl_function const& F,
 
 
 Real 
-GreensFunction3DRadAbs::drawPleaves(gsl_function const& F,
+FirstPassagePairGreensFunction::drawPleaves(gsl_function const& F,
                                             gsl_root_fsolver* solver,
                                             Real t_guess,
                                             RealVector& pleaveFactorTable,
@@ -1668,7 +1668,7 @@ GreensFunction3DRadAbs::drawPleaves(gsl_function const& F,
 
 
 
-Real GreensFunction3DRadAbs::drawR(Real rnd, Real t) const
+Real FirstPassagePairGreensFunction::drawR(Real rnd, Real t) const
 {
     const Real D(this->getD());
     const Real sigma(this->getSigma());
@@ -1815,7 +1815,7 @@ Real GreensFunction3DRadAbs::drawR(Real rnd, Real t) const
 
 
 
-Real GreensFunction3DRadAbs::p_n_alpha(unsigned int i, unsigned int n,
+Real FirstPassagePairGreensFunction::p_n_alpha(unsigned int i, unsigned int n,
                                                Real r, Real t) const
 {
     const Real sigma(this->getSigma());
@@ -1871,7 +1871,7 @@ Real GreensFunction3DRadAbs::p_n_alpha(unsigned int i, unsigned int n,
 
 
 Real 
-GreensFunction3DRadAbs::p_n(Integer n, Real r, Real t, Real max_alpha) const
+FirstPassagePairGreensFunction::p_n(Integer n, Real r, Real t, Real max_alpha) const
 {
     const unsigned int min_i(2);
 
@@ -1902,7 +1902,7 @@ GreensFunction3DRadAbs::p_n(Integer n, Real r, Real t, Real max_alpha) const
 }
 
 void
-GreensFunction3DRadAbs::makep_nTable(RealVector& p_nTable,
+FirstPassagePairGreensFunction::makep_nTable(RealVector& p_nTable,
                                              Real r, Real t) const
 {
     const Real sigma(this->getSigma());
@@ -1963,7 +1963,7 @@ GreensFunction3DRadAbs::makep_nTable(RealVector& p_nTable,
 
 
 Real 
-GreensFunction3DRadAbs::dp_n_alpha_at_a(unsigned int i, unsigned int n,
+FirstPassagePairGreensFunction::dp_n_alpha_at_a(unsigned int i, unsigned int n,
                                                 Real t) const
 {
     const Real sigma(this->getSigma());
@@ -2013,7 +2013,7 @@ GreensFunction3DRadAbs::dp_n_alpha_at_a(unsigned int i, unsigned int n,
 }
 
 Real 
-GreensFunction3DRadAbs::dp_n_at_a(Integer n, Real t,
+FirstPassagePairGreensFunction::dp_n_at_a(Integer n, Real t,
                                           Real max_alpha) const
 {
     const unsigned int min_i(2);
@@ -2047,7 +2047,7 @@ GreensFunction3DRadAbs::dp_n_at_a(Integer n, Real t,
 
 
 void
-GreensFunction3DRadAbs::makedp_n_at_aTable(RealVector& p_nTable,
+FirstPassagePairGreensFunction::makedp_n_at_aTable(RealVector& p_nTable,
                                                    Real t) const
 {
     const Real sigma(this->getSigma());
@@ -2109,7 +2109,7 @@ GreensFunction3DRadAbs::makedp_n_at_aTable(RealVector& p_nTable,
 }
 
 Real 
-GreensFunction3DRadAbs::p_theta(Real theta, Real r, Real t) const 
+FirstPassagePairGreensFunction::p_theta(Real theta, Real r, Real t) const 
 {
     {
         const Real sigma(this->getSigma());
@@ -2152,7 +2152,7 @@ GreensFunction3DRadAbs::p_theta(Real theta, Real r, Real t) const
     return p;
 }
 
-Real GreensFunction3DRadAbs::dp_theta(Real theta, Real r, Real t) const 
+Real FirstPassagePairGreensFunction::dp_theta(Real theta, Real r, Real t) const 
 {
     {
         const Real sigma(this->getSigma());
@@ -2200,14 +2200,14 @@ Real GreensFunction3DRadAbs::dp_theta(Real theta, Real r, Real t) const
 
 static Real
 p_theta_n(unsigned int n,
-          GreensFunction3DRadAbs::RealVector const& p_nTable,
-          GreensFunction3DRadAbs::RealVector const& lgndTable)
+          FirstPassagePairGreensFunction::RealVector const& p_nTable,
+          FirstPassagePairGreensFunction::RealVector const& lgndTable)
 {
     return p_nTable[n] * lgndTable[n] * (2 * n + 1);
 }
 
 Real
-GreensFunction3DRadAbs::p_theta_table(Real theta, Real r,
+FirstPassagePairGreensFunction::p_theta_table(Real theta, Real r,
                                               Real t,
                                               RealVector const& p_nTable) const
 {
@@ -2226,7 +2226,7 @@ GreensFunction3DRadAbs::p_theta_table(Real theta, Real r,
 }
 
 void
-GreensFunction3DRadAbs::
+FirstPassagePairGreensFunction::
 make_p_thetaTable(RealVector& pTable,
                   Real r, 
                   Real t,
@@ -2268,7 +2268,7 @@ make_p_thetaTable(RealVector& pTable,
 
 
 Real 
-GreensFunction3DRadAbs::ip_theta(Real theta, Real r, Real t) const
+FirstPassagePairGreensFunction::ip_theta(Real theta, Real r, Real t) const
 {
     {
         const Real sigma(this->getSigma());
@@ -2313,7 +2313,7 @@ GreensFunction3DRadAbs::ip_theta(Real theta, Real r, Real t) const
 
 
 Real 
-GreensFunction3DRadAbs::idp_theta(Real theta, Real r, Real t) const
+FirstPassagePairGreensFunction::idp_theta(Real theta, Real r, Real t) const
 {
     {
         const Real sigma(this->getSigma());
@@ -2358,8 +2358,8 @@ GreensFunction3DRadAbs::idp_theta(Real theta, Real r, Real t) const
 
 static Real
 ip_theta_n(unsigned int n,
-           GreensFunction3DRadAbs::RealVector const& p_nTable,
-           GreensFunction3DRadAbs::RealVector const& lgndTable1)
+           FirstPassagePairGreensFunction::RealVector const& p_nTable,
+           FirstPassagePairGreensFunction::RealVector const& lgndTable1)
 {
     // lgndTable1 is offset by 1; lgndTable1[0] is for n=-1.
 
@@ -2372,7 +2372,7 @@ ip_theta_n(unsigned int n,
 
 
 Real 
-GreensFunction3DRadAbs::ip_theta_table(Real theta, Real r,
+FirstPassagePairGreensFunction::ip_theta_table(Real theta, Real r,
                                                Real t, RealVector const& p_nTable) const
 {
     const unsigned int tableSize(p_nTable.size());
@@ -2391,18 +2391,18 @@ GreensFunction3DRadAbs::ip_theta_table(Real theta, Real r,
         tableSize);
 }
 
-struct GreensFunction3DRadAbs::ip_theta_params
+struct FirstPassagePairGreensFunction::ip_theta_params
 { 
-    GreensFunction3DRadAbs const* const gf;
+    FirstPassagePairGreensFunction const* const gf;
     const Real r;
     const Real t;
     RealVector const& p_nTable;
     const Real value;
 };
 
-Real GreensFunction3DRadAbs::ip_theta_F(Real theta, ip_theta_params const* params)
+Real FirstPassagePairGreensFunction::ip_theta_F(Real theta, ip_theta_params const* params)
 {
-    const GreensFunction3DRadAbs* const gf(params->gf); 
+    const FirstPassagePairGreensFunction* const gf(params->gf); 
     const Real r(params->r);
     const Real t(params->t);
     RealVector const& p_nTable(params->p_nTable);
@@ -2412,7 +2412,7 @@ Real GreensFunction3DRadAbs::ip_theta_F(Real theta, ip_theta_params const* param
 }
 
 Real 
-GreensFunction3DRadAbs::drawTheta(Real rnd, Real r, Real t) const
+FirstPassagePairGreensFunction::drawTheta(Real rnd, Real r, Real t) const
 {
     Real theta;
 
@@ -2510,7 +2510,7 @@ GreensFunction3DRadAbs::drawTheta(Real rnd, Real r, Real t) const
 // debug
 //
 
-std::string GreensFunction3DRadAbs::dump() const
+std::string FirstPassagePairGreensFunction::dump() const
 {
     std::ostringstream ss;
     ss << "D = " << this->getD() << ", sigma = " << this->getSigma() <<
@@ -2520,5 +2520,5 @@ std::string GreensFunction3DRadAbs::dump() const
     return ss.str();
 }
 
-Logger& GreensFunction3DRadAbs::log_(
-        Logger::get_logger("GreensFunction3DRadAbs"));
+Logger& FirstPassagePairGreensFunction::log_(
+        Logger::get_logger("FirstPassagePairGreensFunction"));

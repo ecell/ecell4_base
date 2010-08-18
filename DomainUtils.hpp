@@ -4,7 +4,7 @@
 #include "exceptions.hpp"
 #include "Single.hpp"
 #include "Pair.hpp"
-#include "GreensFunction3DAbsSym.hpp"
+#include "FirstPassageGreensFunction.hpp"
 
 template<typename Ttraits_>
 struct DomainUtils
@@ -107,9 +107,9 @@ struct DomainUtils
     }
 
     template<typename Tdom_>
-    static GreensFunction3DAbsSym get_com_greens_function(Tdom_ const& dom)
+    static FirstPassageGreensFunction get_com_greens_function(Tdom_ const& dom)
     {
-        return GreensFunction3DAbsSym(dom)
+        return FirstPassageGreensFunction(dom)
     }
 };
 

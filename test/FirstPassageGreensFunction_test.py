@@ -6,7 +6,7 @@ import numpy
 
 import _greens_functions as mod
 
-class GreensFunction3DAbsSymTestCase(unittest.TestCase):
+class FirstPassageGreensFunctionTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -17,13 +17,13 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
     def test_instantiation(self):
         D = 1e-12
         a = 1.0
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
         self.failIf(gf == None)
 
     def test_no_shell(self):
         D = 1e-12
         a = numpy.inf
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
         t = gf.drawTime(0.5)
         self.assertEqual(numpy.inf, t)
 
@@ -35,7 +35,7 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
     def test_zero_shell(self):
         D = 1e-12
         a = 0.0
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
         
         t = gf.drawTime(0.5)
         self.assertEqual(0.0, t)
@@ -46,7 +46,7 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
     def test_draw_time(self):
         D = 1e-12
         a = 1e-7
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
 
         t = gf.drawTime(0.0)
         t = gf.drawTime(0.5)
@@ -55,7 +55,7 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
     def test_drawR(self):
         D = 1e-12
         a = 1e-7
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
 
         t = gf.drawTime(0.5)
 
@@ -68,7 +68,7 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
         a = 1e-8
         t = 0.0
 
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
 
         r = gf.drawR(0.5, t)
         self.assertEqual(0.0, r)
@@ -76,7 +76,7 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
     def test_drawR_smallt(self):
         D = 1e-12
         a = 1e-8
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
         t = gf.drawTime(0.5)
 
         while t > 1e-30:
@@ -89,7 +89,7 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
     def test_drawR_large_shell(self):
         D = 1e-12
         a = 1e-3
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
         t = 1e-10
         r = gf.drawR(0.5, t)
         self.failIf(r <= 0.0)
@@ -98,7 +98,7 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
     def test_drawR_large_t(self):
         D = 1e-12
         a = 1e-6
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
         t = gf.drawTime(0.0)
         r = gf.drawR(0.5, t)
 
@@ -108,7 +108,7 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
     def test_p_int_r_is_p_int_r_free_with_large_shell(self):
         D = 1e-12
         a = 1e-6
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
 
         r = 1e-9
         t = 1e-6
@@ -122,7 +122,7 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
     def test_p_int_r_at_a_is_p_survival(self):
         D = 1e-12
         a = 1e-8
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
 
         t = 1e-5
 
@@ -134,7 +134,7 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
     def test_p_int_r_at_a_is_p_survival_2(self):
         D = 1e-12
         a = 1e-9
-        gf = mod.GreensFunction3DAbsSym(D, a)
+        gf = mod.FirstPassageGreensFunction(D, a)
 
         t = 1e-3
 

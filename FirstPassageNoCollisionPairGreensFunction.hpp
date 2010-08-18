@@ -11,7 +11,7 @@
 #include "Logger.hpp"
 #include "PairGreensFunction.hpp"
 
-class GreensFunction3DAbs: public PairGreensFunction
+class FirstPassageNoCollisionPairGreensFunction: public PairGreensFunction
 {
 public:
     typedef std::vector<Real> RealVector;
@@ -32,9 +32,9 @@ private:
 
 public:
     
-    GreensFunction3DAbs(Real D, Real r0, Real a); 
+    FirstPassageNoCollisionPairGreensFunction(Real D, Real r0, Real a); 
     
-    ~GreensFunction3DAbs();
+    ~FirstPassageNoCollisionPairGreensFunction();
 
     Real geta() const
     {
