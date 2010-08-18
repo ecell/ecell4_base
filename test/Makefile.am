@@ -34,6 +34,8 @@ PYTHON_TESTS = \
 	ReactionRule_test.py \
 	SphericalShellContainer_test.py \
 	freeFunctions_test.py \
+	CylindricalSurface_test.py \
+	PlanarSurface_test.py \
 	utils_test.py
 
 TESTS = $(CPP_TESTS) $(PYTHON_TESTS)
@@ -59,6 +61,8 @@ GreensFunction3DRadAbs_test.py\
 EGFRDSimulator_test.py\
 SphericalShellContainer_test.py\
 CylindricalShellContainer_test.py\
+CylindricalSurface_test.py \
+PlanarSurface_test.py \
 Model_test.py\
 NetworkRules_test.py\
 ReactionRule_test.py
