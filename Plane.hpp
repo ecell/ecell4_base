@@ -22,7 +22,8 @@ public:
         : position_(position),
           units_(array_gen(
             create_vector<position_type>(1., 0., 0.),
-            create_vector<position_type>(0., 1., 0.))),
+            create_vector<position_type>(0., 1., 0.),
+            create_vector<position_type>(0., 0., 1.))),
           extent_(array_gen<length_type>(1., 1.)) {}
 
     template<typename Tarray_>
@@ -30,7 +31,8 @@ public:
         : position_(position),
           units_(array_gen(
             create_vector<position_type>(1., 0., 0.),
-            create_vector<position_type>(0., 1., 0.)))
+            create_vector<position_type>(0., 1., 0.),
+            create_vector<position_type>(0., 0., 1.)))
     {
         std::copy(boost::begin(extent), boost::end(extent),
                   boost::begin(extent_));
@@ -52,7 +54,7 @@ public:
         position_type const& vx,
         position_type const& vy,
         Tarray_ const& extent = array_gen<length_type>(1., 1.))
-        : position_(position), units_(array_gen(vx, vy))
+        : position_(position), units_(array_gen(vx, vy, cross_product(vx, vy)))
     {
         std::copy(boost::begin(extent), boost::end(extent),
                   boost::begin(extent_));
@@ -63,7 +65,7 @@ public:
         position_type const& vy,
         length_type const& lx,
         length_type const& ly)
-        : position_(position), units_(array_gen(vx, vy)),
+        : position_(position), units_(array_gen(vx, vy, cross_product(vx, vy))),
           extent_(array_gen<length_type>(lx, ly)) {}
 
     position_type const& position() const
@@ -106,12 +108,12 @@ public:
         return units_[2];
     }
 
-    boost::array<position_type, 2> const& units() const
+    boost::array<position_type, 3> const& units() const
     {
         return units_;
     }
 
-    boost::array<position_type, 2>& units()
+    boost::array<position_type, 3>& units()
     {
         return units_;
     }
@@ -167,12 +169,12 @@ public:
 
 protected:
     position_type position_;
-    boost::array<position_type, 2> units_;
+    boost::array<position_type, 3> units_;
     boost::array<length_type, 2> extent_;
 };
 
 template<typename T_>
-inline boost::array<typename Plane<T_>::length_type, 2>
+inline boost::array<typename Plane<T_>::length_type, 3>
 to_internal(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
 {
     typedef typename Plane<T_>::position_type position_type;
@@ -180,17 +182,20 @@ to_internal(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
 
     return array_gen<typename Plane<T_>::length_type>(
         dot_product(pos_vector, obj.unit_x()),
-        dot_product(pos_vector, obj.unit_y()));
+        dot_product(pos_vector, obj.unit_y()),
+        dot_product(pos_vector, obj.unit_z()));
 }
 
 template<typename T_>
-inline typename Plane<T_>::position_type
+inline std::pair<typename Cylinder<T_>::position_type,
+                 typename Cylinder<T_>::length_type>
 projected_point(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
 {
-    boost::array<typename Plane<T_>::length_type, 2> x_y(to_internal(obj, pos));
-    return add(
-        add(obj.position(), multiply(obj.unit_x(), x_y[0])),
-            multiply(obj.unit_y(), x_y[1]));
+    boost::array<typename Plane<T_>::length_type, 3> x_y_z(to_internal(obj, pos));
+    return std::make_pair(
+        add(add(obj.position(), multiply(obj.unit_x(), x_y_z[0])),
+            multiply(obj.unit_y(), x_y_z[1])),
+        x_y_z[2]);
 }
 
 template<typename T_>
@@ -198,30 +203,40 @@ inline typename Plane<T_>::length_type
 distance(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
 {
     typedef typename Plane<T_>::length_type length_type;
-    boost::array<length_type, 2> const x_y(to_internal(obj, pos));
-    length_type const dx(subtract(abs(x_y[0]), obj.extent()[0]));
-    length_type const dy(subtract(abs(x_y[1]), obj.extent()[1]));
+    boost::array<length_type, 3> const x_y_z(to_internal(obj, pos));
+
+    length_type const dx(subtract(abs(x_y_z[0]), obj.extent()[0]));
+    length_type const dy(subtract(abs(x_y_z[1]), obj.extent()[1]));
+
+    if (dx < 0 && dy < 0) {
+        // Projected point of pos is on the plane.
+        // Probably an infinite plane anyway.
+        return x_y_z[2];
+    }
 
     if (dx > 0)
     {
         if (dy > 0)
         {
-            return std::sqrt(gsl_pow_2(dx) + gsl_pow_2(dy));
+            // Far away from plane.
+            return std::sqrt(gsl_pow_2(dx) + gsl_pow_2(dy) +
+                             gsl_pow_2(x_y_z[2]));
         }
         else
         {
-            return dx;
+            return std::sqrt(gsl_pow_2(dx) + gsl_pow_2(x_y_z[2]));
         }
     }
     else
     {
         if (dy > 0)
         {
-            return dy;
+            return std::sqrt(gsl_pow_2(dy) + gsl_pow_2(x_y_z[2]));
         }
         else
         {
-            return std::max(dx, dy);
+            // Already tested above.
+            return x_y_z[2];
         }
     }
 }

@@ -6,10 +6,10 @@
 
 template<typename Ttraits_>
 class PlanarSurface
-    : public BasicRegionImpl<Ttraits_, Plane<typename Ttraits_::length_type> >
+    : public BasicSurfaceImpl<Ttraits_, Plane<typename Ttraits_::length_type> >
 {
 public:
-    typedef BasicRegionImpl<Ttraits_, Plane<typename Ttraits_::length_type> > base_type;
+    typedef BasicSurfaceImpl<Ttraits_, Plane<typename Ttraits_::length_type> > base_type;
     typedef typename base_type::traits_type traits_type;
     typedef typename base_type::identifier_type identifier_type;
     typedef typename base_type::shape_type shape_type;
