@@ -1,6 +1,8 @@
 #if !defined( __DEFS_HPP )
 #define __DEFS_HPP
 
+#include <cstddef>
+
 typedef double Real;
 typedef long int Integer;
 typedef unsigned long int UnsignedInteger;
