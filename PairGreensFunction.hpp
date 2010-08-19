@@ -2,6 +2,7 @@
 #define __PAIRGREENSFUNCTION_HPP
 
 #include "Defs.hpp"
+#include "GreensFunction.hpp"
 
 enum EventType
 {
@@ -22,18 +23,13 @@ enum EventType
     MULTI_REACTION = 18
 };
 
-class PairGreensFunction
+class PairGreensFunction: public GreensFunction
 {
 public:
     PairGreensFunction(Real D, Real kf, Real r0, Real Sigma)
-      : D(D), kf(kf), r0(r0), Sigma(Sigma) {}
+      : GreensFunction(D), kf(kf), r0(r0), Sigma(Sigma) {}
     
     ~PairGreensFunction() {}
-    
-    Real getD() const
-    {
-        return this->D;
-    }
     
     Real getkf() const
     {
@@ -51,7 +47,6 @@ public:
     }
 
 protected:
-  const Real D;
   const Real kf;
   const Real r0;
   const Real Sigma;
