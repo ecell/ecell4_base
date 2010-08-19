@@ -2,6 +2,8 @@
 #define BOX_HPP
 
 #include <boost/array.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
 #include <boost/multi_array.hpp>
 #include <utility>
 #include <algorithm>
@@ -181,8 +183,10 @@ public:
     }
 
 protected:
+    // Middle of box.
     position_type position_;
     boost::array<position_type, 3> units_;
+    // Extent: for a box of 2 by 2 by 2, extent is 1 by 1 by 1.
     boost::array<length_type, 3> extent_;
 };
 
@@ -204,12 +208,10 @@ inline std::pair<typename Box<T_>::position_type,
                  typename Box<T_>::length_type>
 projected_point(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
 {
-    boost::array<typename Box<T_>::length_type, 3> x_y_z(to_internal(obj, pos));
-    return std::make_pair(
-        add(
-            add(obj.position(), multiply(obj.unit_x(), x_y_z[0])),
-            multiply(obj.unit_y(), x_y_z[1])),
-        x_y_z[2]);
+    // Todo. If we ever need it.
+    // The projection of a point on a box.
+    return std::make_pair(typename Box<T_>::position_type(),
+                          typename Box<T_>::length_type());
 }
 
 template<typename T_>
@@ -226,6 +228,7 @@ distance(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
         {
             if (dx_dy_dz[2] > 0)
             {
+                // Far away from box.
                 return length(dx_dy_dz);
             }
             else
@@ -266,6 +269,7 @@ distance(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
             }
             else
             {
+                // Inside box.
                 return std::max(std::max(dx_dy_dz[0], dx_dy_dz[1]), dx_dy_dz[2]);
             }
         }
@@ -277,6 +281,7 @@ inline typename Box<T>::position_type
 random_position(Box<T> const& shape, Trng& rng)
 {
     boost::const_multi_array_ref<T, 2> mat(&shape.units()[0][0], boost::extents[3][3]);
+    // -1 < rng() < 1. See for example CuboidalRegion.hpp.
     return add(
         shape.position(),
         multiply(

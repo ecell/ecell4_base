@@ -107,8 +107,10 @@ to_internal(Cylinder<T_> const& obj, typename Cylinder<T_>::position_type const&
     typedef typename Cylinder<T_>::length_type length_type;
 
     const position_type pos_vector(subtract(pos, obj.position()));
-    const length_type z(dot_product(pos_vector, obj.unit_z())); // can be < 0
-    const length_type r(length(pos_vector - multiply(obj.unit_z(), z))); // always >= 0
+    // z can be < 0
+    const length_type z(dot_product(pos_vector, obj.unit_z()));
+    // r is always >= 0
+    const length_type r(length(pos_vector - multiply(obj.unit_z(), z)));
 
     return std::make_pair(r, z);
 }
@@ -121,7 +123,8 @@ projected_point(Cylinder<T_> const& obj,
 {
     typedef typename Cylinder<T_>::length_type length_type;
 
-    std::pair<length_type, length_type> r_z(to_internal(obj, pos));\
+    // The projection lies on the z-axis.
+    std::pair<length_type, length_type> r_z(to_internal(obj, pos));
     return std::make_pair(
         add(obj.position(), multiply(obj.unit_z(), r_z.second)),
         r_z.first);
@@ -162,7 +165,7 @@ distance(Cylinder<T_> const& obj,
     {
         if (dr > obj.radius())
         {
-            // pos is somewhere 'parellel' to the cylinder.
+            // pos is somewhere 'parallel' to the cylinder.
             distance = dr;
         }
         else
@@ -178,6 +181,7 @@ template<typename T, typename Trng>
 inline typename Cylinder<T>::position_type
 random_position(Cylinder<T> const& shape, Trng& rng)
 {
+    // -1 < rng() < 1. See for example CylindricalSurface.hpp.
     return add(shape.position(),
                multiply(shape.unit_z(), rng() * shape.size()));
 }

@@ -275,6 +275,7 @@ inline boost::python::objects::class_base register_world_class(char const* name)
         .def("distance", &impl_type::template distance<typename Ttraits_::sphere_type>)
         .def("distance", &impl_type::template distance<typename Ttraits_::cylinder_type>)
         .def("distance", &impl_type::template distance<typename Ttraits_::box_type>)
+        .def("distance", &impl_type::template distance<typename Ttraits_::plane_type>)
         .def("calculate_pair_CoM", &impl_type::template calculate_pair_CoM<typename impl_type::position_type>)
         ;
 }

@@ -33,6 +33,8 @@ public:
     typedef Region<Ttraits_> base_type;
     typedef typename Ttraits_::structure_id_type identifier_type;
     typedef Tshape_ shape_type;
+    typedef typename base_type::length_type length_type;
+    typedef typename base_type::position_type position_type;
 
 public:
     virtual ~BasicRegionImpl() {}
@@ -70,6 +72,13 @@ public:
         std::ostringstream out;
         out << "Region(" << base_type::id_ << ":" << shape() << ")";
         return out.str();
+    }
+
+    //std::pair<position_type, length_type>
+    position_type projected_point(position_type const& pos) const
+    {
+        // Todo. Return pair and Pythonify.
+        return ::projected_point(shape(), pos).first;
     }
 
     BasicRegionImpl(identifier_type const& id, shape_type const& shape)

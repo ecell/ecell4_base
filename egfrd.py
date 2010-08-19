@@ -533,7 +533,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
             for _ in range(self.dissociation_retry_moves):
                 vector = _random_vector(current_surface, particle_radius12 *
-                                       MINIMAL_SEPERATION_FACTOR, self.rng)
+                                        MINIMAL_SEPARATION_FACTOR, self.rng)
             
                 # place particles according to the ratio D1:D2
                 # this way, species with D=0 doesn't move.
@@ -694,14 +694,16 @@ class EGFRDSimulator(ParticleSimulatorBase):
             burst = uniq(burst)
 
             closest, closest_distance = \
-                self.get_closest_obj(singlepos, ignore = [single.domain_id, ])
+                self.get_closest_obj(singlepos, ignore=[single.domain_id],
+                                     ignores=[single.surface.id])
             self.update_single(single, closest, closest_distance)
             for s in burst:
                 if not isinstance(s, Single):
                     continue
                 assert s.is_reset()
                 closest, closest_distance = self.get_closest_obj(
-                    s.shell.shape.position, ignore = [s.domain_id, ])
+                    s.shell.shape.position, ignore=[s.domain_id],
+                    ignores=[single.surface.id])
 
                 self.update_single(s, closest, closest_distance)
                 self.update_single_event(self.t + s.dt, s)
@@ -764,7 +766,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
             new_shell_size = self.calculate_single_shell_size(single, closest, 
                                                       distance_to_closest,
                                                       distance_to_shell)
-        else:  # Pair or Multi
+        else:  # Pair or Multi or Surface
             new_shell_size = distance_to_shell / SAFETY
             new_shell_size = max(new_shell_size,
                                  single.pid_particle_pair[1].radius)
@@ -1071,6 +1073,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         assert single1.is_reset()
         assert single2.is_reset()
 
+        # 1. Determine min shell size.
         radius1 = single1.pid_particle_pair[1].radius
         radius2 = single2.pid_particle_pair[1].radius
 
@@ -1101,7 +1104,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
             min_shell_size = shell_size2
             shell_size_margin = shell_size_margin2
 
-        # 1. Shell cannot be larger than max shell size or sim cell size.
+        # 2. Check if min shell size not larger than max shell size or 
+        # sim cell size.
         com = self.world.calculate_pair_CoM(pos1, pos2, D1, D2)
         com = self.world.apply_boundary(com)
         min_shell_size_with_margin = min_shell_size + shell_size_margin
@@ -1119,8 +1123,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
                            FORMAT_DOUBLE % max_shell_size))
             return None
 
-        # Here, we have to take into account of the burst Singles in
-        # this step.  The simple check for closest below could miss
+        # 3. Check if bursted Singles not too close.
+        # The simple check for closest below could miss
         # some of them, because sizes of these Singles for this
         # distance check has to include SINGLE_SHELL_FACTOR, while
         # these burst objects have zero mobility radii.  This is not
@@ -1145,8 +1149,12 @@ class EGFRDSimulator(ParticleSimulatorBase):
             return None
 
         assert closest_shell_distance > 0
+
+        # 4. Determine shell size and check if closest object not too 
+        # close (squeezing).
         c, d = self.get_closest_obj(com, ignore=[single1.domain_id,
-                                                 single2.domain_id])
+                                                 single2.domain_id],
+                                    ignores=[single1.surface.id])
         if d < closest_shell_distance:
             closest, closest_shell_distance = c, d
 
@@ -1162,17 +1170,21 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
             D_closest = closest.pid_particle_pair[1].D
             D_tot = D_closest + D12
-            closest_distance = self.world.distance(
-                    com, closest.pid_particle_pair[1].position) ##??
+            closest_particle_distance = self.world.distance(
+                    com, closest.pid_particle_pair[1].position)
 
             closest_min_radius = closest.pid_particle_pair[1].radius
             closest_min_shell = closest_min_radius * \
                 (self.SINGLE_SHELL_FACTOR + 1.0)
 
+            # options for shell size:
+            # a. ideal shell size
+            # b. closest shell is from a bursted single
+            # c. closest shell is closer than ideal shell size 
             shell_size = min((D12 / D_tot) *
-                            (closest_distance - min_shell_size 
+                            (closest_particle_distance - min_shell_size 
                              - closest_min_radius) + min_shell_size,
-                            closest_distance - closest_min_shell,
+                            closest_particle_distance - closest_min_shell,
                             closest_shell_distance)
 
             shell_size /= SAFETY
@@ -1192,6 +1204,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
             return None
 
 
+        # 5. Check if singles would not be better.
         d1 = self.world.distance(com, pos1)
         d2 = self.world.distance(com, pos2)
 
@@ -1205,7 +1218,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
                                             single2.pid_particle_pair[0]))
             return None
 
-        # 3. Ok, Pair makes sense.  Create one.
+        # 6. Ok, Pair makes sense. Create one.
         shell_size = min(shell_size, max_shell_size)
 
         pair = self.create_pair(single1, single2, com, r0, shell_size)
@@ -1230,7 +1243,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         if __debug__:
             log.info('%s,\ndt=%s, r0=%s, shell_size=%s, '
-                     'closest_distance=%s,\nclosest = %s' %
+                     'closest_shell_distance=%s,\nclosest = %s' %
                      (pair, FORMAT_DOUBLE % pair.dt, FORMAT_DOUBLE % r0, 
                       FORMAT_DOUBLE % shell_size, 
                       FORMAT_DOUBLE % closest_shell_distance, closest))
@@ -1423,7 +1436,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         return intruders, closest_domain, closest_distance
 
-    def get_closest_obj(self, pos, ignore=[]):
+    def get_closest_obj(self, pos, ignore=[], ignores=[]):
         # ignore: domain ids.
         closest_domain = None
         closest_distance = numpy.inf
@@ -1441,7 +1454,12 @@ class EGFRDSimulator(ParticleSimulatorBase):
                     # loop and check other containers.
                     break   
 
-        return closest_domain, closest_distance
+        surface, distance = get_closest_surface(self.world, pos, ignores)
+
+        if distance < closest_distance:
+            return surface, distance
+        else:
+            return closest_domain, closest_distance
 
     def obj_distance(self, pos, obj):
         return min(self.world.distance(shell.shape, pos)
@@ -1493,7 +1511,8 @@ rejected moves = %d
 
         for shell_id, shell in obj.shell_list:
             closest, distance = self.get_closest_obj(shell.shape.position,
-                                                   ignore = [obj.domain_id])
+                                                     ignore=[obj.domain_id],
+                                                     ignores=[obj.surface.id])
             if(type(obj) is CylindricalSurfaceSingle or
                type(obj) is CylindricalSurfacePair):
                 shell_size = shell.shape.size

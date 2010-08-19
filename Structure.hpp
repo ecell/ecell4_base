@@ -47,6 +47,8 @@ public:
 
     virtual position_type bd_displacement(length_type const& r, rng_type& rng) const = 0;
 
+    virtual position_type projected_point(position_type const& pos) const = 0;
+
     virtual std::size_t hash() const
     {
 #if defined(HAVE_TR1_FUNCTIONAL)

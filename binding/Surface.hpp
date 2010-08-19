@@ -13,7 +13,9 @@ inline boost::python::objects::class_base register_surface_class(char const *nam
 
     return class_<impl_type, bases<typename impl_type::base_type>,
            boost::shared_ptr<impl_type>, boost::noncopyable>(
-            name, no_init);
+            name, no_init)
+        .def("minimal_distance", &impl_type::minimal_distance)
+        ;
 }
 
 } // namespace binding

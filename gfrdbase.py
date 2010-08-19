@@ -27,6 +27,8 @@ __all__ = [
     'NoSpace',
     'create_world',
     'ParticleSimulatorBase',
+    'get_closest_surface',
+    'get_closest_surface_within_radius'
     ]
 
 World = _gfrd.World
@@ -86,28 +88,38 @@ class NoSpace(Exception):
 
 def get_closest_surface(world, pos, ignore):
     """Return sorted list of tuples with:
-        - distance to surface
         - surface itself
+        - distance to surface
 
     We can not use matrix_space, it would miss a surface if the origin 
     of the surface would not be in the same or neighboring cells as pos.
 
     """
-    structures = []
-    distances = []
+    surfaces_and_distances_to_surfaces = []
 
     for surface in world.structures:
         if isinstance(surface, _gfrd.Surface) and surface.id not in ignore:
             pos_transposed = \
                 world.cyclic_transpose(pos, surface.shape.position)
-            distance_to_surface = world.distance(surface.shape, pos_transposed)
-            distances.append(distance_to_surface)
-            structures.append(surface)
+            distance = world.distance(surface.shape, pos_transposed)
+            surfaces_and_distances_to_surfaces.append((surface, distance))
 
-    if distances:
-        return min(zip(distances, structures))
+    if surfaces_and_distances_to_surfaces:
+        return min(surfaces_and_distances_to_surfaces)
     else:
-        return None
+        return None, numpy.inf
+
+def get_closest_surface_within_radius(world, pos, radius, ignore):
+    """Return sorted list of tuples with:
+        - surface itself
+        - distance to surface
+
+    """
+    surface, distance = get_closest_surface(world, pos, ignore) 
+    if distance < radius:
+        return surface, distance
+    else:
+        return None, numpy.inf
 
 def create_world(m, matrix_size=10):
     m.set_all_repulsive()
@@ -167,15 +179,13 @@ def throw_in_particles(world, sid, n):
             # particles added to the world, or added to a self-defined 
             # box.
             if isinstance(structure, _gfrd.CuboidalRegion):
-                tmp = get_closest_surface(world, position, [])
-                if tmp is not None:
-                    distance, closest_surface = tmp
-                    if(distance < 
-                       closest_surface.minimal_distance(species.radius)):
-                        if __debug__:
-                            log.info('\t%d-th particle rejected. Too close to '
-                                     'surface. I will keep trying.' % i)
-                        create = False
+                surface, distance = get_closest_surface(world, position, [])
+                if(surface and
+                   distance < surface.minimal_distance(species.radius)):
+                    if __debug__:
+                        log.info('\t%d-th particle rejected. Too close to '
+                                 'surface. I will keep trying.' % i)
+                    create = False
             if create:
                 # All checks passed. Create particle.
                 p = world.new_particle(sid, position)
@@ -224,18 +234,6 @@ class ParticleSimulatorBase(object):
 
     def initialize(self):
         pass
-
-    def get_closest_surface_within_radius(self, pos, radius, ignore):
-        """Return sorted list of tuples with:
-            - distance to surface
-            - surface itself
-
-        """
-        distance, closest_surface = self.get_closest_surface(pos, ignore) 
-        if distance < radius:
-            return distance, closest_surface
-        else:
-            return numpy.inf, None
 
     def get_species(self):
         return self.world.species

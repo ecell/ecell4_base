@@ -5,6 +5,8 @@
 #define BOOST_TEST_MODULE "StructureUtils"
 
 #include <boost/test/included/unit_test.hpp>
+#include "Box.hpp"
+#include "Cylinder.hpp"
 #include "World.hpp"
 #include "EGFRDSimulator.hpp"
 #include "StructureUtils.hpp"
