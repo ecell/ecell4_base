@@ -4,25 +4,6 @@
 #include "Defs.hpp"
 #include "GreensFunction.hpp"
 
-enum EventType
-{
-    SINGLE_REACTION = 10,
-    SINGLE_ESCAPE = 11,
-
-    COM_ESCAPE = 11, // Same as SINGLE_ESCAPE
-
-    IV_EVENT = 12,
-    IV_ESCAPE = 13,
-    IV_REACTION = 14,
-
-    IV_INTERACTION = 15,
-
-    BURST = 16,
-
-    MULTI_ESCAPE = 17,
-    MULTI_REACTION = 18
-};
-
 class PairGreensFunction: public GreensFunction
 {
 public:
