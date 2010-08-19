@@ -24,9 +24,9 @@
 #include "SphericalBesselGenerator.hpp"
 #include "GreensFunction3DAbs.hpp"
 
-typedef GreensFunction3DAbs FPNCPGF;
+typedef GreensFunction3DAbs GF3DA;
 
-FPNCPGF::GreensFunction3DAbs(Real D, Real r0, Real a) 
+GF3DA::GreensFunction3DAbs(Real D, Real r0, Real a) 
     : PairGreensFunction(D, 0., r0, 0.), a(a)
 {
     if (a < 0.0)
@@ -35,13 +35,13 @@ FPNCPGF::GreensFunction3DAbs(Real D, Real r0, Real a)
     }
 }
 
-FPNCPGF::~GreensFunction3DAbs()
+GF3DA::~GreensFunction3DAbs()
 {
     ; // do nothing
 }
 
 Real
-FPNCPGF::p_survival(Real t) const
+GF3DA::p_survival(Real t) const
 {
     const Real D(getD());
     const Real a(geta());
@@ -51,7 +51,7 @@ FPNCPGF::p_survival(Real t) const
 
 
 Real
-FPNCPGF::dp_survival(Real t) const
+GF3DA::dp_survival(Real t) const
 {
     const Real D(getD());
     const Real a(geta());
@@ -60,7 +60,7 @@ FPNCPGF::dp_survival(Real t) const
 }
 
 Real
-FPNCPGF::p_int_r(Real r, Real t) const
+GF3DA::p_int_r(Real r, Real t) const
 {
     const Real D(getD());
     const Real a(geta());
@@ -116,14 +116,14 @@ FPNCPGF::p_int_r(Real r, Real t) const
 
 struct p_survival_params
 { 
-    const FPNCPGF* const gf;
+    const GF3DA* const gf;
     const Real rnd;
 };
 
 Real
 static p_survival_F(Real t, p_survival_params const* params)
 {
-    const FPNCPGF* const gf(params->gf); 
+    const GF3DA* const gf(params->gf); 
     const Real rnd(params->rnd);
 
     return rnd - gf->p_survival(t);
@@ -131,14 +131,14 @@ static p_survival_F(Real t, p_survival_params const* params)
 
 struct p_int_r_params
 { 
-    const FPNCPGF* const gf;
+    const GF3DA* const gf;
     const Real t;
     const Real rnd;
 };
 
 static Real p_int_r_F(Real r, p_int_r_params const* params)
 {
-    const FPNCPGF* const gf(params->gf); 
+    const GF3DA* const gf(params->gf); 
     const Real t(params->t);
     const Real rnd(params->rnd);
 
@@ -146,7 +146,7 @@ static Real p_int_r_F(Real r, p_int_r_params const* params)
 }
 
 Real 
-FPNCPGF::p_n_alpha(unsigned int i, unsigned int n, Real r, Real t) const
+GF3DA::p_n_alpha(unsigned int i, unsigned int n, Real r, Real t) const
 {
     const Real a(geta());
 
@@ -175,16 +175,16 @@ FPNCPGF::p_n_alpha(unsigned int i, unsigned int n, Real r, Real t) const
 
 
 Real 
-FPNCPGF::p_n(Integer n, Real r, Real t) const
+GF3DA::p_n(Integer n, Real r, Real t) const
 {
-    const Real p(funcSum(boost::bind(&FPNCPGF::p_n_alpha, this, _1, n, r, t),
+    const Real p(funcSum(boost::bind(&GF3DA::p_n_alpha, this, _1, n, r, t),
                          MAX_ALPHA_SEQ));
 
     return p;
 }
 
 void
-FPNCPGF::makep_nTable(RealVector& p_nTable, Real r, Real t) const
+GF3DA::makep_nTable(RealVector& p_nTable, Real r, Real t) const
 {
     const Real a(geta());
 
@@ -241,13 +241,13 @@ FPNCPGF::makep_nTable(RealVector& p_nTable, Real r, Real t) const
 
 static Real
 p_theta_i(unsigned int n,
-          FPNCPGF::RealVector const& p_nTable,
-          FPNCPGF::RealVector const& lgndTable)
+          GF3DA::RealVector const& p_nTable,
+          GF3DA::RealVector const& lgndTable)
 {
     return p_nTable[n] * lgndTable[n] * (2 * n + 1);
 }
 
-Real FPNCPGF::p_theta_table(Real theta, Real r, Real t, RealVector const& p_nTable) const
+Real GF3DA::p_theta_table(Real theta, Real r, Real t, RealVector const& p_nTable) const
 {
     const unsigned int tableSize(p_nTable.size());
 
@@ -264,7 +264,7 @@ Real FPNCPGF::p_theta_table(Real theta, Real r, Real t, RealVector const& p_nTab
 }
 
 
-Real FPNCPGF::p_theta(Real theta, Real r, Real t) const 
+Real GF3DA::p_theta(Real theta, Real r, Real t) const 
 {
     {
         const Real a(geta());
@@ -308,7 +308,7 @@ Real FPNCPGF::p_theta(Real theta, Real r, Real t) const
 
 
 
-Real FPNCPGF::ip_theta(Real theta, Real r, Real t) const
+Real GF3DA::ip_theta(Real theta, Real r, Real t) const
 {
     {
         const Real a(geta());
@@ -352,8 +352,8 @@ Real FPNCPGF::ip_theta(Real theta, Real r, Real t) const
 
 static Real
 ip_theta_i(unsigned int n,
-           FPNCPGF::RealVector const& p_nTable,
-           FPNCPGF::RealVector const& lgndTable1)
+           GF3DA::RealVector const& p_nTable,
+           GF3DA::RealVector const& lgndTable1)
 {
     // lgndTable1 is offset by 1; lgndTable1[0] is for n=-1.
 
@@ -365,7 +365,7 @@ ip_theta_i(unsigned int n,
 
 
 Real 
-FPNCPGF::ip_theta_table(
+GF3DA::ip_theta_table(
     Real theta, Real r, Real t, RealVector const& p_nTable) const
 {
     const unsigned int tableSize(p_nTable.size());
@@ -388,18 +388,18 @@ FPNCPGF::ip_theta_table(
         tableSize);
 }
 
-struct FPNCPGF::ip_theta_params
+struct GF3DA::ip_theta_params
 { 
-    FPNCPGF const* const gf;
+    GF3DA const* const gf;
     const Real r;
     const Real t;
     RealVector const& p_nTable;
     const Real value;
 };
 
-Real FPNCPGF::ip_theta_F(Real theta, ip_theta_params const* params)
+Real GF3DA::ip_theta_F(Real theta, ip_theta_params const* params)
 {
-    const FPNCPGF* const gf(params->gf); 
+    const GF3DA* const gf(params->gf); 
     const Real r(params->r);
     const Real t(params->t);
     const RealVector& p_nTable(params->p_nTable);
@@ -410,7 +410,7 @@ Real FPNCPGF::ip_theta_F(Real theta, ip_theta_params const* params)
 
 
 Real 
-FPNCPGF::dp_n_alpha(unsigned int i, unsigned int n, Real t) const
+GF3DA::dp_n_alpha(unsigned int i, unsigned int n, Real t) const
 {
     const Real a(geta());
 
@@ -435,17 +435,17 @@ FPNCPGF::dp_n_alpha(unsigned int i, unsigned int n, Real t) const
 
 
 Real 
-FPNCPGF::dp_n(Integer n, Real t) const
+GF3DA::dp_n(Integer n, Real t) const
 {
     const Real 
-        p(funcSum(boost::bind(&FPNCPGF::dp_n_alpha, this, _1, n, t),
+        p(funcSum(boost::bind(&GF3DA::dp_n_alpha, this, _1, n, t),
                   MAX_ALPHA_SEQ));
 
     return p;
 }
 
 
-void FPNCPGF::makedp_nTable(RealVector& p_nTable, Real t) const
+void GF3DA::makedp_nTable(RealVector& p_nTable, Real t) const
 {
     p_nTable.clear();
 
@@ -497,7 +497,7 @@ void FPNCPGF::makedp_nTable(RealVector& p_nTable, Real t) const
 }
 
 Real 
-FPNCPGF::dp_theta(Real theta, Real r, Real t) const 
+GF3DA::dp_theta(Real theta, Real r, Real t) const 
 {
     {
         const Real a(geta());
@@ -542,7 +542,7 @@ FPNCPGF::dp_theta(Real theta, Real r, Real t) const
 }
 
 Real 
-FPNCPGF::idp_theta(Real theta, Real r, Real t) const
+GF3DA::idp_theta(Real theta, Real r, Real t) const
 {
     {
         const Real a(geta());
@@ -585,7 +585,7 @@ FPNCPGF::idp_theta(Real theta, Real r, Real t) const
 }
 
 Real 
-FPNCPGF::drawTime(Real rnd) const
+GF3DA::drawTime(Real rnd) const
 {
    const Real a(geta());
 
@@ -688,7 +688,7 @@ FPNCPGF::drawTime(Real rnd) const
 }
 
 Real 
-FPNCPGF::drawR(Real rnd, Real t) const
+GF3DA::drawR(Real rnd, Real t) const
 {
     const Real a(geta());
 
@@ -771,7 +771,7 @@ FPNCPGF::drawR(Real rnd, Real t) const
 }
     
 Real 
-FPNCPGF::drawTheta(Real rnd, Real r, Real t) const
+GF3DA::drawTheta(Real rnd, Real r, Real t) const
 {
     Real theta;
 
@@ -871,7 +871,7 @@ FPNCPGF::drawTheta(Real rnd, Real r, Real t) const
 // debug
 //
 
-std::string FPNCPGF::dump() const
+std::string GF3DA::dump() const
 {
     std::ostringstream ss;
     ss << "D = " << getD() <<
