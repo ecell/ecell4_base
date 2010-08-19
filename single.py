@@ -180,7 +180,12 @@ class NonInteractionSingle(Single):
             if feq(length(displacement), abs(r), typical=scale) == False:
                 raise AssertionError('displacement != abs(r): %g != %g.' % 
                                      (length(displacement), abs(r)))
-        return self.pid_particle_pair[1].position + displacement
+        # Add displacement to shape.position, not to particle.position.  
+        # This distinction is important only in the case of an 
+        # asymmetric 1D domain (r0 != 0, or drift), since draw_r always 
+        # returns a position relative to the centre of the shell (r=0), 
+        # not relative to r0.
+        return self.shell.shape.position + displacement
 
 
 class SphericalSingle(NonInteractionSingle):
