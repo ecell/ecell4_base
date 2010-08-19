@@ -164,8 +164,8 @@ class Pair(object):
         """Returns a (event time, event type, reactingsingle=None) tuple.
         
         """
-        dt_com = drawTime_wrapper(self.com_greens_function())
-        dt_iv = drawTime_wrapper(self.iv_greens_function(r0))
+        dt_com = draw_time_wrapper(self.com_greens_function())
+        dt_iv = draw_time_wrapper(self.iv_greens_function(r0))
         if dt_com < dt_iv:
             return dt_com, EventType.COM_ESCAPE, None
         else:
@@ -195,7 +195,7 @@ class Pair(object):
 
     def draw_iv_event_type(self, r0):
         gf = self.iv_greens_function(r0)
-        return draw_eventtype_wrapper(gf, self.dt)
+        return draw_event_type_wrapper(gf, self.dt)
 
     def draw_new_positions(self, dt, r0, old_iv, event_type):
         """Calculate new positions of the pair particles using a new 
@@ -212,6 +212,31 @@ class Pair(object):
         newpos1 = new_com - new_iv * (D1 / self.D_tot)
         newpos2 = new_com + new_iv * (D2 / self.D_tot)
         return newpos1, newpos2
+
+    def draw_new_com(self, dt, event_type):
+        if event_type == EventType.COM_ESCAPE:
+            r = self.a_R
+        else:
+            gf = self.com_greens_function()
+            r = draw_r_wrapper(gf, dt, self.a_R)
+
+        displacement = self.create_com_vector(r)
+
+        # Add displacement to old CoM. This assumes (correctly) that 
+        # r0=0 for the CoM. Compare this to 1D singles, where r0 is not  
+        # necesseraly 0.
+        return self.com + displacement
+
+    def draw_new_iv(self, dt, r0, old_iv, event_type):
+        gf = self.choose_pair_greens_function(r0, dt)
+        if event_type == EventType.IV_ESCAPE:
+            r = self.a_r
+        elif event_type == EventType.IV_REACTION:
+            r = self.sigma
+        else:
+            r = draw_r_wrapper(gf, dt, self.a_r, self.sigma)
+
+        return self.create_interparticle_vector(gf, r, dt, r0, old_iv)
 
     def check(self):
         pass
@@ -284,15 +309,12 @@ class SphericalPair(Pair):
                     log.debug('GF: free')
                 return GreensFunction3D(self.D_tot, r0)
 
-    def draw_new_com(self, dt, event_type):
-        gf = self.com_greens_function()
-        r_R = draw_displacement_wrapper(gf, dt, event_type, self.a_R)
-        return self.com + random_vector(r_R)
+    def create_com_vector(self, r):
+        return random_vector(r)
 
-    def draw_new_iv(self, dt, r0, old_iv, event_type): 
-        gf = self.choose_pair_greens_function(r0, dt)
-        r, theta = draw_displacement_iv_wrapper(gf, dt, event_type,
-                                                self.a_r, self.sigma)
+    def create_interparticle_vector(self, gf, r, dt, r0, old_iv): 
+        theta = draw_theta_wrapper(gf, r, dt)
+
         new_inter_particle_s = numpy.array([r, theta, 
                                          myrandom.uniform() * 2 * Pi])
         new_iv = spherical_to_cartesian(new_inter_particle_s)
@@ -356,20 +378,16 @@ class PlanarSurfacePair(Pair):
 
         a_R, a_r = self.determine_radii()
 
-    def draw_new_com(self, dt, event_type):
-        gf = self.com_greens_function()
-        r_R = draw_displacement_wrapper(gf, dt, event_type, self.a_R)
-        x, y = random_vector2D(r_R)
-        return(self.com + x * self.surface.shape.unit_x
-                        + y * self.surface.shape.unit_y)
+    def choose_pair_greens_function(self, r0, t):
+        # Todo
+        return self.iv_greens_function(r0)
 
-    def draw_new_iv(self, dt, r0, old_iv, event_type): 
-        # Todo.
-        #gf = self.choose_pair_greens_function(r0, dt)
-        gf = self.iv_greens_function(r0)
-        r, theta = draw_displacement_iv_wrapper(gf, dt, event_type,
-                                                self.a_r, self.sigma)
-        assert r > self.sigma and r <= self.a_r
+    def create_com_vector(self, r):
+        x, y = random_vector2D(r)
+        return x * self.surface.shape.unit_x + y * self.surface.shape.unit_y
+
+    def create_interparticle_vector(self, gf, r, dt, r0, old_iv): 
+        theta = draw_theta_wrapper(gf, r, dt)
 
         #FIXME: need better handling of angles near zero and pi?
         unit_x = self.surface.shape.unit_x
@@ -419,20 +437,14 @@ class CylindricalSurfacePair(Pair):
         return CylindricalShell(domain_id,
                                 Cylinder(position, radius, orientation, size))
 
-    def draw_new_com(self, dt, event_type):
-        gf = self.com_greens_function()
-        # Draw displacement (not absolute position).
-        r_R = draw_displacement_wrapper(gf, dt, event_type, self.a_R) # Todo?
-        return self.com + r_R * self.surface.shape.unit_z
+    def choose_pair_greens_function(self, r0, t):
+        # Todo
+        return self.iv_greens_function(r0)
 
-    def draw_new_iv(self, dt, r0, old_iv, event_type): 
-        # Todo.
-        #gf = self.choose_pair_greens_function(r0, dt)
-        gf = self.iv_greens_function(r0)
+    def create_com_vector(self, r):
+        return r * self.surface.shape.unit_z
 
-        r = draw_displacement_wrapper(gf, dt, event_type, self.a_r, self.sigma)
-        assert r > self.sigma and r <= self.a_r
-
+    def create_interparticle_vector(self, gf, r, dt, r0, old_iv): 
         # Note: using self.surface.shape.unit_z here might accidently 
         # interchange the particles.
         return r * normalize(old_iv)
