@@ -1103,7 +1103,7 @@ GreensFunction3DRadAbs::guess_maxi(Real t) const
         return this->MAX_ALPHA_SEQ;
     }
 
-    const Real max_alpha(sqrt(Dt * alpha0 * alpha0 - log(thr) / Dt));
+    const Real max_alpha(sqrt(alpha0 * alpha0 - log(thr) / Dt));
 
     const unsigned int 
         maxi(safety + 
@@ -1915,7 +1915,7 @@ GreensFunction3DRadAbs::makep_nTable(RealVector& p_nTable,
     const Real Dt(this->getD() * t);
     const Real alpha00(this->getAlpha(0, 0));
 
-    const Real max_alpha(sqrt(Dt * alpha00 * alpha00 - 
+    const Real max_alpha(sqrt(alpha00 * alpha00 - 
                               log(THETA_TOLERANCE * 1e-1) / Dt));
 
 
