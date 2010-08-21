@@ -1,3 +1,5 @@
+#ifndef FACTORIAL_HPP
+#define FACTORIAL_HPP
 
 
 
@@ -437,3 +439,5 @@ inline const double factorial_r( const unsigned int n )
     // assert( n <= FACTORIAL_NMAX );
     return factorials_r[n];
 }
+
+#endif /* FACTORIAL_HPP */

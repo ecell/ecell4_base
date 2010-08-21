@@ -1,10 +1,10 @@
+#ifndef __DYNAMICPRIORITYQUEUE_HPP
+#define __DYNAMICPRIORITYQUEUE_HPP
 //
 // written by Koichi Takahashi based on the initial version by Eiichiro Adachi.
 // modified by Mozoyoshi Koizumi
 //
 
-#ifndef __DYNAMICPRIORITYQUEUE_HPP
-#define __DYNAMICPRIORITYQUEUE_HPP
 
 #include "config.h"
 

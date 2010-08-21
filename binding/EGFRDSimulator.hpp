@@ -1,3 +1,6 @@
+#ifndef EGFRD_SIMULATOR_HPP
+#define EGFRD_SIMULATOR_HPP
+
 template<typename Timpl_>
 struct domain_id_pair_converter
 {
@@ -61,3 +64,4 @@ class_<_EGFRDSimulator, boost::noncopyable>("_EGFRDSimulator",
 
     domain_id_pair_converter<DomainID>::__register();
 
+#endif /* EGFRD_SIMULATOR_HPP */
