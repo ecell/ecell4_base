@@ -240,7 +240,7 @@ private:
                     }
                     break;
                 default:
-                    throw not_implemented("reactions that produces more than three products are not supported");
+                    throw not_implemented("monomolecular reactions that produce more than two products are not supported");
                 }
                 reactions_occurred_.push_back(r);
                 return true;
@@ -285,29 +285,43 @@ private:
                 LOG_DEBUG(("fire reaction"));
                 const typename reaction_rule_type::species_id_range products(
                     r.get_products());
-                BOOST_ASSERT(::size(products) == 1);
-                const species_id_type product(products[0]);
-                const species_type sp(tx_.get_species(product));
 
-                const position_type new_pos(
-                    tx_.apply_boundary(
-                        divide(
-                            add(multiply(pp0.second.position(), s1.D()),
-                                multiply(tx_.cyclic_transpose(
-                                    pp1.second.position(),
-                                    pp0.second.position()), s0.D())),
-                            (s0.D() + s1.D()))));
-                boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-                    tx_.check_overlap(particle_shape_type(new_pos, sp.radius()),
-                                      pp0.first, pp1.first));
-                if (overlapped && overlapped->size() > 0)
+                switch (::size(products))
                 {
-                    throw propagation_error("no space");
-                }
+                case 1:
+                    {
+                        const species_id_type product(products[0]);
+                        const species_type sp(tx_.get_species(product));
 
-                remove_particle(pp0.first);
-                remove_particle(pp1.first);
-                tx_.new_particle(product, new_pos);
+                        const position_type new_pos(
+                            tx_.apply_boundary(
+                                divide(
+                                    add(multiply(pp0.second.position(), s1.D()),
+                                        multiply(tx_.cyclic_transpose(
+                                            pp1.second.position(),
+                                            pp0.second.position()), s0.D())),
+                                    (s0.D() + s1.D()))));
+                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+                            tx_.check_overlap(particle_shape_type(new_pos, sp.radius()),
+                                              pp0.first, pp1.first));
+                        if (overlapped && overlapped->size() > 0)
+                        {
+                            throw propagation_error("no space");
+                        }
+
+                        remove_particle(pp0.first);
+                        remove_particle(pp1.first);
+                        tx_.new_particle(product, new_pos);
+                        break;
+                    }
+                case 0:
+                    remove_particle(pp0.first);
+                    remove_particle(pp1.first);
+                    break;
+                
+                default:
+                    throw not_implemented("bimolecular reactions that produce more than one product are not supported");
+                }
 
                 reactions_occurred_.push_back(r);
                 return true;
