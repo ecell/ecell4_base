@@ -12,6 +12,11 @@
 
 #include <sstream>
 #include "Structure.hpp"
+#include "Box.hpp"
+#include "Cylinder.hpp"
+#include "Sphere.hpp"
+#include "Plane.hpp"
+
 
 template<typename Ttraits_>
 class Surface: public Structure<Ttraits_>

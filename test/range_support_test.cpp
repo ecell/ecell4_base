@@ -8,6 +8,7 @@
 #include <list>
 #include <vector>
 #include "utils/range.hpp"
+#include "utils/range_support.hpp"
     
 struct fn_t {
     void operator()(int v)

@@ -15,6 +15,7 @@
 #include "freeFunctions.hpp"
 #include "utils.hpp"
 #include "utils/random.hpp"
+#include "utils/get_default_impl.hpp"
 #include "Logger.hpp"
 #include "StructureUtils.hpp"
 #include "utils/unassignable_adapter.hpp"

@@ -8,6 +8,7 @@
 #include "twofold_container.hpp"
 #include "utils/range.hpp"
 #include "ReactionRuleInfo.hpp"
+#include "generator.hpp"
 
 template<typename T_, typename Trri_>
 class NetworkRulesWrapper

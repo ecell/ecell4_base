@@ -13,8 +13,6 @@
 #include "utils/get_mapper_mf.hpp"
 #include "utils/pair.hpp"
 
-#include "SpeciesType.hpp"
-
 class Model: private boost::noncopyable
 {
 public:
