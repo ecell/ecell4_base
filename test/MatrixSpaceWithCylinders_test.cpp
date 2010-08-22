@@ -1,8 +1,8 @@
-#define BOOST_TEST_MODULE "MatrixSpaceWithCylinders_test"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
+
+#define BOOST_TEST_MODULE "MatrixSpaceWithCylinders_test"
 
 #include <functional>
 #include <iostream>

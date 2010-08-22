@@ -1,8 +1,8 @@
-#define BOOST_TEST_MODULE "Vector3_test"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
+
+#define BOOST_TEST_MODULE "Vector3_test"
 
 #include <boost/test/included/unit_test.hpp>
 #include "Vector3.hpp"

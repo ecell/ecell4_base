@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #define BOOST_TEST_MODULE "range_support_test"
 
 #include <boost/test/included/unit_test.hpp>
