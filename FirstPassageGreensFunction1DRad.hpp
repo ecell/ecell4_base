@@ -21,13 +21,10 @@
 #include "findRoot.hpp"
 #include "Defs.hpp"
 #include "OldDefs.hpp"			// TODO: this must be removed at some point!
+#include "GreensFunction.hpp"
 #include "PairGreensFunction.hpp"	// needed to declare EventType
-					// This is new since being ported to the new version of the code
-					// -> TODO: Improve organisation of the included files
-					//
-					// The ESCAPE and REACTION events have been changed to IV_ESCAPE / IV_REACTION
 
-class FirstPassageGreensFunction1DRad
+class FirstPassageGreensFunction1DRad: public GreensFunction
 {
 private:
     // This is a typical length scale of the system, may not be true!
@@ -45,16 +42,16 @@ private:
 
 
 public:
-    FirstPassageGreensFunction1DRad(Real D, Real k, Real r0, Real a)
-	: D(D), v(0.0), k(k), r0(r0), a(a), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
+    FirstPassageGreensFunction1DRad(Real D, Real k, Real r0, Real sigma, Real a)
+	: GreensFunction(D), v(0.0), k(k), r0(r0), sigma(sigma), a(a), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
     {
 	// do nothing
     }
 
     // The constructor is overloaded and can be called with or without drift v
     // copy constructor including drift variable v
-    FirstPassageGreensFunction1DRad(Real D, Real k, Real v, Real r0, Real a)
-	: D(D), v(v), k(k), r0(r0), a(a), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
+    FirstPassageGreensFunction1DRad(Real D, Real k, Real v, Real r0, Real sigma, Real a)
+	: GreensFunction(D), v(v), k(k), r0(r0), sigma(sigma), a(a), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
     {
 	// do nothing
     }
@@ -67,11 +64,11 @@ public:
     // This also sets the scale
     void seta(Real a)
     {
-	THROW_UNLESS( std::invalid_argument, a >= 0.0 && r0 <= a);
+	THROW_UNLESS( std::invalid_argument, (a-this->sigma) >= 0.0 && this->r0 <= a);
 
 	// Use a typical domain size to determine if we are here 
 	// defining a domain of size 0.
-	if ( a < EPSILON * l_scale)
+	if ( (a-this->sigma) < EPSILON * this->l_scale)
 	{
 	    // just some random value to show that the domain is 
 	    // zero
@@ -81,9 +78,9 @@ public:
 	else
 	{
 	    // set the l_scale to the given one
-	    this->l_scale = a;
+	    this->l_scale = a-sigma;
 	    // set the typical time scale (msd = sqrt(2*d*D*t) )
-	    this->t_scale = (a*a)/D;
+	    this->t_scale = (l_scale*l_scale)/this->getD();
 	    // this->a = a/l_scale		// renormalized version, discontinued
 	    this->a = a;
 	}
@@ -93,20 +90,26 @@ public:
     {
 	return this->a;
     }
+    
+    Real getsigma() const
+    {
+	return this->sigma;
+    }
 
     void setr0(Real r0)
     {
-	// if the domain had zero size
-	if ( this->a < 0.0 )
+	if ( this->a - this->sigma < 0.0 )
 	{
+	    // if the domain had zero size
 	    THROW_UNLESS( std::invalid_argument,
-	                  0.0 <= r0 && r0 <= EPSILON * l_scale );
+	                  0.0 <= (r0-sigma) && (r0-sigma) <= EPSILON * l_scale );
 	    this->r0 = 0.0;
 	}
 	else
 	{
+	    // The normal case
 	    THROW_UNLESS( std::invalid_argument,
-	                  0.0 <= r0 && r0 <= this->a );
+	                  0.0 <= (r0-sigma) && r0 <= this->a);
 	    this->r0 = r0;
 	}
     }
@@ -122,12 +125,6 @@ public:
 	return this->k;
 	// don't forget to scale the k as well!
 	//return this->k/l_scale;			// renormalized version, discontinued
-    }
-
-    Real getD() const
-    {
-	return this->D;
-	//return this->D/(l_scale*l_scale);		// renormalized version, discontinued
     }
 
     Real getv() const
@@ -184,7 +181,7 @@ public:
 
 //private:
     // Calculates the roots of tan(a*x)=-xk/h
-    Real a_n(int n) const;
+    Real root_n(int n) const;
     
 private:
 
@@ -205,7 +202,6 @@ private:
 
     struct drawT_params
     {
-	// use 10 terms in the summation for now
 	double exponent[MAX_TERMEN];
 	double Xn[MAX_TERMEN];
 	double prefactor;
@@ -220,9 +216,8 @@ private:
 
     struct drawR_params
     {
-	double an[MAX_TERMEN];
-	double S_Cn_an[MAX_TERMEN];
-	double b_an[MAX_TERMEN];
+	double root_n[MAX_TERMEN];
+	double S_Cn_root_n[MAX_TERMEN];
 	// variables H: for additional terms appearing as multiplicative factors etc.
 	double H[5];
 	int terms;
@@ -232,18 +227,15 @@ private:
 
     static double drawR_f (double z, void *p);
 
-    //static Real CUTOFF = 1e-10;
-
     // The diffusion constant and drift velocity
-    Real D;
     Real v;
     // The reaction constant
     Real k;
     Real r0;
-    // The length of your domain (also the l_scale, see below)
+    // The left and right boundary of the domain (also the l_scale, see below)
+    Real sigma;
     Real a;
-    // This is the 'scale' of your system (1e-14 or 1e6).
-    // We scale everything to 1 with this
+    // This is the 'scale' of the system (1e-14 or 1e6).
     Real l_scale;
     // This is the time scale of the system.
     Real t_scale;

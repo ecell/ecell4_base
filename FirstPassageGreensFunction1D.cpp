@@ -27,22 +27,27 @@ Real FirstPassageGreensFunction1D::p_survival (Real t) const
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
     const Real a(this->geta());
+    const Real sigma(this->getsigma());
+    const Real L(this->geta() - this->getsigma());
     const Real r0(this->getr0());
     const Real D(this->getD());
     const Real v(this->getv());
 
-    if ( a < 0 || fabs (a-r0) < a*EPSILON || r0 < a*EPSILON )
+    if ( fabs(r0-sigma) < L*EPSILON || fabs(a-r0) < L*EPSILON || L < 0.0 )
     {
 	// The survival probability of a zero domain is zero?
 	return 0.0;
     }
 
     // Set values that are constant in this calculation
-    const Real expo(-D*t/(a*a));   // part of the exponent -D n^2 PI^2 t / a^2
-    const Real r0_a(r0/a);
+    const Real expo(-D*t/(L*L));   // part of the exponent -D n^2 PI^2 t / L^2
+    const Real r0s(r0 - sigma);
+    const Real r0s_L(r0s/L);
     
     // some abbreviations for terms appearing in the sums with drift<>0
+    const Real sigmav2D(sigma*v/2.0/D);
     const Real av2D(a*v/2.0/D);
+    const Real Lv2D(L*v/2.0/D);
     const Real vexpo(-v*v*t/4.0/D - v*r0/2.0/D);	// exponent of the drift-prefactor
     
 
@@ -65,10 +70,8 @@ Real FirstPassageGreensFunction1D::p_survival (Real t) const
 	  }
 	  
 	  prev_term = term;
-	  //nPI = (double)(2*n+1)*M_PI;
-	  //term = 2.0 * exp(nPI*nPI*expo) * sin(nPI*r0_a) / nPI;	// TODO: seems not to work in some cases... why?
 	  nPI = (double)n*M_PI;
-	  term = exp(nPI*nPI*expo) * sin(nPI*r0_a) * (1.0 - cos(nPI)) / nPI;
+	  term = exp(nPI*nPI*expo) * sin(nPI*r0s_L) * (1.0 - cos(nPI)) / nPI;
 	  sum += term;
 	  n++;
       }
@@ -91,7 +94,7 @@ Real FirstPassageGreensFunction1D::p_survival (Real t) const
 	  
 	  nPI = (double)n*M_PI;
 	  prev_term = term;
-	  term = exp(nPI*nPI*expo) * (1.0 - cos(nPI)*exp(av2D)) * nPI/(av2D*av2D+nPI*nPI) * sin(nPI*r0_a);
+	  term = exp(nPI*nPI*expo) * (exp(sigmav2D) - cos(nPI)*exp(av2D)) * nPI/(Lv2D*Lv2D+nPI*nPI) * sin(nPI*r0s_L);
 	  sum += term;
 	  n++;
       }
@@ -112,11 +115,13 @@ Real FirstPassageGreensFunction1D::p_survival (Real t) const
 Real FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
 {
     const Real a(this->geta());
+    const Real sigma(this->getsigma());
+    const Real L(this->geta() - this->getsigma());
     const Real r0(this->getr0());
     const Real D(this->getD());
     const Real v(this->getv());
 
-    THROW_UNLESS( std::invalid_argument, 0 <= r && r <= a );
+    THROW_UNLESS( std::invalid_argument, 0.0 <= (r-sigma) && r <= a );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
     // if there was no time or no movement
@@ -132,15 +137,15 @@ Real FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
 	    return 0.0;
 	}
     }
-    else if ( r < EPSILON || (a-r) < EPSILON || a < 0 )
+    else if ( fabs(r-sigma) < L*EPSILON || fabs(a-r) < L*EPSILON || L < 0.0 )
     {
 	return 0.0;
     }
 
     // Set values that are constant in this calculation
-    const Real expo(-D*t/(a*a));
-    const Real r_a(r/a);
-    const Real r0_a(r0/a);
+    const Real expo(-D*t/(L*L));
+    const Real rs_L((r-sigma)/L);
+    const Real r0s_L((r0-sigma)/L);
     const Real vexpo(-v*v*t/4.0/D + v*(r-r0)/2.0/D);	// exponent of the drift-prefactor
 
     // Initialize summation
@@ -160,7 +165,7 @@ Real FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
 	prev_term = term;
 
 	nPI = n*M_PI;
-	term = exp(nPI*nPI*expo) * sin(nPI*r0_a) * sin(nPI*r_a);
+	term = exp(nPI*nPI*expo) * sin(nPI*r0s_L) * sin(nPI*rs_L);
 	sum += term;
 	n++;
     }
@@ -169,14 +174,14 @@ Real FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
 	fabs(prev_term/sum) > EPSILON*PDENS_TYPICAL ||
 	n <= MIN_TERMEN);
 
-    return 2.0/a * exp(vexpo) * sum;
+    return 2.0/L * exp(vexpo) * sum;
 }
 
 // Calculates the probability density of finding the particle at location r at 
 // timepoint t, given that the particle is still in the domain.
 Real FirstPassageGreensFunction1D::calcpcum (Real r, Real t) const
 {
-    return prob_r (r, t)/p_survival (t);
+    return prob_r(r, t) / p_survival(t);
 }
 
 // Calculates the amount of flux leaving the left boundary at time t
@@ -185,11 +190,13 @@ Real FirstPassageGreensFunction1D::leaves(Real t) const
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
     const Real a(this->geta());
+    const Real sigma(this->getsigma());
+    const Real L(this->geta() - this->getsigma());
     const Real r0(this->getr0());
     const Real D(this->getD());
     const Real v(this->getv());
 
-    if ( a < 0 || r0 < EPSILON )
+    if ( fabs(r0-sigma) < L*EPSILON || fabs(a-r0) < L*EPSILON || L < 0.0 )
     {
 	// The flux of a zero domain is zero? Also if the particle 
 	// started on the left boundary
@@ -204,10 +211,10 @@ Real FirstPassageGreensFunction1D::leaves(Real t) const
 
     Real sum = 0, term = 0, prev_term = 0;
     Real nPI;
-    const Real D_a_sq(D/(a*a));
-    const Real expo(-D_a_sq*t);    // exponent -D n^2 PI^2 t / l^2
-    const Real r0_a(r0/a);
-    const Real vexpo(-v*v*t/4.0/D - v*r0/2.0/D);
+    const Real D_L_sq(D/(L*L));
+    const Real expo(-D_L_sq*t);
+    const Real r0s_L((r0-sigma)/L);
+    const Real vexpo(-v*v*t/4.0/D - v*(r0-sigma)/2.0/D);
     
     Real n=1;
     do
@@ -220,7 +227,7 @@ Real FirstPassageGreensFunction1D::leaves(Real t) const
 
 	nPI = n*M_PI;
 	prev_term = term;
-	term = nPI * exp(nPI*nPI*expo) * sin(nPI*r0_a);
+	term = nPI * exp(nPI*nPI*expo) * sin(nPI*r0s_L);
 	sum += term;
 	n++;
     }
@@ -229,7 +236,7 @@ Real FirstPassageGreensFunction1D::leaves(Real t) const
 	fabs(prev_term/sum) > EPSILON*PDENS_TYPICAL ||
 	n < MIN_TERMEN );
 
-    return 2.0*D_a_sq*exp(vexpo)*sum;
+    return 2.0*D_L_sq * exp(vexpo) * sum;
 }
 
 // Calculates the amount of flux leaving the right boundary at time t
@@ -238,11 +245,13 @@ Real FirstPassageGreensFunction1D::leavea(Real t) const
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
     const Real a(this->geta());
+    const Real sigma(this->getsigma());
+    const Real L(this->geta() - this->getsigma());
     const Real r0(this->getr0());
     const Real D(this->getD());
     const Real v(this->getv());
 
-    if ( a < 0 || fabs (a-r0) < EPSILON )
+    if ( fabs(r0-sigma) < L*EPSILON || fabs(a-r0) < L*EPSILON || L < 0.0 )
     {
 	// The flux of a zero domain is zero? Also if the particle 
 	// started on the right boundary.
@@ -257,9 +266,9 @@ Real FirstPassageGreensFunction1D::leavea(Real t) const
 
     Real sum = 0, term = 0, prev_term = 0;
     Real nPI;
-    const Real D_a_sq(D/(a*a));
-    const Real expo(-D_a_sq*t);		// exponent -D n^2 PI^2 t / l^2
-    const Real r0_a(r0/a);
+    const Real D_L_sq(D/(L*L));
+    const Real expo(-D_L_sq*t);		// exponent -D n^2 PI^2 t / l^2
+    const Real r0s_L((r0-sigma)/L);
     const Real vexpo(-v*v*t/4.0/D + v*(a-r0)/2.0/D);
     
     Real n=1;
@@ -273,7 +282,7 @@ Real FirstPassageGreensFunction1D::leavea(Real t) const
        
        nPI = n*M_PI;
        prev_term = term;
-       term = nPI * exp(nPI*nPI*expo) * cos(nPI) * sin(nPI*r0_a);
+       term = nPI * exp(nPI*nPI*expo) * cos(nPI) * sin(nPI*r0s_L);
        sum += term;
        n++;
      }
@@ -282,10 +291,10 @@ Real FirstPassageGreensFunction1D::leavea(Real t) const
 	    fabs(prev_term/sum) > EPSILON*PDENS_TYPICAL ||
 	    n < MIN_TERMEN );
      
-     return -2.0*D_a_sq*exp(vexpo)*sum;
+     return -2.0*D_L_sq * exp(vexpo) * sum;
 }
 
-// This draws an eventtype of time t based on the flux through the left (z=0) 
+// This draws an eventtype of time t based on the flux through the left (z=sigma) 
 // and right (z=a) boundary. Although not completely accurate, it returns an 
 // IV_ESCAPE for an escape through the right boundary and a IV_REACTION for an 
 // escape through the left boundary.
@@ -293,18 +302,20 @@ EventType
 FirstPassageGreensFunction1D::drawEventType( Real rnd, Real t ) const
 {
     const Real a(this->geta());
+    const Real sigma(this->getsigma());
+    const Real L(this->geta() - this->getsigma());
     const Real r0(this->getr0());
 
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     // if t=0 nothing has happened->no event!!
     THROW_UNLESS( std::invalid_argument, t > 0.0 );
 
-    if ( fabs( r0 - a ) < EPSILON*a )
+    if ( fabs(a-r0) < EPSILON*L )
     {
 	// if the particle started on the right boundary
 	return IV_ESCAPE;
     }
-    else if ( r0 < EPSILON )
+    else if ( fabs(r0-sigma) < EPSILON*L )
     {
 	// if the particle started on the left boundary
 	return IV_REACTION;
@@ -375,6 +386,8 @@ Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
     THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
 
     const Real a(this->geta());
+    const Real sigma(this->getsigma());
+    const Real L(this->geta() - this->getsigma());
     const Real r0(this->getr0());
     const Real D(this->getD());
     const Real v(this->getv());
@@ -383,16 +396,18 @@ Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
     {
 	return INFINITY;
     }
-    else if ( a < 0.0 || r0 < EPSILON*a || r0 > (1.0 - EPSILON)*a )
+    else if ( L < 0.0 || fabs(a-r0) < EPSILON*L || fabs(r0-sigma) > (1.0 - EPSILON)*L )
     {
 	// if the domain had zero size
 	return 0.0;
     }
 
-    const Real expo(-D/(a*a));
-    const Real r0_a(r0/a);
+    const Real expo(-D/(L*L));
+    const Real r0s_L((r0-sigma)/L);
     // some abbreviations for terms appearing in the sums with drift<>0
+    const Real sigmav2D(sigma*v/2.0/D);
     const Real av2D(a*v/2.0/D);
+    const Real Lv2D(L*v/2.0/D);
     // exponent of the prefactor present in case of v<>0; has to be split because it has a t-dep. and t-indep. part
     const Real vexpo_t(-v*v/4.0/D);
     const Real vexpo_pref(-v*r0/2.0/D);
@@ -413,7 +428,7 @@ Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
       do
       {
 	  nPI = ((Real)(n+1))*M_PI;	// why n+1 : this loop starts at n=0 (1st index of the arrays), while the sum starts at n=1 !
-	  Xn = sin(nPI*r0_a) * (1.0 - cos(nPI)) / nPI; 
+	  Xn = sin(nPI*r0s_L) * (1.0 - cos(nPI)) / nPI; 
 	  exponent = nPI*nPI*expo;
 	  
 	  // store the coefficients in the structure
@@ -430,7 +445,7 @@ Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
      do
       {
 	  nPI = ((Real)(n+1))*M_PI;	// why n+1 : this loop starts at n=0 (1st index of the arrays), while the sum starts at n=1 !
-	  Xn = (1.0 - cos(nPI)*exp(av2D)) * nPI/(av2D*av2D+nPI*nPI) * sin(nPI*r0_a);
+	  Xn = (exp(sigmav2D) - cos(nPI)*exp(av2D)) * nPI/(Lv2D*Lv2D+nPI*nPI) * sin(nPI*r0s_L);
 	  exponent = nPI*nPI*expo + vexpo_t;
 	  
 	  // store the coefficients in the structure
@@ -454,28 +469,20 @@ Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
     parameters.terms = MAX_TERMEN;
     parameters.tscale = this->t_scale;
 
-//debugging
-/*
-for (double t=0; t<0.1; t += 0.0001)
-{
-    std::cout << t << " " << drawT_f (t, &parameters) << std::endl;
-}
-*/
     gsl_function F;
     F.function = &drawT_f;
     F.params = &parameters;
 
-
     // Find a good interval to determine the first passage time in
-    const Real dist( std::min(r0, a-r0));
+    const Real dist( std::min(r0-sigma, a-r0) );
 
     // construct a guess: MSD = sqrt (2*d*D*t)
     Real t_guess( dist * dist / ( 2.0 * D ) );
     // A different guess has to be made in case of nonzero drift to account for the displacement due to it
     // When drifting towards the closest boundary...
-    if( (r0 >= a/2.0 && v > 0.0) || (r0 <= a/2.0 && v < 0.0) )	t_guess = sqrt(D*D/(v*v*v*v)+dist*dist/(v*v)) - D/(v*v);
+    if( ( r0-sigma >= L/2.0 && v > 0.0 ) || ( r0-sigma <= L/2.0 && v < 0.0 ) )	t_guess = sqrt(D*D/(v*v*v*v)+dist*dist/(v*v)) - D/(v*v);
     // When drifting away from the closest boundary...
-    if( ( r0 < a/2.0 && v > 0.0) || ( r0 > a/2.0 && v < 0.0) )	t_guess = D/(v*v) - sqrt(D*D/(v*v*v*v)-dist*dist/(v*v));
+    if( ( r0-sigma  < L/2.0 && v > 0.0 ) || ( r0-sigma  > L/2.0 && v < 0.0 ) )	t_guess = D/(v*v) - sqrt(D*D/(v*v*v*v)-dist*dist/(v*v));
     
     
     Real value( GSL_FN_EVAL( &F, t_guess ) );
@@ -554,9 +561,10 @@ double FirstPassageGreensFunction1D::drawR_f (double r, void *p)
 {   
     struct drawR_params *params = (struct drawR_params *)p;
     double sum = 0, term = 0, prev_term = 0;
-    double S_Cn_An, n_l;
+    double S_Cn_An, n_L;
     int    terms = params->terms;
-    double v2D = params->v2D;	// this is v divided by 2D
+    double sigma = params->H[0];
+    double v2D = params->H[1];	// this is v divided by 2D
 
     int n=0;
     do
@@ -569,19 +577,18 @@ double FirstPassageGreensFunction1D::drawR_f (double r, void *p)
 	prev_term = term;
 
 	S_Cn_An = params->S_Cn_An[n];
-	n_l = params->n_l[n];	// this is n*pi/a
-	if(v2D==0.0)	term = S_Cn_An * ( 1.0 - cos(n_l*r) );
-	else		term = S_Cn_An * ( 1.0 + exp(v2D*r)*( v2D/n_l*sin(n_l*r) - cos(n_l*r) ));
+	n_L = params->n_L[n];	// this is n*pi/L
+	if(v2D==0.0)	term = S_Cn_An * ( 1.0 - cos(n_L*(r-sigma)) );
+	else		term = S_Cn_An * ( exp(v2D*sigma) + exp(v2D*r)*( v2D/n_L*sin(n_L*(r-sigma)) - cos(n_L*(r-sigma)) ));
 	  // S_Cn_An contains all expon. prefactors, the 1/S(t) term and all parts
 	  // of the terms that do not depend on r.
 	  //
-	  // In case of zero drift the terms become S_An_Cn * (1 - cos(nPi/a*r))
-	  // as it should be.
+	  // In case of zero drift the terms become S_An_Cn * ( 1 - cos(nPi/L*(r-sigma)) )
+	  // as it should be. The if-statement is only to avoid calculation costs.
 
 	sum += term;
 	n++;
     }
-    // A lengthscale of 1 if implied here; TODO: Is that even true?
     while (fabs(term/sum) > EPSILON ||
 	fabs(prev_term/sum) > EPSILON ||
 	n <= MIN_TERMEN );
@@ -598,12 +605,14 @@ Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
     const Real a(this->geta());
+    const Real sigma(this->getsigma());
+    const Real L(this->geta() - this->getsigma());
     const Real r0(this->getr0());
     const Real D(this->getD());
     const Real v(this->getv());
 
     // the trivial case, if there was no movement or the domain was zero
-    if ( (D==0.0 && v==0.0) || a<0.0 || t==0.0)
+    if ( (D==0.0 && v==0.0) || L<0.0 || t==0.0)
     {
 	return r0;
     }
@@ -612,7 +621,7 @@ Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
 	// if the initial condition is at the boundary, raise an error
 	// The particle can only be at the boundary in the ABOVE cases
 	THROW_UNLESS( std::invalid_argument,
-	              EPSILON <= r0 && r0 <= (a-EPSILON) );
+	              (r0-sigma) >= L*EPSILON && (r0-sigma) <= L*(1.0-EPSILON) );
     }
     // else the normal case
     // From here on the problem is well defined
@@ -622,9 +631,10 @@ Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
     struct drawR_params parameters;
     Real S_Cn_An;
     Real nPI;
-    const Real expo (-D*t/(a*a));
-    const Real r0_a(r0/a);
+    const Real expo (-D*t/(L*L));
+    const Real r0s_L((r0-sigma)/L);
     const Real v2D(v/2.0/D);
+    const Real Lv2D(L*v/2.0/D);
     const Real vexpo(-v*v*t/4.0/D - v*r0/2.0/D);	// exponent of the drift-prefactor, same as in survival prob.
     const Real S = 2.0*exp(vexpo)/p_survival(t);	// This is a prefactor to every term, so it also contains there
 							// exponential drift-prefactor.
@@ -636,17 +646,17 @@ Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
     {
 	nPI = ((Real)(n+1))*M_PI;	    // note: summation starting with n=1, indexing with n=0, therefore we need n+1 here
 	
-	if(v==0.0)	S_Cn_An = S * exp(nPI*nPI*expo) * sin(nPI*r0_a) / nPI;
-	else		S_Cn_An = S * exp(nPI*nPI*expo) * sin(nPI*r0_a) * nPI/(nPI*nPI + a*a*v2D*v2D);
+	if(v==0.0)	S_Cn_An = S * exp(nPI*nPI*expo) * sin(nPI*r0s_L) / nPI;
+	else		S_Cn_An = S * exp(nPI*nPI*expo) * sin(nPI*r0s_L) * nPI/(nPI*nPI + Lv2D*Lv2D);
 	  // The rest is the z-dependent part, which has to be defined directly in drawR_f(z).
 	  // Of course also the summation happens there because the terms now are z-dependent.
 	  // The last term originates from the integrated prob. density including drift.
 	  //
-	  // In case of zero drift this expression becomes: 2.0/p_survival(t) * exp(nPI*nPI*expo) * sin(nPI*r0_a) / nPI
+	  // In case of zero drift this expression becomes: 2.0/p_survival(t) * exp(nPI*nPI*expo) * sin(nPI*r0s_L) / nPI
 	  
 	// also store the values for the exponent, so they don't have to be recalculated in drawR_f
 	parameters.S_Cn_An[n]= S_Cn_An;
-	parameters.n_l[n]    = nPI/a;
+	parameters.n_L[n]    = nPI/L;
 	n++;
     }
     while (n<MAX_TERMEN);
@@ -657,7 +667,8 @@ Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
     parameters.terms = MAX_TERMEN;
     
     // store needed constants
-    parameters.v2D = v2D;
+    parameters.H[0] = sigma;
+    parameters.H[1] = v2D;
 
     // find the intersection on the y-axis between the random number and 
     // the function
@@ -670,11 +681,10 @@ Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
     // make a new solver instance
     // TODO: incl typecast?
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
-    const Real r( findRoot( F, solver, 0.0, a, a*EPSILON, EPSILON,
+    const Real r( findRoot( F, solver, sigma, a, L*EPSILON, EPSILON,
                             "FirstPassageGreensFunction1D::drawR" ) );
 
     // return the drawn time
-    //return r*(this->l_scale);		// renormalized version, discontinued
     return r;
 }
 

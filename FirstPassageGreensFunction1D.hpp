@@ -21,13 +21,12 @@
 #include "findRoot.hpp"
 #include "Defs.hpp"
 #include "OldDefs.hpp"			// TODO: this must be removed at some point!
-#include "PairGreensFunction.hpp"	// needed to declare EventType
-					// This is new since being ported to the new version of the code
-					// -> TODO: Improve organisation of the included files
-					//
-					// The ESCAPE and REACTION events have been changed to IV_ESCAPE / IV_REACTION
 
-class FirstPassageGreensFunction1D
+#include "GreensFunction.hpp"
+#include "PairGreensFunction.hpp"	// needed to declare EventType
+
+
+class FirstPassageGreensFunction1D: public GreensFunction
 {
 private:
     // This is a typical length scale of the system, may not be true!
@@ -44,15 +43,15 @@ private:
     static const int MIN_TERMEN = 20;
 
 public:
-    FirstPassageGreensFunction1D(Real D, Real r0, Real a)	// standard version as used up to now
-	: D(D), v(0.0), a(a), r0(r0), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
+    FirstPassageGreensFunction1D(Real D, Real r0, Real sigma, Real a)
+	: GreensFunction(D), v(0.0), sigma(sigma), a(a), r0(r0), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
     {
 	;   // do nothing
     }
 
     // The constructor is overloaded and can be called with or without drift v
-    FirstPassageGreensFunction1D(Real D, Real v, Real r0, Real a) // copy constructor including drift variable v
-	: D(D), v(v), a(a), r0(r0), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
+    FirstPassageGreensFunction1D(Real D, Real v, Real r0, Real sigma, Real a) // copy constructor including drift variable v
+	: GreensFunction(D), v(v), sigma(sigma), a(a), r0(r0), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
     {
 	;   // do nothing
     }
@@ -65,61 +64,58 @@ public:
     // This also sets the scale
     void seta(Real a)
     {
-	THROW_UNLESS( std::invalid_argument, a >= 0.0 && r0 <= a);
+	Real L( a - this->sigma );
+	
+	THROW_UNLESS( std::invalid_argument, L >= 0.0 && (this->r0 - sigma) <= L);
 
 	// Use a typical domain size to determine if we are here
 	// defining a domain of size 0.
-	if ( a <= EPSILON * l_scale )
+	if ( L <= EPSILON * l_scale )
 	{
 	    // just some random value to show that the domain is 
 	    // zero
-	    this->a = -1.0;
+	    this->a = -INT_MAX;
 	    // don't touch the scales
-	    //this->l_scale = 1.0;
 	}
 	else
-	{
-	    // set the scale to the given one
-	    //this->l_scale = a;		// renormalized version, discontinued
+	{   
 	    // set the typical time scale (msd = sqrt(2*d*D*t) )
-	    this->t_scale = (a*a)/D;		// this is needed by drawTime_f, do not get rid of it!
+	    // this is needed by drawTime_f, do not get rid of it!
+	    this->t_scale = (L*L)/this->getD();
 	    // set a
 	    this->a = a;
-	    // this->a = 1.0;			// renormalized version, discontinued
 	}
     }
 
+    Real getsigma() const
+    {
+	return this->sigma;
+    }
+ 
     Real geta() const
     {
 	return this->a;
     }
 
-    Real getD() const
-    {
-	return this->D;
-	// return this->D/(l_scale*l_scale);	// renormalized version, discontinued
-    }
-
     Real getv() const
     {
 	return this->v;
-	// return this->v/l_scale;		// renormalized version, discontinued
     }
 
     void setr0(Real r0)
     {
-	if ( this->a < 0.0 )
+	if ( this->a - this->sigma < 0.0 )
 	{
 	    // if the domain had zero size    
 	    THROW_UNLESS( std::invalid_argument,
-	                  0.0 <= r0 && r0 <= EPSILON * l_scale );
+	                  0.0 <= (r0-sigma) && (r0-sigma) <= EPSILON * l_scale );
 	    this->r0 = 0.0;
 	}
 	else
 	{
 	    // The normal case
 	    THROW_UNLESS( std::invalid_argument,
-	                  0.0 <= r0 && r0 <= this->a);
+	                  0.0 <= (r0-sigma) && r0 <= this->a);
 	    this->r0 = r0;
 	}
     }
@@ -179,9 +175,9 @@ private:
     struct drawR_params
     {
 	double S_Cn_An[MAX_TERMEN];
-	double n_l[MAX_TERMEN];
-	// constants needed for the sum computation in case of nonzero drift
-	double v2D;
+	double n_L[MAX_TERMEN];
+	// variables H: for additional terms appearing as multiplicative factors etc.
+	double H[5];
 	int terms;
 	// the random number associated with the time
 	double rnd;
@@ -191,9 +187,9 @@ private:
 
 private:
     // The diffusion constant and drift velocity
-    Real D;
     Real v;
     // The length of your domain (also the l_scale, see below)
+    Real sigma;
     Real a;
     Real r0;
     // This is the 'length scale' of your system (1e-14 or 1e6)

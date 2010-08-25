@@ -46,6 +46,10 @@ class Single(object):
         return self.pid_particle_pair[1].D
     D = property(getD)
 
+    def getv(self):
+        return self.pid_particle_pair[1].v
+    v = property(getv)
+
     def get_shell_id(self):
         return self.shell_list[0][0]
     shell_id = property(get_shell_id)

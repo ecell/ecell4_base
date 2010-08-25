@@ -15,33 +15,16 @@
 // All passages conflicting with analogous definitions in the new Defs.hpp are taken out.
 //
 
-// Taking out everything that is already defined in Defs.hpp
-/*
-//typedef double Real;
-//typedef int Integer;
-//typedef unsigned int UnsignedInteger;
-typedef size_t Index;
-*/
+
 
 
 typedef std::vector< Real > RealVector;
-//typedef boost::multi_array< Real, 1, boost::pool_allocator<Real> > 
-//RealArray;
 typedef boost::multi_array<Real, 2>
 Real2DArray;
 typedef boost::multi_array<Real, 3>
 Real3DArray;
 typedef boost::multi_array<Real, 4>
 Real4DArray;
-
-// Kick this out to prevent double declaration
-/*
-enum EventType
-{
-    REACTION = 0,
-    ESCAPE = 1
-};
-*/
 
 
 #if !HAVE_SINCOS

@@ -78,6 +78,17 @@ class Pair(object):
                 self.single2.pid_particle_pair[1].D) / self.D_tot
     D_R = property(get_D_R)
 
+    def get_v_tot(self):
+        return self.single2.pid_particle_pair[1].v - \
+               self.single1.pid_particle_pair[1].v
+    v_tot = property(get_v_tot)
+
+    def get_v_R(self):
+        return ( self.single1.pid_particle_pair[1].v * self.single2.pid_particle_pair[1].D +
+		 self.single2.pid_particle_pair[1].v * self.single1.pid_particle_pair[1].D )
+		 / self.D_tot
+    v_R = property(get_v_R)
+
     def getSigma(self):
         return self.single1.pid_particle_pair[1].radius + \
                self.single2.pid_particle_pair[1].radius
@@ -422,12 +433,10 @@ class CylindricalSurfacePair(Pair):
                       r0, shell_size, rt, surface)
 
     def com_greens_function(self):
-        # Todo. 1D gf Abs Abs  should be -a to a.
         #gf = GreensFunction3DAbsSym1D(self.D_R)
         return GreensFunction3DAbsSym(self.D_R, self.a_R)
 
     def iv_greens_function(self, r0):
-        # Todo. 1D gf Rad Abs  should be sigma to a.
         #gf = GreensFunction3DAbsSym1DRad(self.D_tot, self.rt.k)
         # This exact solution is used for drawing times.
         return GreensFunction3DRadAbs(self.D_tot, self.rt.k, r0, self.sigma, self.a_r)
