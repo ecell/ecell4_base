@@ -36,9 +36,9 @@ private:
     // Is 1E3 a good measure for the probability density?!
     static const Real PDENS_TYPICAL = 1;
     // The maximum number of terms used in calculating the sum
-    static const int MAX_TERMEN = 500;
+    static const int MAX_TERMS = 500;
     // The minimum number of terms
-    static const int MIN_TERMEN = 20;
+    static const int MIN_TERMS = 20;
 
 
 public:
@@ -68,20 +68,17 @@ public:
 
 	// Use a typical domain size to determine if we are here 
 	// defining a domain of size 0.
-	if ( (a-this->sigma) < EPSILON * this->l_scale)
+	if ( (a-this->sigma) < EPSILON*this->l_scale )
 	{
-	    // just some random value to show that the domain is 
-	    // zero
+	    // just some random value to show that the domain is zero
 	    this->a = -1.0;
-	    //this->l_scale = 1.0;
 	}
 	else
 	{
 	    // set the l_scale to the given one
 	    this->l_scale = a-sigma;
-	    // set the typical time scale (msd = sqrt(2*d*D*t) )
+	    // set the typical time scale (MSD = sqrt(2*d*D*t) )
 	    this->t_scale = (l_scale*l_scale)/this->getD();
-	    // this->a = a/l_scale		// renormalized version, discontinued
 	    this->a = a;
 	}
     }
@@ -117,20 +114,16 @@ public:
     Real getr0() const
     {
 	return r0;
-	//return r0/l_scale;				// renormalized version, discontinued
     }
 
     Real getk() const
     {
 	return this->k;
-	// don't forget to scale the k as well!
-	//return this->k/l_scale;			// renormalized version, discontinued
     }
 
     Real getv() const
     {
 	return this->v;
-	//return this->v/l_scale;			// renormalized version, discontinued
     }
 
     // Calculates the probability density of finding the particle at 
@@ -179,7 +172,8 @@ public:
     
 // End of public/private mix methods
 
-//private:
+//private:	// method made public for testing
+
     // Calculates the roots of tan(a*x)=-xk/h
     Real root_n(int n) const;
     
@@ -202,8 +196,8 @@ private:
 
     struct drawT_params
     {
-	double exponent[MAX_TERMEN];
-	double Xn[MAX_TERMEN];
+	double exponent[MAX_TERMS];
+	double Xn[MAX_TERMS];
 	double prefactor;
 	int    terms;
 	// the timescale used for convergence
@@ -216,8 +210,8 @@ private:
 
     struct drawR_params
     {
-	double root_n[MAX_TERMEN];
-	double S_Cn_root_n[MAX_TERMEN];
+	double root_n[MAX_TERMS];
+	double S_Cn_root_n[MAX_TERMS];
 	// variables H: for additional terms appearing as multiplicative factors etc.
 	double H[5];
 	int terms;
@@ -232,10 +226,10 @@ private:
     // The reaction constant
     Real k;
     Real r0;
-    // The left and right boundary of the domain (also the l_scale, see below)
+    // The left and right boundary of the domain (sets the l_scale, see below)
     Real sigma;
     Real a;
-    // This is the 'scale' of the system (1e-14 or 1e6).
+    // This is the length scale of the system
     Real l_scale;
     // This is the time scale of the system.
     Real t_scale;

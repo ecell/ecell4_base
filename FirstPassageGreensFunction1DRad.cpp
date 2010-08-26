@@ -16,11 +16,16 @@
 #include <math.h>
 
 #include "findRoot.hpp"
-
 #include "FirstPassageGreensFunction1DRad.hpp"
 
-// this is the appropriate definition of the function in gsl
-double FirstPassageGreensFunction1DRad::tan_f (double x, void *p)
+
+// This is the appropriate definition of the function defining
+// the roots of our Green's functions in GSL.
+// Later needed by the rootfinder.
+//
+// It expects a reaction rate h=k/D already divided by D.
+double
+FirstPassageGreensFunction1DRad::tan_f (double x, void *p)
 {
     // casts the void to the struct pointer
     struct tan_f_params *params = (struct tan_f_params *)p;
@@ -29,22 +34,23 @@ double FirstPassageGreensFunction1DRad::tan_f (double x, void *p)
     const Real h_a (h*a);
     if ( h_a < 1 )
     {
-	// h = k/D, h=h1/k1
+	// h = k/D
 	return 1/tan(x) + (h_a)/x;
     }
     else
     {
-	// h = k/D, h=h1/k1
+	// h = k/D
 	return tan(x) + x/(h_a);
     }
 }
 
-// Calculates the roots of tan(x*a)=-xk/h
-Real FirstPassageGreensFunction1DRad::root_n(int n) const
+// Calculates the roots of tan(x*a)=-x/h
+Real
+FirstPassageGreensFunction1DRad::root_n(int n) const
 {
-    const Real L(this->geta()-this->getsigma());
-    const Real h((this->getk()+this->getv()/2.0)/this->getD());
-	  // the drift v also comes into this constant, h=(k+v/2)/D
+    const Real L( this->geta()-this->getsigma() );
+    const Real h( (this->getk()+this->getv()/2.0) / this->getD() );
+    // the drift v also comes into this constant, h=(k+v/2)/D
     Real upper, lower;
 
     if ( h*L < 1 )
@@ -95,7 +101,8 @@ Real FirstPassageGreensFunction1DRad::root_n(int n) const
 //
 // The factor calculated here is identical for the cases w. or w/o drift,
 // only h changes.
-Real FirstPassageGreensFunction1DRad::An (Real root_n) const
+Real
+FirstPassageGreensFunction1DRad::An (Real root_n) const
 {
     const Real h((this->getk()+this->getv()/2.0)/this->getD());
     const Real sigma(this->getsigma());
@@ -107,7 +114,8 @@ Real FirstPassageGreensFunction1DRad::An (Real root_n) const
 }
 
 // This factor appears in the survival prob.
-Real FirstPassageGreensFunction1DRad::Bn (Real root_n) const
+Real
+FirstPassageGreensFunction1DRad::Bn (Real root_n) const
 {
     const Real h((this->getk()+this->getv()/2.0)/this->getD());
     const Real k(this->getk());
@@ -130,7 +138,8 @@ Real FirstPassageGreensFunction1DRad::Bn (Real root_n) const
 // appearing in the survival prob. and prop. function.
 //
 // Also here the root is the one refering to the interval of length L.
-Real FirstPassageGreensFunction1DRad::Cn (Real root_n, Real t)
+Real
+FirstPassageGreensFunction1DRad::Cn (Real root_n, Real t)
 const
 {
     const Real D(this->getD());
@@ -138,16 +147,16 @@ const
     return std::exp(-D*root_n*root_n*t);
 }
 
-// Calculates the probability of finding the particle inside the domain at
-// time t, the survival probability. The domain is from -r to r (r0 is in
-// between!!)
-Real FirstPassageGreensFunction1DRad::p_survival (Real t) const
+// Calculates the probability of finding the particle inside the domain
+// at time t, the survival probability.
+Real
+FirstPassageGreensFunction1DRad::p_survival (Real t) const
 {
+    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+  
     const Real D(this->getD());
     const Real v(this->getv());
     const Real vexpo(-v*v*t/4.0/D - v*r0/2.0/D);
-
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
     if (t == 0.0 || (D == 0.0 && v == 0.0) )
     {
@@ -171,17 +180,21 @@ Real FirstPassageGreensFunction1DRad::p_survival (Real t) const
     }
     while ( fabs(term/sum) > EPSILON  ||
 	fabs(term_prev/sum) > EPSILON ||
-	n <= MIN_TERMEN);
+	n <= MIN_TERMS);
 
     return 2.0*exp(vexpo)*sum;
 }
 
 
-// Calculates the probability density of finding the particle at location r at
-// time t.
-Real FirstPassageGreensFunction1DRad::prob_r (Real r, Real t)
+// Calculates the probability density of finding the particle at location r
+// at time t.
+Real
+FirstPassageGreensFunction1DRad::prob_r (Real r, Real t)
 const
 {
+    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, (r-sigma) >= 0.0 && r <= a && (r0 - sigma) >= 0.0 && r0<=a );
+    
     const Real sigma(this->getsigma());
     const Real a(this->geta());
     const Real L(this->geta()-this->getsigma());
@@ -189,13 +202,10 @@ const
     const Real D(this->getD());
     const Real v(this->getv());
     const Real h((this->getk()+this->getv()/2.0)/this->getD());
-
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
-    THROW_UNLESS( std::invalid_argument, (r-sigma) >= 0.0 && r <= a && (r0 - sigma) >= 0.0 && r0<=a );
     
     const Real vexpo(-v*v*t/D/4.0 + v*(r-r0)/D/2.0);
 
-    // if there was no time or no movement
+    // if there was no time change or zero diffusivity => no movement
     if (t == 0 || D == 0)
     {
 	// the probability density function is a delta function
@@ -221,7 +231,7 @@ const
 
     do
     {
-	if ( n >= MAX_TERMEN )
+	if ( n >= MAX_TERMS )
 	{
 	    std::cerr << "Too many terms needed for GF1DRad::prob_r. N: "
 	              << n << std::endl;
@@ -237,10 +247,9 @@ const
 
 	n++;
     }
-    // TODO: PDENS_TYPICAL is now 1e3, is this any good?!
     while (fabs(term/sum) > EPSILON*PDENS_TYPICAL || 
 	fabs(prev_term/sum) > EPSILON*PDENS_TYPICAL ||
-	n <= MIN_TERMEN );
+	n <= MIN_TERMS );
 
     return 2.0*exp(vexpo)*sum;
 }
@@ -250,16 +259,14 @@ const
 Real
 FirstPassageGreensFunction1DRad::calcpcum (Real r, Real t) const
 {
-    // BEWARE: HERE THERE IS SCALING OF R!
-    //const Real r_corr(r/this->l_scale);
-    //return prob_r(r_corr, t)/p_survival(t);	// renormalized version, discontinued
-    return prob_r(r, t)/p_survival(t);		// p_survival is unscaled!
+    return prob_r(r, t)/p_survival(t);
 }
 
 // Calculates the total probability flux leaving the domain at time t
 // This is simply the negative of the time derivative of the survival prob.
 // at time t [-dS(t')/dt' for t'=t].
-Real FirstPassageGreensFunction1DRad::flux_tot (Real t) const
+Real
+FirstPassageGreensFunction1DRad::flux_tot (Real t) const
 {
     Real root_n;
     const Real D(this->getD());
@@ -273,7 +280,7 @@ Real FirstPassageGreensFunction1DRad::flux_tot (Real t) const
 
     do
     {
-	if ( n >= MAX_TERMEN )
+	if ( n >= MAX_TERMS )
 	{
 	    std::cerr << "Too many terms needed for GF1DRad::flux_tot. N: "
 	              << n << std::endl;
@@ -288,23 +295,25 @@ Real FirstPassageGreensFunction1DRad::flux_tot (Real t) const
     }
     while (fabs(term/sum) > EPSILON*PDENS_TYPICAL ||
 	fabs(prev_term/sum) > EPSILON*PDENS_TYPICAL ||
-	n <= MIN_TERMEN );
+	n <= MIN_TERMS );
 
     return 2.0*D*exp(vexpo)*sum;
 }
 
 // Calculates the probability flux leaving the domain through the radiative
 // boundary at time t
-Real FirstPassageGreensFunction1DRad::flux_rad (Real t) const
+Real
+FirstPassageGreensFunction1DRad::flux_rad (Real t) const
 {
-    return this->getk()*prob_r(this->getsigma(), t);
+    return this->getk() * prob_r(this->getsigma(), t);
 }
 
 // Calculates the flux leaving the domain through the radiative boundary as a
 // fraction of the total flux. This is the probability that the particle left
 // the domain through the radiative boundary instead of the absorbing
 // boundary.
-Real FirstPassageGreensFunction1DRad::fluxRatioRadTot (Real t) const
+Real
+FirstPassageGreensFunction1DRad::fluxRatioRadTot (Real t) const
 {
     return flux_rad(t)/flux_tot(t);
 }
@@ -316,21 +325,22 @@ EventType
 FirstPassageGreensFunction1DRad::drawEventType( Real rnd, Real t )
 const
 {
+    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, t > 0.0 );
+    // if t=0 nothing has happened => no event
+
     const Real a(this->geta());
     const Real L(this->geta()-this->getsigma());
     const Real r0(this->getr0());
 
-    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
-    // if t=0 nothing has happened->no event!!
-    THROW_UNLESS( std::invalid_argument, t > 0.0 );
-
     // if the radiative boundary is impermeable (k==0) or
-    // the particle is at the absorbing boundary @a => IV_ESCAPE event
+    // the particle is at the absorbing boundary (at a) => IV_ESCAPE event
     if ( k == 0 || fabs(a-r0) < EPSILON*L )
     {
 	return IV_ESCAPE;
     }
 
+    // Else the event is sampled from the flux ratio
     const Real fluxratio (this->fluxRatioRadTot(t));
 
     if (rnd > fluxratio )
@@ -345,9 +355,10 @@ const
 
 // This function is needed to cast the math. form of the function
 // into the form needed by the GSL root solver.
-double FirstPassageGreensFunction1DRad::drawT_f (double t, void *p)
+double
+FirstPassageGreensFunction1DRad::drawT_f (double t, void *p)
 {
-    // casts p naar type 'struct drawT_params *'
+    // casts p to type 'struct drawT_params *'
     struct drawT_params *params = (struct drawT_params *)p;
     Real Xn, exponent;
     Real prefactor = params->prefactor;
@@ -373,7 +384,7 @@ double FirstPassageGreensFunction1DRad::drawT_f (double t, void *p)
     }
     while (fabs(term/sum) > EPSILON*1.0 ||
 	fabs(prev_term/sum) > EPSILON*1.0 ||
-	n <= MIN_TERMEN );
+	n <= MIN_TERMS );
 
     // find the intersection with the random number
     return 1.0 - prefactor*sum - params->rnd;
@@ -382,8 +393,11 @@ double FirstPassageGreensFunction1DRad::drawT_f (double t, void *p)
 // Draws the first passage time from the survival probability,
 // using an assistance function drawT_f that casts the math. function
 // into the form needed by the GSL root solver.
-Real FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
+Real
+FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
 {
+    THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
+  
     const Real sigma(this->getsigma());
     const Real a(this->geta());
     const Real L(this->geta()-this->getsigma());
@@ -392,9 +406,7 @@ Real FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
     const Real D(this->getD());
     const Real v(this->getv());
     const Real h((this->getk()+this->getv()/2.0)/this->getD());
-
-
-    THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
+    
 
     if ( D == 0.0 || L == INFINITY )
     {
@@ -424,7 +436,7 @@ Real FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
     // produce the coefficients and the terms in the exponent and put them
     // in the params structure. This is not very efficient at this point,
     // coefficients should be calculated on demand->TODO
-    for (int n=0; n<MAX_TERMEN; n++)
+    for (int n=0; n<MAX_TERMS; n++)
     {
 	root_n = this->root_n(n+1);	// get the n-th root of tan(root*a)=root/-h (Note: root numbering starts at n=1)
 	
@@ -443,19 +455,18 @@ Real FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
 	// store the coefficients in the structure
 	parameters.Xn[n] = Xn;
 	// also store the values for the exponent
-	parameters.exponent[n]=exponent;
-
+	parameters.exponent[n] = exponent;
     }
     
     // the prefactor of the sum is also different in case of drift<>0 :
     if(v==0)	prefactor = 2.0;
     else	prefactor = 2.0*exp(vexpo_pref);
-    parameters.prefactor = prefactor;
+    parameters.prefactor  = prefactor;
     
     // store the random number for the probability
     parameters.rnd = rnd;
     // store the number of terms used
-    parameters.terms = MAX_TERMEN;
+    parameters.terms = MAX_TERMS;
     parameters.tscale = this->t_scale;
 
     // Define the function for the rootfinder
@@ -471,10 +482,10 @@ Real FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
     // construct a guess: MSD = sqrt (2*d*D*t)
     Real t_guess( dist * dist / ( 2.0*D ) );
     // A different guess has to be made in case of nonzero drift to account for the displacement due to it
-    // TODO: This does not work properly in this case yet...
-    // When drifting towards the closest boundary...
+    // TODO: This does not work properly in this case yet, but we don't know why...
+    // When drifting towards the closest boundary
     //if( (r0 >= a/2.0 && v > 0.0) || (r0 <= a/2.0 && v < 0.0) )	t_guess = sqrt(D*D/(v*v*v*v)+dist*dist/(v*v)) - D/(v*v);
-    // When drifting away from the closest boundary...
+    // When drifting away from the closest boundary
     //if( ( r0 < a/2.0 && v > 0.0) || ( r0 > a/2.0 && v < 0.0) )	t_guess = D/(v*v) - sqrt(D*D/(v*v*v*v)-dist*dist/(v*v));
     
     Real value( GSL_FN_EVAL( &F, t_guess ) );
@@ -529,9 +540,9 @@ Real FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
 	while ( value >= 0.0 );
     }
 
-
     // find the intersection on the y-axis between the random number and
     // the function
+    
     // define a new solver type brent
     const gsl_root_fsolver_type* solverType( gsl_root_fsolver_brent );
     // make a new solver instance
@@ -544,9 +555,10 @@ Real FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
     return t;
 }
 
-double FirstPassageGreensFunction1DRad::drawR_f (double z, void *p)
+double
+FirstPassageGreensFunction1DRad::drawR_f (double z, void *p)
 {
-    // casts p naar type 'struct drawR_params *'
+    // casts p to type 'struct drawR_params *'
     struct drawR_params *params = (struct drawR_params *)p;
     Real v2D 		= params->H[0];	// = v2D = v/(2D)
     Real costerm 	= params->H[1];	// = k/D
@@ -578,10 +590,9 @@ double FirstPassageGreensFunction1DRad::drawR_f (double z, void *p)
 	sum += term;
 	n++;
     }
-    // the function returns a probability (scale is 1, TODO: is this important?)
     while (fabs(term/sum) > EPSILON*1.0 ||
 	fabs(prev_term/sum) > EPSILON*1.0 ||
-	n <= MIN_TERMEN );
+	n <= MIN_TERMS );
 
     // Find the intersection with the random number
     return sum - params->rnd;
@@ -590,6 +601,9 @@ double FirstPassageGreensFunction1DRad::drawR_f (double z, void *p)
 Real
 FirstPassageGreensFunction1DRad::drawR (Real rnd, Real t) const
 {
+    THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
+    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    
     const Real sigma(this->getsigma());
     const Real a(this->geta());
     const Real L(this->geta()-this->getsigma());
@@ -598,9 +612,7 @@ FirstPassageGreensFunction1DRad::drawR (Real rnd, Real t) const
     const Real v(this->getv());
     const Real k(this->getk());
     const Real h((this->getk()+this->getv()/2.0)/this->getD());
-
-    THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+    
 
     if (t==0.0 || (D==0.0 && v==0.0) )
     {
@@ -619,16 +631,16 @@ FirstPassageGreensFunction1DRad::drawR (Real rnd, Real t) const
     double root_n = 0;
     double S_Cn_root_n;
     double root_n2, root_n_r0_s;
-    const Real vexpo(-v*v*t/4.0/D - v*r0/2.0/D);	// exponent of the drift-prefactor, same as in survival prob.
+    const Real vexpo(-v*v*t/4.0/D - v*r0/2.0/D); // exponent of the drift-prefactor, same as in survival prob.
     const Real v2D(v/2.0/D);
     const Real v2Dv2D(v2D*v2D);
-    const Real S = 2.0*exp(vexpo)/p_survival(t);	// This is a prefactor to every term, so it also contains there
-							// exponential drift-prefactor.
+    const Real S = 2.0*exp(vexpo)/p_survival(t); // This is a prefactor to every term, so it also contains
+						 // the exponential drift-prefactor.
 
 
     // produce the coefficients and the terms in the exponent and put them
     // in the params structure
-    for (int n=0; n<MAX_TERMEN; n++)
+    for (int n=0; n<MAX_TERMS; n++)
     {
 	root_n = this->root_n(n+1);  // get the n-th root of tan(alfa*a)=alfa/-k
 	root_n2 = root_n * root_n;
@@ -646,7 +658,7 @@ FirstPassageGreensFunction1DRad::drawR (Real rnd, Real t) const
     // store the random number for the probability
     parameters.rnd = rnd;
     // store the number of terms used
-    parameters.terms = MAX_TERMEN;
+    parameters.terms = MAX_TERMS;
     
     // also store constant prefactors that appear in the calculation of the
     // r-dependent terms
@@ -673,4 +685,3 @@ FirstPassageGreensFunction1DRad::drawR (Real rnd, Real t) const
     // return the drawn position
     return r;
 }
-

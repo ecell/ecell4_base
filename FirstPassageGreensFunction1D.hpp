@@ -38,9 +38,9 @@ private:
     //E3; Is 1E3 a good measure for the probability density?!
     static const Real PDENS_TYPICAL = 1;
     // The maximum number of terms in the sum
-    static const int MAX_TERMEN = 500;
+    static const int MAX_TERMS = 500;
     // The minimum
-    static const int MIN_TERMEN = 20;
+    static const int MIN_TERMS = 20;
 
 public:
     FirstPassageGreensFunction1D(Real D, Real r0, Real sigma, Real a)
@@ -72,10 +72,8 @@ public:
 	// defining a domain of size 0.
 	if ( L <= EPSILON * l_scale )
 	{
-	    // just some random value to show that the domain is 
-	    // zero
+	    // just some random value to show that the domain is zero
 	    this->a = -INT_MAX;
-	    // don't touch the scales
 	}
 	else
 	{   
@@ -123,7 +121,6 @@ public:
     Real getr0() const
     {
 	return this->r0;
-	// return this->r0/l_scale;		// renormalized version, discontinued
     }
 
     // Draws the first passage time from the propensity function
@@ -161,12 +158,12 @@ private:
     struct drawT_params
     {
 	// use 10 terms in the summation for now
-	double exponent[MAX_TERMEN];
-	double Xn[MAX_TERMEN];
+	double exponent[MAX_TERMS];
+	double Xn[MAX_TERMS];
 	double prefactor;
 	int    terms;
 	Real tscale;
-	// the random number associated with the time
+	// random number
 	double rnd;
     };
 
@@ -174,12 +171,12 @@ private:
 
     struct drawR_params
     {
-	double S_Cn_An[MAX_TERMEN];
-	double n_L[MAX_TERMEN];
+	double S_Cn_An[MAX_TERMS];
+	double n_L[MAX_TERMS];
 	// variables H: for additional terms appearing as multiplicative factors etc.
 	double H[5];
 	int terms;
-	// the random number associated with the time
+	// random number
 	double rnd;
     };
 
@@ -188,7 +185,7 @@ private:
 private:
     // The diffusion constant and drift velocity
     Real v;
-    // The length of your domain (also the l_scale, see below)
+    // These are the dimensions of our domain; L is calculated as a-sigma
     Real sigma;
     Real a;
     Real r0;

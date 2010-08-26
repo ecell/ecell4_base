@@ -22,7 +22,8 @@
 
 // Calculates the probability of finding the particle inside the domain at 
 // time t
-Real FirstPassageGreensFunction1D::p_survival (Real t) const
+Real
+FirstPassageGreensFunction1D::p_survival (Real t) const
 {
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
@@ -35,7 +36,7 @@ Real FirstPassageGreensFunction1D::p_survival (Real t) const
 
     if ( fabs(r0-sigma) < L*EPSILON || fabs(a-r0) < L*EPSILON || L < 0.0 )
     {
-	// The survival probability of a zero domain is zero?
+	// The survival probability of a zero domain is zero
 	return 0.0;
     }
 
@@ -63,7 +64,7 @@ Real FirstPassageGreensFunction1D::p_survival (Real t) const
     {
       do
       {
-	  if (n >= MAX_TERMEN )
+	  if (n >= MAX_TERMS )
 	  {
 	      std::cerr << "Too many terms for p_survival. N: " << n << std::endl;
 	      break;
@@ -78,7 +79,7 @@ Real FirstPassageGreensFunction1D::p_survival (Real t) const
       // Is 1 a good measure or will this fail at some point?
       while (	fabs(term/sum) > EPSILON*1.0 ||
 		fabs(prev_term/sum) > EPSILON*1.0 ||
-		n < MIN_TERMEN );
+		n < MIN_TERMS );
 
       sum = 2.0*sum;	// This is a prefactor of every term, so do only one multiplication here
     }
@@ -86,7 +87,7 @@ Real FirstPassageGreensFunction1D::p_survival (Real t) const
     {
       do
       {
-	  if (n >= MAX_TERMEN )
+	  if (n >= MAX_TERMS )
 	  {
 	      std::cerr << "Too many terms for p_survival. N: " << n << std::endl;
 	      break;
@@ -101,7 +102,7 @@ Real FirstPassageGreensFunction1D::p_survival (Real t) const
       // TODO: Is 1 a good measure or will this fail at some point?
       while (	fabs(term/sum) > EPSILON*1.0 ||
 		fabs(prev_term/sum) > EPSILON*1.0 ||
-		n < MIN_TERMEN );
+		n < MIN_TERMS );
       
       sum = 2.0*exp(vexpo) * sum;	// prefactor containing the drift
 
@@ -112,8 +113,12 @@ Real FirstPassageGreensFunction1D::p_survival (Real t) const
 
 // Calculates the probability density of finding the particle at location r at 
 // time t.
-Real FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
+Real
+FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
 {
+    THROW_UNLESS( std::invalid_argument, 0.0 <= (r-sigma) && r <= a );
+    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
+
     const Real a(this->geta());
     const Real sigma(this->getsigma());
     const Real L(this->geta() - this->getsigma());
@@ -121,10 +126,7 @@ Real FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
     const Real D(this->getD());
     const Real v(this->getv());
 
-    THROW_UNLESS( std::invalid_argument, 0.0 <= (r-sigma) && r <= a );
-    THROW_UNLESS( std::invalid_argument, t >= 0.0 );
-
-    // if there was no time or no movement
+    // if there was no time change or no diffusivity => no movement
     if (t == 0 || D == 0)
     {
 	// the probability density function is a delta function
@@ -156,7 +158,7 @@ Real FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
     int n=1;
     do
     {
-	if (n >= MAX_TERMEN )
+	if (n >= MAX_TERMS )
 	{
 	    std::cerr << "Too many terms for prob_r. N: " << n << std::endl;
 	    break;
@@ -169,23 +171,24 @@ Real FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
 	sum += term;
 	n++;
     }
-    // TODO: Is 1E3 a good measure for the probability density?!
     while (fabs(term/sum) > EPSILON*PDENS_TYPICAL ||
 	fabs(prev_term/sum) > EPSILON*PDENS_TYPICAL ||
-	n <= MIN_TERMEN);
+	n <= MIN_TERMS);
 
     return 2.0/L * exp(vexpo) * sum;
 }
 
 // Calculates the probability density of finding the particle at location r at 
 // timepoint t, given that the particle is still in the domain.
-Real FirstPassageGreensFunction1D::calcpcum (Real r, Real t) const
+Real
+FirstPassageGreensFunction1D::calcpcum (Real r, Real t) const
 {
     return prob_r(r, t) / p_survival(t);
 }
 
 // Calculates the amount of flux leaving the left boundary at time t
-Real FirstPassageGreensFunction1D::leaves(Real t) const
+Real
+FirstPassageGreensFunction1D::leaves(Real t) const
 {
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
@@ -198,8 +201,8 @@ Real FirstPassageGreensFunction1D::leaves(Real t) const
 
     if ( fabs(r0-sigma) < L*EPSILON || fabs(a-r0) < L*EPSILON || L < 0.0 )
     {
-	// The flux of a zero domain is zero? Also if the particle 
-	// started on the left boundary
+	// The flux of a zero domain is INFINITY. Also if the particle 
+	// started on the left boundary (leaking out immediately).
 	return INFINITY;
     }
     else if ( t < EPSILON*this->t_scale )
@@ -219,7 +222,7 @@ Real FirstPassageGreensFunction1D::leaves(Real t) const
     Real n=1;
     do
     {
-	if (n >= MAX_TERMEN )
+	if (n >= MAX_TERMS )
 	{
 	    std::cerr << "Too many terms for p_survival. N: " << n << std::endl;
 	    break;
@@ -231,16 +234,16 @@ Real FirstPassageGreensFunction1D::leaves(Real t) const
 	sum += term;
 	n++;
     }
-    // Is PDENS_TYPICAL a good measure or will this fail at some point?
     while (fabs(term/sum) > EPSILON*PDENS_TYPICAL ||
 	fabs(prev_term/sum) > EPSILON*PDENS_TYPICAL ||
-	n < MIN_TERMEN );
+	n < MIN_TERMS );
 
     return 2.0*D_L_sq * exp(vexpo) * sum;
 }
 
 // Calculates the amount of flux leaving the right boundary at time t
-Real FirstPassageGreensFunction1D::leavea(Real t) const
+Real
+FirstPassageGreensFunction1D::leavea(Real t) const
 {
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
@@ -253,8 +256,8 @@ Real FirstPassageGreensFunction1D::leavea(Real t) const
 
     if ( fabs(r0-sigma) < L*EPSILON || fabs(a-r0) < L*EPSILON || L < 0.0 )
     {
-	// The flux of a zero domain is zero? Also if the particle 
-	// started on the right boundary.
+	// The flux of a zero domain is INFINITY. Also if the particle 
+	// started on the right boundary (leaking out immediately).
 	return INFINITY;
     }
     else if ( t < EPSILON*this->t_scale )
@@ -274,7 +277,7 @@ Real FirstPassageGreensFunction1D::leavea(Real t) const
     Real n=1;
     do
      {
-       if (n >= MAX_TERMEN )
+       if (n >= MAX_TERMS )
        {
 	 std::cerr << "Too many terms for leaves. N: " << n << std::endl;
 	 break;
@@ -286,10 +289,9 @@ Real FirstPassageGreensFunction1D::leavea(Real t) const
        sum += term;
        n++;
      }
-     // Is PDENS_TYPICAL a good measure or will this fail at some point?
      while (fabs(term/sum) > EPSILON*PDENS_TYPICAL ||
 	    fabs(prev_term/sum) > EPSILON*PDENS_TYPICAL ||
-	    n < MIN_TERMEN );
+	    n < MIN_TERMS );
      
      return -2.0*D_L_sq * exp(vexpo) * sum;
 }
@@ -301,15 +303,16 @@ Real FirstPassageGreensFunction1D::leavea(Real t) const
 EventType
 FirstPassageGreensFunction1D::drawEventType( Real rnd, Real t ) const
 {
+    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
+    THROW_UNLESS( std::invalid_argument, t > 0.0 );
+    // if t=0 nothing has happened => no event
+
     const Real a(this->geta());
     const Real sigma(this->getsigma());
     const Real L(this->geta() - this->getsigma());
     const Real r0(this->getr0());
 
-    THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
-    // if t=0 nothing has happened->no event!!
-    THROW_UNLESS( std::invalid_argument, t > 0.0 );
-
+    // For particles at the boundaries
     if ( fabs(a-r0) < EPSILON*L )
     {
 	// if the particle started on the right boundary
@@ -340,10 +343,12 @@ FirstPassageGreensFunction1D::drawEventType( Real rnd, Real t ) const
 // the right form and calculates the survival probability from it (and returns it).
 // The routine drawTime uses this one to sample the next-event time from the
 // survival probability using a rootfinder from GSL.
-double FirstPassageGreensFunction1D::drawT_f (double t, void *p)
+double
+FirstPassageGreensFunction1D::drawT_f (double t, void *p)
 {   
     // casts p to type 'struct drawT_params *'
     struct drawT_params *params = (struct drawT_params *)p;
+    
     Real sum = 0, term = 0, prev_term = 0;
     Real Xn, exponent, prefactor;
     // the maximum number of terms in the params table
@@ -370,10 +375,11 @@ double FirstPassageGreensFunction1D::drawT_f (double t, void *p)
     }
     while (fabs(term/sum) > EPSILON*tscale ||
 	fabs(prev_term/sum) > EPSILON*tscale ||
-	n <= MIN_TERMEN );
+	n <= MIN_TERMS );
 
     prefactor = params->prefactor;
-    // the intersection with the random number
+    
+    // find intersection with the random number
     return 1.0 - prefactor*sum - params->rnd;
 }
 
@@ -381,7 +387,8 @@ double FirstPassageGreensFunction1D::drawT_f (double t, void *p)
 // Uses the help routine drawT_f and structure drawT_params for some technical
 // reasons related to the way to input a function and parameters required by
 // the GSL library.
-Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
+Real
+FirstPassageGreensFunction1D::drawTime (Real rnd) const
 {
     THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
 
@@ -418,9 +425,8 @@ Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
     
     Real nPI;
     
-    // Sum
-    // construct the coefficients and the terms in the exponent and put them 
-    // in the params structure
+    // Construct the coefficients and the terms in the exponent and put them 
+    // into the params structure
     int n = 0;
     // a simpler sum has to be computed for the case w/o drift, so distinguish here
     if(v==0)
@@ -437,8 +443,8 @@ Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
 	  parameters.exponent[n]=exponent;
 	  n++;
       }
-      // modify this later to include a cutoff when changes are small
-      while (n<MAX_TERMEN);
+      // TODO: Modify this later to include a cutoff when changes are small
+      while (n<MAX_TERMS);
     }
     else	// case with drift<>0
     {
@@ -454,8 +460,8 @@ Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
 	  parameters.exponent[n]=exponent;
 	  n++;
       }
-      // modify this later to include a cutoff when changes are small
-      while (n<MAX_TERMEN);
+       // TODO: Modify this later to include a cutoff when changes are small
+      while (n<MAX_TERMS);
     }
 
     // the prefactor of the sum is also different in case of drift<>0 :
@@ -463,10 +469,8 @@ Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
     else	prefactor = 2.0;
     parameters.prefactor = prefactor;
     
-    // store the random number for the probability
     parameters.rnd = rnd;
-    // store the number of terms used
-    parameters.terms = MAX_TERMEN;
+    parameters.terms = MAX_TERMS;
     parameters.tscale = this->t_scale;
 
     gsl_function F;
@@ -557,14 +561,15 @@ Real FirstPassageGreensFunction1D::drawTime (Real rnd) const
 // the right form and calculates the survival probability from it (and returns it).
 // The routine drawR uses this function to sample the exit point, making use of the
 // GSL root finder to draw the random position.
-double FirstPassageGreensFunction1D::drawR_f (double r, void *p)
+double
+FirstPassageGreensFunction1D::drawR_f (double r, void *p)
 {   
     struct drawR_params *params = (struct drawR_params *)p;
     double sum = 0, term = 0, prev_term = 0;
     double S_Cn_An, n_L;
     int    terms = params->terms;
     double sigma = params->H[0];
-    double v2D = params->H[1];	// this is v divided by 2D
+    double v2D = params->H[1];	// =v/(2D)
 
     int n=0;
     do
@@ -591,7 +596,7 @@ double FirstPassageGreensFunction1D::drawR_f (double r, void *p)
     }
     while (fabs(term/sum) > EPSILON ||
 	fabs(prev_term/sum) > EPSILON ||
-	n <= MIN_TERMEN );
+	n <= MIN_TERMS );
 
     // find the intersection with the random number
     return sum - params->rnd;
@@ -599,7 +604,8 @@ double FirstPassageGreensFunction1D::drawR_f (double r, void *p)
 
 // Draws the position of the particle at a given time from p(r,t), assuming 
 // that the particle is still in the domain
-Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
+Real
+FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
 {
     THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
@@ -611,7 +617,7 @@ Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
     const Real D(this->getD());
     const Real v(this->getv());
 
-    // the trivial case, if there was no movement or the domain was zero
+    // the trivial case: if there was no movement or the domain was zero
     if ( (D==0.0 && v==0.0) || L<0.0 || t==0.0)
     {
 	return r0;
@@ -627,7 +633,7 @@ Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
     // From here on the problem is well defined
 
 
-    // structure to store the numbers to calculate numbers for 1-S
+    // structure to store the numbers to calculate numbers for 1-S(t)
     struct drawR_params parameters;
     Real S_Cn_An;
     Real nPI;
@@ -639,7 +645,7 @@ Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
     const Real S = 2.0*exp(vexpo)/p_survival(t);	// This is a prefactor to every term, so it also contains there
 							// exponential drift-prefactor.
 
-    // produce the coefficients and the terms in the exponent and put them 
+    // Construct the coefficients and the terms in the exponent and put them 
     // in the params structure
     int n=0;
     do
@@ -659,12 +665,12 @@ Real FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
 	parameters.n_L[n]    = nPI/L;
 	n++;
     }
-    while (n<MAX_TERMEN);
+    while (n<MAX_TERMS);
 
     // store the random number for the probability
     parameters.rnd = rnd ;
     // store the number of terms used
-    parameters.terms = MAX_TERMEN;
+    parameters.terms = MAX_TERMS;
     
     // store needed constants
     parameters.H[0] = sigma;
