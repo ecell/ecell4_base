@@ -16,7 +16,7 @@
 #include <math.h>
 
 #include "findRoot.hpp"
-#include "FirstPassageGreensFunction1DRad.hpp"
+#include "GreensFunction1DRadAbs.hpp"
 
 
 // This is the appropriate definition of the function defining
@@ -25,7 +25,7 @@
 //
 // It expects a reaction rate h=k/D already divided by D.
 double
-FirstPassageGreensFunction1DRad::tan_f (double x, void *p)
+GreensFunction1DRadAbs::tan_f (double x, void *p)
 {
     // casts the void to the struct pointer
     struct tan_f_params *params = (struct tan_f_params *)p;
@@ -46,7 +46,7 @@ FirstPassageGreensFunction1DRad::tan_f (double x, void *p)
 
 // Calculates the roots of tan(x*a)=-x/h
 Real
-FirstPassageGreensFunction1DRad::root_n(int n) const
+GreensFunction1DRadAbs::root_n(int n) const
 {
     const Real L( this->geta()-this->getsigma() );
     const Real h( (this->getk()+this->getv()/2.0) / this->getD() );
@@ -69,7 +69,7 @@ FirstPassageGreensFunction1DRad::root_n(int n) const
     gsl_function F;
     struct tan_f_params params = { L, h };
      
-    F.function = &FirstPassageGreensFunction1DRad::tan_f;
+    F.function = &GreensFunction1DRadAbs::tan_f;
     F.params = &params;
 
     // define a new solver type brent
@@ -80,7 +80,7 @@ FirstPassageGreensFunction1DRad::root_n(int n) const
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
     // get the root = run the rootsolver
     const Real root( findRoot( F, solver, lower, upper, 1.0*EPSILON, EPSILON,
-                            "FirstPassageGreensFunction1DRad::root_tan" ) );
+                            "GreensFunction1DRadAbs::root_tan" ) );
     gsl_root_fsolver_free( solver );
     
     return root/L;
@@ -102,7 +102,7 @@ FirstPassageGreensFunction1DRad::root_n(int n) const
 // The factor calculated here is identical for the cases w. or w/o drift,
 // only h changes.
 Real
-FirstPassageGreensFunction1DRad::An (Real root_n) const
+GreensFunction1DRadAbs::An (Real root_n) const
 {
     const Real h((this->getk()+this->getv()/2.0)/this->getD());
     const Real sigma(this->getsigma());
@@ -115,7 +115,7 @@ FirstPassageGreensFunction1DRad::An (Real root_n) const
 
 // This factor appears in the survival prob.
 Real
-FirstPassageGreensFunction1DRad::Bn (Real root_n) const
+GreensFunction1DRadAbs::Bn (Real root_n) const
 {
     const Real h((this->getk()+this->getv()/2.0)/this->getD());
     const Real k(this->getk());
@@ -139,7 +139,7 @@ FirstPassageGreensFunction1DRad::Bn (Real root_n) const
 //
 // Also here the root is the one refering to the interval of length L.
 Real
-FirstPassageGreensFunction1DRad::Cn (Real root_n, Real t)
+GreensFunction1DRadAbs::Cn (Real root_n, Real t)
 const
 {
     const Real D(this->getD());
@@ -150,7 +150,7 @@ const
 // Calculates the probability of finding the particle inside the domain
 // at time t, the survival probability.
 Real
-FirstPassageGreensFunction1DRad::p_survival (Real t) const
+GreensFunction1DRadAbs::p_survival (Real t) const
 {
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
   
@@ -189,7 +189,7 @@ FirstPassageGreensFunction1DRad::p_survival (Real t) const
 // Calculates the probability density of finding the particle at location r
 // at time t.
 Real
-FirstPassageGreensFunction1DRad::prob_r (Real r, Real t)
+GreensFunction1DRadAbs::prob_r (Real r, Real t)
 const
 {
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
@@ -257,7 +257,7 @@ const
 // Calculates the probability density of finding the particle at location z at
 // timepoint t, given that the particle is still in the domain.
 Real
-FirstPassageGreensFunction1DRad::calcpcum (Real r, Real t) const
+GreensFunction1DRadAbs::calcpcum (Real r, Real t) const
 {
     return prob_r(r, t)/p_survival(t);
 }
@@ -266,7 +266,7 @@ FirstPassageGreensFunction1DRad::calcpcum (Real r, Real t) const
 // This is simply the negative of the time derivative of the survival prob.
 // at time t [-dS(t')/dt' for t'=t].
 Real
-FirstPassageGreensFunction1DRad::flux_tot (Real t) const
+GreensFunction1DRadAbs::flux_tot (Real t) const
 {
     Real root_n;
     const Real D(this->getD());
@@ -303,7 +303,7 @@ FirstPassageGreensFunction1DRad::flux_tot (Real t) const
 // Calculates the probability flux leaving the domain through the radiative
 // boundary at time t
 Real
-FirstPassageGreensFunction1DRad::flux_rad (Real t) const
+GreensFunction1DRadAbs::flux_rad (Real t) const
 {
     return this->getk() * prob_r(this->getsigma(), t);
 }
@@ -313,7 +313,7 @@ FirstPassageGreensFunction1DRad::flux_rad (Real t) const
 // the domain through the radiative boundary instead of the absorbing
 // boundary.
 Real
-FirstPassageGreensFunction1DRad::fluxRatioRadTot (Real t) const
+GreensFunction1DRadAbs::fluxRatioRadTot (Real t) const
 {
     return flux_rad(t)/flux_tot(t);
 }
@@ -322,7 +322,7 @@ FirstPassageGreensFunction1DRad::fluxRatioRadTot (Real t) const
 // fluxes through the boundaries at the given time. Beware: if t is not a
 // first passage time you still get an answer!
 EventType
-FirstPassageGreensFunction1DRad::drawEventType( Real rnd, Real t )
+GreensFunction1DRadAbs::drawEventType( Real rnd, Real t )
 const
 {
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
@@ -356,7 +356,7 @@ const
 // This function is needed to cast the math. form of the function
 // into the form needed by the GSL root solver.
 double
-FirstPassageGreensFunction1DRad::drawT_f (double t, void *p)
+GreensFunction1DRadAbs::drawT_f (double t, void *p)
 {
     // casts p to type 'struct drawT_params *'
     struct drawT_params *params = (struct drawT_params *)p;
@@ -394,7 +394,7 @@ FirstPassageGreensFunction1DRad::drawT_f (double t, void *p)
 // using an assistance function drawT_f that casts the math. function
 // into the form needed by the GSL root solver.
 Real
-FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
+GreensFunction1DRadAbs::drawTime (Real rnd) const
 {
     THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
   
@@ -471,7 +471,7 @@ FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
 
     // Define the function for the rootfinder
     gsl_function F;
-    F.function = &FirstPassageGreensFunction1DRad::drawT_f;
+    F.function = &GreensFunction1DRadAbs::drawT_f;
     F.params = &parameters;
 
 
@@ -549,14 +549,14 @@ FirstPassageGreensFunction1DRad::drawTime (Real rnd) const
     // TODO: incl typecast?
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
     const Real t( findRoot( F, solver, low, high, t_scale*EPSILON, EPSILON,
-                            "FirstPassageGreensFunction1DRad::drawTime" ) );
+                            "GreensFunction1DRadAbs::drawTime" ) );
 
     // return the drawn time
     return t;
 }
 
 double
-FirstPassageGreensFunction1DRad::drawR_f (double z, void *p)
+GreensFunction1DRadAbs::drawR_f (double z, void *p)
 {
     // casts p to type 'struct drawR_params *'
     struct drawR_params *params = (struct drawR_params *)p;
@@ -599,7 +599,7 @@ FirstPassageGreensFunction1DRad::drawR_f (double z, void *p)
 }
 
 Real
-FirstPassageGreensFunction1DRad::drawR (Real rnd, Real t) const
+GreensFunction1DRadAbs::drawR (Real rnd, Real t) const
 {
     THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
@@ -671,7 +671,7 @@ FirstPassageGreensFunction1DRad::drawR (Real rnd, Real t) const
     // find the intersection on the y-axis between the random number and
     // the function
     gsl_function F;
-    F.function = &FirstPassageGreensFunction1DRad::drawR_f;
+    F.function = &GreensFunction1DRadAbs::drawR_f;
     F.params = &parameters;
 
     // define a new solver type brent
@@ -680,7 +680,7 @@ FirstPassageGreensFunction1DRad::drawR (Real rnd, Real t) const
     // TODO: incl typecast?
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
     Real r( findRoot( F, solver, sigma, a, EPSILON*L, EPSILON,
-                            "FirstPassageGreensFunction1DRad::drawR" ) );
+                            "GreensFunction1DRadAbs::drawR" ) );
 
     // return the drawn position
     return r;

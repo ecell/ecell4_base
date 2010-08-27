@@ -26,7 +26,7 @@
 #include "PairGreensFunction.hpp"	// needed to declare EventType
 
 
-class FirstPassageGreensFunction1D: public GreensFunction
+class GreensFunction1DAbsAbs: public GreensFunction
 {
 private:
     // This is a typical length scale of the system, may not be true!
@@ -43,20 +43,20 @@ private:
     static const int MIN_TERMS = 20;
 
 public:
-    FirstPassageGreensFunction1D(Real D, Real r0, Real sigma, Real a)
+    GreensFunction1DAbsAbs(Real D, Real r0, Real sigma, Real a)
 	: GreensFunction(D), v(0.0), sigma(sigma), a(a), r0(r0), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
     {
 	;   // do nothing
     }
 
     // The constructor is overloaded and can be called with or without drift v
-    FirstPassageGreensFunction1D(Real D, Real v, Real r0, Real sigma, Real a) // copy constructor including drift variable v
+    GreensFunction1DAbsAbs(Real D, Real v, Real r0, Real sigma, Real a) // copy constructor including drift variable v
 	: GreensFunction(D), v(v), sigma(sigma), a(a), r0(r0), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
     {
 	;   // do nothing
     }
 
-    ~FirstPassageGreensFunction1D()
+    ~GreensFunction1DAbsAbs()
     { 
 	;   // empty
     }

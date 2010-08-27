@@ -19,12 +19,14 @@ StructureUtils_test
 
 PYTHON_TESTS = \
 	BDSimulator_test.py \
-	GreensFunction3DRadInf_test.py \
 	CylindricalShellContainer_test.py \
 	EGFRDSimulator_test.py \
 	EventScheduler_test.py \
-	GreensFunction3DAbs_test.py \
+	GreensFunction1DAbsAbs_test.py \
+	GreensFunction1DRadAbs_test.py \
 	GreensFunction3DRadAbs_test.py \
+	GreensFunction3DRadInf_test.py \
+	GreensFunction3DAbs_test.py \
 	GreensFunction3DAbsSym_test.py \
 	GreensFunction3DSym_test.py \
 	GreensFunction3D_test.py \
@@ -53,6 +55,8 @@ alltests.py\
 utils_test.py\
 freeFunctions_test.py\
 EventScheduler_test.py\
+GreensFunction1DAbsAbs_test.py\
+GreensFunction1DRadAbs_test.py\
 GreensFunction3DSym_test.py\
 GreensFunction3D_test.py\
 GreensFunction3DRadInf_test.py\

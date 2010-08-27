@@ -5,6 +5,8 @@
 #include <boost/python.hpp>
 
 #include "freeFunctions.hpp"
+#include "GreensFunction1DAbsAbs.hpp"
+#include "GreensFunction1DRadAbs.hpp"
 #include "GreensFunction3DSym.hpp"
 #include "GreensFunction3DAbsSym.hpp"
 #include "GreensFunction3DRadInf.hpp"
@@ -29,6 +31,47 @@ BOOST_PYTHON_MODULE( _greens_functions )
     def( "p_reaction_irr", __p_reaction_irr );
     def( "p_reaction_irr_t_inf", __p_reaction_irr_t_inf );
 
+    
+    class_<GreensFunction1DAbsAbs>( "GreensFunction1DAbsAbs",
+					init<Real, Real, Real, Real>() )
+	.def( init<Real, Real, Real, Real, Real>())
+	.def( "getD", &FirstPassageGreensFunction1D::getD )
+	.def( "getv", &FirstPassageGreensFunction1D::getv )
+	.def( "getsigma", &FirstPassageGreensFunction1D::getsigma )
+	.def( "seta", &FirstPassageGreensFunction1D::seta )
+	.def( "geta", &FirstPassageGreensFunction1D::geta )
+	.def( "setr0", &FirstPassageGreensFunction1D::setr0 )
+	.def( "getr0", &FirstPassageGreensFunction1D::getr0 )
+	.def( "drawTime", &FirstPassageGreensFunction1D::drawTime )
+	.def( "drawR", &FirstPassageGreensFunction1D::drawR )
+	.def( "drawEventType", &FirstPassageGreensFunction1D::drawEventType )
+	.def( "leaves", &FirstPassageGreensFunction1D::leaves )
+	.def( "leavea", &FirstPassageGreensFunction1D::leavea )
+	.def( "p_survival", &FirstPassageGreensFunction1D::p_survival )
+	.def( "calcpcum", &FirstPassageGreensFunction1D::calcpcum )
+	;
+
+    class_<GreensFunction1DRadAbs>( "GreensFunction1DRadAbs",
+					init<Real, Real, Real, Real, Real>() )
+	.def( init<Real, Real, Real, Real, Real, Real>())
+	.def( "getk", &FirstPassageGreensFunction1DRad::getk )
+	.def( "getD", &FirstPassageGreensFunction1DRad::getD )
+	.def( "getv", &FirstPassageGreensFunction1DRad::getv )
+	.def( "getsigma", &FirstPassageGreensFunction1DRad::getsigma )
+	.def( "seta", &FirstPassageGreensFunction1DRad::seta )
+	.def( "geta", &FirstPassageGreensFunction1DRad::geta )
+	.def( "setr0", &FirstPassageGreensFunction1DRad::setr0 )
+	.def( "getr0", &FirstPassageGreensFunction1DRad::getr0 )
+	.def( "drawTime", &FirstPassageGreensFunction1DRad::drawTime )
+	.def( "drawR", &FirstPassageGreensFunction1DRad::drawR )
+	.def( "drawEventType", &FirstPassageGreensFunction1DRad::drawEventType )
+	.def( "flux_tot", &FirstPassageGreensFunction1DRad::flux_tot )
+	.def( "flux_rad", &FirstPassageGreensFunction1DRad::flux_rad )
+	.def( "fluxRatioRadTot", &FirstPassageGreensFunction1DRad::fluxRatioRadTot )
+	.def( "p_survival", &FirstPassageGreensFunction1DRad::p_survival )
+	.def( "calcpcum", &FirstPassageGreensFunction1DRad::calcpcum )
+	;
+    
     class_<GreensFunction3DSym>("GreensFunction3DSym", init<Real>())
         .def( "getD", &GreensFunction3DSym::getD )
         .def( "drawTime", &GreensFunction3DSym::drawTime )

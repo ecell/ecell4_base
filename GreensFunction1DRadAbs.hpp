@@ -24,7 +24,7 @@
 #include "GreensFunction.hpp"
 #include "PairGreensFunction.hpp"	// needed to declare EventType
 
-class FirstPassageGreensFunction1DRad: public GreensFunction
+class GreensFunction1DRadAbs: public GreensFunction
 {
 private:
     // This is a typical length scale of the system, may not be true!
@@ -42,7 +42,7 @@ private:
 
 
 public:
-    FirstPassageGreensFunction1DRad(Real D, Real k, Real r0, Real sigma, Real a)
+    GreensFunction1DRadAbs(Real D, Real k, Real r0, Real sigma, Real a)
 	: GreensFunction(D), v(0.0), k(k), r0(r0), sigma(sigma), a(a), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
     {
 	// do nothing
@@ -50,13 +50,13 @@ public:
 
     // The constructor is overloaded and can be called with or without drift v
     // copy constructor including drift variable v
-    FirstPassageGreensFunction1DRad(Real D, Real k, Real v, Real r0, Real sigma, Real a)
+    GreensFunction1DRadAbs(Real D, Real k, Real v, Real r0, Real sigma, Real a)
 	: GreensFunction(D), v(v), k(k), r0(r0), sigma(sigma), a(a), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
     {
 	// do nothing
     }
 
-    ~FirstPassageGreensFunction1DRad()
+    ~GreensFunction1DRadAbs()
     {
 	;   // empty
     }

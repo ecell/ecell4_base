@@ -62,6 +62,8 @@ noinst_HEADERS = \
 	factorial.hpp\
 	filters.hpp\
 	findRoot.hpp\
+	GreensFunction1DRadAbs.hpp\
+	GreensFunction1DAbsAbs.hpp\
 	GreensFunction3DAbsSym.hpp\
 	GreensFunction3DAbs.hpp\
 	GreensFunction3DRadAbs.hpp\
@@ -176,6 +178,8 @@ _greens_functions_la_SOURCES=\
 	greens_functions.cpp\
 	SphericalBesselGenerator.cpp\
 	freeFunctions.cpp\
+	GreensFunction1DAbsAbs.cpp\
+	GreensFunction1DRadAbs.cpp\
 	GreensFunction3DSym.cpp\
 	GreensFunction3DAbsSym.cpp\
 	GreensFunction3DRadInf.cpp\

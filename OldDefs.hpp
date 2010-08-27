@@ -6,8 +6,8 @@
 #include <boost/multi_array.hpp>
 #include <cmath>
 
-// This file is needed temporarily by	FirstPassageGreensFunction1D.cpp
-// and					FirstPassageGreensFunction1DRad.cpp
+// This file is needed temporarily by	GreensFunction1DAbsAbs.cpp
+// and					GreensFunction1DRadAbs.cpp
 //
 // At some point it should be taken out of the new code version.
 // This requires some major refurbishment of the above functions, so postponed for later.

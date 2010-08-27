@@ -16,14 +16,14 @@
 #include <math.h>
 
 #include "findRoot.hpp"
-#include "FirstPassageGreensFunction1D.hpp"
+#include "GreensFunction1DAbsAbs.hpp"
 #include "Defs.hpp"
 
 
 // Calculates the probability of finding the particle inside the domain at 
 // time t
 Real
-FirstPassageGreensFunction1D::p_survival (Real t) const
+GreensFunction1DAbsAbs::p_survival (Real t) const
 {
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
@@ -114,7 +114,7 @@ FirstPassageGreensFunction1D::p_survival (Real t) const
 // Calculates the probability density of finding the particle at location r at 
 // time t.
 Real
-FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
+GreensFunction1DAbsAbs::prob_r (Real r, Real t) const
 {
     THROW_UNLESS( std::invalid_argument, 0.0 <= (r-sigma) && r <= a );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
@@ -181,14 +181,14 @@ FirstPassageGreensFunction1D::prob_r (Real r, Real t) const
 // Calculates the probability density of finding the particle at location r at 
 // timepoint t, given that the particle is still in the domain.
 Real
-FirstPassageGreensFunction1D::calcpcum (Real r, Real t) const
+GreensFunction1DAbsAbs::calcpcum (Real r, Real t) const
 {
     return prob_r(r, t) / p_survival(t);
 }
 
 // Calculates the amount of flux leaving the left boundary at time t
 Real
-FirstPassageGreensFunction1D::leaves(Real t) const
+GreensFunction1DAbsAbs::leaves(Real t) const
 {
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
@@ -243,7 +243,7 @@ FirstPassageGreensFunction1D::leaves(Real t) const
 
 // Calculates the amount of flux leaving the right boundary at time t
 Real
-FirstPassageGreensFunction1D::leavea(Real t) const
+GreensFunction1DAbsAbs::leavea(Real t) const
 {
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
 
@@ -301,7 +301,7 @@ FirstPassageGreensFunction1D::leavea(Real t) const
 // IV_ESCAPE for an escape through the right boundary and a IV_REACTION for an 
 // escape through the left boundary.
 EventType
-FirstPassageGreensFunction1D::drawEventType( Real rnd, Real t ) const
+GreensFunction1DAbsAbs::drawEventType( Real rnd, Real t ) const
 {
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );
     THROW_UNLESS( std::invalid_argument, t > 0.0 );
@@ -344,7 +344,7 @@ FirstPassageGreensFunction1D::drawEventType( Real rnd, Real t ) const
 // The routine drawTime uses this one to sample the next-event time from the
 // survival probability using a rootfinder from GSL.
 double
-FirstPassageGreensFunction1D::drawT_f (double t, void *p)
+GreensFunction1DAbsAbs::drawT_f (double t, void *p)
 {   
     // casts p to type 'struct drawT_params *'
     struct drawT_params *params = (struct drawT_params *)p;
@@ -388,7 +388,7 @@ FirstPassageGreensFunction1D::drawT_f (double t, void *p)
 // reasons related to the way to input a function and parameters required by
 // the GSL library.
 Real
-FirstPassageGreensFunction1D::drawTime (Real rnd) const
+GreensFunction1DAbsAbs::drawTime (Real rnd) const
 {
     THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
 
@@ -550,7 +550,7 @@ FirstPassageGreensFunction1D::drawTime (Real rnd) const
     // TODO: incl typecast?
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
     const Real t( findRoot( F, solver, low, high, EPSILON*t_scale, EPSILON,
-                            "FirstPassageGreensFunction1D::drawTime" ) );
+                            "GreensFunction1DAbsAbs::drawTime" ) );
 
     // return the drawn time
     return t;
@@ -562,7 +562,7 @@ FirstPassageGreensFunction1D::drawTime (Real rnd) const
 // The routine drawR uses this function to sample the exit point, making use of the
 // GSL root finder to draw the random position.
 double
-FirstPassageGreensFunction1D::drawR_f (double r, void *p)
+GreensFunction1DAbsAbs::drawR_f (double r, void *p)
 {   
     struct drawR_params *params = (struct drawR_params *)p;
     double sum = 0, term = 0, prev_term = 0;
@@ -605,7 +605,7 @@ FirstPassageGreensFunction1D::drawR_f (double r, void *p)
 // Draws the position of the particle at a given time from p(r,t), assuming 
 // that the particle is still in the domain
 Real
-FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
+GreensFunction1DAbsAbs::drawR (Real rnd, Real t) const
 {
     THROW_UNLESS( std::invalid_argument, 0.0 <= rnd && rnd < 1.0 );
     THROW_UNLESS( std::invalid_argument, t >= 0.0 );
@@ -688,7 +688,7 @@ FirstPassageGreensFunction1D::drawR (Real rnd, Real t) const
     // TODO: incl typecast?
     gsl_root_fsolver* solver( gsl_root_fsolver_alloc( solverType ) );
     const Real r( findRoot( F, solver, sigma, a, L*EPSILON, EPSILON,
-                            "FirstPassageGreensFunction1D::drawR" ) );
+                            "GreensFunction1DAbsAbs::drawR" ) );
 
     // return the drawn time
     return r;
