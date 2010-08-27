@@ -79,9 +79,9 @@ GF3DA::p_int_r(Real r, Real t) const
 
     const unsigned int i_max(
         std::max(static_cast<unsigned int>(
-                      ceil(sqrt(Dt * M_PI * M_PI + asq * 
-                                  log(1.0 / TOLERANCE) / Dt) * 
-                            M_1_PI)), 
+                      ceil(sqrt( 1.0 - asq / M_PI / M_PI
+				    * log(TOLERANCE) / Dt ) 
+			  )), 
                   2u));
 
     Real p(0.0);
