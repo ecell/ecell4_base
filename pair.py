@@ -433,13 +433,11 @@ class CylindricalSurfacePair(Pair):
                       r0, shell_size, rt, surface)
 
     def com_greens_function(self):
-        #gf = GreensFunction3DAbsSym1D(self.D_R)
-        return GreensFunction3DAbsSym(self.D_R, self.a_R)
+        # The domain is created around r0, so r0 corresponds to r=0 within the domain
+        return GreensFunction1DAbsAbs(self.D_R, self.v_R, 0.0, -self.a_R, self.a_R)
 
     def iv_greens_function(self, r0):
-        #gf = GreensFunction3DAbsSym1DRad(self.D_tot, self.rt.k)
-        # This exact solution is used for drawing times.
-        return GreensFunction3DRadAbs(self.D_tot, self.rt.k, r0, self.sigma, self.a_r)
+        return GreensFunction1DRadAbs(self.D_tot, self.v_r, self.rt.k, r0, self.sigma, self.a_r)
 
     def create_new_shell(self, position, size, domain_id):
         # The radius of a rod is not more than it has to be (namely the 

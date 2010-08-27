@@ -247,7 +247,7 @@ class PlanarSurfaceSingle(NonInteractionSingle):
 
     def greens_function(self):
         # Todo. 2D gf Abs Sym.
-        #gf = GreensFunction3DAbsSym2D(self.getD())
+        #gf = GreensFunction2DAbsSym(self.getD())
         return GreensFunction3DAbsSym(self.getD(),
                                           self.get_mobility_radius())
 
@@ -287,9 +287,8 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
                                       shell_id, reactiontypes, surface)
 
     def greens_function(self):
-        # Todo. 1D gf Abs Abs.
-        #gf = GreensFunction3DAbsSym1D(self.getD(), )
-        return GreensFunction3DAbsSym(self.getD(), self.get_mobility_radius())
+	# The domain is created around r0, so r0 corresponds to r=0 within the domain
+        return GreensFunction1DAbsAbs(self.getD(), self.getv(), 0.0, -self.get_mobility_radius(), self.get_mobility_radius())
 
     def create_new_shell(self, position, size, domain_id):
         # Heads up. The cylinder's *size*, not radius, is changed when 
