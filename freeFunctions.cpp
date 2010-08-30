@@ -147,7 +147,7 @@ Real p_survival_nocollision(Real t, Real r0, Real D, Real a)
 
     const unsigned int i_max(
         std::max(static_cast<unsigned int>(
-                      std::ceil(std::sqrt(Dt * M_PI * M_PI 
+                      std::ceil(std::sqrt(M_PI * M_PI 
                                   + asq * std::log(1.0 / TOLERANCE) / Dt) *
                             M_1_PI)), 2u));
 
@@ -192,7 +192,7 @@ Real dp_survival_nocollision(Real t, Real r0, Real D, Real a)
 
     const unsigned int i_max(
         std::max(static_cast<unsigned int>(
-                      std::ceil(std::sqrt(Dt * M_PI * M_PI 
+                      std::ceil(std::sqrt(M_PI * M_PI 
                                   + asq * std::log(1.0 / TOLERANCE) / Dt) *
                             M_1_PI)), 2u));
 

@@ -5,32 +5,19 @@
 
 class GreensFunction
 {
-
 public:
+    GreensFunction( const Real D )
+      : D( D ) {}
+  
+    ~GreensFunction() {}
+  
+    Real getD() const
+    {
+        return this->D;
+    }
 
-  GreensFunction( const Real D )
-    :
-    D( D )
-  {
-    ;
-  }
-
-  ~GreensFunction()
-  {
-    ;
-  }
-
-  const Real getD() const
-  {
-    return this->D;
-  }
-
-private:
-
-  const Real D;
-
+protected:
+    const Real D;
 };
-
-
 
 #endif // __GREENSFUNCTION_HPP

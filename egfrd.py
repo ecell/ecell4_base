@@ -839,14 +839,16 @@ class EGFRDSimulator(ParticleSimulatorBase):
         # 2. Pair reaction
         #
         if pair.event_type == EventType.IV_REACTION:
+            self.world.remove_particle(single1.pid_particle_pair[0])
+            self.world.remove_particle(single2.pid_particle_pair[0])
+
             if len(pair.rt.products) == 1:
-                
                 species3 = self.world.get_species(pair.rt.products[0])
 
                 # calculate new R
                 event_type = pair.event_type
                 new_com = pair.draw_new_com(pair.dt, event_type)
-                
+
                 if __debug__:
                     shell_size = pair.get_shell_size()
                     assert self.world.distance(old_com, new_com) < \
@@ -854,24 +856,21 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
                 new_com = self.world.apply_boundary(new_com)
 
-                self.world.remove_particle(single1.pid_particle_pair[0])
-                self.world.remove_particle(single2.pid_particle_pair[0])
-
                 particle = self.world.new_particle(species3.id, new_com)
-                newsingle = self.create_single(particle)
-                if __debug__:
-                    log.info('product = %s' % newsingle)
-                self.add_single_event(newsingle)
+                product = self.create_single(particle)
+                self.add_single_event(product)
 
                 self.reaction_events += 1
 
                 self.last_reaction = (pair.rt, (particle1, particle2),
                                       [particle])
-
-
+            elif len(pair.rt.products) == 0:
+                product = []
             else:
                 raise NotImplementedError('num products >= 2 not supported.')
 
+            if __debug__:
+                log.info('product = %s' % product)
             self.remove_domain(pair)
 
             return

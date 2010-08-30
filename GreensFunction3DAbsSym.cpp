@@ -211,6 +211,8 @@ static Real p_survival_F(Real t, p_survival_params const* params)
 
 Real GreensFunction3DAbsSym::drawTime(Real rnd) const
 {
+    const Real D(getD());
+
     if (rnd >= 1.0 || rnd < 0.0)
     {
         throw std::invalid_argument((boost::format("0.0 <= %g < 1.0") % rnd).str());
@@ -218,7 +220,7 @@ Real GreensFunction3DAbsSym::drawTime(Real rnd) const
 
     const Real a(geta());
 
-    if (getD() == 0.0 || a == INFINITY)
+    if (D == 0.0 || a == INFINITY)
     {
         return INFINITY;
     }

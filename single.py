@@ -108,7 +108,7 @@ class Single(object):
         if self.getD() == 0:
             dt = numpy.inf
         else:
-            dt = drawTime_wrapper(self.greens_function())
+            dt = draw_time_wrapper(self.greens_function())
 
         event_type = EventType.SINGLE_ESCAPE
         return dt, event_type
@@ -172,16 +172,29 @@ class NonInteractionSingle(Single):
         return self.shell_list[0][1].shape.radius
 
     def draw_new_position(self, dt, event_type):
-        gf = self.greens_function()
-        a = self.get_mobility_radius()
-        r = draw_displacement_wrapper(gf, dt, event_type, a)
-        displacement = self.displacement(r)
+        if event_type == EventType.SINGLE_ESCAPE:
+            # Moving this checks to the Green's functions is not a good 
+            # idea, because then you'd draw an unused random number.  
+            # The same yields for the draw_new_com and draw_new_iv.  
+            r = self.get_mobility_radius()
+        else:
+            gf = self.greens_function()
+            r = draw_r_wrapper(gf, dt, self.get_mobility_radius())
+
+        displacement = self.create_position_vector(r)
+
         if __debug__:
             scale = self.pid_particle_pair[1].radius
             if feq(length(displacement), abs(r), typical=scale) == False:
                 raise AssertionError('displacement != abs(r): %g != %g.' % 
                                      (length(displacement), abs(r)))
-        return self.pid_particle_pair[1].position + displacement
+
+        # Add displacement to shape.position, not to particle.position.  
+        # This distinction is important only in the case of an 
+        # asymmetric 1D domain (r0 != 0, or drift), since draw_r always 
+        # returns a position relative to the centre of the shell (r=0), 
+        # not relative to r0.
+        return self.shell.shape.position + displacement
 
 
 class SphericalSingle(NonInteractionSingle):
@@ -206,7 +219,7 @@ class SphericalSingle(NonInteractionSingle):
     def create_new_shell(self, position, radius, domain_id):
         return SphericalShell(domain_id, Sphere(position, radius))
 
-    def displacement(self, r):
+    def create_position_vector(self, r):
         return random_vector(r)
 
     def __str__(self):
@@ -246,7 +259,7 @@ class PlanarSurfaceSingle(NonInteractionSingle):
         return CylindricalShell(domain_id,
                                 Cylinder(position, radius, orientation, size))
 
-    def displacement(self, r):
+    def create_position_vector(self, r):
         x, y = random_vector2D(r)
         return x * self.surface.shape.unit_x + y * self.surface.shape.unit_y
 
@@ -288,8 +301,7 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
         return CylindricalShell(domain_id,
                                 Cylinder(position, radius, orientation, size))
 
-    def displacement(self, z):
-        # z can be pos or min.
+    def create_position_vector(self, z):
         return z * self.shell_list[0][1].shape.unit_z
 
     def get_mobility_radius(self):

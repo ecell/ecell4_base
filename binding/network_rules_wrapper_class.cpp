@@ -8,7 +8,6 @@
 #include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
 #include "SpeciesInfo.hpp"
-#include "binding_common.hpp"
 
 namespace binding {
 

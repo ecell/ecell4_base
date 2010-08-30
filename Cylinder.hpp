@@ -1,4 +1,3 @@
-
 #ifndef CYLINDER_HPP
 #define CYLINDER_HPP
 

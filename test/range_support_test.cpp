@@ -1,9 +1,14 @@
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #define BOOST_TEST_MODULE "range_support_test"
 
 #include <boost/test/included/unit_test.hpp>
 #include <list>
 #include <vector>
 #include "utils/range.hpp"
+#include "utils/range_support.hpp"
     
 struct fn_t {
     void operator()(int v)

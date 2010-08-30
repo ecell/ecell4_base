@@ -187,8 +187,8 @@ to_internal(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
 }
 
 template<typename T_>
-inline std::pair<typename Cylinder<T_>::position_type,
-                 typename Cylinder<T_>::length_type>
+inline std::pair<typename Plane<T_>::position_type,
+                 typename Plane<T_>::length_type>
 projected_point(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
 {
     boost::array<typename Plane<T_>::length_type, 3> x_y_z(to_internal(obj, pos));

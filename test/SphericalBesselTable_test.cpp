@@ -1,6 +1,10 @@
-#define BOOST_AUTO_TEST_MAIN
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
 
 #define BOOST_TEST_MODULE SphericalBesselTable
+
+#define BOOST_AUTO_TEST_MAIN
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/test_case_template.hpp>

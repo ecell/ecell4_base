@@ -1,6 +1,11 @@
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #include <stdexcept>
 #include <string>
 #include <boost/lexical_cast.hpp>
+#include "utils.hpp"
 
 // GSL error handler.
 void gsl_error_handler( char const* reason, char const* file, int line, int gsl_errno )

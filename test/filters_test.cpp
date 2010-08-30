@@ -1,8 +1,8 @@
-#define BOOST_TEST_MODULE "filters_test"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
+
+#define BOOST_TEST_MODULE "filters_test"
 
 #include <boost/test/included/unit_test.hpp>
 #include "MatrixSpace.hpp"

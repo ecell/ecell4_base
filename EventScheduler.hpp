@@ -1,10 +1,10 @@
+#ifndef __EVENTSCHEDULER_HPP
+#define __EVENTSCHEDULER_HPP
 //
 // written by Koichi Takahashi <shafi@e-cell.org>,
 // E-Cell Project.
 //
 
-#ifndef __EVENTSCHEDULER_HPP
-#define __EVENTSCHEDULER_HPP
 
 #include "DynamicPriorityQueue.hpp"
 #include <boost/shared_ptr.hpp>

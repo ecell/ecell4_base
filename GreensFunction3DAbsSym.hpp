@@ -3,13 +3,14 @@
 
 #include "Defs.hpp"
 #include "Logger.hpp"
+#include "GreensFunction.hpp"
 #include <ostream>
 
-class GreensFunction3DAbsSym
+class GreensFunction3DAbsSym: public GreensFunction
 {
 public:
     GreensFunction3DAbsSym(Real D, Real a)
-        : D( D), a( a) {}
+        : GreensFunction(D), a(a) {}
 
     ~GreensFunction3DAbsSym() {}
 
@@ -45,7 +46,6 @@ private:
     // 5.6: ~1e-8, 6.0: ~1e-9
     static const Real CUTOFF_H = 6.0;
 
-    const Real D;
     const Real a;
 
     static Logger& log_;

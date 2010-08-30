@@ -2,12 +2,13 @@
 #define __PAIRGREENSFUNCTION_HPP
 
 #include "Defs.hpp"
+#include "GreensFunction.hpp"
 
-class PairGreensFunction
+class PairGreensFunction: public GreensFunction
 {
 public:
     PairGreensFunction(Real D, Real kf, Real r0, Real Sigma)
-      : D(D), kf(kf), r0(r0), Sigma(Sigma) {}
+      : GreensFunction(D), kf(kf), r0(r0), Sigma(Sigma) {}
     
     virtual ~PairGreensFunction() {}
     
@@ -38,7 +39,6 @@ public:
     virtual Real drawTheta(Real rnd, Real r, Real t) const = 0;
 
 protected:
-  const Real D;
   const Real kf;
   const Real r0;
   const Real Sigma;
