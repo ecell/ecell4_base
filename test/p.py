@@ -87,7 +87,7 @@ def plot_p_leaveas(gf, t):
     parray1 = array([1 - gf.p_survival(t, r0) for t in tarray])
     semilogx(tarray , parray1, '-', label='psurvival')
 
-    gf2 = _gfrd.BasicPairGreensFunction(D, kf, sigma)
+    gf2 = _gfrd.GreensFunction3DRadInf(D, kf, sigma)
     parray2 = array([1 - gf2.p_survival(t, r0) for t in tarray])
     semilogx(tarray , parray2, '-', label='psurvival basic')
 
@@ -183,9 +183,9 @@ def p(r, t):
 
 if __name__ == '__main__':
 
-    #gf = _gfrd.FirstPassagePairGreensFunction(D, kf, sigma)
-    #gf = _gfrd.FirstPassageNoCollisionPairGreensFunction(D)
-    gf = _gfrd.FirstPassageGreensFunction(D)
+    #gf = _gfrd.GreensFunction3DRadAbs(D, kf, sigma)
+    #gf = _gfrd.GreensFunction3DAbs(D)
+    gf = _gfrd.GreensFunction3DAbsSym(D)
     gf.seta(a)
      
     #plot_p_int_r(gf, T)

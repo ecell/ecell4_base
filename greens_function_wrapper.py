@@ -1,6 +1,7 @@
 import numpy
 import myrandom
-from _greens_functions import EventType
+from _greens_functions import PairEventKind
+from constants import EventType
 from utils import *
 
 import logging

@@ -12,7 +12,6 @@ public:
     typedef typename traits_type::world_type::structure_id_type structure_id_type;
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::event_id_type event_id_type;
-    typedef typename traits_type::event_kind_type event_kind_type;
     typedef typename traits_type::time_type time_type;
 
 public:
@@ -56,22 +55,11 @@ public:
         return dt_;
     }
 
-    event_kind_type const& event_kind() const
-    {
-        return event_kind_;
-    }
-
-    event_kind_type& event_kind()
-    {
-        return event_kind_;
-    }
-
 protected:
     structure_id_type structure_id_;
     event_id_type event_id_;
     time_type last_time_;
     time_type dt_;
-    event_kind_type event_kind_;
 };
 
 #endif /* DOMAIN_HPP */

@@ -23,13 +23,12 @@ from _gfrd import (
     _random_vector
     )
 
-from _greens_functions import EventType
-
 from gfrdbase import *
 from single import *
 from pair import *
 from multi import *
 from utils import *
+from constants import *
 
 import logging
 import os

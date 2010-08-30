@@ -10,10 +10,9 @@
 
 #include "Logger.hpp"
 
-#include "PairGreensFunction.hpp"
+#include "GreensFunction3DRadAbsBase.hpp"
 
-
-class FirstPassagePairGreensFunction: public PairGreensFunction
+class GreensFunction3DRadAbs: public GreensFunction3DRadAbsBase
 {
 public:
     typedef std::vector<Real> RealVector;
@@ -34,9 +33,9 @@ private:
 
 public:
     
-    FirstPassagePairGreensFunction(Real D, Real kf, Real r0, Real Sigma, Real a);
+    GreensFunction3DRadAbs(Real D, Real kf, Real r0, Real Sigma, Real a);
     
-    ~FirstPassagePairGreensFunction();
+    virtual ~GreensFunction3DRadAbs();
 
     Real geth() const
     {
@@ -48,16 +47,16 @@ public:
         return this->a;
     }
     
-    Real drawTime(Real rnd) const;
+    virtual Real drawTime(Real rnd) const;
 
-    std::pair<Real, EventType> 
+    std::pair<Real, EventKind> 
     drawTime2(Real rnd1, Real rnd2) const;
 
-    EventType drawEventType(Real rnd, Real t) const;
+    virtual EventKind drawEventType(Real rnd, Real t) const;
+
+    virtual Real drawR(Real rnd, Real t) const;
     
-    Real drawR(Real rnd, Real t) const;
-    
-    Real drawTheta(Real rnd, Real r, Real t) const;
+    virtual Real drawTheta(Real rnd, Real r, Real t) const;
     
     Real f_alpha0(Real alpha) const;
     Real f_alpha0_aux(Real alpha) const;

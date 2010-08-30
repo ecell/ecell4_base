@@ -1,6 +1,7 @@
 from _gfrd import *
 from _greens_functions import *
 from greens_function_wrapper import *
+from constants import EventType
 import utils
 
 class Single(object):
@@ -199,7 +200,7 @@ class SphericalSingle(NonInteractionSingle):
                                       shell_id, reactiontypes, surface)
 
     def greens_function(self):
-        return FirstPassageGreensFunction(self.getD(),
+        return GreensFunction3DAbsSym(self.getD(),
                                           self.get_mobility_radius())
 
     def create_new_shell(self, position, radius, domain_id):
@@ -229,8 +230,8 @@ class PlanarSurfaceSingle(NonInteractionSingle):
 
     def greens_function(self):
         # Todo. 2D gf Abs Sym.
-        #gf = FirstPassageGreensFunction2D(self.getD())
-        return FirstPassageGreensFunction(self.getD(),
+        #gf = GreensFunction3DAbsSym2D(self.getD())
+        return GreensFunction3DAbsSym(self.getD(),
                                           self.get_mobility_radius())
 
     def create_new_shell(self, position, radius, domain_id):
@@ -270,8 +271,8 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
 
     def greens_function(self):
         # Todo. 1D gf Abs Abs.
-        #gf = FirstPassageGreensFunction1D(self.getD(), )
-        return FirstPassageGreensFunction(self.getD(), self.get_mobility_radius())
+        #gf = GreensFunction3DAbsSym1D(self.getD(), )
+        return GreensFunction3DAbsSym(self.getD(), self.get_mobility_radius())
 
     def create_new_shell(self, position, size, domain_id):
         # Heads up. The cylinder's *size*, not radius, is changed when 

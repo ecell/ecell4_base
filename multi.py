@@ -6,7 +6,7 @@ from utils import *
 import itertools
 
 import _gfrd
-from _greens_functions import EventType
+from constants import EventType
 
 import os
 

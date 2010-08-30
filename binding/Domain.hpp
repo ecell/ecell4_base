@@ -36,16 +36,6 @@ inline boost::python::objects::class_base register_domain_class(char const* name
                 &peer::util::reference_accessor_wrapper<
                     impl_type, typename impl_type::time_type,
                     &impl_type::last_time, &impl_type::last_time>::set))
-        .add_property("event_kind", 
-            make_function(
-                &peer::util::reference_accessor_wrapper<
-                    impl_type, typename impl_type::event_kind_type,
-                    &impl_type::event_kind, &impl_type::event_kind>::get,
-                return_value_policy<return_by_value>()),
-            make_function(
-                &peer::util::reference_accessor_wrapper<
-                    impl_type, typename impl_type::event_kind_type,
-                    &impl_type::event_kind, &impl_type::event_kind>::set))
         ;
 }
 

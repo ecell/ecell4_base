@@ -3,32 +3,13 @@
 
 #include "Defs.hpp"
 
-enum EventType
-{
-    SINGLE_REACTION = 10,
-    SINGLE_ESCAPE = 11,
-
-    COM_ESCAPE = 11, // Same as SINGLE_ESCAPE
-
-    IV_EVENT = 12,
-    IV_ESCAPE = 13,
-    IV_REACTION = 14,
-
-    IV_INTERACTION = 15,
-
-    BURST = 16,
-
-    MULTI_ESCAPE = 17,
-    MULTI_REACTION = 18
-};
-
 class PairGreensFunction
 {
 public:
     PairGreensFunction(Real D, Real kf, Real r0, Real Sigma)
       : D(D), kf(kf), r0(r0), Sigma(Sigma) {}
     
-    ~PairGreensFunction() {}
+    virtual ~PairGreensFunction() {}
     
     Real getD() const
     {
@@ -49,6 +30,12 @@ public:
     {
         return this->r0;
     }
+
+    virtual Real drawTime(Real rnd) const = 0;
+    
+    virtual Real drawR(Real rnd, Real t) const = 0;
+    
+    virtual Real drawTheta(Real rnd, Real r, Real t) const = 0;
 
 protected:
   const Real D;

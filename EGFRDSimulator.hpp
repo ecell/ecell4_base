@@ -35,7 +35,6 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
     typedef std::pair<const shell_id_type, spherical_shell_type> spherical_shell_id_pair;
     typedef std::pair<const shell_id_type, cylindrical_shell_type> cylindrical_shell_id_pair;
     typedef int event_id_type;
-    typedef EventType event_kind_type;
 };
 
 template<typename Ttraits_>

@@ -2,16 +2,16 @@
 #define __FIRSTPASSAGEGREENSFUNCTION_HPP
 
 #include "Defs.hpp"
-
 #include "Logger.hpp"
+#include <ostream>
 
-class FirstPassageGreensFunction
+class GreensFunction3DAbsSym
 {
 public:
-    FirstPassageGreensFunction(Real D, Real a)
+    GreensFunction3DAbsSym(Real D, Real a)
         : D( D), a( a) {}
 
-    ~FirstPassageGreensFunction() {}
+    ~GreensFunction3DAbsSym() {}
 
     Real getD() const
     {
@@ -34,8 +34,6 @@ public:
 
     Real p_r_fourier(Real r, Real t) const;
 
-    std::string dump() const;
-
 private:
     static Real ellipticTheta4Zero(Real q);
 
@@ -53,6 +51,15 @@ private:
     static Logger& log_;
 };
 
-
+template<typename Tstrm, typename Ttraits>
+inline std::basic_ostream<Tstrm, Ttraits>&
+operator <<(std::basic_ostream<Tstrm, Ttraits>& strm,
+            GreensFunction3DAbsSym const& gf)
+{
+    strm << "GreensFunction3DAbsSym("
+         << "D=" << gf.getD() << ", "
+         << "a=" << gf.geta() << ")";
+    return strm;
+}
 
 #endif // __PAIRGREENSFUNCTION_HPP

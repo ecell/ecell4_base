@@ -17,9 +17,7 @@
    kf == sigma == 0.
 */
 
-class FreePairGreensFunction
-    :
-    public PairGreensFunction
+class GreensFunction3D: public PairGreensFunction
 {
     
 private:
@@ -30,24 +28,17 @@ private:
     
 public:
     
-    FreePairGreensFunction(Real D, Real r0)
+    GreensFunction3D(Real D, Real r0)
         : PairGreensFunction(D, 0.0, r0, 0.0)
     {
         ; // do nothing
     }
     
     
-    ~FreePairGreensFunction()
-    {
-        ; // do nothing
-    }
+    virtual ~GreensFunction3D();
     
-    
-    Real drawTime(Real rnd, Real maxt) const
-    {
-        return INFINITY;
-    }
-    
+    virtual Real drawTime(Real rnd) const;
+
     Real drawR(Real rnd, Real t) const;
     
     Real drawTheta(Real rnd, Real r, Real t) const;

@@ -9,9 +9,9 @@
 #include <gsl/gsl_roots.h>
 
 #include "Logger.hpp"
-#include "PairGreensFunction.hpp"
+#include "GreensFunction3DRadAbsBase.hpp"
 
-class FirstPassageNoCollisionPairGreensFunction: public PairGreensFunction
+class GreensFunction3DAbs: public GreensFunction3DRadAbsBase
 {
 public:
     typedef std::vector<Real> RealVector;
@@ -32,22 +32,22 @@ private:
 
 public:
     
-    FirstPassageNoCollisionPairGreensFunction(Real D, Real r0, Real a); 
+    GreensFunction3DAbs(Real D, Real r0, Real a); 
     
-    ~FirstPassageNoCollisionPairGreensFunction();
+    virtual ~GreensFunction3DAbs();
 
     Real geta() const
     {
         return this->a;
     }
 
-    Real drawTime(Real rnd) const;
+    virtual Real drawTime(Real rnd) const;
 
-    EventType drawEventType(Real rnd, Real t) const;
+    virtual EventKind drawEventType(Real rnd, Real t) const;
     
-    Real drawR(Real rnd, Real t) const;
+    virtual Real drawR(Real rnd, Real t) const;
     
-    Real drawTheta(Real rnd, Real r, Real t) const;
+    virtual Real drawTheta(Real rnd, Real r, Real t) const;
     
     Real p_survival(Real t) const;
 

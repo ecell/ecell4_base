@@ -8,6 +8,7 @@
 #include <exception>
 #include <vector>
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_trig.h>
 #include <gsl/gsl_sum.h>
@@ -18,7 +19,7 @@
 #include <gsl/gsl_roots.h>
 
 #include "findRoot.hpp"
-#include "FirstPassageGreensFunction.hpp"
+#include "GreensFunction3DAbsSym.hpp"
 
 /**
   EllipticTheta[4,0,q]
@@ -26,7 +27,7 @@
   Efficiently calculate EllipticTheta[4,0,q] for q < 1.0.
 */
 
-Real FirstPassageGreensFunction::ellipticTheta4Zero(Real q)
+Real GreensFunction3DAbsSym::ellipticTheta4Zero(Real q)
 {
     if (fabs(q) > 1.0)
     {
@@ -72,7 +73,7 @@ Real FirstPassageGreensFunction::ellipticTheta4Zero(Real q)
 }
 
 
-Real FirstPassageGreensFunction::p_survival(Real t) const
+Real GreensFunction3DAbsSym::p_survival(Real t) const
 {
     const Real D(getD());
     const Real a(geta());
@@ -83,7 +84,7 @@ Real FirstPassageGreensFunction::p_survival(Real t) const
     return 1.0 - ellipticTheta4Zero(exp(q));
 } 
 
-Real FirstPassageGreensFunction::p_int_r_free(Real r, Real t) const
+Real GreensFunction3DAbsSym::p_int_r_free(Real r, Real t) const
 {
     const Real D(getD());
     const Real Dt(D * t);
@@ -94,7 +95,7 @@ Real FirstPassageGreensFunction::p_int_r_free(Real r, Real t) const
         - r * exp(- r * r / (4.0 * Dt)) / (sqrtPI * sqrtDt);
 }
 
-Real FirstPassageGreensFunction::p_int_r(Real r, Real t) const
+Real GreensFunction3DAbsSym::p_int_r(Real r, Real t) const
 {
     Real value(0.0);
 
@@ -148,7 +149,7 @@ Real FirstPassageGreensFunction::p_int_r(Real r, Real t) const
     return value * factor;
 } 
 
-Real FirstPassageGreensFunction::p_r_fourier(Real r, Real t) const 
+Real GreensFunction3DAbsSym::p_r_fourier(Real r, Real t) const 
 {
     Real value(0.0);
 
@@ -198,7 +199,7 @@ Real FirstPassageGreensFunction::p_r_fourier(Real r, Real t) const
 
 struct p_survival_params
 {
-    const FirstPassageGreensFunction* const gf;
+    const GreensFunction3DAbsSym* const gf;
     const Real rnd;
 };
 
@@ -208,7 +209,7 @@ static Real p_survival_F(Real t, p_survival_params const* params)
 }
 
 
-Real FirstPassageGreensFunction::drawTime(Real rnd) const
+Real GreensFunction3DAbsSym::drawTime(Real rnd) const
 {
     if (rnd >= 1.0 || rnd < 0.0)
     {
@@ -259,7 +260,8 @@ Real FirstPassageGreensFunction::drawTime(Real rnd) const
             {
                 throw std::runtime_error(
                     (boost::format("couldn't adjust high. F(%g) = %g; %s") %
-                       high % GSL_FN_EVAL(&F, high) % dump()).str());
+                       high % GSL_FN_EVAL(&F, high) %
+                       boost::lexical_cast<std::string>(*this)).str());
             }
             high *= 10;
         }
@@ -282,7 +284,8 @@ Real FirstPassageGreensFunction::drawTime(Real rnd) const
                 fabs(low_value - low_value_prev) < CUTOFF)
             {
                 log_.info("couldn't adjust high. F(%g) = %g; %s",
-                          low, GSL_FN_EVAL(&F, low), dump().c_str());
+                          low, GSL_FN_EVAL(&F, low),
+                          boost::lexical_cast<std::string>(*this).c_str());
                 log_.info("returning low (%g)", low);
                 return low;
             }
@@ -296,7 +299,7 @@ Real FirstPassageGreensFunction::drawTime(Real rnd) const
     gsl_root_fsolver* solver(gsl_root_fsolver_alloc(solverType));
 
     const Real t(findRoot(F, solver, low, high, 1e-18, 1e-12,
-                            "FirstPassageGreensFunction::drawTime"));
+                            "GreensFunction3DAbsSym::drawTime"));
 
     gsl_root_fsolver_free(solver);
 
@@ -305,7 +308,7 @@ Real FirstPassageGreensFunction::drawTime(Real rnd) const
 
 struct p_r_params
 {
-    const FirstPassageGreensFunction* const gf;
+    const GreensFunction3DAbsSym* const gf;
     const Real t;
     const Real target;
 };
@@ -321,7 +324,7 @@ static Real p_r_F(Real r, p_r_params const* params)
     return params->gf->p_int_r(r, params->t) - params->target;
 }
 
-Real FirstPassageGreensFunction::drawR(Real rnd, Real t) const 
+Real GreensFunction3DAbsSym::drawR(Real rnd, Real t) const 
 {
     if (rnd >= 1.0 || rnd < 0.0)
     {
@@ -386,21 +389,12 @@ Real FirstPassageGreensFunction::drawR(Real rnd, Real t) const
     gsl_root_fsolver* solver(gsl_root_fsolver_alloc(solverType));
 
     const Real r(findRoot(F, solver, low, high, 1e-18, 1e-12,
-                            "FirstPassageGreensFunction::drawR"));
+                            "GreensFunction3DAbsSym::drawR"));
   
     gsl_root_fsolver_free(solver);
 
     return r;
 }
 
-
-
-std::string FirstPassageGreensFunction::dump() const
-{
-    std::ostringstream ss;
-    ss << "D = " << this->getD() << ", a = " << this->geta() << std::endl;
-    return ss.str();
-}
-
-Logger& FirstPassageGreensFunction::log_(
-        Logger::get_logger("FirstPassageGreensFunction"));
+Logger& GreensFunction3DAbsSym::log_(
+        Logger::get_logger("GreensFunction3DAbsSym"));
