@@ -73,14 +73,10 @@ struct SpeciesInfo
 
     SpeciesInfo() {}
 
-    SpeciesInfo(identifier_type const& id, D_type const& D = 0., v_type const& v = 0.,
-                length_type const& r = 0., structure_id_type const& s = "") 
+    SpeciesInfo(identifier_type const& id, D_type const& D = 0., 
+                length_type const& r = 0., structure_id_type const& s = "", v_type const& v = 0.) 
         : id_(id), diffusion_coef_(D), drift_velocity_(v), radius_(r), structure_id_(s) {}
   
-    SpeciesInfo(identifier_type const& id, D_type const& D = 0.,
-                length_type const& r = 0., structure_id_type const& s = "") 
-        : id_(id), diffusion_coef_(D), drift_velocity_(0.), radius_(r), structure_id_(s) {}
-
 
 private:
     identifier_type id_;
