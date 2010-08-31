@@ -300,7 +300,7 @@ GreensFunction1DAbsAbs::leavea(Real t) const
 // and right (z=a) boundary. Although not completely accurate, it returns an 
 // IV_ESCAPE for an escape through the right boundary and a IV_REACTION for an 
 // escape through the left boundary.
-EventType
+GreensFunction1DAbsAbs::EventKind
 GreensFunction1DAbsAbs::drawEventType( Real rnd, Real t ) const
 {
     THROW_UNLESS( std::invalid_argument, rnd < 1.0 && rnd >= 0.0 );

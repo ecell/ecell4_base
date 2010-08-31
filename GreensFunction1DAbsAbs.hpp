@@ -43,6 +43,13 @@ private:
     static const int MIN_TERMS = 20;
 
 public:
+    enum EventKind
+    {
+        IV_ESCAPE,
+        IV_REACTION
+    };
+
+public:
     GreensFunction1DAbsAbs(Real D, Real r0, Real sigma, Real a)
 	: GreensFunction(D), v(0.0), sigma(sigma), a(a), r0(r0), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
     {
@@ -139,7 +146,7 @@ public:
 
     // Determines based on the flux ratios if the particle left the left 
     // or right boundary
-    EventType drawEventType( Real rnd, Real t ) const;
+    EventKind drawEventType( Real rnd, Real t ) const;
 
     // Calculates the probability of finding the particle inside the 
     // domain at time t so, the survival probability

@@ -40,6 +40,12 @@ private:
     // The minimum number of terms
     static const int MIN_TERMS = 20;
 
+public:
+    enum EventKind
+    {
+        IV_ESCAPE,
+        IV_REACTION
+    };
 
 public:
     GreensFunction1DRadAbs(Real D, Real k, Real r0, Real sigma, Real a)
@@ -134,7 +140,7 @@ public:
     // Determine which event has occured, an escape or a reaction. Based 
     // on the fluxes through the boundaries at the given time. Beware: if 
     // t is not a first passage time you still get an answer!
-    EventType drawEventType( Real rnd, Real t ) const;
+    EventKind drawEventType( Real rnd, Real t ) const;
 
     // Draws the first passage time from the propensity function
     Real drawTime (Real rnd) const;
