@@ -6,8 +6,8 @@
 #include <boost/multi_array.hpp>
 #include <cmath>
 
-// This file is needed temporarily by	GreensFunction1DAbsAbs.cpp
-// and					GreensFunction1DRadAbs.cpp
+// This file is needed temporarily by   GreensFunction1DAbsAbs.cpp
+// and                                  GreensFunction1DRadAbs.cpp
 //
 // At some point it should be taken out of the new code version.
 // This requires some major refurbishment of the above functions, so postponed for later.
@@ -39,11 +39,11 @@ inline void sincos( double x, double* s, double* c )
 #define XSTR( S ) STR( S )
 #define STR( S ) #S
 
-#define THROW_UNLESS( CLASS, EXPRESSION )	\
+#define THROW_UNLESS( CLASS, EXPRESSION )       \
     if( ! ( EXPRESSION ) )\
     {\
-	throw CLASS( "Check [" + std::string( STR( EXPRESSION ) ) +\
-		     "] failed." );\
+        throw CLASS( "Check [" + std::string( STR( EXPRESSION ) ) +\
+                     "] failed." );\
     }\
 
 

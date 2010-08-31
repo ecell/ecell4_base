@@ -28,7 +28,7 @@ struct Particle
     Particle(species_id_type const& species_id, shape_type const& shape,
              D_type const& D)
         : shape_(shape), species_id_(species_id), D_(D), v_(0.){}
-	
+
     Particle(species_id_type const& species_id, shape_type const& shape,
              D_type const& D, v_type const& v)
         : shape_(shape), species_id_(species_id), D_(D), v_(v) {}

@@ -16,7 +16,7 @@ inline boost::python::objects::class_base register_species_info_class(
     return class_<impl_type>("SpeciesInfo",
             init<>() )
         .def(init<typename impl_type::identifier_type, typename impl_type::length_type, typename impl_type::D_type, typename impl_type::structure_id_type>())
-	.def(init<typename impl_type::identifier_type, typename impl_type::length_type, typename impl_type::D_type, typename impl_type::v_type, typename impl_type::structure_id_type>())
+        .def(init<typename impl_type::identifier_type, typename impl_type::length_type, typename impl_type::D_type, typename impl_type::v_type, typename impl_type::structure_id_type>())
         .add_property("id",
             make_function(&impl_type::id,
                 return_value_policy<return_by_value>()))
@@ -53,7 +53,7 @@ inline boost::python::objects::class_base register_species_info_class(
                 impl_type, typename impl_type::D_type,
                 &impl_type::D,
                 &impl_type::D>::set)
-	 .add_property("v",
+         .add_property("v",
             make_function(
                 &peer::util::reference_accessor_wrapper<
                     impl_type, typename impl_type::v_type,

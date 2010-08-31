@@ -287,7 +287,7 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
                                       shell_id, reactiontypes, surface)
 
     def greens_function(self):
-	# The domain is created around r0, so r0 corresponds to r=0 within the domain
+        # The domain is created around r0, so r0 corresponds to r=0 within the domain
         return GreensFunction1DAbsAbs(self.getD(), self.getv(), 0.0, -self.get_mobility_radius(), self.get_mobility_radius())
 
     def create_new_shell(self, position, size, domain_id):

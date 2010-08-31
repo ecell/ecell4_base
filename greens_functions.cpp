@@ -32,45 +32,45 @@ BOOST_PYTHON_MODULE( _greens_functions )
     def( "p_reaction_irr_t_inf", __p_reaction_irr_t_inf );
 
     
-    class_<GreensFunction1DAbsAbs>( "GreensFunction1DAbsAbs",
-					init<Real, Real, Real, Real>() )
-	.def( init<Real, Real, Real, Real, Real>())
-	.def( "getD", &GreensFunction1DAbsAbs::getD )
-	.def( "getv", &GreensFunction1DAbsAbs::getv )
-	.def( "getsigma", &GreensFunction1DAbsAbs::getsigma )
-	.def( "seta", &GreensFunction1DAbsAbs::seta )
-	.def( "geta", &GreensFunction1DAbsAbs::geta )
-	.def( "setr0", &GreensFunction1DAbsAbs::setr0 )
-	.def( "getr0", &GreensFunction1DAbsAbs::getr0 )
-	.def( "drawTime", &GreensFunction1DAbsAbs::drawTime )
-	.def( "drawR", &GreensFunction1DAbsAbs::drawR )
-	.def( "drawEventType", &GreensFunction1DAbsAbs::drawEventType )
-	.def( "leaves", &GreensFunction1DAbsAbs::leaves )
-	.def( "leavea", &GreensFunction1DAbsAbs::leavea )
-	.def( "p_survival", &GreensFunction1DAbsAbs::p_survival )
-	.def( "calcpcum", &GreensFunction1DAbsAbs::calcpcum )
-	;
+    class_<GreensFunction1DAbsAbs>("GreensFunction1DAbsAbs",
+                                   init<Real, Real, Real, Real>() )
+        .def( init<Real, Real, Real, Real, Real>())
+        .def( "getD", &GreensFunction1DAbsAbs::getD )
+        .def( "getv", &GreensFunction1DAbsAbs::getv )
+        .def( "getsigma", &GreensFunction1DAbsAbs::getsigma )
+        .def( "seta", &GreensFunction1DAbsAbs::seta )
+        .def( "geta", &GreensFunction1DAbsAbs::geta )
+        .def( "setr0", &GreensFunction1DAbsAbs::setr0 )
+        .def( "getr0", &GreensFunction1DAbsAbs::getr0 )
+        .def( "drawTime", &GreensFunction1DAbsAbs::drawTime )
+        .def( "drawR", &GreensFunction1DAbsAbs::drawR )
+        .def( "drawEventType", &GreensFunction1DAbsAbs::drawEventType )
+        .def( "leaves", &GreensFunction1DAbsAbs::leaves )
+        .def( "leavea", &GreensFunction1DAbsAbs::leavea )
+        .def( "p_survival", &GreensFunction1DAbsAbs::p_survival )
+        .def( "calcpcum", &GreensFunction1DAbsAbs::calcpcum )
+        ;
 
-    class_<GreensFunction1DRadAbs>( "GreensFunction1DRadAbs",
-					init<Real, Real, Real, Real, Real>() )
-	.def( init<Real, Real, Real, Real, Real, Real>())
-	.def( "getk", &GreensFunction1DRadAbs::getk )
-	.def( "getD", &GreensFunction1DRadAbs::getD )
-	.def( "getv", &GreensFunction1DRadAbs::getv )
-	.def( "getsigma", &GreensFunction1DRadAbs::getsigma )
-	.def( "seta", &GreensFunction1DRadAbs::seta )
-	.def( "geta", &GreensFunction1DRadAbs::geta )
-	.def( "setr0", &GreensFunction1DRadAbs::setr0 )
-	.def( "getr0", &GreensFunction1DRadAbs::getr0 )
-	.def( "drawTime", &GreensFunction1DRadAbs::drawTime )
-	.def( "drawR", &GreensFunction1DRadAbs::drawR )
-	.def( "drawEventType", &GreensFunction1DRadAbs::drawEventType )
-	.def( "flux_tot", &GreensFunction1DRadAbs::flux_tot )
-	.def( "flux_rad", &GreensFunction1DRadAbs::flux_rad )
-	.def( "fluxRatioRadTot", &GreensFunction1DRadAbs::fluxRatioRadTot )
-	.def( "p_survival", &GreensFunction1DRadAbs::p_survival )
-	.def( "calcpcum", &GreensFunction1DRadAbs::calcpcum )
-	;
+    class_<GreensFunction1DRadAbs>("GreensFunction1DRadAbs",
+                                   init<Real, Real, Real, Real, Real>() )
+        .def( init<Real, Real, Real, Real, Real, Real>())
+        .def( "getk", &GreensFunction1DRadAbs::getk )
+        .def( "getD", &GreensFunction1DRadAbs::getD )
+        .def( "getv", &GreensFunction1DRadAbs::getv )
+        .def( "getsigma", &GreensFunction1DRadAbs::getsigma )
+        .def( "seta", &GreensFunction1DRadAbs::seta )
+        .def( "geta", &GreensFunction1DRadAbs::geta )
+        .def( "setr0", &GreensFunction1DRadAbs::setr0 )
+        .def( "getr0", &GreensFunction1DRadAbs::getr0 )
+        .def( "drawTime", &GreensFunction1DRadAbs::drawTime )
+        .def( "drawR", &GreensFunction1DRadAbs::drawR )
+        .def( "drawEventType", &GreensFunction1DRadAbs::drawEventType )
+        .def( "flux_tot", &GreensFunction1DRadAbs::flux_tot )
+        .def( "flux_rad", &GreensFunction1DRadAbs::flux_rad )
+        .def( "fluxRatioRadTot", &GreensFunction1DRadAbs::fluxRatioRadTot )
+        .def( "p_survival", &GreensFunction1DRadAbs::p_survival )
+        .def( "calcpcum", &GreensFunction1DRadAbs::calcpcum )
+        ;
     
     class_<GreensFunction3DSym>("GreensFunction3DSym", init<Real>())
         .def( "getD", &GreensFunction3DSym::getD )
@@ -82,7 +82,7 @@ BOOST_PYTHON_MODULE( _greens_functions )
         ;
 
     class_<GreensFunction3DAbsSym>("GreensFunction3DAbsSym",
-                                       init<Real, Real>())
+                                   init<Real, Real>())
         .def( "getD", &GreensFunction3DAbsSym::getD )
         .def( "geta", &GreensFunction3DAbsSym::geta )
         .def( "drawTime", &GreensFunction3DAbsSym::drawTime )
@@ -94,7 +94,7 @@ BOOST_PYTHON_MODULE( _greens_functions )
         ;
 
     class_<GreensFunction3DRadInf>("GreensFunction3DRadInf",
-                                    init<Real, Real, Real, Real>())
+                                   init<Real, Real, Real, Real>())
         .def( "getD", &GreensFunction3DRadInf::getD )
         .def( "getkf", &GreensFunction3DRadInf::getkf )
         .def( "getSigma", &GreensFunction3DRadInf::getSigma )
@@ -136,8 +136,8 @@ BOOST_PYTHON_MODULE( _greens_functions )
         .value( "IV_REACTION", GreensFunction3DRadAbs::IV_REACTION )
         ;
 
-    class_<GreensFunction3DRadAbs>( "GreensFunction3DRadAbs",
-                                            init<Real, Real, Real, Real, Real>() )
+    class_<GreensFunction3DRadAbs>("GreensFunction3DRadAbs",
+                                   init<Real, Real, Real, Real, Real>() )
         .def( "geta", &GreensFunction3DRadAbs::geta )
         .def( "getD", &GreensFunction3DRadAbs::getD )
         .def( "getkf", &GreensFunction3DRadInf::getkf )
@@ -177,8 +177,8 @@ BOOST_PYTHON_MODULE( _greens_functions )
 //        .def( "alpha_i", &GreensFunction3DRadAbs::alpha_i )
         ;
 
-    class_<GreensFunction3DAbs>
-        ( "GreensFunction3DAbs", init<Real, Real, Real>() ) 
+    class_<GreensFunction3DAbs>("GreensFunction3DAbs",
+                                init<Real, Real, Real>()) 
         .def( "geta", &GreensFunction3DAbs::geta )
         .def( "getD", &GreensFunction3DAbs::getD )
         .def( "drawTime", &GreensFunction3DAbs::drawTime )

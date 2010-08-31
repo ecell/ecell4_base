@@ -84,9 +84,10 @@ class Pair(object):
     v_tot = property(get_v_tot)
 
     def get_v_R(self):
-        return ( self.single1.pid_particle_pair[1].v * self.single2.pid_particle_pair[1].D +
-		 self.single2.pid_particle_pair[1].v * self.single1.pid_particle_pair[1].D )
-		 / self.D_tot
+        return (self.single1.pid_particle_pair[1].v * 
+                self.single2.pid_particle_pair[1].D +
+                self.single2.pid_particle_pair[1].v *
+                self.single1.pid_particle_pair[1].D) / self.D_tot
     v_R = property(get_v_R)
 
     def getSigma(self):
