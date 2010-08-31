@@ -81,7 +81,7 @@ def fleq(a, b, typical=1, tolerance=TOLERANCE):
     # Try both 'less than' and equality.
     return diff > barrier or abs(diff) < barrier
 
-def Mtom3(rate):
+def per_M_to_m3(rate):
     return rate / (1000 * N_A)
 
 def mean_arrival_time(r, D):

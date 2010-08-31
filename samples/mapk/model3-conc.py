@@ -104,8 +104,8 @@ s.throw_in_particles(KK, N_KK, box1)
 s.throw_in_particles(P, N_P, box1)
 
 # print kD
-# print k_a(Mtom3(0.02e9), kD)
-# print k_a(Mtom3(0.032e9), kD)
+# print k_a(per_M_to_m3(0.02e9), kD)
+# print k_a(per_M_to_m3(0.032e9), kD)
 # sys.exit(0)
 
 #end_time = 5
@@ -118,11 +118,11 @@ while 1:
         break
 
 s.reset()
-k1 = k_a(Mtom3(0.02e9), kD)
-k2 = k_d(1.0, Mtom3(0.02e9), kD)
+k1 = k_a(per_M_to_m3(0.02e9), kD)
+k2 = k_d(1.0, per_M_to_m3(0.02e9), kD)
 k3 = 1.5
-k4 = k_a(Mtom3(0.032e9), kD)
-k5 = k_d(1.0, Mtom3(0.032e9), kD)
+k4 = k_a(per_M_to_m3(0.032e9), kD)
+k5 = k_d(1.0, per_M_to_m3(0.032e9), kD)
 k6 = 15.0
 
 r1 = create_binding_reaction_rule(K, KK, K_KK, k1)

@@ -97,7 +97,7 @@ Dtot = D1 + D2
 
 kD = k_D(Dtot, sigma)
 #ka = k_a(kon, kD)
-#kon = Mtom3(0.03e9)
+#kon = per_M_to_m3(0.03e9)
 
 ka = 7e-19
 kon = k_on(ka, kD)
