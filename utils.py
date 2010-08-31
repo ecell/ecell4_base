@@ -82,7 +82,30 @@ def fleq(a, b, typical=1, tolerance=TOLERANCE):
     return diff > barrier or abs(diff) < barrier
 
 def per_M_to_m3(rate):
+    """Convert a reaction rate from 'per molar per second' to 'meters 
+    cubed per second'.
+
+    """
     return rate / (1000 * N_A)
+
+def per_microM_to_m3(rate):
+    """Convert a reaction rate from 'per micromolar per second' to 
+    'meters cubed per second'.
+
+    """
+    return per_M_to_m3(rate * 1e6)
+
+def M_to_per_m3(molar):
+    """Convert a concentration from 'molar' to 'per meters cubed'.
+
+    """
+    return molar * (1000 * N_A)
+
+def microM_to_per_m3(micromolar):
+    """Convert a concentration from 'micromolar' to 'per meters cubed'.
+
+    """
+    return M_to_per_m3(micromolar / 1e6) 
 
 def mean_arrival_time(r, D):
     return (r * r) / (6.0 * D)
