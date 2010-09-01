@@ -258,7 +258,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 self.zero_steps = 0
 
     def create_single(self, pid_particle_pair):
-        rt = self.network_rules.query_reaction_rule(pid_particle_pair[1].sid)
+        rts = self.network_rules.query_reaction_rule(pid_particle_pair[1].sid)
         domain_id = self.domain_id_generator()
         shell_id = self.shell_id_generator()
 
@@ -271,7 +271,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         # SphericalSingle, PlanarSurfaceSingle, or 
         # CylindricalSurfaceSingle.
         single = create_default_single(domain_id, pid_particle_pair, 
-                                       shell_id, rt, surface)
+                                       shell_id, rts, surface)
 
         single.initialize(self.t)
         self.move_shell(single.shell_id_shell_pair)
@@ -286,9 +286,18 @@ class EGFRDSimulator(ParticleSimulatorBase):
         assert single1.dt == 0.0
         assert single2.dt == 0.0
 
-        rt = self.network_rules.query_reaction_rule(
+        # Select 1 reaction type out of all possible reaction types.
+        rts = self.network_rules.query_reaction_rule(
                 single1.pid_particle_pair[1].sid,
-                single2.pid_particle_pair[1].sid)[0]
+                single2.pid_particle_pair[1].sid)
+        k_array = numpy.add.accumulate([rt.k for rt in rts])
+        k_max = k_array[-1]
+        rnd = myrandom.uniform()
+        i = numpy.searchsorted(k_array, rnd * k_max)
+        rt = rts[i]
+        # The probability for this reaction to happen is proportional to 
+        # the sum of the rates of all the possible reaction types. 
+        rt.ktot = k_max
 
         domain_id = self.domain_id_generator()
         shell_id = self.shell_id_generator()

@@ -293,7 +293,7 @@ class SphericalPair(Pair):
     def iv_greens_function(self, r0):
         # Green's function for interparticle vector inside absorbing 
         # sphere.  This exact solution is used for drawing times.
-        return GreensFunction3DRadAbs(self.D_tot, self.rt.k, r0,
+        return GreensFunction3DRadAbs(self.D_tot, self.rt.ktot, r0,
                                               self.sigma, self.a_r)
 
     def create_new_shell(self, position, radius, domain_id):
@@ -318,7 +318,7 @@ class SphericalPair(Pair):
                 # near sigma; use GreensFunction3DRadInf
                 if __debug__:
                     log.debug('GF: only sigma')
-                return GreensFunction3DRadInf(self.D_tot, self.rt.k, r0,
+                return GreensFunction3DRadInf(self.D_tot, self.rt.ktot, r0,
                                                self.sigma)
         else:
             if distance_from_shell < threshold_distance:
@@ -386,7 +386,7 @@ class PlanarSurfacePair(Pair):
     def iv_greens_function(self, r0):
         # Todo. 2D gf Rad Abs.
         # This exact solution is used for drawing times.
-        return GreensFunction3DRadAbs(self.D_tot, self.rt.k, r0,
+        return GreensFunction3DRadAbs(self.D_tot, self.rt.ktot, r0,
                                               self.sigma, self.a_r)
 
     def create_new_shell(self, position, radius, domain_id):
@@ -445,7 +445,7 @@ class CylindricalSurfacePair(Pair):
         return GreensFunction1DAbsAbs(self.D_R, self.v_R, 0.0, -self.a_R, self.a_R)
 
     def iv_greens_function(self, r0):
-        return GreensFunction1DRadAbs(self.D_tot, self.v_r, self.rt.k, r0, self.sigma, self.a_r)
+        return GreensFunction1DRadAbs(self.D_tot, self.v_r, self.rt.ktot, r0, self.sigma, self.a_r)
 
     def create_new_shell(self, position, size, domain_id):
         # The radius of a rod is not more than it has to be (namely the 
