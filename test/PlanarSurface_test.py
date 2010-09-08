@@ -4,6 +4,7 @@ import unittest
 from egfrd import *
 import _gfrd
 import myrandom
+import model
 
 class PlanarSurfaceTestCase(unittest.TestCase):
     def setUp(self):
@@ -18,12 +19,12 @@ class PlanarSurfaceTestCase(unittest.TestCase):
         self.r4 = 4.2
 
     def membrane_at_position(self, x, y):
-        return create_planar_surface('m1',
-                                     [x, y, 5],
-                                     [1, 0, 0],
-                                     [0, 1, 0],
-                                     self.L,
-                                     self.L)
+        return model.create_planar_surface('m1',
+                                           [x, y, 5],
+                                           [1, 0, 0],
+                                           [0, 1, 0],
+                                           self.L,
+                                           self.L)
 
     def test_random_positions(self):
         # For a plane in x-y, positions x and y should not matter.

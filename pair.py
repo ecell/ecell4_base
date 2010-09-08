@@ -3,6 +3,13 @@ from constants import EventType
 from _greens_functions import *
 from greens_function_wrapper import *
 
+__all__ = [
+    'CylindricalSurfacePair',
+    'PlanarSurfacePair',
+    'SphericalPair',
+    'Pair',
+    ]
+
 class Pair(object):
     """There are 3 types of pairs:
         * SphericalPair

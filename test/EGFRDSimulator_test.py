@@ -31,7 +31,7 @@ class EGFRDSimulatorTestCase(unittest.TestCase):
         self.m.add_species_type(self.B)
         self.m.set_all_repulsive()
         self.w = gfrdbase.create_world(self.m)
-        self.nrw = NetworkRulesWrapper(self.m.network_rules)
+        self.nrw = _gfrd.NetworkRulesWrapper(self.m.network_rules)
         self.s = EGFRDSimulator(self.w, myrandom.rng, self.nrw)
 
     def tearDown(self):
@@ -185,12 +185,12 @@ class EGFRDSimulatorMembraneTestCase(EGFRDSimulatorTestCaseBase):
     def setUp(self):
         self.setUpBase()
 
-        m1 = create_planar_surface('m1',
-                                   [0, 0, 0],
-                                   [1, 0, 0],
-                                   [0, 1, 0],
-                                   self.L,
-                                   self.L)
+        m1 = model.create_planar_surface('m1',
+                                         [0, 0, 0],
+                                         [1, 0, 0],
+                                         [0, 1, 0],
+                                         self.L,
+                                         self.L)
 
         self.m.add_structure(m1)
 
@@ -210,11 +210,11 @@ class EGFRDSimulatorDnaTestCase(EGFRDSimulatorTestCaseBase):
         self.setUpBase()
 
         radius = self.radius
-        d = create_cylindrical_surface('d',
-                                       [0, 0, 0],
-                                       radius,
-                                       [0, 1, 0],
-                                       self.L)
+        d = model.create_cylindrical_surface('d',
+                                             [0, 0, 0],
+                                             radius,
+                                             [0, 1, 0],
+                                             self.L)
 
         self.m.add_structure(d)
 

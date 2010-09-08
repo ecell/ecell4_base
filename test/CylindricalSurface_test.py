@@ -3,6 +3,7 @@
 import unittest
 from egfrd import *
 import _gfrd
+import model
 import myrandom
 
 class CylindricalSurfaceTestCase(unittest.TestCase):
@@ -18,11 +19,11 @@ class CylindricalSurfaceTestCase(unittest.TestCase):
         self.r4 = 4.2
 
     def cylinder_at_position(self, z):
-        return create_cylindrical_surface('d',
-                                          [5, 5, z],
-                                          self.radius,
-                                          [0, 0, 1],
-                                          self.L)
+        return model.create_cylindrical_surface('d',
+                                                [5, 5, z],
+                                                self.radius,
+                                                [0, 0, 1],
+                                                self.L)
 
     def test_random_positions(self):
         # For a cylinder along z-axis, position z should not matter.

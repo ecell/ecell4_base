@@ -12,6 +12,7 @@ from _gfrd import (
     Particle,
     SphericalShell,
     SphericalShellContainer,
+    CylindricalShell,
     CylindricalShellContainer,
     DomainIDGenerator,
     ShellIDGenerator,
@@ -20,7 +21,8 @@ from _gfrd import (
     CuboidalRegion,
     CylindricalSurface,
     PlanarSurface,
-    _random_vector
+    _random_vector,
+    Sphere,
     )
 
 from gfrdbase import *

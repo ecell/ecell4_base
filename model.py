@@ -1,4 +1,6 @@
 import _gfrd
+from _gfrd import create_planar_surface, create_cylindrical_surface, \
+        create_cuboidal_region
 import numpy
 
 __all__ = [
@@ -8,6 +10,9 @@ __all__ = [
     'create_decay_reaction_rule',
     'create_binding_reaction_rule',
     'create_unbinding_reaction_rule',
+    'create_planar_surface',
+    'create_cylindrical_surface'
+    'create_cuboidal_region'
     ]
 
 
