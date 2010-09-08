@@ -120,11 +120,11 @@ class GillespieSimulatorBase(object):
         if size == utils.INF:
             self.set_volume(utils.INF)
         else:
-            volume = (size * size * size) * 1e+3
+            volume = size * size * size
             self.set_volume(volume)
 
     def get_world_size(self):
-        return (self.volume * 1e+3) ** (1.0 / 3.0)
+        return self.volume ** (1.0 / 3.0)
 
     def set_volume(self, volume):
         self.volume = volume
@@ -148,7 +148,7 @@ class GillespieSimulatorBase(object):
             if kD == 0.0:
                 k = 0.0
             elif k != 0.0:
-                k = utils.k_on(k, kD) * (1000 * utils.N_A)
+                k = utils.k_on(k, kD)
 
         return ReactionRuleCache(rr, reactants, products, k)
 
@@ -260,7 +260,7 @@ class GillespieSimulatorBase(object):
             * self.get_pool_size(rr.reactants[1])
 
         if value > 0.0:
-            return rr.k * value / (self.volume * utils.N_A)
+            return rr.k * value / self.volume
         else:
             return 0.0
 
@@ -268,8 +268,7 @@ class GillespieSimulatorBase(object):
         value = self.get_pool_size(rr.reactants[0])
 
         if value > 1.0: # there must be two or more molecules
-#             return self.k * 0.5 * value * (value - 1.0) 
-            return rr.k * value * (value - 1.0) / (self.volume * utils.N_A)
+            return rr.k * value * (value - 1.0) / self.volume
         else:
             return 0.0
 
