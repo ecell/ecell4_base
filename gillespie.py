@@ -6,7 +6,7 @@ import logging
 import os
 
 from _gfrd import * # FIX ME
-from _greens_functions import EventType # FIX ME
+from constants import EventType # FIX ME
 import utils
 import logger
 import myrandom
@@ -59,6 +59,13 @@ class Delegate(object):
     def __call__(self, *arg):
         return self.method(self.ref(), *arg)
 
+class GillespieEvent(Event):
+    __slot__ = ['func', 'rr']
+    def __init__(self, time, func, rr):
+        Event.__init__(self, time)
+        self.func = func
+        self.rr = rr
+
 class ReactionRuleCache(object):
 
     def __init__(self, rr, reactants, products, k):
@@ -101,6 +108,7 @@ class GillespieSimulatorBase(object):
 
     def set_model(self, model):
         self.model = model
+        self.network_rules = NetworkRulesWrapper(model.network_rules)
 
     def initialize(self):
         pass
@@ -129,14 +137,14 @@ class GillespieSimulatorBase(object):
         products = [id for id in rr.products]
 
         if len(reactants) == 1:
-            k = float(rr['k'])
+            k = float(rr.k)
         elif len(reactants) == 2:
             st1 = self.model.get_species_type_by_id(reactants[0])
             st2 = self.model.get_species_type_by_id(reactants[1])
             D = float(st1['D']) + float(st2['D'])
             sigma = float(st1['radius']) + float(st2['radius'])
             kD = utils.k_D(D, sigma)
-            k = float(rr['k'])
+            k = float(rr.k)
             if kD == 0.0:
                 k = 0.0
             elif k != 0.0:
@@ -151,13 +159,13 @@ class GillespieSimulatorBase(object):
         return self.__get_reaction_rule(st1, st2)
 
     def __get_reaction_rule(self, *args):
-        gen = self.model.network_rules.query_reaction_rule(*args)
+        gen = self.network_rules.query_reaction_rule(*args)
         if gen == None:
             return []
 
         retval = []
         for rr in gen:
-            if float(rr['k']) == 0:
+            if rr.k == 0:
                 continue
             retval.append(self.create_reaction_rule_cache(rr))
         return retval
@@ -267,7 +275,7 @@ class GillespieSimulatorBase(object):
 
 class GillespieSimulator(GillespieSimulatorBase):
 
-    def __init__(self, volume=1.0):
+    def __init__(self, model):
         self.scheduler = EventScheduler()
         GillespieSimulatorBase.__init__(self)
 
@@ -280,7 +288,9 @@ class GillespieSimulator(GillespieSimulatorBase):
 
         self.scheduler.clear()
 
+        volume = model.world_size ** 3
         self.set_volume(volume)
+        self.set_model(model)
 
     def initialize(self):
         GillespieSimulatorBase.initialize(self)
@@ -309,7 +319,7 @@ class GillespieSimulator(GillespieSimulatorBase):
         if self.scheduler.size == 0:
             return self.t
 
-        return self.scheduler.getTopTime()
+        return self.scheduler.top[1].time
 
     def govern(self, id):
         return id in self.speciesDict.keys()
@@ -337,10 +347,10 @@ class GillespieSimulator(GillespieSimulatorBase):
             self.last_reaction = None
             return
 
-        event = self.scheduler.getTopEvent()
-        self.t, self.last_event = event.getTime(), event.getArg()
+        id, event = self.scheduler.pop()
+        self.t, self.last_event = event.time, event
 
-        if self.last_event.eventType == EventType.SINGLE_REACTION: # FIX ME
+        if self.last_event.rr.eventType == EventType.SINGLE_REACTION: # FIX ME
             self.last_reaction = self.last_event
         else:
             self.last_reaction = None
@@ -349,7 +359,9 @@ class GillespieSimulator(GillespieSimulatorBase):
 #             log.info('\n%d: t=%g dt=%g\nevent=%s reactions=%d rejectedmoves=%d' % (self.stepCount, self.t, self.dt, self.last_event, self.reactionEvents, self.rejectedMoves))
             pass
 
-        self.scheduler.step()
+        
+        # Execute event.
+        event.func(event.rr)
 
         if self.t != utils.INF: # and self.scheduler.getTopTime() == utils.INF
             nextTime = self.get_next_time()
@@ -367,9 +379,9 @@ class GillespieSimulator(GillespieSimulatorBase):
             self.throw_in_particles(st, 1)
 
         for rr2 in self.dependencies[rr]:
-            event = self.scheduler.getEvent(rr2.eventID)
+            event = self.scheduler[rr2.eventID]
             dt = self.get_step_interval(rr2)
-            self.update_event_time(self.t + dt, rr2)
+            self.update_event_time(self.t + dt, event)
 
         self.add_reaction_event(rr)
 
@@ -407,9 +419,11 @@ class GillespieSimulator(GillespieSimulatorBase):
                 self.add_update_event(rr)
         
     def add_event(self, t, func, arg):
-        return self.scheduler.addEvent(t, func, arg)
+        return self.scheduler.add(GillespieEvent(t, func, arg))
 
     def add_reaction_event(self, rr):
+        rr.eventType = EventType.SINGLE_REACTION # FIX ME
+
         dt = self.get_step_interval(rr)
         eventID = self.add_event(self.t + dt,
                                  Delegate(self, GillespieSimulator.fire),
@@ -418,12 +432,11 @@ class GillespieSimulator(GillespieSimulatorBase):
             log.info('addReactionEvent: #%d (t=%g)' % (eventID, self.t + dt))
 
         rr.eventID = eventID
-        rr.eventType = EventType.SINGLE_REACTION # FIX ME
 
         self.update_event_dependency(rr)
 
-        for i in range(self.scheduler.size):
-            rr2 = self.scheduler.getEventByIndex(i).getArg()
+        for id, event in self.scheduler:
+            rr2 = event.rr
             if rr == rr2:
                 continue
 
@@ -431,6 +444,8 @@ class GillespieSimulator(GillespieSimulatorBase):
                 self.dependencies[rr2].append(rr)
 
     def add_update_event(self, rr):
+        rr.eventType = EventType.SINGLE_ESCAPE # FIX ME
+
         eventID = self.add_event(self.t,
                                  Delegate(self, GillespieSimulator.update),
                                  rr)
@@ -438,7 +453,6 @@ class GillespieSimulator(GillespieSimulatorBase):
             log.info('addUpdateEvent: #%d (t=%g)' % (eventID, self.t))
 
         rr.eventID = eventID
-        rr.eventType = EventType.SINGLE_ESCAPE # FIX ME
         self.dependencies[rr] = []
 
     def remove_event(self, rr):
@@ -449,11 +463,12 @@ class GillespieSimulator(GillespieSimulatorBase):
         rr.eventID = None
         rr.eventType = None
 
-    def update_event_time(self, t, rr):
+    def update_event_time(self, t, event):
         if __debug__:
-            log.info('updateEventTime: #%d (t=%g)' % (rr.eventID, t))
+            log.info('updateEventTime: #%d (t=%g)' % (event.rr.eventID, t))
 
-        self.scheduler.updateEventTime(rr.eventID, t)
+        self.scheduler.update((event.rr.eventID,
+                               GillespieEvent(t, event.func, event.rr)))
 
 #     def update_all_event_time(self):
 #         for i in range(self.scheduler.size):
@@ -470,8 +485,8 @@ class GillespieSimulator(GillespieSimulatorBase):
     def update_event_dependency(self, rr1):
         self.dependencies[rr1] = []
 
-        for j in range(self.scheduler.size):
-            rr2 = self.scheduler.getEventByIndex(j).getArg()
+        for id, event in self.scheduler:
+            rr2 = event.rr
             if rr1 == rr2:
                 continue
 
@@ -490,7 +505,7 @@ class GillespieSimulator(GillespieSimulatorBase):
     def interrupted(self, rr):
         '''return bool for efficiency.
         '''
-        if float(rr['k']) == 0.0:
+        if float(rr.k) == 0.0:
             return False
 
         interrupt = False
@@ -516,7 +531,7 @@ class GillespieSimulator(GillespieSimulatorBase):
             rr2 = event.getArg()
             if rr2.is_dependent_on(rr1):
                 dt = self.get_step_interval(rr2)
-                self.update_event_time(self.t + dt, rr2)
+                self.update_event_time(self.t + dt, event)
 
         dt = self.get_next_time() - self.t
         self.dt = dt
