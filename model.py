@@ -8,6 +8,7 @@ __all__ = [
     'ParticleModel',
     'create_unimolecular_reaction_rule',
     'create_decay_reaction_rule',
+    'create_annihilation_reaction_rule',
     'create_binding_reaction_rule',
     'create_unbinding_reaction_rule',
     'create_planar_surface',
@@ -104,18 +105,20 @@ def create_unimolecular_reaction_rule(s1, p1, k):
     rr['k'] = '%.16g' % k
     return rr
 
-
 def create_decay_reaction_rule(s1, k):
     rr = _gfrd.ReactionRule([s1, ], [])
     rr['k'] = '%.16g' % k
     return rr
 
-
-def create_binding_reaction_rule(s1, s2, p1, k):
-    rr = _gfrd.ReactionRule([s1, s2], [p1, ])
+def create_annihilation_reaction_rule(s1, s2, k):
+    rr = _gfrd.ReactionRule([s1, s2], [])
     rr['k'] = '%.16g' % k
     return rr
 
+def create_binding_reaction_rule(s1, s2, p1, k):
+    rr = _gfrd.ReactionRule([s1, s2], [p1])
+    rr['k'] = '%.16g' % k
+    return rr
 
 def create_unbinding_reaction_rule(s1, p1, p2, k):
     rr = _gfrd.ReactionRule([s1, ], [p1, p2])
