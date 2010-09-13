@@ -132,7 +132,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
                            EventType.IV_ESCAPE:0,
                            EventType.COM_ESCAPE:0}
         self.multi_steps = {EventType.MULTI_ESCAPE:0,
-                            EventType.MULTI_REACTION:0, 2:0}
+                            EventType.MULTI_UNIMOLECULAR_REACTION:0,
+                            EventType.MULTI_BIMOLECULAR_REACTION:0, 3:0}
         self.zero_steps = 0
         self.rejected_moves = 0
         self.reaction_events = 0
@@ -894,13 +895,14 @@ class EGFRDSimulator(ParticleSimulatorBase):
         return
 
     def fire_multi(self, multi):
-        self.multi_steps[2] += 1  # multi_steps[2]: total multi steps
+        self.multi_steps[3] += 1  # multi_steps[3]: total multi steps
         multi.step()
 
         if __debug__:
             log.info('FIRE MULTI: %s' % multi.last_event)
 
-        if multi.last_event == EventType.MULTI_REACTION:
+        if(multi.last_event == EventType.MULTI_UNIMOLECULAR_REACTION or
+           multi.last_event == EventType.MULTI_BIMOLECULAR_REACTION):
             self.reaction_events += 1
             self.last_reaction = multi.last_reaction
 
@@ -1480,7 +1482,7 @@ t = %g
 steps = %d 
 \tSingle:\t%d\t(escape: %d, reaction: %d)
 \tPair:\t%d\t(escape r: %d, R: %d, reaction pair: %d, single: %d)
-\tMulti:\t%d\t(escape: %d, reaction: %d)
+\tMulti:\t%d\t(escape: %d, reaction pair: %d, single: %d)
 total reactions = %d
 rejected moves = %d
 ''' \
@@ -1493,9 +1495,10 @@ rejected moves = %d
                self.pair_steps[EventType.COM_ESCAPE],
                self.pair_steps[EventType.IV_REACTION],
                self.pair_steps[EventType.SINGLE_REACTION],
-               self.multi_steps[2], # total multi steps
+               self.multi_steps[3], # total multi steps
                self.multi_steps[EventType.MULTI_ESCAPE],
-               self.multi_steps[EventType.MULTI_REACTION],
+               self.multi_steps[EventType.MULTI_BIMOLECULAR_REACTION],
+               self.multi_steps[EventType.MULTI_UNIMOLECULAR_REACTION],
                self.reaction_events,
                self.rejected_moves
                )

@@ -58,8 +58,11 @@ class Multi(object):
         self.last_event = None
         while ppg():
             if ppg.reactions:
-                self.last_event = EventType.MULTI_REACTION
                 self.last_reaction = ppg.reactions[-1]
+                if len(self.last_reaction.reactants) == 1:
+                    self.last_event = EventType.MULTI_UNIMOLECULAR_REACTION
+                else:
+                    self.last_event = EventType.MULTI_BIMOLECULAR_REACTION
                 break
 
         for pid_particle_pair in itertools.chain(

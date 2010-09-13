@@ -18,4 +18,7 @@ EventType.IV_REACTION     = EventType(14, "IV_REACTION")
 EventType.IV_INTERACTION  = EventType(15, "IV_INTERACTION")
 EventType.BURST           = EventType(16, "BURST")
 EventType.MULTI_ESCAPE    = EventType(17, "MULTI_ESCAPE")
-EventType.MULTI_REACTION  = EventType(18, "MULTI_REACTION")
+EventType.MULTI_UNIMOLECULAR_REACTION = \
+        EventType(18, "MULTI_UNIMOLECULAR_REACTION")
+EventType.MULTI_BIMOLECULAR_REACTION = \
+        EventType(19, "MULTI_BIMOLECULAR_REACTION")
