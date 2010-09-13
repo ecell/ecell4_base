@@ -72,7 +72,8 @@ class Multi(object):
                 return
 
             if not self.within_shell(pid_particle_pair):
-                self.last_event = EventType.MULTI_ESCAPE
+                if self.last_event == None:
+                    self.last_event = EventType.MULTI_ESCAPE
                 main.clear_volume(
                     pid_particle_pair[1].position,
                     pid_particle_pair[1].radius, ignore=[self.domain_id, ])
