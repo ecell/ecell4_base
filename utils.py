@@ -247,7 +247,13 @@ def k_a(kon, kD):
     return ka
 
 def k_d(koff, kon, kD):
-    return k_a(kon, kD) * koff / kon
+    ka = k_a(kon, kD)
+    kd = k_d_using_ka(koff, ka, kD)
+    return kd
+
+def k_d_using_ka(koff, ka, kD):
+    kd =  ka * koff / kon
+    return kd
 
 def k_on(ka, kD):
     kon = 1. / ((1. / kD) + (1. / ka))  # m^3/s
@@ -255,6 +261,10 @@ def k_on(ka, kD):
 
 def k_off(kd, kon, kD):
     ka = k_a(kon, kD) 
+    koff = k_off_using_ka(kd, ka, kD)
+    return koff
+
+def k_off_using_ka(kd, ka, kD):
     koff = 1. / (ka / (kd * kD) + (1. / kd))
     return koff
 
