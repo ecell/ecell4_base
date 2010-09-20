@@ -138,6 +138,24 @@ class GillespieSimulatorBase(object):
 
         if len(reactants) == 1:
             k = float(rr.k)
+            if len(products) == 2:
+                st1 = self.model.get_species_type_by_id(products[0])
+                st2 = self.model.get_species_type_by_id(products[1])
+
+                # Lookup kon for reverse reaction rule.
+                for rr_possible_reverse in self.get_reaction_rule2(st1, st2):
+                    if rr_possible_reverse.products == reactants: 
+                        rr_reverse = rr_possible_reverse
+                        kon = float(rr_reverse.k)
+
+                        # Compute kD for reverse reaction.
+                        D = float(st1['D']) + float(st2['D'])
+                        sigma = float(st1['radius']) + float(st2['radius'])
+                        kD = utils.k_D(D, sigma)
+
+                        # Use overall rate internally.
+                        k = utils.k_off(k, kon, kD)
+
         elif len(reactants) == 2:
             st1 = self.model.get_species_type_by_id(reactants[0])
             st2 = self.model.get_species_type_by_id(reactants[1])
@@ -148,6 +166,7 @@ class GillespieSimulatorBase(object):
             if kD == 0.0:
                 k = 0.0
             elif k != 0.0:
+                # Use overall rate kon internally.
                 k = utils.k_on(k, kD)
 
         return ReactionRuleCache(rr, reactants, products, k)
@@ -551,6 +570,8 @@ class GillespieSimulator(GillespieSimulatorBase):
     def dump(self):
         self.dump_scheduler()
 
+    def print_report(self):
+        pass
 
 if __name__ == '__main__':
 
