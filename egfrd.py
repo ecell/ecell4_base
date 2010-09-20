@@ -23,6 +23,7 @@ from _gfrd import (
     PlanarSurface,
     _random_vector,
     Sphere,
+    NetworkRulesWrapper,
     )
 
 from gfrdbase import *
@@ -84,7 +85,9 @@ class Delegate(object):
 
 
 class EGFRDSimulator(ParticleSimulatorBase):
-    def __init__(self, world, rng, network_rules):
+    def __init__(self, world, rng=myrandom.rng, network_rules=None):
+        if network_rules == None:
+            network_rules = NetworkRulesWrapper(world.model.network_rules)
         ParticleSimulatorBase.__init__(self, world, rng, network_rules)
 
         self.domain_id_generator = DomainIDGenerator(0)
