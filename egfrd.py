@@ -265,16 +265,16 @@ class EGFRDSimulator(ParticleSimulatorBase):
         domain_id = self.domain_id_generator()
         shell_id = self.shell_id_generator()
 
-        # Get surface.
+        # Get structure (region or surface).
         species = self.world.get_species(pid_particle_pair[1].sid)
-        surface = self.world.get_structure(species.structure_id)
+        structure = self.world.get_structure(species.structure_id)
 
         # Create single. The type of the single that will be created 
-        # depends on the surface this particle is on. Either 
-        # SphericalSingle, PlanarSurfaceSingle, or 
+        # depends on the structure (region or surface) this particle is 
+        # in/on. Either SphericalSingle, PlanarSurfaceSingle, or 
         # CylindricalSurfaceSingle.
         single = create_default_single(domain_id, pid_particle_pair, 
-                                       shell_id, rts, surface)
+                                       shell_id, rts, structure)
 
         single.initialize(self.t)
         self.move_shell(single.shell_id_shell_pair)
@@ -308,15 +308,16 @@ class EGFRDSimulator(ParticleSimulatorBase):
         pos1 = single1.shell.shape.position
         pos2 = single2.shell.shape.position
 
-        # Get surface.
+        # Get structure (region or surface).
         species = self.world.get_species(single1.pid_particle_pair[1].sid)
-        surface = self.world.get_structure(species.structure_id)
+        structure = self.world.get_structure(species.structure_id)
 
         # Create pair. The type of the pair that will be created depends
-        # on the surface the particles are on. Either SphericalPair, 
-        # PlanarSurfacePair, or CylindricalSurfacePair.
+        # on the structure (region or surface) the particles are in/on.  
+        # Either SphericalPair, PlanarSurfacePair, or 
+        # CylindricalSurfacePair.
         pair = create_default_pair(domain_id, com, single1, single2, shell_id, 
-                                   r0, shell_size, rt, surface)
+                                   r0, shell_size, rt, structure)
 
         pair.initialize(self.t)
 

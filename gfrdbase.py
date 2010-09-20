@@ -147,7 +147,7 @@ def create_world(m, matrix_size=10):
                               region,
                               float(st["v"])))
 
-    for r in m.regions.itervalues():
+    for r in m.structures.itervalues():
         world.add_structure(r)
 
     world.model = m

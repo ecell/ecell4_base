@@ -18,13 +18,13 @@ __all__ = [
 
 
 
-def Species(name, D, radius=0, surface="world", v=0):
+def Species(name, D, radius=0, structure="world", drift=0):
     st = _gfrd.SpeciesType()
     st["name"] = str(name)
     st["D"] = str(D)
-    st["v"] = str(v)
+    st["v"] = str(drift)
     st["radius"] = str(radius)
-    st["surface"] = surface
+    st["surface"] = structure
     return st
 
 
@@ -32,7 +32,7 @@ class ParticleModel(_gfrd.Model):
     def __init__(self, world_size):
         _gfrd.Model.__init__(self)
         self.world_size = world_size
-        self.regions = {}
+        self.structures = {}
 
         # Particles of a Species whose surface is not specified will be 
         # added to the "world". Dimensions don't matter, except for 
@@ -41,13 +41,13 @@ class ParticleModel(_gfrd.Model):
         region = _gfrd.CuboidalRegion('world', _gfrd.Box(x, x))
         self.add_structure(region)
 
-    def add_structure(self, surface):
-        assert isinstance(surface, _gfrd.Structure)
-        self.regions[surface.id] = surface
-        return surface
+    def add_structure(self, structure):
+        assert isinstance(structure, _gfrd.Structure)
+        self.structures[structure.id] = structure
+        return structure
 
     def get_structure(self, id): 
-        return self.regions[id]
+        return self.structures[id]
 
     def set_all_repulsive(self):
         nr = self.network_rules
