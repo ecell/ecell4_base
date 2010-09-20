@@ -268,7 +268,7 @@ class GillespieSimulatorBase(object):
         value = self.get_pool_size(rr.reactants[0])
 
         if value > 1.0: # there must be two or more molecules
-            return rr.k * value * (value - 1.0) / self.volume
+            return rr.k * 0.5 * value * (value - 1.0) / self.volume
         else:
             return 0.0
 
