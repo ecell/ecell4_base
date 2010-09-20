@@ -243,15 +243,20 @@ def k_D(D, sigma):
 def k_a(kon, kD):
     if kon > kD:
         raise RuntimeError, 'kon > kD.'
-    ka = 1 / ((1 / kon) - (1 / kD))
+    ka = 1. / ((1. / kon) - (1. / kD))
     return ka
 
 def k_d(koff, kon, kD):
     return k_a(kon, kD) * koff / kon
 
 def k_on(ka, kD):
-    kon = 1 / ((1 / kD) + (1 / ka))  # m^3/s
+    kon = 1. / ((1. / kD) + (1. / ka))  # m^3/s
     return kon
+
+def k_off(kd, kon, kD):
+    ka = k_a(kon, kD) 
+    koff = 1. / (ka / (kd * kD) + (1. / kd))
+    return koff
 
 def C2N(c, V):
     return c * V * N_A  # round() here?
