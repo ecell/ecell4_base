@@ -2,6 +2,7 @@
 #define BINDING_MODEL_HPP
 
 #include <boost/python.hpp>
+#include <boost/python/docstring_options.hpp>
 #include "peer/utils.hpp"
 
 namespace binding {
@@ -17,6 +18,9 @@ inline void register_model_class(char const* name)
 {
     using namespace boost::python;
     typedef Tmodel_ impl_type;
+
+    docstring_options doc_options;
+    doc_options.disable_signatures();
 
     class_<impl_type, boost::noncopyable>(name)
         .add_property("network_rules",

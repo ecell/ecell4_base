@@ -3,6 +3,7 @@
 #endif /* HAVE_CONFIG_H */
 
 #include <boost/python.hpp>
+#include <boost/python/docstring_options.hpp>
 #include "binding_common.hpp"
 
 namespace binding {
@@ -30,6 +31,10 @@ calculate_pair_CoM(Position const& p1,
 void register_module_functions()
 {
     using namespace boost::python;
+
+    docstring_options doc_options;
+    doc_options.disable_signatures();
+
     def( "length_sq", &length_sq<Position> );
     def( "length", &length<Position> );
     def( "distance", (WorldTraits::length_type(*)(Position const&, Position const&))&distance<Position> );
