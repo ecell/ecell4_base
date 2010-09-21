@@ -252,7 +252,7 @@ def k_d(koff, kon, kD):
     return kd
 
 def k_d_using_ka(koff, ka, kD):
-    kd =  ka * koff / kon
+    kd =  koff * (1 + float(ka) / kD)
     return kd
 
 def k_on(ka, kD):
@@ -265,7 +265,7 @@ def k_off(kd, kon, kD):
     return koff
 
 def k_off_using_ka(kd, ka, kD):
-    koff = 1. / (ka / (kd * kD) + (1. / kd))
+    koff = 1. / (float(ka) / (kd * kD) + (1. / kd))
     return koff
 
 def C2N(c, V):
