@@ -4,6 +4,7 @@ from egfrd import *
 
 from logger import *
 import sys
+import dumper
 
 w = World(1e-6, 3)
 s = EGFRDSimulator(w)
@@ -79,4 +80,4 @@ interrupter = FixedIntervalInterrupter(s, 1e-3, l)
 l.start(s)
 while s.t < 1000:
     interrupter.step()
-    s.dump_population()
+    dumper.dump_particles(s)

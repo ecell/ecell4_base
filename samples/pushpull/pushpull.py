@@ -5,6 +5,7 @@ from egfrd import *
 from logger import *
 import sys
 import os
+import dumper
 
 from fractionS import *
 
@@ -226,5 +227,5 @@ while s.t < T:
     interrupter.step()
 
     if s.last_reaction:
-        #log.info(s.dump_population())
+        #log.info(dumper.dump_particles(s))
         l.log(s, s.t)

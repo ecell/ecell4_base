@@ -225,63 +225,6 @@ class ParticleModel(_gfrd.Model):
                     rr['k'] = '0.0'
                     nr.add_reaction_rule(rr)
 
-    def dump_reaction_rule(self, reaction_rule):
-        '''Pretty print reaction rule.
-
-        ReactionRule.__str__ would be good, but we are actually getting a 
-        ReactionRuleInfo or ReactionRuleCache object.
-
-        '''
-        buf = ('k=%.3g' % reaction_rule.k + ': ').ljust(15)
-        for index, sid in enumerate(reaction_rule.reactants):
-            if index != 0:
-                buf += ' + '
-            reactant = self.get_species_type_by_id(sid)
-            buf += reactant['name'].ljust(15)
-        if len(reaction_rule.products) == 0:
-            if reaction_rule.k != 0:
-                buf += '..decays'
-            else:
-                buf += '..reflective'
-        else:
-            buf += '-> '
-
-        for index, sid in enumerate(reaction_rule.products):
-            if index != 0:
-                buf += ' + '
-            product = self.get_species_type_by_id(sid)
-            buf += product['name'].ljust(15)
-
-        return buf + '\n'
-
-    def dump_reaction_rules(self):
-        """Return a formatted string with all the reaction rules 
-        defined in the ParticleModel.
-
-        """
-        rr1, rr2, rrr = self.get_reaction_rules()
-        reaction_rules_1 = [self.dump_reaction_rule(rule) for rule in rr1]
-        reaction_rules_2 = [self.dump_reaction_rule(rule) for rule in rr2]
-        repulsive_rules  = [self.dump_reaction_rule(rule) for rule in rrr]
-
-        if repulsive_rules == []:
-            repulsive_rules_as_string = (
-                'None.\n  '
-                'An EGFRDSimulator assumes all other possible\n'
-                'reaction rules to be repulsive. You can explicitly add\n'
-                'these repulsive reaction rules to the model with the\n'
-                'method ParticleModel.set_all_repulsive.')
-        else:
-            repulsive_rules_as_string = ''.join(repulsive_rules)
-
-        return('\nMonomolecular reaction rules:\n' +
-               ''.join(reaction_rules_1) +
-               '\nBimolecular reaction rules:\n' +
-               ''.join(reaction_rules_2) +
-               '\nRepulsive bimolecular reaction rules:\n' +
-               repulsive_rules_as_string
-               )
-
 def create_unimolecular_reaction_rule(reactant, product, k):
     """Example: A -> B.
 
