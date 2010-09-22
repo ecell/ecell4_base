@@ -85,7 +85,24 @@ class Delegate(object):
 
 
 class EGFRDSimulator(ParticleSimulatorBase):
+    """
+    """
     def __init__(self, world, rng=myrandom.rng, network_rules=None):
+        """Create a new EGFRDSimulator.
+
+        Arguments:
+            - world
+                a world object created with the function 
+                gfrdbase.create_world.
+            - rng
+                a random number generator. By default myrandom.rng is 
+                used, which uses Mersenne Twister from the GSL library.
+                You can set the seed of it with the function 
+                myrandom.seed.
+            - network_rules
+                you don't need to use this, for backward compatibility only.
+
+        """
         if network_rules == None:
             network_rules = NetworkRulesWrapper(world.model.network_rules)
         ParticleSimulatorBase.__init__(self, world, rng, network_rules)
@@ -174,6 +191,25 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.is_dirty = False
 
     def stop(self, t):
+        """Synchronize all particles at time t.
+
+        With eGFRD, particle positions are normally updated 
+        asynchronously. This method bursts all protective domains and 
+        assigns a position to each particle.
+
+        Arguments:
+            - t
+                the time at which to synchronize the particles. Usually 
+                you will want to use the current time of the simulator: 
+                EGFRDSimulator.t.
+
+        This method is called stop because it is usually called at the 
+        end of a simulation. It is possible to call this method at an 
+        earlier time. For example the Logger module does this, because 
+        it needs to know the positions of the particles at each log 
+        step.
+
+        """
         if __debug__:
             log.info('stop at %s' % (FORMAT_DOUBLE % t))
 
@@ -212,6 +248,9 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.dt = 0.0
 
     def step(self):
+        """Execute one eGFRD step.
+
+        """
         self.last_reaction = None
 
         if self.is_dirty:
@@ -1490,6 +1529,12 @@ class EGFRDSimulator(ParticleSimulatorBase):
     #
 
     def print_report(self, out=None):
+        """Print various statistics about the simulation.
+        
+        Arguments:
+            - None
+
+        """
         report = '''
 t = %g
 steps = %d 
@@ -1665,10 +1710,16 @@ rejected moves = %d
     #
 
     def dump_scheduler(self):
+        """Dump scheduler information.
+
+        """
         for id, event in self.scheduler:
             print id, event
 
     def dump(self):
+        """Dump scheduler and event information.
+
+        """
         for id, event in self.scheduler:
             print id, event, event.data
 

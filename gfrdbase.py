@@ -87,14 +87,14 @@ class NoSpace(Exception):
     pass
 
 def get_closest_surface(world, pos, ignore):
-    """Return sorted list of tuples with:
-        - surface itself
-        - distance to surface
+    # Return sorted list of tuples with:
+    #   - surface itself
+    #   - distance to surface
+    #
+    # We can not use matrix_space, it would miss a surface if the 
+    # origin of the surface would not be in the same or neighboring 
+    # cells as pos.
 
-    We can not use matrix_space, it would miss a surface if the origin 
-    of the surface would not be in the same or neighboring cells as pos.
-
-    """
     surfaces_and_distances_to_surfaces = []
 
     for surface in world.structures:
@@ -110,11 +110,10 @@ def get_closest_surface(world, pos, ignore):
         return None, numpy.inf
 
 def get_closest_surface_within_radius(world, pos, radius, ignore):
-    """Return sorted list of tuples with:
-        - surface itself
-        - distance to surface
+    # Return sorted list of tuples with:
+    #   - surface itself
+    #   - distance to surface
 
-    """
     surface, distance = get_closest_surface(world, pos, ignore) 
     if distance < radius:
         return surface, distance
@@ -122,6 +121,38 @@ def get_closest_surface_within_radius(world, pos, radius, ignore):
         return None, numpy.inf
 
 def create_world(m, matrix_size=10):
+    """Create a world object.
+    
+    The world object keeps track of the positions of the particles
+    and the protective domains during an eGFRD simulation.
+
+    Arguments:
+        - m
+            a ParticleModel previously created with model.ParticleModel.
+        - matrix_size
+            the number of cells in the MatrixSpace along the x, y and z 
+            axis. Leave it to the default number if you don't know what 
+            to put here.
+
+    The simulation cube "world" is divided into (matrix_size x matrix_size 
+    x matrix_size) cells. Together these cells form a MatrixSpace. The 
+    MatrixSpace keeps track in which cell every particle and protective 
+    domain is at a certain point in time. To find the neigherest 
+    neighbours of particle, only objects in the same cell and the 26 
+    (3x3x3 - 1) neighbouring cells (the simulation cube has periodic
+    boundary conditions) have to be taken into account.
+
+    The matrix_size limits the size of the protective domains. If you 
+    have fewer particles, you want a smaller matrix_size, such that the 
+    protective domains and thus the eGFRD timesteps can be larger. If 
+    you have more particles, you want a larger matrix_size, such that 
+    finding the neigherest neighbours is faster.
+    
+    Example. In samples/dimer/dimer.py a matrix_size of
+    (N * 6) ** (1. / 3.) is used, where N is the average number of 
+    particles in the world.
+
+    """
     m.set_all_repulsive()
     world_region = m.get_structure("world")
     if not isinstance(world_region, _gfrd.CuboidalRegion):
@@ -152,11 +183,24 @@ def create_world(m, matrix_size=10):
 
     world.model = m
     return world
-   
+
 def create_network_rules_wrapper(model):
     return _gfrd.NetworkRulesWrapper(model.network_rules)
 
 def throw_in_particles(world, sid, n):
+    """Add n particles of a certain Species to the specified world.
+
+    Arguments:
+        - sid
+            a Species previously created with the function 
+            model.Species.
+        - n
+            the number of particles to add.
+
+    Make sure to first add the Species to the model with the method
+    model.ParticleModel.add_species_type.
+
+    """
     species = world.get_species(sid)
     structure = world.get_structure(species.structure_id)
 
@@ -197,6 +241,20 @@ def throw_in_particles(world, sid, n):
             log.info('\t%d-th particle rejected. I will keep trying.' % i)
 
 def place_particle(world, sid, pos):
+    """Place a particle of a certain Species at a specific position in 
+    the specified world.
+
+    Arguments:
+        - sid
+            a Species previously created with the function 
+            model.Species.
+        - position
+            a position vector [x, y, z]. Units: [meters, meters, meters].
+
+    Make sure to first add the Species to the model with the method 
+    model.ParticleModel.add_species_type.
+
+    """
     species = world.get_species(sid)
     radius = species.radius
 
