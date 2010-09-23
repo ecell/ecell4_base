@@ -136,8 +136,13 @@ class GillespieSimulatorBase(object):
         reactants = [id for id in rr.reactants]
         products = [id for id in rr.products]
 
+        k = float(rr.k)
+
+        if self.convert_rates == False:
+            # Don't do the conversion below.
+            return ReactionRuleCache(rr, reactants, products, k)
+
         if len(reactants) == 1:
-            k = float(rr.k)
             if len(products) == 2:
                 st1 = self.model.get_species_type_by_id(products[0])
                 st2 = self.model.get_species_type_by_id(products[1])
@@ -162,7 +167,6 @@ class GillespieSimulatorBase(object):
             D = float(st1['D']) + float(st2['D'])
             sigma = float(st1['radius']) + float(st2['radius'])
             kD = utils.k_D(D, sigma)
-            k = float(rr.k)
             if kD == 0.0:
                 k = 0.0
             elif k != 0.0:
@@ -293,7 +297,7 @@ class GillespieSimulatorBase(object):
 
 class GillespieSimulator(GillespieSimulatorBase):
 
-    def __init__(self, model):
+    def __init__(self, model, convert_rates=True):
         self.scheduler = EventScheduler()
         GillespieSimulatorBase.__init__(self)
 
@@ -309,6 +313,7 @@ class GillespieSimulator(GillespieSimulatorBase):
         volume = model.world_size ** 3
         self.set_volume(volume)
         self.set_model(model)
+        self.convert_rates = convert_rates
 
     def initialize(self):
         GillespieSimulatorBase.initialize(self)
