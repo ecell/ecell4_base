@@ -123,14 +123,14 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
 
         t = gf.drawTime(0.5)
         event_type = gf.drawEventType(0.5, t)
-        self.failIf(event_type != mod.EventType.IV_REACTION and
-                    event_type != mod.EventType.IV_ESCAPE)
+        self.failIf(event_type != mod.PairEventKind.IV_REACTION and
+                    event_type != mod.PairEventKind.IV_ESCAPE)
 
         event_type = gf.drawEventType(0.0, t)
-        self.assertEqual(event_type, mod.EventType.IV_REACTION)
+        self.assertEqual(event_type, mod.PairEventKind.IV_REACTION)
 
         event_type = gf.drawEventType(0.999999, t)
-        self.assertEqual(event_type, mod.EventType.IV_ESCAPE)
+        self.assertEqual(event_type, mod.PairEventKind.IV_ESCAPE)
 
 
     def no_test_draw_event_type_smallt(self):
@@ -145,14 +145,14 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
         t = gf.drawTime(0.999)
 
         event_type = gf.drawEventType(0.5, t)
-        self.failIf(event_type != mod.EventType.IV_REACTION and
-                    event_type != mod.EventType.IV_ESCAPE)
+        self.failIf(event_type != mod.PairEventKind.IV_REACTION and
+                    event_type != mod.PairEventKind.IV_ESCAPE)
 
         event_type = gf.drawEventType(0.0, t)
-        self.assertEqual(event_type, mod.EventType.IV_REACTION)
+        self.assertEqual(event_type, mod.PairEventKind.IV_REACTION)
 
         event_type = gf.drawEventType(0.9999, t)
-        #self.assertEqual(event_type, mod.EventType.IV_ESCAPE)
+        #self.assertEqual(event_type, mod.PairEventKind.IV_ESCAPE)
 
 
     '''
@@ -196,7 +196,7 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
 
         t, et = gf.drawTime2(0.5, 0.5)
         self.assertEqual(0.0, t)
-        self.assertEqual(et, mod.EventType.IV_ESCAPE)
+        self.assertEqual(et, mod.PairEventKind.IV_ESCAPE)
 
     def test_draw_time2_squeezed(self):
         D = 1e-12
@@ -221,7 +221,7 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
 
         t, et = gf.drawTime2(0.5, 0.5)
         self.assertEqual(0.0, t)
-        self.assertEqual(et, mod.EventType.IV_ESCAPE)
+        self.assertEqual(et, mod.PairEventKind.IV_ESCAPE)
 
 
     def test_draw_time2_r0_equal_sigma_kf_zero(self):
@@ -235,7 +235,7 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
 
         t, et = gf.drawTime2(0.5, 0.5)
         self.failIf(t < 0.0 or t >= numpy.inf)
-        self.assertEqual(et, mod.EventType.IV_ESCAPE)
+        self.assertEqual(et, mod.PairEventKind.IV_ESCAPE)
 
         # when kf == 0, pleavea == psurvival
         t2 = gf.drawTime(0.5)
@@ -258,7 +258,7 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
         print 't',t, 't2', t2, 'et', et, 'et2', et2
 
         self.failIf(t < 0.0 or t >= numpy.inf)
-        self.assertEqual(et, mod.EventType.IV_REACTION)
+        self.assertEqual(et, mod.PairEventKind.IV_REACTION)
 
         self.assertAlmostEqual(t, t2)
 
