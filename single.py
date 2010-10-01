@@ -4,9 +4,6 @@ from greens_function_wrapper import *
 from constants import EventType
 import utils
             
-SINGLE_REACTION = 1
-SINGLE_ESCAPE   = 2
-
 class Single(object):
     """There are 2 main types of Singles:
         * NonInteractionSingle
@@ -29,7 +26,7 @@ class Single(object):
 
         self.last_time = 0.0
         self.dt = 0.0
-        self.event_type = SINGLE_ESCAPE
+        self.event_type = EventType.SINGLE_ESCAPE
 
         self.surface = surface
 
@@ -74,10 +71,10 @@ class Single(object):
         '''
         self.dt = 0.0
         self.last_time = t
-        self.event_type = SINGLE_ESCAPE
+        self.event_type = EventType.SINGLE_ESCAPE
 
     def is_reset(self):
-        return self.dt == 0.0 and self.event_type == SINGLE_ESCAPE
+        return self.dt == 0.0 and self.event_type == EventType.SINGLE_ESCAPE
 
     def draw_reaction_time_tuple(self):
         """Return a (reaction time, event type)-tuple.
@@ -113,7 +110,7 @@ class Single(object):
         else:
             dt = draw_time_wrapper(self.greens_function())
 
-        event_type = SINGLE_ESCAPE
+        event_type = EventType.SINGLE_ESCAPE
         return dt, event_type
 
     def determine_next_event(self):

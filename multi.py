@@ -51,15 +51,25 @@ class Multi(object):
         self.escaped = False
         tx = self.particle_container.create_transaction()
         main = self.main()
+
+        class check_reaction(object):
+            def __init__(self):
+                self.reactions = []
+
+            def __call__(self, ri):
+                self.reactions.append(ri)
+
+        cr = check_reaction()
+
         ppg = _gfrd.BDPropagator(tx, main.network_rules,
                      myrandom.rng, self.dt, main.dissociation_retry_moves,
-                     [pid for pid, _ in self.particle_container])
+                     cr, [pid for pid, _ in self.particle_container])
 
         self.last_event = None
         while ppg():
-            if ppg.reactions:
+            if cr.reactions:
                 self.last_event = EventType.MULTI_REACTION
-                self.last_reaction = ppg.reactions[-1]
+                self.last_reaction = cr.reactions[-1]
                 break
 
         for pid_particle_pair in itertools.chain(
