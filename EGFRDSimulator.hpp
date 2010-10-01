@@ -2955,7 +2955,7 @@ protected:
 
     void check_domain(multi_type const& domain) const
     {
-        BOOST_FOREACH (typename multi_type::shell_id_pair const& shell,
+        BOOST_FOREACH (typename multi_type::spherical_shell_id_pair const& shell,
                        domain.get_shells())
         {
             std::pair<domain_id_type, length_type> closest(
