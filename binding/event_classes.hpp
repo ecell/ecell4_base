@@ -4,6 +4,7 @@
 namespace binding {
 
 void register_event_class();
+void register_python_event_class();
 void register_event_scheduler_class();
 
 } //namespace binding

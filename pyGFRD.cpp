@@ -88,6 +88,7 @@ BOOST_PYTHON_MODULE(_gfrd)
     b::register_particle_id_class();
     b::register_position_converters();
     b::register_event_class();
+    b::register_python_event_class();
     b::register_event_scheduler_class();
     b::register_random_number_generator_class();
     b::register_sphere_class();
