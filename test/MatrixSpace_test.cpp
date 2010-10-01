@@ -70,7 +70,8 @@ struct collector
 {
     collector(): result() {}
 
-    void operator()(typename Toc_::iterator i)
+    void operator()(typename Toc_::iterator i,
+            const typename Toc_::position_type&)
     {
         result.insert((*i).first);
     }
@@ -190,7 +191,8 @@ struct collector3
 {
     collector3(): count(0) {}
 
-    void operator()(typename Toc_::iterator i)
+    void operator()(typename Toc_::iterator i,
+            typename Toc_::position_type const&)
     {
         ++count;
     }
@@ -203,7 +205,8 @@ struct collector4
 {
     collector4(): count(0) {}
 
-    void operator()(typename Toc_::iterator i, typename Toc_::position_type const&)
+    void operator()(typename Toc_::iterator i,
+            typename Toc_::position_type const&)
     {
         ++count;
     }

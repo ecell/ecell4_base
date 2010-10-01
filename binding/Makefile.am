@@ -46,9 +46,13 @@ noinst_HEADERS = \
 	EventScheduler.hpp \
 	random_number_generator_class.hpp \
 	RandomNumberGenerator.hpp \
+	ReactionRecord.hpp \
+	reaction_recorder_converter.hpp \
+	reaction_record_classes.hpp \
 	ReactionRule.hpp \
 	ReactionRuleInfo.hpp \
 	SerialIDGenerator.hpp \
+	ShapedDomain.hpp
 	shape_converters.hpp \
 	shell_classes.hpp \
 	Shell.hpp \
@@ -73,6 +77,7 @@ libbinding_utils_la_SOURCES = \
 	cylinder_class.cpp \
 	domain_classes.cpp \
 	domain_id_class.cpp \
+	egfrd_simulator_classes.cpp \
 	exception_classes.cpp \
 	matrix_space_classes.cpp \
 	model_class.cpp \
@@ -87,6 +92,7 @@ libbinding_utils_la_SOURCES = \
 	position_converters.cpp \
 	event_classes.cpp \
 	random_number_generator_class.cpp \
+	reaction_record_classes.cpp \
 	shape_converters.cpp \
 	shell_classes.cpp \
 	shell_id_class.cpp \

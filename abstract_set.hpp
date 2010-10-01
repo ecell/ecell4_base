@@ -5,6 +5,7 @@
 #include <boost/range/end.hpp>
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/value_type.hpp>
+#include <algorithm>
 
 template<typename T_>
 struct collection_value: public boost::range_value<T_>

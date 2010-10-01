@@ -30,6 +30,8 @@ public:
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef typename traits_type::reaction_rule_type reaction_rule_type;
     typedef typename traits_type::rate_type rate_type;
+    typedef typename traits_type::reaction_record_type reaction_record_type;
+    typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
 
 public:
     Real const& dt_factor()
@@ -39,16 +41,21 @@ public:
 
     virtual ~BDSimulator() {}
 
-    BDSimulator(world_type& world, 
-                network_rules_type const& network_rules,
-                rng_type& rng,
+    BDSimulator(boost::shared_ptr<world_type> world, 
+                boost::shared_ptr<network_rules_type const> network_rules,
+                rng_type& rng, reaction_recorder_type& rrec,
                 Real dt_factor = .5,
                 int dissociation_retry_moves = 1)
-        : base_type(world, network_rules, rng),
+        : base_type(world, network_rules, rng, rrec),
           dt_factor_(dt_factor), num_retrys_(dissociation_retry_moves)
     {
-        determine_dt();
-        LOG_DEBUG(("dt=%f", dt_));
+        calculate_dt();
+    }
+
+    virtual void calculate_dt()
+    {
+        base_type::dt_ = dt_factor_ * determine_dt(*base_type::world_);
+        LOG_DEBUG(("dt=%f", base_type::dt_));
     }
 
     virtual void step()
@@ -73,21 +80,21 @@ public:
         return true;
     }
 
-protected:
-    void determine_dt()
+    static Real determine_dt(world_type const& world)
     {
         Real D_max(0.), radius_min(std::numeric_limits<Real>::max());
 
-        BOOST_FOREACH(species_type s, base_type::world_.get_species())
+        BOOST_FOREACH(species_type s, world.get_species())
         {
             if (D_max < s.D())
                 D_max = s.D();
             if (radius_min > s.radius())
                 radius_min = s.radius();
         }
-        base_type::dt_ = dt_factor_ * gsl_pow_2(radius_min * 2) / (D_max * 2);
+        return gsl_pow_2(radius_min * 2) / (D_max * 2);
     }
 
+protected:
     void _step(time_type const& dt)
     {
         {
@@ -98,8 +105,7 @@ protected:
                 dt, num_retrys_,
                 make_select_first_range(base_type::world_.get_particles_range()));
             while (propagator());
-            base_type::num_reactions_ += propagator.get_reactions().size();
-            LOG_DEBUG(("%d: t=%lg, dt=%lg, reactions=%d", base_type::num_steps_, t_, dt, base_type::num_reactions_));
+            LOG_DEBUG(("%d: t=%lg, dt=%lg", base_type::num_steps_, base_type::t_, dt));
         }
         ++base_type::num_steps_;
         base_type::t_ += dt;

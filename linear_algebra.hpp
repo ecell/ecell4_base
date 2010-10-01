@@ -50,6 +50,11 @@ struct is_matrix<boost::multi_array_ref<T_, N_>, N_>: public boost::mpl::true_ {
 template<typename T_, std::size_t N_, typename Tptr_>
 struct is_matrix<boost::const_multi_array_ref<T_, N_, Tptr_>, N_>: public boost::mpl::true_ {};
 
+template<typename T_, std::size_t N1_, std::size_t N2_>
+struct is_matrix<boost::array<boost::array<T_, N1_>, N2_>, 2>: public boost::mpl::true_ {};
+
+template<typename T_, std::size_t N1_, std::size_t N2_>
+struct is_matrix<T_[N1_][N2_], 2>: public boost::mpl::true_ {};
 
 template<typename T_>
 struct is_scalar: public boost::is_arithmetic<T_> {};
@@ -153,6 +158,27 @@ struct matrix_adapter<boost::const_multi_array_ref<T_, N_, Tptr_> >
                                        std::size_t idx)
     {
         return first.shape()[idx];
+    }
+};
+
+template<typename T_, std::size_t N1_, std::size_t N2_>
+struct matrix_adapter<T_[N1_][N2_]>
+{
+    typedef T_ matrix_type[N1_][N2_];
+    typedef std::size_t matrix_size_type;
+
+    static matrix_size_type get_extent(matrix_type const& first,
+                                       std::size_t idx)
+    {
+        switch (idx)
+        {
+        case 0:
+            return N1_;
+        case 1:
+            return N2_;
+        default:
+            throw std::out_of_range("index out of range");
+        }
     }
 };
 
@@ -280,6 +306,24 @@ inline T_ multiply(T_ const& p1, M_ const& p2, typename boost::enable_if<
     retval[2] = multiply(p1[0], p2[0][2])
                 + multiply(p1[1], p2[1][2])
                 + multiply(p1[2], p2[2][2]);
+    return retval;
+}
+
+template<typename M_, typename T_>
+inline T_ multiply(M_ const& p1, T_ const& p2, typename boost::enable_if<
+    boost::mpl::and_<is_matrix<M_, 2>, is_vector3<T_> > >::type* = 0)
+{
+    BOOST_ASSERT(matrix_extent(p1, 0) == 3 && matrix_extent(p1, 1) == 3);
+    T_ retval;
+    retval[0] = multiply(p1[0][0], p2[0])
+                + multiply(p1[0][1], p2[1])
+                + multiply(p1[0][2], p2[2]);
+    retval[1] = multiply(p1[1][0], p2[0])
+                + multiply(p1[1][1], p2[1])
+                + multiply(p1[1][2], p2[2]);
+    retval[2] = multiply(p1[2][0], p2[0])
+                + multiply(p1[2][1], p2[1])
+                + multiply(p1[2][2], p2[2]);
     return retval;
 }
 

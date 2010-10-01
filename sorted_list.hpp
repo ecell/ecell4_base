@@ -17,11 +17,12 @@
 #include <boost/range/const_reverse_iterator.hpp>
 #include "utils/fun_composition.hpp"
 
-template<typename Tcntnr_, typename TweakOrdering_ = std::less<typename boost::range_value<Tcntnr_>::type> >
+template<typename Tcntnr_, typename TweakOrdering_ = std::less<typename boost::range_value<Tcntnr_>::type>, typename Tholder_ = Tcntnr_>
 class sorted_list
 {
 public:
     typedef Tcntnr_ container_type;
+	typedef Tholder_ holder_type;
     typedef typename boost::range_value<container_type>::type value_type;
     typedef typename boost::range_size<container_type>::type size_type;
     typedef typename boost::range_difference<container_type>::type difference_type;
@@ -37,75 +38,75 @@ public:
 
     size_type size() const
     {
-        return boost::size(cntnr_);
+        return boost::size(static_cast<container_type const&>(cntnr_));
     }
 
     iterator begin()
     {
-        return boost::begin(cntnr_);
+        return boost::begin(static_cast<container_type&>(cntnr_));
     }
 
     const_iterator begin() const
     {
-        return boost::begin(cntnr_);
+        return boost::begin(static_cast<container_type const&>(cntnr_));
     }
 
     iterator end()
     {
-        return boost::end(cntnr_);
+        return boost::end(static_cast<container_type&>(cntnr_));
     }
 
     const_iterator end() const
     {
-        return boost::end(cntnr_);
+        return boost::end(static_cast<container_type const&>(cntnr_));
     }
 
     reverse_iterator rbegin()
     {
-        return boost::rbegin(cntnr_);
+        return boost::rbegin(static_cast<container_type&>(cntnr_));
     }
 
     const_reverse_iterator rbegin() const
     {
-        return boost::rbegin(cntnr_);
+        return boost::rbegin(static_cast<container_type const&>(cntnr_));
     }
 
     reverse_iterator rend()
     {
-        return boost::rend(cntnr_);
+        return boost::rend(static_cast<container_type&>(cntnr_));
     }
 
     const_reverse_iterator rend() const
     {
-        return boost::end(cntnr_);
+        return boost::end(static_cast<container_type const&>(cntnr_));
     }
 
     void push(value_type const& v)
     {
-        iterator i(std::upper_bound(cntnr_.begin(), cntnr_.end(), v,
+        iterator i(std::upper_bound(begin(), end(), v,
                 static_cast<TweakOrdering_ const&>(ord_)));
-        cntnr_.insert(i, v);
+        static_cast<container_type&>(cntnr_).insert(i, v);
     }
 
     bool push_no_duplicate(value_type const& v)
     {
-        iterator i(std::upper_bound(cntnr_.begin(), cntnr_.end(), v,
+        iterator i(std::upper_bound(begin(), end(), v,
                 static_cast<TweakOrdering_ const&>(ord_)));
-        if (i != cntnr_.begin())
+        if (i != begin())
         {
             if (*--i == v)
                 return false;
             ++i;
         }
-        cntnr_.insert(i, v);
+        static_cast<container_type&>(cntnr_).insert(i, v);
         return true;
     }
 
     bool update(value_type const& v)
     {
-        iterator i(std::upper_bound(cntnr_.begin(), cntnr_.end(), v,
+        iterator i(std::upper_bound(begin(), end(), v,
                 static_cast<TweakOrdering_ const&>(ord_)));
-        if (i != cntnr_.begin())
+        if (i != begin())
         {
             if (*--i == v)
             {
@@ -115,14 +116,14 @@ public:
             }
             ++i;
         }
-        cntnr_.insert(i, v);
+        static_cast<container_type&>(cntnr_).insert(i, v);
         return true;
     }
 
 
     void erase(iterator const& i)
     {
-        cntnr_.erase(i);
+        static_cast<container_type&>(cntnr_).erase(i);
     }
 
     iterator find(value_type const& v)
@@ -157,25 +158,42 @@ public:
 
     size_type erase(value_type const& v)
     {
-        iterator e(cntnr_.end());
-        std::pair<iterator, iterator> i(std::equal_range(cntnr_.begin(), e, v,
+        iterator e(end());
+        std::pair<iterator, iterator> i(std::equal_range(begin(), e, v,
                 static_cast<TweakOrdering_ const&>(ord_)));
         const size_type retval(i.second - i.first);
-        cntnr_.erase(i.first, i.second);
+        static_cast<container_type&>(cntnr_).erase(i.first, i.second);
         return retval;
     }
 
     void clear()
     {
-        cntnr_.clear();
+        static_cast<container_type&>(cntnr_).clear();
     }
 
-    sorted_list(typename boost::call_traits<TweakOrdering_>::param_type ord): ord_(ord) {}
+	holder_type& container()
+	{
+		return cntnr_;
+	}
+
+	holder_type const& container() const
+	{
+		return cntnr_;
+	}
+
+    sorted_list(typename boost::call_traits<TweakOrdering_>::param_type ord,
+			    typename boost::call_traits<holder_type>::param_type holder)
+		: ord_(ord), cntnr_(holder) {}
+
+    explicit sorted_list(typename boost::call_traits<holder_type>::param_type const& holder)
+		: ord_(), cntnr_(holder) {}
+
+    explicit sorted_list(typename boost::call_traits<TweakOrdering_>::param_type ord): ord_(ord) {}
 
     sorted_list(): ord_() {}
 
 private:
-    container_type cntnr_;
+    holder_type cntnr_;
     TweakOrdering_ ord_;
 };
 

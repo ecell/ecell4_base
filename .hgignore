@@ -53,5 +53,8 @@ test/range_support_test
 test/py_range_converters_test
 test/StructureUtils_test
 test/linear_algebra_test
+test/pointer_as_ref_test
+test/EGFRDSimulator_test
+test/geometry_test
 samples/benchmark/hardbody
 samples/*/*.out

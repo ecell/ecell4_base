@@ -49,7 +49,7 @@ inline T_& reinterpret_cast_wrapper(Targ_& v)
 }
 
 template<typename T_, typename Targ_>
-struct dynamic_caster
+struct dynamic_caster: std::unary_function<Targ_, T_>
 {
     T_ operator()(Targ_ const& v)
     {
@@ -58,7 +58,7 @@ struct dynamic_caster
 };
 
 template<typename T_, typename Targ_>
-struct dynamic_caster<T_&, Targ_&>
+struct dynamic_caster<T_&, Targ_&>: std::unary_function<Targ_&, T_&>
 {
     T_& operator()(Targ_& v)
     {
@@ -77,5 +77,43 @@ inline T_& dynamic_cast_wrapper(Targ_& v)
 {
     return dynamic_caster<T_&, Targ_&>()(v);
 }
+
+template<typename Talloc_>
+struct destruct_ptr
+    : std::unary_function<typename Talloc_::pointer, void>
+{
+public:
+    typedef typename Talloc_::pointer argument_type;
+    typedef void result_type;
+
+public:
+    destruct_ptr(Talloc_& alloc): alloc_(alloc) {}
+
+    void operator()(argument_type ptr) const
+    {
+        alloc_.destroy(ptr);
+    }
+
+private:
+    Talloc_& alloc_;
+};
+
+template<typename Talloc_>
+struct default_initializer
+    : std::unary_function<typename Talloc_::reference, void>
+{
+    typedef typename Talloc_::reference argument_type;
+    typedef void result_type;
+
+    default_initializer(Talloc_& alloc): alloc_(alloc) {}
+
+    void operator()(argument_type ptr) const
+    {
+        new(alloc_.address(ptr)) typename Talloc_::value_type();
+    }
+
+private:
+    Talloc_& alloc_;
+};
 
 #endif /* FUN_WRAPPERS_HPP */

@@ -22,6 +22,7 @@
 #include "../Model.hpp"
 #include "../World.hpp"
 #include "../Multi.hpp"
+#include "../ShapedDomain.hpp"
 #include "../GSLRandomNumberGenerator.hpp"
 #include "../EGFRDSimulator.hpp"
 #include "../BDPropagator.hpp"
@@ -65,17 +66,19 @@ typedef EGFRDSimulatorTraits::plane_type Plane;
 typedef ::BDPropagator<EGFRDSimulatorTraits> BDPropagator;
 typedef EGFRDSimulatorTraits::shell_id_type ShellID;
 typedef EGFRDSimulatorTraits::domain_id_type DomainID;
-typedef EGFRDSimulatorTraits::spherical_shell_type SphericalShell;
-typedef EGFRDSimulatorTraits::cylindrical_shell_type CylindricalShell;
 typedef EGFRDSimulatorTraits::reaction_rule_type ReactionRuleInfo;
 typedef EGFRDSimulatorTraits::network_rules_type NetworkRulesWrapper;
 typedef EGFRDSimulator::domain_type Domain;
+typedef ::ShapedDomain<EGFRDSimulatorTraits> ShapedDomain;
+typedef EGFRDSimulator::spherical_shell_type SphericalShell;
+typedef EGFRDSimulator::cylindrical_shell_type CylindricalShell;
 typedef EGFRDSimulator::spherical_single_type::base_type Single;
 typedef EGFRDSimulator::spherical_pair_type::base_type Pair;
 typedef EGFRDSimulator::spherical_single_type SphericalSingle;
 typedef EGFRDSimulator::cylindrical_single_type CylindricalSingle;
 typedef EGFRDSimulator::spherical_pair_type SphericalPair;
 typedef EGFRDSimulator::cylindrical_pair_type CylindricalPair;
+typedef EGFRDSimulator::multi_type Multi;
 typedef ::MatrixSpace<SphericalShell, ShellID> SphericalShellContainer;
 typedef ::MatrixSpace<CylindricalShell, ShellID> CylindricalShellContainer;
 typedef ::StructureUtils<EGFRDSimulatorTraits> StructureUtils;
@@ -83,7 +86,8 @@ typedef EGFRDSimulatorTraits::planar_surface_type PlanarSurface;
 typedef EGFRDSimulatorTraits::spherical_surface_type SphericalSurface;
 typedef EGFRDSimulatorTraits::cylindrical_surface_type CylindricalSurface;
 typedef EGFRDSimulatorTraits::cuboidal_region_type CuboidalRegion;
-
+typedef EGFRDSimulatorTraits::reaction_record_type ReactionRecord;
+typedef EGFRDSimulatorTraits::reaction_recorder_type ReactionRecorder;
 } // namespace binding
 
 #endif /* TRAITS_HPP */

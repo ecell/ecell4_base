@@ -55,6 +55,7 @@
 #include "binding/shape_converters.hpp"
 #include "binding/position_converters.hpp"
 #include "binding/structure_classes.hpp"
+#include "binding/reaction_record_classes.hpp"
 
 namespace b = binding;
 
@@ -69,7 +70,7 @@ BOOST_PYTHON_MODULE(_gfrd)
 
     peer::util::register_std_exception_translator();
 
-    peer::util::register_std_exception_translator<PyExc_IndexError, std::out_of_range>();
+    peer::util::register_exception_translator<PyExc_IndexError, std::out_of_range>();
 
     b::register_model_class();
     b::register_bd_propagator_class();
@@ -102,6 +103,7 @@ BOOST_PYTHON_MODULE(_gfrd)
     b::register_world_class();
     b::register_structure_classes();
     b::register_module_functions();
+    b::register_reaction_record_classes();
 
     peer::util::register_seq_wrapped_multi_array_converter<b::Length>();
     peer::util::register_ndarray_wrapped_multi_array_converter<b::Length, 2>();

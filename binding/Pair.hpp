@@ -16,9 +16,9 @@ inline boost::python::objects::class_base register_pair_class(char const* name)
             typename impl_type::particle_array_type>();
 
     return class_<impl_type, bases<typename impl_type::base_type>,
-           boost::shared_ptr<impl_type> >(name, no_init)
+           boost::shared_ptr<impl_type>, boost::noncopyable>(name, no_init)
         .add_property("particles",
-            make_function(&impl_type::particles,
+            make_function(static_cast<typename impl_type::particle_array_type const&(impl_type::*)() const>(&impl_type::particles),
                 return_value_policy<return_by_value>()));
 }
 

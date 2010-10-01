@@ -15,6 +15,7 @@
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/iterator/filter_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
 
 template<typename Trange_>
@@ -282,5 +283,47 @@ struct range_size_retriever<transformed_range<Titer_, Tfun_, Tholder_getter_> >
         return range.size();
     }
 };
+
+namespace detail {
+
+template<typename Tpred_, typename Trange_>
+struct get_filter_iterator_range
+{
+    typedef boost::filter_iterator<Tpred_, typename boost::range_iterator<Trange_>::type> iterator_type;
+    typedef boost::iterator_range<iterator_type> type;
+};
+
+template<typename Tpred_, typename Trange_>
+struct get_filter_iterator_range<Tpred_, const Trange_>
+{
+    typedef boost::filter_iterator<Tpred_, typename boost::range_const_iterator<Trange_>::type> iterator_type;
+    typedef boost::iterator_range<iterator_type> type;
+};
+
+} // namespace detail
+
+template<typename Trange_, typename Tpred_>
+inline typename detail::get_filter_iterator_range<Tpred_, Trange_>::type
+make_filter_iterator_range(Trange_& range, Tpred_ pred)
+{
+    typedef typename detail::get_filter_iterator_range<Tpred_, Trange_> filter_range_gen;
+    typedef typename filter_range_gen::iterator_type iterator;
+    typedef typename filter_range_gen::type result_type;
+
+    return result_type(iterator(pred, boost::begin(range)),
+                       iterator(pred, boost::end(range)));
+}
+
+template<typename Trange_, typename Tpred_>
+inline typename detail::get_filter_iterator_range<Tpred_, const Trange_>::type
+make_filter_iterator_range(Trange_ const& range, Tpred_ pred)
+{
+    typedef typename detail::get_filter_iterator_range<Tpred_, const Trange_> filter_range_gen;
+    typedef typename filter_range_gen::iterator_type iterator;
+    typedef typename filter_range_gen::type result_type;
+
+    return result_type(iterator(pred, boost::begin(range)),
+                       iterator(pred, boost::end(range)));
+}
 
 #endif /* UTILS_RANGE_HPP */

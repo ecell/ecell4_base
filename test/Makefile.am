@@ -15,7 +15,10 @@ BDPropagator_test\
 range_support_test\
 py_range_converters_test \
 linear_algebra_test\
-StructureUtils_test
+geometry_test\
+StructureUtils_test\
+pointer_as_ref_test\
+EGFRDSimulator_test
 
 PYTHON_TESTS = \
 	BDSimulator_test.py \
@@ -36,7 +39,8 @@ PYTHON_TESTS = \
 	freeFunctions_test.py \
 	CylindricalSurface_test.py \
 	PlanarSurface_test.py \
-	utils_test.py
+	utils_test.py \
+	ReactionRecord_test.py
 
 TESTS = $(CPP_TESTS) $(PYTHON_TESTS)
 
@@ -65,7 +69,8 @@ CylindricalSurface_test.py \
 PlanarSurface_test.py \
 Model_test.py\
 NetworkRules_test.py\
-ReactionRule_test.py
+ReactionRule_test.py\
+ReactionRecord_test.py
 
 #%.py:
 #	$(TESTS_ENVIRONMENT) $(PYTHON) $<
@@ -103,6 +108,16 @@ range_support_test_SOURCES = range_support_test.cpp ../utils/range.hpp ../utils/
 
 linear_algebra_test_SOURCES = linear_algebra_test.cpp ../linear_algebra.hpp
 
+geometry_test_SOURCES = geometry_test.cpp ../geometry.hpp
+
 StructureUtils_test_SOURCES = StructureUtils_test.cpp ../StructureUtils.hpp
 StructureUtils_test_LDADD = $(GSL_LIBS)
 py_range_converters_test_SOURCES = py_range_converters_test.cpp ../peer/range_converters.hpp 
+
+pointer_as_ref_test_SOURCES = pointer_as_ref_test.cpp ../utils/pointer_as_ref.hpp
+
+EGFRDSimulator_test_SOURCES = EGFRDSimulator_test.cpp ../EGFRDSimulator.hpp ../Model.cpp ../NetworkRules.cpp ../BasicNetworkRulesImpl.cpp ../SpeciesType.cpp ../freeFunctions.cpp ../Logger.cpp ../GreensFunction3D.cpp ../GreensFunction3DAbs.cpp ../GreensFunction3DAbsSym.cpp ../GreensFunction3DRadAbs.cpp ../GreensFunction3DRadAbsBase.cpp ../GreensFunction3DRadInf.cpp ../GreensFunction3DSym.cpp ../SphericalBesselGenerator.cpp ../CylindricalBesselGenerator.cpp ../funcSum.cpp ../findRoot.cpp
+EGFRDSimulator_test_CPPFLAGS = -DDEBUG
+
+EGFRDSimulator_test_LDADD = $(GSL_LIBS)
+

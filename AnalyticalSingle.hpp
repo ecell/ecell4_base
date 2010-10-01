@@ -12,7 +12,7 @@ public:
     typedef typename traits_type::world_type::length_type length_type;
     typedef typename traits_type::world_type::position_type position_type;
     typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
-    typedef typename traits_type::world_type::structure_id_type structure_id_type;
+    typedef typename traits_type::domain_id_type identifier_type;
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef Tshell_ shell_type;
@@ -23,45 +23,48 @@ public:
 public:
     virtual ~AnalyticalSingle() {}
 
-    AnalyticalSingle(structure_id_type const& structure_id,
+    AnalyticalSingle(identifier_type const& id,
                      particle_id_pair const& particle,
-                     shell_id_pair const& shell,
-                     reaction_rule_vector const& reactions)
-        : base_type(structure_id, particle), shell_(shell),
-          reactions_(reactions), k_tot_(calculate_k_tot(reactions)) {}
+                     shell_id_pair const& shell)
+        : base_type(id, particle), shell_(shell) {}
 
     shell_id_pair const& shell() const
     {
         return shell_;
     }
 
-    reaction_rule_vector const& reactions()
+    length_type mobility_radius() const
     {
-        return reactions_;
+        return shape_size(shape(shell_.second)) - base_type::particle().second.radius();
     }
 
-    rate_type const& k_tot()
+    virtual char const* type_name() const
     {
-        return k_tot_;
+        return retrieve_domain_type_name(*this);
     }
 
-private:
-    static rate_type calculate_k_tot(reaction_rule_vector const& reactions)
+    virtual position_type const& position() const
     {
-        rate_type k_tot(0);
-        for (typename reaction_rule_vector::const_iterator
-             i(reactions.begin()), e(reactions.end());
-             i != e; ++i)
-        {
-            k_tot += (*i).k();
-        }
-        return k_tot;
+        return shape_position(shape(shell_.second));
+    }
+
+    virtual length_type const& size() const
+    {
+        return shape_size(shape(shell_.second));
+    }
+
+    virtual typename Domain<traits_type>::size_type num_shells() const
+    {
+        return 1;
+    }
+
+    virtual typename Domain<traits_type>::size_type multiplicity() const
+    {
+        return 1;
     }
 
 protected:
     const shell_id_pair shell_;
-    reaction_rule_vector const& reactions_;
-    const rate_type k_tot_;
 };
 
 #endif /* ANALYTICAL_SINGLE_HPP */

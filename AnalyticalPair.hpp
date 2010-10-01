@@ -4,6 +4,7 @@
 #include <cmath>
 #include <boost/array.hpp>
 #include "Pair.hpp"
+#include "AnalyticalSingle.hpp"
 
 template<typename Ttraits_, typename Tshell_>
 class AnalyticalPair: public Pair<Ttraits_>
@@ -14,22 +15,24 @@ public:
     typedef typename traits_type::world_type::length_type length_type;
     typedef typename traits_type::world_type::position_type position_type;
     typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
-    typedef typename traits_type::world_type::structure_id_type structure_id_type;
     typedef typename traits_type::world_type::traits_type::D_type D_type;
+    typedef typename traits_type::domain_id_type identifier_type;
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::network_rules_type network_rules_type;
+    typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
+    typedef typename network_rules_type::reaction_rule_vector reaction_rule_vector;
     typedef Tshell_ shell_type;
     typedef std::pair<shell_id_type, shell_type> shell_id_pair;
 
 public:
     virtual ~AnalyticalPair() {}
 
-    AnalyticalPair(structure_id_type const& structure_id,
+    AnalyticalPair(identifier_type const& id,
                    particle_id_pair const& p0, particle_id_pair const& p1,
                    shell_id_pair const& shell,
-                   length_type const& r0, length_type const& rt)
-        : base_type(structure_id, p0, p1), shell_(shell),
-          r0_(r0), rt_(rt)
+                   position_type const& iv,
+                   reaction_rule_vector const& reactions)
+        : base_type(id, p0, p1), shell_(shell), iv_(iv), reactions_(reactions)
     {
         // determine a_r and a_R
         {
@@ -40,7 +43,8 @@ public:
             const length_type sigma(R0 + R1);
             const length_type D_tot(D0 + D1);
             const length_type D_geom(std::sqrt(D0 * D1));
-            const length_type shell_size(shape(shell.second).radius() / SAFETY);
+            const length_type shell_size(shape(shell.second).radius() / traits_type::SAFETY);
+            const length_type r0(this->r0());
             BOOST_ASSERT(r0 >= sigma);
             if (((D_geom - D0) * r0) / D_tot + shell_size
                 + std::sqrt(D0 / D1) * (R1 - shell_size) - R0 < 0)
@@ -67,14 +71,14 @@ public:
         return shell_;
     }
 
-    length_type const& r0() const
+    position_type const& iv() const
     {
-        return r0_;
+        return iv_;
     }
 
-    length_type const& rt() const
+    length_type r0() const
     {
-        return rt_;
+        return length(iv_);
     }
 
     length_type const& a_R() const
@@ -112,13 +116,42 @@ public:
                base_type::particles_[1].second.D() / D_tot();
     }
 
+    virtual position_type const& position() const
+    {
+        return shape_position(shape(shell_.second));
+    }
+
+    virtual length_type const& size() const
+    {
+        return shape_size(shape(shell_.second));
+    }
+
+    virtual char const* type_name() const
+    {
+        return retrieve_domain_type_name(*this);
+    }
+
+    reaction_rule_vector const& reactions() const
+    {
+        return reactions_;
+    }
+
+    virtual typename Domain<traits_type>::size_type num_shells() const
+    {
+        return 1;
+    }
+
+    virtual typename Domain<traits_type>::size_type multiplicity() const
+    {
+        return 2;
+    }
+
 protected:
-    const shell_id_pair shell_;
-    const length_type r0_;
-    const length_type rt_;
+    shell_id_pair const shell_;
+    position_type const iv_;
+    reaction_rule_vector const& reactions_;
     mutable length_type a_R_;
     mutable length_type a_r_;
-    static const double SAFETY = 1.0 + 1e-5;
 };
 
 #endif /* ANALYTICAL_PAIR_HPP */

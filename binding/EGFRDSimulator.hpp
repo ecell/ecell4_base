@@ -32,9 +32,10 @@ class _EGFRDSimulator: public b::EGFRDSimulator, public boost::python::wrapper<b
     typedef base_type::domain_id_pair_generator domain_id_pair_generator;
 
 public:
-    _EGFRDSimulator(world_type& world, rng_type& rng,
-                    network_rules_type const& network_rules)
-        : base_type(world, rng, network_rules) {}
+    _EGFRDSimulator(boost::shared_ptr<world_type>,
+                    boost::shared_ptr<network_rules_type const> network_rules,
+                    rng_type& rng)
+        : base_type(world, network_rules, rng) {}
 
     virtual void step()
     {
@@ -43,9 +44,9 @@ public:
 };
 
 class_<_EGFRDSimulator, boost::noncopyable>("_EGFRDSimulator",
-            init<CyclicWorld&,
-                 GSLRandomNumberGenerator&,
-                 NetworkRulesWrapper const&>())
+            init<boost::shared_ptr<CyclicWorld>,
+                 boost::shared_ptr<NetworkRulesWrapper>,
+                 GSLRandomNumberGenerator&>())
         .def("new_spherical_shell", &_EGFRDSimulator::new_spherical_shell)
         .def("new_cylindrical_shell", &_EGFRDSimulator::new_spherical_shell)
         .def("get_spherical_shell",

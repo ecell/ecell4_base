@@ -206,6 +206,23 @@ struct shape_position_type<Cylinder<T_> >
     typedef typename Cylinder<T_>::position_type type;
 };
 
+template<typename T_>
+struct shape_length_type<Cylinder<T_> > {
+    typedef typename Cylinder<T_>::length_type type;
+};
+
+template<typename T>
+inline typename shape_length_type<Cylinder<T> >::type const& shape_size(Cylinder<T> const& shape)
+{
+    return shape.radius();
+} 
+
+template<typename T>
+inline typename shape_length_type<Cylinder<T> >::type& shape_size(Cylinder<T>& shape)
+{
+    return shape.radius();
+} 
+
 #if defined(HAVE_TR1_FUNCTIONAL)
 namespace std { namespace tr1 {
 #elif defined(HAVE_STD_HASH)

@@ -108,9 +108,9 @@ random_position(Sphere<T> const& shape, Trng& rng)
 {
     return add(shape.position(),
                 create_vector<typename Sphere<T>::position_type>(
-                    shape.size() * rng(),
-                    shape.size() * rng(),
-                    shape.size() * rng())); 
+                    shape.radius() * rng(),
+                    shape.radius() * rng(),
+                    shape.radius() * rng())); 
 }
 
 template<typename T_>
@@ -120,6 +120,23 @@ template<typename T_>
 struct shape_position_type<Sphere<T_> > {
     typedef typename Sphere<T_>::position_type type;
 };
+
+template<typename T_>
+struct shape_length_type<Sphere<T_> > {
+    typedef typename Sphere<T_>::length_type type;
+};
+
+template<typename T>
+inline typename shape_length_type<Sphere<T> >::type const& shape_size(Sphere<T> const& shape)
+{
+    return shape.radius();
+} 
+
+template<typename T>
+inline typename shape_length_type<Sphere<T> >::type& shape_size(Sphere<T>& shape)
+{
+    return shape.radius();
+} 
 
 #if defined(HAVE_TR1_FUNCTIONAL)
 namespace std { namespace tr1 {

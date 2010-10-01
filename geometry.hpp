@@ -124,4 +124,40 @@ distance_cyclic(T_ const& p1, T_ const& p2,
     return distance_cyclic(p1, p2, world_size, (void*)0);
 }
 
+template<typename T>
+inline T spherical_to_cartesian(T const& s)
+{
+    typename element_type_of<T>::type const sintheta(std::sin(s[1]));
+    T retval;
+    retval[0] = s[0] * std::cos(s[2]) * sintheta;
+    retval[1] = s[0] * std::sin(s[2]) * sintheta;
+    retval[2] = s[0] * std::cos(s[1]);
+    return retval;
+}
+
+template<typename T1, typename T2>
+inline T1 rotate_vector(T1 const& v, T2 const& axis, double angle)
+{
+    double const c(std::cos(angle)), s(std::sin(angle)), cc(1. - c);
+    double const mat[3][3] = {
+        {
+            c + cc * axis[0] * axis[0],
+            cc * axis[0] * axis[1] - axis[2] * s,
+            cc * axis[0] * axis[2] + axis[1] * s
+        },
+        {
+            cc * axis[0] * axis[1] + axis[2] * s,
+            c + cc * axis[1] * axis[1],
+            cc * axis[1] * axis[2] - axis[0] * s
+        },
+        {
+            cc * axis[0] * axis[2] - axis[1] * s,
+            cc * axis[1] * axis[2] + axis[0] * s,
+            c + cc * axis[2] * axis[2]
+        }
+    };
+
+    return multiply(mat, v);
+}
+
 #endif /* GEOMETRY_HPP */

@@ -18,7 +18,6 @@
 #include "utils/get_default_impl.hpp"
 #include "Logger.hpp"
 #include "StructureUtils.hpp"
-#include "utils/unassignable_adapter.hpp"
 
 template<typename Ttraits_>
 class BDPropagator
@@ -39,22 +38,23 @@ public:
     typedef typename particle_container_type::particle_id_pair_and_distance particle_id_pair_and_distance;
     typedef typename particle_container_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
     typedef typename particle_container_type::structure_type structure_type;
-    typedef typename Ttraits_::world_type::traits_type::rng_type rng_type;
-    typedef typename Ttraits_::time_type time_type;
-    typedef typename Ttraits_::network_rules_type network_rules_type;
+    typedef typename traits_type::world_type::traits_type::rng_type rng_type;
+    typedef typename traits_type::time_type time_type;
+    typedef typename traits_type::network_rules_type network_rules_type;
     typedef typename network_rules_type::reaction_rules reaction_rules;
     typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
-    typedef unassignable_adapter<reaction_rule_type, get_default_impl::std::vector> reaction_rule_list_type;
-
-public:
-    typedef boost::iterator_range<typename reaction_rule_list_type::const_iterator> reaction_rules_range;
+    typedef typename traits_type::reaction_record_type reaction_record_type;
+    typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
 
 public:
     template<typename Trange_>
-    BDPropagator(particle_container_type& tx, network_rules_type const& rules, rng_type& rng, time_type const& dt, int max_retry_count, Trange_ const& particles)
-        : tx_(tx), rules_(rules),
-          rng_(rng), dt_(dt), max_retry_count_(max_retry_count), queue_(),
-          rejected_move_count_(0)
+    BDPropagator(
+        particle_container_type& tx, network_rules_type const& rules,
+        rng_type& rng, time_type const& dt, int max_retry_count,
+        reaction_recorder_type* rrec, Trange_ const& particles)
+        : tx_(tx), rules_(rules), rng_(rng), dt_(dt),
+          max_retry_count_(max_retry_count), rrec_(rrec),
+          queue_(), rejected_move_count_(0)
     {
         call_with_size_if_randomly_accessible(
             boost::bind(&particle_id_vector_type::reserve, &queue_, _1),
@@ -137,11 +137,6 @@ public:
         return true;
     }
 
-    reaction_rules_range get_reactions() const
-    {
-        return reaction_rules_range(reactions_occurred_);
-    }
-
     std::size_t get_rejected_move_count() const
     {
         return rejected_move_count_;
@@ -194,6 +189,13 @@ private:
                         }
 
                         tx_.update_particle(new_p);
+
+                        if (rrec_)
+                        {
+                            (*rrec_)(
+                                reaction_record_type(
+                                    r.id(), array_gen(new_p.first), pp.first));
+                        }
                     }
                     break;
 
@@ -237,12 +239,20 @@ private:
                         const particle_id_pair
                             npp0(tx_.new_particle(s0.id(), np0)),
                             npp1(tx_.new_particle(s1.id(), np1));
+
+                        if (rrec_)
+                        {
+                            (*rrec_)(
+                                reaction_record_type(
+                                    r.id(),
+                                    array_gen(npp0.first, npp1.first),
+                                    pp.first));
+                        }
                     }
                     break;
                 default:
                     throw not_implemented("monomolecular reactions that produce more than two products are not supported");
                 }
-                reactions_occurred_.push_back(r);
                 return true;
             }
         }
@@ -311,7 +321,13 @@ private:
 
                         remove_particle(pp0.first);
                         remove_particle(pp1.first);
-                        tx_.new_particle(product, new_pos);
+                        particle_id_pair npp(tx_.new_particle(product, new_pos));
+                        if (rrec_)
+                        {
+                            (*rrec_)(
+                                reaction_record_type(
+                                    r.id(), array_gen(npp.first), pp0.first, pp1.first));
+                        }
                         break;
                     }
                 case 0:
@@ -323,7 +339,6 @@ private:
                     throw not_implemented("bimolecular reactions that produce more than one product are not supported");
                 }
 
-                reactions_occurred_.push_back(r);
                 return true;
             }
         }
@@ -353,8 +368,8 @@ private:
     rng_type& rng_;
     Real const dt_;
     int const max_retry_count_;
+    reaction_recorder_type* const rrec_;
     particle_id_vector_type queue_;
-    reaction_rule_list_type reactions_occurred_;
     int rejected_move_count_;
     static Logger& log_;
 };

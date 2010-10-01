@@ -99,7 +99,7 @@ private:
 class no_space: public std::exception
 {
 public:
-    no_space(std::string const& str): str_(str) {}
+    no_space(std::string const& str = ""): str_(str) {}
 
     virtual ~no_space() throw() {}
 
