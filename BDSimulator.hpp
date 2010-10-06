@@ -43,10 +43,9 @@ public:
 
     BDSimulator(boost::shared_ptr<world_type> world, 
                 boost::shared_ptr<network_rules_type const> network_rules,
-                rng_type& rng, reaction_recorder_type& rrec,
-                Real dt_factor = .5,
+                rng_type& rng, Real dt_factor = .5,
                 int dissociation_retry_moves = 1)
-        : base_type(world, network_rules, rng, rrec),
+        : base_type(world, network_rules, rng),
           dt_factor_(dt_factor), num_retrys_(dissociation_retry_moves)
     {
         calculate_dt();

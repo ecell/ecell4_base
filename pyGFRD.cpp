@@ -42,6 +42,7 @@
 #include "binding/particle_class.hpp"
 #include "binding/particle_container_class.hpp"
 #include "binding/particle_id_class.hpp"
+#include "binding/particle_model_class.hpp"
 #include "binding/plane_class.hpp"
 #include "binding/event_classes.hpp"
 #include "binding/shell_classes.hpp"
@@ -86,6 +87,7 @@ BOOST_PYTHON_MODULE(_gfrd)
     b::register_network_rules_wrapper_class();
     b::register_particle_class();
     b::register_particle_id_class();
+    b::register_particle_model_class();
     b::register_position_converters();
     b::register_event_class();
     b::register_python_event_class();

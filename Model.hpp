@@ -2,31 +2,35 @@
 #define MODEL_HPP
 
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <map>
 
 #include "SerialIDGenerator.hpp"
 #include "SpeciesTypeID.hpp"
 #include "SpeciesType.hpp"
-#include "NetworkRules.hpp"
 #include "utils/get_mapper_mf.hpp"
 #include "utils/pair.hpp"
+
+class NetworkRules;
 
 class Model: private boost::noncopyable
 {
 public:
-    typedef SpeciesTypeID species_id_type;
     typedef SpeciesType species_type_type;
+    typedef species_type_type::identifier_type species_id_type;
 
 private:
     typedef SerialIDGenerator<species_id_type> species_type_id_generator_type;
     typedef std::map<species_id_type, boost::shared_ptr<species_type_type> > species_type_map_type;
-    typedef select_second<species_type_map_type::value_type> second_selector_type;
+    typedef select_second<species_type_map_type::value_type> species_second_selector_type;
+
     typedef get_mapper_mf<std::string, std::string>::type string_map_type;
 
 public:
-    typedef boost::transform_iterator<second_selector_type,
+    typedef boost::transform_iterator<species_second_selector_type,
             species_type_map_type::const_iterator> species_type_iterator;
     typedef boost::iterator_range<species_type_iterator> species_type_range;
     typedef NetworkRules network_rules_type;
@@ -36,7 +40,7 @@ public:
 public:
     Model();
 
-    ~Model();
+    virtual ~Model();
 
     NetworkRules& network_rules() const
     {
@@ -62,7 +66,7 @@ public:
 public:
     species_type_id_generator_type species_type_id_generator_;
     species_type_map_type species_type_map_;
-    NetworkRules *network_rules_;
+    boost::scoped_ptr<NetworkRules> network_rules_;
     string_map_type attrs_;
 };
 

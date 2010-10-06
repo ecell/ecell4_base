@@ -807,11 +807,10 @@ public:
 
     EGFRDSimulator(boost::shared_ptr<world_type> world,
                    boost::shared_ptr<network_rules_type const> network_rules,
-                   rng_type& rng, reaction_recorder_type& rrec,
-                   int dissociation_retry_moves,
+                   rng_type& rng, int dissociation_retry_moves,
                    length_type const& user_max_shell_size =
                     std::numeric_limits<length_type>::infinity())
-        : base_type(world, network_rules, rng, rrec),
+        : base_type(world, network_rules, rng),
           num_retries_(dissociation_retry_moves),
           user_max_shell_size_(user_max_shell_size),
           ssmat_((*world).world_size(), (*world).matrix_size()),
@@ -822,7 +821,7 @@ public:
                                      cylindrical_shell_matrix_type&>(csmat_)),
           single_shell_factor_(.1),
           multi_shell_factor_(.05),
-          rejected_moves_(0), zero_step_count_(0) {}
+          rejected_moves_(0), zero_step_count_(0), dirty_(true) {}
 
     length_type const& user_max_shell_size() const
     {
@@ -928,15 +927,25 @@ public:
         domains_.clear();
         ssmat_.clear();
         csmat_.clear();
+
+        BOOST_FOREACH (particle_id_pair const& pp,
+                       (*base_type::world_).get_particles_range())
+        {
+            boost::shared_ptr<single_type> single(create_single(pp));
+            add_event(*single, SINGLE_EVENT_ESCAPE);
+        }
+        dirty_ = false;
     }
 
     virtual void step()
     {
-        step(base_type::dt_);
+        step(base_type::t_ + base_type::dt_);
     }
 
     virtual bool step(time_type const& upto)
     {
+        if (dirty_)
+            initialize();
         time_type const lt(upto - base_type::t_);
         if (lt <= 0.)
             return false;
@@ -1646,7 +1655,11 @@ protected:
         case 0:
             remove_domain(domain);
             (*base_type::world_).remove_particle(reactant.first);
-            (base_type::rrec_)(reaction_record_type(r.id(), array_gen<particle_id_type>(), reactant.first));
+            if (base_type::rrec_)
+            {
+                (*base_type::rrec_)(reaction_record_type(
+                    r.id(), array_gen<particle_id_type>(), reactant.first));
+            }
             break;
         case 1: 
             {
@@ -1671,7 +1684,11 @@ protected:
                         product_species.id(), reactant.second.position()));
                 boost::shared_ptr<single_type> new_domain(create_single(product));
                 add_event(*new_domain, SINGLE_EVENT_ESCAPE);
-                (base_type::rrec_)(reaction_record_type(r.id(), array_gen(product.first), reactant.first));
+                if (base_type::rrec_)
+                {
+                    (*base_type::rrec_)(reaction_record_type(
+                        r.id(), array_gen(product.first), reactant.first));
+                }
             }
             break;
         case 2:
@@ -1749,8 +1766,11 @@ protected:
                 add_event(*create_single(pp0), SINGLE_EVENT_ESCAPE);
                 add_event(*create_single(pp1), SINGLE_EVENT_ESCAPE);
 
-                (base_type::rrec_)(reaction_record_type(
-                    r.id(), array_gen(pp0.first, pp1.first), reactant.first));
+                if (base_type::rrec_)
+                {
+                    (*base_type::rrec_)(reaction_record_type(
+                        r.id(), array_gen(pp0.first, pp1.first), reactant.first));
+                }
             }
             break;
         default:
@@ -2729,11 +2749,14 @@ protected:
                                     create_single(new_particle));
                                 add_event(*new_single, SINGLE_EVENT_ESCAPE);
 
-                                (base_type::rrec_)(reaction_record_type(
-                                    r.id(),
-                                    array_gen(new_particle.first),
-                                    domain.particles()[0].first,
-                                    domain.particles()[1].first));
+                                if (base_type::rrec_)
+                                {
+                                    (*base_type::rrec_)(reaction_record_type(
+                                        r.id(),
+                                        array_gen(new_particle.first),
+                                        domain.particles()[0].first,
+                                        domain.particles()[1].first));
+                                }
 
                                 LOG_DEBUG(("product: %s", boost::lexical_cast<std::string>(new_single).c_str()));
                             }
@@ -2772,7 +2795,8 @@ protected:
         switch (domain.last_event())
         {
         case multi_type::REACTION:
-            (base_type::rrec_)(domain.last_reaction());
+            if (base_type::rrec_)
+                (*base_type::rrec_)(domain.last_reaction());
             burst(domain);
             break;
         case multi_type::ESCAPE:
@@ -3184,6 +3208,7 @@ protected:
     length_type multi_shell_factor_;
     unsigned int rejected_moves_;
     unsigned int zero_step_count_;
+    bool dirty_;
     static Logger& log_;
 };
 

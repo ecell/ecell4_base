@@ -20,6 +20,7 @@
 #include "../Plane.hpp"
 #include "../Point.hpp"
 #include "../Model.hpp"
+#include "../ParticleModel.hpp"
 #include "../World.hpp"
 #include "../Multi.hpp"
 #include "../ShapedDomain.hpp"
@@ -51,6 +52,7 @@ typedef WorldTraits::surface_type Surface;
 typedef WorldTraits::region_type Region;
 typedef ::World<WorldTraits> World;
 typedef ::Model Model;
+typedef ::ParticleModel ParticleModel;
 typedef ::NetworkRules NetworkRules;
 typedef NetworkRules::reaction_rule_generator ReactionRuleGenerator;
 typedef World::transaction_type Transaction;

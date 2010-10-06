@@ -38,6 +38,7 @@ noinst_HEADERS = \
 	Particle.hpp \
 	particle_id_class.hpp \
 	particle_container_class.hpp \
+	particle_model_class.hpp \
 	position_converters.hpp \
 	PlanarSurface.hpp \
 	plane_class.hpp \
@@ -65,7 +66,9 @@ noinst_HEADERS = \
 	Sphere.hpp \
 	sphere_class.hpp \
 	SphericalSurface.hpp \
+	StructureType.hpp \
 	structure_classes.hpp \
+	structure_type_class.hpp \
 	transaction_classes.hpp \
 	Transaction.hpp \
 	world_class.hpp \
@@ -88,6 +91,7 @@ libbinding_utils_la_SOURCES = \
 	particle_class.cpp \
 	particle_container_class.cpp \
 	particle_id_class.cpp \
+	particle_model_class.cpp \
 	plane_class.cpp \
 	position_converters.cpp \
 	event_classes.cpp \
@@ -100,5 +104,6 @@ libbinding_utils_la_SOURCES = \
 	species_type_class.cpp \
 	sphere_class.cpp \
 	structure_classes.cpp \
+	structure_type_class.cpp \
 	transaction_classes.cpp \
 	world_class.cpp

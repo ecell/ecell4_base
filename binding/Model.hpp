@@ -34,7 +34,7 @@ inline void register_model_class(char const* name)
         .add_property("species_types",
                 peer::util::range_from_range<
                     typename impl_type::species_type_range,
-                    impl_type, &impl_type::get_species_types>());
+                    impl_type, &impl_type::get_species_types>())
         ;
 }
 

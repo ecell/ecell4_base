@@ -116,7 +116,7 @@ py_range_converters_test_SOURCES = py_range_converters_test.cpp ../peer/range_co
 
 pointer_as_ref_test_SOURCES = pointer_as_ref_test.cpp ../utils/pointer_as_ref.hpp
 
-EGFRDSimulator_test_SOURCES = EGFRDSimulator_test.cpp ../EGFRDSimulator.hpp ../Model.cpp ../NetworkRules.cpp ../BasicNetworkRulesImpl.cpp ../SpeciesType.cpp ../freeFunctions.cpp ../Logger.cpp ../GreensFunction3D.cpp ../GreensFunction3DAbs.cpp ../GreensFunction3DAbsSym.cpp ../GreensFunction3DRadAbs.cpp ../GreensFunction3DRadAbsBase.cpp ../GreensFunction3DRadInf.cpp ../GreensFunction3DSym.cpp ../SphericalBesselGenerator.cpp ../CylindricalBesselGenerator.cpp ../funcSum.cpp ../findRoot.cpp
+EGFRDSimulator_test_SOURCES = EGFRDSimulator_test.cpp ../EGFRDSimulator.hpp ../Model.cpp ../NetworkRules.cpp ../BasicNetworkRulesImpl.cpp ../SpeciesType.cpp ../freeFunctions.cpp ../Logger.cpp ../GreensFunction3D.cpp ../GreensFunction3DAbs.cpp ../GreensFunction3DAbsSym.cpp ../GreensFunction3DRadAbs.cpp ../GreensFunction3DRadAbsBase.cpp ../GreensFunction3DRadInf.cpp ../GreensFunction3DSym.cpp ../SphericalBesselGenerator.cpp ../CylindricalBesselGenerator.cpp ../funcSum.cpp ../findRoot.cpp ../ParticleModel.cpp ../StructureType.cpp
 EGFRDSimulator_test_CPPFLAGS = -DDEBUG
 
 EGFRDSimulator_test_LDADD = $(GSL_LIBS)

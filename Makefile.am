@@ -111,6 +111,7 @@ noinst_HEADERS = \
 	SphericalBesselTable.hpp\
 	Structure.hpp\
 	StructureUtils.hpp\
+	StructureType.hpp\
 	Surface.hpp\
 	Transaction.hpp\
 	twofold_container.hpp\
@@ -165,8 +166,10 @@ _gfrd_la_SOURCES=\
 	pyGFRD.cpp\
 	Model.cpp\
 	SpeciesType.cpp\
+	StructureType.cpp\
 	BasicNetworkRulesImpl.cpp\
 	NetworkRules.cpp\
+	ParticleModel.cpp\
 	Logger.cpp\
 	utils.cpp
 

@@ -5,8 +5,10 @@
 #define BOOST_TEST_MODULE "EGFRDSimulator"
 
 #include <boost/test/included/unit_test.hpp>
-#include "Model.hpp"
+#include <cmath>
+#include "ParticleModel.hpp"
 #include "EGFRDSimulator.hpp"
+#include "EGFRDSimulatorFactory.hpp"
 #include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
 
@@ -15,18 +17,55 @@ typedef EGFRDSimulatorTraitsBase<world_type> simulator_traits_type;
 typedef EGFRDSimulator<simulator_traits_type> simulator_type;
 typedef simulator_traits_type::network_rules_type network_rules_type;
 
-struct ReactionRecorderMock: public simulator_traits_type::reaction_recorder_type
-{
-    virtual ~ReactionRecorderMock() {}
+static Real const N_A(6.0221367e23);
 
-    virtual void operator()(reaction_record_type const&) {}
-};
+template<typename Tworld_, typename Trng_, typename Tpid_list_>
+void inject_particles(Tworld_& world, Trng_& rng, Tpid_list_& pid_list, typename Tworld_::species_id_type const& sid, int n)
+{
+    typedef typename Tworld_::particle_id_pair_and_distance_list particle_id_pair_list;
+    typedef typename Tworld_::particle_id_pair particle_id_pair;
+    typedef typename Tworld_::length_type length_type;
+    typedef typename Tworld_::particle_shape_type particle_shape_type;
+    typedef typename Tworld_::position_type position_type;
+    typedef typename Tworld_::species_type species_type;
+
+    species_type const& s(world.get_species(sid));
+ 
+    for (int i = 0; i < n; ++i)
+    {
+        particle_shape_type p(position_type(), s.radius());
+
+        for (;;)
+        {
+            p.position() = position_type(
+                rng.uniform(0, world.world_size()),
+                rng.uniform(0, world.world_size()),
+                rng.uniform(0, world.world_size()));
+            if (boost::scoped_ptr<particle_id_pair_list>(
+                world.check_overlap(p)) == 0)
+            {
+                break;
+            }
+            std::cerr << i << "th particle rejected" << std::endl;
+        }
+        
+        particle_id_pair i(world.new_particle(sid, p.position()));
+        pid_list.push_back(i.first);
+    }
+}
 
 BOOST_AUTO_TEST_CASE(test)
 {
+    typedef world_type::traits_type::particle_id_type particle_id_type;
+    typedef world_type::traits_type::length_type length_type;
 
-    boost::shared_ptr<world_type> w(new world_type(1., 10));
-    Model m;
+    int const n(300);
+
+    ParticleModel m;
+
+    m["size"] = "1.";
+    m["matrix_size"] = boost::lexical_cast<std::string>(
+        (int)std::pow(n * 6, 1. / 3.));
 
     boost::shared_ptr<SpeciesType> s1(new SpeciesType());
     (*s1)["name"] = "S";
@@ -42,12 +81,26 @@ BOOST_AUTO_TEST_CASE(test)
     m.add_species_type(s2);
 
     m.network_rules().add_reaction_rule(
-        new_reaction_rule(s1->id(), array_gen<SpeciesTypeID>(), .2));
+        new_reaction_rule(s1->id(), s1->id(),
+            array_gen<SpeciesTypeID>(s2->id()), 1e7 / N_A));
 
-    boost::shared_ptr<network_rules_type> nrw(new network_rules_type(m.network_rules()));
+    m.network_rules().add_reaction_rule(
+        new_reaction_rule(s2->id(),
+            array_gen<SpeciesTypeID>(s1->id(), s1->id()), 1e3));
+
+    boost::shared_ptr<network_rules_type> nrw(
+        new network_rules_type(m.network_rules()));
+
     world_type::traits_type::rng_type rng;
-    ReactionRecorderMock rr;
-    simulator_type s(w, nrw, rng, rr, 3);
 
-    s.step();
+    std::vector<particle_id_type> S_particles, P_particles;
+    EGFRDSimulatorFactory<simulator_traits_type> factory(rng);
+    boost::scoped_ptr<simulator_type> s(factory(m));
+
+    inject_particles(*s->world(), rng, S_particles, s1->id(), n / 2);
+    inject_particles(*s->world(), rng, P_particles, s2->id(), n / 2);
+
+
+    for (int i = 10000; --i >= 0;)
+        s->step();
 }
