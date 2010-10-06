@@ -939,26 +939,52 @@ public:
 
     virtual void step()
     {
-        step(base_type::t_ + base_type::dt_);
+        _step();
     }
 
     virtual bool step(time_type const& upto)
     {
-        if (dirty_)
-            initialize();
-        time_type const lt(upto - base_type::t_);
-        if (lt <= 0.)
+        log_.info("stop at %g", upto);
+
+        if (upto >= base_type::t_)
+        {
             return false;
-        if (base_type::dt_ < lt)
-        {
-            _step(base_type::dt_);
         }
-        else
+
+        if (upto >= scheduler_.top().second->time())
         {
-            _step(lt);
-            base_type::t_ = upto;
+            _step();
+            return true;
         }
-        return true;
+
+        base_type::t_ = upto;
+
+        std::vector<domain_id_type> non_singles;
+
+        // first burst all Singles.
+        BOOST_FOREACH (event_id_pair_type const& event, scheduler_.events())
+        {
+            single_event const* single_ev(
+                    dynamic_cast<single_event const*>(event.second.get()));
+            if (single_ev)
+            {
+                burst(single_ev->domain());
+            }
+            else
+            {
+                domain_event_base const* domain_ev(
+                    dynamic_cast<domain_event_base const*>(event.second.get()));
+                BOOST_ASSERT(domain_ev);
+                non_singles.push_back(domain_ev->domain().id());
+            }
+        }
+
+        // then burst all Pairs and Multis.
+        burst_domains(non_singles);
+
+        base_type::dt_ = 0.;
+
+        return false;
     }
 
 protected:
@@ -1571,6 +1597,30 @@ protected:
                 result.get().push_back(boost::dynamic_pointer_cast<domain_type>(s));
             }
         }
+    }
+
+    void burst(single_type& domain)
+    {
+        LOG_DEBUG(("burst: bursting %s", boost::lexical_cast<std::string>(domain).c_str()));
+        BOOST_ASSERT(base_type::t_ >= domain.last_time());
+        BOOST_ASSERT(base_type::t_ <= domain.last_time() + domain.dt());
+        {
+            spherical_single_type* _domain(dynamic_cast<spherical_single_type*>(&domain));
+            if (_domain)
+            {
+                burst(*_domain);
+                return;
+            }
+        }
+        {
+            cylindrical_single_type* _domain(dynamic_cast<cylindrical_single_type*>(&domain));
+            if (_domain)
+            {
+                burst(*_domain);
+                return;
+            }
+        }
+        throw not_implemented("?");
     }
 
     void burst(boost::shared_ptr<domain_type> domain, boost::optional<std::vector<boost::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<boost::shared_ptr<domain_type> >&>())
@@ -2837,8 +2887,10 @@ protected:
         throw not_implemented(std::string("unsupported domain type"));
     }
 
-    void _step(time_type const& dt)
+    void _step()
     {
+        if (dirty_)
+            initialize();
 #ifdef DEBUG
         check();
 #endif
