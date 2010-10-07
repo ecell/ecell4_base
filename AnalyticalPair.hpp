@@ -22,7 +22,7 @@ public:
     typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
     typedef typename network_rules_type::reaction_rule_vector reaction_rule_vector;
     typedef Tshell_ shell_type;
-    typedef std::pair<shell_id_type, shell_type> shell_id_pair;
+    typedef std::pair<const shell_id_type, shell_type> shell_id_pair;
 
 public:
     virtual ~AnalyticalPair() {}
@@ -67,6 +67,11 @@ public:
     }
 
     shell_id_pair const& shell() const
+    {
+        return shell_;
+    }
+
+    shell_id_pair& shell()
     {
         return shell_;
     }
@@ -146,8 +151,24 @@ public:
         return 2;
     }
 
+    virtual std::string as_string() const
+    {
+        return (boost::format(
+            "%s(id=%s, event=%s, last_time=%g, dt=%g, particles=[(%s:%s), (%s:%s)], iv=%s, shell=(%s:%s))") %
+            type_name() %
+            boost::lexical_cast<std::string>(base_type::id_) %
+            boost::lexical_cast<std::string>(base_type::event_.first) %
+            base_type::last_time_ % base_type::dt_ %
+            boost::lexical_cast<std::string>(base_type::particles()[0].first) %
+            boost::lexical_cast<std::string>(base_type::particles()[0].second) %
+            boost::lexical_cast<std::string>(base_type::particles()[1].first) %
+            boost::lexical_cast<std::string>(base_type::particles()[1].second) %
+            boost::lexical_cast<std::string>(iv_) %
+            boost::lexical_cast<std::string>(shell_.first) %
+            boost::lexical_cast<std::string>(shell_.second)).str();
+    }
 protected:
-    shell_id_pair const shell_;
+    shell_id_pair shell_;
     position_type const iv_;
     reaction_rule_vector const& reactions_;
     mutable length_type a_R_;

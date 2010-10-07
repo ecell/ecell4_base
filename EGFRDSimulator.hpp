@@ -1018,11 +1018,10 @@ protected:
                      length_type const& new_shell_size)
     {
         typedef typename AnalyticalSingle<traits_type, T>::shell_type shell_type;
-        typename shell_type::shape_type new_shape(shape(domain.shell().second));
-        shape_position(new_shape) = new_pos;
-        shape_size(new_shape) = new_shell_size;
-        shell_type const new_shell(domain.id(), new_shape);
-        move_shell(std::pair<shell_id_type const, shell_type>(domain.shell().first, new_shell));
+        typename shell_type::shape_type& domain_shape(shape(domain.shell().second));
+        shape_position(domain_shape) = new_pos;
+        shape_size(domain_shape) = new_shell_size;
+        move_shell(domain.shell());
     }
 
     template<typename T>
@@ -1926,6 +1925,10 @@ protected:
         typedef typename detail::get_greens_function<shape_type>::type greens_function;
         time_type const dt_reaction(draw_single_reaction_time(domain.particle().second.sid()));
         time_type const dt_escape_or_interaction(draw_escape_or_interaction_time(domain));
+        LOG_DEBUG(("determine_next_event: %s => dt_reaction=%g, "
+                   "dt_escape_or_interaction=%g",
+                   boost::lexical_cast<std::string>(domain).c_str(),
+                   dt_reaction, dt_escape_or_interaction));
         single_event_kind event_kind;
         if (dt_reaction < dt_escape_or_interaction)
         {
@@ -1939,7 +1942,7 @@ protected:
         }
 
         domain.last_time() = base_type::t_;
-        update_event(domain, event_kind);
+        add_event(domain, event_kind);
     }
 
     void determine_next_event(single_type& domain) const
@@ -1975,7 +1978,7 @@ protected:
                 dt_reaction: dt_com_escape_or_iv_event);
         domain.dt() = dt_and_event_pair.first;
         domain.last_time() = base_type::t_;
-        update_event(domain, dt_and_event_pair.second);
+        add_event(domain, dt_and_event_pair.second);
     }
 
     void determine_next_event(pair_type& domain) const
@@ -2067,6 +2070,7 @@ protected:
             boost::lexical_cast<std::string>(closest_domain).c_str(),
             closest.second));
         move_domain(domain, domain.position(), new_shell_size);
+        BOOST_ASSERT(shape_size(shape(domain.shell().second)) == new_shell_size);
 
         determine_next_event(domain);
     }
@@ -2667,7 +2671,6 @@ protected:
                 LOG_DEBUG(("%s (dt=%g)",
                     boost::lexical_cast<std::string>(domain).c_str(),
                     domain.dt()));
-                add_event(domain, SINGLE_EVENT_ESCAPE);
             }
         }
     }
@@ -2918,7 +2921,7 @@ protected:
         if (base_type::dt_ == 0.)
         {
             ++zero_step_count_;
-            if (zero_step_count_ >= std::max(scheduler_.size(), static_cast<std::size_t>(10u)))
+            if (zero_step_count_ >= std::max(scheduler_.size() * 3, static_cast<std::size_t>(10u)))
             {
                 throw illegal_state("too many dt=zero steps. simulator halted?");
             }

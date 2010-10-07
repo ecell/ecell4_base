@@ -21,7 +21,7 @@ public:
     virtual ~Domain() {}
 
     Domain(identifier_type const& id)
-        : id_(id) {}
+        : id_(id), last_time_(0.), dt_(0.) {}
 
     identifier_type const& id() const
     {

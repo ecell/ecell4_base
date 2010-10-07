@@ -16,7 +16,7 @@ public:
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef Tshell_ shell_type;
-    typedef std::pair<shell_id_type, shell_type> shell_id_pair;
+    typedef std::pair<const shell_id_type, shell_type> shell_id_pair;
     typedef typename network_rules_type::reaction_rule_vector reaction_rule_vector;
     typedef typename traits_type::rate_type rate_type;
 
@@ -29,6 +29,11 @@ public:
         : base_type(id, particle), shell_(shell) {}
 
     shell_id_pair const& shell() const
+    {
+        return shell_;
+    }
+
+    shell_id_pair& shell()
     {
         return shell_;
     }
@@ -63,8 +68,22 @@ public:
         return 1;
     }
 
+    virtual std::string as_string() const
+    {
+        return (boost::format(
+            "%s(id=%s, event=%s, last_time=%g, dt=%g, particle=(%s:%s), shell=(%d:%s))") %
+            type_name() %
+            boost::lexical_cast<std::string>(base_type::id_) %
+            boost::lexical_cast<std::string>(base_type::event_.first) %
+            base_type::last_time_ % base_type::dt_ %
+            boost::lexical_cast<std::string>(base_type::particle().first) %
+            boost::lexical_cast<std::string>(base_type::particle().second) %
+            boost::lexical_cast<std::string>(shell_.first) %
+            boost::lexical_cast<std::string>(shell_.second)).str();
+    }
+
 protected:
-    const shell_id_pair shell_;
+    shell_id_pair shell_;
 };
 
 #endif /* ANALYTICAL_SINGLE_HPP */
