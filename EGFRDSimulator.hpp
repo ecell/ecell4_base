@@ -253,9 +253,9 @@ protected:
     struct intruder_collector
     {
         intruder_collector(world_type const& world,
-                           particle_shape_type const& particle,
+                           particle_shape_type const& cmp,
                            domain_id_type const& ignore)
-            : world(world), particle(particle), ignore(ignore),
+            : world(world), cmp(cmp), ignore(ignore),
               closest(domain_id_type(),
                       std::numeric_limits<length_type>::infinity()) {}
 
@@ -268,8 +268,8 @@ protected:
 
             length_type const distance(
                     world.distance(
-                        shape(offset((*i).second, off)), particle.position()));
-            if (distance > particle.radius())
+                        shape(offset((*i).second, off)), cmp.position()));
+            if (distance > cmp.radius())
             {
                 if (distance < closest.second)
                 {
@@ -288,7 +288,7 @@ protected:
         }
 
         world_type const& world;
-        particle_shape_type const& particle;
+        particle_shape_type cmp;
         domain_id_type ignore;
         std::pair<domain_id_type, length_type> closest;
         sorted_list<std::vector<domain_id_type>,
@@ -348,15 +348,15 @@ protected:
                     pointer_as_ref<std::vector<domain_id_type> > > neighbors;
     };
 
-    template<typename TdistFn_, typename TdidSet_>
+    template<typename TdidSet_>
     struct closest_object_finder
     {
-        typedef TdistFn_ distance_function;
         typedef TdidSet_ domain_id_set;
 
-        closest_object_finder(distance_function const& dist_fn,
+        closest_object_finder(world_type const& world,
+                              position_type const& cmp,
                               domain_id_set const& ignore)
-            : dist_fn(dist_fn), ignore(ignore),
+            : world(world), cmp(cmp), ignore(ignore),
               closest(domain_id_type(),
                       std::numeric_limits<length_type>::infinity()) {}
 
@@ -367,7 +367,7 @@ protected:
             if (contains(ignore, did))
                 return;
 
-            length_type const distance(dist_fn(shape(offset((*i).second, off))));
+            length_type const distance(world.distance(shape(offset((*i).second, off)), cmp));
             if (distance < closest.second)
             {
                 closest.first = did;
@@ -375,12 +375,10 @@ protected:
             }
         }
 
-        distance_function const& dist_fn;
+        world_type const& world;
+        position_type cmp;
         domain_id_set const& ignore;
         std::pair<domain_id_type, length_type> closest;
-        sorted_list<std::vector<domain_id_type>,
-                    std::less<domain_id_type>,
-                    pointer_as_ref<std::vector<domain_id_type> > > intruders;
     };
 
     template<typename Tcol_>
@@ -1421,7 +1419,7 @@ protected:
         position_type const displacement(draw_displacement(domain, r));
 #ifdef DEBUG
         length_type const scale(domain.particle().second.radius());
-        BOOST_ASSERT(!feq(length(displacement), std::abs(r), scale));
+        BOOST_ASSERT(feq(length(displacement), std::abs(r), scale));
 #endif
         LOG_DEBUG(("draw_new_position(domain=%s, dt=%g): r=%g, displacement=%s",
                 boost::lexical_cast<std::string>(domain).c_str(),
@@ -2023,10 +2021,9 @@ protected:
     std::pair<domain_id_type, length_type>
     get_closest_domain(position_type const& p, TdidSet const& ignore) const
     {
-        typedef closest_object_finder<distance_calculator, TdidSet> collector_type;
+        typedef closest_object_finder<TdidSet> collector_type;
 
-        collector_type col(
-            distance_calculator((*base_type::world_), p), ignore);
+        collector_type col((*base_type::world_), p, ignore);
         boost::fusion::for_each(smatm_, shell_collector_applier<collector_type>(col, p));
         return col.closest;
     }
@@ -2044,12 +2041,15 @@ protected:
     void restore_domain(AnalyticalSingle<traits_type, T>& domain,
                         std::pair<domain_id_type, length_type> const& closest)
     {
-        domain_type const& closest_domain(*get_domain(closest.first));
+        domain_type const* closest_domain(
+            closest.second == std::numeric_limits<length_type>::infinity() ?
+                (domain_type const*)0: get_domain(closest.first).get());
         length_type new_shell_size(0.);
 
+        if (closest_domain)
         {
             single_type const* const _closest_domain(
-                dynamic_cast<single_type const*>(&closest_domain));
+                dynamic_cast<single_type const*>(closest_domain));
             if (_closest_domain)
             {
                 length_type const distance_to_closest(
@@ -2063,11 +2063,18 @@ protected:
                 new_shell_size = closest.second / traits_type::SAFETY;
             }
         }
+        else
+        {
+            new_shell_size = (*base_type::world_).cell_size() / 2 /
+                    traits_type::SAFETY;
+        }
         LOG_DEBUG(("restore shell: %s (shell_size=%g, dt=%g) closest=%s (distance=%g)",
             boost::lexical_cast<std::string>(domain).c_str(),
             new_shell_size,
             domain.dt(),
-            boost::lexical_cast<std::string>(closest_domain).c_str(),
+            closest_domain ?
+                boost::lexical_cast<std::string>(*closest_domain).c_str():
+                "(none)",
             closest.second));
         move_domain(domain, domain.position(), new_shell_size);
         BOOST_ASSERT(shape_size(shape(domain.shell().second)) == new_shell_size);

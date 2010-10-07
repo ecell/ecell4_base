@@ -66,6 +66,7 @@ BOOST_AUTO_TEST_CASE(test)
     m["size"] = "1.";
     m["matrix_size"] = boost::lexical_cast<std::string>(
         (int)std::pow(n * 6, 1. / 3.));
+    std::cout << "matrix_size=" << m["matrix_size"] << std::endl;
 
     boost::shared_ptr<SpeciesType> s1(new SpeciesType());
     (*s1)["name"] = "S";

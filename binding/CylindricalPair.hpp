@@ -2,6 +2,7 @@
 #define BINDING_CYLINDRICAL_PAIR_HPP
 
 #include <boost/python.hpp>
+#include "fcpair_reference_accessor_wrapper.hpp"
 
 namespace binding {
 
@@ -20,8 +21,15 @@ inline boost::python::objects::class_base register_cylindrical_pair_class(char c
              typename impl_type::position_type,
              typename impl_type::reaction_rule_vector>())
         .add_property("shell",
-            make_function(&impl_type::shell,
-                return_value_policy<return_by_value>()))
+            make_function(
+                 &fcpair_reference_accessor_wrapper<
+                    impl_type, typename impl_type::shell_id_pair,
+                    &impl_type::shell, &impl_type::shell>::get,
+                 return_value_policy<return_by_value>()),
+            make_function(
+                 &fcpair_reference_accessor_wrapper<
+                    impl_type, typename impl_type::shell_id_pair,
+                    &impl_type::shell, &impl_type::shell>::set))
         .add_property("iv",
             make_function(&impl_type::iv,
                 return_value_policy<return_by_value>()))
