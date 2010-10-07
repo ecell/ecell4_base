@@ -250,14 +250,12 @@ protected:
         domain_type& domain_;
     };
 
-    template<typename TdistFn_>
     struct intruder_collector
     {
-        typedef TdistFn_ distance_function;
-
-        intruder_collector(distance_function const& dist_fn,
+        intruder_collector(world_type const& world,
+                           particle_shape_type const& particle,
                            domain_id_type const& ignore)
-            : dist_fn(dist_fn), ignore(ignore),
+            : world(world), particle(particle), ignore(ignore),
               closest(domain_id_type(),
                       std::numeric_limits<length_type>::infinity()) {}
 
@@ -268,11 +266,16 @@ protected:
             if (did == ignore)
                 return;
 
-            length_type const distance(dist_fn(shape(offset((*i).second, off))));
-            if (distance < closest.second)
+            length_type const distance(
+                    world.distance(
+                        shape(offset((*i).second, off)), particle.position()));
+            if (distance > particle.radius())
             {
-                closest.first = did;
-                closest.second = distance;
+                if (distance < closest.second)
+                {
+                    closest.first = did;
+                    closest.second = distance;
+                }
             }
             else
             {
@@ -284,7 +287,8 @@ protected:
             }
         }
 
-        distance_function const& dist_fn;
+        world_type const& world;
+        particle_shape_type const& particle;
         domain_id_type ignore;
         std::pair<domain_id_type, length_type> closest;
         sorted_list<std::vector<domain_id_type>,
@@ -1420,6 +1424,9 @@ protected:
         length_type const scale(domain.particle().second.radius());
         BOOST_ASSERT(!feq(length(displacement), std::abs(r), scale));
 #endif
+        LOG_DEBUG(("draw_new_position(domain=%s, dt=%g): r=%g, displacement=%s",
+                boost::lexical_cast<std::string>(domain).c_str(),
+                dt, r, boost::lexical_cast<std::string>(displacement).c_str()));
         return add(domain.particle().second.position(), displacement);
     }
 
@@ -2001,10 +2008,9 @@ protected:
     get_intruders(particle_shape_type const& p,
                   domain_id_type const& ignore) const
     {
-        typedef intruder_collector<distance_calculator> collector_type;
+        typedef intruder_collector collector_type;
 
-        collector_type col(
-            distance_calculator((*base_type::world_), p.position()), ignore);
+        collector_type col((*base_type::world_), p, ignore);
         boost::fusion::for_each(smatm_, shell_collector_applier<collector_type>(col, p.position()));
         return std::make_pair(col.intruders.container().get(), col.closest);
     }
@@ -2593,7 +2599,7 @@ protected:
         switch (event.kind())
         {
         case SINGLE_EVENT_REACTION:
-            LOG_DEBUG(("fire_single: single reaction (%s)", boost::lexical_cast<std::string>(domain.id()).c_str()));
+            LOG_DEBUG(("fire_single: single reaction (%s)", boost::lexical_cast<std::string>(domain).c_str()));
             propagate(domain, draw_new_position(domain, domain.dt()));
             try
             {
@@ -2606,7 +2612,7 @@ protected:
             break;
 
         case SINGLE_EVENT_ESCAPE:
-            LOG_DEBUG(("fire_single: single escape (%s)", boost::lexical_cast<std::string>(domain.id()).c_str()));
+            LOG_DEBUG(("fire_single: single escape (%s)", boost::lexical_cast<std::string>(domain).c_str()));
 
             // handle immobile case
             if (domain.D() == 0.)
@@ -2899,9 +2905,9 @@ protected:
         event_id_pair_type ev(scheduler_.pop());
         base_type::t_ = ev.second->time();
 
-        log_.info("%d: t=%g dt=%g event=%s rejectedmoves=%d",
+        log_.info("%d: t=%g dt=%g domain=%s rejectedmoves=%d",
                   base_type::num_steps_, base_type::t_, base_type::dt_,
-                  boost::lexical_cast<std::string>(ev.second).c_str(),
+                  boost::lexical_cast<std::string>(dynamic_cast<domain_event_base const*>(ev.second.get())->domain()).c_str(),
                   rejected_moves_);
 
         fire_event(*ev.second);
@@ -3266,36 +3272,28 @@ protected:
 
 template<typename Ttraits>
 inline char const* retrieve_domain_type_name(
-    AnalyticalSingle<Ttraits,
-        Shell<Sphere<typename Ttraits::world_traits_type::length_type>,
-              typename Ttraits::domain_id_type> > const&)
+    typename EGFRDSimulator<Ttraits>::spherical_single_type const&)
 {
     return "SphericalSingle";
 }
 
 template<typename Ttraits>
 inline char const* retrieve_domain_type_name(
-    AnalyticalSingle<Ttraits,
-        Shell<Cylinder<typename Ttraits::world_traits_type::length_type>,
-              typename Ttraits::domain_id_type> > const&)
+    typename EGFRDSimulator<Ttraits>::cylindrical_single_type const&)
 {
     return "CylindricalSingle";
 }
 
 template<typename Ttraits>
 inline char const* retrieve_domain_type_name(
-    AnalyticalPair<Ttraits,
-        Shell<Sphere<typename Ttraits::world_traits_type::length_type>,
-              typename Ttraits::domain_id_type> > const&)
+    typename EGFRDSimulator<Ttraits>::spherical_pair_type const&)
 {
     return "SphericalPair";
 }
 
 template<typename Ttraits>
 inline char const* retrieve_domain_type_name(
-    AnalyticalPair<Ttraits,
-        Shell<Cylinder<typename Ttraits::world_traits_type::length_type>,
-              typename Ttraits::domain_id_type> > const&)
+    typename EGFRDSimulator<Ttraits>::cylindrical_pair_type const&)
 {
     return "CylindricalPair";
 }
