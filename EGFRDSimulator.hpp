@@ -186,6 +186,8 @@ protected:
     {
         domain_event_base(time_type const& time): event_type(time) {}
 
+
+
         virtual domain_type& domain() const = 0;
     };
 
@@ -997,18 +999,6 @@ protected:
         boost::fusion::at_key<shell_type>(smatm_).update(shell);
     }
 
-    void move_single_particle(single_type& domain,
-                              position_type const& new_pos)
-    {
-        particle_type const& old(domain.particle().second);
-        particle_id_pair new_pp(
-            domain.particle().first,
-            particle_type(old.sid(),
-                particle_shape_type(new_pos, old.radius()), old.D()));
-        domain.particle().second = new_pp.second;
-        (*base_type::world_).update_particle(new_pp);
-    }
-
     // move_domain {{{
     template<typename T>
     void move_domain(AnalyticalSingle<traits_type, T>& domain,
@@ -1038,7 +1028,14 @@ protected:
         LOG_DEBUG(("remove domain: %s", boost::lexical_cast<std::string>(domain.id()).c_str()));
         domains_.erase(domain.id());
         boost::fusion::at_key<shell_type>(smatm_).erase(domain.shell().first);
-        remove_event(domain);
+        try
+        {
+            remove_event(domain);
+        }
+        catch (std::out_of_range const&)
+        {
+            // ignore the exception as event may have already been removed.
+        }
     }
 
     template<typename T>
@@ -1141,7 +1138,15 @@ protected:
         boost::shared_ptr<event_type> new_event(
             new single_event(base_type::t_ + domain.dt(), domain, kind));
         domain.event() = std::make_pair(domain.event().first, new_event);
-        scheduler_.update(domain.event());
+        try
+        {
+            scheduler_.update(domain.event());
+        }
+        catch (std::exception const&)
+        {
+            dump_events();
+            throw;
+        }
     }
 
     void update_event(pair_type& domain, pair_event_kind const& kind)
@@ -1150,7 +1155,15 @@ protected:
         boost::shared_ptr<event_type> new_event(
             new pair_event(base_type::t_ + domain.dt(), domain, kind));
         domain.event() = std::make_pair(domain.event().first, new_event);
-        scheduler_.update(domain.event());
+        try
+        {
+            scheduler_.update(domain.event());
+        }
+        catch (std::exception const&)
+        {
+            dump_events();
+            throw;
+        }
     }
 
     void update_event(multi_type& domain)
@@ -1159,7 +1172,15 @@ protected:
         boost::shared_ptr<event_type> new_event(
             new pair_event(base_type::t_ + domain.dt(), domain));
         domain.event() = std::make_pair(domain.event().first, new_event);
-        scheduler_.update(domain.event());
+        try
+        {
+            scheduler_.update(domain.event());
+        }
+        catch (std::exception const&)
+        {
+            dump_events();
+            throw;
+        }
     }
 
     void remove_event(domain_type& domain)
@@ -1501,7 +1522,13 @@ protected:
         }
 #endif
 
-        move_single_particle(domain, new_pos);
+        particle_type const& old(domain.particle().second);
+        particle_id_pair new_pp(
+            domain.particle().first,
+            particle_type(old.sid(),
+                particle_shape_type(new_pos, old.radius()), old.D()));
+        domain.particle().second = new_pp.second;
+        (*base_type::world_).update_particle(new_pp);
     }
 
     template<typename T>
@@ -1703,6 +1730,14 @@ protected:
         }
 
         reaction_rule_type const& r(draw_reaction_rule(rules));
+        LOG_DEBUG(("attempt_single_reaction: reactant=%s, products=[%s]",
+                boost::lexical_cast<std::string>(reactant.second.sid()).c_str(),
+                boost::algorithm::join(
+                    make_transform_iterator_range(
+                        r.get_products(),
+                        boost::bind(&boost::lexical_cast<std::string,
+                                                         species_id_type>, _1)),
+                    std::string(", ")).c_str()));
 
         switch (::size(r.get_products()))
         {
@@ -1721,9 +1756,7 @@ protected:
                     (*base_type::world_).get_species(r.get_products()[0]));
 
                 if (reactant_species.radius() < product_species.radius())
-                {
-                    clear_volume(::shape(reactant.second));
-                }
+                    clear_volume(::shape(reactant.second), domain.id());
 
                 if ((*base_type::world_).check_overlap(::shape(reactant.second), reactant.first))
                 {
@@ -1747,19 +1780,19 @@ protected:
             break;
         case 2:
             {
-                species_type const& product_species0(
-                    (*base_type::world_).get_species(r.get_products()[0]));
-                species_type const& product_species1(
-                    (*base_type::world_).get_species(r.get_products()[1]));
+                species_type const* const product_species[] = {
+                    &(*base_type::world_).get_species(r.get_products()[0]),
+                    &(*base_type::world_).get_species(r.get_products()[1])
+                };
 
-                D_type const D01(product_species0.D() + product_species1.D());
-                length_type r01(product_species0.radius() + product_species1.radius());
+                D_type const D01(product_species[0]->D() + product_species[1]->D());
+                length_type r01(product_species[0]->radius() + product_species[1]->radius());
                 Real const rad(std::max(
-                        r01 * (product_species0.D() / D01) + product_species0.radius(),
-                        r01 * (product_species1.D() / D01) + product_species1.radius()));
-                clear_volume(particle_shape_type(reactant.second.position(), rad));
+                        r01 * (product_species[0]->D() / D01) + product_species[0]->radius(),
+                        r01 * (product_species[1]->D() / D01) + product_species[1]->radius()));
+                clear_volume(particle_shape_type(reactant.second.position(), rad), domain.id());
 
-                particle_shape_type new0, new1;
+                particle_shape_type new_particles[2];
 
                 int i = num_retries_;
                 while (--i >= 0)
@@ -1775,18 +1808,22 @@ protected:
                     // this way, species with D=0 doesn't move.
                     // FIXME: what if D1 == D2 == 0?
                     for (;;) {
-                        new0 = particle_shape_type(
+                        new_particles[0] = particle_shape_type(
                             (*base_type::world_).apply_boundary(
                                 add(reactant.second.position(),
-                                    multiply(vector, product_species0.D() / D01))),
-                            product_species0.radius());
-                        new1 = particle_shape_type(
+                                    multiply(vector, product_species[0]->D() / D01))),
+                            product_species[0]->radius());
+                        new_particles[1] = particle_shape_type(
                             (*base_type::world_).apply_boundary(
                                 add(reactant.second.position(),
-                                    multiply(vector, product_species1.D() / D01))),
-                            product_species1.radius());
+                                    multiply(vector, -product_species[1]->D() / D01))),
+                            product_species[1]->radius());
 
-                        if ((*base_type::world_).distance(new0.position(), new1.position()) >= r01)
+                        length_type const distance_between_new_particles(
+                            (*base_type::world_).distance(
+                                new_particles[0].position(),
+                                new_particles[1].position()));
+                        if (distance_between_new_particles >= r01)
                             break;
 
                         vector *= 1.0 + 1e-7;
@@ -1794,9 +1831,9 @@ protected:
 
                     // accept the new positions if there is enough space.
                     if ((!(*base_type::world_).check_overlap(
-                            new0, reactant.first)) &&
+                            new_particles[0], reactant.first)) &&
                         (!(*base_type::world_).check_overlap(
-                            new1, reactant.first)))
+                            new_particles[1], reactant.first)))
                         break;
                 }
                 if (i < 0)
@@ -1808,22 +1845,22 @@ protected:
                 remove_domain(domain);
                 (*base_type::world_).remove_particle(reactant.first);
 
-                const particle_id_pair
-                    pp0(
-                        (*base_type::world_).new_particle(
-                            product_species0.id(), new0.position())),
-                    pp1(
-                        (*base_type::world_).new_particle(
-                            product_species1.id(), new1.position()));
+                particle_id_pair const pp[] = {
+                    (*base_type::world_).new_particle(
+                        product_species[0]->id(), new_particles[0].position()),
+                    (*base_type::world_).new_particle(
+                        product_species[1]->id(), new_particles[1].position())
+                };
                 // create domains for two particles and add them to
                 // the event queue
-                add_event(*create_single(pp0), SINGLE_EVENT_ESCAPE);
-                add_event(*create_single(pp1), SINGLE_EVENT_ESCAPE);
+                add_event(*create_single(pp[0]), SINGLE_EVENT_ESCAPE);
+                add_event(*create_single(pp[1]), SINGLE_EVENT_ESCAPE);
 
                 if (base_type::rrec_)
                 {
                     (*base_type::rrec_)(reaction_record_type(
-                        r.id(), array_gen(pp0.first, pp1.first), reactant.first));
+                        r.id(), array_gen(pp[0].first, pp[1].first),
+                        reactant.first));
                 }
             }
             break;
@@ -2937,6 +2974,91 @@ protected:
         {
             zero_step_count_ = 0;
         }
+    }
+
+    void dump_events() const
+    {
+        log_.info("QUEUED EVENTS:");
+        BOOST_FOREACH (event_id_pair_type const& ev, scheduler_.events())
+        {
+            log_.info("  #%d: %s", ev.first, stringize_event(*ev.second).c_str());
+        }
+    }
+
+    static std::string stringize_event(event_type const& ev)
+    {
+        {
+            single_event const* _ev(dynamic_cast<single_event const*>(&ev));
+            if (_ev)
+            {
+                return stringize_event(*_ev);
+            }
+        }
+        {
+            pair_event const* _ev(dynamic_cast<pair_event const*>(&ev));
+            if (_ev)
+            {
+                return stringize_event(*_ev);
+            }
+        }
+        {
+            multi_event const* _ev(dynamic_cast<multi_event const*>(&ev));
+            if (_ev)
+            {
+                return stringize_event(*_ev);
+            }
+        }
+        return (boost::format("Event(t=%g)") % ev.time()).str();
+    }
+
+    static std::string stringize_event_kind(enum single_event_kind kind)
+    {
+        switch (kind)
+        {
+        case SINGLE_EVENT_ESCAPE:
+            return "escape";
+
+        case SINGLE_EVENT_REACTION:
+            return "reaction";
+        }
+    }
+
+    static std::string stringize_event_kind(enum pair_event_kind kind)
+    {
+        switch (kind)
+        {
+        case PAIR_EVENT_SINGLE_REACTION_0:
+            return "reaction(0)";
+
+        case PAIR_EVENT_SINGLE_REACTION_1:
+            return "reaction(1)";
+
+        case PAIR_EVENT_COM_ESCAPE:
+            return "com_escape";
+
+        case PAIR_EVENT_IV:
+            return "iv";
+        }
+    }
+
+    static std::string stringize_event(single_event const& ev)
+    {
+        return (boost::format("SingleEvent(t=%g, kind=%s, domain=%s)") %
+            ev.time() % stringize_event_kind(ev.kind()) %
+            boost::lexical_cast<std::string>(ev.domain())).str();
+    }
+
+    static std::string stringize_event(pair_event const& ev)
+    {
+        return (boost::format("PairEvent(t=%g, kind=%s, domain=%s)") %
+            ev.time() % stringize_event_kind(ev.kind()) %
+            boost::lexical_cast<std::string>(ev.domain())).str();
+    }
+
+    static std::string stringize_event(multi_event const& ev)
+    {
+        return (boost::format("MultiEvent(t=%g, domain=%s)") %
+            ev.time() % boost::lexical_cast<std::string>(ev.domain())).str();
     }
 
     void check_shell_matrix() const
