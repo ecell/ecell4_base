@@ -93,9 +93,25 @@ struct get_select_second_range
 
 template<typename Trange_>
 inline typename get_select_first_range<Trange_>::type
-make_select_first_range(Trange_ const& range)
+make_select_first_range(Trange_& range)
 {
     typedef typename get_select_first_range<Trange_>::type type;
+    return type(range, typename type::functor_type());
+}
+
+template<typename Trange_>
+inline typename get_select_first_range<Trange_>::type
+make_select_first_range(Trange_ const& range)
+{
+    typedef typename get_select_first_range<const Trange_>::type type;
+    return type(range, typename type::functor_type());
+}
+
+template<typename Trange_>
+inline typename get_select_second_range<Trange_>::type
+make_select_second_range(Trange_& range)
+{
+    typedef typename get_select_second_range<Trange_>::type type;
     return type(range, typename type::functor_type());
 }
 
@@ -103,7 +119,7 @@ template<typename Trange_>
 inline typename get_select_second_range<Trange_>::type
 make_select_second_range(Trange_ const& range)
 {
-    typedef typename get_select_second_range<Trange_>::type type;
+    typedef typename get_select_second_range<const Trange_>::type type;
     return type(range, typename type::functor_type());
 }
 

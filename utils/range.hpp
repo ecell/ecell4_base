@@ -204,6 +204,10 @@ public:
 
 public:
     template<typename Trange>
+    transformed_range(Trange& range, Tfun_ const& fun)
+        : base_(range), fun_(fun) {}
+
+    template<typename Trange>
     transformed_range(Trange const& range, Tfun_ const& fun)
         : base_(range), fun_(fun) {}
 

@@ -11,7 +11,6 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <boost/algorithm/string/join.hpp>
 #include <boost/fusion/container/map.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 #include <boost/fusion/sequence/intrinsic/at_key.hpp>
@@ -24,6 +23,7 @@
 #include "utils/pointer_as_ref.hpp"
 #include "utils/pair.hpp"
 #include "utils/math.hpp"
+#include "utils/stringizer.hpp"
 #include "ShellID.hpp"
 #include "DomainID.hpp"
 #include "Shell.hpp"
@@ -50,8 +50,7 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
     typedef typename ParticleSimulatorTraitsBase<Tworld_>::sphere_type sphere_type;
     typedef typename ParticleSimulatorTraitsBase<Tworld_>::cylinder_type cylinder_type;
     typedef SerialIDGenerator<shell_id_type> shell_id_generator;
-    typedef SerialIDGenerator<domain_id_type> domain_id_generator;
-    typedef Domain<EGFRDSimulatorTraitsBase> domain_type;
+    typedef SerialIDGenerator<domain_id_type> domain_id_generator; typedef Domain<EGFRDSimulatorTraitsBase> domain_type;
     typedef std::pair<const domain_id_type, boost::shared_ptr<domain_type> > domain_id_pair;
     typedef int event_id_type;
     typedef EventScheduler<typename base_type::time_type> event_scheduler_type;
@@ -434,7 +433,7 @@ protected:
             BOOST_ASSERT(world_.world_size() == smat.second.world_size());
             BOOST_FOREACH (typename boost::remove_reference<typename T::second_type>::type::value_type pair, smat.second)
             {
-                did_map_[pair.second.did()].push_back(pair.first);
+                did_map_[pair.second.did()].insert(pair.first);
             }
         }
 
@@ -443,19 +442,28 @@ protected:
         domain_shell_association& did_map_;
     };
 
-    struct shell_population_summer
+    template<typename Tset_>
+    struct shell_id_collector
     {
-        shell_population_summer(std::size_t& population)
-            : population_(population) {}
+        shell_id_collector(Tset_& shell_ids)
+            : shell_ids_(shell_ids) {}
 
         template<typename T>
         void operator()(T const& smat) const
         {
-            population_ += smat.second.size();
+            std::for_each(
+                boost::begin(smat.second),
+                boost::end(smat.second),
+                compose_unary(
+                    boost::bind(&insert<Tset_>,
+                                boost::reference_wrapper<Tset_>(shell_ids_),
+                                _1),
+                    select_first<typename boost::remove_reference<
+                        typename T::second_type>::type::value_type>()));
         }
 
     private:
-        std::size_t& population_;
+        Tset_& shell_ids_;
     };
 
 
@@ -1020,38 +1028,41 @@ protected:
     }
     // }}}
 
-    // remove_domain {{{
-    template<typename T>
-    void remove_domain(AnalyticalSingle<traits_type, T>& domain)
+    // remove_domain_but_shell {{{
+    void remove_domain_but_shell(domain_type& domain)
     {
-        typedef T shell_type;
-        LOG_DEBUG(("remove domain: %s", boost::lexical_cast<std::string>(domain.id()).c_str()));
+        LOG_DEBUG(("remove_domain_but_shell: %s", boost::lexical_cast<std::string>(domain.id()).c_str()));
         domains_.erase(domain.id());
-        boost::fusion::at_key<shell_type>(smatm_).erase(domain.shell().first);
         try
         {
             remove_event(domain);
         }
         catch (std::out_of_range const&)
         {
-            // ignore the exception as event may have already been removed.
+            LOG_DEBUG(("event %s already removed; ignoring.", boost::lexical_cast<std::string>(domain.event().first).c_str()));
         }
+    }
+    // }}}
+
+    // remove_domain {{{
+    template<typename T>
+    void remove_domain(AnalyticalSingle<traits_type, T>& domain)
+    {
+        typedef T shell_type;
+        boost::fusion::at_key<shell_type>(smatm_).erase(domain.shell().first);
+        remove_domain_but_shell(domain);
     }
 
     template<typename T>
     void remove_domain(AnalyticalPair<traits_type, T>& domain)
     {
         typedef T shell_type;
-        LOG_DEBUG(("remove domain: %s", boost::lexical_cast<std::string>(domain.id()).c_str()));
-        domains_.erase(domain.id());
         boost::fusion::at_key<shell_type>(smatm_).erase(domain.shell().first);
-        remove_event(domain);
+        remove_domain_but_shell(domain);
     }
 
     void remove_domain(multi_type& domain)
     {
-        LOG_DEBUG(("remove domain: %s", boost::lexical_cast<std::string>(domain.id()).c_str()));
-        domains_.erase(domain.id());
         typename multi_type::spherical_shell_id_pair_range r(domain.get_shells());
         spherical_shell_matrix_type& mat(
             boost::fusion::at_key<spherical_shell_type>(smatm_));
@@ -1059,7 +1070,7 @@ protected:
             compose_unary(
                 boost::bind(&spherical_shell_matrix_type::erase, mat, _1),
                 select_first<spherical_shell_id_pair>()));
-        remove_event(domain);
+        remove_domain_but_shell(domain);
     }
 
     void remove_domain(domain_type& domain)
@@ -1438,13 +1449,14 @@ protected:
                 base_type::dt_,
                 domain.mobility_radius()));
         position_type const displacement(draw_displacement(domain, r));
+        LOG_DEBUG(("draw_new_position(domain=%s, dt=%g): r=%g, displacement=%s (%g)",
+                boost::lexical_cast<std::string>(domain).c_str(),
+                dt, r, boost::lexical_cast<std::string>(displacement).c_str(),
+                length(displacement)));
 #ifdef DEBUG
         length_type const scale(domain.particle().second.radius());
         BOOST_ASSERT(feq(length(displacement), std::abs(r), scale));
 #endif
-        LOG_DEBUG(("draw_new_position(domain=%s, dt=%g): r=%g, displacement=%s",
-                boost::lexical_cast<std::string>(domain).c_str(),
-                dt, r, boost::lexical_cast<std::string>(displacement).c_str()));
         return add(domain.particle().second.position(), displacement);
     }
 
@@ -1657,9 +1669,6 @@ protected:
     void burst(boost::shared_ptr<domain_type> domain, boost::optional<std::vector<boost::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<boost::shared_ptr<domain_type> >&>())
     {
         LOG_DEBUG(("burst: bursting %s", boost::lexical_cast<std::string>(*domain).c_str()));
-        BOOST_ASSERT(base_type::t_ >= domain->last_time());
-        BOOST_ASSERT(base_type::t_ <= domain->last_time() + domain->dt());
-
         {
             spherical_single_type* _domain(dynamic_cast<spherical_single_type*>(domain.get()));
             if (_domain)
@@ -1732,12 +1741,7 @@ protected:
         reaction_rule_type const& r(draw_reaction_rule(rules));
         LOG_DEBUG(("attempt_single_reaction: reactant=%s, products=[%s]",
                 boost::lexical_cast<std::string>(reactant.second.sid()).c_str(),
-                boost::algorithm::join(
-                    make_transform_iterator_range(
-                        r.get_products(),
-                        boost::bind(&boost::lexical_cast<std::string,
-                                                         species_id_type>, _1)),
-                    std::string(", ")).c_str()));
+                stringize_and_join(r.get_products(), ", ").c_str()));
 
         switch (::size(r.get_products()))
         {
@@ -1826,7 +1830,7 @@ protected:
                         if (distance_between_new_particles >= r01)
                             break;
 
-                        vector *= 1.0 + 1e-7;
+                        vector = multiply(vector, 1.0 + 1e-7);
                     }
 
                     // accept the new positions if there is enough space.
@@ -1919,10 +1923,10 @@ protected:
         typedef typename pair_greens_functions::com_type com_greens_function;
         BOOST_ASSERT(::size(domain.reactions()) == 1);
         time_type const dt_com(
-            com_greens_function(domain.D_R(), domain.a_R()).drawTime());
+            com_greens_function(domain.D_R(), domain.a_R()).drawTime(base_type::rng_.uniform(0., 1.)));
         time_type const dt_iv(
             iv_greens_function(domain.D_tot(), domain.reactions()[0].k(),
-                           domain.r0(), domain.sigma(), domain.a_r()).drawTime());
+                           domain.r0(), domain.sigma(), domain.a_r()).drawTime(base_type::rng_.uniform(0., 1.)));
         if (dt_com < dt_iv)
         {
             return std::make_pair(dt_com, PAIR_EVENT_COM_ESCAPE);
@@ -2016,7 +2020,7 @@ protected:
         add_event(domain, dt_and_event_pair.second);
     }
 
-    void determine_next_event(pair_type& domain) const
+    void determine_next_event(pair_type& domain)
     {
         {
             spherical_pair_type* _domain(
@@ -2327,17 +2331,19 @@ protected:
             }
         }
 
-        BOOST_ASSERT(closest_domain);
-        if (closest_shell_distance <= min_shell_size_with_margin)
+        if (closest_domain)
         {
-            LOG_DEBUG(("Pair(%s, %s) not formed: squeezed by burst neighbor %s",
-                       boost::lexical_cast<std::string>(domain).c_str(),
-                       boost::lexical_cast<std::string>(possible_partner).c_str(),
-                       boost::lexical_cast<std::string>(*closest_domain).c_str()));
-            return boost::optional<pair_type&>();
-        }
+            BOOST_ASSERT(closest_shell_distance > 0);
 
-        BOOST_ASSERT(closest_shell_distance > 0);
+            if (closest_shell_distance <= min_shell_size_with_margin)
+            {
+                LOG_DEBUG(("Pair(%s, %s) not formed: squeezed by burst neighbor %s",
+                           boost::lexical_cast<std::string>(domain).c_str(),
+                           boost::lexical_cast<std::string>(possible_partner).c_str(),
+                           boost::lexical_cast<std::string>(*closest_domain).c_str()));
+                return boost::optional<pair_type&>();
+            }
+        }
 
         // 4. Determine shell size and check if closest object not too 
         // close (squeezing).
@@ -2354,14 +2360,16 @@ protected:
             }
         }
 
-        BOOST_ASSERT(closest_domain);
-        BOOST_ASSERT(closest_shell_distance > 0);
+        if (closest_domain)
+        {
+            BOOST_ASSERT(closest_shell_distance > 0);
 
-        LOG_DEBUG(("Pair closest neighbor: %s %g, "
-                   "min_shell_with_margin=%g",
-                   boost::lexical_cast<std::string>(*closest_domain).c_str(),
-                   closest_shell_distance,
-                   min_shell_size_with_margin));
+            LOG_DEBUG(("Pair closest neighbor: %s %g, "
+                       "min_shell_with_margin=%g",
+                       boost::lexical_cast<std::string>(*closest_domain).c_str(),
+                       closest_shell_distance,
+                       min_shell_size_with_margin));
+        }
 
         length_type new_shell_size(0.);
 
@@ -2402,10 +2410,11 @@ protected:
 
             if (new_shell_size <= min_shell_size_with_margin)
             {
-                LOG_DEBUG(("Pair(%s, %s) not formed: squeezed by %s",
+                LOG_DEBUG(("Pair(%s, %s) not formed%s%s",
                     boost::lexical_cast<std::string>(domain).c_str(),
                     boost::lexical_cast<std::string>(possible_partner).c_str(),
-                    boost::lexical_cast<std::string>(closest_domain).c_str()));
+                    closest_domain ? ": squeezed by ": "",
+                    closest_domain ? boost::lexical_cast<std::string>(closest_domain).c_str(): ""));
                 return boost::optional<pair_type&>();
             }
         }
@@ -2448,18 +2457,16 @@ protected:
         remove_domain(possible_partner);
 
         BOOST_ASSERT(
-                closest_shell_distance ==
-                    std::numeric_limits<length_type>::infinity()
+                (closest_domain && closest_shell_distance ==
+                    std::numeric_limits<length_type>::infinity())
                 || new_shell_size < closest_shell_distance);
         BOOST_ASSERT(new_shell_size >= min_shell_size_with_margin);
         BOOST_ASSERT(new_shell_size <= max_shell_size);
 
-        log_.info("%s,\ndt=%g, shell_size=%g, "
-                  "closest_shell_distance=%s,\nclosest=%s",
+        log_.info("new_pair=%s, closest_shell_distance=%g, closest=%s",
                   boost::lexical_cast<std::string>(*new_pair).c_str(),
-                  new_pair->dt(), new_shell_size,
                   closest_shell_distance,
-                  boost::lexical_cast<std::string>(closest_domain).c_str());
+                  closest_domain ? boost::lexical_cast<std::string>(closest_domain).c_str(): "(none)");
 
         check_domain(*new_pair);
 
@@ -2548,8 +2555,7 @@ protected:
             multi.add_particle(particle);
         }
 
-        domains_.erase(other_multi.id());
-        remove_event(other_multi);
+        remove_domain_but_shell(other_multi);
     }
 
     void add_to_multi_recursive(multi_type& multi, domain_type& domain)
@@ -2683,13 +2689,7 @@ protected:
 
                 LOG_DEBUG(("intruders: %s, closest: %s (dist=%g)",
                     intruders ?
-                        boost::algorithm::join(
-                            make_transform_iterator_range(
-                                *intruders,
-                                boost::bind(
-                                    &boost::lexical_cast<std::string,
-                                                         domain_id_type>, _1)),
-                            std::string(", ")).c_str():
+                        stringize_and_join(*intruders, ", ").c_str():
                         "(none)",
                     boost::lexical_cast<std::string>(closest.first).c_str(),
                     closest.second));
@@ -2762,7 +2762,7 @@ protected:
         check_domain(domain);
 
         ++pair_step_count_[kind];
-        LOG_DEBUG(("fire_pair: event_kind %d", kind));
+        LOG_DEBUG(("fire_pair: %s", stringize_event_kind(kind).c_str()));
 
         //  1. Single reaction
         //  2. Pair reaction
@@ -2816,7 +2816,7 @@ protected:
                 {
                 case GreensFunction3DRadAbs::IV_REACTION:
                     {
-                        LOG_DEBUG(("iv_reaction"));
+                        LOG_DEBUG(("=> iv_reaction"));
                         BOOST_ASSERT(::size(domain.reactions()) == 1);
                         reaction_rule_type const& r(domain.reactions()[0]);
 
@@ -2860,8 +2860,6 @@ protected:
                                         domain.particles()[0].first,
                                         domain.particles()[1].first));
                                 }
-
-                                LOG_DEBUG(("product: %s", boost::lexical_cast<std::string>(new_single).c_str()));
                             }
                             break;
                         default:
@@ -2872,6 +2870,7 @@ protected:
                     break;
                 case GreensFunction3DRadAbs::IV_ESCAPE:
                     {
+                        LOG_DEBUG(("=> iv_escape"));
                         time_type const dt(domain.dt());
                         boost::array<position_type, 2> const new_pos(
                             draw_new_positions<draw_on_iv_escape>(
@@ -3063,7 +3062,7 @@ protected:
 
     void check_shell_matrix() const
     {
-        typedef std::map<domain_id_type, std::vector<shell_id_type> >
+        typedef std::map<domain_id_type, std::set<shell_id_type> >
             domain_shell_association;
 
         domain_shell_association did_map;
@@ -3072,25 +3071,48 @@ protected:
                 domain_shell_map_builder<domain_shell_association>(
                     (*base_type::world_), did_map));
 
-        typename domain_type::size_type shell_population(0);
-
+        std::set<domain_id_type> scheduled_domains;
+        typename domain_type::size_type shells_correspond_to_domains(0);
         BOOST_FOREACH (typename event_scheduler_type::value_type const& value,
                        scheduler_.events())
         {
             domain_type const& domain(dynamic_cast<domain_event_base&>(*value.second).domain());
+            scheduled_domains.insert(domain.id());
             typename domain_type::size_type const num_shells(domain.num_shells());
 
-            shell_population += num_shells;
-            typename std::vector<shell_id_type> const& shell_ids(
+            shells_correspond_to_domains += num_shells;
+            typename std::set<shell_id_type> const& shell_ids(
                 did_map[domain.id()]);
             BOOST_ASSERT(static_cast<typename domain_type::size_type>(
                     ::size(shell_ids)) == num_shells);
         }
 
-        std::size_t matrix_population(0);
+        std::vector<domain_id_type> diff;
+        ::difference(make_select_first_range(did_map), scheduled_domains,
+                std::back_inserter(diff));
+
+        if (diff.size() != 0)
+        {
+            log_.debug("domains not scheduled: %s",
+                stringize_and_join(diff, ", ").c_str());
+            BOOST_FOREACH (domain_id_type const& domain_id, diff)
+            {
+                log_.debug("  shells that belong to unscheduled domain %s: %s",
+                    boost::lexical_cast<std::string>(domain_id).c_str(),
+                    stringize_and_join(did_map[domain_id], ", ").c_str());
+            }
+            BOOST_ASSERT(false);
+        }
+
+        std::set<shell_id_type> all_shell_ids;
         boost::fusion::for_each(smatm_,
-                shell_population_summer(matrix_population));
-        BOOST_ASSERT(shell_population == matrix_population);
+                shell_id_collector<std::set<shell_id_type> >(all_shell_ids));
+
+        if (shells_correspond_to_domains != static_cast<std::size_t>(::size(all_shell_ids)))
+        {
+            log_.debug("shells_correspond_to_domains=%zu, shell_population=%zu", shells_correspond_to_domains, static_cast<std::size_t>(::size(all_shell_ids)));
+            BOOST_ASSERT(false);
+        }
     }
 
     void check_domains() const
