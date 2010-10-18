@@ -101,7 +101,7 @@ template<typename Tstrm_, typename Ttraits_, typename T_>
 inline std::basic_ostream<Tstrm_, Ttraits_>&
 operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Vector3<T_>& v)
 {
-    strm << "(" << v[0] <<  ", " << v[1] <<  ", " << v[2] << ")";
+    strm << std::setprecision(12) << "(" << v[0] <<  ", " << v[1] <<  ", " << v[2] << ")";
     return strm;
 }
 
