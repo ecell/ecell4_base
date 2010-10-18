@@ -523,7 +523,6 @@ protected:
                     domain.reactions()[0].k(), domain.r0(),
                     domain.sigma(), domain.a_r()),
                    dt, domain.a_r(), domain.sigma()));
-            BOOST_ASSERT(r > domain.sigma() && r <= domain.a_r());
             return multiply(normalize(old_iv), r);
         }
 
@@ -622,7 +621,7 @@ protected:
         {
             boost::scoped_ptr<PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
-            length_type const r(domain.a_R());
+            length_type const r(domain.a_r());
             length_type const theta(draw_theta(rng_, *gf, dt, r));
             return adjust_iv_with_old_iv(
                 spherical_to_cartesian(
@@ -798,7 +797,6 @@ protected:
                         domain.reactions()[0].k(), domain.r0(),
                         domain.sigma(), domain.a_r()),
                     dt, domain.a_r(), domain.sigma()));
-            BOOST_ASSERT(r > domain.sigma() && r <= domain.a_r());
             return multiply(normalize(old_iv), r);
         }
 

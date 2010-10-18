@@ -319,6 +319,8 @@ class SphericalPair(Pair):
         return random_vector(r)
 
     def create_interparticle_vector(self, gf, r, dt, r0, old_iv): 
+        if __debug__:
+            log.debug("create_interparticle_vector: r=%g, dt=%g", r, dt)
         theta = draw_theta_wrapper(gf, r, dt)
 
         new_inter_particle_s = numpy.array([r, theta, 
@@ -393,6 +395,8 @@ class PlanarSurfacePair(Pair):
         return x * self.surface.shape.unit_x + y * self.surface.shape.unit_y
 
     def create_interparticle_vector(self, gf, r, dt, r0, old_iv): 
+        if __debug__:
+            log.debug("create_interparticle_vector: r=%g, dt=%g", r, dt)
         theta = draw_theta_wrapper(gf, r, dt)
 
         #FIXME: need better handling of angles near zero and pi?
@@ -451,6 +455,8 @@ class CylindricalSurfacePair(Pair):
         return r * self.surface.shape.unit_z
 
     def create_interparticle_vector(self, gf, r, dt, r0, old_iv): 
+        if __debug__:
+            log.debug("create_interparticle_vector: r=%g, dt=%g", r, dt)
         # Note: using self.surface.shape.unit_z here might accidently 
         # interchange the particles.
         return r * normalize(old_iv)
