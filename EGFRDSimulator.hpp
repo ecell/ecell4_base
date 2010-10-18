@@ -488,7 +488,8 @@ protected:
         {
             boost::scoped_ptr<PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
-            length_type const r(draw_r(rng_, *gf, dt, domain.a_R(), domain.sigma()));
+            length_type const r(draw_r(
+                rng_, *gf, dt, domain.a_r(), domain.sigma()));
             length_type const theta(draw_theta(rng_, *gf, dt, r));
             return adjust_iv_with_old_iv(
                 spherical_to_cartesian(
@@ -552,7 +553,7 @@ protected:
             boost::scoped_ptr<PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
             length_type const r(draw_r(
-                rng_, *gf, dt, domain.a_R(), domain.sigma()));
+                rng_, *gf, dt, domain.a_r(), domain.sigma()));
             length_type const theta(draw_theta(rng_, *gf, dt, r));
             return adjust_iv_with_old_iv(
                 spherical_to_cartesian(
@@ -754,7 +755,8 @@ protected:
         {
             boost::scoped_ptr<PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
-            length_type const r(draw_r(rng_, *gf, dt, domain.a_R(), domain.sigma()));
+            length_type const r(draw_r(
+                rng_, *gf, dt, domain.a_r(), domain.sigma()));
             length_type const theta(draw_theta(rng_, *gf, dt, r));
             return adjust_iv_with_old_iv(
                 spherical_to_cartesian(
@@ -1365,14 +1367,16 @@ protected:
                               length_type const& a,
                               length_type const& sigma = -1.)
     {
+        LOG_DEBUG(("draw_r: dt=%g, a=%g, sigma=%g", dt, a, sigma));
+        BOOST_ASSERT(dt != 0.);
+        BOOST_ASSERT(a > sigma);
         length_type r(0.);
         double rnd(0.);
         try
         {
             do
             {
-                rnd = rng.uniform(0., 1.);
-                r = gf.drawR(rnd, dt);
+                r = gf.drawR(rng.uniform(0., 1.), dt);
             } while (r > a || r <= sigma);
         }
         catch (std::exception const& e)
@@ -1446,7 +1450,7 @@ protected:
                 greens_function(
                     domain.particle().second.D(),
                     domain.mobility_radius()),
-                base_type::dt_,
+                dt,
                 domain.mobility_radius()));
         position_type const displacement(draw_displacement(domain, r));
         LOG_DEBUG(("draw_new_position(domain=%s, dt=%g): r=%g, displacement=%s (%g)",
@@ -1598,6 +1602,7 @@ protected:
 
         // Override dt, burst happens before single's scheduled event.
         domain.dt() = base_type::t_ - domain.last_time();
+        LOG_DEBUG(("t=%g, domain.last_time=%g", base_type::t_, domain.last_time()));
 
         position_type const new_pos(draw_new_position(domain, domain.dt()));
 
