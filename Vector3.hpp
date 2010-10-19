@@ -2,6 +2,7 @@
 #define VECTOR3_HPP
 
 #include <ostream>
+#include <iomanip>
 #include <functional>
 #include <algorithm>
 
