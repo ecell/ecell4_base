@@ -134,6 +134,7 @@ public:
     typedef typename world_type::particle_shape_type particle_shape_type;
     typedef typename world_type::traits_type::particle_id_type particle_id_type;
     typedef typename world_type::particle_id_pair particle_id_pair;
+    typedef typename world_type::particle_id_pair_and_distance particle_id_pair_and_distance;
     typedef typename world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
 
     typedef typename traits_type::domain_type domain_type;
@@ -143,6 +144,7 @@ public:
     typedef Single<traits_type> single_type;
     typedef Pair<traits_type> pair_type;
     typedef Multi<EGFRDSimulator> multi_type;
+    typedef ShapedDomain<traits_type> shaped_domain_type;
     typedef AnalyticalSingle<traits_type, spherical_shell_type> spherical_single_type;
     typedef AnalyticalSingle<traits_type, cylindrical_shell_type> cylindrical_single_type;
     typedef AnalyticalPair<traits_type, spherical_shell_type> spherical_pair_type;
@@ -184,8 +186,6 @@ protected:
     struct domain_event_base: public event_type
     {
         domain_event_base(time_type const& time): event_type(time) {}
-
-
 
         virtual domain_type& domain() const = 0;
     };
@@ -1007,26 +1007,50 @@ protected:
         boost::fusion::at_key<shell_type>(smatm_).update(shell);
     }
 
-    // move_domain {{{
     template<typename T>
-    void move_domain(AnalyticalSingle<traits_type, T>& domain,
-                     position_type const& new_pos,
-                     length_type const& new_shell_size)
+    void update_shell_matrix(AnalyticalSingle<traits_type, T> const& domain)
     {
-        typedef typename AnalyticalSingle<traits_type, T>::shell_type shell_type;
-        typename shell_type::shape_type& domain_shape(shape(domain.shell().second));
-        shape_position(domain_shape) = new_pos;
-        shape_size(domain_shape) = new_shell_size;
         move_shell(domain.shell());
     }
 
     template<typename T>
-    void move_domain(AnalyticalSingle<traits_type, T>& domain,
-                     position_type const& new_pos)
+    void update_shell_matrix(AnalyticalPair<traits_type, T> const& domain)
     {
-        move_domain(domain, new_pos, shape_size(shape(domain.shell().second)));
+        move_shell(domain.shell());
     }
-    // }}}
+
+    void update_shell_matrix(shaped_domain_type const& domain)
+    {
+        {
+            spherical_single_type const* _domain(dynamic_cast<spherical_single_type const*>(&domain));
+            if (_domain) {
+                update_shell_matrix(*_domain);
+                return;
+            }
+        }
+        {
+            cylindrical_single_type const* _domain(dynamic_cast<cylindrical_single_type const*>(&domain));
+            if (_domain) {
+                update_shell_matrix(*_domain);
+                return;
+            }
+        }
+        {
+            spherical_pair_type const* _domain(dynamic_cast<spherical_pair_type const*>(&domain));
+            if (_domain) {
+                update_shell_matrix(*_domain);
+                return;
+            }
+        }
+        {
+            cylindrical_pair_type const* _domain(dynamic_cast<cylindrical_pair_type const*>(&domain));
+            if (_domain) {
+                update_shell_matrix(*_domain);
+                return;
+            }
+        }
+        throw not_implemented("unsupported domain type");
+    }
 
     // remove_domain_but_shell {{{
     void remove_domain_but_shell(domain_type& domain)
@@ -1451,12 +1475,14 @@ protected:
                 dt,
                 domain.mobility_radius()));
         position_type const displacement(draw_displacement(domain, r));
-        LOG_DEBUG(("draw_new_position(domain=%s, dt=%g): r=%g, displacement=%s (%g)",
+        LOG_DEBUG(("draw_new_position(domain=%s, dt=%g): mobility_radius=%g, r=%g, displacement=%s (%g)",
+                domain.mobility_radius(),
                 boost::lexical_cast<std::string>(domain).c_str(),
                 dt, r, boost::lexical_cast<std::string>(displacement).c_str(),
                 length(displacement)));
 #ifdef DEBUG
         length_type const scale(domain.particle().second.radius());
+        BOOST_ASSERT(r <= domain.mobility_radius());
         BOOST_ASSERT(feq(length(displacement), std::abs(r), scale));
 #endif
         return add(domain.particle().second.position(), displacement);
@@ -1513,36 +1539,30 @@ protected:
      */
     //template<typename T>
     //void propagate(AnalyticalSingle<traits_type, T>& domain, position_type const& new_pos)
-    void propagate(single_type& domain, position_type const& new_pos)
+    void propagate(single_type& domain, position_type const& new_pos,
+                   bool do_update_shell_matrix)
     {
-        LOG_DEBUG(("single.dt=%g, single.last_time=%g, self.t=%g",
-                   domain.dt(), domain.last_time(), base_type::t_));
+        LOG_DEBUG(("propagate: domain=%s, new_pos=%s, do_update_shell_matrix=%d",
+                boost::lexical_cast<std::string>(domain).c_str(),
+                boost::lexical_cast<std::string>(new_pos).c_str(),
+                do_update_shell_matrix));
 
         position_type const _new_pos(
             (*base_type::world_).apply_boundary(new_pos));
 #ifdef DEBUG
-        LOG_DEBUG(("propagate %s: %s => %s",
-            boost::lexical_cast<std::string>(domain).c_str(),
-            boost::lexical_cast<std::string>(domain.particle().second.position()).c_str(),
-            boost::lexical_cast<std::string>(_new_pos).c_str()));
-
         particle_shape_type const new_particle(new_pos, domain.particle().second.radius());
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-                (*base_type::world_).check_overlap(
-                    new_particle, domain.particle().first));
-        if (overlapped && ::size(*overlapped))
-        {
-            throw propagation_error("propagate_single: check_overlap failed.");
-        }
+        check_overlap(new_particle, domain.particle().first);
 #endif
 
         particle_type const& old(domain.particle().second);
-        particle_id_pair new_pp(
-            domain.particle().first,
-            particle_type(old.sid(),
-                particle_shape_type(new_pos, old.radius()), old.D()));
-        domain.particle().second = new_pp.second;
-        (*base_type::world_).update_particle(new_pp);
+        domain.particle().second = particle_type(old.sid(),
+                particle_shape_type(new_pos, old.radius()), old.D());
+        (*base_type::world_).update_particle(domain.particle());
+
+        domain.position() = new_pos;
+        domain.size() = domain.particle().second.radius();
+        if (do_update_shell_matrix)
+            update_shell_matrix(domain);
     }
 
     template<typename T>
@@ -1555,21 +1575,24 @@ protected:
         new_particles[0].second.position() = (*base_type::world_).apply_boundary(_new_pos[0]);
         new_particles[1].second.position() = (*base_type::world_).apply_boundary(_new_pos[1]);
 
-        BOOST_ASSERT(
-            !(*base_type::world_).check_overlap(
-                shape(new_particles[0].second),
-                new_particles[0].first, new_particles[1].first));
-        BOOST_ASSERT(
-            !(*base_type::world_).check_overlap(
-                shape(new_particles[1].second),
-                new_particles[0].first, new_particles[1].first));
+#ifdef DEBUG
+        check_overlap(
+            shape(new_particles[0].second),
+            new_particles[0].first, new_particles[1].first);
+        check_overlap(
+            shape(new_particles[1].second),
+            new_particles[0].first, new_particles[1].first);
         BOOST_ASSERT(check_pair_pos(domain, new_particles));
+#endif
+        (*base_type::world_).update_particle(new_particles[0]);
+        (*base_type::world_).update_particle(new_particles[1]);
 
-        LOG_DEBUG(("propagate: %s => %s, %s => %s",
-            boost::lexical_cast<std::string>(particles[0].second.position()).c_str(),
-            boost::lexical_cast<std::string>(new_particles[0].second.position()).c_str(),
-            boost::lexical_cast<std::string>(particles[1].second.position()).c_str(),
-            boost::lexical_cast<std::string>(new_particles[1].second.position()).c_str()));
+        for (int i = 0; i < 2; i++)
+        {
+            LOG_DEBUG(("propagate: #%d: %s => %s", i,
+                boost::lexical_cast<std::string>(particles[i].second.position()).c_str(),
+                boost::lexical_cast<std::string>(new_particles[i].second.position()).c_str()));
+        }
 
         remove_domain(domain);
 
@@ -1594,8 +1617,8 @@ protected:
     template<typename T>
     void burst(AnalyticalSingle<traits_type, T>& domain)
     {
-        position_type const old_pos(shape_position(shape(domain.shell().second)));
-        length_type const old_shell_size(shape_size(shape(domain.shell().second))); 
+        position_type const old_pos(domain.position());
+        length_type const old_shell_size(domain.size()); 
         length_type const particle_radius(domain.particle().second.radius());
 
         // Override dt, burst happens before single's scheduled event.
@@ -1604,9 +1627,7 @@ protected:
 
         position_type const new_pos(draw_new_position(domain, domain.dt()));
 
-        propagate(domain, new_pos);
-
-        move_domain(domain, new_pos);
+        propagate(domain, new_pos, true);
 
         // Todo. if isinstance(single, InteractionSingle):
         domain.dt() = 0.;
@@ -1618,7 +1639,7 @@ protected:
                 <= old_shell_size - particle_radius);
         // Displacement check is in NonInteractionSingle.draw_new_position.
 
-        BOOST_ASSERT(shape_size(shape(domain.shell().second)) == particle_radius);
+        BOOST_ASSERT(domain.size() == particle_radius);
     }
 
     template<typename T>
@@ -2085,6 +2106,7 @@ protected:
     void restore_domain(AnalyticalSingle<traits_type, T>& domain,
                         std::pair<domain_id_type, length_type> const& closest)
     {
+        typedef typename AnalyticalSingle<traits_type, T>::shell_type shell_type;
         domain_type const* closest_domain(
             closest.second == std::numeric_limits<length_type>::infinity() ?
                 (domain_type const*)0: get_domain(closest.first).get());
@@ -2120,9 +2142,14 @@ protected:
                 boost::lexical_cast<std::string>(*closest_domain).c_str():
                 "(none)",
             closest.second));
-        move_domain(domain, domain.position(), new_shell_size);
-        BOOST_ASSERT(shape_size(shape(domain.shell().second)) == new_shell_size);
-
+#ifdef DEBUG
+        check_overlap(
+            sphere_type(domain.position(), new_shell_size),
+            domain.particle().first);
+#endif
+        domain.size() = new_shell_size;
+        update_shell_matrix(domain);
+        BOOST_ASSERT(domain.size() == new_shell_size);
         determine_next_event(domain);
     }
 
@@ -2657,7 +2684,7 @@ protected:
         {
         case SINGLE_EVENT_REACTION:
             LOG_DEBUG(("fire_single: single reaction (%s)", boost::lexical_cast<std::string>(domain).c_str()));
-            propagate(domain, draw_new_position(domain, domain.dt()));
+            propagate(domain, draw_new_position(domain, domain.dt()), false);
             try
             {
                 attempt_single_reaction(domain);
@@ -2680,7 +2707,8 @@ protected:
             }
 
             if (domain.dt() != 0.)
-                propagate(domain, draw_new_position(domain, domain.dt()));
+                // Heads up: shell matrix will be updated later in restore_domain().
+                propagate(domain, draw_new_position(domain, domain.dt()), false);
             length_type const min_shell_radius(domain.particle().second.radius() * (1. + single_shell_factor_));
             {
                 std::vector<domain_id_type>* intruders;
@@ -3247,6 +3275,59 @@ protected:
             {
                 check_domain(*_domain);
             }
+        }
+    }
+
+    void check_overlap(particle_shape_type const& s) const
+    {
+        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+            (*base_type::world_).check_overlap(s));
+
+        if (overlapped && ::size(*overlapped))
+        {
+            log_.debug("check_overlap %s failed:",
+                boost::lexical_cast<std::string>(s).c_str());
+            dump_overlapped(*overlapped);
+            BOOST_ASSERT(false);
+        }
+    }
+
+    void check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    {
+        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+            (*base_type::world_).check_overlap(s, ignore));
+
+        if (overlapped && ::size(*overlapped))
+        {
+            log_.debug("check_overlap %s failed:",
+                boost::lexical_cast<std::string>(s).c_str());
+            dump_overlapped(*overlapped);
+            BOOST_ASSERT(false);
+        }
+    }
+
+    void check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    {
+        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+            (*base_type::world_).check_overlap(s, ignore1, ignore2));
+
+        if (overlapped && ::size(*overlapped))
+        {
+            log_.debug("check_overlap %s failed:",
+                boost::lexical_cast<std::string>(s).c_str());
+            dump_overlapped(*overlapped);
+            BOOST_ASSERT(false);
+        }
+    }
+
+    void dump_overlapped(particle_id_pair_and_distance_list const& list)const
+    {
+        BOOST_FOREACH (particle_id_pair_and_distance const& i, list)
+        {
+            log_.debug("  (%s:%s) %g",
+                boost::lexical_cast<std::string>(i.first.first).c_str(),
+                boost::lexical_cast<std::string>(i.first.second).c_str(),
+                i.second);
         }
     }
 

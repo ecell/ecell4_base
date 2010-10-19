@@ -18,7 +18,11 @@ public:
 
     virtual position_type const& position() const = 0;
 
+    virtual position_type& position() = 0;
+
     virtual length_type const& size() const = 0;
+
+    virtual length_type& size() = 0;
 
     ShapedDomain(identifier_type const& id)
         : base_type(id) {}

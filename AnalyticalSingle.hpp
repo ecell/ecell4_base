@@ -53,7 +53,17 @@ public:
         return shape_position(shape(shell_.second));
     }
 
+    virtual position_type& position()
+    {
+        return shape_position(shape(shell_.second));
+    }
+
     virtual length_type const& size() const
+    {
+        return shape_size(shape(shell_.second));
+    }
+
+    virtual length_type& size()
     {
         return shape_size(shape(shell_.second));
     }
