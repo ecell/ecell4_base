@@ -1390,7 +1390,6 @@ protected:
                               length_type const& sigma = -1.)
     {
         LOG_DEBUG(("draw_r: dt=%g, a=%g, sigma=%g", dt, a, sigma));
-        BOOST_ASSERT(dt != 0.);
         BOOST_ASSERT(a > sigma);
         length_type r(0.);
         double rnd(0.);
