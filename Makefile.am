@@ -162,15 +162,25 @@ noinst_HEADERS = \
 _gfrd_la_CPPFLAGS = -DPY_ARRAY_UNIQUE_SYMBOL=PyArray_API
 
 _gfrd_la_SOURCES=\
-	freeFunctions.cpp\
-	pyGFRD.cpp\
-	Model.cpp\
-	SpeciesType.cpp\
-	StructureType.cpp\
 	BasicNetworkRulesImpl.cpp\
+	findRoot.cpp\
+	freeFunctions.cpp\
+	funcSum.cpp\
+	GreensFunction3DAbs.cpp\
+	GreensFunction3DAbsSym.cpp\
+	GreensFunction3D.cpp\
+	GreensFunction3DRadAbsBase.cpp\
+	GreensFunction3DRadAbs.cpp\
+	GreensFunction3DRadInf.cpp\
+	GreensFunction3DSym.cpp\
+	Logger.cpp\
+	Model.cpp\
 	NetworkRules.cpp\
 	ParticleModel.cpp\
-	Logger.cpp\
+	pyGFRD.cpp\
+	SpeciesType.cpp\
+	SphericalBesselGenerator.cpp\
+	StructureType.cpp\
 	utils.cpp
 
 _greens_functions_la_SOURCES=\

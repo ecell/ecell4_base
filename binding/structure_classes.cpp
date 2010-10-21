@@ -3,6 +3,7 @@
 #endif /* HAVE_CONFIG_H */
 
 #include "Structure.hpp"
+#include "ParticleSimulationStructure.hpp"
 #include "Surface.hpp"
 #include "Region.hpp"
 #include "PlanarSurface.hpp"
@@ -16,6 +17,7 @@ namespace binding {
 void register_structure_classes()
 {
     register_structure_class<Structure>("Structure");
+    register_particle_simulation_structure_class<ParticleSimulationStructure>("ParticleSimulationStructure");
     register_surface_class<Surface>("Surface");
     register_region_class<Region>("Region");
     register_cuboidal_region_class<CuboidalRegion>("CuboidalRegion");

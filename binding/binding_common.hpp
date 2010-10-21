@@ -82,6 +82,7 @@ typedef EGFRDSimulator::multi_type Multi;
 typedef ::MatrixSpace<SphericalShell, ShellID> SphericalShellContainer;
 typedef ::MatrixSpace<CylindricalShell, ShellID> CylindricalShellContainer;
 typedef ::StructureUtils<EGFRDSimulator> StructureUtils;
+typedef EGFRDSimulator::particle_simulation_structure_type ParticleSimulationStructure;
 typedef EGFRDSimulator::surface_type Surface;
 typedef EGFRDSimulator::region_type Region;
 typedef EGFRDSimulator::planar_surface_type PlanarSurface;
