@@ -31,7 +31,7 @@ inline boost::python::objects::class_base register_bd_propagator_class(char cons
 
     peer::converters::register_pyiterable_range_converter<particle_id_type>();
     return class_<impl_type, boost::noncopyable>(
-        "BDPropagator", init<
+        name, init<
             particle_container_type&, network_rules_type const&, rng_type&,
             time_type, int, reaction_recorder_type*,
             peer::wrappers::pyiterable_range<particle_id_type> >())

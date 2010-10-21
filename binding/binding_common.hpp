@@ -25,8 +25,10 @@
 #include "../Multi.hpp"
 #include "../ShapedDomain.hpp"
 #include "../GSLRandomNumberGenerator.hpp"
+#include "../ParticleSimulator.hpp"
 #include "../EGFRDSimulator.hpp"
 #include "../BDPropagator.hpp"
+#include "../BDSimulator.hpp"
 #include "../StructureUtils.hpp"
 #include "../AnalyticalSingle.hpp"
 #include "../AnalyticalPair.hpp"
@@ -57,6 +59,8 @@ typedef World::transaction_type Transaction;
 typedef World::base_type::base_type ParticleContainer; 
 typedef ::TransactionImpl<ParticleContainer> TransactionImpl;
 typedef ::EGFRDSimulatorTraitsBase<World> EGFRDSimulatorTraits;
+typedef ::ParticleSimulator<EGFRDSimulatorTraits> ParticleSimulator;
+typedef ::BDSimulator<EGFRDSimulatorTraits> BDSimulator;
 typedef ::EGFRDSimulator<EGFRDSimulatorTraits> EGFRDSimulator;
 typedef ::MultiParticleContainer<EGFRDSimulatorTraits> MultiParticleContainer;
 typedef EGFRDSimulator::box_type Box;

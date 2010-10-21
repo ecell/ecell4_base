@@ -16,6 +16,8 @@
 #include <boost/fusion/sequence/intrinsic/at_key.hpp>
 #include <boost/fusion/sequence/intrinsic/value_at_key.hpp>
 #include <boost/fusion/include/at_key.hpp>
+#include <boost/none_t.hpp>
+#include <boost/variant.hpp>
 #include "utils/array_helper.hpp"
 #include "utils/get_mapper_mf.hpp"
 #include "utils/fun_composition.hpp"
@@ -207,6 +209,8 @@ public:
     typedef typename traits_type::event_type event_type;
     typedef typename traits_type::event_id_type event_id_type;
     typedef typename traits_type::event_id_pair_type event_id_pair_type;
+    typedef boost::variant<boost::none_t, spherical_shell_type, cylindrical_shell_type> shell_variant_type;
+
 
 protected:
     typedef boost::fusion::map<
@@ -523,6 +527,25 @@ protected:
 
     private:
         Tset_& shell_ids_;
+    };
+
+    struct shell_finder
+    {
+        shell_finder(shell_id_type const& id, shell_variant_type& result)
+            : id(id), result(result) {}
+
+        template<typename T>
+        void operator()(T const& smat) const
+        {
+            typename boost::remove_reference<typename T::second_type>::type::const_iterator i(smat.second.find(id));
+            if (i != smat.second.end())
+            {
+                result = (*i).second;
+            }
+        }
+
+        shell_id_type id;
+        shell_variant_type& result;
     };
 
     struct draw_on_com_escape
@@ -877,7 +900,7 @@ public:
 
     EGFRDSimulator(boost::shared_ptr<world_type> world,
                    boost::shared_ptr<network_rules_type const> network_rules,
-                   rng_type& rng, int dissociation_retry_moves,
+                   rng_type& rng, int dissociation_retry_moves = 1,
                    length_type const& user_max_shell_size =
                     std::numeric_limits<length_type>::infinity())
         : base_type(world, network_rules, rng),
@@ -919,7 +942,27 @@ public:
     template<typename T>
     std::pair<const shell_id_type, T> const& get_shell(shell_id_type const& id) const
     {
-        return boost::fusion::at_key<T>(smatm_)[id];
+        typedef typename boost::remove_reference<
+            typename boost::fusion::result_of::value_at_key<
+                shell_matrix_map_type, T>::type>::type shell_matrix_type;
+
+        shell_matrix_type const& smat(boost::fusion::at_key<T>(smatm_));
+        
+        typename shell_matrix_type::const_iterator i(smat.find(id));
+        if (i == smat.end())
+        {
+            throw not_found(
+                (boost::format("shell id #%s not found") % boost::lexical_cast<std::string>(id)).str());
+        }
+
+        return *i;
+    }
+
+    std::pair<shell_id_type, shell_variant_type> get_shell(shell_id_type const& id)
+    {
+        shell_variant_type result;
+        boost::fusion::for_each(smatm_, shell_finder(id, result));
+        return std::make_pair(id, result);
     }
 
     boost::shared_ptr<domain_type> get_domain(domain_id_type const& id) const
@@ -1418,7 +1461,7 @@ protected:
                 // undergoes an unbinding reaction we still have to clear the
                 // target volume and the move may be rejected (NoSpace error).
                 cylindrical_shell_id_pair const new_shell(
-                    this->new_shell(did, cylinder_type(
+                    _this->new_shell(did, cylinder_type(
                         com,
                         shell_size,
                         shape(structure).unit_z(),
@@ -1432,7 +1475,7 @@ protected:
             virtual void operator()(planar_surface_type const& structure) const
             {
                 cylindrical_shell_id_pair const new_shell(
-                    this->new_shell(did, cylinder_type(
+                    _this->new_shell(did, cylinder_type(
                         com,
                         shell_size,
                         normalize(cross_product(
@@ -1447,7 +1490,7 @@ protected:
             virtual void operator()(cuboidal_region_type const& structure) const
             {
                 spherical_shell_id_pair new_shell(
-                    this->new_shell(did,
+                    _this->new_shell(did,
                         sphere_type(com, shell_size)));
                 new_pair = new spherical_pair_type(did, p0, p1, new_shell,
                                                    iv, rules);
@@ -1471,14 +1514,14 @@ protected:
             position_type const& com;
             position_type const& iv;
             length_type const& shell_size;
-            typename network_rules_type::reaction_rule_vector const& rules;
             domain_id_type const& did;
+            typename network_rules_type::reaction_rule_vector const& rules;
             pair_type*& new_pair;
             domain_kind& kind;
         };
 
         species_type const& species((*base_type::world_).get_species(p0.second.sid()));
-        dynamic_cast<particle_simulation_structure_type&>(*(*base_type::world_).get_structure(species.structure_id()))->accept(factory(this, p0, p1, com, iv, shell_size, did, new_pair, kind));
+        dynamic_cast<particle_simulation_structure_type&>(*(*base_type::world_).get_structure(species.structure_id())).accept(factory(this, p0, p1, com, iv, shell_size, did, new_pair, kind));
 
         boost::shared_ptr<domain_type> const retval(new_pair);
         domains_.insert(std::make_pair(did, retval));
@@ -2924,10 +2967,8 @@ protected:
             {
                 int const index(kind == PAIR_EVENT_SINGLE_REACTION_0 ? 0 : 1);
                 int const theother_index(1 - index);
-                particle_id_pair const& reacting_particle(
-                        domain.particles()[index]);
                 position_type const old_CoM(domain.position());
-                LOG_DEBUG(("pair: single reaction %s", boost::lexical_cast<std::string>(reacting_particle.first).c_str()));
+                LOG_DEBUG(("pair: single reaction %s", boost::lexical_cast<std::string>(domain.particles()[index].first).c_str()));
 
                 boost::array<boost::shared_ptr<single_type>, 2> const new_single(burst(domain));
 
