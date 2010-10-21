@@ -4,6 +4,12 @@
 #include <cstddef>
 
 template<typename Ttraits_>
+class ImmutativeDomainVisitor;
+
+template<typename Ttraits_>
+class MutativeDomainVisitor;
+
+template<typename Ttraits_>
 class Domain
 {
 public:
@@ -73,6 +79,10 @@ public:
             boost::lexical_cast<std::string>(event_.first).c_str() %
             last_time_ % dt_).str();
     }
+
+    virtual void accept(ImmutativeDomainVisitor<traits_type> const&) const = 0;
+
+    virtual void accept(MutativeDomainVisitor<traits_type> const&) = 0;
 
 protected:
     identifier_type id_;

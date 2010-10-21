@@ -17,7 +17,6 @@
 #include "utils/random.hpp"
 #include "utils/get_default_impl.hpp"
 #include "Logger.hpp"
-#include "StructureUtils.hpp"
 
 template<typename Ttraits_>
 class BDPropagator

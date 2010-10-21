@@ -161,6 +161,16 @@ public:
         return 2;
     }
 
+    virtual void accept(ImmutativeDomainVisitor<traits_type> const& visitor) const
+    {
+        visitor(*this);
+    }
+
+    virtual void accept(MutativeDomainVisitor<traits_type> const& visitor)
+    {
+        visitor(*this);
+    }
+
     virtual std::string as_string() const
     {
         return (boost::format(

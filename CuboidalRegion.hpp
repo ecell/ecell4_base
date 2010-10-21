@@ -10,6 +10,7 @@ class CuboidalRegion
 {
 public:
     typedef BasicRegionImpl<Ttraits_, Box<typename Ttraits_::length_type> > base_type;
+    typedef typename base_type::traits_type traits_type;
     typedef typename base_type::identifier_type identifier_type;
     typedef typename base_type::shape_type shape_type;
     typedef typename base_type::rng_type rng_type;
@@ -42,6 +43,16 @@ public:
             rng.normal(0., r),
             rng.normal(0., r),
             rng.normal(0., r));
+    }
+
+    virtual void accept(ImmutativeStructureVisitor<traits_type> const& visitor) const
+    {
+        visitor(*this);
+    }
+
+    virtual void accept(MutativeStructureVisitor<traits_type> const& visitor)
+    {
+        visitor(*this);
     }
 
     CuboidalRegion(identifier_type const& id, shape_type const& shape)

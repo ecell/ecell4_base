@@ -11,19 +11,18 @@
 #endif
 
 #include <sstream>
-#include "Structure.hpp"
+#include "ParticleSimulationStructure.hpp"
 #include "Box.hpp"
 #include "Cylinder.hpp"
 #include "Sphere.hpp"
 #include "Plane.hpp"
 
-
 template<typename Ttraits_>
-class Surface: public Structure<Ttraits_>
+class Surface: public ParticleSimulationStructure<Ttraits_>
 {
 public:
-    typedef Structure<Ttraits_> base_type;
-    typedef typename Ttraits_::structure_id_type identifier_type;
+    typedef ParticleSimulationStructure<Ttraits_> base_type;
+    typedef typename base_type::identifier_type identifier_type;
     typedef typename base_type::length_type length_type;
 
 public:
@@ -39,8 +38,8 @@ class BasicSurfaceImpl: public Surface<Ttraits_>
 {
 public:
     typedef Surface<Ttraits_> base_type;
-    typedef typename Ttraits_::structure_id_type identifier_type;
     typedef Tshape_ shape_type;
+    typedef typename base_type::identifier_type identifier_type;
     typedef typename base_type::length_type length_type;
     typedef typename base_type::position_type position_type;
 

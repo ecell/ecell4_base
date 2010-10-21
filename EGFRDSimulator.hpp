@@ -47,8 +47,6 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
     typedef Tworld_ world_type;
     typedef ShellID shell_id_type;
     typedef DomainID domain_id_type;
-    typedef typename ParticleSimulatorTraitsBase<Tworld_>::sphere_type sphere_type;
-    typedef typename ParticleSimulatorTraitsBase<Tworld_>::cylinder_type cylinder_type;
     typedef SerialIDGenerator<shell_id_type> shell_id_generator;
     typedef SerialIDGenerator<domain_id_type> domain_id_generator; typedef Domain<EGFRDSimulatorTraitsBase> domain_type;
     typedef std::pair<const domain_id_type, boost::shared_ptr<domain_type> > domain_id_pair;
@@ -106,16 +104,69 @@ struct get_pair_greens_function<Cylinder<T_> >
 } // namespace detail
 
 template<typename Ttraits_>
+class EGFRDSimulator;
+
+template<typename Ttraits_>
+struct ImmutativeDomainVisitor
+{
+    typedef typename EGFRDSimulator<Ttraits_>::multi_type multi_type;
+    typedef typename EGFRDSimulator<Ttraits_>::spherical_single_type spherical_single_type;
+    typedef typename EGFRDSimulator<Ttraits_>::cylindrical_single_type cylindrical_single_type;
+    typedef typename EGFRDSimulator<Ttraits_>::spherical_pair_type spherical_pair_type;
+    typedef typename EGFRDSimulator<Ttraits_>::cylindrical_pair_type cylindrical_pair_type;
+
+    virtual ~ImmutativeDomainVisitor() {}
+
+    virtual void operator()(multi_type const&) const = 0;
+
+    virtual void operator()(spherical_single_type const&) const = 0;
+
+    virtual void operator()(cylindrical_single_type const&) const = 0;
+
+    virtual void operator()(spherical_pair_type const&) const = 0;
+
+    virtual void operator()(cylindrical_pair_type const&) const = 0;
+};
+
+template<typename Ttraits_>
+struct MutativeDomainVisitor
+{
+    typedef typename EGFRDSimulator<Ttraits_>::multi_type multi_type;
+    typedef typename EGFRDSimulator<Ttraits_>::spherical_single_type spherical_single_type;
+    typedef typename EGFRDSimulator<Ttraits_>::cylindrical_single_type cylindrical_single_type;
+    typedef typename EGFRDSimulator<Ttraits_>::spherical_pair_type spherical_pair_type;
+    typedef typename EGFRDSimulator<Ttraits_>::cylindrical_pair_type cylindrical_pair_type;
+
+    virtual ~MutativeDomainVisitor() {}
+
+    virtual void operator()(multi_type&) const = 0;
+
+    virtual void operator()(spherical_single_type&) const = 0;
+
+    virtual void operator()(cylindrical_single_type&) const = 0;
+
+    virtual void operator()(spherical_pair_type&) const = 0;
+
+    virtual void operator()(cylindrical_pair_type&) const = 0;
+};
+
+
+template<typename Ttraits_>
 class EGFRDSimulator: public ParticleSimulator<Ttraits_>
 {
 public:
     typedef Ttraits_ traits_type;
     typedef ParticleSimulator<Ttraits_> base_type;
+    typedef typename base_type::sphere_type sphere_type;
+    typedef typename base_type::cylinder_type cylinder_type;
+    typedef typename base_type::particle_simulation_structure_type particle_simulation_structure_type;
+    typedef typename base_type::spherical_surface_type spherical_surface_type;
+    typedef typename base_type::cylindrical_surface_type cylindrical_surface_type;
+    typedef typename base_type::planar_surface_type planar_surface_type;
+    typedef typename base_type::cuboidal_region_type cuboidal_region_type;
     typedef typename traits_type::world_type world_type;
     typedef typename traits_type::domain_id_type domain_id_type;
     typedef typename traits_type::shell_id_type shell_id_type;
-    typedef typename traits_type::sphere_type sphere_type;
-    typedef typename traits_type::cylinder_type cylinder_type;
     typedef typename traits_type::template shell_generator<sphere_type>::type spherical_shell_type;
     typedef typename traits_type::template shell_generator<cylinder_type>::type cylindrical_shell_type;
     typedef std::pair<const shell_id_type, spherical_shell_type> spherical_shell_id_pair;
@@ -152,9 +203,6 @@ public:
 
     typedef typename traits_type::reaction_record_type reaction_record_type;
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
-    typedef typename traits_type::cylindrical_surface_type cylindrical_surface_type;
-    typedef typename traits_type::planar_surface_type planar_surface_type;
-    typedef typename traits_type::cuboidal_region_type cuboidal_region_type;
     typedef typename traits_type::event_scheduler_type event_scheduler_type;
     typedef typename traits_type::event_type event_type;
     typedef typename traits_type::event_id_type event_id_type;
@@ -182,6 +230,17 @@ protected:
     typedef typename network_rules_type::reaction_rules reaction_rules;
     typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
     typedef typename traits_type::rate_type rate_type;
+
+    enum domain_kind
+    {
+        NONE = 0,
+        SPHERICAL_SINGLE,
+        CYLINDRICAL_SINGLE,
+        SPHERICAL_PAIR,
+        CYLINDRICAL_PAIR,
+        MULTI,
+        NUM_DOMAIN_KINDS
+    };
 
     struct domain_event_base: public event_type
     {
@@ -465,7 +524,6 @@ protected:
     private:
         Tset_& shell_ids_;
     };
-
 
     struct draw_on_com_escape
     {
@@ -887,9 +945,9 @@ public:
         return domains_.size();
     }
 
-    int num_domains_per_type(std::type_info const& type) const
+    int num_domains_per_type(domain_kind type) const
     {
-        return domain_count_per_type_[&type];
+        return domain_count_per_type_[type];
     }
 
     std::vector<domain_id_type>*
@@ -910,28 +968,6 @@ public:
         collector_type col((*base_type::world_), p, f);
         boost::fusion::for_each(smatm_, shell_collector_applier<collector_type>(col, p.position()));
         return col.neighbors.container().get();
-    }
-
-    virtual void clear_volume(particle_shape_type const& p)
-    {
-        boost::scoped_ptr<std::vector<domain_id_type> > domains(
-            get_neighbor_domains(p));
-        if (domains)
-        {
-            burst_domains(*domains);
-        }
-    }
-
-    virtual void clear_volume(particle_shape_type const& p,
-                              domain_id_type const& ignore)
-    {
-        boost::scoped_ptr<std::vector<domain_id_type> > domains(
-            get_neighbor_domains(p, ignore));
-
-        if (domains)
-        {
-            burst_domains(*domains);
-        }
     }
 
     virtual void initialize()
@@ -999,6 +1035,31 @@ public:
         return false;
     }
 
+    // {{{ clear_volume
+    // called by Multi
+    void clear_volume(particle_shape_type const& p)
+    {
+        boost::scoped_ptr<std::vector<domain_id_type> > domains(
+            get_neighbor_domains(p));
+        if (domains)
+        {
+            burst_domains(*domains);
+        }
+    }
+
+    void clear_volume(particle_shape_type const& p,
+                      domain_id_type const& ignore)
+    {
+        boost::scoped_ptr<std::vector<domain_id_type> > domains(
+            get_neighbor_domains(p, ignore));
+
+        if (domains)
+        {
+            burst_domains(*domains);
+        }
+    }
+    // }}}
+
 protected:
     template<typename Tshell>
     void move_shell(std::pair<const shell_id_type, Tshell> const& shell)
@@ -1053,7 +1114,33 @@ protected:
     }
 
     // remove_domain_but_shell {{{
+    template<typename T>
+    void remove_domain_but_shell(AnalyticalSingle<traits_type, T>& domain)
+    {
+        --domain_count_per_type_[get_domain_kind(domain)];
+        _remove_domain_but_shell(domain);
+    }
+
+    template<typename T>
+    void remove_domain_but_shell(AnalyticalPair<traits_type, T>& domain)
+    {
+        --domain_count_per_type_[get_domain_kind(domain)];
+        _remove_domain_but_shell(domain);
+    }
+
+    void remove_domain_but_shell(multi_type& domain)
+    {
+        --domain_count_per_type_[get_domain_kind(domain)];
+        _remove_domain_but_shell(domain);
+    }
+
     void remove_domain_but_shell(domain_type& domain)
+    {
+        --domain_count_per_type_[get_domain_kind(domain)];
+        _remove_domain_but_shell(domain);
+    }
+
+    void _remove_domain_but_shell(domain_type& domain)
     {
         LOG_DEBUG(("remove_domain_but_shell: %s", boost::lexical_cast<std::string>(domain.id()).c_str()));
         domains_.erase(domain.id());
@@ -1066,6 +1153,7 @@ protected:
             LOG_DEBUG(("event %s already removed; ignoring.", boost::lexical_cast<std::string>(domain.event().first).c_str()));
         }
     }
+
     // }}}
 
     // remove_domain {{{
@@ -1227,66 +1315,78 @@ protected:
     // create_single {{{
     boost::shared_ptr<single_type> create_single(particle_id_pair const& p)
     {
+        domain_kind kind;
         single_type* new_single(0);
         domain_id_type did(didgen_());
-        species_type const& species((*base_type::world_).get_species(p.second.sid()));
-        boost::shared_ptr<structure_type> structure((*base_type::world_).get_structure(species.structure_id()));
-        {
-            planar_surface_type* _structure(
-                dynamic_cast<planar_surface_type*>(structure.get()));
-            if (_structure)
-            {
-                cylindrical_shell_id_pair const new_shell(
-                    this->new_shell(did, cylinder_type(
-                        p.second.position(), p.second.radius(),
-                        normalize(cross_product(
-                            _structure->shape().unit_x(),
-                            _structure->shape().unit_y())),
-                        p.second.radius())));
-                new_single = new cylindrical_single_type(did, p, new_shell);
-            }
-        }
-        {
-            // Heads up. The cylinder's *size*, not radius, is changed when you 
-            // make the cylinder bigger, because of the redefinition of set_radius.
 
-            // The radius of a rod is not more than it has to be (namely the radius 
-            // of the particle), so if the particle undergoes an unbinding reaction 
-            // we still have to clear the target volume and the move may be 
-            // rejected (NoSpace error).
-            cylindrical_surface_type* _structure(
-                dynamic_cast<cylindrical_surface_type*>(structure.get()));
-            if (_structure)
+        struct factory: ImmutativeStructureVisitor<traits_type>
+        {
+            virtual ~factory() {}
+
+            virtual void operator()(spherical_surface_type const& structure) const
             {
+                throw not_implemented(
+                    (boost::format("unsupported structure type: %s") %
+                        boost::lexical_cast<std::string>(structure)).str());
+            }
+
+            virtual void operator()(cylindrical_surface_type const& structure) const
+            {
+                // Heads up. The cylinder's *size*, not radius, is changed when
+                // you make the cylinder bigger, because of the redefinition of
+                // set_radius.
+                // The radius of a rod is not more than it has to be (namely
+                // the radius of the particle), so if the particle undergoes an
+                // unbinding reaction, we still have to clear the target volume
+                // and the move may be rejected (NoSpace error).
                 const cylindrical_shell_id_pair new_shell(
-                    this->new_shell(
+                    _this->new_shell(
                         did, cylinder_type(
                             p.second.position(), p.second.radius(),
-                            _structure->shape().unit_z(),
+                            structure.shape().unit_z(),
                             p.second.radius())));
                 new_single = new cylindrical_single_type(did, p, new_shell);
+                kind = CYLINDRICAL_SINGLE;
             }
-        }
-        {
-            cuboidal_region_type* _structure(
-                dynamic_cast<cuboidal_region_type*>(structure.get()));
-            if (_structure)
+
+            virtual void operator()(planar_surface_type const& structure) const
+            {
+                cylindrical_shell_id_pair const new_shell(
+                    _this->new_shell(did, cylinder_type(
+                        p.second.position(), p.second.radius(),
+                        normalize(cross_product(
+                            structure.shape().unit_x(),
+                            structure.shape().unit_y())),
+                        p.second.radius())));
+                new_single = new cylindrical_single_type(did, p, new_shell);
+                kind = CYLINDRICAL_SINGLE;
+            }
+
+            virtual void operator()(cuboidal_region_type const& structure) const
             {
                 spherical_shell_id_pair new_shell(
-                    this->new_shell(did, ::shape(p.second)));
+                    _this->new_shell(did, ::shape(p.second)));
                 new_single = new spherical_single_type(did, p, new_shell);
             }
-        }
-        if (!new_single)
-        {
-            throw not_implemented(
-                (boost::format("unsupported structure type: %s") %
-                    boost::lexical_cast<std::string>(*structure)).str());;
-        }
 
+            factory(EGFRDSimulator* _this, particle_id_pair const& p,
+                    domain_id_type const& did, single_type*& new_single,
+                    domain_kind& kind)
+                : _this(_this), p(p), did(did), new_single(new_single),
+                  kind(kind) {}
+
+            EGFRDSimulator* _this;
+            particle_id_pair const& p;
+            domain_id_type const& did;
+            single_type*& new_single;
+            domain_kind& kind;
+        };
+
+        species_type const& species((*base_type::world_).get_species(p.second.sid()));
+        dynamic_cast<particle_simulation_structure_type const&>(*(*base_type::world_).get_structure(species.structure_id())).accept(factory(this, p, did, new_single, kind));
         boost::shared_ptr<domain_type> const retval(new_single);
         domains_.insert(std::make_pair(did, retval));
-        ++domain_count_per_type_[&typeid(*new_single)];
+        ++domain_count_per_type_[kind];
         return boost::dynamic_pointer_cast<single_type>(retval);
     }
     // }}}
@@ -1298,73 +1398,91 @@ protected:
                                              position_type const& iv,
                                              length_type const& shell_size)
     {
+        domain_kind kind = NONE;
         pair_type* new_pair(0);
         domain_id_type did(didgen_());
-        species_type const& species((*base_type::world_).get_species(p0.second.sid()));
-        boost::shared_ptr<structure_type> const structure(((*base_type::world_).get_structure(species.structure_id())));
-        typename network_rules_type::reaction_rule_vector const& rules(
-            (*base_type::network_rules_).query_reaction_rule(
-                p0.second.sid(), p1.second.sid()));
+
+        struct factory: ImmutativeStructureVisitor<traits_type>
         {
-            planar_surface_type* _structure(
-                dynamic_cast<planar_surface_type*>(structure.get()));
-            if (_structure)
+            virtual void operator()(spherical_surface_type const& structure) const
+            {
+                throw not_implemented(
+                    (boost::format("unsupported structure type: %s") %
+                        boost::lexical_cast<std::string>(structure)).str());
+            }
+
+            virtual void operator()(cylindrical_surface_type const& structure) const
+            {
+                // The radius of a rod is not more than it has to be (namely
+                // the radius of the biggest particle), so if the particle
+                // undergoes an unbinding reaction we still have to clear the
+                // target volume and the move may be rejected (NoSpace error).
+                cylindrical_shell_id_pair const new_shell(
+                    this->new_shell(did, cylinder_type(
+                        com,
+                        shell_size,
+                        shape(structure).unit_z(),
+                        std::max(p0.second.radius(), p1.second.radius()))));
+                new_pair = new cylindrical_pair_type(did, p0, p1, new_shell,
+                                                     iv, rules);
+                kind = CYLINDRICAL_PAIR;
+            }
+
+        
+            virtual void operator()(planar_surface_type const& structure) const
             {
                 cylindrical_shell_id_pair const new_shell(
                     this->new_shell(did, cylinder_type(
                         com,
                         shell_size,
                         normalize(cross_product(
-                            _structure->shape().unit_x(),
-                            _structure->shape().unit_y())),
+                            shape(structure).unit_x(),
+                            shape(structure).unit_y())),
                         std::max(p0.second.radius(), p1.second.radius()))));
                 new_pair = new cylindrical_pair_type(did, p0, p1, new_shell,
                                                        iv, rules);
+                kind = CYLINDRICAL_PAIR;
             }
-        }
-        {
-            // The radius of a rod is not more than it has to be (namely the 
-            // radius of the biggest particle), so if the particle undergoes 
-            // an unbinding reaction we still have to clear the target volume 
-            // and the move may be rejected (NoSpace error).
 
-            cylindrical_surface_type* _structure(
-                dynamic_cast<cylindrical_surface_type*>(structure.get()));
-            if (_structure)
-            {
-                cylindrical_shell_id_pair const new_shell(
-                    this->new_shell(did, cylinder_type(
-                        com,
-                        shell_size,
-                        shape(*_structure).unit_z(),
-                        std::max(p0.second.radius(), p1.second.radius()))));
-                new_pair = new cylindrical_pair_type(did, p0, p1, new_shell,
-                                                     iv, rules);
-            }
-        }
-        {
-            cuboidal_region_type* _structure(
-                dynamic_cast<cuboidal_region_type*>(structure.get()));
-            if (_structure)
+            virtual void operator()(cuboidal_region_type const& structure) const
             {
                 spherical_shell_id_pair new_shell(
                     this->new_shell(did,
                         sphere_type(com, shell_size)));
                 new_pair = new spherical_pair_type(did, p0, p1, new_shell,
                                                    iv, rules);
+                kind = SPHERICAL_PAIR;
             }
-        }
 
-        if (!new_pair)
-        {
-            throw not_implemented(
-                (boost::format("unsupported structure type: %s") %
-                    boost::lexical_cast<std::string>(*structure)).str());;
-        }
+            factory(EGFRDSimulator* _this, particle_id_pair const& p0,
+                    particle_id_pair const& p1, position_type const& com,
+                    position_type const& iv, length_type const& shell_size,
+                    domain_id_type const& did, pair_type*& new_pair,
+                    domain_kind& kind)
+                : _this(_this), p0(p0), p1(p1), com(com), iv(iv),
+                  shell_size(shell_size), did(did),
+                  rules((*_this->network_rules_).query_reaction_rule(
+                        p0.second.sid(), p1.second.sid())),
+                  new_pair(new_pair), kind(kind) {}
+
+            EGFRDSimulator* _this;
+            particle_id_pair const& p0;
+            particle_id_pair const& p1;
+            position_type const& com;
+            position_type const& iv;
+            length_type const& shell_size;
+            typename network_rules_type::reaction_rule_vector const& rules;
+            domain_id_type const& did;
+            pair_type*& new_pair;
+            domain_kind& kind;
+        };
+
+        species_type const& species((*base_type::world_).get_species(p0.second.sid()));
+        dynamic_cast<particle_simulation_structure_type&>(*(*base_type::world_).get_structure(species.structure_id()))->accept(factory(this, p0, p1, com, iv, shell_size, did, new_pair, kind));
 
         boost::shared_ptr<domain_type> const retval(new_pair);
         domains_.insert(std::make_pair(did, retval));
-        ++domain_count_per_type_[&typeid(*new_pair)];
+        ++domain_count_per_type_[kind];
         return boost::dynamic_pointer_cast<pair_type>(retval);
     }
     // }}}
@@ -1376,7 +1494,7 @@ protected:
         multi_type* new_multi(new multi_type(did, *this, traits_type::DEFAULT_DT_FACTOR));
         boost::shared_ptr<domain_type> const retval(new_multi);
         domains_.insert(std::make_pair(did, retval));
-        ++domain_count_per_type_[&typeid(*new_multi)];
+        ++domain_count_per_type_[MULTI];
         return boost::dynamic_pointer_cast<multi_type>(retval);
     }
     // }}}
@@ -3005,6 +3123,72 @@ protected:
         }
     }
 
+    static domain_kind get_domain_kind(domain_type const& domain)
+    {
+        struct domain_kind_visitor: ImmutativeDomainVisitor<traits_type>
+        {
+            virtual ~domain_kind_visitor() {}
+
+            virtual void operator()(multi_type const&) const
+            {
+                retval = MULTI;
+            }
+
+            virtual void operator()(spherical_single_type const&) const
+            {
+                retval = SPHERICAL_SINGLE;
+            }
+
+            virtual void operator()(cylindrical_single_type const&) const
+            {
+                retval = CYLINDRICAL_SINGLE;
+            }
+
+            virtual void operator()(spherical_pair_type const&) const
+            {
+                retval = SPHERICAL_PAIR;
+            }
+
+            virtual void operator()(cylindrical_pair_type const&) const
+            {
+                retval = CYLINDRICAL_PAIR;
+            }
+
+            domain_kind_visitor(domain_kind& retval): retval(retval) {}
+
+            domain_kind& retval;
+        };
+
+        domain_kind retval = NONE;
+        domain.accept(domain_kind_visitor(retval));
+        return retval;
+    }
+
+    static domain_kind get_domain_kind(spherical_single_type const&)
+    {
+        return SPHERICAL_SINGLE;
+    }
+
+    static domain_kind get_domain_kind(cylindrical_single_type const&)
+    {
+        return CYLINDRICAL_SINGLE;
+    }
+
+    static domain_kind get_domain_kind(spherical_pair_type const&)
+    {
+        return SPHERICAL_PAIR;
+    }
+
+    static domain_kind get_domain_kind(cylindrical_pair_type const&)
+    {
+        return CYLINDRICAL_PAIR;
+    }
+
+    static domain_kind get_domain_kind(multi_type const&)
+    {
+        return MULTI;
+    }
+
     void dump_events() const
     {
         log_.info("QUEUED EVENTS:");
@@ -3498,7 +3682,7 @@ protected:
     std::map<single_event_kind, int> single_step_count_;
     std::map<pair_event_kind, int> pair_step_count_;
     std::map<typename multi_type::event_kind, int> multi_step_count_;
-    std::map<std::type_info const*, int> domain_count_per_type_;
+    boost::array<int, NUM_DOMAIN_KINDS> domain_count_per_type_;
     length_type single_shell_factor_;
     length_type multi_shell_factor_;
     unsigned int rejected_moves_;

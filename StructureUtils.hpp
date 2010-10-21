@@ -9,25 +9,26 @@
 #include "Surface.hpp"
 #include "Region.hpp"
 
-template<typename Ttraits_>
+template<typename Tsim_>
 struct StructureUtils
 {
-    typedef Ttraits_ traits_type;
+    typedef Tsim_ simulator_type;
+    typedef typename simulator_type::traits_type traits_type;
     typedef typename traits_type::world_type::position_type position_type;
     typedef typename traits_type::world_type::length_type length_type;
     typedef typename traits_type::world_type::structure_id_type structure_id_type;
     typedef typename traits_type::world_type::structure_type structure_type;
     typedef typename traits_type::world_type::traits_type::surface_type surface_type;
     typedef typename traits_type::world_type::traits_type::region_type region_type;
-    typedef typename traits_type::sphere_type sphere_type;
-    typedef typename traits_type::cylinder_type cylinder_type;
-    typedef typename traits_type::box_type box_type;
-    typedef typename traits_type::plane_type plane_type;
-    typedef typename traits_type::spherical_surface_type spherical_surface_type;
-    typedef typename traits_type::cylindrical_surface_type cylindrical_surface_type;
-    typedef typename traits_type::planar_surface_type planar_surface_type;
-    typedef typename traits_type::cuboidal_region_type cuboidal_region_type;
-    typedef typename traits_type::world_type::traits_type::rng_type rng_type;
+    typedef typename simulator_type::sphere_type sphere_type;
+    typedef typename simulator_type::cylinder_type cylinder_type;
+    typedef typename simulator_type::box_type box_type;
+    typedef typename simulator_type::plane_type plane_type;
+    typedef typename simulator_type::spherical_surface_type spherical_surface_type;
+    typedef typename simulator_type::cylindrical_surface_type cylindrical_surface_type;
+    typedef typename simulator_type::planar_surface_type planar_surface_type;
+    typedef typename simulator_type::cuboidal_region_type cuboidal_region_type;
+    typedef typename simulator_type::world_type::traits_type::rng_type rng_type;
  
     static planar_surface_type* create_planar_surface(
             structure_id_type const& id,

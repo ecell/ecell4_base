@@ -5,6 +5,7 @@
 #include "Sphere.hpp"
 #include "Cylinder.hpp"
 #include "Box.hpp"
+#include "ParticleSimulationStructure.hpp"
 #include "CuboidalRegion.hpp"
 #include "PlanarSurface.hpp"
 #include "CylindricalSurface.hpp"
@@ -22,14 +23,6 @@ struct ParticleSimulatorTraitsBase
     typedef Real rate_type;
     typedef Real time_type;
     typedef int reaction_rule_id_type;
-    typedef Sphere<typename world_type::length_type> sphere_type;
-    typedef Cylinder<typename world_type::length_type> cylinder_type;
-    typedef Box<typename world_type::length_type> box_type;
-    typedef Plane<typename world_type::length_type> plane_type;
-    typedef SphericalSurface<typename world_type::traits_type> spherical_surface_type;
-    typedef CylindricalSurface<typename world_type::traits_type> cylindrical_surface_type;
-    typedef PlanarSurface<typename world_type::traits_type> planar_surface_type;
-    typedef CuboidalRegion<typename world_type::traits_type> cuboidal_region_type;
     typedef ReactionRuleInfo<
             reaction_rule_id_type,
             typename world_type::traits_type::species_id_type,
@@ -42,11 +35,63 @@ struct ParticleSimulatorTraitsBase
 };
 
 template<typename Ttraits_>
+class ParticleSimulator;
+
+template<typename Ttraits_>
+struct ImmutativeStructureVisitor
+{
+    typedef Ttraits_ traits_type;
+    typedef typename ParticleSimulator<traits_type>::spherical_surface_type spherical_surface_type;
+    typedef typename ParticleSimulator<traits_type>::cylindrical_surface_type cylindrical_surface_type;
+    typedef typename ParticleSimulator<traits_type>::planar_surface_type planar_surface_type;
+    typedef typename ParticleSimulator<traits_type>::cuboidal_region_type cuboidal_region_type;
+
+    virtual ~ImmutativeStructureVisitor() {}
+
+    virtual void operator()(spherical_surface_type const&) const = 0;
+
+    virtual void operator()(cylindrical_surface_type const&) const = 0;
+
+    virtual void operator()(planar_surface_type const&) const = 0;
+
+    virtual void operator()(cuboidal_region_type const&) const = 0;
+};
+
+template<typename Ttraits_>
+struct MutativeStructureVisitor
+{
+    typedef Ttraits_ traits_type;
+    typedef typename ParticleSimulator<traits_type>::spherical_surface_type spherical_surface_type;
+    typedef typename ParticleSimulator<traits_type>::cylindrical_surface_type cylindrical_surface_type;
+    typedef typename ParticleSimulator<traits_type>::planar_surface_type planar_surface_type;
+    typedef typename ParticleSimulator<traits_type>::cuboidal_region_type cuboidal_region_type;
+
+    virtual ~MutativeStructureVisitor() {}
+
+    virtual void operator()(spherical_surface_type&) const = 0;
+
+    virtual void operator()(cylindrical_surface_type&) const = 0;
+
+    virtual void operator()(planar_surface_type&) const = 0;
+
+    virtual void operator()(cuboidal_region_type&) const = 0;
+};
+
+template<typename Ttraits_>
 class ParticleSimulator
 {
 public:
     typedef Ttraits_ traits_type;
     typedef typename traits_type::world_type world_type;
+    typedef Sphere<typename world_type::length_type> sphere_type;
+    typedef Cylinder<typename world_type::length_type> cylinder_type;
+    typedef Box<typename world_type::length_type> box_type;
+    typedef Plane<typename world_type::length_type> plane_type;
+    typedef ParticleSimulationStructure<traits_type> particle_simulation_structure_type;
+    typedef SphericalSurface<traits_type> spherical_surface_type;
+    typedef CylindricalSurface<traits_type> cylindrical_surface_type;
+    typedef PlanarSurface<traits_type> planar_surface_type;
+    typedef CuboidalRegion<traits_type> cuboidal_region_type;
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef typename world_type::traits_type::rng_type rng_type;
     typedef typename traits_type::time_type time_type;

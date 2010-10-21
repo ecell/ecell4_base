@@ -197,7 +197,7 @@ public:
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::domain_id_type identifier_type;
     typedef typename traits_type::template shell_generator<
-        typename traits_type::sphere_type>::type spherical_shell_type;
+        typename simulator_type::sphere_type>::type spherical_shell_type;
     typedef std::pair<const typename traits_type::shell_id_type, spherical_shell_type> spherical_shell_id_pair;
     typedef typename traits_type::reaction_record_type reaction_record_type;
 
@@ -274,6 +274,16 @@ public:
     virtual typename Domain<traits_type>::size_type multiplicity() const
     {
         return pc_.num_particles();
+    }
+
+    virtual void accept(ImmutativeDomainVisitor<traits_type> const& visitor) const
+    {
+        visitor(*this);
+    }
+
+    virtual void accept(MutativeDomainVisitor<traits_type> const& visitor)
+    {
+        visitor(*this);
     }
 
     bool within_shell(particle_shape_type const& sphere) const

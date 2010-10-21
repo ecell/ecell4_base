@@ -101,7 +101,8 @@ BOOST_AUTO_TEST_CASE(test)
     inject_particles(*s->world(), rng, S_particles, s1->id(), n / 2);
     inject_particles(*s->world(), rng, P_particles, s2->id(), n / 2);
 
-
     for (int i = 10000; --i >= 0;)
         s->step();
+
+    BOOST_TEST_MESSAGE("single" <<     
 }
