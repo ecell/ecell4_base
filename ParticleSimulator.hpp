@@ -32,6 +32,8 @@ struct ParticleSimulatorTraitsBase
     typedef ReactionRecord<typename world_type::particle_id_type,
                            reaction_rule_id_type> reaction_record_type;
     typedef ReactionRecorder<reaction_record_type> reaction_recorder_type;
+
+    static const Real MINIMAL_SEPARATION_FACTOR = (1.0 + 1e-7);
 };
 
 template<typename Ttraits_>

@@ -1947,7 +1947,7 @@ protected:
                             reactant_species.structure_id()));
                     position_type vector(
                         structure->random_vector(
-                            r01 * traits_type::world_type::traits_type::MINIMAL_SEPARATION_FACTOR,
+                            r01 * traits_type::MINIMAL_SEPARATION_FACTOR,
                             base_type::rng_));
                     // place particles according to the ratio D1:D2
                     // this way, species with D=0 doesn't move.

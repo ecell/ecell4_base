@@ -6,10 +6,10 @@
 
 template<typename Ttraits_>
 class CuboidalRegion
-    : public BasicRegionImpl<Ttraits_, Box<typename Ttraits_::length_type> >
+    : public BasicRegionImpl<Ttraits_, Box<typename Ttraits_::world_type::traits_type::length_type> >
 {
 public:
-    typedef BasicRegionImpl<Ttraits_, Box<typename Ttraits_::length_type> > base_type;
+    typedef BasicRegionImpl<Ttraits_, Box<typename Ttraits_::world_type::traits_type::length_type> > base_type;
     typedef typename base_type::traits_type traits_type;
     typedef typename base_type::identifier_type identifier_type;
     typedef typename base_type::shape_type shape_type;
