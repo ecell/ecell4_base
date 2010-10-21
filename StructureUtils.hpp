@@ -18,8 +18,8 @@ struct StructureUtils
     typedef typename traits_type::world_type::length_type length_type;
     typedef typename traits_type::world_type::structure_id_type structure_id_type;
     typedef typename traits_type::world_type::structure_type structure_type;
-    typedef typename traits_type::world_type::traits_type::surface_type surface_type;
-    typedef typename traits_type::world_type::traits_type::region_type region_type;
+    typedef typename simulator_type::surface_type surface_type;
+    typedef typename simulator_type::region_type region_type;
     typedef typename simulator_type::sphere_type sphere_type;
     typedef typename simulator_type::cylinder_type cylinder_type;
     typedef typename simulator_type::box_type box_type;

@@ -90,6 +90,8 @@ public:
     typedef Box<typename world_type::length_type> box_type;
     typedef Plane<typename world_type::length_type> plane_type;
     typedef ParticleSimulationStructure<traits_type> particle_simulation_structure_type;
+    typedef Surface<traits_type> surface_type;
+    typedef Region<traits_type> region_type;
     typedef SphericalSurface<traits_type> spherical_surface_type;
     typedef CylindricalSurface<traits_type> cylindrical_surface_type;
     typedef PlanarSurface<traits_type> planar_surface_type;

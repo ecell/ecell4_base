@@ -242,7 +242,7 @@ World_get_particle_ids(T const& world)
 }
 
 
-template<typename Timpl_, typename Tbase_, typename Ttraits_>
+template<typename Timpl_, typename Tbase_, typename Tsim>
 inline boost::python::objects::class_base register_world_class(char const* name)
 {
     using namespace boost::python;
@@ -273,10 +273,10 @@ inline boost::python::objects::class_base register_world_class(char const* name)
         .def("add_structure", &impl_type::add_structure)
 		.def("get_particle_ids", &impl_type::get_particle_ids)
         .def("distance", &impl_type::template distance<typename impl_type::position_type>)
-        .def("distance", &impl_type::template distance<typename Ttraits_::sphere_type>)
-        .def("distance", &impl_type::template distance<typename Ttraits_::cylinder_type>)
-        .def("distance", &impl_type::template distance<typename Ttraits_::box_type>)
-        .def("distance", &impl_type::template distance<typename Ttraits_::plane_type>)
+        .def("distance", &impl_type::template distance<typename Tsim::sphere_type>)
+        .def("distance", &impl_type::template distance<typename Tsim::cylinder_type>)
+        .def("distance", &impl_type::template distance<typename Tsim::box_type>)
+        .def("distance", &impl_type::template distance<typename Tsim::plane_type>)
         .def("calculate_pair_CoM", &impl_type::template calculate_pair_CoM<typename impl_type::position_type>)
         ;
 }

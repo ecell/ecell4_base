@@ -41,8 +41,6 @@ struct WorldTraitsBase
     typedef typename particle_type::shape_type::position_type position_type;
     typedef GSLRandomNumberGenerator rng_type;
     typedef Structure<Tderived_> structure_type;
-    typedef Surface<Tderived_> surface_type;
-    typedef Region<Tderived_> region_type;
 
     static const Real TOLERANCE = 1e-7;
 };
