@@ -6,6 +6,7 @@
 #include "peer/util/to_native_converter.hpp"
 #include "peer/wrappers/generator/generator_wrapper.hpp"
 #include "peer/converters/tuple.hpp"
+#include "peer/util/shared_const_ptr.hpp"
 
 namespace binding {
 
@@ -46,7 +47,6 @@ struct shell_variant_converter
     }
 };
 
-
 template<typename Timpl>
 void register_egfrd_simulator_class(char const* name)
 {
@@ -78,6 +78,7 @@ void register_egfrd_simulator_class(char const* name)
                       std::auto_ptr<
                         typename impl_type::domain_id_pair_generator> > >::__register_class("DomainIDPairGenerator");
 
+    peer::util::register_shared_const_ptr_from_python<typename impl_type::network_rules_type>();
     peer::converters::register_tuple_converter<typename impl_type::domain_id_pair>();
     peer::converters::register_tuple_converter<get_shell_result_type>();
     shell_variant_converter<Timpl>::__register();
