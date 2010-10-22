@@ -104,5 +104,9 @@ BOOST_AUTO_TEST_CASE(test)
     for (int i = 10000; --i >= 0;)
         s->step();
 
-    BOOST_TEST_MESSAGE("single" <<     
+    BOOST_TEST_MESSAGE("spherical single: " << s->num_domains_per_type(simulator_type::SPHERICAL_SINGLE));
+    BOOST_TEST_MESSAGE("cylindrical single: " << s->num_domains_per_type(simulator_type::CYLINDRICAL_SINGLE));
+    BOOST_TEST_MESSAGE("spherical pair: " << s->num_domains_per_type(simulator_type::SPHERICAL_PAIR));
+    BOOST_TEST_MESSAGE("cylindrical pair: " << s->num_domains_per_type(simulator_type::CYLINDRICAL_PAIR));
+    BOOST_TEST_MESSAGE("multi: " << s->num_domains_per_type(simulator_type::MULTI));
 }

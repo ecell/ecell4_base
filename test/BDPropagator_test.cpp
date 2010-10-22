@@ -29,6 +29,8 @@
 struct Traits: ParticleSimulatorTraitsBase<World<CyclicWorldTraits<Real, Real> > >
 {};
 
+typedef ParticleSimulator<Traits> _ParticleSimulator;
+
 template<typename Tworld_, typename Trng_, typename Tpid_list_>
 void inject_particles(Tworld_& world, Trng_& rng, Tpid_list_& pid_list, typename Tworld_::species_id_type const& sid, int n)
 {
@@ -98,8 +100,8 @@ BOOST_AUTO_TEST_CASE(basic)
     w.add_species(S2);
 
     boost::shared_ptr<Traits::world_type::structure_type> default_surface(
-        new Traits::cuboidal_region_type("default",
-            Traits::box_type(position_type(1e-5 / 2, 1e-5 / 2, 1e-5 / 2),
+        new _ParticleSimulator::cuboidal_region_type("default",
+            _ParticleSimulator::box_type(position_type(1e-5 / 2, 1e-5 / 2, 1e-5 / 2),
                              array_gen(1e-5, 1e-5, 1e-5))));
     w.add_structure(default_surface);
 

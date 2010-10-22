@@ -19,7 +19,7 @@ public:
     typedef typename world_traits_type::size_type size_type;
     typedef typename world_traits_type::position_type position_type;
     typedef typename world_traits_type::rng_type rng_type;
-    typedef CuboidalRegion<world_traits_type> cuboidal_region_type;
+    typedef CuboidalRegion<traits_type> cuboidal_region_type;
 
 public:
     EGFRDSimulatorFactory(rng_type& rng): rng_(rng) {}

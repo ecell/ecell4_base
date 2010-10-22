@@ -15,13 +15,14 @@ BOOST_AUTO_TEST_CASE(test_random_position)
 {
     typedef World<CyclicWorldTraits<Real, Real> > world_type;
     typedef EGFRDSimulatorTraitsBase<world_type> simulator_traits_type;
+    typedef EGFRDSimulator<simulator_traits_type> simulator_type;
     typedef world_type::position_type position_type;
-    typedef StructureUtils<simulator_traits_type> structure_utils_type;
+    typedef StructureUtils<simulator_type> structure_utils_type;
 
     world_type::traits_type::rng_type rng;
 
     {
-        boost::scoped_ptr<simulator_traits_type::cylindrical_surface_type>
+        boost::scoped_ptr<simulator_type::cylindrical_surface_type>
             cyl_surface(
                 structure_utils_type::create_cylindrical_surface(
                     "test",
@@ -40,7 +41,7 @@ BOOST_AUTO_TEST_CASE(test_random_position)
     }
 
     {
-        boost::scoped_ptr<simulator_traits_type::cuboidal_region_type>
+        boost::scoped_ptr<simulator_type::cuboidal_region_type>
             cube_surface(
                 structure_utils_type::create_cuboidal_region(
                     "test",

@@ -211,6 +211,16 @@ public:
     typedef typename traits_type::event_id_pair_type event_id_pair_type;
     typedef boost::variant<boost::none_t, spherical_shell_type, cylindrical_shell_type> shell_variant_type;
 
+    enum domain_kind
+    {
+        NONE = 0,
+        SPHERICAL_SINGLE,
+        CYLINDRICAL_SINGLE,
+        SPHERICAL_PAIR,
+        CYLINDRICAL_PAIR,
+        MULTI,
+        NUM_DOMAIN_KINDS
+    };
 
 protected:
     typedef boost::fusion::map<
@@ -234,17 +244,6 @@ protected:
     typedef typename network_rules_type::reaction_rules reaction_rules;
     typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
     typedef typename traits_type::rate_type rate_type;
-
-    enum domain_kind
-    {
-        NONE = 0,
-        SPHERICAL_SINGLE,
-        CYLINDRICAL_SINGLE,
-        SPHERICAL_PAIR,
-        CYLINDRICAL_PAIR,
-        MULTI,
-        NUM_DOMAIN_KINDS
-    };
 
     struct domain_event_base: public event_type
     {
