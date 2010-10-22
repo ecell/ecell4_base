@@ -6,13 +6,6 @@
 class GreensFunction3DRadAbsBase: public PairGreensFunction
 {
 public:
-    enum EventKind
-    {
-        IV_ESCAPE,
-        IV_REACTION
-    };
-
-public:
     GreensFunction3DRadAbsBase(Real D, Real kf, Real r0, Real Sigma)
         : PairGreensFunction(D, kf, r0, Sigma) {}
 

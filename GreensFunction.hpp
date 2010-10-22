@@ -6,6 +6,13 @@
 class GreensFunction
 {
 public:
+    enum EventKind
+    {
+        IV_ESCAPE,
+        IV_REACTION
+    };
+
+public:
     GreensFunction( const Real D )
       : D( D ) {}
   

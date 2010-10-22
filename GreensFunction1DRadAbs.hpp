@@ -22,7 +22,6 @@
 #include "Defs.hpp"
 #include "OldDefs.hpp"			// TODO: this must be removed at some point!
 #include "GreensFunction.hpp"
-#include "PairGreensFunction.hpp"	// needed to declare EventType
 
 class GreensFunction1DRadAbs: public GreensFunction
 {
@@ -39,13 +38,6 @@ private:
     static const int MAX_TERMS = 500;
     // The minimum number of terms
     static const int MIN_TERMS = 20;
-
-public:
-    enum EventKind
-    {
-        IV_ESCAPE,
-        IV_REACTION
-    };
 
 public:
     GreensFunction1DRadAbs(Real D, Real k, Real r0, Real sigma, Real a)
