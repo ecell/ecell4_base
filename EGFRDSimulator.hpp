@@ -2838,9 +2838,11 @@ protected:
     void fire_event(single_event const& event)
     {
         single_type& domain(event.domain());
+#if 0
         BOOST_ASSERT(
-            (domain.dt() + domain.last_time() - base_type::t_)
+            std::abs(domain.dt() + domain.last_time() - base_type::t_)
                 <= 1e-18 * base_type::t_);
+#endif
         ++single_step_count_[event.kind()];
         switch (event.kind())
         {
