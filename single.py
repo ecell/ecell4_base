@@ -54,6 +54,7 @@ class Single(object):
     D = property(getD)
 
     def getv(self):
+        return 0 # TODO.
         return self.pid_particle_pair[1].v
     v = property(getv)
 

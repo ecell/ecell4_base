@@ -22,8 +22,6 @@ PYTHON_TESTS = \
 	CylindricalShellContainer_test.py \
 	EGFRDSimulator_test.py \
 	EventScheduler_test.py \
-	GreensFunction1DAbsAbs_test.py \
-	GreensFunction1DRadAbs_test.py \
 	GreensFunction3DRadAbs_test.py \
 	GreensFunction3DRadInf_test.py \
 	GreensFunction3DAbs_test.py \
@@ -39,6 +37,9 @@ PYTHON_TESTS = \
 	CylindricalSurface_test.py \
 	PlanarSurface_test.py \
 	utils_test.py
+
+#GreensFunction1DAbsAbs_test.py \
+#GreensFunction1DRadAbs_test.py
 
 TESTS = $(CPP_TESTS) $(PYTHON_TESTS)
 

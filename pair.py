@@ -90,7 +90,10 @@ class Pair(object):
                self.single1.pid_particle_pair[1].v
     v_tot = property(get_v_tot)
 
+    v_r = 0 # Todo.
+
     def get_v_R(self):
+        return 0 # Todo.
         return (self.single1.pid_particle_pair[1].v * 
                 self.single2.pid_particle_pair[1].D +
                 self.single2.pid_particle_pair[1].v *
