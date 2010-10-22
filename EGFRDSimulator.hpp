@@ -1357,7 +1357,7 @@ protected:
     // create_single {{{
     boost::shared_ptr<single_type> create_single(particle_id_pair const& p)
     {
-        domain_kind kind;
+        domain_kind kind(NONE);
         single_type* new_single(0);
         domain_id_type did(didgen_());
 
@@ -1409,6 +1409,7 @@ protected:
                 spherical_shell_id_pair new_shell(
                     _this->new_shell(did, ::shape(p.second)));
                 new_single = new spherical_single_type(did, p, new_shell);
+                kind = SPHERICAL_SINGLE;
             }
 
             factory(EGFRDSimulator* _this, particle_id_pair const& p,
@@ -1428,6 +1429,7 @@ protected:
         dynamic_cast<particle_simulation_structure_type const&>(*(*base_type::world_).get_structure(species.structure_id())).accept(factory(this, p, did, new_single, kind));
         boost::shared_ptr<domain_type> const retval(new_single);
         domains_.insert(std::make_pair(did, retval));
+        BOOST_ASSERT(kind != NONE);
         ++domain_count_per_type_[kind];
         return boost::dynamic_pointer_cast<single_type>(retval);
     }
@@ -1440,7 +1442,7 @@ protected:
                                              position_type const& iv,
                                              length_type const& shell_size)
     {
-        domain_kind kind = NONE;
+        domain_kind kind(NONE);
         pair_type* new_pair(0);
         domain_id_type did(didgen_());
 
@@ -1524,6 +1526,7 @@ protected:
 
         boost::shared_ptr<domain_type> const retval(new_pair);
         domains_.insert(std::make_pair(did, retval));
+        BOOST_ASSERT(kind != NONE);
         ++domain_count_per_type_[kind];
         return boost::dynamic_pointer_cast<pair_type>(retval);
     }
