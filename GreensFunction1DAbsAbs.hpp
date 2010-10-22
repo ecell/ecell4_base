@@ -161,6 +161,8 @@ public:
     // location r at time t.
     Real prob_r (Real r, Real t) const;
 
+    std::string dump() const;
+
 private:
     struct drawT_params
     {

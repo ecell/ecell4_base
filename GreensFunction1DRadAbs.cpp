@@ -685,3 +685,13 @@ GreensFunction1DRadAbs::drawR (Real rnd, Real t) const
     // return the drawn position
     return r;
 }
+
+std::string GreensFunction1DRadAbs::dump() const
+{
+    std::ostringstream ss;
+    ss << "D = " << this->getD() << ", sigma = " << this->getsigma() <<
+        ", a = " << this->geta() <<
+        ", k = " << this->getk() << std::endl;
+    return ss.str();
+}
+

@@ -180,6 +180,8 @@ public:
 
 //private:	// method made public for testing
 
+    std::string dump() const;
+
     // Calculates the roots of tan(a*x)=-xk/h
     Real root_n(int n) const;
     

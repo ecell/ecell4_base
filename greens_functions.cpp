@@ -49,6 +49,7 @@ BOOST_PYTHON_MODULE( _greens_functions )
         .def( "leavea", &GreensFunction1DAbsAbs::leavea )
         .def( "p_survival", &GreensFunction1DAbsAbs::p_survival )
         .def( "calcpcum", &GreensFunction1DAbsAbs::calcpcum )
+        .def( "dump", &GreensFunction1DRadAbs::dump )
         ;
 
     class_<GreensFunction1DRadAbs>("GreensFunction1DRadAbs",
@@ -70,6 +71,7 @@ BOOST_PYTHON_MODULE( _greens_functions )
         .def( "fluxRatioRadTot", &GreensFunction1DRadAbs::fluxRatioRadTot )
         .def( "p_survival", &GreensFunction1DRadAbs::p_survival )
         .def( "calcpcum", &GreensFunction1DRadAbs::calcpcum )
+        .def( "dump", &GreensFunction1DRadAbs::dump )
         ;
     
     class_<GreensFunction3DSym>("GreensFunction3DSym", init<Real>())

@@ -694,3 +694,10 @@ GreensFunction1DAbsAbs::drawR (Real rnd, Real t) const
     return r;
 }
 
+std::string GreensFunction1DAbsAbs::dump() const
+{
+    std::ostringstream ss;
+    ss << "D = " << this->getD() << ", sigma = " << this->getsigma() <<
+        ", a = " << this->geta() << std::endl;
+    return ss.str();
+}
