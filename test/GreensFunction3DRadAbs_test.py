@@ -123,14 +123,14 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
 
         t = gf.drawTime(0.5)
         event_type = gf.drawEventType(0.5, t)
-        self.failIf(event_type != mod.EventType.IV_REACTION and
-                    event_type != mod.EventType.IV_ESCAPE)
+        self.failIf(event_type != mod.PairEventKind.IV_REACTION and
+                    event_type != mod.PairEventKind.IV_ESCAPE)
 
         event_type = gf.drawEventType(0.0, t)
-        self.assertEqual(event_type, mod.EventType.IV_REACTION)
+        self.assertEqual(event_type, mod.PairEventKind.IV_REACTION)
 
         event_type = gf.drawEventType(0.999999, t)
-        self.assertEqual(event_type, mod.EventType.IV_ESCAPE)
+        self.assertEqual(event_type, mod.PairEventKind.IV_ESCAPE)
 
 
     def no_test_draw_event_type_smallt(self):
