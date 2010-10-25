@@ -24,7 +24,7 @@ public:
             create_vector<position_type>(1., 0., 0.),
             create_vector<position_type>(0., 1., 0.),
             create_vector<position_type>(0., 0., 1.))),
-          extent_(array_gen<length_type>(1., 1.)) {}
+          half_extent_(array_gen<length_type>(0.5, 0.5)) {}
 
     template<typename Tarray_>
     Plane(position_type const& position, Tarray_ const& half_extent)
@@ -53,7 +53,7 @@ public:
     Plane(position_type const& position,
         position_type const& vx,
         position_type const& vy,
-        Tarray_ const& extent = array_gen<length_type>(1., 1.))
+        Tarray_ const& half_extent = array_gen<length_type>(0.5, 0.5))
         : position_(position), units_(array_gen(vx, vy, cross_product(vx, vy)))
     {
         std::copy(boost::begin(half_extent), boost::end(half_extent),
@@ -118,24 +118,24 @@ public:
         return units_;
     }
 
-    length_type const& Lx() const
+    length_type const Lx() const
     { 
-        return extent_[0];
+        return 2 * half_extent_[0];
     }
 
-    length_type& Lx()
+    length_type Lx()
     {
-        return extent_[0];
+        return 2 * half_extent_[0];
     }
 
-    length_type const& Ly() const
+    length_type const Ly() const
     {
-        return extent_[1];
+        return 2 * half_extent_[1];
     }
 
-    length_type& Ly()
+    length_type Ly()
     {
-        return extent_[1];
+        return 2 * half_extent_[1];
     }
 
     boost::array<length_type, 2> const& half_extent() const

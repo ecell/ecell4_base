@@ -300,18 +300,14 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
         return GreensFunction1DAbsAbs(self.getD(), self.getv(), 0.0, -self.get_mobility_radius(), self.get_mobility_radius())
 
     def create_new_shell(self, position, half_length, domain_id):
-        # Heads up. The cylinder's *half_length*, not radius, is 
-        # changed when you make the cylinder bigger, because of the 
-        # redefinition of get_shell_size.
-
         # The radius of a rod is not more than it has to be (namely the 
         # radius of the particle), so if the particle undergoes an 
         # unbinding reaction we still have to clear the target volume 
         # and the move may be rejected (NoSpace error).
         radius = self.pid_particle_pair[1].radius
         orientation = self.surface.shape.unit_z
-        return CylindricalShell(domain_id,
-                                Cylinder(position, radius, orientation, half_length))
+        return CylindricalShell(domain_id, Cylinder(position, radius, 
+                                                    orientation, half_length))
 
     def create_position_vector(self, z):
         return z * self.shell_list[0][1].shape.unit_z
@@ -322,7 +318,8 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
                self.pid_particle_pair[1].radius
 
     def get_shell_size(self):
-        # Heads up.
+        # Heads up. The cylinder's *half_length*, not radius, 
+        # determines the size in case of a cylindrical surface.
         return self.shell_list[0][1].shape.half_length
 
     def __str__(self):

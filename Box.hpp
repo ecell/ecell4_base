@@ -26,7 +26,7 @@ public:
             create_vector<position_type>(1., 0., 0.),
             create_vector<position_type>(0., 1., 0.),
             create_vector<position_type>(0., 0., 1.))),
-          extent_(array_gen<length_type>(1., 1., 1.)) {}
+          half_extent_(array_gen<length_type>(0.5, 0.5, 0.5)) {}
 
     template<typename Tarray_>
     Box(position_type const& position, Tarray_ const& half_extent)
@@ -56,7 +56,7 @@ public:
         position_type const& vx,
         position_type const& vy,
         position_type const& vz,
-        Tarray_ const& extent = array_gen<length_type>(1., 1., 1.))
+        Tarray_ const& half_extent = array_gen<length_type>(0.5, 0.5, 0.5))
         : position_(position), units_(array_gen(vx, vy, vz))
     {
         std::copy(boost::begin(half_extent), boost::end(half_extent),
@@ -67,11 +67,11 @@ public:
         position_type const& vx,
         position_type const& vy,
         position_type const& vz,
-        length_type const& lx,
-        length_type const& ly,
-        length_type const& lz)
+        length_type const& half_lx,
+        length_type const& half_ly,
+        length_type const& half_lz)
         : position_(position), units_(array_gen(vx, vy, vz)),
-          half_extent_(array_gen<length_type>(lx, ly, lz)) {}
+          half_extent_(array_gen<length_type>(half_lx, half_ly, half_lz)) {}
 
     position_type const& position() const
     {
@@ -123,34 +123,34 @@ public:
         return units_;
     }
 
-    length_type const& Lx() const
+    length_type const Lx() const
     { 
-        return extent_[0];
+        return 2 * half_extent_[0];
     }
 
-    length_type& Lx()
+    length_type Lx()
     {
-        return extent_[0];
+        return 2 * half_extent_[0];
     }
 
-    length_type const& Ly() const
+    length_type const Ly() const
     {
-        return extent_[1];
+        return 2 * half_extent_[1];
     }
 
-    length_type& Ly()
+    length_type Ly()
     {
-        return extent_[1];
+        return 2 * half_extent_[1];
     }
 
-    length_type const& Lz() const
+    length_type const Lz() const
     {
-        return extent_[2];
+        return 2 * half_extent_[2];
     }
 
-    length_type& Lz()
+    length_type Lz()
     {
-        return extent_[2];
+        return 2 * half_extent_[2];
     }
 
     boost::array<length_type, 3> const& half_extent() const
