@@ -252,7 +252,8 @@ def k_D(Dtot, sigma):
             the radius of particle A plus the radius of particle B. 
             Units: meters.
 
-    This function is only available for reaction rules in 3D.
+    This function is only available for reaction rules in 3D. No 
+    analytical expression for kD in 1D or 2D is currently known. 
 
     """
     return 4.0 * numpy.pi * Dtot * sigma
@@ -275,6 +276,9 @@ def k_a(kon, kD):
             the 'pseudo-'reaction rate caused by the diffusion of 
             particles A and B. See the function k_D(). Units: 
             meters^3/second.
+
+    This function is only available for reaction rules in 3D. No 
+    analytical expression for kD in 1D or 2D is currently known. 
 
     """
     if kon > kD:
@@ -310,6 +314,9 @@ def k_d(koff, kon, kD):
             particles A and B. See the function k_D(). Units: 
             meters^3/second.
 
+    This function is only available for reaction rules in 3D. No 
+    analytical expression for kD in 1D or 2D is currently known. 
+
     """
     ka = k_a(kon, kD)
     kd = k_d_using_ka(koff, ka, kD)
@@ -323,6 +330,9 @@ def k_d_using_ka(koff, ka, kD):
     instead of an overall rate (kon) for the reversed reaction rule as 
     the second argument.
 
+    This function is only available for reaction rules in 3D. No 
+    analytical expression for kD in 1D or 2D is currently known. 
+
     """
     kd =  koff * (1 + float(ka) / kD)
     return kd
@@ -335,6 +345,9 @@ def k_on(ka, kD):
     
     Rarely needed.
 
+    This function is only available for reaction rules in 3D. No 
+    analytical expression for kD in 1D or 2D is currently known. 
+
     """
     kon = 1. / ((1. / kD) + (1. / ka))  # m^3/s
     return kon
@@ -346,6 +359,9 @@ def k_off(kd, kon, kD):
     The inverse of the function k_d().
 
     Rarely needed.
+
+    This function is only available for reaction rules in 3D. No 
+    analytical expression for kD in 1D or 2D is currently known. 
 
     """
     ka = k_a(kon, kD) 
@@ -360,6 +376,9 @@ def k_off_using_ka(kd, ka, kD):
     (ka) instead of an overall rate (kon) as the second argument.
 
     Rarely needed.
+
+    This function is only available for reaction rules in 3D. No 
+    analytical expression for kD in 1D or 2D is currently known. 
 
     """
     koff = 1. / (float(ka) / (kd * kD) + (1. / kd))

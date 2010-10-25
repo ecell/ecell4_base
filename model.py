@@ -243,6 +243,8 @@ def create_unimolecular_reaction_rule(reactant, product, k):
     There is no distinction between an intrinsic and an overall reaction 
     rate for a unimolecular ReactionRule.
 
+    A unimolecular reaction rule defines a Poissonian process.
+
     """
     rr = _gfrd.ReactionRule([reactant], [product])
     rr['k'] = '%.16g' % k
@@ -260,6 +262,8 @@ def create_decay_reaction_rule(reactant, k):
 
     There is no distinction between an intrinsic and an overall reaction 
     rate for a decay ReactionRule.
+
+    A decay reaction rule defines a Poissonian process.
 
     """
     rr = _gfrd.ReactionRule([reactant], [])
@@ -282,13 +286,13 @@ def create_annihilation_reaction_rule(reactant1, reactant2, ka):
 
     ka should be an *intrinsic* reaction rate. You can convert an 
     overall reaction rate (kon) to an intrinsic reaction rate (ka) with 
-    the function utils.k_a(kon, kD).
+    the function utils.k_a(kon, kD), but only for reaction rules in 3D.
 
     By default an EGFRDSimulator will assume a repulsive 
     bimolecular reaction rule (ka=0) for each possible combination of 
     reactants for which no bimolecular reaction rule is specified. 
-    You can explicitly add these reactions to the model with the method 
-    model.ParticleModel.set_all_repulsive.
+    You can explicitly add these reaction rules to the model with the 
+    method model.ParticleModel.set_all_repulsive.
 
     """
     rr = _gfrd.ReactionRule([reactant1, reactant2], [])
@@ -312,17 +316,17 @@ def create_binding_reaction_rule(reactant1, reactant2, product, ka):
     The reactants and the product should be in/on the same 
     Region or Surface.
 
-    A binding reaction rule can not have more than 1 product.
+    A binding reaction rule always has exactly one product.
 
     ka should be an *intrinsic* reaction rate. You can convert an 
     overall reaction rate (kon) to an intrinsic reaction rate (ka) with 
-    the function utils.k_a(kon, kD).
+    the function utils.k_a(kon, kD), but only for reaction rules in 3D.
 
     By default an EGFRDSimulator will assume a repulsive 
     bimolecular reaction rule (ka=0) for each possible combination of 
     reactants for which no bimolecular reaction rule is specified. 
-    You can explicitly add these reactions to the model with the method
-    model.ParticleModel.set_all_repulsive.
+    You can explicitly add these reaction rules to the model with the 
+    method model.ParticleModel.set_all_repulsive.
 
     """
     rr = _gfrd.ReactionRule([reactant1, reactant2], [product])
@@ -339,17 +343,21 @@ def create_unbinding_reaction_rule(reactant, product1, product2, kd):
             a Species.
         - product2
             a Species.
-        - intrinsic_rate
+        - kd
+            intrinsic reaction rate. Units: per second. (Rough order of 
+            magnitude: 1e-2 /s to 1e2 /s).
 
     The reactant and the products should be in/on the same 
     Region or Surface.
 
-    An unbinding reaction rule can not have more than 2 products.
+    An unbinding reaction rule always has exactly two products.
 
     kd should be an *intrinsic* reaction rate. You can convert an 
     overall reaction rate (koff) for this reaction rule to an intrinsic 
     reaction rate (kd) with the function utils.k_d(koff, kon, kD) or 
     utils.k_d_using_ka(koff, ka, kD).
+
+    An unbinding reaction rule defines a Poissonian process.
 
     """
     rr = _gfrd.ReactionRule([reactant], [product1, product2])
