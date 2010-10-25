@@ -168,14 +168,14 @@ def create_world(m, matrix_size=10):
 
     for st in m.species_types:
         try:
-            region = st["surface"]
+            structure = st["structure"]
         except _gfrd.NotFound:
-            region = "world"
+            structure = "world"
         world.add_species(
             _gfrd.SpeciesInfo(st.id, 
                               float(st["D"]), 
                               float(st["radius"]), 
-                              region,
+                              structure,
                               float(st["v"])))
 
     for r in m.structures.itervalues():

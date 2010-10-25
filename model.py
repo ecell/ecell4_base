@@ -134,7 +134,7 @@ def Species(name, D, radius=0, structure="world", drift=0):
     st["D"] = str(D)
     st["v"] = str(drift)
     st["radius"] = str(radius)
-    st["surface"] = structure
+    st["structure"] = structure
     return st
 
 
