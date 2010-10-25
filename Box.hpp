@@ -29,26 +29,26 @@ public:
           extent_(array_gen<length_type>(1., 1., 1.)) {}
 
     template<typename Tarray_>
-    Box(position_type const& position, Tarray_ const& extent)
+    Box(position_type const& position, Tarray_ const& half_extent)
         : position_(position),
           units_(array_gen(
             create_vector<position_type>(1., 0., 0.),
             create_vector<position_type>(0., 1., 0.),
             create_vector<position_type>(0., 0., 1.)))
     {
-        std::copy(boost::begin(extent), boost::end(extent),
-                  boost::begin(extent_));
+        std::copy(boost::begin(half_extent), boost::end(half_extent),
+                  boost::begin(half_extent_));
     }
 
     template<typename Tarray1, typename Tarray2>
     Box(position_type const& position,
-        Tarray1 const& units, Tarray2 const& extent)
+        Tarray1 const& units, Tarray2 const& half_extent)
         : position_(position)
     {
         std::copy(boost::begin(units), boost::end(units),
                   boost::begin(units_));
-        std::copy(boost::begin(extent), boost::end(extent),
-                  boost::begin(extent_));
+        std::copy(boost::begin(half_extent), boost::end(half_extent),
+                  boost::begin(half_extent_));
     }
 
     template<typename Tarray_>
@@ -59,8 +59,8 @@ public:
         Tarray_ const& extent = array_gen<length_type>(1., 1., 1.))
         : position_(position), units_(array_gen(vx, vy, vz))
     {
-        std::copy(boost::begin(extent), boost::end(extent),
-                  boost::begin(extent_));
+        std::copy(boost::begin(half_extent), boost::end(half_extent),
+                  boost::begin(half_extent_));
     }
 
     Box(position_type const& position,
@@ -71,7 +71,7 @@ public:
         length_type const& ly,
         length_type const& lz)
         : position_(position), units_(array_gen(vx, vy, vz)),
-          extent_(array_gen<length_type>(lx, ly, lz)) {}
+          half_extent_(array_gen<length_type>(lx, ly, lz)) {}
 
     position_type const& position() const
     {
@@ -153,20 +153,20 @@ public:
         return extent_[2];
     }
 
-    boost::array<length_type, 3> const& extent() const
+    boost::array<length_type, 3> const& half_extent() const
     {
-        return extent_;
+        return half_extent_;
     }
 
-    boost::array<length_type, 3>& extent()
+    boost::array<length_type, 3>& half_extent()
     {
-        return extent_;
+        return half_extent_;
     }
 
     bool operator==(const Box& rhs) const
     {
         return position_ == rhs.position_ && units_ == rhs.units_ &&
-               extent_ == rhs.extent_;
+               half_extent_ == rhs.half_extent_;
     }
 
     bool operator!=(const Box& rhs) const
@@ -186,14 +186,15 @@ protected:
     // Middle of box.
     position_type position_;
     boost::array<position_type, 3> units_;
-    // Extent: for a box of 2 by 2 by 2, extent is 1 by 1 by 1.
-    boost::array<length_type, 3> extent_;
+    // Extent: for a box of 2 by 2 by 2, half_extent is 1 by 1 by 1.
+    boost::array<length_type, 3> half_extent_;
 };
 
 template<typename T_>
 inline boost::array<typename Box<T_>::length_type, 3>
 to_internal(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
 {
+    // Return pos relative to position of box. 
     typedef typename Box<T_>::position_type position_type;
     position_type pos_vector(subtract(pos, obj.position()));
 
@@ -220,7 +221,7 @@ distance(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
 {
     typedef typename Box<T_>::length_type length_type;
     boost::array<length_type, 3> x_y_z(to_internal(obj, pos));
-    boost::array<length_type, 3> dx_dy_dz(subtract(abs(x_y_z), obj.extent()));
+    boost::array<length_type, 3> dx_dy_dz(subtract(abs(x_y_z), obj.half_extent()));
 
     if (dx_dy_dz[0] > 0)
     {
@@ -286,9 +287,9 @@ random_position(Box<T> const& shape, Trng& rng)
         shape.position(),
         multiply(
             create_vector<typename Box<T>::position_type>(
-                shape.extent()[0] * rng(),
-                shape.extent()[1] * rng(),
-                shape.extent()[2] * rng()),
+                shape.half_extent()[0] * rng(),
+                shape.half_extent()[1] * rng(),
+                shape.half_extent()[2] * rng()),
             mat));
 }
 
@@ -341,9 +342,9 @@ struct hash<Box<T_> >
             hash<typename argument_type::position_type>()(val.unit_x()) ^
             hash<typename argument_type::position_type>()(val.unit_y()) ^
             hash<typename argument_type::position_type>()(val.unit_z()) ^
-            hash<typename argument_type::length_type>()(val.extent()[0]) ^
-            hash<typename argument_type::length_type>()(val.extent()[1]) ^
-            hash<typename argument_type::length_type>()(val.extent()[2]);
+            hash<typename argument_type::length_type>()(val.half_extent()[0]) ^
+            hash<typename argument_type::length_type>()(val.half_extent()[1]) ^
+            hash<typename argument_type::length_type>()(val.half_extent()[2]);
     }
 };
 

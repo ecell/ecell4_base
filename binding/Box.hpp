@@ -50,20 +50,20 @@ inline boost::python::objects::class_base register_box_class(char const* name)
                     typename impl_type::position_type,
                     &impl_type::position,
                     &impl_type::position>::set))
-        .add_property("extent",
+        .add_property("half_extent",
             make_function(
                 &peer::util::reference_accessor_wrapper<
                     impl_type,
                     boost::array<typename impl_type::length_type, 3>,
-                    &impl_type::extent,
-                    &impl_type::extent>::get,
+                    &impl_type::half_extent,
+                    &impl_type::half_extent>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
                     impl_type,
                     boost::array<typename impl_type::length_type, 3>,
-                    &impl_type::extent,
-                    &impl_type::extent>::set))
+                    &impl_type::half_extent,
+                    &impl_type::half_extent>::set))
         .add_property("unit_x",
             make_function(
                 &peer::util::reference_accessor_wrapper<

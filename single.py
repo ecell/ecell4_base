@@ -260,16 +260,17 @@ class PlanarSurfaceSingle(NonInteractionSingle):
                                           self.get_mobility_radius())
 
     def create_new_shell(self, position, radius, domain_id):
-        # The size (thickness) of a hockey puck is not more than it has 
-        # to be (namely the radius of the particle), so if the particle 
-        # undergoes an unbinding reaction we still have to clear the 
-        # target volume and the move may be rejected (NoSpace error).
+        # The half_length (thickness) of a hockey puck is not more than 
+        # it has to be (namely the radius of the particle), so if the 
+        # particle undergoes an unbinding reaction we still have to 
+        # clear the target volume and the move may be rejected (NoSpace 
+        # error).
         orientation = normalize(
             utils.crossproduct(self.surface.shape.unit_x,
                                self.surface.shape.unit_y))
-        size = self.pid_particle_pair[1].radius
-        return CylindricalShell(domain_id,
-                                Cylinder(position, radius, orientation, size))
+        half_length = self.pid_particle_pair[1].radius
+        return CylindricalShell(domain_id, Cylinder(position, radius, 
+                                                    orientation, half_length))
 
     def create_position_vector(self, r):
         x, y = random_vector2D(r)
@@ -298,10 +299,10 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
         # The domain is created around r0, so r0 corresponds to r=0 within the domain
         return GreensFunction1DAbsAbs(self.getD(), self.getv(), 0.0, -self.get_mobility_radius(), self.get_mobility_radius())
 
-    def create_new_shell(self, position, size, domain_id):
-        # Heads up. The cylinder's *size*, not radius, is changed when 
-        # you make the cylinder bigger, because of the redefinition of 
-        # set_radius.
+    def create_new_shell(self, position, half_length, domain_id):
+        # Heads up. The cylinder's *half_length*, not radius, is 
+        # changed when you make the cylinder bigger, because of the 
+        # redefinition of get_shell_size.
 
         # The radius of a rod is not more than it has to be (namely the 
         # radius of the particle), so if the particle undergoes an 
@@ -310,19 +311,19 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
         radius = self.pid_particle_pair[1].radius
         orientation = self.surface.shape.unit_z
         return CylindricalShell(domain_id,
-                                Cylinder(position, radius, orientation, size))
+                                Cylinder(position, radius, orientation, half_length))
 
     def create_position_vector(self, z):
         return z * self.shell_list[0][1].shape.unit_z
 
     def get_mobility_radius(self):
         # Heads up.
-        return self.shell_list[0][1].shape.size - \
+        return self.shell_list[0][1].shape.half_length - \
                self.pid_particle_pair[1].radius
 
     def get_shell_size(self):
         # Heads up.
-        return self.shell_list[0][1].shape.size
+        return self.shell_list[0][1].shape.half_length
 
     def __str__(self):
         return 'CylindricalSurface' + Single.__str__(self)

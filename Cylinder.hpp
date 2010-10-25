@@ -17,16 +17,16 @@ public:
 
 public:
     Cylinder()
-        : position_(), radius_(0), unit_z_(), size_(0) {}
+        : position_(), radius_(0), unit_z_(), half_length_(0) {}
 
     Cylinder(position_type const& position, length_type const& radius,
-             position_type const& unit_z, length_type const& size )
+             position_type const& unit_z, length_type const& half_length )
         : position_(position), radius_(radius), unit_z_(unit_z),
-          size_(size) {}
+          half_length_(half_length) {}
 
     bool operator==(const Cylinder& rhs) const
     {
-        return position_ == rhs.position() && radius_ == rhs.radius() && unit_z_ == rhs.unit_z() && size_ == rhs.size();
+        return position_ == rhs.position() && radius_ == rhs.radius() && unit_z_ == rhs.unit_z() && half_length_ == rhs.half_length();
     }
 
     bool operator!=(const Cylinder& rhs) const
@@ -64,14 +64,14 @@ public:
         return unit_z_;
     }
 
-    length_type const& size() const
+    length_type const& half_length() const
     {
-        return size_;
+        return half_length_;
     }
 
-    length_type& size()
+    length_type& half_length()
     {
-        return size_;
+        return half_length_;
     }
 
     std::string show(int precision)
@@ -86,14 +86,14 @@ private:
     position_type position_; // centre.
     length_type radius_;
     position_type unit_z_; // Z-unit_z. should be normalized.
-    length_type size_; // half length.
+    length_type half_length_;
 };
 
 template<typename Tstrm_, typename T_>
 inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
         const Cylinder<T_>& v)
 {
-    strm << "{" << v.position() <<  ", " << v.radius() << ", " << v.unit_z() << ", " << v.size() << "}";
+    strm << "{" << v.position() <<  ", " << v.radius() << ", " << v.unit_z() << ", " << v.half_length() << "}";
     return strm;
 }
 
@@ -102,6 +102,7 @@ inline std::pair<typename Cylinder<T_>::length_type,
                  typename Cylinder<T_>::length_type>
 to_internal(Cylinder<T_> const& obj, typename Cylinder<T_>::position_type const& pos)
 {
+    // Return pos relative to position of cylinder. 
     typedef typename Cylinder<T_>::position_type position_type;
     typedef typename Cylinder<T_>::length_type length_type;
 
@@ -144,7 +145,7 @@ distance(Cylinder<T_> const& obj,
     const std::pair<length_type, length_type> r_z(to_internal(obj, pos));
 
     /* Then compute distance to cylinder. */
-    const length_type dz(std::fabs(r_z.second) - obj.size());
+    const length_type dz(std::fabs(r_z.second) - obj.half_length());
     const length_type dr(r_z.first - obj.radius());
     length_type distance;
     if (dz > 0)
@@ -182,7 +183,7 @@ random_position(Cylinder<T> const& shape, Trng& rng)
 {
     // -1 < rng() < 1. See for example CylindricalSurface.hpp.
     return add(shape.position(),
-               multiply(shape.unit_z(), rng() * shape.size()));
+               multiply(shape.unit_z(), rng() * shape.half_length()));
 }
 
 template<typename T_>
@@ -224,7 +225,7 @@ struct hash<Cylinder<T_> >
         return hash<typename argument_type::position_type>()(val.position()) ^
             hash<typename argument_type::length_type>()(val.radius()) ^
             hash<typename argument_type::position_type>()(val.unit_z()) ^
-            hash<typename argument_type::length_type>()(val.size());
+            hash<typename argument_type::length_type>()(val.half_length());
     }
 };
 

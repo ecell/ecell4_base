@@ -311,8 +311,8 @@ class VTKLogger:
 
             try:
                 shell = object.shell_list[0][1]
-                # Only cylinders have size.
-                shell.shape.size
+                # Only cylinders have half_length.
+                shell.shape.half_length
                 cylinders.append(shell)
                 cylinder_colors.append(color)
             except:
@@ -390,12 +390,12 @@ class VTKLogger:
                 position = cylinder.position
                 radius = cylinder.radius
                 orientation = cylinder.unit_z
-                size = cylinder.size
+                half_length = cylinder.half_length
             except:
                 position = cylinder.shape.position
                 radius = cylinder.shape.radius
                 orientation = cylinder.shape.unit_z
-                size = cylinder.shape.size
+                half_length = cylinder.shape.half_length
 
             # Construct tensor. Use TensorGlyph plugin from:
             # http://www.paraview.org/pipermail/paraview/2009-March/011256.html
@@ -412,7 +412,7 @@ class VTKLogger:
             # Stupid ParaView wants  a normal vector to the cylinder to 
             # orient it. So orientation and perpendicular1 swapped.
             tensor = numpy.concatenate((perpendicular1 * radius, 
-                                        orientation * size,
+                                        orientation * half_length,
                                         perpendicular2 * radius))
 
             self.append_lists(pos_list, position, tensor_list=tensor_list, 
@@ -430,13 +430,13 @@ class VTKLogger:
 
         for box in boxes:
             try:
-                dz = box.unit_z * box.extent[2]
+                dz = box.unit_z * box.half_extent[2]
             except AttributeError:
                 # Planes don't have z dimension.
                 unit_z = crossproduct(box.unit_x, box.unit_y)
                 dz = unit_z * 1e-20
-            tensor = numpy.concatenate((box.unit_x * box.extent[0],
-                                        box.unit_y * box.extent[1],
+            tensor = numpy.concatenate((box.unit_x * box.half_extent[0],
+                                        box.unit_y * box.half_extent[1],
                                         dz))
             self.append_lists(pos_list, box.position, tensor_list=tensor_list, 
                               tensor=tensor)

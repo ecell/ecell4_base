@@ -27,26 +27,26 @@ public:
           extent_(array_gen<length_type>(1., 1.)) {}
 
     template<typename Tarray_>
-    Plane(position_type const& position, Tarray_ const& extent)
+    Plane(position_type const& position, Tarray_ const& half_extent)
         : position_(position),
           units_(array_gen(
             create_vector<position_type>(1., 0., 0.),
             create_vector<position_type>(0., 1., 0.),
             create_vector<position_type>(0., 0., 1.)))
     {
-        std::copy(boost::begin(extent), boost::end(extent),
-                  boost::begin(extent_));
+        std::copy(boost::begin(half_extent), boost::end(half_extent),
+                  boost::begin(half_extent_));
     }
 
     template<typename Tarray1, typename Tarray2>
     Plane(position_type const& position,
-        Tarray1 const& units, Tarray2 const& extent)
+        Tarray1 const& units, Tarray2 const& half_extent)
         : position_(position)
     {
         std::copy(boost::begin(units), boost::end(units),
                   boost::begin(units_));
-        std::copy(boost::begin(extent), boost::end(extent),
-                  boost::begin(extent_));
+        std::copy(boost::begin(half_extent), boost::end(half_extent),
+                  boost::begin(half_extent_));
     }
 
     template<typename Tarray_>
@@ -56,17 +56,17 @@ public:
         Tarray_ const& extent = array_gen<length_type>(1., 1.))
         : position_(position), units_(array_gen(vx, vy, cross_product(vx, vy)))
     {
-        std::copy(boost::begin(extent), boost::end(extent),
-                  boost::begin(extent_));
+        std::copy(boost::begin(half_extent), boost::end(half_extent),
+                  boost::begin(half_extent_));
     }
 
     Plane(position_type const& position,
         position_type const& vx,
         position_type const& vy,
-        length_type const& lx,
-        length_type const& ly)
+        length_type const& half_lx,
+        length_type const& half_ly)
         : position_(position), units_(array_gen(vx, vy, cross_product(vx, vy))),
-          extent_(array_gen<length_type>(lx, ly)) {}
+          half_extent_(array_gen<length_type>(half_lx, half_ly)) {}
 
     position_type const& position() const
     {
@@ -138,20 +138,20 @@ public:
         return extent_[1];
     }
 
-    boost::array<length_type, 2> const& extent() const
+    boost::array<length_type, 2> const& half_extent() const
     {
-        return extent_;
+        return half_extent_;
     }
 
-    boost::array<length_type, 2>& extent()
+    boost::array<length_type, 2>& half_extent()
     {
-        return extent_;
+        return half_extent_;
     }
 
     bool operator==(const Plane& rhs) const
     {
         return position_ == rhs.position_ && units_ == rhs.units_ &&
-               extent_ == rhs.extent_;
+               half_extent_ == rhs.half_extent_;
     }
 
     bool operator!=(const Plane& rhs) const
@@ -170,7 +170,7 @@ public:
 protected:
     position_type position_;
     boost::array<position_type, 3> units_;
-    boost::array<length_type, 2> extent_;
+    boost::array<length_type, 2> half_extent_;
 };
 
 template<typename T_>
@@ -205,8 +205,8 @@ distance(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
     typedef typename Plane<T_>::length_type length_type;
     boost::array<length_type, 3> const x_y_z(to_internal(obj, pos));
 
-    length_type const dx(subtract(abs(x_y_z[0]), obj.extent()[0]));
-    length_type const dy(subtract(abs(x_y_z[1]), obj.extent()[1]));
+    length_type const dx(subtract(abs(x_y_z[0]), obj.half_extent()[0]));
+    length_type const dy(subtract(abs(x_y_z[1]), obj.half_extent()[1]));
 
     if (dx < 0 && dy < 0) {
         // Projected point of pos is on the plane.
@@ -250,8 +250,8 @@ random_position(Plane<T> const& shape, Trng& rng)
     // -1 < rng() < 1. See for example PlanarSurface.hpp.
     return add(
         shape.position(),
-        add(multiply(shape.units()[0], shape.extent()[0] * rng()),
-            multiply(shape.units()[1], shape.extent()[1] * rng())));
+        add(multiply(shape.units()[0], shape.half_extent()[0] * rng()),
+            multiply(shape.units()[1], shape.half_extent()[1] * rng())));
 }
 
 template<typename T>
@@ -302,8 +302,8 @@ struct hash<Plane<T_> >
         return hash<typename argument_type::position_type>()(val.position()) ^
             hash<typename argument_type::position_type>()(val.unit_x()) ^
             hash<typename argument_type::position_type>()(val.unit_y()) ^
-            hash<typename argument_type::length_type>()(val.extent()[0]) ^
-            hash<typename argument_type::length_type>()(val.extent()[1]);
+            hash<typename argument_type::length_type>()(val.half_extent()[0]) ^
+            hash<typename argument_type::length_type>()(val.half_extent()[1]);
     }
 };
 

@@ -51,20 +51,20 @@ inline boost::python::objects::class_base register_cylinder_class(char const* na
                     typename impl_type::length_type,
                     &impl_type::radius,
                     &impl_type::radius>::set))
-        .add_property("size",
+        .add_property("half_length",
             make_function(
                 &peer::util::reference_accessor_wrapper<
                     impl_type,
                     typename impl_type::length_type,
-                    &impl_type::size,
-                    &impl_type::size>::get,
+                    &impl_type::half_length,
+                    &impl_type::half_length>::get,
                 return_value_policy<return_by_value>()),
             make_function(
                 &peer::util::reference_accessor_wrapper<
                     impl_type,
                     typename impl_type::length_type,
-                    &impl_type::size,
-                    &impl_type::size>::set))
+                    &impl_type::half_length,
+                    &impl_type::half_length>::set))
         .add_property("unit_z",
             make_function(
                 &peer::util::reference_accessor_wrapper<

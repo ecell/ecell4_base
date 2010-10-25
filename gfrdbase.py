@@ -158,11 +158,11 @@ def create_world(m, matrix_size=10):
     if not isinstance(world_region, _gfrd.CuboidalRegion):
         raise TypeError("the world should be a CuboidalRegion")
 
-    if not numpy.all(world_region.shape.extent ==
-                     world_region.shape.extent[0]):
+    if not numpy.all(world_region.shape.half_extent ==
+                     world_region.shape.half_extent[0]):
         raise NotImplementedError("non-cuboidal world is not supported")
 
-    world_size = world_region.shape.extent[0] * 2
+    world_size = world_region.shape.half_extent[0] * 2
 
     world = _gfrd.World(world_size, matrix_size)
 

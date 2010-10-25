@@ -81,13 +81,13 @@ struct StructureUtils
             position_type const& corner,
             boost::array<length_type, 3> const& extent)
     {
-        const boost::array<length_type, 3> half_of_extent(divide(extent, 2));
+        const boost::array<length_type, 3> half_extent(divide(extent, 2));
         return new cuboidal_region_type(id,
-                box_type(add(corner, half_of_extent),
+                box_type(add(corner, half_extent),
                          create_vector<position_type>(1, 0, 0),
                          create_vector<position_type>(0, 1, 0),
                          create_vector<position_type>(0, 0, 1),
-                         half_of_extent));
+                         half_extent));
     }
 
     static position_type random_vector(structure_type const& structure,
