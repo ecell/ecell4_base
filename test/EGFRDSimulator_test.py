@@ -9,6 +9,7 @@ import numpy
 import _gfrd
 
 from egfrd import *
+from visualization import vtklogger
 
 import model
 import gfrdbase
@@ -188,9 +189,9 @@ class EGFRDSimulatorTestCaseBase(unittest.TestCase):
         r = model.create_decay_reaction_rule(C, self.kb_1)
         self.m.network_rules.add_reaction_rule(r)
 
-    def add_particles(self):
-        throw_in_particles(self.w, self.A, 2)
-        throw_in_particles(self.w, self.B, 2)
+    def add_particles(self, n):
+        throw_in_particles(self.w, self.A, n)
+        throw_in_particles(self.w, self.B, n)
 
     def tearDown(self):
         pass
@@ -205,12 +206,19 @@ class CytosoleTestCase(EGFRDSimulatorTestCaseBase):
         self.add_species() 
         self.create_simulator() 
         self.add_reactions()
-        self.add_particles()
+        self.add_particles(2)
 
     def test_run(self):
         for i in range(10):
             self.s.step()
 
+    def test_vtklogger(self):
+        vtk_logger = vtklogger.VTKLogger(self.s, 'vtk_temp_data')
+        for i in range(10):
+            vtk_logger.log()
+            self.s.step()
+        vtk_logger.stop()
+        vtk_logger.cleanup()
 
 class PlanarSurfaceTestCase(EGFRDSimulatorTestCaseBase):
     """Events happening *on* a planar surface.
@@ -228,12 +236,19 @@ class PlanarSurfaceTestCase(EGFRDSimulatorTestCaseBase):
         self.add_species() 
         self.create_simulator() 
         self.add_reactions()
+        self.add_particles(2)
 
     def test_run(self):
-        self.add_particles()
-
         for i in range(10):
             self.s.step()
+
+    def test_vtklogger(self):
+        vtk_logger = vtklogger.VTKLogger(self.s, 'vtk_temp_data')
+        for i in range(10):
+            vtk_logger.log()
+            self.s.step()
+        vtk_logger.stop()
+        vtk_logger.cleanup()
 
 
 class CylindricalSurfaceTestCase(EGFRDSimulatorTestCaseBase):
@@ -252,11 +267,19 @@ class CylindricalSurfaceTestCase(EGFRDSimulatorTestCaseBase):
         self.add_species() 
         self.create_simulator() 
         self.add_reactions()
-        self.add_particles()
+        self.add_particles(2)
 
     def test_run(self):
         for i in range(10):
             self.s.step()
+
+    def test_vtklogger(self):
+        vtk_logger = vtklogger.VTKLogger(self.s, 'vtk_temp_data')
+        for i in range(10):
+            vtk_logger.log()
+            self.s.step()
+        vtk_logger.stop()
+        vtk_logger.cleanup()
 
 
 if __name__ == "__main__":

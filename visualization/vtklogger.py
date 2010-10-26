@@ -90,6 +90,12 @@ class VTKLogger:
         self.delta_t = 1e-11
         self.last_time = INF
 
+    def cleanup(self):
+        """Delete any data directories creaeted by this VTKLogger.
+
+        """
+        shutil.rmtree(self.dir)
+
     def log(self):
         """Write the particle and shell data (last one is optional) for 
         the current timestep to .vtk files or to a buffer.
@@ -296,13 +302,15 @@ class VTKLogger:
 
         if number_of_shells > 0:
             top_event_id = self.sim.scheduler.top[0]
+        else:
+            top_event_id = None
 
         for object in self.sim.domains.itervalues():
             # Single and pairs.
             color = object.multiplicity
 
             # Highlight top_event for singles and pairs.
-            if object.event_id == top_event_id:
+            if top_event_id != None and object.event_id == top_event_id:
                 color = 0
 
             # Multi.
