@@ -47,7 +47,7 @@ def setup_logging():
             handler = logging.FileHandler(os.environ['LOGFILE'], 'w', )
             
     else:
-        handler = logging.StreamHandler(sys.stdout)
+        handler = _gfrd.LoggerHandler("ecell")
 
     formatter = logging.Formatter('%(message)s')
     handler.setFormatter(formatter)

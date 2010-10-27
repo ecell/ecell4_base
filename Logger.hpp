@@ -70,6 +70,8 @@ public:
 
     virtual void logv(enum level lv, char const* format, va_list ap) = 0;
 
+    virtual void flush() = 0;
+
     static Logger& get_logger(char const* name);
 };
 

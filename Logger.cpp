@@ -54,6 +54,12 @@ struct LoggerProxy: public Logger
         logger_->logv(lv, format, ap);
     }
 
+    virtual void flush()
+    {
+        fetch_logger();
+        logger_->flush();
+    }
+
     void fetch_logger()
     {
         if (logger_)

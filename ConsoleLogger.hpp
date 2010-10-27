@@ -12,6 +12,8 @@ public:
 
     virtual void logv(enum level lv, char const* format, va_list ap);
 
+    virtual void flush();
+
     ConsoleLogger(char const* name): name_(name) {}
 
 private:

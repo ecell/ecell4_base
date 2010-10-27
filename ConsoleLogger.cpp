@@ -17,6 +17,11 @@ void ConsoleLogger::logv(enum level lv, char const* format, va_list ap)
     std::fputc('\n', stderr);
 }
 
+void ConsoleLogger::flush()
+{
+    std::fflush(stderr);
+}
+
 char const* ConsoleLogger::stringize_error_level(enum level lv)
 {
     static char const* names[] = {

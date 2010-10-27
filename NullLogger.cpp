@@ -10,6 +10,10 @@ void NullLogger::logv(enum level lv, char const* format, va_list ap)
 {
 }
 
+void NullLogger::flush()
+{
+}
+
 NullLoggerFactory::~NullLoggerFactory() {}
 
 Logger* NullLoggerFactory::operator()(char const* logger_name) const

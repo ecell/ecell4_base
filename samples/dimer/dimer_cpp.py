@@ -15,8 +15,8 @@ L = 5e-6
 #L = 5e-8
 #L = 3e-7
 
-_gfrd.PythonLoggerFactory.register_logger_factory(
-    ".*", _gfrd.PythonLoggerFactory())
+#_gfrd.PythonLoggerFactory.register_logger_factory(
+#    ".*", _gfrd.PythonLoggerFactory())
 
 m = model.ParticleModel(L)
 S = model.Species('S', 1.5e-12, 5e-9)
