@@ -213,22 +213,13 @@ public:
         CppLoggerHandler* const self(get_self(_self));
         if (!self)
             return NULL;
-        boost::python::object level(boost::python::borrowed(_level));
-
-        boost::python::object closest;
-        BOOST_FOREACH (loglevel_map_type::value_type const& i, loglevel_map)
-        {
-            if (i.second <= level && closest < i.second)
-            {
-                self->level_ = i.first;
-                closest = i.second;
-            }
-        }
-        if (closest.ptr() == Py_None)
+        enum Logger::level const level(get_level(_level));
+        if (level == Logger::L_OFF)
         {
             PyErr_SetString(PyExc_ValueError, "invalid loglevel");
             return NULL;
         }
+        self->level_ = level;
         return boost::python::incref(Py_None);
     }
 
@@ -242,11 +233,13 @@ public:
 
         try
         {
+            boost::python::handle<> _level(
+                    PyObject_GetAttrString(_record, "levelno"));
             boost::python::object msg(
                 boost::python::getattr(
                     boost::python::object(
                         boost::python::borrowed(_self)), "format")(record));
-            self->impl_.log(self->level_, "%s",
+            self->impl_.log(get_level(_level.get()), "%s",
                     boost::python::extract<char const*>(msg)());
         }
         catch (boost::python::error_already_set const&)
@@ -274,6 +267,25 @@ public:
     }
 
     CppLoggerHandler(Logger& impl): impl_(impl), level_(Logger::L_INFO) {}
+
+protected:
+    static enum Logger::level get_level(PyObject* _level)
+    {
+        enum Logger::level retval(Logger::L_OFF);
+        boost::python::object level(boost::python::borrowed(_level));
+        boost::python::object closest;
+
+        BOOST_FOREACH (loglevel_map_type::value_type const& i, loglevel_map)
+        {
+            if (i.second <= level && closest < i.second)
+            {
+                retval = i.first;
+                closest = i.second;
+            }
+        }
+        return retval;
+    }
+
 
 protected:
     static boost::python::handle<> __class__;
