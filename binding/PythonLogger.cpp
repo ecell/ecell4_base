@@ -68,7 +68,7 @@ public:
 };
 
 // XXX: logging.Handler is a old-style class... *sigh*
-class LoggingHandler
+class CppLoggerHandler
 {
 public:
     static PyObject* __class_init__(const char* name, PyObject* mod)
@@ -111,10 +111,10 @@ public:
 
     static void __dealloc__(void* ptr)
     {
-        delete reinterpret_cast<LoggingHandler*>(ptr);
+        delete reinterpret_cast<CppLoggerHandler*>(ptr);
     }
 
-    static LoggingHandler* get_self(PyObject* _self)
+    static CppLoggerHandler* get_self(PyObject* _self)
     {
         boost::python::handle<> ptr(
             boost::python::allow_null(
@@ -128,14 +128,14 @@ public:
                     ptr.get()->ob_type->tp_name);
             return 0;
         }
-        return reinterpret_cast<LoggingHandler*>(PyCObject_AsVoidPtr(ptr.get()));
+        return reinterpret_cast<CppLoggerHandler*>(PyCObject_AsVoidPtr(ptr.get()));
     }
 
     static PyObject* __init__(PyObject* _self, PyObject* name)
     {
         BOOST_ASSERT(PyInstance_Check(_self));
 
-        LoggingHandler* self(new LoggingHandler(
+        CppLoggerHandler* self(new CppLoggerHandler(
             Logger::get_logger(
                 boost::python::extract<char const*>(name))));
         boost::python::handle<> ptr(
@@ -186,7 +186,7 @@ public:
 
     static PyObject* createLock(PyObject* _self)
     {
-        LoggingHandler* const self(get_self(_self));
+        CppLoggerHandler* const self(get_self(_self));
         if (!self)
             return NULL;
         return boost::python::incref(Py_None);
@@ -194,7 +194,7 @@ public:
 
     static PyObject* acquire(PyObject* _self)
     {
-        LoggingHandler* const self(get_self(_self));
+        CppLoggerHandler* const self(get_self(_self));
         if (!self)
             return NULL;
         return boost::python::incref(Py_None);
@@ -202,7 +202,7 @@ public:
 
     static PyObject* release(PyObject* _self)
     {
-        LoggingHandler* const self(get_self(_self));
+        CppLoggerHandler* const self(get_self(_self));
         if (!self)
             return NULL;
         return boost::python::incref(Py_None);
@@ -210,7 +210,7 @@ public:
 
     static PyObject* setLevel(PyObject* _self, PyObject* _level)
     {
-        LoggingHandler* const self(get_self(_self));
+        CppLoggerHandler* const self(get_self(_self));
         if (!self)
             return NULL;
         boost::python::object level(boost::python::borrowed(_level));
@@ -234,7 +234,7 @@ public:
 
     static PyObject* emit(PyObject* _self, PyObject* _record)
     {
-        LoggingHandler* const self(get_self(_self));
+        CppLoggerHandler* const self(get_self(_self));
         if (!self)
             return NULL;
         boost::python::object record(
@@ -258,7 +258,7 @@ public:
 
     static PyObject* flush(PyObject* _self, PyObject* arg)
     {
-        LoggingHandler* const self(get_self(_self));
+        CppLoggerHandler* const self(get_self(_self));
         if (!self)
             return NULL;
         self->impl_.flush();
@@ -267,13 +267,13 @@ public:
 
     static PyObject* close(PyObject* _self, PyObject* arg)
     {
-        LoggingHandler* const self(get_self(_self));
+        CppLoggerHandler* const self(get_self(_self));
         if (!self)
             return NULL;
         return boost::python::incref(Py_None);
     }
 
-    LoggingHandler(Logger& impl): impl_(impl), level_(Logger::L_INFO) {}
+    CppLoggerHandler(Logger& impl): impl_(impl), level_(Logger::L_INFO) {}
 
 protected:
     static boost::python::handle<> __class__;
@@ -282,17 +282,17 @@ protected:
     enum Logger::level level_;
 };
 
-boost::python::handle<> LoggingHandler::__class__;
+boost::python::handle<> CppLoggerHandler::__class__;
 
-PyMethodDef LoggingHandler::__methods__[] = {
-    { "__init__", (PyCFunction)LoggingHandler::__init__, METH_O, "" },
-    { "createLock", (PyCFunction)LoggingHandler::createLock, METH_NOARGS, "" },
-    { "acquire", (PyCFunction)LoggingHandler::acquire, METH_NOARGS, "" },
-    { "release", (PyCFunction)LoggingHandler::release, METH_NOARGS, "" },
-    { "setLevel", (PyCFunction)LoggingHandler::setLevel, METH_O, "" },
-    { "emit", (PyCFunction)LoggingHandler::emit, METH_O, "" },
-    { "flush", (PyCFunction)LoggingHandler::flush, METH_NOARGS, "" },
-    { "close", (PyCFunction)LoggingHandler::close, METH_NOARGS, "" },
+PyMethodDef CppLoggerHandler::__methods__[] = {
+    { "__init__", (PyCFunction)CppLoggerHandler::__init__, METH_O, "" },
+    { "createLock", (PyCFunction)CppLoggerHandler::createLock, METH_NOARGS, "" },
+    { "acquire", (PyCFunction)CppLoggerHandler::acquire, METH_NOARGS, "" },
+    { "release", (PyCFunction)CppLoggerHandler::release, METH_NOARGS, "" },
+    { "setLevel", (PyCFunction)CppLoggerHandler::setLevel, METH_O, "" },
+    { "emit", (PyCFunction)CppLoggerHandler::emit, METH_O, "" },
+    { "flush", (PyCFunction)CppLoggerHandler::flush, METH_NOARGS, "" },
+    { "close", (PyCFunction)CppLoggerHandler::close, METH_NOARGS, "" },
     { NULL, NULL }
 };
 
@@ -330,7 +330,7 @@ register_logger_handler_class(char const* name)
 {
     using namespace boost::python;
     PyObject* klass(
-        LoggingHandler::__class_init__(
+        CppLoggerHandler::__class_init__(
             name, reinterpret_cast<PyObject*>(scope().ptr())));
     boost::python::object retval(borrowed(klass));
     scope().attr(name) = retval;
