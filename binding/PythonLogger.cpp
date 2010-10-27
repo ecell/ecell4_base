@@ -104,22 +104,20 @@ public:
         using namespace boost::python;
 
         import_logging_module();
-
-        __name__ = static_cast<std::string>(
-            extract<std::string>(object(borrowed(mod)).attr("__name__")))
-            + "." + name;
+        object mod_name(object(borrowed(mod)).attr("__name__"));
 
         __type__ = PyClass_Type;
         __type__.tp_call = (ternaryfunc)&__new__;
 
         boost::python::handle<> dict(PyDict_New());
-        if (PyDict_SetItemString(dict.get(), "__module__", mod))
+        if (PyDict_SetItemString(dict.get(), "__module__", mod_name.ptr()))
             return NULL;
 
         boost::python::object bases(
             boost::python::make_tuple(
                 getattr(logging_module, "Handler")));
-        boost::python::object _name(__name__);
+
+        boost::python::object _name(name);
 
         boost::python::handle<> klass(
             PyClass_New(bases.ptr(), dict.get(), _name.ptr()));
@@ -203,29 +201,78 @@ public:
         delete self;
     }
 
-    static PyObject* createLock(LoggingHandler* self)
+    static PyObject* createLock(PyClassObject* klass, PyObject* arg)
     {
+        BOOST_ASSERT(PyTuple_Check(arg));
+        Py_ssize_t const nargs(PyTuple_GET_SIZE(arg));
+        BOOST_ASSERT(nargs >= 1);
+        if (nargs != 1)
+        {
+            PyErr_Format(PyExc_TypeError,
+                "%s.%.200s takes no argument (%zd given)",
+                PyString_AsString(klass->cl_name), __FUNCTION__,
+                nargs - 1);
+            return NULL;
+        }
         return boost::python::incref(Py_None);
     }
 
-    static PyObject* acquire(LoggingHandler* self)
+    static PyObject* acquire(PyClassObject* klass, PyObject* arg)
     {
+        BOOST_ASSERT(PyTuple_Check(arg));
+        Py_ssize_t const nargs(PyTuple_GET_SIZE(arg));
+        BOOST_ASSERT(nargs >= 1);
+        if (nargs != 1)
+        {
+            PyErr_Format(PyExc_TypeError,
+                "%s.%.200s takes no argument (%zd given)",
+                PyString_AsString(klass->cl_name), __FUNCTION__,
+                nargs - 1);
+            return NULL;
+        }
         return boost::python::incref(Py_None);
     }
 
-    static PyObject* release(LoggingHandler* self)
+    static PyObject* release(PyClassObject* klass, PyObject* arg)
     {
+        BOOST_ASSERT(PyTuple_Check(arg));
+        Py_ssize_t const nargs(PyTuple_GET_SIZE(arg));
+        BOOST_ASSERT(nargs >= 1);
+        if (nargs != 1)
+        {
+            PyErr_Format(PyExc_TypeError,
+                "%s.%.200s takes no argument (%zd given)",
+                PyString_AsString(klass->cl_name), __FUNCTION__,
+                nargs - 1);
+            return NULL;
+        }
         return boost::python::incref(Py_None);
     }
 
-    static PyObject* setLevel(LoggingHandler* self, PyObject* level)
+    static PyObject* setLevel(PyClassObject* klass, PyObject* arg)
     {
-        boost::python::object _level(boost::python::borrowed(level));
+        BOOST_ASSERT(PyTuple_Check(arg));
+        Py_ssize_t const nargs(PyTuple_GET_SIZE(arg));
+        BOOST_ASSERT(nargs >= 1);
+        if (nargs != 2)
+        {
+            PyErr_Format(PyExc_TypeError,
+                "%s.%.200s takes exactly one argument (%zd given)",
+                PyString_AsString(klass->cl_name), __FUNCTION__,
+                nargs - 1);
+            return NULL;
+        }
+        LoggingHandler* const self(
+            reinterpret_cast<LoggingHandler*>(PyTuple_GET_ITEM(arg, 0)));
+        boost::python::object level(
+            boost::python::borrowed(PyTuple_GET_ITEM(arg, 1)));
+
         boost::python::object closest;
         BOOST_FOREACH (loglevel_map_type::value_type const& i, loglevel_map)
         {
-            if (i.second <= _level && closest < i.second)
+            if (i.second <= level && closest < i.second)
             {
+                self->level_ = i.first;
                 closest = i.second;
             }
         }
@@ -237,27 +284,70 @@ public:
         return boost::python::incref(Py_None);
     }
 
-    static PyObject* emit(LoggingHandler* self, PyObject* record)
+    static PyObject* emit(PyClassObject* klass, PyObject* arg)
     {
-        boost::python::object msg(
-            boost::python::getattr(
-                boost::python::object(
-                    boost::python::borrowed(
-                        reinterpret_cast<PyObject*>(self))), "format")(
-                            boost::python::object(
-                                boost::python::borrowed(record))));
-        self->impl_.log(self->level_, "%s",
-                boost::python::extract<char const*>(msg)());
+        BOOST_ASSERT(PyTuple_Check(arg));
+        Py_ssize_t const nargs(PyTuple_GET_SIZE(arg));
+        BOOST_ASSERT(nargs >= 1);
+        if (nargs != 2)
+        {
+            PyErr_Format(PyExc_TypeError,
+                "%s.%.200s takes exactly one argument (%zd given)",
+                PyString_AsString(klass->cl_name), __FUNCTION__,
+                nargs - 1);
+            return NULL;
+        }
+        LoggingHandler* const self(
+            reinterpret_cast<LoggingHandler*>(PyTuple_GET_ITEM(arg, 0)));
+        boost::python::object record(
+            boost::python::borrowed(PyTuple_GET_ITEM(arg, 1)));
+
+        try
+        {
+            boost::python::object msg(
+                boost::python::getattr(
+                    boost::python::object(
+                        boost::python::borrowed(
+                            reinterpret_cast<PyObject*>(self))), "format")(record));
+            self->impl_.log(self->level_, "%s",
+                    boost::python::extract<char const*>(msg)());
+        }
+        catch (boost::python::error_already_set const&)
+        {
+            return NULL;
+        }
         return boost::python::incref(Py_None);
     }
 
-    static PyObject* flush(LoggingHandler* self)
+    static PyObject* flush(PyClassObject* klass, PyObject* arg)
     {
+        BOOST_ASSERT(PyTuple_Check(arg));
+        Py_ssize_t const nargs(PyTuple_GET_SIZE(arg));
+        BOOST_ASSERT(nargs >= 1);
+        if (nargs != 1)
+        {
+            PyErr_Format(PyExc_TypeError,
+                "%s.%.200s takes no argument (%zd given)",
+                PyString_AsString(klass->cl_name), __FUNCTION__,
+                nargs - 1);
+            return NULL;
+        }
         return boost::python::incref(Py_None);
     }
 
-    static PyObject* close(LoggingHandler* self)
+    static PyObject* close(PyClassObject* klass, PyObject* arg)
     {
+        BOOST_ASSERT(PyTuple_Check(arg));
+        Py_ssize_t const nargs(PyTuple_GET_SIZE(arg));
+        BOOST_ASSERT(nargs >= 1);
+        if (nargs != 1)
+        {
+            PyErr_Format(PyExc_TypeError,
+                "%s.%.200s takes no argument (%zd given)",
+                PyString_AsString(klass->cl_name), __FUNCTION__,
+                nargs - 1);
+            return NULL;
+        }
         return boost::python::incref(Py_None);
     }
 
@@ -268,12 +358,9 @@ protected:
     static boost::python::handle<> __class__;
     static boost::python::handle<> __real_class__;
     static PyMethodDef __methods__[];
-    static std::string __name__;
     Logger& impl_;
     enum Logger::level level_;
 };
-
-std::string LoggingHandler::__name__;
 
 PyTypeObject LoggingHandler::__type__;
 
@@ -281,13 +368,13 @@ boost::python::handle<> LoggingHandler::__class__;
 boost::python::handle<> LoggingHandler::__real_class__;
 
 PyMethodDef LoggingHandler::__methods__[] = {
-    { "createLock", (PyCFunction)LoggingHandler::createLock, METH_NOARGS, "" },
-    { "acquire", (PyCFunction)LoggingHandler::acquire, METH_NOARGS, "" },
-    { "release", (PyCFunction)LoggingHandler::release, METH_NOARGS, "" },
-    { "setLevel", (PyCFunction)LoggingHandler::setLevel, METH_O, "" },
-    { "emit", (PyCFunction)LoggingHandler::emit, METH_O, "" },
-    { "flush", (PyCFunction)LoggingHandler::flush, METH_O, "" },
-    { "close", (PyCFunction)LoggingHandler::close, METH_O, "" },
+    { "createLock", (PyCFunction)LoggingHandler::createLock, METH_VARARGS, "" },
+    { "acquire", (PyCFunction)LoggingHandler::acquire, METH_VARARGS, "" },
+    { "release", (PyCFunction)LoggingHandler::release, METH_VARARGS, "" },
+    { "setLevel", (PyCFunction)LoggingHandler::setLevel, METH_VARARGS, "" },
+    { "emit", (PyCFunction)LoggingHandler::emit, METH_VARARGS, "" },
+    { "flush", (PyCFunction)LoggingHandler::flush, METH_VARARGS, "" },
+    { "close", (PyCFunction)LoggingHandler::close, METH_VARARGS, "" },
     { NULL, NULL }
 };
 
