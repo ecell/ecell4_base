@@ -9,7 +9,8 @@ namespace binding {
 
 void register_python_logger_classes()
 {
-    register_logger_factory_class("_LoggerFactory");
+    register_logger_factory_class("LoggerFactory");
+    register_null_logger_factory_class("NullLoggerFactory");
     register_python_logger_factory_class("PythonLoggerFactory");
 }
 

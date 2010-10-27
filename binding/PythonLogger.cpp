@@ -69,6 +69,16 @@ register_logger_factory_class(char const* name)
 }
 
 boost::python::objects::class_base
+register_null_logger_factory_class(char const* name)
+{
+    using namespace boost::python;
+    typedef NullLoggerFactory impl_type;
+
+    return class_<impl_type, bases<LoggerFactory>, boost::shared_ptr<impl_type>, boost::noncopyable>(name)
+        ;
+}
+
+boost::python::objects::class_base
 register_python_logger_factory_class(char const* name)
 {
     using namespace boost::python;

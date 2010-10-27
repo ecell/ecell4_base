@@ -175,6 +175,7 @@ _gfrd_la_SOURCES=\
 	GreensFunction3DRadInf.cpp\
 	GreensFunction3DSym.cpp\
 	Logger.cpp\
+	NullLogger.cpp\
 	ConsoleLogger.cpp\
 	Model.cpp\
 	NetworkRules.cpp\

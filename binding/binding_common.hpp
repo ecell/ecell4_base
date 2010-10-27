@@ -34,6 +34,7 @@
 #include "../AnalyticalPair.hpp"
 #include "../EventScheduler.hpp"
 #include "../Logger.hpp"
+#include "../NullLogger.hpp"
 
 #include "peer/wrappers/range/pyiterable_range.hpp"
 
