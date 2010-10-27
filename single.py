@@ -178,7 +178,7 @@ class NonInteractionSingle(Single):
                         reactiontypes, surface)
 
     def get_mobility_radius(self):
-        return self.shell_list[0][1].shape.radius - self.pid_particle_pair[1].radius
+        return self.get_shell_size() - self.pid_particle_pair[1].radius
 
     def get_shell_size(self):
         return self.shell_list[0][1].shape.radius
@@ -311,11 +311,6 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
 
     def create_position_vector(self, z):
         return z * self.shell_list[0][1].shape.unit_z
-
-    def get_mobility_radius(self):
-        # Heads up.
-        return self.shell_list[0][1].shape.half_length - \
-               self.pid_particle_pair[1].radius
 
     def get_shell_size(self):
         # Heads up. The cylinder's *half_length*, not radius, 
