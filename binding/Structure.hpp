@@ -2,6 +2,7 @@
 #define BINDING_STRUCTURE_HPP
 
 #include <boost/python.hpp>
+#include "peer/converters/tuple.hpp"
 
 namespace binding {
 
@@ -10,6 +11,9 @@ inline boost::python::objects::class_base register_structure_class(char const *n
 {
     using namespace boost::python;
     typedef Timpl impl_type;
+
+    peer::converters::register_tuple_converter<
+            typename impl_type::projected_type>();
 
     return class_<impl_type, boost::shared_ptr<impl_type>,
                   boost::noncopyable>(name, no_init)

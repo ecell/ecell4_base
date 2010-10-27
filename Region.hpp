@@ -74,11 +74,10 @@ public:
         return out.str();
     }
 
-    //std::pair<position_type, length_type>
-    position_type projected_point(position_type const& pos) const
+    std::pair<position_type, length_type>
+    projected_point(position_type const& pos) const
     {
-        // Todo. Return pair and Pythonify.
-        return ::projected_point(shape(), pos).first;
+        return ::projected_point(shape(), pos);
     }
 
     BasicRegionImpl(identifier_type const& id, shape_type const& shape)

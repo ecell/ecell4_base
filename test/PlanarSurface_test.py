@@ -45,7 +45,8 @@ class PlanarSurfaceTestCase(unittest.TestCase):
 
     def test_projected_point(self):
         m = self.membrane_at_position(self.r1, self.r2)
-        assert (m.projected_point([2, 2, 2]) == [2, 2, 5]).all()
+        assert (m.projected_point([2, 2, 2])[0] == [2, 2, 5]).all()
+        assert m.projected_point([2, 2, 2])[1] == -3
 
     def test_distance_to_plane(self):
         m1 = self.membrane_at_position(self.r1, self.r2)
