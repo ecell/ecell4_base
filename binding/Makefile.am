@@ -49,6 +49,8 @@ noinst_HEADERS = \
 	PlanarSurface.hpp \
 	plane_class.hpp \
 	position_converters.hpp \
+	PythonLogger.hpp \
+	python_logger_classes.hpp \
 	random_number_generator_class.hpp \
 	RandomNumberGenerator.hpp \
 	reaction_record_classes.hpp \
@@ -100,6 +102,8 @@ libbinding_utils_la_SOURCES = \
 	particle_simulator_classes.cpp \
 	plane_class.cpp \
 	position_converters.cpp \
+	PythonLogger.cpp \
+	python_logger_classes.cpp \
 	random_number_generator_class.cpp \
 	reaction_record_classes.cpp \
 	shape_converters.cpp \

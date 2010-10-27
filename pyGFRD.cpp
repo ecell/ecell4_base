@@ -59,6 +59,7 @@
 #include "binding/reaction_record_classes.hpp"
 #include "binding/particle_simulator_classes.hpp"
 #include "binding/egfrd_simulator_classes.hpp"
+#include "binding/python_logger_classes.hpp"
 
 namespace b = binding;
 
@@ -110,6 +111,7 @@ peer::util::register_exception_translator<PyExc_IndexError, std::out_of_range>()
     b::register_reaction_record_classes();
     b::register_particle_simulator_classes();
     b::register_egfrd_simulator_classes();
+    b::register_python_logger_classes();
 
     peer::util::register_seq_wrapped_multi_array_converter<b::Length>();
     peer::util::register_ndarray_wrapped_multi_array_converter<b::Length, 2>();

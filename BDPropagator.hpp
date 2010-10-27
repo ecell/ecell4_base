@@ -374,6 +374,6 @@ private:
 };
 
 template<typename Ttraits_>
-Logger& BDPropagator<Ttraits_>::log_(Logger::get_logger("BDPropagator"));
+Logger& BDPropagator<Ttraits_>::log_(Logger::get_logger("ecell.BDPropagator"));
 
 #endif /* BD_PROPAGATOR_HPP */

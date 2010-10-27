@@ -2,6 +2,7 @@
 #define LOGGER_HPP
 
 #include <cstdarg>
+#include <boost/shared_ptr.hpp>
 
 class Logger
 {
@@ -67,8 +68,6 @@ public:
         va_end(ap);
     }
 
-    virtual void set_name(char const* name) = 0;
-
     virtual void logv(enum level lv, char const* format, va_list ap) = 0;
 
     static Logger& get_logger(char const* name);
@@ -79,9 +78,16 @@ class LoggerFactory
 public:
     virtual ~LoggerFactory();
 
-    virtual Logger* create() const = 0;
+    virtual Logger* operator()(char const* logger_name) const = 0;
 
-    static LoggerFactory& get_logger_factory(char const* name);
+    virtual char const* get_name() const = 0;
+
+    static void register_logger_factory(
+            char const* logger_name_pattern,
+            boost::shared_ptr<LoggerFactory> const&);
+
+    static boost::shared_ptr<LoggerFactory>
+           get_logger_factory(char const* logger_name);
 };
 
 #ifdef DEBUG

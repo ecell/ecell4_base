@@ -8,6 +8,8 @@
 #include <cmath>
 #include "ParticleModel.hpp"
 #include "EGFRDSimulator.hpp"
+#include "Logger.hpp"
+#include "NullLogger.hpp"
 #include "EGFRDSimulatorFactory.hpp"
 #include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
@@ -60,6 +62,10 @@ BOOST_AUTO_TEST_CASE(test)
     typedef world_type::traits_type::length_type length_type;
 
     int const n(300);
+
+    LoggerFactory::register_logger_factory(
+        "EGFRDSimulator",
+        boost::shared_ptr<LoggerFactory>(new NullLoggerFactory()));
 
     ParticleModel m;
 

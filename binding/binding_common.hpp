@@ -33,6 +33,7 @@
 #include "../AnalyticalSingle.hpp"
 #include "../AnalyticalPair.hpp"
 #include "../EventScheduler.hpp"
+#include "../Logger.hpp"
 
 #include "peer/wrappers/range/pyiterable_range.hpp"
 
@@ -95,6 +96,9 @@ typedef EGFRDSimulator::cylindrical_surface_type CylindricalSurface;
 typedef EGFRDSimulator::cuboidal_region_type CuboidalRegion;
 typedef EGFRDSimulatorTraits::reaction_record_type ReactionRecord;
 typedef EGFRDSimulatorTraits::reaction_recorder_type ReactionRecorder;
+typedef ::Logger Logger;
+typedef ::LoggerFactory LoggerFactory;
+
 } // namespace binding
 
 #endif /* TRAITS_HPP */

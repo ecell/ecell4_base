@@ -374,6 +374,6 @@ protected:
 };
 
 template<typename Tsim_>
-Logger& Multi<Tsim_>::log_(Logger::get_logger("Multi"));
+Logger& Multi<Tsim_>::log_(Logger::get_logger("ecell.Multi"));
 
 #endif /* MULTI_HPP */

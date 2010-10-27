@@ -101,7 +101,7 @@ model_test_SOURCES = model_test.cpp ../Model.cpp ../NetworkRules.cpp ../BasicNet
 
 Vector3_test_SOURCES = Vector3_test.cpp ../Vector3.hpp
 
-BDPropagator_test_SOURCES = BDPropagator_test.cpp ../BasicNetworkRulesImpl.cpp ../NetworkRules.cpp ../Logger.cpp ../freeFunctions.cpp ../BDPropagator.hpp
+BDPropagator_test_SOURCES = BDPropagator_test.cpp ../BasicNetworkRulesImpl.cpp ../NetworkRules.cpp ../Logger.cpp ../ConsoleLogger.cpp ../freeFunctions.cpp ../BDPropagator.hpp
 BDPropagator_test_LDADD = $(GSL_LIBS)
 
 range_support_test_SOURCES = range_support_test.cpp ../utils/range.hpp ../utils/range_support.hpp
@@ -116,7 +116,8 @@ py_range_converters_test_SOURCES = py_range_converters_test.cpp ../peer/range_co
 
 pointer_as_ref_test_SOURCES = pointer_as_ref_test.cpp ../utils/pointer_as_ref.hpp
 
-EGFRDSimulator_test_SOURCES = EGFRDSimulator_test.cpp ../EGFRDSimulator.hpp ../Model.cpp ../NetworkRules.cpp ../BasicNetworkRulesImpl.cpp ../SpeciesType.cpp ../freeFunctions.cpp ../Logger.cpp ../GreensFunction3D.cpp ../GreensFunction3DAbs.cpp ../GreensFunction3DAbsSym.cpp ../GreensFunction3DRadAbs.cpp ../GreensFunction3DRadAbsBase.cpp ../GreensFunction3DRadInf.cpp ../GreensFunction3DSym.cpp ../SphericalBesselGenerator.cpp ../CylindricalBesselGenerator.cpp ../funcSum.cpp ../findRoot.cpp ../ParticleModel.cpp ../StructureType.cpp
+EGFRDSimulator_test_SOURCES = EGFRDSimulator_test.cpp ../EGFRDSimulator.hpp ../Model.cpp ../NetworkRules.cpp ../BasicNetworkRulesImpl.cpp ../SpeciesType.cpp ../freeFunctions.cpp ../Logger.cpp ../ConsoleLogger.cpp ../NullLogger.cpp ../GreensFunction3D.cpp ../GreensFunction3DAbs.cpp ../GreensFunction3DAbsSym.cpp ../GreensFunction3DRadAbs.cpp ../GreensFunction3DRadAbsBase.cpp ../GreensFunction3DRadInf.cpp ../GreensFunction3DSym.cpp ../SphericalBesselGenerator.cpp ../CylindricalBesselGenerator.cpp ../funcSum.cpp ../findRoot.cpp ../ParticleModel.cpp ../StructureType.cpp
+EGFRDSimulator_test_LIBS = -l@BOOST_REGEX_LIBNAME@ -l@BOOST_DATE_TIME_LIBNAME@
 EGFRDSimulator_test_CPPFLAGS = -DDEBUG
 
 EGFRDSimulator_test_LDADD = $(GSL_LIBS)

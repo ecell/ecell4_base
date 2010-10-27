@@ -3767,6 +3767,6 @@ inline char const* retrieve_domain_type_name(
 
 
 template<typename Ttraits_>
-Logger& EGFRDSimulator<Ttraits_>::log_(Logger::get_logger("EGFRDSimulator"));
+Logger& EGFRDSimulator<Ttraits_>::log_(Logger::get_logger("ecell.EGFRDSimulator"));
 
 #endif /* EGFRDSIMULATOR_HPP */

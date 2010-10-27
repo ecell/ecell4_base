@@ -4,10 +4,12 @@
 
 #include <string>
 #include <map>
-#include <cstdio>
+#include <utility>
+#include <boost/regex.hpp>
+#include <boost/foreach.hpp>
 #include <boost/type_traits/remove_pointer.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include "Logger.hpp"
+#include "ConsoleLogger.hpp"
 #include "utils/pair.hpp"
 #include "utils/fun_composition.hpp"
 #include "utils/fun_wrappers.hpp"
@@ -42,6 +44,64 @@ Logger::~Logger()
 {
 }
 
+struct LoggerProxy: public Logger
+{
+    virtual ~LoggerProxy() {}
+
+    virtual void logv(enum level lv, char const* format, va_list ap)
+    {
+        fetch_logger();
+        logger_->logv(lv, format, ap);
+    }
+
+    void fetch_logger()
+    {
+        if (logger_)
+            return;
+        logger_ = (*factory_)(name_);
+    }
+
+    LoggerProxy(boost::shared_ptr<LoggerFactory> factory, char const* name)
+        : factory_(factory), logger_(0), name_(name) {}
+
+private:
+    boost::shared_ptr<LoggerFactory> factory_;
+    Logger* logger_;
+    char const* name_;
+};
+
+struct DeferredLoggerFactory: public LoggerFactory
+{
+    virtual ~DeferredLoggerFactory() {}
+
+    virtual Logger* operator()(char const* name) const
+    {
+        const_cast<DeferredLoggerFactory*>(this)->fetch_factory();
+        Logger* const log((*factory_)(name));
+        return log;
+    }
+
+    virtual char const* get_name() const
+    {
+        const_cast<DeferredLoggerFactory*>(this)->fetch_factory();
+        return factory_->get_name();
+    }
+
+    DeferredLoggerFactory(char const* name): name_(name), factory_() {}
+
+private:
+    void fetch_factory()
+    {
+        if (!factory_)
+            factory_ = get_logger_factory(name_);
+        BOOST_ASSERT(factory_.get());
+    }
+
+private:
+    char const* name_;
+    boost::shared_ptr<LoggerFactory> factory_;
+};
+
 Logger& Logger::get_logger(char const* name)
 {
     typedef map_adapter<std::map<std::string, Logger*>, map_adapter_handler> loggers_type;
@@ -53,8 +113,9 @@ Logger& Logger::get_logger(char const* name)
 
     if (i.second)
     {
-        Logger* log = LoggerFactory::get_logger_factory(name).create();
-        log->set_name(name);
+        Logger* log = new LoggerProxy(
+            boost::shared_ptr<LoggerFactory>(
+                new DeferredLoggerFactory(name)), name);
         (*i.first).second = log;
     }
 
@@ -65,55 +126,52 @@ LoggerFactory::~LoggerFactory()
 {
 }
 
-class ConsoleLogger: public Logger
+class LoggerFactoryRegistry
 {
+private:
+    typedef std::pair<boost::regex, boost::shared_ptr<LoggerFactory> > entry_type;
 public:
-    virtual ~ConsoleLogger() {}
-
-    virtual void set_name(char const* name)
+    void register_logger_factory(char const* logger_name_pattern,
+                                 boost::shared_ptr<LoggerFactory> const& factory)
     {
-        name_ = name;
+        factories_.push_back(entry_type(boost::regex(logger_name_pattern), factory));
     }
 
-    virtual void logv(enum level lv, char const* format, va_list ap)
+    boost::shared_ptr<LoggerFactory>
+    get_logger_factory(char const* logger_name) const
     {
-        using namespace boost::posix_time;
-        std::fprintf(stderr, "[%s] %s: %-8s ", to_iso_string(second_clock::local_time()).c_str(), name_.c_str(), stringize_error_level(lv));
-        std::vfprintf(stderr, format, ap);
-        std::fputc('\n', stderr);
+        BOOST_FOREACH (entry_type const& i, factories_)
+        {
+            if (boost::regex_match(logger_name,
+                                   logger_name + std::strlen(logger_name),
+                                   i.first))
+            {
+                return i.second;
+            }
+        }
+        BOOST_ASSERT(default_factory_.get());
+        return default_factory_;
     }
+
+    LoggerFactoryRegistry(): default_factory_(new ConsoleLoggerFactory()) {}
 
 private:
-    static char const* stringize_error_level(enum level lv)
-    {
-        static char const* names[] = {
-            "OFF",
-            "DEBUG",
-            "INFO",
-            "WARN",
-            "ERROR",
-            "FATAL"
-        };
-        return static_cast<std::size_t>(lv) >= sizeof(names) / sizeof(*names) ? "???": names[lv];
-    }
-
-private:
-    std::string name_;
+    std::vector<entry_type> factories_;
+    boost::shared_ptr<ConsoleLoggerFactory> default_factory_;
 };
 
-class ConsoleLoggerFactory: public LoggerFactory
+static LoggerFactoryRegistry registry;
+    
+void LoggerFactory::register_logger_factory(
+        char const* logger_name_pattern,
+        boost::shared_ptr<LoggerFactory> const& factory)
 {
-public:
-    virtual ~ConsoleLoggerFactory() {}
+    registry.register_logger_factory(logger_name_pattern, factory);
+}
 
-    virtual Logger* create() const
-    {
-        return new ConsoleLogger();
-    }
-};
 
-LoggerFactory& LoggerFactory::get_logger_factory(char const* name)
+boost::shared_ptr<LoggerFactory>
+LoggerFactory::get_logger_factory(char const* name)
 {
-    static ConsoleLoggerFactory singleton_;
-    return singleton_;
+    return registry.get_logger_factory(name);
 }
