@@ -1443,7 +1443,6 @@ class EGFRDSimulator(ParticleSimulatorBase):
         # shells. Can for example be used to try to clear all objects 
         # from a certain volume.
 
-        neighbors = []
         for container in self.containers:
             result = container.get_neighbors_within_radius(pos, radius)
             # result = [((shell_id_shell_pair), distance), ]
@@ -1451,10 +1450,9 @@ class EGFRDSimulator(ParticleSimulatorBase):
             # example), and for each shell there is an entry in the 
             # shell container, we make sure each domain occurs only once 
             # in the returned list here.
-            neighbors.extend(self.domains[did]
-                             for did in uniq(s[0][1].did for s in result)
-                                     if did not in ignore)
-        return neighbors
+            for did in uniq(s[0][1].did for s in result):
+                if did not in ignore:
+                    yield self.domains[did]
 
     def get_intruders(self, position, radius, ignore):
         intruders = []   # intruders are domains within radius
