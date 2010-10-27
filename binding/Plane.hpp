@@ -83,7 +83,21 @@ inline boost::python::objects::class_base register_plane_class(char const* name)
                     impl_type,
                     typename impl_type::position_type,
                     &impl_type::unit_y,
-                    &impl_type::unit_y>::set));
+                    &impl_type::unit_y>::set))
+        .add_property("unit_z",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    impl_type,
+                    typename impl_type::position_type,
+                    &impl_type::unit_z,
+                    &impl_type::unit_z>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    impl_type,
+                    typename impl_type::position_type,
+                    &impl_type::unit_z,
+                    &impl_type::unit_z>::set));
 
 }
 

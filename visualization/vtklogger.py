@@ -431,10 +431,9 @@ class VTKLogger:
         for box in boxes:
             try:
                 dz = box.unit_z * box.half_extent[2]
-            except AttributeError:
-                # Planes don't have z dimension.
-                unit_z = crossproduct(box.unit_x, box.unit_y)
-                dz = unit_z * 1e-20
+            except IndexError:
+                # Planes don't have half_extent[2].
+                dz = box.unit_z * 1e-20
             tensor = numpy.concatenate((box.unit_x * box.half_extent[0],
                                         box.unit_y * box.half_extent[1],
                                         dz))
