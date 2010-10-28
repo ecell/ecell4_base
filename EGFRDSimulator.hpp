@@ -2767,12 +2767,11 @@ protected:
                 std::vector<boost::shared_ptr<domain_type> > bursted;
                 burst_non_multis(*neighbors, bursted);
 
-                BOOST_FOREACH (domain_id_type neighbor_id, *neighbors)
+                BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, bursted)
                 {
-                    boost::shared_ptr<domain_type> neighbor(get_domain(neighbor_id));
                     length_type const dist(distance(*neighbor, single->position()));
                     if (dist < new_shell.radius())
-                        add_to_multi_recursive(multi, domain); 
+                        add_to_multi_recursive(multi, *neighbor); 
                 }
                 return;
             }
