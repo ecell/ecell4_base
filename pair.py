@@ -194,8 +194,8 @@ class Pair(object):
         else:
             # Note: we are not calling pair.draw_iv_event_type yet, but 
             # postpone it to the very last minute (when this event is 
-            # executed in fire_pair). So IV_EVENT can still be a iv 
-            # event or a iv reaction.
+            # executed in fire_pair). So IV_EVENT can still be an iv 
+            # escape or an iv reaction.
             return dt_iv, EventType.IV_EVENT, None
 
     def draw_single_reaction_time_tuple(self):
@@ -393,16 +393,17 @@ class PlanarSurfacePair(Pair):
                                               self.sigma, self.a_r)
 
     def create_new_shell(self, position, radius, domain_id):
-        # The size (thickness) of a hockey puck is not more than it has 
-        # to be (namely the radius of the particle), so if the particle 
-        # undergoes an unbinding reaction we still have to clear the 
-        # target volume and the move may be rejected (NoSpace error).
+        # The half_length (thickness/2) of a hockey puck is not more 
+        # than it has to be (namely the radius of the particle), so if 
+        # the particle undergoes an unbinding reaction we still have to 
+        # clear the target volume and the move may be rejected (NoSpace 
+        # error).
         orientation = crossproduct(self.surface.shape.unit_x,
                                    self.surface.shape.unit_y)
-        size = max(self.single1.pid_particle_pair[1].radius,
-                   self.single2.pid_particle_pair[1].radius)
+        half_length = max(self.single1.pid_particle_pair[1].radius,
+                          self.single2.pid_particle_pair[1].radius)
         return CylindricalShell(domain_id, Cylinder(position, radius, 
-                                                    orientation, size))
+                                                    orientation, half_length))
 
         a_R, a_r = self.determine_radii()
 
@@ -450,7 +451,7 @@ class CylindricalSurfacePair(Pair):
     def iv_greens_function(self, r0):
         return GreensFunction1DRadAbs(self.D_tot, self.v_r, self.rt.ktot, r0, self.sigma, self.a_r)
 
-    def create_new_shell(self, position, size, domain_id):
+    def create_new_shell(self, position, half_length, domain_id):
         # The radius of a rod is not more than it has to be (namely the 
         # radius of the biggest particle), so if the particle undergoes 
         # an unbinding reaction we still have to clear the target volume 
@@ -458,8 +459,8 @@ class CylindricalSurfacePair(Pair):
         radius = max(self.single1.pid_particle_pair[1].radius,
                      self.single2.pid_particle_pair[1].radius)
         orientation = self.surface.shape.unit_z
-        return CylindricalShell(domain_id,
-                                Cylinder(position, radius, orientation, size))
+        return CylindricalShell(domain_id, Cylinder(position, radius, 
+                                                    orientation, half_length))
 
     def choose_pair_greens_function(self, r0, t):
         # Todo
@@ -475,7 +476,7 @@ class CylindricalSurfacePair(Pair):
 
     def get_shell_size(self):
         # Heads up.
-        return self.shell_list[0][1].shape.size
+        return self.shell_list[0][1].shape.half_length
 
     def __str__(self):
         return 'CylindricalSurface' + Pair.__str__(self)

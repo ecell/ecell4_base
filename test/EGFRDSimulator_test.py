@@ -229,9 +229,9 @@ class PlanarSurfaceTestCase(EGFRDSimulatorTestCaseBase):
         self.add_planar_surface()
 
         # All species on planar surface.
-        self.A["surface"] = "m1"
-        self.B["surface"] = "m1"
-        self.C["surface"] = "m1"
+        self.A["structure"] = "m1"
+        self.B["structure"] = "m1"
+        self.C["structure"] = "m1"
 
         self.add_species() 
         self.create_simulator() 
@@ -260,9 +260,9 @@ class CylindricalSurfaceTestCase(EGFRDSimulatorTestCaseBase):
         self.add_cylindrical_surface()
 
         # All species on cylindrical surface.
-        self.A["surface"] = "d"
-        self.B["surface"] = "d"
-        self.C["surface"] = "d"
+        self.A["structure"] = "d"
+        self.B["structure"] = "d"
+        self.C["structure"] = "d"
 
         self.add_species() 
         self.create_simulator() 

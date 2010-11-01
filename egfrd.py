@@ -1083,10 +1083,10 @@ class EGFRDSimulator(ParticleSimulatorBase):
                    single2.shell.shape.radius
 
             if type(single1.shell) is CylindricalShell:
-                assert container[single1.shell_id].shape.size == \
-                       single1.shell.shape.size
-                assert container[single2.shell_id].shape.size == \
-                       single2.shell.shape.size
+                assert container[single1.shell_id].shape.half_length == \
+                       single1.shell.shape.half_length
+                assert container[single2.shell_id].shape.half_length == \
+                       single2.shell.shape.half_length
 
         assert single1.shell.shape.radius == particle1[1].radius
         assert single2.shell.shape.radius == particle2[1].radius
@@ -1572,7 +1572,7 @@ rejected moves = %d
                                                      ignores=[obj.surface.id])
             if(type(obj) is CylindricalSurfaceSingle or
                type(obj) is CylindricalSurfacePair):
-                shell_size = shell.shape.size
+                shell_size = shell.shape.half_length
             else:
                 shell_size = shell.shape.radius
 
