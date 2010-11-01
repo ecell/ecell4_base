@@ -261,6 +261,15 @@ def place_particle(world, sid, pos):
     if world.check_overlap((pos, radius)):
         raise NoSpace, 'overlap check failed'
 
+    if __debug__:
+        species = world.get_species(sid)
+        structure = world.get_structure(species.structure_id)
+        name = world.model.get_species_type_by_id(sid)["name"]
+        if name[0] != '(':
+            name = '(' + name + ')'
+        log.info('\n\tplacing particle of type %s to %s at position %s' %
+                 (name, structure.id, pos))
+
     particle = world.new_particle(sid, pos)
     return particle
 
