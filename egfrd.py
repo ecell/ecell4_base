@@ -111,7 +111,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.shell_id_generator = ShellIDGenerator(0)
 
         self.MULTI_SHELL_FACTOR = 0.05
-        self.SINGLE_SHELL_FACTOR = 0.1
+        self.SINGLE_SHELL_FACTOR = 1.1
 
         self.is_dirty = True
         self.scheduler = EventScheduler()
@@ -725,7 +725,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         # (2) Clear volume.
 
         min_shell = single.pid_particle_pair[1].radius * \
-                    (1.0 + self.SINGLE_SHELL_FACTOR)
+                    self.SINGLE_SHELL_FACTOR
 
         intruders, closest, closest_distance = \
             self.get_intruders(singlepos, min_shell,
@@ -1147,8 +1147,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         shell_size1 = r0 * D1 / D12 + radius1
         shell_size2 = r0 * D2 / D12 + radius2
-        shell_size_margin1 = radius1 * 2 #* self.SINGLE_SHELL_FACTOR
-        shell_size_margin2 = radius2 * 2 #* self.SINGLE_SHELL_FACTOR
+        shell_size_margin1 = radius1 * 2
+        shell_size_margin2 = radius2 * 2
         shell_size_with_margin1 = shell_size1 + shell_size_margin1
         shell_size_with_margin2 = shell_size2 + shell_size_margin2
         if shell_size_with_margin1  >= shell_size_with_margin2:
@@ -1189,8 +1189,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
             if isinstance(b, Single):
                 bpos = b.shell.shape.position
                 d = self.world.distance(com, bpos) - \
-                    b.pid_particle_pair[1].radius * \
-                    (1.0 + self.SINGLE_SHELL_FACTOR)
+                    b.pid_particle_pair[1].radius * self.SINGLE_SHELL_FACTOR
                 if d < closest_shell_distance:
                     closest, closest_shell_distance = b, d
 
@@ -1228,8 +1227,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
                     com, closest.pid_particle_pair[1].position)
 
             closest_min_radius = closest.pid_particle_pair[1].radius
-            closest_min_shell = closest_min_radius * \
-                (self.SINGLE_SHELL_FACTOR + 1.0)
+            closest_min_shell = closest_min_radius * self.SINGLE_SHELL_FACTOR
 
             # options for shell size:
             # a. ideal shell size
@@ -1263,9 +1261,9 @@ class EGFRDSimulator(ParticleSimulatorBase):
         d2 = self.world.distance(com, pos2)
 
         if shell_size < max(d1 + single1.pid_particle_pair[1].radius *
-                           (1.0 + self.SINGLE_SHELL_FACTOR), \
-                               d2 + single2.pid_particle_pair[1].radius * \
-                               (1.0 + self.SINGLE_SHELL_FACTOR)) * 1.3:
+                            self.SINGLE_SHELL_FACTOR, \
+                            d2 + single2.pid_particle_pair[1].radius * \
+                            self.SINGLE_SHELL_FACTOR) * 1.3:
             if __debug__:
                 log.debug('%s not formed: singles are better' %
                           'Pair(%s, %s)' % (single1.pid_particle_pair[0], 
