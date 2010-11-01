@@ -900,10 +900,12 @@ public:
     EGFRDSimulator(boost::shared_ptr<world_type> world,
                    boost::shared_ptr<network_rules_type const> network_rules,
                    rng_type& rng, int dissociation_retry_moves = 1,
+                   double const& bd_dt_factor = traits_type::DEFAULT_DT_FACTOR,
                    length_type const& user_max_shell_size =
                     std::numeric_limits<length_type>::infinity())
         : base_type(world, network_rules, rng),
           num_retries_(dissociation_retry_moves),
+          bd_dt_factor_(bd_dt_factor),
           user_max_shell_size_(user_max_shell_size),
           ssmat_((*world).world_size(), (*world).matrix_size()),
           csmat_((*world).world_size(), (*world).matrix_size()),
@@ -1536,7 +1538,7 @@ protected:
     boost::shared_ptr<multi_type> create_multi()
     {
         domain_id_type did(didgen_());
-        multi_type* new_multi(new multi_type(did, *this, traits_type::DEFAULT_DT_FACTOR));
+        multi_type* new_multi(new multi_type(did, *this, bd_dt_factor_));
         boost::shared_ptr<domain_type> const retval(new_multi);
         domains_.insert(std::make_pair(did, retval));
         ++domain_count_per_type_[MULTI];
@@ -3714,6 +3716,7 @@ protected:
 
 protected:
     int const num_retries_;
+    double const bd_dt_factor_;
     length_type const user_max_shell_size_;
 
     domain_map domains_;
