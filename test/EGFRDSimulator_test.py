@@ -123,13 +123,16 @@ class EGFRDSimulatorTestCase(unittest.TestCase):
 
 
 class EGFRDSimulatorTestCaseBase(unittest.TestCase):
-    def setUpBase(self):
+    """Base class for TestCases below.
+
+    """
+    def create_model(self):
         self.L = 1e-6
 
         self.D = 1e-12
         self.radius = 5e-9
 
-        self.m = model.ParticleModel(1.)
+        self.m = model.ParticleModel(self.L)
 
         self.A = model.Species('A', self.D, self.radius)
         self.B = model.Species('B', self.D, self.radius)
@@ -140,18 +143,39 @@ class EGFRDSimulatorTestCaseBase(unittest.TestCase):
         self.kb_1 = 4000
         self.kb_2 = 4000
 
-    def setUpPost(self):
+    def add_planar_surface(self):
+        m1 = model.create_planar_surface('m1',
+                                         [0, 0, 0],
+                                         [1, 0, 0],
+                                         [0, 1, 0],
+                                         self.L,
+                                         self.L)
+
+        self.m.add_structure(m1)
+
+    def add_cylindrical_surface(self):
+        radius = self.radius
+        d = model.create_cylindrical_surface('d',
+                                             [0, 0, 0],
+                                             radius,
+                                             [0, 1, 0],
+                                             self.L)
+
+        self.m.add_structure(d)
+
+    def add_species(self):
+        self.m.add_species_type(self.A)
+        self.m.add_species_type(self.B)
+        self.m.add_species_type(self.C)
+
+    def create_simulator(self):
+        self.w = create_world(self.m)
+        self.s = EGFRDSimulator(self.w)
+
+    def add_reactions(self):
         A = self.A
         B = self.B
         C = self.C
-
-        self.m.add_species_type(A)
-        self.m.add_species_type(B)
-        self.m.add_species_type(C)
-
-        self.w = create_world(self.m)
-        self.nrw = _gfrd.NetworkRulesWrapper(self.m.network_rules)
-        self.s = EGFRDSimulator(self.w, myrandom.rng, self.nrw)
 
         r = model.create_unimolecular_reaction_rule(A, B, self.kf_1)
         self.m.network_rules.add_reaction_rule(r)
@@ -164,65 +188,71 @@ class EGFRDSimulatorTestCaseBase(unittest.TestCase):
         r = model.create_decay_reaction_rule(C, self.kb_1)
         self.m.network_rules.add_reaction_rule(r)
 
-        throw_in_particles(self.w, A, 2)
-        throw_in_particles(self.w, B, 2)
+    def add_particles(self):
+        throw_in_particles(self.w, self.A, 2)
+        throw_in_particles(self.w, self.B, 2)
 
     def tearDown(self):
         pass
 
 
-class EGFRDSimulatorCytosoleTestCase(EGFRDSimulatorTestCaseBase):
+class CytosoleTestCase(EGFRDSimulatorTestCaseBase):
+    """Events happening in the "world".
+
+    """
     def setUp(self):
-        self.setUpBase()
-        self.setUpPost() 
+        self.create_model()
+        self.add_species() 
+        self.create_simulator() 
+        self.add_reactions()
+        self.add_particles()
 
     def test_run(self):
         for i in range(10):
             self.s.step()
 
 
-class EGFRDSimulatorMembraneTestCase(EGFRDSimulatorTestCaseBase):
+class PlanarSurfaceTestCase(EGFRDSimulatorTestCaseBase):
+    """Events happening *on* a planar surface.
+
+    """
     def setUp(self):
-        self.setUpBase()
+        self.create_model()
+        self.add_planar_surface()
 
-        m1 = model.create_planar_surface('m1',
-                                         [0, 0, 0],
-                                         [1, 0, 0],
-                                         [0, 1, 0],
-                                         self.L,
-                                         self.L)
-
-        self.m.add_structure(m1)
-
+        # All species on planar surface.
         self.A["surface"] = "m1"
         self.B["surface"] = "m1"
         self.C["surface"] = "m1"
 
-        self.setUpPost()
+        self.add_species() 
+        self.create_simulator() 
+        self.add_reactions()
 
     def test_run(self):
+        self.add_particles()
+
         for i in range(10):
             self.s.step()
 
 
-class EGFRDSimulatorDnaTestCase(EGFRDSimulatorTestCaseBase):
+class CylindricalSurfaceTestCase(EGFRDSimulatorTestCaseBase):
+    """Events happening *on* a cylindrical surface.
+
+    """
     def setUp(self):
-        self.setUpBase()
+        self.create_model()
+        self.add_cylindrical_surface()
 
-        radius = self.radius
-        d = model.create_cylindrical_surface('d',
-                                             [0, 0, 0],
-                                             radius,
-                                             [0, 1, 0],
-                                             self.L)
-
-        self.m.add_structure(d)
-
+        # All species on cylindrical surface.
         self.A["surface"] = "d"
         self.B["surface"] = "d"
         self.C["surface"] = "d"
 
-        self.setUpPost()
+        self.add_species() 
+        self.create_simulator() 
+        self.add_reactions()
+        self.add_particles()
 
     def test_run(self):
         for i in range(10):
