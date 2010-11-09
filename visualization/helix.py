@@ -24,15 +24,15 @@ new_pts = vtk.vtkPoints()
 for i in range(0, num_pts):
    # Generate points for first helix.
    x = i*length/num_pts - length/2
-   y = scaleyz * math.sin(i*rounds*2*math.pi/num_pts)
-   z = scaleyz * math.cos(i*rounds*2*math.pi/num_pts)
+   y = scaleyz * math.sin(- i*rounds*2*math.pi/num_pts)
+   z = scaleyz * math.cos(- i*rounds*2*math.pi/num_pts)
    # Stupid Paraview wants a normal vector to the cylinder to orient
    # it. So x and y swapped.
    new_pts.InsertPoint(i, y, x, z)
  
    # Generate Points for second helix. Add a phase offset to y and z.
-   y = scaleyz * math.sin(i*rounds*2*math.pi/num_pts+phase_shift)
-   z = scaleyz * math.cos(i*rounds*2*math.pi/num_pts+phase_shift)
+   y = scaleyz * math.sin(- i*rounds*2*math.pi/num_pts+phase_shift)
+   z = scaleyz * math.cos(- i*rounds*2*math.pi/num_pts+phase_shift)
    # Offset helix 2 pts by 'num_pts' to keep separate from helix 1 Pts.
    # Stupid Paraview wants a normal vector to the cylinder to orient
    # it. So x and y swapped.
