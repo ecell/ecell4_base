@@ -147,6 +147,8 @@ class EGFRDSimulator(ParticleSimulatorBase):
         self.step_counter = 0
         self.single_steps = {EventType.SINGLE_ESCAPE:0,
                              EventType.SINGLE_REACTION:0}
+        self.interaction_steps = {EventType.IV_INTERACTION:0,
+                                  EventType.IV_ESCAPE:0}
         self.pair_steps = {EventType.SINGLE_REACTION:0,
                            EventType.IV_REACTION:0,
                            EventType.IV_ESCAPE:0,
@@ -701,12 +703,16 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
             return
 
-        # Propagate, if not reaction.
-        single.event_type = EventType.SINGLE_ESCAPE
+        if single.event_type == EventType.IV_EVENT:
+            # Draw actual pair event for iv at very last minute.
+            single.event_type = single.draw_iv_event_type()
+            self.interaction_steps[single.event_type] += 1
+        else:
+            self.single_steps[single.event_type] += 1
+
         if __debug__:
             log.info('%s' % single.event_type)
             log.info('single = %s' % single)
-        self.single_steps[single.event_type] += 1
 
         # Handle immobile case first.
         if single.getD() == 0:
@@ -1535,6 +1541,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 t = %g
 steps = %d 
 \tSingle:\t%d\t(escape: %d, reaction: %d)
+\tInteraction: %d\t(escape: %d, interaction: %d)
 \tPair:\t%d\t(escape r: %d, R: %d, reaction pair: %d, single: %d)
 \tMulti:\t%d\t(escape: %d, reaction pair: %d, single: %d)
 total reactions = %d
@@ -1544,6 +1551,9 @@ rejected moves = %d
                numpy.array(self.single_steps.values()).sum(),
                self.single_steps[EventType.SINGLE_ESCAPE],
                self.single_steps[EventType.SINGLE_REACTION],
+               numpy.array(self.interaction_steps.values()).sum(),
+               self.interaction_steps[EventType.IV_ESCAPE],
+               self.interaction_steps[EventType.IV_INTERACTION],
                numpy.array(self.pair_steps.values()).sum(),
                self.pair_steps[EventType.IV_ESCAPE],
                self.pair_steps[EventType.COM_ESCAPE],
