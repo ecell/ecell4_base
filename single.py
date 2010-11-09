@@ -310,6 +310,9 @@ class CylindricalSurfaceSingle(NonInteractionSingle):
                                                     orientation, half_length))
 
     def create_position_vector(self, z):
+        if utils.feq(z, self.get_mobility_radius()):
+            # Escape, can be either to the left or to the right.
+            z = myrandom.choice(-1, 1) * z 
         return z * self.shell_list[0][1].shape.unit_z
 
     def get_shell_size(self):
