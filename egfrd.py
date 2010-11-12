@@ -1567,9 +1567,13 @@ rejected moves = %d
         obj.check()
 
         for shell_id, shell in obj.shell_list:
+            if not isinstance(obj, Multi):
+                ignores = [obj.surface.id]
+            else:
+                ignores = []
             closest, distance = self.get_closest_obj(shell.shape.position,
                                                      ignore=[obj.domain_id],
-                                                     ignores=[obj.surface.id])
+                                                     ignores=ignores)
             if(type(obj) is CylindricalSurfaceSingle or
                type(obj) is CylindricalSurfacePair):
                 shell_size = shell.shape.half_length

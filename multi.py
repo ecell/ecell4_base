@@ -92,7 +92,7 @@ class Multi(object):
             nearest = result[1]
             distance = nearest[1]
             assert distance - shell.shape.radius < 0.0,\
-                'shells of %s are not contiguous.' % str(self.multiref())
+                'shells of %s are not contiguous.' % str(self)
 
         # all particles within the shell.
         for pid_particle_pair in self.particle_container:
