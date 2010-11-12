@@ -485,7 +485,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         if isinstance(obj, Single):
             # TODO. Compare with gfrd.
-            self.burst_single(obj)
+            obj = self.burst_single(obj)
             bursted = [obj, ]
         elif isinstance(obj, Pair):  # Pair
             single1, single2 = self.burst_pair(obj)
@@ -675,11 +675,14 @@ class EGFRDSimulator(ParticleSimulatorBase):
             # SINGLE_REACTION, and not a burst. No need to update, single is 
             # removed anyway.
             self.move_single_particle(single, newpos)
+            return single
         else:
             # Todo. if isinstance(single, InteractionSingle):
             single.initialize(self.t)
             self.move_single(single, newpos,
                              single.pid_particle_pair[1].radius)
+
+            return single
 
     def fire_single(self, single):
         assert abs(single.dt + single.last_time - self.t) <= 1e-18 * self.t
@@ -693,7 +696,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
             self.single_steps[single.event_type] += 1
 
 
-            self.propagate_single(single)
+            single = self.propagate_single(single)
 
             try:
                 self.remove_domain(single)
@@ -724,7 +727,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         
         if single.dt != 0.0:
             # Propagate this particle to the exit point on the shell.
-            self.propagate_single(single)
+            single = self.propagate_single(single)
 
         singlepos = single.shell.shape.position
 
@@ -1001,9 +1004,9 @@ class EGFRDSimulator(ParticleSimulatorBase):
         single.dt = self.t - single.last_time
         # Override event_type. Always call gf.drawR on BURST.
         single.event_type = EventType.BURST
-        self.propagate_single(single)
+        newsingle = self.propagate_single(single)
 
-        newpos = single.pid_particle_pair[1].position
+        newpos = newsingle.pid_particle_pair[1].position
         assert self.world.distance(newpos, oldpos) <= \
                old_shell_size - particle_radius
         # Displacement check is in NonInteractionSingle.draw_new_position.
@@ -1011,7 +1014,11 @@ class EGFRDSimulator(ParticleSimulatorBase):
         # Todo. if isinstance(single, InteractionSingle):
         self.update_single_event(self.t, single)
 
-        assert single.shell.shape.radius == particle_radius
+        assert newsingle.shell.shape.radius == particle_radius
+
+        # Returned single is different from original single in the case 
+        # of an InteractionSingle only.
+        return newsingle
 
     def burst_pair(self, pair):
         if __debug__:
