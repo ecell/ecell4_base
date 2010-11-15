@@ -297,37 +297,35 @@ class VTKLogger:
 
         if self.show_shells == True:
             number_of_shells = self.sim.scheduler.size
-        else:
-            number_of_shells = 0
 
-        if number_of_shells > 0:
-            top_event_id = self.sim.scheduler.top[0]
-        else:
-            top_event_id = None
+            if number_of_shells > 0:
+                top_event_id = self.sim.scheduler.top[0]
+            else:
+                top_event_id = None
 
-        for object in self.sim.domains.itervalues():
-            # Single and pairs.
-            color = object.multiplicity
+            for object in self.sim.domains.itervalues():
+                # Single and pairs.
+                color = object.multiplicity
 
-            # Highlight top_event for singles and pairs.
-            if top_event_id != None and object.event_id == top_event_id:
-                color = 0
+                # Highlight top_event for singles and pairs.
+                if top_event_id != None and object.event_id == top_event_id:
+                    color = 0
 
-            # Multi.
-            if isinstance(object, Multi):
-                color = 3
+                # Multi.
+                if isinstance(object, Multi):
+                    color = 3
 
-            try:
-                shell = object.shell_list[0][1]
-                # Only cylinders have half_length.
-                shell.shape.half_length
-                cylinders.append(shell)
-                cylinder_colors.append(color)
-            except:
-                # Spheres: single, pair or multi.
-                for _, shell in object.shell_list:
-                    spheres.append(shell)
-                    sphere_colors.append(color)
+                try:
+                    shell = object.shell_list[0][1]
+                    # Only cylinders have half_length.
+                    shell.shape.half_length
+                    cylinders.append(shell)
+                    cylinder_colors.append(color)
+                except:
+                    # Spheres: single, pair or multi.
+                    for _, shell in object.shell_list:
+                        spheres.append(shell)
+                        sphere_colors.append(color)
 
         return self.process_spheres(spheres, sphere_colors), \
                self.process_cylinders(cylinders, cylinder_colors)
