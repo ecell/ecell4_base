@@ -214,7 +214,8 @@ public:
     {
         NONE,
         ESCAPE,
-        REACTION
+        REACTION,
+        NUM_MULTI_EVENT_KINDS
     };
 
 private:

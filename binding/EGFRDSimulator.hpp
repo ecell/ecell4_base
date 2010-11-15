@@ -53,6 +53,29 @@ void register_egfrd_simulator_class(char const* name)
     using namespace boost::python;
     typedef Timpl impl_type;
     typedef std::pair<typename impl_type::shell_id_type, typename impl_type::shell_variant_type> get_shell_result_type;
+    enum_<typename impl_type::domain_kind>("DomainKind")
+        .value("NONE", impl_type::NONE)
+        .value("SPHERICAL_SINGLE", impl_type::SPHERICAL_SINGLE)
+        .value("CYLINDRICAL_SINGLE", impl_type::CYLINDRICAL_SINGLE)
+        .value("SPHERICAL_PAIR", impl_type::SPHERICAL_PAIR)
+        .value("CYLINDRICAL_PAIR", impl_type::CYLINDRICAL_PAIR)
+        .value("MULTI", impl_type::MULTI)
+        ;
+    enum_<typename impl_type::single_event_kind>("SingleEventKind")
+        .value("REACTION", impl_type::SINGLE_EVENT_REACTION)
+        .value("ESCAPE", impl_type::SINGLE_EVENT_ESCAPE)
+        ;
+    enum_<typename impl_type::pair_event_kind>("PairEventKind")
+        .value("SINGLE_REACTION_0", impl_type::PAIR_EVENT_SINGLE_REACTION_0)
+        .value("SINGLE_REACTION_1", impl_type::PAIR_EVENT_SINGLE_REACTION_1)
+        .value("COM_ESCAPE", impl_type::PAIR_EVENT_COM_ESCAPE)
+        .value("IV", impl_type::PAIR_EVENT_IV)
+        ;
+    enum_<typename impl_type::multi_type::event_kind>("MultiEventKind")
+        .value("NONE", impl_type::multi_type::NONE)
+        .value("ESCAPE", impl_type::multi_type::ESCAPE)
+        .value("REACTION", impl_type::multi_type::REACTION)
+        ;
     class_<impl_type, bases<typename impl_type::base_type>, boost::noncopyable>(
             name,
             init<boost::shared_ptr<typename impl_type::world_type>,
@@ -70,6 +93,9 @@ void register_egfrd_simulator_class(char const* name)
                  typename impl_type::length_type>())
         .def("get_shell", static_cast<get_shell_result_type(impl_type::*)(typename impl_type::shell_id_type const&)>(&impl_type::get_shell))
         .def("num_domains_per_type", &impl_type::num_domains_per_type)
+        .def("num_single_steps_per_type", &impl_type::num_single_steps_per_type)
+        .def("num_pair_steps_per_type", &impl_type::num_pair_steps_per_type)
+        .def("num_multi_steps_per_type", &impl_type::num_multi_steps_per_type)
         .def("__len__", &impl_type::num_domains)
         .def("__getitem__", &impl_type::get_domain)
         .def("__iter__", &impl_type::get_domains,

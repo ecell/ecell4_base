@@ -29,8 +29,6 @@ m.network_rules.add_reaction_rule(r1)
 m.network_rules.add_reaction_rule(r2)
 m.set_all_repulsive()
 
-import math
-math.sin(2)
 world = create_world(m, int((N * 6) ** (1. / 3.)))
 nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
 s = _gfrd._EGFRDSimulator(world, nrw, myrandom.rng)
@@ -55,13 +53,37 @@ def profrun():
     if l is not None:
         l.start(s)
     for _ in xrange(15000):
-        if _ > 1370:
-            import math
-            math.acosh(1)
         if interrupter is not None:
             interrupter.step()
         else:
             s.step()
+
+def print_report(s):
+    print 't = %g' % s.t
+    print 'steps = %d' % s.num_steps
+    print 'Single: %d (escape: %d, reaction: %d)' % (
+        s.num_single_steps_per_type(_gfrd.SingleEventKind.ESCAPE) + \
+        s.num_single_steps_per_type(_gfrd.SingleEventKind.REACTION),
+        s.num_single_steps_per_type(_gfrd.SingleEventKind.ESCAPE),
+        s.num_single_steps_per_type(_gfrd.SingleEventKind.REACTION),
+        )
+    print 'Pair: %d (single reaction: %d, CoM escape: %d, IV escape: %d)' % (
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.SINGLE_REACTION_0) + \
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.SINGLE_REACTION_1) + \
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.COM_ESCAPE) + \
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.IV),
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.SINGLE_REACTION_0) + \
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.SINGLE_REACTION_1),
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.COM_ESCAPE),
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.IV),
+        )
+    print 'Multi: %d (escape: %d, reaction: %d)' % (
+        s.num_multi_steps_per_type(_gfrd.MultiEventKind.NONE) + \
+        s.num_multi_steps_per_type(_gfrd.MultiEventKind.ESCAPE) + \
+        s.num_multi_steps_per_type(_gfrd.MultiEventKind.REACTION),
+        s.num_multi_steps_per_type(_gfrd.MultiEventKind.ESCAPE),
+        s.num_multi_steps_per_type(_gfrd.MultiEventKind.REACTION)
+        )
 
 PROFMODE = True
 
@@ -71,11 +93,11 @@ if PROFMODE:
     except:
         import profile
     profile.run('profrun()', 'fooprof')
-    s.print_report()
+    print_report(s)
 
     import pstats
     pstats.Stats('fooprof').sort_stats('time').print_stats(40)
 
 else:
     profrun()
-    s.print_report()
+    print_report(s)

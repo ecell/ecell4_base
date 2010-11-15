@@ -222,6 +222,22 @@ public:
         NUM_DOMAIN_KINDS
     };
 
+    enum single_event_kind
+    {
+        SINGLE_EVENT_REACTION,
+        SINGLE_EVENT_ESCAPE,
+        NUM_SINGLE_EVENT_KINDS
+    };
+
+    enum pair_event_kind
+    {
+        PAIR_EVENT_SINGLE_REACTION_0,
+        PAIR_EVENT_SINGLE_REACTION_1,
+        PAIR_EVENT_COM_ESCAPE,
+        PAIR_EVENT_IV,
+        NUM_PAIR_EVENT_KINDS
+    };
+
 protected:
     typedef boost::fusion::map<
         boost::fusion::pair<spherical_shell_type, 
@@ -275,20 +291,6 @@ protected:
     private:
         domain_type& domain_;
         event_kind_type kind_;
-    };
-
-    enum single_event_kind
-    {
-        SINGLE_EVENT_REACTION,
-        SINGLE_EVENT_ESCAPE
-    };
-
-    enum pair_event_kind
-    {
-        PAIR_EVENT_SINGLE_REACTION_0,
-        PAIR_EVENT_SINGLE_REACTION_1,
-        PAIR_EVENT_COM_ESCAPE,
-        PAIR_EVENT_IV
     };
 
     typedef domain_event<single_type, single_event_kind> single_event;
@@ -915,7 +917,13 @@ public:
                                      cylindrical_shell_matrix_type&>(csmat_)),
           single_shell_factor_(.1),
           multi_shell_factor_(.05),
-          rejected_moves_(0), zero_step_count_(0), dirty_(true) {}
+          rejected_moves_(0), zero_step_count_(0), dirty_(true)
+    {
+        std::fill(domain_count_per_type_.begin(), domain_count_per_type_.end(), 0);
+        std::fill(single_step_count_.begin(), single_step_count_.end(), 0);
+        std::fill(pair_step_count_.begin(), pair_step_count_.end(), 0);
+        std::fill(multi_step_count_.begin(), multi_step_count_.end(), 0);
+    }
 
     length_type const& user_max_shell_size() const
     {
@@ -989,9 +997,24 @@ public:
         return domains_.size();
     }
 
-    int num_domains_per_type(domain_kind type) const
+    int num_domains_per_type(domain_kind kind) const
     {
-        return domain_count_per_type_[type];
+        return domain_count_per_type_[kind];
+    }
+
+    int num_single_steps_per_type(single_event_kind kind) const
+    {
+        return single_step_count_[kind];
+    }
+
+    int num_pair_steps_per_type(pair_event_kind kind) const
+    {
+        return pair_step_count_[kind];
+    }
+
+    int num_multi_steps_per_type(typename multi_type::event_kind kind) const
+    {
+        return multi_step_count_[kind];
     }
 
     std::vector<domain_id_type>*
@@ -2879,6 +2902,7 @@ protected:
         ++single_step_count_[event.kind()];
         switch (event.kind())
         {
+        default: /* never get here */ BOOST_ASSERT(0); break;
         case SINGLE_EVENT_REACTION:
             LOG_DEBUG(("fire_single: single reaction (%s)", boost::lexical_cast<std::string>(domain).c_str()));
             propagate(domain, draw_new_position(domain, domain.dt()), false);
@@ -3000,6 +3024,7 @@ protected:
 
         switch (kind)
         {
+        default: /* never get here */ BOOST_ASSERT(0); break;
         case PAIR_EVENT_SINGLE_REACTION_0: 
         case PAIR_EVENT_SINGLE_REACTION_1:
             {
@@ -3123,6 +3148,7 @@ protected:
         multi_step_count_[domain.last_event()]++; 
         switch (domain.last_event())
         {
+        default: /* never get here */ BOOST_ASSERT(0); break;
         case multi_type::REACTION:
             if (base_type::rrec_)
                 (*base_type::rrec_)(domain.last_reaction());
@@ -3765,9 +3791,9 @@ protected:
     shell_id_generator shidgen_;
     domain_id_generator didgen_;
     event_scheduler_type scheduler_;
-    std::map<single_event_kind, int> single_step_count_;
-    std::map<pair_event_kind, int> pair_step_count_;
-    std::map<typename multi_type::event_kind, int> multi_step_count_;
+    boost::array<int, NUM_SINGLE_EVENT_KINDS> single_step_count_;
+    boost::array<int, NUM_PAIR_EVENT_KINDS> pair_step_count_;
+    boost::array<int, multi_type::NUM_MULTI_EVENT_KINDS> multi_step_count_;
     boost::array<int, NUM_DOMAIN_KINDS> domain_count_per_type_;
     length_type single_shell_factor_;
     length_type multi_shell_factor_;
