@@ -234,6 +234,11 @@ public:
         return *i;
     }
 
+    virtual bool has_particle(particle_id_type const& id) const
+    {
+        return pmat_.end() != pmat_.find(id);
+    }
+
     virtual transaction_type* create_transaction();
 
     virtual particle_id_pair_generator* get_particles() const

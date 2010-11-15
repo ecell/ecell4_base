@@ -55,6 +55,9 @@ def profrun():
     if l is not None:
         l.start(s)
     for _ in xrange(15000):
+        if _ > 1370:
+            import math
+            math.acosh(1)
         if interrupter is not None:
             interrupter.step()
         else:

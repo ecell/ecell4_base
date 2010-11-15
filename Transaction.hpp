@@ -124,6 +124,11 @@ public:
         return pc_.get_particle(id);
     }
 
+    virtual bool has_particle(particle_id_type const& id) const
+    {
+        return pc_.has_particle(id);
+    }
+
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
     {
         return pc_.check_overlap(s);

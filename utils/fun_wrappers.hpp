@@ -4,6 +4,8 @@
 #include <functional>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_reference.hpp>
+#include <boost/pointee.hpp>
+#include <boost/call_traits.hpp>
 #include "utils/fun_composition.hpp"
 
 template < typename T_ >
@@ -114,6 +116,19 @@ struct default_initializer
 
 private:
     Talloc_& alloc_;
+};
+
+template <typename T_>
+struct dereference: std::unary_function<T_, typename boost::pointee<T_>::type&>
+{
+    typedef typename boost::pointee<T_>::type& result_type;
+    typedef T_* argument_type;
+
+    result_type
+    operator()(typename boost::call_traits<T_>::param_type ptr) const
+    {
+        return *ptr;
+    }
 };
 
 #endif /* FUN_WRAPPERS_HPP */

@@ -1323,7 +1323,6 @@ protected:
         }
         catch (std::exception const&)
         {
-            dump_events();
             throw;
         }
     }
@@ -1343,7 +1342,6 @@ protected:
         }
         catch (std::exception const&)
         {
-            dump_events();
             throw;
         }
     }
@@ -1363,7 +1361,6 @@ protected:
         }
         catch (std::exception const&)
         {
-            dump_events();
             throw;
         }
     }
@@ -1814,7 +1811,15 @@ protected:
         // Todo. if isinstance(single, InteractionSingle):
         domain.dt() = 0.;
         domain.last_time() = base_type::t_;
-        update_event(domain, SINGLE_EVENT_ESCAPE);
+        try
+        {
+            update_event(domain, SINGLE_EVENT_ESCAPE);
+        }
+        catch (std::out_of_range const&)
+        {
+            // event may have been removed.
+            LOG_DEBUG(("event %s already removed; ignoring.", boost::lexical_cast<std::string>(domain.event().first).c_str()));
+        }
 
         BOOST_ASSERT(
             (*base_type::world_).distance(new_pos, old_pos)
@@ -2689,6 +2694,12 @@ protected:
                std::vector<boost::shared_ptr<domain_type> > const& neighbors,
                std::pair<domain_type&, length_type> closest)
     {
+        LOG_DEBUG(("form multi: neighbors=%s, closest=%s",
+                stringize_and_join(
+                    make_transform_iterator_range(neighbors,
+                        dereference<boost::shared_ptr<domain_type> >()),
+                    ", ").c_str(),
+                boost::lexical_cast<std::string>(closest.first).c_str()));
         length_type const min_shell_size(
                 domain.particle().second.radius() *
                     (1.0 + multi_shell_factor_));
@@ -2775,6 +2786,10 @@ protected:
             single_type* single(dynamic_cast<single_type*>(&domain));
             if (single)
             {
+                if (multi.has_particle(single->particle().first))
+                    return;
+                add_to_multi(multi, *single);
+
                 particle_shape_type const new_shell(
                     single->particle().second.position(),
                     single->particle().second.radius() *

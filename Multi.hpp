@@ -96,6 +96,11 @@ public:
         return *i;
     }
 
+    virtual bool has_particle(particle_id_type const& id) const
+    {
+        return particles_.end() != particles_.find(id);
+    }
+
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
     {
         return check_overlap(s, array_gen<particle_id_type>());
@@ -247,6 +252,11 @@ public:
     reaction_record_type const& last_reaction() const
     {
         return last_reaction_;
+    }
+
+    bool has_particle(particle_id_type const& pid) const
+    {
+        return pc_.has_particle(pid);
     }
 
     bool add_particle(particle_id_pair const& pp)

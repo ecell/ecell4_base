@@ -159,21 +159,6 @@ struct particle_id_pair_and_distance_list_converter
     }
 };
 
-template<typename Timpl>
-bool particle_container_has_particle(Timpl const& self,
-                                     typename Timpl::particle_id_type const& id)
-{
-    try
-    {
-        self.get_particle(id);
-        return true;
-    }
-    catch (not_found const&)
-    {
-    }
-    return false;
-}
-
 template<typename Tbase_>
 class ParticleContainerWrapper
     : public Tbase_, public boost::python::wrapper<Tbase_>
@@ -247,6 +232,11 @@ public:
     virtual particle_id_pair get_particle(particle_id_type const& id) const
     {
         return py_wrapper_type::get_override("get_particle")(id);
+    }
+
+    virtual bool has_particle(particle_id_type const& id) const
+    {
+        return py_wrapper_type::get_override("has_particle")(id);
     }
 
     virtual particle_id_pair_and_distance_list* check_overlap(particle_id_pair const& s) const
@@ -349,7 +339,7 @@ inline boost::python::objects::class_base register_particle_container_class(
         .def("apply_boundary", pure_virtual((typename impl_type::length_type(impl_type::*)(typename impl_type::length_type const&) const)&impl_type::apply_boundary))
         .def("cyclic_transpose", pure_virtual((typename impl_type::position_type(impl_type::*)(typename impl_type::position_type const&, typename impl_type::position_type const&) const)&impl_type::cyclic_transpose))
         .def("cyclic_transpose", pure_virtual((typename impl_type::length_type(impl_type::*)(typename impl_type::length_type const&, typename impl_type::length_type const&) const)&impl_type::cyclic_transpose))
-        .def("__contains__", &particle_container_has_particle<impl_type>)
+        .def("__contains__", pure_virtual(&impl_type::has_particle))
         .def("__iter__", pure_virtual(&impl_type::get_particles),
                 return_value_policy<return_by_value>())
         ;
