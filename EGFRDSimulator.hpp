@@ -900,7 +900,7 @@ public:
     EGFRDSimulator(boost::shared_ptr<world_type> world,
                    boost::shared_ptr<network_rules_type const> network_rules,
                    rng_type& rng, int dissociation_retry_moves = 1,
-                   double const& bd_dt_factor = traits_type::DEFAULT_DT_FACTOR,
+                   double const& bd_dt_factor = 1e-5, 
                    length_type const& user_max_shell_size =
                     std::numeric_limits<length_type>::infinity())
         : base_type(world, network_rules, rng),
@@ -1277,6 +1277,9 @@ protected:
 
     void add_event(single_type& domain, single_event_kind const& kind)
     {
+#ifdef DEBUG
+        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+#endif
         boost::shared_ptr<event_type> new_event(
             new single_event(base_type::t_ + domain.dt(), domain, kind));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
@@ -1285,6 +1288,9 @@ protected:
 
     void add_event(pair_type& domain, pair_event_kind const& kind)
     {
+#ifdef DEBUG
+        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+#endif
         boost::shared_ptr<event_type> new_event(
             new pair_event(base_type::t_ + domain.dt(), domain, kind));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
@@ -1293,6 +1299,9 @@ protected:
 
     void add_event(multi_type& domain)
     {
+#ifdef DEBUG
+        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+#endif
         boost::shared_ptr<event_type> new_event(
             new multi_event(base_type::t_ + domain.dt(), domain));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
@@ -1301,6 +1310,9 @@ protected:
 
     void update_event(single_type& domain, single_event_kind const& kind)
     {
+#ifdef DEBUG
+        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+#endif
         LOG_DEBUG(("update_event: #%d", domain.event().first));
         boost::shared_ptr<event_type> new_event(
             new single_event(base_type::t_ + domain.dt(), domain, kind));
@@ -1318,6 +1330,9 @@ protected:
 
     void update_event(pair_type& domain, pair_event_kind const& kind)
     {
+#ifdef DEBUG
+        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+#endif
         LOG_DEBUG(("update_event: #%d", domain.event().first));
         boost::shared_ptr<event_type> new_event(
             new pair_event(base_type::t_ + domain.dt(), domain, kind));
@@ -1335,6 +1350,9 @@ protected:
 
     void update_event(multi_type& domain)
     {
+#ifdef DEBUG
+        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+#endif
         LOG_DEBUG(("update_event: #%d", domain.event().first));
         boost::shared_ptr<event_type> new_event(
             new pair_event(base_type::t_ + domain.dt(), domain));
@@ -2172,7 +2190,7 @@ protected:
         add_event(domain, event_kind);
     }
 
-    void determine_next_event(single_type& domain) const
+    void determine_next_event(single_type& domain)
     {
         {
             spherical_single_type* _domain(
@@ -2298,7 +2316,7 @@ protected:
             new_shell_size = (*base_type::world_).cell_size() / 2 /
                     traits_type::SAFETY;
         }
-        LOG_DEBUG(("restore shell: %s (shell_size=%g, dt=%g) closest=%s (distance=%g)",
+        LOG_DEBUG(("restore domain: %s (shell_size=%g, dt=%g) closest=%s (distance=%g)",
             boost::lexical_cast<std::string>(domain).c_str(),
             new_shell_size,
             domain.dt(),
@@ -2314,7 +2332,6 @@ protected:
         domain.size() = new_shell_size;
         update_shell_matrix(domain);
         BOOST_ASSERT(domain.size() == new_shell_size);
-        determine_next_event(domain);
     }
 
     void restore_domain(single_type& domain,
@@ -2908,6 +2925,7 @@ protected:
                 } else {
                     restore_domain(domain, closest);
                 }
+                determine_next_event(domain);
                 LOG_DEBUG(("%s (dt=%g)",
                     boost::lexical_cast<std::string>(domain).c_str(),
                     domain.dt()));
@@ -3337,7 +3355,10 @@ protected:
                        scheduler_.events())
         {
             domain_type const& domain(dynamic_cast<domain_event_base&>(*value.second).domain());
-            scheduled_domains.insert(domain.id());
+            if (!scheduled_domains.insert(domain.id()).second)
+            {
+                log_.debug("domain id %s is doubly scheduled!", boost::lexical_cast<std::string>(domain.id()).c_str());
+            }
             typename domain_type::size_type const num_shells(domain.num_shells());
 
             shells_correspond_to_domains += num_shells;
@@ -3347,21 +3368,23 @@ protected:
                     ::size(shell_ids)) == num_shells);
         }
 
-        std::vector<domain_id_type> diff;
-        ::difference(make_select_first_range(did_map), scheduled_domains,
-                std::back_inserter(diff));
-
-        if (diff.size() != 0)
         {
-            log_.debug("domains not scheduled: %s",
-                stringize_and_join(diff, ", ").c_str());
-            BOOST_FOREACH (domain_id_type const& domain_id, diff)
+            std::vector<domain_id_type> diff;
+            ::difference(make_select_first_range(did_map), scheduled_domains,
+                    std::back_inserter(diff));
+
+            if (diff.size() != 0)
             {
-                log_.debug("  shells that belong to unscheduled domain %s: %s",
-                    boost::lexical_cast<std::string>(domain_id).c_str(),
-                    stringize_and_join(did_map[domain_id], ", ").c_str());
+                log_.debug("domains not scheduled: %s",
+                    stringize_and_join(diff, ", ").c_str());
+                BOOST_FOREACH (domain_id_type const& domain_id, diff)
+                {
+                    log_.debug("  shells that belong to unscheduled domain %s: %s",
+                        boost::lexical_cast<std::string>(domain_id).c_str(),
+                        stringize_and_join(did_map[domain_id], ", ").c_str());
+                }
+                BOOST_ASSERT(false);
             }
-            BOOST_ASSERT(false);
         }
 
         std::set<shell_id_type> all_shell_ids;
@@ -3371,6 +3394,7 @@ protected:
         if (shells_correspond_to_domains != static_cast<std::size_t>(::size(all_shell_ids)))
         {
             log_.debug("shells_correspond_to_domains=%zu, shell_population=%zu", shells_correspond_to_domains, static_cast<std::size_t>(::size(all_shell_ids)));
+            dump_events();
             BOOST_ASSERT(false);
         }
     }
