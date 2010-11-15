@@ -2608,7 +2608,7 @@ protected:
                     boost::lexical_cast<std::string>(domain).c_str(),
                     boost::lexical_cast<std::string>(possible_partner).c_str(),
                     closest_domain ? ": squeezed by ": "",
-                    closest_domain ? boost::lexical_cast<std::string>(closest_domain).c_str(): ""));
+                    closest_domain ? boost::lexical_cast<std::string>(*closest_domain).c_str(): ""));
                 return boost::optional<pair_type&>();
             }
         }
