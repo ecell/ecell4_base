@@ -420,7 +420,7 @@ struct chained_generator<Tgen1_, Tgen2_, true>
 
     virtual bool valid() const
     {
-        return ::valid(gen1_) && ::valid(gen2_);
+        return ::valid(gen1_) || ::valid(gen2_);
     }
 
     virtual result_type operator()()
@@ -434,6 +434,12 @@ private:
     Tgen1_& gen1_;
     Tgen2_& gen2_;
 };
+
+template<typename Tgen1, typename Tgen2>
+bool valid(chained_generator<Tgen1, Tgen2, true> const& gen)
+{
+    return gen.valid();
+}
 
 template<typename Tgen_, typename Tpointer_ = Tgen_*>
 class generator_iterator:
