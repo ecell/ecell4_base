@@ -359,10 +359,11 @@ public:
         boost::scoped_ptr<particle_id_pair_generator>
             added_particles(tx->get_added_particles()),
             modified_particles(tx->get_modified_particles());
+        LOG_DEBUG(("added_particles=%zu, modified_particles=%zu",
+            ::count(*added_particles), ::count(*modified_particles)));
         chained_generator<particle_id_pair_generator,
                           particle_id_pair_generator>
             gen(*added_particles, *modified_particles);
-
         while (::valid(gen))
         {
             particle_id_pair pp(gen());

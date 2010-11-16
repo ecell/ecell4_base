@@ -1863,8 +1863,6 @@ protected:
 
     void burst(multi_type& domain, boost::optional<std::vector<boost::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<boost::shared_ptr<domain_type> >&>())
     {
-        remove_domain(domain);
-
         BOOST_FOREACH(particle_id_pair p, domain.get_particles_range())
         {
             boost::shared_ptr<single_type> s(create_single(p));
@@ -1874,6 +1872,7 @@ protected:
                 result.get().push_back(boost::dynamic_pointer_cast<domain_type>(s));
             }
         }
+        remove_domain(domain);
     }
 
     void burst(single_type& domain)
@@ -2645,7 +2644,6 @@ protected:
                 new_shell_size = closest_shell_distance;
             }
             new_shell_size /= traits_type::SAFETY;
-            BOOST_ASSERT(new_shell_size < closest_shell_distance);
 
             if (new_shell_size <= min_shell_size_with_margin)
             {
@@ -2717,7 +2715,7 @@ protected:
                std::vector<boost::shared_ptr<domain_type> > const& neighbors,
                std::pair<domain_type&, length_type> closest)
     {
-        LOG_DEBUG(("form multi: neighbors=%s, closest=%s",
+        LOG_DEBUG(("form multi: neighbors=[%s], closest=%s",
                 stringize_and_join(
                     make_transform_iterator_range(neighbors,
                         dereference<boost::shared_ptr<domain_type> >()),
@@ -2740,17 +2738,19 @@ protected:
         if (!retval)
         {
             retval = create_multi().get();
+            add_event(*retval);
             LOG_DEBUG(("form multi: created a new multi %s",
                     boost::lexical_cast<std::string>(*retval).c_str()));
         }
 
+        position_type const single_pos(domain.position());
         add_to_multi(*retval, domain);
 
         BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, neighbors)
         {
-            length_type const dist(distance(*neighbor, domain.position()));
+            length_type const dist(distance(*neighbor, single_pos));
             if (dist < min_shell_size)
-                add_to_multi_recursive(*retval, domain); 
+                add_to_multi_recursive(*retval, *neighbor); 
         }
 
         return *retval;
@@ -2819,6 +2819,9 @@ protected:
 
     void add_to_multi_recursive(multi_type& multi, domain_type& domain)
     {
+        LOG_DEBUG(("add_to_multi_recursive: multi=%s, domain=%s",
+                boost::lexical_cast<std::string>(multi).c_str(),
+                boost::lexical_cast<std::string>(domain).c_str()));
         {
             single_type* single(dynamic_cast<single_type*>(&domain));
             if (single)
@@ -3166,7 +3169,7 @@ protected:
     {
         multi_type& domain(event.domain());
         domain.step();
-        LOG_DEBUG(("fire_multi: %s", domain.last_event()));
+        LOG_DEBUG(("fire_multi: last_event=%s", boost::lexical_cast<std::string>(domain.last_event()).c_str()));
         multi_step_count_[domain.last_event()]++; 
         switch (domain.last_event())
         {
