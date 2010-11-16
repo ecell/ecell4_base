@@ -74,9 +74,8 @@ public:
 
     virtual bool update_particle(particle_id_pair const& pi_pair)
     {
-        bool const retval(world_.update_particle(pi_pair));
-        particles_[pi_pair.first] = pi_pair.second;
-        return retval;
+        world_.update_particle(pi_pair);
+        return particles_.insert(pi_pair).second;
     }
 
     virtual bool remove_particle(particle_id_type const& id)
@@ -239,6 +238,19 @@ public:
     virtual char const* type_name() const
     {
         return "Multi";
+    }
+
+    virtual std::string as_string() const
+    {
+        return (boost::format(
+            "%s(id=%s, event=%s, last_time=%g, dt=%g, particles=[%s])") %
+            type_name() %
+            boost::lexical_cast<std::string>(base_type::id_).c_str() %
+            boost::lexical_cast<std::string>(base_type::event_.first).c_str() %
+            base_type::last_time_ % base_type::dt_ %
+            stringize_and_join(
+                make_select_first_range(pc_.get_particles_range()),
+                ", ")).str();
     }
 
     Multi(identifier_type const& id, simulator_type& main, Real dt_factor)

@@ -2733,11 +2733,15 @@ protected:
             return boost::optional<multi_type&>();
         }
 
+        // If there's a multi neighbor, merge others into it.
+        // Otherwise, create a new multi and let it hold them all.
         multi_type* retval(0);
         retval = dynamic_cast<multi_type*>(&closest.first);
         if (!retval)
         {
             retval = create_multi().get();
+            LOG_DEBUG(("form multi: created a new multi %s",
+                    boost::lexical_cast<std::string>(*retval).c_str()));
         }
 
         add_to_multi(*retval, domain);
@@ -2759,7 +2763,12 @@ protected:
                 boost::lexical_cast<std::string>(multi).c_str()));
 
         if (!multi.add_particle(single.particle()))
+        {
+            LOG_DEBUG(("particle %s is already added to %s",
+                boost::lexical_cast<std::string>(single.particle().first).c_str(),
+                boost::lexical_cast<std::string>(multi).c_str()));
             return false;
+        }
 
         spherical_shell_id_pair sid_shell_pair(
             new_shell(
@@ -2770,16 +2779,21 @@ protected:
                         (1. + multi_shell_factor_))));
         multi.add_shell(sid_shell_pair);
         remove_domain(single);
-
         return true;
     }
 
     void add_to_multi(multi_type& multi, multi_type& other_multi)
     {
+        if (multi.id() == other_multi.id())
+        {
+            LOG_DEBUG(("add to multi: given two multis are the same; do nothing"));
+            return;
+        }
+
         LOG_DEBUG(("add to multi: %s => %s",
                 boost::lexical_cast<std::string>(other_multi).c_str(),
                 boost::lexical_cast<std::string>(multi).c_str()));
-        
+
         // merge other_multi into multi. other_multi will be removed.
         spherical_shell_matrix_type& mat(
             boost::fusion::at_key<spherical_shell_type>(smatm_));
@@ -2809,20 +2823,28 @@ protected:
             single_type* single(dynamic_cast<single_type*>(&domain));
             if (single)
             {
-                if (multi.has_particle(single->particle().first))
-                    return;
-                add_to_multi(multi, *single);
-
                 particle_shape_type const new_shell(
                     single->particle().second.position(),
                     single->particle().second.radius() *
                         (1.0 + multi_shell_factor_));
+
+                if (!add_to_multi(multi, *single))
+                {
+                    return;
+                }
 
                 boost::scoped_ptr<std::vector<domain_id_type> > neighbors(
                     get_neighbor_domains(new_shell, single->id()));
 
                 std::vector<boost::shared_ptr<domain_type> > bursted;
                 burst_non_multis(*neighbors, bursted);
+
+                LOG_DEBUG(("add_to_multi_recursive: bursted=[%s]",
+                        stringize_and_join(
+                            make_transform_iterator_range(
+                                bursted,
+                                dereference<boost::shared_ptr<domain_type> >()),
+                            ", ").c_str()));
 
                 BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, bursted)
                 {
@@ -3333,6 +3355,7 @@ protected:
     {
         switch (kind)
         {
+        default: /* never get here */ BOOST_ASSERT(0); break;
         case SINGLE_EVENT_ESCAPE:
             return "escape";
 
@@ -3345,6 +3368,7 @@ protected:
     {
         switch (kind)
         {
+        default: /* never get here */ BOOST_ASSERT(0); break;
         case PAIR_EVENT_SINGLE_REACTION_0:
             return "reaction(0)";
 
