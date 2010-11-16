@@ -10,6 +10,10 @@ class NullLogger: public Logger
 public:
     virtual ~NullLogger();
 
+    virtual void level(enum level);
+
+    virtual enum level level() const;
+
     virtual void logv(enum level lv, char const* format, va_list ap);
 
     virtual void flush();
@@ -27,6 +31,8 @@ class NullLoggerFactory: public LoggerFactory
 {
 public:
     virtual ~NullLoggerFactory();
+
+    virtual void level(enum Logger::level level);
 
     virtual Logger* operator()(char const* logger_name) const;
 

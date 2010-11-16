@@ -48,6 +48,18 @@ struct LoggerProxy: public Logger
 {
     virtual ~LoggerProxy() {}
 
+    virtual void level(enum level level)
+    {
+        fetch_logger();
+        logger_->level(level);
+    }
+
+    virtual enum level level() const
+    {
+        const_cast<LoggerProxy*>(this)->fetch_logger();
+        return logger_->level();
+    }
+
     virtual void logv(enum level lv, char const* format, va_list ap)
     {
         fetch_logger();
@@ -79,6 +91,12 @@ private:
 struct DeferredLoggerFactory: public LoggerFactory
 {
     virtual ~DeferredLoggerFactory() {}
+
+    virtual void level(enum Logger::level lv)
+    {
+        const_cast<DeferredLoggerFactory*>(this)->fetch_factory();
+        factory_->level(lv);
+    }
 
     virtual Logger* operator()(char const* name) const
     {
@@ -144,8 +162,17 @@ public:
     }
 
     boost::shared_ptr<LoggerFactory>
+    get_default_logger_factory() const
+    {
+        return default_factory_;
+    }
+
+    boost::shared_ptr<LoggerFactory>
     get_logger_factory(char const* logger_name) const
     {
+        if (!logger_name)
+            return default_factory_;
+
         BOOST_FOREACH (entry_type const& i, factories_)
         {
             if (boost::regex_match(logger_name,

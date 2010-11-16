@@ -9,6 +9,16 @@
 
 ConsoleLogger::~ConsoleLogger() {}
 
+void ConsoleLogger::level(enum ConsoleLogger::level level)
+{
+    level_ = level;
+}
+
+enum ConsoleLogger::level ConsoleLogger::level() const
+{
+    return level_;
+}
+
 void ConsoleLogger::logv(enum level lv, char const* format, va_list ap)
 {
     using namespace boost::posix_time;
@@ -21,6 +31,9 @@ void ConsoleLogger::flush()
 {
     std::fflush(stderr);
 }
+
+ConsoleLogger::ConsoleLogger(char const* name)
+    : name_(name), level_(L_DEBUG) {}
 
 char const* ConsoleLogger::stringize_error_level(enum level lv)
 {
@@ -37,12 +50,23 @@ char const* ConsoleLogger::stringize_error_level(enum level lv)
 
 ConsoleLoggerFactory::~ConsoleLoggerFactory() {}
 
+void ConsoleLoggerFactory::level(enum Logger::level level)
+{
+    level_ = level;
+}
+
 Logger* ConsoleLoggerFactory::operator()(char const* logger_name) const
 {
-    return new ConsoleLogger(logger_name);
+    Logger* const retval(new ConsoleLogger(logger_name));
+    retval->level(level_);
+    return retval;
 }
 
 char const* ConsoleLoggerFactory::get_name() const
 {
     return "ConsoleLogger";
+}
+
+ConsoleLoggerFactory::ConsoleLoggerFactory(): level_(Logger::L_DEBUG)
+{
 }

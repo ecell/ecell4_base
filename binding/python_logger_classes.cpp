@@ -13,6 +13,7 @@ void register_python_logger_classes()
     register_logger_factory_class("LoggerFactory");
     register_null_logger_factory_class("NullLoggerFactory");
     register_python_logger_factory_class("PythonLoggerFactory");
+    register_logger_level_enum("LogLevel");
 }
 
 } // namespace binding

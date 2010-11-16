@@ -68,6 +68,10 @@ public:
         va_end(ap);
     }
 
+    virtual void level(enum level) = 0;
+
+    virtual enum level level() const = 0;
+
     virtual void logv(enum level lv, char const* format, va_list ap) = 0;
 
     virtual void flush() = 0;
@@ -79,6 +83,8 @@ class LoggerFactory
 {
 public:
     virtual ~LoggerFactory();
+
+    virtual void level(enum Logger::level level) = 0;
 
     virtual Logger* operator()(char const* logger_name) const = 0;
 
@@ -93,9 +99,11 @@ public:
 };
 
 #ifdef DEBUG
-#   define LOG_DEBUG(args) log_.debug args
+#   define LOG_DEBUG(args) if (log_.level() == Logger::L_DEBUG) log_.debug args
 #else
 #   define LOG_DEBUG(args)
 #endif 
+
+#define LOG_INFO(args) if (enum Logger::level const level = log_.level()) if (level <= Logger::L_INFO) log_.info args
 
 #endif /* LOGGER_HPP */

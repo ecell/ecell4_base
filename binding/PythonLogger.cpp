@@ -39,6 +39,16 @@ class PythonLogger: public Logger
 public:
     virtual ~PythonLogger() {}
 
+    virtual void level(enum level level)
+    {
+        logger_.attr("setLevel")(loglevel_map[level]);
+    }
+
+    virtual enum level level() const
+    {
+        return Logger::L_DEBUG;
+    }
+
     virtual void logv(enum level lv, char const* format, va_list ap)
     {
         char buf[2048];
@@ -62,9 +72,17 @@ class PythonLoggerFactory: public LoggerFactory
 public:
     virtual ~PythonLoggerFactory();
 
+    virtual void level(enum Logger::level);
+
     virtual Logger* operator()(char const* name) const;
 
     virtual char const* get_name() const;
+
+    PythonLoggerFactory();
+
+private:
+    enum Logger::level level_;
+    boost::python::object getLogger;
 };
 
 // XXX: logging.Handler is a old-style class... *sigh*
@@ -219,8 +237,16 @@ public:
             PyErr_SetString(PyExc_ValueError, "invalid loglevel");
             return NULL;
         }
-        self->level_ = level;
+        self->impl_.level(level);
         return boost::python::incref(Py_None);
+    }
+
+    static PyObject* getLevel(PyObject* _self)
+    {
+        CppLoggerHandler* const self(get_self(_self));
+        if (!self)
+            return NULL;
+        return boost::python::incref(loglevel_map[self->impl_.level()].ptr());
     }
 
     static PyObject* emit(PyObject* _self, PyObject* _record)
@@ -266,7 +292,7 @@ public:
         return boost::python::incref(Py_None);
     }
 
-    CppLoggerHandler(Logger& impl): impl_(impl), level_(Logger::L_INFO) {}
+    CppLoggerHandler(Logger& impl): impl_(impl) {}
 
 protected:
     static enum Logger::level get_level(PyObject* _level)
@@ -291,7 +317,6 @@ protected:
     static boost::python::handle<> __class__;
     static PyMethodDef __methods__[];
     Logger& impl_;
-    enum Logger::level level_;
 };
 
 boost::python::handle<> CppLoggerHandler::__class__;
@@ -302,6 +327,7 @@ PyMethodDef CppLoggerHandler::__methods__[] = {
     { "acquire", (PyCFunction)CppLoggerHandler::acquire, METH_NOARGS, "" },
     { "release", (PyCFunction)CppLoggerHandler::release, METH_NOARGS, "" },
     { "setLevel", (PyCFunction)CppLoggerHandler::setLevel, METH_O, "" },
+    { "getLevel", (PyCFunction)CppLoggerHandler::getLevel, METH_NOARGS, "" },
     { "emit", (PyCFunction)CppLoggerHandler::emit, METH_O, "" },
     { "flush", (PyCFunction)CppLoggerHandler::flush, METH_NOARGS, "" },
     { "close", (PyCFunction)CppLoggerHandler::close, METH_NOARGS, "" },
@@ -312,16 +338,33 @@ PythonLoggerFactory::~PythonLoggerFactory()
 {
 }
 
+void PythonLoggerFactory::level(enum Logger::level level)
+{
+    level_ = level;
+}
+
 Logger* PythonLoggerFactory::operator()(char const* name) const
 {
     using namespace boost::python;
-    object getLogger(getattr(logging_module, "getLogger"));
-    return new PythonLogger(getLogger(name));
+    object logger(getLogger(name));
+    logger.attr("setLevel")(loglevel_map[level_]);
+    return new PythonLogger(logger);
 }
 
 char const* PythonLoggerFactory::get_name() const
 {
     return "PythonLogger";
+}
+
+PythonLoggerFactory::PythonLoggerFactory()
+    : level_(Logger::L_DEBUG), getLogger(getattr(logging_module, "getLogger"))
+{
+}
+
+static PyObject* dummy_getter(PyObject*)
+{
+    PyErr_SetString(PyExc_AttributeError, "try to read a write-only property");
+    return NULL;
 }
 
 boost::python::objects::class_base
@@ -331,9 +374,26 @@ register_logger_factory_class(char const* name)
     typedef LoggerFactory impl_type;
 
     return class_<impl_type, boost::shared_ptr<impl_type>, boost::noncopyable>(name, no_init)
+        .add_property("level", &dummy_getter, &impl_type::level)
         .add_property("name", &impl_type::get_name)
         .def("register_logger_factory", &impl_type::register_logger_factory)
         .staticmethod("register_logger_factory")
+        .def("get_logger_factory", &impl_type::get_logger_factory)
+        .staticmethod("get_logger_factory")
+        ;
+}
+
+boost::python::objects::enum_base
+register_logger_level_enum(char const* name)
+{
+    using namespace boost::python;
+    return enum_<enum   Logger::level>(name)
+        .value("OFF",     Logger::L_OFF)
+        .value("DEBUG",   Logger::L_DEBUG)
+        .value("INFO",    Logger::L_INFO)
+        .value("WARNING", Logger::L_WARNING)
+        .value("ERROR",   Logger::L_ERROR)
+        .value("FATAL",   Logger::L_FATAL)
         ;
 }
 

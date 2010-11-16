@@ -18,6 +18,8 @@ L = 5e-6
 #_gfrd.PythonLoggerFactory.register_logger_factory(
 #    ".*", _gfrd.PythonLoggerFactory())
 
+_gfrd.LoggerFactory.get_logger_factory(None).level = _gfrd.LogLevel.WARNING
+
 m = model.ParticleModel(L)
 S = model.Species('S', 1.5e-12, 5e-9)
 P = model.Species('P', 1e-12, 7e-9)

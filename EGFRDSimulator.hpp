@@ -1059,7 +1059,7 @@ public:
 
     virtual bool step(time_type const& upto)
     {
-        log_.info("stop at %g", upto);
+        LOG_INFO(("stop at %g", upto));
 
         if (upto >= base_type::t_)
         {
@@ -1997,7 +1997,7 @@ protected:
 
                 if ((*base_type::world_).check_overlap(::shape(reactant.second), reactant.first))
                 {
-                    log_.info("no space for product particle.");
+                    LOG_INFO(("no space for product particle."));
                     throw no_space();
                 }
 
@@ -2075,7 +2075,7 @@ protected:
                 }
                 if (i < 0)
                 {
-                    log_.info("no space for product particles.");
+                    LOG_INFO(("no space for product particles."));
                     throw no_space();
                 }
 
@@ -2700,10 +2700,10 @@ protected:
         BOOST_ASSERT(new_shell_size >= min_shell_size_with_margin);
         BOOST_ASSERT(new_shell_size <= max_shell_size);
 
-        log_.info("new_pair=%s, closest_shell_distance=%g, closest=%s",
+        LOG_INFO(("new_pair=%s, closest_shell_distance=%g, closest=%s",
                   boost::lexical_cast<std::string>(*new_pair).c_str(),
                   closest_shell_distance,
-                  closest_domain ? boost::lexical_cast<std::string>(closest_domain).c_str(): "(none)");
+                  closest_domain ? boost::lexical_cast<std::string>(closest_domain).c_str(): "(none)"));
 
         check_domain(*new_pair);
 
@@ -3229,10 +3229,10 @@ protected:
         event_id_pair_type ev(scheduler_.pop());
         base_type::t_ = ev.second->time();
 
-        log_.info("%d: t=%g dt=%g domain=%s rejectedmoves=%d",
+        LOG_INFO(("%d: t=%g dt=%g domain=%s rejectedmoves=%d",
                   base_type::num_steps_, base_type::t_, base_type::dt_,
                   boost::lexical_cast<std::string>(dynamic_cast<domain_event_base const*>(ev.second.get())->domain()).c_str(),
-                  rejected_moves_);
+                  rejected_moves_));
 
         fire_event(*ev.second);
 
@@ -3321,10 +3321,10 @@ protected:
 
     void dump_events() const
     {
-        log_.info("QUEUED EVENTS:");
+        LOG_INFO(("QUEUED EVENTS:"));
         BOOST_FOREACH (event_id_pair_type const& ev, scheduler_.events())
         {
-            log_.info("  #%d: %s", ev.first, stringize_event(*ev.second).c_str());
+            LOG_INFO(("  #%d: %s", ev.first, stringize_event(*ev.second).c_str()));
         }
     }
 
