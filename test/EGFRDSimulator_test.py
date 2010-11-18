@@ -77,9 +77,19 @@ class EGFRDSimulatorTestCase(unittest.TestCase):
         # dummy
         place_particle(self.s.world, self.S, [2e-7,0.0,0.0])
 
+        r = model.create_unimolecular_reaction_rule(self.S, self.A, 1e10)
+        self.m.network_rules.add_reaction_rule(r)
+
         t = self.s.t
         for i in range(5):
             self.s.step()
+            
+            # Check if species ids are consistent after unimolecular 
+            # multi reaction.
+            for species in self.s.world.species:
+                for pid in self.s.world.get_particle_ids(species.id):
+                    particle = self.s.world.get_particle(pid)[1]
+                    self.failIf(particle.sid != species.id)
         self.failIf(t == self.s.t)
 
     def test_four_particles_close(self):
