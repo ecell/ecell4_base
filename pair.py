@@ -271,14 +271,14 @@ class Pair(object):
 
     def __str__(self):
         sid = self.single1.pid_particle_pair[1].sid
+        sid2 = self.single2.pid_particle_pair[1].sid
         name = self.world.model.get_species_type_by_id(sid)["name"]
-        if name[0] != '(':
-            name = '(' + name + ')'
-        return 'Pair[%s: %s, %s, %s]' % (
+        name2 = self.world.model.get_species_type_by_id(sid2)["name"]
+        return 'Pair[%s: %s, %s, (%s, %s)]' % (
             self.domain_id,
             self.single1.pid_particle_pair[0],
             self.single2.pid_particle_pair[0],
-            name)
+            name, name2)
 
 class SphericalPair(Pair):
     """2 Particles inside a (spherical) shell not on any surface.
