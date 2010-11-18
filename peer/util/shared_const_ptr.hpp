@@ -45,6 +45,16 @@ struct shared_const_ptr_from_python
     }
 };
 
+template<typename T_>
+struct shared_const_ptr_to_python
+{
+    static PyObject* convert(boost::shared_ptr<T_ const> const& value)
+    {
+        return boost::python::incref(boost::python::object(boost::const_pointer_cast<T_, T_ const>(value)).ptr());
+    }
+};
+
+
 } // namespace detail
 
 template<typename T>
@@ -52,6 +62,13 @@ void register_shared_const_ptr_from_python()
 {
     peer::util::to_native_converter<boost::shared_ptr<T const>,
         detail::shared_const_ptr_from_python<T> >();
+}
+
+template<typename T>
+void register_shared_const_ptr_to_python()
+{
+    boost::python::to_python_converter<boost::shared_ptr<T const>,
+        detail::shared_const_ptr_to_python<T> >();
 }
 
 } }

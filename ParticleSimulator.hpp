@@ -109,7 +109,7 @@ public:
                       boost::shared_ptr<network_rules_type const> network_rules,
                       rng_type& rng)
         : world_(world), network_rules_(network_rules), rrec_(), rng_(rng),
-          t_(0.), dt_(0.), num_steps_(0) {}
+          t_(0.), dt_(0.), num_steps_(0), paranoiac_(false) {}
 
     boost::shared_ptr<world_type> const& world() const
     {
@@ -146,6 +146,16 @@ public:
         return dt_;
     }
 
+    bool const& paranoiac() const
+    {
+        return paranoiac_;
+    }
+
+    bool& paranoiac()
+    {
+        return paranoiac_;
+    }
+
     int num_steps() const
     {
         return num_steps_;
@@ -153,7 +163,7 @@ public:
 
     virtual void step() = 0;
 
-    virtual bool step(time_type const& upto) = 0;
+    virtual bool step(time_type upto) = 0;
 
 protected:
     boost::shared_ptr<world_type> world_;
@@ -163,6 +173,7 @@ protected:
     time_type t_;
     time_type dt_;
     int num_steps_;
+    bool paranoiac_;
 };
 
 #endif /* PARTICLE_SIMULATOR_HPP */

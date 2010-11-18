@@ -62,7 +62,7 @@ public:
         step(base_type::dt_);
     }
 
-    virtual bool step(time_type const& upto)
+    virtual bool step(time_type upto)
     {
         time_type const lt(upto - base_type::t_);
         if (lt <= 0.)
@@ -94,7 +94,7 @@ public:
     }
 
 protected:
-    void _step(time_type const& dt)
+    void _step(time_type dt)
     {
         {
             BDPropagator<traits_type> propagator(

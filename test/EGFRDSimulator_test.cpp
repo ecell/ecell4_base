@@ -9,7 +9,6 @@
 #include "ParticleModel.hpp"
 #include "EGFRDSimulator.hpp"
 #include "Logger.hpp"
-#include "NullLogger.hpp"
 #include "EGFRDSimulatorFactory.hpp"
 #include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
@@ -63,9 +62,10 @@ BOOST_AUTO_TEST_CASE(test)
 
     int const n(300);
 
-    LoggerFactory::register_logger_factory(
-        "EGFRDSimulator",
-        boost::shared_ptr<LoggerFactory>(new NullLoggerFactory()));
+    LoggerManager::register_logger_manager(
+        "ecell.EGFRDSimulator",
+        boost::shared_ptr<LoggerManager>(
+            new LoggerManager("dummy", Logger::L_INFO)));
 
     ParticleModel m;
 

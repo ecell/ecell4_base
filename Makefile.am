@@ -51,6 +51,7 @@ noinst_HEADERS = \
 	BDSimulator.hpp\
 	bessel.hpp\
 	Box.hpp\
+	ConsoleAppender.hpp\
 	Cylinder.hpp\
 	Defs.hpp\
 	DomainFactory.hpp\
@@ -175,8 +176,7 @@ _gfrd_la_SOURCES=\
 	GreensFunction3DRadInf.cpp\
 	GreensFunction3DSym.cpp\
 	Logger.cpp\
-	NullLogger.cpp\
-	ConsoleLogger.cpp\
+	ConsoleAppender.cpp\
 	Model.cpp\
 	NetworkRules.cpp\
 	ParticleModel.cpp\
@@ -200,7 +200,7 @@ _greens_functions_la_SOURCES=\
 	GreensFunction3DRadAbs.cpp\
 	GreensFunction3DAbs.cpp\
 	Logger.cpp\
-	ConsoleLogger.cpp
+	ConsoleAppender.cpp
 
 _gfrd_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
 _gfrd_la_LIBADD = binding/libbinding_utils.la

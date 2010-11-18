@@ -13,6 +13,7 @@ noinst_HEADERS = \
 	binding_common.hpp \
 	box_class.hpp \
 	Box.hpp \
+	ConsoleAppender.hpp \
 	CuboidalRegion.hpp \
 	cylinder_class.hpp \
 	Cylinder.hpp \
@@ -26,6 +27,9 @@ noinst_HEADERS = \
 	EventScheduler.hpp \
 	exception_classes.hpp \
 	Identifier.hpp \
+	LogAppender.hpp \
+	Logger.hpp \
+	LoggerManager.hpp \
 	matrix_space_classes.hpp \
 	MatrixSpace.hpp \
 	model_class.hpp \
@@ -49,7 +53,7 @@ noinst_HEADERS = \
 	PlanarSurface.hpp \
 	plane_class.hpp \
 	position_converters.hpp \
-	PythonLogger.hpp \
+	PythonAppender.hpp \
 	python_logger_classes.hpp \
 	random_number_generator_class.hpp \
 	RandomNumberGenerator.hpp \
@@ -83,12 +87,16 @@ noinst_HEADERS = \
 libbinding_utils_la_SOURCES = \
 	bd_propagator_class.cpp \
 	box_class.cpp \
+	ConsoleAppender.cpp \
 	cylinder_class.cpp \
 	domain_classes.cpp \
 	domain_id_class.cpp \
 	egfrd_simulator_classes.cpp \
 	event_classes.cpp \
 	exception_classes.cpp \
+	LogAppender.cpp \
+	Logger.cpp \
+	LoggerManager.cpp \
 	matrix_space_classes.cpp \
 	model_class.cpp \
 	module_functions.cpp \
@@ -102,7 +110,7 @@ libbinding_utils_la_SOURCES = \
 	particle_simulator_classes.cpp \
 	plane_class.cpp \
 	position_converters.cpp \
-	PythonLogger.cpp \
+	PythonAppender.cpp \
 	python_logger_classes.cpp \
 	random_number_generator_class.cpp \
 	reaction_record_classes.cpp \

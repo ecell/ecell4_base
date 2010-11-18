@@ -34,7 +34,6 @@
 #include "../AnalyticalPair.hpp"
 #include "../EventScheduler.hpp"
 #include "../Logger.hpp"
-#include "../NullLogger.hpp"
 
 #include "peer/wrappers/range/pyiterable_range.hpp"
 
@@ -98,7 +97,8 @@ typedef EGFRDSimulator::cuboidal_region_type CuboidalRegion;
 typedef EGFRDSimulatorTraits::reaction_record_type ReactionRecord;
 typedef EGFRDSimulatorTraits::reaction_recorder_type ReactionRecorder;
 typedef ::Logger Logger;
-typedef ::LoggerFactory LoggerFactory;
+typedef ::LogAppender LogAppender;
+typedef ::LoggerManager LoggerManager;
 
 } // namespace binding
 

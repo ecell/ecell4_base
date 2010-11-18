@@ -18,8 +18,6 @@ L = 5e-6
 #_gfrd.PythonLoggerFactory.register_logger_factory(
 #    ".*", _gfrd.PythonLoggerFactory())
 
-_gfrd.LoggerFactory.get_logger_factory(None).level = _gfrd.LogLevel.WARNING
-
 m = model.ParticleModel(L)
 S = model.Species('S', 1.5e-12, 5e-9)
 P = model.Species('P', 1e-12, 7e-9)
@@ -34,6 +32,7 @@ m.set_all_repulsive()
 world = create_world(m, int((N * 6) ** (1. / 3.)))
 nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
 s = _gfrd._EGFRDSimulator(world, nrw, myrandom.rng)
+s.paranoiac = True
 #s = BDSimulator(world. myrandom.rng, nrw)
 
 throw_in_particles(s.world, S, N / 2)
@@ -69,15 +68,17 @@ def print_report(s):
         s.num_single_steps_per_type(_gfrd.SingleEventKind.ESCAPE),
         s.num_single_steps_per_type(_gfrd.SingleEventKind.REACTION),
         )
-    print 'Pair: %d (single reaction: %d, CoM escape: %d, IV escape: %d)' % (
+    print 'Pair: %d (single reaction: %d, CoM escape: %d, IV escape: %d, IV reaction: %d)' % (
         s.num_pair_steps_per_type(_gfrd.PairEventKind.SINGLE_REACTION_0) + \
         s.num_pair_steps_per_type(_gfrd.PairEventKind.SINGLE_REACTION_1) + \
         s.num_pair_steps_per_type(_gfrd.PairEventKind.COM_ESCAPE) + \
-        s.num_pair_steps_per_type(_gfrd.PairEventKind.IV),
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.IV_ESCAPE) + \
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.IV_REACTION),
         s.num_pair_steps_per_type(_gfrd.PairEventKind.SINGLE_REACTION_0) + \
         s.num_pair_steps_per_type(_gfrd.PairEventKind.SINGLE_REACTION_1),
         s.num_pair_steps_per_type(_gfrd.PairEventKind.COM_ESCAPE),
-        s.num_pair_steps_per_type(_gfrd.PairEventKind.IV),
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.IV_ESCAPE),
+        s.num_pair_steps_per_type(_gfrd.PairEventKind.IV_REACTION),
         )
     print 'Multi: %d (escape: %d, reaction: %d)' % (
         s.num_multi_steps_per_type(_gfrd.MultiEventKind.NONE) + \

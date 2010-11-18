@@ -5,11 +5,16 @@
 #include <string>
 #include <map>
 #include <utility>
+#include <cstdio>
+#include <functional>
 #include <boost/regex.hpp>
 #include <boost/foreach.hpp>
 #include <boost/type_traits/remove_pointer.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/ptr_container/ptr_map.hpp>
+#include <boost/bind.hpp>
 #include "Logger.hpp"
-#include "ConsoleLogger.hpp"
+#include "ConsoleAppender.hpp"
 #include "utils/pair.hpp"
 #include "utils/fun_composition.hpp"
 #include "utils/fun_wrappers.hpp"
@@ -40,91 +45,70 @@ struct map_adapter_handler
     }
 };
 
-Logger::~Logger()
+class LoggerManagerRegistry
 {
+private:
+    typedef std::pair<boost::regex, boost::shared_ptr<LoggerManager> > entry_type;
+public:
+    void register_logger_manager(char const* logger_name_pattern,
+                                 boost::shared_ptr<LoggerManager> const& manager)
+    {
+        managers_.push_back(entry_type(boost::regex(logger_name_pattern), manager));
+    }
+
+    boost::shared_ptr<LoggerManager>
+    get_default_logger_manager() const
+    {
+        return default_manager_;
+    }
+
+    boost::shared_ptr<LoggerManager>
+    operator()(char const* logger_name) const
+    {
+        if (!logger_name)
+            return default_manager_;
+
+
+        char const* const logger_name_end(logger_name + std::strlen(logger_name));
+        BOOST_FOREACH (entry_type const& i, managers_)
+        {
+            if (boost::regex_match(logger_name, logger_name_end, i.first))
+                return i.second;
+        }
+
+        BOOST_ASSERT(default_manager_.get());
+        return default_manager_;
+    }
+
+    LoggerManagerRegistry(): default_manager_(new LoggerManager("default"))
+    {
+        default_manager_->add_appender(boost::shared_ptr<LogAppender>(new ConsoleAppender()));
+    }
+
+private:
+    std::vector<entry_type> managers_;
+    boost::shared_ptr<LoggerManager> default_manager_;
+};
+
+static LoggerManagerRegistry registry;
+    
+void LoggerManager::register_logger_manager(
+        char const* logger_name_pattern,
+        boost::shared_ptr<LoggerManager> const& manager)
+{
+    registry.register_logger_manager(logger_name_pattern, manager);
 }
 
-struct LoggerProxy: public Logger
+boost::shared_ptr<LoggerManager> LoggerManager::get_logger_manager(char const* logger_name_pattern)
 {
-    virtual ~LoggerProxy() {}
+    return registry(logger_name_pattern);
+}
 
-    virtual void level(enum level level)
-    {
-        fetch_logger();
-        logger_->level(level);
-    }
-
-    virtual enum level level() const
-    {
-        const_cast<LoggerProxy*>(this)->fetch_logger();
-        return logger_->level();
-    }
-
-    virtual void logv(enum level lv, char const* format, va_list ap)
-    {
-        fetch_logger();
-        logger_->logv(lv, format, ap);
-    }
-
-    virtual void flush()
-    {
-        fetch_logger();
-        logger_->flush();
-    }
-
-    void fetch_logger()
-    {
-        if (logger_)
-            return;
-        logger_ = (*factory_)(name_);
-    }
-
-    LoggerProxy(boost::shared_ptr<LoggerFactory> factory, char const* name)
-        : factory_(factory), logger_(0), name_(name) {}
-
-private:
-    boost::shared_ptr<LoggerFactory> factory_;
-    Logger* logger_;
-    char const* name_;
-};
-
-struct DeferredLoggerFactory: public LoggerFactory
+boost::shared_ptr<LoggerManager const> Logger::manager() const
 {
-    virtual ~DeferredLoggerFactory() {}
-
-    virtual void level(enum Logger::level lv)
-    {
-        const_cast<DeferredLoggerFactory*>(this)->fetch_factory();
-        factory_->level(lv);
-    }
-
-    virtual Logger* operator()(char const* name) const
-    {
-        const_cast<DeferredLoggerFactory*>(this)->fetch_factory();
-        Logger* const log((*factory_)(name));
-        return log;
-    }
-
-    virtual char const* get_name() const
-    {
-        const_cast<DeferredLoggerFactory*>(this)->fetch_factory();
-        return factory_->get_name();
-    }
-
-    DeferredLoggerFactory(char const* name): name_(name), factory_() {}
-
-private:
-    void fetch_factory()
-    {
-        if (!factory_)
-            factory_ = get_logger_factory(name_);
-        BOOST_ASSERT(factory_.get());
-    }
-
-private:
-    char const* name_;
-    boost::shared_ptr<LoggerFactory> factory_;
-};
+    const_cast<Logger*>(this)->ensure_initialized();
+    return manager_;
+}
 
 Logger& Logger::get_logger(char const* name)
 {
@@ -137,74 +121,143 @@ Logger& Logger::get_logger(char const* name)
 
     if (i.second)
     {
-        Logger* log = new LoggerProxy(
-            boost::shared_ptr<LoggerFactory>(
-                new DeferredLoggerFactory(name)), name);
+        Logger* const log(new Logger(registry, name));
         (*i.first).second = log;
     }
 
     return *(*i.first).second;
 }
 
-LoggerFactory::~LoggerFactory()
+
+char const* Logger::stringize_error_level(enum level lv)
+{
+    static char const* names[] = {
+        "OFF",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL"
+    };
+    return static_cast<std::size_t>(lv) >= sizeof(names) / sizeof(*names) ? "???": names[lv];
+}
+
+Logger::~Logger()
 {
 }
 
-class LoggerFactoryRegistry
+struct invoke_appender
 {
-private:
-    typedef std::pair<boost::regex, boost::shared_ptr<LoggerFactory> > entry_type;
-public:
-    void register_logger_factory(char const* logger_name_pattern,
-                                 boost::shared_ptr<LoggerFactory> const& factory)
+    void operator()(boost::shared_ptr<LogAppender> const& appender) const
     {
-        factories_.push_back(entry_type(boost::regex(logger_name_pattern), factory));
+        const char* chunks[] = { formatted_msg, NULL };
+        (*appender)(level, time, name, chunks);
     }
 
-    boost::shared_ptr<LoggerFactory>
-    get_default_logger_factory() const
-    {
-        return default_factory_;
-    }
+    invoke_appender(enum Logger::level level, boost::posix_time::ptime const& time,
+                    const char* name, char const *formatted_msg)
+        : level(level), time(time), name(name),
+          formatted_msg(formatted_msg) {}
 
-    boost::shared_ptr<LoggerFactory>
-    get_logger_factory(char const* logger_name) const
-    {
-        if (!logger_name)
-            return default_factory_;
-
-        BOOST_FOREACH (entry_type const& i, factories_)
-        {
-            if (boost::regex_match(logger_name,
-                                   logger_name + std::strlen(logger_name),
-                                   i.first))
-            {
-                return i.second;
-            }
-        }
-        BOOST_ASSERT(default_factory_.get());
-        return default_factory_;
-    }
-
-    LoggerFactoryRegistry(): default_factory_(new ConsoleLoggerFactory()) {}
-
-private:
-    std::vector<entry_type> factories_;
-    boost::shared_ptr<ConsoleLoggerFactory> default_factory_;
+    enum Logger::level const level;
+    boost::posix_time::ptime const time;
+    char const* const name;
+    char const* const formatted_msg;
 };
 
-static LoggerFactoryRegistry registry;
-    
-void LoggerFactory::register_logger_factory(
-        char const* logger_name_pattern,
-        boost::shared_ptr<LoggerFactory> const& factory)
+void Logger::level(enum Logger::level level)
 {
-    registry.register_logger_factory(logger_name_pattern, factory);
+    ensure_initialized();
+    level_ = level;
 }
 
-
-boost::shared_ptr<LoggerFactory>
-LoggerFactory::get_logger_factory(char const* name)
+enum Logger::level Logger::level() const
 {
-    return registry.get_logger_factory(name);
+    const_cast<Logger*>(this)->ensure_initialized();
+    return level_;
 }
+
+void Logger::logv(enum level lv, char const* format, va_list ap)
+{
+    using namespace boost::posix_time;
+
+    ensure_initialized();
+
+    if (lv < level_)
+        return;
+
+    char buf[1024];
+    std::vsnprintf(buf, sizeof(buf), format, ap);
+
+    std::for_each(appenders_.begin(), appenders_.end(),
+            invoke_appender(lv, second_clock::local_time(), name_.c_str(),
+                            buf));
+}
+
+void Logger::flush()
+{
+    ensure_initialized();
+
+    std::for_each(appenders_.begin(), appenders_.end(),
+            boost::bind(&LogAppender::flush, _1));
+}
+
+inline void Logger::ensure_initialized()
+{
+    if (!manager_)
+    {
+        boost::shared_ptr<LoggerManager> manager(registry_(name_.c_str()));
+        std::vector<boost::shared_ptr<LogAppender> > appenders(manager->appenders());
+        level_ = manager->level();
+        appenders_.swap(appenders);
+        manager->manage(this);
+        manager_ = manager;
+    }
+}
+
+Logger::Logger(LoggerManagerRegistry const& registry, char const* name)
+        : registry_(registry), name_(name), manager_() {}
+
+void LoggerManager::level(enum Logger::level level) const
+{
+    /* synchronized { */
+    std::for_each(managed_loggers_.begin(), managed_loggers_.end(),
+                  boost::bind(&Logger::level, _1, level));
+    /* } */
+}
+
+enum Logger::level LoggerManager::level() const
+{
+    return level_;
+}
+
+char const* LoggerManager::name() const
+{
+    return name_.c_str();
+}
+
+std::vector<boost::shared_ptr<LogAppender> > const& LoggerManager::appenders() const
+{
+    /* synchronized() { */
+    return appenders_;
+    /* } */
+}
+
+void LoggerManager::add_appender(boost::shared_ptr<LogAppender> const& appender)
+{
+    /* synchronized() { */
+    appenders_.push_back(appender);
+    /* } */
+}
+
+LoggerManager::LoggerManager(char const* name, enum Logger::level level)
+    : name_(name), level_(level) {}
+
+void LoggerManager::manage(Logger* logger)
+{
+    /* synchronized { */
+    managed_loggers_.insert(logger);
+    /* }} */
+}
+
+LogAppender::~LogAppender() {}

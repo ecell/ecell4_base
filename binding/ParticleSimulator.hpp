@@ -35,17 +35,26 @@ void register_particle_simulator_class(char const* name)
                 &peer::util::reference_accessor_wrapper<
                     impl_type,
                     boost::shared_ptr<typename impl_type::reaction_recorder_type>,
-                    &impl_type::reaction_recorder, &impl_type::reaction_recorder>::set,
-                return_value_policy<return_by_value>()))
+                    &impl_type::reaction_recorder, &impl_type::reaction_recorder>::set))
         .add_property("rng",
             make_function(
                 &impl_type::rng,
                 return_value_policy<reference_existing_object>()))
+        .add_property("paranoiac",
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    impl_type, bool,
+                    &impl_type::paranoiac, &impl_type::paranoiac>::get,
+                return_value_policy<return_by_value>()),
+            make_function(
+                &peer::util::reference_accessor_wrapper<
+                    impl_type, bool,
+                    &impl_type::paranoiac, &impl_type::paranoiac>::set))
         .add_property("t", &impl_type::t)
         .add_property("dt", &impl_type::dt)
         .add_property("num_steps", &impl_type::num_steps)
         .def("step", static_cast<void(impl_type::*)()>(&impl_type::step))
-        .def("step", static_cast<bool(impl_type::*)(typename impl_type::time_type const&)>(&impl_type::step))
+        .def("step", static_cast<bool(impl_type::*)(typename impl_type::time_type)>(&impl_type::step))
         ;
 }
 

@@ -5,7 +5,7 @@
 #include <map>
 #include <cstdio>
 #include <boost/foreach.hpp>
-#include "PythonLogger.hpp"
+#include "PythonAppender.hpp"
 #include "binding_common.hpp"
 
 namespace binding {
@@ -20,7 +20,7 @@ static void import_logging_module()
     if (logging_module.ptr() != Py_None)
         return;
 
-    logging_module = boost::python::object(boost::python::borrowed(PyImport_Import(PyString_FromString("logging"))));
+    logging_module = boost::python::object(boost::python::borrowed(PyImport_Import(boost::python::handle<>(PyString_FromString("logging")).get())));
     if (PyErr_Occurred())
     {
         boost::python::throw_error_already_set();
@@ -34,55 +34,36 @@ static void import_logging_module()
     loglevel_map[Logger::L_FATAL]   = getattr(logging_module, "CRITICAL");
 }
 
-class PythonLogger: public Logger
+class PythonAppender: public LogAppender
 {
 public:
-    virtual ~PythonLogger() {}
+    virtual ~PythonAppender() {}
 
-    virtual void level(enum level level)
+    virtual void operator()(enum Logger::level lv,
+                            boost::posix_time::ptime const& tm,
+                            char const* name, char const** chunks)
     {
-        logger_.attr("setLevel")(loglevel_map[level]);
-    }
-
-    virtual enum level level() const
-    {
-        return Logger::L_DEBUG;
-    }
-
-    virtual void logv(enum level lv, char const* format, va_list ap)
-    {
-        char buf[2048];
-        std::vsnprintf(buf, sizeof(buf), format, ap);
-        logger_.attr("log")(loglevel_map[lv], "%s", buf);
+        std::string msg;
+        for (char const** p = chunks; *p; ++p)
+            msg.append(*p);
+        handle_(makeRecord_(name, lv, "", 0, msg.c_str(), NULL, NULL, NULL));
     }
 
     virtual void flush()
     {
-        // do nothing for now.
+        flush_();
     }
 
-    PythonLogger(boost::python::object logger): logger_(logger) {}
+    PythonAppender(boost::python::object handler)
+        : handler_(handler), flush_(handler_.attr("flush")),
+          handle_(handler_.attr("handle")),
+          makeRecord_(handler_.attr("makeRecord")) {}  
 
 private:
-    boost::python::object logger_;
-};
-
-class PythonLoggerFactory: public LoggerFactory
-{
-public:
-    virtual ~PythonLoggerFactory();
-
-    virtual void level(enum Logger::level);
-
-    virtual Logger* operator()(char const* name) const;
-
-    virtual char const* get_name() const;
-
-    PythonLoggerFactory();
-
-private:
-    enum Logger::level level_;
-    boost::python::object getLogger;
+    boost::python::object handler_;
+    boost::python::object flush_;
+    boost::python::object handle_;
+    boost::python::object makeRecord_;
 };
 
 // XXX: logging.Handler is a old-style class... *sigh*
@@ -334,73 +315,13 @@ PyMethodDef CppLoggerHandler::__methods__[] = {
     { NULL, NULL }
 };
 
-PythonLoggerFactory::~PythonLoggerFactory()
-{
-}
-
-void PythonLoggerFactory::level(enum Logger::level level)
-{
-    level_ = level;
-}
-
-Logger* PythonLoggerFactory::operator()(char const* name) const
-{
-    using namespace boost::python;
-    object logger(getLogger(name));
-    logger.attr("setLevel")(loglevel_map[level_]);
-    return new PythonLogger(logger);
-}
-
-char const* PythonLoggerFactory::get_name() const
-{
-    return "PythonLogger";
-}
-
-PythonLoggerFactory::PythonLoggerFactory()
-    : level_(Logger::L_DEBUG), getLogger(getattr(logging_module, "getLogger"))
-{
-}
-
-static PyObject* dummy_getter(PyObject*)
-{
-    PyErr_SetString(PyExc_AttributeError, "try to read a write-only property");
-    return NULL;
-}
-
-boost::python::objects::class_base
-register_logger_factory_class(char const* name)
-{
-    using namespace boost::python;
-    typedef LoggerFactory impl_type;
-
-    return class_<impl_type, boost::shared_ptr<impl_type>, boost::noncopyable>(name, no_init)
-        .add_property("level", &dummy_getter, &impl_type::level)
-        .add_property("name", &impl_type::get_name)
-        .def("register_logger_factory", &impl_type::register_logger_factory)
-        .staticmethod("register_logger_factory")
-        .def("get_logger_factory", &impl_type::get_logger_factory)
-        .staticmethod("get_logger_factory")
-        ;
-}
-
-boost::python::objects::enum_base
-register_logger_level_enum(char const* name)
-{
-    using namespace boost::python;
-    return enum_<enum   Logger::level>(name)
-        .value("OFF",     Logger::L_OFF)
-        .value("DEBUG",   Logger::L_DEBUG)
-        .value("INFO",    Logger::L_INFO)
-        .value("WARNING", Logger::L_WARNING)
-        .value("ERROR",   Logger::L_ERROR)
-        .value("FATAL",   Logger::L_FATAL)
-        ;
-}
-
 boost::python::object
 register_logger_handler_class(char const* name)
 {
     using namespace boost::python;
+
+    import_logging_module();
+
     PyObject* klass(
         CppLoggerHandler::__class_init__(
             name, reinterpret_cast<PyObject*>(scope().ptr())));
@@ -410,24 +331,16 @@ register_logger_handler_class(char const* name)
 }
 
 boost::python::objects::class_base
-register_null_logger_factory_class(char const* name)
+register_python_appender_class(char const* name)
 {
     using namespace boost::python;
-    typedef NullLoggerFactory impl_type;
-
-    return class_<impl_type, bases<LoggerFactory>, boost::shared_ptr<impl_type>, boost::noncopyable>(name)
-        ;
-}
-
-boost::python::objects::class_base
-register_python_logger_factory_class(char const* name)
-{
-    using namespace boost::python;
-    typedef PythonLoggerFactory impl_type;
+    typedef PythonAppender impl_type;
 
     import_logging_module();
 
-    return class_<impl_type, bases<LoggerFactory>, boost::shared_ptr<impl_type>, boost::noncopyable>(name)
+    return class_<impl_type, bases<LogAppender>,
+                  boost::shared_ptr<impl_type>, boost::noncopyable>(
+                  name, init<boost::python::object>())
         ;
 }
 

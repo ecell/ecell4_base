@@ -49,7 +49,7 @@ public:
     template<typename Trange_>
     BDPropagator(
         particle_container_type& tx, network_rules_type const& rules,
-        rng_type& rng, time_type const& dt, int max_retry_count,
+        rng_type& rng, time_type dt, int max_retry_count,
         reaction_recorder_type* rrec, Trange_ const& particles)
         : tx_(tx), rules_(rules), rng_(rng), dt_(dt),
           max_retry_count_(max_retry_count), rrec_(rrec),

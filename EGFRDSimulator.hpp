@@ -153,6 +153,14 @@ struct MutativeDomainVisitor
 };
 
 
+#define CHECK(expr) \
+    do \
+    { \
+        bool const result = (expr); \
+        LOG_DEBUG(("checking if %s ... %s", #expr, result ? "yes": "no")); \
+        if (!result) retval = false; \
+    } while (0)
+
 template<typename Ttraits_>
 class EGFRDSimulator: public ParticleSimulator<Ttraits_>
 {
@@ -234,7 +242,9 @@ public:
         PAIR_EVENT_SINGLE_REACTION_0,
         PAIR_EVENT_SINGLE_REACTION_1,
         PAIR_EVENT_COM_ESCAPE,
-        PAIR_EVENT_IV,
+        PAIR_EVENT_IV_UNDETERMINED,
+        PAIR_EVENT_IV_ESCAPE,
+        PAIR_EVENT_IV_REACTION,
         NUM_PAIR_EVENT_KINDS
     };
 
@@ -263,7 +273,7 @@ protected:
 
     struct domain_event_base: public event_type
     {
-        domain_event_base(time_type const& time): event_type(time) {}
+        domain_event_base(time_type time): event_type(time) {}
 
         virtual domain_type& domain() const = 0;
     };
@@ -283,7 +293,7 @@ protected:
 
         event_kind_type kind() const { return kind_; }
 
-        domain_event(time_type const& time,
+        domain_event(time_type time,
                      domain_type& domain,
                      event_kind_type kind)
             : base_type(time), domain_(domain), kind_(kind) {}
@@ -307,7 +317,7 @@ protected:
 
         virtual ~multi_event() {}
 
-        multi_event(time_type const& time,
+        multi_event(time_type time,
                      domain_type& domain)
             : base_type(time), domain_(domain) {}
 
@@ -902,8 +912,8 @@ public:
     EGFRDSimulator(boost::shared_ptr<world_type> world,
                    boost::shared_ptr<network_rules_type const> network_rules,
                    rng_type& rng, int dissociation_retry_moves = 1,
-                   double const& bd_dt_factor = 1e-5, 
-                   length_type const& user_max_shell_size =
+                   Real bd_dt_factor = 1e-5, 
+                   length_type user_max_shell_size =
                     std::numeric_limits<length_type>::infinity())
         : base_type(world, network_rules, rng),
           num_retries_(dissociation_retry_moves),
@@ -925,7 +935,7 @@ public:
         std::fill(multi_step_count_.begin(), multi_step_count_.end(), 0);
     }
 
-    length_type const& user_max_shell_size() const
+    length_type user_max_shell_size() const
     {
         return user_max_shell_size_;
     }
@@ -1057,7 +1067,7 @@ public:
         _step();
     }
 
-    virtual bool step(time_type const& upto)
+    virtual bool step(time_type upto)
     {
         LOG_INFO(("stop at %g", upto));
 
@@ -1126,6 +1136,86 @@ public:
         }
     }
     // }}}
+
+    bool check() const
+    {
+        LOG_INFO(("checking overall consistency"));
+
+        bool retval(true);
+
+        CHECK(base_type::t_ >= 0.0);
+        CHECK(base_type::dt_ >= 0.0);
+
+        typedef std::map<domain_id_type, std::set<shell_id_type> >
+            domain_shell_association;
+
+        domain_shell_association did_map;
+
+        boost::fusion::for_each(smatm_,
+                domain_shell_map_builder<domain_shell_association>(
+                    (*base_type::world_), did_map));
+
+        std::set<domain_id_type> scheduled_domains;
+        typename domain_type::size_type shells_correspond_to_domains(0);
+        std::size_t particles_correspond_to_domains(0);
+
+        BOOST_FOREACH (typename event_scheduler_type::value_type const& value,
+                       scheduler_.events())
+        {
+            domain_type const& domain(dynamic_cast<domain_event_base&>(*value.second).domain());
+            CHECK(check_domain(domain));
+
+            if (!scheduled_domains.insert(domain.id()).second)
+            {
+                LOG_DEBUG(("domain id %s is doubly scheduled!", boost::lexical_cast<std::string>(domain.id()).c_str()));
+            }
+
+            CHECK(domain.event() == value);
+
+            typename domain_type::size_type const num_shells(domain.num_shells());
+
+            shells_correspond_to_domains += num_shells;
+            particles_correspond_to_domains += domain.multiplicity();
+
+            typename std::set<shell_id_type> const& shell_ids(
+                did_map[domain.id()]);
+            CHECK(static_cast<typename domain_type::size_type>(
+                    ::size(shell_ids)) == num_shells);
+        }
+
+        CHECK((*base_type::world_).num_particles() == particles_correspond_to_domains);
+
+        {
+            std::vector<domain_id_type> diff;
+            ::difference(make_select_first_range(did_map), scheduled_domains,
+                    std::back_inserter(diff));
+
+            if (diff.size() != 0)
+            {
+                LOG_DEBUG(("domains not scheduled: %s",
+                    stringize_and_join(diff, ", ").c_str()));
+                BOOST_FOREACH (domain_id_type const& domain_id, diff)
+                {
+                    LOG_DEBUG(("  shells that belong to unscheduled domain %s: %s",
+                        boost::lexical_cast<std::string>(domain_id).c_str(),
+                        stringize_and_join(did_map[domain_id], ", ").c_str()));
+                }
+                retval = false;
+            }
+        }
+
+        std::set<shell_id_type> all_shell_ids;
+        boost::fusion::for_each(smatm_,
+                shell_id_collector<std::set<shell_id_type> >(all_shell_ids));
+
+        if (shells_correspond_to_domains != static_cast<std::size_t>(::size(all_shell_ids)))
+        {
+            LOG_DEBUG(("shells_correspond_to_domains=%zu, shell_population=%zu", shells_correspond_to_domains, static_cast<std::size_t>(::size(all_shell_ids))));
+            dump_events();
+            retval = false;
+        }
+        return retval;
+    }
 
 protected:
     template<typename Tshell>
@@ -1300,9 +1390,9 @@ protected:
 
     void add_event(single_type& domain, single_event_kind const& kind)
     {
-#ifdef DEBUG
-        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
-#endif
+        if (base_type::paranoiac_)
+            BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+
         boost::shared_ptr<event_type> new_event(
             new single_event(base_type::t_ + domain.dt(), domain, kind));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
@@ -1311,9 +1401,9 @@ protected:
 
     void add_event(pair_type& domain, pair_event_kind const& kind)
     {
-#ifdef DEBUG
-        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
-#endif
+        if (base_type::paranoiac_)
+            BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+
         boost::shared_ptr<event_type> new_event(
             new pair_event(base_type::t_ + domain.dt(), domain, kind));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
@@ -1322,9 +1412,9 @@ protected:
 
     void add_event(multi_type& domain)
     {
-#ifdef DEBUG
-        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
-#endif
+        if (base_type::paranoiac_)
+            BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+
         boost::shared_ptr<event_type> new_event(
             new multi_event(base_type::t_ + domain.dt(), domain));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
@@ -1333,9 +1423,9 @@ protected:
 
     void update_event(single_type& domain, single_event_kind const& kind)
     {
-#ifdef DEBUG
-        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
-#endif
+        if (base_type::paranoiac_)
+            BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+
         LOG_DEBUG(("update_event: #%d", domain.event().first));
         boost::shared_ptr<event_type> new_event(
             new single_event(base_type::t_ + domain.dt(), domain, kind));
@@ -1352,9 +1442,9 @@ protected:
 
     void update_event(pair_type& domain, pair_event_kind const& kind)
     {
-#ifdef DEBUG
-        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
-#endif
+        if (base_type::paranoiac_)
+            BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+
         LOG_DEBUG(("update_event: #%d", domain.event().first));
         boost::shared_ptr<event_type> new_event(
             new pair_event(base_type::t_ + domain.dt(), domain, kind));
@@ -1371,9 +1461,9 @@ protected:
 
     void update_event(multi_type& domain)
     {
-#ifdef DEBUG
-        BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
-#endif
+        if (base_type::paranoiac_)
+            BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
+
         LOG_DEBUG(("update_event: #%d", domain.event().first));
         boost::shared_ptr<event_type> new_event(
             new pair_event(base_type::t_ + domain.dt(), domain));
@@ -1480,7 +1570,7 @@ protected:
                                              particle_id_pair const& p1,
                                              position_type const& com,
                                              position_type const& iv,
-                                             length_type const& shell_size)
+                                             length_type shell_size)
     {
         domain_kind kind(NONE);
         pair_type* new_pair(0);
@@ -1540,7 +1630,7 @@ protected:
 
             factory(EGFRDSimulator* _this, particle_id_pair const& p0,
                     particle_id_pair const& p1, position_type const& com,
-                    position_type const& iv, length_type const& shell_size,
+                    position_type const& iv, length_type shell_size,
                     domain_id_type const& did, pair_type*& new_pair,
                     domain_kind& kind)
                 : _this(_this), p0(p0), p1(p1), com(com), iv(iv),
@@ -1588,9 +1678,9 @@ protected:
     template<typename Tgf>
     static length_type draw_r(rng_type& rng,
                               Tgf const& gf,
-                              time_type const& dt,
-                              length_type const& a,
-                              length_type const& sigma = -1.)
+                              time_type dt,
+                              length_type a,
+                              length_type sigma = -1.)
     {
         LOG_DEBUG(("draw_r: dt=%g, a=%g, sigma=%g", dt, a, sigma));
         BOOST_ASSERT(a > sigma);
@@ -1618,8 +1708,8 @@ protected:
     template<typename Tgf>
     static length_type draw_theta(rng_type& rng,
                               Tgf const& gf,
-                              time_type const& dt,
-                              length_type const& r)
+                              time_type dt,
+                              length_type r)
     {
         length_type theta(0.);
         double rnd(0.);
@@ -1642,7 +1732,7 @@ protected:
     // draw_displacement {{{
     position_type draw_displacement(
         AnalyticalSingle<traits_type, spherical_shell_type> const& domain,
-        length_type const& r)
+        length_type r)
     {
         return normalize(
             create_vector<position_type>(
@@ -1653,7 +1743,7 @@ protected:
 
     position_type draw_displacement(
         AnalyticalSingle<traits_type, cylindrical_shell_type> const& domain,
-        length_type const& r)
+        length_type r)
     {
         return multiply(shape(domain.shell().second).unit_z(), r);
     }
@@ -1663,7 +1753,7 @@ protected:
     template<typename Tshell>
     position_type draw_new_position(
             AnalyticalSingle<traits_type, Tshell> const& domain,
-            time_type const& dt)
+            time_type dt)
     {
         typedef Tshell shell_type;
         typedef typename shell_type::shape_type shape_type;
@@ -1682,16 +1772,16 @@ protected:
                 boost::lexical_cast<std::string>(domain).c_str(),
                 dt, r, boost::lexical_cast<std::string>(displacement).c_str(),
                 length(displacement)));
-#ifdef DEBUG
-        length_type const scale(domain.particle().second.radius());
-        BOOST_ASSERT(r <= domain.mobility_radius());
-        BOOST_ASSERT(feq(length(displacement), std::abs(r), scale));
-#endif
+        if (base_type::paranoiac_)
+        {
+            length_type const scale(domain.particle().second.radius());
+            BOOST_ASSERT(r <= domain.mobility_radius());
+            BOOST_ASSERT(feq(length(displacement), std::abs(r), scale));
+        }
         return add(domain.particle().second.position(), displacement);
     }
 
-    position_type draw_new_position(single_type& domain,
-                                    time_type const& dt)
+    position_type draw_new_position(single_type& domain, time_type dt)
     {
         {
             spherical_single_type* _domain(dynamic_cast<spherical_single_type*>(&domain));
@@ -1714,8 +1804,7 @@ protected:
     // draw_new_positions {{{
     template<typename Tdraw, typename T>
     boost::array<position_type, 2> draw_new_positions(
-        AnalyticalPair<traits_type, T> const& domain,
-        time_type const& dt)
+        AnalyticalPair<traits_type, T> const& domain, time_type dt)
     {
         Tdraw d(base_type::rng_, *base_type::world_);
         position_type const new_com(d.draw_com(domain, dt));
@@ -1751,10 +1840,11 @@ protected:
 
         position_type const _new_pos(
             (*base_type::world_).apply_boundary(new_pos));
-#ifdef DEBUG
-        particle_shape_type const new_particle(new_pos, domain.particle().second.radius());
-        check_overlap(new_particle, domain.particle().first);
-#endif
+        if (base_type::paranoiac_)
+        {
+            particle_shape_type const new_particle(new_pos, domain.particle().second.radius());
+            BOOST_ASSERT(check_overlap(new_particle, domain.particle().first));
+        }
 
         particle_type const& old(domain.particle().second);
         domain.particle().second = particle_type(old.sid(),
@@ -1777,15 +1867,17 @@ protected:
         new_particles[0].second.position() = (*base_type::world_).apply_boundary(_new_pos[0]);
         new_particles[1].second.position() = (*base_type::world_).apply_boundary(_new_pos[1]);
 
-#ifdef DEBUG
-        check_overlap(
-            shape(new_particles[0].second),
-            new_particles[0].first, new_particles[1].first);
-        check_overlap(
-            shape(new_particles[1].second),
-            new_particles[0].first, new_particles[1].first);
-        BOOST_ASSERT(check_pair_pos(domain, new_particles));
-#endif
+        if (base_type::paranoiac_)
+        {
+            BOOST_ASSERT(check_overlap(
+                shape(new_particles[0].second),
+                new_particles[0].first, new_particles[1].first));
+            BOOST_ASSERT(check_overlap(
+                shape(new_particles[1].second),
+                new_particles[0].first, new_particles[1].first));
+            BOOST_ASSERT(check_pair_pos(domain, new_particles));
+        }
+
         (*base_type::world_).update_particle(new_particles[0]);
         (*base_type::world_).update_particle(new_particles[1]);
 
@@ -2166,7 +2258,7 @@ protected:
         }
         else
         {
-            return std::make_pair(dt_iv, PAIR_EVENT_IV);
+            return std::make_pair(dt_iv, PAIR_EVENT_IV_UNDETERMINED);
         }
     }
 
@@ -2351,11 +2443,12 @@ protected:
                 boost::lexical_cast<std::string>(*closest_domain).c_str():
                 "(none)",
             closest.second));
-#ifdef DEBUG
-        check_overlap(
-            sphere_type(domain.position(), new_shell_size),
-            domain.particle().first);
-#endif
+        if (base_type::paranoiac_)
+        {
+            BOOST_ASSERT(check_overlap(
+                sphere_type(domain.position(), new_shell_size),
+                domain.particle().first));
+        }
         domain.size() = new_shell_size;
         update_shell_matrix(domain);
         BOOST_ASSERT(domain.size() == new_shell_size);
@@ -2705,8 +2798,6 @@ protected:
                   closest_shell_distance,
                   closest_domain ? boost::lexical_cast<std::string>(closest_domain).c_str(): "(none)"));
 
-        check_domain(*new_pair);
-
         return *new_pair;
     }
 
@@ -3037,7 +3128,20 @@ protected:
     void fire_event(AnalyticalPair<traits_type, T>& domain, pair_event_kind kind)
     {
         typedef AnalyticalSingle<traits_type, T> corresponding_single_type;
-        check_domain(domain);
+
+        if (kind == PAIR_EVENT_IV_UNDETERMINED)
+        {
+            // Draw actual pair event for iv at very last minute.
+            switch (draw_iv_event_type(domain))
+            {
+            case GreensFunction3DRadAbs::IV_ESCAPE:
+                kind = PAIR_EVENT_IV_ESCAPE;
+                break;
+            case GreensFunction3DRadAbs::IV_REACTION:
+                kind = PAIR_EVENT_IV_REACTION;
+                break;
+            }
+        }
 
         ++pair_step_count_[kind];
         LOG_DEBUG(("fire_pair: %s", stringize_event_kind(kind).c_str()));
@@ -3086,80 +3190,72 @@ protected:
             }
             break;
         
-        case PAIR_EVENT_IV:
+        case PAIR_EVENT_IV_REACTION:
             {
-                // Draw actual pair event for iv at very last minute.
-                switch (draw_iv_event_type(domain))
+                LOG_DEBUG(("=> iv_reaction"));
+                BOOST_ASSERT(::size(domain.reactions()) == 1);
+                reaction_rule_type const& r(domain.reactions()[0]);
+
+                switch (::size(r.get_products()))
                 {
-                case GreensFunction3DRadAbs::IV_REACTION:
+                case 1:
                     {
-                        LOG_DEBUG(("=> iv_reaction"));
-                        BOOST_ASSERT(::size(domain.reactions()) == 1);
-                        reaction_rule_type const& r(domain.reactions()[0]);
+                        species_type const& new_species(
+                            (*base_type::world_).get_species(
+                                r.get_products()[0]));
 
-                        switch (::size(r.get_products()))
+                        // calculate new R
+                        position_type const new_com(
+                            (*base_type::world_).apply_boundary(
+                                draw_on_iv_reaction(
+                                    base_type::rng_,
+                                    *base_type::world_).draw_com(
+                                        domain, domain.dt())));
+                   
+                        BOOST_ASSERT(
+                            (*base_type::world_).distance(
+                                domain.shell().second.position(),
+                                new_com) + new_species.radius()
+                            < shape(domain.shell().second).radius());
+
+                        (*base_type::world_).remove_particle(domain.particles()[0].first);
+                        (*base_type::world_).remove_particle(domain.particles()[1].first);
+
+                        particle_id_pair const new_particle(
+                            (*base_type::world_).new_particle(
+                                new_species.id(), new_com));
+                        boost::shared_ptr<single_type> new_single(
+                            create_single(new_particle));
+                        add_event(*new_single, SINGLE_EVENT_ESCAPE);
+
+                        if (base_type::rrec_)
                         {
-                        case 1:
-                            {
-                                species_type const& new_species(
-                                    (*base_type::world_).get_species(
-                                        r.get_products()[0]));
-
-                                // calculate new R
-                                position_type const new_com(
-                                    (*base_type::world_).apply_boundary(
-                                        draw_on_iv_reaction(
-                                            base_type::rng_,
-                                            *base_type::world_).draw_com(
-                                                domain, domain.dt())));
-                           
-                                BOOST_ASSERT(
-                                    (*base_type::world_).distance(
-                                        domain.shell().second.position(),
-                                        new_com) + new_species.radius()
-                                    < shape(domain.shell().second).radius());
-
-                                (*base_type::world_).remove_particle(domain.particles()[0].first);
-                                (*base_type::world_).remove_particle(domain.particles()[1].first);
-
-                                particle_id_pair const new_particle(
-                                    (*base_type::world_).new_particle(
-                                        new_species.id(), new_com));
-                                boost::shared_ptr<single_type> new_single(
-                                    create_single(new_particle));
-                                add_event(*new_single, SINGLE_EVENT_ESCAPE);
-
-                                if (base_type::rrec_)
-                                {
-                                    (*base_type::rrec_)(reaction_record_type(
-                                        r.id(),
-                                        array_gen(new_particle.first),
-                                        domain.particles()[0].first,
-                                        domain.particles()[1].first));
-                                }
-                            }
-                            break;
-                        default:
-                            throw not_implemented("num products >= 2 not supported.");
+                            (*base_type::rrec_)(reaction_record_type(
+                                r.id(),
+                                array_gen(new_particle.first),
+                                domain.particles()[0].first,
+                                domain.particles()[1].first));
                         }
-                        remove_domain(domain);
                     }
                     break;
-                case GreensFunction3DRadAbs::IV_ESCAPE:
-                    {
-                        LOG_DEBUG(("=> iv_escape"));
-                        time_type const dt(domain.dt());
-                        boost::array<position_type, 2> const new_pos(
-                            draw_new_positions<draw_on_iv_escape>(
-                                domain, dt));
-                        boost::array<boost::shared_ptr<single_type>, 2> const new_single(
-                            propagate(domain, new_pos));
-
-                        add_event(*new_single[0], SINGLE_EVENT_ESCAPE);
-                        add_event(*new_single[1], SINGLE_EVENT_ESCAPE);
-                    }
-                    break;
+                default:
+                    throw not_implemented("num products >= 2 not supported.");
                 }
+                remove_domain(domain);
+            }
+            break;
+        case PAIR_EVENT_IV_ESCAPE:
+            {
+                LOG_DEBUG(("=> iv_escape"));
+                time_type const dt(domain.dt());
+                boost::array<position_type, 2> const new_pos(
+                    draw_new_positions<draw_on_iv_escape>(
+                        domain, dt));
+                boost::array<boost::shared_ptr<single_type>, 2> const new_single(
+                    propagate(domain, new_pos));
+
+                add_event(*new_single[0], SINGLE_EVENT_ESCAPE);
+                add_event(*new_single[1], SINGLE_EVENT_ESCAPE);
             }
             break;
         }
@@ -3221,9 +3317,10 @@ protected:
     {
         if (dirty_)
             initialize();
-#ifdef DEBUG
-        check();
-#endif
+
+        if (base_type::paranoiac_)
+            BOOST_ASSERT(check());
+
         ++base_type::num_steps_;
 
         event_id_pair_type ev(scheduler_.pop());
@@ -3381,8 +3478,14 @@ protected:
         case PAIR_EVENT_COM_ESCAPE:
             return "com_escape";
 
-        case PAIR_EVENT_IV:
-            return "iv";
+        case PAIR_EVENT_IV_UNDETERMINED:
+            return "iv_undetermined";
+
+        case PAIR_EVENT_IV_ESCAPE:
+            return "iv_escape";
+
+        case PAIR_EVENT_IV_REACTION:
+            return "iv_reaction";
         }
     }
 
@@ -3406,249 +3509,145 @@ protected:
             ev.time() % boost::lexical_cast<std::string>(ev.domain())).str();
     }
 
-    void check_shell_matrix() const
+    template<typename T>
+    bool check_domain(AnalyticalSingle<traits_type, T> const& domain) const
     {
-        typedef std::map<domain_id_type, std::set<shell_id_type> >
-            domain_shell_association;
-
-        domain_shell_association did_map;
-
-        boost::fusion::for_each(smatm_,
-                domain_shell_map_builder<domain_shell_association>(
-                    (*base_type::world_), did_map));
-
-        std::set<domain_id_type> scheduled_domains;
-        typename domain_type::size_type shells_correspond_to_domains(0);
-        BOOST_FOREACH (typename event_scheduler_type::value_type const& value,
-                       scheduler_.events())
-        {
-            domain_type const& domain(dynamic_cast<domain_event_base&>(*value.second).domain());
-            if (!scheduled_domains.insert(domain.id()).second)
-            {
-                log_.debug("domain id %s is doubly scheduled!", boost::lexical_cast<std::string>(domain.id()).c_str());
-            }
-            typename domain_type::size_type const num_shells(domain.num_shells());
-
-            shells_correspond_to_domains += num_shells;
-            typename std::set<shell_id_type> const& shell_ids(
-                did_map[domain.id()]);
-            BOOST_ASSERT(static_cast<typename domain_type::size_type>(
-                    ::size(shell_ids)) == num_shells);
-        }
-
-        {
-            std::vector<domain_id_type> diff;
-            ::difference(make_select_first_range(did_map), scheduled_domains,
-                    std::back_inserter(diff));
-
-            if (diff.size() != 0)
-            {
-                log_.debug("domains not scheduled: %s",
-                    stringize_and_join(diff, ", ").c_str());
-                BOOST_FOREACH (domain_id_type const& domain_id, diff)
-                {
-                    log_.debug("  shells that belong to unscheduled domain %s: %s",
-                        boost::lexical_cast<std::string>(domain_id).c_str(),
-                        stringize_and_join(did_map[domain_id], ", ").c_str());
-                }
-                BOOST_ASSERT(false);
-            }
-        }
-
-        std::set<shell_id_type> all_shell_ids;
-        boost::fusion::for_each(smatm_,
-                shell_id_collector<std::set<shell_id_type> >(all_shell_ids));
-
-        if (shells_correspond_to_domains != static_cast<std::size_t>(::size(all_shell_ids)))
-        {
-            log_.debug("shells_correspond_to_domains=%zu, shell_population=%zu", shells_correspond_to_domains, static_cast<std::size_t>(::size(all_shell_ids)));
-            dump_events();
-            BOOST_ASSERT(false);
-        }
-    }
-
-    void check_domains() const
-    {
-        std::set<event_id_type> event_ids;
-        BOOST_FOREACH (typename domain_map::value_type const& domain_id_pair,
-                       domains_)
-        {
-            event_ids.insert(domain_id_pair.second->event().first);
-        }
-
-        BOOST_FOREACH (event_id_pair_type const& event_id_pair,
-                       scheduler_.events())
-        {
-            BOOST_ASSERT(event_ids.find(event_id_pair.first) != event_ids.end());
-            event_ids.erase(event_id_pair.first);
-        }
-
-        // self.domains always include a None  --> this can change in future
-        BOOST_ASSERT(event_ids.empty());
-    }
-
-    void check_every_domain() const
-    {
-        BOOST_FOREACH (event_id_pair_type const& event, scheduler_.events())
-        {
-            domain_event_base& _event(
-                dynamic_cast<domain_event_base&>(*event.second));
-            check_domain(_event.domain());
-        }
-    }
-
-    void check_event_stoichiometry() const
-    {
-        std::size_t event_population(0);
-        BOOST_FOREACH (event_id_pair_type const& event, scheduler_.events())
-        {
-            domain_event_base& _event(
-                dynamic_cast<domain_event_base&>(*event.second));
-            event_population += _event.domain().multiplicity();
-        }
-
-        BOOST_ASSERT((*base_type::world_).num_particles() == event_population);
-    }
-
-    void check() const
-    {
-        BOOST_ASSERT(base_type::t_ >= 0.0);
-        BOOST_ASSERT(base_type::dt_ >= 0.0);
-
-        check_shell_matrix();
-        check_domains();
-        check_event_stoichiometry();
-        check_every_domain(); 
+        bool retval(true);
+        std::pair<domain_id_type, length_type> closest(
+            get_closest_domain(domain.position(), array_gen(domain.id())));
+        CHECK(shape_size(shape(domain.shell().second)) <= user_max_shell_size_);
+        CHECK(shape_size(shape(domain.shell().second)) <= max_shell_size());
+        CHECK(closest.second > shape_size(shape(domain.shell().second)));
+        return retval;
     }
 
     template<typename T>
-    void check_domain(AnalyticalSingle<traits_type, T> const& domain) const
+    bool check_domain(AnalyticalPair<traits_type, T> const& domain) const
     {
+        bool retval(true);
         std::pair<domain_id_type, length_type> closest(
             get_closest_domain(domain.position(), array_gen(domain.id())));
-        BOOST_ASSERT(shape_size(shape(domain.shell().second)) <= user_max_shell_size_);
-        BOOST_ASSERT(shape_size(shape(domain.shell().second)) <= max_shell_size());
-        BOOST_ASSERT(closest.second > shape_size(shape(domain.shell().second)));
+        CHECK(shape_size(shape(domain.shell().second)) <= user_max_shell_size_);
+        CHECK(shape_size(shape(domain.shell().second)) <= max_shell_size());
+        CHECK(closest.second > shape_size(shape(domain.shell().second)));
+        return retval;
     }
 
-    template<typename T>
-    void check_domain(AnalyticalPair<traits_type, T> const& domain) const
+    bool check_domain(multi_type const& domain) const
     {
-        std::pair<domain_id_type, length_type> closest(
-            get_closest_domain(domain.position(), array_gen(domain.id())));
-        BOOST_ASSERT(shape_size(shape(domain.shell().second)) <= user_max_shell_size_);
-        BOOST_ASSERT(shape_size(shape(domain.shell().second)) <= max_shell_size());
-        BOOST_ASSERT(closest.second > shape_size(shape(domain.shell().second)));
-    }
-
-    void check_domain(multi_type const& domain) const
-    {
+        bool retval(true);
         BOOST_FOREACH (typename multi_type::spherical_shell_id_pair const& shell,
                        domain.get_shells())
         {
             std::pair<domain_id_type, length_type> closest(
                 get_closest_domain(shape_position(shape(shell.second)),
                                    array_gen(domain.id())));
-            BOOST_ASSERT(shape_size(shape(shell.second)) <= user_max_shell_size_);
-            BOOST_ASSERT(shape_size(shape(shell.second)) <= max_shell_size());
-            BOOST_ASSERT(closest.second > shape_size(shape(shell.second)));
+            CHECK(shape_size(shape(shell.second)) <= user_max_shell_size_);
+            CHECK(shape_size(shape(shell.second)) <= max_shell_size());
+            CHECK(closest.second > shape_size(shape(shell.second)));
         }
+        return retval;
     }
 
-    void check_domain(domain_type const& domain) const
+    bool check_domain(domain_type const& domain) const
     {
+        struct visitor: public ImmutativeDomainVisitor<traits_type>
         {
-            spherical_single_type const* const _domain(
-                dynamic_cast<spherical_single_type const*>(&domain));
-            if (_domain)
+            virtual ~visitor() {}
+
+            virtual void operator()(multi_type const& domain) const
             {
-                check_domain(*_domain);
+                retval = self.check_domain(domain);
             }
-        }
-        {
-            cylindrical_single_type const* const _domain(
-                dynamic_cast<cylindrical_single_type const*>(&domain));
-            if (_domain)
+
+            virtual void operator()(spherical_single_type const& domain) const
             {
-                check_domain(*_domain);
+                retval = self.check_domain(domain);
             }
-        }
-        {
-            spherical_pair_type const* const _domain(
-                dynamic_cast<spherical_pair_type const*>(&domain));
-            if (_domain)
+
+            virtual void operator()(cylindrical_single_type const& domain) const
             {
-                check_domain(*_domain);
+                retval = self.check_domain(domain);
             }
-        }
-        {
-            cylindrical_pair_type const* const _domain(
-                dynamic_cast<cylindrical_pair_type const*>(&domain));
-            if (_domain)
+
+            virtual void operator()(spherical_pair_type const& domain) const
             {
-                check_domain(*_domain);
+                retval = self.check_domain(domain);
             }
-        }
-        {
-            multi_type const* const _domain(
-                dynamic_cast<multi_type const*>(&domain));
-            if (_domain)
+
+            virtual void operator()(cylindrical_pair_type const& domain) const
             {
-                check_domain(*_domain);
+                retval = self.check_domain(domain);
             }
-        }
+
+            visitor(EGFRDSimulator const& self, bool& retval)
+                : self(self), retval(retval) {}
+
+            EGFRDSimulator const& self;
+            bool& retval;
+        };
+
+        bool retval;
+        domain.accept(visitor(*this, retval));
+        return retval;
     }
 
-    void check_overlap(particle_shape_type const& s) const
+    bool check_overlap(particle_shape_type const& s) const
     {
         boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
             (*base_type::world_).check_overlap(s));
 
         if (overlapped && ::size(*overlapped))
         {
-            log_.debug("check_overlap %s failed:",
-                boost::lexical_cast<std::string>(s).c_str());
+            LOG_DEBUG(("check_overlap %s failed:",
+                boost::lexical_cast<std::string>(s).c_str()));
             dump_overlapped(*overlapped);
-            BOOST_ASSERT(false);
+            return false;
         }
+        return true;
     }
 
-    void check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    bool check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
     {
         boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
             (*base_type::world_).check_overlap(s, ignore));
 
         if (overlapped && ::size(*overlapped))
         {
-            log_.debug("check_overlap %s failed:",
+            LOG_DEBUG(("check_overlap %s failed:",
                 boost::lexical_cast<std::string>(s).c_str());
-            dump_overlapped(*overlapped);
-            BOOST_ASSERT(false);
+            dump_overlapped(*overlapped));
+            return false;
         }
+        return true;
     }
 
-    void check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    bool check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
     {
         boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
             (*base_type::world_).check_overlap(s, ignore1, ignore2));
 
         if (overlapped && ::size(*overlapped))
         {
-            log_.debug("check_overlap %s failed:",
-                boost::lexical_cast<std::string>(s).c_str());
+            LOG_DEBUG(("check_overlap %s failed:",
+                boost::lexical_cast<std::string>(s).c_str()));
             dump_overlapped(*overlapped);
-            BOOST_ASSERT(false);
+            return false;
         }
+        return true;
     }
 
     void dump_overlapped(particle_id_pair_and_distance_list const& list)const
     {
-        BOOST_FOREACH (particle_id_pair_and_distance const& i, list)
+        if (log_.level() == Logger::L_DEBUG)
         {
-            log_.debug("  (%s:%s) %g",
-                boost::lexical_cast<std::string>(i.first.first).c_str(),
-                boost::lexical_cast<std::string>(i.first.second).c_str(),
-                i.second);
+            BOOST_FOREACH (particle_id_pair_and_distance const& i, list)
+            {
+                log_.debug("  (%s:%s) %g",
+                    boost::lexical_cast<std::string>(i.first.first).c_str(),
+                    boost::lexical_cast<std::string>(i.first.second).c_str(),
+                    i.second);
+            }
         }
     }
 
@@ -3737,8 +3736,7 @@ protected:
 
     template<typename T>
     static PairGreensFunction* choose_pair_greens_function(
-            AnalyticalPair<traits_type, T> const& domain,
-            time_type const& t)
+            AnalyticalPair<traits_type, T> const& domain, time_type t)
     {
         length_type const r0(domain.r0());
         length_type const distance_from_sigma(r0 - domain.sigma());
@@ -3788,8 +3786,8 @@ protected:
     static length_type calculate_single_shell_size(
             single_type const& single,
             single_type const& closest,
-            length_type const& distance,
-            length_type const& shell_distance)
+            length_type distance,
+            length_type shell_distance)
     {
         length_type const min_radius0(single.particle().second.radius());
         D_type const D0(single.particle().second.D());
@@ -3829,6 +3827,7 @@ protected:
     bool dirty_;
     static Logger& log_;
 };
+#undef CHECK
 
 template<typename Ttraits>
 inline char const* retrieve_domain_type_name(
