@@ -182,18 +182,19 @@ private:
                 case 1:
                     {
                         const species_type s0(tx_.get_species(products[0]));
-                        const particle_id_pair new_p(
-                            pp.first, particle_type(products[0],
-                                particle_shape_type(pp.second.position(),
-                                                    s0.radius()),
-                                                    s0.D()));
-                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(tx_.check_overlap(new_p.second.shape(), new_p.first));
+
+                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+                            tx_.check_overlap(
+                                particle_shape_type(pp.second.position(), s0.radius()),
+                                pp.first));
+
                         if (overlapped && overlapped->size() > 0)
                         {
                             throw propagation_error("no space");
                         }
 
-                        tx_.update_particle(new_p);
+                        tx_.remove_particle(pp.first);
+                        tx_.new_particle(products[0], pp.second.position());
                     }
                     break;
 
