@@ -40,7 +40,7 @@ public:
         return name_.c_str();
     }
 
-    boost::shared_ptr<LoggerManager const> manager() const;
+    boost::shared_ptr<LoggerManager> manager() const;
 
     void debug(char const* format, ...)
     {
@@ -106,7 +106,7 @@ private:
 protected:
     LoggerManagerRegistry const& registry_; 
     std::string const name_;
-    boost::shared_ptr<LoggerManager const> manager_;
+    boost::shared_ptr<LoggerManager> manager_;
     enum level level_;
     std::vector<boost::shared_ptr<LogAppender> > appenders_;
 };
@@ -116,7 +116,7 @@ class LoggerManager: boost::noncopyable
     friend class Logger;
 
 public:
-    void level(enum Logger::level level) const;
+    void level(enum Logger::level level);
 
     enum Logger::level level() const;
 

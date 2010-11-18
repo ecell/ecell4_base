@@ -14,9 +14,6 @@ register_logger_class(char const* name)
     using namespace boost::python;
     typedef Logger impl_type;
 
-    peer::util::register_shared_const_ptr_from_python<LoggerManager>();
-    peer::util::register_shared_const_ptr_to_python<LoggerManager>();
-
     return class_<impl_type, boost::noncopyable>(name, no_init)
         .add_property("level",
             static_cast<enum impl_type::level(impl_type::*)() const>(

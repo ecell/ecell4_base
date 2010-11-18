@@ -96,10 +96,23 @@ public:
         {
             boost::python::handle<> _meth(
                 boost::python::allow_null(
-                    PyDescr_NewMethod(&PyInstance_Type, meth)));
+                    meth->ml_flags & METH_STATIC ?
+                        PyStaticMethod_New(PyCFunction_New(meth, NULL)):
+                        PyDescr_NewMethod(&PyInstance_Type, meth)));
             if (!_meth)
                 return NULL;
             if (PyDict_SetItemString(dict.get(), meth->ml_name, _meth.get()))
+                return NULL;
+        }
+
+        for (PyGetSetDef* gsp = __getsets__; gsp->name; ++gsp)
+        {
+            boost::python::handle<> descr(
+                boost::python::allow_null(
+                    PyDescr_NewGetSet(&PyInstance_Type, gsp)));
+            if (!descr)
+                return NULL;
+            if (PyDict_SetItemString(dict.get(), gsp->name, descr.get()))
                 return NULL;
         }
 
@@ -130,13 +143,14 @@ public:
         return reinterpret_cast<CppLoggerHandler*>(PyCObject_AsVoidPtr(ptr.get()));
     }
 
-    static PyObject* __init__(PyObject* _self, PyObject* name)
+    static PyObject* __init__(PyObject* _self, PyObject* logger)
+    try
     {
         BOOST_ASSERT(PyInstance_Check(_self));
 
         CppLoggerHandler* self(new CppLoggerHandler(
-            Logger::get_logger(
-                boost::python::extract<char const*>(name))));
+            *boost::python::extract<Logger*>(logger)()));
+
         boost::python::handle<> ptr(
             boost::python::allow_null(
                 PyCObject_FromVoidPtr(self, &__dealloc__)));
@@ -182,6 +196,10 @@ public:
 
         return boost::python::incref(Py_None);
     }
+    catch (boost::python::error_already_set const&)
+    {
+        return NULL;
+    }
 
     static PyObject* createLock(PyObject* _self)
     {
@@ -212,7 +230,7 @@ public:
         CppLoggerHandler* const self(get_self(_self));
         if (!self)
             return NULL;
-        enum Logger::level const level(get_level(_level));
+        enum Logger::level const level(translate_level(_level));
         if (level == Logger::L_OFF)
         {
             PyErr_SetString(PyExc_ValueError, "invalid loglevel");
@@ -246,7 +264,7 @@ public:
                 boost::python::getattr(
                     boost::python::object(
                         boost::python::borrowed(_self)), "format")(record));
-            self->impl_.log(get_level(_level.get()), "%s",
+            self->impl_.log(translate_level(_level.get()), "%s",
                     boost::python::extract<char const*>(msg)());
         }
         catch (boost::python::error_already_set const&)
@@ -273,10 +291,28 @@ public:
         return boost::python::incref(Py_None);
     }
 
+    static PyObject* translateLevelValue(PyObject* _self, PyObject* arg)
+    try
+    {
+        return boost::python::incref(boost::python::object(translate_level(arg)).ptr());
+    }
+    catch (boost::python::error_already_set const&)
+    {
+        return NULL;
+    }
+
+    static PyObject* get_logger(PyObject* _self, void* context)
+    {
+        CppLoggerHandler* const self(get_self(_self));
+        if (!self)
+            return NULL;
+        return boost::python::reference_existing_object::apply<Logger*>::type()(self->impl_);
+    }
+
     CppLoggerHandler(Logger& impl): impl_(impl) {}
 
 protected:
-    static enum Logger::level get_level(PyObject* _level)
+    static enum Logger::level translate_level(PyObject* _level)
     {
         enum Logger::level retval(Logger::L_OFF);
         boost::python::object level(boost::python::borrowed(_level));
@@ -297,6 +333,7 @@ protected:
 protected:
     static boost::python::handle<> __class__;
     static PyMethodDef __methods__[];
+    static PyGetSetDef __getsets__[];
     Logger& impl_;
 };
 
@@ -312,6 +349,12 @@ PyMethodDef CppLoggerHandler::__methods__[] = {
     { "emit", (PyCFunction)CppLoggerHandler::emit, METH_O, "" },
     { "flush", (PyCFunction)CppLoggerHandler::flush, METH_NOARGS, "" },
     { "close", (PyCFunction)CppLoggerHandler::close, METH_NOARGS, "" },
+    { "translateLevelValue", (PyCFunction)CppLoggerHandler::translateLevelValue, METH_O | METH_STATIC, "" },
+    { NULL, NULL }
+};
+
+PyGetSetDef CppLoggerHandler::__getsets__[] = {
+    { const_cast<char*>("logger"), (getter)&CppLoggerHandler::get_logger, NULL, NULL },
     { NULL, NULL }
 };
 

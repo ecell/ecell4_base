@@ -22,12 +22,6 @@ register_logger_level_enum(char const* name)
         ;
 }
 
-static PyObject* dummy_getter(PyObject*)
-{
-    PyErr_SetString(PyExc_AttributeError, "try to read a write-only property");
-    return NULL;
-}
-
 boost::python::objects::class_base
 register_logger_manager_class(char const* name)
 {
@@ -40,7 +34,7 @@ register_logger_manager_class(char const* name)
     return class_<impl_type, boost::shared_ptr<impl_type>, boost::noncopyable>(name, no_init)
         .add_property("level",
             static_cast<enum Logger::level(impl_type::*)() const>(&impl_type::level),
-            static_cast<void(impl_type::*)(enum Logger::level) const>(&impl_type::level))
+            static_cast<void(impl_type::*)(enum Logger::level)>(&impl_type::level))
         .add_property("name", &impl_type::name)
         .add_property("appenders",
             make_function(&impl_type::appenders,

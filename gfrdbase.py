@@ -47,16 +47,18 @@ def setup_logging():
         else:
             handler = logging.FileHandler(os.environ['LOGFILE'], 'w', )
             
+        if 'LOGLEVEL' in os.environ:
+            handler.setLevel(getattr(logging, os.environ['LOGLEVEL']))
+        else:
+            handler.setLevel(logging.INFO)
     else:
-        handler = _gfrd.CppLoggerHandler("ecell")
+        handler = _gfrd.CppLoggerHandler(_gfrd.Logger.get_logger("ecell"))
+        if 'LOGLEVEL' in os.environ:
+            handler.logger.manager.level = _gfrd.CppLoggerHandler.translateLevelValue(getattr(logging, os.environ['LOGLEVEL']))
+            print handler.logger.manager.level
 
     formatter = logging.Formatter('%(message)s')
     handler.setFormatter(formatter)
-
-    if 'LOGLEVEL' in os.environ:
-        handler.setLevel(getattr(logging, os.environ['LOGLEVEL']))
-    else:
-        handler.setLevel(logging.INFO)
 
     log.addHandler(handler)
 

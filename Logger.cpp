@@ -104,7 +104,7 @@ boost::shared_ptr<LoggerManager> LoggerManager::get_logger_manager(char const* l
     return registry(logger_name_pattern);
 }
 
-boost::shared_ptr<LoggerManager const> Logger::manager() const
+boost::shared_ptr<LoggerManager> Logger::manager() const
 {
     const_cast<Logger*>(this)->ensure_initialized();
     return manager_;
@@ -218,9 +218,10 @@ inline void Logger::ensure_initialized()
 Logger::Logger(LoggerManagerRegistry const& registry, char const* name)
         : registry_(registry), name_(name), manager_() {}
 
-void LoggerManager::level(enum Logger::level level) const
+void LoggerManager::level(enum Logger::level level)
 {
     /* synchronized { */
+    level_ = level;
     std::for_each(managed_loggers_.begin(), managed_loggers_.end(),
                   boost::bind(&Logger::level, _1, level));
     /* } */
