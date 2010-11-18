@@ -55,7 +55,6 @@ def setup_logging():
         handler = _gfrd.CppLoggerHandler(_gfrd.Logger.get_logger("ecell"))
         if 'LOGLEVEL' in os.environ:
             handler.logger.manager.level = _gfrd.CppLoggerHandler.translateLevelValue(getattr(logging, os.environ['LOGLEVEL']))
-            print handler.logger.manager.level
 
     formatter = logging.Formatter('%(message)s')
     handler.setFormatter(formatter)
