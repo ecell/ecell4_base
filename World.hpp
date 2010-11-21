@@ -184,12 +184,21 @@ public:
 
     virtual bool update_particle(particle_id_pair const& pi_pair)
     {
-        if (base_type::update_particle(pi_pair))
+        typename base_type::particle_matrix_type::iterator i(
+                base_type::pmat_.find(pi_pair.first));
+        if (i != base_type::pmat_.end())
         {
-            particle_pool_[pi_pair.second.sid()].insert(pi_pair.first);
-            return true;
+            if ((*i).second.sid() != pi_pair.second.sid())
+            {
+                particle_pool_[(*i).second.sid()].erase((*i).first);
+                particle_pool_[pi_pair.second.sid()].insert(pi_pair.first);
+            }
+            base_type::pmat_.update(i, pi_pair);
+            return false;
         }
-        return false;
+        BOOST_ASSERT(base_type::update_particle(pi_pair));
+        particle_pool_[pi_pair.second.sid()].insert(pi_pair.first);
+        return true;
     }
 
     virtual bool remove_particle(particle_id_type const& id)
