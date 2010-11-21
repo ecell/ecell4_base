@@ -311,6 +311,7 @@ BOOST_AUTO_TEST_CASE(particle_pool)
     typedef world_type::species_type species;
     typedef world_type::position_type position_type;
     typedef world_type::particle_id_pair particle_id_pair;
+    typedef world_type::particle_type particle_type;
     typedef SerialIDGenerator<species_id> id_generator;
     typedef world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
 
@@ -331,4 +332,15 @@ BOOST_AUTO_TEST_CASE(particle_pool)
     BOOST_CHECK(contains(i.get_particle_ids(s1.id()), p1.first));
     BOOST_CHECK(contains(i.get_particle_ids(s1.id()), p2.first));
     BOOST_CHECK(!contains(i.get_particle_ids(s1.id()), p3.first));
+    BOOST_CHECK(!contains(i.get_particle_ids(s2.id()), p1.first));
+    BOOST_CHECK(!contains(i.get_particle_ids(s2.id()), p2.first));
+    BOOST_CHECK(contains(i.get_particle_ids(s2.id()), p3.first));
+
+    i.update_particle(particle_id_pair(p1.first, particle_type(s2.id(), p1.second.shape(), p1.second.D())));
+    BOOST_CHECK(!contains(i.get_particle_ids(s1.id()), p1.first));
+    BOOST_CHECK(contains(i.get_particle_ids(s1.id()), p2.first));
+    BOOST_CHECK(!contains(i.get_particle_ids(s1.id()), p3.first));
+    BOOST_CHECK(contains(i.get_particle_ids(s2.id()), p1.first));
+    BOOST_CHECK(!contains(i.get_particle_ids(s2.id()), p2.first));
+    BOOST_CHECK(contains(i.get_particle_ids(s2.id()), p3.first));
 }

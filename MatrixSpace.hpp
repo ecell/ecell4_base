@@ -334,6 +334,31 @@ public:
         return size_;
     }
 
+    inline iterator update(iterator const& i, const value_type& v)
+    {
+        cell_type& c(cell(index(v.second.position())));
+        std::pair<typename cell_type::iterator, bool> ir;
+        if (&c != i.cell_p_)
+        {
+            i.cell_p_->erase(v.first);
+            rmap_.erase(v.first);
+            rmap_.insert(std::make_pair(v.first, &c));
+            ir = c.insert(v);
+        }
+        else
+        {
+            ir.first = c.find(v.first);
+            BOOST_ASSERT(c.end() != ir.first);
+            if (v.first == (*ir.first).first) {
+                ir.first->second = v.second;
+            } else {
+                c.erase(ir.first);
+                ir.first = c.insert(v).first;
+            }
+        }
+        return iterator(&c, cell_range(), ir.first);
+    }
+
     inline std::pair<iterator, bool> update(const value_type& v)
     {
         cell_type& c(cell(index(v.second.position())));
@@ -370,6 +395,16 @@ public:
         }
     }
 
+    inline bool erase(iterator const& i)
+    {
+        if (end() == i)
+        {
+            return false;
+        }
+        i.cell_p_->erase(i->cell_iter_);
+        --size_;
+        return true;
+    }
 
     inline bool erase(const key_type& k)
     {
