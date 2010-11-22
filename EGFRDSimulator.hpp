@@ -1337,7 +1337,12 @@ protected:
             boost::fusion::at_key<spherical_shell_type>(smatm_));
         std::for_each(boost::begin(r), boost::end(r),
             compose_unary(
-                boost::bind(&spherical_shell_matrix_type::erase, mat, _1),
+                boost::bind(
+                    static_cast<
+                        bool(spherical_shell_matrix_type::*)(
+                            typename spherical_shell_matrix_type::key_type
+                            const&)>(&spherical_shell_matrix_type::erase),
+                    mat, _1),
                 select_first<spherical_shell_id_pair>()));
         remove_domain_but_shell(domain);
     }
