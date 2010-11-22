@@ -57,7 +57,8 @@ BOOST_AUTO_TEST_CASE(insert)
 template<typename Toc_>
 struct collector
 {
-    void operator()(typename Toc_::iterator i)
+    void operator()(typename Toc_::iterator i,
+            const typename Toc_::position_type& pos_off)
     {
         result.insert((*i).first);
     }

@@ -39,7 +39,7 @@ class EventSchedulerTestCase(unittest.TestCase):
     def test_one_event(self):
         scheduler = mod.EventScheduler()
 
-        event = mod.Event(1.0)
+        event = mod.PythonEvent(1.0, 1)
         id = scheduler.add(event)
         self.failIf(scheduler.time != 0.0)
         self.failIf(scheduler.top[1].time != 1.0)
@@ -54,8 +54,8 @@ class EventSchedulerTestCase(unittest.TestCase):
 
         scheduler = mod.EventScheduler()
 
-        event1 = mod.Event(1.0)
-        event2 = mod.Event(0.5)
+        event1 = mod.PythonEvent(1.0, 1)
+        event2 = mod.PytohnEvent(0.5, 2)
 
         event1_id = scheduler.add(event1)
 

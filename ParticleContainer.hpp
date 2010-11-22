@@ -50,6 +50,8 @@ public:
 
     virtual particle_id_pair get_particle(particle_id_type const& id) const = 0;
 
+    virtual bool has_particle(particle_id_type const& id) const = 0;
+
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const = 0;
 
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const = 0;

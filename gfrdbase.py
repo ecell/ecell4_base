@@ -33,10 +33,11 @@ __all__ = [
 
 World = _gfrd.World
 
-log = logging.getLogger('ecell')
+log = None
 
 def setup_logging():
     global log 
+    log = logging.getLogger('ecell')
 
     if 'LOGFILE' in os.environ:
         if 'LOGSIZE' in os.environ and int(os.environ['LOGSIZE']) != 0:
@@ -46,28 +47,21 @@ def setup_logging():
         else:
             handler = logging.FileHandler(os.environ['LOGFILE'], 'w', )
             
+        if 'LOGLEVEL' in os.environ:
+            handler.setLevel(getattr(logging, os.environ['LOGLEVEL']))
+        else:
+            handler.setLevel(logging.INFO)
     else:
-        handler = logging.StreamHandler(sys.stdout)
+        handler = _gfrd.CppLoggerHandler(_gfrd.Logger.get_logger("ecell"))
+        if 'LOGLEVEL' in os.environ:
+            levelvalue = getattr(logging, os.environ['LOGLEVEL'])
+            handler.logger.manager.level = _gfrd.CppLoggerHandler.translateLevelValue(levelvalue)
+            log.setLevel(levelvalue)
 
     formatter = logging.Formatter('%(message)s')
     handler.setFormatter(formatter)
-    if __debug__:
-        log.addHandler(handler)
-        
-    LOGLEVELS = { 'CRITICAL': logging.CRITICAL,
-                  'ERROR': logging.ERROR,
-                  'WARNING': logging.WARNING,
-                  'INFO': logging.INFO, 
-                  'DEBUG': logging.DEBUG, 
-                  'NOTSET': logging.NOTSET }
 
-    if 'LOGLEVEL' in os.environ:
-        if __debug__:
-            log.setLevel(LOGLEVELS[os.environ['LOGLEVEL']])
-    else:
-        if __debug__:
-            log.setLevel(logging.INFO)
-
+    log.addHandler(handler)
 
 setup_logging()
 

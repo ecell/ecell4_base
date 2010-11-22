@@ -21,6 +21,7 @@ INCLUDES = ${PYTHON_INCLUDES} -I${NUMPY_INCLUDE_DIR}
 AM_CXXFLAGS = @CXXFLAGS@ @GSL_CFLAGS@
 LIBBOOSTPYTHON = -l@BOOST_PYTHON_LIBNAME@
 LIBBOOSTDATE = -l@BOOST_DATE_TIME_LIBNAME@
+LIBBOOSTREGEX = -l@BOOST_REGEX_LIBNAME@
 
 CFLAGS = @GSL_CFLAGS@ @BOOST_CPPFLAGS@
 
@@ -50,6 +51,7 @@ noinst_HEADERS = \
 	BDSimulator.hpp\
 	bessel.hpp\
 	Box.hpp\
+	ConsoleAppender.hpp\
 	Cylinder.hpp\
 	Defs.hpp\
 	DomainFactory.hpp\
@@ -113,6 +115,7 @@ noinst_HEADERS = \
 	SphericalBesselTable.hpp\
 	Structure.hpp\
 	StructureUtils.hpp\
+	StructureType.hpp\
 	Surface.hpp\
 	Transaction.hpp\
 	twofold_container.hpp\
@@ -163,13 +166,26 @@ noinst_HEADERS = \
 _gfrd_la_CPPFLAGS = -DPY_ARRAY_UNIQUE_SYMBOL=PyArray_API
 
 _gfrd_la_SOURCES=\
-	freeFunctions.cpp\
-	pyGFRD.cpp\
-	Model.cpp\
-	SpeciesType.cpp\
 	BasicNetworkRulesImpl.cpp\
-	NetworkRules.cpp\
+	findRoot.cpp\
+	freeFunctions.cpp\
+	funcSum.cpp\
+	GreensFunction3DAbs.cpp\
+	GreensFunction3DAbsSym.cpp\
+	GreensFunction3D.cpp\
+	GreensFunction3DRadAbsBase.cpp\
+	GreensFunction3DRadAbs.cpp\
+	GreensFunction3DRadInf.cpp\
+	GreensFunction3DSym.cpp\
 	Logger.cpp\
+	ConsoleAppender.cpp\
+	Model.cpp\
+	NetworkRules.cpp\
+	ParticleModel.cpp\
+	pyGFRD.cpp\
+	SpeciesType.cpp\
+	SphericalBesselGenerator.cpp\
+	StructureType.cpp\
 	utils.cpp
 
 _greens_functions_la_SOURCES=\
@@ -187,7 +203,8 @@ _greens_functions_la_SOURCES=\
 	GreensFunction3DRadAbsBase.cpp\
 	GreensFunction3DRadAbs.cpp\
 	GreensFunction3DAbs.cpp\
-	Logger.cpp
+	Logger.cpp\
+	ConsoleAppender.cpp
 
 _gfrd_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
 _gfrd_la_LIBADD = binding/libbinding_utils.la

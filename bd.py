@@ -13,6 +13,12 @@ import logging
 
 import itertools
 
+__all__ = [
+    'calculate_bd_dt',
+    'BDSimulatorCore',
+    'BDSimulator',
+    ]
+
 log = logging.getLogger('ecell')
 
 DEFAULT_DT_FACTOR = 1e-5
@@ -28,6 +34,7 @@ def calculate_bd_dt(species_list):
         if radius_min > species.radius:
             radius_min = species.radius
     return (radius_min * 2) ** 2 / (D_max * 2)
+
 
 class BDSimulatorCore(object):
     '''
@@ -69,12 +76,14 @@ class BDSimulatorCore(object):
     def step(self):
         self.step_counter += 1
 
+        def increment_reaction_events(rr):
+            self.reaction_events += 1
+
         ppg = _gfrd.BDPropagator(self.world, self.network_rules,
                      self.rng, self.dt, self.dissociation_retry_moves,
-                     self.world.particle_ids)
+                     increment_reaction_events, self.world.particle_ids)
         ppg.propagate_all()
 
-        self.reaction_events += len(ppg.reactions)
         self.t += self.dt
 
     def check(self):

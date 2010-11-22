@@ -10,6 +10,7 @@
 #include "sorted_list.hpp"
 #include "generator.hpp"
 #include "utils/unassignable_adapter.hpp"
+#include "utils/stringizer.hpp"
 
 template<typename Ttraits_>
 class Transaction: public ParticleContainer<Ttraits_>
@@ -122,6 +123,11 @@ public:
     virtual particle_id_pair get_particle(particle_id_type const& id) const
     {
         return pc_.get_particle(id);
+    }
+
+    virtual bool has_particle(particle_id_type const& id) const
+    {
+        return pc_.has_particle(id);
     }
 
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const

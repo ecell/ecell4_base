@@ -42,11 +42,8 @@ struct WorldTraitsBase
     typedef typename particle_type::shape_type::position_type position_type;
     typedef GSLRandomNumberGenerator rng_type;
     typedef Structure<Tderived_> structure_type;
-    typedef Surface<Tderived_> surface_type;
-    typedef Region<Tderived_> region_type;
 
     static const Real TOLERANCE = 1e-7;
-    static const Real MINIMAL_SEPARATION_FACTOR = (1.0 + 1e-7);
 };
 
 template<typename Tlen_, typename TD_>
@@ -74,6 +71,18 @@ public:
     {
         return ::distance(p0, p1);
     }
+
+	template<typename Toc_, typename Tfun_, typename Tsphere_>
+	static void each_neighbor(Toc_& oc, Tfun_& fun, Tsphere_ const& pos)
+	{
+		oc.each_neighbor(oc.index(pos), fun);
+	}
+
+	template<typename Toc_, typename Tfun_, typename Tsphere_>
+	static void each_neighbor(Toc_ const& oc, Tfun_& fun, Tsphere_ const& pos)
+	{
+		oc.each_neighbor(oc.index(pos), fun);
+	}
 
     template<typename Toc_, typename Tfun_, typename Tsphere_>
     static void take_neighbor(Toc_& oc, Tfun_& fun, const Tsphere_& cmp)
@@ -117,6 +126,18 @@ public:
     {
         return distance_cyclic(p0, p1, world_size);
     }
+
+	template<typename Toc_, typename Tfun_, typename Tsphere_>
+	static void each_neighbor(Toc_& oc, Tfun_& fun, Tsphere_ const& pos)
+	{
+		oc.each_neighbor_cyclic(oc.index(pos), fun);
+	}
+
+	template<typename Toc_, typename Tfun_, typename Tsphere_>
+	static void each_neighbor(Toc_ const& oc, Tfun_& fun, Tsphere_ const& pos)
+	{
+		oc.each_neighbor_cyclic(oc.index(pos), fun);
+	}
 
     template<typename Toc_, typename Tfun_, typename Tsphere_>
     static void take_neighbor(Toc_& oc, Tfun_& fun, const Tsphere_& cmp)

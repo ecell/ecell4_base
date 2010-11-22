@@ -11,19 +11,18 @@
 #endif
 
 #include <sstream>
-#include "Structure.hpp"
+#include "ParticleSimulationStructure.hpp"
 #include "Box.hpp"
 #include "Cylinder.hpp"
 #include "Sphere.hpp"
 #include "Plane.hpp"
 
-
 template<typename Ttraits_>
-class Surface: public Structure<Ttraits_>
+class Surface: public ParticleSimulationStructure<Ttraits_>
 {
 public:
-    typedef Structure<Ttraits_> base_type;
-    typedef typename Ttraits_::structure_id_type identifier_type;
+    typedef ParticleSimulationStructure<Ttraits_> base_type;
+    typedef typename base_type::identifier_type identifier_type;
     typedef typename base_type::length_type length_type;
 
 public:
@@ -39,8 +38,8 @@ class BasicSurfaceImpl: public Surface<Ttraits_>
 {
 public:
     typedef Surface<Ttraits_> base_type;
-    typedef typename Ttraits_::structure_id_type identifier_type;
     typedef Tshape_ shape_type;
+    typedef typename base_type::identifier_type identifier_type;
     typedef typename base_type::length_type length_type;
     typedef typename base_type::position_type position_type;
     typedef std::pair<position_type, length_type> projected_type;
@@ -58,7 +57,7 @@ public:
         return shape_;
     }
 
-    virtual bool operator==(Structure<Ttraits_> const& rhs) const
+    virtual bool operator==(Structure<typename Ttraits_::world_type::traits_type> const& rhs) const
     {
         BasicSurfaceImpl const* _rhs(dynamic_cast<BasicSurfaceImpl const*>(&rhs));
         return _rhs && base_type::id_ == rhs.id() && shape_ == _rhs->shape();

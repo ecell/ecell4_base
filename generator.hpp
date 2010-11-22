@@ -22,6 +22,7 @@
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/is_readable_iterator.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/remove_const.hpp>
@@ -389,6 +390,57 @@ make_transform_generator(Tgen_* gen, Tfun_ const& fun)
     return transform_generator<Tgen_, Tfun_, boost::shared_ptr<Tgen_> >(gen, fun);
 }
 
+template<typename Tgen1_, typename Tgen2_,
+         bool Bvalid_ = boost::is_same<
+            typename Tgen1_::result_type,
+            typename Tgen2_::result_type>::value >
+struct chained_generator
+{
+    struct two_generators_return_different_types;
+    enum { _ = sizeof(two_generators_return_different_types) };
+};
+
+template<typename Tgen1_, typename Tgen2_>
+struct chained_generator<Tgen1_, Tgen2_, true>
+    : abstract_limited_generator<typename Tgen1_::result_type>
+{
+    typedef Tgen1_ first_generator_type;
+    typedef Tgen2_ second_generator_type;
+    typedef typename Tgen1_::result_type result_type;
+
+    virtual ~chained_generator() {}
+
+    chained_generator(Tgen1_& gen1, Tgen2_& gen2)
+        : gen1_(gen1), gen2_(gen2) {}
+
+    virtual std::size_t count() const
+    {
+        return ::count(gen1_) + ::count(gen2_);
+    }
+
+    virtual bool valid() const
+    {
+        return ::valid(gen1_) || ::valid(gen2_);
+    }
+
+    virtual result_type operator()()
+    {
+        if (::valid(gen1_))
+            return gen1_();
+        return gen2_();
+    }
+
+private:
+    Tgen1_& gen1_;
+    Tgen2_& gen2_;
+};
+
+template<typename Tgen1, typename Tgen2>
+bool valid(chained_generator<Tgen1, Tgen2, true> const& gen)
+{
+    return gen.valid();
+}
+
 template<typename Tgen_, typename Tpointer_ = Tgen_*>
 class generator_iterator:
     public boost::iterator_facade<
@@ -492,11 +544,6 @@ public:
 private:
     Tpointer_ gen_;
 };
-
-namespace std {
-
-
-} // namespace std
 
 template<typename Tgen, typename Tpointer>
 inline generator_range<Tgen, Tpointer>

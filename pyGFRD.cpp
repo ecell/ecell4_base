@@ -42,6 +42,7 @@
 #include "binding/particle_class.hpp"
 #include "binding/particle_container_class.hpp"
 #include "binding/particle_id_class.hpp"
+#include "binding/particle_model_class.hpp"
 #include "binding/plane_class.hpp"
 #include "binding/event_classes.hpp"
 #include "binding/shell_classes.hpp"
@@ -55,6 +56,10 @@
 #include "binding/shape_converters.hpp"
 #include "binding/position_converters.hpp"
 #include "binding/structure_classes.hpp"
+#include "binding/reaction_record_classes.hpp"
+#include "binding/particle_simulator_classes.hpp"
+#include "binding/egfrd_simulator_classes.hpp"
+#include "binding/python_logger_classes.hpp"
 
 namespace b = binding;
 
@@ -68,8 +73,7 @@ BOOST_PYTHON_MODULE(_gfrd)
     gsl_set_error_handler( &gsl_error_handler );
 
     peer::util::register_std_exception_translator();
-
-    peer::util::register_std_exception_translator<PyExc_IndexError, std::out_of_range>();
+peer::util::register_exception_translator<PyExc_IndexError, std::out_of_range>();
 
     b::register_model_class();
     b::register_bd_propagator_class();
@@ -85,8 +89,10 @@ BOOST_PYTHON_MODULE(_gfrd)
     b::register_network_rules_wrapper_class();
     b::register_particle_class();
     b::register_particle_id_class();
+    b::register_particle_model_class();
     b::register_position_converters();
     b::register_event_class();
+    b::register_python_event_class();
     b::register_event_scheduler_class();
     b::register_random_number_generator_class();
     b::register_sphere_class();
@@ -102,6 +108,10 @@ BOOST_PYTHON_MODULE(_gfrd)
     b::register_world_class();
     b::register_structure_classes();
     b::register_module_functions();
+    b::register_reaction_record_classes();
+    b::register_particle_simulator_classes();
+    b::register_egfrd_simulator_classes();
+    b::register_python_logger_classes();
 
     peer::util::register_seq_wrapped_multi_array_converter<b::Length>();
     peer::util::register_ndarray_wrapped_multi_array_converter<b::Length, 2>();

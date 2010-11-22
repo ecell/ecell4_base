@@ -1,6 +1,7 @@
 #ifndef TWOFOLD_CONTAINER_HPP
 #define TWOFOLD_CONTAINER_HPP
 
+#include <algorithm>
 #include <boost/array.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_categories.hpp>
@@ -250,6 +251,11 @@ public:
     bool operator!=(twofold_container const& rhs) const
     {
         return !operator==(rhs);
+    }
+
+    void swap(twofold_container& rhs)
+    {
+        std::swap(items_, rhs.items_);
     }
 
 protected:

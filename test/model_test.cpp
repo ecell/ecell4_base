@@ -7,6 +7,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <memory>
 #include "Model.hpp"
+#include "NetworkRules.hpp"
 #include "utils/array_helper.hpp"
 #include "SpeciesType.hpp"
 

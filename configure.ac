@@ -84,6 +84,17 @@ AC_ARG_WITH(boost-date_time-libname,
 AC_CHECK_LIB($BOOST_DATE_TIME_LIBNAME,main,,AC_MSG_ERROR([could not find libboost_date_time.]))
 AC_SUBST(BOOST_DATE_TIME_LIBNAME)
 
+BOOST_REGEX_LIBNAME=boost_regex
+
+AC_ARG_WITH(boost-regex-libname,
+  AC_HELP_STRING([--with-boost-date-time-libname=LIBNAME],
+                 [specify the library name of Boost.Python [[boost_regex]]]
+                ),
+  [BOOST_REGEX_LIBNAME=$withval]
+)
+AC_CHECK_LIB($BOOST_REGEX_LIBNAME,main,,AC_MSG_ERROR([could not find libboost_regex.]))
+AC_SUBST(BOOST_REGEX_LIBNAME)
+
 dnl
 dnl
 AM_CHECK_PYMOD(numpy,,,[AC_MSG_ERROR([could not find Python numpy module.])])

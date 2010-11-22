@@ -1,11 +1,18 @@
 #ifndef MULTI_HPP
 #define MULTI_HPP
 
+#include <boost/scoped_ptr.hpp>
+#include <boost/algorithm/string/join.hpp>
+
 #include "exceptions.hpp"
 #include "Domain.hpp"
 #include "ParticleContainer.hpp"
 #include "ParticleContainerBase.hpp"
 #include "Sphere.hpp"
+#include "BDSimulator.hpp"
+#include "BDPropagator.hpp"
+#include "Logger.hpp"
+#include "PairGreensFunction.hpp"
 #include "utils/array_helper.hpp"
 #include "utils/range.hpp"
 
@@ -33,6 +40,7 @@ public:
     typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
     typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
     typedef std::map<particle_id_type, particle_type> particle_map;
+    typedef sized_iterator_range<typename particle_map::const_iterator> particle_id_pair_range;
 
     virtual ~MultiParticleContainer() {}
 
@@ -66,9 +74,8 @@ public:
 
     virtual bool update_particle(particle_id_pair const& pi_pair)
     {
-        bool const retval(world_.update_particle(pi_pair));
-        particles_[pi_pair.first] = pi_pair.second;
-        return retval;
+        world_.update_particle(pi_pair);
+        return particles_.insert(pi_pair).second;
     }
 
     virtual bool remove_particle(particle_id_type const& id)
@@ -86,6 +93,11 @@ public:
                     + boost::lexical_cast<std::string>(id));
         }
         return *i;
+    }
+
+    virtual bool has_particle(particle_id_type const& id) const
+    {
+        return particles_.end() != particles_.find(id);
     }
 
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
@@ -156,6 +168,12 @@ public:
         return world_.cyclic_transpose(p0, p1);
     }
 
+    particle_id_pair_range get_particles_range() const
+    {
+        return particle_id_pair_range(particles_.begin(), particles_.end(),
+                                      particles_.size());
+    }
+
     MultiParticleContainer(world_type& world): world_(world) {}
 
 private:
@@ -170,78 +188,135 @@ public:
     typedef Tsim_ simulator_type;
     typedef typename simulator_type::traits_type traits_type;
     typedef Domain<traits_type> base_type;
-    typedef typename traits_type::particle_type particle_type;
+    typedef typename traits_type::world_type::particle_type particle_type;
     typedef typename particle_type::shape_type particle_shape_type;
-    typedef typename traits_type::species_type species_type;
-    typedef typename traits_type::species_id_type species_id_type;
-    typedef typename traits_type::position_type position_type;
-    typedef typename traits_type::particle_id_type particle_id_type;
-    typedef typename traits_type::length_type length_type;
-    typedef typename traits_type::size_type size_type;
-    typedef typename traits_type::structure_id_type structure_id_type;
-    typedef typename traits_type::structure_type structure_type;
-    typedef typename traits_type::spherical_shell_type spherical_shell_type;
-    typedef typename traits_type::spherical_shell_id_pair spherical_shell_id_pair;
-    typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
-    typedef Transaction<traits_type> transaction_type;
-    typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
-    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
-    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
+    typedef typename traits_type::world_type::species_type species_type;
+    typedef typename traits_type::world_type::species_id_type species_id_type;
+    typedef typename traits_type::world_type::position_type position_type;
+    typedef typename traits_type::world_type::particle_id_type particle_id_type;
+    typedef typename traits_type::world_type::length_type length_type;
+    typedef typename traits_type::world_type::size_type size_type;
+    typedef typename traits_type::world_type::structure_type structure_type;
+    typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
     typedef typename traits_type::shell_id_type shell_id_type;
-    typedef typename traits_type::domain_id_type domain_id_type;
-    typedef typename traits_type::time_type time_type;
-    typedef typename traits_type::sphere_type sphere_type;
-    typedef MatrixSpace<particle_type, particle_id_type, get_mapper_mf> particle_matrix_type;
-    typedef std::map<shell_id_type, particle_id_type> shell_particle_id_map;
-    typedef sized_iterator_range<typename shell_particle_id_map::const_iterator> shell_particle_id_pair_range;
+    typedef typename traits_type::domain_id_type identifier_type;
+    typedef typename traits_type::template shell_generator<
+        typename simulator_type::sphere_type>::type spherical_shell_type;
+    typedef std::pair<const typename traits_type::shell_id_type, spherical_shell_type> spherical_shell_id_pair;
+    typedef typename traits_type::reaction_record_type reaction_record_type;
+
+    typedef std::map<shell_id_type, spherical_shell_type> spherical_shell_map;
+    typedef sized_iterator_range<typename spherical_shell_map::const_iterator> spherical_shell_id_pair_range;
+    typedef MultiParticleContainer<traits_type> multi_particle_container_type;
+
+    enum event_kind
+    {
+        NONE,
+        ESCAPE,
+        REACTION,
+        NUM_MULTI_EVENT_KINDS
+    };
+
+private:
+    struct last_reaction_setter: ReactionRecorder<reaction_record_type>
+    {
+        virtual ~last_reaction_setter() {}
+
+        virtual void operator()(reaction_record_type const& rec)
+        {
+            outer_.last_reaction_.swap(const_cast<reaction_record_type&>(rec));
+        }
+
+        last_reaction_setter(Multi& outer): outer_(outer) {}
+
+        Multi& outer_;
+    };
 
 public:
     virtual ~Multi() {}
 
-    Multi(domain_id_type const& id, structure_id_type const& structure_id,
-          simulator_type& main)
-        : base_type(id, structure_id),
-          main_(main), shell_ids_(), escaped_(false) {}
-
-    spherical_shell_id_pair
-    add_particle_and_shell(domain_id_type const& id,
-                           particle_id_pair const& pp,
-                           length_type const& shell_size)
+    virtual char const* type_name() const
     {
-        BOOST_ASSERT(main_.world().update_particle(pp));
-        spherical_shell_id_pair ssp(
-            main_.new_spherical_shell(
-                id, sphere_type(pp.second.position(), shell_size)));
-        shell_ids_[ssp.first] = pp.first;
-        return ssp;
+        return "Multi";
     }
 
-    shell_particle_id_pair_range get_shell_particle_pairs() const
+    virtual std::string as_string() const
     {
-        return shell_particle_id_pair_range(shell_ids_);
+        return (boost::format(
+            "%s(id=%s, event=%s, last_time=%g, dt=%g, particles=[%s])") %
+            type_name() %
+            boost::lexical_cast<std::string>(base_type::id_).c_str() %
+            boost::lexical_cast<std::string>(base_type::event_.first).c_str() %
+            base_type::last_time_ % base_type::dt_ %
+            stringize_and_join(
+                make_select_first_range(pc_.get_particles_range()),
+                ", ")).str();
     }
 
-    template<typename Tset_>
-    void clear_volume(particle_shape_type const& sphere, Tset_ const& ignore)
+    Multi(identifier_type const& id, simulator_type& main, Real dt_factor)
+        : base_type(id), main_(main), pc_(*main.world()), dt_factor_(dt_factor),
+          shells_(), last_event_(NONE) {}
+
+    event_kind const& last_event() const
     {
-        // check if the particle has escaped
-        if (!within_shell(sphere))
-        {
-            escaped_ = true;
-            clear_outer_volume(sphere, ignore);
-        }
+        return last_event_;
     }
 
-protected:
+    reaction_record_type const& last_reaction() const
+    {
+        return last_reaction_;
+    }
+
+    bool has_particle(particle_id_type const& pid) const
+    {
+        return pc_.has_particle(pid);
+    }
+
+    bool add_particle(particle_id_pair const& pp)
+    {
+        return pc_.update_particle(pp);
+    }
+
+    bool add_shell(spherical_shell_id_pair const& sp)
+    {
+        spherical_shell_id_pair new_sp(sp);
+        new_sp.second.did() = base_type::id();
+        return shells_.insert(new_sp).second;
+    }
+
+    spherical_shell_id_pair_range get_shells() const
+    {
+        return spherical_shell_id_pair_range(shells_.begin(), shells_.end(), shells_.size());
+    }
+
+    virtual typename Domain<traits_type>::size_type num_shells() const
+    {
+        return shells_.size();
+    }
+
+    virtual typename Domain<traits_type>::size_type multiplicity() const
+    {
+        return pc_.num_particles();
+    }
+
+    virtual void accept(ImmutativeDomainVisitor<traits_type> const& visitor) const
+    {
+        visitor(*this);
+    }
+
+    virtual void accept(MutativeDomainVisitor<traits_type> const& visitor)
+    {
+        visitor(*this);
+    }
+
     bool within_shell(particle_shape_type const& sphere) const
     {
-        for (typename shell_particle_id_map::const_iterator
-                i(shell_ids_.begin()), e(shell_ids_.end());
-             i != e; ++i)
+        for (typename spherical_shell_map::const_iterator
+                i(shells_.begin()), e(shells_.end()); i != e; ++i)
         {
-            spherical_shell_type shell(main_.get_spherical_shell((*i).first));
-            position_type ppos(main_.world().cyclic_transpose(sphere.position(), shell.position()));
-            if (distance(ppos, shell.position()) < shell.radius())
+            spherical_shell_id_pair const& sp(*i);
+            position_type ppos(main_.world()->cyclic_transpose(sphere.position(), (sp).second.position()));
+            if (distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius())
             {
                 return true;
             }
@@ -249,20 +324,80 @@ protected:
         return false;
     }
 
-    template<typename Tset_>
-    void clear_outer_volume(particle_shape_type const& sphere, Tset_ const& ignore)
+    typename multi_particle_container_type::particle_id_pair_range
+    get_particles_range() const
     {
-        main_.clear_volume(sphere, ignore);
-        if (std::auto_ptr<particle_id_pair_and_distance_list>(main_.world().check_overlap(sphere, ignore)).get())
+        return pc_.get_particles_range();
+    }
+
+    void step()
+    {
+        boost::scoped_ptr<
+            typename multi_particle_container_type::transaction_type>
+                tx(pc_.create_transaction());
+        typedef typename multi_particle_container_type::transaction_type::particle_id_pair_generator particle_id_pair_generator;
+        typedef typename multi_particle_container_type::transaction_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
+
+        last_reaction_setter rs(*this);
+        BDPropagator<traits_type> ppg(
+            *tx, *main_.network_rules(), main_.rng(),
+            dt_factor_ * BDSimulator<traits_type>::determine_dt(*main_.world()),
+            1 /* FIXME: dissociation_retry_moves */, &rs,
+            make_select_first_range(pc_.get_particles_range()));
+
+        last_event_ = NONE;
+
+        while (ppg())
         {
-            throw no_space(__FUNCTION__);
+            if (last_reaction_)
+            {
+                last_event_ = REACTION;
+                break;
+            }
+        }
+
+        boost::scoped_ptr<particle_id_pair_generator>
+            added_particles(tx->get_added_particles()),
+            modified_particles(tx->get_modified_particles());
+        LOG_DEBUG(("added_particles=%zu, modified_particles=%zu",
+            ::count(*added_particles), ::count(*modified_particles)));
+        chained_generator<particle_id_pair_generator,
+                          particle_id_pair_generator>
+            gen(*added_particles, *modified_particles);
+        while (::valid(gen))
+        {
+            particle_id_pair pp(gen());
+            boost::scoped_ptr<particle_id_pair_and_distance_list>
+                overlapped(main_.world()->check_overlap(
+                    pp.second.shape(), pp.first));
+            if (overlapped && ::size(*overlapped))
+            {
+                log_.info("collision occurred between particles of a multi and the outside: %s.  moves will be rolled back.",
+                    boost::lexical_cast<std::string>(pp.first).c_str());
+                tx->rollback();
+                return;
+            }
+
+            if (!within_shell(pp.second.shape()))
+            {
+                last_event_ = ESCAPE;
+                main_.clear_volume(pp.second.shape(), base_type::id_);
+            }
         }
     }
 
 protected:
     simulator_type& main_;
-    shell_particle_id_map shell_ids_;
-    bool escaped_;
+    multi_particle_container_type pc_;
+    Real dt_factor_;
+    spherical_shell_map shells_;
+    event_kind last_event_;
+    reaction_record_type last_reaction_;
+
+    static Logger& log_;
 };
+
+template<typename Tsim_>
+Logger& Multi<Tsim_>::log_(Logger::get_logger("ecell.Multi"));
 
 #endif /* MULTI_HPP */

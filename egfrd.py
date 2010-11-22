@@ -748,7 +748,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
         if intruders:
             burst = self.burst_non_multis(intruders)
 
-            obj = self.form_pair_or_multi(single, singlepos, burst)
+            obj = self.form_pair_or_multi(single, burst)
 
             if obj:
                 return
@@ -1109,8 +1109,10 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         return single1, single2
 
-    def form_pair_or_multi(self, single, singlepos, neighbors):
+    def form_pair_or_multi(self, single, neighbors):
         assert neighbors
+
+        singlepos = single.shell.shape.position
 
         # sort burst neighbors by distance
         dists = self.obj_distance_array(singlepos, neighbors)

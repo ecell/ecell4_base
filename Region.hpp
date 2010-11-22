@@ -11,14 +11,14 @@
 #endif
 
 #include <sstream>
-#include "Structure.hpp"
+#include "ParticleSimulationStructure.hpp"
 
 template<typename Ttraits_>
-class Region: public Structure<Ttraits_>
+class Region: public ParticleSimulationStructure<Ttraits_>
 {
 public:
-    typedef Structure<Ttraits_> base_type;
-    typedef typename Ttraits_::structure_id_type identifier_type;
+    typedef ParticleSimulationStructure<Ttraits_> base_type;
+    typedef typename base_type::identifier_type identifier_type;
 
 public:
     virtual ~Region() {}
@@ -31,8 +31,8 @@ class BasicRegionImpl: public Region<Ttraits_>
 {
 public:
     typedef Region<Ttraits_> base_type;
-    typedef typename Ttraits_::structure_id_type identifier_type;
     typedef Tshape_ shape_type;
+    typedef typename base_type::identifier_type identifier_type;
     typedef typename base_type::length_type length_type;
     typedef typename base_type::position_type position_type;
 
@@ -49,7 +49,7 @@ public:
         return shape_;
     }
 
-    virtual bool operator==(Structure<Ttraits_> const& rhs) const
+    virtual bool operator==(Structure<typename Ttraits_::world_type::traits_type> const& rhs) const
     {
         BasicRegionImpl const* _rhs(dynamic_cast<BasicRegionImpl const*>(&rhs));
         return _rhs && base_type::id_ == rhs.id() && shape_ == _rhs->shape();

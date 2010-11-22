@@ -11,6 +11,7 @@
 #include "peer/utils.hpp"
 #include "peer/numpy/pyarray_backed_allocator.hpp"
 #include "peer/numpy/type_mappings.hpp"
+#include "utils/fun_wrappers.hpp"
 
 namespace peer {
 
@@ -114,7 +115,7 @@ namespace util
                 }
                 catch (const std::exception&)
                 {
-                    std::for_each(converted_data, di, functor::destructor_fun<
+                    std::for_each(converted_data, di, destruct_ptr<
                             pyobject_array_allocator_type>(alloc));
                     return NULL; 
                 }

@@ -27,21 +27,18 @@ inline boost::python::objects::class_base register_bd_propagator_class(char cons
     typedef typename world_type::traits_type::rng_type rng_type;
     typedef typename simulator_traits_type::time_type time_type;
     typedef typename world_type::particle_container_type particle_container_type;
+    typedef typename impl_type::reaction_recorder_type reaction_recorder_type;
 
     peer::converters::register_pyiterable_range_converter<particle_id_type>();
     return class_<impl_type, boost::noncopyable>(
-        "BDPropagator", init<
+        name, init<
             particle_container_type&, network_rules_type const&, rng_type&,
-            time_type, int,
+            time_type, int, reaction_recorder_type*,
             peer::wrappers::pyiterable_range<particle_id_type> >())
         .def(init<
             particle_container_type&, network_rules_type const&, rng_type&,
-            time_type, int,
+            time_type, int, reaction_recorder_type*,
             typename get_select_first_range<typename world_type::particle_id_pair_range>::type>())
-        .add_property("reactions",
-            peer::util::range_from_range<
-                typename impl_type::reaction_rules_range,
-                impl_type, &impl_type::get_reactions>())
         .add_property("rejected_move_count",
             &impl_type::get_rejected_move_count)
         .def("__call__", &impl_type::operator())

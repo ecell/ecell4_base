@@ -116,7 +116,7 @@ struct particle_id_pair_range_select_first_converter
 
 void register_world_class()
 {
-    register_world_class<World, ParticleContainer, EGFRDSimulatorTraits>("World");
+    register_world_class<World, ParticleContainer, EGFRDSimulator>("World");
     particle_id_pair_range_select_first_converter<
         get_select_first_range<
             World::particle_id_pair_range>::type>::__register();

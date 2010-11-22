@@ -29,6 +29,8 @@
 struct Traits: ParticleSimulatorTraitsBase<World<CyclicWorldTraits<Real, Real> > >
 {};
 
+typedef ParticleSimulator<Traits> _ParticleSimulator;
+
 template<typename Tworld_, typename Trng_, typename Tpid_list_>
 void inject_particles(Tworld_& world, Trng_& rng, Tpid_list_& pid_list, typename Tworld_::species_id_type const& sid, int n)
 {
@@ -72,7 +74,7 @@ BOOST_AUTO_TEST_CASE(instantiation)
     Traits::world_type w;
     boost::scoped_ptr<Traits::world_type::transaction_type> tx(
             w.create_transaction());
-    BDPropagator<Traits> bdp(*tx, nrw, rng, .01, 100,
+    BDPropagator<Traits> bdp(*tx, nrw, rng, .01, 100, 0,
             make_select_first_range(w.get_particles_range()));
 }
 
@@ -98,8 +100,8 @@ BOOST_AUTO_TEST_CASE(basic)
     w.add_species(S2);
 
     boost::shared_ptr<Traits::world_type::structure_type> default_surface(
-        new Traits::cuboidal_region_type("default",
-            Traits::box_type(position_type(1e-5 / 2, 1e-5 / 2, 1e-5 / 2),
+        new _ParticleSimulator::cuboidal_region_type("default",
+            _ParticleSimulator::box_type(position_type(1e-5 / 2, 1e-5 / 2, 1e-5 / 2),
                              array_gen(1e-5, 1e-5, 1e-5))));
     w.add_structure(default_surface);
 
@@ -113,7 +115,7 @@ BOOST_AUTO_TEST_CASE(basic)
 
     for (int i = 1000; --i >= 0; ) {
         boost::scoped_ptr<Traits::world_type::transaction_type> tx(w.create_transaction());
-        BDPropagator<Traits> prpg(*tx, nrw, rng, 5e-11, 100, make_select_first_range(w.get_particles_range()));
+        BDPropagator<Traits> prpg(*tx, nrw, rng, 5e-11, 100, 0, make_select_first_range(w.get_particles_range()));
         while (prpg());
         boost::scoped_ptr<particle_id_pair_generator> added_particles(tx->get_added_particles());
         boost::scoped_ptr<particle_id_pair_generator> removed_particles(tx->get_removed_particles());

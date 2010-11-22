@@ -6,10 +6,10 @@
 
 template<typename Ttraits_>
 class CylindricalSurface
-    : public BasicSurfaceImpl<Ttraits_, Cylinder<typename Ttraits_::length_type> >
+    : public BasicSurfaceImpl<Ttraits_, Cylinder<typename Ttraits_::world_type::traits_type::length_type> >
 {
 public:
-    typedef BasicSurfaceImpl<Ttraits_, Cylinder<typename Ttraits_::length_type> > base_type;
+    typedef BasicSurfaceImpl<Ttraits_, Cylinder<typename Ttraits_::world_type::traits_type::length_type> > base_type;
     typedef typename base_type::traits_type traits_type;
     typedef typename base_type::identifier_type identifier_type;
     typedef typename base_type::shape_type shape_type;
@@ -36,6 +36,16 @@ public:
     virtual length_type minimal_distance(length_type const& radius) const
     {
         return (base_type::shape().radius() + radius) * traits_type::MINIMAL_SEPARATION_FACTOR;
+    }
+
+    virtual void accept(ImmutativeStructureVisitor<traits_type> const& visitor) const
+    {
+        visitor(*this);
+    }
+
+    virtual void accept(MutativeStructureVisitor<traits_type> const& visitor)
+    {
+        visitor(*this);
     }
 
     CylindricalSurface(identifier_type const& id, shape_type const& shape)

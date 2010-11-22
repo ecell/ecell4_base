@@ -608,7 +608,7 @@ private:
             cell_type const& c(cell(_idx));
             for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
             {
-                collector(const_iterator(&c, cell_range(), i));
+                collector(const_iterator(&c, cell_range(), i), position_type());
             }
         }
     }
@@ -634,7 +634,7 @@ private:
             cell_type& c(cell(_idx));
             for (typename cell_type::iterator i(c.begin()); i != c.end(); ++i) 
             {
-                collector(iterator(&c, cell_range(), i));
+                collector(iterator(&c, cell_range(), i), position_type());
             }
         }
     }

@@ -1,6 +1,7 @@
 #ifndef SHAPE_HPP
 #define SHAPE_HPP
 
+#include <boost/type_traits/remove_cv.hpp>
 #include "Vector3.hpp"
 
 template<typename Tobj_>
@@ -36,13 +37,29 @@ struct shape_position_type
 template<typename T_>
 struct shape_length_type
 {
-    typedef typename element_type_of<typename shape_position_type<T_>::type>::type type;
+    typedef typename element_type_of<typename shape_position_type<typename boost::remove_cv<T_>::type >::type>::type type;
 };
 
 template<typename T_>
-inline typename shape_position_type<T_>::type shape_position(T_ const& shape)
+inline typename shape_position_type<T_>::type const& shape_position(T_ const& shape)
 {
     return shape.position();
+}
+
+template<typename T_>
+inline typename shape_position_type<T_>::type& shape_position(T_& shape)
+{
+    return shape.position();
+}
+
+template<typename T_>
+inline typename shape_length_type<T_>::type const& shape_size(T_ const& shape)
+{
+}
+
+template<typename T_>
+inline typename shape_length_type<T_>::type& shape_size(T_& shape)
+{
 }
 
 template< typename T1_, typename T2_ >
