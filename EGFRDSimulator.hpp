@@ -1886,18 +1886,24 @@ protected:
         (*base_type::world_).update_particle(new_particles[0]);
         (*base_type::world_).update_particle(new_particles[1]);
 
-        for (int i = 0; i < 2; i++)
-        {
-            LOG_DEBUG(("propagate: #%d: %s => %s", i,
-                boost::lexical_cast<std::string>(particles[i].second.position()).c_str(),
-                boost::lexical_cast<std::string>(new_particles[i].second.position()).c_str()));
-        }
-
         remove_domain(domain);
 
-        return array_gen(
+        boost::array<boost::shared_ptr<single_type>, 2> const singles = { {
             create_single(new_particles[0]),
-            create_single(new_particles[1]));
+            create_single(new_particles[1]) 
+        } };
+
+        if (log_.level() == Logger::L_DEBUG)
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                LOG_DEBUG(("propagate: #%d: %s => %s", i,
+                    boost::lexical_cast<std::string>(particles[i].second.position()).c_str(),
+                    boost::lexical_cast<std::string>(*singles[i]).c_str()));
+            }
+        }
+
+        return singles;
     }
     // }}}
 
@@ -1954,8 +1960,13 @@ protected:
     {
         length_type const dt(base_type::t_ - domain.last_time());
 
-        return propagate(domain,
-            draw_new_positions<draw_on_burst>(domain, dt));
+        boost::array<boost::shared_ptr<single_type>, 2> const singles(
+            propagate(domain, draw_new_positions<draw_on_burst>(domain, dt)));
+
+        add_event(*singles[0], SINGLE_EVENT_ESCAPE);
+        add_event(*singles[1], SINGLE_EVENT_ESCAPE);
+
+        return singles;
     }
 
     void burst(multi_type& domain, boost::optional<std::vector<boost::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<boost::shared_ptr<domain_type> >&>())
@@ -3169,7 +3180,6 @@ protected:
 
                 boost::array<boost::shared_ptr<single_type>, 2> const new_single(burst(domain));
 
-                add_event(*new_single[theother_index], SINGLE_EVENT_ESCAPE);
                 try
                 {
                     attempt_single_reaction(*new_single[index]);
