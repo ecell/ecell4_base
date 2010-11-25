@@ -1167,7 +1167,7 @@ public:
 
             if (!scheduled_domains.insert(domain.id()).second)
             {
-                LOG_DEBUG(("domain id %s is doubly scheduled!", boost::lexical_cast<std::string>(domain.id()).c_str()));
+                LOG_WARNING(("domain id %s is doubly scheduled!", boost::lexical_cast<std::string>(domain.id()).c_str()));
             }
 
             CHECK(domain.event() == value);
@@ -1192,11 +1192,11 @@ public:
 
             if (diff.size() != 0)
             {
-                LOG_DEBUG(("domains not scheduled: %s",
+                LOG_WARNING(("domains not scheduled: %s",
                     stringize_and_join(diff, ", ").c_str()));
                 BOOST_FOREACH (domain_id_type const& domain_id, diff)
                 {
-                    LOG_DEBUG(("  shells that belong to unscheduled domain %s: %s",
+                    LOG_WARNING(("  shells that belong to unscheduled domain %s: %s",
                         boost::lexical_cast<std::string>(domain_id).c_str(),
                         stringize_and_join(did_map[domain_id], ", ").c_str()));
                 }
@@ -1210,7 +1210,7 @@ public:
 
         if (shells_correspond_to_domains != static_cast<std::size_t>(::size(all_shell_ids)))
         {
-            LOG_DEBUG(("shells_correspond_to_domains=%zu, shell_population=%zu", shells_correspond_to_domains, static_cast<std::size_t>(::size(all_shell_ids))));
+            LOG_WARNING(("shells_correspond_to_domains=%zu, shell_population=%zu", shells_correspond_to_domains, static_cast<std::size_t>(::size(all_shell_ids))));
             dump_events();
             retval = false;
         }

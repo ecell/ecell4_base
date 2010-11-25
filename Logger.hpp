@@ -159,4 +159,6 @@ public:
 
 #define LOG_INFO(args) if (enum Logger::level const level = log_.level()) if (level <= Logger::L_INFO) log_.info args
 
+#define LOG_WARNING(args) if (enum Logger::level const level = log_.level()) if (level <= Logger::L_WARNING) log_.warn args
+
 #endif /* LOGGER_HPP */
