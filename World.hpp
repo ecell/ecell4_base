@@ -72,17 +72,17 @@ public:
         return ::distance(p0, p1);
     }
 
-	template<typename Toc_, typename Tfun_, typename Tsphere_>
-	static void each_neighbor(Toc_& oc, Tfun_& fun, Tsphere_ const& pos)
-	{
-		oc.each_neighbor(oc.index(pos), fun);
-	}
+    template<typename Toc_, typename Tfun_, typename Tsphere_>
+    static void each_neighbor(Toc_& oc, Tfun_& fun, Tsphere_ const& pos)
+    {
+        oc.each_neighbor(oc.index(pos), fun);
+    }
 
-	template<typename Toc_, typename Tfun_, typename Tsphere_>
-	static void each_neighbor(Toc_ const& oc, Tfun_& fun, Tsphere_ const& pos)
-	{
-		oc.each_neighbor(oc.index(pos), fun);
-	}
+    template<typename Toc_, typename Tfun_, typename Tsphere_>
+    static void each_neighbor(Toc_ const& oc, Tfun_& fun, Tsphere_ const& pos)
+    {
+        oc.each_neighbor(oc.index(pos), fun);
+    }
 
     template<typename Toc_, typename Tfun_, typename Tsphere_>
     static void take_neighbor(Toc_& oc, Tfun_& fun, const Tsphere_& cmp)
