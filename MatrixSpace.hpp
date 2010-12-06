@@ -201,13 +201,6 @@ public:
                 pos[2] / cell_size_ ) % matrix_.shape()[2] );
     }
 
-    inline cell_offset_type offset(const position_type& pos,
-            double t = 1e-10) const
-    {
-        return array_gen<typename matrix_type::difference_type>(
-            pos[0] / cell_size, pos[1] / cell_size, pos[2] / cell_size);
-    }
-
     inline bool offset_index(
             cell_index_type& i,
             const cell_offset_type& o) const
