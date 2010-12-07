@@ -156,9 +156,7 @@ struct MutativeDomainVisitor
 #define CHECK(expr) \
     do \
     { \
-        bool const result = (expr); \
-        LOG_DEBUG(("checking if %s ... %s", #expr, result ? "yes": "no")); \
-        if (!result) retval = false; \
+        if (!(expr)) { retval = false; LOG_DEBUG(("checking [%s] failed", #expr)); } \
     } while (0)
 
 template<typename Ttraits_>
@@ -942,7 +940,7 @@ public:
 
     length_type max_shell_size() const
     {
-        return std::min((*base_type::world_).matrix_size() * .5 /
+        return std::min((*base_type::world_).cell_size() / 2 /
                         traits_type::SAFETY,
                    user_max_shell_size_);
     }
@@ -1300,14 +1298,15 @@ protected:
     void _remove_domain_but_shell(domain_type& domain)
     {
         LOG_DEBUG(("remove_domain_but_shell: %s", boost::lexical_cast<std::string>(domain.id()).c_str()));
+        event_id_type const event_id(domain.event().first);
         domains_.erase(domain.id());
         try
         {
-            remove_event(domain);
+            remove_event(event_id);
         }
         catch (std::out_of_range const&)
         {
-            LOG_DEBUG(("event %s already removed; ignoring.", boost::lexical_cast<std::string>(domain.event().first).c_str()));
+            LOG_DEBUG(("event %s already removed; ignoring.", boost::lexical_cast<std::string>(event_id).c_str()));
         }
     }
 
@@ -1483,10 +1482,10 @@ protected:
         }
     }
 
-    void remove_event(domain_type& domain)
+    void remove_event(event_id_type const& id)
     {
-        LOG_DEBUG(("remove_event: #%d", domain.event().first));
-        scheduler_.remove(domain.event().first);
+        LOG_DEBUG(("remove_event: #%d", id));
+        scheduler_.remove(id);
     }
 
     // create_single {{{
@@ -1865,15 +1864,17 @@ protected:
     template<typename T>
     boost::array<boost::shared_ptr<single_type>, 2>
     propagate(AnalyticalPair<traits_type, T>& domain,
-              boost::array<position_type, 2> const& _new_pos)
+              boost::array<position_type, 2> const& new_pos)
     {
         boost::array<particle_id_pair, 2> const& particles(domain.particles());
         boost::array<particle_id_pair, 2> new_particles(particles);
-        new_particles[0].second.position() = (*base_type::world_).apply_boundary(_new_pos[0]);
-        new_particles[1].second.position() = (*base_type::world_).apply_boundary(_new_pos[1]);
+        new_particles[0].second.position() = (*base_type::world_).apply_boundary(new_pos[0]);
+        new_particles[1].second.position() = (*base_type::world_).apply_boundary(new_pos[1]);
 
         if (base_type::paranoiac_)
         {
+            BOOST_ASSERT(distance(domain, new_particles[0].second.position()) <= -new_particles[0].second.radius());
+            BOOST_ASSERT(distance(domain, new_particles[1].second.position()) <= -new_particles[1].second.radius());
             BOOST_ASSERT(check_overlap(
                 shape(new_particles[0].second),
                 new_particles[0].first, new_particles[1].first));
@@ -2445,11 +2446,11 @@ protected:
             } else {
                 new_shell_size = closest.second / traits_type::SAFETY;
             }
+            new_shell_size = std::min(max_shell_size(), new_shell_size);
         }
         else
         {
-            new_shell_size = (*base_type::world_).cell_size() / 2 /
-                    traits_type::SAFETY;
+            new_shell_size = max_shell_size();
         }
         LOG_DEBUG(("restore domain: %s (shell_size=%g, dt=%g) closest=%s (distance=%g)",
             boost::lexical_cast<std::string>(domain).c_str(),
@@ -2508,19 +2509,19 @@ protected:
 
     template<typename T>
     length_type distance(AnalyticalSingle<traits_type, T> const& domain,
-                         position_type const& pos)
+                         position_type const& pos) const
     {
         return (*base_type::world_).distance(shape(domain.shell().second), pos);
     }
 
     template<typename T>
     length_type distance(AnalyticalPair<traits_type, T> const& domain,
-                         position_type const& pos)
+                         position_type const& pos) const
     {
         return (*base_type::world_).distance(shape(domain.shell().second), pos);
     }
 
-    length_type distance(multi_type const& domain, position_type const& pos)
+    length_type distance(multi_type const& domain, position_type const& pos) const
     {
         length_type retval(std::numeric_limits<length_type>::infinity());
         BOOST_FOREACH (spherical_shell_id_pair const& shell,
@@ -2536,48 +2537,50 @@ protected:
         return retval;
     }
 
-    length_type distance(domain_type const& domain, position_type const& pos)
+    length_type distance(domain_type const& domain, position_type const& pos) const
     {
+        length_type retval;
+
+        struct distance_visitor: ImmutativeDomainVisitor<traits_type>
         {
-            spherical_single_type const* _domain(
-                dynamic_cast<spherical_single_type const*>(&domain));
-            if (_domain)
+            virtual ~distance_visitor() {}
+
+            virtual void operator()(multi_type const& domain) const
             {
-                return distance(*_domain, pos);
+                retval = outer.distance(domain, pos);
             }
-        }
-        {
-            cylindrical_single_type const* _domain(
-                dynamic_cast<cylindrical_single_type const*>(&domain));
-            if (_domain)
+
+            virtual void operator()(spherical_single_type const& domain) const
             {
-                return distance(*_domain, pos);
+                retval = outer.distance(domain, pos);
             }
-        }
-        {
-            spherical_pair_type const* _domain(
-                dynamic_cast<spherical_pair_type const*>(&domain));
-            if (_domain)
+
+            virtual void operator()(cylindrical_single_type const& domain) const
             {
-                return distance(*_domain, pos);
+                retval = outer.distance(domain, pos);
             }
-        }
-        {
-            cylindrical_pair_type const* _domain(
-                dynamic_cast<cylindrical_pair_type const*>(&domain));
-            if (_domain)
+
+            virtual void operator()(spherical_pair_type const& domain) const
             {
-                return distance(*_domain, pos);
+                retval = outer.distance(domain, pos);
             }
-        }
-        {
-            multi_type const* _domain(dynamic_cast<multi_type const*>(&domain));
-            if (_domain)
+
+            virtual void operator()(cylindrical_pair_type const& domain) const
             {
-                return distance(*_domain, pos);
+                retval = outer.distance(domain, pos);
             }
-        }
-        throw not_implemented(std::string("unsupported domain type"));
+
+            distance_visitor(EGFRDSimulator const& outer, position_type const& pos,
+                             length_type& retval)
+                : outer(outer), pos(pos), retval(retval) {}
+
+            EGFRDSimulator const& outer;
+            position_type const& pos;
+            length_type& retval;
+        };
+
+        domain.accept(distance_visitor(*this, pos, retval));
+        return retval;
     }
 
     boost::optional<pair_type&>
@@ -3193,6 +3196,7 @@ protected:
 
         case PAIR_EVENT_COM_ESCAPE:
             {
+                LOG_DEBUG(("=> com_escape"));
                 time_type const dt(domain.dt());
                 boost::array<position_type, 2> const new_pos(
                     draw_new_positions<draw_on_com_escape>(
@@ -3527,6 +3531,7 @@ protected:
     template<typename T>
     bool check_domain(AnalyticalSingle<traits_type, T> const& domain) const
     {
+        LOG_DEBUG(("checking domain %s", boost::lexical_cast<std::string>(domain).c_str()));
         bool retval(true);
         std::pair<domain_id_type, length_type> closest(
             get_closest_domain(domain.position(), array_gen(domain.id())));
@@ -3539,6 +3544,7 @@ protected:
     template<typename T>
     bool check_domain(AnalyticalPair<traits_type, T> const& domain) const
     {
+        LOG_DEBUG(("checking domain %s", boost::lexical_cast<std::string>(domain).c_str()));
         bool retval(true);
         std::pair<domain_id_type, length_type> closest(
             get_closest_domain(domain.position(), array_gen(domain.id())));
@@ -3550,6 +3556,7 @@ protected:
 
     bool check_domain(multi_type const& domain) const
     {
+        LOG_DEBUG(("checking domain %s", boost::lexical_cast<std::string>(domain).c_str()));
         bool retval(true);
         BOOST_FOREACH (typename multi_type::spherical_shell_id_pair const& shell,
                        domain.get_shells())
