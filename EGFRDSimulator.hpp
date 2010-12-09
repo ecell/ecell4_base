@@ -1935,8 +1935,6 @@ protected:
 
         propagate(domain, new_pos, true);
 
-        // Todo. if isinstance(single, InteractionSingle):
-        domain.dt() = 0.;
         domain.last_time() = base_type::t_;
         try
         {
@@ -2838,6 +2836,7 @@ protected:
         // Multis shells need to be contiguous.
         if (closest.second > min_shell_size)
         {
+            LOG_DEBUG(("multi shells aren't close enough to each other (closest distance=%g, min_shell_size=%g)", closest.second, min_shell_size));
             return boost::optional<multi_type&>();
         }
 
