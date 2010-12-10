@@ -1772,9 +1772,9 @@ protected:
                 domain.mobility_radius()));
         position_type const displacement(draw_displacement(domain, r));
         LOG_DEBUG(("draw_new_position(domain=%s, dt=%g): mobility_radius=%g, r=%g, displacement=%s (%g)",
+                boost::lexical_cast<std::string>(domain).c_str(), dt,
                 domain.mobility_radius(),
-                boost::lexical_cast<std::string>(domain).c_str(),
-                dt, r, boost::lexical_cast<std::string>(displacement).c_str(),
+                r, boost::lexical_cast<std::string>(displacement).c_str(),
                 length(displacement)));
         if (base_type::paranoiac_)
         {
