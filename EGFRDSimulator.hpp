@@ -1946,10 +1946,10 @@ protected:
             LOG_DEBUG(("event %s already removed; ignoring.", boost::lexical_cast<std::string>(domain.event().first).c_str()));
         }
 
-        BOOST_ASSERT(
-            (*base_type::world_).distance(new_pos, old_pos)
-                <= old_shell_size - particle_radius);
-        // Displacement check is in NonInteractionSingle.draw_new_position.
+        // Displacement check is in draw_new_position.
+        // BOOST_ASSERT(
+        //     (*base_type::world_).distance(new_pos, old_pos)
+        //         <= old_shell_size - particle_radius);
 
         BOOST_ASSERT(domain.size() == particle_radius);
     }
