@@ -74,8 +74,9 @@ public:
 
     virtual bool update_particle(particle_id_pair const& pi_pair)
     {
-        world_.update_particle(pi_pair);
-        return particles_.insert(pi_pair).second;
+        bool const retval(world_.update_particle(pi_pair));
+        particles_[pi_pair.first] = pi_pair.second;
+        return retval;
     }
 
     virtual bool remove_particle(particle_id_type const& id)
