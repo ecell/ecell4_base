@@ -385,5 +385,9 @@ def k_off_using_ka(kd, ka, kD):
     return koff
 
 def C2N(c, V):
+    """Calculate the number of particles in a volume 'V' (dm^3) 
+    with a concentration 'c' (mol/dm^3).
+
+    """
     return c * V * N_A  # round() here?
 

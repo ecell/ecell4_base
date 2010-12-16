@@ -138,10 +138,10 @@ class EGFRDSimulatorTestCaseBase(unittest.TestCase):
 
     """
     def create_model(self):
-        self.L = 1e-6
+        self.L = 1.e-6
 
-        self.D = 1e-12
-        self.radius = 5e-9
+        self.D = 1.e-12
+        self.radius = 5.e-9
 
         self.m = model.ParticleModel(self.L)
 
@@ -166,11 +166,12 @@ class EGFRDSimulatorTestCaseBase(unittest.TestCase):
 
     def add_cylindrical_surface(self):
         radius = self.radius
+        L = self.L
         d = model.create_cylindrical_surface('d',
-                                             [0, 0, 0],
+                                             [L / 2, 0, L / 2],
                                              radius,
                                              [0, 1, 0],
-                                             self.L)
+                                             L)
 
         self.m.add_structure(d)
 

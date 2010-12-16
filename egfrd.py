@@ -273,7 +273,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         if __debug__:
             domain_counts = self.count_domains()
-            log.info('\n%d: t=%s dt=%s\t' %
+            log.info('\n\n%d: t=%s dt=%s\t' %
                      (self.step_counter, FORMAT_DOUBLE % self.t,
                       FORMAT_DOUBLE % self.dt) + 
                      'Singles: %d, Pairs: %d, Multis: %d\n' % domain_counts + 

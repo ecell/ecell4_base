@@ -55,7 +55,7 @@ class EventSchedulerTestCase(unittest.TestCase):
         scheduler = mod.EventScheduler()
 
         event1 = mod.PythonEvent(1.0, 1)
-        event2 = mod.PytohnEvent(0.5, 2)
+        event2 = mod.PythonEvent(0.5, 2)
 
         event1_id = scheduler.add(event1)
 
