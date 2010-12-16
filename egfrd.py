@@ -766,7 +766,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 assert s.is_reset()
                 closest, closest_distance = self.get_closest_obj(
                     s.shell.shape.position, ignore=[s.domain_id],
-                    ignores=[single.surface.id])
+                    ignores=[s.surface.id])
 
                 self.update_single(s, closest, closest_distance)
                 self.update_single_event(self.t + s.dt, s)
