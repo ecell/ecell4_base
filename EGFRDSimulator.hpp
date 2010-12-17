@@ -1782,7 +1782,7 @@ protected:
             BOOST_ASSERT(r <= domain.mobility_radius());
             BOOST_ASSERT(feq(length(displacement), std::abs(r), scale));
         }
-        return add(domain.particle().second.position(), displacement);
+        return (*base_type::world_).apply_boundary(add(domain.particle().second.position(), displacement));
     }
 
     position_type draw_new_position(single_type& domain, time_type dt)
@@ -1816,8 +1816,8 @@ protected:
         D_type const D0(domain.particles()[0].second.D());
         D_type const D1(domain.particles()[1].second.D());
         return array_gen(
-            subtract(new_com, multiply(new_iv, D0 / (D0 + D1))),
-            add(new_com, multiply(new_iv, D1 / (D0 + D1))));
+            (*base_type::world_).apply_boundary(subtract(new_com, multiply(new_iv, D0 / (D0 + D1)))),
+            (*base_type::world_).apply_boundary(add(new_com, multiply(new_iv, D1 / (D0 + D1)))));
     }
     // }}}
 
@@ -1842,8 +1842,6 @@ protected:
                 boost::lexical_cast<std::string>(new_pos).c_str(),
                 do_update_shell_matrix));
 
-        position_type const _new_pos(
-            (*base_type::world_).apply_boundary(new_pos));
         if (base_type::paranoiac_)
         {
             particle_shape_type const new_particle(new_pos, domain.particle().second.radius());
@@ -1868,8 +1866,8 @@ protected:
     {
         boost::array<particle_id_pair, 2> const& particles(domain.particles());
         boost::array<particle_id_pair, 2> new_particles(particles);
-        new_particles[0].second.position() = (*base_type::world_).apply_boundary(new_pos[0]);
-        new_particles[1].second.position() = (*base_type::world_).apply_boundary(new_pos[1]);
+        new_particles[0].second.position() = new_pos[0];
+        new_particles[1].second.position() = new_pos[1];
 
         if (base_type::paranoiac_)
         {
