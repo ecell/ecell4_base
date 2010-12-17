@@ -2708,13 +2708,12 @@ protected:
 
         if (closest_domain)
         {
-            BOOST_ASSERT(closest_shell_distance > 0);
-
             LOG_DEBUG(("Pair closest neighbor: %s %g, "
                        "min_shell_with_margin=%g",
                        boost::lexical_cast<std::string>(*closest_domain).c_str(),
                        closest_shell_distance,
                        min_shell_size_with_margin));
+            BOOST_ASSERT(closest_shell_distance > 0);
         }
 
         length_type new_shell_size(0.);
