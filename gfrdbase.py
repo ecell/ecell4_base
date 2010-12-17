@@ -235,7 +235,7 @@ def throw_in_particles(world, sid, n):
         elif __debug__:
             log.info('\t%d-th particle rejected. I will keep trying.' % i)
 
-def place_particle(world, sid, pos):
+def place_particle(world, sid, position):
     """Place a particle of a certain Species at a specific position in 
     the specified world.
 
@@ -251,10 +251,21 @@ def place_particle(world, sid, pos):
 
     """
     species = world.get_species(sid)
+    structure = world.get_structure(species.structure_id)
     radius = species.radius
 
-    if world.check_overlap((pos, radius)):
+    if world.check_overlap((position, radius)):
         raise NoSpace, 'overlap check failed'
+
+    # Check if not too close to a neighbouring structures for particles 
+    # added to the world, or added to a self-defined box.
+    if isinstance(structure, _gfrd.CuboidalRegion):
+        surface, distance = get_closest_surface(world, position, [])
+        if(surface and
+           distance < surface.minimal_distance(species.radius)):
+            raise RuntimeError('Placing particle failed: %s %s. '
+                               'Too close to surface: %s.' %
+                               (sid, position, distance))
 
     if __debug__:
         species = world.get_species(sid)
@@ -263,9 +274,9 @@ def place_particle(world, sid, pos):
         if name[0] != '(':
             name = '(' + name + ')'
         log.info('\n\tplacing particle of type %s to %s at position %s' %
-                 (name, structure.id, pos))
+                 (name, structure.id, position))
 
-    particle = world.new_particle(sid, pos)
+    particle = world.new_particle(sid, position)
     return particle
 
 class ParticleSimulatorBase(object):

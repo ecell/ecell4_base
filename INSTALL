@@ -19,8 +19,8 @@ gsl, gsl-devel, numpy, scipy, boost, and boost-devel.
 
 On Ubuntu Linux and some other Debian families, install the following:
 
-gsl-bin, libgsl0, libgsl0-dev, libboost-dev, libboost-python-dev,
-libboost-test-dev, python-scipy.
+gsl-bin, libgsl0, libgsl0-dev, libboost-dev, libboost-date-time-dev,
+libboost-python-dev, libboost-regex-dev, libboost-test-dev, python-scipy.
 
 
 In addition to above, optionally,

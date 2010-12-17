@@ -246,7 +246,7 @@ public:
 
     virtual ~TransactionImpl() {}
 
-    TransactionImpl(particle_container_type& world): pc_(world) {}
+    TransactionImpl(particle_container_type& pc): pc_(pc) {}
 
 private:
     particle_id_pair get_original_particle(particle_id_type const& id) const

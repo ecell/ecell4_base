@@ -273,7 +273,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         if __debug__:
             domain_counts = self.count_domains()
-            log.info('\n%d: t=%s dt=%s\t' %
+            log.info('\n\n%d: t=%s dt=%s\t' %
                      (self.step_counter, FORMAT_DOUBLE % self.t,
                       FORMAT_DOUBLE % self.dt) + 
                      'Singles: %d, Pairs: %d, Multis: %d\n' % domain_counts + 
@@ -766,7 +766,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
                 assert s.is_reset()
                 closest, closest_distance = self.get_closest_obj(
                     s.shell.shape.position, ignore=[s.domain_id],
-                    ignores=[single.surface.id])
+                    ignores=[s.surface.id])
 
                 self.update_single(s, closest, closest_distance)
                 self.update_single_event(self.t + s.dt, s)
