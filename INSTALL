@@ -6,10 +6,10 @@ Prerequisites
 -------------------------
 
 1. autotools
-   (autoconf, automake, libtool)
+   (autoconf (>=2.50), automake (>=1.11) libtool (>=2.2.6))
 2. GNU Scientific Library (GSL) 1.11 or later.
 3. Boost C++ Library 1.37 or later.
-4. Python 2.3 or later.
+4. Python 2.4 or later.
 5. Scipy 0.5 or later, Numpy 1.0 or later.
 
 If you use Fedora or any other RedHat lines of linux, check
@@ -19,8 +19,7 @@ gsl, gsl-devel, numpy, scipy, boost, and boost-devel.
 
 On Ubuntu Linux and some other Debian families, install the following:
 
-gsl-bin, libgsl0, libgsl0-dev, libboost-dev, libboost-date-time-dev,
-libboost-python-dev, libboost-regex-dev, libboost-test-dev, python-scipy.
+gsl-bin libgsl0-dev libboost-dev libboost-date-time-dev libboost-python-dev libboost-regex-dev libboost-test-dev python-scipy.
 
 
 In addition to above, optionally,
