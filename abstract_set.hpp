@@ -1,6 +1,8 @@
 #ifndef ABSTRACT_SET_HPP
 #define ABSTRACT_SET_HPP
 
+#include <set>
+#include <map>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 #include <boost/range/const_iterator.hpp>

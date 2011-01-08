@@ -1,6 +1,10 @@
 #ifndef SHELL_HPP
 #define SHELL_HPP
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #include <ostream>
 #if defined(HAVE_TR1_FUNCTIONAL)
 #include <tr1/functional>

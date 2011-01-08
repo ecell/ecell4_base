@@ -3,6 +3,7 @@
 
 #include <boost/python.hpp>
 #include "peer/converters/sequence.hpp"
+#include "../twofold_container.hpp"
 
 namespace binding {
 

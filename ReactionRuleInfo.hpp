@@ -1,6 +1,7 @@
 #ifndef REACTION_RULE_INFO_HPP
 #define REACTION_RULE_INFO_HPP
 
+#include <vector>
 #include <algorithm>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>

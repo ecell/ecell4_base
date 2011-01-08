@@ -3,6 +3,7 @@
 #endif /* HAVE_CONFIG_H */
 
 #include "binding_common.hpp"
+#include "../SpeciesType.hpp"
 #include "SpeciesType.hpp"
 #include "peer/utils.hpp"
 

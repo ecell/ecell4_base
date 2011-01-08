@@ -1,10 +1,15 @@
 #if !defined( __OLDDEFS_HPP )
 #define __OLDDEFS_HPP
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif /* HAVE_CONFIG_H */
+
 #include <vector>
 #include <boost/multi_array.hpp>
 #include <cmath>
+
+#include "Defs.hpp"
 
 // This file is needed temporarily by   GreensFunction1DAbsAbs.cpp
 // and                                  GreensFunction1DRadAbs.cpp

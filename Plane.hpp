@@ -1,6 +1,8 @@
 #ifndef PLANE_HPP
 #define PLANE_HPP
 
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
 #include <boost/array.hpp>
 #include <boost/multi_array.hpp>
 #include <utility>

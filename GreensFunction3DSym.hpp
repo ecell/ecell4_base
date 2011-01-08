@@ -3,7 +3,6 @@
 
 #include "compat.h"
 
-#include <cmath>
 #include <gsl/gsl_integration.h>
 
 #include "Logger.hpp"

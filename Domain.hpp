@@ -1,7 +1,14 @@
 #ifndef DOMAIN_HPP
 #define DOMAIN_HPP
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
+#include <string>
 #include <cstddef>
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
 template<typename Ttraits_>
 class ImmutativeDomainVisitor;

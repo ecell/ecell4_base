@@ -1,6 +1,7 @@
 #ifndef CUBOIDAL_REGION_HPP
 #define CUBOIDAL_REGION_HPP
 
+#include <boost/bind.hpp>
 #include "Region.hpp"
 #include "Box.hpp"
 

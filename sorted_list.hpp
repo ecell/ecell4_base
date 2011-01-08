@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <boost/call_traits.hpp>
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>

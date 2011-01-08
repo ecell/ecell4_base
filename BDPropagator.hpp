@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>

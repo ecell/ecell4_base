@@ -1,6 +1,7 @@
 #ifndef PLANAR_SURFACE_HPP
 #define PLANAR_SURFACE_HPP
 
+#include <boost/bind.hpp>
 #include "Surface.hpp"
 #include "Plane.hpp"
 

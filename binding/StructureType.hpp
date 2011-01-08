@@ -1,11 +1,16 @@
 #ifndef BINDING_STRUCTURE_TYPE_HPP
 #define BINDING_STRUCTURE_TYPE_HPP
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #include <boost/shared_ptr.hpp>
 #include <boost/python.hpp>
 #include <boost/python/copy_const_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
 #include <boost/lexical_cast.hpp>
+#include "../Model.hpp"
 
 namespace binding {
 

@@ -12,6 +12,7 @@
 
 #include <sstream>
 #include "ParticleSimulationStructure.hpp"
+#include "Box.hpp"
 
 template<typename Ttraits_>
 class Region: public ParticleSimulationStructure<Ttraits_>

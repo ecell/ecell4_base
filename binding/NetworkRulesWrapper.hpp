@@ -1,7 +1,12 @@
 #ifndef BINDING_NETWORK_RULES_WRAPPER_HPP
 #define BINDING_NETWORK_RULES_WRAPPER_HPP
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #include <boost/python.hpp>
+#include "../NetworkRules.hpp"
 
 namespace binding {
 

@@ -1,6 +1,7 @@
 #ifndef CYLINDRICAL_SURFACE_HPP
 #define CYLINDRICAL_SURFACE_HPP
 
+#include <boost/bind.hpp>
 #include "Surface.hpp"
 #include "Cylinder.hpp"
 

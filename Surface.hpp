@@ -12,7 +12,6 @@
 
 #include <sstream>
 #include "ParticleSimulationStructure.hpp"
-#include "Box.hpp"
 #include "Cylinder.hpp"
 #include "Sphere.hpp"
 #include "Plane.hpp"

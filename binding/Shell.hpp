@@ -1,6 +1,10 @@
 #ifndef PEER_SHELL_WRAPPER_HPP
 #define PEER_SHELL_WRAPPER_HPP
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #include <cstddef>
 #include <string>
 #if defined(HAVE_TR1_FUNCTIONAL)

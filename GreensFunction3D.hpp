@@ -1,8 +1,6 @@
 #if !defined( __FREEPAIRGREENSFUNCTION )
 #define __FREEPAIRGREENSFUNCTION 
 
-#include <cmath>
-
 #include "compat.h"
 
 #include <gsl/gsl_integration.h>

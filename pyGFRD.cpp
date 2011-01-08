@@ -21,6 +21,7 @@
 
 #include <numpy/arrayobject.h>
 
+#include "utils.hpp"
 #include "peer/utils.hpp"
 #include "peer/converters/tuple.hpp"
 #include "peer/numpy/wrapped_multi_array.hpp"
