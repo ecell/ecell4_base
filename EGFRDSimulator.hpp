@@ -1922,7 +1922,7 @@ protected:
     void burst(AnalyticalSingle<traits_type, T>& domain)
     {
         position_type const old_pos(domain.position());
-        length_type const old_shell_size(domain.size()); 
+        //length_type const old_shell_size(domain.size()); 
         length_type const particle_radius(domain.particle().second.radius());
 
         // Override dt, burst happens before single's scheduled event.
@@ -3173,7 +3173,8 @@ protected:
         case PAIR_EVENT_SINGLE_REACTION_1:
             {
                 int const index(kind == PAIR_EVENT_SINGLE_REACTION_0 ? 0 : 1);
-                int const theother_index(1 - index);
+                // TODO.
+                //int const theother_index(1 - index);
                 position_type const old_CoM(domain.position());
                 LOG_DEBUG(("pair: single reaction %s", boost::lexical_cast<std::string>(domain.particles()[index].first).c_str()));
 
