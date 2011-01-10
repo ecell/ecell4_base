@@ -187,8 +187,8 @@ the implementation.
 \paragraph{Properties}
 
 \begin{itemize}
-\item[eventType] the time of the next event, either SINGLE_REACTION or 
-  SINGLE_ESCAPE.
+\item[eventType] the time of the next event, either SINGLE\_REACTION or 
+  SINGLE\_ESCAPE.
 \item[dt] the time to the next event from the lastTime.
 \item[lastTime] the last time this Single was updated.
 \item[mobilityRadius] $shellSize - particle.radius$.  This
@@ -225,7 +225,7 @@ the implementation.
 \item[propagate( r, t )] This method displaces the particle to a
   random point on the spherical surface of distance r from the
   original position, set lastTime to t, then reset the shell size to
-  the radius of the particle, dt to zero, and eventType to SINGLE_ESCAPE.
+  the radius of the particle, dt to zero, and eventType to SINGLE\_ESCAPE.
 
 \end{itemize}
 
@@ -239,18 +239,18 @@ the implementation.
   \frac{\sqrt{D1}}{\sqrt{D2}} * single2.pos ) / (
   \frac{\sqrt{D2}}{\sqrt{D1}}+\frac{\sqrt{D1}}{\sqrt{D2}})$
 
-\item[D_tot] Total of the diffusion constants of the pair of particles.
+\item[D\_tot] Total of the diffusion constants of the pair of particles.
  $single1.particle.D + single2.particle.D$
 
-\item[D_geom] Geometric mean of the diffusion constants of the pair of
+\item[D\_geom] Geometric mean of the diffusion constants of the pair of
   particles.  $\sqrt{ single1.particle.D \cdot single2.particle.D}$.
   This defines the diffusion constant of the CoM $D_{CoM}$
 
 
 \item[single1, single2] the pair of singles this Pair is responsible for.
 
-\item[eventType] the type of the next event, one of SINGLE_REACTION,
-  IV_REACTION, IV_ESCAPE, or COM_ESCAPE.
+\item[eventType] the type of the next event, one of SINGLE\_REACTION,
+  IV\_REACTION, IV\_ESCAPE, or COM\_ESCAPE.
 
 \item[lastTime] the last time this Pair was updated.
 
