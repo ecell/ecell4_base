@@ -231,7 +231,7 @@ if __name__ == '__main__':
         jdot = jdot_table[n][start:end]
         write_arrays(file, 'sj_table%d_f' % n, j, jdot)
         write_table(file, 'sj_table%d' % n, end-start, z_start, delta_z)
-        print 'j', n, len(j)
+    print 'j', len(j)
 
     # y
     for n in range(minn_y, maxn_y + 1):
@@ -244,7 +244,7 @@ if __name__ == '__main__':
         write_arrays(file, 'sy_table%d_f' % n, y, ydot)
         write_table(file, 'sy_table%d' % n, end-start, z_start, delta_z)
 
-        print 'y', n, len(y)
+    print 'y', len(y)
 
     write_table_array(file, 'sj_table', minn_j, maxn_j)
     write_table_array(file, 'sy_table', minn_y, maxn_y)
