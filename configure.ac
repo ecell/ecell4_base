@@ -15,6 +15,11 @@ dnl
 dnl
 AC_CANONICAL_TARGET([])
 AM_INIT_AUTOMAKE([epdp],[0.3b])
+
+dnl Check pdflatex
+AC_PROG_PDFLATEX()
+
+dnl
 AC_PROG_MAKE_SET
 dnl
 dnl checks for programs
