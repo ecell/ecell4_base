@@ -1,6 +1,5 @@
 #ifndef PARTICLE_CONTAINER_BASE_HPP
 #define PARTICLE_CONTAINER_BASE_HPP
-
 #include "utils/range.hpp"
 #include "utils/get_mapper_mf.hpp"
 #include "utils/unassignable_adapter.hpp"
@@ -37,15 +36,13 @@ struct ParticleContainerUtils
             return c_(lhs).second < c_(rhs).second;
         }
 
-        distance_comparator(): c_() {}
-
         const_caster c_;
     };
 
     template<typename Tset_>
     struct overlap_checker
     {
-        overlap_checker(Tset_ const& ignore = Tset_()): ignore_(ignore), result_(0) {}
+        overlap_checker(Tset_ const& ignore = Tset_()): ignore_(ignore), result_(0), compare_(0) {}
 
         template<typename Titer_>
         void operator()(Titer_ const& i, length_type const& dist)
@@ -64,7 +61,7 @@ struct ParticleContainerUtils
         {
             if (result_)
             {
-                std::sort(result_->pbegin(), result_->pend(), distance_comparator());
+                std::sort(result_->pbegin(), result_->pend(), *compare_);
             }
             return result_;
         }
@@ -72,6 +69,7 @@ struct ParticleContainerUtils
     private:
         Tset_ const& ignore_;
         particle_id_pair_and_distance_list* result_;
+        distance_comparator* compare_;
     };
 };
 
