@@ -1,6 +1,7 @@
 #ifndef MATRIX_SPACE_HPP
 #define MATRIX_SPACE_HPP
 
+#include <iostream>
 #include <cstddef>
 #include <algorithm>
 #include <iterator>
@@ -33,29 +34,7 @@ public:
     typedef std::pair<const key_type, mapped_type> value_type;
     typedef Vector3<length_type> position_type;
     typedef unassignable_adapter<value_type, get_default_impl::std::vector> all_values_type;
-
-    struct id_less: public std::binary_function<
-            typename all_values_type::size_type,
-            typename all_values_type::size_type,
-            bool>
-    {
-        typedef typename all_values_type::size_type first_argument_type;
-        typedef typename all_values_type::size_type second_argument_type;
-        typedef bool result_type;
-
-        result_type operator()(first_argument_type const& first,
-                             second_argument_type const& second) const
-        {
-            return values_[first].first < values_[second].first;
-        }
-
-        id_less(all_values_type const& values): values_(values) {}
-
-    private:
-        all_values_type const& values_;
-    };
-
-    typedef std::vector<typename all_values_type::size_type> cell_type;
+    typedef sorted_list<std::vector<typename all_values_type::size_type> > cell_type;
     typedef boost::multi_array<cell_type, 3> matrix_type;
     typedef typename cell_type::size_type size_type;
     typedef boost::array<typename matrix_type::size_type, 3>
@@ -235,27 +214,23 @@ public:
         }
         else
         {
-            typedef sorted_list<cell_type, id_less, cell_type&> temporary_sorted_list;
             typename all_values_type::size_type index(0);
 
             if (old_cell)
             {
                 reinterpret_cast<nonconst_value_type&>(*old_value) = v;
 
-                temporary_sorted_list old_list(id_less(values_), *old_cell);
-                typename temporary_sorted_list::iterator i(
-                        old_list.find(v.first));
+                typename cell_type::iterator i(
+                        old_cell->find(old_value - values_.begin()));
                 index = *i;
-                old_list.erase(i);
-                temporary_sorted_list new_list(id_less(values_), *new_cell);
-                new_list.push(index);
+                old_cell->erase(i);
+                new_cell->push(index);
             }
             else
             {
                 index = values_.size();
                 values_.push_back(v);
-                temporary_sorted_list new_list(id_less(values_), *new_cell);
-                new_list.push(index);
+                new_cell->push(index);
                 rmap_[v.first] = index;
             }
             return values_.begin() + index;
@@ -284,28 +259,24 @@ public:
         }
         else
         {
-            typedef sorted_list<cell_type, id_less, cell_type&> temporary_sorted_list;
             typename all_values_type::size_type index(0);
 
             if (old_cell)
             {
                 reinterpret_cast<nonconst_value_type&>(*old_value) = v;
 
-                temporary_sorted_list old_list(id_less(values_), *old_cell);
-                typename temporary_sorted_list::iterator i(
-                        old_list.find(v.first));
+                typename cell_type::iterator i(
+                        old_cell->find(old_value - values_.begin()));
                 index = *i;
-                old_list.erase(i);
-                temporary_sorted_list new_list(id_less(values_), *new_cell);
-                new_list.push(index);
+                old_cell->erase(i);
+                new_cell->push(index);
                 return std::pair<iterator, bool>(values_.begin() + index, false);
             }
             else
             {
                 index = values_.size();
                 values_.push_back(v);
-                temporary_sorted_list new_list(id_less(values_), *new_cell);
-                new_list.push(index);
+                new_cell->push(index);
                 rmap_[v.first] = index;
                 return std::pair<iterator, bool>(values_.begin() + index, true);
             }
@@ -319,18 +290,15 @@ public:
             return false;
         }
 
+        typename all_values_type::size_type const old_index(i - values_.begin());
+
         cell_type& c(cell(index((*i).second.position())));
-        typedef sorted_list<cell_type, id_less, cell_type&> temporary_sorted_list;
-        {
-            temporary_sorted_list tmp(id_less(values_), c);
-            tmp.erase(tmp.find((*i).first));
-        }
+        c.erase(c.find(old_index));
         rmap_.erase((*i).first);
 
         {
-            typename all_values_type::size_type const old_index(i - values_.begin());
             value_type const& last(values_.back());
-            *temporary_sorted_list(id_less(values_), cell(index(last.second.position()))).find(last.first) = old_index;
+            *cell(index(last.second.position())).find(values_.size() - 1) = old_index;
             rmap_[last.first] = old_index;
             reinterpret_cast<nonconst_value_type&>(*i) = last; 
             values_.pop_back();
