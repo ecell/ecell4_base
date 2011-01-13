@@ -321,10 +321,20 @@ public:
 
         cell_type& c(cell(index((*i).second.position())));
         typedef sorted_list<cell_type, id_less, cell_type&> temporary_sorted_list;
-        temporary_sorted_list tmp(id_less(values_), c);
-        tmp.erase(tmp.find((*i).first));
+        {
+            temporary_sorted_list tmp(id_less(values_), c);
+            tmp.erase(tmp.find((*i).first));
+        }
         rmap_.erase((*i).first);
-        values_.erase(i);
+
+        {
+            typename all_values_type::size_type const old_index(i - values_.begin());
+            value_type const& last(values_.back());
+            *temporary_sorted_list(id_less(values_), cell(index(last.second.position()))).find(last.first) = old_index;
+            rmap_[last.first] = old_index;
+            reinterpret_cast<nonconst_value_type&>(*i) = last; 
+            values_.pop_back();
+        }
         return true;
     }
 
