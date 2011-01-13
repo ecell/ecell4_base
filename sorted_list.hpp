@@ -194,8 +194,8 @@ public:
     sorted_list(): ord_() {}
 
 private:
-    holder_type cntnr_;
     TweakOrdering_ ord_;
+    holder_type cntnr_;
 };
 
 #endif /* SORTED_LIST */
