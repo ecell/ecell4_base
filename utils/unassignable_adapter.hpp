@@ -48,10 +48,97 @@ public:
     typedef typename boost::range_const_iterator<container_type>::type const_placeholder_iterator;
     typedef typename boost::range_reverse_iterator<container_type>::type placeholder_reverse_iterator;
     typedef typename boost::range_const_reverse_iterator<container_type>::type const_placeholder_reverse_iterator;
+
     typedef typename boost::transform_iterator<caster, placeholder_iterator> iterator;
-    typedef typename boost::transform_iterator<const_caster, const_placeholder_iterator> const_iterator;
+
+    struct const_iterator: boost::transform_iterator<const_caster, const_placeholder_iterator>
+    {
+        typedef boost::transform_iterator<const_caster, const_placeholder_iterator> base_type;
+
+        const_iterator(const_iterator const& that): base_type(that) {}
+
+        const_iterator(base_type const& that): base_type(that) {}
+
+        const_iterator(iterator const& that): base_type(that.base(), const_caster()) {}
+
+        const_iterator(const_placeholder_iterator const& iter, const_caster const& functor): base_type(iter, functor) {}
+
+        bool operator==(iterator const& rhs) const
+        {
+            return base_type::base() == rhs.base();
+        }
+
+        bool operator!=(iterator const& rhs) const
+        {
+            return base_type::base() != rhs.base();
+        }
+
+        bool operator<(iterator const& rhs) const
+        {
+            return base_type::base() < rhs.base();
+        }
+
+        bool operator>=(iterator const& rhs) const
+        {
+            return base_type::base() >= rhs.base();
+        }
+
+        bool operator>(iterator const& rhs) const
+        {
+            return base_type::base() > rhs.base();
+        }
+
+        bool operator<=(iterator const& rhs) const
+        {
+            return base_type::base() <= rhs.base();
+        }
+    };
+
     typedef typename boost::transform_iterator<caster, placeholder_reverse_iterator> reverse_iterator;
-    typedef typename boost::transform_iterator<const_caster, const_placeholder_reverse_iterator> const_reverse_iterator;
+
+    struct const_reverse_iterator: boost::transform_iterator<const_caster, const_placeholder_reverse_iterator>
+    {
+        typedef boost::transform_iterator<const_caster, const_placeholder_reverse_iterator> base_type;
+
+        const_reverse_iterator(const_reverse_iterator const& that): base_type(that) {}
+
+        const_reverse_iterator(base_type const& that): base_type(that) {}
+
+        const_reverse_iterator(reverse_iterator const& that): base_type(that.base(), const_caster()) {}
+
+        const_reverse_iterator(const_placeholder_reverse_iterator const& iter, const_caster const& functor): base_type(iter, functor) {}
+
+        bool operator==(iterator const& rhs) const
+        {
+            return base_type::base() == rhs.base();
+        }
+
+        bool operator!=(iterator const& rhs) const
+        {
+            return base_type::base() != rhs.base();
+        }
+
+        bool operator<(iterator const& rhs) const
+        {
+            return base_type::base() < rhs.base();
+        }
+
+        bool operator>=(iterator const& rhs) const
+        {
+            return base_type::base() >= rhs.base();
+        }
+
+        bool operator>(iterator const& rhs) const
+        {
+            return base_type::base() > rhs.base();
+        }
+
+        bool operator<=(iterator const& rhs) const
+        {
+            return base_type::base() <= rhs.base();
+        }
+    };
+
 
     size_type size() const
     {
@@ -180,19 +267,19 @@ public:
 
     void insert(iterator const& pos, value_type const& v)
     {
-        cntnr_.insert(pos, reinterpret_cast<typename container_type::value_type const&>(v));
+        cntnr_.insert(pos.base(), reinterpret_cast<typename container_type::value_type const&>(v));
     }
 
     void insert(iterator const& pos, size_type n, value_type const v)
     {
-        cntnr_.insert(pos, n, reinterpret_cast<typename container_type::value_type const&>(v));
+        cntnr_.insert(pos.base(), n, reinterpret_cast<typename container_type::value_type const&>(v));
     }
 
     template<typename Titer_>
     void insert(iterator const& pos, Titer_ const& b, Titer_ const& e)
     {
         typedef boost::transform_iterator<reverse_caster, Titer_> transform_iterator;
-        cntnr_.insert(pos, transform_iterator(b, const_reverse_caster()), transform_iterator(e, caster()));
+        cntnr_.insert(pos.base(), transform_iterator(b, const_reverse_caster()), transform_iterator(e, const_reverse_caster()));
     }
 
     void push_front(value_type const& v)
@@ -237,12 +324,12 @@ public:
 
     iterator erase(iterator const& pos)
     {
-        return cntnr_.erase(pos);
+        return iterator(cntnr_.erase(pos.base()), caster());
     }
 
     iterator erase(iterator const& b, iterator const& e)
     {
-        return cntnr_.erase(b, e);
+        return iterator(cntnr_.erase(b.base(), e.base()), caster());
     }
 
     unassignable_adapter() {}
