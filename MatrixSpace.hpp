@@ -1,7 +1,6 @@
 #ifndef MATRIX_SPACE_HPP
 #define MATRIX_SPACE_HPP
 
-#include <iostream>
 #include <cstddef>
 #include <algorithm>
 #include <iterator>
@@ -292,17 +291,21 @@ public:
 
         typename all_values_type::size_type const old_index(i - values_.begin());
 
-        cell_type& c(cell(index((*i).second.position())));
-        c.erase(c.find(old_index));
+        BOOST_ASSERT(cell(index((*i).second.position())).erase(old_index));
         rmap_.erase((*i).first);
 
+        typename all_values_type::size_type const last_index(values_.size() - 1);
+
+        if (old_index < last_index)
         {
-            value_type const& last(values_.back());
-            *cell(index(last.second.position())).find(values_.size() - 1) = old_index;
+            value_type const& last(values_[last_index]);
+            cell_type& old_c(cell(index(last.second.position())));
+            BOOST_ASSERT(old_c.erase(last_index));
+            old_c.push(old_index);
             rmap_[last.first] = old_index;
             reinterpret_cast<nonconst_value_type&>(*i) = last; 
-            values_.pop_back();
         }
+        values_.pop_back();
         return true;
     }
 
