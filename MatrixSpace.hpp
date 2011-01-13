@@ -6,6 +6,7 @@
 #include <iterator>
 #include <boost/multi_array.hpp>
 #include <boost/mpl/if.hpp>
+#include <boost/optional.hpp>
 #include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/add_const.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
@@ -13,9 +14,12 @@
 #include <boost/range/size.hpp>
 #include <boost/range/difference_type.hpp>
 #include "Vector3.hpp"
+#include "sorted_list.hpp"
 #include "utils/array_helper.hpp"
 #include "utils/get_default_impl.hpp"
 #include "utils/range.hpp"
+#include "utils/unassignable_adapter.hpp"
+#include "utils/get_default_impl.hpp"
 
 template<typename Tobj_, typename Tkey_,
         template<typename, typename> class MFget_mapper_ =
@@ -28,164 +32,53 @@ public:
     typedef Tobj_ mapped_type;
     typedef std::pair<const key_type, mapped_type> value_type;
     typedef Vector3<length_type> position_type;
-    typedef typename MFget_mapper_<Tkey_, mapped_type>::type cell_type;
+    typedef unassignable_adapter<value_type, get_default_impl::std::vector> all_values_type;
+
+    struct id_less: public std::binary_function<
+            typename all_values_type::size_type,
+            typename all_values_type::size_type,
+            bool>
+    {
+        typedef typename all_values_type::size_type first_argument_type;
+        typedef typename all_values_type::size_type second_argument_type;
+        typedef bool result_type;
+
+        result_type operator()(first_argument_type const& first,
+                             second_argument_type const& second) const
+        {
+            return values_[first].first < values_[second].first;
+        }
+
+        id_less(all_values_type const& values): values_(values) {}
+
+    private:
+        all_values_type const& values_;
+    };
+
+    typedef std::vector<typename all_values_type::size_type> cell_type;
     typedef boost::multi_array<cell_type, 3> matrix_type;
     typedef typename cell_type::size_type size_type;
     typedef boost::array<typename matrix_type::size_type, 3>
             cell_index_type;
     typedef boost::array<typename matrix_type::difference_type, 3>
             cell_offset_type;
-    typedef typename cell_type::reference reference;
-    typedef typename cell_type::const_reference const_reference;
-    typedef typename MFget_mapper_<key_type, cell_type*>::type
-            key_to_cell_mapper_type;
+    typedef typename MFget_mapper_<key_type, typename all_values_type::size_type>::type
+            key_to_value_mapper_type;
 
-    template<typename Thost_, typename Treftype_, typename Tciter_>
-    class iterator_base
-    {
-    private:
-        struct reference_is_const:
-            public boost::is_const<
-                    typename boost::remove_reference<Treftype_>::type> {};
-    public:
-        typedef typename MatrixSpace::value_type value_type;
-        typedef Treftype_ reference;
-        typedef const Treftype_ const_reference;
-        typedef std::bidirectional_iterator_tag iterator_category;
-        typedef typename Tciter_::difference_type difference_type;
-        typedef typename boost::mpl::if_<reference_is_const,
-                typename boost::add_const<value_type>::type,
-                value_type>::type* pointer;
+    typedef typename all_values_type::iterator iterator;
+    typedef typename all_values_type::const_iterator const_iterator;
+    typedef typename all_values_type::reference reference;
+    typedef typename all_values_type::const_reference const_reference;
 
-    protected:
-        typedef typename boost::mpl::if_<reference_is_const,
-                typename boost::add_const<cell_type>::type,
-                cell_type>::type* cell_ptr_type;
-        typedef std::pair<cell_ptr_type, cell_ptr_type> cell_range_type;
-
-    public:
-        bool operator==(const Thost_& rhs) const
-        {
-            return cell_p_ == rhs.cell_p_ &&
-                cell_iter_ == rhs.cell_iter_;
-        }
-
-        bool operator!=(const Thost_& rhs) const
-        {
-            return !operator==(rhs);
-        }
-
-        const_reference operator*() const
-        {
-            return *cell_iter_;
-        }
-
-        reference operator*()
-        {
-            return *cell_iter_;
-        }
-
-        Thost_& operator++()
-        {
-            if (cell_iter_ != cell_p_->end())
-            {
-                ++cell_iter_;
-            }
-
-            while (cell_iter_ == cell_p_->end())
-            {
-                ++cell_p_;
-                if (cell_p_ == cell_r_.second)
-                {
-                    --cell_p_;
-                    cell_iter_ = cell_p_->end();
-                    break;
-                }
-                cell_iter_ = cell_p_->begin();
-            }
-            return *static_cast<Thost_*>(this);
-        }
-
-        Thost_ operator++(int)
-        {
-            Thost_ retval(static_cast<Thost_ const&>(*this));
-            operator++();
-            return retval;
-        }
-
-        Thost_& operator--()
-        {
-            while (cell_iter_ == cell_p_->begin() && cell_p_ > cell_r_.first)
-            {
-                --cell_p_;
-                cell_iter_ = cell_p_->end();
-            }
-            --cell_iter_;
-            return *static_cast<Thost_*>(this);
-        }
-
-        Thost_ operator--(int)
-        {
-            Thost_ retval(static_cast<Thost_ const&>(*this));
-            operator--();
-            return retval;
-        }
-
-        Thost_& operator=(const Thost_& rhs)
-        {
-            cell_p_ = rhs.cell_p_;
-            cell_iter_ = rhs.cell_iter_;
-            return *static_cast<Thost_*>(this);
-        }
-
-        iterator_base(cell_ptr_type cell_p, cell_range_type const& cell_r,
-                const Tciter_& cell_iter)
-                : cell_p_(cell_p), cell_r_(cell_r), cell_iter_(cell_iter) {}
-
-    public:
-        cell_ptr_type cell_p_;
-        cell_range_type cell_r_;
-        Tciter_ cell_iter_;
-    };
-
-    class iterator: public iterator_base<iterator, reference,
-            typename cell_type::iterator>
-    {
-    public:
-        typedef iterator_base<iterator, reference,
-                typename cell_type::iterator> base_type;
-
-    public:
-        iterator(typename base_type::cell_ptr_type cell_p,
-                typename base_type::cell_range_type cell_r,
-                const typename cell_type::iterator& cell_iter)
-                : base_type(cell_p, cell_r, cell_iter) {}
-    };
-
-    class const_iterator: public iterator_base<const_iterator,
-            const_reference, typename cell_type::const_iterator>
-    {
-    public:
-        typedef iterator_base<const_iterator, const_reference,
-                typename cell_type::const_iterator> base_type;
-
-    public:
-        const_iterator(typename base_type::cell_ptr_type cell_p,
-                typename base_type::cell_range_type const& cell_r,
-                const typename cell_type::const_iterator& cell_iter)
-                : base_type(cell_p, cell_r, cell_iter) {}
-
-        const_iterator(iterator const& that)
-                : base_type(that.cell_p_, that.cell_r_, that.cell_iter_) {}
-    };
+private:
+    typedef std::pair<key_type, mapped_type> nonconst_value_type;
 
 public:
     MatrixSpace(length_type world_size = 1.0,
             typename matrix_type::size_type size = 1)
         : world_size_(world_size),
           cell_size_(world_size / size),
-          matrix_(boost::extents[size][size][size]),
-          size_(0)
+          matrix_(boost::extents[size][size][size])
     {
     }
 
@@ -324,67 +217,98 @@ public:
 
     inline size_type size() const
     {
-        return size_;
+        return values_.size();
     }
 
-    inline iterator update(iterator const& i, const value_type& v)
+    inline iterator update(iterator const& old_value, const value_type& v)
     {
-        cell_type& c(cell(index(v.second.position())));
-        std::pair<typename cell_type::iterator, bool> ir;
-        if (&c != i.cell_p_)
+        cell_type* new_cell(&cell(index(v.second.position())));
+        cell_type* old_cell(0);
+
+        if (old_value != values_.end())
+            old_cell = &cell(index((*old_value).second.position()));
+
+        if (new_cell == old_cell)
         {
-            i.cell_p_->erase(v.first);
-            rmap_.erase(v.first);
-            rmap_.insert(std::make_pair(v.first, &c));
-            ir = c.insert(v);
+            reinterpret_cast<nonconst_value_type&>(*old_value) = v;
+            return old_value;
         }
         else
         {
-            ir.first = c.find(v.first);
-            BOOST_ASSERT(c.end() != ir.first);
-            if (v.first == (*ir.first).first) {
-                ir.first->second = v.second;
-            } else {
-                c.erase(ir.first);
-                ir.first = c.insert(v).first;
+            typedef sorted_list<cell_type, id_less, cell_type&> temporary_sorted_list;
+            typename all_values_type::size_type index(0);
+
+            if (old_cell)
+            {
+                reinterpret_cast<nonconst_value_type&>(*old_value) = v;
+
+                temporary_sorted_list old_list(id_less(values_), *old_cell);
+                typename temporary_sorted_list::iterator i(
+                        old_list.find(v.first));
+                index = *i;
+                old_list.erase(i);
+                temporary_sorted_list new_list(id_less(values_), *new_cell);
+                new_list.push(index);
             }
+            else
+            {
+                index = values_.size();
+                values_.push_back(v);
+                temporary_sorted_list new_list(id_less(values_), *new_cell);
+                new_list.push(index);
+                rmap_[v.first] = index;
+            }
+            return values_.begin() + index;
         }
-        return iterator(&c, cell_range(), ir.first);
     }
 
     inline std::pair<iterator, bool> update(const value_type& v)
     {
-        cell_type& c(cell(index(v.second.position())));
-        typename key_to_cell_mapper_type::iterator kci(rmap_.find(v.first));
-        std::pair<typename cell_type::iterator, bool> ir;
-        if (rmap_.end() != kci)
+        cell_type* new_cell(&cell(index(v.second.position())));
+        typename all_values_type::iterator old_value(values_.end());
+        cell_type* old_cell(0);
+
         {
-            if (&c != (*kci).second)
+            typename key_to_value_mapper_type::const_iterator i(rmap_.find(v.first));
+            if (i != rmap_.end())
             {
-                (*kci).second->erase(v.first);
-                rmap_.erase(v.first);
-                rmap_.insert(std::make_pair(v.first, &c));
-                ir = c.insert(v);
+                old_value = values_.begin() + (*i).second;
+                old_cell = &cell(index(old_value->second.position()));
             }
-            else
-            {
-                ir.first = c.find(v.first);
-                BOOST_ASSERT(c.end() != ir.first);
-                if (v.first == (*ir.first).first) {
-                    ir.first->second = v.second;
-                } else {
-                    c.erase(ir.first);
-                    ir.first = c.insert(v).first;
-                }
-            }
-            return std::make_pair(iterator(&c, cell_range(), ir.first), false);
+        }
+
+        if (new_cell == old_cell)
+        {
+            reinterpret_cast<nonconst_value_type&>(*old_value) = v;
+            return std::pair<iterator, bool>(old_value, false);
         }
         else
         {
-            ir = c.insert(v);
-            rmap_.insert(std::make_pair(v.first, &c));
-            ++size_;
-            return std::make_pair(iterator(&c, cell_range(), ir.first), true);
+            typedef sorted_list<cell_type, id_less, cell_type&> temporary_sorted_list;
+            typename all_values_type::size_type index(0);
+
+            if (old_cell)
+            {
+                reinterpret_cast<nonconst_value_type&>(*old_value) = v;
+
+                temporary_sorted_list old_list(id_less(values_), *old_cell);
+                typename temporary_sorted_list::iterator i(
+                        old_list.find(v.first));
+                index = *i;
+                old_list.erase(i);
+                temporary_sorted_list new_list(id_less(values_), *new_cell);
+                new_list.push(index);
+                return std::pair<iterator, bool>(values_.begin() + index, false);
+            }
+            else
+            {
+                index = values_.size();
+                values_.push_back(v);
+                temporary_sorted_list new_list(id_less(values_), *new_cell);
+                new_list.push(index);
+                rmap_[v.first] = index;
+                return std::pair<iterator, bool>(values_.begin() + index, true);
+            }
         }
     }
 
@@ -394,22 +318,24 @@ public:
         {
             return false;
         }
-        i.cell_p_->erase(i->cell_iter_);
-        --size_;
+
+        cell_type& c(cell(index((*i).second.position())));
+        typedef sorted_list<cell_type, id_less, cell_type&> temporary_sorted_list;
+        temporary_sorted_list tmp(id_less(values_), c);
+        tmp.erase(tmp.find((*i).first));
+        rmap_.erase((*i).first);
+        values_.erase(i);
         return true;
     }
 
     inline bool erase(const key_type& k)
     {
-        typename key_to_cell_mapper_type::iterator p(rmap_.find(k));
+        typename key_to_value_mapper_type::const_iterator p(rmap_.find(k));
         if (rmap_.end() == p)
         {
             return false;
         }
-        (*p).second->erase(k);
-        rmap_.erase(p);
-        --size_;
-        return true;
+        return erase(values_.begin() + (*p).second);
     }
 
     inline void clear()
@@ -422,149 +348,98 @@ public:
             (*p).clear();
         }
         rmap_.clear();
-        size_ = 0;
     }
 
     inline iterator begin()
     {
-        BOOST_ASSERT(matrix_.num_elements() > 0);
-        std::pair<cell_type*, cell_type*> r(cell_range());
-        cell_type* cell_p(r.first);
-
-        while (cell_p->begin() == cell_p->end())
-        {
-            ++cell_p;
-            if (cell_p == r.second)
-            {
-                --cell_p;
-                return iterator(cell_p, r, cell_p->end());
-            }
-        }
-
-        return iterator(cell_p, r, cell_p->begin());
+        return values_.begin();
     }
 
     inline const_iterator begin() const
     {
-        BOOST_ASSERT(matrix_.num_elements() > 0);
-        std::pair<cell_type const*, cell_type const*> r(cell_range());
-        cell_type const* cell_p(r.first);
-
-        while (cell_p->begin() == cell_p->end())
-        {
-            ++cell_p;
-            if (cell_p == r.second)
-            {
-                --cell_p;
-                return const_iterator(cell_p, r, cell_p->end());
-            }
-        }
-
-        return const_iterator(cell_p, r, cell_p->begin());
+        return values_.begin();
     }
 
     inline iterator end()
     {
-        BOOST_ASSERT(matrix_.num_elements() > 0);
-        std::pair<cell_type*, cell_type*> r(cell_range());
-        return iterator(r.second - 1, r, (r.second - 1)->end());
+        return values_.end();
     }
 
     inline const_iterator end() const
     {
-        BOOST_ASSERT(matrix_.num_elements() > 0);
-        std::pair<cell_type const*, cell_type const*> r(cell_range());
-        return const_iterator(r.second - 1, r, (r.second - 1)->end());
+        return values_.end();
     }
 
     inline iterator find(const key_type& k)
     {
-        typename key_to_cell_mapper_type::iterator p(rmap_.find(k));
+        typename key_to_value_mapper_type::const_iterator p(rmap_.find(k));
         if (rmap_.end() == p)
         {
-            return end();
+            return values_.end();
         }
-        typename cell_type::iterator i((*p).second->find(k));
-        if ((*p).second->end() == i)
-        {
-            return end();
-        }
-        return iterator((*p).second, cell_range(), i);
+        return values_.begin() + (*p).second;
     }
 
     inline const_iterator find(const key_type& k) const
     {
-        typename key_to_cell_mapper_type::const_iterator p(rmap_.find(k));
+        typename key_to_value_mapper_type::const_iterator p(rmap_.find(k));
         if (rmap_.end() == p)
         {
-            return end();
+            return values_.end();
         }
-        typename cell_type::const_iterator i((*p).second->find(k));
-        if ((*p).second->end() == i)
-        {
-            return end();
-        }
-        return const_iterator((*p).second, cell_range(), i);
+        return values_.begin() + (*p).second;
     }
 
     template<typename Tcollect_>
     inline void each_neighbor(const cell_index_type& idx, Tcollect_& collector)
     {
-        cell_offset_type _off;
-        each_neighbor_loops<Tcollect_>(3, _off, idx, collector);
+        each_neighbor_loops<Tcollect_>(idx, collector);
     }
 
     template<typename Tcollect_>
     inline void each_neighbor(const cell_index_type& idx, Tcollect_ const& collector)
     {
-        cell_offset_type _off;
-        each_neighbor_loops<Tcollect_ const>(3, _off, idx, collector);
+        each_neighbor_loops<Tcollect_ const>(idx, collector);
     }
 
     template<typename Tcollect_>
     inline void each_neighbor(const cell_index_type& idx, Tcollect_& collector) const
     {
-        cell_offset_type _off;
-        each_neighbor_loops<Tcollect_>(3, _off, idx, collector);
+        each_neighbor_loops<Tcollect_>(idx, collector);
     }
 
     template<typename Tcollect_>
     inline void each_neighbor(const cell_index_type& idx, Tcollect_ const& collector) const
     {
-        cell_offset_type _off;
-        each_neighbor_loops<Tcollect_ const>(3, _off, idx, collector);
+        each_neighbor_loops<Tcollect_ const>(idx, collector);
     }
 
     template<typename Tcollect_>
     inline void each_neighbor_cyclic(const cell_index_type& idx,
             Tcollect_& collector)
     {
-        cell_offset_type _off;
-        each_neighbor_cyclic_loops<Tcollect_>(3, _off, idx, collector);
+        each_neighbor_cyclic_loops<Tcollect_>(idx, collector);
     }
 
     template<typename Tcollect_>
     inline void each_neighbor_cyclic(const cell_index_type& idx,
             Tcollect_ const& collector)
     {
-        cell_offset_type _off;
-        each_neighbor_cyclic_loops<Tcollect_ const>(3, _off, idx, collector);
+        each_neighbor_cyclic_loops<Tcollect_ const>(idx, collector);
     }
 
     template<typename Tcollect_>
     inline void each_neighbor_cyclic(const cell_index_type& idx,
             Tcollect_& collector) const
     {
-        cell_offset_type _off;
-        each_neighbor_cyclic_loops<Tcollect_>(3, _off, idx, collector);
+        each_neighbor_cyclic_loops<Tcollect_>(idx, collector);
     }
 
     template<typename Tcollect_>
     inline void each_neighbor_cyclic(const cell_index_type& idx,
             Tcollect_ const& collector) const
     {
-        cell_offset_type _off;
-        each_neighbor_cyclic_loops<Tcollect_ const>(3, _off, idx, collector);
+        each_neighbor_cyclic_loops<Tcollect_ const>(idx, collector);
     }
 
 private:
@@ -581,101 +456,101 @@ private:
     }
 
     template<typename Tcollect_>
-    inline void each_neighbor_loops(const std::size_t depth,
-            cell_offset_type& off, const cell_index_type& idx,
-            Tcollect_& collector) const
+    inline void each_neighbor_loops(const cell_index_type& idx,
+                                    Tcollect_& collector) const
     {
-        if (depth > 0)
+        cell_offset_type off;
+
+        for (off[2] = -1; off[2] <= 1; ++off[2])
         {
-            for (off[depth - 1] = -1; off[depth - 1] <= 1; ++off[depth - 1])
+            for (off[1] = -1; off[1] <= 1; ++off[1])
             {
-                each_neighbor_loops(depth - 1, off, idx, collector);
-            }
-        }
-        else
-        {
-            cell_index_type _idx(idx);
-            if (!offset_index(_idx, off)) {
-                return;
-            }
-            cell_type const& c(cell(_idx));
-            for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
-            {
-                collector(const_iterator(&c, cell_range(), i), position_type());
+                for (off[0] = -1; off[0] <= 1; ++off[0])
+                {
+                    cell_index_type _idx(idx);
+                    if (!offset_index(_idx, off)) {
+                        continue;
+                    }
+                    cell_type const& c(cell(_idx));
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    {
+                        collector(values_.begin() + *i, position_type());
+                    }
+                }
             }
         }
     }
 
     template<typename Tcollect_>
-    inline void each_neighbor_loops(const std::size_t depth,
-            cell_offset_type& off, const cell_index_type& idx,
-            Tcollect_& collector)
+    inline void each_neighbor_loops(const cell_index_type& idx,
+                                    Tcollect_& collector)
     {
-        if (depth > 0)
+        cell_offset_type off;
+
+        for (off[2] = -1; off[2] <= 1; ++off[2])
         {
-            for (off[depth - 1] = -1; off[depth - 1] <= 1; ++off[depth - 1])
+            for (off[1] = -1; off[1] <= 1; ++off[1])
             {
-                each_neighbor_loops(depth - 1, off, idx, collector);
-            }
-        }
-        else
-        {
-            cell_index_type _idx(idx);
-            if (!offset_index(_idx, off)) {
-                return;
-            }
-            cell_type& c(cell(_idx));
-            for (typename cell_type::iterator i(c.begin()); i != c.end(); ++i) 
-            {
-                collector(iterator(&c, cell_range(), i), position_type());
+                for (off[0] = -1; off[0] <= 1; ++off[0])
+                {
+                    cell_index_type _idx(idx);
+                    if (!offset_index(_idx, off)) {
+                        continue;
+                    }
+                    cell_type const& c(cell(_idx));
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    {
+                        collector(values_.begin() + *i, position_type());
+                    }
+                }
             }
         }
     }
 
     template<typename Tcollect_>
-    inline void each_neighbor_cyclic_loops(const std::size_t depth,
-            cell_offset_type& off, const cell_index_type& idx,
-            Tcollect_& collector) const
+    inline void each_neighbor_cyclic_loops(const cell_index_type& idx,
+                                           Tcollect_& collector) const
     {
-        if (depth > 0)
+        cell_offset_type off;
+
+        for (off[2] = -1; off[2] <= 1; ++off[2])
         {
-            for (off[depth - 1] = -1; off[depth - 1] <= 1; ++off[depth - 1])
+            for (off[1] = -1; off[1] <= 1; ++off[1])
             {
-                each_neighbor_cyclic_loops(depth - 1, off, idx, collector);
-            }
-        }
-        else
-        {
-            cell_index_type _idx(idx);
-            const position_type pos_off(offset_index_cyclic(_idx, off));
-            cell_type const& c(cell(_idx));
-            for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
-            {
-                collector(const_iterator(&c, cell_range(), i), pos_off);
+                for (off[0] = -1; off[0] <= 1; ++off[0])
+                {
+                    cell_index_type _idx(idx);
+                    const position_type pos_off(offset_index_cyclic(_idx, off));
+                    cell_type const& c(cell(_idx));
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    {
+                        collector(values_.begin() + *i, pos_off);
+                    }
+                }
             }
         }
     }
 
     template<typename Tcollect_>
-    inline void each_neighbor_cyclic_loops(const std::size_t depth,
-            cell_offset_type& off, const cell_index_type& idx,
-            Tcollect_& collector)
+    inline void each_neighbor_cyclic_loops(const cell_index_type& idx,
+                                           Tcollect_& collector)
     {
-        if (depth > 0)
+        cell_offset_type off;
+
+        for (off[2] = -1; off[2] <= 1; ++off[2])
         {
-            for (off[depth - 1] = -1; off[depth - 1] <= 1; ++off[depth - 1])
+            for (off[1] = -1; off[1] <= 1; ++off[1])
             {
-                each_neighbor_cyclic_loops(depth - 1, off, idx, collector);
-            }
-        }
-        else
-        {
-            cell_index_type _idx(idx);
-            const position_type pos_off(offset_index_cyclic(_idx, off));
-            cell_type& c(cell(_idx));
-            for (typename cell_type::iterator i(c.begin()); i != c.end(); ++i) 
-            {
-                collector(iterator(&c, cell_range(), i), pos_off);
+                for (off[0] = -1; off[0] <= 1; ++off[0])
+                {
+                    cell_index_type _idx(idx);
+                    const position_type pos_off(offset_index_cyclic(_idx, off));
+                    cell_type const& c(cell(_idx));
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    {
+                        collector(values_.begin() + *i, pos_off);
+                    }
+                }
             }
         }
     }
@@ -684,8 +559,8 @@ private:
     const length_type world_size_;
     const length_type cell_size_;
     matrix_type matrix_;
-    key_to_cell_mapper_type rmap_;
-    size_type size_;
+    key_to_value_mapper_type rmap_;
+    all_values_type values_;
 };
 
 template<typename T_, typename Tkey_,
