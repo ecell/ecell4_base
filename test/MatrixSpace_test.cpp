@@ -12,6 +12,8 @@
 #include <boost/test/floating_point_comparison.hpp>
 #include "Sphere.hpp"
 #include "MatrixSpace.hpp"
+#include "utils/random.hpp"
+#include "GSLRandomNumberGenerator.hpp"
 
 BOOST_AUTO_TEST_CASE(sized)
 {
@@ -63,6 +65,124 @@ BOOST_AUTO_TEST_CASE(update)
         BOOST_CHECK(oc.end() != oc.find(0));
         BOOST_CHECK(oc.end() == oc.find(1));
     }
+}
+
+BOOST_AUTO_TEST_CASE(erase)
+{
+    typedef MatrixSpace<Sphere<double>, int> oc_type;
+    typedef oc_type::position_type pos;
+
+    for (int i = 0; i < 500; ++i)
+    {
+        oc_type oc(1.0, 10);
+
+        if (i % 50 == 0)
+        {
+            std::cout << "*";
+            std::cout.flush();
+        }
+
+        for (int j = 0; j < i; ++j)
+        {
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(j));
+            std::pair<oc_type::iterator, bool> ir(
+                    oc.update(std::make_pair(
+                        j, oc_type::mapped_type(pos(0.2 + 0.0001 * i, 0.6 + 0.0002 * i, 0.4), 0.001))));
+            BOOST_CHECK_EQUAL(true, ir.second);
+            for (int k = 0; k <= j; ++k)
+                BOOST_CHECK(oc.end() != oc.find(k));
+            BOOST_CHECK(oc.end() == oc.find(j + 1));
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(j + 1));
+        }
+        for (int j = i; --j >= 0;)
+        {
+            for (int k = 0; k <= j; ++k)
+                BOOST_CHECK(oc.end() != oc.find(k));
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(j + 1));
+            BOOST_CHECK(oc.erase(j));
+            BOOST_CHECK(oc.end() == oc.find(j));
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(j));
+        }
+    }
+
+    std::cout << std::endl;
+
+    for (int i = 0; i < 500; ++i)
+    {
+        oc_type oc(1.0, 10);
+
+        if (i % 50 == 0)
+        {
+            std::cout << "*";
+            std::cout.flush();
+        }
+
+        for (int j = 0; j < i; ++j)
+        {
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(j));
+            std::pair<oc_type::iterator, bool> ir(
+                    oc.update(std::make_pair(
+                        j, oc_type::mapped_type(pos(0.2 + 0.0001 * i, 0.6 + 0.0002 * i, 0.4), 0.001))));
+            BOOST_CHECK_EQUAL(true, ir.second);
+            for (int k = 0; k <= j; ++k)
+                BOOST_CHECK(oc.end() != oc.find(k));
+            BOOST_CHECK(oc.end() == oc.find(j + 1));
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(j + 1));
+        }
+        for (int j = 0; j < i; ++j)
+        {
+            for (int k = j; k < i; ++k)
+                BOOST_CHECK(oc.end() != oc.find(k));
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(i - j));
+            BOOST_CHECK(oc.erase(j));
+            BOOST_CHECK(oc.end() == oc.find(j));
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(i - j - 1));
+        }
+    }
+
+    std::cout << std::endl;
+
+    for (int i = 0; i < 500; ++i)
+    {
+        oc_type oc(1.0, 10);
+        std::vector<int> id_list;
+
+        if (i % 50 == 0)
+        {
+            std::cout << "*";
+            std::cout.flush();
+        }
+
+        for (int j = 0; j < i; ++j)
+        {
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(j));
+            std::pair<oc_type::iterator, bool> ir(
+                    oc.update(std::make_pair(
+                        j, oc_type::mapped_type(pos(0.2 + 0.0001 * i, 0.6 + 0.0002 * i, 0.4), 0.001))));
+            BOOST_CHECK_EQUAL(true, ir.second);
+            for (int k = 0; k <= j; ++k)
+                BOOST_CHECK(oc.end() != oc.find(k));
+            BOOST_CHECK(oc.end() == oc.find(j + 1));
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(j + 1));
+            id_list.push_back(j);
+        }
+
+        GSLRandomNumberGenerator rng;
+        shuffle(rng, id_list);
+
+        for (int j = 0; j < i; ++j)
+        {
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(i - j));
+            for (int k = 0; k < j; ++k)
+                BOOST_CHECK(oc.end() == oc.find(id_list[k]));
+            for (int k = j; k < i; ++k)
+                BOOST_CHECK(oc.end() != oc.find(id_list[k]));
+            BOOST_CHECK(oc.erase(id_list[j]));
+            BOOST_CHECK(oc.size() == static_cast<oc_type::size_type>(i - j - 1));
+        }
+    }
+
+    std::cout << std::endl;
 }
 
 template<typename Toc_>

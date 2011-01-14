@@ -97,6 +97,7 @@ array_helper_test_SOURCES = array_helper_test.cpp
 filters_test_SOURCES = filters_test.cpp
 
 MatrixSpace_test_SOURCES = MatrixSpace_test.cpp
+MatrixSpace_test_LDADD = $(GSL_LIBS)
 
 MatrixSpaceWithCylinders_test_SOURCES = MatrixSpaceWithCylinders_test.cpp
 
