@@ -134,17 +134,17 @@ class HDF5Logger(object):
 
         num_particles = 0
         for species in sim.world.species:
-            pid_list = sim.particle_pool[species.id]
+            pid_list = sim.world.get_particle_ids(species.id)
             num_particles += len(pid_list)
 
         x = numpy.zeros((num_particles, ),
                         dtype = numpy.dtype(PARTICLES_SCHEMA))
 
         count = 0
-        for sid, pid_set in sim.particle_pool.iteritems():
+        for species in sim.world.species:
+            pid_set = sim.world.get_particle_ids(species.id)
             for pid in pid_set:
                 pid, particle = sim.world.get_particle(pid)
-                species = sim.world.get_species(sid)
                 x['id'][count] = pid.serial
                 x['species_id'][count] = sid.serial
                 x['position'][count] = particle.position
