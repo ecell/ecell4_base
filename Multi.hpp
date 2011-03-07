@@ -265,7 +265,11 @@ public:
 
     Multi(identifier_type const& id, simulator_type& main, Real dt_factor)
         : base_type(id), main_(main), pc_(*main.world()), dt_factor_(dt_factor),
-          shells_(), last_event_(NONE) {}
+          shells_(), last_event_(NONE)
+    {
+        BOOST_ASSERT(dt_factor > 0.);
+        base_type::dt_ = dt_factor_ * BDSimulator<traits_type>::determine_dt(*main_.world());
+    }
 
     event_kind const& last_event() const
     {
@@ -347,11 +351,10 @@ public:
                 tx(pc_.create_transaction());
         typedef typename multi_particle_container_type::transaction_type::particle_id_pair_generator particle_id_pair_generator;
         typedef typename multi_particle_container_type::transaction_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
-
         last_reaction_setter rs(*this);
         BDPropagator<traits_type> ppg(
             *tx, *main_.network_rules(), main_.rng(),
-            dt_factor_ * BDSimulator<traits_type>::determine_dt(*main_.world()),
+            base_type::dt_,
             1 /* FIXME: dissociation_retry_moves */, &rs,
             make_select_first_range(pc_.get_particles_range()));
 
