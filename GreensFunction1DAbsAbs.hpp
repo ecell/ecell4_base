@@ -163,6 +163,11 @@ public:
 
     std::string dump() const;
 
+    const char* getName() const
+    {
+        return "GreensFunction1DAbsAbs";
+    }
+
 private:
     struct drawT_params
     {

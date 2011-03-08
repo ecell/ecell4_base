@@ -2,6 +2,7 @@
 #define __PAIRGREENSFUNCTION_HPP
 
 #include "Defs.hpp"
+#include <string>
 #include "GreensFunction.hpp"
 
 class PairGreensFunction: public GreensFunction
@@ -31,6 +32,10 @@ public:
     {
         return this->r0;
     }
+
+    virtual std::string dump() const = 0;
+
+    virtual const char* getName() const = 0;
 
     virtual Real drawTime(Real rnd) const = 0;
     

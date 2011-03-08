@@ -52,6 +52,11 @@ public:
 
     std::string dump() const;
 
+    const char* getName() const
+    {
+        return "GreensFunction3D";
+    }
+
 private:
     static Logger& log_;
 };

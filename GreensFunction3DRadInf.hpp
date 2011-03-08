@@ -73,6 +73,11 @@ public:
 
     std::string dump() const;
 
+    const char* getName() const
+    {
+        return "GreensFunction3DRadInf";
+    }
+
 private:
     Real p_corr_R(Real alpha, unsigned int n, Real r, Real t) const;
 

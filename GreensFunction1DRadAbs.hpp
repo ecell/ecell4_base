@@ -174,6 +174,11 @@ public:
 
     std::string dump() const;
 
+    const char* getName() const
+    {
+        return "GreensFunction1DRadAbs";
+    }
+
     // Calculates the roots of tan(a*x)=-xk/h
     Real root_n(int n) const;
     

@@ -77,6 +77,11 @@ public:
 
     std::string dump() const;
 
+    const char* getName() const
+    {
+        return "GreensFunction3DAbs";
+    }
+
 protected:
 
     Real p_theta_table(Real theta, Real r, Real t, 

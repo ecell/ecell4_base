@@ -106,6 +106,11 @@ public:
 
     std::string dump() const;
 
+    const char* getName() const
+    {
+        return "GreensFunction3DRadAbs";
+    }
+
     unsigned int alphaOffset(unsigned int n) const;
 
     Real alpha0_i(Integer i) const;

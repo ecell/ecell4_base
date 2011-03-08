@@ -398,5 +398,10 @@ Real GreensFunction3DAbsSym::drawR(Real rnd, Real t) const
     return r;
 }
 
+std::string GreensFunction3DAbsSym::dump() const
+{
+    return (boost::format("D=%g, a=%g") % getD() % geta()).str();
+}
+
 Logger& GreensFunction3DAbsSym::log_(
         Logger::get_logger("GreensFunction3DAbsSym"));
