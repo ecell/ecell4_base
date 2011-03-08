@@ -166,27 +166,27 @@ public:
 private:
     struct drawT_params
     {
-	// use 10 terms in the summation for now
-	double exponent[MAX_TERMS];
-	double Xn[MAX_TERMS];
-	double prefactor;
-	int    terms;
-	Real tscale;
-	// random number
-	double rnd;
+        // use 10 terms in the summation for now
+        double exponent[MAX_TERMS];
+        double Xn[MAX_TERMS];
+        double prefactor;
+        int    terms;
+        Real tscale;
+        // random number
+        double rnd;
     };
 
     static double drawT_f (double t, void *p);
 
     struct drawR_params
     {
-	double S_Cn_An[MAX_TERMS];
-	double n_L[MAX_TERMS];
-	// variables H: for additional terms appearing as multiplicative factors etc.
-	double H[5];
-	int terms;
-	// random number
-	double rnd;
+        double S_Cn_An[MAX_TERMS];
+        double n_L[MAX_TERMS];
+        // variables H: for additional terms appearing as multiplicative factors etc.
+        double H[5];
+        int terms;
+        // random number
+        double rnd;
     };
 
     static double drawR_f (double z, void *p);
