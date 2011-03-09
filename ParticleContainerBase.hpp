@@ -42,7 +42,7 @@ struct ParticleContainerUtils
     template<typename Tset_>
     struct overlap_checker
     {
-        overlap_checker(Tset_ const& ignore = Tset_()): ignore_(ignore), result_(0), compare_(0) {}
+        overlap_checker(Tset_ const& ignore = Tset_()): ignore_(ignore), result_(0) {}
 
         template<typename Titer_>
         void operator()(Titer_ const& i, length_type const& dist)
@@ -61,7 +61,7 @@ struct ParticleContainerUtils
         {
             if (result_)
             {
-                std::sort(result_->pbegin(), result_->pend(), *compare_);
+                std::sort(result_->pbegin(), result_->pend(), compare_);
             }
             return result_;
         }
@@ -69,7 +69,7 @@ struct ParticleContainerUtils
     private:
         Tset_ const& ignore_;
         particle_id_pair_and_distance_list* result_;
-        distance_comparator* compare_;
+        distance_comparator compare_;
     };
 };
 
