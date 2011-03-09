@@ -1694,14 +1694,15 @@ protected:
         {
             do
             {
-                r = gf.drawR(rng.uniform(0., 1.), dt);
+                rnd = rng.uniform(0., 1.);
+                r = gf.drawR(rnd, dt);
             } while (r > a || r <= sigma);
         }
         catch (std::exception const& e)
         {
             throw propagation_error(
                 (boost::format(
-                    "gf.drawR() failed: %s, rnd=%g, dt=%g, a=%g, sigma=%g") % e.what() % rnd % dt % a % sigma).str());
+                    "gf.drawR() failed: %s, gf=%s, rnd=%g, dt=%g, a=%g, sigma=%g: %s") % e.what() % gf.getName() % rnd % dt % a % sigma % gf.dump()).str());
         }
 
         return r;
