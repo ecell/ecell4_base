@@ -10,7 +10,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/fusion/container/map.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 #include <boost/fusion/sequence/intrinsic/at_key.hpp>
@@ -1425,67 +1424,15 @@ protected:
         LOG_DEBUG(("add_event: #%d - %s", domain.event().first, boost::lexical_cast<std::string>(domain).c_str()));
     }
 
-    void update_event(single_type& domain, single_event_kind const& kind)
-    {
-        if (base_type::paranoiac_)
-            BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
-
-        LOG_DEBUG(("update_event: #%d", domain.event().first));
-        boost::shared_ptr<event_type> new_event(
-            new single_event(base_type::t_ + domain.dt(), domain, kind));
-        domain.event() = std::make_pair(domain.event().first, new_event);
-        try
-        {
-            scheduler_.update(domain.event());
-        }
-        catch (std::exception const&)
-        {
-            throw;
-        }
-    }
-
-    void update_event(pair_type& domain, pair_event_kind const& kind)
-    {
-        if (base_type::paranoiac_)
-            BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
-
-        LOG_DEBUG(("update_event: #%d", domain.event().first));
-        boost::shared_ptr<event_type> new_event(
-            new pair_event(base_type::t_ + domain.dt(), domain, kind));
-        domain.event() = std::make_pair(domain.event().first, new_event);
-        try
-        {
-            scheduler_.update(domain.event());
-        }
-        catch (std::exception const&)
-        {
-            throw;
-        }
-    }
-
-    void update_event(multi_type& domain)
-    {
-        if (base_type::paranoiac_)
-            BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
-
-        LOG_DEBUG(("update_event: #%d", domain.event().first));
-        boost::shared_ptr<event_type> new_event(
-            new pair_event(base_type::t_ + domain.dt(), domain));
-        domain.event() = std::make_pair(domain.event().first, new_event);
-        try
-        {
-            scheduler_.update(domain.event());
-        }
-        catch (std::exception const&)
-        {
-            throw;
-        }
-    }
-
     void remove_event(event_id_type const& id)
     {
         LOG_DEBUG(("remove_event: #%d", id));
         scheduler_.remove(id);
+    }
+
+    void remove_event(domain_type const& domain)
+    {
+        remove_event(domain.event().first);
     }
 
     // create_single {{{
@@ -1937,7 +1884,8 @@ protected:
         domain.last_time() = base_type::t_;
         try
         {
-            update_event(domain, SINGLE_EVENT_ESCAPE);
+            remove_event(domain);
+            add_event(domain, SINGLE_EVENT_ESCAPE);
         }
         catch (std::out_of_range const&)
         {
@@ -3092,6 +3040,9 @@ protected:
                         if (!single)
                             continue;
                         restore_domain(*single);
+                        // reschedule events for the restored domains
+                        remove_event(*single);
+                        determine_next_event(*single);
                     }
                 } else {
                     restore_domain(domain, closest);
