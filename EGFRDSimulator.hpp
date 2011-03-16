@@ -473,23 +473,6 @@ protected:
         position_type pos_;
     };
 
-    struct distance_calculator
-    {
-        distance_calculator(world_type const& world,
-                            position_type const& pos)
-            : world_(world), pos_(pos) {}
-
-        template<typename Tshape_>
-        length_type operator()(Tshape_ const& shape) const
-        {
-            return world_.distance(shape, pos_);
-        }
-
-    private:
-        world_type const& world_;
-        position_type pos_;
-    };
-
     template<typename Tmap_>
     struct domain_shell_map_builder
     {
