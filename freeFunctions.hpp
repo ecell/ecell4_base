@@ -7,9 +7,9 @@ Real expxsq_erfc(Real x);
 
 Real W(Real a, Real b);
 
-Real p_irr(Real r, Real r0, Real t, Real kf, Real D, Real sigma);
+Real p_irr(Real r, Real t, Real r0, Real kf, Real D, Real sigma);
 
-Real __p_irr(Real r, Real r0, Real t, Real kf, Real D, Real sigma, Real alpha);
+Real __p_irr(Real r, Real t, Real r0, Real kf, Real D, Real sigma, Real alpha);
 
 Real p_free(Real r, Real r0, Real theta, Real t); 
 

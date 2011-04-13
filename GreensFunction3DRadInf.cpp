@@ -613,7 +613,7 @@ void GreensFunction3DRadInf::makeRnTable(RealVector& RnTable,
     {  
         // First, estimate the size of p_corr, and if it's small enough,
         // we don't need to calculate it in the first place.
-        const Real pirr(p_irr(r, r0, t, kf, D, sigma));
+        const Real pirr(p_irr(r, t, r0, kf, D, sigma));
         const Real ipfree_max(ip_free(M_PI, r, t) * 2 * M_PI * r * r);
         
         if(fabs((pirr - ipfree_max) / ipfree_max) < 1e-8)
