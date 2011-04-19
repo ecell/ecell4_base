@@ -186,7 +186,7 @@ public:
 			    typename boost::call_traits<holder_type>::param_type holder)
 		: ord_(ord), cntnr_(holder) {}
 
-    explicit sorted_list(typename boost::call_traits<holder_type>::param_type const& holder)
+    explicit sorted_list(typename boost::call_traits<holder_type>::param_type holder)
 		: ord_(), cntnr_(holder) {}
 
     explicit sorted_list(typename boost::call_traits<TweakOrdering_>::param_type ord): ord_(ord) {}
