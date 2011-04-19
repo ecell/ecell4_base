@@ -3607,12 +3607,11 @@ protected:
 
     static rate_type calculate_k_tot(reaction_rules const& rules)
     {
-        using namespace boost::lambda;
-        using boost::lambda::_1;
-        using boost::lambda::bind;
         rate_type k_tot(0.);
-        std::for_each(boost::begin(rules), boost::end(rules),
-            var(k_tot) += bind(&reaction_rule_type::k, _1));
+        BOOST_FOREACH (reaction_rule_type const& rule, rules)
+        {
+            k_tot += rule.k();
+        }
         return k_tot;
     }
 
