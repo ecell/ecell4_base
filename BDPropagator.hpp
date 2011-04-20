@@ -117,7 +117,11 @@ public:
                 particle_id_pair_and_distance const& closest(overlapped->at(0));
                 try
                 {
-                    attempt_reaction(pp, closest.first);
+                    if (!attempt_reaction(pp, closest.first))
+                    {
+                        LOG_DEBUG(("collision with a nonreactive particle %s. move rejected", boost::lexical_cast<std::string>(closest.first.first).c_str()));
+                        ++rejected_move_count_;
+                    }
                 }
                 catch (propagation_error const& reason)
                 {
