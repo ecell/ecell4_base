@@ -48,9 +48,12 @@ def setup_logging():
             handler = logging.FileHandler(os.environ['LOGFILE'], 'w', )
             
         if 'LOGLEVEL' in os.environ:
-            handler.setLevel(getattr(logging, os.environ['LOGLEVEL']))
+            levelvalue = getattr(logging, os.environ['LOGLEVEL'])
+            handler.setLevel(levelvalue)
+            log.setLevel(levelvalue))
         else:
             handler.setLevel(logging.INFO)
+            log.setLevel(logging.INFO)
     else:
         handler = _gfrd.CppLoggerHandler(_gfrd.Logger.get_logger("ecell"))
         if 'LOGLEVEL' in os.environ:
