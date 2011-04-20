@@ -146,7 +146,7 @@ class HDF5Logger(object):
             for pid in pid_set:
                 pid, particle = sim.world.get_particle(pid)
                 x['id'][count] = pid.serial
-                x['species_id'][count] = sid.serial
+                x['species_id'][count] = species.id.serial
                 x['position'][count] = particle.position
                 count += 1
 
