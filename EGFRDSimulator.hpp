@@ -2750,14 +2750,14 @@ protected:
     boost::optional<multi_type&>
     form_multi(single_type& domain,
                std::vector<boost::shared_ptr<domain_type> > const& neighbors,
-               std::pair<domain_type&, length_type> closest)
+               std::pair<domain_type*, length_type> closest)
     {
         LOG_DEBUG(("form multi: neighbors=[%s], closest=%s",
                 stringize_and_join(
                     make_transform_iterator_range(neighbors,
                         dereference<boost::shared_ptr<domain_type> >()),
                     ", ").c_str(),
-                boost::lexical_cast<std::string>(closest.first).c_str()));
+                boost::lexical_cast<std::string>(*closest.first).c_str()));
         length_type const min_shell_size(
                 domain.particle().second.radius() *
                     (1.0 + multi_shell_factor_));
@@ -2772,7 +2772,7 @@ protected:
         // If there's a multi neighbor, merge others into it.
         // Otherwise, create a new multi and let it hold them all.
         multi_type* retval(0);
-        retval = dynamic_cast<multi_type*>(&closest.first);
+        retval = dynamic_cast<multi_type*>(closest.first);
         if (!retval)
         {
             retval = create_multi().get();
@@ -2943,8 +2943,8 @@ protected:
         {
             boost::optional<multi_type&> new_multi(
                     form_multi(domain, neighbors,
-                               std::pair<domain_type&, length_type>(
-                                    *possible_partner,
+                               std::pair<domain_type*, length_type>(
+                                    possible_partner,
                                     length_to_possible_partner)));
             if (new_multi)
             {
@@ -3607,12 +3607,11 @@ protected:
 
     static rate_type calculate_k_tot(reaction_rules const& rules)
     {
-        using namespace boost::lambda;
-        using boost::lambda::_1;
-        using boost::lambda::bind;
         rate_type k_tot(0.);
-        std::for_each(boost::begin(rules), boost::end(rules),
-            var(k_tot) += bind(&reaction_rule_type::k, _1));
+        BOOST_FOREACH (reaction_rule_type const& rule, rules)
+        {
+            k_tot += rule.k();
+        }
         return k_tot;
     }
 
