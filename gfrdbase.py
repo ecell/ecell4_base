@@ -50,7 +50,7 @@ def setup_logging():
         if 'LOGLEVEL' in os.environ:
             levelvalue = getattr(logging, os.environ['LOGLEVEL'])
             handler.setLevel(levelvalue)
-            log.setLevel(levelvalue))
+            log.setLevel(levelvalue)
         else:
             handler.setLevel(logging.INFO)
             log.setLevel(logging.INFO)
