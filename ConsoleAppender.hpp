@@ -15,7 +15,7 @@ public:
 
     virtual void flush();
 
-    virtual void operator()(enum Logger::level lv, boost::posix_time::ptime const& tm, char const* name, char const** chunks);
+    virtual void operator()(enum Logger::level lv, char const* name, char const** chunks);
 };
 
 #endif /* CONSOLE_LOGGER_HPP */

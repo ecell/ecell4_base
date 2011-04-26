@@ -40,7 +40,6 @@ public:
     virtual ~PythonAppender() {}
 
     virtual void operator()(enum Logger::level lv,
-                            boost::posix_time::ptime const& tm,
                             char const* name, char const** chunks)
     {
         std::string msg;

@@ -26,7 +26,6 @@ static void import_datetime_module()
 
 template<typename Timpl>
 static void log_appender_call(Timpl& self, enum Logger::level lv,
-                              boost::posix_time::ptime const& tm,
                               char const* name, PyObject* _chunks)
 {
     using namespace boost::python;
@@ -48,7 +47,7 @@ static void log_appender_call(Timpl& self, enum Logger::level lv,
     }
 
     chunks.push_back(0);
-    self(lv, tm, name, &chunks.front());
+    self(lv, name, &chunks.front());
 }
 
 struct posix_timer_converter

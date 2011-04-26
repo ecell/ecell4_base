@@ -151,7 +151,6 @@ public:
     virtual void flush() = 0;
 
     virtual void operator()(enum Logger::level lv,
-                            boost::posix_time::ptime const& tm,
                             char const* name, char const** chunks) = 0;
 };
 

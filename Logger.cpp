@@ -151,16 +151,15 @@ struct invoke_appender
     void operator()(boost::shared_ptr<LogAppender> const& appender) const
     {
         const char* chunks[] = { formatted_msg, NULL };
-        (*appender)(level, time, name, chunks);
+        (*appender)(level, name, chunks);
     }
 
-    invoke_appender(enum Logger::level level, boost::posix_time::ptime const& time,
+    invoke_appender(enum Logger::level level,
                     const char* name, char const *formatted_msg)
-        : level(level), time(time), name(name),
+        : level(level), name(name),
           formatted_msg(formatted_msg) {}
 
     enum Logger::level const level;
-    boost::posix_time::ptime const time;
     char const* const name;
     char const* const formatted_msg;
 };
@@ -190,7 +189,7 @@ void Logger::logv(enum level lv, char const* format, va_list ap)
     std::vsnprintf(buf, sizeof(buf), format, ap);
 
     std::for_each(appenders_.begin(), appenders_.end(),
-            invoke_appender(lv, second_clock::local_time(), name_.c_str(),
+            invoke_appender(lv, name_.c_str(),
                             buf));
 }
 
