@@ -9,11 +9,10 @@
 
 ConsoleAppender::~ConsoleAppender() {}
 
-void ConsoleAppender::operator()(enum Logger::level lv, boost::posix_time::ptime const& tm, char const* name, char const** chunks)
+void ConsoleAppender::operator()(enum Logger::level lv, char const* name, char const** chunks)
 {
-    using namespace boost::posix_time;
-    std::fprintf(stderr, "[%s] %s: %-8s ", to_iso_string(tm).c_str(),
-                 name, Logger::stringize_error_level(lv));
+    std::fprintf(stderr, "%s: %-8s ",
+      name, Logger::stringize_error_level(lv));
     for (char const** p = chunks; *p; ++p)
         std::fwrite(*p, sizeof(char), strlen(*p), stderr);
     std::fputc('\n', stderr);
