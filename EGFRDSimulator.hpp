@@ -2374,7 +2374,8 @@ protected:
             } else {
                 new_shell_size = closest.second / traits_type::SAFETY;
             }
-            new_shell_size = std::min(max_shell_size(), new_shell_size);
+            new_shell_size = std::min(max_shell_size(), 
+                std::max(domain.particle().second.radius(), new_shell_size));
         }
         else
         {
