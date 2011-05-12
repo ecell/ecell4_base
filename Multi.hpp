@@ -330,7 +330,7 @@ public:
         {
             spherical_shell_id_pair const& sp(*i);
             position_type ppos(main_.world()->cyclic_transpose(sphere.position(), (sp).second.position()));
-            if (distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius())
+            if (distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius() - sphere.radius())
             {
                 return true;
             }
