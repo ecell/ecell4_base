@@ -195,11 +195,12 @@ class NonInteractionSingle(Single):
 
         displacement = self.create_position_vector(r)
 
-        if __debug__:
-            scale = self.pid_particle_pair[1].radius
-            if feq(length(displacement), abs(r), typical=scale) == False:
-                raise AssertionError('displacement != abs(r): %g != %g.' % 
-                                     (length(displacement), abs(r)))
+        # This should be checked in the unit test of random_vector.
+        # if __debug__:
+        #     scale = self.pid_particle_pair[1].radius
+        #     if feq(length(displacement), abs(r), typical=scale) == False:
+        #         raise AssertionError('displacement != abs(r): %g != %g.' % 
+        #                              (length(displacement), abs(r)))
 
         # Add displacement to shape.position, not to particle.position.  
         # This distinction is important only in the case of an 
