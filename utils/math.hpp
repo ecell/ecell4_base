@@ -20,7 +20,7 @@
 template<typename T>
 inline bool feq(T const& a, T const& b, T const& typical = 1., double tolerance = 1e-7)
 {
-    return std::abs(a - b) <= tolerance * (typical * std::min(std::abs(a), std::abs(b)));
+    return std::abs(a - b) <= tolerance * (typical + std::min(std::abs(a), std::abs(b)));
 }
 
 #endif /* UTILS_MATH_HPP */
