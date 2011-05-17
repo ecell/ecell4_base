@@ -10,7 +10,6 @@
 #include <boost/regex.hpp>
 #include <boost/foreach.hpp>
 #include <boost/type_traits/remove_pointer.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/bind.hpp>
 #include "Logger.hpp"
@@ -178,8 +177,6 @@ enum Logger::level Logger::level() const
 
 void Logger::logv(enum level lv, char const* format, va_list ap)
 {
-    using namespace boost::posix_time;
-
     ensure_initialized();
 
     if (lv < level_)

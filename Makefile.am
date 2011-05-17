@@ -20,7 +20,6 @@ LIBPYTHON = -lpython$(PYTHON_VERSION)
 INCLUDES = ${PYTHON_INCLUDES} -I${NUMPY_INCLUDE_DIR}
 AM_CXXFLAGS = @CXXFLAGS@ @GSL_CFLAGS@
 LIBBOOSTPYTHON = -l@BOOST_PYTHON_LIBNAME@
-LIBBOOSTDATE = -l@BOOST_DATE_TIME_LIBNAME@
 LIBBOOSTREGEX = -l@BOOST_REGEX_LIBNAME@
 
 CFLAGS = @GSL_CFLAGS@ @BOOST_CPPFLAGS@
@@ -208,10 +207,10 @@ _greens_functions_la_SOURCES=\
 
 _gfrd_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
 _gfrd_la_LIBADD = binding/libbinding_utils.la
-_gfrd_la_LIBADD += $(LIBBOOSTPYTHON) $(LIBBOOSTDATE) $(LIBPYTHON) $(GSL_LIBS)
+_gfrd_la_LIBADD += $(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
 
 _greens_functions_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
-_greens_functions_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBBOOSTDATE) $(LIBPYTHON) $(GSL_LIBS)
+_greens_functions_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
 
 #nodist__gfrd_la_SOURCES = \
 #	SphericalBesselTable.hpp

@@ -3,7 +3,7 @@
 #endif /* HAVE_CONFIG_H */
 
 #include <cstdio>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <cstring>
 
 #include "ConsoleAppender.hpp"
 
@@ -14,7 +14,7 @@ void ConsoleAppender::operator()(enum Logger::level lv, char const* name, char c
     std::fprintf(stderr, "%s: %-8s ",
       name, Logger::stringize_error_level(lv));
     for (char const** p = chunks; *p; ++p)
-        std::fwrite(*p, sizeof(char), strlen(*p), stderr);
+      std::fwrite(*p, sizeof(char), std::strlen(*p), stderr);
     std::fputc('\n', stderr);
 }
 

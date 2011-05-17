@@ -78,17 +78,6 @@ AC_ARG_WITH(boost-python-libname,
 AC_CHECK_LIB($BOOST_PYTHON_LIBNAME,main,,AC_MSG_ERROR([could not find libboost_python.]),-lpython${PYTHON_VERSION})
 AC_SUBST(BOOST_PYTHON_LIBNAME)
 
-BOOST_DATE_TIME_LIBNAME=boost_date_time
-
-AC_ARG_WITH(boost-date_time-libname,
-  AC_HELP_STRING([--with-boost-date-time-libname=LIBNAME],
-                 [specify the library name of Boost.Python [[boost_date_time]]]
-                ),
-  [BOOST_DATE_TIME_LIBNAME=$withval]
-)
-AC_CHECK_LIB($BOOST_DATE_TIME_LIBNAME,main,,AC_MSG_ERROR([could not find libboost_date_time.]))
-AC_SUBST(BOOST_DATE_TIME_LIBNAME)
-
 BOOST_REGEX_LIBNAME=boost_regex
 
 AC_ARG_WITH(boost-regex-libname,

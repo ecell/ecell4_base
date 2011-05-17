@@ -7,7 +7,6 @@
 #include <string>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/date_time/posix_time/posix_time_types.hpp>
 
 class LogAppender;
 class LoggerManager;
