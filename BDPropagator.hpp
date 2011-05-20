@@ -45,15 +45,17 @@ public:
     typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
     typedef typename traits_type::reaction_record_type reaction_record_type;
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
+    typedef typename traits_type::volume_clearer_type volume_clearer_type;
 
 public:
     template<typename Trange_>
     BDPropagator(
         particle_container_type& tx, network_rules_type const& rules,
         rng_type& rng, time_type dt, int max_retry_count,
-        reaction_recorder_type* rrec, Trange_ const& particles)
+        reaction_recorder_type* rrec, volume_clearer_type* vc,
+        Trange_ const& particles)
         : tx_(tx), rules_(rules), rng_(rng), dt_(dt),
-          max_retry_count_(max_retry_count), rrec_(rrec),
+          max_retry_count_(max_retry_count), rrec_(rrec), vc_(vc),
           queue_(), rejected_move_count_(0)
     {
         call_with_size_if_randomly_accessible(
@@ -137,6 +139,15 @@ public:
             ++rejected_move_count_;
             return true;
         }
+        if (vc_)
+        {
+            if (!(*vc_)(particle_to_update.second.shape(), 
+                        particle_to_update.first))
+            {
+                log_.info("propagation move rejected.");
+                return true;
+            }
+        }
         tx_.update_particle(particle_to_update);
         return true;
     }
@@ -192,6 +203,14 @@ private:
                             throw propagation_error("no space");
                         }
 
+                        if (vc_)
+                        {
+                            if (!(*vc_)(new_p.second.shape(), pp.first))
+                            {
+                                throw propagation_error("no space");
+                            }
+                        }
+
                         tx_.update_particle(new_p);
 
                         if (rrec_)
@@ -237,6 +256,14 @@ private:
                                     pp.first));
                             if (!(overlapped_s0 && overlapped_s0->size() > 0) && !(overlapped_s1 && overlapped_s1->size() > 0))
                                 break;
+                        }
+
+                        if (vc_)
+                        {
+                            if (!(*vc_)(particle_shape_type(np0, s0.radius()), pp.first) || !(*vc_)(particle_shape_type(np1, s1.radius()), pp.first))
+                            {
+                                throw propagation_error("no space");
+                            }
                         }
 
                         tx_.remove_particle(pp.first);
@@ -323,6 +350,16 @@ private:
                             throw propagation_error("no space");
                         }
 
+                        if (vc_)
+                        {
+                            if (!(*vc_)(
+                                    particle_shape_type(new_pos, sp.radius()), 
+                                    pp0.first, pp1.first))
+                            {
+                                throw propagation_error("no space");
+                            }
+                        }
+
                         remove_particle(pp0.first);
                         remove_particle(pp1.first);
                         particle_id_pair npp(tx_.new_particle(product, new_pos));
@@ -373,6 +410,7 @@ private:
     Real const dt_;
     int const max_retry_count_;
     reaction_recorder_type* const rrec_;
+    volume_clearer_type* const vc_;
     particle_id_vector_type queue_;
     int rejected_move_count_;
     static Logger& log_;

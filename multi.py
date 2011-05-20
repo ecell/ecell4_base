@@ -59,11 +59,34 @@ class Multi(object):
             def __call__(self, ri):
                 self.reactions.append(ri)
 
+        class clear_volume(object):
+            def __init__(self, outer):
+                self.outer_ = outer
+
+            def __call__(self, shape, ignore0, ignore1=None):
+                within_radius = bool(
+                    self.outer_.sphere_container.get_neighbors_within_radius(
+                        shape.position, -shape.radius))
+                if not within_radius:
+                    main = self.outer_.main()
+                    if self.outer_.last_event == None:
+                        self.outer_.last_event = EventType.MULTI_ESCAPE
+                    main.clear_volume(shape.position, shape.radius, 
+                                      ignore=[self.outer_.domain_id, ])
+                    if ignore1 is None:
+                        return main.world.check_overlap(
+                            (shape.position, shape.radius), ignore0)
+                    else:
+                        return main.world.check_overlap(
+                            (shape.position, shape.radius), ignore0, ignore1)
+                return True
+
         cr = check_reaction()
+        vc = clear_volume(self)
 
         ppg = _gfrd.BDPropagator(tx, main.network_rules,
                      myrandom.rng, self.dt, main.dissociation_retry_moves,
-                     cr, [pid for pid, _ in self.particle_container])
+                     cr, vc, [pid for pid, _ in self.particle_container])
 
         self.last_event = None
         while ppg():
@@ -75,21 +98,21 @@ class Multi(object):
                     self.last_event = EventType.MULTI_BIMOLECULAR_REACTION
                 break
 
-        for pid_particle_pair in itertools.chain(
-                tx.modified_particles, tx.added_particles):
-            overlapped = main.world.check_overlap(pid_particle_pair[1].shape, pid_particle_pair[0])
-            if overlapped:
-                if __debug__:
-                    log.info("collision occurred between particles of a multi and the outside: %s - %s.  moves will be rolled back." % (pid_particle_pair, list(overlapped)))
-                tx.rollback()
-                return
+        # for pid_particle_pair in itertools.chain(
+        #         tx.modified_particles, tx.added_particles):
+        #     overlapped = main.world.check_overlap(pid_particle_pair[1].shape, pid_particle_pair[0])
+        #     if overlapped:
+        #         if __debug__:
+        #             log.info("collision occurred between particles of a multi and the outside: %s - %s.  moves will be rolled back." % (pid_particle_pair, list(overlapped)))
+        #         tx.rollback()
+        #         return
 
-            if not self.within_shell(pid_particle_pair):
-                if self.last_event == None:
-                    self.last_event = EventType.MULTI_ESCAPE
-                main.clear_volume(
-                    pid_particle_pair[1].position,
-                    pid_particle_pair[1].radius, ignore=[self.domain_id, ])
+        #     if not self.within_shell(pid_particle_pair):
+        #         if self.last_event == None:
+        #             self.last_event = EventType.MULTI_ESCAPE
+        #         main.clear_volume(
+        #             pid_particle_pair[1].position,
+        #             pid_particle_pair[1].radius, ignore=[self.domain_id, ])
 
     def check(self):
         # shells are contiguous

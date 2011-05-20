@@ -57,6 +57,8 @@ noinst_HEADERS = \
 	python_logger_classes.hpp \
 	random_number_generator_class.hpp \
 	RandomNumberGenerator.hpp \
+	volume_clearer_classes.hpp \
+	volume_clearer_converter.hpp \
 	reaction_record_classes.hpp \
 	reaction_recorder_converter.hpp \
 	ReactionRecord.hpp \
@@ -113,6 +115,7 @@ libbinding_utils_la_SOURCES = \
 	PythonAppender.cpp \
 	python_logger_classes.cpp \
 	random_number_generator_class.cpp \
+	volume_clearer_classes.cpp \
 	reaction_record_classes.cpp \
 	shape_converters.cpp \
 	shell_classes.cpp \

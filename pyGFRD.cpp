@@ -51,6 +51,7 @@
 #include "binding/position_converters.hpp"
 #include "binding/python_logger_classes.hpp"
 #include "binding/random_number_generator_class.hpp"
+#include "binding/volume_clearer_classes.hpp"
 #include "binding/reaction_record_classes.hpp"
 #include "binding/shape_converters.hpp"
 #include "binding/shell_classes.hpp"
@@ -109,6 +110,7 @@ peer::util::register_exception_translator<PyExc_IndexError, std::out_of_range>()
     b::register_world_class();
     b::register_structure_classes();
     b::register_module_functions();
+    b::register_volume_clearer_classes();
     b::register_reaction_record_classes();
     b::register_particle_simulator_classes();
     b::register_egfrd_simulator_classes();

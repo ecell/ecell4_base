@@ -13,6 +13,7 @@
 #include "BDPropagator.hpp"
 #include "Logger.hpp"
 #include "PairGreensFunction.hpp"
+#include "VolumeClearer.hpp"
 #include "utils/array_helper.hpp"
 #include "utils/range.hpp"
 
@@ -213,6 +214,8 @@ public:
     typedef typename traits_type::template shell_generator<
         typename simulator_type::sphere_type>::type spherical_shell_type;
     typedef std::pair<const typename traits_type::shell_id_type, spherical_shell_type> spherical_shell_id_pair;
+    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
+    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
     typedef typename traits_type::reaction_record_type reaction_record_type;
 
     typedef std::map<shell_id_type, spherical_shell_type> spherical_shell_map;
@@ -241,6 +244,37 @@ private:
 
         Multi& outer_;
     };
+
+    struct volume_clearer: VolumeClearer<particle_shape_type, particle_id_type>
+    {
+        virtual ~volume_clearer() {}
+
+        virtual bool operator()(particle_shape_type const& shape, particle_id_type const& ignore)
+        {
+            if (!outer_.within_shell(shape))
+            {
+                outer_.last_event_ = ESCAPE;
+                return outer_.clear_volume(shape, ignore);
+            }
+            return true;
+        }
+
+        virtual bool operator()(particle_shape_type const& shape, particle_id_type const& ignore0, particle_id_type const& ignore1)
+        {
+            if (!outer_.within_shell(shape))
+            {
+                outer_.last_event_ = ESCAPE;
+                return outer_.clear_volume(shape, ignore0, ignore1);
+            }
+            return true;
+        }
+
+        volume_clearer(Multi& outer): outer_(outer) {}
+
+        Multi& outer_;
+    };
+
+    friend struct volume_clearer;
 
 public:
     virtual ~Multi() {}
@@ -338,6 +372,32 @@ public:
         return false;
     }
 
+    bool clear_volume(particle_shape_type const& shape, particle_id_type const& ignore) const
+    {
+        LOG_DEBUG(("clear_volume was called here."));
+        main_.clear_volume(shape, base_type::id_);
+        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+            main_.world()->check_overlap(shape, ignore));
+        if (overlapped && ::size(*overlapped))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    bool clear_volume(particle_shape_type const& shape, particle_id_type const& ignore0, particle_id_type const& ignore1) const
+    {
+        LOG_DEBUG(("clear_volume was called here."));
+        main_.clear_volume(shape, base_type::id_);
+        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+            main_.world()->check_overlap(shape, ignore0, ignore1));
+        if (overlapped && ::size(*overlapped))
+        {
+            return false;
+        }
+        return true;
+    }
+
     typename multi_particle_container_type::particle_id_pair_range
     get_particles_range() const
     {
@@ -352,10 +412,11 @@ public:
         typedef typename multi_particle_container_type::transaction_type::particle_id_pair_generator particle_id_pair_generator;
         typedef typename multi_particle_container_type::transaction_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
         last_reaction_setter rs(*this);
+        volume_clearer vc(*this);
         BDPropagator<traits_type> ppg(
             *tx, *main_.network_rules(), main_.rng(),
             base_type::dt_,
-            1 /* FIXME: dissociation_retry_moves */, &rs,
+            1 /* FIXME: dissociation_retry_moves */, &rs, &vc,
             make_select_first_range(pc_.get_particles_range()));
 
         last_event_ = NONE;
@@ -369,6 +430,7 @@ public:
             }
         }
 
+        /*
         boost::scoped_ptr<particle_id_pair_generator>
             added_particles(tx->get_added_particles()),
             modified_particles(tx->get_modified_particles());
@@ -396,7 +458,7 @@ public:
                 last_event_ = ESCAPE;
                 main_.clear_volume(pp.second.shape(), base_type::id_);
             }
-        }
+        } */
     }
 
 protected:

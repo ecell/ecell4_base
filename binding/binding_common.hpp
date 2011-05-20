@@ -96,6 +96,7 @@ typedef EGFRDSimulator::cylindrical_surface_type CylindricalSurface;
 typedef EGFRDSimulator::cuboidal_region_type CuboidalRegion;
 typedef EGFRDSimulatorTraits::reaction_record_type ReactionRecord;
 typedef EGFRDSimulatorTraits::reaction_recorder_type ReactionRecorder;
+typedef EGFRDSimulatorTraits::volume_clearer_type VolumeClearer;
 typedef ::Logger Logger;
 typedef ::LogAppender LogAppender;
 typedef ::LoggerManager LoggerManager;

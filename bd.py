@@ -79,9 +79,12 @@ class BDSimulatorCore(object):
         def increment_reaction_events(rr):
             self.reaction_events += 1
 
+        def dummy(shape, ignore0, ignore1=None):
+            return True
+
         ppg = _gfrd.BDPropagator(self.world, self.network_rules,
                      self.rng, self.dt, self.dissociation_retry_moves,
-                     increment_reaction_events, self.world.particle_ids)
+                     increment_reaction_events, dummy, self.world.particle_ids)
         ppg.propagate_all()
 
         self.t += self.dt
