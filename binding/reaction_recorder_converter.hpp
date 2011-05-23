@@ -20,13 +20,13 @@ public:
 
     virtual void operator()(reaction_record_type const& rr)
     {
-        callable_(rr);
+        boost::python::decref(PyObject_CallObject(callable_, boost::python::object(rr).ptr()));
     }
 
-    ReactionRecorderWrapper(boost::python::object callable): callable_(callable) {}
+    ReactionRecorderWrapper(PyObject* callable): callable_(callable) {}
 
 private:
-    boost::python::object callable_;
+    PyObject* callable_;
 };
 
 template<typename Tbase_>
@@ -51,9 +51,7 @@ struct reaction_recorder_converter
             boost::python::throw_error_already_set();
         }
 
-        native_type* retval(
-            new native_type(
-                boost::python::object(boost::python::borrowed(pyo))));
+        native_type* retval(new native_type(pyo));
         peer::util::install_instance_holder<boost::scoped_ptr<native_type> >(pyo, boost::in_place(retval));
         return retval;
     }
