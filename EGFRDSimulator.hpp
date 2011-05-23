@@ -2154,7 +2154,7 @@ protected:
         reaction_rules const& rules(
             (*base_type::network_rules_).query_reaction_rule(sid));
         rate_type const k_tot(calculate_k_tot(rules));
-        if (k_tot == 0.)
+        if (k_tot <= 0.)
         {
             return std::numeric_limits<time_type>::infinity();
         }
@@ -2164,7 +2164,15 @@ protected:
         }
         else
         {
-            return (1. / k_tot) * std::log(1. / base_type::rng_.uniform(0., 1.));
+            const double rnd(base_type::rng_.uniform(0., 1.));
+            if(rnd <= 0.)
+            {
+                return std::numeric_limits<time_type>::infinity();
+            }
+            else
+            {
+                return (1. / k_tot) * (- std::log(rnd)); // log(1/x) == - log(x)
+            }
         }
     }
 

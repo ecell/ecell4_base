@@ -92,12 +92,16 @@ class Single(object):
         """Return a (reaction time, event type)-tuple.
 
         """
-        if self.k_tot == 0:
+        if self.k_tot <= 0:
             dt = numpy.inf
         elif self.k_tot == numpy.inf:
             dt = 0.0
         else:
-            dt = (1.0 / self.k_tot) * math.log(1.0 / myrandom.uniform())
+            rnd = myrandom.uniform()
+            if rnd == 0:
+                dt = numpy.inf
+            else:
+                dt = (1.0 / self.k_tot) * (- math.log(rnd)) # log(1/x) == - log(x)
         return dt, EventType.SINGLE_REACTION
 
     def draw_interaction_time(self):
