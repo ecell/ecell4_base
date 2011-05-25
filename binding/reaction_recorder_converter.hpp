@@ -20,7 +20,7 @@ public:
 
     virtual void operator()(reaction_record_type const& rr)
     {
-        boost::python::decref(PyObject_CallObject(callable_, boost::python::object(rr).ptr()));
+        boost::python::decref(PyObject_CallObject(callable_, boost::python::make_tuple(boost::python::object(rr)).ptr()));
     }
 
     ReactionRecorderWrapper(PyObject* callable): callable_(callable) {}
