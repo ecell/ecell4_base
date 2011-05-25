@@ -154,11 +154,12 @@ class Multi(object):
             )
 
     def has_particle(self, pid):
-        try:
-            self.particle_container.get_particle(pid)
-            return True
-        except:
-            return False
+        return pid in [pid_particle_pair[0] for pid_particle_pair in self.particles]
+        # try:
+        #     self.particle_container.get_particle(pid)
+        #     return True
+        # except:
+        #     return False
 
     def particles(self):
         return iter(self.particle_container)
