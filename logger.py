@@ -304,6 +304,7 @@ class Logger(object):
             for i in sim.get_species()) + '\n')
         self.timecourse_file.flush()
 
+    # this method will be deprecated.
     def write_particles(self, sim):
         if not os.path.exists(self.directory):
             os.mkdir(self.directory)
@@ -335,9 +336,7 @@ class Logger(object):
     def log(self, sim, time):
         if sim.last_reaction:
             self.write_timecourse(sim)
-        self.write_particles(sim)
 
     def start(self, sim):
         self.prepare_timecourse_file(sim)
         self.write_timecourse(sim)
-        self.write_particles(sim)
