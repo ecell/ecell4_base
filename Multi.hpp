@@ -429,36 +429,6 @@ public:
                 break;
             }
         }
-
-        /*
-        boost::scoped_ptr<particle_id_pair_generator>
-            added_particles(tx->get_added_particles()),
-            modified_particles(tx->get_modified_particles());
-        LOG_DEBUG(("added_particles=%zu, modified_particles=%zu",
-            ::count(*added_particles), ::count(*modified_particles)));
-        chained_generator<particle_id_pair_generator,
-                          particle_id_pair_generator>
-            gen(*added_particles, *modified_particles);
-        while (::valid(gen))
-        {
-            particle_id_pair pp(gen());
-            boost::scoped_ptr<particle_id_pair_and_distance_list>
-                overlapped(main_.world()->check_overlap(
-                    pp.second.shape(), pp.first));
-            if (overlapped && ::size(*overlapped))
-            {
-                log_.info("collision occurred between particles of a multi and the outside: %s.  moves will be rolled back.",
-                    boost::lexical_cast<std::string>(pp.first).c_str());
-                tx->rollback();
-                return;
-            }
-
-            if (!within_shell(pp.second.shape()))
-            {
-                last_event_ = ESCAPE;
-                main_.clear_volume(pp.second.shape(), base_type::id_);
-            }
-        } */
     }
 
 protected:

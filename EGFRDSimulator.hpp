@@ -1709,8 +1709,8 @@ protected:
                 length(displacement)));
         if (base_type::paranoiac_)
         {
-            length_type const scale(domain.particle().second.radius());
             BOOST_ASSERT(r <= domain.mobility_radius());
+            // length_type const scale(domain.particle().second.radius());
             // BOOST_ASSERT(feq(length(displacement), std::abs(r), scale));
         }
         return (*base_type::world_).apply_boundary(add(domain.particle().second.position(), displacement));
