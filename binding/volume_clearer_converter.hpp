@@ -21,18 +21,24 @@ public:
 
     virtual bool operator()(particle_shape_type const& shape, particle_id_type const& ignore)
     {
-        return callable_(shape, ignore);
+        PyObject* retobj(PyObject_CallObject(callable_, boost::python::make_tuple(boost::python::object(shape), boost::python::object(ignore)).ptr()));
+        bool const retval(retobj == Py_True);
+        boost::python::decref(retobj);
+        return retval;
     }
 
     virtual bool operator()(particle_shape_type const& shape, particle_id_type const& ignore0, particle_id_type const& ignore1)
     {
-        return callable_(shape, ignore0, ignore1);
+        PyObject* retobj(PyObject_CallObject(callable_, boost::python::make_tuple(boost::python::object(shape), boost::python::object(ignore0), boost::python::object(ignore1)).ptr()));
+        bool const retval(retobj == Py_True);
+        boost::python::decref(retobj);
+        return retval;
     }
 
-    VolumeClearerWrapper(boost::python::object callable): callable_(callable) {}
+    VolumeClearerWrapper(PyObject* callable): callable_(callable) {}
 
 private:
-    boost::python::object callable_;
+    PyObject* callable_;
 };
 
 template<typename Tbase_>
@@ -57,9 +63,7 @@ struct volume_clearer_converter
             boost::python::throw_error_already_set();
         }
 
-        native_type* retval(
-            new native_type(
-                boost::python::object(boost::python::borrowed(pyo))));
+        native_type* retval(new native_type(pyo));
         peer::util::install_instance_holder<boost::scoped_ptr<native_type> >(pyo, boost::in_place(retval));
         return retval;
     }
