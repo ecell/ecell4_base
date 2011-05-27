@@ -16,6 +16,7 @@
 #include "ReactionRuleInfo.hpp"
 #include "ReactionRecorder.hpp"
 #include "ReactionRecord.hpp"
+#include "VolumeClearer.hpp"
 
 template<typename Tworld_>
 struct ParticleSimulatorTraitsBase
@@ -33,6 +34,7 @@ struct ParticleSimulatorTraitsBase
     typedef ReactionRecord<typename world_type::particle_id_type,
                            reaction_rule_id_type> reaction_record_type;
     typedef ReactionRecorder<reaction_record_type> reaction_recorder_type;
+    typedef VolumeClearer<typename world_type::particle_shape_type, typename world_type::particle_id_type> volume_clearer_type;
 
     static const Real MINIMAL_SEPARATION_FACTOR = (1.0 + 1e-7);
 };
@@ -102,6 +104,7 @@ public:
     typedef typename traits_type::time_type time_type;
     typedef typename traits_type::reaction_record_type reaction_record_type;
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
+    typedef typename traits_type::volume_clearer_type volume_clearer_type;
 
 public:
     virtual ~ParticleSimulator() {}

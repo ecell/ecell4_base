@@ -40,7 +40,6 @@
 #include "GreensFunction3DAbsSym.hpp"
 #include "GreensFunction3DAbs.hpp"
 #include "GreensFunction3D.hpp"
-#include "VolumeClearer.hpp"
 
 template<typename Tworld_>
 struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
@@ -56,8 +55,6 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
     typedef EventScheduler<typename base_type::time_type> event_scheduler_type;
     typedef typename event_scheduler_type::Event event_type;
     typedef typename event_scheduler_type::value_type event_id_pair_type;
-
-    typedef VolumeClearer<typename world_type::particle_shape_type, typename world_type::particle_id_type> volume_clearer_type;
 
     template<typename Tshape_>
     struct shell_generator
@@ -201,7 +198,6 @@ public:
     typedef typename traits_type::domain_type domain_type;
     typedef typename traits_type::domain_id_pair domain_id_pair;
     typedef typename traits_type::time_type time_type;
-    typedef typename traits_type::volume_clearer_type volume_clearer_type;
 
     typedef Single<traits_type> single_type;
     typedef Pair<traits_type> pair_type;

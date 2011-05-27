@@ -25,6 +25,8 @@
 #include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
 #include "ParticleSimulator.hpp"
+#include "ReactionRecorder.hpp"
+#include "VolumeClearer.hpp"
 
 struct Traits: ParticleSimulatorTraitsBase<World<CyclicWorldTraits<Real, Real> > >
 {};
@@ -66,6 +68,31 @@ void inject_particles(Tworld_& world, Trng_& rng, Tpid_list_& pid_list, typename
     }
 }
 
+template<typename reaction_record_type>
+struct reaction_recorder: ReactionRecorder<reaction_record_type>
+{
+    reaction_recorder() {}
+    virtual ~reaction_recorder() {}
+    virtual void operator()(reaction_record_type const& rec) {}
+};
+
+template<typename particle_shape_type, typename particle_id_type>
+struct volume_clearer: VolumeClearer<particle_shape_type, particle_id_type>
+{
+    volume_clearer() {}
+    virtual ~volume_clearer() {}
+
+    virtual bool operator()(particle_shape_type const& shape, particle_id_type const& ignore)
+    {
+        return true;
+    }
+
+    virtual bool operator()(particle_shape_type const& shape, particle_id_type const& ignore0, particle_id_type const& ignore1)
+    {
+        return true;
+    }
+};
+
 BOOST_AUTO_TEST_CASE(instantiation)
 {
     Traits::world_type::traits_type::rng_type rng;
@@ -74,8 +101,11 @@ BOOST_AUTO_TEST_CASE(instantiation)
     Traits::world_type w;
     boost::scoped_ptr<Traits::world_type::transaction_type> tx(
             w.create_transaction());
-    BDPropagator<Traits> bdp(*tx, nrw, rng, .01, 100, 0,
-            make_select_first_range(w.get_particles_range()));
+    reaction_recorder<Traits::reaction_record_type> rr;
+    volume_clearer<Traits::world_type::particle_shape_type, Traits::world_type::particle_id_type> vc;
+    BDPropagator<Traits> bdp(
+        *tx, nrw, rng, 0.01, 100, &rr, &vc, 
+        make_select_first_range(w.get_particles_range()));
 }
 
 BOOST_AUTO_TEST_CASE(basic)
@@ -113,9 +143,13 @@ BOOST_AUTO_TEST_CASE(basic)
     int num_of_moving_particles = 500;
     int num_of_immobile_particles = 500;
 
+    reaction_recorder<Traits::reaction_record_type> rr;
+    volume_clearer<Traits::world_type::particle_shape_type, Traits::world_type::particle_id_type> vc;
+
     for (int i = 1000; --i >= 0; ) {
         boost::scoped_ptr<Traits::world_type::transaction_type> tx(w.create_transaction());
-        BDPropagator<Traits> prpg(*tx, nrw, rng, 5e-11, 100, 0, make_select_first_range(w.get_particles_range()));
+        // BDPropagator<Traits> prpg(*tx, nrw, rng, 5e-11, 100, 0, make_select_first_range(w.get_particles_range()));
+        BDPropagator<Traits> prpg(*tx, nrw, rng, 5e-11, 100, &rr, &vc, make_select_first_range(w.get_particles_range()));
         while (prpg());
         boost::scoped_ptr<particle_id_pair_generator> added_particles(tx->get_added_particles());
         boost::scoped_ptr<particle_id_pair_generator> removed_particles(tx->get_removed_particles());
