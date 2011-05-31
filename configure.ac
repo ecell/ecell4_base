@@ -67,6 +67,9 @@ CFLAGS="$CFLAGS -g"
 
 AX_BOOST_BASE([1.37],,AC_MSG_ERROR([could not find required version of BOOST.]))
 
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+
 BOOST_PYTHON_LIBNAME=boost_python
 
 AC_ARG_WITH(boost-python-libname,
