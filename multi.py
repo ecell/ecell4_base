@@ -74,10 +74,10 @@ class Multi(object):
                     main.clear_volume(shape.position, shape.radius, 
                                       ignore=[self.outer_.domain_id, ])
                     if ignore1 is None:
-                        return main.world.check_overlap(
+                        return not main.world.check_overlap(
                             (shape.position, shape.radius), ignore0)
                     else:
-                        return main.world.check_overlap(
+                        return not main.world.check_overlap(
                             (shape.position, shape.radius), ignore0, ignore1)
                 return True
 
