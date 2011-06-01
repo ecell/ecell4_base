@@ -1,5 +1,5 @@
-#ifndef EGFRD_SIMULATOR_HPP
-#define EGFRD_SIMULATOR_HPP
+#ifndef PARTICLE_SIMULATOR_HPP
+#define PARTICLE_SIMULATOR_HPP
 
 #include <boost/python.hpp>
 #include <boost/python.hpp>
@@ -59,4 +59,4 @@ void register_particle_simulator_class(char const* name)
 }
 
 } // namespace binding
-#endif /* EGFRD_SIMULATOR_HPP */
+#endif /* PARTICLE_SIMULATOR_HPP */
