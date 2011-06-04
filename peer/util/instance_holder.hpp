@@ -52,7 +52,7 @@ struct instance_holder
     template<typename Tin_place_factory>
     static PyObject* create(Tin_place_factory const& inpf)
     {
-        return reinterpret_cast<PyObject*>(new instance_holder<Tin_place_factory>(inpf));
+        return reinterpret_cast<PyObject*>(new instance_holder<impl_type>(inpf));
     }
 
     static PyTypeObject* __class_init__(PyObject* mod = 0)
