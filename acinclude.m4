@@ -117,4 +117,15 @@ AC_DEFUN([ECELL_CHECK_NUMPY], [
   AC_SUBST(NUMPY_INCLUDE_DIR)
 ])
 
-
+AC_DEFUN([ECELL_CHECK_NUMPY_ARRAY_DESCR], [
+  AC_MSG_CHECKING([PyArray_Descr has hasobject])
+  ac_save_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="-I${NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDES} $CPPFLAGS"
+  AC_CHECK_MEMBER([PyArray_Descr.hasobject], [
+    AC_DEFINE([PYARRAY_DESCR_HAS_HASOBJECT], [1], [Define to 1 if PyArray_Descr has hasobject field])
+  ], [], [
+#include <Python.h>
+#include <numpy/arrayobject.h>
+])
+  CPPFLAGS="$ac_save_CPPFLAGS"                 
+])
