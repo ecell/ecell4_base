@@ -2962,6 +2962,14 @@ protected:
         }
         return boost::optional<domain_type&>();
     }
+  
+    void reject_single_reaction(single_type& domain)
+    {
+	  ++rejected_moves_;
+	  domain.dt() = 0.;
+	  domain.last_time() = base_type::t_;
+	  add_event(domain, SINGLE_EVENT_ESCAPE);
+    }
 
     void fire_event(single_event const& event)
     {
@@ -2985,6 +2993,7 @@ protected:
             catch (no_space const&)
             {
                 LOG_DEBUG(("single reaction rejected"));
+                reject_single_reaction(domain);
             }
             break;
 
@@ -3131,6 +3140,7 @@ protected:
                 catch (no_space const&)
                 {
                     LOG_DEBUG(("single reaction rejected"));
+                    reject_single_reaction(*new_single[index]);
                 }
             }
             break;
