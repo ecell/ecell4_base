@@ -1313,18 +1313,10 @@ protected:
 
     void remove_domain(multi_type& domain)
     {
-        typename multi_type::spherical_shell_id_pair_range r(domain.get_shells());
-        spherical_shell_matrix_type& mat(
-            boost::fusion::at_key<spherical_shell_type>(smatm_));
-        std::for_each(boost::begin(r), boost::end(r),
-            compose_unary(
-                boost::bind(
-                    static_cast<
-                        bool(spherical_shell_matrix_type::*)(
-                            typename spherical_shell_matrix_type::key_type
-                            const&)>(&spherical_shell_matrix_type::erase),
-                    mat, _1),
-                select_first<spherical_shell_id_pair>()));
+        BOOST_FOREACH (spherical_shell_id_pair const& shell, domain.get_shells())
+        {
+            boost::fusion::at_key<spherical_shell_type>(smatm_).erase(shell.first);
+        }
         remove_domain_but_shell(domain);
     }
 
