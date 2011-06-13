@@ -262,12 +262,10 @@ class HDF5Logger(object):
 
     def log(self, sim, time):
         self.new_hdf5_file(sim)
-        self.write_domains(sim)
         self.write_particles(sim)
 
     def start(self, sim):
         self.new_hdf5_file(sim)
-        self.write_domains(sim)
         self.write_particles(sim)
 
 
@@ -301,7 +299,7 @@ class Logger(object):
         self.timecourse_file.write('%g' % sim.t + '\t')
         self.timecourse_file.write('\t'.join(
             str(len(sim.world.get_particle_ids(i.id))) \
-            for i in sim.get_species()) + '\n')
+            for i in sim.world.species) + '\n')
         self.timecourse_file.flush()
 
     # this method will be deprecated.
@@ -334,8 +332,7 @@ class Logger(object):
         self.file_counter += 1
 
     def log(self, sim, time):
-        if sim.last_reaction:
-            self.write_timecourse(sim)
+        self.write_timecourse(sim)
 
     def start(self, sim):
         self.prepare_timecourse_file(sim)
