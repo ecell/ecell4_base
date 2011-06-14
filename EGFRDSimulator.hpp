@@ -1281,7 +1281,9 @@ protected:
     {
         LOG_DEBUG(("remove_domain_but_shell: %s", boost::lexical_cast<std::string>(domain.id()).c_str()));
         event_id_type const event_id(domain.event().first);
-        domains_.erase(domain.id());
+
+        // domains_.erase(domain.id()); // this hits a bug in gcc 4.4 (at least)'s unordered_map.
+        domains_.erase(domains_.find(domain.id()));  // this is fine.
         try
         {
             remove_event(event_id);
