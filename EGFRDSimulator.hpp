@@ -51,8 +51,8 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
     typedef SerialIDGenerator<shell_id_type> shell_id_generator;
     typedef SerialIDGenerator<domain_id_type> domain_id_generator; typedef Domain<EGFRDSimulatorTraitsBase> domain_type;
     typedef std::pair<const domain_id_type, boost::shared_ptr<domain_type> > domain_id_pair;
-    typedef int event_id_type;
     typedef EventScheduler<typename base_type::time_type> event_scheduler_type;
+    typedef typename event_scheduler_type::identifier_type event_id_type;
     typedef typename event_scheduler_type::Event event_type;
     typedef typename event_scheduler_type::value_type event_id_pair_type;
 
