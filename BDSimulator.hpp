@@ -31,7 +31,8 @@ public:
     typedef typename traits_type::reaction_rule_type reaction_rule_type;
     typedef typename traits_type::rate_type rate_type;
     typedef typename traits_type::reaction_record_type reaction_record_type;
-    typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
+    typedef typename traits_type::reaction_recorder_type 
+    reaction_recorder_type;
 
 public:
     Real const& dt_factor()
@@ -43,7 +44,7 @@ public:
 
     BDSimulator(boost::shared_ptr<world_type> world, 
                 boost::shared_ptr<network_rules_type const> network_rules,
-                rng_type& rng, Real dt_factor = .5,
+                rng_type& rng, Real dt_factor = 1.,
                 int dissociation_retry_moves = 1)
         : base_type(world, network_rules, rng),
           dt_factor_(dt_factor), num_retries_(dissociation_retry_moves)
@@ -59,7 +60,7 @@ public:
 
     virtual void step()
     {
-        step(base_type::dt_);
+        _step(base_type::dt_);
     }
 
     virtual bool step(time_type upto)
@@ -98,13 +99,16 @@ protected:
     {
         {
             BDPropagator<traits_type> propagator(
-                base_type::world_,
-                base_type::network_rules_,
+                *base_type::world_,
+                *base_type::network_rules_,
                 base_type::rng_,
                 dt, num_retries_,
-                make_select_first_range(base_type::world_.get_particles_range()));
+                base_type::rrec_.get(), 0,
+                make_select_first_range(base_type::world_->
+                                        get_particles_range()));
             while (propagator());
-            LOG_DEBUG(("%d: t=%lg, dt=%lg", base_type::num_steps_, base_type::t_, dt));
+            LOG_DEBUG(("%d: t=%lg, dt=%lg", base_type::num_steps_, 
+                       base_type::t_, dt));
         }
         ++base_type::num_steps_;
         base_type::t_ += dt;

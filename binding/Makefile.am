@@ -22,6 +22,8 @@ noinst_HEADERS = \
 	domain_id_class.hpp \
 	egfrd_simulator_classes.hpp \
 	EGFRDSimulator.hpp \
+	bd_simulator_classes.hpp \
+	BDSimulator.hpp \
 	event_classes.hpp \
 	Event.hpp \
 	EventScheduler.hpp \
@@ -94,6 +96,7 @@ libbinding_utils_la_SOURCES = \
 	domain_classes.cpp \
 	domain_id_class.cpp \
 	egfrd_simulator_classes.cpp \
+	bd_simulator_classes.cpp \
 	event_classes.cpp \
 	exception_classes.cpp \
 	LogAppender.cpp \

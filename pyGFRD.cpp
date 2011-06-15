@@ -34,6 +34,7 @@
 #include "binding/domain_id_class.hpp"
 #include "binding/domain_classes.hpp"
 #include "binding/egfrd_simulator_classes.hpp"
+#include "binding/bd_simulator_classes.hpp"
 #include "binding/event_classes.hpp"
 #include "binding/exception_classes.hpp"
 #include "binding/matrix_space_classes.hpp"
@@ -72,10 +73,11 @@ BOOST_PYTHON_MODULE(_gfrd)
     import_array();
 
     // GSL error handler: is this the best place for this?
-    gsl_set_error_handler( &gsl_error_handler );
+    gsl_set_error_handler(&gsl_error_handler);
 
     peer::util::register_std_exception_translator();
-peer::util::register_exception_translator<PyExc_IndexError, std::out_of_range>();
+    peer::util::register_exception_translator<PyExc_IndexError, 
+        std::out_of_range>();
 
     b::register_model_class();
     b::register_bd_propagator_class();
@@ -114,6 +116,7 @@ peer::util::register_exception_translator<PyExc_IndexError, std::out_of_range>()
     b::register_reaction_record_classes();
     b::register_particle_simulator_classes();
     b::register_egfrd_simulator_classes();
+    b::register_bd_simulator_classes();
     b::register_python_logger_classes();
 
     peer::util::register_seq_wrapped_multi_array_converter<b::Length>();

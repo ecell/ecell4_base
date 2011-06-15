@@ -62,35 +62,40 @@ void inject_particles(Tworld_& world, Trng_& rng, Tpid_list_& pid_list, typename
 
 void do_benchmark(Real volume, std::size_t n, Traits::time_type t, Real dt_factor)
 {
-    typedef Traits::world_type::species_id_type species_id;
-    typedef Traits::world_type::particle_id_type particle_id;
-    typedef Traits::world_type::species_type species;
-    typedef Traits::world_type::length_type length_type;
-    typedef Traits::world_type::particle_id_pair_generator particle_id_pair_generator;
-    typedef Traits::network_rules_type::reaction_rule_type reaction_rule_type;
-    typedef Traits::world_type::position_type position_type;
+    typedef Traits::world_type world_type;
+    typedef world_type::species_id_type species_id;
+    typedef world_type::particle_id_type particle_id;
+    typedef world_type::species_type species;
+    typedef world_type::length_type length_type;
+    typedef world_type::particle_id_pair_generator particle_id_pair_generator;
+    typedef Traits::network_rules_type network_rules_type;
+    typedef network_rules_type::reaction_rule_type reaction_rule_type;
+    typedef world_type::position_type position_type;
+    typedef BDSimulator<Traits>::cuboidal_region_type cuboidal_region_type;
+    typedef BDSimulator<Traits>::box_type box_type;
+
     SerialIDGenerator<species_id> sidgen;
-    Traits::world_type::traits_type::rng_type rng;
+    world_type::traits_type::rng_type rng;
     BasicNetworkRulesImpl nr;
-    Traits::network_rules_type nrw(nr);
+    boost::shared_ptr<network_rules_type> nrw(new network_rules_type(nr));
     length_type const world_size(std::pow(volume, 1. / 3.));
     std::size_t const matrix_size(
         std::max(static_cast<std::size_t>(3u),
                  static_cast<std::size_t>(std::pow(3. * n, 1. / 3.))));
-    Traits::world_type w(world_size, matrix_size);
+    boost::shared_ptr<world_type> w(new world_type(world_size, matrix_size));
 
     species A(sidgen(), 1e-12, 2.5e-9, "default");
-    w.add_species(A);
+    w->add_species(A);
 
-    boost::shared_ptr<Traits::world_type::structure_type> default_surface(
-        new Traits::cuboidal_region_type("default",
-            Traits::box_type(
+    boost::shared_ptr<world_type::structure_type> default_surface(
+        new cuboidal_region_type("default",
+            box_type(
                 position_type(world_size / 2, world_size / 2, world_size / 2),
                  array_gen(world_size / 2, world_size / 2, world_size / 2))));
-    w.add_structure(default_surface);
+    w->add_structure(default_surface);
 
     std::vector<particle_id> A_particles;
-    inject_particles(w, rng, A_particles, A.id(), n);
+    inject_particles(*w, rng, A_particles, A.id(), n);
 
     std::cout << "T: " << t << std::endl;
     std::cout << "V: " << volume << std::endl;
