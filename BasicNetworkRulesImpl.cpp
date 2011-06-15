@@ -13,13 +13,20 @@ BasicNetworkRulesImpl::~BasicNetworkRulesImpl()
 }
 
 BasicNetworkRulesImpl::BasicNetworkRulesImpl()
+    : serial_(0)
 {
 }
 
-void BasicNetworkRulesImpl::add_reaction_rule(ReactionRule const& r)
+BasicNetworkRulesImpl::identifier_type 
+BasicNetworkRulesImpl::add_reaction_rule(ReactionRule const& r)
 {
-    if (!reaction_rules_map_[r.get_reactants()].insert(r).second)
+    std::pair<BasicNetworkRulesImpl::reaction_rule_set::iterator, bool> 
+        res(reaction_rules_map_[r.get_reactants()].insert(r));
+    if (!res.second)
         throw already_exists(boost::lexical_cast<std::string>(r));
+
+    (*res.first).set_id(serial_++);
+    return (*res.first).id();
 }
 
 void BasicNetworkRulesImpl::remove_reaction_rule(ReactionRule const& r)

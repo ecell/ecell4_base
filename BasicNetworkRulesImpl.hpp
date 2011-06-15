@@ -11,9 +11,10 @@ class BasicNetworkRulesImpl: public NetworkRules
 {
     typedef std::set<ReactionRule> reaction_rule_set;
     typedef std::map<ReactionRule::Reactants, reaction_rule_set> reaction_rules_map;
+    typedef ReactionRule::identifier_type identifier_type;
 
 public:
-    virtual void add_reaction_rule(ReactionRule const&);
+    virtual identifier_type add_reaction_rule(ReactionRule const&);
     virtual void remove_reaction_rule(ReactionRule const&);
 
     virtual reaction_rule_generator* query_reaction_rule(SpeciesTypeID const& r1) const;
@@ -26,6 +27,7 @@ public:
 
 private:
     reaction_rules_map reaction_rules_map_;
+    identifier_type serial_;
 };
 
 #endif /* BASIC_NETWORK_RULES_IMPL_HPP */
