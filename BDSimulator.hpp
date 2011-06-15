@@ -46,7 +46,7 @@ public:
                 rng_type& rng, Real dt_factor = .5,
                 int dissociation_retry_moves = 1)
         : base_type(world, network_rules, rng),
-          dt_factor_(dt_factor), num_retrys_(dissociation_retry_moves)
+          dt_factor_(dt_factor), num_retries_(dissociation_retry_moves)
     {
         calculate_dt();
     }
@@ -101,7 +101,7 @@ protected:
                 base_type::world_,
                 base_type::network_rules_,
                 base_type::rng_,
-                dt, num_retrys_,
+                dt, num_retries_,
                 make_select_first_range(base_type::world_.get_particles_range()));
             while (propagator());
             LOG_DEBUG(("%d: t=%lg, dt=%lg", base_type::num_steps_, base_type::t_, dt));
@@ -112,7 +112,7 @@ protected:
 
 private:
     Real const dt_factor_;
-    int const num_retrys_;
+    int const num_retries_;
     static Logger& log_;
 };
 
