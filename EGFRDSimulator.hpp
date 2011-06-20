@@ -1283,7 +1283,13 @@ protected:
         event_id_type const event_id(domain.event().first);
 
         // domains_.erase(domain.id()); // this hits a bug in gcc 4.4 (at least)'s unordered_map.
-        domains_.erase(domains_.find(domain.id()));  // this is fine.
+        typename domain_map::iterator domain_to_be_removed(domains_.find(domain.id()));
+        if (base_type::paranoiac_)
+        {
+            BOOST_ASSERT(domain_to_be_removed != domains_.end());
+        }
+        domains_.erase(domain_to_be_removed);
+
         try
         {
             remove_event(event_id);
@@ -2799,7 +2805,7 @@ protected:
 
     bool add_to_multi(multi_type& multi, single_type& single)
     {
-        LOG_DEBUG(("add to multi: %s => %s",
+        LOG_DEBUG(("adding single to multi: %s => %s",
                 boost::lexical_cast<std::string>(single).c_str(),
                 boost::lexical_cast<std::string>(multi).c_str()));
 
@@ -2827,11 +2833,16 @@ protected:
     {
         if (multi.id() == other_multi.id())
         {
-            LOG_DEBUG(("add to multi: given two multis are the same; do nothing"));
+            LOG_DEBUG(("add multi to multi: given two multis are the same; do nothing"));
+            return;
+        }
+        if (multi.has_particle(other_multi.get_particles_range().front().first))
+        {
+            LOG_DEBUG(("add multi to multi: given multi already added."));
             return;
         }
 
-        LOG_DEBUG(("add to multi: %s => %s",
+        LOG_DEBUG(("adding multi to multi: %s => %s",
                 boost::lexical_cast<std::string>(other_multi).c_str(),
                 boost::lexical_cast<std::string>(multi).c_str()));
 
