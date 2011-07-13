@@ -105,6 +105,23 @@ class GreensFunction3DAbsSymTestCase(unittest.TestCase):
         self.failIf(r <= 0.0)
         self.failIf(r > a)
 
+
+    def test_drawR_regression1(self):
+
+        # this parameter set causes very small p_survival.
+
+        D = 1e-12
+        a=3.30588e-08
+        rnd=0.944502 
+        dt=0.00411832
+
+        gf = mod.GreensFunction3DAbsSym(D, a)
+        r = gf.drawR(rnd, dt)
+
+        self.failIf(r <= 0.0)
+        self.failIf(r > a)
+
+
     def test_p_int_r_is_p_int_r_free_with_large_shell(self):
         D = 1e-12
         a = 1e-6

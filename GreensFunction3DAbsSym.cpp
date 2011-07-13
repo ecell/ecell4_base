@@ -131,7 +131,7 @@ Real GreensFunction3DAbsSym::p_int_r(Real r, Real t) const
     }
     
 
-    for (int n(1); n <= N; ++n)
+    for (Integer n(1); n <= N; ++n)
     {
         const Real term1(exp(- n * n * DtPIsq_asq));
       
@@ -353,7 +353,8 @@ Real GreensFunction3DAbsSym::drawR(Real rnd, Real t) const
 
     if (a <= thresholdDistance)
     {
-        psurv = p_survival(t);
+        //psurv = p_survival(t);  // this causes a problem when p_survival is very small.
+        psurv = p_int_r(a, t);
 
         if (psurv == 0.0)
         {
@@ -381,7 +382,6 @@ Real GreensFunction3DAbsSym::drawR(Real rnd, Real t) const
     p_r_params params = { this, t, target };
 
     F.params = &params;
-
 
     const Real low(0.0);
     const Real high(a);
