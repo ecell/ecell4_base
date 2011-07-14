@@ -1051,7 +1051,7 @@ public:
     {
         LOG_INFO(("stop at %g", upto));
 
-        if (upto >= base_type::t_)
+        if (upto <= base_type::t_)
         {
             return false;
         }
