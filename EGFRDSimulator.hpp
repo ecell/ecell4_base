@@ -1865,6 +1865,7 @@ protected:
         propagate(domain, new_pos, true);
 
         domain.last_time() = base_type::t_;
+        domain.dt() = 0.;
         try
         {
             remove_event(domain);
