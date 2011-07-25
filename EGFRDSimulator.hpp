@@ -1736,6 +1736,45 @@ protected:
     }
     // }}}
 
+    template<typename Tshell>
+    position_type draw_escape_position(
+            AnalyticalSingle<traits_type, Tshell> const& domain)
+    {
+        position_type const displacement(draw_displacement(domain, domain.mobility_radius()));
+        LOG_DEBUG(("draw_escape_position(domain=%s): mobility_radius=%g, displacement=%s (%g)",
+                boost::lexical_cast<std::string>(domain).c_str(),
+                domain.mobility_radius(),
+                boost::lexical_cast<std::string>(displacement).c_str(),
+                length(displacement)));
+        if (base_type::paranoiac_)
+        {
+            ; // do nothing
+            // BOOST_ASSERT(feq(length(displacement)) <= domain.mobility_radius());
+            // length_type const scale(domain.particle().second.radius());
+            // BOOST_ASSERT(feq(length(displacement), std::abs(domain.mobility_radius()), scale));
+        }
+        return (*base_type::world_).apply_boundary(add(domain.particle().second.position(), displacement));
+    }
+
+    position_type draw_escape_position(single_type& domain)
+    {
+        {
+            spherical_single_type* _domain(dynamic_cast<spherical_single_type*>(&domain));
+            if (_domain)
+            {
+                return draw_escape_position(*_domain);
+            }
+        }
+        {
+            cylindrical_single_type* _domain(dynamic_cast<cylindrical_single_type*>(&domain));
+            if (_domain)
+            {
+                return draw_escape_position(*_domain);
+            }
+        }
+        throw not_implemented(std::string("unsupported domain type"));
+    }
+
     // draw_new_positions {{{
     template<typename Tdraw, typename T>
     boost::array<position_type, 2> draw_new_positions(
@@ -3011,7 +3050,8 @@ protected:
 
             if (domain.dt() != 0.)
                 // Heads up: shell matrix will be updated later in restore_domain().
-                propagate(domain, draw_new_position(domain, domain.dt()), false);
+                // propagate(domain, draw_new_position(domain, domain.dt()), false);
+                propagate(domain, draw_escape_position(domain), false);
             length_type const min_shell_radius(domain.particle().second.radius() * (1. + single_shell_factor_));
             {
                 std::vector<domain_id_type>* intruders;
