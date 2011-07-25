@@ -85,13 +85,13 @@ void register_egfrd_simulator_class(char const* name)
                  typename impl_type::rng_type&>())
         .def(init<boost::shared_ptr<typename impl_type::world_type>,
                  boost::shared_ptr<typename impl_type::network_rules_type const>,
-                 typename impl_type::rng_type&, double>())
+                 typename impl_type::rng_type&, int>())
         .def(init<boost::shared_ptr<typename impl_type::world_type>,
                  boost::shared_ptr<typename impl_type::network_rules_type const>,
-                 typename impl_type::rng_type&, double, int>())
+             typename impl_type::rng_type&, int, double>())
         .def(init<boost::shared_ptr<typename impl_type::world_type>,
                  boost::shared_ptr<typename impl_type::network_rules_type const>,
-                 typename impl_type::rng_type&, double, int,
+             typename impl_type::rng_type&, int, double,
                  typename impl_type::length_type>())
         .def("get_shell", static_cast<get_shell_result_type(impl_type::*)(typename impl_type::shell_id_type const&)>(&impl_type::get_shell))
         .def("num_domains_per_type", &impl_type::num_domains_per_type)
