@@ -8,6 +8,12 @@
 
 from egfrd import *
 import sys
+import _gfrd
+import model
+import gfrdbase
+
+import myrandom
+
 
 def run(outfilename, T, S, N):
     print outfilename
@@ -27,31 +33,32 @@ def run(outfilename, T, S, N):
 
 def singlerun(T, S):
 
-    w = World(1e-3, 3)
-    s = EGFRDSimulator(w)
+    m = model.ParticleModel(1e-3)
 
-    s.set_user_max_shell_size(S)
+    A = model.Species('A', 1e-12, 5e-9)
+    m.add_species_type(A)
 
-    m = ParticleModel()
+    w = gfrdbase.create_world(m, 3)
+    nrw = gfrdbase.create_network_rules_wrapper(m)
+    s = EGFRDSimulator(w, myrandom.rng, nrw)
+    # s = _gfrd._EGFRDSimulator(w, nrw, myrandom.rng)
+    # s.set_user_max_shell_size(S)
 
-    A = m.new_species_type('A', 1e-12, 5e-9)
-
-    s.set_model(m)
-
-    particleA = s.place_particle(A, [0,0,0])
+    particleA = gfrdbase.place_particle(w, A, [0, 0, 0])
 
     end_time = T
     s.step()
 
     while 1:
-        next_time = s.get_next_time()
+        next_time = s.t + s.dt
         if next_time > end_time:
             s.stop(end_time)
+            # s.step(end_time)
             break
         s.step()
 
-    pos = s.get_position(A.id)
-    distance = s.distance([0,0,0], pos)
+    pos = w.get_particle(iter(w.get_particle_ids(A.id)).next())[1].position
+    distance = w.distance([0,0,0], pos)
     return distance, s.t
     
 def first(x):

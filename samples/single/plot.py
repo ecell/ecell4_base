@@ -51,7 +51,7 @@ def plot_file(infilename, t, maxr):
     hist /= len(data) * xtick
     x = lower_edges + (xtick * .5)
 
-    plot(x, hist, '.', label=infilename)
+    plot(x[: -1], hist, '.', label=infilename)
 
 
 if __name__ == '__main__':
