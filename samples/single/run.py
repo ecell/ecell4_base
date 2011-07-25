@@ -41,9 +41,9 @@ def singlerun(T, S):
     w = gfrdbase.create_world(m, 3)
     nrw = gfrdbase.create_network_rules_wrapper(m)
     s = EGFRDSimulator(w, myrandom.rng, nrw)
-    # s = _gfrd._EGFRDSimulator(w, nrw, myrandom.rng)
-    # s.set_user_max_shell_size(S)
-
+    s.set_user_max_shell_size(S)
+    # s = _gfrd._EGFRDSimulator(w, nrw, myrandom.rng, 1, 1e-5, S)
+    
     particleA = gfrdbase.place_particle(w, A, [0, 0, 0])
 
     end_time = T
