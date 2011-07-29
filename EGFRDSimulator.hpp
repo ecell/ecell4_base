@@ -1657,7 +1657,7 @@ protected:
         {
             throw propagation_error(
                 (boost::format(
-                    "gf.drawTheta() failed: %s, gf=%s, rnd=%g, dt=%g, r=%g: %s") % e.what() % rnd % dt % r % gf.dump()).str());
+                    "gf.drawTheta() failed: %s, gf=%s, rnd=%g, dt=%g, r=%g: %s") % e.what() % gf.getName() % rnd % dt % r % gf.dump()).str());
         }
 
         return theta;
