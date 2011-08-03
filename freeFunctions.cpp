@@ -64,7 +64,7 @@ Real W(Real a, Real b)
 
 Real __p_irr(Real r, Real t, Real r0, Real kf, Real D, Real sigma, Real alpha)
 {
-    //  printf("irrp %g %g %g\n",r,r0,t);
+    //  printf("irrp %.16g %.16g %.16g\n",r,r0,t);
     const Real sqrtD(std::sqrt(D));
 
     const Real Dt4(4.0 * D * t);

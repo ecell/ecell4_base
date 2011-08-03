@@ -1547,7 +1547,7 @@ class EGFRDSimulator(ParticleSimulatorBase):
 
         """
         report = '''
-t = %g
+t = %.16g
 steps = %d 
 \tSingle:\t%d\t(escape: %d, reaction: %d)
 \tInteraction: %d\t(escape: %d, interaction: %d)

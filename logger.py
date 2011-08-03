@@ -296,7 +296,7 @@ class Logger(object):
 
     def write_timecourse(self, sim):
         data = []
-        self.timecourse_file.write('%g' % sim.t + '\t')
+        self.timecourse_file.write('%.16g' % sim.t + '\t')
         self.timecourse_file.write('\t'.join(
             str(len(sim.world.get_particle_ids(i.id))) \
             for i in sim.world.species) + '\n')
@@ -311,7 +311,7 @@ class Logger(object):
 
         file.write('#@ name = \'%s\'\n' % str(self.logname))
         file.write('#@ count = %d\n' % int(self.file_counter))
-        file.write('#@ t = %s\n' % '%g' % sim.t)
+        file.write('#@ t = %s\n' % '%.16g' % sim.t)
         file.write('#@ world_size = %f\n' % float(sim.world.world_size))
         file.write('#--------\n')
 

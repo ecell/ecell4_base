@@ -35,8 +35,10 @@ def run_single(T, V, N):
     w = gfrdbase.create_world(m, matrix_size)
     nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
     #s = EGFRDSimulator(w, myrandom.rng, nrw)
+    myrandom.seed(3964642685656813207)
     s = _gfrd._EGFRDSimulator(w, nrw, myrandom.rng)
-    
+    #s.paranoiac = True
+
     gfrdbase.throw_in_particles(w, A, N)
     print 'stir'
 

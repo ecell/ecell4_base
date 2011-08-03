@@ -508,7 +508,7 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
 
     def test_draw_theta_regression2(self):
 
-        r0 =  6.9928e-09
+        r0 = 5.50265e-09
 
         rnd=0.749325
         dt=1.43732e-06
@@ -762,7 +762,7 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
             pmin = min(pmin, p)
             #print 'theta: ', theta, '\tp: ', p
             
-        self.failIf(pmin < 0.0, 'Negative p_theta; t= %g, %s'
+        self.failIf(pmin < 0.0, 'Negative p_theta; t= %.16g, %s'
                     % (t, gf.dump()))
 
 

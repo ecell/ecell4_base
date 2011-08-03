@@ -70,8 +70,8 @@ funcSum_all_accel(boost::function<Real(unsigned int i)> f,
                                 &sum, &error);
     if (fabs(error) >= fabs(sum * tolerance))
     {
-        _log.error("series acceleration error: %g"
-                  " (rel error: %g), terms_used = %d (%d given)",
+        _log.error("series acceleration error: %.16g"
+                  " (rel error: %.16g), terms_used = %d (%d given)",
                   fabs(error), fabs(error / sum),
                   workspace->terms_used, pTable.size());
     }
@@ -141,8 +141,8 @@ funcSum(boost::function<Real(unsigned int i)> f, size_t max_i, Real tolerance)
         &sum, &error);
         if (fabs(error) >= fabs(sum * tolerance * 10))
         {
-            _log.error("series acceleration error: %g"
-                      " (rel error: %g), terms_used = %d (%d given)",
+            _log.error("series acceleration error: %.16g"
+                      " (rel error: %.16g), terms_used = %d (%d given)",
                       fabs(error), fabs(error / sum),
                       workspace->terms_used, pTable.size());
         }

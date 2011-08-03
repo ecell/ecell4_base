@@ -40,7 +40,7 @@ class Logger(logger.Logger):
 
     def write_timecourse(self, simulator):
         data = []
-        self.timecourse_file.write('%g\t' % simulator.t)
+        self.timecourse_file.write('%.16g\t' % simulator.t)
         self.timecourse_file.write('\t'.join(
                 str(simulator.get_pool_size(id))
                 for id in simulator.get_species_id()) + '\n')
@@ -349,7 +349,7 @@ class GillespieSimulator(GillespieSimulatorBase):
 
     def stop(self, t):
         if __debug__:
-            log.info('stop at %g' % t)
+            log.info('stop at %.16g' % t)
 
         if self.t == t:
             return
@@ -379,7 +379,7 @@ class GillespieSimulator(GillespieSimulatorBase):
             self.last_reaction = None
 
         if __debug__:
-#             log.info('\n%d: t=%g dt=%g\nevent=%s reactions=%d rejectedmoves=%d' % (self.stepCount, self.t, self.dt, self.last_event, self.reactionEvents, self.rejectedMoves))
+#             log.info('\n%d: t=%.16g dt=%.16g\nevent=%s reactions=%d rejectedmoves=%d' % (self.stepCount, self.t, self.dt, self.last_event, self.reactionEvents, self.rejectedMoves))
             pass
 
         
@@ -452,7 +452,7 @@ class GillespieSimulator(GillespieSimulatorBase):
                                  Delegate(self, GillespieSimulator.fire),
                                  rr)
         if __debug__:
-            log.info('addReactionEvent: #%d (t=%g)' % (eventID, self.t + dt))
+            log.info('addReactionEvent: #%d (t=%.16g)' % (eventID, self.t + dt))
 
         rr.eventID = eventID
 
@@ -473,7 +473,7 @@ class GillespieSimulator(GillespieSimulatorBase):
                                  Delegate(self, GillespieSimulator.update),
                                  rr)
         if __debug__:
-            log.info('addUpdateEvent: #%d (t=%g)' % (eventID, self.t))
+            log.info('addUpdateEvent: #%d (t=%.16g)' % (eventID, self.t))
 
         rr.eventID = eventID
         self.dependencies[rr] = []
@@ -488,7 +488,7 @@ class GillespieSimulator(GillespieSimulatorBase):
 
     def update_event_time(self, t, event):
         if __debug__:
-            log.info('updateEventTime: #%d (t=%g)' % (event.rr.eventID, t))
+            log.info('updateEventTime: #%d (t=%.16g)' % (event.rr.eventID, t))
 
         self.scheduler.update((event.rr.eventID,
                                GillespieEvent(t, event.func, event.rr)))

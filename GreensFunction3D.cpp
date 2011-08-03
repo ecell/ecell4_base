@@ -86,17 +86,17 @@ Real GreensFunction3D::drawR(Real rnd, Real t) const
     // input parameter range checks.
     if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
     {
-        throw std::invalid_argument( ( boost::format( "rnd <= 1.0 && rnd >= 0.0 : rnd=%g" ) % rnd ).str() );
+        throw std::invalid_argument( ( boost::format( "rnd <= 1.0 && rnd >= 0.0 : rnd=%.16g" ) % rnd ).str() );
     }
 
     if ( !(r0 >= 0.0 ) )
     {
-        throw std::invalid_argument( ( boost::format( "r0 >= 0.0 : r0=%g" ) % r0 ).str() );
+        throw std::invalid_argument( ( boost::format( "r0 >= 0.0 : r0=%.16g" ) % r0 ).str() );
     }
 
     if ( !(t >= 0.0 ) )
     {
-        throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+        throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%.16g" ) % t ).str() );
     }
 
 
@@ -185,22 +185,22 @@ Real GreensFunction3D::drawTheta(Real rnd, Real r, Real t) const
     // input parameter range checks.
     if ( !(rnd <= 1.0 && rnd >= 0.0 ) )
     {
-        throw std::invalid_argument( ( boost::format( "rnd <= 1.0 && rnd >= 0.0 : rnd=%g" ) % rnd ).str() );
+        throw std::invalid_argument( ( boost::format( "rnd <= 1.0 && rnd >= 0.0 : rnd=%.16g" ) % rnd ).str() );
     }
 
     if ( !(r >= 0.0 ) )
     {
-        throw std::invalid_argument( ( boost::format( "r >= 0.0 : r=%g" ) % r ).str() );
+        throw std::invalid_argument( ( boost::format( "r >= 0.0 : r=%.16g" ) % r ).str() );
     }
 
     if ( !(r0 >= 0.0 ) )
     {
-        throw std::invalid_argument( ( boost::format( "r0 >= 0.0 : r0=%g" ) % r0 ).str() );
+        throw std::invalid_argument( ( boost::format( "r0 >= 0.0 : r0=%.16g" ) % r0 ).str() );
     }
 
     if ( !(t >= 0.0 ) )
     {
-        throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%g" ) % t ).str() );
+        throw std::invalid_argument( ( boost::format( "t >= 0.0 : t=%.16g" ) % t ).str() );
     }
 
 

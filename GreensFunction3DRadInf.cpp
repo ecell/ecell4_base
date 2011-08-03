@@ -234,12 +234,12 @@ Real GreensFunction3DRadInf::drawTime(Real rnd) const
 
     if (!(rnd < 1.0 && rnd >= 0.0))
     {
-        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%g") % rnd).str());
+        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%.16g") % rnd).str());
     }
 
     if (!(r0 >= sigma))
     {
-        throw std::invalid_argument((boost::format("r0 >= sigma : r0=%g, sigma=%g") % r0 % sigma).str());
+        throw std::invalid_argument((boost::format("r0 >= sigma : r0=%.16g, sigma=%.16g") % r0 % sigma).str());
     }
 
 
@@ -310,17 +310,17 @@ Real GreensFunction3DRadInf::drawR(Real rnd, Real t) const
 
     if (!(rnd < 1.0 && rnd >= 0.0))
     {
-        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%g") % rnd).str());
+        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%.16g") % rnd).str());
     }
 
     if (!(r0 >= sigma))
     {
-        throw std::invalid_argument((boost::format("r0 >= sigma : r0=%g, sigma=%g") % r0 % sigma).str());
+        throw std::invalid_argument((boost::format("r0 >= sigma : r0=%.16g, sigma=%.16g") % r0 % sigma).str());
     }
 
     if (!(t >= 0.0))
     {
-        throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+        throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
     }
 
 
@@ -694,22 +694,22 @@ Real GreensFunction3DRadInf::drawTheta(Real rnd, Real r, Real t) const
     // input parameter range checks.
     if (!(rnd < 1.0 && rnd >= 0.0))
     {
-        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%g") % rnd).str());
+        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%.16g") % rnd).str());
     }
 
     if (!(r >= sigma))
     {
-        throw std::invalid_argument((boost::format("r >= sigma : r=%g, sigma=%g") % r % sigma).str());
+        throw std::invalid_argument((boost::format("r >= sigma : r=%.16g, sigma=%.16g") % r % sigma).str());
     }
 
     if (!(r0 >= sigma))
     {
-        throw std::invalid_argument((boost::format("r0 >= sigma : r0=%g, sigma=%g") % r0 % sigma).str());
+        throw std::invalid_argument((boost::format("r0 >= sigma : r0=%.16g, sigma=%.16g") % r0 % sigma).str());
     }
 
     if (!(t >= 0.0))
     {
-        throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+        throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
     }
 
 

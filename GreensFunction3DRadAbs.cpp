@@ -41,7 +41,7 @@ GreensFunction3DRadAbs::GreensFunction3DRadAbs(
 
     if (a < sigma)
     {
-        throw std::invalid_argument((boost::format("a >= sigma : a=%g, sigma=%g") % a % sigma).str());
+        throw std::invalid_argument((boost::format("a >= sigma : a=%.16g, sigma=%.16g") % a % sigma).str());
     }
     clearAlphaTable();
 }
@@ -119,7 +119,7 @@ Real GreensFunction3DRadAbs::alpha0_i(Integer i) const
 {
     if (!(i >= 0))
     {
-        throw std::out_of_range((boost::format("i >= 0 : i=%g") % i).str());
+        throw std::out_of_range((boost::format("i >= 0 : i=%.16g") % i).str());
     }
 
 
@@ -548,7 +548,7 @@ GreensFunction3DRadAbs::updateAlphaTable(const unsigned int n,
 {
     if (!(n >= 0 && n <= this->MAX_ORDER))
     {
-        throw std::range_error((boost::format("n >= 0 && n <= this->MAX_ORDER : n=%g, this->MAX_ORDER=%g") % n % this->MAX_ORDER).str());
+        throw std::range_error((boost::format("n >= 0 && n <= this->MAX_ORDER : n=%.16g, this->MAX_ORDER=%.16g") % n % this->MAX_ORDER).str());
     }
 
 
@@ -597,7 +597,7 @@ GreensFunction3DRadAbs::updateAlphaTable(const unsigned int n,
 
         if (i >= end)
         {
-            log_.info("alphaTable (%d): didn't converge. t = %g, %s",
+            log_.info("alphaTable (%d): didn't converge. t = %.16g, %s",
                        n, t, dump().c_str());
             break;
         }
@@ -1324,12 +1324,12 @@ Real GreensFunction3DRadAbs::drawTime(Real rnd) const
 
     if (!(rnd < 1.0 && rnd >= 0.0))
     {
-        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%g") % rnd).str());
+        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%.16g") % rnd).str());
     }
 
     if (!(r0 >= sigma && r0 <= a))
     {
-        throw std::invalid_argument((boost::format("r0 >= sigma && r0 <= a : r0=%g, sigma=%g, a=%g") % r0 % sigma % a).str());
+        throw std::invalid_argument((boost::format("r0 >= sigma && r0 <= a : r0=%.16g, sigma=%.16g, a=%.16g") % r0 % sigma % a).str());
     }
 
 
@@ -1387,7 +1387,7 @@ Real GreensFunction3DRadAbs::drawTime(Real rnd) const
             {
                 throw std::runtime_error(
                     (boost::format(
-                        "couldn't adjust high. F(%g) = %g; r0 = %g, %s") %
+                        "couldn't adjust high. F(%.16g) = %.16g; r0 = %.16g, %s") %
                         high % GSL_FN_EVAL(&F, high) % r0 % dump()).str());
             }
 
@@ -1413,10 +1413,10 @@ Real GreensFunction3DRadAbs::drawTime(Real rnd) const
             if (fabs(low) <= minT ||
                 fabs(low_value - low_value_prev) < TOLERANCE) 
             {
-                log_.info("couldn't adjust low. F(%g) = %g; r0 = %g, %s",
+                log_.info("couldn't adjust low. F(%.16g) = %.16g; r0 = %.16g, %s",
                           low, GSL_FN_EVAL(&F, low), r0,
                           dump().c_str());
-                log_.info("returning %g", low);
+                log_.info("returning %.16g", low);
                 return low;
             }
             low_value_prev = low_value;
@@ -1446,17 +1446,17 @@ GreensFunction3DRadAbs::drawEventType(Real rnd, Real t) const
 
     if (!(rnd < 1.0 && rnd >= 0.0))
     {
-        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%g") % rnd).str());
+        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%.16g") % rnd).str());
     }
 
     if (!(r0 >= sigma && r0 < a))
     {
-        throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%g, sigma=%g, a=%g") % r0 % sigma % a).str());
+        throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%.16g, sigma=%.16g, a=%.16g") % r0 % sigma % a).str());
     }
 
     if (!(t > 0.0))
     {
-        throw std::invalid_argument((boost::format("t > 0.0 : t=%g") % t).str());
+        throw std::invalid_argument((boost::format("t > 0.0 : t=%.16g") % t).str());
     }
 
 
@@ -1536,11 +1536,11 @@ GreensFunction3DRadAbs::drawPleavea(gsl_function const& F,
             {
                 throw std::runtime_error(
                     (boost::format(
-                        "couldn't adjust high. Fa(%g) = %g; r0 = %g, %s") %
+                        "couldn't adjust high. Fa(%.16g) = %.16g; r0 = %.16g, %s") %
                         high % GSL_FN_EVAL(&F, high) % r0 % dump()).str());
             }
 
-            log_.info("drawTime2: adjusting high: %g Fa = %g", high, high_value);
+            log_.info("drawTime2: adjusting high: %.16g Fa = %.16g", high, high_value);
             high *= 10;
         }
     }
@@ -1567,14 +1567,14 @@ GreensFunction3DRadAbs::drawPleavea(gsl_function const& F,
             if (fabs(low) <= minT || 
                 fabs(low_value - low_value_prev) < TOLERANCE) 
             {
-                log_.info("couldn't adjust low. Fa(%g) = %g; r0 = %g, %s",
+                log_.info("couldn't adjust low. Fa(%.16g) = %.16g; r0 = %.16g, %s",
                            low, GSL_FN_EVAL(&F, low), r0, dump().c_str());
-                log_.info("returning %g", minT);
+                log_.info("returning %.16g", minT);
                 return minT;
             }
             low_value_prev = low_value;
 
-            log_.info("drawTime2: adjusting low: %g, Fa = %g", low, low_value);
+            log_.info("drawTime2: adjusting low: %.16g, Fa = %.16g", low, low_value);
             low *= .1;
         }
     }
@@ -1616,11 +1616,11 @@ GreensFunction3DRadAbs::drawPleaves(gsl_function const& F,
             {
                 throw std::runtime_error(
                     (boost::format(
-                        "couldn't adjust high. Fs(%g) = %g; r0 = %g, %s") %
+                        "couldn't adjust high. Fs(%.16g) = %.16g; r0 = %.16g, %s") %
                         high % GSL_FN_EVAL(&F, high) % r0 % dump()).str());
             }
 
-            log_.info("drawTime2: adjusting high: %g Fs = %g", 
+            log_.info("drawTime2: adjusting high: %.16g Fs = %.16g", 
                       high, high_value);
             high *= 10;
         }
@@ -1647,14 +1647,14 @@ GreensFunction3DRadAbs::drawPleaves(gsl_function const& F,
             if (fabs(low) <= minT)//|| 
 //                fabs(low_value - low_value_prev) < TOLERANCE) 
             {
-                log_.info("couldn't adjust low.  returning minT (=%g);"
-                          "Fs(%g) = %g; r0 = %g, %s",
+                log_.info("couldn't adjust low.  returning minT (=%.16g);"
+                          "Fs(%.16g) = %.16g; r0 = %.16g, %s",
                           minT, low, GSL_FN_EVAL(&F, low), r0, dump().c_str());
                 return minT;
             }
             low_value_prev = low_value;
 
-            log_.info("drawTime2: adjusting low: %g, Fs = %g", low, low_value);
+            log_.info("drawTime2: adjusting low: %.16g, Fs = %.16g", low, low_value);
             low *= .1;
         }
     }
@@ -1676,12 +1676,12 @@ Real GreensFunction3DRadAbs::drawR(Real rnd, Real t) const
 
     if (!(rnd < 1.0 && rnd >= 0.0))
     {
-        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%g") % rnd).str());
+        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%.16g") % rnd).str());
     }
 
     if (!(r0 >= sigma && r0 < a))
     {
-        throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%g, sigma=%g, a=%g") % r0 % sigma % a).str());
+        throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%.16g, sigma=%.16g, a=%.16g") % r0 % sigma % a).str());
     }
 
 
@@ -2117,23 +2117,23 @@ GreensFunction3DRadAbs::p_theta(Real theta, Real r, Real t) const
         
         if (!(theta >= 0.0 && theta <= M_PI))
         {
-            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g") % theta % M_PI).str());
+            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%.16g, M_PI=%.16g") % theta % M_PI).str());
         }
 
         // r \in (sigma, a);  not defined at r == sigma and r == a.
         if (!(r >= sigma && r < a))
         {
-            throw std::invalid_argument((boost::format("r >= sigma && r < a : r=%g, sigma=%g, a=%g") % r % sigma % a).str());
+            throw std::invalid_argument((boost::format("r >= sigma && r < a : r=%.16g, sigma=%.16g, a=%.16g") % r % sigma % a).str());
         }
 
         if (!(r0 >= sigma && r0 < a))
         {
-            throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%g, sigma=%g, a=%g") % r0 % sigma % a).str());
+            throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%.16g, sigma=%.16g, a=%.16g") % r0 % sigma % a).str());
         }
 
         if (!(t >= 0.0))
         {
-            throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+            throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
         }
 
     }
@@ -2160,7 +2160,7 @@ Real GreensFunction3DRadAbs::dp_theta(Real theta, Real r, Real t) const
         
         if (!(theta >= 0.0 && theta <= M_PI))
         {
-            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g") % theta % M_PI).str());
+            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%.16g, M_PI=%.16g") % theta % M_PI).str());
         }
 
 
@@ -2168,17 +2168,17 @@ Real GreensFunction3DRadAbs::dp_theta(Real theta, Real r, Real t) const
         // defined at r == sigma and r == a.
         if (!(r >= sigma && r <= a))
         {
-            throw std::invalid_argument((boost::format("r >= sigma && r <= a : r=%g, sigma=%g, a=%g") % r % sigma % a).str());
+            throw std::invalid_argument((boost::format("r >= sigma && r <= a : r=%.16g, sigma=%.16g, a=%.16g") % r % sigma % a).str());
         }
 
         if (!(r0 >= sigma && r0 < a))
         {
-            throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%g, sigma=%g, a=%g") % r0 % sigma % a).str());
+            throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%.16g, sigma=%.16g, a=%.16g") % r0 % sigma % a).str());
         }
 
         if (!(t >= 0.0))
         {
-            throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+            throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
         }
 
     }
@@ -2247,7 +2247,7 @@ make_p_thetaTable(RealVector& pTable,
 
         if (p < 0.0)
         {
-            log_.info("drawTheta: p<0 %g", p);
+            log_.info("drawTheta: p<0 %.16g", p);
             p = 0.0;
         }
 
@@ -2276,23 +2276,23 @@ GreensFunction3DRadAbs::ip_theta(Real theta, Real r, Real t) const
         
         if (!(theta >= 0.0 && theta <= M_PI))
         {
-            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g") % theta % M_PI).str());
+            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%.16g, M_PI=%.16g") % theta % M_PI).str());
         }
 
         // r \in (sigma, a)
         if (!(r >= sigma && r < a))
         {
-            throw std::invalid_argument((boost::format("r >= sigma && r < a : r=%g, sigma=%g, a=%g") % r % sigma % a).str());
+            throw std::invalid_argument((boost::format("r >= sigma && r < a : r=%.16g, sigma=%.16g, a=%.16g") % r % sigma % a).str());
         }
 
         if (!(r0 >= sigma && r0 < a))
         {
-            throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%g, sigma=%g, a=%g") % r0 % sigma % a).str());
+            throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%.16g, sigma=%.16g, a=%.16g") % r0 % sigma % a).str());
         }
 
         if (!(t >= 0.0))
         {
-            throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+            throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
         }
 
     }
@@ -2321,23 +2321,23 @@ GreensFunction3DRadAbs::idp_theta(Real theta, Real r, Real t) const
         
         if (!(theta >= 0.0 && theta <= M_PI))
         {
-            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g") % theta % M_PI).str());
+            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%.16g, M_PI=%.16g") % theta % M_PI).str());
         }
 
         // r \in [ sigma, a ]
         if (!(r >= sigma && r <= a))
         {
-            throw std::invalid_argument((boost::format("r >= sigma && r <= a : r=%g, sigma=%g, a=%g") % r % sigma % a).str());
+            throw std::invalid_argument((boost::format("r >= sigma && r <= a : r=%.16g, sigma=%.16g, a=%.16g") % r % sigma % a).str());
         }
 
         if (!(r0 >= sigma && r0 < a))
         {
-            throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%g, sigma=%g, a=%g") % r0 % sigma % a).str());
+            throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%.16g, sigma=%.16g, a=%.16g") % r0 % sigma % a).str());
         }
 
         if (!(t >= 0.0))
         {
-            throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+            throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
         }
 
     }
@@ -2422,22 +2422,22 @@ GreensFunction3DRadAbs::drawTheta(Real rnd, Real r, Real t) const
     // input parameter range checks.
     if (!(rnd < 1.0 && rnd >= 0.0))
     {
-        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%g") % rnd).str());
+        throw std::invalid_argument((boost::format("rnd < 1.0 && rnd >= 0.0 : rnd=%.16g") % rnd).str());
     }
 
     if (!(r0 >= sigma && r0 < a))
     {
-        throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%g, sigma=%g, a=%g") % r0 % sigma % a).str());
+        throw std::invalid_argument((boost::format("r0 >= sigma && r0 < a : r0=%.16g, sigma=%.16g, a=%.16g") % r0 % sigma % a).str());
     }
 
     if (!(r >= sigma))
     {
-        throw std::invalid_argument((boost::format("r >= sigma : r=%g, sigma=%g") % r % sigma).str());
+        throw std::invalid_argument((boost::format("r >= sigma : r=%.16g, sigma=%.16g") % r % sigma).str());
     }
 
     if (!(t >= 0.0))
     {
-        throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+        throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
     }
 
 

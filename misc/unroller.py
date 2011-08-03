@@ -14,7 +14,7 @@ def cb(g):
             vars.append(var)
     vars_fmt = []
     for var in vars:
-        vars_fmt.append('%s=%%g' % var)
+        vars_fmt.append('%s=%%.16g' % var)
     vars = ' % '.join(vars)
     vars_fmt = ', '.join(vars_fmt)
     return '''%(ind)sif (!(%(cond)s))
