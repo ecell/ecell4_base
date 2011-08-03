@@ -6,11 +6,6 @@
 #include <iterator>
 #include <boost/multi_array.hpp>
 #include <boost/mpl/if.hpp>
-#include <boost/optional.hpp>
-#include <boost/type_traits/is_const.hpp>
-#include <boost/type_traits/add_const.hpp>
-#include <boost/preprocessor/repetition/repeat.hpp>
-#include <boost/preprocessor/list/at.hpp>
 #include <boost/range/size.hpp>
 #include <boost/range/difference_type.hpp>
 #include "Vector3.hpp"
