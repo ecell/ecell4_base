@@ -30,6 +30,16 @@ public:
         return gsl_rng_uniform_int(rng_.get(), max - min + 1) + min;
     }
 
+    void dir_2d(double *x, double *y)
+    {
+        gsl_ran_dir_2d(rng_.get(), x, y);
+    }
+
+    void dir_3d(double *x, double *y, double *z)
+    {
+        gsl_ran_dir_3d(rng_.get(), x, y, z);
+    }
+
     double operator()()
     {
         return gsl_rng_uniform(rng_.get());
