@@ -9,7 +9,6 @@
 #include <sstream>
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_legendre.h>
@@ -393,11 +392,21 @@ Real GreensFunction3DRadAbs::f_alpha_aux(Real alpha, Integer n) const
 
     Real Ps;
     Real Psp;
-    boost::tie(Ps, Psp) = P2(n, sigmaAlpha);
+    // boost::tie(Ps, Psp) = P2(n, sigmaAlpha);
+    {
+        std::pair<Real,Real> res(P2(n, sigmaAlpha));
+        Ps = res.first;
+        Psp = res.second;
+    }
 
     Real Qs;
     Real Qsp;
-    boost::tie(Qs, Qsp) = Q2(n, sigmaAlpha);
+    // boost::tie(Qs, Qsp) = Q2(n, sigmaAlpha);
+    {
+        std::pair<Real,Real> res(Q2(n, sigmaAlpha));
+        Qs = res.first;
+        Qsp = res.second;
+    }
 
     const Real n_m_hSigmaPs(n_m_hSigma * Ps);
     const Real n_m_hSigmaQs(n_m_hSigma * Qs);

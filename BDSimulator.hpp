@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <limits>
 #include <boost/foreach.hpp>
-#include <boost/random/mersenne_twister.hpp>
 #include "NetworkRules.hpp"
 #include "BDPropagator.hpp"
 #include "World.hpp"

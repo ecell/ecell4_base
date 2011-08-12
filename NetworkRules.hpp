@@ -2,7 +2,6 @@
 #define NETWORK_RULES_HPP
 
 #include <map>
-#include <boost/range/iterator_range.hpp>
 #include "ReactionRule.hpp"
 #include "generator.hpp"
 

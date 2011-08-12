@@ -8,8 +8,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/lambda/bind.hpp>
 #include <boost/fusion/container/map.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 #include <boost/fusion/sequence/intrinsic/at_key.hpp>
@@ -3063,9 +3061,21 @@ protected:
             {
                 std::vector<domain_id_type>* intruders;
                 std::pair<domain_id_type, length_type> closest;
-                boost::tie(intruders, closest) = get_intruders(
-                    particle_shape_type(domain.position(), min_shell_radius),
-                    domain.id());
+
+                // boost::tie(intruders, closest) = get_intruders(
+                //     particle_shape_type(
+                //         domain.position(), min_shell_radius), domain.id());
+                {
+                    std::pair<std::vector<domain_id_type>*, 
+                        std::pair<domain_id_type, length_type> > 
+                        res(get_intruders(particle_shape_type(
+                                              domain.position(), 
+                                              min_shell_radius), 
+                                          domain.id()));
+                    intruders = res.first;
+                    closest = res.second;
+                }
+
                 boost::scoped_ptr<std::vector<domain_id_type> > _(intruders);
 
                 LOG_DEBUG(("intruders: %s, closest: %s (dist=%.16g)",
