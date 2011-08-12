@@ -1049,7 +1049,7 @@ public:
 
     virtual bool step(time_type upto)
     {
-        LOG_INFO(("stop at %g", upto));
+        LOG_INFO(("stop at %.16g", upto));
 
         if (upto <= base_type::t_)
         {
@@ -1616,7 +1616,7 @@ protected:
                               length_type a,
                               length_type sigma = -1.)
     {
-        LOG_DEBUG(("draw_r: dt=%g, a=%g, sigma=%g", dt, a, sigma));
+        LOG_DEBUG(("draw_r: dt=%.16g, a=%.16g, sigma=%.16g", dt, a, sigma));
         BOOST_ASSERT(a > sigma);
         length_type r(0.);
         double rnd(0.);
@@ -1632,7 +1632,7 @@ protected:
         {
             throw propagation_error(
                 (boost::format(
-                    "gf.drawR() failed: %s, gf=%s, rnd=%g, dt=%g, a=%g, sigma=%g: %s") % e.what() % gf.getName() % rnd % dt % a % sigma % gf.dump()).str());
+                    "gf.drawR() failed: %s, gf=%s, rnd=%.16g, dt=%.16g, a=%.16g, sigma=%.16g: %s") % e.what() % gf.getName() % rnd % dt % a % sigma % gf.dump()).str());
         }
 
         return r;
@@ -1657,7 +1657,7 @@ protected:
         {
             throw propagation_error(
                 (boost::format(
-                    "gf.drawTheta() failed: %s, gf=%s, rnd=%g, dt=%g, r=%g: %s") % e.what() % rnd % dt % r % gf.dump()).str());
+                    "gf.drawTheta() failed: %s, gf=%s, rnd=%.16g, dt=%.16g, r=%.16g: %s") % e.what() % rnd % dt % r % gf.dump()).str());
         }
 
         return theta;
@@ -1709,7 +1709,7 @@ protected:
                 dt,
                 domain.mobility_radius()));
         position_type const displacement(draw_displacement(domain, r));
-        LOG_DEBUG(("draw_new_position(domain=%s, dt=%g): mobility_radius=%g, r=%g, displacement=%s (%g)",
+        LOG_DEBUG(("draw_new_position(domain=%s, dt=%.16g): mobility_radius=%.16g, r=%.16g, displacement=%s (%.16g)",
                 boost::lexical_cast<std::string>(domain).c_str(), dt,
                 domain.mobility_radius(),
                 r, boost::lexical_cast<std::string>(displacement).c_str(),
@@ -1748,7 +1748,7 @@ protected:
             AnalyticalSingle<traits_type, Tshell> const& domain)
     {
         position_type const displacement(draw_displacement(domain, domain.mobility_radius()));
-        LOG_DEBUG(("draw_escape_position(domain=%s): mobility_radius=%g, displacement=%s (%g)",
+        LOG_DEBUG(("draw_escape_position(domain=%s): mobility_radius=%.16g, displacement=%s (%.16g)",
                 boost::lexical_cast<std::string>(domain).c_str(),
                 domain.mobility_radius(),
                 boost::lexical_cast<std::string>(displacement).c_str(),
@@ -1904,7 +1904,7 @@ protected:
 
         // Override dt, burst happens before single's scheduled event.
         domain.dt() = base_type::t_ - domain.last_time();
-        LOG_DEBUG(("t=%g, domain.last_time=%g", base_type::t_, domain.last_time()));
+        LOG_DEBUG(("t=%.16g, domain.last_time=%.16g", base_type::t_, domain.last_time()));
 
         position_type const new_pos(draw_new_position(domain, domain.dt()));
 
@@ -2289,8 +2289,8 @@ protected:
         typedef typename detail::get_greens_function<shape_type>::type greens_function;
         time_type const dt_reaction(draw_single_reaction_time(domain.particle().second.sid()));
         time_type const dt_escape_or_interaction(draw_escape_or_interaction_time(domain));
-        LOG_DEBUG(("determine_next_event: %s => dt_reaction=%g, "
-                   "dt_escape_or_interaction=%g",
+        LOG_DEBUG(("determine_next_event: %s => dt_reaction=%.16g, "
+                   "dt_escape_or_interaction=%.16g",
                    boost::lexical_cast<std::string>(domain).c_str(),
                    dt_reaction, dt_escape_or_interaction));
         single_event_kind event_kind;
@@ -2436,7 +2436,7 @@ protected:
         {
             new_shell_size = max_shell_size();
         }
-        LOG_DEBUG(("restore domain: %s (shell_size=%g, dt=%g) closest=%s (distance=%g)",
+        LOG_DEBUG(("restore domain: %s (shell_size=%.16g, dt=%.16g) closest=%s (distance=%.16g)",
             boost::lexical_cast<std::string>(domain).c_str(),
             new_shell_size,
             domain.dt(),
@@ -2630,8 +2630,8 @@ protected:
 
         if (min_shell_size_with_margin >= max_shell_size)
         {
-            LOG_DEBUG(("Pair(%s, %s) not formed: min_shell_size %g >="
-                       "max_shell_size %g",
+            LOG_DEBUG(("Pair(%s, %s) not formed: min_shell_size %.16g >="
+                       "max_shell_size %.16g",
                        boost::lexical_cast<std::string>(domain).c_str(),
                        boost::lexical_cast<std::string>(possible_partner).c_str(),
                        min_shell_size_with_margin, max_shell_size));
@@ -2696,8 +2696,8 @@ protected:
 
         if (closest_domain)
         {
-            LOG_DEBUG(("Pair closest neighbor: %s %g, "
-                       "min_shell_with_margin=%g",
+            LOG_DEBUG(("Pair closest neighbor: %s %.16g, "
+                       "min_shell_with_margin=%.16g",
                        boost::lexical_cast<std::string>(*closest_domain).c_str(),
                        closest_shell_distance,
                        min_shell_size_with_margin));
@@ -2795,7 +2795,7 @@ protected:
         BOOST_ASSERT(new_shell_size >= min_shell_size_with_margin);
         BOOST_ASSERT(new_shell_size <= max_shell_size);
 
-        LOG_INFO(("new_pair=%s, closest_shell_distance=%g, closest=%s",
+        LOG_INFO(("new_pair=%s, closest_shell_distance=%.16g, closest=%s",
                   boost::lexical_cast<std::string>(*new_pair).c_str(),
                   closest_shell_distance,
                   closest_domain ? boost::lexical_cast<std::string>(closest_domain).c_str(): "(none)"));
@@ -2821,7 +2821,7 @@ protected:
         // Multis shells need to be contiguous.
         if (closest.second > min_shell_size)
         {
-            LOG_DEBUG(("multi shells aren't close enough to each other (closest distance=%g, min_shell_size=%g)", closest.second, min_shell_size));
+            LOG_DEBUG(("multi shells aren't close enough to each other (closest distance=%.16g, min_shell_size=%.16g)", closest.second, min_shell_size));
             return boost::optional<multi_type&>();
         }
 
@@ -3068,7 +3068,7 @@ protected:
                     domain.id());
                 boost::scoped_ptr<std::vector<domain_id_type> > _(intruders);
 
-                LOG_DEBUG(("intruders: %s, closest: %s (dist=%g)",
+                LOG_DEBUG(("intruders: %s, closest: %s (dist=%.16g)",
                     intruders ?
                         stringize_and_join(*intruders, ", ").c_str():
                         "(none)",
@@ -3097,7 +3097,7 @@ protected:
                     restore_domain(domain, closest);
                 }
                 determine_next_event(domain);
-                LOG_DEBUG(("%s (dt=%g)",
+                LOG_DEBUG(("%s (dt=%.16g)",
                     boost::lexical_cast<std::string>(domain).c_str(),
                     domain.dt()));
             }
@@ -3344,7 +3344,7 @@ protected:
         event_id_pair_type ev(scheduler_.pop());
         base_type::t_ = ev.second->time();
 
-        LOG_INFO(("%d: t=%g dt=%g domain=%s rejectedmoves=%d",
+        LOG_INFO(("%d: t=%.16g dt=%.16g domain=%s rejectedmoves=%d",
                   base_type::num_steps_, base_type::t_, base_type::dt_,
                   boost::lexical_cast<std::string>(dynamic_cast<domain_event_base const*>(ev.second.get())->domain()).c_str(),
                   rejected_moves_));
@@ -3466,7 +3466,7 @@ protected:
                 return stringize_event(*_ev);
             }
         }
-        return (boost::format("Event(t=%g)") % ev.time()).str();
+        return (boost::format("Event(t=%.16g)") % ev.time()).str();
     }
 
     static std::string stringize_event_kind(enum single_event_kind kind)
@@ -3509,21 +3509,21 @@ protected:
 
     static std::string stringize_event(single_event const& ev)
     {
-        return (boost::format("SingleEvent(t=%g, kind=%s, domain=%s)") %
+        return (boost::format("SingleEvent(t=%.16g, kind=%s, domain=%s)") %
             ev.time() % stringize_event_kind(ev.kind()) %
             boost::lexical_cast<std::string>(ev.domain())).str();
     }
 
     static std::string stringize_event(pair_event const& ev)
     {
-        return (boost::format("PairEvent(t=%g, kind=%s, domain=%s)") %
+        return (boost::format("PairEvent(t=%.16g, kind=%s, domain=%s)") %
             ev.time() % stringize_event_kind(ev.kind()) %
             boost::lexical_cast<std::string>(ev.domain())).str();
     }
 
     static std::string stringize_event(multi_event const& ev)
     {
-        return (boost::format("MultiEvent(t=%g, domain=%s)") %
+        return (boost::format("MultiEvent(t=%.16g, domain=%s)") %
             ev.time() % boost::lexical_cast<std::string>(ev.domain())).str();
     }
 
@@ -3664,7 +3664,7 @@ protected:
         {
             BOOST_FOREACH (particle_id_pair_and_distance const& i, list)
             {
-                log_.debug("  (%s:%s) %g",
+                log_.debug("  (%s:%s) %.16g",
                     boost::lexical_cast<std::string>(i.first.first).c_str(),
                     boost::lexical_cast<std::string>(i.first.second).c_str(),
                     i.second);
@@ -3730,7 +3730,7 @@ protected:
         if (new_distance <= r01)
         {
             log_.warn(
-                "rejected move: pair=%s, radii=%g, particle_distance=%g",
+                "rejected move: pair=%s, radii=%.16g, particle_distance=%.16g",
                 boost::lexical_cast<std::string>(domain).c_str(),
                 r01, new_distance);
             return false;
@@ -3746,7 +3746,7 @@ protected:
         if (d[0] > radius || d[1] > radius)
         {
             log_.warn(
-                "rejected move: new particle(s) out of protective sphere: pair=%s, radii=%g, d0=%g, d1=%g",
+                "rejected move: new particle(s) out of protective sphere: pair=%s, radii=%.16g, d0=%.16g, d1=%.16g",
                 boost::lexical_cast<std::string>(domain).c_str(),
                 d[0], d[1]);
             return false;

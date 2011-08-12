@@ -91,7 +91,7 @@ public:
     virtual std::string as_string() const
     {
         return (boost::format(
-            "%s(id=%s, event=%s, last_time=%g, dt=%g, particle=(%s:%s), shell=(%d:%s))") %
+            "%s(id=%s, event=%s, last_time=%.16g, dt=%.16g, particle=(%s:%s), shell=(%d:%s))") %
             type_name() %
             boost::lexical_cast<std::string>(base_type::id_) %
             boost::lexical_cast<std::string>(base_type::event_.first) %

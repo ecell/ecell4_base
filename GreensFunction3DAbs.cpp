@@ -31,7 +31,7 @@ GF3DA::GreensFunction3DAbs(Real D, Real r0, Real a)
 {
     if (a < 0.0)
     {
-        throw std::invalid_argument((boost::format("a >= 0.0 : a=%g") % a).str());
+        throw std::invalid_argument((boost::format("a >= 0.0 : a=%.16g") % a).str());
     }
 }
 
@@ -210,7 +210,7 @@ GF3DA::makep_nTable(RealVector& p_nTable, Real r, Real t) const
 
         if (! isfinite(p_n))
         {
-            log_.error("makep_nTable: invalid value: %g (n=%d)", p_n, n);
+            log_.error("makep_nTable: invalid value: %.16g (n=%d)", p_n, n);
             break;
         }
 
@@ -271,22 +271,22 @@ Real GF3DA::p_theta(Real theta, Real r, Real t) const
         
         if (!(theta >= 0.0 && theta <= M_PI))
         {
-            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g") % theta % M_PI).str());
+            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%.16g, M_PI=%.16g") % theta % M_PI).str());
         }
 
         if (!(r >= 0 && r < a))
         {
-            throw std::invalid_argument((boost::format("r >= 0 && r < a : r=%g, a=%g") % r % a).str());
+            throw std::invalid_argument((boost::format("r >= 0 && r < a : r=%.16g, a=%.16g") % r % a).str());
         }
 
         if (!(r0 >= 0 && r0 < a))
         {
-            throw std::invalid_argument((boost::format("r0 >= 0 && r0 < a : r0=%g, a=%g") % r0 % a).str());
+            throw std::invalid_argument((boost::format("r0 >= 0 && r0 < a : r0=%.16g, a=%.16g") % r0 % a).str());
         }
 
         if (!(t >= 0.0))
         {
-            throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+            throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
         }
 
     }
@@ -315,23 +315,23 @@ Real GF3DA::ip_theta(Real theta, Real r, Real t) const
         
         if (!(theta >= 0.0 && theta <= M_PI))
         {
-            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g") % theta % M_PI).str());
+            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%.16g, M_PI=%.16g") % theta % M_PI).str());
         }
 
         // r \in (sigma, a)
         if (!(r >= 0.0 && r < a))
         {
-            throw std::invalid_argument((boost::format("r >= 0.0 && r < a : r=%g, a=%g") % r % a).str());
+            throw std::invalid_argument((boost::format("r >= 0.0 && r < a : r=%.16g, a=%.16g") % r % a).str());
         }
 
         if (!(r0 >= 0.0 && r0 < a))
         {
-            throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 < a : r0=%g, a=%g") % r0 % a).str());
+            throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 < a : r0=%.16g, a=%.16g") % r0 % a).str());
         }
 
         if (!(t >= 0.0))
         {
-            throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+            throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
         }
 
     }
@@ -469,7 +469,7 @@ void GF3DA::makedp_nTable(RealVector& p_nTable, Real t) const
 
         if (! isfinite(p_n))
         {
-            log_.error("makedp_nTable: invalid value: %g (n=%d)", p_n, n);
+            log_.error("makedp_nTable: invalid value: %.16g (n=%d)", p_n, n);
             break;
         }
 
@@ -504,7 +504,7 @@ GF3DA::dp_theta(Real theta, Real r, Real t) const
         
         if (!(theta >= 0.0 && theta <= M_PI))
         {
-            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g") % theta % M_PI).str());
+            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%.16g, M_PI=%.16g") % theta % M_PI).str());
         }
 
 
@@ -512,17 +512,17 @@ GF3DA::dp_theta(Real theta, Real r, Real t) const
         // defined at r == sigma and r == a.
         if (!(r >= 0.0 && r <= a))
         {
-            throw std::invalid_argument((boost::format("r >= 0.0 && r <= a : r=%g, a=%g") % r % a).str());
+            throw std::invalid_argument((boost::format("r >= 0.0 && r <= a : r=%.16g, a=%.16g") % r % a).str());
         }
 
         if (!(r0 >= 0.0 && r0 < a))
         {
-            throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 < a : r0=%g, a=%g") % r0 % a).str());
+            throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 < a : r0=%.16g, a=%.16g") % r0 % a).str());
         }
 
         if (!(t >= 0.0))
         {
-            throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+            throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
         }
 
     }
@@ -549,23 +549,23 @@ GF3DA::idp_theta(Real theta, Real r, Real t) const
         
         if (!(theta >= 0.0 && theta <= M_PI))
         {
-            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%g, M_PI=%g") % theta % M_PI).str());
+            throw std::invalid_argument((boost::format("theta >= 0.0 && theta <= M_PI : theta=%.16g, M_PI=%.16g") % theta % M_PI).str());
         }
 
         // r \in [ sigma, a ]
         if (!(r >= 0.0 && r <= a))
         {
-            throw std::invalid_argument((boost::format("r >= 0.0 && r <= a : r=%g, a=%g") % r % a).str());
+            throw std::invalid_argument((boost::format("r >= 0.0 && r <= a : r=%.16g, a=%.16g") % r % a).str());
         }
 
         if (!(r0 >= 0.0 && r0 < a))
         {
-            throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 < a : r0=%g, a=%g") % r0 % a).str());
+            throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 < a : r0=%.16g, a=%.16g") % r0 % a).str());
         }
 
         if (!(t >= 0.0))
         {
-            throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+            throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
         }
 
     }
@@ -591,12 +591,12 @@ GF3DA::drawTime(Real rnd) const
 
    if (!(rnd <= 1.0 && rnd >= 0.0))
    {
-       throw std::invalid_argument((boost::format("rnd <= 1.0 && rnd >= 0.0 : rnd=%g") % rnd).str());
+       throw std::invalid_argument((boost::format("rnd <= 1.0 && rnd >= 0.0 : rnd=%.16g") % rnd).str());
    }
 
    if (!(r0 >= 0.0 && r0 <= a))
    {
-       throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 <= a : r0=%g, a=%g") % r0 % a).str());
+       throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 <= a : r0=%.16g, a=%.16g") % r0 % a).str());
    }
 
 
@@ -619,11 +619,11 @@ GF3DA::drawTime(Real rnd) const
     while(GSL_FN_EVAL(&F, high) < 0.0)
     {
         high *= 10;
-        log_.info("drawTime: adjusting high: %g", high);
+        log_.info("drawTime: adjusting high: %.16g", high);
         if (fabs(high) >= 1e10)
         {
             throw std::runtime_error(
-                (boost::format("couldn't adjust high. F(%g) = %g; r0=%g, %s") %
+                (boost::format("couldn't adjust high. F(%.16g) = %.16g; r0=%.16g, %s") %
                     high % GSL_FN_EVAL(&F, high) % r0 % dump()).str());
         }
     }
@@ -635,13 +635,13 @@ GF3DA::drawTime(Real rnd) const
 
         const Real low_value_new(GSL_FN_EVAL(&F, low));
 
-        log_.info("drawTime: adjusting low: %g, F = %g", low, low_value_new);
+        log_.info("drawTime: adjusting low: %.16g, F = %.16g", low, low_value_new);
 
         if (fabs(low) <= MIN_T || 
             fabs(low_value - low_value_new) < TOLERANCE) 
         {
-            log_.info("couldn't adjust low.  Returning %g as MIN_T; "
-                      "F(%g) = %g; r0 = %g, %s", MIN_T, low,
+            log_.info("couldn't adjust low.  Returning %.16g as MIN_T; "
+                      "F(%.16g) = %.16g; r0 = %.16g, %s", MIN_T, low,
                       GSL_FN_EVAL(&F, low), r0, dump().c_str());
             return MIN_T;
         }
@@ -694,12 +694,12 @@ GF3DA::drawR(Real rnd, Real t) const
 
     if (!(rnd <= 1.0 && rnd >= 0.0))
     {
-        throw std::invalid_argument((boost::format("rnd <= 1.0 && rnd >= 0.0 : rnd=%g") % rnd).str());
+        throw std::invalid_argument((boost::format("rnd <= 1.0 && rnd >= 0.0 : rnd=%.16g") % rnd).str());
     }
 
     if (!(r0 >= 0.0 && r0 < a))
     {
-        throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 < a : r0=%g, a=%g") % r0 % a).str());
+        throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 < a : r0=%.16g, a=%.16g") % r0 % a).str());
     }
 
 
@@ -728,7 +728,7 @@ GF3DA::drawR(Real rnd, Real t) const
 
     if (highvalue < 0.0)
     {
-        log_.info("drawR: highvalue < 0.0 (%g). returning a (%g)", highvalue, a);
+        log_.info("drawR: highvalue < 0.0 (%.16g). returning a (%.16g)", highvalue, a);
         return a;
     }
 
@@ -780,22 +780,22 @@ GF3DA::drawTheta(Real rnd, Real r, Real t) const
     // input parameter range checks.
     if (!(rnd <= 1.0 && rnd >= 0.0))
     {
-        throw std::invalid_argument((boost::format("rnd <= 1.0 && rnd >= 0.0 : rnd=%g") % rnd).str());
+        throw std::invalid_argument((boost::format("rnd <= 1.0 && rnd >= 0.0 : rnd=%.16g") % rnd).str());
     }
 
     if (!(r0 >= 0.0 && r0 < a))
     {
-        throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 < a : r0=%g, a=%g") % r0 % a).str());
+        throw std::invalid_argument((boost::format("r0 >= 0.0 && r0 < a : r0=%.16g, a=%.16g") % r0 % a).str());
     }
 
     if (!(r >= 0.0 && r <= a))
     {
-        throw std::invalid_argument((boost::format("r >= 0.0 && r <= a : r=%g, a=%g") % r % a).str());
+        throw std::invalid_argument((boost::format("r >= 0.0 && r <= a : r=%.16g, a=%.16g") % r % a).str());
     }
 
     if (!(t >= 0.0))
     {
-        throw std::invalid_argument((boost::format("t >= 0.0 : t=%g") % t).str());
+        throw std::invalid_argument((boost::format("t >= 0.0 : t=%.16g") % t).str());
     }
 
 

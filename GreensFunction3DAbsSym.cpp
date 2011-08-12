@@ -31,7 +31,7 @@ Real GreensFunction3DAbsSym::ellipticTheta4Zero(Real q)
 {
     if (fabs(q) > 1.0)
     {
-        throw std::invalid_argument((boost::format("fabs(%g) <= 1.0") % q).str());
+        throw std::invalid_argument((boost::format("fabs(%.16g) <= 1.0") % q).str());
     }
 
     // et4z(1 - 1e4) ~= 7.2e-23
@@ -185,7 +185,7 @@ Real GreensFunction3DAbsSym::p_r_fourier(Real r, Real t) const
 
         if (n > N)
         {
-            log_.warn("p_r_fourier: didn't converge; n = %d, value = %g", n, value);
+            log_.warn("p_r_fourier: didn't converge; n = %d, value = %.16g", n, value);
             break;
         }
 
@@ -215,7 +215,7 @@ Real GreensFunction3DAbsSym::drawTime(Real rnd) const
 
     if (rnd >= 1.0 || rnd < 0.0)
     {
-        throw std::invalid_argument((boost::format("0.0 <= %g < 1.0") % rnd).str());
+        throw std::invalid_argument((boost::format("0.0 <= %.16g < 1.0") % rnd).str());
     }
 
     const Real a(geta());
@@ -261,7 +261,7 @@ Real GreensFunction3DAbsSym::drawTime(Real rnd) const
             if (fabs(high) >= t_guess * 1e6)
             {
                 throw std::runtime_error(
-                    (boost::format("couldn't adjust high. F(%g) = %g; %s") %
+                    (boost::format("couldn't adjust high. F(%.16g) = %.16g; %s") %
                        high % GSL_FN_EVAL(&F, high) %
                        boost::lexical_cast<std::string>(*this)).str());
             }
@@ -285,10 +285,10 @@ Real GreensFunction3DAbsSym::drawTime(Real rnd) const
             if (fabs(low) <= t_guess * 1e-6 ||
                 fabs(low_value - low_value_prev) < CUTOFF)
             {
-                log_.info("couldn't adjust high. F(%g) = %g; %s",
+                log_.info("couldn't adjust high. F(%.16g) = %.16g; %s",
                           low, GSL_FN_EVAL(&F, low),
                           boost::lexical_cast<std::string>(*this).c_str());
-                log_.info("returning low (%g)", low);
+                log_.info("returning low (%.16g)", low);
                 return low;
             }
             low_value_prev = low_value;
@@ -330,12 +330,12 @@ Real GreensFunction3DAbsSym::drawR(Real rnd, Real t) const
 {
     if (rnd >= 1.0 || rnd < 0.0)
     {
-        throw std::invalid_argument((boost::format("0.0 <= %g < 1.0") % rnd).str());
+        throw std::invalid_argument((boost::format("0.0 <= %.16g < 1.0") % rnd).str());
     }
 
     if (t < 0.0)
     {
-        throw std::invalid_argument((boost::format("%g < 0.0") % t).str());
+        throw std::invalid_argument((boost::format("%.16g < 0.0") % t).str());
     }
 
     const Real a(geta());
@@ -400,7 +400,7 @@ Real GreensFunction3DAbsSym::drawR(Real rnd, Real t) const
 
 std::string GreensFunction3DAbsSym::dump() const
 {
-    return (boost::format("D=%g, a=%g") % getD() % geta()).str();
+    return (boost::format("D=%.16g, a=%.16g") % getD() % geta()).str();
 }
 
 Logger& GreensFunction3DAbsSym::log_(

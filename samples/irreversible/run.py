@@ -15,6 +15,7 @@ from egfrd import *
 from bd import *
 import model
 import gfrdbase
+import _gfrd
 import myrandom
 
 def run(outfilename, T, N):
@@ -107,7 +108,18 @@ def singlerun2(T):
 
     w = gfrdbase.create_world(m, 3)
     nrw = gfrdbase.create_network_rules_wrapper(m)
-    s = EGFRDSimulator(w, myrandom.rng, nrw)
+    # s = EGFRDSimulator(w, myrandom.rng, nrw)
+    s = _gfrd._EGFRDSimulator(w, nrw, myrandom.rng)
+
+    class check_reactions:
+        def __init__(self):
+            self.reactions = []
+
+        def __call__(self, ri):
+            self.reactions.append(ri)
+
+    cr = check_reactions()
+    s.reaction_recorder = cr
 
     particleA = gfrdbase.place_particle(w, A, [0,0,0])
     particleB = gfrdbase.place_particle(w, B, [float(A['radius']) + float(B['radius'])+1e-23,0,0])
@@ -116,16 +128,20 @@ def singlerun2(T):
 
     while 1:
         s.step()
-        if s.last_reaction:
+        # if s.last_reaction:
+        if len(cr.reactions) > 0:
             #print 'reaction'
+            cr.reactions = []
             return 0.0, s.t
 
-        next_time = s.get_next_time()
+        next_time = s.t + s.dt
         if next_time > end_time:
-            s.stop(end_time)
+            # s.stop(end_time)
+            s.step(end_time)
             break
 
-    distance = w.distance(s.get_position(particleA), s.get_position(particleB))
+    # distance = w.distance(s.get_position(particleA), s.get_position(particleB))
+    distance = w.distance(w.get_particle(iter(w.get_particle_ids(A.id)).next())[1].position, w.get_particle(iter(w.get_particle_ids(B.id)).next())[1].position)
 
     return distance, s.t
 
