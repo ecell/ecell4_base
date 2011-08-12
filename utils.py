@@ -178,7 +178,7 @@ def random_vector(r):
     return _gfrd.normalize(v, r)
 
 def random_vector2D(r):
-    # Return a random 2D mcartesian vector of length r.
+    # Return a random 2D cartesian vector of length r.
     phi = myrandom.uniform(0, Pi2)
     v = [math.cos(phi), math.sin(phi)] # sincos
 
