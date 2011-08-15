@@ -37,7 +37,7 @@ def plot_theory(E1, E2, K, maxt):
 
 
 def plot_file(filename):
-    ycolumns = [2, ]
+    ycolumns = [5, ]
     #ycolumns = [2,6]
     #ycolumns = [3,5]
     #ycolumns = [2,6,3,5]
@@ -48,12 +48,12 @@ def plot_file(filename):
         exec(l)
 
 
-    data = load(filename)
+    data = loadtxt(filename)
     x = data[:,0]
     y = add_columns(data, ycolumns)
 
     plot_theory(N_K, N_P, Keq, x[-1])
-    plot(x, y / S_tot)
+    plot(x, y)# / S_tot)
 
 
 import glob
@@ -72,6 +72,6 @@ for filename in filelist:
 
 title(figtitle)
 
-savefig('figs/' + figtitle + '.png', dpi=80)
+#savefig('figs/' + figtitle + '.png', dpi=80)
 
-#show()
+show()
