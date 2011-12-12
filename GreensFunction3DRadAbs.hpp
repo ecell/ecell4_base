@@ -2,8 +2,6 @@
 #define __FIRSTPASSAGEPAIRGREENSFUNCTION_HPP 
 
 #include <vector>
-#include <boost/tuple/tuple.hpp>
-#include <boost/function.hpp>
 #include <boost/array.hpp>
 
 #include <gsl/gsl_roots.h>
@@ -45,6 +43,11 @@ public:
     Real geta() const
     {
         return this->a;
+    }
+
+    Real getr0() const
+    {
+        return this->r0;
     }
     
     virtual Real drawTime(Real rnd) const;

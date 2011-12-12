@@ -159,13 +159,29 @@ def random_unit_vector():
     return _gfrd.normalize(v, 1)
 
 def random_vector(r):
-    v = [myrandom.uniform(-1,1), myrandom.uniform(-1,1), myrandom.uniform(-1,1)]
+    # v, s = [0.0, 0.0, 0.0], 2.0
+    # while s > 1.0:
+    #     v[0] = myrandom.uniform (-1, 1)
+    #     v[1] = myrandom.uniform (-1, 1)
+    #     s = v[0] * v[0] + v[1] * v[1]
+
+    # v[2] = -1 + 2 * s
+    # a = 2 * numpy.sqrt(1 - s)
+    # v[0] *= a
+    # v[1] *= a
+
+    cos_theta = myrandom.uniform(-1, 1)
+    sin_theta = numpy.sqrt(1 - cos_theta * cos_theta)
+    phi = myrandom.uniform(0, Pi2)
+    sin_phi, cos_phi = math.sin(phi), math.cos(phi) # sincos
+    v = [sin_theta * cos_phi, sin_theta * sin_phi, cos_theta]
     return _gfrd.normalize(v, r)
 
 def random_vector2D(r):
     # Return a random 2D cartesian vector of length r.
+    phi = myrandom.uniform(0, Pi2)
+    v = [math.cos(phi), math.sin(phi)] # sincos
 
-    v = [myrandom.uniform(-1,1), myrandom.uniform(-1,1)]
     # Todo. return _gfrd.normalize(v, r)
     v = numpy.array(v)
     norm = numpy.linalg.norm(v)

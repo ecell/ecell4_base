@@ -1667,11 +1667,18 @@ protected:
         AnalyticalSingle<traits_type, spherical_shell_type> const& domain,
         length_type r)
     {
+        double x, y, z;
+        base_type::rng_.dir_3d(&x, &y, &z);
         return normalize(
-            create_vector<position_type>(
-                base_type::rng_.uniform(-1., 1.),
-                base_type::rng_.uniform(-1., 1.),
-                base_type::rng_.uniform(-1., 1.)), r);
+            create_vector<position_type>(x, y, z), r);
+
+        // const double cos_theta(base_type::rng_.uniform(-1., 1.));
+        // const double sin_theta(sqrt(1 - cos_theta * cos_theta));
+        // double sin_phi, cos_phi;
+        // sincos(base_type::rng_.uniform(0., 2 * M_PI), &sin_phi, &cos_phi);
+        // return normalize(
+        //     create_vector<position_type>(
+        //         sin_theta * cos_phi, sin_theta * sin_phi, cos_theta), r);
     }
 
     position_type draw_displacement(
@@ -3054,9 +3061,21 @@ protected:
             {
                 std::vector<domain_id_type>* intruders;
                 std::pair<domain_id_type, length_type> closest;
-                boost::tie(intruders, closest) = get_intruders(
-                    particle_shape_type(domain.position(), min_shell_radius),
-                    domain.id());
+
+                // boost::tie(intruders, closest) = get_intruders(
+                //     particle_shape_type(
+                //         domain.position(), min_shell_radius), domain.id());
+                {
+                    std::pair<std::vector<domain_id_type>*, 
+                        std::pair<domain_id_type, length_type> > 
+                        res(get_intruders(particle_shape_type(
+                                              domain.position(), 
+                                              min_shell_radius), 
+                                          domain.id()));
+                    intruders = res.first;
+                    closest = res.second;
+                }
+
                 boost::scoped_ptr<std::vector<domain_id_type> > _(intruders);
 
                 LOG_DEBUG(("intruders: %s, closest: %s (dist=%.16g)",
