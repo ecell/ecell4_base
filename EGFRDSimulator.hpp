@@ -1615,7 +1615,7 @@ protected:
                               length_type sigma = -1.)
     {
         LOG_DEBUG(("draw_r: dt=%.16g, a=%.16g, sigma=%.16g", dt, a, sigma));
-        BOOST_ASSERT(a > sigma && a > 0.);
+        BOOST_ASSERT(a > sigma && a >= 0.);
         length_type r(0.);
         double rnd(0.);
         try
