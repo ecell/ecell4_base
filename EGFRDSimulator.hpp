@@ -3695,6 +3695,12 @@ protected:
     reaction_rule_type const& draw_reaction_rule(reaction_rules const& rules)
     {
         const rate_type k_tot(calculate_k_tot(rules));
+        if(k_tot == std::numeric_limits<rate_type>::infinity())
+        {
+            LOG_WARNING(("k_tot == infinite: first reaction type applied."));
+            return rules[0];
+        }
+
         const rate_type t(base_type::rng_.uniform(0., 1.) * k_tot);
         rate_type a(0.);
         BOOST_FOREACH(reaction_rule_type const& r, rules)
@@ -3703,7 +3709,8 @@ protected:
             if (a > t)
                 return r;
         }
-        throw std::exception(); // should never happen
+
+        BOOST_ASSERT(false); // should never happen
     }
 
     template<typename T1, typename T2>
