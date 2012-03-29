@@ -134,7 +134,7 @@ class Pair(object):
         D_geom = math.sqrt(D1 * D2)
 
         assert r0 >= self.sigma, \
-            '%s;  r0 %g < sigma %g' % (self, r0, self.sigma)
+            '%s;  r0 %.16g < sigma %.16g' % (self, r0, self.sigma)
 
         # equalize expected mean t_r and t_R.
         if ((D_geom - D2) * r0) / D_tot + shell_size +\
@@ -166,7 +166,7 @@ class Pair(object):
 
 
         if __debug__:
-          log.debug('a %g, r %g, R %g r0 %g' % 
+          log.debug('a %.16g, r %.16g, R %.16g r0 %.16g' % 
                  (shell_size, a_r, a_R, r0))
         if __debug__:
             tr = ((a_r - r0) / math.sqrt(6 * self.D_tot))**2
@@ -174,11 +174,11 @@ class Pair(object):
                 tR = numpy.inf 
             else:
                 tR = (a_R / math.sqrt(6*self.D_R))**2
-            log.debug('tr %g, tR %g' % (tr, tR))
+            log.debug('tr %.16g, tR %.16g' % (tr, tR))
 
 
         assert a_r > 0
-        assert a_r > r0, '%g %g' % (a_r, r0)
+        assert a_r > r0, '%.16g %.16g' % (a_r, r0)
         assert a_R > 0 or (a_R == 0 and (D1 == 0 or D2 == 0))
 
         return a_R, a_r
@@ -342,7 +342,7 @@ class SphericalPair(Pair):
 
     def create_interparticle_vector(self, gf, r, dt, r0, old_iv): 
         if __debug__:
-            log.debug("create_interparticle_vector: r=%g, dt=%g", r, dt)
+            log.debug("create_interparticle_vector: r=%.16g, dt=%.16g", r, dt)
         theta = draw_theta_wrapper(gf, r, dt)
 
         new_inter_particle_s = numpy.array([r, theta, 
@@ -419,7 +419,7 @@ class PlanarSurfacePair(Pair):
 
     def create_interparticle_vector(self, gf, r, dt, r0, old_iv): 
         if __debug__:
-            log.debug("create_interparticle_vector: r=%g, dt=%g", r, dt)
+            log.debug("create_interparticle_vector: r=%.16g, dt=%.16g", r, dt)
         theta = draw_theta_wrapper(gf, r, dt)
 
         #FIXME: need better handling of angles near zero and pi?
@@ -475,7 +475,7 @@ class CylindricalSurfacePair(Pair):
 
     def create_interparticle_vector(self, gf, r, dt, r0, old_iv): 
         if __debug__:
-            log.debug("create_interparticle_vector: r=%g, dt=%g", r, dt)
+            log.debug("create_interparticle_vector: r=%.16g, dt=%.16g", r, dt)
         # Note: using self.surface.shape.unit_z here might accidently 
         # interchange the particles.
         return r * normalize(old_iv)

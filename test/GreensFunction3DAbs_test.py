@@ -345,7 +345,7 @@ class GreensFunction3DAbsTestCase(unittest.TestCase):
             pmin = min(pmin, p)
             #print 'theta: ', theta, '\tp: ', p
             
-        self.failIf(pmin < 0.0, 'Negative p_theta; t= %g, %s'
+        self.failIf(pmin < 0.0, 'Negative p_theta; t= %.16g, %s'
                     % (t, gf.dump()))
 
 

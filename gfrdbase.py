@@ -350,7 +350,7 @@ class ParticleSimulatorBase(object):
             pos = pid_particle_pair[1].position
             if (pos >= self.world.world_size).any() or (pos < 0.0).any():
                 raise RuntimeError('%s at position %s out of the world '
-                                   '(world size=%g).' %
+                                   '(world size=%.16g).' %
                                    (pid, pos, self.world.world_size))
 
 

@@ -71,7 +71,7 @@ class BDSimulatorCore(object):
         self.dt = self.dt_factor * \
                calculate_bd_dt(self.world.species)
         if __debug__:
-            log.debug('bd dt = %g' % self.dt)
+            log.debug('bd dt = %.16g' % self.dt)
 
     def step(self):
         self.step_counter += 1
@@ -150,7 +150,7 @@ class BDSimulator(ParticleSimulatorBase):
         self.core.step()
 
         if __debug__:
-            log.info('%d: t=%g dt=%g, reactions=%d, rejected_moves=%d' %
+            log.info('%d: t=%.16g dt=%.16g, reactions=%d, rejected_moves=%d' %
                  (self.step_counter, self.t, self.dt, self.reaction_events,
                   self.rejected_moves))
 

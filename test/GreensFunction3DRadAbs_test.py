@@ -490,7 +490,7 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
         theta = gf.drawTheta(0.5, r, t)
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
-    def test_draw_theta_1(self):
+    def test_draw_theta_regression1(self):
         r0 =  1.0206416181e-07
         t =  4.41358538629e-08
         D = 4e-11
@@ -503,6 +503,24 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
         gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
 
         theta = gf.drawTheta(0.5, r, t)
+        self.failIf(theta < 0.0 or theta > numpy.pi)
+
+
+    def test_draw_theta_regression2(self):
+
+        r0 = 5.50265e-09
+
+        rnd=0.749325
+        dt=1.43732e-06
+        r=6.9928e-09
+        D = 2e-12
+        sigma = 5e-09
+        a = 1.16464e-08
+        kf = 0
+        
+        gf = mod.GreensFunction3DRadAbs(D, kf, r0, sigma, a)
+
+        theta = gf.drawTheta(rnd, r, dt)
         self.failIf(theta < 0.0 or theta > numpy.pi)
 
 
@@ -744,7 +762,7 @@ class GreensFunction3DRadAbsTestCase(unittest.TestCase):
             pmin = min(pmin, p)
             #print 'theta: ', theta, '\tp: ', p
             
-        self.failIf(pmin < 0.0, 'Negative p_theta; t= %g, %s'
+        self.failIf(pmin < 0.0, 'Negative p_theta; t= %.16g, %s'
                     % (t, gf.dump()))
 
 

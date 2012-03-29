@@ -2522,8 +2522,7 @@ GreensFunction3DRadAbs::drawTheta(Real rnd, Real r, Real t) const
 std::string GreensFunction3DRadAbs::dump() const
 {
     std::ostringstream ss;
-    ss << "D = " << this->getD() << 
-        ", r0 = " << this->getr0() <<
+    ss << "D = " << this->getD() << ", r0 = " << this->getr0() <<
         ", sigma = " << this->getSigma() <<
         ", a = " << this->geta() <<
         ", kf = " << this->getkf() <<
