@@ -369,24 +369,40 @@ public:
     template<typename Tcollect_>
     inline void each_neighbor(const cell_index_type& idx, Tcollect_& collector)
     {
+        if(size() == 0)
+        {
+            return;
+        }
         each_neighbor_loops<Tcollect_>(idx, collector);
     }
 
     template<typename Tcollect_>
     inline void each_neighbor(const cell_index_type& idx, Tcollect_ const& collector)
     {
+        if(size() == 0)
+        {
+            return;
+        }
         each_neighbor_loops<Tcollect_ const>(idx, collector);
     }
 
     template<typename Tcollect_>
     inline void each_neighbor(const cell_index_type& idx, Tcollect_& collector) const
     {
+        if(size() == 0)
+        {
+            return;
+        }
         each_neighbor_loops<Tcollect_>(idx, collector);
     }
 
     template<typename Tcollect_>
     inline void each_neighbor(const cell_index_type& idx, Tcollect_ const& collector) const
     {
+        if(size() == 0)
+        {
+            return;
+        }
         each_neighbor_loops<Tcollect_ const>(idx, collector);
     }
 
@@ -394,6 +410,10 @@ public:
     inline void each_neighbor_cyclic(const cell_index_type& idx,
             Tcollect_& collector)
     {
+        if(size() == 0)
+        {
+            return;
+        }
         each_neighbor_cyclic_loops<Tcollect_>(idx, collector);
     }
 
@@ -401,6 +421,10 @@ public:
     inline void each_neighbor_cyclic(const cell_index_type& idx,
             Tcollect_ const& collector)
     {
+        if(size() == 0)
+        {
+            return;
+        }
         each_neighbor_cyclic_loops<Tcollect_ const>(idx, collector);
     }
 
@@ -408,6 +432,10 @@ public:
     inline void each_neighbor_cyclic(const cell_index_type& idx,
             Tcollect_& collector) const
     {
+        if(size() == 0)
+        {
+            return;
+        }
         each_neighbor_cyclic_loops<Tcollect_>(idx, collector);
     }
 
@@ -415,6 +443,10 @@ public:
     inline void each_neighbor_cyclic(const cell_index_type& idx,
             Tcollect_ const& collector) const
     {
+        if(size() == 0)
+        {
+            return;
+        }
         each_neighbor_cyclic_loops<Tcollect_ const>(idx, collector);
     }
 
