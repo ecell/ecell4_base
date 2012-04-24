@@ -1042,11 +1042,21 @@ public:
 
     virtual void step()
     {
+        if (dirty_)
+        {
+            initialize();
+        }
+
         _step();
     }
 
     virtual bool step(time_type upto)
     {
+        if (dirty_)
+        {
+            initialize();
+        }
+
         if (upto <= base_type::t_)
         {
             return false;
@@ -3343,9 +3353,6 @@ protected:
 
     void _step()
     {
-        if (dirty_)
-            initialize();
-
         if (base_type::paranoiac_)
             BOOST_ASSERT(check());
 
