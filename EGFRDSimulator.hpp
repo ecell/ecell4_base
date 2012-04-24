@@ -1047,8 +1047,6 @@ public:
 
     virtual bool step(time_type upto)
     {
-        LOG_INFO(("stop at %.16g", upto));
-
         if (upto <= base_type::t_)
         {
             return false;
@@ -1059,6 +1057,8 @@ public:
             _step();
             return true;
         }
+
+        LOG_INFO(("stop at %.16g", upto));
 
         base_type::t_ = upto;
 
