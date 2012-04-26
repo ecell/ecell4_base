@@ -127,10 +127,12 @@ def singlerun2(T):
     end_time = T
 
     while s.step(end_time):
-        try:
-            s.world.get_particle(pid1)  # check if particle A still exists
-        except _gfrd.NotFound:
+        if len(cr.reactions) > 0:
             return 0, s.t
+        # try:
+        #     s.world.get_particle(pid1)  # check if particle A still exists
+        # except _gfrd.NotFound:
+        #     return 0, s.t
 
     p1 = s.world.get_particle(pid1)[1]
     p2 = s.world.get_particle(pid2)[1]
