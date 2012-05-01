@@ -1,6 +1,8 @@
 #!/usr/bin/env/python
 
-# PYTHONPATH=../.. python plot.py rev.-3.out p_rev.-3.tsv 0.0000000125 rev.-2.out p_rev.-2.tsv 0.000000125 rev.-1.out p_rev.-1.tsv 0.00000125 rev.0.out p_rev.0.tsv 0.0000125 rev.1.out p_rev.1.tsv 0.000125 rev.2.out p_rev.2.tsv 0.00125 rev.3.out p_rev.3.tsv 0.0125
+# PYTHONPATH=../.. python plot.py rev.-2.out p_rev.-2.tsv 0.000000125 rev.-1.out p_rev.-1.tsv 0.00000125 rev.0.out p_rev.0.tsv 0.0000125 rev.1.out p_rev.1.tsv 0.000125 rev.2.out p_rev.2.tsv 0.00125 rev.3.out p_rev.3.tsv 0.0125
+
+# rev.-3.out p_rev.-3.tsv 0.0000000125 
 
 import sys
 
@@ -78,7 +80,7 @@ def plot_hist(data, T, i):
 
 if __name__ == '__main__':
 
-    axes([.15,.15,.8,.8])
+    axes([.14,.15,.84,.82])
 
     for i in range(len(sys.argv[1:])/3):
         simfilename = sys.argv[i*3+1]
@@ -100,5 +102,7 @@ if __name__ == '__main__':
     solline.set_label(r'theory')
     #legend(handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001)
     #grid()
+    savefig('rev.eps')
     show()
+
 

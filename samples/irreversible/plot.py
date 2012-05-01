@@ -86,8 +86,7 @@ def plot_hist(data, T, i):
 
 if __name__ == '__main__':
 
-    axes([.15,.15,.8,.8])
-
+    axes([.14,.15,.84,.82])
 
     for i in range(len(sys.argv[1:])/2):
         filename = sys.argv[i*2+1]
@@ -108,6 +107,7 @@ if __name__ == '__main__':
     #solline.set_label(r'theory')
     #legend(handlelen=0.02, pad=0.02,handletextsep=0.01, labelsep=0.001)
     #grid()
+    savefig('irr.eps')
     show()
 
 
