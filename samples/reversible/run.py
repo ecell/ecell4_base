@@ -22,7 +22,7 @@ def run(outfilename, T, N):
 
     outfile = open(outfilename, 'w')
 
-    for i in range(N):
+    for i in xrange(N):
         d, t = singlerun(T)
         outfile.write('%.18g\n' % d)
         outfile.flush()
@@ -65,22 +65,23 @@ def singlerun(T):
     nrw = _gfrd.NetworkRulesWrapper(m.network_rules)
     s = _gfrd._EGFRDSimulator(w, nrw, myrandom.rng)
 
-    pid1 = place_particle(w, A, [0,0,0])[0]
-    pid2 = place_particle(w, B, 
-                          [(float(A['radius']) + float(B['radius']))+1e-23,
-                           0,0])[0]
+    place_particle(w, A, [0,0,0])
+    place_particle(w, B, 
+                   [(float(A['radius']) + float(B['radius']))+1e-23,
+                    0,0])
 
     end_time = T
 
     while s.step(end_time):
         pass
-    
-    try:
-        p1 = s.world.get_particle(pid1)[1]
-        p2 = s.world.get_particle(pid2)[1]
-    except _gfrd.NotFound:
+
+    if len(s.world.get_particle_ids(C.id)) != 0:
         return 0, s.t
 
+    pid1 = list(s.world.get_particle_ids(A.id))[0]
+    pid2 = list(s.world.get_particle_ids(B.id))[0]
+    p1 = s.world.get_particle(pid1)[1]
+    p2 = s.world.get_particle(pid2)[1]
     distance = w.distance(p1.position, p2.position)
 
     return distance, s.t
