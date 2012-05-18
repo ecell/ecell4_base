@@ -35,7 +35,7 @@ AX_PATH_GSL([1.11],,AC_MSG_ERROR([could not find required version of GSL.]))
 dnl
 AC_CHECK_LIB(m,exp,,AC_MSG_ERROR([could not find libm.]))
 dnl
-AC_CHECK_LIB(python${PYTHON_VERSION},main,,AC_MSG_ERROR([could not find libpython.]))
+AC_CHECK_LIB(python${PYTHON_VERSION},PySys_GetObject,,AC_MSG_ERROR([could not find libpython.]))
 dnl
 AC_PROG_CXX
 AC_LANG_CPLUSPLUS
@@ -78,7 +78,6 @@ AC_ARG_WITH(boost-python-libname,
                 ),
   [BOOST_PYTHON_LIBNAME=$withval]
 )
-AC_CHECK_LIB($BOOST_PYTHON_LIBNAME,main,,AC_MSG_ERROR([could not find libboost_python.]),-lpython${PYTHON_VERSION})
 AC_SUBST(BOOST_PYTHON_LIBNAME)
 
 BOOST_REGEX_LIBNAME=boost_regex
@@ -89,7 +88,6 @@ AC_ARG_WITH(boost-regex-libname,
                 ),
   [BOOST_REGEX_LIBNAME=$withval]
 )
-AC_CHECK_LIB($BOOST_REGEX_LIBNAME,main,,AC_MSG_ERROR([could not find libboost_regex.]))
 AC_SUBST(BOOST_REGEX_LIBNAME)
 
 dnl
