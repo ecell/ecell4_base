@@ -207,7 +207,7 @@ _greens_functions_la_SOURCES=\
 
 _gfrd_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
 _gfrd_la_LIBADD = binding/libbinding_utils.la
-_gfrd_la_LIBADD += $(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
+_gfrd_la_LIBADD += $(LIBBOOSTPYTHON) $(LIBBOOSTREGEX) $(LIBPYTHON) $(GSL_LIBS)
 
 _greens_functions_la_LDFLAGS = -module -export-dynamic -avoid-version $(no_undefined)
 _greens_functions_la_LIBADD = $(LIBBOOSTPYTHON) $(LIBPYTHON) $(GSL_LIBS)
