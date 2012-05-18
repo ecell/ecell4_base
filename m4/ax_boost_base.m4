@@ -27,6 +27,7 @@
 #
 #   Copyright (c) 2008 Thomas Porschberg <thomas@randspringer.de>
 #   Copyright (c) 2009 Peter Adolphs
+#   Copyright (c) 2012 Moriyoshi Koizumi <mozo@mozo.jp>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
@@ -84,24 +85,32 @@ if test "x$want_boost" = "xyes"; then
     AC_MSG_CHECKING(for boostlib >= $boost_lib_version_req)
     succeeded=no
 
-    libsubdir="lib"
+    libsubdirs="lib"
     if test "$(uname -m)" = "x86_64"; then
-        libsubdir="lib64"
+        libsubdirs="lib64 lib"
     fi
 
     dnl first we check the system location for boost libraries
     dnl this location ist chosen if boost libraries are installed with the --layout=system option
     dnl or if you install boost with RPM
-    if test "$ac_boost_path" != ""; then
-        BOOST_LDFLAGS="-L$ac_boost_path/$libsubdir"
-        BOOST_CPPFLAGS="-I$ac_boost_path/include"
+    if test -n "$ac_boost_path"; then
+        for libsubdir in $libsubdirs; do
+            if test -d "$ac_boost_path/$libsubdir" -a -d "$ac_boost_path/include/boost"; then
+                BOOST_LDFLAGS="-L$ac_boost_path/$libsubdir"
+                BOOST_CPPFLAGS="-I$ac_boost_path/include"
+                break
+            fi
+        done
     elif test "$cross_compiling" != yes; then
         for ac_boost_path_tmp in /usr /usr/local /opt /opt/local ; do
-            if test -d "$ac_boost_path_tmp/include/boost" && test -r "$ac_boost_path_tmp/include/boost"; then
-                BOOST_LDFLAGS="-L$ac_boost_path_tmp/$libsubdir"
-                BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include"
-                break;
-            fi
+            for libsubdir in $libsubdirs; do
+                if test -d "$ac_boost_path_tmp/$libsubdir" -a -d "$ac_boost_path_tmp/include/boost" -a -r "$ac_boost_path_tmp/include/boost"; then
+                    BOOST_LDFLAGS="-L$ac_boost_path_tmp/$libsubdir"
+                    BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include"
+                    break;
+                fi
+            done
+            if test -n "$BOOST_LDFLAGS"; then break; fi
         done
     fi
 
