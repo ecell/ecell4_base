@@ -129,3 +129,14 @@ AC_DEFUN([ECELL_CHECK_NUMPY_ARRAY_DESCR], [
 ])
   CPPFLAGS="$ac_save_CPPFLAGS"                 
 ])
+
+AC_DEFUN([ECELL_CHECK_LOGGING_MODULE], [
+  AC_MSG_CHECKING([if classes in the Python's logging module is old-fashioned])
+  AC_REQUIRE([AM_PATH_PYTHON])
+  if "$PYTHON" -c "import sys, logging; sys.exit(type(logging.Handler) == type)"; then
+    AC_MSG_RESULT(yes)
+    AC_DEFINE([HAVE_OLD_FASHIONED_LOGGER_CLASSES], [1], [Defined to 1 if Python's logging module is old-fashioned])
+  else
+    AC_MSG_RESULT(no)
+  fi
+])
