@@ -7,6 +7,7 @@
 #include "peer/wrappers/generator/generator_wrapper.hpp"
 #include "peer/converters/tuple.hpp"
 #include "peer/util/shared_const_ptr.hpp"
+#include "peer/converters/generator/to_python.hpp"
 
 namespace binding {
 
@@ -109,6 +110,11 @@ void register_egfrd_simulator_class(char const* name)
         ptr_generator<typename impl_type::domain_id_pair_generator,
                       std::auto_ptr<
                         typename impl_type::domain_id_pair_generator> > >::__register_class("DomainIDPairGenerator");
+    boost::python::to_python_converter<
+            typename impl_type::domain_id_pair_generator *,
+            peer::converters::ptr_generator_to_pyiterator_converter<
+                typename impl_type::domain_id_pair_generator,
+                std::auto_ptr<typename impl_type::domain_id_pair_generator> > >();
 
     peer::util::register_shared_const_ptr_from_python<typename impl_type::network_rules_type>();
     peer::converters::register_tuple_converter<typename impl_type::domain_id_pair>();
