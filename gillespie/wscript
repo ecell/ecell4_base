@@ -38,7 +38,7 @@ def build(bld):
 	
 	# always build libgillespie.so or .dylib(mac)
 	bld.shlib(
-		source = './Gillespie.cpp',
+		source = './GillespieSolver.cpp',
 		includes = ['.'],
 		lib = ['gsl', 'gslcblas'],
 		target = 'gillespie',
