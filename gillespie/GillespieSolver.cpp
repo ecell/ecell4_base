@@ -162,15 +162,14 @@ double GillespieSolver::step(void)
 	for(unsigned int idx(0); idx < this->m.reactions.size(); idx++) {
 		a[idx] = this->m.reactions[idx].k;	// implement and fix accessor 
 		for(
-				std::vector<id_stoichiometry>::iterator it_reactant(this->m.reactions[idx].reactants.begin());
-				it_reactant != this->m.reactions[idx].reactants.end();
-				it_reactant++
+			std::vector<id_stoichiometry>::iterator it_reactant(this->m.reactions[idx].reactants.begin());
+			it_reactant != this->m.reactions[idx].reactants.end();
+			it_reactant++
 		) 
 		{
 			a[idx] *= combination(
-							this->w.current_state[ it_reactant->first ],
-							it_reactant->second		// stoichiometry	
-							);
+						this->w.current_state[ it_reactant->first ],
+						it_reactant->second	);
 		}
 	}
 
@@ -196,18 +195,18 @@ double GillespieSolver::step(void)
 	this->w.current_t += dt;
 	//	Ru(this->m.rections[u]) occurs.
 	for(
-			std::vector<id_stoichiometry>::iterator it(this->m.reactions[u].reactants.begin());
-			it != this->m.reactions[u].reactants.end();
-			it++
+		std::vector<id_stoichiometry>::iterator it(this->m.reactions[u].reactants.begin());
+		it != this->m.reactions[u].reactants.end();
+		it++
 	   )
 	{
 		this->w.current_state[it->first] -= it->second;	//second is stoichiomety
 	}
 
 	for(
-			std::vector<id_stoichiometry>::iterator it(this->m.reactions[u].products.begin());
-			it != this->m.reactions[u].products.end();
-			it++
+		std::vector<id_stoichiometry>::iterator it(this->m.reactions[u].products.begin());
+		it != this->m.reactions[u].products.end();
+		it++
 	   )
 	{
 		this->w.current_state[it->first] += it->second;
