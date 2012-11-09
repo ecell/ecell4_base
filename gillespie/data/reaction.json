@@ -1,0 +1,34 @@
+[
+	{
+		"reactionID": "r1",
+		"reactant": "X",
+		"reaStoich": "1",
+		"product": "Y",
+		"proStoich": "1",
+		"kineticParameter": "0.5"
+	},
+	{
+		"reactionID": "r2",
+		"reactant": "Y",
+		"reaStoich": "1",
+		"product": "X",
+		"proStoich": "1",
+		"kineticParameter": "0.2"
+	},
+	{
+		"reactionID": "r3",
+		"reactant": "X",
+		"reaStoich": "2",
+		"product": "Z",
+		"proStoich": "1",
+		"kineticParameter": "0.4"
+	},
+	{
+		"reactionID": "r4",
+		"reactant": "Z",
+		"reaStoich": "1",
+		"product": "X",
+		"proStoich": "2",
+		"kineticParameter": "0.2"
+	}
+]

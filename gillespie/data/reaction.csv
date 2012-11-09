@@ -1,0 +1,5 @@
+reactionID,reactant,reaStoich,product,proStoich,kineticParameter
+r1,X,1,Y,1,0.5
+r2,Y,1,X,1,0.2
+r3,X,2,Z,1,0.4
+r4,Z,1,X,2,0.2

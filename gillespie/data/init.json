@@ -1,0 +1,14 @@
+[
+	{
+		"species": "X",
+		"initVal": "1000"
+	},
+	{
+		"species": "Y",
+		"initVal": "1000"
+	},
+	{
+		"species": "Z",
+		"initVal": "1000"
+	}
+]
