@@ -24,21 +24,16 @@ def configure(conf):
 	conf.env.unit_test = conf.options.unit_test
 	conf.env.enable_debug =  conf.options.enable_debug
 
+	conf.env.append_unique(
+		'CXXFLAGS', 
+		['-Wall', '-g']
+		)
+	
 
 def build(bld):
-	bld.env.CFLAGS = []
-	bld.env.CXXFLAGS = []
-	bld.env.LINKFLAGS = []
-
-	# inititlize flags
-	if bld.env.enable_debug == True:
-		bld.env.CFLAGS.append('-g')
-		bld.env.CXXFLAGS.append('-g')
-		bld.env.LINKFLAGS.append('-g')
-	
 	# always build libgillespie.so or .dylib(mac)
 	bld.shlib(
-		source = './GillespieSolver.cpp',
+		source = ['./GillespieSolver.cpp', './GillespieWorld.cpp'],
 		includes = ['.'],
 		lib = ['gsl', 'gslcblas'],
 		target = 'gillespie',

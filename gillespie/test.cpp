@@ -1,3 +1,4 @@
+#include "./GillespieWorld.hpp"
 #include "./GillespieSolver.hpp"
 
 int main(void)
