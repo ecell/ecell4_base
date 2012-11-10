@@ -1,4 +1,11 @@
+#include <map>
+#include <vector>
+#include <string>
+#include <pficommon/text/json.h>
+
 #include "./GillespieWorld.hpp"
+
+using namespace pfi::text::json;
 
 //============================================================
 //	World	*Definitions
@@ -27,3 +34,31 @@ void World::add_specie(int id, int number = 0)
 {
 	this->current_state.insert(std::map<int,int>::value_type(id, number));
 }
+
+World *init_world_from_json(pfi::text::json::json js) {
+	
+	return new World();
+}
+
+
+#ifdef unit_world
+int main(void)
+{
+	using namespace std;
+	json json_world;
+	ifstream ifs("./init.json");
+	string f_str;
+	
+	ifs.seekg(0, ios::end);
+	int len(ifs.tellg());
+	ifs.seekg(0, ios::beg);
+	
+	char *buffer = new char[len + 1];
+	ifs.read(buffer, len);
+	stringstream ss(string(buffer));
+
+	delete[] buffer;
+
+}
+
+#endif

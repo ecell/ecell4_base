@@ -1,3 +1,4 @@
+
 #include <map>
 #include <vector>
 #include <string>
@@ -6,7 +7,8 @@
 #include <gsl/gsl_sf_log.h>
 
 
-#include "./GillespieWorld.hpp"
+#ifndef INCLUDE_GUARD_GILLESPIE_SOLVER
+#	define INCLUDE_GUARD_GILLESPIE_SOLVER
 
 
 //============================================================
@@ -53,3 +55,5 @@ public:
 	double step(void);
 	double run(double duration);
 };
+
+#endif	//INCLUDE_GUARD_GILLESPIE_SOLVER

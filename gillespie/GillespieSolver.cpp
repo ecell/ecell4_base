@@ -8,6 +8,7 @@
 #include <numeric>
 #include <map>
 
+#include "GillespieWorld.hpp"
 #include "GillespieSolver.hpp"
 
 

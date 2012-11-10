@@ -1,6 +1,7 @@
-#include <map>
-#include <vector>
+#include <pficommon/text/json.h>
 
+#ifndef INCLUDE_GUARD_GILLESPIE_WORLD
+#	define INCLUDE_GUARD_GILLESPIE_WORLD
 //============================================================
 //	World	
 //============================================================
@@ -18,3 +19,7 @@ public:
 	void set_current_state(int id, int number);
 	void add_specie(int id, int number);
 };
+
+World *init_world_from_json(pfi::text::json::json js);
+
+#endif	//INCLUDE_GUARD_GILLESPIE_WORLD
