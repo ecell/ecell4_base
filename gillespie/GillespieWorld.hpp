@@ -18,6 +18,8 @@ public:
 	int get_current_state(int id);
 	void set_current_state(int id, int number);
 	void add_specie(int id, int number);
+
+	std::string to_string(void);
 };
 
 World *init_world_from_json(pfi::text::json::json js);

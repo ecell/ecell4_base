@@ -1,13 +1,16 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <sstream>
+#include <iostream>
 #include <pficommon/text/json.h>
 
 #include "./GillespieWorld.hpp"
-
+using namespace std;
 
 //============================================================
-//	World	*Definitions
+//	World	
+//		-- General
 //============================================================
 World::World(void)
 {
@@ -34,8 +37,31 @@ void World::add_specie(int id, int number = 0)
 	this->current_state.insert(std::map<int,int>::value_type(id, number));
 }
 
+//============================================================
+//	World
+//		-- pretty printer
+//============================================================
+string World::to_string(void) {
+	ostringstream os;
+	os << "time: " << this->current_t;
+	for(std::map<int,int>::iterator it = this->current_state.begin(); it != this->current_state.end(); it++) {
+		os << ", " << it->first << ": " << it->second;
+	}
+	return os.str();
+}
+
+ostream &operator<<(ostream &s, World &w) {
+	return s << w.to_string();
+}
+
+
+//============================================================
+//	World
+//		-- serialization(json)
+//============================================================
 using namespace pfi::text::json;
-using namespace std;
+
+// XXX
 int spiecie_to_id(string specie)
 {
 	int id;
@@ -89,6 +115,6 @@ int main(void)
 {
 	string json_file_content(read_file_all("./data/init.json"));
 	World *w = init_world_from_json( string_to_json(json_file_content) );
-
+	std::cout << *w << std::endl;
 }
 #endif
