@@ -35,8 +35,8 @@ def build(bld):
 	bld.shlib(
 		source = ['./GillespieSolver.cpp', './GillespieWorld.cpp'],
 		includes = ['.'],
-		lib = ['gsl', 'gslcblas'],
-		target = 'gillespie',
+		lib = ['gsl', 'gslcblas', 'pficommon_text'],
+		target = 'gillespie'
 	)
 	
 	# make executable for testing.

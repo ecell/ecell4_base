@@ -52,7 +52,7 @@ int spiecie_to_id(string specie)
 // world -- factorial method
 World *init_world_from_json(json js_world) {
 	World *world = new World();
-	for(int idx = 0; idx < js_world.size(); idx++) {
+	for(unsigned int idx = 0; idx < js_world.size(); idx++) {
 		string species(json_cast<string>(js_world[idx]["species"]));
 		int initVal(json_cast<int>(js_world[idx]["initVal"]));
 		world->add_specie(spiecie_to_id(species), initVal);
