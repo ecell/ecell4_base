@@ -22,6 +22,7 @@ public:
 	std::string to_string(void);
 };
 
-World *init_world_from_json(pfi::text::json::json js);
+template<typename F>
+World *init_world_from_json(pfi::text::json::json js, F translate_func);
 
 #endif	//INCLUDE_GUARD_GILLESPIE_WORLD

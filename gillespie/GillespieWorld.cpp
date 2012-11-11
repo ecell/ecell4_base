@@ -61,27 +61,15 @@ ostream &operator<<(ostream &s, World &w) {
 //============================================================
 using namespace pfi::text::json;
 
-// XXX
-int spiecie_to_id(string specie)
-{
-	int id;
-	if(specie == "X") {
-		id = 1;
-	} else if (specie == "Y") {
-		id = 2;
-	} else {
-		id = 3;
-	}
-	return id;
-}
-
 // world -- factorial method
-World *init_world_from_json(json js_world) {
+template<typename F>
+World *init_world_from_json(json js_world, F translate_func ) {
 	World *world = new World();
 	for(unsigned int idx = 0; idx < js_world.size(); idx++) {
 		string species(json_cast<string>(js_world[idx]["species"]));
 		int initVal(json_cast<int>(js_world[idx]["initVal"]));
-		world->add_specie(spiecie_to_id(species), initVal);
+
+		world->add_specie(translate_func(species), initVal);
 	}
 	return world;
 }
@@ -110,11 +98,29 @@ string read_file_all(const char *json_filename) {
 	return content;
 }
 
+class Specie_to_Id {
+public:
+	int operator()(std::string &specie) {
+		int id;
+		if (specie == "X") {
+			id = 1;
+		} else if (specie == "Y") {
+			id = 2;
+		} else if (specie == "Z") {
+			id = 3;
+		} else {
+			id = 4;
+		}
+		return id;
+	}
+};
+
 #ifdef unit_world
 int main(void)
 {
+	Specie_to_Id translater;
 	string json_file_content(read_file_all("./data/init.json"));
-	World *w = init_world_from_json( string_to_json(json_file_content) );
+	World *w = init_world_from_json( string_to_json(json_file_content), translater );
 	std::cout << *w << std::endl;
 }
 #endif
