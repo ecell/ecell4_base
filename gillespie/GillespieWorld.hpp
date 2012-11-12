@@ -25,4 +25,6 @@ public:
 template<typename F>
 World *init_world_from_json(pfi::text::json::json js, F translate_func);
 
+std::ostream &operator<<(std::ostream &s, World &w);
+
 #endif	//INCLUDE_GUARD_GILLESPIE_WORLD
