@@ -33,7 +33,7 @@ def configure(conf):
 def build(bld):
 	# always build libgillespie.so or .dylib(mac)
 	bld.shlib(
-		source = ['./GillespieSolver.cpp', './GillespieWorld.cpp'],
+		source = ['./GillespieSolver.cpp', './GillespieWorld.cpp', './serialize.cpp'],
 		includes = ['.'],
 		lib = ['gsl', 'gslcblas', 'pficommon_text'],
 		target = 'gillespie'

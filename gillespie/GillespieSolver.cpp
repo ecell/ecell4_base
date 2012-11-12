@@ -105,6 +105,7 @@ void ReactionRule::set_kinetic_parameter(double new_k)
 	this->valid_check();
 }
 
+
 //============================================================
 //	GillespieSolver 	*Definitions
 //============================================================
