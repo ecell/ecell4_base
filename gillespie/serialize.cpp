@@ -52,15 +52,28 @@ World *init_world_from_json(json js_world, F translate_func ) {
 //============================================================
 //	Model
 //============================================================
-ReactionRule *init_reaction_from_json(json js_reaction) {
+template <typename F>
+ReactionRule *init_reaction_from_json(json js_reaction, F translate_func) {
 	ReactionRule *r = new ReactionRule;
+	string reactant( json_cast<string>(js_reaction["reactant"]) );
+	int reaStoich( json_cast<int>(js_reaction["reaStoich"]) );
+	r->add_reactant(translate_func(reactant), reaStoich);
+
+	string product( json_cast<string>(js_reaction["product"]) );
+	int proStoich( json_cast<int>(js_reaction["proStoich"]) );
+	r->add_product(translate_func(product), proStoich);
+	r->set_kinetic_parameter( json_cast<double>(js_reaction["kineticParameter"]) );
+
 	return r;
 }
 
-Model *init_model_from_json(json js_model) {
+template <typename F>
+Model *init_model_from_json(json js_model, F translate_func) {
 	Model *m = new Model;
 	for(unsigned int i = 0; i < js_model.size(); i++) {
-		m->reactions.push_back( *init_reaction_from_json(js_model[i]) );
+		ReactionRule *r = init_reaction_from_json(js_model[i], translate_func);
+		m->reactions.push_back(*r);
+		delete r;
 	}
 	return m;
 }
@@ -92,7 +105,12 @@ int main(void)
 	World *w = init_world_from_json( string_to_json(json_file_content), translater );
 	std::cout << *w << std::endl;
 
-	string json_model(read_file_all("./data/reactions.json"));
+	string json_model(read_file_all("./data/reaction.json"));
+	Model *m = init_model_from_json( string_to_json(json_model), translater );
 
+	GillespieSolver gs(*w, *m);
+	for(double elapse = 0.0; elapse < 10.0; elapse += gs.run(1.0)) {
+		std::cout << *w << std::endl;
+	}
 }
 #endif
