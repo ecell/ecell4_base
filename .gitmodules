@@ -7,3 +7,6 @@
 [submodule "ecell4-gillespie"]
 	path = ecell4-gillespie
 	url = git@github.com:ecell/ecell4-gillespie.git
+[submodule "ecell4-bd"]
+	path = ecell4-bd
+	url = git@github.com:ecell/ecell4-bd.git
