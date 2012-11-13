@@ -1,0 +1,9 @@
+[submodule "ecell4-vis"]
+	path = ecell4-vis
+	url = git@github.com:ecell/ecell4-vis.git
+[submodule "ecell4-ode"]
+	path = ecell4-ode
+	url = git@github.com:ecell/ecell4-ode.git
+[submodule "ecell4-gillespie"]
+	path = ecell4-gillespie
+	url = git@github.com:ecell/ecell4-gillespie.git
