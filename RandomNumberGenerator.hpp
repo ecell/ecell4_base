@@ -8,6 +8,9 @@
 #include "types.hpp"
 
 
+namespace ecell4
+{
+
 class RandomNumberGenerator
 {
 public:
@@ -48,5 +51,7 @@ public:
 
     rng_handle rng_;
 };
+
+}
 
 #endif /* __RANDOM_NUMBER_GENERATOR_HPP */

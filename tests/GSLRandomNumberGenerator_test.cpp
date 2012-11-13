@@ -4,6 +4,8 @@
 
 #include "../RandomNumberGenerator.hpp"
 
+using namespace ecell4;
+
 
 class GSLRandomNumberGeneratorTest
     : public CppUnit::TestFixture
@@ -11,17 +13,17 @@ class GSLRandomNumberGeneratorTest
 public:
 
     CPPUNIT_TEST_SUITE(GSLRandomNumberGeneratorTest);
-    CPPUNIT_TEST (test_seed);
+    CPPUNIT_TEST(test_seed);
     CPPUNIT_TEST_SUITE_END();
 
 public:
 
-    void setUp ()
+    void setUp()
     {
         target = new GSLRandomNumberGenerator();
     }
 
-    void tearDown ()
+    void tearDown()
     {
         delete target;
     }
@@ -37,5 +39,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(GSLRandomNumberGeneratorTest);
 
 void GSLRandomNumberGeneratorTest::test_seed()
 {
-    CPPUNIT_ASSERT_EQUAL(1, 2);
+    target->seed(0);
+    // CPPUNIT_ASSERT_EQUAL(1, 2);
 }
