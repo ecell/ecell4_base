@@ -8,15 +8,12 @@
 #include "types.hpp"
 
 
-namespace ecell4
-{
-
 class RandomNumberGenerator
 {
 public:
 
     virtual Real uniform(Real min, Real max) = 0;
-    virtual Real seed(Integer val) = 0;
+    virtual void seed(Integer val) = 0;
 
 };
 
@@ -51,7 +48,5 @@ public:
 
     rng_handle rng_;
 };
-
-} // ecell4
 
 #endif /* __RANDOM_NUMBER_GENERATOR_HPP */
