@@ -11,6 +11,13 @@ subdirs = [
     'tests'
     ]
 
+submoduledirs = [
+    'ecell4-bd',
+    'ecell4-ode',
+    'ecell4-gillespie',
+    'ecell4-vis'
+    ]
+
 def options(opt):
     opt.load('compiler_cxx waf_unit_test')
 

@@ -17,7 +17,6 @@ public:
 
     virtual Real uniform(Real min, Real max) = 0;
     virtual void seed(Integer val) = 0;
-
 };
 
 class GSLRandomNumberGenerator
@@ -52,6 +51,6 @@ public:
     rng_handle rng_;
 };
 
-}
+} // ecell4
 
 #endif /* __RANDOM_NUMBER_GENERATOR_HPP */
