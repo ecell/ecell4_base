@@ -4,19 +4,46 @@
 #include "types.hpp"
 #include "Space.hpp"
 
+
 namespace ecell4
 {
 
 class CompartmentSpace
     : public Space
 {
-    // not implemented yet
+public:
+
+    virtual Real const& volume() const = 0;
+    virtual void set_volume(Real volume) = 0;
 };
 
 class CompartmentSpaceVectorImpl
     : public CompartmentSpace
 {
-    // not implemented yet
+public:
+
+    CompartmentSpaceVectorImpl(Real const& volume)
+        : volume_(volume)
+    {
+        ;
+    }
+
+    Real const& volume() const
+    {
+        return volume_;
+    }
+
+    void set_volume(Real volume)
+    {
+        if (volume >= 0)
+        {
+            volume_ = volume;
+        }
+    }
+
+protected:
+
+    Real volume_;
 };
 
 } // ecell4

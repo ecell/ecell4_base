@@ -34,6 +34,12 @@ def configure(conf):
     conf.recurse(subdirs)
 
 def build(bld):
+    bld.shlib(
+        source = ['CompartmentSpace.cpp'],
+        includes = ['.'],
+        lib = ['gsl', 'gslcblas', 'm'],
+        target = 'ecell4-core')
+
     bld.recurse(subdirs)
 
     bld.add_post_fun(waf_unit_test.summary)
