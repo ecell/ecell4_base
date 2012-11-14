@@ -18,7 +18,7 @@ def build(bld):
         source='CompartmentSpaceVectorImpl_test.cpp',
         target='CompartmentSpaceVectorImpl_test',
         includes='..',
-        lib=['gsl', 'gslcblas', 'm'],
+        lib=[],
         use='unittestmain ecell4-core CPPUNIT')
 
     bld.program(

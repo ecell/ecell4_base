@@ -11,7 +11,7 @@ Real const& CompartmentSpaceVectorImpl::volume() const
 
 void CompartmentSpaceVectorImpl::set_volume(Real volume)
 {
-    if (volume >= 0)
+    if (volume > 0)
     {
         volume_ = volume;
     }

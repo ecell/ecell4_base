@@ -23,9 +23,9 @@ class CompartmentSpaceVectorImpl
 public:
 
     CompartmentSpaceVectorImpl(Real const& volume)
-        : volume_(volume)
+        : volume_(1)
     {
-        ;
+        set_volume(volume);
     }
 
     Real const& volume() const;
