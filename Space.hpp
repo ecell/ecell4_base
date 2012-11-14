@@ -9,7 +9,22 @@ namespace ecell4
 
 class Space
 {
-    // not implemented yet
+public:
+
+    Space()
+        : t_(0)
+    {
+        ;
+    }
+
+    Real const& t() const
+    {
+        return t_;
+    }
+
+protected:
+
+    Real t_;
 };
 
 } // ecell4
