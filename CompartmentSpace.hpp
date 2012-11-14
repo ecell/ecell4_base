@@ -28,18 +28,8 @@ public:
         ;
     }
 
-    Real const& volume() const
-    {
-        return volume_;
-    }
-
-    void set_volume(Real volume)
-    {
-        if (volume >= 0)
-        {
-            volume_ = volume;
-        }
-    }
+    Real const& volume() const;
+    void set_volume(Real volume);
 
 protected:
 

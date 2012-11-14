@@ -11,7 +11,15 @@ def build(bld):
         target='GSLRandomNumberGenerator_test',
         includes='..',
         lib=['gsl', 'gslcblas', 'm'],
-        use='unittestmain useless CPPUNIT')
+        use='unittestmain ecell4-core CPPUNIT')
+
+    bld.program(
+        features='cxx cxxprogram test',
+        source='CompartmentSpaceVectorImpl_test.cpp',
+        target='CompartmentSpaceVectorImpl_test',
+        includes='..',
+        lib=['gsl', 'gslcblas', 'm'],
+        use='unittestmain ecell4-core CPPUNIT')
 
     bld.program(
         features='cxx cxxstlib',
