@@ -1,6 +1,8 @@
 #ifndef __SPECIES_HPP
 #define __SPECIES_HPP
 
+#include <vector>
+
 #include "types.hpp"
 
 
@@ -11,6 +13,8 @@ class Species
 {
     // not implemeted yet
 };
+
+typedef std::vector<Species> SpeciesVector;
 
 } // ecell4
 
