@@ -42,6 +42,8 @@ public:
 
     void add_species(Species const& sp);
     Integer num_of_molecules(Species const& sp);
+
+    void remove_species(Species const& sp);
     void add_molecules(Species const& sp, Integer const& num);
     void remove_molecules(Species const& sp, Integer const& num);
 
@@ -50,7 +52,7 @@ protected:
     Real volume_;
 
     std::vector<Integer> num_of_molecules_;
-    std::vector<Species> species_;
+    SpeciesVector species_;
     index_map_type index_map_;
 };
 
