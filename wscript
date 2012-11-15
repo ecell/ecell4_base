@@ -32,6 +32,7 @@ def configure(conf):
         l = conf.check(lib='dl', uselib_store='CPPUNIT')
 
     conf.recurse(subdirs)
+    configure_submodule(conf)
 
 def build(bld):
     bld.shlib(
@@ -44,10 +45,18 @@ def build(bld):
 
     bld.add_post_fun(waf_unit_test.summary)
     bld.options.all_tests = True
+    build_submodule(bld)
+
+def configure_submodule(conf):
+    import os
+    for subm in submoduledirs:
+        if os.path.exists(os.getcwd() + '/' + subm + '/.git'):
+            print subm + " detected. build recurse."
+            os.system("cd " + subm + "; ./waf configure")
 
 def build_submodule(bld):
     import os
     for subm in submoduledirs:
         if os.path.exists(os.getcwd() + '/' + subm + '/.git'):
             print subm + " detected. build recurse."
-            os.system("cd " + subm + "; ./waf configure; ./waf build")
+            os.system("cd " + subm + "; ./waf build")
