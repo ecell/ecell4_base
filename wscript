@@ -50,13 +50,13 @@ def build(bld):
 def configure_submodule(conf):
     import os
     for subm in submoduledirs:
-        if os.path.exists(os.getcwd() + '/' + subm + '/.git'):
+        if os.path.exists(os.path.join(os.getcwd(), subm, '.git')):
             print subm + " detected. build recurse."
             os.system("cd " + subm + "; ./waf configure")
 
 def build_submodule(bld):
     import os
     for subm in submoduledirs:
-        if os.path.exists(os.getcwd() + '/' + subm + '/.git'):
+        if os.path.exists(os.path.join(os.getcwd(), subm, '.git')):
             print subm + " detected. build recurse."
             os.system("cd " + subm + "; ./waf build")
