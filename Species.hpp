@@ -11,7 +11,11 @@ namespace ecell4
 
 class Species
 {
-    // not implemeted yet
+public:
+
+    bool operator==(Species const& rhs) const;
+    bool operator<(Species const& rhs) const;
+    bool operator>(Species const& rhs) const;
 };
 
 typedef std::vector<Species> SpeciesVector;
