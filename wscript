@@ -44,3 +44,10 @@ def build(bld):
 
     bld.add_post_fun(waf_unit_test.summary)
     bld.options.all_tests = True
+
+def checksubmodule(ctx):
+    import os.path
+    import os
+    for subm in submoduledirs:
+        if os.path.exists(os.getcwd() + '/' + subm + '/.git'):
+            print subm + " detected."
