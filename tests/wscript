@@ -7,6 +7,14 @@ def configure(conf):
 def build(bld):
     bld.program(
         features='cxx cxxprogram test',
+        source='Position3_test.cpp',
+        target='Position3_test',
+        includes='..',
+        lib=['gsl', 'gslcblas', 'm'],
+        use='unittestmain ecell4-core CPPUNIT')
+
+    bld.program(
+        features='cxx cxxprogram test',
         source='GSLRandomNumberGenerator_test.cpp',
         target='GSLRandomNumberGenerator_test',
         includes='..',
