@@ -25,6 +25,8 @@ public:
     virtual Integer num_particles() const = 0;
     virtual bool update_particle(ParticleID const& pid, Particle const& p) = 0;
     virtual bool remove_particle(ParticleID const& pid) = 0;
+    virtual std::pair<ParticleID, Particle>
+    get_particle(ParticleID const& pid) const = 0;
 
     virtual Real distance_sq(Position3 const& p1, Position3 const& p2) const = 0;
 
@@ -44,6 +46,8 @@ class ParticleSpaceVectorImpl
 public:
 
     typedef std::vector<std::pair<ParticleID, Particle> > container_type;
+    typedef typename container_type::size_type index_type;
+    typedef std::map<ParticleID, index_type> index_map_type;
 
     ParticleSpaceVectorImpl(Real const& edge_length)
         : edge_length_(edge_length)
@@ -61,6 +65,7 @@ public:
     Integer num_particles() const;
     bool update_particle(ParticleID const& pid, Particle const& p);
     bool remove_particle(ParticleID const& pid);
+    std::pair<ParticleID, Particle> get_particle(ParticleID const& pid) const;
 
     Real distance_sq(Position3 const& p1, Position3 const& p2) const;
 
@@ -72,7 +77,7 @@ protected:
 
     Real edge_length_;
     container_type particles_;
-    std::map<ParticleID, typename container_type::size_type> index_map_;
+    index_map_type index_map_;
 };
 
 } // ecell4
