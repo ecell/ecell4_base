@@ -20,7 +20,11 @@ public:
     virtual void set_volume(Real volume) = 0;
 
     virtual void add_species(Species const& sp) = 0;
-    virtual Integer num_of_molecules(Species const& sp) = 0;
+    virtual void remove_species(Species const& sp) = 0;
+
+    virtual Integer num_molecules(Species const& sp) = 0;
+    virtual void add_molecules(Species const& sp, Integer const& num) = 0;
+    virtual void remove_molecules(Species const& sp, Integer const& num) = 0;
 };
 
 class CompartmentSpaceVectorImpl
@@ -41,9 +45,9 @@ public:
     void set_volume(Real volume);
 
     void add_species(Species const& sp);
-    Integer num_of_molecules(Species const& sp);
-
     void remove_species(Species const& sp);
+
+    Integer num_molecules(Species const& sp);
     void add_molecules(Species const& sp, Integer const& num);
     void remove_molecules(Species const& sp, Integer const& num);
 
@@ -51,8 +55,8 @@ protected:
 
     Real volume_;
 
-    std::vector<Integer> num_of_molecules_;
-    SpeciesVector species_;
+    std::vector<Integer> num_molecules_;
+    std::vector<Species> species_;
     index_map_type index_map_;
 };
 
