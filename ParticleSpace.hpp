@@ -2,6 +2,7 @@
 #define __PARTICLE_SPACE_HPP
 
 #include "types.hpp"
+#include "Position3.hpp"
 #include "Particle.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
@@ -21,7 +22,7 @@ public:
 
     virtual Integer num_particles() const = 0;
     virtual particle_id_pair_type new_particle(
-        Species const& sp, Position const& pos) = 0;
+        Species const& sp, Position3 const& pos) = 0;
     virtual bool update_particle(particle_id_pair_type const& pidpair) = 0;
     virtual bool remove_particle(ParticleID const& pid) = 0;
 };
@@ -39,7 +40,7 @@ public:
     Integer num_species() const;
 
     Integer num_particles() const;
-    particle_id_pair_type new_particle(Species const& sp, Position const& pos);
+    particle_id_pair_type new_particle(Species const& sp, Position3 const& pos);
     bool update_particle(particle_id_pair_type const& pidpair);
     bool remove_particle(ParticleID const& pid);
 };

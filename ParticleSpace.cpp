@@ -15,7 +15,7 @@ Integer ParticleSpaceVectorImpl::num_particles() const
 }
 
 typename ParticleSpace::particle_id_pair_type
-ParticleSpaceVectorImpl::new_particle(Species const& sp, Position const& pos)
+ParticleSpaceVectorImpl::new_particle(Species const& sp, Position3 const& pos)
 {
     return std::make_pair(ParticleID(), Particle());
 }

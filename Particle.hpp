@@ -2,6 +2,7 @@
 #define __PARTICLE_HPP
 
 #include "types.hpp"
+#include "Position3.hpp"
 #include "Species.hpp"
 #include "Identifier.hpp"
 
@@ -18,13 +19,13 @@ public:
         ;
     }
 
-    Particle(Species const& sp, Position const& pos, Real const& radius)
+    Particle(Species const& sp, Position3 const& pos, Real const& radius)
         : species_(sp), position_(pos), radius_(radius)
     {
         ;
     }
 
-    Position& position()
+    Position3& position()
     {
         return position_;
     }
@@ -41,7 +42,7 @@ public:
 
 private:
 
-    Position position_;
+    Position3 position_;
     Real radius_;
     Species species_;
 };
