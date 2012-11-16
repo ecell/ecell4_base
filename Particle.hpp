@@ -1,6 +1,8 @@
 #ifndef __PARTICLE_HPP
 #define __PARTICLE_HPP
 
+#include <map>
+
 #include "types.hpp"
 #include "Position3.hpp"
 #include "Species.hpp"
@@ -30,12 +32,27 @@ public:
         return position_;
     }
 
+    Position3 const& position() const
+    {
+        return position_;
+    }
+
     Real& radius()
     {
         return radius_;
     }
 
+    Real const& radius() const
+    {
+        return radius_;
+    }
+
     Species& species()
+    {
+        return species_;
+    }
+
+    Species const& species() const
     {
         return species_;
     }
