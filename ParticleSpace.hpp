@@ -21,12 +21,16 @@ public:
     virtual Position3 const& edge_lengths() const = 0;
 
     virtual Integer num_species() const = 0;
-
     virtual Integer num_particles() const = 0;
+    virtual Integer num_particles(Species const& species) const = 0;
+
     virtual bool update_particle(ParticleID const& pid, Particle const& p) = 0;
     virtual bool remove_particle(ParticleID const& pid) = 0;
+
     virtual std::pair<ParticleID, Particle>
     get_particle(ParticleID const& pid) const = 0;
+    virtual std::vector<std::pair<ParticleID, Particle> >
+    get_particles(Species const& species) const = 0;
 
     virtual Position3 apply_boundary(Position3 const& pos) const = 0;
     virtual Real distance_sq(
@@ -63,11 +67,15 @@ public:
     }
 
     Integer num_species() const;
-
     Integer num_particles() const;
+    Integer num_particles(Species const& species) const;
+
     bool update_particle(ParticleID const& pid, Particle const& p);
     bool remove_particle(ParticleID const& pid);
+
     std::pair<ParticleID, Particle> get_particle(ParticleID const& pid) const;
+    std::vector<std::pair<ParticleID, Particle> >
+    get_particles(Species const& species) const;
 
     Position3 apply_boundary(Position3 const& pos) const = 0;
     Real distance_sq(Position3 const& pos1, Position3 const& pos2) const;

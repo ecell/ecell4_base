@@ -33,6 +33,11 @@ Integer ParticleSpaceVectorImpl::num_particles() const
     return static_cast<Integer>(particles_.size());
 }
 
+Integer ParticleSpaceVectorImpl::num_particles(Species const& species) const
+{
+    return static_cast<Integer>(get_particles(species).size());
+}
+
 bool ParticleSpaceVectorImpl::update_particle(
     ParticleID const& pid, Particle const& p)
 {
@@ -82,6 +87,23 @@ std::pair<ParticleID, Particle> ParticleSpaceVectorImpl::get_particle(
     }
 
     return particles_[(*i).second];
+}
+
+std::vector<std::pair<ParticleID, Particle> >
+ParticleSpaceVectorImpl::get_particles(Species const& species) const
+{
+    std::vector<std::pair<ParticleID, Particle> > retval;
+
+    for (container_type::const_iterator i(particles_.begin());
+         i != particles_.end(); ++i)
+    {
+        if ((*i).second.species() == species)
+        {
+            retval.push_back(*i);
+        }
+    }
+
+    return retval;
 }
 
 Position3 ParticleSpaceVectorImpl::apply_boundary(Position3 const& pos) const
