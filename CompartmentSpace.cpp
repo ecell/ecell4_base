@@ -57,7 +57,12 @@ void CompartmentSpaceVectorImpl::remove_species(Species const& sp)
     index_map_.erase(sp);
 }
 
-Integer CompartmentSpaceVectorImpl::num_molecules(Species const& sp)
+Integer CompartmentSpaceVectorImpl::num_species() const
+{
+    return static_cast<Integer>(species_.size());
+}
+
+Integer CompartmentSpaceVectorImpl::num_molecules(Species const& sp) const
 {
     index_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
