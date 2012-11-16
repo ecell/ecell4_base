@@ -14,14 +14,8 @@ Integer ParticleSpaceVectorImpl::num_particles() const
     return 0;
 }
 
-typename ParticleSpace::particle_id_pair_type
-ParticleSpaceVectorImpl::new_particle(Species const& sp, Position3 const& pos)
-{
-    return std::make_pair(ParticleID(), Particle());
-}
-
 bool ParticleSpaceVectorImpl::update_particle(
-    particle_id_pair_type const& pidpair)
+    ParticleID const& pid, Particle const& p)
 {
     return true;
 }
@@ -29,6 +23,13 @@ bool ParticleSpaceVectorImpl::update_particle(
 bool ParticleSpaceVectorImpl::remove_particle(ParticleID const& pid)
 {
     return true;
+}
+
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+ParticleSpaceVectorImpl::get_particles_within_radius(
+    Position3 const& pos, Real const& radius) const
+{
+    return std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >();
 }
 
 } // ecell4

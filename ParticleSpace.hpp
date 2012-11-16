@@ -16,15 +16,15 @@ class ParticleSpace
 {
 public:
 
-    typedef std::pair<ParticleID, Particle> particle_id_pair_type;
-
     virtual Integer num_species() const = 0;
 
     virtual Integer num_particles() const = 0;
-    virtual particle_id_pair_type new_particle(
-        Species const& sp, Position3 const& pos) = 0;
-    virtual bool update_particle(particle_id_pair_type const& pidpair) = 0;
+    virtual bool update_particle(ParticleID const& pid, Particle const& p) = 0;
     virtual bool remove_particle(ParticleID const& pid) = 0;
+
+    virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    get_particles_within_radius(
+        Position3 const& pos, Real const& radius) const = 0;
 };
 
 class ParticleSpaceVectorImpl
@@ -40,9 +40,12 @@ public:
     Integer num_species() const;
 
     Integer num_particles() const;
-    particle_id_pair_type new_particle(Species const& sp, Position3 const& pos);
-    bool update_particle(particle_id_pair_type const& pidpair);
+    bool update_particle(ParticleID const& pid, Particle const& p);
     bool remove_particle(ParticleID const& pid);
+
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    get_particles_within_radius(
+        Position3 const& pos, Real const& radius) const;
 };
 
 } // ecell4
