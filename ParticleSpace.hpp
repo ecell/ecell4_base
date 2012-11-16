@@ -18,7 +18,7 @@ class ParticleSpace
 {
 public:
 
-    virtual Real const& edge_length() const = 0;
+    virtual Position3 const& edge_lengths() const = 0;
 
     virtual Integer num_species() const = 0;
 
@@ -28,11 +28,13 @@ public:
     virtual std::pair<ParticleID, Particle>
     get_particle(ParticleID const& pid) const = 0;
 
-    virtual Real distance_sq(Position3 const& p1, Position3 const& p2) const = 0;
+    virtual Position3 apply_boundary(Position3 const& pos) const = 0;
+    virtual Real distance_sq(
+        Position3 const& pos1, Position3 const& pos2) const = 0;
 
-    inline Real distance(Position3 const& p1, Position3 const& p2) const
+    inline Real distance(Position3 const& pos1, Position3 const& pos2) const
     {
-        return std::sqrt(distance_sq(p1, p2));
+        return std::sqrt(distance_sq(pos1, pos2));
     }
 
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -49,15 +51,15 @@ public:
     typedef typename container_type::size_type index_type;
     typedef std::map<ParticleID, index_type> index_map_type;
 
-    ParticleSpaceVectorImpl(Real const& edge_length)
-        : edge_length_(edge_length)
+    ParticleSpaceVectorImpl(Position3 const& edge_lengths)
+        : edge_lengths_(edge_lengths)
     {
         ;
     }
 
-    Real const& edge_length() const
+    Position3 const& edge_lengths() const
     {
-        return edge_length_;
+        return edge_lengths_;
     }
 
     Integer num_species() const;
@@ -67,7 +69,8 @@ public:
     bool remove_particle(ParticleID const& pid);
     std::pair<ParticleID, Particle> get_particle(ParticleID const& pid) const;
 
-    Real distance_sq(Position3 const& p1, Position3 const& p2) const;
+    Position3 apply_boundary(Position3 const& pos) const = 0;
+    Real distance_sq(Position3 const& pos1, Position3 const& pos2) const;
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     get_particles_within_radius(
@@ -75,7 +78,7 @@ public:
 
 protected:
 
-    Real edge_length_;
+    Position3 edge_lengths_;
     container_type particles_;
     index_map_type index_map_;
 };

@@ -8,6 +8,12 @@
 namespace ecell4
 {
 
+Real pow_2(Real const& a)
+{
+    // return gsl_pow_2(a);
+    return a * a;
+}
+
 Integer ParticleSpaceVectorImpl::num_species() const
 {
     std::vector<Species> species_;
@@ -78,19 +84,41 @@ std::pair<ParticleID, Particle> ParticleSpaceVectorImpl::get_particle(
     return particles_[(*i).second];
 }
 
+Position3 ParticleSpaceVectorImpl::apply_boundary(Position3 const& pos) const
+{
+    return modulo(pos, edge_lengths_);
+}
+
 Real ParticleSpaceVectorImpl::distance_sq(
     Position3 const& p1, Position3 const& p2) const
 {
-    // not implemented yet
-    return 0.0;
+    Real retval(0);
+    for (Position3::size_type dim(0); dim < 3; ++dim)
+    {
+        const Real edge_length(edge_lengths_[dim]);
+        const Real diff(p1[dim] - p2[dim]), half(edge_length * 0.5);
+
+        if (diff > half)
+        {
+            retval += pow_2(diff - edge_length);
+        }
+        else if (diff < -half)
+        {
+            retval += pow_2(diff + edge_length);
+        }
+        else
+        {
+            retval += pow_2(diff);
+        }
+    }
+    return retval;
 }
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleSpaceVectorImpl::get_particles_within_radius(
     Position3 const& pos, Real const& radius) const
 {
-    // Real const rsq(gsl_pow_2(radius));
-    Real const rsq(radius * radius);
+    Real const rsq(pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
     for (container_type::const_iterator i(particles_.begin());

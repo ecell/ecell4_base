@@ -105,6 +105,15 @@ inline Position3 modulo(Position3 const& p1, Position3::value_type const& p2)
     return retval;
 }
 
+inline Position3 modulo(Position3 const& p1, Position3 const& p2)
+{
+    Position3 retval;
+    retval[0] = modulo(p1[0], p2[0]);
+    retval[1] = modulo(p1[1], p2[1]);
+    retval[2] = modulo(p1[2], p2[2]);
+    return retval;
+}
+
 inline Position3 abs(Position3 const& v)
 {
     Position3 retval;
