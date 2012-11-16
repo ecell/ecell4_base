@@ -36,7 +36,8 @@ def configure(conf):
 
 def build(bld):
     bld.shlib(
-        source = ['Journal.cpp', 'Species.cpp', 'CompartmentSpace.cpp'],
+        source = ['Journal.cpp', 'Species.cpp', 'ParticleSpace.cpp',
+                  'CompartmentSpace.cpp'],
         includes = ['.'],
         lib = ['gsl', 'gslcblas', 'm'],
         target = 'ecell4-core')
