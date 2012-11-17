@@ -38,10 +38,23 @@ Integer ParticleSpaceVectorImpl::num_particles(Species const& species) const
     return static_cast<Integer>(get_particles(species).size());
 }
 
+bool ParticleSpaceVectorImpl::has_particle(ParticleID const& pid) const
+{
+    index_map_type::const_iterator i(index_map_.find(pid));
+    if (i == index_map_.end())
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 bool ParticleSpaceVectorImpl::update_particle(
     ParticleID const& pid, Particle const& p)
 {
-    index_map_type::iterator i(index_map_.find(pid));
+    index_map_type::const_iterator i(index_map_.find(pid));
     if (i == index_map_.end())
     {
         particles_[(*i).second] = std::make_pair(pid, p);
@@ -57,7 +70,7 @@ bool ParticleSpaceVectorImpl::update_particle(
 
 bool ParticleSpaceVectorImpl::remove_particle(ParticleID const& pid)
 {
-    index_map_type::iterator i(index_map_.find(pid));
+    index_map_type::const_iterator i(index_map_.find(pid));
     if (i == index_map_.end())
     {
         // throw not_found("Particle not found");
@@ -87,6 +100,12 @@ std::pair<ParticleID, Particle> ParticleSpaceVectorImpl::get_particle(
     }
 
     return particles_[(*i).second];
+}
+
+std::vector<std::pair<ParticleID, Particle> >
+ParticleSpaceVectorImpl::get_particles() const
+{
+    return particles_;
 }
 
 std::vector<std::pair<ParticleID, Particle> >

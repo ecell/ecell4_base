@@ -24,11 +24,14 @@ public:
     virtual Integer num_particles() const = 0;
     virtual Integer num_particles(Species const& species) const = 0;
 
+    virtual bool has_particle(ParticleID const& pid) const = 0;
     virtual bool update_particle(ParticleID const& pid, Particle const& p) = 0;
     virtual bool remove_particle(ParticleID const& pid) = 0;
 
     virtual std::pair<ParticleID, Particle>
     get_particle(ParticleID const& pid) const = 0;
+    virtual std::vector<std::pair<ParticleID, Particle> >
+    get_particles() const = 0;
     virtual std::vector<std::pair<ParticleID, Particle> >
     get_particles(Species const& species) const = 0;
 
@@ -70,10 +73,12 @@ public:
     Integer num_particles() const;
     Integer num_particles(Species const& species) const;
 
+    bool has_particle(ParticleID const& pid) const;
     bool update_particle(ParticleID const& pid, Particle const& p);
     bool remove_particle(ParticleID const& pid);
 
     std::pair<ParticleID, Particle> get_particle(ParticleID const& pid) const;
+    std::vector<std::pair<ParticleID, Particle> > get_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
     get_particles(Species const& species) const;
 
