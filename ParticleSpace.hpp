@@ -59,9 +59,8 @@ public:
     typedef std::map<ParticleID, index_type> index_map_type;
 
     ParticleSpaceVectorImpl(Position3 const& edge_lengths)
-        : edge_lengths_(edge_lengths)
     {
-        ;
+        set_edge_lengths(edge_lengths);
     }
 
     Position3 const& edge_lengths() const
@@ -82,12 +81,16 @@ public:
     std::vector<std::pair<ParticleID, Particle> >
     get_particles(Species const& species) const;
 
-    Position3 apply_boundary(Position3 const& pos) const = 0;
+    Position3 apply_boundary(Position3 const& pos) const;
     Real distance_sq(Position3 const& pos1, Position3 const& pos2) const;
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     get_particles_within_radius(
         Position3 const& pos, Real const& radius) const;
+
+private:
+
+    void set_edge_lengths(Position3 const& edge_lengths);
 
 protected:
 

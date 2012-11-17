@@ -1,4 +1,5 @@
 #include <cmath>
+#include <stdexcept>
 // #include <gsl/gsl_pow_int.h>
 
 #include "exceptions.hpp"
@@ -166,6 +167,19 @@ ParticleSpaceVectorImpl::get_particles_within_radius(
     }
 
     return retval;
+}
+
+void ParticleSpaceVectorImpl::set_edge_lengths(Position3 const& edge_lengths)
+{
+    for (Position3::size_type dim(0); dim < 3; ++dim)
+    {
+        if (edge_lengths[dim] <= 0)
+        {
+            throw std::invalid_argument("the edge length must be positive.");
+        }
+    }
+
+    edge_lengths_ = edge_lengths;
 }
 
 } // ecell4

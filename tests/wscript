@@ -30,6 +30,14 @@ def build(bld):
         use='unittestmain ecell4-core CPPUNIT')
 
     bld.program(
+        features='cxx cxxprogram test',
+        source='ParticleSpaceVectorImpl_test.cpp',
+        target='ParticleSpaceVectorImpl_test',
+        includes='..',
+        lib=['gsl', 'gslcblas', 'm'],
+        use='unittestmain ecell4-core CPPUNIT')
+
+    bld.program(
         features='cxx cxxstlib',
         source='main.cpp',
         use='CPPUNIT',
