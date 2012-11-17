@@ -41,14 +41,7 @@ Integer ParticleSpaceVectorImpl::num_particles(Species const& species) const
 bool ParticleSpaceVectorImpl::has_particle(ParticleID const& pid) const
 {
     index_map_type::const_iterator i(index_map_.find(pid));
-    if (i == index_map_.end())
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
+    return (i != index_map_.end());
 }
 
 bool ParticleSpaceVectorImpl::update_particle(

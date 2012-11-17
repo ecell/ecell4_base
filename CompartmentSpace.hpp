@@ -22,6 +22,7 @@ public:
     virtual void add_species(Species const& sp) = 0;
     virtual void remove_species(Species const& sp) = 0;
     virtual Integer num_species() const = 0;
+    virtual bool has_species(Species const& sp) const = 0;
 
     virtual Integer num_molecules(Species const& sp) const = 0;
     virtual void add_molecules(Species const& sp, Integer const& num) = 0;
@@ -48,6 +49,7 @@ public:
     void add_species(Species const& sp);
     void remove_species(Species const& sp);
     Integer num_species() const;
+    bool has_species(Species const& sp) const;
 
     Integer num_molecules(Species const& sp) const;
     void add_molecules(Species const& sp, Integer const& num);
