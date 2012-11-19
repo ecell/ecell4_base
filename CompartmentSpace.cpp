@@ -1,6 +1,6 @@
 #include <stdexcept>
 
-#include "exceptions.hpp"
+#include "Exceptions.hpp"
 #include "CompartmentSpace.hpp"
 
 
@@ -27,7 +27,7 @@ void CompartmentSpaceVectorImpl::add_species(Species const& sp)
     index_map_type::const_iterator i(index_map_.find(sp));
     if (i != index_map_.end())
     {
-        throw already_exists("Species already exists");
+        throw AlreadyExists("Species already exists");
     }
 
     index_map_.insert(std::make_pair(sp, num_molecules_.size()));
@@ -40,7 +40,7 @@ void CompartmentSpaceVectorImpl::remove_species(Species const& sp)
     index_map_type::iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw not_found("Species not found");
+        throw NotFound("Species not found");
     }
 
     index_type idx((*i).second), last_idx(num_molecules_.size() - 1);
@@ -73,7 +73,7 @@ Integer CompartmentSpaceVectorImpl::num_molecules(Species const& sp) const
     index_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw not_found("Species not found");
+        throw NotFound("Species not found");
     }
 
     return num_molecules_[(*i).second];
@@ -90,7 +90,7 @@ void CompartmentSpaceVectorImpl::add_molecules(
     index_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw not_found("Species not found");
+        throw NotFound("Species not found");
     }
 
     num_molecules_[(*i).second] += num;
@@ -107,7 +107,7 @@ void CompartmentSpaceVectorImpl::remove_molecules(
     index_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw not_found("Species not found");
+        throw NotFound("Species not found");
     }
 
     if (num_molecules_[(*i).second] < num)

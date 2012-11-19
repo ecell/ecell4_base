@@ -8,18 +8,39 @@
 namespace ecell4
 {
 
-class not_found
+class Exception
     : public std::exception
 {
 public:
 
-    not_found(std::string const& str)
+    Exception()
+    {
+        ;
+    }
+
+    virtual ~Exception() throw()
+    {
+        ;
+    }
+
+    virtual const char* what() const throw()
+    {
+        return "";
+    }
+};
+
+class NotFound
+    : public Exception
+{
+public:
+
+    NotFound(std::string const& str)
         : str_(str)
     {
         ;
     }
 
-    virtual ~not_found() throw()
+    virtual ~NotFound() throw()
     {
         ;
     }
@@ -34,18 +55,18 @@ private:
     std::string str_;
 };
 
-class already_exists
-    : public std::exception
+class AlreadyExists
+    : public Exception
 {
 public:
 
-    already_exists(std::string const& str)
+    AlreadyExists(std::string const& str)
         : str_(str)
     {
         ;
     }
 
-    virtual ~already_exists() throw()
+    virtual ~AlreadyExists() throw()
     {
         ;
     }

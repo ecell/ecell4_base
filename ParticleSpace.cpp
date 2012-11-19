@@ -2,7 +2,7 @@
 #include <stdexcept>
 // #include <gsl/gsl_pow_int.h>
 
-#include "exceptions.hpp"
+#include "Exceptions.hpp"
 #include "ParticleSpace.hpp"
 
 
@@ -67,7 +67,7 @@ bool ParticleSpaceVectorImpl::remove_particle(ParticleID const& pid)
     index_map_type::const_iterator i(index_map_.find(pid));
     if (i == index_map_.end())
     {
-        // throw not_found("Particle not found");
+        // throw NotFound("Particle not found");
         return false;
     }
 
@@ -90,7 +90,7 @@ std::pair<ParticleID, Particle> ParticleSpaceVectorImpl::get_particle(
     index_map_type::const_iterator i(index_map_.find(pid));
     if (i == index_map_.end())
     {
-        throw not_found("Particle not found");
+        throw NotFound("Particle not found");
     }
 
     return particles_[(*i).second];
