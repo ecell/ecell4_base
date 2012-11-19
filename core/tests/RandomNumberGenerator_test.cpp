@@ -7,12 +7,15 @@
 using namespace ecell4;
 
 
-class GSLRandomNumberGeneratorTest
+template <typename Timpl_>
+class RandomNumberGeneratorTest
     : public CppUnit::TestFixture
 {
 public:
 
-    CPPUNIT_TEST_SUITE(GSLRandomNumberGeneratorTest);
+    typedef Timpl_ implementation_type;
+
+    CPPUNIT_TEST_SUITE(RandomNumberGeneratorTest);
     CPPUNIT_TEST(test_seed);
     CPPUNIT_TEST_SUITE_END();
 
@@ -20,7 +23,7 @@ public:
 
     void setUp()
     {
-        target = new GSLRandomNumberGenerator();
+        target = new implementation_type();
     }
 
     void tearDown()
@@ -32,12 +35,14 @@ public:
 
 private:
 
-    GSLRandomNumberGenerator *target;
+    RandomNumberGenerator *target;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(GSLRandomNumberGeneratorTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(
+    RandomNumberGeneratorTest<GSLRandomNumberGenerator>);
 
-void GSLRandomNumberGeneratorTest::test_seed()
+template <typename Timpl_>
+void RandomNumberGeneratorTest<Timpl_>::test_seed()
 {
     target->seed(0);
     // CPPUNIT_ASSERT_EQUAL(1, 2);

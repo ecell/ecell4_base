@@ -8,12 +8,15 @@
 using namespace ecell4;
 
 
-class CompartmentSpaceVectorImplTest
+template <typename Timpl_>
+class CompartmentSpaceTest
     : public CppUnit::TestFixture
 {
 public:
 
-    CPPUNIT_TEST_SUITE(CompartmentSpaceVectorImplTest);
+    typedef Timpl_ implementation_type;
+
+    CPPUNIT_TEST_SUITE(CompartmentSpaceTest);
     CPPUNIT_TEST(test_volume);
     CPPUNIT_TEST_SUITE_END();
 
@@ -22,7 +25,7 @@ public:
     void setUp()
     {
         Real const volume(1e-18);
-        target = new CompartmentSpaceVectorImpl(volume);
+        target = new implementation_type(volume);
     }
 
     void tearDown()
@@ -34,12 +37,14 @@ public:
 
 private:
 
-    CompartmentSpaceVectorImpl *target;
+    CompartmentSpace *target;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(CompartmentSpaceVectorImplTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(
+    CompartmentSpaceTest<CompartmentSpaceVectorImpl>);
 
-void CompartmentSpaceVectorImplTest::test_volume()
+template <typename Timpl_>
+void CompartmentSpaceTest<Timpl_>::test_volume()
 {
     target->set_volume(2 * target->volume());
 }

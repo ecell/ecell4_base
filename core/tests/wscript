@@ -15,24 +15,24 @@ def build(bld):
 
     bld.program(
         features='cxx cxxprogram test',
-        source='GSLRandomNumberGenerator_test.cpp',
-        target='GSLRandomNumberGenerator_test',
+        source='RandomNumberGenerator_test.cpp',
+        target='RandomNumberGenerator_test',
         includes='..',
         lib=['gsl', 'gslcblas', 'm'],
         use='unittestmain ecell4-core CPPUNIT')
 
     bld.program(
         features='cxx cxxprogram test',
-        source='CompartmentSpaceVectorImpl_test.cpp',
-        target='CompartmentSpaceVectorImpl_test',
+        source='CompartmentSpace_test.cpp',
+        target='CompartmentSpace_test',
         includes='..',
         lib=['gsl', 'gslcblas', 'm'],
         use='unittestmain ecell4-core CPPUNIT')
 
     bld.program(
         features='cxx cxxprogram test',
-        source='ParticleSpaceVectorImpl_test.cpp',
-        target='ParticleSpaceVectorImpl_test',
+        source='ParticleSpace_test.cpp',
+        target='ParticleSpace_test',
         includes='..',
         lib=['gsl', 'gslcblas', 'm'],
         use='unittestmain ecell4-core CPPUNIT')

@@ -8,12 +8,15 @@
 using namespace ecell4;
 
 
-class ParticleSpaceVectorImplTest
+template <typename Timpl_>
+class ParticleSpaceTest
     : public CppUnit::TestFixture
 {
 public:
 
-    CPPUNIT_TEST_SUITE(ParticleSpaceVectorImplTest);
+    typedef Timpl_ implementation_type;
+
+    CPPUNIT_TEST_SUITE(ParticleSpaceTest);
     CPPUNIT_TEST(test_edge_lengths);
     CPPUNIT_TEST_SUITE_END();
 
@@ -23,7 +26,7 @@ public:
     {
         Real const L(1e-6);
         Position3 const edge_lengths(L, L, L);
-        target = new ParticleSpaceVectorImpl(edge_lengths);
+        target = new implementation_type(edge_lengths);
     }
 
     void tearDown()
@@ -35,12 +38,13 @@ public:
 
 private:
 
-    ParticleSpaceVectorImpl *target;
+    ParticleSpace *target;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ParticleSpaceVectorImplTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(ParticleSpaceTest<ParticleSpaceVectorImpl>);
 
-void ParticleSpaceVectorImplTest::test_edge_lengths()
+template <typename Timpl_>
+void ParticleSpaceTest<Timpl_>::test_edge_lengths()
 {
     Position3 const& edge_lengths(target->edge_lengths());
     for (Position3::size_type dim(0); dim < 3; ++dim)
