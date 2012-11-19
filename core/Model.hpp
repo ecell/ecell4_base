@@ -19,6 +19,6 @@ public:
         Species const& sp1, Species const& sp2) const = 0;
 };
 
-}
+} // ecell4
 
 #endif /* __MODEL_HPP */

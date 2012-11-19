@@ -16,10 +16,30 @@ public:
 
     typedef std::vector<Species> SpeciesVector;
 
-    virtual SpeciesVector const& reactants() const = 0;
-    virtual SpeciesVector const& products() const = 0;
+    ReactionRule()
+        : reactants_(), products_()
+    {
+        ;
+    }
 
-    virtual void add_product(Species const& sp) const = 0;
+    virtual SpeciesVector const& reactants() const
+    {
+        return reactants_;
+    }
+
+    virtual SpeciesVector const& products() const
+    {
+        return products_;
+    }
+
+    virtual void add_product(Species const& sp) const
+    {
+        ;
+    }
+
+protected:
+
+    SpeciesVector reactants_, products_;
 };
 
 typedef std::vector<ReactionRule> ReactionRuleVector;

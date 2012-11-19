@@ -1,5 +1,5 @@
-#ifndef __MODEL_HPP
-#define __MODEL_HPP
+#ifndef __NETWORK_MODEL_HPP
+#define __NETWORK_MODEL_HPP
 
 #include "types.hpp"
 
@@ -16,12 +16,19 @@ class NetworkModel
 {
 public:
 
-    typedef Model::ReactionRuleVector ReactionRuleVector;
+    NetworkModel()
+    {
+        ;
+    }
 
-    virtual bool add_species(Species const& sp) = 0;
-    virtual bool add_reaction_rule(ReactionRule const& rr) = 0;
+    ReactionRuleVector query_reaction_rules(Species const& sp) const;
+    ReactionRuleVector query_reaction_rules(
+        Species const& sp1, Species const& sp2) const;
+
+    bool add_species(Species const& sp);
+    bool add_reaction_rule(ReactionRule const& rr);
 };
 
-}
+} // ecell4
 
-#endif /* __MODEL_HPP */
+#endif /* __NETWORK_MODEL_HPP */
