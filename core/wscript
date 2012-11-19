@@ -32,7 +32,7 @@ def configure(conf):
         l = conf.check(lib='dl', uselib_store='CPPUNIT')
 
     conf.recurse(subdirs)
-    configure_submodule(conf)
+    # configure_submodule(conf)
 
 def build(bld):
     bld.shlib(
@@ -46,7 +46,7 @@ def build(bld):
 
     bld.add_post_fun(waf_unit_test.summary)
     bld.options.all_tests = True
-    build_submodule(bld)
+    # build_submodule(bld)
 
 def configure_submodule(conf):
     import os
