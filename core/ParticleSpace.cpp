@@ -1,6 +1,5 @@
 #include <cmath>
 #include <stdexcept>
-// #include <gsl/gsl_pow_int.h>
 
 #include "Exceptions.hpp"
 #include "ParticleSpace.hpp"
@@ -8,12 +7,6 @@
 
 namespace ecell4
 {
-
-Real pow_2(Real const& a)
-{
-    // return gsl_pow_2(a);
-    return a * a;
-}
 
 Integer ParticleSpaceVectorImpl::num_species() const
 {
@@ -116,36 +109,6 @@ ParticleSpaceVectorImpl::get_particles(Species const& species) const
         }
     }
 
-    return retval;
-}
-
-Position3 ParticleSpaceVectorImpl::apply_boundary(Position3 const& pos) const
-{
-    return modulo(pos, edge_lengths_);
-}
-
-Real ParticleSpaceVectorImpl::distance_sq(
-    Position3 const& p1, Position3 const& p2) const
-{
-    Real retval(0);
-    for (Position3::size_type dim(0); dim < 3; ++dim)
-    {
-        const Real edge_length(edge_lengths_[dim]);
-        const Real diff(p1[dim] - p2[dim]), half(edge_length * 0.5);
-
-        if (diff > half)
-        {
-            retval += pow_2(diff - edge_length);
-        }
-        else if (diff < -half)
-        {
-            retval += pow_2(diff + edge_length);
-        }
-        else
-        {
-            retval += pow_2(diff);
-        }
-    }
     return retval;
 }
 

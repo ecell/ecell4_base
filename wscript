@@ -7,10 +7,10 @@ out = 'build'
 
 subdirs = [
     'core',
-    # 'ecell4-bd',
-    # 'ecell4-ode',
-    # 'ecell4-gillespie',
-    # 'ecell4-vis'
+    # 'bd',
+    # 'ode',
+    # 'gillespie',
+    # 'vis'
     ]
 
 def options(opt):

@@ -2,6 +2,7 @@
 #define __PARTICLE_SPACE_HPP
 
 #include <cmath>
+// #include <gsl/gsl_pow_int.h>
 
 #include "types.hpp"
 #include "Position3.hpp"
@@ -12,6 +13,12 @@
 
 namespace ecell4
 {
+
+Real pow_2(Real const& a)
+{
+    // return gsl_pow_2(a);
+    return a * a;
+}
 
 class ParticleSpace
     : public Space
@@ -35,9 +42,36 @@ public:
     virtual std::vector<std::pair<ParticleID, Particle> >
     get_particles(Species const& species) const = 0;
 
-    virtual Position3 apply_boundary(Position3 const& pos) const = 0;
-    virtual Real distance_sq(
-        Position3 const& pos1, Position3 const& pos2) const = 0;
+    inline Position3 apply_boundary(Position3 const& pos) const
+    {
+        return modulo(pos, edge_lengths());
+    }
+
+    Real distance_sq(
+        Position3 const& pos1, Position3 const& pos2) const
+    {
+        Real retval(0);
+        Position3 const& edges(edge_lengths());
+        for (Position3::size_type dim(0); dim < 3; ++dim)
+        {
+            const Real edge_length(edges[dim]);
+            const Real diff(pos1[dim] - pos2[dim]), half(edge_length * 0.5);
+
+            if (diff > half)
+            {
+                retval += pow_2(diff - edge_length);
+            }
+            else if (diff < -half)
+            {
+                retval += pow_2(diff + edge_length);
+            }
+            else
+            {
+                retval += pow_2(diff);
+            }
+        }
+        return retval;
+    }
 
     inline Real distance(Position3 const& pos1, Position3 const& pos2) const
     {
@@ -80,9 +114,6 @@ public:
     std::vector<std::pair<ParticleID, Particle> > get_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
     get_particles(Species const& species) const;
-
-    Position3 apply_boundary(Position3 const& pos) const;
-    Real distance_sq(Position3 const& pos1, Position3 const& pos2) const;
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     get_particles_within_radius(
