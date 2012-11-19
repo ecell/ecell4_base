@@ -11,6 +11,18 @@ subdirs = [
     'tests'
     ]
 
+hppfiles = [
+    'CompartmentSpace.hpp', 'Exceptions.hpp', 'Identifier.hpp',
+    'Journal.hpp', 'linear_algebra.hpp', 'Model.hpp', 'NetworkModel.hpp',
+    'Particle.hpp', 'ParticleSpace.hpp', 'Position3.hpp',
+    'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',
+    'Space.hpp', 'Species.hpp', 'types.hpp'
+    ]
+cppfiles = [
+    'Journal.cpp', 'Species.cpp', 'ParticleSpace.cpp',
+    'CompartmentSpace.cpp', 'NetworkModel.cpp'
+    ]
+
 def options(opt):
     opt.load('compiler_cxx waf_unit_test')
 
@@ -27,9 +39,10 @@ def configure(conf):
     conf.recurse(subdirs)
 
 def build(bld):
+    bld.install_files(
+        '${PREFIX}/include/ecell4/core', hppfiles)
     bld.shlib(
-        source = ['Journal.cpp', 'Species.cpp', 'ParticleSpace.cpp',
-                  'CompartmentSpace.cpp', 'NetworkModel.cpp'],
+        source = cppfiles,
         includes = ['.'],
         lib = ['gsl', 'gslcblas', 'm'],
         target = 'ecell4-core')
