@@ -1,6 +1,8 @@
 #ifndef __SPACE_HPP
 #define __SPACE_HPP
 
+#include <stdexcept>
+
 #include "types.hpp"
 
 
@@ -20,6 +22,15 @@ public:
     Real const& t() const
     {
         return t_;
+    }
+
+    void set_t(Real const& t)
+    {
+        if (t < 0)
+        {
+            throw std::invalid_argument("the time must be positive.");
+        }
+        t_ = t;
     }
 
 protected:
