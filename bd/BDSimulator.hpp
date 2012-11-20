@@ -17,6 +17,8 @@ namespace ecell4
 namespace bd
 {
 
+Real I_bd_3d(Real const& r01, Real const& dt, Real const& D);
+
 struct BDSimulatorState
 {
     BDSimulatorState(RandomNumberGenerator& r)
@@ -79,7 +81,13 @@ public:
     bool attempt_reaction(
         ParticleID const& pid1, Particle const& particle1,
         ParticleID const& pid2, Particle const& particle2);
-    Position3 draw_displacement(Particle const& particle);
+
+    Position3 draw_displacement_3d(Particle const& particle);
+
+    inline Position3 draw_displacement(Particle const& particle)
+    {
+        return draw_displacement_3d(particle);
+    }
 
 protected:
 

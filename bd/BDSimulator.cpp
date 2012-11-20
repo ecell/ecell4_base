@@ -1,3 +1,6 @@
+#include <cmath>
+
+#include <ecell4/core/exceptions.hpp>
 #include "BDSimulator.hpp"
 
 
@@ -6,6 +9,25 @@ namespace ecell4
 
 namespace bd
 {
+
+Real I_bd_3d(Real const& sigma, Real const& t, Real const& D)
+{
+    const Real sqrtPi(std::sqrt(M_PI));
+
+    const Real Dt(D * t);
+    const Real Dt2(Dt + Dt);
+    const Real sqrtDt(std::sqrt(Dt));
+    const Real sigmasq(sigma * sigma);
+
+    const Real term1(1 / (3 * sqrtPi));
+    const Real term2(sigmasq - Dt2);
+    const Real term3(Dt2 - 3 * sigmasq);
+    const Real term4(sqrtPi * sigmasq * sigma * erfc(sigma / sqrtDt));
+
+    const Real result(
+        term1 * (-sqrtDt * (term2 * std::exp(-sigmasq / Dt) + term3) + term4));
+    return result;
+}
 
 bool BDSimulator::attempt_reaction(
     ParticleID const& pid, Particle const& particle)
@@ -17,7 +39,34 @@ bool BDSimulator::attempt_reaction(
         return false;
     }
 
-    return true;
+    Real const rnd((*state_).rng.uniform(0, 1));
+    Real prob(0);
+    for (ReactionRuleVector::const_iterator i(reaction_rules.begin());
+         i != reaction_rules.end(); ++i)
+    {
+        ReactionRule const& rr(*i);
+        prob += rr.k() * dt();
+        if (prob > rnd)
+        {
+            SpeciesVector const& products(rr.products());
+            switch (products.size())
+            {
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            default:
+                throw NotImplemented(
+                    "more than two products are not allowed");
+                break;
+            }
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool BDSimulator::attempt_reaction(
@@ -32,16 +81,54 @@ bool BDSimulator::attempt_reaction(
         return false;
     }
 
-    return true;
+    Real const D1(particle1.D()), D2(particle2.D());
+    Real const r01(particle1.radius() + particle2.radius());
+    Real const rnd((*state_).rng.uniform(0, 1));
+    Real prob(0);
+
+    for (ReactionRuleVector::const_iterator i(reaction_rules.begin());
+         i != reaction_rules.end(); ++i)
+    {
+        ReactionRule const& rr(*i);
+        prob += rr.k() * dt() / (
+            (I_bd_3d(r01, dt(), D1) + I_bd_3d(r01, dt(), D2)) * 4 * M_PI);
+
+        if (prob >= 1)
+        {
+            throw std::runtime_error(
+                "the total reaction probability exceeds 1."
+                " the step interval is too long");
+        }
+        if (prob > rnd)
+        {
+            SpeciesVector const& products(rr.products());
+            switch (products.size())
+            {
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            default:
+                throw NotImplemented(
+                    "more than two products are not allowed");
+                break;
+            }
+            return true;
+        }
+    }
+
+    return false;
 }
 
-Position3 BDSimulator::draw_displacement(Particle const& particle)
+Position3 BDSimulator::draw_displacement_3d(Particle const& particle)
 {
     Real const sigma(std::sqrt(2 * particle.D() * dt()));
     return Position3(
-        rng_.gaussian(0, sigma),
-        rng_.gaussian(0, sigma),
-        rng_.gaussian(0, sigma));
+        (*state_).rng.gaussian(0, sigma),
+        (*state_).rng.gaussian(0, sigma),
+        (*state_).rng.gaussian(0, sigma));
 }
 
 void BDSimulator::step()
