@@ -48,6 +48,11 @@ public:
         return (*world_).t();
     }
 
+    void set_t(Real const& t)
+    {
+        (*world_).set_t(t);
+    }
+
     Real dt() const
     {
         return (*state_).dt;
@@ -69,6 +74,12 @@ public:
 
     void step();
     bool step(Real const& upto);
+
+    bool attempt_reaction(ParticleID const& pid, Particle const& particle);
+    bool attempt_reaction(
+        ParticleID const& pid1, Particle const& particle1,
+        ParticleID const& pid2, Particle const& particle2);
+    Position3 draw_displacement(Particle const& particle);
 
 protected:
 

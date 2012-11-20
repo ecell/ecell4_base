@@ -27,6 +27,11 @@ public:
         return (*ps_).t();
     }
 
+    void set_t(Real const& t)
+    {
+        (*ps_).set_t(t);
+    }
+
     Position3 const& edge_lengths() const
     {
         return (*ps_).edge_lengths();
@@ -84,6 +89,13 @@ public:
         Position3 const& pos, Real const& radius) const
     {
         return (*ps_).get_particles_within_radius(pos, radius);
+    }
+
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    get_particles_within_radius(
+        Position3 const& pos, Real const& radius, ParticleID const& pid) const
+    {
+        return (*ps_).get_particles_within_radius(pos, radius, pid);
     }
 
 protected:
