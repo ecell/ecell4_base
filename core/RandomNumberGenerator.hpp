@@ -18,6 +18,9 @@ public:
 
     virtual Real uniform(Real min, Real max) = 0;
     virtual Integer uniform_int(Integer min, Integer max) = 0;
+
+    virtual Real gaussian(Real mean, Real sigma) = 0;
+
     virtual void seed(Integer val) = 0;
 };
 
@@ -48,6 +51,11 @@ public:
     Integer uniform_int(Integer min, Integer max)
     {
         return gsl_rng_uniform_int(rng_.get(), max - min + 1) + min;
+    }
+
+    Real gaussian(Real mean, Real sigma)
+    {
+        return gsl_ran_gaussian(rng_.get(), sigma) + mean;
     }
 
     void seed(Integer val)
