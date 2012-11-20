@@ -12,7 +12,7 @@ subdirs = [
     ]
 
 hppfiles = [
-    'CompartmentSpace.hpp', 'Exceptions.hpp', 'Identifier.hpp',
+    'CompartmentSpace.hpp', 'exceptions.hpp', 'Identifier.hpp',
     'Journal.hpp', 'linear_algebra.hpp', 'Model.hpp', 'NetworkModel.hpp',
     'Particle.hpp', 'ParticleSpace.hpp', 'Position3.hpp',
     'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',

@@ -1,7 +1,7 @@
 #include <cmath>
 #include <stdexcept>
 
-#include "Exceptions.hpp"
+#include "exceptions.hpp"
 #include "ParticleSpace.hpp"
 
 

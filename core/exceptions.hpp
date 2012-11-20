@@ -81,6 +81,32 @@ private:
     std::string str_;
 };
 
+class NotImplemented
+    : public Exception
+{
+public:
+
+    NotImplemented(std::string const& str)
+        : str_(str)
+    {
+        ;
+    }
+
+    virtual ~NotImplemented() throw()
+    {
+        ;
+    }
+
+    virtual const char* what() const throw()
+    {
+        return str_.c_str();
+    }
+
+private:
+
+    std::string str_;
+};
+
 }
 
 #endif /* __EXCEPTIONS_HPP */

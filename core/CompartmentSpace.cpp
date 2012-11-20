@@ -1,6 +1,6 @@
 #include <stdexcept>
 
-#include "Exceptions.hpp"
+#include "exceptions.hpp"
 #include "CompartmentSpace.hpp"
 
 
