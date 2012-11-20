@@ -14,6 +14,8 @@ namespace ecell4
 namespace bd
 {
 
+Position3 random_displacement_3d(
+    RandomNumberGenerator& rng, Real const& t, Real const& D);
 Real I_bd_3d(Real const& r01, Real const& dt, Real const& D);
 
 class BDPropagator
@@ -44,11 +46,9 @@ public:
         ParticleID const& pid1, Particle const& particle1,
         ParticleID const& pid2, Particle const& particle2);
 
-    Position3 draw_displacement_3d(Particle const& particle);
-
     inline Position3 draw_displacement(Particle const& particle)
     {
-        return draw_displacement_3d(particle);
+        return random_displacement_3d(rng(), dt(), particle.D());
     }
 
 protected:

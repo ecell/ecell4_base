@@ -9,6 +9,14 @@ namespace ecell4
 namespace bd
 {
 
+Position3 random_displacement_3d(
+    RandomNumberGenerator& rng, Real const& t, Real const& D)
+{
+    Real const sigma(std::sqrt(2 * D * t));
+    return Position3(
+        rng.gaussian(0, sigma), rng.gaussian(0, sigma), rng.gaussian(0, sigma));
+}
+
 Real I_bd_3d(Real const& sigma, Real const& t, Real const& D)
 {
     const Real sqrtPi(std::sqrt(M_PI));
@@ -170,15 +178,6 @@ bool BDPropagator::attempt_reaction(
     }
 
     return false;
-}
-
-Position3 BDPropagator::draw_displacement_3d(Particle const& particle)
-{
-    Real const sigma(std::sqrt(2 * particle.D() * dt()));
-    return Position3(
-        rng().gaussian(0, sigma),
-        rng().gaussian(0, sigma),
-        rng().gaussian(0, sigma));
 }
 
 } // bd
