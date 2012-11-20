@@ -22,11 +22,10 @@ public:
         ;
     }
 
-    // // see core/Space.hpp
-    // Real const& t() const
-    // {
-    //     return t_;
-    // }
+    Real const& t() const
+    {
+        return (*ps_).t();
+    }
 
     Position3 const& edge_lengths() const
     {

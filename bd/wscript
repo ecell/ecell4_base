@@ -12,10 +12,12 @@ subdirs = [
     ]
 
 hppfiles = [
-    'BDWorld.hpp'
+    'BDWorld.hpp', 'BDSimulator.hpp'
     ]
 
-cppfiles = []
+cppfiles = [
+    'BDSimulator.cpp'
+    ]
 
 def options(opt):
     opt.load('compiler_cxx waf_unit_test')
@@ -38,11 +40,11 @@ def build(bld):
     bld.install_files(
         '${PREFIX}/ecell/bd', hppfiles)
 
-    # bld.shlib(
-    #     source = cppfiles,
-    #     includes = ['.'],
-    #     lib = ['gsl', 'gslcblas', 'm'],
-    #     target = 'ecell4-core')
+    bld.shlib(
+        source = cppfiles,
+        includes = ['.'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
+        target = 'ecell4-bd')
 
     bld.recurse(subdirs)
 
