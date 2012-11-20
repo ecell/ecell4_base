@@ -11,10 +11,18 @@ def build(bld):
         target='BDWorld_test',
         includes=['..'],
         lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
-        use='unittestmain CPPUNIT')
+        use='ecell4-bd unittestmain CPPUNIT')
+
+    bld.program(
+        features='cxx cxxprogram test',
+        source='BDSimulator_test.cpp',
+        target='BDSimulator_test',
+        includes=['..'],
+        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        use='ecell4-bd unittestmain CPPUNIT')
 
     bld.program(
         features='cxx cxxstlib',
         source='main.cpp',
-        use='CPPUNIT',
+        use='ecell4-bd CPPUNIT',
         target='unittestmain')
