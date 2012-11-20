@@ -9,6 +9,8 @@
 #include <ecell4/core/Simulator.hpp>
 
 #include "BDWorld.hpp"
+#include "BDSimulatorState.hpp"
+#include "BDPropagator.hpp"
 
 
 namespace ecell4
@@ -16,21 +18,6 @@ namespace ecell4
 
 namespace bd
 {
-
-Real I_bd_3d(Real const& r01, Real const& dt, Real const& D);
-
-struct BDSimulatorState
-{
-    BDSimulatorState(RandomNumberGenerator& r)
-        : rng(r), num_steps(0), dt(0)
-    {
-        ;
-    }
-
-    Real dt;
-    Integer num_steps;
-    RandomNumberGenerator& rng;
-};
 
 class BDSimulator
     : public Simulator
@@ -76,18 +63,6 @@ public:
 
     void step();
     bool step(Real const& upto);
-
-    bool attempt_reaction(ParticleID const& pid, Particle const& particle);
-    bool attempt_reaction(
-        ParticleID const& pid1, Particle const& particle1,
-        ParticleID const& pid2, Particle const& particle2);
-
-    Position3 draw_displacement_3d(Particle const& particle);
-
-    inline Position3 draw_displacement(Particle const& particle)
-    {
-        return draw_displacement_3d(particle);
-    }
 
 protected:
 

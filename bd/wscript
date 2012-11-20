@@ -12,11 +12,11 @@ subdirs = [
     ]
 
 hppfiles = [
-    'BDWorld.hpp', 'BDSimulator.hpp', 'BDSolver.hpp'
+    'BDWorld.hpp', 'BDSimulator.hpp', 'BDPropagator.hpp', 'BDSimulatorState.hpp'
     ]
 
 cppfiles = [
-    'BDSimulator.cpp'
+    'BDSimulator.cpp', 'BDPropagator.cpp'
     ]
 
 def options(opt):
