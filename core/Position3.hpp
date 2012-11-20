@@ -1,5 +1,5 @@
-#ifndef __VECTOR3_HPP
-#define __VECTOR3_HPP
+#ifndef __POSITION3_HPP
+#define __POSITION3_HPP
 
 #include <ostream>
 #include <iomanip>
@@ -170,30 +170,6 @@ inline Position3 operator*(
     return multiply(lhs, rhs);
 }
 
-Position3& Position3::operator+=(Position3 const& rhs)
-{
-    *this = add(*this, rhs);
-    return *this;
-}
-
-Position3& Position3::operator-=(Position3 const& rhs)
-{
-    *this = subtract(*this, rhs);
-    return *this;
-}
-
-Position3& Position3::operator*=(Position3::value_type const& rhs)
-{
-    *this = multiply(*this, rhs);
-    return *this;
-}
-
-Position3& Position3::operator/=(Position3::value_type const& rhs)
-{
-    *this = divide(*this, rhs);
-    return *this;
-}
-
 template<typename Tstrm_, typename Ttraits_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
     std::basic_ostream<Tstrm_, Ttraits_>& strm, const Position3& v)
@@ -205,4 +181,4 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
 
 } // ecell4
 
-#endif /* __VECTOR3_HPP */
+#endif /* __POSITION3_HPP */

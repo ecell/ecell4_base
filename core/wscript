@@ -21,7 +21,7 @@ hppfiles = [
 
 cppfiles = [
     'Journal.cpp', 'Species.cpp', 'ParticleSpace.cpp',
-    'CompartmentSpace.cpp', 'NetworkModel.cpp'
+    'CompartmentSpace.cpp', 'NetworkModel.cpp', 'Position3.cpp'
     ]
 
 def options(opt):

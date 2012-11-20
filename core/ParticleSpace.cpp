@@ -8,6 +8,12 @@
 namespace ecell4
 {
 
+Real pow_2(Real const& a)
+{
+    // return gsl_pow_2(a);
+    return a * a;
+}
+
 Integer ParticleSpaceVectorImpl::num_species() const
 {
     std::vector<Species> species_;

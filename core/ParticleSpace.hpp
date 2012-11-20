@@ -14,11 +14,7 @@
 namespace ecell4
 {
 
-Real pow_2(Real const& a)
-{
-    // return gsl_pow_2(a);
-    return a * a;
-}
+Real pow_2(Real const& a);
 
 class ParticleSpace
     : public Space
