@@ -22,6 +22,11 @@ public:
         ;
     }
 
+    Real k() const
+    {
+        return k_;
+    }
+
     virtual SpeciesVector const& reactants() const
     {
         return reactants_;
@@ -39,6 +44,7 @@ public:
 
 protected:
 
+    Real k_;
     SpeciesVector reactants_, products_;
 };
 
