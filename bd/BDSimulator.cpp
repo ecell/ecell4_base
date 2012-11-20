@@ -10,19 +10,38 @@ namespace bd
 bool BDSimulator::attempt_reaction(
     ParticleID const& pid, Particle const& particle)
 {
-    return false;
+    ReactionRuleVector reaction_rules(
+        (*model_).query_reaction_rules(particle.species()));
+    if (reaction_rules.size() == 0)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 bool BDSimulator::attempt_reaction(
     ParticleID const& pid1, Particle const& particle1,
     ParticleID const& pid2, Particle const& particle2)
 {
-    return false;
+    ReactionRuleVector reaction_rules(
+        (*model_).query_reaction_rules(
+            particle1.species(), particle2.species()));
+    if (reaction_rules.size() == 0)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 Position3 BDSimulator::draw_displacement(Particle const& particle)
 {
-    return Position3();
+    Real const sigma(std::sqrt(2 * particle.D() * dt()));
+    return Position3(
+        rng_.gaussian(0, sigma),
+        rng_.gaussian(0, sigma),
+        rng_.gaussian(0, sigma));
 }
 
 void BDSimulator::step()
