@@ -16,8 +16,9 @@ hppfiles = [
     'Journal.hpp', 'linear_algebra.hpp', 'Model.hpp', 'NetworkModel.hpp',
     'Particle.hpp', 'ParticleSpace.hpp', 'Position3.hpp',
     'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',
-    'Space.hpp', 'Species.hpp', 'types.hpp'
+    'Simulator.hpp', 'Space.hpp', 'Species.hpp', 'types.hpp'
     ]
+
 cppfiles = [
     'Journal.cpp', 'Species.cpp', 'ParticleSpace.cpp',
     'CompartmentSpace.cpp', 'NetworkModel.cpp'
