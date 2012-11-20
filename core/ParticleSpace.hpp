@@ -81,6 +81,10 @@ public:
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     get_particles_within_radius(
         Position3 const& pos, Real const& radius) const = 0;
+    virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    get_particles_within_radius(
+        Position3 const& pos, Real const& radius,
+        ParticleID const& ignore) const = 0;
 };
 
 class ParticleSpaceVectorImpl
@@ -118,6 +122,10 @@ public:
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     get_particles_within_radius(
         Position3 const& pos, Real const& radius) const;
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    get_particles_within_radius(
+        Position3 const& pos, Real const& radius,
+        ParticleID const& ignore) const;
 
 private:
 
