@@ -21,8 +21,10 @@ public:
         ;
     }
 
-    Particle(Species const& sp, Position3 const& pos, Real const& radius)
-        : species_(sp), position_(pos), radius_(radius)
+    Particle(
+        Species const& sp, Position3 const& pos, Real const& radius,
+        Real const& D)
+        : species_(sp), position_(pos), radius_(radius), D_(D)
     {
         ;
     }
@@ -47,6 +49,16 @@ public:
         return radius_;
     }
 
+    Real& D()
+    {
+        return D_;
+    }
+
+    Real const& D() const
+    {
+        return D_;
+    }
+
     Species& species()
     {
         return species_;
@@ -60,7 +72,7 @@ public:
 private:
 
     Position3 position_;
-    Real radius_;
+    Real radius_, D_;
     Species species_;
 };
 
