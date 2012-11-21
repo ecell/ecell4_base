@@ -161,6 +161,30 @@ ParticleSpaceVectorImpl::get_particles_within_radius(
     return retval;
 }
 
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+ParticleSpaceVectorImpl::get_particles_within_radius(
+    Position3 const& pos, Real const& radius,
+    ParticleID const& ignore1, ParticleID const& ignore2) const
+{
+    Real const rsq(pow_2(radius));
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
+
+    for (container_type::const_iterator i(particles_.begin());
+         i != particles_.end(); ++i)
+    {
+        Real const dsq(distance_sq((*i).second.position(), pos));
+        if (dsq <= rsq)
+        {
+            if ((*i).first != ignore1 && (*i).first != ignore2)
+            {
+                retval.push_back(std::make_pair(*i, std::sqrt(dsq)));
+            }
+        }
+    }
+
+    return retval;
+}
+
 void ParticleSpaceVectorImpl::set_edge_lengths(Position3 const& edge_lengths)
 {
     for (Position3::size_type dim(0); dim < 3; ++dim)

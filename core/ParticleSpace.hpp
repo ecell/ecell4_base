@@ -38,6 +38,28 @@ public:
     virtual std::vector<std::pair<ParticleID, Particle> >
     get_particles(Species const& species) const = 0;
 
+    Position3 periodic_transpose(
+        Position3 const& pos1, Position3 const& pos2) const
+    {
+        Position3 retval(pos1);
+        Position3 const& edges(edge_lengths());
+        for (Position3::size_type dim(0); dim < 3; ++dim)
+        {
+            const Real edge_length(edges[dim]);
+            const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
+
+            if (diff > half)
+            {
+                retval[dim] += edge_length;
+            }
+            else if (diff < -half)
+            {
+                retval[dim] -= edge_length;
+            }
+        }
+        return retval;
+    }
+
     inline Position3 apply_boundary(Position3 const& pos) const
     {
         return modulo(pos, edge_lengths());
@@ -51,7 +73,7 @@ public:
         for (Position3::size_type dim(0); dim < 3; ++dim)
         {
             const Real edge_length(edges[dim]);
-            const Real diff(pos1[dim] - pos2[dim]), half(edge_length * 0.5);
+            const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
 
             if (diff > half)
             {
@@ -81,6 +103,10 @@ public:
     get_particles_within_radius(
         Position3 const& pos, Real const& radius,
         ParticleID const& ignore) const = 0;
+    virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    get_particles_within_radius(
+        Position3 const& pos, Real const& radius,
+        ParticleID const& ignore1, ParticleID const& ignore2) const = 0;
 };
 
 class ParticleSpaceVectorImpl
@@ -122,6 +148,10 @@ public:
     get_particles_within_radius(
         Position3 const& pos, Real const& radius,
         ParticleID const& ignore) const;
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    get_particles_within_radius(
+        Position3 const& pos, Real const& radius,
+        ParticleID const& ignore1, ParticleID const& ignore2) const;
 
 private:
 
