@@ -3,7 +3,8 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include "../core/ParticleSpace.hpp"
+#include <ecell4/core/SerialIDGenerator.hpp>
+#include <ecell4/core/ParticleSpace.hpp>
 
 
 namespace ecell4
@@ -20,6 +21,11 @@ public:
         : ps_(new ParticleSpaceVectorImpl(edge_lengths))
     {
         ;
+    }
+
+    ParticleID new_particle_id()
+    {
+        return pidgen_();
     }
 
     Real const& t() const
@@ -93,9 +99,23 @@ public:
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     get_particles_within_radius(
-        Position3 const& pos, Real const& radius, ParticleID const& pid) const
+        Position3 const& pos, Real const& radius, ParticleID const& ignore) const
     {
-        return (*ps_).get_particles_within_radius(pos, radius, pid);
+        return (*ps_).get_particles_within_radius(pos, radius, ignore);
+    }
+
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    get_particles_within_radius(
+        Position3 const& pos, Real const& radius,
+        ParticleID const& ignore1, ParticleID const& ignore2) const
+    {
+        return (*ps_).get_particles_within_radius(pos, radius, ignore1, ignore2);
+    }
+
+    inline Position3 periodic_transpose(
+        Position3 const& pos1, Position3 const& pos2) const
+    {
+        return (*ps_).periodic_transpose(pos1, pos2);
     }
 
     inline Position3 apply_boundary(Position3 const& pos) const
@@ -116,6 +136,7 @@ public:
 protected:
 
     boost::scoped_ptr<ParticleSpace> ps_;
+    SerialIDGenerator<ParticleID> pidgen_;
 };
 
 } // bd

@@ -87,7 +87,7 @@ bool BDPropagator::attempt_reaction(
                 break;
             case 1:
             {
-                Species const& species_new(*(products.begin()));
+                Species const& species_new(products[0]);
                 // Real const radius_new(species_new.radius());
                 // Real const D_new(species_new.D());
                 Real const radius_new(particle.radius());
@@ -149,14 +149,13 @@ bool BDPropagator::attempt_reaction(
                     }
                 }
 
-                remove_particle(pid);
-
                 Particle particle_to_update1(
                     species_new1, newpos1, radius1, D1);
                 Particle particle_to_update2(
                     species_new2, newpos2, radius2, D2);
-                // world_.update_particle(pid1, particle_to_update1);
-                // world_.update_particle(pid2, particle_to_update2);
+                world_.update_particle(pid, particle_to_update1);
+                world_.update_particle(
+                    world_.new_particle_id(), particle_to_update2);
                 break;
             }
             default:
@@ -211,9 +210,36 @@ bool BDPropagator::attempt_reaction(
                 remove_particle(pid2);
                 break;
             case 1:
-                remove_particle(pid1);
+            {
+                Species const& species_new(products[0]);
+                // Real const radius_new(species_new.radius());
+                // Real const D_new(species_new.D());
+                Real const radius_new(particle1.radius());
+                Real const D_new(particle1.D());
+
+                Position3 const pos1(particle1.position());
+                Position3 const pos2(
+                    world_.periodic_transpose(particle2.position(), pos1));
+                Real const D1(particle1.D()), D2(particle2.D());
+                Real const D12(D1 + D2);
+                Position3 const newpos(
+                    world_.apply_boundary((pos1 * D2 + pos2 * D1) / D12));
+
+                std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+                    overlapped(world_.get_particles_within_radius(
+                                   newpos, radius_new, pid1, pid2));
+                if (overlapped.size() > 0)
+                {
+                    // throw NoSpace("");
+                    return false;
+                }
+
+                Particle particle_to_update(
+                    species_new, newpos, radius_new, D_new);
+                world_.update_particle(pid1, particle_to_update);
                 remove_particle(pid2);
                 break;
+            }
             default:
                 throw NotImplemented(
                     "more than one product is not allowed");
