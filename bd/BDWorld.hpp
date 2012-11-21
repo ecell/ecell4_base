@@ -23,9 +23,15 @@ public:
         ;
     }
 
-    ParticleID new_particle_id()
+    ParticleID new_particle(Particle const& p)
     {
-        return pidgen_();
+        ParticleID pid(pidgen_());
+        // if (has_particle(pid))
+        // {
+        //     throw AlreadyExists("particle already exists");
+        // }
+        (*ps_).update_particle(pid, p);
+        return pid;
     }
 
     Real const& t() const

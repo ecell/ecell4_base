@@ -154,8 +154,7 @@ bool BDPropagator::attempt_reaction(
                 Particle particle_to_update2(
                     species_new2, newpos2, radius2, D2);
                 world_.update_particle(pid, particle_to_update1);
-                world_.update_particle(
-                    world_.new_particle_id(), particle_to_update2);
+                world_.new_particle(particle_to_update2);
                 break;
             }
             default:
