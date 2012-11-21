@@ -88,10 +88,9 @@ bool BDPropagator::attempt_reaction(
             case 1:
             {
                 Species const& species_new(products[0]);
-                // Real const radius_new(species_new.radius());
-                // Real const D_new(species_new.D());
-                Real const radius_new(particle.radius());
-                Real const D_new(particle.D());
+                SpeciesInfo const species_info(get_species_info(species_new));
+                Real const radius_new(species_info.radius);
+                Real const D_new(species_info.D);
 
                 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
                     overlapped(world_.get_particles_within_radius(
@@ -111,11 +110,12 @@ bool BDPropagator::attempt_reaction(
             {
                 Species const& species_new1(products[0]);
                 Species const& species_new2(products[1]);
-                // Real const D1(species_new1.D()), D2(species_new2.D());
-                // Real const radius1(species_new1.radius()),
-                //     radius2(species_new2.radius());
-                Real const D1(particle.D()), D2(particle.D());
-                Real const radius1(particle.radius()), radius2(particle.radius());
+
+                SpeciesInfo const species_info1(get_species_info(species_new1)),
+                    species_info2(get_species_info(species_new2));
+                Real const radius1(species_info1.radius),
+                    radius2(species_info2.radius);
+                Real const D1(species_info1.D), D2(species_info2.D);
 
                 Real const D12(D1 + D2);
                 Real const r12(radius1 + radius2);
@@ -211,10 +211,9 @@ bool BDPropagator::attempt_reaction(
             case 1:
             {
                 Species const& species_new(products[0]);
-                // Real const radius_new(species_new.radius());
-                // Real const D_new(species_new.D());
-                Real const radius_new(particle1.radius());
-                Real const D_new(particle1.D());
+                SpeciesInfo species_info(get_species_info(species_new));
+                Real const radius_new(species_info.radius);
+                Real const D_new(species_info.D);
 
                 Position3 const pos1(particle1.position());
                 Position3 const pos2(
@@ -261,6 +260,13 @@ bool BDPropagator::remove_particle(ParticleID const& pid)
     {
         queue_.erase(i);
     }
+}
+
+SpeciesInfo BDPropagator::get_species_info(Species const& sp) const
+{
+    const Real radius(5e-9), D(1e-12); // hard coding!
+    SpeciesInfo species_info = {radius, D};
+    return species_info;
 }
 
 } // bd

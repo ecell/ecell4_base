@@ -15,6 +15,12 @@ namespace ecell4
 namespace bd
 {
 
+struct SpeciesInfo
+{
+    Real const radius;
+    Real const D;
+};
+
 class BDPropagator
 {
 public:
@@ -65,6 +71,8 @@ public:
     };
 
     bool remove_particle(ParticleID const& pid);
+
+    SpeciesInfo get_species_info(Species const& sp) const;
 
     inline Position3 draw_displacement(Particle const& particle)
     {
