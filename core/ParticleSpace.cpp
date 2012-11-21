@@ -50,14 +50,15 @@ bool ParticleSpaceVectorImpl::update_particle(
     index_map_type::const_iterator i(index_map_.find(pid));
     if (i == index_map_.end())
     {
-        particles_[(*i).second] = std::make_pair(pid, p);
-        return true;
+        container_type::size_type idx(particles_.size());
+        index_map_[pid] = idx;
+        particles_.push_back(std::make_pair(pid, p));
+        return false;
     }
     else
     {
-        index_map_[pid] = particles_.size();
-        particles_.push_back(std::make_pair(pid, p));
-        return false;
+        particles_[(*i).second] = std::make_pair(pid, p);
+        return true;
     }
 }
 
@@ -89,7 +90,7 @@ std::pair<ParticleID, Particle> ParticleSpaceVectorImpl::get_particle(
     index_map_type::const_iterator i(index_map_.find(pid));
     if (i == index_map_.end())
     {
-        throw NotFound("Particle not found");
+        throw NotFound("particle not found");
     }
 
     return particles_[(*i).second];
