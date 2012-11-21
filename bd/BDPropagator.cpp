@@ -9,33 +9,6 @@ namespace ecell4
 namespace bd
 {
 
-Position3 random_displacement_3d(
-    RandomNumberGenerator& rng, Real const& t, Real const& D)
-{
-    Real const sigma(std::sqrt(2 * D * t));
-    return Position3(
-        rng.gaussian(0, sigma), rng.gaussian(0, sigma), rng.gaussian(0, sigma));
-}
-
-Real I_bd_3d(Real const& sigma, Real const& t, Real const& D)
-{
-    const Real sqrtPi(std::sqrt(M_PI));
-
-    const Real Dt(D * t);
-    const Real Dt2(Dt + Dt);
-    const Real sqrtDt(std::sqrt(Dt));
-    const Real sigmasq(sigma * sigma);
-
-    const Real term1(1 / (3 * sqrtPi));
-    const Real term2(sigmasq - Dt2);
-    const Real term3(Dt2 - 3 * sigmasq);
-    const Real term4(sqrtPi * sigmasq * sigma * erfc(sigma / sqrtDt));
-
-    const Real result(
-        term1 * (-sqrtDt * (term2 * std::exp(-sigmasq / Dt) + term3) + term4));
-    return result;
-}
-
 bool BDPropagator::operator()()
 {
     if (queue_.empty())
@@ -110,11 +83,82 @@ bool BDPropagator::attempt_reaction(
             switch (products.size())
             {
             case 0:
+                remove_particle(pid);
                 break;
             case 1:
+            {
+                Species const& species_new(*(products.begin()));
+                // Real const radius_new(species_new.radius());
+                // Real const D_new(species_new.D());
+                Real const radius_new(particle.radius());
+                Real const D_new(particle.D());
+
+                std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+                    overlapped(world_.get_particles_within_radius(
+                                   particle.position(), radius_new, pid));
+                if (overlapped.size() > 0)
+                {
+                    // throw NoSpace("");
+                    return false;
+                }
+
+                Particle particle_to_update(
+                    species_new, particle.position(), radius_new, D_new);
+                world_.update_particle(pid, particle_to_update);
                 break;
+            }
             case 2:
+            {
+                Species const& species_new1(products[0]);
+                Species const& species_new2(products[1]);
+                // Real const D1(species_new1.D()), D2(species_new2.D());
+                // Real const radius1(species_new1.radius()),
+                //     radius2(species_new2.radius());
+                Real const D1(particle.D()), D2(particle.D());
+                Real const radius1(particle.radius()), radius2(particle.radius());
+
+                Real const D12(D1 + D2);
+                Real const r12(radius1 + radius2);
+                Position3 newpos1, newpos2;
+                Integer i(max_retry_count_);
+                while (true)
+                {
+                    if (--i < 0)
+                    {
+                        // throw NoSpace("")
+                        return false;
+                    }
+
+                    Real const pair_distance(drawR_gbd(rng(), r12, dt(), D12));
+                    Position3 const ipv(draw_unit_vector() * pair_distance);
+                    newpos1 = world_.apply_boundary(
+                        particle.position() + ipv * (D1 / D12));
+                    newpos2 = world_.apply_boundary(
+                        particle.position() - ipv * (D2 / D12));
+                    std::vector<
+                        std::pair<std::pair<ParticleID, Particle>, Real> >
+                        overlapped1(world_.get_particles_within_radius(
+                                        newpos1, radius1, pid));
+                    std::vector<
+                        std::pair<std::pair<ParticleID, Particle>, Real> >
+                        overlapped2(world_.get_particles_within_radius(
+                                       newpos2, radius2, pid));
+                    if (overlapped1.size() == 0 && overlapped2.size() == 0)
+                    {
+                        break;
+                    }
+                }
+
+                remove_particle(pid);
+
+                Particle particle_to_update1(
+                    species_new1, newpos1, radius1, D1);
+                Particle particle_to_update2(
+                    species_new2, newpos2, radius2, D2);
+                // world_.update_particle(pid1, particle_to_update1);
+                // world_.update_particle(pid2, particle_to_update2);
                 break;
+            }
             default:
                 throw NotImplemented(
                     "more than two products are not allowed");
@@ -140,7 +184,7 @@ bool BDPropagator::attempt_reaction(
     }
 
     Real const D1(particle1.D()), D2(particle2.D());
-    Real const r01(particle1.radius() + particle2.radius());
+    Real const r12(particle1.radius() + particle2.radius());
     Real const rnd(rng().uniform(0, 1));
     Real prob(0);
 
@@ -149,7 +193,7 @@ bool BDPropagator::attempt_reaction(
     {
         ReactionRule const& rr(*i);
         prob += rr.k() * dt() / (
-            (I_bd_3d(r01, dt(), D1) + I_bd_3d(r01, dt(), D2)) * 4 * M_PI);
+            (I_bd_3d(r12, dt(), D1) + I_bd_3d(r12, dt(), D2)) * 4 * M_PI);
 
         if (prob >= 1)
         {
@@ -163,14 +207,16 @@ bool BDPropagator::attempt_reaction(
             switch (products.size())
             {
             case 0:
+                remove_particle(pid1);
+                remove_particle(pid2);
                 break;
             case 1:
-                break;
-            case 2:
+                remove_particle(pid1);
+                remove_particle(pid2);
                 break;
             default:
                 throw NotImplemented(
-                    "more than two products are not allowed");
+                    "more than one product is not allowed");
                 break;
             }
             return true;
@@ -178,6 +224,18 @@ bool BDPropagator::attempt_reaction(
     }
 
     return false;
+}
+
+bool BDPropagator::remove_particle(ParticleID const& pid)
+{
+    world_.remove_particle(pid);
+    particle_finder cmp(pid);
+    std::vector<std::pair<ParticleID, Particle> >::iterator
+        i(std::find_if(queue_.begin(), queue_.end(), cmp));
+    if (i != queue_.end())
+    {
+        queue_.erase(i);
+    }
 }
 
 } // bd

@@ -98,6 +98,21 @@ public:
         return (*ps_).get_particles_within_radius(pos, radius, pid);
     }
 
+    inline Position3 apply_boundary(Position3 const& pos) const
+    {
+        return (*ps_).apply_boundary(pos);
+    }
+
+    inline Real distance_sq(Position3 const& pos1, Position3 const& pos2) const
+    {
+        return (*ps_).distance_sq(pos1, pos2);
+    }
+
+    inline Real distance(Position3 const& pos1, Position3 const& pos2) const
+    {
+        return (*ps_).distance(pos1, pos2);
+    }
+
 protected:
 
     boost::scoped_ptr<ParticleSpace> ps_;
