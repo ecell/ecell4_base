@@ -193,7 +193,7 @@ bool BDPropagator::attempt_reaction(
     {
         ReactionRule const& rr(*i);
         prob += rr.k() * dt() / (
-            (I_bd_3d(r12, dt(), D1) + I_bd_3d(r12, dt(), D2)) * 4 * M_PI);
+            (Igbd_3d(r12, dt(), D1) + Igbd_3d(r12, dt(), D2)) * 4 * M_PI);
 
         if (prob >= 1)
         {

@@ -32,7 +32,7 @@ Position3 random_displacement_3d(
         rng.gaussian(0, sigma), rng.gaussian(0, sigma), rng.gaussian(0, sigma));
 }
 
-Real I_bd_3d(Real const& sigma, Real const& t, Real const& D)
+Real Igbd_3d(Real const& sigma, Real const& t, Real const& D)
 {
     const Real sqrtPi(std::sqrt(M_PI));
 
@@ -51,7 +51,7 @@ Real I_bd_3d(Real const& sigma, Real const& t, Real const& D)
     return result;
 }
 
-Real I_bd_r(Real r, Real sigma, Real t, Real D)
+Real Igbd_r_3d(Real r, Real sigma, Real t, Real D)
 {
     const Real sqrtPi(std::sqrt(M_PI));
 
@@ -85,7 +85,7 @@ Real I_bd_r(Real r, Real sigma, Real t, Real D)
     return result;
 }
 
-struct g_bd_params
+struct Igbd_r_3d_params
 {
     const Real sigma;
     const Real t;
@@ -93,9 +93,9 @@ struct g_bd_params
     const Real target;
 };
 
-static Real I_gbd_r_F(Real r, const g_bd_params* params)
+static Real Igbd_r_3d_F(Real r, const Igbd_r_3d_params* params)
 {
-    return I_bd_r(r, params->sigma, params->t, params->D) - params->target;
+    return Igbd_r_3d(r, params->sigma, params->t, params->D) - params->target;
 }
 
 Real random_ipv_length_3d(
@@ -103,10 +103,11 @@ Real random_ipv_length_3d(
 {
     const Real epsabs(1e-18), epsrel(1e-12);
 
-    const Real I(I_bd_3d(sigma, t, D));
+    const Real ptot(Igbd_3d(sigma, t, D));
 
-    g_bd_params params = {sigma, t, D, rng.uniform(0, 1) * I};
-    gsl_function F = {reinterpret_cast<typeof(F.function)>(&I_gbd_r_F), &params};
+    Igbd_r_3d_params params = {sigma, t, D, rng.uniform(0, 1) * ptot};
+    gsl_function F = {
+        reinterpret_cast<typeof(F.function)>(&Igbd_r_3d_F), &params};
 
     Real low(sigma), high(sigma + 10 * std::sqrt(6 * D * t));
 
