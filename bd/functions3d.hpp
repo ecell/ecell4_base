@@ -11,12 +11,13 @@ namespace ecell4
 namespace bd
 {
 
-Position3 random_unit_vector_3d(RandomNumberGenerator& rng);
+Real I_bd_3d(Real const& sigma, Real const& t, Real const& D);
+
+Position3 random_spherical_uniform(RandomNumberGenerator& rng, Real const& r);
 Position3 random_displacement_3d(
     RandomNumberGenerator& rng, Real const& t, Real const& D);
-Real drawR_gbd(
-    RandomNumberGenerator& rng, Real const sigma, Real const& t, Real const& D);
-Real I_bd_3d(Real const& sigma, Real const& t, Real const& D);
+Position3 random_ipv_3d(
+    RandomNumberGenerator& rng, Real const& sigma, Real const& t, Real const& D);
 
 } // bd
 

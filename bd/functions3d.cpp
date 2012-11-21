@@ -1,3 +1,5 @@
+#include <gsl/gsl_roots.h>
+
 #include "functions3d.hpp"
 
 
@@ -7,9 +9,19 @@ namespace ecell4
 namespace bd
 {
 
-Position3 random_unit_vector_3d(RandomNumberGenerator& rng)
+Position3 random_spherical_uniform(
+    RandomNumberGenerator& rng, Real const& r)
 {
-    return Position3(1, 0, 0);
+    Real a(0), b(0), r2(1);
+    while (r2 > 0.25)
+    {
+        a = rng.uniform(0, 1) - 0.5;
+        b = rng.uniform(0, 1) - 0.5;
+        r2 = a * a + b * b;
+    }
+
+    const Real scale(8 * r * std::sqrt(0.25 - r2));
+    return Position3(a * scale, b * scale, r * (8 * r2 - 1));
 }
 
 Position3 random_displacement_3d(
@@ -39,10 +51,103 @@ Real I_bd_3d(Real const& sigma, Real const& t, Real const& D)
     return result;
 }
 
-Real drawR_gbd(
-    RandomNumberGenerator& rng, Real const sigma, Real const& t, Real const& D)
+Real I_bd_r(Real r, Real sigma, Real t, Real D)
 {
-    return 0;
+    const Real sqrtPi(std::sqrt(M_PI));
+
+    const Real Dt(D * t);
+    const Real Dt2(Dt + Dt);
+    const Real Dt4(Dt2 + Dt2);
+    const Real sqrtDt(std::sqrt(Dt));
+    // const Real sqrtDt4(std::sqrt(Dt4));
+    const Real sqrtDt4(2 * sqrtDt);
+    const Real sigmasq(sigma * sigma);
+
+    const Real sigmacb(sigmasq * sigma);
+    const Real rcb(gsl_pow_3(r));
+
+    const Real rsigma(r * sigma);
+
+    const Real rps_sq(gsl_pow_2(r + sigma)), rms_sq(gsl_pow_2(r - sigma));
+
+    const Real term1(-2 * sqrtDt / sqrtPi);
+    const Real term2(std::exp(-sigmasq / Dt) * (sigmasq - Dt2));
+    const Real term3(-std::exp(-rps_sq / Dt4) * (rms_sq + rsigma - Dt2));
+    const Real term4(std::exp(-rms_sq / Dt4) * (rps_sq - rsigma - Dt2));
+    const Real term5(-sigmasq * 3 + Dt2);
+
+    const Real term6((sigmacb - rcb) * erf((r - sigma) / sqrtDt4));
+    const Real term7(-(sigmacb + sigmacb) * erf(sigma / sqrtDt));
+    const Real term8((sigmacb + rcb) * erf((r + sigma) / sqrtDt4));
+
+    const Real result(
+        (term1 * (term2 + term3 + term4 + term5) + term6 + term7 + term8) / 6);
+    return result;
+}
+
+struct g_bd_params
+{
+    const Real sigma;
+    const Real t;
+    const Real D;
+    const Real target;
+};
+
+static Real I_gbd_r_F(Real r, const g_bd_params* params)
+{
+    return I_bd_r(r, params->sigma, params->t, params->D) - params->target;
+}
+
+Real random_ipv_length_3d(
+    RandomNumberGenerator& rng, Real const& sigma, Real const& t, Real const& D)
+{
+    const Real epsabs(1e-18), epsrel(1e-12);
+
+    const Real I(I_bd_3d(sigma, t, D));
+
+    g_bd_params params = {sigma, t, D, rng.uniform(0, 1) * I};
+    gsl_function F = {reinterpret_cast<typeof(F.function)>(&I_gbd_r_F), &params};
+
+    Real low(sigma), high(sigma + 10 * std::sqrt(6 * D * t));
+
+    gsl_root_fsolver* solver(gsl_root_fsolver_alloc(gsl_root_fsolver_brent));
+    gsl_root_fsolver_set(solver, &F, low, high);
+
+    const unsigned int max_num_iter(100);
+    unsigned int i(0);
+    while (true)
+    {
+        gsl_root_fsolver_iterate(solver);
+
+        low = gsl_root_fsolver_x_lower(solver);
+        high = gsl_root_fsolver_x_upper(solver);
+        int status(gsl_root_test_interval(low, high, epsabs, epsrel));
+
+        if (status == GSL_CONTINUE)
+        {
+            if (i >= max_num_iter)
+            {
+                gsl_root_fsolver_free(solver);
+                throw std::runtime_error("failed to converge");
+            }
+        }
+        else
+        {
+            break;
+        }
+
+        ++i;
+    }
+
+    gsl_root_fsolver_free(solver);
+    return low;
+}
+
+Position3 random_ipv_3d(
+    RandomNumberGenerator& rng, Real const& sigma, Real const& t, Real const& D)
+{
+    const Real r(random_ipv_length_3d(rng, sigma, t, D));
+    return random_spherical_uniform(rng, r);
 }
 
 } // bd

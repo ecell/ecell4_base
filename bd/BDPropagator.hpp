@@ -71,9 +71,9 @@ public:
         return random_displacement_3d(rng(), dt(), particle.D());
     }
 
-    inline Position3 draw_unit_vector()
+    inline Position3 draw_ipv(Real const& sigma, Real const& t, Real const& D)
     {
-        return random_unit_vector_3d(rng());
+        return random_ipv_3d(rng(), sigma, t, D);
     }
 
 protected:

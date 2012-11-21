@@ -129,8 +129,8 @@ bool BDPropagator::attempt_reaction(
                         return false;
                     }
 
-                    Real const pair_distance(drawR_gbd(rng(), r12, dt(), D12));
-                    Position3 const ipv(draw_unit_vector() * pair_distance);
+                    Position3 const ipv(draw_ipv(r12, dt(), D12));
+
                     newpos1 = world_.apply_boundary(
                         particle.position() + ipv * (D1 / D12));
                     newpos2 = world_.apply_boundary(
