@@ -87,6 +87,7 @@ ReactionRule *init_reaction_from_json(json js_reaction, F translate_func) {
 	return r;
 }
 
+
 template <typename F>
 Model *init_model_from_json(json js_model, F translate_func) {
 	Model *m = new Model;
@@ -97,6 +98,29 @@ Model *init_model_from_json(json js_model, F translate_func) {
 	}
 	return m;
 }
+
+template <typename F>
+Model *init_model_from_csv(string &csv_model, F translate_func) {
+	bool header = true, first = true;
+	Model *m = new Model;
+	pfi::text::csv_parser psr(csv_model);
+	for(pfi::text::csv_iterator p(psr), q; p != q; ++p) {
+		if (header == true && first == true) {
+			first = false;
+			continue;
+		}
+		ReactionRule *r = new ReactionRule;
+		string reactant( (*p)[1] );
+		string product( (*p)[3] );
+		r->add_reactant( translate_func(reactant), atoi((*p)[2]) );
+		r->add_product( translate_func(product), atoi((*p)[4]) );
+		r->set_kinetic_parameter( double(atof( (*p)[5] )) );
+		m->reactions.push_back( *r );
+		delete r;
+	}
+	return m;
+}
+
 
 //Specieと内部におけるそのIDとの変換をどうしようか。。。？
 //とりあえずはこのファンクタを変換テーブルの代わりにした。
@@ -127,8 +151,11 @@ int main(void)
 	World *w = init_world_from_csv( csv_file_content, translater );
 	std::cout << *w << std::endl;
 
-	string json_model(read_file_all("./data/reaction.json"));
-	Model *m = init_model_from_json( string_to_json(json_model), translater );
+	//string json_model(read_file_all("./data/reaction.json"));
+	//Model *m = init_model_from_json( string_to_json(json_model), translater );
+	
+	string csv_model(read_file_all("./data/reaction.csv"));
+	Model *m = init_model_from_csv( csv_model, translater );
 
 	GillespieSolver gs(*w, *m);
 	for(double elapse = 0.0; elapse < 10.0; elapse += gs.run(1.0)) {
