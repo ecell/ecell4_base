@@ -1,7 +1,9 @@
 
 #include "pficommon/text/json.h"
+#include "pficommon/text/csv.h"
 #include "GillespieWorld.hpp"
 #include "GillespieSolver.hpp"
+#include <cstdlib>
 
 
 using namespace pfi::text::json;
@@ -43,6 +45,24 @@ World *init_world_from_json(json js_world, F translate_func ) {
 		string species(json_cast<string>(js_world[idx]["species"]));
 		int initVal(json_cast<int>(js_world[idx]["initVal"]));
 
+		world->add_specie(translate_func(species), initVal);
+	}
+	return world;
+}
+
+
+template <typename F>
+World *init_world_from_csv(string csv_str, F translate_func) {
+	bool header = true, first = true;
+	World *world = new World();
+	pfi::text::csv_parser psr(csv_str);
+	for(pfi::text::csv_iterator p(psr), q; p != q; ++p) {
+		if (header == true && first == true) {
+			first = false;
+			continue;
+		}
+		string species( (*p)[0] );
+		int initVal( atoi((*p)[1]) );
 		world->add_specie(translate_func(species), initVal);
 	}
 	return world;
@@ -101,8 +121,10 @@ public:
 int main(void)
 {
 	Specie_to_Id translater;
-	string json_file_content(read_file_all("./data/init.json"));
-	World *w = init_world_from_json( string_to_json(json_file_content), translater );
+	//string json_file_content(read_file_all("./data/init.json"));
+	//World *w = init_world_from_json( string_to_json(json_file_content), translater );
+	string csv_file_content(read_file_all("./data/init.csv"));
+	World *w = init_world_from_csv( csv_file_content, translater );
 	std::cout << *w << std::endl;
 
 	string json_model(read_file_all("./data/reaction.json"));
