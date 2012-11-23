@@ -6,7 +6,7 @@ APPNAME = 'gillespie_solver'
 VERSION = '0.1.0'
 
 # Header files which this module requires.
-header_list = ['pficommon/text/json.h', 'pficommon/text/csv.h', 'gsl/gsl_rng.h', 'gsl/gsl_randist.h', 'gsl/gsl_sf_log.h', 'vector', 'map', 'numeric']
+header_list = ['vector', 'map', 'numeric']
 
 def options(opt):
 	opt.add_option('--unit_test', action='store_true', default=False, help='unit test')
@@ -15,6 +15,9 @@ def options(opt):
 
 def configure(conf):
 	conf.load('compiler_cxx')
+
+	conf.check_cfg(package='gsl', uselib_store='gsl', atleat_version='1.13', args='--cflags --libs')
+	conf.check_cfg(package='pficommon', uselib_store='pficommon', atleat_version='1.0.0', args='--cflags --libs')
 
 	# Checking the existence of header files.
 	for header in header_list:
@@ -35,7 +38,7 @@ def build(bld):
 	bld.shlib(
 		source = ['./GillespieSolver.cpp', './GillespieWorld.cpp', './serialize.cpp'],
 		includes = ['.'],
-		lib = ['gsl', 'gslcblas', 'pficommon_text'],
+		uselib = ['gsl', 'pficommon'],
 		target = 'gillespie'
 	)
 	
