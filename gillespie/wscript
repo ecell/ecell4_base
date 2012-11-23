@@ -6,7 +6,7 @@ APPNAME = 'gillespie_solver'
 VERSION = '0.1.0'
 
 # Header files which this module requires.
-header_list = ['gsl/gsl_rng.h', 'gsl/gsl_randist.h', 'gsl/gsl_sf_log.h', 'vector', 'map', 'numeric']
+header_list = ['pficommon/text/json.h', 'pficommon/text/csv.h', 'gsl/gsl_rng.h', 'gsl/gsl_randist.h', 'gsl/gsl_sf_log.h', 'vector', 'map', 'numeric']
 
 def options(opt):
 	opt.add_option('--unit_test', action='store_true', default=False, help='unit test')
