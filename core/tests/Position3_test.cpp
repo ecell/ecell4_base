@@ -32,6 +32,7 @@ public:
 
     void test_constructor();
     void test_four_arithmetic_operations();
+    void test_add();
 
 private:
 
@@ -50,3 +51,11 @@ void Position3Test::test_four_arithmetic_operations()
     Position3 pos1(1, 2, 3);
     CPPUNIT_ASSERT_EQUAL(pos1 * 2, Position3(2, 4, 6));
 }
+
+void Position3Test::test_add()
+{
+    Position3 pos1(1,2,3);
+    Position3 pos2(2,4,6);
+    CPPUNIT_ASSERT_EQUAL(pos1 + pos2, Position3(3, 6, 9));
+}
+
