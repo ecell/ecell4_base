@@ -29,10 +29,11 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_cxx waf_unit_test')
-    conf.check_cxx(lib='gsl')
+    
     conf.check_cxx(lib='gslcblas')
     conf.check_cxx(lib='m')
 
+    conf.check_cfg(package='gsl', uselib_store='gsl', atleat_version='1.13', args='--cflags --libs')
     conf.check_cfg(package='cppunit', args='--cflags --libs', mandatory=True)
     if 'dl' not in conf.env.LIB_CPPUNIT:
         l = conf.check(lib='dl', uselib_store='CPPUNIT')
