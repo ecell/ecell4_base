@@ -1,15 +1,8 @@
 #! /usr/bin/env python
 # encoding: utf-8
 
-from waflib.Tools import waf_unit_test
-
-
 top = '.'
 out = 'build'
-
-subdirs = [
-    'tests'
-    ]
 
 hppfiles = [
     'CompartmentSpace.hpp', 'exceptions.hpp', 'Identifier.hpp',
@@ -25,17 +18,13 @@ cppfiles = [
     ]
 
 def options(opt):
-    opt.load('compiler_cxx waf_unit_test')
+    opt.add_option('--unit-test', action='store_true', default=False, help='unit test')
+    opt.load('compiler_cxx')
 
 def configure(conf):
-    conf.load('compiler_cxx waf_unit_test')
-
+    conf.load('compiler_cxx')
     conf.check_cfg(package='gsl', uselib_store='gsl', atleat_version='1.13', args='--cflags --libs')
-    conf.check_cfg(package='cppunit', args='--cflags --libs', mandatory=True)
-    if 'dl' not in conf.env.LIB_CPPUNIT:
-        l = conf.check(lib='dl', uselib_store='CPPUNIT')
-
-    conf.recurse(subdirs)
+    conf.env.unit_test = conf.options.unit_test
 
 def build(bld):
     bld.install_files(
@@ -46,7 +35,12 @@ def build(bld):
         lib = ['gsl', 'gslcblas', 'm'],
         target = 'ecell4-core')
 
-    bld.recurse(subdirs)
+    if bld.env.unit_test == True:
+        bld.program(
+            source = './boosttest.cpp',
+            includes = ['.'],
+            target = 'boosttest',
+            defines = ['UNITTEST'],
+            use = 'ecell4-core',
+        )
 
-    bld.add_post_fun(waf_unit_test.summary)
-    bld.options.all_tests = True
