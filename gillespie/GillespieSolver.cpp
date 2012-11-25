@@ -88,15 +88,15 @@ void ReactionRule::valid_check(void)
 bool ReactionRule::is_valid(void)
 {	return this->valid_react;	}
 
-void ReactionRule::add_reactant(int id, int stoichiometry)
+void ReactionRule::add_reactant(string &sp, int stoichiometry)
 {
-	this->reactants.push_back(std::pair<int,int>(id, stoichiometry));
+	this->reactants.push_back(std::pair<string,int>(sp, stoichiometry));
 	this->valid_check();
 }
 
-void ReactionRule::add_product(int id, int stoichiometry)
+void ReactionRule::add_product(string &sp, int stoichiometry)
 {
-	this->products.push_back(std::pair<int,int>(id, stoichiometry));
+	this->products.push_back(std::pair<string,int>(sp, stoichiometry));
 	this->valid_check();
 }
 void ReactionRule::set_kinetic_parameter(double new_k)

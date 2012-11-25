@@ -9,15 +9,15 @@ class World {
 private:
 public:	// Data members
 	double current_t;
-	std::map<int,int> current_state;	// [id] -> number of substrate	// id => 分子の個数　
+	std::map<std::string,int> current_state;	// [id] -> number of substrate	// id => 分子の個数　
 
 public:
 	World();
 	double get_current_time(void);
 	void set_current_time(double new_t);
-	int get_current_state(int id);
-	void set_current_state(int id, int number);
-	void add_specie(int id, int number);
+	int get_current_state(std::string &sp);
+	void set_current_state(std::string &sp, int number);
+	void add_specie(std::string &sp, int number);
 
 	std::string to_string(void);
 };

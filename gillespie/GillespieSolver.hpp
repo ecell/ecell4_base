@@ -10,11 +10,12 @@
 #ifndef INCLUDE_GUARD_GILLESPIE_SOLVER
 #	define INCLUDE_GUARD_GILLESPIE_SOLVER
 
+using namespace std;
 
 //============================================================
 //	Model and supporting classes.
 //============================================================
-typedef std::pair<int,int> id_stoichiometry;
+typedef std::pair<std::string,int> id_stoichiometry;
 class ReactionRule {
 private:
 	bool valid_react;
@@ -25,8 +26,8 @@ public:	// should be private member?
 	std::vector<id_stoichiometry>	products;	// id
 	double k;
 public:
-	void add_reactant(int id, int stoichiometry);
-	void add_product(int id, int stoichiometry);
+	void add_reactant(string &sp, int stoichiometry);
+	void add_product(string &sp, int stoichiometry);
 	void set_kinetic_parameter(double new_k);
 	bool is_valid(void);
 };
