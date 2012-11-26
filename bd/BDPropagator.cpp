@@ -1,4 +1,5 @@
 #include <ecell4/core/exceptions.hpp>
+#include <ecell4/core/Species.hpp>
 
 #include "BDPropagator.hpp"
 
@@ -264,7 +265,8 @@ bool BDPropagator::remove_particle(ParticleID const& pid)
 
 SpeciesInfo BDPropagator::get_species_info(Species const& sp) const
 {
-    const Real radius(5e-9), D(1e-12); // hard coding!
+    const Real radius(std::atof(sp.get_attribute("radius").c_str()));
+    const Real D(std::atof(sp.get_attribute("D").c_str()));
     SpeciesInfo species_info = {radius, D};
     return species_info;
 }

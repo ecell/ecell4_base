@@ -73,6 +73,10 @@ protected:
     boost::shared_ptr<Model> model_;
     boost::shared_ptr<BDWorld> world_;
 
+    /**
+     * the protected internal state of BDSimulator.
+     * they are needed to be saved/loaded with Visitor pattern.
+     */
     Real dt_;
     Integer num_steps_;
     RandomNumberGenerator& rng_;
