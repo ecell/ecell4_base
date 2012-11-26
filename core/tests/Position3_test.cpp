@@ -1,70 +1,30 @@
-#include <cppunit/TestCase.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/ui/text/TestRunner.h>
+#define BOOST_TEST_MODULE "Position3_test"
+#define BOOST_TEST_NO_LIB
+
+#include <boost/test/included/unit_test.hpp>
 
 #include "../Position3.hpp"
 #include "../linear_algebra.hpp"
 
 using namespace ecell4;
 
-
-class Position3Test
-    : public CppUnit::TestFixture
+BOOST_AUTO_TEST_CASE( Position3Multiply )
 {
-public:
-
-    CPPUNIT_TEST_SUITE(Position3Test);
-    CPPUNIT_TEST(test_constructor);
-    CPPUNIT_TEST(test_four_arithmetic_operations);
-    CPPUNIT_TEST_SUITE_END();
-
-public:
-
-    void setUp()
-    {
-        target = new Position3();
-    }
-
-    void tearDown()
-    {
-        delete target;
-    }
-
-    void test_constructor();
-    void test_four_arithmetic_operations();
-    void test_add();
-    void test_substract();
-
-private:
-
-    Position3 *target;
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(Position3Test);
-
-void Position3Test::test_constructor()
-{
-    CPPUNIT_ASSERT_EQUAL(*target, Position3(0, 0, 0));
+  Position3 pos1(1,2,3);
+  BOOST_CHECK_EQUAL( pos1 * 2, Position3(2,4,6));
 }
 
-void Position3Test::test_four_arithmetic_operations()
+BOOST_AUTO_TEST_CASE( Position3Add )
 {
-    Position3 pos1(1, 2, 3);
-    CPPUNIT_ASSERT_EQUAL(pos1 * 2, Position3(2, 4, 6));
+  Position3 pos2(1,2,3);
+  Position3 pos3(2,4,6);
+  BOOST_CHECK_EQUAL( pos2 + pos3, Position3(3,6,9));
 }
 
-void Position3Test::test_add()
+BOOST_AUTO_TEST_CASE( Position3Sub )
 {
-    Position3 pos1(1,2,3);
-    Position3 pos2(2,4,6);
-    CPPUNIT_ASSERT_EQUAL(pos1 + pos2, Position3(3, 6, 9));
+  Position3 pos4(2,4,6);
+  Position3 pos5(1,2,3);
+  BOOST_CHECK_EQUAL( pos4 - pos5, Position3(1,2,3));
 }
-
-void Position3Test::test_substract()
-{
-    Position3 pos2(2,4,6);
-    Position3 pos1(1,2,3);
-    CPPUNIT_ASSERT_EQUAL(pos2 - pos1, Position3(1, 2, 3));
-}
-
 

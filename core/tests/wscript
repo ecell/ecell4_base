@@ -7,14 +7,6 @@ def configure(conf):
 def build(bld):
     # bld.program(
     #     features='cxx cxxprogram test',
-    #     source='Position3_test.cpp',
-    #     target='Position3_test',
-    #     includes='..',
-    #     lib=['gsl', 'gslcblas', 'm'],
-    #     use='unittestmain ecell4-core CPPUNIT')
-
-    # bld.program(
-    #     features='cxx cxxprogram test',
     #     source='RandomNumberGenerator_test.cpp',
     #     target='RandomNumberGenerator_test',
     #     includes='..',
@@ -51,11 +43,21 @@ def build(bld):
     #     use='CPPUNIT',
     #     target='unittestmain')
 
-    if bld.env.unit_test == True:
-        bld.program(
-            source = 'boosttest.cpp',
-            includes = ['.'],
-            target = 'boosttest',
-            defines = ['UNITTEST'],
-            use = 'ecell4-core',
-        )
+    # if bld.env.unit_test == True:
+    bld.program(
+        source = 'boosttest.cpp',
+        includes = ['.'],
+        target = 'boosttest',
+        defines = ['UNITTEST'],
+        use = 'ecell4-core',
+    )
+
+    bld.program(
+        source='Position3_test.cpp',
+        includes='..',
+        target='Position3_test',
+        lib=['gsl', 'gslcblas', 'm'],
+        use='ecell4-core',
+    )
+
+
