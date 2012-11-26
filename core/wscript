@@ -35,12 +35,4 @@ def build(bld):
         lib = ['gsl', 'gslcblas', 'm'],
         target = 'ecell4-core')
 
-    if bld.env.unit_test == True:
-        bld.program(
-            source = './boosttest.cpp',
-            includes = ['.'],
-            target = 'boosttest',
-            defines = ['UNITTEST'],
-            use = 'ecell4-core',
-        )
-
+    bld.recurse('tests')
