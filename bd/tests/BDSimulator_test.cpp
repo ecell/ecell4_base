@@ -1,7 +1,7 @@
-#include <cppunit/TestCase.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/ui/text/TestRunner.h>
-#include <boost/shared_ptr.hpp>
+#define BOOST_TEST_MODULE "BDSimulator_test"
+#define BOOST_TEST_NO_LIB
+
+#include <boost/test/included/unit_test.hpp>
 
 #include <ecell4/core/NetworkModel.hpp>
 #include "../BDSimulator.hpp"
@@ -10,44 +10,27 @@ using namespace ecell4;
 using namespace ecell4::bd;
 
 
-class BDSimulatorTest
-    : public CppUnit::TestFixture
+BOOST_AUTO_TEST_CASE(BDSimulator_test_constructor)
 {
-public:
+    Real const L(1e-6);
+    Position3 const edge_lengths(L, L, L);
 
-    CPPUNIT_TEST_SUITE(BDSimulatorTest);
-    CPPUNIT_TEST(test_step);
-    CPPUNIT_TEST_SUITE_END();
+    boost::shared_ptr<Model> model(new NetworkModel());
+    boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths));
+    GSLRandomNumberGenerator rng;
 
-public:
+    BDSimulator target(model, world, rng);
+}
 
-    void setUp()
-    {
-        Real const L(1e-6);
-        Position3 const edge_lengths(L, L, L);
-
-        boost::shared_ptr<Model> model(new NetworkModel());
-        boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths));
-        GSLRandomNumberGenerator rng;
-
-        target = new BDSimulator(model, world, rng);
-    }
-
-    void tearDown()
-    {
-        delete target;
-    }
-
-    void test_step();
-
-private:
-
-    BDSimulator *target;
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(BDSimulatorTest);
-
-void BDSimulatorTest::test_step()
+BOOST_AUTO_TEST_CASE(BDSimulator_test_step)
 {
-    target->step();
+    Real const L(1e-6);
+    Position3 const edge_lengths(L, L, L);
+
+    boost::shared_ptr<Model> model(new NetworkModel());
+    boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths));
+    GSLRandomNumberGenerator rng;
+
+    BDSimulator target(model, world, rng);
+    target.step();
 }

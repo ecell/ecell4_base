@@ -31,10 +31,6 @@ def configure(conf):
 
     conf.check_cxx(lib='ecell4-core')
 
-    conf.check_cfg(package='cppunit', args='--cflags --libs', mandatory=True)
-    if 'dl' not in conf.env.LIB_CPPUNIT:
-        l = conf.check(lib='dl', uselib_store='CPPUNIT')
-
     conf.recurse(subdirs)
 
 def build(bld):
