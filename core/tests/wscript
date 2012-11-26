@@ -43,8 +43,8 @@ def build(bld):
     #     use='CPPUNIT',
     #     target='unittestmain')
 
-    # if bld.env.unit_test == True:
     bld.program(
+        features='cxx cxxprogram test',
         source = 'boosttest.cpp',
         includes = ['.'],
         target = 'boosttest',
@@ -53,11 +53,10 @@ def build(bld):
     )
 
     bld.program(
+        features='cxx cxxprogram test',
         source='Position3_test.cpp',
         includes='..',
         target='Position3_test',
         lib=['gsl', 'gslcblas', 'm'],
         use='ecell4-core',
     )
-
-
