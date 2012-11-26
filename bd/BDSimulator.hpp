@@ -60,6 +60,11 @@ public:
         return num_steps_;
     }
 
+    RandomNumberGenerator& rng()
+    {
+        return rng_;
+    }
+
     void step();
     bool step(Real const& upto);
 
