@@ -1,6 +1,3 @@
-[submodule "ode"]
-	path = ode
-	url = git@github.com:ecell/ecell4-ode.git
 [submodule "gillespie"]
 	path = gillespie
 	url = git@github.com:ecell/ecell4-gillespie.git
