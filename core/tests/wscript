@@ -51,11 +51,10 @@ def build(bld):
     #     use='CPPUNIT',
     #     target='unittestmain')
 
-    if bld.env.unit_test == True:
-        bld.program(
-            source = 'boosttest.cpp',
-            includes = ['.'],
-            target = 'boosttest',
-            defines = ['UNITTEST'],
-            use = 'ecell4-core',
-        )
+    bld.program(
+        features='cxx cxxprogram test',
+        source='boosttest.cpp',
+        includes=['.'],
+        target='boosttest',
+        defines=['UNITTEST'],
+        use='ecell4-core')
