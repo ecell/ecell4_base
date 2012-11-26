@@ -6,17 +6,17 @@ namespace ecell4
 
 bool Species::operator==(Species const& rhs) const
 {
-    return true;
+    return (name() == rhs.name());
 }
 
 bool Species::operator<(Species const& rhs) const
 {
-    return false;
+    return (name() < rhs.name());
 }
 
 bool Species::operator>(Species const& rhs) const
 {
-    return false;
+    return (name() > rhs.name());
 }
 
-}
+} // ecell4
