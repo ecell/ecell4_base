@@ -6,7 +6,6 @@
 
 #include "functions3d.hpp"
 #include "BDWorld.hpp"
-#include "BDSimulatorState.hpp"
 
 
 namespace ecell4
@@ -25,23 +24,23 @@ class BDPropagator
 {
 public:
 
-    BDPropagator(Model& model, BDWorld& world, BDSimulatorState& state)
-        : model_(model), world_(world), state_(state), max_retry_count_(1)
+    BDPropagator(Model& model, BDWorld& world, RandomNumberGenerator& rng, Real const& dt)
+        : model_(model), world_(world), rng_(rng), dt_(dt), max_retry_count_(1)
     {
         queue_ = world_.get_particles();
-        shuffle(state_.rng, queue_);
+        shuffle(rng_, queue_);
     }
 
     bool operator()();
 
     inline Real dt() const
     {
-        return state_.dt;
+        return dt_;
     }
 
     inline RandomNumberGenerator& rng()
     {
-        return state_.rng;
+        return rng_;
     }
 
     bool attempt_reaction(ParticleID const& pid, Particle const& particle);
@@ -91,7 +90,8 @@ protected:
 
     Model& model_;
     BDWorld& world_;
-    BDSimulatorState& state_;
+    RandomNumberGenerator& rng_;
+    Real dt_;
 };
 
 } // bd

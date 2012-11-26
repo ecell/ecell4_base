@@ -10,21 +10,21 @@ namespace bd
 void BDSimulator::step()
 {
     {
-        BDPropagator propagator(*model_, *world_, *state_);
+        BDPropagator propagator(*model_, *world_, rng_, dt_);
         while (propagator())
         {
             ; // do nothing here
         }
     }
 
-    set_t(t() + dt());
-    ++(*state_).num_steps;
+    set_t(t() + dt_);
+    ++num_steps_;
 }
 
 bool BDSimulator::step(Real const& upto)
 {
-    Real const t_(t()), dt_(dt());
-    Real const next_time(t_ + dt_);
+    Real const t0(t()), dt0(dt_);
+    Real const next_time(t0 + dt0);
 
     if (upto > next_time)
     {
@@ -33,9 +33,9 @@ bool BDSimulator::step(Real const& upto)
     }
     else
     {
-        set_dt(next_time - t_);
+        set_dt(next_time - t0);
         step();
-        set_dt(dt_);
+        set_dt(dt0);
         return true;
     }
 }

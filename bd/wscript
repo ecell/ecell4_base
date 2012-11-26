@@ -13,8 +13,7 @@ subdirs = [
     ]
 
 hppfiles = [
-    'BDWorld.hpp', 'BDSimulator.hpp', 'BDPropagator.hpp', 'BDSimulatorState.hpp',
-    'functions3d.hpp'
+    'BDWorld.hpp', 'BDSimulator.hpp', 'BDPropagator.hpp', 'functions3d.hpp'
     ]
 
 cppfiles = [

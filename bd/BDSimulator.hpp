@@ -9,7 +9,6 @@
 #include <ecell4/core/Simulator.hpp>
 
 #include "BDWorld.hpp"
-#include "BDSimulatorState.hpp"
 #include "BDPropagator.hpp"
 
 
@@ -27,7 +26,7 @@ public:
     BDSimulator(
         boost::shared_ptr<Model> model, boost::shared_ptr<BDWorld> world,
         RandomNumberGenerator& rng)
-        : model_(model), world_(world), state_(new BDSimulatorState(rng))
+        : model_(model), world_(world), rng_(rng), num_steps_(0), dt_(0)
     {
         ;
     }
@@ -44,7 +43,7 @@ public:
 
     Real dt() const
     {
-        return (*state_).dt;
+        return dt_;
     }
 
     void set_dt(Real const& dt)
@@ -53,12 +52,12 @@ public:
         {
             throw std::invalid_argument("The step size must be positive.");
         }
-        (*state_).dt = dt;
+        dt_ = dt;
     }
 
     Integer num_steps() const
     {
-        return (*state_).num_steps;
+        return num_steps_;
     }
 
     void step();
@@ -68,7 +67,10 @@ protected:
 
     boost::shared_ptr<Model> model_;
     boost::shared_ptr<BDWorld> world_;
-    boost::shared_ptr<BDSimulatorState> state_;
+
+    Real dt_;
+    Integer num_steps_;
+    RandomNumberGenerator& rng_;
 };
 
 } // bd
