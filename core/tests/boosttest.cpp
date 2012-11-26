@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE "CompartmentSpace_test"
+#define BOOST_TEST_MODULE "boosttest"
 #define BOOST_TEST_NO_LIB
 
 #include <boost/test/included/unit_test.hpp>
@@ -13,9 +13,6 @@
 
 using namespace ecell4;
 
-
-//____________________________________________________________________________//
-
 // template<typename Timpl_2>
 // void RandomNumberGenerator_test_seed_template()
 // {
@@ -27,20 +24,3 @@ using namespace ecell4;
 // {
 //   RandomNumberGenerator_test_seed_template<GSLRandomNumberGenerator>();
 // }
-
-
-//____________________________________________________________________________//
-
-template<typename Timpl_>
-void CompartmentSpace_test_volume2()
-{
-    Real const volume(1e-18);
-    Timpl_ target(volume);
-    target.set_volume(2 * target.volume());
-}
-
-BOOST_AUTO_TEST_CASE(CompartmentSpace_test_volume)
-{
-    CompartmentSpace_test_volume2<CompartmentSpaceVectorImpl>();
-}
-
