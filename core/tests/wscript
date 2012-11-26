@@ -6,6 +6,7 @@ def configure(conf):
 
 def build(bld):
     bld.program(
+        features='cxx cxxprogram test',
         source='Position3_test.cpp',
         includes='..',
         target='Position3_test',
@@ -14,6 +15,7 @@ def build(bld):
     )
 
     bld.program(
+        features='cxx cxxprogram test',
         source='CompartmentSpace_test.cpp',
         includes='..',
         target='CompartmentSpace_test',
