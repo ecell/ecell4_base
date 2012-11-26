@@ -26,4 +26,5 @@ BOOST_AUTO_TEST_CASE(Species_test_attributes)
     species.set_attribute("attr2", "value2");
     BOOST_CHECK_EQUAL(species.get_attribute("attr1"), "value1");
     BOOST_CHECK_EQUAL(species.get_attribute("attr2"), "value2");
+    species.remove_attribute("attr1");
 }

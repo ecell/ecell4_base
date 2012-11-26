@@ -32,7 +32,7 @@ public:
     typename attributes_container_type::mapped_type get_attribute(
         std::string const& name_attr) const
     {
-        attributes_container_type::const_iterator
+        typename attributes_container_type::const_iterator
             i(attributes_.find(name_attr));
         if (i == attributes_.end())
         {
@@ -47,6 +47,18 @@ public:
         typename attributes_container_type::mapped_type value)
     {
         attributes_[name_attr] = value;
+    }
+
+    void remove_attribute(std::string const& name_attr)
+    {
+        typename attributes_container_type::iterator
+            i(attributes_.find(name_attr));
+        if (i == attributes_.end())
+        {
+            throw NotFound("attribute not found");
+        }
+
+        attributes_.erase(i);
     }
 
     bool operator==(Species const& rhs) const;
