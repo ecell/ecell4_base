@@ -9,7 +9,8 @@ top = '.'
 out = 'build'
 
 subdirs = [
-    'tests'
+    'tests',
+    'samples'
     ]
 
 hppfiles = [
