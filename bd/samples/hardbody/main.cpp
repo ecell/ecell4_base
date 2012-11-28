@@ -24,7 +24,7 @@ void print_particle_position(BDWorld const& world, ParticleID const& pid)
  */
 int main(int argc, char** argv)
 {
-    /// simulation paramters
+    /// simulation parameters
     const Real L(1e-6);
     std::string D("5e-12"), radius("5e-9");
     Position3 const edge_lengths(L, L, L);
@@ -45,9 +45,9 @@ int main(int argc, char** argv)
     boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths));
 
     /// create a Particle, and inject it into BDWorld
-    SpeciesInfo info((*world).get_species_info(sp1));
+    SpeciesInfo info1((*world).get_species_info(sp1));
     Particle const p1(
-        sp1, Position3(0, 0, 0), info.radius, info.D);
+        sp1, Position3(0, 0, 0), info1.radius, info1.D);
     ParticleID const pid1((*world).new_particle(p1));
 
     /// instatiate BDSimulator
@@ -55,7 +55,6 @@ int main(int argc, char** argv)
     sim.set_dt(1e-6);
 
     /// run and log by the millisecond
-    const Real upto(1e-3);
     for (unsigned int i(0); i <= 10; ++i)
     {
         while (sim.step(1e-3 * i))
