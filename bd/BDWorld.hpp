@@ -13,7 +13,7 @@ namespace ecell4
 namespace bd
 {
 
-struct SpeciesInfo
+struct ParticleInfo
 {
     Real const radius;
     Real const D;
@@ -46,15 +46,15 @@ public:
     }
 
     /**
-     * draw attributes of species and return it as a species info.
+     * draw attributes of species and return it as a particle info.
      * @param sp a species
-     * @return info a species info
+     * @return info a particle info
      */
-    SpeciesInfo get_species_info(Species const& sp) const
+    ParticleInfo get_particle_info(Species const& sp) const
     {
         const Real radius(std::atof(sp.get_attribute("radius").c_str()));
         const Real D(std::atof(sp.get_attribute("D").c_str()));
-        SpeciesInfo info = {radius, D};
+        ParticleInfo info = {radius, D};
         return info;
     }
 
