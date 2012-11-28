@@ -33,7 +33,8 @@ bool BDPropagator::operator()()
     }
 
     Position3 const newpos(
-        particle.position() + draw_displacement(particle));
+        world_.apply_boundary(
+            particle.position() + draw_displacement(particle)));
     Particle particle_to_update(
         particle.species(), newpos, particle.radius(), particle.D());
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
