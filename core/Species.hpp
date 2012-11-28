@@ -24,6 +24,11 @@ public:
         ;
     }
 
+    std::string serial() const
+    {
+        return name();
+    }
+
     std::string name() const
     {
         return name_;
