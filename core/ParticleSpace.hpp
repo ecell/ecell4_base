@@ -5,6 +5,7 @@
 // #include <gsl/gsl_pow_int.h>
 
 #include "types.hpp"
+#include "functions.hpp"
 #include "Position3.hpp"
 #include "Particle.hpp"
 #include "Species.hpp"
