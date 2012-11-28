@@ -13,6 +13,12 @@ namespace ecell4
 namespace bd
 {
 
+struct SpeciesInfo
+{
+    Real const radius;
+    Real const D;
+};
+
 class BDWorld
 {
 public:
@@ -23,6 +29,11 @@ public:
         ;
     }
 
+    /**
+     * create and add a new particle
+     * @param p a particle
+     * @return pid a particle id
+     */
     ParticleID new_particle(Particle const& p)
     {
         ParticleID pid(pidgen_());
@@ -32,6 +43,19 @@ public:
         // }
         (*ps_).update_particle(pid, p);
         return pid;
+    }
+
+    /**
+     * draw attributes of species and return it as a species info.
+     * @param sp a species
+     * @return info a species info
+     */
+    SpeciesInfo get_species_info(Species const& sp) const
+    {
+        const Real radius(std::atof(sp.get_attribute("radius").c_str()));
+        const Real D(std::atof(sp.get_attribute("D").c_str()));
+        SpeciesInfo info = {radius, D};
+        return info;
     }
 
     Real const& t() const

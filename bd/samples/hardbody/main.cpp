@@ -24,9 +24,9 @@ int main(int argc, char** argv)
     (*model).add_species(sp1);
 
     boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths));
+    SpeciesInfo info((*world).get_species_info(sp1));
     Particle const p1(
-        sp1, Position3(0, 0, 0),
-        std::atof(radius.c_str()), std::atof(D.c_str()));
+        sp1, Position3(0, 0, 0), info.radius, info.D);
     (*world).new_particle(p1);
 
     GSLRandomNumberGenerator rng;
