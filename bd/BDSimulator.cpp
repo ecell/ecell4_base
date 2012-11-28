@@ -26,17 +26,22 @@ bool BDSimulator::step(Real const& upto)
     Real const t0(t()), dt0(dt());
     Real const next_time(t0 + dt0);
 
+    if (upto <= t0)
+    {
+        return false;
+    }
+
     if (upto > next_time)
     {
         step();
-        return false;
+        return true;
     }
     else
     {
-        set_dt(next_time - t0);
+        set_dt(upto - t0);
         step();
         set_dt(dt0);
-        return true;
+        return false;
     }
 }
 
