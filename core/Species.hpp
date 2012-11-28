@@ -17,6 +17,7 @@ class Species
 public:
 
     typedef std::map<std::string, std::string> attributes_container_type;
+    typedef std::string serial_type;
 
     Species(std::string const& name = "")
         : name_(name)
@@ -24,7 +25,7 @@ public:
         ;
     }
 
-    std::string serial() const
+    serial_type serial() const
     {
         return name();
     }
