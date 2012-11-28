@@ -73,11 +73,6 @@ public:
         return (*ps_).edge_lengths();
     }
 
-    Integer num_species() const
-    {
-        return (*ps_).num_species();
-    }
-
     Integer num_particles() const
     {
         return (*ps_).num_particles();

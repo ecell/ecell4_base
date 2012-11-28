@@ -4,6 +4,7 @@
 #include <map>
 
 #include "types.hpp"
+#include "exceptions.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
 
@@ -16,16 +17,61 @@ class CompartmentSpace
 {
 public:
 
-    virtual Real const& volume() const = 0;
+    virtual Real const& volume() const
+    {
+        throw NotImplemented("volume() not implemented");
+    }
+
+    virtual Integer num_species() const
+    {
+        throw NotImplemented("num_species() not implemented");
+    }
+
+    virtual bool has_species(Species const& sp) const
+    {
+        throw NotImplemented("has_species() not implemented");
+    }
+
+    virtual Integer num_molecules(Species const& sp) const
+    {
+        throw NotImplemented("num_molecules() not implemented");
+    }
+
+    /**
+     * set volume.
+     * this function is a member of CompartmentSpace.
+     * @param volume a nonzero positive Real value
+     */
     virtual void set_volume(Real volume) = 0;
 
+    /**
+     * add a species.
+     * this function is a member of CompartmentSpace.
+     * @param sp a species
+     */
     virtual void add_species(Species const& sp) = 0;
-    virtual void remove_species(Species const& sp) = 0;
-    virtual Integer num_species() const = 0;
-    virtual bool has_species(Species const& sp) const = 0;
 
-    virtual Integer num_molecules(Species const& sp) const = 0;
+    /**
+     * remove a species.
+     * this function is a member of CompartmentSpace.
+     * @param sp a species
+     */
+    virtual void remove_species(Species const& sp) = 0;
+
+    /**
+     * increase the number of molecules.
+     * this function is a member of CompartmentSpace.
+     * @param sp a species
+     * @param num a number of molecules
+     */
     virtual void add_molecules(Species const& sp, Integer const& num) = 0;
+
+    /**
+     * decrease the number of molecules.
+     * this function is a member of CompartmentSpace.
+     * @param sp a species
+     * @param num a number of molecules
+     */
     virtual void remove_molecules(Species const& sp, Integer const& num) = 0;
 };
 

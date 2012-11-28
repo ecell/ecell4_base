@@ -6,6 +6,7 @@
 
 #include "types.hpp"
 #include "functions.hpp"
+#include "exceptions.hpp"
 #include "Position3.hpp"
 #include "Particle.hpp"
 #include "Species.hpp"
@@ -22,11 +23,26 @@ class ParticleSpace
 {
 public:
 
-    virtual Position3 const& edge_lengths() const = 0;
+    virtual Position3 const& edge_lengths() const
+    {
+        throw NotImplemented("edge_lengths() not implemented");
+    }
 
-    virtual Integer num_species() const = 0;
-    virtual Integer num_particles() const = 0;
-    virtual Integer num_particles(Species const& species) const = 0;
+    virtual Integer num_particles() const
+    {
+        throw NotImplemented("num_particles() not implemented");
+    }
+
+    virtual Integer num_particles(Species const& species) const
+    {
+        throw NotImplemented("num_particles() not implemented");
+    }
+
+    virtual std::vector<std::pair<ParticleID, Particle> >
+    get_particles(Species const& species) const
+    {
+        throw NotImplemented("get_particles() not implemented");
+    }
 
     virtual bool has_particle(ParticleID const& pid) const = 0;
     virtual bool update_particle(ParticleID const& pid, Particle const& p) = 0;
@@ -36,8 +52,6 @@ public:
     get_particle(ParticleID const& pid) const = 0;
     virtual std::vector<std::pair<ParticleID, Particle> >
     get_particles() const = 0;
-    virtual std::vector<std::pair<ParticleID, Particle> >
-    get_particles(Species const& species) const = 0;
 
     Position3 periodic_transpose(
         Position3 const& pos1, Position3 const& pos2) const
@@ -129,7 +143,6 @@ public:
         return edge_lengths_;
     }
 
-    Integer num_species() const;
     Integer num_particles() const;
     Integer num_particles(Species const& species) const;
 
