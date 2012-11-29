@@ -21,7 +21,7 @@ public:
     typedef std::vector<Species> species_container_type;
 
     typedef
-    std::map<typename ReactionRule::reactants_type, std::set<ReactionRule> >
+    std::map<ReactionRule::reactants_type, std::set<ReactionRule> >
     reaction_rules_type;
 
     NetworkModel()
@@ -35,10 +35,12 @@ public:
         Species const& sp1, Species const& sp2) const;
 
     bool add_species(Species const& sp);
+    void remove_species(Species const& sp);
     bool has_species(Species const& sp) const;
 
     bool add_reaction_rule(ReactionRule const& rr);
     void remove_reaction_rule(ReactionRule const& rr);
+    bool has_reaction_rule(ReactionRule const& rr) const;
 
 protected:
 
