@@ -77,8 +77,6 @@ protected:
     attributes_container_type attributes_;
 };
 
-typedef std::vector<Species> SpeciesVector;
-
 } // ecell4
 
 #endif /* __SPECIES_HPP */

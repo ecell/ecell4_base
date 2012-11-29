@@ -15,7 +15,13 @@ class ReactionRule
 {
 public:
 
-    typedef std::vector<Species> SpeciesVector;
+    /**
+     * a type of the container of reactants
+     * std::multiset allows multiple keys with equal values,
+     * but looses the original order at the registration.
+     */
+    typedef std::multiset<Species> reactants_type;
+    typedef std::multiset<Species> products_type;
 
     ReactionRule()
         : reactants_(), products_()
@@ -28,12 +34,12 @@ public:
         return k_;
     }
 
-    SpeciesVector const& reactants() const
+    reactants_type const& reactants() const
     {
         return reactants_;
     }
 
-    SpeciesVector const& products() const
+    products_type const& products() const
     {
         return products_;
     }
@@ -49,19 +55,44 @@ public:
 
     void add_reactant(Species const& sp)
     {
-        reactants_.push_back(sp);
+        reactants_.insert(sp);
     }
 
     void add_product(Species const& sp)
     {
-        products_.push_back(sp);
+        products_.insert(sp);
     }
 
 protected:
 
     Real k_;
-    SpeciesVector reactants_, products_;
+    reactants_type reactants_;
+    products_type products_;
 };
+
+inline bool operator<(ReactionRule const& lhs, ReactionRule const& rhs)
+{
+    if (lhs.reactants() < rhs.reactants())
+    {
+        return true;
+    }
+    else if (lhs.reactants() > rhs.reactants())
+    {
+        return false;
+    }
+    return (lhs.products() < rhs.products());
+}
+
+inline bool operator==(ReactionRule const& lhs, ReactionRule const& rhs)
+{
+    return ((lhs.reactants() == rhs.reactants())
+            && (lhs.products() == rhs.products()));
+}
+
+inline bool operator!=(ReactionRule const& lhs, ReactionRule const& rhs)
+{
+    return !(lhs == rhs);
+}
 
 typedef std::vector<ReactionRule> ReactionRuleVector;
 

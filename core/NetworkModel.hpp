@@ -1,6 +1,8 @@
 #ifndef __NETWORK_MODEL_HPP
 #define __NETWORK_MODEL_HPP
 
+#include <set>
+
 #include "types.hpp"
 
 #include "Species.hpp"
@@ -16,7 +18,14 @@ class NetworkModel
 {
 public:
 
+    typedef std::vector<Species> species_container_type;
+
+    typedef
+    std::map<typename ReactionRule::reactants_type, std::set<ReactionRule> >
+    reaction_rules_type;
+
     NetworkModel()
+        : species_(), reaction_rules_()
     {
         ;
     }
@@ -27,11 +36,14 @@ public:
 
     bool add_species(Species const& sp);
     bool has_species(Species const& sp) const;
+
     bool add_reaction_rule(ReactionRule const& rr);
+    void remove_reaction_rule(ReactionRule const& rr);
 
 protected:
 
-    SpeciesVector species_;
+    species_container_type species_;
+    reaction_rules_type reaction_rules_;
 };
 
 } // ecell4

@@ -81,7 +81,7 @@ bool BDPropagator::attempt_reaction(
         prob += rr.k() * dt();
         if (prob > rnd)
         {
-            SpeciesVector const& products(rr.products());
+            typename ReactionRule::products_type const& products(rr.products());
             switch (products.size())
             {
             case 0:
@@ -203,7 +203,7 @@ bool BDPropagator::attempt_reaction(
         }
         if (prob > rnd)
         {
-            SpeciesVector const& products(rr.products());
+            typename ReactionRule::products_type const& products(rr.products());
             switch (products.size())
             {
             case 0:
