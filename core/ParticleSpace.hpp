@@ -130,7 +130,7 @@ class ParticleSpaceVectorImpl
 public:
 
     typedef std::vector<std::pair<ParticleID, Particle> > container_type;
-    typedef typename container_type::size_type index_type;
+    typedef container_type::size_type index_type;
     typedef std::map<ParticleID, index_type> index_map_type;
 
     ParticleSpaceVectorImpl(Position3 const& edge_lengths)
