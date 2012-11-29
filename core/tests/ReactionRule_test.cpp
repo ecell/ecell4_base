@@ -20,6 +20,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_k)
     Real const epsrel(1e-6);
     Real const k(1.5);
     ReactionRule rr;
+    rr.set_k(0);
     rr.set_k(k);
     BOOST_CHECK_CLOSE(rr.k(), k, k * epsrel);
     BOOST_CHECK_THROW(rr.set_k(-k), std::invalid_argument);

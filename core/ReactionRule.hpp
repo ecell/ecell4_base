@@ -24,7 +24,7 @@ public:
     typedef std::multiset<Species> products_type;
 
     ReactionRule()
-        : reactants_(), products_()
+        : k(0), reactants_(), products_()
     {
         ;
     }
@@ -46,7 +46,7 @@ public:
 
     void set_k(Real const& k)
     {
-        if (k <= 0)
+        if (k < 0)
         {
             throw std::invalid_argument("a kinetic rate must be positive.");
         }
