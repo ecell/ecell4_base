@@ -26,7 +26,12 @@ public:
         Species const& sp1, Species const& sp2) const;
 
     bool add_species(Species const& sp);
+    bool has_species(Species const& sp) const;
     bool add_reaction_rule(ReactionRule const& rr);
+
+protected:
+
+    SpeciesVector species_;
 };
 
 } // ecell4

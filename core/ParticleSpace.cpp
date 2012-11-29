@@ -14,20 +14,6 @@ Real pow_2(Real const& a)
     return a * a;
 }
 
-Integer ParticleSpaceVectorImpl::num_species() const
-{
-    std::vector<Species> species_;
-    for (container_type::const_iterator i(particles_.begin());
-         i != particles_.end(); ++i)
-    {
-        species_.push_back((*i).second.species());
-    }
-
-    std::sort(species_.begin(), species_.end());
-    return static_cast<Integer>(
-        species_.end() - std::unique(species_.begin(), species_.end()));
-}
-
 Integer ParticleSpaceVectorImpl::num_particles() const
 {
     return static_cast<Integer>(particles_.size());

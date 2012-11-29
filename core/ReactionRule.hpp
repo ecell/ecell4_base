@@ -2,6 +2,7 @@
 #define __REACTION_RULE_HPP
 
 #include <vector>
+#include <stdexcept>
 
 #include "types.hpp"
 #include "Species.hpp"
@@ -27,19 +28,33 @@ public:
         return k_;
     }
 
-    virtual SpeciesVector const& reactants() const
+    SpeciesVector const& reactants() const
     {
         return reactants_;
     }
 
-    virtual SpeciesVector const& products() const
+    SpeciesVector const& products() const
     {
         return products_;
     }
 
-    virtual void add_product(Species const& sp) const
+    void set_k(Real const& k)
     {
-        ;
+        if (k <= 0)
+        {
+            throw std::invalid_argument("a kinetic rate must be positive.");
+        }
+        k_ = k;
+    }
+
+    void add_reactant(Species const& sp)
+    {
+        reactants_.push_back(sp);
+    }
+
+    void add_product(Species const& sp)
+    {
+        products_.push_back(sp);
     }
 
 protected:

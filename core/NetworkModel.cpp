@@ -1,3 +1,6 @@
+#include <algorithm>
+
+#include "exceptions.hpp"
 #include "NetworkModel.hpp"
 
 
@@ -20,7 +23,19 @@ ReactionRuleVector NetworkModel::query_reaction_rules(
 
 bool NetworkModel::add_species(Species const& sp)
 {
+    if (has_species(sp))
+    {
+        throw AlreadyExists("species already exists");
+    }
+    species_.push_back(sp);
     return true;
+}
+
+bool NetworkModel::has_species(Species const& sp) const
+{
+    SpeciesVector::const_iterator i(
+        std::find(species_.begin(), species_.end(), sp));
+    return (i != species_.end());
 }
 
 bool NetworkModel::add_reaction_rule(ReactionRule const& rr)

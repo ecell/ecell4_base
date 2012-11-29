@@ -45,6 +45,17 @@ public:
     }
 
     /**
+     * return if a species is in the model, or not.
+     * this function is a part of the trait of NetworkModel.
+     * @param species a Species
+     * @return if the species exists, or not
+     */
+    virtual bool has_species(Species const& sp) const
+    {
+        throw NotSupported("add_species is not supported in this model class");
+    }
+
+    /**
      * add a concrete reaction rule to the model.
      * this function is a part of the trait of NetworkModel.
      * @param rr a new ReactionRule

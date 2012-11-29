@@ -10,6 +10,7 @@
 #include <boost/array.hpp>
 
 #include "types.hpp"
+#include "functions.hpp"
 
 
 namespace ecell4

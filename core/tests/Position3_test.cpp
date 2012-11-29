@@ -8,23 +8,23 @@
 
 using namespace ecell4;
 
-BOOST_AUTO_TEST_CASE( Position3Multiply )
+
+BOOST_AUTO_TEST_CASE(Position3_test_multiply)
 {
   Position3 pos1(1,2,3);
-  BOOST_CHECK_EQUAL( pos1 * 2, Position3(2,4,6));
+  BOOST_CHECK_EQUAL(pos1 * 2, Position3(2,4,6));
 }
 
-BOOST_AUTO_TEST_CASE( Position3Add )
+BOOST_AUTO_TEST_CASE(Position3_test_add)
 {
   Position3 pos2(1,2,3);
   Position3 pos3(2,4,6);
-  BOOST_CHECK_EQUAL( pos2 + pos3, Position3(3,6,9));
+  BOOST_CHECK_EQUAL(pos2 + pos3, Position3(3,6,9));
 }
 
-BOOST_AUTO_TEST_CASE( Position3Sub )
+BOOST_AUTO_TEST_CASE(Position3_test_sub)
 {
   Position3 pos4(2,4,6);
   Position3 pos5(1,2,3);
-  BOOST_CHECK_EQUAL( pos4 - pos5, Position3(1,2,3));
+  BOOST_CHECK_EQUAL(pos4 - pos5, Position3(1,2,3));
 }
-

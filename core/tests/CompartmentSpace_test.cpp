@@ -1,50 +1,24 @@
-#include <cppunit/TestCase.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/ui/text/TestRunner.h>
+#define BOOST_TEST_MODULE "CompartmentSpace_test"
+#define BOOST_TEST_NO_LIB
+
+#include <boost/test/included/unit_test.hpp>
+#include <boost/test/test_case_template.hpp>
 
 #include "../types.hpp"
 #include "../CompartmentSpace.hpp"
 
 using namespace ecell4;
 
-
-template <typename Timpl_>
-class CompartmentSpaceTest
-    : public CppUnit::TestFixture
+template<typename Timpl_>
+void CompartmentSpace_test_volume_template()
 {
-public:
-
-    typedef Timpl_ implementation_type;
-
-    CPPUNIT_TEST_SUITE(CompartmentSpaceTest);
-    CPPUNIT_TEST(test_volume);
-    CPPUNIT_TEST_SUITE_END();
-
-public:
-
-    void setUp()
-    {
-        Real const volume(1e-18);
-        target = new implementation_type(volume);
-    }
-
-    void tearDown()
-    {
-        delete target;
-    }
-
-    void test_volume();
-
-private:
-
-    CompartmentSpace *target;
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(
-    CompartmentSpaceTest<CompartmentSpaceVectorImpl>);
-
-template <typename Timpl_>
-void CompartmentSpaceTest<Timpl_>::test_volume()
-{
-    target->set_volume(2 * target->volume());
+    Real const volume(1e-18);
+    Timpl_ target(volume);
+    target.set_volume(2 * target.volume());
 }
+
+BOOST_AUTO_TEST_CASE(CompartmentSpace_test_volume)
+{
+    CompartmentSpace_test_volume_template<CompartmentSpaceVectorImpl>();
+}
+

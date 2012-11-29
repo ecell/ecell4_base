@@ -8,30 +8,31 @@ from waflib import Logs
 top = '.'
 out = 'build'
 
+subdirs = [
+    'tests',
+    'samples'
+    ]
+
 hppfiles = [
-    'CompartmentSpace.hpp', 'exceptions.hpp', 'Identifier.hpp',
-    'Journal.hpp', 'linear_algebra.hpp', 'Model.hpp', 'NetworkModel.hpp',
-    'Particle.hpp', 'ParticleSpace.hpp', 'Position3.hpp',
-    'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',
-    'Simulator.hpp', 'Space.hpp', 'Species.hpp', 'functions.hpp', 'types.hpp'
+    'BDWorld.hpp', 'BDSimulator.hpp', 'BDPropagator.hpp', 'functions3d.hpp'
     ]
 
 cppfiles = [
-    'Journal.cpp', 'Species.cpp', 'ParticleSpace.cpp',
-    'CompartmentSpace.cpp', 'NetworkModel.cpp', 'Position3.cpp'
+    'BDSimulator.cpp', 'BDPropagator.cpp', 'functions3d.cpp'
     ]
 
 def options(opt):
-    # opt.add_option(
-    #     '--unit-test', action='store_true', default=False, help='unit test')
-    opt.load('compiler_cxx')
+    opt.load('compiler_cxx waf_unit_test')
 
 def configure(conf):
-    conf.load('compiler_cxx')
-    conf.check_cfg(
-        package='gsl', uselib_store='gsl', atleat_version='1.13',
-        args='--cflags --libs')
-    # conf.env.unit_test = conf.options.unit_test
+    conf.load('compiler_cxx waf_unit_test')
+    conf.check_cxx(lib='gsl')
+    conf.check_cxx(lib='gslcblas')
+    conf.check_cxx(lib='m')
+
+    conf.check_cxx(lib='ecell4-core')
+
+    conf.recurse(subdirs)
 
 def summary(bld):
     '''borrowed from waf demos/unit_test/wscript
@@ -54,14 +55,15 @@ def summary(bld):
 
 def build(bld):
     bld.install_files(
-        '${PREFIX}/include/ecell4/core', hppfiles)
+        '${PREFIX}/ecell/bd', hppfiles)
+
     bld.shlib(
         source = cppfiles,
         includes = ['.'],
-        lib = ['gsl', 'gslcblas', 'm'],
-        target = 'ecell4-core')
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
+        target = 'ecell4-bd')
 
-    bld.recurse('tests')
+    bld.recurse(subdirs)
 
     # bld.add_post_fun(waf_unit_test.summary)
     bld.add_post_fun(summary)
