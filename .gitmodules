@@ -1,3 +1,0 @@
-[submodule "gillespie"]
-	path = gillespie
-	url = git@github.com:ecell/ecell4-gillespie.git
