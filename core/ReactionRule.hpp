@@ -24,7 +24,7 @@ public:
     typedef std::multiset<Species> products_type;
 
     ReactionRule()
-        : k(0), reactants_(), products_()
+        : k_(0), reactants_(), products_()
     {
         ;
     }
