@@ -12,7 +12,13 @@ ReactionRuleVector NetworkModel::query_reaction_rules(Species const& sp) const
     ReactionRule::reactants_type reactants;
     reactants.insert(sp);
     reaction_rules_type::const_iterator i(reaction_rules_.find(reactants));
-    ReactionRuleVector retval((*i).second.begin(), (*i).second.end());
+    ReactionRuleVector retval;
+    if (i != reaction_rules_.end())
+    {
+        retval.reserve((*i).second.size());
+        std::copy(
+            (*i).second.begin(), (*i).second.end(), std::back_inserter(retval));
+    }
     return retval;
 }
 
@@ -23,7 +29,13 @@ ReactionRuleVector NetworkModel::query_reaction_rules(
     reactants.insert(sp1);
     reactants.insert(sp2);
     reaction_rules_type::const_iterator i(reaction_rules_.find(reactants));
-    ReactionRuleVector retval((*i).second.begin(), (*i).second.end());
+    ReactionRuleVector retval;
+    if (i != reaction_rules_.end())
+    {
+        retval.reserve((*i).second.size());
+        std::copy(
+            (*i).second.begin(), (*i).second.end(), std::back_inserter(retval));
+    }
     return retval;
 }
 
