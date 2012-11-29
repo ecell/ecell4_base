@@ -19,8 +19,8 @@ struct Position3
     : public boost::array<Real, 3>
 {
     typedef boost::array<Real, 3> base_type;
-    typedef typename base_type::value_type value_type;
-    typedef typename base_type::size_type size_type;
+    typedef base_type::value_type value_type;
+    typedef base_type::size_type size_type;
 
     Position3& operator+=(Position3 const& rhs);
     Position3& operator-=(Position3 const& rhs);
