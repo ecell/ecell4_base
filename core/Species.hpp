@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 
+#include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "exceptions.hpp"
 
@@ -16,8 +17,9 @@ class Species
 {
 public:
 
-    typedef std::map<std::string, std::string> attributes_container_type;
     typedef std::string serial_type;
+    typedef get_mapper_mf<std::string, std::string>::type
+    attributes_container_type;
 
     Species(std::string const& name = "")
         : name_(name)

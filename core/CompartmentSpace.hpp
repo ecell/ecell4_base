@@ -1,8 +1,7 @@
 #ifndef __COMPARTMENT_SPACE_HPP
 #define __COMPARTMENT_SPACE_HPP
 
-#include <map>
-
+#include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "exceptions.hpp"
 #include "Species.hpp"
@@ -81,7 +80,7 @@ class CompartmentSpaceVectorImpl
 public:
 
     typedef std::vector<Integer>::size_type index_type;
-    typedef std::map<Species, index_type> index_map_type;
+    typedef get_mapper_mf<Species, index_type>::type index_map_type;
 
     CompartmentSpaceVectorImpl(Real const& volume)
         : volume_(1)

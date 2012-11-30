@@ -4,6 +4,7 @@
 #include <cmath>
 // #include <gsl/gsl_pow_int.h>
 
+#include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "functions.hpp"
 #include "exceptions.hpp"
@@ -131,7 +132,7 @@ public:
 
     typedef std::vector<std::pair<ParticleID, Particle> > container_type;
     typedef container_type::size_type index_type;
-    typedef std::map<ParticleID, index_type> index_map_type;
+    typedef get_mapper_mf<ParticleID, index_type>::type index_map_type;
 
     ParticleSpaceVectorImpl(Position3 const& edge_lengths)
     {
