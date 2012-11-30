@@ -11,13 +11,17 @@ ReactionRuleVector NetworkModel::query_reaction_rules(Species const& sp) const
 {
     ReactionRule::reactants_type reactants;
     reactants.insert(sp);
-    reaction_rules_type::const_iterator i(reaction_rules_.find(reactants));
+    reaction_rules_map_type::const_iterator
+        i(reaction_rules_map_.find(reactants));
     ReactionRuleVector retval;
-    if (i != reaction_rules_.end())
+    if (i != reaction_rules_map_.end())
     {
         retval.reserve((*i).second.size());
-        std::copy(
-            (*i).second.begin(), (*i).second.end(), std::back_inserter(retval));
+        for (reaction_rules_map_type::mapped_type::const_iterator
+                 j((*i).second.begin()); j != (*i).second.end(); ++j)
+        {
+            retval.push_back(reaction_rules_[*j]);
+        }
     }
     return retval;
 }
@@ -28,13 +32,17 @@ ReactionRuleVector NetworkModel::query_reaction_rules(
     ReactionRule::reactants_type reactants;
     reactants.insert(sp1);
     reactants.insert(sp2);
-    reaction_rules_type::const_iterator i(reaction_rules_.find(reactants));
+    reaction_rules_map_type::const_iterator
+        i(reaction_rules_map_.find(reactants));
     ReactionRuleVector retval;
-    if (i != reaction_rules_.end())
+    if (i != reaction_rules_map_.end())
     {
         retval.reserve((*i).second.size());
-        std::copy(
-            (*i).second.begin(), (*i).second.end(), std::back_inserter(retval));
+        for (reaction_rules_map_type::mapped_type::const_iterator
+                 j((*i).second.begin()); j != (*i).second.end(); ++j)
+        {
+            retval.push_back(reaction_rules_[*j]);
+        }
     }
     return retval;
 }
@@ -69,38 +77,65 @@ bool NetworkModel::has_species(Species const& sp) const
 
 bool NetworkModel::add_reaction_rule(ReactionRule const& rr)
 {
-    std::pair<reaction_rules_type::mapped_type::iterator, bool>
-        retval(reaction_rules_[rr.reactants()].insert(rr));
-    if (!retval.second)
+    reaction_rules_container_type::const_iterator
+        i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
+    if (i != reaction_rules_.end())
     {
         throw AlreadyExists("reaction rule already exists");
     }
+
+    reaction_rules_map_[rr.reactants()].insert(reaction_rules_.size());
+    reaction_rules_.push_back(rr);
     return true;
 }
 
 void NetworkModel::remove_reaction_rule(ReactionRule const& rr)
 {
-    reaction_rules_type::iterator
-        i(reaction_rules_.find(rr.reactants()));
+    reaction_rules_container_type::iterator
+        i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
     if (i == reaction_rules_.end())
     {
         throw NotFound("reaction rule not found");
     }
-    else if ((*i).second.erase(rr) == 0) /// remove a reaction rule here
+
+    reaction_rules_container_type::size_type const
+        idx(i - reaction_rules_.begin()), last_idx(reaction_rules_.size() - 1);
+    reaction_rules_map_type::iterator
+        j(reaction_rules_map_.find(rr.reactants()));
+    if (j == reaction_rules_map_.end())
     {
-        throw NotFound("reaction rule not found");
+        throw IllegalState("no corresponding map key found");
     }
+    else if ((*j).second.erase(idx) == 0)
+    {
+        throw IllegalState("no corresponding map value found");
+    }
+
+    if (idx < last_idx)
+    {
+        reaction_rules_container_type::value_type const
+            last_value(reaction_rules_[last_idx]);
+        (*i) = last_value;
+        j = reaction_rules_map_.find(last_value.reactants());
+        if (j == reaction_rules_map_.end())
+        {
+            throw IllegalState("no corresponding map key for the last found");
+        }
+        else if ((*j).second.erase(last_idx) == 0)
+        {
+            throw IllegalState("no corresponding map value for the last found");
+        }
+        (*j).second.insert(idx);
+    }
+
+    reaction_rules_.pop_back();
 }
 
 bool NetworkModel::has_reaction_rule(ReactionRule const& rr) const
 {
-    reaction_rules_type::const_iterator
-        i(reaction_rules_.find(rr.reactants()));
-    if (i == reaction_rules_.end())
-    {
-        return false;
-    }
-    return ((*i).second.find(rr) != (*i).second.end());
+    reaction_rules_container_type::const_iterator
+        i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
+    return (i != reaction_rules_.end());
 }
 
 } // ecell4

@@ -53,6 +53,8 @@ BOOST_AUTO_TEST_CASE(NetworkModel_test_reaction_rule)
     BOOST_CHECK_THROW(model.add_reaction_rule(rr1), AlreadyExists);
     model.remove_reaction_rule(rr1);
     BOOST_CHECK_THROW(model.remove_reaction_rule(rr1), NotFound);
+    model.remove_reaction_rule(rr3);
+    model.remove_reaction_rule(rr2);
 }
 
 BOOST_AUTO_TEST_CASE(NetworkModel_test_query_reaction_rules)
