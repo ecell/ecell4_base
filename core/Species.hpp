@@ -18,7 +18,7 @@ class Species
 public:
 
     typedef std::string serial_type;
-    typedef get_mapper_mf<std::string, std::string>::type
+    typedef utils::get_mapper_mf<std::string, std::string>::type
     attributes_container_type;
 
     Species(std::string const& name = "")

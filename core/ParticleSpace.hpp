@@ -132,7 +132,7 @@ public:
 
     typedef std::vector<std::pair<ParticleID, Particle> > container_type;
     typedef container_type::size_type index_type;
-    typedef get_mapper_mf<ParticleID, index_type>::type index_map_type;
+    typedef utils::get_mapper_mf<ParticleID, index_type>::type index_map_type;
 
     ParticleSpaceVectorImpl(Position3 const& edge_lengths)
     {

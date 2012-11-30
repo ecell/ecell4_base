@@ -80,7 +80,7 @@ class CompartmentSpaceVectorImpl
 public:
 
     typedef std::vector<Integer>::size_type index_type;
-    typedef get_mapper_mf<Species, index_type>::type index_map_type;
+    typedef utils::get_mapper_mf<Species, index_type>::type index_map_type;
 
     CompartmentSpaceVectorImpl(Real const& volume)
         : volume_(1)

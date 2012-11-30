@@ -12,6 +12,12 @@
 #endif /* HAVE_UNORDERED_MAP */
 
 
+namespace ecell4
+{
+
+namespace utils
+{
+
 /**
    a metafunction for generating a type for an efficient map algorithm.
    in the current version of C++, the following line is not accepted:
@@ -32,5 +38,9 @@ struct get_mapper_mf
     typedef std::map<Tkey_, Tval_> type;
 #endif
 };
+
+} // utils
+
+} // ecell4
 
 #endif /* __GET_MAPPER_MF_HPP */
