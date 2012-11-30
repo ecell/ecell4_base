@@ -52,7 +52,17 @@ public:
      */
     virtual bool has_species(Species const& sp) const
     {
-        throw NotSupported("add_species is not supported in this model class");
+        throw NotSupported("has_species is not supported in this model class");
+    }
+
+    /**
+     * remove a species in the model.
+     * this function is a part of the trait of NetworkModel.
+     * @param species a new Species
+     */
+    virtual void remove_species(Species const& sp)
+    {
+        throw NotSupported("remove_species is not supported in this model class");
     }
 
     /**
@@ -65,6 +75,29 @@ public:
     {
         throw NotSupported(
             "add_reaction_rule is not supported in this model class");
+    }
+
+    /**
+     * remove a reaction rule in the model.
+     * this function is a part of the trait of NetworkModel.
+     * @param rr a new ReactionRule
+     */
+    virtual void remove_reaction_rule(ReactionRule const& rr)
+    {
+        throw NotSupported(
+            "remove_reaction_rule is not supported in this model class");
+    }
+
+    /**
+     * return if a reaction rule is in the model, or not.
+     * this function is a part of the trait of NetworkModel.
+     * @param rr a reaction rule
+     * @return if the reaction rule exists, or not
+     */
+    virtual bool has_reaction_rule(ReactionRule const& rr)
+    {
+        throw NotSupported(
+            "has_reaction_rule is not supported in this model class");
     }
 };
 

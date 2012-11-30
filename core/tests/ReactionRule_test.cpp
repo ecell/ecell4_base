@@ -12,7 +12,7 @@ using namespace ecell4;
 
 BOOST_AUTO_TEST_CASE(ReactionRule_test_constructor)
 {
-    ReactionRule rr();
+    ReactionRule rr;
 }
 
 BOOST_AUTO_TEST_CASE(ReactionRule_test_k)
