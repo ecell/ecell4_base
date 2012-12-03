@@ -23,6 +23,8 @@ class BDWorld
 {
 public:
 
+    typedef ParticleSpace::particle_container_type particle_container_type;
+
     BDWorld(Position3 const& edge_lengths)
         : ps_(new ParticleSpaceVectorImpl(edge_lengths))
     {
@@ -83,6 +85,11 @@ public:
         return (*ps_).num_particles(species);
     }
 
+    particle_container_type const& particles() const
+    {
+        return (*ps_).particles();
+    }
+
     bool has_particle(ParticleID const& pid) const
     {
         return (*ps_).has_particle(pid);
@@ -93,9 +100,9 @@ public:
         return (*ps_).update_particle(pid, p);
     }
 
-    bool remove_particle(ParticleID const& pid)
+    void remove_particle(ParticleID const& pid)
     {
-        return (*ps_).remove_particle(pid);
+        (*ps_).remove_particle(pid);
     }
 
     std::pair<ParticleID, Particle>
@@ -104,37 +111,37 @@ public:
         return (*ps_).get_particle(pid);
     }
 
-    std::vector<std::pair<ParticleID, Particle> > get_particles() const
+    std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
-        return (*ps_).get_particles();
+        return (*ps_).list_particles();
     }
 
     std::vector<std::pair<ParticleID, Particle> >
-    get_particles(Species const& species) const
+    list_particles(Species const& species) const
     {
-        return (*ps_).get_particles(species);
+        return (*ps_).list_particles(species);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    get_particles_within_radius(
+    list_particles_within_radius(
         Position3 const& pos, Real const& radius) const
     {
-        return (*ps_).get_particles_within_radius(pos, radius);
+        return (*ps_).list_particles_within_radius(pos, radius);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    get_particles_within_radius(
+    list_particles_within_radius(
         Position3 const& pos, Real const& radius, ParticleID const& ignore) const
     {
-        return (*ps_).get_particles_within_radius(pos, radius, ignore);
+        return (*ps_).list_particles_within_radius(pos, radius, ignore);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    get_particles_within_radius(
+    list_particles_within_radius(
         Position3 const& pos, Real const& radius,
         ParticleID const& ignore1, ParticleID const& ignore2) const
     {
-        return (*ps_).get_particles_within_radius(pos, radius, ignore1, ignore2);
+        return (*ps_).list_particles_within_radius(pos, radius, ignore1, ignore2);
     }
 
     inline Position3 periodic_transpose(

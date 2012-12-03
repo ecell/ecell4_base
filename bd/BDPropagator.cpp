@@ -38,7 +38,7 @@ bool BDPropagator::operator()()
     Particle particle_to_update(
         particle.species(), newpos, particle.radius(), particle.D());
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-        overlapped(world_.get_particles_within_radius(
+        overlapped(world_.list_particles_within_radius(
                        newpos, particle.radius(), pid));
 
     switch (overlapped.size())
@@ -95,7 +95,7 @@ bool BDPropagator::attempt_reaction(
                 Real const D_new(info.D);
 
                 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-                    overlapped(world_.get_particles_within_radius(
+                    overlapped(world_.list_particles_within_radius(
                                    particle.position(), radius_new, pid));
                 if (overlapped.size() > 0)
                 {
@@ -139,11 +139,11 @@ bool BDPropagator::attempt_reaction(
                         particle.position() - ipv * (D2 / D12));
                     std::vector<
                         std::pair<std::pair<ParticleID, Particle>, Real> >
-                        overlapped1(world_.get_particles_within_radius(
+                        overlapped1(world_.list_particles_within_radius(
                                         newpos1, radius1, pid));
                     std::vector<
                         std::pair<std::pair<ParticleID, Particle>, Real> >
-                        overlapped2(world_.get_particles_within_radius(
+                        overlapped2(world_.list_particles_within_radius(
                                        newpos2, radius2, pid));
                     if (overlapped1.size() == 0 && overlapped2.size() == 0)
                     {
@@ -226,7 +226,7 @@ bool BDPropagator::attempt_reaction(
                     world_.apply_boundary((pos1 * D2 + pos2 * D1) / D12));
 
                 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-                    overlapped(world_.get_particles_within_radius(
+                    overlapped(world_.list_particles_within_radius(
                                    newpos, radius_new, pid1, pid2));
                 if (overlapped.size() > 0)
                 {

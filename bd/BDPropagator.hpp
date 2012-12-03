@@ -21,7 +21,7 @@ public:
     BDPropagator(Model& model, BDWorld& world, RandomNumberGenerator& rng, Real const& dt)
         : model_(model), world_(world), rng_(rng), dt_(dt), max_retry_count_(1)
     {
-        queue_ = world_.get_particles();
+        queue_ = world_.list_particles();
         shuffle(rng_, queue_);
     }
 
