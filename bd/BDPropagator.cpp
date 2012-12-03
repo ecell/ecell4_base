@@ -83,7 +83,7 @@ bool BDPropagator::attempt_reaction(
         prob += rr.k() * dt();
         if (prob > rnd)
         {
-            typename ReactionRule::products_type const& products(rr.products());
+            ReactionRule::product_container_type const& products(rr.products());
             switch (products.size())
             {
             case 0:
@@ -112,7 +112,7 @@ bool BDPropagator::attempt_reaction(
             }
             case 2:
             {
-                ReactionRule::products_type::iterator
+                ReactionRule::product_container_type::iterator
                     it(products.begin());
                 Species const& species_new1(*it);
                 Species const& species_new2(*(++it));
@@ -207,7 +207,7 @@ bool BDPropagator::attempt_reaction(
         }
         if (prob > rnd)
         {
-            typename ReactionRule::products_type const& products(rr.products());
+            ReactionRule::product_container_type const& products(rr.products());
             switch (products.size())
             {
             case 0:

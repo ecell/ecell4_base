@@ -9,7 +9,7 @@ namespace ecell4
 
 ReactionRuleVector NetworkModel::query_reaction_rules(Species const& sp) const
 {
-    ReactionRule::reactants_type reactants;
+    ReactionRule::reactant_container_type reactants;
     reactants.insert(sp);
     reaction_rules_map_type::const_iterator
         i(reaction_rules_map_.find(reactants));
@@ -29,7 +29,7 @@ ReactionRuleVector NetworkModel::query_reaction_rules(Species const& sp) const
 ReactionRuleVector NetworkModel::query_reaction_rules(
     Species const& sp1, Species const& sp2) const
 {
-    ReactionRule::reactants_type reactants;
+    ReactionRule::reactant_container_type reactants;
     reactants.insert(sp1);
     reactants.insert(sp2);
     reaction_rules_map_type::const_iterator

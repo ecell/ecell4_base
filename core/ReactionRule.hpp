@@ -23,8 +23,8 @@ public:
      * std::multiset allows multiple keys with equal values,
      * but looses the original order at the registration.
      */
-    typedef std::multiset<Species> reactants_type;
-    typedef std::multiset<Species> products_type;
+    typedef std::multiset<Species> reactant_container_type;
+    typedef std::multiset<Species> product_container_type;
 
     ReactionRule()
         : k_(0), reactants_(), products_()
@@ -37,12 +37,12 @@ public:
         return k_;
     }
 
-    reactants_type const& reactants() const
+    reactant_container_type const& reactants() const
     {
         return reactants_;
     }
 
-    products_type const& products() const
+    product_container_type const& products() const
     {
         return products_;
     }
@@ -69,8 +69,8 @@ public:
 protected:
 
     Real k_;
-    reactants_type reactants_;
-    products_type products_;
+    reactant_container_type reactants_;
+    product_container_type products_;
 };
 
 inline bool operator<(ReactionRule const& lhs, ReactionRule const& rhs)

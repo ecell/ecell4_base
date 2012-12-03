@@ -21,7 +21,7 @@ public:
     typedef std::vector<Species> species_container_type;
     typedef std::vector<ReactionRule> reaction_rules_container_type;
     typedef utils::get_mapper_mf<
-        ReactionRule::reactants_type,
+        ReactionRule::reactant_container_type,
         std::set<reaction_rules_container_type::size_type> >::type
     reaction_rules_map_type;
 

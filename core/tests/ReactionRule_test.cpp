@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_reactants)
     rr.add_reactant(sp2);
     rr.add_reactant(sp1);
 
-    typename ReactionRule::reactants_type const& reactants(rr.reactants());
+    ReactionRule::reactant_container_type const& reactants(rr.reactants());
     BOOST_CHECK_EQUAL(reactants.size(), 3);
     BOOST_CHECK_EQUAL(reactants.count(sp1), 2);
     BOOST_CHECK_EQUAL(reactants.count(sp2), 1);
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_products)
     rr.add_product(sp2);
     rr.add_product(sp1);
 
-    typename ReactionRule::products_type const& products(rr.products());
+    ReactionRule::product_container_type const& products(rr.products());
     BOOST_CHECK_EQUAL(products.size(), 3);
     BOOST_CHECK_EQUAL(products.count(sp1), 2);
     BOOST_CHECK_EQUAL(products.count(sp2), 1);
