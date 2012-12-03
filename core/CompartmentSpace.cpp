@@ -24,7 +24,7 @@ void CompartmentSpaceVectorImpl::set_volume(Real volume)
 
 void CompartmentSpaceVectorImpl::add_species(Species const& sp)
 {
-    index_map_type::const_iterator i(index_map_.find(sp));
+    species_map_type::const_iterator i(index_map_.find(sp));
     if (i != index_map_.end())
     {
         throw AlreadyExists("Species already exists");
@@ -37,17 +37,21 @@ void CompartmentSpaceVectorImpl::add_species(Species const& sp)
 
 void CompartmentSpaceVectorImpl::remove_species(Species const& sp)
 {
-    index_map_type::iterator i(index_map_.find(sp));
+    species_map_type::iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
         throw NotFound("Species not found");
     }
 
-    index_type idx((*i).second), last_idx(num_molecules_.size() - 1);
+    species_map_type::mapped_type
+        idx((*i).second), last_idx(num_molecules_.size() - 1);
     if (idx != last_idx)
     {
-        Species const& last_sp(species_[last_idx]);
-        species_[idx] = last_sp;
+        species_container_type::size_type const
+            idx_(static_cast<species_container_type::size_type>(idx)),
+            last_idx_(static_cast<species_container_type::size_type>(last_idx));
+        Species const& last_sp(species_[last_idx_]);
+        species_[idx_] = last_sp;
         num_molecules_[idx] = num_molecules_[last_idx];
         index_map_[last_sp] = idx;
     }
@@ -59,7 +63,7 @@ void CompartmentSpaceVectorImpl::remove_species(Species const& sp)
 
 bool CompartmentSpaceVectorImpl::has_species(Species const& sp) const
 {
-    index_map_type::const_iterator i(index_map_.find(sp));
+    species_map_type::const_iterator i(index_map_.find(sp));
     return (i != index_map_.end());
 }
 
@@ -70,7 +74,7 @@ Integer CompartmentSpaceVectorImpl::num_species() const
 
 Integer CompartmentSpaceVectorImpl::num_molecules(Species const& sp) const
 {
-    index_map_type::const_iterator i(index_map_.find(sp));
+    species_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
         throw NotFound("Species not found");
@@ -87,7 +91,7 @@ void CompartmentSpaceVectorImpl::add_molecules(
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    index_map_type::const_iterator i(index_map_.find(sp));
+    species_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
         throw NotFound("Species not found");
@@ -104,7 +108,7 @@ void CompartmentSpaceVectorImpl::remove_molecules(
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    index_map_type::const_iterator i(index_map_.find(sp));
+    species_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
         throw NotFound("Species not found");

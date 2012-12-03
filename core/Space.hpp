@@ -117,9 +117,9 @@ public:
      * @return a list of particles
      */
     virtual std::vector<std::pair<ParticleID, Particle> >
-    get_particles(Species const& species) const
+    list_particles(Species const& species) const
     {
-        throw NotSupported("get_particles() is not supported by this space class");
+        throw NotSupported("list_particles() is not supported by this space class");
     }
 
 protected:

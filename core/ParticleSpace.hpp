@@ -24,6 +24,9 @@ class ParticleSpace
 {
 public:
 
+    typedef std::vector<std::pair<ParticleID, Particle> >
+    particle_container_type;
+
     virtual Position3 const& edge_lengths() const
     {
         throw NotImplemented("edge_lengths() not implemented");
@@ -40,19 +43,21 @@ public:
     }
 
     virtual std::vector<std::pair<ParticleID, Particle> >
-    get_particles(Species const& species) const
+    list_particles(Species const& species) const
     {
-        throw NotImplemented("get_particles() not implemented");
+        throw NotImplemented("list_particles() not implemented");
     }
 
     virtual bool has_particle(ParticleID const& pid) const = 0;
     virtual bool update_particle(ParticleID const& pid, Particle const& p) = 0;
-    virtual bool remove_particle(ParticleID const& pid) = 0;
+    virtual void remove_particle(ParticleID const& pid) = 0;
+
+    virtual particle_container_type const& particles() const = 0;
 
     virtual std::pair<ParticleID, Particle>
     get_particle(ParticleID const& pid) const = 0;
     virtual std::vector<std::pair<ParticleID, Particle> >
-    get_particles() const = 0;
+    list_particles() const = 0;
 
     Position3 periodic_transpose(
         Position3 const& pos1, Position3 const& pos2) const
@@ -113,14 +118,14 @@ public:
     }
 
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    get_particles_within_radius(
+    list_particles_within_radius(
         Position3 const& pos, Real const& radius) const = 0;
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    get_particles_within_radius(
+    list_particles_within_radius(
         Position3 const& pos, Real const& radius,
         ParticleID const& ignore) const = 0;
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    get_particles_within_radius(
+    list_particles_within_radius(
         Position3 const& pos, Real const& radius,
         ParticleID const& ignore1, ParticleID const& ignore2) const = 0;
 };
@@ -130,9 +135,7 @@ class ParticleSpaceVectorImpl
 {
 public:
 
-    typedef std::vector<std::pair<ParticleID, Particle> > container_type;
-    typedef container_type::size_type index_type;
-    typedef utils::get_mapper_mf<ParticleID, index_type>::type index_map_type;
+    typedef ParticleSpace::particle_container_type particle_container_type;
 
     ParticleSpaceVectorImpl(Position3 const& edge_lengths)
     {
@@ -149,22 +152,27 @@ public:
 
     bool has_particle(ParticleID const& pid) const;
     bool update_particle(ParticleID const& pid, Particle const& p);
-    bool remove_particle(ParticleID const& pid);
+    void remove_particle(ParticleID const& pid);
+
+    particle_container_type const& particles() const
+    {
+        return particles_;
+    }
 
     std::pair<ParticleID, Particle> get_particle(ParticleID const& pid) const;
-    std::vector<std::pair<ParticleID, Particle> > get_particles() const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
-    get_particles(Species const& species) const;
+    list_particles(Species const& species) const;
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    get_particles_within_radius(
+    list_particles_within_radius(
         Position3 const& pos, Real const& radius) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    get_particles_within_radius(
+    list_particles_within_radius(
         Position3 const& pos, Real const& radius,
         ParticleID const& ignore) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    get_particles_within_radius(
+    list_particles_within_radius(
         Position3 const& pos, Real const& radius,
         ParticleID const& ignore1, ParticleID const& ignore2) const;
 
@@ -174,9 +182,12 @@ private:
 
 protected:
 
+    typedef utils::get_mapper_mf<
+        ParticleID, particle_container_type::size_type>::type particle_map_type;
+
     Position3 edge_lengths_;
-    container_type particles_;
-    index_map_type index_map_;
+    particle_container_type particles_;
+    particle_map_type index_map_;
 };
 
 } // ecell4

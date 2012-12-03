@@ -21,22 +21,22 @@ Integer ParticleSpaceVectorImpl::num_particles() const
 
 Integer ParticleSpaceVectorImpl::num_particles(Species const& species) const
 {
-    return static_cast<Integer>(get_particles(species).size());
+    return static_cast<Integer>(list_particles(species).size());
 }
 
 bool ParticleSpaceVectorImpl::has_particle(ParticleID const& pid) const
 {
-    index_map_type::const_iterator i(index_map_.find(pid));
+    particle_map_type::const_iterator i(index_map_.find(pid));
     return (i != index_map_.end());
 }
 
 bool ParticleSpaceVectorImpl::update_particle(
     ParticleID const& pid, Particle const& p)
 {
-    index_map_type::const_iterator i(index_map_.find(pid));
+    particle_map_type::const_iterator i(index_map_.find(pid));
     if (i == index_map_.end())
     {
-        container_type::size_type idx(particles_.size());
+        particle_container_type::size_type idx(particles_.size());
         index_map_[pid] = idx;
         particles_.push_back(std::make_pair(pid, p));
         return false;
@@ -48,16 +48,16 @@ bool ParticleSpaceVectorImpl::update_particle(
     }
 }
 
-bool ParticleSpaceVectorImpl::remove_particle(ParticleID const& pid)
+void ParticleSpaceVectorImpl::remove_particle(ParticleID const& pid)
 {
-    index_map_type::const_iterator i(index_map_.find(pid));
+    particle_map_type::const_iterator i(index_map_.find(pid));
     if (i == index_map_.end())
     {
-        // throw NotFound("Particle not found");
-        return false;
+        throw NotFound("particle not found");
     }
 
-    index_type idx((*i).second), last_idx(particles_.size() - 1);
+    particle_map_type::mapped_type
+        idx((*i).second),last_idx(particles_.size() - 1);
     if (idx != last_idx)
     {
         std::pair<ParticleID, Particle> const& last(particles_[last_idx]);
@@ -67,13 +67,12 @@ bool ParticleSpaceVectorImpl::remove_particle(ParticleID const& pid)
 
     particles_.pop_back();
     index_map_.erase((*i).first);
-    return true;
 }
 
 std::pair<ParticleID, Particle> ParticleSpaceVectorImpl::get_particle(
     ParticleID const& pid) const
 {
-    index_map_type::const_iterator i(index_map_.find(pid));
+    particle_map_type::const_iterator i(index_map_.find(pid));
     if (i == index_map_.end())
     {
         throw NotFound("particle not found");
@@ -83,17 +82,17 @@ std::pair<ParticleID, Particle> ParticleSpaceVectorImpl::get_particle(
 }
 
 std::vector<std::pair<ParticleID, Particle> >
-ParticleSpaceVectorImpl::get_particles() const
+ParticleSpaceVectorImpl::list_particles() const
 {
     return particles_;
 }
 
 std::vector<std::pair<ParticleID, Particle> >
-ParticleSpaceVectorImpl::get_particles(Species const& species) const
+ParticleSpaceVectorImpl::list_particles(Species const& species) const
 {
     std::vector<std::pair<ParticleID, Particle> > retval;
 
-    for (container_type::const_iterator i(particles_.begin());
+    for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
         if ((*i).second.species() == species)
@@ -106,13 +105,13 @@ ParticleSpaceVectorImpl::get_particles(Species const& species) const
 }
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-ParticleSpaceVectorImpl::get_particles_within_radius(
+ParticleSpaceVectorImpl::list_particles_within_radius(
     Position3 const& pos, Real const& radius) const
 {
     Real const rsq(pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
-    for (container_type::const_iterator i(particles_.begin());
+    for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
         Real const dsq(distance_sq((*i).second.position(), pos));
@@ -126,13 +125,13 @@ ParticleSpaceVectorImpl::get_particles_within_radius(
 }
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-ParticleSpaceVectorImpl::get_particles_within_radius(
+ParticleSpaceVectorImpl::list_particles_within_radius(
     Position3 const& pos, Real const& radius, ParticleID const& ignore) const
 {
     Real const rsq(pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
-    for (container_type::const_iterator i(particles_.begin());
+    for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
         Real const dsq(distance_sq((*i).second.position(), pos));
@@ -149,14 +148,14 @@ ParticleSpaceVectorImpl::get_particles_within_radius(
 }
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-ParticleSpaceVectorImpl::get_particles_within_radius(
+ParticleSpaceVectorImpl::list_particles_within_radius(
     Position3 const& pos, Real const& radius,
     ParticleID const& ignore1, ParticleID const& ignore2) const
 {
     Real const rsq(pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
-    for (container_type::const_iterator i(particles_.begin());
+    for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
         Real const dsq(distance_sq((*i).second.position(), pos));

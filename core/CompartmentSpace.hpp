@@ -79,9 +79,6 @@ class CompartmentSpaceVectorImpl
 {
 public:
 
-    typedef std::vector<Integer>::size_type index_type;
-    typedef utils::get_mapper_mf<Species, index_type>::type index_map_type;
-
     CompartmentSpaceVectorImpl(Real const& volume)
         : volume_(1)
     {
@@ -102,11 +99,17 @@ public:
 
 protected:
 
+    typedef std::vector<Integer> num_molecules_container_type;
+    typedef std::vector<Species> species_container_type;
+
+    typedef utils::get_mapper_mf<
+        Species, num_molecules_container_type::size_type>::type species_map_type;
+
     Real volume_;
 
-    std::vector<Integer> num_molecules_;
-    std::vector<Species> species_;
-    index_map_type index_map_;
+    num_molecules_container_type num_molecules_;
+    species_container_type species_;
+    species_map_type index_map_;
 };
 
 } // ecell4
