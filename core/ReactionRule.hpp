@@ -1,7 +1,10 @@
 #ifndef __REACTION_RULE_HPP
 #define __REACTION_RULE_HPP
 
+
+
 #include <vector>
+#include <set>
 #include <stdexcept>
 
 #include "types.hpp"

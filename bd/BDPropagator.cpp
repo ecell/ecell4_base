@@ -1,3 +1,5 @@
+#include <iterator>
+
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/Species.hpp>
 
@@ -89,7 +91,7 @@ bool BDPropagator::attempt_reaction(
                 break;
             case 1:
             {
-                Species const& species_new(products[0]);
+                Species const& species_new(*(products.begin()));
                 ParticleInfo const info(world_.get_particle_info(species_new));
                 Real const radius_new(info.radius);
                 Real const D_new(info.D);
@@ -110,8 +112,10 @@ bool BDPropagator::attempt_reaction(
             }
             case 2:
             {
-                Species const& species_new1(products[0]);
-                Species const& species_new2(products[1]);
+                ReactionRule::products_type::iterator
+                    it(products.begin());
+                Species const& species_new1(*it);
+                Species const& species_new2(*(++it));
 
                 ParticleInfo const info1(world_.get_particle_info(species_new1)),
                     info2(world_.get_particle_info(species_new2));
@@ -212,7 +216,7 @@ bool BDPropagator::attempt_reaction(
                 break;
             case 1:
             {
-                Species const& species_new(products[0]);
+                Species const& species_new(*(products.begin()));
                 ParticleInfo info(world_.get_particle_info(species_new));
                 Real const radius_new(info.radius);
                 Real const D_new(info.D);
