@@ -67,7 +67,7 @@ bool BDPropagator::operator()()
 bool BDPropagator::attempt_reaction(
     ParticleID const& pid, Particle const& particle)
 {
-    ReactionRuleVector reaction_rules(
+    std::vector<ReactionRule> reaction_rules(
         model_.query_reaction_rules(particle.species()));
     if (reaction_rules.size() == 0)
     {
@@ -76,7 +76,7 @@ bool BDPropagator::attempt_reaction(
 
     Real const rnd(rng().uniform(0, 1));
     Real prob(0);
-    for (ReactionRuleVector::const_iterator i(reaction_rules.begin());
+    for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
          i != reaction_rules.end(); ++i)
     {
         ReactionRule const& rr(*i);
@@ -179,7 +179,7 @@ bool BDPropagator::attempt_reaction(
     ParticleID const& pid1, Particle const& particle1,
     ParticleID const& pid2, Particle const& particle2)
 {
-    ReactionRuleVector reaction_rules(
+    std::vector<ReactionRule> reaction_rules(
         model_.query_reaction_rules(
             particle1.species(), particle2.species()));
     if (reaction_rules.size() == 0)
@@ -192,7 +192,7 @@ bool BDPropagator::attempt_reaction(
     Real const rnd(rng().uniform(0, 1));
     Real prob(0);
 
-    for (ReactionRuleVector::const_iterator i(reaction_rules.begin());
+    for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
          i != reaction_rules.end(); ++i)
     {
         ReactionRule const& rr(*i);

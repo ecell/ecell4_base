@@ -1,9 +1,6 @@
 #ifndef __REACTION_RULE_HPP
 #define __REACTION_RULE_HPP
 
-
-
-#include <vector>
 #include <set>
 #include <stdexcept>
 
@@ -96,8 +93,6 @@ inline bool operator!=(ReactionRule const& lhs, ReactionRule const& rhs)
 {
     return !(lhs == rhs);
 }
-
-typedef std::vector<ReactionRule> ReactionRuleVector;
 
 } // ecell4
 
