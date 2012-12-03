@@ -20,7 +20,7 @@ public:
      * @param species Species of a reactant
      * @return the vector of ReactionRule(s)
      */
-    virtual ReactionRuleVector query_reaction_rules(
+    virtual std::vector<ReactionRule> query_reaction_rules(
         Species const& sp) const = 0;
 
     /**
@@ -30,16 +30,15 @@ public:
      * @param species2 Species of the second reactant
      * @return the vector of ReactionRule(s)
      */
-    virtual ReactionRuleVector query_reaction_rules(
+    virtual std::vector<ReactionRule> query_reaction_rules(
         Species const& sp1, Species const& sp2) const = 0;
 
     /**
      * add a concrete species to the model.
      * this function is a part of the trait of NetworkModel.
      * @param species a new Species
-     * @return if the species is not registered yet.
      */
-    virtual bool add_species(Species const& sp)
+    virtual void add_species(Species const& sp)
     {
         throw NotSupported("add_species is not supported in this model class");
     }
@@ -71,7 +70,7 @@ public:
      * @param rr a new ReactionRule
      * @return if the reaction rule is not registered yet.
      */
-    virtual bool add_reaction_rule(ReactionRule const& rr)
+    virtual void add_reaction_rule(ReactionRule const& rr)
     {
         throw NotSupported(
             "add_reaction_rule is not supported in this model class");
