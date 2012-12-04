@@ -28,7 +28,7 @@ def options(opt):
     opt.load('compiler_cxx')
 
 def configure(conf):
-    conf.load('compiler_cxx boost')
+    conf.load('compiler_cxx boost doxygen')
     conf.check_cfg(
         package='gsl', uselib_store='gsl', atleat_version='1.13',
         args='--cflags --libs')
