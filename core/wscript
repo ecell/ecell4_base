@@ -28,10 +28,12 @@ def options(opt):
     opt.load('compiler_cxx')
 
 def configure(conf):
-    conf.load('compiler_cxx')
+    conf.load('compiler_cxx boost')
     conf.check_cfg(
         package='gsl', uselib_store='gsl', atleat_version='1.13',
         args='--cflags --libs')
+    conf.check_boost(lib='test')
+
     # conf.env.unit_test = conf.options.unit_test
 
 def summary(bld):
