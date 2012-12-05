@@ -38,6 +38,7 @@ void CompartmentSpace_test_species_template()
     BOOST_CHECK(!target.has_species(sp3));
     target.add_species(sp3);
     BOOST_CHECK(target.has_species(sp3));
+    BOOST_CHECK(target.num_species() == 3);
 
     target.remove_species(sp2);
     BOOST_CHECK(!target.has_species(sp2));
