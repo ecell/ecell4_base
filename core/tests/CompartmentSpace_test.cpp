@@ -45,6 +45,12 @@ void CompartmentSpace_test_species_template()
     BOOST_CHECK_THROW(target.remove_species(sp2), NotFound);
     BOOST_CHECK(target.has_species(sp1));
     BOOST_CHECK(target.has_species(sp3));
+
+    BOOST_CHECK(target.num_molecules(sp1) == 0);
+    target.add_molecules(sp1, 30);
+    BOOST_CHECK(target.num_molecules(sp1) == 30);
+    target.remove_molecules(sp1, 10);
+    BOOST_CHECK(target.num_molecules(sp1) == 20);
 }
 
 BOOST_AUTO_TEST_CASE(CompartmentSpace_test_species)
