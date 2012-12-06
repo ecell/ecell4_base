@@ -34,13 +34,17 @@ def configure(conf):
         args='--cflags --libs')
     conf.check_boost(lib='test')
 
-    if conf.check(header_name='unordered_map.hpp', mandatory=False):
-        conf.define('HAVE_UNORDERED_MAP_HPP', 1)
-    if conf.check(header_name='boost/unordered_map.hpp', mandatory=False):
-        conf.define('HAVE_BOOST_UNORDERED_MAP_HPP', 1)
-    if conf.check(header_name='boost/functional/hash.hpp', mandatory=False):
-        conf.define('HAVE_BOOST_FUNCTIONAL_HASH_HPP', 1)
+    conf.check(header_name='unordered_map.hpp', define_name="HAVE_UNORDERED_MAP_HPP", mandatory=False)
+    conf.check(header_name='boost/unordered_map.hpp', define_name="HAVE_BOOST_UNORDERED_MAP_HPP", mandatory=False)
+    conf.check(header_name='boost/functional/hash.hpp', define_name="HAVE_BOOST_FUNCTIONAL_HASH_HPP", mandatory=False)
 
+    conf.check(fragment='''
+#include <tr1/unordered_map>
+std::tr1::unordered_map<int, int> a, b( a); ''',
+               execute=True,
+               define_name="HAVE_TR1_FUNCTIONAL",
+               mandatory=False)
+                     
     conf.write_config_header('config.h')
     conf.env.store('conf.log')
 
