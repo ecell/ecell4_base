@@ -34,6 +34,16 @@ def configure(conf):
         args='--cflags --libs')
     conf.check_boost(lib='test')
 
+    if conf.check(header_name='unordered_map.hpp', mandatory=False):
+        conf.define('HAVE_UNORDERED_MAP_HPP', 1)
+    if conf.check(header_name='boost/unordered_map.hpp', mandatory=False):
+        conf.define('HAVE_BOOST_UNORDERED_MAP_HPP', 1)
+    if conf.check(header_name='boost/functional/hash.hpp', mandatory=False):
+        conf.define('HAVE_BOOST_FUNCTIONAL_HASH_HPP', 1)
+
+    conf.write_config_header('config.h')
+    conf.env.store('conf.log')
+
     # conf.env.unit_test = conf.options.unit_test
 
 def summary(bld):
@@ -59,6 +69,7 @@ def build(bld):
     bld(doxyfile='Doxyfile', features='doxygen')
     bld.install_files(
         '${PREFIX}/include/ecell4/core', hppfiles)
+        #'${PREFIX}/include/ecell4/core', 'config.h', hppfiles)
     bld.shlib(
         source = cppfiles,
         includes = ['.'],
