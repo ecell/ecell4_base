@@ -14,7 +14,7 @@ hppfiles = [
     'Particle.hpp', 'ParticleSpace.hpp', 'Position3.hpp',
     'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',
     'Simulator.hpp', 'Space.hpp', 'Species.hpp', 'functions.hpp', 'types.hpp',
-    'get_mapper_mf.hpp'
+    'get_mapper_mf.hpp', 'config.h'
     ]
 
 cppfiles = [

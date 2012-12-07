@@ -13,5 +13,8 @@ using namespace ecell4;
 BOOST_AUTO_TEST_CASE(get_mapper_mf_test_type)
 {
   typedef utils::get_mapper_mf<std::string, std::string>::type string_map_type;
-  BOOST_CHECK((boost::is_same<string_map_type, std::map<std::string, std::string> >::value));
+  // typedef std::map<std::string, std::string> expected_map_type;
+  typedef boost::unordered_map<std::string, std::string> expected_map_type;
+
+  BOOST_CHECK((boost::is_same<string_map_type, expected_map_type>::value));
 }

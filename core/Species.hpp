@@ -5,6 +5,16 @@
 #include <vector>
 #include <map>
 
+#include "config.h"
+
+#if defined(HAVE_TR1_FUNCTIONAL)
+#include <tr1/functional>
+#elif defined(HAVE_STD_HASH)
+#include <functional>
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+#include <boost/functional/hash.hpp>
+#endif
+
 #include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "exceptions.hpp"
@@ -80,5 +90,38 @@ protected:
 };
 
 } // ecell4
+
+#if defined(HAVE_TR1_FUNCTIONAL)
+namespace std
+{
+
+namespace tr1
+{
+#elif defined(HAVE_STD_HASH)
+namespace std
+{
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+namespace boost
+{
+#endif
+
+template<>
+struct hash<ecell4::Species>
+{
+    std::size_t operator()(ecell4::Species const& val) const
+    {
+        return hash<ecell4::Species::serial_type>()(val.serial());
+    }
+};
+
+#if defined(HAVE_TR1_FUNCTIONAL)
+} // tr1
+
+} // std
+#elif defined(HAVE_STD_HASH)
+} // std
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+} // boost
+#endif
 
 #endif /* __SPECIES_HPP */

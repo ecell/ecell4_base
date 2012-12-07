@@ -1,7 +1,7 @@
 #ifndef __GET_MAPPER_MF_HPP
 #define __GET_MAPPER_MF_HPP
 
-// #include "config.h"
+#include "config.h"
 
 #if defined(HAVE_UNORDERED_MAP)
 #include <unordered_map>

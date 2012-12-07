@@ -14,6 +14,4 @@ Do following instructions.
 
 ..
 
-  $ ./waf update --file=boost
-  $ ./waf update --file=doxygen
-  $ ./waf configure --prefix=${PREFIX} build install
+  $ ./waf update --files="boost,doxygen" configure --prefix=${PREFIX} build install
