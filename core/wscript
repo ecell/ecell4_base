@@ -25,10 +25,15 @@ cppfiles = [
 def options(opt):
     # opt.add_option(
     #     '--unit-test', action='store_true', default=False, help='unit test')
+    opt.add_option('--doxygen', action='store_true', default=False, help='generate docs using doxygen')
     opt.load('compiler_cxx')
 
 def configure(conf):
-    conf.load('compiler_cxx boost doxygen')
+    if conf.options.doxygen:
+        conf.load('compiler_cxx boost doxygen')
+    else:
+        conf.load('compiler_cxx boost')
+        
     conf.check_cfg(
         package='gsl', uselib_store='gsl', atleat_version='1.13',
         args='--cflags --libs')
@@ -72,7 +77,8 @@ def summary(bld):
             if err: Logs.pprint('RED', 'err: %r' % err)
 
 def build(bld):
-    bld(doxyfile='Doxyfile', features='doxygen')
+    if bld.options.doxygen:
+        bld(doxyfile='Doxyfile', features='doxygen')
     bld.install_files(
         '${PREFIX}/include/ecell4/core', hppfiles)
         #'${PREFIX}/include/ecell4/core', 'config.h', hppfiles)
