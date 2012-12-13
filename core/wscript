@@ -26,7 +26,7 @@ def options(opt):
     # opt.add_option(
     #     '--unit-test', action='store_true', default=False, help='unit test')
     opt.add_option('--doxygen', action='store_true', default=False, help='generate docs using doxygen')
-    opt.load('compiler_cxx')
+    opt.load('compiler_cxx boost')
 
 def configure(conf):
     if conf.options.doxygen:
