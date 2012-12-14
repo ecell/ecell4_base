@@ -49,8 +49,12 @@ std::tr1::unordered_map<int, int> a, b( a); ''',
                define_name="HAVE_TR1_UNORDERED_MAP",
                mandatory=False)
 
-    #conf.check(function_name="std::hash<int>", header_name="tr1/functional", define_name="HAVE_TR1_FUNCTIONAL", mandatory=False)
-                     
+    conf.check_cc(fragment='''
+#include <tr1/functional>
+int main() {std::tr1::hash<int>(); return 0; }''',
+               define_name="HAVE_TR1_FUNCTIONAL",
+               mandatory=False)
+
     conf.write_config_header('config.h')
     conf.env.store('conf.log')
 
