@@ -43,14 +43,13 @@ def configure(conf):
     conf.check(header_name='boost/unordered_map.hpp', define_name="HAVE_BOOST_UNORDERED_MAP_HPP", mandatory=False)
     conf.check(header_name='boost/functional/hash.hpp', define_name="HAVE_BOOST_FUNCTIONAL_HASH_HPP", mandatory=False)
 
-    conf.check(fragment='''
+    conf.check_cc(fragment='''
 #include <tr1/unordered_map>
 std::tr1::unordered_map<int, int> a, b( a); ''',
-               execute=True,
                define_name="HAVE_TR1_UNORDERED_MAP",
                mandatory=False)
 
-    conf.check(function_name="std::hash<int>", header_name="tr1/functional", define_name="HAVE_TR1_FUNCTIONAL", mandatory=False)
+    #conf.check(function_name="std::hash<int>", header_name="tr1/functional", define_name="HAVE_TR1_FUNCTIONAL", mandatory=False)
                      
     conf.write_config_header('config.h')
     conf.env.store('conf.log')
