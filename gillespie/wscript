@@ -1,15 +1,20 @@
 # Build script for Gillespie Solver (draft)
 # vim: syntax=python 
 top = '.'
-out = 'build_with_waf'
-APPNAME = 'gillespie_solver'
-VERSION = '0.1.0'
+out = 'build'
 
 # Header files which this module requires.
 header_list = ['vector', 'map', 'numeric']
 
+hppfiles = [
+	'GillespieSolver.hpp', 'GillespieWorld.hpp', 'GillespieSimulator.hpp'
+	]
+
+cppfiles = [
+	'GillespieSolver.cpp', 'GillespieWorld.cpp', 'GillespieSimulator.cpp', #'serialize.cpp', 
+	]
+
 def options(opt):
-	opt.add_option('--unit_test', action='store_true', default=False, help='unit test')
 	opt.add_option('--enable_debug', action='store_true', default=False, help='debug')
 	opt.load('compiler_cxx')
 
@@ -24,7 +29,6 @@ def configure(conf):
 		conf.check(header_name = header, features = 'c cprogram')
 
 	# Save option flags.
-	conf.env.unit_test = conf.options.unit_test
 	conf.env.enable_debug =  conf.options.enable_debug
 
 	conf.env.append_unique(
@@ -35,20 +39,21 @@ def configure(conf):
 
 def build(bld):
 	# always build libgillespie.so or .dylib(mac)
+	#bld.shlib(
+	#	source = ['./GillespieSolver.cpp', './GillespieWorld.cpp', './serialize.cpp'],
+	#	includes = ['.'],
+	#	uselib = ['gsl', 'pficommon'],
+	#	target = 'gillespie'
+	#)
+
+	bld.install_files(
+		'${PREFIX}/ecell/bd', hppfiles)
+
 	bld.shlib(
-		source = ['./GillespieSolver.cpp', './GillespieWorld.cpp', './serialize.cpp'],
-		includes = ['.'],
-		uselib = ['gsl', 'pficommon'],
-		target = 'gillespie'
-	)
-	
-	# make executable for testing.
-	if bld.env.unit_test == True:
-		bld.program(
-			source='./test.cpp', 
-			includes = ['.'],
-			target = 'gillespie_unit',
-			defines = ['UNITTEST'],
-			use = 'gillespie',
-		)
+		source = cppfiles,
+		includes = ['.', '..'],
+		libpath = ['../build/core'],
+		lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
+		target = 'ecell4-gillespie')
+
 
