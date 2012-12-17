@@ -1,6 +1,8 @@
 #ifndef __NETWORK_MODEL_HPP
 #define __NETWORK_MODEL_HPP
 
+// #include "get_mapper_mf.hpp"
+
 #include <map>
 #include <set>
 
@@ -26,6 +28,10 @@ protected:
     typedef std::map<ReactionRule::reactant_container_type,
                      std::set<reaction_rule_container_type::size_type> >
     reaction_rules_map_type;
+    // typedef utils::get_mapper_mf<
+    // ReactionRule::reactant_container_type,
+    // std::set<reaction_rule_container_type::size_type> >::type
+    // reaction_rules_map_type;
 
 public:
 
