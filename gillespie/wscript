@@ -7,11 +7,11 @@ out = 'build'
 header_list = ['vector', 'map', 'numeric']
 
 hppfiles = [
-	'GillespieSolver.hpp', 'GillespieWorld.hpp', 'GillespieSimulator.hpp'
+	'GillespieWorld.hpp', 'GillespieSimulator.hpp'
 	]
 
 cppfiles = [
-	'GillespieSolver.cpp', 'GillespieWorld.cpp', 'GillespieSimulator.cpp', #'serialize.cpp', 
+	'GillespieWorld.cpp', 'GillespieSimulator.cpp', #'serialize.cpp', 
 	]
 
 def options(opt):
@@ -51,7 +51,7 @@ def build(bld):
 
 	bld.shlib(
 		source = cppfiles,
-		includes = ['.', '..'],
+		includes = ['.', '..', '../build/core' ],
 		libpath = ['../build/core'],
 		lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
 		target = 'ecell4-gillespie')

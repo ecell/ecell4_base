@@ -5,10 +5,11 @@
 #include <boost/shared_ptr.hpp>
 #include <core/RandomNumberGenerator.hpp>
 #include <core/Model.hpp>
+#include <core/NetworkModel.hpp>
 #include <core/Simulator.hpp>
 
 #include "GillespieWorld.hpp"
-#include "GillespieSolver.hpp"
+//#include "GillespieSolver.hpp"
 
 namespace ecell4 
 {

@@ -1,6 +1,7 @@
 #include "GillespieSimulator.hpp"
 #include <numeric>
 #include <vector>
+#include <gsl/gsl_sf_log.h>
 
 namespace ecell4 
 {
