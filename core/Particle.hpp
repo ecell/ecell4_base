@@ -1,7 +1,7 @@
 #ifndef __PARTICLE_HPP
 #define __PARTICLE_HPP
 
-#include <config.h>
+#include "config.h"
 
 #include <ostream>
 #if defined(HAVE_TR1_FUNCTIONAL)
