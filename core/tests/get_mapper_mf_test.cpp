@@ -1,9 +1,21 @@
 #define BOOST_TEST_MODULE "get_mapper_mf_test"
 #define BOOST_TEST_NO_LIB
 
+#include "config.h"
+
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/type_traits.hpp>
+
+#if defined(HAVE_UNORDERED_MAP)
+#include <unordered_map>
+#elif defined(HAVE_TR1_UNORDERED_MAP)
+#include <tr1/unordered_map>
+#elif defined(HAVE_BOOST_UNORDERED_MAP_HPP)
+#include <boost/unordered_map.hpp>
+#else
+#include <map>
+#endif /* HAVE_UNORDERED_MAP */
 
 #include <map>
 
@@ -17,8 +29,9 @@ using namespace ecell4;
 BOOST_AUTO_TEST_CASE(get_mapper_mf_test_type)
 {
     typedef utils::get_mapper_mf<std::string, std::string>::type string_map_type;
-    typedef std::map<std::string, std::string> expected_map_type;
+    // typedef std::map<std::string, std::string> expected_map_type;
     // typedef boost::unordered_map<std::string, std::string> expected_map_type;
+    typedef std::tr1::unordered_map<std::string, std::string> expected_map_type;
 
     BOOST_CHECK((boost::is_same<string_map_type, expected_map_type>::value));
 }

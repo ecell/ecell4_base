@@ -1,9 +1,9 @@
 #ifndef __NETWORK_MODEL_HPP
 #define __NETWORK_MODEL_HPP
 
+#include <map>
 #include <set>
 
-#include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "Species.hpp"
 #include "ReactionRule.hpp"
@@ -20,6 +20,14 @@ public:
 
     typedef std::vector<Species> species_container_type;
     typedef std::vector<ReactionRule> reaction_rule_container_type;
+
+protected:
+
+    typedef std::map<ReactionRule::reactant_container_type,
+                     std::set<reaction_rule_container_type::size_type> >
+    reaction_rules_map_type;
+
+public:
 
     NetworkModel()
         : species_(), reaction_rules_()
@@ -50,11 +58,6 @@ public:
     bool has_reaction_rule(ReactionRule const& rr) const;
 
 protected:
-
-    typedef utils::get_mapper_mf<
-        ReactionRule::reactant_container_type,
-        std::set<reaction_rule_container_type::size_type> >::type
-    reaction_rules_map_type;
 
     species_container_type species_;
     reaction_rule_container_type reaction_rules_;
