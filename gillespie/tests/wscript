@@ -9,6 +9,19 @@ def configure(conf):
 	pass
 
 def build(bld):
+        # GillespieWorld
+	bld.program(
+		features = 'cxx cxxprogram test',
+		source = 'GillespieWorld_test.cpp',
+		target = 'GillespieWorld_test',
+		includes = ['..', '../../', '../../build/core'],
+		lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+
+                # this relative path is from working directory for building( ecell4/build/gillespie ).
+                libpath = ['../build/core'],    
+                use = 'ecell4-gillespie')
+
+        # GillespieSimulator
 	bld.program(
 		features = 'cxx cxxprogram test',
 		source = 'GillespieSimulator_test.cpp',
