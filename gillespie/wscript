@@ -1,7 +1,14 @@
+#! /usr/bin/env python
+# encoding: utf-8
+#
 # Build script for Gillespie Solver (draft)
 # vim: syntax=python 
+# #
 top = '.'
 out = 'build'
+
+from waflib.Tools import waf_unit_test
+from waflib import Logs
 
 # Header files which this module requires.
 header_list = ['vector', 'map', 'numeric']
@@ -16,13 +23,13 @@ cppfiles = [
 
 def options(opt):
 	opt.add_option('--enable_debug', action='store_true', default=False, help='debug')
-	opt.load('compiler_cxx')
+	opt.load('compiler_cxx boost')
 
 def configure(conf):
-	conf.load('compiler_cxx')
+	conf.load('compiler_cxx boost')
 
 	conf.check_cfg(package='gsl', uselib_store='gsl', atleat_version='1.13', args='--cflags --libs')
-	conf.check_cfg(package='pficommon', uselib_store='pficommon', atleat_version='1.0.0', args='--cflags --libs')
+	#conf.check_cfg(package='pficommon', uselib_store='pficommon', atleat_version='1.0.0', args='--cflags --libs')
 
 	# Checking the existence of header files.
 	for header in header_list:
@@ -35,6 +42,25 @@ def configure(conf):
 		'CXXFLAGS', 
 		['-Wall', '-g']
 		)
+
+def summary(bld):
+    '''borrowd from waf demos/unit_test/wscript
+    '''
+    lst = getattr(bld, 'utest_results', [])
+    if lst:
+        total = len(lst)
+        tfail = len([x for x in lst if x[1]])
+
+        val = 100 * (total - tfail) / (1.0 * total)
+        Logs.pprint('CYAN', 'test report %3.0f%% success' % val)
+
+        Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
+        for(f, code, out, err) in lst:
+            if code:
+                Logs.pprint('CYAN', '   %s' % f)
+                Logs.pprint('RED', 'status: %r' % code)
+                if out: Logs.pprint('RED', 'out: %r' % out)
+                if err: Logs.pprint('RED', 'err: %r' % err)
 	
 
 def build(bld):
@@ -47,7 +73,7 @@ def build(bld):
 	#)
 
 	bld.install_files(
-		'${PREFIX}/ecell/bd', hppfiles)
+		'${PREFIX}/ecell/gillespie', hppfiles)
 
 	bld.shlib(
 		source = cppfiles,
@@ -56,4 +82,5 @@ def build(bld):
 		lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
 		target = 'ecell4-gillespie')
 
-
+	bld.recurse('tests')
+        #bld.add_post_fun(summary)

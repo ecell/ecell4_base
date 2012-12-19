@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+from waflib.Tools import waf_unit_test
+from waflib import Logs
+
+
+def configure(conf):
+	pass
+
+def build(bld):
+	bld.program(
+		features = 'cxx cxxprogram test',
+		source = 'GillespieSimulator_test.cpp',
+		target = 'GillespieSimulator_test',
+		includes = ['..', '../../', '../../build/core'],
+		lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+
+                # this relative path is from working directory for building( ecell4/build/gillespie ).
+                libpath = ['../build/core'],    
+                use = 'ecell4-gillespie')
