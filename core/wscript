@@ -39,6 +39,8 @@ def configure(conf):
         args='--cflags --libs')
     conf.check_boost(lib='test')
 
+    conf.check(header_name='H5Cpp.h', mandatory=True)
+
     conf.check(header_name='unordered_map.hpp', define_name="HAVE_UNORDERED_MAP_HPP", mandatory=False)
     conf.check(header_name='boost/unordered_map.hpp', define_name="HAVE_BOOST_UNORDERED_MAP_HPP", mandatory=False)
     conf.check(header_name='boost/functional/hash.hpp', define_name="HAVE_BOOST_FUNCTIONAL_HASH_HPP", mandatory=False)
