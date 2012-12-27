@@ -83,8 +83,7 @@ def build(bld):
     if bld.options.doxygen:
         bld(doxyfile='Doxyfile', features='doxygen')
     bld.install_files(
-        '${PREFIX}/include/ecell4/core', hppfiles)
-        #'${PREFIX}/include/ecell4/core', 'config.h', hppfiles)
+        '${PREFIX}/include/ecell4/core', 'config.h', hppfiles)
     bld.shlib(
         source = cppfiles,
         includes = ['.'],
