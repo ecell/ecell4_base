@@ -83,7 +83,7 @@ def build(bld):
     if bld.options.doxygen:
         bld(doxyfile='Doxyfile', features='doxygen')
     bld.install_files(
-        '${PREFIX}/include/ecell4/core', 'config.h', hppfiles)
+        '${PREFIX}/include/ecell4/core', hppfiles)
     bld.shlib(
         source = cppfiles,
         includes = ['.'],
@@ -95,3 +95,19 @@ def build(bld):
     # bld.add_post_fun(waf_unit_test.summary)
     bld.add_post_fun(summary)
     bld.options.all_tests = True
+
+    if bld.cmd == 'install':
+        import platform
+        if platform.system() == 'Darwin':
+            import os
+            bld_lib_dir = bld.path.get_bld().abspath() + '/' 
+            bld_lib_path = bld_lib_dir + 'libecell4-core.dylib'
+            dest_lib_dir = bld.env['LIBDIR'] + '/'             
+            dest_lib_path = dest_lib_dir + 'libecell4-core.dylib'
+            #ins_name_toos_cmdline = "install_name_tool -change " + bld_lib_dir + ' ' + dest_lib_dir + ' ' +  bld_lib_path
+            ins_name_toos_cmdline = "install_name_tool -id " + dest_lib_path + ' ' + bld_lib_path
+            os.system(ins_name_toos_cmdline)
+
+
+
+
