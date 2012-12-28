@@ -18,7 +18,7 @@ def build(bld):
 		lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
 
                 # this relative path is from working directory for building( ecell4/build/gillespie ).
-                libpath = ['../build/core'],    
+                #libpath = ['../build/core'],    
                 use = 'ecell4-gillespie')
 
         # GillespieSimulator
@@ -30,5 +30,5 @@ def build(bld):
 		lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
 
                 # this relative path is from working directory for building( ecell4/build/gillespie ).
-                libpath = ['../build/core'],    
+                #libpath = ['../build/core'],    
                 use = 'ecell4-gillespie')

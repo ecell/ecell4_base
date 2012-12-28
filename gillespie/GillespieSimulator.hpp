@@ -3,13 +3,12 @@
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
-#include <core/RandomNumberGenerator.hpp>
-#include <core/Model.hpp>
-#include <core/NetworkModel.hpp>
-#include <core/Simulator.hpp>
+#include <ecell4/core/RandomNumberGenerator.hpp>
+#include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/Simulator.hpp>
 
 #include "GillespieWorld.hpp"
-//#include "GillespieSolver.hpp"
 
 namespace ecell4 
 {

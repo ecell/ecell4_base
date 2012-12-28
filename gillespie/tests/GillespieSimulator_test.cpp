@@ -3,9 +3,9 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-#include <core/RandomNumberGenerator.hpp>
-#include <core/Model.hpp>
-#include <core/NetworkModel.hpp>
+#include <ecell4/core/RandomNumberGenerator.hpp>
+#include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 
 #include "../GillespieWorld.cpp"
 #include "../GillespieSimulator.hpp"

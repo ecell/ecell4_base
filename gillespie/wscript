@@ -77,8 +77,8 @@ def build(bld):
 
 	bld.shlib(
 		source = cppfiles,
-		includes = ['.', '..', '../build/core' ],
-		libpath = ['../build/core'],
+		#includes = ['.', '..', '../build/core' ],
+		#libpath = ['../build/core'],
 		lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
 		target = 'ecell4-gillespie')
 

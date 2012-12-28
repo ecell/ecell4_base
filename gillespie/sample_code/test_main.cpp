@@ -1,8 +1,8 @@
 #include <string>
 
-#include <core/types.hpp>
-#include <core/Species.hpp>
-#include <core/NetworkModel.hpp>
+#include <ecell4/core/types.hpp>
+#include <ecell4/core/Species.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 
 #include "../GillespieSimulator.hpp"
 

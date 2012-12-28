@@ -76,7 +76,7 @@ void GillespieSimulator::step(void)
 
 	if (dt == 0.0 || u < 0)
 	{
-		// reactions cannot occur.
+		// Any reactions cannot occur.
 		return;
 	}
 
