@@ -11,11 +11,14 @@ namespace gillespie
 
 void GillespieSimulator::calc_next_reaction_(void) 
 {
-	this->can_next_reaction_happen_ = false;
+	// reset
+	this->dt_ = inf;
+
 	const NetworkModel::reaction_rule_container_type &possible_reaction_rules =
 		this->model_->reaction_rules();
 	if (possible_reaction_rules.size() == 0)
 	{
+		this->dt_ = inf;
 		return;
 	}
 	std::vector<double> a(possible_reaction_rules.size() );
@@ -34,6 +37,8 @@ void GillespieSimulator::calc_next_reaction_(void)
 	double a_total( std::accumulate(a.begin(), a.end(), double(0.0)) );
 	if(a_total == 0.0)
 	{
+		// Any reactions cannot occur.
+		this->dt_ = inf;
 		return;
 	}
 
@@ -52,20 +57,21 @@ void GillespieSimulator::calc_next_reaction_(void)
 
 	if (len == u)
 	{
-		// no reaction can occur.
+		// Any reactions cannot occur.
+		this->dt_ = inf;
 		return;
 	}
 
 	// save.
 	this->next_reaction_num_ = u;
 	this->dt_ = dt;
-	this->can_next_reaction_happen_ = true;
 }
 
 void GillespieSimulator::step(void)
 {
-	if (this->can_next_reaction_happen_ == false)
+	if (this->dt_ == inf) 
 	{
+		// Any reactions cannot occur.
 		return;
 	}
 	const NetworkModel::reaction_rule_container_type &possible_reaction_rules =
@@ -106,13 +112,13 @@ void GillespieSimulator::step(void)
 bool GillespieSimulator::step(Real const &upto) 
 {
 	// proceed reactions before the argument 'upto'.
-	while(this->can_next_reaction_happen_ == true && this->world_->t() + this->dt_ < upto) 
+	while(this->dt_ != inf && this->world_->t() + this->dt_ < upto) 
 	{
 		this->step();
 	}
 
 	// The next reaction will occur after the argument 'upto'.
-	if (this->can_next_reaction_happen_ == true)
+	if (this->dt_ != inf)
 	{
 		this->dt_ = this->t() + this->dt_ - upto ;
 	}

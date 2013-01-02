@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
+#include <ecell4/core/types.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/NetworkModel.hpp>
@@ -27,7 +28,6 @@ public:
 		: model_(model), world_(world), rng_(rng)
 	{
 		this->num_steps_ = 0;
-		this->can_next_reaction_happen_ = false;
 		this->initialize();	// calucate the time the first reaction occurs.
 	}
 		
@@ -51,7 +51,6 @@ protected:
 
 	Real dt_;	
 	int next_reaction_num_; 	// the index of the next reaction.
-	bool can_next_reaction_happen_;
 	void calc_next_reaction_(void);
 };
 
