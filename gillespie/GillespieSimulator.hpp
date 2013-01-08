@@ -3,13 +3,13 @@
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
-#include <core/RandomNumberGenerator.hpp>
-#include <core/Model.hpp>
-#include <core/NetworkModel.hpp>
-#include <core/Simulator.hpp>
+#include <ecell4/core/types.hpp>
+#include <ecell4/core/RandomNumberGenerator.hpp>
+#include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/Simulator.hpp>
 
 #include "GillespieWorld.hpp"
-//#include "GillespieSolver.hpp"
 
 namespace ecell4 
 {
@@ -28,16 +28,18 @@ public:
 		: model_(model), world_(world), rng_(rng)
 	{
 		this->num_steps_ = 0;
+		this->initialize();	// calucate the time the first reaction occurs.
 	}
 		
 	Integer num_steps(void) const;
 	void step(void) ;
 	bool step(Real const & upto);
-	void run(void);
 
 	Real t(void) const;
 	void set_t(Real const &t);
+	Real dt(void) const;
 
+	void initialize(void);	// re-calcurate the next reaction.
 	RandomNumberGenerator &rng(void);
 					
 protected:
@@ -46,6 +48,10 @@ protected:
 	
 	Integer num_steps_;
 	RandomNumberGenerator &rng_;
+
+	Real dt_;	
+	int next_reaction_num_; 	// the index of the next reaction.
+	void calc_next_reaction_(void);
 };
 
 }

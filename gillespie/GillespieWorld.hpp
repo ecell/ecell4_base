@@ -5,8 +5,8 @@
 #include <boost/scoped_ptr.hpp>
 #include <string>
 
-#include <core/CompartmentSpace.hpp>
-#include <core/Species.hpp>
+#include <ecell4/core/CompartmentSpace.hpp>
+#include <ecell4/core/Species.hpp>
 
 
 namespace ecell4 
