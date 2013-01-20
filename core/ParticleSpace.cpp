@@ -4,6 +4,7 @@
 #include "exceptions.hpp"
 #include "ParticleSpace.hpp"
 
+#include "H5Cpp.h"
 
 namespace ecell4
 {

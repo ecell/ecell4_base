@@ -13,6 +13,7 @@
 #include "Species.hpp"
 #include "Space.hpp"
 
+#include "H5Cpp.h"
 
 namespace ecell4
 {
