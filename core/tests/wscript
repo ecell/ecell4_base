@@ -19,7 +19,8 @@ def build(bld):
         source='CompartmentSpace_test.cpp',
         includes='..',
         target='CompartmentSpace_test',
-        lib=['gsl', 'gslcblas', 'm'],
+        libpath = ['/usr/lib'],
+        lib=['gsl', 'gslcblas', 'm', 'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
         use='ecell4-core',
     )
 
