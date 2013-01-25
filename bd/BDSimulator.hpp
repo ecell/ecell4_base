@@ -41,6 +41,11 @@ public:
         (*world_).set_t(t);
     }
 
+    void save_space(std::string hoge)
+    {
+    	(*world_).save_space(hoge);
+    }
+
     Real dt() const
     {
         return dt_;
