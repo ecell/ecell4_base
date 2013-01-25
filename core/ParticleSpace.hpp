@@ -201,6 +201,16 @@ public:
         mtype.insertMember( MEMBER1, HOFFSET(h5_particles, h5_particle_id), PredType::NATIVE_INT);
         mtype.insertMember( MEMBER2, HOFFSET(h5_particles, h5_particle_position), PredType::NATIVE_DOUBLE);
 
+        hsize_t dim[] = {2, particles_.size()};
+        DataSpace space(1, dim);
+
+        DataSet* dataset;
+        dataset = new DataSet(file->createDataSet(DATASET_NAME, mtype, space));
+
+        dataset->write(h5_p, mtype);
+
+        delete dataset;
+        delete file;
 
     }
 
