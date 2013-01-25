@@ -26,7 +26,6 @@
     using namespace H5;
 #endif
 
-const H5std_string FILE_NAME( "hoge.h5" );
 const H5std_string DATASET_NAME( "TimePoint" );
 const H5std_string MEMBER1( "particle_id" );
 const H5std_string MEMBER2( "positions" );
@@ -196,7 +195,8 @@ public:
 
     	H5::Exception::dontPrint();
 
-    	H5File* file = new H5File( FILE_NAME, H5F_ACC_RDONLY );
+        // const H5std_string FILE_NAME( "hoge.h5" );
+    	H5File* file = new H5File( filename, H5F_ACC_RDONLY );
     	CompType mtype( sizeof(h5_particles) );
         mtype.insertMember( MEMBER1, HOFFSET(h5_particles, h5_particle_id), PredType::NATIVE_INT);
         mtype.insertMember( MEMBER2, HOFFSET(h5_particles, h5_particle_position), PredType::NATIVE_DOUBLE);
