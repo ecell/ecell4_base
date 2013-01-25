@@ -76,7 +76,7 @@ public:
     virtual std::vector<std::pair<ParticleID, Particle> >
     list_particles() const = 0;
 
-    virtual void insert_space(particle_container_type particle_container) = 0;
+    virtual void save(std::string const& filename) = 0;
 
     Position3 periodic_transpose(
         Position3 const& pos1, Position3 const& pos2) const
