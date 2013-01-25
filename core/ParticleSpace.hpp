@@ -13,7 +13,23 @@
 #include "Species.hpp"
 #include "Space.hpp"
 
+#ifndef H5_NO_NAMESPACE
+#ifndef H5_NO_STD
+    using std::cout;
+    using std::endl;
+#endif  // H5_NO_STD
+#endif
+
 #include "H5Cpp.h"
+
+#ifndef H5_NO_NAMESPACE
+    using namespace H5;
+#endif
+
+const H5std_string FILE_NAME( "hoge.h5" );
+const H5std_string DATASET_NAME( "TimePoint" );
+const H5std_string MEMBER1( "particle_id" );
+const H5std_string MEMBER2( "positions" );
 
 namespace ecell4
 {
@@ -59,6 +75,8 @@ public:
     get_particle(ParticleID const& pid) const = 0;
     virtual std::vector<std::pair<ParticleID, Particle> >
     list_particles() const = 0;
+
+    virtual void insert_space(particle_container_type particle_container) = 0;
 
     Position3 periodic_transpose(
         Position3 const& pos1, Position3 const& pos2) const
@@ -158,6 +176,32 @@ public:
     particle_container_type const& particles() const
     {
         return particles_;
+    }
+
+    void save(std::string const& filename)
+    {
+    	typedef struct h5_partcles {
+    		int h5_particle_id;
+    		double h5_particle_position[3];
+    	} h5_particles;
+
+    	h5_particles h5_p[particles_.size()];
+
+    	for (int i=0; i<particles_.size(); i++){
+    		h5_p[i].h5_particle_id = particles_[i].first;
+    		h5_p[i].h5_particle_position[0] = particles_[i].second.position()[0];
+    		h5_p[i].h5_particle_position[1] = particles_[i].second.position()[1];
+    		h5_p[i].h5_particle_position[2] = particles_[i].second.position()[2];
+    	}
+
+    	H5::Exception::dontPrint();
+
+    	H5File* file = new H5File( FILE_NAME, H5F_ACC_RDONLY );
+    	CompType mtype( sizeof(h5_particles) );
+        mtype.insertMember( MEMBER1, HOFFSET(h5_particles, h5_particle_id), PredType::NATIVE_INT);
+        mtype.insertMember( MEMBER2, HOFFSET(h5_particles, h5_particle_position), PredType::NATIVE_DOUBLE);
+
+
     }
 
     std::pair<ParticleID, Particle> get_particle(ParticleID const& pid) const;
