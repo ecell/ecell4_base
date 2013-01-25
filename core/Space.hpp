@@ -17,14 +17,6 @@
 #endif  // H5_NO_STD
 #endif
 
-#include "H5Cpp.h"
-
-#ifndef H5_NO_NAMESPACE
-    using namespace H5;
-#endif
-
-const H5std_string FILE_NAME( "Select.h5" );
-
 namespace ecell4
 {
 
@@ -137,10 +129,6 @@ public:
         throw NotSupported("list_particles() is not supported by this space class");
     }
 
-    virtual void hoge(std::string moge)
-    {
-        H5File* file = new H5File(FILE_NAME, H5F_ACC_TRUNC);
-    }
 
 protected:
 
