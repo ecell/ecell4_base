@@ -63,5 +63,8 @@ int main(int argc, char** argv)
         }
 
         print_particle_position(*world, pid1);
+        std::string hoge("hoge.h5");
+        sim.save_space(hoge);
     }
+
 }

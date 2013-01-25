@@ -105,6 +105,11 @@ public:
         (*ps_).remove_particle(pid);
     }
 
+    void save_space(std::string hoge)
+    {
+    	(*ps_).save(hoge);
+    }
+
     std::pair<ParticleID, Particle>
     get_particle(ParticleID const& pid) const
     {
