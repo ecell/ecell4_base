@@ -9,6 +9,9 @@
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Simulator.hpp>
 
+#include <hdf5.h>
+#include <H5Cpp.h>
+
 #include "GillespieWorld.hpp"
 
 namespace ecell4 
@@ -41,6 +44,10 @@ public:
 
 	void initialize(void);	// re-calcurate the next reaction.
 	RandomNumberGenerator &rng(void);
+
+	// About Hdf5
+	void save_hdf5_init(std::string filename);
+	void save_hdf5(void);
 					
 protected:
 	boost::shared_ptr<NetworkModel> model_;
@@ -52,6 +59,9 @@ protected:
 	Real dt_;	
 	int next_reaction_num_; 	// the index of the next reaction.
 	void calc_next_reaction_(void);
+
+	// About Hdf5
+	H5::H5File *file_;
 };
 
 }

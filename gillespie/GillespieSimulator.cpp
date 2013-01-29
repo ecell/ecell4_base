@@ -2,6 +2,7 @@
 #include <numeric>
 #include <vector>
 #include <gsl/gsl_sf_log.h>
+#include <sstream>
 
 namespace ecell4 
 {
@@ -156,6 +157,80 @@ RandomNumberGenerator& GillespieSimulator::rng(void)
 	return this->rng_;
 }
 
+void GillespieSimulator::save_hdf5_init(std::string filename)
+{
+	using namespace H5;
+	this->file_ = new H5File(filename, H5F_ACC_TRUNC);
+
+	// save species' id
+	typedef struct specie_id_struct {
+		uint32_t id;
+		char name[32];
+	} specie_id_struct;
+
+	const NetworkModel::species_container_type &species_list = this->model_->species();
+
+	CompType mtype_specie_id( sizeof(specie_id_struct) );
+
+	mtype_specie_id.insertMember(std::string("id"), HOFFSET(specie_id_struct, id), 
+					PredType::STD_I32LE);
+	mtype_specie_id.insertMember(std::string("name"), HOFFSET(specie_id_struct, name), 
+					StrType(PredType::C_S1, 32));
+
+	specie_id_struct *specie_id_table = new specie_id_struct[ species_list.size() ];
+	for(unsigned int i = 0; i < species_list.size(); i++) 
+	{
+		specie_id_table[i].id = i + 1;
+		strcpy(specie_id_table[i].name, species_list[i].name().c_str());
+	}
+	const int RANK = 1;
+	hsize_t dim[1];	// id, name
+	dim[0] = species_list.size();
+	DataSpace space(RANK, dim);
+	DataSet *dataset_species = new DataSet(this->file_->createDataSet(std::string("species"),
+							mtype_specie_id, space));
+	dataset_species->write(specie_id_table, mtype_specie_id);
+
+	delete specie_id_table;
+}
+
+void GillespieSimulator::save_hdf5(void) 
+{
+	using namespace H5;
+	typedef struct species_num_struct {
+		uint32_t id;
+		uint32_t num;
+	} species_num_struct;
+
+	// Construct Datatype.
+	CompType mtype_species_num(sizeof(species_num_struct));
+	mtype_species_num.insertMember(std::string("id"), HOFFSET(species_num_struct, id),
+					PredType::STD_I32LE);
+	mtype_species_num.insertMember(std::string("number"), HOFFSET(species_num_struct, num),
+					PredType::STD_I32LE);
+
+	const NetworkModel::species_container_type &species_list = this->model_->species();
+	species_num_struct *species_num_table = new species_num_struct[ species_list.size() ];
+
+	// Construct Data Set.
+	for(unsigned int i = 0; i < species_list.size(); i++)
+	{
+		species_num_table[i].id = i + 1;
+		species_num_table[i].num = this->world_->num_molecules( species_list[i] );
+	}
+	const int RANK = 1;
+	hsize_t dim[1];
+	dim[0] = species_list.size();
+	std::ostringstream ost;
+	ost << this->t();
+	DataSpace space(RANK, dim);
+	DataSet *dataset = new DataSet(this->file_->createDataSet(std::string( ost.str() ), 
+							mtype_species_num, space));
+	dataset->write(species_num_table, mtype_species_num);
+	ost.clear();
+	
+	delete species_num_table;
+}
 
 }	// gillespie
 
