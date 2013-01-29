@@ -77,7 +77,7 @@ def build(bld):
 
     bld.shlib(
 	source = cppfiles,
-	lib = ['gslcblas', 'gsl', 'm', 'ecell4-core'],
+	lib = ['gslcblas', 'gsl', 'm', 'ecell4-core', 'hdf5', 'hdf5_cpp'],
 	target = 'ecell4-gillespie')
 
     bld.recurse('tests')
