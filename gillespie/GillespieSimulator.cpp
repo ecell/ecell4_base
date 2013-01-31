@@ -162,6 +162,8 @@ void GillespieSimulator::save_hdf5_init(std::string filename)
 	using namespace H5;
 	this->file_ = new H5File(filename, H5F_ACC_TRUNC);
 
+	Group *group = new Group(this->file_->createGroup("/Data"));
+
 	// save species' id
 	typedef struct specie_id_struct {
 		uint32_t id;
@@ -191,6 +193,7 @@ void GillespieSimulator::save_hdf5_init(std::string filename)
 							mtype_specie_id, space));
 	dataset_species->write(specie_id_table, mtype_specie_id);
 
+	delete group;
 	delete specie_id_table;
 }
 
@@ -222,7 +225,7 @@ void GillespieSimulator::save_hdf5(void)
 	hsize_t dim[1];
 	dim[0] = species_list.size();
 	std::ostringstream ost;
-	ost << this->t();
+	ost << "/Data/" << this->t();
 	DataSpace space(RANK, dim);
 	DataSet *dataset = new DataSet(this->file_->createDataSet(std::string( ost.str() ), 
 							mtype_species_num, space));
