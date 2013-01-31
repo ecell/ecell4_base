@@ -49,6 +49,9 @@ int main(int argc, char** argv)
     Particle const p1(
         sp1, Position3(0, 0, 0), info1.radius, info1.D);
     ParticleID const pid1((*world).new_particle(p1));
+    Particle const p2(
+        sp1, Position3(L * 0.5, 0, 0), info1.radius, info1.D);
+    ParticleID const pid2((*world).new_particle(p2));
 
     /// instatiate BDSimulator
     BDSimulator sim(model, world, rng);
@@ -63,8 +66,7 @@ int main(int argc, char** argv)
         }
 
         print_particle_position(*world, pid1);
-        std::string hoge("hoge.h5");
-        sim.save_space(hoge);
     }
-
+    std::string hoge("hoge.h5");
+    sim.save_space(hoge);
 }
