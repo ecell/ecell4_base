@@ -28,7 +28,9 @@
 
 const H5std_string DATASET_NAME( "TimePoint" );
 const H5std_string MEMBER1( "particle_id" );
-const H5std_string MEMBER2( "positions" );
+const H5std_string MEMBER2( "position_x" );
+const H5std_string MEMBER3( "position_y" );
+const H5std_string MEMBER4( "position_z" );
 
 namespace ecell4
 {
@@ -179,29 +181,38 @@ public:
 
     void save(std::string const& filename)
     {
-    	typedef struct h5_partcles {
+    	typedef struct h5_partcle {
     		int h5_particle_id;
-    		double h5_particle_position[3];
-    	} h5_particles;
+    		double h5_particle_position_x;
+    		double h5_particle_position_y;
+    		double h5_particle_position_z;
+    	} h5_particle;
 
-    	h5_particles h5_p[particles_.size()];
+    	particle_container_type::size_type const np(particles_.size());
+        std::cout << np << std::endl;
 
-    	for (int i=0; i<particles_.size(); i++){
+    	h5_particle h5_p[np];
+
+    	for (int i=0; i<np; i++){
     		h5_p[i].h5_particle_id = particles_[i].first;
-    		h5_p[i].h5_particle_position[0] = particles_[i].second.position()[0];
-    		h5_p[i].h5_particle_position[1] = particles_[i].second.position()[1];
-    		h5_p[i].h5_particle_position[2] = particles_[i].second.position()[2];
+    		h5_p[i].h5_particle_position_x = particles_[i].second.position()[0];
+    		h5_p[i].h5_particle_position_y = particles_[i].second.position()[1];
+    		h5_p[i].h5_particle_position_z = particles_[i].second.position()[2];
     	}
 
-    	H5::Exception::dontPrint();
+    	//H5::Exception::dontPrint();
 
         // const H5std_string FILE_NAME( "hoge.h5" );
-    	H5File* file = new H5File( filename, H5F_ACC_RDONLY );
-    	CompType mtype( sizeof(h5_particles) );
-        mtype.insertMember( MEMBER1, HOFFSET(h5_particles, h5_particle_id), PredType::NATIVE_INT);
-        mtype.insertMember( MEMBER2, HOFFSET(h5_particles, h5_particle_position), PredType::NATIVE_DOUBLE);
+    	H5File* file = new H5File( filename, H5F_ACC_TRUNC);
+    	CompType mtype( sizeof(h5_particle) );
+        mtype.insertMember( MEMBER1, HOFFSET(h5_particle, h5_particle_id), PredType::NATIVE_INT);
+        mtype.insertMember( MEMBER2, HOFFSET(h5_particle, h5_particle_position_x), PredType::NATIVE_DOUBLE);
+        mtype.insertMember( MEMBER3, HOFFSET(h5_particle, h5_particle_position_y), PredType::NATIVE_DOUBLE);
+        mtype.insertMember( MEMBER4, HOFFSET(h5_particle, h5_particle_position_z), PredType::NATIVE_DOUBLE);
 
-        hsize_t dim[] = {2, particles_.size()};
+        // hsize_t dim[] = {5, particles_.size()};
+        std::cout << np << std::endl;
+        hsize_t dim[] = {5};
         DataSpace space(1, dim);
 
         DataSet* dataset;
