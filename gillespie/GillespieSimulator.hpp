@@ -32,6 +32,16 @@ public:
 	{
 		this->num_steps_ = 0;
 		this->initialize();	// calucate the time the first reaction occurs.
+
+		// About Hdf5
+		this->file_ = NULL;
+	}
+	~GillespieSimulator(void)
+	{
+		if (this->file_ != NULL)
+		{
+			delete this->file_;
+		}
 	}
 		
 	Integer num_steps(void) const;
