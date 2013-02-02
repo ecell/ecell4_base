@@ -72,6 +72,16 @@ protected:
 
 	// About Hdf5
 	H5::H5File *file_;
+	
+	typedef struct species_id_table_struct {
+		uint32_t id;
+		char name[32];
+	} species_id_table_struct;
+
+	typedef struct species_num_struct {
+		uint32_t id;
+		uint32_t num_of_molecules;
+	} species_num_struct;
 };
 
 }

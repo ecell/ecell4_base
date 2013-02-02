@@ -4,6 +4,8 @@
 #include <gsl/gsl_sf_log.h>
 #include <sstream>
 
+#include <boost/scoped_array.hpp>
+
 namespace ecell4 
 {
 
@@ -161,78 +163,56 @@ void GillespieSimulator::save_hdf5_init(std::string filename)
 {
 	using namespace H5;
 	this->file_ = new H5File(filename, H5F_ACC_TRUNC);
-
-	Group *group = new Group(this->file_->createGroup("/Data"));
-
-	// save species' id
-	typedef struct specie_id_struct {
-		uint32_t id;
-		char name[32];
-	} specie_id_struct;
-
-	const NetworkModel::species_container_type &species_list = this->model_->species();
-
-	CompType mtype_specie_id( sizeof(specie_id_struct) );
-
-	mtype_specie_id.insertMember(std::string("id"), HOFFSET(specie_id_struct, id), 
-					PredType::STD_I32LE);
-	mtype_specie_id.insertMember(std::string("name"), HOFFSET(specie_id_struct, name), 
-					StrType(PredType::C_S1, 32));
-
-	specie_id_struct *specie_id_table = new specie_id_struct[ species_list.size() ];
-	for(unsigned int i = 0; i < species_list.size(); i++) 
-	{
-		specie_id_table[i].id = i + 1;
-		strcpy(specie_id_table[i].name, species_list[i].name().c_str());
-	}
-	const int RANK = 1;
-	hsize_t dim[1];	// id, name
-	dim[0] = species_list.size();
-	DataSpace space(RANK, dim);
-	DataSet *dataset_species = new DataSet(this->file_->createDataSet(std::string("species"),
-							mtype_specie_id, space));
-	dataset_species->write(specie_id_table, mtype_specie_id);
-
-	delete group;
-	delete specie_id_table;
 }
 
-void GillespieSimulator::save_hdf5(void) 
+void GillespieSimulator::save_hdf5(void)
 {
 	using namespace H5;
-	typedef struct species_num_struct {
-		uint32_t id;
-		uint32_t num;
-	} species_num_struct;
+	if (this->file_ == NULL)
+		return;
 
-	// Construct Datatype.
-	CompType mtype_species_num(sizeof(species_num_struct));
-	mtype_species_num.insertMember(std::string("id"), HOFFSET(species_num_struct, id),
+	// Define Data Structure
+	CompType mtype_id_table_struct(sizeof(species_id_table_struct));
+	mtype_id_table_struct.insertMember(std::string("id"), HOFFSET(species_id_table_struct, id),
 					PredType::STD_I32LE);
-	mtype_species_num.insertMember(std::string("number"), HOFFSET(species_num_struct, num),
-					PredType::STD_I32LE);
+	mtype_id_table_struct.insertMember(std::string("name"), 
+					HOFFSET(species_id_table_struct, name), StrType(PredType::C_S1, 32));
 
-	const NetworkModel::species_container_type &species_list = this->model_->species();
-	species_num_struct *species_num_table = new species_num_struct[ species_list.size() ];
+	CompType mtype_num_struct(sizeof(species_num_struct));
+	mtype_num_struct.insertMember(std::string("id"), HOFFSET(species_num_struct, id),
+							PredType::STD_I32LE);
+	mtype_num_struct.insertMember(std::string("number"), HOFFSET(species_num_struct, num_of_molecules),
+							PredType::STD_I32LE);
 
 	// Construct Data Set.
-	for(unsigned int i = 0; i < species_list.size(); i++)
+	const NetworkModel::species_container_type &species_list = this->model_->species();
+	boost::scoped_array<species_id_table_struct> species_id_table(new species_id_table_struct[ species_list.size() ]);
+	boost::scoped_array<species_num_struct> species_num_table(new species_num_struct[ species_list.size() ]);
+
+	for(unsigned int i(0); i < species_list.size(); i++) 
 	{
+		species_id_table[i].id = i + 1;
+		strcpy(species_id_table[i].name, species_list[i].name().c_str());
+
 		species_num_table[i].id = i + 1;
-		species_num_table[i].num = this->world_->num_molecules( species_list[i] );
+		species_num_table[i].num_of_molecules = this->world_->num_molecules( species_list[i] );
 	}
 	const int RANK = 1;
 	hsize_t dim[1];
 	dim[0] = species_list.size();
-	std::ostringstream ost;
-	ost << "/Data/" << this->t();
+
+	// Create Path.
+	std::ostringstream ost_hdf5path;
+	ost_hdf5path << "/" << this->t();
+	boost::scoped_ptr<Group> group (new Group(this->file_->createGroup( ost_hdf5path.str() )));
+
 	DataSpace space(RANK, dim);
-	DataSet *dataset = new DataSet(this->file_->createDataSet(std::string( ost.str() ), 
-							mtype_species_num, space));
-	dataset->write(species_num_table, mtype_species_num);
-	ost.clear();
-	
-	delete species_num_table;
+	std::string species_table_path = ost_hdf5path.str() + "/species";
+	std::string species_num_path = ost_hdf5path.str() + "/num";
+	boost::scoped_ptr<DataSet> dataset_id_table( new DataSet(this->file_->createDataSet(species_table_path , mtype_id_table_struct, space)) );
+	boost::scoped_ptr<DataSet> dataset_num_table( new DataSet(this->file_->createDataSet(species_num_path , mtype_num_struct, space)) );
+	dataset_id_table->write(species_id_table.get(), mtype_id_table_struct);
+	dataset_num_table->write(species_num_table.get(), mtype_num_struct);
 }
 
 }	// gillespie
