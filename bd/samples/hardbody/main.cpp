@@ -41,11 +41,17 @@ int main(int argc, char** argv)
     sp1.set_attribute("radius", radius);
     (*model).add_species(sp1);
 
+    Species sp2("B");
+    sp2.set_attribute("D", D);
+    sp2.set_attribute("radius", radius);
+    (*model).add_species(sp2);
+
     /// instantiate BDWorld
     boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths));
 
     /// create a Particle, and inject it into BDWorld
     ParticleInfo info1((*world).get_particle_info(sp1));
+
     Particle const p1(
         sp1, Position3(0, 0, 0), info1.radius, info1.D);
     ParticleID const pid1((*world).new_particle(p1));
