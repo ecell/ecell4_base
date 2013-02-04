@@ -3,6 +3,8 @@
 
 #include <boost/test/included/unit_test.hpp>
 
+#include <ecell4/core/Species.hpp>
+#include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/NetworkModel.hpp>
 #include "../ODESimulator.hpp"
 
@@ -28,5 +30,35 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step)
     boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
 
     ODESimulator target(model, world);
-    target.step();
+    target.step(15.0);
+}
+
+BOOST_AUTO_TEST_CASE(ODESimulator_test_run)
+{
+    Real const volume(1e-18);
+
+    Species sp1("A"), sp2("B"), sp3("C");
+    ReactionRule rr1;
+    rr1.set_k(1.0);
+    rr1.add_reactant(sp1);
+    rr1.add_product(sp2);
+    rr1.add_product(sp3);
+
+    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    model->add_species(sp1);
+    model->add_species(sp2);
+    model->add_species(sp3);
+    model->add_reaction_rule(rr1);
+
+    boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
+    world->add_species(sp1);
+    world->add_species(sp2);
+    world->add_species(sp3);
+    world->set_num_molecules(sp1, 60);
+
+    ODESimulator target(model, world);
+
+    target.step(15.0);
+
+    // BOOST_ASSERT(false);
 }

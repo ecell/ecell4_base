@@ -95,15 +95,20 @@ public:
         return num_molecules_[(*i).second];
     }
 
-    void add_molecules(Species const& sp, Real const& num)
+    void set_num_molecules(Species const& sp, Real const& num)
     {
+        if (num < 0)
+        {
+            throw std::invalid_argument("The number of molecules must be positive.");
+        }
+
         species_map_type::const_iterator i(index_map_.find(sp));
         if (i == index_map_.end())
         {
             throw NotFound("Species not found");
         }
 
-        num_molecules_[(*i).second] += num;
+        num_molecules_[(*i).second] = num;
     }
 
 protected:
