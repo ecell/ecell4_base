@@ -2,7 +2,8 @@
 # encoding: utf-8
 
 subdirs = [
-    'dissociation'
+    'dissociation',
+    'equilibrium'
     ]
 
 def configure(conf):

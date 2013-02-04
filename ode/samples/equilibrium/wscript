@@ -1,0 +1,14 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+
+def configure(conf):
+    pass
+
+def build(bld):
+    bld.program(
+        source='main.cpp',
+        target='equilibrium',
+        includes=['../..'],
+        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        use='ecell4-ode')

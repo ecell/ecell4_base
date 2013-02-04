@@ -113,6 +113,16 @@ public:
         num_molecules_[(*i).second] = num;
     }
 
+    void add_molecules(Species const& sp, Real const& num)
+    {
+        set_num_molecules(sp, num_molecules(sp) + num);
+    }
+
+    void remove_molecules(Species const& sp, Real const& num)
+    {
+        set_num_molecules(sp, num_molecules(sp) - num);
+    }
+
 protected:
 
     typedef std::vector<Real> num_molecules_container_type;
