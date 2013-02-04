@@ -73,7 +73,7 @@ def build(bld):
     #)
 
     bld.install_files(
-	'${PREFIX}/ecell/gillespie', hppfiles)
+	'${PREFIX}/include/ecell4/gillespie', hppfiles)
 
     bld.shlib(
 	source = cppfiles,

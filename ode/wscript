@@ -55,7 +55,7 @@ def summary(bld):
 
 def build(bld):
     bld.install_files(
-        '${PREFIX}/include/ecell/ode', hppfiles)
+        '${PREFIX}/include/ecell4/ode', hppfiles)
 
     bld.shlib(
         source = cppfiles,
