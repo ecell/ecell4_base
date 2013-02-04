@@ -1,57 +1,68 @@
-# Build script for Gillespie Solver (draft)
-# vim: syntax=python 
-top = '.'
-out = 'build_with_waf'
-APPNAME = 'ode_solver'
-VERSION = '0.1.0'
+#! /usr/bin/env python
+# encoding: utf-8
 
-# Header files which this module requires.
-header_list = ['gsl/gsl_rng.h', 'gsl/gsl_linalg.h', 'gsl/gsl_complex.h', 'gsl/gsl_complex_math.h', 'boost/multi_array.hpp', 'gsl/gsl_poly.h', 'limits', 'vector', 'map', 'numeric']
-#header_list = ['gsl/gsl_rng.h', 'gsl/gsl_randist.h', 'gsl/gsl_sf_log.h', 'vector', 'map', 'numeric']
+from waflib.Tools import waf_unit_test
+from waflib import Logs
+
+
+top = '.'
+out = 'build'
+
+subdirs = [
+    ]
+
+hppfiles = [
+    'ODEWorld.hpp', 'ODESimulator.hpp',
+    ]
+
+cppfiles = [
+    'ODESimulator.cpp',
+    ]
 
 def options(opt):
-	opt.add_option('--unit_test', action='store_true', default=False, help='unit test')
-	opt.add_option('--enable_debug', action='store_true', default=False, help='debug')
-	opt.load('compiler_cxx')
+    opt.load('compiler_cxx waf_unit_test')
 
 def configure(conf):
-	conf.load('compiler_cxx')
+    conf.load('compiler_cxx waf_unit_test')
+    conf.check_cxx(lib='gsl')
+    conf.check_cxx(lib='gslcblas')
+    conf.check_cxx(lib='m')
 
-	# Checking the existence of header files.
-	for header in header_list:
-		conf.check(header_name = header, features = 'c cprogram')
+    conf.check_cxx(lib='ecell4-core')
 
-	# Save option flags.
-	conf.env.unit_test = conf.options.unit_test
-	conf.env.enable_debug =  conf.options.enable_debug
+    conf.recurse(subdirs)
 
+def summary(bld):
+    '''borrowed from waf demos/unit_test/wscript
+    '''
+    lst = getattr(bld, 'utest_results', [])
+    if lst:
+        total = len(lst)
+        tfail = len([x for x in lst if x[1]])
+
+    val = 100 * (total - tfail) / (1.0 * total)
+    Logs.pprint('CYAN', 'test report %3.0f%% success' % val)
+
+    Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
+    for (f, code, out, err) in lst:
+        if code:
+            Logs.pprint('CYAN', '    %s' % f)
+            Logs.pprint('RED', 'status: %r' % code)
+            if out: Logs.pprint('RED', 'out: %r' % out)
+            if err: Logs.pprint('RED', 'err: %r' % err)
 
 def build(bld):
-	bld.env.CFLAGS = []
-	bld.env.CXXFLAGS = []
-	bld.env.LINKFLAGS = []
+    bld.install_files(
+        '${PREFIX}/include/ecell/ode', hppfiles)
 
-	# inititlize flags
-	if bld.env.enable_debug == True:
-		bld.env.CFLAGS.append('-g')
-		bld.env.CXXFLAGS.append('-g')
-		bld.env.LINKFLAGS.append('-g')
-	
-	# always build libgillespie.so or .dylib(mac)
-	bld.shlib(
-		source = './GillespieSolver.cpp',
-		includes = ['.'],
-		lib = ['gsl', 'gslcblas'],
-		target = 'gillespie',
-	)
-	
-	# make executable for testing.
-	if bld.env.unit_test == True:
-		bld.program(
-			source='./test.cpp', 
-			includes = ['.'],
-			target = 'gillespie_unit',
-			defines = ['UNITTEST'],
-			use = 'gillespie',
-		)
+    bld.shlib(
+        source = cppfiles,
+        includes = ['.'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
+        target = 'ecell4-ode')
 
+    bld.recurse(subdirs)
+
+    # bld.add_post_fun(waf_unit_test.summary)
+    bld.add_post_fun(summary)
+    bld.options.all_tests = True
