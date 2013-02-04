@@ -10,11 +10,14 @@
 namespace ecell4
 {
 
-ReactionRule create_association_reaction_rule(
+ReactionRule create_unimolecular_reaction_rule(
+    Species const& reactant1, Species const& product1, double const& k);
+
+ReactionRule create_binding_reaction_rule(
     Species const& reactant1, Species const& reactant2, Species const& product1,
     double const& k);
 
-ReactionRule create_dissociation_reaction_rule(
+ReactionRule create_unbinding_reaction_rule(
     Species const& reactant1, Species const& product1, Species const& product2,
     double const& k);
 
