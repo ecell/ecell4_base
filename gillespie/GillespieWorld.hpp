@@ -27,6 +27,11 @@ public:
     void set_t(Real const &t);
     Real t(void);
 
+    Real const& volume() const
+    {
+        return cs_->volume();
+    }
+
     // about molecules states
     // immutable functions.
     Integer num_species(void);
