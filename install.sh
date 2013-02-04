@@ -1,8 +1,30 @@
 #!/usr/bin/env bash
 
+install_core()
+{
+    # install ecell4-core
+    ./waf distclean update --files="boost,doxygen" configure --prefix=${PREFIX} build install
+    return $?
+}
+
+install_submodule()
+{
+    # install a submodule
+    if [ $# != 1 ]; then
+        return 1
+    fi
+    cd $1
+    LD_LIBRARY_PATH=${PREFIX}/lib LIBRARY_PATH=${PREFIX}/lib \
+        CPLUS_INCLUDE_PATH=${PREFIX}/include \
+        ../waf distclean configure --prefix=${PREFIX} build install
+    VAL=$?
+    cd ..
+    return ${VAL}
+}
+
 # PREFIX=/usr/local
-# PREFIX=${HOME}/local
-PREFIX=
+PREFIX=${HOME}/local
+# PREFIX=
 SUBMODS=("bd" "gillespie")
 
 if [ "$PREFIX" == "" ]; then
@@ -10,21 +32,20 @@ if [ "$PREFIX" == "" ]; then
     exit 1
 fi
 
-# install ecell4-core
-./waf distclean update --files="boost,doxygen" configure --prefix=${PREFIX} build install
-if [ $? != 0 ]; then
-    exit 1
+if [ $# == 0 ]; then
+    TMP=("core" ${SUBMODS[@]})
+else
+    TMP=$@
 fi
 
-# install submodules
-for SUBMOD in ${SUBMODS[@]}
+for SUBMOD in ${TMP[@]}
 do
-    cd $SUBMOD
-    LD_LIBRARY_PATH=${PREFIX}/lib LIBRARY_PATH=${PREFIX}/lib \
-        CPLUS_INCLUDE_PATH=${PREFIX}/include \
-        ../waf distclean configure --prefix=${PREFIX} build install
+    if [ $SUBMOD == "core" ]; then
+        install_core
+    else
+        install_submodule $SUBMOD
+    fi
     if [ $? != 0 ]; then
         exit 1
     fi
-    cd ..
 done
