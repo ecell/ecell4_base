@@ -18,7 +18,7 @@ hppfiles = [
     ]
 
 cppfiles = [
-    'Journal.cpp', 'Species.cpp', 'ParticleSpace.cpp',
+    'Journal.cpp', 'Species.cpp', 'Model.cpp', 'ParticleSpace.cpp',
     'CompartmentSpace.cpp', 'NetworkModel.cpp', 'Position3.cpp'
     ]
 
@@ -33,7 +33,7 @@ def configure(conf):
         conf.load('compiler_cxx boost doxygen')
     else:
         conf.load('compiler_cxx boost')
-        
+
     conf.check_cfg(
         package='gsl', uselib_store='gsl', atleat_version='1.13',
         args='--cflags --libs')
@@ -113,14 +113,10 @@ def build(bld):
         import platform
         if platform.system() == 'Darwin':
             import os
-            bld_lib_dir = bld.path.get_bld().abspath() + '/' 
+            bld_lib_dir = bld.path.get_bld().abspath() + '/'
             bld_lib_path = bld_lib_dir + 'libecell4-core.dylib'
-            dest_lib_dir = bld.env['LIBDIR'] + '/'             
+            dest_lib_dir = bld.env['LIBDIR'] + '/'
             dest_lib_path = dest_lib_dir + 'libecell4-core.dylib'
             #ins_name_toos_cmdline = "install_name_tool -change " + bld_lib_dir + ' ' + dest_lib_dir + ' ' +  bld_lib_path
             ins_name_toos_cmdline = "install_name_tool -id " + dest_lib_path + ' ' + bld_lib_path
             os.system(ins_name_toos_cmdline)
-
-
-
-
