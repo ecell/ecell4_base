@@ -23,8 +23,8 @@ do
     LD_LIBRARY_PATH=${PREFIX}/lib LIBRARY_PATH=${PREFIX}/lib \
         CPLUS_INCLUDE_PATH=${PREFIX}/include \
         ../waf distclean configure --prefix=${PREFIX} build install
-    cd ..
     if [ $? != 0 ]; then
         exit 1
-  fi
+    fi
+    cd ..
 done
