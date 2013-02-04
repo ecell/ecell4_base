@@ -51,6 +51,7 @@ int main(int argc, char** argv)
 
     /// create a Particle, and inject it into BDWorld
     ParticleInfo info1((*world).get_particle_info(sp1));
+    ParticleInfo info2((*world).get_particle_info(sp2));
 
     Particle const p1(
         sp1, Position3(0, 0, 0), info1.radius, info1.D);
@@ -65,19 +66,19 @@ int main(int argc, char** argv)
     ParticleID const pid3((*world).new_particle(p3));
 
     Particle const p4(
-        sp1, Position3(0, 0, L * 0.5), info1.radius, info1.D);
+        sp2, Position3(0, 0, L * 0.5), info2.radius, info2.D);
     ParticleID const pid4((*world).new_particle(p4));
 
     Particle const p5(
-        sp1, Position3(L * 0.1, 0, 0), info1.radius, info1.D);
+        sp2, Position3(L * 0.1, 0, 0), info2.radius, info2.D);
     ParticleID const pid5((*world).new_particle(p5));
 
     Particle const p6(
-        sp1, Position3(0, L * 0.1, 0), info1.radius, info1.D);
+        sp2, Position3(0, L * 0.1, 0), info2.radius, info2.D);
     ParticleID const pid6((*world).new_particle(p6));
 
     Particle const p7(
-        sp1, Position3(0, 0, L * 0.1), info1.radius, info1.D);
+        sp2, Position3(0, 0, L * 0.1), info2.radius, info2.D);
     ParticleID const pid7((*world).new_particle(p7));
 
     /// instatiate BDSimulator
