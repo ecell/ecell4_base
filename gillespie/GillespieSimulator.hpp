@@ -11,51 +11,51 @@
 
 #include "GillespieWorld.hpp"
 
-namespace ecell4 
+namespace ecell4
 {
 
-namespace gillespie 
+namespace gillespie
 {
 
-class GillespieSimulator 
-	: 
-		public Simulator 
+class GillespieSimulator
+    : public Simulator
 {
 public:
-	GillespieSimulator(
-		boost::shared_ptr<NetworkModel> model, boost::shared_ptr<GillespieWorld> world,
-		RandomNumberGenerator &rng)
-		: model_(model), world_(world), rng_(rng)
-	{
-		this->num_steps_ = 0;
-		this->initialize();	// calucate the time the first reaction occurs.
-	}
-		
-	Integer num_steps(void) const;
-	void step(void) ;
-	bool step(Real const & upto);
+    GillespieSimulator(
+        boost::shared_ptr<NetworkModel> model,
+        boost::shared_ptr<GillespieWorld> world,
+        RandomNumberGenerator &rng)
+        : model_(model), world_(world), rng_(rng)
+    {
+        this->num_steps_ = 0;
+        this->initialize(); // calucate the time the first reaction occurs.
+    }
 
-	Real t(void) const;
-	void set_t(Real const &t);
-	Real dt(void) const;
+    Integer num_steps(void) const;
+    void step(void) ;
+    bool step(Real const & upto);
 
-	void initialize(void);	// re-calcurate the next reaction.
-	RandomNumberGenerator &rng(void);
-					
+    Real t(void) const;
+    void set_t(Real const &t);
+    Real dt(void) const;
+
+    void initialize(void); // re-calcurate the next reaction.
+    RandomNumberGenerator &rng(void);
+
 protected:
-	boost::shared_ptr<NetworkModel> model_;
-	boost::shared_ptr<GillespieWorld> world_;
-	
-	Integer num_steps_;
-	RandomNumberGenerator &rng_;
+    boost::shared_ptr<NetworkModel> model_;
+    boost::shared_ptr<GillespieWorld> world_;
 
-	Real dt_;	
-	int next_reaction_num_; 	// the index of the next reaction.
-	void calc_next_reaction_(void);
+    Integer num_steps_;
+    RandomNumberGenerator &rng_;
+
+    Real dt_;
+    int next_reaction_num_; // the index of the next reaction.
+    void calc_next_reaction_(void);
 };
 
 }
 
-}	// ecell4
+} // ecell4
 
 #endif //__GILLESPIESIMULATOR_HPP
