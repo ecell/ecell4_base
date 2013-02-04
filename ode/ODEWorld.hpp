@@ -72,7 +72,8 @@ public:
         {
             species_container_type::size_type const
                 idx_(static_cast<species_container_type::size_type>(idx)),
-                last_idx_(static_cast<species_container_type::size_type>(last_idx));
+                last_idx_(
+                    static_cast<species_container_type::size_type>(last_idx));
             Species const& last_sp(species_[last_idx_]);
             species_[idx_] = last_sp;
             num_molecules_[idx] = num_molecules_[last_idx];
@@ -99,7 +100,8 @@ public:
     {
         if (num < 0)
         {
-            throw std::invalid_argument("The number of molecules must be positive.");
+            throw std::invalid_argument(
+                "The number of molecules must be positive.");
         }
 
         species_map_type::const_iterator i(index_map_.find(sp));

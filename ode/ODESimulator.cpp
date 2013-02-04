@@ -29,13 +29,17 @@ bool ODESimulator::step(Real const& upto)
     typedef odeint::controlled_runge_kutta<error_stepper_type>
         controlled_stepper_type;
 
-    double abs_err(1e-10), rel_err(1.0e-6), a_x(1.0), a_dxdt(1.0);
-    controlled_stepper_type controlled_stepper(
-        odeint::default_error_checker<double>(abs_err, rel_err, a_x, a_dxdt));
-
-    ODESystem func_obj;
+    ODESystem func_obj(model_, world_->volume());
     StateAndTimeBackInserter::state_container_type x_vec;
     StateAndTimeBackInserter::time_container_type times;
+
+    // size_t steps(odeint::integrate(
+    //                  func_obj, x, t_, upto, upto - t_,
+    //                  StateAndTimeBackInserter(x_vec, times)));
+
+    double abs_err(1e-10), rel_err(1e-6), a_x(1.0), a_dxdt(1.0);
+    controlled_stepper_type controlled_stepper(
+        odeint::default_error_checker<double>(abs_err, rel_err, a_x, a_dxdt));
     size_t steps(odeint::integrate_adaptive(
                      controlled_stepper, func_obj, x, t_, upto, upto - t_,
                      StateAndTimeBackInserter(x_vec, times)));
@@ -50,7 +54,8 @@ bool ODESimulator::step(Real const& upto)
         }
     }
 
-    t_ += upto;
+    // t_ += upto;
+    t_ += times[steps];
     ++num_steps_;
 }
 

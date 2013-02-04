@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_constructor)
     ODESimulator target(model, world);
 }
 
-BOOST_AUTO_TEST_CASE(ODESimulator_test_step)
+BOOST_AUTO_TEST_CASE(ODESimulator_test_step1)
 {
     Real const volume(1e-18);
 
@@ -30,10 +30,10 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step)
     boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
 
     ODESimulator target(model, world);
-    target.step(15.0);
+    target.step(1.0);
 }
 
-BOOST_AUTO_TEST_CASE(ODESimulator_test_run)
+BOOST_AUTO_TEST_CASE(ODESimulator_test_step2)
 {
     Real const volume(1e-18);
 
@@ -58,7 +58,11 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_run)
 
     ODESimulator target(model, world);
 
-    target.step(15.0);
+    // std::cout << target.t() << ":" << world->num_molecules(sp1)
+    //           << ":" << world->num_molecules(sp2) << std::endl;
+    target.step(1.0);
+    // std::cout << target.t() << ":" << world->num_molecules(sp1)
+    //           << ":" << world->num_molecules(sp2) << std::endl;
 
     // BOOST_ASSERT(false);
 }
