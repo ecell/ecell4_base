@@ -49,9 +49,30 @@ int main(int argc, char** argv)
     Particle const p1(
         sp1, Position3(0, 0, 0), info1.radius, info1.D);
     ParticleID const pid1((*world).new_particle(p1));
+
     Particle const p2(
         sp1, Position3(L * 0.5, 0, 0), info1.radius, info1.D);
     ParticleID const pid2((*world).new_particle(p2));
+
+    Particle const p3(
+        sp1, Position3(0, L * 0.5, 0), info1.radius, info1.D);
+    ParticleID const pid3((*world).new_particle(p3));
+
+    Particle const p4(
+        sp1, Position3(0, 0, L * 0.5), info1.radius, info1.D);
+    ParticleID const pid4((*world).new_particle(p4));
+
+    Particle const p5(
+        sp1, Position3(L * 0.1, 0, 0), info1.radius, info1.D);
+    ParticleID const pid5((*world).new_particle(p5));
+
+    Particle const p6(
+        sp1, Position3(0, L * 0.1, 0), info1.radius, info1.D);
+    ParticleID const pid6((*world).new_particle(p6));
+
+    Particle const p7(
+        sp1, Position3(0, 0, L * 0.1), info1.radius, info1.D);
+    ParticleID const pid7((*world).new_particle(p7));
 
     /// instatiate BDSimulator
     BDSimulator sim(model, world, rng);
