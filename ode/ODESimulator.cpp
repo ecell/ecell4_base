@@ -54,7 +54,7 @@ bool ODESimulator::step(Real const& upto)
         }
     }
 
-    t_ += upto;
+    t_ = upto;
     // t_ = times[steps];
     ++num_steps_;
 }
