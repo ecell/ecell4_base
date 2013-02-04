@@ -2,6 +2,7 @@
 #define __PARTICLE_SPACE_HPP
 
 #include <cmath>
+#include <string.h>
 // #include <gsl/gsl_pow_int.h>
 
 #include "get_mapper_mf.hpp"
@@ -28,9 +29,10 @@
 
 const H5std_string DATASET_NAME( "TimePoint" );
 const H5std_string MEMBER1( "particle_id" );
-const H5std_string MEMBER2( "position_x" );
-const H5std_string MEMBER3( "position_y" );
-const H5std_string MEMBER4( "position_z" );
+const H5std_string MEMBER2( "species_name" );
+const H5std_string MEMBER3( "position_x" );
+const H5std_string MEMBER4( "position_y" );
+const H5std_string MEMBER5( "position_z" );
 
 namespace ecell4
 {
@@ -183,6 +185,7 @@ public:
     {
     	typedef struct h5_partcle {
     		int h5_particle_id;
+    		char h5_species_name[32];
     		double h5_particle_position_x;
     		double h5_particle_position_y;
     		double h5_particle_position_z;
@@ -195,6 +198,7 @@ public:
 
     	for (int i=0; i<np; i++){
     		h5_p[i].h5_particle_id = particles_[i].first;
+    		strcpy( h5_p[i].h5_species_name, particles_[i].second.species().name().c_str() );
     		h5_p[i].h5_particle_position_x = particles_[i].second.position()[0];
     		h5_p[i].h5_particle_position_y = particles_[i].second.position()[1];
     		h5_p[i].h5_particle_position_z = particles_[i].second.position()[2];
@@ -206,13 +210,14 @@ public:
     	H5File* file = new H5File( filename, H5F_ACC_TRUNC);
     	CompType mtype( sizeof(h5_particle) );
         mtype.insertMember( MEMBER1, HOFFSET(h5_particle, h5_particle_id), PredType::NATIVE_INT);
-        mtype.insertMember( MEMBER2, HOFFSET(h5_particle, h5_particle_position_x), PredType::NATIVE_DOUBLE);
-        mtype.insertMember( MEMBER3, HOFFSET(h5_particle, h5_particle_position_y), PredType::NATIVE_DOUBLE);
-        mtype.insertMember( MEMBER4, HOFFSET(h5_particle, h5_particle_position_z), PredType::NATIVE_DOUBLE);
+        mtype.insertMember( MEMBER2, HOFFSET(h5_particle, h5_species_name), StrType(PredType::C_S1, 32) );
+        mtype.insertMember( MEMBER3, HOFFSET(h5_particle, h5_particle_position_x), PredType::NATIVE_DOUBLE);
+        mtype.insertMember( MEMBER4, HOFFSET(h5_particle, h5_particle_position_y), PredType::NATIVE_DOUBLE);
+        mtype.insertMember( MEMBER5, HOFFSET(h5_particle, h5_particle_position_z), PredType::NATIVE_DOUBLE);
 
         // hsize_t dim[] = {5, particles_.size()};
-        std::cout << np << std::endl;
-        hsize_t dim[] = {5};
+        //std::cout << np << std::endl;
+        hsize_t dim[] = {particles_.size()};
         DataSpace space(1, dim);
 
         DataSet* dataset;
