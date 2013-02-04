@@ -3,7 +3,8 @@
 install_core()
 {
     # install ecell4-core
-    ./waf distclean update --files="boost,doxygen" configure --prefix=${PREFIX} build install
+    ./waf distclean update --files="boost,doxygen" \
+        configure --prefix=${PREFIX} build install
     return $?
 }
 
@@ -14,8 +15,9 @@ install_submodule()
         return 1
     fi
     cd $1
-    LD_LIBRARY_PATH=${PREFIX}/lib LIBRARY_PATH=${PREFIX}/lib \
-        CPLUS_INCLUDE_PATH=${PREFIX}/include \
+    LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PREFIX}/lib \
+        LIBRARY_PATH=${LIBRARY_PATH}:${PREFIX}/lib \
+        CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:${PREFIX}/include \
         ../waf distclean configure --prefix=${PREFIX} build install
     VAL=$?
     cd ..
@@ -25,7 +27,7 @@ install_submodule()
 # PREFIX=/usr/local
 PREFIX=${HOME}/local
 # PREFIX=
-SUBMODS=("bd" "gillespie")
+SUBMODS=("bd" "gillespie" "ode")
 
 if [ "$PREFIX" == "" ]; then
     echo "\${PREFIX} is undefined."
