@@ -9,6 +9,7 @@ top = '.'
 out = 'build'
 
 subdirs = [
+    'tests'
     ]
 
 hppfiles = [
@@ -63,6 +64,6 @@ def build(bld):
 
     bld.recurse(subdirs)
 
-    # bld.add_post_fun(waf_unit_test.summary)
-    # bld.add_post_fun(summary)
-    # bld.options.all_tests = True
+    bld.add_post_fun(waf_unit_test.summary)
+    bld.add_post_fun(summary)
+    bld.options.all_tests = True
