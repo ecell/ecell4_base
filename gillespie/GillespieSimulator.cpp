@@ -24,14 +24,14 @@ void GillespieSimulator::calc_next_reaction_(void)
     std::vector<double> a(possible_reaction_rules.size());
     for (unsigned int idx(0); idx < possible_reaction_rules.size(); idx++)
     {
-        a[idx] = possible_reaction_rules[idx].k();
+        a[idx] = possible_reaction_rules[idx].k() * this->world_->volume();
         const ReactionRule::reactant_container_type &reactants =
             possible_reaction_rules[idx].reactants();
         for (ReactionRule::reactant_container_type::iterator
                  it = reactants.begin();
              it != reactants.end(); it++)
         {
-            a[idx] *= this->world_->num_molecules(*it);
+            a[idx] *= this->world_->num_molecules(*it) / this->world_->volume();
         }
     }
     double a_total(std::accumulate(a.begin(), a.end(), double(0.0)));
