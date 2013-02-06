@@ -55,7 +55,10 @@ public:
     {
         world_type::position_type const x(
             translate(divide(edge_lengths(), 2)));
-        (*world_).add_structure(boost::shared_ptr<cuboidal_region_type>(new cuboidal_region_type("world", typename cuboidal_region_type::shape_type(x, x))));
+        (*world_).add_structure(
+            boost::shared_ptr<cuboidal_region_type>(
+                new cuboidal_region_type(
+                    "world", typename cuboidal_region_type::shape_type(x, x))));
 
         ;
     }
@@ -79,7 +82,6 @@ public:
     {
         // add_species(p.species());
 
-        // Position3 const& pos(p.position());
         world_type::particle_id_pair retval(
             (*world_).new_particle(
                 find(p.species()), translate(p.position())));
@@ -338,7 +340,7 @@ protected:
 
     inline ParticleID translate(world_type::particle_id_type const& pid) const
     {
-        throw ParticleID(ParticleID::value_type(pid.lot(), pid.serial()));
+        return ParticleID(ParticleID::value_type(pid.lot(), pid.serial()));
     }
 
     inline world_type::particle_id_type translate(ParticleID const& pid) const
