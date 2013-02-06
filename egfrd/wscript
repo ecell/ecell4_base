@@ -14,13 +14,11 @@ subdirs = [
     ]
 
 hppfiles = [
-    'EGFRDModel.hpp',
     'EGFRDWorld.hpp',
     'EGFRDSimulatorWrapper.hpp'
     ]
 
 cppfiles = [
-    'EGFRDModel.cpp',
     'EGFRDSimulatorWrapper.cpp'
     ]
 
