@@ -44,6 +44,12 @@ public:
         Integer dissociation_retry_moves = 3)
         : model_(model), world_(world), rng_()
     {
+        // set the log level for epdp as L_WARNING.
+        ::LoggerManager::register_logger_manager(
+            "ecell.EGFRDSimulator",
+            boost::shared_ptr< ::LoggerManager>(
+                new ::LoggerManager("dummy", ::Logger::L_WARNING)));
+
         rng_.seed(seed);
 
         NetworkModel::species_container_type const&
