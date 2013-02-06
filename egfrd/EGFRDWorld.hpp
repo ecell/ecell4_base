@@ -10,6 +10,8 @@
 #include "SpeciesType.hpp"
 #include "SpeciesTypeID.hpp"
 #include "CuboidalRegion.hpp"
+#include "NetworkRules.hpp"
+#include "ReactionRule.hpp"
 #include "EGFRDSimulator.hpp"
 // epdp
 

@@ -54,7 +54,7 @@ public:
             (*world_).add_species(*i);
 
             for (NetworkModel::species_container_type::const_iterator
-                     j(species.begin()); j != species.end(); ++j)
+                     j(i); j != species.end(); ++j)
             {
                 if ((*model_).query_reaction_rules(*i, *j).size() == 0)
                 {
