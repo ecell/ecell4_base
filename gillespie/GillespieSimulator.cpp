@@ -111,19 +111,25 @@ void GillespieSimulator::step(void)
 
 bool GillespieSimulator::step(Real const &upto)
 {
-    // proceed reactions before the argument 'upto'.
-    while (this->dt_ != inf && this->world_->t() + this->dt_ < upto)
+    Real const t0(t()), dt0(dt());
+    Real const next_time(t0 + dt0);
+
+    if (upto <= t0)
     {
-        this->step();
+        return false;
     }
 
-    // The next reaction will occur after the argument 'upto'.
-    if (this->dt_ != inf)
+    if (upto >= next_time)
     {
-        this->dt_ = this->t() + this->dt_ - upto ;
+        this->step();
+        return true;
     }
-    this->set_t(upto);
-    return true;
+    else
+    {
+        // no reaction occurs
+        this->set_t(upto);
+        return false;
+    }
 }
 
 void GillespieSimulator::initialize(void)

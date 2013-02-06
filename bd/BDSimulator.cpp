@@ -31,7 +31,7 @@ bool BDSimulator::step(Real const& upto)
         return false;
     }
 
-    if (upto > next_time)
+    if (upto >= next_time)
     {
         step();
         return true;
