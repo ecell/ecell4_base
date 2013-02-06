@@ -128,6 +128,7 @@ bool GillespieSimulator::step(Real const &upto)
     {
         // no reaction occurs
         this->set_t(upto);
+        this->initialize();
         return false;
     }
 }
