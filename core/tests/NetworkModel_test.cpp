@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(NetworkModel_test_reaction_rule)
     model.remove_reaction_rule(rr2);
 }
 
-BOOST_AUTO_TEST_CASE(NetworkModel_test_query_reaction_rules)
+BOOST_AUTO_TEST_CASE(NetworkModel_test_query_reaction_rules1)
 {
     Species sp1("A"), sp2("B"), sp3("C");
 
@@ -84,4 +84,19 @@ BOOST_AUTO_TEST_CASE(NetworkModel_test_query_reaction_rules)
     BOOST_CHECK_EQUAL(model.query_reaction_rules(sp2).size(), 0);
     BOOST_CHECK_EQUAL(model.query_reaction_rules(sp1, sp2).size(), 1);
     BOOST_CHECK((*(model.query_reaction_rules(sp1, sp2).begin())) == rr1);
+}
+
+BOOST_AUTO_TEST_CASE(NetworkModel_test_query_reaction_rules2)
+{
+    Species sp1("A"), sp2("B");
+
+    ReactionRule rr1;
+    rr1.add_reactant(sp1);
+    rr1.add_reactant(sp2);
+
+    NetworkModel model;
+    model.add_reaction_rule(rr1);
+
+    BOOST_CHECK_EQUAL(model.query_reaction_rules(sp1, sp2).size(), 1);
+    BOOST_CHECK_EQUAL(model.query_reaction_rules(sp2, sp1).size(), 1);
 }
