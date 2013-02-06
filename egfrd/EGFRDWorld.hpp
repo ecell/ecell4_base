@@ -157,15 +157,46 @@ public:
         return Position3(world_size, world_size, world_size);
     }
 
+    Real volume() const
+    {
+        Position3 const lengths(edge_lengths());
+        return lengths[0] * lengths[1] * lengths[2];
+    }
+
+    Integer num_species() const
+    {
+        return sid_container_.size();
+    }
+
+    bool has_species(Species const& sp) const
+    {
+        return (find_species_type_id(sp) != sid_container_.end());
+    }
+
+    Integer num_molecules(Species const& sp) const
+    {
+        return num_particles(sp);
+    }
+
+    void add_molecules(Species const& sp, Integer const& num)
+    {
+        throw NotSupported("Not supported. Use new_particle instead.");
+    }
+
+    void remove_molecules(Species const& sp, Integer const& num)
+    {
+        throw NotSupported("Not supported. Use remove_particle instead.");
+    }
+
     Integer num_particles() const
     {
         return static_cast<Integer>((*world_).num_particles());
     }
 
-    Integer num_particles(Species const& species) const
+    Integer num_particles(Species const& sp) const
     {
         return static_cast<Integer>(
-            (*world_).get_particle_ids(find(species)).size());
+            (*world_).get_particle_ids(find(sp)).size());
     }
 
     bool has_particle(ParticleID const& pid) const
@@ -393,11 +424,6 @@ protected:
             i(std::find_if(
                   sid_container_.begin(), sid_container_.end(), predicator));
         return i;
-    }
-
-    bool has_species(Species const& sp) const
-    {
-        return (find_species_type_id(sp) != sid_container_.end());
     }
 
     inline ::SpeciesTypeID find(Species const& sp) const

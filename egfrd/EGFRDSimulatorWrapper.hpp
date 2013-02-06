@@ -40,9 +40,12 @@ public:
     EGFRDSimulatorWrapper(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<EGFRDWorld> world,
+        unsigned long int seed = 0,
         Integer dissociation_retry_moves = 3)
         : model_(model), world_(world), rng_()
     {
+        rng_.seed(seed);
+
         NetworkModel::species_container_type const&
             species((*model_).species());
         for (NetworkModel::species_container_type::const_iterator
@@ -101,11 +104,6 @@ public:
     Real dt() const
     {
         return (*sim_).dt();
-    }
-
-    void set_dt(Real const& dt)
-    {
-        throw NotSupported("Not supported.");
     }
 
     Integer num_steps() const
