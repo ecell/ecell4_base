@@ -7,8 +7,8 @@ def configure(conf):
 def build(bld):
     bld.program(
         features='cxx cxxprogram test',
-        source=['EGFRDWorld_test.cpp'],
-        target='EGFRDWorld_test',
+        source=['EGFRDSimulatorWrapper_test.cpp'],
+        target='EGFRDSimulatorWrapper_test',
         includes=['..', '../../../epdp'],
         defines=['HAVE_CONFIG_H'],
         lib=['ecell4-core', 'gsl', 'gslcblas', 'm', 'gfrd'],

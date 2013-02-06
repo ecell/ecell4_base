@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE "EGFRDWorld_test"
+#define BOOST_TEST_MODULE "EGFRDSimulatorWrapper_test"
 #define BOOST_TEST_NO_LIB
 
 #include <boost/test/included/unit_test.hpp>
@@ -12,7 +12,7 @@ using namespace ecell4;
 using namespace ecell4::egfrd;
 
 
-BOOST_AUTO_TEST_CASE(EGFRDWorld_test_constructor)
+BOOST_AUTO_TEST_CASE(EGFRDSimulatorWrapper_test_constructor)
 {
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
 
