@@ -51,8 +51,8 @@ protected:
 
 public:
 
-    EGFRDWorld(Real const& world_size)
-        : world_(new world_type(world_size, 3)), t_(0.0)
+    EGFRDWorld(Real const& world_size, Integer const& matrix_size = 3)
+        : world_(new world_type(world_size, matrix_size)), t_(0.0)
     {
         world_type::position_type const x(
             translate(divide(edge_lengths(), 2)));
@@ -64,7 +64,7 @@ public:
         ;
     }
 
-    particle_model_type& model()
+    particle_model_type const& model() const
     {
         return model_;
     }

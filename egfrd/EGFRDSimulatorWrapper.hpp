@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 
 // epdp
 #include "SpeciesTypeID.hpp"
@@ -38,9 +39,9 @@ public:
 
     EGFRDSimulatorWrapper(
         boost::shared_ptr<NetworkModel> model,
-        boost::shared_ptr<EGFRDWorld> world)
-        : model_(model), world_(world), rng_(),
-          num_steps_(0), dt_(0)
+        boost::shared_ptr<EGFRDWorld> world,
+        Integer dissociation_retry_moves = 3)
+        : model_(model), world_(world), rng_()
     {
         NetworkModel::species_container_type const&
             species((*model_).species());
@@ -68,13 +69,22 @@ public:
             (*world_).add_reaction_rule(*i);
         }
 
-        int dissociation_retry_moves(3);
         sim_ = boost::shared_ptr<simulator_type>(
             new simulator_type(
                 world->world(), boost::shared_ptr<network_rules_type>(
                     new network_rules_type(world->model().network_rules())),
                 rng_, dissociation_retry_moves));
 
+        initialize();
+    }
+
+    boost::shared_ptr<simulator_type> simulator() const
+    {
+        return sim_;
+    }
+
+    void initialize()
+    {
         (*sim_).initialize();
     }
 
@@ -112,13 +122,6 @@ protected:
     boost::shared_ptr<EGFRDWorld> world_;
     world_type::traits_type::rng_type rng_;
     boost::shared_ptr<simulator_type> sim_;
-
-    /**
-     * the protected internal state of EGFRDSimulator.
-     * they are needed to be saved/loaded with Visitor pattern.
-     */
-    Real dt_;
-    Integer num_steps_;
 };
 
 } // egfrd
