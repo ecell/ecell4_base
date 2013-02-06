@@ -2,6 +2,7 @@
 #define __EGFRD_WORLD_HPP
 
 #include <boost/shared_ptr.hpp>
+#include <boost/foreach.hpp>
 
 // epdp
 #include "World.hpp"
@@ -135,10 +136,10 @@ public:
         model_.network_rules().add_reaction_rule(translate(rr));
     }
 
-    // void remove_species(Species const& sp)
-    // {
-    //     ;
-    // }
+    void remove_species(Species const& sp)
+    {
+        throw NotImplemented("Not implemented yet.");
+    }
 
     Real const& t() const
     {
@@ -193,41 +194,127 @@ public:
 
     // particle_container_type const& particles() const
     // {
-    //     return (*ps_).particles();
+    //     throw NotSupported("Not supported. Use list_particles() instead.");
     // }
 
-    // std::vector<std::pair<ParticleID, Particle> > list_particles() const
-    // {
-    //     return (*ps_).list_particles();
-    // }
+    std::vector<std::pair<ParticleID, Particle> > list_particles() const
+    {
+        std::vector<std::pair<ParticleID, Particle> > particles(num_particles());
+        BOOST_FOREACH(world_type::particle_id_pair const& pid_pair,
+                      (*world_).get_particles_range())
+        {
+            particles.push_back(
+                std::make_pair(translate(pid_pair.first),
+                               translate(pid_pair.second)));
+        }
+        return particles;
+    }
 
-    // std::vector<std::pair<ParticleID, Particle> >
-    // list_particles(Species const& species) const
-    // {
-    //     return (*ps_).list_particles(species);
-    // }
+    std::vector<std::pair<ParticleID, Particle> >
+    list_particles(Species const& species) const
+    {
+        ::SpeciesTypeID const target(find(species));
+        // std::vector<std::pair<ParticleID, Particle> > particles(num_particles());
+        std::vector<std::pair<ParticleID, Particle> > particles;
+        BOOST_FOREACH(world_type::particle_id_pair const& pid_pair,
+                      (*world_).get_particles_range())
+        {
+            if (pid_pair.second.sid() == target)
+            {
+                particles.push_back(
+                    std::make_pair(translate(pid_pair.first),
+                                   translate(pid_pair.second)));
+            }
+        }
+        return particles;
+    }
 
-    // std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    // list_particles_within_radius(
-    //     Position3 const& pos, Real const& radius) const
-    // {
-    //     return (*ps_).list_particles_within_radius(pos, radius);
-    // }
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_particles_within_radius(
+        Position3 const& pos, Real const& radius) const
+    {
+        boost::scoped_ptr<world_type::particle_id_pair_and_distance_list>
+            overlapped(
+                (*world_).check_overlap(
+                    world_type::particle_shape_type(translate(pos), radius)));
+        if (overlapped && ::size(*overlapped) == 0)
+        {
+            return std::vector<
+                std::pair<std::pair<ParticleID, Particle>, Real> >();
+        }
 
-    // std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    // list_particles_within_radius(
-    //     Position3 const& pos, Real const& radius, ParticleID const& ignore) const
-    // {
-    //     return (*ps_).list_particles_within_radius(pos, radius, ignore);
-    // }
+        std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+            retval(::size(*overlapped));
+        for (world_type::particle_id_pair_and_distance_list::const_iterator
+                 i(overlapped->begin()); i != overlapped->end(); ++i)
+        {
+            retval.push_back(
+                std::make_pair(
+                    std::make_pair(
+                        translate((*i).first.first), translate((*i).first.second)),
+                    (*i).second));
+        }
+        return retval;
+    }
 
-    // std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    // list_particles_within_radius(
-    //     Position3 const& pos, Real const& radius,
-    //     ParticleID const& ignore1, ParticleID const& ignore2) const
-    // {
-    //     return (*ps_).list_particles_within_radius(pos, radius, ignore1, ignore2);
-    // }
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_particles_within_radius(
+        Position3 const& pos, Real const& radius, ParticleID const& ignore) const
+    {
+        boost::scoped_ptr<world_type::particle_id_pair_and_distance_list>
+            overlapped(
+                (*world_).check_overlap(
+                    world_type::particle_shape_type(translate(pos), radius),
+                    translate(ignore)));
+        if (overlapped && ::size(*overlapped) == 0)
+        {
+            return std::vector<
+                std::pair<std::pair<ParticleID, Particle>, Real> >();
+        }
+
+        std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+            retval(::size(*overlapped));
+        for (world_type::particle_id_pair_and_distance_list::const_iterator
+                 i(overlapped->begin()); i != overlapped->end(); ++i)
+        {
+            retval.push_back(
+                std::make_pair(
+                    std::make_pair(
+                        translate((*i).first.first), translate((*i).first.second)),
+                    (*i).second));
+        }
+        return retval;
+    }
+
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_particles_within_radius(
+        Position3 const& pos, Real const& radius,
+        ParticleID const& ignore1, ParticleID const& ignore2) const
+    {
+        boost::scoped_ptr<world_type::particle_id_pair_and_distance_list>
+            overlapped(
+                (*world_).check_overlap(
+                    world_type::particle_shape_type(translate(pos), radius),
+                    translate(ignore1), translate(ignore2)));
+        if (overlapped && ::size(*overlapped) == 0)
+        {
+            return std::vector<
+                std::pair<std::pair<ParticleID, Particle>, Real> >();
+        }
+
+        std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+            retval(::size(*overlapped));
+        for (world_type::particle_id_pair_and_distance_list::const_iterator
+                 i(overlapped->begin()); i != overlapped->end(); ++i)
+        {
+            retval.push_back(
+                std::make_pair(
+                    std::make_pair(
+                        translate((*i).first.first), translate((*i).first.second)),
+                    (*i).second));
+        }
+        return retval;
+    }
 
     inline Position3 periodic_transpose(
         Position3 const& pos1, Position3 const& pos2) const

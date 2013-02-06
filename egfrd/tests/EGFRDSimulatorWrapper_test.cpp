@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(EGFRDSimulatorWrapper_test_constructor)
 
     EGFRDSimulatorWrapper sim(model, world);
 
-    for (int i(0); i < 100; ++i)
+    for (int i(0); i < 10000; ++i)
     {
         std::cout << "t=" << sim.t() << std::endl;
         sim.step();
