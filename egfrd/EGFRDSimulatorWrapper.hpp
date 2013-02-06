@@ -48,6 +48,16 @@ public:
                  i(species.begin()); i != species.end(); ++i)
         {
             (*world_).add_species(*i);
+
+            for (NetworkModel::species_container_type::const_iterator
+                     j(species.begin()); j != species.end(); ++j)
+            {
+                if ((*model_).query_reaction_rules(*i, *j).size() == 0)
+                {
+                    (*world_).add_reaction_rule(
+                        create_repulsive_reaction_rule(*i, *j));
+                }
+            }
         }
 
         NetworkModel::reaction_rule_container_type const&
@@ -64,6 +74,8 @@ public:
                 world->world(), boost::shared_ptr<network_rules_type>(
                     new network_rules_type(world->model().network_rules())),
                 rng_, dissociation_retry_moves));
+
+        (*sim_).initialize();
     }
 
     Real t() const

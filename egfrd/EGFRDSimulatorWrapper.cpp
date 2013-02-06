@@ -9,15 +9,12 @@ namespace egfrd
 
 void EGFRDSimulatorWrapper::step()
 {
-    ;
-
-    set_t(t() + dt());
-    ++num_steps_;
+    (*sim_).step();
 }
 
 bool EGFRDSimulatorWrapper::step(Real const& upto)
 {
-    return false;
+    (*sim_).step(upto);
 }
 
 } // egfrd
