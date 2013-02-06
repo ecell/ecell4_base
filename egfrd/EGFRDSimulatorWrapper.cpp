@@ -15,8 +15,9 @@ void EGFRDSimulatorWrapper::step()
 
 bool EGFRDSimulatorWrapper::step(Real const& upto)
 {
-    (*sim_).step(upto);
+    bool retval((*sim_).step(upto));
     (*world_).set_t((*sim_).t());
+    return retval;
 }
 
 } // egfrd
