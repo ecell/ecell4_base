@@ -19,6 +19,8 @@ public:
      * a type of the container of reactants
      * std::multiset allows multiple keys with equal values,
      * but looses the original order at the registration.
+     * when changing this type into the ordered one,
+     * please modify NetworkModel too.
      */
     typedef std::multiset<Species> reactant_container_type;
     typedef std::multiset<Species> product_container_type;
