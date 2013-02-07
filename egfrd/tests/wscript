@@ -9,8 +9,7 @@ def build(bld):
         features='cxx cxxprogram test',
         source=['EGFRDSimulatorWrapper_test.cpp'],
         target='EGFRDSimulatorWrapper_test',
-        includes=['..', '../../../epdp'],
+        includes=['..'],
         defines=['HAVE_CONFIG_H', 'HAVE_INLINE'],
         lib=['ecell4-core', 'gsl', 'gslcblas', 'm', 'gfrd'],
-        libpath = ['../../../epdp'],
         use='ecell4-egfrd')

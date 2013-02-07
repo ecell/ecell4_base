@@ -31,10 +31,9 @@ def configure(conf):
     conf.check_cxx(lib='gslcblas')
     conf.check_cxx(lib='m')
 
-    conf.check_cxx(lib='ecell4-core')
+    conf.check_cxx(lib='gfrd')
 
-    # conf.env.CXXFLAGS = ['-pg','-g','-ldl','-Wall','-std=gnu++0x','-Wextra','-fpermissive']
-    # conf.env.CXXFLAGS = ['-O2']
+    conf.check_cxx(lib='ecell4-core')
 
     conf.recurse(subdirs)
 
@@ -63,10 +62,9 @@ def build(bld):
 
     bld.shlib(
         source = cppfiles,
-        includes = ['.', '../../../epdp'],
+        includes = ['.'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
         lib=['ecell4-core', 'gsl', 'gslcblas', 'm', 'gfrd'],
-        libpath = ['../../../epdp'],
         target = 'ecell4-egfrd')
 
     bld.recurse(subdirs)
