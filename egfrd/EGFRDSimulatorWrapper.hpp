@@ -40,7 +40,6 @@ public:
     EGFRDSimulatorWrapper(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<EGFRDWorld> world,
-        unsigned long int seed = 0,
         Integer dissociation_retry_moves = 3)
         : model_(model), world_(world), rng_()
     {
@@ -49,8 +48,6 @@ public:
             "ecell.EGFRDSimulator",
             boost::shared_ptr< ::LoggerManager>(
                 new ::LoggerManager("dummy", ::Logger::L_WARNING)));
-
-        rng_.seed(seed);
 
         NetworkModel::species_container_type const&
             species((*model_).species());

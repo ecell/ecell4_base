@@ -7,6 +7,7 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Position3.hpp>
 #include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/RandomNumberGenerator.hpp>
 
 #include "../EGFRDWorld.hpp"
 #include "../EGFRDSimulatorWrapper.hpp"
@@ -29,7 +30,9 @@ BOOST_AUTO_TEST_CASE(EGFRDSimulatorWrapper_test_constructor)
     sp1.set_attribute("radius", radius);
     (*model).add_species(sp1);
 
-    boost::shared_ptr<EGFRDWorld> world(new EGFRDWorld(L));
+    boost::shared_ptr<ecell4::GSLRandomNumberGenerator>
+        rng(new ecell4::GSLRandomNumberGenerator());
+    boost::shared_ptr<EGFRDWorld> world(new EGFRDWorld(L, 3, rng));
 
     (*world).add_species(sp1);
 

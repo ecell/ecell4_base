@@ -19,6 +19,7 @@
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Particle.hpp>
+#include <ecell4/core/RandomNumberGenerator.hpp>
 
 
 namespace ecell4
@@ -55,8 +56,10 @@ protected:
 
 public:
 
-    EGFRDWorld(Real const& world_size, Integer const& matrix_size = 3)
-        : world_(new world_type(world_size, matrix_size)), t_(0.0)
+    EGFRDWorld(
+        Real const& world_size, Integer const& matrix_size,
+        boost::shared_ptr<GSLRandomNumberGenerator> rng)
+        : world_(new world_type(world_size, matrix_size)), rng_(rng), t_(0.0)
     {
         world_type::position_type const x(
             translate(divide(edge_lengths(), 2)));
@@ -375,6 +378,11 @@ public:
             (*world_).distance(translate(pos1), translate(pos2)));
     }
 
+    inline boost::shared_ptr<GSLRandomNumberGenerator> rng()
+    {
+        return rng_;
+    }
+
 protected:
 
     template<typename Tfirst_, typename Tsecond_>
@@ -536,6 +544,7 @@ protected:
 protected:
 
     boost::shared_ptr<world_type> world_;
+    boost::shared_ptr<GSLRandomNumberGenerator> rng_;
     Real t_;
 
     particle_model_type model_;
