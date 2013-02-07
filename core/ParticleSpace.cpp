@@ -1,6 +1,8 @@
 #include <cmath>
 #include <stdexcept>
 
+#include <gsl/gsl_pow_int.h>
+
 #include "exceptions.hpp"
 #include "ParticleSpace.hpp"
 
@@ -11,8 +13,8 @@ namespace ecell4
 
 Real pow_2(Real const& a)
 {
-    // return gsl_pow_2(a);
-    return a * a;
+    return gsl_pow_2(a);
+    // return a * a;
 }
 
 Integer ParticleSpaceVectorImpl::num_particles() const
