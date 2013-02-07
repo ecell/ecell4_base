@@ -75,6 +75,11 @@ public:
         ;
     }
 
+    inline rng_handle handle()
+    {
+        return rng_;
+    }
+
     rng_handle rng_;
 };
 

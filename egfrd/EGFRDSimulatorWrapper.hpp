@@ -41,7 +41,7 @@ public:
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<EGFRDWorld> world,
         Integer dissociation_retry_moves = 3)
-        : model_(model), world_(world), rng_()
+        : model_(model), world_(world), rng_(world->rng()->handle())
     {
         // set the log level for epdp as L_WARNING.
         ::LoggerManager::register_logger_manager(
