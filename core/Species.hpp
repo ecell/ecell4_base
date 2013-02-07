@@ -37,6 +37,14 @@ public:
         ;
     }
 
+    Species(
+        std::string const& name, std::string const& radius, std::string const& D)
+        : name_(name)
+    {
+        set_attribute("radius", radius);
+        set_attribute("D", D);
+    }
+
     serial_type serial() const
     {
         return name();
