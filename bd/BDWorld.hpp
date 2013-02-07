@@ -169,6 +169,13 @@ public:
         return (*ps_).distance(pos1, pos2);
     }
 
+public:
+
+    Integer num_molecules(Species const& sp) const
+    {
+        return num_particles(sp);
+    }
+
 protected:
 
     boost::scoped_ptr<ParticleSpace> ps_;
