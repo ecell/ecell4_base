@@ -23,6 +23,10 @@ class BDWorld
 {
 public:
 
+    typedef ParticleInfo particle_info_type;
+
+public:
+
     typedef ParticleSpace::particle_container_type particle_container_type;
 
     BDWorld(Position3 const& edge_lengths)

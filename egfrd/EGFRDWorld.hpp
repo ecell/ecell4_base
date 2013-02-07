@@ -37,6 +37,8 @@ class EGFRDWorld
 {
 public:
 
+    typedef ParticleInfo particle_info_type;
+
     typedef ::World< ::CyclicWorldTraits<Real, Real> > world_type;
     typedef ::ParticleModel particle_model_type;
     typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<EGFRDWorld::world_type> >
@@ -270,7 +272,7 @@ public:
             overlapped(
                 (*world_).check_overlap(
                     world_type::particle_shape_type(translate(pos), radius)));
-        if (overlapped && ::size(*overlapped) == 0)
+        if (!overlapped || ::size(*overlapped) == 0)
         {
             return std::vector<
                 std::pair<std::pair<ParticleID, Particle>, Real> >();
@@ -299,7 +301,7 @@ public:
                 (*world_).check_overlap(
                     world_type::particle_shape_type(translate(pos), radius),
                     translate(ignore)));
-        if (overlapped && ::size(*overlapped) == 0)
+        if (!overlapped || ::size(*overlapped) == 0)
         {
             return std::vector<
                 std::pair<std::pair<ParticleID, Particle>, Real> >();
@@ -329,7 +331,7 @@ public:
                 (*world_).check_overlap(
                     world_type::particle_shape_type(translate(pos), radius),
                     translate(ignore1), translate(ignore2)));
-        if (overlapped && ::size(*overlapped) == 0)
+        if (!overlapped || ::size(*overlapped) == 0)
         {
             return std::vector<
                 std::pair<std::pair<ParticleID, Particle>, Real> >();
