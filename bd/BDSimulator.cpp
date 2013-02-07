@@ -10,7 +10,7 @@ namespace bd
 void BDSimulator::step()
 {
     {
-        BDPropagator propagator(*model_, *world_, rng(), dt());
+        BDPropagator propagator(*model_, *world_, *rng(), dt());
         while (propagator())
         {
             ; // do nothing here

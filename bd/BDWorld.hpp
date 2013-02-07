@@ -2,7 +2,9 @@
 #define __BD_WORLD_HPP
 
 #include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
+#include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
 
@@ -29,8 +31,10 @@ public:
 
     typedef ParticleSpace::particle_container_type particle_container_type;
 
-    BDWorld(Position3 const& edge_lengths)
-        : ps_(new ParticleSpaceVectorImpl(edge_lengths))
+    BDWorld(
+        Position3 const& edge_lengths,
+        boost::shared_ptr<RandomNumberGenerator> rng)
+        : ps_(new ParticleSpaceVectorImpl(edge_lengths)), rng_(rng)
     {
         ;
     }
@@ -169,6 +173,11 @@ public:
         return (*ps_).distance(pos1, pos2);
     }
 
+    inline boost::shared_ptr<RandomNumberGenerator> rng()
+    {
+        return rng_;
+    }
+
 public:
 
     Integer num_molecules(Species const& sp) const
@@ -179,6 +188,8 @@ public:
 protected:
 
     boost::scoped_ptr<ParticleSpace> ps_;
+    boost::shared_ptr<RandomNumberGenerator> rng_;
+
     SerialIDGenerator<ParticleID> pidgen_;
 };
 

@@ -29,9 +29,6 @@ int main(int argc, char** argv)
     std::string D("5e-12"), radius("5e-9");
     Position3 const edge_lengths(L, L, L);
 
-    /// instantiate RandomNumberGenerator
-    GSLRandomNumberGenerator rng;
-
     /// instantiate NetworkModel
     boost::shared_ptr<Model> model(new NetworkModel());
 
@@ -41,8 +38,10 @@ int main(int argc, char** argv)
     sp1.set_attribute("radius", radius);
     (*model).add_species(sp1);
 
+    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
+
     /// instantiate BDWorld
-    boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths));
+    boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths, rng));
 
     /// create a Particle, and inject it into BDWorld
     ParticleInfo info1((*world).get_particle_info(sp1));
@@ -51,7 +50,7 @@ int main(int argc, char** argv)
     ParticleID const pid1((*world).new_particle(p1));
 
     /// instatiate BDSimulator
-    BDSimulator sim(model, world, rng);
+    BDSimulator sim(model, world);
     sim.set_dt(1e-6);
 
     /// run and log by the millisecond

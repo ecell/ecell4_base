@@ -10,5 +10,5 @@ def build(bld):
         source='main.cpp',
         target='hardbody',
         includes=['../..'],
-        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
         use='ecell4-bd')

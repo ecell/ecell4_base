@@ -13,14 +13,18 @@ BOOST_AUTO_TEST_CASE(BDWorld_test_constructor)
 {
     Real const L(1e-6);
     Position3 const edge_lengths(L, L, L);
-    BDWorld target(edge_lengths);
+    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
+
+    BDWorld target(edge_lengths, rng);
 }
 
 BOOST_AUTO_TEST_CASE(BDWorld_test_edge_lengths)
 {
     Real const L(1e-6);
     Position3 const input(L, L, L);
-    BDWorld target(input);
+    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
+
+    BDWorld target(input, rng);
 
     Position3 const& output(target.edge_lengths());
     for (Position3::size_type dim(0); dim < 3; ++dim)

@@ -10,7 +10,7 @@ def build(bld):
         source='BDWorld_test.cpp',
         target='BDWorld_test',
         includes=['..'],
-        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
         use='ecell4-bd')
 
     bld.program(
@@ -18,5 +18,5 @@ def build(bld):
         source='BDSimulator_test.cpp',
         target='BDSimulator_test',
         includes=['..'],
-        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
         use='ecell4-bd')

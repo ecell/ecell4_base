@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 
-#include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Simulator.hpp>
 
@@ -23,10 +22,8 @@ class BDSimulator
 {
 public:
 
-    BDSimulator(
-        boost::shared_ptr<Model> model, boost::shared_ptr<BDWorld> world,
-        RandomNumberGenerator& rng)
-        : model_(model), world_(world), rng_(rng), num_steps_(0), dt_(0)
+    BDSimulator(boost::shared_ptr<Model> model, boost::shared_ptr<BDWorld> world)
+        : model_(model), world_(world), num_steps_(0), dt_(0)
     {
         ;
     }
@@ -60,9 +57,9 @@ public:
         return num_steps_;
     }
 
-    RandomNumberGenerator& rng()
+    inline boost::shared_ptr<RandomNumberGenerator> rng()
     {
-        return rng_;
+        return (*world_).rng();
     }
 
     void step();
@@ -79,7 +76,6 @@ protected:
      */
     Real dt_;
     Integer num_steps_;
-    RandomNumberGenerator& rng_;
 };
 
 } // bd
