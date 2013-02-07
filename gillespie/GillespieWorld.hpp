@@ -5,6 +5,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <string>
 
+#include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/CompartmentSpace.hpp>
 #include <ecell4/core/Species.hpp>
 
@@ -18,8 +19,9 @@ namespace gillespie
 class GillespieWorld
 {
 public:
-    GillespieWorld(Real const &volume)
-        : cs_(new CompartmentSpaceVectorImpl(volume))
+    GillespieWorld(
+        Real const &volume, boost::shared_ptr<RandomNumberGenerator> rng)
+        : cs_(new CompartmentSpaceVectorImpl(volume)), rng_(rng)
     {
         ;
     }
@@ -45,8 +47,14 @@ public:
     // I think it is better that the name of this function is 'decrease_molecules()'.
     void remove_molecules(Species const &sp, Integer const &num);
 
+    inline boost::shared_ptr<RandomNumberGenerator> rng()
+    {
+        return rng_;
+    }
+
 private:
     boost::scoped_ptr<CompartmentSpace> cs_;
+    boost::shared_ptr<RandomNumberGenerator> rng_;
 };
 
 } // gillespie

@@ -42,9 +42,9 @@ void GillespieSimulator::calc_next_reaction_(void)
         return;
     }
 
-    double rnd_num1(this->rng_.uniform(0, 1));
+    double rnd_num1(this->rng()->uniform(0, 1));
     double dt(gsl_sf_log(1.0 / rnd_num1) / double(a_total));
-    double rnd_num2(this->rng_.uniform(0, 1) * a_total);
+    double rnd_num2(this->rng()->uniform(0, 1) * a_total);
 
     int u(-1);
     double acc(0.0);
@@ -156,11 +156,6 @@ Real GillespieSimulator::dt(void) const
 Integer GillespieSimulator::num_steps(void) const
 {
     return this->num_steps_;
-}
-
-RandomNumberGenerator& GillespieSimulator::rng(void)
-{
-    return this->rng_;
 }
 
 } // gillespie
