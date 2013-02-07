@@ -17,6 +17,7 @@
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/get_mapper_mf.hpp>
+#include <ecell4/core/extras.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
@@ -187,7 +188,7 @@ public:
 
     void add_molecules(Species const& sp, Integer const& num)
     {
-        throw NotSupported("Not supported. Use new_particle instead.");
+        extras::throw_in_particles(*this, sp, num, *rng());
     }
 
     void remove_molecules(Species const& sp, Integer const& num)

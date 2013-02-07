@@ -4,6 +4,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <ecell4/core/extras.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
@@ -183,6 +184,11 @@ public:
     Integer num_molecules(Species const& sp) const
     {
         return num_particles(sp);
+    }
+
+    void add_molecules(Species const& sp, Integer const& num)
+    {
+        extras::throw_in_particles(*this, sp, num, *rng());
     }
 
 protected:
