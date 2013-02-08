@@ -7,8 +7,8 @@ def configure(conf):
 
 def build(bld):
     bld.program(
-        source='main.cpp',
-        target='hardbody',
-        includes=['../..'],
+        source = 'main.cpp',
+        target = 'hardbody',
+        includes = ['../..'],
         lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
-        use='ecell4-bd')
+        use = 'ecell4-bd')

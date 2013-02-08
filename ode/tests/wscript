@@ -6,9 +6,9 @@ def configure(conf):
 
 def build(bld):
     bld.program(
-        features='cxx cxxprogram test',
-        source='ODESimulator_test.cpp',
-        target='ODESimulator_test',
-        includes=['..'],
-        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
-        use='ecell4-ode')
+        features = 'cxx cxxprogram test',
+        source = 'ODESimulator_test.cpp',
+        target = 'ODESimulator_test',
+        includes = ['..'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        use = 'ecell4-ode')

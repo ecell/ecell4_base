@@ -6,10 +6,10 @@ def configure(conf):
 
 def build(bld):
     bld.program(
-        features='cxx cxxprogram test',
-        source=['EGFRDSimulatorWrapper_test.cpp'],
-        target='EGFRDSimulatorWrapper_test',
-        includes=['..'],
-        defines=['HAVE_CONFIG_H', 'HAVE_INLINE'],
-        lib=['ecell4-core', 'gsl', 'gslcblas', 'm', 'gfrd'],
-        use='ecell4-egfrd')
+        features = 'cxx cxxprogram test',
+        source = ['EGFRDSimulatorWrapper_test.cpp'],
+        target = 'EGFRDSimulatorWrapper_test',
+        includes = ['..'],
+        defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'gfrd'],
+        use = 'ecell4-egfrd')

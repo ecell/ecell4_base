@@ -7,8 +7,8 @@ def configure(conf):
 
 def build(bld):
     bld.program(
-        source='main.cpp',
-        target='dissociation',
-        includes=['../..'],
-        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
-        use='ecell4-ode')
+        source = 'main.cpp',
+        target = 'dissociation',
+        includes = ['../..'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        use = 'ecell4-ode')

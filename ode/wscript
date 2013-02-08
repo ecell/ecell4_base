@@ -26,13 +26,13 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_cxx waf_unit_test')
-    conf.check_cxx(lib='gsl')
-    conf.check_cxx(lib='gslcblas')
-    conf.check_cxx(lib='m')
+    conf.check_cxx(lib = 'gsl')
+    conf.check_cxx(lib = 'gslcblas')
+    conf.check_cxx(lib = 'm')
 
-    conf.check_cxx(lib='ecell4-core')
+    conf.check_cxx(lib = 'ecell4-core')
 
-    conf.check(header_name='boost/numeric/odeint.hpp', mandatory=True)
+    conf.check(header_name = 'boost/numeric/odeint.hpp', mandatory = True)
 
     conf.recurse(subdirs)
 
