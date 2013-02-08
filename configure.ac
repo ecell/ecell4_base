@@ -190,6 +190,6 @@ dnl
 dnl
 dnl no checks for system services
 dnl
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile binding/Makefile test/Makefile doc/Makefile samples/benchmark/Makefile])
 AC_OUTPUT([])
