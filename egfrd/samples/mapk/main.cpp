@@ -19,6 +19,10 @@
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 
+#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/Position3.hpp>
+#include <ecell4/core/RandomNumberGenerator.hpp>
+
 #if STYPE == EGFRD_MODE
 #include <ecell4/egfrd/EGFRDSimulatorWrapper.hpp>
 typedef ecell4::egfrd::EGFRDWorld world_type;
