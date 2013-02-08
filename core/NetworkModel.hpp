@@ -41,6 +41,24 @@ public:
         ;
     }
 
+    // ModelTraits
+
+    std::vector<ReactionRule> query_reaction_rules(Species const& sp) const;
+    std::vector<ReactionRule> query_reaction_rules(
+        Species const& sp1, Species const& sp2) const;
+
+    // NetworkModelTraits
+
+    void add_species(Species const& sp);
+    bool has_species(Species const& sp) const;
+    void remove_species(Species const& sp);
+
+    void add_reaction_rule(ReactionRule const& rr);
+    void remove_reaction_rule(ReactionRule const& rr);
+    bool has_reaction_rule(ReactionRule const& rr) const;
+
+    // Optional functions
+
     species_container_type const& species() const
     {
         return species_;
@@ -50,18 +68,6 @@ public:
     {
         return reaction_rules_;
     }
-
-    std::vector<ReactionRule> query_reaction_rules(Species const& sp) const;
-    std::vector<ReactionRule> query_reaction_rules(
-        Species const& sp1, Species const& sp2) const;
-
-    void add_species(Species const& sp);
-    void remove_species(Species const& sp);
-    bool has_species(Species const& sp) const;
-
-    void add_reaction_rule(ReactionRule const& rr);
-    void remove_reaction_rule(ReactionRule const& rr);
-    bool has_reaction_rule(ReactionRule const& rr) const;
 
 protected:
 

@@ -28,6 +28,8 @@ class Model
 {
 public:
 
+    // ModelTraits
+
     /**
      * a fundamental function to query unimolecular reaction rules from a reactant.
      * this must be overloaded by any sub classes of Model.
@@ -46,6 +48,8 @@ public:
      */
     virtual std::vector<ReactionRule> query_reaction_rules(
         Species const& sp1, Species const& sp2) const = 0;
+
+    // NetworkModelTraits
 
     /**
      * add a concrete species to the model.

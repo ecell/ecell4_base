@@ -12,7 +12,7 @@ Real const& CompartmentSpaceVectorImpl::volume() const
     return volume_;
 }
 
-void CompartmentSpaceVectorImpl::set_volume(Real volume)
+void CompartmentSpaceVectorImpl::set_volume(Real const& volume)
 {
     if (volume <= 0)
     {

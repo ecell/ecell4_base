@@ -1,30 +1,21 @@
 #include <cmath>
 #include <stdexcept>
 
-#include <gsl/gsl_pow_int.h>
-
 #include "exceptions.hpp"
 #include "ParticleSpace.hpp"
 
-#include "H5Cpp.h"
 
 namespace ecell4
 {
-
-Real pow_2(Real const& a)
-{
-    return gsl_pow_2(a);
-    // return a * a;
-}
 
 Integer ParticleSpaceVectorImpl::num_particles() const
 {
     return static_cast<Integer>(particles_.size());
 }
 
-Integer ParticleSpaceVectorImpl::num_particles(Species const& species) const
+Integer ParticleSpaceVectorImpl::num_particles(Species const& sp) const
 {
-    return static_cast<Integer>(list_particles(species).size());
+    return static_cast<Integer>(list_particles(sp).size());
 }
 
 bool ParticleSpaceVectorImpl::has_particle(ParticleID const& pid) const
@@ -111,13 +102,13 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleSpaceVectorImpl::list_particles_within_radius(
     Position3 const& pos, Real const& radius) const
 {
-    Real const rsq(pow_2(radius));
+    const Real rsq(gsl_pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
     for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
-        Real const dsq(distance_sq((*i).second.position(), pos));
+        const Real dsq(distance_sq((*i).second.position(), pos));
         if (dsq <= rsq)
         {
             retval.push_back(std::make_pair(*i, std::sqrt(dsq)));
@@ -131,13 +122,13 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleSpaceVectorImpl::list_particles_within_radius(
     Position3 const& pos, Real const& radius, ParticleID const& ignore) const
 {
-    Real const rsq(pow_2(radius));
+    const Real rsq(gsl_pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
     for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
-        Real const dsq(distance_sq((*i).second.position(), pos));
+        const Real dsq(distance_sq((*i).second.position(), pos));
         if (dsq <= rsq)
         {
             if ((*i).first != ignore)
@@ -155,13 +146,13 @@ ParticleSpaceVectorImpl::list_particles_within_radius(
     Position3 const& pos, Real const& radius,
     ParticleID const& ignore1, ParticleID const& ignore2) const
 {
-    Real const rsq(pow_2(radius));
+    const Real rsq(gsl_pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
     for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
-        Real const dsq(distance_sq((*i).second.position(), pos));
+        const Real dsq(distance_sq((*i).second.position(), pos));
         if (dsq <= rsq)
         {
             if ((*i).first != ignore1 && (*i).first != ignore2)

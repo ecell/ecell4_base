@@ -27,7 +27,6 @@ install_submodule()
 # PREFIX=/usr/local
 PREFIX=${HOME}/local
 # PREFIX=
-# SUBMODS=("bd" "gillespie" "ode")
 SUBMODS=("bd" "gillespie")
 
 if [ "$PREFIX" == "" ]; then

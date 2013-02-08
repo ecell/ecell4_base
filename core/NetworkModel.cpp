@@ -7,7 +7,8 @@
 namespace ecell4
 {
 
-std::vector<ReactionRule> NetworkModel::query_reaction_rules(Species const& sp) const
+std::vector<ReactionRule> NetworkModel::query_reaction_rules(
+    Species const& sp) const
 {
     ReactionRule::reactant_container_type reactants;
     reactants.insert(sp);

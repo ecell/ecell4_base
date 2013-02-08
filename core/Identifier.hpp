@@ -78,9 +78,13 @@ struct DefaultLot
 template<typename Tbase_, typename Tserial_, typename Tlot_ = DefaultLot>
 struct Identifier
 {
+public:
+
     typedef Tlot_ lot_type;
     typedef Tserial_ serial_type;
     typedef std::pair<lot_type, serial_type> value_type;
+
+public:
 
     Identifier(value_type const& value)
         : value_(value)
@@ -224,6 +228,7 @@ struct Identifier
     }
 
 protected:
+
     value_type value_;
 };
 

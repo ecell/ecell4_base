@@ -296,8 +296,12 @@ typename identifier_serial<Tid_>::type serial(Tid_& lhs)
 template<typename Tid_>
 struct SerialIDGenerator
 {
+public:
+
     typedef Tid_ identifier_type;
     typedef typename identifier_lot<identifier_type>::type lot_type;
+
+public:
 
     SerialIDGenerator(lot_type const& lot = lot_type())
         : next_(lot_add(identifier_type(), lot))

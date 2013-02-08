@@ -17,19 +17,21 @@ template <typename Tworld_, typename Trng_>
 void throw_in_particles(
     Tworld_& world, Species const& sp, Integer const& N, Trng_& rng)
 {
+    typedef typename Tworld_::particle_info_type particle_info_type;
+
     if (N < 0)
     {
         throw std::invalid_argument("the number of particles must be positive.");
     }
 
-    Position3 const edge_lengths(world.edge_lengths());
-    typename Tworld_::particle_info_type const info(world.get_particle_info(sp));
+    const Position3 edge_lengths(world.edge_lengths());
+    const particle_info_type info(world.get_particle_info(sp));
 
     for (int i(0); i < N; ++i)
     {
         while (true)
         {
-            Position3 const pos(
+            const Position3 pos(
                 rng.uniform(0.0, edge_lengths[0]),
                 rng.uniform(0.0, edge_lengths[1]),
                 rng.uniform(0.0, edge_lengths[2]));

@@ -28,8 +28,13 @@ class Species
 public:
 
     typedef std::string serial_type;
+
+protected:
+
     typedef utils::get_mapper_mf<std::string, std::string>::type
     attributes_container_type;
+
+public:
 
     Species(std::string const& name = "")
         : name_(name)
@@ -55,8 +60,7 @@ public:
         return name_;
     }
 
-    attributes_container_type::mapped_type get_attribute(
-        std::string const& name_attr) const
+    std::string get_attribute(std::string const& name_attr) const
     {
         attributes_container_type::const_iterator
             i(attributes_.find(name_attr));
@@ -68,9 +72,7 @@ public:
         return (*i).second;
     }
 
-    void set_attribute(
-        std::string const& name_attr,
-        attributes_container_type::mapped_type value)
+    void set_attribute(std::string const& name_attr, std::string const& value)
     {
         attributes_[name_attr] = value;
     }

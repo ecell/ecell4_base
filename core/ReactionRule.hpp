@@ -25,6 +25,8 @@ public:
     typedef std::multiset<Species> reactant_container_type;
     typedef std::multiset<Species> product_container_type;
 
+public:
+
     ReactionRule()
         : k_(0), reactants_(), products_()
     {

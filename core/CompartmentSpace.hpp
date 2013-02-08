@@ -16,32 +16,58 @@ class CompartmentSpace
 {
 public:
 
+    // CompartmentSpaceTraits
+
+    /**
+     * get volume.
+     * this function is a part of the trait of CompartmentSpace.
+     * @return a volume (m^3) Real
+     */
     virtual Real const& volume() const
     {
         throw NotImplemented("volume() not implemented");
     }
 
+    /**
+     * get the number of species in this space.
+     * this function is a part of the trait of CompartmentSpace.
+     * @return a number of species Integer
+     */
     virtual Integer num_species() const
     {
         throw NotImplemented("num_species() not implemented");
     }
 
+    /**
+     * return if the species is in this space or not.
+     * this function is a part of the trait of CompartmentSpace.
+     * @param sp a species
+     * @return if the species is in this space
+     */
     virtual bool has_species(Species const& sp) const
     {
-        throw NotImplemented("has_species() not implemented");
+        throw NotImplemented("has_species(Species const&) not implemented");
     }
 
+    /**
+     * get the number of molecules
+     * this function is a part of the trait of CompartmentSpace.
+     * @param sp a species
+     * @return a number of molecules Integer
+     */
     virtual Integer num_molecules(Species const& sp) const
     {
-        throw NotImplemented("num_molecules() not implemented");
+        throw NotImplemented("num_molecules(Species const&) not implemented");
     }
+
+    // CompartSpace member functions
 
     /**
      * set volume.
      * this function is a member of CompartmentSpace.
      * @param volume a nonzero positive Real value
      */
-    virtual void set_volume(Real volume) = 0;
+    virtual void set_volume(Real const& volume) = 0;
 
     /**
      * add a species.
@@ -77,33 +103,37 @@ public:
 class CompartmentSpaceVectorImpl
     : public CompartmentSpace
 {
-public:
-
-    CompartmentSpaceVectorImpl(Real const& volume)
-        : volume_(1)
-    {
-        set_volume(volume);
-    }
-
-    Real const& volume() const;
-    void set_volume(Real volume);
-
-    void add_species(Species const& sp);
-    void remove_species(Species const& sp);
-    Integer num_species() const;
-    bool has_species(Species const& sp) const;
-
-    Integer num_molecules(Species const& sp) const;
-    void add_molecules(Species const& sp, Integer const& num);
-    void remove_molecules(Species const& sp, Integer const& num);
-
 protected:
 
     typedef std::vector<Integer> num_molecules_container_type;
     typedef std::vector<Species> species_container_type;
-
     typedef utils::get_mapper_mf<
         Species, num_molecules_container_type::size_type>::type species_map_type;
+
+public:
+
+    CompartmentSpaceVectorImpl(Real const& volume)
+        : volume_(1.0)
+    {
+        set_volume(volume);
+    }
+
+    // CompartmentSpaceTraits
+
+    Real const& volume() const;
+    Integer num_species() const;
+    bool has_species(Species const& sp) const;
+    Integer num_molecules(Species const& sp) const;
+
+    // CompartmentSpace member functions
+
+    void set_volume(Real const& volume);
+    void add_species(Species const& sp);
+    void remove_species(Species const& sp);
+    void add_molecules(Species const& sp, Integer const& num);
+    void remove_molecules(Species const& sp, Integer const& num);
+
+protected:
 
     Real volume_;
 

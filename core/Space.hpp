@@ -44,6 +44,8 @@ public:
         t_ = t;
     }
 
+    // CompartmentSpaceTraits
+
     /**
      * get volume.
      * this function is a part of the trait of CompartmentSpace.
@@ -72,7 +74,8 @@ public:
      */
     virtual bool has_species(Species const& sp) const
     {
-        throw NotSupported("has_species() is not supported by this space class");
+        throw NotSupported(
+            "has_species(Species const&) is not supported by this space class");
     }
 
     /**
@@ -83,8 +86,12 @@ public:
      */
     virtual Integer num_molecules(Species const& sp) const
     {
-        throw NotSupported("num_molecules() is not supported by this space class");
+        throw NotSupported(
+            "num_molecules(Species const&) is not supported"
+            " by this space class");
     }
+
+    // ParticleSpaceTraits
 
     /**
      * get the axes lengths of a cuboidal region.
@@ -93,7 +100,8 @@ public:
      */
     virtual Position3 const& edge_lengths() const
     {
-        throw NotSupported("edge_lengths() is not supported by this space class");
+        throw NotSupported(
+            "edge_lengths() is not supported by this space class");
     }
 
     /**
@@ -103,7 +111,8 @@ public:
      */
     virtual Integer num_particles() const
     {
-        throw NotSupported("num_particles() is not supported by this space class");
+        throw NotSupported(
+            "num_particles() is not supported by this space class");
     }
 
     /**
@@ -112,9 +121,36 @@ public:
      * @param sp a species
      * @return a number of particles Integer
      */
-    virtual Integer num_particles(Species const& species) const
+    virtual Integer num_particles(Species const& sp) const
     {
-        throw NotSupported("num_particles() is not supported by this space class");
+        throw NotSupported(
+            "num_particles(Species const&) is not supported"
+            " by this space class");
+    }
+
+    /**
+     * check if the particle exists.
+     * this function is a part of the trait of ParticleSpace.
+     * @param pid an ID for the particle
+     * @return if the particle exists or not bool
+     */
+    virtual bool has_particle(ParticleID const& pid) const
+    {
+        throw NotSupported(
+            "has_particle(ParticleID const&) is not supported"
+            " by this space class");
+    }
+
+    /**
+     * get all particles.
+     * this function is a part of the trait of ParticleSpace.
+     * @return a list of particles
+     */
+    virtual std::vector<std::pair<ParticleID, Particle> >
+    list_particles() const
+    {
+        throw NotSupported(
+            "list_particles() is not supported by this space class.");
     }
 
     /**
@@ -124,11 +160,12 @@ public:
      * @return a list of particles
      */
     virtual std::vector<std::pair<ParticleID, Particle> >
-    list_particles(Species const& species) const
+    list_particles(Species const& sp) const
     {
-        throw NotSupported("list_particles() is not supported by this space class");
+        throw NotSupported(
+            "list_particles(Species const&) is not supported"
+            " by this space class");
     }
-
 
 protected:
 

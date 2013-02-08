@@ -10,7 +10,7 @@ namespace ecell4
 typedef int64_t Integer;
 typedef double Real;
 
-const double inf = HUGE_VAL;	// infinity (double)
+const double inf = HUGE_VAL; // infinity (double)
 
 } // ecell4
 
