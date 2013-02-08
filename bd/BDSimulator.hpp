@@ -28,19 +28,31 @@ public:
         ;
     }
 
+    // SimulatorTraits
+
     Real t() const
     {
         return (*world_).t();
     }
 
-    void set_t(Real const& t)
-    {
-        (*world_).set_t(t);
-    }
-
     Real dt() const
     {
         return dt_;
+    }
+
+    Integer num_steps() const
+    {
+        return num_steps_;
+    }
+
+    void step();
+    bool step(Real const& upto);
+
+    // Optional members
+
+    void set_t(Real const& t)
+    {
+        (*world_).set_t(t);
     }
 
     void set_dt(Real const& dt)
@@ -52,18 +64,10 @@ public:
         dt_ = dt;
     }
 
-    Integer num_steps() const
-    {
-        return num_steps_;
-    }
-
     inline boost::shared_ptr<RandomNumberGenerator> rng()
     {
         return (*world_).rng();
     }
-
-    void step();
-    bool step(Real const& upto);
 
 protected:
 

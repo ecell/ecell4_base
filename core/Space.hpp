@@ -30,6 +30,8 @@ public:
         ;
     }
 
+    // SpaceTraits
+
     Real const& t() const
     {
         return t_;
