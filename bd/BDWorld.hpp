@@ -27,10 +27,9 @@ class BDWorld
 public:
 
     typedef ParticleInfo particle_info_type;
+    typedef ParticleSpace::particle_container_type particle_container_type;
 
 public:
-
-    typedef ParticleSpace::particle_container_type particle_container_type;
 
     BDWorld(
         Position3 const& edge_lengths,
@@ -69,6 +68,8 @@ public:
         return info;
     }
 
+    // SpaceTraits
+
     Real const& t() const
     {
         return (*ps_).t();
@@ -78,6 +79,8 @@ public:
     {
         (*ps_).set_t(t);
     }
+
+    // ParticleSpaceTraits
 
     Position3 const& edge_lengths() const
     {
@@ -94,30 +97,9 @@ public:
         return (*ps_).num_particles(species);
     }
 
-    particle_container_type const& particles() const
-    {
-        return (*ps_).particles();
-    }
-
     bool has_particle(ParticleID const& pid) const
     {
         return (*ps_).has_particle(pid);
-    }
-
-    bool update_particle(ParticleID const& pid, Particle const& p)
-    {
-        return (*ps_).update_particle(pid, p);
-    }
-
-    void remove_particle(ParticleID const& pid)
-    {
-        (*ps_).remove_particle(pid);
-    }
-
-    std::pair<ParticleID, Particle>
-    get_particle(ParticleID const& pid) const
-    {
-        return (*ps_).get_particle(pid);
     }
 
     std::vector<std::pair<ParticleID, Particle> > list_particles() const
@@ -129,6 +111,24 @@ public:
     list_particles(Species const& species) const
     {
         return (*ps_).list_particles(species);
+    }
+
+    // ParticleSpace member functions
+
+    bool update_particle(ParticleID const& pid, Particle const& p)
+    {
+        return (*ps_).update_particle(pid, p);
+    }
+
+    std::pair<ParticleID, Particle>
+    get_particle(ParticleID const& pid) const
+    {
+        return (*ps_).get_particle(pid);
+    }
+
+    void remove_particle(ParticleID const& pid)
+    {
+        (*ps_).remove_particle(pid);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -174,12 +174,7 @@ public:
         return (*ps_).distance(pos1, pos2);
     }
 
-    inline boost::shared_ptr<RandomNumberGenerator> rng()
-    {
-        return rng_;
-    }
-
-public:
+    // CompartmentSpaceTraits
 
     Integer num_molecules(Species const& sp) const
     {
@@ -189,6 +184,18 @@ public:
     void add_molecules(Species const& sp, Integer const& num)
     {
         extras::throw_in_particles(*this, sp, num, *rng());
+    }
+
+    // Optional members
+
+    inline boost::shared_ptr<RandomNumberGenerator> rng()
+    {
+        return rng_;
+    }
+
+    particle_container_type const& particles() const
+    {
+        return (*ps_).particles();
     }
 
 protected:
