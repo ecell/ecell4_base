@@ -9,33 +9,34 @@ namespace ecell4
 namespace gillespie
 {
 
-void GillespieSimulator::calc_next_reaction_(void)
+void GillespieSimulator::draw_next_reaction(void)
 {
     // reset
     this->dt_ = inf;
 
-    const NetworkModel::reaction_rule_container_type &possible_reaction_rules =
+    const NetworkModel::reaction_rule_container_type& possible_reaction_rules =
         this->model_->reaction_rules();
     if (possible_reaction_rules.size() == 0)
     {
         this->dt_ = inf;
         return;
     }
+
     std::vector<double> a(possible_reaction_rules.size());
-    for (unsigned int idx(0); idx < possible_reaction_rules.size(); idx++)
+    for (unsigned int idx(0); idx < possible_reaction_rules.size(); ++idx)
     {
         a[idx] = possible_reaction_rules[idx].k() * this->world_->volume();
-        const ReactionRule::reactant_container_type &reactants =
+        const ReactionRule::reactant_container_type& reactants =
             possible_reaction_rules[idx].reactants();
         for (ReactionRule::reactant_container_type::iterator
-                 it = reactants.begin();
-             it != reactants.end(); it++)
+                 it = reactants.begin(); it != reactants.end(); it++)
         {
             a[idx] *= this->world_->num_molecules(*it) / this->world_->volume();
         }
     }
+
     double a_total(std::accumulate(a.begin(), a.end(), double(0.0)));
-    if(a_total == 0.0)
+    if (a_total == 0.0)
     {
         // Any reactions cannot occur.
         this->dt_ = inf;
@@ -53,7 +54,7 @@ void GillespieSimulator::calc_next_reaction_(void)
     {
         u++;
         acc += a[u];
-    } while (acc < rnd_num2 && u < len -1);
+    } while (acc < rnd_num2 && u < len - 1);
 
     if (len == u)
     {
@@ -74,52 +75,52 @@ void GillespieSimulator::step(void)
         // Any reactions cannot occur.
         return;
     }
-    const NetworkModel::reaction_rule_container_type &possible_reaction_rules =
+
+    const NetworkModel::reaction_rule_container_type& possible_reaction_rules =
         this->model_->reaction_rules();
 
     int u = this->next_reaction_num_;
-    Real dt = this->dt_;
+    const Real t0(t()), dt0(dt());
 
-    if (dt == 0.0 || u < 0)
+    if (dt0 == 0.0 || u < 0)
     {
         // Any reactions cannot occur.
         return;
     }
 
-    //Reaction[u] occurs.
+    // Reaction[u] occurs.
     for (ReactionRule::reactant_container_type::iterator
-            it(possible_reaction_rules[u].reactants().begin());
-        it != possible_reaction_rules[u].reactants().end();
-        it++)
+             it(possible_reaction_rules[u].reactants().begin());
+         it != possible_reaction_rules[u].reactants().end(); ++it)
     {
         int one(1);
         this->world_->remove_molecules(*it, one);
     }
+
     for (ReactionRule::product_container_type::iterator
              it(possible_reaction_rules[u].products().begin());
-        it != possible_reaction_rules[u].products().end();
-        it++)
+         it != possible_reaction_rules[u].products().end(); ++it)
     {
         int one(1);
         this->world_->add_molecules(*it, one);
     }
-    this->world_->set_t(this->world_->t() + dt);
-    this->num_steps_++;
 
-    this->calc_next_reaction_();
+    this->set_t(t0 + dt0);
+    ++this->num_steps_;
+
+    this->draw_next_reaction();
 }
 
 bool GillespieSimulator::step(Real const &upto)
 {
-    Real const t0(t()), dt0(dt());
-    Real const next_time(t0 + dt0);
+    const Real t0(t()), tnext(next_time());
 
     if (upto <= t0)
     {
         return false;
     }
 
-    if (upto >= next_time)
+    if (upto >= tnext)
     {
         this->step();
         return true;
@@ -128,14 +129,14 @@ bool GillespieSimulator::step(Real const &upto)
     {
         // no reaction occurs
         this->set_t(upto);
-        this->initialize();
+        this->draw_next_reaction();
         return false;
     }
 }
 
 void GillespieSimulator::initialize(void)
 {
-    this->calc_next_reaction_();
+    this->draw_next_reaction();
 }
 
 void GillespieSimulator::set_t(Real const &t)

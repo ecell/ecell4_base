@@ -18,8 +18,8 @@ namespace bd
 
 struct ParticleInfo
 {
-    Real const radius;
-    Real const D;
+    const Real radius;
+    const Real D;
 };
 
 class BDWorld

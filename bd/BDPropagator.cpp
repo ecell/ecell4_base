@@ -28,7 +28,7 @@ bool BDPropagator::operator()()
         return true;
     }
 
-    Real const D(particle.D());
+    const Real D(particle.D());
     if (D == 0)
     {
         return true;

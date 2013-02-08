@@ -1,6 +1,7 @@
 #ifndef __GILLESPIEWORLD_HPP
 #define __GILLESPIEWORLD_HPP
 
+#include <stdexcept>
 #include <map>
 #include <boost/scoped_ptr.hpp>
 #include <string>
@@ -19,33 +20,43 @@ namespace gillespie
 class GillespieWorld
 {
 public:
+
     GillespieWorld(
-        Real const &volume, boost::shared_ptr<RandomNumberGenerator> rng)
+        Real const& volume, boost::shared_ptr<RandomNumberGenerator> rng)
         : cs_(new CompartmentSpaceVectorImpl(volume)), rng_(rng)
     {
         ;
     }
-    // about time
-    void set_t(Real const &t);
-    Real t(void);
+
+    // SpaceTraits
+
+    Real const& t(void) const;
+    void set_t(Real const& t);
+
+    // CompartmentSpaceTraits
 
     Real const& volume() const
     {
         return cs_->volume();
     }
 
-    // about molecules states
-    // immutable functions.
-    Integer num_species(void);
-    bool has_species(Species const &sp);
-    Integer num_molecules(Species const& sp);
+    Integer num_species(void) const;
+    bool has_species(Species const& sp) const;
+    Integer num_molecules(Species const& sp) const;
 
-    // mutable functions.
-    void add_species(Species const &sp);
-    void remove_species(Species const &sp);
-    void add_molecules(Species const &sp, Integer const &num);
-    // I think it is better that the name of this function is 'decrease_molecules()'.
-    void remove_molecules(Species const &sp, Integer const &num);
+    // CompartmentSpace member functions
+
+    void set_volume(Real const& volume)
+    {
+        (*cs_).set_volume(volume);
+    }
+
+    void add_species(Species const& sp);
+    void remove_species(Species const& sp);
+    void add_molecules(Species const& sp, Integer const& num);
+    void remove_molecules(Species const& sp, Integer const& num);
+
+    // Optional members
 
     inline boost::shared_ptr<RandomNumberGenerator> rng()
     {
@@ -53,6 +64,7 @@ public:
     }
 
 private:
+
     boost::scoped_ptr<CompartmentSpace> cs_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 };

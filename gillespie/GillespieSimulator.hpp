@@ -10,6 +10,7 @@
 
 #include "GillespieWorld.hpp"
 
+
 namespace ecell4
 {
 
@@ -20,24 +21,32 @@ class GillespieSimulator
     : public Simulator
 {
 public:
+
     GillespieSimulator(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<GillespieWorld> world)
-        : model_(model), world_(world)
+        : model_(model), world_(world), num_steps_(0)
     {
-        this->num_steps_ = 0;
-        this->initialize(); // calucate the time the first reaction occurs.
+        this->initialize();
     }
 
+    // SimulatorTraits
+
+    Real t(void) const;
+    Real dt(void) const;
     Integer num_steps(void) const;
+
     void step(void) ;
     bool step(Real const & upto);
 
-    Real t(void) const;
-    void set_t(Real const &t);
-    Real dt(void) const;
+    // Optional members
 
-    void initialize(void); // re-calcurate the next reaction.
+    void set_t(Real const &t);
+
+    /**
+     * recalculate reaction propensities and draw the next time.
+     */
+    void initialize(void);
 
     inline boost::shared_ptr<RandomNumberGenerator> rng()
     {
@@ -45,14 +54,17 @@ public:
     }
 
 protected:
+
+    void draw_next_reaction(void);
+
+protected:
+
     boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<GillespieWorld> world_;
-
     Integer num_steps_;
 
     Real dt_;
     int next_reaction_num_; // the index of the next reaction.
-    void calc_next_reaction_(void);
 };
 
 }

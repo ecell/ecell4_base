@@ -27,7 +27,7 @@ bool EGFRDSimulatorWrapper::step(Real const& upto)
         return true; // this should be false
     }
 
-    bool retval((*sim_).step(upto));
+    const bool retval((*sim_).step(upto));
     (*world_).set_t((*sim_).t());
     return retval;
 }

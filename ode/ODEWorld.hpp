@@ -11,27 +11,42 @@ namespace ode
 
 class ODEWorld
 {
+protected:
+
+    typedef std::vector<Real> num_molecules_container_type;
+    typedef std::vector<Species> species_container_type;
+    typedef utils::get_mapper_mf<
+        Species, num_molecules_container_type::size_type>::type species_map_type;
+
 public:
 
     ODEWorld(Real const& volume)
-        : volume_(volume)
+        : volume_(volume), t_(0.0)
     {
         ;
     }
 
+    // SpaceTraits
+
+    Real const& t() const
+    {
+        return t_;
+    }
+
+    void set_t(Real const& t)
+    {
+        if (t < 0.0)
+        {
+            throw std::invalid_argument("the time must be positive.");
+        }
+        t_ = t;
+    }
+
+    // CompartmentSpaceTraits
+
     Real const& volume() const
     {
         return volume_;
-    }
-
-    void set_volume(Real const& volume)
-    {
-        if (volume <= 0)
-        {
-            throw std::invalid_argument("The volume must be positive.");
-        }
-
-        volume_ = volume;
     }
 
     Integer num_species(void)
@@ -43,6 +58,29 @@ public:
     {
         species_map_type::const_iterator i(index_map_.find(sp));
         return (i != index_map_.end());
+    }
+
+    Real num_molecules(Species const& sp)
+    {
+        species_map_type::const_iterator i(index_map_.find(sp));
+        if (i == index_map_.end())
+        {
+            throw NotFound("Species not found");
+        }
+
+        return num_molecules_[(*i).second];
+    }
+
+    // CompartmentSpace member functions
+
+    void set_volume(Real const& volume)
+    {
+        if (volume <= 0.0)
+        {
+            throw std::invalid_argument("The volume must be positive.");
+        }
+
+        volume_ = volume;
     }
 
     void add_species(Species const &sp)
@@ -70,7 +108,7 @@ public:
             idx((*i).second), last_idx(num_molecules_.size() - 1);
         if (idx != last_idx)
         {
-            species_container_type::size_type const
+            const species_container_type::size_type
                 idx_(static_cast<species_container_type::size_type>(idx)),
                 last_idx_(
                     static_cast<species_container_type::size_type>(last_idx));
@@ -85,16 +123,17 @@ public:
         index_map_.erase(sp);
     }
 
-    Real num_molecules(Species const& sp)
+    void add_molecules(Species const& sp, Real const& num)
     {
-        species_map_type::const_iterator i(index_map_.find(sp));
-        if (i == index_map_.end())
-        {
-            throw NotFound("Species not found");
-        }
-
-        return num_molecules_[(*i).second];
+        set_num_molecules(sp, num_molecules(sp) + num);
     }
+
+    void remove_molecules(Species const& sp, Real const& num)
+    {
+        set_num_molecules(sp, num_molecules(sp) - num);
+    }
+
+    // Optional members
 
     void set_num_molecules(Species const& sp, Real const& num)
     {
@@ -113,25 +152,10 @@ public:
         num_molecules_[(*i).second] = num;
     }
 
-    void add_molecules(Species const& sp, Real const& num)
-    {
-        set_num_molecules(sp, num_molecules(sp) + num);
-    }
-
-    void remove_molecules(Species const& sp, Real const& num)
-    {
-        set_num_molecules(sp, num_molecules(sp) - num);
-    }
-
 protected:
 
-    typedef std::vector<Real> num_molecules_container_type;
-    typedef std::vector<Species> species_container_type;
-
-    typedef utils::get_mapper_mf<
-        Species, num_molecules_container_type::size_type>::type species_map_type;
-
     Real volume_;
+    Real t_;
 
     num_molecules_container_type num_molecules_;
     species_container_type species_;

@@ -12,52 +12,49 @@ namespace ecell4
 namespace gillespie
 {
 
-void GillespieWorld::set_t(Real const &t)
+void GillespieWorld::set_t(Real const& t)
 {
     this->cs_->set_t(t);
 }
-Real GillespieWorld::t(void)
+
+Real const& GillespieWorld::t(void) const
 {
     return this->cs_->t();
 }
 
-Integer GillespieWorld::num_species(void)
+Integer GillespieWorld::num_species(void) const
 {
     return this->cs_->num_species();
 }
 
-bool GillespieWorld::has_species(Species const &sp)
+bool GillespieWorld::has_species(Species const& sp) const
 {
     return this->cs_->has_species(sp);
 }
 
-Integer GillespieWorld::num_molecules(Species const &sp)
+Integer GillespieWorld::num_molecules(Species const& sp) const
 {
     return this->cs_->num_molecules(sp);
 }
 
-void GillespieWorld::add_species(Species const &sp)
+void GillespieWorld::add_species(Species const& sp)
 {
     this->cs_->add_species(sp);
-    return;
 }
 
-void GillespieWorld::remove_species(Species const &sp)
+void GillespieWorld::remove_species(Species const& sp)
 {
     this->cs_->remove_species(sp);
-    return;
 }
 
-void GillespieWorld::add_molecules(Species const &sp, Integer const &num)
+void GillespieWorld::add_molecules(Species const& sp, Integer const& num)
 {
     this->cs_->add_molecules(sp, num);
-    return;
 }
 
-void GillespieWorld::remove_molecules(Species const &sp, Integer const &num)
+void GillespieWorld::remove_molecules(Species const& sp, Integer const& num)
 {
     this->cs_->remove_molecules(sp, num);
-    return;
 }
 
 } //gillespie

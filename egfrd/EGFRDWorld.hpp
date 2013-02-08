@@ -31,8 +31,8 @@ namespace egfrd
 
 struct ParticleInfo
 {
-    Real const radius;
-    Real const D;
+    const Real radius;
+    const Real D;
 };
 
 class EGFRDWorld
@@ -50,7 +50,6 @@ protected:
 
     typedef std::vector<std::pair<Species::serial_type, ::SpeciesTypeID> >
     species_type_id_container_type;
-
     typedef ::CuboidalRegion<simulator_type::traits_type> cuboidal_region_type;
     typedef typename world_type::traits_type::structure_id_type
     structure_id_type;
@@ -62,7 +61,7 @@ public:
         boost::shared_ptr<GSLRandomNumberGenerator> rng)
         : world_(new world_type(world_size, matrix_size)), rng_(rng), t_(0.0)
     {
-        world_type::position_type const x(
+        const world_type::position_type x(
             translate(divide(edge_lengths(), 2)));
         (*world_).add_structure(
             boost::shared_ptr<cuboidal_region_type>(
@@ -70,16 +69,6 @@ public:
                     "world", typename cuboidal_region_type::shape_type(x, x))));
 
         ;
-    }
-
-    particle_model_type const& model() const
-    {
-        return model_;
-    }
-
-    boost::shared_ptr<world_type> world() const
-    {
-        return world_;
     }
 
     /**
@@ -110,44 +99,7 @@ public:
         return info;
     }
 
-    void add_species(Species const& sp)
-    {
-        if (!has_species(sp))
-        {
-            // add ::SpeciesType to ::ParticleModel
-            boost::shared_ptr< ::SpeciesType> st(new ::SpeciesType());
-            (*st)["name"] = boost::lexical_cast<std::string>(sp.name());
-            (*st)["D"] = boost::lexical_cast<std::string>(sp.get_attribute("D"));
-            (*st)["radius"] = boost::lexical_cast<std::string>(
-                sp.get_attribute("radius"));
-            model_.add_species_type(st);
-
-            // create a map between Species and ::SpeciesType
-            sid_container_.push_back(std::make_pair(sp.serial(), st->id()));
-
-            // add ::SpeciesInfo to ::World
-            std::string const& structure_id((*st)["structure"]);
-            (*world_).add_species(
-                typename world_type::traits_type::species_type(
-                    st->id(),
-                    boost::lexical_cast<typename world_type::traits_type::D_type>(
-                        (*st)["D"]),
-                    boost::lexical_cast<typename world_type::length_type>(
-                        (*st)["radius"]),
-                    boost::lexical_cast<structure_id_type>(
-                        structure_id.empty() ? "world": structure_id)));
-        }
-    }
-
-    void add_reaction_rule(ReactionRule const& rr)
-    {
-        model_.network_rules().add_reaction_rule(translate(rr));
-    }
-
-    void remove_species(Species const& sp)
-    {
-        throw NotImplemented("Not implemented yet.");
-    }
+    // SpaceTraits
 
     Real const& t() const
     {
@@ -159,41 +111,12 @@ public:
         t_ = t;
     }
 
+    // ParticleSpaceTraits
+
     Position3 edge_lengths() const
     {
         double const& world_size((*world_).world_size());
         return Position3(world_size, world_size, world_size);
-    }
-
-    Real volume() const
-    {
-        Position3 const lengths(edge_lengths());
-        return lengths[0] * lengths[1] * lengths[2];
-    }
-
-    Integer num_species() const
-    {
-        return sid_container_.size();
-    }
-
-    bool has_species(Species const& sp) const
-    {
-        return (find_species_type_id(sp) != sid_container_.end());
-    }
-
-    Integer num_molecules(Species const& sp) const
-    {
-        return num_particles(sp);
-    }
-
-    void add_molecules(Species const& sp, Integer const& num)
-    {
-        extras::throw_in_particles(*this, sp, num, *rng());
-    }
-
-    void remove_molecules(Species const& sp, Integer const& num)
-    {
-        throw NotSupported("Not supported. Use remove_particle instead.");
     }
 
     Integer num_particles() const
@@ -206,35 +129,6 @@ public:
         return static_cast<Integer>(
             (*world_).get_particle_ids(find(sp)).size());
     }
-
-    bool has_particle(ParticleID const& pid) const
-    {
-        return (*world_).has_particle(translate(pid));
-    }
-
-    bool update_particle(ParticleID const& pid, Particle const& p)
-    {
-        return (*world_).update_particle(
-            std::make_pair(translate(pid), translate(p)));
-    }
-
-    std::pair<ParticleID, Particle>
-    get_particle(ParticleID const& pid) const
-    {
-        world_type::particle_id_pair
-            pid_pair((*world_).get_particle(translate(pid)));
-        return std::make_pair(pid, translate(pid_pair.second));
-    }
-
-    void remove_particle(ParticleID const& pid)
-    {
-        (*world_).remove_particle(translate(pid));
-    }
-
-    // particle_container_type const& particles() const
-    // {
-    //     throw NotSupported("Not supported. Use list_particles() instead.");
-    // }
 
     std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
@@ -266,6 +160,32 @@ public:
             }
         }
         return particles;
+    }
+
+    bool has_particle(ParticleID const& pid) const
+    {
+        return (*world_).has_particle(translate(pid));
+    }
+
+    // ParticleSpace member functions
+
+    bool update_particle(ParticleID const& pid, Particle const& p)
+    {
+        return (*world_).update_particle(
+            std::make_pair(translate(pid), translate(p)));
+    }
+
+    std::pair<ParticleID, Particle>
+    get_particle(ParticleID const& pid) const
+    {
+        world_type::particle_id_pair
+            pid_pair((*world_).get_particle(translate(pid)));
+        return std::make_pair(pid, translate(pid_pair.second));
+    }
+
+    void remove_particle(ParticleID const& pid)
+    {
+        (*world_).remove_particle(translate(pid));
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -369,7 +289,7 @@ public:
 
     inline Real distance_sq(Position3 const& pos1, Position3 const& pos2) const
     {
-        Real const L(distance(pos1, pos2));
+        const Real L(distance(pos1, pos2));
         return L * L;
     }
 
@@ -378,6 +298,97 @@ public:
         return static_cast<Real>(
             (*world_).distance(translate(pos1), translate(pos2)));
     }
+
+    // CompartmentSpaceTraits
+
+    Real volume() const
+    {
+        const Position3 lengths(edge_lengths());
+        return lengths[0] * lengths[1] * lengths[2];
+    }
+
+    Integer num_species() const
+    {
+        return sid_container_.size();
+    }
+
+    bool has_species(Species const& sp) const
+    {
+        return (find_species_type_id(sp) != sid_container_.end());
+    }
+
+    Integer num_molecules(Species const& sp) const
+    {
+        return num_particles(sp);
+    }
+
+    // CompartmentSpace member functions
+
+    void add_species(Species const& sp)
+    {
+        if (!has_species(sp))
+        {
+            // add ::SpeciesType to ::ParticleModel
+            boost::shared_ptr< ::SpeciesType> st(new ::SpeciesType());
+            (*st)["name"] = boost::lexical_cast<std::string>(sp.name());
+            (*st)["D"] = boost::lexical_cast<std::string>(sp.get_attribute("D"));
+            (*st)["radius"] = boost::lexical_cast<std::string>(
+                sp.get_attribute("radius"));
+            model_.add_species_type(st);
+
+            // create a map between Species and ::SpeciesType
+            sid_container_.push_back(std::make_pair(sp.serial(), st->id()));
+
+            // add ::SpeciesInfo to ::World
+            std::string const& structure_id((*st)["structure"]);
+            (*world_).add_species(
+                typename world_type::traits_type::species_type(
+                    st->id(),
+                    boost::lexical_cast<typename world_type::traits_type::D_type>(
+                        (*st)["D"]),
+                    boost::lexical_cast<typename world_type::length_type>(
+                        (*st)["radius"]),
+                    boost::lexical_cast<structure_id_type>(
+                        structure_id.empty() ? "world": structure_id)));
+        }
+    }
+
+    void remove_species(Species const& sp)
+    {
+        throw NotImplemented("Not implemented yet.");
+    }
+
+    void add_molecules(Species const& sp, Integer const& num)
+    {
+        extras::throw_in_particles(*this, sp, num, *rng());
+    }
+
+    // void remove_molecules(Species const& sp, Integer const& num)
+    // {
+    //     throw NotSupported("Not supported. Use remove_particle instead.");
+    // }
+
+    // Optional members
+
+    particle_model_type const& model() const
+    {
+        return model_;
+    }
+
+    boost::shared_ptr<world_type> world() const
+    {
+        return world_;
+    }
+
+    void add_reaction_rule(ReactionRule const& rr)
+    {
+        model_.network_rules().add_reaction_rule(translate(rr));
+    }
+
+    // particle_container_type const& particles() const
+    // {
+    //     throw NotSupported("Not supported. Use list_particles() instead.");
+    // }
 
     inline boost::shared_ptr<GSLRandomNumberGenerator> rng()
     {
@@ -487,7 +498,7 @@ protected:
 
     inline world_type::particle_type translate(Particle const& p) const
     {
-        Real const radius(p.radius()), D(p.D());
+        const Real radius(p.radius()), D(p.D());
         world_type::particle_type retval(
             find(p.species()), world_type::particle_shape_type(
                 translate(p.position()), radius), D);
@@ -496,7 +507,7 @@ protected:
 
     inline Particle translate(world_type::particle_type const& p) const
     {
-        Real const radius(p.radius()), D(p.D());
+        const Real radius(p.radius()), D(p.D());
         Particle retval(
             find(p.sid()), translate(p.position()), radius, D);
         return retval;
@@ -523,15 +534,15 @@ protected:
         {
         case 1:
             {
-                ::SpeciesTypeID const sid1(find(*r));
+                const ::SpeciesTypeID sid1(find(*r));
                 retval = ::new_reaction_rule(sid1, products, rr.k());
             }
             break;
         case 2:
             {
-                ::SpeciesTypeID const sid1(find(*r));
+                const ::SpeciesTypeID sid1(find(*r));
                 ++r;
-                ::SpeciesTypeID const sid2(find(*r));
+                const ::SpeciesTypeID sid2(find(*r));
                 retval = ::new_reaction_rule(sid1, sid2, products, rr.k());
             }
             break;

@@ -84,24 +84,11 @@ public:
         initialize();
     }
 
-    boost::shared_ptr<simulator_type> simulator() const
-    {
-        return sim_;
-    }
-
-    void initialize()
-    {
-        (*sim_).initialize();
-    }
+    // SimulatorTraits
 
     Real t() const
     {
         return (*sim_).t();
-    }
-
-    void set_t(Real const& t)
-    {
-        throw NotImplemented("Not implemented yet.");
     }
 
     Real dt() const
@@ -117,11 +104,29 @@ public:
     void step();
     bool step(Real const& upto);
 
+    // Optional members
+
+    void set_t(Real const& t)
+    {
+        throw NotImplemented("Not implemented yet.");
+    }
+
+    void initialize()
+    {
+        (*sim_).initialize();
+    }
+
+    boost::shared_ptr<simulator_type> simulator() const
+    {
+        return sim_;
+    }
+
 protected:
 
     boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<EGFRDWorld> world_;
     world_type::traits_type::rng_type rng_;
+
     boost::shared_ptr<simulator_type> sim_;
 };
 

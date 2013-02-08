@@ -23,15 +23,14 @@ void BDSimulator::step()
 
 bool BDSimulator::step(Real const& upto)
 {
-    Real const t0(t()), dt0(dt());
-    Real const next_time(t0 + dt0);
+    const Real t0(t()), dt0(dt()), tnext(next_time());
 
     if (upto <= t0)
     {
         return false;
     }
 
-    if (upto >= next_time)
+    if (upto >= tnext)
     {
         step();
         return true;

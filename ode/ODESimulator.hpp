@@ -23,6 +23,13 @@ public:
 
     typedef std::vector<double> state_type;
 
+protected:
+
+    typedef utils::get_mapper_mf<
+        Species, state_type::size_type>::type species_map_type;
+
+public:
+
     ODESystem(boost::shared_ptr<NetworkModel> model, Real const& volume)
         : model_(model), volume_(volume)
     {
@@ -81,9 +88,6 @@ public:
 
 protected:
 
-    typedef utils::get_mapper_mf<
-        Species, state_type::size_type>::type species_map_type;
-
     boost::shared_ptr<NetworkModel> model_;
     Real volume_;
 
@@ -116,37 +120,60 @@ class ODESimulator
     : public Simulator
 {
 public:
+
     ODESimulator(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<ODEWorld> world)
-        : model_(model), world_(world), t_(0), num_steps_(0)
+        : model_(model), world_(world), dt_(0.0), num_steps_(0)
     {
         ;
     }
 
-    void step(void)
-    {
-        throw NotImplemented("a step size must be specified.");
-    }
+    // SimulatorTraits
 
-    bool step(Real const& upto);
+    Real t(void) const
+    {
+        return (*world_).t();
+    }
 
     Integer num_steps(void) const
     {
         return num_steps_;
     }
 
-    Real t(void) const
+    Real dt() const
     {
-        return t_;
+        return dt_;
+    }
+
+    void step(void)
+    {
+        step(next_time());
+    }
+
+    bool step(Real const& upto);
+
+    // Optional members
+
+    void set_t(Real const& t)
+    {
+        (*world_).set_t(t);
+    }
+
+    void set_dt(Real const& dt)
+    {
+        if (dt <= 0)
+        {
+            throw std::invalid_argument("The step size must be positive.");
+        }
+        dt_ = dt;
     }
 
 protected:
 
     boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<ODEWorld> world_;
-
-    Real t_;
+    Real dt_;
     Integer num_steps_;
 };
 

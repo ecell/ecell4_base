@@ -25,7 +25,7 @@ class Space
 public:
 
     Space()
-        : t_(0)
+        : t_(0.0)
     {
         ;
     }
@@ -39,7 +39,7 @@ public:
 
     void set_t(Real const& t)
     {
-        if (t < 0)
+        if (t < 0.0)
         {
             throw std::invalid_argument("the time must be positive.");
         }
