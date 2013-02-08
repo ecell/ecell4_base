@@ -32,6 +32,8 @@ def configure(conf):
 
     conf.check_cxx(lib='ecell4-core')
 
+    conf.check(header_name='boost/numeric/odeint.hpp', mandatory=True)
+
     conf.recurse(subdirs)
 
 def summary(bld):
