@@ -7,7 +7,7 @@
 using namespace ecell4;
 
 
-template <typename Timpl_>
+template<typename Timpl_>
 class RandomNumberGeneratorTest
     : public CppUnit::TestFixture
 {
@@ -41,7 +41,7 @@ private:
 CPPUNIT_TEST_SUITE_REGISTRATION(
     RandomNumberGeneratorTest<GSLRandomNumberGenerator>);
 
-template <typename Timpl_>
+template<typename Timpl_>
 void RandomNumberGeneratorTest<Timpl_>::test_seed()
 {
     target->seed(0);

@@ -13,7 +13,7 @@ namespace ecell4
 namespace extras
 {
 
-template <typename Tworld_, typename Trng_>
+template<typename Tworld_, typename Trng_>
 void throw_in_particles(
     Tworld_& world, Species const& sp, Integer const& N, Trng_& rng)
 {

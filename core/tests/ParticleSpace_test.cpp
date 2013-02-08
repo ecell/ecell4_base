@@ -8,7 +8,7 @@
 using namespace ecell4;
 
 
-template <typename Timpl_>
+template<typename Timpl_>
 class ParticleSpaceTest
     : public CppUnit::TestFixture
 {
@@ -43,7 +43,7 @@ private:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ParticleSpaceTest<ParticleSpaceVectorImpl>);
 
-template <typename Timpl_>
+template<typename Timpl_>
 void ParticleSpaceTest<Timpl_>::test_edge_lengths()
 {
     Position3 const& edge_lengths(target->edge_lengths());
