@@ -23,7 +23,7 @@ public:
      * this function is a part of the trait of CompartmentSpace.
      * @return a volume (m^3) Real
      */
-    virtual Real const& volume() const
+    virtual const Real& volume() const
     {
         throw NotImplemented("volume() not implemented");
     }
@@ -44,9 +44,9 @@ public:
      * @param sp a species
      * @return if the species is in this space
      */
-    virtual bool has_species(Species const& sp) const
+    virtual bool has_species(const Species& sp) const
     {
-        throw NotImplemented("has_species(Species const&) not implemented");
+        throw NotImplemented("has_species(const Species&) not implemented");
     }
 
     /**
@@ -55,9 +55,9 @@ public:
      * @param sp a species
      * @return a number of molecules Integer
      */
-    virtual Integer num_molecules(Species const& sp) const
+    virtual Integer num_molecules(const Species& sp) const
     {
-        throw NotImplemented("num_molecules(Species const&) not implemented");
+        throw NotImplemented("num_molecules(const Species&) not implemented");
     }
 
     // CompartSpace member functions
@@ -67,21 +67,21 @@ public:
      * this function is a member of CompartmentSpace.
      * @param volume a nonzero positive Real value
      */
-    virtual void set_volume(Real const& volume) = 0;
+    virtual void set_volume(const Real& volume) = 0;
 
     /**
      * add a species.
      * this function is a member of CompartmentSpace.
      * @param sp a species
      */
-    virtual void add_species(Species const& sp) = 0;
+    virtual void add_species(const Species& sp) = 0;
 
     /**
      * remove a species.
      * this function is a member of CompartmentSpace.
      * @param sp a species
      */
-    virtual void remove_species(Species const& sp) = 0;
+    virtual void remove_species(const Species& sp) = 0;
 
     /**
      * increase the number of molecules.
@@ -89,7 +89,7 @@ public:
      * @param sp a species
      * @param num a number of molecules
      */
-    virtual void add_molecules(Species const& sp, Integer const& num) = 0;
+    virtual void add_molecules(const Species& sp, const Integer& num) = 0;
 
     /**
      * decrease the number of molecules.
@@ -97,7 +97,7 @@ public:
      * @param sp a species
      * @param num a number of molecules
      */
-    virtual void remove_molecules(Species const& sp, Integer const& num) = 0;
+    virtual void remove_molecules(const Species& sp, const Integer& num) = 0;
 };
 
 class CompartmentSpaceVectorImpl
@@ -112,7 +112,7 @@ protected:
 
 public:
 
-    CompartmentSpaceVectorImpl(Real const& volume)
+    CompartmentSpaceVectorImpl(const Real& volume)
         : volume_(1.0)
     {
         set_volume(volume);
@@ -120,18 +120,18 @@ public:
 
     // CompartmentSpaceTraits
 
-    Real const& volume() const;
+    const Real& volume() const;
     Integer num_species() const;
-    bool has_species(Species const& sp) const;
-    Integer num_molecules(Species const& sp) const;
+    bool has_species(const Species& sp) const;
+    Integer num_molecules(const Species& sp) const;
 
     // CompartmentSpace member functions
 
-    void set_volume(Real const& volume);
-    void add_species(Species const& sp);
-    void remove_species(Species const& sp);
-    void add_molecules(Species const& sp, Integer const& num);
-    void remove_molecules(Species const& sp, Integer const& num);
+    void set_volume(const Real& volume);
+    void add_species(const Species& sp);
+    void remove_species(const Species& sp);
+    void add_molecules(const Species& sp, const Integer& num);
+    void remove_molecules(const Species& sp, const Integer& num);
 
 protected:
 

@@ -9,14 +9,14 @@ namespace ecell4
 namespace ode
 {
 
-bool ODESimulator::step(Real const& upto)
+bool ODESimulator::step(const Real& upto)
 {
     if (upto <= t())
     {
         return false;
     }
 
-    NetworkModel::species_container_type const& species(model_->species());
+    const NetworkModel::species_container_type& species(model_->species());
     ODESystem::state_type x(species.size());
 
     {

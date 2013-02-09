@@ -38,17 +38,17 @@ public:
         return k_;
     }
 
-    reactant_container_type const& reactants() const
+    const reactant_container_type& reactants() const
     {
         return reactants_;
     }
 
-    product_container_type const& products() const
+    const product_container_type& products() const
     {
         return products_;
     }
 
-    void set_k(Real const& k)
+    void set_k(const Real& k)
     {
         if (k < 0)
         {
@@ -57,12 +57,12 @@ public:
         k_ = k;
     }
 
-    void add_reactant(Species const& sp)
+    void add_reactant(const Species& sp)
     {
         reactants_.insert(sp);
     }
 
-    void add_product(Species const& sp)
+    void add_product(const Species& sp)
     {
         products_.insert(sp);
     }
@@ -74,7 +74,7 @@ protected:
     product_container_type products_;
 };
 
-inline bool operator<(ReactionRule const& lhs, ReactionRule const& rhs)
+inline bool operator<(const ReactionRule& lhs, const ReactionRule& rhs)
 {
     if (lhs.reactants() < rhs.reactants())
     {
@@ -87,13 +87,13 @@ inline bool operator<(ReactionRule const& lhs, ReactionRule const& rhs)
     return (lhs.products() < rhs.products());
 }
 
-inline bool operator==(ReactionRule const& lhs, ReactionRule const& rhs)
+inline bool operator==(const ReactionRule& lhs, const ReactionRule& rhs)
 {
     return ((lhs.reactants() == rhs.reactants())
             && (lhs.products() == rhs.products()));
 }
 
-inline bool operator!=(ReactionRule const& lhs, ReactionRule const& rhs)
+inline bool operator!=(const ReactionRule& lhs, const ReactionRule& rhs)
 {
     return !(lhs == rhs);
 }

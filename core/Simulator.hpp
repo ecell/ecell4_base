@@ -41,7 +41,7 @@ public:
      * if not, step till upto and return false.
      * @return if the simulator does not rearch upto
      */
-    virtual bool step(Real const& upto) = 0;
+    virtual bool step(const Real& upto) = 0;
 
     /**
      * get next time (t + dt).

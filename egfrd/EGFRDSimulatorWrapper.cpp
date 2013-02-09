@@ -19,7 +19,7 @@ void EGFRDSimulatorWrapper::step()
     (*world_).set_t((*sim_).t());
 }
 
-bool EGFRDSimulatorWrapper::step(Real const& upto)
+bool EGFRDSimulatorWrapper::step(const Real& upto)
 {
     if ((*world_).num_particles() == 0)
     {

@@ -15,7 +15,7 @@ namespace extras
 
 template<typename Tworld_, typename Trng_>
 void throw_in_particles(
-    Tworld_& world, Species const& sp, Integer const& N, Trng_& rng)
+    Tworld_& world, const Species& sp, const Integer& N, Trng_& rng)
 {
     typedef typename Tworld_::particle_info_type particle_info_type;
 

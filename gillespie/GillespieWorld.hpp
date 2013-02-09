@@ -22,7 +22,7 @@ class GillespieWorld
 public:
 
     GillespieWorld(
-        Real const& volume, boost::shared_ptr<RandomNumberGenerator> rng)
+        const Real& volume, boost::shared_ptr<RandomNumberGenerator> rng)
         : cs_(new CompartmentSpaceVectorImpl(volume)), rng_(rng)
     {
         ;
@@ -30,31 +30,31 @@ public:
 
     // SpaceTraits
 
-    Real const& t(void) const;
-    void set_t(Real const& t);
+    const Real& t(void) const;
+    void set_t(const Real& t);
 
     // CompartmentSpaceTraits
 
-    Real const& volume() const
+    const Real& volume() const
     {
         return cs_->volume();
     }
 
     Integer num_species(void) const;
-    bool has_species(Species const& sp) const;
-    Integer num_molecules(Species const& sp) const;
+    bool has_species(const Species& sp) const;
+    Integer num_molecules(const Species& sp) const;
 
     // CompartmentSpace member functions
 
-    void set_volume(Real const& volume)
+    void set_volume(const Real& volume)
     {
         (*cs_).set_volume(volume);
     }
 
-    void add_species(Species const& sp);
-    void remove_species(Species const& sp);
-    void add_molecules(Species const& sp, Integer const& num);
-    void remove_molecules(Species const& sp, Integer const& num);
+    void add_species(const Species& sp);
+    void remove_species(const Species& sp);
+    void add_molecules(const Species& sp, const Integer& num);
+    void remove_molecules(const Species& sp, const Integer& num);
 
     // Optional members
 

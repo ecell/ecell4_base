@@ -37,11 +37,11 @@ public:
     Integer num_steps(void) const;
 
     void step(void) ;
-    bool step(Real const & upto);
+    bool step(const Real & upto);
 
     // Optional members
 
-    void set_t(Real const &t);
+    void set_t(const Real &t);
 
     /**
      * recalculate reaction propensities and draw the next time.

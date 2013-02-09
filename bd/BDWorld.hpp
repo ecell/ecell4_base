@@ -32,7 +32,7 @@ public:
 public:
 
     BDWorld(
-        Position3 const& edge_lengths,
+        const Position3& edge_lengths,
         boost::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new ParticleSpaceVectorImpl(edge_lengths)), rng_(rng)
     {
@@ -44,7 +44,7 @@ public:
      * @param p a particle
      * @return pid a particle id
      */
-    ParticleID new_particle(Particle const& p)
+    ParticleID new_particle(const Particle& p)
     {
         ParticleID pid(pidgen_());
         // if (has_particle(pid))
@@ -60,7 +60,7 @@ public:
      * @param sp a species
      * @return info a particle info
      */
-    ParticleInfo get_particle_info(Species const& sp) const
+    ParticleInfo get_particle_info(const Species& sp) const
     {
         const Real radius(std::atof(sp.get_attribute("radius").c_str()));
         const Real D(std::atof(sp.get_attribute("D").c_str()));
@@ -70,19 +70,19 @@ public:
 
     // SpaceTraits
 
-    Real const& t() const
+    const Real& t() const
     {
         return (*ps_).t();
     }
 
-    void set_t(Real const& t)
+    void set_t(const Real& t)
     {
         (*ps_).set_t(t);
     }
 
     // ParticleSpaceTraits
 
-    Position3 const& edge_lengths() const
+    const Position3& edge_lengths() const
     {
         return (*ps_).edge_lengths();
     }
@@ -92,12 +92,12 @@ public:
         return (*ps_).num_particles();
     }
 
-    Integer num_particles(Species const& species) const
+    Integer num_particles(const Species& species) const
     {
         return (*ps_).num_particles(species);
     }
 
-    bool has_particle(ParticleID const& pid) const
+    bool has_particle(const ParticleID& pid) const
     {
         return (*ps_).has_particle(pid);
     }
@@ -108,87 +108,87 @@ public:
     }
 
     std::vector<std::pair<ParticleID, Particle> >
-    list_particles(Species const& species) const
+    list_particles(const Species& species) const
     {
         return (*ps_).list_particles(species);
     }
 
     // ParticleSpace member functions
 
-    bool update_particle(ParticleID const& pid, Particle const& p)
+    bool update_particle(const ParticleID& pid, const Particle& p)
     {
         return (*ps_).update_particle(pid, p);
     }
 
     std::pair<ParticleID, Particle>
-    get_particle(ParticleID const& pid) const
+    get_particle(const ParticleID& pid) const
     {
         return (*ps_).get_particle(pid);
     }
 
-    void remove_particle(ParticleID const& pid)
+    void remove_particle(const ParticleID& pid)
     {
         (*ps_).remove_particle(pid);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius) const
+        const Position3& pos, const Real& radius) const
     {
         return (*ps_).list_particles_within_radius(pos, radius);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius, ParticleID const& ignore) const
+        const Position3& pos, const Real& radius, const ParticleID& ignore) const
     {
         return (*ps_).list_particles_within_radius(pos, radius, ignore);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius,
-        ParticleID const& ignore1, ParticleID const& ignore2) const
+        const Position3& pos, const Real& radius,
+        const ParticleID& ignore1, const ParticleID& ignore2) const
     {
         return (*ps_).list_particles_within_radius(pos, radius, ignore1, ignore2);
     }
 
     inline Position3 periodic_transpose(
-        Position3 const& pos1, Position3 const& pos2) const
+        const Position3& pos1, const Position3& pos2) const
     {
         return (*ps_).periodic_transpose(pos1, pos2);
     }
 
-    inline Position3 apply_boundary(Position3 const& pos) const
+    inline Position3 apply_boundary(const Position3& pos) const
     {
         return (*ps_).apply_boundary(pos);
     }
 
-    inline Real distance_sq(Position3 const& pos1, Position3 const& pos2) const
+    inline Real distance_sq(const Position3& pos1, const Position3& pos2) const
     {
         return (*ps_).distance_sq(pos1, pos2);
     }
 
-    inline Real distance(Position3 const& pos1, Position3 const& pos2) const
+    inline Real distance(const Position3& pos1, const Position3& pos2) const
     {
         return (*ps_).distance(pos1, pos2);
     }
 
     // CompartmentSpaceTraits
 
-    Integer num_molecules(Species const& sp) const
+    Integer num_molecules(const Species& sp) const
     {
         return num_particles(sp);
     }
 
-    void add_molecules(Species const& sp, Integer const& num)
+    void add_molecules(const Species& sp, const Integer& num)
     {
         extras::throw_in_particles(*this, sp, num, *rng());
     }
 
     // CompartmentSpace member functions
 
-    void add_species(Species const& sp)
+    void add_species(const Species& sp)
     {
         ; // just ignore
     }
@@ -200,7 +200,7 @@ public:
         return rng_;
     }
 
-    particle_container_type const& particles() const
+    const particle_container_type& particles() const
     {
         return (*ps_).particles();
     }

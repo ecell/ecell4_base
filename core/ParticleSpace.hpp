@@ -50,7 +50,7 @@ public:
      * this function is a part of the trait of ParticleSpace.
      * @return edge lengths Position3
      */
-    virtual Position3 const& edge_lengths() const
+    virtual const Position3& edge_lengths() const
     {
         throw NotImplemented("edge_lengths() not implemented");
     }
@@ -71,9 +71,9 @@ public:
      * @param sp a species
      * @return a number of particles Integer
      */
-    virtual Integer num_particles(Species const& sp) const
+    virtual Integer num_particles(const Species& sp) const
     {
-        throw NotImplemented("num_particles(Species const&) not implemented");
+        throw NotImplemented("num_particles(const Species&) not implemented");
     }
 
     /**
@@ -94,9 +94,9 @@ public:
      * @return a list of particles
      */
     virtual std::vector<std::pair<ParticleID, Particle> >
-    list_particles(Species const& sp) const
+    list_particles(const Species& sp) const
     {
-        throw NotImplemented("list_particles(Species const&) not implemented");
+        throw NotImplemented("list_particles(const Species&) not implemented");
     }
 
     /**
@@ -105,9 +105,9 @@ public:
      * @param pid an ID for the particle
      * @return if the particle exists or not bool
      */
-    virtual bool has_particle(ParticleID const& pid) const
+    virtual bool has_particle(const ParticleID& pid) const
     {
-        throw NotImplemented("has_particle(ParticleID const&) not implemented.");
+        throw NotImplemented("has_particle(const ParticleID&) not implemented.");
     }
 
     // ParticleSpace member functions
@@ -120,7 +120,7 @@ public:
      * @param p Particle
      * @return if the particle already exists or not bool
      */
-    virtual bool update_particle(ParticleID const& pid, Particle const& p) = 0;
+    virtual bool update_particle(const ParticleID& pid, const Particle& p) = 0;
 
     /**
      * get a particle specified with an ID.
@@ -129,14 +129,14 @@ public:
      * @return a pair of ParticleID and Particle
      */
     virtual std::pair<ParticleID, Particle>
-    get_particle(ParticleID const& pid) const = 0;
+    get_particle(const ParticleID& pid) const = 0;
 
     /**
      * remove a particle
      * this function is a member of ParticleSpace
      * @param pid ParticleID
      */
-    virtual void remove_particle(ParticleID const& pid) = 0;
+    virtual void remove_particle(const ParticleID& pid) = 0;
 
     /**
      * get particles within a spherical region.
@@ -147,7 +147,7 @@ public:
      */
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius) const = 0;
+        const Position3& pos, const Real& radius) const = 0;
 
     /**
      * get particles within a spherical region except for ignore(s).
@@ -159,8 +159,8 @@ public:
      */
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius,
-        ParticleID const& ignore) const = 0;
+        const Position3& pos, const Real& radius,
+        const ParticleID& ignore) const = 0;
 
     /**
      * get particles within a spherical region except for ignore(s).
@@ -173,8 +173,8 @@ public:
      */
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius,
-        ParticleID const& ignore1, ParticleID const& ignore2) const = 0;
+        const Position3& pos, const Real& radius,
+        const ParticleID& ignore1, const ParticleID& ignore2) const = 0;
 
     /**
      * transpose a position based on the periodic boundary condition.
@@ -184,10 +184,10 @@ public:
      * @return a transposed position Position3
      */
     Position3 periodic_transpose(
-        Position3 const& pos1, Position3 const& pos2) const
+        const Position3& pos1, const Position3& pos2) const
     {
         Position3 retval(pos1);
-        Position3 const& edges(edge_lengths());
+        const Position3& edges(edge_lengths());
         for (Position3::size_type dim(0); dim < 3; ++dim)
         {
             const Real edge_length(edges[dim]);
@@ -212,7 +212,7 @@ public:
      * @param pos a target position
      * @return a transposed position Position3
      */
-    inline Position3 apply_boundary(Position3 const& pos) const
+    inline Position3 apply_boundary(const Position3& pos) const
     {
         return modulo(pos, edge_lengths());
     }
@@ -225,10 +225,10 @@ public:
      * @return a square of the distance
      */
     Real distance_sq(
-        Position3 const& pos1, Position3 const& pos2) const
+        const Position3& pos1, const Position3& pos2) const
     {
         Real retval(0);
-        Position3 const& edges(edge_lengths());
+        const Position3& edges(edge_lengths());
         for (Position3::size_type dim(0); dim < 3; ++dim)
         {
             const Real edge_length(edges[dim]);
@@ -257,16 +257,16 @@ public:
      * @param pos2
      * @return the distance
      */
-    inline Real distance(Position3 const& pos1, Position3 const& pos2) const
+    inline Real distance(const Position3& pos1, const Position3& pos2) const
     {
         return std::sqrt(distance_sq(pos1, pos2));
     }
 
     // Optional members
 
-    virtual particle_container_type const& particles() const = 0;
+    virtual const particle_container_type& particles() const = 0;
 
-    virtual void save(std::string const& filename) = 0;
+    virtual void save(const std::string& filename) = 0;
 };
 
 class ParticleSpaceVectorImpl
@@ -283,51 +283,51 @@ protected:
 
 public:
 
-    ParticleSpaceVectorImpl(Position3 const& edge_lengths)
+    ParticleSpaceVectorImpl(const Position3& edge_lengths)
     {
         set_edge_lengths(edge_lengths);
     }
 
     // ParticleSpaceTraits
 
-    Position3 const& edge_lengths() const
+    const Position3& edge_lengths() const
     {
         return edge_lengths_;
     }
 
     Integer num_particles() const;
-    Integer num_particles(Species const& sp) const;
+    Integer num_particles(const Species& sp) const;
     std::vector<std::pair<ParticleID, Particle> > list_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
-    list_particles(Species const& sp) const;
-    bool has_particle(ParticleID const& pid) const;
+    list_particles(const Species& sp) const;
+    bool has_particle(const ParticleID& pid) const;
 
     // ParticleSpace member functions
 
-    bool update_particle(ParticleID const& pid, Particle const& p);
-    std::pair<ParticleID, Particle> get_particle(ParticleID const& pid) const;
-    void remove_particle(ParticleID const& pid);
+    bool update_particle(const ParticleID& pid, const Particle& p);
+    std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const;
+    void remove_particle(const ParticleID& pid);
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius) const;
+        const Position3& pos, const Real& radius) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius,
-        ParticleID const& ignore) const;
+        const Position3& pos, const Real& radius,
+        const ParticleID& ignore) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius,
-        ParticleID const& ignore1, ParticleID const& ignore2) const;
+        const Position3& pos, const Real& radius,
+        const ParticleID& ignore1, const ParticleID& ignore2) const;
 
     // Optional members
 
-    particle_container_type const& particles() const
+    const particle_container_type& particles() const
     {
         return particles_;
     }
 
-    void save(std::string const& filename)
+    void save(const std::string& filename)
     {
         typedef struct h5_partcles {
             int h5_particle_id;
@@ -367,7 +367,7 @@ public:
 
 private:
 
-    void set_edge_lengths(Position3 const& edge_lengths);
+    void set_edge_lengths(const Position3& edge_lengths);
 
 protected:
 

@@ -65,7 +65,7 @@ bool BDPropagator::operator()()
 }
 
 bool BDPropagator::attempt_reaction(
-    ParticleID const& pid, Particle const& particle)
+    const ParticleID& pid, const Particle& particle)
 {
     std::vector<ReactionRule> reaction_rules(
         model_.query_reaction_rules(particle.species()));
@@ -79,11 +79,11 @@ bool BDPropagator::attempt_reaction(
     for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
          i != reaction_rules.end(); ++i)
     {
-        ReactionRule const& rr(*i);
+        const ReactionRule& rr(*i);
         prob += rr.k() * dt();
         if (prob > rnd)
         {
-            ReactionRule::product_container_type const& products(rr.products());
+            const ReactionRule::product_container_type& products(rr.products());
             switch (products.size())
             {
             case 0:
@@ -91,7 +91,7 @@ bool BDPropagator::attempt_reaction(
                 break;
             case 1:
                 {
-                    Species const& species_new(*(products.begin()));
+                    const Species& species_new(*(products.begin()));
                     const ParticleInfo info(world_.get_particle_info(species_new));
                     const Real radius_new(info.radius);
                     const Real D_new(info.D);
@@ -114,8 +114,8 @@ bool BDPropagator::attempt_reaction(
                 {
                     ReactionRule::product_container_type::iterator
                         it(products.begin());
-                    Species const& species_new1(*it);
-                    Species const& species_new2(*(++it));
+                    const Species& species_new1(*it);
+                    const Species& species_new2(*(++it));
 
                     const ParticleInfo info1(world_.get_particle_info(species_new1)),
                         info2(world_.get_particle_info(species_new2));
@@ -176,8 +176,8 @@ bool BDPropagator::attempt_reaction(
 }
 
 bool BDPropagator::attempt_reaction(
-    ParticleID const& pid1, Particle const& particle1,
-    ParticleID const& pid2, Particle const& particle2)
+    const ParticleID& pid1, const Particle& particle1,
+    const ParticleID& pid2, const Particle& particle2)
 {
     std::vector<ReactionRule> reaction_rules(
         model_.query_reaction_rules(
@@ -195,7 +195,7 @@ bool BDPropagator::attempt_reaction(
     for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
          i != reaction_rules.end(); ++i)
     {
-        ReactionRule const& rr(*i);
+        const ReactionRule& rr(*i);
         prob += rr.k() * dt() / (
             (Igbd_3d(r12, dt(), D1) + Igbd_3d(r12, dt(), D2)) * 4 * M_PI);
 
@@ -207,7 +207,7 @@ bool BDPropagator::attempt_reaction(
         }
         if (prob > rnd)
         {
-            ReactionRule::product_container_type const& products(rr.products());
+            const ReactionRule::product_container_type& products(rr.products());
             switch (products.size())
             {
             case 0:
@@ -216,7 +216,7 @@ bool BDPropagator::attempt_reaction(
                 break;
             case 1:
                 {
-                    Species const& species_new(*(products.begin()));
+                    const Species& species_new(*(products.begin()));
                     ParticleInfo info(world_.get_particle_info(species_new));
                     const Real radius_new(info.radius);
                     const Real D_new(info.D);
@@ -256,7 +256,7 @@ bool BDPropagator::attempt_reaction(
     return false;
 }
 
-bool BDPropagator::remove_particle(ParticleID const& pid)
+bool BDPropagator::remove_particle(const ParticleID& pid)
 {
     world_.remove_particle(pid);
     particle_finder cmp(pid);

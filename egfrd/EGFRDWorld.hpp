@@ -57,7 +57,7 @@ protected:
 public:
 
     EGFRDWorld(
-        Real const& world_size, Integer const& matrix_size,
+        const Real& world_size, const Integer& matrix_size,
         boost::shared_ptr<GSLRandomNumberGenerator> rng)
         : world_(new world_type(world_size, matrix_size)), rng_(rng), t_(0.0)
     {
@@ -76,7 +76,7 @@ public:
      * @param p a particle
      * @return pid a particle id
      */
-    ParticleID new_particle(Particle const& p)
+    ParticleID new_particle(const Particle& p)
     {
         // add_species(p.species());
 
@@ -91,7 +91,7 @@ public:
      * @param sp a species
      * @return info a particle info
      */
-    ParticleInfo get_particle_info(Species const& sp) const
+    ParticleInfo get_particle_info(const Species& sp) const
     {
         const Real radius(std::atof(sp.get_attribute("radius").c_str()));
         const Real D(std::atof(sp.get_attribute("D").c_str()));
@@ -101,12 +101,12 @@ public:
 
     // SpaceTraits
 
-    Real const& t() const
+    const Real& t() const
     {
         return t_;
     }
 
-    void set_t(Real const& t)
+    void set_t(const Real& t)
     {
         t_ = t;
     }
@@ -115,7 +115,7 @@ public:
 
     Position3 edge_lengths() const
     {
-        double const& world_size((*world_).world_size());
+        const double& world_size((*world_).world_size());
         return Position3(world_size, world_size, world_size);
     }
 
@@ -124,7 +124,7 @@ public:
         return static_cast<Integer>((*world_).num_particles());
     }
 
-    Integer num_particles(Species const& sp) const
+    Integer num_particles(const Species& sp) const
     {
         return static_cast<Integer>(
             (*world_).get_particle_ids(find(sp)).size());
@@ -133,7 +133,7 @@ public:
     std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
         std::vector<std::pair<ParticleID, Particle> > particles(num_particles());
-        BOOST_FOREACH(world_type::particle_id_pair const& pid_pair,
+        BOOST_FOREACH(const world_type::particle_id_pair& pid_pair,
                       (*world_).get_particles_range())
         {
             particles.push_back(
@@ -144,12 +144,12 @@ public:
     }
 
     std::vector<std::pair<ParticleID, Particle> >
-    list_particles(Species const& species) const
+    list_particles(const Species& species) const
     {
-        ::SpeciesTypeID const target(find(species));
+        const ::SpeciesTypeID target(find(species));
         // std::vector<std::pair<ParticleID, Particle> > particles(num_particles());
         std::vector<std::pair<ParticleID, Particle> > particles;
-        BOOST_FOREACH(world_type::particle_id_pair const& pid_pair,
+        BOOST_FOREACH(const world_type::particle_id_pair& pid_pair,
                       (*world_).get_particles_range())
         {
             if (pid_pair.second.sid() == target)
@@ -162,35 +162,35 @@ public:
         return particles;
     }
 
-    bool has_particle(ParticleID const& pid) const
+    bool has_particle(const ParticleID& pid) const
     {
         return (*world_).has_particle(translate(pid));
     }
 
     // ParticleSpace member functions
 
-    bool update_particle(ParticleID const& pid, Particle const& p)
+    bool update_particle(const ParticleID& pid, const Particle& p)
     {
         return (*world_).update_particle(
             std::make_pair(translate(pid), translate(p)));
     }
 
     std::pair<ParticleID, Particle>
-    get_particle(ParticleID const& pid) const
+    get_particle(const ParticleID& pid) const
     {
         world_type::particle_id_pair
             pid_pair((*world_).get_particle(translate(pid)));
         return std::make_pair(pid, translate(pid_pair.second));
     }
 
-    void remove_particle(ParticleID const& pid)
+    void remove_particle(const ParticleID& pid)
     {
         (*world_).remove_particle(translate(pid));
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius) const
+        const Position3& pos, const Real& radius) const
     {
         boost::scoped_ptr<world_type::particle_id_pair_and_distance_list>
             overlapped(
@@ -218,7 +218,7 @@ public:
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius, ParticleID const& ignore) const
+        const Position3& pos, const Real& radius, const ParticleID& ignore) const
     {
         boost::scoped_ptr<world_type::particle_id_pair_and_distance_list>
             overlapped(
@@ -247,8 +247,8 @@ public:
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        Position3 const& pos, Real const& radius,
-        ParticleID const& ignore1, ParticleID const& ignore2) const
+        const Position3& pos, const Real& radius,
+        const ParticleID& ignore1, const ParticleID& ignore2) const
     {
         boost::scoped_ptr<world_type::particle_id_pair_and_distance_list>
             overlapped(
@@ -276,24 +276,24 @@ public:
     }
 
     inline Position3 periodic_transpose(
-        Position3 const& pos1, Position3 const& pos2) const
+        const Position3& pos1, const Position3& pos2) const
     {
         return translate(
             (*world_).cyclic_transpose(translate(pos1), translate(pos2)));
     }
 
-    inline Position3 apply_boundary(Position3 const& pos) const
+    inline Position3 apply_boundary(const Position3& pos) const
     {
         return translate((*world_).apply_boundary(translate(pos)));
     }
 
-    inline Real distance_sq(Position3 const& pos1, Position3 const& pos2) const
+    inline Real distance_sq(const Position3& pos1, const Position3& pos2) const
     {
         const Real L(distance(pos1, pos2));
         return L * L;
     }
 
-    inline Real distance(Position3 const& pos1, Position3 const& pos2) const
+    inline Real distance(const Position3& pos1, const Position3& pos2) const
     {
         return static_cast<Real>(
             (*world_).distance(translate(pos1), translate(pos2)));
@@ -312,19 +312,19 @@ public:
         return sid_container_.size();
     }
 
-    bool has_species(Species const& sp) const
+    bool has_species(const Species& sp) const
     {
         return (find_species_type_id(sp) != sid_container_.end());
     }
 
-    Integer num_molecules(Species const& sp) const
+    Integer num_molecules(const Species& sp) const
     {
         return num_particles(sp);
     }
 
     // CompartmentSpace member functions
 
-    void add_species(Species const& sp)
+    void add_species(const Species& sp)
     {
         if (!has_species(sp))
         {
@@ -340,7 +340,7 @@ public:
             sid_container_.push_back(std::make_pair(sp.serial(), st->id()));
 
             // add ::SpeciesInfo to ::World
-            std::string const& structure_id((*st)["structure"]);
+            const std::string& structure_id((*st)["structure"]);
             (*world_).add_species(
                 typename world_type::traits_type::species_type(
                     st->id(),
@@ -353,24 +353,24 @@ public:
         }
     }
 
-    void remove_species(Species const& sp)
+    void remove_species(const Species& sp)
     {
         throw NotImplemented("Not implemented yet.");
     }
 
-    void add_molecules(Species const& sp, Integer const& num)
+    void add_molecules(const Species& sp, const Integer& num)
     {
         extras::throw_in_particles(*this, sp, num, *rng());
     }
 
-    // void remove_molecules(Species const& sp, Integer const& num)
+    // void remove_molecules(const Species& sp, const Integer& num)
     // {
     //     throw NotSupported("Not supported. Use remove_particle instead.");
     // }
 
     // Optional members
 
-    particle_model_type const& model() const
+    const particle_model_type& model() const
     {
         return model_;
     }
@@ -380,12 +380,12 @@ public:
         return world_;
     }
 
-    void add_reaction_rule(ReactionRule const& rr)
+    void add_reaction_rule(const ReactionRule& rr)
     {
         model_.network_rules().add_reaction_rule(translate(rr));
     }
 
-    // particle_container_type const& particles() const
+    // const particle_container_type& particles() const
     // {
     //     throw NotSupported("Not supported. Use list_particles() instead.");
     // }
@@ -402,13 +402,13 @@ protected:
     {
         typedef std::pair<Tfirst_, Tsecond_> element_type;
 
-        pair_first_element_unary_predicator(Tfirst_ const& target)
+        pair_first_element_unary_predicator(const Tfirst_& target)
             : target_(target)
         {
             ; // do nothing
         }
 
-        bool operator()(element_type const& v)
+        bool operator()(const element_type& v)
         {
             return v.first == target_;
         }
@@ -423,13 +423,13 @@ protected:
     {
         typedef std::pair<Tfirst_, Tsecond_> element_type;
 
-        pair_second_element_unary_predicator(Tsecond_ const& target)
+        pair_second_element_unary_predicator(const Tsecond_& target)
             : target_(target)
         {
             ; // do nothing
         }
 
-        bool operator()(element_type const& v)
+        bool operator()(const element_type& v)
         {
             return v.second == target_;
         }
@@ -440,7 +440,7 @@ protected:
     };
 
     species_type_id_container_type::const_iterator
-    find_species_type_id(Species const& sp) const
+    find_species_type_id(const Species& sp) const
     {
         pair_first_element_unary_predicator<
             Species::serial_type, ::SpeciesTypeID> predicator(sp.serial());
@@ -450,7 +450,7 @@ protected:
         return i;
     }
 
-    inline ::SpeciesTypeID find(Species const& sp) const
+    inline ::SpeciesTypeID find(const Species& sp) const
     {
         species_type_id_container_type::const_iterator
             i(find_species_type_id(sp));
@@ -461,7 +461,7 @@ protected:
         return (*i).second;
     }
 
-    inline Species find(::SpeciesTypeID const& sid) const
+    inline Species find(const ::SpeciesTypeID& sid) const
     {
         pair_second_element_unary_predicator<
             Species::serial_type, ::SpeciesTypeID> predicator(sid);
@@ -475,28 +475,28 @@ protected:
         return (*i).first;
     }
 
-    inline ParticleID translate(world_type::particle_id_type const& pid) const
+    inline ParticleID translate(const world_type::particle_id_type& pid) const
     {
         return ParticleID(ParticleID::value_type(pid.lot(), pid.serial()));
     }
 
-    inline world_type::particle_id_type translate(ParticleID const& pid) const
+    inline world_type::particle_id_type translate(const ParticleID& pid) const
     {
         return world_type::particle_id_type(
             world_type::particle_id_type::value_type(pid.lot(), pid.serial()));
     }
 
-    inline world_type::position_type translate(Position3 const& pos) const
+    inline world_type::position_type translate(const Position3& pos) const
     {
         return world_type::position_type(pos[0], pos[1], pos[2]);
     }
 
-    inline Position3 translate(world_type::position_type const& pos) const
+    inline Position3 translate(const world_type::position_type& pos) const
     {
         return Position3(pos[0], pos[1], pos[2]);
     }
 
-    inline world_type::particle_type translate(Particle const& p) const
+    inline world_type::particle_type translate(const Particle& p) const
     {
         const Real radius(p.radius()), D(p.D());
         world_type::particle_type retval(
@@ -505,7 +505,7 @@ protected:
         return retval;
     }
 
-    inline Particle translate(world_type::particle_type const& p) const
+    inline Particle translate(const world_type::particle_type& p) const
     {
         const Real radius(p.radius()), D(p.D());
         Particle retval(
@@ -513,12 +513,12 @@ protected:
         return retval;
     }
 
-    inline ReactionRule translate(::ReactionRule const& rr) const
+    inline ReactionRule translate(const ::ReactionRule& rr) const
     {
         throw NotImplemented("Not implemented yet.");
     }
 
-    inline ::ReactionRule translate(ReactionRule const& rr) const
+    inline ::ReactionRule translate(const ReactionRule& rr) const
     {
         ::ReactionRule retval;
         std::vector< ::SpeciesTypeID> products;

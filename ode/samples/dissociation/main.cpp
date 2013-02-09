@@ -14,7 +14,7 @@ using namespace ecell4::ode;
  */
 int main(int argc, char** argv)
 {
-    Real const volume(1e-18);
+    const Real volume(1e-18);
 
     Species sp1("A"), sp2("B"), sp3("C");
     ReactionRule rr1;

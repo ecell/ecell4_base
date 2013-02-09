@@ -15,7 +15,7 @@ namespace ecell4
 
 // template<typename T_> \
 // inline T_ create_vector( \
-//     BOOST_PP_ENUM_PARAMS(__n__, typename element_type_of<T_>::type const& p), \
+//     BOOST_PP_ENUM_PARAMS(__n__, const typename element_type_of<T_>::type& p), \
 //     typename boost::enable_if<is_vector<T_, __n__> >::type* = 0) \
 // { \
 //     T_ retval; \
@@ -29,7 +29,7 @@ namespace ecell4
 // #undef CREATE_VECTOR_INNER_TPL
 
 // template<typename T_>
-// inline bool is_cartesian_vector(Position3 const& vector)
+// inline bool is_cartesian_vector(const Position3& vector)
 // {
 //     return (vector == create_vector<T_>(1, 0, 0) ||
 //             vector == create_vector<T_>(0, 1, 0) ||

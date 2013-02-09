@@ -49,7 +49,7 @@ public:
             boost::shared_ptr< ::LoggerManager>(
                 new ::LoggerManager("dummy", ::Logger::L_WARNING)));
 
-        NetworkModel::species_container_type const&
+        const NetworkModel::species_container_type&
             species((*model_).species());
         for (NetworkModel::species_container_type::const_iterator
                  i(species.begin()); i != species.end(); ++i)
@@ -67,7 +67,7 @@ public:
             }
         }
 
-        NetworkModel::reaction_rule_container_type const&
+        const NetworkModel::reaction_rule_container_type&
             reaction_rules((*model_).reaction_rules());
         for (NetworkModel::reaction_rule_container_type::const_iterator
                  i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
@@ -102,11 +102,11 @@ public:
     }
 
     void step();
-    bool step(Real const& upto);
+    bool step(const Real& upto);
 
     // Optional members
 
-    void set_t(Real const& t)
+    void set_t(const Real& t)
     {
         throw NotImplemented("Not implemented yet.");
     }

@@ -22,7 +22,7 @@ namespace bd
  * @param t a step interval, $\Delta t$.
  * @param D a diffusion coefficient, $D$.
  */
-Real Igbd_3d(Real const& sigma, Real const& t, Real const& D);
+Real Igbd_3d(const Real& sigma, const Real& t, const Real& D);
 
 /**
  * $\int_0^R r^2dr\,g\left(r,\Delta t\right).$
@@ -34,12 +34,12 @@ Real Igbd_3d(Real const& sigma, Real const& t, Real const& D);
  */
 Real Igbd_r_3d(Real r, Real sigma, Real t, Real D);
 
-Position3 random_spherical_uniform(RandomNumberGenerator& rng, Real const& r);
+Position3 random_spherical_uniform(RandomNumberGenerator& rng, const Real& r);
 Position3 random_displacement_3d(
-    RandomNumberGenerator& rng, Real const& t, Real const& D);
+    RandomNumberGenerator& rng, const Real& t, const Real& D);
 
 Position3 random_ipv_3d(
-    RandomNumberGenerator& rng, Real const& sigma, Real const& t, Real const& D);
+    RandomNumberGenerator& rng, const Real& sigma, const Real& t, const Real& D);
 
 struct Igbd_r_3d_params
 {

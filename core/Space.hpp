@@ -32,12 +32,12 @@ public:
 
     // SpaceTraits
 
-    Real const& t() const
+    const Real& t() const
     {
         return t_;
     }
 
-    void set_t(Real const& t)
+    void set_t(const Real& t)
     {
         if (t < 0.0)
         {
@@ -53,7 +53,7 @@ public:
      * this function is a part of the trait of CompartmentSpace.
      * @return a volume (m^3) Real
      */
-    virtual Real const& volume() const
+    virtual const Real& volume() const
     {
         throw NotSupported("volume() is not supported by this space class");
     }
@@ -74,10 +74,10 @@ public:
      * @param sp a species
      * @return if the species is in this space
      */
-    virtual bool has_species(Species const& sp) const
+    virtual bool has_species(const Species& sp) const
     {
         throw NotSupported(
-            "has_species(Species const&) is not supported by this space class");
+            "has_species(const Species&) is not supported by this space class");
     }
 
     /**
@@ -86,10 +86,10 @@ public:
      * @param sp a species
      * @return a number of molecules Integer
      */
-    virtual Integer num_molecules(Species const& sp) const
+    virtual Integer num_molecules(const Species& sp) const
     {
         throw NotSupported(
-            "num_molecules(Species const&) is not supported"
+            "num_molecules(const Species&) is not supported"
             " by this space class");
     }
 
@@ -100,7 +100,7 @@ public:
      * this function is a part of the trait of ParticleSpace.
      * @return edge lengths Position3
      */
-    virtual Position3 const& edge_lengths() const
+    virtual const Position3& edge_lengths() const
     {
         throw NotSupported(
             "edge_lengths() is not supported by this space class");
@@ -123,10 +123,10 @@ public:
      * @param sp a species
      * @return a number of particles Integer
      */
-    virtual Integer num_particles(Species const& sp) const
+    virtual Integer num_particles(const Species& sp) const
     {
         throw NotSupported(
-            "num_particles(Species const&) is not supported"
+            "num_particles(const Species&) is not supported"
             " by this space class");
     }
 
@@ -136,10 +136,10 @@ public:
      * @param pid an ID for the particle
      * @return if the particle exists or not bool
      */
-    virtual bool has_particle(ParticleID const& pid) const
+    virtual bool has_particle(const ParticleID& pid) const
     {
         throw NotSupported(
-            "has_particle(ParticleID const&) is not supported"
+            "has_particle(const ParticleID&) is not supported"
             " by this space class");
     }
 
@@ -162,10 +162,10 @@ public:
      * @return a list of particles
      */
     virtual std::vector<std::pair<ParticleID, Particle> >
-    list_particles(Species const& sp) const
+    list_particles(const Species& sp) const
     {
         throw NotSupported(
-            "list_particles(Species const&) is not supported"
+            "list_particles(const Species&) is not supported"
             " by this space class");
     }
 

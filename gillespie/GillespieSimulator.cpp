@@ -111,7 +111,7 @@ void GillespieSimulator::step(void)
     this->draw_next_reaction();
 }
 
-bool GillespieSimulator::step(Real const &upto)
+bool GillespieSimulator::step(const Real &upto)
 {
     const Real t0(t()), tnext(next_time());
 
@@ -139,7 +139,7 @@ void GillespieSimulator::initialize(void)
     this->draw_next_reaction();
 }
 
-void GillespieSimulator::set_t(Real const &t)
+void GillespieSimulator::set_t(const Real &t)
 {
     this->world_->set_t(t);
 }

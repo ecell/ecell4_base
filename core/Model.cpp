@@ -4,7 +4,7 @@ namespace ecell4
 {
 
 ReactionRule create_unimolecular_reaction_rule(
-    Species const& reactant1, Species const& product1, double const& k)
+    const Species& reactant1, const Species& product1, const Real& k)
 {
     ReactionRule rr;
     rr.set_k(k);
@@ -14,8 +14,8 @@ ReactionRule create_unimolecular_reaction_rule(
 }
 
 ReactionRule create_binding_reaction_rule(
-    Species const& reactant1, Species const& reactant2, Species const& product1,
-    double const& k)
+    const Species& reactant1, const Species& reactant2, const Species& product1,
+    const Real& k)
 {
     ReactionRule rr;
     rr.set_k(k);
@@ -26,8 +26,8 @@ ReactionRule create_binding_reaction_rule(
 }
 
 ReactionRule create_unbinding_reaction_rule(
-    Species const& reactant1, Species const& product1, Species const& product2,
-    double const& k)
+    const Species& reactant1, const Species& product1, const Species& product2,
+    const Real& k)
 {
     ReactionRule rr;
     rr.set_k(k);
@@ -38,7 +38,7 @@ ReactionRule create_unbinding_reaction_rule(
 }
 
 ReactionRule create_repulsive_reaction_rule(
-    Species const& reactant1, Species const& reactant2)
+    const Species& reactant1, const Species& reactant2)
 {
     ReactionRule rr;
     rr.set_k(0.0);

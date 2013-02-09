@@ -9,7 +9,7 @@ namespace ecell4
 
 struct DefaultLot
 {
-    DefaultLot& operator=(DefaultLot const&)
+    DefaultLot& operator=(const DefaultLot&)
     {
         return *this;
     }
@@ -44,32 +44,32 @@ struct DefaultLot
         return DefaultLot();
     }
 
-    bool operator==(DefaultLot const& rhs) const
+    bool operator==(const DefaultLot& rhs) const
     {
         return true;
     }
 
-    bool operator!=(DefaultLot const& rhs) const
+    bool operator!=(const DefaultLot& rhs) const
     {
         return false;
     }
 
-    bool operator<(DefaultLot const& rhs) const
+    bool operator<(const DefaultLot& rhs) const
     {
         return false;
     }
 
-    bool operator>=(DefaultLot const& rhs) const
+    bool operator>=(const DefaultLot& rhs) const
     {
         return false;
     }
 
-    bool operator>(DefaultLot const& rhs) const
+    bool operator>(const DefaultLot& rhs) const
     {
         return false;
     }
 
-    bool operator<=(DefaultLot const& rhs) const
+    bool operator<=(const DefaultLot& rhs) const
     {
         return false;
     }
@@ -86,57 +86,57 @@ public:
 
 public:
 
-    Identifier(value_type const& value)
+    Identifier(const value_type& value)
         : value_(value)
     {
         ;
     }
 
-    Tbase_ lot_add(lot_type const& rhs) const
+    Tbase_ lot_add(const lot_type& rhs) const
     {
         return value_type(value_.first + rhs, value_.second);
     }
 
-    Tbase_ lot_subtract(lot_type const& rhs) const
+    Tbase_ lot_subtract(const lot_type& rhs) const
     {
         return value_type(value_.first - rhs, value_.second);
     }
 
-    Tbase_& lot_advance(lot_type const& rhs)
+    Tbase_& lot_advance(const lot_type& rhs)
     {
         value_.first += rhs;
         return static_cast<Tbase_&>(*this);
     }
 
-    Tbase_& lot_retrace(lot_type const& rhs)
+    Tbase_& lot_retrace(const lot_type& rhs)
     {
         value_.first -= rhs;
         return static_cast<Tbase_&>(*this);
     }
 
-    Tbase_ serial_add(serial_type const& rhs) const
+    Tbase_ serial_add(const serial_type& rhs) const
     {
         return value_type(value_.first, value_.second + rhs);
     }
 
-    Tbase_ seral_subtract(serial_type const& rhs) const
+    Tbase_ seral_subtract(const serial_type& rhs) const
     {
         return value_type(value_.first, value_.second - rhs);
     }
 
-    Tbase_& serial_advance(serial_type const& rhs)
+    Tbase_& serial_advance(const serial_type& rhs)
     {
         value_.second += rhs;
         return static_cast<Tbase_&>(*this);
     }
 
-    Tbase_& serial_retrace(serial_type const& rhs)
+    Tbase_& serial_retrace(const serial_type& rhs)
     {
         value_.second -= rhs;
         return static_cast<Tbase_&>(*this);
     }
 
-    Tbase_& operator=(Tbase_ const& rhs)
+    Tbase_& operator=(const Tbase_& rhs)
     {
         value_.first = rhs.value_.first;
         value_.second = rhs.value_.second;
@@ -152,40 +152,40 @@ public:
         return value_.second == 0;
     }
 
-    bool operator==(Tbase_ const& rhs) const
+    bool operator==(const Tbase_& rhs) const
     {
         return value_.first == rhs.value_.first &&
             value_.second == rhs.value_.second;
     }
 
-    bool operator!=(Tbase_ const& rhs) const
+    bool operator!=(const Tbase_& rhs) const
     {
         return value_.first != rhs.value_.first
             || value_.second != rhs.value_.second;
     }
 
-    bool operator<(Tbase_ const& rhs) const
+    bool operator<(const Tbase_& rhs) const
     {
         return value_.second < rhs.value_.second
             || (value_.second == rhs.value_.second &&
                 value_.first < rhs.value_.first);
     }
 
-    bool operator>=(Tbase_ const& rhs) const
+    bool operator>=(const Tbase_& rhs) const
     {
         return value_.second > rhs.value_.second
             || (value_.second == rhs.value_.second &&
                 value_.first >= rhs.value_.first);
     }
 
-    bool operator>(Tbase_ const& rhs) const
+    bool operator>(const Tbase_& rhs) const
     {
         return value_.second > rhs.value_.second
             || (value_.second == rhs.value_.second &&
                 value_.first > rhs.value_.first);
     }
 
-    bool operator<=(Tbase_ const& rhs) const
+    bool operator<=(const Tbase_& rhs) const
     {
         return value_.second < rhs.value_.second
             || (value_.second == rhs.value_.second &&
@@ -197,7 +197,7 @@ public:
         return value_;
     }
 
-    value_type const& operator()() const
+    const value_type& operator()() const
     {
         return value_;
     }
@@ -207,7 +207,7 @@ public:
         return value_.first;
     }
 
-    lot_type const& lot() const
+    const lot_type& lot() const
     {
         return value_.first;
     }
@@ -217,7 +217,7 @@ public:
         return value_.second;
     }
 
-    serial_type const& serial() const
+    const serial_type& serial() const
     {
         return value_.second;
     }

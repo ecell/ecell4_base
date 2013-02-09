@@ -26,7 +26,7 @@ template<bool Vis_integral, typename Tid_>
 struct identifier_lot_adder_helper
     : public std::binary_function<Tid_, typename Tid_::lot_type, Tid_>
 {
-    Tid_ operator()(Tid_ const& lhs, typename Tid_::lot_type rhs)
+    Tid_ operator()(const Tid_& lhs, typename Tid_::lot_type rhs)
     {
         return lhs.lot_add(rhs);
     }
@@ -36,7 +36,7 @@ template<typename Tid_>
 struct identifier_lot_adder_helper<true, Tid_>
     : public std::binary_function<Tid_, Tid_, Tid_>
 {
-    Tid_ operator()(Tid_ const& lhs, Tid_ const& rhs)
+    Tid_ operator()(const Tid_& lhs, const Tid_& rhs)
     {
         return lhs + rhs;
     }
@@ -46,7 +46,7 @@ template<bool Vis_integral, typename Tid_>
 struct identifier_lot_advancer_helper
     : public std::binary_function<Tid_&, typename Tid_::lot_type, Tid_&>
 {
-    Tid_& operator()(Tid_& lhs, typename Tid_::lot_type const& rhs)
+    Tid_& operator()(Tid_& lhs, const typename Tid_::lot_type& rhs)
     {
         lhs.lot_advance(rhs);
         return lhs;
@@ -57,7 +57,7 @@ template<typename Tid_>
 struct identifier_lot_advancer_helper<true, Tid_>
     : public std::binary_function<Tid_&, Tid_, Tid_&>
 {
-    Tid_& operator()(Tid_& lhs, Tid_ const& rhs)
+    Tid_& operator()(Tid_& lhs, const Tid_& rhs)
     {
         lhs += rhs;
         return lhs;
@@ -68,7 +68,7 @@ template<bool Vis_integral, typename Tid_>
 struct identifier_lot_retracer_helper
     : public std::binary_function<Tid_&, typename Tid_::lot_type, Tid_&>
 {
-    Tid_& operator()(Tid_& lhs, typename Tid_::lot_type const& rhs)
+    Tid_& operator()(Tid_& lhs, const typename Tid_::lot_type& rhs)
     {
         lhs.lot_retrace(rhs);
         return lhs;
@@ -79,7 +79,7 @@ template<typename Tid_>
 struct identifier_lot_retracer_helper<true, Tid_>
     : public std::binary_function<Tid_, Tid_, Tid_>
 {
-    Tid_& operator()(Tid_& lhs, Tid_ const& rhs)
+    Tid_& operator()(Tid_& lhs, const Tid_& rhs)
     {
         lhs -= rhs;
         return lhs;
@@ -90,8 +90,8 @@ template<bool Vis_integral, typename Tid_>
 struct identifier_lot_retriever_helper
     : public std::binary_function<Tid_&, typename Tid_::lot_type, Tid_&>
 {
-    typename identifier_lot_helper<Vis_integral, Tid_>::type const&
-    operator()(Tid_ const& lhs)
+    const typename identifier_lot_helper<Vis_integral, Tid_>::type&
+    operator()(const Tid_& lhs)
     {
         return lhs.lot();
     }
@@ -123,7 +123,7 @@ template<bool Vis_integral, typename Tid_>
 struct identifier_serial_advancer_helper
     : public std::binary_function<Tid_&, typename Tid_::serial_type, Tid_&>
 {
-    Tid_& operator()(Tid_& lhs, typename Tid_::serial_type const& rhs)
+    Tid_& operator()(Tid_& lhs, const typename Tid_::serial_type& rhs)
     {
         lhs.serial_advance(rhs);
         return lhs;
@@ -134,7 +134,7 @@ template<typename Tid_>
 struct identifier_serial_advancer_helper<true, Tid_>
     : public std::binary_function<Tid_&, Tid_, Tid_&>
 {
-    Tid_& operator()(Tid_& lhs, Tid_ const& rhs)
+    Tid_& operator()(Tid_& lhs, const Tid_& rhs)
     {
         lhs += rhs;
         return lhs;
@@ -145,7 +145,7 @@ template<bool Vis_integral, typename Tid_>
 struct identifier_serial_retracer_helper
     : public std::binary_function<Tid_&, typename Tid_::serial_type, Tid_&>
 {
-    Tid_& operator()(Tid_& lhs, typename Tid_::serial_type const& rhs)
+    Tid_& operator()(Tid_& lhs, const typename Tid_::serial_type& rhs)
     {
         lhs.serial_retrace(rhs);
         return lhs;
@@ -156,7 +156,7 @@ template<typename Tid_>
 struct identifier_serial_retracer_helper<true, Tid_>
     : public std::binary_function<Tid_, Tid_, Tid_>
 {
-    Tid_& operator()(Tid_& lhs, Tid_ const& rhs)
+    Tid_& operator()(Tid_& lhs, const Tid_& rhs)
     {
         lhs -= rhs;
         return lhs;
@@ -167,8 +167,8 @@ template<bool Vis_integral, typename Tid_>
 struct identifier_serial_retriever_helper
     : public std::binary_function<Tid_&, typename Tid_::serial_type, Tid_&>
 {
-    typename identifier_serial_helper<Vis_integral, Tid_>::type const&
-    operator()(Tid_ const& lhs)
+    const typename identifier_serial_helper<Vis_integral, Tid_>::type&
+    operator()(const Tid_& lhs)
     {
         return lhs.serial();
     }
@@ -249,20 +249,20 @@ struct identifier_serial_retriever
 };
 
 template<typename Tid_>
-Tid_ lot_add(Tid_ const& lhs, typename identifier_lot<Tid_>::type const& rhs)
+Tid_ lot_add(const Tid_& lhs, const typename identifier_lot<Tid_>::type& rhs)
 {
     return identifier_lot_adder<Tid_>()(lhs, rhs);
 }
 
 template<typename Tid_>
-Tid_& lot_advance(Tid_& lhs, typename identifier_lot<Tid_>::type const& rhs)
+Tid_& lot_advance(Tid_& lhs, const typename identifier_lot<Tid_>::type& rhs)
 
 {
     return identifier_lot_advancer<Tid_>()(lhs, rhs);
 }
 
 template<typename Tid_>
-Tid_& lot_retrace(Tid_& lhs, typename identifier_lot<Tid_>::type const& rhs)
+Tid_& lot_retrace(Tid_& lhs, const typename identifier_lot<Tid_>::type& rhs)
 {
     return identifier_lot_retracer<Tid_>()(lhs, rhs);
 }
@@ -275,14 +275,14 @@ typename identifier_lot<Tid_>::type lot(Tid_& lhs)
 
 template<typename Tid_>
 Tid_& serial_advance(
-    Tid_& lhs, typename identifier_serial<Tid_>::type const& rhs)
+    Tid_& lhs, const typename identifier_serial<Tid_>::type& rhs)
 {
     return identifier_serial_advancer<Tid_>()(lhs, rhs);
 }
 
 template<typename Tid_>
 Tid_& serial_retrace(
-    Tid_& lhs, typename identifier_serial<Tid_>::type const& rhs)
+    Tid_& lhs, const typename identifier_serial<Tid_>::type& rhs)
 {
     return identifier_serial_retracer<Tid_>()(lhs, rhs);
 }
@@ -303,7 +303,7 @@ public:
 
 public:
 
-    SerialIDGenerator(lot_type const& lot = lot_type())
+    SerialIDGenerator(const lot_type& lot = lot_type())
         : next_(lot_add(identifier_type(), lot))
     {
         ;

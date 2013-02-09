@@ -36,14 +36,14 @@ protected:
 
 public:
 
-    Species(std::string const& name = "")
+    Species(const std::string& name = "")
         : name_(name)
     {
         ;
     }
 
     Species(
-        std::string const& name, std::string const& radius, std::string const& D)
+        const std::string& name, const std::string& radius, const std::string& D)
         : name_(name)
     {
         set_attribute("radius", radius);
@@ -60,7 +60,7 @@ public:
         return name_;
     }
 
-    std::string get_attribute(std::string const& name_attr) const
+    std::string get_attribute(const std::string& name_attr) const
     {
         attributes_container_type::const_iterator
             i(attributes_.find(name_attr));
@@ -72,12 +72,12 @@ public:
         return (*i).second;
     }
 
-    void set_attribute(std::string const& name_attr, std::string const& value)
+    void set_attribute(const std::string& name_attr, const std::string& value)
     {
         attributes_[name_attr] = value;
     }
 
-    void remove_attribute(std::string const& name_attr)
+    void remove_attribute(const std::string& name_attr)
     {
         attributes_container_type::iterator
             i(attributes_.find(name_attr));
@@ -89,9 +89,9 @@ public:
         attributes_.erase(i);
     }
 
-    bool operator==(Species const& rhs) const;
-    bool operator<(Species const& rhs) const;
-    bool operator>(Species const& rhs) const;
+    bool operator==(const Species& rhs) const;
+    bool operator<(const Species& rhs) const;
+    bool operator>(const Species& rhs) const;
 
 protected:
 
@@ -118,7 +118,7 @@ namespace boost
 template<>
 struct hash<ecell4::Species>
 {
-    std::size_t operator()(ecell4::Species const& val) const
+    std::size_t operator()(const ecell4::Species& val) const
     {
         return hash<ecell4::Species::serial_type>()(val.serial());
     }

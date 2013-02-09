@@ -46,16 +46,16 @@ public:
     }
 
     void step();
-    bool step(Real const& upto);
+    bool step(const Real& upto);
 
     // Optional members
 
-    void set_t(Real const& t)
+    void set_t(const Real& t)
     {
         (*world_).set_t(t);
     }
 
-    void set_dt(Real const& dt)
+    void set_dt(const Real& dt)
     {
         if (dt <= 0)
         {

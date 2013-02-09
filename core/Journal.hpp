@@ -97,7 +97,7 @@ private:
 
 protected:
 
-    std::string const name_;
+    const std::string name_;
     enum level level_;
 };
 

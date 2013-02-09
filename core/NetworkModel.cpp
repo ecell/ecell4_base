@@ -8,7 +8,7 @@ namespace ecell4
 {
 
 std::vector<ReactionRule> NetworkModel::query_reaction_rules(
-    Species const& sp) const
+    const Species& sp) const
 {
     ReactionRule::reactant_container_type reactants;
     reactants.insert(sp);
@@ -28,7 +28,7 @@ std::vector<ReactionRule> NetworkModel::query_reaction_rules(
 }
 
 std::vector<ReactionRule> NetworkModel::query_reaction_rules(
-    Species const& sp1, Species const& sp2) const
+    const Species& sp1, const Species& sp2) const
 {
     ReactionRule::reactant_container_type reactants;
     reactants.insert(sp1);
@@ -48,7 +48,7 @@ std::vector<ReactionRule> NetworkModel::query_reaction_rules(
     return retval;
 }
 
-void NetworkModel::add_species(Species const& sp)
+void NetworkModel::add_species(const Species& sp)
 {
     if (has_species(sp))
     {
@@ -57,7 +57,7 @@ void NetworkModel::add_species(Species const& sp)
     species_.push_back(sp);
 }
 
-void NetworkModel::remove_species(Species const& sp)
+void NetworkModel::remove_species(const Species& sp)
 {
     species_container_type::iterator i(
         std::find(species_.begin(), species_.end(), sp));
@@ -68,14 +68,14 @@ void NetworkModel::remove_species(Species const& sp)
     species_.erase(i);
 }
 
-bool NetworkModel::has_species(Species const& sp) const
+bool NetworkModel::has_species(const Species& sp) const
 {
     species_container_type::const_iterator i(
         std::find(species_.begin(), species_.end(), sp));
     return (i != species_.end());
 }
 
-void NetworkModel::add_reaction_rule(ReactionRule const& rr)
+void NetworkModel::add_reaction_rule(const ReactionRule& rr)
 {
     reaction_rule_container_type::const_iterator
         i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
@@ -88,7 +88,7 @@ void NetworkModel::add_reaction_rule(ReactionRule const& rr)
     reaction_rules_.push_back(rr);
 }
 
-void NetworkModel::remove_reaction_rule(ReactionRule const& rr)
+void NetworkModel::remove_reaction_rule(const ReactionRule& rr)
 {
     reaction_rule_container_type::iterator
         i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
@@ -130,7 +130,7 @@ void NetworkModel::remove_reaction_rule(ReactionRule const& rr)
     reaction_rules_.pop_back();
 }
 
-bool NetworkModel::has_reaction_rule(ReactionRule const& rr) const
+bool NetworkModel::has_reaction_rule(const ReactionRule& rr) const
 {
     reaction_rule_container_type::const_iterator
         i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));

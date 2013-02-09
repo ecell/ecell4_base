@@ -30,7 +30,7 @@ protected:
 
 public:
 
-    ODESystem(boost::shared_ptr<NetworkModel> model, Real const& volume)
+    ODESystem(boost::shared_ptr<NetworkModel> model, const Real& volume)
         : model_(model), volume_(volume)
     {
         initialize();
@@ -38,7 +38,7 @@ public:
 
     void initialize()
     {
-        NetworkModel::species_container_type const& species(model_->species());
+        const NetworkModel::species_container_type& species(model_->species());
         state_type::size_type i(0);
         for (NetworkModel::species_container_type::const_iterator
                  it(species.begin()); it != species.end(); ++it)
@@ -48,23 +48,23 @@ public:
         }
     }
 
-    void operator()(state_type const& x, state_type& dxdt, double const& t)
+    void operator()(const state_type& x, state_type& dxdt, const double& t)
     {
         for (state_type::iterator i(dxdt.begin()); i != dxdt.end(); ++i)
         {
             *i = 0.0;
         }
 
-        NetworkModel::reaction_rule_container_type const&
+        const NetworkModel::reaction_rule_container_type&
             reaction_rules(model_->reaction_rules());
         for (NetworkModel::reaction_rule_container_type::const_iterator
                  i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
         {
             double flux((*i).k() * volume_);
 
-            ReactionRule::reactant_container_type const&
+            const ReactionRule::reactant_container_type&
                 reactants((*i).reactants());
-            ReactionRule::product_container_type const&
+            const ReactionRule::product_container_type&
                 products((*i).products());
             for (ReactionRule::reactant_container_type::iterator
                      j(reactants.begin()); j != reactants.end(); ++j)
@@ -109,7 +109,7 @@ struct StateAndTimeBackInserter
         ;
     }
 
-    void operator()(ODESystem::state_type const&x, double t)
+    void operator()(const ODESystem::state_type&x, double t)
     {
         m_states.push_back(x);
         m_times.push_back(t);
@@ -151,16 +151,16 @@ public:
         step(next_time());
     }
 
-    bool step(Real const& upto);
+    bool step(const Real& upto);
 
     // Optional members
 
-    void set_t(Real const& t)
+    void set_t(const Real& t)
     {
         (*world_).set_t(t);
     }
 
-    void set_dt(Real const& dt)
+    void set_dt(const Real& dt)
     {
         if (dt <= 0)
         {

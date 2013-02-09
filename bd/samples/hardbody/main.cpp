@@ -13,9 +13,9 @@ using namespace ecell4::bd;
 /**
  * a simple function to dump particle position(s)
  */
-void print_particle_position(BDWorld const& world, ParticleID const& pid)
+void print_particle_position(const BDWorld& world, const ParticleID& pid)
 {
-    Position3 const pos(world.get_particle(pid).second.position());
+    const Position3 pos(world.get_particle(pid).second.position());
     std::cout << std::setprecision(12) << world.t() << " : " << pos << std::endl;
 }
 
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     /// simulation parameters
     const Real L(1e-6);
     std::string D("5e-12"), radius("5e-9");
-    Position3 const edge_lengths(L, L, L);
+    const Position3 edge_lengths(L, L, L);
 
     /// instantiate NetworkModel
     boost::shared_ptr<Model> model(new NetworkModel());
@@ -45,9 +45,9 @@ int main(int argc, char** argv)
 
     /// create a Particle, and inject it into BDWorld
     ParticleInfo info1((*world).get_particle_info(sp1));
-    Particle const p1(
+    const Particle p1(
         sp1, Position3(0, 0, 0), info1.radius, info1.D);
-    ParticleID const pid1((*world).new_particle(p1));
+    const ParticleID pid1((*world).new_particle(p1));
 
     /// instatiate BDSimulator
     BDSimulator sim(model, world);

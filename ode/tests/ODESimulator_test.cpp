@@ -14,7 +14,7 @@ using namespace ecell4::ode;
 
 BOOST_AUTO_TEST_CASE(ODESimulator_test_constructor)
 {
-    Real const volume(1e-18);
+    const Real volume(1e-18);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_constructor)
 
 BOOST_AUTO_TEST_CASE(ODESimulator_test_step1)
 {
-    Real const volume(1e-18);
+    const Real volume(1e-18);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step1)
 
 BOOST_AUTO_TEST_CASE(ODESimulator_test_step2)
 {
-    Real const volume(1e-18);
+    const Real volume(1e-18);
 
     Species sp1("A"), sp2("B"), sp3("C");
     ReactionRule rr1;
