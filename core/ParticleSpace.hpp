@@ -336,7 +336,7 @@ public:
 
         h5_particles h5_p[particles_.size()];
 
-        for (int i(0); i < particles_.size(); ++i)
+        for (unsigned int i(0); i < particles_.size(); ++i)
         {
             h5_p[i].h5_particle_id = particles_[i].first;
             h5_p[i].h5_particle_position[0] = particles_[i].second.position()[0];

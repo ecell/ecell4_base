@@ -256,7 +256,7 @@ bool BDPropagator::attempt_reaction(
     return false;
 }
 
-bool BDPropagator::remove_particle(const ParticleID& pid)
+void BDPropagator::remove_particle(const ParticleID& pid)
 {
     world_.remove_particle(pid);
     particle_finder cmp(pid);

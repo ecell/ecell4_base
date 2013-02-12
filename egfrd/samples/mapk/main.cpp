@@ -54,8 +54,8 @@ void run()
     const Integer N(60);
 
     const std::string D("1e-12"), radius("2.5e-9");
-    const Real kD(
-        4 * M_PI * (2 * std::atof(D.c_str())) * (2 * std::atof(radius.c_str())));
+    // const Real kD(
+    //     4 * M_PI * (2 * std::atof(D.c_str())) * (2 * std::atof(radius.c_str())));
 
     const Real kd(0.1), U(0.5);
     const Real ka(kd * volume * (1 - U) / (U * U * N));

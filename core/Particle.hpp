@@ -82,9 +82,9 @@ public:
 
 private:
 
+    Species species_;
     Position3 position_;
     Real radius_, D_;
-    Species species_;
 };
 
 struct ParticleID:

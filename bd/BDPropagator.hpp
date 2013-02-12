@@ -64,7 +64,7 @@ public:
         ParticleID pid_;
     };
 
-    bool remove_particle(const ParticleID& pid);
+    void remove_particle(const ParticleID& pid);
 
     inline Position3 draw_displacement(const Particle& particle)
     {
@@ -78,13 +78,13 @@ public:
 
 protected:
 
-    BDWorld::particle_container_type queue_;
-    Integer max_retry_count_;
-
     Model& model_;
     BDWorld& world_;
     RandomNumberGenerator& rng_;
     Real dt_;
+    Integer max_retry_count_;
+
+    BDWorld::particle_container_type queue_;
 };
 
 } // bd

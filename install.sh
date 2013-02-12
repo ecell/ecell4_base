@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 
+# PREFIX=/usr/local
+# PREFIX=${HOME}/local
+# PREFIX=
+# SUBMODS=("bd" "gillespie")
+SUBMODS=("bd" "gillespie" "ode" "egfrd")
+
+CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
+
 install_core()
 {
     # install ecell4-core
-    ./waf distclean update --files="boost,doxygen" \
+    CXXFLAGS=${CXXFLAGS} ./waf distclean update --files="boost,doxygen" \
         configure --prefix=${PREFIX} build install
     return $?
 }
@@ -18,17 +26,12 @@ install_submodule()
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PREFIX}/lib \
         LIBRARY_PATH=${LIBRARY_PATH}:${PREFIX}/lib \
         CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:${PREFIX}/include \
+        CXXFLAGS=${CXXFLAGS} \
         ../waf distclean configure --prefix=${PREFIX} build install
     VAL=$?
     cd ..
     return ${VAL}
 }
-
-# PREFIX=/usr/local
-# PREFIX=${HOME}/local
-# PREFIX=
-SUBMODS=("bd" "gillespie")
-# SUBMODS=("bd" "gillespie" "ode" "egfrd")
 
 if [ "$PREFIX" == "" ]; then
     echo "\${PREFIX} is undefined."

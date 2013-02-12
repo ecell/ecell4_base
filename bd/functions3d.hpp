@@ -49,11 +49,6 @@ struct Igbd_r_3d_params
     const Real target;
 };
 
-static Real Igbd_r_3d_F(Real r, const Igbd_r_3d_params* params)
-{
-    return Igbd_r_3d(r, params->sigma, params->t, params->D) - params->target;
-}
-
 } // bd
 
 } // ecell4
