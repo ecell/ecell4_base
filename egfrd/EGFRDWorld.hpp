@@ -370,16 +370,6 @@ public:
 
     // Optional members
 
-    const particle_model_type& model() const
-    {
-        return model_;
-    }
-
-    boost::shared_ptr<world_type> world() const
-    {
-        return world_;
-    }
-
     void add_reaction_rule(const ReactionRule& rr)
     {
         model_.network_rules().add_reaction_rule(translate(rr));
