@@ -14,6 +14,7 @@
 #include <boost/utility/enable_if.hpp>
 #include <boost/array.hpp>
 #include <boost/multi_array.hpp>
+#include <boost/preprocessor/repetition/repeat_from_to.hpp>
 
 #include "utils/array_traits.hpp"
 
