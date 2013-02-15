@@ -1,6 +1,7 @@
 #ifndef __SPATIOCYTE_WORLD_HPP
 #define __SPATIOCYTE_WORLD_HPP
 
+#include <sstream>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -54,7 +55,8 @@ protected:
 public:
 
     SpatiocyteWorld(const Position3& edge_lengths, const Real& voxel_radius)
-        : edge_lengths_(edge_lengths), voxel_radius_(voxel_radius), t_(0.0)
+        : edge_lengths_(edge_lengths), voxel_radius_(voxel_radius), t_(0.0),
+          num_reactions_(0)
     {
         libecs::initialize();
         model_ = new libecs::Model(*libecs::createDefaultModuleMaker());
@@ -269,6 +271,64 @@ public:
         return static_cast<Real>((*model_).getStepper("SS")->getStepInterval());
     }
 
+    void add_reaction_rule(const ReactionRule& rr)
+    {
+        switch (rr.reactants().size())
+        {
+        case 1:
+            {
+                std::stringstream ss;
+                ss << "Process:/:rr" << ++num_reactions_;
+                libecs::Process* const process_ptr(
+                    dynamic_cast<libecs::Process*>(
+                        (*model_).createEntity(
+                            "SpatiocyteNextReactionProcess",
+                            libecs::FullID(ss.str()))));
+                process_ptr->loadProperty("k", libecs::Polymorph(rr.k()));
+
+                ReactionRule::reactant_container_type::const_iterator
+                    r(rr.reactants().begin());
+                process_ptr->registerVariableReference(
+                    "_", get_variable_fullid(*r), -1);
+                for (ReactionRule::reactant_container_type::const_iterator
+                         i(rr.products().begin()); i != rr.products().end(); ++i)
+                {
+                    process_ptr->registerVariableReference(
+                        "_", get_variable_fullid(*i), +1);
+                }
+            }
+            break;
+        case 2:
+            {
+                std::stringstream ss;
+                ss << "Process:/:rr" << ++num_reactions_;
+                libecs::Process* const process_ptr(
+                    dynamic_cast<libecs::Process*>(
+                        (*model_).createEntity(
+                            "DiffusionInfluencedReactionProcess",
+                            libecs::FullID(ss.str()))));
+                process_ptr->loadProperty("k", libecs::Polymorph(rr.k()));
+
+                ReactionRule::reactant_container_type::const_iterator
+                    r(rr.reactants().begin());
+                process_ptr->registerVariableReference(
+                    "_", get_variable_fullid(*r), -1);
+                ++r;
+                process_ptr->registerVariableReference(
+                    "_", get_variable_fullid(*r), -1);
+                for (ReactionRule::product_container_type::const_iterator
+                         i(rr.products().begin()); i != rr.products().end(); ++i)
+                {
+                    process_ptr->registerVariableReference(
+                        "_", get_variable_fullid(*i), +1);
+                }
+            }
+            break;
+        default:
+            throw NotSupported("the number of reactants must be 1 or 2.");
+        }
+    }
+
 protected:
 
     template<typename Tfirst_, typename Tsecond_>
@@ -301,6 +361,16 @@ protected:
             i(std::find_if(
                   species_.begin(), species_.end(), predicator));
         return i;
+    }
+
+    libecs::FullID get_variable_fullid(const Species& sp) const
+    {
+        species_container_type::const_iterator i(find_variable_fullid(sp));
+        if (i == species_.end())
+        {
+            throw NotFound("variable not found.");
+        }
+        return libecs::FullID((*i).second);
     }
 
     void setup_model()
@@ -372,6 +442,7 @@ protected:
     Position3 edge_lengths_;
     Real voxel_radius_;
     Real t_;
+    unsigned int num_reactions_;
 
     species_container_type species_;
 };
