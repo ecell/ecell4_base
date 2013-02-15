@@ -512,7 +512,7 @@ protected:
     {
         ::ReactionRule retval;
         std::vector< ::SpeciesTypeID> products;
-        for (ReactionRule::reactant_container_type::const_iterator
+        for (ReactionRule::product_container_type::const_iterator
                  j(rr.products().begin()); j != rr.products().end(); ++j)
         {
             products.push_back(find(*j));
