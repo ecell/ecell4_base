@@ -39,7 +39,7 @@ public:
         for (NetworkModel::reaction_rule_container_type::const_iterator
                  i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
         {
-            ; // (*world_).add_reaction_rule(*i);
+            (*world_).add_reaction_rule(*i);
         }
     }
 
