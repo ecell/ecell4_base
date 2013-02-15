@@ -38,6 +38,6 @@ bool SpatiocyteSimulator::step(const Real& upto)
     }
 }
 
-} // bd
+} // spatiocyte
 
 } // ecell4

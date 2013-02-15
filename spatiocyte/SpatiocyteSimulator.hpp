@@ -63,11 +63,6 @@ public:
         dt_ = dt;
     }
 
-    inline boost::shared_ptr<RandomNumberGenerator> rng()
-    {
-        return (*world_).rng();
-    }
-
 protected:
 
     boost::shared_ptr<Model> model_;
