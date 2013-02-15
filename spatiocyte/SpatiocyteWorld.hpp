@@ -45,7 +45,6 @@ class SpatiocyteWorld
 public:
 
     typedef ParticleInfo particle_info_type;
-    typedef ParticleSpace::particle_container_type particle_container_type;
 
 protected:
 
@@ -59,8 +58,7 @@ public:
     {
         libecs::initialize();
         model_ = new libecs::Model(*libecs::createDefaultModuleMaker());
-
-        initialize_model();
+        setup_model();
     }
 
     ~SpatiocyteWorld()
@@ -261,6 +259,16 @@ public:
 
     // Optional members
 
+    void step()
+    {
+        (*model_).step();
+    }
+
+    Real dt() const
+    {
+        return static_cast<Real>((*model_).getStepper("SS")->getStepInterval());
+    }
+
 protected:
 
     template<typename Tfirst_, typename Tsecond_>
@@ -295,7 +303,7 @@ protected:
         return i;
     }
 
-    void initialize_model()
+    void setup_model()
     {
         (*model_).setup();
         // (*model_).setDMSearchPath("/home/kaizu/local/lib/ecell-3.2/dms");
@@ -366,8 +374,6 @@ protected:
     Real t_;
 
     species_container_type species_;
-
-    // SerialIDGenerator<ParticleID> pidgen_;
 };
 
 } // spatiocyte

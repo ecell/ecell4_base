@@ -9,15 +9,15 @@ namespace spatiocyte
 
 void SpatiocyteSimulator::step()
 {
-    ; // implement here
+    (*world_).step();
 
-    set_t(t() + dt());
     ++num_steps_;
 }
 
 bool SpatiocyteSimulator::step(const Real& upto)
 {
-    const Real t0(t()), dt0(dt()), tnext(next_time());
+    const Real t0(t()), tnext(next_time());
+    // const Real dt0(dt());
 
     if (upto <= t0)
     {
@@ -31,9 +31,9 @@ bool SpatiocyteSimulator::step(const Real& upto)
     }
     else
     {
-        set_dt(upto - t0);
+        // set_dt(upto - t0);
         step();
-        set_dt(dt0);
+        // set_dt(dt0);
         return false;
     }
 }

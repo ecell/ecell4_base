@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 
-#include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Simulator.hpp>
 
 #include "SpatiocyteWorld.hpp"
@@ -21,10 +21,26 @@ class SpatiocyteSimulator
 {
 public:
 
-    SpatiocyteSimulator(boost::shared_ptr<Model> model, boost::shared_ptr<SpatiocyteWorld> world)
-        : model_(model), world_(world), dt_(0), num_steps_(0)
+    SpatiocyteSimulator(
+        boost::shared_ptr<NetworkModel> model,
+        boost::shared_ptr<SpatiocyteWorld> world)
+        : model_(model), world_(world), num_steps_(0)
     {
-        ;
+        const NetworkModel::species_container_type&
+            species((*model_).species());
+        for (NetworkModel::species_container_type::const_iterator
+                 i(species.begin()); i != species.end(); ++i)
+        {
+            (*world_).add_species(*i);
+        }
+
+        const NetworkModel::reaction_rule_container_type&
+            reaction_rules((*model_).reaction_rules());
+        for (NetworkModel::reaction_rule_container_type::const_iterator
+                 i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
+        {
+            ; // (*world_).add_reaction_rule(*i);
+        }
     }
 
     // SimulatorTraits
@@ -36,7 +52,7 @@ public:
 
     Real dt() const
     {
-        return dt_;
+        return (*world_).dt();
     }
 
     Integer num_steps() const
@@ -49,30 +65,15 @@ public:
 
     // Optional members
 
-    void set_t(const Real& t)
-    {
-        (*world_).set_t(t);
-    }
-
-    void set_dt(const Real& dt)
-    {
-        if (dt <= 0)
-        {
-            throw std::invalid_argument("The step size must be positive.");
-        }
-        dt_ = dt;
-    }
-
 protected:
 
-    boost::shared_ptr<Model> model_;
+    boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<SpatiocyteWorld> world_;
 
     /**
      * the protected internal state of SpatiocyteSimulator.
      * they are needed to be saved/loaded with Visitor pattern.
      */
-    Real dt_;
     Integer num_steps_;
 };
 
