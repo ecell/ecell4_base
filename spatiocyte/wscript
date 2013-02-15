@@ -1,0 +1,71 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib.Tools import waf_unit_test
+from waflib import Logs
+
+
+top = '.'
+out = 'build'
+
+subdirs = [
+    'tests',
+    # 'samples'
+    ]
+
+hppfiles = [
+    'SpatiocyteWorld.hpp',
+    'SpatiocyteSimulator.hpp'
+    ]
+
+cppfiles = [
+    'SpatiocyteSimulator.cpp'
+    ]
+
+def options(opt):
+    opt.load('compiler_cxx waf_unit_test')
+
+def configure(conf):
+    conf.load('compiler_cxx waf_unit_test')
+    conf.check_cxx(lib = 'gsl')
+    conf.check_cxx(lib = 'gslcblas')
+    conf.check_cxx(lib = 'm')
+
+    # conf.check_cxx(lib = 'ecell4-core')
+
+    conf.recurse(subdirs)
+
+def summary(bld):
+    '''borrowed from waf demos/unit_test/wscript
+    '''
+    lst = getattr(bld, 'utest_results', [])
+    if lst:
+        total = len(lst)
+        tfail = len([x for x in lst if x[1]])
+
+    val = 100 * (total - tfail) / (1.0 * total)
+    Logs.pprint('CYAN', 'test report %3.0f%% success' % val)
+
+    Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
+    for (f, code, out, err) in lst:
+        if code:
+            Logs.pprint('CYAN', '    %s' % f)
+            Logs.pprint('RED', 'status: %r' % code)
+            if out: Logs.pprint('RED', 'out: %r' % out)
+            if err: Logs.pprint('RED', 'err: %r' % err)
+
+def build(bld):
+    bld.install_files(
+        '${PREFIX}/include/ecell4/spatiocyte', hppfiles)
+
+    bld.shlib(
+        source = cppfiles,
+        includes = ['.'],
+        # defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        target = 'ecell4-spatiocyte')
+
+    bld.recurse(subdirs)
+
+    bld.add_post_fun(summary)
+    bld.options.all_tests = True
