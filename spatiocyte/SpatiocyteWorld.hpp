@@ -104,11 +104,12 @@ public:
 
     void set_t(const Real& t)
     {
-        if (t < 0.0)
-        {
-            throw std::invalid_argument("the time must be positive.");
-        }
-        t_ = t;
+        // if (t < 0.0)
+        // {
+        //     throw std::invalid_argument("the time must be positive.");
+        // }
+        // t_ = t;
+        throw NotSupported("t is not settable.");
     }
 
     // ParticleSpaceTraits
@@ -274,6 +275,7 @@ public:
     void step()
     {
         (*model_).step();
+        t_ = (*model_).getCurrentTime();
     }
 
     Real dt() const
