@@ -46,4 +46,7 @@ int main(int argc, char** argv)
 
     SpatiocyteSimulator sim(model, world);
     sim.step();
+
+    std::cout << "volume = " << volume << std::endl;
+    std::cout << "actual volume = " << world->volume() << std::endl;
 }

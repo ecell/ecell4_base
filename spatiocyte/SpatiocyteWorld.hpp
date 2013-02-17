@@ -23,6 +23,7 @@
 #endif
 
 #include <SpatiocyteCommon.hpp>
+#include <SpatiocyteStepper.hpp>
 
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
@@ -56,7 +57,7 @@ public:
 
     SpatiocyteWorld(const Position3& edge_lengths, const Real& voxel_radius)
         : edge_lengths_(edge_lengths), voxel_radius_(voxel_radius), t_(0.0),
-          num_reactions_(0)
+          num_reactions_(0), visualization_exists_(false), coordinate_exists_(false)
     {
         libecs::initialize();
         model_ = new libecs::Model(*libecs::createDefaultModuleMaker());
@@ -117,14 +118,20 @@ public:
         return edge_lengths_;
     }
 
-    // Integer num_particles() const
-    // {
-    //     return (*ps_).num_particles();
-    // }
+    Integer num_particles() const
+    {
+        libecs::Real num(0.0);
+        for (species_container_type::const_iterator i(species_.begin());
+             i != species_.end(); ++i)
+        {
+            num += get_variable((*i).second)->getValue();
+        }
+        return static_cast<Integer>(num);
+    }
 
     Integer num_particles(const Species& sp) const
     {
-        species_container_type::const_iterator i(find_variable_fullid(sp));
+        species_container_type::const_iterator i(find_fullid(sp));
         if (i == species_.end())
         {
             return 0;
@@ -214,8 +221,11 @@ public:
 
     Real volume() const
     {
-        const Position3 lengths(edge_lengths());
-        return lengths[0] * lengths[1] * lengths[2];
+        // const Position3 lengths(edge_lengths());
+        // return lengths[0] * lengths[1] * lengths[2];
+        const Comp* comp(
+            get_spatiocyte_stepper()->system2Comp((*model_).getRootSystem()));
+        return comp->actualVolume;
     }
 
     Integer num_molecules(const Species& sp) const
@@ -225,16 +235,16 @@ public:
 
     bool has_species(const Species& sp) const
     {
-        return (find_variable_fullid(sp) != species_.end());
+        return (find_fullid(sp) != species_.end());
     }
 
     void add_molecules(const Species& sp, const Integer& num)
     {
-        species_container_type::const_iterator i(find_variable_fullid(sp));
+        species_container_type::const_iterator i(find_fullid(sp));
         if (i == species_.end())
         {
             add_species(sp);
-            i = find_variable_fullid(sp);
+            i = find_fullid(sp);
         }
 
         libecs::Variable* variable_ptr(get_variable((*i).second));
@@ -280,21 +290,18 @@ public:
                 std::stringstream ss;
                 ss << "Process:/:rr" << ++num_reactions_;
                 libecs::Process* const process_ptr(
-                    dynamic_cast<libecs::Process*>(
-                        (*model_).createEntity(
-                            "SpatiocyteNextReactionProcess",
-                            libecs::FullID(ss.str()))));
+                    create_process("SpatiocyteNextReactionProcess", ss.str()));
                 process_ptr->loadProperty("k", libecs::Polymorph(rr.k()));
 
                 ReactionRule::reactant_container_type::const_iterator
                     r(rr.reactants().begin());
                 process_ptr->registerVariableReference(
-                    "_", get_variable_fullid(*r), -1);
+                    "_", get_fullid(*r), -1);
                 for (ReactionRule::reactant_container_type::const_iterator
                          i(rr.products().begin()); i != rr.products().end(); ++i)
                 {
                     process_ptr->registerVariableReference(
-                        "_", get_variable_fullid(*i), +1);
+                        "_", get_fullid(*i), +1);
                 }
             }
             break;
@@ -303,30 +310,107 @@ public:
                 std::stringstream ss;
                 ss << "Process:/:rr" << ++num_reactions_;
                 libecs::Process* const process_ptr(
-                    dynamic_cast<libecs::Process*>(
-                        (*model_).createEntity(
-                            "DiffusionInfluencedReactionProcess",
-                            libecs::FullID(ss.str()))));
+                    create_process(
+                        "DiffusionInfluencedReactionProcess", ss.str()));
                 process_ptr->loadProperty("k", libecs::Polymorph(rr.k()));
 
                 ReactionRule::reactant_container_type::const_iterator
                     r(rr.reactants().begin());
                 process_ptr->registerVariableReference(
-                    "_", get_variable_fullid(*r), -1);
+                    "_", get_fullid(*r), -1);
                 ++r;
                 process_ptr->registerVariableReference(
-                    "_", get_variable_fullid(*r), -1);
+                    "_", get_fullid(*r), -1);
                 for (ReactionRule::product_container_type::const_iterator
                          i(rr.products().begin()); i != rr.products().end(); ++i)
                 {
                     process_ptr->registerVariableReference(
-                        "_", get_variable_fullid(*i), +1);
+                        "_", get_fullid(*i), +1);
                 }
             }
             break;
         default:
             throw NotSupported("the number of reactants must be 1 or 2.");
         }
+    }
+
+    SpatiocyteStepper* get_spatiocyte_stepper() const
+    {
+        return dynamic_cast<SpatiocyteStepper*>((*model_).getStepper("SS"));
+    }
+
+    libecs::Process* create_visualization_log_process(
+        const Real& log_interval, const std::string& filename = "")
+    {
+        if (visualization_exists_)
+        {
+            return get_visualization_log_process();
+        }
+
+        libecs::Process* process_ptr(
+            create_process("VisualizationLogProcess", "Process:/:visualization"));
+        process_ptr->setProperty("LogInterval", libecs::Polymorph(log_interval));
+        if (!filename.empty())
+        {
+            process_ptr->setProperty("FileName", libecs::Polymorph(filename));
+        }
+        visualization_exists_ = true;
+        return process_ptr;
+    }
+
+    libecs::Process* get_visualization_log_process() const
+    {
+        return get_process("Process:/:visualization");
+    }
+
+    void log_visualization(const Species& sp)
+    {
+        if (!visualization_exists_)
+        {
+            throw NotFound(
+                "VisualizationLogProcess not found. (call "
+                "create_visualization_log_process(log_interval, filename).)");
+        }
+
+        get_visualization_log_process()->registerVariableReference(
+            "_", get_fullid(sp).asString(), 0);
+    }
+
+    libecs::Process* create_coordinate_log_process(
+        const Real& log_interval, const std::string& filename = "")
+    {
+        if (coordinate_exists_)
+        {
+            return get_coordinate_log_process();
+        }
+
+        libecs::Process* process_ptr(
+            create_process("CoordinateLogProcess", "Process:/:coordinate"));
+        process_ptr->setProperty("LogInterval", libecs::Polymorph(log_interval));
+        if (!filename.empty())
+        {
+            process_ptr->setProperty("FileName", libecs::Polymorph(filename));
+        }
+        coordinate_exists_ = true;
+        return process_ptr;
+    }
+
+    libecs::Process* get_coordinate_log_process() const
+    {
+        return get_process("Process:/:coordinate");
+    }
+
+    void log_coordinate(const Species& sp)
+    {
+        if (!coordinate_exists_)
+        {
+            throw NotFound(
+                "CoordinateLogProcess not found. (call "
+                "create_coordinate_log_process(log_interval, filename).)");
+        }
+
+        get_coordinate_log_process()->registerVariableReference(
+            "_", get_fullid(sp).asString(), 0);
     }
 
 protected:
@@ -353,7 +437,7 @@ protected:
     };
 
     species_container_type::const_iterator
-    find_variable_fullid(const Species& sp) const
+    find_fullid(const Species& sp) const
     {
         pair_first_element_unary_predicator<
             Species::serial_type, libecs::String> predicator(sp.serial());
@@ -361,16 +445,6 @@ protected:
             i(std::find_if(
                   species_.begin(), species_.end(), predicator));
         return i;
-    }
-
-    libecs::FullID get_variable_fullid(const Species& sp) const
-    {
-        species_container_type::const_iterator i(find_variable_fullid(sp));
-        if (i == species_.end())
-        {
-            throw NotFound("variable not found.");
-        }
-        return libecs::FullID((*i).second);
     }
 
     void setup_model()
@@ -384,7 +458,9 @@ protected:
         stepper_ptr->setProperty(
             "VoxelRadius", libecs::Polymorph(voxel_radius_));
 
-        (*model_).getSystem(libecs::SystemPath("/"))->setProperty(
+        // (*model_).getSystem(libecs::SystemPath("/"))->setProperty(
+        //     "StepperID", libecs::Polymorph("SS"));
+        (*model_).getRootSystem()->setProperty(
             "StepperID", libecs::Polymorph("SS"));
 
         create_variable("Variable:/:GEOMETRY", CUBOID);
@@ -399,8 +475,7 @@ protected:
         create_variable("Variable:/:YZPLANE", PERIODIC);
         create_variable("Variable:/:VACANT", 0);
 
-        (*model_).createEntity(
-            "MoleculePopulateProcess", libecs::FullID("Process:/:populate"));
+        create_molecular_populate_process();
     }
 
     void create_variable(const libecs::String& fullid, const Real& value)
@@ -410,10 +485,27 @@ protected:
         entity_ptr->loadProperty("Value", libecs::Polymorph(value));
     }
 
-    libecs::Process* get_molecule_populate_process() const
+    libecs::Process* create_process(
+        const libecs::String& class_name, const libecs::String& fullid)
     {
         return dynamic_cast<libecs::Process*>(
-            (*model_).getEntity(libecs::FullID("Process:/:populate")));
+            (*model_).createEntity(class_name, libecs::FullID(fullid)));
+    }
+
+    libecs::Process* get_process(const libecs::String& fullid) const
+    {
+        return dynamic_cast<libecs::Process*>(
+            (*model_).getEntity(libecs::FullID(fullid)));
+    }
+
+    libecs::FullID get_fullid(const Species& sp) const
+    {
+        species_container_type::const_iterator i(find_fullid(sp));
+        if (i == species_.end())
+        {
+            throw NotFound("variable not found.");
+        }
+        return libecs::FullID((*i).second);
     }
 
     libecs::Variable* get_variable(const libecs::String& fullid) const
@@ -429,11 +521,23 @@ protected:
             libecs::EntityType("Process"), vid.getSystemPath(),
             "diffuse" + vid.getID());
 
+        // libecs::Process* const process_ptr(
+        //     dynamic_cast<libecs::Process*>(
+        //         (*model_).createEntity("DiffusionProcess", pid)));
         libecs::Process* const process_ptr(
-            dynamic_cast<libecs::Process*>(
-                (*model_).createEntity("DiffusionProcess", pid)));
+            create_process("DiffusionProcess", pid.asString()));
         process_ptr->loadProperty("D", libecs::Polymorph(D));
         process_ptr->registerVariableReference("_", vid, 0);
+    }
+
+    libecs::Process* create_molecular_populate_process()
+    {
+        return create_process("MoleculePopulateProcess", "Process:/:populate");
+    }
+
+    libecs::Process* get_molecule_populate_process() const
+    {
+        return get_process("Process:/:populate");
     }
 
 protected:
@@ -443,6 +547,9 @@ protected:
     Real voxel_radius_;
     Real t_;
     unsigned int num_reactions_;
+
+    bool visualization_exists_;
+    bool coordinate_exists_;
 
     species_container_type species_;
 };

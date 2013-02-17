@@ -65,6 +65,11 @@ public:
 
     // Optional members
 
+    SpatiocyteStepper* get_spatiocyte_stepper() const
+    {
+        return (*world_).get_spatiocyte_stepper();
+    }
+
 protected:
 
     boost::shared_ptr<NetworkModel> model_;
