@@ -22,20 +22,47 @@ Full installation (Read only)
 
   $ cd ${SRCPATH}
 
-  $ git clone git://github.com/ecell/ecell4.git ecell4
+  for ode submodule:
 
   $ git clone git://github.com/headmyshoulder/odeint-v2 odeint-v2
 
+  for egfrd submodule:
+
   $ git clone git://github.com/ecell/epdp.git epdp
 
-  $ cd epdp
+  $ cd ${SRCPATH}/epdp
 
   $ ./autogen.sh && ./configure && make -j
 
-  $ ln -s _gfrd.so libgfrd.so
+  for spatiocyte submodule:
+
+  $ cd ${SRCPATH}
+
+  $ git clone git://github.com/ecell/ecell3.git ecell3
+
+  $ cd ${SRCPATH}/ecell3
+
+  $ ./autogen.sh && ./configure --prefix=${PREFIX} && make -j && make install
+
+  $ cd ${SRCPATH}
+
+  $ git clone git://github.com/ecell/ecell3-spatiocyte.git ecell3-spatiocyte
+
+  $ cd ${SRCPATH}/ecell3-spatiocyte
+
+  $ make
+
+  install ecell4:
+
+  $ cd ${SRCPATH}
+
+  $ git clone git://github.com/ecell/ecell4.git ecell4
 
   $ cd ../ecell4
 
-  $ PREFIX=/foo/bar LIBRARY_PATH=${SRCPATH}/epdp LD_LIBRARY_PATH=${SRCPATH}/epdp \
-  CPLUS_INCLUDE_PATH=${SRCPATH}/epdp:${SRCPATH}/odeint-v2 \
-  ./install.sh core bd gillespie ode egfrd
+  $ PREFIX=/foo/bar \
+  CPLUS_INCLUDE_PATH=${SRCPATH}/odeint-v2:${PREFIX}/include/ecell-3.2:\
+  ${SRCPATH}/ecell3-spatiocyte:${SRCPATH}/epdp \
+  LD_LIBRARY_PATH=${SRCPATH}/ecell3-spatiocyte:${SRCPATH}/epdp \
+  LIBRARY_PATH=${SRCPATH}/ecell3-spatiocyte:${SRCPATH}/epdp \
+  ./install.sh core bd gillespie ode egfrd spatiocyte
