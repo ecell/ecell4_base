@@ -53,13 +53,15 @@ protected:
     typedef ::CuboidalRegion<simulator_type::traits_type> cuboidal_region_type;
     typedef typename world_type::traits_type::structure_id_type
     structure_id_type;
+    typedef simulator_type::traits_type::network_rules_type network_rules_type;
 
 public:
 
     EGFRDWorld(
         const Real& world_size, const Integer& matrix_size,
         boost::shared_ptr<GSLRandomNumberGenerator> rng)
-        : world_(new world_type(world_size, matrix_size)), rng_(rng), t_(0.0)
+        : world_(new world_type(world_size, matrix_size)),
+          rng_(rng), internal_rng_(rng->handle()), t_(0.0)
     {
         const world_type::position_type x(
             translate(divide(edge_lengths(), 2)));
@@ -385,6 +387,14 @@ public:
         return rng_;
     }
 
+    simulator_type* create_simulator(const Integer& dissociation_retry_moves)
+    {
+        return new simulator_type(
+            world_, boost::shared_ptr<network_rules_type>(
+                new network_rules_type(model_.network_rules())),
+            internal_rng_, dissociation_retry_moves);
+    }
+
 protected:
 
     template<typename Tfirst_, typename Tsecond_>
@@ -547,6 +557,7 @@ protected:
 
     boost::shared_ptr<world_type> world_;
     boost::shared_ptr<GSLRandomNumberGenerator> rng_;
+    world_type::traits_type::rng_type internal_rng_;
     Real t_;
 
     particle_model_type model_;

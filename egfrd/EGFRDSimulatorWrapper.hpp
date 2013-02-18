@@ -30,18 +30,13 @@ public:
 
     typedef EGFRDWorld::simulator_type simulator_type;
 
-protected:
-
-    typedef simulator_type::world_type world_type;
-    typedef simulator_type::traits_type::network_rules_type network_rules_type;
-
 public:
 
     EGFRDSimulatorWrapper(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<EGFRDWorld> world,
         Integer dissociation_retry_moves = 3)
-        : model_(model), world_(world), rng_(world->rng()->handle())
+        : model_(model), world_(world)
     {
         // set the log level for epdp as L_WARNING.
         ::LoggerManager::register_logger_manager(
@@ -76,10 +71,7 @@ public:
         }
 
         sim_ = boost::shared_ptr<simulator_type>(
-            new simulator_type(
-                world->world(), boost::shared_ptr<network_rules_type>(
-                    new network_rules_type(world->model().network_rules())),
-                rng_, dissociation_retry_moves));
+            (*world_).create_simulator(dissociation_retry_moves));
 
         initialize();
     }
@@ -125,7 +117,6 @@ protected:
 
     boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<EGFRDWorld> world_;
-    world_type::traits_type::rng_type rng_;
 
     boost::shared_ptr<simulator_type> sim_;
 };
