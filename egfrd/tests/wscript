@@ -11,5 +11,5 @@ def build(bld):
         target = 'EGFRDSimulatorWrapper_test',
         includes = ['..'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
-        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'gfrd'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', ':_gfrd.so'],
         use = 'ecell4-egfrd')

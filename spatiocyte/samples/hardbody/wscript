@@ -12,6 +12,5 @@ def build(bld):
         includes = ['../..'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
         lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'ecs', 'emc',
-               # 'ecell3-spatiocyte-stepper'],
-               ':/home/kaizu/src/ecell3-spatiocyte/SpatiocyteStepper.so'],
+               ':SpatiocyteStepper.so'],
         use = 'ecell4-spatiocyte')

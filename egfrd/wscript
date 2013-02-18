@@ -31,7 +31,7 @@ def configure(conf):
     conf.check_cxx(lib = 'gslcblas')
     conf.check_cxx(lib = 'm')
 
-    conf.check_cxx(lib = 'gfrd')
+    conf.check_cxx(lib = ':_gfrd.so')
 
     conf.check_cxx(lib = 'ecell4-core')
 
@@ -64,7 +64,7 @@ def build(bld):
         source = cppfiles,
         includes = ['.'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
-        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'gfrd'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', ':_gfrd.so'],
         target = 'ecell4-egfrd')
 
     bld.recurse(subdirs)

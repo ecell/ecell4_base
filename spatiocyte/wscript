@@ -33,6 +33,7 @@ def configure(conf):
 
     conf.check_cxx(lib = 'ecs')
     conf.check_cxx(lib = 'emc')
+    conf.check_cxx(lib = ':SpatiocyteStepper.so')
 
     conf.check_cxx(lib = 'ecell4-core')
 
