@@ -38,15 +38,15 @@ int main(int argc, char** argv)
 
     boost::shared_ptr<SpatiocyteWorld> world(
         new SpatiocyteWorld(edge_lengths, voxel_radius));
-
     world->add_species(sp1);
     world->add_species(sp2);
     world->add_species(sp3);
-    world->add_molecules(sp1, N / 2);
-    world->add_molecules(sp2, N / 2);
+    world->add_molecules(sp3, N);
 
     SpatiocyteSimulator sim(model, world);
-    // sim.initialize();
+    sim.initialize();
+    std::cout << "# volume = " << volume << std::endl;
+    std::cout << "# actual volume = " << world->volume() << std::endl;
 
     Real next_time(0.0), dt(0.02);
     std::cout << sim.t()
@@ -65,7 +65,4 @@ int main(int argc, char** argv)
                   << "\t" << world->num_molecules(sp3)
                   << std::endl;
     }
-
-    std::cout << "volume = " << volume << std::endl;
-    std::cout << "actual volume = " << world->volume() << std::endl;
 }
