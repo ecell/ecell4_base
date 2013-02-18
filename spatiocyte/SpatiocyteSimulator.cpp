@@ -16,26 +16,9 @@ void SpatiocyteSimulator::step()
 
 bool SpatiocyteSimulator::step(const Real& upto)
 {
-    const Real t0(t()), tnext(next_time());
-    // const Real dt0(dt());
-
-    if (upto <= t0)
-    {
-        return false;
-    }
-
-    if (upto >= tnext)
-    {
-        step();
-        return true;
-    }
-    else
-    {
-        // set_dt(upto - t0);
-        step();
-        // set_dt(dt0);
-        return false;
-    }
+    const bool retval((*world_).step(upto));
+    ++num_steps_;
+    return retval;
 }
 
 } // spatiocyte

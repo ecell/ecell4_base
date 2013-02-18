@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
     const std::string D("1e-12"), radius("2.5e-9");
 
-    const Real k2(0.1), U(0.5);
+    const Real k2(1000), U(0.5);
     const Real k1(k2 * volume * (1 - U) / (U * U * N));
     ecell4::Species sp1("A", D, radius), sp2("B", D, radius), sp3("C", D, radius);
     ReactionRule rr1(create_binding_reaction_rule(sp1, sp2, sp3, k1)),
@@ -49,11 +49,14 @@ int main(int argc, char** argv)
 
     SpatiocyteSimulator sim(model, world);
 
-    for (unsigned int i(0); i < 100; ++i)
+    for (unsigned int i(0); i < 1; ++i)
     {
-        sim.step();
+        while (sim.step(1e-3)) {}
+
+        break;
     }
 
-    std::cout << "t = " << sim.t() << std::endl;
-    std::cout << "num_steps = " << sim.num_steps() << std::endl;
+    std::cout << sim.t() << "\t" << world->num_molecules(sp1) << "\t"
+              << world->num_molecules(sp2) << "\t"
+              << world->num_molecules(sp3) << "\t" << std::endl;
 }

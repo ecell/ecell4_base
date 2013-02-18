@@ -157,7 +157,7 @@ public:
     //     return (*ps_).list_particles(species);
     // }
 
-    // // ParticleSpace member functions
+    // ParticleSpace member functions
 
     // bool update_particle(const ParticleID& pid, const Particle& p)
     // {
@@ -229,9 +229,9 @@ public:
         return comp->actualVolume;
     }
 
-    Integer num_molecules(const Species& sp) const
+    virtual Integer num_species() const
     {
-        return num_particles(sp);
+        return static_cast<Integer>(species_.size());
     }
 
     bool has_species(const Species& sp) const
@@ -239,17 +239,9 @@ public:
         return (find_fullid(sp) != species_.end());
     }
 
-    void add_molecules(const Species& sp, const Integer& num)
+    Integer num_molecules(const Species& sp) const
     {
-        species_container_type::const_iterator i(find_fullid(sp));
-        if (i == species_.end())
-        {
-            add_species(sp);
-            i = find_fullid(sp);
-        }
-
-        libecs::Variable* variable_ptr(get_variable((*i).second));
-        variable_ptr->setValue(variable_ptr->getValue() + num);
+        return num_particles(sp);
     }
 
     // CompartmentSpace member functions
@@ -270,12 +262,60 @@ public:
         }
     }
 
+    void add_molecules(const Species& sp, const Integer& num)
+    {
+        species_container_type::const_iterator i(find_fullid(sp));
+        if (i == species_.end())
+        {
+            add_species(sp);
+            i = find_fullid(sp);
+        }
+
+        libecs::Variable* variable_ptr(get_variable((*i).second));
+        variable_ptr->setValue(variable_ptr->getValue() + num);
+    }
+
     // Optional members
 
     void step()
     {
         (*model_).step();
         t_ = (*model_).getCurrentTime();
+    }
+
+    bool step(const Real& upto)
+    {
+        const Real t0(t()), tnext(t() + dt());
+
+        if (upto <= t0)
+        {
+            return false;
+        }
+
+        if (upto >= tnext)
+        {
+            step();
+            return true;
+        }
+        else
+        {
+            libecs::Stepper* system_stepper_ptr((*model_).getSystemStepper());
+            system_stepper_ptr->setCurrentTime(t0);
+            system_stepper_ptr->setNextTime(upto);
+            (*model_).getScheduler().updateEvent(0, upto);
+
+            do
+            {
+                if ((*model_).getTopEvent().getTime() > upto)
+                {
+                    break;
+                }
+
+                step();
+            } while (true);
+
+            return false;
+        }
     }
 
     Real dt() const
