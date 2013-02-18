@@ -65,6 +65,11 @@ public:
 
     // Optional members
 
+    void initialize()
+    {
+        (*world_).initialize();
+    }
+
     SpatiocyteStepper* get_spatiocyte_stepper() const
     {
         return (*world_).get_spatiocyte_stepper();
@@ -79,6 +84,7 @@ protected:
      * the protected internal state of SpatiocyteSimulator.
      * they are needed to be saved/loaded with Visitor pattern.
      */
+
     Integer num_steps_;
 };
 

@@ -2,6 +2,7 @@
 #define __SPATIOCYTE_WORLD_HPP
 
 #include <sstream>
+#include <stdexcept>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -38,7 +39,7 @@ namespace spatiocyte
 
 struct ParticleInfo
 {
-    const Real radius;
+    // const Real radius;
     const Real D;
 };
 
@@ -57,7 +58,8 @@ public:
 
     SpatiocyteWorld(const Position3& edge_lengths, const Real& voxel_radius)
         : edge_lengths_(edge_lengths), voxel_radius_(voxel_radius), t_(0.0),
-          num_reactions_(0), visualization_exists_(false), coordinate_exists_(false)
+          num_reactions_(0), is_initialized_(false),
+          visualization_exists_(false), coordinate_exists_(false)
     {
         libecs::initialize();
         model_ = new libecs::Model(*libecs::createDefaultModuleMaker());
@@ -89,9 +91,9 @@ public:
      */
     ParticleInfo get_particle_info(const Species& sp) const
     {
-        const Real radius(std::atof(sp.get_attribute("radius").c_str()));
+        // const Real radius(std::atof(sp.get_attribute("radius").c_str()));
         const Real D(std::atof(sp.get_attribute("D").c_str()));
-        ParticleInfo info = {radius, D};
+        ParticleInfo info = {D};
         return info;
     }
 
@@ -224,6 +226,12 @@ public:
     {
         // const Position3 lengths(edge_lengths());
         // return lengths[0] * lengths[1] * lengths[2];
+
+        if (!is_initialized_)
+        {
+            throw std::runtime_error("call initialize before volume().");
+        }
+
         const Comp* comp(
             get_spatiocyte_stepper()->system2Comp((*model_).getRootSystem()));
         return comp->actualVolume;
@@ -248,6 +256,8 @@ public:
 
     void add_species(const Species& sp)
     {
+        check_initialized();
+
         if (!has_species(sp))
         {
             libecs::String fullid_str("Variable:/:" + sp.name());
@@ -264,6 +274,8 @@ public:
 
     void add_molecules(const Species& sp, const Integer& num)
     {
+        check_initialized();
+
         species_container_type::const_iterator i(find_fullid(sp));
         if (i == species_.end())
         {
@@ -277,8 +289,22 @@ public:
 
     // Optional members
 
+    void initialize()
+    {
+        if (!is_initialized_)
+        {
+            (*model_).initialize();
+            is_initialized_ = true;
+        }
+    }
+
     void step()
     {
+        if (!is_initialized_)
+        {
+            initialize();
+        }
+
         (*model_).step();
         t_ = (*model_).getCurrentTime();
     }
@@ -325,6 +351,8 @@ public:
 
     void add_reaction_rule(const ReactionRule& rr)
     {
+        check_initialized();
+
         switch (rr.reactants().size())
         {
         case 1:
@@ -389,6 +417,8 @@ public:
             return get_visualization_log_process();
         }
 
+        check_initialized();
+
         libecs::Process* process_ptr(
             create_process("VisualizationLogProcess", "Process:/:visualization"));
         process_ptr->setProperty("LogInterval", libecs::Polymorph(log_interval));
@@ -414,6 +444,8 @@ public:
                 "create_visualization_log_process(log_interval, filename).)");
         }
 
+        check_initialized();
+
         get_visualization_log_process()->registerVariableReference(
             "_", get_fullid(sp).asString(), 0);
     }
@@ -425,6 +457,8 @@ public:
         {
             return get_coordinate_log_process();
         }
+
+        check_initialized();
 
         libecs::Process* process_ptr(
             create_process("CoordinateLogProcess", "Process:/:coordinate"));
@@ -450,6 +484,8 @@ public:
                 "CoordinateLogProcess not found. (call "
                 "create_coordinate_log_process(log_interval, filename).)");
         }
+
+        check_initialized();
 
         get_coordinate_log_process()->registerVariableReference(
             "_", get_fullid(sp).asString(), 0);
@@ -518,6 +554,16 @@ protected:
         create_variable("Variable:/:VACANT", 0);
 
         create_molecular_populate_process();
+    }
+
+    void check_initialized() const
+    {
+        if (is_initialized_)
+        {
+            throw std::runtime_error(
+                "the model is protected after initialization."
+                " prepare everything before initialization.");
+        }
     }
 
     void create_variable(const libecs::String& fullid, const Real& value)
@@ -590,6 +636,7 @@ protected:
     Real t_;
     unsigned int num_reactions_;
 
+    bool is_initialized_;
     bool visualization_exists_;
     bool coordinate_exists_;
 
