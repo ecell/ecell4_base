@@ -64,9 +64,9 @@ int main() {std::tr1::hash<int>(); return 0; }''',
     #     libs     = ['hdf5', 'hdf5_hl_cpp', 'hdf5_cpp'],
     # )
 
-    conf.check_cxx(lib = 'hdf5', libpath = '/usr/lib')
-    conf.check_cxx(lib = 'hdf5_hl_cpp', libpath = '/usr/lib')
-    conf.check_cxx(lib = 'hdf5_cpp', libpath = '/usr/lib')
+    conf.check_cxx(lib = 'hdf5', libpath = '/usr/local/hdf5/lib')
+    conf.check_cxx(lib = 'hdf5_hl_cpp', libpath = '/usr/local/hdf5/lib')
+    conf.check_cxx(lib = 'hdf5_cpp', libpath = '/usr/local/hdf5/lib')
 
     conf.write_config_header('config.h')
     conf.env.store('conf.log')
