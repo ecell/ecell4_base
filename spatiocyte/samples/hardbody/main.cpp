@@ -5,7 +5,8 @@
 #include <ecell4/core/Position3.hpp>
 #include <ecell4/core/NetworkModel.hpp>
 
-#include "../../SpatiocyteSimulator.cpp"
+#include "../../utils.hpp"
+#include "../../SpatiocyteSimulator.hpp"
 
 using namespace ecell4;
 using namespace ecell4::spatiocyte;
@@ -45,8 +46,8 @@ int main(int argc, char** argv)
 
     SpatiocyteSimulator sim(model, world);
     sim.initialize();
-    std::cout << "# volume = " << volume << std::endl;
-    std::cout << "# actual volume = " << world->volume() << std::endl;
+
+    // assert(world->volume(), actual_volume_cuboid(edge_lengths, voxel_radius))
 
     Real next_time(0.0), dt(0.02);
     std::cout << sim.t()
