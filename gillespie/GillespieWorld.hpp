@@ -1,5 +1,5 @@
-#ifndef __GILLESPIEWORLD_HPP
-#define __GILLESPIEWORLD_HPP
+#ifndef __ECELL4_GILLESPIE_GILLESPIE_WORLD_HPP
+#define __ECELL4_GILLESPIE_GILLESPIE_WORLD_HPP
 
 #include <stdexcept>
 #include <map>
@@ -73,5 +73,4 @@ private:
 
 } // ecell4
 
-
-#endif // __GILLESPIEWORLD_HPP
+#endif /* __ECELL4_GILLESPIE_GILLESPIE_WORLD_HPP */

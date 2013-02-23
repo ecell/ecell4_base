@@ -1,5 +1,5 @@
-#ifndef __BD_SIMULATOR_HPP
-#define __BD_SIMULATOR_HPP
+#ifndef __ECELL4_BD_BD_SIMULATOR_HPP
+#define __ECELL4_BD_BD_SIMULATOR_HPP
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
@@ -86,4 +86,4 @@ protected:
 
 } // ecell4
 
-#endif /* __BD_SIMULATOR_HPP */
+#endif /* __ECELL4_BD_BD_SIMULATOR_HPP */

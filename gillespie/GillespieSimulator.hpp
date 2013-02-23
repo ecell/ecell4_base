@@ -1,5 +1,5 @@
-#ifndef __GILLESPIESIMULATOR_HPP
-#define __GILLESPIESIMULATOR_HPP
+#ifndef __ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP
+#define __ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
@@ -71,4 +71,4 @@ protected:
 
 } // ecell4
 
-#endif //__GILLESPIESIMULATOR_HPP
+#endif /* __ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP */

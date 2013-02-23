@@ -1,5 +1,5 @@
-#ifndef __BD_WORLD_HPP
-#define __BD_WORLD_HPP
+#ifndef __ECELL4_BD_BD_WORLD_HPP
+#define __ECELL4_BD_BD_WORLD_HPP
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
@@ -217,4 +217,4 @@ protected:
 
 } // ecell4
 
-#endif /* __BD_WORLD_HPP */
+#endif /* __ECELL4_BD_BD_WORLD_HPP */

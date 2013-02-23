@@ -1,5 +1,5 @@
-#ifndef __SIMULATOR_HPP
-#define __SIMULATOR_HPP
+#ifndef __ECELL4_SIMULATOR_HPP
+#define __ECELL4_SIMULATOR_HPP
 
 #include "types.hpp"
 
@@ -55,4 +55,4 @@ public:
 
 }
 
-#endif /* __SIMULATOR_HPP */
+#endif /* __ECELL4_SIMULATOR_HPP */

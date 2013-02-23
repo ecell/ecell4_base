@@ -1,5 +1,5 @@
-#ifndef __LINEAR_ALGEBRA_HPP
-#define __LINEAR_ALGEBRA_HPP
+#ifndef __ECELL4_LINEAR_ALGEBRA_HPP
+#define __ECELL4_LINEAR_ALGEBRA_HPP
 
 #include <algorithm>
 
@@ -45,4 +45,4 @@ inline bool is_cartesian_vector(const Position3& vector)
 
 } // ecell4
 
-#endif /* __LINEAR_ALGEBRA_HPP */
+#endif /* __ECELL4_LINEAR_ALGEBRA_HPP */

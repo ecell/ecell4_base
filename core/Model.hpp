@@ -1,5 +1,5 @@
-#ifndef __MODEL_HPP
-#define __MODEL_HPP
+#ifndef __ECELL4_MODEL_HPP
+#define __ECELL4_MODEL_HPP
 
 #include "types.hpp"
 #include "Species.hpp"
@@ -120,4 +120,4 @@ public:
 
 } // ecell4
 
-#endif /* __MODEL_HPP */
+#endif /* __ECELL4_MODEL_HPP */

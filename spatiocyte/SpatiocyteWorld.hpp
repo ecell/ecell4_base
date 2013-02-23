@@ -1,5 +1,5 @@
-#ifndef __SPATIOCYTE_WORLD_HPP
-#define __SPATIOCYTE_WORLD_HPP
+#ifndef __ECELL4_SPATIOCYTE_SPATIOCYTE_WORLD_HPP
+#define __ECELL4_SPATIOCYTE_SPATIOCYTE_WORLD_HPP
 
 #include <sstream>
 #include <stdexcept>
@@ -647,4 +647,4 @@ protected:
 
 } // ecell4
 
-#endif /* __SPATIOCYTE_WORLD_HPP */
+#endif /* __ECELL4_SPATIOCYTE_SPATIOCYTE_WORLD_HPP */

@@ -1,5 +1,5 @@
-#ifndef __PARTICLE_SPACE_HPP
-#define __PARTICLE_SPACE_HPP
+#ifndef __ECELL4_PARTICLE_SPACE_HPP
+#define __ECELL4_PARTICLE_SPACE_HPP
 
 #include <cmath>
 #include <gsl/gsl_pow_int.h>
@@ -378,4 +378,4 @@ protected:
 
 } // ecell4
 
-#endif /* __PARTICLE_SPACE_HPP */
+#endif /* __ECELL4_PARTICLE_SPACE_HPP */

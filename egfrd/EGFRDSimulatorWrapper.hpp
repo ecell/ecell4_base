@@ -1,5 +1,5 @@
-#ifndef __EGFRD_SIMULATOR_HPP
-#define __EGFRD_SIMULATOR_HPP
+#ifndef __ECELL4_EGFRD_EGFRD_SIMULATOR_WRAPPER_HPP
+#define __ECELL4_EGFRD_EGFRD_SIMULATOR_WRAPPER_HPP
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
@@ -125,4 +125,4 @@ protected:
 
 } // ecell4
 
-#endif /* __EGFRD_SIMULATOR_HPP */
+#endif /* __ECELL4_EGFRD_EGFRD_SIMULATOR_WRAPPER_HPP */

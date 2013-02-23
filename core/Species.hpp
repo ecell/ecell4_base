@@ -1,5 +1,5 @@
-#ifndef __SPECIES_HPP
-#define __SPECIES_HPP
+#ifndef __ECELL4_SPECIES_HPP
+#define __ECELL4_SPECIES_HPP
 
 #include <string>
 #include <vector>
@@ -134,4 +134,4 @@ struct hash<ecell4::Species>
 } // boost
 #endif
 
-#endif /* __SPECIES_HPP */
+#endif /* __ECELL4_SPECIES_HPP */

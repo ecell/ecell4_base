@@ -1,5 +1,5 @@
-#ifndef __PARTICLE_HPP
-#define __PARTICLE_HPP
+#ifndef __ECELL4_PARTICLE_HPP
+#define __ECELL4_PARTICLE_HPP
 
 #include "config.h"
 
@@ -134,4 +134,4 @@ struct hash<ecell4::ParticleID>
 } // boost
 #endif
 
-#endif /* __PARTICLE_HPP */
+#endif /* __ECELL4_PARTICLE_HPP */

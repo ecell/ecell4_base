@@ -1,5 +1,5 @@
-#ifndef __SPATIOCYTE_SIMULATOR_HPP
-#define __SPATIOCYTE_SIMULATOR_HPP
+#ifndef __ECELL4_SPATIOCYTE_SPATIOCYTE_SIMULATOR_HPP
+#define __ECELL4_SPATIOCYTE_SPATIOCYTE_SIMULATOR_HPP
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
@@ -92,4 +92,4 @@ protected:
 
 } // ecell4
 
-#endif /* __SPATIOCYTE_SIMULATOR_HPP */
+#endif /* __ECELL4_SPATIOCYTE_SPATIOCYTE_SIMULATOR_HPP */

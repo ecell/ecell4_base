@@ -1,5 +1,5 @@
-#ifndef __EXCEPTIONS_HPP
-#define __EXCEPTIONS_HPP
+#ifndef __ECELL4_EXCEPTIONS_HPP
+#define __ECELL4_EXCEPTIONS_HPP
 
 #include <exception>
 #include <stdexcept>
@@ -161,4 +161,4 @@ private:
 
 }
 
-#endif /* __EXCEPTIONS_HPP */
+#endif /* __ECELL4_EXCEPTIONS_HPP */

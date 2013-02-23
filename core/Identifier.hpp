@@ -1,5 +1,5 @@
-#ifndef __IDENTIFIER_HPP
-#define __IDENTIFIER_HPP
+#ifndef __ECELL4_IDENTIFIER_HPP
+#define __ECELL4_IDENTIFIER_HPP
 
 #include <utility>
 
@@ -234,4 +234,4 @@ protected:
 
 } // ecell4
 
-#endif /* __IDENTIFIER_HPP */
+#endif /* __ECELL4_IDENTIFIER_HPP */

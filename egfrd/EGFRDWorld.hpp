@@ -1,5 +1,5 @@
-#ifndef __EGFRD_WORLD_HPP
-#define __EGFRD_WORLD_HPP
+#ifndef __ECELL4_EGFRD_EGFRD_WORLD_HPP
+#define __ECELL4_EGFRD_EGFRD_WORLD_HPP
 
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
@@ -568,4 +568,4 @@ protected:
 
 } // ecell4
 
-#endif // __EGFRD_WORLD_HPP
+#endif // __ECELL4_EGFRD_EGFRD_WORLD_HPP

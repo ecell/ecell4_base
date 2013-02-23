@@ -1,5 +1,5 @@
-#ifndef __TYPES_HPP
-#define __TYPES_HPP
+#ifndef __ECELL4_TYPES_HPP
+#define __ECELL4_TYPES_HPP
 
 #include <stdint.h>
 #include <math.h>
@@ -14,4 +14,4 @@ const double inf = HUGE_VAL; // infinity (double)
 
 } // ecell4
 
-#endif /* __TYPES_HPP */
+#endif /* __ECELL4_TYPES_HPP */

@@ -1,5 +1,5 @@
-#ifndef __POSITION3_HPP
-#define __POSITION3_HPP
+#ifndef __ECELL4_POSITION3_HPP
+#define __ECELL4_POSITION3_HPP
 
 #include <ostream>
 #include <iomanip>
@@ -182,4 +182,4 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
 
 } // ecell4
 
-#endif /* __POSITION3_HPP */
+#endif /* __ECELL4_POSITION3_HPP */

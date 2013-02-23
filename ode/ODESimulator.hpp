@@ -1,5 +1,5 @@
-#ifndef __ODESIMULATOR_HPP
-#define __ODESIMULATOR_HPP
+#ifndef __ECELL4_ODE_ODE_SIMULATOR_HPP
+#define __ECELL4_ODE_ODE_SIMULATOR_HPP
 
 #include <boost/shared_ptr.hpp>
 
@@ -181,4 +181,4 @@ protected:
 
 } // ecell4
 
-#endif //__ODESIMULATOR_HPP
+#endif /* __ECELL4_ODE_ODE_SIMULATOR_HPP */

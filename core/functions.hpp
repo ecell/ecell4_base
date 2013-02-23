@@ -1,5 +1,5 @@
-#ifndef __FUNCTIONS_HPP
-#define __FUNCTIONS_HPP
+#ifndef __ECELL4_FUNCTIONS_HPP
+#define __ECELL4_FUNCTIONS_HPP
 
 #include <cmath>
 
@@ -34,4 +34,4 @@ inline double abs(const double& p1)
 
 }
 
-#endif /* __FUNCTIONS_HPP */
+#endif /* __ECELL4_FUNCTIONS_HPP */

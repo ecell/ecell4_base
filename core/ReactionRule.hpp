@@ -1,5 +1,5 @@
-#ifndef __REACTION_RULE_HPP
-#define __REACTION_RULE_HPP
+#ifndef __ECELL4_REACTION_RULE_HPP
+#define __ECELL4_REACTION_RULE_HPP
 
 #include <set>
 #include <stdexcept>
@@ -100,4 +100,4 @@ inline bool operator!=(const ReactionRule& lhs, const ReactionRule& rhs)
 
 } // ecell4
 
-#endif /* __REACTION_RULE_HPP */
+#endif /* __ECELL4_REACTION_RULE_HPP */

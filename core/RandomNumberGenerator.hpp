@@ -1,5 +1,5 @@
-#ifndef __RANDOM_NUMBER_GENERATOR_HPP
-#define __RANDOM_NUMBER_GENERATOR_HPP
+#ifndef __ECELL4_RANDOM_NUMBER_GENERATOR_HPP
+#define __ECELL4_RANDOM_NUMBER_GENERATOR_HPP
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -88,4 +88,4 @@ protected:
 
 } // ecell4
 
-#endif /* __RANDOM_NUMBER_GENERATOR_HPP */
+#endif /* __ECELL4_RANDOM_NUMBER_GENERATOR_HPP */

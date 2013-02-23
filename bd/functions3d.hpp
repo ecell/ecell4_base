@@ -1,5 +1,5 @@
-#ifndef __FUNCTIONS_3D_HPP
-#define __FUNCTIONS_3D_HPP
+#ifndef __ECELL4_BD_FUNCTIONS_3D_HPP
+#define __ECELL4_BD_FUNCTIONS_3D_HPP
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Position3.hpp>
@@ -53,4 +53,4 @@ struct Igbd_r_3d_params
 
 } // ecell4
 
-#endif /* __FUNCTIONS_3D_HPP */
+#endif /* __ECELL4_BD_FUNCTIONS_3D_HPP */

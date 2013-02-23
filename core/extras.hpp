@@ -1,5 +1,5 @@
-#ifndef __EXTRAS_HPP
-#define __EXTRAS_HPP
+#ifndef __ECELL4_EXTRAS_HPP
+#define __ECELL4_EXTRAS_HPP
 
 #include "types.hpp"
 #include "Position3.hpp"
@@ -49,4 +49,4 @@ void throw_in_particles(
 
 } // ecell4
 
-#endif // __EXTRAS_HPP
+#endif // __ECELL4_EXTRAS_HPP
