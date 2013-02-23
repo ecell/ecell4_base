@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     SpatiocyteSimulator sim(model, world);
     sim.initialize();
 
-    // assert(world->volume(), actual_volume_cuboid(edge_lengths, voxel_radius))
+    // assert(world->volume(), actual_volume_cuboid(edge_lengths, voxel_radius));
 
     Real next_time(0.0), dt(0.02);
     std::cout << sim.t()

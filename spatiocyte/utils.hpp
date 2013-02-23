@@ -15,7 +15,8 @@ Real voxel_volume(const Real& voxel_radius)
     return 4 * std::sqrt(2) * gsl_pow_3(voxel_radius);
 }
 
-Real actual_volume_cuboid(const Position3& edge_lengths, const Real& voxel_radius)
+Real actual_volume_cuboid(
+    const Position3& edge_lengths, const Real& voxel_radius)
 {
     const Real normalized_voxel_radius(0.5);
     // const Integer hcpl(normalized_voxel_radius / std::sqrt(3));
@@ -28,9 +29,9 @@ Real actual_volume_cuboid(const Position3& edge_lengths, const Real& voxel_radiu
         num_cols(static_cast<Integer>(rint(center[0] * 2 / hcpx)) + 2);
 
     // readjust_surface_boundary_sizes
-    num_cols += (num_cols % 2 == 0) ? 0 : 1;
-    num_layers += (num_layers % 2 == 0) ? 0 : 1;
-    num_rows += (num_rows % 2 == 0) ? 0 : 1;
+    num_cols += num_cols % 2;
+    num_layers += num_layers % 2;
+    num_rows += num_rows % 2;
 
     if (false) // isPeriodicEdge
     {
