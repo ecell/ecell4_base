@@ -71,6 +71,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step)
     world->add_molecules(sp1, N / 2);
     world->add_molecules(sp2, N / 2);
 
+    BOOST_ASSERT(world->num_molecules(sp1) == N / 2);
+
     SpatiocyteSimulator target(model, world);
 
     world->add_molecules(sp1, N / 2);

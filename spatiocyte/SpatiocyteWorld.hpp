@@ -126,13 +126,26 @@ public:
 
     Integer num_particles() const
     {
-        libecs::Real num(0.0);
-        for (species_container_type::const_iterator i(species_.begin());
-             i != species_.end(); ++i)
+        if (is_initialized_)
         {
-            num += get_variable((*i).second)->getValue();
+            libecs::Real num(0.0);
+            for (species_container_type::const_iterator i(species_.begin());
+                 i != species_.end(); ++i)
+            {
+                num += get_variable((*i).second)->getValue();
+            }
+            return static_cast<Integer>(num);
         }
-        return static_cast<Integer>(num);
+        else
+        {
+            Integer num(0);
+            for (species_population_cache_type::const_iterator
+                     i(populations_.begin()); i != populations_.end(); ++i)
+            {
+                num += (*i).second;
+            }
+            return num;
+        }
     }
 
     Integer num_particles(const Species& sp) const
@@ -143,7 +156,23 @@ public:
             return 0;
         }
 
-        return static_cast<Integer>(get_variable((*i).second)->getValue());
+        if (is_initialized_)
+        {
+            return static_cast<Integer>(get_variable((*i).second)->getValue());
+        }
+        else
+        {
+            Integer num(0);
+            for (species_population_cache_type::const_iterator
+                     i(populations_.begin()); i != populations_.end(); ++i)
+            {
+                if ((*i).first == sp)
+                {
+                    num += (*i).second;
+                }
+            }
+            return num;
+        }
     }
 
     // bool has_particle(const ParticleID& pid) const
@@ -288,6 +317,11 @@ public:
 
         // libecs::Variable* variable_ptr(get_variable((*i).second));
         // variable_ptr->setValue(variable_ptr->getValue() + num);
+
+        if (!has_species(sp))
+        {
+            add_species(sp);
+        }
 
         if (is_initialized_)
         {
