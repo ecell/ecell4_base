@@ -24,6 +24,7 @@
 #endif
 
 #include <SpatiocyteCommon.hpp>
+#include <SpatiocyteSpecies.hpp>
 #include <SpatiocyteStepper.hpp>
 
 #include <ecell4/core/extras.hpp>
@@ -53,6 +54,8 @@ protected:
 
     typedef std::vector<std::pair<Species::serial_type, libecs::String> >
     species_container_type;
+    typedef std::vector<std::pair<Species, Integer> >
+    species_population_cache_type;
 
 public:
 
@@ -233,7 +236,7 @@ public:
         }
 
         const Comp* comp(
-            get_spatiocyte_stepper()->system2Comp((*model_).getRootSystem()));
+            spatiocyte_stepper()->system2Comp((*model_).getRootSystem()));
         return comp->actualVolume;
     }
 
@@ -267,24 +270,55 @@ public:
             const ParticleInfo info(get_particle_info(sp));
             create_diffusion_process(fullid_str, info.D);
 
-            get_molecule_populate_process()->registerVariableReference(
-                "_", fullid_str, 0);
+            // get_molecule_populate_process()->registerVariableReference(
+            //     "_", fullid_str, 0);
         }
     }
 
     void add_molecules(const Species& sp, const Integer& num)
     {
-        check_initialized();
+        // check_initialized();
 
-        species_container_type::const_iterator i(find_fullid(sp));
-        if (i == species_.end())
+        // species_container_type::const_iterator i(find_fullid(sp));
+        // if (i == species_.end())
+        // {
+        //     add_species(sp);
+        //     i = find_fullid(sp);
+        // }
+
+        // libecs::Variable* variable_ptr(get_variable((*i).second));
+        // variable_ptr->setValue(variable_ptr->getValue() + num);
+
+        if (is_initialized_)
         {
-            add_species(sp);
-            i = find_fullid(sp);
+            SpatiocyteStepper* stepper(spatiocyte_stepper());
+            ::Species* spatiocyte_species(stepper->getSpecies(get_variable(sp)));
+            ::Species* vacant_species(spatiocyte_species->getVacantSpecies());
+            spatiocyte_species->setInitCoordSize(num + num_molecules(sp));
+            if (!spatiocyte_species->getIsPopulated())
+            {
+                // unsigned int num_coords(
+                //     spatiocyte_species->getPopulateCoordSize());
+                unsigned int num_vacants(vacant_species->size());
+                for (unsigned int i(0); i != num; ++i)
+                {
+                    unsigned int coord;
+                    do
+                    {
+                        coord = vacant_species->getCoord(
+                            gsl_rng_uniform_int(stepper->getRng(), num_vacants));
+                    } while (stepper->getVoxel(coord)->id
+                             != vacant_species->getID());
+                    spatiocyte_species->addMolecule(stepper->getVoxel(coord));
+                }
+                spatiocyte_species->setIsPopulated();
+            }
+            spatiocyte_species->updateMolecules();
         }
-
-        libecs::Variable* variable_ptr(get_variable((*i).second));
-        variable_ptr->setValue(variable_ptr->getValue() + num);
+        else
+        {
+            populations_.push_back(std::make_pair(sp, num));
+        }
     }
 
     // Optional members
@@ -295,6 +329,13 @@ public:
         {
             (*model_).initialize();
             is_initialized_ = true;
+
+            for (species_population_cache_type::const_iterator
+                     i(populations_.begin()); i != populations_.end(); ++i)
+            {
+                add_molecules((*i).first, (*i).second);
+            }
+            populations_.clear();
         }
     }
 
@@ -404,7 +445,7 @@ public:
         }
     }
 
-    SpatiocyteStepper* get_spatiocyte_stepper() const
+    SpatiocyteStepper* spatiocyte_stepper() const
     {
         return dynamic_cast<SpatiocyteStepper*>((*model_).getStepper("SS"));
     }
@@ -536,8 +577,6 @@ protected:
         stepper_ptr->setProperty(
             "VoxelRadius", libecs::Polymorph(voxel_radius_));
 
-        // (*model_).getSystem(libecs::SystemPath("/"))->setProperty(
-        //     "StepperID", libecs::Polymorph("SS"));
         (*model_).getRootSystem()->setProperty(
             "StepperID", libecs::Polymorph("SS"));
 
@@ -553,7 +592,7 @@ protected:
         create_variable("Variable:/:YZPLANE", PERIODIC);
         create_variable("Variable:/:VACANT", 0);
 
-        create_molecular_populate_process();
+        // create_molecular_populate_process();
     }
 
     void check_initialized() const
@@ -596,6 +635,12 @@ protected:
         return libecs::FullID((*i).second);
     }
 
+    libecs::Variable* get_variable(const Species& sp) const
+    {
+        return dynamic_cast<libecs::Variable*>(
+            (*model_).getEntity(get_fullid(sp)));
+    }
+
     libecs::Variable* get_variable(const libecs::String& fullid) const
     {
         return dynamic_cast<libecs::Variable*>(
@@ -618,15 +663,15 @@ protected:
         process_ptr->registerVariableReference("_", vid, 0);
     }
 
-    libecs::Process* create_molecular_populate_process()
-    {
-        return create_process("MoleculePopulateProcess", "Process:/:populate");
-    }
+    // libecs::Process* create_molecular_populate_process()
+    // {
+    //     return create_process("MoleculePopulateProcess", "Process:/:populate");
+    // }
 
-    libecs::Process* get_molecule_populate_process() const
-    {
-        return get_process("Process:/:populate");
-    }
+    // libecs::Process* get_molecule_populate_process() const
+    // {
+    //     return get_process("Process:/:populate");
+    // }
 
 protected:
 
@@ -641,6 +686,7 @@ protected:
     bool coordinate_exists_;
 
     species_container_type species_;
+    species_population_cache_type populations_; // just for cache
 };
 
 } // spatiocyte

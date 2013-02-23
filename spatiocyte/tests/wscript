@@ -11,5 +11,6 @@ def build(bld):
         target = 'SpatiocyteSimulator_test',
         includes = ['..'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
-        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'ecs', 'emc'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'ecs', 'emc',
+               ':SpatiocyteStepper.so'],
         use = 'ecell4-spatiocyte')

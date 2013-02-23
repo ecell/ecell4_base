@@ -41,6 +41,8 @@ public:
         {
             (*world_).add_reaction_rule(*i);
         }
+
+        initialize();
     }
 
     // SimulatorTraits
@@ -70,9 +72,9 @@ public:
         (*world_).initialize();
     }
 
-    SpatiocyteStepper* get_spatiocyte_stepper() const
+    SpatiocyteStepper* spatiocyte_stepper() const
     {
-        return (*world_).get_spatiocyte_stepper();
+        return (*world_).spatiocyte_stepper();
     }
 
 protected:
