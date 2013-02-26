@@ -62,7 +62,7 @@ public:
     SpatiocyteWorld(const Position3& edge_lengths, const Real& voxel_radius)
         : edge_lengths_(edge_lengths), voxel_radius_(voxel_radius), t_(0.0),
           num_reactions_(0), is_initialized_(false),
-          visualization_exists_(false), coordinate_exists_(false)
+          visualization_exists_(false) // , coordinate_exists_(false)
     {
         libecs::initialize();
         model_ = new libecs::Model(*libecs::createDefaultModuleMaker());
@@ -73,6 +73,13 @@ public:
     {
         delete model_;
         libecs::finalize();
+    }
+
+    // LatticeSpaceTraits
+
+    const Real& voxel_radius() const
+    {
+        return voxel_radius_;
     }
 
     // /**
@@ -185,11 +192,31 @@ public:
     //     return (*ps_).list_particles();
     // }
 
-    // std::vector<std::pair<ParticleID, Particle> >
-    // list_particles(const Species& species) const
-    // {
-    //     return (*ps_).list_particles(species);
-    // }
+    std::vector<std::pair<ParticleID, Particle> >
+    list_particles(const Species& sp) const
+    {
+        const Real radius(voxel_radius());
+
+        SpatiocyteStepper* stepper(spatiocyte_stepper());
+        ::Species* spatiocyte_species(stepper->getSpecies(get_variable(sp)));
+
+        std::vector<std::pair<ParticleID, Particle> > retval;
+        retval.reserve(spatiocyte_species->size());
+        for (unsigned int i(0); i != spatiocyte_species->size(); ++i)
+        {
+            const ::Point tmp(spatiocyte_species->getPoint(i));
+            const Position3 normalized_pos(tmp.x, tmp.y, tmp.z);
+            const Position3 pos(multiply(normalized_pos, 2 * radius));
+
+            const Real D(static_cast<Real>(
+                             spatiocyte_species->getDiffusionCoefficient()));
+
+            // using an empty id and voxel radius
+            retval.push_back(
+                std::make_pair(ParticleID(), Particle(sp, pos, radius, D)));
+        }
+        return retval;
+    }
 
     // ParticleSpace member functions
 
@@ -525,46 +552,46 @@ public:
             "_", get_fullid(sp).asString(), 0);
     }
 
-    libecs::Process* create_coordinate_log_process(
-        const Real& log_interval, const std::string& filename = "")
-    {
-        if (coordinate_exists_)
-        {
-            return get_coordinate_log_process();
-        }
+    // libecs::Process* create_coordinate_log_process(
+    //     const Real& log_interval, const std::string& filename = "")
+    // {
+    //     if (coordinate_exists_)
+    //     {
+    //         return get_coordinate_log_process();
+    //     }
 
-        check_initialized();
+    //     check_initialized();
 
-        libecs::Process* process_ptr(
-            create_process("CoordinateLogProcess", "Process:/:coordinate"));
-        process_ptr->setProperty("LogInterval", libecs::Polymorph(log_interval));
-        if (!filename.empty())
-        {
-            process_ptr->setProperty("FileName", libecs::Polymorph(filename));
-        }
-        coordinate_exists_ = true;
-        return process_ptr;
-    }
+    //     libecs::Process* process_ptr(
+    //         create_process("CoordinateLogProcess", "Process:/:coordinate"));
+    //     process_ptr->setProperty("LogInterval", libecs::Polymorph(log_interval));
+    //     if (!filename.empty())
+    //     {
+    //         process_ptr->setProperty("FileName", libecs::Polymorph(filename));
+    //     }
+    //     coordinate_exists_ = true;
+    //     return process_ptr;
+    // }
 
-    libecs::Process* get_coordinate_log_process() const
-    {
-        return get_process("Process:/:coordinate");
-    }
+    // libecs::Process* get_coordinate_log_process() const
+    // {
+    //     return get_process("Process:/:coordinate");
+    // }
 
-    void log_coordinate(const Species& sp)
-    {
-        if (!coordinate_exists_)
-        {
-            throw NotFound(
-                "CoordinateLogProcess not found. (call "
-                "create_coordinate_log_process(log_interval, filename).)");
-        }
+    // void log_coordinate(const Species& sp)
+    // {
+    //     if (!coordinate_exists_)
+    //     {
+    //         throw NotFound(
+    //             "CoordinateLogProcess not found. (call "
+    //             "create_coordinate_log_process(log_interval, filename).)");
+    //     }
 
-        check_initialized();
+    //     check_initialized();
 
-        get_coordinate_log_process()->registerVariableReference(
-            "_", get_fullid(sp).asString(), 0);
-    }
+    //     get_coordinate_log_process()->registerVariableReference(
+    //         "_", get_fullid(sp).asString(), 0);
+    // }
 
 protected:
 
@@ -717,7 +744,7 @@ protected:
 
     bool is_initialized_;
     bool visualization_exists_;
-    bool coordinate_exists_;
+    // bool coordinate_exists_;
 
     species_container_type species_;
     species_population_cache_type populations_; // just for cache

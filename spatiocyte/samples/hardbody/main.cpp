@@ -7,6 +7,7 @@
 
 #include "../../utils.hpp"
 #include "../../SpatiocyteSimulator.hpp"
+#include "../../CoordinateLogger.hpp"
 
 using namespace ecell4;
 using namespace ecell4::spatiocyte;
@@ -49,17 +50,24 @@ int main(int argc, char** argv)
 
     // assert(world->volume(), actual_volume_cuboid(edge_lengths, voxel_radius));
 
-    Real next_time(0.0), dt(0.02);
+    CoordinateLogger logger(world);
+    logger.add_species(sp3);
+
+    logger.initialize();
+    logger.log();
     std::cout << sim.t()
               << "\t" << world->num_molecules(sp1)
               << "\t" << world->num_molecules(sp2)
               << "\t" << world->num_molecules(sp3)
               << std::endl;
+
+    Real next_time(0.0), dt(0.02);
     for (unsigned int i(0); i < 1000; ++i)
     {
         next_time += dt;
         while (sim.step(next_time)) {}
 
+        logger.log();
         std::cout << sim.t()
                   << "\t" << world->num_molecules(sp1)
                   << "\t" << world->num_molecules(sp2)

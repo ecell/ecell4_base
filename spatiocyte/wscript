@@ -15,7 +15,8 @@ subdirs = [
 
 hppfiles = [
     'SpatiocyteWorld.hpp',
-    'SpatiocyteSimulator.hpp'
+    'SpatiocyteSimulator.hpp',
+    'CoordinateLogger.hpp'
     ]
 
 cppfiles = [
