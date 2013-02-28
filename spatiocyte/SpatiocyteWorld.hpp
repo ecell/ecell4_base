@@ -61,8 +61,8 @@ public:
 
     SpatiocyteWorld(const Position3& edge_lengths, const Real& voxel_radius)
         : edge_lengths_(edge_lengths), voxel_radius_(voxel_radius), t_(0.0),
-          num_reactions_(0), is_initialized_(false),
-          visualization_exists_(false) // , coordinate_exists_(false)
+          num_reactions_(0), is_initialized_(false)
+          // visualization_exists_(false), coordinate_exists_(false)
     {
         libecs::initialize();
         model_ = new libecs::Model(*libecs::createDefaultModuleMaker());
@@ -73,13 +73,6 @@ public:
     {
         delete model_;
         libecs::finalize();
-    }
-
-    // LatticeSpaceTraits
-
-    const Real& voxel_radius() const
-    {
-        return voxel_radius_;
     }
 
     // /**
@@ -122,6 +115,66 @@ public:
         // }
         // t_ = t;
         throw NotSupported("t is not settable.");
+    }
+
+    // LatticeSpaceTraits
+
+    const Real& voxel_radius() const
+    {
+        return voxel_radius_;
+    }
+
+    const Integer lattice_row_size() const
+    {
+        return spatiocyte_stepper()->getRowSize();
+    }
+
+    const Integer lattice_layer_size() const
+    {
+        return spatiocyte_stepper()->getLayerSize();
+    }
+
+    const Integer lattice_column_size() const
+    {
+        return spatiocyte_stepper()->getColSize();
+    }
+
+    std::vector<unsigned int> coordinates(const Species& sp)
+    {
+        ::Species* spatiocyte_species(get_spatiocyte_species(sp));
+        unsigned int species_size(spatiocyte_species->size());
+        std::vector<unsigned int> retval;
+        retval.reserve(species_size);
+        for (unsigned int i(0); i != species_size; ++i)
+        {
+            retval.push_back(spatiocyte_species->getCoord(i));
+        }
+        return retval;
+    }
+
+    bool is_lattice(const Species& sp) const
+    {
+        return !(get_spatiocyte_species(sp)->getIsOffLattice());
+    }
+
+    bool is_polymer(const Species& sp) const
+    {
+        return get_spatiocyte_species(sp)->getIsPolymer();
+    }
+
+    bool is_vacant(const Species& sp) const
+    {
+        return get_spatiocyte_species(sp)->getIsCompVacant();
+    }
+
+    bool is_diffusive_vacant(const Species& sp) const
+    {
+        return get_spatiocyte_species(sp)->getIsDiffusiveVacant();
+    }
+
+    bool is_reactive_vacant(const Species& sp) const
+    {
+        return get_spatiocyte_species(sp)->getIsReactiveVacant();
     }
 
     // ParticleSpaceTraits
@@ -354,6 +407,8 @@ public:
         {
             SpatiocyteStepper* stepper(spatiocyte_stepper());
             ::Species* spatiocyte_species(stepper->getSpecies(get_variable(sp)));
+            // ::Species* spatiocyte_species(get_spatiocyte_species(sp));
+
             ::Species* vacant_species(spatiocyte_species->getVacantSpecies());
             spatiocyte_species->setInitCoordSize(num + num_molecules(sp));
             if (!spatiocyte_species->getIsPopulated())
@@ -511,46 +566,51 @@ public:
         return dynamic_cast<SpatiocyteStepper*>((*model_).getStepper("SS"));
     }
 
-    libecs::Process* create_visualization_log_process(
-        const Real& log_interval, const std::string& filename = "")
+    void update_spatiocyte_species(const Species& sp)
     {
-        if (visualization_exists_)
-        {
-            return get_visualization_log_process();
-        }
-
-        check_initialized();
-
-        libecs::Process* process_ptr(
-            create_process("VisualizationLogProcess", "Process:/:visualization"));
-        process_ptr->setProperty("LogInterval", libecs::Polymorph(log_interval));
-        if (!filename.empty())
-        {
-            process_ptr->setProperty("FileName", libecs::Polymorph(filename));
-        }
-        visualization_exists_ = true;
-        return process_ptr;
+        get_spatiocyte_species(sp)->updateMolecules();
     }
 
-    libecs::Process* get_visualization_log_process() const
-    {
-        return get_process("Process:/:visualization");
-    }
+    // libecs::Process* create_visualization_log_process(
+    //     const Real& log_interval, const std::string& filename = "")
+    // {
+    //     if (visualization_exists_)
+    //     {
+    //         return get_visualization_log_process();
+    //     }
 
-    void log_visualization(const Species& sp)
-    {
-        if (!visualization_exists_)
-        {
-            throw NotFound(
-                "VisualizationLogProcess not found. (call "
-                "create_visualization_log_process(log_interval, filename).)");
-        }
+    //     check_initialized();
 
-        check_initialized();
+    //     libecs::Process* process_ptr(
+    //         create_process("VisualizationLogProcess", "Process:/:visualization"));
+    //     process_ptr->setProperty("LogInterval", libecs::Polymorph(log_interval));
+    //     if (!filename.empty())
+    //     {
+    //         process_ptr->setProperty("FileName", libecs::Polymorph(filename));
+    //     }
+    //     visualization_exists_ = true;
+    //     return process_ptr;
+    // }
 
-        get_visualization_log_process()->registerVariableReference(
-            "_", get_fullid(sp).asString(), 0);
-    }
+    // libecs::Process* get_visualization_log_process() const
+    // {
+    //     return get_process("Process:/:visualization");
+    // }
+
+    // void log_visualization(const Species& sp)
+    // {
+    //     if (!visualization_exists_)
+    //     {
+    //         throw NotFound(
+    //             "VisualizationLogProcess not found. (call "
+    //             "create_visualization_log_process(log_interval, filename).)");
+    //     }
+
+    //     check_initialized();
+
+    //     get_visualization_log_process()->registerVariableReference(
+    //         "_", get_fullid(sp).asString(), 0);
+    // }
 
     // libecs::Process* create_coordinate_log_process(
     //     const Real& log_interval, const std::string& filename = "")
@@ -708,6 +768,11 @@ protected:
             (*model_).getEntity(libecs::FullID(fullid)));
     }
 
+    ::Species* get_spatiocyte_species(const Species& sp) const
+    {
+        return spatiocyte_stepper()->getSpecies(get_variable(sp));
+    }
+
     void create_diffusion_process(const libecs::String& fullid, const Real& D)
     {
         const libecs::FullID vid(fullid);
@@ -743,7 +808,7 @@ protected:
     unsigned int num_reactions_;
 
     bool is_initialized_;
-    bool visualization_exists_;
+    // bool visualization_exists_;
     // bool coordinate_exists_;
 
     species_container_type species_;

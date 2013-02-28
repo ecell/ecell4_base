@@ -7,6 +7,7 @@
 #include <ecell4/core/NetworkModel.hpp>
 
 #include "../SpatiocyteSimulator.hpp"
+#include "../SpatiocyteVisualizationLogger.hpp"
 
 using namespace ecell4;
 using namespace ecell4::spatiocyte;
@@ -74,6 +75,10 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step)
     BOOST_ASSERT(world->num_molecules(sp1) == N / 2);
 
     SpatiocyteSimulator target(model, world);
+
+    SpatiocyteVisualizationLogger logger(world);
+    logger.add_species(sp3);
+    logger.initialize();
 
     world->add_molecules(sp1, N / 2);
 
