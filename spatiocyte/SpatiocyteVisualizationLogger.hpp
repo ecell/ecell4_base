@@ -259,8 +259,6 @@ public:
                 continue;
             }
 
-            (*space_).update_spatiocyte_species(*i);
-
             species_container_type::const_iterator
                 iter(lattice_species_.begin());
             int idx(std::distance(iter, i)); // why not unsigned here?
@@ -321,8 +319,6 @@ public:
             {
                 continue;
             }
-
-            (*space_).update_spatiocyte_species(*i);
 
             // The species index in the process:
             species_container_type::const_iterator

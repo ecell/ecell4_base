@@ -142,6 +142,8 @@ public:
     std::vector<unsigned int> coordinates(const Species& sp)
     {
         ::Species* spatiocyte_species(get_spatiocyte_species(sp));
+        spatiocyte_species->updateMolecules();
+
         unsigned int species_size(spatiocyte_species->size());
         std::vector<unsigned int> retval;
         retval.reserve(species_size);
@@ -252,6 +254,7 @@ public:
 
         SpatiocyteStepper* stepper(spatiocyte_stepper());
         ::Species* spatiocyte_species(stepper->getSpecies(get_variable(sp)));
+        spatiocyte_species->updateMolecules();
 
         std::vector<std::pair<ParticleID, Particle> > retval;
         retval.reserve(spatiocyte_species->size());
@@ -564,11 +567,6 @@ public:
     SpatiocyteStepper* spatiocyte_stepper() const
     {
         return dynamic_cast<SpatiocyteStepper*>((*model_).getStepper("SS"));
-    }
-
-    void update_spatiocyte_species(const Species& sp)
-    {
-        get_spatiocyte_species(sp)->updateMolecules();
     }
 
     // libecs::Process* create_visualization_log_process(
