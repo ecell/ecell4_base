@@ -47,14 +47,16 @@ public:
         for (species_container_type::const_iterator i(species_.begin());
              i != species_.end(); ++i)
         {
-            if (!(*space_).is_lattice(*i))
+            const space_type::particle_info_type
+                info((*space_).get_particle_info(*i));
+            if (!info.is_lattice)
             {
                 offlattice_species_.push_back(*i);
             }
             else
             {
                 lattice_species_.push_back(*i);
-                if ((*space_).is_polymer(*i) && log_polymer_)
+                if (info.is_polymer && log_polymer_)
                 {
                     polymer_indices_.push_back(lattice_species_.size());
                     polymer_species_.push_back(*i);
@@ -181,7 +183,7 @@ public:
         for (species_container_type::const_iterator i(lattice_species_.begin());
              i != lattice_species_.end(); ++i)
         {
-            if ((*space_).is_vacant(*i))
+            if ((*space_).get_particle_info(*i).is_vacant)
             {
                 // The species index in the process:
                 species_container_type::const_iterator
@@ -210,7 +212,7 @@ public:
                  i(offlattice_species_.begin());
              i != offlattice_species_.end(); ++i)
         {
-            if ((*space_).is_vacant(*i))
+            if ((*space_).get_particle_info(*i).is_vacant)
             {
                 // The species index in the process:
                 species_container_type::const_iterator
@@ -254,7 +256,7 @@ public:
         for (species_container_type::const_iterator i(lattice_species_.begin());
              i != lattice_species_.end(); ++i)
         {
-            if ((*space_).is_vacant(*i))
+            if ((*space_).get_particle_info(*i).is_vacant)
             {
                 continue;
             }
@@ -314,8 +316,11 @@ public:
                  i(offlattice_species_.begin());
              i != offlattice_species_.end(); ++i)
         {
-            if ((*space_).is_vacant(*i) && !((*space_).is_diffusive_vacant(*i))
-                && !((*space_).is_reactive_vacant(*i)))
+            const space_type::particle_info_type info(
+                (*space_).get_particle_info(*i));
+            if (info.is_vacant
+                && !info.is_diffusive_vacant
+                && !info.is_reactive_vacant)
             {
                 continue;
             }

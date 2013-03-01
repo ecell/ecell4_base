@@ -42,6 +42,11 @@ struct ParticleInfo
 {
     // const Real radius;
     const Real D;
+    const bool is_lattice;
+    const bool is_polymer;
+    const bool is_vacant;
+    const bool is_diffusive_vacant;
+    const bool is_reactive_vacant;
 };
 
 class SpatiocyteWorld
@@ -96,7 +101,14 @@ public:
     {
         // const Real radius(std::atof(sp.get_attribute("radius").c_str()));
         const Real D(std::atof(sp.get_attribute("D").c_str()));
-        ParticleInfo info = {D};
+        ParticleInfo info = {D, true, false, false, false, false};
+        // ParticleInfo info = {
+        //     D,
+        //     !(get_spatiocyte_species(sp)->getIsOffLattice()),
+        //     get_spatiocyte_species(sp)->getIsPolymer(),
+        //     get_spatiocyte_species(sp)->getIsCompVacant(),
+        //     get_spatiocyte_species(sp)->getIsDiffusiveVacant(),
+        //     get_spatiocyte_species(sp)->getIsReactiveVacant()};
         return info;
     }
 
@@ -150,31 +162,6 @@ public:
             retval.push_back(spatiocyte_species->getCoord(i));
         }
         return retval;
-    }
-
-    bool is_lattice(const Species& sp) const
-    {
-        return !(get_spatiocyte_species(sp)->getIsOffLattice());
-    }
-
-    bool is_polymer(const Species& sp) const
-    {
-        return get_spatiocyte_species(sp)->getIsPolymer();
-    }
-
-    bool is_vacant(const Species& sp) const
-    {
-        return get_spatiocyte_species(sp)->getIsCompVacant();
-    }
-
-    bool is_diffusive_vacant(const Species& sp) const
-    {
-        return get_spatiocyte_species(sp)->getIsDiffusiveVacant();
-    }
-
-    bool is_reactive_vacant(const Species& sp) const
-    {
-        return get_spatiocyte_species(sp)->getIsReactiveVacant();
     }
 
     // ParticleSpaceTraits
