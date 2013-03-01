@@ -124,19 +124,17 @@ public:
         return voxel_radius_;
     }
 
-    const Integer lattice_row_size() const
+    /**
+     * return num of voxels for each axis
+     * @return boost::array<Integer, 3>(num_cols, num_layers, num_rows)
+     */
+    const boost::array<Integer, 3> lattice_size() const
     {
-        return spatiocyte_stepper()->getRowSize();
-    }
-
-    const Integer lattice_layer_size() const
-    {
-        return spatiocyte_stepper()->getLayerSize();
-    }
-
-    const Integer lattice_column_size() const
-    {
-        return spatiocyte_stepper()->getColSize();
+        const boost::array<Integer, 3> retval
+            = {{spatiocyte_stepper()->getColSize(),
+                spatiocyte_stepper()->getLayerSize(),
+                spatiocyte_stepper()->getRowSize()}};
+        return retval;
     }
 
     std::vector<unsigned int> coordinates(const Species& sp)

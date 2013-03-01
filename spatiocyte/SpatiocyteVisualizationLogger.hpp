@@ -80,9 +80,9 @@ public:
         unsigned int start_coord(0);
         fout.write((char*)(&start_coord), sizeof(start_coord));
 
-        unsigned int row_size((*space_).lattice_row_size()),
-            layer_size((*space_).lattice_layer_size()),
-            col_size((*space_).lattice_column_size());
+        const boost::array<Integer, 3> sizes((*space_).lattice_size());
+        unsigned int
+            col_size(sizes[0]), layer_size(sizes[1]), row_size(sizes[2]);
         fout.write((char*)(&row_size), sizeof(row_size));
         fout.write((char*)(&layer_size), sizeof(layer_size));
         fout.write((char*)(&col_size), sizeof(col_size));
