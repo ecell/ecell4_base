@@ -4,6 +4,8 @@
 from waflib.Tools import waf_unit_test
 from waflib import Logs
 
+import os
+
 
 top = '.'
 out = 'build'
@@ -17,7 +19,8 @@ hppfiles = [
     'SpatiocyteWorld.hpp',
     'SpatiocyteSimulator.hpp',
     'CoordinateLogger.hpp',
-    'SpatiocyteVisualizationLogger.hpp'
+    'SpatiocyteVisualizationLogger.hpp',
+    'config.h'
     ]
 
 cppfiles = [
@@ -35,9 +38,14 @@ def configure(conf):
 
     conf.check_cxx(lib = 'ecs')
     conf.check_cxx(lib = 'emc')
-    conf.check_cxx(lib = ':SpatiocyteStepper.so')
+
+    conf.check_cxx(
+        lib = ':SpatiocyteStepper.so', libpath = os.environ['ECELL3_DM_PATH'])
 
     conf.check_cxx(lib = 'ecell4-core')
+
+    conf.define('ECELL3_DM_PATH', os.environ['ECELL3_DM_PATH'])
+    conf.write_config_header('config.h', guard='__ECELL4_SPATIOCYTE_W_CONFIG_H_WAF')
 
     conf.recurse(subdirs)
 

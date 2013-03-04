@@ -27,6 +27,8 @@
 #include <SpatiocyteSpecies.hpp>
 #include <SpatiocyteStepper.hpp>
 
+#include "config.h" // ecell4/spatiocyte/config.h
+
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
@@ -673,8 +675,7 @@ protected:
     void setup_model()
     {
         (*model_).setup();
-        // (*model_).setDMSearchPath("/home/kaizu/local/lib/ecell-3.2/dms");
-        (*model_).setDMSearchPath("/home/kaizu/src/ecell3-spatiocyte");
+        (*model_).setDMSearchPath(ECELL3_DM_PATH);
 
         libecs::Stepper* stepper_ptr(
             (*model_).createStepper("SpatiocyteStepper", "SS"));
