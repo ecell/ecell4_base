@@ -78,6 +78,11 @@ public:
      */
     ParticleID new_particle(const Particle& p)
     {
+        if (!has_species(p.species()))
+        {
+            add_species(p.species());
+        }
+
         world_type::particle_id_pair retval(
             (*world_).new_particle(
                 find(p.species()), translate(p.position())));
