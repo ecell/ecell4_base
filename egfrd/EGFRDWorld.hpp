@@ -51,7 +51,7 @@ protected:
     typedef std::vector<std::pair<Species::serial_type, ::SpeciesTypeID> >
     species_type_id_container_type;
     typedef ::CuboidalRegion<simulator_type::traits_type> cuboidal_region_type;
-    typedef typename world_type::traits_type::structure_id_type
+    typedef world_type::traits_type::structure_id_type
     structure_id_type;
     typedef simulator_type::traits_type::network_rules_type network_rules_type;
 
@@ -68,7 +68,7 @@ public:
         (*world_).add_structure(
             boost::shared_ptr<cuboidal_region_type>(
                 new cuboidal_region_type(
-                    "world", typename cuboidal_region_type::shape_type(x, x))));
+                    "world", cuboidal_region_type::shape_type(x, x))));
     }
 
     /**
@@ -352,11 +352,11 @@ public:
         // add ::SpeciesInfo to ::World
         const std::string& structure_id((*st)["structure"]);
         (*world_).add_species(
-            typename world_type::traits_type::species_type(
+            world_type::traits_type::species_type(
                 st->id(),
-                boost::lexical_cast<typename world_type::traits_type::D_type>(
+                boost::lexical_cast<world_type::traits_type::D_type>(
                     (*st)["D"]),
-                boost::lexical_cast<typename world_type::length_type>(
+                boost::lexical_cast<world_type::length_type>(
                     (*st)["radius"]),
                 boost::lexical_cast<structure_id_type>(
                     structure_id.empty() ? "world": structure_id)));
