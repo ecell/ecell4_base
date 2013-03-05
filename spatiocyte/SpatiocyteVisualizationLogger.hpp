@@ -47,8 +47,8 @@ public:
         for (species_container_type::const_iterator i(species_.begin());
              i != species_.end(); ++i)
         {
-            const space_type::particle_info_type
-                info((*space_).get_particle_info(*i));
+            const space_type::molecule_info_type
+                info((*space_).get_molecule_info(*i));
             if (!info.is_lattice)
             {
                 offlattice_species_.push_back(*i);
@@ -183,7 +183,7 @@ public:
         for (species_container_type::const_iterator i(lattice_species_.begin());
              i != lattice_species_.end(); ++i)
         {
-            if ((*space_).get_particle_info(*i).is_vacant)
+            if ((*space_).get_molecule_info(*i).is_vacant)
             {
                 // The species index in the process:
                 species_container_type::const_iterator
@@ -212,7 +212,7 @@ public:
                  i(offlattice_species_.begin());
              i != offlattice_species_.end(); ++i)
         {
-            if ((*space_).get_particle_info(*i).is_vacant)
+            if ((*space_).get_molecule_info(*i).is_vacant)
             {
                 // The species index in the process:
                 species_container_type::const_iterator
@@ -256,7 +256,7 @@ public:
         for (species_container_type::const_iterator i(lattice_species_.begin());
              i != lattice_species_.end(); ++i)
         {
-            if ((*space_).get_particle_info(*i).is_vacant)
+            if ((*space_).get_molecule_info(*i).is_vacant)
             {
                 continue;
             }
@@ -316,8 +316,8 @@ public:
                  i(offlattice_species_.begin());
              i != offlattice_species_.end(); ++i)
         {
-            const space_type::particle_info_type info(
-                (*space_).get_particle_info(*i));
+            const space_type::molecule_info_type info(
+                (*space_).get_molecule_info(*i));
             if (info.is_vacant
                 && !info.is_diffusive_vacant
                 && !info.is_reactive_vacant)

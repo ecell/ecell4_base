@@ -92,7 +92,8 @@ bool BDPropagator::attempt_reaction(
             case 1:
                 {
                     const Species& species_new(*(products.begin()));
-                    const ParticleInfo info(world_.get_particle_info(species_new));
+                    const BDWorld::molecule_info_type
+                        info(world_.get_molecule_info(species_new));
                     const Real radius_new(info.radius);
                     const Real D_new(info.D);
 
@@ -117,8 +118,9 @@ bool BDPropagator::attempt_reaction(
                     const Species& species_new1(*it);
                     const Species& species_new2(*(++it));
 
-                    const ParticleInfo info1(world_.get_particle_info(species_new1)),
-                        info2(world_.get_particle_info(species_new2));
+                    const BDWorld::molecule_info_type
+                        info1(world_.get_molecule_info(species_new1)),
+                        info2(world_.get_molecule_info(species_new2));
                     const Real radius1(info1.radius),
                         radius2(info2.radius);
                     const Real D1(info1.D), D2(info2.D);
@@ -217,7 +219,8 @@ bool BDPropagator::attempt_reaction(
             case 1:
                 {
                     const Species& species_new(*(products.begin()));
-                    ParticleInfo info(world_.get_particle_info(species_new));
+                    BDWorld::molecule_info_type
+                        info(world_.get_molecule_info(species_new));
                     const Real radius_new(info.radius);
                     const Real D_new(info.D);
 

@@ -40,7 +40,7 @@ namespace ecell4
 namespace spatiocyte
 {
 
-struct ParticleInfo
+struct MoleculeInfo
 {
     // const Real radius;
     const Real D;
@@ -55,7 +55,7 @@ class SpatiocyteWorld
 {
 public:
 
-    typedef ParticleInfo particle_info_type;
+    typedef MoleculeInfo molecule_info_type;
 
 protected:
 
@@ -99,12 +99,12 @@ public:
      * @param sp a species
      * @return info a particle info
      */
-    ParticleInfo get_particle_info(const Species& sp) const
+    MoleculeInfo get_molecule_info(const Species& sp) const
     {
         // const Real radius(std::atof(sp.get_attribute("radius").c_str()));
         const Real D(std::atof(sp.get_attribute("D").c_str()));
-        ParticleInfo info = {D, true, false, false, false, false};
-        // ParticleInfo info = {
+        MoleculeInfo info = {D, true, false, false, false, false};
+        // MoleculeInfo info = {
         //     D,
         //     !(get_spatiocyte_species(sp)->getIsOffLattice()),
         //     get_spatiocyte_species(sp)->getIsPolymer(),
@@ -366,7 +366,7 @@ public:
             species_.push_back(std::make_pair(sp.serial(), fullid_str));
 
             create_variable(fullid_str, 0);
-            const ParticleInfo info(get_particle_info(sp));
+            const MoleculeInfo info(get_molecule_info(sp));
             create_diffusion_process(fullid_str, info.D);
 
             // get_molecule_populate_process()->registerVariableReference(

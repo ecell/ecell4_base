@@ -29,7 +29,7 @@ namespace ecell4
 namespace egfrd
 {
 
-struct ParticleInfo
+struct MoleculeInfo
 {
     const Real radius;
     const Real D;
@@ -39,7 +39,7 @@ class EGFRDWorld
 {
 public:
 
-    typedef ParticleInfo particle_info_type;
+    typedef MoleculeInfo molecule_info_type;
 
     typedef ::World< ::CyclicWorldTraits<Real, Real> > world_type;
     typedef ::ParticleModel particle_model_type;
@@ -93,11 +93,11 @@ public:
      * @param sp a species
      * @return info a particle info
      */
-    ParticleInfo get_particle_info(const Species& sp) const
+    MoleculeInfo get_molecule_info(const Species& sp) const
     {
         const Real radius(std::atof(sp.get_attribute("radius").c_str()));
         const Real D(std::atof(sp.get_attribute("D").c_str()));
-        ParticleInfo info = {radius, D};
+        MoleculeInfo info = {radius, D};
         return info;
     }
 

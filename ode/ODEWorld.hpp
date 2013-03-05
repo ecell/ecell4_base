@@ -54,7 +54,7 @@ public:
         return static_cast<Integer>(species_.size());
     }
 
-    bool has_species(const Species &sp)
+    bool has_species(const Species& sp)
     {
         species_map_type::const_iterator i(index_map_.find(sp));
         return (i != index_map_.end());
@@ -83,7 +83,7 @@ public:
         volume_ = volume;
     }
 
-    void add_species(const Species &sp)
+    void add_species(const Species& sp)
     {
         species_map_type::const_iterator i(index_map_.find(sp));
         if (i != index_map_.end())
@@ -96,7 +96,7 @@ public:
         num_molecules_.push_back(0);
     }
 
-    void remove_species(const Species &sp)
+    void remove_species(const Species& sp)
     {
         species_map_type::iterator i(index_map_.find(sp));
         if (i == index_map_.end())

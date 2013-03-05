@@ -16,7 +16,7 @@ namespace ecell4
 namespace bd
 {
 
-struct ParticleInfo
+struct MoleculeInfo
 {
     const Real radius;
     const Real D;
@@ -26,7 +26,7 @@ class BDWorld
 {
 public:
 
-    typedef ParticleInfo particle_info_type;
+    typedef MoleculeInfo molecule_info_type;
     typedef ParticleSpace::particle_container_type particle_container_type;
 
 public:
@@ -56,15 +56,15 @@ public:
     }
 
     /**
-     * draw attributes of species and return it as a particle info.
+     * draw attributes of species and return it as a molecule info.
      * @param sp a species
-     * @return info a particle info
+     * @return info a molecule info
      */
-    ParticleInfo get_particle_info(const Species& sp) const
+    MoleculeInfo get_molecule_info(const Species& sp) const
     {
         const Real radius(std::atof(sp.get_attribute("radius").c_str()));
         const Real D(std::atof(sp.get_attribute("D").c_str()));
-        ParticleInfo info = {radius, D};
+        MoleculeInfo info = {radius, D};
         return info;
     }
 

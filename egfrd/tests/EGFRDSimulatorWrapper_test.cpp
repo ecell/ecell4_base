@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(EGFRDSimulatorWrapper_test_constructor)
 
     (*world).add_species(sp1);
 
-    ParticleInfo info1((*world).get_particle_info(sp1));
+    EGFRDWorld::molecule_info_type info1((*world).get_molecule_info(sp1));
     ecell4::Particle const p1(
         sp1, Position3(0, 0, 0), info1.radius, info1.D);
     ecell4::ParticleID const pid1((*world).new_particle(p1));

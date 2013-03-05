@@ -44,7 +44,7 @@ int main(int argc, char** argv)
     boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths, rng));
 
     /// create a Particle, and inject it into BDWorld
-    ParticleInfo info1((*world).get_particle_info(sp1));
+    BDWorld::molecule_info_type info1((*world).get_molecule_info(sp1));
     const Particle p1(
         sp1, Position3(0, 0, 0), info1.radius, info1.D);
     const ParticleID pid1((*world).new_particle(p1));

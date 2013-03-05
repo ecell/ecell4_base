@@ -17,7 +17,7 @@ template<typename Tworld_, typename Trng_>
 void throw_in_particles(
     Tworld_& world, const Species& sp, const Integer& N, Trng_& rng)
 {
-    typedef typename Tworld_::particle_info_type particle_info_type;
+    typedef typename Tworld_::molecule_info_type molecule_info_type;
 
     if (N < 0)
     {
@@ -25,7 +25,7 @@ void throw_in_particles(
     }
 
     const Position3 edge_lengths(world.edge_lengths());
-    const particle_info_type info(world.get_particle_info(sp));
+    const molecule_info_type info(world.get_molecule_info(sp));
 
     for (int i(0); i < N; ++i)
     {
