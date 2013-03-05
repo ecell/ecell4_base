@@ -77,7 +77,8 @@ Integer CompartmentSpaceVectorImpl::num_molecules(const Species& sp) const
     species_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw NotFound("Species not found");
+        // throw NotFound("Species not found");
+        return 0;
     }
 
     return num_molecules_[(*i).second];
@@ -94,7 +95,9 @@ void CompartmentSpaceVectorImpl::add_molecules(
     species_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw NotFound("Species not found");
+        // throw NotFound("Species not found");
+        add_species(sp);
+        i = index_map_.find(sp);
     }
 
     num_molecules_[(*i).second] += num;

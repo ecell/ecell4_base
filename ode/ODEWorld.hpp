@@ -65,7 +65,8 @@ public:
         species_map_type::const_iterator i(index_map_.find(sp));
         if (i == index_map_.end())
         {
-            throw NotFound("Species not found");
+            // throw NotFound("Species not found");
+            return 0.0;
         }
 
         return num_molecules_[(*i).second];
@@ -125,6 +126,11 @@ public:
 
     void add_molecules(const Species& sp, const Real& num)
     {
+        if (!has_species(sp))
+        {
+            add_species(sp);
+        }
+
         set_num_molecules(sp, num_molecules(sp) + num);
     }
 

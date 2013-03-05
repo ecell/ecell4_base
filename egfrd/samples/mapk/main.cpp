@@ -24,7 +24,8 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
 #if STYPE == EGFRD_MODE
-#include <ecell4/egfrd/EGFRDSimulatorWrapper.hpp>
+// #include <ecell4/egfrd/EGFRDSimulatorWrapper.hpp>
+#include <../EGFRDSimulatorWrapper.hpp>
 typedef ecell4::egfrd::EGFRDWorld world_type;
 typedef ecell4::egfrd::EGFRDSimulatorWrapper simulator_type;
 #elif STYPE == BD_MODE

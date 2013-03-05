@@ -16,6 +16,8 @@ bool ODESimulator::step(const Real& upto)
         return false;
     }
 
+    initialize();
+
     const NetworkModel::species_container_type& species(model_->species());
     ODESystem::state_type x(species.size());
 

@@ -124,9 +124,29 @@ public:
     ODESimulator(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<ODEWorld> world)
-        : model_(model), world_(world), dt_(0.0), num_steps_(0)
+        : model_(model), world_(world), dt_(0.0), num_steps_(0), is_dirty_(true)
     {
         ;
+    }
+
+    void initialize()
+    {
+        if (!is_dirty_)
+        {
+            return;
+        }
+
+        const NetworkModel::species_container_type& species((*model_).species());
+        for (NetworkModel::species_container_type::const_iterator
+                 i(species.begin()); i != species.end(); ++i)
+        {
+            if (!(*world_).has_species(*i))
+            {
+                (*world_).add_species(*i);
+            }
+        }
+
+        is_dirty_ = false;
     }
 
     // SimulatorTraits
@@ -175,6 +195,7 @@ protected:
     boost::shared_ptr<ODEWorld> world_;
     Real dt_;
     Integer num_steps_;
+    bool is_dirty_;
 };
 
 } // ode

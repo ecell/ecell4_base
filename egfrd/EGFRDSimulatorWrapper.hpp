@@ -49,8 +49,15 @@ public:
         for (NetworkModel::species_container_type::const_iterator
                  i(species.begin()); i != species.end(); ++i)
         {
-            (*world_).add_species(*i);
+            if (!(*world_).has_species(*i))
+            {
+                (*world_).add_species(*i);
+            }
+        }
 
+        for (NetworkModel::species_container_type::const_iterator
+                 i(species.begin()); i != species.end(); ++i)
+        {
             for (NetworkModel::species_container_type::const_iterator
                      j(i); j != species.end(); ++j)
             {

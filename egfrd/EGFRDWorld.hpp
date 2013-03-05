@@ -69,8 +69,6 @@ public:
             boost::shared_ptr<cuboidal_region_type>(
                 new cuboidal_region_type(
                     "world", typename cuboidal_region_type::shape_type(x, x))));
-
-        ;
     }
 
     /**
@@ -80,8 +78,6 @@ public:
      */
     ParticleID new_particle(const Particle& p)
     {
-        // add_species(p.species());
-
         world_type::particle_id_pair retval(
             (*world_).new_particle(
                 find(p.species()), translate(p.position())));
@@ -128,6 +124,10 @@ public:
 
     Integer num_particles(const Species& sp) const
     {
+        if (!has_species(sp))
+        {
+            return 0.0;
+        }
         return static_cast<Integer>(
             (*world_).get_particle_ids(find(sp)).size());
     }
@@ -328,31 +328,33 @@ public:
 
     void add_species(const Species& sp)
     {
-        if (!has_species(sp))
+        if (has_species(sp))
         {
-            // add ::SpeciesType to ::ParticleModel
-            boost::shared_ptr< ::SpeciesType> st(new ::SpeciesType());
-            (*st)["name"] = boost::lexical_cast<std::string>(sp.name());
-            (*st)["D"] = boost::lexical_cast<std::string>(sp.get_attribute("D"));
-            (*st)["radius"] = boost::lexical_cast<std::string>(
-                sp.get_attribute("radius"));
-            model_.add_species_type(st);
-
-            // create a map between Species and ::SpeciesType
-            sid_container_.push_back(std::make_pair(sp.serial(), st->id()));
-
-            // add ::SpeciesInfo to ::World
-            const std::string& structure_id((*st)["structure"]);
-            (*world_).add_species(
-                typename world_type::traits_type::species_type(
-                    st->id(),
-                    boost::lexical_cast<typename world_type::traits_type::D_type>(
-                        (*st)["D"]),
-                    boost::lexical_cast<typename world_type::length_type>(
-                        (*st)["radius"]),
-                    boost::lexical_cast<structure_id_type>(
-                        structure_id.empty() ? "world": structure_id)));
+            throw AlreadyExists("Species already exists");
         }
+
+        // add ::SpeciesType to ::ParticleModel
+        boost::shared_ptr< ::SpeciesType> st(new ::SpeciesType());
+        (*st)["name"] = boost::lexical_cast<std::string>(sp.name());
+        (*st)["D"] = boost::lexical_cast<std::string>(sp.get_attribute("D"));
+        (*st)["radius"] = boost::lexical_cast<std::string>(
+            sp.get_attribute("radius"));
+        model_.add_species_type(st);
+
+        // create a map between Species and ::SpeciesType
+        sid_container_.push_back(std::make_pair(sp.serial(), st->id()));
+
+        // add ::SpeciesInfo to ::World
+        const std::string& structure_id((*st)["structure"]);
+        (*world_).add_species(
+            typename world_type::traits_type::species_type(
+                st->id(),
+                boost::lexical_cast<typename world_type::traits_type::D_type>(
+                    (*st)["D"]),
+                boost::lexical_cast<typename world_type::length_type>(
+                    (*st)["radius"]),
+                boost::lexical_cast<structure_id_type>(
+                    structure_id.empty() ? "world": structure_id)));
     }
 
     void remove_species(const Species& sp)
@@ -362,6 +364,11 @@ public:
 
     void add_molecules(const Species& sp, const Integer& num)
     {
+        if (!has_species(sp))
+        {
+            add_species(sp);
+        }
+
         extras::throw_in_particles(*this, sp, num, *rng());
     }
 
