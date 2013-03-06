@@ -2,7 +2,8 @@
 # encoding: utf-8
 
 subdirs = [
-    'hardbody'
+    'hardbody',
+    '2010.arjunan.syst.synth.biol'
     ]
 
 def configure(conf):
