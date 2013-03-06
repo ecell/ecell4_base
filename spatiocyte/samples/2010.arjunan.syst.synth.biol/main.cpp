@@ -88,7 +88,7 @@ int main(int argc, char** argv)
     logger.add_species((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2[2],loc=mem).MinD(p=atp,bs[2],loc=mem)"));
     logger.add_species((*model).species("MinD(p=atp,bs,loc=mem)"));
 
-    Real next_time(0.0), dt(0.5);
+    // Real next_time(0.0), dt(0.5);
     logger.initialize();
     logger.log();
     // for (unsigned int i(0); i < 100; ++i)
