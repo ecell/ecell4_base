@@ -20,6 +20,7 @@ hppfiles = [
     'SpatiocyteSimulator.hpp',
     'CoordinateLogger.hpp',
     'SpatiocyteVisualizationLogger.hpp',
+    'utils.hpp',
     'config.h'
     ]
 
