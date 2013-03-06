@@ -64,6 +64,22 @@ public:
         return species_;
     }
 
+    const Species& species(const Species::serial_type& key) const
+    {
+        for (species_container_type::const_iterator i(species_.begin());
+             i != species_.end(); ++i)
+        {
+            if ((*i).serial() == key)
+            {
+                return (*i);
+            }
+        }
+
+        std::ostringstream message;
+        message << "Speices [" << key << "] not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
+    }
+
     const reaction_rule_container_type& reaction_rules() const
     {
         return reaction_rules_;

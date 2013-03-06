@@ -63,7 +63,9 @@ void NetworkModel::remove_species(const Species& sp)
         std::find(species_.begin(), species_.end(), sp));
     if (i == species_.end())
     {
-        throw NotFound("species not found");
+        std::ostringstream message;
+        message << "Speices [" << sp.serial() << "] not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
     }
     species_.erase(i);
 }

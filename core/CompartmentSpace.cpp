@@ -40,7 +40,9 @@ void CompartmentSpaceVectorImpl::remove_species(const Species& sp)
     species_map_type::iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw NotFound("Species not found");
+        std::ostringstream message;
+        message << "Speices [" << sp.serial() << "] not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
     }
 
     species_map_type::mapped_type
@@ -114,7 +116,9 @@ void CompartmentSpaceVectorImpl::remove_molecules(
     species_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw NotFound("Species not found");
+        std::ostringstream message;
+        message << "Speices [" << sp.serial() << "] not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
     }
 
     if (num_molecules_[(*i).second] < num)

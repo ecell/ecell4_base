@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <sstream>
 
 #include "config.h"
 
@@ -43,6 +44,13 @@ public:
     }
 
     Species(
+        const std::string& name, const std::string& D)
+        : name_(name)
+    {
+        set_attribute("D", D);
+    }
+
+    Species(
         const std::string& name, const std::string& radius, const std::string& D)
         : name_(name)
     {
@@ -66,7 +74,9 @@ public:
             i(attributes_.find(name_attr));
         if (i == attributes_.end())
         {
-            throw NotFound("attribute not found");
+            std::ostringstream message;
+            message << "attribute [" << name_attr << "] not found";
+            throw NotFound(message.str()); // use boost::format if it's allowed
         }
 
         return (*i).second;
@@ -83,7 +93,9 @@ public:
             i(attributes_.find(name_attr));
         if (i == attributes_.end())
         {
-            throw NotFound("attribute not found");
+            std::ostringstream message;
+            message << "attribute [" << name_attr << "] not found";
+            throw NotFound(message.str()); // use boost::format if it's allowed
         }
 
         attributes_.erase(i);
