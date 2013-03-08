@@ -4,7 +4,7 @@
 # PREFIX=${HOME}/local
 # PREFIX=
 # SUBMODS=("bd" "gillespie")
-SUBMODS=("bd" "gillespie" "ode" "egfrd")
+SUBMODS=("bd" "gillespie" "ode" "egfrd" "spatiocyte")
 
 CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
 
