@@ -3,6 +3,10 @@
 
 #include <cmath>
 #include <string.h>
+#include <sstream>
+#include <cstdio>
+#include <cstring>
+
 // #include <gsl/gsl_pow_int.h>
 
 #include "get_mapper_mf.hpp"
@@ -13,6 +17,9 @@
 #include "Particle.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
+
+#include <boost/scoped_ptr.hpp>
+#include <boost/scoped_array.hpp>
 
 #ifndef H5_NO_NAMESPACE
 #ifndef H5_NO_STD
@@ -79,7 +86,7 @@ public:
     virtual std::vector<std::pair<ParticleID, Particle> >
     list_particles() const = 0;
 
-    virtual void save(std::string const& filename) = 0;
+    virtual void save_positions(H5::H5File *file_, Real const& t) = 0;
 
     Position3 periodic_transpose(
         Position3 const& pos1, Position3 const& pos2) const
@@ -181,20 +188,26 @@ public:
         return particles_;
     }
 
-    void save(std::string const& filename)
+    void save_positions(H5::H5File *file_, Real const& t)
     {
-    	typedef struct h5_partcle {
+
+    	// Define data structure
+
+    	typedef struct h5_partcle_struct {
     		int h5_particle_id;
     		char h5_species_name[32];
     		double h5_particle_position_x;
     		double h5_particle_position_y;
     		double h5_particle_position_z;
-    	} h5_particle;
+    	} h5_particle_struct;
 
     	particle_container_type::size_type const np(particles_.size());
         std::cout << np << std::endl;
 
-    	h5_particle h5_p[np];
+    	h5_particle_struct h5_p[np];
+
+        // construct data set.
+        //boost::scoped_array<h5_particle_struct> particle_id_table(new h5_particle_struct[ particles_.size() ]);
 
     	for (int i=0; i<np; i++){
     		h5_p[i].h5_particle_id = particles_[i].first;
@@ -204,29 +217,46 @@ public:
     		h5_p[i].h5_particle_position_z = particles_[i].second.position()[2];
     	}
 
+//        for (unsigned int i(0); i < particles_.size(); i++)
+//        {
+//        	particle_id_table[i].h5_particle_id = particles_[i].first;
+//        	std::strcpy(particle_id_table[i].h5_species_name, particles_[i].second.species().name().c_str());
+//        	particle_id_table[i].h5_particle_position_x = particles_[i].second.position()[0];
+//        	particle_id_table[i].h5_particle_position_y = particles_[i].second.position()[1];
+//        	particle_id_table[i].h5_particle_position_z = particles_[i].second.position()[2];
+//        }
+
+
     	//H5::Exception::dontPrint();
 
-        // const H5std_string FILE_NAME( "hoge.h5" );
-    	H5File* file = new H5File( filename, H5F_ACC_TRUNC);
-    	CompType mtype( sizeof(h5_particle) );
-        mtype.insertMember( MEMBER1, HOFFSET(h5_particle, h5_particle_id), PredType::NATIVE_INT);
-        mtype.insertMember( MEMBER2, HOFFSET(h5_particle, h5_species_name), StrType(PredType::C_S1, 32) );
-        mtype.insertMember( MEMBER3, HOFFSET(h5_particle, h5_particle_position_x), PredType::NATIVE_DOUBLE);
-        mtype.insertMember( MEMBER4, HOFFSET(h5_particle, h5_particle_position_y), PredType::NATIVE_DOUBLE);
-        mtype.insertMember( MEMBER5, HOFFSET(h5_particle, h5_particle_position_z), PredType::NATIVE_DOUBLE);
+    	CompType mtype( sizeof(h5_particle_struct) );
+        mtype.insertMember( MEMBER1, HOFFSET(h5_particle_struct, h5_particle_id), PredType::NATIVE_INT);
+        mtype.insertMember( MEMBER2, HOFFSET(h5_particle_struct, h5_species_name), StrType(PredType::C_S1, 32) );
+        mtype.insertMember( MEMBER3, HOFFSET(h5_particle_struct, h5_particle_position_x), PredType::NATIVE_DOUBLE);
+        mtype.insertMember( MEMBER4, HOFFSET(h5_particle_struct, h5_particle_position_y), PredType::NATIVE_DOUBLE);
+        mtype.insertMember( MEMBER5, HOFFSET(h5_particle_struct, h5_particle_position_z), PredType::NATIVE_DOUBLE);
 
         // hsize_t dim[] = {5, particles_.size()};
         //std::cout << np << std::endl;
         hsize_t dim[] = {particles_.size()};
         DataSpace space(1, dim);
 
-        DataSet* dataset;
-        dataset = new DataSet(file->createDataSet(DATASET_NAME, mtype, space));
+        //DataSet* dataset;
+        //dataset = new DataSet(file_->createDataSet(DATASET_NAME, mtype, space));
 
-        dataset->write(h5_p, mtype);
+        // create path.
+        std::ostringstream ost_hdf5path;
+        boost::scoped_ptr<Group> parent_group (new Group(file_->openGroup("/ParticleSpace")));
+        ost_hdf5path << "/ParticleSpace/" << t;
+        boost::scoped_ptr<Group> group (new Group(parent_group->createGroup( ost_hdf5path.str() )));
 
-        delete dataset;
-        delete file;
+        std::string species_table_path = ost_hdf5path.str() + "/species";
+        //std::string species_num_path = ost_hdf5path.str() + "/num";
+        boost::scoped_ptr<H5::DataSet> dataset_id_table( new DataSet(file_->createDataSet(species_table_path, mtype, space)) );
+
+        //dataset->write(h5_p, mtype);
+        //dataset_id_table->write(particle_id_table.get(), mtype);
+        dataset_id_table->write(h5_p, mtype);
 
     }
 

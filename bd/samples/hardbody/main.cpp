@@ -86,15 +86,14 @@ int main(int argc, char** argv)
     sim.set_dt(1e-6);
 
     /// run and log by the millisecond
+    sim.save_hdf5_init("hoge.h5");
     for (unsigned int i(0); i <= 10; ++i)
     {
         while (sim.step(1e-3 * i))
         {
-            ; // do nothing
+            sim.save(); // save particle positions into hdf5
         }
 
         print_particle_position(*world, pid1);
     }
-    std::string hoge("hoge.h5");
-    sim.save_space(hoge);
 }
