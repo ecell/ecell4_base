@@ -11,6 +11,9 @@
 #include "BDWorld.hpp"
 #include "BDPropagator.hpp"
 
+#include <hdf5.h>
+#include <H5Cpp.h>
+
 
 namespace ecell4
 {
@@ -28,8 +31,18 @@ public:
         RandomNumberGenerator& rng)
         : model_(model), world_(world), rng_(rng), num_steps_(0), dt_(0)
     {
+    	// about hdf5
+    	this->file_ = NULL;
         ;
     }
+    ~BDSimulator(void)
+    {
+    	if (this->file_ != NULL)
+    	{
+    		delete this->file_;
+    	}
+    }
+
 
     Real t() const
     {
@@ -41,10 +54,9 @@ public:
         (*world_).set_t(t);
     }
 
-    void save_space(std::string hoge)
-    {
-    	(*world_).save_space(hoge);
-    }
+    // about hdf5
+    void save_hdf5_init(std::string filename);
+    void save(void);
 
     Real dt() const
     {
@@ -73,10 +85,14 @@ public:
     void step();
     bool step(Real const& upto);
 
+
 protected:
 
     boost::shared_ptr<Model> model_;
     boost::shared_ptr<BDWorld> world_;
+
+    // about hdf5
+    H5::H5File *file_;
 
     /**
      * the protected internal state of BDSimulator.

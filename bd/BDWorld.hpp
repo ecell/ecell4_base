@@ -109,9 +109,9 @@ public:
         (*ps_).remove_particle(pid);
     }
 
-    void save_space(std::string hoge)
+    void save_space(H5::H5File *file_)
     {
-    	(*ps_).save(hoge);
+    	(*ps_).save_positions(file_, (*ps_).t());
     }
 
     std::pair<ParticleID, Particle>
