@@ -33,7 +33,8 @@ def configure(conf):
         conf.load('compiler_cxx boost doxygen')
     else:
         conf.load('compiler_cxx boost')
-
+        
+    conf.env.CXXFLAGS = ['-g', '-O0']
     conf.check_cfg(
         package='gsl', uselib_store='gsl', atleat_version='1.13',
         args='--cflags --libs')
@@ -101,7 +102,10 @@ def build(bld):
         includes = ['.'],
         libpath = ['/usr/lib'],
         lib = ['gsl', 'gslcblas', 'm', 'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
-        target = 'ecell4-core')
+        target = 'ecell4-core',
+        cxxflags = ['-O0', '-Wall'],
+        dflags = ['-g'],
+        )
 
     bld.recurse('tests')
 
@@ -120,3 +124,7 @@ def build(bld):
             #ins_name_toos_cmdline = "install_name_tool -change " + bld_lib_dir + ' ' + dest_lib_dir + ' ' +  bld_lib_path
             ins_name_toos_cmdline = "install_name_tool -id " + dest_lib_path + ' ' + bld_lib_path
             os.system(ins_name_toos_cmdline)
+
+
+
+

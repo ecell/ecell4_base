@@ -26,6 +26,7 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_cxx waf_unit_test')
+    conf.env.CXXFLAGS = ['-g', '-O0']
     conf.check_cxx(lib='gsl')
     conf.check_cxx(lib='gslcblas')
     conf.check_cxx(lib='m')
@@ -61,7 +62,10 @@ def build(bld):
         source = cppfiles,
         includes = ['.'],
         lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
-        target = 'ecell4-bd')
+        target = 'ecell4-bd',
+        cxxflags = ['-O0', '-Wall'],
+        dflags = ['-g'],
+        )
 
     bld.recurse(subdirs)
 
