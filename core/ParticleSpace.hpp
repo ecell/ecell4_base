@@ -35,11 +35,12 @@
 #endif
 
 const H5std_string DATASET_NAME( "TimePoint" );
-const H5std_string MEMBER1( "particle_id" );
-const H5std_string MEMBER2( "species_name" );
-const H5std_string MEMBER3( "position_x" );
-const H5std_string MEMBER4( "position_y" );
-const H5std_string MEMBER5( "position_z" );
+const H5std_string MEMBER1( "particle_id_lot" );
+const H5std_string MEMBER2( "particle_id_serial");
+const H5std_string MEMBER3( "species_name" );
+const H5std_string MEMBER4( "position_x" );
+const H5std_string MEMBER5( "position_y" );
+const H5std_string MEMBER6( "position_z" );
 
 namespace ecell4
 {
@@ -194,7 +195,8 @@ public:
     	// Define data structure
 
     	typedef struct h5_partcle_struct {
-    		int h5_particle_id;
+    		int h5_particle_id_lot;
+    		unsigned long long h5_particle_id_serial;
     		char h5_species_name[32];
     		double h5_particle_position_x;
     		double h5_particle_position_y;
@@ -202,7 +204,7 @@ public:
     	} h5_particle_struct;
 
     	particle_container_type::size_type const np(particles_.size());
-        std::cout << np << std::endl;
+        //std::cout << np << std::endl;
 
     	h5_particle_struct h5_p[np];
 
@@ -210,7 +212,9 @@ public:
         //boost::scoped_array<h5_particle_struct> particle_id_table(new h5_particle_struct[ particles_.size() ]);
 
     	for (int i=0; i<np; i++){
-    		h5_p[i].h5_particle_id = particles_[i].first;
+    		h5_p[i].h5_particle_id_lot = particles_[i].first.lot();
+    		h5_p[i].h5_particle_id_serial = particles_[i].first.serial();
+
     		strcpy( h5_p[i].h5_species_name, particles_[i].second.species().name().c_str() );
     		h5_p[i].h5_particle_position_x = particles_[i].second.position()[0];
     		h5_p[i].h5_particle_position_y = particles_[i].second.position()[1];
@@ -230,11 +234,13 @@ public:
     	//H5::Exception::dontPrint();
 
     	CompType mtype( sizeof(h5_particle_struct) );
-        mtype.insertMember( MEMBER1, HOFFSET(h5_particle_struct, h5_particle_id), PredType::NATIVE_INT);
-        mtype.insertMember( MEMBER2, HOFFSET(h5_particle_struct, h5_species_name), StrType(PredType::C_S1, 32) );
-        mtype.insertMember( MEMBER3, HOFFSET(h5_particle_struct, h5_particle_position_x), PredType::NATIVE_DOUBLE);
-        mtype.insertMember( MEMBER4, HOFFSET(h5_particle_struct, h5_particle_position_y), PredType::NATIVE_DOUBLE);
-        mtype.insertMember( MEMBER5, HOFFSET(h5_particle_struct, h5_particle_position_z), PredType::NATIVE_DOUBLE);
+    	mtype.insertMember( MEMBER1, HOFFSET(h5_particle_struct, h5_particle_id_lot), PredType::NATIVE_INT);
+    	mtype.insertMember( MEMBER2, HOFFSET(h5_particle_struct, h5_particle_id_serial), PredType::NATIVE_ULLONG);
+
+        mtype.insertMember( MEMBER3, HOFFSET(h5_particle_struct, h5_species_name), StrType(PredType::C_S1, 32) );
+        mtype.insertMember( MEMBER4, HOFFSET(h5_particle_struct, h5_particle_position_x), PredType::NATIVE_DOUBLE);
+        mtype.insertMember( MEMBER5, HOFFSET(h5_particle_struct, h5_particle_position_y), PredType::NATIVE_DOUBLE);
+        mtype.insertMember( MEMBER6, HOFFSET(h5_particle_struct, h5_particle_position_z), PredType::NATIVE_DOUBLE);
 
         // hsize_t dim[] = {5, particles_.size()};
         //std::cout << np << std::endl;
