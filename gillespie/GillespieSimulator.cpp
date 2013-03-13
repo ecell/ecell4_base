@@ -164,6 +164,7 @@ void GillespieSimulator::save_hdf5_init(std::string filename)
 {
 	using namespace H5;
 	this->file_ = new H5File(filename, H5F_ACC_TRUNC);
+	boost::scoped_ptr<Group> group (new Group(this->file_->createGroup( "/CompartmentSpace" )));
 }
 
 void GillespieSimulator::save_hdf5(void)
@@ -204,8 +205,9 @@ void GillespieSimulator::save_hdf5(void)
 
 	// Create Path.
 	std::ostringstream ost_hdf5path;
-	ost_hdf5path << "/" << this->t();
-	boost::scoped_ptr<Group> group (new Group(this->file_->createGroup( ost_hdf5path.str() )));
+	boost::scoped_ptr<Group> parent_group (new Group(this->file_->openGroup("/CompartmentSpace")));
+	ost_hdf5path << "/CompartmentSpace/" << this->t();
+	boost::scoped_ptr<Group> group (new Group(parent_group->createGroup( ost_hdf5path.str() )));
 
 	DataSpace space(RANK, dim);
 	std::string species_table_path = ost_hdf5path.str() + "/species";
