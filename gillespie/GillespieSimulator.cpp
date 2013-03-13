@@ -212,6 +212,18 @@ void GillespieSimulator::save_hdf5(void)
 	std::string species_num_path = ost_hdf5path.str() + "/num";
 	boost::scoped_ptr<DataSet> dataset_id_table( new DataSet(this->file_->createDataSet(species_table_path , mtype_id_table_struct, space)) );
 	boost::scoped_ptr<DataSet> dataset_num_table( new DataSet(this->file_->createDataSet(species_num_path , mtype_num_struct, space)) );
+
+	/* attribute */
+	const double t_value = this->t();
+	FloatType doubleType(PredType::IEEE_F64LE);
+
+	Attribute attr_id_table = dataset_id_table->createAttribute("t", doubleType, DataSpace(H5S_SCALAR));
+	attr_id_table.write(doubleType, &t_value);
+
+	Attribute attr_num_table = dataset_num_table->createAttribute("t", doubleType, DataSpace(H5S_SCALAR));
+	attr_num_table.write(doubleType, &t_value);
+
+	/* write */
 	dataset_id_table->write(species_id_table.get(), mtype_id_table_struct);
 	dataset_num_table->write(species_num_table.get(), mtype_num_struct);
 }
