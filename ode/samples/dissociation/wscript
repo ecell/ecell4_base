@@ -10,5 +10,5 @@ def build(bld):
         source = 'main.cpp',
         target = 'dissociation',
         includes = ['../..'],
-        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'hdf5', 'hdf5_cpp'],
         use = 'ecell4-ode')
