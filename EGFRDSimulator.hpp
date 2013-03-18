@@ -1586,7 +1586,7 @@ protected:
             particle_id_pair const& p1;
             position_type const& com;
             position_type const& iv;
-            length_type const& shell_size;
+            const length_type shell_size;
             domain_id_type const& did;
             typename network_rules_type::reaction_rule_vector const& rules;
             pair_type*& new_pair;
