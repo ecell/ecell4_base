@@ -10,6 +10,8 @@
 
 #include "../GillespieSimulator.hpp"
 
+#include "../../H5Save.hpp"
+
 using namespace ecell4;
 using namespace ecell4::gillespie;
 
@@ -48,15 +50,15 @@ int main(int argc, char **argv)
 	model->add_species(sp2);
 	
 	GillespieSimulator sim(model, world, rng);
+	ecell4_hdf5_manager<GillespieWorld, int>	hdf("GillespieWorld_test.hdf5", model, world, "CompartmentSpace");
 
-	sim.save_hdf5_init("test_main.h5");
 	for(int i = 0; i < 10; i++) {
 		sim.step();
 
 		std::ostringstream ost;
 		ost << sim.t();
 		printf("t = %f A: %llu, B: %llu \n", sim.t(), world->num_molecules(sp1), world->num_molecules(sp2));
-		sim.save_hdf5();
+		hdf.save();
 	}
 
 }
