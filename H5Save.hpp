@@ -143,6 +143,12 @@ public:
 		this->world_ = w;
 	}
 
+	// Destructor
+	~ecell4_hdf5_manager(void)
+	{
+		delete this->file_;
+	}
+
 	void save(void)
 	{
 		// Construct Data Set.
