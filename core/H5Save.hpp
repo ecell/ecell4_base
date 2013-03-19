@@ -126,10 +126,12 @@ public:
         this->group_root_ = std::string("/") + group_name;
         boost::scoped_ptr<Group>
             group(new Group(this->file_->createGroup(group_root_)));
-
-        this->model_ = m;
-        this->world_ = w;
     }
+
+	~ecell4_hdf5_manager()
+	{
+		delete this->file_;
+	}
 
     void save(void)
     {
