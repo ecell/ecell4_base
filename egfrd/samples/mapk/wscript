@@ -12,4 +12,5 @@ def build(bld):
         includes = ['../..'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
         lib = ['gsl', 'gslcblas', 'm', 'ecell4-core', ':_gfrd.so'],
+        # 'hdf5', 'hdf5_cpp'
         use = 'ecell4-egfrd')

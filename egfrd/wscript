@@ -33,6 +33,9 @@ def configure(conf):
 
     conf.check_cxx(lib = ':_gfrd.so')
 
+    # conf.check_cxx(lib = 'hdf5')
+    # conf.check_cxx(lib = 'hdf5_cpp')
+
     conf.check_cxx(lib = 'ecell4-core')
 
     conf.recurse(subdirs)
