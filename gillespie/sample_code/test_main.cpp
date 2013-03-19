@@ -8,9 +8,9 @@
 #include <hdf5.h>
 #include <H5Cpp.h>
 
-#include "../GillespieSimulator.hpp"
+#include <ecell4/core/H5Save.hpp>
 
-#include "../../H5Save.hpp"
+#include "../GillespieSimulator.hpp"
 
 using namespace ecell4;
 using namespace ecell4::gillespie;

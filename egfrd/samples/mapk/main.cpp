@@ -22,7 +22,8 @@
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Position3.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
-#include <ecell4/egfrd/EGFRDWorld.hpp>
+
+#include <ecell4/core/H5Save.hpp>
 
 #if STYPE == EGFRD_MODE
 // #include <ecell4/egfrd/EGFRDSimulatorWrapper.hpp>
@@ -45,8 +46,6 @@ typedef ecell4::gillespie::GillespieSimulator simulator_type;
 
 #include <hdf5.h>
 #include <H5Cpp.h>
-
-#include "../../H5Save.hpp"
 
 using namespace H5;
 
@@ -109,7 +108,7 @@ void run()
     world->add_molecules(sp1, N);
 
     simulator_type sim(model, world);
-    ecell4_hdf5_manager<world_type, int> hdf("hoge.h5", model, world, "ParticleSpace");
+    // ecell4_hdf5_manager<world_type, int> hdf("hoge.h5", model, world, "ParticleSpace");
 
 #if STYPE == BD_MODE
     sim.set_dt(1e-3);
@@ -131,7 +130,7 @@ void run()
                   << "\t" << world->num_molecules(sp2)
                   << "\t" << world->num_molecules(sp3)
                   << std::endl;
-        hdf.save();
+        // hdf.save();
     }
 }
 
