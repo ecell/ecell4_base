@@ -73,6 +73,10 @@ void BDSimulator::save_hdf5(void)
 		h5_index[i].h5_particle_id = particles[i].first;
 		std::strcpy(h5_index[i].h5_particle_name, particles[i].
 						second.species().name().c_str());
+		h5_index[i].h5_particle_radius = (this->world_->get_molecule_info
+				(particles[i].second.species())).radius;
+		h5_index[i].h5_particle_D = (this->world_->get_molecule_info
+				(particles[i].second.species())).D;
     }
 
 	// Define Structure Type.
@@ -92,6 +96,10 @@ void BDSimulator::save_hdf5(void)
 					PredType::NATIVE_INT);
 	mtype_index.insertMember("Species", HOFFSET(h5_particles_index, h5_particle_name),
 					StrType(PredType::C_S1, 32));
+	mtype_index.insertMember("Radius", HOFFSET(h5_particles_index, h5_particle_radius),
+					PredType::NATIVE_DOUBLE);
+	mtype_index.insertMember("D", HOFFSET(h5_particles_index, h5_particle_D),
+					PredType::NATIVE_DOUBLE);
 
 
 	// Create Group that represents t.

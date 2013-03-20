@@ -90,6 +90,9 @@ protected:
 	typedef struct h5_particles_index {
 		int h5_particle_id;
 		char h5_particle_name[32];
+
+		double h5_particle_radius;
+		double h5_particle_D;
 	} h5_particles_index;
 
     /**
