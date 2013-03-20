@@ -81,16 +81,18 @@ def summary(bld):
         total = len(lst)
         tfail = len([x for x in lst if x[1]])
 
-    val = 100 * (total - tfail) / (1.0 * total)
-    Logs.pprint('CYAN', 'test report %3.0f%% success' % val)
+        val = 100 * (total - tfail) / (1.0 * total)
+        Logs.pprint('CYAN', 'test report %3.0f%% success' % val)
 
-    Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
-    for (f, code, out, err) in lst:
-        if code:
-            Logs.pprint('CYAN', '    %s' % f)
-            Logs.pprint('RED', 'status: %r' % code)
-            if out: Logs.pprint('RED', 'out: %r' % out)
-            if err: Logs.pprint('RED', 'err: %r' % err)
+        Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
+        for (f, code, out, err) in lst:
+            if code:
+                Logs.pprint('CYAN', '    %s' % f)
+                Logs.pprint('RED', 'status: %r' % code)
+                if out: Logs.pprint('RED', 'out: %r' % out)
+                if err: Logs.pprint('RED', 'err: %r' % err)
+    else:
+        Logs.pprint('CYAN', 'no tests to run')
 
 def build(bld):
     if bld.options.doxygen:
