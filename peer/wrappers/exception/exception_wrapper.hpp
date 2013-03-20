@@ -67,22 +67,35 @@ public:
         return reinterpret_cast<PyObject*>(new exception_wrapper(exc));
     }
 
-    exception_wrapper(Texc_ const& impl): impl_(impl)
+    exception_wrapper(Texc_ const& impl): impl_(impl) {}
+
+    ~exception_wrapper()
     {
-        boost::python::tuple t(boost::python::make_tuple(impl_.what()));
-        if ((*base_traits::pytype_object->tp_init)(
-                reinterpret_cast<PyObject*>(this), t.ptr(), NULL) == -1)
+        __clear__(reinterpret_cast<PyObject*>(this));
+    }
+
+    static int __clear__(PyObject* _self)
+    {
+#ifndef HAVE_PYBASEEXCEPTIONOBJECT
+        boost::python::decref(reinterpret_cast<exception_wrapper*>(_self)->message);
+#endif
+        base_traits::pytype_object->tp_clear(_self);
+        return 0;
+    }
+
+    static int __init__(PyObject* _self, PyObject* args, PyObject *kwargs)
+    {
+        exception_wrapper* self = reinterpret_cast<exception_wrapper*>(_self);
+        boost::python::tuple t(boost::python::make_tuple(self->impl_.what()));
+        if ((*base_traits::pytype_object->tp_init)(_self, t.ptr(), NULL) == -1)
         {
             throw std::runtime_error("Failed to initialize the base class");
         }
 
-        this->message = boost::python::incref(
+        self->message = boost::python::incref(
             static_cast<boost::python::object>(t[0]).ptr());
-    }
 
-    ~exception_wrapper()
-    {
-        base_traits::pytype_object->tp_clear(reinterpret_cast<PyObject*>(this));
+        return 0;
     }
 
     static PyObject* __get_message__(exception_wrapper* self)
@@ -122,6 +135,9 @@ public:
 
     static int __traverse__(exception_wrapper* self, visitproc visit, void *arg)
     {
+#ifndef HAVE_PYBASEEXCEPTIONOBJECT
+        Py_VISIT(self->message);
+#endif 
         return (*base_traits::pytype_object->tp_traverse)(
             reinterpret_cast<PyObject*>(self), visit, arg);
     }
@@ -184,7 +200,7 @@ PyTypeObject exception_wrapper<Texc_, TbaseTraits_>::__class__ = {
 	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_BASETYPE, /* tp_flags */
 	0,					/* tp_doc */
 	(traverseproc)&exception_wrapper::__traverse__,              	/* tp_traverse */
-	0,					/* tp_clear */
+	exception_wrapper::__clear__,	/* tp_clear */
 	0,                  /* tp_richcompare */
 	0,					/* tp_weaklistoffset */
 	0,                  /* tp_iter */
@@ -197,7 +213,7 @@ PyTypeObject exception_wrapper<Texc_, TbaseTraits_>::__class__ = {
     0,                  /* tp_descr_get */
     0,                  /* tp_descr_set */
     offsetof(typename exception_wrapper::base_type, PYEXC_DICT_MEMBER_NAME) /* tp_dictoffset */,
-    0,                  /* tp_init */
+    &exception_wrapper::__init__,   /* tp_init */
     0,                  /* tp_alloc */
     &exception_wrapper::__new__    /* tp_new */
 };
