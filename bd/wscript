@@ -60,7 +60,7 @@ def build(bld):
     bld.shlib(
         source = cppfiles,
         includes = ['.'],
-        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core', 'hdf5', 'hdf5_cpp'],
         target = 'ecell4-bd')
 
     bld.recurse(subdirs)

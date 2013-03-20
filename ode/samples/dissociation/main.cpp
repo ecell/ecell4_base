@@ -6,8 +6,6 @@
 #include <ecell4/core/NetworkModel.hpp>
 #include "../../ODESimulator.hpp"
 
-#include <ecell4/core/H5Save.hpp>
-
 using namespace ecell4;
 using namespace ecell4::ode;
 
@@ -42,6 +40,9 @@ int main(int argc, char** argv)
 	ecell4_hdf5_manager<ODEWorld, double> hdf("dissociation.hdf5", model, world, "ODEWorld");
 
     Real next_time(0.0), dt(0.01);
+	//target.save_hdf5_init(std::string("hogehoge.hdf5"));
+	ecell4_hdf5_manager<ODEWorld, double> hdf5_mng(std::string("ode_test.hdf5"), model, world, "MyOdeWorld");
+
     std::cout << target.t()
               << "\t" << world->num_molecules(sp1)
               << "\t" << world->num_molecules(sp2)
@@ -56,6 +57,5 @@ int main(int argc, char** argv)
                   << "\t" << world->num_molecules(sp2)
                   << "\t" << world->num_molecules(sp3)
                   << std::endl;
-		hdf.save();
     }
 }
