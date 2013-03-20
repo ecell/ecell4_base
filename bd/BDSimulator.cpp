@@ -2,6 +2,7 @@
 
 #include <boost/scoped_array.hpp>
 
+#include <cstring>
 
 namespace ecell4
 {
