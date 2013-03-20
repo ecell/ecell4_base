@@ -38,6 +38,10 @@ inline int isfinite( double x )
 {
 	return x == x && x != INFINITY && -x != INFINITY;
 }
+#else
+#ifdef __cplusplus
+using std::isfinite;
+#endif
 #endif
 
 #endif // __COMPAT_HPP
