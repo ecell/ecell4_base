@@ -532,7 +532,6 @@ protected:
 
     inline ::ReactionRule translate(const ReactionRule& rr) const
     {
-        ::ReactionRule retval;
         std::vector< ::SpeciesTypeID> products;
         for (ReactionRule::product_container_type::const_iterator
                  j(rr.products().begin()); j != rr.products().end(); ++j)
@@ -547,7 +546,7 @@ protected:
         case 1:
             {
                 const ::SpeciesTypeID sid1(find(*r));
-                retval = ::new_reaction_rule(sid1, products, rr.k());
+                return ::new_reaction_rule(sid1, products, rr.k());
             }
             break;
         case 2:
@@ -555,14 +554,12 @@ protected:
                 const ::SpeciesTypeID sid1(find(*r));
                 ++r;
                 const ::SpeciesTypeID sid2(find(*r));
-                retval = ::new_reaction_rule(sid1, sid2, products, rr.k());
+                return ::new_reaction_rule(sid1, sid2, products, rr.k());
             }
             break;
         default:
             throw NotSupported("the number of reactants must be 1 or 2.");
         }
-
-        return retval;
     }
 
 protected:

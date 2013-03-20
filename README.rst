@@ -26,14 +26,6 @@ Full installation (Read only)
 
   $ git clone git://github.com/headmyshoulder/odeint-v2 odeint-v2
 
-  for egfrd submodule:
-
-  $ git clone git://github.com/ecell/epdp.git epdp
-
-  $ cd ${SRCPATH}/epdp
-
-  $ ./autogen.sh && ./configure && make -j
-
   for spatiocyte submodule:
 
   $ cd ${SRCPATH}
