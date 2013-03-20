@@ -11,7 +11,7 @@ public:
     PairGreensFunction(Real D, Real kf, Real r0, Real Sigma)
       : GreensFunction(D), kf(kf), r0(r0), Sigma(Sigma) {}
     
-    virtual ~PairGreensFunction() {}
+    virtual ~PairGreensFunction();
     
     Real getD() const
     {
