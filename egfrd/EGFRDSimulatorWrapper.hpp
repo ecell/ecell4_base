@@ -16,6 +16,9 @@
 
 #include "EGFRDWorld.hpp"
 
+#include <H5Cpp.h>
+#include <hdf5.h>
+
 
 namespace ecell4
 {
@@ -120,12 +123,30 @@ public:
         return sim_;
     }
 
+	void save_hdf5_init(std::string);
+	void save_hdf5(void);
+
 protected:
 
     boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<EGFRDWorld> world_;
 
     boost::shared_ptr<simulator_type> sim_;
+
+
+	H5::H5File *file_;
+	typedef struct h5_particles {
+		int h5_particle_id;
+		double h5_particle_position[3];
+	} h5_particles;
+
+	typedef struct h5_particles_index {
+		int h5_particle_id;
+		char h5_particle_name[32];
+
+		double h5_particle_radius;
+		double h5_particle_D;
+	} h5_particles_index;
 };
 
 } // egfrd

@@ -151,7 +151,7 @@ def build(bld):
         source = cppfiles,
         includes = ['.', 'epdp'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
-        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'boost_regex'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'boost_regex', 'hdf5', 'hdf5_cpp'],
         target = 'ecell4-egfrd')
 
     bld.recurse(subdirs)

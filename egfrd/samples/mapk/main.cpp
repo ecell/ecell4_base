@@ -116,12 +116,13 @@ void run()
 #endif
 
     Real next_time(0.0), dt(0.02);
+	sim.save_hdf5_init(std::string("mapk.hdf5"));
     std::cout << sim.t()
               << "\t" << world->num_molecules(sp1)
               << "\t" << world->num_molecules(sp2)
               << "\t" << world->num_molecules(sp3)
               << std::endl;
-    for (unsigned int i(0); i < 1000; ++i)
+    for (unsigned int i(0); i < 100; ++i)
     {
         next_time += dt;
         while (sim.step(next_time)) {}
@@ -131,6 +132,7 @@ void run()
                   << "\t" << world->num_molecules(sp2)
                   << "\t" << world->num_molecules(sp3)
                   << std::endl;
+		sim.save_hdf5();
         // hdf.save();
     }
 }
