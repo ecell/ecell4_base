@@ -225,7 +225,7 @@ public:
     virtual bool remove_particle(particle_id_type const& id)
     {
         bool found(false);
-        particle_id_pair pp(get_particle(id, found));
+        particle_id_pair pp(this->get_particle(id, found));
         if (!found)
         {
             return false;
