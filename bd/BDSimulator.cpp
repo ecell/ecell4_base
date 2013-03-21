@@ -102,7 +102,6 @@ void BDSimulator::save_hdf5(void)
 	mtype_index.insertMember("D", HOFFSET(h5_particles_index, h5_particle_D),
 					PredType::NATIVE_DOUBLE);
 
-
 	// Create Group that represents t.
 	std::ostringstream ost_hdf5path;
 	boost::scoped_ptr<Group> parent_group
@@ -111,11 +110,19 @@ void BDSimulator::save_hdf5(void)
 	boost::scoped_ptr<Group> group
 			(new Group(parent_group->createGroup(ost_hdf5path.str())));
 
+	// Set Attribute
+	const double t_value = this->t();
+	FloatType doubleType(PredType::IEEE_F64LE);
+
 	// Create Dataset and Write on HDF5 File.
     DataSet *dataset = new DataSet(this->file_->createDataSet(ost_hdf5path.str() + "/Particles" , mtype, space));
+	Attribute attr = dataset->createAttribute("t", doubleType, DataSpace(H5S_SCALAR));
+	attr.write(doubleType, &t_value);
     dataset->write(h5_p.get(), mtype);
 
     DataSet *dataset_index = new DataSet(this->file_->createDataSet(ost_hdf5path.str() + "/index" , mtype_index, space));
+	Attribute attr_index = dataset_index->createAttribute("t", doubleType, DataSpace(H5S_SCALAR));
+	attr_index.write(doubleType, &t_value);
 	dataset_index->write(h5_index.get(), mtype_index);
 
     delete dataset;
