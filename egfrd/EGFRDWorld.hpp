@@ -140,7 +140,7 @@ public:
     std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
         std::vector<std::pair<ParticleID, Particle> > particles;	
-		particles.reserve( this->num_particles() );
+        particles.reserve( this->num_particles() );
         BOOST_FOREACH(const world_type::particle_id_pair& pid_pair,
                       (*world_).get_particles_range())
         {
