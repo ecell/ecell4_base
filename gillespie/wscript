@@ -44,7 +44,7 @@ def configure(conf):
 		)
 
 def summary(bld):
-    '''borrowd from waf demos/unit_test/wscript
+    '''borrowed from waf demos/unit_test/wscript
     '''
     lst = getattr(bld, 'utest_results', [])
     if lst:
@@ -55,13 +55,14 @@ def summary(bld):
         Logs.pprint('CYAN', 'test report %3.0f%% success' % val)
 
         Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
-        for(f, code, out, err) in lst:
+        for (f, code, out, err) in lst:
             if code:
-                Logs.pprint('CYAN', '   %s' % f)
+                Logs.pprint('CYAN', '    %s' % f)
                 Logs.pprint('RED', 'status: %r' % code)
                 if out: Logs.pprint('RED', 'out: %r' % out)
                 if err: Logs.pprint('RED', 'err: %r' % err)
-	
+    else:
+        Logs.pprint('CYAN', 'no tests to run')
 
 def build(bld):
     # always build libgillespie.so or .dylib(mac)
