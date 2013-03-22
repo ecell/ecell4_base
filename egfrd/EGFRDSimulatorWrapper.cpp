@@ -62,16 +62,23 @@ void EGFRDSimulatorWrapper::save_hdf5(void)
         h5_p[i].h5_particle_position[1] = particles[i].second.position()[1];
         h5_p[i].h5_particle_position[2] = particles[i].second.position()[2];
 
-		h5_index[i].h5_particle_id = particles[i].first;
+		h5_index[i].h5_particle_id = particles[i].first.serial();
 		std::strcpy(h5_index[i].h5_particle_name, particles[i].second.species().name().c_str());
-		/*
-		h5_index[i].h5_particle_radius = (this->world_->get_molecule_info
-				(particles[i].second.species())).radius;
-		h5_index[i].h5_particle_D = (this->world_->get_molecule_info
-				(particles[i].second.species())).D;
-				*/
-		h5_index[i].h5_particle_radius = 0.0;
-		h5_index[i].h5_particle_D = 0.0;
+
+        h5_index[i].h5_particle_radius = particles[i].second.radius();
+        h5_index[i].h5_particle_D = particles[i].second.D();
+
+//		h5_index[i].h5_particle_radius = particles[i].second.species().get_attribute("radius");
+//		h5_index[i].h5_particle_D = particles[i].second.species().get_attribute("D");
+
+//		h5_index[i].h5_particle_radius = (this->world_->get_molecule_info
+//				(particles[i].second.species())).radius;
+//		h5_index[i].h5_particle_D = (this->world_->get_molecule_info
+//				(particles[i].second.species())).D;
+
+//		h5_index[i].h5_particle_radius = 0.0;
+//		h5_index[i].h5_particle_D = 0.0;
+
 	}
 	// Define Structure Type.
 	// 	1. Positions
