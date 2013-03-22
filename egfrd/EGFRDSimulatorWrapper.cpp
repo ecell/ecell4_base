@@ -2,8 +2,9 @@
 
 #include <boost/scoped_array.hpp>
 
-#define MEMBER1 "particle_id"
-#define MEMBER2 "positions"
+#define MEMBER1 "particle_id_lot"
+#define MEMBER2 "particle_id_serial"
+#define MEMBER3 "positions"
 
 
 namespace ecell4
@@ -57,12 +58,13 @@ void EGFRDSimulatorWrapper::save_hdf5(void)
 
     for (unsigned int i(0); i < length; ++i)
     {
-        h5_p[i].h5_particle_id = particles[i].first.serial();
+        h5_p[i].h5_particle_id_lot = particles[i].first.lot();
+        h5_p[i].h5_particle_id_serial = particles[i].first.serial();
         h5_p[i].h5_particle_position[0] = particles[i].second.position()[0];
         h5_p[i].h5_particle_position[1] = particles[i].second.position()[1];
         h5_p[i].h5_particle_position[2] = particles[i].second.position()[2];
 
-		h5_index[i].h5_particle_id = particles[i].first.serial();
+		h5_index[i].h5_particle_id_serial = particles[i].first.serial();
 		std::strcpy(h5_index[i].h5_particle_name, particles[i].second.species().name().c_str());
 
         h5_index[i].h5_particle_radius = particles[i].second.radius();
@@ -83,17 +85,19 @@ void EGFRDSimulatorWrapper::save_hdf5(void)
 	// Define Structure Type.
 	// 	1. Positions
     CompType mtype(sizeof(h5_particles));
-    mtype.insertMember(MEMBER1, HOFFSET(h5_particles, h5_particle_id),
+    mtype.insertMember(MEMBER1, HOFFSET(h5_particles, h5_particle_id_lot),
+                       PredType::NATIVE_INT);
+    mtype.insertMember(MEMBER2, HOFFSET(h5_particles, h5_particle_id_serial),
                        PredType::NATIVE_INT);
 	const hsize_t dims[] = {3};
-    mtype.insertMember(MEMBER2, HOFFSET(h5_particles, h5_particle_position),
+    mtype.insertMember(MEMBER3, HOFFSET(h5_particles, h5_particle_position),
                        ArrayType(PredType::NATIVE_DOUBLE, 1, dims));
     hsize_t dim[] = {particles.size()};
     DataSpace space(1, dim);
 
 	//	2. Tables between Id and the Name of Species.
 	CompType mtype_index(sizeof(h5_particles_index));
-	mtype_index.insertMember(MEMBER1, HOFFSET(h5_particles_index, h5_particle_id),
+	mtype_index.insertMember(MEMBER2, HOFFSET(h5_particles_index, h5_particle_id_serial),
 					PredType::NATIVE_INT);
 	mtype_index.insertMember("Species", HOFFSET(h5_particles_index, h5_particle_name),
 					StrType(PredType::C_S1, 32));

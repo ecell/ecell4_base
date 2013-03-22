@@ -136,12 +136,13 @@ protected:
 
 	H5::H5File *file_;
 	typedef struct h5_particles {
-		int h5_particle_id;
+		int h5_particle_id_lot;
+		int h5_particle_id_serial;
 		double h5_particle_position[3];
 	} h5_particles;
 
 	typedef struct h5_particles_index {
-		int h5_particle_id;
+		int h5_particle_id_serial;
 		char h5_particle_name[32];
 
 		double h5_particle_radius;
