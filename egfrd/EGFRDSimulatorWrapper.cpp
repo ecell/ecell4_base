@@ -57,7 +57,7 @@ void EGFRDSimulatorWrapper::save_hdf5(void)
 
     for (unsigned int i(0); i < length; ++i)
     {
-        h5_p[i].h5_particle_id = particles[i].first;
+        h5_p[i].h5_particle_id = particles[i].first.serial();
         h5_p[i].h5_particle_position[0] = particles[i].second.position()[0];
         h5_p[i].h5_particle_position[1] = particles[i].second.position()[1];
         h5_p[i].h5_particle_position[2] = particles[i].second.position()[2];
