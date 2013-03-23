@@ -1,5 +1,5 @@
-#ifndef __JOURNAL_HPP
-#define __JOURNAL_HPP
+#ifndef __ECELL4_JOURNAL_HPP
+#define __ECELL4_JOURNAL_HPP
 
 #include <cstdarg>
 #include <string>
@@ -97,10 +97,10 @@ private:
 
 protected:
 
-    std::string const name_;
+    const std::string name_;
     enum level level_;
 };
 
 } // ecell4
 
-#endif /* __JOURNAL_HPP */
+#endif /* __ECELL4_JOURNAL_HPP */

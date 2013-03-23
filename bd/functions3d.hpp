@@ -1,5 +1,5 @@
-#ifndef __FUNCTIONS_3D_HPP
-#define __FUNCTIONS_3D_HPP
+#ifndef __ECELL4_BD_FUNCTIONS_3D_HPP
+#define __ECELL4_BD_FUNCTIONS_3D_HPP
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Position3.hpp>
@@ -22,7 +22,7 @@ namespace bd
  * @param t a step interval, $\Delta t$.
  * @param D a diffusion coefficient, $D$.
  */
-Real Igbd_3d(Real const& sigma, Real const& t, Real const& D);
+Real Igbd_3d(const Real& sigma, const Real& t, const Real& D);
 
 /**
  * $\int_0^R r^2dr\,g\left(r,\Delta t\right).$
@@ -34,12 +34,12 @@ Real Igbd_3d(Real const& sigma, Real const& t, Real const& D);
  */
 Real Igbd_r_3d(Real r, Real sigma, Real t, Real D);
 
-Position3 random_spherical_uniform(RandomNumberGenerator& rng, Real const& r);
+Position3 random_spherical_uniform(RandomNumberGenerator& rng, const Real& r);
 Position3 random_displacement_3d(
-    RandomNumberGenerator& rng, Real const& t, Real const& D);
+    RandomNumberGenerator& rng, const Real& t, const Real& D);
 
 Position3 random_ipv_3d(
-    RandomNumberGenerator& rng, Real const& sigma, Real const& t, Real const& D);
+    RandomNumberGenerator& rng, const Real& sigma, const Real& t, const Real& D);
 
 struct Igbd_r_3d_params
 {
@@ -49,13 +49,8 @@ struct Igbd_r_3d_params
     const Real target;
 };
 
-static Real Igbd_r_3d_F(Real r, const Igbd_r_3d_params* params)
-{
-    return Igbd_r_3d(r, params->sigma, params->t, params->D) - params->target;
-}
-
 } // bd
 
 } // ecell4
 
-#endif /* __FUNCTIONS_3D_HPP */
+#endif /* __ECELL4_BD_FUNCTIONS_3D_HPP */

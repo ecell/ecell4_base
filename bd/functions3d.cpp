@@ -10,7 +10,7 @@ namespace bd
 {
 
 Position3 random_spherical_uniform(
-    RandomNumberGenerator& rng, Real const& r)
+    RandomNumberGenerator& rng, const Real& r)
 {
     Real a(0), b(0), r2(1);
     while (r2 > 0.25)
@@ -25,14 +25,14 @@ Position3 random_spherical_uniform(
 }
 
 Position3 random_displacement_3d(
-    RandomNumberGenerator& rng, Real const& t, Real const& D)
+    RandomNumberGenerator& rng, const Real& t, const Real& D)
 {
-    Real const sigma(std::sqrt(2 * D * t));
+    const Real sigma(std::sqrt(2 * D * t));
     return Position3(
         rng.gaussian(0, sigma), rng.gaussian(0, sigma), rng.gaussian(0, sigma));
 }
 
-Real Igbd_3d(Real const& sigma, Real const& t, Real const& D)
+Real Igbd_3d(const Real& sigma, const Real& t, const Real& D)
 {
     const Real sqrtPi(std::sqrt(M_PI));
 
@@ -85,8 +85,13 @@ Real Igbd_r_3d(Real r, Real sigma, Real t, Real D)
     return result;
 }
 
+static Real Igbd_r_3d_F(Real r, const Igbd_r_3d_params* params)
+{
+    return Igbd_r_3d(r, params->sigma, params->t, params->D) - params->target;
+}
+
 Real random_ipv_length_3d(
-    RandomNumberGenerator& rng, Real const& sigma, Real const& t, Real const& D)
+    RandomNumberGenerator& rng, const Real& sigma, const Real& t, const Real& D)
 {
     const Real epsabs(1e-18), epsrel(1e-12);
 
@@ -132,7 +137,7 @@ Real random_ipv_length_3d(
 }
 
 Position3 random_ipv_3d(
-    RandomNumberGenerator& rng, Real const& sigma, Real const& t, Real const& D)
+    RandomNumberGenerator& rng, const Real& sigma, const Real& t, const Real& D)
 {
     const Real r(random_ipv_length_3d(rng, sigma, t, D));
     return random_spherical_uniform(rng, r);

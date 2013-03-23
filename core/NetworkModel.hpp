@@ -1,5 +1,5 @@
-#ifndef __NETWORK_MODEL_HPP
-#define __NETWORK_MODEL_HPP
+#ifndef __ECELL4_NETWORK_MODEL_HPP
+#define __ECELL4_NETWORK_MODEL_HPP
 
 // #include "get_mapper_mf.hpp"
 
@@ -41,27 +41,49 @@ public:
         ;
     }
 
-    species_container_type const& species() const
+    // ModelTraits
+
+    std::vector<ReactionRule> query_reaction_rules(const Species& sp) const;
+    std::vector<ReactionRule> query_reaction_rules(
+        const Species& sp1, const Species& sp2) const;
+
+    // NetworkModelTraits
+
+    void add_species(const Species& sp);
+    bool has_species(const Species& sp) const;
+    void remove_species(const Species& sp);
+
+    void add_reaction_rule(const ReactionRule& rr);
+    void remove_reaction_rule(const ReactionRule& rr);
+    bool has_reaction_rule(const ReactionRule& rr) const;
+
+    // Optional functions
+
+    const species_container_type& species() const
     {
         return species_;
     }
 
-    reaction_rule_container_type const& reaction_rules() const
+    const Species& species(const Species::serial_type& key) const
+    {
+        for (species_container_type::const_iterator i(species_.begin());
+             i != species_.end(); ++i)
+        {
+            if ((*i).serial() == key)
+            {
+                return (*i);
+            }
+        }
+
+        std::ostringstream message;
+        message << "Speices [" << key << "] not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
+    }
+
+    const reaction_rule_container_type& reaction_rules() const
     {
         return reaction_rules_;
     }
-
-    std::vector<ReactionRule> query_reaction_rules(Species const& sp) const;
-    std::vector<ReactionRule> query_reaction_rules(
-        Species const& sp1, Species const& sp2) const;
-
-    void add_species(Species const& sp);
-    void remove_species(Species const& sp);
-    bool has_species(Species const& sp) const;
-
-    void add_reaction_rule(ReactionRule const& rr);
-    void remove_reaction_rule(ReactionRule const& rr);
-    bool has_reaction_rule(ReactionRule const& rr) const;
 
 protected:
 
@@ -72,4 +94,4 @@ protected:
 
 } // ecell4
 
-#endif /* __NETWORK_MODEL_HPP */
+#endif /* __ECELL4_NETWORK_MODEL_HPP */

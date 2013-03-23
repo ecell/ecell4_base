@@ -1,5 +1,5 @@
-#ifndef __EXCEPTIONS_HPP
-#define __EXCEPTIONS_HPP
+#ifndef __ECELL4_EXCEPTIONS_HPP
+#define __ECELL4_EXCEPTIONS_HPP
 
 #include <exception>
 #include <stdexcept>
@@ -34,7 +34,7 @@ class NotFound
 {
 public:
 
-    NotFound(std::string const& str)
+    NotFound(const std::string& str)
         : str_(str)
     {
         ;
@@ -60,7 +60,7 @@ class AlreadyExists
 {
 public:
 
-    AlreadyExists(std::string const& str)
+    AlreadyExists(const std::string& str)
         : str_(str)
     {
         ;
@@ -86,7 +86,7 @@ class NotImplemented
 {
 public:
 
-    NotImplemented(std::string const& str)
+    NotImplemented(const std::string& str)
         : str_(str)
     {
         ;
@@ -112,7 +112,7 @@ class NotSupported
 {
 public:
 
-    NotSupported(std::string const& str)
+    NotSupported(const std::string& str)
         : str_(str)
     {
         ;
@@ -138,7 +138,7 @@ class IllegalState
 {
 public:
 
-    IllegalState(std::string const& str)
+    IllegalState(const std::string& str)
         : str_(str)
     {
         ;
@@ -161,4 +161,4 @@ private:
 
 }
 
-#endif /* __EXCEPTIONS_HPP */
+#endif /* __ECELL4_EXCEPTIONS_HPP */

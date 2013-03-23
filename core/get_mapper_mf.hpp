@@ -1,5 +1,5 @@
-#ifndef __GET_MAPPER_MF_HPP
-#define __GET_MAPPER_MF_HPP
+#ifndef __ECELL4_UTILS_GET_MAPPER_MF_HPP
+#define __ECELL4_UTILS_GET_MAPPER_MF_HPP
 
 #include "config.h"
 
@@ -45,4 +45,4 @@ struct get_mapper_mf
 
 } // ecell4
 
-#endif /* __GET_MAPPER_MF_HPP */
+#endif /* __ECELL4_UTILS_GET_MAPPER_MF_HPP */

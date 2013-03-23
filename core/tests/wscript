@@ -6,56 +6,56 @@ def configure(conf):
 
 def build(bld):
     bld.program(
-        features='cxx cxxprogram test',
-        source='Position3_test.cpp',
-        includes='..',
-        target='Position3_test',
-        lib=['gsl', 'gslcblas', 'm'],
-        use='ecell4-core',
+        features = 'cxx cxxprogram test',
+        source = 'Position3_test.cpp',
+        includes = '..',
+        target = 'Position3_test',
+        lib = ['gsl', 'gslcblas', 'm'],
+        use = 'ecell4-core',
     )
 
     bld.program(
-        features='cxx cxxprogram test',
-        source='CompartmentSpace_test.cpp',
-        includes='..',
-        target='CompartmentSpace_test',
-        libpath = ['/usr/lib'],
-        lib=['gsl', 'gslcblas', 'm', 'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
-        use='ecell4-core',
+        features = 'cxx cxxprogram test',
+        source = 'CompartmentSpace_test.cpp',
+        includes = '..',
+        target = 'CompartmentSpace_test',
+        lib = ['gsl', 'gslcblas', 'm',
+               'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
+        use = 'ecell4-core',
     )
 
     bld.program(
-        features='cxx cxxprogram test',
-        source='Species_test.cpp',
-        includes='..',
-        target='Species_test',
-        lib=['gsl', 'gslcblas', 'm'],
-        use='ecell4-core',
+        features = 'cxx cxxprogram test',
+        source = 'Species_test.cpp',
+        includes = '..',
+        target = 'Species_test',
+        lib = ['gsl', 'gslcblas', 'm'],
+        use = 'ecell4-core',
     )
 
     bld.program(
-        features='cxx cxxprogram test',
-        source='ReactionRule_test.cpp',
-        includes='..',
-        target='ReactionRule_test',
-        lib=['gsl', 'gslcblas', 'm'],
-        use='ecell4-core',
+        features = 'cxx cxxprogram test',
+        source = 'ReactionRule_test.cpp',
+        includes = '..',
+        target = 'ReactionRule_test',
+        lib = ['gsl', 'gslcblas', 'm'],
+        use = 'ecell4-core',
     )
 
     bld.program(
-        features='cxx cxxprogram test',
-        source='NetworkModel_test.cpp',
-        includes='..',
-        target='NetworkModel_test',
-        lib=['gsl', 'gslcblas', 'm'],
-        use='ecell4-core',
+        features = 'cxx cxxprogram test',
+        source = 'NetworkModel_test.cpp',
+        includes = '..',
+        target = 'NetworkModel_test',
+        lib = ['gsl', 'gslcblas', 'm'],
+        use = 'ecell4-core',
     )
 
     bld.program(
-        features='cxx cxxprogram test',
-        source='get_mapper_mf_test.cpp',
-        includes='..',
-        target='get_mapper_mf_test',
-        lib=['gsl', 'gslcblas', 'm'],
-        use='ecell4-core',
+        features = 'cxx cxxprogram test',
+        source = 'get_mapper_mf_test.cpp',
+        includes = '..',
+        target = 'get_mapper_mf_test',
+        lib = ['gsl', 'gslcblas', 'm'],
+        use = 'ecell4-core',
     )

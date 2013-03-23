@@ -1,18 +1,17 @@
-#ifndef __BD_SIMULATOR_HPP
-#define __BD_SIMULATOR_HPP
+#ifndef __ECELL4_BD_BD_SIMULATOR_HPP
+#define __ECELL4_BD_BD_SIMULATOR_HPP
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 
-#include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Simulator.hpp>
 
 #include "BDWorld.hpp"
 #include "BDPropagator.hpp"
 
-#include <hdf5.h>
 #include <H5Cpp.h>
+#include <hdf5.h>
 
 
 namespace ecell4
@@ -26,44 +25,40 @@ class BDSimulator
 {
 public:
 
-    BDSimulator(
-        boost::shared_ptr<Model> model, boost::shared_ptr<BDWorld> world,
-        RandomNumberGenerator& rng)
-        : model_(model), world_(world), rng_(rng), num_steps_(0), dt_(0)
+    BDSimulator(boost::shared_ptr<Model> model, boost::shared_ptr<BDWorld> world)
+        : model_(model), world_(world), dt_(0), num_steps_(0)
     {
-    	// about hdf5
-    	this->file_ = NULL;
         ;
     }
-    ~BDSimulator(void)
-    {
-    	if (this->file_ != NULL)
-    	{
-    		delete this->file_;
-    	}
-    }
 
+    // SimulatorTraits
 
     Real t() const
     {
         return (*world_).t();
     }
 
-    void set_t(Real const& t)
-    {
-        (*world_).set_t(t);
-    }
-
-    // about hdf5
-    void save_hdf5_init(std::string filename);
-    void save(void);
-
     Real dt() const
     {
         return dt_;
     }
 
-    void set_dt(Real const& dt)
+    Integer num_steps() const
+    {
+        return num_steps_;
+    }
+
+    void step();
+    bool step(const Real& upto);
+
+    // Optional members
+
+    void set_t(const Real& t)
+    {
+        (*world_).set_t(t);
+    }
+
+    void set_dt(const Real& dt)
     {
         if (dt <= 0)
         {
@@ -72,27 +67,33 @@ public:
         dt_ = dt;
     }
 
-    Integer num_steps() const
+    inline boost::shared_ptr<RandomNumberGenerator> rng()
     {
-        return num_steps_;
+        return (*world_).rng();
     }
 
-    RandomNumberGenerator& rng()
-    {
-        return rng_;
-    }
-
-    void step();
-    bool step(Real const& upto);
-
+	void save_hdf5_init(std::string);
+	void save_hdf5(void);
 
 protected:
 
     boost::shared_ptr<Model> model_;
     boost::shared_ptr<BDWorld> world_;
 
-    // about hdf5
-    H5::H5File *file_;
+
+	H5::H5File *file_;
+	typedef struct h5_particles {
+		int h5_particle_id;
+		double h5_particle_position[3];
+	} h5_particles;
+
+	typedef struct h5_particles_index {
+		int h5_particle_id;
+		char h5_particle_name[32];
+
+		double h5_particle_radius;
+		double h5_particle_D;
+	} h5_particles_index;
 
     /**
      * the protected internal state of BDSimulator.
@@ -100,11 +101,10 @@ protected:
      */
     Real dt_;
     Integer num_steps_;
-    RandomNumberGenerator& rng_;
 };
 
 } // bd
 
 } // ecell4
 
-#endif /* __BD_SIMULATOR_HPP */
+#endif /* __ECELL4_BD_BD_SIMULATOR_HPP */

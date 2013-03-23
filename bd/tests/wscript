@@ -6,17 +6,17 @@ def configure(conf):
 
 def build(bld):
     bld.program(
-        features='cxx cxxprogram test',
-        source='BDWorld_test.cpp',
-        target='BDWorld_test',
-        includes=['..'],
-        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
-        use='ecell4-bd')
+        features = 'cxx cxxprogram test',
+        source = 'BDWorld_test.cpp',
+        target = 'BDWorld_test',
+        includes = ['..'],
+        lib  =  ['gsl', 'gslcblas', 'm', 'ecell4-core'],
+        use = 'ecell4-bd')
 
     bld.program(
-        features='cxx cxxprogram test',
-        source='BDSimulator_test.cpp',
-        target='BDSimulator_test',
-        includes=['..'],
-        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
-        use='ecell4-bd')
+        features = 'cxx cxxprogram test',
+        source = 'BDSimulator_test.cpp',
+        target = 'BDSimulator_test',
+        includes = ['..'],
+        lib  =  ['gsl', 'gslcblas', 'm', 'ecell4-core'],
+        use = 'ecell4-bd')

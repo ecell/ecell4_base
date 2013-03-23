@@ -11,18 +11,22 @@ using namespace ecell4::bd;
 
 BOOST_AUTO_TEST_CASE(BDWorld_test_constructor)
 {
-    Real const L(1e-6);
-    Position3 const edge_lengths(L, L, L);
-    BDWorld target(edge_lengths);
+    const Real L(1e-6);
+    const Position3 edge_lengths(L, L, L);
+    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
+
+    BDWorld target(edge_lengths, rng);
 }
 
 BOOST_AUTO_TEST_CASE(BDWorld_test_edge_lengths)
 {
-    Real const L(1e-6);
-    Position3 const input(L, L, L);
-    BDWorld target(input);
+    const Real L(1e-6);
+    const Position3 input(L, L, L);
+    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
-    Position3 const& output(target.edge_lengths());
+    BDWorld target(input, rng);
+
+    const Position3& output(target.edge_lengths());
     for (Position3::size_type dim(0); dim < 3; ++dim)
     {
         BOOST_CHECK(output[dim] > 0);

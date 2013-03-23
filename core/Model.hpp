@@ -1,5 +1,5 @@
-#ifndef __MODEL_HPP
-#define __MODEL_HPP
+#ifndef __ECELL4_MODEL_HPP
+#define __ECELL4_MODEL_HPP
 
 #include "types.hpp"
 #include "Species.hpp"
@@ -11,22 +11,24 @@ namespace ecell4
 {
 
 ReactionRule create_unimolecular_reaction_rule(
-    Species const& reactant1, Species const& product1, double const& k);
+    const Species& reactant1, const Species& product1, const Real& k);
 
 ReactionRule create_binding_reaction_rule(
-    Species const& reactant1, Species const& reactant2, Species const& product1,
-    double const& k);
+    const Species& reactant1, const Species& reactant2, const Species& product1,
+    const Real& k);
 
 ReactionRule create_unbinding_reaction_rule(
-    Species const& reactant1, Species const& product1, Species const& product2,
-    double const& k);
+    const Species& reactant1, const Species& product1, const Species& product2,
+    const Real& k);
 
 ReactionRule create_repulsive_reaction_rule(
-    Species const& reactant1, Species const& reactant2);
+    const Species& reactant1, const Species& reactant2);
 
 class Model
 {
 public:
+
+    // ModelTraits
 
     /**
      * a fundamental function to query unimolecular reaction rules from a reactant.
@@ -35,7 +37,7 @@ public:
      * @return the vector of ReactionRule(s)
      */
     virtual std::vector<ReactionRule> query_reaction_rules(
-        Species const& sp) const = 0;
+        const Species& sp) const = 0;
 
     /**
      * a fundamental function to query bimolecular reaction rules from reactants.
@@ -45,14 +47,16 @@ public:
      * @return the vector of ReactionRule(s)
      */
     virtual std::vector<ReactionRule> query_reaction_rules(
-        Species const& sp1, Species const& sp2) const = 0;
+        const Species& sp1, const Species& sp2) const = 0;
+
+    // NetworkModelTraits
 
     /**
      * add a concrete species to the model.
      * this function is a part of the trait of NetworkModel.
      * @param species a new Species
      */
-    virtual void add_species(Species const& sp)
+    virtual void add_species(const Species& sp)
     {
         throw NotSupported("add_species is not supported in this model class");
     }
@@ -63,7 +67,7 @@ public:
      * @param species a Species
      * @return if the species exists, or not
      */
-    virtual bool has_species(Species const& sp) const
+    virtual bool has_species(const Species& sp) const
     {
         throw NotSupported("has_species is not supported in this model class");
     }
@@ -73,7 +77,7 @@ public:
      * this function is a part of the trait of NetworkModel.
      * @param species a new Species
      */
-    virtual void remove_species(Species const& sp)
+    virtual void remove_species(const Species& sp)
     {
         throw NotSupported("remove_species is not supported in this model class");
     }
@@ -84,7 +88,7 @@ public:
      * @param rr a new ReactionRule
      * @return if the reaction rule is not registered yet.
      */
-    virtual void add_reaction_rule(ReactionRule const& rr)
+    virtual void add_reaction_rule(const ReactionRule& rr)
     {
         throw NotSupported(
             "add_reaction_rule is not supported in this model class");
@@ -95,7 +99,7 @@ public:
      * this function is a part of the trait of NetworkModel.
      * @param rr a new ReactionRule
      */
-    virtual void remove_reaction_rule(ReactionRule const& rr)
+    virtual void remove_reaction_rule(const ReactionRule& rr)
     {
         throw NotSupported(
             "remove_reaction_rule is not supported in this model class");
@@ -107,7 +111,7 @@ public:
      * @param rr a reaction rule
      * @return if the reaction rule exists, or not
      */
-    virtual bool has_reaction_rule(ReactionRule const& rr)
+    virtual bool has_reaction_rule(const ReactionRule& rr)
     {
         throw NotSupported(
             "has_reaction_rule is not supported in this model class");
@@ -116,4 +120,4 @@ public:
 
 } // ecell4
 
-#endif /* __MODEL_HPP */
+#endif /* __ECELL4_MODEL_HPP */

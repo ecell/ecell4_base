@@ -1,5 +1,5 @@
-#ifndef __PARTICLE_HPP
-#define __PARTICLE_HPP
+#ifndef __ECELL4_PARTICLE_HPP
+#define __ECELL4_PARTICLE_HPP
 
 #include "config.h"
 
@@ -33,8 +33,8 @@ public:
     }
 
     Particle(
-        Species const& sp, Position3 const& pos, Real const& radius,
-        Real const& D)
+        const Species& sp, const Position3& pos, const Real& radius,
+        const Real& D)
         : species_(sp), position_(pos), radius_(radius), D_(D)
     {
         ;
@@ -45,7 +45,7 @@ public:
         return position_;
     }
 
-    Position3 const& position() const
+    const Position3& position() const
     {
         return position_;
     }
@@ -55,7 +55,7 @@ public:
         return radius_;
     }
 
-    Real const& radius() const
+    const Real& radius() const
     {
         return radius_;
     }
@@ -65,7 +65,7 @@ public:
         return D_;
     }
 
-    Real const& D() const
+    const Real& D() const
     {
         return D_;
     }
@@ -75,16 +75,16 @@ public:
         return species_;
     }
 
-    Species const& species() const
+    const Species& species() const
     {
         return species_;
     }
 
 private:
 
+    Species species_;
     Position3 position_;
     Real radius_, D_;
-    Species species_;
 };
 
 struct ParticleID:
@@ -92,7 +92,7 @@ struct ParticleID:
 {
     typedef Identifier<ParticleID, unsigned long long, int> base_type;
 
-    ParticleID(value_type const& value = value_type(0, 0))
+    ParticleID(const value_type& value = value_type(0, 0))
         : base_type(value)
     {
         ;
@@ -118,7 +118,7 @@ namespace boost
 template<>
 struct hash<ecell4::ParticleID>
 {
-    std::size_t operator()(ecell4::ParticleID const& val) const
+    std::size_t operator()(const ecell4::ParticleID& val) const
     {
         return static_cast<std::size_t>(val().first ^ val().second);
     }
@@ -134,4 +134,4 @@ struct hash<ecell4::ParticleID>
 } // boost
 #endif
 
-#endif /* __PARTICLE_HPP */
+#endif /* __ECELL4_PARTICLE_HPP */

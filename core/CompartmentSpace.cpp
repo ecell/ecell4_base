@@ -7,12 +7,12 @@
 namespace ecell4
 {
 
-Real const& CompartmentSpaceVectorImpl::volume() const
+const Real& CompartmentSpaceVectorImpl::volume() const
 {
     return volume_;
 }
 
-void CompartmentSpaceVectorImpl::set_volume(Real volume)
+void CompartmentSpaceVectorImpl::set_volume(const Real& volume)
 {
     if (volume <= 0)
     {
@@ -22,7 +22,7 @@ void CompartmentSpaceVectorImpl::set_volume(Real volume)
     volume_ = volume;
 }
 
-void CompartmentSpaceVectorImpl::add_species(Species const& sp)
+void CompartmentSpaceVectorImpl::add_species(const Species& sp)
 {
     species_map_type::const_iterator i(index_map_.find(sp));
     if (i != index_map_.end())
@@ -35,12 +35,14 @@ void CompartmentSpaceVectorImpl::add_species(Species const& sp)
     num_molecules_.push_back(0);
 }
 
-void CompartmentSpaceVectorImpl::remove_species(Species const& sp)
+void CompartmentSpaceVectorImpl::remove_species(const Species& sp)
 {
     species_map_type::iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw NotFound("Species not found");
+        std::ostringstream message;
+        message << "Speices [" << sp.serial() << "] not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
     }
 
     species_map_type::mapped_type
@@ -50,7 +52,7 @@ void CompartmentSpaceVectorImpl::remove_species(Species const& sp)
         species_container_type::size_type const
             idx_(static_cast<species_container_type::size_type>(idx)),
             last_idx_(static_cast<species_container_type::size_type>(last_idx));
-        Species const& last_sp(species_[last_idx_]);
+        const Species& last_sp(species_[last_idx_]);
         species_[idx_] = last_sp;
         num_molecules_[idx] = num_molecules_[last_idx];
         index_map_[last_sp] = idx;
@@ -61,7 +63,7 @@ void CompartmentSpaceVectorImpl::remove_species(Species const& sp)
     index_map_.erase(sp);
 }
 
-bool CompartmentSpaceVectorImpl::has_species(Species const& sp) const
+bool CompartmentSpaceVectorImpl::has_species(const Species& sp) const
 {
     species_map_type::const_iterator i(index_map_.find(sp));
     return (i != index_map_.end());
@@ -72,19 +74,20 @@ Integer CompartmentSpaceVectorImpl::num_species() const
     return static_cast<Integer>(species_.size());
 }
 
-Integer CompartmentSpaceVectorImpl::num_molecules(Species const& sp) const
+Integer CompartmentSpaceVectorImpl::num_molecules(const Species& sp) const
 {
     species_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw NotFound("Species not found");
+        // throw NotFound("Species not found");
+        return 0;
     }
 
     return num_molecules_[(*i).second];
 }
 
 void CompartmentSpaceVectorImpl::add_molecules(
-    Species const& sp, Integer const& num)
+    const Species& sp, const Integer& num)
 {
     if (num <= 0)
     {
@@ -94,14 +97,16 @@ void CompartmentSpaceVectorImpl::add_molecules(
     species_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw NotFound("Species not found");
+        // throw NotFound("Species not found");
+        add_species(sp);
+        i = index_map_.find(sp);
     }
 
     num_molecules_[(*i).second] += num;
 }
 
 void CompartmentSpaceVectorImpl::remove_molecules(
-    Species const& sp, Integer const& num)
+    const Species& sp, const Integer& num)
 {
     if (num <= 0)
     {
@@ -111,7 +116,9 @@ void CompartmentSpaceVectorImpl::remove_molecules(
     species_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        throw NotFound("Species not found");
+        std::ostringstream message;
+        message << "Speices [" << sp.serial() << "] not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
     }
 
     if (num_molecules_[(*i).second] < num)

@@ -1,5 +1,5 @@
-#ifndef __SPACE_HPP
-#define __SPACE_HPP
+#ifndef __ECELL4_SPACE_HPP
+#define __ECELL4_SPACE_HPP
 
 #include <stdexcept>
 
@@ -25,31 +25,35 @@ class Space
 public:
 
     Space()
-        : t_(0)
+        : t_(0.0)
     {
         ;
     }
 
-    Real const& t() const
+    // SpaceTraits
+
+    const Real& t() const
     {
         return t_;
     }
 
-    void set_t(Real const& t)
+    void set_t(const Real& t)
     {
-        if (t < 0)
+        if (t < 0.0)
         {
             throw std::invalid_argument("the time must be positive.");
         }
         t_ = t;
     }
 
+    // CompartmentSpaceTraits
+
     /**
      * get volume.
      * this function is a part of the trait of CompartmentSpace.
      * @return a volume (m^3) Real
      */
-    virtual Real const& volume() const
+    virtual const Real& volume() const
     {
         throw NotSupported("volume() is not supported by this space class");
     }
@@ -70,9 +74,10 @@ public:
      * @param sp a species
      * @return if the species is in this space
      */
-    virtual bool has_species(Species const& sp) const
+    virtual bool has_species(const Species& sp) const
     {
-        throw NotSupported("has_species() is not supported by this space class");
+        throw NotSupported(
+            "has_species(const Species&) is not supported by this space class");
     }
 
     /**
@@ -81,19 +86,24 @@ public:
      * @param sp a species
      * @return a number of molecules Integer
      */
-    virtual Integer num_molecules(Species const& sp) const
+    virtual Integer num_molecules(const Species& sp) const
     {
-        throw NotSupported("num_molecules() is not supported by this space class");
+        throw NotSupported(
+            "num_molecules(const Species&) is not supported"
+            " by this space class");
     }
+
+    // ParticleSpaceTraits
 
     /**
      * get the axes lengths of a cuboidal region.
      * this function is a part of the trait of ParticleSpace.
      * @return edge lengths Position3
      */
-    virtual Position3 const& edge_lengths() const
+    virtual const Position3& edge_lengths() const
     {
-        throw NotSupported("edge_lengths() is not supported by this space class");
+        throw NotSupported(
+            "edge_lengths() is not supported by this space class");
     }
 
     /**
@@ -103,7 +113,8 @@ public:
      */
     virtual Integer num_particles() const
     {
-        throw NotSupported("num_particles() is not supported by this space class");
+        throw NotSupported(
+            "num_particles() is not supported by this space class");
     }
 
     /**
@@ -112,9 +123,36 @@ public:
      * @param sp a species
      * @return a number of particles Integer
      */
-    virtual Integer num_particles(Species const& species) const
+    virtual Integer num_particles(const Species& sp) const
     {
-        throw NotSupported("num_particles() is not supported by this space class");
+        throw NotSupported(
+            "num_particles(const Species&) is not supported"
+            " by this space class");
+    }
+
+    /**
+     * check if the particle exists.
+     * this function is a part of the trait of ParticleSpace.
+     * @param pid an ID for the particle
+     * @return if the particle exists or not bool
+     */
+    virtual bool has_particle(const ParticleID& pid) const
+    {
+        throw NotSupported(
+            "has_particle(const ParticleID&) is not supported"
+            " by this space class");
+    }
+
+    /**
+     * get all particles.
+     * this function is a part of the trait of ParticleSpace.
+     * @return a list of particles
+     */
+    virtual std::vector<std::pair<ParticleID, Particle> >
+    list_particles() const
+    {
+        throw NotSupported(
+            "list_particles() is not supported by this space class.");
     }
 
     /**
@@ -124,11 +162,12 @@ public:
      * @return a list of particles
      */
     virtual std::vector<std::pair<ParticleID, Particle> >
-    list_particles(Species const& species) const
+    list_particles(const Species& sp) const
     {
-        throw NotSupported("list_particles() is not supported by this space class");
+        throw NotSupported(
+            "list_particles(const Species&) is not supported"
+            " by this space class");
     }
-
 
 protected:
 
@@ -137,4 +176,4 @@ protected:
 
 } // ecell4
 
-#endif /* __SPACE_HPP */
+#endif /* __ECELL4_SPACE_HPP */

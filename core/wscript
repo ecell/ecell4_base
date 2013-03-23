@@ -14,7 +14,7 @@ hppfiles = [
     'Particle.hpp', 'ParticleSpace.hpp', 'Position3.hpp',
     'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',
     'Simulator.hpp', 'Space.hpp', 'Species.hpp', 'functions.hpp', 'types.hpp',
-    'get_mapper_mf.hpp', 'config.h'
+    'extras.hpp', 'get_mapper_mf.hpp', 'config.h', 'H5Save.hpp'
     ]
 
 cppfiles = [
@@ -24,8 +24,11 @@ cppfiles = [
 
 def options(opt):
     # opt.add_option(
-    #     '--unit-test', action='store_true', default=False, help='unit test')
-    opt.add_option('--doxygen', action='store_true', default=False, help='generate docs using doxygen')
+    #     '--unit-test', action = 'store_true', default = False,
+    #     help = 'unit test')
+    opt.add_option(
+        '--doxygen', action = 'store_true', default = False,
+        help = 'generate docs using doxygen')
     opt.load('compiler_cxx boost')
 
 def configure(conf):
@@ -33,42 +36,46 @@ def configure(conf):
         conf.load('compiler_cxx boost doxygen')
     else:
         conf.load('compiler_cxx boost')
-        
-    conf.env.CXXFLAGS = ['-g', '-O0']
+
     conf.check_cfg(
-        package='gsl', uselib_store='gsl', atleat_version='1.13',
-        args='--cflags --libs')
-    conf.check_boost(lib='test')
+        package = 'gsl', uselib_store = 'gsl', atleat_version = '1.13',
+        args = '--cflags --libs')
+    conf.check_boost(lib = 'test')
 
-    conf.check(header_name='H5Cpp.h', mandatory=True)
+    conf.check(header_name = 'H5Cpp.h', mandatory = True)
 
-    conf.check(header_name='unordered_map.hpp', define_name="HAVE_UNORDERED_MAP_HPP", mandatory=False)
-    conf.check(header_name='boost/unordered_map.hpp', define_name="HAVE_BOOST_UNORDERED_MAP_HPP", mandatory=False)
-    conf.check(header_name='boost/functional/hash.hpp', define_name="HAVE_BOOST_FUNCTIONAL_HASH_HPP", mandatory=False)
+    conf.check(
+        header_name = 'unordered_map.hpp',
+        define_name = "HAVE_UNORDERED_MAP_HPP", mandatory = False)
+    conf.check(
+        header_name = 'boost/unordered_map.hpp',
+        define_name = "HAVE_BOOST_UNORDERED_MAP_HPP", mandatory = False)
+    conf.check(
+        header_name = 'boost/functional/hash.hpp',
+        define_name = "HAVE_BOOST_FUNCTIONAL_HASH_HPP", mandatory = False)
 
-    conf.check_cc(fragment='''
+    conf.check_cc(fragment = '''
 #include <tr1/unordered_map>
 std::tr1::unordered_map<int, int> a, b( a); ''',
-               define_name="HAVE_TR1_UNORDERED_MAP",
-               mandatory=False)
+               define_name = "HAVE_TR1_UNORDERED_MAP",
+               mandatory = False)
 
-    conf.check_cc(fragment='''
+    conf.check_cc(fragment = '''
 #include <tr1/functional>
 int main() {std::tr1::hash<int>(); return 0; }''',
-               define_name="HAVE_TR1_FUNCTIONAL",
-               mandatory=False)
+               define_name = "HAVE_TR1_FUNCTIONAL",
+               mandatory = False)
 
     # conf.check_cxx(
-    #     lib      = 'm',
-    #     libpath  = ['/usr/lib'],
-    #     libs     = ['hdf5', 'hdf5_hl_cpp', 'hdf5_cpp'],
-    # )
+    #     lib = 'm',
+    #     libpath = ['/usr/lib'],
+    #     libs = ['hdf5', 'hdf5_hl_cpp', 'hdf5_cpp'])
 
-    conf.check_cxx(lib = 'hdf5', libpath = '/usr/local/hdf5/lib')
-    conf.check_cxx(lib = 'hdf5_hl_cpp', libpath = '/usr/local/hdf5/lib')
-    conf.check_cxx(lib = 'hdf5_cpp', libpath = '/usr/local/hdf5/lib')
+    conf.check_cxx(lib = 'hdf5', libpath = '/usr/lib')
+    conf.check_cxx(lib = 'hdf5_hl_cpp', libpath = '/usr/lib')
+    conf.check_cxx(lib = 'hdf5_cpp', libpath = '/usr/lib')
 
-    conf.write_config_header('config.h')
+    conf.write_config_header('config.h', guard='__ECELL4_W_CONFIG_H_WAF')
     conf.env.store('conf.log')
 
     # conf.env.unit_test = conf.options.unit_test
@@ -81,33 +88,29 @@ def summary(bld):
         total = len(lst)
         tfail = len([x for x in lst if x[1]])
 
-        val = 100 * (total - tfail) / (1.0 * total)
-        Logs.pprint('CYAN', 'test report %3.0f%% success' % val)
+    val = 100 * (total - tfail) / (1.0 * total)
+    Logs.pprint('CYAN', 'test report %3.0f%% success' % val)
 
-        Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
-        for (f, code, out, err) in lst:
-            if code:
-                Logs.pprint('CYAN', '    %s' % f)
-                Logs.pprint('RED', 'status: %r' % code)
-                if out: Logs.pprint('RED', 'out: %r' % out)
-                if err: Logs.pprint('RED', 'err: %r' % err)
-    else:
-        Logs.pprint('CYAN', 'no tests to run')
+    Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
+    for (f, code, out, err) in lst:
+        if code:
+            Logs.pprint('CYAN', '    %s' % f)
+            Logs.pprint('RED', 'status: %r' % code)
+            if out: Logs.pprint('RED', 'out: %r' % out)
+            if err: Logs.pprint('RED', 'err: %r' % err)
 
 def build(bld):
     if bld.options.doxygen:
-        bld(doxyfile='Doxyfile', features='doxygen')
+        bld(doxyfile = 'Doxyfile', features = 'doxygen')
     bld.install_files(
         '${PREFIX}/include/ecell4/core', hppfiles)
     bld.shlib(
         source = cppfiles,
         includes = ['.'],
         libpath = ['/usr/lib'],
-        lib = ['gsl', 'gslcblas', 'm', 'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
-        target = 'ecell4-core',
-        cxxflags = ['-O0', '-Wall'],
-        dflags = ['-g'],
-        )
+        lib = ['gsl', 'gslcblas', 'm',
+               'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
+        target = 'ecell4-core')
 
     bld.recurse('tests')
 
@@ -123,10 +126,8 @@ def build(bld):
             bld_lib_path = bld_lib_dir + 'libecell4-core.dylib'
             dest_lib_dir = bld.env['LIBDIR'] + '/'
             dest_lib_path = dest_lib_dir + 'libecell4-core.dylib'
-            #ins_name_toos_cmdline = "install_name_tool -change " + bld_lib_dir + ' ' + dest_lib_dir + ' ' +  bld_lib_path
-            ins_name_toos_cmdline = "install_name_tool -id " + dest_lib_path + ' ' + bld_lib_path
+            # ins_name_toos_cmdline = "install_name_tool -change " \
+            #     + bld_lib_dir + ' ' + dest_lib_dir + ' ' +  bld_lib_path
+            ins_name_toos_cmdline = "install_name_tool -id " \
+                + dest_lib_path + ' ' + bld_lib_path
             os.system(ins_name_toos_cmdline)
-
-
-
-

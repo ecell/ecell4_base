@@ -17,8 +17,8 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_constructor)
 
 BOOST_AUTO_TEST_CASE(ReactionRule_test_k)
 {
-    Real const epsrel(1e-6);
-    Real const k(1.5);
+    const Real epsrel(1e-6);
+    const Real k(1.5);
     ReactionRule rr;
     rr.set_k(0);
     rr.set_k(k);
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_reactants)
     rr.add_reactant(sp2);
     rr.add_reactant(sp1);
 
-    ReactionRule::reactant_container_type const& reactants(rr.reactants());
+    const ReactionRule::reactant_container_type& reactants(rr.reactants());
     BOOST_CHECK_EQUAL(reactants.size(), 3);
     BOOST_CHECK_EQUAL(reactants.count(sp1), 2);
     BOOST_CHECK_EQUAL(reactants.count(sp2), 1);
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_products)
     rr.add_product(sp2);
     rr.add_product(sp1);
 
-    ReactionRule::product_container_type const& products(rr.products());
+    const ReactionRule::product_container_type& products(rr.products());
     BOOST_CHECK_EQUAL(products.size(), 3);
     BOOST_CHECK_EQUAL(products.count(sp1), 2);
     BOOST_CHECK_EQUAL(products.count(sp2), 1);

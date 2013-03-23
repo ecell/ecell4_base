@@ -26,12 +26,11 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_cxx waf_unit_test')
-    conf.env.CXXFLAGS = ['-g', '-O0']
-    conf.check_cxx(lib='gsl')
-    conf.check_cxx(lib='gslcblas')
-    conf.check_cxx(lib='m')
+    conf.check_cxx(lib = 'gsl')
+    conf.check_cxx(lib = 'gslcblas')
+    conf.check_cxx(lib = 'm')
 
-    conf.check_cxx(lib='ecell4-core')
+    conf.check_cxx(lib = 'ecell4-core')
 
     conf.recurse(subdirs)
 
@@ -43,18 +42,16 @@ def summary(bld):
         total = len(lst)
         tfail = len([x for x in lst if x[1]])
 
-        val = 100 * (total - tfail) / (1.0 * total)
-        Logs.pprint('CYAN', 'test report %3.0f%% success' % val)
+    val = 100 * (total - tfail) / (1.0 * total)
+    Logs.pprint('CYAN', 'test report %3.0f%% success' % val)
 
-        Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
-        for (f, code, out, err) in lst:
-            if code:
-                Logs.pprint('CYAN', '    %s' % f)
-                Logs.pprint('RED', 'status: %r' % code)
-                if out: Logs.pprint('RED', 'out: %r' % out)
-                if err: Logs.pprint('RED', 'err: %r' % err)
-    else:
-        Logs.pprint('CYAN', 'no tests to run')
+    Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
+    for (f, code, out, err) in lst:
+        if code:
+            Logs.pprint('CYAN', '    %s' % f)
+            Logs.pprint('RED', 'status: %r' % code)
+            if out: Logs.pprint('RED', 'out: %r' % out)
+            if err: Logs.pprint('RED', 'err: %r' % err)
 
 def build(bld):
     bld.install_files(
@@ -63,11 +60,8 @@ def build(bld):
     bld.shlib(
         source = cppfiles,
         includes = ['.'],
-        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
-        target = 'ecell4-bd',
-        cxxflags = ['-O0', '-Wall'],
-        dflags = ['-g'],
-        )
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core', 'hdf5', 'hdf5_cpp'],
+        target = 'ecell4-bd')
 
     bld.recurse(subdirs)
 

@@ -1,5 +1,5 @@
-#ifndef __RANDOM_NUMBER_GENERATOR_HPP
-#define __RANDOM_NUMBER_GENERATOR_HPP
+#ifndef __ECELL4_RANDOM_NUMBER_GENERATOR_HPP
+#define __ECELL4_RANDOM_NUMBER_GENERATOR_HPP
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -18,7 +18,6 @@ public:
 
     virtual Real uniform(Real min, Real max) = 0;
     virtual Integer uniform_int(Integer min, Integer max) = 0;
-
     virtual Real gaussian(Real mean, Real sigma) = 0;
 
     virtual void seed(Integer val) = 0;
@@ -42,6 +41,8 @@ class GSLRandomNumberGenerator
 public:
 
     typedef boost::shared_ptr<gsl_rng> rng_handle;
+
+public:
 
     Real uniform(Real min, Real max)
     {
@@ -75,9 +76,16 @@ public:
         ;
     }
 
+    inline rng_handle handle()
+    {
+        return rng_;
+    }
+
+protected:
+
     rng_handle rng_;
 };
 
 } // ecell4
 
-#endif /* __RANDOM_NUMBER_GENERATOR_HPP */
+#endif /* __ECELL4_RANDOM_NUMBER_GENERATOR_HPP */
