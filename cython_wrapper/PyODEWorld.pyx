@@ -1,6 +1,7 @@
 # distutils: language = c++
 # distutils: sources = ../ode/ODEWorld.cpp
 
+from libcpp cimport bool
 from libcpp.vector cimport vector
 from cython.operator cimport dereference as deref
 
@@ -16,13 +17,13 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         Real & volume()
         void set_volume(Real & volume)
         int num_species()
-#       bool has_species(Species sp)
+        bool has_species(Species sp)
         void add_species(Species &sp) 
-#       void remove_species(Species sp)
-#       Real num_molecules(Species sp)
-#       void set_num_molecules(Species sp, Real const num)
-#       void add_molecules(Species sp, Real num) 
-#       void remove_molecules(Species sp, Real num)
+        void remove_species(Species sp)
+        Real num_molecules(Species sp)
+        void set_num_molecules(Species sp, Real num)
+        void add_molecules(Species sp, Real num) 
+        void remove_molecules(Species sp, Real num)
         
         
 cdef class PyOdeWorld:
@@ -41,15 +42,21 @@ cdef class PyOdeWorld:
     def num_species(self):
         return self.thisptr.num_species()
 
-    #XXX
-    def add_species(self, PySpecies sp):
-        #cdef void *p
-        #p = <void*>sp.thisptr
-        #p = (<PySpecies>sp).thisptr
-        #self.thisptr.add_species( deref(<Species*>(sp.thisptr)) )
-        #self.thisptr.add_species( deref(<Species*>(p)) )
+    def has_species(self, PySpecies sp):
+        return self.thisptr.has_species( deref(sp.thisptr) )
 
-        #self.thisptr.add_species( deref(<Species*>(<void*>(sp.thisptr) )) )
+    def add_species(self, PySpecies sp):
         self.thisptr.add_species( deref(sp.thisptr) ) 
+
+    def remove_species(self, PySpecies sp):
+        self.thisptr.remove_species( deref(sp.thisptr) )
+    def num_molecules(self, PySpecies sp):
+        return self.thisptr.num_molecules( deref(sp.thisptr) )
+    def set_num_molecules(self, PySpecies sp, Real num):
+        self.thisptr.set_num_molecules( deref(sp.thisptr), num)
+    def add_molecules(self, PySpecies sp, Real num):
+        self.thisptr.add_molecules( deref(sp.thisptr), num )
+    def remove_molecules(self, PySpecies sp, Real num):
+        self.thisptr.remove_molecules( deref(sp.thisptr), num )
 
 

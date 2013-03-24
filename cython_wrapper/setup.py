@@ -1,14 +1,15 @@
 from distutils.core import setup
 from Cython.Build import cythonize
 
-'''
-setup(
-    name = "CoreObjects",
-    ext_modules = cythonize('*.pyx'),
-)
-'''
+# core
 setup(ext_modules = cythonize(
-    "Species.pyx",
+    "PySpecies.pyx",
     language="c++",
     include_dirs="../core"
+    ))
+
+setup(ext_modules = cythonize(
+    "PyODEWorld.pyx",
+    language="c++",
+    include_dirs="../ode"
     ))
