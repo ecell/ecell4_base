@@ -33,3 +33,4 @@ cdef class PySpecies:
         self.thisptr.set_attribute(name, value)
     def remove_attributes(self, string name):
         self.thisptr.remove_attribute(name)
+
