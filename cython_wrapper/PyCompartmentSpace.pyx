@@ -9,8 +9,8 @@ from cython.operator cimport dereference as deref
 from PySpecies cimport Species, PySpecies
 from PySpecies import PySpecies
 
-ctypedef double Real 
-ctypedef int Integer
+#ctypedef double Real 
+#ctypedef int Integer
 
 cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
     cdef cppclass CompartmentSpaceVectorImpl:
@@ -27,7 +27,7 @@ cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
         void remove_molecules(Species &sp, Integer num)
 
 cdef class PyCompartmentSpace:
-    cdef CompartmentSpaceVectorImpl *thisptr
+    #cdef CompartmentSpaceVectorImpl *thisptr
     def __cinit__(self, Real volume):
         self.thisptr = new CompartmentSpaceVectorImpl(volume)
     def __dealloc__(self):
