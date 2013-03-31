@@ -9,6 +9,12 @@ setup(ext_modules = cythonize(
     ))
 
 setup(ext_modules = cythonize(
+    "PyCompartmentSpace.pyx",
+    language="c++",
+    include_dirs="../core"
+    ))
+
+setup(ext_modules = cythonize(
     "PyODEWorld.pyx",
     language="c++",
     include_dirs="../ode"
