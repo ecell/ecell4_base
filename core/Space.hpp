@@ -9,6 +9,7 @@
 #include "Species.hpp"
 #include "Particle.hpp"
 
+#include <iostream>
 
 #ifndef H5_NO_NAMESPACE
 #ifndef H5_NO_STD
