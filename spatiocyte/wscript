@@ -37,11 +37,8 @@ def configure(conf):
     conf.check_cxx(lib = 'gslcblas')
     conf.check_cxx(lib = 'm')
 
-    conf.check_cxx(lib = 'ecs')
+    conf.check_cxx(lib = 'ecs', libpath = os.environ['ECELL3_DM_PATH'])
     conf.check_cxx(lib = 'emc')
-
-    conf.check_cxx(
-        lib = ':SpatiocyteStepper.so', libpath = os.environ['ECELL3_DM_PATH'])
 
     conf.check_cxx(lib = 'ecell4-core')
 
