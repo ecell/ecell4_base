@@ -23,9 +23,9 @@
 #include <libecs/Model.hpp>
 #endif
 
-#include <SpatiocyteCommon.hpp>
-#include <SpatiocyteSpecies.hpp>
-#include <SpatiocyteStepper.hpp>
+#include <libecs/SpatiocyteCommon.hpp>
+#include <libecs/SpatiocyteSpecies.hpp>
+#include <libecs/SpatiocyteStepper.hpp>
 
 #include "config.h" // ecell4/spatiocyte/config.h
 
