@@ -9,6 +9,7 @@
 
 #include "SpatiocyteWorld.hpp"
 
+#include <H5Cpp.h>
 
 namespace ecell4
 {
@@ -77,10 +78,15 @@ public:
         return (*world_).spatiocyte_stepper();
     }
 
+    void save_hdf5_init(std::string);
+    void save_hdf5(void);
+
 protected:
 
     boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<SpatiocyteWorld> world_;
+
+    H5::H5File *file_;
 
     /**
      * the protected internal state of SpatiocyteSimulator.

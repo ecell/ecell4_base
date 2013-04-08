@@ -21,6 +21,14 @@ bool SpatiocyteSimulator::step(const Real& upto)
     return retval;
 }
 
+void SpatiocyteSimulator::save_hdf5_init(std::string filename)
+{
+	using namespace H5;
+	this->file_ = new H5File(filename, H5F_ACC_TRUNC);
+	boost::scoped_ptr<Group> group(new Group(this->file_->createGroup("/SpatiocyteWorld")));
+}
+
+
 } // spatiocyte
 
 } // ecell4
