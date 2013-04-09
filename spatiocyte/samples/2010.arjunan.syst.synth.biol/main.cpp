@@ -83,6 +83,7 @@ int main(int argc, char** argv)
     SpatiocyteSimulator sim(model, world);
 
     SpatiocyteVisualizationLogger logger(world);
+
     logger.add_species((*model).species("MinEE(bs1,bs2,loc=mem)"));
     logger.add_species((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)"));
     logger.add_species((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2[2],loc=mem).MinD(p=atp,bs[2],loc=mem)"));
@@ -91,11 +92,23 @@ int main(int argc, char** argv)
     // Real next_time(0.0), dt(0.5);
     logger.initialize();
     logger.log();
-    // for (unsigned int i(0); i < 100; ++i)
-    // {
-    //     next_time += dt;
-    //     while (sim.step(next_time)) {}
 
-    //     logger.log();
-    // }
+    sim.save_hdf5_init( std::string("spatiocyte.hdf5") );
+
+    Real next_time(0.0), dt(0.02);
+
+    for (unsigned int i(0); i < 100; ++i)
+    {
+        next_time += dt;
+        while (sim.step(next_time)) {}
+
+        sim.save_hdf5();
+
+        std::cout << sim.t()
+                  << "\t" << world->num_molecules((*model).species("MinEE(bs1,bs2,loc=mem)"))
+                  << "\t" << world->num_molecules((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)"))
+                  << "\t" << world->num_molecules((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2[2],loc=mem).MinD(p=atp,bs[2],loc=mem)"))
+                  << std::endl;
+    }
+
 }
