@@ -56,11 +56,11 @@ class SpatiocyteWorld
 public:
 
     typedef MoleculeInfo molecule_info_type;
+    typedef std::vector<std::pair<Species::serial_type, libecs::String> >
+    species_container_type;
 
 protected:
 
-    typedef std::vector<std::pair<Species::serial_type, libecs::String> >
-    species_container_type;
     typedef std::vector<std::pair<Species, Integer> >
     species_population_cache_type;
 
@@ -637,6 +637,11 @@ public:
     //     get_coordinate_log_process()->registerVariableReference(
     //         "_", get_fullid(sp).asString(), 0);
     // }
+
+    const species_container_type& species() const
+    {
+    	return this->species_;
+    }
 
 protected:
 
