@@ -1,5 +1,5 @@
 # distutils: language = c++
-# distutils: sources = ../ode/ODEWorld.cpp
+# distutils: sources = ../ode/ODEWorld.cpp ../core/Species.cpp
 
 from libcpp cimport bool
 from libcpp.vector cimport vector
