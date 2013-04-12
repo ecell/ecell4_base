@@ -1,5 +1,5 @@
 # distutils: language = c++
-# distutils: sources = ../core/CompartmentSpace.cpp
+# distutils: sources = ../core/CompartmentSpace.cpp ../core/Species.cpp
 
 from libcpp cimport bool
 from libcpp.vector cimport vector
