@@ -1,0 +1,3 @@
+
+ctypedef double Real
+
