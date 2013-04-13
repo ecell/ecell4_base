@@ -9,7 +9,19 @@ setup(ext_modules = cythonize(
     ))
 
 setup(ext_modules = cythonize(
+    "PyReactionRule.pyx",
+    language="c++",
+    include_dirs="../core"
+    ))
+
+setup(ext_modules = cythonize(
     "PyCompartmentSpace.pyx",
+    language="c++",
+    include_dirs="../core"
+    ))
+
+setup(ext_modules = cythonize(
+    "PyNetworkModel.pyx",
     language="c++",
     include_dirs="../core"
     ))
