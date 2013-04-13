@@ -6,6 +6,7 @@
 #include "exceptions.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
+#include <iostream>
 
 
 namespace ecell4
