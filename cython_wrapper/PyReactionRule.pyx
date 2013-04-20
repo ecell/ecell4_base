@@ -1,15 +1,9 @@
-# distutils: language = c++
-# distutils: sources = ../core/ReactionRule.cpp
 
 from cython.operator cimport dereference as deref
-
 from libcpp.vector cimport vector
 from libcpp cimport set
 from libcpp cimport bool
 
-
-from PySpecies cimport Species,PySpecies
-from PySpecies import PySpecies
 
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
     cdef cppclass ReactionRule:
