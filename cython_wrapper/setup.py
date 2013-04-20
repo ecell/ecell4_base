@@ -1,33 +1,17 @@
 from distutils.core import setup
-from Cython.Build import cythonize
+from distutils.extension import Extension
+from Cython.Distutils import build_ext
 
-# core
-setup(ext_modules = cythonize(
-    "PySpecies.pyx",
-    language="c++",
-    include_dirs="../core"
-    ))
+ext_modules = [
+        Extension("PyEcell4",
+            ["PyEcell4.pyx"],
+            language = 'c++',
+            libraries = ['ecell4-core'],
+            )]
 
-setup(ext_modules = cythonize(
-    "PyReactionRule.pyx",
-    language="c++",
-    include_dirs="../core"
-    ))
+setup(
+        name = "PyEcell4",
+        cmdclass = {'build_ext' : build_ext},
+        ext_modules = ext_modules
+        )
 
-setup(ext_modules = cythonize(
-    "PyCompartmentSpace.pyx",
-    language="c++",
-    include_dirs="../core"
-    ))
-
-setup(ext_modules = cythonize(
-    "PyNetworkModel.pyx",
-    language="c++",
-    include_dirs="../core"
-    ))
-
-setup(ext_modules = cythonize(
-    "PyODEWorld.pyx",
-    language="c++",
-    include_dirs="../ode"
-    ))

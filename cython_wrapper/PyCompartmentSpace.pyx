@@ -1,16 +1,9 @@
-# distutils: language = c++
-# distutils: sources = ../core/CompartmentSpace.cpp ../core/Species.cpp
 
 from libcpp cimport bool
 from libcpp.vector cimport vector
 from libcpp.string cimport string 
 from cython.operator cimport dereference as deref
 
-from PySpecies cimport Species, PySpecies
-from PySpecies import PySpecies
-
-#ctypedef double Real 
-#ctypedef int Integer
 
 cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
     cdef cppclass CompartmentSpaceVectorImpl:

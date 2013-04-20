@@ -1,10 +1,5 @@
-# distutils: language = c++
-# distutils: sources = ../core/Species.cpp
-
 from libcpp.vector cimport vector
 from libcpp.string cimport string 
-
-ctypedef double Real 
 
 cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
     cdef cppclass Species:

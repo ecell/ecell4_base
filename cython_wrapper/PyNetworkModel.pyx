@@ -1,19 +1,9 @@
-# distutils: language = c++
-# distutils: sources = ../core/NetworkModel.cpp
 
 from cython.operator cimport dereference as deref
 
 from libcpp.vector cimport vector
 from libcpp cimport set
 from libcpp cimport bool
-
-include "types.pxi"
-
-from PySpecies cimport Species,PySpecies
-from PySpecies import PySpecies
-
-from PyReactionRule cimport ReactionRule, PyReactionRule
-from PyReactionRule import PyReactionRule
 
 cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
     cdef cppclass NetworkModel:
@@ -26,7 +16,7 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         bool has_reaction_rule(ReactionRule)
 
 cdef class PyNetworkModel:
-    cdef NetworkModel *thisptr
+    #cdef NetworkModel *thisptr
     def __cinit__(self):
         self.thisptr = new NetworkModel() 
     def __dealloc__(self):
