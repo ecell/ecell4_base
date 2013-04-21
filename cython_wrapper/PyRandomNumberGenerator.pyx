@@ -3,7 +3,7 @@
 cdef extern from "gsl/gsl_rng.h":
     ctypedef struct gsl_rng:
         pass
-        
+
 
 cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
     cdef cppclass GSLRandomNumberGenerator:
@@ -15,9 +15,10 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
         void seed(Integer)
 
 cdef class PyRandomNumberGenerator:
-    cdef GSLRandomNumberGenerator *thisptr
+    #cdef GSLRandomNumberGenerator *thisptr
     def __cinit__(self):
         self.thisptr = new GSLRandomNumberGenerator()
+            
     def __dealloc__(self):
         del self.thisptr
 

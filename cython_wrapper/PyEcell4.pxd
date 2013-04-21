@@ -20,6 +20,26 @@ cdef extern from "boost/shared_ptr.hpp" namespace "boost":
         T* get()
 
 #============================================================
+#   RandomNumberGenerator
+#============================================================
+cdef extern from "gsl/gsl_rng.h":
+    ctypedef struct gsl_rng:
+        pass
+
+cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
+    cdef cppclass GSLRandomNumberGenerator:
+        #GSLRandomNumberGenerator(shared_ptr[gsl_rng]) except +
+        GSLRandomNumberGenerator() except +
+        Real uniform(Real, Real)
+        Integer uniform_int(Integer, Integer)
+        Real gaussian(Real, Real)
+        void seed(Integer)
+
+# For Dereference
+cdef class PyRandomNumberGenerator:
+    cdef GSLRandomNumberGenerator *thisptr
+
+#============================================================
 #   Species
 #============================================================
 cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
@@ -87,7 +107,8 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         bool has_reaction_rule(ReactionRule)
 
 cdef class PyNetworkModel:
-    cdef NetworkModel *thisptr
+    #cdef NetworkModel *thisptr
+    cdef shared_ptr[NetworkModel] *thisptr
 
 #============================================================
 #   Position3
