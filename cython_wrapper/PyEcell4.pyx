@@ -8,3 +8,4 @@ include "PyReactionRule.pyx"
 include "PyCompartmentSpace.pyx"
 
 include "PyNetworkModel.pyx"
+include "PyPosition3.pyx"
