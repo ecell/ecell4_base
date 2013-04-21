@@ -4,6 +4,7 @@
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/NetworkModel.hpp>
+#include <cstring>
 
 #include <hdf5.h>
 #include <H5Cpp.h>

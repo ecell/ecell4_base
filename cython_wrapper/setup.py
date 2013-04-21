@@ -15,3 +15,14 @@ setup(
         ext_modules = ext_modules
         )
 
+#Gillespie
+setup(
+        name = "PyGillespie",
+        cmdclass = {'build_ext' : build_ext},
+        ext_modules = [
+            Extension("PyGillespie",
+                ["PyGillespie.pyx"],
+                language = 'c++',
+                libraries = ['ecell4-core', 'ecell4-gillespie'],
+                )]
+            )
