@@ -23,6 +23,6 @@ setup(
             Extension("PyGillespie",
                 ["PyGillespie.pyx"],
                 language = 'c++',
-                libraries = ['ecell4-core', 'ecell4-gillespie'],
+                libraries = ['ecell4-core', 'ecell4-gillespie', 'hdf5', 'hdf5_cpp'],
                 )]
             )

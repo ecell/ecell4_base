@@ -18,27 +18,25 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
 cdef class PyNetworkModel:
     #cdef NetworkModel *thisptr
     def __cinit__(self):
-        self.thisptr = new NetworkModel() 
+        #self.thisptr = new NetworkModel() 
+        self.thisptr = new shared_ptr[NetworkModel](new NetworkModel())
     def __dealloc__(self):
         del self.thisptr
-    #def k(self):
-    #    return self.thisptr.k()
-    
     # HANDLERS FOR SPECIES
     def add_species(self, PySpecies sp):
-        self.thisptr.add_species( deref(sp.thisptr) )
+        self.thisptr.get().add_species( deref(sp.thisptr) )
     def has_species(self, PySpecies sp):
-        return self.thisptr.has_species( deref(sp.thisptr) )
+        return self.thisptr.get().has_species( deref(sp.thisptr) )
     def remove_species(self, PySpecies sp):
-        self.thisptr.remove_species( deref(sp.thisptr) )
+        self.thisptr.get().remove_species( deref(sp.thisptr) )
 
     # HANDLERS FOR REACTION_RULES
     def add_reaction_rule(self, PyReactionRule rr):
-        self.thisptr.add_reaction_rule( deref(rr.thisptr) )
+        self.thisptr.get().add_reaction_rule( deref(rr.thisptr) )
     def remove_reaction_rule(self, PyReactionRule rr):
-        self.thisptr.remove_reaction_rule( deref(rr.thisptr) )
+        self.thisptr.get().remove_reaction_rule( deref(rr.thisptr) )
     def has_reaction_rule(self, PyReactionRule rr):
-        self.thisptr.has_reaction_rule( deref(rr.thisptr) )
+        self.thisptr.get().has_reaction_rule( deref(rr.thisptr) )
     
 '''
     def add_reactant(self, PySpecies sp):
