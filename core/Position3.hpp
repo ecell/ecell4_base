@@ -42,6 +42,13 @@ struct Position3
         (*this)[2] = p2;
     }
 
+	Position3(const Position3 &rhs)
+	{
+		(*this)[0] = rhs[0];
+		(*this)[1] = rhs[1];
+		(*this)[2] = rhs[2];
+	}
+
     // Position3(const Real (&a)[3])
     //     : base_type(*reinterpret_cast<const base_type*>(&a))
     // {
