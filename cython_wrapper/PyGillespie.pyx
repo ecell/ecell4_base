@@ -27,32 +27,42 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         void add_molecules(Species &sp, Integer &num)
         void remove_molecules(Species &sp, Integer &num)
 
+cdef extern from "boost/shared_ptr.hpp" namespace "boost":
+    cdef cppclass shared_ptr[T]:
+        shared_ptr(T *ptr)
+        T* get()
+
 cdef class PyGillespieWorld:
-    cdef GillespieWorld *thisptr
+    #cdef GillespieWorld *thisptr
+    cdef shared_ptr[GillespieWorld] *thisptr
+    # XXX
+    # If you don't use shared_ptr, please remove calling 'get()'.
     def __cinit__(self, Real vol):
-        self.thisptr = new GillespieWorld(vol)
+        #self.thisptr = new GillespieWorld(vol)
+        self.thisptr = new shared_ptr[GillespieWorld](new GillespieWorld(vol))
     def __dealloc__(self):
+        #XXX Here, we release shared pointer, and if reference count to the GillespieWorld object,
+        # it will be released automatically.
         del self.thisptr
     
     def set_t(self, Real t):
-        self.thisptr.set_t(t)
+        self.thisptr.get().set_t(t)
     def t(self):
-        return self.thisptr.t()
+        return self.thisptr.get().t()
     def volume(self):
-        return self.thisptr.volume()
+        return self.thisptr.get().volume()
     def num_species(self):
-        return self.thisptr.num_species()
+        return self.thisptr.get().num_species()
     def has_species(self, PySpecies sp):
-        return self.thisptr.has_species( deref(sp.thisptr) )
+        return self.thisptr.get().has_species( deref(sp.thisptr) )
     def num_molecules(self, PySpecies sp):
-        return self.thisptr.num_molecules( deref(sp.thisptr) )
+        return self.thisptr.get().num_molecules( deref(sp.thisptr) )
 
     def add_species(self, PySpecies sp):
-        self.thisptr.add_species(deref(sp.thisptr) )
+        self.thisptr.get().add_species(deref(sp.thisptr) )
     def remove_species(self, PySpecies sp):
-        self.thisptr.remove_species(deref(sp.thisptr))
+        self.thisptr.get().remove_species(deref(sp.thisptr))
     def add_molecules(self, PySpecies sp, Integer num):
-        self.thisptr.add_molecules(deref(sp.thisptr), num)
+        self.thisptr.get().add_molecules(deref(sp.thisptr), num)
     def remove_species(self, PySpecies sp, Integer num):
-        self.thisptr.remove_molecules(deref(sp.thisptr), num)
-
+        self.thisptr.get().remove_molecules(deref(sp.thisptr), num)

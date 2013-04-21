@@ -9,3 +9,5 @@ include "PyCompartmentSpace.pyx"
 
 include "PyNetworkModel.pyx"
 include "PyPosition3.pyx"
+
+include "PyRandomNumberGenerator.pyx"
