@@ -4,6 +4,7 @@
 #include <gsl/gsl_sf_log.h>
 #include <sstream>
 #include <cstdio>
+#include <cstring>
 
 #include <boost/scoped_array.hpp>
 
