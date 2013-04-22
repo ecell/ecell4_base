@@ -13,6 +13,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         void set_attribute(string,string)
         void remove_attribute(string)
 
+
 cdef class PySpecies:
     #cdef Species *thisptr
     def __cinit__(self, string name):
@@ -29,3 +30,9 @@ cdef class PySpecies:
     def remove_attributes(self, string name):
         self.thisptr.remove_attribute(name)
 
+cdef to_PySpecies(Species *sp):
+    cdef Species *new_obj = new Species("")
+    r = PySpecies("")
+    del r.thisptr
+    r.thisptr = new_obj
+    return r
