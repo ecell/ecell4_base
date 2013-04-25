@@ -1,6 +1,7 @@
 #ifndef __ECELL4_ODE_ODE_SIMULATOR_HPP
 #define __ECELL4_ODE_ODE_SIMULATOR_HPP
 
+#include <cstring>
 #include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/exceptions.hpp>

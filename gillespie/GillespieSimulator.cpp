@@ -3,7 +3,7 @@
 #include <vector>
 #include <gsl/gsl_sf_log.h>
 
-#include <string.h>
+#include <cstring>
 #include <sstream>
 #include <cstdio>
 #include <boost/scoped_array.hpp>
@@ -210,7 +210,7 @@ void GillespieSimulator::save_hdf5(void)
     for(unsigned int i(0); i < species_list.size(); ++i) 
     {
         species_id_table[i].id = i + 1;
-        strcpy(species_id_table[i].name, species_list[i].name().c_str());
+        std::strcpy(species_id_table[i].name, species_list[i].name().c_str());
 
         species_num_table[i].id = i + 1;
         species_num_table[i].num_of_molecules
