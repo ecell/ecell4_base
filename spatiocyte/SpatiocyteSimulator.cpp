@@ -51,7 +51,7 @@ void SpatiocyteSimulator::save_hdf5(void)
 {
 	using namespace H5;
 	const SpatiocyteWorld::species_container_type &species = this->world_->species();
-	int species_size = species.size();
+	unsigned int species_size = species.size();
 	int lattice_size = 0;
 
 	for (unsigned int i(0); i < species_size; ++i)
@@ -83,7 +83,7 @@ void SpatiocyteSimulator::save_hdf5(void)
 	// Define Structure Type
 	CompType mtype(sizeof(h5_lattice));
 	mtype.insertMember(SPATIOCYTE_MEMBER1, HOFFSET(h5_lattice, h5_lattice_id), PredType::NATIVE_INT);
-	const hsize_t dims[] = {3};
+	// const hsize_t dims[] = {3};
 //	mtype.insertMember(SPATIOCYTE_MEMBER2, HOFFSET(h5_particles, h5_particle_position), ArrayType(PredType::NATIVE_DOUBLE, 1, dims));
 	mtype.insertMember(SPATIOCYTE_MEMBER2, HOFFSET(h5_lattice, h5_species_id), StrType(PredType::C_S1, 32));
 	hsize_t dim[] = {lattice_size};
