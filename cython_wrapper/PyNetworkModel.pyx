@@ -5,16 +5,6 @@ from libcpp.vector cimport vector
 from libcpp cimport set
 from libcpp cimport bool
 
-cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
-    cdef cppclass NetworkModel:
-        NetworkModel() except +
-        void add_species(Species sp)
-        bool has_species(Species sp)
-        void remove_species(Species sp)
-        void add_reaction_rule(ReactionRule)
-        void remove_reaction_rule(ReactionRule)
-        bool has_reaction_rule(ReactionRule)
-
 cdef class PyNetworkModel:
     #cdef NetworkModel *thisptr
     def __cinit__(self):

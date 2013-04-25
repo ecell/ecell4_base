@@ -3,27 +3,6 @@ from cython cimport address, declare
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 
-cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
-    cdef cppclass Position3:
-        Position3() except +
-        Position3(Real, Real, Real) except +
-        Position3(Position3 &pos3) except +
-
-    Position3 add(Position3, Position3)
-    Position3 subtract(Position3, Position3)
-    Position3 divide(Position3, Real)
-    Position3 multiply(Position3, Real)
-    Position3 modulo(Position3, Real)
-    Position3 modulo(Position3, Position3)
-    Position3 abs(Position3)
-    Real dot_product(Position3, Position3)
-    Position3 cross_product(Position3, Position3)
-    Integer length_sq(Position3)
-    Integer length(Position3)
-    Position3 operator+(Position3, Position3)
-    Position3 operator-(Position3, Position3)
-    Position3 operator/(Position3, Real)
-    Position3 operator*(Position3, Real)
 
 cdef class PyPosition3:
     #cdef Position3 *thisptr
