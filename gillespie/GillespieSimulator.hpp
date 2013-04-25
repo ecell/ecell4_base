@@ -1,10 +1,9 @@
-#ifndef __GILLESPIESIMULATOR_HPP
-#define __GILLESPIESIMULATOR_HPP
+#ifndef __ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP
+#define __ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 #include <ecell4/core/types.hpp>
-#include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Simulator.hpp>
@@ -14,78 +13,93 @@
 
 #include "GillespieWorld.hpp"
 
-namespace ecell4 
+
+namespace ecell4
 {
 
-namespace gillespie 
+namespace gillespie
 {
 
-class GillespieSimulator 
-	: 
-		public Simulator 
+class GillespieSimulator
+    : public Simulator
 {
 public:
-	GillespieSimulator(
-		boost::shared_ptr<NetworkModel> model, boost::shared_ptr<GillespieWorld> world,
-		RandomNumberGenerator &rng)
-		: model_(model), world_(world), rng_(rng)
-	{
-		this->num_steps_ = 0;
-		this->initialize();	// calucate the time the first reaction occurs.
 
-		// About Hdf5
-		this->file_ = NULL;
-	}
-	~GillespieSimulator(void)
-	{
-		if (this->file_ != NULL)
-		{
-			delete this->file_;
-		}
-	}
-		
-	Integer num_steps(void) const;
-	void step(void) ;
-	bool step(Real const & upto);
+    GillespieSimulator(
+        boost::shared_ptr<NetworkModel> model,
+        boost::shared_ptr<GillespieWorld> world)
+        : model_(model), world_(world), num_steps_(0)
+    {
+        this->initialize();
 
-	Real t(void) const;
-	void set_t(Real const &t);
-	Real dt(void) const;
+        // About Hdf5
+        this->file_ = NULL;
+    }
 
-	void initialize(void);	// re-calcurate the next reaction.
-	RandomNumberGenerator &rng(void);
+    ~GillespieSimulator(void)
+    {
+        if (this->file_ != NULL)
+        {
+            delete this->file_;
+        }
+    }
+
+    // SimulatorTraits
+
+    Real t(void) const;
+    Real dt(void) const;
+    Integer num_steps(void) const;
+
+    void step(void) ;
+    bool step(const Real & upto);
+
+    // Optional members
+
+    void set_t(const Real &t);
+
+    /**
+     * recalculate reaction propensities and draw the next time.
+     */
+    void initialize(void);
 
 	// About Hdf5
-	void save_hdf5_init(std::string filename);
-	void save_hdf5(void);
-					
+    void save_hdf5_init(std::string filename);
+    void save_hdf5(void);
+
+    inline boost::shared_ptr<RandomNumberGenerator> rng()
+    {
+        return (*world_).rng();
+    }
+
 protected:
-	boost::shared_ptr<NetworkModel> model_;
-	boost::shared_ptr<GillespieWorld> world_;
-	
-	Integer num_steps_;
-	RandomNumberGenerator &rng_;
 
-	Real dt_;	
-	int next_reaction_num_; 	// the index of the next reaction.
-	void calc_next_reaction_(void);
+    void draw_next_reaction(void);
 
-	// About Hdf5
-	H5::H5File *file_;
-	
-	typedef struct species_id_table_struct {
-		uint32_t id;
-		char name[32];
-	} species_id_table_struct;
+protected:
 
-	typedef struct species_num_struct {
-		uint32_t id;
-		uint32_t num_of_molecules;
-	} species_num_struct;
+    boost::shared_ptr<NetworkModel> model_;
+    boost::shared_ptr<GillespieWorld> world_;
+    Integer num_steps_;
+
+    Real dt_;
+    int next_reaction_num_; // the index of the next reaction.
+
+    // About Hdf5
+    H5::H5File *file_;
+
+    typedef struct species_id_table_struct {
+        uint32_t id;
+        char name[32];
+    } species_id_table_struct;
+
+    typedef struct species_num_struct {
+        uint32_t id;
+        uint32_t num_of_molecules;
+    } species_num_struct;
 };
 
 }
 
-}	// ecell4
+} // ecell4
 
-#endif //__GILLESPIESIMULATOR_HPP
+#endif /* __ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP */
