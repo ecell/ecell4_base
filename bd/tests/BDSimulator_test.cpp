@@ -12,8 +12,8 @@ using namespace ecell4::bd;
 
 BOOST_AUTO_TEST_CASE(BDSimulator_test_constructor)
 {
-    const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    Real const L(1e-6);
+    Position3 const edge_lengths(L, L, L);
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
     boost::shared_ptr<Model> model(new NetworkModel());
@@ -22,10 +22,10 @@ BOOST_AUTO_TEST_CASE(BDSimulator_test_constructor)
     BDSimulator target(model, world);
 }
 
-BOOST_AUTO_TEST_CASE(BDSimulator_test_step1)
+BOOST_AUTO_TEST_CASE(BDSimulator_test_step)
 {
-    const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    Real const L(1e-6);
+    Position3 const edge_lengths(L, L, L);
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
     boost::shared_ptr<Model> model(new NetworkModel());
