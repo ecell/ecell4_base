@@ -4,17 +4,6 @@ from libcpp.vector cimport vector
 from libcpp cimport set
 from libcpp cimport bool
 
-
-cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
-    cdef cppclass ReactionRule:
-        ReactionRule() except +
-        Real k()
-        #set[Species] reactants() 
-        #set[Species] products()
-        void set_k(Real)
-        void add_reactant(Species)
-        void add_product(Species)
-
 cdef class PyReactionRule:
  #   cdef ReactionRule *thisptr
     def __cinit__(self):

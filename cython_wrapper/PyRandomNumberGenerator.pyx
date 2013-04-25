@@ -1,19 +1,5 @@
 
 
-cdef extern from "gsl/gsl_rng.h":
-    ctypedef struct gsl_rng:
-        pass
-
-
-cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
-    cdef cppclass GSLRandomNumberGenerator:
-        #GSLRandomNumberGenerator(shared_ptr[gsl_rng]) except +
-        GSLRandomNumberGenerator() except +
-        Real uniform(Real, Real)
-        Integer uniform_int(Integer, Integer)
-        Real gaussian(Real, Real)
-        void seed(Integer)
-
 cdef class PyRandomNumberGenerator:
     #cdef GSLRandomNumberGenerator *thisptr
     def __cinit__(self):

@@ -3,16 +3,6 @@ from cython.operator cimport dereference as deref
 from cython cimport address, declare
 from libcpp.vector cimport vector
 from libcpp.string cimport string
-
-cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
-    cdef cppclass Particle:
-        Particle() except +
-        Particle(Species, Position3, Real radius, Real D) except +
-        Position3 position()
-        Real radius()
-        Real D()
-        Species &species()
-        
         
 
 cdef class PyParticle:

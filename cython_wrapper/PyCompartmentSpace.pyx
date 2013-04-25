@@ -4,21 +4,6 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string 
 from cython.operator cimport dereference as deref
 
-
-cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
-    cdef cppclass CompartmentSpaceVectorImpl:
-        #Constructor
-        CompartmentSpaceVectorImpl(Real) except+
-        Real volume()
-        Integer num_species()
-        bool has_species(Species &sp)
-        Integer num_molecules(Species &sp)
-        void set_volume(Real)
-        void add_species(Species &sp)
-        void remove_species(Species &sp)
-        void add_molecules(Species &sp, Integer num)
-        void remove_molecules(Species &sp, Integer num)
-
 cdef class PyCompartmentSpace:
     #cdef CompartmentSpaceVectorImpl *thisptr
     def __cinit__(self, Real volume):
