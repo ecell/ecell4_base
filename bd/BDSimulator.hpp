@@ -1,5 +1,5 @@
-#ifndef __BD_SIMULATOR_HPP
-#define __BD_SIMULATOR_HPP
+#ifndef __ECELL4_BD_BD_SIMULATOR_HPP
+#define __ECELL4_BD_BD_SIMULATOR_HPP
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
@@ -26,19 +26,16 @@ class BDSimulator
 public:
 
     BDSimulator(boost::shared_ptr<Model> model, boost::shared_ptr<BDWorld> world)
-        : model_(model), world_(world), num_steps_(0), dt_(0)
+        : model_(model), world_(world), dt_(0), num_steps_(0)
     {
         ;
     }
 
+    // SimulatorTraits
+
     Real t() const
     {
         return (*world_).t();
-    }
-
-    void set_t(Real const& t)
-    {
-        (*world_).set_t(t);
     }
 
     Real dt() const
@@ -46,7 +43,22 @@ public:
         return dt_;
     }
 
-    void set_dt(Real const& dt)
+    Integer num_steps() const
+    {
+        return num_steps_;
+    }
+
+    void step();
+    bool step(const Real& upto);
+
+    // Optional members
+
+    void set_t(const Real& t)
+    {
+        (*world_).set_t(t);
+    }
+
+    void set_dt(const Real& dt)
     {
         if (dt <= 0)
         {
@@ -55,18 +67,13 @@ public:
         dt_ = dt;
     }
 
-    Integer num_steps() const
-    {
-        return num_steps_;
-    }
-
     inline boost::shared_ptr<RandomNumberGenerator> rng()
     {
         return (*world_).rng();
     }
 
-    void step();
-    bool step(Real const& upto);
+	void save_hdf5_init(std::string);
+	void save_hdf5(void);
 
 protected:
 
@@ -100,4 +107,4 @@ protected:
 
 } // ecell4
 
-#endif /* __BD_SIMULATOR_HPP */
+#endif /* __ECELL4_BD_BD_SIMULATOR_HPP */

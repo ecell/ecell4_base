@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # encoding: utf-8
 
+
 def configure(conf):
     conf.load('boost')
 
@@ -47,10 +48,10 @@ int main() { double a, b; sincos(0., &a, &b); return 0; }
 
 def build(bld):
     bld.program(
-        features = 'cxx cxxprogram test',
-        source = ['EGFRDSimulatorWrapper_test.cpp'],
-        target = 'EGFRDSimulatorWrapper_test',
-        includes = ['..', '../epdp'],
+        source = 'main.cpp',
+        target = 'mapk',
+        includes = ['../..', '../../epdp'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
-        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'boost_regex'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core', 'boost_regex',
+        'hdf5', 'hdf5_cpp'],
         use = 'ecell4-egfrd')

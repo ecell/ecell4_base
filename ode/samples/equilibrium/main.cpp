@@ -14,9 +14,9 @@ using namespace ecell4::ode;
  */
 int main(int argc, char** argv)
 {
-    Real const volume(1e-18);
-    Real const N(60);
-    Real const ka(0.1), U(0.5);
+    const Real volume(1e-18);
+    const Real N(60);
+    const Real ka(0.1), U(0.5);
 
     Species sp1("A"), sp2("B"), sp3("C");
     ReactionRule rr1, rr2;
@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     rr1.add_reactant(sp1);
     rr1.add_product(sp2);
     rr1.add_product(sp3);
-    Real const kd(ka * volume * (1 - U) / (U * U * N));
+    const Real kd(ka * volume * (1 - U) / (U * U * N));
     rr2.set_k(kd);
     rr2.add_reactant(sp2);
     rr2.add_reactant(sp3);

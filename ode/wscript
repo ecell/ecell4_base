@@ -26,11 +26,13 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_cxx waf_unit_test')
-    conf.check_cxx(lib='gsl')
-    conf.check_cxx(lib='gslcblas')
-    conf.check_cxx(lib='m')
+    conf.check_cxx(lib = 'gsl')
+    conf.check_cxx(lib = 'gslcblas')
+    conf.check_cxx(lib = 'm')
 
-    conf.check_cxx(lib='ecell4-core')
+    conf.check_cxx(lib = 'ecell4-core')
+
+    conf.check(header_name = 'boost/numeric/odeint.hpp', mandatory = True)
 
     conf.recurse(subdirs)
 
@@ -62,7 +64,7 @@ def build(bld):
     bld.shlib(
         source = cppfiles,
         includes = ['.'],
-        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core', 'hdf5', 'hdf5_cpp'],
         target = 'ecell4-ode')
 
     bld.recurse(subdirs)

@@ -6,29 +6,21 @@ from waflib import Logs
 
 
 def configure(conf):
-	pass
+    pass
 
 def build(bld):
-        # GillespieWorld
-	bld.program(
-		features = 'cxx cxxprogram test',
-		source = 'GillespieWorld_test.cpp',
-		target = 'GillespieWorld_test',
-		includes = ['..', '../../', '../../build/core'],
-		lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+    bld.program(
+        features='cxx cxxprogram test',
+        source='GillespieWorld_test.cpp',
+        target='GillespieWorld_test',
+        includes=['..'],
+        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        use='ecell4-gillespie')
 
-                # this relative path is from working directory for building( ecell4/build/gillespie ).
-                #libpath = ['../build/core'],    
-                use = 'ecell4-gillespie')
-
-        # GillespieSimulator
-	bld.program(
-		features = 'cxx cxxprogram test',
-		source = 'GillespieSimulator_test.cpp',
-		target = 'GillespieSimulator_test',
-		includes = ['..', '../../', '../../build/core'],
-		lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
-
-                # this relative path is from working directory for building( ecell4/build/gillespie ).
-                #libpath = ['../build/core'],    
-                use = 'ecell4-gillespie')
+    bld.program(
+        features='cxx cxxprogram test',
+        source='GillespieSimulator_test.cpp',
+        target='GillespieSimulator_test',
+        includes=['..'],
+        lib=['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        use='ecell4-gillespie')

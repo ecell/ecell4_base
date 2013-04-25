@@ -1,5 +1,5 @@
-#ifndef __EGFRD_SIMULATOR_HPP
-#define __EGFRD_SIMULATOR_HPP
+#ifndef __ECELL4_EGFRD_EGFRD_SIMULATOR_WRAPPER_HPP
+#define __ECELL4_EGFRD_EGFRD_SIMULATOR_WRAPPER_HPP
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
@@ -16,6 +16,9 @@
 
 #include "EGFRDWorld.hpp"
 
+#include <H5Cpp.h>
+#include <hdf5.h>
+
 
 namespace ecell4
 {
@@ -30,19 +33,13 @@ public:
 
     typedef EGFRDWorld::simulator_type simulator_type;
 
-protected:
-
-    typedef simulator_type::world_type world_type;
-    typedef simulator_type::traits_type::network_rules_type network_rules_type;
-
 public:
 
     EGFRDSimulatorWrapper(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<EGFRDWorld> world,
-        unsigned long int seed = 0,
         Integer dissociation_retry_moves = 3)
-        : model_(model), world_(world), rng_()
+        : model_(model), world_(world)
     {
         // set the log level for epdp as L_WARNING.
         ::LoggerManager::register_logger_manager(
@@ -50,15 +47,20 @@ public:
             boost::shared_ptr< ::LoggerManager>(
                 new ::LoggerManager("dummy", ::Logger::L_WARNING)));
 
-        rng_.seed(seed);
-
-        NetworkModel::species_container_type const&
+        const NetworkModel::species_container_type&
             species((*model_).species());
         for (NetworkModel::species_container_type::const_iterator
                  i(species.begin()); i != species.end(); ++i)
         {
-            (*world_).add_species(*i);
+            if (!(*world_).has_species(*i))
+            {
+                (*world_).add_species(*i);
+            }
+        }
 
+        for (NetworkModel::species_container_type::const_iterator
+                 i(species.begin()); i != species.end(); ++i)
+        {
             for (NetworkModel::species_container_type::const_iterator
                      j(i); j != species.end(); ++j)
             {
@@ -70,7 +72,7 @@ public:
             }
         }
 
-        NetworkModel::reaction_rule_container_type const&
+        const NetworkModel::reaction_rule_container_type&
             reaction_rules((*model_).reaction_rules());
         for (NetworkModel::reaction_rule_container_type::const_iterator
                  i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
@@ -79,32 +81,16 @@ public:
         }
 
         sim_ = boost::shared_ptr<simulator_type>(
-            new simulator_type(
-                world->world(), boost::shared_ptr<network_rules_type>(
-                    new network_rules_type(world->model().network_rules())),
-                rng_, dissociation_retry_moves));
+            (*world_).create_simulator(dissociation_retry_moves));
 
         initialize();
     }
 
-    boost::shared_ptr<simulator_type> simulator() const
-    {
-        return sim_;
-    }
-
-    void initialize()
-    {
-        (*sim_).initialize();
-    }
+    // SimulatorTraits
 
     Real t() const
     {
         return (*sim_).t();
-    }
-
-    void set_t(Real const& t)
-    {
-        throw NotImplemented("Not implemented yet.");
     }
 
     Real dt() const
@@ -118,18 +104,54 @@ public:
     }
 
     void step();
-    bool step(Real const& upto);
+    bool step(const Real& upto);
+
+    // Optional members
+
+    void set_t(const Real& t)
+    {
+        throw NotImplemented("Not implemented yet.");
+    }
+
+    void initialize()
+    {
+        (*sim_).initialize();
+    }
+
+    boost::shared_ptr<simulator_type> simulator() const
+    {
+        return sim_;
+    }
+
+	void save_hdf5_init(std::string);
+	void save_hdf5(void);
 
 protected:
 
     boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<EGFRDWorld> world_;
-    world_type::traits_type::rng_type rng_;
+
     boost::shared_ptr<simulator_type> sim_;
+
+
+	H5::H5File *file_;
+	typedef struct h5_particles {
+		int h5_particle_id_lot;
+		int h5_particle_id_serial;
+		double h5_particle_position[3];
+	} h5_particles;
+
+	typedef struct h5_particles_index {
+		int h5_particle_id_serial;
+		char h5_particle_name[32];
+
+		double h5_particle_radius;
+		double h5_particle_D;
+	} h5_particles_index;
 };
 
 } // egfrd
 
 } // ecell4
 
-#endif /* __EGFRD_SIMULATOR_HPP */
+#endif /* __ECELL4_EGFRD_EGFRD_SIMULATOR_WRAPPER_HPP */
