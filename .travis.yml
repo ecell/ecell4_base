@@ -7,7 +7,7 @@ compiler:
 before_install:
  - echo 'yes' | sudo add-apt-repository ppa:apokluda/boost1.53
  - sudo apt-get update -qq
- - sudo apt-get install -qq libtool python2.7-dev libboost-dev libboost-python-dev libgsl0-dev libhdf5-dev python-ply python-support docbook-xml docbook-utils doxygen
+ - sudo apt-get install -qq libtool python2.7-dev libboost-dev libboost-python-dev libgsl0-dev libhdf5-serial-dev python-ply python-support doxygen
 
 notifications:
   webhooks:
