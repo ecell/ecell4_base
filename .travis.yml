@@ -1,5 +1,5 @@
 language: cpp
-script: PREFIX=/usr/local ./install.sh
+script: sudo PREFIX=/usr/local ./install.sh
 compiler:
  - gcc
  - clang
