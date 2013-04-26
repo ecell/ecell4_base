@@ -1270,10 +1270,10 @@ struct p_survival_params
     const Real rnd;
 };
 
-static Real p_survival_F(Real t, p_survival_params const* params)
-{
-    return params->rnd - params->gf->p_survival(t);
-}
+// static Real p_survival_F(Real t, p_survival_params const* params)
+// {
+//     return params->rnd - params->gf->p_survival(t);
+// }
 
 struct p_survival_2i_params
 { 
@@ -1281,11 +1281,11 @@ struct p_survival_2i_params
     const Real t;
 };
 
-static Real p_survival_2i_F(Real ri, p_survival_2i_params const* params)
-{
-    return params->gf->p_survival_2i_exp(static_cast<unsigned int>(ri),
-                                         params->t);
-}
+// static Real p_survival_2i_F(Real ri, p_survival_2i_params const* params)
+// {
+//     return params->gf->p_survival_2i_exp(static_cast<unsigned int>(ri),
+//                                          params->t);
+// }
 
 struct p_survival_i_alpha_params
 { 
@@ -1293,11 +1293,11 @@ struct p_survival_i_alpha_params
     const Real t;
 };
 
-static Real p_survival_i_alpha_F(Real alpha,
-                                 p_survival_i_alpha_params const* params)
-{
-    return params->gf->p_survival_i_alpha(alpha, params->t);
-}
+// static Real p_survival_i_alpha_F(Real alpha,
+//                                  p_survival_i_alpha_params const* params)
+// {
+//     return params->gf->p_survival_i_alpha(alpha, params->t);
+// }
 
 struct p_leave_params
 { 
@@ -1636,7 +1636,7 @@ GreensFunction3DRadAbs::drawPleaves(gsl_function const& F,
     }
     else
     {
-        Real low_value_prev(value);
+        // Real low_value_prev(value);
         low *= .1;
 
         for (;;)
@@ -1653,15 +1653,16 @@ GreensFunction3DRadAbs::drawPleaves(gsl_function const& F,
             }
             
             // FIXME: 
-            if (fabs(low) <= minT)//|| 
-//                fabs(low_value - low_value_prev) < TOLERANCE) 
+            // if (fabs(low) <= minT
+            //     || fabs(low_value - low_value_prev) < TOLERANCE)
+            if (fabs(low) <= minT)
             {
                 log_.info("couldn't adjust low.  returning minT (=%.16g);"
                           "Fs(%.16g) = %.16g; r0 = %.16g, %s",
                           minT, low, GSL_FN_EVAL(&F, low), r0, dump().c_str());
                 return minT;
             }
-            low_value_prev = low_value;
+            // low_value_prev = low_value;
 
             log_.info("drawTime2: adjusting low: %.16g, Fs = %.16g", low, low_value);
             low *= .1;
