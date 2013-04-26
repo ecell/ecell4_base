@@ -1,20 +1,22 @@
 import PyEcell4
 import PyGillespie
+import time
 
 def run():
-    rng = PyEcell4.PyRandomNumberGenerator()
-    sp1 = PyEcell4.PySpecies("A")
-    sp2 = PyEcell4.PySpecies("B")
+    rng = PyEcell4.RandomNumberGenerator()
+    rng.seed(int(time.time()))
+    sp1 = PyEcell4.Species("A")
+    sp2 = PyEcell4.Species("B")
 
-    rr1 = PyEcell4.PyReactionRule()
+    rr1 = PyEcell4.ReactionRule()
     rr1.set_k(5.001)
     rr1.add_reactant(sp1)
     rr1.add_product(sp2)
 
-    m = PyEcell4.PyNetworkModel()
+    m = PyEcell4.NetworkModel()
     m.add_reaction_rule(rr1)
 
-    w = PyGillespie.PyGillespieWorld(1.0)
+    w = PyGillespie.GillespieWorld(1.0)
     w.add_species(sp1)
     w.add_species(sp2)
 
@@ -23,7 +25,7 @@ def run():
     m.add_species(sp1)
     m.add_species(sp2)
 
-    sim = PyGillespie.PyGillespieSimulator(m, w, rng)
+    sim = PyGillespie.GillespieSimulator(m, w, rng)
     #sim.save_hdf5_init("cython_wrapper_test.hdf5")
 
     for i in range(10):
