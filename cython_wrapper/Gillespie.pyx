@@ -9,8 +9,8 @@ from libcpp cimport bool
 
 include "types.pxi"
 
-from PyEcell4 cimport *
-from PyEcell4 import Species, NetworkModel, ReactionRule, RandomNumberGenerator
+from Ecell4 cimport *
+from Ecell4 import Species, NetworkModel, ReactionRule, RandomNumberGenerator
 
 
 cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gillespie":
