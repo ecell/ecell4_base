@@ -1,10 +1,10 @@
 from libcpp.vector cimport vector
 from libcpp.string cimport string 
 
-cdef class PySpecies:
-    #cdef Species *thisptr
+cdef class Species:
+    #cdef Cpp_Species *thisptr
     def __cinit__(self, string name):
-        self.thisptr = new Species(name)
+        self.thisptr = new Cpp_Species(name)
     def __dealloc__(self):
         del self.thisptr 
 
@@ -17,9 +17,9 @@ cdef class PySpecies:
     def remove_attributes(self, string name):
         self.thisptr.remove_attribute(name)
 
-cdef to_PySpecies(Species *sp):
-    cdef Species *new_obj = new Species("")
-    r = PySpecies("")
+cdef to_PyObject_Species(Cpp_Species *sp):
+    cdef Cpp_Species *new_obj = new Cpp_Species("")
+    r = Species("")
     del r.thisptr
     r.thisptr = new_obj
     return r
