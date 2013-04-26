@@ -1,5 +1,5 @@
 ================================
-ecell4
+ecell4 |build-status|
 ================================
 
 About
@@ -66,3 +66,9 @@ Full installation (Read only)
   LD_LIBRARY_PATH=${SRCPATH}/ecell3-spatiocyte:${SRCPATH}/epdp \
   LIBRARY_PATH=${SRCPATH}/ecell3-spatiocyte:${SRCPATH}/epdp \
   ./install.sh core bd gillespie ode egfrd spatiocyte
+
+.. Build status badge
+.. |build-status|
+   image:: https://secure.travis-ci.org/ecell/ecell4.png
+   :target: http://travis-ci.org/ecell/ecell4
+   :alt: Build Status
