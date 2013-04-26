@@ -1,9 +1,9 @@
 
 
-cdef class PyRandomNumberGenerator:
-    #cdef GSLRandomNumberGenerator *thisptr
+cdef class RandomNumberGenerator:
+    #cdef Cpp_GSLRandomNumberGenerator *thisptr
     def __cinit__(self):
-        self.thisptr = new GSLRandomNumberGenerator()
+        self.thisptr = new Cpp_GSLRandomNumberGenerator()
             
     def __dealloc__(self):
         del self.thisptr

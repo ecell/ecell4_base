@@ -27,128 +27,127 @@ cdef extern from "gsl/gsl_rng.h":
         pass
 
 cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
-    cdef cppclass GSLRandomNumberGenerator:
+    cdef cppclass Cpp_GSLRandomNumberGenerator "ecell4::GSLRandomNumberGenerator":
         #GSLRandomNumberGenerator(shared_ptr[gsl_rng]) except +
-        GSLRandomNumberGenerator() except +
+        Cpp_GSLRandomNumberGenerator() except +
         Real uniform(Real, Real)
         Integer uniform_int(Integer, Integer)
         Real gaussian(Real, Real)
         void seed(Integer)
 
 # For Dereference
-cdef class PyRandomNumberGenerator:
-    cdef GSLRandomNumberGenerator *thisptr
+cdef class RandomNumberGenerator:
+    cdef Cpp_GSLRandomNumberGenerator *thisptr
 
 #============================================================
 #   Species
 #============================================================
 cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
-    cdef cppclass Species:
+    cdef cppclass Cpp_Species "ecell4::Species":
         # Constructor
-        Species(string) except +
-        Species(string, string)
-        Species(string, string, string)
+        Cpp_Species(string) except +
+        Cpp_Species(string, string) except +
+        Cpp_Species(string, string, string) except +
 #       serial_type serial()
         string name()
         string get_attribute(string)
         void set_attribute(string,string)
         void remove_attribute(string)
 
-cdef class PySpecies:
-    cdef Species *thisptr
+cdef class Species:
+    cdef Cpp_Species *thisptr
 
 #============================================================
 #   ReactionRule
 #============================================================
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
-    cdef cppclass ReactionRule:
-        ReactionRule() except +
+    cdef cppclass Cpp_ReactionRule "ecell4::ReactionRule":
+        Cpp_ReactionRule() except +
         Real k()
         #set[Species] reactants() 
         #set[Species] products()
         void set_k(Real)
-        void add_reactant(Species)
-        void add_product(Species)
+        void add_reactant(Cpp_Species)
+        void add_product(Cpp_Species)
 
-cdef class PyReactionRule:
-    cdef ReactionRule *thisptr
+cdef class ReactionRule:
+    cdef Cpp_ReactionRule *thisptr
 
 #============================================================
 #   CompartmentSpace
 #============================================================
 cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
-    cdef cppclass CompartmentSpaceVectorImpl:
+    cdef cppclass Cpp_CompartmentSpaceVector "ecell4::CompartmentSpaceVectorImpl":
         #Constructor
-        CompartmentSpaceVectorImpl(Real) except+
+        Cpp_CompartmentSpaceVector(Real) except+
         Real volume()
         Integer num_species()
-        bool has_species(Species &sp)
-        Integer num_molecules(Species &sp)
+        bool has_species(Cpp_Species &sp)
+        Integer num_molecules(Cpp_Species &sp)
         void set_volume(Real)
-        void add_species(Species &sp)
-        void remove_species(Species &sp)
-        void add_molecules(Species &sp, Integer num)
-        void remove_molecules(Species &sp, Integer num)
+        void add_species(Cpp_Species &sp)
+        void remove_species(Cpp_Species &sp)
+        void add_molecules(Cpp_Species &sp, Integer num)
+        void remove_molecules(Cpp_Species &sp, Integer num)
 
-cdef class PyCompartmentSpace:
-    cdef CompartmentSpaceVectorImpl *thisptr
+cdef class CompartmentSpace:
+    cdef Cpp_CompartmentSpaceVector *thisptr
 
 #============================================================
 #   NetworkModel
 #============================================================
 cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
-    cdef cppclass NetworkModel:
-        NetworkModel() except +
-        void add_species(Species sp)
-        bool has_species(Species sp)
-        void remove_species(Species sp)
-        void add_reaction_rule(ReactionRule)
-        void remove_reaction_rule(ReactionRule)
-        bool has_reaction_rule(ReactionRule)
+    cdef cppclass Cpp_NetworkModel "ecell4::NetworkModel":
+        Cpp_NetworkModel() except +
+        void add_species(Cpp_Species sp)
+        bool has_species(Cpp_Species sp)
+        void remove_species(Cpp_Species sp)
+        void add_reaction_rule(Cpp_ReactionRule)
+        void remove_reaction_rule(Cpp_ReactionRule)
+        bool has_reaction_rule(Cpp_ReactionRule)
 
-cdef class PyNetworkModel:
-    #cdef NetworkModel *thisptr
-    cdef shared_ptr[NetworkModel] *thisptr
+cdef class NetworkModel:
+    #cdef Cpp_NetworkModel *thisptr
+    cdef shared_ptr[Cpp_NetworkModel] *thisptr
 
 #============================================================
 #   Position3
 #============================================================
 cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
-    cdef cppclass Position3:
-        Position3() except +
-        Position3(Real, Real, Real) except +
-        Position3(Position3 &rhs) except+
-    Position3 add(Position3, Position3)
-    Position3 subtract(Position3, Position3)
-    Position3 divide(Position3, Real)
-    Position3 multiply(Position3, Real)
-    Position3 modulo(Position3, Real)
-    Position3 modulo(Position3, Position3)
-    Position3 abs(Position3)
-    Real dot_product(Position3, Position3)
-    Position3 cross_product(Position3, Position3)
-    Integer length_sq(Position3)
-    Integer length(Position3)
-    Position3 operator+(Position3, Position3)
-    Position3 operator-(Position3, Position3)
-    Position3 operator/(Position3, Real)
-    Position3 operator*(Position3, Real)
+    cdef cppclass Cpp_Position3 "ecell4::Position3":
+        Cpp_Position3() except +
+        Cpp_Position3(Real, Real, Real) except +
+        Cpp_Position3(Cpp_Position3 &rhs) except+
+    Cpp_Position3 add(Cpp_Position3, Cpp_Position3)
+    Cpp_Position3 subtract(Cpp_Position3, Cpp_Position3)
+    Cpp_Position3 divide(Cpp_Position3, Real)
+    Cpp_Position3 multiply(Cpp_Position3, Real)
+    Cpp_Position3 modulo(Cpp_Position3, Real)
+    Cpp_Position3 modulo(Cpp_Position3, Cpp_Position3)
+    Cpp_Position3 abs(Cpp_Position3)
+    Real dot_product(Cpp_Position3, Cpp_Position3)
+    Cpp_Position3 cross_product(Cpp_Position3, Cpp_Position3)
+    Integer length_sq(Cpp_Position3)
+    Integer length(Cpp_Position3)
+    Cpp_Position3 operator+(Cpp_Position3, Cpp_Position3)
+    Cpp_Position3 operator-(Cpp_Position3, Cpp_Position3)
+    Cpp_Position3 operator/(Cpp_Position3, Real)
+    Cpp_Position3 operator*(Cpp_Position3, Real)
 
-cdef class PyPosition3:
-    cdef Position3 *thisptr
-
+cdef class Position3:
+    cdef Cpp_Position3 *thisptr
 
 #============================================================
 #   Particle
 #============================================================
 cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
-    cdef cppclass Particle:
-        Particle() except +
-        Particle(Species, Position3, Real radius, Real D) except +
-        Position3 position()
+    cdef cppclass Cpp_Particle "ecell4::Particle":
+        Cpp_Particle() except +
+        Cpp_Particle(Cpp_Species, Cpp_Position3, Real radius, Real D) except +
+        Cpp_Position3 position()
         Real radius()
         Real D()
-        Species &species()
+        Cpp_Species &species()
 
-cdef class PyParticle:
-    cdef Particle *thisptr
+cdef class Particle:
+    cdef Cpp_Particle *thisptr

@@ -5,21 +5,21 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
         
 
-cdef class PyParticle:
+cdef class Particle:
     #cdef Position3 *thisptr
-    def __cinit__(self, PySpecies sp, PyPosition3 pos, Real radius, Real D):
-        self.thisptr = new Particle( 
+    def __cinit__(self, Species sp, Position3 pos, Real radius, Real D):
+        self.thisptr = new Cpp_Particle( 
                 deref(sp.thisptr), 
                 deref(pos.thisptr), 
                 radius, D)
     def __dealloc__(self):
         del self.thisptr
     def position(self):
-        cdef Position3 pos = self.thisptr.position()
-        return to_PyPosition3( address(pos) )
+        cdef Cpp_Position3 pos = self.thisptr.position()
+        return to_PyObject_Position3( address(pos) )
     def radius(self):
         return self.this.radius()
     def D(self):
         return self.thisptr.D()
     def species(self):
-        return to_PySpecies( address(self.thisptr.species()) )
+        return to_PyObject_Species( address(self.thisptr.species()) )

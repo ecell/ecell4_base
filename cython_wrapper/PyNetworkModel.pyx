@@ -5,27 +5,27 @@ from libcpp.vector cimport vector
 from libcpp cimport set
 from libcpp cimport bool
 
-cdef class PyNetworkModel:
+cdef class NetworkModel:
     #cdef NetworkModel *thisptr
     def __cinit__(self):
         #self.thisptr = new NetworkModel() 
-        self.thisptr = new shared_ptr[NetworkModel](new NetworkModel())
+        self.thisptr = new shared_ptr[Cpp_NetworkModel](new Cpp_NetworkModel())
     def __dealloc__(self):
         del self.thisptr
     # HANDLERS FOR SPECIES
-    def add_species(self, PySpecies sp):
+    def add_species(self, Species sp):
         self.thisptr.get().add_species( deref(sp.thisptr) )
-    def has_species(self, PySpecies sp):
+    def has_species(self, Species sp):
         return self.thisptr.get().has_species( deref(sp.thisptr) )
-    def remove_species(self, PySpecies sp):
+    def remove_species(self, Species sp):
         self.thisptr.get().remove_species( deref(sp.thisptr) )
 
     # HANDLERS FOR REACTION_RULES
-    def add_reaction_rule(self, PyReactionRule rr):
+    def add_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().add_reaction_rule( deref(rr.thisptr) )
-    def remove_reaction_rule(self, PyReactionRule rr):
+    def remove_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().remove_reaction_rule( deref(rr.thisptr) )
-    def has_reaction_rule(self, PyReactionRule rr):
+    def has_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().has_reaction_rule( deref(rr.thisptr) )
     
 '''
