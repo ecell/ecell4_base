@@ -52,7 +52,7 @@ void EGFRDSimulatorWrapper::save_hdf5(void)
 	typedef std::vector<std::pair<ParticleID, Particle> > particle_container_type;
 	const particle_container_type &particles = this->world_->list_particles();
 
-	int length = particles.size();
+	unsigned int length = particles.size();
 	boost::scoped_array<h5_particles> h5_p(new h5_particles[length]);
 	boost::scoped_array<h5_particles_index> h5_index(new h5_particles_index[length]);
 

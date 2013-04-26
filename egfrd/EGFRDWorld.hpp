@@ -561,6 +561,7 @@ protected:
         default:
             throw NotSupported("the number of reactants must be 1 or 2.");
         }
+        return ::ReactionRule(); // never get here
     }
 
 protected:
