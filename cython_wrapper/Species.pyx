@@ -1,27 +1,10 @@
-# distutils: language = c++
-# distutils: sources = ../core/Species.cpp
-
 from libcpp.vector cimport vector
 from libcpp.string cimport string 
 
-ctypedef double Real 
-
-cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
-    cdef cppclass Species:
-        # Constructor
-        Species(string) except +
-        Species(string, string)
-        Species(string, string, string)
-#       serial_type serial()
-        string name()
-        string get_attribute(string)
-        void set_attribute(string,string)
-        void remove_attribute(string)
-
-cdef class PySpecies:
-    cdef Species *thisptr
+cdef class Species:
+    #cdef Cpp_Species *thisptr
     def __cinit__(self, string name):
-        self.thisptr = new Species(name)
+        self.thisptr = new Cpp_Species(name)
     def __dealloc__(self):
         del self.thisptr 
 
@@ -33,3 +16,10 @@ cdef class PySpecies:
         self.thisptr.set_attribute(name, value)
     def remove_attributes(self, string name):
         self.thisptr.remove_attribute(name)
+
+cdef to_PyObject_Species(Cpp_Species *sp):
+    cdef Cpp_Species *new_obj = new Cpp_Species("")
+    r = Species("")
+    del r.thisptr
+    r.thisptr = new_obj
+    return r
