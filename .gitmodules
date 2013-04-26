@@ -1,3 +1,4 @@
 [submodule "egfrd/epdp"]
 	path = egfrd/epdp
-    url = git@github.com:ecell/epdp.git
+#	url = git@github.com:ecell/epdp.git
+	url = git://github.com/ecell/epdp
