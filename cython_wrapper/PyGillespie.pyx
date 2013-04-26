@@ -10,26 +10,26 @@ from libcpp cimport bool
 include "types.pxi"
 
 from PyEcell4 cimport *
-from PyEcell4 import PySpecies, PyNetworkModel, PyReactionRule
+from PyEcell4 import Species, NetworkModel, ReactionRule, RandomNumberGenerator
 
 
 cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gillespie":
-    cdef cppclass GillespieWorld:
-        GillespieWorld(Real) except +
+    cdef cppclass Cpp_GillespieWorld "ecell4::gillespie::GillespieWorld":
+        Cpp_GillespieWorld(Real) except +
         void set_t(Real)
         Real t()
         Real volume()
         Integer num_species()
-        bool has_species(Species &)
-        Integer num_molecules(Species &)
+        bool has_species(Cpp_Species &)
+        Integer num_molecules(Cpp_Species &)
         
-        void add_species(Species &)
-        void remove_species(Species &)
-        void add_molecules(Species &sp, Integer &num)
-        void remove_molecules(Species &sp, Integer &num)
+        void add_species(Cpp_Species &)
+        void remove_species(Cpp_Species &)
+        void add_molecules(Cpp_Species &sp, Integer &num)
+        void remove_molecules(Cpp_Species &sp, Integer &num)
 
 cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
-    cdef cppclass RandomNumberGenerator:
+    cdef cppclass Cpp_GSLRandomNumberGenerator "ecell4::GSLRandomNumberGenerator":
         pass
 
 cdef extern from "boost/shared_ptr.hpp" namespace "boost":
@@ -37,21 +37,19 @@ cdef extern from "boost/shared_ptr.hpp" namespace "boost":
         shared_ptr(T *ptr)
         T* get()
 
-cdef class PyGillespieWorld:
+cdef class GillespieWorld:
     #cdef GillespieWorld *thisptr
-    cdef shared_ptr[GillespieWorld] *thisptr
+    cdef shared_ptr[Cpp_GillespieWorld] *thisptr
     # XXX
     # If you don't use shared_ptr, please remove calling 'get()'.
     def __cinit__(self, Real vol):
-        #self.thisptr = new GillespieWorld(vol)
-        self.thisptr = new shared_ptr[GillespieWorld](new GillespieWorld(vol))
+        self.thisptr = new shared_ptr[Cpp_GillespieWorld](new Cpp_GillespieWorld(vol))
     def __dealloc__(self):
         #XXX Here, we release shared pointer, and if reference count to the GillespieWorld object,
         # it will be released automatically.
         del self.thisptr
     
     def set_t(self, Real t):
-
         self.thisptr.get().set_t(t)
     def t(self):
         return self.thisptr.get().t()
@@ -59,26 +57,25 @@ cdef class PyGillespieWorld:
         return self.thisptr.get().volume()
     def num_species(self):
         return self.thisptr.get().num_species()
-    def has_species(self, PySpecies sp):
+    def has_species(self, Species sp):
         return self.thisptr.get().has_species( deref(sp.thisptr) )
-    def num_molecules(self, PySpecies sp):
+    def num_molecules(self, Species sp):
         return self.thisptr.get().num_molecules( deref(sp.thisptr) )
-
-    def add_species(self, PySpecies sp):
+    def add_species(self, Species sp):
         self.thisptr.get().add_species(deref(sp.thisptr) )
-    def remove_species(self, PySpecies sp):
+    def remove_species(self, Species sp):
         self.thisptr.get().remove_species(deref(sp.thisptr))
-    def add_molecules(self, PySpecies sp, Integer num):
+    def add_molecules(self, Species sp, Integer num):
         self.thisptr.get().add_molecules(deref(sp.thisptr), num)
-    def remove_species(self, PySpecies sp, Integer num):
+    def remove_species(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
 cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gillespie":
-    cdef cppclass GillespieSimulator:
-        GillespieSimulator(
-                shared_ptr[NetworkModel], 
-                shared_ptr[GillespieWorld],
-                GSLRandomNumberGenerator &) except +
+    cdef cppclass Cpp_GillespieSimulator "ecell4::gillespie::GillespieSimulator":
+        Cpp_GillespieSimulator(
+                shared_ptr[Cpp_NetworkModel], 
+                shared_ptr[Cpp_GillespieWorld],
+                Cpp_GSLRandomNumberGenerator &) except +
         Integer num_steps()
         void step()
         bool step(Real)
@@ -86,16 +83,16 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         void set_t(Real)
         Real dt()
         void initialize()
-        RandomNumberGenerator &rng()
+        Cpp_GSLRandomNumberGenerator &rng()
         void save_hdf5_init(string filename)
         void save_hdf5()
 
 
-cdef class PyGillespieSimulator:
-    cdef GillespieSimulator *thisptr
-    def __cinit__(self, PyNetworkModel m, PyGillespieWorld w, PyRandomNumberGenerator rng):
+cdef class GillespieSimulator:
+    cdef Cpp_GillespieSimulator *thisptr
+    def __cinit__(self, NetworkModel m, GillespieWorld w, RandomNumberGenerator rng):
         # XXX
-        self.thisptr = new GillespieSimulator( 
+        self.thisptr = new Cpp_GillespieSimulator( 
                 deref(m.thisptr), 
                 deref(w.thisptr), 
                 deref(rng.thisptr)
