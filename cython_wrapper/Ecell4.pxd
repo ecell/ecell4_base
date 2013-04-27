@@ -10,6 +10,21 @@ from libcpp cimport bool
 
 include "types.pxi"
 
+#============================================================
+#   Stl:    MultiSet
+#============================================================
+cdef extern from "<set>" namespace "std":
+    cdef cppclass multiset[T]:
+        multiset() except +
+        multiset(multiset &) except+
+        cppclass iterator:
+            T& operator*()
+            iterator operator++() 
+            iterator operator--() 
+            bint operator==(iterator) 
+            bint operator!=(iterator) 
+        iterator begin() 
+        iterator end() 
 
 #============================================================
 #   Boost.shared_ptr<T>
@@ -48,6 +63,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         Cpp_Species(string) except +
         Cpp_Species(string, string) except +
         Cpp_Species(string, string, string) except +
+        Cpp_Species(Cpp_Species &) except+
 #       serial_type serial()
         string name()
         string get_attribute(string)
@@ -64,8 +80,8 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRule "ecell4::ReactionRule":
         Cpp_ReactionRule() except +
         Real k()
-        #set[Species] reactants() 
-        #set[Species] products()
+        multiset[Cpp_Species]& reactants() 
+        multiset[Cpp_Species]& products()
         void set_k(Real)
         void add_reactant(Cpp_Species)
         void add_product(Cpp_Species)

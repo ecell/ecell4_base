@@ -1,3 +1,4 @@
+from cython.operator cimport dereference as deref
 from libcpp.vector cimport vector
 from libcpp.string cimport string 
 
@@ -18,7 +19,7 @@ cdef class Species:
         self.thisptr.remove_attribute(name)
 
 cdef to_PyObject_Species(Cpp_Species *sp):
-    cdef Cpp_Species *new_obj = new Cpp_Species("")
+    cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))
     r = Species("")
     del r.thisptr
     r.thisptr = new_obj
