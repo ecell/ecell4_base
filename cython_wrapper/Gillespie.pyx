@@ -32,7 +32,7 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
     cdef cppclass Cpp_GSLRandomNumberGenerator "ecell4::GSLRandomNumberGenerator":
         pass
 
-cdef extern from "boost/shared_ptr.hpp" namespace "boost":
+cdef extern from "<boost/shared_ptr.hpp>" namespace "boost":
     cdef cppclass shared_ptr[T]:
         shared_ptr(T *ptr)
         T* get()
