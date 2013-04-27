@@ -29,7 +29,7 @@ cdef extern from "<set>" namespace "std":
 #============================================================
 #   Boost.shared_ptr<T>
 #============================================================
-cdef extern from "boost/shared_ptr.hpp" namespace "boost":
+cdef extern from "<boost/shared_ptr.hpp>" namespace "boost":
     cdef cppclass shared_ptr[T]:
         shared_ptr(T *ptr)
         T* get()
