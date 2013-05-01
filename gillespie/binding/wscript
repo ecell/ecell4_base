@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+from waflib import Logs
+
+top = '.'
+out = 'build'
+
+pyx_sources = ['Gillespie.pyx']
+
+def options(ctx):
+    ctx.load('compiler_c')
+    ctx.load('compiler_cxx')
+    ctx.load('python')
+    ctx.load('cython')
+    #ctx.load('cython_cache', tooldir='.')
+
+def configure(ctx):
+    ctx.load('compiler_c')
+    ctx.load('compiler_cxx')
+    ctx.load('python')
+    ctx.check_python_headers()
+    try:
+        ctx.load('cython')
+    except ctx.errors.ConfigurationError:
+        Logs.warn('Cython waf not found using the cache')
+
+def build(ctx):
+    # build wrapper for core.
+    ctx(
+            features = 'cxx cxxshlib pyext',
+            source = pyx_sources,
+            target = 'Gillespie',
+            cython_includes = ['../../cython_wrapper'],
+            lib = ['ecell4-core', 'ecell4-gillespie']
+            )
