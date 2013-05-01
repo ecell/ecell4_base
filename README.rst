@@ -19,6 +19,7 @@ Install
 =======
 
 Do following instructions.
+(To build Cython Wrapper it requires Cython 0.17 or later.)
 
 ..
 
