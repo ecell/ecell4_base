@@ -5,7 +5,7 @@ from waflib import Logs
 top = '.'
 out = 'build'
 
-pyx_sources = ['Ecell4.pyx']
+pyx_sources = ['ecell4.pyx']
 
 def options(ctx):
     ctx.load('compiler_c')
@@ -29,6 +29,6 @@ def build(ctx):
     ctx(
             features = 'cxx cxxshlib pyext',
             source = pyx_sources,
-            target = 'Ecell4',
+            target = 'ecell4',
             lib = ['ecell4-core']
             )

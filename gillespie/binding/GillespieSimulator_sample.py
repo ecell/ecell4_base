@@ -1,19 +1,19 @@
-import Ecell4
+import ecell4
 import Gillespie
 import time
 
 def run():
-    rng = Ecell4.RandomNumberGenerator()
+    rng = ecell4.RandomNumberGenerator()
     rng.seed(int(time.time()))
-    sp1 = Ecell4.Species("A")
-    sp2 = Ecell4.Species("B")
+    sp1 = ecell4.Species("A")
+    sp2 = ecell4.Species("B")
 
-    rr1 = Ecell4.ReactionRule()
+    rr1 = ecell4.ReactionRule()
     rr1.set_k(5.001)
     rr1.add_reactant(sp1)
     rr1.add_product(sp2)
 
-    m = Ecell4.NetworkModel()
+    m = ecell4.NetworkModel()
     m.add_reaction_rule(rr1)
 
     w = Gillespie.GillespieWorld(1.0)
