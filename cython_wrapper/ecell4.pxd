@@ -8,6 +8,11 @@ from libcpp.string cimport string
 from libcpp.set cimport set
 from libcpp cimport bool
 
+#XXX Tomplorary using cython stl support.
+#       Perhaps, we should consider importing std::pair by ourselves
+#       that don't cast c-objects into python objects automatically.
+from libcpp.pair cimport pair
+
 include "types.pxi"
 
 #============================================================
@@ -156,7 +161,35 @@ cdef class Position3:
 #============================================================
 #   Particle
 #============================================================
+
 cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
+    ctypedef unsigned long long Ull
+    ctypedef Tbase_ "ecell4::ParticleID"
+    ctypedef int lot_type
+    ctypedef Ull serial_type
+    ctypedef pair[int, Ull] value_type
+    cdef cppclass Cpp_ParticleID "ecell4::ParticleID":
+        Cpp_ParticleID(value_type)
+        Cpp_ParticleID log_add(lot_type &rhs)
+        Cpp_ParticleID log_subtract(lot_type &rhs)
+        Cpp_ParticleID &lot_advance(lot_type &rhs)
+        Cpp_ParticleID &lot_retraace(lot_type &rhs)
+        Cpp_ParticleID serial_add(serial_type &rhs)
+        Cpp_ParticleID serial_subtract(serial_type &rhs)
+        Cpp_ParticleID &serial_advance(serial_type &rhs)
+        Cpp_ParticleID &serial_retrace(serial_type &rhs)
+        #Cpp_ParticleID &operator=(Cpp_ParticleID &rhs) #XXX not yet suppoted
+        bool operator==(Cpp_ParticleID &rhs)
+        bool operator!=(Cpp_ParticleID &rhs)
+        bool operator<(Cpp_ParticleID &rhs)
+        bool operator>=(Cpp_ParticleID &rhs)
+        bool operator>(Cpp_ParticleID &rhs)
+        bool operator<=(Cpp_ParticleID &rhs)
+        # operator value_type()
+        value_type &operator() ()
+        lot_type &lot()
+        serial_type &serial()
+
     cdef cppclass Cpp_Particle "ecell4::Particle":
         Cpp_Particle() except +
         Cpp_Particle(Cpp_Species, Cpp_Position3, Real radius, Real D) except +
