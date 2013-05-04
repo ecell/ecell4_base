@@ -6,6 +6,7 @@
 #include <cstring>
 #include <sstream>
 #include <cstdio>
+#include <cstring>
 
 #include <boost/scoped_array.hpp>
 
