@@ -20,8 +20,7 @@ hppfiles = [
     'SpatiocyteSimulator.hpp',
     'CoordinateLogger.hpp',
     'SpatiocyteVisualizationLogger.hpp',
-    'utils.hpp',
-    'config.h'
+    'utils.hpp'
     ]
 
 cppfiles = [
@@ -42,8 +41,8 @@ def configure(conf):
 
     conf.check_cxx(lib = 'ecell4-core')
 
-    conf.define('ECELL3_DM_PATH', os.environ['ECELL3_DM_PATH'])
-    conf.write_config_header('config.h', guard='__ECELL4_SPATIOCYTE_W_CONFIG_H_WAF')
+    # conf.define('ECELL3_DM_PATH', os.environ['ECELL3_DM_PATH'])
+    # conf.write_config_header('config.h', guard='__ECELL4_SPATIOCYTE_W_CONFIG_H_WAF')
 
     conf.recurse(subdirs)
 

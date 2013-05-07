@@ -27,8 +27,6 @@
 #include <libecs/SpatiocyteSpecies.hpp>
 #include <libecs/SpatiocyteStepper.hpp>
 
-#include "config.h" // ecell4/spatiocyte/config.h
-
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
@@ -680,7 +678,7 @@ protected:
     void setup_model()
     {
         (*model_).setup();
-        (*model_).setDMSearchPath(ECELL3_DM_PATH);
+        // (*model_).setDMSearchPath(ECELL3_DM_PATH);
 
         libecs::Stepper* stepper_ptr(
             (*model_).createStepper("SpatiocyteStepper", "SS"));
