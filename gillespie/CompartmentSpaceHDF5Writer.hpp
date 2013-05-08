@@ -8,6 +8,11 @@
 #include <hdf5.h>
 #include <H5Cpp.h>
 
+#include <ecell4/core/types.hpp>
+#include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
+
+
 namespace ecell4
 {
 

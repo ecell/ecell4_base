@@ -10,12 +10,7 @@ using namespace ecell4::gillespie;
 int main(int argc, char **argv)
 {
     Species sp1("A"), sp2("B");
-
-    // Expand Reaction Rule.
-    ReactionRule rr1;
-    rr1.set_k(5.001);
-    rr1.add_reactant(sp1);
-    rr1.add_product(sp2);
+    ReactionRule rr1(create_unimolecular_reaction_rule(sp1, sp2, 5.001));
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species(sp1);
@@ -31,10 +26,9 @@ int main(int argc, char **argv)
     // world->add_species(sp1);
     // world->add_species(sp2);
     world->add_molecules(sp1, 10);
+    world->save("test.h5");
 
     GillespieSimulator sim(model, world);
-    sim.save_hdf5_init("test.h5");
-    sim.save_hdf5();
 
     std::cout << "t = " << sim.t()
               << ", A: " << world->num_molecules(sp1)

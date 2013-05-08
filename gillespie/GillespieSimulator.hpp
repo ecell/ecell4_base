@@ -8,10 +8,6 @@
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Simulator.hpp>
 
-#include <hdf5.h>
-#include <H5Cpp.h>
-
-#include "CompartmentSpaceHDF5Writer.hpp"
 #include "GillespieWorld.hpp"
 
 
@@ -29,7 +25,7 @@ public:
     GillespieSimulator(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<GillespieWorld> world)
-        : model_(model), world_(world), num_steps_(0), writer_(*world)
+        : model_(model), world_(world), num_steps_(0)
     {
         this->initialize();
     }
@@ -57,10 +53,6 @@ public:
      */
     void initialize(void);
 
-    // About Hdf5
-    void save_hdf5_init(std::string filename);
-    void save_hdf5(void);
-
     inline boost::shared_ptr<RandomNumberGenerator> rng()
     {
         return (*world_).rng();
@@ -78,8 +70,6 @@ protected:
 
     Real dt_;
     int next_reaction_num_; // the index of the next reaction.
-
-    CompartmentSpaceHDF5Writer<GillespieWorld> writer_;
 };
 
 }

@@ -164,16 +164,6 @@ Integer GillespieSimulator::num_steps(void) const
     return this->num_steps_;
 }
 
-void GillespieSimulator::save_hdf5_init(std::string filename)
-{
-    writer_.initialize(filename);
-}
-
-void GillespieSimulator::save_hdf5(void)
-{
-    writer_.save();
-}
-
 } // gillespie
 
 } // ecell4

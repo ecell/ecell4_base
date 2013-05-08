@@ -10,6 +10,8 @@
 #include <ecell4/core/CompartmentSpace.hpp>
 #include <ecell4/core/Species.hpp>
 
+#include "CompartmentSpaceHDF5Writer.hpp"
+
 
 namespace ecell4
 {
@@ -32,6 +34,13 @@ public:
 
     const Real& t(void) const;
     void set_t(const Real& t);
+
+    void save(const std::string& filename) const
+    {
+        CompartmentSpaceHDF5Writer<GillespieWorld> writer(*this);
+        writer.initialize(filename);
+        writer.save();
+    }
 
     // CompartmentSpaceTraits
 
