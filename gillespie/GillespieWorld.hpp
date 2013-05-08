@@ -43,6 +43,7 @@ public:
     Integer num_species(void) const;
     bool has_species(const Species& sp) const;
     Integer num_molecules(const Species& sp) const;
+    std::vector<Species> list_species() const;
 
     // CompartmentSpace member functions
 

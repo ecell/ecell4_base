@@ -11,6 +11,7 @@
 #include <hdf5.h>
 #include <H5Cpp.h>
 
+#include "CompartmentSpaceHDF5Writer.hpp"
 #include "GillespieWorld.hpp"
 
 
@@ -28,20 +29,14 @@ public:
     GillespieSimulator(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<GillespieWorld> world)
-        : model_(model), world_(world), num_steps_(0)
+        : model_(model), world_(world), num_steps_(0), writer_(*world)
     {
         this->initialize();
-
-        // About Hdf5
-        this->file_ = NULL;
     }
 
     ~GillespieSimulator(void)
     {
-        if (this->file_ != NULL)
-        {
-            delete this->file_;
-        }
+        ;
     }
 
     // SimulatorTraits
@@ -84,18 +79,7 @@ protected:
     Real dt_;
     int next_reaction_num_; // the index of the next reaction.
 
-    // About Hdf5
-    H5::H5File *file_;
-
-    typedef struct species_id_table_struct {
-        uint32_t id;
-        char name[32];
-    } species_id_table_struct;
-
-    typedef struct species_num_struct {
-        uint32_t id;
-        uint32_t num_of_molecules;
-    } species_num_struct;
+    CompartmentSpaceHDF5Writer<GillespieWorld> writer_;
 };
 
 }

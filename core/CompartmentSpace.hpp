@@ -60,6 +60,16 @@ public:
         throw NotImplemented("num_molecules(const Species&) not implemented");
     }
 
+    /**
+     * get all species whitin the space.
+     * this function is a part of the trait of CompartmentSpace.
+     * @return a list of species
+     */
+    virtual std::vector<Species> list_species() const
+    {
+        throw NotImplemented("list_species() not implemented");
+    }
+
     // CompartSpace member functions
 
     /**
@@ -124,6 +134,7 @@ public:
     Integer num_species() const;
     bool has_species(const Species& sp) const;
     Integer num_molecules(const Species& sp) const;
+    std::vector<Species> list_species() const;
 
     // CompartmentSpace member functions
 
