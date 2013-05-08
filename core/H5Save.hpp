@@ -62,12 +62,12 @@ struct mtype_species_id_table_struct
     mtype_species_id_table_struct(void)
     {
         CompType mtype_id_table_struct(sizeof(species_id_table_struct));
-        mtype_id_table_struct.insertMember
-            (std::string("id"), HOFFSET(species_id_table_struct, id),
-             PredType::STD_I32LE);
-        mtype_id_table_struct.insertMember
-            (std::string("name"), HOFFSET(species_id_table_struct, name),
-             StrType(PredType::C_S1, 32));
+        mtype_id_table_struct.insertMember(
+            std::string("id"), HOFFSET(species_id_table_struct, id),
+            PredType::STD_I32LE);
+        mtype_id_table_struct.insertMember(
+            std::string("name"), HOFFSET(species_id_table_struct, name),
+            StrType(PredType::C_S1, 32));
         this->mtype = mtype_id_table_struct;
     }
 
@@ -77,13 +77,13 @@ struct mtype_species_id_table_struct
     }
 };
 
-template <typename T = double>
+template<typename T = double>
 struct species_num_struct {
     uint32_t id;
     T num_of_molecules;
 };
 
-template <typename T>
+template<typename T>
 struct mtype_species_num_struct
 {
     CompType mtype;
@@ -92,22 +92,22 @@ struct mtype_species_num_struct
     mtype_species_num_struct(void)
     {
         CompType mtype_id_table_struct(sizeof(species_num_struct<T>));
-        mtype_id_table_struct.insertMember
-            (std::string("id"), HOFFSET(species_num_struct<T>, id),
-             PredType::STD_I32LE);
-        mtype_id_table_struct.insertMember
-            (std::string("number"),
-             HOFFSET(species_num_struct<T>, num_of_molecules), typeT());
+        mtype_id_table_struct.insertMember(
+            std::string("id"), HOFFSET(species_num_struct<T>, id),
+            PredType::STD_I32LE);
+        mtype_id_table_struct.insertMember(
+            std::string("number"),
+            HOFFSET(species_num_struct<T>, num_of_molecules), typeT());
         this->mtype = mtype_id_table_struct;
     }
 
-    CompType operator() (void)
+    CompType operator()(void)
     {
         return this->mtype;
     }
 };
 
-template <typename WorldType, typename MoleculesNumType>
+template<typename WorldType, typename MoleculesNumType>
 class ecell4_hdf5_manager
 {
 public:
@@ -128,16 +128,16 @@ public:
             group(new Group(this->file_->createGroup(group_root_)));
     }
 
-	~ecell4_hdf5_manager()
-	{
-		delete this->file_;
-	}
+    ~ecell4_hdf5_manager()
+    {
+        delete this->file_;
+    }
 
     void save(void)
     {
         // Construct Data Set.
-        const NetworkModel::species_container_type&
-            species_list = this->model_->species();
+        const NetworkModel::species_container_type& species_list
+            = this->model_->species();
         boost::scoped_array<species_id_table_struct>
             species_id_table(
                 new species_id_table_struct[species_list.size()]);
@@ -148,7 +148,8 @@ public:
         for(unsigned int i(0); i < species_list.size(); i++)
         {
             species_id_table[i].id = i + 1;
-            std::strcpy(species_id_table[i].name, species_list[i].name().c_str());
+            std::strcpy(species_id_table[i].name,
+                        species_list[i].name().c_str());
 
             species_num_table[i].id = i + 1;
             species_num_table[i].num_of_molecules
@@ -172,11 +173,13 @@ public:
         std::string species_table_path = ost_hdf5path.str() + "/species";
         std::string species_num_path = ost_hdf5path.str() + "/num";
         boost::scoped_ptr<DataSet> dataset_id_table(
-            new DataSet(this->file_->createDataSet(
-                            species_table_path, this->table_type_(), space)));
+            new DataSet(
+                this->file_->createDataSet(
+                    species_table_path, this->table_type_(), space)));
         boost::scoped_ptr<DataSet> dataset_num_table(
-            new DataSet(this->file_->createDataSet(
-                            species_num_path, this->num_type_(), space)));
+            new DataSet(
+                this->file_->createDataSet(
+                    species_num_path, this->num_type_(), space)));
 
         // set attribute
         const double t_value = this->world_->t();

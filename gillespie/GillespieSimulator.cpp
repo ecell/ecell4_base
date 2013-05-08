@@ -207,14 +207,14 @@ void GillespieSimulator::save_hdf5(void)
     boost::scoped_array<species_num_struct>
         species_num_table(new species_num_struct[species_list.size()]);
 
-    for(unsigned int i(0); i < species_list.size(); ++i) 
+    for(unsigned int i(0); i < species_list.size(); ++i)
     {
         species_id_table[i].id = i + 1;
         std::strcpy(species_id_table[i].name, species_list[i].name().c_str());
 
         species_num_table[i].id = i + 1;
-        species_num_table[i].num_of_molecules
-            = this->world_->num_molecules(species_list[i]);
+        species_num_table[i].num_of_molecules =
+            this->world_->num_molecules(species_list[i]);
     }
 
     const int RANK = 1;

@@ -72,8 +72,8 @@ public:
         return (*world_).rng();
     }
 
-	void save_hdf5_init(std::string);
-	void save_hdf5(void);
+    void save_hdf5_init(std::string);
+    void save_hdf5(void);
 
 protected:
 
@@ -81,19 +81,19 @@ protected:
     boost::shared_ptr<BDWorld> world_;
 
 
-	H5::H5File *file_;
-	typedef struct h5_particles {
-		int h5_particle_id;
-		double h5_particle_position[3];
-	} h5_particles;
+    H5::H5File *file_;
+    typedef struct h5_particles {
+        int h5_particle_id;
+        double h5_particle_position[3];
+    } h5_particles;
 
-	typedef struct h5_particles_index {
-		int h5_particle_id;
-		char h5_particle_name[32];
+    typedef struct h5_particles_index {
+        int h5_particle_id;
+        char h5_particle_name[32];
 
-		double h5_particle_radius;
-		double h5_particle_D;
-	} h5_particles_index;
+        double h5_particle_radius;
+        double h5_particle_D;
+    } h5_particles_index;
 
     /**
      * the protected internal state of BDSimulator.

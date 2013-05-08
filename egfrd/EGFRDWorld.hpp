@@ -139,8 +139,8 @@ public:
 
     std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
-        std::vector<std::pair<ParticleID, Particle> > particles;	
-        particles.reserve( this->num_particles() );
+        std::vector<std::pair<ParticleID, Particle> > particles;
+        particles.reserve(this->num_particles());
         BOOST_FOREACH(const world_type::particle_id_pair& pid_pair,
                       (*world_).get_particles_range())
         {
@@ -155,7 +155,8 @@ public:
     list_particles(const Species& species) const
     {
         const ::SpeciesTypeID target(find(species));
-        // std::vector<std::pair<ParticleID, Particle> > particles(num_particles());
+        // std::vector<std::pair<ParticleID, Particle> >
+        //     particles(num_particles());
         std::vector<std::pair<ParticleID, Particle> > particles;
         BOOST_FOREACH(const world_type::particle_id_pair& pid_pair,
                       (*world_).get_particles_range())
@@ -218,7 +219,8 @@ public:
             retval.push_back(
                 std::make_pair(
                     std::make_pair(
-                        translate((*i).first.first), translate((*i).first.second)),
+                        translate((*i).first.first),
+                        translate((*i).first.second)),
                     (*i).second));
         }
         return retval;
@@ -247,7 +249,8 @@ public:
             retval.push_back(
                 std::make_pair(
                     std::make_pair(
-                        translate((*i).first.first), translate((*i).first.second)),
+                        translate((*i).first.first),
+                        translate((*i).first.second)),
                     (*i).second));
         }
         return retval;
@@ -277,7 +280,8 @@ public:
             retval.push_back(
                 std::make_pair(
                     std::make_pair(
-                        translate((*i).first.first), translate((*i).first.second)),
+                        translate((*i).first.first),
+                        translate((*i).first.second)),
                     (*i).second));
         }
         return retval;

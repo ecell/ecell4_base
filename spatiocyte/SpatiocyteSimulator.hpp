@@ -88,9 +88,9 @@ protected:
 
     H5::H5File *file_;
     typedef struct h5_lattice {
-    	int h5_lattice_id;
+        int h5_lattice_id;
         char h5_species_id[32];
-    	//double h5_particle_position[3];
+        // double h5_particle_position[3];
     } h5_lattice;
 
     /**

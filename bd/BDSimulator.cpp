@@ -49,10 +49,10 @@ bool BDSimulator::step(const Real& upto)
 
 void BDSimulator::save_hdf5_init(std::string filename)
 {
-	using namespace H5;
-	this->file_ = new H5File(filename, H5F_ACC_TRUNC);
-	boost::scoped_ptr<Group> group
-			(new Group(this->file_->createGroup("/BDWorld")));
+    using namespace H5;
+    this->file_ = new H5File(filename, H5F_ACC_TRUNC);
+    boost::scoped_ptr<Group> group(
+        new Group(this->file_->createGroup("/BDWorld")));
 }
 
 void BDSimulator::save_hdf5(void)
@@ -78,7 +78,7 @@ void BDSimulator::save_hdf5(void)
     }
 
     // Define Structure Type.
-    //     1. Positions
+    // 1. Positions
     CompType mtype(sizeof(h5_particles));
     mtype.insertMember(MEMBER1, HOFFSET(h5_particles, h5_particle_id),
                        PredType::NATIVE_INT);
@@ -88,7 +88,7 @@ void BDSimulator::save_hdf5(void)
     hsize_t dim[] = {particles.size()};
     DataSpace space(1, dim);
 
-    //    2. Tables between Id and the Name of Species.
+    // 2. Tables between Id and the Name of Species.
     CompType mtype_index(sizeof(h5_particles_index));
     mtype_index.insertMember(MEMBER1, HOFFSET(h5_particles_index, h5_particle_id),
                              PredType::NATIVE_INT);

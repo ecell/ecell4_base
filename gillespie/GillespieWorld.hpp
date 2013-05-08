@@ -21,8 +21,8 @@ class GillespieWorld
 {
 public:
 
-    GillespieWorld(
-        const Real& volume, boost::shared_ptr<RandomNumberGenerator> rng)
+    GillespieWorld(const Real& volume,
+                   boost::shared_ptr<RandomNumberGenerator> rng)
         : cs_(new CompartmentSpaceVectorImpl(volume)), rng_(rng)
     {
         ;

@@ -23,7 +23,7 @@ public:
     virtual void seed(Integer val) = 0;
 };
 
-template <typename Telem_>
+template<typename Telem_>
 inline void shuffle(RandomNumberGenerator& rng, std::vector<Telem_>& cont)
 {
     typedef std::vector<Telem_> container_type;

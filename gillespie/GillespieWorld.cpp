@@ -3,8 +3,10 @@
 #include <sstream>
 #include <iostream>
 
-using namespace std;
-#include "./GillespieWorld.hpp"
+#include "GillespieWorld.hpp"
+
+
+// using namespace std;
 
 namespace ecell4
 {
@@ -57,6 +59,6 @@ void GillespieWorld::remove_molecules(const Species& sp, const Integer& num)
     this->cs_->remove_molecules(sp, num);
 }
 
-} //gillespie
+} // gillespie
 
-} //ecell4
+} // ecell4
