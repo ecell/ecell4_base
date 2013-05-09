@@ -42,19 +42,6 @@ protected:
         double D;
     } species_num_struct;
 
-    // typedef struct h5_particles {
-    //     int h5_particle_id_lot;
-    //     int h5_particle_id_serial;
-    //     double h5_particle_position[3];
-    // } h5_particles;
-
-    // typedef struct h5_particles_index {
-    //     int h5_particle_id_serial;
-    //     char h5_particle_name[32];
-    //     double h5_particle_radius;
-    //     double h5_particle_D;
-    // } h5_particles_index;
-
 public:
 
     ParticleSpaceHDF5Writer(const space_type& space)
@@ -171,13 +158,20 @@ public:
         dataset->write(h5_particle_table.get(), h5_particle_comp_type);
         dataset_index->write(h5_species_table.get(), h5_species_comp_type);
 
-        const double t_value = space_.t();
-        FloatType doubleType(PredType::IEEE_F64LE);
-
+        const double t = space_.t();
         Attribute attr_t(
             fout->openGroup(hdf5path).createAttribute(
-                "t", doubleType, DataSpace(H5S_SCALAR)));
-        attr_t.write(doubleType, &t_value);
+                "t", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
+        attr_t.write(PredType::IEEE_F64LE, &t);
+
+        const Position3 edge_lengths = space_.edge_lengths();
+        const hsize_t dims[] = {3};
+        const ArrayType lengths_type(PredType::NATIVE_DOUBLE, 1, dims);
+        Attribute attr_lengths(
+            fout->openGroup(hdf5path).createAttribute(
+                "edge_lengths", lengths_type, DataSpace(H5S_SCALAR)));
+        double lengths[] = {edge_lengths[0], edge_lengths[1], edge_lengths[2]};
+        attr_lengths.write(lengths_type, lengths);
     }
 
 protected:

@@ -25,12 +25,12 @@ public:
 protected:
 
     typedef struct species_id_table_struct {
-        uint32_t id;
+        uint32_t sid;
         char serial[32]; // species' serial may exceed the limit
     } species_id_table_struct;
 
     typedef struct species_num_struct {
-        uint32_t id;
+        uint32_t sid;
         uint32_t num_molecules;
     } species_num_struct;
 
@@ -56,7 +56,7 @@ public:
 
         CompType mtype_id_table_struct(sizeof(species_id_table_struct));
         mtype_id_table_struct.insertMember(
-            std::string("id"), HOFFSET(species_id_table_struct, id),
+            std::string("sid"), HOFFSET(species_id_table_struct, sid),
             PredType::STD_I32LE);
         mtype_id_table_struct.insertMember(
             std::string("serial"), HOFFSET(species_id_table_struct, serial),
@@ -64,7 +64,7 @@ public:
 
         CompType mtype_num_struct(sizeof(species_num_struct));
         mtype_num_struct.insertMember(
-            std::string("id"), HOFFSET(species_num_struct, id),
+            std::string("sid"), HOFFSET(species_num_struct, sid),
             PredType::STD_I32LE);
         mtype_num_struct.insertMember(
             std::string("num_molecules"),
@@ -78,11 +78,11 @@ public:
 
         for(unsigned int i(0); i < num_species; ++i)
         {
-            species_id_table[i].id = i + 1;
+            species_id_table[i].sid = i + 1;
             std::strcpy(species_id_table[i].serial,
                         species_list[i].serial().c_str());
 
-            species_num_table[i].id = i + 1;
+            species_num_table[i].sid = i + 1;
             species_num_table[i].num_molecules =
                 space_.num_molecules(species_list[i]);
         }
@@ -105,14 +105,18 @@ public:
         dataset_id_table->write(species_id_table.get(), mtype_id_table_struct);
         dataset_num_table->write(species_num_table.get(), mtype_num_struct);
 
-        // attribute
-        const double t_value = space_.t();
-        FloatType doubleType(PredType::IEEE_F64LE);
-
+        // attributes
+        const double t = space_.t();
         Attribute attr_t(
             fout->openGroup(hdf5path).createAttribute(
-                "t", doubleType, DataSpace(H5S_SCALAR)));
-        attr_t.write(doubleType, &t_value);
+                "t", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
+        attr_t.write(PredType::IEEE_F64LE, &t);
+
+        const double volume = space_.volume();
+        Attribute attr_volume(
+            fout->openGroup(hdf5path).createAttribute(
+                "volume", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
+        attr_volume.write(PredType::IEEE_F64LE, &volume);
     }
 
     // void save(const std::string& filename)
