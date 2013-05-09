@@ -37,9 +37,20 @@ public:
 
     void save(const std::string& filename) const
     {
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename, H5F_ACC_TRUNC));
+
+        std::ostringstream ost_hdf5path;
+        ost_hdf5path << "/" << t();
+
+        boost::scoped_ptr<H5::Group> parent_group(
+            new H5::Group(fout->createGroup(ost_hdf5path.str())));
+        ost_hdf5path << "/CompartmentSpace";
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
+
         CompartmentSpaceHDF5Writer<GillespieWorld> writer(*this);
-        writer.initialize(filename);
-        writer.save();
+        writer.save(fout.get(), ost_hdf5path.str());
     }
 
     // CompartmentSpaceTraits
