@@ -16,34 +16,35 @@ subdirs = [
     ]
 
 hppfiles = [
+    'ParticleSpaceHDF5Writer.hpp',
     'EGFRDWorld.hpp',
     'EGFRDSimulatorWrapper.hpp'
     ]
 
 cppfiles = [
     'EGFRDSimulatorWrapper.cpp',
-	'epdp/Logger.cpp',
-	'epdp/ConsoleAppender.cpp',
-	'epdp/utils.cpp',
-	'epdp/findRoot.cpp',
-	'epdp/funcSum.cpp',
-	'epdp/GreensFunction1DAbsAbs.cpp',
-	'epdp/GreensFunction1DRadAbs.cpp',
-	'epdp/PairGreensFunction.cpp',
-	'epdp/GreensFunction3D.cpp',
-	'epdp/GreensFunction3DAbs.cpp',
-	'epdp/GreensFunction3DAbsSym.cpp',
-	'epdp/GreensFunction3DRadAbsBase.cpp',
-	'epdp/GreensFunction3DRadAbs.cpp',
-	'epdp/GreensFunction3DRadInf.cpp',
-	'epdp/GreensFunction3DSym.cpp',
-	'epdp/SphericalBesselGenerator.cpp',
-	'epdp/BasicNetworkRulesImpl.cpp',
-	'epdp/Model.cpp',
-	'epdp/NetworkRules.cpp',
-	'epdp/ParticleModel.cpp',
-	'epdp/SpeciesType.cpp',
-	'epdp/StructureType.cpp',
+    'epdp/Logger.cpp',
+    'epdp/ConsoleAppender.cpp',
+    'epdp/utils.cpp',
+    'epdp/findRoot.cpp',
+    'epdp/funcSum.cpp',
+    'epdp/GreensFunction1DAbsAbs.cpp',
+    'epdp/GreensFunction1DRadAbs.cpp',
+    'epdp/PairGreensFunction.cpp',
+    'epdp/GreensFunction3D.cpp',
+    'epdp/GreensFunction3DAbs.cpp',
+    'epdp/GreensFunction3DAbsSym.cpp',
+    'epdp/GreensFunction3DRadAbsBase.cpp',
+    'epdp/GreensFunction3DRadAbs.cpp',
+    'epdp/GreensFunction3DRadInf.cpp',
+    'epdp/GreensFunction3DSym.cpp',
+    'epdp/SphericalBesselGenerator.cpp',
+    'epdp/BasicNetworkRulesImpl.cpp',
+    'epdp/Model.cpp',
+    'epdp/NetworkRules.cpp',
+    'epdp/ParticleModel.cpp',
+    'epdp/SpeciesType.cpp',
+    'epdp/StructureType.cpp',
     ]
 
 def options(opt):

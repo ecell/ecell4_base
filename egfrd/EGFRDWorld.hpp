@@ -22,6 +22,10 @@
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
+#include <H5Cpp.h>
+#include <hdf5.h>
+#include "ParticleSpaceHDF5Writer.hpp"
+
 
 namespace ecell4
 {
@@ -410,6 +414,24 @@ public:
             world_, boost::shared_ptr<network_rules_type>(
                 new network_rules_type(model_.network_rules())),
             internal_rng_, dissociation_retry_moves);
+    }
+
+    void save(const std::string& filename) const
+    {
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename, H5F_ACC_TRUNC));
+
+        std::ostringstream ost_hdf5path;
+        ost_hdf5path << "/" << t();
+
+        boost::scoped_ptr<H5::Group> parent_group(
+            new H5::Group(fout->createGroup(ost_hdf5path.str())));
+        ost_hdf5path << "/ParticleSpace";
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
+
+        ParticleSpaceHDF5Writer<EGFRDWorld> writer(*this);
+        writer.save(fout.get(), ost_hdf5path.str());
     }
 
 protected:

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_GILLESPIE_COMPARTMENT_SPACE_HDF5_WRITER_HPP
-#define __ECELL4_GILLESPIE_COMPARTMENT_SPACE_HDF5_WRITER_HPP
+#ifndef __ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
+#define __ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
 #include <boost/scoped_ptr.hpp>
@@ -9,8 +9,7 @@
 #include <H5Cpp.h>
 
 #include <ecell4/core/types.hpp>
-#include <ecell4/core/Model.hpp>
-#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/Species.hpp>
 
 
 namespace ecell4
@@ -52,10 +51,8 @@ public:
     {
         using namespace H5;
 
-        const NetworkModel::species_container_type&
-            species_list(space_.list_species());
-        const NetworkModel::species_container_type::size_type
-            num_species(species_list.size());
+        const std::vector<Species> species_list(space_.list_species());
+        const std::vector<Species>::size_type num_species(species_list.size());
 
         CompType mtype_id_table_struct(sizeof(species_id_table_struct));
         mtype_id_table_struct.insertMember(
@@ -97,8 +94,7 @@ public:
         DataSpace dataspace(RANK, dim);
         const std::string
             species_table_path(hdf5path + "/species"),
-            species_num_path(hdf5path + "/num");
-
+            species_num_path(hdf5path + "/num_molecules");
         boost::scoped_ptr<DataSet> dataset_id_table(
             new DataSet(fout->createDataSet(
                             species_table_path, mtype_id_table_struct,
@@ -106,6 +102,8 @@ public:
         boost::scoped_ptr<DataSet> dataset_num_table(
             new DataSet(fout->createDataSet(
                             species_num_path, mtype_num_struct, dataspace)));
+        dataset_id_table->write(species_id_table.get(), mtype_id_table_struct);
+        dataset_num_table->write(species_num_table.get(), mtype_num_struct);
 
         // attribute
         const double t_value = space_.t();
@@ -115,9 +113,6 @@ public:
             fout->openGroup(hdf5path).createAttribute(
                 "t", doubleType, DataSpace(H5S_SCALAR)));
         attr_t.write(doubleType, &t_value);
-
-        dataset_id_table->write(species_id_table.get(), mtype_id_table_struct);
-        dataset_num_table->write(species_num_table.get(), mtype_num_struct);
     }
 
     // void save(const std::string& filename)
@@ -144,4 +139,4 @@ protected:
 
 } // ecell4
 
-#endif /*  __ECELL4_GILLESPIE_COMPARTMENT_SPACE_HDF5_WRITER_HPP */
+#endif /*  __ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP */

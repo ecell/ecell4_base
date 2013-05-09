@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     // world->add_species(sp2);
     // world->add_species(sp3);
     world->add_molecules(sp3, 10);
-    world->save("test.h5");
+    world->save("test_gillespie.h5");
 
     GillespieSimulator sim(model, world);
 
