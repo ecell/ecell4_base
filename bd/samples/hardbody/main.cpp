@@ -48,12 +48,11 @@ int main(int argc, char** argv)
     const Particle p1(
         sp1, Position3(0, 0, 0), info1.radius, info1.D);
     const ParticleID pid1((*world).new_particle(p1));
+    world->save("test_bd.h5");
 
     /// instatiate BDSimulator
     BDSimulator sim(model, world);
     sim.set_dt(1e-6);
-
-	sim.save_hdf5_init( std::string("hoge.hdf5") );
 
     /// run and log by the millisecond
     for (unsigned int i(0); i <= 10; ++i)
@@ -62,7 +61,6 @@ int main(int argc, char** argv)
         {
             ; // do nothing
         }
-		sim.save_hdf5();
         print_particle_position(*world, pid1);
     }
 }

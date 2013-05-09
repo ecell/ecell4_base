@@ -14,7 +14,7 @@ from waflib import Logs
 header_list = ['vector', 'map', 'numeric']
 
 hppfiles = [
-    'GillespieWorld.hpp', 'GillespieSimulator.hpp', 'CompartmentSpaceHDF5Writer.hpp'
+    'GillespieWorld.hpp', 'GillespieSimulator.hpp'
     ]
 
 cppfiles = [

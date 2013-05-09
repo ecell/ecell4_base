@@ -16,7 +16,6 @@ subdirs = [
     ]
 
 hppfiles = [
-    'ParticleSpaceHDF5Writer.hpp',
     'EGFRDWorld.hpp',
     'EGFRDSimulatorWrapper.hpp'
     ]

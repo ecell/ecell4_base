@@ -205,6 +205,23 @@ public:
         return (*ps_).particles();
     }
 
+    void save(const std::string& filename) const
+    {
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename, H5F_ACC_TRUNC));
+
+        std::ostringstream ost_hdf5path;
+        ost_hdf5path << "/" << t();
+
+        boost::scoped_ptr<H5::Group> parent_group(
+            new H5::Group(fout->createGroup(ost_hdf5path.str())));
+        ost_hdf5path << "/ParticleSpace";
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
+
+        ps_->save(fout.get(), ost_hdf5path.str());
+    }
+
 protected:
 
     boost::scoped_ptr<ParticleSpace> ps_;

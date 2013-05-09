@@ -8,8 +8,8 @@
 #include <hdf5.h>
 #include <H5Cpp.h>
 
-#include <ecell4/core/types.hpp>
-#include <ecell4/core/Species.hpp>
+#include "types.hpp"
+#include "Species.hpp"
 
 
 namespace ecell4

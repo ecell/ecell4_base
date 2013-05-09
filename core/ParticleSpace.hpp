@@ -12,23 +12,8 @@
 #include "Particle.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
+#include "ParticleSpaceHDF5Writer.hpp"
 
-#ifndef H5_NO_NAMESPACE
-#ifndef H5_NO_STD
-    using std::cout;
-    using std::endl;
-#endif  // H5_NO_STD
-#endif
-
-#include "H5Cpp.h"
-
-#ifndef H5_NO_NAMESPACE
-    using namespace H5;
-#endif
-
-const H5std_string DATASET_NAME( "TimePoint" );
-const H5std_string MEMBER1( "particle_id" );
-const H5std_string MEMBER2( "positions" );
 
 namespace ecell4
 {
@@ -266,7 +251,7 @@ public:
 
     virtual const particle_container_type& particles() const = 0;
 
-    virtual void save(const std::string& filename) = 0;
+    virtual void save(H5::H5File* fout, const std::string& hdf5path) const = 0;
 };
 
 class ParticleSpaceVectorImpl
@@ -327,42 +312,10 @@ public:
         return particles_;
     }
 
-    void save(const std::string& filename)
+    void save(H5::H5File* fout, const std::string& hdf5path) const
     {
-        typedef struct h5_partcles {
-            int h5_particle_id;
-            double h5_particle_position[3];
-        } h5_particles;
-
-        h5_particles h5_p[particles_.size()];
-
-        for (unsigned int i(0); i < particles_.size(); ++i)
-        {
-            h5_p[i].h5_particle_id = particles_[i].first;
-            h5_p[i].h5_particle_position[0] = particles_[i].second.position()[0];
-            h5_p[i].h5_particle_position[1] = particles_[i].second.position()[1];
-            h5_p[i].h5_particle_position[2] = particles_[i].second.position()[2];
-        }
-
-        H5::Exception::dontPrint();
-
-        // const H5std_string FILE_NAME("hoge.h5");
-        H5File* file = new H5File(filename, H5F_ACC_RDONLY);
-        CompType mtype(sizeof(h5_particles));
-        mtype.insertMember(MEMBER1, HOFFSET(h5_particles, h5_particle_id),
-                           PredType::NATIVE_INT);
-        mtype.insertMember(MEMBER2, HOFFSET(h5_particles, h5_particle_position),
-                           PredType::NATIVE_DOUBLE);
-
-        hsize_t dim[] = {2, particles_.size()};
-        DataSpace space(1, dim);
-
-        DataSet* dataset;
-        dataset = new DataSet(file->createDataSet(DATASET_NAME, mtype, space));
-        dataset->write(h5_p, mtype);
-
-        delete dataset;
-        delete file;
+        ParticleSpaceHDF5Writer<ParticleSpaceVectorImpl> writer(*this);
+        writer.save(fout, hdf5path);
     }
 
 private:

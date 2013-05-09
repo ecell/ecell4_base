@@ -22,9 +22,7 @@
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
-#include <H5Cpp.h>
-#include <hdf5.h>
-#include "ParticleSpaceHDF5Writer.hpp"
+#include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
 
 
 namespace ecell4

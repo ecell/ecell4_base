@@ -8,10 +8,10 @@
 #include <hdf5.h>
 #include <H5Cpp.h>
 
-#include <ecell4/core/types.hpp>
-#include <ecell4/core/get_mapper_mf.hpp>
-#include <ecell4/core/Species.hpp>
-#include <ecell4/core/Particle.hpp>
+#include "types.hpp"
+#include "get_mapper_mf.hpp"
+#include "Species.hpp"
+#include "Particle.hpp"
 
 
 namespace ecell4
