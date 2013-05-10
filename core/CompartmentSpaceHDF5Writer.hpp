@@ -69,7 +69,7 @@ public:
         ;
     }
 
-    void save(H5::H5File* fout, const std::string& hdf5path)
+    void save(H5::H5File* fout, const std::string& hdf5path) const
     {
         using namespace H5;
 
