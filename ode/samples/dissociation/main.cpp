@@ -34,14 +34,11 @@ int main(int argc, char** argv)
     world->add_species(sp2);
     world->add_species(sp3);
     world->add_molecules(sp1, 60);
+    world->save("test_ode.h5");
 
     ODESimulator target(model, world);
 
-	// ecell4_hdf5_manager<ODEWorld, double> hdf("dissociation.hdf5", model, world, "ODEWorld");
-
     Real next_time(0.0), dt(0.01);
-	// target.save_hdf5_init(std::string("hogehoge.hdf5"));
-	// ecell4_hdf5_manager<ODEWorld, double> hdf5_mng(std::string("ode_test.hdf5"), model, world, "MyOdeWorld");
 
     std::cout << target.t()
               << "\t" << world->num_molecules(sp1)

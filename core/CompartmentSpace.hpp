@@ -6,6 +6,7 @@
 #include "exceptions.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
+#include "CompartmentSpaceHDF5Writer.hpp"
 
 
 namespace ecell4
@@ -108,6 +109,10 @@ public:
      * @param num a number of molecules
      */
     virtual void remove_molecules(const Species& sp, const Integer& num) = 0;
+
+    // Optional members
+
+    virtual void save(H5::H5File* fout, const std::string& hdf5path) const = 0;
 };
 
 class CompartmentSpaceVectorImpl
@@ -143,6 +148,14 @@ public:
     void remove_species(const Species& sp);
     void add_molecules(const Species& sp, const Integer& num);
     void remove_molecules(const Species& sp, const Integer& num);
+
+    // Optional members
+
+    void save(H5::H5File* fout, const std::string& hdf5path) const
+    {
+        CompartmentSpaceHDF5Writer<CompartmentSpaceVectorImpl> writer(*this);
+        writer.save(fout, hdf5path);
+    }
 
 protected:
 

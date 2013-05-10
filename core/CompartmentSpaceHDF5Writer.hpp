@@ -15,12 +15,34 @@
 namespace ecell4
 {
 
-template<typename Tspace_>
+struct H5DataTypeTraits_uint32_t
+{
+    typedef uint32_t type;
+
+    const H5::DataType& operator()() const
+    {
+        return H5::PredType::STD_I32LE;
+    }
+};
+
+struct H5DataTypeTraits_double
+{
+    typedef double type;
+
+    const H5::DataType& operator()() const
+    {
+        return H5::PredType::IEEE_F64LE;
+    }
+};
+
+template<typename Tspace_, typename Ttraits_ = H5DataTypeTraits_uint32_t>
 class CompartmentSpaceHDF5Writer
 {
 public:
 
     typedef Tspace_ space_type;
+    typedef Ttraits_ traits_type;
+    typedef typename Ttraits_::type num_molecules_type;
 
 protected:
 
@@ -31,13 +53,13 @@ protected:
 
     typedef struct species_num_struct {
         uint32_t sid;
-        uint32_t num_molecules;
+        num_molecules_type num_molecules;
     } species_num_struct;
 
 public:
 
     CompartmentSpaceHDF5Writer(const space_type& space)
-        : space_(space)
+        : space_(space), traits_()
     {
         ;
     }
@@ -69,7 +91,7 @@ public:
         mtype_num_struct.insertMember(
             std::string("num_molecules"),
             HOFFSET(species_num_struct, num_molecules),
-            PredType::STD_I32LE);
+            traits_());
 
         boost::scoped_array<species_id_table_struct>
             species_id_table(new species_id_table_struct[num_species]);
@@ -139,6 +161,7 @@ public:
 protected:
 
     const space_type& space_;
+    const traits_type traits_;
 };
 
 } // ecell4

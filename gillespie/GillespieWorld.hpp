@@ -79,8 +79,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
 
-        CompartmentSpaceHDF5Writer<GillespieWorld> writer(*this);
-        writer.save(fout.get(), ost_hdf5path.str());
+        cs_->save(fout.get(), ost_hdf5path.str());
     }
 
 private:
