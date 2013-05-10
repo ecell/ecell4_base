@@ -421,9 +421,11 @@ public:
 
         std::ostringstream ost_hdf5path;
         ost_hdf5path << "/" << t();
-
         boost::scoped_ptr<H5::Group> parent_group(
             new H5::Group(fout->createGroup(ost_hdf5path.str())));
+
+        rng_->save(fout.get(), ost_hdf5path.str());
+
         ost_hdf5path << "/ParticleSpace";
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
