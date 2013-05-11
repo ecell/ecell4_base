@@ -192,7 +192,7 @@ public:
             }
         }
 
-        Voxel voxel = {sp};
+        Voxel voxel = {ParticleID(), sp};
         return voxel;
     }
 
