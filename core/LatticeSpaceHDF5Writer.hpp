@@ -36,16 +36,6 @@ protected:
         uint32_t sid;
     };
 
-    // typedef struct species_id_table_struct {
-    //     uint32_t sid;
-    //     char serial[32]; // species' serial may exceed the limit
-    // } species_id_table_struct;
-
-    // typedef struct species_num_struct {
-    //     uint32_t sid;
-    //     num_molecules_type num_molecules;
-    // } species_num_struct;
-
 public:
 
     LatticeSpaceHDF5Writer(const space_type& space)
@@ -94,8 +84,11 @@ public:
         for (unsigned int i(0); i < species.size(); ++i)
         {
             h5_species_table[i].id = i + 1;
-            std::strcpy(h5_species_table[i].serial,
-                        species[i].serial().c_str());
+            std::strncpy(h5_species_table[i].serial,
+                         species[i].serial().c_str(),
+                         sizeof(h5_species_table[i].serial));
+            // std::strcpy(h5_species_table[i].serial,
+            //             species[i].serial().c_str());
         }
 
         CompType h5_voxel_comp_type(sizeof(h5_voxel_struct));
@@ -133,6 +126,21 @@ public:
             fout->openGroup(hdf5path).createAttribute(
                 "t", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
         attr_t.write(PredType::IEEE_F64LE, &t);
+
+        const double voxel_radius = space_.voxel_radius();
+        Attribute attr_radius(
+            fout->openGroup(hdf5path).createAttribute(
+                "voxel_radius", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
+        attr_radius.write(PredType::IEEE_F64LE, &voxel_radius);
+
+        const Position3 edge_lengths = space_.edge_lengths();
+        const hsize_t dims[] = {3};
+        const ArrayType lengths_type(PredType::NATIVE_DOUBLE, 1, dims);
+        Attribute attr_lengths(
+            fout->openGroup(hdf5path).createAttribute(
+                "edge_lengths", lengths_type, DataSpace(H5S_SCALAR)));
+        double lengths[] = {edge_lengths[0], edge_lengths[1], edge_lengths[2]};
+        attr_lengths.write(lengths_type, lengths);
     }
 
     // void save(const std::string& filename)
