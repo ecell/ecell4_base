@@ -26,12 +26,12 @@ public:
 
 protected:
 
-    typedef struct h5_species_struct {
+    struct h5_species_struct {
         uint32_t id;
         char serial[32]; // species' serial may exceed the limit
-    } species_id_table_struct;
+    };
 
-    typedef struct h5_particle_struct {
+    struct h5_particle_struct {
         int lot;
         int serial;
         uint32_t sid;
@@ -40,7 +40,7 @@ protected:
         double posz;
         double radius;
         double D;
-    } species_num_struct;
+    };
 
 public:
 
@@ -85,7 +85,7 @@ public:
 
             h5_particle_table[i].lot = particles[i].first.lot();
             h5_particle_table[i].serial = particles[i].first.serial();
-            h5_particle_table[i].sid = (*it).second; // FIX ME
+            h5_particle_table[i].sid = (*it).second;
             h5_particle_table[i].posx = particles[i].second.position()[0];
             h5_particle_table[i].posy = particles[i].second.position()[1];
             h5_particle_table[i].posz = particles[i].second.position()[2];
@@ -144,19 +144,20 @@ public:
         const int RANK = 1;
         hsize_t dim1[] = {num_particles};
         DataSpace dataspace1(RANK, dim1);
-        boost::scoped_ptr<DataSet> dataset(
+        boost::scoped_ptr<DataSet> dataset1(
             new DataSet(fout->createDataSet(
                             hdf5path + "/particles", h5_particle_comp_type,
                             dataspace1)));
 
         hsize_t dim2[] = {species.size()};
         DataSpace dataspace2(RANK, dim2);
-        boost::scoped_ptr<DataSet> dataset_index(
+        boost::scoped_ptr<DataSet> dataset2(
             new DataSet(fout->createDataSet(
                             hdf5path + "/species" , h5_species_comp_type,
                             dataspace2)));
-        dataset->write(h5_particle_table.get(), h5_particle_comp_type);
-        dataset_index->write(h5_species_table.get(), h5_species_comp_type);
+
+        dataset1->write(h5_particle_table.get(), h5_particle_comp_type);
+        dataset2->write(h5_species_table.get(), h5_species_comp_type);
 
         const double t = space_.t();
         Attribute attr_t(
