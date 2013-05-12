@@ -6,6 +6,7 @@ top = '.'
 out = 'build'
 
 pyx_sources = ['ecell4.pyx']
+minimal_cython_version = 0.17
 
 def options(ctx):
     ctx.load('compiler_c')
@@ -19,10 +20,22 @@ def configure(ctx):
     ctx.load('compiler_cxx')
     ctx.load('python')
     ctx.check_python_headers()
+
+    ctx.find_program('cython')
     try:
         ctx.load('cython')
     except ctx.errors.ConfigurationError:
         Logs.warn('Cython waf not found using the cache')
+
+    # check cython's version
+    try:
+        from Cython.Compiler.Version import version
+        print 'Cython version: ', version
+        if float(version) < minimal_cython_version:
+            raise ctx.errors.ConfigurationError
+    except ctx.error.ConfigurationError:
+        Logs.warn('Your cython is too old.')
+
 
 def build(ctx):
     # build wrapper for core.
