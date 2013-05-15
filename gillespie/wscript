@@ -90,26 +90,24 @@ def build(bld):
     #    target = 'gillespie'
     #)
 
-    bld.install_files(
-    '${PREFIX}/include/ecell4/gillespie', hppfiles)
+    bld.install_files('${PREFIX}/include/ecell4/gillespie', hppfiles)
 
     bld.shlib(
-    source = cppfiles,
-    lib = ['gslcblas', 'gsl', 'm', 'ecell4-core', 'hdf5', 'hdf5_cpp'],
-    target = 'ecell4-gillespie')
+        source = cppfiles,
+        lib = ['gslcblas', 'gsl', 'm', 'ecell4-core', 'hdf5', 'hdf5_cpp'],
+        target = 'ecell4-gillespie')
 
     bld.recurse(subdirs)
-    #bld.add_post_fun(summary)
+    # bld.add_post_fun(summary)
 
     # build wrapper for gillespie.
-    bld.env.CYTHONFLAGS += '-I${PYTHONDIR}',
+    bld.env.CYTHONFLAGS += ('-I${PYTHONDIR}', )
     bld(
         features = 'cxx cxxshlib pyext',
         source = 'ecell4/gillespie.pyx',
         target = 'gillespie',
+        includes = ['.', bld.env['PREFIX'] + '/include'],
         install_path = '${PYTHONDIR}/ecell4',
-        # cython_includes = ['${PYTHONDIR}/ecell4'],
-        # cython_includes = ['/home/kaizu/local/lib/python2.7/site-packages/ecell4'],
         use = ['ecell4-gillespie'],
         lib = ['ecell4-core'])
 
