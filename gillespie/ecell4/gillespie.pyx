@@ -22,6 +22,7 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         void remove_species(Cpp_Species &)
         void add_molecules(Cpp_Species &sp, Integer &num)
         void remove_molecules(Cpp_Species &sp, Integer &num)
+        void save(string)
 
 ## GillespieWorld
 #  a python wrapper for Cpp_GillespieWorld
@@ -68,6 +69,9 @@ cdef class GillespieWorld:
 
     def remove_species(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
+
+    def save(self, string filename):
+        self.thisptr.get().save(filename)
 
 ## Cpp_GillespieSimulator
 #  ecell4::gillespie::GillespieSimulator
