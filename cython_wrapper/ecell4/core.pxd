@@ -1,106 +1,82 @@
-
-#============================================================
-#   Common Declaration and imports
-#============================================================
-
 from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp.set cimport set
 from libcpp cimport bool
 
-#XXX Tomplorary using cython stl support.
-#       Perhaps, we should consider importing std::pair by ourselves
-#       that don't cast c-objects into python objects automatically.
+# XXX Tomplorary using cython stl support.
+#        Perhaps, we should consider importing std::pair by ourselves
+#        that don't cast c-objects into python objects automatically.
 from libcpp.pair cimport pair
 
 include "types.pxi"
 
-#============================================================
-#   Stl:    MultiSet
-#============================================================
-cdef extern from "<set>" namespace "std":
-    cdef cppclass multiset[T]:
-        multiset() except +
-        multiset(multiset &) except+
-        cppclass iterator:
-            T& operator*()
-            iterator operator++() 
-            iterator operator--() 
-            bint operator==(iterator) 
-            bint operator!=(iterator) 
-        iterator begin() 
-        iterator end() 
+from multiset cimport multiset
+from shared_ptr cimport shared_ptr
 
-#============================================================
-#   Boost.shared_ptr<T>
-#============================================================
-cdef extern from "<boost/shared_ptr.hpp>" namespace "boost":
-    cdef cppclass shared_ptr[T]:
-        shared_ptr(T *ptr)
-        T* get()
 
-#============================================================
-#   RandomNumberGenerator
-#============================================================
 cdef extern from "gsl/gsl_rng.h":
     ctypedef struct gsl_rng:
         pass
 
+## Cpp_GSLRandomNumberGenerator
+#  ecell4::GSLRandomNumberGenerator
 cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
     cdef cppclass Cpp_GSLRandomNumberGenerator "ecell4::GSLRandomNumberGenerator":
-        #GSLRandomNumberGenerator(shared_ptr[gsl_rng]) except +
+        # GSLRandomNumberGenerator(shared_ptr[gsl_rng]) except +
         Cpp_GSLRandomNumberGenerator() except +
         Real uniform(Real, Real)
         Integer uniform_int(Integer, Integer)
         Real gaussian(Real, Real)
         void seed(Integer)
 
-# For Dereference
-cdef class RandomNumberGenerator:
-    cdef Cpp_GSLRandomNumberGenerator *thisptr
+## RandomNumberGenerator
+#  a python wrapper for Cpp_GSLRandomNumberGenerator
+cdef class GSLRandomNumberGenerator:
+    cdef Cpp_GSLRandomNumberGenerator* thisptr
 
-#============================================================
-#   Species
-#============================================================
+## Cpp_Species
+#  ecell4::Species
 cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
     cdef cppclass Cpp_Species "ecell4::Species":
-        # Constructor
         Cpp_Species(string) except +
         Cpp_Species(string, string) except +
         Cpp_Species(string, string, string) except +
         Cpp_Species(Cpp_Species &) except+
-#       serial_type serial()
+        # serial_type serial()
         string name()
         string get_attribute(string)
         void set_attribute(string,string)
         void remove_attribute(string)
 
+## Species
+#  a python wrapper for Cpp_Species
 cdef class Species:
-    cdef Cpp_Species *thisptr
+    cdef Cpp_Species* thisptr
 
-#============================================================
-#   ReactionRule
-#============================================================
+cdef Species Cpp_Species_to_Species(Cpp_Species *sp)
+
+## Cpp_ReactionRule
+#  ecell4::ReactionRule
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRule "ecell4::ReactionRule":
         Cpp_ReactionRule() except +
         Real k()
-        multiset[Cpp_Species]& reactants() 
+        multiset[Cpp_Species]& reactants()
         multiset[Cpp_Species]& products()
         void set_k(Real)
         void add_reactant(Cpp_Species)
         void add_product(Cpp_Species)
 
+## ReactionRule
+#  a python wrapper for Cpp_ReactionRule
 cdef class ReactionRule:
-    cdef Cpp_ReactionRule *thisptr
+    cdef Cpp_ReactionRule* thisptr
 
-#============================================================
-#   CompartmentSpace
-#============================================================
+## Cpp_CompartmentSpaceVectorImpl
+#  ecell4::CompartmentSpaceVectorImpl
 cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
-    cdef cppclass Cpp_CompartmentSpaceVector "ecell4::CompartmentSpaceVectorImpl":
-        #Constructor
-        Cpp_CompartmentSpaceVector(Real) except+
+    cdef cppclass Cpp_CompartmentSpaceVectorImpl "ecell4::CompartmentSpaceVectorImpl":
+        Cpp_CompartmentSpaceVectorImpl(Real) except+
         Real volume()
         Integer num_species()
         bool has_species(Cpp_Species &sp)
@@ -111,12 +87,13 @@ cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
         void add_molecules(Cpp_Species &sp, Integer num)
         void remove_molecules(Cpp_Species &sp, Integer num)
 
-cdef class CompartmentSpace:
-    cdef Cpp_CompartmentSpaceVector *thisptr
+## CompartmentSpaceVectorImpl
+#  a python wrapper for Cpp_CompartmentSpaceVectorImpl
+cdef class CompartmentSpaceVectorImpl:
+    cdef Cpp_CompartmentSpaceVectorImpl* thisptr
 
-#============================================================
-#   NetworkModel
-#============================================================
+## Cpp_NetworkModel
+#  ecell4::NetworkModel
 cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
     cdef cppclass Cpp_NetworkModel "ecell4::NetworkModel":
         Cpp_NetworkModel() except +
@@ -127,18 +104,20 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         void remove_reaction_rule(Cpp_ReactionRule)
         bool has_reaction_rule(Cpp_ReactionRule)
 
+## NetworkModel
+#  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
 cdef class NetworkModel:
-    #cdef Cpp_NetworkModel *thisptr
-    cdef shared_ptr[Cpp_NetworkModel] *thisptr
+    # cdef Cpp_NetworkModel* thisptr
+    cdef shared_ptr[Cpp_NetworkModel]* thisptr
 
-#============================================================
-#   Position3
-#============================================================
+## Cpp_Position3
+#  ecell4::Position3
 cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
     cdef cppclass Cpp_Position3 "ecell4::Position3":
         Cpp_Position3() except +
         Cpp_Position3(Real, Real, Real) except +
         Cpp_Position3(Cpp_Position3 &rhs) except+
+
     Cpp_Position3 add(Cpp_Position3, Cpp_Position3)
     Cpp_Position3 subtract(Cpp_Position3, Cpp_Position3)
     Cpp_Position3 divide(Cpp_Position3, Real)
@@ -155,19 +134,21 @@ cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
     Cpp_Position3 operator/(Cpp_Position3, Real)
     Cpp_Position3 operator*(Cpp_Position3, Real)
 
+## Position3
+#  a python wrapper for Cpp_Position3
 cdef class Position3:
-    cdef Cpp_Position3 *thisptr
+    cdef Cpp_Position3* thisptr
 
-#============================================================
-#   Particle
-#============================================================
+cdef Position3 Cpp_Position3_to_Position3(Cpp_Position3 *p)
 
+## Cpp_ParticleID
+#  ecell4::ParticleID
 cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
-    ctypedef unsigned long long Ull
     ctypedef Tbase_ "ecell4::ParticleID"
     ctypedef int lot_type
-    ctypedef Ull serial_type
-    ctypedef pair[int, Ull] value_type
+    ctypedef unsigned long long serial_type
+    ctypedef pair[lot_type, serial_type] value_type
+
     cdef cppclass Cpp_ParticleID "ecell4::ParticleID":
         Cpp_ParticleID(value_type)
         Cpp_ParticleID log_add(lot_type &rhs)
@@ -178,7 +159,7 @@ cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
         Cpp_ParticleID serial_subtract(serial_type &rhs)
         Cpp_ParticleID &serial_advance(serial_type &rhs)
         Cpp_ParticleID &serial_retrace(serial_type &rhs)
-        #Cpp_ParticleID &operator=(Cpp_ParticleID &rhs) #XXX not yet suppoted
+        # Cpp_ParticleID &operator=(Cpp_ParticleID &rhs) # XXX not yet suppoted
         bool operator==(Cpp_ParticleID &rhs)
         bool operator!=(Cpp_ParticleID &rhs)
         bool operator<(Cpp_ParticleID &rhs)
@@ -190,6 +171,9 @@ cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
         lot_type &lot()
         serial_type &serial()
 
+## Cpp_Particle
+#  ecell4::Particle
+cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
     cdef cppclass Cpp_Particle "ecell4::Particle":
         Cpp_Particle() except +
         Cpp_Particle(Cpp_Species, Cpp_Position3, Real radius, Real D) except +
@@ -198,5 +182,7 @@ cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
         Real D()
         Cpp_Species &species()
 
+## Particle
+#  a python wrapper for Cpp_Particle
 cdef class Particle:
-    cdef Cpp_Particle *thisptr
+    cdef Cpp_Particle* thisptr
