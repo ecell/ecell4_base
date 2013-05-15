@@ -15,7 +15,7 @@ cdef class Particle:
 
     def position(self):
         cdef Cpp_Position3 pos = self.thisptr.position()
-        return Cpp_Position3_to_Position3(address(pos))
+        return Position3_from_Cpp_Position3(address(pos))
 
     def radius(self):
         return self.this.radius()
@@ -24,4 +24,4 @@ cdef class Particle:
         return self.thisptr.D()
 
     def species(self):
-        return Cpp_Species_to_Species(address(self.thisptr.species()))
+        return Species_from_Cpp_Species(address(self.thisptr.species()))

@@ -22,7 +22,7 @@ cdef class Species:
     def remove_attributes(self, string name):
         self.thisptr.remove_attribute(name)
 
-cdef Species Cpp_Species_to_Species(Cpp_Species *sp):
+cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))
     r = Species("")
     del r.thisptr

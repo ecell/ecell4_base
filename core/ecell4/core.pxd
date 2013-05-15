@@ -51,7 +51,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
 cdef class Species:
     cdef Cpp_Species* thisptr
 
-cdef Species Cpp_Species_to_Species(Cpp_Species *sp)
+cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
@@ -71,7 +71,7 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
 cdef class ReactionRule:
     cdef Cpp_ReactionRule* thisptr
 
-cdef ReactionRule Cpp_ReactionRule_to_ReactionRule(Cpp_ReactionRule *rr)
+cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr)
 
 ## Cpp_CompartmentSpaceVectorImpl
 #  ecell4::CompartmentSpaceVectorImpl
@@ -140,7 +140,7 @@ cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
 cdef class Position3:
     cdef Cpp_Position3* thisptr
 
-cdef Position3 Cpp_Position3_to_Position3(Cpp_Position3 *p)
+cdef Position3 Position3_from_Cpp_Position3(Cpp_Position3 *p)
 
 ## Cpp_ParticleID
 #  ecell4::ParticleID
