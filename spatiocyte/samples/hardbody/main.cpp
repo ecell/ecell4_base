@@ -69,7 +69,6 @@ int main(int argc, char** argv)
               << "\t" << world->num_molecules(sp3)
               << std::endl;
 
-    sim.save_hdf5_init( std::string("spatiocyte_simple.hdf5") );
     Real next_time(0.0), dt(0.02);
     for (unsigned int i(0); i < 1000; ++i)
     {
@@ -83,6 +82,5 @@ int main(int argc, char** argv)
                   << "\t" << world->num_molecules(sp2)
                   << "\t" << world->num_molecules(sp3)
                   << std::endl;
-        sim.save_hdf5();
     }
 }

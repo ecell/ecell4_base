@@ -48,7 +48,9 @@ bool ODESimulator::step(const Real& upto)
 
     const double abs_err(1e-10), rel_err(1e-6), a_x(1.0), a_dxdt(1.0);
     controlled_stepper_type controlled_stepper(
-        odeint::default_error_checker<double>(abs_err, rel_err, a_x, a_dxdt));
+        odeint::default_error_checker<
+            double, odeint::range_algebra, odeint::default_operations>(
+                abs_err, rel_err, a_x, a_dxdt));
     const size_t steps(odeint::integrate_adaptive(
                            controlled_stepper, func_obj, x, t(), upto, dt,
                            StateAndTimeBackInserter(x_vec, times)));

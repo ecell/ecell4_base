@@ -2,8 +2,7 @@
 # encoding: utf-8
 
 subdirs = [
-    'simple',
-    'mapk'
+    'simple'
     ]
 
 def configure(conf):

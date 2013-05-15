@@ -22,6 +22,8 @@
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
+#include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
+
 
 namespace ecell4
 {
@@ -139,8 +141,8 @@ public:
 
     std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
-        std::vector<std::pair<ParticleID, Particle> > particles;	
-        particles.reserve( this->num_particles() );
+        std::vector<std::pair<ParticleID, Particle> > particles;
+        particles.reserve(this->num_particles());
         BOOST_FOREACH(const world_type::particle_id_pair& pid_pair,
                       (*world_).get_particles_range())
         {
@@ -155,7 +157,8 @@ public:
     list_particles(const Species& species) const
     {
         const ::SpeciesTypeID target(find(species));
-        // std::vector<std::pair<ParticleID, Particle> > particles(num_particles());
+        // std::vector<std::pair<ParticleID, Particle> >
+        //     particles(num_particles());
         std::vector<std::pair<ParticleID, Particle> > particles;
         BOOST_FOREACH(const world_type::particle_id_pair& pid_pair,
                       (*world_).get_particles_range())
@@ -218,7 +221,8 @@ public:
             retval.push_back(
                 std::make_pair(
                     std::make_pair(
-                        translate((*i).first.first), translate((*i).first.second)),
+                        translate((*i).first.first),
+                        translate((*i).first.second)),
                     (*i).second));
         }
         return retval;
@@ -247,7 +251,8 @@ public:
             retval.push_back(
                 std::make_pair(
                     std::make_pair(
-                        translate((*i).first.first), translate((*i).first.second)),
+                        translate((*i).first.first),
+                        translate((*i).first.second)),
                     (*i).second));
         }
         return retval;
@@ -277,7 +282,8 @@ public:
             retval.push_back(
                 std::make_pair(
                     std::make_pair(
-                        translate((*i).first.first), translate((*i).first.second)),
+                        translate((*i).first.first),
+                        translate((*i).first.second)),
                     (*i).second));
         }
         return retval;
@@ -406,6 +412,26 @@ public:
             world_, boost::shared_ptr<network_rules_type>(
                 new network_rules_type(model_.network_rules())),
             internal_rng_, dissociation_retry_moves);
+    }
+
+    void save(const std::string& filename) const
+    {
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename, H5F_ACC_TRUNC));
+
+        std::ostringstream ost_hdf5path;
+        ost_hdf5path << "/" << t();
+        boost::scoped_ptr<H5::Group> parent_group(
+            new H5::Group(fout->createGroup(ost_hdf5path.str())));
+
+        rng_->save(fout.get(), ost_hdf5path.str());
+
+        ost_hdf5path << "/ParticleSpace";
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
+
+        ParticleSpaceHDF5Writer<EGFRDWorld> writer(*this);
+        writer.save(fout.get(), ost_hdf5path.str());
     }
 
 protected:

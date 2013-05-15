@@ -83,8 +83,6 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         Real dt()
         void initialize()
         Cpp_GSLRandomNumberGenerator& rng()
-        void save_hdf5_init(string filename)
-        void save_hdf5()
 
 ## GillespieSimulator
 #  a python wrapper for Cpp_GillespieSimulator
@@ -115,11 +113,3 @@ cdef class GillespieSimulator:
 
     def initialize(self):
         self.thisptr.initialize()
-
-    def save_hdf5_init(self, string filename):
-        self.thisptr.save_hdf5_init(filename)
-
-    def save_hdf5(self):
-        self.thisptr.save_hdf5()
-
-

@@ -8,9 +8,6 @@
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Simulator.hpp>
 
-#include <hdf5.h>
-#include <H5Cpp.h>
-
 #include "GillespieWorld.hpp"
 
 
@@ -31,17 +28,11 @@ public:
         : model_(model), world_(world), num_steps_(0)
     {
         this->initialize();
-
-        // About Hdf5
-        this->file_ = NULL;
     }
 
     ~GillespieSimulator(void)
     {
-        if (this->file_ != NULL)
-        {
-            delete this->file_;
-        }
+        ;
     }
 
     // SimulatorTraits
@@ -62,10 +53,6 @@ public:
      */
     void initialize(void);
 
-	// About Hdf5
-    void save_hdf5_init(std::string filename);
-    void save_hdf5(void);
-
     inline boost::shared_ptr<RandomNumberGenerator> rng()
     {
         return (*world_).rng();
@@ -83,19 +70,6 @@ protected:
 
     Real dt_;
     int next_reaction_num_; // the index of the next reaction.
-
-    // About Hdf5
-    H5::H5File *file_;
-
-    typedef struct species_id_table_struct {
-        uint32_t id;
-        char name[32];
-    } species_id_table_struct;
-
-    typedef struct species_num_struct {
-        uint32_t id;
-        uint32_t num_of_molecules;
-    } species_num_struct;
 };
 
 }

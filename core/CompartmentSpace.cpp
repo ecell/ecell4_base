@@ -12,6 +12,11 @@ const Real& CompartmentSpaceVectorImpl::volume() const
     return volume_;
 }
 
+std::vector<Species> CompartmentSpaceVectorImpl::list_species() const
+{
+    return species_; // return a copy
+}
+
 void CompartmentSpaceVectorImpl::set_volume(const Real& volume)
 {
     if (volume <= 0)

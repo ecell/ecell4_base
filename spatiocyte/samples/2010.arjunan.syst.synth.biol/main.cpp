@@ -79,7 +79,6 @@ int main(int argc, char** argv)
         new SpatiocyteWorld(edge_lengths, voxel_radius));
     world->add_molecules((*model).species("MinD(p=adp,bs,loc=cyt)"), 1300);
     world->add_molecules((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)"), 700);
-
     SpatiocyteSimulator sim(model, world);
 
     SpatiocyteVisualizationLogger logger(world);
@@ -93,7 +92,8 @@ int main(int argc, char** argv)
     logger.initialize();
     logger.log();
 
-    sim.save_hdf5_init( std::string("spatiocyte.hdf5") );
+    world->save("test_spatiocyte.h5");
+    std::cout << "save done." << std::endl;
 
     Real next_time(0.0), dt(0.02);
 
@@ -101,8 +101,6 @@ int main(int argc, char** argv)
     {
         next_time += dt;
         while (sim.step(next_time)) {}
-
-        sim.save_hdf5();
 
         std::cout << sim.t()
                   << "\t" << world->num_molecules((*model).species("MinEE(bs1,bs2,loc=mem)"))

@@ -12,6 +12,8 @@ hppfiles = [
     'CompartmentSpace.hpp', 'exceptions.hpp', 'Identifier.hpp',
     'Journal.hpp', 'linear_algebra.hpp', 'Model.hpp', 'NetworkModel.hpp',
     'Particle.hpp', 'ParticleSpace.hpp', 'Position3.hpp',
+    'ParticleSpaceHDF5Writer.hpp', 'CompartmentSpaceHDF5Writer.hpp',
+    'LatticeSpaceHDF5Writer.hpp', 'Voxel.hpp',
     'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',
     'Simulator.hpp', 'Space.hpp', 'Species.hpp', 'functions.hpp', 'types.hpp',
     'extras.hpp', 'get_mapper_mf.hpp', 'config.h', 'H5Save.hpp'
@@ -19,7 +21,8 @@ hppfiles = [
 
 cppfiles = [
     'Journal.cpp', 'Species.cpp', 'Model.cpp', 'ParticleSpace.cpp',
-    'CompartmentSpace.cpp', 'NetworkModel.cpp', 'Position3.cpp'
+    'CompartmentSpace.cpp', 'NetworkModel.cpp', 'Position3.cpp',
+    'RandomNumberGenerator.cpp'
     ]
 
 def options(opt):

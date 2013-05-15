@@ -6,7 +6,7 @@
 #include "exceptions.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
-#include <iostream>
+#include "CompartmentSpaceHDF5Writer.hpp"
 
 
 namespace ecell4
@@ -61,6 +61,16 @@ public:
         throw NotImplemented("num_molecules(const Species&) not implemented");
     }
 
+    /**
+     * get all species whitin the space.
+     * this function is a part of the trait of CompartmentSpace.
+     * @return a list of species
+     */
+    virtual std::vector<Species> list_species() const
+    {
+        throw NotImplemented("list_species() not implemented");
+    }
+
     // CompartSpace member functions
 
     /**
@@ -99,6 +109,10 @@ public:
      * @param num a number of molecules
      */
     virtual void remove_molecules(const Species& sp, const Integer& num) = 0;
+
+    // Optional members
+
+    virtual void save(H5::H5File* fout, const std::string& hdf5path) const = 0;
 };
 
 class CompartmentSpaceVectorImpl
@@ -125,6 +139,7 @@ public:
     Integer num_species() const;
     bool has_species(const Species& sp) const;
     Integer num_molecules(const Species& sp) const;
+    std::vector<Species> list_species() const;
 
     // CompartmentSpace member functions
 
@@ -133,6 +148,14 @@ public:
     void remove_species(const Species& sp);
     void add_molecules(const Species& sp, const Integer& num);
     void remove_molecules(const Species& sp, const Integer& num);
+
+    // Optional members
+
+    void save(H5::H5File* fout, const std::string& hdf5path) const
+    {
+        CompartmentSpaceHDF5Writer<CompartmentSpaceVectorImpl> writer(*this);
+        writer.save(fout, hdf5path);
+    }
 
 protected:
 

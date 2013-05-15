@@ -7,8 +7,9 @@
 #include <string>
 
 #include <ecell4/core/RandomNumberGenerator.hpp>
-#include <ecell4/core/CompartmentSpace.hpp>
 #include <ecell4/core/Species.hpp>
+#include <ecell4/core/CompartmentSpace.hpp>
+#include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 
 
 namespace ecell4
@@ -21,8 +22,8 @@ class GillespieWorld
 {
 public:
 
-    GillespieWorld(
-        const Real& volume, boost::shared_ptr<RandomNumberGenerator> rng)
+    GillespieWorld(const Real& volume,
+                   boost::shared_ptr<RandomNumberGenerator> rng)
         : cs_(new CompartmentSpaceVectorImpl(volume)), rng_(rng)
     {
         ;
@@ -43,6 +44,7 @@ public:
     Integer num_species(void) const;
     bool has_species(const Species& sp) const;
     Integer num_molecules(const Species& sp) const;
+    std::vector<Species> list_species() const;
 
     // CompartmentSpace member functions
 
@@ -61,6 +63,25 @@ public:
     inline boost::shared_ptr<RandomNumberGenerator> rng()
     {
         return rng_;
+    }
+
+    void save(const std::string& filename) const
+    {
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename, H5F_ACC_TRUNC));
+
+        std::ostringstream ost_hdf5path;
+        ost_hdf5path << "/" << t();
+        boost::scoped_ptr<H5::Group> parent_group(
+            new H5::Group(fout->createGroup(ost_hdf5path.str())));
+
+        rng_->save(fout.get(), ost_hdf5path.str());
+
+        ost_hdf5path << "/CompartmentSpace";
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
+
+        cs_->save(fout.get(), ost_hdf5path.str());
     }
 
 private:

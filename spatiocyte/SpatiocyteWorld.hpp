@@ -23,15 +23,15 @@
 #include <libecs/Model.hpp>
 #endif
 
-#include <libecs/SpatiocyteCommon.hpp>
-#include <libecs/SpatiocyteSpecies.hpp>
-#include <libecs/SpatiocyteStepper.hpp>
-
-#include "config.h" // ecell4/spatiocyte/config.h
-
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
+#include <ecell4/core/Voxel.hpp>
+#include <ecell4/core/LatticeSpaceHDF5Writer.hpp>
+
+#include <libecs/SpatiocyteCommon.hpp>
+#include <libecs/SpatiocyteSpecies.hpp>
+#include <libecs/SpatiocyteStepper.hpp>
 
 
 namespace ecell4
@@ -56,10 +56,12 @@ class SpatiocyteWorld
 public:
 
     typedef MoleculeInfo molecule_info_type;
-    typedef std::vector<std::pair<Species::serial_type, libecs::String> >
-    species_container_type;
 
 protected:
+
+    typedef std::vector<Species> species_container_type;
+    typedef std::vector<std::pair<Species, libecs::String> >
+    species_map_type;
 
     typedef std::vector<std::pair<Species, Integer> >
     species_population_cache_type;
@@ -151,6 +153,49 @@ public:
         return retval;
     }
 
+    /**
+     * return total num of voxels
+     * @return Integer
+     */
+    const Integer num_voxels() const
+    {
+        return static_cast<Integer>(spatiocyte_stepper()->getLatticeSize());
+    }
+
+    /**
+     */
+    Voxel get_voxel(const Integer& coord) const
+    {
+        SpatiocyteStepper* stepper(spatiocyte_stepper());
+        const unsigned short
+            sid(stepper->getVoxel(static_cast<unsigned int>(coord))->id);
+
+        Species sp;
+        if (sid == stepper->getNullID())
+        {
+            // throw NotFound("Species not found");
+            sp = Species("NULL"); // Boundary
+        }
+        else
+        {
+            const libecs::String
+                fullid(stepper->id2species(sid)->getVariable()->getFullID());
+            species_map_type::const_iterator itr(find_species(fullid));
+            if (itr == smap_.end())
+            {
+                // throw NotFound("Species not found");
+                sp = Species(fullid); // VACANT
+            }
+            else
+            {
+                sp = (*itr).first;
+            }
+        }
+
+        Voxel voxel = {ParticleID(), sp};
+        return voxel;
+    }
+
     std::vector<unsigned int> coordinates(const Species& sp)
     {
         ::Species* spatiocyte_species(get_spatiocyte_species(sp));
@@ -178,8 +223,8 @@ public:
         if (is_initialized_)
         {
             libecs::Real num(0.0);
-            for (species_container_type::const_iterator i(species_.begin());
-                 i != species_.end(); ++i)
+            for (species_map_type::const_iterator i(smap_.begin());
+                 i != smap_.end(); ++i)
             {
                 num += get_variable((*i).second)->getValue();
             }
@@ -199,8 +244,8 @@ public:
 
     Integer num_particles(const Species& sp) const
     {
-        species_container_type::const_iterator i(find_fullid(sp));
-        if (i == species_.end())
+        species_map_type::const_iterator i(find_fullid(sp));
+        if (i == smap_.end())
         {
             return 0;
         }
@@ -341,12 +386,12 @@ public:
 
     virtual Integer num_species() const
     {
-        return static_cast<Integer>(species_.size());
+        return static_cast<Integer>(smap_.size());
     }
 
     bool has_species(const Species& sp) const
     {
-        return (find_fullid(sp) != species_.end());
+        return (find_fullid(sp) != smap_.end());
     }
 
     Integer num_molecules(const Species& sp) const
@@ -363,7 +408,7 @@ public:
         if (!has_species(sp))
         {
             libecs::String fullid_str("Variable:/:" + sp.name());
-            species_.push_back(std::make_pair(sp.serial(), fullid_str));
+            smap_.push_back(std::make_pair(sp, fullid_str));
 
             create_variable(fullid_str, 0);
             const MoleculeInfo info(get_molecule_info(sp));
@@ -378,8 +423,8 @@ public:
     {
         // check_initialized();
 
-        // species_container_type::const_iterator i(find_fullid(sp));
-        // if (i == species_.end())
+        // species_map_type::const_iterator i(find_fullid(sp));
+        // if (i == smap_.end())
         // {
         //     add_species(sp);
         //     i = find_fullid(sp);
@@ -638,9 +683,29 @@ public:
     //         "_", get_fullid(sp).asString(), 0);
     // }
 
-    const species_container_type& species() const
+    void save(const std::string& filename) const
     {
-    	return this->species_;
+        if (!is_initialized_)
+        {
+            throw std::runtime_error("call initialize before volume().");
+        }
+
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename, H5F_ACC_TRUNC));
+
+        std::ostringstream ost_hdf5path;
+        ost_hdf5path << "/" << t();
+        boost::scoped_ptr<H5::Group> parent_group(
+            new H5::Group(fout->createGroup(ost_hdf5path.str())));
+
+        // rng_->save(fout.get(), ost_hdf5path.str());
+
+        ost_hdf5path << "/LatticeSpace";
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
+
+        LatticeSpaceHDF5Writer<SpatiocyteWorld> writer(*this);
+        writer.save(fout.get(), ost_hdf5path.str());
     }
 
 protected:
@@ -666,21 +731,51 @@ protected:
         Tfirst_ target_;
     };
 
-    species_container_type::const_iterator
+    template<typename Tfirst_, typename Tsecond_>
+    struct pair_second_element_unary_predicator
+    {
+        typedef std::pair<Tfirst_, Tsecond_> element_type;
+
+        pair_second_element_unary_predicator(const Tsecond_& target)
+            : target_(target)
+        {
+            ; // do nothing
+        }
+
+        bool operator()(const element_type& v)
+        {
+            return v.second == target_;
+        }
+
+    protected:
+
+        Tsecond_ target_;
+    };
+
+    species_map_type::const_iterator
     find_fullid(const Species& sp) const
     {
-        pair_first_element_unary_predicator<
-            Species::serial_type, libecs::String> predicator(sp.serial());
-        species_container_type::const_iterator
-            i(std::find_if(
-                  species_.begin(), species_.end(), predicator));
+        pair_first_element_unary_predicator<Species, libecs::String>
+            predicator(sp);
+        species_map_type::const_iterator
+            i(std::find_if(smap_.begin(), smap_.end(), predicator));
+        return i;
+    }
+
+    species_map_type::const_iterator
+    find_species(const libecs::String& fullid) const
+    {
+        pair_second_element_unary_predicator<Species, libecs::String>
+            predicator(fullid);
+        species_map_type::const_iterator
+            i(std::find_if(smap_.begin(), smap_.end(), predicator));
         return i;
     }
 
     void setup_model()
     {
         (*model_).setup();
-        (*model_).setDMSearchPath(ECELL3_DM_PATH);
+        // (*model_).setDMSearchPath(ECELL3_DM_PATH);
 
         libecs::Stepper* stepper_ptr(
             (*model_).createStepper("SpatiocyteStepper", "SS"));
@@ -737,8 +832,8 @@ protected:
 
     libecs::FullID get_fullid(const Species& sp) const
     {
-        species_container_type::const_iterator i(find_fullid(sp));
-        if (i == species_.end())
+        species_map_type::const_iterator i(find_fullid(sp));
+        if (i == smap_.end())
         {
             throw NotFound("variable not found.");
         }
@@ -800,7 +895,7 @@ protected:
     // bool visualization_exists_;
     // bool coordinate_exists_;
 
-    species_container_type species_;
+    species_map_type smap_;
     species_population_cache_type populations_; // just for cache
 };
 

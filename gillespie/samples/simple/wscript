@@ -1,0 +1,14 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+
+def configure(conf):
+    pass
+
+def build(bld):
+    bld.program(
+        source = 'main.cpp',
+        target = 'simple',
+        includes = ['../..'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core', 'hdf5', 'hdf5_cpp'],
+        use = 'ecell4-gillespie')

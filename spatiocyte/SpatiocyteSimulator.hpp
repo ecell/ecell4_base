@@ -78,20 +78,10 @@ public:
         return (*world_).spatiocyte_stepper();
     }
 
-    void save_hdf5_init(std::string);
-    void save_hdf5(void);
-
 protected:
 
     boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<SpatiocyteWorld> world_;
-
-    H5::H5File *file_;
-    typedef struct h5_lattice {
-    	int h5_lattice_id;
-        char h5_species_id[32];
-    	//double h5_particle_position[3];
-    } h5_lattice;
 
     /**
      * the protected internal state of SpatiocyteSimulator.

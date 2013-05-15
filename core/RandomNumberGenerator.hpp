@@ -6,6 +6,9 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
+#include <hdf5.h>
+#include <H5Cpp.h>
+
 #include "types.hpp"
 
 
@@ -21,9 +24,12 @@ public:
     virtual Real gaussian(Real mean, Real sigma) = 0;
 
     virtual void seed(Integer val) = 0;
+
+    virtual void save(H5::H5File* fout, const std::string& hdf5path) const = 0;
+    virtual void load(H5::H5File* fout, const std::string& hdf5path) = 0;
 };
 
-template <typename Telem_>
+template<typename Telem_>
 inline void shuffle(RandomNumberGenerator& rng, std::vector<Telem_>& cont)
 {
     typedef std::vector<Telem_> container_type;
@@ -63,6 +69,9 @@ public:
     {
         gsl_rng_set(rng_.get(), val);
     }
+
+    void save(H5::H5File* fout, const std::string& hdf5path) const;
+    void load(H5::H5File* fout, const std::string& hdf5path);
 
     GSLRandomNumberGenerator(rng_handle hdl)
         : rng_(hdl)
