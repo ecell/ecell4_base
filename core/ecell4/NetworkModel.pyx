@@ -24,6 +24,7 @@ cdef class NetworkModel:
 
     def remove_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().remove_reaction_rule(deref(rr.thisptr))
+
     def has_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().has_reaction_rule(deref(rr.thisptr))
 

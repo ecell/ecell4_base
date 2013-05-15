@@ -58,6 +58,7 @@ cdef Species Cpp_Species_to_Species(Cpp_Species *sp)
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRule "ecell4::ReactionRule":
         Cpp_ReactionRule() except +
+        Cpp_ReactionRule(Cpp_ReactionRule&) except +
         Real k()
         multiset[Cpp_Species]& reactants()
         multiset[Cpp_Species]& products()
@@ -69,6 +70,8 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
 #  a python wrapper for Cpp_ReactionRule
 cdef class ReactionRule:
     cdef Cpp_ReactionRule* thisptr
+
+cdef ReactionRule Cpp_ReactionRule_to_ReactionRule(Cpp_ReactionRule *rr)
 
 ## Cpp_CompartmentSpaceVectorImpl
 #  ecell4::CompartmentSpaceVectorImpl

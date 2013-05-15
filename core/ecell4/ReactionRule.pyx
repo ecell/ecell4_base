@@ -1,6 +1,8 @@
 from cython.operator cimport dereference as deref, preincrement as inc
 from cython cimport address
 
+cimport create_reaction_rule as crr
+
 
 cdef class ReactionRule:
 
@@ -42,36 +44,43 @@ cdef class ReactionRule:
     def add_product(self, Species sp):
         self.thisptr.add_product(deref(sp.thisptr))
 
-def create_unimolecular_reaction_rule(
-        Species reactant1, Species product1, Real k):
-    rr = ReactionRule()
-    rr.add_reactant(reactant1)
-    rr.add_product(product1)
-    rr.set_k(k)
-    return rr
+cdef ReactionRule Cpp_ReactionRule_to_ReactionRule(Cpp_ReactionRule *rr):
+    cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))
+    r = ReactionRule()
+    del r.thisptr
+    r.thisptr = new_obj
+    return r
+
+def create_degradation_reaction_rule(Species reactant1, Real k):
+    cdef Cpp_ReactionRule rr = crr.create_degradation_reaction_rule(
+        deref(reactant1.thisptr), k)
+    return Cpp_ReactionRule_to_ReactionRule(address(rr))
+
+def create_synthesis_reaction_rule(Species product1, Real k):
+    cdef Cpp_ReactionRule rr = crr.create_synthesis_reaction_rule(
+        deref(product1.thisptr), k)
+    return Cpp_ReactionRule_to_ReactionRule(address(rr))
+
+def create_unimolecular_reaction_rule(Species reactant1, Species product1, Real k):
+    cdef Cpp_ReactionRule rr = crr.create_unimolecular_reaction_rule(
+        deref(reactant1.thisptr), deref(product1.thisptr), k)
+    return Cpp_ReactionRule_to_ReactionRule(address(rr))
 
 def create_binding_reaction_rule(
-        Species reactant1, Species reactant2, Species product1, Real k):
-    rr = ReactionRule()
-    rr.add_reactant(reactant1)
-    rr.add_reactant(reactant2)
-    rr.add_product(product1)
-    rr.set_k(k)
-    return rr
+    Species reactant1, Species reactant2, Species product1, Real k):
+    cdef Cpp_ReactionRule rr = crr.create_binding_reaction_rule(
+        deref(reactant1.thisptr), deref(reactant2.thisptr),
+        deref(product1.thisptr), k)
+    return Cpp_ReactionRule_to_ReactionRule(address(rr))
 
-def create_unbinding_reaction_rue(
-        Species reactant1, Species product1, Species product2, Real k):
-    rr = ReactionRule()
-    rr.add_reactant(reactant1)
-    rr.add_product(product1)
-    rr.add_product(product2)
-    rr.set_k(k)
-    return rr
+def create_unbinding_reaction_rule(
+    Species reactant1, Species product1, Species product2, Real k):
+    cdef Cpp_ReactionRule rr = crr.create_unbinding_reaction_rule(
+        deref(reactant1.thisptr),
+        deref(product1.thisptr), deref(product2.thisptr), k)
+    return Cpp_ReactionRule_to_ReactionRule(address(rr))
 
-def create_repulsive_reaction_rule(
-        Species reactant1, Species reactant2):
-    rr = ReactionRule()
-    rr.set_k(0.0)
-    rr.add_reactant(reactant1)
-    rr.add_product(reactant2)
-    return rr
+def create_repulsive_reaction_rule(Species reactant1, Species reactant2):
+    cdef Cpp_ReactionRule rr = crr.create_repulsive_reaction_rule(
+        deref(reactant1.thisptr), deref(reactant2.thisptr))
+    return Cpp_ReactionRule_to_ReactionRule(address(rr))

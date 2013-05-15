@@ -8,17 +8,8 @@ def run():
     sp1, sp2, sp3 = Species("A"), Species("B"), Species("C")
     kf, kr = 0.25, 1.0
 
-    rr1 = ReactionRule()
-    rr1.set_k(kf)
-    rr1.add_reactant(sp1)
-    rr1.add_reactant(sp2)
-    rr1.add_product(sp3)
-
-    rr2 = ReactionRule()
-    rr2.set_k(kr)
-    rr2.add_reactant(sp3)
-    rr2.add_product(sp1)
-    rr2.add_product(sp2)
+    rr1 = create_binding_reaction_rule(sp1, sp2, sp3, kf)
+    rr2 = create_unbinding_reaction_rule(sp3, sp1, sp2, kr)
 
     m = NetworkModel()
     m.add_species(sp1)
