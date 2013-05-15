@@ -5,8 +5,6 @@ from waflib import Logs
 top = '.'
 out = 'build'
 
-pyx_sources = ['ecell4.pyx']
-# minimal_cython_version = 0.17
 
 def options(ctx):
     ctx.load('compiler_c')
@@ -25,7 +23,7 @@ def configure(ctx):
     try:
         ctx.load('cython')
     except ctx.errors.ConfigurationError:
-        Logs.warn('Cython waf not found using the cache')
+        Logs.warn('cython not found')
 
     # # check cython's version
     # try:
@@ -37,10 +35,13 @@ def configure(ctx):
     #     Logs.warn('Your cython is too old.')
 
 
-def build(ctx):
+def build(bld):
     # build wrapper for core.
-    ctx(
+    bld.install_files('${PYTHONDIR}/ecell4', '__init__.py')
+
+    bld(
         features = 'cxx cxxshlib pyext',
-        source = pyx_sources,
-        target = 'ecell4',
+        source = 'ecell4/core.pyx',
+        target = 'core',
+        install_path = '${PYTHONDIR}/ecell4',
         lib = ['ecell4-core'])
