@@ -7,12 +7,13 @@
 SUBMODS=("bd" "gillespie" "ode" "egfrd" "spatiocyte")
 
 CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
+# WAFFLAGS="-v --disable-python"
 
 install_core()
 {
     # install ecell4-core
     CXXFLAGS=${CXXFLAGS} ./waf distclean update --files="boost,doxygen" \
-        configure --prefix=${PREFIX} build install
+        configure --prefix=${PREFIX} ${WAFFLAGS} build install
     return $?
 }
 
@@ -27,7 +28,7 @@ install_submodule()
         LIBRARY_PATH=${LIBRARY_PATH}:${PREFIX}/lib \
         CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:${PREFIX}/include \
         CXXFLAGS=${CXXFLAGS} \
-        ../waf distclean configure --prefix=${PREFIX} build install
+        ../waf distclean configure --prefix=${PREFIX} ${WAFFLAGS} build install
     VAL=$?
     cd ..
     return ${VAL}

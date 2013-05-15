@@ -27,6 +27,9 @@ def options(opt):
     opt.add_option('--enable_debug', action='store_true', default=False, help='debug')
     opt.load('compiler_cxx boost')
 
+    opt.add_option(
+        '--disable-python', action = 'store_true', default = False,
+        help = 'disable python wrappers')
     opt.load('compiler_c')
     opt.load('python')
     opt.load('cython')
@@ -50,15 +53,16 @@ def configure(conf):
         ['-Wall', '-g']
         )
 
-    conf.load('compiler_c')
-    conf.load('python')
-    conf.check_python_headers()
+    if not conf.options.disable_python:
+        conf.load('compiler_c')
+        conf.load('python')
+        conf.check_python_headers()
 
-    conf.find_program('cython')
-    try:
-        conf.load('cython')
-    except conf.errors.ConfigurationError:
-        Logs.warn('cython not found')
+        conf.find_program('cython')
+        try:
+            conf.load('cython')
+        except conf.errors.ConfigurationError:
+            Logs.warn('cython not found')
 
 def summary(bld):
     '''borrowed from waf demos/unit_test/wscript
@@ -101,15 +105,16 @@ def build(bld):
     # bld.add_post_fun(summary)
 
     # build wrapper for gillespie.
-    bld.env.CYTHONFLAGS += ('-I${PYTHONDIR}', )
-    bld(
-        features = 'cxx cxxshlib pyext',
-        source = 'ecell4/gillespie.pyx',
-        target = 'gillespie',
-        includes = ['.', bld.env['PREFIX'] + '/include'],
-        install_path = '${PYTHONDIR}/ecell4',
-        use = ['ecell4-gillespie'],
-        lib = ['ecell4-core'])
+    if not bld.options.disable_python:
+        bld.env.CYTHONFLAGS += ('-I${PYTHONDIR}', )
+        bld(
+            features = 'cxx cxxshlib pyext',
+            source = 'ecell4/gillespie.pyx',
+            target = 'gillespie',
+            includes = ['.', bld.env['PREFIX'] + '/include'],
+            install_path = '${PYTHONDIR}/ecell4',
+            use = ['ecell4-gillespie'],
+            lib = ['ecell4-core'])
 
     if bld.cmd == 'install':
         import platform
