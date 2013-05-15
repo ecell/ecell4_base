@@ -18,7 +18,7 @@ cdef class Particle:
         return Position3_from_Cpp_Position3(address(pos))
 
     def radius(self):
-        return self.this.radius()
+        return self.thisptr.radius()
 
     def D(self):
         return self.thisptr.D()

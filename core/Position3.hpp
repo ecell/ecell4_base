@@ -42,12 +42,12 @@ struct Position3
         (*this)[2] = p2;
     }
 
-	Position3(const Position3 &rhs)
-	{
-		(*this)[0] = rhs[0];
-		(*this)[1] = rhs[1];
-		(*this)[2] = rhs[2];
-	}
+    Position3(const Position3 &rhs)
+    {
+        (*this)[0] = rhs[0];
+        (*this)[1] = rhs[1];
+        (*this)[2] = rhs[2];
+    }
 
     // Position3(const Real (&a)[3])
     //     : base_type(*reinterpret_cast<const base_type*>(&a))
@@ -146,12 +146,12 @@ inline Position3 cross_product(const Position3& p1, const Position3& p2)
     return retval;
 }
 
-inline Position3::size_type length_sq(const Position3& r)
+inline Position3::value_type length_sq(const Position3& r)
 {
     return gsl_pow_2(r[0]) + gsl_pow_2(r[1]) + gsl_pow_2(r[2]);
 }
 
-inline Position3::size_type length(const Position3& r)
+inline Position3::value_type length(const Position3& r)
 {
     return std::sqrt(length_sq(r));
 }

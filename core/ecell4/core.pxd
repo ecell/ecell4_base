@@ -119,17 +119,6 @@ cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
         Cpp_Position3(Real, Real, Real) except +
         Cpp_Position3(Cpp_Position3 &rhs) except+
 
-    Cpp_Position3 add(Cpp_Position3, Cpp_Position3)
-    Cpp_Position3 subtract(Cpp_Position3, Cpp_Position3)
-    Cpp_Position3 divide(Cpp_Position3, Real)
-    Cpp_Position3 multiply(Cpp_Position3, Real)
-    Cpp_Position3 modulo(Cpp_Position3, Real)
-    Cpp_Position3 modulo(Cpp_Position3, Cpp_Position3)
-    Cpp_Position3 abs(Cpp_Position3)
-    Real dot_product(Cpp_Position3, Cpp_Position3)
-    Cpp_Position3 cross_product(Cpp_Position3, Cpp_Position3)
-    Integer length_sq(Cpp_Position3)
-    Integer length(Cpp_Position3)
     Cpp_Position3 operator+(Cpp_Position3, Cpp_Position3)
     Cpp_Position3 operator-(Cpp_Position3, Cpp_Position3)
     Cpp_Position3 operator/(Cpp_Position3, Real)
