@@ -1,6 +1,4 @@
-from libcpp.vector cimport vector
 from libcpp.string cimport string
-from libcpp.set cimport set
 from libcpp cimport bool
 
 # XXX Tomplorary using cython stl support.
@@ -8,8 +6,7 @@ from libcpp cimport bool
 #        that don't cast c-objects into python objects automatically.
 from libcpp.pair cimport pair
 
-include "types.pxi"
-
+from types cimport *
 from multiset cimport multiset
 from shared_ptr cimport shared_ptr
 
@@ -32,7 +29,8 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
 ## RandomNumberGenerator
 #  a python wrapper for Cpp_GSLRandomNumberGenerator
 cdef class GSLRandomNumberGenerator:
-    cdef Cpp_GSLRandomNumberGenerator* thisptr
+    # cdef Cpp_GSLRandomNumberGenerator* thisptr
+    cdef shared_ptr[Cpp_GSLRandomNumberGenerator]* thisptr
 
 ## Cpp_Species
 #  ecell4::Species

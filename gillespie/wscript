@@ -2,7 +2,7 @@
 # encoding: utf-8
 #
 # Build script for Gillespie Solver (draft)
-# vim: syntax=python 
+# vim: syntax=python
 # #
 top = '.'
 out = 'build'
@@ -14,34 +14,50 @@ from waflib import Logs
 header_list = ['vector', 'map', 'numeric']
 
 hppfiles = [
-	'GillespieWorld.hpp', 'GillespieSimulator.hpp'
-	]
+    'GillespieWorld.hpp', 'GillespieSimulator.hpp'
+    ]
 
 cppfiles = [
-	'GillespieWorld.cpp', 'GillespieSimulator.cpp', #'serialize.cpp', 
-	]
+    'GillespieWorld.cpp', 'GillespieSimulator.cpp', #'serialize.cpp',
+    ]
 
 def options(opt):
-	opt.add_option('--enable_debug', action='store_true', default=False, help='debug')
-	opt.load('compiler_cxx boost')
+    opt.add_option('--enable_debug', action='store_true', default=False, help='debug')
+    opt.load('compiler_cxx boost')
+
+    opt.load('compiler_c')
+    opt.load('compiler_cxx')
+    opt.load('python')
+    opt.load('cython')
+    # opt.load('cython_cache', tooldir='.')
 
 def configure(conf):
-	conf.load('compiler_cxx boost')
+    conf.load('compiler_cxx boost')
 
-	conf.check_cfg(package='gsl', uselib_store='gsl', atleat_version='1.13', args='--cflags --libs')
-	#conf.check_cfg(package='pficommon', uselib_store='pficommon', atleat_version='1.0.0', args='--cflags --libs')
+    conf.check_cfg(package='gsl', uselib_store='gsl', atleat_version='1.13', args='--cflags --libs')
+    #conf.check_cfg(package='pficommon', uselib_store='pficommon', atleat_version='1.0.0', args='--cflags --libs')
 
-	# Checking the existence of header files.
-	for header in header_list:
-		conf.check(header_name = header, features = 'c cprogram')
+    # Checking the existence of header files.
+    for header in header_list:
+        conf.check(header_name = header, features = 'c cprogram')
 
-	# Save option flags.
-	conf.env.enable_debug =  conf.options.enable_debug
+    # Save option flags.
+    conf.env.enable_debug =  conf.options.enable_debug
 
-	conf.env.append_unique(
-		'CXXFLAGS', 
-		['-Wall', '-g']
-		)
+    conf.env.append_unique(
+        'CXXFLAGS',
+        ['-Wall', '-g']
+        )
+
+    conf.load('compiler_c')
+    conf.load('python')
+    conf.check_python_headers()
+
+    conf.find_program('cython')
+    try:
+        conf.load('cython')
+    except conf.errors.ConfigurationError:
+        Logs.warn('cython not found')
 
 def summary(bld):
     '''borrowed from waf demos/unit_test/wscript
@@ -67,30 +83,42 @@ def summary(bld):
 def build(bld):
     # always build libgillespie.so or .dylib(mac)
     #bld.shlib(
-    #	source = ['./GillespieSolver.cpp', './GillespieWorld.cpp', './serialize.cpp'],
-    #	includes = ['.'],
-    #	uselib = ['gsl', 'pficommon'],
-    #	target = 'gillespie'
+    #    source = ['./GillespieSolver.cpp', './GillespieWorld.cpp', './serialize.cpp'],
+    #    includes = ['.'],
+    #    uselib = ['gsl', 'pficommon'],
+    #    target = 'gillespie'
     #)
 
     bld.install_files(
-	'${PREFIX}/include/ecell4/gillespie', hppfiles)
+    '${PREFIX}/include/ecell4/gillespie', hppfiles)
 
     bld.shlib(
-	source = cppfiles,
-	lib = ['gslcblas', 'gsl', 'm', 'ecell4-core', 'hdf5', 'hdf5_cpp'],
-	target = 'ecell4-gillespie')
+    source = cppfiles,
+    lib = ['gslcblas', 'gsl', 'm', 'ecell4-core', 'hdf5', 'hdf5_cpp'],
+    target = 'ecell4-gillespie')
 
     bld.recurse('tests')
     #bld.add_post_fun(summary)
+
+    # build wrapper for gillespie.
+    bld.env.CYTHONFLAGS += '-I${PYTHONDIR}',
+    bld(
+        features = 'cxx cxxshlib pyext',
+        source = 'ecell4/gillespie.pyx',
+        target = 'gillespie',
+        install_path = '${PYTHONDIR}/ecell4',
+        # cython_includes = ['${PYTHONDIR}/ecell4'],
+        # cython_includes = ['/home/kaizu/local/lib/python2.7/site-packages/ecell4'],
+        use = ['ecell4-gillespie'],
+        lib = ['ecell4-core'])
 
     if bld.cmd == 'install':
         import platform
         if platform.system() == 'Darwin':
             import os
-            bld_lib_dir = bld.path.get_bld().abspath() + '/' 
+            bld_lib_dir = bld.path.get_bld().abspath() + '/'
             bld_lib_path = bld_lib_dir + 'libecell4-gillespie.dylib'
-            dest_lib_dir = bld.env['LIBDIR'] + '/'             
+            dest_lib_dir = bld.env['LIBDIR'] + '/'
             dest_lib_path = dest_lib_dir + 'libecell4-gillespie.dylib'
 
             ins_name_toos_cmdline = "install_name_tool -id " + dest_lib_path + ' ' + bld_lib_path

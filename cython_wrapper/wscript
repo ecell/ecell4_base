@@ -5,13 +5,18 @@ from waflib import Logs
 top = '.'
 out = 'build'
 
+pxdfiles = [
+    'ecell4/core.pxd', 'ecell4/multiset.pxd', 'ecell4/shared_ptr.pxd',
+    'ecell4/types.pxd'
+    ]
+
 
 def options(ctx):
     ctx.load('compiler_c')
     ctx.load('compiler_cxx')
     ctx.load('python')
     ctx.load('cython')
-    #ctx.load('cython_cache', tooldir='.')
+    # ctx.load('cython_cache', tooldir='.')
 
 def configure(ctx):
     ctx.load('compiler_c')
@@ -37,6 +42,7 @@ def configure(ctx):
 
 def build(bld):
     # build wrapper for core.
+    bld.install_files('${PYTHONDIR}/ecell4', pxdfiles)
     bld.install_files('${PYTHONDIR}/ecell4', '__init__.py')
 
     bld(
