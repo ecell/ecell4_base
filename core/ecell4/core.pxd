@@ -5,6 +5,7 @@ from libcpp cimport bool
 #        Perhaps, we should consider importing std::pair by ourselves
 #        that don't cast c-objects into python objects automatically.
 from libcpp.pair cimport pair
+from libcpp.vector cimport vector
 
 from types cimport *
 from multiset cimport multiset
@@ -93,6 +94,20 @@ cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
 cdef class CompartmentSpaceVectorImpl:
     cdef Cpp_CompartmentSpaceVectorImpl* thisptr
 
+## Cpp_ParticleSpaceVectorImpl
+#  ecell4::ParticleSpaceVectorImpl
+cdef extern from "ecell4/core/ParticleSpace.hpp" namespace "ecell4":
+    cdef cppclass Cpp_ParticleSpaceVectorImpl "ecell4::ParticleSpaceVectorImpl":
+        Cpp_ParticleSpaceVectorImpl(Cpp_Position3&) except+
+        Cpp_Position3 edge_lengths()
+        bool update_particle(Cpp_ParticleID, Cpp_Particle)
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
+
+## ParticleSpaceVectorImpl
+#  a python wrapper for ParticleSpaceVectorImpl
+cdef class ParticleSpaceVectorImpl:
+    cdef Cpp_ParticleSpaceVectorImpl* thisptr
+
 ## Cpp_NetworkModel
 #  ecell4::NetworkModel
 cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
@@ -141,7 +156,9 @@ cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
     ctypedef pair[lot_type, serial_type] value_type
 
     cdef cppclass Cpp_ParticleID "ecell4::ParticleID":
-        Cpp_ParticleID(value_type)
+        Cpp_ParticleID() except+
+        Cpp_ParticleID(value_type) except+
+        Cpp_ParticleID(Cpp_ParticleID &rhs) except+
         Cpp_ParticleID log_add(lot_type &rhs)
         Cpp_ParticleID log_subtract(lot_type &rhs)
         Cpp_ParticleID &lot_advance(lot_type &rhs)
@@ -162,12 +179,18 @@ cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
         lot_type &lot()
         serial_type &serial()
 
+cdef class ParticleID:
+    cdef Cpp_ParticleID* thisptr
+
+cdef ParticleID ParticleID_from_Cpp_ParticleID(Cpp_ParticleID* p)
+
 ## Cpp_Particle
 #  ecell4::Particle
 cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
     cdef cppclass Cpp_Particle "ecell4::Particle":
         Cpp_Particle() except +
         Cpp_Particle(Cpp_Species, Cpp_Position3, Real radius, Real D) except +
+        Cpp_Particle(Cpp_Particle &rhs) except+
         Cpp_Position3 position()
         Real radius()
         Real D()
@@ -177,3 +200,5 @@ cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
 #  a python wrapper for Cpp_Particle
 cdef class Particle:
     cdef Cpp_Particle* thisptr
+
+cdef Particle Particle_from_Cpp_Particle(Cpp_Particle* p)

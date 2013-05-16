@@ -111,8 +111,8 @@ int main() {std::tr1::hash<int>(); return 0; }''',
         # try:
         #     from Cython.Compiler.Version import version
         #     print 'Cython version: ', version
-        #     if float(version) < minimal_cython_version:
-        #         raise conf.errors.ConfigurationError
+        #     # if float(version) < minimal_cython_version:
+        #     #     raise conf.errors.ConfigurationError
         # except conf.errors.ConfigurationError:
         #     Logs.warn('Your cython is too old.')
 

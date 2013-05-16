@@ -1,6 +1,7 @@
 include "Species.pyx"
 include "ReactionRule.pyx"
 include "CompartmentSpace.pyx"
+include "ParticleSpace.pyx"
 include "NetworkModel.pyx"
 include "Position3.pyx"
 include "Particle.pyx"
