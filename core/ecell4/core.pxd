@@ -123,6 +123,7 @@ cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
     Cpp_Position3 operator-(Cpp_Position3, Cpp_Position3)
     Cpp_Position3 operator/(Cpp_Position3, Real)
     Cpp_Position3 operator*(Cpp_Position3, Real)
+    Real& operator[](Integer)
 
 ## Position3
 #  a python wrapper for Cpp_Position3

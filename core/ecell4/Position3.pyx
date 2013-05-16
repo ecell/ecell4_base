@@ -11,6 +11,11 @@ cdef class Position3:
     def __dealloc__(self):
         del self.thisptr
 
+    def __getitem__(self, Integer i):
+        if i > 2:
+            raise IndexError("index out of bounds")
+        return deref(self.thisptr)[i]
+
 cdef Position3 Position3_from_Cpp_Position3(Cpp_Position3 *p):
     cdef Cpp_Position3 *new_obj = new Cpp_Position3(<Cpp_Position3> deref(p))
     r = Position3(0.0, 0.0, 0.0)
@@ -34,12 +39,10 @@ def multiply(Position3 p1, Real p2):
     cdef Cpp_Position3 r = p3operator.multiply(deref(p1.thisptr), p2)
     return Position3_from_Cpp_Position3(address(r))
 
-'''
-def modulo(Position3 p1, Position3 p2):
-    cdef Cpp_Position3 r = p3operator.modulo(
-        deref(p1.thisptr), <Position3>deref(p2.thisptr))
-    return Position3_from_Cpp_Position3(address(r))
-'''
+# def modulo(Position3 p1, Position3 p2):
+#     cdef Cpp_Position3 r = p3operator.modulo(
+#         deref(p1.thisptr), <Position3>deref(p2.thisptr))
+#     return Position3_from_Cpp_Position3(address(r))
 
 def abs(Position3 p1):
     cdef Cpp_Position3 r = p3operator.abs(deref(p1.thisptr))
