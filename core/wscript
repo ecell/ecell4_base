@@ -151,16 +151,24 @@ def build(bld):
         target = 'ecell4-core')
 
     if not bld.options.disable_python:
+        hppnodes = []
+        for hppfile in hppfiles:
+            node = bld.path.get_bld().make_node('include/ecell4/core/%s' % hppfile)
+            bld(
+                rule = 'cp ${SRC} ${TGT}',
+                source = hppfile,
+                target = node)
+            hppnodes.append(str(node))
+
         bld.install_files('${PYTHONDIR}/ecell4', pxdfiles)
         bld.install_files('${PYTHONDIR}/ecell4', '__init__.py')
-
         bld(
             features = 'cxx cxxshlib pyext',
             source = 'ecell4/core.pyx',
             target = 'core',
-            includes = ['.', bld.env['PREFIX'] + '/include'],
+            includes = ['.', '%s/include' % bld.path.get_bld().abspath()],
             install_path = '${PYTHONDIR}/ecell4',
-            use = ['ecell4-core'])
+            use = ['ecell4-core'] + hppnodes)
 
     bld.recurse('tests')
 
