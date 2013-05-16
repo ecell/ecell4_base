@@ -18,6 +18,10 @@ cppfiles = [
     'GillespieWorld.cpp', 'GillespieSimulator.cpp', # 'serialize.cpp',
     ]
 
+pxdfiles = [
+    'ecell4/gillespie.pxd'
+    ]
+
 subdirs = [
     'tests',
     'samples'
@@ -115,6 +119,7 @@ def build(bld):
                 target = node)
             hppnodes.append(str(node))
 
+        bld.install_files('${PYTHONDIR}/ecell4', pxdfiles)
         bld.env.CYTHONFLAGS += ('-I${PYTHONDIR}', )
         bld(
             features = 'cxx cxxshlib pyext',
