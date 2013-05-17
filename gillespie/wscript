@@ -18,10 +18,6 @@ cppfiles = [
     'GillespieWorld.cpp', 'GillespieSimulator.cpp', # 'serialize.cpp',
     ]
 
-pxdfiles = [
-    'ecell4/gillespie.pxd'
-    ]
-
 subdirs = [
     'tests',
     'samples'
@@ -30,14 +26,6 @@ subdirs = [
 def options(opt):
     opt.add_option('--enable_debug', action='store_true', default=False, help='debug')
     opt.load('compiler_cxx boost')
-
-    opt.add_option(
-        '--disable-python', action = 'store_true', default = False,
-        help = 'disable python wrappers')
-    opt.load('compiler_c')
-    opt.load('python')
-    opt.load('cython')
-    # opt.load('cython_cache', tooldir='.')
 
 def configure(conf):
     conf.load('compiler_cxx boost')
@@ -56,17 +44,6 @@ def configure(conf):
         'CXXFLAGS',
         ['-Wall', '-g']
         )
-
-    if not conf.options.disable_python:
-        conf.load('compiler_c')
-        conf.load('python')
-        conf.check_python_headers()
-
-        conf.find_program('cython')
-        try:
-            conf.load('cython')
-        except conf.errors.ConfigurationError:
-            Logs.warn('cython not found')
 
 def summary(bld):
     '''borrowed from waf demos/unit_test/wscript
@@ -107,28 +84,6 @@ def build(bld):
 
     bld.recurse(subdirs)
     # bld.add_post_fun(summary)
-
-    # build wrapper for gillespie.
-    if not bld.options.disable_python:
-        hppnodes = []
-        for hppfile in hppfiles:
-            node = bld.path.get_bld().make_node('include/ecell4/gillespie/%s' % hppfile)
-            bld(
-                rule = 'cp ${SRC} ${TGT}',
-                source = hppfile,
-                target = node)
-            hppnodes.append(str(node))
-
-        bld.install_files('${PYTHONDIR}/ecell4', pxdfiles)
-        bld.env.CYTHONFLAGS += ('-I${PYTHONDIR}', )
-        bld(
-            features = 'cxx cxxshlib pyext',
-            source = 'ecell4/gillespie.pyx',
-            target = 'gillespie',
-            includes = ['.', '%s/include' % bld.path.get_bld().abspath()],
-            install_path = '${PYTHONDIR}/ecell4',
-            use = ['ecell4-gillespie'] + hppnodes,
-            lib = ['ecell4-core'])
 
     if bld.cmd == 'install':
         import platform

@@ -25,12 +25,6 @@ cppfiles = [
     'RandomNumberGenerator.cpp'
     ]
 
-pxdfiles = [
-    'ecell4/core.pxd', 'ecell4/multiset.pxd', 'ecell4/shared_ptr.pxd',
-    'ecell4/types.pxd', 'ecell4/p3operator.pxd',
-    'ecell4/create_reaction_rule.pxd'
-    ]
-
 
 def options(opt):
     # opt.add_option(
@@ -40,14 +34,6 @@ def options(opt):
         '--doxygen', action = 'store_true', default = False,
         help = 'generate docs using doxygen')
     opt.load('compiler_cxx boost')
-
-    opt.add_option(
-        '--disable-python', action = 'store_true', default = False,
-        help = 'disable python wrappers')
-    opt.load('compiler_c')
-    opt.load('python')
-    opt.load('cython')
-    # opt.load('cython_cache', tooldir='.')
 
 def configure(conf):
     if conf.options.doxygen:
@@ -96,26 +82,6 @@ int main() {std::tr1::hash<int>(); return 0; }''',
     conf.write_config_header('config.h', guard='__ECELL4_W_CONFIG_H_WAF')
     conf.env.store('conf.log')
 
-    if not conf.options.disable_python:
-        conf.load('compiler_c')
-        conf.load('python')
-        conf.check_python_headers()
-
-        conf.find_program('cython')
-        try:
-            conf.load('cython')
-        except conf.errors.ConfigurationError:
-            Logs.warn('cython not found')
-
-        # # check cython's version
-        # try:
-        #     from Cython.Compiler.Version import version
-        #     print 'Cython version: ', version
-        #     # if float(version) < minimal_cython_version:
-        #     #     raise conf.errors.ConfigurationError
-        # except conf.errors.ConfigurationError:
-        #     Logs.warn('Your cython is too old.')
-
     # conf.env.unit_test = conf.options.unit_test
 
 def summary(bld):
@@ -149,26 +115,6 @@ def build(bld):
         lib = ['gsl', 'gslcblas', 'm',
                'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
         target = 'ecell4-core')
-
-    if not bld.options.disable_python:
-        hppnodes = []
-        for hppfile in hppfiles:
-            node = bld.path.get_bld().make_node('include/ecell4/core/%s' % hppfile)
-            bld(
-                rule = 'cp ${SRC} ${TGT}',
-                source = hppfile,
-                target = node)
-            hppnodes.append(str(node))
-
-        bld.install_files('${PYTHONDIR}/ecell4', pxdfiles)
-        bld.install_files('${PYTHONDIR}/ecell4', '__init__.py')
-        bld(
-            features = 'cxx cxxshlib pyext',
-            source = 'ecell4/core.pyx',
-            target = 'core',
-            includes = ['.', '%s/include' % bld.path.get_bld().abspath()],
-            install_path = '${PYTHONDIR}/ecell4',
-            use = ['ecell4-core'] + hppnodes)
 
     bld.recurse('tests')
 

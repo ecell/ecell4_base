@@ -12,8 +12,10 @@ CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
 install_core()
 {
     # install ecell4-core
-    CXXFLAGS=${CXXFLAGS} ./waf distclean update --files="boost,doxygen" \
+    cd core
+    CXXFLAGS=${CXXFLAGS} ../waf distclean update --files="boost,doxygen" \
         configure --prefix=${PREFIX} ${WAFFLAGS} build install
+    cd ..
     return $?
 }
 
