@@ -5,6 +5,7 @@
 # PREFIX=
 # SUBMODS=("bd" "gillespie")
 SUBMODS=("bd" "gillespie" "ode" "egfrd" "spatiocyte")
+PYTHONMODS=("core_python" "gillespie_python")
 
 CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
 # WAFFLAGS="-v --disable-python"
@@ -42,7 +43,7 @@ if [ "$PREFIX" == "" ]; then
 fi
 
 if [ $# == 0 ]; then
-    TMP=("core" ${SUBMODS[@]})
+    TMP=("core" ${SUBMODS[@]} ${PYTHONMODS[@]})
 else
     TMP=$@
 fi
