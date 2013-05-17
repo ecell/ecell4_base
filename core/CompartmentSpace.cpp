@@ -94,7 +94,7 @@ Integer CompartmentSpaceVectorImpl::num_molecules(const Species& sp) const
 void CompartmentSpaceVectorImpl::add_molecules(
     const Species& sp, const Integer& num)
 {
-    if (num <= 0)
+    if (num < 0)
     {
         throw std::invalid_argument("The number of molecules must be positive.");
     }
@@ -113,7 +113,7 @@ void CompartmentSpaceVectorImpl::add_molecules(
 void CompartmentSpaceVectorImpl::remove_molecules(
     const Species& sp, const Integer& num)
 {
-    if (num <= 0)
+    if (num < 0)
     {
         throw std::invalid_argument("The number of molecules must be positive.");
     }
