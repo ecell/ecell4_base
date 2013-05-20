@@ -119,6 +119,9 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         void add_reaction_rule(Cpp_ReactionRule)
         void remove_reaction_rule(Cpp_ReactionRule)
         bool has_reaction_rule(Cpp_ReactionRule)
+        vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
+        vector[Cpp_ReactionRule] query_reaction_rules(
+            Cpp_Species sp, Cpp_Species sp)
 
 ## NetworkModel
 #  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
@@ -166,7 +169,7 @@ cdef extern from "ecell4/core/Identifier.hpp" namespace "ecell4":
         Cpp_ParticleID serial_subtract(serial_type& rhs)
         Cpp_ParticleID& serial_advance(serial_type& rhs)
         Cpp_ParticleID& serial_retrace(serial_type& rhs)
-        # Cpp_ParticleID &operator=(Cpp_ParticleID &rhs) # XXX not yet suppoted
+        # Cpp_ParticleID &operator=(Cpp_ParticleID& rhs) # XXX not yet suppoted
         bool operator==(Cpp_ParticleID& rhs)
         bool operator!=(Cpp_ParticleID& rhs)
         bool operator<(Cpp_ParticleID& rhs)

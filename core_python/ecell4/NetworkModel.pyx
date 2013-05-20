@@ -1,4 +1,7 @@
-from cython.operator cimport dereference as deref
+from cython.operator cimport dereference as deref, preincrement as inc
+from cython cimport address
+
+from libcpp.vector cimport vector
 
 
 cdef class NetworkModel:
@@ -27,6 +30,22 @@ cdef class NetworkModel:
 
     def has_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().has_reaction_rule(deref(rr.thisptr))
+
+    def query_reaction_rules(self, Species sp1, Species sp2 = None):
+        cdef vector[Cpp_ReactionRule] rules
+        if sp2 is None:
+            rules = self.thisptr.get().query_reaction_rules(
+                deref(sp1.thisptr))
+        else:
+            rules = self.thisptr.get().query_reaction_rules(
+                deref(sp1.thisptr), deref(sp2.thisptr))
+        retval = []
+        cdef vector[Cpp_ReactionRule].iterator it = rules.begin()
+        while it != rules.end():
+            retval.append(ReactionRule_from_Cpp_ReactionRule(
+                <Cpp_ReactionRule*>(address(deref(it)))))
+            inc(it)
+        return retval
 
     # def add_reactant(self, PySpecies sp):
     #     self.thisptr.add_reactant(deref(sp.thisptr))
