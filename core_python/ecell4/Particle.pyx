@@ -7,8 +7,17 @@ from libcpp.string cimport string
 
 cdef class ParticleID:
 
-    def __cinit__(self, Integer lot, Integer serial):
-        self.thisptr = new Cpp_ParticleID() # XXX: FIX ME
+    def __cinit__(self, lot, serial):
+        cdef pair[int, unsigned long long] val
+        val.first = lot
+        val.second = serial
+        self.thisptr = new Cpp_ParticleID(val)
+
+    def lot(self):
+        return self.thisptr.lot()
+
+    def serial(self):
+        return self.thisptr.serial()
 
 cdef class Particle:
 

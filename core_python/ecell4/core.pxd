@@ -149,35 +149,34 @@ cdef Position3 Position3_from_Cpp_Position3(Cpp_Position3 *p)
 
 ## Cpp_ParticleID
 #  ecell4::ParticleID
-cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
-    ctypedef Tbase_ "ecell4::ParticleID"
+cdef extern from "ecell4/core/Identifier.hpp" namespace "ecell4":
     ctypedef int lot_type
     ctypedef unsigned long long serial_type
-    ctypedef pair[lot_type, serial_type] value_type
+    ctypedef pair[int, unsigned long long] value_type
 
     cdef cppclass Cpp_ParticleID "ecell4::ParticleID":
         Cpp_ParticleID() except+
         Cpp_ParticleID(value_type) except+
-        Cpp_ParticleID(Cpp_ParticleID &rhs) except+
-        Cpp_ParticleID log_add(lot_type &rhs)
-        Cpp_ParticleID log_subtract(lot_type &rhs)
-        Cpp_ParticleID &lot_advance(lot_type &rhs)
-        Cpp_ParticleID &lot_retraace(lot_type &rhs)
-        Cpp_ParticleID serial_add(serial_type &rhs)
-        Cpp_ParticleID serial_subtract(serial_type &rhs)
-        Cpp_ParticleID &serial_advance(serial_type &rhs)
-        Cpp_ParticleID &serial_retrace(serial_type &rhs)
+        Cpp_ParticleID(Cpp_ParticleID& rhs) except+
+        Cpp_ParticleID log_add(lot_type& rhs)
+        Cpp_ParticleID log_subtract(lot_type& rhs)
+        Cpp_ParticleID& lot_advance(lot_type& rhs)
+        Cpp_ParticleID& lot_retraace(lot_type& rhs)
+        Cpp_ParticleID serial_add(serial_type& rhs)
+        Cpp_ParticleID serial_subtract(serial_type& rhs)
+        Cpp_ParticleID& serial_advance(serial_type& rhs)
+        Cpp_ParticleID& serial_retrace(serial_type& rhs)
         # Cpp_ParticleID &operator=(Cpp_ParticleID &rhs) # XXX not yet suppoted
-        bool operator==(Cpp_ParticleID &rhs)
-        bool operator!=(Cpp_ParticleID &rhs)
-        bool operator<(Cpp_ParticleID &rhs)
-        bool operator>=(Cpp_ParticleID &rhs)
-        bool operator>(Cpp_ParticleID &rhs)
-        bool operator<=(Cpp_ParticleID &rhs)
+        bool operator==(Cpp_ParticleID& rhs)
+        bool operator!=(Cpp_ParticleID& rhs)
+        bool operator<(Cpp_ParticleID& rhs)
+        bool operator>=(Cpp_ParticleID& rhs)
+        bool operator>(Cpp_ParticleID& rhs)
+        bool operator<=(Cpp_ParticleID& rhs)
         # operator value_type()
-        value_type &operator() ()
-        lot_type &lot()
-        serial_type &serial()
+        value_type& operator() ()
+        int& lot()
+        unsigned long long& serial()
 
 cdef class ParticleID:
     cdef Cpp_ParticleID* thisptr
