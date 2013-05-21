@@ -59,12 +59,12 @@ class ParseElem:
     def __repr__(self):
         label = self.name
 
-        attrs = []
-        if self.args is not None:
-            attrs += ["%s" % str(v) for v in sorted(self.args)]
-        if self.kwargs is not None:
-            attrs += ["%s=%s" % (k, self.kwargs[k]) for k in sorted(self.kwargs.keys())]
-        if len(attrs) > 0:
+        if self.args is not None or self.kwargs is not None:
+            attrs = []
+            if self.args is not None:
+                attrs += ["%s" % str(v) for v in self.args]
+            if self.kwargs is not None:
+                attrs += ["%s=%s" % (k, v) for k, v in self.kwargs.items()]
             label += "(%s)" % (",".join(attrs))
 
         if self.key is not None:
@@ -87,7 +87,11 @@ class ParseObj:
 
     @log_call
     def __add__(self, rhs):
-        return ParseObjSet(self.__root, (self, rhs))
+        if isinstance(rhs, ParseObj):
+            return ParseObjSet(self.__root, (self, rhs))
+        elif isinstance(rhs, ParseObjSet):
+            return ParseObjSet(self.__root, operator.rshift(rhs, [self]))
+        raise RuntimeError, "never get here"
 
     def __getitem__(self, key):
         self.__elems[-1].set_key(key)
@@ -139,10 +143,7 @@ class ParseObj:
         return self.__repr__()
 
     def __repr__(self):
-        # XXX: sort by element's name
-        # XXX: separate params
         labels = [str(elem) for elem in self.__elems]
-        # labels.sort()
         return ".".join(labels)
 
 class ParseObjSet:
@@ -152,6 +153,28 @@ class ParseObjSet:
             raise RuntimeError
         self.__root = root
         self.__objs = list(objs)
+
+    def __call__(self, *args, **kwargs):
+        raise RuntimeError
+
+    def __getitem__(self, key):
+        raise RuntimeError
+
+    def __getattr__(self, key):
+        raise RuntimeError
+
+    def __lshift__(self, other):
+        raise RuntimeError
+
+    @log_call
+    def __add__(self, rhs):
+        if isinstance(rhs, ParseObj):
+            self.__objs.append(rhs)
+            return self
+        elif isinstance(rhs, ParseObjSet):
+            operator.rshift(rhs, self.__objs)
+            return self
+        raise RuntimeError, "never get here"
 
     @log_call
     def __or__(self, rhs):
