@@ -1,10 +1,13 @@
 import copy
 import types
+from functools import wraps
+
 from parseobj import AnyCallable
 
 
 def reaction_rules(func):
-    def wrapper(*args, **kwargs):
+    @wraps(func)
+    def wrapped(*args, **kwargs):
         cache = []
         vardict = copy.copy(globals())
         for k in func.func_code.co_names:
@@ -14,4 +17,4 @@ def reaction_rules(func):
         # return [rr for rr in g(*args, **kwargs)]
         g(*args, **kwargs)
         return cache
-    return wrapper
+    return wrapped
