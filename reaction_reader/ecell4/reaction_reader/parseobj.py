@@ -1,5 +1,5 @@
-import operator
 from logger import log_call
+import operator
 
 
 class AnyCallable:
@@ -61,16 +61,16 @@ class ParseElem:
 
         attrs = []
         if self.args is not None:
-            attrs += ["%s" % v for v in sorted(self.args)]
+            attrs += ["%s" % str(v) for v in sorted(self.args)]
         if self.kwargs is not None:
             attrs += ["%s=%s" % (k, self.kwargs[k]) for k in sorted(self.kwargs.keys())]
         if len(attrs) > 0:
             label += "(%s)" % (",".join(attrs))
 
         if self.key is not None:
-            label += "[%s]" % self.key
+            label += "[%s]" % str(self.key)
         if self.param is not None:
-            label += "|%s" % self.param
+            label += "|%s" % str(self.param)
         return label
 
 class ParseObj:
@@ -104,8 +104,21 @@ class ParseObj:
 
     @log_call
     def __gt__(self, rhs):
-        self.__root.append((self, rhs))
-        return (self, rhs)
+        retval = ("gt", self, rhs)
+        self.__root.append(retval)
+        return retval
+
+    @log_call
+    def __eq__(self, rhs):
+        retval = ("eq", self, rhs)
+        self.__root.append(retval)
+        return retval
+
+    @log_call
+    def __ne__(self, rhs):
+        retval = ("neq", self, rhs)
+        self.__root.append(retval)
+        return retval
 
     @log_call
     def __lshift__(self, other):
@@ -147,8 +160,21 @@ class ParseObjSet:
 
     @log_call
     def __gt__(self, rhs):
-        self.__root.append((self, rhs))
-        return (self, rhs)
+        retval = ("gt", self, rhs)
+        self.__root.append(retval)
+        return retval
+
+    @log_call
+    def __eq__(self, rhs):
+        retval = ("eq", self, rhs)
+        self.__root.append(retval)
+        return retval
+
+    @log_call
+    def __ne__(self, rhs):
+        retval = ("neq", self, rhs)
+        self.__root.append(retval)
+        return retval
 
     def __rshift__(self, other):
         if type(other) is not list:

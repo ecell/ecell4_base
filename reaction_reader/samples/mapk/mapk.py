@@ -3,12 +3,10 @@ from ecell4.reaction_reader.decorator import reaction_rules
 
 @reaction_rules
 def reactions(kon, koff, kcat):
-    mapk(phos=YT) + kk(bs) > mapk(phos=YT[1]).kk(bs[1]) | kon
-    mapk(phos=YT[1]).kk(bs[1]) > mapk(phos=YT) + kk(bs) | koff
+    mapk(phos=YT) + kk(bs) == mapk(phos=YT[1]).kk(bs[1]) | (kon, koff)
     mapk(phos=YT[1]).kk(bs[1]) > mapk(phos=pYT) + kk(bs) | kcat
 
-    mapk(phos=pYT) + pp(bs) > mapk(phos=pYT[1]).pp(bs[1]) | kon
-    mapk(phos=pYT[1]).pp(bs[1]) > mapk(phos=pYT) + pp(bs) | koff
+    mapk(phos=pYT) + pp(bs) <> mapk(phos=pYT[1]).pp(bs[1]) | (kon, koff)
     mapk(phos=pYT[1]).pp(bs[1]) > mapk(phos=YT) + pp(bs) | kcat
 
 
