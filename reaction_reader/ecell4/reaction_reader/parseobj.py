@@ -34,27 +34,24 @@ class ParseElem:
     def __init__(self, name):
         self.name = name
         self.args = []
-        self.kwargs = []
+        self.kwargs = {}
         self.key = None
         self.param = None
 
     @log_call
-    def __call__(self, *args, **kwargs):
+    def set_arguments(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-        return self
 
-    def __getitem__(self, key):
+    def set_key(self, key):
         self.key = key
-        return self
+
+    @log_call
+    def set_parameter(self, rhs):
+        self.param = rhs
 
     def __coerce__(self, other):
         return None
-
-    @log_call
-    def __or__(self, rhs):
-        self.param = rhs
-        return self
 
     def __str__(self):
         return self.__repr__()
@@ -80,7 +77,7 @@ class ParseObj:
 
     @log_call
     def __call__(self, *args, **kwargs):
-        self.__elems[-1] = self.__elems[-1](*args, **kwargs)
+        self.__elems[-1].set_arguments(*args, **kwargs)
         return self
 
     @log_call
@@ -88,19 +85,16 @@ class ParseObj:
         return ParseObjSet(self.__root, (self, rhs))
 
     def __getitem__(self, key):
-        self.__elems[-1] = self.__elems[-1][key]
+        self.__elems[-1].set_key(key)
         return self
 
     @log_call
     def __getattr__(self, key):
         return ParseObjPartial(self, key)
 
-    def __coerce__(self, other):
-        return None
-
     @log_call
     def __or__(self, rhs):
-        self.__elems[-1] = (self.__elems[-1] | rhs)
+        self.__elems[-1].set_parameter(rhs)
         return self
 
     @log_call
@@ -113,6 +107,15 @@ class ParseObj:
         """not for users, but only for ParseObjPartial"""
         self.__elems.append(other)
         return self
+
+    def __rshift__(self, other):
+        if type(other) is not list:
+            raise RuntimeError
+        other.extend(self.__elems)
+        return other
+
+    def __coerce__(self, other):
+        return None
 
     def __str__(self):
         return self.__repr__()
@@ -130,9 +133,6 @@ class ParseObjSet:
         self.__root = root
         self.__objs = list(objs)
 
-    def __coerce__(self, other):
-        return None
-
     @log_call
     def __or__(self, rhs):
         self.__objs[-1] = (self.__objs[-1] | rhs)
@@ -142,6 +142,16 @@ class ParseObjSet:
     def __gt__(self, rhs):
         self.__root.append((self, rhs))
         return (self, rhs)
+
+    def __rshift__(self, other):
+        if type(other) is not list:
+            raise RuntimeError
+        for obj in self.__objs:
+            other.extend(operator.rshift(obj, list()))
+        return other
+
+    def __coerce__(self, other):
+        return None
 
     def __str__(self):
         return self.__repr__()
@@ -159,5 +169,5 @@ class ParseObjPartial:
     @log_call
     def __call__(self, *args, **kwargs):
         rhs = ParseElem(self.__name)
-        rhs = rhs(*args, **kwargs)
+        rhs.set_arguments(*args, **kwargs)
         return operator.lshift(self.__lhs, rhs) # (self.lhs << rhs)
