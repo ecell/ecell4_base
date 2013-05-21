@@ -2,6 +2,33 @@ from logger import log_call
 
 
 class AnyCallable:
+    """AnyCallable must be immutable."""
+
+    def __init__(self, root, name):
+        self.__root = root # a reference to cache
+        self.__name = name
+
+    def as_ParseObj(self):
+        return ParseObj(self.__root, self.__name)
+
+    def __call__(self, *args, **kwargs):
+        retval = self.as_ParseObj()
+        return retval(*args, **kwargs)
+
+    def __getitem__(self, key):
+        retval = self.as_ParseObj()
+        return retval[key]
+
+    def __getattr__(self, key):
+        return getattr(self.as_ParseObj(), key)
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return str(self.as_ParseObj())
+
+class ParseObj:
 
     def __init__(self, root, name, lhs=None):
         self.root = root # a reference to cache
@@ -14,45 +41,33 @@ class AnyCallable:
         self.param = None
         self.called = False
 
-    def copy(self):
-        retval = AnyCallable(self.root, self.name, self.lhs)
-        retval.args = self.args
-        retval.kwargs = self.kwargs
-        retval.key = self.key
-        self.param = self.param
-        retval.called = self.called
-        return retval
-
     @log_call
     def __call__(self, *args, **kwargs):
-        retval = self.copy()
-        retval.args = args
-        retval.kwargs = kwargs
-        retval.called = True
-        return retval
+        self.args = args
+        self.kwargs = kwargs
+        self.called = True
+        return self
 
     @log_call
     def __add__(self, rhs):
-        return AnyCallablePair(self, rhs)
+        return ParseObjSet((self, rhs))
 
     def __getitem__(self, key):
         if self.called:
             raise RuntimeError
-        retval = self.copy()
-        retval.key = key
-        return retval
+        self.key = key
+        return self
 
     def __getattr__(self, key):
-        return AnyPartial(self, key)
+        return ParseObjPartial(self, key)
 
     def __coerce__(self, other):
         return None
 
     @log_call
     def __or__(self, rhs):
-        retval = self.copy()
-        retval.param = rhs
-        return retval
+        self.param = rhs
+        return self
 
     @log_call
     def __gt__(self, rhs):
@@ -65,47 +80,51 @@ class AnyCallable:
     def __repr__(self):
         label = self.name
         if len(self.args) > 0 or len(self.kwargs) > 0:
-            attrs = ["%s" for v in self.args]
-            attrs += ["%s=%s" % (k, v) for k, v in self.kwargs.items()]
+            attrs = ["%s" % v for v in sorted(self.args)]
+            attrs += ["%s=%s" % (k, self.kwargs[k]) for k in sorted(self.kwargs.keys())]
             label += "(%s)" % (",".join(attrs))
         if self.key is not None:
             label += "[%s]" % self.key
         if self.param is not None:
-            label += " | %s" % self.param
+            label += "|%s" % self.param
 
         if self.lhs is not None:
             return str(self.lhs) + "." + label
         else:
             return label
 
-class AnyCallablePair:
+class ParseObjSet:
 
-    def __init__(self, lhs, rhs):
-        if not lhs.called or not rhs.called:
+    def __init__(self, objs):
+        if len(objs) < 2 or any([not obj.called for obj in objs]):
             raise RuntimeError
-        self.lhs = lhs
-        self.rhs = rhs
+        self.objs = list(objs)
+
+    @property
+    def root(self):
+        return self.objs[-1].root
 
     def __coerce__(self, other):
         return None
 
     @log_call
     def __or__(self, rhs):
-        self.rhs = (self.rhs | rhs)
+        self.objs[-1] = (self.objs[-1] | rhs)
         return self
 
     @log_call
     def __gt__(self, rhs):
-        self.lhs.root.append((self, rhs)) # XXX: self.lhs does not always have root
+        self.root.append((self, rhs))
         return (self, rhs)
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
-        return "%s + %s" % (self.lhs, self.rhs)
+        labels = [str(obj) for obj in self.objs]
+        return "+".join(labels)
 
-class AnyPartial:
+class ParseObjPartial:
 
     def __init__(self, lhs, name):
         self.lhs = lhs
@@ -113,9 +132,8 @@ class AnyPartial:
 
     @log_call
     def __call__(self, *args, **kwargs):
-        rhs = AnyCallable(self.lhs.root, self.name, self.lhs)
+        rhs = ParseObj(self.lhs.root, self.name, self.lhs)
         return rhs(*args, **kwargs)
 
     def __coerce__(self, other):
         return None
-
