@@ -15,5 +15,4 @@ def reactions(kon, koff, kcat):
 if __name__ == "__main__":
     rules = reactions(1, 2, 3)
     for i, rr in enumerate(rules):
-        # print i + 1, rr
-        print i + 1, (rr[0] >> list()), (rr[1] >> list())
+        print i + 1, rr

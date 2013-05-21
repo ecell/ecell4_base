@@ -33,8 +33,8 @@ class ParseElem:
 
     def __init__(self, name):
         self.name = name
-        self.args = []
-        self.kwargs = {}
+        self.args = None
+        self.kwargs = None
         self.key = None
         self.param = None
 
@@ -58,10 +58,15 @@ class ParseElem:
 
     def __repr__(self):
         label = self.name
-        if len(self.args) > 0 or len(self.kwargs) > 0:
-            attrs = ["%s" % v for v in sorted(self.args)]
+
+        attrs = []
+        if self.args is not None:
+            attrs += ["%s" % v for v in sorted(self.args)]
+        if self.kwargs is not None:
             attrs += ["%s=%s" % (k, self.kwargs[k]) for k in sorted(self.kwargs.keys())]
+        if len(attrs) > 0:
             label += "(%s)" % (",".join(attrs))
+
         if self.key is not None:
             label += "[%s]" % self.key
         if self.param is not None:
@@ -123,7 +128,9 @@ class ParseObj:
     def __repr__(self):
         # XXX: sort by element's name
         # XXX: separate params
-        return ".".join([str(elem) for elem in self.__elems])
+        labels = [str(elem) for elem in self.__elems]
+        # labels.sort()
+        return ".".join(labels)
 
 class ParseObjSet:
 
