@@ -107,26 +107,29 @@ class ParseObj:
 
     @log_call
     def __or__(self, rhs):
+        optr = "|"
+        self.__root.notify_bitwise_operations(optr, self, rhs)
+
         self.__elems[-1].set_parameter(rhs)
         return self
 
     @log_call
     def __gt__(self, rhs):
-        retval = ("gt", self, rhs)
-        self.__root.append(retval)
-        return retval
+        optr = ">"
+        self.__root.notify_comparisons(optr, self, rhs)
+        return (optr, self, rhs)
 
     @log_call
     def __eq__(self, rhs):
-        retval = ("eq", self, rhs)
-        self.__root.append(retval)
-        return retval
+        optr = "=="
+        self.__root.notify_comparisons(optr, self, rhs)
+        return (optr, self, rhs)
 
     @log_call
     def __ne__(self, rhs):
-        retval = ("neq", self, rhs)
-        self.__root.append(retval)
-        return retval
+        optr = "!="
+        self.__root.notify_comparisons(optr, self, rhs)
+        return (optr, self, rhs)
 
     def __coerce__(self, other):
         return None
@@ -175,26 +178,29 @@ class ParseObjSet:
 
     @log_call
     def __or__(self, rhs):
+        optr = "|"
+        self.__root.notify_bitwise_operations(optr, self, rhs)
+
         self.__objs[-1] = (self.__objs[-1] | rhs)
         return self
 
     @log_call
     def __gt__(self, rhs):
-        retval = ("gt", self, rhs)
-        self.__root.append(retval)
-        return retval
+        optr = ">"
+        self.__root.notify_comparisons(optr, self, rhs)
+        return (optr, self, rhs)
 
     @log_call
     def __eq__(self, rhs):
-        retval = ("eq", self, rhs)
-        self.__root.append(retval)
-        return retval
+        optr = "=="
+        self.__root.notify_comparisons(optr, self, rhs)
+        return (optr, self, rhs)
 
     @log_call
     def __ne__(self, rhs):
-        retval = ("neq", self, rhs)
-        self.__root.append(retval)
-        return retval
+        optr = "!="
+        self.__root.notify_comparisons(optr, self, rhs)
+        return (optr, self, rhs)
 
     def __coerce__(self, other):
         return None

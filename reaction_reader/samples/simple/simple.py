@@ -3,8 +3,7 @@ from ecell4.reaction_reader.decorator import reaction_rules
 
 @reaction_rules
 def reactions(kon, koff, kcat):
-    (A + B
-        == C | (kon, koff)
+    (A + B == C | (kon, koff)
         > D | kcat)
 
 
