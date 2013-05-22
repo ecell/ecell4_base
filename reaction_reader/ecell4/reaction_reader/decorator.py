@@ -16,21 +16,24 @@ def generate_Species(obj):
     if isinstance(obj, parseobj.ParseObj):
         elems = obj._get_elements()
         if len(elems) != 1:
-            raise RuntimeError
+            raise NotImplementedError, (
+                'complex is not allowed yet; "%s"' % str(obj))
         if (elems[0].args is not None
             or elems[0].kwargs is not None
             or elems[0].key is not None):
-            raise RuntimeError
+            raise NotImplementedError, (
+                'modification is not allowed yet; "%s"' % str(obj))
         return ((ecell4.core.Species(elems[0].name), elems[0].param), )
     elif isinstance(obj, parseobj.ParseObjSet):
         subobjs = obj._get_objects()
         return tuple(generate_Species(subobj)[0] for subobj in subobjs)
-    raise RuntimeError
+    raise RuntimeError, 'invalid expression; "%s" given' % str(obj)
 
 def generate_ReactionRule(lhs, rhs, k=0.0):
     if len(lhs) == 0:
         if len(rhs) != 1:
-            raise RuntimeError
+            raise RuntimeError, (
+                "the number of products must be 1; %d given" % len(rhs))
         return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
     elif len(lhs) == 1:
         if len(rhs) == 0:
@@ -42,14 +45,18 @@ def generate_ReactionRule(lhs, rhs, k=0.0):
             return ecell4.core.create_unbinding_reaction_rule(
                 lhs[0], rhs[0], rhs[1], k)
         else:
-            raise RuntimeError
+            raise RuntimeError, (
+                "the number of products must be less than 3; %d given"
+                % len(rhs))
     elif len(lhs) == 2:
         if len(rhs) == 1:
             return ecell4.core.create_binding_reaction_rule(
                 lhs[0], lhs[1], rhs[0], k)
         else:
-            raise RuntimeError
-    raise RuntimeError
+            raise RuntimeError, (
+                "the number of products must be 1; %d given" % len(rhs))
+    raise RuntimeError, (
+        "the number of reactants must be less than 3; %d given" % len(lhs))
 
 class ReactionRuleCallback(object):
 
@@ -72,18 +79,29 @@ class ReactionRuleCallback(object):
         if optr == "!=" or optr == "==":
             if not (isinstance(k, types.ListType)
                 or isinstance(k, types.TupleType)):
-                raise RuntimeError
+                raise RuntimeError, (
+                    'parameter must be a list or tuple with length 2; "%s" given'
+                    % str(k))
             elif len(k) != 2:
-                raise RuntimeError
+                raise RuntimeError, (
+                    "parameter must be a list or tuple with length 2;"
+                    + " length %d given" % len(k))
             elif not (isinstance(k[0], numbers.Number)
                 and isinstance(k[1], numbers.Number)):
-                raise RuntimeError
+                raise RuntimeError, (
+                    'parameters must be given as a list or tuple of numbers;'
+                    + ' "%s" given' % str(k))
             self.comparisons.append(generate_ReactionRule(lhs, rhs, k[0]))
             self.comparisons.append(generate_ReactionRule(rhs, lhs, k[1]))
-        else:
-            if not isinstance(k, numbers.Number):
-                raise RuntimeError
+        elif optr == ">":
+            if k is None:
+                raise RuntimeError, 'no parameter is specified'
+            elif not isinstance(k, numbers.Number):
+                raise RuntimeError, (
+                    'parameter must be given as a number; "%s" given' % str(k))
             self.comparisons.append(generate_ReactionRule(lhs, rhs, k))
+        else:
+            raise RuntimeError, 'operator "%s" not allowed' % optr
 
 class Callback(object):
     """callback before the operations"""
