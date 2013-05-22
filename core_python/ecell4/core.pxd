@@ -44,7 +44,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         bool operator==(Cpp_Species& rhs)
         bool operator<(Cpp_Species& rhs)
         bool operator>(Cpp_Species& rhs)
-        # serial_type serial()
+        string serial() # string == serial_type
         string name()
         string get_attribute(string)
         void set_attribute(string,string)
