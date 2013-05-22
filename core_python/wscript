@@ -10,7 +10,7 @@ out = 'build'
 pxdfiles = [
     'ecell4/core.pxd', 'ecell4/multiset.pxd', 'ecell4/shared_ptr.pxd',
     'ecell4/types.pxd', 'ecell4/p3operator.pxd',
-    'ecell4/create_reaction_rule.pxd'
+    'ecell4/create_reaction_rule.pxd', 'ecell4/util.pxd'
     ]
 
 

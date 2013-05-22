@@ -1,5 +1,6 @@
 from cython.operator cimport dereference as deref
 from libcpp.string cimport string
+cimport util
 
 
 cdef class Species:
@@ -9,6 +10,16 @@ cdef class Species:
 
     def __dealloc__(self):
         del self.thisptr
+
+    def __richcmp__(Species self, Species rhs, int op):
+        cdef int compare
+        if deref(self.thisptr) > deref(rhs.thisptr):
+            compare = 1
+        elif deref(self.thisptr) < deref(rhs.thisptr):
+            compare = -1
+        else: # self == rhs
+            compare = 0
+        return util.richcmp_helper(compare, op)
 
     def name(self):
         return self.thisptr.name()
