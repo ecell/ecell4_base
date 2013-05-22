@@ -3,7 +3,8 @@ import operator
 
 
 class AnyCallable:
-    """AnyCallable must be immutable."""
+    """AnyCallable must be immutable.
+All the members must start with '_'."""
 
     def __init__(self, root, name):
         self.__root = root # a reference to cache
@@ -66,7 +67,7 @@ class ParseElem:
             self.__class__.__module__, self.__class__.__name__, str(self))
 
 class ParseObj:
-    """All the members in ParseObj must start with "_"."""
+    """All the members must start with '_'."""
 
     def __init__(self, root, name, elems=[]):
         self.__root = root # a reference to cache
@@ -139,6 +140,7 @@ class ParseObj:
             self.__class__.__module__, self.__class__.__name__, str(self))
 
 class ParseObjSet:
+    """All the members must start with '_'."""
 
     def __init__(self, root, objs):
         if len(objs) < 2:
