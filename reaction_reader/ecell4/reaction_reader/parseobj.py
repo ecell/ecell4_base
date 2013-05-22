@@ -9,11 +9,11 @@ class AnyCallable:
         self.__root = root # a reference to cache
         self.__name = name
 
-    def as_ParseObj(self):
+    def _as_ParseObj(self):
         return ParseObj(self.__root, self.__name)
 
     def __getattr__(self, key):
-        return getattr(self.as_ParseObj(), key)
+        return getattr(self._as_ParseObj(), key)
 
     def __coerce__(self, other):
         return None
@@ -34,7 +34,6 @@ class ParseElem:
         self.key = None
         self.param = None
 
-    @log_call
     def set_arguments(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -42,12 +41,8 @@ class ParseElem:
     def set_key(self, key):
         self.key = key
 
-    @log_call
     def set_parameter(self, rhs):
         self.param = rhs
-
-    def __coerce__(self, other):
-        return None
 
     def __str__(self):
         label = self.name
@@ -84,14 +79,15 @@ class ParseObj:
 
     @log_call
     def __add__(self, rhs):
-        if isinstance(rhs, AnyCallable) or isinstance(rhs, ParseObjPartial):
-            return ParseObjSet(self.__root, (self, rhs.as_ParseObj()))
+        if isinstance(rhs, AnyCallable):
+            return ParseObjSet(self.__root, (self, rhs._as_ParseObj()))
         elif isinstance(rhs, ParseObj):
             return ParseObjSet(self.__root, (self, rhs))
         elif isinstance(rhs, ParseObjSet):
-            return ParseObjSet(self.__root, operator.rshift(rhs, [self]))
+            return ParseObjSet(self.__root, rhs._get_objects() + [self])
         raise RuntimeError, "never get here"
 
+    @log_call
     def __getitem__(self, key):
         self.__elems[-1].set_key(key)
         return self
@@ -105,7 +101,8 @@ class ParseObj:
             raise RuntimeError, (
                 "'%s' object has no attribute '%s'"
                     % (self.__class__.__name__, key))
-        return ParseObjPartial(self, key)
+        self.__elems.append(ParseElem(key))
+        return self
 
     @log_call
     def __or__(self, rhs):
@@ -130,18 +127,6 @@ class ParseObj:
         self.__root.append(retval)
         return retval
 
-    @log_call
-    def __lshift__(self, other):
-        """not for users, but only for ParseObjPartial"""
-        self.__elems.append(other)
-        return self
-
-    def __rshift__(self, other):
-        if type(other) is not list:
-            raise RuntimeError
-        other.extend(self.__elems)
-        return other
-
     def __coerce__(self, other):
         return None
 
@@ -161,6 +146,9 @@ class ParseObjSet:
         self.__root = root
         self.__objs = list(objs)
 
+    def _get_objects(self):
+        return copy.copy(self.__objs)
+
     def __call__(self, *args, **kwargs):
         raise RuntimeError
 
@@ -170,19 +158,16 @@ class ParseObjSet:
     def __getattr__(self, key):
         raise RuntimeError
 
-    def __lshift__(self, other):
-        raise RuntimeError
-
     @log_call
     def __add__(self, rhs):
-        if isinstance(rhs, AnyCallable) or isinstance(rhs, ParseObjPartial):
-            self.__objs.append(rhs.as_ParseObj())
+        if isinstance(rhs, AnyCallable):
+            self.__objs.append(rhs._as_ParseObj())
             return self
         elif isinstance(rhs, ParseObj):
             self.__objs.append(rhs)
             return self
         elif isinstance(rhs, ParseObjSet):
-            operator.rshift(rhs, self.__objs)
+            self.__objs.extend(rhs._get_objects())
             return self
         raise RuntimeError, "never get here"
 
@@ -209,48 +194,12 @@ class ParseObjSet:
         self.__root.append(retval)
         return retval
 
-    def __rshift__(self, other):
-        if type(other) is not list:
-            raise RuntimeError
-        for obj in self.__objs:
-            other.extend(operator.rshift(obj, list()))
-        return other
-
     def __coerce__(self, other):
         return None
 
     def __str__(self):
         labels = [str(obj) for obj in self.__objs]
         return "+".join(labels)
-
-    def __repr__(self):
-        return "<%s.%s: %s>" % (
-            self.__class__.__module__, self.__class__.__name__, str(self))
-
-class ParseObjPartial:
-
-    def __init__(self, lhs, name):
-        self.__lhs = lhs
-        self.__name = name
-
-    def as_ParseObj(self):
-        """this will change the state of self"""
-        rhs = ParseElem(self.__name)
-        return operator.lshift(self.__lhs, rhs) # (self.lhs << rhs)
-
-    @log_call
-    def __call__(self, *args, **kwargs):
-        return self.as_ParseObj()(*args, **kwargs)
-
-    @log_call
-    def __getattr__(self, key):
-        return getattr(self.as_ParseObj(), key)
-
-    def __coerce__(self, other):
-        return None
-
-    def __str__(self):
-        return "%s.%s" % (str(self.__lhs), self.__name)
 
     def __repr__(self):
         return "<%s.%s: %s>" % (
