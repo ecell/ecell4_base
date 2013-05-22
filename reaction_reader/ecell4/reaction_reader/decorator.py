@@ -125,7 +125,7 @@ def reaction_rules(func):
     def wrapped(*args, **kwargs):
         cache = Callback()
         # cache = ReactionRuleCallback()
-        vardict = copy.copy(globals())
+        vardict = copy.copy(func.func_globals)
         for k in func.func_code.co_names:
             if not k in vardict.keys():
                 vardict[k] = parseobj.AnyCallable(cache, k)
