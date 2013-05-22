@@ -1,4 +1,7 @@
 from functools import wraps
+import logging
+
+# logging.basicConfig(level=logging.DEBUG)
 
 
 def log_call(func):
@@ -9,8 +12,8 @@ def log_call(func):
     func_id = '.'.join(bits)
     @wraps(func)
     def wrapped(*args, **kwargs):
-        print "%s, args=%s, kwargs=%s" % (func_id, args, kwargs) # XXX: use logging
+        logging.debug("%s, args=%s, kwargs=%s" % (func_id, args, kwargs))
         ret = func(*args, **kwargs)
-        print "%s, retval=%s" % (func_id, repr(ret)) # XXX: use logging
+        logging.debug("%s, retval=%s" % (func_id, repr(ret)))
         return ret
     return wrapped

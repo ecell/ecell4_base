@@ -5,6 +5,7 @@ from functools import wraps
 
 from parseobj import AnyCallable
 
+
 class Callback(object):
     """callback before the operations"""
 
