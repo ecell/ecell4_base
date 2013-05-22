@@ -2,7 +2,7 @@ import copy
 import types
 import numbers
 import warnings
-from functools import wraps
+import functools
 
 import parseobj
 
@@ -63,6 +63,9 @@ class ReactionRuleCallback(object):
     def __init__(self):
         self.comparisons = []
 
+    def get(self):
+        return copy.copy(self.comparisons)
+
     def notify_bitwise_operations(self, optr, lhs, rhs):
         pass
 
@@ -110,6 +113,9 @@ class Callback(object):
         # self.bitwise_operations = []
         self.comparisons = []
 
+    def get(self):
+        return copy.copy(self.comparisons)
+
     def notify_bitwise_operations(self, optr, lhs, rhs):
         # self.bitwise_operations.append((optr, lhs, rhs))
         pass
@@ -120,11 +126,10 @@ class Callback(object):
                           DeprecationWarning)
         self.comparisons.append((optr, lhs, rhs))
 
-def reaction_rules(func):
-    @wraps(func)
+def parse_decorator(callback_class, func):
+    @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        cache = Callback()
-        # cache = ReactionRuleCallback()
+        cache = callback_class()
         vardict = copy.copy(func.func_globals)
         for k in func.func_code.co_names:
             if not k in vardict.keys():
@@ -133,5 +138,8 @@ def reaction_rules(func):
         with warnings.catch_warnings():
             # warnings.simplefilter("always")
             g(*args, **kwargs)
-        return cache.comparisons
+        return cache.get()
     return wrapped
+
+reaction_rules = functools.partial(parse_decorator, Callback)
+# reaction_rules = functools.partial(parse_decorator, ReactionRuleCallback)
