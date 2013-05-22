@@ -21,6 +21,12 @@ cdef class Species:
             compare = 0
         return util.richcmp_helper(compare, op)
 
+    def __hash__(self):
+        return hash(self.thisptr.serial())
+
+    def serial(self):
+        return self.thisptr.serial()
+
     def name(self):
         return self.thisptr.name()
 
