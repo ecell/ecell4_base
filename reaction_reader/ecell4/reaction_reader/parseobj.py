@@ -12,22 +12,18 @@ class AnyCallable:
     def as_ParseObj(self):
         return ParseObj(self.__root, self.__name)
 
-    def __call__(self, *args, **kwargs):
-        retval = self.as_ParseObj()
-        return retval(*args, **kwargs)
-
-    def __getitem__(self, key):
-        retval = self.as_ParseObj()
-        return retval[key]
-
     def __getattr__(self, key):
         return getattr(self.as_ParseObj(), key)
 
+    def __coerce__(self, other):
+        return None
+
     def __str__(self):
-        return self.__repr__()
+        return self.__name
 
     def __repr__(self):
-        return str(self.as_ParseObj())
+        return "<%s.%s: %s>" % (
+            self.__class__.__module__, self.__class__.__name__, str(self))
 
 class ParseElem:
 
@@ -54,9 +50,6 @@ class ParseElem:
         return None
 
     def __str__(self):
-        return self.__repr__()
-
-    def __repr__(self):
         label = self.name
 
         if self.args is not None or self.kwargs is not None:
@@ -73,8 +66,12 @@ class ParseElem:
             label += "|%s" % str(self.param)
         return label
 
+    def __repr__(self):
+        return "<%s.%s: %s>" % (
+            self.__class__.__module__, self.__class__.__name__, str(self))
+
 class ParseObj:
-    """All the members in ParseObj must start from "__"."""
+    """All the members in ParseObj must start with "_"."""
 
     def __init__(self, root, name, elems=[]):
         self.__root = root # a reference to cache
@@ -87,7 +84,9 @@ class ParseObj:
 
     @log_call
     def __add__(self, rhs):
-        if isinstance(rhs, ParseObj):
+        if isinstance(rhs, AnyCallable) or isinstance(rhs, ParseObjPartial):
+            return ParseObjSet(self.__root, (self, rhs.as_ParseObj()))
+        elif isinstance(rhs, ParseObj):
             return ParseObjSet(self.__root, (self, rhs))
         elif isinstance(rhs, ParseObjSet):
             return ParseObjSet(self.__root, operator.rshift(rhs, [self]))
@@ -99,6 +98,13 @@ class ParseObj:
 
     @log_call
     def __getattr__(self, key):
+        if key[0] == "_":
+            # raise AttributeError, (
+            #     "'%s' object has no attribute '%s'"
+            #         % (self.__class__.__name__, key))
+            raise RuntimeError, (
+                "'%s' object has no attribute '%s'"
+                    % (self.__class__.__name__, key))
         return ParseObjPartial(self, key)
 
     @log_call
@@ -140,11 +146,12 @@ class ParseObj:
         return None
 
     def __str__(self):
-        return self.__repr__()
-
-    def __repr__(self):
         labels = [str(elem) for elem in self.__elems]
         return ".".join(labels)
+
+    def __repr__(self):
+        return "<%s.%s: %s>" % (
+            self.__class__.__module__, self.__class__.__name__, str(self))
 
 class ParseObjSet:
 
@@ -168,7 +175,10 @@ class ParseObjSet:
 
     @log_call
     def __add__(self, rhs):
-        if isinstance(rhs, ParseObj):
+        if isinstance(rhs, AnyCallable) or isinstance(rhs, ParseObjPartial):
+            self.__objs.append(rhs.as_ParseObj())
+            return self
+        elif isinstance(rhs, ParseObj):
             self.__objs.append(rhs)
             return self
         elif isinstance(rhs, ParseObjSet):
@@ -210,11 +220,12 @@ class ParseObjSet:
         return None
 
     def __str__(self):
-        return self.__repr__()
-
-    def __repr__(self):
         labels = [str(obj) for obj in self.__objs]
         return "+".join(labels)
+
+    def __repr__(self):
+        return "<%s.%s: %s>" % (
+            self.__class__.__module__, self.__class__.__name__, str(self))
 
 class ParseObjPartial:
 
@@ -222,8 +233,25 @@ class ParseObjPartial:
         self.__lhs = lhs
         self.__name = name
 
+    def as_ParseObj(self):
+        """this will change the state of self"""
+        rhs = ParseElem(self.__name)
+        return operator.lshift(self.__lhs, rhs) # (self.lhs << rhs)
+
     @log_call
     def __call__(self, *args, **kwargs):
-        rhs = ParseElem(self.__name)
-        rhs.set_arguments(*args, **kwargs)
-        return operator.lshift(self.__lhs, rhs) # (self.lhs << rhs)
+        return self.as_ParseObj()(*args, **kwargs)
+
+    @log_call
+    def __getattr__(self, key):
+        return getattr(self.as_ParseObj(), key)
+
+    def __coerce__(self, other):
+        return None
+
+    def __str__(self):
+        return "%s.%s" % (str(self.__lhs), self.__name)
+
+    def __repr__(self):
+        return "<%s.%s: %s>" % (
+            self.__class__.__module__, self.__class__.__name__, str(self))

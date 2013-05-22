@@ -11,6 +11,6 @@ def log_call(func):
     def wrapped(*args, **kwargs):
         print "%s, args=%s, kwargs=%s" % (func_id, args, kwargs) # XXX: use logging
         ret = func(*args, **kwargs)
-        print "%s, retval=%s" % (func_id, ret) # XXX: use logging
+        print "%s, retval=%s" % (func_id, repr(ret)) # XXX: use logging
         return ret
     return wrapped
