@@ -1,5 +1,6 @@
-from logger import log_call
 import operator
+import copy
+from logger import log_call
 
 
 class AnyCallable:
@@ -72,6 +73,9 @@ class ParseObj:
     def __init__(self, root, name, elems=[]):
         self.__root = root # a reference to cache
         self.__elems = elems + [ParseElem(name)]
+
+    def _get_elements(self):
+        return copy.copy(self.__elems)
 
     @log_call
     def __call__(self, *args, **kwargs):

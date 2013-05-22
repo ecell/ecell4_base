@@ -11,3 +11,8 @@ if __name__ == "__main__":
     rules = reactions(1, 2, 3)
     for i, rr in enumerate(rules):
         print i + 1, rr
+        # reactants, products = rr.reactants(), rr.products()
+        # print (i + 1,
+        #     [sp.name() for sp in reactants],
+        #     [sp.name() for sp in products],
+        #     rr.k())
