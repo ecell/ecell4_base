@@ -35,6 +35,10 @@ class ParseElem:
         self.kwargs = None
         self.key = None
         self.param = None
+        self.inv = False
+
+    def toggle_invert(self):
+        self.inv = not self.inv
 
     def set_arguments(self, *args, **kwargs):
         self.args = args
@@ -109,6 +113,16 @@ class ParseObj:
         self.__elems.append(ParseElem(key))
         return self
 
+    def __inv__(self):
+        return self.__invert__()
+
+    @log_call
+    def __invert__(self):
+        self.__root.notify_unary_operations("~", self)
+
+        self.__elems[-1].toggle_invert()
+        return self
+
     @log_call
     def __or__(self, rhs):
         optr = "|"
@@ -159,6 +173,12 @@ class ParseObjSet:
         return copy.copy(self.__objs)
 
     def __call__(self, *args, **kwargs):
+        raise RuntimeError
+
+    def __inv__(self):
+        return self.__invert__()
+
+    def __invert__(self):
         raise RuntimeError
 
     def __getitem__(self, key):

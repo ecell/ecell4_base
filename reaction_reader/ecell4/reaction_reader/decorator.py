@@ -23,7 +23,10 @@ def generate_Species(obj):
             or elems[0].key is not None):
             raise NotImplementedError, (
                 'modification is not allowed yet; "%s"' % str(obj))
-        return ((ecell4.core.Species(elems[0].name), elems[0].param), )
+        if elems[0].inv:
+            return ((None, elems[0].param), )
+        else:
+            return ((ecell4.core.Species(elems[0].name), elems[0].param), )
     elif isinstance(obj, parseobj.ParseObjSet):
         subobjs = obj._get_objects()
         return tuple(generate_Species(subobj)[0] for subobj in subobjs)
@@ -58,13 +61,61 @@ def generate_ReactionRule(lhs, rhs, k=0.0):
     raise RuntimeError, (
         "the number of reactants must be less than 3; %d given" % len(lhs))
 
-class ReactionRuleCallback(object):
+class SpeciesAttributesCallback(object):
+
+    def __init__(self):
+        self.bitwise_operations = []
+
+    def get(self):
+        return copy.copy(self.bitwise_operations)
+
+    def notify_unary_operations(self, optr, target):
+        pass
+
+    def notify_bitwise_operations(self, optr, lhs, rhs):
+        if optr != '|':
+            raise RuntimeError, 'operator "%s" not allowed' % optr
+
+        species_list = generate_Species(lhs)
+        if len(species_list) != 1:
+            raise RuntimeError, (
+                'only a single species must be given; %d given'
+                % len(species_list))
+
+        sp, _ = species_list[0]
+        if sp is None:
+            raise RuntimeError, 'never use "~" in "species_attributes"'
+
+        if not isinstance(rhs, types.DictType):
+            raise RuntimeError, (
+                'parameter must be given as a dict; "%s" given'
+                % str(rhs))
+        for key, value in rhs.items():
+            if not (isinstance(key, types.StringType)
+                and isinstance(value, types.StringType)):
+                raise RuntimeError, (
+                    'attributes must be given as a pair of strings;'
+                    + ' "%s" and "%s" given'
+                    % (str(key), str(value)))
+            sp.set_attribute(key, value)
+
+        self.bitwise_operations.append(sp)
+
+    def notify_comparisons(self, optr, lhs, rhs):
+        raise RuntimeError, (
+            'ReactionRule definitions are not allowed'
+            + ' in "species_attributes"')
+
+class ReactionRulesCallback(object):
 
     def __init__(self):
         self.comparisons = []
 
     def get(self):
         return copy.copy(self.comparisons)
+
+    def notify_unary_operations(self, optr, target):
+        pass
 
     def notify_bitwise_operations(self, optr, lhs, rhs):
         pass
@@ -75,9 +126,9 @@ class ReactionRuleCallback(object):
                           DeprecationWarning)
 
         lhs, rhs = generate_Species(lhs), generate_Species(rhs)
-        lhs = tuple(sp for sp, param in lhs)
+        lhs = tuple(sp for sp, param in lhs if sp is not None)
         k = rhs[-1][1]
-        rhs = tuple(sp for sp, param in rhs)
+        rhs = tuple(sp for sp, param in rhs if sp is not None)
 
         if optr == "!=" or optr == "==":
             if not (isinstance(k, types.ListType)
@@ -116,6 +167,9 @@ class Callback(object):
     def get(self):
         return copy.copy(self.comparisons)
 
+    def notify_unary_operations(self, optr, target):
+        pass
+
     def notify_bitwise_operations(self, optr, lhs, rhs):
         # self.bitwise_operations.append((optr, lhs, rhs))
         pass
@@ -141,5 +195,6 @@ def parse_decorator(callback_class, func):
         return cache.get()
     return wrapped
 
-reaction_rules = functools.partial(parse_decorator, Callback)
-# reaction_rules = functools.partial(parse_decorator, ReactionRuleCallback)
+# reaction_rules = functools.partial(parse_decorator, Callback)
+reaction_rules = functools.partial(parse_decorator, ReactionRulesCallback)
+species_attributes = functools.partial(parse_decorator, SpeciesAttributesCallback)
