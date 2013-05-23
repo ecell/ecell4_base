@@ -55,6 +55,7 @@ void NetworkModel::add_species(const Species& sp)
         throw AlreadyExists("species already exists");
     }
     species_.push_back(sp);
+    dirty_ = true;
 }
 
 void NetworkModel::remove_species(const Species& sp)
@@ -68,6 +69,7 @@ void NetworkModel::remove_species(const Species& sp)
         throw NotFound(message.str()); // use boost::format if it's allowed
     }
     species_.erase(i);
+    dirty_ = true;
 }
 
 bool NetworkModel::has_species(const Species& sp) const
@@ -88,6 +90,7 @@ void NetworkModel::add_reaction_rule(const ReactionRule& rr)
 
     reaction_rules_map_[rr.reactants()].insert(reaction_rules_.size());
     reaction_rules_.push_back(rr);
+    dirty_ = true;
 }
 
 void NetworkModel::remove_reaction_rule(const ReactionRule& rr)
@@ -130,6 +133,7 @@ void NetworkModel::remove_reaction_rule(const ReactionRule& rr)
     }
 
     reaction_rules_.pop_back();
+    dirty_ = true;
 }
 
 bool NetworkModel::has_reaction_rule(const ReactionRule& rr) const

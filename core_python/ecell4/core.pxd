@@ -123,6 +123,7 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         void add_reaction_rule(Cpp_ReactionRule)
         void remove_reaction_rule(Cpp_ReactionRule)
         bool has_reaction_rule(Cpp_ReactionRule)
+        vector[Cpp_Species] list_species()
         vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
         vector[Cpp_ReactionRule] query_reaction_rules(
             Cpp_Species sp, Cpp_Species sp)

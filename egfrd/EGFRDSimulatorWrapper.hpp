@@ -2,6 +2,7 @@
 #define __ECELL4_EGFRD_EGFRD_SIMULATOR_WRAPPER_HPP
 
 #include <stdexcept>
+#include <vector>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 
@@ -44,9 +45,8 @@ public:
             boost::shared_ptr< ::LoggerManager>(
                 new ::LoggerManager("dummy", ::Logger::L_WARNING)));
 
-        const NetworkModel::species_container_type&
-            species((*model_).species());
-        for (NetworkModel::species_container_type::const_iterator
+        const std::vector<Species> species((*model_).list_species());
+        for (std::vector<Species>::const_iterator
                  i(species.begin()); i != species.end(); ++i)
         {
             if (!(*world_).has_species(*i))

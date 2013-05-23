@@ -6,12 +6,6 @@ def species():
     K | {'N': '120'}
     KK | {'N': '30'}
     PP | {'N': '30'}
-    Kp | {}
-    Kpp | {}
-    K_KK | {}
-    Kp_KK | {}
-    Kpp_PP | {}
-    Kp_PP | {}
 
 @reaction_rules
 def reactions(kon1, koff1, kcat1, kon2, koff2, kcat2):

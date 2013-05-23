@@ -36,7 +36,7 @@ protected:
 public:
 
     NetworkModel()
-        : species_(), reaction_rules_()
+        : dirty_(false), species_(), reaction_rules_()
     {
         ;
     }
@@ -59,8 +59,33 @@ public:
 
     // Optional functions
 
-    const species_container_type& species() const
+    const std::vector<Species> list_species()
     {
+        if (dirty_)
+        {
+            std::vector<Species> retval;
+            for (reaction_rule_container_type::const_iterator
+                i(reaction_rules_.begin()); i != reaction_rules_.end(); ++i)
+            {
+                const ReactionRule::reactant_container_type&
+                    reactants((*i).reactants());
+                const ReactionRule::product_container_type&
+                    products((*i).products());
+                std::copy(reactants.begin(), reactants.end(), std::back_inserter(retval));
+                std::copy(products.begin(), products.end(), std::back_inserter(retval));
+            }
+            std::sort(retval.begin(), retval.end());
+            retval.erase(std::unique(retval.begin(), retval.end()), retval.end());
+            for (std::vector<Species>::const_iterator i(retval.begin());
+                i != retval.end(); ++i)
+            {
+                if (!has_species(*i))
+                {
+                    add_species(*i);
+                }
+            }
+            dirty_ = false;
+        }
         return species_;
     }
 
@@ -87,6 +112,7 @@ public:
 
 protected:
 
+    bool dirty_;
     species_container_type species_;
     reaction_rule_container_type reaction_rules_;
     reaction_rules_map_type reaction_rules_map_;
