@@ -5,6 +5,7 @@
 
 #include <map>
 #include <set>
+#include <algorithm>
 
 #include "types.hpp"
 #include "Species.hpp"
