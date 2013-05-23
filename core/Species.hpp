@@ -101,6 +101,11 @@ public:
         attributes_.erase(i);
     }
 
+    bool has_attribute(const std::string& name_attr) const
+    {
+        return (attributes_.find(name_attr) != attributes_.end());
+    }
+
     bool operator==(const Species& rhs) const;
     bool operator<(const Species& rhs) const;
     bool operator>(const Species& rhs) const;
