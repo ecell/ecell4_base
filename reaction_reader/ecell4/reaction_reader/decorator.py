@@ -63,7 +63,14 @@ def generate_ReactionRule(lhs, rhs, k=0.0):
 
 class SpeciesAttributesCallback(object):
 
-    def __init__(self):
+    def __init__(self, *args):
+        self.keys = None
+        if len(args) > 0:
+            for key in args:
+                if not isinstance(key, types.StringType):
+                    raise RuntimeError, 'non string key "%s" was given' % key
+            self.keys = args
+
         self.bitwise_operations = []
 
     def get(self):
@@ -86,18 +93,39 @@ class SpeciesAttributesCallback(object):
         if sp is None:
             raise RuntimeError, 'never use "~" in "species_attributes"'
 
-        if not isinstance(rhs, types.DictType):
-            raise RuntimeError, (
-                'parameter must be given as a dict; "%s" given'
-                % str(rhs))
-        for key, value in rhs.items():
-            if not (isinstance(key, types.StringType)
-                and isinstance(value, types.StringType)):
+        if self.keys is None:
+            if not isinstance(rhs, types.DictType):
                 raise RuntimeError, (
-                    'attributes must be given as a pair of strings;'
-                    + ' "%s" and "%s" given'
-                    % (str(key), str(value)))
-            sp.set_attribute(key, value)
+                    'parameter must be given as a dict; "%s" given'
+                    % str(rhs))
+            for key, value in rhs.items():
+                if not (isinstance(key, types.StringType)
+                    and isinstance(value, types.StringType)):
+                    raise RuntimeError, (
+                        'attributes must be given as a pair of strings;'
+                        + ' "%s" and "%s" given'
+                        % (str(key), str(value)))
+                sp.set_attribute(key, value)
+        else:
+            if not (isinstance(rhs, types.TupleType)
+                and isinstance(rhs, types.ListType)):
+                if len(self.keys) == 1:
+                    rhs = (rhs, )
+                else:
+                    raise RuntimeError, (
+                        'parameters must be given as a tuple or list; "%s" given'
+                        % str(rhs))
+            if len(rhs) != len(self.keys):
+                raise RuntimeError, (
+                    'the number of parameters must be %d; %d given'
+                    % (len(self.keys), len(rhs)))
+            else:
+                for key, value in zip(self.keys, rhs):
+                    if not isinstance(value, types.StringType):
+                        raise RuntimeError, (
+                            'paramter must be given as a string; "%s" given'
+                            % str(value))
+                    sp.set_attribute(key, value)
 
         self.bitwise_operations.append(sp)
 
@@ -198,3 +226,8 @@ def parse_decorator(callback_class, func):
 # reaction_rules = functools.partial(parse_decorator, Callback)
 reaction_rules = functools.partial(parse_decorator, ReactionRulesCallback)
 species_attributes = functools.partial(parse_decorator, SpeciesAttributesCallback)
+
+def species_attributes_with_keys(*args):
+    def create_callback():
+        return SpeciesAttributesCallback(*args)
+    return functools.partial(parse_decorator, create_callback)
