@@ -1,11 +1,11 @@
-from ecell4.reaction_reader.decorator import species_attributes, reaction_rules
+from ecell4.reaction_reader.decorator import species_attributes_with_keys, reaction_rules
 
 
-@species_attributes
+@species_attributes_with_keys('N')
 def species():
-    K | {'N': '120'}
-    KK | {'N': '30'}
-    PP | {'N': '30'}
+    K | '120'
+    KK | '30'
+    PP | '30'
 
 @reaction_rules
 def reactions(kon1, koff1, kcat1, kon2, koff2, kcat2):
@@ -21,6 +21,9 @@ def reactions(kon1, koff1, kcat1, kon2, koff2, kcat2):
 
 
 if __name__ == "__main__":
+    import sys
+    import csv
+
     import ecell4.core
     import ecell4.gillespie
 
@@ -44,19 +47,17 @@ if __name__ == "__main__":
     w = ecell4.gillespie.GillespieWorld(volume, rng)
     for sp in species_list:
         if sp.has_attribute("N"):
-            N = int(sp.get_attribute("N"))
-            if N > 0:
-                w.add_molecules(sp, N)
+            w.add_molecules(sp, int(sp.get_attribute("N")))
 
     sim = ecell4.gillespie.GillespieSimulator(m, w)
 
-    derim = '\t'
-    print '#t%s%s' % (derim, derim.join((sp.name() for sp in species_list)))
-    print '%.6e%s%s' % (
-        sim.t(), derim,
-        derim.join(("%d" % w.num_molecules(sp) for sp in species_list)))
+    writer = csv.writer(sys.stdout, delimiter='\t')
+    writer.writerow(['#t'] + [sp.name() for sp in m.list_species()])
+    writer.writerow(
+        ['%.6e' % sim.t()]
+        + ['%d' % w.num_molecules(sp) for sp in m.list_species()])
     for i in xrange(1000):
         sim.step()
-        print '%.6e%s%s' % (
-            sim.t(), derim,
-            derim.join(("%d" % w.num_molecules(sp) for sp in species_list)))
+        writer.writerow(
+            ['%.6e' % sim.t()]
+            + ['%d' % w.num_molecules(sp) for sp in m.list_species()])
