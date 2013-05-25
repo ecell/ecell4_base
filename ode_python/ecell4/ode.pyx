@@ -78,11 +78,11 @@ cdef class ODESimulator:
     def num_steps(self):
         return self.thisptr.num_steps()
 
-    def step(self):
-        self.thisptr.step()
-
-    def step_upto(self, Real upto):
-        return self.thisptr.step(upto)
+    def step(self, upto = None):
+        if upto is None:
+            self.thisptr.step()
+        else:
+            return self.thisptr.step(upto)
 
     def t(self):
         return self.thisptr.t()
