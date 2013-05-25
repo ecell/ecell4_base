@@ -7,7 +7,7 @@ from ecell4.core cimport *
 
 
 ## Cpp_ODEWorld
-#  ecell4::ode::ODESimulator
+#  ecell4::ode::ODEWorld
 cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODEWorld "ecell4::ode::ODEWorld":
         Cpp_ODEWorld(Real&) except +

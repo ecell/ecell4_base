@@ -1,9 +1,18 @@
-from cython.operator cimport dereference as deref
+from cython.operator cimport dereference as deref, preincrement as inc
+from cython cimport address
 from libcpp.string cimport string
+from libcpp.vector cimport vector
 
 from ecell4.types cimport *
 from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
+
+cdef Species _Species_from_Cpp_Species_Duplicate(Cpp_Species *sp):
+    cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))
+    r = Species("")
+    del r.thisptr
+    r.thisptr = new_obj
+    return r
 
 
 ## ODEWorld
@@ -39,9 +48,15 @@ cdef class ODEWorld:
     def num_molecules(self, Species sp):
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
-    #
     def list_species(self):
-        pass
+        cdef vector[Cpp_Species] raw_list_species = self.thisptr.get().list_species() 
+        retval = []
+        cdef vector[Cpp_Species].iterator it = raw_list_species.begin()
+        while it != raw_list_species.end():
+            retval.append( 
+                _Species_from_Cpp_Species_Duplicate(<Cpp_Species*> (address(deref(it))))) 
+            inc(it)
+        return retval
 
     def set_volume(self, Real vol):
         self.thisptr.get().set_volume(vol)
