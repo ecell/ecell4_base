@@ -31,6 +31,16 @@ cdef class NetworkModel:
     def has_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().has_reaction_rule(deref(rr.thisptr))
 
+    def list_species(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(Species_from_Cpp_Species(
+                <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
     def query_reaction_rules(self, Species sp1, Species sp2 = None):
         cdef vector[Cpp_ReactionRule] rules
         if sp2 is None:

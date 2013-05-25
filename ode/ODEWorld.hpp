@@ -149,11 +149,11 @@ public:
 
     void set_num_molecules(const Species& sp, const Real& num)
     {
-        if (num < 0)
-        {
-            throw std::invalid_argument(
-                "The number of molecules must be positive.");
-        }
+        // if (num < 0)
+        // {
+        //     throw std::invalid_argument(
+        //         "The number of molecules must be positive.");
+        // }
 
         species_map_type::const_iterator i(index_map_.find(sp));
         if (i == index_map_.end())
