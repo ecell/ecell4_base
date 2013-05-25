@@ -18,7 +18,7 @@ bool ODESimulator::step(const Real& upto)
 
     initialize();
 
-    const NetworkModel::species_container_type& species(model_->species());
+    const std::vector<Species> species(model_->list_species());
     ODESystem::state_type x(species.size());
 
     {

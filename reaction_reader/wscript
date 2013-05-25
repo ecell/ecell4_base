@@ -1,0 +1,27 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib.Tools import waf_unit_test
+from waflib import Logs
+
+top = '.'
+out = 'build'
+
+pyfiles = [
+    'ecell4/reaction_reader/decorator.py',
+    'ecell4/reaction_reader/__init__.py',
+    'ecell4/reaction_reader/logger.py',
+    'ecell4/reaction_reader/parseobj.py']
+
+
+def options(opt):
+    opt.load('compiler_cxx') # XXX: DUMMY
+    opt.load('python')
+
+def configure(conf):
+    conf.load('compiler_cxx') # XXX: DUMMY
+    conf.load('python')
+    conf.check_python_headers()
+
+def build(bld):
+    bld.install_files('${PYTHONDIR}/ecell4/reaction_reader', pyfiles)

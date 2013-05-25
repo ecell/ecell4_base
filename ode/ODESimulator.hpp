@@ -2,6 +2,7 @@
 #define __ECELL4_ODE_ODE_SIMULATOR_HPP
 
 #include <cstring>
+#include <vector>
 #include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/exceptions.hpp>
@@ -42,9 +43,9 @@ public:
 
     void initialize()
     {
-        const NetworkModel::species_container_type& species(model_->species());
+        const std::vector<Species> species(model_->list_species());
         state_type::size_type i(0);
-        for (NetworkModel::species_container_type::const_iterator
+        for (std::vector<Species>::const_iterator
                  it(species.begin()); it != species.end(); ++it)
         {
             index_map_[*it] = i;
@@ -140,8 +141,8 @@ public:
             return;
         }
 
-        const NetworkModel::species_container_type& species((*model_).species());
-        for (NetworkModel::species_container_type::const_iterator
+        const std::vector<Species> species((*model_).list_species());
+        for (std::vector<Species>::const_iterator
                  i(species.begin()); i != species.end(); ++i)
         {
             if (!(*world_).has_species(*i))

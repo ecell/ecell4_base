@@ -27,8 +27,7 @@ public:
         boost::shared_ptr<SpatiocyteWorld> world)
         : model_(model), world_(world), num_steps_(0)
     {
-        const NetworkModel::species_container_type&
-            species((*model_).species());
+        const std::vector<Species> species((*model_).list_species());
         for (NetworkModel::species_container_type::const_iterator
                  i(species.begin()); i != species.end(); ++i)
         {
