@@ -29,7 +29,7 @@ def run():
         w.num_molecules(sp3))
     for i in range(200):
         next_time += dt
-        target.step_upto(next_time)
+        target.step(next_time)
         print "t = %g\t A = %g\t B = %g\t C = %g" % (
             target.t(), w.num_molecules(sp1), w.num_molecules(sp2),
             w.num_molecules(sp3))
