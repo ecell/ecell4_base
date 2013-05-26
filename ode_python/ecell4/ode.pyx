@@ -7,14 +7,6 @@ from ecell4.types cimport *
 from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
 
-cdef Species _Species_from_Cpp_Species_Duplicate(Cpp_Species *sp):
-    cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))
-    r = Species("")
-    del r.thisptr
-    r.thisptr = new_obj
-    return r
-
-
 ## ODEWorld
 #  a python wrapper for Cpp_ODEWorld
 cdef class ODEWorld:
@@ -54,7 +46,7 @@ cdef class ODEWorld:
         cdef vector[Cpp_Species].iterator it = raw_list_species.begin()
         while it != raw_list_species.end():
             retval.append( 
-                _Species_from_Cpp_Species_Duplicate(<Cpp_Species*> (address(deref(it))))) 
+                Species_from_Cpp_Species(<Cpp_Species*> (address(deref(it))))) 
             inc(it)
         return retval
 

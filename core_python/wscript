@@ -49,7 +49,7 @@ def configure(conf):
 
 def build(bld):
     bld.install_files('${PYTHONDIR}/ecell4', pxdfiles)
-    bld.install_files('${PYTHONDIR}/ecell4', '__init__.py')
+    bld.install_files('${PYTHONDIR}/ecell4', 'ecell4/__init__.py')
     bld(
         features = 'cxx cxxshlib pyext',
         source = 'ecell4/core.pyx',
