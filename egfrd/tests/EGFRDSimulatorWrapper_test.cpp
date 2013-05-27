@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(EGFRDSimulatorWrapper_test_step2)
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     Species sp1("A", "2.5e-9", "1e-12");
-    model->add_species(sp1);
+    model->add_species_attribute(sp1);
 
     boost::shared_ptr<EGFRDWorld> world(new EGFRDWorld(L, 3, rng));
     EGFRDWorld::molecule_info_type info1((*world).get_molecule_info(sp1));
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(EGFRDSimulatorWrapper_test_run)
     Species sp1("A");
     sp1.set_attribute("D", D);
     sp1.set_attribute("radius", radius);
-    (*model).add_species(sp1);
+    (*model).add_species_attribute(sp1);
 
     boost::shared_ptr<ecell4::GSLRandomNumberGenerator>
         rng(new ecell4::GSLRandomNumberGenerator());

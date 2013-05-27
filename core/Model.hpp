@@ -58,34 +58,37 @@ public:
     // NetworkModelTraits
 
     /**
-     * add a concrete species to the model.
+     * add attributes of species to the model.
      * this function is a part of the trait of NetworkModel.
      * @param species a new Species
      */
-    virtual void add_species(const Species& sp)
+    virtual void add_species_attribute(const Species& sp)
     {
-        throw NotSupported("add_species is not supported in this model class");
+        throw NotSupported(
+            "add_species_attribute is not supported in this model class");
     }
 
     /**
-     * return if a species is in the model, or not.
+     * return if a species attribute is in the model, or not.
      * this function is a part of the trait of NetworkModel.
      * @param species a Species
      * @return if the species exists, or not
      */
-    virtual bool has_species(const Species& sp) const
+    virtual bool has_species_attribute(const Species& sp) const
     {
-        throw NotSupported("has_species is not supported in this model class");
+        throw NotSupported(
+            "has_species_attribute is not supported in this model class");
     }
 
     /**
-     * remove a species in the model.
+     * remove attributes of species in the model.
      * this function is a part of the trait of NetworkModel.
      * @param species a new Species
      */
-    virtual void remove_species(const Species& sp)
+    virtual void remove_species_attribute(const Species& sp)
     {
-        throw NotSupported("remove_species is not supported in this model class");
+        throw NotSupported(
+            "remove_species_attribute is not supported in this model class");
     }
 
     /**

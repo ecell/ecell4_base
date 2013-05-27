@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     Species sp1("A");
     sp1.set_attribute("D", D);
     sp1.set_attribute("radius", radius);
-    (*model).add_species(sp1);
+    (*model).add_species_attribute(sp1);
 
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 

@@ -34,13 +34,13 @@ void setup_model(ecell4::NetworkModel& model)
         Surface_MinDEE("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)", "0.02e-12"),
         Surface_MinDEED("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2[2],loc=mem).MinD(p=atp,bs[2],loc=mem)", "0.02e-12");
 
-    model.add_species(MinDatp);
-    model.add_species(MinDadp);
-    model.add_species(MinEE);
-    model.add_species(Surface_MinD);
-    model.add_species(Surface_MinEE);
-    model.add_species(Surface_MinDEE);
-    model.add_species(Surface_MinDEED);
+    model.add_species_attribute(MinDatp);
+    model.add_species_attribute(MinDadp);
+    model.add_species_attribute(MinEE);
+    model.add_species_attribute(Surface_MinD);
+    model.add_species_attribute(Surface_MinEE);
+    model.add_species_attribute(Surface_MinDEE);
+    model.add_species_attribute(Surface_MinDEED);
 
     // model.add_reaction_rule(
     //     create_binding_reaction_rule(

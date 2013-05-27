@@ -22,8 +22,8 @@ BOOST_AUTO_TEST_CASE(GillespieSimulator_test_step)
     rr1.set_k(5.0);
     rr1.add_reactant(sp1);
     rr1.add_product(sp2);
-    model->add_species(sp1);
-    model->add_species(sp2);
+    model->add_species_attribute(sp1);
+    model->add_species_attribute(sp2);
     model->add_reaction_rule(rr1);
 
     Real vol(1.0);

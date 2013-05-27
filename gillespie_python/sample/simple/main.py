@@ -12,9 +12,9 @@ def run():
     rr2 = create_unbinding_reaction_rule(sp3, sp1, sp2, kr)
 
     m = NetworkModel()
-    m.add_species(sp1)
-    m.add_species(sp2)
-    m.add_species(sp3)
+    m.add_species_attribute(sp1)
+    m.add_species_attribute(sp2)
+    m.add_species_attribute(sp3)
     m.add_reaction_rule(rr1)
     m.add_reaction_rule(rr2)
 

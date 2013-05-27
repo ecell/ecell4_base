@@ -27,9 +27,9 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_constructor)
         rr2(create_unbinding_reaction_rule(sp3, sp1, sp2, k2));
 
     boost::shared_ptr<ecell4::NetworkModel> model(new ecell4::NetworkModel());
-    model->add_species(sp1);
-    model->add_species(sp2);
-    model->add_species(sp3);
+    model->add_species_attribute(sp1);
+    model->add_species_attribute(sp2);
+    model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
@@ -55,9 +55,9 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step)
         rr2(create_unbinding_reaction_rule(sp3, sp1, sp2, k2));
 
     boost::shared_ptr<ecell4::NetworkModel> model(new ecell4::NetworkModel());
-    model->add_species(sp1);
-    model->add_species(sp2);
-    model->add_species(sp3);
+    model->add_species_attribute(sp1);
+    model->add_species_attribute(sp2);
+    model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 

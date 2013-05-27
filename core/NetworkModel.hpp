@@ -50,9 +50,9 @@ public:
 
     // NetworkModelTraits
 
-    void add_species(const Species& sp);
-    bool has_species(const Species& sp) const;
-    void remove_species(const Species& sp);
+    void add_species_attribute(const Species& sp);
+    bool has_species_attribute(const Species& sp) const;
+    void remove_species_attribute(const Species& sp);
 
     void add_reaction_rule(const ReactionRule& rr);
     void remove_reaction_rule(const ReactionRule& rr);
@@ -62,31 +62,31 @@ public:
 
     const std::vector<Species> list_species()
     {
-        if (dirty_)
-        {
-            std::vector<Species> retval;
-            for (reaction_rule_container_type::const_iterator
-                i(reaction_rules_.begin()); i != reaction_rules_.end(); ++i)
-            {
-                const ReactionRule::reactant_container_type&
-                    reactants((*i).reactants());
-                const ReactionRule::product_container_type&
-                    products((*i).products());
-                std::copy(reactants.begin(), reactants.end(), std::back_inserter(retval));
-                std::copy(products.begin(), products.end(), std::back_inserter(retval));
-            }
-            std::sort(retval.begin(), retval.end());
-            retval.erase(std::unique(retval.begin(), retval.end()), retval.end());
-            for (std::vector<Species>::const_iterator i(retval.begin());
-                i != retval.end(); ++i)
-            {
-                if (!has_species(*i))
-                {
-                    add_species(*i);
-                }
-            }
-            dirty_ = false;
-        }
+        // if (dirty_)
+        // {
+        //     std::vector<Species> retval;
+        //     for (reaction_rule_container_type::const_iterator
+        //         i(reaction_rules_.begin()); i != reaction_rules_.end(); ++i)
+        //     {
+        //         const ReactionRule::reactant_container_type&
+        //             reactants((*i).reactants());
+        //         const ReactionRule::product_container_type&
+        //             products((*i).products());
+        //         std::copy(reactants.begin(), reactants.end(), std::back_inserter(retval));
+        //         std::copy(products.begin(), products.end(), std::back_inserter(retval));
+        //     }
+        //     std::sort(retval.begin(), retval.end());
+        //     retval.erase(std::unique(retval.begin(), retval.end()), retval.end());
+        //     for (std::vector<Species>::const_iterator i(retval.begin());
+        //         i != retval.end(); ++i)
+        //     {
+        //         if (!has_species(*i))
+        //         {
+        //             add_species(*i);
+        //         }
+        //     }
+        //     dirty_ = false;
+        // }
         return species_;
     }
 

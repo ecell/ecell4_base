@@ -85,6 +85,7 @@ public:
         if (i == index_map_.end())
         {
             reserve_species(sp);
+            i = index_map_.find(sp);
         }
 
         num_molecules_[(*i).second] += num;

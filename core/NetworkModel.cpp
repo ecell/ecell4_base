@@ -48,9 +48,9 @@ std::vector<ReactionRule> NetworkModel::query_reaction_rules(
     return retval;
 }
 
-void NetworkModel::add_species(const Species& sp)
+void NetworkModel::add_species_attribute(const Species& sp)
 {
-    if (has_species(sp))
+    if (has_species_attribute(sp))
     {
         throw AlreadyExists("species already exists");
     }
@@ -58,7 +58,7 @@ void NetworkModel::add_species(const Species& sp)
     dirty_ = true;
 }
 
-void NetworkModel::remove_species(const Species& sp)
+void NetworkModel::remove_species_attribute(const Species& sp)
 {
     species_container_type::iterator i(
         std::find(species_.begin(), species_.end(), sp));
@@ -72,7 +72,7 @@ void NetworkModel::remove_species(const Species& sp)
     dirty_ = true;
 }
 
-bool NetworkModel::has_species(const Species& sp) const
+bool NetworkModel::has_species_attribute(const Species& sp) const
 {
     species_container_type::const_iterator i(
         std::find(species_.begin(), species_.end(), sp));

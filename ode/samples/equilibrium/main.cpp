@@ -31,9 +31,9 @@ int main(int argc, char** argv)
     rr2.add_product(sp1);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    model->add_species(sp1);
-    model->add_species(sp2);
-    model->add_species(sp3);
+    model->add_species_attribute(sp1);
+    model->add_species_attribute(sp2);
+    model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 

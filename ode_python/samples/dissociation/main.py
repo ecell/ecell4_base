@@ -8,15 +8,12 @@ def run():
     rr1 = create_unbinding_reaction_rule(sp1, sp2, sp3, k)
 
     m = NetworkModel()
-    m.add_species(sp1)
-    m.add_species(sp2)
-    m.add_species(sp3)
+    m.add_species_attribute(sp1)
+    m.add_species_attribute(sp2)
+    m.add_species_attribute(sp3)
     m.add_reaction_rule(rr1)
 
     w = ODEWorld(volume)
-    w.add_species(sp1)
-    w.add_species(sp2)
-    w.add_species(sp3)
     w.add_molecules(sp1, 60)
 
     target = ODESimulator(m, w)
@@ -33,7 +30,7 @@ def run():
         print "t = %g\t A = %g\t B = %g\t C = %g" % (
             target.t(), w.num_molecules(sp1), w.num_molecules(sp2),
             w.num_molecules(sp3))
-        
+
 
 if __name__ == "__main__":
     run()

@@ -128,9 +128,9 @@ cdef class ParticleSpaceVectorImpl:
 cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
     cdef cppclass Cpp_NetworkModel "ecell4::NetworkModel":
         Cpp_NetworkModel() except +
-        void add_species(Cpp_Species sp)
-        bool has_species(Cpp_Species sp)
-        void remove_species(Cpp_Species sp)
+        void add_species_attribute(Cpp_Species sp)
+        bool has_species_attribute(Cpp_Species sp)
+        void remove_species_attribute(Cpp_Species sp)
         void add_reaction_rule(Cpp_ReactionRule)
         void remove_reaction_rule(Cpp_ReactionRule)
         bool has_reaction_rule(Cpp_ReactionRule)

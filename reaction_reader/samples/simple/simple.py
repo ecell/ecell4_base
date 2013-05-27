@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     species_list = species()
     for sp in species_list:
-        m.add_species(sp)
+        m.add_species_attribute(sp)
 
     rules = reactions(
         4.483455086786913e-20, 1.35, 1.5,

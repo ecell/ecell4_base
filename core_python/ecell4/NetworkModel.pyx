@@ -13,14 +13,14 @@ cdef class NetworkModel:
     def __dealloc__(self):
         del self.thisptr
 
-    def add_species(self, Species sp):
-        self.thisptr.get().add_species(deref(sp.thisptr))
+    def add_species_attribute(self, Species sp):
+        self.thisptr.get().add_species_attribute(deref(sp.thisptr))
 
-    def has_species(self, Species sp):
-        return self.thisptr.get().has_species(deref(sp.thisptr))
+    def has_species_attribute(self, Species sp):
+        return self.thisptr.get().has_species_attribute(deref(sp.thisptr))
 
-    def remove_species(self, Species sp):
-        self.thisptr.get().remove_species(deref(sp.thisptr))
+    def remove_species_attribute(self, Species sp):
+        self.thisptr.get().remove_species_attribute(deref(sp.thisptr))
 
     def add_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().add_reaction_rule(deref(rr.thisptr))
