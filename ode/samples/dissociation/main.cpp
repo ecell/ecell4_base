@@ -30,9 +30,6 @@ int main(int argc, char** argv)
     model->add_reaction_rule(rr1);
 
     boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
-    world->add_species(sp1);
-    world->add_species(sp2);
-    world->add_species(sp3);
     world->add_molecules(sp1, 60);
     world->save("test_ode.h5");
 

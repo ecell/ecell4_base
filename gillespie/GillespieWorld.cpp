@@ -24,16 +24,6 @@ const Real& GillespieWorld::t(void) const
     return this->cs_->t();
 }
 
-Integer GillespieWorld::num_species(void) const
-{
-    return this->cs_->num_species();
-}
-
-bool GillespieWorld::has_species(const Species& sp) const
-{
-    return this->cs_->has_species(sp);
-}
-
 std::vector<Species> GillespieWorld::list_species() const
 {
     return this->cs_->list_species();
@@ -42,16 +32,6 @@ std::vector<Species> GillespieWorld::list_species() const
 Integer GillespieWorld::num_molecules(const Species& sp) const
 {
     return this->cs_->num_molecules(sp);
-}
-
-void GillespieWorld::add_species(const Species& sp)
-{
-    this->cs_->add_species(sp);
-}
-
-void GillespieWorld::remove_species(const Species& sp)
-{
-    this->cs_->remove_species(sp);
 }
 
 void GillespieWorld::add_molecules(const Species& sp, const Integer& num)

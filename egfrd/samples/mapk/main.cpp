@@ -101,10 +101,6 @@ void run()
     boost::shared_ptr<world_type> world(new world_type(volume, rng));
 #endif
 
-    world->add_species(sp1);
-    world->add_species(sp2);
-    world->add_species(sp3);
-
     world->add_molecules(sp1, N);
 
     simulator_type sim(model, world);

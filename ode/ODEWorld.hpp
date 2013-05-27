@@ -50,17 +50,6 @@ public:
         return volume_;
     }
 
-    Integer num_species(void)
-    {
-        return static_cast<Integer>(species_.size());
-    }
-
-    bool has_species(const Species& sp)
-    {
-        species_map_type::const_iterator i(index_map_.find(sp));
-        return (i != index_map_.end());
-    }
-
     Real num_molecules(const Species& sp) const
     {
         species_map_type::const_iterator i(index_map_.find(sp));
@@ -90,71 +79,32 @@ public:
         volume_ = volume;
     }
 
-    void add_species(const Species& sp)
+    void add_molecules(const Species& sp, const Real& num)
     {
         species_map_type::const_iterator i(index_map_.find(sp));
-        if (i != index_map_.end())
+        if (i == index_map_.end())
         {
-            throw AlreadyExists("Species already exists");
+            reserve_species(sp);
         }
 
-        index_map_.insert(std::make_pair(sp, num_molecules_.size()));
-        species_.push_back(sp);
-        num_molecules_.push_back(0);
+        num_molecules_[(*i).second] += num;
     }
 
-    void remove_species(const Species& sp)
+    void remove_molecules(const Species& sp, const Real& num)
     {
-        species_map_type::iterator i(index_map_.find(sp));
+        species_map_type::const_iterator i(index_map_.find(sp));
         if (i == index_map_.end())
         {
             throw NotFound("Species not found");
         }
 
-        species_map_type::mapped_type
-            idx((*i).second), last_idx(num_molecules_.size() - 1);
-        if (idx != last_idx)
-        {
-            const species_container_type::size_type
-                idx_(static_cast<species_container_type::size_type>(idx)),
-                last_idx_(
-                    static_cast<species_container_type::size_type>(last_idx));
-            const Species& last_sp(species_[last_idx_]);
-            species_[idx_] = last_sp;
-            num_molecules_[idx] = num_molecules_[last_idx];
-            index_map_[last_sp] = idx;
-        }
-
-        species_.pop_back();
-        num_molecules_.pop_back();
-        index_map_.erase(sp);
-    }
-
-    void add_molecules(const Species& sp, const Real& num)
-    {
-        if (!has_species(sp))
-        {
-            add_species(sp);
-        }
-
-        set_num_molecules(sp, num_molecules(sp) + num);
-    }
-
-    void remove_molecules(const Species& sp, const Real& num)
-    {
-        set_num_molecules(sp, num_molecules(sp) - num);
+        num_molecules_[(*i).second] -= num;
     }
 
     // Optional members
 
     void set_num_molecules(const Species& sp, const Real& num)
     {
-        // if (num < 0)
-        // {
-        //     throw std::invalid_argument(
-        //         "The number of molecules must be positive.");
-        // }
-
         species_map_type::const_iterator i(index_map_.find(sp));
         if (i == index_map_.end())
         {
@@ -181,6 +131,52 @@ public:
         CompartmentSpaceHDF5Writer<ODEWorld, H5DataTypeTraits_double>
             writer(*this);
         writer.save(fout.get(), ost_hdf5path.str());
+    }
+
+    bool has_species(const Species& sp)
+    {
+        species_map_type::const_iterator i(index_map_.find(sp));
+        return (i != index_map_.end());
+    }
+
+    void reserve_species(const Species& sp)
+    {
+        species_map_type::const_iterator i(index_map_.find(sp));
+        if (i != index_map_.end())
+        {
+            throw AlreadyExists("Species already exists");
+        }
+
+        index_map_.insert(std::make_pair(sp, num_molecules_.size()));
+        species_.push_back(sp);
+        num_molecules_.push_back(0);
+    }
+
+    void release_species(const Species& sp)
+    {
+        species_map_type::iterator i(index_map_.find(sp));
+        if (i == index_map_.end())
+        {
+            throw NotFound("Species not found");
+        }
+
+        species_map_type::mapped_type
+            idx((*i).second), last_idx(num_molecules_.size() - 1);
+        if (idx != last_idx)
+        {
+            const species_container_type::size_type
+                idx_(static_cast<species_container_type::size_type>(idx)),
+                last_idx_(
+                    static_cast<species_container_type::size_type>(last_idx));
+            const Species& last_sp(species_[last_idx_]);
+            species_[idx_] = last_sp;
+            num_molecules_[idx] = num_molecules_[last_idx];
+            index_map_[last_sp] = idx;
+        }
+
+        species_.pop_back();
+        num_molecules_.pop_back();
+        index_map_.erase(sp);
     }
 
 protected:

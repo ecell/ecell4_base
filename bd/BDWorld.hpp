@@ -186,13 +186,6 @@ public:
         extras::throw_in_particles(*this, sp, num, *rng());
     }
 
-    // CompartmentSpace member functions
-
-    void add_species(const Species& sp)
-    {
-        ; // just ignore
-    }
-
     // Optional members
 
     inline boost::shared_ptr<RandomNumberGenerator> rng()

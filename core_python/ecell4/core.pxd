@@ -84,13 +84,9 @@ cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
     cdef cppclass Cpp_CompartmentSpaceVectorImpl "ecell4::CompartmentSpaceVectorImpl":
         Cpp_CompartmentSpaceVectorImpl(Real) except+
         Real volume()
-        Integer num_species()
-        bool has_species(Cpp_Species &sp)
         Integer num_molecules(Cpp_Species &sp)
         vector[Cpp_Species] list_species()
         void set_volume(Real)
-        void add_species(Cpp_Species &sp)
-        void remove_species(Cpp_Species &sp)
         void add_molecules(Cpp_Species &sp, Integer num)
         void remove_molecules(Cpp_Species &sp, Integer num)
 

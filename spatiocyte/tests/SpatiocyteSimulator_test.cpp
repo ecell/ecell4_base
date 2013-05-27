@@ -35,9 +35,6 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_constructor)
 
     boost::shared_ptr<SpatiocyteWorld> world(
         new SpatiocyteWorld(edge_lengths, voxel_radius));
-    world->add_species(sp1);
-    world->add_species(sp2);
-    world->add_species(sp3);
     world->add_molecules(sp1, N / 2);
     world->add_molecules(sp2, N / 2);
 
@@ -66,9 +63,6 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step)
 
     boost::shared_ptr<SpatiocyteWorld> world(
         new SpatiocyteWorld(edge_lengths, voxel_radius));
-    world->add_species(sp1);
-    world->add_species(sp2);
-    world->add_species(sp3);
     world->add_molecules(sp1, N / 2);
     world->add_molecules(sp2, N / 2);
 

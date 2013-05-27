@@ -42,11 +42,6 @@ int main(int argc, char** argv)
 
     boost::shared_ptr<SpatiocyteWorld> world(
         new SpatiocyteWorld(edge_lengths, voxel_radius));
-    world->add_species(sp1);
-    world->add_species(sp2);
-    world->add_species(sp3);
-    // world->add_molecules(sp1, N);
-    // world->add_molecules(sp2, N);
     world->add_molecules(sp3, N);
 
     SpatiocyteSimulator sim(model, world);

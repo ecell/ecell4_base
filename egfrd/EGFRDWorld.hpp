@@ -82,7 +82,7 @@ public:
     {
         if (!has_species(p.species()))
         {
-            add_species(p.species());
+            reserve_species(p.species());
         }
 
         world_type::particle_id_pair retval(
@@ -326,11 +326,6 @@ public:
         return sid_container_.size();
     }
 
-    bool has_species(const Species& sp) const
-    {
-        return (find_species_type_id(sp) != sid_container_.end());
-    }
-
     Integer num_molecules(const Species& sp) const
     {
         return num_particles(sp);
@@ -338,47 +333,11 @@ public:
 
     // CompartmentSpace member functions
 
-    void add_species(const Species& sp)
-    {
-        if (has_species(sp))
-        {
-            throw AlreadyExists("Species already exists");
-        }
-
-        // add ::SpeciesType to ::ParticleModel
-        boost::shared_ptr< ::SpeciesType> st(new ::SpeciesType());
-        (*st)["name"] = boost::lexical_cast<std::string>(sp.name());
-        (*st)["D"] = boost::lexical_cast<std::string>(sp.get_attribute("D"));
-        (*st)["radius"] = boost::lexical_cast<std::string>(
-            sp.get_attribute("radius"));
-        model_.add_species_type(st);
-
-        // create a map between Species and ::SpeciesType
-        sid_container_.push_back(std::make_pair(sp.serial(), st->id()));
-
-        // add ::SpeciesInfo to ::World
-        const std::string& structure_id((*st)["structure"]);
-        (*world_).add_species(
-            world_type::traits_type::species_type(
-                st->id(),
-                boost::lexical_cast<world_type::traits_type::D_type>(
-                    (*st)["D"]),
-                boost::lexical_cast<world_type::length_type>(
-                    (*st)["radius"]),
-                boost::lexical_cast<structure_id_type>(
-                    structure_id.empty() ? "world": structure_id)));
-    }
-
-    void remove_species(const Species& sp)
-    {
-        throw NotImplemented("Not implemented yet.");
-    }
-
     void add_molecules(const Species& sp, const Integer& num)
     {
         if (!has_species(sp))
         {
-            add_species(sp);
+            reserve_species(sp);
         }
 
         extras::throw_in_particles(*this, sp, num, *rng());
@@ -395,11 +354,6 @@ public:
     {
         model_.network_rules().add_reaction_rule(translate(rr));
     }
-
-    // const particle_container_type& particles() const
-    // {
-    //     throw NotSupported("Not supported. Use list_particles() instead.");
-    // }
 
     inline boost::shared_ptr<GSLRandomNumberGenerator> rng()
     {
@@ -432,6 +386,47 @@ public:
 
         ParticleSpaceHDF5Writer<EGFRDWorld> writer(*this);
         writer.save(fout.get(), ost_hdf5path.str());
+    }
+
+    bool has_species(const Species& sp) const
+    {
+        return (find_species_type_id(sp) != sid_container_.end());
+    }
+
+    void reserve_species(const Species& sp)
+    {
+        if (has_species(sp))
+        {
+            throw AlreadyExists("Species already exists");
+        }
+
+        // add ::SpeciesType to ::ParticleModel
+        boost::shared_ptr< ::SpeciesType> st(new ::SpeciesType());
+        (*st)["name"] = boost::lexical_cast<std::string>(sp.name());
+        (*st)["D"] = boost::lexical_cast<std::string>(sp.get_attribute("D"));
+        (*st)["radius"] = boost::lexical_cast<std::string>(
+            sp.get_attribute("radius"));
+        model_.add_species_type(st);
+
+        // create a map between Species and ::SpeciesType
+        sid_container_.push_back(std::make_pair(sp.serial(), st->id()));
+
+        // add ::SpeciesInfo to ::World
+        const std::string& structure_id((*st)["structure"]);
+        (*world_).add_species(
+            world_type::traits_type::species_type(
+                st->id(),
+                boost::lexical_cast<world_type::traits_type::D_type>(
+                    (*st)["D"]),
+                boost::lexical_cast<world_type::length_type>(
+                    (*st)["radius"]),
+                boost::lexical_cast<structure_id_type>(
+                    structure_id.empty() ? "world": structure_id)));
+    }
+
+    void release_species(const Species& sp)
+    {
+        throw NotImplemented("Not implemented yet.");
     }
 
 protected:

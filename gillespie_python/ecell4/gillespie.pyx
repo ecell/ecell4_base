@@ -30,25 +30,13 @@ cdef class GillespieWorld:
     def volume(self):
         return self.thisptr.get().volume()
 
-    def num_species(self):
-        return self.thisptr.get().num_species()
-
-    def has_species(self, Species sp):
-        return self.thisptr.get().has_species(deref(sp.thisptr))
-
     def num_molecules(self, Species sp):
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
-
-    def add_species(self, Species sp):
-        self.thisptr.get().add_species(deref(sp.thisptr))
-
-    def remove_species(self, Species sp):
-        self.thisptr.get().remove_species(deref(sp.thisptr))
 
     def add_molecules(self, Species sp, Integer num):
         self.thisptr.get().add_molecules(deref(sp.thisptr), num)
 
-    def remove_species(self, Species sp, Integer num):
+    def remove_molecules(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
     def save(self, string filename):

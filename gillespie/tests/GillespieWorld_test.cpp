@@ -24,15 +24,11 @@ BOOST_AUTO_TEST_CASE(GillespieWorld_test)
     Real vol(1.0);
     boost::shared_ptr<GillespieWorld> world(new GillespieWorld(vol, rng));
 
-    world->add_species(sp1);
-    world->add_species(sp2);
-
     world->add_molecules(sp1, 10);
     world->add_molecules(sp2, 20);
     world->set_t(0.5);
 
     BOOST_CHECK(world->t() == 0.5);
-    BOOST_CHECK(world->num_species() == 2);
     BOOST_CHECK(world->num_molecules(sp1) == 10);
     BOOST_CHECK(world->num_molecules(sp2) == 20);
 }

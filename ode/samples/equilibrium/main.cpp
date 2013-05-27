@@ -38,9 +38,6 @@ int main(int argc, char** argv)
     model->add_reaction_rule(rr2);
 
     boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
-    world->add_species(sp1);
-    world->add_species(sp2);
-    world->add_species(sp3);
     world->add_molecules(sp1, N);
 
     ODESimulator target(model, world);

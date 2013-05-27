@@ -31,12 +31,6 @@ cdef class ODEWorld:
     def volume(self):
         return self.thisptr.get().volume()
 
-    def num_species(self):
-        return self.thisptr.get().num_species()
-
-    def has_species(self, Species sp):
-        return self.thisptr.get().has_species(deref(sp.thisptr))
-
     def num_molecules(self, Species sp):
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
@@ -53,12 +47,6 @@ cdef class ODEWorld:
     def set_volume(self, Real vol):
         self.thisptr.get().set_volume(vol)
 
-    def add_species(self, Species sp):
-        self.thisptr.get().add_species(deref(sp.thisptr))
-
-    def remove_species(self, Species sp):
-        self.thisptr.get().remove_species(deref(sp.thisptr))
-
     def add_molecules(self, Species sp, Real num):
         self.thisptr.get().add_molecules(deref(sp.thisptr), num)
 
@@ -70,6 +58,15 @@ cdef class ODEWorld:
 
     def save(self, string filename):
         self.thisptr.get().save(filename)
+
+    def has_species(self, Species sp):
+        return self.thisptr.get().has_species(deref(sp.thisptr))
+
+    def reserve_species(self, Species sp):
+        self.thisptr.get().reserve_species(deref(sp.thisptr))
+
+    def release_species(self, Species sp):
+        self.thisptr.get().release_species(deref(sp.thisptr))
 
 ## ODESimulator
 #  a python wrapper for Cpp_ODESimulator
