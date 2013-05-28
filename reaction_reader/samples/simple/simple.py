@@ -1,11 +1,11 @@
-from ecell4.reaction_reader.decorator import species_attributes_with_keys, reaction_rules
+from ecell4.reaction_reader.decorator import species_attributes, reaction_rules
 
 
-@species_attributes_with_keys('N')
+@species_attributes
 def attributes():
-    K | '120'
-    KK | '30'
-    PP | '30'
+    K | {'N': '120'}
+    KK | {'N': '30'}
+    PP | {'N': '30'}
 
 @reaction_rules
 def reactions(kon1, koff1, kcat1, kon2, koff2, kcat2):
