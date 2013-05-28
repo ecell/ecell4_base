@@ -2,7 +2,7 @@ from ecell4.reaction_reader.decorator import species_attributes_with_keys, react
 
 
 @species_attributes_with_keys('N')
-def species():
+def attributes():
     K | '120'
     KK | '30'
     PP | '30'
@@ -30,34 +30,37 @@ if __name__ == "__main__":
 
     m = ecell4.core.NetworkModel()
 
-    species_list = species()
-    for sp in species_list:
+    for sp in attributes():
         m.add_species_attribute(sp)
 
-    rules = reactions(
+    rules_list = reactions(
         4.483455086786913e-20, 1.35, 1.5,
         9.299017957780264e-20, 1.73, 15.0)
-    for rr in rules:
+    for rr in rules_list:
         m.add_reaction_rule(rr)
+
+    species_list = m.list_species()
 
     rng = ecell4.core.GSLRandomNumberGenerator()
     rng.seed(0)
 
     volume = 1e-18
     w = ecell4.gillespie.GillespieWorld(volume, rng)
+    # for sp in attributes():
     for sp in species_list:
+        sp = m.apply_species_attributes(sp)
         if sp.has_attribute("N"):
             w.add_molecules(sp, int(sp.get_attribute("N")))
 
     sim = ecell4.gillespie.GillespieSimulator(m, w)
 
     writer = csv.writer(sys.stdout, delimiter='\t')
-    writer.writerow(['#t'] + [sp.name() for sp in m.list_species()])
+    writer.writerow(['#t'] + [sp.name() for sp in species_list])
     writer.writerow(
         ['%.6e' % sim.t()]
-        + ['%d' % w.num_molecules(sp) for sp in m.list_species()])
+        + ['%d' % w.num_molecules(sp) for sp in species_list])
     for i in xrange(1000):
         sim.step()
         writer.writerow(
             ['%.6e' % sim.t()]
-            + ['%d' % w.num_molecules(sp) for sp in m.list_species()])
+            + ['%d' % w.num_molecules(sp) for sp in species_list])
