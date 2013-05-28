@@ -36,8 +36,8 @@ cdef class NetworkModel:
             deref(sp.thisptr))
         return Species_from_Cpp_Species(address(retval))
 
-    def get_species(self, string name):
-        cdef Cpp_Species retval = self.thisptr.get().get_species(name)
+    def create_species(self, string name):
+        cdef Cpp_Species retval = self.thisptr.get().create_species(name)
         return Species_from_Cpp_Species(address(retval))
 
     def list_species(self):

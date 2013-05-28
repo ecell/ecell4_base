@@ -81,7 +81,7 @@ public:
         return species_cache_;
     }
 
-    Species get_species(const std::string& name) const
+    Species create_species(const std::string& name) const
     {
         return apply_species_attributes(Species(name));
     }
