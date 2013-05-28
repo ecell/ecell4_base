@@ -13,6 +13,9 @@ cdef class ParticleID:
         val.second = serial
         self.thisptr = new Cpp_ParticleID(val)
 
+    def __dealloc__(self):
+        del self.thisptr
+
     def lot(self):
         return self.thisptr.lot()
 
