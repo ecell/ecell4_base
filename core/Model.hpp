@@ -27,8 +27,8 @@ ReactionRule create_degradation_reaction_rule(
 ReactionRule create_synthesis_reaction_rule(
     const Species& product1, const Real& k);
 
-ReactionRule create_repulsive_reaction_rule(
-    const Species& reactant1, const Species& reactant2);
+// ReactionRule create_repulsive_reaction_rule(
+//     const Species& reactant1, const Species& reactant2);
 
 class Model
 {

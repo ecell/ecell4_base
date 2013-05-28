@@ -50,8 +50,10 @@ public:
 
 protected:
 
+    typedef std::vector<Species> species_container_type;
     typedef std::vector<std::pair<Species::serial_type, ::SpeciesTypeID> >
     species_type_id_container_type;
+
     typedef ::CuboidalRegion<simulator_type::traits_type> cuboidal_region_type;
     typedef world_type::traits_type::structure_id_type
     structure_id_type;
@@ -401,11 +403,11 @@ public:
         }
 
         // add ::SpeciesType to ::ParticleModel
+        const MoleculeInfo info(get_molecule_info(sp));
         boost::shared_ptr< ::SpeciesType> st(new ::SpeciesType());
         (*st)["name"] = boost::lexical_cast<std::string>(sp.name());
-        (*st)["D"] = boost::lexical_cast<std::string>(sp.get_attribute("D"));
-        (*st)["radius"] = boost::lexical_cast<std::string>(
-            sp.get_attribute("radius"));
+        (*st)["D"] = boost::lexical_cast<std::string>(info.D);
+        (*st)["radius"] = boost::lexical_cast<std::string>(info.radius);
         model_.add_species_type(st);
 
         // create a map between Species and ::SpeciesType
@@ -427,6 +429,28 @@ public:
     void release_species(const Species& sp)
     {
         throw NotImplemented("Not implemented yet.");
+    }
+
+    void set_all_repulsive()
+    {
+        BOOST_FOREACH(boost::shared_ptr< ::SpeciesType> st1,
+                      model_.get_species_types())
+        {
+            BOOST_FOREACH(boost::shared_ptr< ::SpeciesType> st2,
+                          model_.get_species_types())
+            {
+                boost::scoped_ptr< ::NetworkRules::reaction_rule_generator>
+                    gen(model_.network_rules().query_reaction_rule(
+                        st1->id(), st2->id()));
+                if (!gen)
+                {
+                    const std::vector< ::SpeciesTypeID> products;
+                    model_.network_rules().add_reaction_rule(
+                        ::new_reaction_rule(
+                            st1->id()(), st2->id(), products, 0.0));
+                }
+            }
+        }
     }
 
 protected:

@@ -80,7 +80,7 @@ def create_unbinding_reaction_rule(
         deref(product1.thisptr), deref(product2.thisptr), k)
     return ReactionRule_from_Cpp_ReactionRule(address(rr))
 
-def create_repulsive_reaction_rule(Species reactant1, Species reactant2):
-    cdef Cpp_ReactionRule rr = crr.create_repulsive_reaction_rule(
-        deref(reactant1.thisptr), deref(reactant2.thisptr))
-    return ReactionRule_from_Cpp_ReactionRule(address(rr))
+# def create_repulsive_reaction_rule(Species reactant1, Species reactant2):
+#     cdef Cpp_ReactionRule rr = crr.create_repulsive_reaction_rule(
+#         deref(reactant1.thisptr), deref(reactant2.thisptr))
+#     return ReactionRule_from_Cpp_ReactionRule(address(rr))

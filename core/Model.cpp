@@ -55,14 +55,14 @@ ReactionRule create_unbinding_reaction_rule(
     return rr;
 }
 
-ReactionRule create_repulsive_reaction_rule(
-    const Species& reactant1, const Species& reactant2)
-{
-    ReactionRule rr;
-    rr.set_k(0.0);
-    rr.add_reactant(reactant1);
-    rr.add_reactant(reactant2);
-    return rr;
-}
+// ReactionRule create_repulsive_reaction_rule(
+//     const Species& reactant1, const Species& reactant2)
+// {
+//     ReactionRule rr;
+//     rr.set_k(0.0);
+//     rr.add_reactant(reactant1);
+//     rr.add_reactant(reactant2);
+//     return rr;
+// }
 
 } // ecell4
