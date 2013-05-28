@@ -31,6 +31,15 @@ cdef class NetworkModel:
     def has_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().has_reaction_rule(deref(rr.thisptr))
 
+    def apply_species_attributes(self, Species sp):
+        cdef Cpp_Species retval = self.thisptr.get().apply_species_attributes(
+            deref(sp.thisptr))
+        return Species_from_Cpp_Species(address(retval))
+
+    def get_species(self, string name):
+        cdef Cpp_Species retval = self.thisptr.get().get_species(name)
+        return Species_from_Cpp_Species(address(retval))
+
     def list_species(self):
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
         retval = []
