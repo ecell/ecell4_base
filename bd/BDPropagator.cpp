@@ -91,7 +91,8 @@ bool BDPropagator::attempt_reaction(
                 break;
             case 1:
                 {
-                    const Species& species_new(*(products.begin()));
+                    const Species species_new(
+                        model_.apply_species_attributes(*(products.begin())));
                     const BDWorld::molecule_info_type
                         info(world_.get_molecule_info(species_new));
                     const Real radius_new(info.radius);
@@ -115,8 +116,10 @@ bool BDPropagator::attempt_reaction(
                 {
                     ReactionRule::product_container_type::iterator
                         it(products.begin());
-                    const Species& species_new1(*it);
-                    const Species& species_new2(*(++it));
+                    const Species species_new1(
+                        model_.apply_species_attributes(*it));
+                    const Species species_new2(
+                        model_.apply_species_attributes(*(++it)));
 
                     const BDWorld::molecule_info_type
                         info1(world_.get_molecule_info(species_new1)),
@@ -218,7 +221,8 @@ bool BDPropagator::attempt_reaction(
                 break;
             case 1:
                 {
-                    const Species& species_new(*(products.begin()));
+                    const Species& species_new(
+                        model_.apply_species_attributes(*(products.begin())));
                     BDWorld::molecule_info_type
                         info(world_.get_molecule_info(species_new));
                     const Real radius_new(info.radius);

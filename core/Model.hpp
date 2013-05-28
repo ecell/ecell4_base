@@ -59,7 +59,7 @@ public:
 
     /**
      * add attributes of species to the model.
-     * this function is a part of the trait of NetworkModel.
+     * this function is a part of the trait of Model.
      * @param species a new Species
      */
     virtual void add_species_attribute(const Species& sp)
@@ -70,7 +70,7 @@ public:
 
     /**
      * return if a species attribute is in the model, or not.
-     * this function is a part of the trait of NetworkModel.
+     * this function is a part of the trait of Model.
      * @param species a Species
      * @return if the species exists, or not
      */
@@ -82,7 +82,7 @@ public:
 
     /**
      * remove attributes of species in the model.
-     * this function is a part of the trait of NetworkModel.
+     * this function is a part of the trait of Model.
      * @param species a new Species
      */
     virtual void remove_species_attribute(const Species& sp)
@@ -92,8 +92,19 @@ public:
     }
 
     /**
-     * add a concrete reaction rule to the model.
-     * this function is a part of the trait of NetworkModel.
+     * apply attributes of species to the given species.
+     * this function is a part of the trait of Model.
+     * @param species an original Species
+     */
+    Species apply_species_attributes(const Species& sp) const
+    {
+        throw NotSupported(
+            "apply_species_attributes is not supported in this model class");
+    }
+
+    /**
+     * add a reaction rule to the model.
+     * this function is a part of the trait of Model.
      * @param rr a new ReactionRule
      * @return if the reaction rule is not registered yet.
      */
@@ -105,7 +116,7 @@ public:
 
     /**
      * remove a reaction rule in the model.
-     * this function is a part of the trait of NetworkModel.
+     * this function is a part of the trait of Model.
      * @param rr a new ReactionRule
      */
     virtual void remove_reaction_rule(const ReactionRule& rr)
@@ -116,7 +127,7 @@ public:
 
     /**
      * return if a reaction rule is in the model, or not.
-     * this function is a part of the trait of NetworkModel.
+     * this function is a part of the trait of Model.
      * @param rr a reaction rule
      * @return if the reaction rule exists, or not
      */

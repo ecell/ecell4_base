@@ -48,6 +48,21 @@ public:
     std::vector<ReactionRule> query_reaction_rules(
         const Species& sp1, const Species& sp2) const;
 
+    Species apply_species_attributes(const Species& sp) const
+    {
+        for (species_container_type::const_iterator
+            i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
+        {
+            if ((*i).match(sp))
+            {
+                Species retval(sp);
+                retval.set_attributes(*i);
+                return retval;
+            }
+        }
+        return sp;
+    }
+
     // NetworkModelTraits
 
     void add_species_attribute(const Species& sp);
@@ -64,21 +79,6 @@ public:
     {
         initialize();
         return species_cache_;
-    }
-
-    Species apply_species_attributes(const Species& sp) const
-    {
-        for (species_container_type::const_iterator
-            i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
-        {
-            if ((*i).match(sp))
-            {
-                Species retval(sp);
-                retval.set_attributes(*i);
-                return retval;
-            }
-        }
-        return sp;
     }
 
     Species get_species(const std::string& name) const
