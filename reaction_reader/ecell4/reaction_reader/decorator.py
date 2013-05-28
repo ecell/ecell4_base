@@ -214,7 +214,8 @@ def parse_decorator(callback_class, func):
         cache = callback_class()
         vardict = copy.copy(func.func_globals)
         for k in func.func_code.co_names:
-            if not k in vardict.keys():
+            if (not k in vardict.keys()
+                and not k in dir(vardict['__builtins__'])): # is this enough?
                 vardict[k] = parseobj.AnyCallable(cache, k)
         g = types.FunctionType(func.func_code, vardict)
         with warnings.catch_warnings():
