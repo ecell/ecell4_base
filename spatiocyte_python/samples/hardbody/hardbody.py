@@ -20,9 +20,9 @@ def run():
         sp.set_attribute("D", D)
 
     m = NetworkModel()
-    m.add_species(sp1)
-    m.add_species(sp2)
-    m.add_species(sp3)
+    m.add_species_attribute(sp1)
+    m.add_species_attribute(sp2)
+    m.add_species_attribute(sp3)
     m.add_reaction_rule(
         create_binding_reaction_rule(sp1, sp2, sp3, k1))
     m.add_reaction_rule(
@@ -32,7 +32,7 @@ def run():
     w.add_molecules(sp3, N)
 
     sim = SpatiocyteSimulator(m, w)
-    sim.initialize()
+    # sim.initialize()
 
     next_time, dt = 0.0, 0.02
 

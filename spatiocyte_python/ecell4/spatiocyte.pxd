@@ -24,10 +24,8 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Integer num_particles(Cpp_Species& sp)
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles(Cpp_Species& sp)
         Real volume()
-        # Integer num_species() # this will be deprecated
         bool has_species(Cpp_Species& sp)
         Integer num_molecules(Cpp_Species& sp)
-        # void add_species(Cpp_Species& sp) # this will be deprecated
         void add_molecules(Cpp_Species& sp, Integer num)
         Real dt()
         void save(string filename)
