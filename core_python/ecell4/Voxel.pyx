@@ -19,3 +19,10 @@ cdef class Voxel:
     property species:
         def __get__(self):
             return Species_from_Cpp_Species(address(self.thisptr.species))
+
+cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* v):
+    cdef Cpp_Voxel *new_obj = new Cpp_Voxel(<Cpp_Voxel> deref(v))
+    r = Voxel(ParticleID(0, 0), Species(""))
+    del r.thisptr
+    r.thisptr = new_obj
+    return r
