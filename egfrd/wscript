@@ -4,6 +4,7 @@
 from waflib.Tools import waf_unit_test, python
 from waflib.Task import Task
 from waflib import Logs
+from waflib import Utils
 import os
 import glob
 
@@ -18,7 +19,7 @@ subdirs = [
 
 hppfiles = [
     'EGFRDWorld.hpp',
-    'EGFRDSimulatorWrapper.hpp'
+    'EGFRDSimulatorWrapper.hpp',
     ]
 
 cppfiles = [
@@ -104,7 +105,7 @@ int main() { double a, b; sincos(0., &a, &b); return 0; }
     conf.check_cxx(lib = 'ecell4-core')
     conf.check_boost(lib = 'regex')
 
-    conf.write_config_header('config.h', guard='__ECELL4_W_CONFIG_H_WAF')
+    conf.write_config_header('epdp/config.h', guard='__ECELL4_W_CONFIG_H_WAF')
     conf.recurse(subdirs)
 
 def summary(bld):
@@ -134,6 +135,9 @@ def pre(bld):
             bld.path.find_resource('epdp/make_sjy_table.py').abspath(),
             sjy_table.abspath(),
             ]))
+        Utils.check_dir(bld.env['PREFIX'] + '/include/ecell4/egfrd/epdp')
+        bld.exec_command(' '.join([
+            'cp', sjy_table.abspath(), '${PREFIX}/include/ecell4/egfrd/epdp/.']))
     cjy_table = bld.path.find_or_declare('epdp/CylindricalBesselTable.hpp')
     if not os.path.exists(cjy_table.abspath()):
         bld.exec_command(' '.join([
@@ -141,17 +145,22 @@ def pre(bld):
             bld.path.find_resource('epdp/make_cjy_table.py').abspath(),
             cjy_table.abspath(),
             ]))
+        Utils.check_dir(bld.env['PREFIX'] + '/include/ecell4/egfrd/epdp')
+        bld.exec_command(' '.join([
+            'cp', cjy_table.abspath(), '${PREFIX}/include/ecell4/egfrd/epdp/.']))
 
 def build(bld):
     bld.add_pre_fun(pre)
 
     bld.install_files(
         '${PREFIX}/include/ecell4/egfrd', hppfiles)
+    bld.install_files(
+        '${PREFIX}/include/ecell4/egfrd/epdp', ['epdp/config.h'])
 
     bld.install_files(
         '${PREFIX}/include/ecell4/egfrd/epdp', glob.glob('epdp/*.hpp'))
     bld.install_files(
-        '${PREFIX}/include/ecell4/egfrd/epdp', glob.glob('epdp/*.h'))
+        '${PREFIX}/include/ecell4/egfrd/epdp', ['epdp/compat.h'])
     bld.install_files(
         '${PREFIX}/include/ecell4/egfrd/epdp/utils', glob.glob('epdp/utils/*.hpp'))
 

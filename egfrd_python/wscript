@@ -20,12 +20,14 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_cxx')
-    # conf.check(
-    #     header_name = 'ecell4/egfrd/EGFRDWorld.hpp', mandatory = True)
 
     conf.load('compiler_c')
     conf.load('python')
     conf.check_python_headers()
+
+    # clear out Python's default NDEBUG and make sure it is undef'd too just in case
+    if 'NDEBUG' in conf.env.DEFINES_PYEXT:
+        conf.env.DEFINES_PYEXT.remove('NDEBUG')
 
     conf.find_program('cython')
     try:
@@ -40,6 +42,6 @@ def build(bld):
         features = 'cxx cxxshlib pyext',
         source = 'ecell4/egfrd.pyx',
         target = 'egfrd',
-        # includes = ['.'],
         install_path = '${PYTHONDIR}/ecell4',
+        defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
         lib = ['ecell4-core', 'ecell4-egfrd'])

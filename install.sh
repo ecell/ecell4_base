@@ -8,7 +8,7 @@ SUBMODS=("bd" "gillespie" "ode" "egfrd" "spatiocyte")
 PYTHONMODS=("core_python" "gillespie_python" "spatiocyte_python" "reaction_reader")
 
 CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
-# WAFFLAGS="-v --disable-python"
+# WAFFLAGS="-v"
 
 install_core()
 {

@@ -12,7 +12,7 @@ from ecell4.core cimport *
 cdef extern from "ecell4/egfrd/EGFRDWorld.hpp" namespace "ecell4::egfrd":
     cdef cppclass Cpp_EGFRDWorld "ecell4::egfrd::EGFRDWorld":
         Cpp_EGFRDWorld(
-            Real& world_size, Integer matrix_size,
+            Real world_size, Integer matrix_size,
             shared_ptr[Cpp_GSLRandomNumberGenerator] rng) except +
         Cpp_ParticleID new_particle(Cpp_Particle& p)
         void set_t(Real t)
@@ -49,9 +49,9 @@ cdef class EGFRDWorld:
 #  ecell4::egfrd::EGFRDSimulator
 cdef extern from "ecell4/egfrd/EGFRDSimulatorWrapper.hpp" namespace "ecell4::egfrd":
     cdef cppclass Cpp_EGFRDSimulatorWrapper "ecell4::egfrd::EGFRDSimulatorWrapper":
-        Cpp_EGFRDSimulatorWrapper(
-            shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_EGFRDWorld],
-            Integer dissociation_retry_moves) except +
+        # Cpp_EGFRDSimulatorWrapper(
+        #     shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_EGFRDWorld],
+        #     Integer dissociation_retry_moves) except +
         Cpp_EGFRDSimulatorWrapper(
             shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_EGFRDWorld]) except +
         Integer num_steps()

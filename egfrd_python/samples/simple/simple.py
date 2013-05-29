@@ -1,23 +1,26 @@
 import csv
 import sys
+import time
 
 from ecell4.core import *
-from ecell4.spatiocyte import *
+from ecell4.egfrd import *
 
 
 def run():
-    voxel_radius = 1e-8
-    D = "1e-12"
-    N = 60
     L = 1e-6
     volume = L * L * L
+    N = 60
+
+    D, radius = "1e-12", "2.5e-9"
+
     k2, U = 0.1, 0.5
-    k1 = k2 * volume * (1 - U) * (U * U * N)
+    k1 = k2 * volume * (1 - U) / (U * U * N)
 
     sp1, sp2, sp3 = Species("A"), Species("B"), Species("C")
     species_list = [sp1, sp2, sp3]
     for sp in species_list:
         sp.set_attribute("D", D)
+        sp.set_attribute("radius", radius)
 
     m = NetworkModel()
     m.add_species(sp1)
@@ -28,11 +31,15 @@ def run():
     m.add_reaction_rule(
         create_unbinding_reaction_rule(sp3, sp1, sp2, k2))
 
-    w = SpatiocyteWorld(Position3(L, L, L), voxel_radius)
+    rng = GSLRandomNumberGenerator()
+    rng.seed(time.time())
+
+    matrix_size = 3
+    w = EGFRDWorld(L, matrix_size, rng)
     w.add_molecules(sp3, N)
 
-    sim = SpatiocyteSimulator(m, w)
-    sim.initialize()
+    sim = EGFRDSimulatorWrapper(m, w)
+    # sim.initialize()
 
     next_time, dt = 0.0, 0.02
 
@@ -41,7 +48,7 @@ def run():
     writer.writerow(
         ['%.6e' % sim.t()]
         + ['%d' % w.num_molecules(sp) for sp in species_list])
-    for i in xrange(1000):
+    for i in xrange(10000):
         next_time += dt
         while sim.step(next_time):
             pass

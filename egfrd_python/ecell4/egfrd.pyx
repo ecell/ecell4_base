@@ -38,16 +38,16 @@ cdef class EGFRDWorld:
         cdef Cpp_Position3 lengths = self.thisptr.get().edge_lengths()
         return Position3_from_Cpp_Position3(address(lengths))
 
-    def num_particles(self, Species sp):
+    def num_particles(self, Species sp = None):
         if sp is None:
             return self.thisptr.get().num_particles()
         else:
             return self.thisptr.get().num_particles(deref(sp.thisptr))
 
-    def list_particles(self, Species sp):
+    def list_particles(self, Species sp = None):
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
         if sp is None:
-            particles = self.thisptr.get().list_particles(deref(sp.thisptr))
+            particles = self.thisptr.get().list_particles()
         else:
             particles = self.thisptr.get().list_particles(deref(sp.thisptr))
 
@@ -80,7 +80,7 @@ cdef class EGFRDWorld:
 
     def list_particles_within_radius(
         self, Position3 pos, Real radius,
-        ParticleID ignore1, ParticleID ignore2):
+        ParticleID ignore1 = None, ParticleID ignore2 = None):
         cdef vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] particles
         if ignore1 is None and ignore2 is None:
             particles = self.thisptr.get().list_particles_within_radius(
@@ -143,13 +143,9 @@ cdef class EGFRDWorld:
 #  a python wrapper for Cpp_EGFRDSimulatorWrapper
 cdef class EGFRDSimulatorWrapper:
 
-    def __cinit__(self, NetworkModel m, EGFRDWorld w, Integer dissociation_retry_moves):
-        if dissociation_retry_moves is None:
-            self.thisptr = new Cpp_EGFRDSimulatorWrapper(
-                deref(m.thisptr), deref(w.thisptr))
-        else:
-            self.thisptr = new Cpp_EGFRDSimulatorWrapper(
-                deref(m.thisptr), deref(w.thisptr), dissociation_retry_moves)
+    def __cinit__(self, NetworkModel m, EGFRDWorld w):
+        self.thisptr = new Cpp_EGFRDSimulatorWrapper(
+            deref(m.thisptr), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -157,7 +153,7 @@ cdef class EGFRDSimulatorWrapper:
     def num_steps(self):
         return self.thisptr.num_steps()
 
-    def step(self, Real upto):
+    def step(self, upto = None):
         if upto is None:
             self.thisptr.step()
         else:
