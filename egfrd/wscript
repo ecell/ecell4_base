@@ -5,6 +5,7 @@ from waflib.Tools import waf_unit_test, python
 from waflib.Task import Task
 from waflib import Logs
 import os
+import glob
 
 
 top = '.'
@@ -146,6 +147,13 @@ def build(bld):
 
     bld.install_files(
         '${PREFIX}/include/ecell4/egfrd', hppfiles)
+
+    bld.install_files(
+        '${PREFIX}/include/ecell4/egfrd/epdp', glob.glob('epdp/*.hpp'))
+    bld.install_files(
+        '${PREFIX}/include/ecell4/egfrd/epdp', glob.glob('epdp/*.h'))
+    bld.install_files(
+        '${PREFIX}/include/ecell4/egfrd/epdp/utils', glob.glob('epdp/utils/*.hpp'))
 
     bld.shlib(
         source = cppfiles,
