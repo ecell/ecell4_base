@@ -169,7 +169,7 @@ def build(bld):
         includes = ['.', 'epdp'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
         lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'hdf5', 'hdf5_cpp'],
-        use = ['BOOST']
+        use = ['BOOST'],
         target = 'ecell4-egfrd')
 
     bld.recurse(subdirs)
