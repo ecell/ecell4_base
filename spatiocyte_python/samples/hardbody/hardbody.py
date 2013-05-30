@@ -12,7 +12,7 @@ def run():
     L = 1e-6
     volume = L * L * L
     k2, U = 0.1, 0.5
-    k1 = k2 * volume * (1 - U) * (U * U * N)
+    k1 = k2 * volume * (1 - U) / (U * U * N)
 
     sp1, sp2, sp3 = Species("A"), Species("B"), Species("C")
     species_list = [sp1, sp2, sp3]
