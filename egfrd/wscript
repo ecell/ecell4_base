@@ -102,8 +102,8 @@ int main() { double a, b; sincos(0., &a, &b); return 0; }
     # conf.check_cxx(lib = 'hdf5')
     # conf.check_cxx(lib = 'hdf5_cpp')
 
-    conf.check_cxx(lib = 'ecell4-core')
     conf.check_boost(lib = 'regex')
+    conf.check_cxx(lib = 'ecell4-core')
 
     conf.write_config_header('epdp/config.h', guard='__ECELL4_W_CONFIG_H_WAF')
     conf.recurse(subdirs)
@@ -168,7 +168,8 @@ def build(bld):
         source = cppfiles,
         includes = ['.', 'epdp'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
-        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'boost_regex', 'hdf5', 'hdf5_cpp'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'hdf5', 'hdf5_cpp'],
+        use = ['BOOST']
         target = 'ecell4-egfrd')
 
     bld.recurse(subdirs)

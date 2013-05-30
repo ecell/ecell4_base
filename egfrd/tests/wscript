@@ -45,6 +45,8 @@ int main() { double a, b; sincos(0., &a, &b); return 0; }
         define_name='HAVE_SINCOS',
         mandatory=False)
 
+    conf.check_boost(lib = 'regex')
+
 def build(bld):
     bld.program(
         features = 'cxx cxxprogram test',
@@ -52,5 +54,5 @@ def build(bld):
         target = 'EGFRDSimulatorWrapper_test',
         includes = ['..', '../epdp'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
-        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm', 'boost_regex'],
-        use = 'ecell4-egfrd')
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        use = ['ecell4-egfrd', 'BOOST'])
