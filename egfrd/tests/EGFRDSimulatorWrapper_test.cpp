@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(EGFRDSimulatorWrapper_test_step2)
         ecell4::Particle(sp1, Position3(0, 0, 0), info1.radius, info1.D));
     world->add_molecules(sp1, 10);
 
-	BOOST_ASSERT(static_cast<Integer>(world->list_particles().size())
+	BOOST_ASSERT(static_cast<ecell4::Integer>(world->list_particles().size())
                  == world->num_particles() );
 
     EGFRDSimulatorWrapper target(model, world);
