@@ -87,6 +87,7 @@ cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
         Integer num_species()
         bool has_species(Cpp_Species &sp)
         Integer num_molecules(Cpp_Species &sp)
+        vector[Cpp_Species] list_species()
         void set_volume(Real)
         void add_species(Cpp_Species &sp)
         void remove_species(Cpp_Species &sp)
@@ -104,8 +105,22 @@ cdef extern from "ecell4/core/ParticleSpace.hpp" namespace "ecell4":
     cdef cppclass Cpp_ParticleSpaceVectorImpl "ecell4::ParticleSpaceVectorImpl":
         Cpp_ParticleSpaceVectorImpl(Cpp_Position3&) except+
         Cpp_Position3 edge_lengths()
-        bool update_particle(Cpp_ParticleID, Cpp_Particle)
+        Integer num_particles()
+        Integer num_particles(Cpp_Species&)
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles(Cpp_Species &sp)
+        bool has_particle(Cpp_ParticleID &pid)
+
+        bool update_particle(Cpp_ParticleID, Cpp_Particle)
+        pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID &pid)
+        void remove_particle(Cpp_ParticleID &pid)
+        vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real] ] list_particles_within_radius(
+                Cpp_Position3 &pos, Real &radius)
+        vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real] ] list_particles_within_radius(
+                Cpp_Position3 &pos, Real &radius, Cpp_ParticleID &ignore)
+        vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real] ] list_particles_within_radius(
+                Cpp_Position3 &pos, Real &radius, Cpp_ParticleID &ignore1, Cpp_ParticleID &ignore2)
+
 
 ## ParticleSpaceVectorImpl
 #  a python wrapper for ParticleSpaceVectorImpl

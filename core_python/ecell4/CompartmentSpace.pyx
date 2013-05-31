@@ -21,6 +21,16 @@ cdef class CompartmentSpaceVectorImpl:
     def num_molecules(self, Species sp):
         return self.thisptr.num_molecules(deref(sp.thisptr))
 
+    def list_species(self):
+        cdef vector[Cpp_Species] raw_species_list = self.thisptr.list_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = raw_species_list.begin()
+        while it != raw_species_list.end():
+            retval.append(
+                    Species_from_Cpp_Species(<Cpp_Species*>address(deref(it))))
+            inc(it)
+        return retval
+
     def set_volume(self, Real volume):
         self.thisptr.set_volume(volume)
 
@@ -35,3 +45,4 @@ cdef class CompartmentSpaceVectorImpl:
 
     def remove_molecules(self, Species sp, Integer num):
         self.thisptr.remove_molecules(deref(sp.thisptr), num)
+
