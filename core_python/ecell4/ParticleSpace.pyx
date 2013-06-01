@@ -56,7 +56,7 @@ cdef class ParticleSpaceVectorImpl:
         if ignore1 == None and ignore2 == None:
             raw_list_particles_within_radius = self.thisptr.list_particles_within_radius(
                     deref(pos.thisptr), radius)
-        elif ignore1 == None:
+        elif ignore2 == None:
             raw_list_particles_within_radius = self.thisptr.list_particles_within_radius(
                     deref(pos.thisptr), radius, deref(ignore1.thisptr) )
         else:
