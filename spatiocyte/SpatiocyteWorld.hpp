@@ -168,7 +168,8 @@ public:
     {
         SpatiocyteStepper* stepper(spatiocyte_stepper());
         const unsigned short
-            sid(stepper->getVoxel(static_cast<unsigned int>(coord))->id);
+            sid(stepper->getID(stepper->getVoxel(
+                                   static_cast<unsigned int>(coord))));
 
         Species sp;
         if (sid == stepper->getNullID())
@@ -458,13 +459,17 @@ public:
                     {
                         coord = vacant_species->getCoord(
                             gsl_rng_uniform_int(stepper->getRng(), num_vacants));
-                    } while (stepper->getVoxel(coord)->id
-                             != vacant_species->getID());
+                    } while (!spatiocyte_species->isPopulatable(
+                                 stepper->getVoxel(coord)));
+                    // } while (stepper->getID(stepper->getVoxel(coord))
+                    //          != vacant_species->getID());
+
                     spatiocyte_species->addMolecule(stepper->getVoxel(coord));
                 }
                 spatiocyte_species->setIsPopulated();
             }
             spatiocyte_species->updateMolecules();
+            stepper->interruptAllProcesses(t());
         }
         else
         {
@@ -504,6 +509,11 @@ public:
     bool step(const Real& upto)
     {
         const Real t0(t()), tnext(t() + dt());
+
+        if (!is_initialized_)
+        {
+            initialize();
+        }
 
         if (upto <= t0)
         {
