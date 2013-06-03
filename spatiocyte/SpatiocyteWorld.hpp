@@ -469,7 +469,6 @@ public:
                 spatiocyte_species->setIsPopulated();
             }
             spatiocyte_species->updateMolecules();
-            stepper->interruptAllProcesses(t());
         }
         else
         {
@@ -502,6 +501,7 @@ public:
             initialize();
         }
 
+        spatiocyte_stepper()->interruptAllProcesses(t());
         (*model_).step();
         t_ = (*model_).getCurrentTime();
     }
@@ -519,6 +519,8 @@ public:
         {
             return false;
         }
+
+        spatiocyte_stepper()->interruptAllProcesses(t());
 
         if (upto >= tnext)
         {
