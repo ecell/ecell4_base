@@ -35,6 +35,7 @@ class ParseElem:
         self.kwargs = None
         self.key = None
         self.param = None
+        self.modification = None
         self.inv = False
 
     def toggle_invert(self):
@@ -50,6 +51,9 @@ class ParseElem:
     def set_parameter(self, rhs):
         self.param = rhs
 
+    def set_modification(self, rhs):
+        self.modification = rhs
+
     def __str__(self):
         label = self.name
 
@@ -61,6 +65,8 @@ class ParseElem:
                 attrs += ["%s=%s" % (k, v) for k, v in self.kwargs.items()]
             label += "(%s)" % (",".join(attrs))
 
+        if self.modification is not None:
+            label += "^%s" % str(self.modification)
         if self.key is not None:
             label += "[%s]" % str(self.key)
         if self.param is not None:
@@ -99,6 +105,11 @@ class ParseObj:
     @log_call
     def __getitem__(self, key):
         self.__elems[-1].set_key(key)
+        return self
+
+    @log_call
+    def __xor__(self, rhs):
+        self.__elems[-1].set_modification(rhs)
         return self
 
     @log_call

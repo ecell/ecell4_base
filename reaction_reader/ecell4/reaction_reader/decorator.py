@@ -20,7 +20,8 @@ def generate_Species(obj):
                 'complex is not allowed yet; "%s"' % str(obj))
         if (elems[0].args is not None
             or elems[0].kwargs is not None
-            or elems[0].key is not None):
+            or elems[0].key is not None
+            or elems[0].modification is not None):
             raise NotImplementedError, (
                 'modification is not allowed yet; "%s"' % str(obj))
         if elems[0].inv:
@@ -185,6 +186,25 @@ class ReactionRulesCallback(object):
         else:
             raise RuntimeError, 'operator "%s" not allowed' % optr
 
+class JustParseCallback(object):
+
+    def __init__(self):
+        self.comparisons = []
+        # self.bitwise_optrs = []
+
+    def get(self):
+        return copy.copy(self.comparisons)
+
+    def notify_unary_operations(self, optr, target):
+        pass
+
+    def notify_bitwise_operations(self, optr, lhs, rhs):
+        # self.bitwise_optrs.append((optr, lhs, rhs))
+        pass
+
+    def notify_comparisons(self, optr, lhs, rhs):
+        self.comparisons.append((optr, lhs, rhs))
+
 class Callback(object):
     """callback before the operations"""
 
@@ -227,6 +247,7 @@ def parse_decorator(callback_class, func):
 # reaction_rules = functools.partial(parse_decorator, Callback)
 reaction_rules = functools.partial(parse_decorator, ReactionRulesCallback)
 species_attributes = functools.partial(parse_decorator, SpeciesAttributesCallback)
+just_parse = functools.partial(parse_decorator, JustParseCallback)
 
 def species_attributes_with_keys(*args):
     def create_callback():
