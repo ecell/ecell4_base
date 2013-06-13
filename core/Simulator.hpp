@@ -11,6 +11,11 @@ class Simulator
 {
 public:
 
+    virtual ~Simulator()
+    {
+        ; // do nothing
+    }
+
     // SimulatorTraits
 
     /**

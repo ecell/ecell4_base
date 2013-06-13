@@ -30,11 +30,6 @@ public:
         this->initialize();
     }
 
-    ~GillespieSimulator(void)
-    {
-        ;
-    }
-
     // SimulatorTraits
 
     Real t(void) const;

@@ -24,6 +24,11 @@ public:
         ;
     }
 
+    virtual ~Space()
+    {
+        ; // do nothing
+    }
+
     // SpaceTraits
 
     const Real& t() const
