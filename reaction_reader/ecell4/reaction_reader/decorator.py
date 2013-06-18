@@ -9,6 +9,78 @@ import parseobj
 import ecell4.core
 
 
+
+class Subunit:
+    def __init__(self, name = None):
+        self.binding_dict = {}
+        self.name = name
+        self.modification_list = []
+    def add_modification(self, new_modification):
+       self.modification_list.append(new_modification)
+
+
+class Modification:
+    def __init__(self, subunit, name, attribute = None):
+        # 
+        self.subunit = subunit  # reference 
+        self.name = name
+        # 
+        self.binding = []   # references to ohter Modification object.
+        self.attribute = attribute 
+
+    def set_modification(self, substrates):
+        for s in substrates:
+            if s is not self:
+                self.binding.append(s)
+    def get_modification(self):
+        return self.binding
+
+def generate_Species2(obj):
+
+    if isinstance(obj, parseobj.AnyCallable):
+        obj = obj._as_ParseObj()
+
+    if isinstance(obj, parseobj.ParseObj):
+        # COMPLEX
+        elems = obj._get_elements()
+        sp = ecell4.core.Species(elems[0].name)
+        correct_binding_dict = {}
+
+        for e in elems:
+            s = Subunit(e)
+            for arg in e.args:
+                parse_elem_list = arg._get_elements()
+                for parse_elem in parse_elem_list:
+                    modification_info = Modification(s, parse_elem.name)
+                    s.add_modification(modification_info)
+                    if parse_elem.modification in correct_binding_dict:
+                        correct_binding_dict[ parse_elem.modification ].append(modification_info)
+                    else:
+                        correct_binding_dict[ parse_elem.modification ] = [ modification_info ]
+
+            for k, v in e.kwargs.iteritems():
+                parse_elem_list = v._get_elements()
+                for parse_elem in parse_elem_list:
+                    modification_info = Modification(s, parse_elem.name, k)
+                    s.add_modification(modification_info)
+                    if parse_elem.modification in correct_binding_dict:
+                        correct_binding_dict[ parse_elem.modification ].append(modification_info)
+                    else:
+                        correct_binding_dict[ parse_elem.modification ] = [ modification_info ]
+        for index, array in correct_binding_dict.iteritems():
+            for modification_iter in array:
+                modification_iter.set_modification(array)
+        return (sp, s)
+        
+    elif isinstance(obj, parseobj.ParseObjSet):
+        subobjs = obj._get_objects()
+        species_list = []
+        for s in subobjs:
+            species_list.append( generate_Species2(s) )
+        #import ipdb; ipdb.set_trace()
+        return species_list
+        
+
 def generate_Species(obj):
     if isinstance(obj, parseobj.AnyCallable):
         obj = obj._as_ParseObj()
@@ -186,6 +258,7 @@ class ReactionRulesCallback(object):
         else:
             raise RuntimeError, 'operator "%s" not allowed' % optr
 
+
 class JustParseCallback(object):
 
     def __init__(self):
@@ -202,8 +275,12 @@ class JustParseCallback(object):
         # self.bitwise_optrs.append((optr, lhs, rhs))
         pass
 
+    #def notify_comparisons(self, optr, lhs, rhs):
+    #    self.comparisons.append((optr, lhs, rhs))
+
     def notify_comparisons(self, optr, lhs, rhs):
         self.comparisons.append((optr, lhs, rhs))
+        lhs, rhs = generate_Species2(lhs), generate_Species2(rhs)
 
 class Callback(object):
     """callback before the operations"""
@@ -233,6 +310,7 @@ def parse_decorator(callback_class, func):
     def wrapped(*args, **kwargs):
         cache = callback_class()
         vardict = copy.copy(func.func_globals)
+        #print vardict.keys()
         for k in func.func_code.co_names:
             if (not k in vardict.keys()
                 and not k in dir(vardict['__builtins__'])): # is this enough?

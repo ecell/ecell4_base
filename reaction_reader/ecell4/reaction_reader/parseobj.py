@@ -24,7 +24,7 @@ All the members must start with '_'."""
         return self.__name
 
     def __repr__(self):
-        return "<%s.%s: %s>" % (
+        return "any<%s.%s: %s>" % (
             self.__class__.__module__, self.__class__.__name__, str(self))
 
 class ParseElem:
@@ -74,7 +74,7 @@ class ParseElem:
         return label
 
     def __repr__(self):
-        return "<%s.%s: %s>" % (
+        return "elm<%s.%s: %s>" % (
             self.__class__.__module__, self.__class__.__name__, str(self))
 
 class ParseObj:
@@ -109,6 +109,7 @@ class ParseObj:
 
     @log_call
     def __xor__(self, rhs):
+        #print "__xor__", self, rhs
         self.__elems[-1].set_modification(rhs)
         return self
 
@@ -168,7 +169,7 @@ class ParseObj:
         return ".".join(labels)
 
     def __repr__(self):
-        return "<%s.%s: %s>" % (
+        return "obj<%s.%s: %s>" % (
             self.__class__.__module__, self.__class__.__name__, str(self))
 
 class ParseObjSet:
@@ -245,5 +246,5 @@ class ParseObjSet:
         return "+".join(labels)
 
     def __repr__(self):
-        return "<%s.%s: %s>" % (
+        return "objset<%s.%s: %s>" % (
             self.__class__.__module__, self.__class__.__name__, str(self))
