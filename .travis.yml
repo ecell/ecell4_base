@@ -10,7 +10,7 @@ before_install:
  - sudo apt-get install -qq libtool python2.7-dev libboost1.53-all-dev libgsl0-dev libhdf5-serial-dev python-ply python-scipy python-support doxygen
  - git clone --depth=50 --branch=spatiocyte-compartment git://github.com/ecell/ecell3.git
  - sudo apt-get install -qq python-numpy python-gtk2 docbook-xml
- - (cd ecell3; ./autogen.sh && ./configure --with-boost-python-libname=boost_python-mt-py27 && make && sudo make install)
+ - (cd ecell3; autoreconf && ./autogen.sh && ./configure --with-boost-python-libname=boost_python-mt-py27 && make && sudo make install)
 
 notifications:
   webhooks:
