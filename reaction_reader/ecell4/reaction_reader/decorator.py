@@ -9,7 +9,8 @@ import parseobj
 import ecell4.core
 
 
-
+#============================================================
+# Species Meta Infomation CLASS XXX
 class Subunit:
     def __init__(self, name = None):
         self.binding_dict = {}
@@ -34,6 +35,7 @@ class Modification:
                 self.binding.append(s)
     def get_modification(self):
         return self.binding
+#============================================================
 
 def generate_Species2(obj):
 
@@ -43,11 +45,14 @@ def generate_Species2(obj):
     if isinstance(obj, parseobj.ParseObj):
         # COMPLEX
         elems = obj._get_elements()
+        #print elems
         sp = ecell4.core.Species(elems[0].name)
+        retval = (sp, [])
         correct_binding_dict = {}
 
         for e in elems:
             s = Subunit(e)
+            retval[1].append(s)
             for arg in e.args:
                 parse_elem_list = arg._get_elements()
                 for parse_elem in parse_elem_list:
@@ -70,13 +75,13 @@ def generate_Species2(obj):
         for index, array in correct_binding_dict.iteritems():
             for modification_iter in array:
                 modification_iter.set_modification(array)
-        return (sp, s)
+        return [retval]
         
     elif isinstance(obj, parseobj.ParseObjSet):
         subobjs = obj._get_objects()
         species_list = []
         for s in subobjs:
-            species_list.append( generate_Species2(s) )
+            species_list.extend( generate_Species2(s) )
         #import ipdb; ipdb.set_trace()
         return species_list
         
@@ -263,6 +268,7 @@ class JustParseCallback(object):
 
     def __init__(self):
         self.comparisons = []
+        self.kinetic_parameters = []
         # self.bitwise_optrs = []
 
     def get(self):
@@ -273,14 +279,48 @@ class JustParseCallback(object):
 
     def notify_bitwise_operations(self, optr, lhs, rhs):
         # self.bitwise_optrs.append((optr, lhs, rhs))
-        pass
+        if isinstance(rhs, types.TupleType):
+            self.kinetic_parameters = list(rhs)# kon, koff
+        else:
+            self.kinetic_parameters = [rhs]
 
     #def notify_comparisons(self, optr, lhs, rhs):
     #    self.comparisons.append((optr, lhs, rhs))
 
     def notify_comparisons(self, optr, lhs, rhs):
-        self.comparisons.append((optr, lhs, rhs))
+        if optr == "!=":
+            warnings.warn('"<>" is deprecated; use "==" instead',
+                          DeprecationWarning)
+
+        print lhs
         lhs, rhs = generate_Species2(lhs), generate_Species2(rhs)
+
+        for s in lhs:
+            print s
+            print '---'
+        print optr
+        for s in rhs:
+            print s
+        print self.kinetic_parameters
+        print "======================================="
+        l = []
+        r = []
+        for s in lhs:
+            l.append(s[0])
+        for s in rhs:
+            r.append(s[0])
+
+        if optr == "==" or optr == "!=":
+            if len(self.kinetic_parameters) != 2:
+                raise RuntimeError("The number of kinetic parameters is invalid.")
+            # reversible reaction
+            self.comparisons.append(generate_ReactionRule(l, r, self.kinetic_parameters[0]))
+            self.comparisons.append(generate_ReactionRule(r, l, self.kinetic_parameters[1]))
+        elif optr == ">":
+            # irreversible reaction
+            self.comparisons.append(generate_ReactionRule(l, r, self.kinetic_parameters[0]))
+        else:
+            raise RuntimeError, 'operator "%s" not allowed' % optr
 
 class Callback(object):
     """callback before the operations"""
