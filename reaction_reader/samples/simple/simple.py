@@ -1,4 +1,4 @@
-from ecell4.reaction_reader.decorator import species_attributes_with_keys, reaction_rules
+from ecell4.reaction_reader.decorator import species_attributes_with_keys, reaction_rules, just_parse
 
 
 @species_attributes_with_keys('N')
@@ -7,7 +7,8 @@ def species():
     KK | '30'
     PP | '30'
 
-@reaction_rules
+#@reaction_rules
+@just_parse
 def reactions(kon1, koff1, kcat1, kon2, koff2, kcat2):
     (K + KK == K_KK | (kon1, koff1)
         > Kp + KK | kcat1

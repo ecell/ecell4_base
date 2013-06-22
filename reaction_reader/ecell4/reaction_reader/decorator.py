@@ -39,6 +39,7 @@ class Modification:
 
 def generate_Species2(obj):
 
+#    import ipdb; ipdb.set_trace()
     if isinstance(obj, parseobj.AnyCallable):
         obj = obj._as_ParseObj()
 
@@ -53,25 +54,27 @@ def generate_Species2(obj):
         for e in elems:
             s = Subunit(e)
             retval[1].append(s)
-            for arg in e.args:
-                parse_elem_list = arg._get_elements()
-                for parse_elem in parse_elem_list:
-                    modification_info = Modification(s, parse_elem.name)
-                    s.add_modification(modification_info)
-                    if parse_elem.modification in correct_binding_dict:
-                        correct_binding_dict[ parse_elem.modification ].append(modification_info)
-                    else:
-                        correct_binding_dict[ parse_elem.modification ] = [ modification_info ]
+            if not isinstance(e.args, types.NoneType):
+                for arg in e.args:
+                    parse_elem_list = arg._get_elements()
+                    for parse_elem in parse_elem_list:
+                        modification_info = Modification(s, parse_elem.name)
+                        s.add_modification(modification_info)
+                        if parse_elem.modification in correct_binding_dict:
+                            correct_binding_dict[ parse_elem.modification ].append(modification_info)
+                        else:
+                            correct_binding_dict[ parse_elem.modification ] = [ modification_info ]
 
-            for k, v in e.kwargs.iteritems():
-                parse_elem_list = v._get_elements()
-                for parse_elem in parse_elem_list:
-                    modification_info = Modification(s, parse_elem.name, k)
-                    s.add_modification(modification_info)
-                    if parse_elem.modification in correct_binding_dict:
-                        correct_binding_dict[ parse_elem.modification ].append(modification_info)
-                    else:
-                        correct_binding_dict[ parse_elem.modification ] = [ modification_info ]
+            if not isinstance(e.args, types.NoneType):
+                for k, v in e.kwargs.iteritems():
+                    parse_elem_list = v._get_elements()
+                    for parse_elem in parse_elem_list:
+                        modification_info = Modification(s, parse_elem.name, k)
+                        s.add_modification(modification_info)
+                        if parse_elem.modification in correct_binding_dict:
+                            correct_binding_dict[ parse_elem.modification ].append(modification_info)
+                        else:
+                            correct_binding_dict[ parse_elem.modification ] = [ modification_info ]
         for index, array in correct_binding_dict.iteritems():
             for modification_iter in array:
                 modification_iter.set_modification(array)
@@ -82,7 +85,6 @@ def generate_Species2(obj):
         species_list = []
         for s in subobjs:
             species_list.extend( generate_Species2(s) )
-        #import ipdb; ipdb.set_trace()
         return species_list
         
 
