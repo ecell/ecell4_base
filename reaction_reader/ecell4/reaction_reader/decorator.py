@@ -35,25 +35,44 @@ class Modification:
                 self.binding.append(s)
     def get_modification(self):
         return self.binding
+
+class Meta_Species(ecell4.core.Species):
+    def __init__(self, name):
+        #self.core_species = ecell4.core.Species(name)
+        self.subunit_list = []
+        ecell4.core.Species.__init__(self, name)
+    def add_subunit(self, sub):
+        self.subunit_list.append(sub)
+    def get_subunit(self):
+        return self.subunit_list
+
+    # Accessor of core species
+    def get_core_species(self):
+        #return self.core_species
+        pass
+    def set_core_species(self, sp):
+        pass
+        '''
+        if sp is not None:
+            warnings.warn('core species will be assignment', 
+                    DeprecationWarning)
+        self.core_species = sp
+        '''
 #============================================================
 
 def generate_Species2(obj):
-
-#    import ipdb; ipdb.set_trace()
     if isinstance(obj, parseobj.AnyCallable):
         obj = obj._as_ParseObj()
 
     if isinstance(obj, parseobj.ParseObj):
         # COMPLEX
         elems = obj._get_elements()
-        #print elems
-        sp = ecell4.core.Species(elems[0].name)
-        retval = (sp, [])
+        msp = Meta_Species(elems[0].name)
         correct_binding_dict = {}
 
         for e in elems:
             s = Subunit(e)
-            retval[1].append(s)
+            msp.add_subunit(s)
             if not isinstance(e.args, types.NoneType):
                 for arg in e.args:
                     parse_elem_list = arg._get_elements()
@@ -78,7 +97,7 @@ def generate_Species2(obj):
         for index, array in correct_binding_dict.iteritems():
             for modification_iter in array:
                 modification_iter.set_modification(array)
-        return [retval]
+        return [msp]
         
     elif isinstance(obj, parseobj.ParseObjSet):
         subobjs = obj._get_objects()
@@ -111,6 +130,42 @@ def generate_Species(obj):
         subobjs = obj._get_objects()
         return tuple(generate_Species(subobj)[0] for subobj in subobjs)
     raise RuntimeError, 'invalid expression; "%s" given' % str(obj)
+
+
+def generate_ReactionRule2(lhs, rhs, k=0.0):
+    #arguments (: lhs rhs) are lists of Meta_Species objects.
+    if len(lhs) == 0:
+        if len(rhs) != 1:
+            raise RuntimeError, (
+                "the number of products must be 1; %d given" % len(rhs))
+        return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
+    elif len(lhs) == 1:
+        if len(rhs) == 0:
+            return ecell4.core.create_degradation_reaction_rule(lhs[0], k)
+        elif len(rhs) == 1:
+            return ecell4.core.create_unimolecular_reaction_rule(
+                lhs[0], rhs[0], k)
+        elif len(rhs) == 2:
+            return ecell4.core.create_unbinding_reaction_rule(
+                lhs[0], 
+                rhs[0], 
+                rhs[1], k)
+        else:
+            raise RuntimeError, (
+                "the number of products must be less than 3; %d given"
+                % len(rhs))
+    elif len(lhs) == 2:
+        if len(rhs) == 1:
+            return ecell4.core.create_binding_reaction_rule(
+                lhs[0], 
+                lhs[1], 
+                rhs[0], k)
+        else:
+            raise RuntimeError, (
+                "the number of products must be 1; %d given" % len(rhs))
+    raise RuntimeError, (
+        "the number of reactants must be less than 3; %d given" % len(lhs))
+
 
 def generate_ReactionRule(lhs, rhs, k=0.0):
     if len(lhs) == 0:
@@ -280,47 +335,30 @@ class JustParseCallback(object):
         pass
 
     def notify_bitwise_operations(self, optr, lhs, rhs):
-        # self.bitwise_optrs.append((optr, lhs, rhs))
         if isinstance(rhs, types.TupleType):
             self.kinetic_parameters = list(rhs)# kon, koff
         else:
             self.kinetic_parameters = [rhs]
-
-    #def notify_comparisons(self, optr, lhs, rhs):
-    #    self.comparisons.append((optr, lhs, rhs))
 
     def notify_comparisons(self, optr, lhs, rhs):
         if optr == "!=":
             warnings.warn('"<>" is deprecated; use "==" instead',
                           DeprecationWarning)
 
-        print lhs
+        # After exec following function(generate_Species2) , 
+        #   the left side variables (lhs and rhs)  will be the array of Meta_Species.
         lhs, rhs = generate_Species2(lhs), generate_Species2(rhs)
-
-        for s in lhs:
-            print s
-            print '---'
-        print optr
-        for s in rhs:
-            print s
-        print self.kinetic_parameters
-        print "======================================="
-        l = []
-        r = []
-        for s in lhs:
-            l.append(s[0])
-        for s in rhs:
-            r.append(s[0])
 
         if optr == "==" or optr == "!=":
             if len(self.kinetic_parameters) != 2:
                 raise RuntimeError("The number of kinetic parameters is invalid.")
             # reversible reaction
-            self.comparisons.append(generate_ReactionRule(l, r, self.kinetic_parameters[0]))
-            self.comparisons.append(generate_ReactionRule(r, l, self.kinetic_parameters[1]))
+            self.comparisons.append(generate_ReactionRule2(lhs, rhs, self.kinetic_parameters[0]))
+            self.comparisons.append(generate_ReactionRule2(rhs, lhs, self.kinetic_parameters[1]))
         elif optr == ">":
             # irreversible reaction
-            self.comparisons.append(generate_ReactionRule(l, r, self.kinetic_parameters[0]))
+            self.comparisons.append(generate_ReactionRule2(lhs, rhs, self.kinetic_parameters[0]))
+            pass
         else:
             raise RuntimeError, 'operator "%s" not allowed' % optr
 
