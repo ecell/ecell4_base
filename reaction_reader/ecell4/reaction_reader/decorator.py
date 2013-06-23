@@ -13,51 +13,49 @@ import ecell4.core
 # Species Meta Infomation CLASS XXX
 class Subunit:
     def __init__(self, name = None):
-        self.binding_dict = {}
         self.name = name
         self.modification_list = []
+        self.species = None
     def add_modification(self, new_modification):
-       self.modification_list.append(new_modification)
+        self.modification_list.append(new_modification)
+    def get_modification(self):
+        return self.modification_list
 
+    # XXX Following 2 functions( (set|get)_species ) may not be necessary.
+    #   Because it makes cross refenrence between Subunit and Meta_Species, 
+    #       the structure of class dependency will be complicated.
+    def set_species(self, sp):
+        self.species = sp
+    def get_species(self):
+        return self.species
+
+    def name(self):
+        pass
 
 class Modification:
     def __init__(self, subunit, name, attribute = None):
-        # 
         self.subunit = subunit  # reference 
         self.name = name
-        # 
-        self.binding = []   # references to ohter Modification object.
+        self.binding = []   # references to binding partner's Modification object.
         self.attribute = attribute 
 
-    def set_modification(self, substrates):
-        for s in substrates:
-            if s is not self:
-                self.binding.append(s)
-    def get_modification(self):
+    def set_binding(self, substrates):
+        self.binding = [s for s in substrates if s is not self]
+    def get_binding(self):
         return self.binding
+    def name(self):
+        return self.name
 
 class Meta_Species(ecell4.core.Species):
     def __init__(self, name):
-        #self.core_species = ecell4.core.Species(name)
         self.subunit_list = []
         ecell4.core.Species.__init__(self, name)
     def add_subunit(self, sub):
         self.subunit_list.append(sub)
+        sub.set_species(self)
     def get_subunit(self):
         return self.subunit_list
 
-    # Accessor of core species
-    def get_core_species(self):
-        #return self.core_species
-        pass
-    def set_core_species(self, sp):
-        pass
-        '''
-        if sp is not None:
-            warnings.warn('core species will be assignment', 
-                    DeprecationWarning)
-        self.core_species = sp
-        '''
 #============================================================
 
 def generate_Species2(obj):
@@ -96,7 +94,7 @@ def generate_Species2(obj):
                             correct_binding_dict[ parse_elem.modification ] = [ modification_info ]
         for index, array in correct_binding_dict.iteritems():
             for modification_iter in array:
-                modification_iter.set_modification(array)
+                modification_iter.set_binding(array)
         return [msp]
         
     elif isinstance(obj, parseobj.ParseObjSet):
@@ -345,7 +343,7 @@ class JustParseCallback(object):
             warnings.warn('"<>" is deprecated; use "==" instead',
                           DeprecationWarning)
 
-        # After exec following function(generate_Species2) , 
+        # After calling next sentence(2 times of generate_Species2) , 
         #   the left side variables (lhs and rhs)  will be the array of Meta_Species.
         lhs, rhs = generate_Species2(lhs), generate_Species2(rhs)
 
