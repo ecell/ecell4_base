@@ -28,7 +28,12 @@ class Subunit:
         self.species = sp
     def get_species(self):
         return self.species
-
+    def enum_binding_subunit(self):
+        ret = []
+        for mod in self.modification_list:
+            for binding in mod.get_binding():
+                ret.append(binding.subunit)
+        return ret
     def name(self):
         pass
 
@@ -43,6 +48,8 @@ class Modification:
         self.binding = [s for s in substrates if s is not self]
     def get_binding(self):
         return self.binding
+    def get_subunit(self):
+        return self.subunit
     def name(self):
         return self.name
 
@@ -55,6 +62,16 @@ class Meta_Species(ecell4.core.Species):
         sub.set_species(self)
     def get_subunit(self):
         return self.subunit_list
+
+    def dot_output(self):
+        acc = []
+        print "digraph %s {" % self.name()
+        print "\tgraph [label = \"%s\", labelloc = t];" % self.name()
+        for sub in self.subunit_list:
+            for s in sub.enum_binding_subunit():
+                print "\t\"%s\" -> \"%s\";" % (sub.name, s.name)
+        print "}"
+
 
 #============================================================
 
@@ -95,6 +112,7 @@ def generate_Species2(obj):
         for index, array in correct_binding_dict.iteritems():
             for modification_iter in array:
                 modification_iter.set_binding(array)
+        msp.dot_output()
         return [msp]
         
     elif isinstance(obj, parseobj.ParseObjSet):
