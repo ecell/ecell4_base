@@ -82,7 +82,7 @@ def generate_Species2(obj):
     if isinstance(obj, parseobj.ParseObj):
         # COMPLEX
         elems = obj._get_elements()
-        msp = Meta_Species(elems[0].name)
+        msp = Meta_Species( str(obj) )
         correct_binding_dict = {}
 
         for e in elems:
