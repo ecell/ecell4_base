@@ -10,6 +10,7 @@ All the members must start with '_'."""
     def __init__(self, root, name):
         self.__root = root # a reference to cache
         self.__name = name
+        self._reduce = None
 
     def _as_ParseObj(self):
         return ParseObj(self.__root, self.__name)
@@ -37,6 +38,8 @@ class ParseElem:
         self.param = None
         self.modification = None
         self.inv = False
+
+        self._reduce = None
 
     def toggle_invert(self):
         self.inv = not self.inv
@@ -83,6 +86,7 @@ class ParseObj:
     def __init__(self, root, name, elems=[]):
         self.__root = root # a reference to cache
         self.__elems = elems + [ParseElem(name)]
+        self._reduce = None
 
     def _get_elements(self):
         return copy.copy(self.__elems)
@@ -94,13 +98,8 @@ class ParseObj:
 
     @log_call
     def __add__(self, rhs):
-        if isinstance(rhs, AnyCallable):
-            return ParseObjSet(self.__root, (self, rhs._as_ParseObj()))
-        elif isinstance(rhs, ParseObj):
-            return ParseObjSet(self.__root, (self, rhs))
-        elif isinstance(rhs, ParseObjSet):
-            return ParseObjSet(self.__root, rhs._get_objects() + [self])
-        raise RuntimeError, "never get here"
+        self._reduce = self.__root.notify_plus_operations("+", self, rhs)
+        return self
 
     @log_call
     def __getitem__(self, key):
@@ -180,6 +179,7 @@ class ParseObjSet:
             raise RuntimeError
         self.__root = root
         self.__objs = list(objs)
+        self._reduce == None
 
     def _get_objects(self):
         return copy.copy(self.__objs)
@@ -201,6 +201,9 @@ class ParseObjSet:
 
     @log_call
     def __add__(self, rhs):
+        print "ParseObjSet::__add__", self, rhs
+        self._reduce = self.__root.notify_plus_operations("+", self, rhs)
+        '''
         if isinstance(rhs, AnyCallable):
             self.__objs.append(rhs._as_ParseObj())
             return self
@@ -211,6 +214,7 @@ class ParseObjSet:
             self.__objs.extend(rhs._get_objects())
             return self
         raise RuntimeError, "never get here"
+        '''
 
     @log_call
     def __or__(self, rhs):

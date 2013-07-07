@@ -112,7 +112,6 @@ def generate_Species2(obj):
         for index, array in correct_binding_dict.iteritems():
             for modification_iter in array:
                 modification_iter.set_binding(array)
-        msp.dot_output()
         return [msp]
         
     elif isinstance(obj, parseobj.ParseObjSet):
@@ -351,29 +350,61 @@ class JustParseCallback(object):
         pass
 
     def notify_bitwise_operations(self, optr, lhs, rhs):
+        if lhs._reduce == None:
+            lhs._reduce = generate_Species2(lhs)
+        '''
+        if (isinstance(rhs, parseobj.AnyCallable) or 
+                isinstance(rhs, parseobj.ParseObj) or 
+                isinstance(rhs, parseobj.ParseObjSet) ): 
+            rhs._reduce = generate_Species2(rhs)
+        '''
         if isinstance(rhs, types.TupleType):
             self.kinetic_parameters = list(rhs)# kon, koff
         else:
             self.kinetic_parameters = [rhs]
+        
+
+    def notify_plus_operations(self, optr, lhs, rhs):
+        if lhs._reduce == None:
+            lhs._reduce = generate_Species2(lhs)
+        if rhs._reduce == None:
+            rhs._reduce = generate_Species2(rhs)
+        if optr == "+":
+            sp = rhs._reduce + lhs._reduce
+            return sp
+        else:
+            raise RuntimeError
 
     def notify_comparisons(self, optr, lhs, rhs):
         if optr == "!=":
             warnings.warn('"<>" is deprecated; use "==" instead',
                           DeprecationWarning)
-
-        # After calling next sentence(2 times of generate_Species2) , 
-        #   the left side variables (lhs and rhs)  will be the array of Meta_Species.
-        lhs, rhs = generate_Species2(lhs), generate_Species2(rhs)
+        if lhs._reduce == None:
+            lhs._reduce = generate_Species2(lhs)
+        if rhs._reduce == None:
+            rhs._reduce = generate_Species2(rhs)
 
         if optr == "==" or optr == "!=":
             if len(self.kinetic_parameters) != 2:
                 raise RuntimeError("The number of kinetic parameters is invalid.")
             # reversible reaction
-            self.comparisons.append(generate_ReactionRule2(lhs, rhs, self.kinetic_parameters[0]))
-            self.comparisons.append(generate_ReactionRule2(rhs, lhs, self.kinetic_parameters[1]))
+            self.comparisons.append(
+                    generate_ReactionRule2(
+                        lhs._reduce, 
+                        rhs._reduce, 
+                        self.kinetic_parameters[0]))
+            self.comparisons.append(
+                    generate_ReactionRule2(
+                        rhs._reduce, 
+                        lhs._reduce, 
+                        self.kinetic_parameters[1]))
         elif optr == ">":
             # irreversible reaction
-            self.comparisons.append(generate_ReactionRule2(lhs, rhs, self.kinetic_parameters[0]))
+            self.comparisons.append(
+                    generate_ReactionRule2(
+                        lhs._reduce, 
+                        rhs._reduce, 
+                        self.kinetic_parameters[0]))
             pass
         else:
             raise RuntimeError, 'operator "%s" not allowed' % optr
