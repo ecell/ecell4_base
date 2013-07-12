@@ -34,7 +34,6 @@ class ParseElem:
         self.args = None
         self.kwargs = None
         self.key = None
-        self.param = None
         self.modification = None
 
     def set_arguments(self, *args, **kwargs):
@@ -43,9 +42,6 @@ class ParseElem:
 
     def set_key(self, key):
         self.key = key
-
-    def set_parameter(self, rhs):
-        self.param = rhs
 
     def set_modification(self, rhs):
         self.modification = rhs
@@ -65,8 +61,6 @@ class ParseElem:
             label += "^%s" % str(self.modification)
         if self.key is not None:
             label += "[%s]" % str(self.key)
-        if self.param is not None:
-            label += "|%s" % str(self.param)
         return label
 
     def __repr__(self):
