@@ -71,8 +71,8 @@ class SpatiocyteLogReader:
         '''
         self.readHeader()
         self.readLatticeSpecies()
-        self.readPolymerSpecies()
-        self.readOffLatticeSpecies()
+        #self.readPolymerSpecies()
+        #self.readOffLatticeSpecies()
 
 
     def readHeader(self):
@@ -118,6 +118,7 @@ class SpatiocyteLogReader:
             aString = struct.unpack(str(aStringSize) + 's',
                     self.logfile.read(aStringSize))[0]
             aRadius = struct.unpack('d', self.logfile.read(8))[0]
+            print (aString, aRadius)
             species.append((aString, aRadius))
 
         self.header['latticeSpecies'] = species
