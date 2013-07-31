@@ -12,10 +12,10 @@ class BdmlExporter(Exporter):
             hoge = particle_spatiocyte_loader.load_particles_from_spatiocyte(self.model, index=i)
 
             measurementList = ET.SubElement(component, 'measurementList')
-            measurement = ET.SubElement(measurementList, 'measurement')
-            targetref = ET.SubElement(measurement, 'targetRef')
 
             for s in hoge.species:
+                measurement = ET.SubElement(measurementList, 'measurement')
+                targetref = ET.SubElement(measurement, 'targetRef')
                 targetref.text = s
                 for particle in hoge.list_particles(sid=s):
                     point = ET.SubElement(targetref, 'point')
