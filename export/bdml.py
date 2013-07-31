@@ -18,12 +18,9 @@ class BdmlExporter(Exporter):
             for s in hoge.species:
                 targetref.text = s
                 for particle in hoge.list_particles(sid=s):
-                    #import pdb; pdb.set_trace()                    
                     point = ET.SubElement(targetref, 'point')
                     point.text = ','.join(map(str, particle[1].position))
 
-        #component.write(self.model.replace(".dat", ".bdml"))
-        #import pdb; pdb.set_trace()
         f = open(self.model.replace(".dat", ".bdml"), 'w')
         f.write(ET.tostring(component))
         f.close()
