@@ -1,13 +1,69 @@
-from ecell4.reaction_reader.decorator import just_parse, reaction_rules
+import itertools
+import ecell4.reaction_reader.species as species
 
-@just_parse
-def reactions(kp1, km1, kp2, km2, kp3, km3):
+from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
+from ecell4.reaction_reader.species import FirstOrderReactionRule, SecondOrderReactionRule
+
+
+def generate_recurse(seeds1, rules, seeds2=[]):
+    seeds = list(itertools.chain(seeds1, seeds2))
+    retval = []
+    for sp1 in seeds1:
+        for rr in rules:
+            if isinstance(rr, FirstOrderReactionRule):
+                try:
+                    pttrns = rr.match(sp1)
+                except Exception, e:
+                    print rr, sp1
+                    raise e
+                if pttrns is not None and len(pttrns) > 0:
+                    for newsp in itertools.chain(*pttrns):
+                        if newsp not in seeds and newsp not in retval:
+                            retval.append(newsp)
+        for sp2 in seeds:
+            for rr in rules:
+                if isinstance(rr, SecondOrderReactionRule):
+                    try:
+                        pttrns = rr.match(sp1, sp2)
+                    except Exception, e:
+                        print rr, sp1, sp2
+                        raise e
+                    if pttrns is not None and len(pttrns) > 0:
+                        for newsp in itertools.chain(*pttrns):
+                            if newsp not in seeds and newsp not in retval:
+                                retval.append(newsp)
+        for sp2 in seeds2:
+            for rr in rules:
+                if isinstance(rr, SecondOrderReactionRule):
+                    try:
+                        pttrns = rr.match(sp2, sp1)
+                    except Exception, e:
+                        print rr, sp1, sp2
+                        raise e
+                    if pttrns is not None and len(pttrns) > 0:
+                        for newsp in itertools.chain(*pttrns):
+                            if newsp not in seeds and newsp not in retval:
+                                retval.append(newsp)
+    return (retval, seeds)
+
+@species_attributes
+def attributegen():
+    egf(r) | egf_tot
+    Grb2(SH2, SH3) | Grb2_tot
+    Shc(PTB, Y317=Y) | Shc_tot
+    Sos(dom) | Sos_tot
+    egfr(l, r, Y1068=Y, Y1148=Y) | egfr_tot
+    Grb2(SH2, SH3^1).Sos(dom^1) | Grb2_Sos_tot
+
+@reaction_rules
+def rulegen():
     # Ligand-receptor binding (ligand-monomer)
-    egfr(l,r) + egf(r) == egfr(l^1,r).egf(r^1) | (kp1, km1)
+    egfr(l, r) + egf(r) == egfr(l^1, r).egf(r^1) | (kp1, km1)
 
     # Note changed multiplicity
     # Receptor-aggregation
-    egfr(l^_1, r) + egfr(l^_2, r) == egfr(l^_1,r^3).egfr(l^_2,r^3) | (kp2, km2)
+    egfr(l^_, r) + egfr(l^_, r) == egfr(l^_,r^3).egfr(l^_,r^3) | (kp2, km2)
+    # egfr(l^_1, r) + egfr(l^_2, r) == egfr(l^_1,r^3).egfr(l^_2,r^3) | (kp2, km2) #XXX: this should work, but not now
 
     # Transphosphorylation of egfr by RTK
     egfr(r^_, Y1068=Y) > egfr(r^_, Y1068=pY) | kp3
@@ -34,18 +90,34 @@ def reactions(kp1, km1, kp2, km2, kp3, km3):
 
     egfr(Y1148=pY^1).Shc(PTB^1,Y317=pY) + Grb2(SH2,SH3) == egfr(Y1148=pY^1).Shc(PTB^1,Y317=pY^2).Grb2(SH2^2,SH3) | (kp17, km17)
 
-    egfr(Y1148=pY^1).Shc(PTB^1,Y317^pY) + Grb2(SH2,SH3^3).Sos(dom^3) == egfr(Y1148=pY^1).Shc(PTB^1,Y317=pY^2).Grb2(SH2^2,SH3^3).Sos(dom^3) | (kp24, km24)
+    # egfr(Y1148=pY^1).Shc(PTB^1,Y317^pY) + Grb2(SH2,SH3^3).Sos(dom^3) == egfr(Y1148=pY^1).Shc(PTB^1,Y317=pY^2).Grb2(SH2^2,SH3^3).Sos(dom^3) | (kp24, km24)
+    egfr(Y1148=pY^1).Shc(PTB^1,Y317=pY) + Grb2(SH2,SH3^3).Sos(dom^3) == egfr(Y1148=pY^1).Shc(PTB^1,Y317=pY^2).Grb2(SH2^2,SH3^3).Sos(dom^3) | (kp24, km24)
 
     Shc(PTB^_,Y317=pY^2).Grb2(SH2^2,SH3) + Sos(dom) == Shc(PTB^_,Y317=pY^2).Grb2(SH2^2,SH3^3).Sos(dom^3) | (kp19, km19)
 
-    # Cytosolic 
+    # Cytosolic
     Shc(PTB,Y317=pY) + Grb2(SH2,SH3) == Shc(PTB,Y317=pY^1).Grb2(SH2^1,SH3) | (kp21, km21)
     Shc(PTB,Y317=pY) + Grb2(SH2,SH3^_) == Shc(PTB,Y317=pY^1).Grb2(SH2^1,SH3^_) | (kp23, km23)
     Shc(PTB,Y317=pY) > Shc(PTB,Y317=Y) | km16
     Grb2(SH2,SH3) + Sos(dom) == Grb2(SH2,SH3^1).Sos(dom^1) | (kp12, km12)
     Shc(PTB,Y317=pY^2).Grb2(SH2^2,SH3) + Sos(dom) == Shc(PTB,Y317=pY^2).Grb2(SH2^2,SH3^3).Sos(dom^3) | (kp22, km22)
 
+
 if __name__ == "__main__":
-    rules = reactions(1.667e-6, .06, 5.556e-6, .1, .5, 4.505)
+    newseeds = []
+    for i, (sp, attr) in enumerate(attributegen()):
+        print i, sp, attr
+        newseeds.append(sp)
+    print ''
+
+    rules = rulegen()
     for i, rr in enumerate(rules):
-        print i + 1, rr
+        print i, rr
+    print ''
+
+    seeds, cnt = [], 0
+    while len(newseeds) != 0 and cnt < 10:
+        print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
+        newseeds, seeds = generate_recurse(newseeds, rules, seeds)
+        cnt += 1
+    print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds

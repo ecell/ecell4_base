@@ -8,6 +8,8 @@ top = '.'
 out = 'build'
 
 pyfiles = [
+    'ecell4/reaction_reader/species.py',
+    'ecell4/reaction_reader/decorator2.py',
     'ecell4/reaction_reader/decorator.py',
     'ecell4/reaction_reader/__init__.py',
     'ecell4/reaction_reader/logger.py',
