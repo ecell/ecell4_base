@@ -3,12 +3,3 @@ class Exporter(object):
         if modeltype == "vislog":
             self.model = model
 
-
-
-
-
-
-
-
-
-
