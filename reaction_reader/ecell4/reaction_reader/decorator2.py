@@ -15,24 +15,40 @@ def generate_Species(obj):
             su = species.Subunit(elem.name)
             if elem.args is not None:
                 for mod in elem.args:
-                    modelem = mod._elements()
-                    if len(modelem) != 1:
-                        raise RuntimeError
-                    modelem = modelem[0]
-                    if modelem.modification is None:
-                        su.add_modification(modelem.name, "", "")
+                    if (not (isinstance(mod, parseobj.ParseObj)
+                            or isinstance(mod, parseobj.AnyCallable))
+                        or mod._size() != 1):
+                        raise RuntimeError, (
+                            "invalid argument [%s] found." % (mod))
+                    arg = mod._elements()[0]
+                    name, binding = arg.name, arg.modification
+                    if binding is None:
+                        su.add_modification(name, "", "")
                     else:
-                        su.add_modification(modelem.name, "", modelem.modification)
+                        binding = str(binding)
+                        if not (binding.isdigit() or binding == ""
+                            or binding[0] == "_"):
+                            raise RuntimeError, (
+                                "invalid binding [%s] given." % (binding))
+                        su.add_modification(name, "", binding)
             if elem.kwargs is not None:
-                for mod, state in elem.kwargs.items():
-                    stateelem = state._elements()
-                    if len(stateelem) != 1:
-                        raise RuntimeError
-                    stateelem = stateelem[0]
-                    if stateelem.modification is None:
-                        su.add_modification(mod, stateelem.name, "")
+                for name, value in elem.kwargs.items():
+                    if (not (isinstance(value, parseobj.ParseObj)
+                            or isinstance(value, parseobj.AnyCallable))
+                        or value._size() != 1):
+                        raise RuntimeError, (
+                            "invalid argument [%s] found." % (mod))
+                    arg = value._elements()[0]
+                    state, binding = str(arg.name), arg.modification
+                    if binding is None:
+                        su.add_modification(name, state, "")
                     else:
-                        su.add_modification(mod, stateelem.name, stateelem.modification)
+                        binding = str(binding)
+                        if not (binding.isdigit() or binding == ""
+                            or binding[0] == "_"):
+                            raise RuntimeError, (
+                                "invalid binding [%s] given." % (binding))
+                        su.add_modification(name, state, binding)
             sp.add_subunit(su)
         return (sp, )
     elif isinstance(obj, parseobj.InvExp):

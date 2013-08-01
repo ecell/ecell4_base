@@ -610,7 +610,7 @@ class Contexts(object):
         return retval
 
     def filter2(self, predicator, key1, key2):
-        """key1 always indicates a subunit, and key2 doesn't."""
+        """key1 always indicates a subunit, but key2 doesn't."""
         if not self.has_key(key1):
             raise RuntimeError, "invalid key [%s] found." % (key1)
         if not self.has_key(key2):
@@ -623,7 +623,7 @@ class Contexts(object):
         return retval
 
     def update(self, modifier, key1, key2):
-        """key1 always indicates a subunit, and key2 doesn't."""
+        """key1 always indicates a subunit, but key2 doesn't."""
         if not self.has_key(key1):
             raise RuntimeError, "invalid key [%s] found." % (key1)
         if self.has_key(key2):

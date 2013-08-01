@@ -122,6 +122,9 @@ class ParseObj(ExpBase):
     def _elements(self):
         return copy.copy(self.__elems)
 
+    def _size(self):
+        return len(self.__elems)
+
     @log_call
     def __call__(self, *args, **kwargs):
         self.__elems[-1].set_arguments(*args, **kwargs)
