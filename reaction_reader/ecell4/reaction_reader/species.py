@@ -166,21 +166,6 @@ def reconnect(L, K, adjacencies):
 def concatenate_species(sp1, sp2):
     retval = copy.deepcopy(sp1)
     num_bindings = retval.num_bindings()
-    # cache_binding = {}
-    # for su in sp2.subunits:
-    #     newsu = Subunit(su.name)
-    #     for mod, (state, binding) in su.modifications.items():
-    #         newbinding = binding
-    #         print mod, (state, binding), num_bindings, cache_binding
-    #         if binding != "" and int(binding) <= num_bindings:
-    #             if binding in cache_binding.keys():
-    #                 newbinding = cache_binding[binding]
-    #             else:
-    #                 num_bindings += 1
-    #                 newbinding = num_bindings
-    #                 cache_binding[binding] = newbinding
-    #         newsu.add_modification(mod, state, newbinding)
-    #     retval.add_subunit(newsu)
     for su in sp2.subunits:
         newsu = Subunit(su.name)
         for mod, (state, binding) in su.modifications.items():
@@ -652,6 +637,56 @@ class Contexts(object):
                 newcontext[key2] = value
                 retval._append(newcontext)
         return retval
+
+def generate_recurse(seeds1, rules, seeds2=[]):
+    seeds = list(itertools.chain(seeds1, seeds2))
+    retval = []
+    for sp1 in seeds1:
+        for rr in rules:
+            if isinstance(rr, FirstOrderReactionRule):
+                try:
+                    pttrns = rr.match(sp1)
+                except Exception, e:
+                    print rr, sp1
+                    raise e
+                if pttrns is not None and len(pttrns) > 0:
+                    for newsp in itertools.chain(*pttrns):
+                        if newsp not in seeds and newsp not in retval:
+                            retval.append(newsp)
+        for sp2 in seeds:
+            for rr in rules:
+                if isinstance(rr, SecondOrderReactionRule):
+                    try:
+                        pttrns = rr.match(sp1, sp2)
+                    except Exception, e:
+                        print rr, sp1, sp2
+                        raise e
+                    if pttrns is not None and len(pttrns) > 0:
+                        for newsp in itertools.chain(*pttrns):
+                            if newsp not in seeds and newsp not in retval:
+                                retval.append(newsp)
+        for sp2 in seeds2:
+            for rr in rules:
+                if isinstance(rr, SecondOrderReactionRule):
+                    try:
+                        pttrns = rr.match(sp2, sp1)
+                    except Exception, e:
+                        print rr, sp1, sp2
+                        raise e
+                    if pttrns is not None and len(pttrns) > 0:
+                        for newsp in itertools.chain(*pttrns):
+                            if newsp not in seeds and newsp not in retval:
+                                retval.append(newsp)
+    return (retval, seeds)
+
+def generate_reactions(newseeds, rules, max_iter=10):
+    seeds, cnt = [], 0
+    while len(newseeds) != 0 and cnt < max_iter:
+        print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
+        newseeds, seeds = generate_recurse(newseeds, rules, seeds)
+        cnt += 1
+    print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
+    return seeds + newseeds
 
 
 if __name__ == "__main__":

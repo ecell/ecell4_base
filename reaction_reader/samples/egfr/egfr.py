@@ -1,50 +1,6 @@
-import itertools
-import ecell4.reaction_reader.species as species
-
 from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
-from ecell4.reaction_reader.species import FirstOrderReactionRule, SecondOrderReactionRule
+from ecell4.reaction_reader.species import generate_reactions
 
-
-def generate_recurse(seeds1, rules, seeds2=[]):
-    seeds = list(itertools.chain(seeds1, seeds2))
-    retval = []
-    for sp1 in seeds1:
-        for rr in rules:
-            if isinstance(rr, FirstOrderReactionRule):
-                try:
-                    pttrns = rr.match(sp1)
-                except Exception, e:
-                    print rr, sp1
-                    raise e
-                if pttrns is not None and len(pttrns) > 0:
-                    for newsp in itertools.chain(*pttrns):
-                        if newsp not in seeds and newsp not in retval:
-                            retval.append(newsp)
-        for sp2 in seeds:
-            for rr in rules:
-                if isinstance(rr, SecondOrderReactionRule):
-                    try:
-                        pttrns = rr.match(sp1, sp2)
-                    except Exception, e:
-                        print rr, sp1, sp2
-                        raise e
-                    if pttrns is not None and len(pttrns) > 0:
-                        for newsp in itertools.chain(*pttrns):
-                            if newsp not in seeds and newsp not in retval:
-                                retval.append(newsp)
-        for sp2 in seeds2:
-            for rr in rules:
-                if isinstance(rr, SecondOrderReactionRule):
-                    try:
-                        pttrns = rr.match(sp2, sp1)
-                    except Exception, e:
-                        print rr, sp1, sp2
-                        raise e
-                    if pttrns is not None and len(pttrns) > 0:
-                        for newsp in itertools.chain(*pttrns):
-                            if newsp not in seeds and newsp not in retval:
-                                retval.append(newsp)
-    return (retval, seeds)
 
 @species_attributes
 def attributegen():
@@ -115,9 +71,4 @@ if __name__ == "__main__":
         print i, rr
     print ''
 
-    seeds, cnt = [], 0
-    while len(newseeds) != 0 and cnt < 10:
-        print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
-        newseeds, seeds = generate_recurse(newseeds, rules, seeds)
-        cnt += 1
-    print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
+    generate_reactions(newseeds, rules)
