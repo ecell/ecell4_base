@@ -227,22 +227,6 @@ class ReactionRule(object):
             if not i in self.__correspondences:
                 self.__removed.append(i)
 
-    def sequencial_number(self, context, reactants, idx):
-        value = context.get("subunit%d" % idx)
-        if value is None:
-            raise RuntimeError, (
-                "no corresponding subunit found [subunit%d]" % idx)
-
-        i, stride1, stride2 = 0, 0, 0
-        while i < len(self.__reactants):
-            stride1 += len(self.__reactants[i].subunits)
-            if idx < stride1:
-                return value.index + stride2
-            stride2 += len(reactants[i].subunits)
-            i += 1
-
-        raise RuntimeError, "an invalid subunit given [subunit%d]" % i
-
     def generate(self, context, reactants):
         def serno(idx):
             value = context.get("subunit%d" % idx)
