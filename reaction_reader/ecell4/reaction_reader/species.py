@@ -47,20 +47,20 @@ class Species(object):
         else:
             return contexts
 
-        # if self.conditions is None:
-        #     self.conditions = self.generate_conditions(stride)
+        if self.conditions is None:
+            self.conditions = self.generate_conditions(stride)
 
-        # for condition in self.conditions:
-        #     contexts = condition.match(sp, contexts)
-        #     if len(contexts) == 0:
-        #         break
-
-        conditions = self.generate_conditions(stride)
-
-        for condition in conditions:
+        for condition in self.conditions:
             contexts = condition.match(sp, contexts)
             if len(contexts) == 0:
                 break
+
+        # conditions = self.generate_conditions(stride)
+
+        # for condition in conditions:
+        #     contexts = condition.match(sp, contexts)
+        #     if len(contexts) == 0:
+        #         break
 
         contexts.clear_locals()
         return contexts
@@ -72,7 +72,11 @@ class Species(object):
         return '<"%s">' % (str(self))
 
     def __eq__(self, rhs):
-        return (len(self.match(rhs)) > 0 and len(rhs.match(self)) > 0)
+        if len(self.subunits) != len(rhs.subunits):
+            # quick filtering
+            return False
+        else:
+            return (len(self.match(rhs)) > 0 and len(rhs.match(self)) > 0)
 
 class Subunit(object):
 
