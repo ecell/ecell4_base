@@ -10,6 +10,8 @@ class Species(object):
     def __init__(self):
         self.subunits = []
 
+        self.conditions = None
+
     def num_bindings(self):
         retval = 0
         for subunit in self.subunits:
@@ -44,15 +46,20 @@ class Species(object):
         else:
             return contexts
 
+        # if self.conditions is None:
+        #     self.conditions = self.generate_conditions(stride)
+
+        # for condition in self.conditions:
+        #     contexts = condition.match(sp, contexts)
+        #     if len(contexts) == 0:
+        #         break
+
         conditions = self.generate_conditions(stride)
 
-        # max_num_contexts = len(contexts)
-        for i, condition in enumerate(conditions):
+        for condition in conditions:
             contexts = condition.match(sp, contexts)
-            # max_num_contexts = max(max_num_contexts, len(contexts))
             if len(contexts) == 0:
                 break
-        # print "max_num_contexts", max_num_contexts
 
         contexts.clear_locals()
         return contexts
@@ -163,18 +170,19 @@ def reconnect(L, K, adjacencies):
             K.append(i)
             reconnect(L, K, adjacencies)
 
-def concatenate_species(sp1, sp2):
-    retval = copy.deepcopy(sp1)
-    num_bindings = retval.num_bindings()
-    for su in sp2.subunits:
-        newsu = Subunit(su.name)
-        for mod, (state, binding) in su.modifications.items():
-            if binding != "" and binding[0] != "_":
-                if not binding.isdigit():
-                    raise RuntimeError
-                binding = int(binding) + num_bindings
-            newsu.add_modification(mod, state, binding)
-        retval.add_subunit(newsu)
+def concatenate_species(*species_list):
+    retval, stride = Species(), 0
+    for sp in species_list:
+        for su in sp.subunits:
+            newsu = Subunit(su.name)
+            for mod, (state, binding) in su.modifications.items():
+                if binding != "" and binding[0] != "_":
+                    if not binding.isdigit():
+                        raise RuntimeError
+                    binding = int(binding) + stride
+                newsu.add_modification(mod, state, binding)
+            retval.add_subunit(newsu)
+        stride += sp.num_bindings()
     retval.update_indices()
     return retval
 
@@ -214,77 +222,84 @@ class FirstOrderReactionRule(object):
             if not i in self.__correspondences:
                 self.__removed.append(i)
 
-    def match(self, reactant1):
-        contexts = self.__reactant1.match(reactant1)
+    def generate(self, context, reactant1):
         product_subunits = list(itertools.chain(
             *[product.subunits for product in self.__products]))
+
+        indices = [value.index for key, value in context.items()
+            if len(key) > 7 and key[: 7] == "subunit"]
+        if len(indices) != len(set(indices)):
+            return None
+
+        retval = concatenate_species(reactant1) # just copy
+        cache_binding = {}
+
+        for i, subunit in enumerate(product_subunits):
+            correspondence = self.__correspondences[i]
+
+            if correspondence >= len(self.__reactant1.subunits):
+                retval.add_subunit(subunit)
+                target = retval.subunits[-1]
+            else:
+                j = context["subunit%d" % correspondence].index
+                target = retval.subunits[j]
+
+            for mod, (state, binding) in subunit.modifications.items():
+                value = target.modifications.get(mod)
+                if value is None:
+                    newstate, newbinding = "", ""
+                else:
+                    newstate, newbinding = value
+
+                if state == "":
+                    pass
+                elif state[0] == "_":
+                    if len(state) == 1:
+                        pass
+                    else:
+                        newstate = context[state]
+                else:
+                    newstate = state
+
+                if binding == "":
+                    newbinding = ""
+                elif binding[0] == "_":
+                    if len(binding) == 1:
+                        pass
+                    else:
+                        newbinding = context[binding]
+                else:
+                    stride = 0
+                    for j, product in enumerate(self.__products):
+                        stride += len(product.subunits)
+                        if stride > i:
+                            label = int(binding) * len(self.__products) + j
+                            break
+
+                    if label in cache_binding.keys():
+                        newbinding = cache_binding[label]
+                    else:
+                        newbinding = str(retval.num_bindings() + 1)
+                        cache_binding[label] = newbinding
+
+                target.add_modification(mod, newstate, newbinding)
+
+        removed = [context["subunit%d" % i].index for i in self.__removed]
+        removed.sort()
+        for i in reversed(removed):
+            retval.subunits.pop(i)
+        retval.update_indices()
+
+        return check_connectivity(retval)
+
+    def match(self, reactant1):
+        contexts = self.__reactant1.match(reactant1)
+
         retval = []
         for context in contexts:
-            indices = [value.index for key, value in context.items()
-                if len(key) > 7 and key[: 7] == "subunit"]
-            if len(indices) != len(set(indices)):
-                continue
-
-            product1 = copy.deepcopy(reactant1)
-            cache_binding = {}
-
-            for i, subunit in enumerate(product_subunits):
-                correspondence = self.__correspondences[i]
-
-                if correspondence >= len(self.__reactant1.subunits):
-                    product1.add_subunit(subunit)
-                    target = product1.subunits[-1]
-                else:
-                    j = context["subunit%d" % correspondence].index
-                    target = product1.subunits[j]
-
-                for mod, (state, binding) in subunit.modifications.items():
-                    value = target.modifications.get(mod)
-                    if value is None:
-                        newstate, newbinding = "", ""
-                    else:
-                        newstate, newbinding = value
-
-                    if state == "":
-                        pass
-                    elif state[0] == "_":
-                        if len(state) == 1:
-                            pass
-                        else:
-                            newstate = context[state]
-                    else:
-                        newstate = state
-
-                    if binding == "":
-                        newbinding = ""
-                    elif binding[0] == "_":
-                        if len(binding) == 1:
-                            pass
-                        else:
-                            newbinding = context[binding]
-                    else:
-                        stride = 0
-                        for j, product in enumerate(self.__products):
-                            stride += len(product.subunits)
-                            if stride > i:
-                                label = int(binding) * len(self.__products) + j
-                                break
-
-                        if label in cache_binding.keys():
-                            newbinding = cache_binding[label]
-                        else:
-                            newbinding = str(product1.num_bindings() + 1)
-                            cache_binding[label] = newbinding
-
-                    target.add_modification(mod, newstate, newbinding)
-
-            removed = [context["subunit%d" % i].index for i in self.__removed]
-            removed.sort()
-            for i in reversed(removed):
-                product1.subunits.pop(i)
-            product1.update_indices()
-
-            retval.append(check_connectivity(product1))
+            products = self.generate(context, reactant1)
+            if products is not None:
+                retval.append(products)
         return retval
 
     def __str__(self):
@@ -329,85 +344,92 @@ class SecondOrderReactionRule(object):
             if not i in self.__correspondences:
                 self.__removed.append(i)
 
+    def generate(self, context, reactant1, reactant2):
+        reactant_subunits = self.__reactant1.subunits + self.__reactant2.subunits
+        product_subunits = list(itertools.chain(
+            *[product.subunits for product in self.__products]))
+
+        indices = [value.index + (
+            0 if i < len(self.__reactant1.subunits) else len(reactant1.subunits))
+                for i, (key, value) in enumerate(context.items())
+                    if len(key) > 7 and key[: 7] == "subunit"]
+        if len(indices) != len(set(indices)):
+            return None
+
+        retval = concatenate_species(reactant1, reactant2)
+        cache_binding = {}
+
+        for i, subunit in enumerate(product_subunits):
+            correspondence = self.__correspondences[i]
+
+            if correspondence >= len(reactant_subunits):
+                retval.add_subunit(subunit)
+                target = retval.subunits[-1]
+            else:
+                if correspondence < len(self.__reactant1.subunits):
+                    j = context["subunit%d" % correspondence].index
+                else:
+                    j = (len(reactant1.subunits)
+                        + context["subunit%d" % correspondence].index)
+                target = retval.subunits[j]
+
+            for mod, (state, binding) in subunit.modifications.items():
+                value = target.modifications.get(mod)
+                if value is None:
+                    newstate, newbinding = "", ""
+                else:
+                    newstate, newbinding = value
+
+                if state == "":
+                    pass
+                elif state[0] == "_":
+                    if len(state) == 1:
+                        pass
+                    else:
+                        newstate = context[state]
+                else:
+                    newstate = state
+
+                if binding == "":
+                    newbinding = ""
+                elif binding[0] == "_":
+                    if len(binding) == 1:
+                        pass
+                    else:
+                        newbinding = context[binding] #XXX this seems problematic
+                else:
+                    stride = 0
+                    for j, product in enumerate(self.__products):
+                        stride += len(product.subunits)
+                        if stride > i:
+                            label = int(binding) * len(self.__products) + j
+                            break
+
+                    if label in cache_binding.keys():
+                        newbinding = cache_binding[label]
+                    else:
+                        newbinding = str(retval.num_bindings() + 1)
+                        cache_binding[label] = newbinding
+
+                target.add_modification(mod, newstate, newbinding)
+
+        removed = [context["subunit%d" % i].index for i in self.__removed]
+        removed.sort()
+        for i in reversed(removed):
+            retval.subunits.pop(i)
+        retval.update_indices()
+
+        return check_connectivity(retval)
+
     def match(self, reactant1, reactant2):
         contexts = self.__reactant1.match(reactant1)
         contexts = self.__reactant2.match(reactant2, contexts)
 
-        reactant_subunits = self.__reactant1.subunits + self.__reactant2.subunits
-        product_subunits = list(itertools.chain(
-            *[product.subunits for product in self.__products]))
         retval = []
         for context in contexts:
-            indices = [value.index + (0 if i < len(self.__reactant1.subunits) else len(reactant1.subunits))
-                for i, (key, value) in enumerate(context.items())
-                if len(key) > 7 and key[: 7] == "subunit"]
-            if len(indices) != len(set(indices)):
-                continue
-
-            product1 = concatenate_species(reactant1, reactant2)
-            cache_binding = {}
-
-            for i, subunit in enumerate(product_subunits):
-                correspondence = self.__correspondences[i]
-
-                if correspondence >= len(reactant_subunits):
-                    product1.add_subunit(subunit)
-                    target = product1.subunits[-1]
-                else:
-                    if correspondence < len(self.__reactant1.subunits):
-                        j = context["subunit%d" % correspondence].index
-                    else:
-                        j = (len(reactant1.subunits)
-                            + context["subunit%d" % correspondence].index)
-                    target = product1.subunits[j]
-
-                for mod, (state, binding) in subunit.modifications.items():
-                    value = target.modifications.get(mod)
-                    if value is None:
-                        newstate, newbinding = "", ""
-                    else:
-                        newstate, newbinding = value
-
-                    if state == "":
-                        pass
-                    elif state[0] == "_":
-                        if len(state) == 1:
-                            pass
-                        else:
-                            newstate = context[state]
-                    else:
-                        newstate = state
-
-                    if binding == "":
-                        newbinding = ""
-                    elif binding[0] == "_":
-                        if len(binding) == 1:
-                            pass
-                        else:
-                            newbinding = context[binding] #XXX this seems problematic
-                    else:
-                        stride = 0
-                        for j, product in enumerate(self.__products):
-                            stride += len(product.subunits)
-                            if stride > i:
-                                label = int(binding) * len(self.__products) + j
-                                break
-
-                        if label in cache_binding.keys():
-                            newbinding = cache_binding[label]
-                        else:
-                            newbinding = str(product1.num_bindings() + 1)
-                            cache_binding[label] = newbinding
-
-                    target.add_modification(mod, newstate, newbinding)
-
-            removed = [context["subunit%d" % i].index for i in self.__removed]
-            removed.sort()
-            for i in reversed(removed):
-                product1.subunits.pop(i)
-            product1.update_indices()
-
-            retval.append(check_connectivity(product1))
+            products = self.generate(context, reactant1, reactant2)
+            if products is not None:
+                retval.append(products)
         return retval
 
     def __str__(self):
