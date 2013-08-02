@@ -65,10 +65,8 @@ def generate_ReactionRule(lhs, rhs, k=0.0):
     #         raise RuntimeError, (
     #             "the number of products must be 1; %d given" % len(rhs))
     #     return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
-    if len(lhs) == 1:
-        return species.FirstOrderReactionRule(lhs[0], *rhs)
-    elif len(lhs) == 2:
-        return species.SecondOrderReactionRule(lhs[0], lhs[1], *rhs)
+    if len(lhs) == 1 or len(lhs) == 2:
+        return species.ReactionRule(lhs, rhs)
     raise RuntimeError, (
         "the number of reactants must be less than 3; %d given" % len(lhs))
 

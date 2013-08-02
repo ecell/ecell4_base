@@ -186,144 +186,27 @@ def concatenate_species(*species_list):
     retval.update_indices()
     return retval
 
-class FirstOrderReactionRule(object):
+class ReactionRule(object):
 
-    def __init__(self, reactant1, *products):
-        self.__reactant1 = reactant1
+    def __init__(self, reactants, products):
+        self.__reactants = reactants
         self.__products = products
 
         self.initialize()
+
+    def num_reactants(self):
+        return len(self.__reactants)
 
     def initialize(self):
         self.__correspondences = []
         self.__removed = []
 
-        num_subunits = len(self.__reactant1.subunits)
+        reactant_subunits = list(itertools.chain(
+            *[sp.subunits for sp in self.__reactants]))
         product_subunits = list(itertools.chain(
-            *[product.subunits for product in self.__products]))
-        for i, su1 in enumerate(product_subunits):
-            for j, su2 in enumerate(self.__reactant1.subunits):
-                if (su1.name == su2.name
-                    and set(su1.modifications.keys())
-                        == set(su2.modifications.keys())):
-                    if len(self.__correspondences) > i:
-                        # raise RuntimeError, "multiple correspondence found [%s]" % su1
-                        print "WARN: multiple correspondence found [%s]" % su1
-                    elif j in self.__correspondences:
-                        print "WARN: multiple correspondence skipped [%s]" % su1
-                    else:
-                        self.__correspondences.append(j)
-            if len(self.__correspondences) == i:
-                print "WARN: no correspondence found [%s]" % su1
-                self.__correspondences.append(num_subunits)
-                num_subunits += 1
-
-        for i in range(len(self.__reactant1.subunits)):
-            if not i in self.__correspondences:
-                self.__removed.append(i)
-
-    def generate(self, context, reactant1):
-        product_subunits = list(itertools.chain(
-            *[product.subunits for product in self.__products]))
-
-        indices = [value.index for key, value in context.items()
-            if len(key) > 7 and key[: 7] == "subunit"]
-        if len(indices) != len(set(indices)):
-            return None
-
-        retval = concatenate_species(reactant1) # just copy
-        cache_binding = {}
-
-        for i, subunit in enumerate(product_subunits):
-            correspondence = self.__correspondences[i]
-
-            if correspondence >= len(self.__reactant1.subunits):
-                retval.add_subunit(subunit)
-                target = retval.subunits[-1]
-            else:
-                j = context["subunit%d" % correspondence].index
-                target = retval.subunits[j]
-
-            for mod, (state, binding) in subunit.modifications.items():
-                value = target.modifications.get(mod)
-                if value is None:
-                    newstate, newbinding = "", ""
-                else:
-                    newstate, newbinding = value
-
-                if state == "":
-                    pass
-                elif state[0] == "_":
-                    if len(state) == 1:
-                        pass
-                    else:
-                        newstate = context[state]
-                else:
-                    newstate = state
-
-                if binding == "":
-                    newbinding = ""
-                elif binding[0] == "_":
-                    if len(binding) == 1:
-                        pass
-                    else:
-                        newbinding = context[binding]
-                else:
-                    stride = 0
-                    for j, product in enumerate(self.__products):
-                        stride += len(product.subunits)
-                        if stride > i:
-                            label = int(binding) * len(self.__products) + j
-                            break
-
-                    if label in cache_binding.keys():
-                        newbinding = cache_binding[label]
-                    else:
-                        newbinding = str(retval.num_bindings() + 1)
-                        cache_binding[label] = newbinding
-
-                target.add_modification(mod, newstate, newbinding)
-
-        removed = [context["subunit%d" % i].index for i in self.__removed]
-        removed.sort()
-        for i in reversed(removed):
-            retval.subunits.pop(i)
-        retval.update_indices()
-
-        return check_connectivity(retval)
-
-    def match(self, reactant1):
-        contexts = self.__reactant1.match(reactant1)
-
-        retval = []
-        for context in contexts:
-            products = self.generate(context, reactant1)
-            if products is not None:
-                retval.append(products)
-        return retval
-
-    def __str__(self):
-        return "%s>%s" % (
-            str(self.__reactant1),
-            "+".join([str(product) for product in self.__products]))
-
-class SecondOrderReactionRule(object):
-
-    def __init__(self, reactant1, reactant2, *products):
-        self.__reactant1 = reactant1
-        self.__reactant2 = reactant2
-        self.__products = products
-
-        self.initialize()
-
-    def initialize(self):
-        self.__correspondences = []
-        self.__removed = []
-
-        reactant_subunits = self.__reactant1.subunits + self.__reactant2.subunits
+            *[sp.subunits for sp in self.__products]))
         num_subunits = len(reactant_subunits)
-        product_subunits = list(itertools.chain(
-            *[product.subunits for product in self.__products]))
+
         for i, su1 in enumerate(product_subunits):
             for j, su2 in enumerate(reactant_subunits):
                 if (su1.name == su2.name
@@ -344,19 +227,51 @@ class SecondOrderReactionRule(object):
             if not i in self.__correspondences:
                 self.__removed.append(i)
 
-    def generate(self, context, reactant1, reactant2):
-        reactant_subunits = self.__reactant1.subunits + self.__reactant2.subunits
-        product_subunits = list(itertools.chain(
-            *[product.subunits for product in self.__products]))
+    def sequencial_number(self, context, reactants, idx):
+        value = context.get("subunit%d" % idx)
+        if value is None:
+            raise RuntimeError, (
+                "no corresponding subunit found [subunit%d]" % idx)
 
-        indices = [value.index + (
-            0 if i < len(self.__reactant1.subunits) else len(reactant1.subunits))
-                for i, (key, value) in enumerate(context.items())
-                    if len(key) > 7 and key[: 7] == "subunit"]
+        i, stride1, stride2 = 0, 0, 0
+        while i < len(self.__reactants):
+            stride1 += len(self.__reactants[i].subunits)
+            if idx < stride1:
+                return value.index + stride2
+            stride2 += len(reactants[i].subunits)
+            i += 1
+
+        raise RuntimeError, "an invalid subunit given [subunit%d]" % i
+
+    def generate(self, context, reactants):
+        def serno(idx):
+            value = context.get("subunit%d" % idx)
+            if value is None:
+                raise RuntimeError, (
+                    "no corresponding subunit found [subunit%d]" % idx)
+
+            i, stride1, stride2 = 0, 0, 0
+            while i < len(self.__reactants):
+                stride1 += len(self.__reactants[i].subunits)
+                if idx < stride1:
+                    return value.index + stride2
+                stride2 += len(reactants[i].subunits)
+                i += 1
+
+            raise RuntimeError, "an invalid subunit given [subunit%d]" % i
+
+        reactant_subunits = list(itertools.chain(
+            *[sp.subunits for sp in self.__reactants]))
+        product_subunits = list(itertools.chain(
+            *[sp.subunits for sp in self.__products]))
+        num_subunits = len(reactant_subunits)
+
+        indices = [serno(i) for i in range(num_subunits)]
+
         if len(indices) != len(set(indices)):
             return None
 
-        retval = concatenate_species(reactant1, reactant2)
+        retval = concatenate_species(*reactants)
         cache_binding = {}
 
         for i, subunit in enumerate(product_subunits):
@@ -366,12 +281,7 @@ class SecondOrderReactionRule(object):
                 retval.add_subunit(subunit)
                 target = retval.subunits[-1]
             else:
-                if correspondence < len(self.__reactant1.subunits):
-                    j = context["subunit%d" % correspondence].index
-                else:
-                    j = (len(reactant1.subunits)
-                        + context["subunit%d" % correspondence].index)
-                target = retval.subunits[j]
+                target = retval.subunits[serno(correspondence)]
 
             for mod, (state, binding) in subunit.modifications.items():
                 value = target.modifications.get(mod)
@@ -421,21 +331,22 @@ class SecondOrderReactionRule(object):
 
         return check_connectivity(retval)
 
-    def match(self, reactant1, reactant2):
-        contexts = self.__reactant1.match(reactant1)
-        contexts = self.__reactant2.match(reactant2, contexts)
+    def match(self, *reactants):
+        contexts = None
+        for sp1, sp2 in zip(self.__reactants, reactants):
+            contexts = sp1.match(sp2, contexts)
 
         retval = []
         for context in contexts:
-            products = self.generate(context, reactant1, reactant2)
+            products = self.generate(context, reactants)
             if products is not None:
                 retval.append(products)
         return retval
 
     def __str__(self):
-        return "%s+%s>%s" % (
-            str(self.__reactant1), str(self.__reactant2),
-            "+".join([str(product) for product in self.__products]))
+        return "%s>%s" % (
+            "+".join([str(sp) for sp in self.__reactants]),
+            "+".join([str(sp) for sp in self.__products]))
 
 class Condition(object):
 
@@ -665,36 +576,39 @@ def generate_recurse(seeds1, rules, seeds2=[]):
     retval = []
     for sp1 in seeds1:
         for rr in rules:
-            if isinstance(rr, FirstOrderReactionRule):
-                try:
-                    pttrns = rr.match(sp1)
-                except Exception, e:
-                    print rr, sp1
-                    raise e
+            if rr.num_reactants() == 1:
+                pttrns = rr.match(sp1)
+                # try:
+                #     pttrns = rr.match(sp1)
+                # except Exception, e:
+                #     print rr, sp1
+                #     raise e
                 if pttrns is not None and len(pttrns) > 0:
                     for newsp in itertools.chain(*pttrns):
                         if newsp not in seeds and newsp not in retval:
                             retval.append(newsp)
         for sp2 in seeds:
             for rr in rules:
-                if isinstance(rr, SecondOrderReactionRule):
-                    try:
-                        pttrns = rr.match(sp1, sp2)
-                    except Exception, e:
-                        print rr, sp1, sp2
-                        raise e
+                if rr.num_reactants() == 2:
+                    pttrns = rr.match(sp1, sp2)
+                    # try:
+                    #     pttrns = rr.match(sp1, sp2)
+                    # except Exception, e:
+                    #     print rr, sp1, sp2
+                    #     raise e
                     if pttrns is not None and len(pttrns) > 0:
                         for newsp in itertools.chain(*pttrns):
                             if newsp not in seeds and newsp not in retval:
                                 retval.append(newsp)
         for sp2 in seeds2:
             for rr in rules:
-                if isinstance(rr, SecondOrderReactionRule):
-                    try:
-                        pttrns = rr.match(sp2, sp1)
-                    except Exception, e:
-                        print rr, sp1, sp2
-                        raise e
+                if rr.num_reactants() == 2:
+                    pttrns = rr.match(sp2, sp1)
+                    # try:
+                    #     pttrns = rr.match(sp2, sp1)
+                    # except Exception, e:
+                    #     print rr, sp1, sp2
+                    #     raise e
                     if pttrns is not None and len(pttrns) > 0:
                         for newsp in itertools.chain(*pttrns):
                             if newsp not in seeds and newsp not in retval:
