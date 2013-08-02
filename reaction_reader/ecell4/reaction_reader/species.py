@@ -5,6 +5,7 @@ import itertools
 label_subunit = lambda x: "subunit%s" % x
 label_binding = lambda x: "binding%s" % x
 
+
 class Species(object):
 
     def __init__(self):
@@ -229,10 +230,10 @@ class ReactionRule(object):
 
     def generate(self, context, reactants):
         def serno(idx):
-            value = context.get("subunit%d" % idx)
+            value = context.get(label_subunit(idx))
             if value is None:
                 raise RuntimeError, (
-                    "no corresponding subunit found [subunit%d]" % idx)
+                    "no corresponding subunit found [%s]" % label_subunit(idx))
 
             i, stride1, stride2 = 0, 0, 0
             while i < len(self.__reactants):
@@ -242,7 +243,8 @@ class ReactionRule(object):
                 stride2 += len(reactants[i].subunits)
                 i += 1
 
-            raise RuntimeError, "an invalid subunit given [subunit%d]" % i
+            raise RuntimeError, (
+                "an invalid subunit given [%s]" % label_subunit(idx))
 
         reactant_subunits = list(itertools.chain(
             *[sp.subunits for sp in self.__reactants]))
@@ -307,7 +309,7 @@ class ReactionRule(object):
 
                 target.add_modification(mod, newstate, newbinding)
 
-        removed = [context["subunit%d" % i].index for i in self.__removed]
+        removed = [context[label_subunit(i)].index for i in self.__removed]
         removed.sort()
         for i in reversed(removed):
             retval.subunits.pop(i)
