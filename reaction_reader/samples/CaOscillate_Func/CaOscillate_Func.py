@@ -1,3 +1,24 @@
+from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
+from ecell4.reaction_reader.species import generate_reactions
+
+@species_attributes
+def attributegen():
+    Null() | 1
+    Ga() | Ga_0
+    PLC() | PLC_0
+    Ca() | Ca_0
+
+@reaction_rules
+def rulegen():
+    Null() > Ga() + Null() | k1
+    Ga() > Ga() + Ga() | k2
+    Ga() + PLC() > PLC() | k3
+    Ga() + Ca() > Ca() | k5
+    Ga() > PLC() + Ga() | k7
+    PLC() + Null() > Null() | k8
+    Ga() > Ca() + Ga() | k10
+    Ca() + Null() > Null() | k11
+ 
 # begin model
 # begin parameters
 #     Na    6.022e23      # Avogadro's # [mol^-1]
