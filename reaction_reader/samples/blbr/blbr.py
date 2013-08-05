@@ -1,3 +1,36 @@
+from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
+from ecell4.reaction_reader.species import generate_reactions
+
+@species_attributes
+def attributegen():
+    R(r,r) | R0
+    L(l,l) | L0
+
+@reaction_rules
+def rulegen():
+    # Ligand addition
+    R(r) + L(l,l) == R(r^1).L(l^1,l) | (kp1,km1)
+
+    # Chain elongation
+    R(r) + L(l,l^_) == R(r^1).L(l^1,l^_) | (kp2,km2)
+
+    # Ring closure
+    R(r).L(l) == R(r^1).L(l^1) | (kp3, km3)
+
+if __name__ == "__main__":
+    newseeds = []
+    for i, (sp, attr) in enumerate(attributegen()):
+        print i, sp, attr
+        newseeds.append(sp)
+    print ''
+
+    rules = rulegen()
+    for i, rr in enumerate(rules):
+        print i, rr
+    print ''
+
+    generate_reactions(newseeds, rules)
+
 # setOption("SpeciesLabel","HNauty")
 # begin model
 # begin parameters
