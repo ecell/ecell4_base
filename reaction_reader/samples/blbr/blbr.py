@@ -3,19 +3,30 @@ from ecell4.reaction_reader.species import generate_reactions
 
 @species_attributes
 def attributegen():
-    R(r,r) | R0
-    L(l,l) | L0
+    # R(r,r) | R0
+    R(r1,r2) | R0
+    # L(l,l) | L0
+    L(l2,l2) | L0
 
 @reaction_rules
 def rulegen():
     # Ligand addition
-    R(r) + L(l,l) == R(r^1).L(l^1,l) | (kp1,km1)
+    # R(r) + L(l,l) == R(r^1).L(l^1,l) | (kp1,km1)
+    R(r1) + L(l1,l2) == R(r1^1).L(l1^1,l2) | (kp1, km1)
+    R(r2) + L(l1,l2) == R(r2^1).L(l1,l2^1) | (kp1, km1)
 
     # Chain elongation
-    R(r) + L(l,l^_) == R(r^1).L(l^1,l^_) | (kp2,km2)
+    # R(r) + L(l,l^_) == R(r^1).L(l^1,l^_) | (kp2,km2)
+    R(r1) + L(l1,l2^_) == R(r1^1).L(l1^1,l2^_) | (kp2, km2)
+    R(r2) + L(l1^_,l2) == R(r2^1).L(l1^_,l2^1) | (kp2, km2)
 
     # Ring closure
-    R(r).L(l) == R(r^1).L(l^1) | (kp3, km3)
+    # R(r).L(l) == R(r^1).L(l^1) | (kp3, km3)
+    R(r1).L(l1) == R(r1^1).L(l1^1) | (kp3, km3)
+    R(r2).L(l2) == R(r2^1).L(l2^1) | (kp3, km3)
+
+
+
 
 if __name__ == "__main__":
     newseeds = []
