@@ -83,8 +83,11 @@ class SpeciesAttributesCallback(decorator.Callback):
     def notify_bitwise_operations(self, obj):
         if not isinstance(obj, parseobj.OrExp):
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
+        elif len(obj._elements()) != 2:
+            raise RuntimeError, 'only one attribute is allowed. [%d] given' % (
+                len(obj._elements()))
 
-        lhs, rhs = obj._lhs, obj._rhs
+        lhs, rhs = obj._elements()
 
         species_list = generate_Species(lhs)
         if len(species_list) != 1:
@@ -123,10 +126,10 @@ class ReactionRulesCallback(decorator.Callback):
         lhs, rhs = obj._lhs, obj._rhs
 
         if isinstance(lhs, parseobj.OrExp):
-            lhs = lhs._lhs
+            lhs = lhs._elements()[0]
 
         if isinstance(rhs, parseobj.OrExp):
-            rhs = rhs._lhs
+            rhs = rhs._elements()[0]
 
         lhs, rhs = generate_Species(lhs), generate_Species(rhs)
         lhs = tuple(sp for sp in lhs if sp is not None)

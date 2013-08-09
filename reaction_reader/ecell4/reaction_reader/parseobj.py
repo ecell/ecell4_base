@@ -200,19 +200,23 @@ class OrExp(ExpBase):
     def __init__(self, root, lhs, rhs):
         ExpBase.__init__(self, root)
 
-        self.__lhs = lhs
-        self.__rhs = rhs
+        self.__elems = []
+        self.__append(lhs)
+        self.__append(rhs)
 
-    @property
-    def _lhs(self):
-        return self.__lhs
+    def _elements(self):
+        return copy.copy(self.__elems)
 
-    @property
-    def _rhs(self):
-        return self.__rhs
+    def __append(self, obj):
+        if isinstance(obj, AnyCallable):
+            self.__elems.append(obj._as_ParseObj())
+        elif isinstance(obj, OrExp):
+            self.__elems.extend(obj._elements())
+        else:
+            self.__elems.append(obj)
 
     def __str__(self):
-        return "%s|%s" % (self.__lhs, self.__rhs)
+        return "|".join([str(obj) for obj in self.__elems])
 
 class CmpExp(ExpBase):
 
