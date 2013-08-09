@@ -3,22 +3,36 @@ from ecell4.reaction_reader.species import generate_reactions
 
 @species_attributes
 def attributegen():
-    Null() | 1
-    Ga() | Ga_0
-    PLC() | PLC_0
-    Ca() | Ca_0
+    Null | 1
+    Ga | Ga_0
+    PLC | PLC_0
+    Ca | Ca_0
 
 @reaction_rules
 def rulegen():
-    Null() > Ga() + Null() | k1
-    Ga() > Ga() + Ga() | k2
-    Ga() + PLC() > PLC() | k3
-    Ga() + Ca() > Ca() | k5
-    Ga() > PLC() + Ga() | k7
-    PLC() + Null() > Null() | k8
-    Ga() > Ca() + Ga() | k10
-    Ca() + Null() > Null() | k11
+    Null > Ga + Null | k1
+    Ga > Ga + Ga | k2
+    Ga + PLC > PLC | k3
+    Ga + Ca > Ca | k5
+    Ga > PLC + Ga | k7
+    PLC + Null > Null | k8
+    Ga > Ca + Ga | k10
+    Ca + Null > Null | k11
  
+if __name__ == "__main__":
+    newseeds = []
+    for i, (sp, attr) in enumerate(attributegen()):
+        print i, sp, attr
+        newseeds.append(sp)
+    print ''
+
+    rules = rulegen()
+    for i, rr in enumerate(rules):
+        print i, rr
+    print ''
+
+    generate_reactions(newseeds, rules)
+
 # begin model
 # begin parameters
 #     Na    6.022e23      # Avogadro's # [mol^-1]
