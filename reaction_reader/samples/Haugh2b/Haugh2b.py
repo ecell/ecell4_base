@@ -8,7 +8,7 @@ def attributegen():
     S2(SH2,Y=U) | 0.25
 
 @reaction_rules
-def rulegen():
+def rulegen(kon_S1,   koff_S1  ,kon_S2   ,koff_S2  ,kp1_PTP  ,km1_PTP ,kcat_PTP ,kp1_KD   ,km1_KD   ,kcat_KD  ,chi_m    ,R_tot):
     # Binding of S1(SH2) from cytosol
     R(Y1=P) + S1(SH2) == R(Y1=P^1).S1(SH2^1) | (kon_S1, koff_S1)
     #          exclude_reactants(2,R) 
@@ -55,7 +55,10 @@ if __name__ == "__main__":
         newseeds.append(sp)
     print ''
 
-    rules = rulegen()
+    rules = rulegen(1,0.1,1,0.001, 0.1, 90, 10, 10, 99, 1 ,100, 1)
+
+
+
     for i, rr in enumerate(rules):
         print i, rr
     print ''
