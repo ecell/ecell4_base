@@ -8,7 +8,7 @@ def attributegen():
     R(DD^1,Y1=U,Y2=P).R(DD^1,Y1=U,Y2=P) | R_dim
 
 @reaction_rules
-def rulegen():
+def rulegen( kdim    , kopen    ,kclose   ,kon_CSH2 ,koff_CSH2, kon_NSH2 ,koff_NSH2 ,kkin_Y1 , kon_PTP  ,koff_PTP ,kcat_PTP ,chi_r1   ,chi_r2   ,chi_r3   ,chi_r4   ,chi_r5   ,chi_r6   ,chi_r7   ,chi_r8   ,chi_r9   ,chi_r10  ,chi_r11 , R_dim    ,S_tot ): 
     # Intra-complex phosphorylation 
     R(DD^_,Y1=U) > R(DD^_,Y1=P) | kkin_Y1
 
@@ -28,8 +28,8 @@ def rulegen():
     #exclude_reactants(2,R)
 
     # Dephosphorylation of R(Y1=P)
-    R(Y1=P!1).S(PTP=O!1) > R(Y1=U) + S(PTP=O) | kcat_PTP
-    R(Y1=P!1).S(PTP=O!1) > R(Y1=U).S(PTP=O) | kcat_PTP
+    R(Y1=P^1).S(PTP=O^1) > R(Y1=U) + S(PTP=O) | kcat_PTP
+    R(Y1=P^1).S(PTP=O^1) > R(Y1=U).S(PTP=O) | kcat_PTP
 
     # 1 Intra-complex binding: CSH2 bound, association of NSH2 (open) with other receptor
     R(Y2=P).S(NSH2=O,CSH2^_,PTP=O) == \
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         newseeds.append(sp)
     print ''
 
-    rules = rulegen()
+    rules = rulegen( 1000, 10, 500, 1 ,1, 1, 1, 0.1, 1 , 10, 1, 1000, 100, 1000, 1000, 100, 100, 100, 1000, 100, 100, 1000, 0.025, 0.05 )
     for i, rr in enumerate(rules):
         print i, rr
     print ''
