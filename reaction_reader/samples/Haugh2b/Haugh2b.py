@@ -2,68 +2,68 @@ from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
 from ecell4.reaction_reader.species import generate_reactions
 
 @species_attributes
-def attributegen():
-    R(KD,Y1=P)  | R_tot
+def attributegen(R_tot):
+    R(KD,Y1=P) | R_tot
     S1(PTP,SH2) | 1.00
     S2(SH2,Y=U) | 0.25
 
 @reaction_rules
-def rulegen(kon_S1,   koff_S1  ,kon_S2   ,koff_S2  ,kp1_PTP  ,km1_PTP ,kcat_PTP ,kp1_KD   ,km1_KD   ,kcat_KD  ,chi_m    ,R_tot):
+def rulegen(
+    kon_S1, koff_S1, kon_S2, koff_S2, kp1_PTP, km1_PTP, kcat_PTP,
+    kp1_KD, km1_KD, kcat_KD, chi_m):
     # Binding of S1(SH2) from cytosol
-    R(Y1=P) + S1(SH2) == R(Y1=P^1).S1(SH2^1) | (kon_S1, koff_S1)
-    #          exclude_reactants(2,R) 
+    (R(Y1=P) + S1(SH2) == R(Y1=P^1).S1(SH2^1)
+        | (kon_S1, koff_S1) | ExcludeReactants(2, R))
 
     # Binding of S1(SH2) from membrane
-    R(Y1=P) + S1(SH2) == R(Y1=P^1).S1(SH2^1) | (chi_m*kon_S1, koff_S1)
-    #          include_reactants(2,R) 
+    (R(Y1=P) + S1(SH2) == R(Y1=P^1).S1(SH2^1)
+        | (chi_m*kon_S1, koff_S1) | IncludeReactants(2, R))
 
     # Binding of S2(SH2) from cytosol
-    R(Y1=P) + S2(SH2) == R(Y1=P^1).S2(SH2^1) | (kon_S2, koff_S2)
-    #          exclude_reactants(2,R) 
+    (R(Y1=P) + S2(SH2) == R(Y1=P^1).S2(SH2^1)
+        | (kon_S2, koff_S2) | ExcludeReactants(2, R))
 
     # Binding of S2(SH2) from membrane
-    R(Y1=P) + S2(SH2) == R(Y1=P^1).S2(SH2^1) | (chi_m*kon_S2, koff_S2)
-    #          include_reactants(2,R) 
+    (R(Y1=P) + S2(SH2) == R(Y1=P^1).S2(SH2^1)
+        | (chi_m*kon_S2, koff_S2) | IncludeReactants(2, R))
 
     # Binding of R(KD) to S2(Y=U) intracomplex and phosphorylation
     R(KD,Y1=P^1).S2(SH2^1,Y=U) == R(KD^2,Y1=P^1).S2(SH2^1,Y=U^2) | (kp1_KD, km1_KD)
     R(KD^2,Y1=P^1).S2(SH2^1,Y=U^2) > R(KD,Y1=P^1).S2(SH2^1,Y=P) | kcat_KD
 
     # Binding of S2(Y=P) in cytosol to S1(PTP) in cytosol
-    S2(Y=P) + S1(PTP) == S2(Y=P^1).S1(PTP^1) | (kp1_PTP, km1_PTP)
-    #exclude_reactants(1,R) exclude_reactants(2,R) 
+    (S2(Y=P) + S1(PTP) == S2(Y=P^1).S1(PTP^1)
+        | (kp1_PTP, km1_PTP) | ExcludeReactants(1, R) | ExcludeReactants(2, R))
 
     # Binding of S2(Y=P) in cytosol to S1(PTP) at membrane
-    S2(Y=P) + S1(PTP) == S2(Y=P^1).S1(PTP^1) | (kp1_PTP, km1_PTP)
-    #exclude_reactants(1,R) include_reactants(2,R) 
+    (S2(Y=P) + S1(PTP) == S2(Y=P^1).S1(PTP^1)
+        | (kp1_PTP, km1_PTP) | ExcludeReactants(1, R) | IncludeReactants(2, R))
 
     # Binding of S2(Y=P) at membran to S1(PTP) in cytosol
-    S2(Y=P) + S1(PTP) == S2(Y=P^1).S1(PTP^1) | (kp1_PTP, km1_PTP)
-    #include_reactants(1,R) exclude_reactants(2,R)
+    (S2(Y=P) + S1(PTP) == S2(Y=P^1).S1(PTP^1)
+        | (kp1_PTP, km1_PTP) | IncludeReactants(1, R) | ExcludeReactants(2, R))
 
     # Binding of S2(Y=P) at membrane to S1(PTP) at membrane
-    S2(Y=P) + S1(PTP) == S2(Y=P^1).S1(PTP^1) | (chi_m*kp1_PTP, km1_PTP)
-    #include_reactants(1,R) include_reactants(2,R)
+    (S2(Y=P) + S1(PTP) == S2(Y=P^1).S1(PTP^1)
+        | (chi_m*kp1_PTP, km1_PTP) | IncludeReactants(1, R) | IncludeReactants(2, R))
 
     # Dephosphorylation of S2(Y=P)
     S2(Y=P^1).S1(PTP^1) > S2(Y=U) + S1(PTP) | kcat_PTP
 
+
 if __name__ == "__main__":
     newseeds = []
-    for i, (sp, attr) in enumerate(attributegen()):
+    for i, (sp, attr) in enumerate(attributegen(1)):
         print i, sp, attr
         newseeds.append(sp)
     print ''
 
-    rules = rulegen(1,0.1,1,0.001, 0.1, 90, 10, 10, 99, 1 ,100, 1)
-
-
-
+    rules = rulegen(1, 0.1, 1, 0.001, 0.1, 90, 10, 10, 99, 1, 100)
     for i, rr in enumerate(rules):
         print i, rr
     print ''
 
-    generate_reactions(newseeds, rules)
+    generate_reactions(newseeds, rules, 3)
 
 #begin model
 #begin parameters
