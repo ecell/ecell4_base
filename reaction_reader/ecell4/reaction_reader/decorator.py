@@ -100,8 +100,11 @@ class SpeciesAttributesCallback(Callback):
     def notify_bitwise_operations(self, obj):
         if not isinstance(obj, parseobj.OrExp):
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
+        elif len(obj._elements()) != 2:
+            raise RuntimeError, 'only one attribute is allowed. [%d] given' % (
+                len(obj._elements()))
 
-        lhs, rhs = obj._lhs, obj._rhs
+        lhs, rhs = obj._elements()
 
         species_list = generate_Species(lhs)
         if len(species_list) != 1:
@@ -174,14 +177,17 @@ class ReactionRulesCallback(Callback):
         lhs, rhs = obj._lhs, obj._rhs
 
         if isinstance(lhs, parseobj.OrExp):
-            lhs = lhs._lhs
+            lhs = lhs._elements()[0]
 
         if not isinstance(rhs, parseobj.OrExp):
             raise RuntimeError, ('an invalid object was given'
                 + ' as a right-hand-side [%s].' % (repr(rhs))
                 + ' OrExp must be given')
+        elif len(rhs._elements()) != 2:
+            raise RuntimeError, 'only one attribute is allowed. [%d] given' % (
+                len(rhs._elements()))
 
-        rhs, params = rhs._lhs, rhs._rhs
+        rhs, params = rhs._elements()
         lhs, rhs = generate_Species(lhs), generate_Species(rhs)
         lhs = tuple(sp for sp in lhs if sp is not None)
         rhs = tuple(sp for sp in rhs if sp is not None)
