@@ -1,3 +1,5 @@
+import types
+import numbers
 import species
 import copy
 import decorator
@@ -59,16 +61,101 @@ def generate_Species(obj):
 
     raise RuntimeError, 'invalid expression; "%s" given' % str(obj)
 
-def generate_ReactionRule(lhs, rhs, k=0.0):
+def generate_ReactionRule(lhs, rhs, opts):
     # if len(lhs) == 0:
     #     if len(rhs) != 1:
     #         raise RuntimeError, (
     #             "the number of products must be 1; %d given" % len(rhs))
     #     return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
     if len(lhs) == 1 or len(lhs) == 2:
-        return species.ReactionRule(lhs, rhs)
+        return species.ReactionRule(lhs, rhs, opts)
     raise RuntimeError, (
         "the number of reactants must be less than 3; %d given" % len(lhs))
+
+def generate_Option(opt):
+    # if not (isinstance(opt, parseobj.AnyCallable)
+    #     or isinstance(opt, parseobj.ParseObj)):
+    #     raise RuntimeError
+
+    if opt._size() != 1:
+        raise RuntimeError
+
+    elem = opt._elements()[0]
+    if elem.name == "IncludeReactants" or elem.name == "ExcludeReactants":
+        if not (len(elem.args) == 2
+            and type(elem.args[0]) == int
+            and (isinstance(elem.args[1], parseobj.AnyCallable)
+                or isinstance(elem.args[1], parseobj.ParseObj))):
+            raise RuntimeError
+
+        if isinstance(elem.args[1], parseobj.ParseObj):
+            raise RuntimeError, "only a subunit name is allowed here."
+
+        pttrn = elem.args[1]._elements()[0].name
+        if elem.name == "ExcludeReactants":
+            return (species.ExcludeReactants(elem.args[0], pttrn),
+                species.ExcludeProducts(elem.args[0], pttrn))
+        elif elem.name == "IncludeReactants":
+            return (species.IncludeReactants(elem.args[0], pttrn),
+                species.IncludeProducts(elem.args[0], pttrn))
+    elif elem.name == "IncludeProducts" or elem.name == "ExcludeProducts":
+        if not (len(elem.args) == 2
+            and type(elem.args[0]) == int
+            and (isinstance(elem.args[1], parseobj.AnyCallable)
+                or isinstance(elem.args[1], parseobj.ParseObj))):
+            raise RuntimeError
+
+        if isinstance(elem.args[1], parseobj.ParseObj):
+            raise RuntimeError, "only a subunit name is allowed here."
+
+        pttrn = elem.args[1]._elements()[0].name
+        if elem.name == "ExcludeProducts":
+            return (species.ExcludeProducts(elem.args[0], pttrn),
+                species.ExcludeReactants(elem.args[0], pttrn))
+        elif elem.name == "IncludeProducts":
+            return (species.IncludeProducts(elem.args[0], pttrn),
+                species.IncludeReactants(elem.args[0], pttrn))
+    else:
+        # raise RuntimeError
+        return (opt, None)
+    return (opt, opt)
+
+def generate_Options1(opts):
+    retval = []
+    for opt in opts:
+        if (isinstance(opt, parseobj.AnyCallable)
+            or isinstance(opt, parseobj.ParseObj)):
+            lhs, rhs = generate_Option(opt)
+            if lhs is not None:
+                retval.append(lhs)
+        # elif isinstance(opt, numbers.Number):
+        #     retval.append(opt)
+        # else:
+        #     raise RuntimeError, "an invalid option [%s] given." % (opt)
+        retval.append(opt)
+    return retval
+
+def generate_Options2(opts):
+    retval1, retval2 = [], []
+    for opt in opts:
+        if (isinstance(opt, parseobj.AnyCallable)
+            or isinstance(opt, parseobj.ParseObj)):
+            lhs, rhs = generate_Option(opt)
+            if lhs is not None:
+                retval1.append(lhs)
+            if rhs is not None:
+                retval2.append(rhs)
+        elif ((isinstance(opt, types.ListType)
+            or isinstance(opt, types.TupleType))
+            and len(opt) == 2):
+            # if (isinstance(opt[0], numbers.Number)
+            #     and isinstance(opt[1], numbers.Number)):
+            #     raise RuntimeError
+            retval1.append(opt[0])
+            retval2.append(opt[1])
+        else:
+            raise RuntimeError, "an invalid option [%s] given." % (opt)
+    return retval1, retval2
 
 class SpeciesAttributesCallback(decorator.Callback):
 
@@ -129,17 +216,22 @@ class ReactionRulesCallback(decorator.Callback):
             lhs = lhs._elements()[0]
 
         if isinstance(rhs, parseobj.OrExp):
+            opts = rhs._elements()[1: ]
             rhs = rhs._elements()[0]
+        else:
+            opts = []
 
         lhs, rhs = generate_Species(lhs), generate_Species(rhs)
         lhs = tuple(sp for sp in lhs if sp is not None)
         rhs = tuple(sp for sp in rhs if sp is not None)
 
         if isinstance(obj, parseobj.EqExp) or isinstance(obj, parseobj.NeExp):
-            self.comparisons.append(generate_ReactionRule(lhs, rhs))
-            self.comparisons.append(generate_ReactionRule(rhs, lhs))
+            opts1, opts2 = generate_Options2(opts)
+            self.comparisons.append(generate_ReactionRule(lhs, rhs, opts1))
+            self.comparisons.append(generate_ReactionRule(rhs, lhs, opts2))
         elif isinstance(obj, parseobj.GtExp):
-            self.comparisons.append(generate_ReactionRule(lhs, rhs))
+            opts = generate_Options1(opts)
+            self.comparisons.append(generate_ReactionRule(lhs, rhs, opts))
         else:
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
 

@@ -122,7 +122,7 @@ class Subunit(object):
     def __repr__(self):
         return '<"%s">' % (str(self))
 
-def check_connectivity(src):
+def check_connectivity(src, markers=[]):
     adjacencies = {}
     tmp = {}
     for i, su in enumerate(src.subunits):
@@ -155,16 +155,18 @@ def check_connectivity(src):
     if len(Ks) == 0:
         raise RuntimeError
     elif len(Ks) == 1:
-        return (src, )
+        return ((src, ), [0 for _ in markers])
     else:
-        retval = []
+        products, correspondence = [], [0 for _ in markers]
         for K in Ks:
             sp = Species()
             for i in K:
                 sp.add_subunit(copy.deepcopy(src.subunits[i]))
+                if src.subunits[i].index in markers:
+                    correspondence[markers.index(src.subunits[i].index)] = len(products)
             sp.update_indices()
-            retval.append(sp)
-        return tuple(retval)
+            products.append(sp)
+        return (tuple(products), correspondence)
 
 def reconnect(L, K, adjacencies):
     src = K[-1]
@@ -193,9 +195,11 @@ def concatenate_species(*species_list):
 
 class ReactionRule(object):
 
-    def __init__(self, reactants, products):
+    def __init__(self, reactants, products, options=[]):
         self.__reactants = reactants
         self.__products = products
+        self.__options = options
+        print self, "with", self.__options
 
         self.initialize()
 
@@ -259,10 +263,11 @@ class ReactionRule(object):
         indices = [serno(i) for i in range(num_subunits)]
 
         if len(indices) != len(set(indices)):
-            return None
+            return None, None
 
         retval = concatenate_species(*reactants)
         cache_binding = {}
+        new_correspondence = []
 
         for i, subunit in enumerate(product_subunits):
             correspondence = self.__correspondences[i]
@@ -272,6 +277,7 @@ class ReactionRule(object):
                 target = retval.subunits[-1]
             else:
                 target = retval.subunits[serno(correspondence)]
+            new_correspondence.append(target.index)
 
             for mod, (state, binding) in subunit.modifications.items():
                 value = target.modifications.get(mod)
@@ -317,20 +323,37 @@ class ReactionRule(object):
         removed.sort()
         for i in reversed(removed):
             retval.subunits.pop(i)
-        retval.update_indices()
+        # retval.update_indices()
 
-        return check_connectivity(retval)
+        markers, stride = [], 0
+        for sp in self.__products:
+            markers.append(new_correspondence[stride])
+            stride += len(sp.subunits)
+
+        return check_connectivity(retval, markers)
 
     def match(self, *reactants):
+        for opt in self.__options:
+            if ((isinstance(opt, ExcludeReactants)
+                    or isinstance(opt, IncludeReactants))
+                and not opt.match(reactants)):
+                return []
+
         contexts = None
         for sp1, sp2 in zip(self.__reactants, reactants):
             contexts = sp1.match(sp2, contexts)
 
         retval = []
         for context in contexts:
-            products = self.generate(context, reactants)
+            products, correspondence = self.generate(context, reactants)
             if products is not None:
-                retval.append(products)
+                for opt in self.__options:
+                    if ((isinstance(opt, ExcludeProducts)
+                            or isinstance(opt, IncludeProducts))
+                        and not opt.match(reactants, correspondence)):
+                        break
+                else:
+                    retval.append(products)
         return retval
 
     def __str__(self):
@@ -560,6 +583,95 @@ class Contexts(object):
                 newcontext[key2] = value
                 retval._append(newcontext)
         return retval
+
+class Option(object):
+
+    def __init__(self):
+        pass
+
+class IncludeReactants(Option):
+
+    def __init__(self, idx, pttrn):
+        Option.__init__(self)
+
+        if type(pttrn) != str:
+            raise RuntimeError
+        elif pttrn[0] == "_":
+            raise RuntimeError
+
+        self.__idx = idx
+        self.__pttrn = pttrn
+
+    def match(self, reactants):
+        if not (len(reactants) > self.__idx - 1):
+            print reactants
+            raise RuntimeError
+
+        sp = reactants[self.__idx - 1]
+        return (self.__pttrn in [su.name for su in sp.subunits])
+
+class ExcludeReactants(Option):
+
+    def __init__(self, idx, pttrn):
+        Option.__init__(self)
+
+        if type(pttrn) != str:
+            raise RuntimeError
+        elif pttrn[0] == "_":
+            raise RuntimeError
+
+        self.__idx = idx
+        self.__pttrn = pttrn
+
+    def match(self, reactants):
+        if not (len(reactants) > self.__idx - 1):
+            print reactants
+            raise RuntimeError
+
+        sp = reactants[self.__idx - 1]
+        return not (self.__pttrn in [su.name for su in sp.subunits])
+
+class IncludeProducts(Option):
+
+    def __init__(self, idx, pttrn):
+        Option.__init__(self)
+
+        if type(pttrn) != str:
+            raise RuntimeError
+        elif pttrn[0] == "_":
+            raise RuntimeError
+
+        self.__idx = idx
+        self.__pttrn = pttrn
+
+    def match(self, products, correspondence):
+        if not (len(correspondence) > self.__idx - 1):
+            print reactants
+            raise RuntimeError
+
+        sp = products[correspondence[self.__idx - 1]]
+        return (self.__pttrn in [su.name for su in sp.subunits])
+
+class ExcludeProducts(Option):
+
+    def __init__(self, idx, pttrn):
+        Option.__init__(self)
+
+        if type(pttrn) != str:
+            raise RuntimeError
+        elif pttrn[0] == "_":
+            raise RuntimeError
+
+        self.__idx = idx
+        self.__pttrn = pttrn
+
+    def match(self, products, correspondence):
+        if not (len(correspondence) > self.__idx - 1):
+            print reactants
+            raise RuntimeError
+
+        sp = products[correspondence[self.__idx - 1]]
+        return not (self.__pttrn in [su.name for su in sp.subunits])
 
 def generate_recurse(seeds1, rules, seeds2=[]):
     seeds = list(itertools.chain(seeds1, seeds2))
