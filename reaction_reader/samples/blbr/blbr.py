@@ -6,7 +6,7 @@ def attributegen():
     # R(r,r) | R0
     R(r1,r2) | R0
     # L(l,l) | L0
-    L(l2,l2) | L0
+    L(l1,l2) | L0
 
 @reaction_rules
 def rulegen():
@@ -24,9 +24,6 @@ def rulegen():
     # R(r).L(l) == R(r^1).L(l^1) | (kp3, km3)
     R(r1).L(l1) == R(r1^1).L(l1^1) | (kp3, km3)
     R(r2).L(l2) == R(r2^1).L(l2^1) | (kp3, km3)
-
-
-
 
 if __name__ == "__main__":
     newseeds = []
