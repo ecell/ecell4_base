@@ -1,6 +1,7 @@
 from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
 from ecell4.reaction_reader.species import generate_reactions
 
+
 @species_attributes
 def attributegen():
     S(CSH2,NSH2=C,PTP=C) | S_tot
@@ -8,98 +9,123 @@ def attributegen():
     R(DD^1,Y1=U,Y2=P).R(DD^1,Y1=U,Y2=P) | R_dim
 
 @reaction_rules
-def rulegen( kdim    , kopen    ,kclose   ,kon_CSH2 ,koff_CSH2, kon_NSH2 ,koff_NSH2 ,kkin_Y1 , kon_PTP  ,koff_PTP ,kcat_PTP ,chi_r1   ,chi_r2   ,chi_r3   ,chi_r4   ,chi_r5   ,chi_r6   ,chi_r7   ,chi_r8   ,chi_r9   ,chi_r10  ,chi_r11 , R_dim    ,S_tot ): 
-    # Intra-complex phosphorylation 
+def rulegen(
+    kdim, kopen, kclose, kon_CSH2, koff_CSH2, kon_NSH2, koff_NSH2, kkin_Y1,
+    kon_PTP, koff_PTP, kcat_PTP, chi_r1, chi_r2, chi_r3, chi_r4, chi_r5,
+    chi_r6, chi_r7, chi_r8, chi_r9, chi_r10 , chi_r11, R_dim, S_tot):
+
+    # Intra-complex phosphorylation
     R(DD^_,Y1=U) > R(DD^_,Y1=P) | kkin_Y1
 
     # Equilibrium between the closed form and open form of S
     S(NSH2=C,PTP=C) == S(NSH2=O,PTP=O) | (kopen, kclose)
 
+    # # Binding of S(CSH2) from cytosol
+    # (R(Y2=P) + S(CSH2) == R(Y2=P^1).S(CSH2^1)
+    #     | (kon_CSH2,koff_CSH2) | ExcludeReactants(2, R))
+
+    # # Binding of S(NSH2=O) from cytosol
+    # (R(Y2=P) + S(NSH2=O) == R(Y2=P^1).S(NSH2=O^1)
+    #     | (kon_NSH2,koff_NSH2) | ExcludeReactants(2, R))
+
+    # # Binding of S(PTP=O) from cytosol
+    # (R(Y1=P) + S(PTP=O) == R(Y1=P^1).S(PTP=O^1)
+    #     | (kon_PTP,koff_PTP) | ExcludeReactants(2, R))
+
     # Binding of S(CSH2) from cytosol
-    R(Y2=P) + S(CSH2) == R(Y2=P^1).S(CSH2^1) | (kon_CSH2,koff_CSH2)
-    #exclude_reactants(2,R)
+    (R(Y2=P) + S(CSH2,NSH2,PTP) == R(Y2=P^1).S(CSH2^1,NSH2,PTP)
+        | (kon_CSH2,koff_CSH2))
 
     # Binding of S(NSH2=O) from cytosol
-    R(Y2=P) + S(NSH2=O) == R(Y2=P^1).S(NSH2=O^1) | (kon_NSH2,koff_NSH2)
-    #exclude_reactants(2,R)
+    (R(Y2=P) + S(CSH2,PTP,NSH2=O) == R(Y2=P^1).S(CSH2,PTP,NSH2=O^1)
+        | (kon_NSH2,koff_NSH2))
 
     # Binding of S(PTP=O) from cytosol
-    R(Y1=P) + S(PTP=O) == R(Y1=P^1).S(PTP=O^1) | (kon_PTP,koff_PTP)
-    #exclude_reactants(2,R)
+    (R(Y1=P) + S(CSH2,NSH2,PTP=O) == R(Y1=P^1).S(CSH2,NSH2,PTP=O^1)
+        | (kon_PTP,koff_PTP))
 
     # Dephosphorylation of R(Y1=P)
     R(Y1=P^1).S(PTP=O^1) > R(Y1=U) + S(PTP=O) | kcat_PTP
     R(Y1=P^1).S(PTP=O^1) > R(Y1=U).S(PTP=O) | kcat_PTP
 
     # 1 Intra-complex binding: CSH2 bound, association of NSH2 (open) with other receptor
-    R(Y2=P).S(CSH2^_,NSH2=O,PTP=O) == \
-    R(Y2=P^1).S(CSH2^_,NSH2=O^1,PTP=O) | (chi_r1*kon_NSH2, koff_NSH2)
+    (R(Y2=P).S(CSH2^_,NSH2=O,PTP=O) == R(Y2=P^1).S(CSH2^_,NSH2=O^1,PTP=O)
+        | (chi_r1 * kon_NSH2, koff_NSH2))
 
     # 2 Intra-complex binding: CSH2 bound, association of PTP (open) with same receptor
-    R(Y1=P,Y2=P^1).S(CSH2^1,NSH2=O,PTP=O) == \
-    R(Y1=P^2,Y2=P^1).S(CSH2^1,NSH2=O,PTP=O^2) | (chi_r2*kon_PTP, koff_PTP)
+    (R(Y1=P,Y2=P^1).S(CSH2^1,NSH2=O,PTP=O)
+        == R(Y1=P^2,Y2=P^1).S(CSH2^1,NSH2=O,PTP=O^2)
+        | (chi_r2 * kon_PTP, koff_PTP))
 
     # 3 Intra-complex binding: CSH2 bound, association of PTP (open) with other receptor
-    R(Y1=P).R(Y2=P^1).S(CSH2^1,NSH2=O,PTP=O) == \
-    R(Y1=P^2).R(Y2=P^1).S(CSH2^1,NSH2=O,PTP=O^2) | (chi_r3*kon_PTP, koff_PTP)
+    (R(Y1=P).R(Y2=P^1).S(CSH2^1,NSH2=O,PTP=O)
+        == R(Y1=P^2).R(Y2=P^1).S(CSH2^1,NSH2=O,PTP=O^2)
+        | (chi_r3 * kon_PTP, koff_PTP))
 
     # 4 Intra-complex binding: NSH2 bound, association of CSH2 with other receptor
-    R(Y2=P).S(CSH2,NSH2=O^_,PTP=O) == \
-    R(Y2=P^1).S(CSH2^1,NSH2=O^_,PTP=O) | (chi_r1*kon_CSH2, koff_CSH2)
+    (R(Y2=P).S(CSH2,NSH2=O^_,PTP=O) == R(Y2=P^1).S(CSH2^1,NSH2=O^_,PTP=O)
+        | (chi_r1 * kon_CSH2, koff_CSH2))
 
     # 5 Intra-complex binding: NSH2 bound, association of PTP with other receptor
-    R(Y1=P).R(Y2=P^1).S(CSH2,NSH2=O^1,PTP=O) == \
-    R(Y1=P^2).R(Y2=P^1).S(CSH2,NSH2=O^1,PTP=O^2) | (chi_r4*kon_PTP, koff_PTP)
+    (R(Y1=P).R(Y2=P^1).S(CSH2,NSH2=O^1,PTP=O)
+        == R(Y1=P^2).R(Y2=P^1).S(CSH2,NSH2=O^1,PTP=O^2)
+        | (chi_r4 * kon_PTP, koff_PTP))
 
     # 6 Intracomplex binding: NSH2 bound, association of PTP with same receptor
-    R(Y1=P,Y2=P^1).S(CSH2,NSH2=O^1,PTP=O) == \
-    R(Y1=P^2,Y2=P^1).S(CSH2,NSH2=O^1,PTP=O^2) | (chi_r5*kon_PTP, koff_PTP)
+    (R(Y1=P,Y2=P^1).S(CSH2,NSH2=O^1,PTP=O)
+        == R(Y1=P^2,Y2=P^1).S(CSH2,NSH2=O^1,PTP=O^2)
+        | (chi_r5 * kon_PTP, koff_PTP))
 
     # 7 Intra-complex binding: PTP bound, association of CSH2 with same receptor
-    R(Y1=P^1,Y2=P).S(CSH2,NSH2=O,PTP=O^1) == \
-    R(Y1=P^1,Y2=P^2).S(CSH2^2,NSH2=O,PTP=O^1) | (chi_r2*kon_CSH2, koff_CSH2)
+    (R(Y1=P^1,Y2=P).S(CSH2,NSH2=O,PTP=O^1)
+        == R(Y1=P^1,Y2=P^2).S(CSH2^2,NSH2=O,PTP=O^1)
+        | (chi_r2 * kon_CSH2, koff_CSH2))
 
     # 8 Intra-complex binding: PTP bound, association of CSH2 with other receptor
-    R(Y1=P^1).R(Y2=P).S(CSH2,NSH2=O,PTP=O^1) == \
-    R(Y1=P^1).R(Y2=P^2).S(CSH2^2,NSH2=O,PTP=O^1) | (chi_r3*kon_CSH2, koff_CSH2)
+    (R(Y1=P^1).R(Y2=P).S(CSH2,NSH2=O,PTP=O^1)
+        == R(Y1=P^1).R(Y2=P^2).S(CSH2^2,NSH2=O,PTP=O^1)
+        | (chi_r3 * kon_CSH2, koff_CSH2))
 
     # 9 Intra-complex binding: PTP bound, association of NSH2 with other receptor
-    R(Y1=P^1).R(Y2=P).S(CSH2,NSH2=O,PTP=O^1) == \
-    R(Y1=P^1).R(Y2=P^2).S(CSH2,NSH2=O^2,PTP=O^1) | (chi_r4*kon_NSH2, koff_NSH2)
+    (R(Y1=P^1).R(Y2=P).S(CSH2,NSH2=O,PTP=O^1)
+        == R(Y1=P^1).R(Y2=P^2).S(CSH2,NSH2=O^2,PTP=O^1)
+        | (chi_r4 * kon_NSH2, koff_NSH2))
 
     # 10 Intra-complex binding: PTP bound, association of NSH2 with same receptor
-    R(Y1=P^1,Y2=P).S(CSH2,NSH2=O,PTP=O^1) == \
-    R(Y1=P^1,Y2=P^2).S(CSH2,NSH2=O^2,PTP=O^1) | (chi_r5*kon_NSH2, koff_NSH2)
+    (R(Y1=P^1,Y2=P).S(CSH2,NSH2=O,PTP=O^1)
+        == R(Y1=P^1,Y2=P^2).S(CSH2,NSH2=O^2,PTP=O^1)
+        | (chi_r5 * kon_NSH2, koff_NSH2))
 
     # 11 Intra-complex binding: CSH2 & NSH2 bound, assoc. of PTP with same receptor as CSH2
-    R(Y1=P,Y2=P^1).R(Y2=P^2).S(CSH2^1,NSH2=O^2,PTP=O) == \
-    R(Y1=P^3,Y2=P^1).R(Y2=P^2).S(CSH2^1,NSH2=O^2,PTP=O^3) \
-    | (chi_r6*kon_PTP,koff_PTP)
+    (R(Y1=P,Y2=P^1).R(Y2=P^2).S(CSH2^1,NSH2=O^2,PTP=O)
+        == R(Y1=P^3,Y2=P^1).R(Y2=P^2).S(CSH2^1,NSH2=O^2,PTP=O^3)
+        | (chi_r6 * kon_PTP,koff_PTP))
 
     # 12 Intra-complex binding: CSH2 & NSH2 bound, assoc. of PTP with same receptor as NSH2
-    R(Y1=P,Y2=P^1).R(Y2=P^2).S(CSH2^2,NSH2=O^1,PTP=O) == \
-    R(Y1=P^3,Y2=P^1).R(Y2=P^2).S(CSH2^2,NSH2=O^1,PTP=O^3) \
-    | (chi_r7*kon_PTP, koff_PTP)
+    (R(Y1=P,Y2=P^1).R(Y2=P^2).S(CSH2^2,NSH2=O^1,PTP=O)
+        == R(Y1=P^3,Y2=P^1).R(Y2=P^2).S(CSH2^2,NSH2=O^1,PTP=O^3)
+        | (chi_r7 * kon_PTP, koff_PTP))
 
     # 13 Intra-complex binding: CSH2 & PTP bound to the same receptor, assoc. of NSH2
-    R(Y1=P^1,Y2=P^2).R(Y2=P).S(CSH2^2,NSH2=O,PTP=O^1) == \
-    R(Y1=P^1,Y2=P^2).R(Y2=P^3).S(CSH2^2,NSH2=O^3,PTP=O^1) \
-    | (chi_r8*kon_NSH2, koff_NSH2)
+    (R(Y1=P^1,Y2=P^2).R(Y2=P).S(CSH2^2,NSH2=O,PTP=O^1)
+        == R(Y1=P^1,Y2=P^2).R(Y2=P^3).S(CSH2^2,NSH2=O^3,PTP=O^1)
+        | (chi_r8 * kon_NSH2, koff_NSH2))
 
     # 14 Intra-complex binding: CSH2 & PTP bound to different receptors, assoc. of NSH2
-    R(Y2=P^1).R(Y1=P^2,Y2=P).S(CSH2^1,NSH2=O,PTP=O^2) == \
-    R(Y2=P^1).R(Y1=P^2,Y2=P^3).S(CSH2^1,NSH2=O^3,PTP=O^2) \
-    | (chi_r9*kon_NSH2, koff_NSH2)
+    (R(Y2=P^1).R(Y1=P^2,Y2=P).S(CSH2^1,NSH2=O,PTP=O^2)
+        == R(Y2=P^1).R(Y1=P^2,Y2=P^3).S(CSH2^1,NSH2=O^3,PTP=O^2)
+        | (chi_r9 * kon_NSH2, koff_NSH2))
 
     # 15 Intra-complex binding: PTP & NSH2 bound to different receptors, assoc. of CSH2
-    R(Y2=P^1).R(Y1=P^2,Y2=P).S(CSH2,NSH2=O^1,PTP=O^2) == \
-    R(Y2=P^1).R(Y1=P^2,Y2=P^3).S(CSH2^3,NSH2=O^1,PTP=O^2) \
-    | (chi_r10*kon_CSH2, koff_CSH2)
+    (R(Y2=P^1).R(Y1=P^2,Y2=P).S(CSH2,NSH2=O^1,PTP=O^2)
+        == R(Y2=P^1).R(Y1=P^2,Y2=P^3).S(CSH2^3,NSH2=O^1,PTP=O^2)
+        | (chi_r10 * kon_CSH2, koff_CSH2))
 
-    # 16 Intra-complex binding: PTP & NSH2 bound to same receptor, assoc. of CSH2 
-    R(Y1=P^1,Y2=P^2).R(Y2=P).S(CSH2,NSH2=O^2,PTP=O^1) == \
-    R(Y1=P^1,Y2=P^2).R(Y2=P^3).S(CSH2^3,NSH2=O^2,PTP=O^1) \
-    | (chi_r11*kon_CSH2, koff_CSH2)
+    # 16 Intra-complex binding: PTP & NSH2 bound to same receptor, assoc. of CSH2
+    (R(Y1=P^1,Y2=P^2).R(Y2=P).S(CSH2,NSH2=O^2,PTP=O^1)
+        == R(Y1=P^1,Y2=P^2).R(Y2=P^3).S(CSH2^3,NSH2=O^2,PTP=O^1)
+        | (chi_r11 * kon_CSH2, koff_CSH2))
+
 
 if __name__ == "__main__":
     newseeds = []
@@ -108,7 +134,10 @@ if __name__ == "__main__":
         newseeds.append(sp)
     print ''
 
-    rules = rulegen( 1000, 10, 500, 1 ,1, 1, 1, 0.1, 1 , 10, 1, 1000, 100, 1000, 1000, 100, 100, 100, 1000, 100, 100, 1000, 0.025, 0.05 )
+    rules = rulegen(
+        1000, 10, 500, 1, 1, 1, 1, 0.1,
+        1, 10, 1, 1000, 100, 1000, 1000, 100,
+        100, 100, 1000, 100, 100, 1000, 0.025, 0.05)
     for i, rr in enumerate(rules):
         print i, rr
     print ''
@@ -127,17 +156,17 @@ if __name__ == "__main__":
 #    kopen        10
 #    kclose       500
 #
-#    kon_CSH2     1       
-#    koff_CSH2    1        
+#    kon_CSH2     1
+#    koff_CSH2    1
 #
-#    kon_NSH2     1       
+#    kon_NSH2     1
 #    koff_NSH2    1
 #
 #    kkin_Y1      0.1
 #
-#    kon_PTP      1        
-#    koff_PTP     10       
-#    kcat_PTP     1        
+#    kon_PTP      1
+#    koff_PTP     10
+#    kcat_PTP     1
 #
 #    chi_r1       1000
 #    chi_r2       100
@@ -167,7 +196,7 @@ if __name__ == "__main__":
 #end seed species
 #
 #begin reaction rules
-#    # Intra-complex phosphorylation 
+#    # Intra-complex phosphorylation
 #    R(DD!+,Y1~U) -> R(DD!+,Y1~P)  kkin_Y1
 #
 #    # Equilibrium between the closed form and open form of S
@@ -254,7 +283,7 @@ if __name__ == "__main__":
 #    R(Y2~P!1).R(Y1~P!2,Y2~P!3).S(NSH2~O!1,CSH2!3,PTP~O!2) \
 #    chi_r10*kon_CSH2, koff_CSH2
 #
-#    # 16 Intra-complex binding: PTP & NSH2 bound to same receptor, assoc. of CSH2 
+#    # 16 Intra-complex binding: PTP & NSH2 bound to same receptor, assoc. of CSH2
 #    R(Y1~P!1,Y2~P!2).R(Y2~P).S(NSH2~O!2,CSH2,PTP~O!1) <-> \
 #    R(Y1~P!1,Y2~P!2).R(Y2~P!3).S(NSH2~O!2,CSH2!3,PTP~O!1) \
 #    chi_r11*kon_CSH2, koff_CSH2
@@ -268,4 +297,3 @@ if __name__ == "__main__":
 #generate_network({overwrite=>1})
 #simulate({method=>"ode",t_end=>1000,n_steps=>100,steady_state=>1,atol=>1e-10,rtol=>1e-8,sparse=>0})
 #
-            
