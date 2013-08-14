@@ -153,7 +153,7 @@ def check_connectivity(src, markers=[]):
         Ks.append(K)
 
     if len(Ks) == 0:
-        raise RuntimeError
+        return (None, [None for _ in markers])
     elif len(Ks) == 1:
         return ((src, ), [0 for _ in markers])
     else:
@@ -199,9 +199,14 @@ class ReactionRule(object):
         self.__reactants = reactants
         self.__products = products
         self.__options = options
-        print self, "with", self.__options
 
         self.initialize()
+
+    def reactants(self):
+        return copy.deepcopy(self.__reactants)
+
+    def products(self):
+        return copy.deepcopy(self.__products)
 
     def num_reactants(self):
         return len(self.__reactants)
@@ -718,6 +723,12 @@ def generate_recurse(seeds1, rules, seeds2=[]):
     return (retval, seeds)
 
 def generate_reactions(newseeds, rules, max_iter=10):
+    for rr in rules:
+        if rr.num_reactants() == 0:
+            for newsp in rr.products():
+                if newsp not in newseeds:
+                    newseeds.append(newsp)
+
     seeds, cnt = [], 0
     while len(newseeds) != 0 and cnt < max_iter:
         print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds

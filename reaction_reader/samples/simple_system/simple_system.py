@@ -3,17 +3,18 @@ from ecell4.reaction_reader.species import generate_reactions
 
 @species_attributes
 def attributegen():
-    X(y,p=0) | 5000
-    X(y,p=1) | 0
+    X(y,p=s0) | 5000
+    X(y,p=s1) | 0
     Y(x)     | 500
- 
+
 @reaction_rules
 def rulegen():
-    X(y,p=0) + Y(x) > X(y^1,p=0).Y(x^1) | kon
-    X(y^1,p=0).Y(x^1) > X(y,p=0) + Y(x) | koff
-    X(y^1,p=0).Y(x^1) > X(y,p=1) + Y(x) | kcat
+    X(y,p=s0) + Y(x) > X(y^1,p=s0).Y(x^1) | kon
+    X(y^1,p=s0).Y(x^1) > X(y,p=s0) + Y(x) | koff
+    X(y^1,p=s0).Y(x^1) > X(y,p=s1) + Y(x) | kcat
 
-    X(p=1) > X(p=0)                    | dephos
+    X(p=s1) > X(p=s0) | dephos
+
 
 if __name__ == "__main__":
     newseeds = []

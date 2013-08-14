@@ -3,23 +3,27 @@ from ecell4.reaction_reader.species import generate_reactions
 
 @species_attributes
 def attributegen():
-    DNA(promoter=0) | 1
-    mRNA          | 0
-    Protein       | 0
-    Src           | 1
-    Null          | 0
+    DNA(promoter=s0) | 1
+    # mRNA | 0
+    # Protein | 0
 
 @reaction_rules
 def rulegen(k0, k1, v0, v1, d0, d1):
     # promoter activation
-    DNA(promoter=0) == DNA(promoter=1) | (k0,k1)
+    DNA(promoter=s0) == DNA(promoter=s1) | (k0, k1)
+
     # mRNA synthesis
-    Src > Src + mRNA | v0*DNA(promoter=1)
+    # Src > Src + mRNA | v0 * DNA(promoter=s1)
+    ~DNA(promoter=s1) > ~DNA(promoter=s1) + mRNA | v0
+
     # Protein synthesis
-    Src > Src + Protein | v1*mRNA
+    # Src > Src + Protein | v1 * mRNA
+    ~mRNA > ~mRNA + Protein | v1
+
     # degradation
-    mRNA    > Null | d0
-    Protein > Null | d1
+    mRNA > ~mRNA | d0
+    Protein > ~Protein | d1
+
 
 if __name__ == "__main__":
     newseeds = []
@@ -28,7 +32,9 @@ if __name__ == "__main__":
         newseeds.append(sp)
     print ''
 
-    rules = rulegen(0.6*0.0005, 0.2*0.0005, 4*0.0005, 10*10*0.0005, 10*0.0005, 0.0005)
+    rules = rulegen(
+        0.6 * 0.0005, 0.2 * 0.0005, 4 * 0.0005,
+        10 * 10 * 0.0005, 10 * 0.0005, 0.0005)
     for i, rr in enumerate(rules):
         print i, rr
     print ''

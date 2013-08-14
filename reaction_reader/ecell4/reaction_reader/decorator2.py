@@ -39,7 +39,7 @@ def generate_Species(obj):
                             or isinstance(value, parseobj.AnyCallable))
                         or value._size() != 1):
                         raise RuntimeError, (
-                            "invalid argument [%s] found." % (mod))
+                            "invalid argument [%s] found." % (value))
                     arg = value._elements()[0]
                     state, binding = str(arg.name), arg.modification
                     if binding is None:
@@ -67,7 +67,7 @@ def generate_ReactionRule(lhs, rhs, opts):
     #         raise RuntimeError, (
     #             "the number of products must be 1; %d given" % len(rhs))
     #     return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
-    if len(lhs) == 1 or len(lhs) == 2:
+    if len(lhs) == 0 or len(lhs) == 1 or len(lhs) == 2:
         return species.ReactionRule(lhs, rhs, opts)
     raise RuntimeError, (
         "the number of reactants must be less than 3; %d given" % len(lhs))
