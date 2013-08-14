@@ -63,7 +63,7 @@ if __name__ == "__main__":
         print i, rr
     print ''
 
-    generate_reactions(newseeds, rules, 3)
+    generate_reactions(newseeds, rules)
 
 #begin model
 #begin parameters

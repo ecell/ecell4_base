@@ -157,7 +157,7 @@ def check_connectivity(src, markers=[]):
     elif len(Ks) == 1:
         return ((src, ), [0 for _ in markers])
     else:
-        products, correspondence = [], [0 for _ in markers]
+        products, correspondence = [], [None for _ in markers]
         for K in Ks:
             sp = Species()
             for i in K:
@@ -346,11 +346,13 @@ class ReactionRule(object):
         retval = []
         for context in contexts:
             products, correspondence = self.generate(context, reactants)
-            if products is not None:
+            # if (products is not None): #XXX: allow indirect connections
+            if (products is not None
+                and len(correspondence) == len(set(correspondence))):
                 for opt in self.__options:
                     if ((isinstance(opt, ExcludeProducts)
                             or isinstance(opt, IncludeProducts))
-                        and not opt.match(reactants, correspondence)):
+                        and not opt.match(products, correspondence)):
                         break
                 else:
                     retval.append(products)
@@ -646,7 +648,6 @@ class IncludeProducts(Option):
 
     def match(self, products, correspondence):
         if not (len(correspondence) > self.__idx - 1):
-            print reactants
             raise RuntimeError
 
         sp = products[correspondence[self.__idx - 1]]
@@ -667,7 +668,6 @@ class ExcludeProducts(Option):
 
     def match(self, products, correspondence):
         if not (len(correspondence) > self.__idx - 1):
-            print reactants
             raise RuntimeError
 
         sp = products[correspondence[self.__idx - 1]]
