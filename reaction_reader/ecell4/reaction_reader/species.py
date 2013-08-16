@@ -89,8 +89,8 @@ class Species(object):
 
                 #XXX: updating subunits through the reference)
                 if newbinding is None:
-                    su.modifications[mod] = (state, stride)
-                    newbindings[binding] = stride
+                    su.modifications[mod] = (state, str(stride))
+                    newbindings[binding] = str(stride)
                     stride += 1
                 else:
                     su.modifications[mod] = (state, newbinding)
@@ -835,6 +835,7 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                     for newsp in itertools.chain(*pttrns):
                         if (newsp not in seeds and newsp not in retval
                             and check_stoichiometry(newsp, max_stoich)):
+                            newsp.sort()
                             retval.append(newsp)
         for sp2 in seeds:
             for rr in rules:
@@ -849,6 +850,7 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                         for newsp in itertools.chain(*pttrns):
                             if (newsp not in seeds and newsp not in retval
                                 and check_stoichiometry(newsp, max_stoich)):
+                                newsp.sort()
                                 retval.append(newsp)
         for sp2 in seeds2:
             for rr in rules:
@@ -863,6 +865,7 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                         for newsp in itertools.chain(*pttrns):
                             if (newsp not in seeds and newsp not in retval
                                 and check_stoichiometry(newsp, max_stoich)):
+                                newsp.sort()
                                 retval.append(newsp)
     return (retval, seeds)
 
@@ -872,6 +875,7 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
             for newsp in rr.products():
                 if (newsp not in newseeds
                     and check_stoichiometry(newsp, max_stoich)):
+                    newsp.sort()
                     newseeds.append(newsp)
 
     seeds, cnt = [], 0
