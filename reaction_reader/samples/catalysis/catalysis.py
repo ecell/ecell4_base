@@ -1,3 +1,38 @@
+from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
+from ecell4.reaction_reader.species import generate_reactions
+
+@species_attributes
+def attributegen():
+    S(e,y=zero)  | 1
+    kinase(s) | 2
+    pptase(s) | 3
+    ATP()     | 4
+    ADP()     | 5
+
+@reaction_rules
+def rulegen():
+    # binding rules
+    S(e) + kinase(s) == S(e^1).kinase(s^1) | k1
+    S(e) + pptase(s) == S(e^1).pptase(s^1) | k2
+    # catalysis
+    S(e^1,y=zero).kinase(s^1) + ATP == S(e^1,y=P).kinase(s^1) + ADP | k3
+    S(e^1,y=P).pptase(s^1)       == S(e^1,y=zero).pptase(s^1)       | k4
+
+if __name__ == "__main__":
+    newseeds = []
+    for i, (sp, attr) in enumerate(attributegen()):
+        print i, sp, attr
+        newseeds.append(sp)
+    print ''
+
+    rules = rulegen()
+    for i, rr in enumerate(rules):
+        print i, rr
+    print ''
+
+    generate_reactions(newseeds, rules)
+
+
 ## Catalysis in energy BNG
 ## justin.s.hogg@gmail.com, 9 Apr 2013
 #
