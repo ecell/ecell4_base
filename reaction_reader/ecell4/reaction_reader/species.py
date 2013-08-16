@@ -80,7 +80,7 @@ class Species(object):
         stride, newbindings = 1, {}
         for su in self.subunits:
             mods = su.modifications.keys()
-            for mod in mods:
+            for mod in sorted(mods):
                 (state, binding) = su.modifications[mod]
                 if binding == "" or binding[0] == "_":
                     continue
