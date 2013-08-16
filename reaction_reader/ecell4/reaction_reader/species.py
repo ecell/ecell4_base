@@ -354,10 +354,10 @@ class ReactionRule(object):
 
                 target.add_modification(mod, newstate, newbinding)
 
-        removed = [context[label_subunit(i)].index for i in self.__removed]
+        removed = [serno(i) for i in self.__removed]
         removed.sort()
         for i in reversed(removed):
-            retval.subunits.pop(i)
+            su = retval.subunits.pop(i)
         # retval.update_indices()
 
         markers, stride = [], 0
@@ -740,15 +740,19 @@ class CmpSubunit:
         if idx1 == idx2:
             return 0
         elif idx1 > idx2:
-            pair_key = (idx2, idx1)
-        else:
             pair_key = (idx1, idx2)
+        else:
+            pair_key = (idx2, idx1)
+        # elif idx1 > idx2:
+        #     pair_key = (idx2, idx1)
+        # else:
+        #     pair_key = (idx1, idx2)
 
         if pair_key in self.__cache.keys():
             if idx1 > idx2:
-                return self.__cache[pair_key] * -1
-            else:
                 return self.__cache[pair_key]
+            else:
+                return self.__cache[pair_key] * -1
         elif pair_key in ignore:
             return 0 # already checked
 
@@ -770,7 +774,7 @@ class CmpSubunit:
                 return cmp(mod1, mod2)
 
             state1, state2 = (
-                su1.modifications[mod1][0], su2.modifications[mod2][0])
+                su1.modifications[mod1], su2.modifications[mod2])
             if state1 != state2:
                 ignore.pop()
                 return cmp(state1, state2)
@@ -805,10 +809,10 @@ class CmpSubunit:
         if retval != 0:
             return retval
         elif lhs.index > rhs.index:
-            self.__cache[(rhs.index, lhs.index)] = -1
+            self.__cache[(lhs.index, rhs.index)] = +1
             return +1
         elif lhs.index < rhs.index:
-            self.__cache[(lhs.index, rhs.index)] = -1
+            self.__cache[(rhs.index, lhs.index)] = +1
             return -1
         else:
             return 0 # lhs.index == rhs.index
@@ -880,10 +884,19 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
 
     seeds, cnt = [], 0
     while len(newseeds) != 0 and cnt < max_iter:
-        print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
+        # print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
+        print "[RESULT%d] %d seeds, %d newseeds." % (
+            cnt, len(seeds), len(newseeds))
         newseeds, seeds = generate_recurse(newseeds, rules, seeds, max_stoich)
         cnt += 1
-    print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
+    # print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
+    print "[RESULT%d] %d seeds, %d newseeds." % (cnt, len(seeds), len(newseeds))
+    print ""
+
+    seeds.sort(key=str)
+    for i, sp in enumerate(seeds):
+        print "%5d %s" % (i + 1, str(sp))
+
     return seeds + newseeds
 
 
