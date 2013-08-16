@@ -29,6 +29,13 @@ class Species(object):
         subunit.index = len(self.subunits)
         self.subunits.append(subunit)
 
+    def count_subunits(self, pttrn):
+        retval = 0
+        for su in self.subunits:
+            if su.name == pttrn:
+                retval += 1
+        return retval
+
     def generate_conditions(self, stride=0):
         conditions = []
         for i, subunit in enumerate(self.subunits):
@@ -804,7 +811,13 @@ def sort_subunits(sp):
             else:
                 su.modifications[mod] = (state, newbinding)
 
-def generate_recurse(seeds1, rules, seeds2=[]):
+def check_stoichiometry(sp, max_stoich):
+    for pttrn, num_subunits in max_stoich.items():
+        if sp.count_subunits(pttrn) > num_subunits:
+            return False
+    return True
+
+def generate_recurse(seeds1, rules, seeds2, max_stoich):
     seeds = list(itertools.chain(seeds1, seeds2))
     retval = []
     for sp1 in seeds1:
@@ -818,7 +831,8 @@ def generate_recurse(seeds1, rules, seeds2=[]):
                 #     raise e
                 if pttrns is not None and len(pttrns) > 0:
                     for newsp in itertools.chain(*pttrns):
-                        if newsp not in seeds and newsp not in retval:
+                        if (newsp not in seeds and newsp not in retval
+                            and check_stoichiometry(newsp, max_stoich)):
                             retval.append(newsp)
         for sp2 in seeds:
             for rr in rules:
@@ -831,7 +845,8 @@ def generate_recurse(seeds1, rules, seeds2=[]):
                     #     raise e
                     if pttrns is not None and len(pttrns) > 0:
                         for newsp in itertools.chain(*pttrns):
-                            if newsp not in seeds and newsp not in retval:
+                            if (newsp not in seeds and newsp not in retval
+                                and check_stoichiometry(newsp, max_stoich)):
                                 retval.append(newsp)
         for sp2 in seeds2:
             for rr in rules:
@@ -844,21 +859,23 @@ def generate_recurse(seeds1, rules, seeds2=[]):
                     #     raise e
                     if pttrns is not None and len(pttrns) > 0:
                         for newsp in itertools.chain(*pttrns):
-                            if newsp not in seeds and newsp not in retval:
+                            if (newsp not in seeds and newsp not in retval
+                                and check_stoichiometry(newsp, max_stoich)):
                                 retval.append(newsp)
     return (retval, seeds)
 
-def generate_reactions(newseeds, rules, max_iter=10):
+def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
     for rr in rules:
         if rr.num_reactants() == 0:
             for newsp in rr.products():
-                if newsp not in newseeds:
+                if (newsp not in newseeds
+                    and check_stoichiometry(newsp, max_stoich)):
                     newseeds.append(newsp)
 
     seeds, cnt = [], 0
     while len(newseeds) != 0 and cnt < max_iter:
         print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
-        newseeds, seeds = generate_recurse(newseeds, rules, seeds)
+        newseeds, seeds = generate_recurse(newseeds, rules, seeds, max_stoich)
         cnt += 1
     print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
     return seeds + newseeds

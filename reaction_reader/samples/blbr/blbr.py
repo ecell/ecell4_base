@@ -37,7 +37,7 @@ if __name__ == "__main__":
         print i, rr
     print ''
 
-    generate_reactions(newseeds, rules)
+    generate_reactions(newseeds, rules, max_stoich=dict(R=5, L=5))
 
 # setOption("SpeciesLabel","HNauty")
 # begin model
