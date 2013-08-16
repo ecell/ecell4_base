@@ -1,10 +1,11 @@
 import types
 import numbers
-import species
 import copy
+import functools
+
+import species
 import decorator
 import parseobj
-import functools
 
 
 def generate_Species(obj):
@@ -237,3 +238,68 @@ class ReactionRulesCallback(decorator.Callback):
 
 species_attributes = functools.partial(decorator.parse_decorator, SpeciesAttributesCallback)
 reaction_rules = functools.partial(decorator.parse_decorator, ReactionRulesCallback)
+
+class AnyCallableGenerator(dict):
+
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+
+        self.__cache = decorator.Callback()
+
+    def __setitem__(self, key, value):
+        dict.__setitem__(self, key, value)
+
+    def __getitem__(self, key):
+        retval = self.get(key)
+        if retval is None:
+            return parseobj.AnyCallable(self.__cache, key)
+        return retval
+
+def create_species(expr):
+    vardict = AnyCallableGenerator()
+    obj = eval(expr, globals(), vardict)
+    retval = generate_Species(obj)
+    if len(retval) != 1:
+        raise RuntimeError, "multiple species were defined in the expression."
+    return retval[0]
+
+
+if __name__ == "__main__":
+    def cmp_subunit(sp, idx1, idx2):
+        retval = species.CmpSubunit(sp)(sp.subunits[idx1], sp.subunits[idx2])
+        print "%s %s %s in %s" % (
+            str(sp.subunits[idx1]),
+            "==" if retval == 0 else (">" if retval == 1 else "<"),
+            str(sp.subunits[idx2]),
+            str(sp))
+        return retval
+
+    sp1 = create_species("Grb2(SH2^1,SH3^2).Grb2(SH2^3,SH3^4).Grb2(SH2^5,SH3^6).Grb2(SH2^7,SH3^8).Shc(PTB^9,Y317=pY^3).Shc(PTB^10,Y317=pY^7).Sos(dom^2).Sos(dom^4).Sos(dom^6).Sos(dom^8).egf(r^11).egf(r^12).egfr(l^11,r^13,Y1068=pY^1,Y1148=pY^9).egfr(l^12,r^13,Y1068=pY^5,Y1148=pY^10)")
+    sp2 = create_species("egf(r^1).egfr(l^1,r^4,Y1068=pY^2,Y1148=pY^6).Grb2(SH2^2,SH3).egf(r^3).egfr(l^3,r^4,Y1068=pY,Y1148=pY^9).Shc(PTB^6,Y317=pY^7).Grb2(SH2^7,SH3).Shc(PTB^9,Y317=pY^10).Grb2(SH2^10,SH3)")
+    sp3 = create_species("A(bs^1).B(l^1,r^2).A(bs^2)")
+    sp4 = create_species("A(bs^1).B(l^1,r^3).B(r^3,l^2).A(bs^2)")
+    sp5 = create_species("A(bs^1).B(l^2,r^3).B(r^3,l^1).A(bs^2)")
+
+    cmp_subunit(sp1, 0, 1)
+    cmp_subunit(sp1, 0, 2)
+    cmp_subunit(sp1, 0, 3)
+    cmp_subunit(sp1, 10, 11)
+    cmp_subunit(sp2, 0, 3)
+    cmp_subunit(sp2, 2, 6)
+    cmp_subunit(sp2, 2, 8)
+    cmp_subunit(sp2, 6, 8)
+    cmp_subunit(sp3, 0, 2)
+    cmp_subunit(sp4, 0, 3)
+    cmp_subunit(sp4, 1, 2)
+
+    print ""
+    species.sort_subunits(sp1)
+    print sp1
+    species.sort_subunits(sp2)
+    print sp2
+    species.sort_subunits(sp3)
+    print sp3
+    species.sort_subunits(sp4)
+    print sp4
+    species.sort_subunits(sp5)
+    print sp5

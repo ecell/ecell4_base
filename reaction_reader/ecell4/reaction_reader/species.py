@@ -678,6 +678,132 @@ class ExcludeProducts(Option):
         sp = products[correspondence[self.__idx - 1]]
         return not (self.__pttrn in [su.name for su in sp.subunits])
 
+class CmpSubunit:
+
+    def __init__(self, sp):
+        self.__species = sp
+
+        self.initialize()
+
+    def initialize(self):
+        self.__species.update_indices()
+        self.__subunits = copy.deepcopy(self.__species.subunits)
+
+        self.__bindings = {}
+        for i, su in enumerate(self.__subunits):
+            for mod, (state, binding) in su.modifications.items():
+                if binding == "":
+                    continue
+                elif binding[0] == "_":
+                    continue
+
+                if not binding in self.__bindings.keys():
+                    self.__bindings[binding] = [(i, mod)]
+                elif len(self.__bindings[binding]) == 1:
+                    self.__bindings[binding].append((i, mod))
+                else:
+                    raise RuntimeError, "an invalid bindig found. [%s]" % (binding)
+
+        self.__cache = {}
+
+    def cmp_recurse(self, idx1, idx2, ignore):
+        if idx1 == idx2:
+            return 0
+        elif idx1 > idx2:
+            pair_key = (idx2, idx1)
+        else:
+            pair_key = (idx1, idx2)
+
+        if pair_key in self.__cache.keys():
+            if idx1 > idx2:
+                return self.__cache[pair_key] * -1
+            else:
+                return self.__cache[pair_key]
+        elif pair_key in ignore:
+            return 0 # already checked
+
+        su1, su2 = self.__subunits[idx1], self.__subunits[idx2]
+        if su1.name != su2.name:
+            return cmp(su1.name, su2.name)
+
+        mods1, mods2 = su1.modifications.keys(), su2.modifications.keys()
+        if len(mods1) != len(mods2):
+            return cmp(len(mods1), len(mods2))
+
+        ignore.append(pair_key)
+        mods1.sort()
+        mods2.sort()
+
+        for mod1, mod2 in zip(mods1, mods2):
+            if mod1 != mod2:
+                ignore.pop()
+                return cmp(mod1, mod2)
+
+            state1, state2 = (
+                su1.modifications[mod1][0], su2.modifications[mod2][0])
+            if state1 != state2:
+                ignore.pop()
+                return cmp(state1, state2)
+
+        for mod1, mod2 in zip(mods1, mods2):
+            binding1, binding2 = (
+                su1.modifications[mod1][1], su2.modifications[mod2][1])
+            if binding1 == binding2:
+                continue
+            elif binding1 == "" or binding2 == "":
+                ignore.pop()
+                return cmp(binding1, binding2)
+
+            pair1, pair2 = self.__bindings[binding1], self.__bindings[binding2]
+            tgt_idx1, tgt_mod1 = pair1[0] if pair1[1][0] == idx1 else pair1[1]
+            tgt_idx2, tgt_mod2 = pair2[0] if pair2[1][0] == idx2 else pair2[1]
+
+            if tgt_mod1 != tgt_mod2:
+                ignore.pop()
+                return cmp(tgt_mod1, tgt_mod2)
+
+            retval = self.cmp_recurse(tgt_idx1, tgt_idx2, ignore)
+            if retval != 0:
+                ignore.pop()
+                return retval
+        else:
+            ignore.pop()
+            return 0
+
+    def __call__(self, lhs, rhs):
+        retval = self.cmp_recurse(lhs.index, rhs.index, [])
+        if retval != 0:
+            return retval
+        elif lhs.index > rhs.index:
+            self.__cache[(rhs.index, lhs.index)] = -1
+            return +1
+        elif lhs.index < rhs.index:
+            self.__cache[(lhs.index, rhs.index)] = -1
+            return -1
+        else:
+            return 0 # lhs.index == rhs.index
+
+def sort_subunits(sp):
+    cmpobj = CmpSubunit(sp)
+    sp.subunits.sort(cmp=cmpobj)
+    sp.update_indices()
+
+    stride, newbindings = 1, {}
+    for su in sp.subunits:
+        mods = su.modifications.keys()
+        for mod in mods:
+            (state, binding) = su.modifications[mod]
+            if binding == "" or binding[0] == "_":
+                continue
+
+            newbinding = newbindings.get(binding)
+            if newbinding is None:
+                su.modifications[mod] = (state, stride)
+                newbindings[binding] = stride
+                stride += 1
+            else:
+                su.modifications[mod] = (state, newbinding)
+
 def generate_recurse(seeds1, rules, seeds2=[]):
     seeds = list(itertools.chain(seeds1, seeds2))
     retval = []
@@ -826,7 +952,6 @@ if __name__ == "__main__":
         contexts = pttrn.match(s1)
         num_patterns = len(contexts)
         print "Match Result => %d Patterns found: %s" % (num_patterns, contexts)
-
 
     # Grb2(SH2!1,SH3!2).Grb2(SH2!3,SH3!4).Grb2(SH2!5,SH3!6).Grb2(SH2!7,SH3!8).Shc(PTB!9,Y317~pY!3).Shc(PTB!10,Y317~pY!7).Sos(dom!2).Sos(dom!4).Sos(dom!6).Sos(dom!8).egf(r!11).egf(r!12).egfr(Y1068~pY!1,Y1148~pY!9,l!11,r!13).egfr(Y1068~pY!5,Y1148~pY!10,l!12,r!13)
     # egfr(Y1148~pY!1).Shc(PTB!1,Y317~pY)
