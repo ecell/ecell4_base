@@ -72,6 +72,29 @@ class Species(object):
         contexts.clear_locals()
         return contexts
 
+    def sort(self):
+        cmpobj = CmpSubunit(self)
+        self.subunits.sort(cmp=cmpobj)
+        self.update_indices()
+
+        stride, newbindings = 1, {}
+        for su in self.subunits:
+            mods = su.modifications.keys()
+            for mod in mods:
+                (state, binding) = su.modifications[mod]
+                if binding == "" or binding[0] == "_":
+                    continue
+
+                newbinding = newbindings.get(binding)
+
+                #XXX: updating subunits through the reference)
+                if newbinding is None:
+                    su.modifications[mod] = (state, stride)
+                    newbindings[binding] = stride
+                    stride += 1
+                else:
+                    su.modifications[mod] = (state, newbinding)
+
     def __str__(self):
         return ".".join([str(subunit) for subunit in self.subunits])
 
@@ -789,27 +812,6 @@ class CmpSubunit:
             return -1
         else:
             return 0 # lhs.index == rhs.index
-
-def sort_subunits(sp):
-    cmpobj = CmpSubunit(sp)
-    sp.subunits.sort(cmp=cmpobj)
-    sp.update_indices()
-
-    stride, newbindings = 1, {}
-    for su in sp.subunits:
-        mods = su.modifications.keys()
-        for mod in mods:
-            (state, binding) = su.modifications[mod]
-            if binding == "" or binding[0] == "_":
-                continue
-
-            newbinding = newbindings.get(binding)
-            if newbinding is None:
-                su.modifications[mod] = (state, stride)
-                newbindings[binding] = stride
-                stride += 1
-            else:
-                su.modifications[mod] = (state, newbinding)
 
 def check_stoichiometry(sp, max_stoich):
     for pttrn, num_subunits in max_stoich.items():

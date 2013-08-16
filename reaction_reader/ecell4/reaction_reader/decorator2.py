@@ -293,13 +293,13 @@ if __name__ == "__main__":
     cmp_subunit(sp4, 1, 2)
 
     print ""
-    species.sort_subunits(sp1)
+    sp1.sort()
     print sp1
-    species.sort_subunits(sp2)
+    sp2.sort()
     print sp2
-    species.sort_subunits(sp3)
+    sp3.sort()
     print sp3
-    species.sort_subunits(sp4)
+    sp4.sort()
     print sp4
-    species.sort_subunits(sp5)
+    sp5.sort()
     print sp5
