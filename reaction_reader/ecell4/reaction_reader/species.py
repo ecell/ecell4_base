@@ -28,6 +28,8 @@ class Species(object):
     def add_subunit(self, subunit):
         subunit.index = len(self.subunits)
         self.subunits.append(subunit)
+    def get_subunit_list(self):
+        return self.subunits
 
     def count_subunits(self, pttrn):
         retval = 0
@@ -116,6 +118,9 @@ class Subunit(object):
 
         self.index = None #XXX
 
+    def get_name(self):
+        return self.name
+
     def generate_conditions(self, key):
         conditions = []
         conditions.append(SubunitContainingCondition(key, self.name))
@@ -129,6 +134,8 @@ class Subunit(object):
 
     def add_modification(self, mod, state="", binding=""):
         self.modifications[mod] = (state, str(binding))
+    def get_modifications_list(self):
+        return self.modifications
 
     def __str__(self):
         mods1, mods2 = [], []
@@ -237,6 +244,9 @@ class ReactionRule(object):
 
     def products(self):
         return copy.deepcopy(self.__products)
+    
+    def options(self):
+        return copy.deepcopy(self.__options)
 
     def num_reactants(self):
         return len(self.__reactants)
