@@ -2,11 +2,9 @@ import species
 import string   # for convert into .bngl
 
 def convert2bng_species(self):
-    print "convert2bng_species"
     return ".".join([subunit.convert2bng() for subunit in self.subunits])
 
 def convert2bng_subunit(self):
-    print "convert2bng_subunit"
     mods1, mods2 = [], []
     for mod, (state, binding) in self.modifications.items():
         if state == '':
@@ -30,23 +28,18 @@ def convert2bng_subunit(self):
     return "%s(%s)" % (self.name, ",".join(mods1))
 
 def convert2bng_reactionrule(self):
-    print "convert2bng_reactionrule"
     return "%s -> %s" % (
         "+".join([sp.convert2bng() for sp in self.reactants()]),
         "+".join([sp.convert2bng() for sp in self.products()]))
 
 def convert2bng_include_reactants(self):
-    print "convert2bng_include_reactants"
     return "inlude_reactants(%d,%s)" % (self.__idx, self.__pttrn)
 def convert2bng_exclude_reactants(self):
-    print "convert2bng_exclude_reactants"
     return "exlude_reactants(%d,%s)" % (self.__idx, self.__pttrn)
 def convert2bng_include_products(self):
-    print "convert2bng_include_products"
     return "inlude_products(%d,%s)" % (self.__idx, self.__pttrn)
 
 def convert2bng_exclude_products(self):
-    print "convert2bng_exclude_products"
     return "exlude_products(%d,%s)" % (self.__idx, self.__pttrn)
 
 
