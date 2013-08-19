@@ -1,6 +1,7 @@
 import species
 import string   # for convert into .bngl
 import copy
+from types import MethodType
 
 # Label Related
 def is_label(s):
@@ -95,13 +96,17 @@ def convert2bng_reactionrule(self, labels = None):
 
 # classe Options
 def convert2bng_include_reactants(self):
-    return "inlude_reactants(%d,%s)" % (self.__idx, self.__pttrn)
+    #return "include_reactants(%d,%s)" % (self.__idx, self.__pttrn)
+    return "include_reactants(%d,%s)" % (self._IncludeReactants__idx, self._IncludeReactants__pttrn)
 def convert2bng_exclude_reactants(self):
-    return "exlude_reactants(%d,%s)" % (self.__idx, self.__pttrn)
+    #return "exclude_reactants(%d,%s)" % (self.__idx, self.__pttrn)
+    return "exclude_reactants(%d,%s)" % (self._ExcludeReactants__idx, self._ExcludeReactants__pttrn)
 def convert2bng_include_products(self):
-    return "inlude_products(%d,%s)" % (self.__idx, self.__pttrn)
+    #return "include_products(%d,%s)" % (self.__idx, self.__pttrn)
+    return "include_products(%d,%s)" % (self._IncludeProducts__idx, self._IncludeProducts__pttrn)
 def convert2bng_exclude_products(self):
-    return "exlude_products(%d,%s)" % (self.__idx, self.__pttrn)
+    #return "exclude_products(%d,%s)" % (self.__idx, self.__pttrn)
+    return "exclude_products(%d,%s)" % (self._ExcludeProducts__idx, self._ExcludeProducts__pttrn)
 
 class Convert2BNGManager(object):
     def __init__(self, species, rules):
@@ -118,13 +123,13 @@ class Convert2BNGManager(object):
         self.expand_reactions()
 
     def initialize_methods(self):
-        species.Species.convert2bng = convert2bng_species
-        species.Subunit.convert2bng = convert2bng_subunit
-        species.ReactionRule.convert2bng = convert2bng_reactionrule
-        species.IncludeReactants.convert2bng = convert2bng_include_reactants
-        species.ExcludeReactants.convert2bng = convert2bng_exclude_reactants
-        species.IncludeProducts.convert2bng = convert2bng_include_products
-        species.ExcludeProducts.convert2bng = convert2bng_exclude_products 
+        species.Species.convert2bng = MethodType(convert2bng_species, None, species.Species)
+        species.Subunit.convert2bng = MethodType(convert2bng_subunit, None, species.Subunit)
+        species.ReactionRule.convert2bng = MethodType(convert2bng_reactionrule, None, species.ReactionRule)
+        species.IncludeReactants.convert2bng = MethodType(convert2bng_include_reactants, None, species.IncludeReactants)
+        species.ExcludeReactants.convert2bng = MethodType(convert2bng_exclude_reactants, None, species.ExcludeReactants)
+        species.IncludeProducts.convert2bng = MethodType(convert2bng_include_products, None, species.IncludeProducts)
+        species.ExcludeProducts.convert2bng = MethodType(convert2bng_exclude_products, None, species.ExcludeProducts)
 
     def expand_reactions(self):
         # Expand labels and update modification collection
@@ -193,7 +198,8 @@ class Convert2BNGManager(object):
             else:   # containing no labels
                 s = "\t%s\t%f" % (rr.convert2bng(), rr.options()[0])
                 for cond in rr.options():
-                    s = "%s %s" % (s, cond.convert2bng() )
+                    if isinstance(cond, species.Option):
+                        s = "%s %s" % (s, cond.convert2bng() )
                 s += "\n"
                 fd.write(s)
         fd.write("end reaction rules\n")
