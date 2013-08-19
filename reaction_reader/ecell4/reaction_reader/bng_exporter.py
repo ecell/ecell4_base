@@ -174,8 +174,11 @@ class Convert2BNGManager(object):
 
         fd.write("begin reaction rules\n")
         for i, rr in enumerate(self.__rules):
+            fd.write( ("\t# %s\n" % rr) )
             (reactant_labels, product_labels, modification_candidates) = self.__rules_notes[i]
             if reactant_labels or product_labels:
+                fd.write("\t# candidates for labels:\n")
+                fd.write("\t#   %s\n" % modification_candidates) 
                 bngl_strs = []
                 convert2bngl_label_expanded_reactionrule_recursive(
                         rr, modification_candidates.keys(), modification_candidates, {}, bngl_strs)
