@@ -41,12 +41,6 @@ def check_label_containing_reaction(rr):
                 product_labels = add_label_dict(product_labels, label, su, mod)
     return (reactant_labels, product_labels)
 
-def build_label_expanded_reactionrule(rr):
-    (reactant_labels, product_labels) = check_label_containing_reaction(rr)
-    print "reactant labels"
-    print reactant_labels
-    print "product_labels"
-    print product_labels
         
 # Formatters for each class
 # class Species
@@ -74,6 +68,12 @@ def convert2bng_subunit(self, labels = None):
                     mods2.append("%s~%s!%s" % (mod, labels[state], binding))
             else:
                 print ("Warning: candidates for label %s was not found" % state)
+                if binding == '_':
+                    mods2.append("%s~%s!+" % (mod, binding))
+                elif binding == "":
+                    mods2.append("%s~%s" % (mod, state))
+                else:
+                    mods2.append("%s~%s!%s" % (mod, state, binding))
         else:
             if binding == '_':
                 mods2.append("%s~%s!+" % (mod, binding))
@@ -105,13 +105,17 @@ def convert2bng_exclude_products(self):
 
 class Convert2BNGManager(object):
     def __init__(self, species, rules):
+        self.__expanded = False
         self.__species = species
         self.__rules = rules
+        self.__rules_notes = []
         self.__modification_collection_dict = {}
+
         if 0 < len(species) and 0 < len(rules):
             self.build_modification_collection_dict()
 
         self.initialize_methods()
+        self.expand_reactions()
 
     def initialize_methods(self):
         species.Species.convert2bng = convert2bng_species
@@ -122,6 +126,12 @@ class Convert2BNGManager(object):
         species.IncludeProducts.convert2bng = convert2bng_include_products
         species.ExcludeProducts.convert2bng = convert2bng_exclude_products 
 
+    def expand_reactions(self):
+        # Expand labels and update modification collection
+        for i, rr in enumerate(self.__rules):
+            notes = self.build_label_expanded_reactionrule(rr)
+            self.__rules_notes.append(notes)
+        self.__expanded = True
 
     def write_section_seed_species(self, fd):
         fd.write("begin seed species\n")
@@ -150,33 +160,39 @@ class Convert2BNGManager(object):
         fd.write("end molecule types\n")
 
     def write_section_reaction_rules(self, fd):
+
+        def convert2bngl_label_expanded_reactionrule_recursive(
+                rr, label_list, candidates, acc, bnglstr_acc):
+            acc_conbination = copy.deepcopy(acc)
+            for mod in candidates[ label_list[0] ]:
+                acc_conbination[label_list[0]] = mod
+                if len(label_list) == 1:
+                    bnglstr_acc.append( rr.convert2bng(acc_conbination) )
+                else:
+                    convert2bngl_label_expanded_reactionrule_recursive(
+                            rr, label_list[1:], candidates, acc_conbination, bnglstr_acc)
+
         fd.write("begin reaction rules\n")
-        for rr in self.__rules:
-            rr_expanded = self.build_label_expanded_reactionrule(rr)
-            if isinstance(rr_expanded, list):
-                for rr_query in rr_expanded:
-                    s = "\t%s\t%f" % (rr_query, rr.options()[0])
+        for i, rr in enumerate(self.__rules):
+            (reactant_labels, product_labels, modification_candidates) = self.__rules_notes[i]
+            if reactant_labels or product_labels:
+                bngl_strs = []
+                convert2bngl_label_expanded_reactionrule_recursive(
+                        rr, modification_candidates.keys(), modification_candidates, {}, bngl_strs)
+                for applied in bngl_strs:
+                    s = "\t%s\t%f" % (applied, rr.options()[0])
                     for cond in rr.options():
                         if isinstance(cond, species.Option):
-                            s = "%s %s" % (s, cond.convert2bng() )
+                            s = "%s %s" % (s, cond.convert2bng())
                     s += "\n"
                     fd.write(s)
-            else:
-                s = "\t%s\t%f" % (rr_expanded, rr.options()[0])
+
+            else:   # containing no labels
+                s = "\t%s\t%f" % (rr.convert2bng(), rr.options()[0])
                 for cond in rr.options():
                     s = "%s %s" % (s, cond.convert2bng() )
                 s += "\n"
                 fd.write(s)
-
-        '''
-        for i, rr in enumerate(self.__rules):
-            s = "\t%s\t%f" % (rr.convert2bng(),rr.options()[0])
-            #fd.write("\t%s\t%f" % (rr.convert2bng(),rr.options()[0]))
-            for cond in rr.options():
-                if isinstance(cond, species.Option):
-                    s = "%s %s" % (s, cond.convert2bng() )
-            s += "\n"
-        '''
         fd.write("end reaction rules\n")
 
     def build_modification_collection_dict(self):
@@ -187,9 +203,9 @@ class Convert2BNGManager(object):
             for mod, (state, binding) in subunit.get_modifications_list().items():
                 if not is_label(state):
                     if mod in current_dict[su_name]:
-                        current_dict[su_name][mod].append(state)
+                        current_dict[su_name][mod].add(state)
                     else:
-                        current_dict[su_name][mod] = [state]
+                        current_dict[su_name][mod] = set([state])
             return current_dict
 
         temp_dict = {}
@@ -215,36 +231,25 @@ class Convert2BNGManager(object):
         return self.__modification_collection_dict
 
     def build_label_expanded_reactionrule(self, rr):
-        def convert2bngl_label_expanded_reactionrule_recursive(
-                rr, label_list, candidates, acc, bnglstr_acc):
-            acc_conbination = copy.deepcopy(acc)
-            for mod in candidates[ label_list[0] ]:
-                acc_conbination[label_list[0]] = mod
-                if len(label_list) == 1:
-                    bnglstr_acc.append( rr.convert2bng(acc_conbination) )
-                else:
-                    convert2bngl_label_expanded_reactionrule_recursive(
-                            rr, label_list[1:], candidates, acc_conbination, bnglstr_acc)
 
         (reactant_labels, product_labels) = check_label_containing_reaction(rr)
         if reactant_labels or product_labels:
             bngl_strs = []
-            modification_candidates = {}
+            modification_candidates = {}    # key is label(::string), value is a set of states.
             for label, pos in reactant_labels.items():
-                modification_candidates[label] = []
+                modification_candidates[label] = set()
                 for (su, mod) in pos:
-                    modification_candidates[label].extend(
-                            self.__modification_collection_dict[su][mod])
-                if 0 < len(modification_candidates):
-                    print ("%s candidates" % (label))
-                    print modification_candidates[label]
-        
-            convert2bngl_label_expanded_reactionrule_recursive(
-                    rr, modification_candidates.keys(), modification_candidates, {}, bngl_strs)
-            print "lebel expanded_rules"
-            for s in bngl_strs:
-                print s
-            return bngl_strs
+                    modification_candidates[label] = modification_candidates[label] | self.__modification_collection_dict[su][mod]
+
+            # Update modification_collection_dict
+            for (label, pos) in reactant_labels.items():
+                for (su, mod) in pos:
+                    self.__modification_collection_dict[su][mod] = self.__modification_collection_dict[su][mod] | modification_candidates[label]
+
+            for (label, pos) in product_labels.items():
+                for (su, mod) in pos:
+                    self.__modification_collection_dict[su][mod] = self.__modification_collection_dict[su][mod] | modification_candidates[label]
+            return (reactant_labels, product_labels, modification_candidates)
         else: #containing no labels.
-            return rr.convert2bng()
+            return (None, None, None)
 
