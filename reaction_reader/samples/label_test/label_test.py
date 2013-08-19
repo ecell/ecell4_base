@@ -9,8 +9,8 @@ def attributegen():
     L0 = 15
     #A(r1,r2) | R0
     #B(l1,l2) | L0
-    A(x=P, phos=YT) | R0 
-    B(y=S, phos=pT) | L0 
+    A(x=P, phos=YT^1).C(bs^1) | R0 
+    B(y=S, phos=pT^1).D(bs^1) | L0 
 
 
 Kp1 = 1.0
@@ -18,22 +18,10 @@ Kp2 = 1.0
 
 @reaction_rules
 def rulegen():
-    A(x=_1) > B(y=_1) | Kp1
+    #A(x=_1) > B(y=_1) | Kp1
     A(x=_1) + B(y=_1) > A(x=_1^1).B(y=_1^1) | Kp2 
     A(x=_1, phos=_2) + B(y=_2) > A(x=_1, phos=_2^1).B(y=_1^1) | Kp2
 
-'''
-0 A(x=_1)>B(y=_1)
-reactant labels
-{'A': {'x': ('_1', '')}}
-product_labels
-{'B': {'y': ('_1', '')}}
-1 A(x=_1)+B(y=_1)>A(x=_1^1).B(y=_1^1)
-reactant labels
-{'A': {'x': ('_1', '')}, 'B': {'y': ('_1', '')}}
-product_labels
-{'A': {'x': ('_1', '1')}, 'B': {'y': ('_1', '1')}}
-'''
 
 if __name__ == "__main__":
     newseeds = []
@@ -47,12 +35,9 @@ if __name__ == "__main__":
         print i, rr
     print ''
     s = Convert2BNGManager(attributegen(), rulegen() )
-    print s.get_modification_collection_dict()
-    for i, rr in enumerate(rules):
-        print i, rr
-        s.build_label_expanded_reactionrule(rr)
+
     with open("expanded.bngl", "w") as fd:
-        s.write_section_seed_species(fd)
         s.write_section_molecule_types(fd)
+        s.write_section_seed_species(fd)
         s.write_section_reaction_rules(fd)
     #generate_reactions(newseeds, rules)
