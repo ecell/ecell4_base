@@ -3,6 +3,8 @@ import string   # for convert into .bngl
 import copy
 from types import MethodType
 
+from collections import defaultdict
+
 # Label Related
 def is_label(s):
     return 1 < len(s) and s[0] == '_'
@@ -21,25 +23,20 @@ def check_labeled_subunit(su):
     return retval
 
 def check_label_containing_reaction(rr):
-    def add_label_dict(current_dict, label, subunit, mod):
-        if label not in current_dict:
-            current_dict[label] = [(subunit.get_name(), mod)]
-        else:
-            current_dict[label].append( (subunit.get_name(), mod) )
-        return current_dict
-
-    reactant_labels = {}
-    product_labels = {}
+    reactant_labels = defaultdict(list)
+    product_labels = defaultdict(list)
     for r in rr.reactants():
         for su in r.get_subunit_list():
             d = check_labeled_subunit(su)
             for (label, mod) in d:
-                reactant_labels = add_label_dict(reactant_labels, label, su, mod)
+                #reactant_labels = add_label_dict(reactant_labels, label, su, mod)
+                reactant_labels[label].append( (su.get_name(), mod) )
     for p in rr.products():
         for su in p.get_subunit_list():
             d = check_labeled_subunit(su)
             for (lebel, mod) in d:
-                product_labels = add_label_dict(product_labels, label, su, mod)
+                #product_labels = add_label_dict(product_labels, label, su, mod)
+                product_labels[label].append( (su.get_name(), mod) )
     return (reactant_labels, product_labels)
 
         
@@ -114,7 +111,8 @@ class Convert2BNGManager(object):
         self.__species = species
         self.__rules = rules
         self.__rules_notes = []
-        self.__modification_collection_dict = {}
+        #self.__modification_collection_dict = {}
+        self.__modification_collection_dict = defaultdict(lambda:defaultdict(set))
 
         if 0 < len(species) and 0 < len(rules):
             self.build_modification_collection_dict()
@@ -205,18 +203,17 @@ class Convert2BNGManager(object):
         fd.write("end reaction rules\n")
 
     def build_modification_collection_dict(self):
+        # The first argumet (current_dict) is dict(defaultdict(set))
         def add_modification_collection_dict_subunit(current_dict, subunit):
             su_name = subunit.get_name()
-            if not current_dict.has_key( su_name ):
-                current_dict[subunit.get_name()] = {}
+            if not current_dict.has_key(su_name):
+                current_dict[subunit.get_name()] = defaultdict(set)
             for mod, (state, binding) in subunit.get_modifications_list().items():
                 if not is_label(state):
-                    if mod in current_dict[su_name]:
                         current_dict[su_name][mod].add(state)
-                    else:
-                        current_dict[su_name][mod] = set([state])
             return current_dict
 
+        # style:  dict[subunit][modification] = set(states)
         temp_dict = {}
         # Build modification dictionary by species
         for (sp, attr) in self.__species:
@@ -240,7 +237,6 @@ class Convert2BNGManager(object):
         return self.__modification_collection_dict
 
     def build_label_expanded_reactionrule(self, rr):
-
         (reactant_labels, product_labels) = check_label_containing_reaction(rr)
         if reactant_labels or product_labels:
             bngl_strs = []
