@@ -888,6 +888,16 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                                 newseeds.append(newsp)
     return (newseeds, seeds, newreactions)
 
+def dump_reaction(reaction):
+    reactants, products = reaction
+    for sp in itertools.chain(reactants, products):
+        sp.sort()
+
+    retval = "+".join(sorted([str(sp) for sp in reactants]))
+    retval += ">"
+    retval += "+".join(sorted([str(sp) for sp in products]))
+    return retval
+
 def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
     for rr in rules:
         if rr.num_reactants() == 0:
@@ -912,6 +922,12 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
     seeds.sort(key=str)
     for i, sp in enumerate(seeds):
         print "%5d %s" % (i + 1, str(sp))
+    print ""
+
+    reactions = list(set([dump_reaction(reaction) for reaction in reactions]))
+    reactions.sort()
+    for i, reaction in enumerate(reactions):
+        print "%5d %s" % (i + 1, reaction)
 
     # return seeds + newseeds, reactions
     return seeds + newseeds
