@@ -732,6 +732,7 @@ class CmpSubunit:
         return stride
 
     def sort(self):
+        """only available for a connected graph"""
         self.__species.subunits.sort(cmp=self)
         self.initialize()
 
@@ -830,7 +831,7 @@ def check_stoichiometry(sp, max_stoich):
 
 def generate_recurse(seeds1, rules, seeds2, max_stoich):
     seeds = list(itertools.chain(seeds1, seeds2))
-    retval = []
+    newseeds, newreactions = [], []
     for sp1 in seeds1:
         for rr in rules:
             if rr.num_reactants() == 1:
@@ -841,11 +842,14 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                 #     print rr, sp1
                 #     raise e
                 if pttrns is not None and len(pttrns) > 0:
+                    for products in pttrns:
+                        newreactions.append(((sp1, ), products))
+
                     for newsp in itertools.chain(*pttrns):
-                        if (newsp not in seeds and newsp not in retval
+                        if (newsp not in seeds and newsp not in newseeds
                             and check_stoichiometry(newsp, max_stoich)):
                             newsp.sort()
-                            retval.append(newsp)
+                            newseeds.append(newsp)
         for sp2 in seeds:
             for rr in rules:
                 if rr.num_reactants() == 2:
@@ -856,11 +860,14 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                     #     print rr, sp1, sp2
                     #     raise e
                     if pttrns is not None and len(pttrns) > 0:
+                        for products in pttrns:
+                            newreactions.append(((sp1, sp2), products))
+
                         for newsp in itertools.chain(*pttrns):
-                            if (newsp not in seeds and newsp not in retval
+                            if (newsp not in seeds and newsp not in newseeds
                                 and check_stoichiometry(newsp, max_stoich)):
                                 newsp.sort()
-                                retval.append(newsp)
+                                newseeds.append(newsp)
         for sp2 in seeds2:
             for rr in rules:
                 if rr.num_reactants() == 2:
@@ -871,12 +878,15 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                     #     print rr, sp1, sp2
                     #     raise e
                     if pttrns is not None and len(pttrns) > 0:
+                        for products in pttrns:
+                            newreactions.append(((sp1, sp2), products))
+
                         for newsp in itertools.chain(*pttrns):
-                            if (newsp not in seeds and newsp not in retval
+                            if (newsp not in seeds and newsp not in newseeds
                                 and check_stoichiometry(newsp, max_stoich)):
                                 newsp.sort()
-                                retval.append(newsp)
-    return (retval, seeds)
+                                newseeds.append(newsp)
+    return (newseeds, seeds, newreactions)
 
 def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
     for rr in rules:
@@ -887,21 +897,23 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
                     newsp.sort()
                     newseeds.append(newsp)
 
-    seeds, cnt = [], 0
+    seeds, cnt, reactions = [], 0, []
     while len(newseeds) != 0 and cnt < max_iter:
-        # print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
-        print "[RESULT%d] %d seeds, %d newseeds." % (
-            cnt, len(seeds), len(newseeds))
-        newseeds, seeds = generate_recurse(newseeds, rules, seeds, max_stoich)
+        print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
+            cnt, len(seeds), len(newseeds), len(reactions))
+        newseeds, seeds, newreactions = generate_recurse(
+            newseeds, rules, seeds, max_stoich)
+        reactions.extend(newreactions)
         cnt += 1
-    # print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
-    print "[RESULT%d] %d seeds, %d newseeds." % (cnt, len(seeds), len(newseeds))
+    print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
+        cnt, len(seeds), len(newseeds), len(reactions))
     print ""
 
     seeds.sort(key=str)
     for i, sp in enumerate(seeds):
         print "%5d %s" % (i + 1, str(sp))
 
+    # return seeds + newseeds, reactions
     return seeds + newseeds
 
 
