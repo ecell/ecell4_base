@@ -280,6 +280,8 @@ if __name__ == "__main__":
     sp4 = create_species("A(bs^1).B(l^1,r^3).B(r^3,l^2).A(bs^2)")
     sp5 = create_species("A(bs^1).B(l^2,r^3).B(r^3,l^1).A(bs^2)")
 
+    sp6 = create_species("L(l1^1,l2^2).L(l1^3,l2^4).L(l1^5,l2^6).R(r1^3,r2^2).R(r1^5,r2^4).R(r1^1,r2^6)")
+
     cmp_subunit(sp1, 0, 1)
     cmp_subunit(sp1, 0, 2)
     cmp_subunit(sp1, 0, 3)
@@ -292,6 +294,13 @@ if __name__ == "__main__":
     cmp_subunit(sp4, 0, 3)
     cmp_subunit(sp4, 1, 2)
 
+    cmp_subunit(sp6, 0, 1)
+    cmp_subunit(sp6, 0, 2)
+    cmp_subunit(sp6, 1, 2)
+    cmp_subunit(sp6, 3, 4)
+    cmp_subunit(sp6, 3, 5)
+    cmp_subunit(sp6, 4, 5)
+
     print ""
     sp1.sort()
     print sp1
@@ -303,3 +312,44 @@ if __name__ == "__main__":
     print sp4
     sp5.sort()
     print sp5
+    sp6.sort()
+    print sp6
+    print ""
+
+    import random
+    sp = create_species("L(l1^1,l2^2).L(l1^3,l2^4).L(l1^5,l2^6).R(r1^3,r2^2).R(r1^5,r2^4).R(r1^1,r2^6)")
+    # sp = create_species("L(l1^1,l2^2).L(l1^3,l2^4).L(l1^5,l2^6).R(r1^1,r2^6).R(r1^3,r2^2).R(r1^5,r2^4)")
+    # sp = create_species("L(l^1,r^2).L(l^2,r^3).L(l^3,r^1)")
+    # sp = create_species("L(l^1,r^2).L(l^2,r^3).L(l^3,r^4).L(l^4,r^1)")
+    newbs = range(1, 7)
+    # print 'ORIGINAL    :', sp
+    for _ in range(10):
+        random.shuffle(sp.subunits)
+        random.shuffle(newbs)
+        sp.update_indices()
+        for su in sp.subunits:
+            for mod in su.modifications.keys():
+                state, bs = su.modifications[mod]
+                if bs.isdigit():
+                    su.modifications[mod] = (state, str(newbs[int(bs) - 1]))
+        # print '[%d] SHUFFLED:' % _, sp
+        sp.sort()
+        print '[%d] SORTED  :' % _, sp
+
+    print ""
+    sp1 = create_species("L(l1^3,l2^5).R(r1^6,r2^5).L(l1^6,l2^2).L(l1^4,l2^1).R(r1^3,r2^1).R(r1^4,r2^2)")
+    sp1.sort()
+    print sp1
+    sp2 = create_species("L(l1^3,l2^5).R(r1^1,r2^6).R(r1^4,r2^5).R(r1^3,r2^2).L(l1^1,l2^2).L(l1^4,l2^6)")
+    sp2.sort()
+    print sp2
+
+    print ""
+    sp1 = create_species("L(l^2,r^3).L(l^3,r^1).L(l^1,r^2)")
+    print sp1
+    sp1.sort()
+    print sp1
+    sp2 = create_species("L(l^1,r^3).L(l^2,r^1).L(l^3,r^2)")
+    print sp2
+    sp2.sort()
+    print sp2

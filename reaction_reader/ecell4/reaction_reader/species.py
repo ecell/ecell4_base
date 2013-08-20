@@ -1,7 +1,6 @@
 import copy
 import itertools
 
-
 label_subunit = lambda x: "subunit%s" % x
 label_binding = lambda x: "binding%s" % x
 
@@ -73,27 +72,8 @@ class Species(object):
         return contexts
 
     def sort(self):
-        cmpobj = CmpSubunit(self)
-        self.subunits.sort(cmp=cmpobj)
-        self.update_indices()
-
-        stride, newbindings = 1, {}
-        for su in self.subunits:
-            mods = su.modifications.keys()
-            for mod in sorted(mods):
-                (state, binding) = su.modifications[mod]
-                if binding == "" or binding[0] == "_":
-                    continue
-
-                newbinding = newbindings.get(binding)
-
-                #XXX: updating subunits through the reference)
-                if newbinding is None:
-                    su.modifications[mod] = (state, str(stride))
-                    newbindings[binding] = str(stride)
-                    stride += 1
-                else:
-                    su.modifications[mod] = (state, newbinding)
+        cmpsu = CmpSubunit(self)
+        cmpsu.sort()
 
     def __str__(self):
         return ".".join([str(subunit) for subunit in self.subunits])
@@ -734,7 +714,51 @@ class CmpSubunit:
                 else:
                     raise RuntimeError, "an invalid bindig found. [%s]" % (binding)
 
-        self.__cache = {}
+    def sort_recurse(self, idx, stride):
+        su = self.__species.subunits[idx]
+        if su.index < 0:
+            su.index = stride
+            stride += 1
+        else:
+            return stride
+
+        mods = su.modifications.keys()
+        for mod in sorted(mods):
+            state, binding = su.modifications[mod]
+            if binding != "" and binding[0] != "_":
+                pair = self.__bindings[binding]
+                tgt_idx, tgt_mod = pair[0] if pair[1][0] == idx else pair[1]
+                stride = self.sort_recurse(tgt_idx, stride)
+        return stride
+
+    def sort(self):
+        self.__species.subunits.sort(cmp=self)
+        self.initialize()
+
+        for su in self.__species.subunits:
+            su.index = -1
+
+        self.sort_recurse(0, 0)
+        self.__species.subunits.sort(key=lambda su: su.index)
+        self.__species.update_indices()
+
+        stride, newbindings = 1, {}
+        for su in self.__species.subunits:
+            mods = su.modifications.keys()
+            for mod in sorted(mods):
+                state, binding = su.modifications[mod]
+                if binding == "" or binding[0] == "_":
+                    continue
+
+                newbinding = newbindings.get(binding)
+
+                #XXX: updating subunits through the reference)
+                if newbinding is None:
+                    su.modifications[mod] = (state, str(stride))
+                    newbindings[binding] = str(stride)
+                    stride += 1
+                else:
+                    su.modifications[mod] = (state, newbinding)
 
     def cmp_recurse(self, idx1, idx2, ignore):
         if idx1 == idx2:
@@ -743,17 +767,8 @@ class CmpSubunit:
             pair_key = (idx1, idx2)
         else:
             pair_key = (idx2, idx1)
-        # elif idx1 > idx2:
-        #     pair_key = (idx2, idx1)
-        # else:
-        #     pair_key = (idx1, idx2)
 
-        if pair_key in self.__cache.keys():
-            if idx1 > idx2:
-                return self.__cache[pair_key]
-            else:
-                return self.__cache[pair_key] * -1
-        elif pair_key in ignore:
+        if pair_key in ignore:
             return 0 # already checked
 
         su1, su2 = self.__subunits[idx1], self.__subunits[idx2]
@@ -774,7 +789,7 @@ class CmpSubunit:
                 return cmp(mod1, mod2)
 
             state1, state2 = (
-                su1.modifications[mod1], su2.modifications[mod2])
+                su1.modifications[mod1][0], su2.modifications[mod2][0])
             if state1 != state2:
                 ignore.pop()
                 return cmp(state1, state2)
@@ -805,17 +820,7 @@ class CmpSubunit:
             return 0
 
     def __call__(self, lhs, rhs):
-        retval = self.cmp_recurse(lhs.index, rhs.index, [])
-        if retval != 0:
-            return retval
-        elif lhs.index > rhs.index:
-            self.__cache[(lhs.index, rhs.index)] = +1
-            return +1
-        elif lhs.index < rhs.index:
-            self.__cache[(rhs.index, lhs.index)] = +1
-            return -1
-        else:
-            return 0 # lhs.index == rhs.index
+        return self.cmp_recurse(lhs.index, rhs.index, [])
 
 def check_stoichiometry(sp, max_stoich):
     for pttrn, num_subunits in max_stoich.items():
