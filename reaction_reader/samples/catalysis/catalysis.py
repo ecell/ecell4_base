@@ -1,6 +1,11 @@
 from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
 from ecell4.reaction_reader.species import generate_reactions
 
+k1 = 0.1
+k2 = 0.2
+k3 = 0.3
+k4 = 0.4
+
 @species_attributes
 def attributegen():
     S(e,y=zero)  | 1
