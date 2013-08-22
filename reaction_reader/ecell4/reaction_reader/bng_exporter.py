@@ -65,7 +65,7 @@ def convert2bng_subunit(self, labels = None):
                 else:
                     mods2.append("%s~%s!%s" % (mod, labels[state], binding))
             else:
-                print ("Warning: candidates for label %s was not found" % state)
+                print ("Warning: The candidate for label %s was not found" % state)
                 if binding == '_':
                     mods2.append("%s~%s!+" % (mod, binding))
                 elif binding == "":
@@ -74,7 +74,7 @@ def convert2bng_subunit(self, labels = None):
                     mods2.append("%s~%s!%s" % (mod, state, binding))
         else:
             if binding == '_':
-                mods2.append("%s~%s!+" % (mod, binding))
+                mods2.append("%s~%s!+" % (mod, state))
             elif binding == "":
                 mods2.append("%s~%s" % (mod, state))
             else:
