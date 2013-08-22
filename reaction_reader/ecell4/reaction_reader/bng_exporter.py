@@ -90,7 +90,15 @@ def generate_Null():
     su = species.Subunit("Null")
     sp.add_subunit(su)
     return sp
+
+def generate_Src():
+    sp = species.Species()
+    su = species.Subunit("Src")
+    sp.add_subunit(su)
+    return sp
+
 species_Null = generate_Null()
+species_Src  = generate_Src()
 
 # class ReactionRule
 def convert2bng_reactionrule(self, labels = None):
@@ -99,6 +107,10 @@ def convert2bng_reactionrule(self, labels = None):
     if self.is_degradation() == True:
         reactants_bng_queries.append("Null")
         products_bng_queries.append("Null")
+    elif self.is_synthesis() == True:
+        reactants_bng_queries.append("Src")
+        products_bng_queries.append("Src")
+
     return "%s -> %s" % (
             #"+".join([sp.convert2bng(labels) for sp in self.reactants()]),
             #"+".join([sp.convert2bng(labels) for sp in self.products()]))
@@ -242,6 +254,8 @@ class Convert2BNGManager(object):
             
             if rr.is_degradation() == True:
                 temp_dict = add_modification_collection_dict_subunit(temp_dict, species_Null.get_subunit_list()[0])
+            elif rr.is_synthesis() == True:
+                temp_dict = add_modification_collection_dict_subunit(temp_dict, species_Src.get_subunit_list()[0])
 
             for r in reactants:
                 for su in r.get_subunit_list():
