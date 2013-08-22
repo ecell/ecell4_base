@@ -408,6 +408,9 @@ class ReactionRule(object):
             "+".join([str(sp) for sp in self.__reactants]),
             "+".join([str(sp) for sp in self.__products]))
 
+    def is_degradation(self):
+        return len(self.__products) == 0
+
 class Condition(object):
 
     def __init__(self):

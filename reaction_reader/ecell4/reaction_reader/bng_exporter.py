@@ -87,9 +87,16 @@ def convert2bng_subunit(self, labels = None):
 
 # class ReactionRule
 def convert2bng_reactionrule(self, labels = None):
+    reactants_bng_queries = [sp.convert2bng(labels) for sp in self.reactants()]
+    products_bng_queries = [sp.convert2bng(labels) for sp in self.products()]
+    if self.is_degradation() == True:
+        reactants_bng_queries.append("Null")
+        products_bng_queries.append("Null")
     return "%s -> %s" % (
-        "+".join([sp.convert2bng(labels) for sp in self.reactants()]),
-        "+".join([sp.convert2bng(labels) for sp in self.products()]))
+            #"+".join([sp.convert2bng(labels) for sp in self.reactants()]),
+            #"+".join([sp.convert2bng(labels) for sp in self.products()]))
+            "+".join(reactants_bng_queries),
+            "+".join(products_bng_queries))
 
 # classe Options
 def convert2bng_include_reactants(self):
