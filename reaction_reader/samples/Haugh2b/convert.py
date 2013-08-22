@@ -15,7 +15,8 @@ with open("too_old_export.bngl", "w") as fd:
 # convert2bng_reaction_rules(fd, rulegen() )
 
 with open("new_export.bngl", "w") as f:
-    bng_mng = Convert2BNGManager(attributegen(), rulegen())
+    rules = rulegen(1, 0.1, 1, 0.001, 0.1, 90, 10, 10, 99, 1, 100)
+    bng_mng = Convert2BNGManager(attributegen(1), rules)
     bng_mng.write_section_molecule_types(f)
     bng_mng.write_section_seed_species(f)
     bng_mng.write_section_reaction_rules(f)
