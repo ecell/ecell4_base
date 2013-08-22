@@ -413,6 +413,9 @@ class ReactionRule(object):
     def is_degradation(self):
         return len(self.__products) == 0
 
+    def is_synthesis(self):
+        return len(self.__reactants) == 0
+
 class Condition(object):
 
     def __init__(self):
