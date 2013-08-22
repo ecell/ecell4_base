@@ -85,6 +85,13 @@ def convert2bng_subunit(self, labels = None):
     #return str(self).translate(string.maketrans('=^', '~!'))
     return "%s(%s)" % (self.name, ",".join(mods1))
 
+def generate_Null():
+    sp = species.Species()
+    su = species.Subunit("Null")
+    sp.add_subunit(su)
+    return sp
+species_Null = generate_Null()
+
 # class ReactionRule
 def convert2bng_reactionrule(self, labels = None):
     reactants_bng_queries = [sp.convert2bng(labels) for sp in self.reactants()]
@@ -232,6 +239,10 @@ class Convert2BNGManager(object):
         for rr in self.__rules:
             reacntants = rr.reactants()
             products = rr.products()
+            
+            if rr.is_degradation() == True:
+                temp_dict = add_modification_collection_dict_subunit(temp_dict, species_Null.get_subunit_list()[0])
+
             for r in reactants:
                 for su in r.get_subunit_list():
                     temp_dict = add_modification_collection_dict_subunit(temp_dict, su)

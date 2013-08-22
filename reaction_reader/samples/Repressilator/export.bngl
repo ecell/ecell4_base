@@ -1,4 +1,5 @@
 begin molecule types
+	Null()
 	gTetR(lac1,lac2)
 	mCI()
 	gCI(tet1,tet2)
