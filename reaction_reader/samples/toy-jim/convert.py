@@ -2,7 +2,7 @@ from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
 from ecell4.reaction_reader.species import generate_reactions 
 from ecell4.reaction_reader.bng_exporter import Convert2BNGManager
 
-from toy-jim import attributegen, rulegen
+from toyjim import attributegen, rulegen
 
 '''
 with open("too_old_export.bngl", "w") as fd:
