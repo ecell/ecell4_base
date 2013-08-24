@@ -446,6 +446,10 @@ class ModificationStateCondition(Condition):
         value = subunit.modifications.get(self.mod)
         return value is not None
 
+    def predicator3(self, subunit, state):
+        value = subunit.modifications.get(self.mod)
+        return value[0] == state
+
     def modifier(self, subunit):
         return subunit.modifications.get(self.mod)[0]
 
@@ -453,9 +457,12 @@ class ModificationStateCondition(Condition):
         if self.state[0] != "_":
             return contexts.filter1(
                 self.predicator1, self.key_subunit)
-        elif len(self.state) == 1:
+        elif len(self.state) == 1: # self.state == "_"
             return contexts.filter1(
                 self.predicator2, self.key_subunit)
+        elif contexts.has_key(self.state):
+            return contexts.filter2(
+                self.predicator3, self.key_subunit, self.state)
         else:
             return contexts.update(
                 self.modifier, self.key_subunit, self.state)
