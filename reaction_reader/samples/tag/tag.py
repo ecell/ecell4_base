@@ -12,8 +12,8 @@ def attributegen():
 
 @reaction_rules
 def rulegen():
-    A(f_1) + B() == C(f_1) | (1,2)
-    C(f_1) + D() == E(f_1) | (3,4)
+    A(f=_1) + B() == C(f=_1) | (1,2)
+    C(f=_1) + D() == E(f=_1) | (3,4)
     A(f=off) + I == A(f=on) | (5,6)
  
 #begin parameters
