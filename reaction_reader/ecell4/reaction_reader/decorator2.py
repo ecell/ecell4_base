@@ -18,22 +18,33 @@ def generate_Species(obj):
             su = species.Subunit(elem.name)
             if elem.args is not None:
                 for mod in elem.args:
-                    if (not (isinstance(mod, parseobj.ParseObj)
-                            or isinstance(mod, parseobj.AnyCallable))
-                        or mod._size() != 1):
-                        raise RuntimeError, (
-                            "invalid argument [%s] found." % (mod))
-                    arg = mod._elements()[0]
-                    name, binding = arg.name, arg.modification
-                    if binding is None:
-                        su.add_modification(name, "", "")
-                    else:
-                        binding = str(binding)
-                        if not (binding.isdigit() or binding == ""
-                            or binding[0] == "_"):
+                    if ((isinstance(mod, parseobj.ParseObj)
+                        or isinstance(mod, parseobj.AnyCallable))
+                        and mod._size() == 1):
+                        arg = mod._elements()[0]
+                        name, binding = arg.name, arg.modification
+                        if binding is None:
+                            su.add_modification(name, "", "")
+                        else:
+                            binding = str(binding)
+                            if not (binding.isdigit() or binding == ""
+                                or binding[0] == "_"):
+                                raise RuntimeError, (
+                                    "invalid binding [%s] given." % (binding))
+                            su.add_modification(name, "", binding)
+                    elif (isinstance(mod, parseobj.InvExp)
+                        and (isinstance(mod._target(), parseobj.ParseObj)
+                            or isinstance(mod._target, parseobj.AnyCallable))
+                        and mod._target()._size() == 1):
+                        arg = mod._target()._elements()[0]
+                        name, binding = arg.name, arg.modification
+                        if binding is not None:
                             raise RuntimeError, (
                                 "invalid binding [%s] given." % (binding))
-                        su.add_modification(name, "", binding)
+                        su.add_exclusion(name)
+                    else:
+                        raise RuntimeError, (
+                            "invalid argument [%s] found." % (mod))
             if elem.kwargs is not None:
                 for name, value in elem.kwargs.items():
                     if (not (isinstance(value, parseobj.ParseObj)
@@ -353,3 +364,11 @@ if __name__ == "__main__":
     print sp2
     sp2.sort()
     print sp2
+
+    sp1 = create_species("A(bs1^1).B(bs1^1,bs2^2).C(bs1^2)")
+    pttrn1 = create_species("_1(bs1^_)")
+    pttrn2 = create_species("_1(bs1^_,~bs2)")
+    print "apply \"%s\" to \"%s\"." % (str(pttrn1), str(sp1))
+    print pttrn1.match(sp1)
+    print "apply \"%s\" to \"%s\"." % (str(pttrn2), str(sp1))
+    print pttrn2.match(sp1)

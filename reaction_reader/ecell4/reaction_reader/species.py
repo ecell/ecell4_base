@@ -93,12 +93,17 @@ class Subunit(object):
     def __init__(self, name):
         self.name = name
         self.modifications = {}
+        self.exclusions = []
 
         self.index = None #XXX
 
     def generate_conditions(self, key):
         conditions = []
         conditions.append(SubunitContainingCondition(key, self.name))
+        for mod in self.exclusions:
+            conditions.append(
+                ExcludedModificationCondition(key, mod))
+
         for mod, (state, binding) in self.modifications.items():
             conditions.append(
                 ModificationBindingCondition(key, mod, binding))
@@ -110,24 +115,29 @@ class Subunit(object):
     def add_modification(self, mod, state="", binding=""):
         self.modifications[mod] = (state, str(binding))
 
+    def add_exclusion(self, mod):
+        if not mod in self.exclusions:
+            self.exclusions.append(mod)
+
     def __str__(self):
-        mods1, mods2 = [], []
+        mods1 = ["~%s" % (mod) for mod in self.exclusions]
+
+        mods2, mods3 = [], []
         for mod, (state, binding) in self.modifications.items():
             if state == "":
                 if binding != "":
-                    mods1.append("%s^%s" % (mod, binding))
+                    mods2.append("%s^%s" % (mod, binding))
                 else:
-                    mods1.append(mod)
+                    mods2.append(mod)
             elif binding == "":
-                mods2.append("%s=%s" % (mod, state))
+                mods3.append("%s=%s" % (mod, state))
             else:
-                mods2.append("%s=%s^%s" % (mod, state, binding))
+                mods3.append("%s=%s^%s" % (mod, state, binding))
 
         mods1.sort()
         mods2.sort()
-        mods1.extend(mods2)
-        # return "%s(%s:%d)" % (self.name, ",".join(mods1), self.index)
-        return "%s(%s)" % (self.name, ",".join(mods1))
+        mods3.sort()
+        return "%s(%s)" % (self.name, ",".join(itertools.chain(mods1, mods2, mods3)))
 
     def __repr__(self):
         return '<"%s">' % (str(self))
@@ -192,6 +202,8 @@ def concatenate_species(*species_list):
     for sp in species_list:
         for su in sp.subunits:
             newsu = Subunit(su.name)
+            for mod in su.exclusions:
+                newsu.add_exclusion(mod)
             for mod, (state, binding) in su.modifications.items():
                 if binding != "" and binding[0] != "_":
                     if not binding.isdigit():
@@ -234,6 +246,7 @@ class ReactionRule(object):
         for i, su1 in enumerate(product_subunits):
             for j, su2 in enumerate(reactant_subunits):
                 if (su1.name == su2.name
+                    and set(su1.exclusions) == set(su2.exclusions)
                     and set(su1.modifications.keys())
                         == set(su2.modifications.keys())):
                     if len(self.__correspondences) > i:
@@ -293,6 +306,9 @@ class ReactionRule(object):
             else:
                 target = retval.subunits[serno(correspondence)]
             new_correspondence.append(target.index)
+
+            # for mod in subunit.exclusions:
+            #     pass
 
             for mod, (state, binding) in subunit.modifications.items():
                 value = target.modifications.get(mod)
@@ -494,6 +510,20 @@ class ModificationBindingCondition(Condition):
         else:
             return contexts.update(
                 self.modifier1, self.key_subunit, self.key_binding)
+
+class ExcludedModificationCondition(Condition):
+
+    def __init__(self, key, mod):
+        Condition.__init__(self)
+        self.key_subunit = key
+        self.mod = mod
+
+    def predicator(self, subunit):
+        value = subunit.modifications.get(self.mod)
+        return (value is None)
+
+    def match(self, sp, contexts):
+        return contexts.filter1(self.predicator, self.key_subunit)
 
 class Contexts(object):
 
@@ -776,24 +806,34 @@ class CmpSubunit:
         if su1.name != su2.name:
             return cmp(su1.name, su2.name)
 
-        mods1, mods2 = su1.modifications.keys(), su2.modifications.keys()
+        mods1, mods2 = su1.exclusions, su2.exclusions
         if len(mods1) != len(mods2):
             return cmp(len(mods1), len(mods2))
 
-        ignore.append(pair_key)
         mods1.sort()
         mods2.sort()
 
         for mod1, mod2 in zip(mods1, mods2):
             if mod1 != mod2:
-                ignore.pop()
+                return cmp(mod1, mod2)
+
+        mods1, mods2 = su1.modifications.keys(), su2.modifications.keys()
+        if len(mods1) != len(mods2):
+            return cmp(len(mods1), len(mods2))
+
+        mods1.sort()
+        mods2.sort()
+
+        for mod1, mod2 in zip(mods1, mods2):
+            if mod1 != mod2:
                 return cmp(mod1, mod2)
 
             state1, state2 = (
                 su1.modifications[mod1][0], su2.modifications[mod2][0])
             if state1 != state2:
-                ignore.pop()
                 return cmp(state1, state2)
+
+        ignore.append(pair_key)
 
         for mod1, mod2 in zip(mods1, mods2):
             binding1, binding2 = (
