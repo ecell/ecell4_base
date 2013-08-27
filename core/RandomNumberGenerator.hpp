@@ -25,6 +25,7 @@ public:
     virtual Real gaussian(Real mean, Real sigma) = 0;
 
     virtual void seed(Integer val) = 0;
+    virtual void seed() = 0;
 
     virtual void save(H5::H5File* fout, const std::string& hdf5path) const = 0;
     virtual void load(H5::H5File* fout, const std::string& hdf5path) = 0;
