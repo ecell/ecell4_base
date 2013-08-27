@@ -1,6 +1,7 @@
 #ifndef __ECELL4_RANDOM_NUMBER_GENERATOR_HPP
 #define __ECELL4_RANDOM_NUMBER_GENERATOR_HPP
 
+#include <ctime>
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <gsl/gsl_rng.h>
@@ -68,6 +69,11 @@ public:
     void seed(Integer val)
     {
         gsl_rng_set(rng_.get(), val);
+    }
+
+    void seed()
+    {
+        gsl_rng_set(rng_.get(), unsigned(std::time(0)));
     }
 
     void save(H5::H5File* fout, const std::string& hdf5path) const;

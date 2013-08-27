@@ -26,6 +26,7 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
         Integer uniform_int(Integer, Integer)
         Real gaussian(Real, Real)
         void seed(Integer)
+        void seed()
 
 ## RandomNumberGenerator
 #  a python wrapper for Cpp_GSLRandomNumberGenerator
