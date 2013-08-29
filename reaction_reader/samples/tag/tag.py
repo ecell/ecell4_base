@@ -17,7 +17,7 @@ def rulegen():
     A(f=off) + I == A(f=on) | (5,6)
  
 #begin parameters
-#NA 6.02e23 # Avogadro’s number (molecues/mol)
+#NA 6.02e23 # Acogadro's number( molecules/mol)
 #f 0.1 # Fraction of the cell to simulate
 #Vo f*1.0e-10 # Extracellular volume=1/cell_density (L)
 #V f*3.0e-12 # Cytoplasmic volume (L)
