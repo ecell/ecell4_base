@@ -156,7 +156,7 @@ class Convert2BNGManager(object):
         self.__rules = rules
         self.__rules_notes = []
         self.__modification_collection_dict = defaultdict(lambda:defaultdict(set))
-
+        self.__modification_collection_dict_ext = defaultdict(lambda:defaultdict(set))
         if 0 < len(species) and 0 < len(rules):
             self.build_modification_collection_dict()
 
@@ -211,10 +211,11 @@ class Convert2BNGManager(object):
             # Following if-else statements is to enable output Null and Src
             # in 'molecule_types' section in degradation/synthesis reactions.
             if rr.is_degradation() == True:
-                temp_dict = add_modification_collection_dict_subunit(temp_dict, species_Null.get_subunit_list()[0])
+                temp_dict = add_modification_collection_dict_subunit(
+                        temp_dict, species_Null.get_subunit_list()[0])
             elif rr.is_synthesis() == True:
-                temp_dict = add_modification_collection_dict_subunit(temp_dict, species_Src.get_subunit_list()[0])
-
+                temp_dict = add_modification_collection_dict_subunit(
+                        temp_dict, species_Src.get_subunit_list()[0])
             for r in reactants:
                 for su in r.get_subunit_list():
                     temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
@@ -223,6 +224,8 @@ class Convert2BNGManager(object):
                     temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
         # Replace instance-member
         self.__modification_collection_dict = temp_dict
+        self.__modification_collection_dict_ext = copy.deepcopy(
+                self.__modification_collection_dict)
     
     def get_modification_collection_dict(self):
         return self.__modification_collection_dict
@@ -254,15 +257,13 @@ class Convert2BNGManager(object):
                 modification_candidates[label] = set()
                 for (su, mod) in pos:
                     modification_candidates[label] = modification_candidates[label] | self.__modification_collection_dict[su][mod]
-
-            # Update modification_collection_dict
+            # Update modification_collection_dict for molecule_types section.
             for (label, pos) in reactant_labels.items():
                 for (su, mod) in pos:
-                    self.__modification_collection_dict[su][mod] = self.__modification_collection_dict[su][mod] | modification_candidates[label]
-
+                    self.__modification_collection_dict_ext[su][mod] = self.__modification_collection_dict_ext[su][mod] | modification_candidates[label]
             for (label, pos) in product_labels.items():
                 for (su, mod) in pos:
-                    self.__modification_collection_dict[su][mod] = self.__modification_collection_dict[su][mod] | modification_candidates[label]
+                    self.__modification_collection_dict_ext[su][mod] = self.__modification_collection_dict_ext[su][mod] | modification_candidates[label]
 
         return (modification_candidates, subunit_candidates)
 
@@ -288,7 +289,7 @@ class Convert2BNGManager(object):
 
         # write
         fd.write("begin molecule types\n")
-        for s in build_molecules_type_query_list(self.__modification_collection_dict):
+        for s in build_molecules_type_query_list(self.__modification_collection_dict_ext):
             fd.write("\t%s\n" % s)
         fd.write("end molecule types\n")
 
