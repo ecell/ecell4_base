@@ -9,12 +9,6 @@ from collections import defaultdict
 def is_label(s):
     return 1 < len(s) and s[0] == '_'
 
-def check_label(self):
-    for su in self.subunits:
-        for mod, (state, binding) in su.get_modifications_list().items():
-            pass
-        pass
-
 def check_labeled_modification(su):
     retval = []
     for mod, (state, binding) in su.get_modifications_list().items():
@@ -161,14 +155,14 @@ class Convert2BNGManager(object):
         self.__species = species
         self.__rules = rules
         self.__rules_notes = []
-        #self.__modification_collection_dict = {}
-        #import ipdb; ipdb.set_trace()
         self.__modification_collection_dict = defaultdict(lambda:defaultdict(set))
 
         if 0 < len(species) and 0 < len(rules):
             self.build_modification_collection_dict()
 
+        # add convert2bng method for related classes
         self.initialize_methods()
+        # analyze all reactions
         self.expand_reactions()
 
     def initialize_methods(self):
@@ -186,6 +180,91 @@ class Convert2BNGManager(object):
             notes = self.build_label_expanded_reactionrule(rr)
             self.__rules_notes.append(notes)
         self.__expanded = True
+
+    def build_modification_collection_dict(self):
+        # The first argumet (current_dict) is dict(defaultdict(set))
+        def add_modification_collection_dict_subunit(current_dict, subunit):
+            su_name = subunit.get_name()
+            if is_label(su_name):
+                # do nothing
+                return current_dict
+
+            if not current_dict.has_key(su_name):
+                current_dict[subunit.get_name()] = defaultdict(set)
+            for mod, (state, binding) in subunit.get_modifications_list().items():
+                if not is_label(state):
+                        current_dict[su_name][mod].add(state)
+            return current_dict
+
+        # style:  dict[subunit][modification] = set(states)
+        temp_dict = {}
+        # Build modification dictionary by species
+        for (sp, attr) in self.__species:
+            for su in sp.get_subunit_list():
+                temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
+        # Build modification dictionary by ReactionRules
+        reactants = []
+        products = []
+        for rr in self.__rules:
+            reacntants = rr.reactants()
+            products = rr.products()
+            # Following if-else statements is to enable output Null and Src
+            # in 'molecule_types' section in degradation/synthesis reactions.
+            if rr.is_degradation() == True:
+                temp_dict = add_modification_collection_dict_subunit(temp_dict, species_Null.get_subunit_list()[0])
+            elif rr.is_synthesis() == True:
+                temp_dict = add_modification_collection_dict_subunit(temp_dict, species_Src.get_subunit_list()[0])
+
+            for r in reactants:
+                for su in r.get_subunit_list():
+                    temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
+            for p in products:
+                for su in p.get_subunit_list():
+                    temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
+        # Replace instance-member
+        self.__modification_collection_dict = temp_dict
+    
+    def get_modification_collection_dict(self):
+        return self.__modification_collection_dict
+
+    def build_label_expanded_reactionrule(self, rr):
+        def find_subunit_candidates(mod, state_set):
+            ret = set()
+            for (subunit, modification) in self.__modification_collection_dict.items():
+                for (candidate_mod, candidate_state_set) in modification.items():
+                    if candidate_mod == mod and state_set.issubset(candidate_state_set):
+                        ret.add(subunit)
+            return ret
+
+        (reactant_labels, product_labels, subunit_labels) = check_label_containing_reaction(rr)
+        # Find candidates that is asigned for Subunits' registers.
+        subunit_candidates = None
+        modification_candidates = None
+        if subunit_labels:
+            subunit_candidates = {}
+            for (label, states_dict) in subunit_labels.items():
+                subunit_candidates[label] = set()
+                for (mod, states_set) in states_dict.items():
+                    subunit_candidates[label] = subunit_candidates[label] | find_subunit_candidates(mod, states_set) 
+        # Find candidates that is asigned for Modifications' registers.
+        if reactant_labels or product_labels:
+            bngl_strs = []
+            modification_candidates = {}    # key is label(::string), value is a set of states.
+            for label, pos in reactant_labels.items():
+                modification_candidates[label] = set()
+                for (su, mod) in pos:
+                    modification_candidates[label] = modification_candidates[label] | self.__modification_collection_dict[su][mod]
+
+            # Update modification_collection_dict
+            for (label, pos) in reactant_labels.items():
+                for (su, mod) in pos:
+                    self.__modification_collection_dict[su][mod] = self.__modification_collection_dict[su][mod] | modification_candidates[label]
+
+            for (label, pos) in product_labels.items():
+                for (su, mod) in pos:
+                    self.__modification_collection_dict[su][mod] = self.__modification_collection_dict[su][mod] | modification_candidates[label]
+
+        return (modification_candidates, subunit_candidates)
 
     def write_section_seed_species(self, fd):
         fd.write("begin seed species\n")
@@ -243,17 +322,12 @@ class Convert2BNGManager(object):
         fd.write("begin reaction rules\n")
         for i, rr in enumerate(self.__rules):
             fd.write( ("\t# %s\n" % rr) )
-            #(reactant_labels, product_labels, modification_candidates) = self.__rules_notes[i]
             (modification_candidates, subunit_candidates) = self.__rules_notes[i]
-            #if reactant_labels or product_labels:
-            #import ipdb; ipdb.set_trace()
             if modification_candidates or subunit_candidates:
                 candidates = merge_candidates_dict(modification_candidates, subunit_candidates)
-                fd.write("\t# candidates for labels:\n")         #Comments
-                fd.write("\t#   %s\n" % candidates) #Comments
+                fd.write("\t# candidates for labels:\n")        #Comments
+                fd.write("\t#   %s\n" % candidates)             #Comments
                 bngl_strs = []
-                #convert2bngl_label_expanded_reactionrule_recursive(
-                #        rr, modification_candidates.keys(), modification_candidates, {}, bngl_strs)
                 convert2bngl_label_expanded_reactionrule_recursive(
                         rr, candidates.keys(), candidates, {}, bngl_strs)
                 for applied in bngl_strs:
@@ -272,90 +346,4 @@ class Convert2BNGManager(object):
                 s += "\n"
                 fd.write(s)
         fd.write("end reaction rules\n")
-
-    def build_modification_collection_dict(self):
-        # The first argumet (current_dict) is dict(defaultdict(set))
-        def add_modification_collection_dict_subunit(current_dict, subunit):
-            su_name = subunit.get_name()
-            if is_label(su_name):
-                # do nothing
-                return current_dict
-
-            if not current_dict.has_key(su_name):
-                current_dict[subunit.get_name()] = defaultdict(set)
-            for mod, (state, binding) in subunit.get_modifications_list().items():
-                if not is_label(state):
-                        current_dict[su_name][mod].add(state)
-            return current_dict
-
-        # style:  dict[subunit][modification] = set(states)
-        temp_dict = {}
-        # Build modification dictionary by species
-        for (sp, attr) in self.__species:
-            for su in sp.get_subunit_list():
-                temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
-        # Build modification dictionary by ReactionRules
-        reactants = []
-        products = []
-        for rr in self.__rules:
-            reacntants = rr.reactants()
-            products = rr.products()
-            
-            if rr.is_degradation() == True:
-                temp_dict = add_modification_collection_dict_subunit(temp_dict, species_Null.get_subunit_list()[0])
-            elif rr.is_synthesis() == True:
-                temp_dict = add_modification_collection_dict_subunit(temp_dict, species_Src.get_subunit_list()[0])
-
-            for r in reactants:
-                for su in r.get_subunit_list():
-                    temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
-            for p in products:
-                for su in p.get_subunit_list():
-                    temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
-        self.__modification_collection_dict = temp_dict
-    
-    def get_modification_collection_dict(self):
-        return self.__modification_collection_dict
-
-    def build_label_expanded_reactionrule(self, rr):
-        def find_subunit_candidates(mod, state_set):
-            ret = set()
-            for (subunit, modification) in self.__modification_collection_dict.items():
-                for (candidate_mod, candidate_state_set) in modification.items():
-                    if candidate_mod == mod and state_set.issubset(candidate_state_set):
-                        ret.add(subunit)
-            return ret
-
-        (reactant_labels, product_labels, subunit_labels) = check_label_containing_reaction(rr)
-        subunit_candidates = None
-        modification_candidates = None
-        if subunit_labels:
-            subunit_candidates = {}
-            for (label, states_dict) in subunit_labels.items():
-                subunit_candidates[label] = set()
-                for (mod, states_set) in states_dict.items():
-                    subunit_candidates[label] = subunit_candidates[label] | find_subunit_candidates(mod, states_set) 
-            #import ipdb; ipdb.set_trace()
-
-        if reactant_labels or product_labels:
-            bngl_strs = []
-            modification_candidates = {}    # key is label(::string), value is a set of states.
-            for label, pos in reactant_labels.items():
-                modification_candidates[label] = set()
-                for (su, mod) in pos:
-                    modification_candidates[label] = modification_candidates[label] | self.__modification_collection_dict[su][mod]
-
-            # Update modification_collection_dict
-            for (label, pos) in reactant_labels.items():
-                for (su, mod) in pos:
-                    self.__modification_collection_dict[su][mod] = self.__modification_collection_dict[su][mod] | modification_candidates[label]
-
-            for (label, pos) in product_labels.items():
-                for (su, mod) in pos:
-                    self.__modification_collection_dict[su][mod] = self.__modification_collection_dict[su][mod] | modification_candidates[label]
-
-        #return (reactant_labels, product_labels, modification_candidates)
-        return (modification_candidates, subunit_candidates)
-        #else: #containing no labels.
-        #    return (None, None, None)
 
