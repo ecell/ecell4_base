@@ -75,6 +75,24 @@ public:
                     "world", cuboidal_region_type::shape_type(x, x))));
     }
 
+    EGFRDWorld(
+        const Real& world_size, const Integer& matrix_size)
+        : world_(new world_type(world_size, matrix_size)),
+          t_(0.0)
+    {
+        rng_ = boost::shared_ptr<GSLRandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+        internal_rng_ = world_type::traits_type::rng_type(rng_->handle());
+
+        const world_type::position_type x(
+            translate(divide(edge_lengths(), 2)));
+        (*world_).add_structure(
+            boost::shared_ptr<cuboidal_region_type>(
+                new cuboidal_region_type(
+                    "world", cuboidal_region_type::shape_type(x, x))));
+    }
+
     /**
      * create and add a new particle
      * @param p a particle
