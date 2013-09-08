@@ -61,17 +61,17 @@ Full installation (Read only)
 
   $ cd ../ecell4
 
+  $ PREFIX=/foo/bar \
+  CPLUS_INCLUDE_PATH=${PREFIX}/include/ecell4/egfrd/epdp:${PREFIX}/include/ecell-3.2 \
+  PYTHONPATH=${PREFIX}/lib/python2.7/site-packages \
+  ./install.sh
+
 ..  $ PREFIX=/foo/bar \
   CPLUS_INCLUDE_PATH=${SRCPATH}/odeint-v2:${PREFIX}/include/ecell-3.2:\
   ${SRCPATH}/ecell3-spatiocyte:${SRCPATH}/epdp \
   LD_LIBRARY_PATH=${SRCPATH}/ecell3-spatiocyte:${SRCPATH}/epdp \
   LIBRARY_PATH=${SRCPATH}/ecell3-spatiocyte:${SRCPATH}/epdp \
   ./install.sh core bd gillespie ode egfrd spatiocyte
-
-  $ PREFIX=/foo/bar \
-  CPLUS_INCLUDE_PATH=${PREFIX}/include/ecell4/egfrd/epdp:${PREFIX}/include/ecell-3.2 \
-  PYTHONPATH=${PREFIX}/lib/python2.7/site-packages \
-  ./install.sh
 
 .. Build status badge
 .. |build-status|
