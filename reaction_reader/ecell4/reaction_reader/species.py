@@ -224,6 +224,9 @@ class ReactionRule(object):
 
         self.initialize()
 
+    def options(self):
+        return self.__options #copy.deepcopy(self.__options)
+
     def reactants(self):
         return copy.deepcopy(self.__reactants)
 
@@ -890,7 +893,7 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                 #     raise e
                 if pttrns is not None and len(pttrns) > 0:
                     for products in pttrns:
-                        newreactions.append(((sp1, ), products))
+                        newreactions.append(((sp1, ), products, rr.options() ))
 
                     for newsp in itertools.chain(*pttrns):
                         if (newsp not in seeds and newsp not in newseeds
@@ -908,7 +911,7 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                     #     raise e
                     if pttrns is not None and len(pttrns) > 0:
                         for products in pttrns:
-                            newreactions.append(((sp1, sp2), products))
+                            newreactions.append(((sp1, sp2), products, rr.options() ))
 
                         for newsp in itertools.chain(*pttrns):
                             if (newsp not in seeds and newsp not in newseeds
@@ -926,7 +929,7 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                     #     raise e
                     if pttrns is not None and len(pttrns) > 0:
                         for products in pttrns:
-                            newreactions.append(((sp1, sp2), products))
+                            newreactions.append(((sp1, sp2), products, rr.options() ))
 
                         for newsp in itertools.chain(*pttrns):
                             if (newsp not in seeds and newsp not in newseeds
@@ -935,8 +938,8 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                                 newseeds.append(newsp)
     return (newseeds, seeds, newreactions)
 
-def dump_reaction(reaction):
-    reactants, products = reaction
+def dump_reaction(reactants, products):
+    #reactants, products = reaction
     for sp in itertools.chain(reactants, products):
         sp.sort()
 
@@ -956,28 +959,36 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
 
     seeds, cnt, reactions = [], 0, []
     while len(newseeds) != 0 and cnt < max_iter:
-        print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
-            cnt, len(seeds), len(newseeds), len(reactions))
+        #print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
+        #    cnt, len(seeds), len(newseeds), len(reactions))
         newseeds, seeds, newreactions = generate_recurse(
             newseeds, rules, seeds, max_stoich)
         reactions.extend(newreactions)
         cnt += 1
-    print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
-        cnt, len(seeds), len(newseeds), len(reactions))
-    print ""
+    #print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
+    #    cnt, len(seeds), len(newseeds), len(reactions))
+    #print ""
 
     seeds.sort(key=str)
+    '''
     for i, sp in enumerate(seeds):
         print "%5d %s" % (i + 1, str(sp))
     print ""
+    '''
 
-    reactions = list(set([dump_reaction(reaction) for reaction in reactions]))
-    reactions.sort()
+    #reactions = list(set([dump_reaction(reaction) for reaction in reactions]))
+    dump_rrobj_map = dict()
+    for r in reactions:
+        s = dump_reaction(r[0], r[1])
+        dump_rrobj_map[s] = r
+    reactions = dump_rrobj_map.values()
+    '''
     for i, reaction in enumerate(reactions):
         print "%5d %s" % (i + 1, reaction)
+    '''
 
     # return seeds + newseeds, reactions
-    return seeds + newseeds
+    return seeds + newseeds, reactions
 
 
 if __name__ == "__main__":
