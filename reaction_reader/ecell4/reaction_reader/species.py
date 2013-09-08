@@ -304,7 +304,7 @@ class ReactionRule(object):
             correspondence = self.__correspondences[i]
 
             if correspondence >= len(reactant_subunits):
-                retval.add_subunit(subunit)
+                retval.add_subunit(copy.deepcopy(subunit))
                 target = retval.subunits[-1]
             else:
                 target = retval.subunits[serno(correspondence)]
@@ -376,6 +376,9 @@ class ReactionRule(object):
         contexts = None
         for sp1, sp2 in zip(self.__reactants, reactants):
             contexts = sp1.match(sp2, contexts)
+
+        if len(self.__products) == 0 and len(contexts) > 0:
+            return [()]
 
         retval = []
         for context in contexts:
