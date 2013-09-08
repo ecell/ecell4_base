@@ -301,7 +301,7 @@ class ReactionRule(object):
             correspondence = self.__correspondences[i]
 
             if correspondence >= len(reactant_subunits):
-                retval.add_subunit(subunit)
+                retval.add_subunit(copy.deepcopy(subunit))
                 target = retval.subunits[-1]
             else:
                 target = retval.subunits[serno(correspondence)]
