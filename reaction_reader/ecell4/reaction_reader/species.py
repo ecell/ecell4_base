@@ -374,6 +374,9 @@ class ReactionRule(object):
         for sp1, sp2 in zip(self.__reactants, reactants):
             contexts = sp1.match(sp2, contexts)
 
+        if len(self.__products) == 0 and len(contexts) > 0:
+            return [()]
+
         retval = []
         for context in contexts:
             products, correspondence = self.generate(context, reactants)
