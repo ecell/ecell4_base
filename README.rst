@@ -73,3 +73,37 @@ Full installation (Read only)
    image:: https://secure.travis-ci.org/ecell/ecell4.png
    :target: http://travis-ci.org/ecell/ecell4
    :alt: Build Status
+
+Using homebrew (Mac OS X and OS X only)
+
+The following commands will install core, gillespie, ode and reaction_reader
+
+..
+
+$ mv ecel4.rb /usr/local/Library/Formula
+
+$ brew install ecell4
+
+If you do not have pip or cython installed in your environment, homebrew will ask for your root password. If you do not want homebrew to do this, exit and do
+
+for pip:
+
+$ sudo easy_install pip
+
+for cython:
+
+$ sudo pip install cython
+
+for cython without for local:
+
+$ pip install cython --user
+
+and add the install directory to your $PYTHONPATH
+
+for csh and tcsh (assuming Python is version 2.7):
+
+$ setenv PYTHONPATH $PYTHONPATH:/usr/local/lib/python2.7/site-packages
+
+for other shells:
+
+$ export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages
