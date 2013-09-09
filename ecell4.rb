@@ -24,17 +24,7 @@ class Ecell4 < Formula
   NEWPATH = "/usr/local/lib/python" + PYTHONVERSION + "/site-packages"
   CPATH = PREFIX + "/include"
   LIBRARY_PATH = PREFIX + "/lib"
-  tmp = `echo $SHELL`.split("/")
-  SHELL = tmp.pop.chomp
-
-  # Uncomment lines to include in installation
-  # NOTE - Some of these modules may require additional Python modules
-  targets = ["core",       "core_python",
-             # "egfrd",      "egfrd_python", # Requires SciPy
-             "gillespie",  "gillespie_python",
-             "ode",        "ode_python",
-             # "spatiocyte", "spatiocyte_python", # Requires ecs
-             "reaction_reader"]
+  SHELL = `echo $SHELL`.split("/").pop.chomp
 
   # Dependencies
   depends_on 'pkg-config'
@@ -65,6 +55,15 @@ class Ecell4 < Formula
 
   def install
     ENV['PATH'] = PATH
+
+    # Uncomment lines to include in installation
+    # NOTE - Some of these modules require additional Python modules
+    targets = ["core",       "core_python",
+               # "egfrd",      "egfrd_python", # Requires SciPy
+               "gillespie",  "gillespie_python",
+               "ode",        "ode_python",
+               # "spatiocyte", "spatiocyte_python", # Requires ecs
+               "reaction_reader"]
 
     # Install pip if not present
     print "Looking for pip..."
