@@ -57,6 +57,15 @@ class Ecell4 < Formula
   def install
     ENV['PATH'] = PATH
 
+    # Uncomment lines to include in installation
+    # NOTE - Some of these modules may require additional Python modules
+    targets = ["core",       "core_python",
+               # "egfrd",      "egfrd_python", # Requires SciPy
+               "gillespie",  "gillespie_python",
+               "ode",        "ode_python",
+               # "spatiocyte", "spatiocyte_python", # Requires ecs
+               "reaction_reader"]
+
     # Install pip if not present
     print "Looking for pip..."
     unless `which pip`.length > 1
@@ -74,7 +83,7 @@ class Ecell4 < Formula
 
     # Install cython if not present
     print "Looking for cython..."
-    if `pip freeze | grep -ic cython`.chomp.to_i == 0
+    if `pip freeze | grep -ic ^cython`.chomp.to_i == 0
       puts " not found"
       puts "\n\e[31mWarning:\e[0m"
       puts "We are trying to install \e[32mcython\e[0m into your environment"
@@ -91,22 +100,26 @@ class Ecell4 < Formula
 
     # Install scipy if not present
     print "Looking for scipy..."
-    puts " skipped" # Under development
-    # if `pip freeze | grep -ic scipy`.chomp.to_i == 0
-    #   puts " not found"
-    #   system "sudo pip install scipy"
-    # else
-    #   puts " found"
-    # end
+    if `pip freeze | grep -ic ^scipy`.chomp.to_i == 0
+      puts " not found: egfrd will not be installed"
+      # puts " not found"
+      # system "sudo pip install scipy"
+    else
+      puts " skipped: egfrd will not be installed" # Build error
+      # puts " found"
+      # targets.push("egfrd", "egfrd_python")
+    end
 
-    # Uncomment lines to include in installation
-    # NOTE - Some of these modules may require additional Python modules
-    targets = ["core",       "core_python",
-               # "egfrd",      "egfrd_python", # Requires SciPy
-               "gillespie",  "gillespie_python",
-               "ode",        "ode_python",
-               # "spatiocyte", "spatiocyte_python", # Requires ecs
-               "reaction_reader"]
+    # Install ecs if not present
+    print "Looking for ecs..."
+    if `pip freeze | grep -ic ^ecs`.chomp.to_i == 0
+      puts " not found: spatiocyte will not be installed"
+      # puts " not found"
+      # system "sudo pip install ecs"
+    else
+      puts " found: installing spatiocyte"
+      targets.push("spatiocyte", "spatiocyte_python")
+    end
     
     targets.each {
       |target|
@@ -116,11 +129,11 @@ class Ecell4 < Formula
     if SHELL == "tcsh" || SHELL == "csh"
       puts "Remember to add"
       puts "'setenv PYTHONPATH $PYTHONPATH:#{NEWPATH}'"
-      puts "into your .#{SHELL}rc"
+      puts "to your .#{SHELL}rc"
     else
       puts "Remember to add"
       puts "'export PYTHONPATH=$PYTHONPATH:#{NEWPATH}'"
-      puts "into your .#{SHELL}rc"
+      puts "to your .#{SHELL}rc"
     end
   end
 

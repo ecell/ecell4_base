@@ -76,7 +76,8 @@ Full installation (Read only)
 
 Using homebrew (Mac OS X and OS X only)
 
-The following commands will install core, gillespie, ode and reaction_reader
+The following commands will install core, gillespie, ode and reaction_reader.
+Other stable modules will also build if necessary dependencies are found.
 
 ..
 
@@ -94,16 +95,18 @@ The following commands will install core, gillespie, ode and reaction_reader
   
   $ sudo pip install cython
   
-  for cython without for local:
+  for cython on local:
   
   $ pip install cython --user
   
   and add the install directory to your $PYTHONPATH
   
-  for csh and tcsh (assuming Python is version 2.7):
+  for csh and tcsh (enter your Python version in place of 2.7):
   
   $ setenv PYTHONPATH $PYTHONPATH:/usr/local/lib/python2.7/site-packages
   
   for other shells:
   
   $ export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages
+
+  It will be useful to have these in your configuration files (e.g. .bashrc, .tcshrc, .zshrc).
