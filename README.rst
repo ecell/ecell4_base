@@ -81,7 +81,7 @@ Other stable modules will also build if necessary dependencies are found.
 
 ..
 
-  $ mv ecel4.rb /usr/local/Library/Formula
+  $ mv ecell4.rb /usr/local/Library/Formula
   
   $ brew install ecell4
   
