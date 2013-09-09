@@ -27,6 +27,15 @@ class Ecell4 < Formula
   tmp = `echo $SHELL`.split("/")
   SHELL = tmp.pop.chomp
 
+  # Uncomment lines to include in installation
+  # NOTE - Some of these modules may require additional Python modules
+  targets = ["core",       "core_python",
+             # "egfrd",      "egfrd_python", # Requires SciPy
+             "gillespie",  "gillespie_python",
+             "ode",        "ode_python",
+             # "spatiocyte", "spatiocyte_python", # Requires ecs
+             "reaction_reader"]
+
   # Dependencies
   depends_on 'pkg-config'
   depends_on 'gsl'
@@ -56,15 +65,6 @@ class Ecell4 < Formula
 
   def install
     ENV['PATH'] = PATH
-
-    # Uncomment lines to include in installation
-    # NOTE - Some of these modules may require additional Python modules
-    targets = ["core",       "core_python",
-               # "egfrd",      "egfrd_python", # Requires SciPy
-               "gillespie",  "gillespie_python",
-               "ode",        "ode_python",
-               # "spatiocyte", "spatiocyte_python", # Requires ecs
-               "reaction_reader"]
 
     # Install pip if not present
     print "Looking for pip..."
@@ -138,11 +138,12 @@ class Ecell4 < Formula
   end
 
   test do
-    # `test do` will create, run in and delete a temporary directory.
-    #
-    # This test will fail and we won't accept that! It's enough to just replace
-    # "false" with the main program this formula installs, but it'd be nice if you
-    # were more thorough. Run the test with `brew test ecell4`.
-    system "false"
+    if SHELL == "tcsh" || SHELL == "csh"
+      system "setenv PYTHONPATH $PYTHONPATH:#{NEWPATH}"
+    else
+      system "export PYTHONPATH=$PYTHONPATH:#{NEWPATH}"
+    end
+
+    system "python -c 'import ecell4'"
   end
 end

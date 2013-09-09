@@ -110,3 +110,9 @@ Other stable modules will also build if necessary dependencies are found.
   $ export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages
 
   It will be useful to have these in your configuration files (e.g. .bashrc, .tcshrc, .zshrc).
+
+  Finally run the test:
+
+  $ brew test ecell4
+
+  and if it does not fail, you are all set!
