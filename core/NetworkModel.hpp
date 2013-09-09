@@ -107,6 +107,11 @@ public:
         return reaction_rules_;
     }
 
+    const Integer num_reaction_rules() const
+    {
+        return reaction_rules_.size();
+    }
+
 protected:
 
     void initialize();
