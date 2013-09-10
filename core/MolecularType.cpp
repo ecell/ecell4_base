@@ -19,7 +19,7 @@ void MolecularType::removeVoxel(const Voxel& voxel)
     for (voxel_container_type::iterator i(this->voxels_.begin());
             i != voxels_.end(); ++i)
     {
-        if ( compare_Voxel(*i, voxel) == true )
+        if ( i->id == voxel.id )
             voxels_.erase(i);
     }
 }
