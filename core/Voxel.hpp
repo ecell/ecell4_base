@@ -16,10 +16,21 @@ struct Voxel
     ParticleID id;
     Integer coord;
     Integer diffuseSize;
-    std::vector<Voxel&> adjoiningVoxels;
-    MolecularType& molecule_type;
+    std::vector<Voxel> adjoiningVoxels;
+    MolecularType *p_molecule_type;
 
 };
+bool compare_Voxel(const Voxel &v1, const Voxel &v2)
+{
+    if (v1.id == v2.id) {
+        if (v1.coord == v2.coord) {
+            if (v1.diffuseSize == v2.diffuseSize) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 } // ecell4
 

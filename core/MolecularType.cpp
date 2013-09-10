@@ -8,28 +8,28 @@ MolecularType::MolecularType(Species& species)
     species_ = species;
 }
 
-void MolecularType::addVoxel(const Voxel& voxel)
+void MolecularType::addVoxel(Voxel& voxel)
 {
     voxels_.push_back(voxel);
-    voxel.molecule_type = static_cast<MolecularType&>(*this);
+    voxel.p_molecule_type = this; //static_cast<MolecularType&>(*this);
 }
 
 void MolecularType::removeVoxel(const Voxel& voxel)
 {
-    for (voxel_container_type::iterator i(voxels_.begin());
+    for (voxel_container_type::iterator i(this->voxels_.begin());
             i != voxels_.end(); ++i)
     {
-        if (*i == voxel)
+        if ( compare_Voxel(*i, voxel) == true )
             voxels_.erase(i);
     }
 }
 
 const Species& MolecularType::species() const
 {
-    return sp_;
+    return this->species_;
 }
 
-const voxel_container_type MolecularType::voxels() const
+const MolecularType::voxel_container_type& MolecularType::voxels() const
 {
     return voxels_;
 }
