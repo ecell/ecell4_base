@@ -16,13 +16,14 @@ hppfiles = [
     'LatticeSpaceHDF5Writer.hpp', 'Voxel.hpp',
     'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',
     'Simulator.hpp', 'Space.hpp', 'Species.hpp', 'functions.hpp', 'types.hpp',
-    'extras.hpp', 'get_mapper_mf.hpp', 'config.h', 'H5Save.hpp'
+    'extras.hpp', 'get_mapper_mf.hpp', 'config.h', 'H5Save.hpp',
+    'SParticle.hpp', 'Voxel.hpp', 'MolecularType.hpp'
     ]
 
 cppfiles = [
     'Journal.cpp', 'Species.cpp', 'Model.cpp', 'ParticleSpace.cpp',
     'CompartmentSpace.cpp', 'NetworkModel.cpp', 'Position3.cpp',
-    'RandomNumberGenerator.cpp'
+    'RandomNumberGenerator.cpp', 'MolecularType.cpp'
     ]
 
 
