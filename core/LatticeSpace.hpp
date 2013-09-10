@@ -17,7 +17,7 @@ class LatticeSpace
 
 protected:
 
-    typedef std::vector<Voxel&> voxel_container_type;
+    typedef std::vector<Voxel> voxel_container_type;
     typedef std::set<MolecularType> molecular_type_set;
     typedef std::set<Species&> species_set;
 
@@ -25,11 +25,12 @@ public:
 
     LatticeSpace(Position3 edge_lengths);
 
+    /*
+     * override from Space
+     */
     Integer num_species() const;
     bool has_species(const Species& sp) const;
-
     const Position3& edge_lengths() const;
-
     Integer num_particles() const;
     Integer num_particles(const Species$ sp) const;
     std::vector<std::pair<ParticleID, Particle> >
@@ -37,15 +38,19 @@ public:
     std::vector<std::pair<ParticleID, Particle> >
         list_particles(const Species& sp) const;
 
-    void update_sparticle(ParticleID id, SParticle sparticle);
-    void remove_sparticle(ParticleID id);
+    /*
+     * original functions
+     */
+    //void update_sparticle(ParticleID id, SParticle sparticle);
+    //void remove_sparticle(ParticleID id);
 
-    Voxel& voxel_at(Integer coord) const;
-    Voxel& voxel_as(ParticleID id) const;
+    //Voxel& voxel_at(Integer coord) const;
+    //Voxel& voxel_as(ParticleID id) const;
 
 
 protected:
 
+    /*
     void set_properties();
     void set_adjoining();
     void concatenate_voxel(Voxel& voxel,
@@ -56,6 +61,7 @@ protected:
             Integer row, Integer layer, Integer col);
     void concatenate_cols(Voxel& voxel,
             Integer row, Integer layer, Integer col);
+    */
     const species_set species_set() const;
     const Integer position2coord(Integer row,
             Integer layer, Integer col)
@@ -104,6 +110,7 @@ protected:
     molecular_type_set molecular_types_;
     Position3 edge_lengths_;
     Position3 center_point_;
+
 };
 
 }

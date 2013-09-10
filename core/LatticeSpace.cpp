@@ -9,7 +9,6 @@ namespace ecell4
 
 LatticeSpace::LatticeSpace()
 {
-
 }
 
 Integer LatticeSpace::num_species()
@@ -84,6 +83,7 @@ std::vector<std::pair<ParticleID, Particle> >
     return retval;
 }
 
+/*
 void LatticeSpace::update_sparticle(ParticleID id, SParticle sparticle)
 {
     Voxel& src = voxel_as(id);
@@ -137,7 +137,7 @@ void LatticeSpace::set_adjoining()
         Integer col(coord / (low_size_ * layer_size_);
         Integer row((coord % (row_size_ * layer_size_)) / row_size_);
         Integer layer((coord % (row_size_ * layer_size_)) % row_size_);
-        concatnate_voxel();
+        concatenate_voxel();
     }
 }
 
@@ -298,6 +298,7 @@ void concatenate_cols(Voxel& voxel,
         }
     }
 }
+*/
 
 const species_set LatticeSpace::species_set()
 {

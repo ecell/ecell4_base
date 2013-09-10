@@ -13,12 +13,12 @@ class MolecularType
 
 public:
 
-    typedef std::vector<Voxel> voxel_container_type;
+    typedef std::vector<Voxel*> voxel_container_type;
 
 public:
 
     MolecularType(Species& species);
-    void addVoxel(Voxel& voxel);
+    void addVoxel(Voxel* voxel);
     void removeVoxel(const Voxel& voxel);
     const Species& species() const;
     const voxel_container_type& voxels() const;
@@ -26,7 +26,6 @@ public:
 protected:
 
     Species species_;
-    //std::vector<Voxel> voxels_;
     voxel_container_type voxels_;
 
 };
