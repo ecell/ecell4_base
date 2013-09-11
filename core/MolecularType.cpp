@@ -3,11 +3,6 @@
 namespace ecell4
 {
 
-MolecularType::MolecularType(Species& species)
-{
-    species_ = species;
-}
-
 void MolecularType::addVoxel(Voxel* p_voxel)
 {
     voxels_.push_back(p_voxel);

@@ -17,7 +17,10 @@ public:
 
 public:
 
-    MolecularType(Species& species);
+    MolecularType(const std::string& name = "")
+        : species_(name)
+    {
+    }
     void addVoxel(Voxel* voxel);
     void removeVoxel(const Voxel& voxel);
     const Species& species() const;
@@ -28,11 +31,6 @@ protected:
     Species species_;
     voxel_container_type voxels_;
 
-};
-
-class VacantType
-    : public MolecularType
-{
 };
 
 }

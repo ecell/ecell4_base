@@ -2,7 +2,6 @@
 #define __ECELL4__VOXEL_HPP
 
 #include <vector>
-#include "MolecularType.hpp"
 #include "Identifier.hpp"
 
 namespace ecell4
@@ -15,11 +14,12 @@ struct Voxel
 
     ParticleID id;
     Integer coord;
-    Integer diffuseSize;
-    std::vector<Voxel> adjoiningVoxels;
+    Integer diffuse_size;
+    std::vector<Voxel*> adjoiningVoxels;
     MolecularType *p_molecule_type;
-    
+
 };
+
 
 } // ecell4
 

@@ -17,13 +17,13 @@ hppfiles = [
     'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',
     'Simulator.hpp', 'Space.hpp', 'Species.hpp', 'functions.hpp', 'types.hpp',
     'extras.hpp', 'get_mapper_mf.hpp', 'config.h', 'H5Save.hpp',
-    'SParticle.hpp', 'Voxel.hpp', 'MolecularType.hpp'
+    'SParticle.hpp', 'Voxel.hpp', 'MolecularType.hpp', 'LatticeSpace.hpp'
     ]
 
 cppfiles = [
     'Journal.cpp', 'Species.cpp', 'Model.cpp', 'ParticleSpace.cpp',
     'CompartmentSpace.cpp', 'NetworkModel.cpp', 'Position3.cpp',
-    'RandomNumberGenerator.cpp', 'MolecularType.cpp'
+    'RandomNumberGenerator.cpp', 'MolecularType.cpp', 'LatticeSpace.cpp'
     ]
 
 
