@@ -16,20 +16,16 @@ class Ecell4 < Formula
 
   # Define some constants for environment variables
   PATH = String.new(ENV['PATH']) + ":" + CYTHONPATH
-  PREFIX = "/usr/local/Cellar/ecell4/4"
   tmp = /\d\.\d\.\d/.match(`python --version 2>&1`).to_s.split(".")
   tmp.pop
   PYTHONVERSION = tmp.join(".")
-  PYTHONPATH = PREFIX + "/lib/python" + PYTHONVERSION + "/site-packages"
-  NEWPATH = "/usr/local/lib/python" + PYTHONVERSION + "/site-packages"
-  CPATH = PREFIX + "/include"
-  LIBRARY_PATH = PREFIX + "/lib"
-  SHELL = `echo $SHELL`.split("/").pop.chomp
+  tmp = `echo $SHELL`.split("/")
+  SHELL = tmp.pop.chomp
 
   # Dependencies
   depends_on 'pkg-config'
   depends_on 'gsl'
-  depends_on 'boost'
+  depends_on 'boost' => '--with-python'
   depends_on 'hdf5' => '--enable-cxx'
 
   # This will automatically build the target module
@@ -41,13 +37,13 @@ class Ecell4 < Formula
     tmp = tmp.join("/")
 
     ENV['PATH'] = PATH + ":" + tmp
-    ENV['CPATH'] = CPATH
-    ENV['LIBRARY_PATH'] = LIBRARY_PATH
-    ENV['PYTHONPATH'] = PYTHONPATH
+    ENV['CPATH'] = "#{prefix}/include"
+    ENV['LIBRARY_PATH'] = "#{prefix}/lib"
+    ENV['PYTHONPATH'] = "#{prefix}/lib/python#{PYTHONVERSION}/site-packages"
 
     # Process the waf stuff
     Dir.chdir(target)
-    system "../waf configure --prefix=" + PREFIX
+    system "../waf configure --prefix=#{prefix}"
     system "../waf build"
     system "../waf install"
     Dir.chdir("../")
@@ -55,15 +51,6 @@ class Ecell4 < Formula
 
   def install
     ENV['PATH'] = PATH
-
-    # Uncomment lines to include in installation
-    # NOTE - Some of these modules require additional Python modules
-    targets = ["core",       "core_python",
-               # "egfrd",      "egfrd_python", # Requires SciPy
-               "gillespie",  "gillespie_python",
-               "ode",        "ode_python",
-               # "spatiocyte", "spatiocyte_python", # Requires ecs
-               "reaction_reader"]
 
     # Install pip if not present
     print "Looking for pip..."
@@ -82,7 +69,7 @@ class Ecell4 < Formula
 
     # Install cython if not present
     print "Looking for cython..."
-    if `pip freeze | grep -ic ^cython`.chomp.to_i == 0
+    if `pip freeze | grep -ic cython`.chomp.to_i == 0
       puts " not found"
       puts "\n\e[31mWarning:\e[0m"
       puts "We are trying to install \e[32mcython\e[0m into your environment"
@@ -99,26 +86,22 @@ class Ecell4 < Formula
 
     # Install scipy if not present
     print "Looking for scipy..."
-    if `pip freeze | grep -ic ^scipy`.chomp.to_i == 0
-      puts " not found: egfrd will not be installed"
-      # puts " not found"
-      # system "sudo pip install scipy"
-    else
-      puts " skipped: egfrd will not be installed" # Build error
-      # puts " found"
-      # targets.push("egfrd", "egfrd_python")
-    end
+    puts " skipped" # Under development
+    # if `pip freeze | grep -ic scipy`.chomp.to_i == 0
+    #   puts " not found"
+    #   system "sudo pip install scipy"
+    # else
+    #   puts " found"
+    # end
 
-    # Install ecs if not present
-    print "Looking for ecs..."
-    if `pip freeze | grep -ic ^ecs`.chomp.to_i == 0
-      puts " not found: spatiocyte will not be installed"
-      # puts " not found"
-      # system "sudo pip install ecs"
-    else
-      puts " found: installing spatiocyte"
-      targets.push("spatiocyte", "spatiocyte_python")
-    end
+    # Uncomment lines to include in installation
+    # NOTE - Some of these modules may require additional Python modules
+    targets = ["core",       "core_python",
+               # "egfrd",      "egfrd_python", # Requires SciPy
+               "gillespie",  "gillespie_python",
+               "ode",        "ode_python",
+               # "spatiocyte", "spatiocyte_python", # Requires ecs
+               "reaction_reader"]
     
     targets.each {
       |target|
@@ -127,22 +110,21 @@ class Ecell4 < Formula
 
     if SHELL == "tcsh" || SHELL == "csh"
       puts "Remember to add"
-      puts "'setenv PYTHONPATH $PYTHONPATH:#{NEWPATH}'"
-      puts "to your .#{SHELL}rc"
+      puts "'setenv PYTHONPATH $PYTHONPATH:#{HOMEBREW_PREFIX}/lib/python#{PYTHONVERSION}/site-packages'"
+      puts "into your .#{SHELL}rc"
     else
       puts "Remember to add"
-      puts "'export PYTHONPATH=$PYTHONPATH:#{NEWPATH}'"
-      puts "to your .#{SHELL}rc"
+      puts "'export PYTHONPATH=$PYTHONPATH:#{HOMEBREW_PREFIX}/lib/python#{PYTHONVERSION}/site-packages'"
+      puts "into your .#{SHELL}rc"
     end
   end
 
   test do
-    if SHELL == "tcsh" || SHELL == "csh"
-      system "setenv PYTHONPATH $PYTHONPATH:#{NEWPATH}"
-    else
-      system "export PYTHONPATH=$PYTHONPATH:#{NEWPATH}"
-    end
-
-    system "python -c 'import ecell4'"
+    # `test do` will create, run in and delete a temporary directory.
+    #
+    # This test will fail and we won't accept that! It's enough to just replace
+    # "false" with the main program this formula installs, but it'd be nice if you
+    # were more thorough. Run the test with `brew test ecell4`.
+    system "false"
   end
 end
