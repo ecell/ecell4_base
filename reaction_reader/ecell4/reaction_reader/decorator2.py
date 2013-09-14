@@ -44,14 +44,14 @@ def generate_Species(obj):
                         su.add_exclusion(name)
                     else:
                         raise RuntimeError, (
-                            "invalid argument [%s] found." % (mod))
+                            "invalid argument [%s] found." % str(mod))
             if elem.kwargs is not None:
                 for name, value in elem.kwargs.items():
                     if (not (isinstance(value, parseobj.ParseObj)
                             or isinstance(value, parseobj.AnyCallable))
                         or value._size() != 1):
                         raise RuntimeError, (
-                            "invalid argument [%s] found." % (value))
+                            "invalid argument [%s] found." % str(value))
                     arg = value._elements()[0]
                     state, binding = str(arg.name), arg.modification
                     if binding is None:
