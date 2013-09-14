@@ -8,6 +8,10 @@ import parseobj
 from decorator_base import Callback, parse_decorator
 
 
+def is_parseobj(obj):
+    return (isinstance(obj, parseobj.ParseObj)
+        or isinstance(obj, parseobj.AnyCallable))
+
 def generate_Species(obj):
     if isinstance(obj, parseobj.AnyCallable):
         obj = obj._as_ParseObj()
@@ -18,9 +22,7 @@ def generate_Species(obj):
             su = species.Subunit(elem.name)
             if elem.args is not None:
                 for mod in elem.args:
-                    if ((isinstance(mod, parseobj.ParseObj)
-                        or isinstance(mod, parseobj.AnyCallable))
-                        and mod._size() == 1):
+                    if is_parseobj(mod) and mod._size() == 1:
                         arg = mod._elements()[0]
                         name, binding = arg.name, arg.modification
                         if binding is None:
@@ -47,22 +49,26 @@ def generate_Species(obj):
                             "invalid argument [%s] found." % str(mod))
             if elem.kwargs is not None:
                 for name, value in elem.kwargs.items():
-                    if (not (isinstance(value, parseobj.ParseObj)
-                            or isinstance(value, parseobj.AnyCallable))
-                        or value._size() != 1):
+                    if is_parseobj(value) and value._size() == 1:
+                        arg = value._elements()[0]
+                        state, binding = str(arg.name), arg.modification
+                        if binding is None:
+                            su.add_modification(name, state, "")
+                        else:
+                            binding = str(binding)
+                            if not (binding.isdigit() or binding == ""
+                                or binding[0] == "_"):
+                                raise RuntimeError, (
+                                    "invalid binding [%s] given." % (binding))
+                            su.add_modification(name, state, binding)
+                    elif ((isinstance(value, tuple) or isinstance(value, list))
+                        and all([is_parseobj(elem) and elem._size() == 1
+                            for elem in value])):
+                        value = tuple(elem._elements()[0].name for elem in value)
+                        su.add_group(name, value)
+                    else:
                         raise RuntimeError, (
                             "invalid argument [%s] found." % str(value))
-                    arg = value._elements()[0]
-                    state, binding = str(arg.name), arg.modification
-                    if binding is None:
-                        su.add_modification(name, state, "")
-                    else:
-                        binding = str(binding)
-                        if not (binding.isdigit() or binding == ""
-                            or binding[0] == "_"):
-                            raise RuntimeError, (
-                                "invalid binding [%s] given." % (binding))
-                        su.add_modification(name, state, binding)
             sp.add_subunit(su)
         return (sp, )
     elif isinstance(obj, parseobj.InvExp):

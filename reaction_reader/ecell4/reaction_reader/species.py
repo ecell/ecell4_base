@@ -94,6 +94,7 @@ class Subunit(object):
         self.name = name
         self.modifications = {}
         self.exclusions = []
+        self.groups = {}
 
         self.index = None #XXX
 
@@ -119,6 +120,13 @@ class Subunit(object):
         if not mod in self.exclusions:
             self.exclusions.append(mod)
 
+    def add_group(self, mod, group):
+        if (not (isinstance(group, list) or isinstance(group, tuple))
+            or len(group) == 0):
+            raise ValueError, "Invalid argument [%s] given." % str(group)
+
+        self.groups[mod] = group
+
     def __str__(self):
         mods1 = ["~%s" % (mod) for mod in self.exclusions]
 
@@ -134,10 +142,14 @@ class Subunit(object):
             else:
                 mods3.append("%s=%s^%s" % (mod, state, binding))
 
+        mods4 = ["%s=(%s)" % (mod, ",".join([str(elem) for elem in group]))
+                for mod, group in self.groups.items()]
+
         mods1.sort()
         mods2.sort()
         mods3.sort()
-        return "%s(%s)" % (self.name, ",".join(itertools.chain(mods1, mods2, mods3)))
+        mods4.sort()
+        return "%s(%s)" % (self.name, ",".join(itertools.chain(mods1, mods2, mods3, mods4)))
 
     def __repr__(self):
         return '<"%s">' % (str(self))
