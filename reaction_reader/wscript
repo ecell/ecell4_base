@@ -14,6 +14,7 @@ pyfiles = [
     'ecell4/reaction_reader/network.py',
     'ecell4/reaction_reader/__init__.py',
     'ecell4/reaction_reader/logger.py',
+    'ecell4/reaction_reader/decorator_base.py',
     'ecell4/reaction_reader/parseobj.py']
 
 

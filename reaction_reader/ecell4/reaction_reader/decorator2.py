@@ -4,8 +4,8 @@ import copy
 import functools
 
 import species
-import decorator
 import parseobj
+from decorator_base import Callback, parse_decorator
 
 
 def generate_Species(obj):
@@ -169,10 +169,10 @@ def generate_Options2(opts):
             raise RuntimeError, "an invalid option [%s] given." % (opt)
     return retval1, retval2
 
-class SpeciesAttributesCallback(decorator.Callback):
+class SpeciesAttributesCallback(Callback):
 
     def __init__(self, *args):
-        decorator.Callback.__init__(self)
+        Callback.__init__(self)
 
         self.bitwise_operations = []
 
@@ -205,10 +205,10 @@ class SpeciesAttributesCallback(decorator.Callback):
             'ReactionRule definitions are not allowed'
             + ' in "species_attributes"')
 
-class ReactionRulesCallback(decorator.Callback):
+class ReactionRulesCallback(Callback):
 
     def __init__(self):
-        decorator.Callback.__init__(self)
+        Callback.__init__(self)
 
         self.comparisons = []
 
@@ -247,15 +247,15 @@ class ReactionRulesCallback(decorator.Callback):
         else:
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
 
-species_attributes = functools.partial(decorator.parse_decorator, SpeciesAttributesCallback)
-reaction_rules = functools.partial(decorator.parse_decorator, ReactionRulesCallback)
+species_attributes = functools.partial(parse_decorator, SpeciesAttributesCallback)
+reaction_rules = functools.partial(parse_decorator, ReactionRulesCallback)
 
 class AnyCallableGenerator(dict):
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
 
-        self.__cache = decorator.Callback()
+        self.__cache = Callback()
 
     def __setitem__(self, key, value):
         dict.__setitem__(self, key, value)
