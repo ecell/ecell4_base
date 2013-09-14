@@ -22,7 +22,7 @@ def generate_NetworkModel(seeds, rules):
                 rr.set_k(opt)
                 break
         else:
-            raise RuntimeError, "No kinetic rate is defined."
+            raise RuntimeError, "No kinetic rate is defined. [%s]" % str(r_tuple)
 
         model.add_reaction_rule(rr)
 
