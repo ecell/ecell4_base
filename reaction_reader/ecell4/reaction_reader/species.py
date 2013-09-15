@@ -3,6 +3,7 @@ import itertools
 
 label_subunit = lambda x: "subunit%s" % x
 label_binding = lambda x: "binding%s" % x
+label_domain = lambda x, y: "_%s__%s" % (x, y)
 
 
 class Species(object):
@@ -218,6 +219,8 @@ def concatenate_species(*species_list):
             newsu = Subunit(su.name)
             for mod in su.exclusions:
                 newsu.add_exclusion(mod)
+            for key, value in su.domain_classes.items():
+                newsu.add_domain_class(key, value)
             for mod, (state, binding) in su.modifications.items():
                 if binding != "" and binding[0] != "_":
                     if not binding.isdigit():
@@ -265,7 +268,11 @@ class ReactionRule(object):
                 if (su1.name == su2.name
                     and set(su1.exclusions) == set(su2.exclusions)
                     and set(su1.modifications.keys())
-                        == set(su2.modifications.keys())):
+                        == set(su2.modifications.keys())
+                    and set(su1.domain_classes.keys())
+                        == set(su2.domain_classes.keys())
+                    and set(su1.domain_classes.values())
+                        == set(su2.domain_classes.values())):
                     if len(self.__correspondences) > i:
                         # raise RuntimeError, "multiple correspondence found [%s]" % su1
                         print "WARN: multiple correspondence found [%s]" % su1
@@ -328,6 +335,13 @@ class ReactionRule(object):
             #     pass
 
             for mod, (state, binding) in subunit.modifications.items():
+                if correspondence < len(reactant_subunits):
+                    mod = context.get(
+                        label_domain(label_subunit(correspondence), mod))
+                    if mod is None:
+                        raise RuntimeError, (
+                            "no corresponding context found [%s]" % mod)
+
                 value = target.modifications.get(mod)
                 if value is None:
                     newstate, newbinding = "", ""
@@ -444,8 +458,7 @@ class DomainClassCondition(Condition):
     def match(self, sp, contexts):
         retval = contexts.product2(
             self.generator, self.key_subunit,
-            "_%s__%s" % (self.key_subunit, self.mod))
-        print retval
+            label_domain(self.key_subunit, self.mod))
         return retval
 
 class SubunitContainingCondition(Condition):
@@ -484,34 +497,38 @@ class ModificationStateCondition(Condition):
         self.mod = mod
         self.state = state
 
-    def predicator1(self, subunit):
-        value = subunit.modifications.get(self.mod)
+    def predicator1(self, subunit, mod):
+        value = subunit.modifications.get(mod)
         return (value is not None and value[0] == self.state)
 
-    def predicator2(self, subunit):
-        value = subunit.modifications.get(self.mod)
+    def predicator2(self, subunit, mod):
+        value = subunit.modifications.get(mod)
         return value is not None
 
-    def predicator3(self, subunit, state):
-        value = subunit.modifications.get(self.mod)
+    def predicator3(self, subunit, mod, state):
+        value = subunit.modifications.get(mod)
         return value[0] == state
 
-    def modifier(self, subunit):
-        return subunit.modifications.get(self.mod)[0]
+    def modifier(self, subunit, mod):
+        return subunit.modifications.get(mod)[0]
 
     def match(self, sp, contexts):
         if self.state[0] != "_":
-            return contexts.filter1(
-                self.predicator1, self.key_subunit)
-        elif len(self.state) == 1: # self.state == "_"
-            return contexts.filter1(
-                self.predicator2, self.key_subunit)
-        elif contexts.has_key(self.state):
             return contexts.filter2(
-                self.predicator3, self.key_subunit, self.state)
+                self.predicator1, self.key_subunit,
+                label_domain(self.key_subunit, self.mod))
+        elif len(self.state) == 1: # self.state == "_"
+            return contexts.filter2(
+                self.predicator2, self.key_subunit,
+                label_domain(self.key_subunit, self.mod))
+        elif contexts.has_key(self.state):
+            return contexts.filter3(
+                self.predicator3, self.key_subunit,
+                label_domain(self.key_subunit, self.mod), self.state)
         else:
-            return contexts.update(
-                self.modifier, self.key_subunit, self.state)
+            return contexts.update2(
+                self.modifier, self.key_subunit,
+                label_domain(self.key_subunit, self.mod), self.state)
 
 class ModificationBindingCondition(Condition):
 
@@ -528,26 +545,26 @@ class ModificationBindingCondition(Condition):
         else:
             self.key_binding = label_binding(self.binding)
 
-    def predicator1(self, subunit):
+    def predicator1(self, subunit, mod):
         check_binding = (
             (lambda x: x != "") if self.binding == "_" else
             (lambda x: x == ""))
-        value = subunit.modifications.get(self.mod)
+        value = subunit.modifications.get(mod)
         return (value is not None and check_binding(value[1]))
 
-    def predicator2(self, subunit, target):
-        value = subunit.modifications.get(self.mod)
+    def predicator2(self, subunit, mod, target):
+        value = subunit.modifications.get(mod)
         return (value is not None and value[1] == target)
 
-    def modifier1(self, subunit):
-        value = subunit.modifications.get(self.mod)
+    def modifier1(self, subunit, mod):
+        value = subunit.modifications.get(mod)
         if (value is not None and value[1] != ""):
             return value[1]
         else:
             return None
 
-    def modifier2(self, subunit):
-        value = subunit.modifications.get(self.mod)
+    def modifier2(self, subunit, mod):
+        value = subunit.modifications.get(mod)
         if (value is not None and value[1] != ""):
             return value[1]
         else:
@@ -555,14 +572,17 @@ class ModificationBindingCondition(Condition):
 
     def match(self, sp, contexts):
         if self.binding == "_" or self.binding == "":
-            return contexts.filter1(
-                self.predicator1, self.key_subunit)
-        elif contexts.has_key(self.key_binding):
             return contexts.filter2(
-                self.predicator2, self.key_subunit, self.key_binding)
+                self.predicator1, self.key_subunit,
+                label_domain(self.key_subunit, self.mod))
+        elif contexts.has_key(self.key_binding):
+            return contexts.filter3(
+                self.predicator2, self.key_subunit,
+                label_domain(self.key_subunit, self.mod), self.key_binding)
         else:
-            return contexts.update(
-                self.modifier1, self.key_subunit, self.key_binding)
+            return contexts.update2(
+                self.modifier1, self.key_subunit,
+                label_domain(self.key_subunit, self.mod), self.key_binding)
 
 class ExcludedModificationCondition(Condition):
 
@@ -572,8 +592,10 @@ class ExcludedModificationCondition(Condition):
         self.mod = mod
 
     def predicator(self, subunit):
-        value = subunit.modifications.get(self.mod)
-        return (value is None)
+        if subunit.modifications.get(self.mod) is not None:
+            return False
+        else:
+            return (subunit.domain_classes.get(self.mod) is None)
 
     def match(self, sp, contexts):
         return contexts.filter1(self.predicator, self.key_subunit)
@@ -655,6 +677,8 @@ class Contexts(object):
         for context in self.__data:
             values = generator(context[key1])
             for value in values:
+                if value is None:
+                    continue
                 newcontext = copy.copy(context)
                 newcontext[key2] = value
                 retval._append(newcontext)
@@ -684,19 +708,39 @@ class Contexts(object):
                 retval._append(context)
         return retval
 
-    def update(self, modifier, key1, key2):
+    def filter3(self, predicator, key1, key2, key3):
         """key1 always indicates a subunit, but key2 doesn't."""
         if not self.has_key(key1):
             raise RuntimeError, "invalid key [%s] found." % (key1)
+        if not self.has_key(key2):
+            raise RuntimeError, "invalid key [%s] found." % (key2)
+        if not self.has_key(key3):
+            raise RuntimeError, "invalid key [%s] found." % (key3)
+
+        retval = Contexts()
+        for context in self.__data:
+            if predicator(context[key1], context[key2], context[key3]):
+                retval._append(context)
+        return retval
+
+    def update(self, modifier, key1, key2):
+        """key1 always indicates a subunit, but key2 doesn't."""
+        return self.product2(lambda su: [modifier(su)], key1, key2)
+
+    def update2(self, modifier, key1, key2, key3):
+        if not self.has_key(key1):
+            raise RuntimeError, "invalid key [%s] found." % (key1)
+        if not self.has_key(key2):
+            raise RuntimeError, "invalid key [%s] found." % (key2)
         if self.has_key(key2):
             raise RuntimeError, "key [%s] already exists." % (key2)
 
         retval = Contexts()
         for context in self.__data:
-            value = modifier(context[key1])
+            value = modifier(context[key1], context[key2])
             if value is not None:
                 newcontext = copy.copy(context)
-                newcontext[key2] = value
+                newcontext[key3] = value
                 retval._append(newcontext)
         return retval
 
