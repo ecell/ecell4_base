@@ -94,7 +94,7 @@ class Subunit(object):
         self.name = name
         self.modifications = {}
         self.exclusions = []
-        self.groups = {}
+        self.domain_classes = {}
 
         self.index = None #XXX
 
@@ -106,6 +106,8 @@ class Subunit(object):
                 ExcludedModificationCondition(key, mod))
 
         for mod, (state, binding) in self.modifications.items():
+            conditions.append(
+                DomainClassCondition(key, mod))
             conditions.append(
                 ModificationBindingCondition(key, mod, binding))
             if state != "":
@@ -120,12 +122,12 @@ class Subunit(object):
         if not mod in self.exclusions:
             self.exclusions.append(mod)
 
-    def add_group(self, mod, group):
-        if (not (isinstance(group, list) or isinstance(group, tuple))
-            or len(group) == 0):
-            raise ValueError, "Invalid argument [%s] given." % str(group)
+    def add_domain_class(self, mod, value):
+        if (not (isinstance(value, list) or isinstance(value, tuple))
+            or len(value) == 0):
+            raise ValueError, "Invalid argument [%s] given." % str(value)
 
-        self.groups[mod] = group
+        self.domain_classes[mod] = value
 
     def __str__(self):
         mods1 = ["~%s" % (mod) for mod in self.exclusions]
@@ -142,8 +144,8 @@ class Subunit(object):
             else:
                 mods3.append("%s=%s^%s" % (mod, state, binding))
 
-        mods4 = ["%s=(%s)" % (mod, ",".join([str(elem) for elem in group]))
-                for mod, group in self.groups.items()]
+        mods4 = ["%s=(%s)" % (mod, ",".join([str(elem) for elem in value]))
+                for mod, value in self.domain_classes.items()]
 
         mods1.sort()
         mods2.sort()
@@ -418,7 +420,33 @@ class Condition(object):
         self.priority = 0
 
     def match(self, sp, contexts):
-        return []
+        return None
+
+class DomainClassCondition(Condition):
+
+    def __init__(self, key, mod):
+        Condition.__init__(self)
+
+        self.key_subunit = key
+        self.mod = mod
+
+    def generator(self, subunit):
+        value = subunit.modifications.get(self.mod)
+        if value is None:
+            value = subunit.domain_classes.get(self.mod)
+            if value is None:
+                return []
+            else:
+                return list(value)
+        else:
+            return [self.mod]
+
+    def match(self, sp, contexts):
+        retval = contexts.product2(
+            self.generator, self.key_subunit,
+            "_%s__%s" % (self.key_subunit, self.mod))
+        print retval
+        return retval
 
 class SubunitContainingCondition(Condition):
 
@@ -613,6 +641,22 @@ class Contexts(object):
             for value in values:
                 newcontext = copy.copy(context)
                 newcontext[key] = value
+                retval._append(newcontext)
+        return retval
+
+    def product2(self, generator, key1, key2):
+        """key1 is always a subunit."""
+        if self.has_key(key2):
+            raise RuntimeError, "key [%s] already exists." % (key2)
+        elif not self.has_key(key1):
+            raise RuntimeError, "invalid key [%s] found." % (key1)
+
+        retval = Contexts()
+        for context in self.__data:
+            values = generator(context[key1])
+            for value in values:
+                newcontext = copy.copy(context)
+                newcontext[key2] = value
                 retval._append(newcontext)
         return retval
 

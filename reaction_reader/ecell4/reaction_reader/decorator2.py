@@ -65,7 +65,7 @@ def generate_Species(obj):
                         and all([is_parseobj(elem) and elem._size() == 1
                             for elem in value])):
                         value = tuple(elem._elements()[0].name for elem in value)
-                        su.add_group(name, value)
+                        su.add_domain_class(name, value)
                     else:
                         raise RuntimeError, (
                             "invalid argument [%s] found." % str(value))
