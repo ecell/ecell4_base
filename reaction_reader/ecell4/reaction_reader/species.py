@@ -732,8 +732,8 @@ class Contexts(object):
             raise RuntimeError, "invalid key [%s] found." % (key1)
         if not self.has_key(key2):
             raise RuntimeError, "invalid key [%s] found." % (key2)
-        if self.has_key(key2):
-            raise RuntimeError, "key [%s] already exists." % (key2)
+        if self.has_key(key3):
+            raise RuntimeError, "key [%s] already exists." % (key3)
 
         retval = Contexts()
         for context in self.__data:
