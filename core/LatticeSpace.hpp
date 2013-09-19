@@ -64,7 +64,6 @@ namespace ecell4
 #define MAX_IMMEDIATE_DISTANCE 0.2
 #define BIG_NUMBER 1e+20
 
-// Simply Comp (temporary)
 struct Comp
 {
     bool isIntersectParent;
@@ -113,7 +112,7 @@ struct Comp
     std::vector<Comp*> intersectLowerPeers;
     std::vector<Comp*> lineSubs;
     std::vector<Species*> species;
-// std::vector<unsigned int>
+//    std::vector<unsigned int>
     std::vector<Integer> adjoinCount;
 };
 
@@ -144,26 +143,13 @@ public:
     std::vector<std::pair<ParticleID, Particle> >
         list_particles(const Species& sp) const;
 
-    /*
-     * Spatiocyte methods
-     */
-    void set_lattice_properties();
-    void construct_lattice();
-    void concatenate_voxel(Voxel& voxel,
-            Integer row, Integer layer, Integer col);
-    void concatenate_rows(Voxel& voxel,
-            Integer row, Integer layer, Integer col);
-    void concatenate_layers(Voxel& voxel,
-            Integer row, Integer layer, Integer col);
-    void concatenate_cols(Voxel& voxel,
-            Integer row, Integer layer, Integer col);
-    bool is_inside_coord(Integer coord, Comp* comp, Real delta);
 
     /*
      * original methods
      */
     bool update_sparticle(ParticleID pid, SParticle spcl);
     void remove_sparticle(ParticleID pid);
+    MolecularType& get_molecular_type(Species& sp);
     void coord2global(Integer coord, Integer& global_row,
             Integer& global_layer, Integer& global_col) const;
     const Position3 coord2position(Integer coord) const;
@@ -184,6 +170,11 @@ protected:
         Particle particle(sp, pos, radius, D);
         return particle;
     }
+
+    /*
+     * Spatiocyte methods
+     */
+    void set_lattice_properties();
 
 protected:
 

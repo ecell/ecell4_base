@@ -12,7 +12,7 @@ void MolecularType::addVoxel(Voxel* p_voxel)
 void MolecularType::removeVoxel(const Voxel& voxel)
 {
     for (voxel_container_type::iterator i(this->voxels_.begin());
-            i != voxels_.end(); ++i)
+            i != this->voxels_.end(); ++i)
     {
         Voxel* p_v = *i;
         if (p_v->id == voxel.id)
