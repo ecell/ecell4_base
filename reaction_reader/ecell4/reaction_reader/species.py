@@ -915,6 +915,9 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                     if pttrns is not None and len(pttrns) > 0:
                         for products in pttrns:
                             newreactions.append(((sp1, sp2), products, rr.options()))
+                            if str(sp1) == str(sp2):
+                                print "This rule is symmetric and generated reaction has homo-dimer, ecell4 changes following reaction rate!"
+                                print ((sp1, sp2), products)
 
                         for newsp in itertools.chain(*pttrns):
                             if (newsp not in seeds and newsp not in newseeds
