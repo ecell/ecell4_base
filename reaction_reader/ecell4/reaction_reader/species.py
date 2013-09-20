@@ -340,8 +340,16 @@ class ReactionRule(object):
 
             for mod, (state, binding) in subunit.modifications.items():
                 if correspondence < len(reactant_subunits):
-                    mod = context.get(
-                        label_domain(label_subunit(correspondence), mod))
+                    if mod == "":
+                        raise RuntimeError, "an empty name for modification given."
+                    elif mod[0] != "_":
+                        label = label_domain(label_subunit(correspondence), mod)
+                    elif mod in context.keys():
+                        label = mod
+                    else:
+                        raise RuntimeError, "invalid name [%s] given." % mod
+
+                    mod = context.get(label)
                     if mod is None:
                         raise RuntimeError, (
                             "no corresponding context found [%s]" % mod)
@@ -477,7 +485,6 @@ class DomainClassCondition(Condition):
 
         retval = contexts.product_any(
             self.generator, self.key_subunit, self.unnamed)
-        print retval
         return retval
 
 class ModificationNameCondition(Condition):
@@ -500,14 +507,20 @@ class ModificationNameCondition(Condition):
             return [self.mod]
 
     def match(self, sp, contexts):
-        # if (self.mod == "" or
-        #     (self.mod[0] == "_" and not contexts.has_key(self.mod))):
-        #     raise RuntimeError, "[%s] not defined." % self.mod
+        if (self.mod == "" or
+            (self.mod[0] == "_" and not contexts.has_key(self.mod))):
+            raise RuntimeError, "[%s] not defined." % self.mod
 
-        retval = contexts.product2(
-            self.generator, self.key_subunit,
-            label_domain(self.key_subunit, self.mod))
-        return retval
+        if self.mod == "":
+            raise RuntimeError, "an empty name for modification given."
+        elif self.mod[0] != "_":
+            return contexts.product2(
+                self.generator, self.key_subunit,
+                label_domain(self.key_subunit, self.mod))
+        elif contexts.has_key(self.mod):
+            return contexts
+        else:
+            raise RuntimeError, "invalid name [%s] given." % self.mod
 
 class SubunitContainingCondition(Condition):
 
@@ -561,25 +574,27 @@ class ModificationStateCondition(Condition):
         return subunit.modifications.get(mod)[0]
 
     def match(self, sp, contexts):
-        if self.mod == "" or (self.mod[0] == "_" and not contexts.has_key(self.mod)):
-            raise RuntimeError, "[%s] not defined." % self.mod
+        if self.mod == "":
+            raise RuntimeError, "an empty name for modification given."
+        elif self.mod[0] != "_":
+            label = label_domain(self.key_subunit, self.mod)
+        elif contexts.has_key(self.mod):
+            label = self.mod
+        else:
+            raise RuntimeError, "invalid name [%s] given." % self.mod
 
         if self.state[0] != "_":
             return contexts.filter2(
-                self.predicator1, self.key_subunit,
-                label_domain(self.key_subunit, self.mod))
+                self.predicator1, self.key_subunit, label)
         elif len(self.state) == 1: # self.state == "_"
             return contexts.filter2(
-                self.predicator2, self.key_subunit,
-                label_domain(self.key_subunit, self.mod))
+                self.predicator2, self.key_subunit, label)
         elif contexts.has_key(self.state):
             return contexts.filter3(
-                self.predicator3, self.key_subunit,
-                label_domain(self.key_subunit, self.mod), self.state)
+                self.predicator3, self.key_subunit, label, self.state)
         else:
             return contexts.update2(
-                self.modifier, self.key_subunit,
-                label_domain(self.key_subunit, self.mod), self.state)
+                self.modifier, self.key_subunit, label, self.state)
 
 class ModificationBindingCondition(Condition):
 
@@ -622,18 +637,24 @@ class ModificationBindingCondition(Condition):
             return None
 
     def match(self, sp, contexts):
+        if self.mod == "":
+            raise RuntimeError, "an empty name for modification given."
+        elif self.mod[0] != "_":
+            label = label_domain(self.key_subunit, self.mod)
+        elif contexts.has_key(self.mod):
+            label = self.mod
+        else:
+            raise RuntimeError, "invalid name [%s] given." % self.mod
+
         if self.binding == "_" or self.binding == "":
             return contexts.filter2(
-                self.predicator1, self.key_subunit,
-                label_domain(self.key_subunit, self.mod))
+                self.predicator1, self.key_subunit, label)
         elif contexts.has_key(self.key_binding):
             return contexts.filter3(
-                self.predicator2, self.key_subunit,
-                label_domain(self.key_subunit, self.mod), self.key_binding)
+                self.predicator2, self.key_subunit, label, self.key_binding)
         else:
             return contexts.update2(
-                self.modifier1, self.key_subunit,
-                label_domain(self.key_subunit, self.mod), self.key_binding)
+                self.modifier1, self.key_subunit, label, self.key_binding)
 
 class ExcludedModificationCondition(Condition):
 

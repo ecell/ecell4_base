@@ -40,13 +40,16 @@ def test3():
         # _(_1=u) > _(_1=p)
         # A(ps1=u) > A(ps1=p)
         # A(ps1=u,ps=(ps1,ps2)) > A(ps1=p,ps=(ps1,ps2))
-        A(_1=u,ps=(_1,_)) > A(_1=p,ps=(_1,_))
+        # A(_1=u,ps=(_1,_)) > A(_1=p,ps=(_1,_))
+        A(_1=u,_2=u,ps=(_1,_2)) > A(_1=p,_2=u,ps=(_1,_2))
 
     rules = rulegen()
     print generate_reactions(
         [create_species("A(ps1=u,ps=(ps1,))")], rules)[0]
     print generate_reactions(
         [create_species("A(ps1=u,ps2=u,ps=(ps1,ps2))")], rules)[0]
+    print generate_reactions(
+        [create_species("A(ps1=u,ps2=u,ps3=u,ps=(ps1,ps2,ps3))")], rules)[0]
 
 
 if __name__ == '__main__':
