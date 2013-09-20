@@ -483,6 +483,10 @@ class DomainClassCondition(Condition):
             (self.name[0] == "_" and not contexts.has_key(self.name))):
             raise RuntimeError, "[%s] not defined." % self.name
 
+        for key in self.unnamed:
+            if contexts.has_key(key):
+                raise RuntimeError, "key [%s] already assigned" % key
+
         retval = contexts.product_any(
             self.generator, self.key_subunit, self.unnamed)
         return retval
