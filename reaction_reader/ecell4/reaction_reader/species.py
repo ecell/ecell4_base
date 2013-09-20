@@ -106,9 +106,13 @@ class Subunit(object):
             conditions.append(
                 ExcludedModificationCondition(key, mod))
 
+        for mod, value in self.domain_classes.items():
+            conditions.append(
+                DomainClassCondition(key, mod, value))
+
         for mod, (state, binding) in self.modifications.items():
             conditions.append(
-                DomainClassCondition(key, mod))
+                ModificationNameCondition(key, mod))
             conditions.append(
                 ModificationBindingCondition(key, mod, binding))
             if state != "":
@@ -438,6 +442,46 @@ class Condition(object):
 
 class DomainClassCondition(Condition):
 
+    def __init__(self, key, name, values):
+        Condition.__init__(self)
+
+        self.key_subunit = key
+        self.name = name
+
+        self.size, self.named, self.unnamed = len(values), [], []
+        for value in values:
+            if value[0] == "_":
+                if len(value) > 1:
+                    self.unnamed.append(value)
+            else:
+                self.named.append(value)
+
+    def generator(self, subunit):
+        values = subunit.domain_classes.get(self.name)
+        if values is None or len(values) < self.size:
+            return None
+
+        values = set(values)
+        for value in self.named:
+            if value not in values:
+                return None
+            else:
+                values.remove(value)
+
+        return list(itertools.permutations(values, len(self.unnamed)))
+
+    def match(self, sp, contexts):
+        if (self.name == "" or
+            (self.name[0] == "_" and not contexts.has_key(self.name))):
+            raise RuntimeError, "[%s] not defined." % self.name
+
+        retval = contexts.product_any(
+            self.generator, self.key_subunit, self.unnamed)
+        print retval
+        return retval
+
+class ModificationNameCondition(Condition):
+
     def __init__(self, key, mod):
         Condition.__init__(self)
 
@@ -456,6 +500,10 @@ class DomainClassCondition(Condition):
             return [self.mod]
 
     def match(self, sp, contexts):
+        # if (self.mod == "" or
+        #     (self.mod[0] == "_" and not contexts.has_key(self.mod))):
+        #     raise RuntimeError, "[%s] not defined." % self.mod
+
         retval = contexts.product2(
             self.generator, self.key_subunit,
             label_domain(self.key_subunit, self.mod))
@@ -513,6 +561,9 @@ class ModificationStateCondition(Condition):
         return subunit.modifications.get(mod)[0]
 
     def match(self, sp, contexts):
+        if self.mod == "" or (self.mod[0] == "_" and not contexts.has_key(self.mod)):
+            raise RuntimeError, "[%s] not defined." % self.mod
+
         if self.state[0] != "_":
             return contexts.filter2(
                 self.predicator1, self.key_subunit,
@@ -681,6 +732,26 @@ class Contexts(object):
                     continue
                 newcontext = copy.copy(context)
                 newcontext[key2] = value
+                retval._append(newcontext)
+        return retval
+
+    def product_any(self, generator, key, newkeys):
+        if not self.has_key(key):
+            raise RuntimeError, "invalid key [%s] given." % (key)
+        elif any([self.has_key(elem) for elem in newkeys]):
+            raise RuntimeError, "key [%s] already exists." % str(newkeys)
+
+        retval = Contexts()
+        for context in self.__data:
+            subsets = generator(context[key])
+            if subsets is None:
+                continue
+            for values in subsets:
+                if values is None or len(values) != len(newkeys):
+                    raise RuntimeError, "invalid return value [%s]" % str(values)
+                newcontext = copy.copy(context)
+                for newkey, value in zip(newkeys, values):
+                    newcontext[newkey] = value
                 retval._append(newcontext)
         return retval
 
