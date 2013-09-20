@@ -460,6 +460,8 @@ class DomainClassCondition(Condition):
         for value in values:
             if value[0] == "_":
                 if len(value) > 1:
+                    if value in self.unnamed:
+                        raise RuntimeError, "key [%s] is not unique." % value
                     self.unnamed.append(value)
             else:
                 self.named.append(value)
