@@ -18,29 +18,40 @@ def generate_Species(obj):
             su = species.Subunit(elem.name)
             if elem.args is not None:
                 for mod in elem.args:
-                    if (not (isinstance(mod, parseobj.ParseObj)
-                            or isinstance(mod, parseobj.AnyCallable))
-                        or mod._size() != 1):
-                        raise RuntimeError, (
-                            "invalid argument [%s] found." % (mod))
-                    arg = mod._elements()[0]
-                    name, binding = arg.name, arg.modification
-                    if binding is None:
-                        su.add_modification(name, "", "")
-                    else:
-                        binding = str(binding)
-                        if not (binding.isdigit() or binding == ""
-                            or binding[0] == "_"):
+                    if ((isinstance(mod, parseobj.ParseObj)
+                        or isinstance(mod, parseobj.AnyCallable))
+                        and mod._size() == 1):
+                        arg = mod._elements()[0]
+                        name, binding = arg.name, arg.modification
+                        if binding is None:
+                            su.add_modification(name, "", "")
+                        else:
+                            binding = str(binding)
+                            if not (binding.isdigit() or binding == ""
+                                or binding[0] == "_"):
+                                raise RuntimeError, (
+                                    "invalid binding [%s] given." % (binding))
+                            su.add_modification(name, "", binding)
+                    elif (isinstance(mod, parseobj.InvExp)
+                        and (isinstance(mod._target(), parseobj.ParseObj)
+                            or isinstance(mod._target, parseobj.AnyCallable))
+                        and mod._target()._size() == 1):
+                        arg = mod._target()._elements()[0]
+                        name, binding = arg.name, arg.modification
+                        if binding is not None:
                             raise RuntimeError, (
                                 "invalid binding [%s] given." % (binding))
-                        su.add_modification(name, "", binding)
+                        su.add_exclusion(name)
+                    else:
+                        raise RuntimeError, (
+                            "invalid argument [%s] found." % str(mod))
             if elem.kwargs is not None:
                 for name, value in elem.kwargs.items():
                     if (not (isinstance(value, parseobj.ParseObj)
                             or isinstance(value, parseobj.AnyCallable))
                         or value._size() != 1):
                         raise RuntimeError, (
-                            "invalid argument [%s] found." % (value))
+                            "invalid argument [%s] found." % str(value))
                     arg = value._elements()[0]
                     state, binding = str(arg.name), arg.modification
                     if binding is None:
@@ -280,6 +291,8 @@ if __name__ == "__main__":
     sp4 = create_species("A(bs^1).B(l^1,r^3).B(r^3,l^2).A(bs^2)")
     sp5 = create_species("A(bs^1).B(l^2,r^3).B(r^3,l^1).A(bs^2)")
 
+    sp6 = create_species("L(l1^1,l2^2).L(l1^3,l2^4).L(l1^5,l2^6).R(r1^3,r2^2).R(r1^5,r2^4).R(r1^1,r2^6)")
+
     cmp_subunit(sp1, 0, 1)
     cmp_subunit(sp1, 0, 2)
     cmp_subunit(sp1, 0, 3)
@@ -292,6 +305,13 @@ if __name__ == "__main__":
     cmp_subunit(sp4, 0, 3)
     cmp_subunit(sp4, 1, 2)
 
+    cmp_subunit(sp6, 0, 1)
+    cmp_subunit(sp6, 0, 2)
+    cmp_subunit(sp6, 1, 2)
+    cmp_subunit(sp6, 3, 4)
+    cmp_subunit(sp6, 3, 5)
+    cmp_subunit(sp6, 4, 5)
+
     print ""
     sp1.sort()
     print sp1
@@ -303,3 +323,52 @@ if __name__ == "__main__":
     print sp4
     sp5.sort()
     print sp5
+    sp6.sort()
+    print sp6
+    print ""
+
+    import random
+    sp = create_species("L(l1^1,l2^2).L(l1^3,l2^4).L(l1^5,l2^6).R(r1^3,r2^2).R(r1^5,r2^4).R(r1^1,r2^6)")
+    # sp = create_species("L(l1^1,l2^2).L(l1^3,l2^4).L(l1^5,l2^6).R(r1^1,r2^6).R(r1^3,r2^2).R(r1^5,r2^4)")
+    # sp = create_species("L(l^1,r^2).L(l^2,r^3).L(l^3,r^1)")
+    # sp = create_species("L(l^1,r^2).L(l^2,r^3).L(l^3,r^4).L(l^4,r^1)")
+    newbs = range(1, 7)
+    # print 'ORIGINAL    :', sp
+    for _ in range(10):
+        random.shuffle(sp.subunits)
+        random.shuffle(newbs)
+        sp.update_indices()
+        for su in sp.subunits:
+            for mod in su.modifications.keys():
+                state, bs = su.modifications[mod]
+                if bs.isdigit():
+                    su.modifications[mod] = (state, str(newbs[int(bs) - 1]))
+        # print '[%d] SHUFFLED:' % _, sp
+        sp.sort()
+        print '[%d] SORTED  :' % _, sp
+
+    print ""
+    sp1 = create_species("L(l1^3,l2^5).R(r1^6,r2^5).L(l1^6,l2^2).L(l1^4,l2^1).R(r1^3,r2^1).R(r1^4,r2^2)")
+    sp1.sort()
+    print sp1
+    sp2 = create_species("L(l1^3,l2^5).R(r1^1,r2^6).R(r1^4,r2^5).R(r1^3,r2^2).L(l1^1,l2^2).L(l1^4,l2^6)")
+    sp2.sort()
+    print sp2
+
+    print ""
+    sp1 = create_species("L(l^2,r^3).L(l^3,r^1).L(l^1,r^2)")
+    print sp1
+    sp1.sort()
+    print sp1
+    sp2 = create_species("L(l^1,r^3).L(l^2,r^1).L(l^3,r^2)")
+    print sp2
+    sp2.sort()
+    print sp2
+
+    sp1 = create_species("A(bs1^1).B(bs1^1,bs2^2).C(bs1^2)")
+    pttrn1 = create_species("_1(bs1^_)")
+    pttrn2 = create_species("_1(bs1^_,~bs2)")
+    print "apply \"%s\" to \"%s\"." % (str(pttrn1), str(sp1))
+    print pttrn1.match(sp1)
+    print "apply \"%s\" to \"%s\"." % (str(pttrn2), str(sp1))
+    print pttrn2.match(sp1)

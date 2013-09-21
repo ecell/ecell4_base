@@ -10,10 +10,15 @@ from ecell4.core cimport *
 #  a python wrapper for Cpp_GillespieWorld
 cdef class GillespieWorld:
 
-    def __cinit__(self, Real vol, GSLRandomNumberGenerator rng):
-        # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
-        self.thisptr = new shared_ptr[Cpp_GillespieWorld](
-            new Cpp_GillespieWorld(vol, deref(rng.thisptr)))
+    def __cinit__(self, Real vol, GSLRandomNumberGenerator rng = None):
+        if rng is None:
+            self.thisptr = new shared_ptr[Cpp_GillespieWorld](
+                new Cpp_GillespieWorld(vol))
+        else:
+            # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
+            self.thisptr = new shared_ptr[Cpp_GillespieWorld](
+                new Cpp_GillespieWorld(
+                    vol, deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,

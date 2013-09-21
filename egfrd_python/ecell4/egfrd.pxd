@@ -14,6 +14,8 @@ cdef extern from "ecell4/egfrd/EGFRDWorld.hpp" namespace "ecell4::egfrd":
         Cpp_EGFRDWorld(
             Real world_size, Integer matrix_size,
             shared_ptr[Cpp_GSLRandomNumberGenerator] rng) except +
+        Cpp_EGFRDWorld(
+            Real world_size, Integer matrix_size) except +
         Cpp_ParticleID new_particle(Cpp_Particle& p)
         void set_t(Real t)
         Real t()

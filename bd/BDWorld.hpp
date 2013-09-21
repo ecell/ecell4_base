@@ -39,6 +39,14 @@ public:
         ;
     }
 
+    BDWorld(const Position3& edge_lengths)
+        : ps_(new ParticleSpaceVectorImpl(edge_lengths))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+    }
+
     /**
      * create and add a new particle
      * @param p a particle

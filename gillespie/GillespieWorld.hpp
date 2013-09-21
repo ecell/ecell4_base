@@ -29,6 +29,14 @@ public:
         ;
     }
 
+    GillespieWorld(const Real& volume)
+        : cs_(new CompartmentSpaceVectorImpl(volume))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+    }
+
     // SpaceTraits
 
     const Real& t(void) const;

@@ -1,7 +1,6 @@
 import copy
 import itertools
 
-
 label_subunit = lambda x: "subunit%s" % x
 label_binding = lambda x: "binding%s" % x
 
@@ -75,27 +74,8 @@ class Species(object):
         return contexts
 
     def sort(self):
-        cmpobj = CmpSubunit(self)
-        self.subunits.sort(cmp=cmpobj)
-        self.update_indices()
-
-        stride, newbindings = 1, {}
-        for su in self.subunits:
-            mods = su.modifications.keys()
-            for mod in sorted(mods):
-                (state, binding) = su.modifications[mod]
-                if binding == "" or binding[0] == "_":
-                    continue
-
-                newbinding = newbindings.get(binding)
-
-                #XXX: updating subunits through the reference)
-                if newbinding is None:
-                    su.modifications[mod] = (state, str(stride))
-                    newbindings[binding] = str(stride)
-                    stride += 1
-                else:
-                    su.modifications[mod] = (state, newbinding)
+        cmpsu = CmpSubunit(self)
+        cmpsu.sort()
 
     def __str__(self):
         return ".".join([str(subunit) for subunit in self.subunits])
@@ -115,6 +95,7 @@ class Subunit(object):
     def __init__(self, name):
         self.name = name
         self.modifications = {}
+        self.exclusions = []
 
         self.index = None #XXX
 
@@ -124,6 +105,10 @@ class Subunit(object):
     def generate_conditions(self, key):
         conditions = []
         conditions.append(SubunitContainingCondition(key, self.name))
+        for mod in self.exclusions:
+            conditions.append(
+                ExcludedModificationCondition(key, mod))
+
         for mod, (state, binding) in self.modifications.items():
             conditions.append(
                 ModificationBindingCondition(key, mod, binding))
@@ -137,24 +122,29 @@ class Subunit(object):
     def get_modifications_list(self):
         return self.modifications
 
+    def add_exclusion(self, mod):
+        if not mod in self.exclusions:
+            self.exclusions.append(mod)
+
     def __str__(self):
-        mods1, mods2 = [], []
+        mods1 = ["~%s" % (mod) for mod in self.exclusions]
+
+        mods2, mods3 = [], []
         for mod, (state, binding) in self.modifications.items():
             if state == "":
                 if binding != "":
-                    mods1.append("%s^%s" % (mod, binding))
+                    mods2.append("%s^%s" % (mod, binding))
                 else:
-                    mods1.append(mod)
+                    mods2.append(mod)
             elif binding == "":
-                mods2.append("%s=%s" % (mod, state))
+                mods3.append("%s=%s" % (mod, state))
             else:
-                mods2.append("%s=%s^%s" % (mod, state, binding))
+                mods3.append("%s=%s^%s" % (mod, state, binding))
 
         mods1.sort()
         mods2.sort()
-        mods1.extend(mods2)
-        # return "%s(%s:%d)" % (self.name, ",".join(mods1), self.index)
-        return "%s(%s)" % (self.name, ",".join(mods1))
+        mods3.sort()
+        return "%s(%s)" % (self.name, ",".join(itertools.chain(mods1, mods2, mods3)))
 
     def __repr__(self):
         return '<"%s">' % (str(self))
@@ -219,6 +209,8 @@ def concatenate_species(*species_list):
     for sp in species_list:
         for su in sp.subunits:
             newsu = Subunit(su.name)
+            for mod in su.exclusions:
+                newsu.add_exclusion(mod)
             for mod, (state, binding) in su.modifications.items():
                 if binding != "" and binding[0] != "_":
                     if not binding.isdigit():
@@ -238,6 +230,9 @@ class ReactionRule(object):
         self.__options = options
 
         self.initialize()
+
+    def options(self):
+        return self.__options #copy.deepcopy(self.__options)
 
     def reactants(self):
         return copy.deepcopy(self.__reactants)
@@ -264,6 +259,7 @@ class ReactionRule(object):
         for i, su1 in enumerate(product_subunits):
             for j, su2 in enumerate(reactant_subunits):
                 if (su1.name == su2.name
+                    and set(su1.exclusions) == set(su2.exclusions)
                     and set(su1.modifications.keys())
                         == set(su2.modifications.keys())):
                     if len(self.__correspondences) > i:
@@ -318,11 +314,14 @@ class ReactionRule(object):
             correspondence = self.__correspondences[i]
 
             if correspondence >= len(reactant_subunits):
-                retval.add_subunit(subunit)
+                retval.add_subunit(copy.deepcopy(subunit))
                 target = retval.subunits[-1]
             else:
                 target = retval.subunits[serno(correspondence)]
             new_correspondence.append(target.index)
+
+            # for mod in subunit.exclusions:
+            #     pass
 
             for mod, (state, binding) in subunit.modifications.items():
                 value = target.modifications.get(mod)
@@ -387,6 +386,9 @@ class ReactionRule(object):
         contexts = None
         for sp1, sp2 in zip(self.__reactants, reactants):
             contexts = sp1.match(sp2, contexts)
+
+        if len(self.__products) == 0 and len(contexts) > 0:
+            return [()]
 
         retval = []
         for context in contexts:
@@ -466,6 +468,10 @@ class ModificationStateCondition(Condition):
         value = subunit.modifications.get(self.mod)
         return value is not None
 
+    def predicator3(self, subunit, state):
+        value = subunit.modifications.get(self.mod)
+        return value[0] == state
+
     def modifier(self, subunit):
         return subunit.modifications.get(self.mod)[0]
 
@@ -473,9 +479,12 @@ class ModificationStateCondition(Condition):
         if self.state[0] != "_":
             return contexts.filter1(
                 self.predicator1, self.key_subunit)
-        elif len(self.state) == 1:
+        elif len(self.state) == 1: # self.state == "_"
             return contexts.filter1(
                 self.predicator2, self.key_subunit)
+        elif contexts.has_key(self.state):
+            return contexts.filter2(
+                self.predicator3, self.key_subunit, self.state)
         else:
             return contexts.update(
                 self.modifier, self.key_subunit, self.state)
@@ -530,6 +539,20 @@ class ModificationBindingCondition(Condition):
         else:
             return contexts.update(
                 self.modifier1, self.key_subunit, self.key_binding)
+
+class ExcludedModificationCondition(Condition):
+
+    def __init__(self, key, mod):
+        Condition.__init__(self)
+        self.key_subunit = key
+        self.mod = mod
+
+    def predicator(self, subunit):
+        value = subunit.modifications.get(self.mod)
+        return (value is None)
+
+    def match(self, sp, contexts):
+        return contexts.filter1(self.predicator, self.key_subunit)
 
 class Contexts(object):
 
@@ -750,7 +773,52 @@ class CmpSubunit:
                 else:
                     raise RuntimeError, "an invalid bindig found. [%s]" % (binding)
 
-        self.__cache = {}
+    def sort_recurse(self, idx, stride):
+        su = self.__species.subunits[idx]
+        if su.index < 0:
+            su.index = stride
+            stride += 1
+        else:
+            return stride
+
+        mods = su.modifications.keys()
+        for mod in sorted(mods):
+            state, binding = su.modifications[mod]
+            if binding != "" and binding[0] != "_":
+                pair = self.__bindings[binding]
+                tgt_idx, tgt_mod = pair[0] if pair[1][0] == idx else pair[1]
+                stride = self.sort_recurse(tgt_idx, stride)
+        return stride
+
+    def sort(self):
+        """only available for a connected graph"""
+        self.__species.subunits.sort(cmp=self)
+        self.initialize()
+
+        for su in self.__species.subunits:
+            su.index = -1
+
+        self.sort_recurse(0, 0)
+        self.__species.subunits.sort(key=lambda su: su.index)
+        self.__species.update_indices()
+
+        stride, newbindings = 1, {}
+        for su in self.__species.subunits:
+            mods = su.modifications.keys()
+            for mod in sorted(mods):
+                state, binding = su.modifications[mod]
+                if binding == "" or binding[0] == "_":
+                    continue
+
+                newbinding = newbindings.get(binding)
+
+                #XXX: updating subunits through the reference)
+                if newbinding is None:
+                    su.modifications[mod] = (state, str(stride))
+                    newbindings[binding] = str(stride)
+                    stride += 1
+                else:
+                    su.modifications[mod] = (state, newbinding)
 
     def cmp_recurse(self, idx1, idx2, ignore):
         if idx1 == idx2:
@@ -759,41 +827,42 @@ class CmpSubunit:
             pair_key = (idx1, idx2)
         else:
             pair_key = (idx2, idx1)
-        # elif idx1 > idx2:
-        #     pair_key = (idx2, idx1)
-        # else:
-        #     pair_key = (idx1, idx2)
 
-        if pair_key in self.__cache.keys():
-            if idx1 > idx2:
-                return self.__cache[pair_key]
-            else:
-                return self.__cache[pair_key] * -1
-        elif pair_key in ignore:
+        if pair_key in ignore:
             return 0 # already checked
 
         su1, su2 = self.__subunits[idx1], self.__subunits[idx2]
         if su1.name != su2.name:
             return cmp(su1.name, su2.name)
 
-        mods1, mods2 = su1.modifications.keys(), su2.modifications.keys()
+        mods1, mods2 = su1.exclusions, su2.exclusions
         if len(mods1) != len(mods2):
             return cmp(len(mods1), len(mods2))
 
-        ignore.append(pair_key)
         mods1.sort()
         mods2.sort()
 
         for mod1, mod2 in zip(mods1, mods2):
             if mod1 != mod2:
-                ignore.pop()
+                return cmp(mod1, mod2)
+
+        mods1, mods2 = su1.modifications.keys(), su2.modifications.keys()
+        if len(mods1) != len(mods2):
+            return cmp(len(mods1), len(mods2))
+
+        mods1.sort()
+        mods2.sort()
+
+        for mod1, mod2 in zip(mods1, mods2):
+            if mod1 != mod2:
                 return cmp(mod1, mod2)
 
             state1, state2 = (
-                su1.modifications[mod1], su2.modifications[mod2])
+                su1.modifications[mod1][0], su2.modifications[mod2][0])
             if state1 != state2:
-                ignore.pop()
                 return cmp(state1, state2)
+
+        ignore.append(pair_key)
 
         for mod1, mod2 in zip(mods1, mods2):
             binding1, binding2 = (
@@ -821,17 +890,7 @@ class CmpSubunit:
             return 0
 
     def __call__(self, lhs, rhs):
-        retval = self.cmp_recurse(lhs.index, rhs.index, [])
-        if retval != 0:
-            return retval
-        elif lhs.index > rhs.index:
-            self.__cache[(lhs.index, rhs.index)] = +1
-            return +1
-        elif lhs.index < rhs.index:
-            self.__cache[(rhs.index, lhs.index)] = +1
-            return -1
-        else:
-            return 0 # lhs.index == rhs.index
+        return self.cmp_recurse(lhs.index, rhs.index, [])
 
 def check_stoichiometry(sp, max_stoich):
     for pttrn, num_subunits in max_stoich.items():
@@ -841,7 +900,7 @@ def check_stoichiometry(sp, max_stoich):
 
 def generate_recurse(seeds1, rules, seeds2, max_stoich):
     seeds = list(itertools.chain(seeds1, seeds2))
-    retval = []
+    newseeds, newreactions = [], []
     for sp1 in seeds1:
         for rr in rules:
             if rr.num_reactants() == 1:
@@ -852,11 +911,14 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                 #     print rr, sp1
                 #     raise e
                 if pttrns is not None and len(pttrns) > 0:
+                    for products in pttrns:
+                        newreactions.append(((sp1, ), products, rr.options()))
+
                     for newsp in itertools.chain(*pttrns):
-                        if (newsp not in seeds and newsp not in retval
+                        if (newsp not in seeds and newsp not in newseeds
                             and check_stoichiometry(newsp, max_stoich)):
                             newsp.sort()
-                            retval.append(newsp)
+                            newseeds.append(newsp)
         for sp2 in seeds:
             for rr in rules:
                 if rr.num_reactants() == 2:
@@ -867,11 +929,17 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                     #     print rr, sp1, sp2
                     #     raise e
                     if pttrns is not None and len(pttrns) > 0:
+                        for products in pttrns:
+                            newreactions.append(((sp1, sp2), products, rr.options()))
+                            if str(sp1) == str(sp2):
+                                print "This rule is symmetric and generated reaction has homo-dimer, ecell4 changes following reaction rate!"
+                                print ((sp1, sp2), products)
+
                         for newsp in itertools.chain(*pttrns):
-                            if (newsp not in seeds and newsp not in retval
+                            if (newsp not in seeds and newsp not in newseeds
                                 and check_stoichiometry(newsp, max_stoich)):
                                 newsp.sort()
-                                retval.append(newsp)
+                                newseeds.append(newsp)
         for sp2 in seeds2:
             for rr in rules:
                 if rr.num_reactants() == 2:
@@ -882,38 +950,69 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                     #     print rr, sp1, sp2
                     #     raise e
                     if pttrns is not None and len(pttrns) > 0:
+                        for products in pttrns:
+                            newreactions.append(((sp1, sp2), products, rr.options()))
+
                         for newsp in itertools.chain(*pttrns):
-                            if (newsp not in seeds and newsp not in retval
+                            if (newsp not in seeds and newsp not in newseeds
                                 and check_stoichiometry(newsp, max_stoich)):
                                 newsp.sort()
-                                retval.append(newsp)
-    return (retval, seeds)
+                                newseeds.append(newsp)
+    return (newseeds, seeds, newreactions)
+
+def dump_reaction(reactants, products):
+    #reactants, products = reaction
+    for sp in itertools.chain(reactants, products):
+        sp.sort()
+
+    retval = "+".join(sorted([str(sp) for sp in reactants]))
+    retval += ">"
+    retval += "+".join(sorted([str(sp) for sp in products]))
+    return retval
 
 def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
+    seeds, cnt, reactions = [], 0, []
+
     for rr in rules:
         if rr.num_reactants() == 0:
+            reactions.append((rr.reactants(), rr.products(), rr.options()))
             for newsp in rr.products():
                 if (newsp not in newseeds
                     and check_stoichiometry(newsp, max_stoich)):
                     newsp.sort()
                     newseeds.append(newsp)
 
-    seeds, cnt = [], 0
     while len(newseeds) != 0 and cnt < max_iter:
-        # print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
-        print "[RESULT%d] %d seeds, %d newseeds." % (
-            cnt, len(seeds), len(newseeds))
-        newseeds, seeds = generate_recurse(newseeds, rules, seeds, max_stoich)
+        #print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
+        #    cnt, len(seeds), len(newseeds), len(reactions))
+        newseeds, seeds, newreactions = generate_recurse(
+            newseeds, rules, seeds, max_stoich)
+        reactions.extend(newreactions)
         cnt += 1
-    # print "[RESULT%d: %d]" % (cnt, len(seeds)), newseeds, seeds
-    print "[RESULT%d] %d seeds, %d newseeds." % (cnt, len(seeds), len(newseeds))
-    print ""
+    #print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
+    #    cnt, len(seeds), len(newseeds), len(reactions))
+    #print ""
 
     seeds.sort(key=str)
+    '''
     for i, sp in enumerate(seeds):
         print "%5d %s" % (i + 1, str(sp))
+    print ""
+    '''
 
-    return seeds + newseeds
+    # reactions = list(set([dump_reaction(reaction) for reaction in reactions]))
+    dump_rrobj_map = dict()
+    for r in reactions:
+        s = dump_reaction(r[0], r[1])
+        dump_rrobj_map[s] = r
+    reactions = dump_rrobj_map.values()
+    '''
+    for i, reaction in enumerate(reactions):
+        print "%5d %s" % (i + 1, reaction)
+    '''
+
+    # return seeds + newseeds, reactions
+    return seeds + newseeds, reactions
 
 
 if __name__ == "__main__":
