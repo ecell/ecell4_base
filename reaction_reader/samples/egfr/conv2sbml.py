@@ -5,7 +5,7 @@ from ecell4.reaction_reader.sbml_exporter import convert2SBML
 import ecell4.core as core
 
 import ecell4.ode as ode
-from ecell4.reaction_reader.network import generateNetworkModel
+from ecell4.reaction_reader.network import generate_NetworkModel
 from egfr import attributegen, rulegen
 newseeds = []
 attrs = attributegen()
@@ -15,7 +15,7 @@ for i, (sp, attr) in enumerate(attrs):
     #print ''
 reaction_rules = rulegen()
 
-seeds, rules = generate_reactions(newseeds , reaction_rules, max_iter = 3)
+seeds, rules = generate_reactions(newseeds , reaction_rules, max_iter = 5)
 
-m = generateNetworkModel(seeds, rules)
-convert2SBML(m, attrs)
+m = generate_NetworkModel(seeds, rules)
+convert2SBML(m, attrs, "egfr_n5.xml")

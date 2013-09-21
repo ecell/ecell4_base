@@ -8,7 +8,7 @@ import species
 Level = 2
 Version = 4
 
-def convert2SBML(nw_model, sp_attrs):
+def convert2SBML(nw_model, sp_attrs, fname):
     level = 2
     version = 4
     sbmlDoc = SBMLDocument(level, version)
@@ -17,7 +17,7 @@ def convert2SBML(nw_model, sp_attrs):
     
     # Model {{{
     model = sbmlDoc.createModel()
-    model.setId("XXX")  # XXX
+    model.setId("E-Cell4_Model")  # XXX
     #   }}}
 
     # Define Units   {{{
@@ -29,8 +29,8 @@ def convert2SBML(nw_model, sp_attrs):
     compName = "cytosol"
     comp = model.createCompartment()
     comp.setId(compName)
-
-    comp.setSize(1e-14)    # XXX
+     
+    comp.setSize(1.0)    # XXX
     # }}}
 
     # Draw Species {{{
@@ -38,36 +38,47 @@ def convert2SBML(nw_model, sp_attrs):
     all_species = dict()
 
     sp_index = 0
-    for sp in nw_model.list_species():
-        all_species[ sp.name() ] = (sp_index, 0)
-        sp_index += 1
+    # Distribute IDs for each species
     for (sp, attr) in sp_attrs:
-        if not all_species.has_key(sp):
-            all_species[ str(sp) ] = (sp_index, attr)
+        all_species[ str(sp) ] = ("sp{}".format(sp_index), attr)
+        sp_index += 1
+
+    for sp in nw_model.list_species():
+        if not all_species.has_key( sp.name() ):
+            all_species[ sp.name() ] = ("sp{}".format(sp_index), 0)
             sp_index += 1
+    
+    # Add to SBML model object
 
-    for (sp, attr) in all_species.items():
-        sp = model.createSpecies()
-        sp.setId("sp{}".format(sp_index))
-        sp.setName(str(sp))
-    import ipdb; ipdb.set_trace()
-
+    for (sp, (sp_id, attr) ) in all_species.items():
+        sbml_sp = model.createSpecies()
+        sbml_sp.setId(sp_id)
+        sbml_sp.setName(str(sp))
+        if isinstance(attr, (int, long, float, complex)):
+            sbml_sp.setInitialAmount(attr)
+        sbml_sp.setCompartment(compName)
 
     # Draw Reactions {{{
-    #   reaction = model.createReaction()
-    #   reaction.setId("r{}".format(r_id) )
-
-    r_id = 0
-    for rr in model.query_reaction_rules():
-        reaction = model.createReaction()
-        reaction.setId("r{}".format(r_index))
-        r_id += 1
-
-    # Kinetic Law 
-    k1 = reaction.createKineticLaw()
+    r_index = 0
+    for rr in nw_model.reaction_rules():
+        sbml_reaction = model.createReaction()
+        sbml_reaction.setId("r{}".format(r_index))
+        for reactant in rr.reactants():
+            sbml_spr = sbml_reaction.createReactant()
+            (sbml_spid, attr) = all_species[ reactant.name()]
+            #sbml_spr.setSpecies( all_species[ reactant.name() ][0] )
+            sbml_spr.setSpecies( sbml_spid)
+        for product in rr.products():
+            sbml_spr = sbml_reaction.createProduct()
+            (sbml_spid, attr) = all_species[ product.name() ]
+            sbml_spr.setSpecies( sbml_spid)
+        r_index += 1
+        # Kinetic Law 
+        #k1 = sbml_reaction.createKineticLaw()
 
     #   }}}
-    return sbmlDoc
+    writeSBML(sbmlDoc, fname)
+    return
 
 
 #sbmlDoc = convert2SBML()
