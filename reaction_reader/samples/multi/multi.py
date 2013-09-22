@@ -51,8 +51,18 @@ def test3():
     print generate_reactions(
         [create_species("A(ps1=u,ps2=u,ps3=u,ps=(ps1,ps2,ps3))")], rules)[0]
 
+def test4():
+    @reaction_rules
+    def rulegen():
+        A(_1=u,ps=(_1,)) + A(_1=u,ps=(_1,)) > A(_1=u^1,ps=(_1,)).A(_1=u^1,ps=(_1,))
+
+    rules = rulegen()
+    print generate_reactions(
+        [create_species("A(ps1=u,ps2=u,ps3=u,ps=(ps1,ps2,ps3))")], rules, max_iter=1)[0]
+
 
 if __name__ == '__main__':
     # test1()
     # test2()
-    test3()
+    # test3()
+    test4()

@@ -456,7 +456,8 @@ class DomainClassCondition(Condition):
         self.key_subunit = key
         self.name = name
 
-        self.size, self.named, self.unnamed = len(values), [], []
+        self.size_values = len(values)
+        self.named, self.unnamed = [], []
         for value in values:
             if value[0] == "_":
                 if len(value) > 1:
@@ -466,9 +467,13 @@ class DomainClassCondition(Condition):
             else:
                 self.named.append(value)
 
+    def predicator(self, subunit, name):
+        values = subunit.domain_classes.get(self.name)
+        return (values is not None) and (name in values)
+
     def generator(self, subunit):
         values = subunit.domain_classes.get(self.name)
-        if values is None or len(values) < self.size:
+        if values is None or len(values) < self.size_values:
             return None
 
         values = set(values)
@@ -478,19 +483,25 @@ class DomainClassCondition(Condition):
             else:
                 values.remove(value)
 
-        return list(itertools.permutations(values, len(self.unnamed)))
+        return list(itertools.permutations(values, self.size_unnamed))
 
     def match(self, sp, contexts):
         if (self.name == "" or
             (self.name[0] == "_" and not contexts.has_key(self.name))):
             raise RuntimeError, "[%s] not defined." % self.name
 
+        retval = contexts
+
+        unnamed = copy.copy(self.unnamed)
         for key in self.unnamed:
             if contexts.has_key(key):
-                raise RuntimeError, "key [%s] already assigned" % key
+                # raise RuntimeError, "key [%s] already assigned" % key
+                unnamed.remove(key)
+                retval = retval.filter2(self.predicator, self.key_subunit, key)
+        self.size_unnamed = len(unnamed) # this must be immutable in generator
 
-        retval = contexts.product_any(
-            self.generator, self.key_subunit, self.unnamed)
+        retval = retval.product_any(
+            self.generator, self.key_subunit, unnamed)
         return retval
 
 class ModificationNameCondition(Condition):
