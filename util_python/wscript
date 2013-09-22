@@ -8,13 +8,13 @@ top = '.'
 out = 'build'
 
 pyfiles = [
-    '__init__.py',
-    'particle_space.py',
-    'spatiocyte_tools.py',
-    'bdml.py',
-    'particle_spatiocyte_loader.py',
-    'lattice_space.py',
-    'sbml_exporter.py'
+    'ecell4/util/__init__.py',
+    'ecell4/util/particle_space.py',
+    'ecell4/util/spatiocyte_tools.py',
+    'ecell4/util/bdml.py',
+    'ecell4/util/particle_spatiocyte_loader.py',
+    'ecell4/util/lattice_space.py',
+    'ecell4/util/sbml_exporter.py'
     ]
 
 
@@ -28,4 +28,4 @@ def configure(conf):
     conf.check_python_headers()
 
 def build(bld):
-    bld.install_files('${PYTHONDIR}/ecell4/export', pyfiles)
+    bld.install_files('${PYTHONDIR}/ecell4/util', pyfiles)
