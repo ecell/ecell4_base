@@ -1,6 +1,11 @@
 from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
 from ecell4.reaction_reader.species import generate_reactions
 
+k1 = 0.1
+k2 = 0.2
+k3 = 0.3
+k4 = 0.4
+
 @species_attributes
 def attributegen():
     S(e,y=zero)  | 1
@@ -12,11 +17,11 @@ def attributegen():
 @reaction_rules
 def rulegen():
     # binding rules
-    S(e) + kinase(s) == S(e^1).kinase(s^1) | k1
-    S(e) + pptase(s) == S(e^1).pptase(s^1) | k2
+    S(e) + kinase(s) == S(e^1).kinase(s^1) | (1,2)
+    S(e) + pptase(s) == S(e^1).pptase(s^1) | (3,4)
     # catalysis
-    S(e^1,y=zero).kinase(s^1) + ATP == S(e^1,y=P).kinase(s^1) + ADP | k3
-    S(e^1,y=P).pptase(s^1)       == S(e^1,y=zero).pptase(s^1)       | k4
+    S(e^1,y=zero).kinase(s^1) + ATP == S(e^1,y=P).kinase(s^1) + ADP | (5,6)
+    S(e^1,y=P).pptase(s^1)       == S(e^1,y=zero).pptase(s^1)       | (7,8)
 
 if __name__ == "__main__":
     newseeds = []

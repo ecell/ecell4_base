@@ -1,0 +1,73 @@
+begin molecule types
+	Null()
+	gTetR(lac1,lac2)
+	mCI()
+	gCI(tet1,tet2)
+	pCI(lac)
+	mTetR()
+	pLacI(tet)
+	pTetR(cI)
+	gLacI(cI2,cI1)
+	mLacI()
+end molecule types
+begin seed species
+	gTetR(lac1,lac2)	1.000000
+	gCI(tet1,tet2)	1.000000
+	gLacI(cI1,cI2)	1.000000
+end seed species
+begin reaction rules
+	# gTetR(lac1,lac2)+pLacI(tet)>gTetR(lac1^1,lac2).pLacI(tet^1)
+	gTetR(lac1,lac2)+pLacI(tet) -> gTetR(lac1!1,lac2).pLacI(tet!1)	0.000000
+	# gTetR(lac1^1,lac2).pLacI(tet^1)>gTetR(lac1,lac2)+pLacI(tet)
+	gTetR(lac1!1,lac2).pLacI(tet!1) -> gTetR(lac1,lac2)+pLacI(tet)	0.022400
+	# gTetR(lac1^_,lac2)+pLacI(tet)>gTetR(lac1^_,lac2^1).pLacI(tet^1)
+	gTetR(lac1!+,lac2)+pLacI(tet) -> gTetR(lac1!+,lac2!1).pLacI(tet!1)	0.000000
+	# gTetR(lac1^_,lac2^1).pLacI(tet^1)>gTetR(lac1^_,lac2)+pLacI(tet)
+	gTetR(lac1!+,lac2!1).pLacI(tet!1) -> gTetR(lac1!+,lac2)+pLacI(tet)	0.000900
+	# gTetR(lac1,lac2)>gTetR(lac1,lac2)+mTetR()
+	gTetR(lac1,lac2) -> gTetR(lac1,lac2)+mTetR()	500.000000
+	# gTetR(lac1^_)>gTetR(lac1^_)+mTetR()
+	gTetR(lac1!+) -> gTetR(lac1!+)+mTetR()	0.500000
+	# mTetR()>mTetR()+pTetR(cI)
+	mTetR() -> mTetR()+pTetR(cI)	0.167000
+	# mTetR()>
+	mTetR()+Null -> Null	0.005776
+	# pTetR(cI)>
+	pTetR(cI)+Null -> Null	0.001155
+	# gCI(tet1,tet2)+pTetR(cI)>gCI(tet1^1,tet2).pTetR(cI^1)
+	gCI(tet1,tet2)+pTetR(cI) -> gCI(tet1!1,tet2).pTetR(cI!1)	0.000000
+	# gCI(tet1^1,tet2).pTetR(cI^1)>gCI(tet1,tet2)+pTetR(cI)
+	gCI(tet1!1,tet2).pTetR(cI!1) -> gCI(tet1,tet2)+pTetR(cI)	0.022400
+	# gCI(tet1^_,tet2)+pTetR(cI)>gCI(tet1^_,tet2^1).pTetR(cI^1)
+	gCI(tet1!+,tet2)+pTetR(cI) -> gCI(tet1!+,tet2!1).pTetR(cI!1)	0.000000
+	# gCI(tet1^_,tet2^1).pTetR(cI^1)>gCI(tet1^_,tet2)+pTetR(cI)
+	gCI(tet1!+,tet2!1).pTetR(cI!1) -> gCI(tet1!+,tet2)+pTetR(cI)	0.000900
+	# gCI(tet1,tet2)>gCI(tet1,tet2)+mCI()
+	gCI(tet1,tet2) -> gCI(tet1,tet2)+mCI()	500.000000
+	# gCI(tet1^_)>gCI(tet1^_)+mCI()
+	gCI(tet1!+) -> gCI(tet1!+)+mCI()	0.500000
+	# mCI()>mCI()+pCI(lac)
+	mCI() -> mCI()+pCI(lac)	0.167000
+	# mCI()>
+	mCI()+Null -> Null	0.005776
+	# pCI(lac)>
+	pCI(lac)+Null -> Null	0.001155
+	# gLacI(cI1,cI2)+pCI(lac)>gLacI(cI1^1,cI2).pCI(lac^1)
+	gLacI(cI1,cI2)+pCI(lac) -> gLacI(cI1!1,cI2).pCI(lac!1)	0.000000
+	# gLacI(cI1^1,cI2).pCI(lac^1)>gLacI(cI1,cI2)+pCI(lac)
+	gLacI(cI1!1,cI2).pCI(lac!1) -> gLacI(cI1,cI2)+pCI(lac)	0.022400
+	# gLacI(cI1^_,cI2)+pCI(lac)>gLacI(cI1^_,cI2^1).pCI(lac^1)
+	gLacI(cI1!+,cI2)+pCI(lac) -> gLacI(cI1!+,cI2!1).pCI(lac!1)	0.000000
+	# gLacI(cI1^_,cI2^1).pCI(lac^1)>gLacI(cI1^_,cI2)+pCI(lac)
+	gLacI(cI1!+,cI2!1).pCI(lac!1) -> gLacI(cI1!+,cI2)+pCI(lac)	0.000900
+	# gLacI(cI1,cI2)>gLacI(cI1,cI2)+mLacI()
+	gLacI(cI1,cI2) -> gLacI(cI1,cI2)+mLacI()	500.000000
+	# gLacI(cI1^_)>gLacI(cI1^_)+mLacI()
+	gLacI(cI1!+) -> gLacI(cI1!+)+mLacI()	0.500000
+	# mLacI()>mLacI()+pLacI(tet)
+	mLacI() -> mLacI()+pLacI(tet)	0.167000
+	# mLacI()>
+	mLacI()+Null -> Null	0.005776
+	# pLacI(tet)>
+	pLacI(tet)+Null -> Null	0.001155
+end reaction rules
