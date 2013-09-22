@@ -21,7 +21,7 @@ pyfiles = [
     'ecell4/reaction_reader/parseobj.py']
 
 testfiles = [
-    'tests/test.py'
+    'tests/test_species.py'
     ]
 
 if 'PYTHONPATH' in os.environ:
