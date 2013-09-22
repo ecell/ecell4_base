@@ -12,6 +12,7 @@ pyfiles = [
     'ecell4/util/particle_space.py',
     'ecell4/util/spatiocyte_tools.py',
     'ecell4/util/bdml.py',
+    'ecell4/util/bng_exporter.py',
     'ecell4/util/particle_spatiocyte_loader.py',
     'ecell4/util/lattice_space.py',
     'ecell4/util/sbml_exporter.py'

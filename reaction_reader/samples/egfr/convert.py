@@ -1,6 +1,6 @@
 from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
 from ecell4.reaction_reader.species import generate_reactions 
-from ecell4.reaction_reader.bng_exporter import Convert2BNGManager
+from ecell4.util.bng_exporter import Convert2BNGManager
 
 from egfr import attributegen, rulegen
 

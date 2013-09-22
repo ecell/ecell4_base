@@ -1,4 +1,4 @@
-import species
+import ecell4.reaction_reader.species as species
 import string   # for convert into .bngl
 import copy
 from types import MethodType
