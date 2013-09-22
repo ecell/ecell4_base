@@ -4,6 +4,13 @@ from ecell4.reaction_reader.network import generate_reactions
 
 @species_attributes
 def attributegen():
+    egf_tot = 0.0 
+    Grb2_tot= 0.0
+    Shc_tot = 0.0
+    Sos_tot = 0.0
+    egfr_tot= 0.0
+    Grb2_Sos_tot = 0.0
+
     egf(r) | egf_tot
     Grb2(SH2, SH3) | Grb2_tot
     Shc(PTB, Y317=Y) | Shc_tot
@@ -13,6 +20,8 @@ def attributegen():
 
 @reaction_rules
 def rulegen():
+    (kp1, km1, kp2, km2, kp3, km3, kp14, km14, kp9, km9, kp11, km11, kp10, km10, kp13, km13, kp15, km15, 
+            kp18, km18, kp20, km20, kp17, km17, kp24, km24, kp19, km19,  kp21, km21, kp23, km23, km16, kp12, km12, kp22, km22) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     # Ligand-receptor binding (ligand-monomer)
     egfr(l, r) + egf(r) == egfr(l^1, r).egf(r^1) | (kp1, km1)
 

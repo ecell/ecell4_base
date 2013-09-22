@@ -4,6 +4,10 @@
 from waflib.Tools import waf_unit_test
 from waflib import Logs
 
+import os
+import subprocess
+
+
 top = '.'
 out = 'build'
 
@@ -17,6 +21,15 @@ pyfiles = [
     'ecell4/reaction_reader/decorator_base.py',
     'ecell4/reaction_reader/parseobj.py']
 
+testfiles = [
+    'tests/test_species.py'
+    ]
+
+if 'PYTHONPATH' in os.environ:
+    os.environ['PYTHONPATH'] = os.pathsep.join([
+        '%s/ecell4/reaction_reader' % os.getcwd(), os.environ['PYTHONPATH']])
+else:
+    os.environ['PYTHONPATH'] = '%s/ecell4/reaction_reader' % os.getcwd()
 
 def options(opt):
     opt.load('compiler_cxx') # XXX: DUMMY
@@ -29,3 +42,9 @@ def configure(conf):
 
 def build(bld):
     bld.install_files('${PYTHONDIR}/ecell4/reaction_reader', pyfiles)
+
+    pycmd = bld.env['PYTHON'][0]
+    for filename in testfiles:
+        retval = subprocess.Popen([pycmd, '-O', filename]).wait()
+        if retval:
+            raise SystemExit(retval)

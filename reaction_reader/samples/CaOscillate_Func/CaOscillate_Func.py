@@ -5,20 +5,20 @@ from ecell4.reaction_reader.network import generate_reactions
 @species_attributes
 def attributegen():
     Null | 1
-    Ga | Ga_0
-    PLC | PLC_0
-    Ca | Ca_0
+    Ga | 2
+    PLC | 3
+    Ca | 4
 
 @reaction_rules
 def rulegen():
-    Null > Ga + Null | k1
-    Ga > Ga + Ga | k2
-    Ga + PLC > PLC | k3
-    Ga + Ca > Ca | k5
-    Ga > PLC + Ga | k7
-    PLC + Null > Null | k8
-    Ga > Ca + Ga | k10
-    Ca + Null > Null | k11
+    Null > Ga + Null | 1
+    Ga > Ga + Ga | 2
+    Ga + PLC > PLC | 3
+    Ga + Ca > Ca | 4
+    Ga > PLC + Ga | 5
+    PLC + Null > Null | 6
+    Ga > Ca + Ga | 7
+    Ca + Null > Null | 8
  
 if __name__ == "__main__":
     newseeds = []

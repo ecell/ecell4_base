@@ -4,9 +4,9 @@ from ecell4.reaction_reader.network import generate_reactions
 
 @species_attributes
 def attributegen():
-    S(CSH2,NSH2=C,PTP=C) | S_tot
+    S(CSH2,NSH2=C,PTP=C) | 1
     # Pre-dimerized receptors
-    R(DD^1,Y1=U,Y2=P).R(DD^1,Y1=U,Y2=P) | R_dim
+    R(DD^1,Y1=U,Y2=P).R(DD^1,Y1=U,Y2=P) | 2
 
 @reaction_rules
 def rulegen(

@@ -143,6 +143,7 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
         vector[Cpp_ReactionRule] query_reaction_rules(
             Cpp_Species sp, Cpp_Species sp)
+        vector[Cpp_ReactionRule] reaction_rules()
 
 ## NetworkModel
 #  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr

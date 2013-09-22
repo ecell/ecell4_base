@@ -10,11 +10,11 @@ def attributegen():
 
 @reaction_rules
 def rulegen():
-    X(y,p=s0) + Y(x) > X(y^1,p=s0).Y(x^1) | kon
-    X(y^1,p=s0).Y(x^1) > X(y,p=s0) + Y(x) | koff
-    X(y^1,p=s0).Y(x^1) > X(y,p=s1) + Y(x) | kcat
+    X(y,p=s0) + Y(x) > X(y^1,p=s0).Y(x^1) | 1
+    X(y^1,p=s0).Y(x^1) > X(y,p=s0) + Y(x) | 2
+    X(y^1,p=s0).Y(x^1) > X(y,p=s1) + Y(x) | 3
 
-    X(p=s1) > X(p=s0) | dephos
+    X(p=s1) > X(p=s0) | 4
 
 
 if __name__ == "__main__":

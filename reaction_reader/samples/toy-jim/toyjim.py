@@ -8,15 +8,15 @@ def attributegen():
     L(r) | 0
     # r binds to l of R
 
-    R(l,r,a) | R_tot
+    R(l,r,a) | 1
     # l binds to r of L
     # r binds to r of R
 
-    A(r,k) | A_tot
+    A(r,k) | 2
     # r binds to a of R
     # k binds to a of K
 
-    K(a,Y=U) | K_tot
+    K(a,Y=U) | 3
     # a binds to k of A
     # Y is phosphorylation site that is either unphosphorylated (U) or
     #   phosphorylated (P)
@@ -29,36 +29,36 @@ def rulegen():
     # Note: specifying r in R here means that the r component must not 
     #       be bound.  This prevents dissociation of ligand from R
     #       when R is in a dimer.
-    L(r) + R(l,r) == L(r^1).R(l^1,r) | (kpL,kmL)
+    L(r) + R(l,r) == L(r^1).R(l^1,r) | (1,2)
 
     # Aggregation (R+R)
     # Note:  R must be bound to ligand to dimerize.
-    L(r^1).R(l^1,r) + L(r^1).R(l^1,r) == L(r^1).R(l^1,r^3).L(r^2).R(l^2,r^3) | (kpD,kmD)
+    L(r^1).R(l^1,r) + L(r^1).R(l^1,r) == L(r^1).R(l^1,r^3).L(r^2).R(l^2,r^3) | (3,4)
 
     # Receptor binding to adaptor (R+A)
     # Note: A and R can bind independent of whether A is bound to K or 
     #       whether R is in a dimer.
-    A(r) + R(a) == A(r^1).R(a^1) | (kpA,kmA)
+    A(r) + R(a) == A(r^1).R(a^1) | (5,6)
 
     # Adaptor binding kinase 
     # Note: Doesn't depend on phosphorylation state of K or whether A is bound to
     #       receptor, i.e. binding rate is same whether A is on membrane (bound to
     #        R) or in cytosol.
-    A(k) + K(a) == A(k^1).K(a^1) | (kpK,kmK)
+    A(k) + K(a) == A(k^1).K(a^1) | (7,8)
 
     # Kinase transphosphorylation by inactive kinase
     # Note: Rule doesn't specify how two K's are associated
-    K(Y=U).K(Y=U) > K(Y=U).K(Y=P) | pK
+    K(Y=U).K(Y=U) > K(Y=U).K(Y=P) | 9
 
     # Kinase transphosphorylation by active kinase
     # Note: Rule doesn't specify how two K's are associated
-    K(Y=P).K(Y=U) > K(Y=P).K(Y=P) | pKs
+    K(Y=P).K(Y=U) > K(Y=P).K(Y=P) | 10
 
     # Dephosphorylation of kinase in membrane complex
-    R(a^1).A(r^1,k^2).K(a^2,Y=P) > R(a^1).A(r^1,k^2).K(a^2,Y=U) | dM
+    R(a^1).A(r^1,k^2).K(a^2,Y=P) > R(a^1).A(r^1,k^2).K(a^2,Y=U) | 11
 
     # Dephosphorylation of kinase in cytosol
-    K(a,Y=P) > K(a,Y=U) | dC
+    K(a,Y=P) > K(a,Y=U) | 12
 
 if __name__ == "__main__":
     newseeds = []
