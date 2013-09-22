@@ -13,6 +13,20 @@ class Species(object):
         self.conditions = None
 
     def num_bindings(self):
+        labels, n = [], 0
+        for subunit in self.subunits:
+            for mod, (state, binding) in subunit.modifications.items():
+                if binding == "":
+                    continue
+                elif binding[0] == "_":
+                    if len(binding) != 1:
+                        raise RuntimeError, "[%s] not supported yet." % binding
+                    n += 1
+                else:
+                    labels.append(int(binding))
+        return n + len(set(labels))
+
+    def get_binding_stride(self):
         retval = 0
         for subunit in self.subunits:
             for mod, (state, binding) in subunit.modifications.items():
@@ -27,10 +41,14 @@ class Species(object):
     def add_subunit(self, subunit):
         subunit.index = len(self.subunits)
         self.subunits.append(subunit)
+
     def get_subunit_list(self):
         return self.subunits
 
-    def count_subunits(self, pttrn):
+    def count_subunits(self, pttrn=None):
+        if pttrn is None:
+            return len(self.subunits)
+
         retval = 0
         for su in self.subunits:
             if su.name == pttrn:
@@ -78,6 +96,7 @@ class Species(object):
         cmpsu.sort()
 
     def __str__(self):
+        # self.sort() #XXX: check if it's already sorted or not
         return ".".join([str(subunit) for subunit in self.subunits])
 
     def __repr__(self):
@@ -161,7 +180,7 @@ def check_connectivity(src, markers=[]):
             if binding in tmp.keys():
                 if tmp[binding] is None:
                     raise RuntimeError, "[%s] duplicated in [%s:%d]" % (
-                        binding, src, src.num_bindings())
+                        binding, src, src.get_binding_stride())
 
                 adjacencies[i].append(tmp[binding])
                 adjacencies[tmp[binding]].append(i)
@@ -218,7 +237,7 @@ def concatenate_species(*species_list):
                     binding = int(binding) + stride
                 newsu.add_modification(mod, state, binding)
             retval.add_subunit(newsu)
-        stride += sp.num_bindings()
+        stride += sp.get_binding_stride()
     retval.update_indices()
     return retval
 
@@ -239,7 +258,7 @@ class ReactionRule(object):
 
     def products(self):
         return copy.deepcopy(self.__products)
-    
+
     def options(self):
         return copy.deepcopy(self.__options)
 
@@ -358,7 +377,7 @@ class ReactionRule(object):
                     if label in cache_binding.keys():
                         newbinding = cache_binding[label]
                     else:
-                        newbinding = str(retval.num_bindings() + 1)
+                        newbinding = str(retval.get_binding_stride() + 1)
                         cache_binding[label] = newbinding
 
                 target.add_modification(mod, newstate, newbinding)
