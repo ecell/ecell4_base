@@ -280,6 +280,16 @@ def create_species(expr):
         raise RuntimeError, "multiple species were defined in the expression."
     return retval[0]
 
+def create_reaction_rule(expr):
+    vardict = AnyCallableGenerator()
+    obj = eval(expr, globals(), vardict)
+    callback = ReactionRulesCallback()
+    callback.notify_comparisons(obj)
+    retval = callback.get()
+    if len(retval) != 1:
+        raise RuntimeError, "multiple rules were defined in the expression."
+    return retval[0]
+
 
 if __name__ == "__main__":
     def cmp_subunit(sp, idx1, idx2):

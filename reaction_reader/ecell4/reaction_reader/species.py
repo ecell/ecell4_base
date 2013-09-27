@@ -1,5 +1,6 @@
 import copy
 import itertools
+import sys
 
 label_subunit = lambda x: "subunit%s" % x
 label_binding = lambda x: "binding%s" % x
@@ -181,8 +182,11 @@ class Subunit(object):
         mods1.sort()
         mods2.sort()
         mods3.sort()
-        mods4.sort()
-        return "%s(%s)" % (self.name, ",".join(itertools.chain(mods1, mods2, mods3, mods4)))
+        labels = ",".join(itertools.chain(mods1, mods2, mods3))
+        if labels == "":
+            return self.name
+        else:
+            return "%s(%s)" % (self.name, labels)
 
     def __repr__(self):
         return '<"%s">' % (str(self))
@@ -285,6 +289,9 @@ class ReactionRule(object):
 
     def num_reactants(self):
         return len(self.__reactants)
+
+    def num_products(self):
+        return len(self.__products)
 
     def initialize(self):
         self.__correspondences = []
@@ -441,6 +448,9 @@ class ReactionRule(object):
                     or isinstance(opt, IncludeReactants))
                 and not opt.match(reactants)):
                 return []
+
+        if len(self.__reactants) != len(reactants):
+            return []
 
         contexts = None
         for sp1, sp2 in zip(self.__reactants, reactants):
