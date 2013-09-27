@@ -182,7 +182,9 @@ class Subunit(object):
         mods1.sort()
         mods2.sort()
         mods3.sort()
-        labels = ",".join(itertools.chain(mods1, mods2, mods3))
+        mods4.sort()
+
+        labels = ",".join(itertools.chain(mods1, mods2, mods3, mods4))
         if labels == "":
             return self.name
         else:
