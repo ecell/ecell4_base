@@ -146,7 +146,11 @@ class Subunit(object):
         return conditions
 
     def add_modification(self, mod, state="", binding=""):
+        if isinstance(binding, str) and len(binding) > 1 and binding[0] == "_":
+            raise RuntimeError, "A binding label [%s] not allowed" % (binding)
+
         self.modifications[mod] = (state, str(binding))
+
     def get_modifications_list(self):
         return self.modifications
 

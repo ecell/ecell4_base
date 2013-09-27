@@ -101,6 +101,12 @@ class ReactionRuleTestCase(unittest.TestCase):
         self.assertTrue(
             create_species("X(a=b1,c=d1^1).X(a=b2,c=d2^1)") in products)
 
+
+        retval = create_reaction_rule("X(c^_,a=b1)>X(c^_,a=b2)").match(sp1)
+        self.assertEqual(len(retval), 1)
+        self.assertEqual(len(retval[0]), 1)
+        self.assertEqual(retval[0][0], create_species("X(a=b2,c=d^1).Y(e^1)"))
+
     def test_matches3(self):
         sp1 = create_species("X(l,r)")
         sp2 = create_species("Y(l,r^1).Z(l^1,r)")
@@ -249,6 +255,15 @@ class ReactionRuleTestCase(unittest.TestCase):
             " > A(_1=u^1,ps=(_1,)).A(_2=u^1,ps=(_2,))")
         self.assertEqual(len(rr2.match(sp1, sp1)), 2)
         self.assertEqual(len(rr3.match(sp1, sp1)), 4)
+
+    def test_exceptions1(self):
+        rr1 = create_reaction_rule("A(_1=u)>A(_1=p)")
+        sp1 = create_species("A(ps1=u,ps2=u)")
+        self.assertRaises(RuntimeError, rr1.match, sp1)
+
+        self.assertRaises(
+            RuntimeError, create_reaction_rule,
+            "A(ps1^_1).A(ps1^_1)>A(ps1)+A(ps1)")
 
 
 if __name__ == '__main__':
