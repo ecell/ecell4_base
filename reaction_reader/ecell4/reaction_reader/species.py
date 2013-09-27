@@ -1,5 +1,6 @@
 import copy
 import itertools
+import sys
 
 label_subunit = lambda x: "subunit%s" % x
 label_binding = lambda x: "binding%s" % x
@@ -999,7 +1000,7 @@ def dump_reaction(reactants, products):
     retval += "+".join(sorted([str(sp) for sp in products]))
     return retval
 
-def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
+def generate_reactions(newseeds, rules, max_iter=sys.maxint, max_stoich={}):
     seeds, cnt, reactions = [], 0, []
 
     for rr in rules:
@@ -1012,15 +1013,16 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
                     newseeds.append(newsp)
 
     while len(newseeds) != 0 and cnt < max_iter:
-        #print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
-        #    cnt, len(seeds), len(newseeds), len(reactions))
+        # print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
+        #     cnt, len(seeds), len(newseeds), len(reactions))
         newseeds, seeds, newreactions = generate_recurse(
             newseeds, rules, seeds, max_stoich)
         reactions.extend(newreactions)
         cnt += 1
-    #print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
-    #    cnt, len(seeds), len(newseeds), len(reactions))
-    #print ""
+
+    # print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
+    #     cnt, len(seeds), len(newseeds), len(reactions))
+    # print ""
 
     seeds.sort(key=str)
     '''
@@ -1033,6 +1035,8 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
     dump_rrobj_map = dict()
     for r in reactions:
         s = dump_reaction(r[0], r[1])
+        # if s in dump_rrobj_map.keys():
+        #     print "[%s] already exists" % (str(s))
         dump_rrobj_map[s] = r
     reactions = dump_rrobj_map.values()
     '''
