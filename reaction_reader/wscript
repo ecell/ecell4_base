@@ -39,6 +39,7 @@ def build(bld):
     bld.install_files('${PYTHONDIR}/ecell4/reaction_reader', pyfiles)
 
     pycmd = bld.env['PYTHON'][0]
-    retval = subprocess.Popen([pycmd, '-O', 'tests/tests.py']).wait()
+    retval = subprocess.Popen([pycmd, '-O', 'tests/test_reaction_rule.py']).wait()
+    retval = subprocess.Popen([pycmd, '-O', 'tests/test_species.py']).wait()
     if retval:
         raise SystemExit(retval)
