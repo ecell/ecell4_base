@@ -81,6 +81,18 @@ class NetworkTestCase(unittest.TestCase):
         self.assertEqual(len(newreactions), 1)
         # dump_reactions(newreactions)
 
+    def test_generate_reactions1(self):
+        rr1 = create_reaction_rule("X(c=u)>X(c=p)")
+        rr2 = create_reaction_rule("X(a)+X(a)>X(a^1).X(a^1)")
+        sp1 = create_species("X(a,b,c=u)")
+
+        retval = network.generate_reactions([sp1], [rr1, rr2])
+        self.assertEqual(len(retval), 2)
+        seeds, reactions = retval
+        self.assertEqual(len(seeds), 5)
+        self.assertEqual(len(reactions), 6)
+        # dump_reactions(reactions)
+
 
 if __name__ == '__main__':
     unittest.main()

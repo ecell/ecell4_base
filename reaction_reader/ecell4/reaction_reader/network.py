@@ -147,7 +147,8 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
     while len(newseeds) != 0 and cnt < max_iter:
         # print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
         #     cnt, len(seeds), len(newseeds), len(reactions))
-        newseeds, seeds, newreactions = generate_recurse(
+        # newseeds, seeds, newreactions = generate_recurse(
+        newseeds, seeds, newreactions = generate_recurse2(
             newseeds, rules, seeds, max_stoich)
         reactions.extend(newreactions)
         cnt += 1
