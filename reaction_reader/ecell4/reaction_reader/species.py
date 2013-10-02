@@ -47,6 +47,9 @@ class Species(object):
     def get_subunit_list(self):
         return self.subunits
 
+    def num_subunits(self):
+        return len(self.subunits)
+
     def count_subunits(self, pttrn=None):
         if pttrn is None:
             return len(self.subunits)
@@ -65,15 +68,15 @@ class Species(object):
         conditions.sort(key=lambda x: x.priority)
         return conditions
 
-    def match(self, sp, contexts=None):
+    def match(self, sp, contexts=None, stride=None):
         if contexts is None:
             contexts = Contexts()
             contexts.initialize()
-            stride = 0
-        elif len(contexts) != 0:
-            stride = contexts.num_subunits()
-        else:
+        elif len(contexts) == 0:
             return contexts
+
+        if stride is None:
+            stride = contexts.num_subunits()
 
         if self.conditions is None:
             self.conditions = self.generate_conditions(stride)
@@ -467,9 +470,19 @@ class ReactionRule(object):
             contexts = sp1.match(sp2, contexts)
         return contexts
 
-    def generate(self, *reactants):
-        contexts = self.match(*reactants)
+    def match_partial(self, idx, sp, contexts=None):
+        if idx < 0 or idx >= len(self.__reactants):
+            raise RuntimeError, "invalid index [%d] given." % (idx)
 
+        if idx == 0:
+            stride = 0
+        else:
+            stride = sum([
+                self.__reactants[i].num_subunits() for i in range(idx)])
+
+        return self.__reactants[idx].match(sp, contexts, stride)
+
+    def generate_with_contexts(self, reactants, contexts=None):
         if contexts is None or len(contexts) == 0:
             return []
         elif len(self.__products) == 0:
@@ -482,6 +495,10 @@ class ReactionRule(object):
             if opts is not None:
                 retval.append(products)
         return retval
+
+    def generate(self, *reactants):
+        contexts = self.match(*reactants)
+        return self.generate_with_contexts(reactants, contexts)
 
     def __str__(self):
         return "%s>%s" % (
@@ -790,11 +807,20 @@ class Contexts(object):
     def has_key(self, key):
         return (key in self.__keys)
 
+    def keys(self):
+        return copy.copy(self.__keys)
+
     def __str__(self):
         return str(self.__data)
 
     def num_subunits(self):
-        return len([key for key in self.__keys if key[: 7] == "subunit"])
+        indices = [
+            int(key[7: ]) for key in self.__keys if key[: 7] == "subunit"]
+        if len(indices) == 0:
+            return 0
+        else:
+            return max(indices) + 1
+        # return len([key for key in self.__keys if key[: 7] == "subunit"])
 
     def product(self, key, values):
         """key is always a subunit."""

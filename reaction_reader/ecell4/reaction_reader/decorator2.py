@@ -80,15 +80,11 @@ def generate_Species(obj):
     raise RuntimeError, 'invalid expression; "%s" given' % str(obj)
 
 def generate_ReactionRule(lhs, rhs, opts):
-    # if len(lhs) == 0:
-    #     if len(rhs) != 1:
-    #         raise RuntimeError, (
-    #             "the number of products must be 1; %d given" % len(rhs))
-    #     return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
-    if len(lhs) == 0 or len(lhs) == 1 or len(lhs) == 2:
-        return species.ReactionRule(lhs, rhs, opts)
-    raise RuntimeError, (
-        "the number of reactants must be less than 3; %d given" % len(lhs))
+    # if len(lhs) == 0 or len(lhs) == 1 or len(lhs) == 2:
+    #     return species.ReactionRule(lhs, rhs, opts)
+    # raise RuntimeError, (
+    #     "the number of reactants must be less than 3; %d given" % len(lhs))
+    return species.ReactionRule(lhs, rhs, opts)
 
 def generate_Option(opt):
     # if not (isinstance(opt, parseobj.AnyCallable)

@@ -1,4 +1,5 @@
 import itertools
+import copy
 
 import species
 
@@ -8,6 +9,69 @@ def check_stoichiometry(sp, max_stoich):
         if sp.count_subunits(pttrn) > num_subunits:
             return False
     return True
+
+def dump_reaction(reactants, products):
+    # reactants, products = reaction
+    for sp in itertools.chain(reactants, products):
+        sp.sort()
+
+    retval = "+".join(sorted([str(sp) for sp in reactants]))
+    retval += ">"
+    retval += "+".join(sorted([str(sp) for sp in products]))
+    return retval
+
+def reaction_rule_match_recurse(
+    rr, idx, seeds1, seeds2, reactants, contexts, ignore):
+    if idx >= rr.num_reactants():
+        pttrns = rr.generate_with_contexts(reactants, contexts)
+        return [
+            (copy.deepcopy(reactants), products, rr.options())
+            for products in pttrns]
+    elif idx == ignore[0]:
+        return reaction_rule_match_recurse(
+            rr, idx + 1, seeds1, seeds2, reactants + [ignore[1]],
+            contexts, ignore)
+
+    if idx < ignore[0]:
+        seeds = itertools.chain(seeds1, seeds2)
+    else:
+        seeds = seeds2
+
+    retval = []
+    for sp in seeds:
+        newcontexts = rr.match_partial(idx, sp, copy.deepcopy(contexts))
+        if newcontexts is None or len(contexts) == 0:
+            continue
+        tmp = reaction_rule_match_recurse(
+            rr, idx + 1, seeds1, seeds2, reactants + [sp], newcontexts, ignore)
+        retval.extend(tmp)
+    return retval
+
+def generate_recurse2(seeds1, rules, seeds2, max_stoich={}):
+    seeds = list(itertools.chain(seeds1, seeds2))
+    newseeds, newreactions = [], []
+    for rr in rules:
+        num_reactants = rr.num_reactants()
+        if num_reactants == 0:
+            continue # skip rules for synthesis
+
+        for i in range(num_reactants):
+            for sp in seeds1:
+                contexts = rr.match_partial(i, sp)
+                if contexts is None or len(contexts) == 0:
+                    continue
+
+                reactions = reaction_rule_match_recurse(
+                    rr, 0, seeds1, seeds2, [], contexts, ignore=(i, sp))
+
+                newreactions.extend(reactions)
+                for (reactants, products, opts) in reactions:
+                    for newsp in products:
+                        if (newsp not in seeds and newsp not in newseeds
+                            and check_stoichiometry(newsp, max_stoich)):
+                            newsp.sort()
+                            newseeds.append(newsp)
+    return (newseeds, seeds, newreactions)
 
 def generate_recurse(seeds1, rules, seeds2, max_stoich):
     seeds = list(itertools.chain(seeds1, seeds2))
@@ -67,16 +131,6 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                                 newsp.sort()
                                 newseeds.append(newsp)
     return (newseeds, seeds, newreactions)
-
-def dump_reaction(reactants, products):
-    #reactants, products = reaction
-    for sp in itertools.chain(reactants, products):
-        sp.sort()
-
-    retval = "+".join(sorted([str(sp) for sp in reactants]))
-    retval += ">"
-    retval += "+".join(sorted([str(sp) for sp in products]))
-    return retval
 
 def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
     seeds, cnt, reactions = [], 0, []
