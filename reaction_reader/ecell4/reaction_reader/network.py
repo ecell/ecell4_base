@@ -1,7 +1,6 @@
 import itertools
 
 import species
-import ecell4.core as core
 
 
 def check_stoichiometry(sp, max_stoich):
@@ -124,6 +123,9 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
     return seeds + newseeds, reactions
 
 def generate_NetworkModel(seeds, rules):
+    import ecell4.core as core
+
+
     model = core.NetworkModel()
 
     for sp in seeds:
