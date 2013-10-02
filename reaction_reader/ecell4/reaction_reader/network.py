@@ -24,7 +24,7 @@ def dump_reaction(reactants, products):
 def reaction_rule_match_recurse(
     rr, idx, seeds1, seeds2, reactants, contexts, ignore):
     if idx >= rr.num_reactants():
-        pttrns = rr.generate_with_contexts(reactants, contexts)
+        pttrns = rr.generate(reactants, contexts)
         return [
             (copy.deepcopy(reactants), products, rr.options())
             for products in pttrns]
@@ -80,9 +80,9 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
     for sp1 in seeds1:
         for rr in rules:
             if rr.num_reactants() == 1:
-                pttrns = rr.generate(sp1)
+                pttrns = rr.generate([sp1])
                 # try:
-                #     pttrns = rr.generate(sp1)
+                #     pttrns = rr.generate([sp1])
                 # except Exception, e:
                 #     print rr, sp1
                 #     raise e
@@ -98,9 +98,9 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
         for sp2 in seeds:
             for rr in rules:
                 if rr.num_reactants() == 2:
-                    pttrns = rr.generate(sp1, sp2)
+                    pttrns = rr.generate([sp1, sp2])
                     # try:
-                    #     pttrns = rr.generate(sp1, sp2)
+                    #     pttrns = rr.generate([sp1, sp2])
                     # except Exception, e:
                     #     print rr, sp1, sp2
                     #     raise e
@@ -116,9 +116,9 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
         for sp2 in seeds2:
             for rr in rules:
                 if rr.num_reactants() == 2:
-                    pttrns = rr.generate(sp2, sp1)
+                    pttrns = rr.generate([sp2, sp1])
                     # try:
-                    #     pttrns = rr.generate(sp2, sp1)
+                    #     pttrns = rr.generate([sp2, sp1])
                     # except Exception, e:
                     #     print rr, sp1, sp2
                     #     raise e

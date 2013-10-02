@@ -479,7 +479,15 @@ class ReactionRule(object):
 
         return self.__reactants[idx].match(sp, contexts, stride)
 
-    def generate_with_contexts(self, reactants, contexts=None):
+    def generate(self, reactants, contexts=None):
+        if type(reactants) not in (list, tuple):
+            # just for the safety. remove this later
+            raise RuntimeError, "invalid argument [%s] given." % (
+                str(reactants))
+
+        if contexts is None:
+            contexts = self.match(*reactants)
+
         if contexts is None or len(contexts) == 0:
             return []
         elif len(self.__products) == 0:
@@ -492,10 +500,6 @@ class ReactionRule(object):
             if opts is not None:
                 retval.append(products)
         return retval
-
-    def generate(self, *reactants):
-        contexts = self.match(*reactants)
-        return self.generate_with_contexts(reactants, contexts)
 
     def __str__(self):
         return "%s>%s" % (
