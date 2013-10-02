@@ -1,5 +1,6 @@
 import itertools
 import copy
+import sys
 
 import species
 
@@ -132,7 +133,7 @@ def generate_recurse(seeds1, rules, seeds2, max_stoich):
                                 newseeds.append(newsp)
     return (newseeds, seeds, newreactions)
 
-def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
+def generate_reactions(newseeds, rules, max_iter=sys.maxint, max_stoich={}):
     seeds, cnt, reactions = [], 0, []
 
     for rr in rules:
