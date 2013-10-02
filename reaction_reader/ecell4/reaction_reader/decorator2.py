@@ -104,7 +104,8 @@ def generate_Option(opt):
             and type(elem.args[0]) == int
             and (isinstance(elem.args[1], parseobj.AnyCallable)
                 or isinstance(elem.args[1], parseobj.ParseObj))):
-            raise RuntimeError
+            raise RuntimeError, "invalid type of arguments given [%s]" % (
+                str(elem.args))
 
         if isinstance(elem.args[1], parseobj.ParseObj):
             raise RuntimeError, "only a subunit name is allowed here."

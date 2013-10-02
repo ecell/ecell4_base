@@ -334,7 +334,7 @@ class ReactionRule(object):
             if not i in self.__correspondences:
                 self.__removed.append(i)
 
-    def generate(self, context, reactants):
+    def __generate(self, context, reactants):
         def serno(idx):
             value = context.get(label_subunit(idx))
             if value is None:
@@ -448,36 +448,39 @@ class ReactionRule(object):
 
         return check_connectivity(retval, markers)
 
-    def match(self, *reactants):
+    def check_options(self, reactants, products, context, corresp=None):
         for opt in self.__options:
-            if ((isinstance(opt, ExcludeReactants)
-                    or isinstance(opt, IncludeReactants))
-                and not opt.match(reactants)):
-                return []
+            if (isinstance(opt, ExcludeReactants)
+                    or isinstance(opt, IncludeReactants)
+                    or isinstance(opt, ExcludeProducts)
+                    or isinstance(opt, IncludeProducts)):
+                if not opt.check(reactants, products, context, corresp):
+                    return None
+        return self.__options
 
-        if len(self.__reactants) != len(reactants):
-            return []
-
+    def match(self, *reactants):
         contexts = None
+        if len(self.__reactants) != len(reactants):
+            return contexts
+
         for sp1, sp2 in zip(self.__reactants, reactants):
             contexts = sp1.match(sp2, contexts)
+        return contexts
 
-        if len(self.__products) == 0 and len(contexts) > 0:
+    def generate(self, *reactants):
+        contexts = self.match(*reactants)
+
+        if contexts is None or len(contexts) == 0:
+            return []
+        elif len(self.__products) == 0:
             return [()]
 
         retval = []
         for context in contexts:
-            products, correspondence = self.generate(context, reactants)
-            # if (products is not None): #XXX: allow indirect connections
-            if (products is not None
-                and len(correspondence) == len(set(correspondence))):
-                for opt in self.__options:
-                    if ((isinstance(opt, ExcludeProducts)
-                            or isinstance(opt, IncludeProducts))
-                        and not opt.match(products, correspondence)):
-                        break
-                else:
-                    retval.append(products)
+            products, corresp = self.__generate(context, reactants)
+            opts = self.check_options(reactants, products, context, corresp)
+            if opts is not None:
+                retval.append(products)
         return retval
 
     def __str__(self):
@@ -909,6 +912,9 @@ class Option(object):
     def __init__(self):
         pass
 
+    def check(self, reactants, products, context, corresp=None):
+        return None
+
 class IncludeReactants(Option):
 
     def __init__(self, idx, pttrn):
@@ -922,7 +928,7 @@ class IncludeReactants(Option):
         self.__idx = idx
         self.__pttrn = pttrn
 
-    def match(self, reactants):
+    def check(self, reactants, products, context, corresp=None):
         if not (len(reactants) > self.__idx - 1):
             print reactants
             raise RuntimeError
@@ -943,7 +949,7 @@ class ExcludeReactants(Option):
         self.__idx = idx
         self.__pttrn = pttrn
 
-    def match(self, reactants):
+    def check(self, reactants, products, context, corresp=None):
         if not (len(reactants) > self.__idx - 1):
             print reactants
             raise RuntimeError
@@ -964,11 +970,15 @@ class IncludeProducts(Option):
         self.__idx = idx
         self.__pttrn = pttrn
 
-    def match(self, products, correspondence):
-        if not (len(correspondence) > self.__idx - 1):
-            raise RuntimeError
-
-        sp = products[correspondence[self.__idx - 1]]
+    def check(self, reactants, products, context, corresp=None):
+        if corresp is None:
+            if len(products) < self.__idx:
+                raise RuntimeError
+            sp = products[self.__idx]
+        else:
+            if len(corresp) < self.__idx:
+                raise RuntimeError
+            sp = products[corresp[self.__idx - 1]]
         return (self.__pttrn in [su.name for su in sp.subunits])
 
 class ExcludeProducts(Option):
@@ -984,11 +994,15 @@ class ExcludeProducts(Option):
         self.__idx = idx
         self.__pttrn = pttrn
 
-    def match(self, products, correspondence):
-        if not (len(correspondence) > self.__idx - 1):
-            raise RuntimeError
-
-        sp = products[correspondence[self.__idx - 1]]
+    def check(self, reactants, products, context, corresp=None):
+        if corresp is None:
+            if len(products) < self.__idx:
+                raise RuntimeError
+            sp = products[self.__idx]
+        else:
+            if len(corresp) < self.__idx:
+                raise RuntimeError
+            sp = products[corresp[self.__idx - 1]]
         return not (self.__pttrn in [su.name for su in sp.subunits])
 
 class CmpSubunit:
