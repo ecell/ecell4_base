@@ -145,22 +145,20 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
                     newseeds.append(newsp)
 
     while len(newseeds) != 0 and cnt < max_iter:
-        #print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
-        #    cnt, len(seeds), len(newseeds), len(reactions))
+        # print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
+        #     cnt, len(seeds), len(newseeds), len(reactions))
         newseeds, seeds, newreactions = generate_recurse(
             newseeds, rules, seeds, max_stoich)
         reactions.extend(newreactions)
         cnt += 1
-    #print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
-    #    cnt, len(seeds), len(newseeds), len(reactions))
-    #print ""
+    # print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
+    #     cnt, len(seeds), len(newseeds), len(reactions))
+    # print ""
 
     seeds.sort(key=str)
-    '''
-    for i, sp in enumerate(seeds):
-        print "%5d %s" % (i + 1, str(sp))
-    print ""
-    '''
+    # for i, sp in enumerate(seeds):
+    #     print "%5d %s" % (i + 1, str(sp))
+    # print ""
 
     # reactions = list(set([dump_reaction(reaction) for reaction in reactions]))
     dump_rrobj_map = dict()
@@ -168,12 +166,9 @@ def generate_reactions(newseeds, rules, max_iter=10, max_stoich={}):
         s = dump_reaction(r[0], r[1])
         dump_rrobj_map[s] = r
     reactions = dump_rrobj_map.values()
-    '''
-    for i, reaction in enumerate(reactions):
-        print "%5d %s" % (i + 1, reaction)
-    '''
+    # for i, reaction in enumerate(reactions):
+    #     print "%5d %s" % (i + 1, reaction)
 
-    # return seeds + newseeds, reactions
     return seeds + newseeds, reactions
 
 def generate_NetworkModel(seeds, rules):

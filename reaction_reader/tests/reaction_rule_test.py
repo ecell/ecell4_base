@@ -43,17 +43,25 @@ class ReactionRuleTestCase(unittest.TestCase):
 
     def test_matches1(self):
         rr1 = create_reaction_rule("A+B>C")
+        sp1 = create_species("A")
 
-        self.assertEqual(len(rr1.generate(create_species("B"), create_species("A"))), 0)
-        self.assertEqual(len(rr1.generate(create_species("A"))), 0)
+        self.assertEqual(len(rr1.generate(create_species("B"), sp1)), 0)
+        self.assertEqual(len(rr1.generate(sp1)), 0)
         self.assertEqual(len(rr1.generate(
-            create_species("A"), create_species("B"), create_species("C"))), 0)
+            sp1, create_species("B"), create_species("C"))), 0)
 
-        self.assertEqual(len(rr1.generate(create_species("A"), create_species("B"))), 1)
-        self.assertEqual(len(rr1.generate(create_species("A"), create_species("B"))[0]), 1)
+        self.assertEqual(len(rr1.generate(sp1, create_species("B"))), 1)
+        self.assertEqual(len(rr1.generate(sp1, create_species("B"))[0]), 1)
         self.assertEqual(
-            rr1.generate(create_species("A"), create_species("B"))[0][0],
+            rr1.generate(sp1, create_species("B"))[0][0],
             create_species("C"))
+
+        rr2 = create_reaction_rule("A>A+A")
+        retval = rr2.generate(sp1)
+        self.assertEqual(len(retval), 1)
+        self.assertEqual(len(retval[0]), 2)
+        self.assertEqual(retval[0][0], retval[0][1])
+        self.assertEqual(retval[0][0], sp1)
 
     def test_matches2(self):
         sp1 = create_species("X(a=b1,c=d^1).Y(e^1)")
@@ -237,7 +245,7 @@ class ReactionRuleTestCase(unittest.TestCase):
 
     def test_matches8(self):
         rr1 = create_reaction_rule(
-            "A(_1=u,_2=u,ps=(_1,_2)) > A(_1=p,_2=u,ps=(_1,_2))")
+            "A(_1=u,_2=u,ps=(_1,_2))>A(_1=p,_2=u,ps=(_1,_2))")
         sp1 = create_species("A(ps1=u,ps2=u,ps=(ps1,ps2))")
 
         self.assertEqual(
@@ -255,6 +263,35 @@ class ReactionRuleTestCase(unittest.TestCase):
             " > A(_1=u^1,ps=(_1,)).A(_2=u^1,ps=(_2,))")
         self.assertEqual(len(rr2.generate(sp1, sp1)), 2)
         self.assertEqual(len(rr3.generate(sp1, sp1)), 4)
+
+    def test_matches(self):
+        rr1 = create_reaction_rule(
+            "A(r^1).B(bs^1)+C(bs)+D(l)>A(r^1).C(bs^1)+B(bs^1).D(l^1)")
+        sp1, sp2, sp3, sp4 = (
+            create_species("A(l,r)"),
+            create_species("B(bs)"),
+            create_species("C(bs)"),
+            create_species("D(l,r)"))
+        sp5 = create_species("A(l^2,r^1).B(bs^1).C(bs^2)")
+        sp6 = create_species("D(l,r^1).B(bs^1)")
+
+        retval = rr1.generate(sp1, sp3, sp4)
+        self.assertEqual(len(retval), 0)
+
+        retval = rr1.generate(sp5, sp3, sp6)
+        self.assertEqual(len(retval), 1)
+        self.assertEqual(len(retval[0]), 2)
+        self.assertIn(create_species("A(l^1,r^2).C(bs^1).C(bs^2)"), retval[0])
+        self.assertIn(create_species("B(bs^1).D(l^1,r^2).B(bs^2)"), retval[0])
+
+        rr2 = create_reaction_rule("A+B+C>D+E+F")
+        retval = rr2.generate(
+            create_species("A"), create_species("B"), create_species("C"))
+        self.assertEqual(len(retval), 1)
+        self.assertEqual(len(retval[0]), 3)
+        self.assertIn(create_species("D"), retval[0])
+        self.assertIn(create_species("E"), retval[0])
+        self.assertIn(create_species("F"), retval[0])
 
     def test_exceptions1(self):
         rr1 = create_reaction_rule("A(_1=u)>A(_1=p)")
