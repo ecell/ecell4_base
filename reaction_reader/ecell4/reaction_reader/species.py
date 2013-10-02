@@ -47,10 +47,7 @@ class Species(object):
     def get_subunit_list(self):
         return self.subunits
 
-    def num_subunits(self):
-        return len(self.subunits)
-
-    def count_subunits(self, pttrn=None):
+    def num_subunits(self, pttrn=None):
         if pttrn is None:
             return len(self.subunits)
 

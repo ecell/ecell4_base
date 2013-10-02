@@ -31,8 +31,8 @@ class SpeciesTestCase(unittest.TestCase):
         self.assertTrue(sp1.match(sp1))
         self.assertEqual(sp1.get_binding_stride(), 0)
         self.assertEqual(sp1.num_bindings(), 0)
-        self.assertEqual(sp1.count_subunits(), 1)
-        self.assertEqual(sp1.count_subunits("A"), 1)
+        self.assertEqual(sp1.num_subunits(), 1)
+        self.assertEqual(sp1.num_subunits("A"), 1)
 
     def test_properties2(self):
         sp1 = create_species("A(l^4,r^1).A(l^4,r^2).B(l^1,r^5).B(l,r^2).C(bs^5)")
@@ -42,9 +42,9 @@ class SpeciesTestCase(unittest.TestCase):
 
         sp1.sort()
         self.assertEqual(str(sp1), "A(l^1,r^2).A(l^1,r^3).B(l,r^3).B(l^2,r^4).C(bs^4)")
-        self.assertEqual(sp1.count_subunits(), 5)
-        self.assertEqual(sp1.count_subunits("A"), 2)
-        self.assertEqual(sp1.count_subunits("C"), 1)
+        self.assertEqual(sp1.num_subunits(), 5)
+        self.assertEqual(sp1.num_subunits("A"), 2)
+        self.assertEqual(sp1.num_subunits("C"), 1)
         self.assertEqual(sp1.get_binding_stride(), 4)
         self.assertEqual(sp1.num_bindings(), 4)
 

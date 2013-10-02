@@ -7,7 +7,7 @@ import species
 
 def check_stoichiometry(sp, max_stoich):
     for pttrn, num_subunits in max_stoich.items():
-        if sp.count_subunits(pttrn) > num_subunits:
+        if sp.num_subunits(pttrn) > num_subunits:
             return False
     return True
 
