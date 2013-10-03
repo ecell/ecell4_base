@@ -3,21 +3,23 @@
 namespace ecell4
 {
 
-void MolecularType::addVoxel(Voxel* p_voxel)
+void MolecularType::addVoxel(Voxel &voxel)
 {
-    voxels_.push_back(p_voxel);
-    p_voxel->p_molecule_type = this;
+    voxels_.insert(voxel_container_type::value_type(
+                voxel.id, voxel));
+    voxel.ptr_mt = this;
 }
 
-void MolecularType::removeVoxel(const Voxel& voxel)
+bool MolecularType::removeVoxel(const ParticleID pid)
 {
-    for (voxel_container_type::iterator i(this->voxels_.begin());
-            i != this->voxels_.end(); ++i)
+    voxel_container_type::iterator itr(voxels_.find(pid));
+    if (itr == voxels_.end())
     {
-        Voxel* p_v = *i;
-        if (p_v->id == voxel.id)
-            voxels_.erase(i);
+        return false;
     }
+    (*itr).second.ptr_mt = NULL;
+    voxels_.erase(itr++);
+    return true;
 }
 
 const Species& MolecularType::species() const

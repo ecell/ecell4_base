@@ -4,7 +4,10 @@
 #include "Space.hpp"
 #include "MolecularType.hpp"
 #include "SParticle.hpp"
+#include "SerialIDGenerator.hpp"
+#include <vector>
 #include <set>
+#include <map>
 
 namespace ecell4
 {
@@ -64,70 +67,18 @@ namespace ecell4
 #define MAX_IMMEDIATE_DISTANCE 0.2
 #define BIG_NUMBER 1e+20
 
-struct Comp
-{
-    bool isIntersectParent;
-    bool isIntersectRoot;
-// unsigned
-    Integer dimension;
-    Integer vacantID; //remove this
-    Integer interfaceID;
-// int
-    Integer enclosed;
-    Integer geometry;
-    Integer xyPlane;
-    Integer xzPlane;
-    Integer yzPlane;
-// unsigned
-    Integer minRow;
-    Integer minCol;
-    Integer minLayer;
-    Integer maxRow;
-    Integer maxCol;
-    Integer maxLayer;
-// double
-    Real lengthX;
-    Real lengthY;
-    Real lengthZ;
-    Real originX;
-    Real originY;
-    Real originZ;
-    Real rotateX;
-    Real rotateY;
-    Real rotateZ;
-    Real specVolume;
-    Real specArea;
-    Real actualVolume;
-    Real actualArea;
-//    System* system;
-    Comp* surfaceSub;
-    //Even if there are many adjacent diffusive compartents, use only one single
-    //common id. So there is only one common diffusive Comp:
-    Comp* diffusiveComp;
-    Position3 centerPoint;
-    Species* vacantSpecies;
-    std::vector<Comp*> allSubs;
-    std::vector<Comp*> immediateSubs;
-    std::vector<Comp*> intersectPeers;
-    std::vector<Comp*> intersectLowerPeers;
-    std::vector<Comp*> lineSubs;
-    std::vector<Species*> species;
-//    std::vector<unsigned int>
-    std::vector<Integer> adjoinCount;
-};
-
 class LatticeSpace
     : public Space
 {
 protected:
 
-    typedef std::vector<Voxel> lattice_container_type;
-    typedef std::set<MolecularType> molecular_type_set;
-    typedef std::set<Species*> species_pointer_set;
+    typedef std::map<ParticleID, Voxel> lattice_container_type;
+    typedef std::vector<MolecularType> molecular_type_set;
 
 public:
 
     LatticeSpace();
+    ~LatticeSpace();
     /*
      * methods of Space class
      */
@@ -147,8 +98,9 @@ public:
     /*
      * original methods
      */
-    bool update_sparticle(ParticleID pid, SParticle spcl);
+    bool update_sparticle(const ParticleID pid, const SParticle spcl);
     void remove_sparticle(ParticleID pid);
+    Species add_molecular_type(const std::string name);
     MolecularType& get_molecular_type(Species& sp);
     void coord2global(Integer coord, Integer& global_row,
             Integer& global_layer, Integer& global_col) const;
@@ -156,20 +108,20 @@ public:
 
 protected:
 
-    const species_pointer_set get_species_set() const;
     Voxel& voxel_as(ParticleID pid);
     Voxel& voxel_at(Integer coord);
     Integer position2coord(Integer row, Integer layer, Integer col);
     const Particle voxel2particle(const Voxel& voxel) const
     {
-        const MolecularType* mt = voxel.p_molecule_type;
-        const Species& sp = mt->species();
+        const MolecularType* ptr_mt = voxel.ptr_mt;
+        const Species& sp = ptr_mt->species();
         const Position3& pos = coord2position(voxel.coord);
         const Real& radius = 0;
         const Real& D = 0;
         Particle particle(sp, pos, radius, D);
         return particle;
     }
+    void exchange_coords(const ParticleID pid0, const ParticleID pid1);
 
     /*
      * Spatiocyte methods
@@ -188,7 +140,6 @@ protected:
     Integer theNullCoord;
 
     MolecularType VACANT_TYPE_;
-    ParticleID VACANT_ID_;
 
     Integer adjoining_size_;    // theAdjoiningCoordSize
     Position3 edge_lengths_;

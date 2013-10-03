@@ -11,12 +11,19 @@ class MolecularType;
 
 struct Voxel
 {
+    Voxel(ParticleID id, Integer coord, MolecularType* ptr_mt) :
+        id(id),
+        coord(coord),
+        ptr_mt(ptr_mt),
+        diffuse_size(0)
+    {
+    }
 
     ParticleID id;
     Integer coord;
     Integer diffuse_size;
     std::vector<Voxel*> adjoiningVoxels;
-    MolecularType *p_molecule_type;
+    MolecularType* ptr_mt;
 
 };
 

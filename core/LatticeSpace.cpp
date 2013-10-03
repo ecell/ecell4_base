@@ -9,16 +9,27 @@ LatticeSpace::LatticeSpace()
     set_lattice_properties();
 }
 
+LatticeSpace::~LatticeSpace()
+{
+}
+
 Integer LatticeSpace::num_species() const
 {
-    const species_pointer_set sps = get_species_set();
-    return sps.size();
+    return molecular_types_.size();
 }
 
 bool LatticeSpace::has_species(const Species& sp) const
 {
-    const species_pointer_set sps = get_species_set();
-    return (sps.find(const_cast<Species*>(&sp)) != sps.end());
+    for (molecular_type_set::const_iterator itr(molecular_types_.begin());
+            itr != molecular_types_.end(); ++itr)
+    {
+        const MolecularType& mt(*itr);
+        if (mt.species() == sp)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 Integer LatticeSpace::num_molecules(const Species& sp) const
@@ -33,11 +44,12 @@ const Position3& LatticeSpace::edge_lengths() const
 
 Integer LatticeSpace::num_particles() const
 {
-    Integer count = 0;
-    for (Integer i = 0; i < lattice_.size(); ++i)
+    Integer count(0);
+    for (lattice_container_type::const_iterator i(lattice_.begin());
+            i != lattice_.end(); ++i)
     {
-        const Voxel& voxel = lattice_.at(i);
-        const MolecularType* p_mt = voxel.p_molecule_type;
+        const Voxel voxel((*i).second);
+        const MolecularType* p_mt(voxel.ptr_mt);
         if (p_mt != &VACANT_TYPE_)
         {
             count++;
@@ -48,7 +60,7 @@ Integer LatticeSpace::num_particles() const
 
 Integer LatticeSpace::num_particles(const Species& sp) const
 {
-    for (molecular_type_set::iterator i(molecular_types_.begin());
+    for (molecular_type_set::const_iterator i(molecular_types_.begin());
             i != molecular_types_.end(); ++i)
     {
         const MolecularType& mt = *i;
@@ -60,22 +72,17 @@ Integer LatticeSpace::num_particles(const Species& sp) const
 
 bool LatticeSpace::has_particle(const ParticleID& pid) const
 {
-    for (Integer i = 0; i < lattice_.size(); ++i)
-    {
-        const Voxel& voxel = lattice_.at(i);
-        if (voxel.id == pid)
-            return true;
-    }
-    return false;
+    return lattice_.find(pid) != lattice_.end();
 }
 
 std::vector<std::pair<ParticleID, Particle> >
     LatticeSpace::list_particles() const
 {
     std::vector<std::pair<ParticleID, Particle> > retval;
-    for (Integer i = 0; i < lattice_.size(); ++i)
+    for (lattice_container_type::const_iterator i(lattice_.begin());
+            i != lattice_.end(); ++i)
     {
-        const Voxel& voxel = lattice_.at(i);
+        const Voxel voxel((*i).second);
         retval.push_back(std::pair<ParticleID, Particle>(
                     voxel.id, voxel2particle(voxel)));
     }
@@ -86,16 +93,18 @@ std::vector<std::pair<ParticleID, Particle> >
     LatticeSpace::list_particles(const Species& sp) const
 {
     std::vector<std::pair<ParticleID, Particle> > retval;
-    for (molecular_type_set::iterator i(molecular_types_.begin());
+    for (molecular_type_set::const_iterator i(molecular_types_.begin());
             i != molecular_types_.end(); ++i)
     {
         const MolecularType& mt = *i;
         if (mt.species() == sp)
         {
             const MolecularType::voxel_container_type vct = mt.voxels();
-            for (Integer i = 0; i < vct.size(); ++i)
+            for (MolecularType::voxel_container_type::const_iterator itr(vct.begin());
+                    itr != vct.end(); ++itr)
+
             {
-                const Voxel& voxel = *(vct.at(i));
+                const Voxel& voxel = (*itr).second;
                 retval.push_back(std::pair<ParticleID, Particle>(
                             voxel.id, voxel2particle(voxel)));
             }
@@ -132,11 +141,15 @@ void LatticeSpace::set_lattice_properties()
     layer_size_ = (Integer)rint((theCenterPoint[1]*2)/theHCPy);
     col_size_ = (Integer)rint((theCenterPoint[0]*2)/theHCPx);
 
-    lattice_.resize(row_size_ * layer_size_ * col_size_ + 1);
-    for (lattice_container_type::iterator i(lattice_.begin());
-            i != lattice_.end(); ++i)
+    Integer coord(0);
+    SerialIDGenerator<ParticleID> sidgen;
+    for (Integer coord(0); coord < row_size_ * layer_size_ * col_size_; ++coord)
     {
-        (*i).p_molecule_type = &VACANT_TYPE_;
+        ParticleID pid(sidgen());
+        Voxel voxel(pid, coord, NULL);
+        VACANT_TYPE_.addVoxel(voxel);
+        lattice_.insert(lattice_container_type::value_type(pid, voxel));
+        coord++;
     }
     theNullCoord = row_size_ * layer_size_ * col_size_;
 }
@@ -149,31 +162,54 @@ bool LatticeSpace::update_sparticle(ParticleID pid, SParticle spcl)
 {
     Voxel& src = voxel_as(pid);
     Voxel& dest = voxel_at(spcl.coord);
-    if (dest.p_molecule_type != &VACANT_TYPE_)
+    if (dest.ptr_mt != &VACANT_TYPE_)
     {
         return false;
     }
-    MolecularType* src_mt_p = src.p_molecule_type;
 
-    src_mt_p->removeVoxel(src);
-    MolecularType& mt = get_molecular_type(spcl.species);
-    mt.addVoxel(&src);
+    MolecularType* src_ptr_mt(src.ptr_mt);
+    MolecularType& dest_mt = get_molecular_type(spcl.species);
 
-    dest.p_molecule_type = src_mt_p;
-    dest.id = src.id;
+    src_ptr_mt->removeVoxel(src.id);
+    dest_mt.addVoxel(src);
 
-    src.p_molecule_type = &VACANT_TYPE_;
-    src.id = VACANT_ID_;
+    exchange_coords(src.id, dest.id);
+
     return true;
 }
 
+void LatticeSpace::exchange_coords(const ParticleID pid0,
+        const ParticleID pid1)
+{
+    Voxel& voxel0 = voxel_as(pid0);
+    Voxel& voxel1 = voxel_as(pid1);
+
+    Integer tmp_coord = voxel0.coord;
+    Integer tmp_diffuse_size = voxel0.diffuse_size;
+    std::vector<Voxel*> tmp_adjoiningVoxels = voxel0.adjoiningVoxels;
+
+    voxel0.coord = voxel1.coord;
+    voxel0.diffuse_size = voxel1.diffuse_size;
+    voxel0.adjoiningVoxels = voxel1.adjoiningVoxels;
+
+    voxel1.coord = tmp_coord;
+    voxel1.diffuse_size = tmp_diffuse_size;
+    voxel1.adjoiningVoxels = tmp_adjoiningVoxels;
+};
+
 void LatticeSpace::remove_sparticle(ParticleID pid)
 {
-    Voxel& v = voxel_as(pid);
-    MolecularType* p_mt = v.p_molecule_type;
-    p_mt->removeVoxel(v);
-    v.p_molecule_type = &VACANT_TYPE_;
-    v.id = VACANT_ID_;
+    Voxel& voxel = voxel_as(pid);
+    MolecularType* p_mt(voxel.ptr_mt);
+    p_mt->removeVoxel(voxel.id);
+    VACANT_TYPE_.addVoxel(voxel);
+}
+
+Species LatticeSpace::add_molecular_type(const std::string name)
+{
+    const MolecularType mt(name);
+    molecular_types_.push_back(mt);
+    return mt.species();
 }
 
 MolecularType& LatticeSpace::get_molecular_type(Species& sp)
@@ -187,6 +223,7 @@ MolecularType& LatticeSpace::get_molecular_type(Species& sp)
             return const_cast<MolecularType&>(mt);
         }
     }
+    throw "Exception in get_molerular_type";
 }
 
 void LatticeSpace::coord2global(Integer aCoord, Integer& aGlobalRow,
@@ -225,33 +262,14 @@ const Position3 LatticeSpace::coord2position(Integer coord) const
 /*
 * Protected methods
 */
-
-const LatticeSpace::species_pointer_set LatticeSpace::get_species_set() const
-{
-    species_pointer_set retval;
-    for (molecular_type_set::iterator i(molecular_types_.begin());
-            i != molecular_types_.end(); ++i)
-    {
-        const MolecularType& mt = *i;
-        if (&mt != &VACANT_TYPE_)
-        {
-            Species s = (*i).species();
-            retval.insert(&s);
-        }
-    }
-    return retval;
-}
-
 Voxel& LatticeSpace::voxel_as(ParticleID pid)
 {
-    for (lattice_container_type::iterator i(this->lattice_.begin());
-            i != lattice_.end(); ++i)
+    lattice_container_type::iterator i(lattice_.find(pid));
+    if (i == lattice_.end())
     {
-        if ((*i).id == pid)
-        {
-            return *i;
-        }
+        throw "Exception: Not in lattice_";
     }
+    return (*i).second;
 }
 
 Voxel& LatticeSpace::voxel_at(Integer coord)
@@ -259,9 +277,9 @@ Voxel& LatticeSpace::voxel_at(Integer coord)
     for (lattice_container_type::iterator i(this->lattice_.begin());
             i != lattice_.end(); ++i)
     {
-        if ((*i).coord = coord)
+        if ((*i).second.coord = coord)
         {
-            return *i;
+            return (*i).second;
         }
     }
 }
