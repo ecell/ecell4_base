@@ -11,20 +11,37 @@ class MolecularType;
 
 struct Voxel
 {
+public:
     Voxel(ParticleID id, Integer coord, MolecularType* ptr_mt) :
         id(id),
         coord(coord),
         ptr_mt(ptr_mt),
-        diffuse_size(0)
+        diffuse_size(0),
+        adjoining_size(12)
     {
     }
+    ~Voxel()
+    {
+        //delete[] adjoiningVoxels;
+    }
+    bool setAdjoiningVoxel(Integer direction, Voxel* adjoining)
+    {
+        if (0 > direction || direction >= adjoining_size)
+        {
+            return false;
+        }
+        adjoiningVoxels[direction] = adjoining;
+        return true;
+    }
 
+public:
     ParticleID id;
     Integer coord;
     Integer diffuse_size;
-    std::vector<Voxel*> adjoiningVoxels;
+    Integer adjoining_size;
+    //std::vector<Voxel*> adjoiningVoxels;
+    Voxel** adjoiningVoxels;
     MolecularType* ptr_mt;
-
 };
 
 

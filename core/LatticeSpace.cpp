@@ -149,9 +149,178 @@ void LatticeSpace::set_lattice_properties()
         Voxel voxel(pid, coord, NULL);
         VACANT_TYPE_.addVoxel(voxel);
         lattice_.insert(lattice_container_type::value_type(pid, voxel));
-        coord++;
+    }
+    for (Integer coord(0); coord < row_size_ * layer_size_ * col_size_; ++coord)
+    {
+        Voxel& voxel(voxel_at(coord));
+        Position3 pos(coord2position(coord));
+        concatenate_voxel(voxel, pos[0], pos[1], pos[2]);
     }
     theNullCoord = row_size_ * layer_size_ * col_size_;
+}
+
+void LatticeSpace::concatenate_voxel(Voxel& voxel,
+        Integer row, Integer layer, Integer col)
+{
+    Integer coord(position2coord(row, layer, col));
+    if (row > 0)
+    {
+        concatenate_rows(voxel, coord, row-1, layer, col);
+    }
+    if (layer > 0)
+    {
+        concatenate_layers(voxel, coord, row, layer-1, col);
+    }
+    if (col > 0)
+    {
+        concatenate_cols(voxel, coord, row, layer, col-1);
+    }
+}
+
+void LatticeSpace::concatenate_rows(Voxel& voxel, Integer coord,
+        Integer row, Integer layer, Integer col)
+{
+    Integer b(position2coord(row, layer, col));
+    Voxel& adjoining_voxel(voxel_at(b));
+    voxel.adjoiningVoxels[NORTH] = &adjoining_voxel;
+    adjoining_voxel.adjoiningVoxels[SOUTH] = &voxel;
+}
+
+void LatticeSpace::concatenate_layers(Voxel& voxel, Integer coord,
+        Integer row, Integer layer, Integer col)
+{
+    Integer b(position2coord(row, layer, col));
+    Voxel& adjoining_voxel(voxel_at(b));
+    switch(lattice_type_)
+    {
+        case HCP_LATTICE:
+            if ((layer + 1) % 2 + col % 2 == 1)
+            {
+                voxel.setAdjoiningVoxel(VENTRALN, &adjoining_voxel);
+                adjoining_voxel.setAdjoiningVoxel(DORSALS, &voxel);
+                if (row > row_size_ - 1)
+                {
+                    Integer c(position2coord(row+1, layer, col));
+                    Voxel& adjoining_voxel(voxel_at(c));
+                    voxel.setAdjoiningVoxel(VENTRALS, &adjoining_voxel);
+                    adjoining_voxel.setAdjoiningVoxel(DORSALN, &voxel);
+                }
+            }
+            else
+            {
+                voxel.setAdjoiningVoxel(VENTRALS, &adjoining_voxel);
+                adjoining_voxel.setAdjoiningVoxel(DORSALN, &voxel);
+                if (row > 0)
+                {
+                    Integer c(position2coord(row-1, layer, col));
+                    Voxel& adjoining_voxel(voxel_at(c));
+                    voxel.setAdjoiningVoxel(VENTRALN, &adjoining_voxel);
+                    adjoining_voxel.setAdjoiningVoxel(DORSALS, &voxel);
+                }
+            }
+            break;
+        case CUBIC_LATTICE:
+            voxel.setAdjoiningVoxel(VENTRAL, &adjoining_voxel);
+            adjoining_voxel.setAdjoiningVoxel(DORSAL, &voxel);
+            break;
+    }
+}
+
+void LatticeSpace::concatenate_cols(Voxel& voxel, Integer coord,
+        Integer row, Integer layer, Integer col)
+{
+    Integer b(position2coord(row, layer, col));
+    Voxel& adjoining_voxel(voxel_at(b));
+    switch(lattice_type_)
+    {
+        case HCP_LATTICE:
+            if (layer % 2 == 0)
+            {
+                if ((col + 1) % 2 == 1)
+                {
+                    voxel.setAdjoiningVoxel(NW, &adjoining_voxel);
+                    adjoining_voxel.setAdjoiningVoxel(SE, &voxel);
+                    if (row < row_size_ - 1)
+                    {
+                        Integer c(position2coord(row+1, layer, col));
+                        Voxel& adjoining_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(SW, &adjoining_voxel);
+                        adjoining_voxel.setAdjoiningVoxel(NE, &voxel);
+                    }
+                    if (layer < layer_size_ - 1)
+                    {
+                        Integer c(position2coord(row, layer+1, col));
+                        Voxel& adjoining_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(WEST, &adjoining_voxel);
+                        adjoining_voxel.setAdjoiningVoxel(EAST, &voxel);
+                    }
+                }
+                else
+                {
+                    voxel.adjoiningVoxels[SW] = &adjoining_voxel;
+                    adjoining_voxel.adjoiningVoxels[NE] = &voxel;
+                    if (row > 0)
+                    {
+                        Integer c(position2coord(row-1, layer, col));
+                        Voxel& adjoining_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(NW, &adjoining_voxel);
+                        adjoining_voxel.setAdjoiningVoxel(SE, &voxel);
+                    }
+                    if (layer > 0)
+                    {
+                        Integer c(position2coord(row, layer-1, col));
+                        Voxel& adjoining_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(WEST, &adjoining_voxel);
+                        adjoining_voxel.setAdjoiningVoxel(EAST, &voxel);
+                    }
+                }
+            }
+            else
+            {
+                if ((col + 1) % 2 == 1)
+                {
+                    voxel.setAdjoiningVoxel(SW, &adjoining_voxel);
+                    adjoining_voxel.setAdjoiningVoxel(NE, &voxel);
+                    if (row > 0)
+                    {
+                        Integer c(position2coord(row-1, layer, col));
+                        Voxel& adjoining_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(NW, &adjoining_voxel);
+                        adjoining_voxel.setAdjoiningVoxel(SE, &voxel);
+                    }
+                    if (layer < layer_size_ - 1)
+                    {
+                        Integer c(position2coord(row, layer+1, col));
+                        Voxel& adjoining_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(WEST, &adjoining_voxel);
+                        adjoining_voxel.setAdjoiningVoxel(EAST, &voxel);
+                    }
+                }
+                else
+                {
+                    voxel.setAdjoiningVoxel(NW, &adjoining_voxel);
+                    adjoining_voxel.setAdjoiningVoxel(SE, &voxel);
+                    if (row < row_size_ -1)
+                    {
+                        Integer c(position2coord(row+1, layer, col));
+                        Voxel& adjoining_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(SW, &adjoining_voxel);
+                        adjoining_voxel.setAdjoiningVoxel(NE, &voxel);
+                    }
+                    if (layer > 0)
+                    {
+                        Integer c(position2coord(row, layer-1, col));
+                        Voxel& adjoining_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(WEST, &adjoining_voxel);
+                        adjoining_voxel.setAdjoiningVoxel(EAST, &voxel);
+                    }
+                }
+            }
+            break;
+        case CUBIC_LATTICE:
+            voxel.setAdjoiningVoxel(WEST, &adjoining_voxel);
+            adjoining_voxel.setAdjoiningVoxel(EAST, &voxel);
+    }
 }
 
 /*
@@ -173,20 +342,16 @@ bool LatticeSpace::update_sparticle(ParticleID pid, SParticle spcl)
     src_ptr_mt->removeVoxel(src.id);
     dest_mt.addVoxel(src);
 
-    exchange_coords(src.id, dest.id);
+    exchange_coords(src, dest);
 
     return true;
 }
 
-void LatticeSpace::exchange_coords(const ParticleID pid0,
-        const ParticleID pid1)
+void LatticeSpace::exchange_coords(Voxel& voxel0, Voxel& voxel1)
 {
-    Voxel& voxel0 = voxel_as(pid0);
-    Voxel& voxel1 = voxel_as(pid1);
-
     Integer tmp_coord = voxel0.coord;
     Integer tmp_diffuse_size = voxel0.diffuse_size;
-    std::vector<Voxel*> tmp_adjoiningVoxels = voxel0.adjoiningVoxels;
+    Voxel** tmp_adjoiningVoxels = voxel0.adjoiningVoxels;
 
     voxel0.coord = voxel1.coord;
     voxel0.diffuse_size = voxel1.diffuse_size;
@@ -195,7 +360,12 @@ void LatticeSpace::exchange_coords(const ParticleID pid0,
     voxel1.coord = tmp_coord;
     voxel1.diffuse_size = tmp_diffuse_size;
     voxel1.adjoiningVoxels = tmp_adjoiningVoxels;
-};
+
+    Position3 pos0 = coord2position(voxel0.coord);
+    Position3 pos1 = coord2position(voxel1.coord);
+    concatenate_voxel(voxel0, pos0[0], pos0[1], pos0[2]);
+    concatenate_voxel(voxel1, pos1[0], pos1[1], pos1[2]);
+}
 
 void LatticeSpace::remove_sparticle(ParticleID pid)
 {

@@ -121,12 +121,20 @@ protected:
         Particle particle(sp, pos, radius, D);
         return particle;
     }
-    void exchange_coords(const ParticleID pid0, const ParticleID pid1);
+    void exchange_coords(Voxel& voxel0, Voxel& voxel1);
 
     /*
      * Spatiocyte methods
      */
     void set_lattice_properties();
+    void concatenate_voxel(Voxel& voxel,
+            Integer row, Integer layer, Integer col);
+    void concatenate_rows(Voxel& voxel, Integer coord,
+            Integer row, Integer layer, Integer col);
+    void concatenate_layers(Voxel& voxel, Integer coord,
+            Integer row, Integer layer, Integer col);
+    void concatenate_cols(Voxel& voxel, Integer coord,
+            Integer row, Integer layer, Integer col);
 
 protected:
 
