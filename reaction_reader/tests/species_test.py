@@ -96,6 +96,31 @@ class SpeciesTestCase(unittest.TestCase):
                 for context in sp4.match(sp2)),
             set([("ps1", "ps2"), ("ps2", "ps1")]))
 
+    def test_commutativities(self):
+        com1 = species.Commutatives()
+
+        com1.set_commutative("spam", "ham")
+        com1.set_commutative("foo", "bar")
+        com1.set_commutative("ham", "eggs")
+        com1.set_commutative("hoge", "piyo")
+
+        self.assertTrue(com1.is_commutative("spam", "ham", "eggs"))
+        self.assertTrue(com1.is_commutative("foo", "bar"))
+        self.assertFalse(com1.is_commutative("spam", "eggs", "foo"))
+        self.assertFalse(com1.is_commutative("ham", "piyo"))
+
+        com2 = species.Commutatives()
+        com2.set_commutative("spam", "ham", "eggs")
+        com2.set_commutative("hoge", "piyo")
+        self.assertTrue(com2.is_comprised(com1))
+
+        com2.set_commutative("foo", "hoge")
+        self.assertFalse(com2.is_comprised(com1))
+
+        com1.set_commutative("spam", "foo", "hoge")
+        self.assertTrue(com1.is_commutative("spam", "eggs", "foo", "hoge"))
+        self.assertTrue(com2.is_comprised(com1))
+
 
 if __name__ == '__main__':
     unittest.main()

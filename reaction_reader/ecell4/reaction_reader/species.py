@@ -197,6 +197,72 @@ class Subunit(object):
     def __repr__(self):
         return '<"%s">' % (str(self))
 
+class Commutatives(object):
+
+    def __init__(self):
+        self.__indices = {}
+
+    def __len__(self):
+        return len(self.__indices)
+
+    def set_commutative(self, *keys):
+        if len(keys) == 0:
+            return
+
+        collection, newset = [], []
+        for key in keys:
+            if key in self.__indices.keys():
+                collection.append(self.__indices[key])
+            else:
+                newset.append(key)
+
+        if len(collection) == 0:
+            newidx = (max(self.__indices.values()) + 1
+                if len(self.__indices) > 0 else 1)
+        else:
+            newidx = min(collection)
+            for key in self.__indices.keys():
+                if self.__indices[key] in collection:
+                    self.__indices[key] = newidx
+
+        for key in newset:
+            self.__indices[key] = newidx
+
+    def is_commutative(self, *keys):
+        if len(keys) < 2:
+            raise RuntimeError, "at least two keys must be given"
+
+        idx1 = self.__indices.get(keys[0])
+        if idx1 is None:
+            raise RuntimeError, "an invalid key [%s] given" % (keys[0])
+
+        for key in keys[1: ]:
+            idx2 = self.__indices.get(key)
+            if idx2 is None:
+                raise RuntimeError, "an invalid key [%s] given" % (key)
+            elif idx2 != idx1:
+                return False
+        return True
+
+    def is_comprised(self, com):
+        if len(com) < len(self):
+            return False
+
+        for subset in commutative_generator(self.__indices):
+            if not com.is_commutative(*subset):
+                return False
+        return True
+
+def commutative_generator(indices):
+    i, done, keys = 0, [], indices.keys()
+
+    for i in range(len(keys)):
+        value = indices[keys[i]]
+        if value in done:
+            continue
+        done.append(value)
+        yield tuple([key for key in keys[i: ] if indices[key] == value])
+
 def check_connectivity(src, markers=[]):
     adjacencies = {}
     tmp = {}
@@ -596,13 +662,12 @@ class ModificationNameCondition(Condition):
             return [self.mod]
 
     def match(self, sp, contexts):
-        if (self.mod == "" or
-            (self.mod[0] == "_" and not contexts.has_key(self.mod))):
-            raise RuntimeError, "[%s] not defined." % self.mod
-
         if self.mod == "":
             raise RuntimeError, "an empty name for modification given."
-        elif self.mod[0] != "_":
+        elif self.mod[0] == "_" and not contexts.has_key(self.mod):
+            raise RuntimeError, "[%s] not defined." % self.mod
+
+        if self.mod[0] != "_":
             return contexts.product2(
                 self.generator, self.key_subunit,
                 label_domain(self.key_subunit, self.mod))
