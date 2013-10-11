@@ -180,7 +180,7 @@ class Subunit(object):
             else:
                 mods3.append("%s=%s^%s" % (mod, state, binding))
 
-        mods4 = ["%s=(%s)" % (mod, ",".join([str(elem) for elem in value]))
+        mods4 = ["%s=[%s]" % (mod, ",".join([str(elem) for elem in value]))
                 for mod, value in self.domain_classes.items()]
 
         mods1.sort()

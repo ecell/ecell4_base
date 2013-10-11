@@ -78,18 +78,18 @@ class SpeciesTestCase(unittest.TestCase):
         self.assertEqual(len(sp1.match(create_species("A(ps=u)"))), 1)
         self.assertEqual(len(sp1.match(create_species("A(ps1=u,ps2=u)"))), 0)
 
-        sp2 = create_species("A(ps1=u,ps2=u,ps=(ps1,ps2))")
+        sp2 = create_species("A(ps1=u,ps2=u,ps=[ps1,ps2])")
         self.assertEqual(len(sp1.match(sp2)), 2)
         self.assertEqual(
-            len(sp1.match(create_species("A(ps1=u,ps2=p,ps=(ps1,ps2))"))), 1)
+            len(sp1.match(create_species("A(ps1=u,ps2=p,ps=[ps1,ps2])"))), 1)
 
-        sp3 = create_species("_(_1=u,ps=(_1,))")
+        sp3 = create_species("_(_1=u,ps=[_1])")
         self.assertEqual(len(sp3.match(sp2)), 2)
         self.assertEqual(
             set(context.get("_1") for context in sp3.match(sp2)),
             set(["ps1", "ps2"]))
 
-        sp4 = create_species("_(_1=u,_2=u,ps=(_1,_2))")
+        sp4 = create_species("_(_1=u,_2=u,ps=[_1,_2])")
         self.assertEqual(len(sp4.match(sp2)), 2)
         self.assertEqual(
             set((context.get("_1"), context.get("_2"))

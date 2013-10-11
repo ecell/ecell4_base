@@ -236,16 +236,16 @@ class ReactionRuleTestCase(unittest.TestCase):
         self.assertEqual(
             len(rr1.generate([create_species("A(ps1=u,ps2=u)")])), 0)
 
-        sp1 = create_species("A(ps1=u,ps2=u,ps=(ps1,ps2))")
+        sp1 = create_species("A(ps1=u,ps2=u,ps=[ps1,ps2])")
         retval = rr1.generate([sp1])
         self.assertEqual(len(retval), 2)
         self.assertEqual(len(retval[0]), 1)
         self.assertEqual(len(retval[1]), 1)
         self.assertTrue(
-            create_species("A(ps1=p,ps2=u,ps=(ps1,ps2))")
+            create_species("A(ps1=p,ps2=u,ps=[ps1,ps2])")
             in (retval[0][0], retval[1][0]))
         self.assertTrue(
-            create_species("A(ps1=u,ps2=p,ps=(ps1,ps2))")
+            create_species("A(ps1=u,ps2=p,ps=[ps1,ps2])")
             in (retval[0][0], retval[1][0]))
 
         rr2 = create_reaction_rule("_(ps)+_(ps)>_(ps^1)._(ps^1)")
@@ -253,22 +253,22 @@ class ReactionRuleTestCase(unittest.TestCase):
 
     def test_matches8(self):
         rr1 = create_reaction_rule(
-            "A(_1=u,_2=u,ps=(_1,_2))>A(_1=p,_2=u,ps=(_1,_2))")
-        sp1 = create_species("A(ps1=u,ps2=u,ps=(ps1,ps2))")
+            "A(_1=u,_2=u,ps=[_1,_2])>A(_1=p,_2=u,ps=[_1,_2])")
+        sp1 = create_species("A(ps1=u,ps2=u,ps=[ps1,ps2])")
 
         self.assertEqual(
-            len(rr1.generate([create_species("A(ps1=u,ps=(ps1,))")])), 0)
+            len(rr1.generate([create_species("A(ps1=u,ps=[ps1])")])), 0)
         self.assertEqual(len(rr1.generate([sp1])), 2)
         self.assertEqual(
             len(rr1.generate(
-                [create_species("A(ps1=u,ps2=u,ps3=u,ps=(ps1,ps2,ps3))")])), 6)
+                [create_species("A(ps1=u,ps2=u,ps3=u,ps=[ps1,ps2,ps3])")])), 6)
 
         rr2 = create_reaction_rule(
-            "A(_1=u,ps=(_1,)) + A(_1=u,ps=(_1,))"
-            " > A(_1=u^1,ps=(_1,)).A(_1=u^1,ps=(_1,))")
+            "A(_1=u,ps=[_1]) + A(_1=u,ps=[_1])"
+            " > A(_1=u^1,ps=[_1]).A(_1=u^1,ps=[_1])")
         rr3 = create_reaction_rule(
-            "A(_1=u,ps=(_1,)) + A(_2=u,ps=(_2,))"
-            " > A(_1=u^1,ps=(_1,)).A(_2=u^1,ps=(_2,))")
+            "A(_1=u,ps=[_1]) + A(_2=u,ps=[_2])"
+            " > A(_1=u^1,ps=[_1]).A(_2=u^1,ps=[_2])")
         self.assertEqual(len(rr2.generate([sp1, sp1])), 2)
         self.assertEqual(len(rr3.generate([sp1, sp1])), 4)
 

@@ -61,7 +61,10 @@ def generate_Species(obj):
                                 raise RuntimeError, (
                                     "invalid binding [%s] given." % (binding))
                             su.add_modification(name, state, binding)
-                    elif ((isinstance(value, tuple) or isinstance(value, list))
+                    # elif ((isinstance(value, tuple) or isinstance(value, list))
+                    #     and all([is_parseobj(elem) and elem._size() == 1
+                    #         for elem in value])):
+                    elif (isinstance(value, list)
                         and all([is_parseobj(elem) and elem._size() == 1
                             for elem in value])):
                         value = tuple(elem._elements()[0].name for elem in value)
