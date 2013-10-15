@@ -6,92 +6,84 @@ class Option(object):
     def check(self, reactants, products, context, corresp=None):
         return None
 
-class IncludeReactants(Option):
+class CountSubunits(Option):
 
     def __init__(self, idx, pttrn):
         Option.__init__(self)
 
         if type(pttrn) != str:
-            raise RuntimeError
+            raise RuntimeError, (
+                "a pattern for subunits must be a string [%s]." % (str(pttrn)))
         elif pttrn[0] == "_":
-            raise RuntimeError
+            raise RuntimeError, ("an invalid pattern [%s] given." % (pttrn))
 
-        self.__idx = idx
-        self.__pttrn = pttrn
+        self.idx = idx
+        self.pttrn = pttrn
+
+class IncludeReactants(CountSubunits):
+
+    def __init__(self, idx, pttrn):
+        CountSubunits.__init__(self, idx, pttrn)
 
     def check(self, reactants, products, context, corresp=None):
-        if not (len(reactants) > self.__idx - 1):
-            print reactants
-            raise RuntimeError
+        if not (len(reactants) > self.idx - 1):
+            raise RuntimeError, (
+                "the number of reactants is too small [%d < %d]." % (
+                    len(reactants), self.idx))
 
-        sp = reactants[self.__idx - 1]
-        return (self.__pttrn in [su.name for su in sp.subunits])
+        sp = reactants[self.idx - 1]
+        return (self.pttrn in [su.name for su in sp.subunits])
 
-class ExcludeReactants(Option):
+class ExcludeReactants(CountSubunits):
 
     def __init__(self, idx, pttrn):
-        Option.__init__(self)
-
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
-
-        self.__idx = idx
-        self.__pttrn = pttrn
+        CountSubunits.__init__(self, idx, pttrn)
 
     def check(self, reactants, products, context, corresp=None):
-        if not (len(reactants) > self.__idx - 1):
-            print reactants
-            raise RuntimeError
+        if not (len(reactants) > self.idx - 1):
+            raise RuntimeError, (
+                "the number of reactants is too small [%d < %d]." % (
+                    len(reactants), self.idx))
 
-        sp = reactants[self.__idx - 1]
-        return not (self.__pttrn in [su.name for su in sp.subunits])
+        sp = reactants[self.idx - 1]
+        return not (self.pttrn in [su.name for su in sp.subunits])
 
-class IncludeProducts(Option):
+class IncludeProducts(CountSubunits):
 
     def __init__(self, idx, pttrn):
-        Option.__init__(self)
-
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
-
-        self.__idx = idx
-        self.__pttrn = pttrn
+        CountSubunits.__init__(self, idx, pttrn)
 
     def check(self, reactants, products, context, corresp=None):
         if corresp is None:
-            if len(products) < self.__idx:
-                raise RuntimeError
-            sp = products[self.__idx]
+            if not (len(products) > self.idx - 1):
+                raise RuntimeError, (
+                    "the number of products is too small [%d < %d]." % (
+                        len(products), self.idx))
+            sp = products[self.idx]
         else:
-            if len(corresp) < self.__idx:
-                raise RuntimeError
-            sp = products[corresp[self.__idx - 1]]
-        return (self.__pttrn in [su.name for su in sp.subunits])
+            if not (len(corresp) > self.idx - 1):
+                raise RuntimeError, (
+                    "no corresponding subunit found [%d < %d]." % (
+                        len(corresp), self.idx))
+            sp = products[corresp[self.idx - 1]]
+        return (self.pttrn in [su.name for su in sp.subunits])
 
-class ExcludeProducts(Option):
+class ExcludeProducts(CountSubunits):
 
     def __init__(self, idx, pttrn):
-        Option.__init__(self)
-
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
-
-        self.__idx = idx
-        self.__pttrn = pttrn
+        CountSubunits.__init__(self, idx, pttrn)
 
     def check(self, reactants, products, context, corresp=None):
         if corresp is None:
-            if len(products) < self.__idx:
-                raise RuntimeError
-            sp = products[self.__idx]
+            if not (len(products) > self.idx - 1):
+                raise RuntimeError, (
+                    "the number of products is too small [%d < %d]." % (
+                        len(products), self.idx))
+            sp = products[self.idx]
         else:
-            if len(corresp) < self.__idx:
-                raise RuntimeError
-            sp = products[corresp[self.__idx - 1]]
-        return not (self.__pttrn in [su.name for su in sp.subunits])
+            if not (len(corresp) > self.idx - 1):
+                raise RuntimeError, (
+                    "no corresponding subunit found [%d < %d]." % (
+                        len(corresp), self.idx))
+            sp = products[corresp[self.idx - 1]]
+        return not (self.pttrn in [su.name for su in sp.subunits])

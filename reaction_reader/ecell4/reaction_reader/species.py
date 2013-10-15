@@ -551,10 +551,7 @@ class ReactionRule(object):
 
     def check_options(self, reactants, products, context, corresp=None):
         for opt in self.__options:
-            if (isinstance(opt, options.ExcludeReactants)
-                    or isinstance(opt, options.IncludeReactants)
-                    or isinstance(opt, options.ExcludeProducts)
-                    or isinstance(opt, options.IncludeProducts)):
+            if isinstance(opt, options.CountSubunits):
                 if not opt.check(reactants, products, context, corresp):
                     return None
         return self.__options
