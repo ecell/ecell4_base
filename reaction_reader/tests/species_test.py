@@ -97,14 +97,19 @@ class SpeciesTestCase(unittest.TestCase):
             set([("ps1", "ps2"), ("ps2", "ps1")]))
 
     def test_matches4(self):
-        sp1 = create_species("X(d,c,(a,b),(b,c),a=u,b=p)")
+        sp1 = create_species("X((a,b),(b,c),a=u,b=p)")
         sp2 = create_species("X((a,c))")
         sp3 = create_species("X(a=p,b=u)")
         sp4 = create_species("X(a=p,b=p)")
+        sp5 = create_species("X(b=u,c=p)")
 
         self.assertEqual(len(sp2.match(sp1)), 1)
         self.assertEqual(len(sp3.match(sp1)), 1)
         self.assertEqual(len(sp4.match(sp1)), 0)
+        self.assertEqual(len(sp5.match(sp1)), 0)
+
+        sp1 = create_species("X(p=u,q=u,r=p,c=(p,q,r))")
+        self.assertEqual(len(create_species("X(r=u)").match(sp1)), 2)
 
         sp1 = create_species("R(l1^1,l2,(l1,l2)).R(l1^1,l2,(l1,l2))")
         sp2 = create_species("R(l1^1,l2,(l1,l2)).R(l1,l2^2,(l1,l2))")
