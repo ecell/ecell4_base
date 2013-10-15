@@ -35,8 +35,7 @@ def generate_Species(obj):
                                     "invalid binding [%s] given." % (binding))
                             su.add_modification(name, "", binding)
                     elif (isinstance(mod, parseobj.InvExp)
-                        and (isinstance(mod._target(), parseobj.ParseObj)
-                            or isinstance(mod._target, parseobj.AnyCallable))
+                        and is_parseobj(mod._target())
                         and mod._target()._size() == 1):
                         arg = mod._target()._elements()[0]
                         name, binding = arg.name, arg.modification
@@ -44,6 +43,15 @@ def generate_Species(obj):
                             raise RuntimeError, (
                                 "invalid binding [%s] given." % (binding))
                         su.add_exclusion(name)
+                    elif isinstance(mod, tuple):
+                        if any([not isinstance(dom, parseobj.AnyCallable)
+                            for dom in mod]):
+                            raise RuntimeError, (
+                                "invalid commutative definition [%s] found"
+                                % (str(mod)))
+
+                        doms = [dom._elements()[0].name for dom in mod]
+                        su.set_commutative(doms)
                     else:
                         raise RuntimeError, (
                             "invalid argument [%s] found." % str(mod))
@@ -61,14 +69,14 @@ def generate_Species(obj):
                                 raise RuntimeError, (
                                     "invalid binding [%s] given." % (binding))
                             su.add_modification(name, state, binding)
-                    # elif ((isinstance(value, tuple) or isinstance(value, list))
-                    #     and all([is_parseobj(elem) and elem._size() == 1
-                    #         for elem in value])):
-                    elif (isinstance(value, list)
-                        and all([is_parseobj(elem) and elem._size() == 1
-                            for elem in value])):
-                        value = tuple(elem._elements()[0].name for elem in value)
-                        su.add_domain_class(name, value)
+                    elif ((isinstance(value, list) or isinstance(value, tuple))
+                        and all([is_parseobj(dom) and dom._size() == 1
+                            for dom in value])):
+                        doms = tuple(dom._elements()[0].name for dom in value)
+                        su.add_domain_class(name, doms)
+
+                        if isinstance(value, tuple):
+                            su.set_commutative(doms)
                     else:
                         raise RuntimeError, (
                             "invalid argument [%s] found." % str(value))

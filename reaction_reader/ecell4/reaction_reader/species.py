@@ -118,6 +118,7 @@ class Subunit(object):
         self.modifications = {}
         self.exclusions = []
         self.domain_classes = {}
+        self.commutatives = Commutatives()
 
         self.index = None #XXX
 
@@ -134,6 +135,10 @@ class Subunit(object):
         for mod, value in self.domain_classes.items():
             conditions.append(
                 DomainClassCondition(key, mod, value))
+
+        for value in self.commutatives.as_sets():
+            conditions.append(
+                CommutativeCondition(key, value))
 
         for mod, (state, binding) in self.modifications.items():
             conditions.append(
@@ -165,6 +170,9 @@ class Subunit(object):
 
         self.domain_classes[mod] = value
 
+    def set_commutative(self, mods):
+        self.commutatives.set_commutative(*mods)
+
     def __str__(self):
         mods1 = ["~%s" % (mod) for mod in self.exclusions]
 
@@ -183,12 +191,16 @@ class Subunit(object):
         mods4 = ["%s=[%s]" % (mod, ",".join([str(elem) for elem in value]))
                 for mod, value in self.domain_classes.items()]
 
+        mods5 = ["(%s)" % (",".join(subset))
+            for subset in self.commutatives.as_sets()]
+
         mods1.sort()
         mods2.sort()
         mods3.sort()
         mods4.sort()
+        mods5.sort()
 
-        labels = ",".join(itertools.chain(mods1, mods2, mods3, mods4))
+        labels = ",".join(itertools.chain(mods1, mods2, mods5, mods3, mods4))
         if labels == "":
             return self.name
         else:
@@ -248,10 +260,13 @@ class Commutatives(object):
         if len(com) < len(self):
             return False
 
-        for subset in commutative_generator(self.__indices):
+        for subset in self.as_sets():
             if not com.is_commutative(*subset):
                 return False
         return True
+
+    def as_sets(self):
+        return commutative_generator(self.__indices)
 
 def commutative_generator(indices):
     i, done, keys = 0, [], indices.keys()
@@ -261,7 +276,9 @@ def commutative_generator(indices):
         if value in done:
             continue
         done.append(value)
-        yield tuple([key for key in keys[i: ] if indices[key] == value])
+        retval = [key for key in keys[i: ] if indices[key] == value]
+        retval.sort()
+        yield tuple(retval)
 
 def check_connectivity(src, markers=[]):
     adjacencies = {}
@@ -641,6 +658,20 @@ class DomainClassCondition(Condition):
         retval = retval.product_any(
             self.generator, self.key_subunit, unnamed)
         return retval
+
+class CommutativeCondition(Condition):
+
+    def __init__(self, key, doms):
+        Condition.__init__(self)
+
+        self.key_subunit = key
+        self.doms = doms
+
+    def predicator(self, subunit):
+        return subunit.commutatives.is_commutative(*self.doms)
+
+    def match(self, sp, contexts):
+        return contexts.filter1(self.predicator, self.key_subunit)
 
 class ModificationNameCondition(Condition):
 

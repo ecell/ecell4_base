@@ -96,6 +96,15 @@ class SpeciesTestCase(unittest.TestCase):
                 for context in sp4.match(sp2)),
             set([("ps1", "ps2"), ("ps2", "ps1")]))
 
+    def test_matches4(self):
+        sp1 = create_species("X(d,c,(a,b),(b,c),a=u,b=p)")
+        print sp1
+
+        sp2 = create_species("X((a,c))")
+        print sp2
+
+        self.assertEqual(len(sp2.match(sp1)), 1)
+
     def test_commutativities(self):
         com1 = species.Commutatives()
 
