@@ -3,6 +3,7 @@ import numbers
 import copy
 import functools
 
+import options
 import species
 import parseobj
 from decorator_base import Callback, parse_decorator
@@ -119,11 +120,11 @@ def generate_Option(opt):
 
         pttrn = elem.args[1]._elements()[0].name
         if elem.name == "ExcludeReactants":
-            return (species.ExcludeReactants(elem.args[0], pttrn),
-                species.ExcludeProducts(elem.args[0], pttrn))
+            return (options.ExcludeReactants(elem.args[0], pttrn),
+                options.ExcludeProducts(elem.args[0], pttrn))
         elif elem.name == "IncludeReactants":
-            return (species.IncludeReactants(elem.args[0], pttrn),
-                species.IncludeProducts(elem.args[0], pttrn))
+            return (options.IncludeReactants(elem.args[0], pttrn),
+                options.IncludeProducts(elem.args[0], pttrn))
     elif elem.name == "IncludeProducts" or elem.name == "ExcludeProducts":
         if not (len(elem.args) == 2
             and type(elem.args[0]) == int
@@ -136,11 +137,11 @@ def generate_Option(opt):
 
         pttrn = elem.args[1]._elements()[0].name
         if elem.name == "ExcludeProducts":
-            return (species.ExcludeProducts(elem.args[0], pttrn),
-                species.ExcludeReactants(elem.args[0], pttrn))
+            return (options.ExcludeProducts(elem.args[0], pttrn),
+                options.ExcludeReactants(elem.args[0], pttrn))
         elif elem.name == "IncludeProducts":
-            return (species.IncludeProducts(elem.args[0], pttrn),
-                species.IncludeReactants(elem.args[0], pttrn))
+            return (options.IncludeProducts(elem.args[0], pttrn),
+                options.IncludeReactants(elem.args[0], pttrn))
     else:
         # raise RuntimeError
         return (opt, None)

@@ -2,6 +2,9 @@ import copy
 import itertools
 import sys
 
+import options
+
+
 label_subunit = lambda x: "subunit%s" % x
 label_binding = lambda x: "binding%s" % x
 label_domain = lambda x, y: "_%s__%s" % (x, y)
@@ -375,15 +378,12 @@ def concatenate_species(*species_list):
 
 class ReactionRule(object):
 
-    def __init__(self, reactants, products, options=[]):
+    def __init__(self, reactants, products, opts=[]):
         self.__reactants = reactants
         self.__products = products
-        self.__options = options
+        self.__options = opts
 
         self.initialize()
-
-    def options(self):
-        return self.__options #copy.deepcopy(self.__options)
 
     def reactants(self):
         return copy.deepcopy(self.__reactants)
@@ -551,10 +551,10 @@ class ReactionRule(object):
 
     def check_options(self, reactants, products, context, corresp=None):
         for opt in self.__options:
-            if (isinstance(opt, ExcludeReactants)
-                    or isinstance(opt, IncludeReactants)
-                    or isinstance(opt, ExcludeProducts)
-                    or isinstance(opt, IncludeProducts)):
+            if (isinstance(opt, options.ExcludeReactants)
+                    or isinstance(opt, options.IncludeReactants)
+                    or isinstance(opt, options.ExcludeProducts)
+                    or isinstance(opt, options.IncludeProducts)):
                 if not opt.check(reactants, products, context, corresp):
                     return None
         return self.__options
@@ -1089,104 +1089,6 @@ class Contexts(object):
                 newcontext[key3] = value
                 retval._append(newcontext)
         return retval
-
-class Option(object):
-
-    def __init__(self):
-        pass
-
-    def check(self, reactants, products, context, corresp=None):
-        return None
-
-class IncludeReactants(Option):
-
-    def __init__(self, idx, pttrn):
-        Option.__init__(self)
-
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
-
-        self.__idx = idx
-        self.__pttrn = pttrn
-
-    def check(self, reactants, products, context, corresp=None):
-        if not (len(reactants) > self.__idx - 1):
-            print reactants
-            raise RuntimeError
-
-        sp = reactants[self.__idx - 1]
-        return (self.__pttrn in [su.name for su in sp.subunits])
-
-class ExcludeReactants(Option):
-
-    def __init__(self, idx, pttrn):
-        Option.__init__(self)
-
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
-
-        self.__idx = idx
-        self.__pttrn = pttrn
-
-    def check(self, reactants, products, context, corresp=None):
-        if not (len(reactants) > self.__idx - 1):
-            print reactants
-            raise RuntimeError
-
-        sp = reactants[self.__idx - 1]
-        return not (self.__pttrn in [su.name for su in sp.subunits])
-
-class IncludeProducts(Option):
-
-    def __init__(self, idx, pttrn):
-        Option.__init__(self)
-
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
-
-        self.__idx = idx
-        self.__pttrn = pttrn
-
-    def check(self, reactants, products, context, corresp=None):
-        if corresp is None:
-            if len(products) < self.__idx:
-                raise RuntimeError
-            sp = products[self.__idx]
-        else:
-            if len(corresp) < self.__idx:
-                raise RuntimeError
-            sp = products[corresp[self.__idx - 1]]
-        return (self.__pttrn in [su.name for su in sp.subunits])
-
-class ExcludeProducts(Option):
-
-    def __init__(self, idx, pttrn):
-        Option.__init__(self)
-
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
-
-        self.__idx = idx
-        self.__pttrn = pttrn
-
-    def check(self, reactants, products, context, corresp=None):
-        if corresp is None:
-            if len(products) < self.__idx:
-                raise RuntimeError
-            sp = products[self.__idx]
-        else:
-            if len(corresp) < self.__idx:
-                raise RuntimeError
-            sp = products[corresp[self.__idx - 1]]
-        return not (self.__pttrn in [su.name for su in sp.subunits])
 
 class CmpSubunit:
 
