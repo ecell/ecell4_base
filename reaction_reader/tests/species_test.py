@@ -98,12 +98,22 @@ class SpeciesTestCase(unittest.TestCase):
 
     def test_matches4(self):
         sp1 = create_species("X(d,c,(a,b),(b,c),a=u,b=p)")
-        print sp1
-
         sp2 = create_species("X((a,c))")
-        print sp2
+        sp3 = create_species("X(a=p,b=u)")
+        sp4 = create_species("X(a=p,b=p)")
 
         self.assertEqual(len(sp2.match(sp1)), 1)
+        self.assertEqual(len(sp3.match(sp1)), 1)
+        self.assertEqual(len(sp4.match(sp1)), 0)
+
+        sp1 = create_species("R(l1^1,l2,(l1,l2)).R(l1^1,l2,(l1,l2))")
+        sp2 = create_species("R(l1^1,l2,(l1,l2)).R(l1,l2^2,(l1,l2))")
+        sp3 = create_species("R(l1,l2^1,(l1,l2)).R(l1,l2^1,(l1,l2))")
+
+        self.assertEqual(sp1, sp1)
+        self.assertEqual(sp1, sp2)
+        self.assertEqual(sp1, sp3)
+        self.assertEqual(sp2, sp3)
 
     def test_commutativities(self):
         com1 = species.Commutatives()

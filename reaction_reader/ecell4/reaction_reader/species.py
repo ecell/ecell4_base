@@ -6,6 +6,9 @@ label_subunit = lambda x: "subunit%s" % x
 label_binding = lambda x: "binding%s" % x
 label_domain = lambda x, y: "_%s__%s" % (x, y)
 
+def is_label_domain(key, subunit):
+    header = "_%s__" % subunit
+    return (len(key) > len(header) and key[: len(header)] == header)
 
 class Species(object):
 
@@ -217,6 +220,17 @@ class Commutatives(object):
     def __len__(self):
         return len(self.__indices)
 
+    def keys(self):
+        return self.__indices.keys()
+
+    def get_commutatives(self, key1):
+        idx1 = self.__indices.get(key1)
+        if idx1 is None:
+            return []
+        else:
+            return [key2 for key2, idx2 in self.__indices.items()
+                if idx2 == idx1]
+
     def set_commutative(self, *keys):
         if len(keys) == 0:
             return
@@ -246,12 +260,14 @@ class Commutatives(object):
 
         idx1 = self.__indices.get(keys[0])
         if idx1 is None:
-            raise RuntimeError, "an invalid key [%s] given" % (keys[0])
+            # raise RuntimeError, "an invalid key [%s] given" % (keys[0])
+            return False
 
         for key in keys[1: ]:
             idx2 = self.__indices.get(key)
             if idx2 is None:
-                raise RuntimeError, "an invalid key [%s] given" % (key)
+                # raise RuntimeError, "an invalid key [%s] given" % (key)
+                return False
             elif idx2 != idx1:
                 return False
         return True
@@ -344,6 +360,8 @@ def concatenate_species(*species_list):
                 newsu.add_exclusion(mod)
             for key, value in su.domain_classes.items():
                 newsu.add_domain_class(key, value)
+            for subset in su.commutatives.as_sets():
+                newsu.set_commutative(subset)
             for mod, (state, binding) in su.modifications.items():
                 if binding != "" and binding[0] != "_":
                     if not binding.isdigit():
@@ -579,6 +597,9 @@ class ReactionRule(object):
         retval = []
         for context in contexts:
             products, corresp = self.__generate(context, reactants)
+            if products is None:
+                continue
+
             opts = self.check_options(reactants, products, context, corresp)
             if opts is not None:
                 retval.append(products)
@@ -667,7 +688,15 @@ class CommutativeCondition(Condition):
         self.key_subunit = key
         self.doms = doms
 
+        for dom in doms:
+            if dom[0] == "_":
+                raise RuntimeError, (
+                    "a commutative definition for [%s] not allowed" % (dom))
+
     def predicator(self, subunit):
+        # for dom in self.doms:
+        #     if dom not in subunit.commutatives.keys():
+        #         return False
         return subunit.commutatives.is_commutative(*self.doms)
 
     def match(self, sp, contexts):
@@ -689,6 +718,8 @@ class ModificationNameCondition(Condition):
                 return []
             else:
                 return list(value)
+        elif self.mod in subunit.commutatives.keys():
+            return subunit.commutatives.get_commutatives(self.mod)
         else:
             return [self.mod]
 
@@ -699,9 +730,19 @@ class ModificationNameCondition(Condition):
             raise RuntimeError, "[%s] not defined." % self.mod
 
         if self.mod[0] != "_":
-            return contexts.product2(
-                self.generator, self.key_subunit,
-                label_domain(self.key_subunit, self.mod))
+            label_key = label_domain(self.key_subunit, self.mod)
+
+            retval = contexts.product2(
+                self.generator, self.key_subunit, label_key)
+            if retval is None or len(retval) == 0:
+                return retval
+
+            keys = [key for key in retval.keys()
+                if is_label_domain(key, self.key_subunit) and key != label_key]
+            if len(keys) > 0:
+                return retval.filter_unique(label_key, keys) #XXX: an irregular use of Contexts
+            else:
+                return retval
         elif contexts.has_key(self.mod):
             return contexts
         else:
@@ -869,6 +910,9 @@ class Contexts(object):
     def __len__(self):
         return len(self.__data)
 
+    def __str__(self):
+        return str(self.__data)
+
     def initialize(self):
         if self.__keys is not None:
             raise RuntimeError, "initialized called twice."
@@ -1006,6 +1050,22 @@ class Contexts(object):
         retval = Contexts()
         for context in self.__data:
             if predicator(context[key1], context[key2], context[key3]):
+                retval._append(context)
+        return retval
+
+    def filter_unique(self, newkey, keys):
+        #XXX: an irregular use of Contexts
+
+        if not self.has_key(newkey):
+            raise RuntimeError, "invalid key [%s] found." % (newkey)
+        for key in keys:
+            if not self.has_key(key):
+                raise RuntimeError, "invalid key [%s] found." % (key)
+
+        retval = Contexts()
+        for context in self.__data:
+            newvalue = context[newkey]
+            if all([context[key] != newvalue for key in keys]):
                 retval._append(context)
         return retval
 
