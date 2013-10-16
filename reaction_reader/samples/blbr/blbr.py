@@ -1,29 +1,25 @@
 from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
-from ecell4.reaction_reader.species import generate_reactions
+from ecell4.reaction_reader.network import generate_reactions
+
 
 @species_attributes
 def attributegen():
-    # R(r,r) | R0
-    R(r1,r2) | R0
-    # L(l,l) | L0
-    L(l1,l2) | L0
+    R(r1,r2,r=(r1,r2)) | R0
+    L(l1,l2,l=(l1,l2)) | L0
 
 @reaction_rules
 def rulegen():
     # Ligand addition
-    # R(r) + L(l,l) == R(r^1).L(l^1,l) | (kp1,km1)
-    R(r1) + L(l1,l2) == R(r1^1).L(l1^1,l2) | (kp1, km1)
-    R(r2) + L(l1,l2) == R(r2^1).L(l1,l2^1) | (kp1, km1)
+    R(r) + L(_1,_2,l=[_1,_2]) == R(r^1).L(_1^1,_2,l=[_1,_2]) | (kp1, km1)
+    # R(r) + L(l1,l2) == R(r^1).L(l1^1,l2) | (kp1, km1)
 
     # Chain elongation
-    # R(r) + L(l,l^_) == R(r^1).L(l^1,l^_) | (kp2,km2)
-    R(r1) + L(l1,l2^_) == R(r1^1).L(l1^1,l2^_) | (kp2, km2)
-    R(r2) + L(l1^_,l2) == R(r2^1).L(l1^_,l2^1) | (kp2, km2)
+    R(r) + L(_1,_2^_,l=[_1,_2]) == R(r^1).L(_1^1,_2^_,l=[_1,_2]) | (kp2, km2)
+    # R(r) + L(l1,l2^_) == R(r^1).L(l1^1,l2^_) | (kp2, km2)
 
     # Ring closure
-    # R(r).L(l) == R(r^1).L(l^1) | (kp3, km3)
-    R(r1).L(l1) == R(r1^1).L(l1^1) | (kp3, km3)
-    R(r2).L(l2) == R(r2^1).L(l2^1) | (kp3, km3)
+    R(r).L(l) == R(r^1).L(l^1) | (kp3, km3)
+
 
 if __name__ == "__main__":
     newseeds = []
@@ -37,7 +33,13 @@ if __name__ == "__main__":
         print i, rr
     print ''
 
-    generate_reactions(newseeds, rules, max_stoich=dict(R=5, L=5))
+    seeds, reactions = generate_reactions(
+        newseeds, rules, max_stoich={"R": 5, "L": 5})
+    for i, seed in enumerate(seeds):
+        print i, seed
+    # print ''
+    # for i, reaction in enumerate(reactions):
+    #     print i, reaction
 
 # setOption("SpeciesLabel","HNauty")
 # begin model

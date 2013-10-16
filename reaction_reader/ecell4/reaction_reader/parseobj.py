@@ -142,7 +142,7 @@ class ParseObj(ExpBase):
 
     @log_call
     def __getattr__(self, key):
-        if key[0] == "_" and not key[1: ].isdigit():
+        if key[0] == "_" and len(key) > 1 and not key[1: ].isdigit():
             raise RuntimeError, (
                 "'%s' object has no attribute '%s'"
                     % (self.__class__.__name__, key))

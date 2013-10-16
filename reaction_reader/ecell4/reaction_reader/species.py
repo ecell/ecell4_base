@@ -2,9 +2,16 @@ import copy
 import itertools
 import sys
 
+import options
+
+
 label_subunit = lambda x: "subunit%s" % x
 label_binding = lambda x: "binding%s" % x
+label_domain = lambda x, y: "_%s__%s" % (x, y)
 
+def is_label_domain(key, subunit):
+    header = "_%s__" % subunit
+    return (len(key) > len(header) and key[: len(header)] == header)
 
 class Species(object):
 
@@ -46,7 +53,7 @@ class Species(object):
     def get_subunit_list(self):
         return self.subunits
 
-    def count_subunits(self, pttrn=None):
+    def num_subunits(self, pttrn=None):
         if pttrn is None:
             return len(self.subunits)
 
@@ -64,15 +71,15 @@ class Species(object):
         conditions.sort(key=lambda x: x.priority)
         return conditions
 
-    def match(self, sp, contexts=None):
+    def match(self, sp, contexts=None, stride=None):
         if contexts is None:
             contexts = Contexts()
             contexts.initialize()
-            stride = 0
-        elif len(contexts) != 0:
-            stride = contexts.num_subunits()
-        else:
+        elif len(contexts) == 0:
             return contexts
+
+        if stride is None:
+            stride = contexts.num_subunits()
 
         if self.conditions is None:
             self.conditions = self.generate_conditions(stride)
@@ -116,6 +123,8 @@ class Subunit(object):
         self.name = name
         self.modifications = {}
         self.exclusions = []
+        self.domain_classes = {}
+        self.commutatives = Commutatives()
 
         self.index = None #XXX
 
@@ -129,7 +138,17 @@ class Subunit(object):
             conditions.append(
                 ExcludedModificationCondition(key, mod))
 
+        for mod, value in self.domain_classes.items():
+            conditions.append(
+                DomainClassCondition(key, mod, value))
+
+        for value in self.commutatives.as_sets():
+            conditions.append(
+                CommutativeCondition(key, value))
+
         for mod, (state, binding) in self.modifications.items():
+            conditions.append(
+                ModificationNameCondition(key, mod))
             conditions.append(
                 ModificationBindingCondition(key, mod, binding))
             if state != "":
@@ -138,13 +157,27 @@ class Subunit(object):
         return conditions
 
     def add_modification(self, mod, state="", binding=""):
+        if isinstance(binding, str) and len(binding) > 1 and binding[0] == "_":
+            raise RuntimeError, "A binding label [%s] not allowed" % (binding)
+
         self.modifications[mod] = (state, str(binding))
+
     def get_modifications_list(self):
         return self.modifications
 
     def add_exclusion(self, mod):
         if not mod in self.exclusions:
             self.exclusions.append(mod)
+
+    def add_domain_class(self, mod, value):
+        if (not (isinstance(value, list) or isinstance(value, tuple))
+            or len(value) == 0):
+            raise ValueError, "Invalid argument [%s] given." % str(value)
+
+        self.domain_classes[mod] = value
+
+    def set_commutative(self, mods):
+        self.commutatives.set_commutative(*mods)
 
     def __str__(self):
         mods1 = ["~%s" % (mod) for mod in self.exclusions]
@@ -161,10 +194,19 @@ class Subunit(object):
             else:
                 mods3.append("%s=%s^%s" % (mod, state, binding))
 
+        mods4 = ["%s=[%s]" % (mod, ",".join([str(elem) for elem in value]))
+                for mod, value in self.domain_classes.items()]
+
+        mods5 = ["(%s)" % (",".join(subset))
+            for subset in self.commutatives.as_sets()]
+
         mods1.sort()
         mods2.sort()
         mods3.sort()
-        labels = ",".join(itertools.chain(mods1, mods2, mods3))
+        mods4.sort()
+        mods5.sort()
+
+        labels = ",".join(itertools.chain(mods1, mods2, mods5, mods3, mods4))
         if labels == "":
             return self.name
         else:
@@ -172,6 +214,90 @@ class Subunit(object):
 
     def __repr__(self):
         return '<"%s">' % (str(self))
+
+class Commutatives(object):
+
+    def __init__(self):
+        self.__indices = {}
+
+    def __len__(self):
+        return len(self.__indices)
+
+    def keys(self):
+        return self.__indices.keys()
+
+    def get_commutatives(self, key1):
+        idx1 = self.__indices.get(key1)
+        if idx1 is None:
+            return []
+        else:
+            return [key2 for key2, idx2 in self.__indices.items()
+                if idx2 == idx1]
+
+    def set_commutative(self, *keys):
+        if len(keys) == 0:
+            return
+
+        collection, newset = [], []
+        for key in keys:
+            if key in self.__indices.keys():
+                collection.append(self.__indices[key])
+            else:
+                newset.append(key)
+
+        if len(collection) == 0:
+            newidx = (max(self.__indices.values()) + 1
+                if len(self.__indices) > 0 else 1)
+        else:
+            newidx = min(collection)
+            for key in self.__indices.keys():
+                if self.__indices[key] in collection:
+                    self.__indices[key] = newidx
+
+        for key in newset:
+            self.__indices[key] = newidx
+
+    def is_commutative(self, *keys):
+        if len(keys) < 2:
+            raise RuntimeError, "at least two keys must be given"
+
+        idx1 = self.__indices.get(keys[0])
+        if idx1 is None:
+            # raise RuntimeError, "an invalid key [%s] given" % (keys[0])
+            return False
+
+        for key in keys[1: ]:
+            idx2 = self.__indices.get(key)
+            if idx2 is None:
+                # raise RuntimeError, "an invalid key [%s] given" % (key)
+                return False
+            elif idx2 != idx1:
+                return False
+        return True
+
+    def is_comprised(self, com):
+        if len(com) < len(self):
+            return False
+
+        for subset in self.as_sets():
+            if not com.is_commutative(*subset):
+                return False
+        return True
+
+    def as_sets(self):
+        return commutative_generator(self.__indices)
+
+def commutative_generator(indices):
+    i, done, keys = 0, [], indices.keys()
+
+    for i in range(len(keys)):
+        value = indices[keys[i]]
+        if value in done:
+            continue
+        done.append(value)
+        retval = [key for key in keys[i: ] if indices[key] == value]
+        retval.sort()
+        yield tuple(retval)
 
 def check_connectivity(src, markers=[]):
     adjacencies = {}
@@ -235,6 +361,10 @@ def concatenate_species(*species_list):
             newsu = Subunit(su.name)
             for mod in su.exclusions:
                 newsu.add_exclusion(mod)
+            for key, value in su.domain_classes.items():
+                newsu.add_domain_class(key, value)
+            for subset in su.commutatives.as_sets():
+                newsu.set_commutative(subset)
             for mod, (state, binding) in su.modifications.items():
                 if binding != "" and binding[0] != "_":
                     if not binding.isdigit():
@@ -248,15 +378,12 @@ def concatenate_species(*species_list):
 
 class ReactionRule(object):
 
-    def __init__(self, reactants, products, options=[]):
+    def __init__(self, reactants, products, opts=[]):
         self.__reactants = reactants
         self.__products = products
-        self.__options = options
+        self.__options = opts
 
         self.initialize()
-
-    def options(self):
-        return self.__options #copy.deepcopy(self.__options)
 
     def reactants(self):
         return copy.deepcopy(self.__reactants)
@@ -265,7 +392,8 @@ class ReactionRule(object):
         return copy.deepcopy(self.__products)
 
     def options(self):
-        return copy.deepcopy(self.__options)
+        # return copy.deepcopy(self.__options)
+        return self.__options
 
     def num_reactants(self):
         return len(self.__reactants)
@@ -288,7 +416,11 @@ class ReactionRule(object):
                 if (su1.name == su2.name
                     and set(su1.exclusions) == set(su2.exclusions)
                     and set(su1.modifications.keys())
-                        == set(su2.modifications.keys())):
+                        == set(su2.modifications.keys())
+                    and set(su1.domain_classes.keys())
+                        == set(su2.domain_classes.keys())
+                    and set(su1.domain_classes.values())
+                        == set(su2.domain_classes.values())):
                     if len(self.__correspondences) > i:
                         # raise RuntimeError, "multiple correspondence found [%s]" % su1
                         print "WARN: multiple correspondence found [%s]" % su1
@@ -304,7 +436,7 @@ class ReactionRule(object):
             if not i in self.__correspondences:
                 self.__removed.append(i)
 
-    def generate(self, context, reactants):
+    def __generate(self, context, reactants):
         def serno(idx):
             value = context.get(label_subunit(idx))
             if value is None:
@@ -351,6 +483,21 @@ class ReactionRule(object):
             #     pass
 
             for mod, (state, binding) in subunit.modifications.items():
+                if correspondence < len(reactant_subunits):
+                    if mod == "":
+                        raise RuntimeError, "an empty name for modification given."
+                    elif mod[0] != "_":
+                        label = label_domain(label_subunit(correspondence), mod)
+                    elif mod in context.keys():
+                        label = mod
+                    else:
+                        raise RuntimeError, "invalid name [%s] given." % mod
+
+                    mod = context.get(label)
+                    if mod is None:
+                        raise RuntimeError, (
+                            "no corresponding context found [%s]" % mod)
+
                 value = target.modifications.get(mod)
                 if value is None:
                     newstate, newbinding = "", ""
@@ -403,36 +550,64 @@ class ReactionRule(object):
 
         return check_connectivity(retval, markers)
 
-    def match(self, *reactants):
+    def check_options(self, reactants, products, context, corresp=None):
         for opt in self.__options:
-            if ((isinstance(opt, ExcludeReactants)
-                    or isinstance(opt, IncludeReactants))
-                and not opt.match(reactants)):
-                return []
+            if isinstance(opt, options.Option):
+                if not opt.check(reactants, products, context, corresp):
+                    return opt.get(reactants, products, context, corresp)
+            else:
+                return opt
+        return 0.0 # default
 
-        if len(self.__reactants) != len(reactants):
-            return []
-
+    def match(self, *reactants):
         contexts = None
+        if len(self.__reactants) != len(reactants):
+            return contexts
+
         for sp1, sp2 in zip(self.__reactants, reactants):
             contexts = sp1.match(sp2, contexts)
+        return contexts
 
-        if len(self.__products) == 0 and len(contexts) > 0:
-            return [()]
+    def match_partial(self, idx, sp, contexts=None):
+        if idx < 0 or idx >= len(self.__reactants):
+            raise RuntimeError, "invalid index [%d] given." % (idx)
+
+        if idx == 0:
+            stride = 0
+        else:
+            stride = sum([
+                self.__reactants[i].num_subunits() for i in range(idx)])
+
+        return self.__reactants[idx].match(sp, contexts, stride)
+
+    def generate(self, reactants, contexts=None):
+        if type(reactants) not in (list, tuple):
+            # just for the safety. remove this later
+            raise RuntimeError, "invalid argument [%s] given." % (
+                str(reactants))
+
+        if contexts is None:
+            contexts = self.match(*reactants)
+
+        if contexts is None or len(contexts) == 0:
+            return []
+        # elif len(self.__products) == 0:
+        #     return [()]
 
         retval = []
         for context in contexts:
-            products, correspondence = self.generate(context, reactants)
-            # if (products is not None): #XXX: allow indirect connections
-            if (products is not None
-                and len(correspondence) == len(set(correspondence))):
-                for opt in self.__options:
-                    if ((isinstance(opt, ExcludeProducts)
-                            or isinstance(opt, IncludeProducts))
-                        and not opt.match(products, correspondence)):
-                        break
-                else:
-                    retval.append(products)
+            products, corresp = self.__generate(context, reactants)
+            if products is None:
+                continue
+
+            if len(self.__options) > 0:
+                opt = self.check_options(reactants, products, context, corresp)
+                if opt is not None:
+                    reaction = (copy.deepcopy(reactants), products, opt)
+                    retval.append(reaction)
+            else:
+                reaction = (copy.deepcopy(reactants), products, None)
+                retval.append(reaction)
         return retval
 
     def __str__(self):
@@ -452,7 +627,131 @@ class Condition(object):
         self.priority = 0
 
     def match(self, sp, contexts):
-        return []
+        return None
+
+class DomainClassCondition(Condition):
+
+    def __init__(self, key, name, values):
+        Condition.__init__(self)
+
+        self.key_subunit = key
+        self.name = name
+
+        self.size_values = len(values)
+        self.named, self.unnamed = [], []
+        for value in values:
+            if value[0] == "_":
+                if len(value) > 1:
+                    if value in self.unnamed:
+                        raise RuntimeError, "key [%s] is not unique." % value
+                    self.unnamed.append(value)
+            else:
+                self.named.append(value)
+
+    def predicator(self, subunit, name):
+        values = subunit.domain_classes.get(self.name)
+        return (values is not None) and (name in values)
+
+    def generator(self, subunit):
+        values = subunit.domain_classes.get(self.name)
+        if values is None or len(values) < self.size_values:
+            return None
+
+        values = set(values)
+        for value in self.named:
+            if value not in values:
+                return None
+            else:
+                values.remove(value)
+
+        return list(itertools.permutations(values, self.size_unnamed))
+
+    def match(self, sp, contexts):
+        if (self.name == "" or
+            (self.name[0] == "_" and not contexts.has_key(self.name))):
+            raise RuntimeError, "[%s] not defined." % self.name
+
+        retval = contexts
+
+        unnamed = copy.copy(self.unnamed)
+        for key in self.unnamed:
+            if contexts.has_key(key):
+                # raise RuntimeError, "key [%s] already assigned" % key
+                unnamed.remove(key)
+                retval = retval.filter2(self.predicator, self.key_subunit, key)
+        self.size_unnamed = len(unnamed) # this must be immutable in generator
+
+        retval = retval.product_any(
+            self.generator, self.key_subunit, unnamed)
+        return retval
+
+class CommutativeCondition(Condition):
+
+    def __init__(self, key, doms):
+        Condition.__init__(self)
+
+        self.key_subunit = key
+        self.doms = doms
+
+        for dom in doms:
+            if dom[0] == "_":
+                raise RuntimeError, (
+                    "a commutative definition for [%s] not allowed" % (dom))
+
+    def predicator(self, subunit):
+        # for dom in self.doms:
+        #     if dom not in subunit.commutatives.keys():
+        #         return False
+        return subunit.commutatives.is_commutative(*self.doms)
+
+    def match(self, sp, contexts):
+        return contexts.filter1(self.predicator, self.key_subunit)
+
+class ModificationNameCondition(Condition):
+
+    def __init__(self, key, mod):
+        Condition.__init__(self)
+
+        self.key_subunit = key
+        self.mod = mod
+
+    def generator(self, subunit):
+        value = subunit.modifications.get(self.mod)
+        if value is None:
+            value = subunit.domain_classes.get(self.mod)
+            if value is None:
+                return []
+            else:
+                return list(value)
+        elif self.mod in subunit.commutatives.keys():
+            return subunit.commutatives.get_commutatives(self.mod)
+        else:
+            return [self.mod]
+
+    def match(self, sp, contexts):
+        if self.mod == "":
+            raise RuntimeError, "an empty name for modification given."
+        elif self.mod[0] == "_" and not contexts.has_key(self.mod):
+            raise RuntimeError, "[%s] not defined." % self.mod
+
+        if self.mod[0] != "_":
+            label_key = label_domain(self.key_subunit, self.mod)
+
+            retval = contexts.product2(
+                self.generator, self.key_subunit, label_key)
+            if retval is None or len(retval) == 0:
+                return retval
+
+            keys = [key for key in retval.keys()
+                if is_label_domain(key, self.key_subunit) and key != label_key]
+            if len(keys) > 0:
+                return retval.filter_unique(label_key, keys) #XXX: an irregular use of Contexts
+            else:
+                return retval
+        elif contexts.has_key(self.mod):
+            return contexts
+        else:
+            raise RuntimeError, "invalid name [%s] given." % self.mod
 
 class SubunitContainingCondition(Condition):
 
@@ -490,34 +789,43 @@ class ModificationStateCondition(Condition):
         self.mod = mod
         self.state = state
 
-    def predicator1(self, subunit):
-        value = subunit.modifications.get(self.mod)
+    def predicator1(self, subunit, mod):
+        value = subunit.modifications.get(mod)
         return (value is not None and value[0] == self.state)
 
-    def predicator2(self, subunit):
-        value = subunit.modifications.get(self.mod)
+    def predicator2(self, subunit, mod):
+        value = subunit.modifications.get(mod)
         return value is not None
 
-    def predicator3(self, subunit, state):
-        value = subunit.modifications.get(self.mod)
+    def predicator3(self, subunit, mod, state):
+        value = subunit.modifications.get(mod)
         return value[0] == state
 
-    def modifier(self, subunit):
-        return subunit.modifications.get(self.mod)[0]
+    def modifier(self, subunit, mod):
+        return subunit.modifications.get(mod)[0]
 
     def match(self, sp, contexts):
-        if self.state[0] != "_":
-            return contexts.filter1(
-                self.predicator1, self.key_subunit)
-        elif len(self.state) == 1: # self.state == "_"
-            return contexts.filter1(
-                self.predicator2, self.key_subunit)
-        elif contexts.has_key(self.state):
-            return contexts.filter2(
-                self.predicator3, self.key_subunit, self.state)
+        if self.mod == "":
+            raise RuntimeError, "an empty name for modification given."
+        elif self.mod[0] != "_":
+            label = label_domain(self.key_subunit, self.mod)
+        elif contexts.has_key(self.mod):
+            label = self.mod
         else:
-            return contexts.update(
-                self.modifier, self.key_subunit, self.state)
+            raise RuntimeError, "invalid name [%s] given." % self.mod
+
+        if self.state[0] != "_":
+            return contexts.filter2(
+                self.predicator1, self.key_subunit, label)
+        elif len(self.state) == 1: # self.state == "_"
+            return contexts.filter2(
+                self.predicator2, self.key_subunit, label)
+        elif contexts.has_key(self.state):
+            return contexts.filter3(
+                self.predicator3, self.key_subunit, label, self.state)
+        else:
+            return contexts.update2(
+                self.modifier, self.key_subunit, label, self.state)
 
 class ModificationBindingCondition(Condition):
 
@@ -534,41 +842,50 @@ class ModificationBindingCondition(Condition):
         else:
             self.key_binding = label_binding(self.binding)
 
-    def predicator1(self, subunit):
+    def predicator1(self, subunit, mod):
         check_binding = (
             (lambda x: x != "") if self.binding == "_" else
             (lambda x: x == ""))
-        value = subunit.modifications.get(self.mod)
+        value = subunit.modifications.get(mod)
         return (value is not None and check_binding(value[1]))
 
-    def predicator2(self, subunit, target):
-        value = subunit.modifications.get(self.mod)
+    def predicator2(self, subunit, mod, target):
+        value = subunit.modifications.get(mod)
         return (value is not None and value[1] == target)
 
-    def modifier1(self, subunit):
-        value = subunit.modifications.get(self.mod)
+    def modifier1(self, subunit, mod):
+        value = subunit.modifications.get(mod)
         if (value is not None and value[1] != ""):
             return value[1]
         else:
             return None
 
-    def modifier2(self, subunit):
-        value = subunit.modifications.get(self.mod)
+    def modifier2(self, subunit, mod):
+        value = subunit.modifications.get(mod)
         if (value is not None and value[1] != ""):
             return value[1]
         else:
             return None
 
     def match(self, sp, contexts):
-        if self.binding == "_" or self.binding == "":
-            return contexts.filter1(
-                self.predicator1, self.key_subunit)
-        elif contexts.has_key(self.key_binding):
-            return contexts.filter2(
-                self.predicator2, self.key_subunit, self.key_binding)
+        if self.mod == "":
+            raise RuntimeError, "an empty name for modification given."
+        elif self.mod[0] != "_":
+            label = label_domain(self.key_subunit, self.mod)
+        elif contexts.has_key(self.mod):
+            label = self.mod
         else:
-            return contexts.update(
-                self.modifier1, self.key_subunit, self.key_binding)
+            raise RuntimeError, "invalid name [%s] given." % self.mod
+
+        if self.binding == "_" or self.binding == "":
+            return contexts.filter2(
+                self.predicator1, self.key_subunit, label)
+        elif contexts.has_key(self.key_binding):
+            return contexts.filter3(
+                self.predicator2, self.key_subunit, label, self.key_binding)
+        else:
+            return contexts.update2(
+                self.modifier1, self.key_subunit, label, self.key_binding)
 
 class ExcludedModificationCondition(Condition):
 
@@ -578,8 +895,10 @@ class ExcludedModificationCondition(Condition):
         self.mod = mod
 
     def predicator(self, subunit):
-        value = subunit.modifications.get(self.mod)
-        return (value is None)
+        if subunit.modifications.get(self.mod) is not None:
+            return False
+        else:
+            return (subunit.domain_classes.get(self.mod) is None)
 
     def match(self, sp, contexts):
         return contexts.filter1(self.predicator, self.key_subunit)
@@ -595,6 +914,9 @@ class Contexts(object):
 
     def __len__(self):
         return len(self.__data)
+
+    def __str__(self):
+        return str(self.__data)
 
     def initialize(self):
         if self.__keys is not None:
@@ -631,11 +953,20 @@ class Contexts(object):
     def has_key(self, key):
         return (key in self.__keys)
 
+    def keys(self):
+        return copy.copy(self.__keys)
+
     def __str__(self):
         return str(self.__data)
 
     def num_subunits(self):
-        return len([key for key in self.__keys if key[: 7] == "subunit"])
+        indices = [
+            int(key[7: ]) for key in self.__keys if key[: 7] == "subunit"]
+        if len(indices) == 0:
+            return 0
+        else:
+            return max(indices) + 1
+        # return len([key for key in self.__keys if key[: 7] == "subunit"])
 
     def product(self, key, values):
         """key is always a subunit."""
@@ -647,6 +978,44 @@ class Contexts(object):
             for value in values:
                 newcontext = copy.copy(context)
                 newcontext[key] = value
+                retval._append(newcontext)
+        return retval
+
+    def product2(self, generator, key1, key2):
+        """key1 is always a subunit."""
+        if self.has_key(key2):
+            raise RuntimeError, "key [%s] already exists." % (key2)
+        elif not self.has_key(key1):
+            raise RuntimeError, "invalid key [%s] found." % (key1)
+
+        retval = Contexts()
+        for context in self.__data:
+            values = generator(context[key1])
+            for value in values:
+                if value is None:
+                    continue
+                newcontext = copy.copy(context)
+                newcontext[key2] = value
+                retval._append(newcontext)
+        return retval
+
+    def product_any(self, generator, key, newkeys):
+        if not self.has_key(key):
+            raise RuntimeError, "invalid key [%s] given." % (key)
+        elif any([self.has_key(elem) for elem in newkeys]):
+            raise RuntimeError, "key [%s] already exists." % str(newkeys)
+
+        retval = Contexts()
+        for context in self.__data:
+            subsets = generator(context[key])
+            if subsets is None:
+                continue
+            for values in subsets:
+                if values is None or len(values) != len(newkeys):
+                    raise RuntimeError, "invalid return value [%s]" % str(values)
+                newcontext = copy.copy(context)
+                for newkey, value in zip(newkeys, values):
+                    newcontext[newkey] = value
                 retval._append(newcontext)
         return retval
 
@@ -674,108 +1043,57 @@ class Contexts(object):
                 retval._append(context)
         return retval
 
-    def update(self, modifier, key1, key2):
+    def filter3(self, predicator, key1, key2, key3):
         """key1 always indicates a subunit, but key2 doesn't."""
         if not self.has_key(key1):
             raise RuntimeError, "invalid key [%s] found." % (key1)
-        if self.has_key(key2):
-            raise RuntimeError, "key [%s] already exists." % (key2)
+        if not self.has_key(key2):
+            raise RuntimeError, "invalid key [%s] found." % (key2)
+        if not self.has_key(key3):
+            raise RuntimeError, "invalid key [%s] found." % (key3)
 
         retval = Contexts()
         for context in self.__data:
-            value = modifier(context[key1])
-            if value is not None:
-                newcontext = copy.copy(context)
-                newcontext[key2] = value
-                retval._append(newcontext)
+            if predicator(context[key1], context[key2], context[key3]):
+                retval._append(context)
         return retval
 
-class Option(object):
+    def filter_unique(self, newkey, keys):
+        #XXX: an irregular use of Contexts
 
-    def __init__(self):
-        pass
+        if not self.has_key(newkey):
+            raise RuntimeError, "invalid key [%s] found." % (newkey)
+        for key in keys:
+            if not self.has_key(key):
+                raise RuntimeError, "invalid key [%s] found." % (key)
 
-class IncludeReactants(Option):
+        retval = Contexts()
+        for context in self.__data:
+            newvalue = context[newkey]
+            if all([context[key] != newvalue for key in keys]):
+                retval._append(context)
+        return retval
 
-    def __init__(self, idx, pttrn):
-        Option.__init__(self)
+    def update(self, modifier, key1, key2):
+        """key1 always indicates a subunit, but key2 doesn't."""
+        return self.product2(lambda su: [modifier(su)], key1, key2)
 
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
+    def update2(self, modifier, key1, key2, key3):
+        if not self.has_key(key1):
+            raise RuntimeError, "invalid key [%s] found." % (key1)
+        if not self.has_key(key2):
+            raise RuntimeError, "invalid key [%s] found." % (key2)
+        if self.has_key(key3):
+            raise RuntimeError, "key [%s] already exists." % (key3)
 
-        self.__idx = idx
-        self.__pttrn = pttrn
-
-    def match(self, reactants):
-        if not (len(reactants) > self.__idx - 1):
-            print reactants
-            raise RuntimeError
-
-        sp = reactants[self.__idx - 1]
-        return (self.__pttrn in [su.name for su in sp.subunits])
-
-class ExcludeReactants(Option):
-
-    def __init__(self, idx, pttrn):
-        Option.__init__(self)
-
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
-
-        self.__idx = idx
-        self.__pttrn = pttrn
-
-    def match(self, reactants):
-        if not (len(reactants) > self.__idx - 1):
-            print reactants
-            raise RuntimeError
-
-        sp = reactants[self.__idx - 1]
-        return not (self.__pttrn in [su.name for su in sp.subunits])
-
-class IncludeProducts(Option):
-
-    def __init__(self, idx, pttrn):
-        Option.__init__(self)
-
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
-
-        self.__idx = idx
-        self.__pttrn = pttrn
-
-    def match(self, products, correspondence):
-        if not (len(correspondence) > self.__idx - 1):
-            raise RuntimeError
-
-        sp = products[correspondence[self.__idx - 1]]
-        return (self.__pttrn in [su.name for su in sp.subunits])
-
-class ExcludeProducts(Option):
-
-    def __init__(self, idx, pttrn):
-        Option.__init__(self)
-
-        if type(pttrn) != str:
-            raise RuntimeError
-        elif pttrn[0] == "_":
-            raise RuntimeError
-
-        self.__idx = idx
-        self.__pttrn = pttrn
-
-    def match(self, products, correspondence):
-        if not (len(correspondence) > self.__idx - 1):
-            raise RuntimeError
-
-        sp = products[correspondence[self.__idx - 1]]
-        return not (self.__pttrn in [su.name for su in sp.subunits])
+        retval = Contexts()
+        for context in self.__data:
+            value = modifier(context[key1], context[key2])
+            if value is not None:
+                newcontext = copy.copy(context)
+                newcontext[key3] = value
+                retval._append(newcontext)
+        return retval
 
 class CmpSubunit:
 
@@ -921,131 +1239,6 @@ class CmpSubunit:
 
     def __call__(self, lhs, rhs):
         return self.cmp_recurse(lhs.index, rhs.index, [])
-
-def check_stoichiometry(sp, max_stoich):
-    for pttrn, num_subunits in max_stoich.items():
-        if sp.count_subunits(pttrn) > num_subunits:
-            return False
-    return True
-
-def generate_recurse(seeds1, rules, seeds2, max_stoich):
-    seeds = list(itertools.chain(seeds1, seeds2))
-    newseeds, newreactions = [], []
-    for sp1 in seeds1:
-        for rr in rules:
-            if rr.num_reactants() == 1:
-                pttrns = rr.match(sp1)
-                # try:
-                #     pttrns = rr.match(sp1)
-                # except Exception, e:
-                #     print rr, sp1
-                #     raise e
-                if pttrns is not None and len(pttrns) > 0:
-                    for products in pttrns:
-                        newreactions.append(((sp1, ), products, rr.options()))
-
-                    for newsp in itertools.chain(*pttrns):
-                        if (newsp not in seeds and newsp not in newseeds
-                            and check_stoichiometry(newsp, max_stoich)):
-                            newsp.sort()
-                            newseeds.append(newsp)
-        for sp2 in seeds:
-            for rr in rules:
-                if rr.num_reactants() == 2:
-                    pttrns = rr.match(sp1, sp2)
-                    # try:
-                    #     pttrns = rr.match(sp1, sp2)
-                    # except Exception, e:
-                    #     print rr, sp1, sp2
-                    #     raise e
-                    if pttrns is not None and len(pttrns) > 0:
-                        for products in pttrns:
-                            newreactions.append(((sp1, sp2), products, rr.options()))
-                            if str(sp1) == str(sp2):
-                                print "This rule is symmetric and generated reaction has homo-dimer, ecell4 changes following reaction rate!"
-                                print ((sp1, sp2), products)
-
-                        for newsp in itertools.chain(*pttrns):
-                            if (newsp not in seeds and newsp not in newseeds
-                                and check_stoichiometry(newsp, max_stoich)):
-                                newsp.sort()
-                                newseeds.append(newsp)
-        for sp2 in seeds2:
-            for rr in rules:
-                if rr.num_reactants() == 2:
-                    pttrns = rr.match(sp2, sp1)
-                    # try:
-                    #     pttrns = rr.match(sp2, sp1)
-                    # except Exception, e:
-                    #     print rr, sp1, sp2
-                    #     raise e
-                    if pttrns is not None and len(pttrns) > 0:
-                        for products in pttrns:
-                            newreactions.append(((sp1, sp2), products, rr.options()))
-
-                        for newsp in itertools.chain(*pttrns):
-                            if (newsp not in seeds and newsp not in newseeds
-                                and check_stoichiometry(newsp, max_stoich)):
-                                newsp.sort()
-                                newseeds.append(newsp)
-    return (newseeds, seeds, newreactions)
-
-def dump_reaction(reactants, products):
-    #reactants, products = reaction
-    for sp in itertools.chain(reactants, products):
-        sp.sort()
-
-    retval = "+".join(sorted([str(sp) for sp in reactants]))
-    retval += ">"
-    retval += "+".join(sorted([str(sp) for sp in products]))
-    return retval
-
-def generate_reactions(newseeds, rules, max_iter=sys.maxint, max_stoich={}):
-    seeds, cnt, reactions = [], 0, []
-
-    for rr in rules:
-        if rr.num_reactants() == 0:
-            reactions.append((rr.reactants(), rr.products(), rr.options()))
-            for newsp in rr.products():
-                if (newsp not in newseeds
-                    and check_stoichiometry(newsp, max_stoich)):
-                    newsp.sort()
-                    newseeds.append(newsp)
-
-    while len(newseeds) != 0 and cnt < max_iter:
-        # print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
-        #     cnt, len(seeds), len(newseeds), len(reactions))
-        newseeds, seeds, newreactions = generate_recurse(
-            newseeds, rules, seeds, max_stoich)
-        reactions.extend(newreactions)
-        cnt += 1
-
-    # print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
-    #     cnt, len(seeds), len(newseeds), len(reactions))
-    # print ""
-
-    seeds.sort(key=str)
-    '''
-    for i, sp in enumerate(seeds):
-        print "%5d %s" % (i + 1, str(sp))
-    print ""
-    '''
-
-    # reactions = list(set([dump_reaction(reaction) for reaction in reactions]))
-    dump_rrobj_map = dict()
-    for r in reactions:
-        s = dump_reaction(r[0], r[1])
-        # if s in dump_rrobj_map.keys():
-        #     print "[%s] already exists" % (str(s))
-        dump_rrobj_map[s] = r
-    reactions = dump_rrobj_map.values()
-    '''
-    for i, reaction in enumerate(reactions):
-        print "%5d %s" % (i + 1, reaction)
-    '''
-
-    # return seeds + newseeds, reactions
-    return seeds + newseeds, reactions
 
 
 if __name__ == "__main__":

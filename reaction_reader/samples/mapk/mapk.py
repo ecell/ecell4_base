@@ -1,4 +1,5 @@
-from ecell4.reaction_reader.decorator import just_parse, reaction_rules
+from ecell4.reaction_reader.decorator_base import just_parse
+from ecell4.reaction_reader.decorator import reaction_rules
 
 
 # @reaction_rules

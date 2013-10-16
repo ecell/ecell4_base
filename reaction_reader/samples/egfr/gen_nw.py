@@ -1,9 +1,9 @@
-from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
-from ecell4.reaction_reader.species import generate_reactions
 import ecell4.core as core
-
 import ecell4.ode as ode
-from ecell4.reaction_reader.network import generate_NetworkModel
+
+from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
+from ecell4.reaction_reader.network import generate_reactions, generate_NetworkModel
+
 from egfr import attributegen, rulegen
 
 

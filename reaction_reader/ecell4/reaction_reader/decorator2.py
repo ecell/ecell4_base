@@ -3,10 +3,15 @@ import numbers
 import copy
 import functools
 
+import options
 import species
-import decorator
 import parseobj
+from decorator_base import Callback, parse_decorator
 
+
+def is_parseobj(obj):
+    return (isinstance(obj, parseobj.ParseObj)
+        or isinstance(obj, parseobj.AnyCallable))
 
 def generate_Species(obj):
     if isinstance(obj, parseobj.AnyCallable):
@@ -18,9 +23,7 @@ def generate_Species(obj):
             su = species.Subunit(elem.name)
             if elem.args is not None:
                 for mod in elem.args:
-                    if ((isinstance(mod, parseobj.ParseObj)
-                        or isinstance(mod, parseobj.AnyCallable))
-                        and mod._size() == 1):
+                    if is_parseobj(mod) and mod._size() == 1:
                         arg = mod._elements()[0]
                         name, binding = arg.name, arg.modification
                         if binding is None:
@@ -33,8 +36,7 @@ def generate_Species(obj):
                                     "invalid binding [%s] given." % (binding))
                             su.add_modification(name, "", binding)
                     elif (isinstance(mod, parseobj.InvExp)
-                        and (isinstance(mod._target(), parseobj.ParseObj)
-                            or isinstance(mod._target, parseobj.AnyCallable))
+                        and is_parseobj(mod._target())
                         and mod._target()._size() == 1):
                         arg = mod._target()._elements()[0]
                         name, binding = arg.name, arg.modification
@@ -42,27 +44,43 @@ def generate_Species(obj):
                             raise RuntimeError, (
                                 "invalid binding [%s] given." % (binding))
                         su.add_exclusion(name)
+                    elif isinstance(mod, tuple):
+                        if any([not isinstance(dom, parseobj.AnyCallable)
+                            for dom in mod]):
+                            raise RuntimeError, (
+                                "invalid commutative definition [%s] found"
+                                % (str(mod)))
+
+                        doms = [dom._elements()[0].name for dom in mod]
+                        su.set_commutative(doms)
                     else:
                         raise RuntimeError, (
                             "invalid argument [%s] found." % str(mod))
             if elem.kwargs is not None:
                 for name, value in elem.kwargs.items():
-                    if (not (isinstance(value, parseobj.ParseObj)
-                            or isinstance(value, parseobj.AnyCallable))
-                        or value._size() != 1):
+                    if is_parseobj(value) and value._size() == 1:
+                        arg = value._elements()[0]
+                        state, binding = str(arg.name), arg.modification
+                        if binding is None:
+                            su.add_modification(name, state, "")
+                        else:
+                            binding = str(binding)
+                            if not (binding.isdigit() or binding == ""
+                                or binding[0] == "_"):
+                                raise RuntimeError, (
+                                    "invalid binding [%s] given." % (binding))
+                            su.add_modification(name, state, binding)
+                    elif ((isinstance(value, list) or isinstance(value, tuple))
+                        and all([is_parseobj(dom) and dom._size() == 1
+                            for dom in value])):
+                        doms = tuple(dom._elements()[0].name for dom in value)
+                        su.add_domain_class(name, doms)
+
+                        if isinstance(value, tuple):
+                            su.set_commutative(doms)
+                    else:
                         raise RuntimeError, (
                             "invalid argument [%s] found." % str(value))
-                    arg = value._elements()[0]
-                    state, binding = str(arg.name), arg.modification
-                    if binding is None:
-                        su.add_modification(name, state, "")
-                    else:
-                        binding = str(binding)
-                        if not (binding.isdigit() or binding == ""
-                            or binding[0] == "_"):
-                            raise RuntimeError, (
-                                "invalid binding [%s] given." % (binding))
-                        su.add_modification(name, state, binding)
             sp.add_subunit(su)
         return (sp, )
     elif isinstance(obj, parseobj.InvExp):
@@ -74,15 +92,11 @@ def generate_Species(obj):
     raise RuntimeError, 'invalid expression; "%s" given' % str(obj)
 
 def generate_ReactionRule(lhs, rhs, opts):
-    # if len(lhs) == 0:
-    #     if len(rhs) != 1:
-    #         raise RuntimeError, (
-    #             "the number of products must be 1; %d given" % len(rhs))
-    #     return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
-    if len(lhs) == 0 or len(lhs) == 1 or len(lhs) == 2:
-        return species.ReactionRule(lhs, rhs, opts)
-    raise RuntimeError, (
-        "the number of reactants must be less than 3; %d given" % len(lhs))
+    # if len(lhs) == 0 or len(lhs) == 1 or len(lhs) == 2:
+    #     return species.ReactionRule(lhs, rhs, opts)
+    # raise RuntimeError, (
+    #     "the number of reactants must be less than 3; %d given" % len(lhs))
+    return species.ReactionRule(lhs, rhs, opts)
 
 def generate_Option(opt):
     # if not (isinstance(opt, parseobj.AnyCallable)
@@ -98,18 +112,19 @@ def generate_Option(opt):
             and type(elem.args[0]) == int
             and (isinstance(elem.args[1], parseobj.AnyCallable)
                 or isinstance(elem.args[1], parseobj.ParseObj))):
-            raise RuntimeError
+            raise RuntimeError, "invalid type of arguments given [%s]" % (
+                str(elem.args))
 
         if isinstance(elem.args[1], parseobj.ParseObj):
             raise RuntimeError, "only a subunit name is allowed here."
 
         pttrn = elem.args[1]._elements()[0].name
         if elem.name == "ExcludeReactants":
-            return (species.ExcludeReactants(elem.args[0], pttrn),
-                species.ExcludeProducts(elem.args[0], pttrn))
+            return (options.ExcludeReactants(elem.args[0], pttrn),
+                options.ExcludeProducts(elem.args[0], pttrn))
         elif elem.name == "IncludeReactants":
-            return (species.IncludeReactants(elem.args[0], pttrn),
-                species.IncludeProducts(elem.args[0], pttrn))
+            return (options.IncludeReactants(elem.args[0], pttrn),
+                options.IncludeProducts(elem.args[0], pttrn))
     elif elem.name == "IncludeProducts" or elem.name == "ExcludeProducts":
         if not (len(elem.args) == 2
             and type(elem.args[0]) == int
@@ -122,15 +137,38 @@ def generate_Option(opt):
 
         pttrn = elem.args[1]._elements()[0].name
         if elem.name == "ExcludeProducts":
-            return (species.ExcludeProducts(elem.args[0], pttrn),
-                species.ExcludeReactants(elem.args[0], pttrn))
+            return (options.ExcludeProducts(elem.args[0], pttrn),
+                options.ExcludeReactants(elem.args[0], pttrn))
         elif elem.name == "IncludeProducts":
-            return (species.IncludeProducts(elem.args[0], pttrn),
-                species.IncludeReactants(elem.args[0], pttrn))
+            return (options.IncludeProducts(elem.args[0], pttrn),
+                options.IncludeReactants(elem.args[0], pttrn))
+    elif elem.name == "CaseIf":
+        if len(elem.args) != 1:
+            raise RuntimeError, (
+                "just one argument must be given [%d]." % (len(elem.args)))
+
+        kwargs = {}
+        for key, value in elem.kwargs.items():
+            if type(value) is str:
+                kwargs[key] = value
+            elif is_parseobj(value) and len(value._elements()) == 1:
+                kwargs[key] = value._elements()[0].name
+            else:
+                raise RuntimeError, (
+                    "an invalid value [%s] given." % (str(value)))
+
+        value = elem.args[0]
+        if type(value) is tuple or type(value) is list:
+            if len(value) != 2:
+                raise RuntimeError, (
+                    "an invalid argument [%s] given." % (str(value)))
+            return (options.CaseIf(value[0], **kwargs),
+                options.CaseIf(value[1], **kwargs))
+        else:
+            return (options.CaseIf(value, **kwargs), None)
     else:
         # raise RuntimeError
         return (opt, None)
-    return (opt, opt)
 
 def generate_Options1(opts):
     retval = []
@@ -144,7 +182,8 @@ def generate_Options1(opts):
         #     retval.append(opt)
         # else:
         #     raise RuntimeError, "an invalid option [%s] given." % (opt)
-        retval.append(opt)
+        else:
+            retval.append(opt)
     return retval
 
 def generate_Options2(opts):
@@ -169,10 +208,10 @@ def generate_Options2(opts):
             raise RuntimeError, "an invalid option [%s] given." % (opt)
     return retval1, retval2
 
-class SpeciesAttributesCallback(decorator.Callback):
+class SpeciesAttributesCallback(Callback):
 
     def __init__(self, *args):
-        decorator.Callback.__init__(self)
+        Callback.__init__(self)
 
         self.bitwise_operations = []
 
@@ -205,10 +244,10 @@ class SpeciesAttributesCallback(decorator.Callback):
             'ReactionRule definitions are not allowed'
             + ' in "species_attributes"')
 
-class ReactionRulesCallback(decorator.Callback):
+class ReactionRulesCallback(Callback):
 
     def __init__(self):
-        decorator.Callback.__init__(self)
+        Callback.__init__(self)
 
         self.comparisons = []
 
@@ -247,15 +286,15 @@ class ReactionRulesCallback(decorator.Callback):
         else:
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
 
-species_attributes = functools.partial(decorator.parse_decorator, SpeciesAttributesCallback)
-reaction_rules = functools.partial(decorator.parse_decorator, ReactionRulesCallback)
+species_attributes = functools.partial(parse_decorator, SpeciesAttributesCallback)
+reaction_rules = functools.partial(parse_decorator, ReactionRulesCallback)
 
 class AnyCallableGenerator(dict):
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
 
-        self.__cache = decorator.Callback()
+        self.__cache = Callback()
 
     def __setitem__(self, key, value):
         dict.__setitem__(self, key, value)
