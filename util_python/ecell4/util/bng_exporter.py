@@ -59,30 +59,30 @@ def check_label_containing_reaction(rr):
 class SubunitRegister:
     def __init__(self, name):
         self.name = name
-        self.domains = list()
+        self.domains = set()
     def add_domain(self, domain):
-        self.domains.append( domain )
+        self.domains.add( domain )
     def get_name(self):
         return self.name
     def get_domains(self):
         return self.domains
     def __repr__(self):
-        return "SubunitRegister: %s %s" % (self.name, self.domains)
+        return "SubunitRegister: %s %s" % (self.name, list(self.domains) )
     def __str__(self):
         return self.__repr__()
 
 class DomainStateRegister:
     def __init__(self, name):
         self.name = name
-        self.domains = list()
+        self.domains = set()
     def add_domain(self, domain):
-        self.domains.append( domain )
+        self.domains.add( domain )
     def get_name(self):
         return self.name
     def get_domains(self):
         return self.domains
     def __repr__(self):
-        return "SubunitRegister: %s %s" % (self.name, self.domains)
+        return "SubunitRegister: %s %s" % (self.name, list(self.domains))
     def __str__(self):
         return self.__repr__()
 
