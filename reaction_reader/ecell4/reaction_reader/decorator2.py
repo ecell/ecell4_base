@@ -142,10 +142,33 @@ def generate_Option(opt):
         elif elem.name == "IncludeProducts":
             return (options.IncludeProducts(elem.args[0], pttrn),
                 options.IncludeReactants(elem.args[0], pttrn))
+    elif elem.name == "CaseIf":
+        if len(elem.args) != 1:
+            raise RuntimeError, (
+                "just one argument must be given [%d]." % (len(elem.args)))
+
+        kwargs = {}
+        for key, value in elem.kwargs.items():
+            if type(value) is str:
+                kwargs[key] = value
+            elif is_parseobj(value) and len(value._elements()) == 1:
+                kwargs[key] = value._elements()[0].name
+            else:
+                raise RuntimeError, (
+                    "an invalid value [%s] given." % (str(value)))
+
+        value = elem.args[0]
+        if type(value) is tuple or type(value) is list:
+            if len(value) != 2:
+                raise RuntimeError, (
+                    "an invalid argument [%s] given." % (str(value)))
+            return (options.CaseIf(value[0], **kwargs),
+                options.CaseIf(value[1], **kwargs))
+        else:
+            return (options.CaseIf(value, **kwargs), None)
     else:
         # raise RuntimeError
         return (opt, None)
-    return (opt, opt)
 
 def generate_Options1(opts):
     retval = []
@@ -159,7 +182,8 @@ def generate_Options1(opts):
         #     retval.append(opt)
         # else:
         #     raise RuntimeError, "an invalid option [%s] given." % (opt)
-        retval.append(opt)
+        else:
+            retval.append(opt)
     return retval
 
 def generate_Options2(opts):

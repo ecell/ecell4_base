@@ -6,6 +6,29 @@ class Option(object):
     def check(self, reactants, products, context, corresp=None):
         return None
 
+    def get(self, reactants, products, context, corresp=None):
+        return None
+
+class CaseIf(Option):
+
+    def __init__(self, value, **kwargs):
+        self.value = value
+        self.kwargs = kwargs
+
+        for key in self.kwargs.keys():
+            if type(key) != str:
+                raise RuntimeError, (
+                    "a key [%s] must be a string." % (str(key)))
+
+    def check(self, reactants, products, context, corresp=None):
+        for key, value in self.kwargs.items():
+            if context.get(key) != value:
+                return True
+        return False
+
+    def get(self, reactants, products, context, corresp=None):
+        return self.value
+
 class CountSubunits(Option):
 
     def __init__(self, idx, pttrn):

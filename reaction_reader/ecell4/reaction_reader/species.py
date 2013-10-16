@@ -392,7 +392,8 @@ class ReactionRule(object):
         return copy.deepcopy(self.__products)
 
     def options(self):
-        return copy.deepcopy(self.__options)
+        # return copy.deepcopy(self.__options)
+        return self.__options
 
     def num_reactants(self):
         return len(self.__reactants)
@@ -551,10 +552,12 @@ class ReactionRule(object):
 
     def check_options(self, reactants, products, context, corresp=None):
         for opt in self.__options:
-            if isinstance(opt, options.CountSubunits):
+            if isinstance(opt, options.Option):
                 if not opt.check(reactants, products, context, corresp):
-                    return None
-        return self.__options
+                    return opt.get(reactants, products, context, corresp)
+            else:
+                return opt
+        return 0.0 # default
 
     def match(self, *reactants):
         contexts = None
@@ -588,8 +591,8 @@ class ReactionRule(object):
 
         if contexts is None or len(contexts) == 0:
             return []
-        elif len(self.__products) == 0:
-            return [()]
+        # elif len(self.__products) == 0:
+        #     return [()]
 
         retval = []
         for context in contexts:
@@ -597,9 +600,14 @@ class ReactionRule(object):
             if products is None:
                 continue
 
-            opts = self.check_options(reactants, products, context, corresp)
-            if opts is not None:
-                retval.append(products)
+            if len(self.__options) > 0:
+                opt = self.check_options(reactants, products, context, corresp)
+                if opt is not None:
+                    reaction = (copy.deepcopy(reactants), products, opt)
+                    retval.append(reaction)
+            else:
+                reaction = (copy.deepcopy(reactants), products, None)
+                retval.append(reaction)
         return retval
 
     def __str__(self):

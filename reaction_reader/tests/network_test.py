@@ -34,7 +34,7 @@ class NetworkTestCase(unittest.TestCase):
         rr2 = create_reaction_rule("X(a)+X(a)>X(a^1).X(a^1)")
         sp1 = create_species("X(a,b,c=u)")
 
-        newseeds, seeds, newreactions = network.generate_recurse2(
+        newseeds, seeds, newreactions = network.generate_recurse(
             [sp1], [rr1], [], {})
         self.assertEqual(len(seeds), 1)
         self.assertEqual(seeds[0], sp1)
@@ -43,7 +43,7 @@ class NetworkTestCase(unittest.TestCase):
         self.assertEqual(len(newreactions), 1)
         # dump_reactions(newreactions)
 
-        newseeds, seeds, newreactions = network.generate_recurse2(
+        newseeds, seeds, newreactions = network.generate_recurse(
             [sp1], [rr1, rr2], [], {})
         self.assertEqual(len(seeds), 1)
         self.assertEqual(seeds[0], sp1)
@@ -53,7 +53,7 @@ class NetworkTestCase(unittest.TestCase):
         self.assertEqual(len(newreactions), 2)
         # dump_reactions(newreactions)
 
-        newseeds, seeds, newreactions = network.generate_recurse2(
+        newseeds, seeds, newreactions = network.generate_recurse(
             newseeds, [rr1, rr2], seeds, {})
         self.assertEqual(len(seeds), 3)
         self.assertEqual(len(newseeds), 2)
@@ -62,18 +62,18 @@ class NetworkTestCase(unittest.TestCase):
         self.assertEqual(len(newreactions), 5)
         # dump_reactions(newreactions)
 
-    def test_generate_recurse2(self):
+    def test_generate_recurse(self):
         sp1, sp2 = create_species("A(l,r)"), create_species("B(l)")
 
         rr1 = create_reaction_rule("A(r)+B(l)>A(r^1).B(l^1)")
-        newseeds, seeds, newreactions = network.generate_recurse2(
+        newseeds, seeds, newreactions = network.generate_recurse(
             [sp1, sp2], [rr1], [], {})
         self.assertEqual(len(newseeds), 1)
         self.assertEqual(newseeds[0], create_species("A(l,r^1).B(l^1)"))
         self.assertEqual(len(newreactions), 1)
 
         rr2 = create_reaction_rule("A(r)+A(l,r)+B(l)>A(r^1).A(l^1,r^2).B(l^2)")
-        newseeds, seeds, newreactions = network.generate_recurse2(
+        newseeds, seeds, newreactions = network.generate_recurse(
             [sp1, sp2], [rr2], [], {})
         self.assertEqual(len(newseeds), 1)
         self.assertEqual(

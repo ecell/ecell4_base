@@ -24,10 +24,7 @@ def dump_reaction(reactants, products):
 def reaction_rule_match_recurse(
     rr, idx, seeds1, seeds2, reactants, contexts, ignore):
     if idx >= rr.num_reactants():
-        pttrns = rr.generate(reactants, contexts)
-        return [
-            (copy.deepcopy(reactants), products, rr.options())
-            for products in pttrns]
+        return rr.generate(reactants, contexts)
     elif idx == ignore[0]:
         return reaction_rule_match_recurse(
             rr, idx + 1, seeds1, seeds2, reactants + [ignore[1]],
@@ -48,7 +45,7 @@ def reaction_rule_match_recurse(
         retval.extend(tmp)
     return retval
 
-def generate_recurse2(seeds1, rules, seeds2, max_stoich={}):
+def generate_recurse(seeds1, rules, seeds2, max_stoich={}):
     seeds = list(itertools.chain(seeds1, seeds2))
     newseeds, newreactions = [], []
     for rr in rules:
@@ -74,65 +71,6 @@ def generate_recurse2(seeds1, rules, seeds2, max_stoich={}):
                             newseeds.append(newsp)
     return (newseeds, seeds, newreactions)
 
-def generate_recurse(seeds1, rules, seeds2, max_stoich):
-    seeds = list(itertools.chain(seeds1, seeds2))
-    newseeds, newreactions = [], []
-    for sp1 in seeds1:
-        for rr in rules:
-            if rr.num_reactants() == 1:
-                pttrns = rr.generate([sp1])
-                # try:
-                #     pttrns = rr.generate([sp1])
-                # except Exception, e:
-                #     print rr, sp1
-                #     raise e
-                if pttrns is not None and len(pttrns) > 0:
-                    for products in pttrns:
-                        newreactions.append(((sp1, ), products, rr.options()))
-
-                    for newsp in itertools.chain(*pttrns):
-                        if (newsp not in seeds and newsp not in newseeds
-                            and check_stoichiometry(newsp, max_stoich)):
-                            newsp.sort()
-                            newseeds.append(newsp)
-        for sp2 in seeds:
-            for rr in rules:
-                if rr.num_reactants() == 2:
-                    pttrns = rr.generate([sp1, sp2])
-                    # try:
-                    #     pttrns = rr.generate([sp1, sp2])
-                    # except Exception, e:
-                    #     print rr, sp1, sp2
-                    #     raise e
-                    if pttrns is not None and len(pttrns) > 0:
-                        for products in pttrns:
-                            newreactions.append(((sp1, sp2), products, rr.options()))
-
-                        for newsp in itertools.chain(*pttrns):
-                            if (newsp not in seeds and newsp not in newseeds
-                                and check_stoichiometry(newsp, max_stoich)):
-                                newsp.sort()
-                                newseeds.append(newsp)
-        for sp2 in seeds2:
-            for rr in rules:
-                if rr.num_reactants() == 2:
-                    pttrns = rr.generate([sp2, sp1])
-                    # try:
-                    #     pttrns = rr.generate([sp2, sp1])
-                    # except Exception, e:
-                    #     print rr, sp1, sp2
-                    #     raise e
-                    if pttrns is not None and len(pttrns) > 0:
-                        for products in pttrns:
-                            newreactions.append(((sp1, sp2), products, rr.options()))
-
-                        for newsp in itertools.chain(*pttrns):
-                            if (newsp not in seeds and newsp not in newseeds
-                                and check_stoichiometry(newsp, max_stoich)):
-                                newsp.sort()
-                                newseeds.append(newsp)
-    return (newseeds, seeds, newreactions)
-
 def generate_reactions(newseeds, rules, max_iter=sys.maxint, max_stoich={}):
     seeds, cnt, reactions = [], 0, []
 
@@ -148,8 +86,7 @@ def generate_reactions(newseeds, rules, max_iter=sys.maxint, max_stoich={}):
     while len(newseeds) != 0 and cnt < max_iter:
         # print "[RESULT%d] %d seeds, %d newseeds, %d reactions." % (
         #     cnt, len(seeds), len(newseeds), len(reactions))
-        # newseeds, seeds, newreactions = generate_recurse(
-        newseeds, seeds, newreactions = generate_recurse2(
+        newseeds, seeds, newreactions = generate_recurse(
             newseeds, rules, seeds, max_stoich)
         reactions.extend(newreactions)
         cnt += 1
