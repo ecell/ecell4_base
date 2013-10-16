@@ -1,7 +1,9 @@
-import ecell4.reaction_reader.species as species
 import string   # for convert into .bngl
 import copy
 from types import MethodType
+
+import ecell4.reaction_reader.species as species
+import ecell4.reaction_reader.options as options
 
 from collections import defaultdict
 
@@ -169,10 +171,10 @@ class Convert2BNGManager(object):
         species.Species.convert2bng = MethodType(convert2bng_species, None, species.Species)
         species.Subunit.convert2bng = MethodType(convert2bng_subunit, None, species.Subunit)
         species.ReactionRule.convert2bng = MethodType(convert2bng_reactionrule, None, species.ReactionRule)
-        species.IncludeReactants.convert2bng = MethodType(convert2bng_include_reactants, None, species.IncludeReactants)
-        species.ExcludeReactants.convert2bng = MethodType(convert2bng_exclude_reactants, None, species.ExcludeReactants)
-        species.IncludeProducts.convert2bng = MethodType(convert2bng_include_products, None, species.IncludeProducts)
-        species.ExcludeProducts.convert2bng = MethodType(convert2bng_exclude_products, None, species.ExcludeProducts)
+        options.IncludeReactants.convert2bng = MethodType(convert2bng_include_reactants, None, options.IncludeReactants)
+        options.ExcludeReactants.convert2bng = MethodType(convert2bng_exclude_reactants, None, options.ExcludeReactants)
+        options.IncludeProducts.convert2bng = MethodType(convert2bng_include_products, None, options.IncludeProducts)
+        options.ExcludeProducts.convert2bng = MethodType(convert2bng_exclude_products, None, options.ExcludeProducts)
 
     def expand_reactions(self):
         # Expand labels and update modification collection
@@ -342,7 +344,7 @@ class Convert2BNGManager(object):
             else:   # containing no labels
                 s = "\t%s\t%f" % (rr.convert2bng(), rr.options()[0])
                 for cond in rr.options():
-                    if isinstance(cond, species.Option):
+                    if isinstance(cond, options.Option):
                         s = "%s %s" % (s, cond.convert2bng() )
                 s += "\n"
                 fd.write(s)
