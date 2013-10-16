@@ -66,6 +66,10 @@ class SubunitRegister:
         return self.name
     def get_domains(self):
         return self.domains
+    def __repr__(self):
+        return "SubunitRegister: %s %s" % (self.name, self.domains)
+    def __str__(self):
+        return self.__repr__()
 
 class DomainStateRegister:
     def __init__(self, name):
@@ -77,7 +81,35 @@ class DomainStateRegister:
         return self.name
     def get_domains(self):
         return self.domains
+    def __repr__(self):
+        return "SubunitRegister: %s %s" % (self.name, self.domains)
+    def __str__(self):
+        return self.__repr__()
 
+def check_registers(rr):
+    if not isinstance(rr, species.ReactionRule):
+        raise RuntimeError("Invalid argument")
+    found_registers = dict()
+    for sp_obj in rr.reactants() + rr.products:
+        for subunit_obj in sp_obj.get_subunit_list():
+            su_name = subunit_obj.get_name()
+            # subunit register
+            if is_register(su_name):
+                if not found_registers.has_key(su_name):
+                    found_registers[su_name] = SubunitRegister(su_name)
+                for domain, (state, binding) in subunit_obj.get_modifications_list.items():
+                    found_registers[su_name].add_domain( domain )
+            # domain-state register
+            for domain, (state, binding) in subunit_obj.get_modification_list:
+                if is_register(state):
+                    if not found_registers.has_key(state):
+                        found_registers[state] = DomainStateRegister(state)
+                    found_registers[state].add_domain(domain)
+    return found_registers
+    
+def dump_registers( reg_dict, fdesc ):
+    for reg_name, reg_obj in reg_dict.items():
+        fdesc.write( "%s : %s\n" % (reg_name, reg_obj) )
         
 # Formatters for each class
 # class Species
