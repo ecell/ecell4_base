@@ -8,7 +8,7 @@ import ecell4.reaction_reader.options as options
 from collections import defaultdict
 
 # Label Related
-def is_label(s):
+def is_register(s):
     return 1 < len(s) and s[0] == '_'
 
 def check_labeled_modification(su):
@@ -20,7 +20,7 @@ def check_labeled_modification(su):
 
 def check_labeled_subunit(su):
     retval = []
-    if is_label(su.get_name()):
+    if is_register(su.get_name()):
         for mod, (state, binding) in su.get_modifications_list().items():
             retval.append( (mod, state, binding) )
     return retval
@@ -36,7 +36,7 @@ def check_label_containing_reaction(rr):
             for (label, mod) in d:
                 reactant_labels[label].append( (su.get_name(), mod) )
             # check the subunit label
-            if is_label(su.get_name()):
+            if is_register(su.get_name()):
                 for (su_mod, su_state, su_binding) in check_labeled_subunit(su):
                     subunit_labels[su.get_name()][su_mod].add(su_state)
                 #subunit_labels[su.get_name()].extend(check_labeled_subunit(su))
@@ -48,13 +48,35 @@ def check_label_containing_reaction(rr):
             for (lebel, mod) in d:
                 product_labels[label].append( (su.get_name(), mod) )
             # check the subunit label
-            #if is_label(su.get_name()):
+            #if is_register(su.get_name()):
             #    subunit_labels[su.get_name()].extend(check_labeled_subunit(su))
-            if is_label(su.get_name()):
+            if is_register(su.get_name()):
                 for (su_mod, su_state, su_binding) in check_labeled_subunit(su):
                     subunit_labels[su.get_name()][su_mod].add(su_state)
 
     return (reactant_labels, product_labels, subunit_labels)
+
+class SubunitRegister:
+    def __init__(self, name):
+        self.name = name
+        self.domains = list()
+    def add_domain(self, domain):
+        self.domains.append( domain )
+    def get_name(self):
+        return self.name
+    def get_domains(self):
+        return self.domains
+
+class DomainStateRegister:
+    def __init__(self, name):
+        self.name = name
+        self.domains = list()
+    def add_domain(self, domain):
+        self.domains.append( domain )
+    def get_name(self):
+        return self.name
+    def get_domains(self):
+        return self.domains
 
         
 # Formatters for each class
@@ -73,7 +95,7 @@ def convert2bng_subunit(self, labels = None):
                 mods1.append("%s!%s" % (mod, binding))
             else:
                 mods1.append(mod)
-        elif is_label(state):
+        elif is_register(state):
             if labels != None and (state in labels) and 0 < len(labels[state]):
                 if binding == '_':
                     mods2.append("%s~%s!+" % (mod, binding))
@@ -100,7 +122,7 @@ def convert2bng_subunit(self, labels = None):
     mods2.sort()
     mods1.extend(mods2)
     su_name = self.name
-    if is_label(su_name):
+    if is_register(su_name):
         #import ipdb; ipdb.set_trace()
         if labels != None and labels.has_key(su_name):
             su_name = labels[su_name]
@@ -183,51 +205,50 @@ class Convert2BNGManager(object):
             self.__rules_notes.append(notes)
         self.__expanded = True
 
+    def dump_modification_collection_dict(self, fdesc):
+        for (subunit_name, domain_state_dict) in self.__modification_collection_dict.items():
+            fdesc.write( ("%s\n" % subunit_name) )
+            for (domain_name, state_set) in domain_state_dict.items():
+                fdesc.write( ("\t%s\t%s\n" % (domain_name, list(state_set)))  )
+
+    def add_modification_collection_dict_subunit(self, subunit_obj):
+        if isinstance(subunit_obj, species.Subunit):
+            su_name = subunit_obj.get_name()
+            if is_register(su_name):
+                return  # do nothing
+            # search the same subunit, domain and then, add there
+            if not self.__modification_collection_dict.has_key(su_name):
+                self.__modification_collection_dict[su_name] = defaultdict(set)
+            for domain, (state, binding) in subunit_obj.get_modifications_list().items():
+                if not is_register(state):
+                    self.__modification_collection_dict[su_name][domain].add(state)
+            return
+        else:
+            raise RuntimeError("Invalid instance was passed as an argument")
+
     def build_modification_collection_dict(self):
-        # The first argumet (current_dict) is dict(defaultdict(set))
-        def add_modification_collection_dict_subunit(current_dict, subunit):
-            su_name = subunit.get_name()
-            if is_label(su_name):
-                # do nothing
-                return current_dict
-
-            if not current_dict.has_key(su_name):
-                current_dict[subunit.get_name()] = defaultdict(set)
-            for mod, (state, binding) in subunit.get_modifications_list().items():
-                if not is_label(state):
-                        current_dict[su_name][mod].add(state)
-            return current_dict
-
         # style:  dict[subunit][modification] = set(states)
-        temp_dict = {}
         # Build modification dictionary by species
         for (sp, attr) in self.__species:
-            for su in sp.get_subunit_list():
-                temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
+            for subunit_obj in sp.get_subunit_list():
+                self.add_modification_collection_dict_subunit(subunit_obj)
         # Build modification dictionary by ReactionRules
         reactants = []
         products = []
         for rr in self.__rules:
-            reacntants = rr.reactants()
+            reactants = rr.reactants()
             products = rr.products()
             # Following if-else statements is to enable output Null and Src
             # in 'molecule_types' section in degradation/synthesis reactions.
             if rr.is_degradation() == True:
-                temp_dict = add_modification_collection_dict_subunit(
-                        temp_dict, species_Null.get_subunit_list()[0])
+                self.add_modification_collection_dict_subunit(species_Null.get_subunit_list()[0])
             elif rr.is_synthesis() == True:
-                temp_dict = add_modification_collection_dict_subunit(
-                        temp_dict, species_Src.get_subunit_list()[0])
-            for r in reactants:
-                for su in r.get_subunit_list():
-                    temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
-            for p in products:
-                for su in p.get_subunit_list():
-                    temp_dict = add_modification_collection_dict_subunit(temp_dict, su)
-        # Replace instance-member
-        self.__modification_collection_dict = temp_dict
-        self.__modification_collection_dict_ext = copy.deepcopy(
-                self.__modification_collection_dict)
+                self.add_modification_collection_dict_subunit( species_Src.get_subunit_list()[0])
+            # Add each substrates
+            for r in reactants + products:
+                for subunit_obj in r.get_subunit_list():
+                    self.add_modification_collection_dict_subunit(subunit_obj)
+        self.__modification_collection_dict_ext = copy.deepcopy(self.__modification_collection_dict)
     
     def get_modification_collection_dict(self):
         return self.__modification_collection_dict
@@ -336,7 +357,7 @@ class Convert2BNGManager(object):
                 for applied in bngl_strs:
                     s = "\t%s\t%f" % (applied, rr.options()[0])
                     for cond in rr.options():
-                        if isinstance(cond, species.Option):
+                        if isinstance(cond, options.Option):
                             s = "%s %s" % (s, cond.convert2bng())
                     s += "\n"
                     fd.write(s)
