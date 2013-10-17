@@ -4,8 +4,13 @@ namespace ecell4
 {
 
 LatticeSpace::LatticeSpace()
-    : VACANT_TYPE_("VACANT")
+    : VACANT_TYPE_("VACANT"), theNormalizedVoxelRadius(0.5)
 {
+    // tmp
+    edge_lengths_[0] = 10;
+    edge_lengths_[1] = 5;
+    edge_lengths_[2] = 15;
+
     set_lattice_properties();
 }
 
@@ -83,6 +88,10 @@ std::vector<std::pair<ParticleID, Particle> >
             i != lattice_.end(); ++i)
     {
         const Voxel voxel((*i).second);
+        if (voxel.ptr_mt == &VACANT_TYPE_)
+        {
+            continue;
+        }
         retval.push_back(std::pair<ParticleID, Particle>(
                     voxel.id, voxel2particle(voxel)));
     }
@@ -447,11 +456,12 @@ Voxel& LatticeSpace::voxel_at(Integer coord)
     for (lattice_container_type::iterator i(this->lattice_.begin());
             i != lattice_.end(); ++i)
     {
-        if ((*i).second.coord = coord)
+        if ((*i).second.coord == coord)
         {
             return (*i).second;
         }
     }
+    throw "Exception: Not in lattice_";
 }
 
 Integer LatticeSpace::position2coord(Integer row, Integer layer, Integer col)
