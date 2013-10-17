@@ -37,7 +37,7 @@ class DomainStateRegister:
     def get_domains(self):
         return self.domains
     def __repr__(self):
-        return "SubunitRegister: %s %s" % (self.name, list(self.domains))
+        return "DomainStateRegister: %s %s" % (self.name, list(self.domains))
     def __str__(self):
         return self.__repr__()
 
@@ -233,6 +233,8 @@ class Convert2BNGManager(object):
 
     def build_modification_collection_dict(self):
         # style:  dict[subunit][modification] = set(states)
+        # reset
+        self.__modification_collection_dict = defaultdict(lambda:defaultdict(set))
         # Build modification dictionary by species
         for (sp, attr) in self.__species:
             for subunit_obj in sp.get_subunit_list():
