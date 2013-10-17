@@ -7,54 +7,9 @@ import ecell4.reaction_reader.options as options
 
 from collections import defaultdict
 
-# Label Related
+# Register Related
 def is_register(s):
     return 1 < len(s) and s[0] == '_'
-
-def check_labeled_modification(su):
-    retval = []
-    for mod, (state, binding) in su.get_modifications_list().items():
-        if 1 < len(state) and state[0] == '_':
-            retval.append( (state,mod) )    # state should be label.
-    return retval
-
-def check_labeled_subunit(su):
-    retval = []
-    if is_register(su.get_name()):
-        for mod, (state, binding) in su.get_modifications_list().items():
-            retval.append( (mod, state, binding) )
-    return retval
-
-def check_label_containing_reaction(rr):
-    reactant_labels = defaultdict(list)
-    product_labels = defaultdict(list)
-    subunit_labels = defaultdict(lambda:defaultdict(set))
-    for r in rr.reactants():
-        for su in r.get_subunit_list():
-            # check modification-state labels.
-            d = check_labeled_modification(su)
-            for (label, mod) in d:
-                reactant_labels[label].append( (su.get_name(), mod) )
-            # check the subunit label
-            if is_register(su.get_name()):
-                for (su_mod, su_state, su_binding) in check_labeled_subunit(su):
-                    subunit_labels[su.get_name()][su_mod].add(su_state)
-                #subunit_labels[su.get_name()].extend(check_labeled_subunit(su))
-
-    for p in rr.products():
-        for su in p.get_subunit_list():
-            # check modification-state labels.
-            d = check_labeled_modification(su)
-            for (lebel, mod) in d:
-                product_labels[label].append( (su.get_name(), mod) )
-            # check the subunit label
-            #if is_register(su.get_name()):
-            #    subunit_labels[su.get_name()].extend(check_labeled_subunit(su))
-            if is_register(su.get_name()):
-                for (su_mod, su_state, su_binding) in check_labeled_subunit(su):
-                    subunit_labels[su.get_name()][su_mod].add(su_state)
-
-    return (reactant_labels, product_labels, subunit_labels)
 
 class SubunitRegister:
     def __init__(self, name):
@@ -210,17 +165,16 @@ class Convert2BNGManager(object):
         self.__expanded = False
         self.__species = species
         self.__rules = rules
-        self.__rules_notes = []
         self.__modification_collection_dict = defaultdict(lambda:defaultdict(set))
         self.__modification_collection_dict_ext = defaultdict(lambda:defaultdict(set))
+        # about registers
+        self.__reg_assign_candidate = [None] * len(rules)
         if 0 < len(species) and 0 < len(rules):
             self.build_modification_collection_dict()
-
         # add convert2bng method for related classes
         self.initialize_methods()
         # analyze all reactions
         self.expand_reactions()
-        self.hoge()
 
     def initialize_methods(self):
         species.Species.convert2bng = MethodType(convert2bng_species, None, species.Species)
@@ -232,17 +186,29 @@ class Convert2BNGManager(object):
         options.ExcludeProducts.convert2bng = MethodType(convert2bng_exclude_products, None, options.ExcludeProducts)
 
     def expand_reactions(self):
-        # Expand labels and update modification collection
-        for i, rr in enumerate(self.__rules):
-            notes = self.build_label_expanded_reactionrule(rr)
-            self.__rules_notes.append(notes)
+        import sys
+        for (i, rr) in enumerate(self.__rules):
+            self.__reg_assign_candidate[i] = self.expand_reactionrule(rr)
+            #print self.__reg_assign_candidate[i]
         self.__expanded = True
 
-    def hoge(self):
-        import sys
-        for rr in self.__rules:
-            mp = check_registers(rr)
-            dump_registers_dict(mp, sys.stdout)
+    def expand_reactionrule(self, rr):
+        reg_map = check_registers(rr)
+        reg_assign_candidates = defaultdict( set )
+        for (reg_name), reg_obj in reg_map.items():
+            if isinstance(reg_obj, SubunitRegister):
+                for subunit_name, domain_state_dict in self.__modification_collection_dict.items():
+                    domains = set( domain_state_dict.keys() )
+                    if (reg_obj.get_domains()).issubset(domains):
+                        reg_assign_candidates[reg_name].add(subunit_name)
+                        reg_assign_candidates[reg_name].discard('')
+            elif isinstance(reg_obj, DomainStateRegister):
+                for modifying_domain in list( reg_obj.get_domains() ):
+                    for su_name, domain_state_dict in self.__modification_collection_dict.items():
+                        if domain_state_dict.has_key(modifying_domain):
+                            reg_assign_candidates[reg_name].update(domain_state_dict[modifying_domain])
+                            reg_assign_candidates[reg_name].discard('')
+        return reg_assign_candidates
 
     def dump_modification_collection_dict(self, fdesc):
         for (subunit_name, domain_state_dict) in self.__modification_collection_dict.items():
@@ -292,43 +258,6 @@ class Convert2BNGManager(object):
     def get_modification_collection_dict(self):
         return self.__modification_collection_dict
 
-    def build_label_expanded_reactionrule(self, rr):
-        def find_subunit_candidates(mod, state_set):
-            ret = set()
-            for (subunit, modification) in self.__modification_collection_dict.items():
-                for (candidate_mod, candidate_state_set) in modification.items():
-                    if candidate_mod == mod and state_set.issubset(candidate_state_set):
-                        ret.add(subunit)
-            return ret
-
-        (reactant_labels, product_labels, subunit_labels) = check_label_containing_reaction(rr)
-        # Find candidates that is asigned for Subunits' registers.
-        subunit_candidates = None
-        modification_candidates = None
-        if subunit_labels:
-            subunit_candidates = {}
-            for (label, states_dict) in subunit_labels.items():
-                subunit_candidates[label] = set()
-                for (mod, states_set) in states_dict.items():
-                    subunit_candidates[label] = subunit_candidates[label] | find_subunit_candidates(mod, states_set) 
-        # Find candidates that is asigned for Modifications' registers.
-        if reactant_labels or product_labels:
-            bngl_strs = []
-            modification_candidates = {}    # key is label(::string), value is a set of states.
-            for label, pos in reactant_labels.items():
-                modification_candidates[label] = set()
-                for (su, mod) in pos:
-                    modification_candidates[label] = modification_candidates[label] | self.__modification_collection_dict[su][mod]
-            # Update modification_collection_dict for molecule_types section.
-            for (label, pos) in reactant_labels.items():
-                for (su, mod) in pos:
-                    self.__modification_collection_dict_ext[su][mod] = self.__modification_collection_dict_ext[su][mod] | modification_candidates[label]
-            for (label, pos) in product_labels.items():
-                for (su, mod) in pos:
-                    self.__modification_collection_dict_ext[su][mod] = self.__modification_collection_dict_ext[su][mod] | modification_candidates[label]
-
-        return (modification_candidates, subunit_candidates)
-
     def write_section_seed_species(self, fd):
         fd.write("begin seed species\n")
         for i, (sp, attr) in enumerate( self.__species ):
@@ -356,21 +285,6 @@ class Convert2BNGManager(object):
         fd.write("end molecule types\n")
 
     def write_section_reaction_rules(self, fd):
-        def merge_candidates_dict(d1, d2):
-            retval = defaultdict(set)
-            if d1:
-                if d2:
-                    for (key, val_set) in d1.items():
-                        retval[key] = val_set
-                    for (key, val_set) in d2.items():
-                        retval[key] = retval[key] | val_set
-                else:
-                    retval = d1
-            else:
-                if d2:
-                    retval = d2
-            return retval
-
         def convert2bngl_label_expanded_reactionrule_recursive(
                 rr, label_list, candidates, acc, bnglstr_acc):
             acc_conbination = copy.deepcopy(acc)
@@ -385,14 +299,13 @@ class Convert2BNGManager(object):
         fd.write("begin reaction rules\n")
         for i, rr in enumerate(self.__rules):
             fd.write( ("\t# %s\n" % rr) )
-            (modification_candidates, subunit_candidates) = self.__rules_notes[i]
-            if modification_candidates or subunit_candidates:
-                candidates = merge_candidates_dict(modification_candidates, subunit_candidates)
+            reg_assign_candidates = self.__reg_assign_candidate[i]
+            if reg_assign_candidates:
                 fd.write("\t# candidates for labels:\n")        #Comments
-                fd.write("\t#   %s\n" % candidates)             #Comments
+                fd.write("\t#   %s\n" % reg_assign_candidates)             #Comments
                 bngl_strs = []
                 convert2bngl_label_expanded_reactionrule_recursive(
-                        rr, candidates.keys(), candidates, {}, bngl_strs)
+                        rr, reg_assign_candidates.keys(), reg_assign_candidates, {}, bngl_strs)
                 for applied in bngl_strs:
                     s = "\t%s\t%f" % (applied, rr.options()[0])
                     for cond in rr.options():
@@ -400,7 +313,6 @@ class Convert2BNGManager(object):
                             s = "%s %s" % (s, cond.convert2bng())
                     s += "\n"
                     fd.write(s)
-
             else:   # containing no labels
                 s = "\t%s\t%f" % (rr.convert2bng(), rr.options()[0])
                 for cond in rr.options():
@@ -409,4 +321,3 @@ class Convert2BNGManager(object):
                 s += "\n"
                 fd.write(s)
         fd.write("end reaction rules\n")
-
