@@ -19,6 +19,7 @@ Installing dependencies (Mac OSX)
 
 ::
 
+   $ brew tap homebrew/science
    $ brew install pkg-config
    $ brew install gsl
    $ brew install boost
