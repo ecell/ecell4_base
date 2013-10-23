@@ -9,9 +9,9 @@ def attributegen():
 
 @reaction_rules
 def rulegen():
-    R(l) + L(r,r,r)     == R(l^1).L(r^1,r,r)      | (kp1, koff)
-    R(l) + L(r,r,r^_)   == R(l^1).L(r^1,r,r^_)    | (kp2, koff)
-    R(l) + L(r,r^_1,r^_2) == R(l^1).L(r^1,r^_1,r^_2) | (kp2, koff)
+    R(l) + L(_1, _2, _3, r=[_1,_2,_3]) == R(l^1).L(_1^1, _2, _3, r=[_1,_2,_3]) | (kp1, koff)
+    R(l) + L(_1, _2, _3^_, r=[_1,_2,_3]) == R(l^1).L(_1^1, _2, _3^_, r=[_1,_2,_3]) | (kp2, koff)
+    R(l) + L(_1, _2^_, _3^_, r=[_1,_2,_3]) == R(l^1).L(_1^1, _2^_, _3^_, r=[_1,_2,_3]) | (kp2, koff)
 
 if __name__ == "__main__":
     newseeds = []
