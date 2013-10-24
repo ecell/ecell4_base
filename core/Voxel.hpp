@@ -17,12 +17,12 @@ public:
         coord(coord),
         ptr_mt(ptr_mt),
         diffuse_size(0),
-        adjoining_size(12)
+        adjoining_size(12),
+        adjoiningVoxels(adjoining_size)
     {
     }
     ~Voxel()
     {
-        //delete[] adjoiningVoxels;
     }
     bool setAdjoiningVoxel(Integer direction, Voxel* adjoining)
     {
@@ -39,8 +39,7 @@ public:
     Integer coord;
     Integer diffuse_size;
     Integer adjoining_size;
-    //std::vector<Voxel*> adjoiningVoxels;
-    Voxel** adjoiningVoxels;
+    std::vector<Voxel*> adjoiningVoxels;
     MolecularType* ptr_mt;
 };
 

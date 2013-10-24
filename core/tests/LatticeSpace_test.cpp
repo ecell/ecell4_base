@@ -65,31 +65,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
     BOOST_CHECK_EQUAL(lspace.num_particles(), 2);
 }
 
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_remove_spartilce)
-{
-    LatticeSpace lspace;
-
-    ParticleID id = ParticleID(ParticleID::value_type(0,1));
-    Species sp = lspace.add_molecular_type(std::string("TEST"));
-    SParticle sparticle = {
-        .coord = 6,
-        .species = sp
-    };
-
-    ParticleID a_id = ParticleID(ParticleID::value_type(0,2));
-    Species a = lspace.add_molecular_type(std::string("ANOTHER"));
-    SParticle another = {
-        .coord = 5,
-        .species = a
-    };
-
-    BOOST_CHECK(lspace.update_sparticle(id, sparticle));
-    BOOST_CHECK(lspace.update_sparticle(a_id, another));
-    lspace.remove_sparticle(id);
-    BOOST_CHECK_EQUAL(lspace.num_particles(sp), 0);
-    BOOST_CHECK_EQUAL(lspace.num_particles(), 1);
-}
-
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 {
     LatticeSpace lspace;

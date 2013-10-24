@@ -6,7 +6,7 @@ namespace ecell4
 LatticeSpace::LatticeSpace()
     : VACANT_TYPE_("VACANT"), theNormalizedVoxelRadius(0.5)
 {
-    // tmp
+    // example
     edge_lengths_[0] = 10;
     edge_lengths_[1] = 5;
     edge_lengths_[2] = 15;
@@ -131,6 +131,8 @@ std::vector<std::pair<ParticleID, Particle> >
  */
 void LatticeSpace::set_lattice_properties()
 {
+    lattice_type_ = HCP_LATTICE;
+
     adjoining_size_ = 12;
     theHCPl = theNormalizedVoxelRadius/sqrt(3);
     theHCPx = theNormalizedVoxelRadius*sqrt(8.0/3); //Lx
@@ -150,7 +152,6 @@ void LatticeSpace::set_lattice_properties()
     layer_size_ = (Integer)rint((theCenterPoint[1]*2)/theHCPy);
     col_size_ = (Integer)rint((theCenterPoint[0]*2)/theHCPx);
 
-    Integer coord(0);
     SerialIDGenerator<ParticleID> sidgen;
     for (Integer coord(0); coord < row_size_ * layer_size_ * col_size_; ++coord)
     {
@@ -162,173 +163,168 @@ void LatticeSpace::set_lattice_properties()
     for (Integer coord(0); coord < row_size_ * layer_size_ * col_size_; ++coord)
     {
         Voxel& voxel(voxel_at(coord));
-        Position3 pos(coord2position(coord));
-        concatenate_voxel(voxel, pos[0], pos[1], pos[2]);
+        Global global(coord2global(coord));
+        concatenate_voxel(voxel, global);
     }
     theNullCoord = row_size_ * layer_size_ * col_size_;
 }
 
-void LatticeSpace::concatenate_voxel(Voxel& voxel,
-        Integer row, Integer layer, Integer col)
+void LatticeSpace::concatenate_voxel(Voxel& voxel, const Global& global)
 {
-    Integer coord(position2coord(row, layer, col));
-    if (row > 0)
+    if (global.row > 0)
     {
-        concatenate_rows(voxel, coord, row-1, layer, col);
+        concatenate_rows(voxel, global.north());
     }
-    if (layer > 0)
+    if (global.layer > 0)
     {
-        concatenate_layers(voxel, coord, row, layer-1, col);
+        concatenate_layers(voxel, global.ventral());
     }
-    if (col > 0)
+    if (global.col > 0)
     {
-        concatenate_cols(voxel, coord, row, layer, col-1);
+        concatenate_cols(voxel, global.west());
     }
 }
 
-void LatticeSpace::concatenate_rows(Voxel& voxel, Integer coord,
-        Integer row, Integer layer, Integer col)
+void LatticeSpace::concatenate_rows(Voxel& voxel, const Global& north)
 {
-    Integer b(position2coord(row, layer, col));
-    Voxel& adjoining_voxel(voxel_at(b));
-    voxel.adjoiningVoxels[NORTH] = &adjoining_voxel;
-    adjoining_voxel.adjoiningVoxels[SOUTH] = &voxel;
+    Integer north_coord(global2coord(north));
+    Voxel& north_voxel(voxel_at(north_coord));
+    voxel.setAdjoiningVoxel(NORTH, &north_voxel);
+    north_voxel.setAdjoiningVoxel(SOUTH, &voxel);
 }
 
-void LatticeSpace::concatenate_layers(Voxel& voxel, Integer coord,
-        Integer row, Integer layer, Integer col)
+void LatticeSpace::concatenate_layers(Voxel& voxel, const Global& ventral)
 {
-    Integer b(position2coord(row, layer, col));
-    Voxel& adjoining_voxel(voxel_at(b));
+    Integer ventral_coord(global2coord(ventral));
+    Voxel& ventral_voxel(voxel_at(ventral_coord));
     switch(lattice_type_)
     {
         case HCP_LATTICE:
-            if ((layer + 1) % 2 + col % 2 == 1)
+            if ((ventral.layer + 1) % 2 + ventral.col % 2 == 1)
             {
-                voxel.setAdjoiningVoxel(VENTRALN, &adjoining_voxel);
-                adjoining_voxel.setAdjoiningVoxel(DORSALS, &voxel);
-                if (row > row_size_ - 1)
+                voxel.setAdjoiningVoxel(VENTRALN, &ventral_voxel);
+                ventral_voxel.setAdjoiningVoxel(DORSALS, &voxel);
+                if (ventral.row < row_size_ - 1)
                 {
-                    Integer c(position2coord(row+1, layer, col));
-                    Voxel& adjoining_voxel(voxel_at(c));
-                    voxel.setAdjoiningVoxel(VENTRALS, &adjoining_voxel);
-                    adjoining_voxel.setAdjoiningVoxel(DORSALN, &voxel);
+                    Integer ventrals_coord(global2coord(ventral.south()));
+                    Voxel& ventrals_voxel(voxel_at(ventrals_coord));
+                    voxel.setAdjoiningVoxel(VENTRALS, &ventrals_voxel);
+                    ventrals_voxel.setAdjoiningVoxel(DORSALN, &voxel);
                 }
             }
             else
             {
-                voxel.setAdjoiningVoxel(VENTRALS, &adjoining_voxel);
-                adjoining_voxel.setAdjoiningVoxel(DORSALN, &voxel);
-                if (row > 0)
+                voxel.setAdjoiningVoxel(VENTRALS, &ventral_voxel);
+                ventral_voxel.setAdjoiningVoxel(DORSALN, &voxel);
+                if (ventral.row > 0)
                 {
-                    Integer c(position2coord(row-1, layer, col));
-                    Voxel& adjoining_voxel(voxel_at(c));
-                    voxel.setAdjoiningVoxel(VENTRALN, &adjoining_voxel);
-                    adjoining_voxel.setAdjoiningVoxel(DORSALS, &voxel);
+                    Integer ventraln_coord(global2coord(ventral.north()));
+                    Voxel& ventraln_voxel(voxel_at(ventraln_coord));
+                    voxel.setAdjoiningVoxel(VENTRALN, &ventraln_voxel);
+                    ventraln_voxel.setAdjoiningVoxel(DORSALS, &voxel);
                 }
             }
             break;
         case CUBIC_LATTICE:
-            voxel.setAdjoiningVoxel(VENTRAL, &adjoining_voxel);
-            adjoining_voxel.setAdjoiningVoxel(DORSAL, &voxel);
+            voxel.setAdjoiningVoxel(VENTRAL, &ventral_voxel);
+            ventral_voxel.setAdjoiningVoxel(DORSAL, &voxel);
             break;
     }
 }
 
-void LatticeSpace::concatenate_cols(Voxel& voxel, Integer coord,
-        Integer row, Integer layer, Integer col)
+void LatticeSpace::concatenate_cols(Voxel& voxel, const Global& west)
 {
-    Integer b(position2coord(row, layer, col));
-    Voxel& adjoining_voxel(voxel_at(b));
+    Integer west_coord(global2coord(west));
+    Voxel& west_voxel(voxel_at(west_coord));
     switch(lattice_type_)
     {
         case HCP_LATTICE:
-            if (layer % 2 == 0)
+            if (west.layer % 2 == 0)
             {
-                if ((col + 1) % 2 == 1)
+                if ((west.col + 1) % 2 == 1)
                 {
-                    voxel.setAdjoiningVoxel(NW, &adjoining_voxel);
-                    adjoining_voxel.setAdjoiningVoxel(SE, &voxel);
-                    if (row < row_size_ - 1)
+                    voxel.setAdjoiningVoxel(NW, &west_voxel);
+                    west_voxel.setAdjoiningVoxel(SE, &voxel);
+                    if (west.row < row_size_ - 1)
                     {
-                        Integer c(position2coord(row+1, layer, col));
-                        Voxel& adjoining_voxel(voxel_at(c));
-                        voxel.setAdjoiningVoxel(SW, &adjoining_voxel);
-                        adjoining_voxel.setAdjoiningVoxel(NE, &voxel);
+                        Integer sw_coord(global2coord(west.south()));
+                        Voxel& sw_voxel(voxel_at(sw_coord));
+                        voxel.setAdjoiningVoxel(SW, &sw_voxel);
+                        sw_voxel.setAdjoiningVoxel(NE, &voxel);
                     }
-                    if (layer < layer_size_ - 1)
+                    if (west.layer < layer_size_ - 1)
                     {
-                        Integer c(position2coord(row, layer+1, col));
-                        Voxel& adjoining_voxel(voxel_at(c));
-                        voxel.setAdjoiningVoxel(WEST, &adjoining_voxel);
-                        adjoining_voxel.setAdjoiningVoxel(EAST, &voxel);
+                        Integer c(global2coord(west.dorsal()));
+                        Voxel& west_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(WEST, &west_voxel);
+                        west_voxel.setAdjoiningVoxel(EAST, &voxel);
                     }
                 }
                 else
                 {
-                    voxel.adjoiningVoxels[SW] = &adjoining_voxel;
-                    adjoining_voxel.adjoiningVoxels[NE] = &voxel;
-                    if (row > 0)
+                    voxel.setAdjoiningVoxel(SW, &west_voxel);
+                    west_voxel.setAdjoiningVoxel(NE, &voxel);
+                    if (west.row > 0)
                     {
-                        Integer c(position2coord(row-1, layer, col));
-                        Voxel& adjoining_voxel(voxel_at(c));
-                        voxel.setAdjoiningVoxel(NW, &adjoining_voxel);
-                        adjoining_voxel.setAdjoiningVoxel(SE, &voxel);
+                        Integer nw_coord(global2coord(west.north()));
+                        Voxel& nw_voxel(voxel_at(nw_coord));
+                        voxel.setAdjoiningVoxel(NW, &nw_voxel);
+                        nw_voxel.setAdjoiningVoxel(SE, &voxel);
                     }
-                    if (layer > 0)
+                    if (west.layer > 0)
                     {
-                        Integer c(position2coord(row, layer-1, col));
-                        Voxel& adjoining_voxel(voxel_at(c));
-                        voxel.setAdjoiningVoxel(WEST, &adjoining_voxel);
-                        adjoining_voxel.setAdjoiningVoxel(EAST, &voxel);
+                        Integer c(global2coord(west.ventral()));
+                        Voxel& west_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(WEST, &west_voxel);
+                        west_voxel.setAdjoiningVoxel(EAST, &voxel);
                     }
                 }
             }
             else
             {
-                if ((col + 1) % 2 == 1)
+                if ((west.col + 1) % 2 == 1)
                 {
-                    voxel.setAdjoiningVoxel(SW, &adjoining_voxel);
-                    adjoining_voxel.setAdjoiningVoxel(NE, &voxel);
-                    if (row > 0)
+                    voxel.setAdjoiningVoxel(SW, &west_voxel);
+                    west_voxel.setAdjoiningVoxel(NE, &voxel);
+                    if (west.row > 0)
                     {
-                        Integer c(position2coord(row-1, layer, col));
-                        Voxel& adjoining_voxel(voxel_at(c));
-                        voxel.setAdjoiningVoxel(NW, &adjoining_voxel);
-                        adjoining_voxel.setAdjoiningVoxel(SE, &voxel);
+                        Integer nw_coord(global2coord(west.north()));
+                        Voxel& west_voxel(voxel_at(nw_coord));
+                        voxel.setAdjoiningVoxel(NW, &west_voxel);
+                        west_voxel.setAdjoiningVoxel(SE, &voxel);
                     }
-                    if (layer < layer_size_ - 1)
+                    if (west.layer < layer_size_ - 1)
                     {
-                        Integer c(position2coord(row, layer+1, col));
-                        Voxel& adjoining_voxel(voxel_at(c));
-                        voxel.setAdjoiningVoxel(WEST, &adjoining_voxel);
-                        adjoining_voxel.setAdjoiningVoxel(EAST, &voxel);
+                        Integer c(global2coord(west.dorsal()));
+                        Voxel& west_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(WEST, &west_voxel);
+                        west_voxel.setAdjoiningVoxel(EAST, &voxel);
                     }
                 }
                 else
                 {
-                    voxel.setAdjoiningVoxel(NW, &adjoining_voxel);
-                    adjoining_voxel.setAdjoiningVoxel(SE, &voxel);
-                    if (row < row_size_ -1)
+                    voxel.setAdjoiningVoxel(NW, &west_voxel);
+                    west_voxel.setAdjoiningVoxel(SE, &voxel);
+                    if (west.row < row_size_ -1)
                     {
-                        Integer c(position2coord(row+1, layer, col));
-                        Voxel& adjoining_voxel(voxel_at(c));
-                        voxel.setAdjoiningVoxel(SW, &adjoining_voxel);
-                        adjoining_voxel.setAdjoiningVoxel(NE, &voxel);
+                        Integer sw_coord(global2coord(west.south()));
+                        Voxel& sw_voxel(voxel_at(sw_coord));
+                        voxel.setAdjoiningVoxel(SW, &sw_voxel);
+                        sw_voxel.setAdjoiningVoxel(NE, &voxel);
                     }
-                    if (layer > 0)
+                    if (west.layer > 0)
                     {
-                        Integer c(position2coord(row, layer-1, col));
-                        Voxel& adjoining_voxel(voxel_at(c));
-                        voxel.setAdjoiningVoxel(WEST, &adjoining_voxel);
-                        adjoining_voxel.setAdjoiningVoxel(EAST, &voxel);
+                        Integer c(global2coord(west.ventral()));
+                        Voxel& west_voxel(voxel_at(c));
+                        voxel.setAdjoiningVoxel(WEST, &west_voxel);
+                        west_voxel.setAdjoiningVoxel(EAST, &voxel);
                     }
                 }
             }
             break;
         case CUBIC_LATTICE:
-            voxel.setAdjoiningVoxel(WEST, &adjoining_voxel);
-            adjoining_voxel.setAdjoiningVoxel(EAST, &voxel);
+            voxel.setAdjoiningVoxel(WEST, &west_voxel);
+            west_voxel.setAdjoiningVoxel(EAST, &voxel);
     }
 }
 
@@ -360,7 +356,6 @@ void LatticeSpace::exchange_coords(Voxel& voxel0, Voxel& voxel1)
 {
     Integer tmp_coord = voxel0.coord;
     Integer tmp_diffuse_size = voxel0.diffuse_size;
-    Voxel** tmp_adjoiningVoxels = voxel0.adjoiningVoxels;
 
     voxel0.coord = voxel1.coord;
     voxel0.diffuse_size = voxel1.diffuse_size;
@@ -368,12 +363,13 @@ void LatticeSpace::exchange_coords(Voxel& voxel0, Voxel& voxel1)
 
     voxel1.coord = tmp_coord;
     voxel1.diffuse_size = tmp_diffuse_size;
-    voxel1.adjoiningVoxels = tmp_adjoiningVoxels;
 
-    Position3 pos0 = coord2position(voxel0.coord);
-    Position3 pos1 = coord2position(voxel1.coord);
-    concatenate_voxel(voxel0, pos0[0], pos0[1], pos0[2]);
-    concatenate_voxel(voxel1, pos1[0], pos1[1], pos1[2]);
+    /*
+    Global g0(coord2global(voxel0.coord));
+    Global g1(coord2global(voxel1.coord));
+    concatenate_voxel(voxel0, g0);
+    concatenate_voxel(voxel1, g1);
+    */
 }
 
 void LatticeSpace::remove_sparticle(ParticleID pid)
@@ -405,12 +401,13 @@ MolecularType& LatticeSpace::get_molecular_type(Species& sp)
     throw "Exception in get_molerular_type";
 }
 
-void LatticeSpace::coord2global(Integer aCoord, Integer& aGlobalRow,
-        Integer& aGlobalLayer, Integer& aGlobalCol) const
+Global LatticeSpace::coord2global(Integer aCoord) const
 {
-    aGlobalCol = aCoord / (row_size_ * layer_size_);
-    aGlobalLayer = (aCoord % (row_size_ * layer_size_)) / row_size_;
-    aGlobalRow = (aCoord % (row_size_ * layer_size_)) % row_size_;
+    Global retval;
+    retval.col = aCoord / (row_size_ * layer_size_);
+    retval.layer = (aCoord % (row_size_ * layer_size_)) / row_size_;
+    retval.row = (aCoord % (row_size_ * layer_size_)) % row_size_;
+    return retval;
 }
 
 const Position3 LatticeSpace::coord2position(Integer coord) const
@@ -418,21 +415,21 @@ const Position3 LatticeSpace::coord2position(Integer coord) const
     Integer aGlobalCol;
     Integer aGlobalLayer;
     Integer aGlobalRow;
-    coord2global(coord, aGlobalRow, aGlobalLayer, aGlobalCol);
+    Global global(coord2global(coord));
     //the center point of a voxel
     Position3 position;
     switch(lattice_type_)
     {
         case HCP_LATTICE:
-            position[1] = (aGlobalCol % 2) * theHCPl + theHCPy * aGlobalLayer;
-            position[2] = aGlobalRow * 2 * theNormalizedVoxelRadius +
-            ((aGlobalLayer + aGlobalCol) % 2) * theNormalizedVoxelRadius;
-            position[0] = aGlobalCol * theHCPx;
+            position[1] = (global.col % 2) * theHCPl + theHCPy * global.layer;
+            position[2] = global.row * 2 * theNormalizedVoxelRadius +
+            ((global.layer + global.col) % 2) * theNormalizedVoxelRadius;
+            position[0] = global.col * theHCPx;
             break;
         case CUBIC_LATTICE:
-            position[1] = aGlobalLayer * 2 * theNormalizedVoxelRadius;
-            position[2] = aGlobalRow * 2 * theNormalizedVoxelRadius;
-            position[0] = aGlobalCol * 2 * theNormalizedVoxelRadius;
+            position[1] = global.layer * 2 * theNormalizedVoxelRadius;
+            position[2] = global.row * 2 * theNormalizedVoxelRadius;
+            position[0] = global.col * 2 * theNormalizedVoxelRadius;
             break;
     }
     return position;
@@ -464,11 +461,11 @@ Voxel& LatticeSpace::voxel_at(Integer coord)
     throw "Exception: Not in lattice_";
 }
 
-Integer LatticeSpace::position2coord(Integer row, Integer layer, Integer col)
+Integer LatticeSpace::global2coord(const Global& global) const
 {
-    return row +
-        row_size_ * layer +
-        row_size_ * layer_size_ * col;
+    return global.row +
+        row_size_ * global.layer +
+        row_size_ * layer_size_ * global.col;
 }
 
 }

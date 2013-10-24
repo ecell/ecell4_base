@@ -4,7 +4,8 @@
 #include "Space.hpp"
 #include "MolecularType.hpp"
 #include "SParticle.hpp"
-#include "SerialIDGenerator.hpp"
+#include "SerialIDGenerator.hpp" // TODO
+#include "Global.hpp"
 #include <vector>
 #include <set>
 #include <map>
@@ -102,15 +103,14 @@ public:
     void remove_sparticle(ParticleID pid);
     Species add_molecular_type(const std::string name);
     MolecularType& get_molecular_type(Species& sp);
-    void coord2global(Integer coord, Integer& global_row,
-            Integer& global_layer, Integer& global_col) const;
+    Global coord2global(Integer coord) const;
     const Position3 coord2position(Integer coord) const;
 
 protected:
 
     Voxel& voxel_as(ParticleID pid);
     Voxel& voxel_at(Integer coord);
-    Integer position2coord(Integer row, Integer layer, Integer col);
+    Integer global2coord(const Global& global) const;
     const Particle voxel2particle(const Voxel& voxel) const
     {
         const MolecularType* ptr_mt = voxel.ptr_mt;
@@ -127,14 +127,10 @@ protected:
      * Spatiocyte methods
      */
     void set_lattice_properties();
-    void concatenate_voxel(Voxel& voxel,
-            Integer row, Integer layer, Integer col);
-    void concatenate_rows(Voxel& voxel, Integer coord,
-            Integer row, Integer layer, Integer col);
-    void concatenate_layers(Voxel& voxel, Integer coord,
-            Integer row, Integer layer, Integer col);
-    void concatenate_cols(Voxel& voxel, Integer coord,
-            Integer row, Integer layer, Integer col);
+    void concatenate_voxel(Voxel& voxel, const Global& global);
+    void concatenate_rows(Voxel& voxel, const Global& north);
+    void concatenate_layers(Voxel& voxel, const Global& ventral);
+    void concatenate_cols(Voxel& voxel, const Global& west);
 
 protected:
 
