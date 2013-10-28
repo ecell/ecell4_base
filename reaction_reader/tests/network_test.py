@@ -82,11 +82,16 @@ class NetworkTestCase(unittest.TestCase):
         # dump_reactions(newreactions)
 
     def test_generate_reactions1(self):
-        rr1 = create_reaction_rule("X(c=u)>X(c=p)")
-        rr2 = create_reaction_rule("X(a)+X(a)>X(a^1).X(a^1)")
-        sp1 = create_species("X(a,b,c=u)")
+        # rr1 = create_reaction_rule("X(c=u)>X(c=p)")
+        # rr2 = create_reaction_rule("X(a)+X(a)>X(a^1).X(a^1)")
+        # sp1 = create_species("X(a,b,c=u)")
 
-        retval = network.generate_reactions([sp1], [rr1, rr2])
+        rr1 = create_reaction_rule("egfr(r^_, Y1068=Y) > egfr(r^_, Y1068=pY)")
+        sp1 = create_species("egf(r^1).egf(r^2).egfr(l^1,r^3,Y1068=Y,Y1148=Y).egfr(l^2,r^3,Y1068=Y,Y1148=Y)")
+        sp2 = create_species("egf(r^1).egf(r^2).egfr(l^2,r^3,Y1068=Y,Y1148=Y).egfr(l^1,r^3,Y1068=pY,Y1148=Y)")
+
+        # retval = network.generate_reactions([sp1], [rr1, rr2])
+        retval = network.generate_reactions([sp1,sp2], [rr1])
         self.assertEqual(len(retval), 2)
         seeds, reactions = retval
         self.assertEqual(len(seeds), 5)
