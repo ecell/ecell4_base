@@ -4,8 +4,9 @@ from ecell4.reaction_reader.network import generate_reactions
 
 @species_attributes
 def attributegen():
-    R(l,l) | Rec_tot
-    L(r,r,r) | Lig_tot
+    R(l1,l2, l=(l1,l2)) | Rec_tot
+    #R(l) | Rec_tot
+    L(r1,r2,r3, r=(r1,r2,r3)) | Lig_tot
 
 @reaction_rules
 def rulegen():
@@ -25,7 +26,13 @@ if __name__ == "__main__":
         print i, rr
     print ''
 
-    generate_reactions(newseeds, rules)
+    seeds, reactions = generate_reactions(
+        newseeds, rules, max_stoich={"R": 5, "L": 2 })
+    for i, seed in enumerate(seeds):
+        print i, seed
+
+
+#    generate_reactions(newseeds, rules)
 
 
 ## Trivalent-ligand, Bivalen-receptor model
