@@ -4,7 +4,7 @@
 #include "Space.hpp"
 #include "MolecularType.hpp"
 #include "SParticle.hpp"
-#include "SerialIDGenerator.hpp" // TODO
+// #include "SerialIDGenerator.hpp" // TODO
 #include "Global.hpp"
 #include <vector>
 #include <set>
@@ -73,8 +73,12 @@ class LatticeSpace
 {
 protected:
 
-    typedef std::map<ParticleID, Voxel> lattice_container_type;
+    typedef std::map<Integer, Voxel> lattice_container_type;
     typedef std::vector<MolecularType> molecular_type_set;
+
+    // new container
+    typedef std::map<Species, MolecularType> mtset;
+    typedef std::vector<MolecularType*> mtvec;
 
 public:
 
@@ -113,7 +117,7 @@ protected:
     Integer global2coord(const Global& global) const;
     const Particle voxel2particle(const Voxel& voxel) const
     {
-        const MolecularType* ptr_mt = voxel.ptr_mt;
+        const MolecularTypeBase* ptr_mt = voxel.ptr_mt;
         const Species& sp = ptr_mt->species();
         const Position3& pos = coord2position(voxel.coord);
         const Real& radius = 0;
@@ -121,16 +125,12 @@ protected:
         Particle particle(sp, pos, radius, D);
         return particle;
     }
-    void exchange_coords(Voxel& voxel0, Voxel& voxel1);
+    void update_diffuseSize(Voxel& voxel);
 
     /*
      * Spatiocyte methods
      */
     void set_lattice_properties();
-    void concatenate_voxel(Voxel& voxel, const Global& global);
-    void concatenate_rows(Voxel& voxel, const Global& north);
-    void concatenate_layers(Voxel& voxel, const Global& ventral);
-    void concatenate_cols(Voxel& voxel, const Global& west);
 
 protected:
 
@@ -141,11 +141,10 @@ protected:
     Integer lattice_type_;
     lattice_container_type lattice_;
     molecular_type_set molecular_types_;
-    Integer theNullCoord;
+    //Integer theNullCoord;
 
-    MolecularType VACANT_TYPE_;
+    ParticleID VACANT_ID;
 
-    Integer adjoining_size_;    // theAdjoiningCoordSize
     Position3 edge_lengths_;
     Integer row_size_, layer_size_, col_size_;
     Integer stride_;

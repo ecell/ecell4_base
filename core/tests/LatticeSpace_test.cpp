@@ -5,6 +5,7 @@
 #include <boost/test/floating_point_comparison.hpp>
 
 #include "../LatticeSpace.hpp"
+#include "../SerialIDGenerator.hpp"
 
 using namespace ecell4;
 
@@ -30,7 +31,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_has_species)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_sparticle)
 {
     LatticeSpace lspace;
-    ParticleID id = ParticleID(ParticleID::value_type(0,1));
+    SerialIDGenerator<ParticleID> sidgen;
+    ParticleID id(sidgen());
     Species sp = lspace.add_molecular_type(std::string("TEST"));
     SParticle sparticle = {
         .coord = 6,
@@ -45,14 +47,15 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
     LatticeSpace lspace;
     BOOST_CHECK_EQUAL(lspace.num_particles(), 0);
 
-    ParticleID id = ParticleID(ParticleID::value_type(0,1));
+    SerialIDGenerator<ParticleID> sidgen;
+    ParticleID id(sidgen());
     Species sp = lspace.add_molecular_type(std::string("TEST"));
     SParticle sparticle = {
         .coord = 6,
         .species = sp
     };
 
-    ParticleID a_id = ParticleID(ParticleID::value_type(0,2));
+    ParticleID a_id(sidgen());
     Species a = lspace.add_molecular_type(std::string("ANOTHER"));
     SParticle another = {
         .coord = 5,
@@ -68,14 +71,16 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 {
     LatticeSpace lspace;
-    ParticleID id = ParticleID(ParticleID::value_type(0,1));
+
+    SerialIDGenerator<ParticleID> sidgen;
+    ParticleID id(sidgen());
     Species sp = lspace.add_molecular_type(std::string("TEST"));
     SParticle sparticle = {
         .coord = 6,
         .species = sp
     };
 
-    ParticleID a_id = ParticleID(ParticleID::value_type(0,2));
+    ParticleID a_id(sidgen());
     Species a = lspace.add_molecular_type(std::string("ANOTHER"));
     SParticle another = {
         .coord = 5,
