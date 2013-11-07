@@ -24,8 +24,8 @@ hppfiles = [
 cppfiles = [
     'Journal.cpp', 'Species.cpp', 'Model.cpp', 'ParticleSpace.cpp',
     'CompartmentSpace.cpp', 'NetworkModel.cpp', 'Position3.cpp',
-    'RandomNumberGenerator.cpp', 'MolecularType.cpp', 'Global.cpp',
-    'LatticeSpace.cpp'
+    'RandomNumberGenerator.cpp', 'MolecularType.cpp', 'VacantType.cpp',
+    'Global.cpp', 'LatticeSpace.cpp'
     ]
 
 

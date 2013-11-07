@@ -13,8 +13,7 @@ struct Voxel
 {
 
 public:
-    Voxel(ParticleID id, Integer coord, MolecularTypeBase* ptr_mt) :
-        id(id),
+    Voxel(Integer coord, MolecularTypeBase* ptr_mt) :
         coord(coord),
         ptr_mt(ptr_mt)
     {
@@ -24,7 +23,6 @@ public:
     }
 
 public:
-    ParticleID id;
     Integer coord;
     MolecularTypeBase* ptr_mt;
 

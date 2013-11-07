@@ -3,8 +3,8 @@
 
 #include "Space.hpp"
 #include "MolecularType.hpp"
+#include "VacantType.hpp"
 #include "SParticle.hpp"
-// #include "SerialIDGenerator.hpp" // TODO
 #include "Global.hpp"
 #include <vector>
 #include <set>
@@ -73,12 +73,8 @@ class LatticeSpace
 {
 protected:
 
-    typedef std::map<Integer, Voxel> lattice_container_type;
-    typedef std::vector<MolecularType> molecular_type_set;
-
-    // new container
-    typedef std::map<Species, MolecularType> mtset;
-    typedef std::vector<MolecularType*> mtvec;
+    typedef std::map<Species, MolecularType> spmap;
+    typedef std::vector<Voxel> voxel_container;
 
 public:
 
@@ -104,7 +100,6 @@ public:
      * original methods
      */
     bool update_sparticle(const ParticleID pid, const SParticle spcl);
-    void remove_sparticle(ParticleID pid);
     Species add_molecular_type(const std::string name);
     MolecularType& get_molecular_type(Species& sp);
     Global coord2global(Integer coord) const;
@@ -125,7 +120,6 @@ protected:
         Particle particle(sp, pos, radius, D);
         return particle;
     }
-    void update_diffuseSize(Voxel& voxel);
 
     /*
      * Spatiocyte methods
@@ -139,11 +133,12 @@ protected:
     Position3 theCenterPoint;
 
     Integer lattice_type_;
-    lattice_container_type lattice_;
-    molecular_type_set molecular_types_;
+    spmap spmap_;
+    voxel_container voxels_;
     //Integer theNullCoord;
 
     ParticleID VACANT_ID;
+    VacantType vacant_type_;
 
     Position3 edge_lengths_;
     Integer row_size_, layer_size_, col_size_;

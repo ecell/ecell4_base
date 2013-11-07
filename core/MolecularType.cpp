@@ -3,23 +3,27 @@
 namespace ecell4
 {
 
-void MolecularType::addVoxel(Voxel &voxel)
+void MolecularType::addVoxel(Voxel *voxel, ParticleID pid)
 {
-    voxels_.insert(voxel_container_type::value_type(
-                voxel.id, voxel));
-    voxel.ptr_mt = this;
+    if (find(pid) == voxels_.end())
+    {
+        voxels_.push_back(container_type::value_type(
+                    std::pair<Voxel*, ParticleID>(voxel, pid)));
+        voxel->ptr_mt = this;
+    }
 }
 
 bool MolecularType::removeVoxel(const ParticleID pid)
 {
-    voxel_container_type::iterator itr(voxels_.find(pid));
-    if (itr == voxels_.end())
+    container_type::iterator itr(find(pid));
+    bool flg(false);
+    if (itr != voxels_.end())
     {
-        return false;
+        voxels_.erase(itr);
+        (*itr).first->ptr_mt = NULL;
+        flg = true;
     }
-    (*itr).second.ptr_mt = NULL;
-    voxels_.erase(itr++);
-    return true;
+    return flg;
 }
 
 const Species& MolecularType::species() const
@@ -27,9 +31,9 @@ const Species& MolecularType::species() const
     return this->species_;
 }
 
-const MolecularType::voxel_container_type& MolecularType::voxels() const
+const MolecularType::container_type& MolecularType::voxels() const
 {
     return voxels_;
 }
 
-}
+} // ecell4

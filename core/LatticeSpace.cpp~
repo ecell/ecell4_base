@@ -20,12 +20,12 @@ LatticeSpace::~LatticeSpace()
 
 Integer LatticeSpace::num_species() const
 {
-    return spmap_.size();
+    return molecular_types_.size();
 }
 
 bool LatticeSpace::has_species(const Species& sp) const
 {
-    return spmap_.find(sp) != spmap_.end();
+    return spmap_.find(sp) == spmap_.end();
 }
 
 Integer LatticeSpace::num_molecules(const Species& sp) const
@@ -157,7 +157,8 @@ void LatticeSpace::set_lattice_properties()
     for (Integer coord(0); coord < row_size_ * layer_size_ * col_size_; ++coord)
     {
         Voxel voxel(coord, NULL);
-        voxels_.push_back(voxel);
+        //lattice_.insert(lattice_container_type::value_type(coord, voxel));
+        mtvec_.push_back(voxel);
     }
     //theNullCoord = row_size_ * layer_size_ * col_size_;
 }
@@ -177,7 +178,7 @@ bool LatticeSpace::update_sparticle(ParticleID pid, SParticle spcl)
         Voxel& src = voxel_as(pid);
         MolecularTypeBase* src_ptr_mt(src.ptr_mt);
         src_ptr_mt->removeVoxel(pid);
-        vacant_type_.addVoxel(&src);
+        vacant_type_.addVoxel(src, pid);
     }
     dest_mt.addVoxel(&dest, pid);
 
@@ -187,7 +188,7 @@ bool LatticeSpace::update_sparticle(ParticleID pid, SParticle spcl)
 Species LatticeSpace::add_molecular_type(const std::string name)
 {
     const MolecularType mt(name);
-    spmap_.insert(spmap::value_type(mt.species(), mt));
+    molecular_types_.push_back(mt);
     return mt.species();
 }
 
@@ -254,12 +255,12 @@ Voxel& LatticeSpace::voxel_as(ParticleID pid)
             }
         }
     }
-    throw "Exception: Not in lattice";
+    throw "Exception: Not in lattice_";
 }
 
 Voxel& LatticeSpace::voxel_at(Integer coord)
 {
-    return voxels_.at(coord);
+    return mtvec_.at(coord);
 }
 
 Integer LatticeSpace::global2coord(const Global& global) const

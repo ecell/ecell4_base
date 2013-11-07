@@ -1,8 +1,7 @@
 #ifndef __ECELL4_MOLECULAR_TYPE_BASE_HPP
 #define __ECELL4_MOLECULAR_TYPE_BASE_HPP
 
-//#include <vector>
-#include <map>
+#include <vector>
 #include "Species.hpp"
 #include "Voxel.hpp"
 #include "Identifier.hpp"
@@ -13,13 +12,12 @@ namespace ecell4
 class MolecularTypeBase
 {
 public:
-    //typedef std::vector<std::pair<lattice_type::iterator, ParticleID>> container_type;
-    typedef std::map<ParticleID, Voxel&> container_type;
+    typedef std::vector<std::pair<Voxel*, ParticleID> > container_type;
 
 public:
-    virtual void addVoxel(Voxel &voxel)
+    virtual void addVoxel(Voxel *voxel, ParticleID pid)
     {
-        throw "addVoxel(Voxel) is not supported.";
+        throw "addVoxel(Voxel, ParticleID) is not supported.";
     }
 
     virtual bool removeVoxel(const ParticleID pid)

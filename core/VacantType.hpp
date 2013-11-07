@@ -1,14 +1,23 @@
 #ifndef __ECELL4_VACANT_TYPE_HPP
 #define __ECELL4_VACANT_TYPE_HPP
 
-namespace ecelll4
+#include "MolecularTypeBase.hpp"
+
+namespace ecell4
 {
 
 class VacantType
     : public MolecularTypeBase
 {
+
+public:
+    typedef MolecularTypeBase::container_type container_type;
+
+public:
+    void addVoxel(Voxel *voxel);
+
 };
 
-}
+} // ecell4
 
-#endif /* __ECELL$_VACANT_TYPE_HPP */
+#endif /* __ECELL4_VACANT_TYPE_HPP */
