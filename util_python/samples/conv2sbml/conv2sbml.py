@@ -1,7 +1,7 @@
 from ecell4.reaction_reader.decorator2 import species_attributes, reaction_rules
-from ecell4.reaction_reader.species import generate_reactions
+#from ecell4.reaction_reader.species import generate_reactions
 from ecell4.util.sbml_exporter import convert2SBML
-from ecell4.reaction_reader.network import generate_NetworkModel
+from ecell4.reaction_reader.network import generate_NetworkModel, generate_reactions
 
 
 @species_attributes

@@ -111,6 +111,10 @@ def generate_reactions(newseeds, rules, max_iter=sys.maxint, max_stoich={}):
     return seeds + newseeds, reactions
 
 def generate_NetworkModel(seeds, rules):
+    def is_ValidKineticParameter(val):
+        return (not isinstance(val, bool)
+                and isinstance(val, (int, long, float, complex)))
+
     import ecell4.core as core
 
 
@@ -127,11 +131,13 @@ def generate_NetworkModel(seeds, rules):
             rr.add_product(core.Species(str(product)))
 
         # kinetic parameter
-        for opt in r_tuple[2]:
-            if (not isinstance(opt, bool)
-                and isinstance(opt, (int, long, float, complex))):
-                rr.set_k(opt)
-                break
+        if isinstance(r_tuple[2], list):
+            for opt in r_tuple[2]:
+                if is_ValidKineticParameter(opt):
+                    rr.set_k(opt)
+                    break
+        elif is_ValidKineticParameter(r_tuple[2]):
+            rr.set_k(r_tuple[2])
         else:
             raise RuntimeError, "No kinetic rate is defined. [%s]" % str(r_tuple)
 
