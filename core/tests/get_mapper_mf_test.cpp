@@ -31,8 +31,13 @@ BOOST_AUTO_TEST_CASE(get_mapper_mf_test_type)
     typedef utils::get_mapper_mf<std::string, std::string>::type string_map_type;
     // typedef std::map<std::string, std::string> expected_map_type;
     // typedef boost::unordered_map<std::string, std::string> expected_map_type;
+#if defined(HAVE_UNORDERED_MAP)
+    typedef std::unordered_map<std::string, std::string> expected_map_type;
+#elif defined(HAVE_TR1_UNORDERED_MAP)
     typedef std::tr1::unordered_map<std::string, std::string> expected_map_type;
-
+#elif defined(HAVE_BOOST_UNORDERED_MAP_HPP)
+    typedef boost::unordered_map<std::string, std::string> expected_map_type;
+#endif
     BOOST_CHECK((boost::is_same<string_map_type, expected_map_type>::value));
 }
 

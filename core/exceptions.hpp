@@ -4,6 +4,7 @@
 #include <exception>
 #include <stdexcept>
 
+#include <string>
 
 namespace ecell4
 {
