@@ -33,12 +33,12 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_sparticle)
     LatticeSpace lspace;
     SerialIDGenerator<ParticleID> sidgen;
     ParticleID id(sidgen());
-    Species sp = lspace.add_molecular_type(std::string("TEST"));
-    SParticle sparticle = {
-        .coord = 6,
-        .species = sp,
-    };
-    BOOST_CHECK(lspace.update_sparticle(id, sparticle));
+    Species sp(std::string("TEST"));
+    Position3 pos(2, 0, 0);
+    Real r(1.0);
+    Real d(2.3);
+    Particle particle(sp, pos, r, d);
+    BOOST_CHECK(lspace.update_particle(id, particle));
     BOOST_CHECK(lspace.has_species(sp));
 }
 
@@ -49,21 +49,21 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 
     SerialIDGenerator<ParticleID> sidgen;
     ParticleID id(sidgen());
-    Species sp = lspace.add_molecular_type(std::string("TEST"));
-    SParticle sparticle = {
-        .coord = 6,
-        .species = sp
-    };
+    Species sp(std::string("TEST"));
+    Position3 pos(2, 0, 0);
+    Real r(1.0);
+    Real d(2.3);
+    Particle particle(sp, pos, r, d);
 
     ParticleID a_id(sidgen());
-    Species a = lspace.add_molecular_type(std::string("ANOTHER"));
-    SParticle another = {
-        .coord = 5,
-        .species = a
-    };
+    Species a(std::string("ANOTHER"));
+    Position3 pos1(1, 2, 0);
+    Real r1(1.1);
+    Real d1(4.3);
+    Particle another(a, pos1, r1, d1);
 
-    BOOST_CHECK(lspace.update_sparticle(id, sparticle));
-    BOOST_CHECK(lspace.update_sparticle(a_id, another));
+    BOOST_CHECK(lspace.update_particle(id, particle));
+    BOOST_CHECK(lspace.update_particle(a_id, another));
     BOOST_CHECK_EQUAL(lspace.num_particles(sp), 1);
     BOOST_CHECK_EQUAL(lspace.num_particles(), 2);
 }
@@ -74,23 +74,24 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 
     SerialIDGenerator<ParticleID> sidgen;
     ParticleID id(sidgen());
-    Species sp = lspace.add_molecular_type(std::string("TEST"));
-    SParticle sparticle = {
-        .coord = 6,
-        .species = sp
-    };
+    Species sp(std::string("TEST"));
+    Position3 pos(2, 0, 0);
+    Real r(1.0);
+    Real d(2.3);
+    Particle particle(sp, pos, r, d);
 
     ParticleID a_id(sidgen());
-    Species a = lspace.add_molecular_type(std::string("ANOTHER"));
-    SParticle another = {
-        .coord = 5,
-        .species = a
-    };
+    Species a(std::string("ANOTHER"));
+    Position3 pos1(1, 2, 0);
+    Real r1(1.1);
+    Real d1(4.3);
+    Particle another(a, pos1, r1, d1);
 
-    BOOST_CHECK(lspace.update_sparticle(id, sparticle));
-    BOOST_CHECK(lspace.update_sparticle(a_id, another));
+    BOOST_CHECK(lspace.update_particle(id, particle));
+    BOOST_CHECK(lspace.update_particle(a_id, another));
 
     typedef std::vector<std::pair<ParticleID, Particle> > vector;
+
     vector test_list(lspace.list_particles(sp));
     vector list(lspace.list_particles());
     BOOST_CHECK_EQUAL(list.size(), 2);

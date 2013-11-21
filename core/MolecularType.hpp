@@ -18,6 +18,11 @@ public:
         : species_(name)
     {
     }
+
+    MolecularType(const Species& species) : species_(species)
+    {
+    }
+
     void addVoxel(Voxel *voxel, ParticleID pid);
     bool removeVoxel(const ParticleID pid);
     const Species& species() const;

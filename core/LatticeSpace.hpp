@@ -94,22 +94,19 @@ public:
         list_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
         list_particles(const Species& sp) const;
-
-
-    /*
-     * original methods
-     */
-    bool update_sparticle(const ParticleID pid, const SParticle spcl);
-    Species add_molecular_type(const std::string name);
-    MolecularType& get_molecular_type(Species& sp);
-    Global coord2global(Integer coord) const;
-    const Position3 coord2position(Integer coord) const;
+    bool update_particle(const ParticleID& pid, const Particle& p);
 
 protected:
 
     Voxel& voxel_as(ParticleID pid);
     Voxel& voxel_at(Integer coord);
+    MolecularType& get_molecular_type(const Species& sp);
+
+    const Global coord2global(Integer coord) const;
+    const Position3 coord2position(Integer coord) const;
     Integer global2coord(const Global& global) const;
+    Integer position2coord(const Position3& pos) const;
+
     const Particle voxel2particle(const Voxel& voxel) const
     {
         const MolecularTypeBase* ptr_mt = voxel.ptr_mt;

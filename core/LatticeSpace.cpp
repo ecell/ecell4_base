@@ -125,6 +125,23 @@ std::vector<std::pair<ParticleID, Particle> >
     return retval;
 }
 
+bool LatticeSpace::update_particle(const ParticleID& pid, const Particle& p)
+{
+    Voxel& dest = voxel_at(position2coord(p.position()));
+    MolecularType& dest_mt = get_molecular_type(p.species());
+
+    if (has_particle(pid))
+    {
+        Voxel& src = voxel_as(pid);
+        MolecularTypeBase* src_ptr_mt(src.ptr_mt);
+        src_ptr_mt->removeVoxel(pid);
+        vacant_type_.addVoxel(&src);
+    }
+    dest_mt.addVoxel(&dest, pid);
+
+    return true;
+}
+
 /*
  * Spatiocyte methods
  */
@@ -166,42 +183,19 @@ void LatticeSpace::set_lattice_properties()
  * original methods
  */
 
-bool LatticeSpace::update_sparticle(ParticleID pid, SParticle spcl)
-{
-    Voxel& dest = voxel_at(spcl.coord);
-
-    MolecularType& dest_mt = get_molecular_type(spcl.species);
-
-    if (has_particle(pid))
-    {
-        Voxel& src = voxel_as(pid);
-        MolecularTypeBase* src_ptr_mt(src.ptr_mt);
-        src_ptr_mt->removeVoxel(pid);
-        vacant_type_.addVoxel(&src);
-    }
-    dest_mt.addVoxel(&dest, pid);
-
-    return true;
-}
-
-Species LatticeSpace::add_molecular_type(const std::string name)
-{
-    const MolecularType mt(name);
-    spmap_.insert(spmap::value_type(mt.species(), mt));
-    return mt.species();
-}
-
-MolecularType& LatticeSpace::get_molecular_type(Species& sp)
+MolecularType& LatticeSpace::get_molecular_type(const Species& sp)
 {
     spmap::iterator itr(spmap_.find(sp));
     if (itr == spmap_.end())
     {
-        throw "Exception in get_molerular_type";
+        MolecularType mt(sp);
+        spmap_.insert(spmap::value_type(sp, mt));
+        itr = spmap_.find(sp);
     }
     return (*itr).second;
 }
 
-Global LatticeSpace::coord2global(Integer aCoord) const
+const Global LatticeSpace::coord2global(Integer aCoord) const
 {
     Global retval;
     retval.col = aCoord / (row_size_ * layer_size_);
@@ -212,10 +206,7 @@ Global LatticeSpace::coord2global(Integer aCoord) const
 
 const Position3 LatticeSpace::coord2position(Integer coord) const
 {
-    Integer aGlobalCol;
-    Integer aGlobalLayer;
-    Integer aGlobalRow;
-    Global global(coord2global(coord));
+    const Global global(coord2global(coord));
     //the center point of a voxel
     Position3 position;
     switch(lattice_type_)
@@ -235,9 +226,29 @@ const Position3 LatticeSpace::coord2position(Integer coord) const
     return position;
 }
 
-/*
-* Protected methods
-*/
+Integer LatticeSpace::position2coord(const Position3& pos) const
+{
+    Global global;
+    switch(lattice_type_)
+    {
+        case HCP_LATTICE:
+            global.col = (Integer)(pos[0] / theHCPx);
+            global.layer = (Integer)((pos[1] - (global.col % 2) * theHCPl) / theHCPy);
+            global.row = (Integer)((pos[2] - (((global.layer + global.col) % 2) *
+                            theNormalizedVoxelRadius)) /
+                    theNormalizedVoxelRadius / 2);
+            break;
+
+        case CUBIC_LATTICE:
+            global.layer = (Integer)(pos[1] / theNormalizedVoxelRadius / 2);
+            global.row = (Integer)(pos[2] / theNormalizedVoxelRadius / 2);
+            global.col = (Integer)(pos[0] / theNormalizedVoxelRadius / 2);
+            break;
+    }
+
+    return global2coord(global);
+}
+
 Voxel& LatticeSpace::voxel_as(ParticleID pid)
 {
     for (spmap::iterator itr(spmap_.begin());
@@ -269,4 +280,4 @@ Integer LatticeSpace::global2coord(const Global& global) const
         row_size_ * layer_size_ * global.col;
 }
 
-}
+} // ecell4
