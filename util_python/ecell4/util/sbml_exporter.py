@@ -68,51 +68,38 @@ def convert2SBML(nw_model, sp_attrs, fname):
         sbml_reaction = model.createReaction()
         sbml_reaction.setId("r{}".format(r_index))
         kl = sbml_reaction.createKineticLaw()
-        multiple_factors = list()
+
+        # Kinetic Parameter
+        astKon = ASTNode(AST_NAME)
+        astKon.setName("k{}".format(r_index))
+
+        multiple_factors = []
+        multiple_factors.append( astCytosol.deepCopy() )
+        multiple_factors.append(astKon)
         for reactant in rr.reactants():
             sbml_spr = sbml_reaction.createReactant()
             (sbml_spid, attr, ast) = all_species[ reactant.name()]
             #sbml_spr.setSpecies( all_species[ reactant.name() ][0] )
             sbml_spr.setSpecies( sbml_spid)
-            multiple_factors.append(ast)
+            multiple_factors.append( ast.deepCopy() )
         for product in rr.products():
             sbml_spr = sbml_reaction.createProduct()
             (sbml_spid, attr, ast) = all_species[ product.name() ]
             sbml_spr.setSpecies( sbml_spid)
-        # Kinetic Law related
-        astKon = ASTNode(AST_NAME)
-        astKon.setName("k{}".format(r_index))
-        #multiple_factors.append(astKon)
         # Build Tree
-        #import ipdb; ipdb.set_trace()
-        print multiple_factors
-        ast_number = 1
-        '''
-        while 1 < len(multiple_factors):
-            astTimes_top = ASTNode(AST_TIMES)
-            astTimes_top.addChild( multiple_factors.pop() )
-            astTimes_top.addChild( multiple_factors.pop() )
-            multiple_factors.insert(0, astTimes_top)
-        kl.setMath( multiple_factors[0] )
-        '''
         #asttimes = ASTNode(AST_TIMES)
-        Node_top = ASTNode(AST_TIMES)
-        kl.setMath(Node_top)
-        Node_top.addChild(astKon)
-        current_Node = Node_top
-
-        import ipdb; ipdb.set_trace()
-        while multiple_factors:
-            if len(multiple_factors) == 1:
-                current_Node.addChild(multiple_factors.pop(0))
-            elif 1 < len(multiple_factors):
-                child_Node = ASTNode(AST_TIMES)
-                child_Node.addChild(multiple_factors.pop(0))
-                current_Node.addChild(child_Node)
-                current_Node = child_Node
-            else:
-                ast_one = ASTNode(AST_REAL) 
-                current_Node.addChild(ast_one)
+        if 2 < len(multiple_factors):
+            current_node = ASTNode(AST_TIMES)
+            current_node.addChild( multiple_factors.pop(0))
+            kl.setMath(current_node)
+            while 0 < len(multiple_factors):
+                if len(multiple_factors) == 1:
+                    current_node.addChild(multiple_factors.pop(0))
+                elif 1 < len(multiple_factors):
+                    new_node = ASTNode(AST_TIMES)
+                    new_node.addChild(multiple_factors.pop(0))
+                    current_node.addChild(new_node)
+                    current_node = new_node
         r_index += 1
     #   }}}
     writeSBML(sbmlDoc, fname)
