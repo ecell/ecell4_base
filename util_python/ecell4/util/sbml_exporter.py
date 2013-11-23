@@ -88,6 +88,7 @@ def convert2SBML(nw_model, sp_attrs, fname):
             sbml_spr.setSpecies( sbml_spid)
         # Build Tree
         #asttimes = ASTNode(AST_TIMES)
+        '''
         if 2 < len(multiple_factors):
             current_node = ASTNode(AST_TIMES)
             current_node.addChild( multiple_factors.pop(0))
@@ -100,6 +101,29 @@ def convert2SBML(nw_model, sp_attrs, fname):
                     new_node.addChild(multiple_factors.pop(0))
                     current_node.addChild(new_node)
                     current_node = new_node
+        '''
+        import ipdb;ipdb.set_trace()
+        ast2 = ASTNode(AST_TIMES)
+        ast2.addChild(astKon)
+        if len( rr.reactants() ) == 1:
+            # 1 molecule reaction
+            (sbml_spid, attr, ast_reactant) = all_species[rr.reactants()[0].name()]
+            ast2.addChild( ast_reactant.deepCopy())
+
+        elif len( rr.reactants() ) == 2:
+            (sbml_spid0, attr0, ast_reactant0) = all_species[rr.reactants()[0].name()]
+            (sbml_spid1, attr1, ast_reactant1) = all_species[rr.reactants()[1].name()]
+            # 2 molecule reaction
+            ast3 = ASTNode(AST_TIMES)
+            ast3.addChild( ast_reactant0.deepCopy() )
+            ast3.addChild( ast_reactant1.deepCopy() )
+            ast2.addChild(ast3)
+        else:
+            raise RuntimeError("substances are too many.")
+        ast1 = ASTNode(AST_TIMES)
+        ast1.addChild(astCytosol)
+        ast1.addChild(ast2)
+        kl.setMath(ast1)
         r_index += 1
     #   }}}
     writeSBML(sbmlDoc, fname)
