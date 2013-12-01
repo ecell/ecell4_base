@@ -56,6 +56,11 @@ protected:
         num_molecules_type num_molecules;
     } species_num_struct;
 
+    typedef struct compartment_space_attribute_struct {
+        Real volume;
+        //gsl_rng
+    } compartment_space_attribute_struct;
+
 public:
 
     CompartmentSpaceHDF5Writer(const space_type& space)
@@ -93,10 +98,18 @@ public:
             HOFFSET(species_num_struct, num_molecules),
             traits_());
 
+        CompType mtype_attr_struct(sizeof(compartment_space_attribute_struct));
+        mtype_attr_struct.insertMember(
+            std::string("volume"), 
+            HOFFSET(compartment_space_attribute_struct, volume),
+            H5::PredType::IEEE_F64LE);
+
         boost::scoped_array<species_id_table_struct>
             species_id_table(new species_id_table_struct[num_species]);
         boost::scoped_array<species_num_struct>
             species_num_table(new species_num_struct[num_species]);
+        boost::scoped_ptr<compartment_space_attribute_struct>
+            space_attr_desc(new compartment_space_attribute_struct);
 
         for(unsigned int i(0); i < num_species; ++i)
         {
@@ -108,15 +121,22 @@ public:
             species_num_table[i].num_molecules =
                 space_.num_molecules(species_list[i]);
         }
+        space_attr_desc->volume = space_.volume();
 
         const int RANK = 1;
         hsize_t dim[1];
         dim[0] = num_species;
-
         DataSpace dataspace(RANK, dim);
+
+        hsize_t dim_space[1];
+        dim_space[0] = 1;
+        DataSpace dataspace_attr(RANK, dim_space);
+
         const std::string
             species_table_path(hdf5path + "/species"),
-            species_num_path(hdf5path + "/num_molecules");
+            species_num_path(hdf5path + "/num_molecules"),
+            space_attr_path(hdf5path + "/space_attributes");
+
         boost::scoped_ptr<DataSet> dataset_id_table(
             new DataSet(fout->createDataSet(
                             species_table_path, mtype_id_table_struct,
@@ -124,8 +144,12 @@ public:
         boost::scoped_ptr<DataSet> dataset_num_table(
             new DataSet(fout->createDataSet(
                             species_num_path, mtype_num_struct, dataspace)));
+        boost::scoped_ptr<DataSet> dataset_space_attr(
+            new DataSet(fout->createDataSet(
+                            space_attr_path, mtype_attr_struct, dataspace_attr)));
         dataset_id_table->write(species_id_table.get(), mtype_id_table_struct);
         dataset_num_table->write(species_num_table.get(), mtype_num_struct);
+        dataset_space_attr->write(space_attr_desc.get(), mtype_attr_struct);
 
         // attributes
         const double t = space_.t();
