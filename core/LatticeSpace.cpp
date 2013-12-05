@@ -14,6 +14,12 @@ LatticeSpace::LatticeSpace()
     set_lattice_properties();
 }
 
+LatticeSpace::LatticeSpace(const Position3& edge_lengths)
+{
+    this->edge_lengths_ = edge_lengths;
+    set_lattice_properties();
+}
+
 LatticeSpace::~LatticeSpace()
 {
 }
@@ -68,9 +74,8 @@ bool LatticeSpace::has_particle(const ParticleID& pid) const
             itr != spmap_.end(); ++itr)
     {
         const MolecularType& mt((*itr).second);
-        const MolecularType::container_type voxels(mt.voxels());
-        for (MolecularType::container_type::const_iterator vitr(voxels.begin());
-                vitr != voxels.end(); ++vitr)
+        for (MolecularType::container_type::const_iterator vitr(mt.begin());
+                vitr != mt.end(); ++vitr)
         {
             if ((*vitr).second == pid)
             {
@@ -91,13 +96,11 @@ std::vector<std::pair<ParticleID, Particle> >
             itr != spmap_.end(); ++itr)
     {
         const MolecularType& mt((*itr).second);
-        const MolecularType::container_type voxels(mt.voxels());
-        for (MolecularType::container_type::const_iterator vitr(voxels.begin());
-                vitr != voxels.end(); ++vitr)
+        for (MolecularType::container_type::const_iterator vitr(mt.begin());
+                vitr != mt.end(); ++vitr)
         {
-            const Voxel *voxel((*vitr).first);
             retval.push_back(std::pair<ParticleID, Particle>(
-                        (*vitr).second, voxel2particle(*voxel)));
+                        (*vitr).second, particle_at((*vitr).first)));
         }
     }
 
@@ -112,34 +115,95 @@ std::vector<std::pair<ParticleID, Particle> >
     if (itr != spmap_.end())
     {
         const MolecularType& mt((*itr).second);
-        const MolecularType::container_type voxels(mt.voxels());
-        for (MolecularType::container_type::const_iterator vitr(voxels.begin());
-                vitr != voxels.end(); ++vitr)
+        for (MolecularType::container_type::const_iterator vitr(mt.begin());
+                vitr != mt.end(); ++vitr)
         {
-            const Voxel *voxel((*vitr).first);
             retval.push_back(std::pair<ParticleID, Particle>(
-                        (*vitr).second, voxel2particle(*voxel)));
+                        (*vitr).second, particle_at((*vitr).first)));
         }
     }
 
     return retval;
 }
 
+std::vector<SParticle> LatticeSpace::list_sparticles() const
+{
+    std::vector<SParticle> retval;
+    for (spmap::const_iterator itr(spmap_.begin());
+            itr != spmap_.end(); ++itr)
+    {
+        const MolecularType& mt((*itr).second);
+        std::vector<SParticle> sparticles(mt.sparticles());
+        retval.insert(retval.end(), sparticles.begin(), sparticles.end());
+    }
+
+    return retval;
+}
+
+std::vector<SParticle> LatticeSpace::list_sparticles(const Species& sp) const
+{
+    spmap::const_iterator itr(spmap_.find(sp));
+    if (itr != spmap_.end())
+    {
+        const MolecularType& mt((*itr).second);
+        return mt.sparticles();
+    }
+
+    std::vector<SParticle> retval;
+    return retval;
+}
+
 bool LatticeSpace::update_particle(const ParticleID& pid, const Particle& p)
 {
-    Voxel& dest = voxel_at(position2coord(p.position()));
-    MolecularType& dest_mt = get_molecular_type(p.species());
+    Integer coord(position2coord(p.position()));
+    MolecularType* dest_mt = get_molecular_type(p.species());
 
     if (has_particle(pid))
     {
-        Voxel& src = voxel_as(pid);
-        MolecularTypeBase* src_ptr_mt(src.ptr_mt);
-        src_ptr_mt->removeVoxel(pid);
-        vacant_type_.addVoxel(&src);
+        Integer coord2(get_coord(pid));
+        MolecularTypeBase* src_ptr_mt(voxels_.at(coord));
+        src_ptr_mt->removeVoxel(coord2);
+        voxel_container::iterator itr(voxels_.begin() + coord2);
+        voxels_.erase(itr);
+        voxels_.insert(itr, NULL);
     }
-    dest_mt.addVoxel(&dest, pid);
+    dest_mt->addVoxel(coord, pid);
+
+    voxel_container::iterator itr(voxels_.begin() + coord);
+    voxels_.erase(itr);
+    voxels_.insert(itr, dest_mt);
 
     return true;
+}
+
+bool LatticeSpace::move(Integer from, Integer to)
+{
+    if (has_particle(to) || has_particle(from))
+        return false;
+
+    MolecularType* mt(voxel_at(from));
+    MolecularType::container_type::iterator mitr(mt->find(from));
+    if (mitr == mt->end())
+        return false;
+
+    ParticleID pid((*mitr).second);
+    mt->removeVoxel(from);
+    mt->addVoxel(to, pid);
+
+    voxel_container::iterator itr;
+    itr = voxels_.begin() + from;
+    voxels_.erase(itr);
+    voxels_.insert(itr, NULL);
+    itr = voxels_.begin() + to;
+    voxels_.erase(itr);
+    voxels_.insert(itr, mt);
+
+    return true;
+}
+
+bool LatticeSpace::has_particle(Integer coord) const
+{
+    return voxels_.at(coord) != NULL;
 }
 
 /*
@@ -157,9 +221,9 @@ void LatticeSpace::set_lattice_properties()
     theHCPx = theNormalizedVoxelRadius*sqrt(8.0/3); //Lx
     theHCPy = theNormalizedVoxelRadius*sqrt(3); //Ly
 
-    Integer lengthX = edge_lengths_[0];
-    Integer lengthY = edge_lengths_[1];
-    Integer lengthZ = edge_lengths_[2];
+    Real lengthX = edge_lengths_[0];
+    Real lengthY = edge_lengths_[1];
+    Real lengthZ = edge_lengths_[2];
 
     theCenterPoint[2] = lengthZ / 2 + 4 *
         theNormalizedVoxelRadius; //row
@@ -173,17 +237,15 @@ void LatticeSpace::set_lattice_properties()
 
     for (Integer coord(0); coord < row_size_ * layer_size_ * col_size_; ++coord)
     {
-        Voxel voxel(coord, NULL);
-        voxels_.push_back(voxel);
+        voxels_.push_back(NULL);
     }
-    //theNullCoord = row_size_ * layer_size_ * col_size_;
 }
 
 /*
  * original methods
  */
 
-MolecularType& LatticeSpace::get_molecular_type(const Species& sp)
+MolecularType* LatticeSpace::get_molecular_type(const Species& sp)
 {
     spmap::iterator itr(spmap_.find(sp));
     if (itr == spmap_.end())
@@ -192,7 +254,29 @@ MolecularType& LatticeSpace::get_molecular_type(const Species& sp)
         spmap_.insert(spmap::value_type(sp, mt));
         itr = spmap_.find(sp);
     }
-    return (*itr).second;
+    return &((*itr).second);
+}
+
+const Global LatticeSpace::position2global(const Position3& pos) const
+{
+    Global global;
+    switch(lattice_type_)
+    {
+        case HCP_LATTICE:
+            global.col = (Integer)(pos[0] / theHCPx);
+            global.layer = (Integer)((pos[1] - (global.col % 2) * theHCPl) / theHCPy);
+            global.row = (Integer)((pos[2] - (((global.layer + global.col) % 2) *
+                            theNormalizedVoxelRadius)) /
+                    theNormalizedVoxelRadius / 2);
+            break;
+
+        case CUBIC_LATTICE:
+            global.layer = (Integer)(pos[1] / theNormalizedVoxelRadius / 2);
+            global.row = (Integer)(pos[2] / theNormalizedVoxelRadius / 2);
+            global.col = (Integer)(pos[0] / theNormalizedVoxelRadius / 2);
+            break;
+    }
+    return global;
 }
 
 const Global LatticeSpace::coord2global(Integer aCoord) const
@@ -202,6 +286,11 @@ const Global LatticeSpace::coord2global(Integer aCoord) const
     retval.layer = (aCoord % (row_size_ * layer_size_)) / row_size_;
     retval.row = (aCoord % (row_size_ * layer_size_)) % row_size_;
     return retval;
+}
+
+const Position3 LatticeSpace::global2position(const Global& global) const
+{
+    return coord2position(global2coord(global));
 }
 
 const Position3 LatticeSpace::coord2position(Integer coord) const
@@ -228,47 +317,28 @@ const Position3 LatticeSpace::coord2position(Integer coord) const
 
 Integer LatticeSpace::position2coord(const Position3& pos) const
 {
-    Global global;
-    switch(lattice_type_)
-    {
-        case HCP_LATTICE:
-            global.col = (Integer)(pos[0] / theHCPx);
-            global.layer = (Integer)((pos[1] - (global.col % 2) * theHCPl) / theHCPy);
-            global.row = (Integer)((pos[2] - (((global.layer + global.col) % 2) *
-                            theNormalizedVoxelRadius)) /
-                    theNormalizedVoxelRadius / 2);
-            break;
-
-        case CUBIC_LATTICE:
-            global.layer = (Integer)(pos[1] / theNormalizedVoxelRadius / 2);
-            global.row = (Integer)(pos[2] / theNormalizedVoxelRadius / 2);
-            global.col = (Integer)(pos[0] / theNormalizedVoxelRadius / 2);
-            break;
-    }
-
-    return global2coord(global);
+    return global2coord(position2global(pos));
 }
 
-Voxel& LatticeSpace::voxel_as(ParticleID pid)
+Integer LatticeSpace::get_coord(const ParticleID& pid) const
 {
-    for (spmap::iterator itr(spmap_.begin());
+    for (spmap::const_iterator itr(spmap_.begin());
             itr != spmap_.end(); ++itr)
     {
-        MolecularType& mt((*itr).second);
-        MolecularType::container_type voxels(mt.voxels());
-        for (MolecularType::container_type::iterator vitr(voxels.begin());
-                vitr != voxels.end(); ++vitr)
+        const MolecularType& mt((*itr).second);
+        for (MolecularType::container_type::const_iterator vitr(mt.begin());
+                vitr != mt.end(); ++vitr)
         {
             if ((*vitr).second == pid)
             {
-                return *((*vitr).first);
+                return (*vitr).first;
             }
         }
     }
     throw "Exception: Not in lattice";
 }
 
-Voxel& LatticeSpace::voxel_at(Integer coord)
+MolecularType* LatticeSpace::voxel_at(Integer coord) const
 {
     return voxels_.at(coord);
 }
@@ -278,6 +348,17 @@ Integer LatticeSpace::global2coord(const Global& global) const
     return global.row +
         row_size_ * global.layer +
         row_size_ * layer_size_ * global.col;
+}
+
+const Particle LatticeSpace::particle_at(Integer coord) const
+{
+    const MolecularType* ptr_mt(voxel_at(coord));
+    const Species& sp = ptr_mt->species();
+    const Position3& pos = coord2position(coord);
+    const Real& radius = 0;
+    const Real& D = 0;
+    Particle particle(sp, pos, radius, D);
+    return particle;
 }
 
 } // ecell4

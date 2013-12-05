@@ -1,6 +1,7 @@
 #ifndef __ECELL4__GLOBAL_HPP
 #define __ECELL4__GLOBAL_HPP
 
+#include <vector>
 #include "types.hpp"
 
 namespace ecell4

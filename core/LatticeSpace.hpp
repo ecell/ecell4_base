@@ -74,54 +74,71 @@ class LatticeSpace
 protected:
 
     typedef std::map<Species, MolecularType> spmap;
-    typedef std::vector<Voxel> voxel_container;
+    typedef std::vector<MolecularType*> voxel_container;
+
 
 public:
 
     LatticeSpace();
+    LatticeSpace(const Position3& edge_lengths);
     ~LatticeSpace();
+
     /*
-     * methods of Space class
+     * APIs
+     *
+     * using ParticleID, Species and Posision3
      */
-    Integer num_species() const;
-    bool has_species(const Species& sp) const;
-    Integer num_molecules(const Species& sp)const;
     const Position3& edge_lengths() const;
+
+    Integer num_species() const;
+    Integer num_molecules(const Species& sp)const;
     Integer num_particles() const;
     Integer num_particles(const Species& sp) const;
+
+    bool has_species(const Species& sp) const;
     bool has_particle(const ParticleID& pid) const;
+
     std::vector<std::pair<ParticleID, Particle> >
         list_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
         list_particles(const Species& sp) const;
+
     bool update_particle(const ParticleID& pid, const Particle& p);
+
+    /*
+     * for Simulator
+     *
+     * using Species, SParticle and Coord
+     */
+    std::vector<SParticle> list_sparticles() const;
+    std::vector<SParticle> list_sparticles(const Species& sp) const;
+
+    bool move(Integer from, Integer to);
+    bool has_particle(Integer coord) const;
+
 
 protected:
 
-    Voxel& voxel_as(ParticleID pid);
-    Voxel& voxel_at(Integer coord);
-    MolecularType& get_molecular_type(const Species& sp);
+    void set_lattice_properties();
 
-    const Global coord2global(Integer coord) const;
-    const Position3 coord2position(Integer coord) const;
-    Integer global2coord(const Global& global) const;
-    Integer position2coord(const Position3& pos) const;
-
-    const Particle voxel2particle(const Voxel& voxel) const
-    {
-        const MolecularTypeBase* ptr_mt = voxel.ptr_mt;
-        const Species& sp = ptr_mt->species();
-        const Position3& pos = coord2position(voxel.coord);
-        const Real& radius = 0;
-        const Real& D = 0;
-        Particle particle(sp, pos, radius, D);
-        return particle;
-    }
+    Integer get_coord(const ParticleID& pid) const;
+    MolecularType* voxel_at(Integer coord) const;
+    MolecularType* get_molecular_type(const Species& sp);
 
     /*
-     * Spatiocyte methods
+     * coordinate transformations
      */
-    void set_lattice_properties();
+    const Global coord2global(Integer coord) const;
+    const Position3 coord2position(Integer coord) const;
+
+    Integer global2coord(const Global& global) const;
+    const Position3 global2position(const Global& global) const;
+
+    Integer position2coord(const Position3& pos) const;
+    const Global position2global(const Position3& pos) const;
+
+    const Particle particle_at(Integer coord) const;
+
 
 protected:
 
@@ -132,10 +149,6 @@ protected:
     Integer lattice_type_;
     spmap spmap_;
     voxel_container voxels_;
-    //Integer theNullCoord;
-
-    ParticleID VACANT_ID;
-    VacantType vacant_type_;
 
     Position3 edge_lengths_;
     Integer row_size_, layer_size_, col_size_;

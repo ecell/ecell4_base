@@ -10,10 +10,15 @@ namespace ecell4
 struct SParticle
 {
     Integer coord;
-    Species& species;
+    const Species* species;
+
+    SParticle(Integer coord, const Species* species)
+        : coord(coord), species(species)
+    {
+    }
 };
 
-}
+} // ecell4
 
 #endif
 

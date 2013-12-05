@@ -13,9 +13,6 @@ class VacantType
 public:
     typedef MolecularTypeBase::container_type container_type;
 
-public:
-    void addVoxel(Voxel *voxel);
-
 };
 
 } // ecell4

@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "Species.hpp"
-#include "Voxel.hpp"
 #include "Identifier.hpp"
 
 namespace ecell4
@@ -12,17 +11,17 @@ namespace ecell4
 class MolecularTypeBase
 {
 public:
-    typedef std::vector<std::pair<Voxel*, ParticleID> > container_type;
+    typedef std::vector<std::pair<Integer, ParticleID> > container_type;
 
 public:
-    virtual void addVoxel(Voxel *voxel, ParticleID pid)
+    virtual void addVoxel(Integer coord, const ParticleID pid)
     {
-        throw "addVoxel(Voxel, ParticleID) is not supported.";
+        throw "addVoxel(Integer, ParticleID) is not supported.";
     }
 
-    virtual bool removeVoxel(const ParticleID pid)
+    virtual bool removeVoxel(Integer coord)
     {
-        throw "removeVoxel(const ParticleID) is not supported.";
+        throw "removeVoxel(Integer) is not supported.";
     }
 
     virtual const Species& species() const

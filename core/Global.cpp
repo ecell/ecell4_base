@@ -12,7 +12,7 @@ Global Global::east() const
 Global Global::west() const
 {
     Global retval(*this);
-    retval.col == 1;
+    retval.col -= 1;
     return retval;
 }
 
@@ -44,4 +44,4 @@ Global Global::ventral() const
     return retval;
 }
 
-}
+} // ecell4
