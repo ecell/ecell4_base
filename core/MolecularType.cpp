@@ -3,18 +3,17 @@
 namespace ecell4
 {
 
-void MolecularType::addVoxel(Integer coord, ParticleID pid)
+void MolecularType::addVoxel(particle_info info)
 {
-    container_type::iterator itr(find(coord));
+    container_type::iterator itr(find(info.first));
     if (itr != voxels_.end())
     {
         voxels_.erase(itr);
     }
-    voxels_.push_back(container_type::value_type(
-                std::pair<Integer, ParticleID>(coord, pid)));
+    voxels_.push_back(info);
 }
 
-bool MolecularType::removeVoxel(Integer coord)
+bool MolecularType::removeVoxel(Coord coord)
 {
     container_type::iterator itr(find(coord));
     if (itr != voxels_.end())

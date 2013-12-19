@@ -12,7 +12,8 @@ class MolecularType
 {
 
 public:
-    typedef MolecularTypeBase::container_type container_type;
+    typedef std::pair<Coord, ParticleID> particle_info;
+    typedef std::vector<particle_info> container_type;
 
 public:
     MolecularType(const std::string& name = "")
@@ -24,13 +25,27 @@ public:
     {
     }
 
-    void addVoxel(Integer coord, const ParticleID pid);
-    bool removeVoxel(Integer coord);
+    ~MolecularType()
+    {
+    }
+
+    void addVoxel(particle_info info);
+    bool removeVoxel(Coord coord);
     const Species& species() const;
     std::vector<SParticle> sparticles() const;
     const container_type& voxels() const;
 
+    bool is_vacant() const
+    {
+        return false;
+    }
+
     container_type::iterator begin()
+    {
+        return voxels_.begin();
+    }
+
+    container_type::const_iterator begin() const
     {
         return voxels_.begin();
     }
@@ -40,22 +55,56 @@ public:
         return voxels_.end();
     }
 
-    container_type::const_iterator begin() const
-    {
-        return voxels_.begin();
-    }
-
     container_type::const_iterator end() const
     {
         return voxels_.end();
     }
 
-    container_type::iterator find(Integer coord)
+    container_type::iterator find(Coord coord)
     {
         container_type::iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
         {
             if ((*itr).first == coord)
+            {
+                break;
+            }
+        }
+        return itr;
+    }
+
+    container_type::const_iterator find(Coord coord) const
+    {
+        container_type::const_iterator itr;
+        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
+        {
+            if ((*itr).first == coord)
+            {
+                break;
+            }
+        }
+        return itr;
+    }
+
+    container_type::iterator find(ParticleID pid)
+    {
+        container_type::iterator itr;
+        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
+        {
+            if ((*itr).second == pid)
+            {
+                break;
+            }
+        }
+        return itr;
+    }
+
+    container_type::const_iterator find(ParticleID pid) const
+    {
+        container_type::const_iterator itr;
+        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
+        {
+            if ((*itr).second == pid)
             {
                 break;
             }

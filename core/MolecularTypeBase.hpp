@@ -8,30 +8,83 @@
 namespace ecell4
 {
 
+typedef Integer Coord;
+
 class MolecularTypeBase
 {
 public:
-    typedef std::vector<std::pair<Integer, ParticleID> > container_type;
-
-public:
-    virtual void addVoxel(Integer coord, const ParticleID pid)
+    virtual ~MolecularTypeBase()
     {
-        throw "addVoxel(Integer, ParticleID) is not supported.";
     }
 
-    virtual bool removeVoxel(Integer coord)
+    virtual void addVoxel(std::pair<Coord, ParticleID> info)
     {
-        throw "removeVoxel(Integer) is not supported.";
+        throw "addVoxel(Coord, ParticleID) is not supported.";
+    }
+
+    virtual bool removeVoxel(Coord coord)
+    {
+        throw "removeVoxel(Coord) is not supported.";
     }
 
     virtual const Species& species() const
     {
-        throw "species() is not supported.";
+        throw "species() const is not supported.";
     }
 
-    virtual const container_type& voxels() const
+    virtual const std::vector<std::pair<Coord, ParticleID> >& voxels() const
     {
-        throw "voxels() is not supported.";
+        throw "voxels() const is not supported.";
+    }
+
+    virtual bool is_vacant() const = 0;
+
+    virtual std::vector<std::pair<Coord, ParticleID> >::iterator
+        begin()
+    {
+        throw "begin() is not supported.";
+    }
+
+    virtual std::vector<std::pair<Coord, ParticleID> >::const_iterator
+        begin() const
+    {
+        throw "begin() const is not supported.";
+    }
+
+    virtual std::vector<std::pair<Coord, ParticleID> >::iterator
+        end()
+    {
+        throw "end() is not supported.";
+    }
+
+    virtual std::vector<std::pair<Coord, ParticleID> >::const_iterator
+        end() const
+    {
+        throw "end() const is not supported.";
+    }
+
+    virtual std::vector<std::pair<Coord, ParticleID> >::iterator
+        find(Coord coord)
+    {
+        throw "find(Coord) is not supported.";
+    }
+
+    virtual std::vector<std::pair<Coord, ParticleID> >::const_iterator
+        find(Coord coord) const
+    {
+        throw "find(Coord) const is not supported.";
+    }
+
+    virtual std::vector<std::pair<Coord, ParticleID> >::iterator
+        find(ParticleID pid)
+    {
+        throw "find(ParticleID) is not supported.";
+    }
+
+    virtual std::vector<std::pair<Coord, ParticleID> >::const_iterator
+        find(ParticleID pid) const
+    {
+        throw "find(ParticleID) const is not supported.";
     }
 
 };

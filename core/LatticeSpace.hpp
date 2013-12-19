@@ -4,7 +4,6 @@
 #include "Space.hpp"
 #include "MolecularType.hpp"
 #include "VacantType.hpp"
-#include "SParticle.hpp"
 #include "Global.hpp"
 #include <vector>
 #include <set>
@@ -17,69 +16,17 @@ namespace ecell4
 #define HCP_LATTICE   0
 #define CUBIC_LATTICE 1
 
-//Comp dimensions:
-#define VOLUME  3
-#define SURFACE 2
-#define LINE    1
-
-//Comp geometries:
-#define CUBOID        0
-#define ELLIPSOID     1
-#define CYLINDER      2
-#define ROD           3
-#define PYRAMID       4
-#define ERYTHROCYTE   5
-
-//CUBOID Comp surface boundary conditions:
-#define REFLECTIVE     0
-#define PERIODIC       1
-#define UNIPERIODIC    2
-#define REMOVE_UPPER   3
-#define REMOVE_LOWER   4
-#define REMOVE_BOTH    5
-
-//The 12 adjoining voxels of a voxel in the HCP lattice:
-#define NORTH    0
-#define SOUTH    1
-#define NW       2
-#define SW       3
-#define NE       4
-#define SE       5
-#define EAST     6
-#define WEST     7
-#define DORSALN  8
-#define DORSALS  9
-#define VENTRALN 10
-#define VENTRALS 11
-
-//The 6 adjoining voxels of a voxel in the CUBIC lattice:
-#define DORSAL   4
-#define VENTRAL  5
-
-#define INNER     0
-#define OUTER     1
-#define IMMED     2
-#define EXTEND    3
-#define SHARED    4
-
-// Polymerization parameters
-#define LARGE_DISTANCE 50
-#define MAX_MONOMER_OVERLAP 0.2
-#define MAX_IMMEDIATE_DISTANCE 0.2
-#define BIG_NUMBER 1e+20
-
 class LatticeSpace
     : public Space
 {
 protected:
 
     typedef std::map<Species, MolecularType> spmap;
-    typedef std::vector<MolecularType*> voxel_container;
+    typedef std::vector<MolecularTypeBase*> voxel_container;
 
 
 public:
 
-    LatticeSpace();
     LatticeSpace(const Position3& edge_lengths);
     ~LatticeSpace();
 
@@ -108,51 +55,65 @@ public:
     /*
      * for Simulator
      *
-     * using Species, SParticle and Coord
+     * using Species and Coord
      */
-    std::vector<SParticle> list_sparticles() const;
-    std::vector<SParticle> list_sparticles(const Species& sp) const;
+    std::vector<Species> list_species() const;
+    MolecularTypeBase* get_molecular_type(const Species& sp);
+    MolecularTypeBase* get_molecular_type(Coord coord) const;
+    bool add(const Species& sp, Coord coord, const ParticleID& pid);
+    bool move(Coord from, Coord to);
+    bool react(Coord coord, const Species& species);
 
-    bool move(Integer from, Integer to);
-    bool has_particle(Integer coord) const;
+    inline Integer num_col() const
+    {
+        return this->edge_lengths_[0] / HCP_X + 3;
+    }
 
+    inline Integer num_row() const
+    {
+        return this->edge_lengths_[1] / theNormalizedVoxelRadius / 2 + 2;
+    }
+
+    inline Integer num_colrow() const
+    {
+        return num_col() * num_row();
+    }
 
 protected:
 
     void set_lattice_properties();
 
-    Integer get_coord(const ParticleID& pid) const;
-    MolecularType* voxel_at(Integer coord) const;
-    MolecularType* get_molecular_type(const Species& sp);
+    Coord get_coord(const ParticleID& pid) const;
 
     /*
      * coordinate transformations
      */
-    const Global coord2global(Integer coord) const;
-    const Position3 coord2position(Integer coord) const;
+    const Global coord2global(Coord coord) const;
+    const Position3 coord2position(Coord coord) const;
 
-    Integer global2coord(const Global& global) const;
+    Coord global2coord(const Global& global) const;
     const Position3 global2position(const Global& global) const;
 
-    Integer position2coord(const Position3& pos) const;
+    Coord position2coord(const Position3& pos) const;
     const Global position2global(const Position3& pos) const;
 
-    const Particle particle_at(Integer coord) const;
+    const Particle particle_at(Coord coord) const;
 
 
 protected:
 
     Real theNormalizedVoxelRadius;
-    Real theHCPl, theHCPx, theHCPy;
+    Real HCP_L, HCP_X, HCP_Y;
     Position3 theCenterPoint;
 
     Integer lattice_type_;
     spmap spmap_;
     voxel_container voxels_;
 
+    VacantType* vacant_;
+
     Position3 edge_lengths_;
     Integer row_size_, layer_size_, col_size_;
-    Integer stride_;
 
 };
 

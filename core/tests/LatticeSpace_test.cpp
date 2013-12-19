@@ -9,55 +9,62 @@
 
 using namespace ecell4;
 
-
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_constructor)
 {
-    LatticeSpace lspace;
+    Position3 edge_lengths(1e-6,1e-6,1e-6);
+    LatticeSpace lspace(edge_lengths);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_species)
 {
-    LatticeSpace lspace;
+    Position3 edge_lengths(1e-6,1e-6,1e-6);
+    LatticeSpace lspace(edge_lengths);
     BOOST_CHECK_EQUAL(lspace.num_species(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_has_species)
 {
-    LatticeSpace lspace;
+    Position3 edge_lengths(1e-6,1e-6,1e-6);
+    LatticeSpace lspace(edge_lengths);
     const Species &sp = Species("TEST");
     BOOST_CHECK(!lspace.has_species(sp));
 }
 
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_sparticle)
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_particle)
 {
-    LatticeSpace lspace;
+    Position3 edge_lengths(1e-6,1e-6,1e-6);
+    LatticeSpace lspace(edge_lengths);
+
     SerialIDGenerator<ParticleID> sidgen;
     ParticleID id(sidgen());
+
     Species sp(std::string("TEST"));
-    Position3 pos(2, 0, 0);
+    Position3 pos(2e-7, 0, 0);
     Real r(1.0);
     Real d(2.3);
     Particle particle(sp, pos, r, d);
+
     BOOST_CHECK(lspace.update_particle(id, particle));
     BOOST_CHECK(lspace.has_species(sp));
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 {
-    LatticeSpace lspace;
+    Position3 edge_lengths(1e-6,1e-6,1e-6);
+    LatticeSpace lspace(edge_lengths);
     BOOST_CHECK_EQUAL(lspace.num_particles(), 0);
 
     SerialIDGenerator<ParticleID> sidgen;
     ParticleID id(sidgen());
     Species sp(std::string("TEST"));
-    Position3 pos(2, 0, 0);
+    Position3 pos(2e-7, 0, 0);
     Real r(1.0);
     Real d(2.3);
     Particle particle(sp, pos, r, d);
 
     ParticleID a_id(sidgen());
     Species a(std::string("ANOTHER"));
-    Position3 pos1(1, 2, 0);
+    Position3 pos1(1e-7, 2e-7, 0);
     Real r1(1.1);
     Real d1(4.3);
     Particle another(a, pos1, r1, d1);
@@ -70,19 +77,20 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 {
-    LatticeSpace lspace;
+    Position3 edge_lengths(1e-6,1e-6,1e-6);
+    LatticeSpace lspace(edge_lengths);
 
     SerialIDGenerator<ParticleID> sidgen;
     ParticleID id(sidgen());
     Species sp(std::string("TEST"));
-    Position3 pos(2, 0, 0);
+    Position3 pos(2e-7, 0, 0);
     Real r(1.0);
     Real d(2.3);
     Particle particle(sp, pos, r, d);
 
     ParticleID a_id(sidgen());
     Species a(std::string("ANOTHER"));
-    Position3 pos1(1, 2, 0);
+    Position3 pos1(1e-7, 2e-7, 0);
     Real r1(1.1);
     Real d1(4.3);
     Particle another(a, pos1, r1, d1);

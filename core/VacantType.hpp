@@ -11,8 +11,15 @@ class VacantType
 {
 
 public:
-    typedef MolecularTypeBase::container_type container_type;
 
+    ~VacantType()
+    {
+    }
+
+    bool is_vacant() const
+    {
+        return true;
+    }
 };
 
 } // ecell4
