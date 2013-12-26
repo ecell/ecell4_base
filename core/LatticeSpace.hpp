@@ -60,6 +60,7 @@ public:
     std::vector<Species> list_species() const;
     MolecularTypeBase* get_molecular_type(const Species& sp);
     MolecularTypeBase* get_molecular_type(Coord coord) const;
+    bool add(const Species& sp);
     bool add(const Species& sp, Coord coord, const ParticleID& pid);
     bool move(Coord from, Coord to);
     bool react(Coord coord, const Species& species);

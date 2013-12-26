@@ -307,6 +307,17 @@ MolecularTypeBase* LatticeSpace::get_molecular_type(Integer coord) const
     return voxels_.at(coord);
 }
 
+bool LatticeSpace::add(const Species& sp)
+{
+    if (has_species(sp))
+    {
+        return false;
+    }
+    MolecularType mt(sp);
+    std::pair<spmap::iterator, bool> retval = spmap_.insert(spmap::value_type(sp, mt));
+    return retval.second;
+}
+
 bool LatticeSpace::add(const Species& sp, Coord coord, const ParticleID& pid)
 {
     MolecularTypeBase* mt(get_molecular_type(sp));
@@ -323,6 +334,10 @@ bool LatticeSpace::add(const Species& sp, Coord coord, const ParticleID& pid)
      * Warning: Not Checking duplication of ParticleID
      */
     mt->addVoxel(std::pair<Coord, ParticleID>(coord, pid));
+
+    voxel_container::iterator itr(voxels_.begin() + coord);
+    (*itr) = mt;
+
     return true;
 }
 
@@ -339,8 +354,10 @@ bool LatticeSpace::move(Coord from, Coord to)
     if (!from_mt->is_vacant()) {
         MolecularType::container_type::iterator itr(from_mt->find(from));
         (*itr).first = to;
-        voxels_[from] = vacant_;
-        voxels_[to] = from_mt;
+        voxel_container::iterator fitr(voxels_.begin() + from);
+        (*fitr) = vacant_;
+        voxel_container::iterator titr(voxels_.begin() + to);
+        (*titr) = from_mt;
     }
 
     return true;

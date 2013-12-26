@@ -124,6 +124,32 @@ Coord LatticeWorld::get_neighbor(Coord coord, Integer nrand) const
     return coord-1;
 }
 
+bool LatticeWorld::add_species(const Species& sp)
+{
+    return space_.add(sp);
+}
+
+bool LatticeWorld::add_molecule(const Species& sp, Coord coord)
+{
+    ParticleID pid(sidgen_());
+    return space_.add(sp, coord, pid);
+}
+
+bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
+{
+    // TODO
+    if (has_species(sp))
+    {
+        add_species(sp);
+    }
+    for (Integer i(0); i < num; ++i)
+    {
+        Coord coord(0);
+        add_molecule(sp, coord);
+    }
+    return true;
+}
+
 bool LatticeWorld::move(Coord from, Coord to)
 {
     space_.move(from, to);
