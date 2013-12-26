@@ -15,6 +15,7 @@ subdirs = [
 hppfiles = [
     'LatticeWorld.hpp',
     'LatticeSimulator.hpp',
+    'EventScheduler.hpp'
     ]
 
 cppfiles = [

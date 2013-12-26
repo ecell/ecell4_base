@@ -34,6 +34,7 @@ public:
     const Species& species() const;
     std::vector<SParticle> sparticles() const;
     const container_type& voxels() const;
+    container_type& voxels();
 
     bool is_vacant() const
     {

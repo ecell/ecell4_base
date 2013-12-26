@@ -65,6 +65,11 @@ public:
     bool move(Coord from, Coord to);
     bool react(Coord coord, const Species& species);
 
+    Real normalized_voxel_radius() const
+    {
+        return theNormalizedVoxelRadius;
+    }
+
     inline Integer num_col() const
     {
         return this->edge_lengths_[0] / HCP_X + 3;

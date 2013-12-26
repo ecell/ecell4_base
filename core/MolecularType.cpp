@@ -34,6 +34,11 @@ const MolecularType::container_type& MolecularType::voxels() const
     return voxels_;
 }
 
+MolecularType::container_type& MolecularType::voxels()
+{
+    return voxels_;
+}
+
 std::vector<SParticle> MolecularType::sparticles() const
 {
     std::vector<SParticle> retval;

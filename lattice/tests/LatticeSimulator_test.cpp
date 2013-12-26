@@ -18,9 +18,9 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_constructor)
 
     const std::string D("1e-12"), radius("2.5e-9");
 
-    ecell4::Species sp1("A", D, radius),
-        sp2("B", D, radius),
-        sp3("C", D, radius);
+    ecell4::Species sp1("A", radius, D),
+        sp2("B", radius, D),
+        sp3("C", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     (*model).add_species(sp1);
     (*model).add_species(sp2);
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_species)
 
     const std::string D("1e-12"), radius("2.5e-9");
 
-    ecell4::Species sp1("A", D, radius);
+    ecell4::Species sp1("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     (*model).add_species(sp1);
 

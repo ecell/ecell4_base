@@ -51,6 +51,11 @@ public:
     bool move(Coord from, Coord to);
     bool react(Coord at, Species species);
 
+    Real normalized_voxel_radius() const
+    {
+        space_.normalized_voxel_radius();
+    }
+
     inline boost::shared_ptr<GSLRandomNumberGenerator> rng()
     {
         return rng_;
