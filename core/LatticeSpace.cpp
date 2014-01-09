@@ -320,6 +320,11 @@ bool LatticeSpace::add(const Species& sp)
 
 bool LatticeSpace::add(const Species& sp, Coord coord, const ParticleID& pid)
 {
+    if (!is_in_range(coord))
+    {
+        return false;
+    }
+
     MolecularTypeBase* mt(get_molecular_type(sp));
     if (mt->is_vacant())
     {
@@ -343,6 +348,11 @@ bool LatticeSpace::add(const Species& sp, Coord coord, const ParticleID& pid)
 
 bool LatticeSpace::move(Coord from, Coord to)
 {
+    if (!is_in_range(from) || !is_in_range(to))
+    {
+        return false;
+    }
+
     MolecularTypeBase* to_mt(get_molecular_type(to));
 
     if (!to_mt->is_vacant()) {
@@ -365,6 +375,11 @@ bool LatticeSpace::move(Coord from, Coord to)
 
 bool LatticeSpace::react(Coord coord, const Species& species)
 {
+    if (!is_in_range(coord))
+    {
+        return false;
+    }
+
     MolecularTypeBase* mt(get_molecular_type(coord));
     MolecularTypeBase* new_mt(get_molecular_type(species));
     if (mt->is_vacant())
@@ -398,6 +413,11 @@ const Particle LatticeSpace::particle_at(Integer coord) const
     const Real& D = 0;
     Particle particle(sp, pos, radius, D);
     return particle;
+}
+
+bool LatticeSpace::is_in_range(Coord coord) const
+{
+    return coord >= 0 && coord < row_size_ * layer_size_ * col_size_;
 }
 
 } // ecell4

@@ -5,6 +5,7 @@
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 
+#include <ecell4/core/types.hpp>
 #include <ecell4/core/DynamicPriorityQueue.hpp>
 
 namespace ecell4

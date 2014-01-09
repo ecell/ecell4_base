@@ -97,7 +97,6 @@ Coord LatticeWorld::get_neighbor(Coord coord, Integer nrand) const
     const bool odd_lay((coord / NUM_COLROW) & 1);
     switch(nrand)
     {
-
     case 1:
         return coord+1;
     case 2:

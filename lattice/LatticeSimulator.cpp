@@ -1,5 +1,6 @@
 #include "LatticeSimulator.hpp"
 
+
 namespace ecell4
 {
 
@@ -19,6 +20,8 @@ void LatticeSimulator::initialize()
         const boost::shared_ptr<EventScheduler::Event> event(create_event(*itr));
         scheduler_.add(event);
     }
+
+    is_initialized_ = true;
 }
 
 boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_event(
@@ -30,7 +33,12 @@ boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_event(
 
 void LatticeSimulator::step()
 {
-    EventScheduler::value_type top(scheduler_.top());
+    if (!is_initialized_)
+    {
+        initialize();
+    }
+
+    EventScheduler::value_type const& top(scheduler_.top());
     Real time(top.second->time());
     top.second->fire(); // top.second->time_ is updated in fire()
     (*world_).set_t(time);
@@ -61,6 +69,11 @@ void LatticeSimulator::step()
 
 bool LatticeSimulator::step(const Real& upto)
 {
+    if (!is_initialized_)
+    {
+        initialize();
+    }
+
     /*
     Integer count((Integer)(upto / dt()) - num_steps());
     for (Integer i(0); i < count; ++i)

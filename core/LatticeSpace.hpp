@@ -105,6 +105,7 @@ protected:
 
     const Particle particle_at(Coord coord) const;
 
+    bool is_in_range(Coord coord) const;
 
 protected:
 

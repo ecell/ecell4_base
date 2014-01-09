@@ -3,7 +3,6 @@
 //
 // written by Koichi Takahashi based on the initial version by Eiichiro Adachi.
 // modified by Mozoyoshi Koizumi
-// modified by Suguru Kato
 //
 
 #ifdef HAVE_CONFIG_H

@@ -22,3 +22,12 @@ def build(bld):
         lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
         use = 'ecell4-lattice'
     )
+
+    bld.program(
+        features = 'cxx cxxprogram test',
+        source = 'EventScheduler_test.cpp',
+        includes = '..',
+        target = 'EventScheduler_test',
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        use = 'ecell4-lattice'
+    )

@@ -40,14 +40,18 @@ protected:
         {
             boost::shared_ptr<GSLRandomNumberGenerator> rng(sim_->world_->rng());
 
-            //shuffle(*rng, mt_->voxels());
+            shuffle(*rng, mt_->voxels());
             for (MolecularType::container_type::iterator itr(mt_->begin());
                     itr != mt_->end(); ++itr)
             {
                 Coord from_coord((*itr).first);
                 Coord to_coord(sim_->world_->get_neighbor(from_coord,
-                            (*rng).uniform_int(0, 11)));
-                sim_->world_->move(from_coord, to_coord);
+                            rng->uniform_int(0, 11)));
+                bool flg = sim_->world_->move(from_coord, to_coord);
+                if (!flg)
+                {
+                    std::cerr << "[can not moved :" << from_coord << "-->" << to_coord << "]";
+                }
             }
 
             time_ += dt_;
@@ -65,7 +69,7 @@ public:
     LatticeSimulator(
             boost::shared_ptr<NetworkModel> model,
             boost::shared_ptr<LatticeWorld> world)
-        : model_(model), world_(world)
+        : model_(model), world_(world), is_initialized_(false)
     {
     }
 
@@ -85,9 +89,11 @@ public:
     }
 
     void initialize();
-    boost::shared_ptr<EventScheduler::Event> create_event(const Species& species);
     void step();
     bool step(const Real& upto);
+
+protected:
+    boost::shared_ptr<EventScheduler::Event> create_event(const Species& species);
 
 protected:
 
@@ -96,6 +102,7 @@ protected:
     EventScheduler scheduler_;
 
     Real dt_;
+    bool is_initialized_;
 
 };
 

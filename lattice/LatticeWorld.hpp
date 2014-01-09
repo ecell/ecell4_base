@@ -56,7 +56,7 @@ public:
         space_.normalized_voxel_radius();
     }
 
-    inline boost::shared_ptr<GSLRandomNumberGenerator> rng()
+    boost::shared_ptr<GSLRandomNumberGenerator> rng()
     {
         return rng_;
     }

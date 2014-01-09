@@ -37,6 +37,11 @@ public:
         throw "voxels() const is not supported.";
     }
 
+    virtual std::vector<std::pair<Coord, ParticleID> >& voxels()
+    {
+        throw "voxels() const is not supported.";
+    }
+
     virtual bool is_vacant() const = 0;
 
     virtual std::vector<std::pair<Coord, ParticleID> >::iterator
