@@ -1,0 +1,34 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib.Tools import waf_unit_test, python
+from waflib.Task import Task
+from waflib import Logs
+from waflib import Utils
+import os
+import glob
+
+
+top = '.'
+out = 'build'
+
+cppfiles = ["mymapk.cpp"]
+
+def options(opt):
+    opt.load('compiler_cxx boost')
+
+def configure(conf):
+    conf.load('compiler_cxx python boost')
+    conf.check_cxx(lib='gsl')
+
+def build(bld):
+    bld.program(
+        features = 'cxx cprogram',
+        source = cppfiles,
+        includes = ['.', '${HOME}/local/include/ecell4/egfrd_impl'],
+        defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
+        lib = ['ecell4-core', 'ecell4_egfrd_intgl', 'gsl', 'gslcblas', 'm', 'hdf5', 'hdf5_cpp'],
+        use = ['BOOST'],
+        target = 'sample_epdp_intgl')
+    
+

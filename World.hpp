@@ -21,9 +21,10 @@
 #include "Surface.hpp"
 #include "Region.hpp"
 #include "geometry.hpp"
-#include "GSLRandomNumberGenerator.hpp"
+//#include "GSLRandomNumberGenerator.hpp"
 #include "Point.hpp" // XXX: workaround. should be removed later.
 #include "utils/pair.hpp"
+#include "ecell4/core/RandomNumberGenerator.hpp"
 
 template<typename Tderived_, typename Tlen_, typename TD_>
 struct WorldTraitsBase
@@ -40,7 +41,8 @@ struct WorldTraitsBase
     typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;
     typedef Vector3<length_type> point_type;
     typedef typename particle_type::shape_type::position_type position_type;
-    typedef GSLRandomNumberGenerator rng_type;
+    //typedef GSLRandomNumberGenerator rng_type;
+    typedef ecell4::GSLRandomNumberGenerator rng_type;
     typedef Structure<Tderived_> structure_type;
 
     static const Real TOLERANCE = 1e-7;
