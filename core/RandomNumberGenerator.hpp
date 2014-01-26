@@ -24,6 +24,12 @@ public:
     virtual Integer uniform_int(Integer min, Integer max) = 0;
     virtual Real gaussian(Real mean, Real sigma) = 0;
 
+    __attribute__((deprecated)) 
+    virtual Real normal(Real mean, Real sigma)  = 0;
+
+    virtual void dir_2d(Real *x, Real *y) = 0;
+    virtual void dir_3d(Real *x, Real *y, Real *z) = 0;
+    virtual double operator() () = 0;
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
 
@@ -62,13 +68,42 @@ public:
         return gsl_rng_uniform_int(rng_.get(), max - min + 1) + min;
     }
 
+    __attribute__((deprecated))
+    Real normal(Real loc, Real scale)
+    {   // This function is implecated for comatible for epdp::GSLRandomNumberGenerator.
+        // This function is the same as uniform().
+        std::cout << "hoge" << std::endl;
+        return this->uniform(loc, scale);
+
+    }
+
     Real gaussian(Real mean, Real sigma)
     {
         return gsl_ran_gaussian(rng_.get(), sigma) + mean;
     }
 
-    void seed(Integer val)
+    Integer get_raw()
+    {   // epdp
+        return gsl_rng_get(rng_.get());
+    }
+
+    void dir_2d(Real *x, Real *y)
     {
+        gsl_ran_dir_2d(rng_.get(), x, y);
+    }
+
+    void dir_3d(Real *x, Real *y, Real *z)
+    {
+        gsl_ran_dir_3d(rng_.get(), x, y, z);
+    }
+
+    Real operator()()
+    {
+        gsl_rng_uniform(rng_.get());
+    }
+
+    void seed(Integer val)
+    {   //epdp
         gsl_rng_set(rng_.get(), val);
     }
 
