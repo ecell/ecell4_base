@@ -17,7 +17,11 @@ void LatticeSimulator::initialize()
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
-        const boost::shared_ptr<EventScheduler::Event> event(create_event(*itr));
+        const Species species(*itr);
+        if (boost::lexical_cast<Real>(species.get_attribute("D")) == 0.)
+            continue;
+
+        const boost::shared_ptr<EventScheduler::Event> event(create_event(species));
         scheduler_.add(event);
     }
 
@@ -43,6 +47,8 @@ void LatticeSimulator::step()
     top.second->fire(); // top.second->time_ is updated in fire()
     (*world_).set_t(time);
     scheduler_.update(top);
+
+    std::cerr << "<" << scheduler_.size() << ">";
 
     /*
     boost::shared_ptr<GSLRandomNumberGenerator> rng((*world_).rng());

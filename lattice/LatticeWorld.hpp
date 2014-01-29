@@ -61,6 +61,16 @@ public:
         return rng_;
     }
 
+    const Integer num_colrow() const
+    {
+        return space_.num_colrow();
+    }
+
+    const Integer num_row() const
+    {
+        return space_.num_row();
+    }
+
 protected:
 
     LatticeSpace space_;

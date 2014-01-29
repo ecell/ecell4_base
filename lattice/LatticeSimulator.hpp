@@ -29,7 +29,12 @@ protected:
             mt_ = sim_->world_->get_molecular_type(species);
             const Real R(sim_->world_->normalized_voxel_radius());
             Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
-            dt_ = 4 * R / 6 / D;
+            if (D <= 0)
+            {
+                dt_ = 0;
+            } else {
+                dt_ = 4 * R / 6 / D;
+            }
         }
 
         virtual ~Event()
@@ -38,6 +43,8 @@ protected:
 
         virtual void fire()
         {
+            std::cerr << "[" << time_ << "," << dt_ << "," <<
+                mt_->species().name() << "," << mt_->species().get_attribute("D") << "]";
             boost::shared_ptr<GSLRandomNumberGenerator> rng(sim_->world_->rng());
 
             shuffle(*rng, mt_->voxels());
@@ -45,13 +52,11 @@ protected:
                     itr != mt_->end(); ++itr)
             {
                 Coord from_coord((*itr).first);
+                const Integer rnd(rng->uniform_int(0,11));
                 Coord to_coord(sim_->world_->get_neighbor(from_coord,
-                            rng->uniform_int(0, 11)));
-                bool flg = sim_->world_->move(from_coord, to_coord);
-                if (!flg)
-                {
-                    std::cerr << "[can not moved :" << from_coord << "-->" << to_coord << "]";
-                }
+                            rnd));
+
+                sim_->world_->move(from_coord, to_coord);
             }
 
             time_ += dt_;

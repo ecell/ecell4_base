@@ -173,19 +173,30 @@ void LatticeSpace::set_lattice_properties()
     Real lengthY = edge_lengths_[1];
     Real lengthZ = edge_lengths_[2];
 
-    theCenterPoint[2] = lengthZ / 2 + 4 *
-        theNormalizedVoxelRadius; //row
-    theCenterPoint[1] = lengthY / 2 + 2 * HCP_Y; //layer
-    theCenterPoint[0] = lengthX / 2 + 2 * HCP_X; //column
+    /*
+    row_size_ = (Integer)rint((lengthZ/2)/theNormalizedVoxelRadius) + 4;
+    layer_size_ = (Integer)rint(lengthY/HCP_Y) + 4;
+    col_size_ = (Integer)rint(lengthX/HCP_X) + 4;
+    */
+    row_size_ = (Integer)rint((lengthZ/2)/theNormalizedVoxelRadius) + 2;
+    layer_size_ = (Integer)rint(lengthY/HCP_Y) + 2;
+    col_size_ = (Integer)rint(lengthX/HCP_X) + 2;
 
-    row_size_ = (Integer)rint((theCenterPoint[2])/
-                              (theNormalizedVoxelRadius));
-    layer_size_ = (Integer)rint((theCenterPoint[1]*2)/HCP_Y);
-    col_size_ = (Integer)rint((theCenterPoint[0]*2)/HCP_X);
-
+    MolecularTypeBase* border = get_molecular_type(Species("Border", "0"));
     for (Integer coord(0); coord < row_size_ * layer_size_ * col_size_; ++coord)
     {
-        voxels_.push_back(vacant_);
+        Global global(coord2global(coord));
+        if (global.col == 0 || global.col == col_size_-1 ||
+                global.row == 0 || global.row == row_size_-1 ||
+                global.layer == 0 || global.layer == layer_size_-1)
+        {
+            //voxels_.push_back(border_);
+            voxels_.push_back(border);
+        }
+        else
+        {
+            voxels_.push_back(vacant_);
+        }
     }
 }
 
@@ -211,8 +222,11 @@ MolecularTypeBase* LatticeSpace::get_molecular_type(const Species& sp)
     if (itr == spmap_.end())
     {
         MolecularType mt(sp);
-        spmap_.insert(spmap::value_type(sp, mt));
-        itr = spmap_.find(sp);
+        std::pair<spmap::iterator, bool> result = spmap_.insert(spmap::value_type(sp, mt));
+        if (result.second)
+            itr = result.first;
+        else
+            throw "insert error";
     }
     return &((*itr).second);
 }
@@ -250,29 +264,28 @@ const Global LatticeSpace::coord2global(Integer aCoord) const
 
 const Position3 LatticeSpace::global2position(const Global& global) const
 {
-    return coord2position(global2coord(global));
-}
-
-const Position3 LatticeSpace::coord2position(Integer coord) const
-{
-    const Global global(coord2global(coord));
     //the center point of a voxel
     Position3 position;
     switch(lattice_type_)
     {
         case HCP_LATTICE:
-            position[1] = (global.col % 2) * HCP_L + HCP_Y * global.layer;
-            position[2] = global.row * 2 * theNormalizedVoxelRadius +
-            ((global.layer + global.col) % 2) * theNormalizedVoxelRadius;
             position[0] = global.col * HCP_X;
+            position[1] = (global.col % 2) * HCP_L + HCP_Y * global.layer;
+            position[2] = (global.row * 2 + (global.layer + global.col) % 2)
+                * theNormalizedVoxelRadius;
             break;
         case CUBIC_LATTICE:
+            position[0] = global.col * 2 * theNormalizedVoxelRadius;
             position[1] = global.layer * 2 * theNormalizedVoxelRadius;
             position[2] = global.row * 2 * theNormalizedVoxelRadius;
-            position[0] = global.col * 2 * theNormalizedVoxelRadius;
             break;
     }
     return position;
+}
+
+const Position3 LatticeSpace::coord2position(Integer coord) const
+{
+    return global2position(coord2global(coord));
 }
 
 Integer LatticeSpace::position2coord(const Position3& pos) const

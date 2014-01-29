@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_num_species)
         rng(new GSLRandomNumberGenerator());
     const Position3 edge_lengths(1e-6, 1e-6, 1e-6);
     LatticeWorld world(edge_lengths, rng);
-    BOOST_CHECK_EQUAL(world.num_species(), 0);
+    BOOST_CHECK_EQUAL(world.num_species(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_has_species)
@@ -93,10 +93,11 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_species)
     BOOST_CHECK(world.add_species(sp));
     BOOST_CHECK(world.has_species(sp));
 
-    std::vector<Species> list;
-    list.push_back(sp);
+    std::vector<Species> list(world.list_species());
+    std::vector<Species>::iterator pos;
+    pos = find(list.begin(), list.end(), sp);
 
-    BOOST_CHECK(list == world.list_species());
+    BOOST_CHECK(pos != list.end());
 }
 
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_add)
@@ -109,7 +110,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add)
     Species sp(std::string("TEST"));
     BOOST_CHECK(world.add_species(sp));
 
-    Coord coord(2);
+    Coord coord(3000000);
     BOOST_CHECK(world.add_molecule(sp, coord));
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
@@ -127,10 +128,10 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
     Species sp(std::string("TEST"));
     BOOST_CHECK(world.add_species(sp));
 
-    Coord coord(2);
+    Coord coord(161605);
     BOOST_CHECK(world.add_molecule(sp, coord));
 
-    Coord to_coord(1);
+    Coord to_coord(486420);
     BOOST_CHECK(world.move(coord, to_coord));
 
     MolecularTypeBase* mt(world.get_molecular_type(to_coord));
@@ -138,4 +139,3 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
 
     BOOST_CHECK(!world.move(coord, to_coord));
 }
-

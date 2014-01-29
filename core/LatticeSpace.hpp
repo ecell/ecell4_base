@@ -111,7 +111,6 @@ protected:
 
     Real theNormalizedVoxelRadius;
     Real HCP_L, HCP_X, HCP_Y;
-    Position3 theCenterPoint;
 
     Integer lattice_type_;
     spmap spmap_;
