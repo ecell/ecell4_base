@@ -10,7 +10,7 @@ namespace ecell4 {
 namespace egfrd {
 
 // cf. epdp/NetworkRulesWrapper.hpp
-// This class will substitute for NetworkRulesWrapper 
+// NetworkRulesAdapter will substitute for NetworkRulesWrapper 
 //  which is instanciated in ParticleSimulatorTraitsBase.
 template <typename T_, typename Trri_>  // will be removed
 class NetworkRulesAdapter {
@@ -35,8 +35,11 @@ public:
         return retval;
     }
 
-    NetworkRulesAdapter(boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model)
-    {;}
+    NetworkRulesAdapter(boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model):
+        ecell4_nw_model_(ecell4_nw_model){;}
+
+private:
+    boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model_;
 };
 
 }   // egfrd
