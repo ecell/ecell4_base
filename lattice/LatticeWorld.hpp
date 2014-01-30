@@ -1,6 +1,7 @@
 #ifndef __ECELL4_LATTICE_LATTICE_WORLD_HPP
 #define __ECELL4_LATTICE_LATTICE_WORLD_HPP
 
+#include <stdexcept>
 #include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/LatticeSpace.hpp>
@@ -46,10 +47,10 @@ public:
     MolecularTypeBase* get_molecular_type(Integer coord);
     Integer get_neighbor(Integer coord, Integer nrand) const;
     bool add_species(const Species& sp);
-    bool add_molecule(const Species& sp, Coord coord);
+    bool add_molecule(const Species& sp, Coord coord) throw(std::out_of_range);
     bool add_molecules(const Species& sp, const Integer& num);
-    bool move(Coord from, Coord to);
-    bool react(Coord at, Species species);
+    bool move(Coord from, Coord to) throw(std::out_of_range);
+    bool react(Coord at, Species species) throw(std::out_of_range);
 
     Real normalized_voxel_radius() const
     {

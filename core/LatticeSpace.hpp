@@ -8,6 +8,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <stdexcept>
 
 namespace ecell4
 {
@@ -61,9 +62,9 @@ public:
     MolecularTypeBase* get_molecular_type(const Species& sp);
     MolecularTypeBase* get_molecular_type(Coord coord) const;
     bool add(const Species& sp);
-    bool add(const Species& sp, Coord coord, const ParticleID& pid);
-    bool move(Coord from, Coord to);
-    bool react(Coord coord, const Species& species);
+    bool add(const Species& sp, Coord coord, const ParticleID& pid) throw(std::out_of_range);
+    bool move(Coord from, Coord to) throw(std::out_of_range);
+    bool react(Coord coord, const Species& species) throw(std::out_of_range);
 
     Real normalized_voxel_radius() const
     {

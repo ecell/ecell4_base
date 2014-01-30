@@ -331,11 +331,11 @@ bool LatticeSpace::add(const Species& sp)
     return retval.second;
 }
 
-bool LatticeSpace::add(const Species& sp, Coord coord, const ParticleID& pid)
+bool LatticeSpace::add(const Species& sp, Coord coord, const ParticleID& pid) throw(std::out_of_range)
 {
     if (!is_in_range(coord))
     {
-        return false;
+        throw std::out_of_range("");
     }
 
     MolecularTypeBase* mt(get_molecular_type(sp));
@@ -359,11 +359,11 @@ bool LatticeSpace::add(const Species& sp, Coord coord, const ParticleID& pid)
     return true;
 }
 
-bool LatticeSpace::move(Coord from, Coord to)
+bool LatticeSpace::move(Coord from, Coord to) throw(std::out_of_range)
 {
     if (!is_in_range(from) || !is_in_range(to))
     {
-        return false;
+        throw std::out_of_range("");
     }
 
     MolecularTypeBase* to_mt(get_molecular_type(to));
@@ -386,11 +386,11 @@ bool LatticeSpace::move(Coord from, Coord to)
     return true;
 }
 
-bool LatticeSpace::react(Coord coord, const Species& species)
+bool LatticeSpace::react(Coord coord, const Species& species) throw(std::out_of_range)
 {
     if (!is_in_range(coord))
     {
-        return false;
+        throw std::out_of_range("");
     }
 
     MolecularTypeBase* mt(get_molecular_type(coord));

@@ -128,7 +128,7 @@ bool LatticeWorld::add_species(const Species& sp)
     return space_.add(sp);
 }
 
-bool LatticeWorld::add_molecule(const Species& sp, Coord coord)
+bool LatticeWorld::add_molecule(const Species& sp, Coord coord) throw(std::out_of_range)
 {
     ParticleID pid(sidgen_());
     return space_.add(sp, coord, pid);
@@ -144,17 +144,20 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     for (Integer i(0); i < num; ++i)
     {
         Coord coord(0);
-        add_molecule(sp, coord);
+        try {
+            add_molecule(sp, coord);
+        } catch (std::out_of_range& e) {
+        }
     }
     return true;
 }
 
-bool LatticeWorld::move(Coord from, Coord to)
+bool LatticeWorld::move(Coord from, Coord to) throw(std::out_of_range)
 {
     space_.move(from, to);
 }
 
-bool LatticeWorld::react(Coord at, Species species)
+bool LatticeWorld::react(Coord at, Species species) throw(std::out_of_range)
 {
     space_.react(at, species);
 }
