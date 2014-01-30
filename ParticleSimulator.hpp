@@ -12,11 +12,13 @@
 #include "CylindricalSurface.hpp"
 #include "SphericalSurface.hpp"
 #include "NetworkRules.hpp"
-#include "NetworkRulesWrapper.hpp"
+//#include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
 #include "ReactionRecorder.hpp"
 #include "ReactionRecord.hpp"
 #include "VolumeClearer.hpp"
+
+#include "NetworkRulesAdapter.hpp"
 
 template<typename Tworld_>
 struct ParticleSimulatorTraitsBase
@@ -29,8 +31,9 @@ struct ParticleSimulatorTraitsBase
             reaction_rule_id_type,
             typename world_type::traits_type::species_id_type,
             rate_type> reaction_rule_type;
-    typedef NetworkRulesWrapper<NetworkRules,
-                                reaction_rule_type> network_rules_type;
+    //typedef NetworkRulesWrapper<NetworkRules,
+    //                           reaction_rule_type> network_rules_type;
+    typedef NetworkRulesAdapter<reaction_rule_type> network_rules_type;
     typedef ReactionRecord<typename world_type::particle_id_type,
                            reaction_rule_id_type> reaction_record_type;
     typedef ReactionRecorder<reaction_record_type> reaction_recorder_type;

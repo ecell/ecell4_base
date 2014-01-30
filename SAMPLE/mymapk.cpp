@@ -21,9 +21,10 @@
 #include <ecell4/egfrd_impl/NetworkRules.hpp>
 #include <ecell4/egfrd_impl/ReactionRule.hpp>
 #include <ecell4/egfrd_impl/EGFRDSimulator.hpp>
+#include <ecell4/egfrd_impl/NetworkRulesAdapter.hpp>
 //#include <ecell4/egfrd_impl/GSLRandomNumberGenerator.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
-//#include <ecell4/core/RandomNumberGenerator.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 
 typedef double Real;
 
@@ -220,10 +221,12 @@ int main(int argc, char **argv)
 
     // EGFRDSimulator instance generated 
     // {{{
+    boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model(new ecell4::NetworkModel());
     boost::shared_ptr< simulator_type> sim( 
             new simulator_type(
                 world, 
-                boost::shared_ptr<network_rules_type>(new network_rules_type(model.network_rules())),
+                //boost::shared_ptr<network_rules_type>(new network_rules_type(model.network_rules())),
+                boost::shared_ptr<network_rules_type>(new network_rules_type(ecell4_nw_model) ),
                 internal_rng,
                 dissociation_retry_moves
                 )
