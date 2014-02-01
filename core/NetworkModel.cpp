@@ -121,6 +121,7 @@ void NetworkModel::add_reaction_rule(const ReactionRule& rr)
     const reaction_rule_container_type::size_type idx(reaction_rules_.size());
     reaction_rules_map_[rr.reactants()].insert(idx);
     reaction_rules_.push_back(rr);
+    reaction_rules_[idx].set_id(idx);
 
     dirty_ = true;
 }

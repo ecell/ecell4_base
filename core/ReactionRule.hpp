@@ -25,10 +25,12 @@ public:
     typedef std::multiset<Species> reactant_container_type;
     typedef std::multiset<Species> product_container_type;
 
+    typedef int identifier_type;
+
 public:
 
     ReactionRule()
-        : k_(0), reactants_(), products_()
+        : k_(0), reactants_(), products_(), id_(-1)
     {
         ;
     }
@@ -67,11 +69,27 @@ public:
         products_.insert(sp);
     }
 
+    identifier_type id() const
+    {
+        return id_;
+    }
+
+    void set_id(const identifier_type id)
+    {
+        if (id < 0 )
+        {
+            throw std::invalid_argument("Id must be positive.");
+        }
+        id_ = id;
+    }
+
+
 protected:
 
     Real k_;
     reactant_container_type reactants_;
     product_container_type products_;
+    identifier_type id_;
 };
 
 inline bool operator<(const ReactionRule& lhs, const ReactionRule& rhs)

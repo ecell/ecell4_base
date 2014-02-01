@@ -34,6 +34,8 @@ protected:
     // std::set<reaction_rule_container_type::size_type> >::type
     // reaction_rules_map_type;
 
+    typedef ReactionRule::identifier_type reaction_rule_id_type;
+
 public:
 
     NetworkModel()
