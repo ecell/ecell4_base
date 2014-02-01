@@ -54,10 +54,8 @@ public:
                 //this->temporary_reaction_rule_vector_.push_back( convert_reaction_rule_type(*it) );
                 x.first->second.push_back(convert_reaction_rule_type( *it ));
             }
-            std::cout << "query_reaction_rule( " << r1 << " )" << x.first->second.size() << std::endl;
             return x.first->second;
         }
-        std::cout << "query_reaction_rule( " << r1 << " )" << i->second.size() << std::endl;
         return i->second;
     }
 
@@ -81,10 +79,8 @@ public:
             {
                 x.first->second.push_back(convert_reaction_rule_type( *it ));
             }
-            std::cout << "query_reaction_rule( " << r1 << ", " << r2 << " )" << x.first->second.size() << std::endl;
             return x.first->second;
         }
-        std::cout << "query_reaction_rule( " << r1 << ", " << r2 << " )" << i->second.size() << std::endl;
         return i->second;
     }
 

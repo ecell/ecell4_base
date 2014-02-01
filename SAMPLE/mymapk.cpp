@@ -243,7 +243,6 @@ int main(int argc, char **argv)
         BOOST_FOREACH( ecell4::Species temp_sp2, ecell4_nw_model->list_species() ) {
             std::vector<ecell4::ReactionRule> rrv(ecell4_nw_model->query_reaction_rules(temp_sp1, temp_sp2));
             //asm volatile ("int3");
-            std::cout << __LINE__ << " : " << temp_sp1.name() << " , " << temp_sp2.name() << " : " << rrv.size() << std::endl;
             if (rrv.size() == 0)
             {
                 ecell4::ReactionRule new_reaction;
