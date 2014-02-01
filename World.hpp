@@ -24,7 +24,9 @@
 //#include "GSLRandomNumberGenerator.hpp"
 #include "Point.hpp" // XXX: workaround. should be removed later.
 #include "utils/pair.hpp"
+
 #include "ecell4/core/RandomNumberGenerator.hpp"
+#include "ecell4/core/Species.hpp"
 
 template<typename Tderived_, typename Tlen_, typename TD_>
 struct WorldTraitsBase
@@ -35,7 +37,8 @@ struct WorldTraitsBase
     typedef TD_ v_type;
     typedef ParticleID particle_id_type;
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
-    typedef SpeciesTypeID species_id_type;
+    //typedef SpeciesTypeID species_id_type;
+    typedef ecell4::Species::serial_type species_id_type; // std::string
     typedef Particle<length_type, D_type, species_id_type> particle_type;
     typedef std::string structure_id_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;

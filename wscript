@@ -58,9 +58,9 @@ cppfiles = [
     'GreensFunction3DSym.cpp',
     'SphericalBesselGenerator.cpp',
     'BasicNetworkRulesImpl.cpp',
-    'Model.cpp',
+    #'Model.cpp',
     'NetworkRules.cpp',
-    'ParticleModel.cpp',
+    #'ParticleModel.cpp',
     'SpeciesType.cpp',
     'StructureType.cpp',
     ]
