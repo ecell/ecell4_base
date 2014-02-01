@@ -17,10 +17,10 @@
 #include <ecell4/egfrd_impl/World.hpp>
 //#include <ecell4/egfrd_impl/ParticleModel.hpp>
 #include <ecell4/egfrd_impl/SpeciesType.hpp>
-#include <ecell4/egfrd_impl/SpeciesTypeID.hpp>
+//#include <ecell4/egfrd_impl/SpeciesTypeID.hpp>
 #include <ecell4/egfrd_impl/CuboidalRegion.hpp>
-#include <ecell4/egfrd_impl/NetworkRules.hpp>
-#include <ecell4/egfrd_impl/ReactionRule.hpp>
+//#include <ecell4/egfrd_impl/NetworkRules.hpp>
+//#include <ecell4/egfrd_impl/ReactionRule.hpp>
 #include <ecell4/egfrd_impl/EGFRDSimulator.hpp>
 #include <ecell4/egfrd_impl/NetworkRulesAdapter.hpp>
 //#include <ecell4/egfrd_impl/GSLRandomNumberGenerator.hpp>

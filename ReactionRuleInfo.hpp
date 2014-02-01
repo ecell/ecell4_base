@@ -63,6 +63,8 @@ public:
                 reactants_.push_back(reactants[1]); 
                 reactants_.push_back(reactants[0]);
             }
+        } else {
+            throw illegal_state("too many reactants");
         }
         std::copy(boost::begin(products),
                 boost::end(products),
