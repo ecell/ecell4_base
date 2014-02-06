@@ -48,8 +48,6 @@ void LatticeSimulator::step()
     (*world_).set_t(time);
     scheduler_.update(top);
 
-    std::cerr << "<" << scheduler_.size() << ">";
-
     /*
     boost::shared_ptr<GSLRandomNumberGenerator> rng((*world_).rng());
 

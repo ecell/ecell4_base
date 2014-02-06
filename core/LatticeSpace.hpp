@@ -86,14 +86,8 @@ public:
         return num_col() * num_row();
     }
 
-protected:
-
-    void set_lattice_properties();
-
-    Coord get_coord(const ParticleID& pid) const;
-
     /*
-     * coordinate transformations
+     * Coordinate transformations
      */
     const Global coord2global(Coord coord) const;
     const Position3 coord2position(Coord coord) const;
@@ -104,8 +98,11 @@ protected:
     Coord position2coord(const Position3& pos) const;
     const Global position2global(const Position3& pos) const;
 
-    const Particle particle_at(Coord coord) const;
+protected:
 
+    void set_lattice_properties();
+    Coord get_coord(const ParticleID& pid) const;
+    const Particle particle_at(Coord coord) const;
     bool is_in_range(Coord coord) const;
 
 protected:
@@ -118,6 +115,7 @@ protected:
     voxel_container voxels_;
 
     VacantType* vacant_;
+    MolecularTypeBase* border_;
 
     Position3 edge_lengths_;
     Integer row_size_, layer_size_, col_size_;

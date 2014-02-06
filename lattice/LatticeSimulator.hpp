@@ -43,8 +43,6 @@ protected:
 
         virtual void fire()
         {
-            std::cerr << "[" << time_ << "," << dt_ << "," <<
-                mt_->species().name() << "," << mt_->species().get_attribute("D") << "]";
             boost::shared_ptr<GSLRandomNumberGenerator> rng(sim_->world_->rng());
 
             shuffle(*rng, mt_->voxels());
