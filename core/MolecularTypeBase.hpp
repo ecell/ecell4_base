@@ -12,85 +12,128 @@ typedef Integer Coord;
 
 class MolecularTypeBase
 {
+
+public:
+    typedef std::pair<Coord, ParticleID> particle_info;
+    typedef std::vector<particle_info> container_type;
+
 public:
     virtual ~MolecularTypeBase()
     {
     }
 
-    virtual void addVoxel(std::pair<Coord, ParticleID> info)
-    {
-        throw "addVoxel(Coord, ParticleID) is not supported.";
-    }
-
-    virtual bool removeVoxel(Coord coord)
-    {
-        throw "removeVoxel(Coord) is not supported.";
-    }
+    virtual bool is_vacant() const = 0;
 
     virtual const Species& species() const
     {
         throw "species() const is not supported.";
     }
 
-    virtual const std::vector<std::pair<Coord, ParticleID> >& voxels() const
+    void addVoxel(particle_info info)
     {
-        throw "voxels() const is not supported.";
+        container_type::iterator itr(find(info.first));
+        if (itr != voxels_.end())
+        {
+            voxels_.erase(itr);
+        }
+        voxels_.push_back(info);
     }
 
-    virtual std::vector<std::pair<Coord, ParticleID> >& voxels()
+    bool removeVoxel(Coord coord)
     {
-        throw "voxels() const is not supported.";
+        container_type::iterator itr(find(coord));
+        if (itr != voxels_.end())
+        {
+            voxels_.erase(itr);
+            return true;
+        }
+        return false;
     }
 
-    virtual bool is_vacant() const = 0;
-
-    virtual std::vector<std::pair<Coord, ParticleID> >::iterator
-        begin()
+    const container_type& voxels() const
     {
-        throw "begin() is not supported.";
+        return voxels_;
     }
 
-    virtual std::vector<std::pair<Coord, ParticleID> >::const_iterator
-        begin() const
+    container_type& voxels()
     {
-        throw "begin() const is not supported.";
+        return voxels_;
     }
 
-    virtual std::vector<std::pair<Coord, ParticleID> >::iterator
-        end()
+    container_type::iterator begin()
     {
-        throw "end() is not supported.";
+        return voxels_.begin();
     }
 
-    virtual std::vector<std::pair<Coord, ParticleID> >::const_iterator
-        end() const
+    container_type::const_iterator begin() const
     {
-        throw "end() const is not supported.";
+        return voxels_.begin();
     }
 
-    virtual std::vector<std::pair<Coord, ParticleID> >::iterator
-        find(Coord coord)
+    container_type::iterator end()
     {
-        throw "find(Coord) is not supported.";
+        return voxels_.end();
     }
 
-    virtual std::vector<std::pair<Coord, ParticleID> >::const_iterator
-        find(Coord coord) const
+    container_type::const_iterator end() const
     {
-        throw "find(Coord) const is not supported.";
+        return voxels_.end();
     }
 
-    virtual std::vector<std::pair<Coord, ParticleID> >::iterator
-        find(ParticleID pid)
+    container_type::iterator find(Coord coord)
     {
-        throw "find(ParticleID) is not supported.";
+        container_type::iterator itr;
+        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
+        {
+            if ((*itr).first == coord)
+            {
+                break;
+            }
+        }
+        return itr;
     }
 
-    virtual std::vector<std::pair<Coord, ParticleID> >::const_iterator
-        find(ParticleID pid) const
+    container_type::const_iterator find(Coord coord) const
     {
-        throw "find(ParticleID) const is not supported.";
+        container_type::const_iterator itr;
+        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
+        {
+            if ((*itr).first == coord)
+            {
+                break;
+            }
+        }
+        return itr;
     }
+
+    container_type::iterator find(ParticleID pid)
+    {
+        container_type::iterator itr;
+        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
+        {
+            if ((*itr).second == pid)
+            {
+                break;
+            }
+        }
+        return itr;
+    }
+
+    container_type::const_iterator find(ParticleID pid) const
+    {
+        container_type::const_iterator itr;
+        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
+        {
+            if ((*itr).second == pid)
+            {
+                break;
+            }
+        }
+        return itr;
+    }
+
+protected:
+    container_type voxels_;
 
 };
 

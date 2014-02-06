@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_species)
     BOOST_CHECK(list == world.list_species());
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_add)
+BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
 {
     const Position3 edge_lengths(1e-6,1e-6,1e-6);
     boost::shared_ptr<GSLRandomNumberGenerator>
@@ -115,6 +115,21 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add)
 
     MolecularTypeBase* mt(world.get_molecular_type(coord));
     BOOST_CHECK(!mt->is_vacant());
+}
+
+BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecules)
+{
+    const Position3 edge_lengths(1e-6,1e-6,1e-6);
+    boost::shared_ptr<GSLRandomNumberGenerator>
+        rng(new GSLRandomNumberGenerator());
+    LatticeWorld world(edge_lengths, rng);
+
+    Species sp(std::string("TEST"));
+    BOOST_CHECK(world.add_species(sp));
+    const Integer N(60);
+
+    BOOST_CHECK(world.add_molecules(sp, N));
+    BOOST_CHECK_EQUAL(world.num_particles(sp), N);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)

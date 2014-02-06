@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_species)
 
     Species sp(std::string("TEST"));
 
-    BOOST_CHECK(lspace.add(sp));
+    BOOST_CHECK(lspace.add_species(sp));
     BOOST_CHECK(lspace.has_species(sp));
 
     std::vector<Species> list;
@@ -122,18 +122,18 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_species)
     BOOST_CHECK(list == lspace.list_species());
 }
 
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_add)
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_molecule)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
     LatticeSpace lspace(edge_lengths);
     SerialIDGenerator<ParticleID> sidgen;
 
     Species sp(std::string("TEST"));
-    BOOST_CHECK(lspace.add(sp));
+    BOOST_CHECK(lspace.add_species(sp));
 
     Coord coord(lspace.global2coord(Global(3,4,5)));
     ParticleID pid(sidgen());
-    BOOST_CHECK(lspace.add(sp, coord, pid));
+    BOOST_CHECK(lspace.add_molecule(sp, coord, pid));
     BOOST_CHECK_EQUAL(lspace.num_particles(sp), 1);
 
     MolecularTypeBase* mt(lspace.get_molecular_type(coord));
@@ -147,11 +147,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     SerialIDGenerator<ParticleID> sidgen;
 
     Species sp(std::string("TEST"));
-    BOOST_CHECK(lspace.add(sp));
+    BOOST_CHECK(lspace.add_species(sp));
 
     Coord coord(lspace.global2coord(Global(3,4,5)));
     ParticleID pid(sidgen());
-    BOOST_CHECK(lspace.add(sp, coord, pid));
+    BOOST_CHECK(lspace.add_molecule(sp, coord, pid));
 
     Coord to_coord(lspace.global2coord(Global(3,5,5)));
     BOOST_CHECK(lspace.move(coord, to_coord));

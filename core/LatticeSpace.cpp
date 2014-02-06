@@ -108,7 +108,7 @@ bool LatticeSpace::has_particle(const ParticleID& pid) const
         {
             return false;
         }
-        for (MolecularType::container_type::const_iterator vitr(mt.begin());
+        for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
                 vitr != mt.end(); ++vitr)
         {
             if ((*vitr).second == pid)
@@ -134,7 +134,7 @@ std::vector<std::pair<ParticleID, Particle> >
         {
             continue;
         }
-        for (MolecularType::container_type::const_iterator vitr(mt.begin());
+        for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
                 vitr != mt.end(); ++vitr)
         {
             retval.push_back(std::pair<ParticleID, Particle>(
@@ -157,7 +157,7 @@ std::vector<std::pair<ParticleID, Particle> >
         {
             return retval;
         }
-        for (MolecularType::container_type::const_iterator vitr(mt.begin());
+        for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
                 vitr != mt.end(); ++vitr)
         {
             retval.push_back(std::pair<ParticleID, Particle>(
@@ -186,7 +186,7 @@ bool LatticeSpace::update_particle(const ParticleID& pid, const Particle& p)
         voxels_.erase(itr);
         voxels_.insert(itr, NULL);
     }
-    dest_mt->addVoxel(MolecularType::particle_info(coord, pid));
+    dest_mt->addVoxel(MolecularTypeBase::particle_info(coord, pid));
 
     voxel_container::iterator itr(voxels_.begin() + coord);
     (*itr) = dest_mt;
@@ -309,7 +309,7 @@ Coord LatticeSpace::get_coord(const ParticleID& pid) const
         {
             return false;
         }
-        for (MolecularType::container_type::const_iterator vitr(mt.begin());
+        for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
                 vitr != mt.end(); ++vitr)
         {
             if ((*vitr).second == pid)
@@ -327,7 +327,7 @@ MolecularTypeBase* LatticeSpace::get_molecular_type(Coord coord) const
 }
 
 
-bool LatticeSpace::add(const Species& sp)
+bool LatticeSpace::add_species(const Species& sp)
 {
     if (has_species(sp))
     {
@@ -338,7 +338,8 @@ bool LatticeSpace::add(const Species& sp)
     return retval.second;
 }
 
-bool LatticeSpace::add(const Species& sp, Coord coord, const ParticleID& pid) throw(std::out_of_range)
+bool LatticeSpace::add_molecule(const Species& sp, Coord coord, const ParticleID& pid)
+        throw(std::out_of_range)
 {
     if (!is_in_range(coord))
     {
@@ -358,9 +359,6 @@ bool LatticeSpace::add(const Species& sp, Coord coord, const ParticleID& pid) th
         std::cerr << "[" << mt_at->species().name()  << " at " << coord << " is not vacant]";
         return false;
     }
-    /*
-     * Warning: Not Checking duplication of ParticleID
-     */
     mt->addVoxel(std::pair<Coord, ParticleID>(coord, pid));
 
     voxel_container::iterator itr(voxels_.begin() + coord);
@@ -386,7 +384,7 @@ bool LatticeSpace::move(Coord from, Coord to) throw(std::out_of_range)
     MolecularTypeBase* from_mt(get_molecular_type(from));
 
     if (!from_mt->is_vacant()) {
-        MolecularType::container_type::iterator itr(from_mt->find(from));
+        MolecularTypeBase::container_type::iterator itr(from_mt->find(from));
         (*itr).first = to;
         voxel_container::iterator fitr(voxels_.begin() + from);
         (*fitr) = vacant_;
@@ -413,7 +411,7 @@ bool LatticeSpace::react(Coord coord, const Species& species) throw(std::out_of_
 
     MolecularTypeBase* new_mt(get_molecular_type(species));
 
-    MolecularType::particle_info info(*old_mt->find(coord));
+    MolecularTypeBase::particle_info info(*old_mt->find(coord));
     old_mt->removeVoxel(coord);
     new_mt->addVoxel(info);
     voxel_container::iterator itr(voxels_.begin() + coord);

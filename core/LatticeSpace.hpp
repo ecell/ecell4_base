@@ -61,8 +61,8 @@ public:
     std::vector<Species> list_species() const;
     MolecularTypeBase* get_molecular_type(const Species& sp);
     MolecularTypeBase* get_molecular_type(Coord coord) const;
-    bool add(const Species& sp);
-    bool add(const Species& sp, Coord coord, const ParticleID& pid) throw(std::out_of_range);
+    bool add_species(const Species& sp);
+    bool add_molecule(const Species& sp, Coord coord, const ParticleID& pid) throw(std::out_of_range);
     bool move(Coord from, Coord to) throw(std::out_of_range);
     bool react(Coord coord, const Species& species) throw(std::out_of_range);
 
@@ -84,6 +84,11 @@ public:
     inline Integer num_colrow() const
     {
         return num_col() * num_row();
+    }
+
+    inline Integer size() const
+    {
+        return voxels_.size();
     }
 
     /*
@@ -114,7 +119,7 @@ protected:
     spmap spmap_;
     voxel_container voxels_;
 
-    VacantType* vacant_;
+    MolecularTypeBase* vacant_;
     MolecularTypeBase* border_;
 
     Position3 edge_lengths_;

@@ -125,13 +125,13 @@ Coord LatticeWorld::get_neighbor(Coord coord, Integer nrand) const
 
 bool LatticeWorld::add_species(const Species& sp)
 {
-    return space_.add(sp);
+    return space_.add_species(sp);
 }
 
 bool LatticeWorld::add_molecule(const Species& sp, Coord coord) throw(std::out_of_range)
 {
     ParticleID pid(sidgen_());
-    return space_.add(sp, coord, pid);
+    return space_.add_molecule(sp, coord, pid);
 }
 
 bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
@@ -141,13 +141,11 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     {
         add_species(sp);
     }
-    for (Integer i(0); i < num; ++i)
-    {
-        Coord coord(0);
-        try {
-            add_molecule(sp, coord);
-        } catch (std::out_of_range& e) {
-        }
+    Integer count(0);
+    while(count < num) {
+        Integer coord(rng()->uniform_int(0,space_.size()-1));;
+        if (add_molecule(sp, coord))
+            ++count;
     }
     return true;
 }
