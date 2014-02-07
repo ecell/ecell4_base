@@ -137,7 +137,8 @@ def pre(bld):
             ]))
         Utils.check_dir(bld.env['PREFIX'] + '/include/ecell4/egfrd_impl/epdp')
         bld.exec_command(' '.join([
-            'cp', sjy_table.abspath(), '${PREFIX}/include/ecell4/egfrd_impl/epdp/.']))
+            #'cp', sjy_table.abspath(), '${PREFIX}/include/ecell4/egfrd_impl/epdp/.']))
+            'cp', sjy_table.abspath(), bld.env['PREFIX'] + '/include/ecell4/egfrd_impl/epdp/.']))
     #cjy_table = bld.path.find_or_declare('epdp/CylindricalBesselTable.hpp')
     cjy_table = bld.path.find_or_declare('CylindricalBesselTable.hpp')
     if not os.path.exists(cjy_table.abspath()):
@@ -149,7 +150,8 @@ def pre(bld):
             ]))
         Utils.check_dir(bld.env['PREFIX'] + '/include/ecell4/egfrd_impl/epdp')
         bld.exec_command(' '.join([
-            'cp', cjy_table.abspath(), '${PREFIX}/include/ecell4/egfrd_impl/epdp/.']))
+            #'cp', cjy_table.abspath(), '${PREFIX}/include/ecell4/egfrd_impl/epdp/.']))
+            'cp', cjy_table.abspath(), bld.env['PREFIX'] + '/include/ecell4/egfrd_impl/epdp/.']))
 
 def build(bld):
     bld.add_pre_fun(pre)

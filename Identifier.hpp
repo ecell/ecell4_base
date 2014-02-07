@@ -134,6 +134,11 @@ struct Identifier
         return value_.second == 0;
     }
 
+    bool is_initialized() const
+    {
+        return value_.second != 0;
+    }
+
     bool operator==(Tbase_ const& rhs) const
     {
         return value_.first == rhs.value_.first &&

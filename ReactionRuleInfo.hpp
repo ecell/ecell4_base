@@ -46,26 +46,9 @@ public:
             Tr1_ const& reactants, Tr2_ const& products)
         : id_(id), k_(k)
     {
-        /*std::copy(boost::begin(reactants),
+        std::copy(boost::begin(reactants),
                 boost::end(reactants),
-                std::back_inserter(reactants_));*/
-        // XXX Temporary Use. Should be fixed !!!
-        if (reactants.size() == 1) { 
-            reactants_.push_back( reactants[0] );
-        } else if (reactants.size() == 2) {
-            if (reactants[0] < reactants[1])
-            {
-                reactants_.push_back(reactants[0]); 
-                reactants_.push_back(reactants[1]);
-            }
-            else
-            {
-                reactants_.push_back(reactants[1]); 
-                reactants_.push_back(reactants[0]);
-            }
-        } else {
-            throw illegal_state("too many reactants");
-        }
+                std::back_inserter(reactants_));
         std::copy(boost::begin(products),
                 boost::end(products),
                 std::back_inserter(products_));
@@ -81,8 +64,7 @@ public:
 private:
     identifier_type id_;
     rate_type k_;
-    //twofold_container<species_id_type> reactants_;
-    species_id_vector reactants_;
+    twofold_container<species_id_type> reactants_;
     species_id_vector products_;
 };
 

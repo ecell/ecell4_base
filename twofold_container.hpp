@@ -7,6 +7,12 @@
 #include <boost/iterator/iterator_categories.hpp>
 #include "utils/memberwise_compare.hpp"
 
+template <typename T>
+bool is_initialized(T const &obj)
+{
+    return obj.is_initialized();
+}
+
 template<typename T_>
 class twofold_container
 {
@@ -132,7 +138,7 @@ public:
 
     size_type size() const
     {
-        return items_[0] ? items_[1] ? 2: 1: 0;
+        return is_initialized(items_[0]) ? is_initialized(items_[1]) ? 2: 1: 0;
     }
 
     iterator begin()
@@ -157,11 +163,11 @@ public:
 
     void push_back(value_type const& item)
     {
-        if (!items_[0])
+        if (!is_initialized(items_[0]))
         {
             items_[0] = item;
         }
-        else if (!items_[1])
+        else if (!is_initialized(items_[1]))
         {
             items_[1] = item;
         }

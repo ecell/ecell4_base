@@ -28,6 +28,14 @@
 #include "ecell4/core/RandomNumberGenerator.hpp"
 #include "ecell4/core/Species.hpp"
 
+
+// For twofold_container
+inline
+bool is_initialized(std::string const &obj)
+{
+    return (0 < obj.size());
+}
+
 template<typename Tderived_, typename Tlen_, typename TD_>
 struct WorldTraitsBase
 {
