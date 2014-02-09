@@ -64,11 +64,10 @@ public:
     {
         typename second_order_reaction_rule_vector_map::const_iterator i(
                 this->second_order_cache_.find(std::make_pair(r1, r2)) );
-        //asm volatile ("int3");
         if (i == this->second_order_cache_.end())
         {
             ecell4::NetworkModel::reaction_rule_container_type 
-                reaction_rules_at_ecell4( this->ecell4_nw_model_->query_reaction_rules(ecell4::Species(r1)) );
+                reaction_rules_at_ecell4( this->ecell4_nw_model_->query_reaction_rules(ecell4::Species(r1), ecell4::Species(r2) ) );
 
             std::pair<typename second_order_reaction_rule_vector_map::iterator, bool>
                 x(this->second_order_cache_.insert( std::make_pair(std::make_pair(r1, r2), reaction_rule_vector()) ));

@@ -126,7 +126,8 @@ int main(int argc, char **argv)
     // {{{
     boost::shared_ptr<ecell4::GSLRandomNumberGenerator> rng(new ecell4::GSLRandomNumberGenerator());
     //particle_model_type model;
-    rng->seed(time(NULL) );
+    //rng->seed(time(NULL) );
+    rng->seed((unsigned long int) 0);
     // }}}
 
     world_type::traits_type::rng_type internal_rng = world_type::traits_type::rng_type( rng->handle() );
@@ -217,7 +218,7 @@ int main(int argc, char **argv)
             world_type::position_type particle_pos( rng->uniform(0.0, edge_length[0]), rng->uniform(0.0, edge_length[1]), rng->uniform(0.0, edge_length[2]) );
             double radius(boost::lexical_cast<double>( sp1.get_attribute("radius") ));
             if (container.list_particles_within_radius(radius, particle_pos).size() == 0) {
-                //std::cout << "(" << particle_pos[0] << particle_pos[1] << particle_pos[2] << ")" << std::endl;
+                std::cout << "(" << particle_pos[0] << particle_pos[1] << particle_pos[2] << ")" << std::endl;
                 container.add(radius, particle_pos);
                 world->new_particle( sp1.name() , particle_pos);
                 break;
@@ -288,7 +289,7 @@ int main(int argc, char **argv)
         << n_st3 << "\t"
         << std::endl;
     Real next_time(0.0), dt(0.02);
-    for(int i(0); i < 100; i++) {
+    for(int i(0); i < 10; i++) {
         next_time += dt;
         while(sim->step(next_time)){};
         n_st1 = world->get_particle_ids(sp1.name()).size();
