@@ -72,7 +72,6 @@ public:
     Real normal(Real loc, Real scale)
     {   // This function is implecated for comatible for epdp::GSLRandomNumberGenerator.
         // This function is the same as uniform().
-        std::cout << "hoge" << std::endl;
         return this->uniform(loc, scale);
 
     }
