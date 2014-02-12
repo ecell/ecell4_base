@@ -98,7 +98,7 @@ public:
 
     Real operator()()
     {
-        gsl_rng_uniform(rng_.get());
+        return gsl_rng_uniform(rng_.get());
     }
 
     void seed(Integer val)
