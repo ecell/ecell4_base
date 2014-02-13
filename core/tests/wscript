@@ -65,6 +65,7 @@ def build(bld):
         source = 'LatticeSpace_test.cpp',
         includes = '..',
         target = 'LatticeSpace_test',
-        lib = ['gsl', 'gslcblas', 'm'],
+        lib = ['gsl', 'gslcblas', 'm',
+               'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
         use = 'ecell4-core',
     )

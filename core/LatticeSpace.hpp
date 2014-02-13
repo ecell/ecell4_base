@@ -1,14 +1,15 @@
 #ifndef __ECELL4_LATTICE_SPACE_HPP
 #define __ECELL4_LATTICE_SPACE_HPP
 
-#include "Space.hpp"
-#include "MolecularType.hpp"
-#include "VacantType.hpp"
-#include "Global.hpp"
 #include <vector>
 #include <set>
 #include <map>
 #include <stdexcept>
+#include "Space.hpp"
+#include "MolecularType.hpp"
+#include "VacantType.hpp"
+#include "Global.hpp"
+#include "LatticeSpaceHDF5Writer.hpp"
 
 namespace ecell4
 {
@@ -32,7 +33,7 @@ public:
     ~LatticeSpace();
 
     /*
-     * APIs
+     * Space APIs
      *
      * using ParticleID, Species and Posision3
      */
@@ -52,6 +53,11 @@ public:
         list_particles(const Species& sp) const;
 
     bool update_particle(const ParticleID& pid, const Particle& p);
+
+    const Real t() const
+    {
+        return this->t_;
+    }
 
     /*
      * for Simulator
@@ -103,6 +109,14 @@ public:
     Coord position2coord(const Position3& pos) const;
     const Global position2global(const Position3& pos) const;
 
+    /*
+     * HDF5 Save
+     */
+    void save(H5::H5File* fout, const std::string& hdf5path) const
+    {
+        LatticeSpaceHDF5Writer<LatticeSpace> writer(*this);
+        writer.save(fout, hdf5path);
+    }
 protected:
 
     void set_lattice_properties();
@@ -115,6 +129,7 @@ protected:
     Real theNormalizedVoxelRadius;
     Real HCP_L, HCP_X, HCP_Y;
 
+    Real t_;
     Integer lattice_type_;
     spmap spmap_;
     voxel_container voxels_;

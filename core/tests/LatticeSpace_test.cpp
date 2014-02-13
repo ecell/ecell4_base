@@ -162,3 +162,21 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     BOOST_CHECK(!lspace.move(coord, to_coord));
 }
 
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_save)
+{
+    Position3 edge_lengths(1e-6,1e-6,1e-6);
+    LatticeSpace lspace(edge_lengths);
+    SerialIDGenerator<ParticleID> sidgen;
+
+    std::string D("1e-12"), radius("2.5e-13");
+    Species sp1(std::string("A"), radius, D);
+    BOOST_CHECK(lspace.add_species(sp1));
+
+    Coord coord(lspace.global2coord(Global(100,100,100)));
+    ParticleID pid(sidgen());
+    BOOST_CHECK(lspace.add_molecule(sp1, coord, pid));
+
+    H5::H5File fout("data.h5", H5F_ACC_TRUNC);
+    const std::string hdf5path("/");
+    lspace.save(&fout, hdf5path);
+}

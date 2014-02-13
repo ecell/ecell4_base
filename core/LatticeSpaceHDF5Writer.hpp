@@ -2,15 +2,16 @@
 #define __ECELL4_LATTICE_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
+#include <sstream>
 #include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <hdf5.h>
 #include <H5Cpp.h>
 
 #include "types.hpp"
 #include "Species.hpp"
-#include "Voxel.hpp"
 
 
 namespace ecell4
@@ -29,6 +30,15 @@ protected:
     {
         uint32_t id;
         char serial[32]; // species' serial may exceed the limit
+        double radius;
+        double D;
+    };
+
+    struct h5_particle_struct
+    {
+        uint32_t id;
+        uint32_t spid;
+        double pos[3];
     };
 
     struct h5_voxel_struct
@@ -53,48 +63,52 @@ public:
     {
         using namespace H5;
 
-        const Integer num_voxels(space_.num_voxels());
-
-        std::vector<Species> species;
-        typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
-        species_id_map_type;
-        species_id_map_type species_id_map;
-
-        boost::scoped_array<h5_voxel_struct>
-            h5_voxel_table(new h5_voxel_struct[num_voxels]);
-        for (unsigned int i(0); i < num_voxels; ++i)
-        {
-            const Voxel voxel(space_.get_voxel(i));
-
-            species_id_map_type::const_iterator
-                it(species_id_map.find(voxel.species.serial()));
-            if (it == species_id_map.end())
-            {
-                species.push_back(voxel.species);
-                it = species_id_map.insert(
-                    std::make_pair(voxel.species.serial(),
-                                   species.size())).first;
-            }
-
-            h5_voxel_table[i].sid = (*it).second;
-        }
+        std::vector<std::pair<ParticleID, Particle> >
+            particles(space_.list_particles());
+        std::vector<Species> species(space_.list_species());
 
         boost::scoped_array<h5_species_struct>
             h5_species_table(new h5_species_struct[species.size()]);
         for (unsigned int i(0); i < species.size(); ++i)
         {
+            Species sp(species.at(i));
             h5_species_table[i].id = i + 1;
             std::strncpy(h5_species_table[i].serial,
-                         species[i].serial().c_str(),
+                         sp.serial().c_str(),
                          sizeof(h5_species_table[i].serial));
-            // std::strcpy(h5_species_table[i].serial,
-            //             species[i].serial().c_str());
+            h5_species_table[i].radius = boost::lexical_cast<double>(
+                    sp.get_attribute("radius"));
+            h5_species_table[i].D = boost::lexical_cast<double>(
+                    sp.get_attribute("D"));
         }
 
-        CompType h5_voxel_comp_type(sizeof(h5_voxel_struct));
-        h5_voxel_comp_type.insertMember(
-            std::string("sid"), HOFFSET(h5_voxel_struct, sid),
+        boost::scoped_array<h5_particle_struct>
+            h5_particle_table(new h5_particle_struct[particles.size()]);
+        for (unsigned int i(0); i < particles.size(); ++i)
+        {
+            const ParticleID pid(particles.at(i).first);
+            const Particle p(particles.at(i).second);
+            h5_particle_table[i].id = pid.serial(); // TODO
+            h5_particle_table[i].spid = 1; // TODO
+            h5_particle_table[i].pos[0] = p.position()[0];
+            h5_particle_table[i].pos[1] = p.position()[1];
+            h5_particle_table[i].pos[2] = p.position()[2];
+        }
+
+        hsize_t dim0[] = {3};
+        ArrayType particle_pos_type(
+            PredType::NATIVE_DOUBLE, 1, dim0);
+
+        CompType h5_particle_comp_type(sizeof(h5_particle_struct));
+        h5_particle_comp_type.insertMember(
+            std::string("id"), HOFFSET(h5_particle_struct, id),
             PredType::STD_I32LE);
+        h5_particle_comp_type.insertMember(
+            std::string("spid"), HOFFSET(h5_particle_struct, spid),
+            PredType::STD_I32LE);
+        h5_particle_comp_type.insertMember(
+            std::string("pos"), HOFFSET(h5_particle_struct, pos),
+            particle_pos_type);
 
         CompType h5_species_comp_type(sizeof(h5_species_struct));
         h5_species_comp_type.insertMember(
@@ -103,13 +117,29 @@ public:
         h5_species_comp_type.insertMember(
             std::string("serial"), HOFFSET(h5_species_struct, serial),
             StrType(PredType::C_S1, 32));
+        h5_species_comp_type.insertMember(
+            std::string("radius"), HOFFSET(h5_species_struct, radius),
+            PredType::NATIVE_DOUBLE);
+        h5_species_comp_type.insertMember(
+            std::string("D"), HOFFSET(h5_species_struct, D),
+            PredType::NATIVE_DOUBLE);
 
         const int RANK = 1;
-        hsize_t dim1[] = {num_voxels};
+
+        // Create the group "/data"
+        std::ostringstream oss;
+        oss << hdf5path << "/data";
+        boost::scoped_ptr<Group> data_group(
+            new Group(fout->createGroup(oss.str())));
+        oss << "/" << space_.t();
+        boost::scoped_ptr<Group> group(
+            new Group(data_group->createGroup(oss.str())));
+
+        hsize_t dim1[] = {particles.size()};
         DataSpace dataspace1(RANK, dim1);
         boost::scoped_ptr<DataSet> dataset1(
-            new DataSet(fout->createDataSet(
-                            hdf5path + "/voxels", h5_voxel_comp_type,
+            new DataSet(group->createDataSet(
+                            "particles", h5_particle_comp_type,
                             dataspace1)));
 
         hsize_t dim2[] = {species.size()};
@@ -118,7 +148,8 @@ public:
             new DataSet(fout->createDataSet(
                             hdf5path + "/species" , h5_species_comp_type,
                             dataspace2)));
-        dataset1->write(h5_voxel_table.get(), h5_voxel_comp_type);
+
+        dataset1->write(h5_particle_table.get(), h5_particle_comp_type);
         dataset2->write(h5_species_table.get(), h5_species_comp_type);
 
         const double t = space_.t();
@@ -126,12 +157,6 @@ public:
             fout->openGroup(hdf5path).createAttribute(
                 "t", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
         attr_t.write(PredType::IEEE_F64LE, &t);
-
-        const double voxel_radius = space_.voxel_radius();
-        Attribute attr_radius(
-            fout->openGroup(hdf5path).createAttribute(
-                "voxel_radius", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
-        attr_radius.write(PredType::IEEE_F64LE, &voxel_radius);
 
         const Position3 edge_lengths = space_.edge_lengths();
         const hsize_t dims[] = {3};

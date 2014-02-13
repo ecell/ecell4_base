@@ -3,7 +3,7 @@
 namespace ecell4
 {
 
-LatticeSpace::LatticeSpace(const Position3& edge_lengths)
+LatticeSpace::LatticeSpace(const Position3& edge_lengths) : t_(0)
 {
     this->edge_lengths_ = edge_lengths;
     vacant_ = new VacantType();
