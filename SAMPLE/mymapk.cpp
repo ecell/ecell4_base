@@ -118,8 +118,11 @@ int main(int argc, char **argv)
     boost::shared_ptr<world_type> world(new world_type(world_size, matrix_size));
     world_type::position_type edge_length(world_size, world_size, world_size);
     world_type::position_type pos(world_size / 2, world_size / 2, world_size / 2);
-    world->add_structure( boost::shared_ptr<cuboidal_region_type>(
-                new cuboidal_region_type("world", cuboidal_region_type::shape_type(pos, pos))));
+
+    boost::shared_ptr<cuboidal_region_type> cuboidal_region
+        (new cuboidal_region_type("world", cuboidal_region_type::shape_type(pos, pos)));
+
+    world->add_structure(cuboidal_region );
     // }}}
 
     // Random Number Generator (Instanciate and Initialize)
@@ -257,19 +260,25 @@ int main(int argc, char **argv)
 
     // Logger Settings 
     // {{{
+    boost::shared_ptr< ::LoggerManager> logger_mng(new ::LoggerManager("dummy", ::Logger::L_WARNING));
     ::LoggerManager::register_logger_manager(
             "ecell.EGFRDSimulator",
-            boost::shared_ptr< ::LoggerManager>(
-                new ::LoggerManager("dummy", ::Logger::L_WARNING)));
+            logger_mng
+            );
+            //boost::shared_ptr< ::LoggerManager>(
+            //    new ::LoggerManager("dummy", ::Logger::L_WARNING)));
     // }}}
 
     // EGFRDSimulator instance generated 
     // {{{
+    boost::shared_ptr<network_rules_type> nw_rules_adapter(
+            new network_rules_type(ecell4_nw_model));
     boost::shared_ptr< simulator_type> sim( 
             new simulator_type(
                 world, 
                 //boost::shared_ptr<network_rules_type>(new network_rules_type(model.network_rules())),
-                boost::shared_ptr<network_rules_type>(new network_rules_type(ecell4_nw_model) ),
+                //boost::shared_ptr<network_rules_type>(new network_rules_type(ecell4_nw_model) ),
+                nw_rules_adapter,
                 internal_rng,
                 dissociation_retry_moves
                 )
