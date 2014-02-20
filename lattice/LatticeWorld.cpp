@@ -79,6 +79,11 @@ std::vector<Species> LatticeWorld::list_species() const
     return space_.list_species();
 }
 
+std::vector<Coord> LatticeWorld::list_coords(const Species& sp) const
+{
+    return space_.list_coords(sp);
+}
+
 MolecularTypeBase* LatticeWorld::get_molecular_type(const Species& species)
 {
     return space_.get_molecular_type(species);
@@ -158,6 +163,16 @@ bool LatticeWorld::move(Coord from, Coord to) throw(std::out_of_range)
 bool LatticeWorld::react(Coord at, Species species) throw(std::out_of_range)
 {
     space_.react(at, species);
+}
+
+Coord LatticeWorld::global2coord(const Global& global) const
+{
+    return space_.global2coord(global);
+}
+
+const Global LatticeWorld::coord2global(Coord coord) const
+{
+    return space_.coord2global(coord);
 }
 
 } // lattice

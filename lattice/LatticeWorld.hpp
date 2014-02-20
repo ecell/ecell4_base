@@ -43,6 +43,7 @@ public:
     bool update_particle(const ParticleID& pid, const Particle& p);
 
     std::vector<Species> list_species() const;
+    std::vector<Coord> list_coords(const Species& sp) const;
     MolecularTypeBase* get_molecular_type(const Species& species);
     MolecularTypeBase* get_molecular_type(Integer coord);
     Integer get_neighbor(Integer coord, Integer nrand) const;
@@ -62,14 +63,40 @@ public:
         return rng_;
     }
 
-    const Integer num_colrow() const
+    const Integer num_col() const
     {
-        return space_.num_colrow();
+        return space_.num_col();
     }
 
     const Integer num_row() const
     {
         return space_.num_row();
+    }
+
+    const Integer num_layer() const
+    {
+        return space_.num_layer();
+    }
+
+    const Integer num_colrow() const
+    {
+        return space_.num_colrow();
+    }
+
+    const Integer size() const
+    {
+        return space_.size();
+    }
+
+    Coord global2coord(const Global& global) const;
+    const Global coord2global(Coord coord) const;
+
+    /*
+     * HDF5 Save
+     */
+    void save(H5::H5File* fout, const std::string& hdf5path) const
+    {
+        space_.save(fout, hdf5path);
     }
 
 protected:

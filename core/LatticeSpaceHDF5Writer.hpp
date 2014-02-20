@@ -131,6 +131,12 @@ public:
         oss << hdf5path << "/data";
         boost::scoped_ptr<Group> data_group(
             new Group(fout->createGroup(oss.str())));
+
+        Attribute attr_world_size(
+                data_group->createAttribute(
+                    "world_size", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
+        attr_world_size.write(PredType::IEEE_F64LE, &space_.edge_lengths()[0]);
+
         oss << "/" << space_.t();
         boost::scoped_ptr<Group> group(
             new Group(data_group->createGroup(oss.str())));

@@ -24,9 +24,8 @@ protected:
     struct Event : EventScheduler::Event
     {
         Event(LatticeSimulator* sim, const Species& species)
-            : EventScheduler::Event(0.0), sim_(sim)
+            : EventScheduler::Event(0.0), species_(species), sim_(sim)
         {
-            mt_ = sim_->world_->get_molecular_type(species);
             const Real R(sim_->world_->normalized_voxel_radius());
             Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
             if (D <= 0)
@@ -35,6 +34,8 @@ protected:
             } else {
                 dt_ = 4 * R / 6 / D;
             }
+
+            time_ = dt_;
         }
 
         virtual ~Event()
@@ -45,15 +46,14 @@ protected:
         {
             boost::shared_ptr<GSLRandomNumberGenerator> rng(sim_->world_->rng());
 
-            shuffle(*rng, mt_->voxels());
-            for (MolecularType::container_type::iterator itr(mt_->begin());
-                    itr != mt_->end(); ++itr)
+            std::vector<Coord> coords(sim_->world_->list_coords(species_));
+            shuffle(*rng, coords);
+            for (std::vector<Coord>::iterator itr(coords.begin());
+                    itr != coords.end(); ++itr)
             {
-                Coord from_coord((*itr).first);
+                Coord from_coord(*itr);
                 const Integer rnd(rng->uniform_int(0,11));
-                Coord to_coord(sim_->world_->get_neighbor(from_coord,
-                            rnd));
-
+                Coord to_coord(sim_->world_->get_neighbor(from_coord, rnd));
                 sim_->world_->move(from_coord, to_coord);
             }
 
@@ -61,6 +61,7 @@ protected:
         }
 
     protected:
+        Species species_;
         LatticeSimulator* sim_;
         MolecularTypeBase* mt_;
         Real dt_;

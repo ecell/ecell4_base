@@ -162,21 +162,47 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     BOOST_CHECK(!lspace.move(coord, to_coord));
 }
 
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_save)
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_save1)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
     LatticeSpace lspace(edge_lengths);
     SerialIDGenerator<ParticleID> sidgen;
 
-    std::string D("1e-12"), radius("2.5e-13");
+    std::string D("1e-12"), radius("2.5e-9");
     Species sp1(std::string("A"), radius, D);
     BOOST_CHECK(lspace.add_species(sp1));
 
-    Coord coord(lspace.global2coord(Global(100,100,100)));
-    ParticleID pid(sidgen());
-    BOOST_CHECK(lspace.add_molecule(sp1, coord, pid));
+    for (int i(0); i < lspace.num_col(); i += 40)
+        for (int j(0); j < lspace.num_row(); j += 40)
+            for (int k(0); k < lspace.num_layer(); k += 40)
+            {
+                Coord coord(lspace.global2coord(Global(i, j, k)));
+                ParticleID pid(sidgen());
+                BOOST_CHECK(lspace.add_molecule(sp1, coord, pid));
+            }
 
     H5::H5File fout("data.h5", H5F_ACC_TRUNC);
+    const std::string hdf5path("/");
+    lspace.save(&fout, hdf5path);
+}
+
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_save2)
+{
+    Position3 edge_lengths(1e-6,1e-6,1e-6);
+    LatticeSpace lspace(edge_lengths);
+    SerialIDGenerator<ParticleID> sidgen;
+
+    std::string D("1e-12"), radius("2.5e-9");
+    Species sp1(std::string("A"), radius, D);
+    BOOST_CHECK(lspace.add_species(sp1));
+
+    for (int i(0); i < lspace.num_col() * lspace.num_row() * lspace.num_layer(); i += 3002)
+    {
+        ParticleID pid(sidgen());
+        BOOST_CHECK(lspace.add_molecule(sp1, i, pid));
+    }
+
+    H5::H5File fout("data_hcp.h5", H5F_ACC_TRUNC);
     const std::string hdf5path("/");
     lspace.save(&fout, hdf5path);
 }

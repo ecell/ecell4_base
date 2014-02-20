@@ -19,7 +19,8 @@ def build(bld):
         source = 'LatticeSimulator_test.cpp',
         includes = '..',
         target = 'LatticeSimulator_test',
-        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm',
+               'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
         use = 'ecell4-lattice'
     )
 

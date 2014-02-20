@@ -14,10 +14,6 @@
 namespace ecell4
 {
 
-//Lattice type:
-#define HCP_LATTICE   0
-#define CUBIC_LATTICE 1
-
 class LatticeSpace
     : public Space
 {
@@ -65,10 +61,12 @@ public:
      * using Species and Coord
      */
     std::vector<Species> list_species() const;
+    std::vector<Coord> list_coords(const Species& sp) const;
     MolecularTypeBase* get_molecular_type(const Species& sp);
     MolecularTypeBase* get_molecular_type(Coord coord) const;
     bool add_species(const Species& sp);
-    bool add_molecule(const Species& sp, Coord coord, const ParticleID& pid) throw(std::out_of_range);
+    bool add_molecule(const Species& sp, Coord coord, const ParticleID& pid)
+        throw(std::out_of_range);
     bool move(Coord from, Coord to) throw(std::out_of_range);
     bool react(Coord coord, const Species& species) throw(std::out_of_range);
 
@@ -79,12 +77,17 @@ public:
 
     inline Integer num_col() const
     {
-        return this->edge_lengths_[0] / HCP_X + 3;
+        return col_size_ - 2;
     }
 
     inline Integer num_row() const
     {
-        return this->edge_lengths_[1] / theNormalizedVoxelRadius / 2 + 2;
+        return row_size_ - 2;
+    }
+
+    inline Integer num_layer() const
+    {
+        return layer_size_ - 2;
     }
 
     inline Integer num_colrow() const
@@ -94,20 +97,14 @@ public:
 
     inline Integer size() const
     {
-        return voxels_.size();
+        return num_col() * num_row() * num_layer();
     }
 
     /*
      * Coordinate transformations
      */
-    const Global coord2global(Coord coord) const;
-    const Position3 coord2position(Coord coord) const;
-
     Coord global2coord(const Global& global) const;
-    const Position3 global2position(const Global& global) const;
-
-    Coord position2coord(const Position3& pos) const;
-    const Global position2global(const Position3& pos) const;
+    const Global coord2global(Coord coord) const;
 
     /*
      * HDF5 Save
@@ -124,13 +121,29 @@ protected:
     const Particle particle_at(Coord coord) const;
     bool is_in_range(Coord coord) const;
 
+    /*
+     * Coordinate transformations
+     */
+    Coord global2coord(const Global& global,
+            Integer col_size, Integer row_size, Integer layer_size) const;
+    const Global coord2global(Coord coord,
+            Integer col_size, Integer row_size, Integer layer_size) const;
+
+    const Position3 global2position(const Global& global) const;
+    const Global position2global(const Position3& pos) const;
+
+    const Position3 coord2position(Coord coord) const;
+    Coord position2coord(const Position3& pos) const;
+
+    Coord inner2general(Coord inner_cood) const;
+    Coord general2inner(Coord genetal_coord) const;
+
 protected:
 
     Real theNormalizedVoxelRadius;
     Real HCP_L, HCP_X, HCP_Y;
 
     Real t_;
-    Integer lattice_type_;
     spmap spmap_;
     voxel_container voxels_;
 

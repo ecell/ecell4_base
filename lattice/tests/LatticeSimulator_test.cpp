@@ -33,6 +33,38 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_constructor)
     LatticeSimulator sim(model, world);
 }
 
+BOOST_AUTO_TEST_CASE(LatticeSimulator_test_hdf5_save)
+{
+    const Real L(1e-6);
+    const Position3 edge_lengths(L, L, L);
+    const Real voxel_radius(1e-8);
+    const Integer N(60);
+
+    const std::string D("1e-12"), radius("2.5e-9");
+
+    ecell4::Species sp1("A", radius, D);
+    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    (*model).add_species(sp1);
+
+    boost::shared_ptr<GSLRandomNumberGenerator>
+        rng(new GSLRandomNumberGenerator());
+    boost::shared_ptr<LatticeWorld> world(
+            new LatticeWorld(edge_lengths, rng));
+
+    world->add_molecules(sp1, N / 2);
+
+    BOOST_ASSERT(world->num_molecules(sp1) == N / 2);
+
+    LatticeSimulator sim(model, world);
+
+    world->add_molecules(sp1, N / 2);
+    BOOST_ASSERT(world->num_molecules(sp1) == N);
+
+    H5::H5File fout("data.h5", H5F_ACC_TRUNC);
+    const std::string hdf5path("/");
+    world->save(&fout, hdf5path);
+}
+
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_species)
 {
     const Real L(1e-6);
@@ -89,6 +121,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_reaction)
 
 BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
 {
+    std::cout << " <<LattiecSimulator_test_scheduler>> ";
     const Real L(1e-6);
     const Position3 edge_lengths(L, L, L);
     const Real voxel_radius(1e-8);
@@ -111,7 +144,9 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     boost::shared_ptr<LatticeWorld> world(
             new LatticeWorld(edge_lengths, rng));
 
-    Coord c1(558520), c2(300000), c3(486420);
+    Coord c1(world->global2coord(Global(40,34,56))),
+          c2(world->global2coord(Global(32,50,24))),
+          c3(world->global2coord(Global(60,36,89)));
     BOOST_CHECK(world->add_molecule(sp1, c1));
     BOOST_CHECK(world->add_molecule(sp2, c2));
     BOOST_CHECK(world->add_molecule(sp3, c3));
@@ -120,9 +155,6 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
 
     sim.initialize();
 
-    sim.step();
-    sim.step();
-    sim.step();
     const MolecularTypeBase
         *mt1(world->get_molecular_type(sp1)),
         *mt2(world->get_molecular_type(sp2)),
@@ -144,6 +176,9 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     itr1 = mt1->begin();
     itr2 = mt2->begin();
     itr3 = mt3->begin();
+    std::cout << "<itr1: " << (*itr1).first << "> ";
+    std::cout << "<itr2: " << (*itr2).first << "> ";
+    std::cout << "<itr3: " << (*itr3).first << "> ";
     BOOST_ASSERT((*itr1).first == c1);
     BOOST_ASSERT((*itr2).first == c2);
     BOOST_ASSERT((*itr3).first != c3);
