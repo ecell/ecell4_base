@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include <gsl/gsl_roots.h>
 
+#include <boost/format.hpp>
+
 // epdp headers
 #include <ecell4/egfrd_impl/utils/range.hpp>
 #include <ecell4/egfrd_impl/World.hpp>
@@ -95,6 +97,7 @@ int main(int argc, char **argv)
     //typedef ::ParticleModel particle_model_type;
     typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> > simulator_type;
     typedef simulator_type::traits_type::network_rules_type network_rules_type;
+    typedef simulator_type::multi_type multi_type;
 
     typedef ::CuboidalRegion<simulator_type::traits_type> cuboidal_region_type;
     typedef world_type::traits_type::structure_id_type structure_id_type;
@@ -311,6 +314,59 @@ int main(int argc, char **argv)
             << std::endl;
     }
     // }}}
+    /*
+    enum domain_kind
+    {
+        NONE = 0,
+        SPHERICAL_SINGLE,
+        CYLINDRICAL_SINGLE,
+        SPHERICAL_PAIR,
+        CYLINDRICAL_PAIR,
+        MULTI,
+        NUM_DOMAIN_KINDS
+    };
+    enum single_event_kind
+    {
+        SINGLE_EVENT_REACTION,
+        SINGLE_EVENT_ESCAPE,
+        NUM_SINGLE_EVENT_KINDS
+    };
+    */
+    int num_single_steps_per_type[simulator_type::NUM_SINGLE_EVENT_KINDS];
+    num_single_steps_per_type[simulator_type::SINGLE_EVENT_REACTION] = sim->num_single_steps_per_type( 
+            simulator_type::SINGLE_EVENT_REACTION);
+    num_single_steps_per_type[simulator_type::SINGLE_EVENT_ESCAPE] = sim->num_single_steps_per_type(
+            simulator_type::SINGLE_EVENT_ESCAPE);
+    std::cout << boost::format("%1%: %2% \n") % "SINGLE_EVENT_REACTION" % num_single_steps_per_type[simulator_type::SINGLE_EVENT_REACTION];
+    std::cout << boost::format("%1%: %2% \n") % "SINGLE_EVENT_ESCAPE" % num_single_steps_per_type[simulator_type::SINGLE_EVENT_ESCAPE];
 
+    /*enum pair_event_kind
+    {
+        PAIR_EVENT_SINGLE_REACTION_0,
+        PAIR_EVENT_SINGLE_REACTION_1,
+        PAIR_EVENT_COM_ESCAPE,
+        PAIR_EVENT_IV_UNDETERMINED,
+        PAIR_EVENT_IV_ESCAPE,
+        PAIR_EVENT_IV_REACTION,
+        NUM_PAIR_EVENT_KINDS
+    }; */
+
+    std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_SINGLE_REACTION_0" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_SINGLE_REACTION_0);
+    std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_SINGLE_REACTION_1" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_SINGLE_REACTION_1);
+    std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_COM_ESCAPE" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_COM_ESCAPE);
+    std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_IV_UNDETERMINED" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_IV_UNDETERMINED);
+    std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_IV_ESCAPE" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_IV_ESCAPE);
+    std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_IV_REACTION" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_IV_REACTION);
+
+    /*enum event_kind
+    {
+        NONE,
+        ESCAPE,
+        REACTION,
+        NUM_MULTI_EVENT_KINDS
+    };  */
+    std::cout << boost::format("%1%: %2% \n") % "NONE" % sim->num_multi_steps_per_type(multi_type::NONE);
+    std::cout << boost::format("%1%: %2% \n") % "ESCAPE" % sim->num_multi_steps_per_type(multi_type::ESCAPE);
+    std::cout << boost::format("%1%: %2% \n") % "REACTION" % sim->num_multi_steps_per_type(multi_type::REACTION);
     return 0;
 }

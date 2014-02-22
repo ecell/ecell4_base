@@ -40,14 +40,10 @@ public:
 
     virtual position_type bd_displacement(length_type const& r, rng_type& rng) const
     {
-        /* return create_vector<position_type>(
-            rng.normal(0., r),
-            rng.normal(0., r),
-            rng.normal(0., r)); */
         return create_vector<position_type>(
-            rng.uniform(0., r),
-            rng.uniform(0., r),
-            rng.uniform(0., r));
+            rng.normal(0., r),
+            rng.normal(0., r),
+            rng.normal(0., r)); 
     }
 
     virtual void accept(ImmutativeStructureVisitor<traits_type> const& visitor) const
