@@ -24,7 +24,6 @@ public:
     virtual Integer uniform_int(Integer min, Integer max) = 0;
     virtual Real gaussian(Real mean, Real sigma) = 0;
 
-    __attribute__((deprecated)) 
     virtual Real normal(Real mean, Real sigma)  = 0;
 
     virtual void dir_2d(Real *x, Real *y) = 0;
@@ -68,11 +67,10 @@ public:
         return gsl_rng_uniform_int(rng_.get(), max - min + 1) + min;
     }
 
-    __attribute__((deprecated))
     Real normal(Real loc, Real scale)
     {   // This function is implecated for comatible for epdp::GSLRandomNumberGenerator.
         // This function is the same as uniform().
-        return this->uniform(loc, scale);
+        return gsl_ran_gaussian(rng_.get(), scale) + loc;
 
     }
 
