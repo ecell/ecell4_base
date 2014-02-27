@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_constructor)
     const Position3 edge_lengths(L, L, L);
     const Real voxel_radius(1e-8);
 
-    const std::string D("1e-12"), radius("2.5e-13");
+    const std::string D("1e-12"), radius("2.5e-9");
 
     ecell4::Species sp1("A", radius, D),
         sp2("B", radius, D),
@@ -42,27 +42,65 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_hdf5_save)
 
     const std::string D("1e-12"), radius("2.5e-9");
 
-    ecell4::Species sp1("A", radius, D);
+    ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species(sp1);
+    (*model).add_species(sp);
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     boost::shared_ptr<LatticeWorld> world(
             new LatticeWorld(edge_lengths, rng));
 
-    world->add_molecules(sp1, N / 2);
-
-    BOOST_ASSERT(world->num_molecules(sp1) == N / 2);
+    world->add_molecules(sp, N);
+    BOOST_ASSERT(world->num_molecules(sp) == N);
 
     LatticeSimulator sim(model, world);
-
-    world->add_molecules(sp1, N / 2);
-    BOOST_ASSERT(world->num_molecules(sp1) == N);
 
     H5::H5File fout("data.h5", H5F_ACC_TRUNC);
     const std::string hdf5path("/");
     world->save(&fout, hdf5path);
+}
+
+BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_particle)
+{
+    const Real L(2.5e-8);
+    const Position3 edge_lengths(L, L, L);
+    const Real voxel_radius(1e-8);
+
+    const std::string D("1e-12"), radius("2.5e-9");
+
+    ecell4::Species sp("A", radius, D);
+    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    (*model).add_species(sp);
+
+    boost::shared_ptr<GSLRandomNumberGenerator>
+        rng(new GSLRandomNumberGenerator());
+    boost::shared_ptr<LatticeWorld> world(
+            new LatticeWorld(edge_lengths, rng));
+
+    BOOST_CHECK(world->add_molecule(sp, 36));
+
+    LatticeSimulator sim(model, world);
+
+    const std::string hdf5path("/");
+
+	for (int i(0); i < 50; ++i)
+	{
+		std::ostringstream oss;
+		oss << "data_with_single_particle_";
+		if (i < 10)
+		{
+			oss << "0" << i;
+		}
+		else
+		{
+			oss << i;
+		}
+		oss << ".h5";
+		H5::H5File fout(oss.str(), H5F_ACC_TRUNC);
+		sim.step();
+		world->save(&fout, hdf5path);
+	}
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_species)
@@ -72,27 +110,70 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_species)
     const Real voxel_radius(1e-8);
     const Integer N(60);
 
-    const std::string D("1e-12"), radius("2.5e-13");
+    const std::string D("1e-12"), radius("2.5e-9");
 
-    ecell4::Species sp1("A", radius, D);
+    ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species(sp1);
+    (*model).add_species(sp);
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     boost::shared_ptr<LatticeWorld> world(
             new LatticeWorld(edge_lengths, rng));
 
-    world->add_molecules(sp1, N / 2);
+    world->add_molecules(sp, N / 2);
 
-    BOOST_ASSERT(world->num_molecules(sp1) == N / 2);
+    BOOST_ASSERT(world->num_molecules(sp) == N / 2);
 
     LatticeSimulator sim(model, world);
 
-    world->add_molecules(sp1, N / 2);
-    BOOST_ASSERT(world->num_molecules(sp1) == N);
+    world->add_molecules(sp, N / 2);
+    BOOST_ASSERT(world->num_molecules(sp) == N);
 
     sim.step();
+}
+
+BOOST_AUTO_TEST_CASE(LatticeSimulator_test_save_step_with_single_species)
+{
+    const Real L(1e-6);
+    const Position3 edge_lengths(L, L, L);
+    const Real voxel_radius(1e-8);
+    const Integer N(60);
+
+    const std::string D("1e-12"), radius("2.5e-9");
+
+    ecell4::Species sp("A", radius, D);
+    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    (*model).add_species(sp);
+
+    boost::shared_ptr<GSLRandomNumberGenerator>
+        rng(new GSLRandomNumberGenerator());
+    boost::shared_ptr<LatticeWorld> world(
+            new LatticeWorld(edge_lengths, rng));
+
+    LatticeSimulator sim(model, world);
+
+    world->add_molecules(sp, N);
+
+    const std::string hdf5path("/");
+
+	for (int i(0); i < 50; ++i)
+	{
+		std::ostringstream oss;
+		oss << "data_with_single_species_";
+		if (i < 10)
+		{
+			oss << "0" << i;
+		}
+		else
+		{
+			oss << i;
+		}
+		oss << ".h5";
+		H5::H5File fout(oss.str(), H5F_ACC_TRUNC);
+		sim.step();
+		world->save(&fout, hdf5path);
+	}
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_reaction)
@@ -100,7 +181,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_reaction)
     const Real L(1e-6);
     const Position3 edge_lengths(L, L, L);
     const Real voxel_radius(1e-8);
-    const std::string radius("2.5e-13");
+    const std::string radius("2.5e-9");
     const ecell4::Species sp1("A", radius, "1.0e-12"),
           sp2("B", radius, "1.1e-12");
 
@@ -129,7 +210,7 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     const std::string D1("1.0e-12"),
           D2("1.1e-12"),
           D3("1.2e-12"),
-          radius("2.5e-13");
+          radius("2.5e-9");
 
     const ecell4::Species sp1("A", radius, D1),
         sp2("B", radius, D2),

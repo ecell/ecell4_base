@@ -51,10 +51,9 @@ protected:
             for (std::vector<Coord>::iterator itr(coords.begin());
                     itr != coords.end(); ++itr)
             {
-                Coord from_coord(*itr);
-                const Integer rnd(rng->uniform_int(0,11));
-                Coord to_coord(sim_->world_->get_neighbor(from_coord, rnd));
-                sim_->world_->move(from_coord, to_coord);
+                const Coord coord(*itr);
+                const Integer nrnd(rng->uniform_int(0,11));
+				sim_->world_->move_to_neighbor(coord, nrnd);
             }
 
             time_ += dt_;

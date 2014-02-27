@@ -250,12 +250,12 @@ MolecularTypeBase* LatticeSpace::get_molecular_type(const Species& sp)
 
 Coord LatticeSpace::global2coord(const Global& global) const
 {
-    return global2coord(global, num_col(), num_row(), num_layer());
+    return global2coord(global, col_size(), row_size(), layer_size());
 }
 
 const Global LatticeSpace::coord2global(Coord coord) const
 {
-    return coord2global(coord, num_col(), num_row(), num_layer());
+    return coord2global(coord, col_size(), row_size(), layer_size());
 }
 
 /*
@@ -334,34 +334,39 @@ bool LatticeSpace::add_molecule(const Species& sp, Coord coord, const ParticleID
 
 bool LatticeSpace::move(Coord from, Coord to) throw(std::out_of_range)
 {
-    if (!is_in_range(from) || !is_in_range(to))
-    {
-        throw std::out_of_range("");
-        return false;
-    }
-
-    const MolecularTypeBase* to_mt(get_molecular_type(to));
-
-    if (!to_mt->is_vacant()) {
-        return false;
-    }
-
-    MolecularTypeBase* from_mt(get_molecular_type(from));
-
     const Coord general_from(inner2general(from));
     const Coord general_to(inner2general(to));
+	return move_(general_from, general_to);
+}
 
-    if (!from_mt->is_vacant()) {
+bool LatticeSpace::move_to_neighbor(Coord coord, Integer nrand)
+{
+	const Coord general_coord(inner2general(coord));
+	const Coord neighbor(get_neighbor(general_coord, nrand));
+	return move_(general_coord, neighbor);
+}
+
+bool LatticeSpace::move_(Coord general_from, Coord general_to)
+{
+	const MolecularTypeBase* to_mt(voxels_.at(general_to));
+
+	if (!to_mt->is_vacant())
+	{
+		return false;
+	}
+
+	MolecularTypeBase* from_mt(voxels_.at(general_from));
+	if (!from_mt->is_vacant())
+	{
         MolecularTypeBase::container_type::iterator itr(from_mt->find(general_from));
         (*itr).first = general_to;
         voxel_container::iterator fitr(voxels_.begin() + general_from);
         (*fitr) = vacant_;
         voxel_container::iterator titr(voxels_.begin() + general_to);
         (*titr) = from_mt;
-        std::cout << "[from: " << from << ", to: " << to << "] "; // DEBUG
-    }
-
-    return true;
+        std::cout << "[from: " << general_from << ", to: " << general_to << "] "; // DEBUG
+	}
+	return true;
 }
 
 bool LatticeSpace::react(Coord coord, const Species& species) throw(std::out_of_range)
@@ -389,6 +394,41 @@ bool LatticeSpace::react(Coord coord, const Species& species) throw(std::out_of_
     return true;
 }
 
+Coord LatticeSpace::get_neighbor(Coord general_coord, Integer nrand) const
+{
+    const Integer NUM_COLROW(col_size_ * row_size_);
+    const Integer NUM_ROW(row_size_);
+    const bool odd_col((general_coord % NUM_COLROW / NUM_ROW) & 1);
+    const bool odd_lay((general_coord / NUM_COLROW) & 1);
+
+    switch(nrand)
+    {
+    case 1:
+		return general_coord+1;
+    case 2:
+        return general_coord+(odd_col^odd_lay)-NUM_ROW-1;
+    case 3:
+        return general_coord+(odd_col^odd_lay)-NUM_ROW;
+    case 4:
+        return general_coord+(odd_col^odd_lay)+NUM_ROW-1;
+    case 5:
+        return general_coord+(odd_col^odd_lay)+NUM_ROW;
+    case 6:
+        return general_coord+(2*odd_col-1)*NUM_COLROW-NUM_ROW;
+    case 7:
+        return general_coord-(2*odd_col-1)*NUM_COLROW+NUM_ROW;
+    case 8:
+        return general_coord+(odd_col^odd_lay)-NUM_ROW-1;
+    case 9:
+        return general_coord+(odd_col^odd_lay)-NUM_ROW;
+    case 10:
+        return general_coord+(odd_col^odd_lay)+NUM_ROW-1;
+    case 11:
+        return general_coord+(odd_col^odd_lay)+NUM_ROW;
+    }
+	return general_coord-1;
+}
+
 const Particle LatticeSpace::particle_at(Coord coord) const
 {
     const MolecularTypeBase* ptr_mt(voxels_.at(coord));
@@ -400,31 +440,44 @@ const Particle LatticeSpace::particle_at(Coord coord) const
     return particle;
 }
 
-/*
- * Coordinate transformations
- */
-
 bool LatticeSpace::is_in_range(Coord coord) const
 {
     coord = inner2general(coord);
     return coord >= 0 && coord < row_size_ * layer_size_ * col_size_;
 }
 
+/*
+ * Coordinate transformations
+ */
+
 Coord LatticeSpace::global2coord(const Global& global,
         Integer col_size, Integer row_size, Integer layer_size) const
 {
+	/*
     return (global.row) +
         row_size * (global.layer) +
         row_size * layer_size * (global.col);
+	*/
+    return global.row +
+        row_size * (global.col) +
+        row_size * col_size * (global.layer);
 }
 
 const Global LatticeSpace::coord2global(Coord coord,
         Integer col_size, Integer row_size, Integer layer_size) const
 {
+	/*
     Global retval;
     retval.col = coord / (row_size * layer_size);
     retval.layer = (coord % (row_size * layer_size)) / row_size;
     retval.row = (coord % (row_size * layer_size)) % row_size;
+    return retval;
+	*/
+    Global retval;
+	const Integer NUM_COLROW(row_size * col_size);
+    retval.col = (coord % NUM_COLROW) / row_size;
+    retval.layer = coord / NUM_COLROW;
+    retval.row = (coord % NUM_COLROW) % row_size;
     return retval;
 }
 

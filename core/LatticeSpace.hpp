@@ -68,6 +68,7 @@ public:
     bool add_molecule(const Species& sp, Coord coord, const ParticleID& pid)
         throw(std::out_of_range);
     bool move(Coord from, Coord to) throw(std::out_of_range);
+	bool move_to_neighbor(Coord coord, Integer nrand);
     bool react(Coord coord, const Species& species) throw(std::out_of_range);
 
     Real normalized_voxel_radius() const
@@ -75,29 +76,24 @@ public:
         return theNormalizedVoxelRadius;
     }
 
-    inline Integer num_col() const
-    {
-        return col_size_ - 2;
-    }
+	inline Integer col_size() const
+	{
+		return col_size_ - 2;
+	}
 
-    inline Integer num_row() const
-    {
-        return row_size_ - 2;
-    }
+	inline Integer row_size() const
+	{
+		return row_size_ - 2;
+	}
 
-    inline Integer num_layer() const
-    {
-        return layer_size_ - 2;
-    }
-
-    inline Integer num_colrow() const
-    {
-        return num_col() * num_row();
-    }
+	inline Integer layer_size() const
+	{
+		return layer_size_ - 2;
+	}
 
     inline Integer size() const
     {
-        return num_col() * num_row() * num_layer();
+        return col_size() * row_size() * layer_size();
     }
 
     /*
@@ -117,6 +113,8 @@ public:
 protected:
 
     void set_lattice_properties();
+	Coord get_neighbor(Coord general_coord, Integer nrand) const;
+	bool move_(Coord general_from, Coord general_to);
     Coord get_coord(const ParticleID& pid) const;
     const Particle particle_at(Coord coord) const;
     bool is_in_range(Coord coord) const;

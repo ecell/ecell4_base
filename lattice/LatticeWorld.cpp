@@ -96,36 +96,7 @@ MolecularTypeBase* LatticeWorld::get_molecular_type(Coord coord)
 
 Coord LatticeWorld::get_neighbor(Coord coord, Integer nrand) const
 {
-    const Integer NUM_COLROW(space_.num_colrow());
-    const Integer NUM_ROW(space_.num_row());
-    const bool odd_col((coord % NUM_COLROW / NUM_ROW) & 1);
-    const bool odd_lay((coord / NUM_COLROW) & 1);
-    switch(nrand)
-    {
-    case 1:
-        return coord+1;
-    case 2:
-        return coord+(odd_col^odd_lay)-NUM_ROW-1;
-    case 3:
-        return coord+(odd_col^odd_lay)-NUM_ROW;
-    case 4:
-        return coord+(odd_col^odd_lay)+NUM_ROW-1;
-    case 5:
-        return coord+(odd_col^odd_lay)+NUM_ROW;
-    case 6:
-        return coord-NUM_COLROW-(odd_col&odd_lay)-(NUM_ROW&(-!odd_lay));
-    case 7:
-        return coord-NUM_COLROW-!(odd_col|odd_lay)+(!odd_col&odd_lay);
-    case 8:
-        return coord-NUM_COLROW+(odd_col&!odd_lay)+(NUM_ROW&(-odd_lay));
-    case 9:
-        return coord+NUM_COLROW-(odd_col&odd_lay)-(NUM_ROW&(-!odd_lay));
-    case 10:
-        return coord+NUM_COLROW-!(odd_col|odd_lay)+(!odd_col&odd_lay);
-    case 11:
-        return coord+NUM_COLROW+(odd_col&!odd_lay)+(NUM_ROW&(-odd_lay));
-    }
-    return coord-1;
+	return space_.get_neighbor(coord, nrand);
 }
 
 bool LatticeWorld::add_species(const Species& sp)
@@ -158,6 +129,11 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
 bool LatticeWorld::move(Coord from, Coord to) throw(std::out_of_range)
 {
     space_.move(from, to);
+}
+
+bool LatticeWorld::move_to_neighbor(Coord coord, Integer nrand)
+{
+	space_.move_to_neighbor(coord, nrand);
 }
 
 bool LatticeWorld::react(Coord at, Species species) throw(std::out_of_range)

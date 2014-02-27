@@ -51,6 +51,7 @@ public:
     bool add_molecule(const Species& sp, Coord coord) throw(std::out_of_range);
     bool add_molecules(const Species& sp, const Integer& num);
     bool move(Coord from, Coord to) throw(std::out_of_range);
+	bool move_to_neighbor(Coord coord, Integer nrand);
     bool react(Coord at, Species species) throw(std::out_of_range);
 
     Real normalized_voxel_radius() const
@@ -63,24 +64,19 @@ public:
         return rng_;
     }
 
-    const Integer num_col() const
+    const Integer col_size() const
     {
-        return space_.num_col();
+        return space_.col_size();
     }
 
-    const Integer num_row() const
+    const Integer row_size() const
     {
-        return space_.num_row();
+        return space_.row_size();
     }
 
-    const Integer num_layer() const
+    const Integer layer_size() const
     {
-        return space_.num_layer();
-    }
-
-    const Integer num_colrow() const
-    {
-        return space_.num_colrow();
+        return space_.layer_size();
     }
 
     const Integer size() const
