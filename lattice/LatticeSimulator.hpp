@@ -5,6 +5,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/Simulator.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
@@ -53,7 +54,11 @@ protected:
             {
                 const Coord coord(*itr);
                 const Integer nrnd(rng->uniform_int(0,11));
-				sim_->world_->move_to_neighbor(coord, nrnd);
+                std::pair<Coord, bool> retval(sim_->world_->move_to_neighbor(coord, nrnd));
+                if (!retval.second)
+                {
+                    sim_->attempt_reaction_(coord, retval.first);
+                }
             }
 
             time_ += dt_;
@@ -78,7 +83,7 @@ public:
 
     virtual Real t() const
     {
-        return (*world_).t();
+        return world_->t();
     }
 
     virtual Real dt() const
@@ -97,6 +102,7 @@ public:
 
 protected:
     boost::shared_ptr<EventScheduler::Event> create_event(const Species& species);
+    void attempt_reaction_(Coord from_coord, Coord to_coord);
 
 protected:
 

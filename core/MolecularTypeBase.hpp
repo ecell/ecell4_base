@@ -18,15 +18,19 @@ public:
     typedef std::vector<particle_info> container_type;
 
 public:
+    MolecularTypeBase(const Species& species) : species_(species)
+    {
+    }
+
     virtual ~MolecularTypeBase()
     {
     }
 
     virtual bool is_vacant() const = 0;
 
-    virtual const Species& species() const
+    const Species& species() const
     {
-        throw "species() const is not supported.";
+        return species_;
     }
 
     void addVoxel(particle_info info)
@@ -133,6 +137,7 @@ public:
     }
 
 protected:
+    const Species species_;
     container_type voxels_;
 
 };

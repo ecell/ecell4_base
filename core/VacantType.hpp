@@ -12,6 +12,10 @@ class VacantType
 
 public:
 
+    VacantType() : MolecularTypeBase(Species("VACANT", "0"))
+    {
+    }
+
     ~VacantType()
     {
     }

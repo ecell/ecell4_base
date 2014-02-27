@@ -17,11 +17,12 @@ public:
 
 public:
     MolecularType(const std::string& name = "")
-        : species_(name)
+        : MolecularTypeBase(Species(name))
     {
     }
 
-    MolecularType(const Species& species) : species_(species)
+    MolecularType(const Species& species)
+        : MolecularTypeBase(species)
     {
     }
 
@@ -29,10 +30,6 @@ public:
     {
     }
 
-    const Species& species() const
-    {
-        return species_;
-    }
     std::vector<SParticle> sparticles() const
     {
         std::vector<SParticle> retval;
@@ -48,9 +45,6 @@ public:
     {
         return false;
     }
-
-protected:
-    Species species_;
 
 };
 

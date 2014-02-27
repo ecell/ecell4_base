@@ -52,7 +52,7 @@ public:
 
     const Real t() const
     {
-        return this->t_;
+        return t_;
     }
 
     /*
@@ -65,31 +65,31 @@ public:
     MolecularTypeBase* get_molecular_type(const Species& sp);
     MolecularTypeBase* get_molecular_type(Coord coord) const;
     bool add_species(const Species& sp);
-    bool add_molecule(const Species& sp, Coord coord, const ParticleID& pid)
-        throw(std::out_of_range);
-    bool move(Coord from, Coord to) throw(std::out_of_range);
-	bool move_to_neighbor(Coord coord, Integer nrand);
-    bool react(Coord coord, const Species& species) throw(std::out_of_range);
+    bool add_molecule(const Species& sp, Coord coord, const ParticleID& pid);
+    bool remove_molecule(const Coord coord);
+    std::pair<Coord, bool> move(Coord from, Coord to);
+    std::pair<Coord, bool> move_to_neighbor(Coord coord, Integer nrand);
+    bool react(Coord coord, const Species& species);
 
     Real normalized_voxel_radius() const
     {
         return theNormalizedVoxelRadius;
     }
 
-	inline Integer col_size() const
-	{
-		return col_size_ - 2;
-	}
+    inline Integer col_size() const
+    {
+        return col_size_ - 2;
+    }
 
-	inline Integer row_size() const
-	{
-		return row_size_ - 2;
-	}
+    inline Integer row_size() const
+    {
+        return row_size_ - 2;
+    }
 
-	inline Integer layer_size() const
-	{
-		return layer_size_ - 2;
-	}
+    inline Integer layer_size() const
+    {
+        return layer_size_ - 2;
+    }
 
     inline Integer size() const
     {
@@ -113,8 +113,8 @@ public:
 protected:
 
     void set_lattice_properties();
-	Coord get_neighbor(Coord general_coord, Integer nrand) const;
-	bool move_(Coord general_from, Coord general_to);
+    Coord get_neighbor(Coord general_coord, Integer nrand) const;
+    std::pair<Coord, bool> move_(Coord general_from, Coord general_to);
     Coord get_coord(const ParticleID& pid) const;
     const Particle particle_at(Coord coord) const;
     bool is_in_range(Coord coord) const;
@@ -147,6 +147,7 @@ protected:
 
     MolecularTypeBase* vacant_;
     MolecularTypeBase* border_;
+    MolecularTypeBase* periodic_;
 
     Position3 edge_lengths_;
     Integer row_size_, layer_size_, col_size_;

@@ -35,6 +35,37 @@ boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_event(
     return event;
 }
 
+void LatticeSimulator::attempt_reaction_(Coord from_coord, Coord to_coord)
+{
+    // TODO
+    const Species from_species(world_->get_molecular_type(from_coord)->species()),
+                  to_species(world_->get_molecular_type(to_coord)->species());
+    const std::vector<ReactionRule> rules(model_->query_reaction_rules(
+                from_species, to_species));
+    if (rules.size() != 1)
+    {
+        return;
+    }
+    const ReactionRule rule(rules.at(0));
+    const Real k(rule.k());
+    const ReactionRule::reactant_container_type& reactants(rule.reactants());
+    if (reactants.count(from_species) != 1 ||
+            reactants.count(to_species) != 1 ||
+            reactants.size() != 2)
+    {
+        return;
+    }
+    const ReactionRule::product_container_type& products(rule.products());
+    if (products.size() != 1)
+    {
+        return;
+    }
+    Species product_species(*(products.begin()));
+    world_->remove_molecule(from_coord);
+    world_->remove_molecule(to_coord);
+    world_->add_molecule(product_species, to_coord);
+}
+
 void LatticeSimulator::step()
 {
     if (!is_initialized_)
@@ -45,7 +76,7 @@ void LatticeSimulator::step()
     EventScheduler::value_type const& top(scheduler_.top());
     Real time(top.second->time());
     top.second->fire(); // top.second->time_ is updated in fire()
-    (*world_).set_t(time);
+    world_->set_t(time);
     scheduler_.update(top);
 }
 
@@ -74,7 +105,7 @@ bool LatticeSimulator::step(const Real& upto)
     {
         Real time(next_event.second->time());
         next_event.second->fire(); // top.second->time_ is updated in fire()
-        (*world_).set_t(time);
+        world_->set_t(time);
         scheduler_.update(next_event);
     }
 

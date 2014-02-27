@@ -8,6 +8,7 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 
+
 namespace ecell4
 {
 
@@ -45,14 +46,14 @@ public:
     std::vector<Species> list_species() const;
     std::vector<Coord> list_coords(const Species& sp) const;
     MolecularTypeBase* get_molecular_type(const Species& species);
-    MolecularTypeBase* get_molecular_type(Integer coord);
-    Integer get_neighbor(Integer coord, Integer nrand) const;
+    MolecularTypeBase* get_molecular_type(Coord coord);
     bool add_species(const Species& sp);
-    bool add_molecule(const Species& sp, Coord coord) throw(std::out_of_range);
+    bool add_molecule(const Species& sp, Coord coord);
     bool add_molecules(const Species& sp, const Integer& num);
-    bool move(Coord from, Coord to) throw(std::out_of_range);
-	bool move_to_neighbor(Coord coord, Integer nrand);
-    bool react(Coord at, Species species) throw(std::out_of_range);
+    bool remove_molecule(const Coord coord);
+    std::pair<Coord, bool> move(Coord from, Coord to);
+    std::pair<Coord, bool> move_to_neighbor(Coord coord, Integer nrand);
+    bool react(Coord at, Species species);
 
     Real normalized_voxel_radius() const
     {

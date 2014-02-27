@@ -84,23 +84,23 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_particle)
 
     const std::string hdf5path("/");
 
-	for (int i(0); i < 50; ++i)
-	{
-		std::ostringstream oss;
-		oss << "data_with_single_particle_";
-		if (i < 10)
-		{
-			oss << "0" << i;
-		}
-		else
-		{
-			oss << i;
-		}
-		oss << ".h5";
-		H5::H5File fout(oss.str(), H5F_ACC_TRUNC);
-		sim.step();
-		world->save(&fout, hdf5path);
-	}
+    for (int i(0); i < 50; ++i)
+    {
+        std::ostringstream oss;
+        oss << "data_with_single_particle_";
+        if (i < 10)
+        {
+            oss << "0" << i;
+        }
+        else
+        {
+            oss << i;
+        }
+        oss << ".h5";
+        H5::H5File fout(oss.str(), H5F_ACC_TRUNC);
+        sim.step();
+        world->save(&fout, hdf5path);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_species)
@@ -157,40 +157,46 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_save_step_with_single_species)
 
     const std::string hdf5path("/");
 
-	for (int i(0); i < 50; ++i)
-	{
-		std::ostringstream oss;
-		oss << "data_with_single_species_";
-		if (i < 10)
-		{
-			oss << "0" << i;
-		}
-		else
-		{
-			oss << i;
-		}
-		oss << ".h5";
-		H5::H5File fout(oss.str(), H5F_ACC_TRUNC);
-		sim.step();
-		world->save(&fout, hdf5path);
-	}
+    for (int i(0); i < 50; ++i)
+    {
+        std::ostringstream oss;
+        oss << "data_with_single_species_";
+        if (i < 10)
+        {
+            oss << "0" << i;
+        }
+        else
+        {
+            oss << i;
+        }
+        oss << ".h5";
+        H5::H5File fout(oss.str(), H5F_ACC_TRUNC);
+        sim.step();
+        world->save(&fout, hdf5path);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_reaction)
 {
-    const Real L(1e-6);
+    const Real L(2.5e-8);
     const Position3 edge_lengths(L, L, L);
     const Real voxel_radius(1e-8);
-    const std::string radius("2.5e-9");
+    const std::string radius("1.25e-9");
     const ecell4::Species sp1("A", radius, "1.0e-12"),
-          sp2("B", radius, "1.1e-12");
-
-    //const ecell4::ReactionRule rr1();
+          sp2("B", radius, "1.1e-12"),
+          sp3("C", "2.5e-9", "1.2e-12");
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species(sp1);
     model->add_species(sp2);
-    //model->add_reaction_rule(rr1);
+    model->add_species(sp3);
+
+    ecell4::ReactionRule rr1;
+    rr1.add_reactant(sp1);
+    rr1.add_reactant(sp2);
+    rr1.add_product(sp3);
+    rr1.set_k(5.0);
+    model->add_reaction_rule(rr1);
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
@@ -198,6 +204,16 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_reaction)
             new LatticeWorld(edge_lengths, rng));
 
     LatticeSimulator sim(model, world);
+
+    BOOST_CHECK(world->add_molecules(sp1, 25));
+    BOOST_CHECK(world->add_molecules(sp2, 25));
+
+    H5::H5File fout_before("data_reaction_before.h5", H5F_ACC_TRUNC);
+    world->save(&fout_before, "/");
+    sim.step();
+    BOOST_ASSERT(world->num_molecules(sp3) > 0);
+    H5::H5File fout_after("data_reaction_after.h5", H5F_ACC_TRUNC);
+    world->save(&fout_after, "/");
 }
 
 BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)

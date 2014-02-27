@@ -67,12 +67,10 @@ LatticeWorld::list_particles(const Species& sp) const
     return space_.list_particles(sp);
 }
 
-
 bool LatticeWorld::update_particle(const ParticleID& pid, const Particle& p)
 {
     return space_.update_particle(pid, p);
 }
-
 
 std::vector<Species> LatticeWorld::list_species() const
 {
@@ -94,17 +92,12 @@ MolecularTypeBase* LatticeWorld::get_molecular_type(Coord coord)
     return space_.get_molecular_type(coord);
 }
 
-Coord LatticeWorld::get_neighbor(Coord coord, Integer nrand) const
-{
-	return space_.get_neighbor(coord, nrand);
-}
-
 bool LatticeWorld::add_species(const Species& sp)
 {
     return space_.add_species(sp);
 }
 
-bool LatticeWorld::add_molecule(const Species& sp, Coord coord) throw(std::out_of_range)
+bool LatticeWorld::add_molecule(const Species& sp, Coord coord)
 {
     ParticleID pid(sidgen_());
     return space_.add_molecule(sp, coord, pid);
@@ -126,17 +119,22 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     return true;
 }
 
-bool LatticeWorld::move(Coord from, Coord to) throw(std::out_of_range)
+bool LatticeWorld::remove_molecule(const Coord coord)
 {
-    space_.move(from, to);
+    return space_.remove_molecule(coord);
 }
 
-bool LatticeWorld::move_to_neighbor(Coord coord, Integer nrand)
+std::pair<Coord, bool> LatticeWorld::move(Coord from, Coord to)
 {
-	space_.move_to_neighbor(coord, nrand);
+    return space_.move(from, to);
 }
 
-bool LatticeWorld::react(Coord at, Species species) throw(std::out_of_range)
+std::pair<Coord, bool> LatticeWorld::move_to_neighbor(Coord coord, Integer nrand)
+{
+    return space_.move_to_neighbor(coord, nrand);
+}
+
+bool LatticeWorld::react(Coord at, Species species)
 {
     space_.react(at, species);
 }

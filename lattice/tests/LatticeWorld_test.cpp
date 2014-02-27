@@ -146,10 +146,10 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
     BOOST_CHECK(world.add_molecule(sp, coord));
 
     Coord to_coord(486420);
-    BOOST_CHECK(world.move(coord, to_coord));
+    BOOST_CHECK(world.move(coord, to_coord).second);
 
     MolecularTypeBase* mt(world.get_molecular_type(to_coord));
     BOOST_CHECK(!mt->is_vacant());
 
-    BOOST_CHECK(!world.move(coord, to_coord));
+    BOOST_CHECK(world.move(coord, to_coord).second);
 }

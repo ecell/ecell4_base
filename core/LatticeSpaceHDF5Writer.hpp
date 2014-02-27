@@ -89,7 +89,16 @@ public:
             const ParticleID pid(particles.at(i).first);
             const Particle p(particles.at(i).second);
             h5_particle_table[i].id = pid.serial(); // TODO
-            h5_particle_table[i].spid = 1; // TODO
+            uint32_t spid(0);
+            for (unsigned int j(0); j < species.size(); ++j)
+            {
+                if (p.species() == species.at(j))
+                {
+                    spid = j;
+                    break;
+                }
+            }
+            h5_particle_table[i].spid = spid;
             h5_particle_table[i].pos[0] = p.position()[0];
             h5_particle_table[i].pos[1] = p.position()[1];
             h5_particle_table[i].pos[2] = p.position()[2];

@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_species)
     BOOST_CHECK(list == lspace.list_species());
 }
 
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_molecule)
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
     LatticeSpace lspace(edge_lengths);
@@ -138,6 +138,10 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_molecule)
 
     MolecularTypeBase* mt(lspace.get_molecular_type(coord));
     BOOST_CHECK(!mt->is_vacant());
+
+    BOOST_CHECK(lspace.remove_molecule(coord));
+    MolecularTypeBase* vacant(lspace.get_molecular_type(coord));
+    BOOST_CHECK(vacant->is_vacant());
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
@@ -154,12 +158,33 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     BOOST_CHECK(lspace.add_molecule(sp, coord, pid));
 
     Coord to_coord(lspace.global2coord(Global(3,5,5)));
-    BOOST_CHECK(lspace.move(coord, to_coord));
+    BOOST_CHECK(lspace.move(coord, to_coord).second);
 
     MolecularTypeBase* mt(lspace.get_molecular_type(to_coord));
     BOOST_CHECK(!mt->is_vacant());
 
-    BOOST_CHECK(!lspace.move(coord, to_coord));
+    BOOST_CHECK(lspace.add_molecule(sp, coord, sidgen()));
+    BOOST_CHECK(!lspace.move(coord, to_coord).second);
+}
+
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_react)
+{
+    Position3 edge_lengths(1e-6,1e-6,1e-6);
+    LatticeSpace lspace(edge_lengths);
+    SerialIDGenerator<ParticleID> sidgen;
+
+    Species reactant(std::string("Reactant")),
+            product(std::string("Product"));
+    BOOST_CHECK(lspace.add_species(reactant));
+
+    Coord coord(lspace.global2coord(Global(3,4,5)));
+    ParticleID pid(sidgen());
+    BOOST_CHECK(lspace.add_molecule(reactant, coord, pid));
+
+    BOOST_CHECK(lspace.react(coord, product));
+
+    MolecularTypeBase* mt(lspace.get_molecular_type(coord));
+    BOOST_ASSERT(mt->species() == product);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_save1)
@@ -217,11 +242,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
     Species sp1(std::string("A"), radius, D);
     BOOST_CHECK(lspace.add_species(sp1));
 
-	for (int i(0); i < lspace.size(); ++i)
-	{
-		ParticleID pid(sidgen());
-		BOOST_CHECK(lspace.add_molecule(sp1, i, pid));
-	}
+    for (int i(0); i < lspace.size(); ++i)
+    {
+        ParticleID pid(sidgen());
+        BOOST_CHECK(lspace.add_molecule(sp1, i, pid));
+    }
 
     H5::H5File fout("data_structure.h5", H5F_ACC_TRUNC);
     const std::string hdf5path("/");
@@ -237,29 +262,29 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
     std::string D("1e-12"), radius("2.5e-9");
     Species sp(std::string("A"), radius, D);
     BOOST_CHECK(lspace.add_species(sp));
-	ParticleID pid(sidgen());
-	BOOST_CHECK(lspace.add_molecule(sp, 0, pid));
+    ParticleID pid(sidgen());
+    BOOST_CHECK(lspace.add_molecule(sp, 0, pid));
 
-	std::cout << "<<col: " << lspace.col_size() << ", row: "
-		<< lspace.row_size() << ", layer: " << lspace.layer_size() << ">>";
-	for (int i(0); i < lspace.size(); ++i)
-	{
-		for (int j(0); j < 12; ++j)
-		{
-			const std::vector<Coord> coords(lspace.list_coords(sp));
-			BOOST_ASSERT(coords.size() == 1);
-			const Coord old(coords.at(0));
-			lspace.move(old, i);
-			const std::vector<std::pair<ParticleID, Particle> > particles(
-					lspace.list_particles(sp));
-			BOOST_ASSERT(particles.size() == 1);
-			const Particle origin(particles.at(0).second);
-			lspace.move_to_neighbor(i, j);
-			const Particle neighbor(particles.at(0).second);
-			const Real d(length(origin.position()-neighbor.position()));
-			if (d >= 5.1e-9)
-				std::cout << " [i: " << i << ", j: " << j << ", d: " << d << "] ";
-			BOOST_ASSERT(d <= 5.1e-9); 
-		}
-	}
+    std::cout << "<<col: " << lspace.col_size() << ", row: "
+        << lspace.row_size() << ", layer: " << lspace.layer_size() << ">>";
+    for (int i(0); i < lspace.size(); ++i)
+    {
+        for (int j(0); j < 12; ++j)
+        {
+            const std::vector<Coord> coords(lspace.list_coords(sp));
+            BOOST_ASSERT(coords.size() == 1);
+            const Coord old(coords.at(0));
+            lspace.move(old, i);
+            const std::vector<std::pair<ParticleID, Particle> > particles(
+                lspace.list_particles(sp));
+            BOOST_ASSERT(particles.size() == 1);
+            const Particle origin(particles.at(0).second);
+            lspace.move_to_neighbor(i, j);
+            const Particle neighbor(particles.at(0).second);
+            const Real d(length(origin.position()-neighbor.position()));
+            if (d >= 5.1e-9)
+                std::cout << " [i: " << i << ", j: " << j << ", d: " << d << "] ";
+            BOOST_ASSERT(d <= 5.1e-9);
+        }
+    }
 }
