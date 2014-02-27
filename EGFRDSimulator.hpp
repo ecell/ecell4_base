@@ -563,7 +563,7 @@ protected:
             length_type const theta(draw_theta(rng_, *gf, dt, r));
             return adjust_iv_with_old_iv(
                 spherical_to_cartesian(
-                    array_gen(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
+                    position_type(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
                 old_iv);
         }
 
@@ -626,7 +626,7 @@ protected:
             length_type const theta(draw_theta(rng_, *gf, dt, r));
             return adjust_iv_with_old_iv(
                 spherical_to_cartesian(
-                    array_gen(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
+                    position_type(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
                 old_iv);
         }
 
@@ -695,7 +695,7 @@ protected:
             length_type const theta(draw_theta(rng_, *gf, dt, r));
             return adjust_iv_with_old_iv(
                 spherical_to_cartesian(
-                    array_gen(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
+                    position_type(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
                 old_iv);
         }
 
@@ -762,7 +762,7 @@ protected:
             length_type const theta(draw_theta(rng_, *gf, dt, r));
             return adjust_iv_with_old_iv(
                 spherical_to_cartesian(
-                    array_gen(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
+                    position_type(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
                 old_iv);
         }
 
@@ -829,7 +829,7 @@ protected:
             length_type const theta(draw_theta(rng_, *gf, dt, r));
             return adjust_iv_with_old_iv(
                 spherical_to_cartesian(
-                    array_gen(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
+                    position_type(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
                 old_iv);
         }
 
@@ -3720,9 +3720,10 @@ protected:
         BOOST_ASSERT(false); // should never happen
     }
 
-    template<typename T1, typename T2>
+    //template<typename T1, typename T2>
     static position_type
-    adjust_iv_with_old_iv(T1 const& new_iv, T2 const& old_iv)
+    //adjust_iv_with_old_iv(T1 const& new_iv, T2 const& old_iv)
+    adjust_iv_with_old_iv(position_type const& new_iv, position_type const& old_iv)
     {
         length_type const angle(std::acos(old_iv[2] / length(old_iv)));
         if (std::fmod(angle, M_PI) != 0.0)
