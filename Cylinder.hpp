@@ -4,6 +4,7 @@
 #include <ostream>
 #include <cmath>
 #include "Vector3.hpp"
+#include "Position3Type.hpp"
 #include "Shape.hpp"
 
 // Todo. Make sure cylinder is never larger than 1 cellsize or something.  
@@ -11,9 +12,14 @@ template<typename T_>
 class Cylinder
 {
 public:
+    /*
     typedef T_ value_type;
     typedef Vector3<T_> position_type;
     typedef T_ length_type;
+    */
+    typedef ecell4::Position3 position_type;
+    typedef position_type::value_type value_type;
+    typedef position_type::value_type length_type;
 
 public:
     Cylinder()

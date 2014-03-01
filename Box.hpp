@@ -15,9 +15,14 @@ template<typename T_>
 class Box
 {
 public:
+    /*
     typedef T_ value_type;
     typedef Vector3<T_> position_type;
     typedef T_ length_type;
+    */
+    typedef ecell4::Position3 position_type;
+    typedef position_type::value_type value_type;
+    typedef position_type::value_type length_type;
 
 public:
     Box(position_type const& position = position_type())

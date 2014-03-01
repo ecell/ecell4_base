@@ -12,6 +12,7 @@
 
 #include <sstream>
 #include "Vector3.hpp"
+#include "Position3Type.hpp"
 
 template<typename Ttraits_>
 class Structure

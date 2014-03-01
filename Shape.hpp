@@ -3,6 +3,8 @@
 
 #include <boost/type_traits/remove_cv.hpp>
 #include "Vector3.hpp"
+#include "Position3Type.hpp"
+#include "geometry.hpp"
 
 template<typename Tobj_>
 inline typename Tobj_::shape_type const& shape(Tobj_ const& obj)

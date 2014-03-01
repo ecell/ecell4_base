@@ -28,6 +28,7 @@
 #include "ecell4/core/RandomNumberGenerator.hpp"
 #include "ecell4/core/Species.hpp"
 
+#include <ecell4/core/Position3.hpp>
 
 // For twofold_container
 inline
@@ -50,7 +51,8 @@ struct WorldTraitsBase
     typedef Particle<length_type, D_type, species_id_type> particle_type;
     typedef std::string structure_id_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;
-    typedef Vector3<length_type> point_type;
+    //typedef Vector3<length_type> point_type;
+    typedef ecell4::Position3 point_type;
     typedef typename particle_type::shape_type::position_type position_type;
     //typedef GSLRandomNumberGenerator rng_type;
     typedef ecell4::GSLRandomNumberGenerator rng_type;
