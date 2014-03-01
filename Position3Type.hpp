@@ -100,9 +100,9 @@ struct hash<ecell4::Position3>
 
     std::size_t operator()(argument_type const& val)
     {
-        return hash<typename argument_type::value_type>()(val[0]) ^
-            hash<typename argument_type::value_type>()(val[1]) ^
-            hash<typename argument_type::value_type>()(val[2]);
+        return hash<argument_type::value_type>()(val[0]) ^
+            hash<argument_type::value_type>()(val[1]) ^
+            hash<argument_type::value_type>()(val[2]);
     }
 };
 
