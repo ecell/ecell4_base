@@ -92,9 +92,8 @@ public:
     typedef Ttraits_ traits_type;
     typedef typename traits_type::world_type world_type;
     typedef Sphere sphere_type;
-    //typedef Cylinder<typename world_type::length_type> cylinder_type;
     typedef Cylinder cylinder_type;
-    typedef Box<typename world_type::length_type> box_type;
+    typedef Box box_type;
     typedef Plane<typename world_type::length_type> plane_type;
     typedef ParticleSimulationStructure<traits_type> particle_simulation_structure_type;
     typedef Surface<traits_type> surface_type;

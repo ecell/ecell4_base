@@ -11,7 +11,12 @@
 #include "Shape.hpp"
 #include "linear_algebra.hpp"
 
-template<typename T_>
+class Box;
+
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
+        const Box& v);
+
 class Box
 {
 public:
@@ -195,36 +200,36 @@ protected:
     boost::array<length_type, 3> half_extent_;
 };
 
-template<typename T_>
-inline boost::array<typename Box<T_>::length_type, 3>
-to_internal(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
+
+inline boost::array<Box::length_type, 3>
+to_internal(Box const& obj, Box::position_type const& pos)
 {
     // Return pos relative to position of box. 
-    typedef typename Box<T_>::position_type position_type;
+    typedef Box::position_type position_type;
     position_type pos_vector(subtract(pos, obj.position()));
 
-    return array_gen<typename Box<T_>::length_type>(
+    return array_gen<Box::length_type>(
         dot_product(pos_vector, obj.unit_x()),
         dot_product(pos_vector, obj.unit_y()),
         dot_product(pos_vector, obj.unit_z()));
 }
 
-template<typename T_>
-inline std::pair<typename Box<T_>::position_type,
-                 typename Box<T_>::length_type>
-projected_point(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
+
+inline std::pair<Box::position_type,
+                 Box::length_type>
+projected_point(Box const& obj, typename Box::position_type const& pos)
 {
     // Todo. If we ever need it.
     // The projection of a point on a box.
-    return std::make_pair(typename Box<T_>::position_type(),
-                          typename Box<T_>::length_type());
+    return std::make_pair(typename Box::position_type(),
+                          typename Box::length_type());
 }
 
-template<typename T_>
-inline typename Box<T_>::length_type
-distance(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
+
+inline Box::length_type
+distance(Box const& obj, typename Box::position_type const& pos)
 {
-    typedef typename Box<T_>::length_type length_type;
+    typedef Box::length_type length_type;
     boost::array<length_type, 3> x_y_z(to_internal(obj, pos));
     boost::array<length_type, 3> dx_dy_dz(subtract(abs(x_y_z), obj.half_extent()));
 
@@ -282,46 +287,46 @@ distance(Box<T_> const& obj, typename Box<T_>::position_type const& pos)
     }
 }
 
-template<typename T, typename Trng>
-inline typename Box<T>::position_type
-random_position(Box<T> const& shape, Trng& rng)
+template<typename Trng>
+inline Box::position_type
+random_position(Box const& shape, Trng& rng)
 {
-    boost::const_multi_array_ref<T, 2> mat(&shape.units()[0][0], boost::extents[3][3]);
+    boost::const_multi_array_ref<Box::length_type, 2> mat(&shape.units()[0][0], boost::extents[3][3]);
     // -1 < rng() < 1. See for example CuboidalRegion.hpp.
     return add(
         shape.position(),
         multiply(
-            create_vector<typename Box<T>::position_type>(
+            create_vector<Box::position_type>(
                 shape.half_extent()[0] * rng(),
                 shape.half_extent()[1] * rng(),
                 shape.half_extent()[2] * rng()),
             mat));
 }
 
-template<typename T>
-inline Box<T> const& shape(Box<T> const& shape)
+
+inline Box const& shape(Box const& shape)
 {
     return shape;
 }
 
-template<typename T>
-inline Box<T>& shape(Box<T>& shape)
+
+inline Box& shape(Box& shape)
 {
     return shape;
 }
 
-template<typename T_>
-struct is_shape<Box<T_> >: public boost::mpl::true_ {};
+template<>
+struct is_shape<Box>: public boost::mpl::true_ {};
 
-template<typename T_>
-struct shape_position_type<Box<T_> >
+template<>
+struct shape_position_type<Box>
 {
-    typedef typename Box<T_>::position_type type;
+    typedef Box::position_type type;
 };
 
-template<typename Tstrm_, typename Ttraits_, typename T_>
+template<typename Tstrm_, typename Ttraits_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
-        const Box<T_>& v)
+        const Box& v)
 {
     strm << "{" << v.position() <<  ", " << v.unit_x() << ", " << v.unit_y() << ", " << v.unit_z() << "," << v.Lx() << ", " << v.Ly() << ", " << v.Lz() << "}";
     return strm;
@@ -336,10 +341,10 @@ namespace std {
 namespace boost {
 #endif
 
-template<typename T_>
-struct hash<Box<T_> >
+template<>
+struct hash<Box>
 {
-    typedef Box<T_> argument_type;
+    typedef Box argument_type;
 
     std::size_t operator()(argument_type const& val)
     {
