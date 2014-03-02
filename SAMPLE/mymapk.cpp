@@ -35,15 +35,6 @@
 
 typedef double Real;
 
-typedef ::World< ::CyclicWorldTraits<Real, Real> > world_type;
-
-double distance_sq(world_type::position_type p1, world_type::position_type p2)
-{
-    double dsq = 0.0;
-    world_type::position_type sq(gsl_pow_2(p2[0] - p1[0]), gsl_pow_2(p2[1] - p1[1]), gsl_pow_2(p2[2] - p2[2]));
-    return std::accumulate(sq.begin(), sq.end(), 0.0);
-}
-
 // Class to memize the positions of each particles
 template <typename TPos_type>
 class TemporaryParticleContainer {
@@ -94,7 +85,6 @@ int main(int argc, char **argv)
     // Traits typedefs  
     // {{{
     typedef ::World< ::CyclicWorldTraits<Real, Real> > world_type;
-    //typedef ::ParticleModel particle_model_type;
     typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> > simulator_type;
     typedef simulator_type::traits_type::network_rules_type network_rules_type;
     typedef simulator_type::multi_type multi_type;
@@ -131,12 +121,11 @@ int main(int argc, char **argv)
     // Random Number Generator (Instanciate and Initialize)
     // {{{
     boost::shared_ptr<ecell4::GSLRandomNumberGenerator> rng(new ecell4::GSLRandomNumberGenerator());
-    //particle_model_type model;
     //rng->seed(time(NULL) );
     rng->seed((unsigned long int) 0);
+    world_type::traits_type::rng_type internal_rng = world_type::traits_type::rng_type( rng->handle() );
     // }}}
 
-    world_type::traits_type::rng_type internal_rng = world_type::traits_type::rng_type( rng->handle() );
 
     // add ::SpeciesType to ::ParticleModel 
     // {{{
@@ -155,23 +144,12 @@ int main(int argc, char **argv)
     // {{{
     // A -> B + C   k1
     // {{{
-    /*  XXX
-    std::vector< ::SpeciesTypeID> products;
-    products.push_back(st2->id());
-    products.push_back(st3->id());
-    */
     ecell4::ReactionRule rr1( ecell4::create_unbinding_reaction_rule(sp1, sp2, sp3, k1) );
     ecell4_nw_model->add_reaction_rule(rr1);
-    //model.network_rules().add_reaction_rule( new_reaction_rule(st1->id(), products, k1) );
     // }}}
 
     // B + C -> A   k2
     // {{{
-    /*  XXX
-    products.clear();
-    products.push_back(st1->id());
-    */
-    //model.network_rules().add_reaction_rule( new_reaction_rule(st2->id(), st3->id(), products, k2) );
     ecell4::ReactionRule rr2( ecell4::create_binding_reaction_rule(sp2, sp3, sp1, k2) );
     ecell4_nw_model->add_reaction_rule(rr2);
     // }}}
@@ -182,10 +160,8 @@ int main(int argc, char **argv)
     //  st1 {{{
     boost::shared_ptr< ::SpeciesType> st1(new ::SpeciesType());
     const std::string &structure_id((*st1)["structure"]);
-    //const std::string &structure_id(sp1.get_attribute("structure"));
     world->add_species( world_type::traits_type::species_type(
-                //st1->id(), 
-                sp1.name(),
+                sp1.serial(),
                 boost::lexical_cast<world_type::traits_type::D_type>( sp1.get_attribute("D") ),
                 boost::lexical_cast<world_type::length_type>( sp1.get_attribute("radius") ),
                 boost::lexical_cast<structure_id_type>( structure_id.empty() ? "world" : structure_id )));
@@ -195,8 +171,7 @@ int main(int argc, char **argv)
     boost::shared_ptr< ::SpeciesType> st2(new ::SpeciesType());
     const std::string &structure_id2((*st2)["structure"] );
     world->add_species( world_type::traits_type::species_type(
-                //st2->id(), 
-                sp2.name(),
+                sp2.serial(),
                 boost::lexical_cast<world_type::traits_type::D_type>( sp2.get_attribute("D") ),
                 boost::lexical_cast<world_type::length_type>( sp2.get_attribute("radius") ),
                 boost::lexical_cast<structure_id_type>( structure_id.empty() ? "world" : structure_id2 )));
@@ -206,8 +181,7 @@ int main(int argc, char **argv)
     boost::shared_ptr< ::SpeciesType> st3(new ::SpeciesType());
     const std::string &structure_id3((*st3)["structure"] );
     world->add_species( world_type::traits_type::species_type(
-                //st3->id(), 
-                sp3.name(),
+                sp3.serial(),
                 boost::lexical_cast<world_type::traits_type::D_type>( sp3.get_attribute("D") ),
                 boost::lexical_cast<world_type::length_type>( sp3.get_attribute("radius") ),
                 boost::lexical_cast<structure_id_type>( structure_id.empty() ? "world" : structure_id3 )));
@@ -221,7 +195,10 @@ int main(int argc, char **argv)
     for (int cnt = 0; cnt < number_of_particles_A; cnt++) {
         // add particles at random.
         for(;;) {
-            world_type::position_type particle_pos( rng->uniform(0.0, edge_length[0]), rng->uniform(0.0, edge_length[1]), rng->uniform(0.0, edge_length[2]) );
+            world_type::position_type particle_pos( 
+                    rng->uniform(0.0, edge_length[0]), 
+                    rng->uniform(0.0, edge_length[1]), 
+                    rng->uniform(0.0, edge_length[2]) );
             double radius(boost::lexical_cast<double>( sp1.get_attribute("radius") ));
             if (container.list_particles_within_radius(radius, particle_pos).size() == 0) {
                 std::cout << "(" << particle_pos[0] << particle_pos[1] << particle_pos[2] << ")" << std::endl;
@@ -235,21 +212,9 @@ int main(int argc, char **argv)
 
     // world::set_all_repusive() equality section   
     // {{{
-    /*
-    BOOST_FOREACH( boost::shared_ptr< ::SpeciesType> temp_st1, model.get_species_types()) {
-        BOOST_FOREACH( boost::shared_ptr< ::SpeciesType> temp_st2, model.get_species_types()) {
-            boost::scoped_ptr< ::NetworkRules::reaction_rule_generator> gen( model.network_rules().query_reaction_rule( temp_st1->id(), temp_st2->id()));
-            if (!gen) {
-                const::std::vector< ::SpeciesTypeID> products;
-                model.network_rules().add_reaction_rule( ::new_reaction_rule(temp_st1->id()(), temp_st2->id(), products, 0.0) );
-            }
-        }
-    }   // }}}
-    */
     BOOST_FOREACH( ecell4::Species temp_sp1, ecell4_nw_model->list_species() ) {
         BOOST_FOREACH( ecell4::Species temp_sp2, ecell4_nw_model->list_species() ) {
             std::vector<ecell4::ReactionRule> rrv(ecell4_nw_model->query_reaction_rules(temp_sp1, temp_sp2));
-            //asm volatile ("int3");
             if (rrv.size() == 0)
             {
                 ecell4::ReactionRule new_reaction;
@@ -260,6 +225,7 @@ int main(int argc, char **argv)
             }
         }
     }
+    // }}}
 
     // Logger Settings 
     // {{{
@@ -268,8 +234,6 @@ int main(int argc, char **argv)
             "ecell.EGFRDSimulator",
             logger_mng
             );
-            //boost::shared_ptr< ::LoggerManager>(
-            //    new ::LoggerManager("dummy", ::Logger::L_WARNING)));
     // }}}
 
     // EGFRDSimulator instance generated 
@@ -279,8 +243,6 @@ int main(int argc, char **argv)
     boost::shared_ptr< simulator_type> sim( 
             new simulator_type(
                 world, 
-                //boost::shared_ptr<network_rules_type>(new network_rules_type(model.network_rules())),
-                //boost::shared_ptr<network_rules_type>(new network_rules_type(ecell4_nw_model) ),
                 nw_rules_adapter,
                 internal_rng,
                 dissociation_retry_moves
@@ -314,24 +276,9 @@ int main(int argc, char **argv)
             << std::endl;
     }
     // }}}
-    /*
-    enum domain_kind
-    {
-        NONE = 0,
-        SPHERICAL_SINGLE,
-        CYLINDRICAL_SINGLE,
-        SPHERICAL_PAIR,
-        CYLINDRICAL_PAIR,
-        MULTI,
-        NUM_DOMAIN_KINDS
-    };
-    enum single_event_kind
-    {
-        SINGLE_EVENT_REACTION,
-        SINGLE_EVENT_ESCAPE,
-        NUM_SINGLE_EVENT_KINDS
-    };
-    */
+
+    // Statistics
+    // {{{
     int num_single_steps_per_type[simulator_type::NUM_SINGLE_EVENT_KINDS];
     num_single_steps_per_type[simulator_type::SINGLE_EVENT_REACTION] = sim->num_single_steps_per_type( 
             simulator_type::SINGLE_EVENT_REACTION);
@@ -340,17 +287,6 @@ int main(int argc, char **argv)
     std::cout << boost::format("%1%: %2% \n") % "SINGLE_EVENT_REACTION" % num_single_steps_per_type[simulator_type::SINGLE_EVENT_REACTION];
     std::cout << boost::format("%1%: %2% \n") % "SINGLE_EVENT_ESCAPE" % num_single_steps_per_type[simulator_type::SINGLE_EVENT_ESCAPE];
 
-    /*enum pair_event_kind
-    {
-        PAIR_EVENT_SINGLE_REACTION_0,
-        PAIR_EVENT_SINGLE_REACTION_1,
-        PAIR_EVENT_COM_ESCAPE,
-        PAIR_EVENT_IV_UNDETERMINED,
-        PAIR_EVENT_IV_ESCAPE,
-        PAIR_EVENT_IV_REACTION,
-        NUM_PAIR_EVENT_KINDS
-    }; */
-
     std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_SINGLE_REACTION_0" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_SINGLE_REACTION_0);
     std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_SINGLE_REACTION_1" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_SINGLE_REACTION_1);
     std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_COM_ESCAPE" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_COM_ESCAPE);
@@ -358,15 +294,9 @@ int main(int argc, char **argv)
     std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_IV_ESCAPE" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_IV_ESCAPE);
     std::cout << boost::format("%1%: %2% \n") % "PAIR_EVENT_IV_REACTION" % sim->num_pair_steps_per_type(simulator_type::PAIR_EVENT_IV_REACTION);
 
-    /*enum event_kind
-    {
-        NONE,
-        ESCAPE,
-        REACTION,
-        NUM_MULTI_EVENT_KINDS
-    };  */
     std::cout << boost::format("%1%: %2% \n") % "NONE" % sim->num_multi_steps_per_type(multi_type::NONE);
     std::cout << boost::format("%1%: %2% \n") % "ESCAPE" % sim->num_multi_steps_per_type(multi_type::ESCAPE);
     std::cout << boost::format("%1%: %2% \n") % "REACTION" % sim->num_multi_steps_per_type(multi_type::REACTION);
+    // }}}
     return 0;
 }
