@@ -77,8 +77,8 @@ struct get_greens_function<Sphere>
     typedef GreensFunction3DAbsSym type;
 };
 
-template<typename T_>
-struct get_greens_function<Cylinder<T_> >
+template<>
+struct get_greens_function<Cylinder>
 {
     typedef GreensFunction3DAbsSym type;
 };
@@ -93,8 +93,8 @@ struct get_pair_greens_function<Sphere>
     typedef GreensFunction3DAbsSym com_type;
 };
 
-template<typename T_>
-struct get_pair_greens_function<Cylinder<T_> >
+template<>
+struct get_pair_greens_function<Cylinder>
 {
     typedef GreensFunction3DRadAbs iv_type;
     typedef GreensFunction3DAbsSym com_type;

@@ -7,8 +7,14 @@
 #include "Position3Type.hpp"
 #include "Shape.hpp"
 
+class Cylinder;
+
+template<typename Tstrm_>
+inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
+        const Cylinder& v);
+
 // Todo. Make sure cylinder is never larger than 1 cellsize or something.  
-template<typename T_>
+
 class Cylinder
 {
 public:
@@ -95,22 +101,22 @@ private:
     length_type half_length_;
 };
 
-template<typename Tstrm_, typename T_>
+template<typename Tstrm_>
 inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,
-        const Cylinder<T_>& v)
+        const Cylinder& v)
 {
     strm << "{" << v.position() <<  ", " << v.radius() << ", " << v.unit_z() << ", " << v.half_length() << "}";
     return strm;
 }
 
-template<typename T_>
-inline std::pair<typename Cylinder<T_>::length_type,
-                 typename Cylinder<T_>::length_type>
-to_internal(Cylinder<T_> const& obj, typename Cylinder<T_>::position_type const& pos)
+
+inline std::pair<Cylinder::length_type,
+                 Cylinder::length_type>
+to_internal(Cylinder const& obj, Cylinder::position_type const& pos)
 {
     // Return pos relative to position of cylinder. 
-    typedef typename Cylinder<T_>::position_type position_type;
-    typedef typename Cylinder<T_>::length_type length_type;
+    typedef Cylinder::position_type position_type;
+    typedef Cylinder::length_type length_type;
 
     const position_type pos_vector(subtract(pos, obj.position()));
     // z can be < 0
@@ -121,13 +127,13 @@ to_internal(Cylinder<T_> const& obj, typename Cylinder<T_>::position_type const&
     return std::make_pair(r, z);
 }
 
-template<typename T_>
-inline std::pair<typename Cylinder<T_>::position_type,
-                 typename Cylinder<T_>::length_type>
-projected_point(Cylinder<T_> const& obj,
-                typename Cylinder<T_>::position_type const& pos)
+
+inline std::pair<Cylinder::position_type,
+                 Cylinder::length_type>
+projected_point(Cylinder const& obj,
+                Cylinder::position_type const& pos)
 {
-    typedef typename Cylinder<T_>::length_type length_type;
+    typedef Cylinder::length_type length_type;
 
     // The projection lies on the z-axis.
     std::pair<length_type, length_type> r_z(to_internal(obj, pos));
@@ -136,13 +142,13 @@ projected_point(Cylinder<T_> const& obj,
         r_z.first);
 }
 
-template<typename T_>
-inline typename Cylinder<T_>::length_type
-distance(Cylinder<T_> const& obj,
-                typename Cylinder<T_>::position_type const& pos)
+
+inline Cylinder::length_type
+distance(Cylinder const& obj,
+                Cylinder::position_type const& pos)
 {
-    typedef typename Cylinder<T_>::position_type position_type;
-    typedef typename Cylinder<T_>::length_type length_type;
+    typedef Cylinder::position_type position_type;
+    typedef Cylinder::length_type length_type;
 
     /* First compute the (z,r) components of pos in a coordinate system 
      * defined by the vectors unitR and unit_z, where unitR is
@@ -183,49 +189,49 @@ distance(Cylinder<T_> const& obj,
     return distance;
 }
 
-template<typename T, typename Trng>
-inline typename Cylinder<T>::position_type
-random_position(Cylinder<T> const& shape, Trng& rng)
+template<typename Trng>
+inline Cylinder::position_type
+random_position(Cylinder const& shape, Trng& rng)
 {
     // -1 < rng() < 1. See for example CylindricalSurface.hpp.
     return add(shape.position(),
                multiply(shape.unit_z(), rng() * shape.half_length()));
 }
 
-template<typename T_>
-inline Cylinder<T_> const& shape(Cylinder<T_> const& shape)
+
+inline Cylinder const& shape(Cylinder const& shape)
 {
     return shape;
 }
 
-template<typename T_>
-inline Cylinder<T_>& shape(Cylinder<T_>& shape)
+
+inline Cylinder& shape(Cylinder& shape)
 {
     return shape;
 }
 
-template<typename T_>
-struct is_shape<Cylinder<T_> >: public boost::mpl::true_ {};
+template<>
+struct is_shape<Cylinder>: public boost::mpl::true_ {};
 
-template<typename T_>
-struct shape_position_type<Cylinder<T_> >
+template<>
+struct shape_position_type<Cylinder>
 {
-    typedef typename Cylinder<T_>::position_type type;
+    typedef typename Cylinder::position_type type;
 };
 
-template<typename T_>
-struct shape_length_type<Cylinder<T_> > {
-    typedef typename Cylinder<T_>::length_type type;
+template<>
+struct shape_length_type<Cylinder> {
+    typedef typename Cylinder::length_type type;
 };
 
-template<typename T>
-inline typename shape_length_type<Cylinder<T> >::type const& shape_size(Cylinder<T> const& shape)
+
+inline typename shape_length_type<Cylinder>::type const& shape_size(Cylinder const& shape)
 {
     return shape.radius();
 } 
 
-template<typename T>
-inline typename shape_length_type<Cylinder<T> >::type& shape_size(Cylinder<T>& shape)
+
+inline typename shape_length_type<Cylinder>::type& shape_size(Cylinder& shape)
 {
     return shape.radius();
 } 
@@ -238,10 +244,10 @@ namespace std {
 namespace boost {
 #endif
 
-template<typename T_>
-struct hash<Cylinder<T_> >
+template<>
+struct hash<Cylinder>
 {
-    typedef Cylinder<T_> argument_type;
+    typedef Cylinder argument_type;
 
     std::size_t operator()(argument_type const& val)
     {
