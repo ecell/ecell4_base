@@ -13,10 +13,10 @@
 #include "Sphere.hpp"
 #include "Shape.hpp"
 
-template<typename T_, typename Td_, typename Tsid_>
+template<typename Td_, typename Tsid_>
 struct Particle
 {
-    typedef Sphere<T_> shape_type;
+    typedef Sphere shape_type;
     typedef Td_ D_type;
     typedef Td_ v_type;	// the drift v has the same type as diffusion constant D for now, may be generalized at a later stage
     typedef Tsid_ species_id_type;
@@ -118,8 +118,8 @@ private:
     v_type v_;
 };
 
-template<typename Tstrm_, typename Ttraits_, typename T_, typename Td_, typename Tsid_>
-inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle<T_, Td_, Tsid_>& p)
+template<typename Tstrm_, typename Ttraits_, typename Td_, typename Tsid_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle<Td_, Tsid_>& p)
 {
     strm << "Particle(" << p.shape() << ", D=" << p.D() << ", v=" << p.v() << ", " << p.sid() << ")";
     return strm;
@@ -133,10 +133,10 @@ namespace std {
 namespace boost {
 #endif
 
-template<typename T_, typename Td_, typename Tsid_>
-struct hash<Particle<T_, Td_, Tsid_> >
+template<typename Td_, typename Tsid_>
+struct hash<Particle<Td_, Tsid_> >
 {
-    typedef Particle<T_, Td_, Tsid_> argument_type;
+    typedef Particle<Td_, Tsid_> argument_type;
 
     std::size_t operator()(argument_type const& val)
     {

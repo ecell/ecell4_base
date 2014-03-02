@@ -37,18 +37,19 @@ bool is_initialized(std::string const &obj)
     return (0 < obj.size());
 }
 
-template<typename Tderived_, typename Tlen_, typename TD_>
+template<typename Tderived_, typename TD_>
 struct WorldTraitsBase
 {
     typedef std::size_t size_type;
-    typedef Tlen_ length_type;
+    //typedef Tlen_ length_type;
+    typedef Real length_type;
     typedef TD_ D_type;
     typedef TD_ v_type;
     typedef ParticleID particle_id_type;
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
     //typedef SpeciesTypeID species_id_type;
     typedef ecell4::Species::serial_type species_id_type; // std::string
-    typedef Particle<length_type, D_type, species_id_type> particle_type;
+    typedef Particle<D_type, species_id_type> particle_type;
     typedef std::string structure_id_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;
     //typedef Vector3<length_type> point_type;
@@ -61,11 +62,11 @@ struct WorldTraitsBase
     static const Real TOLERANCE = 1e-7;
 };
 
-template<typename Tlen_, typename TD_>
-struct WorldTraits: public WorldTraitsBase<WorldTraits<Tlen_, TD_>, Tlen_, TD_>
+template<typename TD_>
+struct WorldTraits: public WorldTraitsBase<WorldTraits<TD_>, TD_>
 {
 public:
-    typedef WorldTraitsBase<WorldTraits<Tlen_, TD_>, Tlen_, TD_> base_type;
+    typedef WorldTraitsBase<WorldTraits<TD_>, TD_> base_type;
     typedef typename base_type::length_type length_type;
     typedef typename base_type::position_type position_type;
 
@@ -112,11 +113,11 @@ public:
     }
 };
 
-template<typename Tlen_, typename TD_>
-struct CyclicWorldTraits: public WorldTraitsBase<CyclicWorldTraits<Tlen_, TD_>, Tlen_, TD_>
+template<typename TD_>
+struct CyclicWorldTraits: public WorldTraitsBase<CyclicWorldTraits<TD_>, TD_>
 {
 public:
-    typedef WorldTraitsBase<CyclicWorldTraits<Tlen_, TD_>, Tlen_, TD_> base_type;
+    typedef WorldTraitsBase<CyclicWorldTraits<TD_>, TD_> base_type;
     typedef typename base_type::length_type length_type;
     typedef typename base_type::position_type position_type;
 

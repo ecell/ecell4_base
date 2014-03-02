@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 {
     // Traits typedefs  
     // {{{
-    typedef ::World< ::CyclicWorldTraits<Real, Real> > world_type;
+    typedef ::World< ::CyclicWorldTraits<Real> > world_type;
     typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> > simulator_type;
     typedef simulator_type::traits_type::network_rules_type network_rules_type;
     typedef simulator_type::multi_type multi_type;

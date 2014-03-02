@@ -91,7 +91,7 @@ class ParticleSimulator
 public:
     typedef Ttraits_ traits_type;
     typedef typename traits_type::world_type world_type;
-    typedef Sphere<typename world_type::length_type> sphere_type;
+    typedef Sphere sphere_type;
     typedef Cylinder<typename world_type::length_type> cylinder_type;
     typedef Box<typename world_type::length_type> box_type;
     typedef Plane<typename world_type::length_type> plane_type;

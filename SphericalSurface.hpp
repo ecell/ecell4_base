@@ -6,10 +6,10 @@
 
 template<typename Ttraits_>
 class SphericalSurface
-    : public BasicSurfaceImpl<Ttraits_, Sphere<typename Ttraits_::world_type::traits_type::length_type> >
+    : public BasicSurfaceImpl<Ttraits_, Sphere >
 {
 public:
-    typedef BasicSurfaceImpl<Ttraits_, Sphere<typename Ttraits_::world_type::traits_type::length_type> > base_type;
+    typedef BasicSurfaceImpl<Ttraits_, Sphere > base_type;
     typedef typename base_type::traits_type traits_type;
     typedef typename base_type::identifier_type identifier_type;
     typedef typename base_type::shape_type shape_type;

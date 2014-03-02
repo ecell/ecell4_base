@@ -6,7 +6,11 @@
 #include "Position3Type.hpp"
 #include "Shape.hpp"
 
-template<typename T_>
+class Sphere;
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
+        const Sphere& v);
+
 class Sphere
 {
 public:
@@ -69,77 +73,77 @@ private:
     length_type radius_;
 };
 
-template<typename Tstrm_, typename Ttraits_, typename T_>
+template<typename Tstrm_, typename Ttraits_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
-        const Sphere<T_>& v)
+        const Sphere& v)
 {
     strm << "{" << v.position() <<  ", " << v.radius() << "}";
     return strm;
 }
 
-template<typename T_>
-inline std::pair<typename Sphere<T_>::position_type,
-                 typename Sphere<T_>::length_type>
-projected_point(Sphere<T_> const& obj,
-                typename Sphere<T_>::position_type const& pos)
+
+inline std::pair<Sphere::position_type,
+                 Sphere::length_type>
+projected_point(Sphere const& obj,
+                Sphere::position_type const& pos)
 {
     // Todo. If we ever need it.
     // The projection of a point on a sphere.
-    return std::make_pair(typename Sphere<T_>::position_type(),
-                          typename Sphere<T_>::length_type());
+    return std::make_pair(Sphere::position_type(),
+                          Sphere::length_type());
 }
 
-template<typename T_>
-inline typename Sphere<T_>::length_type
-distance(Sphere<T_> const& obj, typename Sphere<T_>::position_type const& pos)
+
+inline Sphere::length_type
+distance(Sphere const& obj, Sphere::position_type const& pos)
 {
     return distance(pos, obj.position()) - obj.radius();
 }
 
-template<typename T_>
-inline Sphere<T_> const& shape(Sphere<T_> const& shape)
+
+inline Sphere const& shape(Sphere const& shape)
 {
     return shape;
 }
 
-template<typename T_>
-inline Sphere<T_>& shape(Sphere<T_>& shape)
+
+inline Sphere& shape(Sphere& shape)
 {
     return shape;
 }
 
-template<typename T, typename Trng>
-inline typename Sphere<T>::position_type
-random_position(Sphere<T> const& shape, Trng& rng)
+template<typename Trng>
+inline Sphere::position_type
+random_position(Sphere const& shape, Trng& rng)
 {
     return add(shape.position(),
-                create_vector<typename Sphere<T>::position_type>(
+                create_vector<Sphere::position_type>(
                     shape.radius() * rng(),
                     shape.radius() * rng(),
                     shape.radius() * rng())); 
 }
 
-template<typename T_>
-struct is_shape<Sphere<T_> >: public boost::mpl::true_ {};
+template<>
+struct is_shape<Sphere>: public boost::mpl::true_ {};
 
-template<typename T_>
-struct shape_position_type<Sphere<T_> > {
-    typedef typename Sphere<T_>::position_type type;
+template<>
+struct shape_position_type<Sphere> {
+    typedef Sphere::position_type type;
 };
 
-template<typename T_>
-struct shape_length_type<Sphere<T_> > {
-    typedef typename Sphere<T_>::length_type type;
+template<>
+struct shape_length_type<Sphere> {
+    typedef Sphere::length_type type;
 };
 
-template<typename T>
-inline typename shape_length_type<Sphere<T> >::type const& shape_size(Sphere<T> const& shape)
+
+inline typename shape_length_type<Sphere>::type const& shape_size(Sphere const& shape)
 {
     return shape.radius();
 } 
 
-template<typename T>
-inline typename shape_length_type<Sphere<T> >::type& shape_size(Sphere<T>& shape)
+
+inline typename shape_length_type<Sphere>::type& shape_size(Sphere &shape)
 {
     return shape.radius();
 } 
@@ -152,10 +156,10 @@ namespace std {
 namespace boost {
 #endif
 
-template<typename T_>
-struct hash<Sphere<T_> >
+template<>
+struct hash<Sphere>
 {
-    typedef Sphere<T_> argument_type;
+    typedef Sphere argument_type;
 
     std::size_t operator()(argument_type const& val)
     {
