@@ -11,7 +11,11 @@
 #include "Shape.hpp"
 #include "linear_algebra.hpp"
 
-template<typename T_>
+class Plane;
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
+        const Plane& v);
+
 class Plane
 {
 public:
@@ -180,36 +184,36 @@ protected:
     boost::array<length_type, 2> half_extent_;
 };
 
-template<typename T_>
-inline boost::array<typename Plane<T_>::length_type, 3>
-to_internal(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
+
+inline boost::array<Plane::length_type, 3>
+to_internal(Plane const& obj, typename Plane::position_type const& pos)
 {
-    typedef typename Plane<T_>::position_type position_type;
+    typedef typename Plane::position_type position_type;
     position_type pos_vector(subtract(pos, obj.position()));
 
-    return array_gen<typename Plane<T_>::length_type>(
+    return array_gen<Plane::length_type>(
         dot_product(pos_vector, obj.unit_x()),
         dot_product(pos_vector, obj.unit_y()),
         dot_product(pos_vector, obj.unit_z()));
 }
 
-template<typename T_>
-inline std::pair<typename Plane<T_>::position_type,
-                 typename Plane<T_>::length_type>
-projected_point(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
+
+inline std::pair<Plane::position_type,
+                 Plane::length_type>
+projected_point(Plane const& obj, Plane::position_type const& pos)
 {
-    boost::array<typename Plane<T_>::length_type, 3> x_y_z(to_internal(obj, pos));
+    boost::array<Plane::length_type, 3> x_y_z(to_internal(obj, pos));
     return std::make_pair(
         add(add(obj.position(), multiply(obj.unit_x(), x_y_z[0])),
             multiply(obj.unit_y(), x_y_z[1])),
         x_y_z[2]);
 }
 
-template<typename T_>
-inline typename Plane<T_>::length_type
-distance(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
+
+inline Plane::length_type
+distance(Plane const& obj, Plane::position_type const& pos)
 {
-    typedef typename Plane<T_>::length_type length_type;
+    typedef Plane::length_type length_type;
     boost::array<length_type, 3> const x_y_z(to_internal(obj, pos));
 
     length_type const dx(subtract(abs(x_y_z[0]), obj.half_extent()[0]));
@@ -248,11 +252,11 @@ distance(Plane<T_> const& obj, typename Plane<T_>::position_type const& pos)
     }
 }
 
-template<typename T, typename Trng>
-inline typename Plane<T>::position_type
-random_position(Plane<T> const& shape, Trng& rng)
+template<typename Trng>
+inline Plane::position_type
+random_position(Plane const& shape, Trng& rng)
 {
-    typedef typename Plane<T>::length_type length_type;
+    typedef Plane::length_type length_type;
 
     // -1 < rng() < 1. See for example PlanarSurface.hpp.
     return add(
@@ -261,30 +265,30 @@ random_position(Plane<T> const& shape, Trng& rng)
             multiply(shape.units()[1], shape.half_extent()[1] * rng())));
 }
 
-template<typename T>
-inline Plane<T> const& shape(Plane<T> const& shape)
+
+inline Plane const& shape(Plane const& shape)
 {
     return shape;
 }
 
-template<typename T>
-inline Plane<T>& shape(Plane<T>& shape)
+
+inline Plane& shape(Plane& shape)
 {
     return shape;
 }
 
-template<typename T_>
-struct is_shape<Plane<T_> >: public boost::mpl::true_ {};
+template<>
+struct is_shape<Plane>: public boost::mpl::true_ {};
 
-template<typename T_>
-struct shape_position_type<Plane<T_> >
+template<>
+struct shape_position_type<Plane>
 {
-    typedef typename Plane<T_>::position_type type;
+    typedef Plane::position_type type;
 };
 
-template<typename Tstrm_, typename Ttraits_, typename T_>
+template<typename Tstrm_, typename Ttraits_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
-        const Plane<T_>& v)
+        const Plane& v)
 {
     strm << "{" << v.position() <<  ", " << v.unit_x() << ", " << v.unit_y() << "," << v.Lx() << ", " << v.Ly() << "}";
     return strm;
@@ -299,10 +303,10 @@ namespace std {
 namespace boost {
 #endif
 
-template<typename T_>
-struct hash<Plane<T_> >
+template<>
+struct hash<Plane>
 {
-    typedef Plane<T_> argument_type;
+    typedef Plane argument_type;
 
     std::size_t operator()(argument_type const& val)
     {

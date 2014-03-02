@@ -94,7 +94,7 @@ public:
     typedef Sphere sphere_type;
     typedef Cylinder cylinder_type;
     typedef Box box_type;
-    typedef Plane<typename world_type::length_type> plane_type;
+    typedef Plane plane_type;
     typedef ParticleSimulationStructure<traits_type> particle_simulation_structure_type;
     typedef Surface<traits_type> surface_type;
     typedef Region<traits_type> region_type;
