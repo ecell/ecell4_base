@@ -12,20 +12,23 @@ using namespace ecell4;
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_constructor)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_species)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
     BOOST_CHECK_EQUAL(lspace.num_species(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_has_species)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
     const Species &sp = Species("TEST");
     BOOST_CHECK(!lspace.has_species(sp));
 }
@@ -33,7 +36,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_has_species)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_particle)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
 
     SerialIDGenerator<ParticleID> sidgen;
     ParticleID id(sidgen());
@@ -51,7 +55,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_particle)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
     BOOST_CHECK_EQUAL(lspace.num_particles(), 0);
 
     SerialIDGenerator<ParticleID> sidgen;
@@ -78,7 +83,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
 
     SerialIDGenerator<ParticleID> sidgen;
     ParticleID id(sidgen());
@@ -109,7 +115,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_species)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
 
     Species sp(std::string("TEST"));
 
@@ -125,7 +132,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_species)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
     SerialIDGenerator<ParticleID> sidgen;
 
     Species sp(std::string("TEST"));
@@ -147,7 +155,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
     SerialIDGenerator<ParticleID> sidgen;
 
     Species sp(std::string("TEST"));
@@ -167,10 +176,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     BOOST_CHECK(!lspace.move(coord, to_coord).second);
 }
 
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_react)
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
     SerialIDGenerator<ParticleID> sidgen;
 
     Species reactant(std::string("Reactant")),
@@ -181,7 +191,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_react)
     ParticleID pid(sidgen());
     BOOST_CHECK(lspace.add_molecule(reactant, coord, pid));
 
-    BOOST_CHECK(lspace.react(coord, product));
+    BOOST_CHECK(lspace.update_molecule(coord, product));
 
     MolecularTypeBase* mt(lspace.get_molecular_type(coord));
     BOOST_ASSERT(mt->species() == product);
@@ -190,7 +200,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_react)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_save1)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
     SerialIDGenerator<ParticleID> sidgen;
 
     std::string D("1e-12"), radius("2.5e-9");
@@ -214,7 +225,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save1)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_save2)
 {
     Position3 edge_lengths(1e-6,1e-6,1e-6);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
     SerialIDGenerator<ParticleID> sidgen;
 
     std::string D("1e-12"), radius("2.5e-9");
@@ -235,7 +247,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save2)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
 {
     Position3 edge_lengths(2.5e-8,2.5e-8,2.5e-8);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
     SerialIDGenerator<ParticleID> sidgen;
 
     std::string D("1e-12"), radius("2.5e-9");
@@ -256,7 +269,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
 {
     Position3 edge_lengths(2.5e-8,2.5e-8,2.5e-8);
-    LatticeSpace lspace(edge_lengths);
+    const Real voxel_radius(2.5e-9);
+    LatticeSpace lspace(edge_lengths, voxel_radius);
     SerialIDGenerator<ParticleID> sidgen;
 
     std::string D("1e-12"), radius("2.5e-9");

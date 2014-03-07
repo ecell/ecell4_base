@@ -9,7 +9,8 @@ top = '.'
 out = 'build'
 
 subdirs = [
-    'tests'
+    'tests',
+    'samples'
     ]
 
 hppfiles = [
@@ -33,6 +34,8 @@ def configure(conf):
     conf.check_cxx(lib = 'm')
 
     conf.check_cxx(lib = 'ecell4-core')
+
+    conf.check_cxx(cxxflags = '-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG')
 
     conf.recurse(subdirs)
 
@@ -63,7 +66,8 @@ def build(bld):
         source = cppfiles,
         includes = ['.'],
         lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
-        target = 'ecell4-lattice')
+        target = 'ecell4-lattice',
+        cxxflags = ['-g', '-Wall', '-Werror', '-Wno-uninitialized', '-O0', '-DDEBUG'])
 
     bld.recurse(subdirs)
 

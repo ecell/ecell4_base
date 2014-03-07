@@ -3,9 +3,9 @@
 namespace ecell4
 {
 
-LatticeSpace::LatticeSpace(const Position3& edge_lengths) : t_(0)
+LatticeSpace::LatticeSpace(const Position3& edge_lengths, const Real& voxel_radius) :
+    theNormalizedVoxelRadius(voxel_radius), edge_lengths_(edge_lengths), t_(0)
 {
-    this->edge_lengths_ = edge_lengths;
     vacant_ = new VacantType();
     border_ = new MolecularType(Species("Border", "0"));
     periodic_ = new MolecularType(Species("Periodic", "0"));
@@ -24,8 +24,6 @@ LatticeSpace::~LatticeSpace()
  */
 void LatticeSpace::set_lattice_properties()
 {
-    theNormalizedVoxelRadius = 2.5e-9;
-
     HCP_L = theNormalizedVoxelRadius/sqrt(3);
     HCP_X = theNormalizedVoxelRadius*sqrt(8.0/3); //Lx
     HCP_Y = theNormalizedVoxelRadius*sqrt(3); //Ly
@@ -311,14 +309,14 @@ bool LatticeSpace::add_molecule(const Species& sp, Coord coord, const ParticleID
     MolecularTypeBase* mt(get_molecular_type(sp));
     if (mt->is_vacant())
     {
-        std::cerr << "[" << sp.name() << " is vacant]";
+        //std::cerr << "[" << sp.name() << " is vacant]";
         return false;
     }
 
     const MolecularTypeBase* mt_at(get_molecular_type(coord));
     if (!mt_at->is_vacant())
     {
-        std::cerr << "[" << mt_at->species().name()  << " at " << coord << " is not vacant]"; //DEBUG
+        //std::cerr << "[" << mt_at->species().name()  << " at " << coord << " is not vacant]"; //DEBUG
         return false;
     }
     const Coord general_coord(inner2general(coord));
@@ -339,6 +337,11 @@ bool LatticeSpace::remove_molecule(const Coord coord)
     const Coord general(inner2general(coord));
     voxel_container::iterator itr(voxels_.begin() + general);
     MolecularTypeBase* mt(*itr);
+    if (mt->is_vacant())
+    {
+        //std::cerr << "[" << "Voxel at " << coord << " is vacant]"; //DEBUG
+        return false;
+    }
     if (mt->removeVoxel(general))
     {
         (*itr) = vacant_;
@@ -365,7 +368,7 @@ std::pair<Coord, bool> LatticeSpace::move_(Coord general_from, Coord general_to)
 {
     if (general_from == general_to)
     {
-        return std::pair<Coord, bool>(general2inner(general_from), true);
+        return std::pair<Coord, bool>(general2inner(general_from), false);
     }
 
     MolecularTypeBase* from_mt(voxels_.at(general_from));
@@ -378,12 +381,11 @@ std::pair<Coord, bool> LatticeSpace::move_(Coord general_from, Coord general_to)
 
     if (to_mt == border_)
     {
-        return std::pair<Coord, bool>(general2inner(general_from), true);
+        return std::pair<Coord, bool>(general2inner(general_from), false);
     }
     else if (to_mt == periodic_)
     {
-        // TODO
-        // updating general_to and to_mt
+        general_to = apply_boundary(general_to);
     }
 
     if (!to_mt->is_vacant())
@@ -397,12 +399,11 @@ std::pair<Coord, bool> LatticeSpace::move_(Coord general_from, Coord general_to)
     (*from_itr) = vacant_;
     voxel_container::iterator to_itr(voxels_.begin() + general_to);
     (*to_itr) = from_mt;
-    std::cout << "[from: " << general_from << ", to: " << general_to << "] "; // DEBUG
 
     return std::pair<Coord, bool>(general2inner(general_to), true);
 }
 
-bool LatticeSpace::react(Coord coord, const Species& species)
+bool LatticeSpace::update_molecule(Coord coord, const Species& species)
 {
     if (!is_in_range(coord))
     {
@@ -562,6 +563,15 @@ Coord LatticeSpace::general2inner(Coord general_coord) const
     global.row -= 1;
     global.layer -= 1;
     return global2coord(global);
+}
+
+Coord LatticeSpace::apply_boundary(const Coord& general_coord) const
+{
+    Global global(coord2global(general_coord, col_size_, row_size_, layer_size_));
+    global.col = (global.col - 1) % col_size() + 1;
+    global.row = (global.row - 1) % row_size() + 1;
+    global.layer = (global.layer - 1) % layer_size() + 1;
+    return global2coord(global, col_size_, row_size_, layer_size_);
 }
 
 } // ecell4

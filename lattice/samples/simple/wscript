@@ -1,0 +1,57 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+
+def configure(conf):
+    conf.load('boost')
+
+    conf.check(
+        header_name = 'unordered_map.hpp',
+        define_name = "HAVE_UNORDERED_MAP_HPP", mandatory = False)
+    conf.check(
+        header_name = 'boost/unordered_map.hpp',
+        define_name = "HAVE_BOOST_UNORDERED_MAP_HPP", mandatory = False)
+    conf.check(
+        header_name = 'boost/functional/hash.hpp',
+        define_name = "HAVE_BOOST_FUNCTIONAL_HASH_HPP", mandatory = False)
+
+    conf.check_cc(fragment = '''
+#include <tr1/unordered_map>
+std::tr1::unordered_map<int, int> a, b( a); ''',
+               define_name = "HAVE_TR1_UNORDERED_MAP",
+               mandatory = False)
+
+    conf.check_cc(fragment = '''
+#include <tr1/functional>
+int main() {std::tr1::hash<int>(); return 0; }''',
+               define_name = "HAVE_TR1_FUNCTIONAL",
+               mandatory = False)
+
+    conf.check_cxx(fragment='''
+#include <math.h>
+int main() { double a = INFINITY; return (int)a * 0; }
+''',
+        define_name='HAVE_DECL_INFINITY',
+        mandatory=False)
+    conf.check_cxx(fragment='''
+#include <math.h>
+int main() { isfinite(0.); return 0; }
+''',
+        define_name='HAVE_ISFINITE',
+        mandatory=False)
+    conf.check_cxx(fragment='''
+#include <math.h>
+int main() { double a, b; sincos(0., &a, &b); return 0; }
+''',
+        define_name='HAVE_SINCOS',
+        mandatory=False)
+
+def build(bld):
+    bld.program(
+        source = 'main.cpp',
+        target = 'simple',
+        includes = ['../..', '../../lattice'],
+        defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core', 'boost_regex',
+        'hdf5', 'hdf5_cpp'],
+        use = 'ecell4-lattice')

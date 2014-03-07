@@ -134,9 +134,9 @@ std::pair<Coord, bool> LatticeWorld::move_to_neighbor(Coord coord, Integer nrand
     return space_.move_to_neighbor(coord, nrand);
 }
 
-bool LatticeWorld::react(Coord at, Species species)
+bool LatticeWorld::update_molecule(Coord at, Species species)
 {
-    space_.react(at, species);
+    return space_.update_molecule(at, species);
 }
 
 Coord LatticeWorld::global2coord(const Global& global) const

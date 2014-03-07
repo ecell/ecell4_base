@@ -33,6 +33,8 @@ public:
             return time_;
         }
 
+        virtual void interrupt(Real const& t) {}
+
         protected:
             Real time_;
     };

@@ -94,7 +94,7 @@ public:
             {
                 if (p.species() == species.at(j))
                 {
-                    spid = j;
+                    spid = j + 1;
                     break;
                 }
             }

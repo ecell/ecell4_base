@@ -8,7 +8,6 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 
-
 namespace ecell4
 {
 
@@ -19,9 +18,9 @@ class LatticeWorld
 {
 public:
 
-    LatticeWorld(const Position3& edge_lengths,
+    LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius,
             boost::shared_ptr<GSLRandomNumberGenerator> rng)
-        : t_(0), rng_(rng), space_(edge_lengths)
+        : space_(edge_lengths, voxel_radius), t_(0), rng_(rng)
     {
     }
 
@@ -53,11 +52,11 @@ public:
     bool remove_molecule(const Coord coord);
     std::pair<Coord, bool> move(Coord from, Coord to);
     std::pair<Coord, bool> move_to_neighbor(Coord coord, Integer nrand);
-    bool react(Coord at, Species species);
+    bool update_molecule(Coord at, Species species);
 
     Real normalized_voxel_radius() const
     {
-        space_.normalized_voxel_radius();
+        return space_.normalized_voxel_radius();
     }
 
     boost::shared_ptr<GSLRandomNumberGenerator> rng()

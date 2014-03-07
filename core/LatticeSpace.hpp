@@ -25,7 +25,7 @@ protected:
 
 public:
 
-    LatticeSpace(const Position3& edge_lengths);
+    LatticeSpace(const Position3& edge_lengths, const Real& voxel_radius);
     ~LatticeSpace();
 
     /*
@@ -69,7 +69,7 @@ public:
     bool remove_molecule(const Coord coord);
     std::pair<Coord, bool> move(Coord from, Coord to);
     std::pair<Coord, bool> move_to_neighbor(Coord coord, Integer nrand);
-    bool react(Coord coord, const Species& species);
+    bool update_molecule(Coord coord, const Species& species);
 
     Real normalized_voxel_radius() const
     {
@@ -134,14 +134,18 @@ protected:
     Coord position2coord(const Position3& pos) const;
 
     Coord inner2general(Coord inner_cood) const;
-    Coord general2inner(Coord genetal_coord) const;
+    Coord general2inner(Coord general_coord) const;
+
+    Coord apply_boundary(const Coord& general_coord) const;
 
 protected:
 
-    Real theNormalizedVoxelRadius;
+    const Real theNormalizedVoxelRadius;
+    const Position3 edge_lengths_;
+    Real t_;
+
     Real HCP_L, HCP_X, HCP_Y;
 
-    Real t_;
     spmap spmap_;
     voxel_container voxels_;
 
@@ -149,7 +153,6 @@ protected:
     MolecularTypeBase* border_;
     MolecularTypeBase* periodic_;
 
-    Position3 edge_lengths_;
     Integer row_size_, layer_size_, col_size_;
 
 };

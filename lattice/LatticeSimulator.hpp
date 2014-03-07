@@ -1,6 +1,7 @@
 #ifndef __ECELL4_LATTICE_LATTICE_SIMULATOR_HPP
 #define __ECELL4_LATTICE_LATTICE_SIMULATOR_HPP
 
+#include <numeric>
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -22,24 +23,24 @@ class LatticeSimulator
     : public Simulator
 {
 protected:
-    struct Event : EventScheduler::Event
+    struct StepEvent : EventScheduler::Event
     {
-        Event(LatticeSimulator* sim, const Species& species)
-            : EventScheduler::Event(0.0), species_(species), sim_(sim)
+        StepEvent(LatticeSimulator* sim, const Species& species)
+            : EventScheduler::Event(0.0), sim_(sim), species_(species)
         {
             const Real R(sim_->world_->normalized_voxel_radius());
             Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
             if (D <= 0)
             {
-                dt_ = 0;
+                dt_ = inf;
             } else {
-                dt_ = 4 * R / 6 / D;
+                dt_ = 2 * R * R / 3 / D;
             }
 
             time_ = dt_;
         }
 
-        virtual ~Event()
+        virtual ~StepEvent()
         {
         }
 
@@ -65,12 +66,58 @@ protected:
         }
 
     protected:
-        Species species_;
         LatticeSimulator* sim_;
+        Species species_;
         MolecularTypeBase* mt_;
         Real dt_;
     };
 
+    struct FirstOrderReactionEvent : EventScheduler::Event
+    {
+        FirstOrderReactionEvent(LatticeSimulator* sim, const ReactionRule& rule)
+            : EventScheduler::Event(0.0), sim_(sim), rule_(rule)
+        {
+            time_ = sim_->t() + draw_dt();
+        }
+
+        virtual ~FirstOrderReactionEvent()
+        {
+        }
+
+        virtual void fire()
+        {
+            const Species reactant(*(rule_.reactants().begin()));
+            const std::vector<Coord> coords(sim_->world_->list_coords(reactant));
+            const Integer index(sim_->world_->rng()->uniform_int(0,coords.size() - 1));
+            const Coord coord(coords.at(index));
+            sim_->apply_reaction_(rule_, coord);
+            time_ += draw_dt();
+        }
+
+        virtual void interrupt(Real const& t)
+        {
+            time_ = t + draw_dt();
+        }
+
+        Real draw_dt()
+        {
+            const Species reactant(*(rule_.reactants().begin()));
+            const Integer num_r(sim_->world_->num_molecules(reactant));
+            const Real k(rule_.k());
+            const Real p = k * num_r;
+            Real dt(inf);
+            if (p != 0.)
+            {
+                const Real rnd(sim_->world_->rng()->uniform(0.,1.));
+                dt = - log(1 - rnd) / p;
+            }
+            return dt;
+        }
+
+    protected:
+        LatticeSimulator* sim_;
+        ReactionRule rule_;
+    };
 
 public:
 
@@ -88,12 +135,14 @@ public:
 
     virtual Real dt() const
     {
-        return dt_;
+        // TODO
+        return 0.;
     }
 
     Integer num_steps() const
     {
-        return (Integer)(t() / dt());
+        // TODO
+        return 0;
     }
 
     void initialize();
@@ -101,17 +150,25 @@ public:
     bool step(const Real& upto);
 
 protected:
-    boost::shared_ptr<EventScheduler::Event> create_event(const Species& species);
+    boost::shared_ptr<EventScheduler::Event> create_step_event(
+            const Species& species);
+    boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
+            const ReactionRule& reaction_rule);
     void attempt_reaction_(Coord from_coord, Coord to_coord);
+    void apply_reaction_(const ReactionRule& reaction_rule,
+            const Coord& from_coord, const Coord& to_coord);
+    void apply_reaction_(const ReactionRule& reaction_rule, const Coord& cood);
+    void step_();
 
 protected:
 
     boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<LatticeWorld> world_;
+    bool is_initialized_;
+
     EventScheduler scheduler_;
 
     Real dt_;
-    bool is_initialized_;
 
 };
 

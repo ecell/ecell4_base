@@ -15,7 +15,8 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_constructor)
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     const Position3 edge_lengths(1e-6, 1e-6, 1e-6);
-    LatticeWorld world(edge_lengths, rng);
+    const Real voxel_radius(2.5e-9);
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_t)
@@ -23,7 +24,8 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_t)
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     const Position3 edge_lengths(1e-6, 1e-6, 1e-6);
-    LatticeWorld world(edge_lengths, rng);
+    const Real voxel_radius(2.5e-9);
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
     BOOST_CHECK_EQUAL(world.t(), 0);
     world.set_t(23.4);
     BOOST_CHECK_EQUAL(world.t(), 23.4);
@@ -34,7 +36,8 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_num_species)
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     const Position3 edge_lengths(1e-6, 1e-6, 1e-6);
-    LatticeWorld world(edge_lengths, rng);
+    const Real voxel_radius(2.5e-9);
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
     BOOST_CHECK_EQUAL(world.num_species(), 0);
 }
 
@@ -43,7 +46,8 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_has_species)
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     const Position3 edge_lengths(1e-6, 1e-6, 1e-6);
-    LatticeWorld world(edge_lengths, rng);
+    const Real voxel_radius(2.5e-9);
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
     Species sp(std::string("Species"));
     BOOST_CHECK(!world.has_species(sp));
 }
@@ -53,7 +57,8 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_list_particles)
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     const Position3 edge_lengths(1e-6, 1e-6, 1e-6);
-    LatticeWorld world(edge_lengths, rng);
+    const Real voxel_radius(2.5e-9);
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
     std::vector<std::pair<ParticleID, Particle> > particles(world.list_particles());
     BOOST_CHECK_EQUAL(particles.size(), 0);
 }
@@ -64,7 +69,8 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_update_particles)
         rng(new GSLRandomNumberGenerator());
     SerialIDGenerator<ParticleID> sidgen;
     const Position3 edge_lengths(1e-6, 1e-6, 1e-6);
-    LatticeWorld world(edge_lengths, rng);
+    const Real voxel_radius(2.5e-9);
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
 
     ParticleID pid(sidgen());
     Species sp(std::string("Species A"));
@@ -84,9 +90,10 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_update_particles)
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_species)
 {
     const Position3 edge_lengths(1e-6,1e-6,1e-6);
+    const Real voxel_radius(2.5e-9);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, rng);
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
 
@@ -102,9 +109,10 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_species)
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
 {
     const Position3 edge_lengths(1e-6,1e-6,1e-6);
+    const Real voxel_radius(2.5e-9);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, rng);
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
     BOOST_CHECK(world.add_species(sp));
@@ -120,9 +128,10 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecules)
 {
     const Position3 edge_lengths(1e-6,1e-6,1e-6);
+    const Real voxel_radius(2.5e-9);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, rng);
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
     BOOST_CHECK(world.add_species(sp));
@@ -135,9 +144,10 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecules)
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
 {
     const Position3 edge_lengths(1e-6,1e-6,1e-6);
+    const Real voxel_radius(2.5e-9);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, rng);
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
     BOOST_CHECK(world.add_species(sp));
