@@ -28,6 +28,7 @@
 #include "ecell4/core/RandomNumberGenerator.hpp"
 #include "ecell4/core/Species.hpp"
 
+#include <ecell4/core/types.hpp>
 #include <ecell4/core/Position3.hpp>
 
 // For twofold_container
@@ -41,21 +42,17 @@ template<typename Tderived_, typename TD_>
 struct WorldTraitsBase
 {
     typedef std::size_t size_type;
-    //typedef Tlen_ length_type;
-    typedef Real length_type;
-    typedef TD_ D_type;
+    typedef ecell4::Real length_type;
+    typedef ecell4::Real D_type;
     typedef TD_ v_type;
     typedef ParticleID particle_id_type;
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
-    //typedef SpeciesTypeID species_id_type;
     typedef ecell4::Species::serial_type species_id_type; // std::string
-    typedef Particle<D_type, species_id_type> particle_type;
+    typedef Particle<species_id_type> particle_type;
     typedef std::string structure_id_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;
-    //typedef Vector3<length_type> point_type;
     typedef ecell4::Position3 point_type;
     typedef typename particle_type::shape_type::position_type position_type;
-    //typedef GSLRandomNumberGenerator rng_type;
     typedef ecell4::GSLRandomNumberGenerator rng_type;
     typedef Structure<Tderived_> structure_type;
 

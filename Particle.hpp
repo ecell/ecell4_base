@@ -10,15 +10,16 @@
 #include <boost/functional/hash.hpp>
 #endif
 
+#include <ecell4/core/types.hpp>
 #include "Sphere.hpp"
 #include "Shape.hpp"
 
-template<typename Td_, typename Tsid_>
+template<typename Tsid_>
 struct Particle
 {
     typedef Sphere shape_type;
-    typedef Td_ D_type;
-    typedef Td_ v_type;	// the drift v has the same type as diffusion constant D for now, may be generalized at a later stage
+    typedef ecell4::Real D_type;
+    typedef ecell4::Real v_type;	// the drift v has the same type as diffusion constant D for now, may be generalized at a later stage
     typedef Tsid_ species_id_type;
     typedef typename shape_type::position_type position_type;
     typedef typename shape_type::length_type length_type;
@@ -118,8 +119,8 @@ private:
     v_type v_;
 };
 
-template<typename Tstrm_, typename Ttraits_, typename Td_, typename Tsid_>
-inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle<Td_, Tsid_>& p)
+template<typename Tstrm_, typename Ttraits_, typename Tsid_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle<Tsid_>& p)
 {
     strm << "Particle(" << p.shape() << ", D=" << p.D() << ", v=" << p.v() << ", " << p.sid() << ")";
     return strm;
@@ -133,10 +134,10 @@ namespace std {
 namespace boost {
 #endif
 
-template<typename Td_, typename Tsid_>
-struct hash<Particle<Td_, Tsid_> >
+template<typename Tsid_>
+struct hash<Particle<Tsid_> >
 {
-    typedef Particle<Td_, Tsid_> argument_type;
+    typedef Particle<Tsid_> argument_type;
 
     std::size_t operator()(argument_type const& val)
     {
