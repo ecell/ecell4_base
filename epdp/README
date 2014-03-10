@@ -1,0 +1,95 @@
+
+:author: Koichi Takahashi
+
+
+E-Cell Particle Dynamics Prototype
+
+Copyright (C) 2008-2010 RIKEN
+Copyright (C) 2009-2010 AMOLF
+Copyright (C) 2005-2008 The Molecular Sciences Institute
+
+
+About this package
+========================
+
+This package is tentatively named E-Cell Particle Dynamics Prototype
+(EPDP).  It currently implements the enhanced Greens Function Reaction
+Dynamics (eGFRD) algorithm and the reaction Brownian Dynamics (BD) simulation
+algorithm.  Implementation of the original version of GFRD will
+possibly be added in future.  The code is implemented with the hope
+that it will eventually be part of the E-Cell System Version 4
+multi-algorithm, multi-space simulation platform.
+
+The purpose of this prototype code written in mixed Python and C++ is
+to establish a solid and practical implementation of the algorithms,
+and to extend it into a form that is suitable for large-scale
+biochemical and cell simulations.
+
+The eGFRD algorithm first appeared and be used in a paper by
+Takahashi, Tanase-Nicola and ten Wolde [1], and will be described more
+in detail in a forthcoming paper[2].
+
+The reaction Brownian Dynamics algorithm is described in a paper by
+Morrelli and ten Wolde[3].
+
+
+Authors
+========================
+
+(alphabetical order)
+Kazunari Kaizu
+Moriyoshi Koizumi
+Thomase Miedema
+Koichi Takahashi
+
+
+License
+========================
+
+This package is distributed under the terms of GNU General Public License
+version 2.  See COPYING.
+
+
+Building this package
+========================
+
+See INSTALL.
+
+
+History of the Code
+========================
+
+Koichi Takahashi initially stated development of the code in 2005 to
+implement his prototype of Greens Function Reaction Dynamics
+simulation method invented by Jeroen van Zon and Pieter Rein ten Wolde
+in AMOLF, Amsterdam[4].  He gave a brief invited talk about
+performance evaluation and applicability of the method to yeast
+pheromon response pathway (the Alpha pathway) using the prototype in
+the Third Annual Alpha Project Research Symposium (June 16-27, 2005, at UC
+Berkeley Art Museum).
+
+Later, in December 2006, ten Wolde, Sorin Tanase-Nicola, and Takahashi
+introduced the concept called first-passage processes[5][6] to Greens
+Function Reaction Dynamics by putting protective domains around
+particles to further boost the performance and accuracy of the method.
+The new method was named eGFRD (enhanced Greens Function Reaction
+Dynamics).
+
+
+Plans
+=========================
+
+Some features planned to be added are; surfaces, interactions between
+membrane proteins and proteins in solution, optimistic discrete-event
+scheduling for massive parallelization, connections to non-spatial 
+simulation methods such as ODE and Gillespie methods.
+
+
+[1] K. Takahashi, S. Tanase-Nicola and P.R. ten Wolde, PNAS doi:10.1073/pnas.0906885107 (2010).
+[2] K. Takahashi, S. Tanase-Nicola and P.R. ten Wolde, in preparation. 
+[3] M.J. Morelli and P.R. ten Wolde, J. Chem. Phys. 7;129(5):054112 (2008).
+[4] van Zon and ten Wolde, Phys. Rev. Lett. 94 (2005).
+[5] T. Opplestrup, V.V. Bulatov, G.H. Gilmer, M.H. Kalos, and B. Sadigh, Phys. Rev. Lett. 97 (2006).
+[6] M.H. Kalos, D. Levesque and L. Verlet, Phys. Rev. A 9 (1974).
+
+
