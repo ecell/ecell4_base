@@ -9,8 +9,6 @@ namespace lattice
 
 void LatticeSimulator::initialize()
 {
-    //(*world_).initialize();
-
     scheduler_.clear();
     std::vector<Species> species(world_->list_species());
     for (std::vector<Species>::const_iterator itr(species.begin());

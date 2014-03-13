@@ -38,7 +38,8 @@ public:
 
     bool has_particle(const ParticleID& pid) const;
     std::vector<std::pair<ParticleID, Particle> > list_particles() const;
-    std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> >
+        list_particles(const Species& sp) const;
 
     bool update_particle(const ParticleID& pid, const Particle& p);
 

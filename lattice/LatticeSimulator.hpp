@@ -55,7 +55,8 @@ protected:
             {
                 const Coord coord(*itr);
                 const Integer nrnd(rng->uniform_int(0,11));
-                std::pair<Coord, bool> retval(sim_->world_->move_to_neighbor(coord, nrnd));
+                std::pair<Coord, bool> retval(
+                        sim_->world_->move_to_neighbor(coord, nrnd));
                 if (!retval.second)
                 {
                     sim_->attempt_reaction_(coord, retval.first);
