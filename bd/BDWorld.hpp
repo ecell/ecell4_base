@@ -194,6 +194,12 @@ public:
         extras::throw_in_particles(*this, sp, num, *rng());
     }
 
+    const Real volume() const
+    {
+        const Position3& lengths(edge_lengths());
+        return lengths[0] * lengths[1] * lengths[2];
+    }
+
     // Optional members
 
     inline boost::shared_ptr<RandomNumberGenerator> rng()
