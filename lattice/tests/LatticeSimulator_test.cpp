@@ -21,9 +21,9 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_constructor)
         sp2("B", radius, D),
         sp3("C", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species(sp1);
-    (*model).add_species(sp2);
-    (*model).add_species(sp3);
+    (*model).add_species_attribute(sp1);
+    (*model).add_species_attribute(sp2);
+    (*model).add_species_attribute(sp3);
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_hdf5_save)
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species(sp);
+    (*model).add_species_attribute(sp);
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_particle)
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species(sp);
+    (*model).add_species_attribute(sp);
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_species)
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species(sp);
+    (*model).add_species_attribute(sp);
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_save_step_with_single_species)
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species(sp);
+    (*model).add_species_attribute(sp);
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_save_step_with_periodic)
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species(sp);
+    (*model).add_species_attribute(sp);
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
@@ -230,9 +230,9 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unimolecular_reaction)
           sp3("C", "2.5e-9", "1.2e-12");
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    model->add_species(sp1);
-    model->add_species(sp2);
-    model->add_species(sp3);
+    model->add_species_attribute(sp1);
+    model->add_species_attribute(sp2);
+    model->add_species_attribute(sp3);
 
     model->add_reaction_rule(create_unimolecular_reaction_rule(sp1,sp3,1e6));
 
@@ -269,9 +269,9 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_binding_reaction)
           sp3("C", "2.5e-9", "1.2e-12");
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    model->add_species(sp1);
-    model->add_species(sp2);
-    model->add_species(sp3);
+    model->add_species_attribute(sp1);
+    model->add_species_attribute(sp2);
+    model->add_species_attribute(sp3);
 
     model->add_reaction_rule(create_binding_reaction_rule(sp1,sp2,sp3,5.));
 
@@ -307,9 +307,9 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unbinding_reaction)
           sp3("C", "2.5e-9", "1.2e-12");
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    model->add_species(sp1);
-    model->add_species(sp2);
-    model->add_species(sp3);
+    model->add_species_attribute(sp1);
+    model->add_species_attribute(sp2);
+    model->add_species_attribute(sp3);
 
     model->add_reaction_rule(create_unbinding_reaction_rule(sp1,sp2,sp3,1e5));
 
@@ -344,7 +344,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_degradation_reaction)
     const ecell4::Species sp1("A", radius, "1.0e-12");
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    model->add_species(sp1);
+    model->add_species_attribute(sp1);
 
     model->add_reaction_rule(create_degradation_reaction_rule(sp1,1e5));
 
@@ -384,9 +384,9 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
         sp2("B", radius, D2),
         sp3("C", radius, D3);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species(sp1);
-    (*model).add_species(sp2);
-    (*model).add_species(sp3);
+    (*model).add_species_attribute(sp1);
+    (*model).add_species_attribute(sp2);
+    (*model).add_species_attribute(sp3);
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());

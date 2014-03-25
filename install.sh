@@ -3,12 +3,20 @@
 # PREFIX=/usr/local
 # PREFIX=${HOME}/local
 # PREFIX=
-# SUBMODS=("bd" "gillespie")
-SUBMODS=("bd" "gillespie" "ode" "egfrd" "spatiocyte")
-PYTHONMODS=("core_python" "gillespie_python" "ode_python" "spatiocyte_python" "egfrd_python" "reaction_reader" "util_python")
+# SUBMODS=("bd" "gillespie" "ode" "egfrd" "spatiocyte")
+# PYTHONMODS=("core_python" "bd_python" "gillespie_python" "ode_python" "spatiocyte_python" "egfrd_python" "reaction_reader" "util_python")
+SUBMODS=("bd" "gillespie" "ode" "lattice")
+PYTHONMODS=("core_python" "bd_python" "gillespie_python" "ode_python")
 
 CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
 # WAFFLAGS="-v"
+
+uninstall_all()
+{
+    rm -rf ${PREFIX}/include/ecell4
+    rm -rf ${PREFIX}/lib/libecell4-*.so
+    rm -rf ${PREFIX}/python2.7/site-packages/ecell4
+}
 
 install_core()
 {
@@ -43,14 +51,16 @@ if [ "$PREFIX" == "" ]; then
 fi
 
 if [ $# == 0 ]; then
-    TMP=("core" ${SUBMODS[@]} ${PYTHONMODS[@]})
+    TMP=("uninstall" "core" ${SUBMODS[@]} ${PYTHONMODS[@]})
 else
     TMP=$@
 fi
 
 for SUBMOD in ${TMP[@]}
 do
-    if [ $SUBMOD == "core" ]; then
+    if [ $SUBMOD == "uninstall" ]; then
+        uninstall_all
+    elif [ $SUBMOD == "core" ]; then
         install_core
     else
         install_submodule $SUBMOD

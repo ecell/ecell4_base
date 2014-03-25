@@ -226,17 +226,3 @@ cdef class Particle:
     cdef Cpp_Particle* thisptr
 
 cdef Particle Particle_from_Cpp_Particle(Cpp_Particle* p)
-
-## Cpp_Voxel
-#  ecell4::Voxel
-cdef extern from "ecell4/core/Voxel.hpp" namespace "ecell4":
-    cdef cppclass Cpp_Voxel "ecell4::Voxel":
-        Cpp_Voxel() except +
-        Cpp_Voxel(Cpp_Voxel&) except +
-        Cpp_ParticleID id
-        Cpp_Species species
-
-cdef class Voxel:
-    cdef Cpp_Voxel* thisptr
-
-cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* v)
