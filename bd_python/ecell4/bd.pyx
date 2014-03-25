@@ -12,8 +12,7 @@ from ecell4.core cimport *
 #  a python wrapper for Cpp_BDWorld
 cdef class BDWorld:
 
-    def __cinit__(
-	self, Position3 edge_lengths,
+    def __cinit__(self, Position3 edge_lengths,
         GSLRandomNumberGenerator rng = None):
         if rng is None:
             self.thisptr = new shared_ptr[Cpp_BDWorld](

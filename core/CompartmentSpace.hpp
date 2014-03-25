@@ -92,9 +92,10 @@ protected:
 
 public:
 
-    CompartmentSpaceVectorImpl(const Real& volume)
+    CompartmentSpaceVectorImpl(const Position3& edge_lengths)
         : volume_(1.0)
     {
+        const Real volume(edge_lengths[0] * edge_lengths[1] * edge_lengths[2]);
         set_volume(volume);
     }
 

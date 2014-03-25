@@ -84,7 +84,7 @@ cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr)
 #  ecell4::CompartmentSpaceVectorImpl
 cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
     cdef cppclass Cpp_CompartmentSpaceVectorImpl "ecell4::CompartmentSpaceVectorImpl":
-        Cpp_CompartmentSpaceVectorImpl(Real) except+
+        Cpp_CompartmentSpaceVectorImpl(Cpp_Position3&) except+
         Real volume()
         Integer num_molecules(Cpp_Species &sp)
         vector[Cpp_Species] list_species()

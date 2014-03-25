@@ -14,7 +14,9 @@ using namespace ecell4::ode;
  */
 int main(int argc, char** argv)
 {
-    const Real volume(1e-18);
+    const Real L(1e-6);
+    const Position3 edge_lengths(L, L, L);
+    const Real volume(L * L * L);
     const Real N(60);
     const Real ka(0.1), U(0.5);
 
@@ -37,7 +39,7 @@ int main(int argc, char** argv)
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
+    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, N);
 
     ODESimulator target(model, world);

@@ -26,10 +26,10 @@ BOOST_AUTO_TEST_CASE(GillespieSimulator_test_step)
     model->add_species_attribute(sp2);
     model->add_reaction_rule(rr1);
 
-    Real vol(1.0);
+    const Real L(1.0);
+    const Position3 edge_lengths(L, L, L);
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
-    rng->seed(time(NULL));
-    boost::shared_ptr<GillespieWorld> world(new GillespieWorld(vol, rng));
+    boost::shared_ptr<GillespieWorld> world(new GillespieWorld(edge_lengths, rng));
 
     world->add_molecules(sp1, 10);
     world->add_molecules(sp2, 10);

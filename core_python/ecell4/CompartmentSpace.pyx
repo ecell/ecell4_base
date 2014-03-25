@@ -3,8 +3,8 @@ from cython.operator cimport dereference as deref
 
 cdef class CompartmentSpaceVectorImpl:
 
-    def __cinit__(self, Real volume):
-        self.thisptr = new Cpp_CompartmentSpaceVectorImpl(volume)
+    def __cinit__(self, Position3 edge_lengths):
+        self.thisptr = new Cpp_CompartmentSpaceVectorImpl(deref(edge_lengths.thisptr))
 
     def __dealloc__(self):
         del self.thisptr

@@ -2,6 +2,7 @@
 #define __ECELL4_ODE_ODE_WORLD_HPP
 
 #include <ecell4/core/Species.hpp>
+#include <ecell4/core/Position3.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 
 namespace ecell4
@@ -21,10 +22,11 @@ protected:
 
 public:
 
-    ODEWorld(const Real& volume)
-        : volume_(volume), t_(0.0)
+    ODEWorld(const Position3& edge_lengths)
+        : volume_(1.0), t_(0.0)
     {
-        ;
+        const Real volume(edge_lengths[0] * edge_lengths[1] * edge_lengths[2]);
+        set_volume(volume);
     }
 
     // SpaceTraits

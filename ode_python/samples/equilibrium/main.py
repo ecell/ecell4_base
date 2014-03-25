@@ -2,7 +2,8 @@ from ecell4.core import *
 from ecell4.ode import *
 
 def run():
-    volume = float(1e-18)
+    L = float(1e-6)
+    volume = L * L * L
     N = float(60)
     ka, U = float(0.1), float(0.5)
 
@@ -27,7 +28,7 @@ def run():
     model.add_reaction_rule(rr1)
     model.add_reaction_rule(rr2)
 
-    world = ODEWorld(volume)
+    world = ODEWorld(Position3(L, L, L))
     world.add_molecules(sp1, N)
 
     next_time = float(0.0)

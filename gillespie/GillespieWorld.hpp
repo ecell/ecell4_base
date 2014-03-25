@@ -22,15 +22,15 @@ class GillespieWorld
 {
 public:
 
-    GillespieWorld(const Real& volume,
+    GillespieWorld(const Position3& edge_lengths,
                    boost::shared_ptr<RandomNumberGenerator> rng)
-        : cs_(new CompartmentSpaceVectorImpl(volume)), rng_(rng)
+        : cs_(new CompartmentSpaceVectorImpl(edge_lengths)), rng_(rng)
     {
         ;
     }
 
-    GillespieWorld(const Real& volume)
-        : cs_(new CompartmentSpaceVectorImpl(volume))
+    GillespieWorld(const Position3& edge_lengths)
+        : cs_(new CompartmentSpaceVectorImpl(edge_lengths))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());

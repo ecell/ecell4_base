@@ -10,8 +10,8 @@ from ecell4.core cimport *
 #  ecell4::gillespie::GillespieWorld
 cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gillespie":
     cdef cppclass Cpp_GillespieWorld "ecell4::gillespie::GillespieWorld":
-        Cpp_GillespieWorld(Real) except +
-        Cpp_GillespieWorld(Real, shared_ptr[Cpp_GSLRandomNumberGenerator]) except +
+        Cpp_GillespieWorld(Cpp_Position3&) except +
+        Cpp_GillespieWorld(Cpp_Position3&, shared_ptr[Cpp_GSLRandomNumberGenerator]) except +
         void set_t(Real)
         Real t()
         Real volume()

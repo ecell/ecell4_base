@@ -14,7 +14,8 @@ using namespace ecell4::ode;
  */
 int main(int argc, char** argv)
 {
-    const Real volume(1e-18);
+    const Real L(1e-6);
+    const Position3 edge_lengths(L, L, L);
 
     Species sp1("A"), sp2("B"), sp3("C");
     ReactionRule rr1;
@@ -29,7 +30,7 @@ int main(int argc, char** argv)
     model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
 
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
+    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, 60);
     world->save("test_ode.h5");
 
