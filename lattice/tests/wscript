@@ -1,0 +1,34 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+def configure(conf):
+    pass
+
+def build(bld):
+    bld.program(
+        features = 'cxx cxxprogram test',
+        source = 'LatticeWorld_test.cpp',
+        includes = '..',
+        target = 'LatticeWorld_test',
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        use = 'ecell4-lattice'
+    )
+
+    bld.program(
+        features = 'cxx cxxprogram test',
+        source = 'LatticeSimulator_test.cpp',
+        includes = '..',
+        target = 'LatticeSimulator_test',
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm',
+               'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
+        use = 'ecell4-lattice'
+    )
+
+    bld.program(
+        features = 'cxx cxxprogram test',
+        source = 'EventScheduler_test.cpp',
+        includes = '..',
+        target = 'EventScheduler_test',
+        lib = ['ecell4-core', 'gsl', 'gslcblas', 'm'],
+        use = 'ecell4-lattice'
+    )
