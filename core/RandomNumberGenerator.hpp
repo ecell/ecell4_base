@@ -27,8 +27,8 @@ public:
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
 
-    virtual void save(H5::H5File* fout, const std::string& hdf5path) const = 0;
-    virtual void load(H5::H5File* fout, const std::string& hdf5path) = 0;
+    virtual void save(H5::Group* root) const = 0;
+    virtual void load(H5::Group* root) = 0;
 };
 
 template<typename Telem_>
@@ -77,8 +77,8 @@ public:
         gsl_rng_set(rng_.get(), unsigned(std::time(0)));
     }
 
-    void save(H5::H5File* fout, const std::string& hdf5path) const;
-    void load(H5::H5File* fout, const std::string& hdf5path);
+    void save(H5::Group* root) const;
+    void load(H5::Group* root);
 
     GSLRandomNumberGenerator(rng_handle hdl)
         : rng_(hdl)

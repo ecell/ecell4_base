@@ -74,7 +74,7 @@ public:
         ;
     }
 
-    void save(H5::H5File* fout, const std::string& hdf5path) const
+    void save(H5::Group* root) const
     {
         using namespace H5;
 
@@ -100,7 +100,7 @@ public:
 
         CompType mtype_attr_struct(sizeof(compartment_space_attribute_struct));
         mtype_attr_struct.insertMember(
-            std::string("volume"), 
+            std::string("volume"),
             HOFFSET(compartment_space_attribute_struct, volume),
             H5::PredType::IEEE_F64LE);
 
@@ -132,36 +132,25 @@ public:
         dim_space[0] = 1;
         DataSpace dataspace_attr(RANK, dim_space);
 
-        const std::string
-            species_table_path(hdf5path + "/species"),
-            species_num_path(hdf5path + "/num_molecules"),
-            space_attr_path(hdf5path + "/space_attributes");
-
-        boost::scoped_ptr<DataSet> dataset_id_table(
-            new DataSet(fout->createDataSet(
-                            species_table_path, mtype_id_table_struct,
-                            dataspace)));
-        boost::scoped_ptr<DataSet> dataset_num_table(
-            new DataSet(fout->createDataSet(
-                            species_num_path, mtype_num_struct, dataspace)));
-        boost::scoped_ptr<DataSet> dataset_space_attr(
-            new DataSet(fout->createDataSet(
-                            space_attr_path, mtype_attr_struct, dataspace_attr)));
+        boost::scoped_ptr<DataSet> dataset_id_table(new DataSet(
+            root->createDataSet("species", mtype_id_table_struct, dataspace)));
+        boost::scoped_ptr<DataSet> dataset_num_table(new DataSet(
+            root->createDataSet("num_molecules", mtype_num_struct, dataspace)));
+        boost::scoped_ptr<DataSet> dataset_space_attr(new DataSet(
+            root->createDataSet("space_attributes", mtype_attr_struct, dataspace_attr)));
         dataset_id_table->write(species_id_table.get(), mtype_id_table_struct);
         dataset_num_table->write(species_num_table.get(), mtype_num_struct);
         dataset_space_attr->write(space_attr_desc.get(), mtype_attr_struct);
 
         // attributes
-        const double t = space_.t();
-        Attribute attr_t(
-            fout->openGroup(hdf5path).createAttribute(
-                "t", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
+        const double t(space_.t());
+        Attribute attr_t(root->createAttribute(
+            "t", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
         attr_t.write(PredType::IEEE_F64LE, &t);
 
-        const double volume = space_.volume();
-        Attribute attr_volume(
-            fout->openGroup(hdf5path).createAttribute(
-                "volume", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
+        const double volume(space_.volume());
+        Attribute attr_volume(root->createAttribute(
+            "volume", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
         attr_volume.write(PredType::IEEE_F64LE, &volume);
     }
 

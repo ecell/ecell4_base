@@ -133,7 +133,7 @@ public:
 
         CompartmentSpaceHDF5Writer<ODEWorld, H5DataTypeTraits_double>
             writer(*this);
-        writer.save(fout.get(), ost_hdf5path.str());
+        writer.save(group.get());
     }
 
     bool has_species(const Species& sp)

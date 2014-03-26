@@ -55,7 +55,7 @@ public:
         ;
     }
 
-    void save(H5::H5File* fout, const std::string& hdf5path) const
+    void save(H5::Group* root) const
     {
         using namespace H5;
 
@@ -144,24 +144,20 @@ public:
         const int RANK = 1;
         hsize_t dim1[] = {num_particles};
         DataSpace dataspace1(RANK, dim1);
-        boost::scoped_ptr<DataSet> dataset1(
-            new DataSet(fout->createDataSet(
-                            hdf5path + "/particles", h5_particle_comp_type,
-                            dataspace1)));
+        boost::scoped_ptr<DataSet> dataset1(new DataSet(
+            root->createDataSet("particles", h5_particle_comp_type, dataspace1)));
 
         hsize_t dim2[] = {species.size()};
         DataSpace dataspace2(RANK, dim2);
-        boost::scoped_ptr<DataSet> dataset2(
-            new DataSet(fout->createDataSet(
-                            hdf5path + "/species" , h5_species_comp_type,
-                            dataspace2)));
+        boost::scoped_ptr<DataSet> dataset2(new DataSet(
+            root->createDataSet("species", h5_species_comp_type, dataspace2)));
 
         dataset1->write(h5_particle_table.get(), h5_particle_comp_type);
         dataset2->write(h5_species_table.get(), h5_species_comp_type);
 
         const double t = space_.t();
         Attribute attr_t(
-            fout->openGroup(hdf5path).createAttribute(
+            root->createAttribute(
                 "t", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
         attr_t.write(PredType::IEEE_F64LE, &t);
 
@@ -169,7 +165,7 @@ public:
         const hsize_t dims[] = {3};
         const ArrayType lengths_type(PredType::NATIVE_DOUBLE, 1, dims);
         Attribute attr_lengths(
-            fout->openGroup(hdf5path).createAttribute(
+            root->createAttribute(
                 "edge_lengths", lengths_type, DataSpace(H5S_SCALAR)));
         double lengths[] = {edge_lengths[0], edge_lengths[1], edge_lengths[2]};
         attr_lengths.write(lengths_type, lengths);

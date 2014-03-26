@@ -77,7 +77,7 @@ public:
 
     // Optional members
 
-    virtual void save(H5::H5File* fout, const std::string& hdf5path) const = 0;
+    virtual void save(H5::Group* root) const = 0;
 };
 
 class CompartmentSpaceVectorImpl
@@ -114,10 +114,10 @@ public:
 
     std::vector<Species> list_species() const;
 
-    void save(H5::H5File* fout, const std::string& hdf5path) const
+    void save(H5::Group* root) const
     {
         CompartmentSpaceHDF5Writer<CompartmentSpaceVectorImpl> writer(*this);
-        writer.save(fout, hdf5path);
+        writer.save(root);
     }
 
 protected:
