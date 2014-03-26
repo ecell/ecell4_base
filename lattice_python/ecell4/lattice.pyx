@@ -12,11 +12,18 @@ from ecell4.core cimport *
 #  a python wrapper for Cpp_LatticeWorld
 cdef class LatticeWorld:
 
-    def __cinit__(self, Position3 edge_lengths, Real voxel_radius,
-        GSLRandomNumberGenerator rng):
-        self.thisptr = new shared_ptr[Cpp_LatticeWorld](
-            new Cpp_LatticeWorld(
-                deref(edge_lengths.thisptr), voxel_radius, deref(rng.thisptr)))
+    def __cinit__(self, Position3 edge_lengths, voxel_radius = None,
+        GSLRandomNumberGenerator rng = None):
+        if voxel_radius is None:
+            self.thisptr = new shared_ptr[Cpp_LatticeWorld](
+                new Cpp_LatticeWorld(deref(edge_lengths.thisptr)))
+        elif rng is None:
+            self.thisptr = new shared_ptr[Cpp_LatticeWorld](
+                new Cpp_LatticeWorld(deref(edge_lengths.thisptr), voxel_radius))
+        else:
+            self.thisptr = new shared_ptr[Cpp_LatticeWorld](
+                new Cpp_LatticeWorld(
+                    deref(edge_lengths.thisptr), voxel_radius, deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,

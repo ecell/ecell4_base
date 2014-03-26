@@ -14,6 +14,9 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Cpp_LatticeWorld(
             Cpp_Position3& edge_lengths, const Real& voxel_radius,
             shared_ptr[Cpp_GSLRandomNumberGenerator] rng) except +
+        Cpp_LatticeWorld(
+            Cpp_Position3& edge_lengths, const Real& voxel_radius) except +
+        Cpp_LatticeWorld(Cpp_Position3& edge_lengths) except +
 
         void set_t(Real t)
         Real t()

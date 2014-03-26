@@ -22,6 +22,23 @@ public:
             boost::shared_ptr<GSLRandomNumberGenerator> rng)
         : space_(edge_lengths, voxel_radius), t_(0), rng_(rng)
     {
+        ; // do nothing
+    }
+
+    LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius)
+        : space_(edge_lengths, voxel_radius), t_(0)
+    {
+        rng_ = boost::shared_ptr<GSLRandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+    }
+
+    LatticeWorld(const Position3& edge_lengths)
+        : space_(edge_lengths, edge_lengths[0] / 100), t_(0) //XXX: sloppy default
+    {
+        rng_ = boost::shared_ptr<GSLRandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
     }
 
     const Real& t() const;
