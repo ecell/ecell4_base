@@ -9,9 +9,9 @@
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/Simulator.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
+#include <ecell4/core/EventScheduler.hpp>
 
 #include "LatticeWorld.hpp"
-#include "EventScheduler.hpp"
 
 namespace ecell4
 {

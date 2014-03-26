@@ -69,3 +69,12 @@ def build(bld):
                'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
         use = 'ecell4-core',
     )
+
+    bld.program(
+        features = 'cxx cxxprogram test',
+        source = 'EventScheduler_test.cpp',
+        includes = '..',
+        target = 'EventScheduler_test',
+        lib = ['gsl', 'gslcblas', 'm'],
+        use = 'ecell4-core'
+    )
