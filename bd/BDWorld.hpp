@@ -80,15 +80,11 @@ public:
         } 
         else if (boost::shared_ptr<Model> bound_model = this->model_.lock())
         {
-            std::cout << "Not found from world" << std::endl;
             if (bound_model->has_species_attribute(sp)) 
             {
-                std::cout << "Found from model" << std::endl;
-                //asm volatile("int3");
                 Species sp_model(bound_model->apply_species_attributes(sp));
                 if (sp_model.has_attribute("radius") && sp_model.has_attribute("D"))
                 {
-                    std::cout << "get attribute from model" << std::endl;
                     radius = std::atof(sp_model.get_attribute("radius").c_str());
                     D = std::atof(sp_model.get_attribute("D").c_str());
                 }
