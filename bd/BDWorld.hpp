@@ -253,6 +253,13 @@ public:
 
     void bind_to(boost::shared_ptr<Model> model)
     {
+        if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+        {
+            if (bound_model.get() != model.get()) 
+            {
+                std::cerr << "Warning: Model already bound to BDWorld" <<std::endl;
+            }
+        }
         this->model_ = model;
     }
 

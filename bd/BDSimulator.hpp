@@ -25,6 +25,7 @@ public:
     BDSimulator(boost::shared_ptr<Model> model, boost::shared_ptr<BDWorld> world)
         : model_(model), world_(world), dt_(0), num_steps_(0)
     {
+        world_->bind_to(model);
         ;
     }
 
