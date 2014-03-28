@@ -3,11 +3,13 @@
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
+#include <ecell4/core/Model.hpp>
 
 
 namespace ecell4
@@ -70,8 +72,28 @@ public:
      */
     MoleculeInfo get_molecule_info(const Species& sp) const
     {
-        const Real radius(std::atof(sp.get_attribute("radius").c_str()));
-        const Real D(std::atof(sp.get_attribute("D").c_str()));
+        Real radius, D;
+        if (sp.has_attribute("radius") && sp.has_attribute("D")) 
+        {
+            radius = std::atof(sp.get_attribute("radius").c_str());
+            D = std::atof(sp.get_attribute("D").c_str());
+        } 
+        else if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+        {
+            std::cout << "Not found from world" << std::endl;
+            if (bound_model->has_species_attribute(sp)) 
+            {
+                std::cout << "Found from model" << std::endl;
+                //asm volatile("int3");
+                Species sp_model(bound_model->apply_species_attributes(sp));
+                if (sp_model.has_attribute("radius") && sp_model.has_attribute("D"))
+                {
+                    std::cout << "get attribute from model" << std::endl;
+                    radius = std::atof(sp_model.get_attribute("radius").c_str());
+                    D = std::atof(sp_model.get_attribute("D").c_str());
+                }
+            }
+        } 
         MoleculeInfo info = {radius, D};
         return info;
     }
@@ -233,12 +255,17 @@ public:
         rng_->load(*fin);
     }
 
+    void bind_to(boost::shared_ptr<Model> model)
+    {
+        this->model_ = model;
+    }
+
 protected:
 
     boost::scoped_ptr<ParticleSpace> ps_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
-
     SerialIDGenerator<ParticleID> pidgen_;
+    boost::weak_ptr<Model> model_;
 };
 
 } // bd

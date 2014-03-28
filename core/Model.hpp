@@ -96,7 +96,7 @@ public:
      * this function is a part of the trait of Model.
      * @param species an original Species
      */
-    Species apply_species_attributes(const Species& sp) const
+    virtual Species apply_species_attributes(const Species& sp) const
     {
         throw NotSupported(
             "apply_species_attributes is not supported in this model class");
