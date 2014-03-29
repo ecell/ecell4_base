@@ -28,6 +28,7 @@ public:
         : model_(model), world_(world), num_steps_(0)
     {
         this->initialize();
+        world_->bind_to(model);
     }
 
     // SimulatorTraits

@@ -4,12 +4,15 @@
 #include <stdexcept>
 #include <map>
 #include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 #include <string>
 
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/CompartmentSpace.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
+#include <ecell4/core/Model.hpp>
 
 
 namespace ecell4
@@ -87,11 +90,22 @@ public:
         const H5::Group group(fin->openGroup("CompartmentSpace"));
         cs_->load(group);
     }
+    void bind_to(boost::shared_ptr<Model> model)
+    {
+        if (boost::shared_ptr<Model> bound_model = this->model_.lock()) {
+            if (bound_model.get() != model.get())
+            {
+                std::cerr << "Warning: Model already bound to GillespieWorld." << std::endl;
+            }
+        }
+        this->model_ = model;
+    }
 
 private:
 
     boost::scoped_ptr<CompartmentSpace> cs_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
+    boost::weak_ptr<Model> model_;
 };
 
 } // gillespie
