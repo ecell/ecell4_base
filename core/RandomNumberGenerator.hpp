@@ -19,7 +19,10 @@ namespace ecell4
 class RandomNumberGenerator
 {
 public:
-
+    virtual ~RandomNumberGenerator()
+    {
+        ;
+    }
     virtual Real uniform(Real min, Real max) = 0;
     virtual Integer uniform_int(Integer min, Integer max) = 0;
     virtual Real gaussian(Real mean, Real sigma) = 0;
