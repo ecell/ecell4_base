@@ -6,6 +6,9 @@
 #include <ecell4/core/Space.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+
 namespace ecell4
 {
 
@@ -185,6 +188,17 @@ public:
         index_map_.erase(sp);
     }
 
+    void bind_to(boost::shared_ptr<Model> model)
+    {
+        if (boost::shared_ptr<Model> bound_model = this->model_.lock()) {
+            if (bound_model.get() != model.get())
+            {
+                std::cerr << "Warning: Model already bound to ODEWorld." << std::endl;
+            }
+        }
+        this->model_ = model;
+    }
+
 protected:
 
     void clear()
@@ -202,6 +216,7 @@ protected:
     num_molecules_container_type num_molecules_;
     species_container_type species_;
     species_map_type index_map_;
+    boost::weak_ptr<Model> model_;
 };
 
 } // ode

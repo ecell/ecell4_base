@@ -131,7 +131,7 @@ public:
         boost::shared_ptr<ODEWorld> world)
         : model_(model), world_(world), dt_(0.0), num_steps_(0), is_dirty_(true)
     {
-        ;
+        world_->bind_to(model_);
     }
 
     void initialize()

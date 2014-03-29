@@ -34,6 +34,8 @@ int main(int argc, char** argv)
     world->add_molecules(sp1, 60);
     world->save("test_ode.h5");
 
+    world->bind_to(model);
+
     ODESimulator target(model, world);
 
     Real next_time(0.0), dt(0.01);
