@@ -22,11 +22,11 @@ and create and run following shell script.
 
 ::
 
-# vm must be powered off
-for i in {8000..8900}; do
- VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port$i,tcp,,$i,,$i";
- VBoxManage modifyvm "boot2docker-vm" --natpf1 "udp-port$i,udp,,$i,,$i";
-done
+   # vm must be powered off
+   for i in {8000..8900}; do
+    VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port$i,tcp,,$i,,$i";
+    VBoxManage modifyvm "boot2docker-vm" --natpf1 "udp-port$i,udp,,$i,,$i";
+   done
 
 Next, please run following commands
 
