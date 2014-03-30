@@ -17,8 +17,9 @@ Please install docker with http://docs.docker.io/en/latest/installation/ubuntuli
 docker for Mac
 ==============
 
-Please install boot2docker and docker with http://docs.docker.io/en/latest/installation/mac/
-and create and run following shell script.
+Please install boot2docker and docker with http://docs.docker.io/en/latest/installation/mac/ .
+
+And create and run following shell script.
 
 ::
 
