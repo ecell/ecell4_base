@@ -41,6 +41,7 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         void add_molecules(Cpp_Species& sp, Integer num)
         shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
         void save(string filename)
+        void load(string filename)
 
 ## BDWorld
 #  a python wrapper for Cpp_BDWorld

@@ -142,6 +142,9 @@ cdef class BDWorld:
     def save(self, string filename):
         self.thisptr.get().save(filename)
 
+    def load(self, string filename):
+        self.thisptr.get().load(filename)
+
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
 cdef class BDSimulator:

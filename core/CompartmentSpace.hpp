@@ -78,6 +78,7 @@ public:
     // Optional members
 
     virtual void save(H5::Group* root) const = 0;
+    virtual void load(const H5::Group& root) = 0;
 };
 
 class CompartmentSpaceVectorImpl
@@ -116,14 +117,22 @@ public:
 
     void save(H5::Group* root) const
     {
-        CompartmentSpaceHDF5Writer<CompartmentSpaceVectorImpl> writer(*this);
-        writer.save(root);
+        save_compartment_space<
+            CompartmentSpaceVectorImpl, H5DataTypeTraits_uint32_t>(*this, root);
+    }
+
+    void load(const H5::Group& root)
+    {
+        clear();
+        load_compartment_space<
+            CompartmentSpaceVectorImpl, H5DataTypeTraits_uint32_t>(root, this);
     }
 
 protected:
 
     void reserve_species(const Species& sp);
     void release_species(const Species& sp);
+    void clear();
 
 protected:
 

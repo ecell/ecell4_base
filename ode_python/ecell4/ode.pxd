@@ -26,6 +26,7 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         # Optional members
         void set_num_molecules(Cpp_Species &sp, Real &num)
         void save(string)
+        void load(string)
         bool has_species(Cpp_Species &)
         void reserve_species(Cpp_Species &)
         void release_species(Cpp_Species &)

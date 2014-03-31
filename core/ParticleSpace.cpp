@@ -178,4 +178,10 @@ void ParticleSpaceVectorImpl::set_edge_lengths(const Position3& edge_lengths)
     edge_lengths_ = edge_lengths;
 }
 
+void ParticleSpaceVectorImpl::clear()
+{
+    particles_.clear();
+    index_map_.clear();
+}
+
 } // ecell4

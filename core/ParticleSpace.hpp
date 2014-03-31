@@ -252,6 +252,7 @@ public:
     virtual const particle_container_type& particles() const = 0;
 
     virtual void save(H5::Group* root) const = 0;
+    virtual void load(const H5::Group& root) = 0;
 };
 
 class ParticleSpaceVectorImpl
@@ -314,13 +315,22 @@ public:
 
     void save(H5::Group* root) const
     {
-        ParticleSpaceHDF5Writer<ParticleSpaceVectorImpl> writer(*this);
-        writer.save(root);
+        // ParticleSpaceHDF5Writer<ParticleSpaceVectorImpl> writer(*this);
+        // writer.save(root);
+        save_particle_space(*this, root);
     }
 
-private:
+    void load(const H5::Group& root)
+    {
+        clear();
+        load_particle_space(root, this);
+    }
 
     void set_edge_lengths(const Position3& edge_lengths);
+
+protected:
+
+    void clear();
 
 protected:
 

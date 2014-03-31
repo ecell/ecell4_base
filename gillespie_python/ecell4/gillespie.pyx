@@ -47,6 +47,9 @@ cdef class GillespieWorld:
     def save(self, string filename):
         self.thisptr.get().save(filename)
 
+    def load(self, string filename):
+        self.thisptr.get().load(filename)
+
 ## GillespieSimulator
 #  a python wrapper for Cpp_GillespieSimulator
 cdef class GillespieSimulator:

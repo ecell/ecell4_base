@@ -14,7 +14,7 @@ cdef class ODEWorld:
     def __cinit__(self, Position3 edge_lengths):
         # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
         self.thisptr = new shared_ptr[Cpp_ODEWorld](
-            new Cpp_ODEWorld(deref(edge_lengths.thisptr)) )
+            new Cpp_ODEWorld(deref(edge_lengths.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,
@@ -35,12 +35,12 @@ cdef class ODEWorld:
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
     def list_species(self):
-        cdef vector[Cpp_Species] raw_list_species = self.thisptr.get().list_species() 
+        cdef vector[Cpp_Species] raw_list_species = self.thisptr.get().list_species()
         retval = []
         cdef vector[Cpp_Species].iterator it = raw_list_species.begin()
         while it != raw_list_species.end():
-            retval.append( 
-                Species_from_Cpp_Species(<Cpp_Species*> (address(deref(it))))) 
+            retval.append(
+                Species_from_Cpp_Species(<Cpp_Species*> (address(deref(it)))))
             inc(it)
         return retval
 
@@ -58,6 +58,9 @@ cdef class ODEWorld:
 
     def save(self, string filename):
         self.thisptr.get().save(filename)
+
+    def load(self, string filename):
+        self.thisptr.get().load(filename)
 
     def has_species(self, Species sp):
         return self.thisptr.get().has_species(deref(sp.thisptr))

@@ -216,19 +216,21 @@ public:
     {
         boost::scoped_ptr<H5::H5File>
             fout(new H5::H5File(filename, H5F_ACC_TRUNC));
-
-        std::ostringstream ost_hdf5path;
-        ost_hdf5path << "/" << t();
-        boost::scoped_ptr<H5::Group> parent_group(
-            new H5::Group(fout->createGroup(ost_hdf5path.str())));
-
-        rng_->save(parent_group.get());
-
-        ost_hdf5path << "/ParticleSpace";
+        rng_->save(fout.get());
+        pidgen_.save(fout.get());
         boost::scoped_ptr<H5::Group>
-            group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
-
+            group(new H5::Group(fout->createGroup("ParticleSpace")));
         ps_->save(group.get());
+    }
+
+    void load(const std::string& filename)
+    {
+        boost::scoped_ptr<H5::H5File>
+            fin(new H5::H5File(filename, H5F_ACC_RDONLY));
+        const H5::Group group(fin->openGroup("ParticleSpace"));
+        ps_->load(group);
+        pidgen_.load(*fin);
+        rng_->load(*fin);
     }
 
 protected:

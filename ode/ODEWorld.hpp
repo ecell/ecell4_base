@@ -121,19 +121,18 @@ public:
     {
         boost::scoped_ptr<H5::H5File>
             fout(new H5::H5File(filename, H5F_ACC_TRUNC));
-
-        std::ostringstream ost_hdf5path;
-        ost_hdf5path << "/" << t();
-
-        boost::scoped_ptr<H5::Group> parent_group(
-            new H5::Group(fout->createGroup(ost_hdf5path.str())));
-        ost_hdf5path << "/CompartmentSpace";
         boost::scoped_ptr<H5::Group>
-            group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
+            group(new H5::Group(fout->createGroup("CompartmentSpace")));
+        save_compartment_space<ODEWorld, H5DataTypeTraits_double>(*this, group.get());
+    }
 
-        CompartmentSpaceHDF5Writer<ODEWorld, H5DataTypeTraits_double>
-            writer(*this);
-        writer.save(group.get());
+    void load(const std::string& filename)
+    {
+        clear();
+        boost::scoped_ptr<H5::H5File>
+            fin(new H5::H5File(filename, H5F_ACC_RDONLY));
+        const H5::Group group(fin->openGroup("CompartmentSpace"));
+        load_compartment_space<ODEWorld, H5DataTypeTraits_double>(group, this);
     }
 
     bool has_species(const Species& sp)
@@ -180,6 +179,15 @@ public:
         species_.pop_back();
         num_molecules_.pop_back();
         index_map_.erase(sp);
+    }
+
+protected:
+
+    void clear()
+    {
+        index_map_.clear();
+        num_molecules_.clear();
+        species_.clear();
     }
 
 protected:
