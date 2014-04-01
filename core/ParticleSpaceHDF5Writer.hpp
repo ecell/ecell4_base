@@ -144,6 +144,12 @@ void save_particle_space(const Tspace_& space, H5::Group* root)
     dataset1->write(h5_particle_table.get(), dataset1->getDataType());
     dataset2->write(h5_species_table.get(), dataset2->getDataType());
 
+    const uint32_t space_type = static_cast<uint32_t>(Space::PARTICLE);
+    H5::Attribute attr_space_type(
+        root->createAttribute(
+            "type", H5::PredType::STD_I32LE, H5::DataSpace(H5S_SCALAR)));
+    attr_space_type.write(H5::PredType::STD_I32LE, &space_type);
+
     const double t = space.t();
     H5::Attribute attr_t(
         root->createAttribute(

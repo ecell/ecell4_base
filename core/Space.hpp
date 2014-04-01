@@ -18,6 +18,16 @@ class Space
 {
 public:
 
+    typedef enum
+    {
+        ELSE,
+        PARTICLE,
+        LATTICE,
+        COMPARTMENT
+    } space_kind;
+
+public:
+
     Space()
         : t_(0.0)
     {

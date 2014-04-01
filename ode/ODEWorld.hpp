@@ -3,6 +3,7 @@
 
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Position3.hpp>
+#include <ecell4/core/Space.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 
 namespace ecell4
@@ -124,6 +125,9 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("CompartmentSpace")));
         save_compartment_space<ODEWorld, H5DataTypeTraits_double>(*this, group.get());
+
+        const uint32_t space_type = static_cast<uint32_t>(Space::ELSE);
+        group->openAttribute("type").write(H5::PredType::STD_I32LE, &space_type);
     }
 
     void load(const std::string& filename)

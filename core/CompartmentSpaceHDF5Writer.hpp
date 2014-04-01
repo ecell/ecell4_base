@@ -88,6 +88,12 @@ void save_compartment_space(const Tspace_& space, H5::Group* root)
     typedef typename traits_type::species_num_struct species_num_struct;
 
     // attributes
+    const uint32_t space_type = static_cast<uint32_t>(Space::COMPARTMENT);
+    H5::Attribute attr_space_type(
+        root->createAttribute(
+            "type", H5::PredType::STD_I32LE, H5::DataSpace(H5S_SCALAR)));
+    attr_space_type.write(H5::PredType::STD_I32LE, &space_type);
+
     const double t(space.t());
     H5::Attribute attr_t(root->createAttribute(
         "t", H5DataTypeTraits_double::get(), H5::DataSpace(H5S_SCALAR)));
