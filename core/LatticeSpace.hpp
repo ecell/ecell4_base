@@ -69,6 +69,7 @@ public:
     bool remove_molecule(const Coord coord);
     std::pair<Coord, bool> move(Coord from, Coord to);
     std::pair<Coord, bool> move_to_neighbor(Coord coord, Integer nrand);
+    std::pair<Coord, bool> move_to_neighbor(MolecularTypeBase::particle_info& info, Integer nrand);
     bool update_molecule(Coord coord, const Species& species);
 
     Real normalized_voxel_radius() const
@@ -115,6 +116,7 @@ protected:
     void set_lattice_properties(const bool is_periodic);
     Coord get_neighbor(Coord general_coord, Integer nrand) const;
     std::pair<Coord, bool> move_(Coord general_from, Coord general_to);
+    std::pair<Coord, bool> move_(MolecularTypeBase::particle_info& info, Coord general_to);
     Coord get_coord(const ParticleID& pid) const;
     const Particle particle_at(Coord coord) const;
     bool is_in_range(Coord coord) const;

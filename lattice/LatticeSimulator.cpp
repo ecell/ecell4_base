@@ -54,7 +54,6 @@ void LatticeSimulator::attempt_reaction_(Coord from_coord, Coord to_coord)
     const std::vector<ReactionRule> rules(model_->query_reaction_rules(
                 from_species, to_species));
 
-    //const Real factor((from_species == to_species) ? 1 : 2);
     const Real factor((from_species == to_species) ? 2 : 1);
     const Real Da(boost::lexical_cast<Real>(from_species.get_attribute("D"))),
                Db(boost::lexical_cast<Real>(to_species.get_attribute("D")));
@@ -79,6 +78,9 @@ void LatticeSimulator::attempt_reaction_(Coord from_coord, Coord to_coord)
     }
 }
 
+/*
+ * the Reaction between two molecules
+ */
 void LatticeSimulator::apply_reaction_(const ReactionRule& reaction_rule,
         const Coord& from_coord, const Coord& to_coord)
 {
@@ -86,7 +88,7 @@ void LatticeSimulator::apply_reaction_(const ReactionRule& reaction_rule,
             reaction_rule.products());
     if (products.size() == 0)
     {
-        // Not yet test
+        // Not test yet
         world_->remove_molecule(from_coord);
         world_->remove_molecule(to_coord);
     }
@@ -101,7 +103,7 @@ void LatticeSimulator::apply_reaction_(const ReactionRule& reaction_rule,
     }
     else if (products.size() == 2)
     {
-        // Not yet test
+        // Not test yet
         const Integer rnd(world_->rng()->uniform_int(0,11));
         std::pair<Coord, bool> retval(world_->move_to_neighbor(to_coord, rnd));
         if (retval.second)
@@ -120,6 +122,9 @@ void LatticeSimulator::apply_reaction_(const ReactionRule& reaction_rule,
     }
 }
 
+/*
+ * the First Order Reaction
+ */
 void LatticeSimulator::apply_reaction_(const ReactionRule& reaction_rule,
         const Coord& coord)
 {
@@ -216,6 +221,43 @@ void LatticeSimulator::step_()
     {
         register_step_event(*itr);
     }
+}
+
+void LatticeSimulator::walk(const Species& species)
+{
+    boost::shared_ptr<GSLRandomNumberGenerator> rng(world_->rng());
+
+    MolecularTypeBase* mt(world_->get_molecular_type(species));
+    mt->shuffle(*rng);
+    Integer i(0);
+    while(i < mt->size())
+    {
+        MolecularTypeBase::particle_info& info(mt->at(i));
+        const Integer nrnd(rng->uniform_int(0,11));
+        std::pair<Coord, bool> retval(world_->move_to_neighbor(info, nrnd));
+        if (!retval.second)
+        {
+            attempt_reaction_(info.first, retval.first);
+        }
+        ++i;
+    }
+
+    /*
+    std::vector<Coord> coords(world_->list_coords(species));
+    shuffle(*rng, coords);
+    for (std::vector<Coord>::iterator itr(coords.begin());
+            itr != coords.end(); ++itr)
+    {
+        const Coord coord(*itr);
+        const Integer nrnd(rng->uniform_int(0,11));
+        std::pair<Coord, bool> retval(
+                world_->move_to_neighbor(coord, nrnd));
+        if (!retval.second)
+        {
+            attempt_reaction_(coord, retval.first);
+        }
+    }
+    */
 }
 
 } // lattice

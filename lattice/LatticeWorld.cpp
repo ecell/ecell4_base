@@ -134,6 +134,12 @@ std::pair<Coord, bool> LatticeWorld::move_to_neighbor(Coord coord, Integer nrand
     return space_.move_to_neighbor(coord, nrand);
 }
 
+std::pair<Coord, bool> LatticeWorld::move_to_neighbor(
+        MolecularTypeBase::particle_info& info, Integer nrand)
+{
+    return space_.move_to_neighbor(info, nrand);
+}
+
 bool LatticeWorld::update_molecule(Coord at, Species species)
 {
     return space_.update_molecule(at, species);

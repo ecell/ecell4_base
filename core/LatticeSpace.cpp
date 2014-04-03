@@ -368,6 +368,13 @@ std::pair<Coord, bool> LatticeSpace::move_to_neighbor(Coord coord, Integer nrand
     return move_(general_coord, neighbor);
 }
 
+std::pair<Coord, bool> LatticeSpace::move_to_neighbor(MolecularTypeBase::particle_info& info,
+        Integer nrand)
+{
+    const Coord neighbor(get_neighbor(info.first, nrand));
+    return move_(info, neighbor);
+}
+
 std::pair<Coord, bool> LatticeSpace::move_(Coord general_from, Coord general_to)
 {
     if (general_from == general_to)
@@ -400,6 +407,47 @@ std::pair<Coord, bool> LatticeSpace::move_(Coord general_from, Coord general_to)
 
     MolecularTypeBase::container_type::iterator itr(from_mt->find(general_from));
     (*itr).first = general_to;
+    voxel_container::iterator from_itr(voxels_.begin() + general_from);
+    (*from_itr) = vacant_;
+    voxel_container::iterator to_itr(voxels_.begin() + general_to);
+    (*to_itr) = from_mt;
+
+    return std::pair<Coord, bool>(general2inner(general_to), true);
+}
+
+std::pair<Coord, bool> LatticeSpace::move_(MolecularTypeBase::particle_info& info,
+        Coord general_to)
+{
+    const Coord general_from(info.first);
+    if (general_from == general_to)
+    {
+        return std::pair<Coord, bool>(general2inner(general_from), false);
+    }
+
+    MolecularTypeBase* from_mt(voxels_.at(general_from));
+    if (from_mt->is_vacant())
+    {
+        return std::pair<Coord, bool>(general2inner(general_from), true);
+    }
+
+    MolecularTypeBase* to_mt(voxels_.at(general_to));
+
+    if (to_mt == border_)
+    {
+        return std::pair<Coord, bool>(general2inner(general_from), false);
+    }
+    else if (to_mt == periodic_)
+    {
+        general_to = apply_boundary_(general_to);
+        to_mt = voxels_.at(general_to);
+    }
+
+    if (!to_mt->is_vacant())
+    {
+        return std::pair<Coord, bool>(general2inner(general_to), false);
+    }
+
+    info.first = general_to;
     voxel_container::iterator from_itr(voxels_.begin() + general_from);
     (*from_itr) = vacant_;
     voxel_container::iterator to_itr(voxels_.begin() + general_to);

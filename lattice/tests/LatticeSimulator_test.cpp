@@ -258,6 +258,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unimolecular_reaction)
     world->save(&fout_after, "/");
 }
 
+/*
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_binding_reaction)
 {
     const Real L(2.5e-8);
@@ -295,6 +296,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_binding_reaction)
     H5::H5File fout_after("data_binding_reaction1.h5", H5F_ACC_TRUNC);
     world->save(&fout_after, "/");
 }
+*/
 
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unbinding_reaction)
 {
@@ -370,7 +372,6 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_degradation_reaction)
 
 BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
 {
-    std::cout << " <<LattiecSimulator_test_scheduler>> ";
     const Real L(1e-6);
     const Position3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
@@ -425,9 +426,6 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     itr1 = mt1->begin();
     itr2 = mt2->begin();
     itr3 = mt3->begin();
-    std::cout << "<itr1: " << (*itr1).first << "> ";
-    std::cout << "<itr2: " << (*itr2).first << "> ";
-    std::cout << "<itr3: " << (*itr3).first << "> ";
     BOOST_ASSERT((*itr1).first == c1);
     BOOST_ASSERT((*itr2).first == c2);
     BOOST_ASSERT((*itr3).first != c3);

@@ -53,6 +53,8 @@ public:
     bool remove_molecule(const Coord coord);
     std::pair<Coord, bool> move(Coord from, Coord to);
     std::pair<Coord, bool> move_to_neighbor(Coord coord, Integer nrand);
+    std::pair<Coord, bool> move_to_neighbor(
+            MolecularTypeBase::particle_info& info, Integer nrand);
     bool update_molecule(Coord at, Species species);
 
     Real normalized_voxel_radius() const

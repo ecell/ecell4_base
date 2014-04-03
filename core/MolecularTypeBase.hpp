@@ -4,6 +4,7 @@
 #include <vector>
 #include "Species.hpp"
 #include "Identifier.hpp"
+#include "RandomNumberGenerator.hpp"
 
 namespace ecell4
 {
@@ -62,6 +63,21 @@ public:
     container_type& voxels()
     {
         return voxels_;
+    }
+
+    particle_info& at(const Integer& index)
+    {
+        return voxels_.at(index);
+    }
+
+    Integer size() const
+    {
+        return voxels_.size();
+    }
+
+    void shuffle(RandomNumberGenerator& rng)
+    {
+        ecell4::shuffle(rng, voxels_);
     }
 
     container_type::iterator begin()

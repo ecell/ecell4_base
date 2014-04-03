@@ -46,23 +46,7 @@ protected:
 
         virtual void fire()
         {
-            boost::shared_ptr<GSLRandomNumberGenerator> rng(sim_->world_->rng());
-
-            std::vector<Coord> coords(sim_->world_->list_coords(species_));
-            shuffle(*rng, coords);
-            for (std::vector<Coord>::iterator itr(coords.begin());
-                    itr != coords.end(); ++itr)
-            {
-                const Coord coord(*itr);
-                const Integer nrnd(rng->uniform_int(0,11));
-                std::pair<Coord, bool> retval(
-                        sim_->world_->move_to_neighbor(coord, nrnd));
-                if (!retval.second)
-                {
-                    sim_->attempt_reaction_(coord, retval.first);
-                }
-            }
-
+            sim_->walk(species_);
             time_ += dt_;
         }
 
@@ -149,6 +133,7 @@ public:
     void initialize();
     void step();
     bool step(const Real& upto);
+    void walk(const Species& species);
 
 protected:
     boost::shared_ptr<EventScheduler::Event> create_step_event(
