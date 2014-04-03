@@ -16,5 +16,8 @@ cdef class GSLRandomNumberGenerator:
     def gaussian(self, Real mean, Real sigma):
         return self.thisptr.get().gaussian(mean, sigma)
 
-    def seed(self, Integer val):
-        self.thisptr.get().seed(val)
+    def seed(self, val = None):
+        if val is None:
+            self.thisptr.get().seed()
+        else:
+            self.thisptr.get().seed(<Integer> val)

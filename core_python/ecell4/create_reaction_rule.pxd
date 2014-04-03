@@ -13,6 +13,6 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         Cpp_Species&, Cpp_Species&, Cpp_Species&, Real)
     Cpp_ReactionRule create_unbinding_reaction_rule(
         Cpp_Species&, Cpp_Species&, Cpp_Species&, Real)
-    Cpp_ReactionRule create_repulsive_reaction_rule(
-        Cpp_Species&, Cpp_Species&)
+    # Cpp_ReactionRule create_repulsive_reaction_rule(
+    #     Cpp_Species&, Cpp_Species&)
 

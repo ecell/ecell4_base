@@ -30,27 +30,6 @@ public:
     }
 
     /**
-     * get the number of species in this space.
-     * this function is a part of the trait of CompartmentSpace.
-     * @return a number of species Integer
-     */
-    virtual Integer num_species() const
-    {
-        throw NotImplemented("num_species() not implemented");
-    }
-
-    /**
-     * return if the species is in this space or not.
-     * this function is a part of the trait of CompartmentSpace.
-     * @param sp a species
-     * @return if the species is in this space
-     */
-    virtual bool has_species(const Species& sp) const
-    {
-        throw NotImplemented("has_species(const Species&) not implemented");
-    }
-
-    /**
      * get the number of molecules
      * this function is a part of the trait of CompartmentSpace.
      * @param sp a species
@@ -79,20 +58,6 @@ public:
      * @param volume a nonzero positive Real value
      */
     virtual void set_volume(const Real& volume) = 0;
-
-    /**
-     * add a species.
-     * this function is a member of CompartmentSpace.
-     * @param sp a species
-     */
-    virtual void add_species(const Species& sp) = 0;
-
-    /**
-     * remove a species.
-     * this function is a member of CompartmentSpace.
-     * @param sp a species
-     */
-    virtual void remove_species(const Species& sp) = 0;
 
     /**
      * increase the number of molecules.
@@ -136,26 +101,28 @@ public:
     // CompartmentSpaceTraits
 
     const Real& volume() const;
-    Integer num_species() const;
-    bool has_species(const Species& sp) const;
     Integer num_molecules(const Species& sp) const;
-    std::vector<Species> list_species() const;
 
     // CompartmentSpace member functions
 
     void set_volume(const Real& volume);
-    void add_species(const Species& sp);
-    void remove_species(const Species& sp);
     void add_molecules(const Species& sp, const Integer& num);
     void remove_molecules(const Species& sp, const Integer& num);
 
     // Optional members
+
+    std::vector<Species> list_species() const;
 
     void save(H5::H5File* fout, const std::string& hdf5path) const
     {
         CompartmentSpaceHDF5Writer<CompartmentSpaceVectorImpl> writer(*this);
         writer.save(fout, hdf5path);
     }
+
+protected:
+
+    void reserve_species(const Species& sp);
+    void release_species(const Species& sp);
 
 protected:
 

@@ -79,9 +79,9 @@ void run()
         rr2(create_binding_reaction_rule(sp2, sp3, sp1, k2));
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    model->add_species(sp1);
-    model->add_species(sp2);
-    model->add_species(sp3);
+    model->add_species_attribute(sp1);
+    model->add_species_attribute(sp2);
+    model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
@@ -100,10 +100,6 @@ void run()
 #else // STYPE == GILLESPIE_MODE
     boost::shared_ptr<world_type> world(new world_type(volume, rng));
 #endif
-
-    world->add_species(sp1);
-    world->add_species(sp2);
-    world->add_species(sp3);
 
     world->add_molecules(sp1, N);
 

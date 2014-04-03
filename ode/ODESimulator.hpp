@@ -147,7 +147,7 @@ public:
         {
             if (!(*world_).has_species(*i))
             {
-                (*world_).add_species(*i);
+                (*world_).reserve_species(*i);
             }
         }
 

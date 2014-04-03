@@ -19,36 +19,33 @@ def run():
     rr2.add_reactant(sp2)
     rr2.add_reactant(sp3)
     rr2.add_product(sp1)
-    
+
     model = NetworkModel()
-    model.add_species(sp1)
-    model.add_species(sp2)
-    model.add_species(sp3)
+    model.add_species_attribute(sp1)
+    model.add_species_attribute(sp2)
+    model.add_species_attribute(sp3)
     model.add_reaction_rule(rr1)
     model.add_reaction_rule(rr2)
 
     world = ODEWorld(volume)
-    world.add_species(sp1)
-    world.add_species(sp2)
-    world.add_species(sp3)
-    world.add_molecules(sp1, N) 
+    world.add_molecules(sp1, N)
 
     next_time = float(0.0)
     dt = float(0.01)
     target = ODESimulator(model, world)
 
     print "t = %g\t A = %g\t B = %g\t C = %g" % (
-        target.t(), world.num_molecules(sp1), 
+        target.t(), world.num_molecules(sp1),
         world.num_molecules(sp2),
         world.num_molecules(sp3))
     for i in range(1000):
         next_time += dt
         target.step(next_time)
         print "t = %g\t A = %g\t B = %g\t C = %g" % (
-                target.t(), 
-                world.num_molecules(sp1), 
+                target.t(),
+                world.num_molecules(sp1),
                 world.num_molecules(sp2),
-                world.num_molecules(sp3) )
+                world.num_molecules(sp3))
 
 
 if __name__ == "__main__":

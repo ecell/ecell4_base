@@ -50,8 +50,10 @@ public:
 
 protected:
 
+    typedef std::vector<Species> species_container_type;
     typedef std::vector<std::pair<Species::serial_type, ::SpeciesTypeID> >
     species_type_id_container_type;
+
     typedef ::CuboidalRegion<simulator_type::traits_type> cuboidal_region_type;
     typedef world_type::traits_type::structure_id_type
     structure_id_type;
@@ -73,6 +75,24 @@ public:
                     "world", cuboidal_region_type::shape_type(x, x))));
     }
 
+    EGFRDWorld(
+        const Real& world_size, const Integer& matrix_size)
+        : world_(new world_type(world_size, matrix_size)),
+          t_(0.0)
+    {
+        rng_ = boost::shared_ptr<GSLRandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+        internal_rng_ = world_type::traits_type::rng_type(rng_->handle());
+
+        const world_type::position_type x(
+            translate(divide(edge_lengths(), 2)));
+        (*world_).add_structure(
+            boost::shared_ptr<cuboidal_region_type>(
+                new cuboidal_region_type(
+                    "world", cuboidal_region_type::shape_type(x, x))));
+    }
+
     /**
      * create and add a new particle
      * @param p a particle
@@ -82,7 +102,7 @@ public:
     {
         if (!has_species(p.species()))
         {
-            add_species(p.species());
+            reserve_species(p.species());
         }
 
         world_type::particle_id_pair retval(
@@ -326,11 +346,6 @@ public:
         return sid_container_.size();
     }
 
-    bool has_species(const Species& sp) const
-    {
-        return (find_species_type_id(sp) != sid_container_.end());
-    }
-
     Integer num_molecules(const Species& sp) const
     {
         return num_particles(sp);
@@ -338,47 +353,11 @@ public:
 
     // CompartmentSpace member functions
 
-    void add_species(const Species& sp)
-    {
-        if (has_species(sp))
-        {
-            throw AlreadyExists("Species already exists");
-        }
-
-        // add ::SpeciesType to ::ParticleModel
-        boost::shared_ptr< ::SpeciesType> st(new ::SpeciesType());
-        (*st)["name"] = boost::lexical_cast<std::string>(sp.name());
-        (*st)["D"] = boost::lexical_cast<std::string>(sp.get_attribute("D"));
-        (*st)["radius"] = boost::lexical_cast<std::string>(
-            sp.get_attribute("radius"));
-        model_.add_species_type(st);
-
-        // create a map between Species and ::SpeciesType
-        sid_container_.push_back(std::make_pair(sp.serial(), st->id()));
-
-        // add ::SpeciesInfo to ::World
-        const std::string& structure_id((*st)["structure"]);
-        (*world_).add_species(
-            world_type::traits_type::species_type(
-                st->id(),
-                boost::lexical_cast<world_type::traits_type::D_type>(
-                    (*st)["D"]),
-                boost::lexical_cast<world_type::length_type>(
-                    (*st)["radius"]),
-                boost::lexical_cast<structure_id_type>(
-                    structure_id.empty() ? "world": structure_id)));
-    }
-
-    void remove_species(const Species& sp)
-    {
-        throw NotImplemented("Not implemented yet.");
-    }
-
     void add_molecules(const Species& sp, const Integer& num)
     {
         if (!has_species(sp))
         {
-            add_species(sp);
+            reserve_species(sp);
         }
 
         extras::throw_in_particles(*this, sp, num, *rng());
@@ -395,11 +374,6 @@ public:
     {
         model_.network_rules().add_reaction_rule(translate(rr));
     }
-
-    // const particle_container_type& particles() const
-    // {
-    //     throw NotSupported("Not supported. Use list_particles() instead.");
-    // }
 
     inline boost::shared_ptr<GSLRandomNumberGenerator> rng()
     {
@@ -432,6 +406,69 @@ public:
 
         ParticleSpaceHDF5Writer<EGFRDWorld> writer(*this);
         writer.save(fout.get(), ost_hdf5path.str());
+    }
+
+    bool has_species(const Species& sp) const
+    {
+        return (find_species_type_id(sp) != sid_container_.end());
+    }
+
+    void reserve_species(const Species& sp)
+    {
+        if (has_species(sp))
+        {
+            throw AlreadyExists("Species already exists");
+        }
+
+        // add ::SpeciesType to ::ParticleModel
+        const MoleculeInfo info(get_molecule_info(sp));
+        boost::shared_ptr< ::SpeciesType> st(new ::SpeciesType());
+        (*st)["name"] = boost::lexical_cast<std::string>(sp.name());
+        (*st)["D"] = boost::lexical_cast<std::string>(info.D);
+        (*st)["radius"] = boost::lexical_cast<std::string>(info.radius);
+        model_.add_species_type(st);
+
+        // create a map between Species and ::SpeciesType
+        sid_container_.push_back(std::make_pair(sp.serial(), st->id()));
+
+        // add ::SpeciesInfo to ::World
+        const std::string& structure_id((*st)["structure"]);
+        (*world_).add_species(
+            world_type::traits_type::species_type(
+                st->id(),
+                boost::lexical_cast<world_type::traits_type::D_type>(
+                    (*st)["D"]),
+                boost::lexical_cast<world_type::length_type>(
+                    (*st)["radius"]),
+                boost::lexical_cast<structure_id_type>(
+                    structure_id.empty() ? "world": structure_id)));
+    }
+
+    void release_species(const Species& sp)
+    {
+        throw NotImplemented("Not implemented yet.");
+    }
+
+    void set_all_repulsive()
+    {
+        BOOST_FOREACH(boost::shared_ptr< ::SpeciesType> st1,
+                      model_.get_species_types())
+        {
+            BOOST_FOREACH(boost::shared_ptr< ::SpeciesType> st2,
+                          model_.get_species_types())
+            {
+                boost::scoped_ptr< ::NetworkRules::reaction_rule_generator>
+                    gen(model_.network_rules().query_reaction_rule(
+                        st1->id(), st2->id()));
+                if (!gen)
+                {
+                    const std::vector< ::SpeciesTypeID> products;
+                    model_.network_rules().add_reaction_rule(
+                        ::new_reaction_rule(
+                            st1->id()(), st2->id(), products, 0.0));
+                }
+            }
+        }
     }
 
 protected:

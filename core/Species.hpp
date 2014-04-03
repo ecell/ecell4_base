@@ -68,6 +68,16 @@ public:
         return name_;
     }
 
+    bool match(const Species& sp) const
+    {
+        return (sp == *this);
+    }
+
+    const attributes_container_type& attributes() const
+    {
+        return attributes_;
+    }
+
     std::string get_attribute(const std::string& name_attr) const
     {
         attributes_container_type::const_iterator
@@ -85,6 +95,11 @@ public:
     void set_attribute(const std::string& name_attr, const std::string& value)
     {
         attributes_[name_attr] = value;
+    }
+
+    void set_attributes(const Species& sp)
+    {
+        attributes_ = sp.attributes();
     }
 
     void remove_attribute(const std::string& name_attr)
@@ -109,6 +124,7 @@ public:
     bool operator==(const Species& rhs) const;
     bool operator<(const Species& rhs) const;
     bool operator>(const Species& rhs) const;
+
 
 protected:
 

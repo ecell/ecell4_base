@@ -14,9 +14,13 @@ cdef class EGFRDWorld:
 
     def __cinit__(
         self, Real world_size, Integer matrix_size,
-        GSLRandomNumberGenerator rng):
-        self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
-            new Cpp_EGFRDWorld(world_size, matrix_size, deref(rng.thisptr)))
+        GSLRandomNumberGenerator rng = None):
+        if rng is None:
+            self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
+                new Cpp_EGFRDWorld(world_size, matrix_size))
+        else:
+            self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
+                new Cpp_EGFRDWorld(world_size, matrix_size, deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,

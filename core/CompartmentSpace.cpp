@@ -27,7 +27,7 @@ void CompartmentSpaceVectorImpl::set_volume(const Real& volume)
     volume_ = volume;
 }
 
-void CompartmentSpaceVectorImpl::add_species(const Species& sp)
+void CompartmentSpaceVectorImpl::reserve_species(const Species& sp)
 {
     species_map_type::const_iterator i(index_map_.find(sp));
     if (i != index_map_.end())
@@ -40,7 +40,7 @@ void CompartmentSpaceVectorImpl::add_species(const Species& sp)
     num_molecules_.push_back(0);
 }
 
-void CompartmentSpaceVectorImpl::remove_species(const Species& sp)
+void CompartmentSpaceVectorImpl::release_species(const Species& sp)
 {
     species_map_type::iterator i(index_map_.find(sp));
     if (i == index_map_.end())
@@ -68,17 +68,6 @@ void CompartmentSpaceVectorImpl::remove_species(const Species& sp)
     index_map_.erase(sp);
 }
 
-bool CompartmentSpaceVectorImpl::has_species(const Species& sp) const
-{
-    species_map_type::const_iterator i(index_map_.find(sp));
-    return (i != index_map_.end());
-}
-
-Integer CompartmentSpaceVectorImpl::num_species() const
-{
-    return static_cast<Integer>(species_.size());
-}
-
 Integer CompartmentSpaceVectorImpl::num_molecules(const Species& sp) const
 {
     species_map_type::const_iterator i(index_map_.find(sp));
@@ -103,7 +92,7 @@ void CompartmentSpaceVectorImpl::add_molecules(
     if (i == index_map_.end())
     {
         // throw NotFound("Species not found");
-        add_species(sp);
+        reserve_species(sp);
         i = index_map_.find(sp);
     }
 

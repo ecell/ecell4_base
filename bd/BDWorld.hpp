@@ -39,6 +39,14 @@ public:
         ;
     }
 
+    BDWorld(const Position3& edge_lengths)
+        : ps_(new ParticleSpaceVectorImpl(edge_lengths))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+    }
+
     /**
      * create and add a new particle
      * @param p a particle
@@ -186,11 +194,10 @@ public:
         extras::throw_in_particles(*this, sp, num, *rng());
     }
 
-    // CompartmentSpace member functions
-
-    void add_species(const Species& sp)
+    const Real volume() const
     {
-        ; // just ignore
+        const Position3& lengths(edge_lengths());
+        return lengths[0] * lengths[1] * lengths[2];
     }
 
     // Optional members

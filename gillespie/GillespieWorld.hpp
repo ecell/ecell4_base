@@ -29,6 +29,14 @@ public:
         ;
     }
 
+    GillespieWorld(const Real& volume)
+        : cs_(new CompartmentSpaceVectorImpl(volume))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+    }
+
     // SpaceTraits
 
     const Real& t(void) const;
@@ -41,8 +49,6 @@ public:
         return cs_->volume();
     }
 
-    Integer num_species(void) const;
-    bool has_species(const Species& sp) const;
     Integer num_molecules(const Species& sp) const;
     std::vector<Species> list_species() const;
 
@@ -53,8 +59,6 @@ public:
         (*cs_).set_volume(volume);
     }
 
-    void add_species(const Species& sp);
-    void remove_species(const Species& sp);
     void add_molecules(const Species& sp, const Integer& num);
     void remove_molecules(const Species& sp, const Integer& num);
 

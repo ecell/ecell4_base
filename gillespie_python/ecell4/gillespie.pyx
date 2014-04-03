@@ -10,10 +10,15 @@ from ecell4.core cimport *
 #  a python wrapper for Cpp_GillespieWorld
 cdef class GillespieWorld:
 
-    def __cinit__(self, Real vol, GSLRandomNumberGenerator rng):
-        # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
-        self.thisptr = new shared_ptr[Cpp_GillespieWorld](
-            new Cpp_GillespieWorld(vol, deref(rng.thisptr)))
+    def __cinit__(self, Real vol, GSLRandomNumberGenerator rng = None):
+        if rng is None:
+            self.thisptr = new shared_ptr[Cpp_GillespieWorld](
+                new Cpp_GillespieWorld(vol))
+        else:
+            # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
+            self.thisptr = new shared_ptr[Cpp_GillespieWorld](
+                new Cpp_GillespieWorld(
+                    vol, deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,
@@ -30,25 +35,13 @@ cdef class GillespieWorld:
     def volume(self):
         return self.thisptr.get().volume()
 
-    def num_species(self):
-        return self.thisptr.get().num_species()
-
-    def has_species(self, Species sp):
-        return self.thisptr.get().has_species(deref(sp.thisptr))
-
     def num_molecules(self, Species sp):
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
-
-    def add_species(self, Species sp):
-        self.thisptr.get().add_species(deref(sp.thisptr))
-
-    def remove_species(self, Species sp):
-        self.thisptr.get().remove_species(deref(sp.thisptr))
 
     def add_molecules(self, Species sp, Integer num):
         self.thisptr.get().add_molecules(deref(sp.thisptr), num)
 
-    def remove_species(self, Species sp, Integer num):
+    def remove_molecules(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
     def save(self, string filename):

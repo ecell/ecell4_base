@@ -11,20 +11,20 @@ class NetowrkModelTest(unittest.TestCase):
     def test_constructor(self):
         model = NetworkModel()
 
-    def test_add_species(self):
+    def test_add_species_attribute(self):
         model = NetworkModel()
         sp1, sp2 = Species("A"), Species("B")
 
-        self.assertFalse(model.has_species(sp1))
-        self.assertFalse(model.has_species(sp2))
+        self.assertFalse(model.has_species_attribute(sp1))
+        self.assertFalse(model.has_species_attribute(sp2))
 
-        model.add_species(sp1)
-        self.assertTrue(model.has_species(sp1))
-        self.assertFalse(model.has_species(sp2))
+        model.add_species_attribute(sp1)
+        self.assertTrue(model.has_species_attribute(sp1))
+        self.assertFalse(model.has_species_attribute(sp2))
 
-        model.remove_species(sp1)
-        self.assertFalse(model.has_species(sp1))
-        self.assertFalse(model.has_species(sp2))
+        model.remove_species_attribute(sp1)
+        self.assertFalse(model.has_species_attribute(sp1))
+        self.assertFalse(model.has_species_attribute(sp2))
 
     def test_query_reaction_rule(self):
         model = NetworkModel()

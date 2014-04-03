@@ -20,13 +20,13 @@ BOOST_AUTO_TEST_CASE(NetworkModel_test_species)
     Species sp1("A"), sp2("B");
 
     NetworkModel model;
-    model.add_species(sp1);
-    model.add_species(sp2);
-    BOOST_CHECK(model.has_species(sp1));
-    BOOST_CHECK(model.has_species(sp2));
-    BOOST_CHECK_THROW(model.add_species(sp1), AlreadyExists);
-    model.remove_species(sp1);
-    BOOST_CHECK_THROW(model.remove_species(sp1), NotFound);
+    model.add_species_attribute(sp1);
+    model.add_species_attribute(sp2);
+    BOOST_CHECK(model.has_species_attribute(sp1));
+    BOOST_CHECK(model.has_species_attribute(sp2));
+    BOOST_CHECK_THROW(model.add_species_attribute(sp1), AlreadyExists);
+    model.remove_species_attribute(sp1);
+    BOOST_CHECK_THROW(model.remove_species_attribute(sp1), NotFound);
 }
 
 BOOST_AUTO_TEST_CASE(NetworkModel_test_reaction_rule)

@@ -26,6 +26,7 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
         Integer uniform_int(Integer, Integer)
         Real gaussian(Real, Real)
         void seed(Integer)
+        void seed()
 
 ## RandomNumberGenerator
 #  a python wrapper for Cpp_GSLRandomNumberGenerator
@@ -37,6 +38,7 @@ cdef class GSLRandomNumberGenerator:
 #  ecell4::Species
 cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
     cdef cppclass Cpp_Species "ecell4::Species":
+        Cpp_Species() except +
         Cpp_Species(string) except +
         Cpp_Species(string, string) except +
         Cpp_Species(string, string, string) except +
@@ -84,13 +86,9 @@ cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
     cdef cppclass Cpp_CompartmentSpaceVectorImpl "ecell4::CompartmentSpaceVectorImpl":
         Cpp_CompartmentSpaceVectorImpl(Real) except+
         Real volume()
-        Integer num_species()
-        bool has_species(Cpp_Species &sp)
         Integer num_molecules(Cpp_Species &sp)
         vector[Cpp_Species] list_species()
         void set_volume(Real)
-        void add_species(Cpp_Species &sp)
-        void remove_species(Cpp_Species &sp)
         void add_molecules(Cpp_Species &sp, Integer num)
         void remove_molecules(Cpp_Species &sp, Integer num)
 
@@ -132,16 +130,20 @@ cdef class ParticleSpaceVectorImpl:
 cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
     cdef cppclass Cpp_NetworkModel "ecell4::NetworkModel":
         Cpp_NetworkModel() except +
-        void add_species(Cpp_Species sp)
-        bool has_species(Cpp_Species sp)
-        void remove_species(Cpp_Species sp)
+        void add_species_attribute(Cpp_Species sp)
+        bool has_species_attribute(Cpp_Species sp)
+        void remove_species_attribute(Cpp_Species sp)
         void add_reaction_rule(Cpp_ReactionRule)
         void remove_reaction_rule(Cpp_ReactionRule)
         bool has_reaction_rule(Cpp_ReactionRule)
+        Integer num_reaction_rules()
+        Cpp_Species apply_species_attributes(Cpp_Species& sp)
+        Cpp_Species create_species(string name)
         vector[Cpp_Species] list_species()
         vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
         vector[Cpp_ReactionRule] query_reaction_rules(
             Cpp_Species sp, Cpp_Species sp)
+        vector[Cpp_ReactionRule] reaction_rules()
 
 ## NetworkModel
 #  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr

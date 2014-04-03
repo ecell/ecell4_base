@@ -16,20 +16,19 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         void set_t(Real&)
         # CompartmentSpaceTraits
         Real &volume()
-        Integer num_species()
-        bool has_species(Cpp_Species &)
         Real num_molecules(Cpp_Species &)
         vector[Cpp_Species] list_species()
 
         # CompartmentSpace member functions
         void set_volume(Real &)
-        void add_species(Cpp_Species &)
-        void remove_species(Cpp_Species &)
         void add_molecules(Cpp_Species &sp, Real &num)
         void remove_molecules(Cpp_Species &sp, Real &num)
         # Optional members
         void set_num_molecules(Cpp_Species &sp, Real &num)
         void save(string)
+        bool has_species(Cpp_Species &)
+        void reserve_species(Cpp_Species &)
+        void release_species(Cpp_Species &)
 
 ## ODEWorld
 #  a python wrapper for Cpp_ODEWorld

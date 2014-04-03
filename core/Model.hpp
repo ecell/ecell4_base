@@ -27,8 +27,8 @@ ReactionRule create_degradation_reaction_rule(
 ReactionRule create_synthesis_reaction_rule(
     const Species& product1, const Real& k);
 
-ReactionRule create_repulsive_reaction_rule(
-    const Species& reactant1, const Species& reactant2);
+// ReactionRule create_repulsive_reaction_rule(
+//     const Species& reactant1, const Species& reactant2);
 
 class Model
 {
@@ -58,39 +58,53 @@ public:
     // NetworkModelTraits
 
     /**
-     * add a concrete species to the model.
-     * this function is a part of the trait of NetworkModel.
+     * add attributes of species to the model.
+     * this function is a part of the trait of Model.
      * @param species a new Species
      */
-    virtual void add_species(const Species& sp)
+    virtual void add_species_attribute(const Species& sp)
     {
-        throw NotSupported("add_species is not supported in this model class");
+        throw NotSupported(
+            "add_species_attribute is not supported in this model class");
     }
 
     /**
-     * return if a species is in the model, or not.
-     * this function is a part of the trait of NetworkModel.
+     * return if a species attribute is in the model, or not.
+     * this function is a part of the trait of Model.
      * @param species a Species
      * @return if the species exists, or not
      */
-    virtual bool has_species(const Species& sp) const
+    virtual bool has_species_attribute(const Species& sp) const
     {
-        throw NotSupported("has_species is not supported in this model class");
+        throw NotSupported(
+            "has_species_attribute is not supported in this model class");
     }
 
     /**
-     * remove a species in the model.
-     * this function is a part of the trait of NetworkModel.
+     * remove attributes of species in the model.
+     * this function is a part of the trait of Model.
      * @param species a new Species
      */
-    virtual void remove_species(const Species& sp)
+    virtual void remove_species_attribute(const Species& sp)
     {
-        throw NotSupported("remove_species is not supported in this model class");
+        throw NotSupported(
+            "remove_species_attribute is not supported in this model class");
     }
 
     /**
-     * add a concrete reaction rule to the model.
-     * this function is a part of the trait of NetworkModel.
+     * apply attributes of species to the given species.
+     * this function is a part of the trait of Model.
+     * @param species an original Species
+     */
+    Species apply_species_attributes(const Species& sp) const
+    {
+        throw NotSupported(
+            "apply_species_attributes is not supported in this model class");
+    }
+
+    /**
+     * add a reaction rule to the model.
+     * this function is a part of the trait of Model.
      * @param rr a new ReactionRule
      * @return if the reaction rule is not registered yet.
      */
@@ -102,7 +116,7 @@ public:
 
     /**
      * remove a reaction rule in the model.
-     * this function is a part of the trait of NetworkModel.
+     * this function is a part of the trait of Model.
      * @param rr a new ReactionRule
      */
     virtual void remove_reaction_rule(const ReactionRule& rr)
@@ -113,7 +127,7 @@ public:
 
     /**
      * return if a reaction rule is in the model, or not.
-     * this function is a part of the trait of NetworkModel.
+     * this function is a part of the trait of Model.
      * @param rr a reaction rule
      * @return if the reaction rule exists, or not
      */

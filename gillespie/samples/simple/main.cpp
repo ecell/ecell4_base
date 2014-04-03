@@ -17,9 +17,9 @@ int main(int argc, char **argv)
         rr2(create_unbinding_reaction_rule(sp3, sp1, sp2, kr));
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    model->add_species(sp1);
-    model->add_species(sp2);
-    model->add_species(sp3);
+    model->add_species_attribute(sp1);
+    model->add_species_attribute(sp2);
+    model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
@@ -29,9 +29,6 @@ int main(int argc, char **argv)
 
     const Real volume(1.0);
     boost::shared_ptr<GillespieWorld> world(new GillespieWorld(volume, rng));
-    // world->add_species(sp1);
-    // world->add_species(sp2);
-    // world->add_species(sp3);
     world->add_molecules(sp3, 10);
     world->save("test_gillespie.h5");
 

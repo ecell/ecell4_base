@@ -385,16 +385,6 @@ public:
         return comp->actualVolume;
     }
 
-    virtual Integer num_species() const
-    {
-        return static_cast<Integer>(smap_.size());
-    }
-
-    bool has_species(const Species& sp) const
-    {
-        return (find_fullid(sp) != smap_.end());
-    }
-
     Integer num_molecules(const Species& sp) const
     {
         return num_particles(sp);
@@ -402,41 +392,11 @@ public:
 
     // CompartmentSpace member functions
 
-    void add_species(const Species& sp)
-    {
-        check_initialized();
-
-        if (!has_species(sp))
-        {
-            libecs::String fullid_str("Variable:/:" + sp.name());
-            smap_.push_back(std::make_pair(sp, fullid_str));
-
-            create_variable(fullid_str, 0);
-            const MoleculeInfo info(get_molecule_info(sp));
-            create_diffusion_process(fullid_str, info.D);
-
-            // get_molecule_populate_process()->registerVariableReference(
-            //     "_", fullid_str, 0);
-        }
-    }
-
     void add_molecules(const Species& sp, const Integer& num)
     {
-        // check_initialized();
-
-        // species_map_type::const_iterator i(find_fullid(sp));
-        // if (i == smap_.end())
-        // {
-        //     add_species(sp);
-        //     i = find_fullid(sp);
-        // }
-
-        // libecs::Variable* variable_ptr(get_variable((*i).second));
-        // variable_ptr->setValue(variable_ptr->getValue() + num);
-
         if (!has_species(sp))
         {
-            add_species(sp);
+            reserve_species(sp);
         }
 
         if (is_initialized_)
@@ -553,7 +513,7 @@ public:
         return static_cast<Real>((*model_).getStepper("SS")->getStepInterval());
     }
 
-    void add_reaction_rule(const ReactionRule& rr)
+    void reserve_reaction_rule(const ReactionRule& rr)
     {
         check_initialized();
 
@@ -718,6 +678,34 @@ public:
 
         LatticeSpaceHDF5Writer<SpatiocyteWorld> writer(*this);
         writer.save(fout.get(), ost_hdf5path.str());
+    }
+
+    bool has_species(const Species& sp) const
+    {
+        return (find_fullid(sp) != smap_.end());
+    }
+
+    void reserve_species(const Species& sp)
+    {
+        check_initialized();
+
+        if (!has_species(sp))
+        {
+            libecs::String fullid_str("Variable:/:" + sp.name());
+            smap_.push_back(std::make_pair(sp, fullid_str));
+
+            create_variable(fullid_str, 0);
+            const MoleculeInfo info(get_molecule_info(sp));
+            create_diffusion_process(fullid_str, info.D);
+
+            // get_molecule_populate_process()->registerVariableReference(
+            //     "_", fullid_str, 0);
+        }
+    }
+
+    void release_species(const Species& sp)
+    {
+        throw NotImplemented("Not implemented yet.");
     }
 
 protected:

@@ -13,14 +13,14 @@ cdef class NetworkModel:
     def __dealloc__(self):
         del self.thisptr
 
-    def add_species(self, Species sp):
-        self.thisptr.get().add_species(deref(sp.thisptr))
+    def add_species_attribute(self, Species sp):
+        self.thisptr.get().add_species_attribute(deref(sp.thisptr))
 
-    def has_species(self, Species sp):
-        return self.thisptr.get().has_species(deref(sp.thisptr))
+    def has_species_attribute(self, Species sp):
+        return self.thisptr.get().has_species_attribute(deref(sp.thisptr))
 
-    def remove_species(self, Species sp):
-        self.thisptr.get().remove_species(deref(sp.thisptr))
+    def remove_species_attribute(self, Species sp):
+        self.thisptr.get().remove_species_attribute(deref(sp.thisptr))
 
     def add_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().add_reaction_rule(deref(rr.thisptr))
@@ -30,6 +30,28 @@ cdef class NetworkModel:
 
     def has_reaction_rule(self, ReactionRule rr):
         self.thisptr.get().has_reaction_rule(deref(rr.thisptr))
+
+    def num_reaction_rules(self):
+        return self.thisptr.get().num_reaction_rules()
+
+    def apply_species_attributes(self, Species sp):
+        cdef Cpp_Species retval = self.thisptr.get().apply_species_attributes(
+            deref(sp.thisptr))
+        return Species_from_Cpp_Species(address(retval))
+
+    def create_species(self, string name):
+        cdef Cpp_Species retval = self.thisptr.get().create_species(name)
+        return Species_from_Cpp_Species(address(retval))
+
+    def reaction_rules(self):
+        cdef vector[Cpp_ReactionRule] c_rr_vector = self.thisptr.get().reaction_rules()
+        retval = []
+        cdef vector[Cpp_ReactionRule].iterator it = c_rr_vector.begin()
+        while it != c_rr_vector.end():
+            retval.append(ReactionRule_from_Cpp_ReactionRule(
+                <Cpp_ReactionRule*>(address(deref(it)))) )
+            inc(it)
+        return retval
 
     def list_species(self):
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()

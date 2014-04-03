@@ -34,13 +34,13 @@ void setup_model(ecell4::NetworkModel& model)
         Surface_MinDEE("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)", "0.02e-12"),
         Surface_MinDEED("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2[2],loc=mem).MinD(p=atp,bs[2],loc=mem)", "0.02e-12");
 
-    model.add_species(MinDatp);
-    model.add_species(MinDadp);
-    model.add_species(MinEE);
-    model.add_species(Surface_MinD);
-    model.add_species(Surface_MinEE);
-    model.add_species(Surface_MinDEE);
-    model.add_species(Surface_MinDEED);
+    model.add_species_attribute(MinDatp);
+    model.add_species_attribute(MinDadp);
+    model.add_species_attribute(MinEE);
+    model.add_species_attribute(Surface_MinD);
+    model.add_species_attribute(Surface_MinEE);
+    model.add_species_attribute(Surface_MinDEE);
+    model.add_species_attribute(Surface_MinDEED);
 
     // model.add_reaction_rule(
     //     create_binding_reaction_rule(
@@ -77,16 +77,16 @@ int main(int argc, char** argv)
 
     boost::shared_ptr<SpatiocyteWorld> world(
         new SpatiocyteWorld(edge_lengths, voxel_radius));
-    world->add_molecules((*model).species("MinD(p=adp,bs,loc=cyt)"), 1300);
-    world->add_molecules((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)"), 700);
+    world->add_molecules((*model).create_species("MinD(p=adp,bs,loc=cyt)"), 1300);
+    world->add_molecules((*model).create_species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)"), 700);
     SpatiocyteSimulator sim(model, world);
 
     SpatiocyteVisualizationLogger logger(world);
 
-    logger.add_species((*model).species("MinEE(bs1,bs2,loc=mem)"));
-    logger.add_species((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)"));
-    logger.add_species((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2[2],loc=mem).MinD(p=atp,bs[2],loc=mem)"));
-    logger.add_species((*model).species("MinD(p=atp,bs,loc=mem)"));
+    logger.add_species((*model).create_species("MinEE(bs1,bs2,loc=mem)"));
+    logger.add_species((*model).create_species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)"));
+    logger.add_species((*model).create_species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2[2],loc=mem).MinD(p=atp,bs[2],loc=mem)"));
+    logger.add_species((*model).create_species("MinD(p=atp,bs,loc=mem)"));
 
     // Real next_time(0.0), dt(0.5);
     logger.initialize();
@@ -103,9 +103,9 @@ int main(int argc, char** argv)
         while (sim.step(next_time)) {}
 
         std::cout << sim.t()
-                  << "\t" << world->num_molecules((*model).species("MinEE(bs1,bs2,loc=mem)"))
-                  << "\t" << world->num_molecules((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)"))
-                  << "\t" << world->num_molecules((*model).species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2[2],loc=mem).MinD(p=atp,bs[2],loc=mem)"))
+                  << "\t" << world->num_molecules((*model).create_species("MinEE(bs1,bs2,loc=mem)"))
+                  << "\t" << world->num_molecules((*model).create_species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2,loc=mem)"))
+                  << "\t" << world->num_molecules((*model).create_species("MinD(p=atp,bs[1],loc=mem).MinEE(bs1[1],bs2[2],loc=mem).MinD(p=atp,bs[2],loc=mem)"))
                   << std::endl;
     }
 

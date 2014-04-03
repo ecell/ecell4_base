@@ -34,19 +34,14 @@ int main(int argc, char** argv)
         rr2(create_unbinding_reaction_rule(sp3, sp1, sp2, k2));
 
     boost::shared_ptr<ecell4::NetworkModel> model(new ecell4::NetworkModel());
-    model->add_species(sp1);
-    model->add_species(sp2);
-    model->add_species(sp3);
+    model->add_species_attribute(sp1);
+    model->add_species_attribute(sp2);
+    model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
     boost::shared_ptr<SpatiocyteWorld> world(
         new SpatiocyteWorld(edge_lengths, voxel_radius));
-    world->add_species(sp1);
-    world->add_species(sp2);
-    world->add_species(sp3);
-    // world->add_molecules(sp1, N);
-    // world->add_molecules(sp2, N);
     world->add_molecules(sp3, N);
 
     SpatiocyteSimulator sim(model, world);

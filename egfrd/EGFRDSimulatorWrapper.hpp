@@ -51,21 +51,8 @@ public:
         {
             if (!(*world_).has_species(*i))
             {
-                (*world_).add_species(*i);
-            }
-        }
-
-        for (NetworkModel::species_container_type::const_iterator
-                 i(species.begin()); i != species.end(); ++i)
-        {
-            for (NetworkModel::species_container_type::const_iterator
-                     j(i); j != species.end(); ++j)
-            {
-                if ((*model_).query_reaction_rules(*i, *j).size() == 0)
-                {
-                    (*world_).add_reaction_rule(
-                        create_repulsive_reaction_rule(*i, *j));
-                }
+                (*world_).reserve_species(
+                    (*model_).apply_species_attributes(*i));
             }
         }
 
@@ -76,6 +63,8 @@ public:
         {
             (*world_).add_reaction_rule(*i);
         }
+
+        (*world_).set_all_repulsive();
 
         sim_ = boost::shared_ptr<simulator_type>(
             (*world_).create_simulator(dissociation_retry_moves));

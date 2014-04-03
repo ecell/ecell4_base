@@ -8,7 +8,8 @@ from waflib.Tools import waf_unit_test
 from waflib import Logs
 
 pxdfiles = [
-    'ecell4/ode.pxd'
+    'ecell4/ode.pxd',
+    'ecell4/load_ode_world.py',
     ]
 
 def options(opt):

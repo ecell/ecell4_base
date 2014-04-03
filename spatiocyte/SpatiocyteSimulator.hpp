@@ -31,7 +31,7 @@ public:
         for (NetworkModel::species_container_type::const_iterator
                  i(species.begin()); i != species.end(); ++i)
         {
-            (*world_).add_species(*i);
+            (*world_).reserve_species((*model_).apply_species_attributes(*i));
         }
 
         const NetworkModel::reaction_rule_container_type&
@@ -39,7 +39,7 @@ public:
         for (NetworkModel::reaction_rule_container_type::const_iterator
                  i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
         {
-            (*world_).add_reaction_rule(*i);
+            (*world_).reserve_reaction_rule(*i);
         }
 
         initialize();
