@@ -3,6 +3,7 @@
 
 subdirs = [
     'simple',
+    'diffusion'
     ]
 
 def configure(conf):
