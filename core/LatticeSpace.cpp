@@ -3,13 +3,14 @@
 namespace ecell4
 {
 
-LatticeSpace::LatticeSpace(const Position3& edge_lengths, const Real& voxel_radius) :
+LatticeSpace::LatticeSpace(const Position3& edge_lengths,
+        const Real& voxel_radius, const bool is_periodic) :
     theNormalizedVoxelRadius(voxel_radius), edge_lengths_(edge_lengths), t_(0)
 {
     vacant_ = new VacantType();
     border_ = new MolecularType(Species("Border", "0"));
     periodic_ = new MolecularType(Species("Periodic", "0"));
-    set_lattice_properties();
+    set_lattice_properties(is_periodic);
 }
 
 LatticeSpace::~LatticeSpace()
@@ -22,7 +23,7 @@ LatticeSpace::~LatticeSpace()
 /*
  * derived from SpatiocyteStepper::setLatticeProperties()
  */
-void LatticeSpace::set_lattice_properties()
+void LatticeSpace::set_lattice_properties(const bool is_periodic)
 {
     HCP_L = theNormalizedVoxelRadius/sqrt(3);
     HCP_X = theNormalizedVoxelRadius*sqrt(8.0/3); //Lx
@@ -43,7 +44,10 @@ void LatticeSpace::set_lattice_properties()
                 global.row == 0 || global.row == row_size_-1 ||
                 global.layer == 0 || global.layer == layer_size_-1)
         {
-            voxels_.push_back(border_);
+            if (is_periodic)
+                voxels_.push_back(periodic_);
+            else
+                voxels_.push_back(border_);
         }
         else
         {
@@ -377,7 +381,7 @@ std::pair<Coord, bool> LatticeSpace::move_(Coord general_from, Coord general_to)
         return std::pair<Coord, bool>(general2inner(general_from), true);
     }
 
-    const MolecularTypeBase* to_mt(voxels_.at(general_to));
+    MolecularTypeBase* to_mt(voxels_.at(general_to));
 
     if (to_mt == border_)
     {
@@ -385,7 +389,8 @@ std::pair<Coord, bool> LatticeSpace::move_(Coord general_from, Coord general_to)
     }
     else if (to_mt == periodic_)
     {
-        general_to = apply_boundary(general_to);
+        general_to = apply_boundary_(general_to);
+        to_mt = voxels_.at(general_to);
     }
 
     if (!to_mt->is_vacant())
@@ -565,12 +570,15 @@ Coord LatticeSpace::general2inner(Coord general_coord) const
     return global2coord(global);
 }
 
-Coord LatticeSpace::apply_boundary(const Coord& general_coord) const
+Coord LatticeSpace::apply_boundary_(const Coord& general_coord) const
 {
     Global global(coord2global(general_coord, col_size_, row_size_, layer_size_));
-    global.col = (global.col - 1) % col_size() + 1;
-    global.row = (global.row - 1) % row_size() + 1;
-    global.layer = (global.layer - 1) % layer_size() + 1;
+    global.col = (global.col - 1) % col_size();
+    global.row = (global.row - 1) % row_size();
+    global.layer = (global.layer - 1) % layer_size();
+    global.col = global.col < 0 ? global.col + col_size() + 1 : global.col + 1;
+    global.row = global.row < 0 ? global.row + row_size() + 1 : global.row + 1;
+    global.layer = global.layer < 0 ? global.layer + layer_size() + 1 : global.layer + 1;
     return global2coord(global, col_size_, row_size_, layer_size_);
 }
 

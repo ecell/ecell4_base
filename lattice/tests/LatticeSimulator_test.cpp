@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_binding_reaction)
     model->add_species(sp2);
     model->add_species(sp3);
 
-    model->add_reaction_rule(create_binding_reaction_rule(sp1,sp2,sp3,5.));
+    model->add_reaction_rule(create_binding_reaction_rule(sp1,sp2,sp3,1e-20));
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());

@@ -20,7 +20,7 @@ public:
 
     LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius,
             boost::shared_ptr<GSLRandomNumberGenerator> rng)
-        : space_(edge_lengths, voxel_radius), t_(0), rng_(rng)
+        : space_(edge_lengths, voxel_radius, true), t_(0), rng_(rng)
     {
     }
 

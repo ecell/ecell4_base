@@ -25,7 +25,7 @@ protected:
 
 public:
 
-    LatticeSpace(const Position3& edge_lengths, const Real& voxel_radius);
+    LatticeSpace(const Position3& edge_lengths, const Real& voxel_radius, const bool is_periodic);
     ~LatticeSpace();
 
     /*
@@ -112,7 +112,7 @@ public:
     }
 protected:
 
-    void set_lattice_properties();
+    void set_lattice_properties(const bool is_periodic);
     Coord get_neighbor(Coord general_coord, Integer nrand) const;
     std::pair<Coord, bool> move_(Coord general_from, Coord general_to);
     Coord get_coord(const ParticleID& pid) const;
@@ -136,7 +136,7 @@ protected:
     Coord inner2general(Coord inner_cood) const;
     Coord general2inner(Coord general_coord) const;
 
-    Coord apply_boundary(const Coord& general_coord) const;
+    Coord apply_boundary_(const Coord& general_coord) const;
 
 protected:
 

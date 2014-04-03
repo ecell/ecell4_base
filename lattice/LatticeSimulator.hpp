@@ -25,8 +25,8 @@ class LatticeSimulator
 protected:
     struct StepEvent : EventScheduler::Event
     {
-        StepEvent(LatticeSimulator* sim, const Species& species)
-            : EventScheduler::Event(0.0), sim_(sim), species_(species)
+        StepEvent(LatticeSimulator* sim, const Species& species, const Real& t)
+            : EventScheduler::Event(t), sim_(sim), species_(species)
         {
             const Real R(sim_->world_->normalized_voxel_radius());
             Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
@@ -37,7 +37,7 @@ protected:
                 dt_ = 2 * R * R / 3 / D;
             }
 
-            time_ = dt_;
+            time_ = t + dt_;
         }
 
         virtual ~StepEvent()
@@ -152,7 +152,7 @@ public:
 
 protected:
     boost::shared_ptr<EventScheduler::Event> create_step_event(
-            const Species& species);
+            const Species& species, const Real& t);
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
             const ReactionRule& reaction_rule);
     void attempt_reaction_(Coord from_coord, Coord to_coord);
@@ -160,6 +160,7 @@ protected:
             const Coord& from_coord, const Coord& to_coord);
     void apply_reaction_(const ReactionRule& reaction_rule, const Coord& cood);
     void step_();
+    void register_step_event(const Species& species);
 
 protected:
 
@@ -168,6 +169,8 @@ protected:
     bool is_initialized_;
 
     EventScheduler scheduler_;
+    std::vector<ReactionRule> reactions_;
+    std::vector<Species> new_species_;
 
     Real dt_;
 
