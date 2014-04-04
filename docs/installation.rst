@@ -2,8 +2,8 @@
  Installation and running IPython notebook
 ===========================================
 
-docker for Ubuntu
-=================
+E-Cell4 docker for Ubuntu
+===============================
 
 Please install docker with http://docs.docker.io/en/latest/installation/ubuntulinux/
 
@@ -14,8 +14,8 @@ Please install docker with http://docs.docker.io/en/latest/installation/ubuntuli
    # please open 0.0.0.0:8123 with your browser on Ubuntu host
    
 
-docker for Mac
-==============
+E-Cell4 docker for Mac
+===============================
 
 Please install boot2docker and docker with http://docs.docker.io/en/latest/installation/mac/ .
 
