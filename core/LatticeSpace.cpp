@@ -4,7 +4,7 @@ namespace ecell4
 {
 
 LatticeSpace::LatticeSpace(const Position3& edge_lengths, const Real& voxel_radius) :
-    theNormalizedVoxelRadius(voxel_radius), edge_lengths_(edge_lengths), t_(0)
+    theNormalizedVoxelRadius(voxel_radius), edge_lengths_(edge_lengths)
 {
     vacant_ = new VacantType();
     border_ = new MolecularType(Species("Border", "0"));

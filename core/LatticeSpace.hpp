@@ -51,11 +51,6 @@ public:
 
     bool update_particle(const ParticleID& pid, const Particle& p);
 
-    const Real t() const
-    {
-        return t_;
-    }
-
     /*
      * for Simulator
      *
@@ -137,6 +132,19 @@ public:
         save_lattice_space(*this, root);
     }
 
+    void load(const H5::Group& root)
+    {
+        clear();
+        load_lattice_space(root, this);
+    }
+
+protected:
+
+    void clear()
+    {
+        ; // do nothing
+    }
+
 protected:
 
     void set_lattice_properties();
@@ -169,7 +177,6 @@ protected:
 
     const Real theNormalizedVoxelRadius;
     const Position3 edge_lengths_;
-    Real t_;
 
     Real HCP_L, HCP_X, HCP_Y;
 

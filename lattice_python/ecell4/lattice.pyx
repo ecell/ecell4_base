@@ -149,6 +149,9 @@ cdef class LatticeWorld:
     def save(self, string filename):
         self.thisptr.get().save(filename)
 
+    def load(self, string filename):
+        self.thisptr.get().load(filename)
+
     def list_voxels(self, Species sp):
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
         voxels = self.thisptr.get().list_voxels(deref(sp.thisptr))

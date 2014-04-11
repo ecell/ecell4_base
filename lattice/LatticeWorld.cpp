@@ -8,16 +8,12 @@ namespace lattice
 
 const Real& LatticeWorld::t() const
 {
-    return t_;
+    return space_.t();
 }
 
 void LatticeWorld::set_t(const Real& t)
 {
-    if (t < 0.0)
-    {
-        throw std::invalid_argument("the time must be positive.");
-    }
-    t_ = t;
+    space_.set_t(t);
 }
 
 const Position3& LatticeWorld::edge_lengths() const

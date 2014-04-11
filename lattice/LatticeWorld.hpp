@@ -20,13 +20,13 @@ public:
 
     LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius,
             boost::shared_ptr<GSLRandomNumberGenerator> rng)
-        : space_(edge_lengths, voxel_radius), t_(0), rng_(rng)
+        : space_(edge_lengths, voxel_radius), rng_(rng)
     {
         ; // do nothing
     }
 
     LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius)
-        : space_(edge_lengths, voxel_radius), t_(0)
+        : space_(edge_lengths, voxel_radius)
     {
         rng_ = boost::shared_ptr<GSLRandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -34,7 +34,7 @@ public:
     }
 
     LatticeWorld(const Position3& edge_lengths)
-        : space_(edge_lengths, edge_lengths[0] / 100), t_(0) //XXX: sloppy default
+        : space_(edge_lengths, edge_lengths[0] / 100) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<GSLRandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -122,10 +122,19 @@ public:
         space_.save(group.get());
     }
 
+    void load(const std::string& filename)
+    {
+        boost::scoped_ptr<H5::H5File>
+            fin(new H5::H5File(filename, H5F_ACC_RDONLY));
+        const H5::Group group(fin->openGroup("LatticeSpace"));
+        space_.load(group);
+        sidgen_.load(*fin);
+        rng_->load(*fin);
+    }
+
 protected:
 
     LatticeSpace space_;
-    Real t_;
     boost::shared_ptr<GSLRandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 
