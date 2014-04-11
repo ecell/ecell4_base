@@ -218,8 +218,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save1)
             }
 
     H5::H5File fout("data.h5", H5F_ACC_TRUNC);
-    const std::string hdf5path("/");
-    lspace.save(&fout, hdf5path);
+    boost::scoped_ptr<H5::Group>
+        group(new H5::Group(fout.createGroup("LatticeSpace")));
+    lspace.save(group.get());
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_save2)
@@ -240,8 +241,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save2)
     }
 
     H5::H5File fout("data_hcp.h5", H5F_ACC_TRUNC);
-    const std::string hdf5path("/");
-    lspace.save(&fout, hdf5path);
+    boost::scoped_ptr<H5::Group>
+        group(new H5::Group(fout.createGroup("LatticeSpace")));
+    lspace.save(group.get());
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
@@ -262,8 +264,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
     }
 
     H5::H5File fout("data_structure.h5", H5F_ACC_TRUNC);
-    const std::string hdf5path("/");
-    lspace.save(&fout, hdf5path);
+    boost::scoped_ptr<H5::Group>
+        group(new H5::Group(fout.createGroup("LatticeSpace")));
+    lspace.save(group.get());
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)

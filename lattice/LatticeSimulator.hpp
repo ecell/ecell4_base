@@ -28,7 +28,7 @@ protected:
         StepEvent(LatticeSimulator* sim, const Species& species)
             : EventScheduler::Event(0.0), sim_(sim), species_(species)
         {
-            const Real R(sim_->world_->normalized_voxel_radius());
+            const Real R(sim_->world_->voxel_radius());
             Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
             if (D <= 0)
             {

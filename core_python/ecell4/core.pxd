@@ -226,3 +226,23 @@ cdef class Particle:
     cdef Cpp_Particle* thisptr
 
 cdef Particle Particle_from_Cpp_Particle(Cpp_Particle* p)
+
+## Cpp_Voxel
+#  ecell4::Voxel
+ctypedef int Coord
+
+cdef extern from "ecell4/core/Voxel.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Voxel "ecell4::Voxel":
+        Cpp_Voxel() except +
+        Cpp_Voxel(Cpp_Species, Coord, Real D) except +
+        Cpp_Voxel(Cpp_Voxel &rhs) except+
+        Coord coordinate()
+        Real D()
+        Cpp_Species &species()
+
+## Voxel
+#  a python wrapper for Cpp_Voxel
+cdef class Voxel:
+    cdef Cpp_Voxel* thisptr
+
+cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)

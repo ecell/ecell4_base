@@ -146,8 +146,39 @@ cdef class LatticeWorld:
     def add_molecules(self, Species sp, Integer num):
         self.thisptr.get().add_molecules(deref(sp.thisptr), num)
 
-    # def save(self, string filename):
-    #     self.thisptr.get().save(filename)
+    def save(self, string filename):
+        self.thisptr.get().save(filename)
+
+    def list_voxels(self, Species sp):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
+        voxels = self.thisptr.get().list_voxels(deref(sp.thisptr))
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]].iterator \
+            it = voxels.begin()
+        while it != voxels.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Voxel_from_Cpp_Voxel(
+                     <Cpp_Voxel*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def voxel_radius(self):
+        return self.thisptr.get().voxel_radius()
+
+    def col_size(self):
+        return self.thisptr.get().col_size()
+
+    def row_size(self):
+        return self.thisptr.get().row_size()
+
+    def layer_size(self):
+        return self.thisptr.get().layer_size()
+
+    def size(self):
+        return self.thisptr.get().size()
 
 ## LatticeSimulator
 #  a python wrapper for Cpp_LatticeSimulator

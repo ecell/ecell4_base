@@ -9,6 +9,7 @@
 #include "MolecularType.hpp"
 #include "VacantType.hpp"
 #include "Global.hpp"
+#include "Voxel.hpp"
 #include "LatticeSpaceHDF5Writer.hpp"
 
 namespace ecell4
@@ -60,6 +61,30 @@ public:
      *
      * using Species and Coord
      */
+    std::vector<std::pair<ParticleID, Voxel> >
+        list_voxels(const Species& sp) const;
+
+    Integer num_voxels(const Species& sp) const
+    {
+        spmap::const_iterator itr(spmap_.find(sp));
+        if (itr == spmap_.end())
+        {
+            return 0;
+        }
+        const MolecularTypeBase* mt(&((*itr).second));
+        return mt->size();
+    }
+
+    Integer num_voxels() const
+    {
+        Integer retval(0);
+        for (spmap::const_iterator itr(spmap_.begin()); itr != spmap_.end(); ++itr)
+        {
+            retval += (*itr).second.size();
+        }
+        return retval;
+    }
+
     std::vector<Species> list_species() const;
     std::vector<Coord> list_coords(const Species& sp) const;
     MolecularTypeBase* get_molecular_type(const Species& sp);
@@ -71,9 +96,9 @@ public:
     std::pair<Coord, bool> move_to_neighbor(Coord coord, Integer nrand);
     bool update_molecule(Coord coord, const Species& species);
 
-    Real normalized_voxel_radius() const
+    Real voxel_radius() const
     {
-        return theNormalizedVoxelRadius;
+        return theNormalizedVoxelRadius; //XXX: ???
     }
 
     inline Integer col_size() const
@@ -105,11 +130,13 @@ public:
     /*
      * HDF5 Save
      */
-    void save(H5::H5File* fout, const std::string& hdf5path) const
+    void save(H5::Group* root) const
     {
-        LatticeSpaceHDF5Writer<LatticeSpace> writer(*this);
-        writer.save(fout, hdf5path);
+        // LatticeSpaceHDF5Writer<LatticeSpace> writer(*this);
+        // writer.save(fout, hdf5path);
+        save_lattice_space(*this, root);
     }
+
 protected:
 
     void set_lattice_properties();
@@ -154,7 +181,6 @@ protected:
     MolecularTypeBase* periodic_;
 
     Integer row_size_, layer_size_, col_size_;
-
 };
 
 }

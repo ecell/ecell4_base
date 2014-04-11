@@ -77,6 +77,12 @@ std::vector<Species> LatticeWorld::list_species() const
     return space_.list_species();
 }
 
+std::vector<std::pair<ParticleID, Voxel> >
+    LatticeWorld::list_voxels(const Species& sp) const
+{
+    return space_.list_voxels(sp);
+}
+
 std::vector<Coord> LatticeWorld::list_coords(const Species& sp) const
 {
     return space_.list_coords(sp);

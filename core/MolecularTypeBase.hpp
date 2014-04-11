@@ -64,6 +64,11 @@ public:
         return voxels_;
     }
 
+    const container_type::size_type size() const
+    {
+        return voxels_.size();
+    }
+
     container_type::iterator begin()
     {
         return voxels_.begin();

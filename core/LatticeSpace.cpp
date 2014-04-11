@@ -226,6 +226,25 @@ std::vector<Coord> LatticeSpace::list_coords(const Species& sp) const
     return retval;
 }
 
+std::vector<std::pair<ParticleID, Voxel> >
+LatticeSpace::list_voxels(const Species& sp) const
+{
+    std::vector<std::pair<ParticleID, Voxel> > retval;
+    spmap::const_iterator itr(spmap_.find(sp));
+    if (itr == spmap_.end())
+    {
+        return retval;
+    }
+
+    const MolecularTypeBase* mt(&((*itr).second));
+    for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
+        itr != mt->end(); ++itr)
+    {
+        retval.push_back(std::make_pair((*itr).second, Voxel(sp, general2inner((*itr).first), 0.0))); //XXX: ignoreing D.
+    }
+    return retval;
+}
+
 MolecularTypeBase* LatticeSpace::get_molecular_type(const Species& sp)
 {
     spmap::iterator itr(spmap_.find(sp));
@@ -465,12 +484,13 @@ Coord LatticeSpace::get_neighbor(Coord general_coord, Integer nrand) const
 const Particle LatticeSpace::particle_at(Coord coord) const
 {
     const MolecularTypeBase* ptr_mt(voxels_.at(coord));
-    const Species& sp = ptr_mt->species();
-    const Position3& pos = coord2position(coord);
-    const Real& radius = 0;
-    const Real& D = 0;
-    Particle particle(sp, pos, radius, D);
-    return particle;
+    // const Species& sp = ptr_mt->species();
+    // const Position3& pos = coord2position(coord);
+    // const Real& radius = 0;
+    // const Real& D = 0;
+    // Particle particle(sp, pos, radius, D);
+    // return particle;
+    return Particle(ptr_mt->species(), coord2position(coord), voxel_radius(), 0);
 }
 
 bool LatticeSpace::is_in_range(Coord coord) const

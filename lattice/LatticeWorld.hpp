@@ -60,6 +60,9 @@ public:
 
     bool update_particle(const ParticleID& pid, const Particle& p);
 
+    std::vector<std::pair<ParticleID, Voxel> >
+        list_voxels(const Species& sp) const;
+
     std::vector<Species> list_species() const;
     std::vector<Coord> list_coords(const Species& sp) const;
     MolecularTypeBase* get_molecular_type(const Species& species);
@@ -72,9 +75,9 @@ public:
     std::pair<Coord, bool> move_to_neighbor(Coord coord, Integer nrand);
     bool update_molecule(Coord at, Species species);
 
-    Real normalized_voxel_radius() const
+    Real voxel_radius() const
     {
-        return space_.normalized_voxel_radius();
+        return space_.voxel_radius();
     }
 
     boost::shared_ptr<GSLRandomNumberGenerator> rng()
@@ -108,9 +111,15 @@ public:
     /*
      * HDF5 Save
      */
-    void save(H5::H5File* fout, const std::string& hdf5path) const
+    void save(const std::string& filename) const
     {
-        space_.save(fout, hdf5path);
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename, H5F_ACC_TRUNC));
+        rng_->save(fout.get());
+        sidgen_.save(fout.get());
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(fout->createGroup("LatticeSpace")));
+        space_.save(group.get());
     }
 
 protected:

@@ -43,7 +43,13 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer num_molecules(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
         # shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
-        # void save(string filename)
+        void save(string filename)
+        vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels(Cpp_Species& sp)
+        Real voxel_radius()
+        Integer col_size()
+        Integer row_size()
+        Integer layer_size()
+        Integer size()
 
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld

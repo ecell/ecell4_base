@@ -68,7 +68,7 @@ void LatticeSimulator::attempt_reaction_(Coord from_coord, Coord to_coord)
     {
         const Real k((*itr).k());
         const Real P(k * factor/ (6 * sqrt(2.)
-                    * (Da + Db) * world_->normalized_voxel_radius()));
+                    * (Da + Db) * world_->voxel_radius()));
         accp += P;
         if (accp >= rnd)
         {
