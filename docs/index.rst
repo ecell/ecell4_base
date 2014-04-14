@@ -5,6 +5,7 @@ E-Cell4 documentation
    :maxdepth: 2
 
    installation
+   sample
    comparison
 
 index
