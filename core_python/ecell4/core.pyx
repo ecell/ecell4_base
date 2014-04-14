@@ -1,3 +1,4 @@
+include "UnitSpecies.pyx"
 include "Species.pyx"
 include "ReactionRule.pyx"
 include "CompartmentSpace.pyx"

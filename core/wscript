@@ -19,7 +19,7 @@ hppfiles = [
     'extras.hpp', 'get_mapper_mf.hpp', 'config.h', 'H5Save.hpp',
     'MolecularTypeBase.hpp', 'MolecularType.hpp',
     'VacantType.hpp', 'Global.hpp', 'LatticeSpace.hpp', 'Voxel.hpp',
-    'DynamicPriorityQueue.hpp', 'swap.hpp', 'EventScheduler.hpp'
+    'DynamicPriorityQueue.hpp', 'swap.hpp', 'EventScheduler.hpp', "UnitSpecies.hpp"
     ]
 
 cppfiles = [

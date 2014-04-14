@@ -34,6 +34,26 @@ cdef class GSLRandomNumberGenerator:
     # cdef Cpp_GSLRandomNumberGenerator* thisptr
     cdef shared_ptr[Cpp_GSLRandomNumberGenerator]* thisptr
 
+## Cpp_UnitSpecies
+#  ecell4::UnitSpecies
+cdef extern from "ecell4/core/UnitSpecies.hpp" namespace "ecell4":
+    cdef cppclass Cpp_UnitSpecies "ecell4::UnitSpecies":
+        Cpp_UnitSpecies() except +
+        Cpp_UnitSpecies(string) except +
+        Cpp_UnitSpecies(Cpp_UnitSpecies&) except+
+        bool operator==(Cpp_UnitSpecies& rhs)
+        bool operator<(Cpp_UnitSpecies& rhs)
+        bool operator>(Cpp_UnitSpecies& rhs)
+        string serial() # string == serial_type
+        string name()
+
+## UnitSpecies
+#  a python wrapper for Cpp_UnitSpecies
+cdef class UnitSpecies:
+    cdef Cpp_UnitSpecies* thisptr
+
+cdef UnitSpecies UnitSpecies_from_Cpp_UnitSpecies(Cpp_UnitSpecies *sp)
+
 ## Cpp_Species
 #  ecell4::Species
 cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
@@ -52,6 +72,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         void set_attribute(string, string)
         void remove_attribute(string)
         bool has_attribute(string)
+        void add_unit(Cpp_UnitSpecies)
 
 ## Species
 #  a python wrapper for Cpp_Species

@@ -5,8 +5,11 @@ cimport util
 
 cdef class Species:
 
-    def __cinit__(self, string name):
-        self.thisptr = new Cpp_Species(name)
+    def __cinit__(self, name = None):
+        if name is None:
+            self.thisptr = new Cpp_Species()
+        else:
+            self.thisptr = new Cpp_Species(<string> name)
 
     def __dealloc__(self):
         del self.thisptr
@@ -41,6 +44,9 @@ cdef class Species:
 
     def has_attribute(self, string name):
         return self.thisptr.has_attribute(name)
+
+    def add_unit(self, UnitSpecies usp):
+        self.thisptr.add_unit(deref(usp.thisptr))
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))

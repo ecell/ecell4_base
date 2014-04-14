@@ -19,6 +19,7 @@
 #include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "exceptions.hpp"
+#include "UnitSpecies.hpp"
 
 
 namespace ecell4
@@ -37,35 +38,64 @@ protected:
 
 public:
 
-    Species(const std::string& name = "")
-        : name_(name)
+    Species()
+        : units_()
     {
-        ;
+        ; // do nothing
+    }
+
+    Species(const std::string& name)
+        : units_()
+    {
+        units_.push_back(UnitSpecies(name));
     }
 
     Species(
         const std::string& name, const std::string& D)
-        : name_(name)
+        : units_()
     {
+        units_.push_back(UnitSpecies(name));
         set_attribute("D", D);
     }
 
     Species(
         const std::string& name, const std::string& radius, const std::string& D)
-        : name_(name)
+        : units_()
     {
+        units_.push_back(UnitSpecies(name));
         set_attribute("radius", radius);
         set_attribute("D", D);
     }
 
     serial_type serial() const
     {
+        //XXX: sort
+        //XXX: accumulate
         return name();
     }
 
     std::string name() const
     {
-        return name_;
+        if (units_.size() == 0)
+        {
+            return "";
+        }
+
+        //XXX: accumulate
+        std::ostringstream oss;
+        std::vector<UnitSpecies>::const_iterator it(units_.begin());
+        oss << (*it).name();
+        ++it;
+        for (; it != units_.end(); ++it)
+        {
+            oss << "." << (*it).name();
+        }
+        return oss.str();
+    }
+
+    void add_unit(const UnitSpecies& usp)
+    {
+        units_.push_back(usp);
     }
 
     bool match(const Species& sp) const
@@ -125,10 +155,9 @@ public:
     bool operator<(const Species& rhs) const;
     bool operator>(const Species& rhs) const;
 
-
 protected:
 
-    std::string name_;
+    std::vector<UnitSpecies> units_;
     attributes_container_type attributes_;
 };
 
