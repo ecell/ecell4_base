@@ -80,7 +80,7 @@ Plot with Matplotlib:
     plt.show()
 
 
-.. image:: a_files/a_12_0.png
+.. image:: https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/timeseries.png
 
 
 A simple VTK viewer is also available:
@@ -103,6 +103,4 @@ A simple VTK viewer is also available:
     Number Of Molecules: A=31, B=31, AB=29
 
 
-.. image:: a_files/a_15_1.png
-
-
+.. image:: https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/particle.png
