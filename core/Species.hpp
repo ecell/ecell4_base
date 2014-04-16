@@ -71,24 +71,7 @@ public:
 
     serial_type serial() const
     {
-        if (units_.size() == 0)
-        {
-            return "";
-        }
-
-        container_type copied(units_.size());
-        std::copy(units_.begin(), units_.end(), copied.begin());
-        std::sort(copied.begin(), copied.end());
-
-        container_type::const_iterator it(copied.begin());
-        std::string retval((*it).name());
-        ++it;
-        for (; it != copied.end(); ++it)
-        {
-            retval += ".";
-            retval += (*it).name();
-        }
-        return retval;
+        return name();
     }
 
     std::string name() const
@@ -111,7 +94,7 @@ public:
 
     void add_unit(const UnitSpecies& usp)
     {
-        units_.push_back(usp);
+        units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
     }
 
     inline container_type::const_iterator begin() const
@@ -126,15 +109,39 @@ public:
 
     bool match(const Species& target) const
     {
-        for (container_type::const_iterator i(units_.begin()); i != units_.end(); ++i)
+        container_type::const_iterator i(units_.begin()), j(target.begin());
+        while (i != units_.end())
         {
-            if (std::count(target.begin(), target.end(), (*i))
-                < std::count(units_.begin(), units_.end(), (*i))) //XXX:
+            const UnitSpecies& usp(*i);
+
+            j = std::lower_bound(j, target.end(), usp);
+            if (j == target.end())
             {
                 return false;
             }
+
+            const container_type::const_iterator
+                nexti(std::upper_bound(i, units_.end(), usp)),
+                nextj(std::upper_bound(j, target.end(), usp));
+            if (nextj - j < nexti - i)
+            {
+                return false;
+            }
+
+            i = nexti;
+            j = nextj;
         }
         return true;
+
+        // for (container_type::const_iterator i(units_.begin()); i != units_.end(); ++i)
+        // {
+        //     if (std::count(target.begin(), target.end(), (*i))
+        //         < std::count(units_.begin(), units_.end(), (*i))) //XXX:
+        //     {
+        //         return false;
+        //     }
+        // }
+        // return true;
     }
 
     const attributes_container_type& attributes() const
