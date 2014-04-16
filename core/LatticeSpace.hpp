@@ -80,6 +80,31 @@ public:
         return retval;
     }
 
+    bool update_voxel(const ParticleID& pid, const Voxel& v)
+    {
+        const Coord to_coord(inner2general(v.coordinate()));
+        if (to_coord < 0 && to_coord >= row_size_ * col_size_ * layer_size_) //XXX: is_in_range
+        {
+            return false;
+        }
+
+        MolecularTypeBase* dest_mt(get_molecular_type(v.species()));
+        const Coord from_coord(get_coord(pid));
+        if (from_coord != -1)
+        {
+            MolecularTypeBase* src_mt(voxels_.at(from_coord));
+            src_mt->removeVoxel(from_coord);
+            voxel_container::iterator itr(voxels_.begin() + from_coord);
+            voxels_.erase(itr);
+            voxels_.insert(itr, vacant_);
+        }
+
+        dest_mt->addVoxel(MolecularTypeBase::particle_info(to_coord, pid));
+        voxel_container::iterator itr(voxels_.begin() + to_coord);
+        (*itr) = dest_mt;
+        return true;
+    }
+
     std::vector<Species> list_species() const;
     std::vector<Coord> list_coords(const Species& sp) const;
     MolecularTypeBase* get_molecular_type(const Species& sp);
@@ -134,15 +159,17 @@ public:
 
     void load(const H5::Group& root)
     {
-        clear();
         load_lattice_space(root, this);
     }
 
-protected:
-
-    void clear()
+    void cleanup(const Position3& edge_lengths, const Real& voxel_radius)
     {
-        ; // do nothing
+        edge_lengths_ = edge_lengths;
+        theNormalizedVoxelRadius = voxel_radius;
+
+        voxels_.clear();
+        spmap_.clear();
+        set_lattice_properties();
     }
 
 protected:
@@ -175,8 +202,8 @@ protected:
 
 protected:
 
-    const Real theNormalizedVoxelRadius;
-    const Position3 edge_lengths_;
+    Real theNormalizedVoxelRadius;
+    Position3 edge_lengths_;
 
     Real HCP_L, HCP_X, HCP_Y;
 

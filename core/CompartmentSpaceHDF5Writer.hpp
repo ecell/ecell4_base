@@ -83,7 +83,7 @@ template<typename Tspace_, typename Tdata_>
 void save_compartment_space(const Tspace_& space, H5::Group* root)
 {
     typedef CompartmentSpaceHDF5Traits<Tdata_> traits_type;
-    typedef typename traits_type::num_molecules_type num_molecules_type;
+    // typedef typename traits_type::num_molecules_type num_molecules_type;
     typedef typename traits_type::species_id_table_struct species_id_table_struct;
     typedef typename traits_type::species_num_struct species_num_struct;
 

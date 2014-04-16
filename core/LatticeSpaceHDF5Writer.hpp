@@ -2,6 +2,7 @@
 #define __ECELL4_LATTICE_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
+#include <iostream>
 #include <sstream>
 #include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
@@ -156,44 +157,51 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     root.openAttribute("t").read(H5::PredType::IEEE_F64LE, &t);
     space->set_t(t);
 
-    // Position3 edge_lengths;
-    // const hsize_t dims[] = {3};
-    // const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
-    // root.openAttribute("edge_lengths").read(lengths_type, &edge_lengths);
-    // space->set_edge_lengths(edge_lengths);
+    Position3 edge_lengths;
+    const hsize_t dims[] = {3};
+    const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
+    root.openAttribute("edge_lengths").read(lengths_type, &edge_lengths);
 
-    // {
-    //     H5::DataSet species_dset(root.openDataSet("species"));
-    //     const unsigned int num_species(
-    //         species_dset.getSpace().getSimpleExtentNpoints());
-    //     boost::scoped_array<h5_species_struct> h5_species_table(
-    //         new h5_species_struct[num_species]);
-    //     species_dset.read(
-    //         h5_species_table.get(), traits_type::get_species_comp_type());
-    //     species_dset.close();
+    double voxel_radius;
+    root.openAttribute("voxel_radius").read(H5::PredType::IEEE_F64LE, &voxel_radius);
 
-    //     H5::DataSet voxel_dset(root.openDataSet("voxels"));
-    //     const unsigned int num_voxels(
-    //         voxel_dset.getSpace().getSimpleExtentNpoints());
-    //     boost::scoped_array<h5_voxel_struct> h5_voxel_table(
-    //         new h5_voxel_struct[num_voxels]);
-    //     voxel_dset.read(
-    //         h5_voxel_table.get(), traits_type::get_voxel_comp_type());
-    //     voxel_dset.close();
+    space->cleanup(edge_lengths, voxel_radius);
 
-    //     typedef utils::get_mapper_mf<unsigned int, Species::serial_type>::type
-    //         species_id_map_type;
-    //     species_id_map_type species_id_map;
-    //     for (unsigned int i(0); i < num_species; ++i)
-    //     {
-    //         species_id_map[h5_species_table[i].id] = h5_species_table[i].serial;
-    //     }
+    {
+        H5::DataSet species_dset(root.openDataSet("species"));
+        const unsigned int num_species(
+            species_dset.getSpace().getSimpleExtentNpoints());
+        boost::scoped_array<h5_species_struct> h5_species_table(
+            new h5_species_struct[num_species]);
+        species_dset.read(
+            h5_species_table.get(), traits_type::get_species_comp_type());
+        species_dset.close();
 
-    //     for (unsigned int i(0); i < num_voxels; ++i)
-    //     {
-    //         space->update_voxel(ParticleID(std::make_pair(h5_voxel_table[i].lot, h5_voxel_table[i].serial)), Particle(Species(species_id_map[h5_voxel_table[i].sid]), Position3(h5_voxel_table[i].posx, h5_voxel_table[i].posy, h5_voxel_table[i].posz), h5_voxel_table[i].radius, h5_voxel_table[i].D));
-    //     }
-    // }
+        H5::DataSet voxel_dset(root.openDataSet("voxels"));
+        const unsigned int num_voxels(
+            voxel_dset.getSpace().getSimpleExtentNpoints());
+        boost::scoped_array<h5_voxel_struct> h5_voxel_table(
+            new h5_voxel_struct[num_voxels]);
+        voxel_dset.read(
+            h5_voxel_table.get(), traits_type::get_voxel_comp_type());
+        voxel_dset.close();
+
+        typedef utils::get_mapper_mf<unsigned int, Species::serial_type>::type
+            species_id_map_type;
+        species_id_map_type species_id_map;
+        for (unsigned int i(0); i < num_species; ++i)
+        {
+            species_id_map[h5_species_table[i].id] = h5_species_table[i].serial;
+        }
+
+        for (unsigned int i(0); i < num_voxels; ++i)
+        {
+            space->update_voxel(
+                ParticleID(std::make_pair(h5_voxel_table[i].lot, h5_voxel_table[i].serial)),
+                Voxel(Species(species_id_map[h5_voxel_table[i].sid]),
+                    h5_voxel_table[i].coord, h5_voxel_table[i].D));
+        }
+    }
 }
 
 } // ecell4
