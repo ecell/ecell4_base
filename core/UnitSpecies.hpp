@@ -25,7 +25,7 @@ public:
 
 public:
 
-    UnitSpecies(const std::string& name)
+    UnitSpecies(const std::string& name = "")
         : name_(name)
     {
         ;

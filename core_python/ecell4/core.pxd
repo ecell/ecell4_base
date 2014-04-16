@@ -69,6 +69,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         string serial() # string == serial_type
         string name()
         string get_attribute(string)
+        bool match(Cpp_Species&)
         void set_attribute(string, string)
         void remove_attribute(string)
         bool has_attribute(string)

@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <algorithm>
 
 #include "config.h"
 
@@ -30,6 +31,7 @@ class Species
 public:
 
     typedef std::string serial_type;
+    typedef std::vector<UnitSpecies> container_type;
 
 protected:
 
@@ -69,9 +71,24 @@ public:
 
     serial_type serial() const
     {
-        //XXX: sort
-        //XXX: accumulate
-        return name();
+        if (units_.size() == 0)
+        {
+            return "";
+        }
+
+        container_type copied(units_.size());
+        std::copy(units_.begin(), units_.end(), copied.begin());
+        std::sort(copied.begin(), copied.end());
+
+        container_type::const_iterator it(copied.begin());
+        std::string retval((*it).name());
+        ++it;
+        for (; it != copied.end(); ++it)
+        {
+            retval += ".";
+            retval += (*it).name();
+        }
+        return retval;
     }
 
     std::string name() const
@@ -81,16 +98,15 @@ public:
             return "";
         }
 
-        //XXX: accumulate
-        std::ostringstream oss;
-        std::vector<UnitSpecies>::const_iterator it(units_.begin());
-        oss << (*it).name();
+        container_type::const_iterator it(units_.begin());
+        std::string retval((*it).name());
         ++it;
         for (; it != units_.end(); ++it)
         {
-            oss << "." << (*it).name();
+            retval += ".";
+            retval += (*it).name();
         }
-        return oss.str();
+        return retval;
     }
 
     void add_unit(const UnitSpecies& usp)
@@ -98,9 +114,27 @@ public:
         units_.push_back(usp);
     }
 
-    bool match(const Species& sp) const
+    inline container_type::const_iterator begin() const
     {
-        return (sp == *this);
+        return units_.begin();
+    }
+
+    inline container_type::const_iterator end() const
+    {
+        return units_.end();
+    }
+
+    bool match(const Species& target) const
+    {
+        for (container_type::const_iterator i(units_.begin()); i != units_.end(); ++i)
+        {
+            if (std::count(target.begin(), target.end(), (*i))
+                < std::count(units_.begin(), units_.end(), (*i))) //XXX:
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     const attributes_container_type& attributes() const

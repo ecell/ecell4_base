@@ -48,6 +48,9 @@ cdef class Species:
     def add_unit(self, UnitSpecies usp):
         self.thisptr.add_unit(deref(usp.thisptr))
 
+    def match(self, Species rhs):
+        return self.thisptr.match(deref(rhs.thisptr))
+
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))
     r = Species("")
