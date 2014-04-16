@@ -6,13 +6,14 @@
 #include <map>
 #include <stdexcept>
 #include "Space.hpp"
-#include "MolecularType.hpp"
-#include "VacantType.hpp"
 #include "Global.hpp"
 #include "LatticeSpaceHDF5Writer.hpp"
 
 namespace ecell4
 {
+
+class MolecularTypeBase;
+class MolecularType;
 
 class LatticeSpace
     : public Space
@@ -22,8 +23,12 @@ protected:
     typedef std::map<Species, MolecularType> spmap;
     typedef std::vector<MolecularTypeBase*> voxel_container;
 
-
 public:
+
+    typedef Integer coordinate_type;
+    typedef coordinate_type private_coordinate_type;
+
+    typedef std::pair<private_coordinate_type, ParticleID> particle_info;
 
     LatticeSpace(const Position3& edge_lengths, const Real& voxel_radius, const bool is_periodic);
     ~LatticeSpace();
@@ -58,23 +63,23 @@ public:
     /*
      * for Simulator
      *
-     * using Species and Coord
+     * using Species and coordinate_type
      */
     std::vector<Species> list_species() const;
-    std::vector<Coord> list_coords(const Species& sp) const;
+    std::vector<coordinate_type> list_coords(const Species& sp) const;
     MolecularTypeBase* get_molecular_type(const Species& sp);
-    MolecularTypeBase* get_molecular_type(Coord coord) const;
+    MolecularTypeBase* get_molecular_type(private_coordinate_type coord) const;
     bool add_species(const Species& sp);
-    bool add_molecule(const Species& sp, Coord coord, const ParticleID& pid);
-    bool remove_molecule(const Coord coord);
-    std::pair<Coord, bool> move(Coord from, Coord to);
-    std::pair<Coord, bool> move_to_neighbor(Coord coord, Integer nrand);
-    std::pair<Coord, bool> move_to_neighbor(MolecularTypeBase::particle_info& info, Integer nrand);
-    bool update_molecule(Coord coord, const Species& species);
+    bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
+    bool remove_molecule(const private_coordinate_type coord);
+    bool move(coordinate_type from, coordinate_type to);
+    std::pair<private_coordinate_type, bool> move_to_neighbor(private_coordinate_type coord, Integer nrand);
+    std::pair<private_coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
+    bool update_molecule(private_coordinate_type coord, const Species& species);
 
-    Real normalized_voxel_radius() const
+    Real voxel_radius() const
     {
-        return theNormalizedVoxelRadius;
+        return voxel_radius_;
     }
 
     inline Integer col_size() const
@@ -100,8 +105,13 @@ public:
     /*
      * Coordinate transformations
      */
-    Coord global2coord(const Global& global) const;
-    const Global coord2global(Coord coord) const;
+    coordinate_type global2coord(const Global& global) const;
+    coordinate_type global2private_coord(const Global& global) const;
+    const Global coord2global(coordinate_type coord) const;
+    const Global private_coord2global(private_coordinate_type coord) const;
+
+    private_coordinate_type coord2private(coordinate_type cood) const;
+    coordinate_type private2coord(private_coordinate_type private_coord) const;
 
     /*
      * HDF5 Save
@@ -114,35 +124,41 @@ public:
 protected:
 
     void set_lattice_properties(const bool is_periodic);
-    Coord get_neighbor(Coord general_coord, Integer nrand) const;
-    std::pair<Coord, bool> move_(Coord general_from, Coord general_to);
-    std::pair<Coord, bool> move_(MolecularTypeBase::particle_info& info, Coord general_to);
-    Coord get_coord(const ParticleID& pid) const;
-    const Particle particle_at(Coord coord) const;
-    bool is_in_range(Coord coord) const;
+    private_coordinate_type get_neighbor(
+            private_coordinate_type private_coord, Integer nrand) const;
+    std::pair<private_coordinate_type, bool> move_(
+            private_coordinate_type private_from, private_coordinate_type private_to);
+    std::pair<private_coordinate_type, bool> move_(
+            particle_info& info, private_coordinate_type private_to);
+    private_coordinate_type get_coord(const ParticleID& pid) const;
+    const Particle particle_at(private_coordinate_type coord) const;
+    bool is_in_range(coordinate_type coord) const;
 
     /*
      * Coordinate transformations
      */
-    Coord global2coord(const Global& global,
+    private_coordinate_type global2coord_(const Global& global,
             Integer col_size, Integer row_size, Integer layer_size) const;
-    const Global coord2global(Coord coord,
+    const Global coord2global_(coordinate_type coord,
             Integer col_size, Integer row_size, Integer layer_size) const;
+
+    const Global private_coord2private_global(
+            const private_coordinate_type privatre_coord) const;
+    const private_coordinate_type private_global2private_coord(
+            const Global private_global) const;
 
     const Position3 global2position(const Global& global) const;
     const Global position2global(const Position3& pos) const;
 
-    const Position3 coord2position(Coord coord) const;
-    Coord position2coord(const Position3& pos) const;
+    const Position3 coord2position(coordinate_type coord) const;
+    coordinate_type position2coord(const Position3& pos) const;
 
-    Coord inner2general(Coord inner_cood) const;
-    Coord general2inner(Coord general_coord) const;
-
-    Coord apply_boundary_(const Coord& general_coord) const;
+    private_coordinate_type apply_boundary_(
+            const private_coordinate_type& private_coord) const;
 
 protected:
 
-    const Real theNormalizedVoxelRadius;
+    const Real voxel_radius_;
     const Position3 edge_lengths_;
     Real t_;
 

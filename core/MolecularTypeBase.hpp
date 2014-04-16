@@ -5,17 +5,16 @@
 #include "Species.hpp"
 #include "Identifier.hpp"
 #include "RandomNumberGenerator.hpp"
+#include "LatticeSpace.hpp"
 
 namespace ecell4
 {
-
-typedef Integer Coord;
 
 class MolecularTypeBase
 {
 
 public:
-    typedef std::pair<Coord, ParticleID> particle_info;
+    typedef LatticeSpace::particle_info particle_info;
     typedef std::vector<particle_info> container_type;
 
 public:
@@ -44,7 +43,7 @@ public:
         voxels_.push_back(info);
     }
 
-    bool removeVoxel(Coord coord)
+    bool removeVoxel(LatticeSpace::private_coordinate_type coord)
     {
         container_type::iterator itr(find(coord));
         if (itr != voxels_.end())
@@ -100,7 +99,7 @@ public:
         return voxels_.end();
     }
 
-    container_type::iterator find(Coord coord)
+    container_type::iterator find(LatticeSpace::private_coordinate_type coord)
     {
         container_type::iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
@@ -113,7 +112,7 @@ public:
         return itr;
     }
 
-    container_type::const_iterator find(Coord coord) const
+    container_type::const_iterator find(LatticeSpace::private_coordinate_type coord) const
     {
         container_type::const_iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)

@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 
+#include <ecell4/core/MolecularTypeBase.hpp>
 #include <ecell4/core/LatticeSpace.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
@@ -17,6 +18,10 @@ namespace lattice
 class LatticeWorld
 {
 public:
+
+    typedef LatticeSpace::coordinate_type coordinate_type;
+    typedef LatticeSpace::private_coordinate_type private_coordinate_type;
+    typedef LatticeSpace::particle_info particle_info;
 
     LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius,
             boost::shared_ptr<GSLRandomNumberGenerator> rng)
@@ -44,22 +49,21 @@ public:
     bool update_particle(const ParticleID& pid, const Particle& p);
 
     std::vector<Species> list_species() const;
-    std::vector<Coord> list_coords(const Species& sp) const;
+    std::vector<coordinate_type> list_coords(const Species& sp) const;
     MolecularTypeBase* get_molecular_type(const Species& species);
-    MolecularTypeBase* get_molecular_type(Coord coord);
+    MolecularTypeBase* get_molecular_type(const private_coordinate_type& coord);
     bool add_species(const Species& sp);
-    bool add_molecule(const Species& sp, Coord coord);
+    std::pair<ParticleID, bool> add_molecule(const Species& sp, coordinate_type coord);
     bool add_molecules(const Species& sp, const Integer& num);
-    bool remove_molecule(const Coord coord);
-    std::pair<Coord, bool> move(Coord from, Coord to);
-    std::pair<Coord, bool> move_to_neighbor(Coord coord, Integer nrand);
-    std::pair<Coord, bool> move_to_neighbor(
-            MolecularTypeBase::particle_info& info, Integer nrand);
-    bool update_molecule(Coord at, Species species);
+    bool remove_molecule(const coordinate_type coord);
+    bool move(coordinate_type from, coordinate_type to);
+    std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);
+    std::pair<coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
+    bool update_molecule(coordinate_type at, Species species);
 
     Real normalized_voxel_radius() const
     {
-        return space_.normalized_voxel_radius();
+        return space_.voxel_radius();
     }
 
     boost::shared_ptr<GSLRandomNumberGenerator> rng()
@@ -87,8 +91,13 @@ public:
         return space_.size();
     }
 
-    Coord global2coord(const Global& global) const;
-    const Global coord2global(Coord coord) const;
+    coordinate_type global2coord(const Global& global) const;
+    const Global coord2global(coordinate_type coord) const;
+
+    coordinate_type private2coord(const private_coordinate_type&
+            private_coord) const;
+    private_coordinate_type coord2private(const coordinate_type&
+            coord) const;
 
     /*
      * HDF5 Save

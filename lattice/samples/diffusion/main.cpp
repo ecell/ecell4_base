@@ -27,7 +27,7 @@ void run()
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    //rng->seed(time(NULL));
+    rng->seed(time(NULL));
 
     boost::shared_ptr<world_type> world(
         new world_type(edge_lengths, voxel_radius, rng));

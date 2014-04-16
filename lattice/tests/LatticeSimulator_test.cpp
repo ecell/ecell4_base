@@ -78,7 +78,9 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_particle)
     boost::shared_ptr<LatticeWorld> world(
             new LatticeWorld(edge_lengths, voxel_radius, rng));
 
-    BOOST_CHECK(world->add_molecule(sp, 36));
+    LatticeWorld::private_coordinate_type private_coord(
+            world->coord2private(36));
+    BOOST_CHECK(world->add_molecule(sp, private_coord).second);
 
     LatticeSimulator sim(model, world);
 
@@ -258,7 +260,6 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unimolecular_reaction)
     world->save(&fout_after, "/");
 }
 
-/*
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_binding_reaction)
 {
     const Real L(2.5e-8);
@@ -288,15 +289,17 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_binding_reaction)
 
     H5::H5File fout_before("data_binging_reaction0.h5", H5F_ACC_TRUNC);
     world->save(&fout_before, "/");
-    sim.step();
-    sim.step();
-    BOOST_ASSERT(world->num_molecules(sp3) > 0);
-    BOOST_ASSERT(25 - world->num_molecules(sp1) == world->num_molecules(sp3));
-    BOOST_ASSERT(25 - world->num_molecules(sp2) == world->num_molecules(sp3));
+    for (Integer i(0); i < 20; ++i)
+    {
+        sim.step();
+    }
     H5::H5File fout_after("data_binding_reaction1.h5", H5F_ACC_TRUNC);
     world->save(&fout_after, "/");
+    Integer num_sp3(world->num_molecules(sp3));
+    BOOST_ASSERT(num_sp3 > 0);
+    BOOST_CHECK_EQUAL(25 - world->num_molecules(sp1), num_sp3);
+    BOOST_CHECK_EQUAL(25 - world->num_molecules(sp2), num_sp3);
 }
-*/
 
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unbinding_reaction)
 {
@@ -330,9 +333,10 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unbinding_reaction)
     {
         sim.step();
     }
-    BOOST_ASSERT(world->num_molecules(sp1) < 25);
-    BOOST_ASSERT(25 - world->num_molecules(sp1) == world->num_molecules(sp2));
-    BOOST_ASSERT(25 - world->num_molecules(sp1) == world->num_molecules(sp3));
+    const Integer num_sp1(world->num_molecules(sp1));
+    BOOST_ASSERT(num_sp1 < 25);
+    BOOST_CHECK_EQUAL(25 - num_sp1, world->num_molecules(sp2));
+    BOOST_CHECK_EQUAL(25 - num_sp1, world->num_molecules(sp3));
     H5::H5File fout_after("data_unbinding_reaction1.h5", H5F_ACC_TRUNC);
     world->save(&fout_after, "/");
 }
@@ -394,12 +398,12 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     boost::shared_ptr<LatticeWorld> world(
             new LatticeWorld(edge_lengths, voxel_radius, rng));
 
-    Coord c1(world->global2coord(Global(40,34,56))),
+    LatticeWorld::coordinate_type c1(world->global2coord(Global(40,34,56))),
           c2(world->global2coord(Global(32,50,24))),
           c3(world->global2coord(Global(60,36,89)));
-    BOOST_CHECK(world->add_molecule(sp1, c1));
-    BOOST_CHECK(world->add_molecule(sp2, c2));
-    BOOST_CHECK(world->add_molecule(sp3, c3));
+    BOOST_CHECK(world->add_molecule(sp1, c1).second);
+    BOOST_CHECK(world->add_molecule(sp2, c2).second);
+    BOOST_CHECK(world->add_molecule(sp3, c3).second);
 
     LatticeSimulator sim(model, world);
 
@@ -409,7 +413,7 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
         *mt1(world->get_molecular_type(sp1)),
         *mt2(world->get_molecular_type(sp2)),
         *mt3(world->get_molecular_type(sp3));
-    std::vector<std::pair<Coord, ParticleID> >::const_iterator
+    std::vector<std::pair<LatticeWorld::coordinate_type, ParticleID> >::const_iterator
         itr1(mt1->begin()),
         itr2(mt2->begin()),
         itr3(mt3->begin());

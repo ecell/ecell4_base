@@ -14,7 +14,7 @@ hppfiles = [
     'Particle.hpp', 'ParticleSpace.hpp', 'Position3.hpp',
     'ParticleSpaceHDF5Writer.hpp', 'CompartmentSpaceHDF5Writer.hpp',
     'LatticeSpaceHDF5Writer.hpp',
-    'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',
+    'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'Reaction.hpp', 'SerialIDGenerator.hpp',
     'Simulator.hpp', 'Space.hpp', 'Species.hpp', 'functions.hpp', 'types.hpp',
     'extras.hpp', 'get_mapper_mf.hpp', 'config.h', 'H5Save.hpp',
     'MolecularTypeBase.hpp', 'MolecularType.hpp',
