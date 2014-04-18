@@ -31,7 +31,7 @@ install_submodule()
         LIBRARY_PATH=${LIBRARY_PATH}:${PREFIX}/lib \
         CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:${PREFIX}/include \
         CXXFLAGS=${CXXFLAGS} \
-        ../waf distclean configure --prefix=${PREFIX} ${WAFFLAGS} install
+        python ../waf distclean configure --prefix=${PREFIX} ${WAFFLAGS} install
     VAL=$?
     cd ..
     return ${VAL}

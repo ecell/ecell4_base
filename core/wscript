@@ -3,7 +3,9 @@
 
 from waflib.Tools import waf_unit_test
 from waflib import Logs
-
+from waflib.extras import boost
+boost.BOOST_INCLUDES.insert(0, '/usr/include/x86_64-linux-gnu')
+boost.BOOST_LIBS.insert(0, '/usr/lib/x86_64-linux-gnu')
 
 top = '.'
 out = 'build'
