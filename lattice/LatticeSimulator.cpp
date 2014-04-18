@@ -1,6 +1,6 @@
 #include "LatticeSimulator.hpp"
 
-#include <set>
+//#include <set>
 
 namespace ecell4
 {
@@ -283,13 +283,16 @@ void LatticeSimulator::walk(const Species& species)
 
     MolecularTypeBase* mt(world_->get_molecular_type(species));
     mt->shuffle(*rng);
-    std::set<ParticleID> pids;
+    //std::set<ParticleID> pids;
+    std::vector<ParticleID> pids;
     Integer i(0);
     Integer max(mt->size());
+    pids.reserve(max);
     while(i < max)
     {
         LatticeWorld::particle_info& info(mt->at(i));
-        pids.insert(info.second);
+        //pids.insert(info.second);
+        pids.push_back(info.second);
         const Integer nrnd(rng->uniform_int(0,11));
         std::pair<LatticeWorld::private_coordinate_type, bool> move(world_->move_to_neighbor(info, nrnd));
         if (!move.second)
@@ -301,10 +304,21 @@ void LatticeSimulator::walk(const Species& species)
                 for (std::vector<Reaction<Voxel>::particle_type>::const_iterator itr(reaction.reactants.begin());
                         itr != reaction.reactants.end(); ++itr)
                 {
+                    for (std::vector<ParticleID>::const_iterator pid_itr(pids.begin());
+                            pid_itr != pids.end(); ++pid_itr)
+                    {
+                        if (*pid_itr == (*itr).first)
+                        {
+                            --i;
+                            break;
+                        }
+                    }
+                    /*
                     if (pids.find((*itr).first) != pids.end())
                     {
                         --i;
                     }
+                    */
                 }
             }
         }
