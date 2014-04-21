@@ -30,9 +30,6 @@ cdef class Species:
     def serial(self):
         return self.thisptr.serial()
 
-    def name(self):
-        return self.thisptr.name()
-
     def get_attribute(self, string attr_name):
         return self.thisptr.get_attribute(attr_name)
 
@@ -50,6 +47,9 @@ cdef class Species:
 
     def match(self, Species rhs):
         return self.thisptr.match(deref(rhs.thisptr))
+
+    def num_units(self):
+        return self.thisptr.num_units()
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))

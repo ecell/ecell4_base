@@ -1,6 +1,7 @@
 #ifndef __ECELL4_UNIT_SPECIES_HPP
 #define __ECELL4_UNIT_SPECIES_HPP
 
+#include <iostream>
 #include <string>
 
 #include "config.h"
@@ -13,6 +14,8 @@
 #include <boost/functional/hash.hpp>
 #endif
 
+#include "get_mapper_mf.hpp"
+
 
 namespace ecell4
 {
@@ -22,6 +25,8 @@ class UnitSpecies
 public:
 
     typedef std::string serial_type;
+    typedef std::pair<std::string, std::string> site_type;
+    typedef utils::get_mapper_mf<std::string, site_type>::type container_type;
 
 public:
 
@@ -36,29 +41,41 @@ public:
         return name_;
     }
 
-    serial_type serial() const
+    void deserialize(const serial_type& serial);
+
+    serial_type serial() const;
+
+    bool add_site(const std::string& name,
+        const std::string& state, const std::string& bond)
     {
-        return name_;
+        container_type::const_iterator itr(sites_.find(name));
+        if (itr != sites_.end())
+        {
+            return false;
+        }
+        sites_.insert(std::make_pair(name, std::make_pair(state, bond)));
+        return true;
     }
 
     bool operator==(const UnitSpecies& rhs) const
     {
-        return (name() == rhs.name());
+        return (serial() == rhs.serial());
     }
 
     bool operator<(const UnitSpecies& rhs) const
     {
-        return (name() < rhs.name());
+        return (serial() < rhs.serial());
     }
 
     bool operator>(const UnitSpecies& rhs) const
     {
-        return (name() > rhs.name());
+        return (serial() > rhs.serial());
     }
 
 protected:
 
     std::string name_;
+    container_type sites_;
 };
 
 } // ecell4

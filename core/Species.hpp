@@ -6,6 +6,7 @@
 #include <map>
 #include <sstream>
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
 
 #include "config.h"
 
@@ -30,7 +31,7 @@ class Species
 {
 public:
 
-    typedef std::string serial_type;
+    typedef UnitSpecies::serial_type serial_type; //XXX: std::string
     typedef std::vector<UnitSpecies> container_type;
 
 protected:
@@ -46,35 +47,45 @@ public:
         ; // do nothing
     }
 
-    Species(const std::string& name)
+    Species(const serial_type& name)
         : units_()
     {
-        units_.push_back(UnitSpecies(name));
+        deserialize(name);
     }
 
     Species(
-        const std::string& name, const std::string& D)
+        const serial_type& name, const std::string& D)
         : units_()
     {
-        units_.push_back(UnitSpecies(name));
+        deserialize(name);
         set_attribute("D", D);
     }
 
     Species(
-        const std::string& name, const std::string& radius, const std::string& D)
+        const serial_type& name, const std::string& radius, const std::string& D)
         : units_()
     {
-        units_.push_back(UnitSpecies(name));
+        deserialize(name);
         set_attribute("radius", radius);
         set_attribute("D", D);
     }
 
-    serial_type serial() const
+    void deserialize(const serial_type& serial)
     {
-        return name();
+        std::vector<std::string> unit_serials;
+        boost::split(unit_serials, serial, boost::is_any_of("."));
+
+        units_.clear();
+        for (std::vector<std::string>::const_iterator i(unit_serials.begin());
+            i != unit_serials.end(); ++i)
+        {
+            UnitSpecies usp;
+            usp.deserialize(*i);
+            units_.push_back(usp);
+        }
     }
 
-    std::string name() const
+    serial_type serial() const
     {
         if (units_.size() == 0)
         {
@@ -82,14 +93,19 @@ public:
         }
 
         container_type::const_iterator it(units_.begin());
-        std::string retval((*it).name());
+        serial_type retval((*it).serial());
         ++it;
         for (; it != units_.end(); ++it)
         {
             retval += ".";
-            retval += (*it).name();
+            retval += (*it).serial();
         }
         return retval;
+    }
+
+    Integer num_units() const
+    {
+        return units_.size();
     }
 
     void add_unit(const UnitSpecies& usp)

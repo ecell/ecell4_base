@@ -30,6 +30,12 @@ cdef class UnitSpecies:
     def name(self):
         return self.thisptr.name()
 
+    def serial(self):
+        return self.thisptr.serial()
+
+    def add_site(self, string name, string state, string bond):
+        return self.thisptr.add_site(name, state, bond)
+
 cdef UnitSpecies UnitSpecies_from_Cpp_UnitSpecies(Cpp_UnitSpecies *sp):
     cdef Cpp_UnitSpecies *new_obj = new Cpp_UnitSpecies(deref(sp))
     r = UnitSpecies("")

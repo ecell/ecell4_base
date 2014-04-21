@@ -44,8 +44,9 @@ cdef extern from "ecell4/core/UnitSpecies.hpp" namespace "ecell4":
         bool operator==(Cpp_UnitSpecies& rhs)
         bool operator<(Cpp_UnitSpecies& rhs)
         bool operator>(Cpp_UnitSpecies& rhs)
-        string serial() # string == serial_type
+        string serial()
         string name()
+        bool add_site(string, string, string)
 
 ## UnitSpecies
 #  a python wrapper for Cpp_UnitSpecies
@@ -67,13 +68,13 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         bool operator<(Cpp_Species& rhs)
         bool operator>(Cpp_Species& rhs)
         string serial() # string == serial_type
-        string name()
         string get_attribute(string)
         bool match(Cpp_Species&)
         void set_attribute(string, string)
         void remove_attribute(string)
         bool has_attribute(string)
         void add_unit(Cpp_UnitSpecies)
+        Integer num_units()
 
 ## Species
 #  a python wrapper for Cpp_Species

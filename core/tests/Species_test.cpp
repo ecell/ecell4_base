@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE(Species_test_constructor)
 BOOST_AUTO_TEST_CASE(Species_test_name)
 {
     Species species("test");
-    BOOST_CHECK_EQUAL(species.name(), "test");
+    BOOST_CHECK_EQUAL(species.serial(), "test");
 }
 
 BOOST_AUTO_TEST_CASE(Species_test_attributes)
@@ -42,7 +42,6 @@ BOOST_AUTO_TEST_CASE(Species_test_match1)
 
     sp2.add_unit(UnitSpecies("A"));
     sp2.add_unit(UnitSpecies("C"));
-    BOOST_CHECK_EQUAL(sp2.name(), "A.C");
     BOOST_CHECK_EQUAL(sp2.serial(), "A.C");
 
     BOOST_CHECK(sp2.match(sp1));
