@@ -3,7 +3,9 @@
 
 from waflib.Tools import waf_unit_test
 from waflib import Logs
-
+from waflib.extras import boost
+boost.BOOST_INCLUDES.insert(0, '/usr/include/x86_64-linux-gnu')
+boost.BOOST_LIBS.insert(0, '/usr/lib/x86_64-linux-gnu')
 
 top = '.'
 out = 'build'
@@ -13,21 +15,16 @@ hppfiles = [
     'Journal.hpp', 'linear_algebra.hpp', 'Model.hpp', 'NetworkModel.hpp',
     'Particle.hpp', 'ParticleSpace.hpp', 'Position3.hpp',
     'ParticleSpaceHDF5Writer.hpp', 'CompartmentSpaceHDF5Writer.hpp',
-    'LatticeSpaceHDF5Writer.hpp',
-    'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'Reaction.hpp', 'SerialIDGenerator.hpp',
+    'LatticeSpaceHDF5Writer.hpp', 'Voxel.hpp',
+    'RandomNumberGenerator.hpp', 'ReactionRule.hpp', 'SerialIDGenerator.hpp',
     'Simulator.hpp', 'Space.hpp', 'Species.hpp', 'functions.hpp', 'types.hpp',
-    'extras.hpp', 'get_mapper_mf.hpp', 'config.h', 'H5Save.hpp',
-    'MolecularTypeBase.hpp', 'MolecularType.hpp',
-    'VacantType.hpp', 'Global.hpp', 'LatticeSpace.hpp', 'Voxel.hpp',
-    'DynamicPriorityQueue.hpp', 'swap.hpp', 'EventScheduler.hpp',
-    "UnitSpecies.hpp"
+    'extras.hpp', 'get_mapper_mf.hpp', 'config.h', 'H5Save.hpp'
     ]
 
 cppfiles = [
     'Journal.cpp', 'Species.cpp', 'Model.cpp', 'ParticleSpace.cpp',
     'CompartmentSpace.cpp', 'NetworkModel.cpp', 'Position3.cpp',
-    'RandomNumberGenerator.cpp', 'Global.cpp', 'LatticeSpace.cpp',
-    'UnitSpecies.cpp'
+    'RandomNumberGenerator.cpp'
     ]
 
 
@@ -83,7 +80,6 @@ int main() {std::tr1::hash<int>(); return 0; }''',
     conf.check_cxx(lib = 'hdf5', libpath = '/usr/lib')
     conf.check_cxx(lib = 'hdf5_hl_cpp', libpath = '/usr/lib')
     conf.check_cxx(lib = 'hdf5_cpp', libpath = '/usr/lib')
-    conf.check_cxx(lib = 'boost_regex')
 
     conf.write_config_header('config.h', guard='__ECELL4_W_CONFIG_H_WAF')
     conf.env.store('conf.log')
@@ -118,7 +114,7 @@ def build(bld):
         source = cppfiles,
         includes = ['.'],
         libpath = ['/usr/lib'],
-        lib = ['gsl', 'gslcblas', 'm', 'boost_regex',
+        lib = ['gsl', 'gslcblas', 'm',
                'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
         target = 'ecell4-core')
 
