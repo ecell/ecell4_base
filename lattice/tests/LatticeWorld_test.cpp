@@ -118,8 +118,8 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
     Species sp(std::string("TEST"));
     BOOST_CHECK(world.add_species(sp));
 
-    Coord coord(486420);
-    BOOST_CHECK(world.add_molecule(sp, coord));
+    LatticeWorld::coordinate_type coord(486420);
+    BOOST_CHECK(world.add_molecule(sp, coord).second);
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
     MolecularTypeBase* mt(world.get_molecular_type(coord));
@@ -153,14 +153,18 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
     Species sp(std::string("TEST"));
     BOOST_CHECK(world.add_species(sp));
 
-    Coord coord(1034);
-    BOOST_CHECK(world.add_molecule(sp, coord));
+    LatticeWorld::coordinate_type from(1034), to(786420);
 
-    Coord to_coord(486420);
-    BOOST_CHECK(world.move(coord, to_coord).second);
+    LatticeWorld::private_coordinate_type private_from(
+            world.coord2private(from));
+    BOOST_CHECK(world.add_molecule(sp, private_from).second);
 
-    MolecularTypeBase* mt(world.get_molecular_type(to_coord));
+    LatticeWorld::private_coordinate_type private_to(
+            world.coord2private(to));
+    BOOST_CHECK(world.move(from, to));
+
+    MolecularTypeBase* mt(world.get_molecular_type(private_to));
     BOOST_CHECK(!mt->is_vacant());
 
-    BOOST_CHECK(world.move(coord, to_coord).second);
+    BOOST_CHECK(world.move(from, to));
 }

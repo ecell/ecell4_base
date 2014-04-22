@@ -7,6 +7,8 @@
 
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/ReactionRule.hpp>
+#include <ecell4/core/Reaction.hpp>
+#include <ecell4/core/MolecularTypeBase.hpp>
 #include <ecell4/core/Simulator.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/EventScheduler.hpp>
@@ -19,14 +21,27 @@ namespace ecell4
 namespace lattice
 {
 
+struct Voxel
+{
+    LatticeWorld::coordinate_type coord;
+    Species species;
+    Real D;
+
+    Voxel() : coord(0), species(), D(0.)
+    {}
+    Voxel(const LatticeWorld::coordinate_type& coord, const Species& species, const Real& D)
+        : coord(coord), species(species), D(D)
+    {}
+};
+
 class LatticeSimulator
     : public Simulator
 {
 protected:
     struct StepEvent : EventScheduler::Event
     {
-        StepEvent(LatticeSimulator* sim, const Species& species)
-            : EventScheduler::Event(0.0), sim_(sim), species_(species)
+        StepEvent(LatticeSimulator* sim, const Species& species, const Real& t)
+            : EventScheduler::Event(t), sim_(sim), species_(species)
         {
             const Real R(sim_->world_->voxel_radius());
             Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
@@ -37,7 +52,7 @@ protected:
                 dt_ = 2 * R * R / 3 / D;
             }
 
-            time_ = dt_;
+            time_ = t + dt_;
         }
 
         virtual ~StepEvent()
@@ -46,23 +61,7 @@ protected:
 
         virtual void fire()
         {
-            boost::shared_ptr<GSLRandomNumberGenerator> rng(sim_->world_->rng());
-
-            std::vector<Coord> coords(sim_->world_->list_coords(species_));
-            shuffle(*rng, coords);
-            for (std::vector<Coord>::iterator itr(coords.begin());
-                    itr != coords.end(); ++itr)
-            {
-                const Coord coord(*itr);
-                const Integer nrnd(rng->uniform_int(0,11));
-                std::pair<Coord, bool> retval(
-                        sim_->world_->move_to_neighbor(coord, nrnd));
-                if (!retval.second)
-                {
-                    sim_->attempt_reaction_(coord, retval.first);
-                }
-            }
-
+            sim_->walk(species_);
             time_ += dt_;
         }
 
@@ -88,10 +87,9 @@ protected:
         virtual void fire()
         {
             const Species reactant(*(rule_.reactants().begin()));
-            const std::vector<Coord> coords(sim_->world_->list_coords(reactant));
-            const Integer index(sim_->world_->rng()->uniform_int(0,coords.size() - 1));
-            const Coord coord(coords.at(index));
-            sim_->apply_reaction_(rule_, coord);
+            MolecularTypeBase* mt(sim_->world_->get_molecular_type(reactant));
+            const Integer index(sim_->world_->rng()->uniform_int(0, mt->size() - 1));
+            sim_->apply_reaction_(rule_, mt->at(index));
             time_ += draw_dt();
         }
 
@@ -149,17 +147,22 @@ public:
     void initialize();
     void step();
     bool step(const Real& upto);
+    void walk(const Species& species);
 
 protected:
     boost::shared_ptr<EventScheduler::Event> create_step_event(
-            const Species& species);
+            const Species& species, const Real& t);
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
             const ReactionRule& reaction_rule);
-    void attempt_reaction_(Coord from_coord, Coord to_coord);
-    void apply_reaction_(const ReactionRule& reaction_rule,
-            const Coord& from_coord, const Coord& to_coord);
-    void apply_reaction_(const ReactionRule& reaction_rule, const Coord& cood);
+    std::pair<bool, Reaction<Voxel> > attempt_reaction_(
+            LatticeWorld::particle_info& info, LatticeWorld::coordinate_type to_coord);
+    std::pair<bool, Reaction<Voxel> > apply_reaction_(
+            const ReactionRule& reaction_rule, LatticeWorld::particle_info& from_info,
+            const LatticeWorld::particle_info& to_info);
+    std::pair<bool, Reaction<Voxel> > apply_reaction_(
+            const ReactionRule& reaction_rule, LatticeWorld::particle_info& info);
     void step_();
+    void register_step_event(const Species& species);
 
 protected:
 
@@ -168,6 +171,8 @@ protected:
     bool is_initialized_;
 
     EventScheduler scheduler_;
+    std::vector<ReactionRule> reactions_;
+    std::vector<Species> new_species_;
 
     Real dt_;
 

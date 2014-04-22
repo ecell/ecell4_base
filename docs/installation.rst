@@ -1,81 +1,41 @@
-Installation
-==================
+===========================================
+ Installation and running IPython notebook
+===========================================
 
-Installing dependencies (Ubuntu Linux)
---------------------------------------------
+docker for Ubuntu
+=================
 
-::
-
-   $ sudo aptitude install python
-   $ sudo aptitude install pkg-config
-   $ sudo aptitude install libgsl0-dev
-   $ sudo aptitude install libboost1.53-all-dev
-   $ sudo aptitude install libhdf5-serial-dev (please use Ubuntu newer than 12.10)
-   $ sudo aptitude install python-pip
-   $ pip install cython --user
-
-Installing dependencies (Mac OSX)
--------------------------------------
+Please install docker with http://docs.docker.io/en/latest/installation/ubuntulinux/
 
 ::
 
-   $ brew tap homebrew/science
-   $ brew install pkg-config
-   $ brew install gsl
-   $ brew install boost
-   $ brew install hdf5 --enable-cxx
-   $ sudo easy_install pip
-   $ pip install cython --user
+   sudo docker pull kozo2/ecell4-docker
+   sudo docker run -p 8123:8888 -t kozo2/ecell4-docker
+   # please open 0.0.0.0:8123 with your browser on Ubuntu host
    
-Enviromental variables
---------------------------------
 
-Please append these lines in .bashrc or .zshrc
+docker for Mac
+==============
 
-in ubuntu
+Please install boot2docker and docker with http://docs.docker.io/en/latest/installation/mac/ .
 
-::
-
-   export PATH=$HOME/.local/bin:$PATH
-   export LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH
-
-
-in MacOSX
+And create and run following shell script.
 
 ::
 
-   export PATH=$HOME/Library/Python/2.7/bin:$PATH
-   export LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH
+   # vm must be powered off
+   for i in {8000..8900}; do
+    VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port$i,tcp,,$i,,$i";
+    VBoxManage modifyvm "boot2docker-vm" --natpf1 "udp-port$i,udp,,$i,,$i";
+   done
 
-
-Installing E-Cell4 core
------------------------------
-
-core_python depends on core, you need to install core before you use core_python.
-
-::
-
-   $ PREFIX=$HOME/ecell4 bash install.sh core
-   $ PREFIX=$HOME/ecell4 bash install.sh core_python
-
-Installing E-Cell4 gillespie
-----------------------------------
-
-gillespie depends on core, you need to install core before you use gillespie.
-gillespie_python depends on core_python, you need to install core_python before you use gillespie_python.
+Next, please run following commands
 
 ::
 
-   $ PREFIX=$HOME/ecell4 bash install.sh gillespie
-   $ PREFIX=$HOME/ecell4 PYTHONPATH=$PREFIX/lib/python2.7/site-packages bash install.sh gillespie_python
-
-Installing E-Cell4 reaction_reader
----------------------------------------
-
-reaction_reader depends on core_python, you need to install core_python before you use reaction_reader.
-
-::
-
-   $ PREFIX=$HOME/ecell4 bash install.sh reaction_reader
-
-
+   boot2docker up
+   boot2docker ssh
+   # now you are in boot2docker
+   docker pull kozo2/ecell4-docker
+   docker run -p 8123:8888 -t kozo2/ecell4-docker
+   # please open 0.0.0.0:8123 with your browser on Mac
