@@ -15,7 +15,7 @@ void run()
 {
     const Real world_size(1e-6);
     const Position3 edge_lengths(world_size, world_size, world_size);
-    const Real volume(world_size * world_size * world_size);
+    // const Real volume(world_size * world_size * world_size);
     const Real voxel_radius(2.5e-9);
 
     const Integer N(60);

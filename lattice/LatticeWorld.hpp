@@ -4,8 +4,9 @@
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 
-#include <ecell4/core/MolecularTypeBase.hpp>
 #include <ecell4/core/LatticeSpace.hpp>
+#include <ecell4/core/MolecularTypeBase.hpp>
+#include <ecell4/core/MolecularType.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 

@@ -13,6 +13,7 @@
 
 #include "types.hpp"
 #include "Species.hpp"
+#include "Voxel.hpp"
 
 
 namespace ecell4
@@ -130,6 +131,12 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
             "t", H5::PredType::IEEE_F64LE, H5::DataSpace(H5S_SCALAR)));
     attr_t.write(H5::PredType::IEEE_F64LE, &t);
 
+    const uint32_t is_periodic = (space.is_periodic()? 1 : 0);
+    H5::Attribute attr_is_periodic(
+        root->createAttribute(
+            "is_periodic", H5::PredType::STD_I32LE, H5::DataSpace(H5S_SCALAR)));
+    attr_is_periodic.write(H5::PredType::STD_I32LE, &is_periodic);
+
     const double voxel_radius = space.voxel_radius();
     H5::Attribute attr_voxel_radius(
         root->createAttribute(
@@ -157,6 +164,10 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     root.openAttribute("t").read(H5::PredType::IEEE_F64LE, &t);
     space->set_t(t);
 
+    uint32_t is_periodic;
+    root.openAttribute("is_periodic").read(
+        H5::PredType::STD_I32LE, &is_periodic);
+
     Position3 edge_lengths;
     const hsize_t dims[] = {3};
     const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
@@ -165,7 +176,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     double voxel_radius;
     root.openAttribute("voxel_radius").read(H5::PredType::IEEE_F64LE, &voxel_radius);
 
-    space->cleanup(edge_lengths, voxel_radius);
+    space->cleanup(edge_lengths, voxel_radius, (is_periodic != 0));
 
     {
         H5::DataSet species_dset(root.openDataSet("species"));

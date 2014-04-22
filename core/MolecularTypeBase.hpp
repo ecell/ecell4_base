@@ -69,7 +69,7 @@ public:
         return voxels_.at(index);
     }
 
-    const container_type::size_type size() const
+    const Integer size() const
     {
         return voxels_.size();
     }

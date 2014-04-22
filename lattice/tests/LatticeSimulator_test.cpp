@@ -442,5 +442,3 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     c1 = (*itr1).first;
 
 }
->>>>>>> origin/lattice
-

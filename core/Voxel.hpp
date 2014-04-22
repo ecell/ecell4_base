@@ -1,8 +1,6 @@
 #ifndef __ECELL4_VOXEL_HPP
 #define __ECELL4_VOXEL_HPP
 
-#include "MolecularType.hpp" //XXX: needed only for the Coord definition.
-
 namespace ecell4
 {
 
@@ -10,12 +8,17 @@ class Voxel
 {
 public:
 
+    typedef Integer coordinate_type;
+    // typedef LatticeSpace::coordinate_type coordinate_type;
+
+public:
+
     Voxel()
     {
         ;
     }
 
-    Voxel(const Species& sp, const Coord& coord, const Real& D)
+    Voxel(const Species& sp, const coordinate_type& coord, const Real& D)
         : species_(sp), coordinate_(coord), D_(D) {}
 
     const Species& species() const
@@ -28,12 +31,12 @@ public:
         return species_;
     }
 
-    const Coord& coordinate() const
+    const coordinate_type& coordinate() const
     {
         return coordinate_;
     }
 
-    Coord& coordinate()
+    coordinate_type& coordinate()
     {
         return coordinate_;
     }
@@ -51,7 +54,7 @@ public:
 private:
 
     Species species_;
-    Coord coordinate_;
+    coordinate_type coordinate_;
     Real D_;
 };
 

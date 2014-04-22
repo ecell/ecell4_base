@@ -5,10 +5,11 @@
 #include <set>
 #include <map>
 #include <stdexcept>
+
 #include "Space.hpp"
 #include "Global.hpp"
-#include "Voxel.hpp"
 #include "LatticeSpaceHDF5Writer.hpp"
+
 
 namespace ecell4
 {
@@ -31,7 +32,9 @@ public:
 
     typedef std::pair<private_coordinate_type, ParticleID> particle_info;
 
-    LatticeSpace(const Position3& edge_lengths, const Real& voxel_radius, const bool is_periodic);
+    LatticeSpace(
+        const Position3& edge_lengths, const Real& voxel_radius,
+        const bool is_periodic = true);
     ~LatticeSpace();
 
     /*
@@ -64,51 +67,11 @@ public:
     std::vector<std::pair<ParticleID, Voxel> >
         list_voxels(const Species& sp) const;
 
-    Integer num_voxels(const Species& sp) const
-    {
-        spmap::const_iterator itr(spmap_.find(sp));
-        if (itr == spmap_.end())
-        {
-            return 0;
-        }
-        const MolecularTypeBase* mt(&((*itr).second));
-        return mt->size();
-    }
+    Integer num_voxels(const Species& sp) const;
 
-    Integer num_voxels() const
-    {
-        Integer retval(0);
-        for (spmap::const_iterator itr(spmap_.begin()); itr != spmap_.end(); ++itr)
-        {
-            retval += (*itr).second.size();
-        }
-        return retval;
-    }
+    Integer num_voxels() const;
 
-    bool update_voxel(const ParticleID& pid, const Voxel& v)
-    {
-        const Coord to_coord(inner2general(v.coordinate()));
-        if (to_coord < 0 && to_coord >= row_size_ * col_size_ * layer_size_) //XXX: is_in_range
-        {
-            return false;
-        }
-
-        MolecularTypeBase* dest_mt(get_molecular_type(v.species()));
-        const Coord from_coord(get_coord(pid));
-        if (from_coord != -1)
-        {
-            MolecularTypeBase* src_mt(voxels_.at(from_coord));
-            src_mt->removeVoxel(from_coord);
-            voxel_container::iterator itr(voxels_.begin() + from_coord);
-            voxels_.erase(itr);
-            voxels_.insert(itr, vacant_);
-        }
-
-        dest_mt->addVoxel(MolecularTypeBase::particle_info(to_coord, pid));
-        voxel_container::iterator itr(voxels_.begin() + to_coord);
-        (*itr) = dest_mt;
-        return true;
-    }
+    bool update_voxel(const ParticleID& pid, const Voxel& v);
 
     std::vector<Species> list_species() const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
@@ -121,6 +84,11 @@ public:
     std::pair<private_coordinate_type, bool> move_to_neighbor(private_coordinate_type coord, Integer nrand);
     std::pair<private_coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
     bool update_molecule(private_coordinate_type coord, const Species& species);
+
+    inline bool is_periodic() const
+    {
+        return is_periodic_;
+    }
 
     Real voxel_radius() const
     {
@@ -173,14 +141,16 @@ public:
         load_lattice_space(root, this);
     }
 
-    void cleanup(const Position3& edge_lengths, const Real& voxel_radius)
+    void cleanup(const Position3& edge_lengths, const Real& voxel_radius,
+        const bool is_periodic)
     {
         edge_lengths_ = edge_lengths;
-        theNormalizedVoxelRadius = voxel_radius;
+        voxel_radius_ = voxel_radius;
+        is_periodic_ = is_periodic;
 
         voxels_.clear();
         spmap_.clear();
-        set_lattice_properties();
+        set_lattice_properties(is_periodic_);
     }
 
 protected:
@@ -223,6 +193,7 @@ protected:
     Real voxel_radius_;
     Position3 edge_lengths_;
     Real t_;
+    bool is_periodic_;
 
     Real HCP_L, HCP_X, HCP_Y;
 

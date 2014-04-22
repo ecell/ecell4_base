@@ -81,7 +81,7 @@ public:
         {
             UnitSpecies usp;
             usp.deserialize(*i);
-            units_.push_back(usp);
+            add_unit(usp);
         }
     }
 
