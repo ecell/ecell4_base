@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     world->bind_to(model);
 
     /// create a Particle, and inject it into BDWorld
-    BDWorld::molecule_info_type info1((*world).get_molecule_info(Species("A") ));
+    BDWorld::molecule_info_type info1((*world).get_molecule_info(Species("A")));
     const Particle p1(
         sp1, Position3(0, 0, 0), info1.radius, info1.D);
     const ParticleID pid1((*world).new_particle(p1));

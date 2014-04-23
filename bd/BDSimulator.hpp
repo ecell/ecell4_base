@@ -26,7 +26,6 @@ public:
         : model_(model), world_(world), dt_(0), num_steps_(0)
     {
         world_->bind_to(model);
-        ;
     }
 
     // SimulatorTraits

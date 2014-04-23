@@ -190,10 +190,12 @@ public:
 
     void bind_to(boost::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<Model> bound_model = this->model_.lock()) {
+        if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+        {
             if (bound_model.get() != model.get())
             {
-                std::cerr << "Warning: Model already bound to ODEWorld." << std::endl;
+                std::cerr << "Warning: Model already bound to ODEWorld."
+                    << std::endl;
             }
         }
         this->model_ = model;
@@ -216,6 +218,7 @@ protected:
     num_molecules_container_type num_molecules_;
     species_container_type species_;
     species_map_type index_map_;
+
     boost::weak_ptr<Model> model_;
 };
 

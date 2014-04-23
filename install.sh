@@ -9,7 +9,7 @@ SUBMODS=("bd" "gillespie" "ode" "lattice")
 PYTHONMODS=("core_python" "bd_python" "gillespie_python" "ode_python")
 
 CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
-# WAFFLAGS="-v"
+# WAFFLAGS="-v -j1"
 
 uninstall_all()
 {

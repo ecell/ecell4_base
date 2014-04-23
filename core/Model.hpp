@@ -33,6 +33,7 @@ ReactionRule create_synthesis_reaction_rule(
 class Model
 {
 public:
+
     virtual ~Model()
     {
         ;

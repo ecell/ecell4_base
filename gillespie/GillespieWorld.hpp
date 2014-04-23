@@ -90,12 +90,15 @@ public:
         const H5::Group group(fin->openGroup("CompartmentSpace"));
         cs_->load(group);
     }
+
     void bind_to(boost::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<Model> bound_model = this->model_.lock()) {
+        if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+        {
             if (bound_model.get() != model.get())
             {
-                std::cerr << "Warning: Model already bound to GillespieWorld." << std::endl;
+                std::cerr << "Warning: Model already bound to GillespieWorld."
+                    << std::endl;
             }
         }
         this->model_ = model;
@@ -105,6 +108,7 @@ private:
 
     boost::scoped_ptr<CompartmentSpace> cs_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
+
     boost::weak_ptr<Model> model_;
 };
 

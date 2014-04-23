@@ -72,24 +72,28 @@ public:
      */
     MoleculeInfo get_molecule_info(const Species& sp) const
     {
-        Real radius, D;
-        if (sp.has_attribute("radius") && sp.has_attribute("D")) 
+        Real radius(0.0), D(0.0);
+
+        if (sp.has_attribute("radius") && sp.has_attribute("D"))
         {
             radius = std::atof(sp.get_attribute("radius").c_str());
             D = std::atof(sp.get_attribute("D").c_str());
-        } 
+        }
         else if (boost::shared_ptr<Model> bound_model = this->model_.lock())
         {
-            if (bound_model->has_species_attribute(sp)) 
+            if (bound_model->has_species_attribute(sp))
             {
-                Species sp_model(bound_model->apply_species_attributes(sp));
-                if (sp_model.has_attribute("radius") && sp_model.has_attribute("D"))
+                Species attributed(bound_model->apply_species_attributes(sp));
+                if (attributed.has_attribute("radius")
+                    && attributed.has_attribute("D"))
                 {
-                    radius = std::atof(sp_model.get_attribute("radius").c_str());
-                    D = std::atof(sp_model.get_attribute("D").c_str());
+                    radius = std::atof(
+                        attributed.get_attribute("radius").c_str());
+                    D = std::atof(attributed.get_attribute("D").c_str());
                 }
             }
-        } 
+        }
+
         MoleculeInfo info = {radius, D};
         return info;
     }
@@ -253,14 +257,15 @@ public:
 
     void bind_to(boost::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+        if (boost::shared_ptr<Model> bound_model = model_.lock())
         {
-            if (bound_model.get() != model.get()) 
+            if (bound_model.get() != model.get())
             {
-                std::cerr << "Warning: Model already bound to BDWorld" <<std::endl;
+                std::cerr << "Warning: Model already bound to BDWorld"
+                    << std::endl;
             }
         }
-        this->model_ = model;
+        model_ = model;
     }
 
 protected:
@@ -268,6 +273,7 @@ protected:
     boost::scoped_ptr<ParticleSpace> ps_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> pidgen_;
+
     boost::weak_ptr<Model> model_;
 };
 
