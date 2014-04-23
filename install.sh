@@ -22,7 +22,7 @@ install_core()
 {
     # install ecell4-core
     cd core
-    CXXFLAGS=${CXXFLAGS} ../waf distclean update --files="boost,doxygen" \
+    CXXFLAGS=${CXXFLAGS} python ../waf distclean update --files="boost,doxygen" \
         configure --prefix=${PREFIX} ${WAFFLAGS} install
     cd ..
     return $?
