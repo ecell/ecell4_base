@@ -30,6 +30,7 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         bool has_species(Cpp_Species &)
         void reserve_species(Cpp_Species &)
         void release_species(Cpp_Species &)
+        void bind_to(shared_ptr[Cpp_NetworkModel])
 
 ## ODEWorld
 #  a python wrapper for Cpp_ODEWorld

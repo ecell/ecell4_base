@@ -71,6 +71,9 @@ cdef class ODEWorld:
     def release_species(self, Species sp):
         self.thisptr.get().release_species(deref(sp.thisptr))
 
+    def bind_to(self, NetworkModel m):
+        self.thisptr.get().bind_to(deref(m.thisptr))
+
 ## ODESimulator
 #  a python wrapper for Cpp_ODESimulator
 cdef class ODESimulator:

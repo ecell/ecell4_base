@@ -42,6 +42,7 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
         void save(string filename)
         void load(string filename)
+        void bind_to(shared_ptr[Cpp_NetworkModel])
 
 ## BDWorld
 #  a python wrapper for Cpp_BDWorld
@@ -62,6 +63,7 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         bool step(Real& upto)
         Real t()
         Real dt()
+        void set_dt(Real& dt)
         # void initialize()
 
 ## BDSimulator

@@ -145,6 +145,9 @@ cdef class BDWorld:
     def load(self, string filename):
         self.thisptr.get().load(filename)
 
+    def bind_to(self, NetworkModel m):
+        self.thisptr.get().bind_to(deref(m.thisptr))
+
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
 cdef class BDSimulator:
@@ -170,6 +173,9 @@ cdef class BDSimulator:
 
     def dt(self):
         return self.thisptr.dt()
+
+    def set_dt(self, Real& dt):
+        self.thisptr.set_dt(dt)
 
     # def initialize(self):
     #     self.thisptr.initialize()

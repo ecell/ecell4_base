@@ -20,6 +20,7 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         void remove_molecules(Cpp_Species &sp, Integer &num)
         void save(string)
         void load(string)
+        void bind_to(shared_ptr[Cpp_NetworkModel])
 
 ## GillespieWorld
 #  a python wrapper for Cpp_GillespieWorld

@@ -50,6 +50,9 @@ cdef class GillespieWorld:
     def load(self, string filename):
         self.thisptr.get().load(filename)
 
+    def bind_to(self, NetworkModel m):
+        self.thisptr.get().bind_to(deref(m.thisptr))
+
 ## GillespieSimulator
 #  a python wrapper for Cpp_GillespieSimulator
 cdef class GillespieSimulator:
