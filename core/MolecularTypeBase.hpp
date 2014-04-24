@@ -12,18 +12,28 @@ namespace ecell4
 
 class MolecularTypeBase
 {
-
 public:
+
     typedef LatticeSpace::particle_info particle_info;
     typedef std::vector<particle_info> container_type;
 
 public:
-    MolecularTypeBase(const Species& species) : species_(species)
+
+    MolecularTypeBase(const Species& species)
+        : species_(species), radius_(0.0), D_(0.0)
     {
+        ;
+    }
+
+    MolecularTypeBase(const Species& species, const Real& radius, const Real& D)
+        : species_(species), radius_(radius), D_(D)
+    {
+        ;
     }
 
     virtual ~MolecularTypeBase()
     {
+        ;
     }
 
     virtual bool is_vacant() const = 0;
@@ -31,6 +41,26 @@ public:
     const Species& species() const
     {
         return species_;
+    }
+
+    Real& radius()
+    {
+        return radius_;
+    }
+
+    const Real& radius() const
+    {
+        return radius_;
+    }
+
+    Real& D()
+    {
+        return D_;
+    }
+
+    const Real& D() const
+    {
+        return D_;
     }
 
     void addVoxel(particle_info info)
@@ -152,9 +182,11 @@ public:
     }
 
 protected:
-    const Species species_;
-    container_type voxels_;
 
+    const Species species_;
+    Real radius_, D_;
+
+    container_type voxels_;
 };
 
 } // ecell4

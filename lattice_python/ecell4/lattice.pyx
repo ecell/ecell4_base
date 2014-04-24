@@ -183,6 +183,9 @@ cdef class LatticeWorld:
     def size(self):
         return self.thisptr.get().size()
 
+    def bind_to(self, NetworkModel m):
+        self.thisptr.get().bind_to(deref(m.thisptr))
+
 ## LatticeSimulator
 #  a python wrapper for Cpp_LatticeSimulator
 cdef class LatticeSimulator:

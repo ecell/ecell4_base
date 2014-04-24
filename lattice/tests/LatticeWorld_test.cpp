@@ -88,24 +88,24 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_update_particles)
     BOOST_CHECK_EQUAL(world.list_particles(sp).size(), 1);
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_species)
-{
-    const Position3 edge_lengths(1e-6,1e-6,1e-6);
-    const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
-    boost::shared_ptr<GSLRandomNumberGenerator>
-        rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
-
-    Species sp(std::string("TEST"));
-
-    BOOST_CHECK(world.add_species(sp));
-    BOOST_CHECK(world.has_species(sp));
-
-    std::vector<Species> list;
-    list.push_back(sp);
-
-    BOOST_CHECK(list == world.list_species());
-}
+// BOOST_AUTO_TEST_CASE(LatticeWorld_test_register_species)
+// {
+//     const Position3 edge_lengths(1e-6,1e-6,1e-6);
+//     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
+//     boost::shared_ptr<GSLRandomNumberGenerator>
+//         rng(new GSLRandomNumberGenerator());
+//     LatticeWorld world(edge_lengths, voxel_radius, rng);
+// 
+//     Species sp(std::string("TEST"));
+// 
+//     BOOST_CHECK(world.register_species(sp));
+//     BOOST_CHECK(world.has_species(sp));
+// 
+//     std::vector<Species> list;
+//     list.push_back(sp);
+// 
+//     BOOST_CHECK(list == world.list_species());
+// }
 
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
 {
@@ -116,10 +116,11 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
     LatticeWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
-    BOOST_CHECK(world.add_species(sp));
+    sp.set_attribute("radius", "2.5e-9");
+    sp.set_attribute("D", "1e-12");
 
-    LatticeWorld::coordinate_type coord(486420);
-    BOOST_CHECK(world.add_molecule(sp, coord).second);
+    LatticeWorld::private_coordinate_type coord(486420);
+    BOOST_CHECK(world.place_voxel_private(sp, coord).second);
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
     MolecularTypeBase* mt(world.get_molecular_type(coord));
@@ -135,7 +136,8 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecules)
     LatticeWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
-    BOOST_CHECK(world.add_species(sp));
+    sp.set_attribute("radius", "2.5e-9");
+    sp.set_attribute("D", "1e-12");
     const Integer N(60);
 
     BOOST_CHECK(world.add_molecules(sp, N));
@@ -151,13 +153,14 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
     LatticeWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
-    BOOST_CHECK(world.add_species(sp));
+    sp.set_attribute("radius", "2.5e-9");
+    sp.set_attribute("D", "1e-12");
 
     LatticeWorld::coordinate_type from(1034), to(786420);
 
     LatticeWorld::private_coordinate_type private_from(
             world.coord2private(from));
-    BOOST_CHECK(world.add_molecule(sp, private_from).second);
+    BOOST_CHECK(world.place_voxel_private(sp, private_from).second);
 
     LatticeWorld::private_coordinate_type private_to(
             world.coord2private(to));

@@ -18,8 +18,9 @@ public:
         ;
     }
 
-    Voxel(const Species& sp, const coordinate_type& coord, const Real& D)
-        : species_(sp), coordinate_(coord), D_(D) {}
+    Voxel(const Species& sp, const coordinate_type& coord,
+        const Real& radius, const Real& D)
+        : species_(sp), coordinate_(coord), radius_(radius), D_(D) {}
 
     const Species& species() const
     {
@@ -51,10 +52,21 @@ public:
         return D_;
     }
 
+    const Real& radius() const
+    {
+        return radius_;
+    }
+
+    Real& radius()
+    {
+        return radius_;
+    }
+
 private:
 
     Species species_;
     coordinate_type coordinate_;
+    Real radius_;
     Real D_;
 };
 

@@ -13,6 +13,7 @@ LatticeSpace::LatticeSpace(const Position3& edge_lengths,
     vacant_ = new VacantType();
     border_ = new MolecularType(Species("Border", "0"));
     periodic_ = new MolecularType(Species("Periodic", "0"));
+
     set_lattice_properties(is_periodic_);
 }
 
@@ -65,11 +66,6 @@ void LatticeSpace::set_lattice_properties(const bool is_periodic)
 Integer LatticeSpace::num_species() const
 {
     return spmap_.size();
-}
-
-bool LatticeSpace::has_species(const Species& sp) const
-{
-    return spmap_.find(sp) != spmap_.end();
 }
 
 Integer LatticeSpace::num_molecules(const Species& sp) const
@@ -140,6 +136,7 @@ std::vector<std::pair<ParticleID, Particle> >
         {
             continue;
         }
+
         for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
                 vitr != mt.end(); ++vitr)
         {
@@ -163,6 +160,7 @@ std::vector<std::pair<ParticleID, Particle> >
         {
             return retval;
         }
+
         for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
                 vitr != mt.end(); ++vitr)
         {
@@ -176,28 +174,29 @@ std::vector<std::pair<ParticleID, Particle> >
 
 bool LatticeSpace::update_particle(const ParticleID& pid, const Particle& p)
 {
-    const coordinate_type to_coord(position2coord(p.position()));
-    MolecularTypeBase* dest_mt = get_molecular_type(p.species());
+    return update_voxel(pid, Voxel(p.species(), position2coord(p.position()), p.radius(), p.D())); //XXX: need MoleculeInfo
 
-    if (!is_in_range(to_coord))
-    {
-        return false;
-    }
-    const private_coordinate_type from_coord(get_coord(pid));
-    if (from_coord != -1)
-    {
-        MolecularTypeBase* src_mt(voxels_.at(from_coord));
-        src_mt->removeVoxel(from_coord);
-        voxel_container::iterator itr(voxels_.begin() + from_coord);
-        voxels_.erase(itr);
-        voxels_.insert(itr, vacant_);
-    }
-    dest_mt->addVoxel(MolecularTypeBase::particle_info(to_coord, pid));
+    // const coordinate_type to_coord(position2coord(p.position()));
+    // if (!is_in_range(to_coord))
+    // {
+    //     return false;
+    // }
 
-    voxel_container::iterator itr(voxels_.begin() + to_coord);
-    (*itr) = dest_mt;
+    // const private_coordinate_type from_coord(get_coord(pid));
+    // if (from_coord != -1)
+    // {
+    //     MolecularTypeBase* src_mt(voxels_.at(from_coord));
+    //     src_mt->removeVoxel(from_coord);
+    //     voxel_container::iterator itr(voxels_.begin() + from_coord);
+    //     voxels_.erase(itr);
+    //     voxels_.insert(itr, vacant_);
+    // }
 
-    return true;
+    // MolecularTypeBase* dest_mt = get_molecular_type(p.species());
+    // dest_mt->addVoxel(MolecularTypeBase::particle_info(to_coord, pid));
+    // voxel_container::iterator itr(voxels_.begin() + to_coord);
+    // (*itr) = dest_mt;
+    // return true;
 }
 
 /*
@@ -250,26 +249,51 @@ LatticeSpace::list_voxels(const Species& sp) const
     for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
         itr != mt->end(); ++itr)
     {
-        retval.push_back(std::make_pair((*itr).second, Voxel(sp, private2coord((*itr).first), 0.0))); //XXX: ignoreing D.
+        retval.push_back(std::make_pair(
+            (*itr).second,
+            Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D())));
     }
     return retval;
 }
 
-MolecularTypeBase* LatticeSpace::get_molecular_type(const Species& sp)
+std::pair<LatticeSpace::spmap::iterator, bool>
+LatticeSpace::__get_molecular_type(const Voxel& v)
 {
-    spmap::iterator itr(spmap_.find(sp));
+    LatticeSpace::spmap::iterator itr(spmap_.find(v.species()));
+    if (itr != spmap_.end())
+    {
+        return std::make_pair(itr, false);
+    }
+
+    MolecularType mt(v.species(), v.radius(), v.D());
+    std::pair<LatticeSpace::spmap::iterator, bool> retval(
+        spmap_.insert(LatticeSpace::spmap::value_type(v.species(), mt)));
+    if (!retval.second)
+    {
+        throw "insert error.";
+    }
+    return retval;
+}
+
+MolecularTypeBase* LatticeSpace::find_molecular_type(const Species& sp)
+{
+    LatticeSpace::spmap::iterator itr(spmap_.find(sp));
     if (itr == spmap_.end())
     {
-        MolecularType mt(sp);
-        std::pair<spmap::iterator, bool> result = spmap_.insert(spmap::value_type(sp, mt));
-        if (result.second)
-            itr = result.first;
-        else
-            throw "insert error";
+        throw NotFound("MolecularType nof found.");
     }
     return &((*itr).second);
 }
 
+MolecularTypeBase* LatticeSpace::get_molecular_type(const Voxel& v)
+{
+    return &((*(__get_molecular_type(v).first)).second);
+}
+
+// bool LatticeSpace::register_species(const Species& sp)
+// {
+//     return __get_molecular_type(sp).second;
+// }
 
 /*
  * Coordinate transformations
@@ -333,42 +357,13 @@ LatticeSpace::private_coordinate_type LatticeSpace::get_coord(const ParticleID& 
 
 MolecularTypeBase* LatticeSpace::get_molecular_type(private_coordinate_type coord) const
 {
-    //return voxels_.at(coord2private(coord));
+    // return voxels_.at(coord2private(coord));
     return voxels_.at(coord);
 }
 
-
-bool LatticeSpace::add_species(const Species& sp)
+bool LatticeSpace::has_species(const Species& sp) const
 {
-    if (has_species(sp))
-    {
-        return false;
-    }
-    MolecularType mt(sp);
-    std::pair<spmap::iterator, bool> retval = spmap_.insert(spmap::value_type(sp, mt));
-    return retval.second;
-}
-
-bool LatticeSpace::add_molecule(const Species& sp,
-        private_coordinate_type private_coord, const ParticleID& pid)
-{
-    MolecularTypeBase* mt(get_molecular_type(sp));
-    if (mt->is_vacant())
-    {
-        return false;
-    }
-
-    const MolecularTypeBase* mt_at(get_molecular_type(private_coord));
-    if (!mt_at->is_vacant())
-    {
-        return false;
-    }
-    mt->addVoxel(std::pair<coordinate_type, ParticleID>(private_coord, pid));
-
-    voxel_container::iterator itr(voxels_.begin() + private_coord);
-    (*itr) = mt;
-
-    return true;
+    return spmap_.find(sp) != spmap_.end();
 }
 
 bool LatticeSpace::remove_molecule(const coordinate_type coord)
@@ -493,23 +488,16 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
     return std::pair<private_coordinate_type, bool>(private_to, true);
 }
 
-bool LatticeSpace::update_molecule(private_coordinate_type coord, const Species& species)
-{
-    MolecularTypeBase* old_mt(get_molecular_type(coord));
-    if (old_mt->is_vacant())
-    {
-        return false;
-    }
-
-    MolecularTypeBase* new_mt(get_molecular_type(species));
-
-    MolecularTypeBase::particle_info info(*old_mt->find(coord));
-    old_mt->removeVoxel(coord);
-    new_mt->addVoxel(info);
-    voxel_container::iterator itr(voxels_.begin() + coord);
-    (*itr) = new_mt;
-    return true;
-}
+// bool LatticeSpace::add_molecule(const Species& sp,
+//         private_coordinate_type private_coord, const ParticleID& pid)
+// {
+//     return update_voxel_private(pid, Voxel(sp, private_coord, voxel_radius_, 0.0)); //XXX: ignoring D
+// }
+// 
+// bool LatticeSpace::update_molecule(private_coordinate_type coord, const Species& species)
+// {
+//     return update_voxel_private(Voxel(species, coord, voxel_radius_, 0.0)); //XXX: need MoleculeInfo
+// }
 
 LatticeSpace::private_coordinate_type LatticeSpace::get_neighbor(
         private_coordinate_type private_coord, Integer nrand) const
@@ -556,12 +544,18 @@ const Particle LatticeSpace::particle_at(private_coordinate_type coord) const
     // const Real& D = 0;
     // Particle particle(sp, pos, radius, D);
     // return particle;
-    return Particle(ptr_mt->species(), coord2position(coord), voxel_radius(), 0);
+    return Particle(
+        ptr_mt->species(), coord2position(coord), ptr_mt->radius(), ptr_mt->D());
 }
 
 bool LatticeSpace::is_in_range(coordinate_type coord) const
 {
     return coord >= 0 && coord < row_size() * layer_size() * col_size();
+}
+
+bool LatticeSpace::is_in_range_private(private_coordinate_type coord) const
+{
+    return coord >= 0 && coord < row_size_ * col_size_ * layer_size_;
 }
 
 /*
@@ -690,13 +684,70 @@ Integer LatticeSpace::num_voxels() const
 
 bool LatticeSpace::update_voxel(const ParticleID& pid, const Voxel& v)
 {
-    const LatticeSpace::private_coordinate_type to_coord(coord2private(v.coordinate()));
-    if (to_coord < 0 && to_coord >= row_size_ * col_size_ * layer_size_) //XXX: is_in_range
+    return update_voxel_private(pid,
+        Voxel(v.species(), coord2private(v.coordinate()), v.radius(), v.D()));
+}
+
+bool LatticeSpace::update_voxel_private(const Voxel& v)
+{
+    const LatticeSpace::private_coordinate_type coord(v.coordinate());
+    MolecularTypeBase* src_mt(voxels_.at(coord));
+    if (src_mt->is_vacant())
     {
         return false;
     }
 
-    MolecularTypeBase* dest_mt(get_molecular_type(v.species()));
+    MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    if (new_mt->is_vacant())
+    {
+        return false; // Vacant has no ParticleID. Call remove_voxel.
+    }
+
+    MolecularTypeBase::particle_info info(*(src_mt->find(coord)));
+    src_mt->removeVoxel(coord);
+    new_mt->addVoxel(info);
+    voxel_container::iterator itr(voxels_.begin() + coord);
+    (*itr) = new_mt;
+    return true;
+}
+
+bool LatticeSpace::update_voxel_private(const ParticleID& pid, const Voxel& v)
+{
+    const LatticeSpace::private_coordinate_type to_coord(v.coordinate());
+    if (!is_in_range_private(to_coord))
+    {
+        return false;
+    }
+
+    MolecularTypeBase* dest_mt(get_molecular_type(to_coord));
+    if (!dest_mt->is_vacant())
+    {
+        if (dest_mt->species() == periodic_->species()
+            || dest_mt->species() == border_->species())
+        {
+            throw NotSupported("The coordinate points a boundary.");
+        }
+
+        MolecularTypeBase::container_type::const_iterator
+            dest_itr(dest_mt->find(to_coord));
+        if (dest_itr == dest_mt->end())
+        {
+            throw IllegalState(
+                "MolecularTypaBase [" + dest_mt->species().serial()
+                + "] doesn't contain a coordinate.");
+        }
+        else if ((*dest_itr).second != pid)
+        {
+            return false;
+        }
+    }
+
+    MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    if (new_mt->is_vacant())
+    {
+        return false; // Vacant has no ParticleID.
+    }
+
     const LatticeSpace::private_coordinate_type from_coord(get_coord(pid));
     if (from_coord != -1)
     {
@@ -707,9 +758,9 @@ bool LatticeSpace::update_voxel(const ParticleID& pid, const Voxel& v)
         voxels_.insert(itr, vacant_);
     }
 
-    dest_mt->addVoxel(MolecularTypeBase::particle_info(to_coord, pid));
+    new_mt->addVoxel(MolecularTypeBase::particle_info(to_coord, pid));
     voxel_container::iterator itr(voxels_.begin() + to_coord);
-    (*itr) = dest_mt;
+    (*itr) = new_mt;
     return true;
 }
 

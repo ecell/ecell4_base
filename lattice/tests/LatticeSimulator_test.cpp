@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_particle)
 
     LatticeWorld::private_coordinate_type private_coord(
             world->coord2private(36));
-    BOOST_CHECK(world->add_molecule(sp, private_coord).second);
+    BOOST_CHECK(world->place_voxel_private(sp, private_coord).second);
 
     LatticeSimulator sim(model, world);
 
@@ -389,18 +389,18 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     LatticeWorld::coordinate_type c1(world->global2coord(Global(40,34,56))),
           c2(world->global2coord(Global(32,50,24))),
           c3(world->global2coord(Global(60,36,89)));
-    BOOST_CHECK(world->add_molecule(sp1, c1).second);
-    BOOST_CHECK(world->add_molecule(sp2, c2).second);
-    BOOST_CHECK(world->add_molecule(sp3, c3).second);
+    BOOST_CHECK(world->place_voxel_private(sp1, c1).second);
+    BOOST_CHECK(world->place_voxel_private(sp2, c2).second);
+    BOOST_CHECK(world->place_voxel_private(sp3, c3).second);
 
     LatticeSimulator sim(model, world);
 
     sim.initialize();
 
     const MolecularTypeBase
-        *mt1(world->get_molecular_type(sp1)),
-        *mt2(world->get_molecular_type(sp2)),
-        *mt3(world->get_molecular_type(sp3));
+        *mt1(world->find_molecular_type(sp1)),
+        *mt2(world->find_molecular_type(sp2)),
+        *mt3(world->find_molecular_type(sp3));
     std::vector<std::pair<LatticeWorld::coordinate_type, ParticleID> >::const_iterator
         itr1(mt1->begin()),
         itr2(mt2->begin()),

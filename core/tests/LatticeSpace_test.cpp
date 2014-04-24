@@ -17,14 +17,14 @@ struct Fixture
     const Real voxel_radius;
     LatticeSpace space;
     SerialIDGenerator<ParticleID> sidgen;
-    const std::string D, radius;
+    const Real D, radius;
     const Species sp;
     Fixture() :
         edge_lengths(2.5e-8, 2.5e-8, 2.5e-8),
         voxel_radius(2.5e-9),
         space(edge_lengths, voxel_radius, false),
-        sidgen(), D("1e-12"), radius("2.5e-9"),
-        sp("A", radius, D)
+        sidgen(), D(1e-12), radius(2.5e-9),
+        sp("A", "2.5e-9", "1e-12")
     {
     }
 };
@@ -103,16 +103,16 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
     BOOST_CHECK_EQUAL(test_list.size(), 1);
 }
 
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_species)
-{
-    BOOST_CHECK(space.add_species(sp));
-    BOOST_CHECK(space.has_species(sp));
-
-    std::vector<Species> list;
-    list.push_back(sp);
-
-    BOOST_CHECK(list == space.list_species());
-}
+// BOOST_AUTO_TEST_CASE(LatticeSpace_test_register_species)
+// {
+//     BOOST_CHECK(space.register_species(sp));
+//     BOOST_CHECK(space.has_species(sp));
+// 
+//     std::vector<Species> list;
+//     list.push_back(sp);
+// 
+//     BOOST_CHECK(list == space.list_species());
+// }
 
 /*
  * for Simulator
@@ -134,12 +134,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
 {
-    BOOST_CHECK(space.add_species(sp));
-
     const LatticeSpace::private_coordinate_type private_coord(
             space.global2private_coord(Global(3,4,5)));
     ParticleID pid(sidgen());
-    BOOST_CHECK(space.add_molecule(sp, private_coord, pid));
+    BOOST_CHECK(space.update_voxel_private(
+        pid, Voxel(sp, private_coord, radius, D)));
     BOOST_CHECK_EQUAL(space.num_particles(sp), 1);
 
     const MolecularTypeBase* mt(space.get_molecular_type(private_coord));
@@ -152,8 +151,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
 {
-    BOOST_CHECK(space.add_species(sp));
-
     const Global global0(3,4,5);
     const LatticeSpace::private_coordinate_type private_coord(
             space.global2private_coord(global0));
@@ -161,7 +158,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
             space.global2coord(global0));
 
     ParticleID pid(sidgen());
-    BOOST_CHECK(space.add_molecule(sp, private_coord, pid));
+    BOOST_CHECK(space.update_voxel_private(
+        pid, Voxel(sp, private_coord, radius, D)));
 
     MolecularTypeBase* from_mt(space.get_molecular_type(private_coord));
     BOOST_CHECK(!from_mt->is_vacant());
@@ -177,7 +175,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     MolecularTypeBase* mt(space.get_molecular_type(private_to_coord));
     BOOST_CHECK(!mt->is_vacant());
 
-    BOOST_CHECK(space.add_molecule(sp, private_coord, sidgen()));
+    BOOST_CHECK(space.update_voxel_private(
+        sidgen(), Voxel(sp, private_coord, radius, D)));
     BOOST_CHECK(!space.move(coord, to_coord));
 }
 
@@ -185,16 +184,16 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
 {
     Species reactant(std::string("Reactant")),
             product(std::string("Product"));
-    BOOST_CHECK(space.add_species(reactant));
 
     const Global global(3,4,5);
     const LatticeSpace::private_coordinate_type private_coord(
             space.global2private_coord(global));
 
     ParticleID pid(sidgen());
-    BOOST_CHECK(space.add_molecule(reactant, private_coord, pid));
-
-    BOOST_CHECK(space.update_molecule(private_coord, product));
+    BOOST_CHECK(space.update_voxel_private(
+        pid, Voxel(reactant, private_coord, radius, D)));
+    BOOST_CHECK(space.update_voxel_private(
+        Voxel(product, private_coord, radius, D)));
 
     const MolecularTypeBase* mt(space.get_molecular_type(private_coord));
     BOOST_ASSERT(mt->species() == product);
@@ -202,8 +201,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_save)
 {
-    BOOST_CHECK(space.add_species(sp));
-
     for (Integer col(0); col < space.col_size(); col += 2)
         for (Integer row(0); row < space.row_size(); row += 2)
             for (Integer layer(0); layer < space.layer_size(); layer += 2)
@@ -211,7 +208,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save)
                 const LatticeSpace::private_coordinate_type private_coord(
                         space.global2private_coord(Global(col, row, layer)));
                 ParticleID pid(sidgen());
-                BOOST_CHECK(space.add_molecule(sp, private_coord, pid));
+                BOOST_CHECK(space.update_voxel_private(
+                    pid, Voxel(sp, private_coord, radius, D)));
             }
 
     H5::H5File fout("data.h5", H5F_ACC_TRUNC);
@@ -222,14 +220,13 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
 {
-    BOOST_CHECK(space.add_species(sp));
-
     for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
     {
         ParticleID pid(sidgen());
         const LatticeSpace::private_coordinate_type private_coord(
                 space.coord2private(coord));
-        BOOST_CHECK(space.add_molecule(sp, private_coord, pid));
+        BOOST_CHECK(space.update_voxel_private(
+            pid, Voxel(sp, private_coord, radius, D)));
     }
 
     H5::H5File fout("data_structure.h5", H5F_ACC_TRUNC);
@@ -240,9 +237,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
 {
-    BOOST_CHECK(space.add_species(sp));
     ParticleID pid(sidgen());
-    BOOST_CHECK(space.add_molecule(sp, space.coord2private(0), pid));
+    BOOST_CHECK(space.update_voxel_private(
+        pid, Voxel(sp, space.coord2private(0), radius, D)));
 
     std::cout << "<<col: " << space.col_size() << ", row: "
         << space.row_size() << ", layer: " << space.layer_size() << ">>";
@@ -279,14 +276,14 @@ struct PeriodicFixture
     const Real voxel_radius;
     LatticeSpace space;
     SerialIDGenerator<ParticleID> sidgen;
-    const std::string D, radius;
+    const Real D, radius;
     const Species sp;
     PeriodicFixture() :
         edge_lengths(2.5e-8, 2.5e-8, 2.5e-8),
         voxel_radius(2.5e-9),
         space(edge_lengths, voxel_radius, true),
-        sidgen(), D("1e-12"), radius("2.5e-9"),
-        sp(std::string("A"), radius, D)
+        sidgen(), D(1e-12), radius(2.5e-9),
+        sp(std::string("A"), "2.5e-9", "1e-12")
     {
     }
 };
@@ -306,7 +303,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
         {
             const LatticeSpace::private_coordinate_type private_coord(
                     space.global2private_coord(Global(0, i, j)));
-            BOOST_CHECK(space.add_molecule(sp, private_coord, sidgen()));
+            BOOST_CHECK(space.update_voxel_private(
+                sidgen(), Voxel(sp, private_coord, radius, D)));
         }
     fout = H5::H5File("periodic_col_0.h5", H5F_ACC_TRUNC);
     group = fout.createGroup("LatticeSpace");
@@ -358,7 +356,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
         {
             const LatticeSpace::private_coordinate_type private_coord(
                     space.global2private_coord(Global(col, 0, layer)));
-            BOOST_CHECK(space.add_molecule(sp, private_coord, sidgen()));
+            BOOST_CHECK(space.update_voxel_private(
+                sidgen(), Voxel(sp, private_coord, radius, D)));
         }
     fout = H5::H5File("periodic_row_0.h5", H5F_ACC_TRUNC);
     group = fout.createGroup("LatticeSpace");
@@ -411,7 +410,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
         {
             const LatticeSpace::private_coordinate_type private_coord(
                     space.global2private_coord(Global(col, row, layer)));
-            BOOST_CHECK(space.add_molecule(sp, private_coord, sidgen()));
+            BOOST_CHECK(space.update_voxel_private(
+                sidgen(), Voxel(sp, private_coord, radius, D)));
         }
     fout = H5::H5File("periodic_layer_0.h5", H5F_ACC_TRUNC);
     group = fout.createGroup("LatticeSpace");

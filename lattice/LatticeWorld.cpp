@@ -84,9 +84,9 @@ std::vector<LatticeWorld::coordinate_type> LatticeWorld::list_coords(const Speci
     return space_.list_coords(sp);
 }
 
-MolecularTypeBase* LatticeWorld::get_molecular_type(const Species& species)
+MolecularTypeBase* LatticeWorld::find_molecular_type(const Species& species)
 {
-    return space_.get_molecular_type(species);
+    return space_.find_molecular_type(species);
 }
 
 MolecularTypeBase* LatticeWorld::get_molecular_type(const private_coordinate_type& coord)
@@ -94,29 +94,36 @@ MolecularTypeBase* LatticeWorld::get_molecular_type(const private_coordinate_typ
     return space_.get_molecular_type(coord);
 }
 
-bool LatticeWorld::add_species(const Species& sp)
-{
-    return space_.add_species(sp);
-}
+// bool LatticeWorld::register_species(const Species& sp)
+// {
+//     return space_.register_species(sp);
+// }
 
-std::pair<ParticleID, bool> LatticeWorld::add_molecule(const Species& sp, coordinate_type coord)
+// std::pair<ParticleID, bool> LatticeWorld::add_molecule(const Species& sp, const private_coordinate_type& coord)
+// {
+//     ParticleID pid(sidgen_());
+//     return std::pair<ParticleID, bool>(pid, space_.add_molecule(sp, coord, pid));
+// }
+
+std::pair<ParticleID, bool> LatticeWorld::new_voxel_private(const Voxel& v)
 {
     ParticleID pid(sidgen_());
-    return std::pair<ParticleID, bool>(pid, space_.add_molecule(sp, coord, pid));
+    return std::make_pair(pid, space_.update_voxel_private(pid, v));
 }
 
 bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
 {
-    // TODO
-    if (has_species(sp))
-    {
-        add_species(sp);
-    }
+    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+
     Integer count(0);
-    while(count < num) {
-        Integer coord(rng()->uniform_int(0,space_.size()-1));
-        if (add_molecule(sp, coord).second)
+    while (count < num)
+    {
+        const coordinate_type coord(rng()->uniform_int(0, space_.size() - 1));
+        if (new_voxel_private(
+            Voxel(sp, coord2private(coord), info.radius, info.D)).second)
+        {
             ++count;
+        }
     }
     return true;
 }
@@ -142,10 +149,10 @@ std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(pa
     return space_.move_to_neighbor(info, nrand);
 }
 
-bool LatticeWorld::update_molecule(coordinate_type at, Species species)
-{
-    return space_.update_molecule(at, species);
-}
+// bool LatticeWorld::update_molecule(coordinate_type at, Species species)
+// {
+//     return space_.update_molecule(at, species);
+// }
 
 LatticeWorld::coordinate_type LatticeWorld::global2coord(const Global& global) const
 {

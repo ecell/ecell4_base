@@ -72,18 +72,20 @@ public:
     Integer num_voxels() const;
 
     bool update_voxel(const ParticleID& pid, const Voxel& v);
+    bool update_voxel_private(const Voxel& v);
+    bool update_voxel_private(const ParticleID& pid, const Voxel& v);
 
     std::vector<Species> list_species() const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
-    MolecularTypeBase* get_molecular_type(const Species& sp);
+    MolecularTypeBase* find_molecular_type(const Species& sp);
     MolecularTypeBase* get_molecular_type(private_coordinate_type coord) const;
-    bool add_species(const Species& sp);
-    bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
+    // bool register_species(const Species& sp);
+    // bool update_molecule(private_coordinate_type coord, const Species& species);
+    // bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
     bool remove_molecule(const private_coordinate_type coord);
     bool move(coordinate_type from, coordinate_type to);
     std::pair<private_coordinate_type, bool> move_to_neighbor(private_coordinate_type coord, Integer nrand);
     std::pair<private_coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
-    bool update_molecule(private_coordinate_type coord, const Species& species);
 
     inline bool is_periodic() const
     {
@@ -155,6 +157,9 @@ public:
 
 protected:
 
+    std::pair<spmap::iterator, bool> __get_molecular_type(const Voxel& v);
+    MolecularTypeBase* get_molecular_type(const Voxel& v);
+
     void set_lattice_properties(const bool is_periodic);
     private_coordinate_type get_neighbor(
             private_coordinate_type private_coord, Integer nrand) const;
@@ -165,6 +170,7 @@ protected:
     private_coordinate_type get_coord(const ParticleID& pid) const;
     const Particle particle_at(private_coordinate_type coord) const;
     bool is_in_range(coordinate_type coord) const;
+    bool is_in_range_private(private_coordinate_type coord) const;
 
     /*
      * Coordinate transformations

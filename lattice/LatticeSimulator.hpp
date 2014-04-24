@@ -44,7 +44,8 @@ protected:
             : EventScheduler::Event(t), sim_(sim), species_(species)
         {
             const Real R(sim_->world_->voxel_radius());
-            Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
+            Real D = sim_->world_->get_molecule_info(species).D;
+            // Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
             if (D <= 0)
             {
                 dt_ = inf;
@@ -87,7 +88,7 @@ protected:
         virtual void fire()
         {
             const Species reactant(*(rule_.reactants().begin()));
-            MolecularTypeBase* mt(sim_->world_->get_molecular_type(reactant));
+            MolecularTypeBase* mt(sim_->world_->find_molecular_type(reactant));
             const Integer index(sim_->world_->rng()->uniform_int(0, mt->size() - 1));
             sim_->apply_reaction_(rule_, mt->at(index));
             time_ += draw_dt();
@@ -125,6 +126,7 @@ public:
             boost::shared_ptr<LatticeWorld> world)
         : model_(model), world_(world), is_initialized_(false)
     {
+        world_->bind_to(model);
     }
 
     virtual Real t() const

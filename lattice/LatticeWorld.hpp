@@ -3,18 +3,26 @@
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include <ecell4/core/LatticeSpace.hpp>
 #include <ecell4/core/MolecularTypeBase.hpp>
 #include <ecell4/core/MolecularType.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
+#include <ecell4/core/Model.hpp>
 
 namespace ecell4
 {
 
 namespace lattice
 {
+
+struct MoleculeInfo
+{
+    const Real radius;
+    const Real D;
+};
 
 class LatticeWorld
 {
@@ -23,6 +31,9 @@ public:
     typedef LatticeSpace::coordinate_type coordinate_type;
     typedef LatticeSpace::private_coordinate_type private_coordinate_type;
     typedef LatticeSpace::particle_info particle_info;
+    typedef MoleculeInfo molecule_info_type;
+
+public:
 
     LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius,
             boost::shared_ptr<GSLRandomNumberGenerator> rng)
@@ -45,6 +56,35 @@ public:
         rng_ = boost::shared_ptr<GSLRandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
+    }
+
+    /**
+     * draw attributes of species and return it as a molecule info.
+     * @param sp a species
+     * @return info a molecule info
+     */
+    MoleculeInfo get_molecule_info(const Species& sp) const
+    {
+        Real radius(voxel_radius()), D(0.0);
+
+        if (sp.has_attribute("D"))
+        {
+            D = std::atof(sp.get_attribute("D").c_str());
+        }
+        else if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+        {
+            if (bound_model->has_species_attribute(sp))
+            {
+                Species attributed(bound_model->apply_species_attributes(sp));
+                if (attributed.has_attribute("D"))
+                {
+                    D = std::atof(attributed.get_attribute("D").c_str());
+                }
+            }
+        }
+
+        MoleculeInfo info = {radius, D};
+        return info;
     }
 
     const Real& t() const;
@@ -71,16 +111,38 @@ public:
 
     std::vector<Species> list_species() const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
-    MolecularTypeBase* get_molecular_type(const Species& species);
+    MolecularTypeBase* find_molecular_type(const Species& species);
     MolecularTypeBase* get_molecular_type(const private_coordinate_type& coord);
-    bool add_species(const Species& sp);
-    std::pair<ParticleID, bool> add_molecule(const Species& sp, coordinate_type coord);
+    // bool register_species(const Species& sp);
+    // std::pair<ParticleID, bool> add_molecule(const Species& sp, const private_coordinate_type& coord);
+    std::pair<ParticleID, bool> new_voxel_private(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
     bool remove_molecule(const coordinate_type coord);
     bool move(coordinate_type from, coordinate_type to);
     std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);
     std::pair<coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
-    bool update_molecule(coordinate_type at, Species species);
+    // bool update_molecule(coordinate_type at, Species species);
+
+    std::pair<ParticleID, bool> place_voxel_private(const Species& sp, const private_coordinate_type& coord)
+    {
+        const molecule_info_type& info(get_molecule_info(sp));
+        return new_voxel_private(ecell4::Voxel(sp, coord, info.radius, info.D));
+    }
+
+    bool update_voxel(const ParticleID& pid, const Voxel& v)
+    {
+        return space_.update_voxel(pid, v);
+    }
+
+    bool update_voxel_private(const Voxel& v)
+    {
+        return space_.update_voxel_private(v);
+    }
+
+    bool update_voxel_private(const ParticleID& pid, const Voxel& v)
+    {
+        return space_.update_voxel_private(pid, v);
+    }
 
     Real voxel_radius() const
     {
@@ -144,12 +206,26 @@ public:
         rng_->load(*fin);
     }
 
+    void bind_to(boost::shared_ptr<Model> model)
+    {
+        if (boost::shared_ptr<Model> bound_model = model_.lock())
+        {
+            if (bound_model.get() != model.get())
+            {
+                std::cerr << "Warning: Model already bound to LatticeWorld"
+                    << std::endl;
+            }
+        }
+        model_ = model;
+    }
+
 protected:
 
     LatticeSpace space_;
     boost::shared_ptr<GSLRandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 
+    boost::weak_ptr<Model> model_;
 };
 
 } // lattice

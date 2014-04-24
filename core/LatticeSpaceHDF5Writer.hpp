@@ -31,6 +31,7 @@ struct LatticeSpaceHDF5Traits
         int serial;
         uint32_t sid;
         int64_t coord;
+        double radius;
         double D;
     } h5_voxel_struct;
 
@@ -49,6 +50,9 @@ struct LatticeSpaceHDF5Traits
         h5_voxel_comp_type.insertMember(
             std::string("coordinate"), HOFFSET(h5_voxel_struct, coord),
             H5::PredType::STD_I64LE);
+        h5_voxel_comp_type.insertMember(
+            std::string("radius"), HOFFSET(h5_voxel_struct, radius),
+            H5::PredType::NATIVE_DOUBLE);
         h5_voxel_comp_type.insertMember(
             std::string("D"), HOFFSET(h5_voxel_struct, D),
             H5::PredType::NATIVE_DOUBLE);
@@ -98,6 +102,7 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
             h5_voxel_table[vidx].serial = voxels[j].first.serial();
             h5_voxel_table[vidx].sid = sid;
             h5_voxel_table[vidx].coord = voxels[j].second.coordinate();
+            h5_voxel_table[vidx].radius = voxels[j].second.radius();
             h5_voxel_table[vidx].D = voxels[j].second.D();
             ++vidx;
         }
@@ -210,7 +215,8 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
             space->update_voxel(
                 ParticleID(std::make_pair(h5_voxel_table[i].lot, h5_voxel_table[i].serial)),
                 Voxel(Species(species_id_map[h5_voxel_table[i].sid]),
-                    h5_voxel_table[i].coord, h5_voxel_table[i].D));
+                    h5_voxel_table[i].coord, h5_voxel_table[i].radius,
+                    h5_voxel_table[i].D));
         }
     }
 }

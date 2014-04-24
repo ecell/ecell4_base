@@ -51,6 +51,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer row_size()
         Integer layer_size()
         Integer size()
+        void bind_to(shared_ptr[Cpp_NetworkModel])
 
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld
