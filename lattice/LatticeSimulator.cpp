@@ -49,9 +49,10 @@ LatticeSimulator::create_first_order_reaction_event(const ReactionRule& reaction
 }
 
 std::pair<bool, Reaction<Voxel> > LatticeSimulator::attempt_reaction_(
-        LatticeWorld::particle_info& info, LatticeWorld::coordinate_type to_coord)
+    LatticeWorld::particle_info& info, LatticeWorld::coordinate_type to_coord)
 {
-    const Species from_species(world_->get_molecular_type(info.first)->species());
+    const Species
+        from_species(world_->get_molecular_type(info.first)->species());
     const MolecularTypeBase* to_mt(world_->get_molecular_type(to_coord));
     const Species to_species(to_mt->species());
     const std::vector<ReactionRule> rules(model_->query_reaction_rules(
@@ -85,18 +86,27 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::attempt_reaction_(
 /*
  * the Reaction between two molecules
  */
-std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(const ReactionRule& reaction_rule,
-        LatticeWorld::particle_info& from_info, const LatticeWorld::particle_info& to_info)
+std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
+    const ReactionRule& reaction_rule,
+    LatticeWorld::particle_info& from_info,
+    const LatticeWorld::particle_info& to_info)
 {
-    const ReactionRule::product_container_type& products(reaction_rule.products());
+    const ReactionRule::product_container_type&
+        products(reaction_rule.products());
     Reaction<Voxel> reaction;
     reaction.rule = reaction_rule;
-    reaction.reactants.push_back(Reaction<Voxel>::particle_type(
-                from_info.second, Voxel(from_info.first,
-                    world_->get_molecular_type(from_info.first)->species(), 0)));
-    reaction.reactants.push_back(Reaction<Voxel>::particle_type(
-                to_info.second, Voxel(to_info.first,
-                    world_->get_molecular_type(to_info.first)->species(), 0)));
+    MolecularTypeBase* from_mtype(world_->get_molecular_type(from_info.first));
+    MolecularTypeBase* to_mtype(world_->get_molecular_type(to_info.first));
+    reaction.reactants.push_back(
+        Reaction<Voxel>::particle_type(
+            from_info.second,
+            Voxel(from_mtype->species(), from_info.first,
+                from_mtype->radius(), from_mtype->D())));
+    reaction.reactants.push_back(
+        Reaction<Voxel>::particle_type(
+            to_info.second,
+            Voxel(to_mtype->species(), to_info.first,
+                to_mtype->radius(), to_mtype->D())));
 
     if (products.size() == 0)
     {
@@ -114,17 +124,22 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(const Reacti
 
         if (!world_->has_species(product_species))
             new_species_.push_back(product_species);
-        std::pair<ParticleID, bool> new_mol(world_->place_voxel_private(product_species, coord));
+
+        const LatticeWorld::molecule_info_type
+            minfo(world_->get_molecule_info(product_species));
+        std::pair<ParticleID, bool> new_mol(
+            world_->new_voxel_private(
+                Voxel(product_species, coord, minfo.radius, minfo.D)));
         if (new_mol.second)
         {
             return std::pair<bool, Reaction<Voxel> >(false, reaction);
         }
 
-        reaction.products.push_back(Reaction<Voxel>::particle_type(
-                    new_mol.first, Voxel(coord, product_species, 0)));
-
+        reaction.products.push_back(
+            Reaction<Voxel>::particle_type(
+                new_mol.first,
+                Voxel(product_species, coord, minfo.radius, minfo.D)));
         reactions_.push_back(reaction_rule);
-
         return std::pair<bool, Reaction<Voxel> >(true, reaction);
     }
     else if (products.size() == 2)
@@ -140,15 +155,27 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(const Reacti
 
         if (!world_->has_species(product_species0))
             new_species_.push_back(product_species0);
-        std::pair<ParticleID, bool> new0(world_->place_voxel_private(product_species0, from_coord));
-        reaction.products.push_back(Reaction<Voxel>::particle_type(
-                    new0.first, Voxel(from_coord, product_species0, 0)));
+        const LatticeWorld::molecule_info_type
+            minfo0(world_->get_molecule_info(product_species0));
+        std::pair<ParticleID, bool> new0(
+            world_->new_voxel_private(
+                Voxel(product_species0, from_coord, minfo0.radius, minfo0.D)));
+        reaction.products.push_back(
+            Reaction<Voxel>::particle_type(
+                new0.first,
+                Voxel(product_species0, from_coord, minfo0.radius, minfo0.D)));
 
         if (!world_->has_species(product_species1))
             new_species_.push_back(product_species1);
-        std::pair<ParticleID, bool> new1(world_->place_voxel_private(product_species1, to_coord));
-        reaction.products.push_back(Reaction<Voxel>::particle_type(
-                    new1.first, Voxel(to_coord, product_species1, 0)));
+        const LatticeWorld::molecule_info_type
+            minfo1(world_->get_molecule_info(product_species1));
+        std::pair<ParticleID, bool> new1(
+            world_->new_voxel_private(
+                Voxel(product_species1, to_coord, minfo1.radius, minfo1.D)));
+        reaction.products.push_back(
+            Reaction<Voxel>::particle_type(
+                new1.first,
+                Voxel(product_species1, to_coord, minfo1.radius, minfo1.D)));
 
         reactions_.push_back(reaction_rule);
         return std::pair<bool, Reaction<Voxel> >(true, reaction);
@@ -164,8 +191,11 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
 {
     Reaction<Voxel> reaction;
     reaction.rule = reaction_rule;
-    reaction.reactants.push_back(Reaction<Voxel>::particle_type(info.second,
-                Voxel(info.first,world_->get_molecular_type(info.first)->species(), 0)));
+    MolecularTypeBase* mtype(world_->get_molecular_type(info.first));
+    reaction.reactants.push_back(
+        Reaction<Voxel>::particle_type(
+            info.second,
+            Voxel(mtype->species(), info.first, mtype->radius(), mtype->D())));
 
     if (reaction_rule.products().size() == 0)
     {
@@ -180,12 +210,15 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
         const LatticeWorld::molecule_info_type
             minfo(world_->get_molecule_info(product));
         world_->update_voxel_private(
-            ecell4::Voxel(product, info.first, minfo.radius, minfo.D));
+            Voxel(product, info.first, minfo.radius, minfo.D));
 
         reactions_.push_back(reaction_rule);
 
-        reaction.products.push_back(std::pair<ParticleID, Voxel>(
-                    info.second, Voxel(world_->private2coord(info.first), product, 0)));
+        reaction.products.push_back(
+            std::pair<ParticleID, Voxel>(
+                info.second,
+                Voxel(product, world_->private2coord(info.first),
+                    minfo.radius, minfo.D)));
         return std::pair<bool, Reaction<Voxel> >(true, reaction);
     }
     else if (reaction_rule.products().size() == 2)
@@ -194,26 +227,37 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
                       product_species1(*(++(reaction_rule.products().begin())));
         const Integer rnd(world_->rng()->uniform_int(0,11));
         const LatticeWorld::private_coordinate_type coord(info.first);
-        std::pair<LatticeWorld::coordinate_type, bool> retval(world_->move_to_neighbor(info, rnd));
+        std::pair<LatticeWorld::coordinate_type, bool>
+            retval(world_->move_to_neighbor(info, rnd));
         if (retval.second)
         {
             if (!world_->has_species(product_species0))
                 new_species_.push_back(product_species0);
-            std::pair<ParticleID, bool> new_val(world_->place_voxel_private(product_species0, coord));
+            const LatticeWorld::molecule_info_type
+                minfo0(world_->get_molecule_info(product_species0));
+            std::pair<ParticleID, bool> new_val(
+                world_->new_voxel_private(
+                    Voxel(product_species0, coord, minfo0.radius, minfo0.D)));
 
             if (!world_->has_species(product_species1))
                 new_species_.push_back(product_species1);
             const LatticeWorld::molecule_info_type
                 minfo1(world_->get_molecule_info(product_species1));
             world_->update_voxel_private(
-                ecell4::Voxel(product_species1, info.first, minfo1.radius, minfo1.D));
+                Voxel(product_species1, info.first, minfo1.radius, minfo1.D));
 
             reactions_.push_back(reaction_rule);
 
-            reaction.products.push_back(std::pair<ParticleID, Voxel>(
-                        new_val.first, Voxel(info.first, product_species0, 0)));
-            reaction.products.push_back(std::pair<ParticleID, Voxel>(
-                        info.second, Voxel(retval.first, product_species1, 0)));
+            reaction.products.push_back(
+                std::pair<ParticleID, Voxel>(
+                    new_val.first,
+                    Voxel(product_species0, info.first,
+                        minfo0.radius, minfo0.D)));
+            reaction.products.push_back(
+                std::pair<ParticleID, Voxel>(
+                    info.second,
+                    Voxel(product_species1, retval.first,
+                        minfo1.radius, minfo1.D)));
             return std::pair<bool, Reaction<Voxel> >(true, reaction);
         }
     }

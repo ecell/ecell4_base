@@ -21,19 +21,6 @@ namespace ecell4
 namespace lattice
 {
 
-struct Voxel
-{
-    LatticeWorld::coordinate_type coord;
-    Species species;
-    Real D;
-
-    Voxel() : coord(0), species(), D(0.)
-    {}
-    Voxel(const LatticeWorld::coordinate_type& coord, const Species& species, const Real& D)
-        : coord(coord), species(species), D(D)
-    {}
-};
-
 class LatticeSimulator
     : public Simulator
 {
@@ -43,8 +30,11 @@ protected:
         StepEvent(LatticeSimulator* sim, const Species& species, const Real& t)
             : EventScheduler::Event(t), sim_(sim), species_(species)
         {
-            const Real R(sim_->world_->voxel_radius());
-            Real D = sim_->world_->get_molecule_info(species).D;
+            const LatticeWorld::molecule_info_type
+                minfo(sim_->world_->get_molecule_info(species));
+            const Real R(minfo.radius);
+            const Real D(minfo.D);
+            // const Real R(sim_->world_->voxel_radius());
             // Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
             if (D <= 0)
             {
