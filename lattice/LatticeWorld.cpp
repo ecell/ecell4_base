@@ -144,9 +144,30 @@ std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(
     return space_.move_to_neighbor(coord, nrand);
 }
 
-std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(particle_info& info, Integer nrand)
+std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(
+        particle_info& info, Integer nrand)
 {
     return space_.move_to_neighbor(info, nrand);
+}
+
+std::pair<std::pair<LatticeWorld::particle_info,
+    LatticeWorld::private_coordinate_type>, bool>
+LatticeWorld::move_to_neighbor(MolecularTypeBase* mtype, Integer index)
+{
+    const Integer rnd(rng()->uniform_int(0,11));
+    particle_info& info(mtype->at(index));
+    std::pair<private_coordinate_type, bool> neighbor(
+            space_.move_to_neighbor(info, rnd));
+    return std::make_pair(std::make_pair(info, neighbor.first), neighbor.second);
+}
+
+std::pair<LatticeWorld::private_coordinate_type, bool> LatticeWorld::check_neighbor(
+        const private_coordinate_type coord)
+{
+    const Integer rnd(rng()->uniform_int(0,11));
+    const private_coordinate_type neighbor(space_.get_neighbor(coord, rnd));
+    bool flg = get_molecular_type(neighbor)->is_vacant();
+    return std::make_pair(neighbor, flg);
 }
 
 // bool LatticeWorld::update_molecule(coordinate_type at, Species species)

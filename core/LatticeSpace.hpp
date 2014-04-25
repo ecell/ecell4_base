@@ -128,6 +128,9 @@ public:
     private_coordinate_type coord2private(coordinate_type cood) const;
     coordinate_type private2coord(private_coordinate_type private_coord) const;
 
+    private_coordinate_type get_neighbor(
+            private_coordinate_type private_coord, Integer nrand) const;
+
     /*
      * HDF5 Save
      */
@@ -161,8 +164,6 @@ protected:
     MolecularTypeBase* get_molecular_type(const Voxel& v);
 
     void set_lattice_properties(const bool is_periodic);
-    private_coordinate_type get_neighbor(
-            private_coordinate_type private_coord, Integer nrand) const;
     std::pair<private_coordinate_type, bool> move_(
             private_coordinate_type private_from, private_coordinate_type private_to);
     std::pair<private_coordinate_type, bool> move_(

@@ -143,16 +143,19 @@ public:
 
 protected:
     boost::shared_ptr<EventScheduler::Event> create_step_event(
-            const Species& species, const Real& t);
+        const Species& species, const Real& t);
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
-            const ReactionRule& reaction_rule);
+        const ReactionRule& reaction_rule);
     std::pair<bool, Reaction<Voxel> > attempt_reaction_(
-            LatticeWorld::particle_info& info, LatticeWorld::coordinate_type to_coord);
+        const LatticeWorld::particle_info info,
+        LatticeWorld::coordinate_type to_coord);
     std::pair<bool, Reaction<Voxel> > apply_reaction_(
-            const ReactionRule& reaction_rule, LatticeWorld::particle_info& from_info,
-            const LatticeWorld::particle_info& to_info);
+        const ReactionRule& reaction_rule,
+        const LatticeWorld::particle_info from_info,
+        const LatticeWorld::particle_info to_info);
     std::pair<bool, Reaction<Voxel> > apply_reaction_(
-            const ReactionRule& reaction_rule, LatticeWorld::particle_info& info);
+        const ReactionRule& reaction_rule,
+        const LatticeWorld::particle_info info);
     void step_();
     void register_step_event(const Species& species);
 

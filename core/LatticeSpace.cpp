@@ -366,7 +366,7 @@ bool LatticeSpace::has_species(const Species& sp) const
     return spmap_.find(sp) != spmap_.end();
 }
 
-bool LatticeSpace::remove_molecule(const coordinate_type coord)
+bool LatticeSpace::remove_molecule(const private_coordinate_type coord)
 {
     voxel_container::iterator itr(voxels_.begin() + coord);
     MolecularTypeBase* mt(*itr);

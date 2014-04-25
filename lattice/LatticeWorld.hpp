@@ -121,6 +121,11 @@ public:
     bool move(coordinate_type from, coordinate_type to);
     std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);
     std::pair<coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
+    std::pair<std::pair<particle_info, private_coordinate_type>, bool>
+        move_to_neighbor(MolecularTypeBase* mtype, Integer index);
+
+    std::pair<private_coordinate_type, bool> check_neighbor(
+            const private_coordinate_type coord);
     // bool update_molecule(coordinate_type at, Species species);
 
     std::pair<ParticleID, bool> place_voxel_private(const Species& sp, const private_coordinate_type& coord)
