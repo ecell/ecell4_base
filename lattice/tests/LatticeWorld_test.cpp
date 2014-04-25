@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
     BOOST_CHECK(world.place_voxel_private(sp, coord).second);
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
-    MolecularTypeBase* mt(world.get_molecular_type(coord));
+    MolecularTypeBase* mt(world.get_molecular_type_private(coord));
     BOOST_CHECK(!mt->is_vacant());
 }
 
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
             world.coord2private(to));
     BOOST_CHECK(world.move(from, to));
 
-    MolecularTypeBase* mt(world.get_molecular_type(private_to));
+    MolecularTypeBase* mt(world.get_molecular_type_private(private_to));
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(world.move(from, to));

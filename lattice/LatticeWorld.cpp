@@ -89,7 +89,8 @@ MolecularTypeBase* LatticeWorld::find_molecular_type(const Species& species)
     return space_.find_molecular_type(species);
 }
 
-MolecularTypeBase* LatticeWorld::get_molecular_type(const private_coordinate_type& coord)
+MolecularTypeBase* LatticeWorld::get_molecular_type_private(
+        const private_coordinate_type& coord)
 {
     return space_.get_molecular_type(coord);
 }
@@ -128,7 +129,7 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     return true;
 }
 
-bool LatticeWorld::remove_molecule(const coordinate_type coord)
+bool LatticeWorld::remove_private_voxel(const coordinate_type coord)
 {
     return space_.remove_molecule(coord);
 }
@@ -161,12 +162,13 @@ LatticeWorld::move_to_neighbor(MolecularTypeBase* mtype, Integer index)
     return std::make_pair(std::make_pair(info, neighbor.first), neighbor.second);
 }
 
-std::pair<LatticeWorld::private_coordinate_type, bool> LatticeWorld::check_neighbor(
+std::pair<LatticeWorld::private_coordinate_type, bool>
+LatticeWorld::check_neighbor_private(
         const private_coordinate_type coord)
 {
     const Integer rnd(rng()->uniform_int(0,11));
     const private_coordinate_type neighbor(space_.get_neighbor(coord, rnd));
-    bool flg = get_molecular_type(neighbor)->is_vacant();
+    bool flg = get_molecular_type_private(neighbor)->is_vacant();
     return std::make_pair(neighbor, flg);
 }
 

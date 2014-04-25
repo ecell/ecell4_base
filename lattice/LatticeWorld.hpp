@@ -132,19 +132,19 @@ public:
     std::vector<Species> list_species() const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     MolecularTypeBase* find_molecular_type(const Species& species);
-    MolecularTypeBase* get_molecular_type(const private_coordinate_type& coord);
+    MolecularTypeBase* get_molecular_type_private(const private_coordinate_type& coord);
     // bool register_species(const Species& sp);
     // std::pair<ParticleID, bool> add_molecule(const Species& sp, const private_coordinate_type& coord);
     std::pair<ParticleID, bool> new_voxel_private(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
-    bool remove_molecule(const coordinate_type coord);
+    bool remove_private_voxel(const coordinate_type coord);
     bool move(coordinate_type from, coordinate_type to);
     std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);
     std::pair<coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
     std::pair<std::pair<particle_info, private_coordinate_type>, bool>
         move_to_neighbor(MolecularTypeBase* mtype, Integer index);
 
-    std::pair<private_coordinate_type, bool> check_neighbor(
+    std::pair<private_coordinate_type, bool> check_neighbor_private(
             const private_coordinate_type coord);
     // bool update_molecule(coordinate_type at, Species species);
 
