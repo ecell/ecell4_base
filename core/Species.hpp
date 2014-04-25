@@ -110,6 +110,10 @@ public:
 
     void add_unit(const UnitSpecies& usp)
     {
+        if (usp.name() == "")
+        {
+            throw NotSupported("UnitSpecies must have a name.");
+        }
         units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
     }
 

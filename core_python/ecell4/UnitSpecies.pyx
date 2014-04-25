@@ -5,8 +5,11 @@ cimport util
 
 cdef class UnitSpecies:
 
-    def __cinit__(self, string name):
-        self.thisptr = new Cpp_UnitSpecies(name)
+    def __cinit__(self, name=None):
+        if name is None:
+            self.thisptr = new Cpp_UnitSpecies()
+        else:
+            self.thisptr = new Cpp_UnitSpecies(<string> name)
 
     def __dealloc__(self):
         del self.thisptr
@@ -35,6 +38,9 @@ cdef class UnitSpecies:
 
     def add_site(self, string name, string state, string bond):
         return self.thisptr.add_site(name, state, bond)
+
+    def deserialize(self, string serial):
+        self.thisptr.deserialize(serial)
 
 cdef UnitSpecies UnitSpecies_from_Cpp_UnitSpecies(Cpp_UnitSpecies *sp):
     cdef Cpp_UnitSpecies *new_obj = new Cpp_UnitSpecies(deref(sp))

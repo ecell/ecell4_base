@@ -45,6 +45,8 @@ public:
 
     serial_type serial() const;
 
+    void clear();
+
     bool add_site(const std::string& name,
         const std::string& state, const std::string& bond)
     {

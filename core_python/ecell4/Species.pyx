@@ -5,14 +5,14 @@ cimport util
 
 cdef class Species:
 
-    def __cinit__(self, name=None, radius=None, D=None):
-        if name is None:
+    def __cinit__(self, serial=None, radius=None, D=None):
+        if serial is None:
             self.thisptr = new Cpp_Species()
         elif radius is None or D is None:
-            self.thisptr = new Cpp_Species(<string> name)
+            self.thisptr = new Cpp_Species(<string> serial)
         else:
             self.thisptr = new Cpp_Species(
-                <string> name, <string> radius, <string> D)
+                <string> serial, <string> radius, <string> D)
 
     def __dealloc__(self):
         del self.thisptr
@@ -53,6 +53,9 @@ cdef class Species:
 
     def num_units(self):
         return self.thisptr.num_units()
+
+    def deserialize(self, string serial):
+        self.thisptr.deserialize(serial)
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))

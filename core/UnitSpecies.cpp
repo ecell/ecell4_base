@@ -7,8 +7,16 @@
 namespace ecell4
 {
 
+void UnitSpecies::clear()
+{
+    name_ = "";
+    sites_.clear();
+}
+
 void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
 {
+    clear();
+
     boost::regex r1(
         "^\\s*(\\w+)\\s*(\\(\\s*([\\w\\s\\^=,]*)\\))?\\s*$");
     boost::match_results<std::string::const_iterator> results1;
