@@ -65,20 +65,40 @@ public:
      */
     MoleculeInfo get_molecule_info(const Species& sp) const
     {
+        const bool with_D(sp.has_attribute("D"));
+        const bool with_radius(sp.has_attribute("radius"));
         Real radius(voxel_radius()), D(0.0);
 
-        if (sp.has_attribute("D"))
+        if (with_D && with_radius)
         {
+            radius = std::atof(sp.get_attribute("radius").c_str());
             D = std::atof(sp.get_attribute("D").c_str());
         }
-        else if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+        else
         {
-            if (bound_model->has_species_attribute(sp))
+            if (with_D)
             {
-                Species attributed(bound_model->apply_species_attributes(sp));
-                if (attributed.has_attribute("D"))
+                D = std::atof(sp.get_attribute("D").c_str());
+            }
+
+            if (with_radius)
+            {
+                radius = std::atof(sp.get_attribute("radius").c_str());
+            }
+
+            if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+            {
+                if (bound_model->has_species_attribute(sp))
                 {
-                    D = std::atof(attributed.get_attribute("D").c_str());
+                    Species attributed(bound_model->apply_species_attributes(sp));
+                    if (!with_D && attributed.has_attribute("D"))
+                    {
+                        D = std::atof(attributed.get_attribute("D").c_str());
+                    }
+                    if (!with_radius && attributed.has_attribute("radius"))
+                    {
+                        radius = std::atof(attributed.get_attribute("radius").c_str());
+                    }
                 }
             }
         }

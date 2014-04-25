@@ -5,11 +5,14 @@ cimport util
 
 cdef class Species:
 
-    def __cinit__(self, name = None):
+    def __cinit__(self, name=None, radius=None, D=None):
         if name is None:
             self.thisptr = new Cpp_Species()
-        else:
+        elif radius is None or D is None:
             self.thisptr = new Cpp_Species(<string> name)
+        else:
+            self.thisptr = new Cpp_Species(
+                <string> name, <string> radius, <string> D)
 
     def __dealloc__(self):
         del self.thisptr
