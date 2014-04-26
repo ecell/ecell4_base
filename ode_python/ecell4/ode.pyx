@@ -28,6 +28,10 @@ cdef class ODEWorld:
     def t(self):
         return self.thisptr.get().t()
 
+    def edge_lengths(self):
+        cdef Cpp_Position3 lengths = self.thisptr.get().edge_lengths()
+        return Position3_from_Cpp_Position3(address(lengths))
+
     def volume(self):
         return self.thisptr.get().volume()
 
@@ -50,7 +54,7 @@ cdef class ODEWorld:
     def add_molecules(self, Species sp, Real num):
         self.thisptr.get().add_molecules(deref(sp.thisptr), num)
 
-    def remove_species(self, Species sp, Real num):
+    def remove_molecules(self, Species sp, Real num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
     def set_num_molecules(self, Species sp, Real num):

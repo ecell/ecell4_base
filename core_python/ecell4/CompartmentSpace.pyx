@@ -1,3 +1,4 @@
+from cython cimport address
 from cython.operator cimport dereference as deref
 
 
@@ -11,6 +12,10 @@ cdef class CompartmentSpaceVectorImpl:
 
     def volume(self):
         return self.thisptr.volume()
+
+    def edge_lengths(self):
+        cdef Cpp_Position3 lengths = self.thisptr.edge_lengths()
+        return Position3_from_Cpp_Position3(address(lengths))
 
     def num_molecules(self, Species sp):
         return self.thisptr.num_molecules(deref(sp.thisptr))

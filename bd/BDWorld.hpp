@@ -216,6 +216,31 @@ public:
         extras::throw_in_particles(*this, sp, num, *rng());
     }
 
+    void remove_molecules(const Species& sp, const Integer& num)
+    {
+        if (num < 0)
+        {
+            throw std::invalid_argument(
+                "The number of molecules must be positive.");
+        }
+
+        std::vector<std::pair<ParticleID, Particle> >
+            particles(list_particles(sp));
+        const Integer num_particles(particles.size());
+        if (num_particles < num)
+        {
+            throw std::invalid_argument(
+                "The number of molecules cannot be negative.");
+        }
+
+        shuffle((*rng_), particles);
+        for (std::vector<std::pair<ParticleID, Particle> >::const_iterator
+            i(particles.begin()); i != particles.begin() + num; ++i)
+        {
+            remove_particle((*i).first);
+        }
+    }
+
     const Real volume() const
     {
         const Position3& lengths(edge_lengths());

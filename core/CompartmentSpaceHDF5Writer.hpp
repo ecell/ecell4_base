@@ -140,6 +140,15 @@ void save_compartment_space(const Tspace_& space, H5::Group* root)
         species_id_table.get(), dataset_id_table->getDataType());
     dataset_num_table->write(
         species_num_table.get(), dataset_num_table->getDataType());
+
+    const Position3 edge_lengths = space.edge_lengths();
+    const hsize_t dims[] = {3};
+    const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
+    H5::Attribute attr_lengths(
+        root->createAttribute(
+            "edge_lengths", lengths_type, H5::DataSpace(H5S_SCALAR)));
+    double lengths[] = {edge_lengths[0], edge_lengths[1], edge_lengths[2]};
+    attr_lengths.write(lengths_type, lengths);
 }
 
 // template<typename Tspace_, typename Tdata_ = H5DataTypeTraits_uint32_t>
@@ -189,9 +198,15 @@ void load_compartment_space(const H5::Group& root, Tspace_* space)
     root.openAttribute("t").read(H5DataTypeTraits_double::get(), &t);
     space->set_t(t);
 
-    double volume;
-    root.openAttribute("volume").read(H5DataTypeTraits_double::get(), &volume);
-    space->set_volume(volume);
+    // double volume;
+    // root.openAttribute("volume").read(H5DataTypeTraits_double::get(), &volume);
+    // space->set_volume(volume);
+
+    Position3 edge_lengths;
+    const hsize_t dims[] = {3};
+    const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
+    root.openAttribute("edge_lengths").read(lengths_type, &edge_lengths);
+    space->set_edge_lengths(edge_lengths);
 }
 
 } // ecell4

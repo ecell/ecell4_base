@@ -39,6 +39,7 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         # bool has_species(Cpp_Species& sp)
         Integer num_molecules(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
+        void remove_molecules(Cpp_Species& sp, Integer num)
         shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
         void save(string filename)
         void load(string filename)

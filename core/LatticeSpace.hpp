@@ -44,6 +44,11 @@ public:
      */
     const Position3& edge_lengths() const;
 
+    const Real volume() const
+    {
+        return edge_lengths_[0] * edge_lengths_[1] * edge_lengths_[2];
+    }
+
     Integer num_species() const;
     Integer num_molecules(const Species& sp)const;
     Integer num_particles() const;

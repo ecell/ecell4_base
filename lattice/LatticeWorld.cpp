@@ -1,4 +1,7 @@
+#include <stdexcept>
+
 #include "LatticeWorld.hpp"
+
 
 namespace ecell4
 {
@@ -19,6 +22,11 @@ void LatticeWorld::set_t(const Real& t)
 const Position3& LatticeWorld::edge_lengths() const
 {
     return space_.edge_lengths();
+}
+
+const Real LatticeWorld::volume() const
+{
+    return space_.volume();
 }
 
 Integer LatticeWorld::num_species() const
@@ -114,6 +122,11 @@ std::pair<ParticleID, bool> LatticeWorld::new_voxel_private(const Voxel& v)
 
 bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
 {
+    if (num < 0)
+    {
+        throw std::invalid_argument("The number of molecules must be positive.");
+    }
+
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
 
     Integer count(0);
@@ -129,7 +142,32 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     return true;
 }
 
-bool LatticeWorld::remove_private_voxel(const coordinate_type coord)
+void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
+{
+    if (num < 0)
+    {
+        throw std::invalid_argument("The number of molecules must be positive.");
+    }
+
+    MolecularTypeBase* mtype(find_molecular_type(sp));
+    if (mtype->size() < num)
+    {
+        throw std::invalid_argument(
+            "The number of molecules cannot be negative.");
+    }
+
+    Integer count(0);
+    while (count < num)
+    {
+        const Integer idx(rng_->uniform_int(0, mtype->size() - 1));
+        if (remove_voxel_private(mtype->at(idx).first));
+        {
+            ++count;
+        }
+    }
+}
+
+bool LatticeWorld::remove_voxel_private(const private_coordinate_type coord)
 {
     return space_.remove_molecule(coord);
 }

@@ -14,6 +14,8 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         # SpaceTraits
         Real& t()
         void set_t(Real&)
+        void set_edge_lengths(Cpp_Position3&)
+        Cpp_Position3 edge_lengths()
         # CompartmentSpaceTraits
         Real &volume()
         Real num_molecules(Cpp_Species &)

@@ -21,6 +21,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         void set_t(Real t)
         Real t()
         Cpp_Position3 edge_lengths()
+        Real volume()
 
         # Cpp_ParticleID new_particle(Cpp_Particle& p)
         # Integer num_particles()
@@ -42,6 +43,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         # # bool has_species(Cpp_Species& sp)
         Integer num_molecules(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
+        void remove_molecules(Cpp_Species& sp, Integer num)
         # shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
         void save(string filename)
         void load(string filename)

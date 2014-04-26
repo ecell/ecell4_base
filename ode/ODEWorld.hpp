@@ -27,10 +27,9 @@ protected:
 public:
 
     ODEWorld(const Position3& edge_lengths)
-        : volume_(1.0), t_(0.0)
+        : t_(0.0)
     {
-        const Real volume(edge_lengths[0] * edge_lengths[1] * edge_lengths[2]);
-        set_volume(volume);
+        set_edge_lengths(edge_lengths);
     }
 
     // SpaceTraits
@@ -49,12 +48,43 @@ public:
         t_ = t;
     }
 
-    // CompartmentSpaceTraits
+    const Position3& edge_lengths() const
+    {
+        return edge_lengths_;
+    }
 
-    const Real& volume() const
+    void set_edge_lengths(const Position3& edge_lengths)
+    {
+        for (Position3::size_type dim(0); dim < 3; ++dim)
+        {
+            if (edge_lengths[dim] <= 0)
+            {
+                throw std::invalid_argument("the edge length must be positive.");
+            }
+        }
+
+        edge_lengths_ = edge_lengths;
+        volume_ = edge_lengths[0] * edge_lengths[1] * edge_lengths[2];
+    }
+
+    const Real volume() const
     {
         return volume_;
     }
+
+    void set_volume(const Real& volume)
+    {
+        if (volume <= 0.0)
+        {
+            throw std::invalid_argument("The volume must be positive.");
+        }
+
+        volume_ = volume;
+        const Real L(cbrt(volume));
+        edge_lengths_ = Position3(L, L, L);
+    }
+
+    // CompartmentSpaceTraits
 
     Real num_molecules(const Species& sp) const
     {
@@ -74,16 +104,6 @@ public:
     }
 
     // CompartmentSpace member functions
-
-    void set_volume(const Real& volume)
-    {
-        if (volume <= 0.0)
-        {
-            throw std::invalid_argument("The volume must be positive.");
-        }
-
-        volume_ = volume;
-    }
 
     void add_molecules(const Species& sp, const Real& num)
     {
@@ -212,6 +232,7 @@ protected:
 
 protected:
 
+    Position3 edge_lengths_;
     Real volume_;
     Real t_;
 

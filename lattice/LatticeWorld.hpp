@@ -111,6 +111,7 @@ public:
     void set_t(const Real& t);
 
     const Position3& edge_lengths() const;
+    const Real volume() const;
     Integer num_species() const;
     bool has_species(const Species &sp) const;
 
@@ -137,7 +138,8 @@ public:
     // std::pair<ParticleID, bool> add_molecule(const Species& sp, const private_coordinate_type& coord);
     std::pair<ParticleID, bool> new_voxel_private(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
-    bool remove_private_voxel(const coordinate_type coord);
+    void remove_molecules(const Species& sp, const Integer& num);
+    bool remove_voxel_private(const private_coordinate_type coord);
     bool move(coordinate_type from, coordinate_type to);
     std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);
     std::pair<coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);

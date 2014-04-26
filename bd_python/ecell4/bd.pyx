@@ -139,6 +139,9 @@ cdef class BDWorld:
     def add_molecules(self, Species sp, Integer num):
         self.thisptr.get().add_molecules(deref(sp.thisptr), num)
 
+    def remove_molecules(self, Species sp, Integer num):
+        self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
+
     def save(self, string filename):
         self.thisptr.get().save(filename)
 

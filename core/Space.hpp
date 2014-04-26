@@ -62,7 +62,7 @@ public:
      * this function is a part of the trait of CompartmentSpace.
      * @return a volume (m^3) Real
      */
-    virtual const Real& volume() const
+    virtual const Real volume() const
     {
         throw NotSupported("volume() is not supported by this space class");
     }

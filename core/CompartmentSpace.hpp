@@ -19,12 +19,23 @@ public:
 
     // CompartmentSpaceTraits
 
+    virtual const Position3& edge_lengths() const
+    {
+        throw NotImplemented("edge_lengths() not implemented");
+    }
+
+    virtual void set_edge_lengths(const Position3& edge_lengths)
+    {
+        throw NotImplemented(
+            "set_edge_lengths(const Position3&) not implemented");
+    }
+
     /**
      * get volume.
      * this function is a part of the trait of CompartmentSpace.
      * @return a volume (m^3) Real
      */
-    virtual const Real& volume() const
+    virtual const Real volume() const
     {
         throw NotImplemented("volume() not implemented");
     }
@@ -94,15 +105,32 @@ protected:
 public:
 
     CompartmentSpaceVectorImpl(const Position3& edge_lengths)
-        : volume_(1.0)
     {
-        const Real volume(edge_lengths[0] * edge_lengths[1] * edge_lengths[2]);
-        set_volume(volume);
+        set_edge_lengths(edge_lengths);
+    }
+
+    const Position3& edge_lengths() const
+    {
+        return edge_lengths_;
+    }
+
+    void set_edge_lengths(const Position3& edge_lengths)
+    {
+        for (Position3::size_type dim(0); dim < 3; ++dim)
+        {
+            if (edge_lengths[dim] <= 0)
+            {
+                throw std::invalid_argument("the edge length must be positive.");
+            }
+        }
+
+        edge_lengths_ = edge_lengths;
+        volume_ = edge_lengths[0] * edge_lengths[1] * edge_lengths[2];
     }
 
     // CompartmentSpaceTraits
 
-    const Real& volume() const;
+    const Real volume() const;
     Integer num_molecules(const Species& sp) const;
 
     // CompartmentSpace member functions
@@ -136,6 +164,7 @@ protected:
 
 protected:
 
+    Position3 edge_lengths_;
     Real volume_;
 
     num_molecules_container_type num_molecules_;

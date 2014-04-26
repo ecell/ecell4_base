@@ -111,16 +111,16 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
     if (products.size() == 0)
     {
         // Not test yet
-        world_->remove_private_voxel(from_info.first);
-        world_->remove_private_voxel(to_info.first);
+        world_->remove_voxel_private(from_info.first);
+        world_->remove_voxel_private(to_info.first);
         return std::pair<bool, Reaction<Voxel> >(true, reaction);
     }
     else if (products.size() == 1)
     {
         const LatticeWorld::private_coordinate_type coord(to_info.first);
         Species product_species(*(products.begin()));
-        world_->remove_private_voxel(from_info.first);
-        world_->remove_private_voxel(to_info.first);
+        world_->remove_voxel_private(from_info.first);
+        world_->remove_voxel_private(to_info.first);
 
         if (!world_->has_species(product_species))
             new_species_.push_back(product_species);
@@ -148,8 +148,8 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
         // Not test yet
         const LatticeWorld::private_coordinate_type from_coord(from_info.first);
         const LatticeWorld::private_coordinate_type to_coord(to_info.first);
-        world_->remove_private_voxel(from_coord);
-        world_->remove_private_voxel(to_coord);
+        world_->remove_voxel_private(from_coord);
+        world_->remove_voxel_private(to_coord);
 
         const Species product_species0(*(products.begin())),
                       product_species1(*(++(products.begin())));
@@ -203,7 +203,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
 
     if (reaction_rule.products().size() == 0)
     {
-        world_->remove_private_voxel(info.first);
+        world_->remove_voxel_private(info.first);
         return std::pair<bool, Reaction<Voxel> >(true, reaction);
     }
     else if (reaction_rule.products().size() == 1)
@@ -214,7 +214,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
         const LatticeWorld::molecule_info_type
             minfo(world_->get_molecule_info(product));
         const LatticeWorld::private_coordinate_type coord(info.first);
-        world_->remove_private_voxel(coord);
+        world_->remove_voxel_private(coord);
         std::pair<ParticleID, bool> new_val(
             world_->new_voxel_private(
                 Voxel(product, coord, minfo.radius, minfo.D)));
@@ -241,7 +241,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
                 new_species_.push_back(product_species0);
             const LatticeWorld::molecule_info_type
                 minfo0(world_->get_molecule_info(product_species0));
-            world_->remove_private_voxel(coord);
+            world_->remove_voxel_private(coord);
             std::pair<ParticleID, bool> new_val0(
                 world_->new_voxel_private(
                     Voxel(product_species0, coord, minfo0.radius, minfo0.D)));

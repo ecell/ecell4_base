@@ -45,9 +45,19 @@ public:
     const Real& t(void) const;
     void set_t(const Real& t);
 
+    const Position3& edge_lengths() const
+    {
+        return cs_->edge_lengths();
+    }
+
+    void set_edge_lengths(const Position3& edge_lengths)
+    {
+        cs_->set_edge_lengths(edge_lengths);
+    }
+
     // CompartmentSpaceTraits
 
-    const Real& volume() const
+    const Real volume() const
     {
         return cs_->volume();
     }
