@@ -67,11 +67,12 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         Cpp_LatticeSimulator(
             shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_LatticeWorld]) except +
         Integer num_steps()
+        Real next_time()
         void step()
         bool step(Real& upto)
         Real t()
         Real dt()
-        # void initialize()
+        void initialize()
 
 ## LatticeSimulator
 #  a python wrapper for Cpp_LatticeSimulator

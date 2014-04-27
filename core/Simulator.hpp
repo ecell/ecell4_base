@@ -19,6 +19,11 @@ public:
     // SimulatorTraits
 
     /**
+     * initialize
+     */
+     virtual void initialize() = 0;
+
+    /**
      * get current time.
      * @return time Real
      */

@@ -65,7 +65,8 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         Real t()
         Real dt()
         void set_dt(Real& dt)
-        # void initialize()
+        Real next_time()
+        void initialize()
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator

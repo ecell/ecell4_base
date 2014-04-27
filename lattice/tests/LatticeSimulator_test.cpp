@@ -130,6 +130,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_species)
     world->add_molecules(sp, N / 2);
     BOOST_ASSERT(world->num_molecules(sp) == N);
 
+    sim.initialize();
     sim.step();
 }
 
@@ -154,6 +155,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_save_step_with_single_species)
     LatticeSimulator sim(model, world);
 
     world->add_molecules(sp, N);
+    sim.initialize();
 
     const std::string hdf5path("/");
 
@@ -196,6 +198,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_save_step_with_periodic)
     LatticeSimulator sim(model, world);
 
     world->add_molecules(sp, N);
+    sim.initialize();
 
     const std::string hdf5path("/");
 
@@ -243,6 +246,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unimolecular_reaction)
 
     BOOST_CHECK(world->add_molecules(sp1, 25));
     BOOST_CHECK(world->add_molecules(sp2, 25));
+    sim.initialize();
 
     world->save("data_unimolecular_reaction_single0.h5");
     for (Integer i(0); i < 10; ++i)
@@ -280,6 +284,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_binding_reaction)
 
     BOOST_CHECK(world->add_molecules(sp1, 25));
     BOOST_CHECK(world->add_molecules(sp2, 25));
+    sim.initialize();
 
     world->save("data_binging_reaction0.h5");
     for (Integer i(0); i < 20; ++i)
@@ -318,6 +323,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unbinding_reaction)
     LatticeSimulator sim(model, world);
 
     BOOST_CHECK(world->add_molecules(sp1, 25));
+    sim.initialize();
 
     world->save("data_unbinding_reaction0.h5");
     for (Integer i(0); i < 10; ++i)
@@ -352,6 +358,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_degradation_reaction)
     LatticeSimulator sim(model, world);
 
     BOOST_CHECK(world->add_molecules(sp1, 25));
+    sim.initialize();
 
     world->save("data_degradation_reaction0.h5");
     for (Integer i(0); i < 10; ++i)

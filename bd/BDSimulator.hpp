@@ -30,6 +30,11 @@ public:
 
     // SimulatorTraits
 
+    void initialize()
+    {
+        ;
+    }
+
     Real t() const
     {
         return (*world_).t();

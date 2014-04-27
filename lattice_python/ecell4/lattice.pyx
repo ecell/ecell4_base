@@ -218,5 +218,8 @@ cdef class LatticeSimulator:
     def dt(self):
         return self.thisptr.dt()
 
-    # def initialize(self):
-    #     self.thisptr.initialize()
+    def next_time(self):
+        return self.thisptr.next_time()
+
+    def initialize(self):
+        self.thisptr.initialize()

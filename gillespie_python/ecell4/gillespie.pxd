@@ -41,6 +41,7 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         Real t()
         void set_t(Real)
         Real dt()
+        Real next_time()
         void initialize()
         Cpp_GSLRandomNumberGenerator& rng()
 

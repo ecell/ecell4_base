@@ -49,6 +49,7 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         Real t()
         Integer num_steps()
         Real dt()
+        Real next_time()
         void step()
         bool step(Real&)
         # Optional members

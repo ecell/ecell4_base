@@ -8,6 +8,7 @@
 #include "types.hpp"
 #include "DynamicPriorityQueue.hpp"
 
+
 namespace ecell4
 {
 
@@ -18,10 +19,12 @@ class LatticeSimulator;
 
 class EventScheduler
 {
-
 public:
+
     struct Event
     {
+    public:
+
         Event(Real const& time) : time_(time) {}
 
         virtual ~Event() {}
@@ -35,11 +38,13 @@ public:
 
         virtual void interrupt(Real const& t) {}
 
-        protected:
-            Real time_;
+    protected:
+
+        Real time_;
     };
 
 protected:
+
     struct event_comparator
     {
         bool operator()(boost::shared_ptr<Event> const& lhs,
@@ -49,16 +54,19 @@ protected:
         }
     };
 
-    typedef DynamicPriorityQueue<boost::shared_ptr<Event>, event_comparator> EventPriorityQueue;
+    typedef DynamicPriorityQueue<boost::shared_ptr<Event>, event_comparator>
+        EventPriorityQueue;
 
 public:
+
     typedef typename EventPriorityQueue::size_type size_type;
     typedef typename EventPriorityQueue::identifier_type identifier_type;
     typedef typename EventPriorityQueue::value_type value_type;
-    typedef boost::iterator_range<typename EventPriorityQueue::const_iterator> events_range;
-
+    typedef boost::iterator_range<typename EventPriorityQueue::const_iterator>
+        events_range;
 
 public:
+
     EventScheduler() : time_(0.0) {}
 
     ~EventScheduler() {}
@@ -128,14 +136,26 @@ public:
 
     events_range events() const
     {
-        return boost::make_iterator_range(eventPriorityQueue_.begin(),
-                                          eventPriorityQueue_.end());
+        return boost::make_iterator_range(
+            eventPriorityQueue_.begin(), eventPriorityQueue_.end());
+    }
+
+    const Real next_time() const
+    {
+        if (size() > 0)
+        {
+            return top().second->time();
+        }
+        else
+        {
+            return inf;
+        }
     }
 
 protected:
+
     EventPriorityQueue eventPriorityQueue_;
     Real time_;
-
 };
 
 } // lattice

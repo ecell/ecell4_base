@@ -81,6 +81,12 @@ cdef class GillespieSimulator:
     def t(self):
         return self.thisptr.t()
 
+    def dt(self):
+        return self.thisptr.dt()
+
+    def next_time(self):
+        return self.thisptr.next_time()
+
     def set_t(self, Real new_t):
         self.thisptr.set_t(new_t)
 

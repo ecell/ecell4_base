@@ -92,6 +92,12 @@ cdef class ODESimulator:
     def num_steps(self):
         return self.thisptr.num_steps()
 
+    def next_time(self):
+        return self.thisptr.next_time()
+
+    def dt(self):
+        return self.thisptr.dt()
+
     def step(self, upto = None):
         if upto is None:
             self.thisptr.step()

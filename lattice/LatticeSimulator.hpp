@@ -25,6 +25,7 @@ class LatticeSimulator
     : public Simulator
 {
 protected:
+
     struct StepEvent : EventScheduler::Event
     {
         StepEvent(LatticeSimulator* sim, const Species& species, const Real& t)
@@ -57,6 +58,7 @@ protected:
         }
 
     protected:
+
         LatticeSimulator* sim_;
         Species species_;
         MolecularTypeBase* mt_;
@@ -105,6 +107,7 @@ protected:
         }
 
     protected:
+
         LatticeSimulator* sim_;
         ReactionRule rule_;
     };
@@ -114,9 +117,10 @@ public:
     LatticeSimulator(
             boost::shared_ptr<NetworkModel> model,
             boost::shared_ptr<LatticeWorld> world)
-        : model_(model), world_(world), is_initialized_(false)
+        : model_(model), world_(world), num_steps_(0)
     {
         world_->bind_to(model);
+        initialize();
     }
 
     virtual Real t() const
@@ -126,14 +130,12 @@ public:
 
     virtual Real dt() const
     {
-        // TODO
-        return 0.;
+        return dt_;
     }
 
     Integer num_steps() const
     {
-        // TODO
-        return 0;
+        return num_steps_;
     }
 
     void initialize();
@@ -142,6 +144,7 @@ public:
     void walk(const Species& species);
 
 protected:
+
     boost::shared_ptr<EventScheduler::Event> create_step_event(
         const Species& species, const Real& t);
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
@@ -163,14 +166,13 @@ protected:
 
     boost::shared_ptr<NetworkModel> model_;
     boost::shared_ptr<LatticeWorld> world_;
-    bool is_initialized_;
 
     EventScheduler scheduler_;
     std::vector<ReactionRule> reactions_;
     std::vector<Species> new_species_;
 
     Real dt_;
-
+    Integer num_steps_;
 };
 
 } // lattice

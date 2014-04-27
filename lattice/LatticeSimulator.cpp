@@ -30,7 +30,7 @@ void LatticeSimulator::initialize()
         }
     }
 
-    is_initialized_ = true;
+    dt_ = scheduler_.next_time() - t();
 }
 
 boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_step_event(
@@ -281,20 +281,12 @@ void LatticeSimulator::register_step_event(const Species& species)
 
 void LatticeSimulator::step()
 {
-    if (!is_initialized_)
-    {
-        initialize();
-    }
     step_();
+    dt_ = scheduler_.next_time() - t();
 }
 
 bool LatticeSimulator::step(const Real& upto)
 {
-    if (!is_initialized_)
-    {
-        initialize();
-    }
-
     if (upto < t())
     {
         return false;
@@ -303,11 +295,12 @@ bool LatticeSimulator::step(const Real& upto)
     if (upto >= scheduler_.top().second->time())
     {
         step_();
+        dt_ = scheduler_.next_time() - t();
         return true;
     }
 
-    world_->set_t(upto);
-
+    world_->set_t(upto); //XXX: TODO
+    dt_ = scheduler_.next_time() - t();
     return false;
 }
 
@@ -334,6 +327,8 @@ void LatticeSimulator::step_()
     {
         register_step_event(*itr);
     }
+
+    ++num_steps_;
 }
 
 void LatticeSimulator::walk(const Species& species)
