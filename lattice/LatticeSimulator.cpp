@@ -63,8 +63,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::attempt_reaction_(
         from_minfo(world_->get_molecule_info(from_species)),
         to_minfo(world_->get_molecule_info(to_species));
 
-    const Real Da(boost::lexical_cast<Real>(from_minfo.D)),
-               Db(boost::lexical_cast<Real>(to_minfo.D));
+    const Real Dtot(from_minfo.D + to_minfo.D);
     const Real rnd(world_->rng()->uniform(0,1));
     Real accp(0.);
     for (std::vector<ReactionRule>::const_iterator itr(rules.begin());
@@ -72,7 +71,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::attempt_reaction_(
     {
         const Real k((*itr).k());
         const Real P(k * factor/ (6 * sqrt(2.)
-                    * (Da + Db) * world_->voxel_radius()));
+                    * Dtot * world_->voxel_radius()));
         accp += P;
         if (accp > 1)
         {
