@@ -2,7 +2,7 @@
 #define VECTOR3_HPP
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"
 #endif /* HAVE_CONFIG_H */
 
 #include <ostream>

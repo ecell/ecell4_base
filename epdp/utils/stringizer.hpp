@@ -7,7 +7,8 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/range/value_type.hpp>
-#include "utils/range.hpp"
+//#include "utils/range.hpp"
+#include "./range.hpp"
 
 template<typename T_>
 struct stringizer: public std::unary_function<T_, std::string>

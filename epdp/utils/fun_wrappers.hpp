@@ -6,7 +6,8 @@
 #include <boost/type_traits/is_reference.hpp>
 #include <boost/pointee.hpp>
 #include <boost/call_traits.hpp>
-#include "utils/fun_composition.hpp"
+//#include "utils/fun_composition.hpp"
+#include "./fun_composition.hpp"
 
 template < typename T_ >
 struct delete_ptr: public std::unary_function<T_*, void>
