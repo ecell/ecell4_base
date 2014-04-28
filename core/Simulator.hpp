@@ -36,6 +36,11 @@ public:
     virtual Real dt() const = 0;
 
     /**
+     * set step interval.
+     */
+    virtual void set_dt(const Real& dt) = 0;
+
+    /**
      * get the number of steps.
      * @return the number of steps Integer
      */
@@ -116,6 +121,14 @@ public:
     Integer num_steps() const
     {
         return num_steps_;
+    }
+
+    /**
+     * set step interval.
+     */
+    virtual void set_dt(const Real& dt)
+    {
+        std::cerr << "WARN: set_dt(const Real&) was just ignored." << std::endl;
     }
 
 protected:

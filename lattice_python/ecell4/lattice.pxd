@@ -75,6 +75,7 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         bool step(Real& upto)
         Real t()
         Real dt()
+        void set_dt(Real)
         void initialize()
         shared_ptr[Cpp_NetworkModel] model()
         shared_ptr[Cpp_LatticeWorld] world()

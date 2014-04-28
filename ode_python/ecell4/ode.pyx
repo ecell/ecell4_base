@@ -116,6 +116,9 @@ cdef class ODESimulator:
     def set_t(self, Real new_t):
         self.thisptr.set_t(new_t)
 
+    def set_dt(self, Real dt):
+        self.thisptr.set_dt(dt)
+
     def initialize(self):
         self.thisptr.initialize()
 

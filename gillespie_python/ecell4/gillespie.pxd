@@ -43,6 +43,7 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         bool step(Real)
         Real t()
         void set_t(Real)
+        void set_dt(Real)
         Real dt()
         Real next_time()
         void initialize()

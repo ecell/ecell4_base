@@ -227,6 +227,9 @@ cdef class LatticeSimulator:
     def next_time(self):
         return self.thisptr.next_time()
 
+    def set_dt(self, Real dt):
+        self.thisptr.set_dt(dt)
+
     def initialize(self):
         self.thisptr.initialize()
 
