@@ -74,6 +74,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         void set_attribute(string, string)
         void remove_attribute(string)
         bool has_attribute(string)
+        Integer get_unit(Cpp_UnitSpecies)
         void add_unit(Cpp_UnitSpecies)
         Integer num_units()
         void deserialize(string)

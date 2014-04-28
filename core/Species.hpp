@@ -127,6 +127,18 @@ public:
         return units_.end();
     }
 
+    Integer get_unit(const UnitSpecies& usp)
+    {
+        container_type::iterator itr;
+        for (itr = units_.begin(); itr != units_.end(); ++itr)
+        {
+            if (usp == *itr)
+            {
+                return itr - units_.begin();
+            }
+        }
+    }
+
     bool match(const Species& target) const
     {
         container_type::const_iterator i(units_.begin()), j(target.begin());
