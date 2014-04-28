@@ -328,7 +328,7 @@ void LatticeSimulator::step_()
         register_step_event(*itr);
     }
 
-    ++num_steps_;
+    num_steps_++;
 }
 
 void LatticeSimulator::walk(const Species& species)

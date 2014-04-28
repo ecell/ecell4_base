@@ -192,6 +192,12 @@ cdef class LatticeWorld:
     def bind_to(self, NetworkModel m):
         self.thisptr.get().bind_to(deref(m.thisptr))
 
+cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
+    shared_ptr[Cpp_LatticeWorld] w):
+    r = LatticeWorld(Position3(1, 1, 1))
+    r.thisptr.swap(w)
+    return r
+
 ## LatticeSimulator
 #  a python wrapper for Cpp_LatticeSimulator
 cdef class LatticeSimulator:
@@ -223,3 +229,9 @@ cdef class LatticeSimulator:
 
     def initialize(self):
         self.thisptr.initialize()
+
+    def model(self):
+        return NetworkModel_from_Cpp_NetworkModel(self.thisptr.model())
+
+    def world(self):
+        return LatticeWorld_from_Cpp_LatticeWorld(self.thisptr.world())

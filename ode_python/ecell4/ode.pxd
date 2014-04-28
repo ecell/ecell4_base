@@ -39,6 +39,8 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
 cdef class ODEWorld:
     cdef shared_ptr[Cpp_ODEWorld]* thisptr
 
+cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(shared_ptr[Cpp_ODEWorld] m)
+
 ## Cpp_ODESimulator
 #  ecell4::ode::ODESimulator
 cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
@@ -55,6 +57,8 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         # Optional members
         void set_t(Real&)
         void set_dt(Real &)
+        shared_ptr[Cpp_NetworkModel] model()
+        shared_ptr[Cpp_ODEWorld] world()
 
 ## ODESimulator
 #  a python wrapper for Cpp_ODESimulator

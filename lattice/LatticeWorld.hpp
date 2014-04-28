@@ -10,7 +10,7 @@
 #include <ecell4/core/MolecularType.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
-#include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 
 namespace ecell4
 {
@@ -86,7 +86,7 @@ public:
                 radius = std::atof(sp.get_attribute("radius").c_str());
             }
 
-            if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+            if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
             {
                 if (bound_model->has_species_attribute(sp))
                 {
@@ -97,7 +97,8 @@ public:
                     }
                     if (!with_radius && attributed.has_attribute("radius"))
                     {
-                        radius = std::atof(attributed.get_attribute("radius").c_str());
+                        radius = std::atof(
+                            attributed.get_attribute("radius").c_str());
                     }
                 }
             }
@@ -233,9 +234,9 @@ public:
         rng_->load(*fin);
     }
 
-    void bind_to(boost::shared_ptr<Model> model)
+    void bind_to(boost::shared_ptr<NetworkModel> model)
     {
-        if (boost::shared_ptr<Model> bound_model = model_.lock())
+        if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -246,13 +247,18 @@ public:
         model_ = model;
     }
 
+    boost::shared_ptr<NetworkModel> lock_model() const
+    {
+        return model_.lock();
+    }
+
 protected:
 
     LatticeSpace space_;
     boost::shared_ptr<GSLRandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 
-    boost::weak_ptr<Model> model_;
+    boost::weak_ptr<NetworkModel> model_;
 };
 
 } // lattice

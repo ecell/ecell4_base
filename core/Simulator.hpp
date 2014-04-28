@@ -7,11 +7,11 @@
 namespace ecell4
 {
 
-class Simulator
+class SimulatorBase
 {
 public:
 
-    virtual ~Simulator()
+    virtual ~SimulatorBase()
     {
         ; // do nothing
     }
@@ -61,6 +61,68 @@ public:
     {
         return t() + dt();
     }
+};
+
+template <typename Tmodel_, typename Tworld_>
+class Simulator
+    : public SimulatorBase
+{
+public:
+
+    typedef Tmodel_ model_type;
+    typedef Tworld_ world_type;
+
+public:
+
+    Simulator(boost::shared_ptr<model_type> model,
+        boost::shared_ptr<world_type> world)
+        : model_(model), world_(world), num_steps_(0)
+    {
+        world_->bind_to(model_);
+    }
+
+    Simulator(boost::shared_ptr<world_type> world)
+        : world_(world), num_steps_(0)
+    {
+        if (boost::shared_ptr<model_type> bound_model = world_->lock_model())
+        {
+            model_ = bound_model;
+        }
+        else
+        {
+            throw std::invalid_argument("A world must be bound to a model.");
+        }
+    }
+
+    virtual ~Simulator()
+    {
+        ; // do nothing
+    }
+
+    boost::shared_ptr<model_type> model() const
+    {
+        return model_;
+    }
+
+    boost::shared_ptr<world_type> world() const
+    {
+        return world_;
+    }
+
+    /**
+     * get the number of steps.
+     * @return the number of steps Integer
+     */
+    Integer num_steps() const
+    {
+        return num_steps_;
+    }
+
+protected:
+
+    boost::shared_ptr<model_type> model_;
+    boost::shared_ptr<world_type> world_;
+    Integer num_steps_;
 };
 
 }

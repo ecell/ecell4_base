@@ -151,6 +151,12 @@ cdef class BDWorld:
     def bind_to(self, NetworkModel m):
         self.thisptr.get().bind_to(deref(m.thisptr))
 
+cdef BDWorld BDWorld_from_Cpp_BDWorld(
+    shared_ptr[Cpp_BDWorld] w):
+    r = BDWorld(Position3(1, 1, 1))
+    r.thisptr.swap(w)
+    return r
+
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
 cdef class BDSimulator:
@@ -185,3 +191,9 @@ cdef class BDSimulator:
 
     def initialize(self):
         self.thisptr.initialize()
+
+    def model(self):
+        return NetworkModel_from_Cpp_NetworkModel(self.thisptr.model())
+
+    def world(self):
+        return BDWorld_from_Cpp_BDWorld(self.thisptr.world())

@@ -29,6 +29,9 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
 cdef class GillespieWorld:
     cdef shared_ptr[Cpp_GillespieWorld]* thisptr
 
+cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
+    shared_ptr[Cpp_GillespieWorld] m)
+
 ## Cpp_GillespieSimulator
 #  ecell4::gillespie::GillespieSimulator
 cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gillespie":
@@ -44,6 +47,8 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         Real next_time()
         void initialize()
         Cpp_GSLRandomNumberGenerator& rng()
+        shared_ptr[Cpp_NetworkModel] model()
+        shared_ptr[Cpp_GillespieWorld] world()
 
 ## GillespieSimulator
 #  a python wrapper for Cpp_GillespieSimulator

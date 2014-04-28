@@ -178,6 +178,9 @@ cdef class NetworkModel:
     # cdef Cpp_NetworkModel* thisptr
     cdef shared_ptr[Cpp_NetworkModel]* thisptr
 
+cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
+    shared_ptr[Cpp_NetworkModel] m)
+
 ## Cpp_Position3
 #  ecell4::Position3
 cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":

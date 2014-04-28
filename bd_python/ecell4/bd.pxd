@@ -50,6 +50,8 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
 cdef class BDWorld:
     cdef shared_ptr[Cpp_BDWorld]* thisptr
 
+cdef BDWorld BDWorld_from_Cpp_BDWorld(shared_ptr[Cpp_BDWorld] m)
+
 ## Cpp_BDSimulator
 #  ecell4::bd::BDSimulator
 cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
@@ -67,6 +69,8 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         void set_dt(Real& dt)
         Real next_time()
         void initialize()
+        shared_ptr[Cpp_NetworkModel] model()
+        shared_ptr[Cpp_BDWorld] world()
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator

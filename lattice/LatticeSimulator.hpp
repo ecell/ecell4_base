@@ -22,8 +22,12 @@ namespace lattice
 {
 
 class LatticeSimulator
-    : public Simulator
+    : public Simulator<NetworkModel, LatticeWorld>
 {
+public:
+
+    typedef Simulator<NetworkModel, LatticeWorld> base_type;
+
 protected:
 
     struct StepEvent : EventScheduler::Event
@@ -117,9 +121,14 @@ public:
     LatticeSimulator(
             boost::shared_ptr<NetworkModel> model,
             boost::shared_ptr<LatticeWorld> world)
-        : model_(model), world_(world), num_steps_(0)
+        : base_type(model, world)
     {
-        world_->bind_to(model);
+        initialize();
+    }
+
+    LatticeSimulator(boost::shared_ptr<LatticeWorld> world)
+        : base_type(world)
+    {
         initialize();
     }
 
@@ -131,11 +140,6 @@ public:
     virtual Real dt() const
     {
         return dt_;
-    }
-
-    Integer num_steps() const
-    {
-        return num_steps_;
     }
 
     void initialize();
@@ -164,15 +168,11 @@ protected:
 
 protected:
 
-    boost::shared_ptr<NetworkModel> model_;
-    boost::shared_ptr<LatticeWorld> world_;
-
     EventScheduler scheduler_;
     std::vector<ReactionRule> reactions_;
     std::vector<Species> new_species_;
 
     Real dt_;
-    Integer num_steps_;
 };
 
 } // lattice

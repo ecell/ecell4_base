@@ -42,6 +42,11 @@ public:
         ;
     }
 
+    virtual ~NetworkModel()
+    {
+        ;
+    }
+
     // ModelTraits
 
     std::vector<ReactionRule> query_reaction_rules(const Species& sp) const;

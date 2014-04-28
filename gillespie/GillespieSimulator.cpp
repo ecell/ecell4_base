@@ -113,7 +113,7 @@ void GillespieSimulator::step(void)
     }
 
     this->set_t(t0 + dt0);
-    ++this->num_steps_;
+    num_steps_++;
 
     this->draw_next_reaction();
 }
@@ -159,11 +159,6 @@ Real GillespieSimulator::t(void) const
 Real GillespieSimulator::dt(void) const
 {
     return this->dt_;
-}
-
-Integer GillespieSimulator::num_steps(void) const
-{
-    return this->num_steps_;
 }
 
 } // gillespie

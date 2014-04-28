@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     const Position3 edge_lengths(L, L, L);
 
     /// instantiate NetworkModel
-    boost::shared_ptr<Model> model(new NetworkModel());
+    boost::shared_ptr<NetworkModel> model(new NetworkModel());
 
     /// create a Species, and set its attributes
     Species sp1("A");

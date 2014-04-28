@@ -86,3 +86,9 @@ cdef class NetworkModel:
     # def reactants(self):
     #     # self.thisptr.reactants()
     #     pass
+
+cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
+    shared_ptr[Cpp_NetworkModel] m):
+    r = NetworkModel()
+    r.thisptr.swap(m)
+    return r

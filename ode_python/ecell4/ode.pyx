@@ -78,6 +78,12 @@ cdef class ODEWorld:
     def bind_to(self, NetworkModel m):
         self.thisptr.get().bind_to(deref(m.thisptr))
 
+cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(
+    shared_ptr[Cpp_ODEWorld] w):
+    r = ODEWorld(Position3(1, 1, 1))
+    r.thisptr.swap(w)
+    return r
+
 ## ODESimulator
 #  a python wrapper for Cpp_ODESimulator
 cdef class ODESimulator:
@@ -112,3 +118,9 @@ cdef class ODESimulator:
 
     def initialize(self):
         self.thisptr.initialize()
+
+    def model(self):
+        return NetworkModel_from_Cpp_NetworkModel(self.thisptr.model())
+
+    def world(self):
+        return ODEWorld_from_Cpp_ODEWorld(self.thisptr.world())

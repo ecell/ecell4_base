@@ -58,6 +58,12 @@ cdef class GillespieWorld:
     def bind_to(self, NetworkModel m):
         self.thisptr.get().bind_to(deref(m.thisptr))
 
+cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
+    shared_ptr[Cpp_GillespieWorld] w):
+    r = GillespieWorld(Position3(1, 1, 1))
+    r.thisptr.swap(w)
+    return r
+
 ## GillespieSimulator
 #  a python wrapper for Cpp_GillespieSimulator
 cdef class GillespieSimulator:
@@ -92,3 +98,9 @@ cdef class GillespieSimulator:
 
     def initialize(self):
         self.thisptr.initialize()
+
+    def model(self):
+        return NetworkModel_from_Cpp_NetworkModel(self.thisptr.model())
+
+    def world(self):
+        return GillespieWorld_from_Cpp_GillespieWorld(self.thisptr.world())

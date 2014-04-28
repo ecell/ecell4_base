@@ -4,6 +4,7 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Position3.hpp>
 #include <ecell4/core/Space.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 
 #include <boost/shared_ptr.hpp>
@@ -208,9 +209,9 @@ public:
         index_map_.erase(sp);
     }
 
-    void bind_to(boost::shared_ptr<Model> model)
+    void bind_to(boost::shared_ptr<NetworkModel> model)
     {
-        if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+        if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -219,6 +220,11 @@ public:
             }
         }
         this->model_ = model;
+    }
+
+    boost::shared_ptr<NetworkModel> lock_model() const
+    {
+        return model_.lock();
     }
 
 protected:
@@ -240,7 +246,7 @@ protected:
     species_container_type species_;
     species_map_type index_map_;
 
-    boost::weak_ptr<Model> model_;
+    boost::weak_ptr<NetworkModel> model_;
 };
 
 } // ode

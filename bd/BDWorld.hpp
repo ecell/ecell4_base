@@ -9,7 +9,7 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
-#include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 
 
 namespace ecell4
@@ -79,7 +79,7 @@ public:
             radius = std::atof(sp.get_attribute("radius").c_str());
             D = std::atof(sp.get_attribute("D").c_str());
         }
-        else if (boost::shared_ptr<Model> bound_model = this->model_.lock())
+        else if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
         {
             if (bound_model->has_species_attribute(sp))
             {
@@ -280,9 +280,9 @@ public:
         rng_->load(*fin);
     }
 
-    void bind_to(boost::shared_ptr<Model> model)
+    void bind_to(boost::shared_ptr<NetworkModel> model)
     {
-        if (boost::shared_ptr<Model> bound_model = model_.lock())
+        if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -293,13 +293,18 @@ public:
         model_ = model;
     }
 
+    boost::shared_ptr<NetworkModel> lock_model() const
+    {
+        return model_.lock();
+    }
+
 protected:
 
     boost::scoped_ptr<ParticleSpace> ps_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> pidgen_;
 
-    boost::weak_ptr<Model> model_;
+    boost::weak_ptr<NetworkModel> model_;
 };
 
 } // bd

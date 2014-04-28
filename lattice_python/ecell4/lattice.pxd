@@ -60,6 +60,9 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
 cdef class LatticeWorld:
     cdef shared_ptr[Cpp_LatticeWorld]* thisptr
 
+cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
+    shared_ptr[Cpp_LatticeWorld] m)
+
 ## Cpp_LatticeSimulator
 #  ecell4::lattice::LatticeSimulator
 cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattice":
@@ -73,6 +76,8 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         Real t()
         Real dt()
         void initialize()
+        shared_ptr[Cpp_NetworkModel] model()
+        shared_ptr[Cpp_LatticeWorld] world()
 
 ## LatticeSimulator
 #  a python wrapper for Cpp_LatticeSimulator
