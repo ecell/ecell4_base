@@ -59,8 +59,12 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::attempt_reaction_(
                 from_species, to_species));
 
     const Real factor((from_species == to_species) ? 2 : 1);
-    const Real Da(boost::lexical_cast<Real>(from_species.get_attribute("D"))),
-               Db(boost::lexical_cast<Real>(to_species.get_attribute("D")));
+    const LatticeWorld::molecule_info_type
+        from_minfo(world_->get_molecule_info(from_species)),
+        to_minfo(world_->get_molecule_info(to_species));
+
+    const Real Da(boost::lexical_cast<Real>(from_minfo.D)),
+               Db(boost::lexical_cast<Real>(to_minfo.D));
     const Real rnd(world_->rng()->uniform(0,1));
     Real accp(0.);
     for (std::vector<ReactionRule>::const_iterator itr(rules.begin());
