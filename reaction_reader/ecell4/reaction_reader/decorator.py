@@ -3,6 +3,7 @@ import types
 import numbers
 import warnings
 import functools
+import itertools
 
 import parseobj
 from decorator_base import Callback, JustParseCallback, parse_decorator
@@ -15,24 +16,25 @@ def generate_Species(obj):
         obj = obj._as_ParseObj()
 
     if isinstance(obj, parseobj.ParseObj):
-        elems = obj._elements()
-        if len(elems) != 1:
-            raise NotImplementedError, (
-                'complex is not allowed yet; "%s"' % str(obj))
-        if (elems[0].args is not None
-            or elems[0].kwargs is not None
-            or elems[0].key is not None
-            or elems[0].modification is not None):
-            raise NotImplementedError, (
-                'modification is not allowed yet; "%s"' % str(obj))
-        return (ecell4.core.Species(elems[0].name), )
+        return (ecell4.core.Species(str(obj)), )
+        # if len(elems) != 1:
+        #     raise NotImplementedError, (
+        #         'complex is not allowed yet; "%s"' % str(obj))
+        # if (elems[0].args is not None
+        #     or elems[0].kwargs is not None
+        #     or elems[0].key is not None
+        #     or elems[0].modification is not None):
+        #     raise NotImplementedError, (
+        #         'modification is not allowed yet; "%s"' % str(obj))
+        # return (ecell4.core.Species(elems[0].name), )
     elif isinstance(obj, parseobj.InvExp):
         return (None, )
     elif isinstance(obj, parseobj.AddExp):
         subobjs = obj._elements()
-        return tuple(generate_Species(subobj)[0] for subobj in subobjs)
-
-    raise RuntimeError, 'invalid expression; "%s" given' % str(obj)
+        return tuple(itertools.chain(*[
+            generate_Species(subobj) for subobj in subobjs]))
+    else:
+        raise RuntimeError, 'invalid expression; "%s" given' % str(obj)
 
 def generate_ReactionRule(lhs, rhs, k=0.0):
     if len(lhs) == 0:
@@ -113,8 +115,7 @@ class SpeciesAttributesCallback(Callback):
                         % (str(key), str(value)))
                 sp.set_attribute(key, value)
         else:
-            if not (isinstance(rhs, types.TupleType)
-                and isinstance(rhs, types.ListType)):
+            if not isinstance(rhs, (types.TupleType, types.ListType)):
                 if len(self.keys) == 1:
                     rhs = (rhs, )
                 else:
@@ -175,9 +176,8 @@ class ReactionRulesCallback(Callback):
         lhs = tuple(sp for sp in lhs if sp is not None)
         rhs = tuple(sp for sp in rhs if sp is not None)
 
-        if isinstance(obj, parseobj.EqExp) or isinstance(obj, parseobj.NeExp):
-            if not (isinstance(params, types.ListType)
-                or isinstance(params, types.TupleType)):
+        if isinstance(obj, (parseobj.EqExp, parseobj.NeExp)):
+            if not isinstance(params, (types.ListType, types.TupleType)):
                 raise RuntimeError, (
                     'parameter must be a list or tuple with length 2; "%s" given'
                     % str(params))
@@ -190,6 +190,7 @@ class ReactionRulesCallback(Callback):
                 raise RuntimeError, (
                     'parameters must be given as a list or tuple of numbers;'
                     + ' "%s" given' % str(params))
+
             self.comparisons.append(generate_ReactionRule(lhs, rhs, params[0]))
             self.comparisons.append(generate_ReactionRule(rhs, lhs, params[1]))
         elif isinstance(obj, parseobj.GtExp):
@@ -203,11 +204,10 @@ class ReactionRulesCallback(Callback):
         else:
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
 
-# reaction_rules = functools.partial(parse_decorator, Callback)
 reaction_rules = functools.partial(parse_decorator, ReactionRulesCallback)
 species_attributes = functools.partial(parse_decorator, SpeciesAttributesCallback)
 
-def species_attributes_with_keys(*args):
-    def create_callback():
-        return SpeciesAttributesCallback(*args)
-    return functools.partial(parse_decorator, create_callback)
+# def species_attributes_with_keys(*args):
+#     def create_callback():
+#         return SpeciesAttributesCallback(*args)
+#     return functools.partial(parse_decorator, create_callback)
