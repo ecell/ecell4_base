@@ -206,9 +206,12 @@ bool BDPropagator::attempt_reaction(
 
         if (prob >= 1)
         {
-            throw std::runtime_error(
+            // throw std::runtime_error(
+            //     "the total reaction probability exceeds 1."
+            //     " the step interval is too long");
+            std::cerr <<
                 "the total reaction probability exceeds 1."
-                " the step interval is too long");
+                " the step interval is too long" << std::endl;
         }
         if (prob > rnd)
         {
@@ -221,16 +224,15 @@ bool BDPropagator::attempt_reaction(
                 break;
             case 1:
                 {
-                    const Species& species_new(
-                        model_.apply_species_attributes(*(products.begin())));
-                    BDWorld::molecule_info_type
-                        info(world_.get_molecule_info(species_new));
+                    const Species sp(*(products.begin()));
+                    const BDWorld::molecule_info_type
+                        info(world_.get_molecule_info(sp));
                     const Real radius_new(info.radius);
                     const Real D_new(info.D);
 
                     const Position3 pos1(particle1.position());
                     const Position3 pos2(
-                    world_.periodic_transpose(particle2.position(), pos1));
+                        world_.periodic_transpose(particle2.position(), pos1));
                     const Real D1(particle1.D()), D2(particle2.D());
                     const Real D12(D1 + D2);
                     const Position3 newpos(
@@ -245,10 +247,12 @@ bool BDPropagator::attempt_reaction(
                         return false;
                     }
 
-                    Particle particle_to_update(
-                        species_new, newpos, radius_new, D_new);
-                    world_.update_particle(pid1, particle_to_update);
+                    const Particle particle_to_update(
+                        sp, newpos, radius_new, D_new);
                     remove_particle(pid2);
+                    // world_.update_particle(pid1, particle_to_update);
+                    remove_particle(pid1);
+                    world_.new_particle(particle_to_update);
                 }
                 break;
             default:
