@@ -59,7 +59,7 @@ cdef extern from "ecell4/core/UnitSpecies.hpp" namespace "ecell4":
         bool operator>(Cpp_UnitSpecies& rhs)
         string serial()
         string name()
-        void deserialize(string)
+        void deserialize(string) except+
         bool add_site(string, string, string)
 
 ## UnitSpecies
@@ -90,7 +90,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         Integer get_unit(Cpp_UnitSpecies)
         void add_unit(Cpp_UnitSpecies)
         Integer num_units()
-        void deserialize(string)
+        void deserialize(string) except+
 
 ## Species
 #  a python wrapper for Cpp_Species

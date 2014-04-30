@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
@@ -16,6 +17,10 @@ void UnitSpecies::clear()
 void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
 {
     clear();
+    if (serial == "")
+    {
+        return;
+    }
 
     boost::regex r1(
         "^\\s*(\\w+)\\s*(\\(\\s*([\\w\\s\\^=,]*)\\))?\\s*$");
@@ -44,7 +49,9 @@ void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
                     }
                     else if (order)
                     {
-                        //XXX:
+                        throw std::invalid_argument(
+                            "non-keyword arg after keyword arg [" +
+                            (*i) + "]"); //XXX:
                     }
 
                     add_site(
@@ -52,14 +59,17 @@ void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
                 }
                 else
                 {
-                    //XXX:
+                    throw std::invalid_argument(
+                        "a wrong site specification was given [" +
+                        (*i) + "]"); //XXX:
                 }
             }
         }
     }
     else
     {
-        name_ = "FAIL"; //XXX:
+        throw std::invalid_argument(
+            "a wrong serial was given to UnitSpecies [" + serial + "]"); //XXX:
     }
 }
 

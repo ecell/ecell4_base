@@ -62,7 +62,7 @@ cdef class Species:
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))
-    r = Species("")
+    r = Species()
     del r.thisptr
     r.thisptr = new_obj
     return r
