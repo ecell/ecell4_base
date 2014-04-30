@@ -19,6 +19,15 @@ cdef extern from "gsl/gsl_rng.h":
 ## Cpp_GSLRandomNumberGenerator
 #  ecell4::GSLRandomNumberGenerator
 cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
+    cdef cppclass Cpp_RandomNumberGenerator "ecell4::RandomNumberGenerator":
+        # RandomNumberGenerator(shared_ptr[gsl_rng]) except +
+        Cpp_RandomNumberGenerator() except +
+        Real uniform(Real, Real)
+        Integer uniform_int(Integer, Integer)
+        Real gaussian(Real, Real)
+        void seed(Integer)
+        void seed()
+
     cdef cppclass Cpp_GSLRandomNumberGenerator "ecell4::GSLRandomNumberGenerator":
         # GSLRandomNumberGenerator(shared_ptr[gsl_rng]) except +
         Cpp_GSLRandomNumberGenerator() except +
@@ -32,7 +41,11 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
 #  a python wrapper for Cpp_GSLRandomNumberGenerator
 cdef class GSLRandomNumberGenerator:
     # cdef Cpp_GSLRandomNumberGenerator* thisptr
-    cdef shared_ptr[Cpp_GSLRandomNumberGenerator]* thisptr
+    # cdef shared_ptr[Cpp_GSLRandomNumberGenerator]* thisptr
+    cdef shared_ptr[Cpp_RandomNumberGenerator]* thisptr
+
+cdef GSLRandomNumberGenerator GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
+    shared_ptr[Cpp_RandomNumberGenerator])
 
 ## Cpp_UnitSpecies
 #  ecell4::UnitSpecies

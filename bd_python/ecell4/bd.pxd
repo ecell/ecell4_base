@@ -13,7 +13,7 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
     cdef cppclass Cpp_BDWorld "ecell4::bd::BDWorld":
         Cpp_BDWorld(
             Cpp_Position3& edge_lengths,
-            shared_ptr[Cpp_GSLRandomNumberGenerator] rng) except +
+            shared_ptr[Cpp_RandomNumberGenerator] rng) except +
         Cpp_BDWorld(
             Cpp_Position3& edge_lengths) except +
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
@@ -41,10 +41,10 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         Integer num_molecules(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
         void remove_molecules(Cpp_Species& sp, Integer num)
-        shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
         void save(string filename)
         void load(string filename)
         void bind_to(shared_ptr[Cpp_NetworkModel])
+        shared_ptr[Cpp_RandomNumberGenerator] rng()
 
 ## BDWorld
 #  a python wrapper for Cpp_BDWorld

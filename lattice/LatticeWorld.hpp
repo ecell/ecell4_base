@@ -36,7 +36,7 @@ public:
 public:
 
     LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius,
-            boost::shared_ptr<GSLRandomNumberGenerator> rng)
+            boost::shared_ptr<RandomNumberGenerator> rng)
         : space_(edge_lengths, voxel_radius), rng_(rng)
     {
         ; // do nothing
@@ -45,7 +45,7 @@ public:
     LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius)
         : space_(edge_lengths, voxel_radius)
     {
-        rng_ = boost::shared_ptr<GSLRandomNumberGenerator>(
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
     }
@@ -53,7 +53,7 @@ public:
     LatticeWorld(const Position3& edge_lengths)
         : space_(edge_lengths, edge_lengths[0] / 100) //XXX: sloppy default
     {
-        rng_ = boost::shared_ptr<GSLRandomNumberGenerator>(
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
     }
@@ -224,7 +224,7 @@ public:
         return space_.voxel_radius();
     }
 
-    boost::shared_ptr<GSLRandomNumberGenerator> rng()
+    boost::shared_ptr<RandomNumberGenerator> rng()
     {
         return rng_;
     }
@@ -312,7 +312,7 @@ public:
 protected:
 
     LatticeSpace space_;
-    boost::shared_ptr<GSLRandomNumberGenerator> rng_;
+    boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 
     boost::weak_ptr<NetworkModel> model_;

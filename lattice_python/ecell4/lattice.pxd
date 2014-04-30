@@ -13,7 +13,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
     cdef cppclass Cpp_LatticeWorld "ecell4::lattice::LatticeWorld":
         Cpp_LatticeWorld(
             Cpp_Position3& edge_lengths, const Real& voxel_radius,
-            shared_ptr[Cpp_GSLRandomNumberGenerator] rng) except +
+            shared_ptr[Cpp_RandomNumberGenerator] rng) except +
         Cpp_LatticeWorld(
             Cpp_Position3& edge_lengths, const Real& voxel_radius) except +
         Cpp_LatticeWorld(Cpp_Position3& edge_lengths) except +
@@ -64,6 +64,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         void bind_to(shared_ptr[Cpp_NetworkModel])
         Cpp_Position3 coordinate2position(Integer)
         Integer position2coordinate(Cpp_Position3)
+        shared_ptr[Cpp_RandomNumberGenerator] rng()
 
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld

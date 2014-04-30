@@ -11,7 +11,7 @@ from ecell4.core cimport *
 cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gillespie":
     cdef cppclass Cpp_GillespieWorld "ecell4::gillespie::GillespieWorld":
         Cpp_GillespieWorld(Cpp_Position3&) except +
-        Cpp_GillespieWorld(Cpp_Position3&, shared_ptr[Cpp_GSLRandomNumberGenerator]) except +
+        Cpp_GillespieWorld(Cpp_Position3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
         void set_t(Real)
         Real t()
         Real volume()
@@ -23,6 +23,7 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         void save(string)
         void load(string)
         void bind_to(shared_ptr[Cpp_NetworkModel])
+        shared_ptr[Cpp_RandomNumberGenerator] rng()
 
 ## GillespieWorld
 #  a python wrapper for Cpp_GillespieWorld
@@ -47,7 +48,7 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         Real dt()
         Real next_time()
         void initialize()
-        Cpp_GSLRandomNumberGenerator& rng()
+        # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_NetworkModel] model()
         shared_ptr[Cpp_GillespieWorld] world()
 

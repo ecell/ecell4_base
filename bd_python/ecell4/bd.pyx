@@ -156,6 +156,10 @@ cdef class BDWorld:
     def bind_to(self, NetworkModel m):
         self.thisptr.get().bind_to(deref(m.thisptr))
 
+    def rng(self):
+        return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
+            self.thisptr.get().rng())
+
 cdef BDWorld BDWorld_from_Cpp_BDWorld(
     shared_ptr[Cpp_BDWorld] w):
     r = BDWorld(Position3(1, 1, 1))

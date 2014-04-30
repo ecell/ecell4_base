@@ -238,6 +238,10 @@ cdef class LatticeWorld:
         return self.thisptr.get().position2coordinate(
             deref(pos.thisptr))
 
+    def rng(self):
+        return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
+            self.thisptr.get().rng())
+
 cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
     shared_ptr[Cpp_LatticeWorld] w):
     r = LatticeWorld(Position3(1, 1, 1))

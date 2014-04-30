@@ -336,7 +336,7 @@ void LatticeSimulator::step_()
 
 void LatticeSimulator::walk(const Species& species)
 {
-    boost::shared_ptr<GSLRandomNumberGenerator> rng(world_->rng());
+    boost::shared_ptr<RandomNumberGenerator> rng(world_->rng());
 
     MolecularTypeBase* mtype(world_->find_molecular_type(species));
     mtype->shuffle(*rng);
