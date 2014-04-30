@@ -59,6 +59,11 @@ bool LatticeWorld::has_particle(const ParticleID& pid) const
     return space_.has_particle(pid);
 }
 
+bool LatticeWorld::has_voxel(const ParticleID& pid) const
+{
+    return space_.has_voxel(pid);
+}
+
 std::vector<std::pair<ParticleID, Particle> >
 LatticeWorld::list_particles() const
 {
@@ -103,21 +108,32 @@ MolecularTypeBase* LatticeWorld::get_molecular_type_private(
     return space_.get_molecular_type(coord);
 }
 
-// bool LatticeWorld::register_species(const Species& sp)
-// {
-//     return space_.register_species(sp);
-// }
+std::pair<std::pair<ParticleID, Voxel>, bool>
+LatticeWorld::new_voxel(const Voxel& v)
+{
+    const private_coordinate_type private_coord(coord2private(v.coordinate()));
+    return new_voxel_private(
+        Voxel(v.species(), private_coord, v.radius(), v.D()));
+}
 
-// std::pair<ParticleID, bool> LatticeWorld::add_molecule(const Species& sp, const private_coordinate_type& coord)
-// {
-//     ParticleID pid(sidgen_());
-//     return std::pair<ParticleID, bool>(pid, space_.add_molecule(sp, coord, pid));
-// }
+std::pair<std::pair<ParticleID, Voxel>, bool>
+LatticeWorld::new_voxel(const Species& sp, const coordinate_type& coord)
+{
+    const private_coordinate_type private_coord(coord2private(coord));
+    const molecule_info_type minfo(get_molecule_info(sp));
+    return new_voxel_private(
+        Voxel(sp, private_coord, minfo.radius, minfo.D));
+}
 
-std::pair<ParticleID, bool> LatticeWorld::new_voxel_private(const Voxel& v)
+std::pair<std::pair<ParticleID, Voxel>, bool>
+LatticeWorld::new_voxel_private(const Voxel& v)
 {
     ParticleID pid(sidgen_());
-    return std::make_pair(pid, space_.update_voxel_private(pid, v));
+    const bool is_succeeded(space_.update_voxel_private(pid, v));
+    const coordinate_type coord(private2coord(v.coordinate()));
+    return std::make_pair(
+        std::make_pair(pid, Voxel(v.species(), coord, v.radius(), v.D())),
+        is_succeeded);
 }
 
 bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)

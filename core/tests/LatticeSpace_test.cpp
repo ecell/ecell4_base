@@ -475,11 +475,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinates2)
     const Global g4(space.position2global(p1));
 
     BOOST_CHECK(g1.col == g4.col && g1.row == g4.row && g1.layer == g4.layer);
-    BOOST_CHECK_EQUAL(c1, space.position2coord(p1));
+    BOOST_CHECK_EQUAL(c1, space.position2coordinate(p1));
     BOOST_CHECK_EQUAL(pc1, space.position2private_coord(p1));
 
-    const Position3 p2(space.coord2position(c1));
-    BOOST_CHECK_EQUAL(c1, space.position2coord(p2));
+    const Position3 p2(space.coordinate2position(c1));
+    BOOST_CHECK_EQUAL(c1, space.position2coordinate(p2));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

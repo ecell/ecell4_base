@@ -103,6 +103,11 @@ Integer LatticeSpace::num_particles(const Species& sp) const
 
 bool LatticeSpace::has_particle(const ParticleID& pid) const
 {
+    return has_voxel(pid);
+}
+
+bool LatticeSpace::has_voxel(const ParticleID& pid) const
+{
     for (spmap::const_iterator itr(spmap_.begin());
             itr != spmap_.end(); ++itr)
     {
@@ -194,7 +199,7 @@ LatticeSpace::get_particle(const ParticleID& pid) const
 {
     const Voxel v(get_voxel(pid).second);
     return std::make_pair(pid, Particle(
-        v.species(), coord2position(v.coordinate()), v.radius(), v.D()));
+        v.species(), coordinate2position(v.coordinate()), v.radius(), v.D()));
 }
 
 bool LatticeSpace::update_particle(const ParticleID& pid, const Particle& p)
@@ -557,13 +562,13 @@ const Particle LatticeSpace::particle_at(private_coordinate_type coord) const
 {
     const MolecularTypeBase* ptr_mt(voxels_.at(coord));
     // const Species& sp = ptr_mt->species();
-    // const Position3& pos = coord2position(coord);
+    // const Position3& pos = coordinate2position(coord);
     // const Real& radius = 0;
     // const Real& D = 0;
     // Particle particle(sp, pos, radius, D);
     // return particle;
     return Particle(
-        ptr_mt->species(), coord2position(coord), ptr_mt->radius(), ptr_mt->D());
+        ptr_mt->species(), coordinate2position(coord), ptr_mt->radius(), ptr_mt->D());
 }
 
 bool LatticeSpace::is_in_range(coordinate_type coord) const
@@ -643,13 +648,12 @@ const Global LatticeSpace::position2global(const Position3& pos) const
     return global;
 }
 
-const Position3 LatticeSpace::coord2position(coordinate_type coord) const
+const Position3 LatticeSpace::coordinate2position(coordinate_type coord) const
 {
     return global2position(coord2global(coord));
-    // return global2position(coord2global_(coord, col_size_, row_size_, layer_size_)); //XXX: This must be wrong. See coord2global(coordinate_type).
 }
 
-LatticeSpace::coordinate_type LatticeSpace::position2coord(const Position3& pos) const
+LatticeSpace::coordinate_type LatticeSpace::position2coordinate(const Position3& pos) const
 {
     return global2coord(position2global(pos));
 }

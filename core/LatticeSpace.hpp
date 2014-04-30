@@ -56,6 +56,7 @@ public:
 
     bool has_species(const Species& sp) const;
     bool has_particle(const ParticleID& pid) const;
+    bool has_voxel(const ParticleID& pid) const;
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const;
 
     std::vector<std::pair<ParticleID, Particle> >
@@ -164,8 +165,8 @@ public:
     private_coordinate_type coord2private(coordinate_type cood) const;
     coordinate_type private2coord(private_coordinate_type private_coord) const;
 
-    const Position3 coord2position(coordinate_type coord) const;
-    coordinate_type position2coord(const Position3& pos) const;
+    const Position3 coordinate2position(coordinate_type coord) const;
+    coordinate_type position2coordinate(const Position3& pos) const;
 
     private_coordinate_type get_neighbor(
             private_coordinate_type private_coord, Integer nrand) const;

@@ -181,6 +181,18 @@ cdef class LatticeWorld:
     def load(self, string filename):
         self.thisptr.get().load(filename)
 
+    def new_voxel(self, arg1, arg2=None):
+        cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
+
+        if arg2 is None:
+            retval = self.thisptr.get().new_voxel(deref((<Voxel> arg1).thisptr))
+        else:
+            retval = self.thisptr.get().new_voxel(deref((<Species> arg1).thisptr), <Integer> arg2)
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
+
+    def update_voxel(self, ParticleID pid, Voxel v):
+        return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
+
     def list_voxels(self, Species sp):
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
         voxels = self.thisptr.get().list_voxels(deref(sp.thisptr))
@@ -196,6 +208,9 @@ cdef class LatticeWorld:
                      <Cpp_Voxel*>(address(deref(it).second)))))
             inc(it)
         return retval
+
+    def has_voxel(self, ParticleID pid):
+        return self.thisptr.get().has_voxel(deref(pid.thisptr))
 
     def voxel_radius(self):
         return self.thisptr.get().voxel_radius()
@@ -215,12 +230,12 @@ cdef class LatticeWorld:
     def bind_to(self, NetworkModel m):
         self.thisptr.get().bind_to(deref(m.thisptr))
 
-    def coord2position(self, Integer coord):
-        cdef Cpp_Position3 pos = self.thisptr.get().coord2position(coord)
+    def coordinate2position(self, Integer coord):
+        cdef Cpp_Position3 pos = self.thisptr.get().coordinate2position(coord)
         return Position3_from_Cpp_Position3(address(pos))
 
-    def position2coord(self, Position3 pos):
-        return self.thisptr.get().position2coord(
+    def position2coordinate(self, Position3 pos):
+        return self.thisptr.get().position2coordinate(
             deref(pos.thisptr))
 
 cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(

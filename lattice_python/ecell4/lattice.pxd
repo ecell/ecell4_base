@@ -51,15 +51,19 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         # shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
         void save(string filename)
         void load(string filename)
+        pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Voxel& p)
+        pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Species& sp, Integer pos)
         vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels(Cpp_Species& sp)
+        bool update_voxel(Cpp_ParticleID, Cpp_Voxel)
+        bool has_voxel(Cpp_ParticleID)
         Real voxel_radius()
         Integer col_size()
         Integer row_size()
         Integer layer_size()
         Integer size()
         void bind_to(shared_ptr[Cpp_NetworkModel])
-        Cpp_Position3 coord2position(Integer)
-        Integer position2coord(Cpp_Position3)
+        Cpp_Position3 coordinate2position(Integer)
+        Integer position2coordinate(Cpp_Position3)
 
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld

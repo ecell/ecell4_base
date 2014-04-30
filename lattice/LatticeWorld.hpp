@@ -166,7 +166,9 @@ public:
         return space_.remove_voxel(pid);
     }
 
+    bool has_voxel(const ParticleID& pid) const;
     bool has_particle(const ParticleID& pid) const;
+
     std::vector<std::pair<ParticleID, Particle> > list_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
         list_particles(const Species& sp) const;
@@ -180,9 +182,9 @@ public:
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     MolecularTypeBase* find_molecular_type(const Species& species);
     MolecularTypeBase* get_molecular_type_private(const private_coordinate_type& coord);
-    // bool register_species(const Species& sp);
-    // std::pair<ParticleID, bool> add_molecule(const Species& sp, const private_coordinate_type& coord);
-    std::pair<ParticleID, bool> new_voxel_private(const Voxel& v);
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
     void remove_molecules(const Species& sp, const Integer& num);
     bool remove_voxel_private(const private_coordinate_type coord);
@@ -196,7 +198,7 @@ public:
             const private_coordinate_type coord);
     // bool update_molecule(coordinate_type at, Species species);
 
-    std::pair<ParticleID, bool> place_voxel_private(const Species& sp, const private_coordinate_type& coord)
+    std::pair<std::pair<ParticleID, Voxel>, bool> place_voxel_private(const Species& sp, const private_coordinate_type& coord)
     {
         const molecule_info_type& info(get_molecule_info(sp));
         return new_voxel_private(ecell4::Voxel(sp, coord, info.radius, info.D));
@@ -247,14 +249,14 @@ public:
         return space_.size();
     }
 
-    coordinate_type position2coord(const Position3& pos) const
+    coordinate_type position2coordinate(const Position3& pos) const
     {
-        return space_.position2coord(pos);
+        return space_.position2coordinate(pos);
     }
 
-    const Position3 coord2position(const coordinate_type& coord) const
+    const Position3 coordinate2position(const coordinate_type& coord) const
     {
-        return space_.coord2position(coord);
+        return space_.coordinate2position(coord);
     }
 
     coordinate_type global2coord(const Global& global) const;
