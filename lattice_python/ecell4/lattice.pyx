@@ -40,9 +40,32 @@ cdef class LatticeWorld:
     def volume(self):
         return self.thisptr.get().volume()
 
-    # def new_particle(self, Particle p):
-    #     cdef Cpp_ParticleID pid = self.thisptr.get().new_particle(deref(p.thisptr))
-    #     return ParticleID_from_Cpp_ParticleID(address(pid))
+    def new_particle(self, arg1, Position3 arg2=None):
+        cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
+
+        if arg2 is None:
+            retval = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
+        else:
+            retval = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Particle_from_Cpp_Particle(address(retval.first.second))), retval.second)
+
+    def get_particle(self, ParticleID pid):
+        cdef pair[Cpp_ParticleID, Cpp_Particle] \
+            pid_particle_pair = self.thisptr.get().get_particle(deref(pid.thisptr))
+        return (ParticleID_from_Cpp_ParticleID(address(pid_particle_pair.first)),
+                Particle_from_Cpp_Particle(address(pid_particle_pair.second)))
+
+    def get_voxel(self, ParticleID pid):
+        cdef pair[Cpp_ParticleID, Cpp_Voxel] \
+            pid_voxel_pair = self.thisptr.get().get_voxel(deref(pid.thisptr))
+        return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
+                Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
+
+    def remove_particle(self, ParticleID pid):
+        self.thisptr.get().remove_particle(deref(pid.thisptr))
+
+    def remove_voxel(self, ParticleID pid):
+        self.thisptr.get().remove_voxel(deref(pid.thisptr))
 
     def edge_lengths(self):
         cdef Cpp_Position3 lengths = self.thisptr.get().edge_lengths()
@@ -191,6 +214,14 @@ cdef class LatticeWorld:
 
     def bind_to(self, NetworkModel m):
         self.thisptr.get().bind_to(deref(m.thisptr))
+
+    def coord2position(self, Integer coord):
+        cdef Cpp_Position3 pos = self.thisptr.get().coord2position(coord)
+        return Position3_from_Cpp_Position3(address(pos))
+
+    def position2coord(self, Position3 pos):
+        return self.thisptr.get().position2coord(
+            deref(pos.thisptr))
 
 cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
     shared_ptr[Cpp_LatticeWorld] w):

@@ -23,15 +23,19 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Cpp_Position3 edge_lengths()
         Real volume()
 
-        # Cpp_ParticleID new_particle(Cpp_Particle& p)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Position3& pos)
+        bool remove_particle(Cpp_ParticleID& pid)
+        bool remove_voxel(Cpp_ParticleID& pid)
+        pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
+        pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Cpp_ParticleID& pid)
+
         # Integer num_particles()
         Integer num_particles(Cpp_Species& sp)
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles(Cpp_Species& sp)
         bool has_particle(Cpp_ParticleID& pid)
         bool update_particle(Cpp_ParticleID& pid, Cpp_Particle& p)
-        # pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
-        # void remove_particle(Cpp_ParticleID& pid)
         # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Position3& pos, Real& radius)
         # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Position3& pos, Real& radius, Cpp_ParticleID& ignore)
         # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Position3& pos, Real& radius, Cpp_ParticleID& ignore1, Cpp_ParticleID& ignore2)
@@ -54,6 +58,8 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer layer_size()
         Integer size()
         void bind_to(shared_ptr[Cpp_NetworkModel])
+        Cpp_Position3 coord2position(Integer)
+        Integer position2coord(Cpp_Position3)
 
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld

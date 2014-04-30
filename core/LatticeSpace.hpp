@@ -56,11 +56,15 @@ public:
 
     bool has_species(const Species& sp) const;
     bool has_particle(const ParticleID& pid) const;
+    std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const;
 
     std::vector<std::pair<ParticleID, Particle> >
         list_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
         list_particles(const Species& sp) const;
+
+    bool remove_particle(const ParticleID& pid);
+    bool remove_voxel(const ParticleID& pid);
 
     bool update_particle(const ParticleID& pid, const Particle& p);
 
@@ -71,9 +75,9 @@ public:
      */
     std::vector<std::pair<ParticleID, Voxel> >
         list_voxels(const Species& sp) const;
+    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
 
     Integer num_voxels(const Species& sp) const;
-
     Integer num_voxels() const;
 
     bool update_voxel(const ParticleID& pid, const Voxel& v);
@@ -123,20 +127,6 @@ public:
     }
 
     /*
-     * Coordinate transformations
-     */
-    coordinate_type global2coord(const Global& global) const;
-    coordinate_type global2private_coord(const Global& global) const;
-    const Global coord2global(coordinate_type coord) const;
-    const Global private_coord2global(private_coordinate_type coord) const;
-
-    private_coordinate_type coord2private(coordinate_type cood) const;
-    coordinate_type private2coord(private_coordinate_type private_coord) const;
-
-    private_coordinate_type get_neighbor(
-            private_coordinate_type private_coord, Integer nrand) const;
-
-    /*
      * HDF5 Save
      */
     void save(H5::Group* root) const
@@ -163,20 +153,24 @@ public:
         set_lattice_properties(is_periodic_);
     }
 
-protected:
+    /*
+     * Coordinate transformations
+     */
+    coordinate_type global2coord(const Global& global) const;
+    coordinate_type global2private_coord(const Global& global) const;
+    const Global coord2global(coordinate_type coord) const;
+    const Global private_coord2global(private_coordinate_type coord) const;
 
-    std::pair<spmap::iterator, bool> __get_molecular_type(const Voxel& v);
-    MolecularTypeBase* get_molecular_type(const Voxel& v);
+    private_coordinate_type coord2private(coordinate_type cood) const;
+    coordinate_type private2coord(private_coordinate_type private_coord) const;
 
-    void set_lattice_properties(const bool is_periodic);
-    std::pair<private_coordinate_type, bool> move_(
-            private_coordinate_type private_from, private_coordinate_type private_to);
-    std::pair<private_coordinate_type, bool> move_(
-            particle_info& info, private_coordinate_type private_to);
-    private_coordinate_type get_coord(const ParticleID& pid) const;
-    const Particle particle_at(private_coordinate_type coord) const;
-    bool is_in_range(coordinate_type coord) const;
-    bool is_in_range_private(private_coordinate_type coord) const;
+    const Position3 coord2position(coordinate_type coord) const;
+    coordinate_type position2coord(const Position3& pos) const;
+
+    private_coordinate_type get_neighbor(
+            private_coordinate_type private_coord, Integer nrand) const;
+
+public:
 
     /*
      * Coordinate transformations
@@ -194,11 +188,25 @@ protected:
     const Position3 global2position(const Global& global) const;
     const Global position2global(const Position3& pos) const;
 
-    const Position3 coord2position(coordinate_type coord) const;
-    coordinate_type position2coord(const Position3& pos) const;
-
     private_coordinate_type apply_boundary_(
             const private_coordinate_type& private_coord) const;
+
+    private_coordinate_type position2private_coord(const Position3& pos) const;
+
+protected:
+
+    std::pair<spmap::iterator, bool> __get_molecular_type(const Voxel& v);
+    MolecularTypeBase* get_molecular_type(const Voxel& v);
+
+    void set_lattice_properties(const bool is_periodic);
+    std::pair<private_coordinate_type, bool> move_(
+            private_coordinate_type private_from, private_coordinate_type private_to);
+    std::pair<private_coordinate_type, bool> move_(
+            particle_info& info, private_coordinate_type private_to);
+    private_coordinate_type get_coord(const ParticleID& pid) const;
+    const Particle particle_at(private_coordinate_type coord) const;
+    bool is_in_range(coordinate_type coord) const;
+    bool is_in_range_private(private_coordinate_type coord) const;
 
 protected:
 

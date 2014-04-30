@@ -52,17 +52,33 @@ public:
     /**
      * create and add a new particle
      * @param p a particle
-     * @return pid a particle id
+     * @return a pair of a pair of pid (a particle id) and p (a particle)
+     * and bool (if it's succeeded or not)
      */
-    ParticleID new_particle(const Particle& p)
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Particle& p)
     {
         ParticleID pid(pidgen_());
         // if (has_particle(pid))
         // {
         //     throw AlreadyExists("particle already exists");
         // }
-        (*ps_).update_particle(pid, p);
-        return pid;
+        if (list_particles_within_radius(p.position(), p.radius()).size() == 0)
+        {
+            (*ps_).update_particle(pid, p); //XXX: DONOT call this->update_particle
+            return std::make_pair(std::make_pair(pid, p), true);
+        }
+        else
+        {
+            return std::make_pair(std::make_pair(pid, p), false);
+        }
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Species& sp, const Position3& pos)
+    {
+        const MoleculeInfo info(get_molecule_info(sp));
+        return new_particle(Particle(sp, pos, info.radius, info.D));
     }
 
     /**
@@ -147,7 +163,15 @@ public:
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
-        return (*ps_).update_particle(pid, p);
+        if (list_particles_within_radius(p.position(), p.radius(), pid).size()
+            == 0)
+        {
+            return (*ps_).update_particle(pid, p);
+        }
+        else
+        {
+            return true;
+        }
     }
 
     std::pair<ParticleID, Particle>

@@ -27,9 +27,14 @@ cdef class BDWorld:
         #      it will be released automatically.
         del self.thisptr
 
-    def new_particle(self, Particle p):
-        cdef Cpp_ParticleID pid = self.thisptr.get().new_particle(deref(p.thisptr))
-        return ParticleID_from_Cpp_ParticleID(address(pid))
+    def new_particle(self, arg1, Position3 arg2=None):
+        cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
+
+        if arg2 is None:
+            retval = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
+        else:
+            retval = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Particle_from_Cpp_Particle(address(retval.first.second))), retval.second)
 
     def set_t(self, Real t):
         self.thisptr.get().set_t(t)

@@ -451,4 +451,36 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
     space.save(&group);
 }
 
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinates2)
+{
+    const Global g1(4, 4, 4);
+    // const Global g1(0, 0, 0);
+    const LatticeSpace::coordinate_type c1(space.global2coord(g1));
+    const LatticeSpace::private_coordinate_type pc1(space.global2private_coord(g1));
+    const Global g2(space.coord2global(c1));
+    const Global g3(space.private_coord2global(pc1));
+
+    // std::cerr << "[[" << "g1: " << g1.col << "," << g1.row << "," << g1.layer << "]]";
+    // std::cerr << "[[" << "g2: " << g2.col << "," << g2.row << "," << g2.layer << "]]";
+    // std::cerr << "[[" << "g3: " << g3.col << "," << g3.row << "," << g3.layer << "]]";
+
+    BOOST_CHECK_EQUAL(space.private2coord(space.coord2private(c1)), c1);
+    BOOST_CHECK_EQUAL(space.coord2private(c1), pc1);
+    BOOST_CHECK_EQUAL(space.private2coord(pc1), c1);
+
+    BOOST_CHECK(g1.col == g2.col && g1.row == g2.row && g1.layer == g2.layer);
+    BOOST_CHECK(g1.col == g3.col && g1.row == g3.row && g1.layer == g3.layer);
+
+    const Position3 p1(space.global2position(g1));
+    const Global g4(space.position2global(p1));
+
+    BOOST_CHECK(g1.col == g4.col && g1.row == g4.row && g1.layer == g4.layer);
+    BOOST_CHECK_EQUAL(c1, space.position2coord(p1));
+    BOOST_CHECK_EQUAL(pc1, space.position2private_coord(p1));
+
+    const Position3 p2(space.coord2position(c1));
+    BOOST_CHECK_EQUAL(c1, space.position2coord(p2));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
+

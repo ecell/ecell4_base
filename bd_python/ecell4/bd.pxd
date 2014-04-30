@@ -16,7 +16,8 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
             shared_ptr[Cpp_GSLRandomNumberGenerator] rng) except +
         Cpp_BDWorld(
             Cpp_Position3& edge_lengths) except +
-        Cpp_ParticleID new_particle(Cpp_Particle& p)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Position3& pos)
         void set_t(Real t)
         Real t()
         Cpp_Position3 edge_lengths()

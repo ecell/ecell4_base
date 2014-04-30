@@ -121,6 +121,51 @@ public:
     Integer num_particles() const;
     Integer num_particles(const Species& sp) const;
 
+    /**
+     * create and add a new particle
+     * @param p a particle
+     * @return a pair of a pair of pid (a particle id) and p (a particle)
+     * and bool (if it's succeeded or not)
+     */
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Particle& p)
+    {
+        ParticleID pid(sidgen_());
+        // if (has_particle(pid))
+        // {
+        //     throw AlreadyExists("particle already exists");
+        // }
+        const bool is_succeeded(space_.update_particle(pid, p));
+        return std::make_pair(get_particle(pid), is_succeeded);
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Species& sp, const Position3& pos)
+    {
+        const MoleculeInfo info(get_molecule_info(sp));
+        return new_particle(Particle(sp, pos, info.radius, info.D));
+    }
+
+    std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
+    {
+        return space_.get_particle(pid);
+    }
+
+    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
+    {
+        return space_.get_voxel(pid);
+    }
+
+    bool remove_particle(const ParticleID& pid)
+    {
+        return space_.remove_particle(pid);
+    }
+
+    bool remove_voxel(const ParticleID& pid)
+    {
+        return space_.remove_voxel(pid);
+    }
+
     bool has_particle(const ParticleID& pid) const;
     std::vector<std::pair<ParticleID, Particle> > list_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
@@ -200,6 +245,16 @@ public:
     const Integer size() const
     {
         return space_.size();
+    }
+
+    coordinate_type position2coord(const Position3& pos) const
+    {
+        return space_.position2coord(pos);
+    }
+
+    const Position3 coord2position(const coordinate_type& coord) const
+    {
+        return space_.coord2position(coord);
     }
 
     coordinate_type global2coord(const Global& global) const;

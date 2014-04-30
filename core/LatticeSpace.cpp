@@ -172,31 +172,34 @@ std::vector<std::pair<ParticleID, Particle> >
     return retval;
 }
 
+std::pair<ParticleID, Voxel>
+LatticeSpace::get_voxel(const ParticleID& pid) const
+{
+    for (spmap::const_iterator i(spmap_.begin()); i != spmap_.end(); ++i)
+    {
+        const MolecularType& mt((*i).second);
+        typename MolecularType::container_type::const_iterator j(mt.find(pid));
+        if (j != mt.end())
+        {
+            const coordinate_type coord(private2coord((*j).first));
+            return std::make_pair(pid, Voxel((*i).first, coord, mt.radius(), mt.D()));
+        }
+    }
+
+    throw NotFound("voxel not found.");
+}
+
+std::pair<ParticleID, Particle>
+LatticeSpace::get_particle(const ParticleID& pid) const
+{
+    const Voxel v(get_voxel(pid).second);
+    return std::make_pair(pid, Particle(
+        v.species(), coord2position(v.coordinate()), v.radius(), v.D()));
+}
+
 bool LatticeSpace::update_particle(const ParticleID& pid, const Particle& p)
 {
-    return update_voxel(pid, Voxel(p.species(), position2coord(p.position()), p.radius(), p.D())); //XXX: need MoleculeInfo
-
-    // const coordinate_type to_coord(position2coord(p.position()));
-    // if (!is_in_range(to_coord))
-    // {
-    //     return false;
-    // }
-
-    // const private_coordinate_type from_coord(get_coord(pid));
-    // if (from_coord != -1)
-    // {
-    //     MolecularTypeBase* src_mt(voxels_.at(from_coord));
-    //     src_mt->removeVoxel(from_coord);
-    //     voxel_container::iterator itr(voxels_.begin() + from_coord);
-    //     voxels_.erase(itr);
-    //     voxels_.insert(itr, vacant_);
-    // }
-
-    // MolecularTypeBase* dest_mt = get_molecular_type(p.species());
-    // dest_mt->addVoxel(MolecularTypeBase::particle_info(to_coord, pid));
-    // voxel_container::iterator itr(voxels_.begin() + to_coord);
-    // (*itr) = dest_mt;
-    // return true;
+    return update_voxel_private(pid, Voxel(p.species(), position2private_coord(p.position()), p.radius(), p.D()));
 }
 
 /*
@@ -366,6 +369,32 @@ bool LatticeSpace::has_species(const Species& sp) const
     return spmap_.find(sp) != spmap_.end();
 }
 
+bool LatticeSpace::remove_particle(const ParticleID& pid)
+{
+    return remove_voxel(pid);
+}
+
+bool LatticeSpace::remove_voxel(const ParticleID& pid)
+{
+    for (spmap::iterator i(spmap_.begin()); i != spmap_.end(); ++i)
+    {
+        MolecularType& mt((*i).second);
+        typename MolecularType::container_type::const_iterator j(mt.find(pid));
+        if (j != mt.end())
+        {
+            const private_coordinate_type coord((*j).first);
+            if (mt.removeVoxel(coord))
+            {
+                voxel_container::iterator itr(voxels_.begin() + coord);
+                (*itr) = vacant_;
+                return true;
+            }
+            return false;
+        }
+    }
+    return false;
+}
+
 bool LatticeSpace::remove_molecule(const private_coordinate_type coord)
 {
     voxel_container::iterator itr(voxels_.begin() + coord);
@@ -487,17 +516,6 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
 
     return std::pair<private_coordinate_type, bool>(private_to, true);
 }
-
-// bool LatticeSpace::add_molecule(const Species& sp,
-//         private_coordinate_type private_coord, const ParticleID& pid)
-// {
-//     return update_voxel_private(pid, Voxel(sp, private_coord, voxel_radius_, 0.0)); //XXX: ignoring D
-// }
-// 
-// bool LatticeSpace::update_molecule(private_coordinate_type coord, const Species& species)
-// {
-//     return update_voxel_private(Voxel(species, coord, voxel_radius_, 0.0)); //XXX: need MoleculeInfo
-// }
 
 LatticeSpace::private_coordinate_type LatticeSpace::get_neighbor(
         private_coordinate_type private_coord, Integer nrand) const
@@ -627,7 +645,8 @@ const Global LatticeSpace::position2global(const Position3& pos) const
 
 const Position3 LatticeSpace::coord2position(coordinate_type coord) const
 {
-    return global2position(coord2global_(coord, col_size_, row_size_, layer_size_));
+    return global2position(coord2global(coord));
+    // return global2position(coord2global_(coord, col_size_, row_size_, layer_size_)); //XXX: This must be wrong. See coord2global(coordinate_type).
 }
 
 LatticeSpace::coordinate_type LatticeSpace::position2coord(const Position3& pos) const
@@ -635,6 +654,10 @@ LatticeSpace::coordinate_type LatticeSpace::position2coord(const Position3& pos)
     return global2coord(position2global(pos));
 }
 
+LatticeSpace::private_coordinate_type LatticeSpace::position2private_coord(const Position3& pos) const
+{
+    return global2private_coord(position2global(pos));
+}
 
 LatticeSpace::private_coordinate_type LatticeSpace::coord2private(coordinate_type coord) const
 {
