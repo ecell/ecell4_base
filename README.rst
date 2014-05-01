@@ -37,14 +37,6 @@ How to use?
 ..
 
    $ LD_LIBRARY_PATH=/pat/to/lib PYTHONPATH=/path/to/lib/python2.7/site-packages python
-   Python 2.7.6 (default, Mar 22 2014, 22:59:56) 
-   [GCC 4.8.2] on linux2
-   Type "help", "copyright", "credits" or "license" for more information.
-   >>> from ecell4.core import *
-   >>> sp = Species("B.A.C")
-   >>> print sp.serial()
-   A.B.C
-   >>> 
 
 .. Build status badge
 .. |build-status|
