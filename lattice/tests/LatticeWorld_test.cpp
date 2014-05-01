@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_update_particles)
     LatticeWorld world(edge_lengths, voxel_radius, rng);
 
     ParticleID pid(sidgen());
-    Species sp(std::string("Species A"));
+    Species sp(std::string("A"));
     const Position3 pos(2e-7, 1e-7, 0);
     Real r(0);
     Real d(0);
