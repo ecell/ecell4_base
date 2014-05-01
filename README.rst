@@ -1,9 +1,9 @@
 ================================
-ecell4 
+E-Cell System version 4 
 ================================
 
-About
-=====
+What is E-Cell System?
+=======================
 
 E-Cell System, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 
