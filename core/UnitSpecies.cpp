@@ -24,15 +24,17 @@ void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
 
     boost::regex r1(
         "^\\s*(\\w+)\\s*(\\(\\s*([\\w\\s\\^=,]*)\\))?\\s*$");
-    boost::match_results<std::string::const_iterator> results1;
+    // boost::match_results<std::string::const_iterator> results1;
+    boost::smatch results1;
     if (boost::regex_match(serial, results1, r1))
     {
-        name_ = results1.str(1);
+        name_ = std::string(results1.str(1).c_str());
         if (results1.str(3).size() > 0)
         {
             boost::regex r2(
                 "\\s*(\\w+)(\\s*=\\s*(\\w+))?(\\s*\\^\\s*(\\w+))?\\s*");
-            boost::match_results<std::string::const_iterator> results2;
+            // boost::match_results<std::string::const_iterator> results2;
+            boost::smatch results2;
             std::vector<std::string> sites;
             boost::split(
                 sites, static_cast<const std::string>(results1.str(3)),
