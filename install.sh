@@ -8,7 +8,9 @@
 SUBMODS=("bd" "gillespie" "ode" "lattice")
 PYTHONMODS=("core_python" "bd_python" "gillespie_python" "ode_python" "lattice_python")
 
+# CXXFLAGS="-Wall -O2"
 CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
+# LDFLAGS="-pg"
 # WAFFLAGS="-v -j1"
 
 uninstall_all()
@@ -22,7 +24,8 @@ install_core()
 {
     # install ecell4-core
     cd core
-    CXXFLAGS=${CXXFLAGS} python ../waf distclean update --files="boost,doxygen" \
+    CXXFLAGS=${CXXFLAGS} LDFLAGS=${LDFLAGS} \
+        python ../waf distclean update --files="boost,doxygen" \
         configure --prefix=${PREFIX} ${WAFFLAGS} install
     cd ..
     return $?
@@ -38,7 +41,7 @@ install_submodule()
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PREFIX}/lib \
         LIBRARY_PATH=${LIBRARY_PATH}:${PREFIX}/lib \
         CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:${PREFIX}/include \
-        CXXFLAGS=${CXXFLAGS} \
+        CXXFLAGS=${CXXFLAGS} LDFLAGS=${LDFLAGS} \
         python ../waf distclean configure --prefix=${PREFIX} ${WAFFLAGS} install
     VAL=$?
     cd ..
