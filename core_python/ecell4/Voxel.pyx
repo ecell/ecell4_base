@@ -28,7 +28,7 @@ cdef class Voxel:
 
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p):
     cdef Cpp_Voxel *new_obj = new Cpp_Voxel(<Cpp_Voxel> deref(p))
-    r = Voxel(Species(""), 0, 0, 0)
+    r = Voxel(Species(), 0, 0, 0)
     del r.thisptr
     r.thisptr = new_obj
     return r
