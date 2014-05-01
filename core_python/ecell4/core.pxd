@@ -87,6 +87,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         void set_attribute(string, string)
         void remove_attribute(string)
         bool has_attribute(string)
+        vector[pair[string, string]] list_attributes()
         Integer get_unit(Cpp_UnitSpecies)
         void add_unit(Cpp_UnitSpecies)
         Integer num_units()
@@ -185,6 +186,7 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         vector[Cpp_ReactionRule] query_reaction_rules(
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_ReactionRule] reaction_rules()
+        vector[Cpp_Species] species_attributes()
 
 ## NetworkModel
 #  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr

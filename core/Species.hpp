@@ -201,6 +201,17 @@ public:
         return attributes_;
     }
 
+    std::vector<std::pair<std::string, std::string> > list_attributes()
+    {
+        std::vector<std::pair<std::string, std::string> > retval;
+        for (attributes_container_type::const_iterator
+            i(attributes_.begin()); i != attributes_.end(); ++i)
+        {
+            retval.push_back(*i);
+        }
+        return retval;
+    }
+
     std::string get_attribute(const std::string& name_attr) const
     {
         attributes_container_type::const_iterator

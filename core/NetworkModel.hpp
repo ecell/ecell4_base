@@ -112,6 +112,11 @@ public:
         return reaction_rules_;
     }
 
+    const species_container_type& species_attributes() const
+    {
+        return species_attributes_;
+    }
+
     const Integer num_reaction_rules() const
     {
         return reaction_rules_.size();

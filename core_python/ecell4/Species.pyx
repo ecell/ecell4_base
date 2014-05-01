@@ -45,6 +45,9 @@ cdef class Species:
     def has_attribute(self, string name):
         return self.thisptr.has_attribute(name)
 
+    def list_attributes(self):
+        return self.thisptr.list_attributes()
+
     def add_unit(self, UnitSpecies usp):
         self.thisptr.add_unit(deref(usp.thisptr))
 
