@@ -12,13 +12,14 @@ Dependencies
 
 ..
 
-  $ sudo aptitude install libgsl0-dev libboost1.53-dev libhdf5-serial-dev
+  $ sudo apt-get install libgsl0-dev libboost-dev libboost-test-dev libboost-regex-dev libhdf5-serial-dev
 
+  $ sudo apt-get instal python-dev cython
 
 Install
 =======
 
-Do following instructions.
+Do following instructions on Ubuntu 14.04 LTS (Trusty Tahr).
 (To build Cython Wrapper it requires Cython 0.17 or later.)
 
 ..
