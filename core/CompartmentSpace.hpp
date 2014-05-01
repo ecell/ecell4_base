@@ -19,12 +19,23 @@ public:
 
     // CompartmentSpaceTraits
 
+    virtual const Position3& edge_lengths() const
+    {
+        throw NotImplemented("edge_lengths() not implemented");
+    }
+
+    virtual void set_edge_lengths(const Position3& edge_lengths)
+    {
+        throw NotImplemented(
+            "set_edge_lengths(const Position3&) not implemented");
+    }
+
     /**
      * get volume.
      * this function is a part of the trait of CompartmentSpace.
      * @return a volume (m^3) Real
      */
-    virtual const Real& volume() const
+    virtual const Real volume() const
     {
         throw NotImplemented("volume() not implemented");
     }
@@ -77,7 +88,8 @@ public:
 
     // Optional members
 
-    virtual void save(H5::H5File* fout, const std::string& hdf5path) const = 0;
+    virtual void save(H5::Group* root) const = 0;
+    virtual void load(const H5::Group& root) = 0;
 };
 
 class CompartmentSpaceVectorImpl
@@ -92,15 +104,33 @@ protected:
 
 public:
 
-    CompartmentSpaceVectorImpl(const Real& volume)
-        : volume_(1.0)
+    CompartmentSpaceVectorImpl(const Position3& edge_lengths)
     {
-        set_volume(volume);
+        set_edge_lengths(edge_lengths);
+    }
+
+    const Position3& edge_lengths() const
+    {
+        return edge_lengths_;
+    }
+
+    void set_edge_lengths(const Position3& edge_lengths)
+    {
+        for (Position3::size_type dim(0); dim < 3; ++dim)
+        {
+            if (edge_lengths[dim] <= 0)
+            {
+                throw std::invalid_argument("the edge length must be positive.");
+            }
+        }
+
+        edge_lengths_ = edge_lengths;
+        volume_ = edge_lengths[0] * edge_lengths[1] * edge_lengths[2];
     }
 
     // CompartmentSpaceTraits
 
-    const Real& volume() const;
+    const Real volume() const;
     Integer num_molecules(const Species& sp) const;
 
     // CompartmentSpace member functions
@@ -113,19 +143,28 @@ public:
 
     std::vector<Species> list_species() const;
 
-    void save(H5::H5File* fout, const std::string& hdf5path) const
+    void save(H5::Group* root) const
     {
-        CompartmentSpaceHDF5Writer<CompartmentSpaceVectorImpl> writer(*this);
-        writer.save(fout, hdf5path);
+        save_compartment_space<
+            CompartmentSpaceVectorImpl, H5DataTypeTraits_uint32_t>(*this, root);
+    }
+
+    void load(const H5::Group& root)
+    {
+        clear();
+        load_compartment_space<
+            CompartmentSpaceVectorImpl, H5DataTypeTraits_uint32_t>(root, this);
     }
 
 protected:
 
     void reserve_species(const Species& sp);
     void release_species(const Species& sp);
+    void clear();
 
 protected:
 
+    Position3 edge_lengths_;
     Real volume_;
 
     num_molecules_container_type num_molecules_;

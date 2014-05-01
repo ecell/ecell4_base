@@ -20,6 +20,11 @@ class RandomNumberGenerator
 {
 public:
 
+    virtual ~RandomNumberGenerator()
+    {
+        ;
+    }
+
     virtual Real uniform(Real min, Real max) = 0;
     virtual Integer uniform_int(Integer min, Integer max) = 0;
     virtual Real gaussian(Real mean, Real sigma) = 0;
@@ -27,8 +32,8 @@ public:
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
 
-    virtual void save(H5::H5File* fout, const std::string& hdf5path) const = 0;
-    virtual void load(H5::H5File* fout, const std::string& hdf5path) = 0;
+    virtual void save(H5::CommonFG* root) const = 0;
+    virtual void load(const H5::CommonFG& root) = 0;
 };
 
 template<typename Telem_>
@@ -77,8 +82,8 @@ public:
         gsl_rng_set(rng_.get(), unsigned(std::time(0)));
     }
 
-    void save(H5::H5File* fout, const std::string& hdf5path) const;
-    void load(H5::H5File* fout, const std::string& hdf5path);
+    void save(H5::CommonFG* root) const;
+    void load(const H5::CommonFG& root);
 
     GSLRandomNumberGenerator(rng_handle hdl)
         : rng_(hdl)

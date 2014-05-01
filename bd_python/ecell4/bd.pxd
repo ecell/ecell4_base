@@ -13,10 +13,11 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
     cdef cppclass Cpp_BDWorld "ecell4::bd::BDWorld":
         Cpp_BDWorld(
             Cpp_Position3& edge_lengths,
-            shared_ptr[Cpp_GSLRandomNumberGenerator] rng) except +
+            shared_ptr[Cpp_RandomNumberGenerator] rng) except +
         Cpp_BDWorld(
             Cpp_Position3& edge_lengths) except +
-        Cpp_ParticleID new_particle(Cpp_Particle& p)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Position3& pos)
         void set_t(Real t)
         Real t()
         Cpp_Position3 edge_lengths()
@@ -39,13 +40,18 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         # bool has_species(Cpp_Species& sp)
         Integer num_molecules(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
-        shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
+        void remove_molecules(Cpp_Species& sp, Integer num)
         void save(string filename)
+        void load(string filename)
+        void bind_to(shared_ptr[Cpp_NetworkModel])
+        shared_ptr[Cpp_RandomNumberGenerator] rng()
 
 ## BDWorld
 #  a python wrapper for Cpp_BDWorld
 cdef class BDWorld:
     cdef shared_ptr[Cpp_BDWorld]* thisptr
+
+cdef BDWorld BDWorld_from_Cpp_BDWorld(shared_ptr[Cpp_BDWorld] m)
 
 ## Cpp_BDSimulator
 #  ecell4::bd::BDSimulator
@@ -61,7 +67,11 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         bool step(Real& upto)
         Real t()
         Real dt()
-        # void initialize()
+        void set_dt(Real& dt)
+        Real next_time()
+        void initialize()
+        shared_ptr[Cpp_NetworkModel] model()
+        shared_ptr[Cpp_BDWorld] world()
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator

@@ -1,28 +1,34 @@
 from cython.operator cimport dereference as deref
-from cython cimport address
+from cython cimport address, declare
+from libcpp.vector cimport vector
+from libcpp.pair cimport pair
+from libcpp.string cimport string
 
 
 cdef class Voxel:
 
-    def __cinit__(self, ParticleID pid, Species sp):
-        self.thisptr = new Cpp_Voxel()
-        self.thisptr.id = deref(pid.thisptr)
-        self.thisptr.species = deref(sp.thisptr)
+    def __cinit__(self, Species sp, Coord coord, Real radius, Real D):
+        self.thisptr = new Cpp_Voxel(
+            deref(sp.thisptr), coord, radius, D)
 
     def __dealloc__(self):
         del self.thisptr
 
-    property id:
-        def __get__(self):
-            return ParticleID_from_Cpp_ParticleID(address(self.thisptr.id))
+    def coordinate(self):
+        return self.thisptr.coordinate()
 
-    property species:
-        def __get__(self):
-            return Species_from_Cpp_Species(address(self.thisptr.species))
+    def D(self):
+        return self.thisptr.D()
 
-cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* v):
-    cdef Cpp_Voxel *new_obj = new Cpp_Voxel(<Cpp_Voxel> deref(v))
-    r = Voxel(ParticleID(0, 0), Species(""))
+    def radius(self):
+        return self.thisptr.radius()
+
+    def species(self):
+        return Species_from_Cpp_Species(address(self.thisptr.species()))
+
+cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p):
+    cdef Cpp_Voxel *new_obj = new Cpp_Voxel(<Cpp_Voxel> deref(p))
+    r = Voxel(Species(), 0, 0, 0)
     del r.thisptr
     r.thisptr = new_obj
     return r

@@ -4,12 +4,15 @@
 #include <stdexcept>
 #include <map>
 #include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 #include <string>
 
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/CompartmentSpace.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 
 
 namespace ecell4
@@ -22,15 +25,15 @@ class GillespieWorld
 {
 public:
 
-    GillespieWorld(const Real& volume,
+    GillespieWorld(const Position3& edge_lengths,
                    boost::shared_ptr<RandomNumberGenerator> rng)
-        : cs_(new CompartmentSpaceVectorImpl(volume)), rng_(rng)
+        : cs_(new CompartmentSpaceVectorImpl(edge_lengths)), rng_(rng)
     {
         ;
     }
 
-    GillespieWorld(const Real& volume)
-        : cs_(new CompartmentSpaceVectorImpl(volume))
+    GillespieWorld(const Position3& edge_lengths)
+        : cs_(new CompartmentSpaceVectorImpl(edge_lengths))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -42,9 +45,19 @@ public:
     const Real& t(void) const;
     void set_t(const Real& t);
 
+    const Position3& edge_lengths() const
+    {
+        return cs_->edge_lengths();
+    }
+
+    void set_edge_lengths(const Position3& edge_lengths)
+    {
+        cs_->set_edge_lengths(edge_lengths);
+    }
+
     // CompartmentSpaceTraits
 
-    const Real& volume() const
+    const Real volume() const
     {
         return cs_->volume();
     }
@@ -73,25 +86,45 @@ public:
     {
         boost::scoped_ptr<H5::H5File>
             fout(new H5::H5File(filename, H5F_ACC_TRUNC));
-
-        std::ostringstream ost_hdf5path;
-        ost_hdf5path << "/" << t();
-        boost::scoped_ptr<H5::Group> parent_group(
-            new H5::Group(fout->createGroup(ost_hdf5path.str())));
-
-        rng_->save(fout.get(), ost_hdf5path.str());
-
-        ost_hdf5path << "/CompartmentSpace";
+        rng_->save(fout.get());
         boost::scoped_ptr<H5::Group>
-            group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
+            group(new H5::Group(fout->createGroup("CompartmentSpace")));
+        cs_->save(group.get());
+    }
 
-        cs_->save(fout.get(), ost_hdf5path.str());
+    void load(const std::string& filename)
+    {
+        boost::scoped_ptr<H5::H5File>
+            fin(new H5::H5File(filename, H5F_ACC_RDONLY));
+        rng_->load(*fin);
+        const H5::Group group(fin->openGroup("CompartmentSpace"));
+        cs_->load(group);
+    }
+
+    void bind_to(boost::shared_ptr<NetworkModel> model)
+    {
+        if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
+        {
+            if (bound_model.get() != model.get())
+            {
+                std::cerr << "Warning: Model already bound to GillespieWorld."
+                    << std::endl;
+            }
+        }
+        this->model_ = model;
+    }
+
+    boost::shared_ptr<NetworkModel> lock_model() const
+    {
+        return model_.lock();
     }
 
 private:
 
     boost::scoped_ptr<CompartmentSpace> cs_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
+
+    boost::weak_ptr<NetworkModel> model_;
 };
 
 } // gillespie

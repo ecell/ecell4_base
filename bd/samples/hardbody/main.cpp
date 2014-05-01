@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     const Position3 edge_lengths(L, L, L);
 
     /// instantiate NetworkModel
-    boost::shared_ptr<Model> model(new NetworkModel());
+    boost::shared_ptr<NetworkModel> model(new NetworkModel());
 
     /// create a Species, and set its attributes
     Species sp1("A");
@@ -42,12 +42,13 @@ int main(int argc, char** argv)
 
     /// instantiate BDWorld
     boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths, rng));
+    world->bind_to(model);
 
     /// create a Particle, and inject it into BDWorld
-    BDWorld::molecule_info_type info1((*world).get_molecule_info(sp1));
+    BDWorld::molecule_info_type info1((*world).get_molecule_info(Species("A")));
     const Particle p1(
         sp1, Position3(0, 0, 0), info1.radius, info1.D);
-    const ParticleID pid1((*world).new_particle(p1));
+    const ParticleID pid1((*world).new_particle(p1).first.first);
     world->save("test_bd.h5");
 
     /// instatiate BDSimulator

@@ -2,7 +2,7 @@ from ecell4.core import *
 from ecell4.ode import *
 
 def run():
-    volume = 0.5
+    L = 1.0
     sp1, sp2, sp3 = Species("A"), Species("B"), Species("C")
     k = 1.0
     rr1 = create_unbinding_reaction_rule(sp1, sp2, sp3, k)
@@ -13,7 +13,7 @@ def run():
     m.add_species_attribute(sp3)
     m.add_reaction_rule(rr1)
 
-    w = ODEWorld(volume)
+    w = ODEWorld(Position3(L, L, L))
     w.add_molecules(sp1, 60)
 
     target = ODESimulator(m, w)

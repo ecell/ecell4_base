@@ -12,8 +12,7 @@ from ecell4.core cimport *
 #  a python wrapper for Cpp_BDWorld
 cdef class BDWorld:
 
-    def __cinit__(
-	self, Position3 edge_lengths,
+    def __cinit__(self, Position3 edge_lengths,
         GSLRandomNumberGenerator rng = None):
         if rng is None:
             self.thisptr = new shared_ptr[Cpp_BDWorld](
@@ -28,9 +27,14 @@ cdef class BDWorld:
         #      it will be released automatically.
         del self.thisptr
 
-    def new_particle(self, Particle p):
-        cdef Cpp_ParticleID pid = self.thisptr.get().new_particle(deref(p.thisptr))
-        return ParticleID_from_Cpp_ParticleID(address(pid))
+    def new_particle(self, arg1, Position3 arg2=None):
+        cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
+
+        if arg2 is None:
+            retval = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
+        else:
+            retval = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Particle_from_Cpp_Particle(address(retval.first.second))), retval.second)
 
     def set_t(self, Real t):
         self.thisptr.get().set_t(t)
@@ -140,8 +144,27 @@ cdef class BDWorld:
     def add_molecules(self, Species sp, Integer num):
         self.thisptr.get().add_molecules(deref(sp.thisptr), num)
 
+    def remove_molecules(self, Species sp, Integer num):
+        self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
+
     def save(self, string filename):
         self.thisptr.get().save(filename)
+
+    def load(self, string filename):
+        self.thisptr.get().load(filename)
+
+    def bind_to(self, NetworkModel m):
+        self.thisptr.get().bind_to(deref(m.thisptr))
+
+    def rng(self):
+        return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
+            self.thisptr.get().rng())
+
+cdef BDWorld BDWorld_from_Cpp_BDWorld(
+    shared_ptr[Cpp_BDWorld] w):
+    r = BDWorld(Position3(1, 1, 1))
+    r.thisptr.swap(w)
+    return r
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
@@ -169,5 +192,17 @@ cdef class BDSimulator:
     def dt(self):
         return self.thisptr.dt()
 
-    # def initialize(self):
-    #     self.thisptr.initialize()
+    def set_dt(self, Real& dt):
+        self.thisptr.set_dt(dt)
+
+    def next_time(self):
+        return self.thisptr.next_time()
+
+    def initialize(self):
+        self.thisptr.initialize()
+
+    def model(self):
+        return NetworkModel_from_Cpp_NetworkModel(self.thisptr.model())
+
+    def world(self):
+        return BDWorld_from_Cpp_BDWorld(self.thisptr.world())

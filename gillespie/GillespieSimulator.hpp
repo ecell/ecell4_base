@@ -18,23 +18,32 @@ namespace gillespie
 {
 
 class GillespieSimulator
-    : public Simulator
+    : public Simulator<NetworkModel, GillespieWorld>
 {
+public:
+
+    typedef Simulator<NetworkModel, GillespieWorld> base_type;
+
 public:
 
     GillespieSimulator(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<GillespieWorld> world)
-        : model_(model), world_(world), num_steps_(0)
+        : base_type(model, world)
     {
-        this->initialize();
+        initialize();
+    }
+
+    GillespieSimulator(boost::shared_ptr<GillespieWorld> world)
+        : base_type(world)
+    {
+        initialize();
     }
 
     // SimulatorTraits
 
     Real t(void) const;
     Real dt(void) const;
-    Integer num_steps(void) const;
 
     void step(void) ;
     bool step(const Real & upto);
@@ -46,7 +55,7 @@ public:
     /**
      * recalculate reaction propensities and draw the next time.
      */
-    void initialize(void);
+    void initialize();
 
     inline boost::shared_ptr<RandomNumberGenerator> rng()
     {
@@ -58,10 +67,6 @@ protected:
     void draw_next_reaction(void);
 
 protected:
-
-    boost::shared_ptr<NetworkModel> model_;
-    boost::shared_ptr<GillespieWorld> world_;
-    Integer num_steps_;
 
     Real dt_;
     int next_reaction_num_; // the index of the next reaction.

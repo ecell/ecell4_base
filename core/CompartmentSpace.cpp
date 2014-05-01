@@ -7,7 +7,7 @@
 namespace ecell4
 {
 
-const Real& CompartmentSpaceVectorImpl::volume() const
+const Real CompartmentSpaceVectorImpl::volume() const
 {
     return volume_;
 }
@@ -25,6 +25,8 @@ void CompartmentSpaceVectorImpl::set_volume(const Real& volume)
     }
 
     volume_ = volume;
+    const Real L(cbrt(volume));
+    edge_lengths_ = Position3(L, L, L);
 }
 
 void CompartmentSpaceVectorImpl::reserve_species(const Species& sp)
@@ -122,6 +124,13 @@ void CompartmentSpaceVectorImpl::remove_molecules(
     }
 
     num_molecules_[(*i).second] -= num;
+}
+
+void CompartmentSpaceVectorImpl::clear()
+{
+    index_map_.clear();
+    num_molecules_.clear();
+    species_.clear();
 }
 
 } // ecell4

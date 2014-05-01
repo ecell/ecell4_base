@@ -29,7 +29,7 @@ cdef class NetworkModel:
         self.thisptr.get().remove_reaction_rule(deref(rr.thisptr))
 
     def has_reaction_rule(self, ReactionRule rr):
-        self.thisptr.get().has_reaction_rule(deref(rr.thisptr))
+        return self.thisptr.get().has_reaction_rule(deref(rr.thisptr))
 
     def num_reaction_rules(self):
         return self.thisptr.get().num_reaction_rules()
@@ -50,6 +50,16 @@ cdef class NetworkModel:
         while it != c_rr_vector.end():
             retval.append(ReactionRule_from_Cpp_ReactionRule(
                 <Cpp_ReactionRule*>(address(deref(it)))) )
+            inc(it)
+        return retval
+
+    def species_attributes(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().species_attributes()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(Species_from_Cpp_Species(
+                <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
 
@@ -86,3 +96,9 @@ cdef class NetworkModel:
     # def reactants(self):
     #     # self.thisptr.reactants()
     #     pass
+
+cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
+    shared_ptr[Cpp_NetworkModel] m):
+    r = NetworkModel()
+    r.thisptr.swap(m)
+    return r

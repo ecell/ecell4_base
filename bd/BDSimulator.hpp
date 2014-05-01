@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 
-#include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Simulator.hpp>
 
 #include "BDWorld.hpp"
@@ -18,17 +18,33 @@ namespace bd
 {
 
 class BDSimulator
-    : public Simulator
+    : public Simulator<NetworkModel, BDWorld>
 {
 public:
 
-    BDSimulator(boost::shared_ptr<Model> model, boost::shared_ptr<BDWorld> world)
-        : model_(model), world_(world), dt_(0), num_steps_(0)
+    typedef Simulator<NetworkModel, BDWorld> base_type;
+
+public:
+
+    BDSimulator(boost::shared_ptr<NetworkModel> model,
+        boost::shared_ptr<BDWorld> world)
+        : base_type(model, world), dt_(0)
     {
-        ;
+        initialize();
+    }
+
+    BDSimulator(boost::shared_ptr<BDWorld> world)
+        : base_type(world), dt_(0)
+    {
+        initialize();
     }
 
     // SimulatorTraits
+
+    void initialize()
+    {
+        ;
+    }
 
     Real t() const
     {
@@ -38,11 +54,6 @@ public:
     Real dt() const
     {
         return dt_;
-    }
-
-    Integer num_steps() const
-    {
-        return num_steps_;
     }
 
     void step();
@@ -71,15 +82,11 @@ public:
 
 protected:
 
-    boost::shared_ptr<Model> model_;
-    boost::shared_ptr<BDWorld> world_;
-
     /**
      * the protected internal state of BDSimulator.
      * they are needed to be saved/loaded with Visitor pattern.
      */
     Real dt_;
-    Integer num_steps_;
 };
 
 } // bd

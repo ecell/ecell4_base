@@ -21,8 +21,8 @@ def run():
     rng = GSLRandomNumberGenerator()
     rng.seed(int(time.time()))
 
-    volume = 1.0
-    w = GillespieWorld(volume, rng)
+    L = 1.0
+    w = GillespieWorld(Position3(L, L, L), rng)
     # w.add_species(sp1)
     # w.add_species(sp2)
     # w.add_species(sp3)

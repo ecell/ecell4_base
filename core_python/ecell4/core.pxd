@@ -19,6 +19,15 @@ cdef extern from "gsl/gsl_rng.h":
 ## Cpp_GSLRandomNumberGenerator
 #  ecell4::GSLRandomNumberGenerator
 cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
+    cdef cppclass Cpp_RandomNumberGenerator "ecell4::RandomNumberGenerator":
+        # RandomNumberGenerator(shared_ptr[gsl_rng]) except +
+        Cpp_RandomNumberGenerator() except +
+        Real uniform(Real, Real)
+        Integer uniform_int(Integer, Integer)
+        Real gaussian(Real, Real)
+        void seed(Integer)
+        void seed()
+
     cdef cppclass Cpp_GSLRandomNumberGenerator "ecell4::GSLRandomNumberGenerator":
         # GSLRandomNumberGenerator(shared_ptr[gsl_rng]) except +
         Cpp_GSLRandomNumberGenerator() except +
@@ -32,7 +41,33 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
 #  a python wrapper for Cpp_GSLRandomNumberGenerator
 cdef class GSLRandomNumberGenerator:
     # cdef Cpp_GSLRandomNumberGenerator* thisptr
-    cdef shared_ptr[Cpp_GSLRandomNumberGenerator]* thisptr
+    # cdef shared_ptr[Cpp_GSLRandomNumberGenerator]* thisptr
+    cdef shared_ptr[Cpp_RandomNumberGenerator]* thisptr
+
+cdef GSLRandomNumberGenerator GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
+    shared_ptr[Cpp_RandomNumberGenerator])
+
+## Cpp_UnitSpecies
+#  ecell4::UnitSpecies
+cdef extern from "ecell4/core/UnitSpecies.hpp" namespace "ecell4":
+    cdef cppclass Cpp_UnitSpecies "ecell4::UnitSpecies":
+        Cpp_UnitSpecies() except +
+        Cpp_UnitSpecies(string) except +
+        Cpp_UnitSpecies(Cpp_UnitSpecies&) except+
+        bool operator==(Cpp_UnitSpecies& rhs)
+        bool operator<(Cpp_UnitSpecies& rhs)
+        bool operator>(Cpp_UnitSpecies& rhs)
+        string serial()
+        string name()
+        void deserialize(string) except+
+        bool add_site(string, string, string)
+
+## UnitSpecies
+#  a python wrapper for Cpp_UnitSpecies
+cdef class UnitSpecies:
+    cdef Cpp_UnitSpecies* thisptr
+
+cdef UnitSpecies UnitSpecies_from_Cpp_UnitSpecies(Cpp_UnitSpecies *sp)
 
 ## Cpp_Species
 #  ecell4::Species
@@ -47,11 +82,16 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         bool operator<(Cpp_Species& rhs)
         bool operator>(Cpp_Species& rhs)
         string serial() # string == serial_type
-        string name()
         string get_attribute(string)
+        bool match(Cpp_Species&)
         void set_attribute(string, string)
         void remove_attribute(string)
         bool has_attribute(string)
+        vector[pair[string, string]] list_attributes()
+        Integer get_unit(Cpp_UnitSpecies)
+        void add_unit(Cpp_UnitSpecies)
+        Integer num_units()
+        void deserialize(string) except+
 
 ## Species
 #  a python wrapper for Cpp_Species
@@ -84,10 +124,12 @@ cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr)
 #  ecell4::CompartmentSpaceVectorImpl
 cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
     cdef cppclass Cpp_CompartmentSpaceVectorImpl "ecell4::CompartmentSpaceVectorImpl":
-        Cpp_CompartmentSpaceVectorImpl(Real) except+
+        Cpp_CompartmentSpaceVectorImpl(Cpp_Position3&) except+
         Real volume()
         Integer num_molecules(Cpp_Species &sp)
         vector[Cpp_Species] list_species()
+        void set_edge_lengths(Cpp_Position3&)
+        Cpp_Position3 edge_lengths()
         void set_volume(Real)
         void add_molecules(Cpp_Species &sp, Integer num)
         void remove_molecules(Cpp_Species &sp, Integer num)
@@ -144,12 +186,16 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         vector[Cpp_ReactionRule] query_reaction_rules(
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_ReactionRule] reaction_rules()
+        vector[Cpp_Species] species_attributes()
 
 ## NetworkModel
 #  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
 cdef class NetworkModel:
     # cdef Cpp_NetworkModel* thisptr
     cdef shared_ptr[Cpp_NetworkModel]* thisptr
+
+cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
+    shared_ptr[Cpp_NetworkModel] m)
 
 ## Cpp_Position3
 #  ecell4::Position3
@@ -229,14 +275,21 @@ cdef Particle Particle_from_Cpp_Particle(Cpp_Particle* p)
 
 ## Cpp_Voxel
 #  ecell4::Voxel
+ctypedef int Coord
+
 cdef extern from "ecell4/core/Voxel.hpp" namespace "ecell4":
     cdef cppclass Cpp_Voxel "ecell4::Voxel":
         Cpp_Voxel() except +
-        Cpp_Voxel(Cpp_Voxel&) except +
-        Cpp_ParticleID id
-        Cpp_Species species
+        Cpp_Voxel(Cpp_Species, Coord, Real radius, Real D) except +
+        Cpp_Voxel(Cpp_Voxel &rhs) except+
+        Coord coordinate()
+        Real D()
+        Real radius()
+        Cpp_Species &species()
 
+## Voxel
+#  a python wrapper for Cpp_Voxel
 cdef class Voxel:
     cdef Cpp_Voxel* thisptr
 
-cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* v)
+cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)

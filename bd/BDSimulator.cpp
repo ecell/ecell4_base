@@ -21,7 +21,7 @@ void BDSimulator::step()
     }
 
     set_t(t() + dt());
-    ++num_steps_;
+    num_steps_++;
 }
 
 bool BDSimulator::step(const Real& upto)

@@ -1,8 +1,10 @@
 cdef class GSLRandomNumberGenerator:
 
     def __cinit__(self):
-        self.thisptr = new shared_ptr[Cpp_GSLRandomNumberGenerator](
-            new Cpp_GSLRandomNumberGenerator())
+        # self.thisptr = new shared_ptr[Cpp_GSLRandomNumberGenerator](
+        #     new Cpp_GSLRandomNumberGenerator())
+        self.thisptr = new shared_ptr[Cpp_RandomNumberGenerator](
+            <Cpp_RandomNumberGenerator*> (new Cpp_GSLRandomNumberGenerator()))
 
     def __dealloc__(self):
         del self.thisptr
@@ -21,3 +23,9 @@ cdef class GSLRandomNumberGenerator:
             self.thisptr.get().seed()
         else:
             self.thisptr.get().seed(<Integer> val)
+
+cdef GSLRandomNumberGenerator GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
+    shared_ptr[Cpp_RandomNumberGenerator] rng):
+    r = GSLRandomNumberGenerator()
+    r.thisptr.swap(rng)
+    return r

@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <algorithm>
+#include <boost/algorithm/string.hpp>
 
 #include "config.h"
 
@@ -19,6 +21,7 @@
 #include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "exceptions.hpp"
+#include "UnitSpecies.hpp"
 
 
 namespace ecell4
@@ -28,7 +31,8 @@ class Species
 {
 public:
 
-    typedef std::string serial_type;
+    typedef UnitSpecies::serial_type serial_type; //XXX: std::string
+    typedef std::vector<UnitSpecies> container_type;
 
 protected:
 
@@ -37,45 +41,175 @@ protected:
 
 public:
 
-    Species(const std::string& name = "")
-        : name_(name)
+    Species()
+        : units_()
     {
-        ;
+        ; // do nothing
+    }
+
+    Species(const serial_type& name)
+        : units_()
+    {
+        deserialize(name);
     }
 
     Species(
-        const std::string& name, const std::string& D)
-        : name_(name)
+        const serial_type& name, const std::string& D)
+        : units_()
     {
+        deserialize(name);
         set_attribute("D", D);
     }
 
     Species(
-        const std::string& name, const std::string& radius, const std::string& D)
-        : name_(name)
+        const serial_type& name, const std::string& radius, const std::string& D)
+        : units_()
     {
+        deserialize(name);
         set_attribute("radius", radius);
         set_attribute("D", D);
     }
 
+    void deserialize(const serial_type& serial)
+    {
+        std::vector<std::string> unit_serials;
+        boost::split(unit_serials, serial, boost::is_any_of("."));
+
+        units_.clear();
+        for (std::vector<std::string>::const_iterator i(unit_serials.begin());
+            i != unit_serials.end(); ++i)
+        {
+            UnitSpecies usp;
+            usp.deserialize(*i);
+            add_unit(usp);
+        }
+    }
+
     serial_type serial() const
     {
-        return name();
+        if (units_.size() == 0)
+        {
+            return "";
+        }
+
+        container_type::const_iterator it(units_.begin());
+        serial_type retval((*it).serial());
+        ++it;
+        for (; it != units_.end(); ++it)
+        {
+            retval += ".";
+            retval += (*it).serial();
+        }
+        return retval;
     }
 
-    std::string name() const
+    Integer num_units() const
     {
-        return name_;
+        return units_.size();
     }
 
-    bool match(const Species& sp) const
+    void add_unit(const UnitSpecies& usp)
     {
-        return (sp == *this);
+        if (usp.name() == "")
+        {
+            throw NotSupported("UnitSpecies must have a name.");
+        }
+        units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
+    }
+
+    inline container_type::const_iterator begin() const
+    {
+        return units_.begin();
+    }
+
+    inline container_type::const_iterator end() const
+    {
+        return units_.end();
+    }
+
+    Integer get_unit(const UnitSpecies& usp)
+    {
+        container_type::iterator itr;
+        for (itr = units_.begin(); itr != units_.end(); ++itr)
+        {
+            if (usp == *itr)
+            {
+                return itr - units_.begin();
+            }
+        }
+        throw NotFound("UnitSpecies not found");
+    }
+
+    const std::vector<UnitSpecies> list_sites()
+    {
+        std::vector<UnitSpecies> usps;
+        if (units_.size() == 0)
+        {
+            return usps;
+        }
+        container_type::const_iterator it(units_.begin());
+        ++it;
+        for (; it != units_.end(); ++it)
+        {
+//            if ((*it).sites_.size() != 0)
+//            {
+                usps.push_back((*it).serial());
+//            }
+        }
+        return usps;
+    }
+
+    bool match(const Species& target) const
+    {
+        container_type::const_iterator i(units_.begin()), j(target.begin());
+        while (i != units_.end())
+        {
+            const UnitSpecies& usp(*i);
+
+            j = std::lower_bound(j, target.end(), usp);
+            if (j == target.end())
+            {
+                return false;
+            }
+
+            const container_type::const_iterator
+                nexti(std::upper_bound(i, units_.end(), usp)),
+                nextj(std::upper_bound(j, target.end(), usp));
+            if (nextj - j < nexti - i)
+            {
+                return false;
+            }
+
+            i = nexti;
+            j = nextj;
+        }
+        return true;
+
+        // for (container_type::const_iterator i(units_.begin()); i != units_.end(); ++i)
+        // {
+        //     if (std::count(target.begin(), target.end(), (*i))
+        //         < std::count(units_.begin(), units_.end(), (*i))) //XXX:
+        //     {
+        //         return false;
+        //     }
+        // }
+        // return true;
     }
 
     const attributes_container_type& attributes() const
     {
         return attributes_;
+    }
+
+    std::vector<std::pair<std::string, std::string> > list_attributes()
+    {
+        std::vector<std::pair<std::string, std::string> > retval;
+        for (attributes_container_type::const_iterator
+            i(attributes_.begin()); i != attributes_.end(); ++i)
+        {
+            retval.push_back(*i);
+        }
+        return retval;
     }
 
     std::string get_attribute(const std::string& name_attr) const
@@ -125,10 +259,9 @@ public:
     bool operator<(const Species& rhs) const;
     bool operator>(const Species& rhs) const;
 
-
 protected:
 
-    std::string name_;
+    std::vector<UnitSpecies> units_;
     attributes_container_type attributes_;
 };
 

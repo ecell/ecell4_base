@@ -8,6 +8,7 @@
 #include <hdf5.h>
 #include <H5Cpp.h>
 
+#include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "Species.hpp"
 
@@ -19,7 +20,7 @@ struct H5DataTypeTraits_uint32_t
 {
     typedef uint32_t type;
 
-    const H5::DataType& operator()() const
+    static const H5::DataType& get()
     {
         return H5::PredType::STD_I32LE;
     }
@@ -29,164 +30,184 @@ struct H5DataTypeTraits_double
 {
     typedef double type;
 
-    const H5::DataType& operator()() const
+    static const H5::DataType& get()
     {
         return H5::PredType::IEEE_F64LE;
     }
 };
 
-template<typename Tspace_, typename Ttraits_ = H5DataTypeTraits_uint32_t>
-class CompartmentSpaceHDF5Writer
+template<typename Tdata_>
+struct CompartmentSpaceHDF5Traits
 {
-public:
-
-    typedef Tspace_ space_type;
-    typedef Ttraits_ traits_type;
-    typedef typename Ttraits_::type num_molecules_type;
-
-protected:
+    typedef Tdata_ num_molecules_traits_type;
+    typedef typename num_molecules_traits_type::type num_molecules_type;
 
     typedef struct species_id_table_struct {
         uint32_t sid;
         char serial[32]; // species' serial may exceed the limit
     } species_id_table_struct;
 
+    static H5::CompType get_species_id_table_struct_memtype()
+    {
+        H5::CompType mtype_id_table_struct(sizeof(species_id_table_struct));
+        mtype_id_table_struct.insertMember(
+            std::string("sid"), HOFFSET(species_id_table_struct, sid),
+            H5::PredType::STD_I32LE);
+        mtype_id_table_struct.insertMember(
+            std::string("serial"), HOFFSET(species_id_table_struct, serial),
+            H5::StrType(H5::PredType::C_S1, 32));
+        return mtype_id_table_struct;
+    }
+
     typedef struct species_num_struct {
         uint32_t sid;
         num_molecules_type num_molecules;
     } species_num_struct;
 
-    typedef struct compartment_space_attribute_struct {
-        Real volume;
-        //gsl_rng
-    } compartment_space_attribute_struct;
-
-public:
-
-    CompartmentSpaceHDF5Writer(const space_type& space)
-        : space_(space), traits_()
+    static H5::CompType get_species_num_struct_memtype()
     {
-        ;
-    }
-
-    virtual ~CompartmentSpaceHDF5Writer()
-    {
-        ;
-    }
-
-    void save(H5::H5File* fout, const std::string& hdf5path) const
-    {
-        using namespace H5;
-
-        const std::vector<Species> species_list(space_.list_species());
-        const std::vector<Species>::size_type num_species(species_list.size());
-
-        CompType mtype_id_table_struct(sizeof(species_id_table_struct));
-        mtype_id_table_struct.insertMember(
-            std::string("sid"), HOFFSET(species_id_table_struct, sid),
-            PredType::STD_I32LE);
-        mtype_id_table_struct.insertMember(
-            std::string("serial"), HOFFSET(species_id_table_struct, serial),
-            StrType(PredType::C_S1, 32));
-
-        CompType mtype_num_struct(sizeof(species_num_struct));
+        H5::CompType mtype_num_struct(sizeof(species_num_struct));
         mtype_num_struct.insertMember(
             std::string("sid"), HOFFSET(species_num_struct, sid),
-            PredType::STD_I32LE);
+            H5::PredType::STD_I32LE);
         mtype_num_struct.insertMember(
             std::string("num_molecules"),
             HOFFSET(species_num_struct, num_molecules),
-            traits_());
+            num_molecules_traits_type::get());
+        return mtype_num_struct;
+    }
+};
 
-        CompType mtype_attr_struct(sizeof(compartment_space_attribute_struct));
-        mtype_attr_struct.insertMember(
-            std::string("volume"), 
-            HOFFSET(compartment_space_attribute_struct, volume),
-            H5::PredType::IEEE_F64LE);
+// template<typename Tspace_, typename Tdata_ = H5DataTypeTraits_uint32_t>
+template<typename Tspace_, typename Tdata_>
+void save_compartment_space(const Tspace_& space, H5::Group* root)
+{
+    typedef CompartmentSpaceHDF5Traits<Tdata_> traits_type;
+    // typedef typename traits_type::num_molecules_type num_molecules_type;
+    typedef typename traits_type::species_id_table_struct species_id_table_struct;
+    typedef typename traits_type::species_num_struct species_num_struct;
 
-        boost::scoped_array<species_id_table_struct>
-            species_id_table(new species_id_table_struct[num_species]);
-        boost::scoped_array<species_num_struct>
-            species_num_table(new species_num_struct[num_species]);
-        boost::scoped_ptr<compartment_space_attribute_struct>
-            space_attr_desc(new compartment_space_attribute_struct);
+    // attributes
+    const uint32_t space_type = static_cast<uint32_t>(Space::COMPARTMENT);
+    H5::Attribute attr_space_type(
+        root->createAttribute(
+            "type", H5::PredType::STD_I32LE, H5::DataSpace(H5S_SCALAR)));
+    attr_space_type.write(H5::PredType::STD_I32LE, &space_type);
 
-        for(unsigned int i(0); i < num_species; ++i)
-        {
-            species_id_table[i].sid = i + 1;
-            std::strcpy(species_id_table[i].serial,
-                        species_list[i].serial().c_str());
+    const double t(space.t());
+    H5::Attribute attr_t(root->createAttribute(
+        "t", H5DataTypeTraits_double::get(), H5::DataSpace(H5S_SCALAR)));
+    attr_t.write(attr_t.getDataType(), &t);
 
-            species_num_table[i].sid = i + 1;
-            species_num_table[i].num_molecules =
-                space_.num_molecules(species_list[i]);
-        }
-        space_attr_desc->volume = space_.volume();
+    const double volume(space.volume());
+    H5::Attribute attr_volume(root->createAttribute(
+        "volume", H5DataTypeTraits_double::get(), H5::DataSpace(H5S_SCALAR)));
+    attr_volume.write(attr_volume.getDataType(), &volume);
 
-        const int RANK = 1;
-        hsize_t dim[1];
-        dim[0] = num_species;
-        DataSpace dataspace(RANK, dim);
+    const std::vector<Species> species_list(space.list_species());
+    const std::vector<Species>::size_type num_species(species_list.size());
 
-        hsize_t dim_space[1];
-        dim_space[0] = 1;
-        DataSpace dataspace_attr(RANK, dim_space);
+    boost::scoped_array<species_id_table_struct>
+        species_id_table(new species_id_table_struct[num_species]);
+    boost::scoped_array<species_num_struct>
+        species_num_table(new species_num_struct[num_species]);
 
-        const std::string
-            species_table_path(hdf5path + "/species"),
-            species_num_path(hdf5path + "/num_molecules"),
-            space_attr_path(hdf5path + "/space_attributes");
+    for(unsigned int i(0); i < num_species; ++i)
+    {
+        species_id_table[i].sid = i + 1;
+        std::strcpy(
+            species_id_table[i].serial, species_list[i].serial().c_str());
 
-        boost::scoped_ptr<DataSet> dataset_id_table(
-            new DataSet(fout->createDataSet(
-                            species_table_path, mtype_id_table_struct,
-                            dataspace)));
-        boost::scoped_ptr<DataSet> dataset_num_table(
-            new DataSet(fout->createDataSet(
-                            species_num_path, mtype_num_struct, dataspace)));
-        boost::scoped_ptr<DataSet> dataset_space_attr(
-            new DataSet(fout->createDataSet(
-                            space_attr_path, mtype_attr_struct, dataspace_attr)));
-        dataset_id_table->write(species_id_table.get(), mtype_id_table_struct);
-        dataset_num_table->write(species_num_table.get(), mtype_num_struct);
-        dataset_space_attr->write(space_attr_desc.get(), mtype_attr_struct);
-
-        // attributes
-        const double t = space_.t();
-        Attribute attr_t(
-            fout->openGroup(hdf5path).createAttribute(
-                "t", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
-        attr_t.write(PredType::IEEE_F64LE, &t);
-
-        const double volume = space_.volume();
-        Attribute attr_volume(
-            fout->openGroup(hdf5path).createAttribute(
-                "volume", PredType::IEEE_F64LE, DataSpace(H5S_SCALAR)));
-        attr_volume.write(PredType::IEEE_F64LE, &volume);
+        species_num_table[i].sid = i + 1;
+        species_num_table[i].num_molecules =
+            space.num_molecules(species_list[i]);
     }
 
-    // void save(const std::string& filename)
-    // {
-    //     boost::scoped_ptr<H5::H5File>
-    //         fout(new H5::H5File(filename, H5F_ACC_TRUNC));
+    const int RANK = 1;
+    hsize_t dim[1];
+    dim[0] = num_species;
+    H5::DataSpace dataspace(RANK, dim);
 
-    //     std::ostringstream ost_hdf5path;
-    //     ost_hdf5path << "/" << space_.t();
+    boost::scoped_ptr<H5::DataSet> dataset_id_table(new H5::DataSet(
+        root->createDataSet(
+            "species", traits_type::get_species_id_table_struct_memtype(),
+            dataspace)));
+    boost::scoped_ptr<H5::DataSet> dataset_num_table(new H5::DataSet(
+        root->createDataSet(
+            "num_molecules", traits_type::get_species_num_struct_memtype(),
+            dataspace)));
+    dataset_id_table->write(
+        species_id_table.get(), dataset_id_table->getDataType());
+    dataset_num_table->write(
+        species_num_table.get(), dataset_num_table->getDataType());
 
-    //     boost::scoped_ptr<H5::Group> parent_group(
-    //         new H5::Group(fout->createGroup(ost_hdf5path.str())));
-    //     ost_hdf5path << "/CompartmentSpace";
-    //     boost::scoped_ptr<H5::Group>
-    //         group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
+    const Position3 edge_lengths = space.edge_lengths();
+    const hsize_t dims[] = {3};
+    const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
+    H5::Attribute attr_lengths(
+        root->createAttribute(
+            "edge_lengths", lengths_type, H5::DataSpace(H5S_SCALAR)));
+    double lengths[] = {edge_lengths[0], edge_lengths[1], edge_lengths[2]};
+    attr_lengths.write(lengths_type, lengths);
+}
 
-    //     save(fout.get(), ost_hdf5path.str());
-    // }
+// template<typename Tspace_, typename Tdata_ = H5DataTypeTraits_uint32_t>
+template<typename Tspace_, typename Tdata_>
+void load_compartment_space(const H5::Group& root, Tspace_* space)
+{
+    typedef CompartmentSpaceHDF5Traits<Tdata_> traits_type;
+    typedef typename traits_type::num_molecules_type num_molecules_type;
+    typedef typename traits_type::species_id_table_struct species_id_table_struct;
+    typedef typename traits_type::species_num_struct species_num_struct;
 
-protected:
+    {
+        H5::DataSet species_dset(root.openDataSet("species"));
+        const unsigned int num_species(
+            species_dset.getSpace().getSimpleExtentNpoints());
+        boost::scoped_array<species_id_table_struct> species_id_table(
+            new species_id_table_struct[num_species]);
+        species_dset.read(
+            species_id_table.get(),
+            traits_type::get_species_id_table_struct_memtype());
+        species_dset.close();
 
-    const space_type& space_;
-    const traits_type traits_;
-};
+        H5::DataSet num_dset(root.openDataSet("num_molecules"));
+        boost::scoped_array<species_num_struct> species_num_table(
+            new species_num_struct[num_species]);
+        num_dset.read(
+            species_num_table.get(),
+            traits_type::get_species_num_struct_memtype());
+        num_dset.close();
+
+        typename utils::get_mapper_mf<uint32_t, num_molecules_type>::type
+            num_molecules_cache;
+        for (unsigned int i(0); i < num_species; ++i)
+        {
+            num_molecules_cache[species_num_table[i].sid]
+                = species_num_table[i].num_molecules;
+        }
+        for (unsigned int i(0); i < num_species; ++i)
+        {
+            space->add_molecules(
+                Species(species_id_table[i].serial),
+                num_molecules_cache[species_id_table[i].sid]);
+        }
+    }
+
+    double t;
+    root.openAttribute("t").read(H5DataTypeTraits_double::get(), &t);
+    space->set_t(t);
+
+    // double volume;
+    // root.openAttribute("volume").read(H5DataTypeTraits_double::get(), &volume);
+    // space->set_volume(volume);
+
+    Position3 edge_lengths;
+    const hsize_t dims[] = {3};
+    const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
+    root.openAttribute("edge_lengths").read(lengths_type, &edge_lengths);
+    space->set_edge_lengths(edge_lengths);
+}
 
 } // ecell4
 

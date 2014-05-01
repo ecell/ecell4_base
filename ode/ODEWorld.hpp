@@ -2,7 +2,13 @@
 #define __ECELL4_ODE_ODE_WORLD_HPP
 
 #include <ecell4/core/Species.hpp>
+#include <ecell4/core/Position3.hpp>
+#include <ecell4/core/Space.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
+
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 namespace ecell4
 {
@@ -21,10 +27,10 @@ protected:
 
 public:
 
-    ODEWorld(const Real& volume)
-        : volume_(volume), t_(0.0)
+    ODEWorld(const Position3& edge_lengths)
+        : t_(0.0)
     {
-        ;
+        set_edge_lengths(edge_lengths);
     }
 
     // SpaceTraits
@@ -43,12 +49,43 @@ public:
         t_ = t;
     }
 
-    // CompartmentSpaceTraits
+    const Position3& edge_lengths() const
+    {
+        return edge_lengths_;
+    }
 
-    const Real& volume() const
+    void set_edge_lengths(const Position3& edge_lengths)
+    {
+        for (Position3::size_type dim(0); dim < 3; ++dim)
+        {
+            if (edge_lengths[dim] <= 0)
+            {
+                throw std::invalid_argument("the edge length must be positive.");
+            }
+        }
+
+        edge_lengths_ = edge_lengths;
+        volume_ = edge_lengths[0] * edge_lengths[1] * edge_lengths[2];
+    }
+
+    const Real volume() const
     {
         return volume_;
     }
+
+    void set_volume(const Real& volume)
+    {
+        if (volume <= 0.0)
+        {
+            throw std::invalid_argument("The volume must be positive.");
+        }
+
+        volume_ = volume;
+        const Real L(cbrt(volume));
+        edge_lengths_ = Position3(L, L, L);
+    }
+
+    // CompartmentSpaceTraits
 
     Real num_molecules(const Species& sp) const
     {
@@ -68,16 +105,6 @@ public:
     }
 
     // CompartmentSpace member functions
-
-    void set_volume(const Real& volume)
-    {
-        if (volume <= 0.0)
-        {
-            throw std::invalid_argument("The volume must be positive.");
-        }
-
-        volume_ = volume;
-    }
 
     void add_molecules(const Species& sp, const Real& num)
     {
@@ -119,19 +146,21 @@ public:
     {
         boost::scoped_ptr<H5::H5File>
             fout(new H5::H5File(filename, H5F_ACC_TRUNC));
-
-        std::ostringstream ost_hdf5path;
-        ost_hdf5path << "/" << t();
-
-        boost::scoped_ptr<H5::Group> parent_group(
-            new H5::Group(fout->createGroup(ost_hdf5path.str())));
-        ost_hdf5path << "/CompartmentSpace";
         boost::scoped_ptr<H5::Group>
-            group(new H5::Group(parent_group->createGroup(ost_hdf5path.str())));
+            group(new H5::Group(fout->createGroup("CompartmentSpace")));
+        save_compartment_space<ODEWorld, H5DataTypeTraits_double>(*this, group.get());
 
-        CompartmentSpaceHDF5Writer<ODEWorld, H5DataTypeTraits_double>
-            writer(*this);
-        writer.save(fout.get(), ost_hdf5path.str());
+        const uint32_t space_type = static_cast<uint32_t>(Space::ELSE);
+        group->openAttribute("type").write(H5::PredType::STD_I32LE, &space_type);
+    }
+
+    void load(const std::string& filename)
+    {
+        clear();
+        boost::scoped_ptr<H5::H5File>
+            fin(new H5::H5File(filename, H5F_ACC_RDONLY));
+        const H5::Group group(fin->openGroup("CompartmentSpace"));
+        load_compartment_space<ODEWorld, H5DataTypeTraits_double>(group, this);
     }
 
     bool has_species(const Species& sp)
@@ -180,14 +209,44 @@ public:
         index_map_.erase(sp);
     }
 
+    void bind_to(boost::shared_ptr<NetworkModel> model)
+    {
+        if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
+        {
+            if (bound_model.get() != model.get())
+            {
+                std::cerr << "Warning: Model already bound to ODEWorld."
+                    << std::endl;
+            }
+        }
+        this->model_ = model;
+    }
+
+    boost::shared_ptr<NetworkModel> lock_model() const
+    {
+        return model_.lock();
+    }
+
 protected:
 
+    void clear()
+    {
+        index_map_.clear();
+        num_molecules_.clear();
+        species_.clear();
+    }
+
+protected:
+
+    Position3 edge_lengths_;
     Real volume_;
     Real t_;
 
     num_molecules_container_type num_molecules_;
     species_container_type species_;
     species_map_type index_map_;
+
+    boost::weak_ptr<NetworkModel> model_;
 };
 
 } // ode

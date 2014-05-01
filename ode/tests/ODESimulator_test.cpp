@@ -14,20 +14,22 @@ using namespace ecell4::ode;
 
 BOOST_AUTO_TEST_CASE(ODESimulator_test_constructor)
 {
-    const Real volume(1e-18);
+    const Real L(1e-6);
+    const Position3 edge_lengths(L, L, L);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
+    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
 
     ODESimulator target(model, world);
 }
 
 BOOST_AUTO_TEST_CASE(ODESimulator_test_step1)
 {
-    const Real volume(1e-18);
+    const Real L(1e-6);
+    const Position3 edge_lengths(L, L, L);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
+    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
 
     ODESimulator target(model, world);
     target.step(1.0);
@@ -35,7 +37,8 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step1)
 
 BOOST_AUTO_TEST_CASE(ODESimulator_test_step2)
 {
-    const Real volume(1e-18);
+    const Real L(1e-6);
+    const Position3 edge_lengths(L, L, L);
 
     Species sp1("A"), sp2("B"), sp3("C");
     ReactionRule rr1;
@@ -50,7 +53,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step2)
     model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
 
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(volume));
+    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->reserve_species(sp1);
     world->set_num_molecules(sp1, 60);
 

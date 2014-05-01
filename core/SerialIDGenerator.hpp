@@ -3,6 +3,9 @@
 
 #include <functional>
 #include <boost/type_traits/is_integral.hpp>
+#include <hdf5.h>
+#include <H5Cpp.h>
+
 
 namespace ecell4
 {
@@ -312,6 +315,31 @@ public:
     identifier_type operator()()
     {
         return serial_advance(next_, 1);
+    }
+
+    void save(H5::CommonFG* root) const
+    {
+        using namespace H5;
+
+        boost::scoped_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
+        hsize_t bufsize(sizeof(identifier_type));
+        DataSpace dataspace(1, &bufsize);
+        optype->setTag("SerialIDGenerator state type");
+        boost::scoped_ptr<DataSet> dataset(
+            new DataSet(root->createDataSet("idgen", *optype, dataspace)));
+        dataset->write((unsigned char*)(&next_), *optype);
+    }
+
+    void load(const H5::CommonFG& root)
+    {
+        using namespace H5;
+
+        const DataSet dataset(DataSet(root.openDataSet("idgen")));
+        boost::scoped_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
+        optype->setTag("SerialIDGenerator state type");
+        identifier_type state;
+        dataset.read((unsigned char*)(&state), *optype);
+        next_ = state;
     }
 
 private:

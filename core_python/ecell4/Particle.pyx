@@ -53,7 +53,7 @@ cdef ParticleID ParticleID_from_Cpp_ParticleID(Cpp_ParticleID* p):
 
 cdef Particle Particle_from_Cpp_Particle(Cpp_Particle* p):
     cdef Cpp_Particle *new_obj = new Cpp_Particle(<Cpp_Particle> deref(p))
-    r = Particle(Species(""), Position3(0, 0, 0), 0, 0)
+    r = Particle(Species(), Position3(0, 0, 0), 0, 0)
     del r.thisptr
     r.thisptr = new_obj
     return r
