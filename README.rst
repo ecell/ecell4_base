@@ -20,7 +20,6 @@ Install
 =======
 
 Do following instructions on Ubuntu 14.04 LTS (Trusty Tahr).
-(To build Cython Wrapper it requires Cython 0.17 or later.)
 
 ..
 
