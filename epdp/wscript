@@ -140,7 +140,7 @@ def pre(bld):
             #'cp', sjy_table.abspath(), '${PREFIX}/include/ecell4/egfrd_impl/epdp/.']))
             'cp', sjy_table.abspath(), bld.env['PREFIX'] + '/include/ecell4/egfrd_impl/epdp/.']))
     #cjy_table = bld.path.find_or_declare('epdp/CylindricalBesselTable.hpp')
-    cjy_table = bld.path.find_or_declare('CylindricalBesselTable.hpp')
+    cjy_table = bld.path.find_or_declare('epdp/CylindricalBesselTable.hpp')
     if not os.path.exists(cjy_table.abspath()):
         bld.exec_command(' '.join([
             bld.env['PYTHON'][0],
