@@ -449,3 +449,34 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     c1 = (*itr1).first;
 
 }
+
+BOOST_AUTO_TEST_CASE(LatticeSimulator_test_finalize)
+{
+    const Real L(1e-6);
+    const Position3 edge_lengths(L, L, L);
+    const Real voxel_radius(2.5e-9);
+    const Integer N(60);
+
+    const std::string D("1e-12"), radius("2.5e-9");
+
+    ecell4::Species sp("A", radius, D);
+    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    (*model).add_species_attribute(sp);
+
+    boost::shared_ptr<GSLRandomNumberGenerator>
+        rng(new GSLRandomNumberGenerator());
+    boost::shared_ptr<LatticeWorld> world(
+            new LatticeWorld(edge_lengths, voxel_radius, rng));
+
+    LatticeSimulator sim(model, world);
+
+    world->add_molecules(sp, N);
+    sim.initialize();
+
+    while(sim.step(0.311111111))
+        ;
+
+    world->save("data_finalize_before.h5");
+    sim.finalize();
+    world->save("data_finalize_after.h5");
+}

@@ -33,7 +33,7 @@ protected:
     struct StepEvent : EventScheduler::Event
     {
         StepEvent(LatticeSimulator* sim, const Species& species, const Real& t)
-            : EventScheduler::Event(t), sim_(sim), species_(species)
+            : EventScheduler::Event(t), sim_(sim), species_(species), alpha_(1.0)
         {
             const LatticeWorld::molecule_info_type
                 minfo(sim_->world_->get_molecule_info(species));
@@ -45,7 +45,7 @@ protected:
             {
                 dt_ = inf;
             } else {
-                dt_ = 2 * R * R / 3 / D;
+                dt_ = 2 * R * R / 3 / D * alpha_;
             }
 
             time_ = t + dt_;
@@ -57,8 +57,18 @@ protected:
 
         virtual void fire()
         {
-            sim_->walk(species_);
+            sim_->walk(species_, alpha_);
             time_ += dt_;
+        }
+
+        Species const& species() const
+        {
+            return species_;
+        }
+
+        Real const& alpha() const
+        {
+            return alpha_;
         }
 
     protected:
@@ -66,7 +76,7 @@ protected:
         LatticeSimulator* sim_;
         Species species_;
         MolecularTypeBase* mt_;
-        Real dt_;
+        Real alpha_;
     };
 
     struct FirstOrderReactionEvent : EventScheduler::Event
@@ -143,9 +153,12 @@ public:
     }
 
     void initialize();
+    void finalize();
     void step();
     bool step(const Real& upto);
+    void run(const Real& duration);
     void walk(const Species& species);
+    void walk(const Species& species, const Real& alpha);
 
 protected:
 
