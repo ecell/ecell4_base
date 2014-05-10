@@ -8,7 +8,9 @@ before_install:
  - echo 'yes' | sudo add-apt-repository ppa:apokluda/boost1.53
  - sudo apt-get update -qq
  - sudo apt-get install -qq libboost1.53-all-dev libgsl0-dev libhdf5-serial-dev
- - sudo apt-get install -qq python2.7-dev cython
+#  - sudo apt-get install -qq python2.7-dev cython
+ - sudo apt-get install -qq python2.7-dev python-setuptools
+ - sudo easy_install cython
 
 notifications:
   webhooks:
