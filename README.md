@@ -33,4 +33,4 @@ A.B.C
 >>> 
 ```
 
-[![Build Status](https://secure.travis-ci.org/ecell/ecell4.png?branch=travis)](http://travis-ci.org/ecell/ecell4)
+[![Build Status](https://travis-ci.org/ecell/ecell4.svg?branch=master)](https://travis-ci.org/ecell/ecell4)
