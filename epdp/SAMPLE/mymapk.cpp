@@ -157,35 +157,9 @@ int main(int argc, char **argv)
 
     // add ::SpeciesInfo to ::World 
     // {{{
-    //  st1 {{{
-    boost::shared_ptr< ::SpeciesType> st1(new ::SpeciesType());
-    const std::string &structure_id((*st1)["structure"]);
-    world->add_species( world_type::traits_type::species_type(
-                sp1.serial(),
-                boost::lexical_cast<world_type::traits_type::D_type>( sp1.get_attribute("D") ),
-                boost::lexical_cast<world_type::length_type>( sp1.get_attribute("radius") ),
-                boost::lexical_cast<structure_id_type>( structure_id.empty() ? "world" : structure_id )));
-    // }}}
-
-    //  st2 {{{
-    boost::shared_ptr< ::SpeciesType> st2(new ::SpeciesType());
-    const std::string &structure_id2((*st2)["structure"] );
-    world->add_species( world_type::traits_type::species_type(
-                sp2.serial(),
-                boost::lexical_cast<world_type::traits_type::D_type>( sp2.get_attribute("D") ),
-                boost::lexical_cast<world_type::length_type>( sp2.get_attribute("radius") ),
-                boost::lexical_cast<structure_id_type>( structure_id.empty() ? "world" : structure_id2 )));
-    // }}}
-
-    //  st3 {{{
-    boost::shared_ptr< ::SpeciesType> st3(new ::SpeciesType());
-    const std::string &structure_id3((*st3)["structure"] );
-    world->add_species( world_type::traits_type::species_type(
-                sp3.serial(),
-                boost::lexical_cast<world_type::traits_type::D_type>( sp3.get_attribute("D") ),
-                boost::lexical_cast<world_type::length_type>( sp3.get_attribute("radius") ),
-                boost::lexical_cast<structure_id_type>( structure_id.empty() ? "world" : structure_id3 )));
-    // }}}
+    world->add_species(sp1.serial(), world->get_molecule_info(sp1));
+    world->add_species(sp2.serial(), world->get_molecule_info(sp2));
+    world->add_species(sp3.serial(), world->get_molecule_info(sp3));
     // }}}
 
     // Thorow particles into world at random 

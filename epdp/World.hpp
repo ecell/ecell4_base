@@ -38,6 +38,12 @@ bool is_initialized(std::string const &obj)
     return (0 < obj.size());
 }
 
+struct MoleculeInfo
+{
+    const ecell4::Real radius;
+    const ecell4::Real D;
+};
+
 template<typename Tderived_, typename TD_>
 struct WorldTraitsBase
 {
@@ -252,6 +258,21 @@ public:
     {
         species_map_[species.id()] = species;
         particle_pool_[species.id()] = particle_id_set();
+    }
+
+    void add_species(species_id_type const &sid, MoleculeInfo const &info , structure_id_type structure_id = structure_id_type("world") )
+    {
+        species_type sp(sid, info.D, info.radius, structure_id);
+        species_map_[sp.id()] = sp;
+        particle_pool_[sp.id()] = particle_id_set();
+    }
+
+    MoleculeInfo get_molecule_info(const ecell4::Species &sp) const
+    {
+        const Real radius(std::atof(sp.get_attribute("radius").c_str()));
+        const Real D(std::atof(sp.get_attribute("D").c_str()));
+        MoleculeInfo info = {radius, D};
+        return info;
     }
 
     virtual species_type const& get_species(species_id_type const& id) const
