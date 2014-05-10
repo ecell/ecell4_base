@@ -59,6 +59,26 @@ public:
         return true;
     }
 
+    bool has_site(const std::string& name) const
+    {
+        return sites_.find(name) != sites_.end();
+    }
+
+    const site_type& get_site(const std::string& name) const
+    {
+        return (*sites_.find(name)).second;
+    }
+
+    inline container_type::const_iterator begin() const
+    {
+        return sites_.begin();
+    }
+
+    inline container_type::const_iterator end() const
+    {
+        return sites_.end();
+    }
+
     bool operator==(const UnitSpecies& rhs) const
     {
         return (serial() == rhs.serial());

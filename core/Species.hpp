@@ -184,16 +184,6 @@ public:
             j = nextj;
         }
         return true;
-
-        // for (container_type::const_iterator i(units_.begin()); i != units_.end(); ++i)
-        // {
-        //     if (std::count(target.begin(), target.end(), (*i))
-        //         < std::count(units_.begin(), units_.end(), (*i))) //XXX:
-        //     {
-        //         return false;
-        //     }
-        // }
-        // return true;
     }
 
     const attributes_container_type& attributes() const
