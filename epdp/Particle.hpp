@@ -15,6 +15,15 @@
 #include "Shape.hpp"
 
 template<typename Tsid_>
+struct Particle;
+
+template<typename Tsid_>
+inline typename Particle<Tsid_>::shape_type shape(Particle<Tsid_> p)
+{
+    return p.shape();
+}
+
+template<typename Tsid_>
 struct Particle
 {
     typedef Sphere shape_type;
@@ -24,34 +33,41 @@ struct Particle
     typedef typename shape_type::position_type position_type;
     typedef typename shape_type::length_type length_type;
 
-    Particle(): shape_(), species_id_(), D_(0.), v_(0.) {}
+    Particle(): shape_(), species_id_(), D_(0.), v_(0.), position_(), radius_(0.)
+    {}
 
     Particle(species_id_type const& species_id, shape_type const& shape,
              D_type const& D)
-        : shape_(shape), species_id_(species_id), D_(D), v_(0.){}
+        : shape_(shape), species_id_(species_id), D_(D), v_(0.), 
+            position_(shape.position()), radius_(shape.radius()) {}
 
     Particle(species_id_type const& species_id, shape_type const& shape,
              D_type const& D, v_type const& v)
-        : shape_(shape), species_id_(species_id), D_(D), v_(v) {}
+        : shape_(shape), species_id_(species_id), D_(D), v_(v),
+            position_(shape.position()), radius_(shape.radius()) {}
 
     position_type& position()
     {
-        return shape_.position();
+        //return shape_.position();
+        return this->position_;
     }
 
     position_type const& position() const
     {
-        return shape_.position();
+        //return shape_.position();
+        return this->position_;
     }
 
     length_type& radius()
     {
-        return shape_.radius();
+        //return shape_.radius();
+        return this->radius_;
     }
 
     length_type const& radius() const
     {
-        return shape_.radius();
+        //return shape_.radius();
+        return this->radius_;
     }
 
     D_type& D()
@@ -74,14 +90,18 @@ struct Particle
         return v_;
     }
 
+    /*
     shape_type& shape()
     {
         return shape_;
     }
+    */
 
-    shape_type const& shape() const
+    //shape_type const& shape() const
+    shape_type shape() const
     {
-        return shape_;
+        //return shape_;
+        return shape_type(this->position(), this->radius());
     }
 
     species_id_type const& sid() const
@@ -96,7 +116,9 @@ struct Particle
 
     bool operator==(Particle const& rhs) const
     {
-        return species_id_ == rhs.sid() && shape_ == rhs.shape();
+        //return species_id_ == rhs.sid() && shape_ == rhs.shape();
+        return (species_id_ == rhs.sid() && radius_ == rhs.radius() &&
+                position_ == rhs.position() );
     }
 
     bool operator!=(Particle const& rhs) const
@@ -117,6 +139,9 @@ private:
     species_id_type species_id_;
     D_type D_;
     v_type v_;
+
+    position_type position_;
+    length_type radius_;
 };
 
 template<typename Tstrm_, typename Ttraits_, typename Tsid_>
