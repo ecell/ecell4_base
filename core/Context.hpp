@@ -21,6 +21,7 @@ public:
 
         iterator_container_type iterators;
         variable_container_type locals;
+        variable_container_type globals;
     } context_type;
 
 public:

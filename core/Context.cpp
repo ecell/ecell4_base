@@ -4,11 +4,42 @@
 namespace ecell4
 {
 
+bool is_wildcard(const std::string& name)
+{
+    return (name.size() > 0 && name[0] == '_');
+}
+
+bool is_unnamed_wildcard(const std::string& name)
+{
+    return name == "_";
+}
+
+bool is_named_wildcard(const std::string& name)
+{
+    return (name.size() > 1 && name[0] == '_');
+}
+
 std::pair<bool, MatchObject::context_type> uspmatch(
     const UnitSpecies& pttrn, const UnitSpecies& usp,
     MatchObject::context_type& ctx)
 {
-    if (pttrn.name() != "_" && pttrn.name() != usp.name())
+    if (is_wildcard(pttrn.name()))
+    {
+        if (is_named_wildcard(pttrn.name()))
+        {
+            MatchObject::context_type::variable_container_type::const_iterator
+                itr(ctx.globals.find(pttrn.name()));
+            if (itr == ctx.globals.end())
+            {
+                ctx.globals[pttrn.name()] = usp.name();
+            }
+            else if ((*itr).second != usp.name())
+            {
+                return std::make_pair(false, ctx);
+            }
+        }
+    }
+    else if (pttrn.name() != usp.name())
     {
         return std::make_pair(false, ctx);
     }
@@ -19,37 +50,70 @@ std::pair<bool, MatchObject::context_type> uspmatch(
         if (usp.has_site((*j).first))
         {
             const UnitSpecies::site_type& site(usp.get_site((*j).first));
-            if ((*j).second.first != "" && (*j).second.first != site.first)
+
+            if ((*j).second.first != "")
             {
-                return std::make_pair(false, ctx);
+                if (site.first == "")
+                {
+                    return std::make_pair(false, ctx);
+                }
+                else if (is_unnamed_wildcard((*j).second.first))
+                {
+                    ; // do nothing
+                }
+                else if (is_named_wildcard((*j).second.first))
+                {
+                    MatchObject::context_type::variable_container_type::const_iterator
+                        itr(ctx.globals.find((*j).second.first));
+                    if (itr == ctx.globals.end())
+                    {
+                        ctx.globals[(*j).second.first] = site.first;
+                    }
+                    else if ((*itr).second != site.first)
+                    {
+                        return std::make_pair(false, ctx);
+                    }
+                }
+                else if ((*j).second.first != site.first)
+                {
+                    return std::make_pair(false, ctx);
+                }
             }
-            else if ((*j).second.second == "" && site.second != "")
+
+            if ((*j).second.second == "")
             {
-                return std::make_pair(false, ctx);
+                if (site.second != "")
+                {
+                    return std::make_pair(false, ctx);
+                }
             }
-            else if ((*j).second.second != "")
+            else
             {
                 if (site.second == "")
                 {
                     return std::make_pair(false, ctx);
                 }
-                else if ((*j).second.second == "_")
+                else if (is_unnamed_wildcard((*j).second.second))
                 {
                     continue;
+                }
+                else if (is_named_wildcard((*j).second.second))
+                {
+                    throw NotSupported(
+                        "A named wildcard is not allowed to be a bond.");
                 }
 
                 MatchObject::context_type::variable_container_type::const_iterator
                     itr(ctx.locals.find((*j).second.second));
                 if (itr == ctx.locals.end())
                 {
-                    ctx.locals.insert(
-                        std::make_pair((*j).second.second, site.second));
-                    // ctx.locals[(*j).second.second] = site.second;
+                    ctx.locals[(*j).second.second] = site.second;
                 }
                 else if ((*itr).second != site.second)
                 {
                     return std::make_pair(false, ctx);
                 }
+
             }
         }
         else
