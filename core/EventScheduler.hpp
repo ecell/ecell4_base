@@ -36,11 +36,17 @@ public:
             return time_;
         }
 
+        Real const& dt() const
+        {
+            return dt_;
+        }
+
         virtual void interrupt(Real const& t) {}
 
     protected:
 
         Real time_;
+        Real dt_;
     };
 
 protected:

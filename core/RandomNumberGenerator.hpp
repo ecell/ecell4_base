@@ -28,6 +28,7 @@ public:
     virtual Real uniform(Real min, Real max) = 0;
     virtual Integer uniform_int(Integer min, Integer max) = 0;
     virtual Real gaussian(Real mean, Real sigma) = 0;
+    virtual Integer binomial(Real p, Integer n) = 0;
 
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
@@ -70,6 +71,11 @@ public:
     Real gaussian(Real mean, Real sigma)
     {
         return gsl_ran_gaussian(rng_.get(), sigma) + mean;
+    }
+
+    Integer binomial(Real p, Integer n)
+    {
+        return gsl_ran_binomial(rng_.get(), p, n);
     }
 
     void seed(Integer val)

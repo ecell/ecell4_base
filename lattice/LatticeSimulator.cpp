@@ -33,6 +33,23 @@ void LatticeSimulator::initialize()
     dt_ = scheduler_.next_time() - t();
 }
 
+void LatticeSimulator::finalize()
+{
+    EventScheduler::events_range events(scheduler_.events());
+    for (EventScheduler::events_range::iterator itr(events.begin());
+            itr != events.end(); ++itr)
+    {
+        const Real queued_time((*itr).second->time() - (*itr).second->dt());
+        StepEvent* step_event(dynamic_cast<StepEvent*>((*itr).second.get()));
+        if (step_event != NULL && queued_time < t())
+        {
+            const Real alpha((t() - queued_time) / (*itr).second->dt());
+            walk(step_event->species(), alpha);
+        }
+    }
+    initialize();
+}
+
 boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_step_event(
         const Species& species, const Real& t)
 {
@@ -334,15 +351,32 @@ void LatticeSimulator::step_()
     num_steps_++;
 }
 
+void LatticeSimulator::run(const Real& duration)
+{
+    initialize();
+    const Real upto(t() + duration);
+    while (step(upto))
+        ;
+    finalize();
+}
+
 void LatticeSimulator::walk(const Species& species)
 {
+    walk(species, 1.0);
+}
+
+void LatticeSimulator::walk(const Species& species, const Real& alpha)
+{
+    if (alpha < 0 || alpha > 1)
+        return; // INVALID ALPHA VALUE
+
     boost::shared_ptr<RandomNumberGenerator> rng(world_->rng());
 
     MolecularTypeBase* mtype(world_->find_molecular_type(species));
     mtype->shuffle(*rng);
     std::vector<ParticleID> pids;
     Integer i(0);
-    Integer max(mtype->size());
+    Integer max(rng->binomial(alpha, mtype->size()));
     pids.reserve(max);
     while(i < max)
     {
