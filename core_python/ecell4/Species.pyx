@@ -70,5 +70,5 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     r.thisptr = new_obj
     return r
 
-def pyspmatch(self, Species pttrn, Species sp):
+def pyspmatch(Species pttrn, Species sp):
     return spmatch(deref(pttrn.thisptr), deref(sp.thisptr))

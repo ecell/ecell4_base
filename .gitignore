@@ -1,0 +1,6 @@
+.DS_Store
+*~
+*.swp
+*/build
+*.pyo
+*/.lock-waf_linux2_build
