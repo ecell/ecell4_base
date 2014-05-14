@@ -45,6 +45,16 @@ def parse_decorator(callback_class, func):
     def wrapped(*args, **kwargs):
         cache = callback_class()
         vardict = copy.copy(func.func_globals)
+
+        for key, value in vardict.items():
+            if key[0] == "_":
+                print "vardict contains (key='", key, "', value='", str(value)[: 15], "' [", type(value), "])"
+
+        for ignore in ("_", "__", "___", "_i", "_ii", "_iii",
+            "_i1", "_i2", "_i3", "_dh", "_sh", "_oh"):
+            if ignore in vardict.keys():
+                del vardict[ignore]
+
         for k in func.func_code.co_names:
             if (not k in vardict.keys()
                 and not k in dir(vardict['__builtins__'])): # is this enough?
