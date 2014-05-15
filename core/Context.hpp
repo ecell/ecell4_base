@@ -56,9 +56,13 @@ protected:
     context_type ctx_;
 };
 
+bool is_wildcard(const std::string& name);
+bool is_unnamed_wildcard(const std::string& name);
+bool is_named_wildcard(const std::string& name);
+
 std::pair<bool, MatchObject::context_type>
 uspmatch(const UnitSpecies& pttrn, const UnitSpecies& sp,
-    MatchObject::context_type& ctx);
+    const MatchObject::context_type& org);
 bool spmatch(const Species& pttrn, const Species& sp);
 
 } // ecell4

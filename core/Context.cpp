@@ -21,8 +21,12 @@ bool is_named_wildcard(const std::string& name)
 
 std::pair<bool, MatchObject::context_type> uspmatch(
     const UnitSpecies& pttrn, const UnitSpecies& usp,
-    MatchObject::context_type& ctx)
+    const MatchObject::context_type& org)
 {
+    std::pair<bool, MatchObject::context_type>
+        retval(std::make_pair(false, org));
+    MatchObject::context_type& ctx(retval.second);
+
     if (is_wildcard(pttrn.name()))
     {
         if (is_named_wildcard(pttrn.name()))
@@ -35,13 +39,13 @@ std::pair<bool, MatchObject::context_type> uspmatch(
             }
             else if ((*itr).second != usp.name())
             {
-                return std::make_pair(false, ctx);
+                return retval;
             }
         }
     }
     else if (pttrn.name() != usp.name())
     {
-        return std::make_pair(false, ctx);
+        return retval;
     }
 
     for (UnitSpecies::container_type::const_iterator j(pttrn.begin());
@@ -55,7 +59,7 @@ std::pair<bool, MatchObject::context_type> uspmatch(
             {
                 if (site.first == "")
                 {
-                    return std::make_pair(false, ctx);
+                    return retval;
                 }
                 else if (is_unnamed_wildcard((*j).second.first))
                 {
@@ -71,12 +75,12 @@ std::pair<bool, MatchObject::context_type> uspmatch(
                     }
                     else if ((*itr).second != site.first)
                     {
-                        return std::make_pair(false, ctx);
+                        return retval;
                     }
                 }
                 else if ((*j).second.first != site.first)
                 {
-                    return std::make_pair(false, ctx);
+                    return retval;
                 }
             }
 
@@ -84,14 +88,14 @@ std::pair<bool, MatchObject::context_type> uspmatch(
             {
                 if (site.second != "")
                 {
-                    return std::make_pair(false, ctx);
+                    return retval;
                 }
             }
             else
             {
                 if (site.second == "")
                 {
-                    return std::make_pair(false, ctx);
+                    return retval;
                 }
                 else if (is_unnamed_wildcard((*j).second.second))
                 {
@@ -111,30 +115,32 @@ std::pair<bool, MatchObject::context_type> uspmatch(
                 }
                 else if ((*itr).second != site.second)
                 {
-                    return std::make_pair(false, ctx);
+                    return retval;
                 }
 
             }
         }
         else
         {
-            return std::make_pair(false, ctx);
+            return retval;
         }
     }
-    return std::make_pair(true, ctx);
+
+    retval.first = true;
+    return retval;
 }
 
 bool __spmatch(
     Species::container_type::const_iterator itr,
     const Species::container_type::const_iterator& end,
-    const Species& sp, MatchObject::context_type ctx)
+    const Species& sp, const MatchObject::context_type& ctx)
 {
     if (itr == end)
     {
-        for (MatchObject::context_type::iterator_container_type::const_iterator
-            i(ctx.iterators.begin()); i != ctx.iterators.end(); ++i)
-            std::cout << *i << " ";
-        std::cout << std::endl;
+        // for (MatchObject::context_type::iterator_container_type::const_iterator
+        //     i(ctx.iterators.begin()); i != ctx.iterators.end(); ++i)
+        //     std::cout << *i << " ";
+        // std::cout << std::endl;
         return true;
     }
 
@@ -172,12 +178,11 @@ std::pair<bool, MatchObject::context_type> MatchObject::next()
         }
 
         const UnitSpecies& usp(*itr_);
-        MatchObject::context_type ctx(ctx_);
-        ctx.iterators.push_back(pos);
-        const std::pair<bool, MatchObject::context_type>
-            retval(uspmatch(pttrn_, usp, ctx));
+        std::pair<bool, MatchObject::context_type>
+            retval(uspmatch(pttrn_, usp, ctx_));
         if (retval.first)
         {
+            retval.second.iterators.push_back(pos);
             ++itr_;
             return retval;
         }

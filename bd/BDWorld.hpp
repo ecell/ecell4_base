@@ -97,16 +97,13 @@ public:
         }
         else if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
         {
-            if (bound_model->has_species_attribute(sp))
+            Species attributed(bound_model->apply_species_attributes(sp));
+            if (attributed.has_attribute("radius")
+                && attributed.has_attribute("D"))
             {
-                Species attributed(bound_model->apply_species_attributes(sp));
-                if (attributed.has_attribute("radius")
-                    && attributed.has_attribute("D"))
-                {
-                    radius = std::atof(
-                        attributed.get_attribute("radius").c_str());
-                    D = std::atof(attributed.get_attribute("D").c_str());
-                }
+                radius = std::atof(
+                    attributed.get_attribute("radius").c_str());
+                D = std::atof(attributed.get_attribute("D").c_str());
             }
         }
 
