@@ -1,6 +1,7 @@
 #include <stdexcept>
 
 #include "exceptions.hpp"
+#include "Context.hpp"
 #include "CompartmentSpace.hpp"
 
 
@@ -76,9 +77,13 @@ Integer CompartmentSpaceVectorImpl::num_molecules(const Species& sp) const
     for (species_map_type::const_iterator i(index_map_.begin());
         i != index_map_.end(); ++i)
     {
-        if (sp.match((*i).first))
+        SpeciesExpressionMatcher sexp(sp);
+        if (sexp.match((*i).first))
         {
-            retval += num_molecules_[(*i).second];
+            do
+            {
+                retval += num_molecules_[(*i).second];
+            } while (sexp.next());
         }
     }
     return retval;
