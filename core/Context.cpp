@@ -19,6 +19,11 @@ bool is_named_wildcard(const std::string& name)
     return (name.size() > 1 && name[0] == '_');
 }
 
+bool is_freebond(const std::string& name)
+{
+    return name == "_free";
+}
+
 std::pair<bool, MatchObject::context_type> uspmatch(
     const UnitSpecies& pttrn, const UnitSpecies& usp,
     const MatchObject::context_type& org)
@@ -84,7 +89,11 @@ std::pair<bool, MatchObject::context_type> uspmatch(
                 }
             }
 
-            if ((*j).second.second == "")
+            if (is_freebond((*j).second.second))
+            {
+                ; // just skip checking
+            }
+            else if ((*j).second.second == "")
             {
                 if (site.second != "")
                 {
