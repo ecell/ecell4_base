@@ -72,3 +72,6 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
 
 def pyspmatch(Species pttrn, Species sp):
     return spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
+
+def pycount_spmatches(Species pttrn, Species sp):
+    return count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))

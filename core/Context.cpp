@@ -161,8 +161,25 @@ bool __spmatch(
 
 bool spmatch(const Species& pttrn, const Species& sp)
 {
-    MatchObject::context_type ctx;
-    return __spmatch(pttrn.begin(), pttrn.end(), sp, ctx);
+    SpeciesExpressionMatcher sexp(pttrn);
+    return sexp.match(sp);
+    // MatchObject::context_type ctx;
+    // return __spmatch(pttrn.begin(), pttrn.end(), sp, ctx);
+}
+
+Integer count_spmatches(const Species& pttrn, const Species& sp)
+{
+    SpeciesExpressionMatcher sexp(pttrn);
+    if (!sexp.match(sp))
+    {
+        return 0;
+    }
+    Integer n(1);
+    while (sexp.next())
+    {
+        ++n;
+    }
+    return n;
 }
 
 std::pair<bool, MatchObject::context_type> MatchObject::next()

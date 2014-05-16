@@ -50,7 +50,7 @@ public:
 
 protected:
 
-    const UnitSpecies pttrn_;
+    UnitSpecies pttrn_;
     Species target_;
     Species::container_type::const_iterator itr_;
     context_type ctx_;
@@ -63,7 +63,115 @@ bool is_named_wildcard(const std::string& name);
 std::pair<bool, MatchObject::context_type>
 uspmatch(const UnitSpecies& pttrn, const UnitSpecies& sp,
     const MatchObject::context_type& org);
+bool __spmatch(
+    Species::container_type::const_iterator itr,
+    const Species::container_type::const_iterator& end,
+    const Species& sp, const MatchObject::context_type& ctx);
 bool spmatch(const Species& pttrn, const Species& sp);
+Integer count_spmatches(const Species& pttrn, const Species& sp);
+
+class SpeciesExpressionMatcher
+{
+public:
+
+    typedef MatchObject::context_type context_type;
+
+public:
+
+    SpeciesExpressionMatcher(const Species& pttrn)
+        : pttrn_(pttrn)
+    {
+        ;
+    }
+
+    virtual ~SpeciesExpressionMatcher()
+    {
+        ;
+    }
+
+    bool match(const Species& sp)
+    {
+        matches_.clear();
+        for (Species::container_type::const_iterator i(pttrn_.begin());
+            i != pttrn_.end(); ++i)
+        {
+            matches_.push_back(MatchObject(*i));
+        }
+
+        target_ = sp;
+        context_type ctx;
+        itr_ = matches_.begin();
+        return __match(ctx);
+    }
+
+    bool __match(const MatchObject::context_type& ctx)
+    {
+        if (itr_ == matches_.end())
+        {
+            ctx_ = ctx;
+            return true;
+        }
+
+        std::pair<bool, MatchObject::context_type>
+            retval((*itr_).match(target_, ctx));
+        while (retval.first)
+        {
+            ++itr_;
+            const bool succeeded(__match(retval.second));
+            if (succeeded)
+            {
+                return true;
+            }
+            --itr_;
+            retval = (*itr_).next();
+        }
+        return false;
+    }
+
+    bool next()
+    {
+        if (itr_ != matches_.end())
+        {
+            return false;
+        }
+        else if (matches_.size() == 0)
+        {
+            return true;
+        }
+
+        do
+        {
+            --itr_;
+            std::pair<bool, MatchObject::context_type> retval((*itr_).next());
+            while (retval.first)
+            {
+                ++itr_;
+                const bool succeeded(__match(retval.second));
+                if (succeeded)
+                {
+                    return true;
+                }
+                --itr_;
+                retval = (*itr_).next();
+            }
+        }
+        while (itr_ != matches_.begin());
+        return false;
+    }
+
+    const context_type& context() const
+    {
+        return ctx_;
+    }
+
+protected:
+
+    const Species pttrn_;
+    Species target_;
+    std::vector<MatchObject> matches_;
+    std::vector<MatchObject>::iterator itr_;
+    context_type ctx_;
+};
 
 } // ecell4
 
