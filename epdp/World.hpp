@@ -216,8 +216,7 @@ public:
     {
         species_type const& species(get_species(sid));
         particle_id_pair retval(pidgen_(),
-            particle_type(sid, particle_shape_type(pos, species.radius()),
-                          species.D(), species.v() ));
+            particle_type(sid, pos, species.radius(), species.D(), species.v() ));
         update_particle(retval);
         return retval;
     }

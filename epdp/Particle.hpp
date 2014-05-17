@@ -29,14 +29,15 @@ struct Particle
     typedef Sphere shape_type;
     typedef ecell4::Real D_type;
     typedef ecell4::Real v_type;	// the drift v has the same type as diffusion constant D for now, may be generalized at a later stage
+    typedef ecell4::Position3 position_type;
+    typedef position_type::value_type value_type;
+    typedef position_type::value_type length_type;
     typedef Tsid_ species_id_type;
-    typedef typename shape_type::position_type position_type;
-    typedef typename shape_type::length_type length_type;
 
     Particle(): species_id_(), D_(0.), v_(0.), position_(), radius_(0.)
     {}
 
-    Particle(species_id_type const& species_id, shape_type const& shape,
+    /*Particle(species_id_type const& species_id, shape_type const& shape,
              D_type const& D)
         : species_id_(species_id), D_(D), v_(0.), 
             position_(shape.position()), radius_(shape.radius()) {}
@@ -44,7 +45,13 @@ struct Particle
     Particle(species_id_type const& species_id, shape_type const& shape,
              D_type const& D, v_type const& v)
         : species_id_(species_id), D_(D), v_(v),
-            position_(shape.position()), radius_(shape.radius()) {}
+            position_(shape.position()), radius_(shape.radius()) {} */
+
+    // ecell4::Particle like constructor
+    Particle(species_id_type const& species_id, position_type const& pos,
+            length_type const& radius, D_type const& D, v_type const &v = 0.0)
+        : species_id_(species_id), position_(pos), 
+            radius_(radius), D_(D), v_(v) {}
 
     position_type& position()
     {
