@@ -15,7 +15,10 @@ namespace ecell4
 class Particle
 {
 public:
+    typedef Position3 position_type;
+    typedef Real length_type;
 
+public:
     Particle()
     {
         ;
@@ -62,6 +65,16 @@ public:
     Species& species()
     {
         return species_;
+    }
+
+    Species::serial_type sid()
+    {
+        return species_.serial();
+    }
+
+    const Species::serial_type sid() const
+    {
+        return species_.serial();
     }
 
     const Species& species() const
