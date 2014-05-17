@@ -18,15 +18,15 @@ template<typename Tsid_>
 struct Particle;
 
 template<typename Tsid_>
-inline typename Particle<Tsid_>::shape_type shape(Particle<Tsid_> p)
+inline Sphere shape(Particle<Tsid_> p)
 {
-    return p.shape();
+    return Sphere(p.position(), p.radius());
 }
 
 template<typename Tsid_>
 struct Particle
 {
-    typedef Sphere shape_type;
+    //typedef Sphere shape_type;
     typedef ecell4::Real D_type;
     typedef ecell4::Real v_type;	// the drift v has the same type as diffusion constant D for now, may be generalized at a later stage
     typedef ecell4::Position3 position_type;
@@ -93,10 +93,12 @@ struct Particle
         return v_;
     }
 
+    /*
     shape_type const shape() const
     {
         return shape_type(this->position(), this->radius());
     }
+    */
 
     species_id_type const& sid() const
     {
@@ -138,7 +140,7 @@ private:
 template<typename Tstrm_, typename Ttraits_, typename Tsid_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle<Tsid_>& p)
 {
-    strm << "Particle(" << p.shape() << ", D=" << p.D() << ", v=" << p.v() << ", " << p.sid() << ")";
+    strm << "Particle(" << shape(p) << ", D=" << p.D() << ", v=" << p.v() << ", " << p.sid() << ")";
     return strm;
 }
 

@@ -26,7 +26,7 @@ public:
     typedef typename Ttraits_::world_type world_type;
     typedef typename world_type::traits_type traits_type;
     typedef typename traits_type::particle_type particle_type;
-    typedef typename particle_type::shape_type particle_shape_type;
+    typedef typename traits_type::particle_shape_type particle_shape_type;
     typedef typename traits_type::species_type species_type;
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::position_type position_type;
@@ -200,7 +200,7 @@ public:
     typedef typename simulator_type::traits_type traits_type;
     typedef Domain<traits_type> base_type;
     typedef typename traits_type::world_type::particle_type particle_type;
-    typedef typename particle_type::shape_type particle_shape_type;
+    typedef typename traits_type::world_type::particle_shape_type particle_shape_type;
     typedef typename traits_type::world_type::species_type species_type;
     typedef typename traits_type::world_type::species_id_type species_id_type;
     typedef typename traits_type::world_type::position_type position_type;

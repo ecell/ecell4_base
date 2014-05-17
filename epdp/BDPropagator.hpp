@@ -107,7 +107,7 @@ public:
                     new_pos, species.radius(),
                     species.D()));
         boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-            tx_.check_overlap(particle_to_update.second.shape(),
+            tx_.check_overlap(shape(particle_to_update.second),
                               particle_to_update.first));
         switch (overlapped ? overlapped->size(): 0)
         {
@@ -141,7 +141,7 @@ public:
         }
         if (vc_)
         {
-            if (!(*vc_)(particle_to_update.second.shape(), 
+            if (!(*vc_)(shape(particle_to_update.second), 
                         particle_to_update.first))
             {
                 log_.info("propagation move rejected.");
@@ -195,7 +195,7 @@ private:
                         const particle_id_pair new_p(
                             pp.first, particle_type(products[0],
                                 pp.second.position(), s0.radius(), s0.D()));
-                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(tx_.check_overlap(new_p.second.shape(), new_p.first));
+                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(tx_.check_overlap(shape(new_p.second), new_p.first));
                         if (overlapped && overlapped->size() > 0)
                         {
                             throw propagation_error("no space");
@@ -203,7 +203,7 @@ private:
 
                         if (vc_)
                         {
-                            if (!(*vc_)(new_p.second.shape(), pp.first))
+                            if (!(*vc_)(shape(new_p.second), pp.first))
                             {
                                 throw propagation_error("no space");
                             }

@@ -16,7 +16,7 @@ class ParticleContainer
 public:
     typedef Ttraits_ traits_type;
     typedef typename traits_type::particle_type particle_type;
-    typedef typename particle_type::shape_type particle_shape_type;
+    typedef typename traits_type::particle_shape_type particle_shape_type;
     typedef typename traits_type::species_type species_type;
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::position_type position_type;

@@ -55,10 +55,11 @@ struct WorldTraitsBase
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef ecell4::Species::serial_type species_id_type; // std::string
     typedef Particle<species_id_type> particle_type;
+    typedef Sphere particle_shape_type;
     typedef std::string structure_id_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;
     typedef ecell4::Position3 point_type;
-    typedef typename particle_type::shape_type::position_type position_type;
+    typedef typename particle_type::position_type position_type;
     typedef ecell4::GSLRandomNumberGenerator rng_type;
     typedef Structure<Tderived_> structure_type;
 
@@ -185,7 +186,7 @@ public:
     typedef typename traits_type::particle_id_type particle_id_type;
     typedef typename traits_type::particle_id_generator particle_id_generator;
     typedef typename traits_type::species_id_type species_id_type;
-    typedef typename traits_type::particle_type::shape_type particle_shape_type;
+    typedef typename traits_type::particle_shape_type particle_shape_type;
     typedef typename traits_type::size_type size_type;
     typedef typename traits_type::structure_id_type structure_id_type;
     typedef typename traits_type::structure_type structure_type;
