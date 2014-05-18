@@ -11,7 +11,7 @@
 #include "SpeciesTypeID.hpp"
 
 #include "exceptions.hpp"
-#include "utils/get_mapper_mf.hpp"
+#include <ecell4/core/get_mapper_mf.hpp>
 
 class Model;
 
@@ -19,7 +19,7 @@ class SpeciesType
 {
     friend class Model;
 private:
-    typedef get_mapper_mf<std::string, std::string>::type string_map_type;
+    typedef ecell4::utils::get_mapper_mf<std::string, std::string>::type string_map_type;
 
 public:
     typedef SpeciesTypeID identifier_type;

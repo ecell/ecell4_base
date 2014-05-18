@@ -1,10 +1,6 @@
 #ifndef DOMAIN_HPP
 #define DOMAIN_HPP
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif /* HAVE_CONFIG_H */
-
 #include <string>
 #include <cstddef>
 #include <boost/format.hpp>

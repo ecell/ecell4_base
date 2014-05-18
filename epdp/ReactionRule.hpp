@@ -13,9 +13,9 @@
 #include <boost/range/const_iterator.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <ecell4/core/get_mapper_mf.hpp>
 
 #include "Defs.hpp"
-#include "utils/get_mapper_mf.hpp"
 #include "utils/range_support.hpp"
 #include "exceptions.hpp"
 #include "utils.hpp"
@@ -32,7 +32,7 @@ public:
 
 private:
     typedef std::vector<species_type_id_type> species_type_id_vector;
-    typedef get_mapper_mf<std::string, std::string>::type string_map_type;
+    typedef ecell4::utils::get_mapper_mf<std::string, std::string>::type string_map_type;
 
 public:
     typedef int identifier_type; 

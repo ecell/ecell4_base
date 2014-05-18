@@ -9,7 +9,7 @@
 #include <boost/range/iterator_range.hpp>
 
 #include "exceptions.hpp"
-#include "utils/get_mapper_mf.hpp"
+#include <ecell4/core/get_mapper_mf.hpp>
 
 class ParticleModel;
 
@@ -17,7 +17,7 @@ class StructureType
 {
     friend class ParticleModel;
 private:
-    typedef get_mapper_mf<std::string, std::string>::type string_map_type;
+    typedef ecell4::utils::get_mapper_mf<std::string, std::string>::type string_map_type;
 
 public:
     typedef std::string identifier_type;

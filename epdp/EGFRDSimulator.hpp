@@ -15,8 +15,10 @@
 #include <boost/fusion/include/at_key.hpp>
 #include <boost/none_t.hpp>
 #include <boost/variant.hpp>
+
+#include <ecell4/core/get_mapper_mf.hpp>
 #include "utils/array_helper.hpp"
-#include "utils/get_mapper_mf.hpp"
+//#include "utils/get_mapper_mf.hpp"
 #include "utils/fun_composition.hpp"
 #include "utils/fun_wrappers.hpp"
 #include "utils/pointer_as_ref.hpp"
@@ -247,9 +249,9 @@ protected:
     typedef boost::fusion::map<
         boost::fusion::pair<spherical_shell_type, 
                             MatrixSpace<spherical_shell_type,
-                                        shell_id_type, get_mapper_mf>&>,
+                                        shell_id_type, ecell4::utils::get_mapper_mf>&>,
         boost::fusion::pair<cylindrical_shell_type, MatrixSpace<cylindrical_shell_type,
-                                        shell_id_type, get_mapper_mf>&> >
+                                        shell_id_type, ecell4::utils::get_mapper_mf>&> >
             shell_matrix_map_type;
     typedef typename boost::remove_reference<
         typename boost::fusion::result_of::value_at_key<
@@ -261,7 +263,7 @@ protected:
             shell_matrix_map_type,
             cylindrical_shell_type>::type>::type
                 cylindrical_shell_matrix_type;
-    typedef typename get_mapper_mf<domain_id_type, boost::shared_ptr<domain_type> >::type domain_map;
+    typedef typename ecell4::utils::get_mapper_mf<domain_id_type, boost::shared_ptr<domain_type> >::type domain_map;
     typedef typename network_rules_type::reaction_rules reaction_rules;
     typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
     typedef typename traits_type::rate_type rate_type;

@@ -11,8 +11,8 @@
 #include "SerialIDGenerator.hpp"
 #include "SpeciesTypeID.hpp"
 #include "SpeciesType.hpp"
-#include "utils/get_mapper_mf.hpp"
 #include "utils/pair.hpp"
+#include <ecell4/core/get_mapper_mf.hpp>
 
 class NetworkRules;
 
@@ -27,7 +27,7 @@ private:
     typedef std::map<species_id_type, boost::shared_ptr<species_type_type> > species_type_map_type;
     typedef select_second<species_type_map_type::value_type> species_second_selector_type;
 
-    typedef get_mapper_mf<std::string, std::string>::type string_map_type;
+    typedef ecell4::utils::get_mapper_mf<std::string, std::string>::type string_map_type;
 
 public:
     typedef boost::transform_iterator<species_second_selector_type,

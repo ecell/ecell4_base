@@ -6,9 +6,6 @@
 //
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif /* HAVE_CONFIG_H */
 
 #include <functional>
 #include <vector>
@@ -18,6 +15,8 @@
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include <ecell4/core/config.h>
 
 //#define HAVE_TR1_UNORDERED_MAP
 

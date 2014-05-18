@@ -75,28 +75,6 @@ def configure(conf):
     conf.check_cxx(lib = 'm')
     conf.check_python_module('scipy')
 
-    conf.check(
-        header_name = 'unordered_map.hpp',
-        define_name = "HAVE_UNORDERED_MAP_HPP", mandatory = False)
-    conf.check(
-        header_name = 'boost/unordered_map.hpp',
-        define_name = "HAVE_BOOST_UNORDERED_MAP_HPP", mandatory = False)
-    conf.check(
-        header_name = 'boost/functional/hash.hpp',
-        define_name = "HAVE_BOOST_FUNCTIONAL_HASH_HPP", mandatory = False)
-
-    conf.check_cc(fragment = '''
-#include <tr1/unordered_map>
-std::tr1::unordered_map<int, int> a, b( a); ''',
-               define_name = "HAVE_TR1_UNORDERED_MAP",
-               mandatory = False)
-
-    conf.check_cc(fragment = '''
-#include <tr1/functional>
-int main() {std::tr1::hash<int>(); return 0; }''',
-               define_name = "HAVE_TR1_FUNCTIONAL",
-               mandatory = False)
-
     conf.check_cxx(fragment='''
 #include <math.h>
 int main() { double a = INFINITY; return (int)a * 0; }

@@ -1,9 +1,7 @@
 #ifndef SPECIES_TYPE_ID_HPP
 #define SPECIES_TYPE_ID_HPP
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif /* HAVE_CONFIG_H */
+#include <ecell4/core/config.h>
 
 #include <ostream>
 #if defined(HAVE_TR1_FUNCTIONAL)
