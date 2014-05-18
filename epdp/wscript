@@ -122,7 +122,7 @@ int main() { double a, b; sincos(0., &a, &b); return 0; }
     conf.check_boost(lib = 'regex')
     #conf.check_cxx(lib = 'ecell4-core')
 
-    conf.write_config_header('epdp/config.h', guard='__ECELL4_W_CONFIG_H_WAF')
+    conf.write_config_header('epdp/config.h', guard='__ECELL4_EGFRD_CONFIG_H_WAF')
     #conf.recurse(subdirs)
 
 
