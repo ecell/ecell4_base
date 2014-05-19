@@ -17,10 +17,19 @@ set(HPP_FILES
     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp UnitSpecies.hpp
     exceptions.hpp get_mapper_mf.hpp types.hpp)
 
-include(CheckIncludeFiles)
-check_include_files(unordered_map.hpp HAVE_UNORDERED_MAP_HPP)
-check_include_files("boost/unordered_map.hpp" HAVE_BOOST_UNORDERED_MAP_HPP)
-check_include_files("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
+include_directories(${HDF5_INCLUDE_DIRS})
+find_package(Boost COMPONENTS regex REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+find_library(GSL_LIBRARIES gsl)
+find_library(GSL_CBLAS_LIBRARIES gslcblas)
+
+include(CheckIncludeFileCXX)
+# set(CMAKE_REQUIRED_INCLUDES "/usr/include")
+check_include_file_cxx(unordered_map.hpp HAVE_UNORDERED_MAP_HPP)
+check_include_file_cxx("boost/unordered_map.hpp" HAVE_BOOST_UNORDERED_MAP_HPP)
+check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles("#include <tr1/unordered_map>
@@ -29,14 +38,6 @@ int main() { std::tr1::unordered_map<int, int> a, b(a); return 0; }"
 check_cxx_source_compiles("#include <tr1/functional>
 int main() { std::tr1::hash<int>(); return 0; }"
     HAVE_TR1_FUNCTIONAL)
-
-find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
-include_directories(${HDF5_INCLUDE_DIRS})
-find_package(Boost COMPONENTS regex REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
-find_library(GSL_LIBRARIES gsl)
-find_library(GSL_CBLAS_LIBRARIES gslcblas)
 
 configure_file(
     ${PROJECT_SOURCE_DIR}/config.h.in
