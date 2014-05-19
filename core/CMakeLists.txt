@@ -6,6 +6,17 @@ set(CPP_FILES
     LatticeSpace.cpp Model.cpp NetworkModel.cpp ParticleSpace.cpp
     Position3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp)
 
+set(HPP_FILES
+    CompartmentSpace.hpp DynamicPriorityQueue.hpp H5Save.hpp LatticeSpace.hpp
+    MolecularType.hpp Particle.hpp Position3.hpp ReactionRule.hpp Space.hpp
+    VacantType.hpp extras.hpp linear_algebra.hpp CompartmentSpaceHDF5Writer.hpp
+    EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
+    MolecularTypeBase.hpp ParticleSpace.hpp RandomNumberGenerator.hpp
+    SerialIDGenerator.hpp Species.hpp Voxel.hpp functions.hpp swap.hpp
+    Context.hpp Global.hpp Journal.hpp Model.hpp NetworkModel.hpp
+    ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp UnitSpecies.hpp
+    exceptions.hpp get_mapper_mf.hpp types.hpp)
+
 include(CheckIncludeFiles)
 check_include_files(unordered_map.hpp HAVE_UNORDERED_MAP_HPP)
 check_include_files("boost/unordered_map.hpp" HAVE_BOOST_UNORDERED_MAP_HPP)
@@ -33,9 +44,12 @@ configure_file(
 include_directories(${PROJECT_BINARY_DIR})
 
 add_library(ecell4-core SHARED ${CPP_FILES})
-# target_link_libraries(ecell4-core ${HDF5_LIBRARIES} ${Boost_LIBRARIES} gsl gslcblas)
-target_link_libraries(ecell4-core ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
+target_link_libraries(ecell4-core
+    ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
 
 enable_testing()
-
 add_subdirectory(tests)
+
+install(TARGETS ecell4-core DESTINATION lib)
+install(FILES "${PROJECT_BINARY_DIR}/config.h" ${HPP_FILES}
+    DESTINATION include)
