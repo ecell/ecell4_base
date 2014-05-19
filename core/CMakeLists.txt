@@ -27,17 +27,19 @@ find_library(GSL_CBLAS_LIBRARIES gslcblas)
 
 include(CheckIncludeFileCXX)
 # set(CMAKE_REQUIRED_INCLUDES "/usr/include")
-check_include_file_cxx(unordered_map.hpp HAVE_UNORDERED_MAP_HPP)
-check_include_file_cxx("boost/unordered_map.hpp" HAVE_BOOST_UNORDERED_MAP_HPP)
-check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-
 include(CheckCXXSourceCompiles)
+
+check_include_file_cxx(unordered_map HAVE_UNORDERED_MAP)
 check_cxx_source_compiles("#include <tr1/unordered_map>
 int main() { std::tr1::unordered_map<int, int> a, b(a); return 0; }"
     HAVE_TR1_UNORDERED_MAP)
+check_include_file_cxx("boost/unordered_map.hpp" HAVE_BOOST_UNORDERED_MAP_HPP)
+
 check_cxx_source_compiles("#include <tr1/functional>
 int main() { std::tr1::hash<int>(); return 0; }"
     HAVE_TR1_FUNCTIONAL)
+check_include_file_cxx(functional HAVE_STD_HASH)
+check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 
 configure_file(
     ${PROJECT_SOURCE_DIR}/config.h.in
