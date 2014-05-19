@@ -73,8 +73,9 @@ BOOST_AUTO_TEST_CASE(Species_test_get_unit)
     sp1.add_unit(UnitSpecies("A"));
     sp1.add_unit(UnitSpecies("A"));
     BOOST_CHECK_EQUAL(sp1.serial(), "A.A.B");
+//     BOOST_CHECK_EQUAL(sp1.serial(), "B.A.A");
 
     BOOST_CHECK_EQUAL(sp1.get_unit(UnitSpecies("B")), 2);
     BOOST_CHECK_EQUAL(sp1.list_sites().size(), 2);
-//    BOOST_CHECK_EQUAL(sp1.get_unit(UnitSpecies("C")), 3);
+//     BOOST_CHECK_EQUAL(sp1.get_unit(UnitSpecies("C")), 3);
 }
