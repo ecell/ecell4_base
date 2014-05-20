@@ -46,7 +46,7 @@ configure_file(
     ${PROJECT_BINARY_DIR}/config.h)
 include_directories(${PROJECT_BINARY_DIR})
 
-add_library(ecell4-core SHARED ${CPP_FILES})
+add_library(ecell4-core SHARED ${CPP_FILES} ${HPP_FILES} "${PROJECT_BINARY_DIR}/config.h")
 target_link_libraries(ecell4-core
     ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
 
@@ -55,4 +55,4 @@ add_subdirectory(tests)
 
 install(TARGETS ecell4-core DESTINATION lib)
 install(FILES "${PROJECT_BINARY_DIR}/config.h" ${HPP_FILES}
-    DESTINATION include)
+    DESTINATION "include/ecell4")
