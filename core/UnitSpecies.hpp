@@ -14,6 +14,7 @@
 #include <boost/functional/hash.hpp>
 #endif
 
+#include "types.hpp"
 #include "get_mapper_mf.hpp"
 
 
@@ -57,6 +58,11 @@ public:
         }
         sites_.insert(std::make_pair(name, std::make_pair(state, bond)));
         return true;
+    }
+
+    Integer num_sites() const
+    {
+        return sites_.size();
     }
 
     bool has_site(const std::string& name) const

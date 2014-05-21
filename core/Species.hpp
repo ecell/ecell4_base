@@ -201,6 +201,11 @@ public:
         attributes_ = sp.attributes();
     }
 
+    std::vector<UnitSpecies> list_units() const
+    {
+        return units_;
+    }
+
     void remove_attribute(const std::string& name_attr)
     {
         attributes_container_type::iterator
@@ -229,6 +234,8 @@ protected:
     std::vector<UnitSpecies> units_;
     attributes_container_type attributes_;
 };
+
+std::string serialize_species(const Species& sp);
 
 } // ecell4
 
