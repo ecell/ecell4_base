@@ -82,29 +82,54 @@ UnitSpecies::serial_type UnitSpecies::serial() const
         return name_;
     }
 
-    std::vector<std::string> unstated, stated;
+    std::stringstream unstated, stated;
+    bool is_unstated_empty(true), is_stated_empty(true);
+    unstated << name_ << "(";
     for (container_type::const_iterator i(sites_.begin());
         i != sites_.end(); ++i)
     {
-        const std::string&
-            state((*i).second.first), bond((*i).second.second);
+        const std::string& state((*i).second.first);
+        const std::string& bond((*i).second.second);
+
         if (state.size() > 0)
         {
-            stated.push_back((*i).first + "="
-                + (bond.size() > 0? state + "^" + bond : state));
+            if (is_stated_empty)
+            {
+                is_stated_empty = false;
+            }
+            else
+            {
+                stated << ",";
+            }
+            stated << (*i).first << "=" << state;
+            if (bond.size() > 0)
+            {
+                stated << "^" << bond;
+            }
         }
         else
         {
-            unstated.push_back(
-                bond.size() > 0? (*i).first + "^" + bond : (*i).first);
+            if (is_unstated_empty)
+            {
+                is_unstated_empty = false;
+            }
+            else
+            {
+                unstated << ",";
+            }
+            unstated << (*i).first;
+            if (bond.size() > 0)
+            {
+                unstated << "^" << bond;
+            }
         }
     }
-
-    std::sort(unstated.begin(), unstated.end());
-    std::sort(stated.begin(), stated.end());
-    return name_ + "(" + boost::algorithm::join(unstated, ",")
-        + (unstated.size() > 0 && stated.size() > 0? "," : "")
-        + boost::algorithm::join(stated, ",") + ")";
+    if (!is_unstated_empty && !is_stated_empty)
+    {
+        unstated << ",";
+    }
+    unstated << stated.str() << ")";
+    return unstated.str();
 }
 
 } // ecell4
