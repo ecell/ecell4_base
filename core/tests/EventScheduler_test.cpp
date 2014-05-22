@@ -11,5 +11,5 @@ using namespace ecell4::lattice;
 
 BOOST_AUTO_TEST_CASE(EventScheduler_test_constructor)
 {
-    EventScheduler scheduler();
+    EventScheduler scheduler;
 }
