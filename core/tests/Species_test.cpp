@@ -79,3 +79,16 @@ BOOST_AUTO_TEST_CASE(Species_test_get_unit)
     BOOST_CHECK_EQUAL(sp1.list_sites().size(), 2);
 //     BOOST_CHECK_EQUAL(sp1.get_unit(UnitSpecies("C")), 3);
 }
+
+BOOST_AUTO_TEST_CASE(Species_test_serialization)
+{
+    Species sp1("X(a^1).Y(a^3,b).X(a^2).Y(a^1,b^2).X(a^3)");
+
+    const std::string retval1("X(a^1).X(a^2).X(a^3).Y(a^1,b).Y(a^2,b^3)");
+    // BOOST_CHECK_EQUAL(sp1.serial(), retval1);
+    BOOST_CHECK_EQUAL(serialize_species(sp1), retval1);
+
+    BOOST_CHECK_EQUAL(
+        serialize_species(Species("X(a^1).Y(a^3,b^4).X(a^3).Z(a^4,b^5).Y(a^1,b^2).Z(a^2,b^5)")),
+        "X(a^1).X(a^2).Y(a^1,b^3).Y(a^2,b^4).Z(a^3,b^5).Z(a^4,b^5)");
+}

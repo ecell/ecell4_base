@@ -127,6 +127,16 @@ public:
         return units_.end();
     }
 
+    const container_type& units() const
+    {
+        return units_;
+    }
+
+    const UnitSpecies& at(const container_type::size_type& idx) const
+    {
+        return units_.at(idx);
+    }
+
     Integer get_unit(const UnitSpecies& usp)
     {
         container_type::iterator itr;

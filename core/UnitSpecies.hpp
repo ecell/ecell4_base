@@ -17,9 +17,22 @@
 #include "types.hpp"
 #include "get_mapper_mf.hpp"
 
+#include <algorithm>
+
 
 namespace ecell4
 {
+
+template <typename T1_, typename T2_>
+struct pair_first_element_comparerator
+{
+    typedef std::pair<T1_, T2_> pair_type;
+
+    bool operator()(const pair_type& val1, const pair_type& val2)
+    {
+        return val1.first < val2.first;
+    }
+};
 
 class UnitSpecies
 {
@@ -27,7 +40,8 @@ public:
 
     typedef std::string serial_type;
     typedef std::pair<std::string, std::string> site_type;
-    typedef utils::get_mapper_mf<std::string, site_type>::type container_type;
+    // typedef utils::get_mapper_mf<std::string, site_type>::type container_type;
+    typedef std::vector<std::pair<std::string, site_type> > container_type;
 
 public:
 
@@ -51,12 +65,13 @@ public:
     bool add_site(const std::string& name,
         const std::string& state, const std::string& bond)
     {
-        container_type::const_iterator itr(sites_.find(name));
-        if (itr != sites_.end())
+        std::pair<std::string, site_type> val(
+            std::make_pair(name, std::make_pair(state, bond)));
+        if (std::binary_search(sites_.begin(), sites_.end(), val, pair_first_element_comparerator<std::string, site_type>()))
         {
             return false;
         }
-        sites_.insert(std::make_pair(name, std::make_pair(state, bond)));
+        sites_.insert(std::lower_bound(sites_.begin(), sites_.end(), val, pair_first_element_comparerator<std::string, site_type>()), val);
         return true;
     }
 
@@ -67,12 +82,12 @@ public:
 
     bool has_site(const std::string& name) const
     {
-        return sites_.find(name) != sites_.end();
+        return std::binary_search(sites_.begin(), sites_.end(), std::make_pair(name, site_type()), pair_first_element_comparerator<std::string, site_type>());
     }
 
     const site_type& get_site(const std::string& name) const
     {
-        return (*sites_.find(name)).second;
+        return (*std::lower_bound(sites_.begin(), sites_.end(), std::make_pair(name, site_type()), pair_first_element_comparerator<std::string, site_type>())).second;
     }
 
     inline container_type::const_iterator begin() const
@@ -98,6 +113,11 @@ public:
     bool operator>(const UnitSpecies& rhs) const
     {
         return (serial() > rhs.serial());
+    }
+
+    container_type::value_type& at(const container_type::size_type& idx)
+    {
+        return sites_.at(idx);
     }
 
 protected:

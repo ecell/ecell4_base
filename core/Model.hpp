@@ -136,7 +136,7 @@ public:
      * @param rr a reaction rule
      * @return if the reaction rule exists, or not
      */
-    virtual bool has_reaction_rule(const ReactionRule& rr)
+    virtual bool has_reaction_rule(const ReactionRule& rr) const
     {
         throw NotSupported(
             "has_reaction_rule is not supported in this model class");
