@@ -15,9 +15,14 @@ pyfiles = [
     'ecell4/util/bng_exporter.py',
     'ecell4/util/particle_spatiocyte_loader.py',
     'ecell4/util/lattice_space.py',
-    'ecell4/util/sbml_exporter.py'
+    'ecell4/util/sbml_exporter.py',
+    'ecell4/util/viz.py'
     ]
 
+templates = [
+    'ecell4/util/templates/init_ipynb.js',
+    'ecell4/util/templates/particles.tmpl'
+]
 
 def options(opt):
     opt.load('compiler_cxx') # XXX: DUMMY
@@ -30,3 +35,4 @@ def configure(conf):
 
 def build(bld):
     bld.install_files('${PYTHONDIR}/ecell4/util', pyfiles)
+    bld.install_files('${PYTHONDIR}/ecell4/util/templates', templates)

@@ -6,7 +6,7 @@
 # SUBMODS=("bd" "gillespie" "ode" "egfrd" "spatiocyte")
 # PYTHONMODS=("core_python" "bd_python" "gillespie_python" "ode_python" "spatiocyte_python" "egfrd_python" "reaction_reader" "util_python")
 SUBMODS=("bd" "gillespie" "ode" "lattice")
-PYTHONMODS=("core_python" "bd_python" "gillespie_python" "ode_python" "lattice_python" "reaction_reader")
+PYTHONMODS=("core_python" "bd_python" "gillespie_python" "ode_python" "lattice_python" "reaction_reader" "util_python")
 
 CXXFLAGS="-Wall -O2"
 # CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
