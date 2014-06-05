@@ -98,17 +98,23 @@ public:
         {
             if ((*i).first != (*j).first)
             {
-                // std::cout << "[1] " << lhs.serial() << "(" << val1 << ") vs " << rhs.serial() << "(" << val2 << ") -> " << (*i).first << " < " << (*j).first << std::endl;
+                // std::cout << "[1] " << lhs.serial() << "(" << val1 << ") vs "
+                //     << rhs.serial() << "(" << val2 << ") -> " << (*i).first
+                //     << " < " << (*j).first << std::endl;
                 return ((*i).first < (*j).first? 1 : -1);
             }
             else if ((*i).second.first != (*j).second.first)
             {
-                // std::cout << "[2] " << lhs.serial() << "(" << val1 << ") vs " << rhs.serial() << "(" << val2 << ")" << std::endl;
+                // std::cout << "[2] " << lhs.serial() << "(" << val1 << ") vs "
+                //     << rhs.serial() << "(" << val2 << ")" << std::endl;
                 return ((*i).second.first < (*j).second.first? 1 : -1);
             }
             else if (((*i).second.second == "") != ((*j).second.second == ""))
             {
-                // std::cout << "[3] " << lhs.serial() << "(" << val1 << ") vs " << rhs.serial() << "(" << val2 << ") -> '" << (*i).second.second << "' < '" << (*j).second.second << "'" << std::endl;
+                // std::cout << "[3] " << lhs.serial() << "(" << val1 << ") vs "
+                //     << rhs.serial() << "(" << val2 << ") -> '"
+                //     << (*i).second.second << "' < '" << (*j).second.second
+                //     << "'" << std::endl;
                 return ((*i).second.second == ""? 1 : -1);
             }
 
@@ -147,7 +153,9 @@ public:
                 }
 
                 const int retval(compare(target1.first, target2.first));
-                // std::cout << "[0] " << lhs.serial() << "(" << val1 << ") vs " << rhs.serial() << "(" << val2 << ") -> " << retval << std::endl;
+                // std::cout << "[0] " << lhs.serial() << "(" << val1 << ") vs "
+                //     << rhs.serial() << "(" << val2 << ") -> " << retval
+                //     << std::endl;
                 if (retval != 0)
                 {
                     ignores_.pop_back();
@@ -169,6 +177,40 @@ public:
         return 0 < compare(val1, val2);
     }
 
+    void reorder_units(
+        std::vector<unsigned int>& units, const unsigned int& idx,
+        unsigned int& stride)
+    {
+        if (units[idx] != root_.num_units())
+        {
+            return;
+        }
+
+        const UnitSpecies& usp(root_.at(idx));
+
+        units[idx] = stride;
+        ++stride;
+
+        for (UnitSpecies::container_type::const_iterator i(usp.begin());
+            i != usp.end(); ++i)
+        {
+            if ((*i).second.second == "" || is_wildcard((*i).second.second))
+            {
+                continue;
+            }
+
+            // const std::vector<unit_species_comparerator::site_type>&
+            //     pair((*connections_.find((*i).second.second)).second);
+            const std::vector<unit_species_comparerator::site_type>&
+                pair(connections_[(*i).second.second]);
+            const unit_species_comparerator::site_type&
+                tgt((pair[0].first == idx && pair[0].second == (*i).first)?
+                    pair[1] : pair[0]);
+
+            reorder_units(units, tgt.first, stride);
+        }
+    }
+
 protected:
 
     const Species& root_;
@@ -187,9 +229,22 @@ std::string serialize_species(const Species& sp)
 
     std::sort(units.begin(), units.end(), comp);
 
+    std::vector<unit_species_comparerator::index_type>
+        next(sp.num_units(), sp.num_units());
+    unsigned int stride(0);
+    for (unit_species_comparerator::index_type i(0); i < sp.num_units(); ++i)
+    {
+        const unit_species_comparerator::index_type idx(units[i]);
+        comp.reorder_units(next, idx, stride);
+    }
+    for (unsigned int i(0); i < sp.num_units(); ++i)
+    {
+        units[next[i]] = i;
+    }
+
     Species newsp;
     utils::get_mapper_mf<std::string, std::string>::type cache;
-    unsigned int stride(1);
+    stride = 1;
     std::stringstream ss;
     for (std::vector<unit_species_comparerator::index_type>::const_iterator
         i(units.begin()); i != units.end(); ++i)

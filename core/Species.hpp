@@ -114,7 +114,8 @@ public:
         {
             throw NotSupported("UnitSpecies must have a name.");
         }
-        units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
+        units_.push_back(usp);
+        // units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
     }
 
     inline container_type::const_iterator begin() const
