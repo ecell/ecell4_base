@@ -1,3 +1,24 @@
+class ColorScale:
+    def from_config(self, config):
+        self.config = config
+        self.colors = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#e31a1c", "#8dd3c7", "#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"]     
+        self.buffer = self.colors[:]
+        for color in self.config.values():
+            self.buffer.remove(color)
+    
+    def get_color(self, type):
+        if self.config.get(type) is None:
+            if len(self.buffer) == 0:
+                self.buffer = self.colors[:]
+            color = self.buffer.pop(0)
+            self.config[type] = color
+            return color
+        else :
+            return self.config.get(type)
+
+    def to_dict(self):
+        return self.config
+
 def init_ipynb():
     import os
     from IPython.core.display import display, HTML
@@ -8,8 +29,9 @@ def init_ipynb():
 
 def plot_world(world, options={}, config={}):
     import uuid
-    colors = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#e31a1c"]
     options = dict(options.items() + {'width':500, 'height':500}.items())
+    color_scale = ColorScale()
+    color_scale.from_config(config)
 
     particles = [(tuple(p.position()), p.radius(), p.species().serial()) for pid, p in world.list_particles()]
     species = {}
@@ -29,7 +51,7 @@ def plot_world(world, options={}, config={}):
         plot = {}
         plot['data'] = data
         plot['type'] = "Particles"
-        plot['options'] = {'color':colors[i], 'name':k}
+        plot['options'] = {'color':color_scale.get_color(k), 'name':k}
         i += 1
         plots.append(plot)
 
@@ -39,6 +61,7 @@ def plot_world(world, options={}, config={}):
     };
     model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
     plot_model(model, model_id)
+    return color_scale.to_dict()
 
 def plot_model(model, model_id):
     from IPython.core.display import display, HTML
