@@ -6,8 +6,7 @@ def init_ipynb():
     html = open(path).read()
     return display(HTML(html))
 
-def plot_world(world, options={}, config={}):
-    import uuid
+def plot_world(world, options={}):
     colors = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#e31a1c"]
     options = dict(options.items() + {'width':500, 'height':500}.items())
 
@@ -37,10 +36,9 @@ def plot_world(world, options={}, config={}):
         'plots':plots,
         'options':options
     };
-    model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
-    plot_model(model, model_id)
+    plot_model(model)
 
-def plot_model(model, model_id):
+def plot_model(model):
     from IPython.core.display import display, HTML
     import json
     import os
@@ -48,5 +46,6 @@ def plot_model(model, model_id):
 
     path = os.path.abspath(os.path.dirname(__file__)) + '/templates/particles.tmpl'
     template = Template(open(path).read())
-    html = template.render(model=json.dumps(model), model_id = model_id)
+    html = template.render(model=json.dumps(model))
+
     return display(HTML(html));

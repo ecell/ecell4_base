@@ -5,7 +5,7 @@
 function render(){
     console.log("Begin rendering...");
     var model = {{ model }};
-    Elegans.Embed.parse("#vis",model).render();
+    Elegans.Embed.parse("#"+{{ model_id }},model).render();
 }
 
 before_render = function(){
@@ -26,7 +26,7 @@ before_render();
 </script>
 </head>
 <body>
-<div id="vis"></div>
+<div id={{ model_id }}></div>
 </body>
 </html>
 
