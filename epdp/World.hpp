@@ -54,7 +54,8 @@ struct WorldTraitsBase
     typedef ParticleID particle_id_type;
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef ecell4::Species::serial_type species_id_type; // std::string
-    typedef Particle<species_id_type> particle_type;
+    //typedef Particle<species_id_type> particle_type;
+    typedef Particle particle_type;
     typedef Sphere particle_shape_type;
     typedef std::string structure_id_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;

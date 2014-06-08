@@ -11,19 +11,15 @@
 #endif
 
 #include <ecell4/core/types.hpp>
+#include <ecell4/core/Species.hpp>
 #include "Sphere.hpp"
 #include "Shape.hpp"
 
-template<typename Tsid_>
+// To Compile Particle::show(), this prototype declaration is need.
 struct Particle;
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle& p);
 
-template<typename Tsid_>
-inline Sphere shape(Particle<Tsid_> p)
-{
-    return Sphere(p.position(), p.radius());
-}
-
-template<typename Tsid_>
 struct Particle
 {
     //typedef Sphere shape_type;
@@ -31,7 +27,7 @@ struct Particle
     typedef ecell4::Position3 position_type;
     typedef position_type::value_type value_type;
     typedef position_type::value_type length_type;
-    typedef Tsid_ species_id_type;
+    typedef ecell4::Species::serial_type species_id_type;
 
     Particle(): species_id_(), D_(0.), position_(), radius_(0.)
     {}
@@ -125,8 +121,18 @@ private:
     length_type radius_;
 };
 
-template<typename Tstrm_, typename Ttraits_, typename Tsid_>
-inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle<Tsid_>& p)
+inline Sphere shape(Particle &p)
+{
+    return Sphere(p.position(), p.radius());
+}
+
+inline Sphere shape(const Particle &p)
+{
+    return Sphere(p.position(), p.radius());
+}
+
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle& p)
 {
     strm << "Particle(" << shape(p) << ", D=" << p.D() << ", " << p.sid() << ")";
     return strm;
@@ -140,17 +146,18 @@ namespace std {
 namespace boost {
 #endif
 
-template<typename Tsid_>
-struct hash<Particle<Tsid_> >
+//template<typename Tsid_>
+template <>
+struct hash<Particle>
 {
-    typedef Particle<Tsid_> argument_type;
+    typedef Particle argument_type;
 
     std::size_t operator()(argument_type const& val)
     {
-        return hash<typename argument_type::position_type>()(val.position()) ^
-            hash<typename argument_type::length_type>()(val.radius()) ^
-            hash<typename argument_type::D_type>()(val.D()) ^
-            hash<typename argument_type::species_id_type>()(val.sid());
+        return hash<argument_type::position_type>()(val.position()) ^
+            hash<argument_type::length_type>()(val.radius()) ^
+            hash<argument_type::D_type>()(val.D()) ^
+            hash<argument_type::species_id_type>()(val.sid());
     }
 };
 
