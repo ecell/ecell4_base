@@ -4,7 +4,8 @@ class ColorScale:
         self.colors = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#e31a1c", "#8dd3c7", "#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"]     
         self.buffer = self.colors[:]
         for color in self.config.values():
-            self.buffer.remove(color)
+            if color in self.buffer:
+                self.buffer.remove(color)
     
     def get_color(self, type):
         if self.config.get(type) is None:
@@ -27,9 +28,9 @@ def init_ipynb():
     html = open(path).read()
     return display(HTML(html))
 
-def plot_world(world, options={}, config={}):
+def plot_world(world, radius=None, width=500, height=500, config={}):
     import uuid
-    options = dict(options.items() + {'width':500, 'height':500}.items())
+    options = {'width':width, 'height':height}
     color_scale = ColorScale()
     color_scale.from_config(config)
 
@@ -48,10 +49,18 @@ def plot_world(world, options={}, config={}):
         data['y'] = [particle[0][1] for particle in species[k]]
         data['z'] = [particle[0][2] for particle in species[k]]
 
+        radiuses = [particle[1] for particle in species[k]]
+        edge_width = world.edge_lengths()[0]
+
+        if radius is None:
+            size = 30/edge_width * radiuses[0]
+        else:
+            size = 30/edge_width * radius
+
         plot = {}
         plot['data'] = data
         plot['type'] = "Particles"
-        plot['options'] = {'color':color_scale.get_color(k), 'name':k}
+        plot['options'] = {'color':color_scale.get_color(k), 'name':k, 'size':size}
         i += 1
         plots.append(plot)
 
