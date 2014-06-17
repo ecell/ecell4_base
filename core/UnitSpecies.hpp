@@ -17,6 +17,7 @@
 #include "types.hpp"
 #include "get_mapper_mf.hpp"
 
+#include <vector>
 #include <algorithm>
 
 
