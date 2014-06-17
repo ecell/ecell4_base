@@ -82,7 +82,6 @@ int main() {std::tr1::hash<int>(); return 0; }''',
     #     libpath = ['/usr/lib'],
     #     libs = ['hdf5', 'hdf5_hl_cpp', 'hdf5_cpp'])
 
-    # conf.check_cxx(lib = 'boost_regex')
     conf.check_cxx(lib = 'boost_regex',
         define_name = "HAVE_BOOST_REGEX", mandatory = False)
 
@@ -119,12 +118,17 @@ def build(bld):
         bld(doxyfile = 'Doxyfile', features = 'doxygen')
     bld.install_files(
         '${PREFIX}/include/ecell4/core', hppfiles)
+
+    dependent_libraries = ['gsl', 'gslcblas', 'm',
+        'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5']
+    if "LIB_BOOST_REGEX" in bld.env.keys():
+        dependent_libraries.extend(bld.env["LIB_BOOST_REGEX"])
+
     bld.shlib(
         source = cppfiles,
         includes = ['.'],
         libpath = ['/usr/lib'],
-        lib = ['gsl', 'gslcblas', 'm', 'boost_regex',
-               'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5'],
+        lib = dependent_libraries,
         target = 'ecell4-core')
 
     bld.recurse('tests')
