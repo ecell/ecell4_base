@@ -138,37 +138,37 @@ public:
         return units_.at(idx);
     }
 
-    Integer get_unit(const UnitSpecies& usp)
-    {
-        container_type::iterator itr;
-        for (itr = units_.begin(); itr != units_.end(); ++itr)
-        {
-            if (usp == *itr)
-            {
-                return itr - units_.begin();
-            }
-        }
-        throw NotFound("UnitSpecies not found");
-    }
+    // Integer get_unit(const UnitSpecies& usp)
+    // {
+    //     container_type::iterator itr;
+    //     for (itr = units_.begin(); itr != units_.end(); ++itr)
+    //     {
+    //         if (usp == *itr)
+    //         {
+    //             return itr - units_.begin();
+    //         }
+    //     }
+    //     throw NotFound("UnitSpecies not found");
+    // }
 
-    const std::vector<UnitSpecies> list_sites()
-    {
-        std::vector<UnitSpecies> usps;
-        if (units_.size() == 0)
-        {
-            return usps;
-        }
-        container_type::const_iterator it(units_.begin());
-        ++it;
-        for (; it != units_.end(); ++it)
-        {
-//            if ((*it).sites_.size() != 0)
-//            {
-                usps.push_back((*it).serial());
-//            }
-        }
-        return usps;
-    }
+    // const std::vector<UnitSpecies> list_sites()
+    // {
+    //     std::vector<UnitSpecies> usps;
+    //     if (units_.size() == 0)
+    //     {
+    //         return usps;
+    //     }
+    //     container_type::const_iterator it(units_.begin());
+    //     ++it;
+    //     for (; it != units_.end(); ++it)
+    //     {
+    //           if ((*it).sites_.size() != 0)
+    //           {
+    //             usps.push_back((*it).serial());
+    //           }
+    //     }
+    //     return usps;
+    // }
 
     bool match(const Species& target) const;
 

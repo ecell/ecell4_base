@@ -4,19 +4,25 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "../Species.hpp"
+#include "../Context.hpp"
 
 using namespace ecell4;
 
 
 BOOST_AUTO_TEST_CASE(Species_test_constructor)
 {
-    Species species("test");
+    Species sp1("A");
+    Species sp2("A(  )");
+//     Species sp2("A( a   , b ^ 1,   c)");
+    Species sp3("A(a,b^1,c=p).B(a,b=u^1)");
 }
 
 BOOST_AUTO_TEST_CASE(Species_test_name)
 {
-    Species species("test");
-    BOOST_CHECK_EQUAL(species.serial(), "test");
+    Species sp1("test");
+    BOOST_CHECK_EQUAL(sp1.serial(), "test");
+    Species sp2("test()");
+    BOOST_CHECK_EQUAL(sp2.serial(), "test");
 }
 
 BOOST_AUTO_TEST_CASE(Species_test_attributes)
@@ -91,4 +97,22 @@ BOOST_AUTO_TEST_CASE(Species_test_serialization)
     BOOST_CHECK_EQUAL(
         serialize_species(Species("X(a^3,b^1).X(a^2,b).X(a,b^3).X(a^1,b^4).X(a^4,b^2)")),
         "X(a,b^1).X(a^1,b^2).X(a^2,b^3).X(a^3,b^4).X(a^4,b)");
+}
+
+BOOST_AUTO_TEST_CASE(Species_test_match3)
+{
+    BOOST_CHECK_EQUAL(count_spmatches(Species("A"), Species("A.A.A")), 3);
+
+    BOOST_CHECK_EQUAL(count_spmatches(Species("_1._2"), Species("A.B.C")), 6);
+
+    MatchObject::context_type::variable_container_type globals;
+    globals["_1"] = "A";
+    BOOST_CHECK_EQUAL(
+        count_spmatches(Species("_1._2"), Species("A.B.C"), globals), 2);
+
+    boost::array<Species, 2> a1 = {{Species("_1"), Species("_1")}};
+    boost::array<Species, 2> b1 = {{Species("A"), Species("A.B")}};
+    boost::array<Species, 2> b2 = {{Species("A"), Species("B.C")}};
+    BOOST_CHECK(rrmatch(a1, b1));
+    BOOST_CHECK(!rrmatch(a1, b2));
 }

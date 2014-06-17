@@ -89,7 +89,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         void remove_attribute(string)
         bool has_attribute(string)
         vector[pair[string, string]] list_attributes()
-        Integer get_unit(Cpp_UnitSpecies)
+        # Integer get_unit(Cpp_UnitSpecies)
         void add_unit(Cpp_UnitSpecies)
         Integer num_units()
         void deserialize(string) except+

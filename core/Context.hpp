@@ -3,6 +3,7 @@
 
 #include "get_mapper_mf.hpp"
 #include "Species.hpp"
+#include <boost/array.hpp>
 
 
 namespace ecell4
@@ -68,7 +69,11 @@ bool __spmatch(
     const Species::container_type::const_iterator& end,
     const Species& sp, const MatchObject::context_type& ctx);
 bool spmatch(const Species& pttrn, const Species& sp);
+bool rrmatch(boost::array<Species, 2> pttrn, boost::array<Species, 2> reactants);
 Integer count_spmatches(const Species& pttrn, const Species& sp);
+Integer count_spmatches(
+    const Species& pttrn, const Species& sp,
+    const MatchObject::context_type::variable_container_type& globals);
 
 class SpeciesExpressionMatcher
 {
@@ -91,6 +96,13 @@ public:
 
     bool match(const Species& sp)
     {
+        context_type::variable_container_type globals;
+        return match(sp, globals);
+    }
+
+    bool match(
+        const Species& sp, const context_type::variable_container_type& globals)
+    {
         matches_.clear();
         for (Species::container_type::const_iterator i(pttrn_.begin());
             i != pttrn_.end(); ++i)
@@ -99,12 +111,13 @@ public:
         }
 
         target_ = sp;
-        context_type ctx;
         itr_ = matches_.begin();
+        context_type ctx;
+        ctx.globals = globals;
         return __match(ctx);
     }
 
-    bool __match(const MatchObject::context_type& ctx)
+    bool __match(const context_type& ctx)
     {
         if (itr_ == matches_.end())
         {
@@ -112,8 +125,7 @@ public:
             return true;
         }
 
-        std::pair<bool, MatchObject::context_type>
-            retval((*itr_).match(target_, ctx));
+        std::pair<bool, context_type> retval((*itr_).match(target_, ctx));
         while (retval.first)
         {
             ++itr_;
@@ -142,7 +154,7 @@ public:
         do
         {
             --itr_;
-            std::pair<bool, MatchObject::context_type> retval((*itr_).next());
+            std::pair<bool, context_type> retval((*itr_).next());
             while (retval.first)
             {
                 ++itr_;

@@ -178,8 +178,15 @@ bool spmatch(const Species& pttrn, const Species& sp)
 
 Integer count_spmatches(const Species& pttrn, const Species& sp)
 {
+    MatchObject::context_type::variable_container_type globals;
+    return count_spmatches(pttrn, sp, globals);
+}
+
+Integer count_spmatches(const Species& pttrn, const Species& sp,
+    const MatchObject::context_type::variable_container_type& globals)
+{
     SpeciesExpressionMatcher sexp(pttrn);
-    if (!sexp.match(sp))
+    if (!sexp.match(sp, globals))
     {
         return 0;
     }
@@ -189,6 +196,18 @@ Integer count_spmatches(const Species& pttrn, const Species& sp)
         ++n;
     }
     return n;
+}
+
+bool rrmatch(boost::array<Species, 2> pttrn, boost::array<Species, 2> reactants)
+{
+    SpeciesExpressionMatcher sexp1(pttrn[0]);
+    if (!sexp1.match(reactants[0]))
+    {
+        return false;
+    }
+
+    SpeciesExpressionMatcher sexp2(pttrn[1]);
+    return sexp2.match(reactants[1], sexp1.context().globals);
 }
 
 std::pair<bool, MatchObject::context_type> MatchObject::next()
