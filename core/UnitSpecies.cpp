@@ -1,8 +1,7 @@
 #include <stdexcept>
 #include <boost/algorithm/string.hpp>
 
-#undef HAVE_BOOST_REGEX
-// #define HAVE_BOOST_REGEX
+#include "config.h"
 
 #if defined(HAVE_BOOST_REGEX)
 #include <boost/regex.hpp>

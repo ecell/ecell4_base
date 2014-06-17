@@ -19,8 +19,10 @@ set(HPP_FILES
 
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})
-find_package(Boost COMPONENTS regex REQUIRED)
+
+find_package(Boost COMPONENTS regex)
 include_directories(${Boost_INCLUDE_DIRS})
+set(HAVE_BOOST_REGEX ${Boost_FOUND})
 
 find_library(GSL_LIBRARIES gsl)
 find_library(GSL_CBLAS_LIBRARIES gslcblas)
