@@ -52,6 +52,5 @@ def build(bld):
         target = 'diffusion',
         includes = ['../..', '../../lattice'],
         defines = ['HAVE_CONFIG_H', 'HAVE_INLINE'],
-        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core', 'boost_regex',
-        'hdf5', 'hdf5_cpp'],
+        lib = ['gsl', 'gslcblas', 'm', 'ecell4-core', 'hdf5', 'hdf5_cpp'],
         use = 'ecell4-lattice')
