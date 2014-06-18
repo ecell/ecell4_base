@@ -112,8 +112,10 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         Cpp_ReactionRule() except +
         Cpp_ReactionRule(Cpp_ReactionRule&) except +
         Real k()
-        multiset[Cpp_Species]& reactants()
-        multiset[Cpp_Species]& products()
+        vector[Cpp_Species]& reactants()
+        vector[Cpp_Species]& products()
+        # multiset[Cpp_Species]& reactants()
+        # multiset[Cpp_Species]& products()
         void set_k(Real)
         void add_reactant(Cpp_Species)
         void add_product(Cpp_Species)

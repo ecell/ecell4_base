@@ -114,7 +114,7 @@ bool BDPropagator::attempt_reaction(
                 break;
             case 2:
                 {
-                    ReactionRule::product_container_type::iterator
+                    ReactionRule::product_container_type::const_iterator
                         it(products.begin());
                     const Species species_new1(
                         model_.apply_species_attributes(*it));

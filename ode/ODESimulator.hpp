@@ -71,19 +71,19 @@ public:
                 reactants((*i).reactants());
             const ReactionRule::product_container_type&
                 products((*i).products());
-            for (ReactionRule::reactant_container_type::iterator
+            for (ReactionRule::reactant_container_type::const_iterator
                      j(reactants.begin()); j != reactants.end(); ++j)
             {
                 flux *= x[index_map_[*j]] / volume_;
             }
 
-            for (ReactionRule::reactant_container_type::iterator
+            for (ReactionRule::reactant_container_type::const_iterator
                      j(reactants.begin()); j != reactants.end(); ++j)
             {
                 dxdt[index_map_[*j]] -= flux;
             }
 
-            for (ReactionRule::product_container_type::iterator
+            for (ReactionRule::product_container_type::const_iterator
                      j(products.begin()); j != products.end(); ++j)
             {
                 dxdt[index_map_[*j]] += flux;

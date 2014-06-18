@@ -19,9 +19,9 @@ cdef class ReactionRule:
         self.thisptr.set_k(k)
 
     def reactants(self):
-        cdef multiset[Cpp_Species] reactants = self.thisptr.reactants()
+        cdef vector[Cpp_Species] reactants = self.thisptr.reactants()
         retval = []
-        cdef multiset[Cpp_Species].iterator it = reactants.begin()
+        cdef vector[Cpp_Species].iterator it = reactants.begin()
         while it != reactants.end():
             retval.append(
                 Species_from_Cpp_Species(<Cpp_Species*>address(deref(it))))
@@ -29,9 +29,9 @@ cdef class ReactionRule:
         return retval
 
     def products(self):
-        cdef multiset[Cpp_Species] products = self.thisptr.products()
+        cdef vector[Cpp_Species] products = self.thisptr.products()
         retval = []
-        cdef multiset[Cpp_Species].iterator it = products.begin()
+        cdef vector[Cpp_Species].iterator it = products.begin()
         while it != products.end():
             retval.append(
                 Species_from_Cpp_Species(<Cpp_Species*>address(deref(it))))

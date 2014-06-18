@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <iterator>
 
 #include "types.hpp"
 #include "Species.hpp"
@@ -90,22 +91,6 @@ public:
     {
         return apply_species_attributes(Species(name));
     }
-
-    // const Species& species(const Species::serial_type& key) const
-    // {
-    //     for (species_container_type::const_iterator
-    //         i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
-    //     {
-    //         if ((*i).serial() == key)
-    //         {
-    //             return (*i);
-    //         }
-    //     }
-
-    //     std::ostringstream message;
-    //     message << "Speices [" << key << "] not found";
-    //     throw NotFound(message.str()); // use boost::format if it's allowed
-    // }
 
     const reaction_rule_container_type& reaction_rules() const
     {

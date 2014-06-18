@@ -1,7 +1,7 @@
 #ifndef __ECELL4_REACTION_RULE_HPP
 #define __ECELL4_REACTION_RULE_HPP
 
-#include <set>
+// #include <set>
 #include <stdexcept>
 
 #include "types.hpp"
@@ -22,8 +22,8 @@ public:
      * when changing this type into the ordered one,
      * please modify NetworkModel too.
      */
-    typedef std::multiset<Species> reactant_container_type;
-    typedef std::multiset<Species> product_container_type;
+    typedef std::vector<Species> reactant_container_type;
+    typedef std::vector<Species> product_container_type;
 
 public:
 
@@ -59,12 +59,12 @@ public:
 
     void add_reactant(const Species& sp)
     {
-        reactants_.insert(sp);
+        reactants_.push_back(sp);
     }
 
     void add_product(const Species& sp)
     {
-        products_.insert(sp);
+        products_.push_back(sp);
     }
 
 protected:

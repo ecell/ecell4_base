@@ -11,7 +11,7 @@ std::vector<ReactionRule> NetworkModel::query_reaction_rules(
     const Species& sp) const
 {
     ReactionRule::reactant_container_type reactants;
-    reactants.insert(sp);
+    reactants.push_back(sp);
     reaction_rules_map_type::const_iterator
         i(reaction_rules_map_.find(reactants));
     std::vector<ReactionRule> retval;
@@ -30,15 +30,28 @@ std::vector<ReactionRule> NetworkModel::query_reaction_rules(
 std::vector<ReactionRule> NetworkModel::query_reaction_rules(
     const Species& sp1, const Species& sp2) const
 {
+    std::vector<ReactionRule> retval;
     ReactionRule::reactant_container_type reactants;
-    reactants.insert(sp1);
-    reactants.insert(sp2);
+    reactants.push_back(sp1);
+    reactants.push_back(sp2);
+
     reaction_rules_map_type::const_iterator
         i(reaction_rules_map_.find(reactants));
-    std::vector<ReactionRule> retval;
     if (i != reaction_rules_map_.end())
     {
         retval.reserve((*i).second.size());
+        for (reaction_rules_map_type::mapped_type::const_iterator
+                 j((*i).second.begin()); j != (*i).second.end(); ++j)
+        {
+            retval.push_back(reaction_rules_[*j]);
+        }
+    }
+
+    std::swap(reactants[0], reactants[1]);
+    i = reaction_rules_map_.find(reactants);
+    if (i != reaction_rules_map_.end())
+    {
+        retval.reserve(retval.size() + (*i).second.size());
         for (reaction_rules_map_type::mapped_type::const_iterator
                  j((*i).second.begin()); j != (*i).second.end(); ++j)
         {

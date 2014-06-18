@@ -35,7 +35,7 @@ void GillespieSimulator::draw_next_reaction(void)
         a[idx] = possible_reaction_rules[idx].k() * this->world_->volume();
         const ReactionRule::reactant_container_type& reactants =
             possible_reaction_rules[idx].reactants();
-        for (ReactionRule::reactant_container_type::iterator
+        for (ReactionRule::reactant_container_type::const_iterator
                  it = reactants.begin(); it != reactants.end(); it++)
         {
             a[idx] *= this->world_->num_molecules(*it) / this->world_->volume();
@@ -96,7 +96,7 @@ void GillespieSimulator::step(void)
     }
 
     // Reaction[u] occurs.
-    for (ReactionRule::reactant_container_type::iterator
+    for (ReactionRule::reactant_container_type::const_iterator
              it(possible_reaction_rules[u].reactants().begin());
          it != possible_reaction_rules[u].reactants().end(); ++it)
     {
@@ -104,7 +104,7 @@ void GillespieSimulator::step(void)
         this->world_->remove_molecules(*it, one);
     }
 
-    for (ReactionRule::product_container_type::iterator
+    for (ReactionRule::product_container_type::const_iterator
              it(possible_reaction_rules[u].products().begin());
          it != possible_reaction_rules[u].products().end(); ++it)
     {
