@@ -251,7 +251,7 @@ std::string serialize_species(const Species& sp)
     {
         UnitSpecies usp(sp.at(*i));
         for (UnitSpecies::container_type::size_type j(0);
-            j < usp.num_sites(); ++j)
+            j < static_cast<UnitSpecies::container_type::size_type>(usp.num_sites()); ++j)
         {
             UnitSpecies::container_type::value_type& site(usp.at(j));
             if (site.second.second == "" || is_wildcard(site.second.second))

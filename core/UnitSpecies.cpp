@@ -161,7 +161,7 @@ void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
 
             add_site(site_name, state, bond);
 
-            if (match2[0].rm_eo == tmp.length())
+            if (static_cast<size_t>(match2[0].rm_eo) == tmp.length())
             {
                 break;
             }

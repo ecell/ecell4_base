@@ -20,7 +20,8 @@ set(HPP_FILES
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})
 
-find_package(Boost COMPONENTS regex)
+# find_package(Boost COMPONENTS regex)
+find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 set(HAVE_BOOST_REGEX ${Boost_FOUND})
 

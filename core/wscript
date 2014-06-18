@@ -77,13 +77,8 @@ int main() {std::tr1::hash<int>(); return 0; }''',
                define_name = "HAVE_TR1_FUNCTIONAL",
                mandatory = False)
 
-    # conf.check_cxx(
-    #     lib = 'm',
-    #     libpath = ['/usr/lib'],
-    #     libs = ['hdf5', 'hdf5_hl_cpp', 'hdf5_cpp'])
-
-    conf.check_cxx(lib = 'boost_regex',
-        define_name = "HAVE_BOOST_REGEX", mandatory = False)
+    # conf.check_cxx(lib = 'boost_regex',
+    #     define_name = "HAVE_BOOST_REGEX", mandatory = False)
 
     conf.check_cxx(lib = 'hdf5', libpath = '/usr/lib')
     conf.check_cxx(lib = 'hdf5_hl_cpp', libpath = '/usr/lib')
