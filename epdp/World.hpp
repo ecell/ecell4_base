@@ -40,12 +40,6 @@ bool is_initialized(std::string const &obj)
     return (0 < obj.size());
 }
 
-struct MoleculeInfo
-{
-    const ecell4::Real radius;
-    const ecell4::Real D;
-};
-
 template<typename Tderived_, typename TD_>
 struct WorldTraitsBase
 {
@@ -60,6 +54,7 @@ struct WorldTraitsBase
     typedef Sphere particle_shape_type;
     typedef std::string structure_id_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;
+    typedef species_type molecule_info;
     typedef ecell4::Position3 point_type;
     typedef typename particle_type::position_type position_type;
     typedef ecell4::GSLRandomNumberGenerator rng_type;
@@ -262,19 +257,31 @@ public:
         particle_pool_[species.id()] = particle_id_set();
     }
 
+    /*
     void add_species(species_id_type const &sid, MoleculeInfo const &info , structure_id_type structure_id = structure_id_type("world") )
     {
         species_type sp(sid, info.D, info.radius, structure_id);
         species_map_[sp.id()] = sp;
         particle_pool_[sp.id()] = particle_id_set();
     }
-
     MoleculeInfo get_molecule_info(const ecell4::Species &sp) const
     {
         const Real radius(std::atof(sp.get_attribute("radius").c_str()));
         const Real D(std::atof(sp.get_attribute("D").c_str()));
         MoleculeInfo info = {radius, D};
         return info;
+    }*/
+    species_type get_molecule_info(const ecell4::Species &sp) const
+    {
+        const ecell4::Species::serial_type sid(sp.serial());
+        const Real D(std::atof( sp.get_attribute("D").c_str() ));
+        const Real radius(std::atof( sp.get_attribute("radius").c_str() ));
+        const typename species_type::structure_id_type 
+            structure_id( 
+                    sp.has_attribute("structure_id")? 
+                      sp.get_attribute("structure_id"):
+                      structure_id_type("world") );
+        return species_type(sid, D, radius, structure_id);
     }
 
     virtual species_type const& get_species(species_id_type const& id) const

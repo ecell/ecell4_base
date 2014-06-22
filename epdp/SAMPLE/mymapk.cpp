@@ -157,9 +157,9 @@ int main(int argc, char **argv)
 
     // add ::SpeciesInfo to ::World 
     // {{{
-    world->add_species(sp1.serial(), world->get_molecule_info(sp1));
-    world->add_species(sp2.serial(), world->get_molecule_info(sp2));
-    world->add_species(sp3.serial(), world->get_molecule_info(sp3));
+    world->add_species( world->get_molecule_info(sp1) );
+    world->add_species( world->get_molecule_info(sp2) );
+    world->add_species( world->get_molecule_info(sp3) );
     // }}}
 
     // Thorow particles into world at random 
