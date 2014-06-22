@@ -1,7 +1,15 @@
 #ifndef WORLD_HPP
 #define WORLD_HPP
 
+
+#include <ecell4/core/RandomNumberGenerator.hpp>
+#include <ecell4/core/Species.hpp>
+#include <ecell4/core/types.hpp>
+#include <ecell4/core/Position3.hpp>
+#include "./ParticleTraits.hpp" // This refers ecell4::Particle
+
 #include "ParticleContainerBase.hpp"
+
 
 #include <map>
 #include <boost/lexical_cast.hpp>
@@ -11,7 +19,6 @@
 #include "exceptions.hpp"
 #include "generator.hpp"
 #include "filters.hpp"
-#include "Particle.hpp"
 #include "ParticleID.hpp"
 #include "SpeciesTypeID.hpp"
 #include "SpeciesInfo.hpp"
@@ -25,11 +32,6 @@
 #include "Point.hpp" // XXX: workaround. should be removed later.
 #include "utils/pair.hpp"
 
-#include "ecell4/core/RandomNumberGenerator.hpp"
-#include "ecell4/core/Species.hpp"
-
-#include <ecell4/core/types.hpp>
-#include <ecell4/core/Position3.hpp>
 
 // For twofold_container
 inline
@@ -54,8 +56,7 @@ struct WorldTraitsBase
     typedef ParticleID particle_id_type;
     typedef SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef ecell4::Species::serial_type species_id_type; // std::string
-    //typedef Particle<species_id_type> particle_type;
-    typedef Particle particle_type;
+    typedef ecell4::Particle particle_type;
     typedef Sphere particle_shape_type;
     typedef std::string structure_id_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;
