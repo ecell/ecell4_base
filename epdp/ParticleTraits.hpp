@@ -1,4 +1,4 @@
-#ifndef __ECELL4_EGFRD_PARITLCE_TRAITS_HPP
+#ifndef __ECELL4_EGFRD_PARTICLE_TRAITS_HPP
 #define __ECELL4_EGFRD_PARTICLE_TRAITS_HPP
 
 #include <ecell4/core/Particle.hpp>
