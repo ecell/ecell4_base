@@ -146,7 +146,7 @@ struct hash<ecell4::Particle>
 
     std::size_t operator()(argument_type const& val)
     {
-        return hash<typename argument_type::position_type>()(val.position()) ^
+        return hash<argument_type::position_type>()(val.position()) ^
             hash<argument_type::length_type>()(val.radius()) ^
             hash<argument_type::D_type>()(val.D()) ^
             hash<argument_type::species_type>()(val.species());
