@@ -13,6 +13,10 @@
 namespace ecell4
 {
 
+class Particle;
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle& p);
+
 class Particle
 {
 public:
@@ -20,6 +24,7 @@ public:
     typedef Real length_type;
     typedef Real D_type;
     typedef Species species_type;
+    typedef species_type::serial_type species_serial_type;
 
 public:
     Particle()
@@ -27,10 +32,19 @@ public:
         ;
     }
 
+    explicit
     Particle(
         const Species& sp, const Position3& pos, const Real& radius,
         const Real& D)
-        : species_(sp), position_(pos), radius_(radius), D_(D)
+        : species_serial_(sp.serial() ), position_(pos), radius_(radius), D_(D)
+    {
+        ;
+    }
+
+    Particle(
+        const species_serial_type &sid, const Position3 &pos, 
+        const Real &radius, const Real &D)
+        : species_serial_(sid), position_(pos), radius_(radius), D_(D)
     {
         ;
     }
@@ -65,30 +79,44 @@ public:
         return D_;
     }
 
-    Species& species()
+    Species species() const
     {
-        return species_;
+        return Species(species_serial_);
     }
 
-    /*
     Species::serial_type &sid()
     {
-        return species_.serial();
-    }*/
+        return this->species_serial_;
+    }
 
     const Species::serial_type &sid() const
     {
-        return species_.serial();
+        return this->species_serial_;
     }
 
-    const Species& species() const
+    bool operator==(Particle const &rhs) const
     {
-        return species_;
+        return (this->sid() == rhs.sid() &&
+                this->radius() == rhs.radius() &&
+                this->position() == rhs.position());
+    }
+    bool operator!=(Particle const &rhs) const
+    {
+        return !operator==(rhs);
+    }
+
+    std::string show(int precision)
+    {
+        std::ostringstream strm;
+        strm.precision(precision);
+        strm << *this;
+        return strm.str();
     }
 
 private:
 
-    Species species_;
+    //Species species_;
+    species_serial_type species_serial_;
     Position3 position_;
     Real radius_, D_;
 };

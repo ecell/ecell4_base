@@ -58,12 +58,12 @@ public:
         set_attribute("D", D);
     }
 
-    serial_type serial() const
+    const serial_type &serial() const
     {
         return name();
     }
 
-    std::string name() const
+    const std::string &name() const
     {
         return name_;
     }
