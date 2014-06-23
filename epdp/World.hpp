@@ -5,6 +5,8 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/types.hpp>
+#include <ecell4/core/Identifier.hpp>
+#include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Position3.hpp>
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 
@@ -19,7 +21,7 @@
 #include "exceptions.hpp"
 #include "generator.hpp"
 #include "filters.hpp"
-#include "ParticleID.hpp"
+//#include "ParticleID.hpp"
 #include "SpeciesTypeID.hpp"
 #include "SpeciesInfo.hpp"
 #include "SerialIDGenerator.hpp"
@@ -47,8 +49,8 @@ struct WorldTraitsBase
     typedef ecell4::Real length_type;
     typedef ecell4::Real D_type;
     typedef TD_ v_type;
-    typedef ParticleID particle_id_type;
-    typedef SerialIDGenerator<particle_id_type> particle_id_generator;
+    typedef ecell4::ParticleID particle_id_type;
+    typedef ecell4::SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef ecell4::Species::serial_type species_id_type; // std::string
     typedef ecell4::Particle particle_type;
     typedef Sphere particle_shape_type;

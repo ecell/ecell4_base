@@ -158,6 +158,11 @@ public:
         return value_.second != 0;
     }
 
+    bool is_initialized() const
+    {
+        return value_.second != 0;
+    }
+
     bool operator!() const
     {
         return value_.second == 0;
