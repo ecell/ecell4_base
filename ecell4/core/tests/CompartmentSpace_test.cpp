@@ -4,8 +4,10 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 
-#include "../types.hpp"
-#include "../CompartmentSpace.hpp"
+// #include "../types.hpp"
+// #include "../CompartmentSpace.hpp"
+#include <ecell4/core/types.hpp>
+#include <ecell4/core/CompartmentSpace.hpp>
 
 using namespace ecell4;
 

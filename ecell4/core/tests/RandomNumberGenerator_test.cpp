@@ -2,7 +2,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/ui/text/TestRunner.h>
 
-#include "../RandomNumberGenerator.hpp"
+#include <ecell4/core/RandomNumberGenerator.hpp>
 
 using namespace ecell4;
 

@@ -4,7 +4,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
-#include "../EventScheduler.hpp"
+#include <ecell4/core/EventScheduler.hpp>
 
 using namespace ecell4;
 using namespace ecell4::lattice;

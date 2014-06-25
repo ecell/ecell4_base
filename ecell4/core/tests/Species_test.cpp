@@ -3,8 +3,8 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-#include "../Species.hpp"
-#include "../Context.hpp"
+#include <ecell4/core/Species.hpp>
+#include <ecell4/core/Context.hpp>
 
 using namespace ecell4;
 

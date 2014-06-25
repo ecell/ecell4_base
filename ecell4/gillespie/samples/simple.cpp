@@ -2,7 +2,7 @@
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include "GillespieSimulator.hpp"
+#include <ecell4/gillespie/GillespieSimulator.hpp>
 
 using namespace ecell4;
 using namespace ecell4::gillespie;

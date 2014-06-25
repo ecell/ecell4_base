@@ -3,8 +3,8 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-#include "../Position3.hpp"
-#include "../linear_algebra.hpp"
+#include <ecell4/core/Position3.hpp>
+#include <ecell4/core/linear_algebra.hpp>
 
 using namespace ecell4;
 

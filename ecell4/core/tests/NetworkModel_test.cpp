@@ -3,9 +3,9 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-#include "exceptions.hpp"
-#include "../types.hpp"
-#include "../NetworkModel.hpp"
+#include <ecell4/core/exceptions.hpp>
+#include <ecell4/core/types.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 
 using namespace ecell4;
 

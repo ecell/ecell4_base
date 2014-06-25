@@ -4,8 +4,8 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
-#include "../Species.hpp"
-#include "../ReactionRule.hpp"
+#include <ecell4/core/Species.hpp>
+#include <ecell4/core/ReactionRule.hpp>
 
 using namespace ecell4;
 

@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 2.6)
-project(ecell4-core)
-
 set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Global.cpp Journal.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp ParticleSpace.cpp
@@ -45,17 +42,16 @@ check_include_file_cxx(functional HAVE_STD_HASH)
 check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 
 configure_file(
-    ${PROJECT_SOURCE_DIR}/config.h.in
-    ${PROJECT_BINARY_DIR}/config.h)
-include_directories(${PROJECT_BINARY_DIR})
+    ${PROJECT_SOURCE_DIR}/ecell4/core/config.h.in
+    ${PROJECT_BINARY_DIR}/ecell4/core/config.h)
 
-add_library(ecell4-core SHARED ${CPP_FILES} ${HPP_FILES} "${PROJECT_BINARY_DIR}/config.h")
+add_library(ecell4-core SHARED
+    ${CPP_FILES} ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/core/config.h")
 target_link_libraries(ecell4-core
     ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
 
-enable_testing()
 add_subdirectory(tests)
 
 install(TARGETS ecell4-core DESTINATION lib)
-install(FILES "${PROJECT_BINARY_DIR}/config.h" ${HPP_FILES}
-    DESTINATION "include/ecell4")
+install(FILES "${PROJECT_BINARY_DIR}/ecell4/core/config.h" ${HPP_FILES}
+    DESTINATION "include/ecell4/core")

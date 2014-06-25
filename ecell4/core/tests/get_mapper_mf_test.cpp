@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE "get_mapper_mf_test"
 #define BOOST_TEST_NO_LIB
 
-#include "config.h"
+#include <ecell4/core/config.h>
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
@@ -19,9 +19,9 @@
 
 #include <map>
 
-#include "../get_mapper_mf.hpp"
-#include "../Particle.hpp"
-#include "../Species.hpp"
+#include <ecell4/core/get_mapper_mf.hpp>
+#include <ecell4/core/Particle.hpp>
+#include <ecell4/core/Species.hpp>
 
 
 using namespace ecell4;

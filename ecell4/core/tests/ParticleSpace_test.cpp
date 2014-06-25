@@ -2,8 +2,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/ui/text/TestRunner.h>
 
-#include "../types.hpp"
-#include "../ParticleSpace.hpp"
+#include <ecell4/core/types.hpp>
+#include <ecell4/core/ParticleSpace.hpp>
 
 using namespace ecell4;
 

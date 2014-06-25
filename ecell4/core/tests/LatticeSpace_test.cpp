@@ -4,10 +4,10 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
-#include "MolecularType.hpp"
-#include "VacantType.hpp"
-#include "../LatticeSpace.hpp"
-#include "../SerialIDGenerator.hpp"
+#include <ecell4/core/MolecularType.hpp>
+#include <ecell4/core/VacantType.hpp>
+#include <ecell4/core/LatticeSpace.hpp>
+#include <ecell4/core/SerialIDGenerator.hpp>
 
 using namespace ecell4;
 

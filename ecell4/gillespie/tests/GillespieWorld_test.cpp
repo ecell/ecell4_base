@@ -8,8 +8,8 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/NetworkModel.hpp>
 
-#include "../GillespieWorld.cpp"
-#include "../GillespieSimulator.hpp"
+#include <ecell4/gillespie/GillespieWorld.cpp>
+#include <ecell4/gillespie/GillespieSimulator.hpp>
 
 using namespace ecell4;
 using namespace ecell4::gillespie;
