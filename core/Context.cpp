@@ -198,16 +198,56 @@ Integer count_spmatches(const Species& pttrn, const Species& sp,
     return n;
 }
 
-bool rrmatch(boost::array<Species, 2> pttrn, boost::array<Species, 2> reactants)
+std::pair<bool, MatchObject::context_type> __rrmatch(
+    const ReactionRule& rr,
+    const ReactionRule::reactant_container_type& reactants,
+    const MatchObject::context_type::variable_container_type& globals,
+    ReactionRule::reactant_container_type::const_iterator i,
+    ReactionRule::reactant_container_type::const_iterator j)
 {
-    SpeciesExpressionMatcher sexp1(pttrn[0]);
-    if (!sexp1.match(reactants[0]))
+    SpeciesExpressionMatcher m(*i);
+    if (!m.match(*j, globals))
+    {
+        return std::make_pair(false, MatchObject::context_type());
+    }
+
+    ++i;
+    ++j;
+    if (i == rr.reactants().end() || j == reactants.end())
+    {
+        return std::make_pair(true, m.context());
+    }
+
+    do
+    {
+        if (__rrmatch(rr, reactants, m.context().globals, i, j).first)
+        {
+            return std::make_pair(true, m.context());
+        }
+    } while (m.next());
+    return std::make_pair(false, MatchObject::context_type());
+}
+
+bool rrmatch(const ReactionRule& rr,
+    const ReactionRule::reactant_container_type& reactants)
+{
+    if (rr.reactants().size() != reactants.size())
     {
         return false;
     }
 
-    SpeciesExpressionMatcher sexp2(pttrn[1]);
-    return sexp2.match(reactants[1], sexp1.context().globals);
+    ReactionRule::reactant_container_type::const_iterator
+        i(rr.reactants().begin()), j(reactants.begin());
+    MatchObject::context_type::variable_container_type globals;
+    std::pair<bool, MatchObject::context_type>
+        retval(__rrmatch(rr, reactants, globals, i, j));
+    // for (MatchObject::context_type::variable_container_type::const_iterator
+    //     i(retval.second.globals.begin()); i != retval.second.globals.end(); ++i)
+    // {
+    //     std::cout << (*i).first << "=" << (*i).second << ";";
+    // }
+    // std::cout << std::endl;
+    return retval.first;
 }
 
 std::pair<bool, MatchObject::context_type> MatchObject::next()
