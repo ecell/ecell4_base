@@ -3,6 +3,7 @@
 
 #include "get_mapper_mf.hpp"
 #include "Species.hpp"
+#include "ReactionRule.hpp"
 #include <boost/array.hpp>
 
 
@@ -69,7 +70,8 @@ bool __spmatch(
     const Species::container_type::const_iterator& end,
     const Species& sp, const MatchObject::context_type& ctx);
 bool spmatch(const Species& pttrn, const Species& sp);
-bool rrmatch(boost::array<Species, 2> pttrn, boost::array<Species, 2> reactants);
+bool rrmatch(const ReactionRule& rr,
+    const ReactionRule::reactant_container_type& reactants);
 Integer count_spmatches(const Species& pttrn, const Species& sp);
 Integer count_spmatches(
     const Species& pttrn, const Species& sp,

@@ -110,9 +110,21 @@ BOOST_AUTO_TEST_CASE(Species_test_match3)
     BOOST_CHECK_EQUAL(
         count_spmatches(Species("_1._2"), Species("A.B.C"), globals), 2);
 
-    boost::array<Species, 2> a1 = {{Species("_1"), Species("_1")}};
-    boost::array<Species, 2> b1 = {{Species("A"), Species("A.B")}};
-    boost::array<Species, 2> b2 = {{Species("A"), Species("B.C")}};
-    BOOST_CHECK(rrmatch(a1, b1));
-    BOOST_CHECK(!rrmatch(a1, b2));
+    ReactionRule rr1;
+    rr1.add_reactant(Species("_1(b)"));
+    rr1.add_reactant(Species("_1(b)"));
+    rr1.add_product(Species("_1(b^1)._1(b^1)"));
+
+    ReactionRule::reactant_container_type reactants;
+    reactants.push_back(Species("A(a^1,b).B(a^1,b)"));
+    reactants.push_back(Species("B(a,b)"));
+
+    BOOST_CHECK(rrmatch(rr1, reactants));
+
+    // boost::array<Species, 2> a1 = {{Species("_1"), Species("_1")}};
+    // boost::array<Species, 2> b1 = {{Species("A"), Species("A.B")}};
+    // boost::array<Species, 2> b2 = {{Species("A"), Species("B.C")}};
+
+    // BOOST_CHECK(rrmatch(a1, b1));
+    // BOOST_CHECK(!rrmatch(a1, b2));
 }
