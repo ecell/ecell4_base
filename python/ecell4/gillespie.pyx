@@ -1,11 +1,5 @@
 from cython cimport address
 from cython.operator cimport dereference as deref
-from libcpp.string cimport string
-
-from ecell4.types cimport *
-from ecell4.shared_ptr cimport shared_ptr
-from ecell4.core cimport *
-
 
 ## GillespieWorld
 #  a python wrapper for Cpp_GillespieWorld

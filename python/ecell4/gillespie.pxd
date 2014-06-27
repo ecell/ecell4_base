@@ -1,9 +1,7 @@
 from libcpp.string cimport string
 from libcpp cimport bool
 
-from ecell4.types cimport *
-from ecell4.shared_ptr cimport shared_ptr
-from ecell4.core cimport *
+from core cimport *
 
 
 ## Cpp_GillespieWorld
