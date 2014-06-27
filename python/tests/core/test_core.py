@@ -1,3 +1,4 @@
+"""
 from ecell4.core import *
 
 
@@ -82,3 +83,4 @@ def CompartmentSpaceTest():
 
 CompartmentSpaceTest()
 # BuildEnvironmentTest()
+"""
