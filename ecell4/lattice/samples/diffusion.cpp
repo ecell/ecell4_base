@@ -4,7 +4,7 @@
 #include <ecell4/core/Position3.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
-#include <../LatticeSimulator.hpp>
+#include <ecell4/lattice/LatticeSimulator.hpp>
 typedef ecell4::lattice::LatticeWorld world_type;
 typedef ecell4::lattice::LatticeSimulator simulator_type;
 

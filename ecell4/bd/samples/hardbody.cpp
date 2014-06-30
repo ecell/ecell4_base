@@ -5,7 +5,7 @@
 #include <ecell4/core/Position3.hpp>
 #include <ecell4/core/NetworkModel.hpp>
 
-#include "../../BDSimulator.cpp"
+#include <ecell4/bd/BDSimulator.hpp>
 
 using namespace ecell4;
 using namespace ecell4::bd;
