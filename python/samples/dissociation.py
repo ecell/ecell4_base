@@ -1,11 +1,11 @@
 from ecell4.core import *
 from ecell4.ode import *
 
-def run():
-    L = 1.0
+
+def singlerun():
+    L, k1 = 1.0, 1.0
     sp1, sp2, sp3 = Species("A"), Species("B"), Species("C")
-    k = 1.0
-    rr1 = create_unbinding_reaction_rule(sp1, sp2, sp3, k)
+    rr1 = create_unbinding_reaction_rule(sp1, sp2, sp3, k1)
 
     m = NetworkModel()
     m.add_species_attribute(sp1)
@@ -33,5 +33,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
-
+    singlerun()
