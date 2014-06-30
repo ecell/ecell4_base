@@ -27,11 +27,14 @@ class run_tests(Command):
         # suite.addTest(test_loader.discover("tests/bd"))
         # suite.addTest(test_loader.discover("tests/ode"))
         # suite.addTest(test_loader.discover("tests/lattice"))
+        # suite.addTest(test_loader.discover("tests/util"))
+        # suite.addTest(test_loader.discover("tests/reaction_reader"))
         test_runner = unittest.TextTestRunner()
         test_runner.run(suite)
 
 setup(
-    packages = ["ecell4"],
+    name = "ecell4",
+    packages = ["ecell4", "ecell4.util", "ecell4.reaction_reader"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     ext_modules = [
         Extension("ecell4.core", sources=["ecell4/core.pyx"],

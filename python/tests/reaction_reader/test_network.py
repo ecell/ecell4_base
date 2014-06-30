@@ -1,7 +1,8 @@
 import unittest
 
-import network
-from decorator2 import create_species, create_reaction_rule
+import ecell4.reaction_reader.network as network
+from ecell4.reaction_reader.decorator2 import (
+    create_species, create_reaction_rule)
 
 
 def dump_reactions(reactions):
