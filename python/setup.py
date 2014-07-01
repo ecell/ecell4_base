@@ -20,15 +20,19 @@ class run_tests(Command):
         pass
 
     def run(self):
-        test_loader = unittest.defaultTestLoader
+        test_loader = unittest.TestLoader()
+        def load_tests(module_name):
+            return test_loader.discover(
+                "tests/%s" % module_name, top_level_dir="tests")
+
         suite = unittest.TestSuite()
-        suite.addTest(test_loader.discover("tests/core"))
-        # suite.addTest(test_loader.discover("tests/gillespie"))
-        # suite.addTest(test_loader.discover("tests/bd"))
-        # suite.addTest(test_loader.discover("tests/ode"))
-        # suite.addTest(test_loader.discover("tests/lattice"))
-        # suite.addTest(test_loader.discover("tests/util"))
-        # suite.addTest(test_loader.discover("tests/reaction_reader"))
+        suite.addTest(load_tests("core"))
+        # suite.addTest(load_tests("gillespie"))
+        # suite.addTest(load_tests("bd"))
+        # suite.addTest(load_tests("ode"))
+        # suite.addTest(load_tests("lattice"))
+        suite.addTest(load_tests("reaction_reader"))
+        # suite.addTest(load_tests("util"))
         test_runner = unittest.TextTestRunner()
         test_runner.run(suite)
 
