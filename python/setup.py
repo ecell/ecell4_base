@@ -38,21 +38,22 @@ class run_tests(Command):
 
 setup(
     name = "ecell4",
+    package_dir = {"": "lib"},
     packages = ["ecell4", "ecell4.util", "ecell4.reaction_reader"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     ext_modules = [
-        Extension("ecell4.core", sources=["ecell4/core.pyx"],
+        Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
             include_dirs=["."], libraries=["ecell4-core"], language="c++"),
-        Extension("ecell4.gillespie", sources=["ecell4/gillespie.pyx"],
+        Extension("ecell4.gillespie", sources=["lib/ecell4/gillespie.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-gillespie"],
             language="c++"),
-        Extension("ecell4.bd", sources=["ecell4/bd.pyx"],
+        Extension("ecell4.bd", sources=["lib/ecell4/bd.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-bd"],
             language="c++"),
-        Extension("ecell4.ode", sources=["ecell4/ode.pyx"],
+        Extension("ecell4.ode", sources=["lib/ecell4/ode.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-ode"],
             language="c++"),
-        Extension("ecell4.lattice", sources=["ecell4/lattice.pyx"],
+        Extension("ecell4.lattice", sources=["lib/ecell4/lattice.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-lattice"],
             language="c++")
         ])

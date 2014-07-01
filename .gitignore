@@ -1,6 +1,12 @@
 .DS_Store
 *~
 *.swp
-*/build
+build
 *.pyo
-*/.lock-waf_linux2_build
+*.pyc
+.lock-waf_linux2_build
+*.cmake
+Makefile
+CMakeFiles
+*.so
+ecell4/*/tests/*.h5
