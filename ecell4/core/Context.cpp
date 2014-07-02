@@ -250,6 +250,56 @@ bool rrmatch(const ReactionRule& rr,
     return retval.first;
 }
 
+// bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
+// {
+//     if (usp1.name() != usp2.name() || usp1.num_sites() != usp2.num_sites())
+//     {
+//         return false;
+//     }
+// 
+//     UnitSpecies::container_type::const_iterator i(usp1.begin()), j(usp2.begin());
+//     while (i != usp1.end() && j != usp2.end())
+//     {
+//         if ((*i).first != (*j).first)
+//         {
+//             return false;
+//         }
+// 
+//         ++i;
+//         ++j;
+//     }
+//     return true;
+// }
+
+// void check_correspondences(const ReactionRule& rr)
+// {
+//     std::vector<unsigned int> correspondences;
+//     unsigned int idx1(0), idx2(0);
+// 
+//     for (ReactionRule::reactant_container_type::const_iterator
+//         i(rr.products().begin()); i != rr.products().end(); ++i)
+//     {
+//         for (Species::container_type::const_iterator
+//             ii((*i).begin()); ii != (*i).end(); ++ii)
+//         {
+//             for (ReactionRule::reactant_container_type::const_iterator
+//                 j(rr.reactants().begin()); j != rr.reactants().end(); ++j)
+//             {
+//                 for (Species::container_type::const_iterator
+//                     jj((*j).begin()); jj != (*j).end(); ++jj)
+//                 {
+//                     if (is_correspondent(*ii, *jj))
+//                     {
+//                         ;
+//                     }
+//                     ++idx2;
+//                 }
+//             }
+//             ++idx1;
+//         }
+//     }
+// }
+
 std::pair<bool, MatchObject::context_type> MatchObject::next()
 {
     for (; itr_ != target_.end(); ++itr_)
