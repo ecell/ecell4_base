@@ -17,7 +17,7 @@ class SpeciesTest(unittest.TestCase):
         sp.add_unit(UnitSpecies("B"))
         sp.add_unit(UnitSpecies("C"))
         sp.add_unit(UnitSpecies("A"))
-        self.assertEqual(sp.serial(), "A.B.C")
+        self.assertEqual(sp.serial(), "B.C.A")
 
 
 if __name__ == '__main__':
