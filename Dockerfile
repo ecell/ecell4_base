@@ -7,7 +7,7 @@ RUN apt-get update
 
 RUN apt-get install -y git cmake g++ libboost-dev libgsl0-dev libhdf5-serial-dev
 RUN cd /; git clone git://github.com/ecell/ecell4
-RUN cd /ecell4; git checkout -t origin/fix_srctree_new; CPLUS_INCLUDE_PATH=/usr/include cmake .; make; make install
+RUN cd /ecell4; git checkout -t origin/master; CPLUS_INCLUDE_PATH=/usr/include cmake .; make; make install
 
 RUN apt-get install -y python cython
 RUN cd /ecell4/python; python setup.py install
