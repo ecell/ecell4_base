@@ -49,7 +49,7 @@ class NetowrkModelTest(unittest.TestCase):
         self.assertEqual(len(rules3[0].products()), 2)
         self.assertEqual(len(rules4), 1)
         self.assertEqual(len(rules4[0].products()), 1)
-        self.assertEqual(rules4[0].products()[0].name(), "C")
+        self.assertEqual(rules4[0].products()[0].serial(), "C")
 
 
 if __name__ == '__main__':

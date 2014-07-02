@@ -10,7 +10,6 @@ class SpeciesTest(unittest.TestCase):
 
     def test1(self):
         sp = Species("A")
-        self.assertEqual(sp.name(), "A")
         self.assertEqual(sp.serial(), "A")
 
     def test2(self):
@@ -18,8 +17,6 @@ class SpeciesTest(unittest.TestCase):
         sp.add_unit(UnitSpecies("B"))
         sp.add_unit(UnitSpecies("C"))
         sp.add_unit(UnitSpecies("A"))
-        self.assertEqual(sp.name(), "A.B.C")
-        # .self.assertEqual(sp.name(), "B.C.A")
         self.assertEqual(sp.serial(), "A.B.C")
 
 
