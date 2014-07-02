@@ -1,3 +1,9 @@
+# SET(CPACK_GENERATOR "DEB")
+# SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libgsl0-dev (>= 1.16+dfsg-1ubuntu1), libhdf5-serial-dev (>= 1.8.11-5ubuntu7), libboost-dev (>= 1.54.0.1ubuntu1)")
+# SET(CPACK_PACKAGE_CONTACT "Kozo Nishida <knishida@riken.jp>")
+# SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Kozo Nishida <knishida@riken.jp>")
+# INCLUDE(CPack)
+
 set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Global.cpp Journal.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp ParticleSpace.cpp
