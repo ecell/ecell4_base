@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 2.6)
+project(ecell4)
+option(WITH_LATTICE "with lattice" ON)
+include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_BINARY_DIR})
+enable_testing()
+add_subdirectory(ecell4)

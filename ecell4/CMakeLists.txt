@@ -1,0 +1,7 @@
+add_subdirectory(core)
+add_subdirectory(gillespie)
+add_subdirectory(ode)
+add_subdirectory(bd)
+if(WITH_LATTICE)
+    add_subdirectory(lattice)
+endif()
