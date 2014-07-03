@@ -1,5 +1,6 @@
 FROM ubuntu:14.04
 RUN apt-get update
+
 # RUN apt-get install -y g++ python-dev libboost-dev libgsl0-dev libhdf5-serial-dev pkg-config cython python-pip git libboost-test-dev python-zmq python-matplotlib libboost-regex-dev
 # RUN pip install ipython jinja2 tornado
 # RUN cd /; git clone git://github.com/ecell/ecell4

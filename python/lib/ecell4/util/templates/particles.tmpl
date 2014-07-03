@@ -1,0 +1,31 @@
+<html>
+<head>
+<script type="text/javascript">
+(function(){
+function render(){
+console.log("Begin rendering...");
+var model = {{ model }};
+Elegans.Embed.parse("#"+{{model_id}},model).render();
+}
+
+var before_render = function(){
+if(!(['d3', 'THREE', 'Elegans'].some(function(lib_name){
+if(window[lib_name] === undefined){
+console.log(lib_name + ' is not loaded.');
+window.addEventListener("load_elegans", before_render);
+return true;
+}
+return false;
+}))){
+render();
+};
+};
+
+before_render();
+})();
+</script>
+</head>
+<body>
+<div id={{model_id}}></div>
+</body>
+</html>
