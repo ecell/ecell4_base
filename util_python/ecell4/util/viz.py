@@ -73,7 +73,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
     return color_scale.get_config()
 
 def generate_html(model, model_id):
-    """Generate static html file from JSON model and its own id
+    """Generate static html file from JSON model and its own id.
 
     Parameters
     ----------
@@ -91,8 +91,7 @@ def generate_html(model, model_id):
 
 
 class ColorScale:
-    """Color scale for picking unique colors
-    
+    """Color scale for species.
     
     """
 
@@ -132,4 +131,6 @@ class ColorScale:
         return self.config[name]
 
     def get_config(self):
+        """Get an instance of dic as the config of colors.
+        """
         return self.config
