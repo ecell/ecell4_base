@@ -1,4 +1,5 @@
 #include "Context.hpp"
+#include <string>
 
 
 namespace ecell4
@@ -231,45 +232,315 @@ std::pair<bool, MatchObject::context_type> __rrmatch(
 bool rrmatch(const ReactionRule& rr,
     const ReactionRule::reactant_container_type& reactants)
 {
-    if (rr.reactants().size() != reactants.size())
+
+    ReactionRuleExpressionMatcher rrexp(rr);
+    return rrexp.match(reactants);
+    // if (rr.reactants().size() != reactants.size())
+    // {
+    //     return false;
+    // }
+
+    // ReactionRule::reactant_container_type::const_iterator
+    //     i(rr.reactants().begin()), j(reactants.begin());
+    // MatchObject::context_type::variable_container_type globals;
+    // std::pair<bool, MatchObject::context_type>
+    //     retval(__rrmatch(rr, reactants, globals, i, j));
+    // // for (MatchObject::context_type::variable_container_type::const_iterator
+    // //     i(retval.second.globals.begin()); i != retval.second.globals.end(); ++i)
+    // // {
+    // //     std::cout << (*i).first << "=" << (*i).second << ";";
+    // // }
+    // // std::cout << std::endl;
+    // return retval.first;
+}
+
+Integer count_rrmatches(const ReactionRule& rr,
+    const ReactionRule::reactant_container_type& reactants)
+{
+    ReactionRuleExpressionMatcher rrexp(rr);
+    if (!rrexp.match(reactants))
+    {
+        return 0;
+    }
+    Integer n(1);
+    while (rrexp.next())
+    {
+        ++n;
+    }
+    return n;
+}
+
+bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
+{
+    if (usp1.name() != usp2.name() || usp1.num_sites() != usp2.num_sites())
     {
         return false;
     }
 
-    ReactionRule::reactant_container_type::const_iterator
-        i(rr.reactants().begin()), j(reactants.begin());
-    MatchObject::context_type::variable_container_type globals;
-    std::pair<bool, MatchObject::context_type>
-        retval(__rrmatch(rr, reactants, globals, i, j));
-    // for (MatchObject::context_type::variable_container_type::const_iterator
-    //     i(retval.second.globals.begin()); i != retval.second.globals.end(); ++i)
-    // {
-    //     std::cout << (*i).first << "=" << (*i).second << ";";
-    // }
-    // std::cout << std::endl;
-    return retval.first;
+    UnitSpecies::container_type::const_iterator i(usp1.begin()), j(usp2.begin());
+    while (i != usp1.end() && j != usp2.end())
+    {
+        if ((*i).first != (*j).first)
+        {
+            return false;
+        }
+
+        ++i;
+        ++j;
+    }
+    return true;
 }
 
-// bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
-// {
-//     if (usp1.name() != usp2.name() || usp1.num_sites() != usp2.num_sites())
-//     {
-//         return false;
-//     }
-// 
-//     UnitSpecies::container_type::const_iterator i(usp1.begin()), j(usp2.begin());
-//     while (i != usp1.end() && j != usp2.end())
-//     {
-//         if ((*i).first != (*j).first)
-//         {
-//             return false;
-//         }
-// 
-//         ++i;
-//         ++j;
-//     }
-//     return true;
-// }
+std::string itos(unsigned int val)
+{
+    std::stringstream ss;
+    ss << val;
+    return ss.str();
+}
+
+void rrgenerate(const ReactionRule& rr,
+    const ReactionRule::reactant_container_type& reactants)
+{
+    ReactionRuleExpressionMatcher rrexp(rr);
+    if (!rrexp.match(reactants))
+    {
+        return;
+    }
+    const ReactionRuleExpressionMatcher::context_type ctx(rrexp.context());
+
+    std::vector<UnitSpecies> reactant_units, product_units;
+
+    for (ReactionRule::reactant_container_type::const_iterator
+        i(rr.reactants().begin()); i != rr.reactants().end(); ++i)
+    {
+        reactant_units.reserve(reactant_units.size() + (*i).num_units());
+        std::copy((*i).begin(), (*i).end(), std::back_inserter(reactant_units));
+    }
+
+    for (ReactionRule::reactant_container_type::const_iterator
+        i(rr.products().begin()); i != rr.products().end(); ++i)
+    {
+        product_units.reserve(product_units.size() + (*i).num_units());
+        std::copy((*i).begin(), (*i).end(), std::back_inserter(product_units));
+    }
+
+    std::vector<UnitSpecies>::size_type num_units(reactant_units.size());
+    std::vector<std::vector<UnitSpecies>::size_type> correspo;
+    std::vector<UnitSpecies>::size_type idx1(0), idx2(0);
+    for (std::vector<UnitSpecies>::iterator i(product_units.begin());
+        i != product_units.end(); ++i, ++idx1)
+    {
+        idx2 = 0;
+        for (std::vector<UnitSpecies>::iterator j(reactant_units.begin());
+            j != reactant_units.end(); ++j, ++idx2)
+        {
+            if (is_correspondent(*i, *j))
+            {
+                if (correspo.size() > idx1)
+                {
+                    ; //WARN: multiple correspondence found
+                }
+                else if (std::find(correspo.begin(), correspo.end(), idx2)
+                    != correspo.end())
+                {
+                    ; //WARN: multiple correspondence skipped
+                }
+                else
+                {
+                    correspo.push_back(idx2);
+                }
+            }
+        }
+
+        if (correspo.size() == idx1)
+        {
+            correspo.push_back(num_units);
+            ++num_units;
+        }
+    }
+
+    std::vector<std::vector<UnitSpecies>::size_type> removed;
+    for (std::vector<UnitSpecies>::size_type i(0);
+        i < reactant_units.size(); ++i)
+    {
+        if (std::find(correspo.begin(), correspo.end(), i)
+            == correspo.end())
+        {
+            removed.push_back(i);
+        }
+    }
+
+    int bond_stride1(0), bond_stride2(0);
+    std::vector<UnitSpecies> units;
+    for (ReactionRule::reactant_container_type::const_iterator
+        i(reactants.begin()); i != reactants.end(); ++i)
+    {
+        units.reserve(units.size() + (*i).num_units());
+        // std::copy((*i).begin(), (*i).end(), std::back_inserter(units));
+
+        for (Species::container_type::const_iterator j((*i).begin());
+            j != (*i).end(); ++j)
+        {
+            units.push_back(*j);
+            for (UnitSpecies::container_type::const_iterator
+                k((*j).begin()); k != (*j).end(); ++k)
+            {
+                if ((*k).second.second != "" && (*k).second.second[0] != '_')
+                {
+                    units.back().at(std::distance((*j).begin(), k)).second.second = itos(atoi((*k).second.second.c_str()) + bond_stride1);
+                    bond_stride2 = std::max(bond_stride2, atoi((*k).second.second.c_str()));
+                }
+            }
+        }
+
+        bond_stride1 += bond_stride2;
+        bond_stride2 = 0;
+    }
+
+    // for (MatchObject::context_type::iterator_container_type::const_iterator
+    //     i(ctx.iterators.begin()); i != ctx.iterators.end(); ++i)
+    // {
+    //     std::cout << (*i);
+    // }
+    // std::cout << std::endl;
+
+    idx1 = 0;
+    utils::get_mapper_mf<unsigned int, std::string>::type bond_cache;
+    for (std::vector<UnitSpecies>::iterator itr1(product_units.begin());
+        itr1 != product_units.end(); ++itr1, ++idx1)
+    {
+        std::vector<UnitSpecies>::size_type tgt(0);
+        std::vector<UnitSpecies>::size_type idx2(correspo[idx1]);
+        if (idx2 >= reactant_units.size())
+        {
+            tgt = units.size();
+            units.push_back(*itr1);
+            if ((*itr1).name().size() > 1 && (*itr1).name()[0] == '_')
+            {
+                MatchObject::context_type::variable_container_type::const_iterator
+                    itr(ctx.globals.find((*itr1).name()));
+                if (itr == ctx.globals.end())
+                {
+                    ; //XXX: an invalid global name given
+                }
+                else
+                {
+                    units.back().set_name((*itr).second);
+                }
+            }
+
+            // continue;
+        }
+        else
+        {
+            tgt = ctx.iterators[idx2];
+        }
+        // std::cout << "(" << idx2 << "," << tgt << ")";
+
+        UnitSpecies::container_type::const_iterator i((*itr1).begin());
+        while (i != (*itr1).end())
+        {
+            UnitSpecies::container_type::value_type&
+                site(units[tgt].at((*i).first));
+
+            if ((*i).second.first == "")
+            {
+                ; // do nothing
+            }
+            else if ((*i).second.first[0] == '_')
+            {
+                if ((*i).second.first.size() != 1)
+                {
+                    MatchObject::context_type::variable_container_type::const_iterator
+                        itr(ctx.globals.find((*i).second.first));
+                    if (itr == ctx.globals.end())
+                    {
+                        ; //XXX: an invalid global name given
+                    }
+                    else
+                    {
+                        site.first = (*itr).second;
+                    }
+                }
+            }
+            else
+            {
+                site.second.first = (*i).second.first;
+            }
+
+            if ((*i).second.second == "")
+            {
+                site.second.second = "";
+            }
+            else if ((*i).second.second[0] == '_')
+            {
+                if ((*i).second.second.size() != 1)
+                {
+                    ; //XXX: no named wildcard is allowed here
+                }
+
+                ; // do nothing
+            }
+            else
+            {
+                unsigned int stride(0), label(0);
+                for (ReactionRule::product_container_type::const_iterator
+                    j(rr.products().begin()); j != rr.products().end(); ++j)
+                {
+                    stride += (*j).num_units();
+                    if (stride > idx1)
+                    {
+                        label = atoi((*i).second.second.c_str()) * rr.products().size() + std::distance(rr.products().begin(), j);
+                        break;
+                    }
+                }
+
+                utils::get_mapper_mf<unsigned int, std::string>::type::const_iterator
+                    itr(bond_cache.find(label));
+                if (itr != bond_cache.end())
+                {
+                    site.second.second = (*itr).second;
+                }
+                else
+                {
+                    ++bond_stride1;
+                    site.second.second = itos(bond_stride1);
+                    bond_cache[label] = site.second.second;
+                }
+            }
+
+            ++i;
+        }
+    }
+
+    std::vector<std::vector<UnitSpecies>::size_type> removed_new;
+    for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator i(removed.begin()); i != removed.end(); ++i)
+    {
+        removed_new.push_back(ctx.iterators[(*i)]);
+    }
+    std::sort(removed_new.begin(), removed_new.end());
+    for (std::vector<std::vector<UnitSpecies>::size_type>::const_reverse_iterator i(removed_new.rbegin()); i != removed_new.rend(); ++i)
+    {
+        units.erase(units.begin() + *i);
+    }
+
+    //XXX: under construction
+
+    std::cout << std::endl << "before: ";
+    for (ReactionRule::reactant_container_type::const_iterator i(reactants.begin());
+        i != reactants.end(); ++i)
+    {
+        std::cout << (*i).serial() << ".";
+    }
+    std::cout << std::endl;
+    std::cout << "after:  ";
+    for (std::vector<UnitSpecies>::const_iterator i(units.begin());
+        i != units.end(); ++i)
+    {
+        std::cout << (*i).serial() << ".";
+    }
+    std::cout << std::endl;
+}
 
 // void check_correspondences(const ReactionRule& rr)
 // {

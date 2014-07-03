@@ -115,11 +115,32 @@ BOOST_AUTO_TEST_CASE(Species_test_match3)
     rr1.add_reactant(Species("_1(b)"));
     rr1.add_product(Species("_1(b^1)._1(b^1)"));
 
-    ReactionRule::reactant_container_type reactants;
-    reactants.push_back(Species("A(a^1,b).B(a^1,b)"));
-    reactants.push_back(Species("B(a,b)"));
+    ReactionRule::reactant_container_type reactants1;
+    reactants1.push_back(Species("A(a^1,b).B(a^1,b)"));
+    reactants1.push_back(Species("B(a,b)"));
 
-    BOOST_CHECK(rrmatch(rr1, reactants));
+    BOOST_CHECK(rrmatch(rr1, reactants1));
+    BOOST_CHECK_EQUAL(count_rrmatches(rr1, reactants1), 1);
+
+    rrgenerate(rr1, reactants1);
+
+    ReactionRule rr2;
+    rr2.add_reactant(Species("A(b)"));
+    rr2.add_reactant(Species("B(b)"));
+    rr2.add_product(Species("A(b^1).A(b^1)"));
+    ReactionRule::reactant_container_type reactants2;
+    reactants2.push_back(Species("A(a^1,b).A(a^1,b)"));
+    reactants2.push_back(Species("B(a^1,b).B(a^1,b^2).B(a^2,b)"));
+
+    BOOST_CHECK(rrmatch(rr2, reactants2));
+    BOOST_CHECK_EQUAL(count_rrmatches(rr2, reactants2), 4);
+
+    ReactionRule rr3;
+    rr3.add_reactant(Species("A"));
+    rr3.add_product(Species("B"));
+    ReactionRule::reactant_container_type reactants3;
+    reactants3.push_back(Species("A"));
+    rrgenerate(rr3, reactants3);
 
     // boost::array<Species, 2> a1 = {{Species("_1"), Species("_1")}};
     // boost::array<Species, 2> b1 = {{Species("A"), Species("A.B")}};

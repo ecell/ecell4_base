@@ -57,6 +57,11 @@ public:
         return name_;
     }
 
+    void set_name(const std::string& name)
+    {
+        name_ = name;
+    }
+
     void deserialize(const serial_type& serial);
 
     serial_type serial() const;
@@ -125,6 +130,12 @@ public:
     container_type::value_type& at(const container_type::size_type& idx)
     {
         return sites_.at(idx);
+    }
+
+    container_type::value_type& at(const std::string& name)
+    {
+        return (*std::lower_bound(sites_.begin(), sites_.end(),
+            std::make_pair(name, site_type()), site_comparerator()));
     }
 
 protected:
