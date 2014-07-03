@@ -1,6 +1,6 @@
 """
 
-ecell4.viz: Visualizer of particles based on D3.js, THREE.js and Elegans.
+ecell4.util.viz: Visualizer of particles based on D3.js, THREE.js and Elegans.
 
 """
 import os
@@ -73,7 +73,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
     return color_scale.get_config()
 
 def generate_html(model, model_id):
-    """Generate static html file from JSON model and its id
+    """Generate static html file from JSON model and its own id
 
     Parameters
     ----------
