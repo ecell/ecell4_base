@@ -19,6 +19,7 @@ if(window['d3'] === undefined ||
 	window['THREE'] = THREE;
 	console.log('Finished loading d3.js and Three.js.');
 
+	// URL shown below (rawgit.com) should be replaced!
 	var script = d3.select("head")
 	    .append("script")
 	    .attr("src", 'https://rawgit.com/domitry/elegans/master/release/elegans.js')
