@@ -1,9 +1,9 @@
 #define BOOST_TEST_MODULE "get_mapper_mf_test"
-#define BOOST_TEST_NO_LIB
+//#define BOOST_TEST_NO_LIB
 
 #include <ecell4/core/config.h>
 
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/type_traits.hpp>
 

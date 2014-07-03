@@ -1,8 +1,8 @@
 
 #define BOOST_TEST_MODULE "GillespieWorld_test"
-#define BOOST_TEST_NO_LIB
+//#define BOOST_TEST_NO_LIB
 
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
