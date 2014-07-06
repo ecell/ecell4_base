@@ -9,8 +9,6 @@ if (BOOST_UNITTEST_FRAMEWORK_LIBRARY)
 	add_definitions(-DBOOST_TEST_DYN_LINK)
 	add_definitions(-DUNITTEST_FRAMEWORK_LIBRARY_EXIST)
 	set(test_library_dependencies boost_unit_test_framework)
-else()
-	message("Boost_unit_test_framework library was not found.")
 endif()
 
 foreach(TEST_NAME ${TEST_NAMES})
