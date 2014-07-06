@@ -1,7 +1,12 @@
 #define BOOST_TEST_MODULE "LatticeSimulator_test"
-//#define BOOST_TEST_NO_LIB
 
-#include <boost/test/unit_test.hpp>
+#ifdef UNITTEST_FRAMEWORK_LIBRARY_EXIST
+#   include <boost/test/unit_test.hpp>
+#else
+#   define BOOST_TEST_NO_LIB
+#   include <boost/test/included/unit_test.hpp>
+#endif
+
 #include <boost/test/floating_point_comparison.hpp>
 
 #include "../LatticeSimulator.hpp"
