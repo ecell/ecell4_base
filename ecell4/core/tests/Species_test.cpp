@@ -142,6 +142,15 @@ BOOST_AUTO_TEST_CASE(Species_test_match3)
     reactants3.push_back(Species("A"));
     rrgenerate(rr3, reactants3);
 
+    ReactionRule rr4;
+    rr4.add_reactant(Species("A(b^1).B(b^1)"));
+    rr4.add_product(Species("A(b)"));
+    rr4.add_product(Species("B(b)"));
+    ReactionRule::reactant_container_type reactants4;
+    reactants4.push_back(
+        Species("A(a^1,b).A(a^1,b^4).B(a^2,b).B(a^2,b^3).B(a^3,b^4)"));
+    rrgenerate(rr4, reactants4);
+
     // boost::array<Species, 2> a1 = {{Species("_1"), Species("_1")}};
     // boost::array<Species, 2> b1 = {{Species("A"), Species("A.B")}};
     // boost::array<Species, 2> b2 = {{Species("A"), Species("B.C")}};

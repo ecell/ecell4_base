@@ -79,7 +79,7 @@ bool rrmatch(const ReactionRule& rr,
     const ReactionRule::reactant_container_type& reactants);
 Integer count_rrmatches(const ReactionRule& rr,
     const ReactionRule::reactant_container_type& reactants);
-void rrgenerate(const ReactionRule& rr,
+std::vector<Species> rrgenerate(const ReactionRule& rr,
     const ReactionRule::reactant_container_type& reactants);
 
 class SpeciesExpressionMatcher
