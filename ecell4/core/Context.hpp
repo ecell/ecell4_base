@@ -79,7 +79,7 @@ bool rrmatch(const ReactionRule& rr,
     const ReactionRule::reactant_container_type& reactants);
 Integer count_rrmatches(const ReactionRule& rr,
     const ReactionRule::reactant_container_type& reactants);
-std::vector<Species> rrgenerate(const ReactionRule& rr,
+std::vector<std::vector<Species> > rrgenerate(const ReactionRule& rr,
     const ReactionRule::reactant_container_type& reactants);
 
 class SpeciesExpressionMatcher
@@ -229,17 +229,10 @@ public:
         target_ = reactants; //XXX: copy?
         itr_ = matchers_.begin();
         context_type::variable_container_type globals;
-        return __match2(globals);
-
-        // reactant_container_type::const_iterator
-        //     i(pttrn_.reactants().begin()), j(target_.begin());
-        // context_type::variable_container_type globals;
-        // std::pair<bool, context_type>
-        //     retval(__match(globals, i, j));
-        // return retval.first;
+        return __match(globals);
     }
 
-    bool __match2(const context_type::variable_container_type& globals)
+    bool __match(const context_type::variable_container_type& globals)
     {
         if (itr_ == matchers_.end())
         {
@@ -254,7 +247,7 @@ public:
             const context_type::variable_container_type&
                 globals_prev((*itr_).context().globals);
             ++itr_;
-            const bool succeeded(__match2(globals_prev));
+            const bool succeeded(__match(globals_prev));
             if (succeeded)
             {
                 return true;
@@ -285,7 +278,7 @@ public:
                 const context_type::variable_container_type&
                     globals_prev((*itr_).context().globals);
                 ++itr_;
-                const bool succeeded(__match2(globals_prev));
+                const bool succeeded(__match(globals_prev));
                 if (succeeded)
                 {
                     return true;
@@ -349,6 +342,8 @@ public:
         }
         return ctx;
     }
+
+    std::vector<Species> generate();
 
 protected:
 

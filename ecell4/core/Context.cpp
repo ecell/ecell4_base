@@ -235,23 +235,6 @@ bool rrmatch(const ReactionRule& rr,
 
     ReactionRuleExpressionMatcher rrexp(rr);
     return rrexp.match(reactants);
-    // if (rr.reactants().size() != reactants.size())
-    // {
-    //     return false;
-    // }
-
-    // ReactionRule::reactant_container_type::const_iterator
-    //     i(rr.reactants().begin()), j(reactants.begin());
-    // MatchObject::context_type::variable_container_type globals;
-    // std::pair<bool, MatchObject::context_type>
-    //     retval(__rrmatch(rr, reactants, globals, i, j));
-    // // for (MatchObject::context_type::variable_container_type::const_iterator
-    // //     i(retval.second.globals.begin()); i != retval.second.globals.end(); ++i)
-    // // {
-    // //     std::cout << (*i).first << "=" << (*i).second << ";";
-    // // }
-    // // std::cout << std::endl;
-    // return retval.first;
 }
 
 Integer count_rrmatches(const ReactionRule& rr,
@@ -335,27 +318,28 @@ std::pair<std::vector<unsigned int>, unsigned int> group_units(
         for (UnitSpecies::container_type::const_iterator j((*i).begin());
             j != (*i).end(); ++j)
         {
-            if ((*j).second.second == "" || (*j).second.second[0] == '_')
+            const std::string bond((*j).second.second);
+            if (bond == "" || is_wildcard(bond))
             {
                 continue;
             }
 
             utils::get_mapper_mf<std::string, unsigned int>::type::iterator
-                itr(tmp.find((*j).second.second));
+                itr(tmp.find(bond));
             if (itr == tmp.end())
             {
-                tmp[(*j).second.second] = idx;
+                tmp[bond] = idx;
             }
             else
             {
-                if (tmp[(*j).second.second] == units.size())
+                if (tmp[bond] == units.size())
                 {
                     ; //WARN: a duplicated bond found
                 }
 
                 adj[idx].push_back((*itr).second);
                 adj[(*itr).second].push_back(idx);
-                tmp[(*j).second.second] = units.size();
+                tmp[bond] = units.size();
             }
         }
     }
@@ -380,40 +364,22 @@ std::pair<std::vector<unsigned int>, unsigned int> group_units(
     return retval;
 }
 
-std::vector<Species> rrgenerate(const ReactionRule& rr,
-    const ReactionRule::reactant_container_type& reactants)
+void check_correspondences(
+    const std::vector<UnitSpecies>& reactant_units,
+    const std::vector<UnitSpecies>& product_units,
+    std::vector<std::vector<UnitSpecies>::size_type>& correspo,
+    std::vector<std::vector<UnitSpecies>::size_type>& removed)
 {
-    ReactionRuleExpressionMatcher rrexp(rr);
-    if (!rrexp.match(reactants))
-    {
-        return std::vector<Species>();
-    }
-    const ReactionRuleExpressionMatcher::context_type ctx(rrexp.context());
-
-    std::vector<UnitSpecies> reactant_units, product_units;
-
-    for (ReactionRule::reactant_container_type::const_iterator
-        i(rr.reactants().begin()); i != rr.reactants().end(); ++i)
-    {
-        reactant_units.reserve(reactant_units.size() + (*i).num_units());
-        std::copy((*i).begin(), (*i).end(), std::back_inserter(reactant_units));
-    }
-
-    for (ReactionRule::reactant_container_type::const_iterator
-        i(rr.products().begin()); i != rr.products().end(); ++i)
-    {
-        product_units.reserve(product_units.size() + (*i).num_units());
-        std::copy((*i).begin(), (*i).end(), std::back_inserter(product_units));
-    }
+    correspo.clear();
+    removed.clear();
 
     std::vector<UnitSpecies>::size_type num_units(reactant_units.size());
-    std::vector<std::vector<UnitSpecies>::size_type> correspo;
     std::vector<UnitSpecies>::size_type idx1(0), idx2(0);
-    for (std::vector<UnitSpecies>::iterator i(product_units.begin());
+    for (std::vector<UnitSpecies>::const_iterator i(product_units.begin());
         i != product_units.end(); ++i, ++idx1)
     {
         idx2 = 0;
-        for (std::vector<UnitSpecies>::iterator j(reactant_units.begin());
+        for (std::vector<UnitSpecies>::const_iterator j(reactant_units.begin());
             j != reactant_units.end(); ++j, ++idx2)
         {
             if (is_correspondent(*i, *j))
@@ -441,7 +407,6 @@ std::vector<Species> rrgenerate(const ReactionRule& rr,
         }
     }
 
-    std::vector<std::vector<UnitSpecies>::size_type> removed;
     for (std::vector<UnitSpecies>::size_type i(0);
         i < reactant_units.size(); ++i)
     {
@@ -451,11 +416,40 @@ std::vector<Species> rrgenerate(const ReactionRule& rr,
             removed.push_back(i);
         }
     }
+}
+
+std::vector<Species> ReactionRuleExpressionMatcher::generate()
+{
+    if (itr_ != matchers_.end())
+    {
+        return std::vector<Species>();
+    }
+
+    const context_type ctx(context());
+
+    std::vector<UnitSpecies> reactant_units, product_units;
+
+    for (ReactionRule::reactant_container_type::const_iterator
+        i(pttrn_.reactants().begin()); i != pttrn_.reactants().end(); ++i)
+    {
+        reactant_units.reserve(reactant_units.size() + (*i).num_units());
+        std::copy((*i).begin(), (*i).end(), std::back_inserter(reactant_units));
+    }
+
+    for (ReactionRule::reactant_container_type::const_iterator
+        i(pttrn_.products().begin()); i != pttrn_.products().end(); ++i)
+    {
+        product_units.reserve(product_units.size() + (*i).num_units());
+        std::copy((*i).begin(), (*i).end(), std::back_inserter(product_units));
+    }
+
+    std::vector<std::vector<UnitSpecies>::size_type> correspo, removed;
+    check_correspondences(reactant_units, product_units, correspo, removed);
 
     int bond_stride1(0), bond_stride2(0);
     std::vector<UnitSpecies> units;
     for (ReactionRule::reactant_container_type::const_iterator
-        i(reactants.begin()); i != reactants.end(); ++i)
+        i(target_.begin()); i != target_.end(); ++i)
     {
         units.reserve(units.size() + (*i).num_units());
         // std::copy((*i).begin(), (*i).end(), std::back_inserter(units));
@@ -467,10 +461,11 @@ std::vector<Species> rrgenerate(const ReactionRule& rr,
             for (UnitSpecies::container_type::const_iterator
                 k((*j).begin()); k != (*j).end(); ++k)
             {
-                if ((*k).second.second != "" && (*k).second.second[0] != '_')
+                const std::string bond((*k).second.second);
+                if (bond != "" && !is_wildcard(bond))
                 {
-                    units.back().at(std::distance((*j).begin(), k)).second.second = itos(atoi((*k).second.second.c_str()) + bond_stride1);
-                    bond_stride2 = std::max(bond_stride2, atoi((*k).second.second.c_str()));
+                    units.back().at(std::distance((*j).begin(), k)).second.second = itos(atoi(bond.c_str()) + bond_stride1);
+                    bond_stride2 = std::max(bond_stride2, atoi(bond.c_str()));
                 }
             }
         }
@@ -479,14 +474,14 @@ std::vector<Species> rrgenerate(const ReactionRule& rr,
         bond_stride2 = 0;
     }
 
-    // for (MatchObject::context_type::iterator_container_type::const_iterator
+    // for (context_type::iterator_container_type::const_iterator
     //     i(ctx.iterators.begin()); i != ctx.iterators.end(); ++i)
     // {
     //     std::cout << (*i);
     // }
     // std::cout << std::endl;
 
-    idx1 = 0;
+    std::vector<UnitSpecies>::size_type idx1(0);
     utils::get_mapper_mf<unsigned int, std::string>::type bond_cache;
     for (std::vector<UnitSpecies>::iterator itr1(product_units.begin());
         itr1 != product_units.end(); ++itr1, ++idx1)
@@ -497,9 +492,9 @@ std::vector<Species> rrgenerate(const ReactionRule& rr,
         {
             tgt = units.size();
             units.push_back(*itr1);
-            if ((*itr1).name().size() > 1 && (*itr1).name()[0] == '_')
+            if (is_named_wildcard((*itr1).name()))
             {
-                MatchObject::context_type::variable_container_type::const_iterator
+                context_type::variable_container_type::const_iterator
                     itr(ctx.globals.find((*itr1).name()));
                 if (itr == ctx.globals.end())
                 {
@@ -529,11 +524,11 @@ std::vector<Species> rrgenerate(const ReactionRule& rr,
             {
                 ; // do nothing
             }
-            else if ((*i).second.first[0] == '_')
+            else if (is_wildcard((*i).second.first))
             {
                 if ((*i).second.first.size() != 1)
                 {
-                    MatchObject::context_type::variable_container_type::const_iterator
+                    context_type::variable_container_type::const_iterator
                         itr(ctx.globals.find((*i).second.first));
                     if (itr == ctx.globals.end())
                     {
@@ -554,7 +549,7 @@ std::vector<Species> rrgenerate(const ReactionRule& rr,
             {
                 site.second.second = "";
             }
-            else if ((*i).second.second[0] == '_')
+            else if (is_wildcard((*i).second.second))
             {
                 if ((*i).second.second.size() != 1)
                 {
@@ -567,12 +562,12 @@ std::vector<Species> rrgenerate(const ReactionRule& rr,
             {
                 unsigned int stride(0), label(0);
                 for (ReactionRule::product_container_type::const_iterator
-                    j(rr.products().begin()); j != rr.products().end(); ++j)
+                    j(pttrn_.products().begin()); j != pttrn_.products().end(); ++j)
                 {
                     stride += (*j).num_units();
                     if (stride > idx1)
                     {
-                        label = atoi((*i).second.second.c_str()) * rr.products().size() + std::distance(rr.products().begin(), j);
+                        label = atoi((*i).second.second.c_str()) * pttrn_.products().size() + std::distance(pttrn_.products().begin(), j);
                         break;
                     }
                 }
@@ -616,11 +611,9 @@ std::vector<Species> rrgenerate(const ReactionRule& rr,
         products[group_ids_pair.first[std::distance(units.begin(), i)]].add_unit(*i);
     }
 
-    //XXX: under construction
-
     std::cout << std::endl << "before: ";
-    for (ReactionRule::reactant_container_type::const_iterator i(reactants.begin());
-        i != reactants.end(); ++i)
+    for (ReactionRule::reactant_container_type::const_iterator i(target_.begin());
+        i != target_.end(); ++i)
     {
         std::cout << (*i).serial() << ".";
     }
@@ -648,6 +641,25 @@ std::vector<Species> rrgenerate(const ReactionRule& rr,
     std::cout << std::endl;
 
     return products;
+}
+
+std::vector<std::vector<Species> > rrgenerate(const ReactionRule& rr,
+    const ReactionRule::reactant_container_type& reactants)
+{
+    std::vector<std::vector<Species> > retval;
+    ReactionRuleExpressionMatcher rrexp(rr);
+
+    if (!rrexp.match(reactants))
+    {
+        return retval;
+    }
+
+    do
+    {
+        retval.push_back(rrexp.generate());
+    }
+    while (rrexp.next());
+    return retval;
 }
 
 std::pair<bool, MatchObject::context_type> MatchObject::next()

@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(Species_test_match3)
     rr4.add_product(Species("B(b)"));
     ReactionRule::reactant_container_type reactants4;
     reactants4.push_back(
-        Species("A(a^1,b).A(a^1,b^4).B(a^2,b).B(a^2,b^3).B(a^3,b^4)"));
+        Species("A(a^1,b^5).A(a^1,b^4).B(a^2,b).B(a^2,b^3).B(a^3,b^4).B(a,b^5)"));
     rrgenerate(rr4, reactants4);
 
     // boost::array<Species, 2> a1 = {{Species("_1"), Species("_1")}};
