@@ -64,11 +64,11 @@ Real Igbd_r_3d(Real r, Real sigma, Real t, Real D)
     const Real sigmasq(sigma * sigma);
 
     const Real sigmacb(sigmasq * sigma);
-    const Real rcb(gsl_pow_3(r));
+    const Real rcb(pow_3(r));
 
     const Real rsigma(r * sigma);
 
-    const Real rps_sq(gsl_pow_2(r + sigma)), rms_sq(gsl_pow_2(r - sigma));
+    const Real rps_sq(pow_2(r + sigma)), rms_sq(pow_2(r - sigma));
 
     const Real term1(-2 * sqrtDt / sqrtPi);
     const Real term2(std::exp(-sigmasq / Dt) * (sigmasq - Dt2));

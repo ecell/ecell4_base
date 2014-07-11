@@ -2,7 +2,6 @@
 #define __ECELL4_PARTICLE_SPACE_HPP
 
 #include <cmath>
-#include <gsl/gsl_pow_int.h>
 
 #include "get_mapper_mf.hpp"
 #include "types.hpp"
@@ -221,15 +220,15 @@ public:
 
             if (diff > half)
             {
-                retval += gsl_pow_2(diff - edge_length);
+                retval += pow_2(diff - edge_length);
             }
             else if (diff < -half)
             {
-                retval += gsl_pow_2(diff + edge_length);
+                retval += pow_2(diff + edge_length);
             }
             else
             {
-                retval += gsl_pow_2(diff);
+                retval += pow_2(diff);
             }
         }
         return retval;

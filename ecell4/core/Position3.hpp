@@ -6,7 +6,6 @@
 #include <functional>
 #include <algorithm>
 #include <cmath>
-#include <gsl/gsl_pow_int.h>
 #include <boost/array.hpp>
 
 #include "types.hpp"
@@ -148,7 +147,7 @@ inline Position3 cross_product(const Position3& p1, const Position3& p2)
 
 inline Position3::value_type length_sq(const Position3& r)
 {
-    return gsl_pow_2(r[0]) + gsl_pow_2(r[1]) + gsl_pow_2(r[2]);
+    return pow_2(r[0]) + pow_2(r[1]) + pow_2(r[2]);
 }
 
 inline Position3::value_type length(const Position3& r)
