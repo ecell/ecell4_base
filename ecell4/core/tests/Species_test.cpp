@@ -122,7 +122,11 @@ BOOST_AUTO_TEST_CASE(Species_test_match3)
     BOOST_CHECK(rrmatch(rr1, reactants1));
     BOOST_CHECK_EQUAL(count_rrmatches(rr1, reactants1), 1);
 
-    rrgenerate(rr1, reactants1);
+    std::vector<std::vector<Species> > retval;
+    retval = rrgenerate(rr1, reactants1);
+    BOOST_CHECK_EQUAL(retval.size(), 1);
+    BOOST_CHECK_EQUAL(retval[0].size(), 1);
+    BOOST_CHECK_EQUAL(retval[0][0].num_units(), 3);
 
     ReactionRule rr2;
     rr2.add_reactant(Species("A(b)"));
@@ -140,7 +144,10 @@ BOOST_AUTO_TEST_CASE(Species_test_match3)
     rr3.add_product(Species("B"));
     ReactionRule::reactant_container_type reactants3;
     reactants3.push_back(Species("A"));
-    rrgenerate(rr3, reactants3);
+    retval = rrgenerate(rr3, reactants3);
+    BOOST_CHECK_EQUAL(retval.size(), 1);
+    BOOST_CHECK_EQUAL(retval[0].size(), 1);
+    BOOST_CHECK_EQUAL(retval[0][0].serial(), "B");
 
     ReactionRule rr4;
     rr4.add_reactant(Species("A(b^1).B(b^1)"));
@@ -149,12 +156,10 @@ BOOST_AUTO_TEST_CASE(Species_test_match3)
     ReactionRule::reactant_container_type reactants4;
     reactants4.push_back(
         Species("A(a^1,b^5).A(a^1,b^4).B(a^2,b).B(a^2,b^3).B(a^3,b^4).B(a,b^5)"));
-    rrgenerate(rr4, reactants4);
-
-    // boost::array<Species, 2> a1 = {{Species("_1"), Species("_1")}};
-    // boost::array<Species, 2> b1 = {{Species("A"), Species("A.B")}};
-    // boost::array<Species, 2> b2 = {{Species("A"), Species("B.C")}};
-
-    // BOOST_CHECK(rrmatch(a1, b1));
-    // BOOST_CHECK(!rrmatch(a1, b2));
+    retval = rrgenerate(rr4, reactants4);
+    BOOST_CHECK_EQUAL(retval.size(), 2);
+    BOOST_CHECK_EQUAL(retval[0].size(), 2);
+    BOOST_CHECK_EQUAL(retval[1].size(), 2);
+    BOOST_CHECK_EQUAL(retval[0][0].num_units() + retval[0][1].num_units(), 6);
+    BOOST_CHECK_EQUAL(retval[1][0].num_units() + retval[1][1].num_units(), 6);
 }
