@@ -20,10 +20,10 @@ bool is_named_wildcard(const std::string& name)
     return (name.size() > 1 && name[0] == '_');
 }
 
-bool is_freebond(const std::string& name)
-{
-    return name == "_free";
-}
+// bool is_freebond(const std::string& name)
+// {
+//     return name == "_free";
+// }
 
 std::pair<bool, MatchObject::context_type> uspmatch(
     const UnitSpecies& pttrn, const UnitSpecies& usp,
@@ -90,11 +90,12 @@ std::pair<bool, MatchObject::context_type> uspmatch(
                 }
             }
 
-            if (is_freebond((*j).second.second))
-            {
-                ; // just skip checking
-            }
-            else if ((*j).second.second == "")
+            // if (is_freebond((*j).second.second))
+            // {
+            //     ; // just skip checking
+            // }
+            // else
+            if ((*j).second.second == "")
             {
                 if (site.second != "")
                 {
@@ -605,41 +606,82 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
         group_ids_pair(group_units(units));
     std::vector<Species> products;
     products.resize(group_ids_pair.second);
-    for (std::vector<UnitSpecies>::iterator i(units.begin());
-        i != units.end(); ++i)
+    // for (std::vector<UnitSpecies>::iterator i(units.begin());
+    //     i != units.end(); ++i)
+    // {
+    //     products[group_ids_pair.first[std::distance(units.begin(), i)]].add_unit(*i);
+    // }
+    for (unsigned int idx(0); idx != group_ids_pair.second; ++idx)
     {
-        products[group_ids_pair.first[std::distance(units.begin(), i)]].add_unit(*i);
+        utils::get_mapper_mf<std::string, std::string>::type new_bonds;
+        unsigned int stride(1);
+
+        for (std::vector<unsigned int>::iterator
+            i(group_ids_pair.first.begin()); i != group_ids_pair.first.end(); ++i)
+        {
+            if (idx != *i)
+            {
+                continue;
+            }
+
+            UnitSpecies& usp(
+                units[std::distance(group_ids_pair.first.begin(), i)]);
+            for (UnitSpecies::container_type::size_type j(0);
+                j != usp.num_sites(); ++j)
+            {
+                UnitSpecies::container_type::value_type&
+                    site(usp.at(j));
+                const std::string bond(site.second.second);
+                if (bond == "" || is_wildcard(bond))
+                {
+                    continue;
+                }
+                utils::get_mapper_mf<std::string, std::string>::type::const_iterator itr(new_bonds.find(bond));
+                if (itr == new_bonds.end())
+                {
+                    const std::string new_bond(itos(stride));
+                    ++stride;
+                    new_bonds[bond] = new_bond;
+                    site.second.second = new_bond;
+                }
+                else
+                {
+                    site.second.second = (*itr).second;
+                }
+            }
+
+            products[idx].add_unit(usp);
+        }
     }
 
-    std::cout << std::endl << "before: ";
-    for (ReactionRule::reactant_container_type::const_iterator i(target_.begin());
-        i != target_.end(); ++i)
-    {
-        std::cout << (*i).serial() << ".";
-    }
-    std::cout << std::endl;
-    std::cout << "after: ";
-    for (std::vector<UnitSpecies>::const_iterator i(units.begin());
-        i != units.end(); ++i)
-    {
-        std::cout << (*i).serial() << ".";
-    }
-    std::cout << std::endl;
-    std::cout << "after: ";
-    for (std::vector<unsigned int>::const_iterator i(group_ids_pair.first.begin());
-        i != group_ids_pair.first.end(); ++i)
-    {
-        std::cout << (*i) << ".";
-    }
-    std::cout << std::endl;
-    std::cout << "products: ";
-    for (std::vector<Species>::const_iterator i(products.begin());
-        i != products.end(); ++i)
-    {
-        std::cout << (*i).serial() << ", ";
-    }
-    std::cout << std::endl;
-
+    // std::cout << std::endl << "before: ";
+    // for (ReactionRule::reactant_container_type::const_iterator i(target_.begin());
+    //     i != target_.end(); ++i)
+    // {
+    //     std::cout << (*i).serial() << ".";
+    // }
+    // std::cout << std::endl;
+    // std::cout << "after: ";
+    // for (std::vector<UnitSpecies>::const_iterator i(units.begin());
+    //     i != units.end(); ++i)
+    // {
+    //     std::cout << (*i).serial() << ".";
+    // }
+    // std::cout << std::endl;
+    // std::cout << "after: ";
+    // for (std::vector<unsigned int>::const_iterator i(group_ids_pair.first.begin());
+    //     i != group_ids_pair.first.end(); ++i)
+    // {
+    //     std::cout << (*i) << ".";
+    // }
+    // std::cout << std::endl;
+    // std::cout << "products: ";
+    // for (std::vector<Species>::const_iterator i(products.begin());
+    //     i != products.end(); ++i)
+    // {
+    //     std::cout << (*i).serial() << ", ";
+    // }
+    // std::cout << std::endl;
     return products;
 }
 
