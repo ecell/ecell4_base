@@ -3,6 +3,8 @@ from libcpp.string cimport string
 from cython cimport address
 cimport util
 
+cimport context
+
 
 cdef class Species:
 
@@ -71,29 +73,30 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     r.thisptr = new_obj
     return r
 
-def pyspmatch(Species pttrn, Species sp):
-    return spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
+def spmatch(Species pttrn, Species sp):
+    return context.spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
 
-def pycount_spmatches(Species pttrn, Species sp):
-    return count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))
+def count_spmatches(Species pttrn, Species sp):
+    return context.count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))
 
-def pyrrmatch(ReactionRule pttrn, reactants):
+def rrmatch(ReactionRule pttrn, reactants):
     cdef vector[Cpp_Species] cpp_reactants
     for sp in reactants:
         cpp_reactants.push_back(deref((<Species> sp).thisptr))
-    return rrmatch(deref(pttrn.thisptr), cpp_reactants)
+    return context.rrmatch(deref(pttrn.thisptr), cpp_reactants)
 
-def pycount_rrmatches(ReactionRule pttrn, reactants):
+def count_rrmatches(ReactionRule pttrn, reactants):
     cdef vector[Cpp_Species] cpp_reactants
     for sp in reactants:
         cpp_reactants.push_back(deref((<Species> sp).thisptr))
-    return count_rrmatches(deref(pttrn.thisptr), cpp_reactants)
+    return context.count_rrmatches(deref(pttrn.thisptr), cpp_reactants)
 
-def pyrrgenerate(ReactionRule pttrn, reactants):
+def rrgenerate(ReactionRule pttrn, reactants):
     cdef vector[Cpp_Species] cpp_reactants
     for sp in reactants:
         cpp_reactants.push_back(deref((<Species> sp).thisptr))
-    cdef vector[vector[Cpp_Species]] cpp_products_list = rrgenerate(deref(pttrn.thisptr), cpp_reactants)
+    cdef vector[vector[Cpp_Species]] cpp_products_list = \
+        context.rrgenerate(deref(pttrn.thisptr), cpp_reactants)
     cdef vector[vector[Cpp_Species]].iterator it1 = cpp_products_list.begin()
     cdef vector[Cpp_Species].iterator it2
     retval = []

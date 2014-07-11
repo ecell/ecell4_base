@@ -101,13 +101,6 @@ cdef class Species:
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 
-cdef extern from "ecell4/core/Context.hpp" namespace "ecell4":
-    bool spmatch(Cpp_Species, Cpp_Species)
-    Integer count_spmatches(Cpp_Species, Cpp_Species)
-    bool rrmatch(Cpp_ReactionRule, vector[Cpp_Species])
-    Integer count_rrmatches(Cpp_ReactionRule, vector[Cpp_Species])
-    vector[vector[Cpp_Species]] rrgenerate(Cpp_ReactionRule, vector[Cpp_Species])
-
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
