@@ -3,8 +3,18 @@
 #include "VacantType.hpp"
 #include "LatticeSpace.hpp"
 
+#ifdef _MSC_BUILD
+#include <boost/numeric/interval/detail/msvc_rounding_control.hpp>
+#endif
+
+
 namespace ecell4
 {
+
+double rint(const double x)
+{
+    return boost::numeric::interval_lib::detail::rint(x);
+}
 
 LatticeSpace::LatticeSpace(const Position3& edge_lengths,
         const Real& voxel_radius, const bool is_periodic) :

@@ -99,8 +99,13 @@ Real random_ipv_length_3d(
     const Real ptot(Igbd_3d(sigma, t, D));
 
     Igbd_r_3d_params params = {sigma, t, D, rng.uniform(0, 1) * ptot};
+#ifndef _MSC_BUILD
     gsl_function F = {
         reinterpret_cast<typeof(F.function)>(&Igbd_r_3d_F), &params};
+#else
+    gsl_function F = {
+        reinterpret_cast<double (__cdecl *)(double,void *)>(&Igbd_r_3d_F), &params};
+#endif
 
     Real low(sigma), high(sigma + 10 * std::sqrt(6 * D * t));
 

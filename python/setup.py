@@ -37,7 +37,7 @@ class run_tests(Command):
         test_runner = unittest.TextTestRunner()
         test_runner.run(suite)
 
-with_cpp_shared_libraries = True
+with_cpp_shared_libraries = False
 if with_cpp_shared_libraries:
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
@@ -57,26 +57,31 @@ if with_cpp_shared_libraries:
         ]
 else:
     dependent_libs = [
-        'gsl', 'gslcblas', 'm', 'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5']
+        'gsl', 'cblas', 'libhdf5_hl_cpp', 'libhdf5_cpp', 'libhdf5_hl', 'libhdf5']
     core_src = glob.glob("../ecell4/core/*.cpp")
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
+            extra_compile_args=["/EHsc", "/w"],
             include_dirs=[".", ".."], libraries=dependent_libs, language="c++"),
         Extension("ecell4.gillespie",
             sources=["lib/ecell4/gillespie.pyx"]
                 + glob.glob("../ecell4/gillespie/*.cpp") + core_src,
+            extra_compile_args=["/EHsc", "/w"],
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         Extension("ecell4.bd",
             sources=["lib/ecell4/bd.pyx"]
                 + glob.glob("../ecell4/bd/*.cpp") + core_src,
+            extra_compile_args=["/EHsc", "/w"],
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         Extension("ecell4.ode",
             sources=["lib/ecell4/ode.pyx"]
                 + glob.glob("../ecell4/ode/*.cpp") + core_src,
+            extra_compile_args=["/EHsc", "/w"],
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         Extension("ecell4.lattice",
             sources=["lib/ecell4/lattice.pyx"]
                 + glob.glob("../ecell4/lattice/*.cpp") + core_src,
+            extra_compile_args=["/EHsc", "/w"],
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         ]
 

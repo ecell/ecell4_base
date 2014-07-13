@@ -4,10 +4,6 @@
 #include <cmath>
 #include <gsl/gsl_pow_int.h>
 
-#ifdef _MSC_BUILD
-#include <boost/numeric/interval/detail/msvc_rounding_control.hpp>
-#endif
-
 #include "types.hpp"
 
 
@@ -63,11 +59,6 @@ inline double pow_3(const double x)
 inline double cbrt(const double x)
 {
     return pow(x, 1.0 / 3.0);
-}
-
-inline double rint(double x)
-{
-    return boost::numeric::interval_lib::detail::rint(x);
 }
 #endif
 
