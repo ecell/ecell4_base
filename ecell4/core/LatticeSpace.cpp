@@ -1,3 +1,4 @@
+#include "functions.hpp"
 #include "MolecularType.hpp"
 #include "VacantType.hpp"
 #include "LatticeSpace.hpp"
