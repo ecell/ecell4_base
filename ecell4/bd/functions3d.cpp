@@ -1,4 +1,5 @@
 #include <gsl/gsl_roots.h>
+#include <gsl/gsl_sf_erf.h>
 
 #include "functions3d.hpp"
 
@@ -44,7 +45,7 @@ Real Igbd_3d(const Real& sigma, const Real& t, const Real& D)
     const Real term1(1 / (3 * sqrtPi));
     const Real term2(sigmasq - Dt2);
     const Real term3(Dt2 - 3 * sigmasq);
-    const Real term4(sqrtPi * sigmasq * sigma * erfc(sigma / sqrtDt));
+    const Real term4(sqrtPi * sigmasq * sigma * gsl_sf_erfc(sigma / sqrtDt));
 
     const Real result(
         term1 * (-sqrtDt * (term2 * std::exp(-sigmasq / Dt) + term3) + term4));
@@ -76,9 +77,9 @@ Real Igbd_r_3d(Real r, Real sigma, Real t, Real D)
     const Real term4(std::exp(-rms_sq / Dt4) * (rps_sq - rsigma - Dt2));
     const Real term5(-sigmasq * 3 + Dt2);
 
-    const Real term6((sigmacb - rcb) * erf((r - sigma) / sqrtDt4));
-    const Real term7(-(sigmacb + sigmacb) * erf(sigma / sqrtDt));
-    const Real term8((sigmacb + rcb) * erf((r + sigma) / sqrtDt4));
+    const Real term6((sigmacb - rcb) * gsl_sf_erf((r - sigma) / sqrtDt4));
+    const Real term7(-(sigmacb + sigmacb) * gsl_sf_erf(sigma / sqrtDt));
+    const Real term8((sigmacb + rcb) * gsl_sf_erf((r + sigma) / sqrtDt4));
 
     const Real result(
         (term1 * (term2 + term3 + term4 + term5) + term6 + term7 + term8) / 6);
