@@ -1,4 +1,5 @@
-import math
+import numpy
+import time
 from ecell4.core import *
 
 # from ecell4.lattice import (
@@ -20,7 +21,7 @@ def singlerun(seed):
     N, kd, U = 60, 0.5, 0.5
     ka = kd * (L * L * L) * (1 - U) / (U * U * N)
     kon, koff = ka, kd
-    # kD = 4 * math.pi * 4 * float(radius) * float(D)
+    # kD = 4 * numpy.pi * 4 * float(radius) * float(D)
     # kon = kD * ka / (kD + ka)
     # koff = kd * kon / ka
     rr1 = create_unbinding_reaction_rule(sp1, sp2, sp3, koff)
@@ -51,18 +52,34 @@ def singlerun(seed):
         t, N1, N2, N3 = (sim.t(),
             w.num_molecules(sp1), w.num_molecules(sp2), w.num_molecules(sp3))
         print "%e\t%g\t%g\t%g" % (t, N1, N2, N3)
-        data.append((t, N1, N2, N3))
+        data.append(numpy.array([t, N1, N2, N3]))
 
     next_time, dt = 0.0, 0.05
     log()
-    for i in xrange(100):
+    for i in range(100):
         next_time += dt
         while sim.step(next_time):
             pass
         log()
 
-    return data
+    return numpy.asarray(data)
+
+def run(filename="test.dat", num_trials=10):
+    singlerun(0)
+
+    # data = singlerun(0)
+    # for i in range(1, num_trials):
+    #     data += singlerun(i)
+    # numpy.savetxt(filename, data / num_trials)
 
 
 if __name__ == "__main__":
-    singlerun(0)
+    import sys
+
+
+    if len(sys.argv) > 2:
+        run(sys.argv[1], int(sys.argv[2]))
+    elif len(sys.argv) == 2:
+        run(sys.argv[1])
+    else:
+        run()
