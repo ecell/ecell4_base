@@ -1,6 +1,8 @@
 import sys
 import glob
-from distutils.core import setup, Command
+# from distutils.core import setup, Command
+from setuptools import setup
+from distutils.core import Command
 from distutils.extension import Extension
 import unittest
 
@@ -57,7 +59,8 @@ if with_cpp_shared_libraries:
         ]
 else:
     dependent_libs = [
-        'gsl', 'cblas', 'libhdf5_hl_cpp', 'libhdf5_cpp', 'libhdf5_hl', 'libhdf5']
+        'gsl', 'cblas', 'hdf5_cpp', 'hdf5']
+        # 'gsl', 'cblas', 'libhdf5_hl_cpp', 'libhdf5_cpp', 'libhdf5_hl', 'libhdf5']
     core_src = glob.glob("../ecell4/core/*.cpp")
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,

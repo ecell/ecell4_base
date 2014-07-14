@@ -40,7 +40,7 @@ def singlerun(seed):
     w = world_type(Position3(L, L, L), rng) # gillespie
     # w = world_type(Position3(L, L, L)) # ode
     w.add_molecules(sp1, N)
-    # w.save("test.h5")
+    w.save("test.h5")
 
     sim = simulator_type(m, w)
     sim.initialize()
