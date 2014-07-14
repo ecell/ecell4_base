@@ -1,7 +1,11 @@
 #define BOOST_TEST_MODULE "NetworkModel_test"
-#define BOOST_TEST_NO_LIB
 
-#include <boost/test/included/unit_test.hpp>
+#ifdef UNITTEST_FRAMEWORK_LIBRARY_EXIST
+#   include <boost/test/unit_test.hpp>
+#else
+#   define BOOST_TEST_NO_LIB
+#   include <boost/test/included/unit_test.hpp>
+#endif
 
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/types.hpp>

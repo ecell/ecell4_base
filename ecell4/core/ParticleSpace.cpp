@@ -102,7 +102,7 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleSpaceVectorImpl::list_particles_within_radius(
     const Position3& pos, const Real& radius) const
 {
-    const Real rsq(gsl_pow_2(radius));
+    const Real rsq(pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
     for (particle_container_type::const_iterator i(particles_.begin());
@@ -122,7 +122,7 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleSpaceVectorImpl::list_particles_within_radius(
     const Position3& pos, const Real& radius, const ParticleID& ignore) const
 {
-    const Real rsq(gsl_pow_2(radius));
+    const Real rsq(pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
     for (particle_container_type::const_iterator i(particles_.begin());
@@ -146,7 +146,7 @@ ParticleSpaceVectorImpl::list_particles_within_radius(
     const Position3& pos, const Real& radius,
     const ParticleID& ignore1, const ParticleID& ignore2) const
 {
-    const Real rsq(gsl_pow_2(radius));
+    const Real rsq(pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
     for (particle_container_type::const_iterator i(particles_.begin());

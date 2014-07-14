@@ -2,10 +2,10 @@ import numpy
 import time
 from ecell4.core import *
 
-from ecell4.lattice import (
-    LatticeWorld as world_type, LatticeSimulator as simulator_type)
-# from ecell4.gillespie import (
-#     GillespieWorld as world_type, GillespieSimulator as simulator_type)
+# from ecell4.lattice import (
+#     LatticeWorld as world_type, LatticeSimulator as simulator_type)
+from ecell4.gillespie import (
+    GillespieWorld as world_type, GillespieSimulator as simulator_type)
 # from ecell4.ode import (
 #     ODEWorld as world_type, ODESimulator as simulator_type)
 
@@ -37,8 +37,8 @@ def singlerun(seed):
     rng = GSLRandomNumberGenerator()
     rng.seed(seed)
 
-    w = world_type(Position3(L, L, L), voxel_radius, rng) # lattice
-    # w = world_type(Position3(L, L, L), rng) # gillespie
+    # w = world_type(Position3(L, L, L), voxel_radius, rng) # lattice
+    w = world_type(Position3(L, L, L), rng) # gillespie
     # w = world_type(Position3(L, L, L)) # ode
     w.add_molecules(sp1, N)
     # w.save("test.h5")

@@ -30,18 +30,20 @@ void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
     }
 
 #if defined(HAVE_BOOST_REGEX)
-    boost::regex r1(
+    using namespace boost;
+
+    regex r1(
         "^\\s*(\\w+)\\s*(\\(\\s*([\\w\\s\\^=,]*)\\))?\\s*$");
-    boost::smatch results1;
-    if (boost::regex_match(serial, results1, r1))
+    smatch results1;
+    if (regex_match(serial, results1, r1))
     {
         name_ = std::string(results1.str(1).c_str());
         if (results1.str(3).size() > 0)
         {
-            boost::regex r2(
+            regex r2(
                 "\\s*(\\w+)(\\s*=\\s*(\\w+))?(\\s*\\^\\s*(\\w+))?\\s*");
-            // boost::match_results<std::string::const_iterator> results2;
-            boost::smatch results2;
+            // match_results<std::string::const_iterator> results2;
+            smatch results2;
             std::vector<std::string> sites;
             boost::split(
                 sites, static_cast<const std::string>(results1.str(3)),
@@ -50,7 +52,7 @@ void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
             for (std::vector<std::string>::const_iterator i(sites.begin());
                 i != sites.end(); ++i)
             {
-                if (boost::regex_match(*i, results2, r2))
+                if (regex_match(*i, results2, r2))
                 {
                     if (results2.str(3).size() > 0)
                     {

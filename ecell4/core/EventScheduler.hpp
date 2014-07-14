@@ -65,10 +65,10 @@ protected:
 
 public:
 
-    typedef typename EventPriorityQueue::size_type size_type;
-    typedef typename EventPriorityQueue::identifier_type identifier_type;
-    typedef typename EventPriorityQueue::value_type value_type;
-    typedef boost::iterator_range<typename EventPriorityQueue::const_iterator>
+    typedef EventPriorityQueue::size_type size_type;
+    typedef EventPriorityQueue::identifier_type identifier_type;
+    typedef EventPriorityQueue::value_type value_type;
+    typedef boost::iterator_range<EventPriorityQueue::const_iterator>
         events_range;
 
 public:

@@ -29,9 +29,9 @@ LatticeSpace::~LatticeSpace()
  */
 void LatticeSpace::set_lattice_properties(const bool is_periodic)
 {
-    HCP_L = voxel_radius_/sqrt(3);
-    HCP_X = voxel_radius_*sqrt(8.0/3); //Lx
-    HCP_Y = voxel_radius_*sqrt(3); //Ly
+    HCP_L = voxel_radius_ / sqrt(3.0);
+    HCP_X = voxel_radius_ * sqrt(8.0 / 3.0); //Lx
+    HCP_Y = voxel_radius_ * sqrt(3.0); //Ly
 
     const Real lengthX = edge_lengths_[0];
     const Real lengthY = edge_lengths_[1];
@@ -183,7 +183,7 @@ LatticeSpace::get_voxel(const ParticleID& pid) const
     for (spmap::const_iterator i(spmap_.begin()); i != spmap_.end(); ++i)
     {
         const MolecularType& mt((*i).second);
-        typename MolecularType::container_type::const_iterator j(mt.find(pid));
+        MolecularType::container_type::const_iterator j(mt.find(pid));
         if (j != mt.end())
         {
             const coordinate_type coord(private2coord((*j).first));
@@ -384,7 +384,7 @@ bool LatticeSpace::remove_voxel(const ParticleID& pid)
     for (spmap::iterator i(spmap_.begin()); i != spmap_.end(); ++i)
     {
         MolecularType& mt((*i).second);
-        typename MolecularType::container_type::const_iterator j(mt.find(pid));
+        MolecularType::container_type::const_iterator j(mt.find(pid));
         if (j != mt.end())
         {
             const private_coordinate_type coord((*j).first);

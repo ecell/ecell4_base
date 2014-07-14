@@ -37,8 +37,10 @@ void Journal::logv(enum level lv, char const* format, va_list ap)
     if (lv < level_)
         return;
 
+    using namespace std;
+
     char buf[1024];
-    std::vsnprintf(buf, sizeof(buf), format, ap);
+    vsnprintf(buf, sizeof(buf), format, ap);
 
     std::fprintf(stderr, "%s: %-8s ", name_.c_str(), stringize_error_level(lv));
     std::fwrite(buf, sizeof(char), std::strlen(buf), stderr);

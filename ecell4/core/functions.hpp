@@ -2,6 +2,7 @@
 #define __ECELL4_FUNCTIONS_HPP
 
 #include <cmath>
+#include <gsl/gsl_pow_int.h>
 
 
 namespace ecell4
@@ -30,6 +31,16 @@ inline double modulo(const double& p1, const double& p2)
 inline double abs(const double& p1)
 {
     return std::fabs(p1);
+}
+
+inline double pow_2(const double x)
+{
+    return gsl_pow_2(x);
+}
+
+inline double pow_3(const double x)
+{
+    return gsl_pow_3(x);
 }
 
 }
