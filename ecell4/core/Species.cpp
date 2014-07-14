@@ -22,10 +22,10 @@ bool Species::operator>(const Species& rhs) const
     return (serial() > rhs.serial());
 }
 
-bool Species::match(const Species& target) const
-{
-    return spmatch(*this, target);
-}
+// bool Species::match(const Species& target) const
+// {
+//     return spmatch(*this, target);
+// }
 
 class unit_species_comparerator
 {

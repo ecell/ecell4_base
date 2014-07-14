@@ -59,7 +59,8 @@ public:
         for (species_container_type::const_iterator
             i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
         {
-            if ((*i).match(sp))
+            if (sp == *i)
+            // if ((*i).match(sp))
             {
                 Species retval(sp);
                 retval.set_attributes(*i);

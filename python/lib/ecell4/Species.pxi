@@ -54,8 +54,8 @@ cdef class Species:
     def add_unit(self, UnitSpecies usp):
         self.thisptr.add_unit(deref(usp.thisptr))
 
-    def match(self, Species rhs):
-        return self.thisptr.match(deref(rhs.thisptr))
+    # def match(self, Species rhs):
+    #     return self.thisptr.match(deref(rhs.thisptr))
 
     # def get_unit(self, UnitSpecies usp):
     #     return self.thisptr.get_unit(deref(usp.thisptr))

@@ -48,8 +48,8 @@ BOOST_AUTO_TEST_CASE(Species_test_match1)
     sp2.add_unit(UnitSpecies("C"));
     BOOST_CHECK_EQUAL(sp2.serial(), "A.C");
 
-    BOOST_CHECK(sp2.match(sp1));
-    BOOST_CHECK(!sp1.match(sp2));
+    // BOOST_CHECK(sp2.match(sp1));
+    // BOOST_CHECK(!sp1.match(sp2));
 }
 
 BOOST_AUTO_TEST_CASE(Species_test_match2)
@@ -65,24 +65,9 @@ BOOST_AUTO_TEST_CASE(Species_test_match2)
     sp2.add_unit(UnitSpecies("A"));
     BOOST_CHECK_EQUAL(sp2.serial(), "B.A");
 
-    BOOST_CHECK(sp2.match(sp1));
-    BOOST_CHECK(!sp1.match(sp2));
+    // BOOST_CHECK(sp2.match(sp1));
+    // BOOST_CHECK(!sp1.match(sp2));
 }
-
-// BOOST_AUTO_TEST_CASE(Species_test_get_unit)
-// {
-//     Species sp1;
-// 
-//     sp1.add_unit(UnitSpecies("B"));
-//     sp1.add_unit(UnitSpecies("A"));
-//     sp1.add_unit(UnitSpecies("A"));
-//     BOOST_CHECK_EQUAL(sp1.serial(), "A.A.B");
-// //     BOOST_CHECK_EQUAL(sp1.serial(), "B.A.A");
-// 
-//     BOOST_CHECK_EQUAL(sp1.get_unit(UnitSpecies("B")), 2);
-//     BOOST_CHECK_EQUAL(sp1.list_sites().size(), 2);
-// //     BOOST_CHECK_EQUAL(sp1.get_unit(UnitSpecies("C")), 3);
-// }
 
 BOOST_AUTO_TEST_CASE(Species_test_serialization)
 {

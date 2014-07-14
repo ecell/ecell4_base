@@ -170,7 +170,7 @@ public:
     //     return usps;
     // }
 
-    bool match(const Species& target) const;
+    // bool match(const Species& target) const;
 
     const attributes_container_type& attributes() const
     {
