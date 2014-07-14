@@ -534,10 +534,12 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
                     if (itr == ctx.globals.end())
                     {
                         ; //XXX: an invalid global name given
+                        std::cerr << "An invalid global name given ["
+                            << (*i).second.first << "]" << std::endl;
                     }
                     else
                     {
-                        site.first = (*itr).second;
+                        site.second.first = (*itr).second;
                     }
                 }
             }
