@@ -45,7 +45,7 @@ public:
 
     NetworkModel()
         : dirty_(false), species_attributes_(), species_cache_(), reaction_rules_(),
-        fist_order_reaction_rules_map_(), second_order_reaction_rules_map_(),
+        first_order_reaction_rules_map_(), second_order_reaction_rules_map_(),
         species_attribute_cache_()
     {
         ;
