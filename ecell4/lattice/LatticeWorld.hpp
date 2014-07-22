@@ -270,7 +270,7 @@ public:
     void save(const std::string& filename) const
     {
         boost::scoped_ptr<H5::H5File>
-            fout(new H5::H5File(filename, H5F_ACC_TRUNC));
+            fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
         sidgen_.save(fout.get());
         boost::scoped_ptr<H5::Group>
@@ -281,7 +281,7 @@ public:
     void load(const std::string& filename)
     {
         boost::scoped_ptr<H5::H5File>
-            fin(new H5::H5File(filename, H5F_ACC_RDONLY));
+            fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         const H5::Group group(fin->openGroup("LatticeSpace"));
         space_.load(group);
         sidgen_.load(*fin);
