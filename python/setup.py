@@ -56,8 +56,7 @@ if with_cpp_shared_libraries:
             language="c++")
         ]
 else:
-    dependent_libs = [
-        'gsl', 'gslcblas', 'm', 'hdf5_hl_cpp', 'hdf5_cpp', 'hdf5_hl', 'hdf5']
+    dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
     core_src = glob.glob("../ecell4/core/*.cpp")
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
