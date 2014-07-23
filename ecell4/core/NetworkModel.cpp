@@ -147,44 +147,110 @@ void NetworkModel::add_reaction_rule(const ReactionRule& rr)
 
 void NetworkModel::remove_reaction_rule(const ReactionRule& rr)
 {
-    // reaction_rule_container_type::iterator
-    //     i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
-    // if (i == reaction_rules_.end())
-    // {
-    //     throw NotFound("reaction rule not found");
-    // }
+    reaction_rule_container_type::iterator
+        i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
+    if (i == reaction_rules_.end())
+    {
+        throw NotFound("reaction rule not found");
+    }
 
-    // reaction_rule_container_type::size_type const
-    //     idx(i - reaction_rules_.begin()), last_idx(reaction_rules_.size() - 1);
-    // reaction_rules_map_type::iterator
-    //     j(reaction_rules_map_.find(rr.reactants()));
-    // if (j == reaction_rules_map_.end())
-    // {
-    //     throw IllegalState("no corresponding map key found");
-    // }
-    // else if ((*j).second.erase(idx) == 0)
-    // {
-    //     throw IllegalState("no corresponding map value found");
-    // }
+    reaction_rule_container_type::size_type const
+        idx(i - reaction_rules_.begin()), last_idx(reaction_rules_.size() - 1);
+    if (rr.reactants().size() == 1)
+    {
+        first_order_reaction_rules_map_type::iterator
+            j(first_order_reaction_rules_map_.find(rr.reactants()[0].serial()));
+        if (j == first_order_reaction_rules_map_.end())
+        {
+            throw IllegalState("no corresponding map key found");
+        }
 
-    // if (idx < last_idx)
-    // {
-    //     reaction_rule_container_type::value_type const
-    //         last_value(reaction_rules_[last_idx]);
-    //     (*i) = last_value;
-    //     j = reaction_rules_map_.find(last_value.reactants());
-    //     if (j == reaction_rules_map_.end())
-    //     {
-    //         throw IllegalState("no corresponding map key for the last found");
-    //     }
-    //     else if ((*j).second.erase(last_idx) == 0)
-    //     {
-    //         throw IllegalState("no corresponding map value for the last found");
-    //     }
-    //     (*j).second.insert(idx);
-    // }
+        first_order_reaction_rules_map_type::mapped_type::iterator
+            k(std::remove((*j).second.begin(), (*j).second.end(), idx));
+        if (k == (*j).second.end())
+        {
+            throw IllegalState("no corresponding map value found");
+        }
+        else
+        {
+            (*j).second.erase(k, (*j).second.end());
+        }
+    }
+    else if (rr.reactants().size() == 2)
+    {
+        second_order_reaction_rules_map_type::iterator
+            j(second_order_reaction_rules_map_.find(std::make_pair(
+                rr.reactants()[0].serial(), rr.reactants()[1].serial())));
+        if (j == second_order_reaction_rules_map_.end())
+        {
+            throw IllegalState("no corresponding map key found");
+        }
 
-    // reaction_rules_.pop_back();
+        second_order_reaction_rules_map_type::mapped_type::iterator
+            k(std::remove((*j).second.begin(), (*j).second.end(), idx));
+        if (k == (*j).second.end())
+        {
+            throw IllegalState("no corresponding map value found");
+        }
+        else
+        {
+            (*j).second.erase(k, (*j).second.end());
+        }
+    }
+
+    if (idx < last_idx)
+    {
+        reaction_rule_container_type::value_type const
+            last_value(reaction_rules_[last_idx]);
+        (*i) = last_value;
+
+        if (last_value.reactants().size() == 1)
+        {
+            first_order_reaction_rules_map_type::iterator
+                j(first_order_reaction_rules_map_.find(
+                    last_value.reactants()[0].serial()));
+            if (j == first_order_reaction_rules_map_.end())
+            {
+                throw IllegalState("no corresponding map key for the last found");
+            }
+
+            first_order_reaction_rules_map_type::mapped_type::iterator
+                k(std::remove((*j).second.begin(), (*j).second.end(), last_idx));
+            if (k == (*j).second.end())
+            {
+                throw IllegalState("no corresponding map value found");
+            }
+            else
+            {
+                (*j).second.erase(k, (*j).second.end());
+            }
+            (*j).second.push_back(idx);
+        }
+        else if (last_value.reactants().size() == 2)
+        {
+            second_order_reaction_rules_map_type::iterator
+                j(second_order_reaction_rules_map_.find(std::make_pair(
+                    last_value.reactants()[0].serial(),
+                    last_value.reactants()[1].serial())));
+            if (j == second_order_reaction_rules_map_.end())
+            {
+                throw IllegalState("no corresponding map key for the last found");
+            }
+            second_order_reaction_rules_map_type::mapped_type::iterator
+                k(std::remove((*j).second.begin(), (*j).second.end(), last_idx));
+            if (k == (*j).second.end())
+            {
+                throw IllegalState("no corresponding map value found");
+            }
+            else
+            {
+                (*j).second.erase(k, (*j).second.end());
+            }
+            (*j).second.push_back(idx);
+        }
+    }
+
+    reaction_rules_.pop_back();
     dirty_ = true;
 }
 
