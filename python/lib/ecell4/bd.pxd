@@ -43,7 +43,7 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         void remove_molecules(Cpp_Species& sp, Integer num)
         void save(string filename)
         void load(string filename)
-        void bind_to(shared_ptr[Cpp_NetworkModel])
+        void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
 ## BDWorld
@@ -61,7 +61,7 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         #     shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_BDWorld],
         #     Integer dissociation_retry_moves) except +
         Cpp_BDSimulator(
-            shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_BDWorld]) except +
+            shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld]) except +
         Integer num_steps()
         void step()
         bool step(Real& upto)
@@ -70,7 +70,7 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         void set_dt(Real& dt)
         Real next_time()
         void initialize()
-        shared_ptr[Cpp_NetworkModel] model()
+        shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_BDWorld] world()
 
 ## BDSimulator

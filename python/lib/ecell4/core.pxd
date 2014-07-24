@@ -170,6 +170,36 @@ cdef extern from "ecell4/core/ParticleSpace.hpp" namespace "ecell4":
 cdef class ParticleSpaceVectorImpl:
     cdef Cpp_ParticleSpaceVectorImpl* thisptr
 
+## Cpp_Model
+#  ecell4::Model
+cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Model "ecell4::Model":
+        Cpp_Model() except +
+        void add_species_attribute(Cpp_Species sp)
+        bool has_species_attribute(Cpp_Species sp)
+        void remove_species_attribute(Cpp_Species sp)
+        void add_reaction_rule(Cpp_ReactionRule)
+        void remove_reaction_rule(Cpp_ReactionRule)
+        bool has_reaction_rule(Cpp_ReactionRule)
+        Cpp_Species apply_species_attributes(Cpp_Species& sp)
+        vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
+        vector[Cpp_ReactionRule] query_reaction_rules(
+            Cpp_Species sp, Cpp_Species sp)
+
+        # vector[Cpp_Species] list_species()
+        # Cpp_Species create_species(string name)
+        # Integer num_reaction_rules()
+        # vector[Cpp_ReactionRule] reaction_rules()
+        # vector[Cpp_Species] species_attributes()
+
+## Model
+#  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
+cdef class Model:
+    # cdef Cpp_Model* thisptr
+    cdef shared_ptr[Cpp_Model]* thisptr
+
+cdef Model Model_from_Cpp_Model(shared_ptr[Cpp_Model] m)
+
 ## Cpp_NetworkModel
 #  ecell4::NetworkModel
 cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":

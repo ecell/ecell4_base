@@ -22,11 +22,11 @@ class LatticeSpace
 {
 protected:
 
-    typedef std::map<Species, MolecularType> spmap;
     typedef std::vector<MolecularTypeBase*> voxel_container;
 
 public:
 
+    typedef std::map<Species, MolecularType> spmap;
     typedef Integer coordinate_type;
     typedef coordinate_type private_coordinate_type;
 
@@ -66,6 +66,7 @@ public:
 
     bool remove_particle(const ParticleID& pid);
     bool remove_voxel(const ParticleID& pid);
+    bool remove_voxel_private(const private_coordinate_type coord);
 
     bool update_particle(const ParticleID& pid, const Particle& p);
 
@@ -92,7 +93,6 @@ public:
     // bool register_species(const Species& sp);
     // bool update_molecule(private_coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
-    bool remove_molecule(const private_coordinate_type coord);
     bool move(coordinate_type from, coordinate_type to);
     std::pair<private_coordinate_type, bool> move_to_neighbor(private_coordinate_type coord, Integer nrand);
     std::pair<private_coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
@@ -193,6 +193,11 @@ public:
             const private_coordinate_type& private_coord) const;
 
     private_coordinate_type position2private_coord(const Position3& pos) const;
+
+    const spmap& molecular_types() const
+    {
+        return spmap_;
+    }
 
 protected:
 

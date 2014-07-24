@@ -15,20 +15,23 @@ void LatticeSimulator::initialize()
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
-        register_step_event(*itr);
+        register_events(*itr);
     }
 
-    NetworkModel::reaction_rule_container_type rules(model_->reaction_rules());
-    for (NetworkModel::reaction_rule_container_type::iterator itr(rules.begin());
-            itr != rules.end(); ++itr)
-    {
-        if ((*itr).reactants().size() == 1)
-        {
-            const boost::shared_ptr<EventScheduler::Event> event(
-                    create_first_order_reaction_event(*itr));
-            scheduler_.add(event);
-        }
-    }
+    // Model::reaction_rule_container_type rules(model_->reaction_rules());
+    // for (Model::reaction_rule_container_type::iterator itr(rules.begin());
+    //         itr != rules.end(); ++itr)
+    // std::vector<ReactionRule> rules(model_->list_reaction_rules());
+    // for (std::vector<ReactionRule>::iterator itr(rules.begin());
+    //     itr != rules.end(); ++itr)
+    // {
+    //     if ((*itr).reactants().size() == 1)
+    //     {
+    //         const boost::shared_ptr<EventScheduler::Event> event(
+    //                 create_first_order_reaction_event(*itr));
+    //         scheduler_.add(event);
+    //     }
+    // }
 
     dt_ = scheduler_.next_time() - t();
 }
@@ -58,10 +61,11 @@ boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_step_event(
 }
 
 boost::shared_ptr<EventScheduler::Event>
-LatticeSimulator::create_first_order_reaction_event(const ReactionRule& reaction_rule)
+LatticeSimulator::create_first_order_reaction_event(
+    const ReactionRule& reaction_rule, const Real& t)
 {
     boost::shared_ptr<EventScheduler::Event> event(new FirstOrderReactionEvent(
-                this, reaction_rule));
+                this, reaction_rule, t));
     return event;
 }
 
@@ -292,11 +296,29 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
     return std::pair<bool, Reaction<Voxel> >(false, reaction);
 }
 
-void LatticeSimulator::register_step_event(const Species& species)
+// void LatticeSimulator::register_step_event(const Species& species)
+// {
+//     const boost::shared_ptr<EventScheduler::Event> event(
+//             create_step_event(species, world_->t()));
+//     scheduler_.add(event);
+// }
+
+void LatticeSimulator::register_events(const Species& sp)
 {
-    const boost::shared_ptr<EventScheduler::Event> event(
-            create_step_event(species, world_->t()));
-    scheduler_.add(event);
+    const boost::shared_ptr<EventScheduler::Event> step_event(
+            create_step_event(sp, world_->t()));
+    scheduler_.add(step_event);
+
+    std::vector<ReactionRule> reaction_rules(model_->query_reaction_rules(sp));
+    for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
+        i != reaction_rules.end(); ++i)
+    {
+        const ReactionRule& rr(*i);
+        const boost::shared_ptr<EventScheduler::Event>
+            first_order_reaction_event(
+                create_first_order_reaction_event(rr, world_->t()));
+        scheduler_.add(first_order_reaction_event);
+    }
 }
 
 void LatticeSimulator::step()
@@ -345,7 +367,7 @@ void LatticeSimulator::step_()
     for (std::vector<Species>::const_iterator itr(new_species_.begin());
             itr != new_species_.end(); ++itr)
     {
-        register_step_event(*itr);
+        register_events(*itr);
     }
 
     num_steps_++;

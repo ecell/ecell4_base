@@ -10,7 +10,7 @@
 #include <ecell4/core/MolecularType.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
-#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/Model.hpp>
 
 namespace ecell4
 {
@@ -31,6 +31,7 @@ public:
     typedef LatticeSpace::coordinate_type coordinate_type;
     typedef LatticeSpace::private_coordinate_type private_coordinate_type;
     typedef LatticeSpace::particle_info particle_info;
+    typedef LatticeSpace::spmap spmap;
     typedef MoleculeInfo molecule_info_type;
 
 public:
@@ -86,7 +87,7 @@ public:
                 radius = std::atof(sp.get_attribute("radius").c_str());
             }
 
-            if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
+            if (boost::shared_ptr<Model> bound_model = lock_model())
             {
                 Species attributed(bound_model->apply_species_attributes(sp));
                 if (!with_D && attributed.has_attribute("D"))
@@ -117,6 +118,11 @@ public:
     Integer num_molecules() const;
     Integer num_particles() const;
     Integer num_particles(const Species& sp) const;
+
+    const spmap& molecular_types() const
+    {
+        return space_.molecular_types();
+    }
 
     /**
      * create and add a new particle
@@ -184,6 +190,7 @@ public:
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
     void remove_molecules(const Species& sp, const Integer& num);
+    void remove_molecules_exact(const Species& sp, const Integer& num);
     bool remove_voxel_private(const private_coordinate_type coord);
     bool move(coordinate_type from, coordinate_type to);
     std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);
@@ -194,6 +201,8 @@ public:
     std::pair<private_coordinate_type, bool> check_neighbor_private(
             const private_coordinate_type coord);
     // bool update_molecule(coordinate_type at, Species species);
+
+    const Species& draw_species(const Species& pttrn) const;
 
     std::pair<std::pair<ParticleID, Voxel>, bool> place_voxel_private(const Species& sp, const private_coordinate_type& coord)
     {
@@ -288,9 +297,9 @@ public:
         rng_->load(*fin);
     }
 
-    void bind_to(boost::shared_ptr<NetworkModel> model)
+    void bind_to(boost::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
+        if (boost::shared_ptr<Model> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -301,7 +310,7 @@ public:
         model_ = model;
     }
 
-    boost::shared_ptr<NetworkModel> lock_model() const
+    boost::shared_ptr<Model> lock_model() const
     {
         return model_.lock();
     }
@@ -312,7 +321,7 @@ protected:
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 
-    boost::weak_ptr<NetworkModel> model_;
+    boost::weak_ptr<Model> model_;
 };
 
 } // lattice

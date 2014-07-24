@@ -61,7 +61,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer row_size()
         Integer layer_size()
         Integer size()
-        void bind_to(shared_ptr[Cpp_NetworkModel])
+        void bind_to(shared_ptr[Cpp_Model])
         Cpp_Position3 coordinate2position(Integer)
         Integer position2coordinate(Cpp_Position3)
         shared_ptr[Cpp_RandomNumberGenerator] rng()
@@ -79,7 +79,7 @@ cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
 cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattice":
     cdef cppclass Cpp_LatticeSimulator "ecell4::lattice::LatticeSimulator":
         Cpp_LatticeSimulator(
-            shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_LatticeWorld]) except +
+            shared_ptr[Cpp_Model], shared_ptr[Cpp_LatticeWorld]) except +
         Integer num_steps()
         Real next_time()
         void step()
@@ -88,7 +88,7 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         Real dt()
         void set_dt(Real)
         void initialize()
-        shared_ptr[Cpp_NetworkModel] model()
+        shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_LatticeWorld] world()
 
 ## LatticeSimulator

@@ -5,7 +5,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/Model.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/Reaction.hpp>
 #include <ecell4/core/MolecularTypeBase.hpp>
@@ -22,11 +22,11 @@ namespace lattice
 {
 
 class LatticeSimulator
-    : public Simulator<NetworkModel, LatticeWorld>
+    : public Simulator<Model, LatticeWorld>
 {
 public:
 
-    typedef Simulator<NetworkModel, LatticeWorld> base_type;
+    typedef Simulator<Model, LatticeWorld> base_type;
 
 protected:
 
@@ -81,10 +81,11 @@ protected:
 
     struct FirstOrderReactionEvent : EventScheduler::Event
     {
-        FirstOrderReactionEvent(LatticeSimulator* sim, const ReactionRule& rule)
-            : EventScheduler::Event(0.0), sim_(sim), rule_(rule)
+        FirstOrderReactionEvent(
+            LatticeSimulator* sim, const ReactionRule& rule, const Real& t)
+            : EventScheduler::Event(t), sim_(sim), rule_(rule)
         {
-            time_ = sim_->t() + draw_dt();
+            time_ = t + draw_dt();
         }
 
         virtual ~FirstOrderReactionEvent()
@@ -129,7 +130,7 @@ protected:
 public:
 
     LatticeSimulator(
-            boost::shared_ptr<NetworkModel> model,
+            boost::shared_ptr<Model> model,
             boost::shared_ptr<LatticeWorld> world)
         : base_type(model, world)
     {
@@ -165,7 +166,7 @@ protected:
     boost::shared_ptr<EventScheduler::Event> create_step_event(
         const Species& species, const Real& t);
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
-        const ReactionRule& reaction_rule);
+        const ReactionRule& reaction_rule, const Real& t);
     std::pair<bool, Reaction<Voxel> > attempt_reaction_(
         const LatticeWorld::particle_info info,
         LatticeWorld::coordinate_type to_coord);
@@ -177,7 +178,8 @@ protected:
         const ReactionRule& reaction_rule,
         const LatticeWorld::particle_info info);
     void step_();
-    void register_step_event(const Species& species);
+    void register_events(const Species& species);
+    // void register_step_event(const Species& species);
 
 protected:
 

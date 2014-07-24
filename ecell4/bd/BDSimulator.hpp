@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 
-#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/Model.hpp>
 #include <ecell4/core/Simulator.hpp>
 
 #include "BDWorld.hpp"
@@ -18,15 +18,15 @@ namespace bd
 {
 
 class BDSimulator
-    : public Simulator<NetworkModel, BDWorld>
+    : public Simulator<Model, BDWorld>
 {
 public:
 
-    typedef Simulator<NetworkModel, BDWorld> base_type;
+    typedef Simulator<Model, BDWorld> base_type;
 
 public:
 
-    BDSimulator(boost::shared_ptr<NetworkModel> model,
+    BDSimulator(boost::shared_ptr<Model> model,
         boost::shared_ptr<BDWorld> world)
         : base_type(model, world), dt_(0)
     {

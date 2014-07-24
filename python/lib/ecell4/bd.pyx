@@ -154,7 +154,7 @@ cdef class BDWorld:
         self.thisptr.get().load(filename)
 
     def bind_to(self, NetworkModel m):
-        self.thisptr.get().bind_to(deref(m.thisptr))
+        self.thisptr.get().bind_to(<shared_ptr[Cpp_Model]>deref(m.thisptr))
 
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
@@ -172,7 +172,7 @@ cdef class BDSimulator:
 
     def __cinit__(self, NetworkModel m, BDWorld w):
         self.thisptr = new Cpp_BDSimulator(
-            deref(m.thisptr), deref(w.thisptr))
+            <shared_ptr[Cpp_Model]>deref(m.thisptr), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -202,7 +202,7 @@ cdef class BDSimulator:
         self.thisptr.initialize()
 
     def model(self):
-        return NetworkModel_from_Cpp_NetworkModel(self.thisptr.model())
+        return Model_from_Cpp_Model(self.thisptr.model())
 
     def world(self):
         return BDWorld_from_Cpp_BDWorld(self.thisptr.world())

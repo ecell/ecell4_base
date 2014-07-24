@@ -9,6 +9,7 @@
 
 #include <boost/test/floating_point_comparison.hpp>
 
+#include <ecell4/core/NetworkModel.hpp>
 #include "../LatticeSimulator.hpp"
 
 using namespace ecell4;

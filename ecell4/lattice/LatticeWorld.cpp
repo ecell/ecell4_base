@@ -160,6 +160,11 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
 
 void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
 {
+    remove_molecules_exact(sp, num);
+}
+
+void LatticeWorld::remove_molecules_exact(const Species& sp, const Integer& num)
+{
     if (num < 0)
     {
         throw std::invalid_argument("The number of molecules must be positive.");
@@ -185,7 +190,7 @@ void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
 
 bool LatticeWorld::remove_voxel_private(const private_coordinate_type coord)
 {
-    return space_.remove_molecule(coord);
+    return space_.remove_voxel_private(coord);
 }
 
 bool LatticeWorld::move(coordinate_type from, coordinate_type to)

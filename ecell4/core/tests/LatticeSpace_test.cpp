@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
     const MolecularTypeBase* mt(space.get_molecular_type(private_coord));
     BOOST_CHECK(!mt->is_vacant());
 
-    BOOST_CHECK(space.remove_molecule(private_coord));
+    BOOST_CHECK(space.remove_voxel_private(private_coord));
     const MolecularTypeBase* vacant(space.get_molecular_type(private_coord));
     BOOST_CHECK(vacant->is_vacant());
 }

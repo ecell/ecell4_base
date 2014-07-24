@@ -228,7 +228,7 @@ cdef class LatticeWorld:
         return self.thisptr.get().size()
 
     def bind_to(self, NetworkModel m):
-        self.thisptr.get().bind_to(deref(m.thisptr))
+        self.thisptr.get().bind_to(<shared_ptr[Cpp_Model]>deref(m.thisptr))
 
     def coordinate2position(self, Integer coord):
         cdef Cpp_Position3 pos = self.thisptr.get().coordinate2position(coord)
@@ -254,7 +254,7 @@ cdef class LatticeSimulator:
 
     def __cinit__(self, NetworkModel m, LatticeWorld w):
         self.thisptr = new Cpp_LatticeSimulator(
-            deref(m.thisptr), deref(w.thisptr))
+            <shared_ptr[Cpp_Model]>deref(m.thisptr), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -284,7 +284,7 @@ cdef class LatticeSimulator:
         self.thisptr.initialize()
 
     def model(self):
-        return NetworkModel_from_Cpp_NetworkModel(self.thisptr.model())
+        return Model_from_Cpp_Model(self.thisptr.model())
 
     def world(self):
         return LatticeWorld_from_Cpp_LatticeWorld(self.thisptr.world())
