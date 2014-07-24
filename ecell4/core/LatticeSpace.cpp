@@ -72,7 +72,7 @@ Integer LatticeSpace::num_species() const
 
 Integer LatticeSpace::num_molecules(const Species& sp) const
 {
-    return num_voxels(sp) * 1;
+    return num_voxels(sp);
 }
 
 const Position3& LatticeSpace::edge_lengths() const
@@ -413,9 +413,14 @@ MolecularTypeBase* LatticeSpace::get_molecular_type(private_coordinate_type coor
     return voxels_.at(coord);
 }
 
-bool LatticeSpace::has_species(const Species& sp) const
+bool LatticeSpace::has_species_exact(const Species& sp) const
 {
     return spmap_.find(sp) != spmap_.end();
+}
+
+bool LatticeSpace::has_species(const Species& sp) const
+{
+    return has_species_exact(sp);
 }
 
 bool LatticeSpace::remove_particle(const ParticleID& pid)
@@ -732,6 +737,17 @@ LatticeSpace::private_coordinate_type LatticeSpace::apply_boundary_(const privat
     return private_global2private_coord(global);
 }
 
+Integer LatticeSpace::num_voxels_exact(const Species& sp) const
+{
+    spmap::const_iterator itr(spmap_.find(sp));
+    if (itr == spmap_.end())
+    {
+        return 0;
+    }
+    const MolecularTypeBase* mt(&((*itr).second));
+    return mt->size();
+}
+
 Integer LatticeSpace::num_voxels(const Species& sp) const
 {
     Integer count(0);
@@ -745,14 +761,6 @@ Integer LatticeSpace::num_voxels(const Species& sp) const
         }
     }
     return count;
-
-    // spmap::const_iterator itr(spmap_.find(sp));
-    // if (itr == spmap_.end())
-    // {
-    //     return 0;
-    // }
-    // const MolecularTypeBase* mt(&((*itr).second));
-    // return mt->size();
 }
 
 Integer LatticeSpace::num_voxels() const

@@ -113,11 +113,15 @@ public:
     const Real volume() const;
     Integer num_species() const;
     bool has_species(const Species &sp) const;
+    bool has_species_exact(const Species &sp) const;
 
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules() const;
     Integer num_particles() const;
     Integer num_particles(const Species& sp) const;
+    Integer num_voxels() const;
+    Integer num_voxels(const Species& sp) const;
+    Integer num_voxels_exact(const Species& sp) const;
 
     const spmap& molecular_types() const
     {

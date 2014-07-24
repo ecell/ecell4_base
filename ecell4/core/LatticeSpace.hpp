@@ -55,6 +55,7 @@ public:
     Integer num_particles(const Species& sp) const;
 
     bool has_species(const Species& sp) const;
+    bool has_species_exact(const Species& sp) const;
     bool has_particle(const ParticleID& pid) const;
     bool has_voxel(const ParticleID& pid) const;
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const;
@@ -79,6 +80,7 @@ public:
         list_voxels(const Species& sp) const;
     std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
 
+    Integer num_voxels_exact(const Species& sp) const
     Integer num_voxels(const Species& sp) const;
     Integer num_voxels() const;
 

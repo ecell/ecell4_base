@@ -109,7 +109,7 @@ protected:
         Real draw_dt()
         {
             const Species reactant(*(rule_.reactants().begin()));
-            const Integer num_r(sim_->world_->num_molecules(reactant));
+            const Integer num_r(sim_->world_->num_voxels_exact(reactant));
             const Real k(rule_.k());
             const Real p = k * num_r;
             Real dt(inf);

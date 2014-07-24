@@ -39,6 +39,11 @@ bool LatticeWorld::has_species(const Species &sp) const
     return space_.has_species(sp);
 }
 
+bool LatticeWorld::has_species_exact(const Species &sp) const
+{
+    return space_.has_species_exact(sp);
+}
+
 Integer LatticeWorld::num_molecules(const Species& sp) const
 {
     return space_.num_molecules(sp);
@@ -52,6 +57,21 @@ Integer LatticeWorld::num_molecules() const
 Integer LatticeWorld::num_particles(const Species& sp) const
 {
     return space_.num_particles(sp);
+}
+
+Integer LatticeWorld::num_voxels() const;
+{
+    return space_.num_voxels();
+}
+
+Integer LatticeWorld::num_voxels(const Species& sp) const;
+{
+    return space_.num_voxels(sp);
+}
+
+Integer LatticeWorld::num_voxels_exact(const Species& sp) const
+{
+    return space_.num_voxels_exact(sp);
 }
 
 bool LatticeWorld::has_particle(const ParticleID& pid) const
