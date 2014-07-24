@@ -80,7 +80,7 @@ public:
         list_voxels(const Species& sp) const;
     std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
 
-    Integer num_voxels_exact(const Species& sp) const
+    Integer num_voxels_exact(const Species& sp) const;
     Integer num_voxels(const Species& sp) const;
     Integer num_voxels() const;
 

@@ -59,12 +59,12 @@ Integer LatticeWorld::num_particles(const Species& sp) const
     return space_.num_particles(sp);
 }
 
-Integer LatticeWorld::num_voxels() const;
+Integer LatticeWorld::num_voxels() const
 {
     return space_.num_voxels();
 }
 
-Integer LatticeWorld::num_voxels(const Species& sp) const;
+Integer LatticeWorld::num_voxels(const Species& sp) const
 {
     return space_.num_voxels(sp);
 }
