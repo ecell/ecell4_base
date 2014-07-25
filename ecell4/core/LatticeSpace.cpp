@@ -70,6 +70,11 @@ Integer LatticeSpace::num_species() const
     return spmap_.size();
 }
 
+Integer LatticeSpace::num_molecules() const
+{
+    return num_voxels();
+}
+
 Integer LatticeSpace::num_molecules(const Species& sp) const
 {
     return num_voxels(sp);

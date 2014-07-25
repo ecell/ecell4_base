@@ -51,12 +51,17 @@ Integer LatticeWorld::num_molecules(const Species& sp) const
 
 Integer LatticeWorld::num_molecules() const
 {
-    return space_.num_particles();
+    return space_.num_molecules();
 }
 
 Integer LatticeWorld::num_particles(const Species& sp) const
 {
     return space_.num_particles(sp);
+}
+
+Integer LatticeWorld::num_particles() const
+{
+    return space_.num_particles();
 }
 
 Integer LatticeWorld::num_voxels() const

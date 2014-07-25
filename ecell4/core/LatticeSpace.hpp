@@ -50,6 +50,7 @@ public:
     }
 
     Integer num_species() const;
+    Integer num_molecules()const;
     Integer num_molecules(const Species& sp)const;
     Integer num_particles() const;
     Integer num_particles(const Species& sp) const;

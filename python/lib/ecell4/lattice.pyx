@@ -71,14 +71,17 @@ cdef class LatticeWorld:
         cdef Cpp_Position3 lengths = self.thisptr.get().edge_lengths()
         return Position3_from_Cpp_Position3(address(lengths))
 
-    def num_particles(self, Species sp):
-        return self.thisptr.get().num_particles(deref(sp.thisptr))
+    def num_particles(self, Species sp = None):
+        if sp is None:
+            return self.thisptr.get().num_particles()
+        else:
+            return self.thisptr.get().num_particles(deref(sp.thisptr))
 
-    # def num_particles(self, Species sp = None):
-    #     if sp is None:
-    #         return self.thisptr.get().num_particles()
-    #     else:
-    #         return self.thisptr.get().num_particles(deref(sp.thisptr))
+    def num_voxels(self, Species sp = None):
+        if sp is None:
+            return self.thisptr.get().num_voxels()
+        else:
+            return self.thisptr.get().num_voxels(deref(sp.thisptr))
 
     def list_particles(self, Species sp = None):
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
@@ -163,8 +166,14 @@ cdef class LatticeWorld:
     # # def has_species(self, Species sp):
     # #     return self.thisptr.get().has_species(deref(sp.thisptr))
 
-    def num_molecules(self, Species sp):
-        return self.thisptr.get().num_molecules(deref(sp.thisptr))
+    # def num_molecules(self, Species sp):
+    #     return self.thisptr.get().num_molecules(deref(sp.thisptr))
+
+    def num_molecules(self, Species sp = None):
+        if sp is None:
+            return self.thisptr.get().num_molecules()
+        else:
+            return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
     # # def add_species(self, Species sp):
     # #     self.thisptr.get().add_species(deref(sp.thisptr))
