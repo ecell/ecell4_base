@@ -3,8 +3,6 @@
 # PREFIX=/usr/local
 # PREFIX=${HOME}/local
 # PREFIX=
-# PREFIX=/home/kaizu/src/ecell4/local
-PREFIX=/home/kaizu/src/ecell4/local2
 
 make clean; rm -rf ${PREFIX}; rm -rf python/build; rm CMakeCache.txt
 cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} .
