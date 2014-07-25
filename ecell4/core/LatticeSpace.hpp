@@ -65,6 +65,8 @@ public:
         list_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
         list_particles(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> >
+        list_particles_exact(const Species& sp) const;
 
     bool remove_particle(const ParticleID& pid);
     bool remove_voxel(const ParticleID& pid);
@@ -79,6 +81,8 @@ public:
      */
     std::vector<std::pair<ParticleID, Voxel> >
         list_voxels(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Voxel> >
+        list_voxels_exact(const Species& sp) const;
     std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
 
     Integer num_voxels_exact(const Species& sp) const;
@@ -91,6 +95,7 @@ public:
 
     std::vector<Species> list_species() const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
+    std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
     MolecularTypeBase* find_molecular_type(const Species& sp);
     MolecularTypeBase* get_molecular_type(private_coordinate_type coord) const;
     // bool register_species(const Species& sp);
