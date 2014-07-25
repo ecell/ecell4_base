@@ -193,7 +193,7 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         # vector[Cpp_Species] species_attributes()
 
 ## Model
-#  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
+#  a python wrapper for Cpp_Model, but wrapped by shared_ptr
 cdef class Model:
     # cdef Cpp_Model* thisptr
     cdef shared_ptr[Cpp_Model]* thisptr
@@ -229,6 +229,36 @@ cdef class NetworkModel:
 
 cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
     shared_ptr[Cpp_NetworkModel] m)
+
+## Cpp_NetfreeModel
+#  ecell4::NetfreeModel
+cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
+    cdef cppclass Cpp_NetfreeModel "ecell4::NetfreeModel":
+        Cpp_NetfreeModel() except +
+        void add_species_attribute(Cpp_Species sp)
+        bool has_species_attribute(Cpp_Species sp)
+        void remove_species_attribute(Cpp_Species sp)
+        void add_reaction_rule(Cpp_ReactionRule)
+        void remove_reaction_rule(Cpp_ReactionRule)
+        bool has_reaction_rule(Cpp_ReactionRule)
+        Integer num_reaction_rules()
+        Cpp_Species apply_species_attributes(Cpp_Species& sp)
+        Cpp_Species create_species(string name)
+        vector[Cpp_Species] list_species()
+        vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
+        vector[Cpp_ReactionRule] query_reaction_rules(
+            Cpp_Species sp, Cpp_Species sp)
+        vector[Cpp_ReactionRule] reaction_rules()
+        vector[Cpp_Species] species_attributes()
+
+## NetfreeModel
+#  a python wrapper for Cpp_NetfreeModel, but wrapped by shared_ptr
+cdef class NetfreeModel:
+    # cdef Cpp_NetfreeModel* thisptr
+    cdef shared_ptr[Cpp_NetfreeModel]* thisptr
+
+cdef NetfreeModel NetfreeModel_from_Cpp_NetfreeModel(
+    shared_ptr[Cpp_NetfreeModel] m)
 
 ## Cpp_Position3
 #  ecell4::Position3

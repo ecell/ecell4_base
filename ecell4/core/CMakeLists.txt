@@ -6,7 +6,7 @@
 
 set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Global.cpp Journal.cpp
-    LatticeSpace.cpp Model.cpp NetworkModel.cpp ParticleSpace.cpp
+    LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Position3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp)
 
 set(HPP_FILES
@@ -16,7 +16,7 @@ set(HPP_FILES
     EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
     MolecularTypeBase.hpp ParticleSpace.hpp RandomNumberGenerator.hpp
     SerialIDGenerator.hpp Species.hpp Voxel.hpp functions.hpp swap.hpp
-    Context.hpp Global.hpp Journal.hpp Model.hpp NetworkModel.hpp
+    Context.hpp Global.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp
     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp UnitSpecies.hpp
     exceptions.hpp get_mapper_mf.hpp types.hpp)
 
