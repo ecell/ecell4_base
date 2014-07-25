@@ -236,8 +236,16 @@ cdef class LatticeWorld:
     def size(self):
         return self.thisptr.get().size()
 
-    def bind_to(self, NetworkModel m):
-        self.thisptr.get().bind_to(<shared_ptr[Cpp_Model]>deref(m.thisptr))
+    def bind_to(self, m):
+        if isinstance(m, NetworkModel):
+            self.thisptr.get().bind_to(
+                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr))
+        elif isinstance(m, NetfreeModel):
+            self.thisptr.get().bind_to(
+                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr))
+        else:
+            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
+                + " the argument must be NetworkModel or NetfreeModel")
 
     def coordinate2position(self, Integer coord):
         cdef Cpp_Position3 pos = self.thisptr.get().coordinate2position(coord)
@@ -261,9 +269,18 @@ cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
 #  a python wrapper for Cpp_LatticeSimulator
 cdef class LatticeSimulator:
 
-    def __cinit__(self, NetworkModel m, LatticeWorld w):
-        self.thisptr = new Cpp_LatticeSimulator(
-            <shared_ptr[Cpp_Model]>deref(m.thisptr), deref(w.thisptr))
+    def __cinit__(self, m, LatticeWorld w):
+        if isinstance(m, NetworkModel):
+            self.thisptr = new Cpp_LatticeSimulator(
+                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr),
+                deref(w.thisptr))
+        elif isinstance(m, NetfreeModel):
+            self.thisptr = new Cpp_LatticeSimulator(
+                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr),
+                deref(w.thisptr))
+        else:
+            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
+                + " the first argument must be NetworkModel or NetfreeModel")
 
     def __dealloc__(self):
         del self.thisptr
