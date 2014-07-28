@@ -212,6 +212,21 @@ public:
         ;
     }
 
+    bool match(const Species& sp)
+    {
+        reactant_container_type reactants;
+        reactants.push_back(sp);
+        return match(reactants);
+    }
+
+    bool match(const Species& sp1, const Species& sp2)
+    {
+        reactant_container_type reactants;
+        reactants.push_back(sp1);
+        reactants.push_back(sp2);
+        return match(reactants);
+    }
+
     bool match(const reactant_container_type& reactants)
     {
         if (pttrn_.reactants().size() != reactants.size())
@@ -344,6 +359,11 @@ public:
     }
 
     std::vector<Species> generate();
+
+    const reactant_container_type& reactants() const
+    {
+        return target_;
+    }
 
 protected:
 

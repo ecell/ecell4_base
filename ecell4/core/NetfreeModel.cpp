@@ -10,43 +10,81 @@ namespace ecell4
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     const Species& sp) const
 {
-    first_order_reaction_rules_map_type::const_iterator
-        i(first_order_reaction_rules_map_.find(sp.serial()));
-
     std::vector<ReactionRule> retval;
-    if (i != first_order_reaction_rules_map_.end())
+    for (reaction_rule_container_type::const_iterator i(reaction_rules_.begin());
+        i != reaction_rules_.end(); ++i)
     {
-        retval.reserve((*i).second.size());
-        for (first_order_reaction_rules_map_type::mapped_type::const_iterator
-                 j((*i).second.begin()); j != (*i).second.end(); ++j)
+        ReactionRuleExpressionMatcher rrexp(*i);
+        if (!rrexp.match(sp))
         {
-            retval.push_back(reaction_rules_[*j]);
+            continue;
         }
+
+        do
+        {
+            const std::vector<Species> products(rrexp.generate());
+            retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
+        }
+        while (rrexp.next());
     }
     return retval;
+
+    // first_order_reaction_rules_map_type::const_iterator
+    //     i(first_order_reaction_rules_map_.find(sp.serial()));
+
+    // std::vector<ReactionRule> retval;
+    // if (i != first_order_reaction_rules_map_.end())
+    // {
+    //     retval.reserve((*i).second.size());
+    //     for (first_order_reaction_rules_map_type::mapped_type::const_iterator
+    //              j((*i).second.begin()); j != (*i).second.end(); ++j)
+    //     {
+    //         retval.push_back(reaction_rules_[*j]);
+    //     }
+    // }
+    // return retval;
 }
 
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     const Species& sp1, const Species& sp2) const
 {
     std::vector<ReactionRule> retval;
-    const std::pair<Species::serial_type, Species::serial_type>
-        key(sp1.serial() < sp2.serial()?
-            std::make_pair(sp1.serial(), sp2.serial()):
-            std::make_pair(sp2.serial(), sp1.serial()));
-
-    second_order_reaction_rules_map_type::const_iterator
-        i(second_order_reaction_rules_map_.find(key));
-    if (i != second_order_reaction_rules_map_.end())
+    for (reaction_rule_container_type::const_iterator i(reaction_rules_.begin());
+        i != reaction_rules_.end(); ++i)
     {
-        retval.reserve((*i).second.size());
-        for (second_order_reaction_rules_map_type::mapped_type::const_iterator
-                 j((*i).second.begin()); j != (*i).second.end(); ++j)
+        ReactionRuleExpressionMatcher rrexp(*i);
+        if (!rrexp.match(sp1, sp2))
         {
-            retval.push_back(reaction_rules_[*j]);
+            continue;
         }
+
+        do
+        {
+            const std::vector<Species> products(rrexp.generate());
+            retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
+        }
+        while (rrexp.next());
     }
     return retval;
+
+    // std::vector<ReactionRule> retval;
+    // const std::pair<Species::serial_type, Species::serial_type>
+    //     key(sp1.serial() < sp2.serial()?
+    //         std::make_pair(sp1.serial(), sp2.serial()):
+    //         std::make_pair(sp2.serial(), sp1.serial()));
+
+    // second_order_reaction_rules_map_type::const_iterator
+    //     i(second_order_reaction_rules_map_.find(key));
+    // if (i != second_order_reaction_rules_map_.end())
+    // {
+    //     retval.reserve((*i).second.size());
+    //     for (second_order_reaction_rules_map_type::mapped_type::const_iterator
+    //              j((*i).second.begin()); j != (*i).second.end(); ++j)
+    //     {
+    //         retval.push_back(reaction_rules_[*j]);
+    //     }
+    // }
+    // return retval;
 }
 
 void NetfreeModel::initialize()
@@ -79,7 +117,7 @@ void NetfreeModel::initialize()
 
 void NetfreeModel::add_species_attribute(const Species& sp)
 {
-    if (has_species_attribute(sp))
+    if (has_species_attribute_exact(sp))
     {
         throw AlreadyExists("species already exists");
     }
@@ -104,6 +142,11 @@ void NetfreeModel::remove_species_attribute(const Species& sp)
 }
 
 bool NetfreeModel::has_species_attribute(const Species& sp) const
+{
+    return has_species_attribute_exact(sp);
+}
+
+bool NetfreeModel::has_species_attribute_exact(const Species& sp) const
 {
     species_container_type::const_iterator i(
         std::find(species_attributes_.begin(), species_attributes_.end(), sp));

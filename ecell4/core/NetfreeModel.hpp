@@ -76,8 +76,7 @@ public:
         for (species_container_type::iterator
             i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
         {
-            if (sp == *i)
-            // if (spmatch(*i, sp))
+            if (spmatch(*i, sp))
             {
                 Species retval(sp);
                 retval.set_attributes(*i);
@@ -93,6 +92,7 @@ public:
 
     void add_species_attribute(const Species& sp);
     bool has_species_attribute(const Species& sp) const;
+    bool has_species_attribute_exact(const Species& sp) const;
     void remove_species_attribute(const Species& sp);
 
     void add_reaction_rule(const ReactionRule& rr);

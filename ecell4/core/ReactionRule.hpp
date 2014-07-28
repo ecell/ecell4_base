@@ -33,6 +33,23 @@ public:
         ;
     }
 
+    ReactionRule(
+        const reactant_container_type& reactants,
+        const product_container_type& products)
+        : k_(0), reactants_(reactants), products_(products)
+    {
+        ;
+    }
+
+    ReactionRule(
+        const reactant_container_type& reactants,
+        const product_container_type& products,
+        const Real& k)
+        : k_(k), reactants_(reactants), products_(products)
+    {
+        ;
+    }
+
     Real k() const
     {
         return k_;
