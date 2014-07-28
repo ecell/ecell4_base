@@ -1,5 +1,5 @@
 language: cpp
-script: sudo PREFIX=/usr/local PYTHONPATH=/usr/local/lib/python2.7/site-packages ./install.sh
+script: sudo PREFIX=/usr/local PYTHONPATH=/usr/local/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages ./install.sh
 compiler:
  - gcc
  - clang
