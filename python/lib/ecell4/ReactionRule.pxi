@@ -44,6 +44,9 @@ cdef class ReactionRule:
     def add_product(self, Species sp):
         self.thisptr.add_product(deref(sp.thisptr))
 
+    def as_string(self):
+        return self.thisptr.as_string()
+
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr):
     cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))
     r = ReactionRule()

@@ -3,6 +3,8 @@
 
 // #include <set>
 #include <stdexcept>
+#include <sstream>
+#include <boost/algorithm/string.hpp>
 
 #include "types.hpp"
 #include "Species.hpp"
@@ -82,6 +84,26 @@ public:
     void add_product(const Species& sp)
     {
         products_.push_back(sp);
+    }
+
+    const std::string as_string() const
+    {
+        std::stringstream oss;
+        std::vector<std::string> tmp;
+        for (reactant_container_type::const_iterator i(reactants_.begin());
+            i != reactants_.end(); ++i)
+        {
+            tmp.push_back((*i).serial());
+        }
+        oss << boost::algorithm::join(tmp, "+") << ">";
+        tmp.clear();
+        for (product_container_type::const_iterator i(products_.begin());
+            i != products_.end(); ++i)
+        {
+            tmp.push_back((*i).serial());
+        }
+        oss << boost::algorithm::join(tmp, "+") << "|" << k_;
+        return oss.str();
     }
 
 protected:

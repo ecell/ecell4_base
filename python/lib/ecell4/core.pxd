@@ -115,6 +115,7 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         void set_k(Real)
         void add_reactant(Cpp_Species)
         void add_product(Cpp_Species)
+        string as_string()
 
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule
