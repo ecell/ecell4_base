@@ -4,7 +4,7 @@
 # PREFIX=${HOME}/local
 # PREFIX=
 
-make clean; rm -rf ${PREFIX}; rm -rf python/build; rm CMakeCache.txt
+# make clean; rm -rf ${PREFIX}; rm -rf python/build; rm CMakeCache.txt
 cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} .
 # cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DWITH_LATTICE=OFF .
 make
