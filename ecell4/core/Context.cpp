@@ -654,6 +654,8 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
 
             products[idx].add_unit(usp);
         }
+
+        products[idx] = format_species(products[idx]);
     }
 
     // std::cout << std::endl << "before: ";

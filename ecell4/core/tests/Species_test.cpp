@@ -78,13 +78,13 @@ BOOST_AUTO_TEST_CASE(Species_test_serialization)
     Species sp1("X(a^1).Y(a^3,b).X(a^2).Y(a^1,b^2).X(a^3)");
 
     BOOST_CHECK_EQUAL(
-        serialize_species(Species("X(a^1).Y(a^3,b).X(a^2).Y(a^1,b^2).X(a^3)")),
+        format_species(Species("X(a^1).Y(a^3,b).X(a^2).Y(a^1,b^2).X(a^3)")).serial(),
         "X(a^1).Y(a^1,b).X(a^2).Y(a^2,b^3).X(a^3)");
     BOOST_CHECK_EQUAL(
-        serialize_species(Species("X(a^1).Y(a^3,b^4).X(a^3).Z(a^4,b^5).Y(a^1,b^2).Z(a^2,b^5)")),
+        format_species(Species("X(a^1).Y(a^3,b^4).X(a^3).Z(a^4,b^5).Y(a^1,b^2).Z(a^2,b^5)")).serial(),
         "X(a^1).Y(a^1,b^2).Z(a^2,b^3).Z(a^4,b^3).Y(a^5,b^4).X(a^5)");
     BOOST_CHECK_EQUAL(
-        serialize_species(Species("X(a^3,b^1).X(a^2,b).X(a,b^3).X(a^1,b^4).X(a^4,b^2)")),
+        format_species(Species("X(a^3,b^1).X(a^2,b).X(a,b^3).X(a^1,b^4).X(a^4,b^2)")).serial(),
         "X(a,b^1).X(a^1,b^2).X(a^2,b^3).X(a^3,b^4).X(a^4,b)");
 }
 

@@ -246,7 +246,7 @@ protected:
     attributes_container_type attributes_;
 };
 
-std::string serialize_species(const Species& sp);
+Species format_species(const Species& sp);
 
 } // ecell4
 

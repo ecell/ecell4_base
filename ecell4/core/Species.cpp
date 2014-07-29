@@ -218,7 +218,7 @@ protected:
     std::vector<std::pair<index_type, index_type> > ignores_;
 };
 
-std::string serialize_species(const Species& sp)
+Species format_species(const Species& sp)
 {
     unit_species_comparerator comp(sp);
     std::vector<unit_species_comparerator::index_type> units;
@@ -277,7 +277,7 @@ std::string serialize_species(const Species& sp)
         }
         newsp.add_unit(usp);
     }
-    return newsp.serial();
+    return newsp;
 }
 
 } // ecell4
