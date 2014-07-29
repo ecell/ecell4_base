@@ -7,7 +7,7 @@ compiler:
 install: pip install -r requirements.txt
 
 before_install:
- - echo 'yes' | add-apt-repository ppa:apokluda/boost1.53
+ - echo 'yes' | sudo add-apt-repository ppa:apokluda/boost1.53
  - apt-get update -qq
  - apt-get install -qq libboost1.53-all-dev libgsl0-dev libhdf5-serial-dev python-dev python-pip
 
