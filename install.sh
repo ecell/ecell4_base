@@ -11,6 +11,9 @@ make
 make test
 make install
 cd python
-PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python -c 'import sys; print sys.path'
+ls /usr/local/lib/python2.7/dist-packages
+ls /usr/local/lib/python2.7/dist-packages/Cython
+which cython
+echo ${PATH}
 LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include install --prefix=${PREFIX}
 PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python setup.py test
