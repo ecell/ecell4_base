@@ -53,17 +53,26 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
         i != reaction_rules_.end(); ++i)
     {
         ReactionRuleExpressionMatcher rrexp(*i);
-        if (!rrexp.match(sp1, sp2))
+
+        if (rrexp.match(sp1, sp2))
         {
-            continue;
+            do
+            {
+                const std::vector<Species> products(rrexp.generate());
+                retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
+            }
+            while (rrexp.next());
         }
 
-        do
+        if (rrexp.match(sp2, sp1))
         {
-            const std::vector<Species> products(rrexp.generate());
-            retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
+            do
+            {
+                const std::vector<Species> products(rrexp.generate());
+                retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
+            }
+            while (rrexp.next());
         }
-        while (rrexp.next());
     }
     return retval;
 
