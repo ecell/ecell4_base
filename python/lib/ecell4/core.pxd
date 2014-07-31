@@ -245,12 +245,13 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
         Integer num_reaction_rules()
         Cpp_Species apply_species_attributes(Cpp_Species& sp)
         Cpp_Species create_species(string name)
-        vector[Cpp_Species] list_species()
+        # vector[Cpp_Species] list_species()
         vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
         vector[Cpp_ReactionRule] query_reaction_rules(
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_ReactionRule] reaction_rules()
         vector[Cpp_Species] species_attributes()
+        void set_cache(bool)
 
 ## NetfreeModel
 #  a python wrapper for Cpp_NetfreeModel, but wrapped by shared_ptr

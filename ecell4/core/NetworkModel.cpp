@@ -8,7 +8,7 @@ namespace ecell4
 {
 
 std::vector<ReactionRule> NetworkModel::query_reaction_rules(
-    const Species& sp) const
+    const Species& sp)
 {
     first_order_reaction_rules_map_type::const_iterator
         i(first_order_reaction_rules_map_.find(sp.serial()));
@@ -27,7 +27,7 @@ std::vector<ReactionRule> NetworkModel::query_reaction_rules(
 }
 
 std::vector<ReactionRule> NetworkModel::query_reaction_rules(
-    const Species& sp1, const Species& sp2) const
+    const Species& sp1, const Species& sp2)
 {
     std::vector<ReactionRule> retval;
     const std::pair<Species::serial_type, Species::serial_type>

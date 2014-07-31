@@ -63,15 +63,15 @@ cdef class NetfreeModel:
             inc(it)
         return retval
 
-    def list_species(self):
-        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
-        retval = []
-        cdef vector[Cpp_Species].iterator it = species.begin()
-        while it != species.end():
-            retval.append(Species_from_Cpp_Species(
-                <Cpp_Species*>(address(deref(it)))))
-            inc(it)
-        return retval
+    # def list_species(self):
+    #     cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
+    #     retval = []
+    #     cdef vector[Cpp_Species].iterator it = species.begin()
+    #     while it != species.end():
+    #         retval.append(Species_from_Cpp_Species(
+    #             <Cpp_Species*>(address(deref(it)))))
+    #         inc(it)
+    #     return retval
 
     def query_reaction_rules(self, Species sp1, Species sp2 = None):
         cdef vector[Cpp_ReactionRule] rules
@@ -88,6 +88,9 @@ cdef class NetfreeModel:
                 <Cpp_ReactionRule*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def set_cache(self, bool val):
+        self.thisptr.get().set_cache(val)
 
     # def add_reactant(self, PySpecies sp):
     #     self.thisptr.add_reactant(deref(sp.thisptr))

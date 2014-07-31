@@ -138,6 +138,8 @@ protected:
     Integer num_steps_;
 };
 
+//XXX: boost::numeric::odeint::integrate_const(stepper, system, x0, t0, t1, dt, observer)
+
 }
 
 #endif /* __ECELL4_SIMULATOR_HPP */

@@ -30,11 +30,16 @@ public:
 protected:
 
 
-    typedef std::map<Species::serial_type,
-                     std::vector<reaction_rule_container_type::size_type> >
+    // typedef std::map<Species::serial_type,
+    //                  std::vector<reaction_rule_container_type::size_type> >
+    //     first_order_reaction_rules_map_type;
+    // typedef std::map<std::pair<Species::serial_type, Species::serial_type>,
+    //                  std::vector<reaction_rule_container_type::size_type> >
+    //     second_order_reaction_rules_map_type;
+    typedef std::map<Species::serial_type, std::vector<ReactionRule> >
         first_order_reaction_rules_map_type;
     typedef std::map<std::pair<Species::serial_type, Species::serial_type>,
-                     std::vector<reaction_rule_container_type::size_type> >
+                     std::vector<ReactionRule> >
         second_order_reaction_rules_map_type;
 
     typedef utils::get_mapper_mf<
@@ -44,7 +49,7 @@ protected:
 public:
 
     NetfreeModel()
-        : dirty_(false), species_attributes_(), species_cache_(), reaction_rules_(),
+        : dirty_(false), cache_(false), species_attributes_(), reaction_rules_(),
         first_order_reaction_rules_map_(), second_order_reaction_rules_map_(),
         species_attribute_cache_()
     {
@@ -58,9 +63,9 @@ public:
 
     // ModelTraits
 
-    std::vector<ReactionRule> query_reaction_rules(const Species& sp) const;
+    std::vector<ReactionRule> query_reaction_rules(const Species& sp);
     std::vector<ReactionRule> query_reaction_rules(
-        const Species& sp1, const Species& sp2) const;
+        const Species& sp1, const Species& sp2);
 
     Species apply_species_attributes(const Species& sp) // const
     {
@@ -101,12 +106,6 @@ public:
 
     // Optional functions
 
-    const std::vector<Species> list_species()
-    {
-        initialize();
-        return species_cache_;
-    }
-
     Species create_species(const std::string& name) // const
     {
         return apply_species_attributes(Species(name));
@@ -127,14 +126,19 @@ public:
         return reaction_rules_.size();
     }
 
+    void set_cache(const bool val)
+    {
+        cache_ = val;
+    }
+
 protected:
 
     void initialize();
 
 protected:
 
-    bool dirty_;
-    species_container_type species_attributes_, species_cache_;
+    bool dirty_, cache_;
+    species_container_type species_attributes_;
     reaction_rule_container_type reaction_rules_;
 
     first_order_reaction_rules_map_type first_order_reaction_rules_map_;

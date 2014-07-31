@@ -48,7 +48,7 @@ public:
      * @return the vector of ReactionRule(s)
      */
     virtual std::vector<ReactionRule> query_reaction_rules(
-        const Species& sp) const = 0;
+        const Species& sp) = 0;
 
     /**
      * a fundamental function to query bimolecular reaction rules from reactants.
@@ -58,7 +58,7 @@ public:
      * @return the vector of ReactionRule(s)
      */
     virtual std::vector<ReactionRule> query_reaction_rules(
-        const Species& sp1, const Species& sp2) const = 0;
+        const Species& sp1, const Species& sp2) = 0;
 
     // NetworkModelTraits
 
