@@ -18,7 +18,7 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         Cpp_Position3 edge_lengths()
         # CompartmentSpaceTraits
         Real &volume()
-        Real num_molecules(Cpp_Species &)
+        Integer num_molecules(Cpp_Species &)
         vector[Cpp_Species] list_species()
 
         # CompartmentSpace member functions
@@ -26,7 +26,8 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         void add_molecules(Cpp_Species &sp, Real &num)
         void remove_molecules(Cpp_Species &sp, Real &num)
         # Optional members
-        void set_num_molecules(Cpp_Species &sp, Real &num)
+        Real get_value(Cpp_Species &)
+        void set_value(Cpp_Species &sp, Real &num)
         void save(string)
         void load(string)
         bool has_species(Cpp_Species &)

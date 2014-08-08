@@ -57,8 +57,11 @@ cdef class ODEWorld:
     def remove_molecules(self, Species sp, Real num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
-    def set_num_molecules(self, Species sp, Real num):
-        self.thisptr.get().set_num_molecules(deref(sp.thisptr), num)
+    def get_value(self, Species sp):
+        return self.thisptr.get().get_value(deref(sp.thisptr))
+
+    def set_value(self, Species sp, Real num):
+        self.thisptr.get().set_value(deref(sp.thisptr), num)
 
     def save(self, string filename):
         self.thisptr.get().save(filename)

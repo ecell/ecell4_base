@@ -42,11 +42,12 @@ class run_tests(Command):
 if sys.platform == "win32":
     dependent_libs = [
         'gsl', 'cblas', 'hdf5_cpp', 'hdf5']
-    extra_compile_args=["/EHsc", "/w"]
+    extra_compile_args = ["/EHsc", "/w"]
     with_cpp_shared_libraries = False
 else:
     dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
-    extra_compile_args=[]
+    extra_compile_args = []
+    # with_cpp_shared_libraries = False
     with_cpp_shared_libraries = True
 
 if with_cpp_shared_libraries:
