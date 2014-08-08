@@ -36,9 +36,10 @@ struct H5DataTypeTraits_double
     }
 };
 
-template<typename Tdata_>
-struct CompartmentSpaceHDF5Traits
+template<typename Tspace_, typename Tdata_>
+struct CompartmentSpaceHDF5TraitsBase
 {
+    typedef Tspace_ space_type;
     typedef Tdata_ num_molecules_traits_type;
     typedef typename num_molecules_traits_type::type num_molecules_type;
 
@@ -76,14 +77,39 @@ struct CompartmentSpaceHDF5Traits
             num_molecules_traits_type::get());
         return mtype_num_struct;
     }
+
+    virtual num_molecules_type getter(
+        const space_type& space, const Species& sp) const = 0;
+    virtual void setter(
+        space_type& space, const Species& sp, const num_molecules_type& value) const = 0;
 };
 
-// template<typename Tspace_, typename Tdata_ = H5DataTypeTraits_uint32_t>
-template<typename Tspace_, typename Tdata_>
-void save_compartment_space(const Tspace_& space, H5::Group* root)
+template<typename Tspace_>
+struct CompartmentSpaceHDF5Traits
+    : public CompartmentSpaceHDF5TraitsBase<Tspace_, H5DataTypeTraits_uint32_t>
 {
-    typedef CompartmentSpaceHDF5Traits<Tdata_> traits_type;
-    // typedef typename traits_type::num_molecules_type num_molecules_type;
+    typedef CompartmentSpaceHDF5TraitsBase<Tspace_, H5DataTypeTraits_uint32_t> base_type;
+    typedef typename base_type::num_molecules_type num_molecules_type;
+    typedef typename base_type::space_type space_type;
+
+    num_molecules_type getter(const space_type& space, const Species& sp) const
+    {
+        return space.num_molecules(sp);
+    }
+
+    void setter(
+        Tspace_& space, const Species& sp, const num_molecules_type& value) const
+    {
+        space.add_molecules(sp, value);
+    }
+};
+
+// template<typename Tspace_, typename Tdata_>
+template<typename Ttraits_>
+void save_compartment_space(const typename Ttraits_::space_type& space, H5::Group* root)
+{
+    // typedef CompartmentSpaceHDF5Traits<Tdata_> traits_type;
+    typedef Ttraits_ traits_type;
     typedef typename traits_type::species_id_table_struct species_id_table_struct;
     typedef typename traits_type::species_num_struct species_num_struct;
 
@@ -151,11 +177,12 @@ void save_compartment_space(const Tspace_& space, H5::Group* root)
     attr_lengths.write(lengths_type, lengths);
 }
 
-// template<typename Tspace_, typename Tdata_ = H5DataTypeTraits_uint32_t>
-template<typename Tspace_, typename Tdata_>
-void load_compartment_space(const H5::Group& root, Tspace_* space)
+// template<typename Tspace_, typename Tdata_>
+template<typename Ttraits_>
+void load_compartment_space(const H5::Group& root, typename Ttraits_::space_type* space)
 {
-    typedef CompartmentSpaceHDF5Traits<Tdata_> traits_type;
+    // typedef CompartmentSpaceHDF5Traits<Tdata_> traits_type;
+    typedef Ttraits_ traits_type;
     typedef typename traits_type::num_molecules_type num_molecules_type;
     typedef typename traits_type::species_id_table_struct species_id_table_struct;
     typedef typename traits_type::species_num_struct species_num_struct;

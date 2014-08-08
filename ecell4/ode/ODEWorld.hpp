@@ -16,7 +16,28 @@ namespace ecell4
 namespace ode
 {
 
+template<typename Tspace_>
+struct ODEWorldHDF5Traits
+    : public CompartmentSpaceHDF5TraitsBase<Tspace_, H5DataTypeTraits_double>
+{
+    typedef CompartmentSpaceHDF5TraitsBase<Tspace_, H5DataTypeTraits_double> base_type;
+    typedef typename base_type::num_molecules_type num_molecules_type;
+    typedef typename base_type::space_type space_type;
+
+    num_molecules_type getter(const space_type& space, const Species& sp) const
+    {
+        return space.get_value(sp);
+    }
+
+    void setter(
+        Tspace_& space, const Species& sp, const num_molecules_type& value) const
+    {
+        space.set_value(sp, value);
+    }
+};
+
 class ODEWorld
+    : public Space
 {
 protected:
 
@@ -87,16 +108,9 @@ public:
 
     // CompartmentSpaceTraits
 
-    Real num_molecules(const Species& sp) const
+    Integer num_molecules(const Species& sp) const
     {
-        species_map_type::const_iterator i(index_map_.find(sp));
-        if (i == index_map_.end())
-        {
-            // throw NotFound("Species not found");
-            return 0.0;
-        }
-
-        return num_molecules_[(*i).second];
+        return static_cast<Integer>(get_value(sp));
     }
 
     std::vector<Species> list_species() const
@@ -131,7 +145,19 @@ public:
 
     // Optional members
 
-    void set_num_molecules(const Species& sp, const Real& num)
+    Real get_value(const Species& sp) const
+    {
+        species_map_type::const_iterator i(index_map_.find(sp));
+        if (i == index_map_.end())
+        {
+            // throw NotFound("Species not found");
+            return 0.0;
+        }
+
+        return num_molecules_[(*i).second];
+    }
+
+    void set_value(const Species& sp, const Real& num)
     {
         species_map_type::const_iterator i(index_map_.find(sp));
         if (i == index_map_.end())
@@ -142,26 +168,8 @@ public:
         num_molecules_[(*i).second] = num;
     }
 
-    void save(const std::string& filename) const
-    {
-        boost::scoped_ptr<H5::H5File>
-            fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
-        boost::scoped_ptr<H5::Group>
-            group(new H5::Group(fout->createGroup("CompartmentSpace")));
-        save_compartment_space<ODEWorld, H5DataTypeTraits_double>(*this, group.get());
-
-        const uint32_t space_type = static_cast<uint32_t>(Space::ELSE);
-        group->openAttribute("type").write(H5::PredType::STD_I32LE, &space_type);
-    }
-
-    void load(const std::string& filename)
-    {
-        clear();
-        boost::scoped_ptr<H5::H5File>
-            fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
-        const H5::Group group(fin->openGroup("CompartmentSpace"));
-        load_compartment_space<ODEWorld, H5DataTypeTraits_double>(group, this);
-    }
+    void save(const std::string& filename) const;
+    void load(const std::string& filename);
 
     bool has_species(const Species& sp)
     {

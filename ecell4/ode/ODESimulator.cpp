@@ -26,7 +26,7 @@ bool ODESimulator::step(const Real& upto)
         for (NetworkModel::species_container_type::const_iterator
                  it(species.begin()); it != species.end(); ++it)
         {
-            x[i] = static_cast<double>(world_->num_molecules(*it));
+            x[i] = static_cast<double>(world_->get_value(*it));
             ++i;
         }
     }
@@ -60,7 +60,7 @@ bool ODESimulator::step(const Real& upto)
         for (NetworkModel::species_container_type::const_iterator
                  it(species.begin()); it != species.end(); ++it)
         {
-            world_->set_num_molecules(*it, static_cast<Real>(x_vec[steps][i]));
+            world_->set_value(*it, static_cast<Real>(x_vec[steps][i]));
             ++i;
         }
     }

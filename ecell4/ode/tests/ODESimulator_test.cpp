@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step2)
 
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->reserve_species(sp1);
-    world->set_num_molecules(sp1, 60);
+    world->set_value(sp1, 60);
 
     ODESimulator target(model, world);
 

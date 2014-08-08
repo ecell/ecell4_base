@@ -29,7 +29,6 @@ public:
 public:
 
     Space()
-        : t_(0.0)
     {
         ;
     }
@@ -41,18 +40,19 @@ public:
 
     // SpaceTraits
 
-    const Real& t() const
+    virtual const Real& t() const = 0;
+    virtual void set_t(const Real& t) = 0;
+
+    virtual void save(const std::string& filename) const
     {
-        return t_;
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
     }
 
-    void set_t(const Real& t)
+    virtual void load(const std::string& filename)
     {
-        if (t < 0.0)
-        {
-            throw std::invalid_argument("the time must be positive.");
-        }
-        t_ = t;
+        throw NotSupported(
+            "load(const std::string) is not supported by this space class");
     }
 
     // CompartmentSpaceTraits
@@ -177,10 +177,6 @@ public:
             "list_particles(const Species&) is not supported"
             " by this space class");
     }
-
-protected:
-
-    Real t_;
 };
 
 } // ecell4

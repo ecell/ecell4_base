@@ -17,6 +17,33 @@ class CompartmentSpace
 {
 public:
 
+    CompartmentSpace()
+        : t_(0.0)
+    {
+        ;
+    }
+
+    virtual ~CompartmentSpace()
+    {
+        ; // do nothing
+    }
+
+    // SpaceTraits
+
+    const Real& t() const
+    {
+        return t_;
+    }
+
+    void set_t(const Real& t)
+    {
+        if (t < 0.0)
+        {
+            throw std::invalid_argument("the time must be positive.");
+        }
+        t_ = t;
+    }
+
     // CompartmentSpaceTraits
 
     virtual const Position3& edge_lengths() const
@@ -90,6 +117,10 @@ public:
 
     virtual void save(H5::Group* root) const = 0;
     virtual void load(const H5::Group& root) = 0;
+
+protected:
+
+    Real t_;
 };
 
 class CompartmentSpaceVectorImpl
@@ -145,15 +176,15 @@ public:
 
     void save(H5::Group* root) const
     {
-        save_compartment_space<
-            CompartmentSpaceVectorImpl, H5DataTypeTraits_uint32_t>(*this, root);
+        typedef CompartmentSpaceHDF5Traits<CompartmentSpaceVectorImpl> traits_type;
+        save_compartment_space<traits_type>(*this, root);
     }
 
     void load(const H5::Group& root)
     {
+        typedef CompartmentSpaceHDF5Traits<CompartmentSpaceVectorImpl> traits_type;
         clear();
-        load_compartment_space<
-            CompartmentSpaceVectorImpl, H5DataTypeTraits_uint32_t>(root, this);
+        load_compartment_space<traits_type>(root, this);
     }
 
 protected:

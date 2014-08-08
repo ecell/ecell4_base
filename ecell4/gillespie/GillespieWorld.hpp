@@ -22,6 +22,7 @@ namespace gillespie
 {
 
 class GillespieWorld
+    : public Space
 {
 public:
 

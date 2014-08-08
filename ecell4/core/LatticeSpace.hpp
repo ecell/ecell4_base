@@ -42,6 +42,21 @@ public:
      *
      * using ParticleID, Species and Posision3
      */
+
+    const Real& t() const
+    {
+        return t_;
+    }
+
+    void set_t(const Real& t)
+    {
+        if (t < 0.0)
+        {
+            throw std::invalid_argument("the time must be positive.");
+        }
+        t_ = t;
+    }
+
     const Position3& edge_lengths() const;
 
     const Real volume() const
@@ -140,8 +155,6 @@ public:
      */
     void save(H5::Group* root) const
     {
-        // LatticeSpaceHDF5Writer<LatticeSpace> writer(*this);
-        // writer.save(fout, hdf5path);
         save_lattice_space(*this, root);
     }
 

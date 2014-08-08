@@ -25,6 +25,7 @@ struct MoleculeInfo
 };
 
 class BDWorld
+    : public Space
 {
 public:
 

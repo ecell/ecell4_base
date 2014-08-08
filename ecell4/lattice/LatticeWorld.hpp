@@ -25,6 +25,7 @@ struct MoleculeInfo
 };
 
 class LatticeWorld
+    : public Space
 {
 public:
 

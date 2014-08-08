@@ -27,6 +27,33 @@ public:
 
 public:
 
+    ParticleSpace()
+        : t_(0.0)
+    {
+        ;
+    }
+
+    virtual ~ParticleSpace()
+    {
+        ; // do nothing
+    }
+
+    // SpaceTraits
+
+    const Real& t() const
+    {
+        return t_;
+    }
+
+    void set_t(const Real& t)
+    {
+        if (t < 0.0)
+        {
+            throw std::invalid_argument("the time must be positive.");
+        }
+        t_ = t;
+    }
+
     // ParticleSpaceTraits
 
     /**
@@ -93,6 +120,9 @@ public:
     {
         throw NotImplemented("has_particle(const ParticleID&) not implemented.");
     }
+
+    virtual void save(H5::Group* root) const = 0;
+    virtual void load(const H5::Group& root) = 0;
 
     // ParticleSpace member functions
 
@@ -250,8 +280,9 @@ public:
 
     virtual const particle_container_type& particles() const = 0;
 
-    virtual void save(H5::Group* root) const = 0;
-    virtual void load(const H5::Group& root) = 0;
+protected:
+
+    Real t_;
 };
 
 class ParticleSpaceVectorImpl
@@ -314,8 +345,6 @@ public:
 
     void save(H5::Group* root) const
     {
-        // ParticleSpaceHDF5Writer<ParticleSpaceVectorImpl> writer(*this);
-        // writer.save(root);
         save_particle_space(*this, root);
     }
 
