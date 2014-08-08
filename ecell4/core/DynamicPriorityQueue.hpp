@@ -97,7 +97,10 @@ public:
         typename index_map::const_iterator i(index_map_.find(id));
         if (i == index_map_.end())
         {
-            throw std::out_of_range((boost::format("%s: Key not found (%s)") % __PRETTY_FUNCTION__ % boost::lexical_cast<std::string>(id)).str());
+            throw std::out_of_range((boost::format("%s: Key not found (%s)")
+                % __FUNCTION__ % boost::lexical_cast<std::string>(id)).str());
+            // throw std::out_of_range((boost::format("%s: Key not found (%s)")
+            //     % __PRETTY_FUNCTION__ % boost::lexical_cast<std::string>(id)).str());
         }
         return (*i).second;
     }

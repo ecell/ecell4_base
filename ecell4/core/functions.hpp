@@ -4,6 +4,8 @@
 #include <cmath>
 #include <gsl/gsl_pow_int.h>
 
+#include "types.hpp"
+
 
 namespace ecell4
 {
@@ -33,6 +35,7 @@ inline double abs(const double& p1)
     return std::fabs(p1);
 }
 
+#ifndef _MSC_BUILD
 inline double pow_2(const double x)
 {
     return gsl_pow_2(x);
@@ -42,6 +45,22 @@ inline double pow_3(const double x)
 {
     return gsl_pow_3(x);
 }
+#else
+inline double pow_2(const double x)
+{
+    return x * x;
+}
+
+inline double pow_3(const double x)
+{
+    return x * x * x;
+}
+
+inline double cbrt(const double x)
+{
+    return pow(x, 1.0 / 3.0);
+}
+#endif
 
 }
 

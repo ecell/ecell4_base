@@ -145,7 +145,7 @@ public:
     void save(const std::string& filename) const
     {
         boost::scoped_ptr<H5::H5File>
-            fout(new H5::H5File(filename, H5F_ACC_TRUNC));
+            fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("CompartmentSpace")));
         save_compartment_space<ODEWorld, H5DataTypeTraits_double>(*this, group.get());
@@ -158,7 +158,7 @@ public:
     {
         clear();
         boost::scoped_ptr<H5::H5File>
-            fin(new H5::H5File(filename, H5F_ACC_RDONLY));
+            fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         const H5::Group group(fin->openGroup("CompartmentSpace"));
         load_compartment_space<ODEWorld, H5DataTypeTraits_double>(group, this);
     }

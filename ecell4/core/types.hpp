@@ -2,6 +2,7 @@
 #define __ECELL4_TYPES_HPP
 
 #include <stdint.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 namespace ecell4

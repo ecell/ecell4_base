@@ -1,6 +1,8 @@
 import sys
 import glob
-from distutils.core import setup, Command
+# from distutils.core import setup, Command
+from setuptools import setup
+from distutils.core import Command
 from distutils.extension import Extension
 import unittest
 
@@ -37,7 +39,7 @@ class run_tests(Command):
         test_runner = unittest.TextTestRunner()
         test_runner.run(suite)
 
-with_cpp_shared_libraries = True
+with_cpp_shared_libraries = False
 if with_cpp_shared_libraries:
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
@@ -56,26 +58,36 @@ if with_cpp_shared_libraries:
             language="c++")
         ]
 else:
-    dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
+    if sys.platform == "win32":
+        dependent_libs = [
+            'gsl', 'cblas', 'hdf5_cpp', 'hdf5']
+    else:
+        dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
+
     core_src = glob.glob("../ecell4/core/*.cpp")
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
+            extra_compile_args=["/EHsc", "/w"],
             include_dirs=[".", ".."], libraries=dependent_libs, language="c++"),
         Extension("ecell4.gillespie",
             sources=["lib/ecell4/gillespie.pyx"]
                 + glob.glob("../ecell4/gillespie/*.cpp") + core_src,
+            extra_compile_args=["/EHsc", "/w"],
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         Extension("ecell4.bd",
             sources=["lib/ecell4/bd.pyx"]
                 + glob.glob("../ecell4/bd/*.cpp") + core_src,
+            extra_compile_args=["/EHsc", "/w"],
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         Extension("ecell4.ode",
             sources=["lib/ecell4/ode.pyx"]
                 + glob.glob("../ecell4/ode/*.cpp") + core_src,
+            extra_compile_args=["/EHsc", "/w"],
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         Extension("ecell4.lattice",
             sources=["lib/ecell4/lattice.pyx"]
                 + glob.glob("../ecell4/lattice/*.cpp") + core_src,
+            extra_compile_args=["/EHsc", "/w"],
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         ]
 

@@ -5,6 +5,8 @@
 
 #if defined(HAVE_BOOST_REGEX)
 #include <boost/regex.hpp>
+#elif defined(_MSC_BUILD)
+#include <regex>
 #else
 #include <regex.h>
 #endif /* HAVE_BOOST_REGEX */
@@ -29,8 +31,12 @@ void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
         return;
     }
 
+#if defined(HAVE_BOOST_REGEX) || defined(_MSC_BUILD)
 #if defined(HAVE_BOOST_REGEX)
     using namespace boost;
+#else /* _MSC_BUILD */
+    using namespace std::tr1;
+#endif /* HAVE_BOOST_REGEX */
 
     regex r1(
         "^\\s*(\\w+)\\s*(\\(\\s*([\\w\\s\\^=,]*)\\))?\\s*$");
@@ -82,7 +88,7 @@ void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
         throw std::invalid_argument(
             "a wrong serial was given to UnitSpecies [" + serial + "]"); //XXX:
     }
-#else
+#else /* regex.h */
     regex_t reg1;
     int errcode = regcomp(&reg1,
         "^[[:blank:]]*([[:alnum:]_]+)[[:blank:]]*"

@@ -1,6 +1,7 @@
 #include <stdexcept>
 
 #include "exceptions.hpp"
+#include "functions.hpp"
 #include "Context.hpp"
 #include "CompartmentSpace.hpp"
 
