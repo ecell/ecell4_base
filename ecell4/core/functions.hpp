@@ -4,6 +4,7 @@
 #include <cmath>
 #include <gsl/gsl_pow_int.h>
 
+#include "config.h"
 #include "types.hpp"
 
 #ifdef WIN32_MSC
