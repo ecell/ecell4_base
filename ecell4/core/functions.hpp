@@ -6,7 +6,7 @@
 
 #include "types.hpp"
 
-#ifdef _MSC_BUILD
+#ifdef WIN32_MSC
 #include <boost/numeric/interval/detail/msvc_rounding_control.hpp>
 #endif
 
@@ -39,7 +39,7 @@ inline double abs(const double& p1)
     return std::fabs(p1);
 }
 
-#ifndef _MSC_BUILD
+#ifndef WIN32_MSC
 inline double pow_2(const double x)
 {
     return gsl_pow_2(x);

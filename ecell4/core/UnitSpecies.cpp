@@ -5,7 +5,7 @@
 
 #if defined(HAVE_BOOST_REGEX)
 #include <boost/regex.hpp>
-#elif defined(_MSC_BUILD)
+#elif defined(WIN32_MSC)
 #include <regex>
 #else
 #include <regex.h>
@@ -31,10 +31,10 @@ void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
         return;
     }
 
-#if defined(HAVE_BOOST_REGEX) || defined(_MSC_BUILD)
+#if defined(HAVE_BOOST_REGEX) || defined(WIN32_MSC)
 #if defined(HAVE_BOOST_REGEX)
     using namespace boost;
-#else /* _MSC_BUILD */
+#else /* WIN32_MSC */
     using namespace std::tr1;
 #endif /* HAVE_BOOST_REGEX */
 
