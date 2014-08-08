@@ -1,6 +1,7 @@
 #ifndef __ECELL4_BD_FUNCTIONS_3D_HPP
 #define __ECELL4_BD_FUNCTIONS_3D_HPP
 
+#include <ecell4/core/config.h>
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Position3.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
