@@ -6,6 +6,10 @@
 
 #include "types.hpp"
 
+#ifdef _MSC_BUILD
+#include <boost/numeric/interval/detail/msvc_rounding_control.hpp>
+#endif
+
 
 namespace ecell4
 {
@@ -59,6 +63,11 @@ inline double pow_3(const double x)
 inline double cbrt(const double x)
 {
     return pow(x, 1.0 / 3.0);
+}
+
+double rint(const double x)
+{
+    return boost::numeric::interval_lib::detail::rint(x);
 }
 #endif
 
