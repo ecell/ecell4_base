@@ -41,7 +41,7 @@ The latest version of boot2docker sets up a host only network adaptor which prov
 
 ```shell
 $ boot2docker ssh
-# in boot2docker
+######## in boot2docker
 docker@boot2docker:~$ docker pull ecell/ecell4:latest
 docker@boot2docker:~$ docker run --rm -i -t -p 8888:8888 ecell/ecell4:latest
 ```
