@@ -162,6 +162,20 @@ public:
         std::cerr << "WARN: set_dt(const Real&) was just ignored." << std::endl;
     }
 
+    void run(const Real& duration)
+    {
+        const Real upto(t() + duration);
+        while (step(upto))
+        {
+            ; // do nothing
+        }
+    }
+
+    void run(const Real& duration, boost::shared_ptr<Observer> obs)
+    {
+        run(duration, std::vector<boost::shared_ptr<Observer> >(1, obs));
+    }
+
     void run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers)
     {
         const Real upto(t() + duration);

@@ -1,5 +1,6 @@
 from cython cimport address
 from cython.operator cimport dereference as deref
+import collections
 
 ## GillespieWorld
 #  a python wrapper for Cpp_GillespieWorld
@@ -106,9 +107,14 @@ cdef class GillespieSimulator:
     def world(self):
         return GillespieWorld_from_Cpp_GillespieWorld(self.thisptr.world())
 
-    def run(self, Real duration, observers):
-        # cdef Observer obs = tmp.as_base()
+    def run(self, Real duration, observers=None):
         cdef vector[shared_ptr[Cpp_Observer]] tmp
-        for obs in observers:
-            tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-        self.thisptr.run(duration, tmp)
+
+        if observers is None:
+            self.thisptr.run(duration)
+        elif isinstance(observers, collections.Iterable):
+            for obs in observers:
+                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+            self.thisptr.run(duration, tmp)
+        else:
+            self.thisptr.run(duration, deref((<Observer>(observers.as_base())).thisptr))
