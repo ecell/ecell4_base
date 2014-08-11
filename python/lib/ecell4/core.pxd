@@ -358,3 +358,22 @@ cdef class Voxel:
     cdef Cpp_Voxel* thisptr
 
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
+
+## Cpp_FixedIntervalNumberObserver
+#  ecell4::FixedIntervalNumberObserver
+cdef extern from "ecell4/core/Observer.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Observer "ecell4::Observer":
+        Real next_time()
+
+    cdef cppclass Cpp_FixedIntervalNumberObserver "ecell4::FixedIntervalNumberObserver":
+        Cpp_FixedIntervalNumberObserver(Real, vector[string]) except +
+        Real next_time()
+        vector[vector[Real]] data()
+
+## FixedIntervalNumberObserver
+#  a python wrapper for Cpp_FixedIntervalNumberObserver
+cdef class Observer:
+    cdef shared_ptr[Cpp_Observer]* thisptr
+
+cdef class FixedIntervalNumberObserver:
+    cdef shared_ptr[Cpp_FixedIntervalNumberObserver]* thisptr

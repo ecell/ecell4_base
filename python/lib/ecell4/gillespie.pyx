@@ -105,3 +105,10 @@ cdef class GillespieSimulator:
 
     def world(self):
         return GillespieWorld_from_Cpp_GillespieWorld(self.thisptr.world())
+
+    def run(self, Real duration, observers):
+        # cdef Observer obs = tmp.as_base()
+        cdef vector[shared_ptr[Cpp_Observer]] tmp
+        for obs in observers:
+            tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+        self.thisptr.run(duration, tmp)

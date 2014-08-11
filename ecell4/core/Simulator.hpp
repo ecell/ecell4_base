@@ -2,6 +2,8 @@
 #define __ECELL4_SIMULATOR_HPP
 
 #include "types.hpp"
+#include "EventScheduler.hpp"
+#include "Observer.hpp"
 
 
 namespace ecell4
@@ -77,6 +79,35 @@ public:
     typedef Tmodel_ model_type;
     typedef Tworld_ world_type;
 
+protected:
+
+    struct ObserverEvent:
+        EventScheduler::Event
+    {
+        ObserverEvent(
+            Simulator<model_type, world_type>* sim, Observer* obs, const Real& t)
+            : EventScheduler::Event(t), sim_(sim), obs_(obs)
+        {
+            obs_->initialize(sim_->world().get());
+            time_ = obs_->next_time();
+        }
+
+        virtual ~ObserverEvent()
+        {
+        }
+
+        virtual void fire()
+        {
+            obs_->fire(sim_->world().get());
+            time_ = obs_->next_time();
+        }
+
+    protected:
+
+        Simulator<model_type, world_type>* sim_;
+        Observer* obs_;
+    };
+
 public:
 
     Simulator(boost::shared_ptr<model_type> model,
@@ -131,14 +162,54 @@ public:
         std::cerr << "WARN: set_dt(const Real&) was just ignored." << std::endl;
     }
 
+    void run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers)
+    {
+        const Real upto(t() + duration);
+
+        EventScheduler scheduler;
+        for (std::vector<boost::shared_ptr<Observer> >::const_iterator
+            i(observers.begin()); i != observers.end(); ++i)
+        {
+            scheduler.add(boost::shared_ptr<EventScheduler::Event>(
+                new ObserverEvent(this, (*i).get(), t())));
+        }
+
+        while (true)
+        {
+            while (next_time() < std::min(upto, scheduler.next_time()))
+            {
+                step();
+            }
+
+            if (upto > scheduler.next_time())
+            {
+                step(scheduler.next_time());
+                EventScheduler::value_type top(scheduler.pop());
+                top.second->fire();
+                scheduler.add(top.second);
+            }
+            else if (upto < scheduler.next_time())
+            {
+                step(upto);
+                break;
+            }
+            else // upto == scheduler.next_time()
+            {
+                step(upto);
+                EventScheduler::value_type top(scheduler.pop());
+                top.second->fire();
+                scheduler.add(top.second);
+                break;
+            }
+        }
+    }
+
 protected:
 
     boost::shared_ptr<model_type> model_;
     boost::shared_ptr<world_type> world_;
     Integer num_steps_;
 };
-
-//XXX: boost::numeric::odeint::integrate_const(stepper, system, x0, t0, t1, dt, observer)
 
 }
 

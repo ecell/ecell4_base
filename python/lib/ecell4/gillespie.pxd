@@ -49,6 +49,7 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_NetworkModel] model()
         shared_ptr[Cpp_GillespieWorld] world()
+        void run(Real, vector[shared_ptr[Cpp_Observer]])
 
 ## GillespieSimulator
 #  a python wrapper for Cpp_GillespieSimulator
