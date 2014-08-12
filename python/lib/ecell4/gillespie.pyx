@@ -117,4 +117,5 @@ cdef class GillespieSimulator:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
             self.thisptr.run(duration, tmp)
         else:
-            self.thisptr.run(duration, deref((<Observer>(observers.as_base())).thisptr))
+            self.thisptr.run(
+                duration, deref((<Observer>(observers.as_base())).thisptr))

@@ -49,7 +49,7 @@ protected:
 public:
 
     NetfreeModel()
-        : dirty_(false), cache_(false), species_attributes_(), reaction_rules_(),
+        : dirty_(false), with_cache_(false), species_attributes_(), reaction_rules_(),
         first_order_reaction_rules_map_(), second_order_reaction_rules_map_(),
         species_attribute_cache_()
     {
@@ -126,9 +126,14 @@ public:
         return reaction_rules_.size();
     }
 
-    void set_cache(const bool val)
+    void with_cache(const bool val)
     {
-        cache_ = val;
+        with_cache_ = val;
+    }
+
+    const bool with_cache() const
+    {
+        return with_cache_;
     }
 
 protected:
@@ -137,7 +142,7 @@ protected:
 
 protected:
 
-    bool dirty_, cache_;
+    bool dirty_, with_cache_;
     species_container_type species_attributes_;
     reaction_rule_container_type reaction_rules_;
 

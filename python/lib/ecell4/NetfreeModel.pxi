@@ -89,8 +89,11 @@ cdef class NetfreeModel:
             inc(it)
         return retval
 
-    def set_cache(self, bool val):
-        self.thisptr.get().set_cache(val)
+    def with_cache(self, val=None):
+        if val is None:
+            return self.thisptr.get().with_cache()
+        else:
+            self.thisptr.get().with_cache(<bool>val)
 
     # def add_reactant(self, PySpecies sp):
     #     self.thisptr.add_reactant(deref(sp.thisptr))

@@ -10,7 +10,7 @@ namespace ecell4
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     const Species& sp)
 {
-    if (cache_)
+    if (with_cache_)
     {
         first_order_reaction_rules_map_type::const_iterator
             i(first_order_reaction_rules_map_.find(sp.serial()));
@@ -38,7 +38,7 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
         while (rrexp.next());
     }
 
-    if (cache_)
+    if (with_cache_)
     {
         first_order_reaction_rules_map_.insert(std::make_pair(sp.serial(), retval));
     }
@@ -49,7 +49,7 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     const Species& sp1, const Species& sp2)
 {
-    if (cache_)
+    if (with_cache_)
     {
         const std::pair<Species::serial_type, Species::serial_type>
             key(sp1.serial() < sp2.serial()?
@@ -90,7 +90,7 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
         }
     }
 
-    if (cache_)
+    if (with_cache_)
     {
         const std::pair<Species::serial_type, Species::serial_type>
             key(sp1.serial() < sp2.serial()?
