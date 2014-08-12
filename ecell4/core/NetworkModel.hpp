@@ -24,8 +24,9 @@ class NetworkModel
 {
 public:
 
-    typedef std::vector<Species> species_container_type;
-    typedef std::vector<ReactionRule> reaction_rule_container_type;
+    typedef Model base_type;
+    typedef typename base_type::species_container_type species_container_type;
+    typedef typename base_type::reaction_rule_container_type reaction_rule_container_type;
 
 protected:
 

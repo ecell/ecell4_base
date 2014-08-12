@@ -34,6 +34,11 @@ class Model
 {
 public:
 
+    typedef std::vector<Species> species_container_type;
+    typedef std::vector<ReactionRule> reaction_rule_container_type;
+
+public:
+
     virtual ~Model()
     {
         ;
@@ -141,6 +146,8 @@ public:
         throw NotSupported(
             "has_reaction_rule is not supported in this model class");
     }
+
+    virtual const reaction_rule_container_type& reaction_rules() const = 0;
 };
 
 } // ecell4
