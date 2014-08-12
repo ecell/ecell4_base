@@ -157,7 +157,7 @@ public:
     void finalize();
     void step();
     bool step(const Real& upto);
-    void run(const Real& duration);
+    // void run(const Real& duration);
     void walk(const Species& species);
     void walk(const Species& species, const Real& alpha);
 

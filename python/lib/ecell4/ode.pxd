@@ -60,6 +60,9 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         void set_dt(Real &)
         shared_ptr[Cpp_NetworkModel] model()
         shared_ptr[Cpp_ODEWorld] world()
+        void run(Real)
+        void run(Real, shared_ptr[Cpp_Observer])
+        void run(Real, vector[shared_ptr[Cpp_Observer]])
 
 ## ODESimulator
 #  a python wrapper for Cpp_ODESimulator

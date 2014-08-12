@@ -373,14 +373,14 @@ void LatticeSimulator::step_()
     num_steps_++;
 }
 
-void LatticeSimulator::run(const Real& duration)
-{
-    initialize();
-    const Real upto(t() + duration);
-    while (step(upto))
-        ;
-    finalize();
-}
+// void LatticeSimulator::run(const Real& duration)
+// {
+//     initialize();
+//     const Real upto(t() + duration);
+//     while (step(upto))
+//         ;
+//     finalize();
+// }
 
 void LatticeSimulator::walk(const Species& species)
 {

@@ -133,13 +133,13 @@ public:
     ODESimulator(
         boost::shared_ptr<NetworkModel> model,
         boost::shared_ptr<ODEWorld> world)
-        : base_type(model, world), dt_(0.0)
+        : base_type(model, world), dt_(inf)
     {
         initialize();
     }
 
     ODESimulator(boost::shared_ptr<ODEWorld> world)
-        : base_type(world), dt_(0.0)
+        : base_type(world), dt_(inf)
     {
         initialize();
     }
