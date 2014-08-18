@@ -178,6 +178,21 @@ public:
         return false;
     }
 
+    Integer count(const Species& sp)
+    {
+        context_type::variable_container_type globals;
+        if (!match(sp, globals))
+        {
+            return 0;
+        }
+        Integer n(1);
+        while (next())
+        {
+            ++n;
+        }
+        return n;
+    }
+
     const context_type& context() const
     {
         return ctx_;

@@ -19,6 +19,11 @@ std::vector<Species> CompartmentSpaceVectorImpl::list_species() const
     return species_; // return a copy
 }
 
+bool CompartmentSpaceVectorImpl::has_species(const Species& sp) const
+{
+    return std::find(species_.begin(), species_.end(), sp) != species_.end();
+}
+
 void CompartmentSpaceVectorImpl::set_volume(const Real& volume)
 {
     if (volume <= 0)
@@ -103,7 +108,9 @@ void CompartmentSpaceVectorImpl::add_molecules(
 {
     if (num < 0)
     {
-        throw std::invalid_argument("The number of molecules must be positive.");
+        std::ostringstream message;
+        message << "The number of molecules must be positive. [" << sp.serial() << "]";
+        throw std::invalid_argument(message.str());
     }
 
     species_map_type::const_iterator i(index_map_.find(sp));
@@ -122,7 +129,9 @@ void CompartmentSpaceVectorImpl::remove_molecules(
 {
     if (num < 0)
     {
-        throw std::invalid_argument("The number of molecules must be positive.");
+        std::ostringstream message;
+        message << "The number of molecules must be positive. [" << sp.serial() << "]";
+        throw std::invalid_argument(message.str());
     }
 
     species_map_type::const_iterator i(index_map_.find(sp));
@@ -135,8 +144,9 @@ void CompartmentSpaceVectorImpl::remove_molecules(
 
     if (num_molecules_[(*i).second] < num)
     {
-        throw std::invalid_argument(
-            "The number of molecules cannot be negative.");
+        std::ostringstream message;
+        message << "The number of molecules cannot be negative. [" << sp.serial() << "]";
+        throw std::invalid_argument(message.str());
     }
 
     num_molecules_[(*i).second] -= num;

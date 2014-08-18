@@ -102,9 +102,9 @@ public:
         cs_->load(group);
     }
 
-    void bind_to(boost::shared_ptr<NetworkModel> model)
+    void bind_to(boost::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
+        if (boost::shared_ptr<Model> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -115,7 +115,7 @@ public:
         this->model_ = model;
     }
 
-    boost::shared_ptr<NetworkModel> lock_model() const
+    boost::shared_ptr<Model> lock_model() const
     {
         return model_.lock();
     }
@@ -125,7 +125,7 @@ private:
     boost::scoped_ptr<CompartmentSpace> cs_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 
-    boost::weak_ptr<NetworkModel> model_;
+    boost::weak_ptr<Model> model_;
 };
 
 } // gillespie

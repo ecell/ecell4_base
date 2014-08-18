@@ -88,6 +88,11 @@ public:
         throw NotImplemented("list_species() not implemented");
     }
 
+    virtual bool has_species(const Species& sp) const
+    {
+        throw NotImplemented("has_species(const Species&) not implemented");
+    }
+
     // CompartSpace member functions
 
     /**
@@ -163,6 +168,7 @@ public:
 
     const Real volume() const;
     Integer num_molecules(const Species& sp) const;
+    bool has_species(const Species& sp) const;
 
     // CompartmentSpace member functions
 

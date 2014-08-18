@@ -18,16 +18,16 @@ namespace gillespie
 {
 
 class GillespieSimulator
-    : public Simulator<NetworkModel, GillespieWorld>
+    : public Simulator<Model, GillespieWorld>
 {
 public:
 
-    typedef Simulator<NetworkModel, GillespieWorld> base_type;
+    typedef Simulator<Model, GillespieWorld> base_type;
 
 public:
 
     GillespieSimulator(
-        boost::shared_ptr<NetworkModel> model,
+        boost::shared_ptr<Model> model,
         boost::shared_ptr<GillespieWorld> world)
         : base_type(model, world)
     {
@@ -64,12 +64,21 @@ public:
 
 protected:
 
+    bool __draw_next_reaction(void);
     void draw_next_reaction(void);
+    Integer num_molecules(const Species& sp);
+    Integer num_molecules(const Species& sp1, const Species& sp2);
+    ReactionRule draw_exact_reaction(const ReactionRule& rr);
+    std::pair<ReactionRule::reactant_container_type, Integer> draw_exact_reactants(const Species& sp1);
+    std::pair<ReactionRule::reactant_container_type, Integer> draw_exact_reactants(const Species& sp1, const Species& sp2);
+
+    Real calculate_propensity(const ReactionRule& rr);
 
 protected:
 
     Real dt_;
-    int next_reaction_num_; // the index of the next reaction.
+    ReactionRule next_reaction_;
+    Model::reaction_rule_container_type reaction_rules_;
 };
 
 }

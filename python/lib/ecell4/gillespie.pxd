@@ -16,6 +16,7 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         void set_edge_lengths(Cpp_Position3&)
         Cpp_Position3 edge_lengths()
         Integer num_molecules(Cpp_Species &)
+        vector[Cpp_Species] list_species()
         void add_molecules(Cpp_Species &sp, Integer &num)
         void remove_molecules(Cpp_Species &sp, Integer &num)
         void save(string)
@@ -36,7 +37,7 @@ cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
 cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gillespie":
     cdef cppclass Cpp_GillespieSimulator "ecell4::gillespie::GillespieSimulator":
         Cpp_GillespieSimulator(
-            shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_GillespieWorld]) except +
+            shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld]) except +
         Integer num_steps()
         void step()
         bool step(Real)
@@ -47,7 +48,7 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         Real next_time()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
-        shared_ptr[Cpp_NetworkModel] model()
+        shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_GillespieWorld] world()
         void run(Real)
         void run(Real, shared_ptr[Cpp_Observer])

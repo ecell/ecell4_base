@@ -1,5 +1,5 @@
 from cython cimport address
-from cython.operator cimport dereference as deref
+from cython.operator cimport dereference as deref, preincrement as inc
 import collections
 
 ## GillespieWorld
@@ -44,6 +44,18 @@ cdef class GillespieWorld:
     def remove_molecules(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
+    def list_species(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
+
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
     def save(self, string filename):
         self.thisptr.get().save(filename)
 
@@ -67,9 +79,18 @@ cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
 #  a python wrapper for Cpp_GillespieSimulator
 cdef class GillespieSimulator:
 
-    def __cinit__(self, NetworkModel m, GillespieWorld w):
-        self.thisptr = new Cpp_GillespieSimulator(
-            deref(m.thisptr), deref(w.thisptr))
+    def __cinit__(self, m, GillespieWorld w):
+        if isinstance(m, NetworkModel):
+            self.thisptr = new Cpp_GillespieSimulator(
+                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr),
+                deref(w.thisptr))
+        elif isinstance(m, NetfreeModel):
+            self.thisptr = new Cpp_GillespieSimulator(
+                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr),
+                deref(w.thisptr))
+        else:
+            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
+                + " the first argument must be NetworkModel or NetfreeModel")
 
     def __dealloc__(self):
         del self.thisptr
@@ -102,7 +123,7 @@ cdef class GillespieSimulator:
         self.thisptr.initialize()
 
     def model(self):
-        return NetworkModel_from_Cpp_NetworkModel(self.thisptr.model())
+        return Model_from_Cpp_Model(self.thisptr.model())
 
     def world(self):
         return GillespieWorld_from_Cpp_GillespieWorld(self.thisptr.world())
