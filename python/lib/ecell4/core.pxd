@@ -371,11 +371,13 @@ cdef extern from "ecell4/core/Observer.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         vector[vector[Real]] data()
+        vector[Cpp_Species] targets()
 
     cdef cppclass Cpp_NumberObserver "ecell4::NumberObserver":
         Cpp_NumberObserver(vector[string]) except +
         Real next_time()
         vector[vector[Real]] data()
+        vector[Cpp_Species] targets()
 
     cdef cppclass Cpp_FixedIntervalHDF5Observer "ecell4::FixedIntervalHDF5Observer":
         Cpp_FixedIntervalHDF5Observer(Real, string) except +

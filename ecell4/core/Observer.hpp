@@ -173,6 +173,11 @@ public:
         return logger_.data;
     }
 
+    NumberLogger::species_container_type targets() const
+    {
+        return logger_.targets;
+    }
+
 protected:
 
     NumberLogger logger_;
@@ -214,6 +219,11 @@ public:
     NumberLogger::data_container_type data() const
     {
         return logger_.data;
+    }
+
+    NumberLogger::species_container_type targets() const
+    {
+        return logger_.targets;
     }
 
 protected:

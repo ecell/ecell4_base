@@ -35,6 +35,18 @@ cdef class FixedIntervalNumberObserver:
             inc(it)
         return retval
 
+    def targets(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().targets()
+
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
     def as_base(self):
         retval = Observer()
         del retval.thisptr
@@ -60,6 +72,18 @@ cdef class NumberObserver:
         cdef vector[vector[Real]].iterator it = d.begin()
         while it != d.end():
             retval.append(deref(it))
+            inc(it)
+        return retval
+
+    def targets(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().targets()
+
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
 
