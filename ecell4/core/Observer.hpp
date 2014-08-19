@@ -88,26 +88,60 @@ protected:
     Integer num_steps_;
 };
 
+struct NumberLogger
+{
+    typedef std::vector<std::vector<Real> > data_container_type;
+    typedef std::vector<Species> species_container_type;
+
+    NumberLogger(const std::vector<std::string>& species)
+    {
+        targets.reserve(species.size());
+        for (std::vector<std::string>::const_iterator i(species.begin());
+            i != species.end(); ++i)
+        {
+            targets.push_back(Species(*i));
+        }
+    }
+
+    ~NumberLogger()
+    {
+        ;
+    }
+
+    void initialize()
+    {
+        data.clear();
+    }
+
+    void log(const Space* space)
+    {
+        data_container_type::value_type tmp;
+        tmp.push_back(space->t());
+        for (species_container_type::const_iterator i(targets.begin());
+            i != targets.end(); ++i)
+        {
+            tmp.push_back(space->num_molecules(*i));
+        }
+        data.push_back(tmp);
+    }
+
+    data_container_type data;
+    species_container_type targets;
+};
+
 class FixedIntervalNumberObserver
     : public FixedIntervalObserver
 {
 public:
 
     typedef FixedIntervalObserver base_type;
-    typedef std::vector<std::vector<Real> > data_container_type;
-    typedef std::vector<Species> species_container_type;
 
 public:
 
     FixedIntervalNumberObserver(const Real& dt, const std::vector<std::string>& species)
-        : base_type(dt)
+        : base_type(dt), logger_(species)
     {
-        species_.reserve(species.size());
-        for (std::vector<std::string>::const_iterator i(species.begin());
-            i != species.end(); ++i)
-        {
-            species_.push_back(Species(*i));
-        }
+        ;
     }
 
     virtual ~FixedIntervalNumberObserver()
@@ -118,32 +152,23 @@ public:
     virtual void initialize(const Space* space)
     {
         base_type::initialize(space);
-        data_.clear();
+        logger_.initialize();
     }
 
     virtual void fire(const Space* space)
     {
-        data_container_type::value_type tmp;
-        tmp.push_back(space->t());
-        for (species_container_type::const_iterator i(species_.begin());
-            i != species_.end(); ++i)
-        {
-            tmp.push_back(space->num_molecules(*i));
-        }
-        data_.push_back(tmp);
-
+        logger_.log(space);
         base_type::fire(space);
     }
 
-    data_container_type data() const
+    NumberLogger::data_container_type data() const
     {
-        return data_;
+        return logger_.data;
     }
 
 protected:
 
-    data_container_type data_;
-    species_container_type species_;
+    NumberLogger logger_;
 };
 
 class NumberObserver
@@ -152,20 +177,13 @@ class NumberObserver
 public:
 
     typedef Observer base_type;
-    typedef std::vector<std::vector<Real> > data_container_type;
-    typedef std::vector<Species> species_container_type;
 
 public:
 
     NumberObserver(const std::vector<std::string>& species)
-        : base_type(true)
+        : base_type(true), logger_(species)
     {
-        species_.reserve(species.size());
-        for (std::vector<std::string>::const_iterator i(species.begin());
-            i != species.end(); ++i)
-        {
-            species_.push_back(Species(*i));
-        }
+        ;
     }
 
     virtual ~NumberObserver()
@@ -175,30 +193,22 @@ public:
 
     virtual void initialize(const Space* space)
     {
-        data_.clear();
+        logger_.initialize();
     }
 
     virtual void fire(const Space* space)
     {
-        data_container_type::value_type tmp;
-        tmp.push_back(space->t());
-        for (species_container_type::const_iterator i(species_.begin());
-            i != species_.end(); ++i)
-        {
-            tmp.push_back(space->num_molecules(*i));
-        }
-        data_.push_back(tmp);
+        logger_.log(space);
     }
 
-    data_container_type data() const
+    NumberLogger::data_container_type data() const
     {
-        return data_;
+        return logger_.data;
     }
 
 protected:
 
-    data_container_type data_;
-    species_container_type species_;
+    NumberLogger logger_;
 };
 
 } // ecell4
