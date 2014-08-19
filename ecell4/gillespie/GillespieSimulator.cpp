@@ -323,23 +323,21 @@ void GillespieSimulator::step(void)
 
 bool GillespieSimulator::step(const Real &upto)
 {
-    const Real t0(t()), tnext(next_time());
-
-    if (upto <= t0)
+    if (upto <= t())
     {
         return false;
     }
 
-    if (upto >= tnext)
+    if (upto >= next_time())
     {
-        this->step();
+        step();
         return true;
     }
     else
     {
         // no reaction occurs
-        this->set_t(upto);
-        this->draw_next_reaction();
+        set_t(upto);
+        // draw_next_reaction();
         return false;
     }
 }

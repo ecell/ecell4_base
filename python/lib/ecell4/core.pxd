@@ -371,6 +371,11 @@ cdef extern from "ecell4/core/Observer.hpp" namespace "ecell4":
         Real next_time()
         vector[vector[Real]] data()
 
+    cdef cppclass Cpp_NumberObserver "ecell4::NumberObserver":
+        Cpp_NumberObserver(vector[string]) except +
+        Real next_time()
+        vector[vector[Real]] data()
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -378,3 +383,6 @@ cdef class Observer:
 
 cdef class FixedIntervalNumberObserver:
     cdef shared_ptr[Cpp_FixedIntervalNumberObserver]* thisptr
+
+cdef class NumberObserver:
+    cdef shared_ptr[Cpp_NumberObserver]* thisptr

@@ -38,3 +38,31 @@ cdef class FixedIntervalNumberObserver:
         retval.thisptr = new shared_ptr[Cpp_Observer](
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
+
+cdef class NumberObserver:
+
+    def __cinit__(self, vector[string] species):
+        self.thisptr = new shared_ptr[Cpp_NumberObserver](
+            new Cpp_NumberObserver(species))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def next_time(self):
+        return self.thisptr.get().next_time()
+
+    def data(self):
+        cdef vector[vector[Real]] d = self.thisptr.get().data()
+        retval = []
+        cdef vector[vector[Real]].iterator it = d.begin()
+        while it != d.end():
+            retval.append(deref(it))
+            inc(it)
+        return retval
+
+    def as_base(self):
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval

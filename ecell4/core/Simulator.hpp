@@ -108,6 +108,14 @@ protected:
         Observer* obs_;
     };
 
+    struct observer_every
+    {
+        bool operator()(boost::shared_ptr<Observer> const& val) const
+        {
+            return val->every();
+        }
+    };
+
 public:
 
     Simulator(boost::shared_ptr<model_type> model,
@@ -171,18 +179,17 @@ public:
         }
     }
 
-    void run(const Real& duration, boost::shared_ptr<Observer> obs)
-    {
-        run(duration, std::vector<boost::shared_ptr<Observer> >(1, obs));
-    }
-
     void run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers)
     {
         const Real upto(t() + duration);
 
+        std::vector<boost::shared_ptr<Observer> >::iterator
+            offset(std::partition(
+                observers.begin(), observers.end(), observer_every()));
+
         EventScheduler scheduler;
         for (std::vector<boost::shared_ptr<Observer> >::const_iterator
-            i(observers.begin()); i != observers.end(); ++i)
+            i(offset); i != observers.end(); ++i)
         {
             scheduler.add(boost::shared_ptr<EventScheduler::Event>(
                 new ObserverEvent(this, (*i).get(), t())));
@@ -193,26 +200,35 @@ public:
             while (next_time() < std::min(upto, scheduler.next_time()))
             {
                 step();
+                for (std::vector<boost::shared_ptr<Observer> >::iterator
+                    i(observers.begin()); i != offset; ++i)
+                {
+                    (*i)->fire(world_.get());
+                }
             }
 
-            if (upto > scheduler.next_time())
+            if (upto >= scheduler.next_time())
             {
                 step(scheduler.next_time());
+                for (std::vector<boost::shared_ptr<Observer> >::iterator
+                    i(observers.begin()); i != offset; ++i)
+                {
+                    (*i)->fire(world_.get());
+                }
+
                 EventScheduler::value_type top(scheduler.pop());
                 top.second->fire();
                 scheduler.add(top.second);
             }
-            else if (upto < scheduler.next_time())
+            else
             {
                 step(upto);
-                break;
-            }
-            else // upto == scheduler.next_time()
-            {
-                step(upto);
-                EventScheduler::value_type top(scheduler.pop());
-                top.second->fire();
-                scheduler.add(top.second);
+                for (std::vector<boost::shared_ptr<Observer> >::iterator
+                    i(observers.begin()); i != offset; ++i)
+                {
+                    (*i)->fire(world_.get());
+                }
+
                 break;
             }
         }

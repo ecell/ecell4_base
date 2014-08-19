@@ -1,6 +1,6 @@
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
-import collections
+
 
 ## GillespieWorld
 #  a python wrapper for Cpp_GillespieWorld
@@ -133,10 +133,7 @@ cdef class GillespieSimulator:
 
         if observers is None:
             self.thisptr.run(duration)
-        elif isinstance(observers, collections.Iterable):
+        else:
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
             self.thisptr.run(duration, tmp)
-        else:
-            self.thisptr.run(
-                duration, deref((<Observer>(observers.as_base())).thisptr))

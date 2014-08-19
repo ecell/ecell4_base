@@ -51,7 +51,6 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_GillespieWorld] world()
         void run(Real)
-        void run(Real, shared_ptr[Cpp_Observer])
         void run(Real, vector[shared_ptr[Cpp_Observer]])
 
 ## GillespieSimulator
