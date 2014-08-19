@@ -342,9 +342,10 @@ bool GillespieSimulator::step(const Real &upto)
     else
     {
         // no reaction occurs
+        // set_dt(next_time() - upto);
         set_t(upto);
-        last_reactions_.clear();
-        // draw_next_reaction();
+        // last_reactions_.clear();
+        draw_next_reaction();
         return false;
     }
 }
