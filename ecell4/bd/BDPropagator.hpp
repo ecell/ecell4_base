@@ -19,8 +19,10 @@ class BDPropagator
 public:
 
     BDPropagator(
-        Model& model, BDWorld& world, RandomNumberGenerator& rng, const Real& dt)
-        : model_(model), world_(world), rng_(rng), dt_(dt), max_retry_count_(1)
+        Model& model, BDWorld& world, RandomNumberGenerator& rng, const Real& dt,
+        std::vector<ReactionRule>& last_reactions)
+        : model_(model), world_(world), rng_(rng), dt_(dt),
+        last_reactions_(last_reactions), max_retry_count_(1)
     {
         queue_ = world_.list_particles();
         shuffle(rng_, queue_);
@@ -82,6 +84,7 @@ protected:
     BDWorld& world_;
     RandomNumberGenerator& rng_;
     Real dt_;
+    std::vector<ReactionRule>& last_reactions_;
     Integer max_retry_count_;
 
     BDWorld::particle_container_type queue_;

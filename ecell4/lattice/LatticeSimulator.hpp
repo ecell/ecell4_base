@@ -161,6 +161,11 @@ public:
     void walk(const Species& species);
     void walk(const Species& species, const Real& alpha);
 
+    std::vector<ReactionRule> last_reactions() const
+    {
+        return reactions_;
+    }
+
 protected:
 
     boost::shared_ptr<EventScheduler::Event> create_step_event(

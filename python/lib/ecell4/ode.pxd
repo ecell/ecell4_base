@@ -58,6 +58,7 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         # Optional members
         void set_t(Real&)
         void set_dt(Real &)
+        vector[Cpp_ReactionRule] last_reactions()
         shared_ptr[Cpp_NetworkModel] model()
         shared_ptr[Cpp_ODEWorld] world()
         void run(Real)

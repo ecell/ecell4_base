@@ -224,10 +224,13 @@ Real GillespieSimulator::calculate_propensity(const ReactionRule& rr)
 
 bool GillespieSimulator::__draw_next_reaction(void)
 {
-    std::vector<double> a(reaction_rules_.size());
-    for (unsigned int idx(0); idx < reaction_rules_.size(); ++idx)
+    const Model::reaction_rule_container_type&
+        reaction_rules(model_->reaction_rules());
+
+    std::vector<double> a(reaction_rules.size());
+    for (unsigned int idx(0); idx < reaction_rules.size(); ++idx)
     {
-        a[idx] = calculate_propensity(reaction_rules_[idx]);
+        a[idx] = calculate_propensity(reaction_rules[idx]);
     }
 
     const double atot(std::accumulate(a.begin(), a.end(), double(0.0)));
@@ -238,9 +241,9 @@ bool GillespieSimulator::__draw_next_reaction(void)
         return true;
     }
 
-    const double rnd1(this->rng()->uniform(0, 1));
+    const double rnd1(rng()->uniform(0, 1));
     const double dt(gsl_sf_log(1.0 / rnd1) / double(atot));
-    const double rnd2(this->rng()->uniform(0, atot));
+    const double rnd2(rng()->uniform(0, atot));
 
     int u(-1);
     double acc(0.0);
@@ -258,7 +261,7 @@ bool GillespieSimulator::__draw_next_reaction(void)
         return true;
     }
 
-    next_reaction_ = draw_exact_reaction(reaction_rules_[u]);
+    next_reaction_ = draw_exact_reaction(reaction_rules[u]);
     if (next_reaction_.k() <= 0.0)
     {
         this->dt_ += dt; // skip a reaction
@@ -271,7 +274,7 @@ bool GillespieSimulator::__draw_next_reaction(void)
 
 void GillespieSimulator::draw_next_reaction(void)
 {
-    if (reaction_rules_.size() == 0)
+    if (model_->reaction_rules().size() == 0)
     {
         this->dt_ = inf;
         return;
@@ -315,6 +318,9 @@ void GillespieSimulator::step(void)
         world_->add_molecules(*it, 1);
     }
 
+    last_reactions_.clear();
+    last_reactions_.push_back(next_reaction_);
+
     this->set_t(t0 + dt0);
     num_steps_++;
 
@@ -337,6 +343,7 @@ bool GillespieSimulator::step(const Real &upto)
     {
         // no reaction occurs
         set_t(upto);
+        last_reactions_.clear();
         // draw_next_reaction();
         return false;
     }
@@ -344,7 +351,6 @@ bool GillespieSimulator::step(const Real &upto)
 
 void GillespieSimulator::initialize(void)
 {
-    reaction_rules_ = model_->reaction_rules();
     this->draw_next_reaction();
 }
 
@@ -361,6 +367,11 @@ Real GillespieSimulator::t(void) const
 Real GillespieSimulator::dt(void) const
 {
     return this->dt_;
+}
+
+std::vector<ReactionRule> GillespieSimulator::last_reactions() const
+{
+    return last_reactions_;
 }
 
 } // gillespie

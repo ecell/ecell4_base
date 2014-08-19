@@ -68,6 +68,7 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         Real t()
         Real dt()
         void set_dt(Real& dt)
+        vector[Cpp_ReactionRule] last_reactions()
         Real next_time()
         void initialize()
         shared_ptr[Cpp_Model] model()

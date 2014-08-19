@@ -43,7 +43,7 @@ public:
 
     void initialize()
     {
-        ;
+        last_reactions_.clear();
     }
 
     Real t() const
@@ -60,6 +60,11 @@ public:
     bool step(const Real& upto);
 
     // Optional members
+
+    std::vector<ReactionRule> last_reactions() const
+    {
+        return last_reactions_;
+    }
 
     void set_t(const Real& t)
     {
@@ -87,6 +92,7 @@ protected:
      * they are needed to be saved/loaded with Visitor pattern.
      */
     Real dt_;
+    std::vector<ReactionRule> last_reactions_;
 };
 
 } // bd

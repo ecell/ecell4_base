@@ -51,6 +51,7 @@ public:
     // Optional members
 
     void set_t(const Real &t);
+    std::vector<ReactionRule> last_reactions() const;
 
     /**
      * recalculate reaction propensities and draw the next time.
@@ -69,8 +70,10 @@ protected:
     Integer num_molecules(const Species& sp);
     Integer num_molecules(const Species& sp1, const Species& sp2);
     ReactionRule draw_exact_reaction(const ReactionRule& rr);
-    std::pair<ReactionRule::reactant_container_type, Integer> draw_exact_reactants(const Species& sp1);
-    std::pair<ReactionRule::reactant_container_type, Integer> draw_exact_reactants(const Species& sp1, const Species& sp2);
+    std::pair<ReactionRule::reactant_container_type, Integer>
+        draw_exact_reactants(const Species& sp1);
+    std::pair<ReactionRule::reactant_container_type, Integer>
+        draw_exact_reactants(const Species& sp1, const Species& sp2);
 
     Real calculate_propensity(const ReactionRule& rr);
 
@@ -78,7 +81,7 @@ protected:
 
     Real dt_;
     ReactionRule next_reaction_;
-    Model::reaction_rule_container_type reaction_rules_;
+    std::vector<ReactionRule> last_reactions_;
 };
 
 }

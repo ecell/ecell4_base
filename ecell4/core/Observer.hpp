@@ -3,6 +3,7 @@
 
 #include "types.hpp"
 #include "Space.hpp"
+#include "SimulatorBase.hpp"
 #include <boost/format.hpp>
 
 
@@ -34,7 +35,7 @@ public:
         ;
     }
 
-    virtual void fire(const Space* space) = 0;
+    virtual void fire(const SimulatorBase* sim, const Space* space) = 0;
 
     bool every()
     {
@@ -82,7 +83,7 @@ public:
         num_steps_ = 0;
     }
 
-    virtual void fire(const Space* space)
+    virtual void fire(const SimulatorBase* sim, const Space* space)
     {
         tnext_ += dt_;
         ++num_steps_;
@@ -161,10 +162,10 @@ public:
         logger_.initialize();
     }
 
-    virtual void fire(const Space* space)
+    virtual void fire(const SimulatorBase* sim, const Space* space)
     {
         logger_.log(space);
-        base_type::fire(space);
+        base_type::fire(sim, space);
     }
 
     NumberLogger::data_container_type data() const
@@ -202,9 +203,12 @@ public:
         logger_.initialize();
     }
 
-    virtual void fire(const Space* space)
+    virtual void fire(const SimulatorBase* sim, const Space* space)
     {
-        logger_.log(space);
+        if (sim->last_reactions().size() > 0)
+        {
+            logger_.log(space);
+        }
     }
 
     NumberLogger::data_container_type data() const
@@ -242,11 +246,11 @@ public:
         base_type::initialize(space);
     }
 
-    virtual void fire(const Space* space)
+    virtual void fire(const SimulatorBase* sim, const Space* space)
     {
         space->save(filename());
 
-        base_type::fire(space);
+        base_type::fire(sim, space);
     }
 
     const std::string filename() const

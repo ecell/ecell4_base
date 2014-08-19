@@ -88,6 +88,7 @@ bool BDPropagator::attempt_reaction(
             {
             case 0:
                 remove_particle(pid);
+                last_reactions_.push_back(rr);
                 break;
             case 1:
                 {
@@ -110,6 +111,7 @@ bool BDPropagator::attempt_reaction(
                     Particle particle_to_update(
                         species_new, particle.position(), radius_new, D_new);
                     world_.update_particle(pid, particle_to_update);
+                    last_reactions_.push_back(rr);
                 }
                 break;
             case 2:
@@ -166,6 +168,7 @@ bool BDPropagator::attempt_reaction(
                         species_new2, newpos2, radius2, D2);
                     world_.update_particle(pid, particle_to_update1);
                     world_.new_particle(particle_to_update2);
+                    last_reactions_.push_back(rr);
                 }
                 break;
             default:
@@ -221,6 +224,7 @@ bool BDPropagator::attempt_reaction(
             case 0:
                 remove_particle(pid1);
                 remove_particle(pid2);
+                last_reactions_.push_back(rr);
                 break;
             case 1:
                 {
@@ -253,6 +257,7 @@ bool BDPropagator::attempt_reaction(
                     // world_.update_particle(pid1, particle_to_update);
                     remove_particle(pid1);
                     world_.new_particle(particle_to_update);
+                    last_reactions_.push_back(rr);
                 }
                 break;
             default:

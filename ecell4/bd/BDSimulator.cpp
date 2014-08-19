@@ -12,8 +12,10 @@ namespace bd
 
 void BDSimulator::step()
 {
+    last_reactions_.clear();
+
     {
-        BDPropagator propagator(*model_, *world_, *rng(), dt());
+        BDPropagator propagator(*model_, *world_, *rng(), dt(), last_reactions_);
         while (propagator())
         {
             ; // do nothing here

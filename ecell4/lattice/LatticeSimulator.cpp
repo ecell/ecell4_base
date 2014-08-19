@@ -342,6 +342,8 @@ bool LatticeSimulator::step(const Real& upto)
     }
 
     world_->set_t(upto); //XXX: TODO
+    reactions_.clear();
+    new_species_.clear();
     dt_ = scheduler_.next_time() - t();
     return false;
 }

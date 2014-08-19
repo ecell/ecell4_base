@@ -113,6 +113,16 @@ cdef class GillespieSimulator:
     def next_time(self):
         return self.thisptr.next_time()
 
+    def last_reactions(self):
+        cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
+        cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
+        retval = []
+        while it != reactions.end():
+            retval.append(ReactionRule_from_Cpp_ReactionRule(
+                <Cpp_ReactionRule*>(address(deref(it)))))
+            inc(it)
+        return retval
+
     def set_t(self, Real new_t):
         self.thisptr.set_t(new_t)
 

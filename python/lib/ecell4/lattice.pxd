@@ -91,6 +91,7 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         Real dt()
         void set_dt(Real)
         void initialize()
+        vector[Cpp_ReactionRule] last_reactions()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_LatticeWorld] world()
         void run(Real)
