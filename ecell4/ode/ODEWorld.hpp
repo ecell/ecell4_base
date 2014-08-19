@@ -110,6 +110,24 @@ public:
 
     Integer num_molecules(const Species& sp) const
     {
+        SpeciesExpressionMatcher sexp(sp);
+        Real retval(0);
+        for (species_map_type::const_iterator i(index_map_.begin());
+            i != index_map_.end(); ++i)
+        {
+            if (sexp.match((*i).first))
+            {
+                do
+                {
+                    retval += num_molecules_[(*i).second];
+                } while (sexp.next());
+            }
+        }
+        return static_cast<Integer>(retval);
+    }
+
+    Integer num_molecules_exact(const Species& sp) const
+    {
         return static_cast<Integer>(get_value(sp));
     }
 

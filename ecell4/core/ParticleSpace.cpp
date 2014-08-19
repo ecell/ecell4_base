@@ -2,6 +2,7 @@
 #include <stdexcept>
 
 #include "exceptions.hpp"
+#include "Context.hpp"
 #include "ParticleSpace.hpp"
 
 
@@ -16,6 +17,28 @@ Integer ParticleSpaceVectorImpl::num_particles() const
 Integer ParticleSpaceVectorImpl::num_particles(const Species& sp) const
 {
     return static_cast<Integer>(list_particles(sp).size());
+}
+
+Integer ParticleSpaceVectorImpl::num_molecules(const Species& sp) const
+{
+    Integer retval(0);
+    SpeciesExpressionMatcher sexp(sp);
+    for (particle_container_type::const_iterator i(particles_.begin());
+         i != particles_.end(); ++i)
+    {
+        retval += sexp.count((*i).second.species());
+    }
+    return retval;
+}
+
+Integer ParticleSpaceVectorImpl::num_molecules_exact(const Species& sp) const
+{
+    return num_particles_exact(sp);
+}
+
+Integer ParticleSpaceVectorImpl::num_particles_exact(const Species& sp) const
+{
+    return static_cast<Integer>(list_particles_exact(sp).size());
 }
 
 bool ParticleSpaceVectorImpl::has_particle(const ParticleID& pid) const
@@ -82,14 +105,31 @@ ParticleSpaceVectorImpl::list_particles() const
 }
 
 std::vector<std::pair<ParticleID, Particle> >
-ParticleSpaceVectorImpl::list_particles(const Species& species) const
+ParticleSpaceVectorImpl::list_particles(const Species& sp) const
+{
+    std::vector<std::pair<ParticleID, Particle> > retval;
+    SpeciesExpressionMatcher sexp(sp);
+
+    for (particle_container_type::const_iterator i(particles_.begin());
+         i != particles_.end(); ++i)
+    {
+        if (sexp.match((*i).second.species()))
+        {
+            retval.push_back(*i);
+        }
+    }
+    return retval;
+}
+
+std::vector<std::pair<ParticleID, Particle> >
+ParticleSpaceVectorImpl::list_particles_exact(const Species& sp) const
 {
     std::vector<std::pair<ParticleID, Particle> > retval;
 
     for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
-        if ((*i).second.species() == species)
+        if ((*i).second.species() == sp)
         {
             retval.push_back(*i);
         }

@@ -38,6 +38,9 @@ cdef class ODEWorld:
     def num_molecules(self, Species sp):
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
+    def num_molecules_exact(self, Species sp):
+        return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
+
     def list_species(self):
         cdef vector[Cpp_Species] raw_list_species = self.thisptr.get().list_species()
         retval = []

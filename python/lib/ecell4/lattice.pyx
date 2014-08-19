@@ -77,11 +77,17 @@ cdef class LatticeWorld:
         else:
             return self.thisptr.get().num_particles(deref(sp.thisptr))
 
+    def num_particles_exact(self, Species sp):
+        return self.thisptr.get().num_particles_exact(deref(sp.thisptr))
+
     def num_voxels(self, Species sp = None):
         if sp is None:
             return self.thisptr.get().num_voxels()
         else:
             return self.thisptr.get().num_voxels(deref(sp.thisptr))
+
+    def num_voxels_exact(self, Species sp):
+        return self.thisptr.get().num_voxels_exact(deref(sp.thisptr))
 
     def list_particles(self, Species sp = None):
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
@@ -89,6 +95,22 @@ cdef class LatticeWorld:
             particles = self.thisptr.get().list_particles()
         else:
             particles = self.thisptr.get().list_particles(deref(sp.thisptr))
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def list_particles_exact(self, Species sp):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.get().list_particles_exact(deref(sp.thisptr))
 
         retval = []
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
@@ -175,6 +197,9 @@ cdef class LatticeWorld:
         else:
             return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
+    def num_molecules_exact(self, Species sp):
+        return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
+
     # # def add_species(self, Species sp):
     # #     self.thisptr.get().add_species(deref(sp.thisptr))
 
@@ -205,6 +230,22 @@ cdef class LatticeWorld:
     def list_voxels(self, Species sp):
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
         voxels = self.thisptr.get().list_voxels(deref(sp.thisptr))
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]].iterator \
+            it = voxels.begin()
+        while it != voxels.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Voxel_from_Cpp_Voxel(
+                     <Cpp_Voxel*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def list_voxels_exact(self, Species sp):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
+        voxels = self.thisptr.get().list_voxels_exact(deref(sp.thisptr))
 
         retval = []
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]].iterator \

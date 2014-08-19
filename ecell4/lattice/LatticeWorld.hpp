@@ -114,12 +114,14 @@ public:
     const Real volume() const;
     Integer num_species() const;
     bool has_species(const Species &sp) const;
-    bool has_species_exact(const Species &sp) const;
+    // bool has_species_exact(const Species &sp) const;
 
     Integer num_molecules(const Species& sp) const;
+    Integer num_molecules_exact(const Species& sp) const;
     Integer num_molecules() const;
     Integer num_particles() const;
     Integer num_particles(const Species& sp) const;
+    Integer num_particles_exact(const Species& sp) const;
     Integer num_voxels() const;
     Integer num_voxels(const Species& sp) const;
     Integer num_voxels_exact(const Species& sp) const;
@@ -180,11 +182,15 @@ public:
     std::vector<std::pair<ParticleID, Particle> > list_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
         list_particles(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> >
+        list_particles_exact(const Species& sp) const;
 
     bool update_particle(const ParticleID& pid, const Particle& p);
 
     std::vector<std::pair<ParticleID, Voxel> >
         list_voxels(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Voxel> >
+        list_voxels_exact(const Species& sp) const;
 
     std::vector<Species> list_species() const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
@@ -195,7 +201,7 @@ public:
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
     void remove_molecules(const Species& sp, const Integer& num);
-    void remove_molecules_exact(const Species& sp, const Integer& num);
+    // void remove_molecules_exact(const Species& sp, const Integer& num);
     bool remove_voxel_private(const private_coordinate_type coord);
     bool move(coordinate_type from, coordinate_type to);
     std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);

@@ -38,6 +38,9 @@ cdef class GillespieWorld:
     def num_molecules(self, Species sp):
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
+    def num_molecules_exact(self, Species sp):
+        return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
+
     def add_molecules(self, Species sp, Integer num):
         self.thisptr.get().add_molecules(deref(sp.thisptr), num)
 
@@ -62,8 +65,17 @@ cdef class GillespieWorld:
     def load(self, string filename):
         self.thisptr.get().load(filename)
 
-    def bind_to(self, NetworkModel m):
-        self.thisptr.get().bind_to(deref(m.thisptr))
+    def bind_to(self, m):
+        if isinstance(m, NetworkModel):
+            self.thisptr.get().bind_to(
+                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr))
+        elif isinstance(m, NetfreeModel):
+            self.thisptr.get().bind_to(
+                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr))
+        else:
+            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
+                + " the argument must be NetworkModel or NetfreeModel")
+
 
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(

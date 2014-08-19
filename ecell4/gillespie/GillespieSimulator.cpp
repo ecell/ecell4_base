@@ -27,7 +27,7 @@ Integer GillespieSimulator::num_molecules(const Species& sp)
         const Integer num(sexp.count(*i));
         if (num > 0)
         {
-            num_tot += num * world_->num_molecules(*i); //XXX: num_molecules_exact
+            num_tot += num * world_->num_molecules_exact(*i);
         }
     }
     return num_tot;
@@ -46,7 +46,7 @@ Integer GillespieSimulator::num_molecules(const Species& sp1, const Species& sp2
 
         if (num1 > 0 || num2 > 0)
         {
-            const Integer num(world_->num_molecules(*i)); //XXX: num_molecules_exact
+            const Integer num(world_->num_molecules_exact(*i));
             const Integer tmp(num1 * num);
             num_tot1 += tmp;
             num_tot2 += num2 * num;
@@ -70,7 +70,7 @@ GillespieSimulator::draw_exact_reactants(const Species& sp)
         const Integer num(sexp.count(*j));
         if (num > 0)
         {
-            num_tot += num * world_->num_molecules(*j); //XXX: num_molecules_exact
+            num_tot += num * world_->num_molecules_exact(*j);
         }
         tmp.push_back(num_tot);
     }
@@ -80,7 +80,7 @@ GillespieSimulator::draw_exact_reactants(const Species& sp)
         itr(std::lower_bound(tmp.begin(), tmp.end(), rnd1));
     const Species& tgt(species[std::distance(tmp.begin(), itr)]);
 
-    if (world_->num_molecules(tgt) == 0)
+    if (world_->num_molecules_exact(tgt) == 0)
     {
         throw IllegalState("the number of reactant molecules must be non-zero.");
     }
@@ -104,7 +104,7 @@ GillespieSimulator::draw_exact_reactants(const Species& sp1, const Species& sp2)
         const Integer num1(sexp1.count(*j));
         if (num1 > 0)
         {
-            num_tot += num1 * world_->num_molecules(*j); //XXX: num_molecules_exact
+            num_tot += num1 * world_->num_molecules_exact(*j);
         }
         tmp.push_back(num_tot);
     }
@@ -117,7 +117,7 @@ GillespieSimulator::draw_exact_reactants(const Species& sp1, const Species& sp2)
     const Species& tgt1(species[idx1]);
     cmb = sexp1.count(tgt1);
 
-    if (world_->num_molecules(tgt1) == 0)
+    if (world_->num_molecules_exact(tgt1) == 0)
     {
         throw IllegalState("the number of reactant molecules must be non-zero.");
     }
@@ -130,7 +130,7 @@ GillespieSimulator::draw_exact_reactants(const Species& sp1, const Species& sp2)
         const Integer num2(sexp2.count(*j));
         if (num2 > 0)
         {
-            const Integer num(world_->num_molecules(*j)); //XXX: num_molecules_exact
+            const Integer num(world_->num_molecules_exact(*j));
             if (std::distance(species.begin(), j) != idx1)
             {
                 num_tot += num2 * num;

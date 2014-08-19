@@ -95,7 +95,7 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
         h5_species_table[i].id = sid;
         std::strcpy(h5_species_table[i].serial, species[i].serial().c_str());
 
-        const voxel_container_type& voxels(space.list_voxels(species[i]));
+        const voxel_container_type& voxels(space.list_voxels_exact(species[i]));
         for (unsigned int j(0); j < voxels.size(); ++j)
         {
             h5_voxel_table[vidx].lot = voxels[j].first.lot();

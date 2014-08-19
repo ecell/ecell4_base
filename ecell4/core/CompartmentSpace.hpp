@@ -75,7 +75,12 @@ public:
      */
     virtual Integer num_molecules(const Species& sp) const
     {
-        throw NotImplemented("num_molecules(const Species&) not implemented");
+        return num_molecules_exact(sp);
+    }
+
+    virtual Integer num_molecules_exact(const Species& sp) const
+    {
+        throw NotImplemented("num_molecules_exact(const Species&) not implemented");
     }
 
     /**
@@ -168,6 +173,7 @@ public:
 
     const Real volume() const;
     Integer num_molecules(const Species& sp) const;
+    Integer num_molecules_exact(const Species& sp) const;
     bool has_species(const Species& sp) const;
 
     // CompartmentSpace member functions

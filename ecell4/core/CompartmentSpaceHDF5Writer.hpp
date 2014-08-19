@@ -94,7 +94,7 @@ struct CompartmentSpaceHDF5Traits
 
     num_molecules_type getter(const space_type& space, const Species& sp) const
     {
-        return space.num_molecules(sp);
+        return space.num_molecules_exact(sp);
     }
 
     void setter(

@@ -88,7 +88,20 @@ Integer LatticeSpace::num_molecules() const
 
 Integer LatticeSpace::num_molecules(const Species& sp) const
 {
-    return num_voxels(sp);
+    Integer count(0);
+    SpeciesExpressionMatcher sexp(sp);
+    for (spmap::const_iterator itr(spmap_.begin());
+            itr != spmap_.end(); ++itr)
+    {
+        const MolecularTypeBase* mt(&((*itr).second));
+        count += mt->size() * sexp.count((*itr).first);
+    }
+    return count;
+}
+
+Integer LatticeSpace::num_molecules_exact(const Species& sp) const
+{
+    return num_voxels_exact(sp);
 }
 
 const Position3& LatticeSpace::edge_lengths() const
@@ -104,6 +117,11 @@ Integer LatticeSpace::num_particles() const
 Integer LatticeSpace::num_particles(const Species& sp) const
 {
     return num_voxels(sp);
+}
+
+Integer LatticeSpace::num_particles_exact(const Species& sp) const
+{
+    return num_voxels_exact(sp);
 }
 
 bool LatticeSpace::has_particle(const ParticleID& pid) const
@@ -184,30 +202,30 @@ std::vector<std::pair<ParticleID, Particle> >
 std::vector<std::pair<ParticleID, Particle> >
     LatticeSpace::list_particles(const Species& sp) const
 {
-    return list_particles_exact(sp);
-    // std::vector<std::pair<ParticleID, Particle> > retval;
-    // for (spmap::const_iterator itr(spmap_.begin());
-    //         itr != spmap_.end(); ++itr)
-    // {
-    //     if (!spmatch(sp, (*itr).first))
-    //     {
-    //         continue;
-    //     }
+    SpeciesExpressionMatcher sexp(sp);
+    std::vector<std::pair<ParticleID, Particle> > retval;
+    for (spmap::const_iterator itr(spmap_.begin());
+            itr != spmap_.end(); ++itr)
+    {
+        if (!sexp.match((*itr).first))
+        {
+            continue;
+        }
 
-    //     const MolecularTypeBase& mt((*itr).second);
-    //     if (mt.is_vacant())
-    //     {
-    //         return retval;
-    //     }
+        const MolecularTypeBase& mt((*itr).second);
+        if (mt.is_vacant())
+        {
+            return retval;
+        }
 
-    //     for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
-    //             vitr != mt.end(); ++vitr)
-    //     {
-    //         retval.push_back(std::pair<ParticleID, Particle>(
-    //                     (*vitr).second, particle_at((*vitr).first)));
-    //     }
-    // }
-    // return retval;
+        for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
+                vitr != mt.end(); ++vitr)
+        {
+            retval.push_back(std::pair<ParticleID, Particle>(
+                        (*vitr).second, particle_at((*vitr).first)));
+        }
+    }
+    return retval;
 }
 
 std::pair<ParticleID, Voxel>
@@ -244,7 +262,6 @@ bool LatticeSpace::update_particle(const ParticleID& pid, const Particle& p)
  * original methods
  */
 
-
 std::vector<Species> LatticeSpace::list_species() const
 {
     std::vector<Species> keys;
@@ -278,25 +295,24 @@ std::vector<LatticeSpace::coordinate_type>
 
 std::vector<LatticeSpace::coordinate_type> LatticeSpace::list_coords(const Species& sp) const
 {
-    return list_coords_exact(sp);
-    // std::vector<coordinate_type> retval;
-    // for (spmap::const_iterator itr(spmap_.begin());
-    //         itr != spmap_.end(); ++itr)
-    // {
-    //     if (!spmatch(sp, (*itr).first))
-    //     {
-    //         continue;
-    //     }
+    std::vector<coordinate_type> retval;
+    for (spmap::const_iterator itr(spmap_.begin());
+            itr != spmap_.end(); ++itr)
+    {
+        if (!spmatch(sp, (*itr).first))
+        {
+            continue;
+        }
 
-    //     const MolecularTypeBase* mt(&((*itr).second));
+        const MolecularTypeBase* mt(&((*itr).second));
 
-    //     for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
-    //             itr != mt->end(); ++itr)
-    //     {
-    //         retval.push_back(private2coord((*itr).first));
-    //     }
-    // }
-    // return retval;
+        for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
+                itr != mt->end(); ++itr)
+        {
+            retval.push_back(private2coord((*itr).first));
+        }
+    }
+    return retval;
 }
 
 std::vector<std::pair<ParticleID, Voxel> >
@@ -322,27 +338,26 @@ LatticeSpace::list_voxels_exact(const Species& sp) const
 std::vector<std::pair<ParticleID, Voxel> >
 LatticeSpace::list_voxels(const Species& sp) const
 {
-    return list_voxels_exact(sp);
+    SpeciesExpressionMatcher sexp(sp);
+    std::vector<std::pair<ParticleID, Voxel> > retval;
+    for (spmap::const_iterator itr(spmap_.begin());
+            itr != spmap_.end(); ++itr)
+    {
+        if (!sexp.match((*itr).first))
+        {
+            continue;
+        }
 
-    // std::vector<std::pair<ParticleID, Voxel> > retval;
-    // for (spmap::const_iterator itr(spmap_.begin());
-    //         itr != spmap_.end(); ++itr)
-    // {
-    //     if (!spmatch(sp, (*itr).first))
-    //     {
-    //         continue;
-    //     }
-
-    //     const MolecularTypeBase* mt(&((*itr).second));
-    //     for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
-    //         itr != mt->end(); ++itr)
-    //     {
-    //         retval.push_back(std::make_pair(
-    //             (*itr).second,
-    //             Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D())));
-    //     }
-    // }
-    // return retval;
+        const MolecularTypeBase* mt(&((*itr).second));
+        for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
+            itr != mt->end(); ++itr)
+        {
+            retval.push_back(std::make_pair(
+                (*itr).second,
+                Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D())));
+        }
+    }
+    return retval;
 }
 
 std::pair<LatticeSpace::spmap::iterator, bool>
@@ -450,14 +465,14 @@ MolecularTypeBase* LatticeSpace::get_molecular_type(private_coordinate_type coor
     return voxels_.at(coord);
 }
 
-bool LatticeSpace::has_species_exact(const Species& sp) const
-{
-    return spmap_.find(sp) != spmap_.end();
-}
+// bool LatticeSpace::has_species_exact(const Species& sp) const
+// {
+//     return spmap_.find(sp) != spmap_.end();
+// }
 
 bool LatticeSpace::has_species(const Species& sp) const
 {
-    return has_species_exact(sp);
+    return spmap_.find(sp) != spmap_.end();
 }
 
 bool LatticeSpace::remove_particle(const ParticleID& pid)
@@ -787,18 +802,18 @@ Integer LatticeSpace::num_voxels_exact(const Species& sp) const
 
 Integer LatticeSpace::num_voxels(const Species& sp) const
 {
-    return num_voxels_exact(sp);
-    // Integer count(0);
-    // for (spmap::const_iterator itr(spmap_.begin());
-    //         itr != spmap_.end(); ++itr)
-    // {
-    //     if (spmatch(sp, (*itr).first))
-    //     {
-    //         const MolecularTypeBase* mt(&((*itr).second));
-    //         count += mt->size();
-    //     }
-    // }
-    // return count;
+    Integer count(0);
+    SpeciesExpressionMatcher sexp(sp);
+    for (spmap::const_iterator itr(spmap_.begin());
+            itr != spmap_.end(); ++itr)
+    {
+        if (sexp.match((*itr).first))
+        {
+            const MolecularTypeBase* mt(&((*itr).second));
+            count += mt->size();
+        }
+    }
+    return count;
 }
 
 Integer LatticeSpace::num_voxels() const

@@ -102,6 +102,13 @@ public:
             " by this space class");
     }
 
+    virtual Integer num_molecules_exact(const Species& sp) const
+    {
+        throw NotSupported(
+            "num_molecules_exact(const Species&) is not supported"
+            " by this space class");
+    }
+
     // ParticleSpaceTraits
 
     /**
@@ -136,6 +143,13 @@ public:
     {
         throw NotSupported(
             "num_particles(const Species&) is not supported"
+            " by this space class");
+    }
+
+    virtual Integer num_particles_exact(const Species& sp) const
+    {
+        throw NotSupported(
+            "num_particles_exact(const Species&) is not supported"
             " by this space class");
     }
 
@@ -175,6 +189,14 @@ public:
     {
         throw NotSupported(
             "list_particles(const Species&) is not supported"
+            " by this space class");
+    }
+
+    virtual std::vector<std::pair<ParticleID, Particle> >
+    list_particles_exact(const Species& sp) const
+    {
+        throw NotSupported(
+            "list_particles_exact(const Species&) is not supported"
             " by this space class");
     }
 };

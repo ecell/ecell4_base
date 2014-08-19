@@ -52,12 +52,31 @@ cdef class BDWorld:
         else:
             return self.thisptr.get().num_particles(deref(sp.thisptr))
 
+    def num_particles_exact(self, Species sp):
+        return self.thisptr.get().num_particles_exact(deref(sp.thisptr))
+
     def list_particles(self, Species sp = None):
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
         if sp is None:
             particles = self.thisptr.get().list_particles()
         else:
             particles = self.thisptr.get().list_particles(deref(sp.thisptr))
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def list_particles_exact(self, Species sp):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.get().list_particles(deref(sp.thisptr))
 
         retval = []
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
@@ -138,6 +157,9 @@ cdef class BDWorld:
     def num_molecules(self, Species sp):
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
+    def num_molecules_exact(self, Species sp):
+        return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
+
     # def add_species(self, Species sp):
     #     self.thisptr.get().add_species(deref(sp.thisptr))
 
@@ -153,8 +175,16 @@ cdef class BDWorld:
     def load(self, string filename):
         self.thisptr.get().load(filename)
 
-    def bind_to(self, NetworkModel m):
-        self.thisptr.get().bind_to(<shared_ptr[Cpp_Model]>deref(m.thisptr))
+    def bind_to(self, m):
+        if isinstance(m, NetworkModel):
+            self.thisptr.get().bind_to(
+                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr))
+        elif isinstance(m, NetfreeModel):
+            self.thisptr.get().bind_to(
+                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr))
+        else:
+            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
+                + " the argument must be NetworkModel or NetfreeModel")
 
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(

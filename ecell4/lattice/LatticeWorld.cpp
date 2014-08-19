@@ -39,14 +39,19 @@ bool LatticeWorld::has_species(const Species &sp) const
     return space_.has_species(sp);
 }
 
-bool LatticeWorld::has_species_exact(const Species &sp) const
-{
-    return space_.has_species_exact(sp);
-}
+// bool LatticeWorld::has_species_exact(const Species &sp) const
+// {
+//     return space_.has_species_exact(sp);
+// }
 
 Integer LatticeWorld::num_molecules(const Species& sp) const
 {
     return space_.num_molecules(sp);
+}
+
+Integer LatticeWorld::num_molecules_exact(const Species& sp) const
+{
+    return space_.num_molecules_exact(sp);
 }
 
 Integer LatticeWorld::num_molecules() const
@@ -57,6 +62,11 @@ Integer LatticeWorld::num_molecules() const
 Integer LatticeWorld::num_particles(const Species& sp) const
 {
     return space_.num_particles(sp);
+}
+
+Integer LatticeWorld::num_particles_exact(const Species& sp) const
+{
+    return space_.num_particles_exact(sp);
 }
 
 Integer LatticeWorld::num_particles() const
@@ -101,6 +111,12 @@ LatticeWorld::list_particles(const Species& sp) const
     return space_.list_particles(sp);
 }
 
+std::vector<std::pair<ParticleID, Particle> >
+LatticeWorld::list_particles_exact(const Species& sp) const
+{
+    return space_.list_particles_exact(sp);
+}
+
 bool LatticeWorld::update_particle(const ParticleID& pid, const Particle& p)
 {
     return space_.update_particle(pid, p);
@@ -115,6 +131,12 @@ std::vector<std::pair<ParticleID, Voxel> >
     LatticeWorld::list_voxels(const Species& sp) const
 {
     return space_.list_voxels(sp);
+}
+
+std::vector<std::pair<ParticleID, Voxel> >
+    LatticeWorld::list_voxels_exact(const Species& sp) const
+{
+    return space_.list_voxels_exact(sp);
 }
 
 std::vector<LatticeWorld::coordinate_type> LatticeWorld::list_coords(const Species& sp) const
@@ -184,11 +206,6 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
 }
 
 void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
-{
-    remove_molecules_exact(sp, num);
-}
-
-void LatticeWorld::remove_molecules_exact(const Species& sp, const Integer& num)
 {
     if (num < 0)
     {

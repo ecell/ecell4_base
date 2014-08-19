@@ -67,11 +67,13 @@ public:
     Integer num_species() const;
     Integer num_molecules()const;
     Integer num_molecules(const Species& sp)const;
+    Integer num_molecules_exact(const Species& sp)const;
     Integer num_particles() const;
     Integer num_particles(const Species& sp) const;
+    Integer num_particles_exact(const Species& sp) const;
 
     bool has_species(const Species& sp) const;
-    bool has_species_exact(const Species& sp) const;
+    // bool has_species_exact(const Species& sp) const;
     bool has_particle(const ParticleID& pid) const;
     bool has_voxel(const ParticleID& pid) const;
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const;

@@ -16,12 +16,13 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         void set_edge_lengths(Cpp_Position3&)
         Cpp_Position3 edge_lengths()
         Integer num_molecules(Cpp_Species &)
+        Integer num_molecules_exact(Cpp_Species &)
         vector[Cpp_Species] list_species()
         void add_molecules(Cpp_Species &sp, Integer &num)
         void remove_molecules(Cpp_Species &sp, Integer &num)
         void save(string)
         void load(string)
-        void bind_to(shared_ptr[Cpp_NetworkModel])
+        void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
 ## GillespieWorld

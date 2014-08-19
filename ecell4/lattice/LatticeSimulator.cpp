@@ -146,7 +146,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
         world_->remove_voxel_private(from_info.first);
         world_->remove_voxel_private(to_info.first);
 
-        if (!world_->has_species_exact(product_species))
+        if (!world_->has_species(product_species))
             new_species_.push_back(product_species);
 
         const LatticeWorld::molecule_info_type
@@ -178,7 +178,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
         const Species product_species0(*(products.begin())),
                       product_species1(*(++(products.begin())));
 
-        if (!world_->has_species_exact(product_species0))
+        if (!world_->has_species(product_species0))
             new_species_.push_back(product_species0);
         const LatticeWorld::molecule_info_type
             minfo0(world_->get_molecule_info(product_species0));
@@ -191,7 +191,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
                 Voxel(product_species0, world_->private2coord(from_coord),
                     minfo0.radius, minfo0.D)));
 
-        if (!world_->has_species_exact(product_species1))
+        if (!world_->has_species(product_species1))
             new_species_.push_back(product_species1);
         const LatticeWorld::molecule_info_type
             minfo1(world_->get_molecule_info(product_species1));
@@ -233,7 +233,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
     else if (reaction_rule.products().size() == 1)
     {
         const Species product(*(reaction_rule.products().begin()));
-        if (!world_->has_species_exact(product))
+        if (!world_->has_species(product))
                 new_species_.push_back(product);
         const LatticeWorld::molecule_info_type
             minfo(world_->get_molecule_info(product));
@@ -261,7 +261,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
                 world_->check_neighbor_private(coord));
         if (neighbor.second)
         {
-            if (!world_->has_species_exact(product_species0))
+            if (!world_->has_species(product_species0))
                 new_species_.push_back(product_species0);
             const LatticeWorld::molecule_info_type
                 minfo0(world_->get_molecule_info(product_species0));
@@ -270,7 +270,7 @@ std::pair<bool, Reaction<Voxel> > LatticeSimulator::apply_reaction_(
                 world_->new_voxel_private(
                     Voxel(product_species0, coord, minfo0.radius, minfo0.D)));
 
-            if (!world_->has_species_exact(product_species1))
+            if (!world_->has_species(product_species1))
                 new_species_.push_back(product_species1);
             const LatticeWorld::molecule_info_type
                 minfo1(world_->get_molecule_info(product_species1));

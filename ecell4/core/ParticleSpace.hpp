@@ -84,7 +84,12 @@ public:
      */
     virtual Integer num_particles(const Species& sp) const
     {
-        throw NotImplemented("num_particles(const Species&) not implemented");
+        return num_particles_exact(sp);
+    }
+
+    virtual Integer num_particles_exact(const Species& sp) const
+    {
+        throw NotImplemented("num_particles_exact(const Species&) not implemented");
     }
 
     /**
@@ -107,7 +112,13 @@ public:
     virtual std::vector<std::pair<ParticleID, Particle> >
     list_particles(const Species& sp) const
     {
-        throw NotImplemented("list_particles(const Species&) not implemented");
+        return list_particles_exact(sp);
+    }
+
+    virtual std::vector<std::pair<ParticleID, Particle> >
+    list_particles_exact(const Species& sp) const
+    {
+        throw NotImplemented("list_particles_exact(const Species&) not implemented");
     }
 
     /**
@@ -313,9 +324,12 @@ public:
 
     Integer num_particles() const;
     Integer num_particles(const Species& sp) const;
+    Integer num_particles_exact(const Species& sp) const;
     std::vector<std::pair<ParticleID, Particle> > list_particles() const;
     std::vector<std::pair<ParticleID, Particle> >
     list_particles(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> >
+    list_particles_exact(const Species& sp) const;
     bool has_particle(const ParticleID& pid) const;
 
     // ParticleSpace member functions
@@ -335,6 +349,11 @@ public:
     list_particles_within_radius(
         const Position3& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const;
+
+    // CompartmentSpaceTraits
+
+    Integer num_molecules(const Species& sp) const;
+    Integer num_molecules_exact(const Species& sp) const;
 
     // Optional members
 

@@ -64,6 +64,7 @@ public:
     }
 
     Integer num_molecules(const Species& sp) const;
+    Integer num_molecules_exact(const Species& sp) const;
     std::vector<Species> list_species() const;
 
     // CompartmentSpace member functions

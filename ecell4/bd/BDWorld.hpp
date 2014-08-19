@@ -141,6 +141,11 @@ public:
         return (*ps_).num_particles(species);
     }
 
+    Integer num_particles_exact(const Species& species) const
+    {
+        return (*ps_).num_particles_exact(species);
+    }
+
     bool has_particle(const ParticleID& pid) const
     {
         return (*ps_).has_particle(pid);
@@ -152,9 +157,15 @@ public:
     }
 
     std::vector<std::pair<ParticleID, Particle> >
-    list_particles(const Species& species) const
+    list_particles(const Species& sp) const
     {
-        return (*ps_).list_particles(species);
+        return (*ps_).list_particles(sp);
+    }
+
+    std::vector<std::pair<ParticleID, Particle> >
+    list_particles_exact(const Species& sp) const
+    {
+        return (*ps_).list_particles_exact(sp);
     }
 
     // ParticleSpace member functions
@@ -230,7 +241,12 @@ public:
 
     Integer num_molecules(const Species& sp) const
     {
-        return num_particles(sp);
+        return (*ps_).num_molecules(sp);
+    }
+
+    Integer num_molecules_exact(const Species& sp) const
+    {
+        return (*ps_).num_molecules_exact(sp);
     }
 
     void add_molecules(const Species& sp, const Integer& num)

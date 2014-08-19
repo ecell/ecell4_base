@@ -19,6 +19,7 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         # CompartmentSpaceTraits
         Real &volume()
         Integer num_molecules(Cpp_Species &)
+        Integer num_molecules_exact(Cpp_Species &)
         vector[Cpp_Species] list_species()
 
         # CompartmentSpace member functions
