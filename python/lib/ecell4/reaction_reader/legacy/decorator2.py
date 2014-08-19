@@ -5,8 +5,8 @@ import functools
 
 import options
 import species
-import parseobj
-from decorator_base import Callback, parse_decorator
+import ecell4.reaction_reader.parseobj as parseobj
+from ecell4.reaction_reader.decorator_base import Callback, parse_decorator
 
 
 def is_parseobj(obj):

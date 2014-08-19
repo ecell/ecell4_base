@@ -99,7 +99,8 @@ setup(
     name = "ecell4",
     package_dir = {"": "lib"},
     package_data = {"ecell4.util": ["templates/*"]},
-    packages = ["ecell4", "ecell4.util", "ecell4.reaction_reader"],
+    packages = ["ecell4",
+        "ecell4.util", "ecell4.reaction_reader", "ecell4.reaction_reader.legacy"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     ext_modules = ext_modules
     )
