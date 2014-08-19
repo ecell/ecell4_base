@@ -3,6 +3,7 @@
 
 #include "types.hpp"
 #include "Space.hpp"
+#include <boost/format.hpp>
 
 
 namespace ecell4
@@ -68,6 +69,11 @@ public:
     const Real next_time() const
     {
         return tnext_;
+    }
+
+    const Integer num_steps() const
+    {
+        return num_steps_;
     }
 
     virtual void initialize(const Space* space)
@@ -209,6 +215,57 @@ public:
 protected:
 
     NumberLogger logger_;
+};
+
+class FixedIntervalHDF5Observer
+    : public FixedIntervalObserver
+{
+public:
+
+    typedef FixedIntervalObserver base_type;
+
+public:
+
+    FixedIntervalHDF5Observer(const Real& dt, const std::string& filename)
+        : base_type(dt), prefix_(filename)
+    {
+        ;
+    }
+
+    virtual ~FixedIntervalHDF5Observer()
+    {
+        ;
+    }
+
+    virtual void initialize(const Space* space)
+    {
+        base_type::initialize(space);
+    }
+
+    virtual void fire(const Space* space)
+    {
+        space->save(filename());
+
+        base_type::fire(space);
+    }
+
+    const std::string filename() const
+    {
+        boost::format fmt(prefix_);
+
+        if (fmt.expected_args() == 0)
+        {
+            return fmt.str();
+        }
+        else
+        {
+            return (fmt % num_steps()).str();
+        }
+    }
+
+protected:
+
+    std::string prefix_;
 };
 
 } // ecell4
