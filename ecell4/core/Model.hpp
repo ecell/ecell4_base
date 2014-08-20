@@ -148,6 +148,7 @@ public:
     }
 
     virtual const reaction_rule_container_type& reaction_rules() const = 0;
+    virtual const species_container_type& species_attributes() const = 0;
 };
 
 } // ecell4

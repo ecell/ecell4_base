@@ -6,10 +6,13 @@ import functools
 import itertools
 
 import parseobj
-from decorator_base import Callback, JustParseCallback, parse_decorator
+from decorator_base import Callback, JustParseCallback, parse_decorator, ParseDecorator
 
 import ecell4.core
 
+
+SPECIES_ATTRIBUTES = []
+REACTION_RULES = []
 
 def generate_Species(obj):
     if isinstance(obj, parseobj.AnyCallable):
@@ -82,6 +85,10 @@ class SpeciesAttributesCallback(Callback):
     def get(self):
         return copy.copy(self.bitwise_operations)
 
+    def set(self):
+        global SPECIES_ATTRIBUTES
+        SPECIES_ATTRIBUTES.extend(self.bitwise_operations)
+
     def notify_bitwise_operations(self, obj):
         if not isinstance(obj, parseobj.OrExp):
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
@@ -151,6 +158,10 @@ class ReactionRulesCallback(Callback):
     def get(self):
         return copy.copy(self.comparisons)
 
+    def set(self):
+        global REACTION_RULES
+        REACTION_RULES.extend(self.comparisons)
+
     def notify_comparisons(self, obj):
         if not isinstance(obj, parseobj.CmpExp):
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
@@ -204,8 +215,29 @@ class ReactionRulesCallback(Callback):
         else:
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
 
+def get_model(is_netfree=True):
+    global SPECIES_ATTRIBUTES
+    global REACTION_RULES
+
+    if is_netfree:
+        m = ecell4.core.NetfreeModel()
+    else:
+        m = ecell4.core.NetworkModel()
+
+    for sp in SPECIES_ATTRIBUTES:
+        m.add_species_attribute(sp)
+    for rr in REACTION_RULES:
+        m.add_reaction_rule(rr)
+
+    SPECIES_ATTRIBUTES = []
+    REACTION_RULES = []
+    return m
+
 reaction_rules = functools.partial(parse_decorator, ReactionRulesCallback)
 species_attributes = functools.partial(parse_decorator, SpeciesAttributesCallback)
+
+new_reaction_rules = functools.partial(ParseDecorator, ReactionRulesCallback)
+new_species_attributes = functools.partial(ParseDecorator, SpeciesAttributesCallback)
 
 # def species_attributes_with_keys(*args):
 #     def create_callback():

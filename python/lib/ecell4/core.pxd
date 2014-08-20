@@ -190,8 +190,8 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         # vector[Cpp_Species] list_species()
         # Cpp_Species create_species(string name)
         # Integer num_reaction_rules()
-        # vector[Cpp_ReactionRule] reaction_rules()
-        # vector[Cpp_Species] species_attributes()
+        vector[Cpp_Species] species_attributes()
+        vector[Cpp_ReactionRule] reaction_rules()
 
 ## Model
 #  a python wrapper for Cpp_Model, but wrapped by shared_ptr

@@ -45,25 +45,25 @@ cdef class Model:
     #     cdef Cpp_Species retval = self.thisptr.get().create_species(name)
     #     return Species_from_Cpp_Species(address(retval))
 
-    # def reaction_rules(self):
-    #     cdef vector[Cpp_ReactionRule] c_rr_vector = self.thisptr.get().reaction_rules()
-    #     retval = []
-    #     cdef vector[Cpp_ReactionRule].iterator it = c_rr_vector.begin()
-    #     while it != c_rr_vector.end():
-    #         retval.append(ReactionRule_from_Cpp_ReactionRule(
-    #             <Cpp_ReactionRule*>(address(deref(it)))))
-    #         inc(it)
-    #     return retval
+    def reaction_rules(self):
+        cdef vector[Cpp_ReactionRule] c_rr_vector = self.thisptr.get().reaction_rules()
+        retval = []
+        cdef vector[Cpp_ReactionRule].iterator it = c_rr_vector.begin()
+        while it != c_rr_vector.end():
+            retval.append(ReactionRule_from_Cpp_ReactionRule(
+                <Cpp_ReactionRule*>(address(deref(it)))))
+            inc(it)
+        return retval
 
-    # def species_attributes(self):
-    #     cdef vector[Cpp_Species] species = self.thisptr.get().species_attributes()
-    #     retval = []
-    #     cdef vector[Cpp_Species].iterator it = species.begin()
-    #     while it != species.end():
-    #         retval.append(Species_from_Cpp_Species(
-    #             <Cpp_Species*>(address(deref(it)))))
-    #         inc(it)
-    #     return retval
+    def species_attributes(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().species_attributes()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(Species_from_Cpp_Species(
+                <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
 
     # def list_species(self):
     #     cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
