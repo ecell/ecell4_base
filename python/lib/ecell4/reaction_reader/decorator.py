@@ -233,13 +233,8 @@ def get_model(is_netfree=True):
     REACTION_RULES = []
     return m
 
-reaction_rules = functools.partial(parse_decorator, ReactionRulesCallback)
-species_attributes = functools.partial(parse_decorator, SpeciesAttributesCallback)
+# reaction_rules = functools.partial(parse_decorator, ReactionRulesCallback)
+# species_attributes = functools.partial(parse_decorator, SpeciesAttributesCallback)
 
-new_reaction_rules = functools.partial(ParseDecorator, ReactionRulesCallback)
-new_species_attributes = functools.partial(ParseDecorator, SpeciesAttributesCallback)
-
-# def species_attributes_with_keys(*args):
-#     def create_callback():
-#         return SpeciesAttributesCallback(*args)
-#     return functools.partial(parse_decorator, create_callback)
+reaction_rules = functools.partial(ParseDecorator, ReactionRulesCallback)
+species_attributes = functools.partial(ParseDecorator, SpeciesAttributesCallback)

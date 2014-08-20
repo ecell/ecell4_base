@@ -62,8 +62,9 @@ class ParseDecorator:
     def __call__(self, *args, **kwargs):
         cache = self.__callback_class()
         vardict = copy.copy(self.__func.func_globals)
-        for ignore in ("_", "__", "___", "_i", "_ii", "_iii",
-            "_i1", "_i2", "_i3", "_dh", "_sh", "_oh"):
+        ignores = ("_", "__", "___", "_i", "_ii", "_iii",
+            "_i1", "_i2", "_i3", "_dh", "_sh", "_oh")
+        for ignore in ignores:
             if ignore in vardict.keys():
                 del vardict[ignore]
         for k in self.__func.func_code.co_names:
@@ -77,7 +78,7 @@ class ParseDecorator:
         return cache.get()
 
     def __enter__(self):
-        print "ParseDecorator#__enter__"
+        # print "ParseDecorator#__enter__"
         self.__callback = self.__callback_class()
         calling_frame = inspect.currentframe().f_back
         vardict = copy.copy(calling_frame.f_globals)
@@ -85,21 +86,21 @@ class ParseDecorator:
             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh")
         for k in calling_frame.f_code.co_names:
             if k in ignores:
-                print "WARNING: '%s' was overridden." % k
+                # print "WARNING: '%s' was overridden." % k
                 calling_frame.f_globals[k] = parseobj.AnyCallable(self.__callback, k)
                 self.__newvars[k] = vardict[k]
             elif (not k in vardict.keys()
                 and not k in dir(vardict['__builtins__'])):
-                print "WARNING: '%s' is undefined." % k
+                # print "WARNING: '%s' is undefined." % k
                 calling_frame.f_globals[k] = parseobj.AnyCallable(self.__callback, k)
                 self.__newvars[k] = None
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        print "ParseDecorator#__exit__", exc_type, exc_value, traceback
+        # print "ParseDecorator#__exit__", exc_type, exc_value, traceback
         if self.__callback is not None:
             if exc_type is None:
-                print self.__callback.get()
+                # print self.__callback.get()
                 self.__callback.set()
 
             self.__callback = None
@@ -107,10 +108,10 @@ class ParseDecorator:
             for k, v in self.__newvars.items():
                 if v is None:
                     del calling_frame.f_globals[k]
-                    print "WARNING: '%s' was removed." % k
+                    # print "WARNING: '%s' was removed." % k
                 else:
                     calling_frame.f_globals[k] = v
-                    print "WARNING: '%s' was recovered to be '%s'." % (k, v)
+                    # print "WARNING: '%s' was recovered to be '%s'." % (k, v)
 
 def parse_decorator(callback_class, func):
     @functools.wraps(func)
