@@ -4,15 +4,46 @@
 
 E-Cell System, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 
-## Requirements
+## Installing E-Cell (Windows)
+
+### Requirements
+
+- Python 2.7.8(**32bit**) https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi
+- virtualenv https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.11.6.tar.gz
+- HDF5-1.8.13 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/hdf5-1.8.13-win32-VS2012-shared.zip
+
+```
+:: creating virtualenv environment
+cd C:\path\to\virtualenv-1.11.6 
+python virtualenv.py C:\path\to\myenv
+cd C:\path\to\myenv\Scripts
+activate.bat
+:: now you are in virtual environment
+pip install http://dev.e-cell.org/downloads/ecell4/win/latest/ecell4-0.0.0-cp27-none-win32.whl
+
+## Installing E-Cell (Mac OS X)
+
+### Requirements
+
+- hdf5 (latest)
+- pip (latest)
 
 ```shell
+# here we use homebrew to install hdf5, please install hdf5 to /usr/local/lib
+brew install homebrew/science/hdf5 --enable-cxx
+sudo easy_install pip
+pip install http://dev.e-cell.org/downloads/ecell4/mac/mavericks/latest/ecell4-0.0.0-cp27-none-macosx_10_9_intel.whl
+# if you are using Mountain Lion
+# pip install http://dev.e-cell.org/downloads/ecell4/mac/mountainlion/latest/ecell4-0.0.0-cp27-none-macosx_10_8_intel.whl
+```
+
+## Building and installing Ubuntu 14.04
+
+```shell
+# dependent packages
 $ sudo apt-get install libgsl0-dev libboost-dev libboost-test-dev libboost-regex-dev libhdf5-serial-dev
 $ sudo apt-get instal python-dev cython
-```
-## Ubuntu 14.04 LTS (Trusty Tahr) installation
 
-```shell
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
 $ unzip master.zip
 $ cd ecell4-master
