@@ -20,6 +20,7 @@ cd C:\path\to\myenv\Scripts
 activate.bat
 :: now you are in virtual environment
 pip install http://dev.e-cell.org/downloads/ecell4/win/latest/ecell4-0.0.0-cp27-none-win32.whl
+```
 
 ## Installing E-Cell (Mac OS X)
 
