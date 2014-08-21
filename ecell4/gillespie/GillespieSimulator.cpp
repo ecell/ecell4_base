@@ -16,165 +16,277 @@ namespace ecell4
 namespace gillespie
 {
 
-Integer GillespieSimulator::num_molecules(const Species& sp)
+void GillespieSimulator::calculate_stoichiometries()
 {
-    SpeciesExpressionMatcher sexp(sp);
-    Integer num_tot(0);
-    const std::vector<Species> species(world_->list_species());
-    for (std::vector<Species>::const_iterator i(species.begin());
-        i != species.end(); ++i)
+    const Model::reaction_rule_container_type&
+        reaction_rules(model_->reaction_rules());
+
+    stoichiometries_.clear();
+    for (Model::reaction_rule_container_type::const_iterator
+        i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
     {
-        const Integer num(sexp.count(*i));
-        if (num > 0)
+        const ReactionRule::reactant_container_type& reactants((*i).reactants());
+        if (reactants.size() == 1)
         {
-            num_tot += num * world_->num_molecules_exact(*i);
+            stoichiometries_.push_back(get_stoichiometry(reactants[0]));
+        }
+        else if (reactants.size() == 2)
+        {
+            stoichiometries_.push_back(get_stoichiometry(reactants[0], reactants[1]));
+        }
+        else
+        {
+            throw NotSupported("not supported yet.");
         }
     }
-    return num_tot;
 }
 
-Integer GillespieSimulator::num_molecules(const Species& sp1, const Species& sp2)
+void GillespieSimulator::append_stoichiometries(const Species& sp)
 {
-    SpeciesExpressionMatcher sexp1(sp1), sexp2(sp2);
-    Integer num_tot1(0), num_tot2(0), num_tot12(0);
+    const Model::reaction_rule_container_type&
+        reaction_rules(model_->reaction_rules());
+
+    for (unsigned int i(0); i < reaction_rules.size(); ++i)
+    {
+        const ReactionRule::reactant_container_type&
+            reactants(reaction_rules[i].reactants());
+        if (reactants.size() == 1)
+        {
+            const Integer coef(SpeciesExpressionMatcher(reactants[0]).count(sp));
+            if (coef > 0)
+            {
+                stoichiometries_[i].push_back(stoichiometry(sp, coef));
+            }
+        }
+        else if (reactants.size() == 2)
+        {
+            const Integer coef1(SpeciesExpressionMatcher(reactants[0]).count(sp));
+            const Integer coef2(SpeciesExpressionMatcher(reactants[1]).count(sp));
+            if (coef1 > 0 || coef2 > 0)
+            {
+                stoichiometries_[i].push_back(stoichiometry(sp, coef1, coef2));
+            }
+        }
+        else
+        {
+            throw NotSupported("not supported yet.");
+        }
+    }
+}
+
+GillespieSimulator::stoichiometry_container_type
+GillespieSimulator::get_stoichiometry(const Species& sp)
+{
     const std::vector<Species> species(world_->list_species());
+    stoichiometry_container_type retval;
+
+    SpeciesExpressionMatcher sexp(sp);
     for (std::vector<Species>::const_iterator i(species.begin());
         i != species.end(); ++i)
     {
-        const Integer num1(sexp1.count(*i));
-        const Integer num2(sexp2.count(*i));
-
-        if (num1 > 0 || num2 > 0)
+        const Integer coef(sexp.count(*i));
+        if (coef > 0)
         {
-            const Integer num(world_->num_molecules_exact(*i));
-            const Integer tmp(num1 * num);
+            retval.push_back(stoichiometry(*i, coef));
+        }
+    }
+    return retval;
+}
+
+GillespieSimulator::stoichiometry_container_type
+GillespieSimulator::get_stoichiometry(const Species& sp1, const Species& sp2)
+{
+    const std::vector<Species> species(world_->list_species());
+    stoichiometry_container_type retval;
+
+    SpeciesExpressionMatcher sexp1(sp1), sexp2(sp2);
+    for (std::vector<Species>::const_iterator i(species.begin());
+        i != species.end(); ++i)
+    {
+        const Integer coef1(sexp1.count(*i));
+        const Integer coef2(sexp2.count(*i));
+        if (coef1 > 0 || coef2 > 0)
+        {
+            retval.push_back(stoichiometry(*i, coef1, coef2));
+        }
+    }
+    return retval;
+}
+
+Integer GillespieSimulator::num_molecules(
+    const Model::reaction_rule_container_type::size_type& u)
+{
+    const stoichiometry_container_type& retval(stoichiometries_[u]);
+    const ReactionRule::reactant_container_type& reactants(
+        model_->reaction_rules()[u].reactants());
+
+    if (reactants.size() == 1)
+    {
+        Integer num_tot(0);
+        for (stoichiometry_container_type::const_iterator
+            i(retval.begin()); i != retval.end(); ++i)
+        {
+            num_tot += (*i).coef1 * world_->num_molecules_exact((*i).species);
+        }
+        return num_tot;
+    }
+    else if (reactants.size() == 2)
+    {
+        Integer num_tot1(0), num_tot2(0), num_tot12(0);
+        for (stoichiometry_container_type::const_iterator
+            i(retval.begin()); i != retval.end(); ++i)
+        {
+            const Integer num(world_->num_molecules_exact((*i).species));
+            const Integer tmp(num * (*i).coef1);
             num_tot1 += tmp;
-            num_tot2 += num2 * num;
-            num_tot12 += num2 * tmp;
+            num_tot2 += num * (*i).coef2;
+            num_tot12 += tmp * (*i).coef2;
         }
-    }
-    return num_tot1 * num_tot2 - num_tot12;
-}
-
-std::pair<ReactionRule::reactant_container_type, Integer>
-GillespieSimulator::draw_exact_reactants(const Species& sp)
-{
-    const std::vector<Species> species(world_->list_species());
-
-    SpeciesExpressionMatcher sexp(sp);
-    Integer num_tot(0);
-    std::vector<Real> tmp;
-    for (std::vector<Species>::const_iterator j(species.begin());
-        j != species.end(); ++j)
-    {
-        const Integer num(sexp.count(*j));
-        if (num > 0)
-        {
-            num_tot += num * world_->num_molecules_exact(*j);
-        }
-        tmp.push_back(num_tot);
-    }
-
-    const Real rnd1(rng()->uniform(0.0, num_tot));
-    std::vector<Real>::iterator
-        itr(std::lower_bound(tmp.begin(), tmp.end(), rnd1));
-    const Species& tgt(species[std::distance(tmp.begin(), itr)]);
-
-    if (world_->num_molecules_exact(tgt) == 0)
-    {
-        throw IllegalState("the number of reactant molecules must be non-zero.");
-    }
-
-    return std::make_pair(ReactionRule::reactant_container_type(1, tgt), sexp.count(tgt));
-}
-
-std::pair<ReactionRule::reactant_container_type, Integer>
-GillespieSimulator::draw_exact_reactants(const Species& sp1, const Species& sp2)
-{
-    const std::vector<Species> species(world_->list_species());
-
-    SpeciesExpressionMatcher sexp1(sp1), sexp2(sp2);
-
-    Integer num_tot(0), cmb(0);
-
-    std::vector<Real> tmp;
-    for (std::vector<Species>::const_iterator j(species.begin());
-        j != species.end(); ++j)
-    {
-        const Integer num1(sexp1.count(*j));
-        if (num1 > 0)
-        {
-            num_tot += num1 * world_->num_molecules_exact(*j);
-        }
-        tmp.push_back(num_tot);
-    }
-
-    const Real rnd1(rng()->uniform(0.0, num_tot));
-    std::vector<Real>::iterator
-        itr1(std::lower_bound(tmp.begin(), tmp.end(), rnd1));
-    const std::vector<Species>::difference_type
-        idx1(std::distance(tmp.begin(), itr1));
-    const Species& tgt1(species[idx1]);
-    cmb = sexp1.count(tgt1);
-
-    if (world_->num_molecules_exact(tgt1) == 0)
-    {
-        throw IllegalState("the number of reactant molecules must be non-zero.");
-    }
-
-    tmp.clear();
-    num_tot = 0;
-    for (std::vector<Species>::const_iterator j(species.begin());
-        j != species.end(); ++j)
-    {
-        const Integer num2(sexp2.count(*j));
-        if (num2 > 0)
-        {
-            const Integer num(world_->num_molecules_exact(*j));
-            if (std::distance(species.begin(), j) != idx1)
-            {
-                num_tot += num2 * num;
-            }
-            else
-            {
-                num_tot += num2 * (num - 1);
-            }
-        }
-        tmp.push_back(num_tot);
-    }
-
-    const Real rnd2(rng()->uniform(0.0, num_tot));
-    std::vector<Real>::iterator
-        itr2(std::lower_bound(tmp.begin(), tmp.end(), rnd2));
-    const Species& tgt2(species[std::distance(tmp.begin(), itr2)]);
-    cmb *= sexp2.count(tgt2);
-
-    ReactionRule::reactant_container_type reactants(2);
-    reactants[0] = tgt1;
-    reactants[1] = tgt2;
-    return std::make_pair(reactants, cmb);
-}
-
-ReactionRule GillespieSimulator::draw_exact_reaction(const ReactionRule& rr)
-{
-    ReactionRule::reactant_container_type reactants;
-    Integer cmb;
-    if (rr.reactants().size() == 1)
-    {
-        std::pair<ReactionRule::reactant_container_type, Integer> retval(draw_exact_reactants(rr.reactants()[0]));
-        reactants = retval.first;
-        cmb = retval.second;
-    }
-    else if (rr.reactants().size() == 2)
-    {
-        std::pair<ReactionRule::reactant_container_type, Integer> retval(draw_exact_reactants(rr.reactants()[0], rr.reactants()[1]));
-        reactants = retval.first;
-        cmb = retval.second;
+        return num_tot1 * num_tot2 - num_tot12;
     }
     else
     {
         throw NotSupported("not supported yet.");
     }
+}
+
+std::pair<ReactionRule::reactant_container_type, Integer>
+GillespieSimulator::draw_exact_reactants(
+    const Model::reaction_rule_container_type::size_type& u)
+{
+    ReactionRule::reactant_container_type reactants(
+        model_->reaction_rules()[u].reactants());
+    if (reactants.size() == 1)
+    {
+        return draw_exact_reactants(reactants[0], stoichiometries_[u]);
+    }
+    else if (reactants.size() == 2)
+    {
+        return draw_exact_reactants(
+            reactants[0], reactants[1], stoichiometries_[u]);
+    }
+    else
+    {
+        throw NotSupported("not supported yet.");
+    }
+}
+
+std::pair<ReactionRule::reactant_container_type, Integer>
+GillespieSimulator::draw_exact_reactants(
+    const Species& sp, const stoichiometry_container_type& retval)
+{
+    if (retval.size() == 1)
+    {
+        return std::make_pair(
+            ReactionRule::reactant_container_type(1, retval[0].species),
+            retval[0].coef1);
+    }
+
+    Integer num_tot(0);
+    std::vector<Real> cum;
+    cum.reserve(retval.size());
+    for (stoichiometry_container_type::const_iterator
+        i(retval.begin()); i != retval.end(); ++i)
+    {
+        num_tot += (*i).coef1 * world_->num_molecules_exact((*i).species);
+        cum.push_back(num_tot);
+    }
+
+    assert(retval.size() > 0);
+    const Real rnd1(rng()->uniform(0.0, num_tot));
+    unsigned int idx(std::distance(
+        cum.begin(), std::lower_bound(cum.begin(), cum.end(), rnd1)));
+    assert(idx < retval.size());
+    const Species& tgt(retval[idx].species);
+    const Integer& coef(retval[idx].coef1);
+
+    // assert(world_->num_molecules_exact(tgt) > 0);
+    return std::make_pair(ReactionRule::reactant_container_type(1, tgt), coef);
+}
+
+std::pair<ReactionRule::reactant_container_type, Integer>
+GillespieSimulator::draw_exact_reactants(
+    const Species& sp1, const Species& sp2, const stoichiometry_container_type& retval)
+{
+    if (retval.size() == 2)
+    {
+        if (retval[0].coef1 == 0)
+        {
+            if (retval[1].coef2 == 0)
+            {
+                ReactionRule::reactant_container_type reactants(2);
+                reactants[0] = retval[1].species;
+                reactants[1] = retval[0].species;
+                return std::make_pair(reactants,
+                    retval[0].coef2 * retval[1].coef1);
+            }
+        }
+        else if (retval[1].coef1 == 0)
+        {
+            if (retval[0].coef2 == 0)
+            {
+                ReactionRule::reactant_container_type reactants(2);
+                reactants[0] = retval[0].species;
+                reactants[1] = retval[1].species;
+                return std::make_pair(reactants,
+                    retval[0].coef1 * retval[1].coef2);
+            }
+        }
+    }
+
+    Integer num_tot1(0), num_tot2(0), num_tot12(0);
+    std::vector<Real> cum1, cum2;
+    cum1.reserve(retval.size());
+    cum2.reserve(retval.size());
+    for (stoichiometry_container_type::const_iterator
+        i(retval.begin()); i != retval.end(); ++i)
+    {
+        const Integer num(world_->num_molecules_exact((*i).species));
+        num_tot1 += (*i).coef1 * num;
+        num_tot2 += (*i).coef2 * num;
+        cum1.push_back(num_tot1);
+        cum2.push_back(num_tot2);
+    }
+
+    assert(retval.size() > 0);
+    const Real rnd1(rng()->uniform(0.0, num_tot1));
+    unsigned int idx1(std::distance(
+        cum1.begin(), std::lower_bound(cum1.begin(), cum1.end(), rnd1)));
+    assert(idx1 < retval.size());
+    const Species& tgt1(retval[idx1].species);
+    const Integer& coef1(retval[idx1].coef1);
+    // assert(world_->num_molecules_exact(tgt1) > 0);
+
+    const Integer& coef12(retval[idx1].coef2);
+    if (coef12 > 0)
+    {
+        num_tot2 -= coef12;
+        std::transform(cum2.begin() + idx1, cum2.end(),
+            cum2.begin() + idx1, std::bind2nd(std::minus<Real>(), coef12));
+    }
+
+    const Real rnd2(rng()->uniform(0.0, num_tot2));
+    unsigned int idx2(std::distance(
+        cum2.begin(), std::lower_bound(cum2.begin(), cum2.end(), rnd2)));
+    assert(idx2 < retval.size());
+    const Species& tgt2(retval[idx2].species);
+    const Integer& coef2(retval[idx2].coef2);
+    // assert(world_->num_molecules_exact(tgt2) > 0);
+
+    ReactionRule::reactant_container_type reactants(2);
+    reactants[0] = tgt1;
+    reactants[1] = tgt2;
+    return std::make_pair(reactants, coef1 * coef2);
+}
+
+ReactionRule GillespieSimulator::draw_exact_reaction(
+    const Model::reaction_rule_container_type::size_type& u)
+{
+    const ReactionRule& rr(model_->reaction_rules()[u]);
+    std::pair<ReactionRule::reactant_container_type, Integer>
+        retval(draw_exact_reactants(u));
+    ReactionRule::reactant_container_type& reactants(retval.first);
+    const Integer cmb(retval.second);
 
     std::vector<std::vector<Species> > possible_products(rrgenerate(rr, reactants));
     if (cmb <= 0 || cmb < possible_products.size())
@@ -204,22 +316,17 @@ ReactionRule GillespieSimulator::draw_exact_reaction(const ReactionRule& rr)
     }
 }
 
-Real GillespieSimulator::calculate_propensity(const ReactionRule& rr)
+Real GillespieSimulator::calculate_propensity(
+    const Model::reaction_rule_container_type::size_type& u)
 {
-    if (rr.reactants().size() == 1)
+    const ReactionRule& rr(model_->reaction_rules()[u]);
+    const Real V(world_->volume());
+    Real prop(rr.k() * num_molecules(u));
+    for (unsigned int i(0); i < rr.reactants().size() - 1; ++i)
     {
-        return rr.k() * num_molecules(rr.reactants()[0]);
+        prop /= V;
     }
-    else if (rr.reactants().size() == 2)
-    {
-        const Real V(world_->volume());
-        return (rr.k() * num_molecules(rr.reactants()[0], rr.reactants()[1])
-            / world_->volume());
-    }
-    else
-    {
-        throw NotSupported("not supported yet.");
-    }
+    return prop;
 }
 
 bool GillespieSimulator::__draw_next_reaction(void)
@@ -230,7 +337,7 @@ bool GillespieSimulator::__draw_next_reaction(void)
     std::vector<double> a(reaction_rules.size());
     for (unsigned int idx(0); idx < reaction_rules.size(); ++idx)
     {
-        a[idx] = calculate_propensity(reaction_rules[idx]);
+        a[idx] = calculate_propensity(idx);
     }
 
     const double atot(std::accumulate(a.begin(), a.end(), double(0.0)));
@@ -261,7 +368,7 @@ bool GillespieSimulator::__draw_next_reaction(void)
         return true;
     }
 
-    next_reaction_ = draw_exact_reaction(reaction_rules[u]);
+    next_reaction_ = draw_exact_reaction(u);
     if (next_reaction_.k() <= 0.0)
     {
         this->dt_ += dt; // skip a reaction
@@ -281,6 +388,7 @@ void GillespieSimulator::draw_next_reaction(void)
     }
 
     this->dt_ = 0.0;
+
     while (!__draw_next_reaction())
     {
         ; // pass
@@ -315,6 +423,11 @@ void GillespieSimulator::step(void)
         it(next_reaction_.products().begin());
         it != next_reaction_.products().end(); ++it)
     {
+        if (!world_->has_species(*it))
+        {
+            append_stoichiometries(*it);
+        }
+
         world_->add_molecules(*it, 1);
     }
 
@@ -352,6 +465,7 @@ bool GillespieSimulator::step(const Real &upto)
 
 void GillespieSimulator::initialize(void)
 {
+    calculate_stoichiometries();
     this->draw_next_reaction();
 }
 

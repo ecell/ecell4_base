@@ -24,6 +24,23 @@ public:
 
     typedef Simulator<Model, GillespieWorld> base_type;
 
+protected:
+
+    struct stoichiometry
+    {
+        stoichiometry(const Species& sp, const Integer val1, const Integer val2=0)
+            : species(sp), coef1(val1), coef2(val2)
+        {
+            ;
+        }
+
+        Species species;
+        Integer coef1;
+        Integer coef2;
+    };
+
+    typedef std::vector<stoichiometry> stoichiometry_container_type;
+
 public:
 
     GillespieSimulator(
@@ -67,21 +84,33 @@ protected:
 
     bool __draw_next_reaction(void);
     void draw_next_reaction(void);
-    Integer num_molecules(const Species& sp);
-    Integer num_molecules(const Species& sp1, const Species& sp2);
-    ReactionRule draw_exact_reaction(const ReactionRule& rr);
+    Integer num_molecules(
+        const Model::reaction_rule_container_type::size_type& u);
+    ReactionRule draw_exact_reaction(
+        const Model::reaction_rule_container_type::size_type& u);
     std::pair<ReactionRule::reactant_container_type, Integer>
-        draw_exact_reactants(const Species& sp1);
+        draw_exact_reactants(const Model::reaction_rule_container_type::size_type& u);
     std::pair<ReactionRule::reactant_container_type, Integer>
-        draw_exact_reactants(const Species& sp1, const Species& sp2);
+        draw_exact_reactants(const Species& sp1, const stoichiometry_container_type& retval);
+    std::pair<ReactionRule::reactant_container_type, Integer>
+        draw_exact_reactants(const Species& sp1, const Species& sp2, const stoichiometry_container_type& retval);
 
-    Real calculate_propensity(const ReactionRule& rr);
+    Real calculate_propensity(
+        const Model::reaction_rule_container_type::size_type& u);
+    stoichiometry_container_type get_stoichiometry(const Species& sp);
+    stoichiometry_container_type get_stoichiometry(
+        const Species& sp1, const Species& sp2);
+
+    void calculate_stoichiometries();
+    void append_stoichiometries(const Species& sp);
 
 protected:
 
     Real dt_;
     ReactionRule next_reaction_;
     std::vector<ReactionRule> last_reactions_;
+
+    std::vector<stoichiometry_container_type> stoichiometries_;
 };
 
 }

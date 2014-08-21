@@ -49,6 +49,11 @@ void GillespieWorld::remove_molecules(const Species& sp, const Integer& num)
     this->cs_->remove_molecules(sp, num);
 }
 
+bool GillespieWorld::has_species(const Species& sp) const
+{
+    return this->cs_->has_species(sp);
+}
+
 } // gillespie
 
 } // ecell4
