@@ -67,7 +67,7 @@ A.B.C
 
 ## Running E-Cell4 with IPython notebook (by docker)
 
-If you use following docker images you don't need to do OS dependent installation.
+If you use following docker images, you don't need to do OS dependent installation.  
 We have already installed E-Cell4 to docker environment.
 
 ### boot2docker (Windows or Mac)
