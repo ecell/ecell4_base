@@ -25,8 +25,8 @@ class NetworkModel
 public:
 
     typedef Model base_type;
-    typedef typename base_type::species_container_type species_container_type;
-    typedef typename base_type::reaction_rule_container_type reaction_rule_container_type;
+    typedef base_type::species_container_type species_container_type;
+    typedef base_type::reaction_rule_container_type reaction_rule_container_type;
 
 protected:
 
