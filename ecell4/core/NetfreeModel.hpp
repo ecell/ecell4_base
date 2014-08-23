@@ -68,6 +68,11 @@ public:
     std::vector<ReactionRule> query_reaction_rules(
         const Species& sp1, const Species& sp2);
 
+    Integer apply(const Species& pttrn, const Species& sp);
+    std::vector<ReactionRule> apply(
+        const ReactionRule& rr,
+        const ReactionRule::reactant_container_type& reactants);
+
     Species apply_species_attributes(const Species& sp) // const
     {
         species_attribute_cache_type::const_iterator

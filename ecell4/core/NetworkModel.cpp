@@ -49,6 +49,31 @@ std::vector<ReactionRule> NetworkModel::query_reaction_rules(
     return retval;
 }
 
+Integer NetworkModel::apply(const Species& pttrn, const Species& sp)
+{
+    return (pttrn == sp ? 1 : 0);
+}
+
+std::vector<ReactionRule> NetworkModel::apply(
+    const ReactionRule& rr, const ReactionRule::reactant_container_type& reactants)
+{
+    if (rr.reactants().size() != reactants.size())
+    {
+        return std::vector<ReactionRule>();
+    }
+
+    ReactionRule::reactant_container_type::const_iterator
+        i(rr.reactants().begin()), j(reactants.begin());
+    for (; i != rr.reactants().end(); ++i, ++j)
+    {
+        if (*i != *j)
+        {
+            return std::vector<ReactionRule>();
+        }
+    }
+    return std::vector<ReactionRule>(1, rr);
+}
+
 void NetworkModel::initialize()
 {
     if (!dirty_)

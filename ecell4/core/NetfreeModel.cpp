@@ -121,6 +121,25 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     // return retval;
 }
 
+Integer NetfreeModel::apply(const Species& pttrn, const Species& sp)
+{
+    return SpeciesExpressionMatcher(pttrn).count(sp);
+}
+
+std::vector<ReactionRule> NetfreeModel::apply(
+    const ReactionRule& rr, const ReactionRule::reactant_container_type& reactants)
+{
+    const std::vector<std::vector<Species> > possibles(rrgenerate(rr, reactants));
+    std::vector<ReactionRule> retval;
+    retval.reserve(possibles.size());
+    for (std::vector<std::vector<Species> >::const_iterator i(possibles.begin());
+        i != possibles.end(); ++i)
+    {
+        retval.push_back(ReactionRule(reactants, *i, rr.k()));
+    }
+    return retval;
+}
+
 void NetfreeModel::initialize()
 {
     if (!dirty_)

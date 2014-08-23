@@ -80,7 +80,7 @@ public:
 
     // Optional members
 
-    inline boost::shared_ptr<RandomNumberGenerator> rng()
+    inline const boost::shared_ptr<RandomNumberGenerator>& rng()
     {
         return rng_;
     }

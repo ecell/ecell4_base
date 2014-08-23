@@ -82,12 +82,12 @@ public:
         ; // do nothing
     }
 
-    boost::shared_ptr<model_type> model() const
+    const boost::shared_ptr<model_type>& model() const
     {
         return model_;
     }
 
-    boost::shared_ptr<world_type> world() const
+    const boost::shared_ptr<world_type>& world() const
     {
         return world_;
     }

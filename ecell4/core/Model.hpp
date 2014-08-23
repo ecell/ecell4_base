@@ -65,6 +65,11 @@ public:
     virtual std::vector<ReactionRule> query_reaction_rules(
         const Species& sp1, const Species& sp2) = 0;
 
+    virtual Integer apply(const Species& pttrn, const Species& sp) = 0;
+    virtual std::vector<ReactionRule> apply(
+        const ReactionRule& rr,
+        const ReactionRule::reactant_container_type& reactants) = 0;
+
     // NetworkModelTraits
 
     /**

@@ -237,6 +237,7 @@ public:
     }
 
     bool operator==(const Species& rhs) const;
+    bool operator!=(const Species& rhs) const;
     bool operator<(const Species& rhs) const;
     bool operator>(const Species& rhs) const;
 
