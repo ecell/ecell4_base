@@ -8,18 +8,8 @@ namespace ecell4
 {
 
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
-    const Species& sp)
+    const Species& sp) const
 {
-    if (with_cache_)
-    {
-        first_order_reaction_rules_map_type::const_iterator
-            i(first_order_reaction_rules_map_.find(sp.serial()));
-        if (i != first_order_reaction_rules_map_.end())
-        {
-            return (*i).second;
-        }
-    }
-
     std::vector<ReactionRule> retval;
     for (reaction_rule_container_type::const_iterator i(reaction_rules_.begin());
         i != reaction_rules_.end(); ++i)
@@ -37,32 +27,12 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
         }
         while (rrexp.next());
     }
-
-    if (with_cache_)
-    {
-        first_order_reaction_rules_map_.insert(std::make_pair(sp.serial(), retval));
-    }
-
     return retval;
 }
 
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
-    const Species& sp1, const Species& sp2)
+    const Species& sp1, const Species& sp2) const
 {
-    if (with_cache_)
-    {
-        const std::pair<Species::serial_type, Species::serial_type>
-            key(sp1.serial() < sp2.serial()?
-                std::make_pair(sp1.serial(), sp2.serial()):
-                std::make_pair(sp2.serial(), sp1.serial()));
-        second_order_reaction_rules_map_type::const_iterator
-            i(second_order_reaction_rules_map_.find(key));
-        if (i != second_order_reaction_rules_map_.end())
-        {
-            return (*i).second;
-        }
-    }
-
     std::vector<ReactionRule> retval;
     for (reaction_rule_container_type::const_iterator i(reaction_rules_.begin());
         i != reaction_rules_.end(); ++i)
@@ -89,16 +59,6 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
             while (rrexp.next());
         }
     }
-
-    if (with_cache_)
-    {
-        const std::pair<Species::serial_type, Species::serial_type>
-            key(sp1.serial() < sp2.serial()?
-                std::make_pair(sp1.serial(), sp2.serial()):
-                std::make_pair(sp2.serial(), sp1.serial()));
-        second_order_reaction_rules_map_.insert(std::make_pair(key, retval));
-    }
-
     return retval;
 
     // std::vector<ReactionRule> retval;
@@ -121,13 +81,13 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     // return retval;
 }
 
-Integer NetfreeModel::apply(const Species& pttrn, const Species& sp)
+Integer NetfreeModel::apply(const Species& pttrn, const Species& sp) const
 {
     return SpeciesExpressionMatcher(pttrn).count(sp);
 }
 
 std::vector<ReactionRule> NetfreeModel::apply(
-    const ReactionRule& rr, const ReactionRule::reactant_container_type& reactants)
+    const ReactionRule& rr, const ReactionRule::reactant_container_type& reactants) const
 {
     const std::vector<std::vector<Species> > possibles(rrgenerate(rr, reactants));
     std::vector<ReactionRule> retval;
@@ -140,34 +100,6 @@ std::vector<ReactionRule> NetfreeModel::apply(
     return retval;
 }
 
-void NetfreeModel::initialize()
-{
-    if (!dirty_)
-    {
-        return; // do nothing
-    }
-
-    // species_cache_.clear();
-    // for (reaction_rule_container_type::const_iterator
-    //     i(reaction_rules_.begin()); i != reaction_rules_.end(); ++i)
-    // {
-    //     const ReactionRule::reactant_container_type&
-    //         reactants((*i).reactants());
-    //     const ReactionRule::product_container_type&
-    //         products((*i).products());
-    //     std::copy(reactants.begin(), reactants.end(),
-    //               std::back_inserter(species_cache_));
-    //     std::copy(products.begin(), products.end(),
-    //               std::back_inserter(species_cache_));
-    // }
-    // std::sort(species_cache_.begin(), species_cache_.end());
-    // species_cache_.erase(
-    //     std::unique(species_cache_.begin(), species_cache_.end()),
-    //     species_cache_.end());
-
-    dirty_ = false;
-}
-
 void NetfreeModel::add_species_attribute(const Species& sp)
 {
     if (has_species_attribute_exact(sp))
@@ -175,8 +107,6 @@ void NetfreeModel::add_species_attribute(const Species& sp)
         throw AlreadyExists("species already exists");
     }
     species_attributes_.push_back(sp);
-
-    dirty_ = true;
 }
 
 void NetfreeModel::remove_species_attribute(const Species& sp)
@@ -190,8 +120,6 @@ void NetfreeModel::remove_species_attribute(const Species& sp)
         throw NotFound(message.str()); // use boost::format if it's allowed
     }
     species_attributes_.erase(i);
-
-    dirty_ = true;
 }
 
 bool NetfreeModel::has_species_attribute(const Species& sp) const
@@ -237,8 +165,6 @@ void NetfreeModel::add_reaction_rule(const ReactionRule& rr)
     // {
     //     ;
     // }
-
-    dirty_ = true;
 }
 
 void NetfreeModel::remove_reaction_rule(const ReactionRule& rr)
@@ -250,9 +176,6 @@ void NetfreeModel::remove_reaction_rule(const ReactionRule& rr)
         throw NotFound("reaction rule not found");
     }
     reaction_rules_.erase(i);
-
-    first_order_reaction_rules_map_.clear();
-    second_order_reaction_rules_map_.clear();
 
     // reaction_rule_container_type::size_type const
     //     idx(i - reaction_rules_.begin()), last_idx(reaction_rules_.size() - 1);
@@ -351,7 +274,6 @@ void NetfreeModel::remove_reaction_rule(const ReactionRule& rr)
     // }
 
     // reaction_rules_.pop_back();
-    dirty_ = true;
 }
 
 bool NetfreeModel::has_reaction_rule(const ReactionRule& rr) const

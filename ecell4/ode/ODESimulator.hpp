@@ -10,6 +10,7 @@
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Simulator.hpp>
+#include <ecell4/core/ModelWrapper.hpp>
 
 #include "ODEWorld.hpp"
 
@@ -27,6 +28,7 @@ class ODESystem
 public:
 
     typedef std::vector<double> state_type;
+    typedef Model::reaction_rule_container_type reaction_rule_container_type;
 
 protected:
 
@@ -35,18 +37,18 @@ protected:
 
 public:
 
-    ODESystem(boost::shared_ptr<NetworkModel> model, const Real& volume)
-        : model_(model), volume_(volume)
+    ODESystem(const std::vector<Species>& species,
+        const reaction_rule_container_type& reaction_rules, const Real& volume)
+        : species_(species), reaction_rules_(reaction_rules), volume_(volume)
     {
         initialize();
     }
 
     void initialize()
     {
-        const std::vector<Species> species(model_->list_species());
         state_type::size_type i(0);
         for (std::vector<Species>::const_iterator
-                 it(species.begin()); it != species.end(); ++it)
+                 it(species_.begin()); it != species_.end(); ++it)
         {
             index_map_[*it] = i;
             ++i;
@@ -60,10 +62,8 @@ public:
             *i = 0.0;
         }
 
-        const NetworkModel::reaction_rule_container_type&
-            reaction_rules(model_->reaction_rules());
-        for (NetworkModel::reaction_rule_container_type::const_iterator
-                 i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
+        for (reaction_rule_container_type::const_iterator
+            i(reaction_rules_.begin()); i != reaction_rules_.end(); ++i)
         {
             double flux((*i).k() * volume_);
 
@@ -93,7 +93,8 @@ public:
 
 protected:
 
-    boost::shared_ptr<NetworkModel> model_;
+    const std::vector<Species>& species_;
+    const reaction_rule_container_type& reaction_rules_;
     Real volume_;
 
     species_map_type index_map_;
@@ -146,7 +147,7 @@ public:
 
     void initialize()
     {
-        const std::vector<Species> species((*model_).list_species());
+        const std::vector<Species> species(model_->list_species());
         for (std::vector<Species>::const_iterator
                  i(species.begin()); i != species.end(); ++i)
         {

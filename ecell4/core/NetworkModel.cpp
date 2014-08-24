@@ -8,7 +8,7 @@ namespace ecell4
 {
 
 std::vector<ReactionRule> NetworkModel::query_reaction_rules(
-    const Species& sp)
+    const Species& sp) const
 {
     first_order_reaction_rules_map_type::const_iterator
         i(first_order_reaction_rules_map_.find(sp.serial()));
@@ -27,7 +27,7 @@ std::vector<ReactionRule> NetworkModel::query_reaction_rules(
 }
 
 std::vector<ReactionRule> NetworkModel::query_reaction_rules(
-    const Species& sp1, const Species& sp2)
+    const Species& sp1, const Species& sp2) const
 {
     std::vector<ReactionRule> retval;
     const std::pair<Species::serial_type, Species::serial_type>
@@ -49,13 +49,13 @@ std::vector<ReactionRule> NetworkModel::query_reaction_rules(
     return retval;
 }
 
-Integer NetworkModel::apply(const Species& pttrn, const Species& sp)
+Integer NetworkModel::apply(const Species& pttrn, const Species& sp) const
 {
     return (pttrn == sp ? 1 : 0);
 }
 
 std::vector<ReactionRule> NetworkModel::apply(
-    const ReactionRule& rr, const ReactionRule::reactant_container_type& reactants)
+    const ReactionRule& rr, const ReactionRule::reactant_container_type& reactants) const
 {
     if (rr.reactants().size() != reactants.size())
     {
@@ -74,34 +74,6 @@ std::vector<ReactionRule> NetworkModel::apply(
     return std::vector<ReactionRule>(1, rr);
 }
 
-void NetworkModel::initialize()
-{
-    if (!dirty_)
-    {
-        return; // do nothing
-    }
-
-    species_cache_.clear();
-    for (reaction_rule_container_type::const_iterator
-        i(reaction_rules_.begin()); i != reaction_rules_.end(); ++i)
-    {
-        const ReactionRule::reactant_container_type&
-            reactants((*i).reactants());
-        const ReactionRule::product_container_type&
-            products((*i).products());
-        std::copy(reactants.begin(), reactants.end(),
-                  std::back_inserter(species_cache_));
-        std::copy(products.begin(), products.end(),
-                  std::back_inserter(species_cache_));
-    }
-    std::sort(species_cache_.begin(), species_cache_.end());
-    species_cache_.erase(
-        std::unique(species_cache_.begin(), species_cache_.end()),
-        species_cache_.end());
-
-    dirty_ = false;
-}
-
 void NetworkModel::add_species_attribute(const Species& sp)
 {
     if (has_species_attribute(sp))
@@ -109,8 +81,6 @@ void NetworkModel::add_species_attribute(const Species& sp)
         throw AlreadyExists("species already exists");
     }
     species_attributes_.push_back(sp);
-
-    dirty_ = true;
 }
 
 void NetworkModel::remove_species_attribute(const Species& sp)
@@ -124,8 +94,6 @@ void NetworkModel::remove_species_attribute(const Species& sp)
         throw NotFound(message.str()); // use boost::format if it's allowed
     }
     species_attributes_.erase(i);
-
-    dirty_ = true;
 }
 
 bool NetworkModel::has_species_attribute(const Species& sp) const
@@ -166,8 +134,6 @@ void NetworkModel::add_reaction_rule(const ReactionRule& rr)
     {
         ;
     }
-
-    dirty_ = true;
 }
 
 void NetworkModel::remove_reaction_rule(const ReactionRule& rr)
@@ -276,7 +242,6 @@ void NetworkModel::remove_reaction_rule(const ReactionRule& rr)
     }
 
     reaction_rules_.pop_back();
-    dirty_ = true;
 }
 
 bool NetworkModel::has_reaction_rule(const ReactionRule& rr) const

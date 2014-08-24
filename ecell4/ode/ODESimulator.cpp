@@ -16,9 +16,9 @@ bool ODESimulator::step(const Real& upto)
         return false;
     }
 
-    initialize();
+    // initialize();
 
-    const std::vector<Species> species(model_->list_species());
+    const std::vector<Species> species(world_->list_species());
     ODESystem::state_type x(species.size());
 
     {
@@ -36,7 +36,7 @@ bool ODESimulator::step(const Real& upto)
     typedef odeint::controlled_runge_kutta<error_stepper_type>
         controlled_stepper_type;
 
-    ODESystem func_obj(model_, world_->volume());
+    ODESystem func_obj(species, model_->reaction_rules(), world_->volume());
     StateAndTimeBackInserter::state_container_type x_vec;
     StateAndTimeBackInserter::time_container_type times;
 

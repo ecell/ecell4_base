@@ -251,8 +251,6 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_ReactionRule] reaction_rules()
         vector[Cpp_Species] species_attributes()
-        void with_cache(bool)
-        bool with_cache()
 
 ## NetfreeModel
 #  a python wrapper for Cpp_NetfreeModel, but wrapped by shared_ptr

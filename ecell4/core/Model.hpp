@@ -53,7 +53,7 @@ public:
      * @return the vector of ReactionRule(s)
      */
     virtual std::vector<ReactionRule> query_reaction_rules(
-        const Species& sp) = 0;
+        const Species& sp) const = 0;
 
     /**
      * a fundamental function to query bimolecular reaction rules from reactants.
@@ -63,12 +63,12 @@ public:
      * @return the vector of ReactionRule(s)
      */
     virtual std::vector<ReactionRule> query_reaction_rules(
-        const Species& sp1, const Species& sp2) = 0;
+        const Species& sp1, const Species& sp2) const = 0;
 
-    virtual Integer apply(const Species& pttrn, const Species& sp) = 0;
+    virtual Integer apply(const Species& pttrn, const Species& sp) const = 0;
     virtual std::vector<ReactionRule> apply(
         const ReactionRule& rr,
-        const ReactionRule::reactant_container_type& reactants) = 0;
+        const ReactionRule::reactant_container_type& reactants) const = 0;
 
     // NetworkModelTraits
 
@@ -111,10 +111,15 @@ public:
      * this function is a part of the trait of Model.
      * @param species an original Species
      */
-    virtual Species apply_species_attributes(const Species& sp)
+    virtual Species apply_species_attributes(const Species& sp) const
     {
         throw NotSupported(
             "apply_species_attributes is not supported in this model class");
+    }
+
+    Species create_species(const std::string& name) const
+    {
+        return apply_species_attributes(Species(name));
     }
 
     /**
@@ -154,6 +159,28 @@ public:
 
     virtual const reaction_rule_container_type& reaction_rules() const = 0;
     virtual const species_container_type& species_attributes() const = 0;
+
+    const std::vector<Species> list_species() const
+    {
+        std::vector<Species> retval;
+        const reaction_rule_container_type& rrs(reaction_rules());
+        for (reaction_rule_container_type::const_iterator i(rrs.begin());
+            i != rrs.end(); ++i)
+        {
+            const ReactionRule::reactant_container_type&
+                reactants((*i).reactants());
+            const ReactionRule::product_container_type&
+                products((*i).products());
+            std::copy(reactants.begin(), reactants.end(),
+                      std::back_inserter(retval));
+            std::copy(products.begin(), products.end(),
+                      std::back_inserter(retval));
+        }
+        retval.erase(
+            std::unique(retval.begin(), retval.end()), retval.end());
+        std::sort(retval.begin(), retval.end());
+        return retval;
+    }
 };
 
 } // ecell4
