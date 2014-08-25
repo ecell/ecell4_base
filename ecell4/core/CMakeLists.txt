@@ -5,7 +5,7 @@
 # INCLUDE(CPack)
 
 set(CPP_FILES
-    CompartmentSpace.cpp Context.cpp Global.cpp Journal.cpp
+    CompartmentSpace.cpp Context.cpp Global.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Position3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp)
 

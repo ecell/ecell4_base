@@ -1,7 +1,7 @@
 import unittest
 
-import ecell4.reaction_reader.legacy.species as species
-from ecell4.reaction_reader.legacy.decorator2 import create_species
+import ecell4.util.legacy.species as species
+from ecell4.util.legacy.decorator2 import create_species
 
 
 class SpeciesTestCase(unittest.TestCase):

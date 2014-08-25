@@ -70,53 +70,15 @@ public:
         set_attribute("D", D);
     }
 
-    void deserialize(const serial_type& serial)
-    {
-        std::vector<std::string> unit_serials;
-        boost::split(unit_serials, serial, boost::is_any_of("."));
-
-        units_.clear();
-        for (std::vector<std::string>::const_iterator i(unit_serials.begin());
-            i != unit_serials.end(); ++i)
-        {
-            UnitSpecies usp;
-            usp.deserialize(*i);
-            add_unit(usp);
-        }
-    }
-
-    serial_type serial() const
-    {
-        if (units_.size() == 0)
-        {
-            return "";
-        }
-
-        container_type::const_iterator it(units_.begin());
-        serial_type retval((*it).serial());
-        ++it;
-        for (; it != units_.end(); ++it)
-        {
-            retval += ".";
-            retval += (*it).serial();
-        }
-        return retval;
-    }
+    void deserialize(const serial_type& serial);
+    serial_type serial() const;
 
     Integer num_units() const
     {
         return units_.size();
     }
 
-    void add_unit(const UnitSpecies& usp)
-    {
-        if (usp.name() == "")
-        {
-            throw NotSupported("UnitSpecies must have a name.");
-        }
-        units_.push_back(usp);
-        // units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
-    }
+    void add_unit(const UnitSpecies& usp);
 
     inline container_type::const_iterator begin() const
     {
@@ -128,7 +90,7 @@ public:
         return units_.end();
     }
 
-    const container_type& units() const
+    const std::vector<UnitSpecies>& units() const
     {
         return units_;
     }
@@ -170,76 +132,24 @@ public:
     //     return usps;
     // }
 
-    // bool match(const Species& target) const;
-
     const attributes_container_type& attributes() const
     {
         return attributes_;
     }
 
-    std::vector<std::pair<std::string, std::string> > list_attributes()
-    {
-        std::vector<std::pair<std::string, std::string> > retval;
-        for (attributes_container_type::const_iterator
-            i(attributes_.begin()); i != attributes_.end(); ++i)
-        {
-            retval.push_back(*i);
-        }
-        return retval;
-    }
-
-    std::string get_attribute(const std::string& name_attr) const
-    {
-        attributes_container_type::const_iterator
-            i(attributes_.find(name_attr));
-        if (i == attributes_.end())
-        {
-            std::ostringstream message;
-            message << "attribute [" << name_attr << "] not found";
-            throw NotFound(message.str()); // use boost::format if it's allowed
-        }
-
-        return (*i).second;
-    }
-
-    void set_attribute(const std::string& name_attr, const std::string& value)
-    {
-        attributes_[name_attr] = value;
-    }
-
-    void set_attributes(const Species& sp)
-    {
-        attributes_ = sp.attributes();
-    }
-
-    std::vector<UnitSpecies> list_units() const
-    {
-        return units_;
-    }
-
-    void remove_attribute(const std::string& name_attr)
-    {
-        attributes_container_type::iterator
-            i(attributes_.find(name_attr));
-        if (i == attributes_.end())
-        {
-            std::ostringstream message;
-            message << "attribute [" << name_attr << "] not found";
-            throw NotFound(message.str()); // use boost::format if it's allowed
-        }
-
-        attributes_.erase(i);
-    }
-
-    bool has_attribute(const std::string& name_attr) const
-    {
-        return (attributes_.find(name_attr) != attributes_.end());
-    }
+    std::vector<std::pair<std::string, std::string> > list_attributes();
+    std::string get_attribute(const std::string& name_attr) const;
+    void set_attribute(const std::string& name_attr, const std::string& value);
+    void set_attributes(const Species& sp);
+    void remove_attribute(const std::string& name_attr);
+    bool has_attribute(const std::string& name_attr) const;
 
     bool operator==(const Species& rhs) const;
     bool operator!=(const Species& rhs) const;
     bool operator<(const Species& rhs) const;
     bool operator>(const Species& rhs) const;
+
+    Integer count(const Species& pttrn) const;
 
 protected:
 

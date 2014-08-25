@@ -3,7 +3,7 @@ import sys
 import os.path
 from libsbml import *
 import ecell4.core as core
-import ecell4.reaction_reader.species 
+import ecell4.util.legacy.species 
 
 Level = 2
 Version = 4

@@ -27,10 +27,107 @@ bool Species::operator>(const Species& rhs) const
     return (serial() > rhs.serial());
 }
 
-// bool Species::match(const Species& target) const
-// {
-//     return spmatch(*this, target);
-// }
+Integer Species::count(const Species& pttrn) const
+{
+    return count_spmatches(pttrn, *this);
+}
+
+void Species::deserialize(const Species::serial_type& serial)
+{
+    std::vector<std::string> unit_serials;
+    boost::split(unit_serials, serial, boost::is_any_of("."));
+
+    units_.clear();
+    for (std::vector<std::string>::const_iterator i(unit_serials.begin());
+        i != unit_serials.end(); ++i)
+    {
+        UnitSpecies usp;
+        usp.deserialize(*i);
+        add_unit(usp);
+    }
+}
+
+Species::serial_type Species::serial() const
+{
+    if (units_.size() == 0)
+    {
+        return "";
+    }
+
+    container_type::const_iterator it(units_.begin());
+    serial_type retval((*it).serial());
+    ++it;
+    for (; it != units_.end(); ++it)
+    {
+        retval += ".";
+        retval += (*it).serial();
+    }
+    return retval;
+}
+
+void Species::add_unit(const UnitSpecies& usp)
+{
+    if (usp.name() == "")
+    {
+        throw NotSupported("UnitSpecies must have a name.");
+    }
+    units_.push_back(usp);
+    // units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
+}
+
+std::vector<std::pair<std::string, std::string> > Species::list_attributes()
+{
+    std::vector<std::pair<std::string, std::string> > retval;
+    for (attributes_container_type::const_iterator
+        i(attributes_.begin()); i != attributes_.end(); ++i)
+    {
+        retval.push_back(*i);
+    }
+    return retval;
+}
+
+std::string Species::get_attribute(const std::string& name_attr) const
+{
+    attributes_container_type::const_iterator
+        i(attributes_.find(name_attr));
+    if (i == attributes_.end())
+    {
+        std::ostringstream message;
+        message << "attribute [" << name_attr << "] not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
+    }
+
+    return (*i).second;
+}
+
+void Species::set_attribute(const std::string& name_attr, const std::string& value)
+{
+    attributes_[name_attr] = value;
+}
+
+void Species::set_attributes(const Species& sp)
+{
+    attributes_ = sp.attributes();
+}
+
+void Species::remove_attribute(const std::string& name_attr)
+{
+    attributes_container_type::iterator
+        i(attributes_.find(name_attr));
+    if (i == attributes_.end())
+    {
+        std::ostringstream message;
+        message << "attribute [" << name_attr << "] not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
+    }
+
+    attributes_.erase(i);
+}
+
+bool Species::has_attribute(const std::string& name_attr) const
+{
+    return (attributes_.find(name_attr) != attributes_.end());
+}
 
 class unit_species_comparerator
 {

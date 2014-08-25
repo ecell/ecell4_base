@@ -1,7 +1,7 @@
 import unittest
 
-import ecell4.reaction_reader.legacy.network as network
-from ecell4.reaction_reader.legacy.decorator2 import (
+import ecell4.util.legacy.network as network
+from ecell4.util.legacy.decorator2 import (
     create_species, create_reaction_rule)
 
 

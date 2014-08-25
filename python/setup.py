@@ -34,8 +34,7 @@ class run_tests(Command):
         # suite.addTest(load_tests("bd"))
         # suite.addTest(load_tests("ode"))
         # suite.addTest(load_tests("lattice"))
-        suite.addTest(load_tests("reaction_reader"))
-        # suite.addTest(load_tests("util"))
+        suite.addTest(load_tests("util"))
         test_runner = unittest.TextTestRunner()
         test_runner.run(suite)
 
@@ -105,7 +104,7 @@ setup(
     package_dir = {"": "lib"},
     package_data = {"ecell4.util": ["templates/*"]},
     packages = ["ecell4",
-        "ecell4.util", "ecell4.reaction_reader", "ecell4.reaction_reader.legacy"],
+        "ecell4.util", "ecell4.util.legacy"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     ext_modules = ext_modules
     )

@@ -2,8 +2,8 @@ import string   # for convert into .bngl
 import copy
 from types import MethodType
 
-import ecell4.reaction_reader.species as species
-import ecell4.reaction_reader.options as options
+import ecell4.util.legacy.species as species
+import ecell4.util.legacy.options as options
 
 from collections import defaultdict
 

@@ -47,6 +47,24 @@ cdef class ReactionRule:
     def as_string(self):
         return self.thisptr.as_string()
 
+    def count(self, reactants):
+        cdef vector[Cpp_Species] cpp_reactants
+        for sp in reactants:
+            cpp_reactants.push_back(deref((<Species> sp).thisptr))
+        return self.thisptr.count(cpp_reactants)
+
+    def generate(self, reactants):
+        cdef vector[Cpp_Species] cpp_reactants
+        for sp in reactants:
+            cpp_reactants.push_back(deref((<Species> sp).thisptr))
+        cdef vector[Cpp_ReactionRule] cpp_rules = self.thisptr.generate(cpp_reactants)
+        cdef vector[Cpp_ReactionRule].iterator it1 = cpp_rules.begin()
+        retval = []
+        while it1 != cpp_rules.end():
+            retval.append(ReactionRule_from_Cpp_ReactionRule(address(deref(it1))))
+            inc(it1)
+        return retval
+
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr):
     cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))
     r = ReactionRule()
