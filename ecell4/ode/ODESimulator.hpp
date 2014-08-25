@@ -28,31 +28,23 @@ class ODESystem
 public:
 
     typedef std::vector<double> state_type;
-    typedef Model::reaction_rule_container_type reaction_rule_container_type;
+    typedef std::vector<state_type::size_type> index_container_type;
 
-protected:
+    typedef struct reaction
+    {
+        index_container_type reactants;
+        index_container_type products;
+        Real k;
+    } reaction_type;
 
-    typedef utils::get_mapper_mf<
-        Species, state_type::size_type>::type species_map_type;
+    typedef std::vector<reaction_type> reaction_container_type;
 
 public:
 
-    ODESystem(const std::vector<Species>& species,
-        const reaction_rule_container_type& reaction_rules, const Real& volume)
-        : species_(species), reaction_rules_(reaction_rules), volume_(volume)
+    ODESystem(const reaction_container_type& reactions, const Real& volume)
+        : reactions_(reactions), volume_(volume), vinv_(1.0 / volume)
     {
-        initialize();
-    }
-
-    void initialize()
-    {
-        state_type::size_type i(0);
-        for (std::vector<Species>::const_iterator
-                 it(species_.begin()); it != species_.end(); ++it)
-        {
-            index_map_[*it] = i;
-            ++i;
-        }
+        ;
     }
 
     void operator()(const state_type& x, state_type& dxdt, const double& t)
@@ -62,42 +54,36 @@ public:
             *i = 0.0;
         }
 
-        for (reaction_rule_container_type::const_iterator
-            i(reaction_rules_.begin()); i != reaction_rules_.end(); ++i)
+        for (reaction_container_type::const_iterator
+            i(reactions_.begin()); i != reactions_.end(); ++i)
         {
-            double flux((*i).k() * volume_);
+            double flux((*i).k * volume_);
 
-            const ReactionRule::reactant_container_type&
-                reactants((*i).reactants());
-            const ReactionRule::product_container_type&
-                products((*i).products());
-            for (ReactionRule::reactant_container_type::const_iterator
-                     j(reactants.begin()); j != reactants.end(); ++j)
+            for (index_container_type::const_iterator
+                j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
             {
-                flux *= x[index_map_[*j]] / volume_;
+                flux *= x[*j] * vinv_;
             }
 
-            for (ReactionRule::reactant_container_type::const_iterator
-                     j(reactants.begin()); j != reactants.end(); ++j)
+            for (index_container_type::const_iterator
+                j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
             {
-                dxdt[index_map_[*j]] -= flux;
+                dxdt[*j] -= flux;
             }
 
-            for (ReactionRule::product_container_type::const_iterator
-                     j(products.begin()); j != products.end(); ++j)
+            for (index_container_type::const_iterator
+                j((*i).products.begin()); j != (*i).products.end(); ++j)
             {
-                dxdt[index_map_[*j]] += flux;
+                dxdt[*j] += flux;
             }
         }
     }
 
 protected:
 
-    const std::vector<Species>& species_;
-    const reaction_rule_container_type& reaction_rules_;
-    Real volume_;
-
-    species_map_type index_map_;
+    const reaction_container_type& reactions_;
+    const Real volume_;
+    const Real vinv_;
 };
 
 struct StateAndTimeBackInserter
@@ -192,6 +178,10 @@ public:
         }
         dt_ = dt;
     }
+
+protected:
+
+    ODESystem generate_system() const;
 
 protected:
 
