@@ -17,20 +17,29 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
 
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+
 namespace ecell4
 {
 
 namespace ode
 {
 
-class ODESystem
+class ODESimulator
+    : public Simulator<NetworkModel, ODEWorld>
 {
 public:
 
-    typedef std::vector<double> state_type;
+    typedef Simulator<NetworkModel, ODEWorld> base_type;
+
+public:
+
+    typedef boost::numeric::ublas::vector<double> state_type;
+    typedef boost::numeric::ublas::matrix<double> matrix_type;
     typedef std::vector<state_type::size_type> index_container_type;
 
-    typedef struct reaction
+    typedef struct
     {
         index_container_type reactants;
         index_container_type products;
@@ -39,81 +48,141 @@ public:
 
     typedef std::vector<reaction_type> reaction_container_type;
 
-public:
-
-    ODESystem(const reaction_container_type& reactions, const Real& volume)
-        : reactions_(reactions), volume_(volume), vinv_(1.0 / volume)
+    class deriv_func
     {
-        ;
-    }
+    public:
 
-    void operator()(const state_type& x, state_type& dxdt, const double& t)
-    {
-        for (state_type::iterator i(dxdt.begin()); i != dxdt.end(); ++i)
+        deriv_func(const reaction_container_type& reactions, const Real& volume)
+            : reactions_(reactions), volume_(volume), vinv_(1.0 / volume)
         {
-            *i = 0.0;
+            ;
         }
 
-        for (reaction_container_type::const_iterator
-            i(reactions_.begin()); i != reactions_.end(); ++i)
+        void operator()(const state_type& x, state_type& dxdt, const double& t)
         {
-            double flux((*i).k * volume_);
-
-            for (index_container_type::const_iterator
-                j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
+            for (state_type::iterator i(dxdt.begin()); i != dxdt.end(); ++i)
             {
-                flux *= x[*j] * vinv_;
+                *i = 0.0;
             }
 
-            for (index_container_type::const_iterator
-                j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
+            for (reaction_container_type::const_iterator
+                i(reactions_.begin()); i != reactions_.end(); ++i)
             {
-                dxdt[*j] -= flux;
-            }
+                double flux((*i).k * volume_);
+                for (index_container_type::const_iterator
+                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
+                {
+                    flux *= x[*j] * vinv_;
+                }
 
-            for (index_container_type::const_iterator
-                j((*i).products.begin()); j != (*i).products.end(); ++j)
-            {
-                dxdt[*j] += flux;
+                for (index_container_type::const_iterator
+                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
+                {
+                    dxdt[*j] -= flux;
+                }
+
+                for (index_container_type::const_iterator
+                    j((*i).products.begin()); j != (*i).products.end(); ++j)
+                {
+                    dxdt[*j] += flux;
+                }
             }
         }
-    }
 
-protected:
+    protected:
 
-    const reaction_container_type& reactions_;
-    const Real volume_;
-    const Real vinv_;
-};
+        const reaction_container_type reactions_;
+        const Real volume_;
+        const Real vinv_;
+    };
 
-struct StateAndTimeBackInserter
-{
-    typedef std::vector<ODESystem::state_type> state_container_type;
-    typedef std::vector<double> time_container_type;
-
-    state_container_type& m_states;
-    time_container_type& m_times;
-
-    StateAndTimeBackInserter(
-        state_container_type& states, time_container_type& times)
-        : m_states(states), m_times(times)
+    class jacobi_func
     {
-        ;
-    }
+    public:
 
-    void operator()(const ODESystem::state_type&x, double t)
+        jacobi_func(const reaction_container_type& reactions, const Real& volume)
+            : reactions_(reactions), volume_(volume), vinv_(1.0 / volume)
+        {
+            ;
+        }
+
+        void operator()(
+            const state_type& x, matrix_type& jacobi, const double& t, state_type& dfdt) const
+        {
+            for (state_type::iterator i(dfdt.begin()); i != dfdt.end(); ++i)
+            {
+                *i = 0.0;
+            }
+
+            for (matrix_type::array_type::iterator i(jacobi.data().begin());
+                i != jacobi.data().end(); ++i)
+            {
+                *i = 0.0;
+            }
+
+            for (reaction_container_type::const_iterator
+                i(reactions_.begin()); i != reactions_.end(); ++i)
+            {
+                double flux((*i).k * volume_);
+                for (index_container_type::const_iterator
+                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
+                {
+                    flux *= x[*j] * vinv_;
+                }
+
+                if (flux == 0)
+                {
+                    continue;
+                }
+
+                for (index_container_type::const_iterator
+                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
+                {
+                    const double partial(flux / x[*j]); //XXX: consider squares
+
+                    for (index_container_type::const_iterator
+                        k((*i).reactants.begin()); k != (*i).reactants.end(); ++k)
+                    {
+                        jacobi(*k, *j) -= partial;
+                    }
+
+                    for (index_container_type::const_iterator
+                        k((*i).products.begin()); k != (*i).products.end(); ++k)
+                    {
+                        jacobi(*k, *j) += partial;
+                    }
+                }
+            }
+        }
+
+    protected:
+
+        const reaction_container_type reactions_;
+        const Real volume_;
+        const Real vinv_;
+    };
+
+    struct StateAndTimeBackInserter
     {
-        m_states.push_back(x);
-        m_times.push_back(t);
-    }
-};
+        typedef std::vector<state_type> state_container_type;
+        typedef std::vector<double> time_container_type;
 
-class ODESimulator
-    : public Simulator<NetworkModel, ODEWorld>
-{
-public:
+        state_container_type& m_states;
+        time_container_type& m_times;
 
-    typedef Simulator<NetworkModel, ODEWorld> base_type;
+        StateAndTimeBackInserter(
+            state_container_type& states, time_container_type& times)
+            : m_states(states), m_times(times)
+        {
+            ;
+        }
+
+        void operator()(const state_type&x, double t)
+        {
+            m_states.push_back(x);
+            m_times.push_back(t);
+        }
+    };
 
 public:
 
@@ -181,7 +250,7 @@ public:
 
 protected:
 
-    ODESystem generate_system() const;
+    std::pair<deriv_func, jacobi_func> generate_system() const;
 
 protected:
 
