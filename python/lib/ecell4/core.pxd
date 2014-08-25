@@ -186,8 +186,7 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
         vector[Cpp_ReactionRule] query_reaction_rules(
             Cpp_Species sp, Cpp_Species sp)
-
-        # vector[Cpp_Species] list_species()
+        vector[Cpp_Species] list_species()
         # Cpp_Species create_species(string name)
         # Integer num_reaction_rules()
         vector[Cpp_Species] species_attributes()
@@ -212,9 +211,9 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         void add_reaction_rule(Cpp_ReactionRule)
         void remove_reaction_rule(Cpp_ReactionRule)
         bool has_reaction_rule(Cpp_ReactionRule)
-        Integer num_reaction_rules()
+        # Integer num_reaction_rules()
         Cpp_Species apply_species_attributes(Cpp_Species& sp)
-        Cpp_Species create_species(string name)
+        # Cpp_Species create_species(string name)
         vector[Cpp_Species] list_species()
         vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
         vector[Cpp_ReactionRule] query_reaction_rules(
@@ -242,10 +241,10 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
         void add_reaction_rule(Cpp_ReactionRule)
         void remove_reaction_rule(Cpp_ReactionRule)
         bool has_reaction_rule(Cpp_ReactionRule)
-        Integer num_reaction_rules()
+        # Integer num_reaction_rules()
         Cpp_Species apply_species_attributes(Cpp_Species& sp)
-        Cpp_Species create_species(string name)
-        # vector[Cpp_Species] list_species()
+        # Cpp_Species create_species(string name)
+        vector[Cpp_Species] list_species()
         vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
         vector[Cpp_ReactionRule] query_reaction_rules(
             Cpp_Species sp, Cpp_Species sp)

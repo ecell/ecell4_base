@@ -176,9 +176,9 @@ public:
             std::copy(products.begin(), products.end(),
                       std::back_inserter(retval));
         }
+        std::sort(retval.begin(), retval.end());
         retval.erase(
             std::unique(retval.begin(), retval.end()), retval.end());
-        std::sort(retval.begin(), retval.end());
         return retval;
     }
 };
