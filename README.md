@@ -45,7 +45,7 @@ $ sudo apt-get install python-pip libgsl0-dev libhdf5-serial-dev libboost-dev
 $ sudo pip install http://dev.e-cell.org/downloads/ecell4/ubuntu/latest/ecell4-0.0.0-cp27-none-linux_x86_64.whl
 ```
 
-## Building and installing Ubuntu 14.04
+## Building and installing E-Cell (Ubuntu 14.04)
 
 ```shell
 # dependent packages
