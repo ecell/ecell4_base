@@ -38,6 +38,18 @@ pip install http://dev.e-cell.org/downloads/ecell4/mac/mavericks/latest/ecell4-0
 # pip install http://dev.e-cell.org/downloads/ecell4/mac/mountainlion/latest/ecell4-0.0.0-cp27-none-macosx_10_8_intel.whl
 ```
 
+## Installing E-Cell (Ubuntu 14.04)
+
+### Requirements
+
+- pip (latest)
+
+```shell
+$ sudo apt-get install python-pip
+$ wget http://dev.e-cell.org/downloads/ecell4/ubuntu/latest/ecell4-0.0.0-cp27-none-linux_x86_64.whl
+$ sudo pip install ecell4-0.0.0-cp27-none-linux_x86_64.whl
+```
+
 ## Building and installing Ubuntu 14.04
 
 ```shell
