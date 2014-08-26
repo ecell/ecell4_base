@@ -42,8 +42,7 @@ pip install http://dev.e-cell.org/downloads/ecell4/mac/mavericks/latest/ecell4-0
 
 ```shell
 $ sudo apt-get install python-pip libgsl0-dev libhdf5-serial-dev libboost-dev
-$ wget http://dev.e-cell.org/downloads/ecell4/ubuntu/latest/ecell4-0.0.0-cp27-none-linux_x86_64.whl
-$ sudo pip install ecell4-0.0.0-cp27-none-linux_x86_64.whl
+$ sudo pip install http://dev.e-cell.org/downloads/ecell4/ubuntu/latest/ecell4-0.0.0-cp27-none-linux_x86_64.whl
 ```
 
 ## Building and installing Ubuntu 14.04
