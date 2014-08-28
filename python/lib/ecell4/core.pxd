@@ -361,7 +361,7 @@ cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
 
 ## Cpp_FixedIntervalNumberObserver
 #  ecell4::FixedIntervalNumberObserver
-cdef extern from "ecell4/core/Observer.hpp" namespace "ecell4":
+cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
     cdef cppclass Cpp_Observer "ecell4::Observer":
         Real next_time()
 

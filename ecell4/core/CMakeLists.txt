@@ -18,7 +18,7 @@ set(HPP_FILES
     SerialIDGenerator.hpp Species.hpp Voxel.hpp functions.hpp swap.hpp ModelWrapper.hpp
     Context.hpp Global.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp
     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp SimulatorBase.hpp
-    UnitSpecies.hpp Observer.hpp exceptions.hpp get_mapper_mf.hpp types.hpp)
+    UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp)
 
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})

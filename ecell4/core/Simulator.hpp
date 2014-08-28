@@ -3,7 +3,7 @@
 
 #include "SimulatorBase.hpp"
 #include "EventScheduler.hpp"
-#include "Observer.hpp"
+#include "observers.hpp"
 
 
 namespace ecell4
