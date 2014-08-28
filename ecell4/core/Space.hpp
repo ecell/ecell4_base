@@ -109,6 +109,20 @@ public:
             " by this space class");
     }
 
+    virtual Real get_value(const Species& sp) const
+    {
+        throw NotSupported(
+            "get_value(const Species&) is not supported"
+            " by this space class");
+    }
+
+    virtual Real get_value_exact(const Species& sp) const
+    {
+        throw NotSupported(
+            "get_value_exact(const Species&) is not supported"
+            " by this space class");
+    }
+
     // ParticleSpaceTraits
 
     /**

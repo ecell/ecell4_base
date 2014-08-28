@@ -127,7 +127,8 @@ struct NumberLogger
         for (species_container_type::const_iterator i(targets.begin());
             i != targets.end(); ++i)
         {
-            tmp.push_back(space->num_molecules(*i));
+            tmp.push_back(space->get_value(*i));
+            // tmp.push_back(space->num_molecules(*i));
         }
         data.push_back(tmp);
     }

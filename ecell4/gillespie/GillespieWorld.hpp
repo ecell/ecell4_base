@@ -65,6 +65,8 @@ public:
 
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;
+    Real get_value(const Species& sp) const;
+    Real get_value_exact(const Species& sp) const;
     std::vector<Species> list_species() const;
     bool has_species(const Species& sp) const;
 

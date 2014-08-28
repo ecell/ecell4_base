@@ -83,6 +83,16 @@ public:
         throw NotImplemented("num_molecules_exact(const Species&) not implemented");
     }
 
+    virtual Real get_value(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules(sp));
+    }
+
+    virtual Real get_value_exact(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules_exact(sp));
+    }
+
     /**
      * get all species whitin the space.
      * this function is a part of the trait of CompartmentSpace.

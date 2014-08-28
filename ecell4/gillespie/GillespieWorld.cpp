@@ -39,6 +39,16 @@ Integer GillespieWorld::num_molecules_exact(const Species& sp) const
     return this->cs_->num_molecules_exact(sp);
 }
 
+Real GillespieWorld::get_value(const Species& sp) const
+{
+    return this->cs_->get_value(sp);
+}
+
+Real GillespieWorld::get_value_exact(const Species& sp) const
+{
+    return this->cs_->get_value_exact(sp);
+}
+
 void GillespieWorld::add_molecules(const Species& sp, const Integer& num)
 {
     this->cs_->add_molecules(sp, num);

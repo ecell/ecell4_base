@@ -26,7 +26,7 @@ struct ODEWorldHDF5Traits
 
     num_molecules_type getter(const space_type& space, const Species& sp) const
     {
-        return space.get_value(sp);
+        return space.get_value_exact(sp);
     }
 
     void setter(
@@ -110,25 +110,12 @@ public:
 
     Integer num_molecules(const Species& sp) const
     {
-        SpeciesExpressionMatcher sexp(sp);
-        Real retval(0);
-        for (species_map_type::const_iterator i(index_map_.begin());
-            i != index_map_.end(); ++i)
-        {
-            if (sexp.match((*i).first))
-            {
-                do
-                {
-                    retval += num_molecules_[(*i).second];
-                } while (sexp.next());
-            }
-        }
-        return static_cast<Integer>(retval);
+        return static_cast<Integer>(get_value(sp));
     }
 
     Integer num_molecules_exact(const Species& sp) const
     {
-        return static_cast<Integer>(get_value(sp));
+        return static_cast<Integer>(get_value_exact(sp));
     }
 
     std::vector<Species> list_species() const
@@ -164,6 +151,24 @@ public:
     // Optional members
 
     Real get_value(const Species& sp) const
+    {
+        SpeciesExpressionMatcher sexp(sp);
+        Real retval(0);
+        for (species_map_type::const_iterator i(index_map_.begin());
+            i != index_map_.end(); ++i)
+        {
+            if (sexp.match((*i).first))
+            {
+                do
+                {
+                    retval += num_molecules_[(*i).second];
+                } while (sexp.next());
+            }
+        }
+        return retval;
+    }
+
+    Real get_value_exact(const Species& sp) const
     {
         species_map_type::const_iterator i(index_map_.find(sp));
         if (i == index_map_.end())

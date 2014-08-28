@@ -80,7 +80,7 @@ bool ODESimulator::step(const Real& upto)
     for (Model::species_container_type::const_iterator
         it(species.begin()); it != species.end(); ++it)
     {
-        x[i] = static_cast<double>(world_->get_value(*it));
+        x[i] = static_cast<double>(world_->get_value_exact(*it));
         ++i;
     }
 
