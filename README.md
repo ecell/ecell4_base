@@ -112,4 +112,4 @@ Open localhost:8888 with your favorite browser.
 
 ## IPython notebooks (tutorials) for E-Cell4
 
-Please see http://nbviewer.ipython.org/github/ecell/ecell4/blob/master/ipynb/index.ipynb
+Please see http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/index.ipynb
