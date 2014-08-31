@@ -45,13 +45,21 @@ void SubvolumeSpace_test_num_molecules_template()
     const Position3 edge_lengths(L, L, L);
     Timpl_ target(edge_lengths, 2, 3, 4);
 
-    const Species sp1("A");
+    const Species sp1("A"), sp2("B");
     BOOST_CHECK_EQUAL(target.num_molecules_exact(sp1, 0), 0);
     BOOST_CHECK_EQUAL(target.num_molecules_exact(sp1, 23), 0);
     target.add_molecules(sp1, 60, 0);
     target.remove_molecules(sp1, 30, 0);
+    target.add_molecules(sp1, 60, 23);
+    target.add_molecules(sp2, 60, 23);
     BOOST_CHECK_EQUAL(target.num_molecules_exact(sp1, 0), 30);
-    BOOST_CHECK_EQUAL(target.num_molecules_exact(sp1, 23), 0);
+    BOOST_CHECK_EQUAL(target.num_molecules_exact(sp2, 0), 0);
+    BOOST_CHECK_EQUAL(target.num_molecules_exact(sp1, 23), 60);
+    BOOST_CHECK_EQUAL(target.num_molecules_exact(sp2, 23), 60);
+
+    BOOST_CHECK_EQUAL(target.num_molecules_exact(sp1), 90);
+    BOOST_CHECK_EQUAL(target.num_molecules_exact(sp2), 60);
+    BOOST_CHECK_EQUAL(target.num_molecules(Species("_")), 150);
 }
 
 BOOST_AUTO_TEST_CASE(SubvolumeSpace_test_num_molecules)

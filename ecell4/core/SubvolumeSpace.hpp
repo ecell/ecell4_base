@@ -63,14 +63,15 @@ public:
 
     typedef SubvolumeSpace base_type;
     typedef base_type::coordinate_type coordinate_type;
-    typedef utils::get_mapper_mf<Species, Integer>::type cell_type;
-    typedef std::vector<cell_type> matrix_type;
+
+    typedef std::vector<Integer> cell_type;
+    typedef utils::get_mapper_mf<Species, cell_type>::type matrix_type;
 
 public:
 
     SubvolumeSpaceVectorImpl(const Position3& edge_lengths,
         const Integer& cx, const Integer& cy, const Integer& cz)
-        : base_type(), matrix_(cx * cy * cz)
+        : base_type()
     {
         cell_sizes_[0] = cx;
         cell_sizes_[1] = cy;
@@ -132,6 +133,9 @@ public:
         return Global(surplus - row * cell_sizes_[0], row, layer);
     }
 
+
+    Integer num_molecules(const Species& sp) const;
+    Integer num_molecules_exact(const Species& sp) const;
     Integer num_molecules(const Species& sp, const coordinate_type& c) const;
     Integer num_molecules_exact(const Species& sp, const coordinate_type& c) const;
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
@@ -139,7 +143,12 @@ public:
 
     std::vector<Species> list_species() const
     {
-        return species_;
+        std::vector<Species> retval;
+        for (matrix_type::const_iterator i(matrix_.begin()); i != matrix_.end(); ++i)
+        {
+            retval.push_back((*i).first);
+        }
+        return retval;
     }
 
 protected:
