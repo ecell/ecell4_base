@@ -1,6 +1,8 @@
 #ifndef __ECELL4__GLOBAL_HPP
 #define __ECELL4__GLOBAL_HPP
 
+#include <ostream>
+#include <iomanip>
 #include <vector>
 #include "types.hpp"
 
@@ -40,7 +42,6 @@ struct Global
     Global north() const;
     Global dorsal() const;
     Global ventral() const;
-
 };
 
 inline Global add(const Global& g1, const Global& g2)
@@ -69,6 +70,36 @@ inline Global operator+(const Global& lhs, const Global& rhs)
 inline Global operator-(const Global& lhs, const Global& rhs)
 {
     return subtract(lhs, rhs);
+}
+
+inline bool operator<(const Global& lhs, const Global& rhs)
+{
+    return (lhs.col < rhs.col ? true :
+        (lhs.row < rhs.row ? true : (lhs.layer < lhs.layer ? true : false)));
+}
+
+inline bool operator>(const Global& lhs, const Global& rhs)
+{
+    return (lhs.col > rhs.col ? true :
+        (lhs.row > rhs.row ? true : (lhs.layer > lhs.layer ? true : false)));
+}
+
+inline bool operator==(const Global& lhs, const Global& rhs)
+{
+    return (lhs.col == rhs.col && lhs.row == rhs.row && lhs.layer == rhs.layer);
+}
+
+inline bool operator!=(const Global& lhs, const Global& rhs)
+{
+    return (lhs.col != rhs.col || lhs.row != rhs.row || lhs.layer != rhs.layer);
+}
+
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
+    std::basic_ostream<Tstrm_, Ttraits_>& strm, const Global& g)
+{
+    strm << "{" << g.col <<  ", " << g.row <<  ", " << g.layer << "}";
+    return strm;
 }
 
 } // ecell4
