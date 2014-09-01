@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Animated BFS</title>
+<style type="text/css">
+body { 
+  font: 14px helvetica neue, helvetica, arial, sans-serif;
+}
+
+#{{uuid}} {
+  height: 500px;
+  width: 500px;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+</style>
+
+<script>
+(function(){
+
+function render(){
+$('#{{uuid}}').cytoscape({
+  style: cytoscape.stylesheet()
+    .selector('node')
+      .css({
+        'content': 'data(id)'
+      })
+    .selector('edge')
+      .css({
+        'target-arrow-shape': 'triangle',
+        'width': 4,
+        'line-color': '#ddd',
+        'target-arrow-color': '#ddd'
+      })
+    .selector('.highlighted')
+      .css({
+        'background-color': '#61bffc',
+        'line-color': '#61bffc',
+        'target-arrow-color': '#61bffc',
+        'transition-property': 'background-color, line-color, target-arrow-color',
+        'transition-duration': '0.5s'
+      }),
+  
+  elements: {
+      nodes: {{nodes}},
+      
+      edges: {{edges}}
+    },
+  
+  layout: {
+    name: 'breadthfirst',
+    directed: true,
+    roots: '#a',
+    padding: 10
+  },
+  
+  ready: function(){
+    window.cy = this;
+    
+    var bfs = cy.elements().bfs('#a', function(){}, true);
+    
+    var i = 0;
+    var highlightNextEle = function(){
+      bfs.path[i].addClass('highlighted');
+      
+      if( i < bfs.path.length ){
+        i++;
+        setTimeout(highlightNextEle, 1000);
+      }
+    };
+    
+    // kick off first highlight
+    highlightNextEle();
+  }
+});
+};
+
+var before_render = function(){
+    if(window['cytoscape'] === undefined){
+         console.log("wait!");
+	 window.addEventListener("load_cytoscape", before_render);
+    }else{
+	 console.log("begin rendering!");
+	 render();
+    }
+}
+
+before_render();
+
+})();
+</script>
+</head>
+<body>
+  <div id="{{uuid}}"></div>
+  <!-- When only #uuid div is placed on this page, the height of output-box on ipynb will be 0px. One line below will prevent that. -->
+  <div id="dammy" style="width:700px;height:500px">
+</body>
+</html>
