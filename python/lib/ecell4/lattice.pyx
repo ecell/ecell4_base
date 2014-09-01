@@ -124,6 +124,9 @@ cdef class LatticeWorld:
             inc(it)
         return retval
 
+    def get_neighbor(self, coord, nrand):
+        return self.thisptr.get().get_neighbor(coord, nrand)
+
     def has_particle(self, ParticleID pid):
         return self.thisptr.get().has_particle(deref(pid.thisptr))
 
@@ -287,6 +290,10 @@ cdef class LatticeWorld:
         else:
             raise ValueError, ("a wrong argument was given [%s]." % (type(m))
                 + " the argument must be NetworkModel or NetfreeModel")
+
+    def private2position(self, Integer coord):
+        cdef Cpp_Position3 pos = self.thisptr.get().private2position(coord)
+        return Position3_from_Cpp_Position3(address(pos))
 
     def coordinate2position(self, Integer coord):
         cdef Cpp_Position3 pos = self.thisptr.get().coordinate2position(coord)
