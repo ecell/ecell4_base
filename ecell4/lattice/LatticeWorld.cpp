@@ -215,21 +215,19 @@ Integer LatticeWorld::add_molecules(const Species& sp, const Shape& shape)
                 space_.get_neighbors(coord2private(coord)));
         std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
                 neighbors.begin());
-        bool previous_flg(shape.is_inside(coordinate2position(
-                        private2coord(*itr))));
-        for (itr++; itr != neighbors.end(); itr++)
+        bool flg(shape.is_inside(coordinate2position(coord)));
+        for (std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
+                    neighbors.begin()); itr != neighbors.end(); itr++)
         {
             const bool current_flg(shape.is_inside(coordinate2position(
                         private2coord(*itr))));
-            if (previous_flg != current_flg)
+            if (flg != current_flg)
             {
                 if (new_voxel_private(
                             Voxel(sp, *itr, info.radius, info.D)).second)
                     ++count;
                 break;
             }
-            else
-                previous_flg = current_flg;
         }
     }
     return count;

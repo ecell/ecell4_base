@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(Shape_test_constructor)
 BOOST_AUTO_TEST_CASE(Shape_test_is_inside)
 {
     BOOST_CHECK(sphere.is_inside(center));
-    BOOST_CHECK(!sphere.is_inside(Position3(2.39e-6, 2.5e-6, 2.5e-6)));
+    BOOST_CHECK(!sphere.is_inside(Position3(2.2e-6, 2.5e-6, 2.5e-6)));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
