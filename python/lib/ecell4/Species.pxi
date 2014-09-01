@@ -60,6 +60,17 @@ cdef class Species:
     # def get_unit(self, UnitSpecies usp):
     #     return self.thisptr.get_unit(deref(usp.thisptr))
 
+    def units(self):
+        cdef vector[Cpp_UnitSpecies] usps = self.thisptr.units()
+        retval = []
+        cdef vector[Cpp_UnitSpecies].iterator it = usps.begin()
+        while it != usps.end():
+            retval.append(UnitSpecies_from_Cpp_UnitSpecies(
+            <Cpp_UnitSpecies*>(address(deref(it)))))
+            inc(it)
+
+        return retval
+
     def num_units(self):
         return self.thisptr.num_units()
 
@@ -108,4 +119,3 @@ def rrgenerate(ReactionRule pttrn, reactants):
             inc(it2)
         inc(it1)
     return retval
-
