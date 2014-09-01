@@ -46,6 +46,26 @@ public:
         t_ = t;
     }
 
+    virtual Integer num_molecules(const Species& sp) const
+    {
+        return num_molecules_exact(sp);
+    }
+
+    virtual Integer num_molecules_exact(const Species& sp) const
+    {
+        throw NotImplemented("num_molecules_exact(const Species&) not implemented");
+    }
+
+    virtual Real get_value(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules(sp));
+    }
+
+    virtual Real get_value_exact(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules_exact(sp));
+    }
+
     virtual const Integer num_subvolumes() const = 0;
     virtual const Real subvolume() const = 0;
     virtual coordinate_type global2coord(const Global& g) const = 0;
@@ -137,7 +157,6 @@ public:
 
         return Global(surplus - row * cell_sizes_[0], row, layer);
     }
-
 
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;

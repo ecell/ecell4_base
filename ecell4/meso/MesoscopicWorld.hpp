@@ -77,6 +77,10 @@ public:
 
     coordinate_type global2coord(const Global& g) const;
     Global coord2global(const coordinate_type& c) const;
+    Real get_value(const Species& sp) const;
+    Real get_value_exact(const Species& sp) const;
+    Integer num_molecules(const Species& sp) const;
+    Integer num_molecules_exact(const Species& sp) const;
     Integer num_molecules(const Species& sp, const coordinate_type& c) const;
     Integer num_molecules_exact(const Species& sp, const coordinate_type& c) const;
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);

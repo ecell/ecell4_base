@@ -16,6 +16,16 @@ void MesoscopicWorld::set_t(const Real& t)
     cs_->set_t(t);
 }
 
+Real MesoscopicWorld::get_value(const Species& sp) const
+{
+    return cs_->get_value(sp);
+}
+
+Real MesoscopicWorld::get_value_exact(const Species& sp) const
+{
+    return cs_->get_value_exact(sp);
+}
+
 const Integer MesoscopicWorld::num_subvolumes() const
 {
     return cs_->num_subvolumes();
@@ -39,6 +49,16 @@ MesoscopicWorld::coordinate_type MesoscopicWorld::global2coord(const Global& g) 
 Global MesoscopicWorld::coord2global(const MesoscopicWorld::coordinate_type& c) const
 {
     return cs_->coord2global(c);
+}
+
+Integer MesoscopicWorld::num_molecules(const Species& sp) const
+{
+    return cs_->num_molecules(sp);
+}
+
+Integer MesoscopicWorld::num_molecules_exact(const Species& sp) const
+{
+    return cs_->num_molecules_exact(sp);
 }
 
 Integer MesoscopicWorld::num_molecules(
