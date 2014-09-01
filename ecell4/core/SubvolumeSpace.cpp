@@ -72,6 +72,7 @@ void SubvolumeSpaceVectorImpl::reserve_species(
         throw AlreadyExists("Species already exists");
     }
     matrix_.insert(std::make_pair(sp, std::vector<Integer>(num_subvolumes())));
+    species_.push_back(sp);
 }
 
 void SubvolumeSpaceVectorImpl::add_molecules(

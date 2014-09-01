@@ -209,6 +209,12 @@ public:
     std::pair<std::pair<particle_info, private_coordinate_type>, bool>
         move_to_neighbor(MolecularTypeBase* mtype, Integer index);
 
+    private_coordinate_type get_neighbor(
+            private_coordinate_type private_coord, Integer nrand) const
+    {
+        return space_.get_neighbor(private_coord, nrand);
+    }
+
     std::pair<private_coordinate_type, bool> check_neighbor_private(
             const private_coordinate_type coord);
     // bool update_molecule(coordinate_type at, Species species);
@@ -274,6 +280,11 @@ public:
     const Position3 coordinate2position(const coordinate_type& coord) const
     {
         return space_.coordinate2position(coord);
+    }
+
+    const Position3 private2position(const private_coordinate_type& coord) const
+    {
+        return space_.coordinate2position(private2coord(coord));
     }
 
     coordinate_type global2coord(const Global& global) const;

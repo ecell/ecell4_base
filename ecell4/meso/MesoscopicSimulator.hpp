@@ -343,23 +343,81 @@ protected:
 
         virtual void fire()
         {
+            if (dt1_ < dt2_)
+            {
+                fire1();
+            }
+            else
+            {
+                fire2();
+            }
+
+            update();
+        }
+
+        void fire1()
+        {
             for (ReactionRule::reactant_container_type::const_iterator
-                it(next_.reactants().begin());
-                it != next_.reactants().end(); ++it)
+                it(rr_.reactants().begin());
+                it != rr_.reactants().end(); ++it)
             {
                 sim_->decrement_molecules(*it, coord_);
             }
 
             for (ReactionRule::product_container_type::const_iterator
-                it(next_.products().begin());
-                it != next_.products().end(); ++it)
+                it(rr_.products().begin());
+                it != rr_.products().end(); ++it)
             {
                 sim_->increment_molecules(*it, coord_);
             }
 
-            sim_->set_last_reaction(next_);
+            sim_->set_last_reaction(rr_);
+        }
 
-            update();
+        void fire2()
+        {
+            const Position3 lengths(sim_->world()->subvolume_edge_lengths());
+            const Real px(1.0 / (lengths[0] * lengths[0])),
+                py(1.0 / (lengths[1] * lengths[1])),
+                pz(1.0 / (lengths[2] * lengths[2]));
+
+            const Real rnd1(sim_->world()->rng()->uniform(0.0, px + py + pz));
+
+            coordinate_type tgt;
+            if (rnd1 < px * 0.5)
+            {
+                tgt = sim_->world()->global2coord(sim_->world()->coord2global(coord_).east());
+            }
+            else if (rnd1 < px)
+            {
+                tgt = sim_->world()->global2coord(sim_->world()->coord2global(coord_).west());
+            }
+            else if (rnd1 < px + py * 0.5)
+            {
+                tgt = sim_->world()->global2coord(sim_->world()->coord2global(coord_).south());
+            }
+            else if (rnd1 < px + py)
+            {
+                tgt = sim_->world()->global2coord(sim_->world()->coord2global(coord_).north());
+            }
+            else if (rnd1 < px + py + pz * 0.5)
+            {
+                tgt = sim_->world()->global2coord(sim_->world()->coord2global(coord_).dorsal());
+            }
+            else
+            {
+                tgt = sim_->world()->global2coord(sim_->world()->coord2global(coord_).ventral());
+            }
+
+            if (coord_ != tgt)
+            {
+                std::cout << "DIFFUSION FROM " << coord_ << " TO " << tgt << std::endl;
+                sim_->decrement_molecules(sp_, coord_);
+                sim_->increment_molecules(sp_, tgt);
+                sim_->interrupt(tgt);
+            }
+
+            sim_->reset_last_reactions();
         }
 
         virtual void interrupt(Real const& t)
@@ -375,24 +433,36 @@ protected:
 
         void update()
         {
+            dt1_ = 0.0;
             while (true)
             {
                 const std::pair<Real, ReactionRule>
                     retval(sim_->draw_next_reaction(coord_));
-                time_ += retval.first;
+                dt1_ += retval.first;
                 if (retval.first == inf || retval.second.k() > 0.0)
                 {
-                    next_ = retval.second;
+                    rr_ = retval.second;
                     break;
                 }
             }
+
+            {
+                const std::pair<Real, Species>
+                    retval(sim_->draw_next_diffusion(coord_));
+                sp_ = retval.second;
+                dt2_ = retval.first;
+            }
+
+            time_ += std::min(dt1_, dt2_);
         }
 
     protected:
 
         MesoscopicSimulator* sim_;
         coordinate_type coord_;
-        ReactionRule next_;
+        Real dt1_, dt2_;
+        Species sp_;
+        ReactionRule rr_;
     };
 
 public:
@@ -426,6 +496,11 @@ public:
     std::vector<ReactionRule> last_reactions() const;
     void set_last_reaction(const ReactionRule& rr);
 
+    void reset_last_reactions()
+    {
+        last_reactions_.clear();
+    }
+
     /**
      * recalculate reaction propensities and draw the next time.
      */
@@ -436,10 +511,16 @@ public:
         return (*world_).rng();
     }
 
+    void interrupt(const coordinate_type& coord)
+    {
+        interrupted_ = coord;
+    }
+
 protected:
 
-    void interrupt(const Real& t);
+    void interrupt_all(const Real& t);
     std::pair<Real, ReactionRule> draw_next_reaction(const coordinate_type& c);
+    std::pair<Real, Species> draw_next_diffusion(const coordinate_type& c);
     void increment_molecules(const Species& sp, const coordinate_type& c);
     void decrement_molecules(const Species& sp, const coordinate_type& c);
 
@@ -449,6 +530,8 @@ protected:
 
     boost::ptr_vector<ReactionRuleProxy> proxies_;
     EventScheduler scheduler_;
+    std::vector<EventScheduler::identifier_type> event_ids_;
+    coordinate_type interrupted_;
 };
 
 } // meso

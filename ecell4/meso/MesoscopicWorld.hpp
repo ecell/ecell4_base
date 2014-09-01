@@ -15,6 +15,11 @@ namespace ecell4
 namespace meso
 {
 
+struct MoleculeInfo
+{
+    const Real D;
+};
+
 class MesoscopicWorld
     : public Space
 {
@@ -69,14 +74,18 @@ public:
         return rng_;
     }
 
+    MoleculeInfo get_molecule_info(const Species& sp) const;
+
     const Real& t() const;
     void set_t(const Real& t);
     const Integer num_subvolumes() const;
     const Real subvolume() const;
     const Real volume() const;
+    const Position3 subvolume_edge_lengths() const;
 
     coordinate_type global2coord(const Global& g) const;
     Global coord2global(const coordinate_type& c) const;
+
     Real get_value(const Species& sp) const;
     Real get_value_exact(const Species& sp) const;
     Integer num_molecules(const Species& sp) const;
@@ -85,6 +94,7 @@ public:
     Integer num_molecules_exact(const Species& sp, const coordinate_type& c) const;
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
     void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
+    const std::vector<Species>& species() const;
     std::vector<Species> list_species() const;
 
 private:

@@ -66,6 +66,7 @@ public:
         return static_cast<Real>(num_molecules_exact(sp));
     }
 
+    virtual const Position3 subvolume_edge_lengths() const = 0;
     virtual const Integer num_subvolumes() const = 0;
     virtual const Real subvolume() const = 0;
     virtual coordinate_type global2coord(const Global& g) const = 0;
@@ -74,6 +75,7 @@ public:
     virtual Integer num_molecules_exact(const Species& sp, const coordinate_type& c) const = 0;
     virtual void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c) = 0;
     virtual void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c) = 0;
+    virtual const std::vector<Species>& species() const = 0;
     virtual std::vector<Species> list_species() const = 0;
 
 protected:
@@ -115,6 +117,11 @@ public:
         return edge_lengths_;
     }
 
+    const Position3 subvolume_edge_lengths() const
+    {
+        return Position3(edge_lengths_[0] / cell_sizes_[0], edge_lengths_[1] / cell_sizes_[1], edge_lengths_[2] / cell_sizes_[2]);
+    }
+
     void set_edge_lengths(const Position3& edge_lengths)
     {
         for (Position3::size_type dim(0); dim < 3; ++dim)
@@ -145,7 +152,15 @@ public:
 
     coordinate_type global2coord(const Global& g) const
     {
-        return g.col + cell_sizes_[0] * (g.row + cell_sizes_[1] * g.layer);
+        const coordinate_type coord(
+            modulo(g.col, cell_sizes_[0])
+                + cell_sizes_[0] * (modulo(g.row, cell_sizes_[1])
+                    + cell_sizes_[1] * modulo(g.layer, cell_sizes_[2])));
+        if (coord < 0 || coord >= num_subvolumes())
+        {
+            std::cout << "global2coord(" << g.col << ", " << g.row << ", " << g.layer << ") = " << coord << std::endl;
+        }
+        return coord;
     }
 
     Global coord2global(const coordinate_type& c) const
@@ -165,14 +180,20 @@ public:
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
     void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
 
+    const std::vector<Species>& species() const
+    {
+        return species_;
+    }
+
     std::vector<Species> list_species() const
     {
-        std::vector<Species> retval;
-        for (matrix_type::const_iterator i(matrix_.begin()); i != matrix_.end(); ++i)
-        {
-            retval.push_back((*i).first);
-        }
-        return retval;
+        // std::vector<Species> retval;
+        // for (matrix_type::const_iterator i(matrix_.begin()); i != matrix_.end(); ++i)
+        // {
+        //     retval.push_back((*i).first);
+        // }
+        // return retval;
+        return species_;
     }
 
 protected:

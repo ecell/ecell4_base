@@ -39,6 +39,52 @@ void MesoscopicSimulator::decrement_molecules(const Species& sp, const coordinat
     }
 }
 
+std::pair<Real, Species> MesoscopicSimulator::draw_next_diffusion(const coordinate_type& c)
+{
+    const Position3 lengths(world_->subvolume_edge_lengths());
+    const Real lsq(
+        lengths[0] * lengths[0] + lengths[1] * lengths[1] + lengths[2] * lengths[2]);
+
+    std::vector<double> b(world_->species().size());
+    for (unsigned int idx(0); idx < world_->species().size(); ++idx)
+    {
+        const Species& sp(world_->species()[idx]);
+        const Real D(world_->get_molecule_info(sp).D);
+        b[idx] = 2 * D / lsq * world_->num_molecules_exact(sp, c);
+    }
+
+    const double btot(std::accumulate(b.begin(), b.end(), double(0.0)));
+
+    if (btot == 0.0)
+    {
+        // Any reactions cannot occur.
+        return std::make_pair(inf, Species());
+    }
+
+    const double rnd1(rng()->uniform(0, 1));
+    const double dt(gsl_sf_log(1.0 / rnd1) / double(btot));
+    const double rnd2(rng()->uniform(0, btot));
+
+    int u(-1);
+    double acc(0.0);
+    const int len_b(b.size());
+    do
+    {
+        u++;
+        acc += b[u];
+    } while (acc < rnd2 && u < len_b - 1);
+
+    if (len_b == u)
+    {
+        // Any reactions cannot occur.
+        return std::make_pair(inf, Species());
+    }
+
+    assert(b[u] > 0);
+    assert(world_->num_molecules_exact(world_->species()[u], c) > 0);
+    return std::make_pair(dt, world_->species()[u]);
+}
+
 std::pair<Real, ReactionRule> MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
 {
     std::vector<double> a(proxies_.size());
@@ -79,7 +125,7 @@ std::pair<Real, ReactionRule> MesoscopicSimulator::draw_next_reaction(const coor
     return std::make_pair(dt, next_reaction);
 }
 
-void MesoscopicSimulator::interrupt(const Real& t)
+void MesoscopicSimulator::interrupt_all(const Real& t)
 {
     EventScheduler::events_range events(scheduler_.events());
     for (EventScheduler::events_range::iterator itr(events.begin());
@@ -98,18 +144,33 @@ void MesoscopicSimulator::step(void)
         return;
     }
 
-    EventScheduler::value_type top(scheduler_.pop());
+    interrupted_ = event_ids_.size();
+    EventScheduler::value_type const& top(scheduler_.top());
     const Real time(top.second->time());
     top.second->fire(); // top.second->time_ is updated in fire()
     this->set_t(time);
-    // EventScheduler::events_range events(scheduler_.events());
-    // for (EventScheduler::events_range::iterator itr(events.begin());
-    //         itr != events.end(); ++itr)
-    // {
-    //     (*itr).second->interrupt(time);
-    //     scheduler_.update(*itr);
-    // }
-    scheduler_.add(top.second);
+    scheduler_.update(top);
+
+    if (interrupted_ < event_ids_.size())
+    {
+        EventScheduler::identifier_type evid(event_ids_[interrupted_]);
+        boost::shared_ptr<EventScheduler::Event> ev(scheduler_.get(evid));
+        ev->interrupt(t());
+        scheduler_.update(std::make_pair(evid, ev));
+    }
+
+    // EventScheduler::value_type top(scheduler_.pop());
+    // const Real time(top.second->time());
+    // top.second->fire(); // top.second->time_ is updated in fire()
+    // this->set_t(time);
+    // // EventScheduler::events_range events(scheduler_.events());
+    // // for (EventScheduler::events_range::iterator itr(events.begin());
+    // //         itr != events.end(); ++itr)
+    // // {
+    // //     (*itr).second->interrupt(time);
+    // //     scheduler_.update(*itr);
+    // // }
+    // scheduler_.add(top.second);
 
     num_steps_++;
 }
@@ -132,7 +193,7 @@ bool MesoscopicSimulator::step(const Real &upto)
         // set_dt(next_time() - upto);
         set_t(upto);
         // last_reactions_.clear();
-        interrupt(upto);
+        interrupt_all(upto);
         return false;
     }
 }
@@ -165,10 +226,12 @@ void MesoscopicSimulator::initialize(void)
     }
 
     scheduler_.clear();
+    event_ids_.resize(world_->num_subvolumes());
     for (Integer i(0); i < world_->num_subvolumes(); ++i)
     {
-        scheduler_.add(boost::shared_ptr<EventScheduler::Event>(
-            new SubvolumeEvent(this, i, t())));
+        event_ids_[i] =
+            scheduler_.add(boost::shared_ptr<EventScheduler::Event>(
+                new SubvolumeEvent(this, i, t())));
     }
 }
 

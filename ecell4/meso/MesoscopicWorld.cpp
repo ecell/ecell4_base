@@ -6,6 +6,36 @@ namespace ecell4
 namespace meso
 {
 
+MoleculeInfo MesoscopicWorld::get_molecule_info(const Species& sp) const
+{
+    const bool with_D(sp.has_attribute("D"));
+    Real D(0.0);
+
+    if (with_D)
+    {
+        D = std::atof(sp.get_attribute("D").c_str());
+    }
+    else
+    {
+        if (boost::shared_ptr<Model> bound_model = lock_model())
+        {
+            Species attributed(bound_model->apply_species_attributes(sp));
+            if (attributed.has_attribute("D"))
+            {
+                D = std::atof(attributed.get_attribute("D").c_str());
+            }
+        }
+    }
+
+    MoleculeInfo info = {D};
+    return info;
+}
+
+const Position3 MesoscopicWorld::subvolume_edge_lengths() const
+{
+    return cs_->subvolume_edge_lengths();
+}
+
 const Real& MesoscopicWorld::t() const
 {
     return cs_->t();
@@ -83,6 +113,11 @@ void MesoscopicWorld::remove_molecules(
     const Species& sp, const Integer& num, const MesoscopicWorld::coordinate_type& c)
 {
     cs_->remove_molecules(sp, num, c);
+}
+
+const std::vector<Species>& MesoscopicWorld::species() const
+{
+    return cs_->species();
 }
 
 std::vector<Species> MesoscopicWorld::list_species() const

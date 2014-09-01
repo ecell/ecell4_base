@@ -38,17 +38,17 @@ cdef class MesoscopicWorld:
     def subvolume(self):
         return self.thisptr.get().subvolume()
 
-    def num_molecules(self, Species sp):
-        return self.thisptr.get().num_molecules(deref(sp.thisptr))
+    def num_molecules(self, Species sp, c = None):
+        if c is None:
+            return self.thisptr.get().num_molecules(deref(sp.thisptr))
+        else:
+            return self.thisptr.get().num_molecules(deref(sp.thisptr), <Integer>c)
 
-    def num_molecules_exact(self, Species sp):
-        return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
-
-    def num_molecules(self, Species sp, Integer c):
-        return self.thisptr.get().num_molecules(deref(sp.thisptr), c)
-
-    def num_molecules_exact(self, Species sp, Integer c):
-        return self.thisptr.get().num_molecules_exact(deref(sp.thisptr), c)
+    def num_molecules_exact(self, Species sp, c = None):
+        if c is None:
+            return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
+        else:
+            return self.thisptr.get().num_molecules_exact(deref(sp.thisptr), <Integer>c)
 
     def add_molecules(self, Species sp, Integer num, Integer c):
         self.thisptr.get().add_molecules(deref(sp.thisptr), num, c)
