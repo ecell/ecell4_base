@@ -46,10 +46,15 @@ public:
         t_ = t;
     }
 
+    virtual const Integer num_subvolumes() const = 0;
+    virtual const Real subvolume() const = 0;
+    virtual coordinate_type global2coord(const Global& g) const = 0;
+    virtual Global coord2global(const coordinate_type& c) const = 0;
     virtual Integer num_molecules(const Species& sp, const coordinate_type& c) const = 0;
     virtual Integer num_molecules_exact(const Species& sp, const coordinate_type& c) const = 0;
     virtual void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c) = 0;
     virtual void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c) = 0;
+    virtual std::vector<Species> list_species() const = 0;
 
 protected:
 
