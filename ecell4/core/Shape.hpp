@@ -8,7 +8,7 @@ namespace ecell4
 
 struct Shape
 {
-    virtual bool func(const Position3& coord) = 0; // TODO: temporary name
+    virtual bool is_inside(const Position3& coord) const = 0;
 };
 
 } // ecell4

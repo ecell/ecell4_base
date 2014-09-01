@@ -9,7 +9,7 @@ Sphere::Sphere(const Position3& center, const Real radius)
     ;
 }
 
-bool Sphere::func(const Position3& coord) // TODO: temporary name
+bool Sphere::is_inside(const Position3& coord) const
 {
     return length(coord-center_) <= radius_;
 }

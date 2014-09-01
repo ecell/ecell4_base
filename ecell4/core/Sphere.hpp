@@ -9,7 +9,7 @@ namespace ecell4
 struct Sphere : public Shape
 {
     Sphere(const Position3& center, const Real radius);
-    bool func(const Position3& coord); // TODO: temporary name
+    bool is_inside(const Position3& coord) const;
 
 protected:
     Position3 center_;

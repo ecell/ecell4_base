@@ -205,6 +205,36 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     return true;
 }
 
+Integer LatticeWorld::add_molecules(const Species& sp, const Shape& shape)
+{
+    Integer count(0);
+    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    for (coordinate_type coord(0); coord < size(); coord++)
+    {
+        std::vector<LatticeWorld::private_coordinate_type> neighbors(
+                space_.get_neighbors(coord2private(coord)));
+        std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
+                neighbors.begin());
+        bool previous_flg(shape.is_inside(coordinate2position(
+                        private2coord(*itr))));
+        for (itr++; itr != neighbors.end(); itr++)
+        {
+            const bool current_flg(shape.is_inside(coordinate2position(
+                        private2coord(*itr))));
+            if (previous_flg != current_flg)
+            {
+                if (new_voxel_private(
+                            Voxel(sp, *itr, info.radius, info.D)).second)
+                    ++count;
+                break;
+            }
+            else
+                previous_flg = current_flg;
+        }
+    }
+    return count;
+}
+
 void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
 {
     if (num < 0)

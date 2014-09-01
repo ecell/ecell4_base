@@ -191,6 +191,8 @@ public:
     const Position3 coordinate2position(coordinate_type coord) const;
     coordinate_type position2coordinate(const Position3& pos) const;
 
+    std::vector<private_coordinate_type> get_neighbors(
+            private_coordinate_type coord) const;
     private_coordinate_type get_neighbor(
             private_coordinate_type private_coord, Integer nrand) const;
 

@@ -623,6 +623,17 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
     return std::pair<private_coordinate_type, bool>(private_to, true);
 }
 
+std::vector<LatticeSpace::private_coordinate_type>
+LatticeSpace::get_neighbors(LatticeSpace::private_coordinate_type coord) const
+{
+    std::vector<LatticeSpace::private_coordinate_type> retval;
+    for (Integer i(0); i < 12; i++)
+    {
+        retval.push_back(get_neighbor(coord, i));
+    }
+    return retval;
+}
+
 LatticeSpace::private_coordinate_type LatticeSpace::get_neighbor(
         private_coordinate_type private_coord, Integer nrand) const
 {
