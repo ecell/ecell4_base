@@ -35,6 +35,11 @@ public:
         ;
     }
 
+    virtual void finalize(const Space* space)
+    {
+        ;
+    }
+
     virtual void fire(const SimulatorBase* sim, const Space* space) = 0;
 
     bool every()
@@ -206,7 +211,15 @@ public:
 
     virtual void initialize(const Space* space)
     {
+        base_type::initialize(space);
         logger_.initialize();
+        logger_.log(space);
+    }
+
+    virtual void finalize(const Space* space)
+    {
+        logger_.log(space);
+        base_type::finalize(space);
     }
 
     virtual void fire(const SimulatorBase* sim, const Space* space)
