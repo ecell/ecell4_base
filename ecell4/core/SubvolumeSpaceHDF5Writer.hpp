@@ -175,7 +175,7 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
 
         for (unsigned int i(0); i < num_species; ++i)
         {
-            const uint32_t sid(i + i);
+            const uint32_t sid(i + 1);
             const Species sp(species_id_map[sid]);
             for (unsigned int j(0); j < num_subvolumes; ++j)
             {
