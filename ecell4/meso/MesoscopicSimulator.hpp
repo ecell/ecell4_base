@@ -411,7 +411,6 @@ protected:
 
             if (coord_ != tgt)
             {
-                std::cout << "DIFFUSION FROM " << coord_ << " TO " << tgt << std::endl;
                 sim_->decrement_molecules(sp_, coord_);
                 sim_->increment_molecules(sp_, tgt);
                 sim_->interrupt(tgt);
