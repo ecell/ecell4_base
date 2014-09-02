@@ -28,6 +28,8 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         void remove_molecules(Cpp_Species &sp, Integer &num, Integer)
         void add_molecules(Cpp_Species &sp, Integer &num, Cpp_Global)
         void remove_molecules(Cpp_Species &sp, Integer &num, Cpp_Global)
+        void add_molecules(Cpp_Species &sp, Integer &num)
+        void remove_molecules(Cpp_Species &sp, Integer &num)
         # void save(string)
         # void load(string)
         void bind_to(shared_ptr[Cpp_Model])

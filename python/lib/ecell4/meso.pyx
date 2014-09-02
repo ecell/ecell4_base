@@ -54,14 +54,18 @@ cdef class MesoscopicWorld:
         else:
             return self.thisptr.get().num_molecules_exact(deref(sp.thisptr), <Integer>c)
 
-    def add_molecules(self, Species sp, Integer num, c):
-        if isinstance(c, Global):
+    def add_molecules(self, Species sp, Integer num, c = None):
+        if c is None:
+            self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+        elif isinstance(c, Global):
             self.thisptr.get().add_molecules(deref(sp.thisptr), num, deref((<Global>c).thisptr))
         else:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num, <Integer>c)
 
-    def remove_molecules(self, Species sp, Integer num, Integer c):
-        if isinstance(c, Global):
+    def remove_molecules(self, Species sp, Integer num, c = None):
+        if c is None:
+            self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
+        elif isinstance(c, Global):
             self.thisptr.get().remove_molecules(deref(sp.thisptr), num, deref((<Global>c).thisptr))
         else:
             self.thisptr.get().remove_molecules(deref(sp.thisptr), num, <Integer>c)

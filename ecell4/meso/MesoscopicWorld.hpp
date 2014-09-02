@@ -1,6 +1,7 @@
 #ifndef __ECELL4_MESO_MESOSCOPIC_WORLD_HPP
 #define __ECELL4_MESO_MESOSCOPIC_WORLD_HPP
 
+#include <numeric>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -114,6 +115,48 @@ public:
     void remove_molecules(const Species& sp, const Integer& num, const Global& g)
     {
         cs_->remove_molecules(sp, num, g);
+    }
+
+    void add_molecules(const Species& sp, const Integer& num)
+    {
+        for (Integer i(0); i < num; ++i)
+        {
+            cs_->add_molecules(sp, 1, rng_->uniform_int(0, num_subvolumes() - 1));
+        }
+    }
+
+    void remove_molecules(const Species& sp, const Integer& num)
+    {
+        std::vector<Integer> a(num_subvolumes());
+        for (coordinate_type c(0); c < num_subvolumes(); ++c)
+        {
+            a[c] = num_molecules_exact(sp, c);
+        }
+
+        Integer num_tot(std::accumulate(a.begin(), a.end(), 0));
+        if (num_tot < num)
+        {
+            std::ostringstream message;
+            message << "The number of molecules cannot be negative. [" << sp.serial() << "]";
+            throw std::invalid_argument(message.str());
+        }
+
+        for (Integer i(0); i < num; ++i)
+        {
+            const Integer rnd1(rng_->uniform_int(0, num_tot - 1));
+            Integer acct(0);
+            for (coordinate_type c(0); c < num_subvolumes(); ++c)
+            {
+                acct += a[c];
+                if (acct > rnd1)
+                {
+                    cs_->remove_molecules(sp, 1, c);
+                    a[c] -= 1;
+                    --num_tot;
+                    break;
+                }
+            }
+        }
     }
 
     const std::vector<Species>& species() const;
