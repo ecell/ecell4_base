@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_shape)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    const Sphere sphere(Position3(5e-7, 5e-7, 5e-7), 5e-8);
+    const Sphere sphere(Position3(5e-7, 5e-7, 5e-7), 5e-7*1.5);
 
     const Integer n(world.add_molecules(sp, sphere));
     BOOST_ASSERT(n > 0);

@@ -252,7 +252,7 @@ LatticeSpace::get_particle(const ParticleID& pid) const
 
 bool LatticeSpace::update_particle(const ParticleID& pid, const Particle& p)
 {
-    return update_voxel_private(pid, Voxel(p.species(), position2private_coord(p.position()), p.radius(), p.D()));
+    return update_voxel_private(pid, Voxel(p.species(), position2private(p.position()), p.radius(), p.D()));
 }
 
 /*
@@ -738,12 +738,6 @@ const Global LatticeSpace::private_coord2private_global(
     return coord2global_(private_coord, col_size_, row_size_, layer_size_);
 }
 
-const LatticeSpace::private_coordinate_type LatticeSpace::private_global2private_coord(
-        const Global private_global) const
-{
-    return global2coord_(private_global, col_size_, row_size_, layer_size_);
-}
-
 const Position3 LatticeSpace::global2position(const Global& global) const
 {
     //the center point of a voxel
@@ -767,7 +761,8 @@ const Global LatticeSpace::position2global(const Position3& pos) const
 
 const Position3 LatticeSpace::coordinate2position(coordinate_type coord) const
 {
-    return global2position(coord2global(coord));
+    return private2position(coord2private(coord));
+    //return global2position(coord2global(coord));
 }
 
 LatticeSpace::coordinate_type LatticeSpace::position2coordinate(
@@ -776,11 +771,18 @@ LatticeSpace::coordinate_type LatticeSpace::position2coordinate(
     return global2coord(position2global(pos));
 }
 
-LatticeSpace::private_coordinate_type LatticeSpace::position2private_coord(
+const Position3 LatticeSpace::private2position(
+        private_coordinate_type private_coord) const
+{
+    return global2position(private_coord2global(private_coord));
+}
+
+LatticeSpace::private_coordinate_type LatticeSpace::position2private(
         const Position3& pos) const
 {
     return global2private_coord(position2global(pos));
 }
+
 
 LatticeSpace::private_coordinate_type LatticeSpace::coord2private(
         coordinate_type coord) const
@@ -803,11 +805,11 @@ LatticeSpace::private_coordinate_type LatticeSpace::apply_boundary_(
     global.row = (global.row - 1) % row_size();
     global.layer = (global.layer - 1) % layer_size();
 
-    global.col = global.col < 0 ? global.col + col_size() + 1 : global.col + 1;
-    global.row = global.row < 0 ? global.row + row_size() + 1 : global.row + 1;
-    global.layer = global.layer < 0 ? global.layer + layer_size() + 1 : global.layer + 1;
+    global.col = global.col < 0 ? global.col + col_size() : global.col;
+    global.row = global.row < 0 ? global.row + row_size() : global.row;
+    global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
 
-    return private_global2private_coord(global);
+    return global2private_coord(global);
 }
 
 Integer LatticeSpace::num_voxels_exact(const Species& sp) const

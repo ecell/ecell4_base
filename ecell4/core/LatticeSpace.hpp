@@ -191,6 +191,9 @@ public:
     const Position3 coordinate2position(coordinate_type coord) const;
     coordinate_type position2coordinate(const Position3& pos) const;
 
+    const Position3 private2position(private_coordinate_type private_coord) const;
+    private_coordinate_type position2private(const Position3& pos) const;
+
     std::vector<private_coordinate_type> get_neighbors(
             private_coordinate_type coord) const;
     private_coordinate_type get_neighbor(
@@ -208,8 +211,6 @@ public:
 
     const Global private_coord2private_global(
             const private_coordinate_type privatre_coord) const;
-    const private_coordinate_type private_global2private_coord(
-            const Global private_global) const;
 
     const Position3 global2position(const Global& global) const;
     const Global position2global(const Position3& pos) const;
@@ -217,7 +218,6 @@ public:
     private_coordinate_type apply_boundary_(
             const private_coordinate_type& private_coord) const;
 
-    private_coordinate_type position2private_coord(const Position3& pos) const;
 
     const spmap& molecular_types() const
     {

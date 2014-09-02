@@ -164,11 +164,24 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_global_translation)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_position_translation)
 {
-    for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
+    const Position3 private_origin(space.private2position(0));
+    BOOST_ASSERT(private_origin[0] < 0);
+    BOOST_ASSERT(private_origin[1] < 0);
+    BOOST_ASSERT(private_origin[2] < 0);
+
+    const Position3 origin(space.private2position(
+                (space.col_size() + 3) * (space.row_size() + 2) + 1));
+    BOOST_ASSERT(origin[0] == 0);
+    BOOST_ASSERT(origin[1] == 0);
+    BOOST_ASSERT(origin[2] == 0);
+
+    Integer size(
+            (space.col_size()+2) * (space.layer_size() + 2) * (space.row_size() + 2));
+    for (LatticeSpace::private_coordinate_type coord(0); coord < size; ++coord)
     {
-        const Position3 pos(space.coordinate2position(coord));
-        LatticeSpace::coordinate_type created_coord(
-                space.position2coordinate(pos));
+        const Position3 pos(space.private2position(coord));
+        LatticeSpace::private_coordinate_type created_coord(
+                space.position2private(pos));
         BOOST_CHECK_EQUAL(coord, created_coord);
     }
 }
@@ -526,7 +539,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinates2)
 
     BOOST_CHECK(g1.col == g4.col && g1.row == g4.row && g1.layer == g4.layer);
     BOOST_CHECK_EQUAL(c1, space.position2coordinate(p1));
-    BOOST_CHECK_EQUAL(pc1, space.position2private_coord(p1));
+    BOOST_CHECK_EQUAL(pc1, space.position2private(p1));
 
     const Position3 p2(space.coordinate2position(c1));
     BOOST_CHECK_EQUAL(c1, space.position2coordinate(p2));
