@@ -669,7 +669,7 @@ const Particle LatticeSpace::particle_at(private_coordinate_type coord) const
     // Particle particle(sp, pos, radius, D);
     // return particle;
     return Particle(
-        ptr_mt->species(), coordinate2position(coord), ptr_mt->radius(), ptr_mt->D());
+        ptr_mt->species(), coordinate2position(private2coord(coord)), ptr_mt->radius(), ptr_mt->D());
 }
 
 bool LatticeSpace::is_in_range(coordinate_type coord) const

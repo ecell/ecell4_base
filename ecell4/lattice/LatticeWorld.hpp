@@ -287,9 +287,18 @@ public:
         return space_.coordinate2position(private2coord(coord));
     }
 
+    const Position3 global2position(const Global& global) const
+    {
+        return space_.global2position(global);
+    }
+
+    const Global position2global(const Position3& pos) const
+    {
+        return space_.position2global(pos);
+    }
+
     coordinate_type global2coord(const Global& global) const;
     const Global coord2global(coordinate_type coord) const;
-
     coordinate_type private2coord(const private_coordinate_type&
             private_coord) const;
     private_coordinate_type coord2private(const coordinate_type&

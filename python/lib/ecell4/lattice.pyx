@@ -303,6 +303,27 @@ cdef class LatticeWorld:
         return self.thisptr.get().position2coordinate(
             deref(pos.thisptr))
 
+    def private2coord(self, Integer coord):
+        return self.thisptr.get().private2coord(coord)
+
+    def coord2private(self, Integer coord):
+        return self.thisptr.get().coord2private(coord)
+
+    def global2coord(self, Global coord):
+        return self.thisptr.get().global2coord(deref(coord.thisptr))
+
+    def coord2global(self, Integer coord):
+        cdef Cpp_Global g = self.thisptr.get().coord2global(coord)
+        return Global_from_Cpp_Global(address(g))
+
+    def global2position(self, Global g):
+        cdef Cpp_Position3 pos = self.thisptr.get().global2position(deref(g.thisptr))
+        return Position3_from_Cpp_Position3(address(pos))
+
+    def position2global(self, Position3 pos):
+        cdef Cpp_Global g = self.thisptr.get().position2global(deref(pos.thisptr))
+        return Global_from_Cpp_Global(address(g))
+
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())

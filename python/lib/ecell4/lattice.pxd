@@ -76,6 +76,12 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
         Cpp_Position3 private2position(Integer)
+        Integer private2coord(Integer)
+        Integer coord2private(Integer)
+        Cpp_Global coord2global(Integer)
+        Integer global2coord(Cpp_Global)
+        Cpp_Position3 global2position(Cpp_Global)
+        Cpp_Global position2global(Cpp_Position3)
 
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld

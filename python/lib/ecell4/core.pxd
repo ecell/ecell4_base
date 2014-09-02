@@ -289,6 +289,9 @@ cdef extern from "ecell4/core/Global.hpp" namespace "ecell4":
         Cpp_Global() except +
         Cpp_Global(Integer, Integer, Integer) except +
         Cpp_Global(Cpp_Global&) except +
+        Integer col
+        Integer row
+        Integer layer
 
 cdef class Global:
     cdef Cpp_Global* thisptr
