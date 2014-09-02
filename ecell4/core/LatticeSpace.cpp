@@ -59,10 +59,7 @@ void LatticeSpace::set_lattice_properties(const bool is_periodic)
     voxels_.reserve(voxel_size);
     for (private_coordinate_type coord(0); coord < voxel_size; ++coord)
     {
-        Global global(private_coord2private_global(coord));
-        if (global.col == 0 || global.col == col_size_-1 ||
-                global.row == 0 || global.row == row_size_-1 ||
-                global.layer == 0 || global.layer == layer_size_-1)
+        if (!is_inside(coord))
         {
             if (is_periodic)
                 voxels_.push_back(periodic_);
@@ -639,7 +636,7 @@ LatticeSpace::private_coordinate_type LatticeSpace::get_neighbor(
 {
     const Integer NUM_COLROW(col_size_ * row_size_);
     const Integer NUM_ROW(row_size_);
-    const bool odd_col((private_coord % NUM_COLROW / NUM_ROW) & 1);
+    const bool odd_col(((private_coord % NUM_COLROW) / NUM_ROW) & 1);
     const bool odd_lay((private_coord / NUM_COLROW) & 1);
 
     switch(nrand)
@@ -655,17 +652,17 @@ LatticeSpace::private_coordinate_type LatticeSpace::get_neighbor(
     case 5:
         return private_coord+(odd_col^odd_lay)+NUM_ROW;
     case 6:
-        return private_coord+(2*odd_col-1)*NUM_COLROW-NUM_ROW;
+        return private_coord-(2*odd_col-1)*NUM_COLROW-NUM_ROW;
     case 7:
         return private_coord-(2*odd_col-1)*NUM_COLROW+NUM_ROW;
     case 8:
-        return private_coord+(odd_col^odd_lay)-NUM_ROW-1;
+        return private_coord+(odd_col^odd_lay)-NUM_COLROW-1;
     case 9:
-        return private_coord+(odd_col^odd_lay)-NUM_ROW;
+        return private_coord+(odd_col^odd_lay)-NUM_COLROW;
     case 10:
-        return private_coord+(odd_col^odd_lay)+NUM_ROW-1;
+        return private_coord+(odd_col^odd_lay)+NUM_COLROW-1;
     case 11:
-        return private_coord+(odd_col^odd_lay)+NUM_ROW;
+        return private_coord+(odd_col^odd_lay)+NUM_COLROW;
     }
     return private_coord-1;
 }
@@ -679,8 +676,8 @@ const Particle LatticeSpace::particle_at(private_coordinate_type coord) const
     // const Real& D = 0;
     // Particle particle(sp, pos, radius, D);
     // return particle;
-    return Particle(
-        ptr_mt->species(), coordinate2position(coord), ptr_mt->radius(), ptr_mt->D());
+    return Particle(ptr_mt->species(), coordinate2position(
+                private2coord(coord)), ptr_mt->radius(), ptr_mt->D());
 }
 
 bool LatticeSpace::is_in_range(coordinate_type coord) const
@@ -691,6 +688,14 @@ bool LatticeSpace::is_in_range(coordinate_type coord) const
 bool LatticeSpace::is_in_range_private(private_coordinate_type coord) const
 {
     return coord >= 0 && coord < row_size_ * col_size_ * layer_size_;
+}
+
+bool LatticeSpace::is_inside(private_coordinate_type coord) const
+{
+    const Global global(private_coord2private_global(coord));
+    return global.col > 0 && global.col < col_size_-1
+        && global.row > 0 && global.row < row_size_-1
+        && global.layer > 0 && global.layer < layer_size_-1;
 }
 
 /*

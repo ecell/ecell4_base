@@ -14,6 +14,8 @@
 #include <ecell4/core/LatticeSpace.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 
+#include <fstream>
+
 using namespace ecell4;
 
 struct Fixture
@@ -242,33 +244,19 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
 {
-    ParticleID pid(sidgen());
-    BOOST_CHECK(space.update_voxel_private(
-        pid, Voxel(sp, space.coord2private(0), radius, D)));
-
-    std::cout << "<<col: " << space.col_size() << ", row: "
-        << space.row_size() << ", layer: " << space.layer_size() << ">>";
-    for (int coord(0); coord < space.size(); ++coord)
+    for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
     {
-        for (int j(0); j < 12; ++j)
+        Position3 center(space.coordinate2position(coord));
+        for (int i(0); i < 12; ++i)
         {
-            const std::vector<LatticeSpace::coordinate_type> coords(
-                    space.list_coords(sp));
-            BOOST_ASSERT(coords.size() == 1);
-
-            const LatticeSpace::coordinate_type old(coords.at(0));
-            space.move(old, coord);
-
-            const std::vector<std::pair<ParticleID, Particle> > particles(
-                space.list_particles(sp));
-            BOOST_ASSERT(particles.size() == 1);
-            const Particle origin(particles.at(0).second);
-            const LatticeSpace::private_coordinate_type private_coord(
-                    space.coord2private(coord));
-            space.move_to_neighbor(private_coord, j);
-            const Particle neighbor(particles.at(0).second);
-            const Real d(length(origin.position()-neighbor.position()));
-            BOOST_ASSERT(d <= 5.1e-9);
+            LatticeSpace::private_coordinate_type neighbor(
+                    space.get_neighbor(space.coord2private(coord), i));
+            if (!space.is_inside(neighbor))
+                continue;
+            Position3 pos(space.coordinate2position(space.private2coord(neighbor)));
+            Position3 vec((pos-center)/voxel_radius/2);
+            Real r_ratio(length(pos-center)/voxel_radius/2);
+            BOOST_ASSERT(r_ratio < 1.0001);
         }
     }
 }
@@ -427,7 +415,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
         {
             const LatticeSpace::private_coordinate_type private_coord(
                     space.global2private_coord(Global(col, row, layer)));
-            const Integer nrnd((col&1)==1?6:7);
+            const Integer nrnd((col&1)==1?8:9);
             std::pair<LatticeSpace::private_coordinate_type, bool> retval(
                     space.move_to_neighbor(private_coord, nrnd));
             BOOST_CHECK(retval.second);
@@ -437,7 +425,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
     fout = H5::H5File("periodic_layer_1.h5", H5F_ACC_TRUNC);
     group = fout.createGroup("LatticeSpace");
     space.save(&group);
-    return;
     // from layer_size-1 to 0
     layer = layer_size - 1;
     for (int row(0); row < row_size; ++row)
@@ -445,7 +432,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
         {
             const LatticeSpace::private_coordinate_type private_coord(
                     space.global2private_coord(Global(col, row, layer)));
-            const Integer nrnd((col&1)==1?6:7);
+            const Integer nrnd((col&1)==1?10:11);
             std::pair<LatticeSpace::private_coordinate_type, bool> retval(
                     space.move_to_neighbor(private_coord, nrnd));
             BOOST_CHECK(retval.second);
@@ -459,15 +446,10 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinates2)
 {
     const Global g1(4, 4, 4);
-    // const Global g1(0, 0, 0);
     const LatticeSpace::coordinate_type c1(space.global2coord(g1));
     const LatticeSpace::private_coordinate_type pc1(space.global2private_coord(g1));
     const Global g2(space.coord2global(c1));
     const Global g3(space.private_coord2global(pc1));
-
-    // std::cerr << "[[" << "g1: " << g1.col << "," << g1.row << "," << g1.layer << "]]";
-    // std::cerr << "[[" << "g2: " << g2.col << "," << g2.row << "," << g2.layer << "]]";
-    // std::cerr << "[[" << "g3: " << g3.col << "," << g3.row << "," << g3.layer << "]]";
 
     BOOST_CHECK_EQUAL(space.private2coord(space.coord2private(c1)), c1);
     BOOST_CHECK_EQUAL(space.coord2private(c1), pc1);

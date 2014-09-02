@@ -223,6 +223,7 @@ public:
     {
         return spmap_;
     }
+    bool is_inside(private_coordinate_type coord) const;
 
 protected:
 
