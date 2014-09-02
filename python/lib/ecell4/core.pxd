@@ -167,7 +167,6 @@ cdef extern from "ecell4/core/ParticleSpace.hpp" namespace "ecell4":
         vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real] ] list_particles_within_radius(
                 Cpp_Position3 &pos, Real &radius, Cpp_ParticleID &ignore1, Cpp_ParticleID &ignore2)
 
-
 ## ParticleSpaceVectorImpl
 #  a python wrapper for ParticleSpaceVectorImpl
 cdef class ParticleSpaceVectorImpl:
@@ -282,6 +281,19 @@ cdef class Position3:
     cdef Cpp_Position3* thisptr
 
 cdef Position3 Position3_from_Cpp_Position3(Cpp_Position3 *p)
+
+## Cpp_Global
+#  ecell4::Global
+cdef extern from "ecell4/core/Global.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Global "ecell4::Global":
+        Cpp_Global() except +
+        Cpp_Global(Integer, Integer, Integer) except +
+        Cpp_Global(Cpp_Global&) except +
+
+cdef class Global:
+    cdef Cpp_Global* thisptr
+
+cdef Global Global_from_Cpp_Global(Cpp_Global *g)
 
 ## Cpp_ParticleID
 #  ecell4::ParticleID

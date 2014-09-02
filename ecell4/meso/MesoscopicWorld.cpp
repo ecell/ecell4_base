@@ -1,3 +1,4 @@
+#include <ecell4/core/SerialIDGenerator.hpp>
 #include "MesoscopicWorld.hpp"
 
 namespace ecell4
@@ -29,6 +30,94 @@ MoleculeInfo MesoscopicWorld::get_molecule_info(const Species& sp) const
 
     MoleculeInfo info = {D};
     return info;
+}
+
+std::vector<std::pair<ParticleID, Particle> >
+    MesoscopicWorld::list_particles() const
+{
+    SerialIDGenerator<ParticleID> pidgen;
+    const std::vector<Species>& species_list(species());
+    const Position3 lengths(subvolume_edge_lengths());
+
+    std::vector<std::pair<ParticleID, Particle> > retval;
+    for (std::vector<Species>::const_iterator i(species_list.begin());
+        i != species_list.end(); ++i)
+    {
+        MoleculeInfo info(get_molecule_info(*i));
+        for (coordinate_type j(0); j < num_subvolumes(); ++j)
+        {
+            const Integer num(num_molecules_exact(*i, j));
+            const Global g(coord2global(j));
+
+            for (Integer k(0); k < num; ++k)
+            {
+                const Position3 pos(
+                    rng_->uniform(g.col * lengths[0], (g.col + 1) * lengths[0]),
+                    rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
+                    rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
+                retval.push_back(
+                    std::make_pair(pidgen(), Particle(*i, pos, 0.0, info.D)));
+            }
+        }
+    }
+    return retval;
+}
+
+std::vector<std::pair<ParticleID, Particle> >
+    MesoscopicWorld::list_particles_exact(const Species& sp) const
+{
+    SerialIDGenerator<ParticleID> pidgen;
+    const Position3 lengths(subvolume_edge_lengths());
+
+    std::vector<std::pair<ParticleID, Particle> > retval;
+    MoleculeInfo info(get_molecule_info(sp));
+    for (coordinate_type j(0); j < num_subvolumes(); ++j)
+    {
+        const Integer num(num_molecules_exact(sp, j));
+        const Global g(coord2global(j));
+
+        for (Integer k(0); k < num; ++k)
+        {
+            const Position3 pos(
+                rng_->uniform(g.col * lengths[0], (g.col + 1) * lengths[0]),
+                rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
+                rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
+            retval.push_back(
+                std::make_pair(pidgen(), Particle(sp, pos, 0.0, info.D)));
+        }
+    }
+    return retval;
+}
+
+std::vector<std::pair<ParticleID, Particle> >
+    MesoscopicWorld::list_particles(const Species& sp) const
+{
+    SerialIDGenerator<ParticleID> pidgen;
+    const Position3 lengths(subvolume_edge_lengths());
+
+    std::vector<std::pair<ParticleID, Particle> > retval;
+    MoleculeInfo info(get_molecule_info(sp));
+    for (coordinate_type j(0); j < num_subvolumes(); ++j)
+    {
+        const Integer num(num_molecules(sp, j));
+        const Global g(coord2global(j));
+
+        for (Integer k(0); k < num; ++k)
+        {
+            const Position3 pos(
+                rng_->uniform(g.col * lengths[0], (g.col + 1) * lengths[0]),
+                rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
+                rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
+            retval.push_back(
+                std::make_pair(pidgen(), Particle(sp, pos, 0.0, info.D)));
+        }
+    }
+    return retval;
+}
+
+const Position3& MesoscopicWorld::edge_lengths() const
+{
+    return cs_->edge_lengths();
 }
 
 const Position3 MesoscopicWorld::subvolume_edge_lengths() const

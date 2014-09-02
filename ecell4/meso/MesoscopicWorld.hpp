@@ -82,6 +82,7 @@ public:
     const Real subvolume() const;
     const Real volume() const;
     const Position3 subvolume_edge_lengths() const;
+    const Position3& edge_lengths() const;
 
     coordinate_type global2coord(const Global& g) const;
     Global coord2global(const coordinate_type& c) const;
@@ -94,8 +95,33 @@ public:
     Integer num_molecules_exact(const Species& sp, const coordinate_type& c) const;
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
     void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
+
+    Integer num_molecules(const Species& sp, const Global& g) const
+    {
+        return cs_->num_molecules(sp, g);
+    }
+
+    Integer num_molecules_exact(const Species& sp, const Global& g) const
+    {
+        return cs_->num_molecules_exact(sp, g);
+    }
+
+    void add_molecules(const Species& sp, const Integer& num, const Global& g)
+    {
+        cs_->add_molecules(sp, num, g);
+    }
+
+    void remove_molecules(const Species& sp, const Integer& num, const Global& g)
+    {
+        cs_->remove_molecules(sp, num, g);
+    }
+
     const std::vector<Species>& species() const;
     std::vector<Species> list_species() const;
+
+    std::vector<std::pair<ParticleID, Particle> > list_particles() const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const;
 
 private:
 

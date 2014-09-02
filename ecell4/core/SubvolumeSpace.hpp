@@ -78,6 +78,26 @@ public:
     virtual const std::vector<Species>& species() const = 0;
     virtual std::vector<Species> list_species() const = 0;
 
+    virtual Integer num_molecules(const Species& sp, const Global& g) const
+    {
+        return num_molecules(sp, global2coord(g));
+    }
+
+    virtual Integer num_molecules_exact(const Species& sp, const Global& g) const
+    {
+        return num_molecules_exact(sp, global2coord(g));
+    }
+
+    virtual void add_molecules(const Species& sp, const Integer& num, const Global& g)
+    {
+        add_molecules(sp, num, global2coord(g));
+    }
+
+    virtual void remove_molecules(const Species& sp, const Integer& num, const Global& g)
+    {
+        remove_molecules(sp, num, global2coord(g));
+    }
+
 protected:
 
     double t_;
@@ -119,7 +139,10 @@ public:
 
     const Position3 subvolume_edge_lengths() const
     {
-        return Position3(edge_lengths_[0] / cell_sizes_[0], edge_lengths_[1] / cell_sizes_[1], edge_lengths_[2] / cell_sizes_[2]);
+        return Position3(
+            edge_lengths_[0] / cell_sizes_[0],
+            edge_lengths_[1] / cell_sizes_[1],
+            edge_lengths_[2] / cell_sizes_[2]);
     }
 
     void set_edge_lengths(const Position3& edge_lengths)
@@ -156,10 +179,6 @@ public:
             modulo(g.col, cell_sizes_[0])
                 + cell_sizes_[0] * (modulo(g.row, cell_sizes_[1])
                     + cell_sizes_[1] * modulo(g.layer, cell_sizes_[2])));
-        if (coord < 0 || coord >= num_subvolumes())
-        {
-            std::cout << "global2coord(" << g.col << ", " << g.row << ", " << g.layer << ") = " << coord << std::endl;
-        }
         return coord;
     }
 
@@ -175,6 +194,7 @@ public:
 
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;
+
     Integer num_molecules(const Species& sp, const coordinate_type& c) const;
     Integer num_molecules_exact(const Species& sp, const coordinate_type& c) const;
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);

@@ -21,13 +21,20 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         Integer num_molecules_exact(Cpp_Species &)
         Integer num_molecules(Cpp_Species &, Integer)
         Integer num_molecules_exact(Cpp_Species &, Integer)
+        Integer num_molecules(Cpp_Species &, Cpp_Global)
+        Integer num_molecules_exact(Cpp_Species &, Cpp_Global)
         vector[Cpp_Species] list_species()
         void add_molecules(Cpp_Species &sp, Integer &num, Integer)
         void remove_molecules(Cpp_Species &sp, Integer &num, Integer)
+        void add_molecules(Cpp_Species &sp, Integer &num, Cpp_Global)
+        void remove_molecules(Cpp_Species &sp, Integer &num, Cpp_Global)
         # void save(string)
         # void load(string)
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles(Cpp_Species& sp)
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles_exact(Cpp_Species& sp)
 
 ## MesoscopicWorld
 #  a python wrapper for Cpp_MesoscopicWorld

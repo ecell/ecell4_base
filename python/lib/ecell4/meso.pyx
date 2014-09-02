@@ -41,20 +41,30 @@ cdef class MesoscopicWorld:
     def num_molecules(self, Species sp, c = None):
         if c is None:
             return self.thisptr.get().num_molecules(deref(sp.thisptr))
+        elif isinstance(c, Global):
+            return self.thisptr.get().num_molecules(deref(sp.thisptr), deref((<Global>c).thisptr))
         else:
             return self.thisptr.get().num_molecules(deref(sp.thisptr), <Integer>c)
 
     def num_molecules_exact(self, Species sp, c = None):
         if c is None:
             return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
+        elif isinstance(c, Global):
+            return self.thisptr.get().num_molecules_exact(deref(sp.thisptr), deref((<Global>c).thisptr))
         else:
             return self.thisptr.get().num_molecules_exact(deref(sp.thisptr), <Integer>c)
 
-    def add_molecules(self, Species sp, Integer num, Integer c):
-        self.thisptr.get().add_molecules(deref(sp.thisptr), num, c)
+    def add_molecules(self, Species sp, Integer num, c):
+        if isinstance(c, Global):
+            self.thisptr.get().add_molecules(deref(sp.thisptr), num, deref((<Global>c).thisptr))
+        else:
+            self.thisptr.get().add_molecules(deref(sp.thisptr), num, <Integer>c)
 
     def remove_molecules(self, Species sp, Integer num, Integer c):
-        self.thisptr.get().remove_molecules(deref(sp.thisptr), num, c)
+        if isinstance(c, Global):
+            self.thisptr.get().remove_molecules(deref(sp.thisptr), num, deref((<Global>c).thisptr))
+        else:
+            self.thisptr.get().remove_molecules(deref(sp.thisptr), num, <Integer>c)
 
     def list_species(self):
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
@@ -65,6 +75,41 @@ cdef class MesoscopicWorld:
             retval.append(
                  Species_from_Cpp_Species(
                      <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    def list_particles(self, Species sp = None):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        if sp is None:
+            particles = self.thisptr.get().list_particles()
+        else:
+            particles = self.thisptr.get().list_particles(deref(sp.thisptr))
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def list_particles_exact(self, Species sp):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.get().list_particles_exact(deref(sp.thisptr))
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
             inc(it)
         return retval
 
@@ -84,7 +129,6 @@ cdef class MesoscopicWorld:
         else:
             raise ValueError, ("a wrong argument was given [%s]." % (type(m))
                 + " the argument must be NetworkModel or NetfreeModel")
-
 
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
