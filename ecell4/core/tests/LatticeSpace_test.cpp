@@ -14,8 +14,6 @@
 #include <ecell4/core/LatticeSpace.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 
-#include <fstream>
-
 using namespace ecell4;
 
 struct Fixture
@@ -74,7 +72,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 
     ParticleID a_id(sidgen());
     Species a(std::string("ANOTHER"));
-    Position3 pos1(1e-8, 2e-8, 0);
+    Position3 pos1(1e-8, 2e-8, 1e-9);
     Real r1(1.1);
     Real d1(4.3);
     Particle another(a, pos1, r1, d1);
@@ -94,7 +92,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 
     ParticleID a_id(sidgen());
     Species a(std::string("ANOTHER"));
-    Position3 pos1(1e-8, 2e-8, 0);
+    Position3 pos1(1e-8, 2e-8, 1e-9);
     Real r1(1.1);
     Real d1(4.3);
     Particle another(a, pos1, r1, d1);
@@ -123,10 +121,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 
 /*
  * for Simulator
- */
-
-/*
- *
  */
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate)
@@ -169,18 +163,29 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_position_translation)
     BOOST_ASSERT(private_origin[1] < 0);
     BOOST_ASSERT(private_origin[2] < 0);
 
-    const Position3 origin(space.private2position(
-                (space.col_size() + 3) * (space.row_size() + 2) + 1));
-    BOOST_ASSERT(origin[0] == 0);
-    BOOST_ASSERT(origin[1] == 0);
-    BOOST_ASSERT(origin[2] == 0);
+    const LatticeSpace::private_coordinate_type origin(
+                (space.col_size() + 3) * (space.row_size() + 2) + 1);
+    const Position3 origin_p(space.private2position(origin));
+    BOOST_ASSERT(origin_p[0] == 0);
+    BOOST_ASSERT(origin_p[1] == 0);
+    BOOST_ASSERT(origin_p[2] == 0);
+
+    for (Integer i(0); i < 12; ++i)
+    {
+        const Position3 neighbor(
+                space.private2position(space.get_neighbor(origin, i)));
+        const LatticeSpace::private_coordinate_type coord(
+                space.position2private(origin_p * 0.7 + neighbor * 0.3));
+        BOOST_CHECK_EQUAL(origin, coord);
+    }
 
     Integer size(
             (space.col_size()+2) * (space.layer_size() + 2) * (space.row_size() + 2));
     for (LatticeSpace::private_coordinate_type coord(0); coord < size; ++coord)
     {
         const Position3 pos(space.private2position(coord));
-        LatticeSpace::private_coordinate_type created_coord(
+        const Global global(space.position2global(pos));
+        const LatticeSpace::private_coordinate_type created_coord(
                 space.position2private(pos));
         BOOST_CHECK_EQUAL(coord, created_coord);
     }

@@ -2,6 +2,7 @@
 #include "MolecularType.hpp"
 #include "VacantType.hpp"
 #include "LatticeSpace.hpp"
+#include <cmath>
 
 #ifdef WIN32_MSC
 #include <boost/numeric/interval/detail/msvc_rounding_control.hpp>
@@ -752,9 +753,9 @@ const Position3 LatticeSpace::global2position(const Global& global) const
 const Global LatticeSpace::position2global(const Position3& pos) const
 {
     Global global;
-    global.col = (Integer)(pos[0] / HCP_X);
-    global.layer = (Integer)((pos[1] - (global.col % 2) * HCP_L) / HCP_Y);
-    global.row = (Integer)((pos[2] / voxel_radius_
+    global.col = round(pos[0] / HCP_X);
+    global.layer = round((pos[1] - (global.col % 2) * HCP_L) / HCP_Y);
+    global.row = round((pos[2] / voxel_radius_
                 - ((global.layer + global.col) % 2)) / 2);
     return global;
 }
@@ -901,7 +902,7 @@ bool LatticeSpace::update_voxel_private(const ParticleID& pid, const Voxel& v)
         {
             throw IllegalState(
                 "MolecularTypaBase [" + dest_mt->species().serial()
-                + "] doesn't contain a coordinate.");
+                + "] doesn't contain any coordinate.");
         }
         else if ((*dest_itr).second != pid)
         {
