@@ -202,6 +202,8 @@ public:
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
     Integer add_molecules(const Species& sp, const Shape& shape);
+    Integer add_neighbors(const Species& sp,
+            const private_coordinate_type center); // TODO
     void remove_molecules(const Species& sp, const Integer& num);
     // void remove_molecules_exact(const Species& sp, const Integer& num);
     bool remove_voxel_private(const private_coordinate_type coord);

@@ -2,7 +2,6 @@
 
 #include "LatticeWorld.hpp"
 
-
 namespace ecell4
 {
 
@@ -209,22 +208,18 @@ Integer LatticeWorld::add_molecules(const Species& sp, const Shape& shape)
 {
     Integer count(0);
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
-    for (coordinate_type coord(0); coord < size(); coord++)
+    for (coordinate_type coord(0); coord < size(); ++coord)
     {
         std::vector<LatticeWorld::private_coordinate_type> neighbors(
                 space_.get_neighbors(coord2private(coord)));
-        std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
-                neighbors.begin());
-        bool flg(shape.is_inside(coordinate2position(coord)));
+        const bool flg(shape.is_inside(coordinate2position(coord)));
         for (std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
                     neighbors.begin()); itr != neighbors.end(); itr++)
         {
-            const bool current_flg(shape.is_inside(coordinate2position(
-                        private2coord(*itr))));
-            if (flg != current_flg)
+            if (flg != shape.is_inside(coordinate2position(private2coord(*itr))))
             {
-                if (new_voxel_private(
-                            Voxel(sp, *itr, info.radius, info.D)).second)
+                if (new_voxel_private(Voxel(sp, coord2private(coord),
+                                info.radius, info.D)).second)
                     ++count;
                 break;
             }
@@ -232,6 +227,25 @@ Integer LatticeWorld::add_molecules(const Species& sp, const Shape& shape)
     }
     return count;
 }
+
+// TODO
+Integer LatticeWorld::add_neighbors(const Species& sp,
+        const LatticeWorld::private_coordinate_type center)
+{
+    Integer count(0);
+    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    std::vector<LatticeWorld::private_coordinate_type> neighbors(
+            space_.get_neighbors(center));
+    for (std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
+                neighbors.begin()); itr != neighbors.end(); itr++)
+    {
+        if (new_voxel_private(Voxel(sp, *itr, info.radius, info.D)).second)
+            ++count;
+        else
+            throw "Error in add_neighbors()";
+    }
+}
+// TODO
 
 void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
 {
