@@ -332,6 +332,7 @@ LatticeSpace::list_voxels_exact(const Species& sp) const
     }
     return retval;
 }
+
 std::vector<std::pair<ParticleID, Voxel> >
 LatticeSpace::list_voxels(const Species& sp) const
 {
@@ -759,9 +760,8 @@ const Global LatticeSpace::position2global(const Position3& pos) const
     Global global;
     global.col = (Integer)(pos[0] / HCP_X);
     global.layer = (Integer)((pos[1] - (global.col % 2) * HCP_L) / HCP_Y);
-    global.row = (Integer)((pos[2] - (((global.layer + global.col) % 2) *
-                    voxel_radius_)) /
-            voxel_radius_ / 2);
+    global.row = (Integer)((pos[2] / voxel_radius_
+                - ((global.layer + global.col) % 2)) / 2);
     return global;
 }
 
@@ -770,27 +770,32 @@ const Position3 LatticeSpace::coordinate2position(coordinate_type coord) const
     return global2position(coord2global(coord));
 }
 
-LatticeSpace::coordinate_type LatticeSpace::position2coordinate(const Position3& pos) const
+LatticeSpace::coordinate_type LatticeSpace::position2coordinate(
+        const Position3& pos) const
 {
     return global2coord(position2global(pos));
 }
 
-LatticeSpace::private_coordinate_type LatticeSpace::position2private_coord(const Position3& pos) const
+LatticeSpace::private_coordinate_type LatticeSpace::position2private_coord(
+        const Position3& pos) const
 {
     return global2private_coord(position2global(pos));
 }
 
-LatticeSpace::private_coordinate_type LatticeSpace::coord2private(coordinate_type coord) const
+LatticeSpace::private_coordinate_type LatticeSpace::coord2private(
+        coordinate_type coord) const
 {
     return global2private_coord(coord2global(coord));
 }
 
-LatticeSpace::coordinate_type LatticeSpace::private2coord(private_coordinate_type private_coord) const
+LatticeSpace::coordinate_type LatticeSpace::private2coord(
+        private_coordinate_type private_coord) const
 {
     return global2coord(private_coord2global(private_coord));
 }
 
-LatticeSpace::private_coordinate_type LatticeSpace::apply_boundary_(const private_coordinate_type& private_coord) const
+LatticeSpace::private_coordinate_type LatticeSpace::apply_boundary_(
+        const private_coordinate_type& private_coord) const
 {
     Global global(private_coord2private_global(private_coord));
 
