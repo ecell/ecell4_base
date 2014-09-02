@@ -92,7 +92,6 @@ def generate_html(model, model_id):
 
 class ColorScale:
     """Color scale for species.
-    
     """
 
     COLORS = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#e31a1c", "#8dd3c7", "#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"]
@@ -113,7 +112,7 @@ class ColorScale:
         for color in self.config.values():
             if color in self.buffer:
                 self.buffer.remove(color)
-    
+
     def get_color(self, name):
         """Get color unique to the recieved name
 
