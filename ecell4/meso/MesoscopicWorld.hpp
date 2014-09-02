@@ -30,6 +30,14 @@ public:
 
 public:
 
+    MesoscopicWorld(const Position3& edge_lengths)
+        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, 1, 1, 1))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+    }
+
     MesoscopicWorld(const Position3& edge_lengths,
         const Integer& cx, const Integer& cy, const Integer& cz,
         boost::shared_ptr<RandomNumberGenerator> rng)
@@ -63,6 +71,25 @@ public:
             }
         }
         this->model_ = model;
+    }
+
+    void save(const std::string& filename) const
+    {
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
+        rng_->save(fout.get());
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(fout->createGroup("SubvolumeSpace")));
+        cs_->save(group.get());
+    }
+
+    void load(const std::string& filename)
+    {
+        boost::scoped_ptr<H5::H5File>
+            fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
+        rng_->load(*fin);
+        const H5::Group group(fin->openGroup("SubvolumeSpace"));
+        cs_->load(group);
     }
 
     boost::shared_ptr<Model> lock_model() const

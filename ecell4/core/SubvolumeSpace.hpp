@@ -7,6 +7,7 @@
 #include "Species.hpp"
 #include "Space.hpp"
 #include "Global.hpp"
+#include "SubvolumeSpaceHDF5Writer.hpp"
 
 namespace ecell4
 {
@@ -66,6 +67,7 @@ public:
         return static_cast<Real>(num_molecules_exact(sp));
     }
 
+    virtual const Global matrix_sizes() const = 0;
     virtual const Position3 subvolume_edge_lengths() const = 0;
     virtual const Integer num_subvolumes() const = 0;
     virtual const Real subvolume() const = 0;
@@ -97,6 +99,10 @@ public:
     {
         remove_molecules(sp, num, global2coord(g));
     }
+
+    virtual void cleanup(const Position3& edge_lengths, const Global& matrix_sizes) = 0;
+    virtual void save(H5::Group* root) const = 0;
+    virtual void load(const H5::Group& root) = 0;
 
 protected:
 
@@ -135,6 +141,11 @@ public:
     const Position3& edge_lengths() const
     {
         return edge_lengths_;
+    }
+
+    const Global matrix_sizes() const
+    {
+        return Global(cell_sizes_[0], cell_sizes_[1], cell_sizes_[2]);
     }
 
     const Position3 subvolume_edge_lengths() const
@@ -214,6 +225,26 @@ public:
         // }
         // return retval;
         return species_;
+    }
+
+    void save(H5::Group* root) const
+    {
+        save_subvolume_space(*this, root);
+    }
+
+    void load(const H5::Group& root)
+    {
+        load_subvolume_space(root, this);
+    }
+
+    void cleanup(const Position3& edge_lengths, const Global& matrix_sizes)
+    {
+        set_edge_lengths(edge_lengths);
+        cell_sizes_[0] = matrix_sizes.col;
+        cell_sizes_[1] = matrix_sizes.row;
+        cell_sizes_[2] = matrix_sizes.layer;
+        matrix_.clear();
+        species_.clear();
     }
 
 protected:

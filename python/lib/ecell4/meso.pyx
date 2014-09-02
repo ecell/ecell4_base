@@ -6,15 +6,18 @@ from cython.operator cimport dereference as deref, preincrement as inc
 #  a python wrapper for Cpp_MesoscopicWorld
 cdef class MesoscopicWorld:
 
-    def __cinit__(self, Position3 edge_lengths, Integer cx, Integer cy, Integer cz, GSLRandomNumberGenerator rng = None):
-        if rng is None:
+    def __cinit__(self, Position3 edge_lengths, cx = None, cy = None, cz = None, GSLRandomNumberGenerator rng = None):
+        if cx is None or cy is None or cz is None:
             self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
-                new Cpp_MesoscopicWorld(deref(edge_lengths.thisptr), cx, cy, cz))
+                new Cpp_MesoscopicWorld(deref(edge_lengths.thisptr)))
+        elif rng is None:
+            self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
+                new Cpp_MesoscopicWorld(deref(edge_lengths.thisptr), <Integer>cx, <Integer>cy, <Integer>cz))
         else:
             # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
             self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                 new Cpp_MesoscopicWorld(
-                    deref(edge_lengths.thisptr), cx, cy, cz, deref(rng.thisptr)))
+                    deref(edge_lengths.thisptr), <Integer>cx, <Integer>cy, <Integer>cz, deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,
@@ -117,11 +120,11 @@ cdef class MesoscopicWorld:
             inc(it)
         return retval
 
-    # def save(self, string filename):
-    #     self.thisptr.get().save(filename)
+    def save(self, string filename):
+        self.thisptr.get().save(filename)
 
-    # def load(self, string filename):
-    #     self.thisptr.get().load(filename)
+    def load(self, string filename):
+        self.thisptr.get().load(filename)
 
     def bind_to(self, m):
         if isinstance(m, NetworkModel):

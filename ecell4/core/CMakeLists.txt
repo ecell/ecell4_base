@@ -15,7 +15,7 @@ set(HPP_FILES
     MolecularType.hpp Particle.hpp Position3.hpp ReactionRule.hpp Space.hpp
     VacantType.hpp extras.hpp linear_algebra.hpp CompartmentSpaceHDF5Writer.hpp
     EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
-    SubvolumeSpace.hpp
+    SubvolumeSpace.hpp SubvolumeSpaceHDF5Writer.hpp
     MolecularTypeBase.hpp ParticleSpace.hpp RandomNumberGenerator.hpp
     SerialIDGenerator.hpp Species.hpp Voxel.hpp functions.hpp swap.hpp ModelWrapper.hpp
     Context.hpp Global.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp

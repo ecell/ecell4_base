@@ -8,6 +8,7 @@ from core cimport *
 #  ecell4::meso::MesoscopicWorld
 cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
     cdef cppclass Cpp_MesoscopicWorld "ecell4::meso::MesoscopicWorld":
+        Cpp_MesoscopicWorld(Cpp_Position3&) except +
         Cpp_MesoscopicWorld(Cpp_Position3&, Integer, Integer, Integer) except +
         Cpp_MesoscopicWorld(Cpp_Position3&, Integer, Integer, Integer, shared_ptr[Cpp_RandomNumberGenerator]) except +
         void set_t(Real)
@@ -30,8 +31,8 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         void remove_molecules(Cpp_Species &sp, Integer &num, Cpp_Global)
         void add_molecules(Cpp_Species &sp, Integer &num)
         void remove_molecules(Cpp_Species &sp, Integer &num)
-        # void save(string)
-        # void load(string)
+        void save(string)
+        void load(string)
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
