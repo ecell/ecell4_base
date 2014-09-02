@@ -317,7 +317,7 @@ protected:
 
         const Real propensity(const coordinate_type& c) const
         {
-            return (num_tot1_[c] * num_tot2_[c] - num_tot12_[c]) * rr_.k() / world().volume();
+            return (num_tot1_[c] * num_tot2_[c] - num_tot12_[c]) * rr_.k() / world().subvolume();
         }
 
     protected:
