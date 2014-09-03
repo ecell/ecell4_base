@@ -6,6 +6,7 @@ ecell4.util.viz: Visualizer of particles based on D3.js, THREE.js and Elegans.
 import os
 import uuid
 import json
+import base64
 
 def init_ipynb():
     """Load all depending JavaScript libraries to IPython notebook.
@@ -45,7 +46,8 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
 
     plots = []
     for name in species:
-        particles = [{'pos':p.position(), 'r':p.radius()} for pid, p in world.list_particles() if p.species().serial() is name]
+        particles = [{'pos':p.position(), 'r':p.radius()}
+            for pid, p in world.list_particles() if p.species().serial() is name]
         data = {
             'x': [p['pos'][0] for p in particles],
             'y': [p['pos'][1] for p in particles],
@@ -66,16 +68,20 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
     #     'plots':plots,
     #     'options':{'width': width, 'height': height}
     # };
+
     edge_lengths = world.edge_lengths()
     max_length = max(tuple(edge_lengths))
+    rangex = [(edge_lengths[0] - max_length) * 0.5, (edge_lengths[0] + max_length) * 0.5]
+    rangey = [(edge_lengths[1] - max_length) * 0.5, (edge_lengths[1] + max_length) * 0.5]
+    rangez = [(edge_lengths[2] - max_length) * 0.5, (edge_lengths[2] + max_length) * 0.5]
     model = {
-        'plots':plots,
-        'options':{'width': width, 'height': height, 'range': {'x': [(edge_lengths[0] - max_length) * 0.5, (edge_lengths[0] + max_length) * 0.5], 'y': [(edge_lengths[1] - max_length) * 0.5, (edge_lengths[1] + max_length) * 0.5], 'z': [(edge_lengths[2] - max_length) * 0.5, (edge_lengths[2] + max_length) * 0.5]}, 'autorange': False}
+        'plots': plots,
+        'options': {'width': width, 'height': height,
+            'range': {'x': rangex, 'y': rangey, 'z': rangez}, 'autorange': False}
     };
 
     model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
     display(HTML(generate_html(model, model_id)))
-
     return color_scale.get_config()
 
 def generate_html(model, model_id):
@@ -95,12 +101,45 @@ def generate_html(model, model_id):
     html = template.render(model=json.dumps(model), model_id = model_id)
     return html
 
+def logo():
+    from IPython.core.display import display, HTML, Javascript
+
+    template = """<script type="text/javascript">
+    var logo, x, y, id;
+    var running = false;
+
+    var base64a = ["%s", "%s", "%s", "%s", "%s",
+        "%s", "%s", "%s", "%s", "%s",
+        "%s", "%s", "%s", "%s", "%s"];
+    var maxcnt = base64a.length;
+
+    function move() {
+        x += 10; y = (y + 1) %% maxcnt;
+        logo = document.getElementById('ecelllogo');
+        logo.src = "data:image/png;base64," + base64a[y + 1];
+        if (!running && y == maxcnt - 1) {
+            clearInterval(id);
+        }
+    }
+    </script>
+    <p><img id="ecelllogo" style="position:relative; left:0px;" src="data:image/png;base64," alt="ecelllogo" onClick="running=false;" /></p>
+    """
+
+    filenames = [os.path.abspath(os.path.dirname(__file__))
+        + '/templates/ecelllogo/logo%02d.png' % (i + 1) for i in range(15)]
+    base64s = tuple([base64.b64encode(open(filename, 'rt').read())
+        for filename in filenames])
+    h = HTML(template % base64s)
+    j = Javascript("x = 0; y = 0; running = true; id = setInterval('move();', 100);")
+    display(h, j)
 
 class ColorScale:
     """Color scale for species.
     """
 
-    COLORS = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#e31a1c", "#8dd3c7", "#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"]
+    COLORS = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#e31a1c", "#8dd3c7", "#ffffb3",
+        "#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9",
+        "#bc80bd","#ccebc5","#ffed6f"]
 
     def __init__(self, config={}):
         """Initialize a color scale
@@ -108,7 +147,7 @@ class ColorScale:
         Parameters
         ----------
         config : dict, default {}
-            Dict for configure default colors. Its values are colors unique to each key. 
+            Dict for configure default colors. Its values are colors unique to each key.
             Colors included in config will never be used.
         """
 

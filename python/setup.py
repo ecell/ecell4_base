@@ -110,7 +110,7 @@ else:
 setup(
     name = "ecell4",
     package_dir = {"": "lib"},
-    package_data = {"ecell4.util": ["templates/*"]},
+    package_data = {"ecell4.util": ["templates/init_ipynb.js", "templates/particles.tmpl", "templates/ecelllogo/*.png"]},
     packages = ["ecell4",
         "ecell4.util", "ecell4.util.legacy"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
