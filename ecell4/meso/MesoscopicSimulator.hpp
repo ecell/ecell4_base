@@ -26,18 +26,147 @@ public:
 
 protected:
 
-    class DiffusionProxy
+    class ReactionRuleProxyBase
     {
     public:
 
+        ReactionRuleProxyBase()
+            : sim_(), rr_()
+        {
+            ;
+        }
+
+        ReactionRuleProxyBase(MesoscopicSimulator* sim, const ReactionRule& rr)
+            : sim_(sim), rr_(rr)
+        {
+            ;
+        }
+
+        virtual ~ReactionRuleProxyBase()
+        {
+            ;
+        }
+
+        inline const Integer get_coef(const Species& pttrn, const Species& sp) const
+        {
+            return sim_->model()->apply(pttrn, sp);
+        }
+
+        inline const std::vector<ReactionRule> generate(
+            const ReactionRule::reactant_container_type& reactants) const
+        {
+            return sim_->model()->apply(rr_, reactants);
+        }
+
+        virtual void initialize() = 0;
+        virtual void inc(const Species& sp, const coordinate_type& c, const Integer val = +1) = 0;
+        virtual const Real propensity(const coordinate_type& c) const = 0;
+
+        inline void dec(const Species& sp, const coordinate_type& c)
+        {
+            inc(sp, c, -1);
+        }
+
+        virtual std::pair<ReactionRule, coordinate_type> draw(const coordinate_type& c) = 0;
+
+    protected:
+
+        inline const boost::shared_ptr<RandomNumberGenerator>& rng() const
+        {
+            return sim_->world()->rng();
+        }
+
+        inline const MesoscopicWorld& world() const
+        {
+            return (*sim_->world());
+        }
+
+    protected:
+
+        MesoscopicSimulator* sim_;
+        ReactionRule rr_;
+    };
+
+    class ReactionRuleProxy
+        : public ReactionRuleProxyBase
+    {
+    public:
+
+        typedef ReactionRuleProxyBase base_type;
+
+        ReactionRuleProxy()
+            : base_type()
+        {
+            ;
+        }
+
+        ReactionRuleProxy(MesoscopicSimulator* sim, const ReactionRule& rr)
+            : base_type(sim, rr)
+        {
+            ;
+        }
+
+        virtual ~ReactionRuleProxy()
+        {
+            ;
+        }
+
+        std::pair<ReactionRule, coordinate_type> draw(const coordinate_type& c)
+        {
+            const std::pair<ReactionRule::reactant_container_type, Integer>
+                retval(__draw(c));
+            if (retval.second == 0)
+            {
+                return std::make_pair(ReactionRule(), c);
+            }
+
+            const std::vector<ReactionRule> reactions(generate(retval.first));
+
+            assert(retval.second > 0);
+            assert(retval.second >= reactions.size());
+
+            if (reactions.size() == 0)
+            {
+                return std::make_pair(ReactionRule(), c);
+            }
+            else if (retval.second == 1)
+            {
+                // assert(possibles.size() == 1);
+                return std::make_pair(reactions[0], c);
+            }
+            else
+            {
+                const Integer rnd2(rng()->uniform_int(0, retval.second - 1));
+                if (rnd2 >= reactions.size())
+                {
+                    return std::make_pair(ReactionRule(), c);
+                }
+                return std::make_pair(reactions[rnd2], c);
+            }
+        }
+
+    protected:
+
+        virtual std::pair<ReactionRule::reactant_container_type, Integer>
+            __draw(const coordinate_type& c) = 0;
+    };
+
+    class DiffusionProxy
+        : public ReactionRuleProxyBase
+    {
+    public:
+
+        typedef ReactionRuleProxyBase base_type;
+
         DiffusionProxy()
-            : sim_(), sp_(), num_tot_()
+            : base_type(), num_tot_()
         {
             ;
         }
 
         DiffusionProxy(MesoscopicSimulator* sim, const Species& sp)
-            : sim_(sim), sp_(sp), num_tot_(sim->world()->num_subvolumes())
+            : base_type(sim, create_unimolecular_reaction_rule(sp, sp, 0.0)),
+            num_tot_(sim->world()->num_subvolumes())
         {
             ;
         }
@@ -47,13 +176,7 @@ protected:
             ;
         }
 
-        inline const Integer get_coef(const Species& pttrn, const Species& sp) const
-        {
-            // return sim_->model()->apply(pttrn, sp);
-            return (pttrn == sp ? 1 : 0);
-        }
-
-        std::pair<Species, coordinate_type> draw(const coordinate_type& c)
+        std::pair<ReactionRule, coordinate_type> draw(const coordinate_type& c)
         {
             const Position3 lengths(sim_->world()->subvolume_edge_lengths());
             const Real px(1.0 / (lengths[0] * lengths[0])),
@@ -87,12 +210,13 @@ protected:
             {
                 tgt = sim_->world()->get_neighbor(c, 5);
             }
-            return std::make_pair(sp_, tgt);
+            return std::make_pair(rr_, tgt);
         }
 
         void initialize()
         {
-            const Real D(sim_->world()->get_molecule_info(sp_).D);
+            const Species sp(rr_.reactants()[0]);
+            const Real D(sim_->world()->get_molecule_info(sp).D);
             const Position3 lengths(sim_->world()->subvolume_edge_lengths());
             const Real px(1.0 / (lengths[0] * lengths[0])),
                 py(1.0 / (lengths[1] * lengths[1])),
@@ -104,7 +228,7 @@ protected:
             for (std::vector<Species>::const_iterator i(species.begin());
                 i != species.end(); ++i)
             {
-                const Integer coef(get_coef(sp_, *i));
+                const Integer coef(get_coef(sp, *i));
                 if (coef > 0)
                 {
                     for (Integer j(0); j < sim_->world()->num_subvolumes(); ++j)
@@ -122,120 +246,18 @@ protected:
 
         void inc(const Species& sp, const coordinate_type& c, const Integer val = +1)
         {
-            const Integer coef(get_coef(sp_, sp));
+            const Species pttrn(rr_.reactants()[0]);
+            const Integer coef(get_coef(pttrn, sp));
             if (coef > 0)
             {
                 num_tot_[c] += coef * val;
             }
         }
 
-        inline void dec(const Species& sp, const coordinate_type& c)
-        {
-            inc(sp, c, -1);
-        }
-
     protected:
 
-        MesoscopicSimulator* sim_;
-        Species sp_;
         std::vector<Real> num_tot_;
         Real k_;
-    };
-
-    class ReactionRuleProxy
-    {
-    public:
-
-        ReactionRuleProxy()
-            : sim_(), rr_()
-        {
-            ;
-        }
-
-        ReactionRuleProxy(MesoscopicSimulator* sim, const ReactionRule& rr)
-            : sim_(sim), rr_(rr)
-        {
-            ;
-        }
-
-        virtual ~ReactionRuleProxy()
-        {
-            ;
-        }
-
-        inline const Integer get_coef(const Species& pttrn, const Species& sp) const
-        {
-            return sim_->model()->apply(pttrn, sp);
-        }
-
-        inline const std::vector<ReactionRule> generate(
-            const ReactionRule::reactant_container_type& reactants) const
-        {
-            return sim_->model()->apply(rr_, reactants);
-        }
-
-        virtual void initialize() = 0;
-        virtual void inc(const Species& sp, const coordinate_type& c, const Integer val = +1) = 0;
-        virtual const Real propensity(const coordinate_type& c) const = 0;
-
-        inline void dec(const Species& sp, const coordinate_type& c)
-        {
-            inc(sp, c, -1);
-        }
-
-        ReactionRule draw(const coordinate_type& c)
-        {
-            const std::pair<ReactionRule::reactant_container_type, Integer>
-                retval(__draw(c));
-            if (retval.second == 0)
-            {
-                return ReactionRule();
-            }
-
-            const std::vector<ReactionRule> reactions(generate(retval.first));
-
-            assert(retval.second > 0);
-            assert(retval.second >= reactions.size());
-
-            if (reactions.size() == 0)
-            {
-                return ReactionRule();
-            }
-            else if (retval.second == 1)
-            {
-                // assert(possibles.size() == 1);
-                return reactions[0];
-            }
-            else
-            {
-                const Integer rnd2(rng()->uniform_int(0, retval.second - 1));
-                if (rnd2 >= reactions.size())
-                {
-                    return ReactionRule();
-                }
-                return reactions[rnd2];
-            }
-        }
-
-    protected:
-
-        inline const boost::shared_ptr<RandomNumberGenerator>& rng() const
-        {
-            return sim_->world()->rng();
-        }
-
-        inline const MesoscopicWorld& world() const
-        {
-            return (*sim_->world());
-        }
-
-        virtual std::pair<ReactionRule::reactant_container_type, Integer>
-            __draw(const coordinate_type& c) = 0;
-
-    protected:
-
-        MesoscopicSimulator* sim_;
-        ReactionRule rr_;
     };
 
     class FirstOrderReactionRuleProxy
@@ -459,47 +481,38 @@ protected:
 
         virtual void fire()
         {
-            if (dt1_ < dt2_)
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+            const ReactionRule::product_container_type& products(rr_.products());
+
+            if (!(reactants.size() == 1 && products.size() == 1
+                && reactants[0] == products[0] && coord_ == tgt_))
             {
-                fire1();
+                for (ReactionRule::reactant_container_type::const_iterator
+                    it(rr_.reactants().begin());
+                    it != rr_.reactants().end(); ++it)
+                {
+                    sim_->decrement_molecules(*it, coord_);
+                }
+
+                for (ReactionRule::product_container_type::const_iterator
+                    it(rr_.products().begin());
+                    it != rr_.products().end(); ++it)
+                {
+                    sim_->increment_molecules(*it, tgt_);
+                }
+            }
+
+            if (coord_ != tgt_)
+            {
+                sim_->interrupt(tgt_);
+                sim_->reset_last_reactions();
             }
             else
             {
-                fire2();
+                sim_->set_last_reaction(rr_);
             }
 
             update();
-        }
-
-        void fire1()
-        {
-            for (ReactionRule::reactant_container_type::const_iterator
-                it(rr_.reactants().begin());
-                it != rr_.reactants().end(); ++it)
-            {
-                sim_->decrement_molecules(*it, coord_);
-            }
-
-            for (ReactionRule::product_container_type::const_iterator
-                it(rr_.products().begin());
-                it != rr_.products().end(); ++it)
-            {
-                sim_->increment_molecules(*it, coord_);
-            }
-
-            sim_->set_last_reaction(rr_);
-        }
-
-        void fire2()
-        {
-            if (coord_ != tgt_)
-            {
-                sim_->decrement_molecules(sp_, coord_);
-                sim_->increment_molecules(sp_, tgt_);
-                sim_->interrupt(tgt_);
-            }
-
-            sim_->reset_last_reactions();
         }
 
         virtual void interrupt(Real const& t)
@@ -515,37 +528,29 @@ protected:
 
         void update()
         {
-            dt1_ = 0.0;
+            dt_ = 0.0;
             while (true)
             {
-                const std::pair<Real, ReactionRule>
+                const std::pair<Real, std::pair<ReactionRule, coordinate_type> >
                     retval(sim_->draw_next_reaction(coord_));
-                dt1_ += retval.first;
-                if (retval.first == inf || retval.second.k() > 0.0)
+                dt_ += retval.first;
+                if (retval.first == inf || retval.second.first.k() > 0.0
+                    || retval.second.second != coord_)
                 {
-                    rr_ = retval.second;
-                    tgt_ = coord_;
+                    rr_ = retval.second.first;
+                    tgt_ = retval.second.second;
                     break;
                 }
             }
 
-            {
-                const std::pair<Real, std::pair<Species, coordinate_type> >
-                    retval(sim_->draw_next_diffusion(coord_));
-                sp_ = retval.second.first;
-                tgt_ = retval.second.second;
-                dt2_ = retval.first;
-            }
-
-            time_ += std::min(dt1_, dt2_);
+            time_ += dt_;
         }
 
     protected:
 
         MesoscopicSimulator* sim_;
         coordinate_type coord_, tgt_;
-        Real dt1_, dt2_;
-        Species sp_;
+        Real dt_;
         ReactionRule rr_;
     };
 
@@ -603,8 +608,9 @@ public:
 protected:
 
     void interrupt_all(const Real& t);
-    std::pair<Real, ReactionRule> draw_next_reaction(const coordinate_type& c);
-    std::pair<Real, std::pair<Species, coordinate_type> >
+    std::pair<Real, std::pair<ReactionRule, coordinate_type> >
+        draw_next_reaction(const coordinate_type& c);
+    std::pair<Real, std::pair<ReactionRule, coordinate_type> >
         draw_next_diffusion(const coordinate_type& c);
     void increment_molecules(const Species& sp, const coordinate_type& c);
     void decrement_molecules(const Species& sp, const coordinate_type& c);
@@ -613,8 +619,7 @@ protected:
 
     std::vector<ReactionRule> last_reactions_;
 
-    boost::ptr_vector<ReactionRuleProxy> proxies_;
-    boost::ptr_vector<DiffusionProxy> diffusions_;
+    boost::ptr_vector<ReactionRuleProxyBase> proxies_;
     EventScheduler scheduler_;
     std::vector<EventScheduler::identifier_type> event_ids_;
     coordinate_type interrupted_;

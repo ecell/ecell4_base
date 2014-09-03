@@ -1,4 +1,3 @@
-#include "MesoscopicSimulator.hpp"
 #include <numeric>
 #include <vector>
 #include <gsl/gsl_sf_log.h>
@@ -10,6 +9,9 @@
 
 #include <boost/scoped_array.hpp>
 
+#include "MesoscopicSimulator.hpp"
+
+
 namespace ecell4
 {
 
@@ -20,14 +22,8 @@ void MesoscopicSimulator::increment_molecules(const Species& sp, const coordinat
 {
     world_->add_molecules(sp, 1, c);
 
-    for (boost::ptr_vector<ReactionRuleProxy>::iterator i(proxies_.begin());
+    for (boost::ptr_vector<ReactionRuleProxyBase>::iterator i(proxies_.begin());
         i != proxies_.end(); ++i)
-    {
-        (*i).inc(sp, c);
-    }
-
-    for (boost::ptr_vector<DiffusionProxy>::iterator i(diffusions_.begin());
-        i != diffusions_.end(); ++i)
     {
         (*i).inc(sp, c);
     }
@@ -37,68 +33,19 @@ void MesoscopicSimulator::decrement_molecules(const Species& sp, const coordinat
 {
     world_->remove_molecules(sp, 1, c);
 
-    for (boost::ptr_vector<ReactionRuleProxy>::iterator i(proxies_.begin());
+    for (boost::ptr_vector<ReactionRuleProxyBase>::iterator i(proxies_.begin());
         i != proxies_.end(); ++i)
     {
         (*i).dec(sp, c);
     }
-
-    for (boost::ptr_vector<DiffusionProxy>::iterator i(diffusions_.begin());
-        i != diffusions_.end(); ++i)
-    {
-        (*i).dec(sp, c);
-    }
 }
 
-std::pair<Real, std::pair<Species, MesoscopicSimulator::coordinate_type> >
-MesoscopicSimulator::draw_next_diffusion(const coordinate_type& c)
-{
-    std::vector<double> b(diffusions_.size());
-    for (unsigned int idx(0); idx < diffusions_.size(); ++idx)
-    {
-        b[idx] = diffusions_[idx].propensity(c);
-    }
-
-    const double btot(std::accumulate(b.begin(), b.end(), double(0.0)));
-
-    if (btot == 0.0)
-    {
-        // Any reactions cannot occur.
-        return std::make_pair(inf, std::make_pair(Species(), c));
-    }
-
-    const double rnd1(rng()->uniform(0, 1));
-    const double dt(gsl_sf_log(1.0 / rnd1) / double(btot));
-    const double rnd2(rng()->uniform(0, btot));
-
-    int u(-1);
-    double acc(0.0);
-    const int len_b(b.size());
-    do
-    {
-        u++;
-        acc += b[u];
-    } while (acc < rnd2 && u < len_b - 1);
-
-    if (len_b == u)
-    {
-        // Any reactions cannot occur.
-        return std::make_pair(inf, std::make_pair(Species(), c));
-    }
-
-    const std::pair<Species, coordinate_type> retval(diffusions_[u].draw(c));
-    assert(b[u] > 0);
-    assert(world_->num_molecules_exact(retval.first, c) > 0);
-    return std::make_pair(dt, retval);
-}
-
-std::pair<Real, ReactionRule> MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
+std::pair<Real, std::pair<ReactionRule, MesoscopicSimulator::coordinate_type> >
+MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
 {
     std::vector<double> a(proxies_.size());
-    const Real V(world_->volume());
     for (unsigned int idx(0); idx < proxies_.size(); ++idx)
     {
-        // proxies_[idx].initialize(world_.get());
         a[idx] = proxies_[idx].propensity(c);
     }
 
@@ -106,7 +53,7 @@ std::pair<Real, ReactionRule> MesoscopicSimulator::draw_next_reaction(const coor
     if (atot == 0.0)
     {
         // Any reactions cannot occur.
-        return std::make_pair(inf, ReactionRule());
+        return std::make_pair(inf, std::make_pair(ReactionRule(), c));
     }
 
     const double rnd1(rng()->uniform(0, 1));
@@ -125,11 +72,10 @@ std::pair<Real, ReactionRule> MesoscopicSimulator::draw_next_reaction(const coor
     if (len_a == u)
     {
         // Any reactions cannot occur.
-        return std::make_pair(inf, ReactionRule());
+        return std::make_pair(inf, std::make_pair(ReactionRule(), c));
     }
 
-    const ReactionRule next_reaction(proxies_[u].draw(c));
-    return std::make_pair(dt, next_reaction);
+    return std::make_pair(dt, proxies_[u].draw(c));
 }
 
 void MesoscopicSimulator::interrupt_all(const Real& t)
@@ -233,12 +179,11 @@ void MesoscopicSimulator::initialize(void)
     }
 
     const std::vector<Species>& species(world_->species());
-    diffusions_.clear();
     for (std::vector<Species>::const_iterator i(species.begin());
         i != species.end(); ++i)
     {
-        diffusions_.push_back(new DiffusionProxy(this, *i));
-        diffusions_.back().initialize();
+        proxies_.push_back(new DiffusionProxy(this, *i));
+        proxies_.back().initialize();
     }
 
     scheduler_.clear();
