@@ -62,9 +62,20 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
             'options':{'name':name, 'color':color_scale.get_color(name), 'size':size}
         })
 
+    # model = {
+    #     'plots':plots,
+    #     'options':{'width': width, 'height': height}
+    # };
+
+    edge_lengths = world.edge_lengths()
+    max_length = max(tuple(edge_lengths))
+    rangex = [(edge_lengths[0] - max_length) * 0.5, (edge_lengths[0] + max_length) * 0.5]
+    rangey = [(edge_lengths[1] - max_length) * 0.5, (edge_lengths[1] + max_length) * 0.5]
+    rangez = [(edge_lengths[2] - max_length) * 0.5, (edge_lengths[2] + max_length) * 0.5]
     model = {
-        'plots':plots,
-        'options':{'width': width, 'height': height}
+        'plots': plots,
+        'options': {'width': width, 'height': height,
+        'range': {'x': rangex, 'y': rangey, 'z': rangez}, 'autorange': False}
     };
 
     model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
