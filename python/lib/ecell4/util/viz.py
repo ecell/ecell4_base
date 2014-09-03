@@ -47,7 +47,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
     plots = []
     for name in species:
         particles = [{'pos':p.position(), 'r':p.radius()}
-            for pid, p in world.list_particles() if p.species().serial() is name]
+            for pid, p in world.list_particles() if p.species().serial() == name]
         data = {
             'x': [p['pos'][0] for p in particles],
             'y': [p['pos'][1] for p in particles],
