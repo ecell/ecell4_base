@@ -4,7 +4,7 @@
 <meta charset=utf-8 />
 <title>Animated BFS</title>
 <style type="text/css">
-body { 
+body {
   font: 14px helvetica neue, helvetica, arial, sans-serif;
 }
 
@@ -25,6 +25,7 @@ $('#{{uuid}}').cytoscape({
   style: cytoscape.stylesheet()
     .selector('node')
       .css({
+        'background-color': 'data(faveColor)',
         'content': 'data(id)'
       })
     .selector('edge')
@@ -42,35 +43,35 @@ $('#{{uuid}}').cytoscape({
         'transition-property': 'background-color, line-color, target-arrow-color',
         'transition-duration': '0.5s'
       }),
-  
+
   elements: {
       nodes: {{nodes}},
-      
+
       edges: {{edges}}
     },
-  
+
   layout: {
     name: 'breadthfirst',
     directed: true,
     roots: '#a',
     padding: 10
   },
-  
+
   ready: function(){
     window.cy = this;
-    
+
     var bfs = cy.elements().bfs('#a', function(){}, true);
-    
+
     var i = 0;
     var highlightNextEle = function(){
       bfs.path[i].addClass('highlighted');
-      
+
       if( i < bfs.path.length ){
         i++;
         setTimeout(highlightNextEle, 1000);
       }
     };
-    
+
     // kick off first highlight
     highlightNextEle();
   }
