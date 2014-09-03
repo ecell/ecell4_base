@@ -25,8 +25,13 @@ void MesoscopicSimulator::increment_molecules(const Species& sp, const coordinat
     {
         (*i).inc(sp, c);
     }
-}
 
+    for (boost::ptr_vector<DiffusionProxy>::iterator i(diffusions_.begin());
+        i != diffusions_.end(); ++i)
+    {
+        (*i).inc(sp, c);
+    }
+}
 
 void MesoscopicSimulator::decrement_molecules(const Species& sp, const coordinate_type& c)
 {
@@ -37,20 +42,21 @@ void MesoscopicSimulator::decrement_molecules(const Species& sp, const coordinat
     {
         (*i).dec(sp, c);
     }
+
+    for (boost::ptr_vector<DiffusionProxy>::iterator i(diffusions_.begin());
+        i != diffusions_.end(); ++i)
+    {
+        (*i).dec(sp, c);
+    }
 }
 
-std::pair<Real, Species> MesoscopicSimulator::draw_next_diffusion(const coordinate_type& c)
+std::pair<Real, std::pair<Species, MesoscopicSimulator::coordinate_type> >
+MesoscopicSimulator::draw_next_diffusion(const coordinate_type& c)
 {
-    const Position3 lengths(world_->subvolume_edge_lengths());
-    const Real lsq(
-        lengths[0] * lengths[0] + lengths[1] * lengths[1] + lengths[2] * lengths[2]);
-
-    std::vector<double> b(world_->species().size());
-    for (unsigned int idx(0); idx < world_->species().size(); ++idx)
+    std::vector<double> b(diffusions_.size());
+    for (unsigned int idx(0); idx < diffusions_.size(); ++idx)
     {
-        const Species& sp(world_->species()[idx]);
-        const Real D(world_->get_molecule_info(sp).D);
-        b[idx] = 2 * D / lsq * world_->num_molecules_exact(sp, c);
+        b[idx] = diffusions_[idx].propensity(c);
     }
 
     const double btot(std::accumulate(b.begin(), b.end(), double(0.0)));
@@ -58,7 +64,7 @@ std::pair<Real, Species> MesoscopicSimulator::draw_next_diffusion(const coordina
     if (btot == 0.0)
     {
         // Any reactions cannot occur.
-        return std::make_pair(inf, Species());
+        return std::make_pair(inf, std::make_pair(Species(), c));
     }
 
     const double rnd1(rng()->uniform(0, 1));
@@ -77,12 +83,13 @@ std::pair<Real, Species> MesoscopicSimulator::draw_next_diffusion(const coordina
     if (len_b == u)
     {
         // Any reactions cannot occur.
-        return std::make_pair(inf, Species());
+        return std::make_pair(inf, std::make_pair(Species(), c));
     }
 
+    const std::pair<Species, coordinate_type> retval(diffusions_[u].draw(c));
     assert(b[u] > 0);
-    assert(world_->num_molecules_exact(world_->species()[u], c) > 0);
-    return std::make_pair(dt, world_->species()[u]);
+    assert(world_->num_molecules_exact(retval.first, c) > 0);
+    return std::make_pair(dt, retval);
 }
 
 std::pair<Real, ReactionRule> MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
@@ -223,6 +230,15 @@ void MesoscopicSimulator::initialize(void)
         }
 
         proxies_.back().initialize();
+    }
+
+    const std::vector<Species>& species(world_->species());
+    diffusions_.clear();
+    for (std::vector<Species>::const_iterator i(species.begin());
+        i != species.end(); ++i)
+    {
+        diffusions_.push_back(new DiffusionProxy(this, *i));
+        diffusions_.back().initialize();
     }
 
     scheduler_.clear();

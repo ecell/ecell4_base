@@ -115,6 +115,30 @@ std::vector<std::pair<ParticleID, Particle> >
     return retval;
 }
 
+MesoscopicWorld::coordinate_type MesoscopicWorld::get_neighbor(
+    const coordinate_type& c, const Integer rnd) const
+{
+    Global g(coord2global(c));
+
+    switch (rnd)
+    {
+    case 0:
+        return global2coord(g.east());
+    case 1:
+        return global2coord(g.west());
+    case 2:
+        return global2coord(g.south());
+    case 3:
+        return global2coord(g.north());
+    case 4:
+        return global2coord(g.dorsal());
+    case 5:
+        return global2coord(g.ventral());
+    }
+
+    throw IllegalState("the number of neighbors is less than 6.");
+}
+
 const Position3& MesoscopicWorld::edge_lengths() const
 {
     return cs_->edge_lengths();
