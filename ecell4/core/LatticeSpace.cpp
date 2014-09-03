@@ -2,6 +2,7 @@
 #include "MolecularType.hpp"
 #include "VacantType.hpp"
 #include "LatticeSpace.hpp"
+#include <cmath>
 
 #ifdef WIN32_MSC
 #include <boost/numeric/interval/detail/msvc_rounding_control.hpp>
@@ -59,10 +60,7 @@ void LatticeSpace::set_lattice_properties(const bool is_periodic)
     voxels_.reserve(voxel_size);
     for (private_coordinate_type coord(0); coord < voxel_size; ++coord)
     {
-        Global global(private_coord2private_global(coord));
-        if (global.col == 0 || global.col == col_size_-1 ||
-                global.row == 0 || global.row == row_size_-1 ||
-                global.layer == 0 || global.layer == layer_size_-1)
+        if (!is_inside(coord))
         {
             if (is_periodic)
                 voxels_.push_back(periodic_);
@@ -255,7 +253,7 @@ LatticeSpace::get_particle(const ParticleID& pid) const
 
 bool LatticeSpace::update_particle(const ParticleID& pid, const Particle& p)
 {
-    return update_voxel_private(pid, Voxel(p.species(), position2private_coord(p.position()), p.radius(), p.D()));
+    return update_voxel_private(pid, Voxel(p.species(), position2private(p.position()), p.radius(), p.D()));
 }
 
 /*
@@ -335,6 +333,7 @@ LatticeSpace::list_voxels_exact(const Species& sp) const
     }
     return retval;
 }
+
 std::vector<std::pair<ParticleID, Voxel> >
 LatticeSpace::list_voxels(const Species& sp) const
 {
@@ -623,12 +622,23 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
     return std::pair<private_coordinate_type, bool>(private_to, true);
 }
 
+std::vector<LatticeSpace::private_coordinate_type>
+LatticeSpace::get_neighbors(LatticeSpace::private_coordinate_type coord) const
+{
+    std::vector<LatticeSpace::private_coordinate_type> retval;
+    for (Integer i(0); i < 12; i++)
+    {
+        retval.push_back(get_neighbor(coord, i));
+    }
+    return retval;
+}
+
 LatticeSpace::private_coordinate_type LatticeSpace::get_neighbor(
         private_coordinate_type private_coord, Integer nrand) const
 {
     const Integer NUM_COLROW(col_size_ * row_size_);
     const Integer NUM_ROW(row_size_);
-    const bool odd_col((private_coord % NUM_COLROW / NUM_ROW) & 1);
+    const bool odd_col(((private_coord % NUM_COLROW) / NUM_ROW) & 1);
     const bool odd_lay((private_coord / NUM_COLROW) & 1);
 
     switch(nrand)
@@ -644,17 +654,17 @@ LatticeSpace::private_coordinate_type LatticeSpace::get_neighbor(
     case 5:
         return private_coord+(odd_col^odd_lay)+NUM_ROW;
     case 6:
-        return private_coord+(2*odd_col-1)*NUM_COLROW-NUM_ROW;
+        return private_coord-(2*odd_col-1)*NUM_COLROW-NUM_ROW;
     case 7:
         return private_coord-(2*odd_col-1)*NUM_COLROW+NUM_ROW;
     case 8:
-        return private_coord+(odd_col^odd_lay)-NUM_ROW-1;
+        return private_coord+(odd_col^odd_lay)-NUM_COLROW-1;
     case 9:
-        return private_coord+(odd_col^odd_lay)-NUM_ROW;
+        return private_coord+(odd_col^odd_lay)-NUM_COLROW;
     case 10:
-        return private_coord+(odd_col^odd_lay)+NUM_ROW-1;
+        return private_coord+(odd_col^odd_lay)+NUM_COLROW-1;
     case 11:
-        return private_coord+(odd_col^odd_lay)+NUM_ROW;
+        return private_coord+(odd_col^odd_lay)+NUM_COLROW;
     }
     return private_coord-1;
 }
@@ -668,8 +678,8 @@ const Particle LatticeSpace::particle_at(private_coordinate_type coord) const
     // const Real& D = 0;
     // Particle particle(sp, pos, radius, D);
     // return particle;
-    return Particle(
-        ptr_mt->species(), coordinate2position(coord), ptr_mt->radius(), ptr_mt->D());
+    return Particle(ptr_mt->species(), coordinate2position(
+                private2coord(coord)), ptr_mt->radius(), ptr_mt->D());
 }
 
 bool LatticeSpace::is_in_range(coordinate_type coord) const
@@ -680,6 +690,14 @@ bool LatticeSpace::is_in_range(coordinate_type coord) const
 bool LatticeSpace::is_in_range_private(private_coordinate_type coord) const
 {
     return coord >= 0 && coord < row_size_ * col_size_ * layer_size_;
+}
+
+bool LatticeSpace::is_inside(private_coordinate_type coord) const
+{
+    const Global global(private_coord2private_global(coord));
+    return global.col > 0 && global.col < col_size_-1
+        && global.row > 0 && global.row < row_size_-1
+        && global.layer > 0 && global.layer < layer_size_-1;
 }
 
 /*
@@ -721,12 +739,6 @@ const Global LatticeSpace::private_coord2private_global(
     return coord2global_(private_coord, col_size_, row_size_, layer_size_);
 }
 
-const LatticeSpace::private_coordinate_type LatticeSpace::private_global2private_coord(
-        const Global private_global) const
-{
-    return global2coord_(private_global, col_size_, row_size_, layer_size_);
-}
-
 const Position3 LatticeSpace::global2position(const Global& global) const
 {
     //the center point of a voxel
@@ -741,40 +753,52 @@ const Position3 LatticeSpace::global2position(const Global& global) const
 const Global LatticeSpace::position2global(const Position3& pos) const
 {
     Global global;
-    global.col = (Integer)(pos[0] / HCP_X);
-    global.layer = (Integer)((pos[1] - (global.col % 2) * HCP_L) / HCP_Y);
-    global.row = (Integer)((pos[2] - (((global.layer + global.col) % 2) *
-                    voxel_radius_)) /
-            voxel_radius_ / 2);
+    global.col = round(pos[0] / HCP_X);
+    global.layer = round((pos[1] - (global.col % 2) * HCP_L) / HCP_Y);
+    global.row = round((pos[2] / voxel_radius_
+                - ((global.layer + global.col) % 2)) / 2);
     return global;
 }
 
 const Position3 LatticeSpace::coordinate2position(coordinate_type coord) const
 {
-    return global2position(coord2global(coord));
+    return private2position(coord2private(coord));
+    //return global2position(coord2global(coord));
 }
 
-LatticeSpace::coordinate_type LatticeSpace::position2coordinate(const Position3& pos) const
+LatticeSpace::coordinate_type LatticeSpace::position2coordinate(
+        const Position3& pos) const
 {
     return global2coord(position2global(pos));
 }
 
-LatticeSpace::private_coordinate_type LatticeSpace::position2private_coord(const Position3& pos) const
+const Position3 LatticeSpace::private2position(
+        private_coordinate_type private_coord) const
+{
+    return global2position(private_coord2global(private_coord));
+}
+
+LatticeSpace::private_coordinate_type LatticeSpace::position2private(
+        const Position3& pos) const
 {
     return global2private_coord(position2global(pos));
 }
 
-LatticeSpace::private_coordinate_type LatticeSpace::coord2private(coordinate_type coord) const
+
+LatticeSpace::private_coordinate_type LatticeSpace::coord2private(
+        coordinate_type coord) const
 {
     return global2private_coord(coord2global(coord));
 }
 
-LatticeSpace::coordinate_type LatticeSpace::private2coord(private_coordinate_type private_coord) const
+LatticeSpace::coordinate_type LatticeSpace::private2coord(
+        private_coordinate_type private_coord) const
 {
     return global2coord(private_coord2global(private_coord));
 }
 
-LatticeSpace::private_coordinate_type LatticeSpace::apply_boundary_(const private_coordinate_type& private_coord) const
+LatticeSpace::private_coordinate_type LatticeSpace::apply_boundary_(
+        const private_coordinate_type& private_coord) const
 {
     Global global(private_coord2private_global(private_coord));
 
@@ -782,11 +806,11 @@ LatticeSpace::private_coordinate_type LatticeSpace::apply_boundary_(const privat
     global.row = (global.row - 1) % row_size();
     global.layer = (global.layer - 1) % layer_size();
 
-    global.col = global.col < 0 ? global.col + col_size() + 1 : global.col + 1;
-    global.row = global.row < 0 ? global.row + row_size() + 1 : global.row + 1;
-    global.layer = global.layer < 0 ? global.layer + layer_size() + 1 : global.layer + 1;
+    global.col = global.col < 0 ? global.col + col_size() : global.col;
+    global.row = global.row < 0 ? global.row + row_size() : global.row;
+    global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
 
-    return private_global2private_coord(global);
+    return global2private_coord(global);
 }
 
 Integer LatticeSpace::num_voxels_exact(const Species& sp) const
@@ -878,7 +902,7 @@ bool LatticeSpace::update_voxel_private(const ParticleID& pid, const Voxel& v)
         {
             throw IllegalState(
                 "MolecularTypaBase [" + dest_mt->species().serial()
-                + "] doesn't contain a coordinate.");
+                + "] doesn't contain any coordinate.");
         }
         else if ((*dest_itr).second != pid)
         {

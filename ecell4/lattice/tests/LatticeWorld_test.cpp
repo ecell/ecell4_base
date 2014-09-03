@@ -10,6 +10,9 @@
 #include <boost/test/floating_point_comparison.hpp>
 
 #include "../LatticeWorld.hpp"
+#include "../../core/Sphere.hpp"
+//#include <ecell4/core/Sphere.hpp>
+#include <fstream>
 
 using namespace ecell4;
 using namespace ecell4::lattice;
@@ -149,6 +152,67 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecules)
     BOOST_CHECK_EQUAL(world.num_particles(sp), N);
 }
 
+BOOST_AUTO_TEST_CASE(LatticeWorld_test_neighbor)
+{
+    const Position3 edge_lengths(1e-6,1e-6,1e-6);
+    const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
+    boost::shared_ptr<GSLRandomNumberGenerator>
+        rng(new GSLRandomNumberGenerator());
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
+
+    const Global center(
+            world.col_size()/2, world.row_size()/2, world.layer_size()/2);
+    const LatticeWorld::private_coordinate_type cc(
+            world.coord2private(world.global2coord(center)));
+    const Position3 cp(world.coordinate2position(
+                world.global2coord(center)));
+
+    Species sp(std::string("TEST"));
+    sp.set_attribute("radius", "2.5e-9");
+    sp.set_attribute("D", "1e-12");
+    const Integer n(world.add_neighbors(sp, cc));
+    std::vector<std::pair<ParticleID, Particle> > particles(
+            world.list_particles());
+    std::ofstream ofs("neighbor.txt");
+    ofs << "center" << std::endl;
+    ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") "
+        << world.private2coord(cc) << std::endl;
+    for (std::vector<std::pair<ParticleID, Particle> >::iterator itr(
+                particles.begin()); itr != particles.end(); ++itr)
+    {
+        Position3 pos((*itr).second.position());
+        BOOST_ASSERT(length(pos-cp) < voxel_radius*2.1);
+        const LatticeWorld::coordinate_type coord(world.position2coordinate(pos));
+        //pos /= voxel_radius * 2;
+        ofs << "(" << pos[0] << "," << pos[1] << "," << pos[2] << ") "
+            << coord << std::endl;
+    }
+    ofs.close();
+
+    world.save("neighbor.h5");
+}
+
+BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_shape)
+{
+    const Position3 edge_lengths(1e-6,1e-6,1e-6);
+    const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
+    boost::shared_ptr<GSLRandomNumberGenerator>
+        rng(new GSLRandomNumberGenerator());
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
+
+    Species sp(std::string("TEST"));
+    sp.set_attribute("radius", "2.5e-9");
+    sp.set_attribute("D", "1e-12");
+
+    const Sphere sphere(Position3(5e-7, 5e-7, 5e-7), 5e-7*1.5);
+
+    const Integer n(world.add_molecules(sp, sphere));
+    BOOST_ASSERT(n > 0);
+    BOOST_CHECK_EQUAL(world.num_particles(sp), n);
+
+    world.save("sphere.h5");
+}
+
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
 {
     const Position3 edge_lengths(1e-6,1e-6,1e-6);
@@ -176,3 +240,4 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
 
     BOOST_CHECK(world.move(from, to));
 }
+

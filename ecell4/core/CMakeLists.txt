@@ -7,7 +7,8 @@
 set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Global.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
-    Position3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp)
+    Position3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
+    Sphere.cpp)
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
@@ -18,7 +19,8 @@ set(HPP_FILES
     SerialIDGenerator.hpp Species.hpp Voxel.hpp functions.hpp swap.hpp ModelWrapper.hpp
     Context.hpp Global.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp
     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp SimulatorBase.hpp
-    UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp)
+    UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp
+    Shape.hpp Sphere.hpp)
 
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})
