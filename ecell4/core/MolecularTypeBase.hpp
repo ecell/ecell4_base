@@ -19,14 +19,9 @@ public:
 
 public:
 
-    MolecularTypeBase(const Species& species)
-        : species_(species), radius_(0.0), D_(0.0)
-    {
-        ;
-    }
-
-    MolecularTypeBase(const Species& species, const Real& radius, const Real& D)
-        : species_(species), radius_(radius), D_(D)
+    MolecularTypeBase(const Species& species, MolecularTypeBase* location,
+            const Real& radius, const Real& D)
+        : species_(species), location_(location), radius_(radius), D_(D)
     {
         ;
     }
@@ -41,6 +36,11 @@ public:
     const Species& species() const
     {
         return species_;
+    }
+
+    MolecularTypeBase* location() const
+    {
+        return location_;
     }
 
     Real& radius()
@@ -63,7 +63,7 @@ public:
         return D_;
     }
 
-    void addVoxel(particle_info info)
+    virtual void addVoxel(particle_info info)
     {
         container_type::iterator itr(find(info.first));
         if (itr != voxels_.end())
@@ -73,7 +73,7 @@ public:
         voxels_.push_back(info);
     }
 
-    bool removeVoxel(LatticeSpace::private_coordinate_type coord)
+    virtual bool removeVoxel(LatticeSpace::private_coordinate_type coord)
     {
         container_type::iterator itr(find(coord));
         if (itr != voxels_.end())
@@ -184,6 +184,7 @@ public:
 protected:
 
     const Species species_;
+    MolecularTypeBase* location_;
     Real radius_, D_;
 
     container_type voxels_;

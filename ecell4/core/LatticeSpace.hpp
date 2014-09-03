@@ -90,6 +90,7 @@ public:
     bool remove_voxel_private(const private_coordinate_type coord);
 
     bool update_particle(const ParticleID& pid, const Particle& p);
+    bool update_structure(const Particle& p);
 
     /*
      * for Simulator
@@ -111,9 +112,11 @@ public:
     bool update_voxel_private(const ParticleID& pid, const Voxel& v);
 
     std::vector<Species> list_species() const;
+    const Species& find_species(std::string name) const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
     MolecularTypeBase* find_molecular_type(const Species& sp);
+    MolecularTypeBase* find_molecular_type(const std::string name);
     MolecularTypeBase* get_molecular_type(private_coordinate_type coord) const;
     // bool register_species(const Species& sp);
     // bool update_molecule(private_coordinate_type coord, const Species& species);

@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_shape)
 
     const Sphere sphere(Position3(5e-7, 5e-7, 5e-7), 5e-7*1.5);
 
-    const Integer n(world.add_molecules(sp, sphere));
+    const Integer n(world.add_structure(sp, sphere));
     BOOST_ASSERT(n > 0);
     BOOST_CHECK_EQUAL(world.num_particles(sp), n);
 
@@ -241,3 +241,24 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
     BOOST_CHECK(world.move(from, to));
 }
 
+BOOST_AUTO_TEST_CASE(LatticeWorld_test_structure)
+{
+    const Position3 edge_lengths(5e-7, 5e-7, 5e-7);
+    const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
+    boost::shared_ptr<GSLRandomNumberGenerator>
+        rng(new GSLRandomNumberGenerator());
+    LatticeWorld world(edge_lengths, voxel_radius, rng);
+
+    Species membrane("Membrane", "2.5e-9");
+
+    Species sp("SpeciesA", "2.5e-9", "1e-12");
+    sp.set_attribute("location", "Membrane");
+
+    const Sphere sphere(Position3(2.5e-7, 2.5e-7, 2.5e-7), 2e-7);
+
+    BOOST_CHECK(world.add_structure(membrane, sphere) > 0);
+    BOOST_CHECK(world.new_particle(Particle(sp, Position3(2.5e-7, 2.5e-7, 4.5e-7),
+                    2.5e-9, 1e-12)).second);
+
+    world.save("structure.h5");
+}

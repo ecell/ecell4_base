@@ -45,7 +45,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
 
     plots = []
     for name in species:
-        particles = [{'pos':p.position(), 'r':p.radius()} for pid, p in world.list_particles() if p.species().serial() is name]
+        particles = [{'pos':p.position(), 'r':p.radius()} for pid, p in world.list_particles() if p.species().serial() == name]
         data = {
             'x': [p['pos'][0] for p in particles],
             'y': [p['pos'][1] for p in particles],
@@ -62,9 +62,15 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
             'options':{'name':name, 'color':color_scale.get_color(name), 'size':size}
         })
 
+    edge_lengths = world.edge_lengths()
+    max_length = max(tuple(edge_lengths))
+    rangex = [(edge_lengths[0] - max_length) * 0.5, (edge_lengths[0] + max_length) * 0.5]
+    rangey = [(edge_lengths[1] - max_length) * 0.5, (edge_lengths[1] + max_length) * 0.5]
+    rangez = [(edge_lengths[2] - max_length) * 0.5, (edge_lengths[2] + max_length) * 0.5]
     model = {
-        'plots':plots,
-        'options':{'width': width, 'height': height}
+        'plots': plots,
+        'options': {'width': width, 'height': height,
+        'range': {'x': rangex, 'y': rangey, 'z': rangez}, 'autorange': False}
     };
 
     model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
