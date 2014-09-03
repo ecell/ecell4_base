@@ -105,33 +105,41 @@ def logo():
     from IPython.core.display import display, HTML, Javascript
 
     template = """<script type="text/javascript">
-    var logo, x, y, id;
-    var running = false;
-
+    var y = 0;
+    var running = false, stop = true;
     var base64a = ["%s", "%s", "%s", "%s", "%s",
         "%s", "%s", "%s", "%s", "%s",
         "%s", "%s", "%s", "%s", "%s"];
     var maxcnt = base64a.length;
+    var timer_id;
 
     function move() {
-        x += 10; y = (y + 1) %% maxcnt;
-        logo = document.getElementById('ecelllogo');
-        logo.src = "data:image/png;base64," + base64a[y + 1];
-        if (!running && y == maxcnt - 1) {
-            clearInterval(id);
+        if (running)
+        {
+            y = (y + 1) %% maxcnt;
+            var logos = document.getElementsByName('ecelllogo');
+            for (var i = 0; i < logos.length; i++) {
+                logos[i].src = "data:image/png;base64," + base64a[y + 1];
+            }
+            if (stop && y == maxcnt - 1) {
+                // clearInterval(id);
+                running = false;
+                stop = true;
+            }
         }
     }
     </script>
-    <p><img id="ecelllogo" style="position:relative; left:0px;" src="data:image/png;base64," alt="ecelllogo" onClick="running=false;" /></p>
+    <p><img name="ecelllogo" style="position:relative; left:0px;" alt="ecelllogo" src="data:image/png;base64,%s" onClick="if (!stop) stop = true; else if (!running) { running = true; stop = false; if (timer_id != undefined) { clearInterval(timer_id); } timer_id = setInterval('move();', 100); }" /></p>
     """
 
     filenames = [os.path.abspath(os.path.dirname(__file__))
         + '/templates/ecelllogo/logo%02d.png' % (i + 1) for i in range(15)]
-    base64s = tuple([base64.b64encode(open(filename, 'rt').read())
-        for filename in filenames])
-    h = HTML(template % base64s)
-    j = Javascript("x = 0; y = 0; running = true; id = setInterval('move();', 100);")
-    display(h, j)
+    base64s = [base64.b64encode(open(filename, 'rt').read())
+        for filename in filenames]
+    h = HTML(template % tuple(base64s + [base64s[0]]))
+    # j = Javascript("running = true; stop = false; id = setInterval('move();', %g);" % interval)
+    # display(h, j)
+    display(h)
 
 class ColorScale:
     """Color scale for species.
