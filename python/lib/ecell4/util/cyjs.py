@@ -21,17 +21,17 @@ def plot_species(species):
     if species.num_units() > 0:
         usps = species.units()
         for usp in usps:
-            nodes.append({ 'data': { 'id': usp.name() } })
+            nodes.append({ 'data': { 'id': usp.name(), 'name': usp.name() } })
             components = usp.serial()[len(usp.name())+1:-1]
             print components
             for component in components.split(","):
-                nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name() } })
+                nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name(), 'name': component } })
                 if re.search('\^[0-9]+', component) != None:
                     bsmatch = re.search('\^[0-9]+', component)
                     binds[bsmatch.group()].append(component+"_"+usp.name())
                 if re.search('\=[a-zA-Z0-9]+', component) != None:
                     nodes.pop()
-                    nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name(), 'faveColor': '#FF0000' } })
+                    nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name(), 'faveColor': '#FF0000', 'name': component } })
 
                     # bsindices = re.findall('\^[0-9]+', component)
                     # bsnames = re.findall('[a-zA-Z0-9]+\^', component)
