@@ -17,7 +17,6 @@ def plot_species(species):
     nodes = []
     edges = []
     binds = defaultdict(list)
-    # states =
 
     if species.num_units() > 0:
         usps = species.units()
@@ -32,7 +31,8 @@ def plot_species(species):
                     binds[bsmatch.group()].append(component+"_"+usp.name())
                 if re.search('\=[a-zA-Z0-9]+', component) != None:
                     nodes.pop()
-                    nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name(), 'favaColor': '#FF0000' } })
+                    nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name(), 'faveColor': '#FF0000' } })
+
                     # bsindices = re.findall('\^[0-9]+', component)
                     # bsnames = re.findall('[a-zA-Z0-9]+\^', component)
                     # if len(bsindices) != len(bsnames):
