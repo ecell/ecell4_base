@@ -619,6 +619,7 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
     (*itr).first = private_to;
     voxel_container::iterator from_itr(voxels_.begin() + private_from);
     (*from_itr) = to_mt;
+    to_mt->removeVoxel(private_to);
     to_mt->addVoxel(particle_info(private_from, ParticleID()));
     voxel_container::iterator to_itr(voxels_.begin() + private_to);
     (*to_itr) = from_mt;
@@ -660,6 +661,7 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
 
     voxel_container::iterator from_itr(voxels_.begin() + private_from);
     (*from_itr) = to_mt;
+    to_mt->removeVoxel(private_to);
     to_mt->addVoxel(particle_info(private_from, ParticleID()));
     info.first = private_to;
     voxel_container::iterator to_itr(voxels_.begin() + private_to);

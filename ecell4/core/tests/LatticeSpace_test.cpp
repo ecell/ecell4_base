@@ -579,8 +579,10 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
     ParticleID pid(sidgen());
     BOOST_CHECK(space.update_particle(pid, Particle(sp, pos, radius, D)));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
+    BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
     BOOST_CHECK(space.remove_particle(pid));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1); // TODO -> 0
+    BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 0);
 
     Species sp2("B", "2.5e-9", "1e-12");
     BOOST_CHECK(!space.update_particle(sidgen(), Particle(sp2, pos, radius, D)));
@@ -597,11 +599,16 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
 
     ParticleID pid(sidgen());
     BOOST_CHECK(space.update_particle(pid, Particle(sp, pos1, radius, D)));
+    BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
+    BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1
     const LatticeSpace::coordinate_type
         coord1(space.position2coordinate(pos1)),
         coord2(space.position2coordinate(pos2));
     BOOST_CHECK(space.move(coord1, coord2));
+    BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
+    BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
+    BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1
 }
 
 BOOST_AUTO_TEST_SUITE_END()
