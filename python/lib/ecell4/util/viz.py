@@ -101,7 +101,12 @@ def generate_html(model, model_id):
     html = template.render(model=json.dumps(model), model_id = model_id)
     return html
 
-def logo():
+def logo(itr=1):
+    if not isinstance(itr, int):
+        itr = 1
+    else:
+        itr = min(10, max(1, itr))
+
     from IPython.core.display import display, HTML, Javascript
 
     template = """<script type="text/javascript">
@@ -128,15 +133,30 @@ def logo():
             }
         }
     }
+
+    function action() {
+        if (!stop) {
+            stop = true;
+        }
+        else if (!running) {
+            running = true;
+            stop = false;
+            if (timer_id != undefined) {
+                clearInterval(timer_id);
+            }
+            timer_id = setInterval('move();', 120);
+        }
+    }
     </script>
-    <p><img name="ecelllogo" style="position:relative; left:0px;" alt="ecelllogo" src="data:image/png;base64,%s" onClick="if (!stop) stop = true; else if (!running) { running = true; stop = false; if (timer_id != undefined) { clearInterval(timer_id); } timer_id = setInterval('move();', 100); }" /></p>
+    <p>%s</p>
     """
 
     filenames = [os.path.abspath(os.path.dirname(__file__))
         + '/templates/ecelllogo/logo%02d.png' % (i + 1) for i in range(15)]
     base64s = [base64.b64encode(open(filename, 'rt').read())
         for filename in filenames]
-    h = HTML(template % tuple(base64s + [base64s[0]]))
+    img_html = '<img name="ecelllogo" style="position:relative; left:0px;" alt="ecelllogo" src="data:image/png;base64,%s" onClick="action();" />' % (base64s[0])
+    h = HTML(template % tuple(base64s + [img_html * itr]))
     # j = Javascript("running = true; stop = false; id = setInterval('move();', %g);" % interval)
     # display(h, j)
     display(h)
