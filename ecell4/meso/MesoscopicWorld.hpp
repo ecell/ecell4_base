@@ -30,7 +30,15 @@ public:
 
 public:
 
-    MesoscopicWorld(const Position3& edge_lengths)
+    MesoscopicWorld(const std::string& filename)
+        : cs_(new SubvolumeSpaceVectorImpl(Position3(1, 1, 1), 1, 1, 1))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        this->load(filename);
+    }
+
+    MesoscopicWorld(const Position3& edge_lengths = Position3(1, 1, 1))
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, 1, 1, 1))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(

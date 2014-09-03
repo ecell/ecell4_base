@@ -12,18 +12,30 @@ from ecell4.core cimport *
 #  a python wrapper for Cpp_LatticeWorld
 cdef class LatticeWorld:
 
-    def __cinit__(self, Position3 edge_lengths, voxel_radius = None,
+    def __cinit__(self, edge_lengths = None, voxel_radius = None,
         GSLRandomNumberGenerator rng = None):
-        if voxel_radius is None:
-            self.thisptr = new shared_ptr[Cpp_LatticeWorld](
-                new Cpp_LatticeWorld(deref(edge_lengths.thisptr)))
+        cdef string filename
+
+        if edge_lengths is None:
+            self.thisptr = new shared_ptr[Cpp_LatticeWorld](new Cpp_LatticeWorld())
+        elif voxel_radius is None:
+            if isinstance(edge_lengths, Position3):
+                self.thisptr = new shared_ptr[Cpp_LatticeWorld](
+                    new Cpp_LatticeWorld(
+                        deref((<Position3>edge_lengths).thisptr)))
+            else:
+                filename = edge_lengths
+                self.thisptr = new shared_ptr[Cpp_LatticeWorld](
+                    new Cpp_LatticeWorld(filename))
         elif rng is None:
             self.thisptr = new shared_ptr[Cpp_LatticeWorld](
-                new Cpp_LatticeWorld(deref(edge_lengths.thisptr), voxel_radius))
+                new Cpp_LatticeWorld(
+                    deref((<Position3>edge_lengths).thisptr), <Real>voxel_radius))
         else:
             self.thisptr = new shared_ptr[Cpp_LatticeWorld](
                 new Cpp_LatticeWorld(
-                    deref(edge_lengths.thisptr), voxel_radius, deref(rng.thisptr)))
+                    deref((<Position3>edge_lengths).thisptr), <Real>voxel_radius,
+                    deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,

@@ -8,9 +8,12 @@ from core cimport *
 #  ecell4::meso::MesoscopicWorld
 cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
     cdef cppclass Cpp_MesoscopicWorld "ecell4::meso::MesoscopicWorld":
+        Cpp_MesoscopicWorld() except +
         Cpp_MesoscopicWorld(Cpp_Position3&) except +
+        Cpp_MesoscopicWorld(string&) except +
         Cpp_MesoscopicWorld(Cpp_Position3&, Integer, Integer, Integer) except +
-        Cpp_MesoscopicWorld(Cpp_Position3&, Integer, Integer, Integer, shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_MesoscopicWorld(Cpp_Position3&, Integer, Integer, Integer,
+            shared_ptr[Cpp_RandomNumberGenerator]) except +
         void set_t(Real)
         Real t()
         Real volume()

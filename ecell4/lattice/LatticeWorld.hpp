@@ -52,12 +52,20 @@ public:
         (*rng_).seed();
     }
 
-    LatticeWorld(const Position3& edge_lengths)
+    LatticeWorld(const Position3& edge_lengths = Position3(1, 1, 1))
         : space_(edge_lengths, edge_lengths[0] / 100) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
+    }
+
+    LatticeWorld(const std::string filename)
+        : space_(Position3(1, 1, 1), 1 / 100) //XXX: sloppy default
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        this->load(filename);
     }
 
     /**
