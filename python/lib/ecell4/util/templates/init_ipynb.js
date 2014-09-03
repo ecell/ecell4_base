@@ -23,7 +23,7 @@ if(window['d3'] === undefined ||
 	var script = d3.select("head")
 	    .append("script")
 	    // .attr("src", 'https://rawgit.com/domitry/elegans/master/release/elegans.js')
-	    .attr("src", 'https://raw.githubusercontent.com/domitry/elegans/microbial-sim/release/elegans.js')
+	    .attr("src", 'https://rawgit.com/domitry/elegans/microbial-sim/release/elegans.js')
 	    .attr("async", true);
 
 	script[0][0].onload = script[0][0].onreadystatechange = function(){
