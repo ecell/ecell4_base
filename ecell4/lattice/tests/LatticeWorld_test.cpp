@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_shape)
 
     const Sphere sphere(Position3(5e-7, 5e-7, 5e-7), 5e-7*1.5);
 
-    const Integer n(world.add_molecules(sp, sphere));
+    const Integer n(world.add_structure(sp, sphere));
     BOOST_ASSERT(n > 0);
     BOOST_CHECK_EQUAL(world.num_particles(sp), n);
 

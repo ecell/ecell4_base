@@ -119,10 +119,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 //     BOOST_CHECK(list == space.list_species());
 // }
 
-/*
- * for Simulator
- */
-
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate)
 {
     for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
@@ -552,3 +548,60 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinates2)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+struct StructureFixture
+{
+    const Position3 edge_lengths;
+    const Real voxel_radius;
+    LatticeSpace space;
+    SerialIDGenerator<ParticleID> sidgen;
+    const Real D, radius;
+    const Species structure;
+    Species sp;
+    StructureFixture() :
+        edge_lengths(2.5e-8, 2.5e-8, 2.5e-8),
+        voxel_radius(2.5e-9),
+        space(edge_lengths, voxel_radius, false),
+        sidgen(), D(1e-12), radius(2.5e-9),
+        structure("Structure", "2.5e-9", "0"),
+        sp("A", "2.5e-9", "1e-12")
+    {
+        sp.set_attribute("location", "Structure");
+    }
+};
+
+BOOST_FIXTURE_TEST_SUITE(structure_suite, StructureFixture)
+
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
+{
+    const Position3 pos(2.7e-9, 1.3e-8, 2.0e-8);
+    BOOST_CHECK(space.update_structure(Particle(structure, pos, radius, D)));
+    BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
+    ParticleID pid(sidgen());
+    BOOST_CHECK(space.update_particle(pid, Particle(sp, pos, radius, D)));
+    BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
+    BOOST_CHECK(space.remove_particle(pid));
+    BOOST_CHECK_EQUAL(space.list_particles().size(), 1); // TODO -> 0
+
+    Species sp2("B", "2.5e-9", "1e-12");
+    BOOST_CHECK(!space.update_particle(sidgen(), Particle(sp2, pos, radius, D)));
+}
+
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
+{
+    const Position3 pos1(2.7e-9, 1.3e-8, 2.0e-8);
+    const Position3 pos2(1.2e-8, 1.5e-8, 1.8e-8);
+    BOOST_CHECK(space.update_structure(Particle(structure, pos1, radius, D)));
+    BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
+    BOOST_CHECK(space.update_structure(Particle(structure, pos2, radius, D)));
+    BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 0
+
+    ParticleID pid(sidgen());
+    BOOST_CHECK(space.update_particle(pid, Particle(sp, pos1, radius, D)));
+    BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1
+    const LatticeSpace::coordinate_type
+        coord1(space.position2coordinate(pos1)),
+        coord2(space.position2coordinate(pos2));
+    BOOST_CHECK(space.move(coord1, coord2));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
