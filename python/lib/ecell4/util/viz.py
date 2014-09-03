@@ -45,7 +45,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
 
     plots = []
     for name in species:
-        particles = [{'pos':p.position(), 'r':p.radius()} for pid, p in world.list_particles() if p.species().serial() is name]
+        particles = [{'pos':p.position(), 'r':p.radius()} for pid, p in world.list_particles() if p.species().serial() == name]
         data = {
             'x': [p['pos'][0] for p in particles],
             'y': [p['pos'][1] for p in particles],
@@ -61,11 +61,6 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
             'data':data,
             'options':{'name':name, 'color':color_scale.get_color(name), 'size':size}
         })
-
-    # model = {
-    #     'plots':plots,
-    #     'options':{'width': width, 'height': height}
-    # };
 
     edge_lengths = world.edge_lengths()
     max_length = max(tuple(edge_lengths))
