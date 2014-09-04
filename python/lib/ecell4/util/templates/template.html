@@ -25,6 +25,7 @@ $('#{{uuid}}').cytoscape({
   style: cytoscape.stylesheet()
     .selector('node')
       .css({
+        'shape': 'data(faveShape)',
         'background-color': 'data(faveColor)',
         'content': 'data(name)'
       })

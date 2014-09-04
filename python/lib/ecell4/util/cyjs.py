@@ -29,10 +29,17 @@ def plot_species(species):
                 if re.search('\^[0-9]+', component) != None:
                     bsmatch = re.search('\^[0-9]+', component)
                     binds[bsmatch.group()].append(component+"_"+usp.name())
+                    nodes.pop()
+                    nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name(), 'name': component[:-2] } })
                 if re.search('\=[a-zA-Z0-9]+', component) != None:
                     nodes.pop()
-                    nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name(), 'faveColor': '#FF0000', 'name': component } })
-
+                    print re.search('\=[a-zA-Z0-9]+', component).group()
+                    if re.search('\=[a-zA-Z0-9]+', component).group() == "=U":
+                        nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name(), 'faveColor': '#FFFFFF', 'faveShape': 'rectangle', 'name': component[:-2] } })
+                    elif re.search('\=[a-zA-Z0-9]+', component).group() == "=P":
+                        nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name(), 'faveColor': '#FF0000', 'faveShape': 'rectangle', 'name': component[:-2] } })
+                    else:
+                        nodes.append({ 'data': { 'id': component+"_"+usp.name(), 'parent': usp.name(), 'name': component } })
                     # bsindices = re.findall('\^[0-9]+', component)
                     # bsnames = re.findall('[a-zA-Z0-9]+\^', component)
                     # if len(bsindices) != len(bsnames):
