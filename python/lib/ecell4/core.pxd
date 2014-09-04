@@ -269,11 +269,11 @@ cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
         Cpp_Position3(Real, Real, Real) except +
         Cpp_Position3(Cpp_Position3 &rhs) except+
 
-    Cpp_Position3 operator+(Cpp_Position3, Cpp_Position3)
-    Cpp_Position3 operator-(Cpp_Position3, Cpp_Position3)
-    Cpp_Position3 operator/(Cpp_Position3, Real)
-    Cpp_Position3 operator*(Cpp_Position3, Real)
-    Real& operator[](Integer)
+        Real& operator[](Integer)
+        Cpp_Position3 operator+(Cpp_Position3, Cpp_Position3)
+        Cpp_Position3 operator-(Cpp_Position3, Cpp_Position3)
+        Cpp_Position3 operator/(Cpp_Position3, Real)
+        Cpp_Position3 operator*(Cpp_Position3, Real)
 
 ## Position3
 #  a python wrapper for Cpp_Position3
@@ -292,6 +292,8 @@ cdef extern from "ecell4/core/Global.hpp" namespace "ecell4":
         Integer col
         Integer row
         Integer layer
+
+        Integer& operator[](Integer)
 
 cdef class Global:
     cdef Cpp_Global* thisptr

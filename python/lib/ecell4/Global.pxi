@@ -22,6 +22,11 @@ cdef class Global:
     def layer(self):
         return self.thisptr.layer
 
+    def __getitem__(self, Integer i):
+        if i > 2:
+            raise IndexError("index out of bounds")
+        return deref(self.thisptr)[i]
+
 cdef Global Global_from_Cpp_Global(Cpp_Global *p):
     cdef Cpp_Global *new_obj = new Cpp_Global(<Cpp_Global> deref(p))
     r = Global(0.0, 0.0, 0.0)

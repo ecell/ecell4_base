@@ -4,13 +4,18 @@
 #include <ostream>
 #include <iomanip>
 #include <vector>
+
 #include "types.hpp"
+#include "exceptions.hpp"
+
 
 namespace ecell4
 {
 
 struct Global
 {
+    typedef std::size_t size_type;
+
     Integer col;
     Integer row;
     Integer layer;
@@ -42,6 +47,34 @@ struct Global
     Global north() const;
     Global dorsal() const;
     Global ventral() const;
+
+    Integer& operator[](size_type i)
+    {
+        switch (i)
+        {
+        case 0:
+            return this->col;
+        case 1:
+            return this->row;
+        case 2:
+            return this->layer;
+        }
+        throw NotSupported("out of range");
+    }
+
+    const Integer& operator[](size_type i) const
+    {
+        switch (i)
+        {
+        case 0:
+            return this->col;
+        case 1:
+            return this->row;
+        case 2:
+            return this->layer;
+        }
+        throw NotSupported("out of range");
+    }
 };
 
 inline Global add(const Global& g1, const Global& g2)

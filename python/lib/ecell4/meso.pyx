@@ -48,6 +48,10 @@ cdef class MesoscopicWorld:
         cdef Cpp_Position3 lengths = self.thisptr.get().edge_lengths()
         return Position3_from_Cpp_Position3(address(lengths))
 
+    def matrix_sizes(self):
+        cdef Cpp_Global sizes = self.thisptr.get().matrix_sizes()
+        return Global_from_Cpp_Global(address(sizes))
+
     def volume(self):
         return self.thisptr.get().volume()
 

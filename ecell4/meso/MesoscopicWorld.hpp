@@ -118,6 +118,11 @@ public:
     const Position3 subvolume_edge_lengths() const;
     const Position3& edge_lengths() const;
 
+    const Global matrix_sizes() const
+    {
+        return cs_->matrix_sizes();
+    }
+
     coordinate_type global2coord(const Global& g) const;
     Global coord2global(const coordinate_type& c) const;
     coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const;

@@ -21,6 +21,7 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         Integer num_subvolumes()
         void set_edge_lengths(Cpp_Position3&)
         Cpp_Position3 edge_lengths()
+        Cpp_Global matrix_sizes()
         Integer num_molecules(Cpp_Species &)
         Integer num_molecules_exact(Cpp_Species &)
         Integer num_molecules(Cpp_Species &, Integer)
