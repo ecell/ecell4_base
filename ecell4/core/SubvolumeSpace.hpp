@@ -73,10 +73,14 @@ public:
     virtual const Real subvolume() const = 0;
     virtual coordinate_type global2coord(const Global& g) const = 0;
     virtual Global coord2global(const coordinate_type& c) const = 0;
-    virtual Integer num_molecules(const Species& sp, const coordinate_type& c) const = 0;
-    virtual Integer num_molecules_exact(const Species& sp, const coordinate_type& c) const = 0;
-    virtual void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c) = 0;
-    virtual void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c) = 0;
+    virtual Integer num_molecules(
+        const Species& sp, const coordinate_type& c) const = 0;
+    virtual Integer num_molecules_exact(
+        const Species& sp, const coordinate_type& c) const = 0;
+    virtual void add_molecules(
+        const Species& sp, const Integer& num, const coordinate_type& c) = 0;
+    virtual void remove_molecules(
+        const Species& sp, const Integer& num, const coordinate_type& c) = 0;
     virtual const std::vector<Species>& species() const = 0;
     virtual std::vector<Species> list_species() const = 0;
 
@@ -122,13 +126,13 @@ public:
 
 public:
 
-    SubvolumeSpaceVectorImpl(const Position3& edge_lengths,
-        const Integer& cx, const Integer& cy, const Integer& cz)
+    SubvolumeSpaceVectorImpl(
+        const Position3& edge_lengths, const Global matrix_sizes)
         : base_type()
     {
-        cell_sizes_[0] = cx;
-        cell_sizes_[1] = cy;
-        cell_sizes_[2] = cz;
+        matrix_sizes_[0] = matrix_sizes.col;
+        matrix_sizes_[1] = matrix_sizes.row;
+        matrix_sizes_[2] = matrix_sizes.layer;
 
         set_edge_lengths(edge_lengths);
     }
@@ -145,15 +149,15 @@ public:
 
     const Global matrix_sizes() const
     {
-        return Global(cell_sizes_[0], cell_sizes_[1], cell_sizes_[2]);
+        return Global(matrix_sizes_[0], matrix_sizes_[1], matrix_sizes_[2]);
     }
 
     const Position3 subvolume_edge_lengths() const
     {
         return Position3(
-            edge_lengths_[0] / cell_sizes_[0],
-            edge_lengths_[1] / cell_sizes_[1],
-            edge_lengths_[2] / cell_sizes_[2]);
+            edge_lengths_[0] / matrix_sizes_[0],
+            edge_lengths_[1] / matrix_sizes_[1],
+            edge_lengths_[2] / matrix_sizes_[2]);
     }
 
     void set_edge_lengths(const Position3& edge_lengths)
@@ -176,7 +180,7 @@ public:
 
     const Integer num_subvolumes() const
     {
-        return cell_sizes_[0] * cell_sizes_[1] * cell_sizes_[2];
+        return matrix_sizes_[0] * matrix_sizes_[1] * matrix_sizes_[2];
     }
 
     const Real subvolume() const
@@ -187,20 +191,20 @@ public:
     coordinate_type global2coord(const Global& g) const
     {
         const coordinate_type coord(
-            modulo(g.col, cell_sizes_[0])
-                + cell_sizes_[0] * (modulo(g.row, cell_sizes_[1])
-                    + cell_sizes_[1] * modulo(g.layer, cell_sizes_[2])));
+            modulo(g.col, matrix_sizes_[0])
+                + matrix_sizes_[0] * (modulo(g.row, matrix_sizes_[1])
+                    + matrix_sizes_[1] * modulo(g.layer, matrix_sizes_[2])));
         return coord;
     }
 
     Global coord2global(const coordinate_type& c) const
     {
-        const Integer rowcol(cell_sizes_[0] * cell_sizes_[1]);
+        const Integer rowcol(matrix_sizes_[0] * matrix_sizes_[1]);
         const Integer layer(static_cast<Integer>(c / rowcol));
         const Integer surplus(c - layer * rowcol);
-        const Integer row(surplus / cell_sizes_[0]);
+        const Integer row(surplus / matrix_sizes_[0]);
 
-        return Global(surplus - row * cell_sizes_[0], row, layer);
+        return Global(surplus - row * matrix_sizes_[0], row, layer);
     }
 
     Integer num_molecules(const Species& sp) const;
@@ -240,9 +244,9 @@ public:
     void cleanup(const Position3& edge_lengths, const Global& matrix_sizes)
     {
         set_edge_lengths(edge_lengths);
-        cell_sizes_[0] = matrix_sizes.col;
-        cell_sizes_[1] = matrix_sizes.row;
-        cell_sizes_[2] = matrix_sizes.layer;
+        matrix_sizes_[0] = matrix_sizes.col;
+        matrix_sizes_[1] = matrix_sizes.row;
+        matrix_sizes_[2] = matrix_sizes.layer;
         matrix_.clear();
         species_.clear();
     }
@@ -254,7 +258,7 @@ protected:
 protected:
 
     Position3 edge_lengths_;
-    boost::array<Integer, 3> cell_sizes_;
+    boost::array<Integer, 3> matrix_sizes_;
     matrix_type matrix_;
     std::vector<Species> species_;
 };

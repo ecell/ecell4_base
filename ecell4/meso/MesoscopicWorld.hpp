@@ -31,7 +31,7 @@ public:
 public:
 
     MesoscopicWorld(const std::string& filename)
-        : cs_(new SubvolumeSpaceVectorImpl(Position3(1, 1, 1), 1, 1, 1))
+        : cs_(new SubvolumeSpaceVectorImpl(Position3(1, 1, 1), Global(1, 1, 1)))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -39,7 +39,7 @@ public:
     }
 
     MesoscopicWorld(const Position3& edge_lengths = Position3(1, 1, 1))
-        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, 1, 1, 1))
+        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Global(1, 1, 1)))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -47,16 +47,14 @@ public:
     }
 
     MesoscopicWorld(const Position3& edge_lengths,
-        const Integer& cx, const Integer& cy, const Integer& cz,
-        boost::shared_ptr<RandomNumberGenerator> rng)
-        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, cx, cy, cz)), rng_(rng)
+        const Global& matrix_sizes, boost::shared_ptr<RandomNumberGenerator> rng)
+        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes)), rng_(rng)
     {
         ;
     }
 
-    MesoscopicWorld(const Position3& edge_lengths,
-        const Integer& cx, const Integer& cy, const Integer& cz)
-        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, cx, cy, cz))
+    MesoscopicWorld(const Position3& edge_lengths, const Global& matrix_sizes)
+        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());

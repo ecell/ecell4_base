@@ -11,8 +11,8 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicWorld() except +
         Cpp_MesoscopicWorld(Cpp_Position3&) except +
         Cpp_MesoscopicWorld(string&) except +
-        Cpp_MesoscopicWorld(Cpp_Position3&, Integer, Integer, Integer) except +
-        Cpp_MesoscopicWorld(Cpp_Position3&, Integer, Integer, Integer,
+        Cpp_MesoscopicWorld(Cpp_Position3&, Cpp_Global&) except +
+        Cpp_MesoscopicWorld(Cpp_Position3&, Cpp_Global&,
             shared_ptr[Cpp_RandomNumberGenerator]) except +
         void set_t(Real)
         Real t()

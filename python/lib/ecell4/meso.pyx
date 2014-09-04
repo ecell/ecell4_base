@@ -6,13 +6,13 @@ from cython.operator cimport dereference as deref, preincrement as inc
 #  a python wrapper for Cpp_MesoscopicWorld
 cdef class MesoscopicWorld:
 
-    def __cinit__(self, edge_lengths = None, cx = None, cy = None, cz = None,
-        GSLRandomNumberGenerator rng = None):
+    def __cinit__(self, edge_lengths = None,
+        matrix_sizes = None, GSLRandomNumberGenerator rng = None):
         cdef string filename
 
         if edge_lengths is None:
             self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](new Cpp_MesoscopicWorld())
-        elif cx is None or cy is None or cz is None:
+        elif matrix_sizes is None:
             if isinstance(edge_lengths, Position3):
                 self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                     new Cpp_MesoscopicWorld(deref((<Position3>edge_lengths).thisptr)))
@@ -24,13 +24,13 @@ cdef class MesoscopicWorld:
             self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                 new Cpp_MesoscopicWorld(
                     deref((<Position3>edge_lengths).thisptr),
-                    <Integer>cx, <Integer>cy, <Integer>cz))
+                    deref((<Global>matrix_sizes).thisptr)))
         else:
             # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
             self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                 new Cpp_MesoscopicWorld(
                     deref((<Position3>edge_lengths).thisptr),
-                    <Integer>cx, <Integer>cy, <Integer>cz, deref(rng.thisptr)))
+                    deref((<Global>matrix_sizes).thisptr), deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,

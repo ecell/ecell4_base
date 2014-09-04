@@ -33,7 +33,8 @@ BOOST_AUTO_TEST_CASE(MesoscopicSimulator_test_step)
     const Real L(1.0);
     const Position3 edge_lengths(L, L, L);
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
-    boost::shared_ptr<MesoscopicWorld> world(new MesoscopicWorld(edge_lengths, 2, 3, 4, rng));
+    boost::shared_ptr<MesoscopicWorld> world(
+        new MesoscopicWorld(edge_lengths, Global(2, 3, 4), rng));
 
     world->add_molecules(sp1, 10, 0);
     world->add_molecules(sp2, 10, 23);

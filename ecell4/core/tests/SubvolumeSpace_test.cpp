@@ -19,7 +19,8 @@ void SubvolumeSpace_test_volume_template()
 {
     const Real L(1e-6);
     const Position3 edge_lengths(L, L, L);
-    Timpl_ target(edge_lengths, 2, 3, 4);
+    const Global matrix_sizes(2, 3, 4);
+    Timpl_ target(edge_lengths, matrix_sizes);
 
     BOOST_CHECK_CLOSE(target.volume(), 1e-18, 1e-6);
     BOOST_CHECK_EQUAL(target.num_subvolumes(), 24);
@@ -43,7 +44,8 @@ void SubvolumeSpace_test_num_molecules_template()
 {
     const Real L(1e-6);
     const Position3 edge_lengths(L, L, L);
-    Timpl_ target(edge_lengths, 2, 3, 4);
+    const Global matrix_sizes(2, 3, 4);
+    Timpl_ target(edge_lengths, matrix_sizes);
 
     const Species sp1("A"), sp2("B");
     BOOST_CHECK_EQUAL(target.num_molecules_exact(sp1, 0), 0);
