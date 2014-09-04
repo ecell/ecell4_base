@@ -401,6 +401,12 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Integer num_steps()
         string filename()
 
+    cdef cppclass Cpp_FixedIntervalCSVObserver "ecell4::FixedIntervalCSVObserver":
+        Cpp_FixedIntervalCSVObserver(Real, string) except +
+        Real next_time()
+        Integer num_steps()
+        string filename()
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -414,3 +420,6 @@ cdef class NumberObserver:
 
 cdef class FixedIntervalHDF5Observer:
     cdef shared_ptr[Cpp_FixedIntervalHDF5Observer]* thisptr
+
+cdef class FixedIntervalCSVObserver:
+    cdef shared_ptr[Cpp_FixedIntervalCSVObserver]* thisptr

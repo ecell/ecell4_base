@@ -4,6 +4,8 @@
 #include "types.hpp"
 #include "Space.hpp"
 #include "SimulatorBase.hpp"
+
+#include <fstream>
 #include <boost/format.hpp>
 
 
@@ -273,6 +275,93 @@ public:
     virtual void fire(const SimulatorBase* sim, const Space* space)
     {
         space->save(filename());
+
+        base_type::fire(sim, space);
+    }
+
+    const std::string filename() const
+    {
+        boost::format fmt(prefix_);
+
+        if (fmt.expected_args() == 0)
+        {
+            return fmt.str();
+        }
+        else
+        {
+            return (fmt % num_steps()).str();
+        }
+    }
+
+protected:
+
+    std::string prefix_;
+};
+
+class FixedIntervalCSVObserver
+    : public FixedIntervalObserver
+{
+public:
+
+    typedef FixedIntervalObserver base_type;
+
+public:
+
+    FixedIntervalCSVObserver(const Real& dt, const std::string& filename)
+        : base_type(dt), prefix_(filename)
+    {
+        ;
+    }
+
+    virtual ~FixedIntervalCSVObserver()
+    {
+        ;
+    }
+
+    virtual void initialize(const Space* space)
+    {
+        base_type::initialize(space);
+    }
+
+    virtual void fire(const SimulatorBase* sim, const Space* space)
+    {
+        typedef std::vector<std::pair<ParticleID, Particle> >
+            particle_container_type;
+        typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
+            serial_map_type;
+
+        const particle_container_type particles(space->list_particles());
+        serial_map_type serials;
+        unsigned int cnt(0);
+
+        std::ofstream ofs(filename().c_str(), std::ios::out);
+        ofs << std::setprecision(17);
+        ofs << "x,y,z,r,sid" << std::endl;
+        for(particle_container_type::const_iterator i(particles.begin());
+            i != particles.end(); ++i)
+        {
+            const Position3 pos((*i).second.position());
+            const Real radius((*i).second.radius());
+
+            unsigned int idx;
+            serial_map_type::iterator
+                j(serials.find((*i).second.species().serial()));
+            if (j == serials.end())
+            {
+                idx = cnt;
+                serials.insert(std::make_pair((*i).second.species().serial(), idx));
+                ++cnt;
+            }
+            else
+            {
+                idx = (*j).second;
+            }
+
+            ofs << pos[0] << "," << pos[1] << "," << pos[2] << "," << radius
+                << "," << idx << std::endl;
+        }
+
+        ofs.close();
 
         base_type::fire(sim, space);
     }
