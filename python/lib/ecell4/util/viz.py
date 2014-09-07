@@ -6,6 +6,7 @@ ecell4.util.viz: Visualizer of particles based on D3.js, THREE.js and Elegans.
 import os
 import uuid
 import json
+import base64
 
 def init_ipynb():
     """Load all depending JavaScript libraries to IPython notebook.
@@ -45,7 +46,8 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
 
     plots = []
     for name in species:
-        particles = [{'pos':p.position(), 'r':p.radius()} for pid, p in world.list_particles() if p.species().serial() == name]
+        particles = [{'pos': p.position(), 'r': p.radius()}
+            for pid, p in world.list_particles() if p.species().serial() == name]
         data = {
             'x': [p['pos'][0] for p in particles],
             'y': [p['pos'][1] for p in particles],
@@ -57,9 +59,9 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
         size = 30/min(world.edge_lengths()) * r
 
         plots.append({
-            'type':"Particles",
-            'data':data,
-            'options':{'name':name, 'color':color_scale.get_color(name), 'size':size}
+            'type': "Particles",
+            'data': data,
+            'options': {'name': name, 'color': color_scale.get_color(name), 'size': size}
         })
 
     edge_lengths = world.edge_lengths()
@@ -75,7 +77,6 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
 
     model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
     display(HTML(generate_html(model, model_id)))
-
     return color_scale.get_config()
 
 def generate_html(model, model_id):
@@ -95,13 +96,77 @@ def generate_html(model, model_id):
     html = template.render(model=json.dumps(model), model_id = model_id)
     return html
 
+def logo(x=1, y=None):
+    if not isinstance(x, int):
+        x = 1
+    else:
+        x = min(10, max(1, x))
+    if y is None or not isinstance(y, int):
+        y = 1
+    else:
+        y = min(10, max(1, y))
+
+    from IPython.core.display import display, HTML, Javascript
+
+    template = """<script type="text/javascript">
+    var y = 0;
+    var running = false, stop = true;
+    var base64a = ["%s", "%s", "%s", "%s", "%s",
+        "%s", "%s", "%s", "%s", "%s",
+        "%s", "%s", "%s", "%s", "%s"];
+    var maxcnt = base64a.length;
+    var timer_id;
+
+    function move() {
+        if (running)
+        {
+            y = (y + 1) %% maxcnt;
+            var logos = document.getElementsByName('ecelllogo');
+            for (var i = 0; i < logos.length; i++) {
+                logos[i].src = "data:image/png;base64," + base64a[y + 1];
+            }
+            if (stop && y == maxcnt - 1) {
+                // clearInterval(id);
+                running = false;
+                stop = true;
+            }
+        }
+    }
+
+    function action() {
+        if (!stop) {
+            stop = true;
+        }
+        else if (!running) {
+            running = true;
+            stop = false;
+            if (timer_id != undefined) {
+                clearInterval(timer_id);
+            }
+            timer_id = setInterval('move();', 120);
+        }
+    }
+    </script>
+    %s
+    """
+
+    filenames = [os.path.abspath(os.path.dirname(__file__))
+        + '/templates/ecelllogo/logo%02d.png' % (i + 1) for i in range(15)]
+    base64s = [base64.b64encode(open(filename, 'rt').read())
+        for filename in filenames]
+    img_html = '<img name="ecelllogo" style="position:relative; left:0px;" alt="ecelllogo" src="data:image/png;base64,%s" onClick="action();" />' % (base64s[0])
+    h = HTML(template % tuple(base64s + [("<p>%s</p>" % (img_html * x)) * y]))
+    # j = Javascript("running = true; stop = false; id = setInterval('move();', %g);" % interval)
+    # display(h, j)
+    display(h)
 
 class ColorScale:
     """Color scale for species.
-    
     """
 
-    COLORS = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#e31a1c", "#8dd3c7", "#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"]
+    COLORS = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#e31a1c", "#8dd3c7", "#ffffb3",
+        "#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9",
+        "#bc80bd","#ccebc5","#ffed6f"]
 
     def __init__(self, config={}):
         """Initialize a color scale
@@ -109,7 +174,7 @@ class ColorScale:
         Parameters
         ----------
         config : dict, default {}
-            Dict for configure default colors. Its values are colors unique to each key. 
+            Dict for configure default colors. Its values are colors unique to each key.
             Colors included in config will never be used.
         """
 
@@ -119,7 +184,7 @@ class ColorScale:
         for color in self.config.values():
             if color in self.buffer:
                 self.buffer.remove(color)
-    
+
     def get_color(self, name):
         """Get color unique to the recieved name
 

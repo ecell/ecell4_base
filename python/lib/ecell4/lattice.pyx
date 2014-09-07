@@ -12,18 +12,30 @@ from ecell4.core cimport *
 #  a python wrapper for Cpp_LatticeWorld
 cdef class LatticeWorld:
 
-    def __cinit__(self, Position3 edge_lengths, voxel_radius = None,
+    def __cinit__(self, edge_lengths = None, voxel_radius = None,
         GSLRandomNumberGenerator rng = None):
-        if voxel_radius is None:
-            self.thisptr = new shared_ptr[Cpp_LatticeWorld](
-                new Cpp_LatticeWorld(deref(edge_lengths.thisptr)))
+        cdef string filename
+
+        if edge_lengths is None:
+            self.thisptr = new shared_ptr[Cpp_LatticeWorld](new Cpp_LatticeWorld())
+        elif voxel_radius is None:
+            if isinstance(edge_lengths, Position3):
+                self.thisptr = new shared_ptr[Cpp_LatticeWorld](
+                    new Cpp_LatticeWorld(
+                        deref((<Position3>edge_lengths).thisptr)))
+            else:
+                filename = edge_lengths
+                self.thisptr = new shared_ptr[Cpp_LatticeWorld](
+                    new Cpp_LatticeWorld(filename))
         elif rng is None:
             self.thisptr = new shared_ptr[Cpp_LatticeWorld](
-                new Cpp_LatticeWorld(deref(edge_lengths.thisptr), voxel_radius))
+                new Cpp_LatticeWorld(
+                    deref((<Position3>edge_lengths).thisptr), <Real>voxel_radius))
         else:
             self.thisptr = new shared_ptr[Cpp_LatticeWorld](
                 new Cpp_LatticeWorld(
-                    deref(edge_lengths.thisptr), voxel_radius, deref(rng.thisptr)))
+                    deref((<Position3>edge_lengths).thisptr), <Real>voxel_radius,
+                    deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,
@@ -123,6 +135,9 @@ cdef class LatticeWorld:
                      <Cpp_Particle*>(address(deref(it).second)))))
             inc(it)
         return retval
+
+    def get_neighbor(self, coord, nrand):
+        return self.thisptr.get().get_neighbor(coord, nrand)
 
     def has_particle(self, ParticleID pid):
         return self.thisptr.get().has_particle(deref(pid.thisptr))
@@ -288,6 +303,10 @@ cdef class LatticeWorld:
             raise ValueError, ("a wrong argument was given [%s]." % (type(m))
                 + " the argument must be NetworkModel or NetfreeModel")
 
+    def private2position(self, Integer coord):
+        cdef Cpp_Position3 pos = self.thisptr.get().private2position(coord)
+        return Position3_from_Cpp_Position3(address(pos))
+
     def coordinate2position(self, Integer coord):
         cdef Cpp_Position3 pos = self.thisptr.get().coordinate2position(coord)
         return Position3_from_Cpp_Position3(address(pos))
@@ -295,6 +314,27 @@ cdef class LatticeWorld:
     def position2coordinate(self, Position3 pos):
         return self.thisptr.get().position2coordinate(
             deref(pos.thisptr))
+
+    def private2coord(self, Integer coord):
+        return self.thisptr.get().private2coord(coord)
+
+    def coord2private(self, Integer coord):
+        return self.thisptr.get().coord2private(coord)
+
+    def global2coord(self, Global coord):
+        return self.thisptr.get().global2coord(deref(coord.thisptr))
+
+    def coord2global(self, Integer coord):
+        cdef Cpp_Global g = self.thisptr.get().coord2global(coord)
+        return Global_from_Cpp_Global(address(g))
+
+    def global2position(self, Global g):
+        cdef Cpp_Position3 pos = self.thisptr.get().global2position(deref(g.thisptr))
+        return Position3_from_Cpp_Position3(address(pos))
+
+    def position2global(self, Position3 pos):
+        cdef Cpp_Global g = self.thisptr.get().position2global(deref(pos.thisptr))
+        return Global_from_Cpp_Global(address(g))
 
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(

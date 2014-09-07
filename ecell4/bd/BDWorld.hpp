@@ -34,6 +34,14 @@ public:
 
 public:
 
+    BDWorld(const Position3& edge_lengths = Position3(1, 1, 1))
+        : ps_(new ParticleSpaceVectorImpl(edge_lengths))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+    }
+
     BDWorld(
         const Position3& edge_lengths,
         boost::shared_ptr<RandomNumberGenerator> rng)
@@ -42,12 +50,12 @@ public:
         ;
     }
 
-    BDWorld(const Position3& edge_lengths)
-        : ps_(new ParticleSpaceVectorImpl(edge_lengths))
+    BDWorld(const std::string& filename)
+        : ps_(new ParticleSpaceVectorImpl(Position3(1, 1, 1)))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
-        (*rng_).seed();
+        this->load(filename);
     }
 
     /**

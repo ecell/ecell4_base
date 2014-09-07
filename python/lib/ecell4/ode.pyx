@@ -11,10 +11,17 @@ from ecell4.core cimport *
 #  a python wrapper for Cpp_ODEWorld
 cdef class ODEWorld:
 
-    def __cinit__(self, Position3 edge_lengths):
-        # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
-        self.thisptr = new shared_ptr[Cpp_ODEWorld](
-            new Cpp_ODEWorld(deref(edge_lengths.thisptr)))
+    def __cinit__(self, edge_lengths = None):
+        cdef string filename
+
+        if edge_lengths is None:
+            self.thisptr = new shared_ptr[Cpp_ODEWorld](new Cpp_ODEWorld())
+        elif isinstance(edge_lengths, Position3):
+            self.thisptr = new shared_ptr[Cpp_ODEWorld](
+                new Cpp_ODEWorld(deref((<Position3>edge_lengths).thisptr)))
+        else:
+            filename = edge_lengths
+            self.thisptr = new shared_ptr[Cpp_ODEWorld](new Cpp_ODEWorld(filename))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,

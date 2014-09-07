@@ -53,12 +53,20 @@ public:
         (*rng_).seed();
     }
 
-    LatticeWorld(const Position3& edge_lengths)
+    LatticeWorld(const Position3& edge_lengths = Position3(1, 1, 1))
         : space_(edge_lengths, edge_lengths[0] / 100) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
+    }
+
+    LatticeWorld(const std::string filename)
+        : space_(Position3(1, 1, 1), 1 / 100) //XXX: sloppy default
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        this->load(filename);
     }
 
     /**
@@ -214,6 +222,12 @@ public:
     std::pair<std::pair<particle_info, private_coordinate_type>, bool>
         move_to_neighbor(MolecularTypeBase* mtype, Integer index);
 
+    private_coordinate_type get_neighbor(
+            private_coordinate_type private_coord, Integer nrand) const
+    {
+        return space_.get_neighbor(private_coord, nrand);
+    }
+
     std::pair<private_coordinate_type, bool> check_neighbor_private(
             const private_coordinate_type coord);
     // bool update_molecule(coordinate_type at, Species species);
@@ -281,9 +295,23 @@ public:
         return space_.coordinate2position(coord);
     }
 
+    const Position3 private2position(const private_coordinate_type& coord) const
+    {
+        return space_.coordinate2position(private2coord(coord));
+    }
+
+    const Position3 global2position(const Global& global) const
+    {
+        return space_.global2position(global);
+    }
+
+    const Global position2global(const Position3& pos) const
+    {
+        return space_.position2global(pos);
+    }
+
     coordinate_type global2coord(const Global& global) const;
     const Global coord2global(coordinate_type coord) const;
-
     coordinate_type private2coord(const private_coordinate_type&
             private_coord) const;
     private_coordinate_type coord2private(const coordinate_type&

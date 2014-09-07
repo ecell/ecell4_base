@@ -72,6 +72,11 @@ protected:
         {
             const std::pair<ReactionRule::reactant_container_type, Integer>
                 retval(__draw());
+            if (retval.second == 0)
+            {
+                return ReactionRule();
+            }
+
             const std::vector<ReactionRule> reactions(generate(retval.first));
 
             assert(retval.second > 0);
@@ -88,7 +93,9 @@ protected:
             }
             else
             {
-                const Integer rnd2(rng()->uniform_int(0, retval.second - 1));
+                const ReactionRule::reactant_container_type::size_type rnd2(
+                    static_cast<ReactionRule::reactant_container_type::size_type>(
+                        rng()->uniform_int(0, retval.second - 1)));
                 if (rnd2 >= reactions.size())
                 {
                     return ReactionRule();
@@ -187,7 +194,7 @@ protected:
                 }
             }
 
-            ; // never get here
+            return std::make_pair(ReactionRule::reactant_container_type(), 0);
         }
 
         const Real propensity() const
@@ -302,7 +309,7 @@ protected:
                 }
             }
 
-            ; // never get here
+            return std::make_pair(ReactionRule::reactant_container_type(), 0);
         }
 
         const Real propensity() const
