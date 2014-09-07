@@ -125,7 +125,11 @@ public:
 
     coordinate_type global2coord(const Global& g) const;
     Global coord2global(const coordinate_type& c) const;
-    coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const;
+
+    coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const
+    {
+        return cs_->get_neighbor(c, rnd);
+    }
 
     Real get_value(const Species& sp) const;
     Real get_value_exact(const Species& sp) const;

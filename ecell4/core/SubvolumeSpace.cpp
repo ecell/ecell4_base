@@ -108,4 +108,28 @@ void SubvolumeSpaceVectorImpl::remove_molecules(
     (*i).second[c] -= num;
 }
 
+SubvolumeSpaceVectorImpl::coordinate_type SubvolumeSpaceVectorImpl::get_neighbor(
+    const coordinate_type& c, const Integer rnd) const
+{
+    Global g(coord2global(c));
+
+    switch (rnd)
+    {
+    case 0:
+        return global2coord(g.east());
+    case 1:
+        return global2coord(g.west());
+    case 2:
+        return global2coord(g.south());
+    case 3:
+        return global2coord(g.north());
+    case 4:
+        return global2coord(g.dorsal());
+    case 5:
+        return global2coord(g.ventral());
+    }
+
+    throw IllegalState("the number of neighbors is less than 6.");
+}
+
 } // ecell4

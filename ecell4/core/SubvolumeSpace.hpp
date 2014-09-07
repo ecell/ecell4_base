@@ -83,6 +83,8 @@ public:
         const Species& sp, const Integer& num, const coordinate_type& c) = 0;
     virtual const std::vector<Species>& species() const = 0;
     virtual std::vector<Species> list_species() const = 0;
+    virtual coordinate_type get_neighbor(
+        const coordinate_type& c, const Integer rnd) const = 0;
 
     virtual Integer num_molecules(const Species& sp, const Global& g) const
     {
@@ -202,8 +204,7 @@ public:
         const Integer rowcol(matrix_sizes_[0] * matrix_sizes_[1]);
         const Integer layer(static_cast<Integer>(c / rowcol));
         const Integer surplus(c - layer * rowcol);
-        const Integer row(surplus / matrix_sizes_[0]);
-
+        const Integer row(static_cast<Integer>(surplus / matrix_sizes_[0]));
         return Global(surplus - row * matrix_sizes_[0], row, layer);
     }
 
@@ -214,6 +215,8 @@ public:
     Integer num_molecules_exact(const Species& sp, const coordinate_type& c) const;
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
     void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
+
+    coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const;
 
     const std::vector<Species>& species() const
     {
