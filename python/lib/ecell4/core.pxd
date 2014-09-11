@@ -168,7 +168,6 @@ cdef extern from "ecell4/core/ParticleSpace.hpp" namespace "ecell4":
         vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real] ] list_particles_within_radius(
                 Cpp_Position3 &pos, Real &radius, Cpp_ParticleID &ignore1, Cpp_ParticleID &ignore2)
 
-
 ## ParticleSpaceVectorImpl
 #  a python wrapper for ParticleSpaceVectorImpl
 cdef class ParticleSpaceVectorImpl:
@@ -271,11 +270,11 @@ cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
         Cpp_Position3(Real, Real, Real) except +
         Cpp_Position3(Cpp_Position3 &rhs) except+
 
-    Cpp_Position3 operator+(Cpp_Position3, Cpp_Position3)
-    Cpp_Position3 operator-(Cpp_Position3, Cpp_Position3)
-    Cpp_Position3 operator/(Cpp_Position3, Real)
-    Cpp_Position3 operator*(Cpp_Position3, Real)
-    Real& operator[](Integer)
+        Real& operator[](Integer)
+        Cpp_Position3 operator+(Cpp_Position3, Cpp_Position3)
+        Cpp_Position3 operator-(Cpp_Position3, Cpp_Position3)
+        Cpp_Position3 operator/(Cpp_Position3, Real)
+        Cpp_Position3 operator*(Cpp_Position3, Real)
 
 ## Position3
 #  a python wrapper for Cpp_Position3
@@ -283,6 +282,24 @@ cdef class Position3:
     cdef Cpp_Position3* thisptr
 
 cdef Position3 Position3_from_Cpp_Position3(Cpp_Position3 *p)
+
+## Cpp_Global
+#  ecell4::Global
+cdef extern from "ecell4/core/Global.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Global "ecell4::Global":
+        Cpp_Global() except +
+        Cpp_Global(Integer, Integer, Integer) except +
+        Cpp_Global(Cpp_Global&) except +
+        Integer col
+        Integer row
+        Integer layer
+
+        Integer& operator[](Integer)
+
+cdef class Global:
+    cdef Cpp_Global* thisptr
+
+cdef Global Global_from_Cpp_Global(Cpp_Global *g)
 
 ## Cpp_ParticleID
 #  ecell4::ParticleID
@@ -385,6 +402,12 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Integer num_steps()
         string filename()
 
+    cdef cppclass Cpp_FixedIntervalCSVObserver "ecell4::FixedIntervalCSVObserver":
+        Cpp_FixedIntervalCSVObserver(Real, string) except +
+        Real next_time()
+        Integer num_steps()
+        string filename()
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -398,3 +421,6 @@ cdef class NumberObserver:
 
 cdef class FixedIntervalHDF5Observer:
     cdef shared_ptr[Cpp_FixedIntervalHDF5Observer]* thisptr
+
+cdef class FixedIntervalCSVObserver:
+    cdef shared_ptr[Cpp_FixedIntervalCSVObserver]* thisptr

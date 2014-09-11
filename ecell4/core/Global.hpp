@@ -1,14 +1,21 @@
 #ifndef __ECELL4__GLOBAL_HPP
 #define __ECELL4__GLOBAL_HPP
 
+#include <ostream>
+#include <iomanip>
 #include <vector>
+
 #include "types.hpp"
+#include "exceptions.hpp"
+
 
 namespace ecell4
 {
 
 struct Global
 {
+    typedef std::size_t size_type;
+
     Integer col;
     Integer row;
     Integer layer;
@@ -41,6 +48,33 @@ struct Global
     Global dorsal() const;
     Global ventral() const;
 
+    Integer& operator[](size_type i)
+    {
+        switch (i)
+        {
+        case 0:
+            return this->col;
+        case 1:
+            return this->row;
+        case 2:
+            return this->layer;
+        }
+        throw NotSupported("out of range");
+    }
+
+    const Integer& operator[](size_type i) const
+    {
+        switch (i)
+        {
+        case 0:
+            return this->col;
+        case 1:
+            return this->row;
+        case 2:
+            return this->layer;
+        }
+        throw NotSupported("out of range");
+    }
 };
 
 inline Global add(const Global& g1, const Global& g2)
@@ -69,6 +103,36 @@ inline Global operator+(const Global& lhs, const Global& rhs)
 inline Global operator-(const Global& lhs, const Global& rhs)
 {
     return subtract(lhs, rhs);
+}
+
+inline bool operator<(const Global& lhs, const Global& rhs)
+{
+    return (lhs.col < rhs.col ? true :
+        (lhs.row < rhs.row ? true : (lhs.layer < lhs.layer ? true : false)));
+}
+
+inline bool operator>(const Global& lhs, const Global& rhs)
+{
+    return (lhs.col > rhs.col ? true :
+        (lhs.row > rhs.row ? true : (lhs.layer > lhs.layer ? true : false)));
+}
+
+inline bool operator==(const Global& lhs, const Global& rhs)
+{
+    return (lhs.col == rhs.col && lhs.row == rhs.row && lhs.layer == rhs.layer);
+}
+
+inline bool operator!=(const Global& lhs, const Global& rhs)
+{
+    return (lhs.col != rhs.col || lhs.row != rhs.row || lhs.layer != rhs.layer);
+}
+
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
+    std::basic_ostream<Tstrm_, Ttraits_>& strm, const Global& g)
+{
+    strm << "{" << g.col <<  ", " << g.row <<  ", " << g.layer << "}";
+    return strm;
 }
 
 } // ecell4

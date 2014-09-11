@@ -23,7 +23,8 @@ public:
         ELSE,
         PARTICLE,
         LATTICE,
-        COMPARTMENT
+        COMPARTMENT,
+        SUBVOLUME
     } space_kind;
 
 public:

@@ -118,3 +118,28 @@ cdef class FixedIntervalHDF5Observer:
         retval.thisptr = new shared_ptr[Cpp_Observer](
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
+
+cdef class FixedIntervalCSVObserver:
+
+    def __cinit__(self, Real dt, string filename):
+        self.thisptr = new shared_ptr[Cpp_FixedIntervalCSVObserver](
+            new Cpp_FixedIntervalCSVObserver(dt, filename))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def next_time(self):
+        return self.thisptr.get().next_time()
+
+    def num_steps(self):
+        return self.thisptr.get().num_steps()
+
+    def filename(self):
+        return self.thisptr.get().filename()
+
+    def as_base(self):
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval

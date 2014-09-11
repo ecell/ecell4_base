@@ -12,14 +12,21 @@ from ecell4.core cimport *
 #  a python wrapper for Cpp_BDWorld
 cdef class BDWorld:
 
-    def __cinit__(self, Position3 edge_lengths,
-        GSLRandomNumberGenerator rng = None):
-        if rng is None:
-            self.thisptr = new shared_ptr[Cpp_BDWorld](
-                new Cpp_BDWorld(deref(edge_lengths.thisptr)))
+    def __cinit__(self, edge_lengths = None, GSLRandomNumberGenerator rng = None):
+        cdef string filename
+
+        if edge_lengths is None:
+            self.thisptr = new shared_ptr[Cpp_BDWorld](new Cpp_BDWorld())
+        elif rng is None:
+            if isinstance(edge_lengths, Position3):
+                self.thisptr = new shared_ptr[Cpp_BDWorld](
+                    new Cpp_BDWorld(deref((<Position3>edge_lengths).thisptr)))
+            else:
+                filename = edge_lengths
+                self.thisptr = new shared_ptr[Cpp_BDWorld](new Cpp_BDWorld(filename))
         else:
             self.thisptr = new shared_ptr[Cpp_BDWorld](
-                new Cpp_BDWorld(deref(edge_lengths.thisptr), deref(rng.thisptr)))
+                new Cpp_BDWorld(deref((<Position3>edge_lengths).thisptr), deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,

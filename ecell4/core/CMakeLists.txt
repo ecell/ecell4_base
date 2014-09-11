@@ -8,13 +8,14 @@ set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Global.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Position3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
-    Sphere.cpp)
+    Sphere.cpp SubvolumeSpace.cpp)
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
     MolecularType.hpp Particle.hpp Position3.hpp ReactionRule.hpp Space.hpp
     VacantType.hpp extras.hpp linear_algebra.hpp CompartmentSpaceHDF5Writer.hpp
     EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
+    SubvolumeSpace.hpp SubvolumeSpaceHDF5Writer.hpp
     MolecularTypeBase.hpp ParticleSpace.hpp RandomNumberGenerator.hpp
     SerialIDGenerator.hpp Species.hpp Voxel.hpp functions.hpp swap.hpp ModelWrapper.hpp
     Context.hpp Global.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp

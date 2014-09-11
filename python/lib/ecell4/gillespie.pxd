@@ -8,7 +8,9 @@ from core cimport *
 #  ecell4::gillespie::GillespieWorld
 cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gillespie":
     cdef cppclass Cpp_GillespieWorld "ecell4::gillespie::GillespieWorld":
+        Cpp_GillespieWorld() except +
         Cpp_GillespieWorld(Cpp_Position3&) except +
+        Cpp_GillespieWorld(string&) except +
         Cpp_GillespieWorld(Cpp_Position3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
         void set_t(Real)
         Real t()

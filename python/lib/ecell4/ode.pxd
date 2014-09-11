@@ -10,7 +10,9 @@ from ecell4.core cimport *
 #  ecell4::ode::ODEWorld
 cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODEWorld "ecell4::ode::ODEWorld":
+        Cpp_ODEWorld() except +
         Cpp_ODEWorld(Cpp_Position3&) except +
+        Cpp_ODEWorld(string&) except +
         # SpaceTraits
         Real& t()
         void set_t(Real&)
