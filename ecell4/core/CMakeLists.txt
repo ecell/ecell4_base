@@ -11,7 +11,7 @@ set(CPP_FILES
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
-    MolecularType.hpp Particle.hpp Position3.hpp ReactionRule.hpp Space.hpp
+	MolecularType.hpp Particle.hpp Position3.hpp ReactionRule.hpp Space.hpp Ratelow.hpp
     VacantType.hpp extras.hpp linear_algebra.hpp CompartmentSpaceHDF5Writer.hpp
     EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
     MolecularTypeBase.hpp ParticleSpace.hpp RandomNumberGenerator.hpp

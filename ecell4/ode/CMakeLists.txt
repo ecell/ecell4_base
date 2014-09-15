@@ -20,3 +20,4 @@ add_subdirectory(samples)
 
 install(TARGETS ecell4-ode DESTINATION lib)
 install(FILES ${HPP_FILES} DESTINATION "include/ecell4/ode")
+install(FILES ${RATELOW_HPP_FILES} DESTINATION "include/ecell4/ode")

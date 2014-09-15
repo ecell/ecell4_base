@@ -9,6 +9,16 @@
 using namespace ecell4;
 using namespace ecell4::ode;
 
+double calculate_flux(double *state_array, double volume)
+{
+    double k = 1.0;
+    double flux = k / volume;
+    for(int i(0); i < 1; i++) {
+        flux *= double(*(state_array + i)) * volume;
+    }
+    return flux;
+}
+
 /**
  * main function
  */
@@ -23,6 +33,8 @@ int main(int argc, char** argv)
     rr1.add_reactant(sp1);
     rr1.add_product(sp2);
     rr1.add_product(sp3);
+    boost::shared_ptr<Ratelow> ratelow(new RatelowCppImpl(calculate_flux) );
+    rr1.set_ratelow(ratelow);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
