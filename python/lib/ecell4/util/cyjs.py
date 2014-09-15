@@ -9,7 +9,7 @@ from IPython.core.display import display, HTML
 def init_cyjs():
     from IPython.core.display import display, HTML
     path = os.path.abspath(os.path.dirname(__file__)) + '/templates/init_cyjs.js'
-    print path
+    # print path
     html = open(path).read()
     return display(HTML(html))
 
