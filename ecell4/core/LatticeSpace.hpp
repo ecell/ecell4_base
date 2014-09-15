@@ -72,6 +72,16 @@ public:
     Integer num_particles(const Species& sp) const;
     Integer num_particles_exact(const Species& sp) const;
 
+    virtual Real get_value(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules(sp));
+    }
+
+    virtual Real get_value_exact(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules_exact(sp));
+    }
+
     bool has_species(const Species& sp) const;
     // bool has_species_exact(const Species& sp) const;
     bool has_particle(const ParticleID& pid) const;

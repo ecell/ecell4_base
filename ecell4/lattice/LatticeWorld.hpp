@@ -135,6 +135,17 @@ public:
     Integer num_voxels(const Species& sp) const;
     Integer num_voxels_exact(const Species& sp) const;
 
+    Real get_value(const Species& sp) const
+    {
+        return space_.get_value(sp);
+    }
+
+    Real get_value_exact(const Species& sp) const
+    {
+        return space_.get_value_exact(sp);
+    }
+
+
     const spmap& molecular_types() const
     {
         return space_.molecular_types();
