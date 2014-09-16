@@ -19,7 +19,7 @@ public:
     virtual Real operator()(Real *state_array, Real value) = 0;
 };
 
-class RatelowCppImpl : public Ratelow
+class RatelowCppCallback : public Ratelow
 {
     /** Function object for calculate ratelow called by C++
      *  This class must not be exposed to Cython interface.
@@ -27,9 +27,9 @@ class RatelowCppImpl : public Ratelow
 public:
     typedef double (*Ratelow_Callback)(double *, double);
 public:
-    RatelowCppImpl(Ratelow_Callback func) : func_(func) {;}
-    RatelowCppImpl() : func_(0) {}
-    virtual ~RatelowCppImpl(){;}
+    RatelowCppCallback(Ratelow_Callback func) : func_(func) {;}
+    RatelowCppCallback() : func_(0) {}
+    virtual ~RatelowCppCallback(){;}
 
     virtual bool is_available() const
     {
@@ -59,6 +59,37 @@ public:
     }
 private:
     Ratelow_Callback func_;
+};
+
+class RatelowMassAction : public Ratelow
+{
+public:
+    RatelowMassAction(Real k = 0.0, std::size_t num_reactant = 0) 
+        : k_(k), num_reactant_(num_reactant) {}
+    virtual ~RatelowMassAction(){;}
+    virtual bool is_available() const
+    {
+        return true;    // always true
+    }
+    virtual Real operator()(Real *state_array, Real volume)
+    {
+        Real flux(this->k_ * volume);
+        for(int i(0); i < this->num_reactant_; i++) {
+            flux *= Real(*(state_array + i)) / volume;
+        }
+        return flux;
+    }
+    Real set_k(Real k)
+    {
+        this->k_ = k;
+    }
+    Real get_k(Real k) const
+    {
+        return this->k_;
+    }
+private:
+    Real k_;
+    std::size_t num_reactant_;
 };
 
 } // ecell4

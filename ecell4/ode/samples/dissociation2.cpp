@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     rr1.add_reactant(sp1);
     rr1.add_product(sp2);
     rr1.add_product(sp3);
-    boost::shared_ptr<Ratelow> ratelow(new RatelowCppImpl(calculate_flux) );
+    boost::shared_ptr<Ratelow> ratelow(new RatelowCppCallback(calculate_flux) );
     rr1.set_ratelow(ratelow);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
