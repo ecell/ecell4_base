@@ -218,24 +218,59 @@ Integer LatticeWorld::add_structure(const Species& sp, const Shape& shape)
 {
     Integer count(0);
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
-    for (coordinate_type coord(0); coord < size(); ++coord)
+    for (Integer col(0); col < col_size(); ++col)
     {
-        std::vector<LatticeWorld::private_coordinate_type> neighbors(
-                space_.get_neighbors(coord2private(coord)));
-        const bool flg(shape.is_inside(coordinate2position(coord)));
-        for (std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
-                    neighbors.begin()); itr != neighbors.end(); itr++)
+        for (Integer row(0); row < row_size(); ++row)
         {
-            if (flg != shape.is_inside(coordinate2position(private2coord(*itr))))
+            for (Integer layer(0); layer < layer_size(); ++layer)
             {
-                if (new_voxel_structure(Voxel(sp, coord2private(coord),
-                                info.radius, info.D)).second)
-                    ++count;
-                break;
+                const Global g(col, row, layer);
+                const bool flg(shape.is_inside(global2position(g)));
+                // if (!flg)
+                // {
+                //     continue;
+                // }
+
+                const LatticeWorld::private_coordinate_type
+                    private_coord(space_.global2private_coord(g));
+                for (Integer i(0); i < 12; ++i)
+                {
+                    if (flg != shape.is_inside(global2position(space_.private_coord2global(
+                        space_.get_neighbor(private_coord, i)))))
+                    // if (!shape.is_inside(global2position(space_.private_coord2global(
+                    //     space_.get_neighbor(private_coord, i)))))
+                    {
+                        if (new_voxel_structure(Voxel(sp, private_coord,
+                                        info.radius, info.D)).second)
+                            ++count;
+                        break;
+                    }
+                }
             }
         }
     }
     return count;
+
+    // Integer count(0);
+    // const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    // for (coordinate_type coord(0); coord < size(); ++coord)
+    // {
+    //     std::vector<LatticeWorld::private_coordinate_type> neighbors(
+    //             space_.get_neighbors(coord2private(coord)));
+    //     const bool flg(shape.is_inside(coordinate2position(coord)));
+    //     for (std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
+    //                 neighbors.begin()); itr != neighbors.end(); itr++)
+    //     {
+    //         if (flg != shape.is_inside(coordinate2position(private2coord(*itr))))
+    //         {
+    //             if (new_voxel_structure(Voxel(sp, coord2private(coord),
+    //                             info.radius, info.D)).second)
+    //                 ++count;
+    //             break;
+    //         }
+    //     }
+    // }
+    // return count;
 }
 
 // TODO
