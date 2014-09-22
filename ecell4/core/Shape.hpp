@@ -8,6 +8,11 @@ namespace ecell4
 
 struct Shape
 {
+    virtual ~Shape()
+    {
+        ; // do nothing
+    }
+
     virtual bool is_inside(const Position3& coord) const = 0;
 };
 

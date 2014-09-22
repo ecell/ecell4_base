@@ -336,6 +336,10 @@ cdef class LatticeWorld:
         cdef Cpp_Global g = self.thisptr.get().position2global(deref(pos.thisptr))
         return Global_from_Cpp_Global(address(g))
 
+    def add_structure(self, Species sp, shape):
+        return self.thisptr.get().add_structure(
+            deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr.get()))
+
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())

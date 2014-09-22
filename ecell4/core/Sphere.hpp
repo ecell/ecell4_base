@@ -6,12 +6,15 @@
 namespace ecell4
 {
 
-struct Sphere : public Shape
+struct Sphere
+    : public Shape
 {
+    Sphere();
     Sphere(const Position3& center, const Real radius);
     bool is_inside(const Position3& coord) const;
 
 protected:
+
     Position3 center_;
     Real radius_;
 };
