@@ -7,6 +7,7 @@ import os
 import uuid
 import json
 import base64
+import copy
 
 def init_ipynb():
     """Load all depending JavaScript libraries to IPython notebook.
@@ -18,7 +19,7 @@ def init_ipynb():
     html = open(path).read()
     return display(HTML(html))
 
-def plot_world(world, radius=None, width=500, height=500, config={}):
+def plot_world(world, radius=None, width=500, height=500, config={}, species_list=None):
     """Generate a plot from received instance of World and show it on IPython notebook.
     This method returns the instance of dict that indicates color setting for each speices.
     You can use the dict as the parameter of plot_world, in order to use the same colors in another plot.
@@ -39,8 +40,11 @@ def plot_world(world, radius=None, width=500, height=500, config={}):
     """
     from IPython.core.display import display, HTML
 
-    species = [p.species().serial() for pid, p in world.list_particles()]
-    species = sorted(set(species), key=species.index) # pick unique ones
+    if species_list is None:
+        species = [p.species().serial() for pid, p in world.list_particles()]
+        species = sorted(set(species), key=species.index) # pick unique ones
+    else:
+        species = copy.copy(species_list)
 
     color_scale = ColorScale(config=config)
 
