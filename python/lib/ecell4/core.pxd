@@ -430,11 +430,7 @@ cdef class FixedIntervalCSVObserver:
 cdef extern from "ecell4/core/Shape.hpp" namespace "ecell4":
     cdef cppclass Cpp_Shape "ecell4::Shape":
         bool is_inside(Cpp_Position3&)
-
-## Shape
-#  a python wrapper for Cpp_Shape
-cdef class Shape:
-    cdef shared_ptr[Cpp_Shape]* thisptr
+        Integer dimension()
 
 ## Cpp_Sphere
 #  ecell4::Sphere
@@ -442,10 +438,38 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
     cdef cppclass Cpp_Sphere "ecell4::Sphere":
         Cpp_Sphere()
         Cpp_Sphere(Cpp_Position3&, Real)
+        Cpp_Sphere(Cpp_Sphere&)
         Real distance(Cpp_Position3&)
         Real is_inside(Cpp_Position3&)
+        Cpp_SphericalSurface surface()
+        Integer dimension()
+
+## Cpp_SphericalSurface
+#  ecell4::SphericalSurface
+cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
+    cdef cppclass Cpp_SphericalSurface "ecell4::SphericalSurface":
+        Cpp_SphericalSurface()
+        Cpp_SphericalSurface(Cpp_Position3&, Real)
+        Cpp_SphericalSurface(Cpp_SphericalSurface&)
+        Real distance(Cpp_Position3&)
+        Real is_inside(Cpp_Position3&)
+        Cpp_Sphere inside()
+        Integer dimension()
+
+## Shape
+#  a python wrapper for Cpp_Shape
+cdef class Shape:
+    cdef Cpp_Shape* thisptr
 
 ## Sphere
 #  a python wrapper for Cpp_Sphere
 cdef class Sphere:
-    cdef shared_ptr[Cpp_Sphere]* thisptr
+    cdef Cpp_Sphere* thisptr
+
+## SphericalSurface
+#  a python wrapper for Cpp_SphericalSurface
+cdef class SphericalSurface:
+    cdef Cpp_SphericalSurface* thisptr
+
+cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
+cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)

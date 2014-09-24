@@ -338,11 +338,11 @@ cdef class LatticeWorld:
 
     def add_molecules_inside(self, Species sp, Integer num, shape):
         self.thisptr.get().add_molecules_inside(
-            deref(sp.thisptr), num, deref((<Shape>(shape.as_base())).thisptr.get()))
+            deref(sp.thisptr), num, deref((<Shape>(shape.as_base())).thisptr))
 
     def add_structure(self, Species sp, shape):
         return self.thisptr.get().add_structure(
-            deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr.get()))
+            deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr))
 
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(

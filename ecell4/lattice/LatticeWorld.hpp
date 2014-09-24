@@ -392,6 +392,11 @@ public:
 
 protected:
 
+    Integer add_structure2(const Species& sp, const Shape& shape);
+    Integer add_structure3(const Species& sp, const Shape& shape);
+
+protected:
+
     LatticeSpace space_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
