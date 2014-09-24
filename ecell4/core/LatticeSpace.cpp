@@ -390,7 +390,7 @@ LatticeSpace::__get_molecular_type(const Voxel& v)
     MolecularTypeBase* location;
     try
     {
-        std::string location_name(v.species().get_attribute("location"));
+        std::string location_name(v.species().get_attribute("location")); //XXX: need MoleculeInfo
         location = find_molecular_type(location_name);
     }
     catch(const NotFound& e)
@@ -952,19 +952,24 @@ bool LatticeSpace::update_voxel_private(const ParticleID& pid, const Voxel& v)
 
         MolecularTypeBase::container_type::const_iterator
             dest_itr(dest_mt->find(to_coord));
-        if (dest_itr == dest_mt->end())
+        if (dest_mt->is_vacant())
+        {
+            return false;
+        }
+        else if (dest_itr == dest_mt->end())
         {
             throw IllegalState(
                 "MolecularTypaBase [" + dest_mt->species().serial()
                 + "] doesn't contain any coordinate.");
         }
-        if ((*dest_itr).second != pid)
+        else if ((*dest_itr).second != pid)
         {
             return false;
         }
-        if (pid == ParticleID())
+        else if (pid == ParticleID())
+        {
             return false;
-
+        }
     }
 
     if (pid != ParticleID())
@@ -985,7 +990,6 @@ bool LatticeSpace::update_voxel_private(const ParticleID& pid, const Voxel& v)
     voxel_container::iterator itr(voxels_.begin() + to_coord);
     (*itr) = new_mt;
     dest_mt->removeVoxel(to_coord);
-
     return true;
 }
 

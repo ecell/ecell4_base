@@ -11,7 +11,10 @@ struct Sphere
 {
     Sphere();
     Sphere(const Position3& center, const Real radius);
-    bool is_inside(const Position3& coord) const;
+    Real is_inside(const Position3& coord) const;
+    Real distance(const Position3& pos) const;
+    Position3 draw_position_inside(
+        boost::shared_ptr<RandomNumberGenerator>& rng) const;
 
 protected:
 

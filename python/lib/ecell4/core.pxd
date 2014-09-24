@@ -442,7 +442,8 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
     cdef cppclass Cpp_Sphere "ecell4::Sphere":
         Cpp_Sphere()
         Cpp_Sphere(Cpp_Position3&, Real)
-        bool is_inside(Cpp_Position3&)
+        Real distance(Cpp_Position3&)
+        Real is_inside(Cpp_Position3&)
 
 ## Sphere
 #  a python wrapper for Cpp_Sphere

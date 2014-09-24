@@ -23,6 +23,7 @@ struct MoleculeInfo
 {
     const Real radius;
     const Real D;
+    const std::string location;
 };
 
 class LatticeWorld
@@ -78,12 +79,20 @@ public:
     {
         const bool with_D(sp.has_attribute("D"));
         const bool with_radius(sp.has_attribute("radius"));
+        const bool with_location(sp.has_attribute("location"));
+
         Real radius(voxel_radius()), D(0.0);
+        std::string location("");
 
         if (with_D && with_radius)
         {
             radius = std::atof(sp.get_attribute("radius").c_str());
             D = std::atof(sp.get_attribute("D").c_str());
+
+            if (with_location)
+            {
+                location = sp.get_attribute("location");
+            }
         }
         else
         {
@@ -95,6 +104,11 @@ public:
             if (with_radius)
             {
                 radius = std::atof(sp.get_attribute("radius").c_str());
+            }
+
+            if (with_location)
+            {
+                location = sp.get_attribute("location");
             }
 
             if (boost::shared_ptr<Model> bound_model = lock_model())
@@ -109,10 +123,14 @@ public:
                     radius = std::atof(
                         attributed.get_attribute("radius").c_str());
                 }
+                if (!with_location && attributed.has_attribute("location"))
+                {
+                    location = attributed.get_attribute("location");
+                }
             }
         }
 
-        MoleculeInfo info = {radius, D};
+        MoleculeInfo info = {radius, D, location};
         return info;
     }
 
@@ -221,6 +239,8 @@ public:
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Voxel& v);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
+    bool add_molecules_inside(
+        const Species& sp, const Integer& num, const Shape& shape);
     Integer add_structure(const Species& sp, const Shape& shape);
     Integer add_neighbors(const Species& sp,
             const private_coordinate_type center); // TODO
