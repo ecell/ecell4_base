@@ -126,7 +126,7 @@ public:
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
     MolecularTypeBase* find_molecular_type(const Species& sp);
-    MolecularTypeBase* find_molecular_type(const std::string name);
+    // MolecularTypeBase* find_molecular_type(const std::string name);
     MolecularTypeBase* get_molecular_type(private_coordinate_type coord) const;
     // bool register_species(const Species& sp);
     // bool update_molecule(private_coordinate_type coord, const Species& species);

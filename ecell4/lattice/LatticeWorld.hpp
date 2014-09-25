@@ -23,7 +23,7 @@ struct MoleculeInfo
 {
     const Real radius;
     const Real D;
-    const std::string location;
+    const std::string loc;
 };
 
 class LatticeWorld
@@ -79,19 +79,19 @@ public:
     {
         const bool with_D(sp.has_attribute("D"));
         const bool with_radius(sp.has_attribute("radius"));
-        const bool with_location(sp.has_attribute("location"));
+        const bool with_loc(sp.has_attribute("location"));
 
         Real radius(voxel_radius()), D(0.0);
-        std::string location("");
+        std::string loc("");
 
         if (with_D && with_radius)
         {
             radius = std::atof(sp.get_attribute("radius").c_str());
             D = std::atof(sp.get_attribute("D").c_str());
 
-            if (with_location)
+            if (with_loc)
             {
-                location = sp.get_attribute("location");
+                loc = sp.get_attribute("location");
             }
         }
         else
@@ -106,9 +106,9 @@ public:
                 radius = std::atof(sp.get_attribute("radius").c_str());
             }
 
-            if (with_location)
+            if (with_loc)
             {
-                location = sp.get_attribute("location");
+                loc = sp.get_attribute("location");
             }
 
             if (boost::shared_ptr<Model> bound_model = lock_model())
@@ -123,14 +123,14 @@ public:
                     radius = std::atof(
                         attributed.get_attribute("radius").c_str());
                 }
-                if (!with_location && attributed.has_attribute("location"))
+                if (!with_loc && attributed.has_attribute("location"))
                 {
-                    location = attributed.get_attribute("location");
+                    loc = attributed.get_attribute("location");
                 }
             }
         }
 
-        MoleculeInfo info = {radius, D, location};
+        MoleculeInfo info = {radius, D, loc};
         return info;
     }
 

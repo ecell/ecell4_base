@@ -235,7 +235,9 @@ LatticeSpace::get_voxel(const ParticleID& pid) const
         if (j != mt.end())
         {
             const coordinate_type coord(private2coord((*j).first));
-            return std::make_pair(pid, Voxel((*i).first, coord, mt.radius(), mt.D()));
+            const std::string loc((mt.location()->is_vacant())
+                ? "" : mt.location()->species().serial());
+            return std::make_pair(pid, Voxel((*i).first, coord, mt.radius(), mt.D(), loc));
         }
     }
 
@@ -252,12 +254,14 @@ LatticeSpace::get_particle(const ParticleID& pid) const
 
 bool LatticeSpace::update_particle(const ParticleID& pid, const Particle& p)
 {
+    //XXX: Particle does not have a location.
     return update_voxel_private(pid, Voxel(p.species(),
                 position2private(p.position()), p.radius(), p.D()));
 }
 
 bool LatticeSpace::update_structure(const Particle& p)
 {
+    //XXX: Particle does not have a location.
     Voxel v(p.species(), position2private(p.position()), p.radius(), p.D());
     return update_voxel_private(ParticleID(), v);
 }
@@ -343,12 +347,14 @@ LatticeSpace::list_voxels_exact(const Species& sp) const
     }
 
     const MolecularTypeBase* mt(&((*itr).second));
+    const std::string loc((mt->location()->is_vacant())
+        ? "" : mt->location()->species().serial());
     for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
         itr != mt->end(); ++itr)
     {
         retval.push_back(std::make_pair(
             (*itr).second,
-            Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D())));
+            Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D(), loc)));
     }
     return retval;
 }
@@ -367,12 +373,14 @@ LatticeSpace::list_voxels(const Species& sp) const
         }
 
         const MolecularTypeBase* mt(&((*itr).second));
+        const std::string loc((mt->location()->is_vacant())
+            ? "" : mt->location()->species().serial());
         for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
             itr != mt->end(); ++itr)
         {
             retval.push_back(std::make_pair(
                 (*itr).second,
-                Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D())));
+                Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D(), loc)));
         }
     }
     return retval;
@@ -390,8 +398,22 @@ LatticeSpace::__get_molecular_type(const Voxel& v)
     MolecularTypeBase* location;
     try
     {
-        std::string location_name(v.species().get_attribute("location")); //XXX: need MoleculeInfo
-        location = find_molecular_type(location_name);
+        if (v.loc() == "")
+        {
+            location = vacant_;
+        }
+        else
+        {
+            // XXX: A MolecularTypeBase for the structure (location) must be allocated
+            // XXX: before the allocation of a Species on the structure.
+            // XXX: The MolecularTypeBase cannot be automatically allocated at the time
+            // XXX: because its MoleculeInfo is unknown.
+            // XXX: LatticeSpace::load will raise a problem about this issue.
+            location = find_molecular_type(Species(v.loc()));
+        }
+
+        // std::string location_name(v.species().get_attribute("location"));
+        // location = find_molecular_type(location_name);
     }
     catch(const NotFound& e)
     {
@@ -418,18 +440,18 @@ MolecularTypeBase* LatticeSpace::find_molecular_type(const Species& sp)
     return &((*itr).second);
 }
 
-MolecularTypeBase* LatticeSpace::find_molecular_type(const std::string name)
-{
-    for (spmap::iterator itr(spmap_.begin());
-            itr != spmap_.end(); ++itr)
-    {
-        if ((*itr).first.serial() == name) {
-            return &((*itr).second);
-        }
-    }
-
-    throw NotFound("MolecularType not found.");
-}
+// MolecularTypeBase* LatticeSpace::find_molecular_type(const std::string name)
+// {
+//     for (spmap::iterator itr(spmap_.begin());
+//             itr != spmap_.end(); ++itr)
+//     {
+//         if ((*itr).first.serial() == name) {
+//             return &((*itr).second);
+//         }
+//     }
+// 
+//     throw NotFound("MolecularType not found.");
+// }
 
 MolecularTypeBase* LatticeSpace::get_molecular_type(const Voxel& v)
 {
@@ -901,7 +923,7 @@ Integer LatticeSpace::num_voxels() const
 bool LatticeSpace::update_voxel(const ParticleID& pid, const Voxel& v)
 {
     return update_voxel_private(pid,
-        Voxel(v.species(), coord2private(v.coordinate()), v.radius(), v.D()));
+        Voxel(v.species(), coord2private(v.coordinate()), v.radius(), v.D(), v.loc()));
 }
 
 bool LatticeSpace::update_voxel_private(const Voxel& v)

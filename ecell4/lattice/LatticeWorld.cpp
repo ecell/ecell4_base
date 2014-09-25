@@ -159,7 +159,7 @@ LatticeWorld::new_voxel(const Voxel& v)
 {
     const private_coordinate_type private_coord(coord2private(v.coordinate()));
     return new_voxel_private(
-        Voxel(v.species(), private_coord, v.radius(), v.D()));
+        Voxel(v.species(), private_coord, v.radius(), v.D(), v.loc()));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -168,7 +168,7 @@ LatticeWorld::new_voxel(const Species& sp, const coordinate_type& coord)
     const private_coordinate_type private_coord(coord2private(coord));
     const molecule_info_type minfo(get_molecule_info(sp));
     return new_voxel_private(
-        Voxel(sp, private_coord, minfo.radius, minfo.D));
+        Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -178,7 +178,7 @@ LatticeWorld::new_voxel_private(const Voxel& v)
     const bool is_succeeded(space_.update_voxel_private(pid, v));
     const coordinate_type coord(private2coord(v.coordinate()));
     return std::make_pair(
-        std::make_pair(pid, Voxel(v.species(), coord, v.radius(), v.D())),
+        std::make_pair(pid, Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
         is_succeeded);
 }
 
@@ -188,7 +188,7 @@ LatticeWorld::new_voxel_structure(const Voxel& v)
     const bool is_succeeded(space_.update_voxel_private(ParticleID(), v));
     const coordinate_type coord(private2coord(v.coordinate()));
     return std::make_pair(
-        std::make_pair(ParticleID(), Voxel(v.species(), coord, v.radius(), v.D())),
+        std::make_pair(ParticleID(), Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
         is_succeeded);
 }
 
@@ -205,8 +205,8 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     while (count < num)
     {
         const coordinate_type coord(rng()->uniform_int(0, space_.size() - 1));
-        if (new_voxel_private(
-            Voxel(sp, coord2private(coord), info.radius, info.D)).second)
+        const Voxel v(sp, coord2private(coord), info.radius, info.D, info.loc);
+        if (new_voxel_private(v).second)
         {
             ++count;
         }
@@ -228,8 +228,8 @@ bool LatticeWorld::add_molecules_inside(
     while (count < num)
     {
         const Position3 pos(shape.draw_position(rng_));
-        if (new_voxel_private(
-            Voxel(sp, space_.position2private(pos), info.radius, info.D)).second)
+        const Voxel v(sp, space_.position2private(pos), info.radius, info.D, info.loc);
+        if (new_voxel_private(v).second)
         {
             ++count;
         }
@@ -269,7 +269,7 @@ Integer LatticeWorld::add_structure3(const Species& sp, const Shape& shape)
 
                 const LatticeWorld::private_coordinate_type
                     private_coord(space_.global2private_coord(g));
-                const Voxel v(sp, private_coord, info.radius, info.D);
+                const Voxel v(sp, private_coord, info.radius, info.D, info.loc);
                 if (new_voxel_structure(v).second)
                 {
                     ++count;
@@ -305,7 +305,7 @@ Integer LatticeWorld::add_structure2(const Species& sp, const Shape& shape)
                     if (shape.is_inside(global2position(space_.private_coord2global(
                         space_.get_neighbor(private_coord, i)))) <= 0)
                     {
-                        const Voxel v(sp, private_coord, info.radius, info.D);
+                        const Voxel v(sp, private_coord, info.radius, info.D, info.loc);
                         if (new_voxel_structure(v).second)
                         {
                             ++count;
@@ -330,7 +330,7 @@ Integer LatticeWorld::add_neighbors(const Species& sp,
     for (std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
                 neighbors.begin()); itr != neighbors.end(); itr++)
     {
-        if (new_voxel_private(Voxel(sp, *itr, info.radius, info.D)).second)
+        if (new_voxel_private(Voxel(sp, *itr, info.radius, info.D, info.loc)).second)
             ++count;
         else
             throw "Error in add_neighbors()";

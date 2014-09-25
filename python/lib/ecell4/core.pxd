@@ -369,6 +369,7 @@ cdef extern from "ecell4/core/Voxel.hpp" namespace "ecell4":
         Real D()
         Real radius()
         Cpp_Species &species()
+        string loc()
 
 ## Voxel
 #  a python wrapper for Cpp_Voxel
