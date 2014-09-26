@@ -19,7 +19,7 @@ def init_ipynb():
     html = open(path).read()
     return display(HTML(html))
 
-def plot_world(world, radius=None, width=500, height=500, config={}, species_list=None):
+def plot_world(world, radius=None, width=500, height=500, config={}, grid=False, species_list=None):
     """Generate a plot from received instance of World and show it on IPython notebook.
     This method returns the instance of dict that indicates color setting for each speices.
     You can use the dict as the parameter of plot_world, in order to use the same colors in another plot.
@@ -75,9 +75,14 @@ def plot_world(world, radius=None, width=500, height=500, config={}, species_lis
     rangez = [(edge_lengths[2] - max_length) * 0.5, (edge_lengths[2] + max_length) * 0.5]
     model = {
         'plots': plots,
-        'options': {'width': width, 'height': height,
-        'range': {'x': rangex, 'y': rangey, 'z': rangez},
-        'autorange': False, 'space_mode': 'wireframe'}
+        'options': {
+            'width': width,
+            'height': height,
+            'range': {'x': rangex, 'y': rangey, 'z': rangez},
+            'autorange': False,
+            'space_mode':'wireframe',
+            'grid': grid
+        }
     };
 
     model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
