@@ -394,6 +394,7 @@ protected:
 
     Integer add_structure2(const Species& sp, const Shape& shape);
     Integer add_structure3(const Species& sp, const Shape& shape);
+    bool is_surface_voxel(const Global& g, const Shape& shape) const;
 
 protected:
 

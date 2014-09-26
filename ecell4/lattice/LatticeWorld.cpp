@@ -206,7 +206,12 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     {
         const coordinate_type coord(rng()->uniform_int(0, space_.size() - 1));
         const Voxel v(sp, coord2private(coord), info.radius, info.D, info.loc);
-        if (new_voxel_private(v).second)
+
+        if (space_.on_structure(v))
+        {
+            continue;
+        }
+        else if (new_voxel_private(v).second)
         {
             ++count;
         }
@@ -229,7 +234,12 @@ bool LatticeWorld::add_molecules_inside(
     {
         const Position3 pos(shape.draw_position(rng_));
         const Voxel v(sp, space_.position2private(pos), info.radius, info.D, info.loc);
-        if (new_voxel_private(v).second)
+
+        if (space_.on_structure(v))
+        {
+            continue;
+        }
+        else if (new_voxel_private(v).second)
         {
             ++count;
         }
@@ -267,9 +277,8 @@ Integer LatticeWorld::add_structure3(const Species& sp, const Shape& shape)
                     continue;
                 }
 
-                const LatticeWorld::private_coordinate_type
-                    private_coord(space_.global2private_coord(g));
-                const Voxel v(sp, private_coord, info.radius, info.D, info.loc);
+                const Voxel v(sp, space_.global2private_coord(g),
+                    info.radius, info.D, info.loc);
                 if (new_voxel_structure(v).second)
                 {
                     ++count;
@@ -282,7 +291,6 @@ Integer LatticeWorld::add_structure3(const Species& sp, const Shape& shape)
 
 Integer LatticeWorld::add_structure2(const Species& sp, const Shape& shape)
 {
-    const Real threshold(2 * voxel_radius());
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (Integer col(0); col < col_size(); ++col)
@@ -292,31 +300,42 @@ Integer LatticeWorld::add_structure2(const Species& sp, const Shape& shape)
             for (Integer layer(0); layer < layer_size(); ++layer)
             {
                 const Global g(col, row, layer);
-                const Real L(shape.is_inside(global2position(g)));
-                if (L <= 0 || L > threshold)
+                if (!is_surface_voxel(g, shape))
                 {
                     continue;
                 }
 
-                const LatticeWorld::private_coordinate_type
-                    private_coord(space_.global2private_coord(g));
-                for (Integer i(0); i < 12; ++i)
+                const Voxel v(sp, space_.global2private_coord(g),
+                    info.radius, info.D, info.loc);
+                if (new_voxel_structure(v).second)
                 {
-                    if (shape.is_inside(global2position(space_.private_coord2global(
-                        space_.get_neighbor(private_coord, i)))) <= 0)
-                    {
-                        const Voxel v(sp, private_coord, info.radius, info.D, info.loc);
-                        if (new_voxel_structure(v).second)
-                        {
-                            ++count;
-                        }
-                        break;
-                    }
+                    ++count;
                 }
             }
         }
     }
     return count;
+}
+
+bool LatticeWorld::is_surface_voxel(const Global& g, const Shape& shape) const
+{
+    const Real L(shape.is_inside(global2position(g)));
+    if (L <= 0 || L > 2 * voxel_radius())
+    {
+        return false;
+    }
+
+    const LatticeWorld::private_coordinate_type
+        private_coord(space_.global2private_coord(g));
+    for (Integer i(0); i < 12; ++i)
+    {
+        if (shape.is_inside(global2position(space_.private_coord2global(
+            space_.get_neighbor(private_coord, i)))) <= 0)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 // TODO

@@ -396,28 +396,37 @@ LatticeSpace::__get_molecular_type(const Voxel& v)
     }
 
     MolecularTypeBase* location;
-    try
+    if (v.loc() == "")
     {
-        if (v.loc() == "")
+        location = vacant_;
+    }
+    else
+    {
+        const Species locsp(v.loc());
+        try
         {
-            location = vacant_;
+            location = find_molecular_type(locsp);
         }
-        else
+        catch (const NotFound& err)
         {
             // XXX: A MolecularTypeBase for the structure (location) must be allocated
             // XXX: before the allocation of a Species on the structure.
             // XXX: The MolecularTypeBase cannot be automatically allocated at the time
             // XXX: because its MoleculeInfo is unknown.
             // XXX: LatticeSpace::load will raise a problem about this issue.
-            location = find_molecular_type(Species(v.loc()));
-        }
+            // XXX: In this implementation, the MolecularTypeBase for a structure is
+            // XXX: created with default arguments.
+            MolecularType locmt(locsp, vacant_, voxel_radius_, 0);
+            std::pair<LatticeSpace::spmap::iterator, bool> locval(
+                spmap_.insert(LatticeSpace::spmap::value_type(locsp, locmt)));
+            if (!locval.second)
+            {
+                throw AlreadyExists(
+                    "never reach here. find_molecular_type seems wrong.");
+            }
 
-        // std::string location_name(v.species().get_attribute("location"));
-        // location = find_molecular_type(location_name);
-    }
-    catch(const NotFound& e)
-    {
-        location = vacant_;
+            location = &((*locval.first).second);
+        }
     }
 
     MolecularType mt(v.species(), location, v.radius(), v.D());
@@ -425,7 +434,7 @@ LatticeSpace::__get_molecular_type(const Voxel& v)
         spmap_.insert(LatticeSpace::spmap::value_type(v.species(), mt)));
     if (!retval.second)
     {
-        throw "insert error.";
+        throw AlreadyExists("never reach here.");
     }
     return retval;
 }
@@ -456,6 +465,12 @@ MolecularTypeBase* LatticeSpace::find_molecular_type(const Species& sp)
 MolecularTypeBase* LatticeSpace::get_molecular_type(const Voxel& v)
 {
     return &((*(__get_molecular_type(v).first)).second);
+}
+
+bool LatticeSpace::on_structure(const Voxel& v)
+{
+    // return get_molecular_type(v.coordinate()) != get_molecular_type(v)->location();
+    return voxels_.at(v.coordinate()) != get_molecular_type(v)->location();
 }
 
 // bool LatticeSpace::register_species(const Species& sp)
@@ -951,7 +966,7 @@ bool LatticeSpace::update_voxel_private(const Voxel& v)
 
 bool LatticeSpace::update_voxel_private(const ParticleID& pid, const Voxel& v)
 {
-    const LatticeSpace::private_coordinate_type to_coord(v.coordinate());
+    const LatticeSpace::private_coordinate_type& to_coord(v.coordinate());
     if (!is_in_range_private(to_coord))
     {
         return false;
@@ -964,7 +979,7 @@ bool LatticeSpace::update_voxel_private(const ParticleID& pid, const Voxel& v)
     }
 
     MolecularTypeBase* dest_mt(get_molecular_type(to_coord));
-    if (dest_mt != new_mt->location())
+    if (!dest_mt->is_vacant() && dest_mt != new_mt->location())
     {
         if (dest_mt->species() == periodic_->species()
             || dest_mt->species() == border_->species())
@@ -974,23 +989,15 @@ bool LatticeSpace::update_voxel_private(const ParticleID& pid, const Voxel& v)
 
         MolecularTypeBase::container_type::const_iterator
             dest_itr(dest_mt->find(to_coord));
-        if (dest_mt->is_vacant())
-        {
-            return false;
-        }
-        else if (dest_itr == dest_mt->end())
+        if (dest_itr == dest_mt->end())
         {
             throw IllegalState(
                 "MolecularTypaBase [" + dest_mt->species().serial()
-                + "] doesn't contain any coordinate.");
+                + "] doesn't contain a proper coordinate.");
         }
-        else if ((*dest_itr).second != pid)
+        else if (!(pid != ParticleID() && (*dest_itr).second == pid))
         {
-            return false;
-        }
-        else if (pid == ParticleID())
-        {
-            return false;
+            return false; // collision
         }
     }
 
