@@ -2,6 +2,7 @@
 #define __ECELL4_MOLECULAR_TYPE_HPP
 
 #include "MolecularTypeBase.hpp"
+#include "VacantType.hpp"
 
 namespace ecell4
 {
@@ -17,19 +18,21 @@ public:
 public:
 
     MolecularType(const std::string& name = "")
-        : MolecularTypeBase(Species(name))
+        : MolecularTypeBase(Species(name), &(VacantType::getInstance()), 0, 0)
     {
         ;
     }
 
-    MolecularType(const Species& species)
-        : MolecularTypeBase(species)
+    MolecularType(const Species& species, const Real& radius = 0.0,
+            const Real& D = 0.0)
+        : MolecularTypeBase(species, &(VacantType::getInstance()), radius, D)
     {
         ;
     }
 
-    MolecularType(const Species& species, const Real& radius, const Real& D)
-        : MolecularTypeBase(species, radius, D)
+    MolecularType(const Species& species, MolecularTypeBase* location,
+            const Real& radius = 0.0, const Real& D = 0.0)
+        : MolecularTypeBase(species, location, radius, D)
     {
         ;
     }

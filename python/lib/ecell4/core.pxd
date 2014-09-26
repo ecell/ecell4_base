@@ -168,7 +168,6 @@ cdef extern from "ecell4/core/ParticleSpace.hpp" namespace "ecell4":
         vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real] ] list_particles_within_radius(
                 Cpp_Position3 &pos, Real &radius, Cpp_ParticleID &ignore1, Cpp_ParticleID &ignore2)
 
-
 ## ParticleSpaceVectorImpl
 #  a python wrapper for ParticleSpaceVectorImpl
 cdef class ParticleSpaceVectorImpl:
@@ -271,11 +270,11 @@ cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
         Cpp_Position3(Real, Real, Real) except +
         Cpp_Position3(Cpp_Position3 &rhs) except+
 
-    Cpp_Position3 operator+(Cpp_Position3, Cpp_Position3)
-    Cpp_Position3 operator-(Cpp_Position3, Cpp_Position3)
-    Cpp_Position3 operator/(Cpp_Position3, Real)
-    Cpp_Position3 operator*(Cpp_Position3, Real)
-    Real& operator[](Integer)
+        Real& operator[](Integer)
+        Cpp_Position3 operator+(Cpp_Position3, Cpp_Position3)
+        Cpp_Position3 operator-(Cpp_Position3, Cpp_Position3)
+        Cpp_Position3 operator/(Cpp_Position3, Real)
+        Cpp_Position3 operator*(Cpp_Position3, Real)
 
 ## Position3
 #  a python wrapper for Cpp_Position3
@@ -283,6 +282,24 @@ cdef class Position3:
     cdef Cpp_Position3* thisptr
 
 cdef Position3 Position3_from_Cpp_Position3(Cpp_Position3 *p)
+
+## Cpp_Global
+#  ecell4::Global
+cdef extern from "ecell4/core/Global.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Global "ecell4::Global":
+        Cpp_Global() except +
+        Cpp_Global(Integer, Integer, Integer) except +
+        Cpp_Global(Cpp_Global&) except +
+        Integer col
+        Integer row
+        Integer layer
+
+        Integer& operator[](Integer)
+
+cdef class Global:
+    cdef Cpp_Global* thisptr
+
+cdef Global Global_from_Cpp_Global(Cpp_Global *g)
 
 ## Cpp_ParticleID
 #  ecell4::ParticleID
@@ -352,6 +369,7 @@ cdef extern from "ecell4/core/Voxel.hpp" namespace "ecell4":
         Real D()
         Real radius()
         Cpp_Species &species()
+        string loc()
 
 ## Voxel
 #  a python wrapper for Cpp_Voxel
@@ -385,6 +403,12 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Integer num_steps()
         string filename()
 
+    cdef cppclass Cpp_FixedIntervalCSVObserver "ecell4::FixedIntervalCSVObserver":
+        Cpp_FixedIntervalCSVObserver(Real, string) except +
+        Real next_time()
+        Integer num_steps()
+        string filename()
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -398,3 +422,55 @@ cdef class NumberObserver:
 
 cdef class FixedIntervalHDF5Observer:
     cdef shared_ptr[Cpp_FixedIntervalHDF5Observer]* thisptr
+
+cdef class FixedIntervalCSVObserver:
+    cdef shared_ptr[Cpp_FixedIntervalCSVObserver]* thisptr
+
+## Cpp_Shape
+#  ecell4::Shape
+cdef extern from "ecell4/core/Shape.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Shape "ecell4::Shape":
+        bool is_inside(Cpp_Position3&)
+        Integer dimension()
+
+## Cpp_Sphere
+#  ecell4::Sphere
+cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Sphere "ecell4::Sphere":
+        Cpp_Sphere()
+        Cpp_Sphere(Cpp_Position3&, Real)
+        Cpp_Sphere(Cpp_Sphere&)
+        Real distance(Cpp_Position3&)
+        Real is_inside(Cpp_Position3&)
+        Cpp_SphericalSurface surface()
+        Integer dimension()
+
+## Cpp_SphericalSurface
+#  ecell4::SphericalSurface
+cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
+    cdef cppclass Cpp_SphericalSurface "ecell4::SphericalSurface":
+        Cpp_SphericalSurface()
+        Cpp_SphericalSurface(Cpp_Position3&, Real)
+        Cpp_SphericalSurface(Cpp_SphericalSurface&)
+        Real distance(Cpp_Position3&)
+        Real is_inside(Cpp_Position3&)
+        Cpp_Sphere inside()
+        Integer dimension()
+
+## Shape
+#  a python wrapper for Cpp_Shape
+cdef class Shape:
+    cdef Cpp_Shape* thisptr
+
+## Sphere
+#  a python wrapper for Cpp_Sphere
+cdef class Sphere:
+    cdef Cpp_Sphere* thisptr
+
+## SphericalSurface
+#  a python wrapper for Cpp_SphericalSurface
+cdef class SphericalSurface:
+    cdef Cpp_SphericalSurface* thisptr
+
+cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
+cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)

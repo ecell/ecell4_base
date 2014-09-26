@@ -48,10 +48,17 @@ protected:
 
 public:
 
-    ODEWorld(const Position3& edge_lengths)
+    ODEWorld(const Position3& edge_lengths = Position3(1, 1, 1))
         : t_(0.0)
     {
         set_edge_lengths(edge_lengths);
+    }
+
+    ODEWorld(const std::string& filename)
+        : t_(0.0)
+    {
+        set_edge_lengths(Position3(1, 1, 1));
+        this->load(filename);
     }
 
     // SpaceTraits

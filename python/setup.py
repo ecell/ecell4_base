@@ -69,7 +69,10 @@ if with_cpp_shared_libraries:
             language="c++"),
         Extension("ecell4.lattice", sources=["lib/ecell4/lattice.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-lattice"],
-            language="c++")
+            language="c++"),
+        Extension("ecell4.meso", sources=["lib/ecell4/meso.pyx"],
+            include_dirs=["."], libraries=["ecell4-core", "ecell4-meso"],
+            language="c++"),
         ]
 else:
     core_src = glob.glob("../ecell4/core/*.cpp")
@@ -97,12 +100,19 @@ else:
                 + glob.glob("../ecell4/lattice/*.cpp") + core_src,
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
+        Extension("ecell4.meso",
+            sources=["lib/ecell4/meso.pyx"]
+                + glob.glob("../ecell4/meso/*.cpp") + core_src,
+            extra_compile_args=extra_compile_args,
+            libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         ]
 
 setup(
     name = "ecell4",
     package_dir = {"": "lib"},
-    package_data = {"ecell4.util": ["templates/*"]},
+    package_data = {"ecell4.util": [
+        "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
+        "templates/particles.tmpl", "templates/ecelllogo/*.png"]},
     packages = ["ecell4",
         "ecell4.util", "ecell4.util.legacy"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},

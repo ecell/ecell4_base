@@ -6,15 +6,24 @@ from cython.operator cimport dereference as deref, preincrement as inc
 #  a python wrapper for Cpp_GillespieWorld
 cdef class GillespieWorld:
 
-    def __cinit__(self, Position3 edge_lengths, GSLRandomNumberGenerator rng = None):
-        if rng is None:
-            self.thisptr = new shared_ptr[Cpp_GillespieWorld](
-                new Cpp_GillespieWorld(deref(edge_lengths.thisptr)))
+    def __cinit__(self, edge_lengths = None, GSLRandomNumberGenerator rng = None):
+        cdef string filename
+
+        if edge_lengths is None:
+            self.thisptr = new shared_ptr[Cpp_GillespieWorld](new Cpp_GillespieWorld())
+        elif rng is None:
+            if isinstance(edge_lengths, Position3):
+                self.thisptr = new shared_ptr[Cpp_GillespieWorld](
+                    new Cpp_GillespieWorld(deref((<Position3>edge_lengths).thisptr)))
+            else:
+                filename = edge_lengths
+                self.thisptr = new shared_ptr[Cpp_GillespieWorld](
+                    new Cpp_GillespieWorld(filename))
         else:
             # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
             self.thisptr = new shared_ptr[Cpp_GillespieWorld](
                 new Cpp_GillespieWorld(
-                    deref(edge_lengths.thisptr), deref(rng.thisptr)))
+                    deref((<Position3>edge_lengths).thisptr), deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,

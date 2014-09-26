@@ -1,7 +1,9 @@
 #ifndef __ECELL4_SIMULATOR_BASE_HPP
 #define __ECELL4_SIMULATOR_BASE_HPP
 
+#include <vector>
 #include "types.hpp"
+#include "ReactionRule.hpp"
 
 
 namespace ecell4

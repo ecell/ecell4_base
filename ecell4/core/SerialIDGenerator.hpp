@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <boost/type_traits/is_integral.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <hdf5.h>
 #include <H5Cpp.h>
 

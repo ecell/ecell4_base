@@ -11,19 +11,34 @@ class VacantType
 {
 
 public:
-
-    VacantType() : MolecularTypeBase(Species("VACANT", "0"))
+    ~VacantType()
     {
     }
 
-    ~VacantType()
+    static VacantType& getInstance()
     {
+        static VacantType instance;
+        return instance;
+    }
+
+    void addVoxel(particle_info info)
+    {
+    }
+
+    bool removeVoxel(LatticeSpace::private_coordinate_type coord)
+    {
+        return true;
     }
 
     bool is_vacant() const
     {
         return true;
     }
+private:
+    VacantType() : MolecularTypeBase(Species("VACANT", "0"), NULL, 0, 0)
+    {
+    }
+
 };
 
 } // ecell4

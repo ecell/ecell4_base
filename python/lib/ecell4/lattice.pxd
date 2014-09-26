@@ -17,6 +17,8 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Cpp_LatticeWorld(
             Cpp_Position3& edge_lengths, const Real& voxel_radius) except +
         Cpp_LatticeWorld(Cpp_Position3& edge_lengths) except +
+        Cpp_LatticeWorld(string&) except +
+        Cpp_LatticeWorld() except +
 
         void set_t(Real t)
         Real t()
@@ -56,6 +58,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         void add_molecules(Cpp_Species& sp, Integer num)
         void remove_molecules(Cpp_Species& sp, Integer num)
         # shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
+        Integer get_neighbor(Integer, Integer)
         void save(string filename)
         void load(string filename)
         pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Voxel& p)
@@ -73,6 +76,16 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Cpp_Position3 coordinate2position(Integer)
         Integer position2coordinate(Cpp_Position3)
         shared_ptr[Cpp_RandomNumberGenerator] rng()
+
+        Cpp_Position3 private2position(Integer)
+        Integer private2coord(Integer)
+        Integer coord2private(Integer)
+        Cpp_Global coord2global(Integer)
+        Integer global2coord(Cpp_Global)
+        Cpp_Position3 global2position(Cpp_Global)
+        Cpp_Global position2global(Cpp_Position3)
+        Integer add_structure(Cpp_Species&, Cpp_Shape&)
+        void add_molecules(Cpp_Species& sp, Integer num, Cpp_Shape&)
 
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld

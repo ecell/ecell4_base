@@ -11,6 +11,7 @@
 #include <H5Cpp.h>
 
 #include "types.hpp"
+#include "Position3.hpp"
 
 
 namespace ecell4
@@ -29,6 +30,7 @@ public:
     virtual Integer uniform_int(Integer min, Integer max) = 0;
     virtual Real gaussian(Real mean, Real sigma) = 0;
     virtual Integer binomial(Real p, Integer n) = 0;
+    virtual Position3 direction3d(Real length) = 0;
 
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
@@ -76,6 +78,13 @@ public:
     Integer binomial(Real p, Integer n)
     {
         return gsl_ran_binomial(rng_.get(), p, n);
+    }
+
+    Position3 direction3d(Real length)
+    {
+        double x, y, z;
+        gsl_ran_dir_3d(rng_.get(), &x, &y, &z);
+        return Position3(x * length, y * length, z * length);
     }
 
     void seed(Integer val)

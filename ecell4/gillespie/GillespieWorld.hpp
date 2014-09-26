@@ -33,12 +33,20 @@ public:
         ;
     }
 
-    GillespieWorld(const Position3& edge_lengths)
+    GillespieWorld(const Position3& edge_lengths = Position3(1, 1, 1))
         : cs_(new CompartmentSpaceVectorImpl(edge_lengths))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
+    }
+
+    GillespieWorld(const std::string filename)
+        : cs_(new CompartmentSpaceVectorImpl(Position3(1, 1, 1)))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        this->load(filename);
     }
 
     // SpaceTraits

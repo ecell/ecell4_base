@@ -11,6 +11,7 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/Shape.hpp>
 
 namespace ecell4
 {
@@ -22,6 +23,7 @@ struct MoleculeInfo
 {
     const Real radius;
     const Real D;
+    const std::string loc;
 };
 
 class LatticeWorld
@@ -52,12 +54,20 @@ public:
         (*rng_).seed();
     }
 
-    LatticeWorld(const Position3& edge_lengths)
+    LatticeWorld(const Position3& edge_lengths = Position3(1, 1, 1))
         : space_(edge_lengths, edge_lengths[0] / 100) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
+    }
+
+    LatticeWorld(const std::string filename)
+        : space_(Position3(1, 1, 1), 1 / 100) //XXX: sloppy default
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        this->load(filename);
     }
 
     /**
@@ -69,12 +79,20 @@ public:
     {
         const bool with_D(sp.has_attribute("D"));
         const bool with_radius(sp.has_attribute("radius"));
+        const bool with_loc(sp.has_attribute("location"));
+
         Real radius(voxel_radius()), D(0.0);
+        std::string loc("");
 
         if (with_D && with_radius)
         {
             radius = std::atof(sp.get_attribute("radius").c_str());
             D = std::atof(sp.get_attribute("D").c_str());
+
+            if (with_loc)
+            {
+                loc = sp.get_attribute("location");
+            }
         }
         else
         {
@@ -86,6 +104,11 @@ public:
             if (with_radius)
             {
                 radius = std::atof(sp.get_attribute("radius").c_str());
+            }
+
+            if (with_loc)
+            {
+                loc = sp.get_attribute("location");
             }
 
             if (boost::shared_ptr<Model> bound_model = lock_model())
@@ -100,10 +123,14 @@ public:
                     radius = std::atof(
                         attributed.get_attribute("radius").c_str());
                 }
+                if (!with_loc && attributed.has_attribute("location"))
+                {
+                    loc = attributed.get_attribute("location");
+                }
             }
         }
 
-        MoleculeInfo info = {radius, D};
+        MoleculeInfo info = {radius, D, loc};
         return info;
     }
 
@@ -125,6 +152,17 @@ public:
     Integer num_voxels() const;
     Integer num_voxels(const Species& sp) const;
     Integer num_voxels_exact(const Species& sp) const;
+
+    Real get_value(const Species& sp) const
+    {
+        return space_.get_value(sp);
+    }
+
+    Real get_value_exact(const Species& sp) const
+    {
+        return space_.get_value_exact(sp);
+    }
+
 
     const spmap& molecular_types() const
     {
@@ -199,7 +237,12 @@ public:
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Voxel& v);
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
+    bool add_molecules(const Species& sp, const Integer& num, const Shape& shape);
+    Integer add_structure(const Species& sp, const Shape& shape);
+    Integer add_neighbors(const Species& sp,
+            const private_coordinate_type center); // TODO
     void remove_molecules(const Species& sp, const Integer& num);
     // void remove_molecules_exact(const Species& sp, const Integer& num);
     bool remove_voxel_private(const private_coordinate_type coord);
@@ -208,6 +251,12 @@ public:
     std::pair<coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
     std::pair<std::pair<particle_info, private_coordinate_type>, bool>
         move_to_neighbor(MolecularTypeBase* mtype, Integer index);
+
+    private_coordinate_type get_neighbor(
+            private_coordinate_type private_coord, Integer nrand) const
+    {
+        return space_.get_neighbor(private_coord, nrand);
+    }
 
     std::pair<private_coordinate_type, bool> check_neighbor_private(
             const private_coordinate_type coord);
@@ -276,9 +325,23 @@ public:
         return space_.coordinate2position(coord);
     }
 
+    const Position3 private2position(const private_coordinate_type& coord) const
+    {
+        return space_.coordinate2position(private2coord(coord));
+    }
+
+    const Position3 global2position(const Global& global) const
+    {
+        return space_.global2position(global);
+    }
+
+    const Global position2global(const Position3& pos) const
+    {
+        return space_.position2global(pos);
+    }
+
     coordinate_type global2coord(const Global& global) const;
     const Global coord2global(coordinate_type coord) const;
-
     coordinate_type private2coord(const private_coordinate_type&
             private_coord) const;
     private_coordinate_type coord2private(const coordinate_type&
@@ -325,6 +388,12 @@ public:
     {
         return model_.lock();
     }
+
+protected:
+
+    Integer add_structure2(const Species& sp, const Shape& shape);
+    Integer add_structure3(const Species& sp, const Shape& shape);
+    bool is_surface_voxel(const Global& g, const Shape& shape) const;
 
 protected:
 

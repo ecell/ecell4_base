@@ -26,6 +26,9 @@ cdef class Voxel:
     def species(self):
         return Species_from_Cpp_Species(address(self.thisptr.species()))
 
+    def loc(self):
+        return self.thisptr.loc()
+
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p):
     cdef Cpp_Voxel *new_obj = new Cpp_Voxel(<Cpp_Voxel> deref(p))
     r = Voxel(Species(), 0, 0, 0)

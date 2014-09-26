@@ -2,7 +2,6 @@
 
 #include "LatticeWorld.hpp"
 
-
 namespace ecell4
 {
 
@@ -160,7 +159,7 @@ LatticeWorld::new_voxel(const Voxel& v)
 {
     const private_coordinate_type private_coord(coord2private(v.coordinate()));
     return new_voxel_private(
-        Voxel(v.species(), private_coord, v.radius(), v.D()));
+        Voxel(v.species(), private_coord, v.radius(), v.D(), v.loc()));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -169,7 +168,7 @@ LatticeWorld::new_voxel(const Species& sp, const coordinate_type& coord)
     const private_coordinate_type private_coord(coord2private(coord));
     const molecule_info_type minfo(get_molecule_info(sp));
     return new_voxel_private(
-        Voxel(sp, private_coord, minfo.radius, minfo.D));
+        Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -179,7 +178,17 @@ LatticeWorld::new_voxel_private(const Voxel& v)
     const bool is_succeeded(space_.update_voxel_private(pid, v));
     const coordinate_type coord(private2coord(v.coordinate()));
     return std::make_pair(
-        std::make_pair(pid, Voxel(v.species(), coord, v.radius(), v.D())),
+        std::make_pair(pid, Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
+        is_succeeded);
+}
+
+std::pair<std::pair<ParticleID, Voxel>, bool>
+LatticeWorld::new_voxel_structure(const Voxel& v)
+{
+    const bool is_succeeded(space_.update_voxel_private(ParticleID(), v));
+    const coordinate_type coord(private2coord(v.coordinate()));
+    return std::make_pair(
+        std::make_pair(ParticleID(), Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
         is_succeeded);
 }
 
@@ -196,14 +205,158 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     while (count < num)
     {
         const coordinate_type coord(rng()->uniform_int(0, space_.size() - 1));
-        if (new_voxel_private(
-            Voxel(sp, coord2private(coord), info.radius, info.D)).second)
+        const Voxel v(sp, coord2private(coord), info.radius, info.D, info.loc);
+
+        if (space_.on_structure(v))
+        {
+            continue;
+        }
+        else if (new_voxel_private(v).second)
         {
             ++count;
         }
     }
     return true;
 }
+
+bool LatticeWorld::add_molecules(
+    const Species& sp, const Integer& num, const Shape& shape)
+{
+    if (num < 0)
+    {
+        throw std::invalid_argument("The number of molecules must be positive.");
+    }
+
+    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+
+    Integer count(0);
+    while (count < num)
+    {
+        const Position3 pos(shape.draw_position(rng_));
+        const Voxel v(sp, space_.position2private(pos), info.radius, info.D, info.loc);
+
+        if (space_.on_structure(v))
+        {
+            continue;
+        }
+        else if (new_voxel_private(v).second)
+        {
+            ++count;
+        }
+    }
+    return true;
+}
+
+Integer LatticeWorld::add_structure(const Species& sp, const Shape& shape)
+{
+    switch (shape.dimension())
+    {
+    case Shape::THREE:
+        return add_structure3(sp, shape);
+    case Shape::TWO:
+        return add_structure2(sp, shape);
+    }
+
+    throw NotSupported("The dimension of a shape must be two or three.");
+}
+
+Integer LatticeWorld::add_structure3(const Species& sp, const Shape& shape)
+{
+    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    Integer count(0);
+    for (Integer col(0); col < col_size(); ++col)
+    {
+        for (Integer row(0); row < row_size(); ++row)
+        {
+            for (Integer layer(0); layer < layer_size(); ++layer)
+            {
+                const Global g(col, row, layer);
+                const Real L(shape.is_inside(global2position(g)));
+                if (L > 0)
+                {
+                    continue;
+                }
+
+                const Voxel v(sp, space_.global2private_coord(g),
+                    info.radius, info.D, info.loc);
+                if (new_voxel_structure(v).second)
+                {
+                    ++count;
+                }
+            }
+        }
+    }
+    return count;
+}
+
+Integer LatticeWorld::add_structure2(const Species& sp, const Shape& shape)
+{
+    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    Integer count(0);
+    for (Integer col(0); col < col_size(); ++col)
+    {
+        for (Integer row(0); row < row_size(); ++row)
+        {
+            for (Integer layer(0); layer < layer_size(); ++layer)
+            {
+                const Global g(col, row, layer);
+                if (!is_surface_voxel(g, shape))
+                {
+                    continue;
+                }
+
+                const Voxel v(sp, space_.global2private_coord(g),
+                    info.radius, info.D, info.loc);
+                if (new_voxel_structure(v).second)
+                {
+                    ++count;
+                }
+            }
+        }
+    }
+    return count;
+}
+
+bool LatticeWorld::is_surface_voxel(const Global& g, const Shape& shape) const
+{
+    const Real L(shape.is_inside(global2position(g)));
+    if (L <= 0 || L > 2 * voxel_radius())
+    {
+        return false;
+    }
+
+    const LatticeWorld::private_coordinate_type
+        private_coord(space_.global2private_coord(g));
+    for (Integer i(0); i < 12; ++i)
+    {
+        if (shape.is_inside(global2position(space_.private_coord2global(
+            space_.get_neighbor(private_coord, i)))) <= 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// TODO
+Integer LatticeWorld::add_neighbors(const Species& sp,
+        const LatticeWorld::private_coordinate_type center)
+{
+    Integer count(0);
+    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    std::vector<LatticeWorld::private_coordinate_type> neighbors(
+            space_.get_neighbors(center));
+    for (std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
+                neighbors.begin()); itr != neighbors.end(); itr++)
+    {
+        if (new_voxel_private(Voxel(sp, *itr, info.radius, info.D, info.loc)).second)
+            ++count;
+        else
+            throw "Error in add_neighbors()";
+    }
+    return count;
+}
+// TODO
 
 void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
 {
@@ -223,7 +376,7 @@ void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
     while (count < num)
     {
         const Integer idx(rng_->uniform_int(0, mtype->size() - 1));
-        if (remove_voxel_private(mtype->at(idx).first));
+        if (remove_voxel_private(mtype->at(idx).first))
         {
             ++count;
         }

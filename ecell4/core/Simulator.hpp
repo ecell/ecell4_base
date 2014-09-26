@@ -27,12 +27,12 @@ protected:
             Simulator<model_type, world_type>* sim, Observer* obs, const Real& t)
             : EventScheduler::Event(t), sim_(sim), obs_(obs)
         {
-            obs_->initialize(sim_->world().get());
             time_ = obs_->next_time();
         }
 
         virtual ~ObserverEvent()
         {
+            ;
         }
 
         virtual void fire()
@@ -126,6 +126,12 @@ public:
             offset(std::partition(
                 observers.begin(), observers.end(), observer_every()));
 
+        for (std::vector<boost::shared_ptr<Observer> >::iterator i(observers.begin());
+            i != observers.end(); ++i)
+        {
+            (*i)->initialize(world_.get());
+        }
+
         EventScheduler scheduler;
         for (std::vector<boost::shared_ptr<Observer> >::const_iterator
             i(offset); i != observers.end(); ++i)
@@ -170,6 +176,12 @@ public:
 
                 break;
             }
+        }
+
+        for (std::vector<boost::shared_ptr<Observer> >::iterator i(observers.begin());
+            i != observers.end(); ++i)
+        {
+            (*i)->finalize(world_.get());
         }
     }
 

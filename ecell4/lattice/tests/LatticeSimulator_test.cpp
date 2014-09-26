@@ -11,6 +11,7 @@
 
 #include <ecell4/core/NetworkModel.hpp>
 #include "../LatticeSimulator.hpp"
+#include <ecell4/core/Sphere.hpp>
 
 using namespace ecell4;
 using namespace ecell4::lattice;
@@ -485,4 +486,48 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_finalize)
     world->save("data_finalize_before.h5");
     sim.finalize();
     world->save("data_finalize_after.h5");
+}
+
+BOOST_AUTO_TEST_CASE(LatticeSimulator_test_shape)
+{
+    const Real L(2.5e-8);
+    const Position3 edge_lengths(L, L, L);
+    const Real voxel_radius(1e-9);
+    const std::string D("1e-12"), radius("2.5e-9");
+    Species membrane("Membrane", "2.5e-9", "0");
+
+    Species sp("SpeciesA", "2.5e-9", "1e-12");
+    sp.set_attribute("location", "Membrane");
+
+    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    (*model).add_species_attribute(sp);
+    boost::shared_ptr<GSLRandomNumberGenerator>
+        rng(new GSLRandomNumberGenerator());
+    boost::shared_ptr<LatticeWorld> world(
+            new LatticeWorld(edge_lengths, voxel_radius, rng));
+
+    LatticeSimulator sim(model, world);
+
+    const Sphere sphere(Position3(L/2, L/2, L/2), L*1/3);
+
+    BOOST_CHECK(world->add_structure(membrane, sphere) > 0);
+    BOOST_CHECK(world->new_particle(Particle(sp, Position3(L/2, L/2, L*5/6),
+                    2.5e-9, 1e-12)).second);
+
+    sim.initialize();
+    world->save("structure_before.h5");
+
+    sim.step();
+    sim.step();
+    sim.step();
+    sim.step();
+    sim.step();
+    sim.step();
+    sim.step();
+    sim.step();
+    sim.step();
+    sim.step();
+    sim.step();
+
+    world->save("structure_after.h5");
 }
