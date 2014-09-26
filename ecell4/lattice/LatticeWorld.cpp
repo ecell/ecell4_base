@@ -219,7 +219,7 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     return true;
 }
 
-bool LatticeWorld::add_molecules_inside(
+bool LatticeWorld::add_molecules(
     const Species& sp, const Integer& num, const Shape& shape)
 {
     if (num < 0)
