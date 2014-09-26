@@ -76,7 +76,8 @@ def plot_world(world, radius=None, width=500, height=500, config={}, species_lis
     model = {
         'plots': plots,
         'options': {'width': width, 'height': height,
-        'range': {'x': rangex, 'y': rangey, 'z': rangez}, 'autorange': False}
+        'range': {'x': rangex, 'y': rangey, 'z': rangez},
+        'autorange': False, 'space_mode': 'wireframe'}
     };
 
     model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
