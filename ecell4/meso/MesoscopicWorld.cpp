@@ -170,6 +170,11 @@ Global MesoscopicWorld::coord2global(const MesoscopicWorld::coordinate_type& c) 
     return cs_->coord2global(c);
 }
 
+Global MesoscopicWorld::position2global(const Position3& pos) const
+{
+    return cs_->position2global(pos);
+}
+
 Integer MesoscopicWorld::num_molecules(const Species& sp) const
 {
     return cs_->num_molecules(sp);

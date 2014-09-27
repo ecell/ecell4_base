@@ -9,6 +9,7 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SubvolumeSpace.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/Shape.hpp>
 
 namespace ecell4
 {
@@ -125,6 +126,7 @@ public:
 
     coordinate_type global2coord(const Global& g) const;
     Global coord2global(const coordinate_type& c) const;
+    Global position2global(const Position3& pos) const;
 
     coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const
     {
@@ -165,6 +167,15 @@ public:
         for (Integer i(0); i < num; ++i)
         {
             cs_->add_molecules(sp, 1, rng_->uniform_int(0, num_subvolumes() - 1));
+        }
+    }
+
+    void add_molecules(const Species& sp, const Integer& num, const Shape& shape)
+    {
+        for (Integer i(0); i < num; ++i)
+        {
+            const Position3 pos(shape.draw_position(rng_));
+            cs_->add_molecules(sp, 1, cs_->global2coord(cs_->position2global(pos)));
         }
     }
 

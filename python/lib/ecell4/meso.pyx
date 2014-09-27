@@ -79,6 +79,9 @@ cdef class MesoscopicWorld:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num)
         elif isinstance(c, Global):
             self.thisptr.get().add_molecules(deref(sp.thisptr), num, deref((<Global>c).thisptr))
+        elif hasattr(c, "as_base"):
+            self.thisptr.get().add_molecules(
+                deref(sp.thisptr), num, deref((<Shape>(c.as_base())).thisptr))
         else:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num, <Integer>c)
 
