@@ -259,7 +259,12 @@ public:
 
     void add_molecules(const Species& sp, const Integer& num)
     {
-        extras::throw_in_particles(*this, sp, num, *rng());
+        extras::throw_in_particles(*this, sp, num, rng());
+    }
+
+    void add_molecules(const Species& sp, const Integer& num, const Shape& shape)
+    {
+        extras::throw_in_particles(*this, sp, num, shape, rng());
     }
 
     void remove_molecules(const Species& sp, const Integer& num)
@@ -295,7 +300,7 @@ public:
 
     // Optional members
 
-    inline boost::shared_ptr<RandomNumberGenerator> rng()
+    inline boost::shared_ptr<RandomNumberGenerator>& rng()
     {
         return rng_;
     }

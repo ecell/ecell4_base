@@ -170,8 +170,15 @@ cdef class BDWorld:
     # def add_species(self, Species sp):
     #     self.thisptr.get().add_species(deref(sp.thisptr))
 
-    def add_molecules(self, Species sp, Integer num):
-        self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+    # def add_molecules(self, Species sp, Integer num):
+    #     self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+
+    def add_molecules(self, Species sp, Integer num, shape=None):
+        if shape is None:
+            self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+        else:
+            self.thisptr.get().add_molecules(
+                deref(sp.thisptr), num, deref((<Shape>(shape.as_base())).thisptr))
 
     def remove_molecules(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
