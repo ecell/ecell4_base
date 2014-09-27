@@ -457,6 +457,19 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
         Cpp_Sphere inside()
         Integer dimension()
 
+## Cpp_AABB
+#  ecell4::AABB
+cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
+    cdef cppclass Cpp_AABB "ecell4::AABB":
+        Cpp_AABB()
+        Cpp_AABB(Cpp_Position3&, Cpp_Position3&)
+        Cpp_AABB(Cpp_AABB&)
+        Real distance(Cpp_Position3&)
+        Real is_inside(Cpp_Position3&)
+        Integer dimension()
+        Cpp_Position3 upper()
+        Cpp_Position3 lower()
+
 ## Shape
 #  a python wrapper for Cpp_Shape
 cdef class Shape:
@@ -472,5 +485,11 @@ cdef class Sphere:
 cdef class SphericalSurface:
     cdef Cpp_SphericalSurface* thisptr
 
+## AABB
+#  a python wrapper for Cpp_AABB
+cdef class AABB:
+    cdef Cpp_AABB* thisptr
+
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
 cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)
+cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
