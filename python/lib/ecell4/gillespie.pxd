@@ -21,6 +21,7 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         Integer num_molecules_exact(Cpp_Species &)
         vector[Cpp_Species] list_species()
         void add_molecules(Cpp_Species &sp, Integer &num)
+        void add_molecules(Cpp_Species &sp, Integer &num, Cpp_Shape&)
         void remove_molecules(Cpp_Species &sp, Integer &num)
         void save(string)
         void load(string)

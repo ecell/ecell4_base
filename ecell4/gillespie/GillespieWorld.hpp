@@ -13,6 +13,7 @@
 #include <ecell4/core/CompartmentSpace.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 #include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/Shape.hpp>
 
 
 namespace ecell4
@@ -130,6 +131,11 @@ public:
     boost::shared_ptr<Model> lock_model() const
     {
         return model_.lock();
+    }
+
+    void add_molecules(const Species& sp, const Integer& num, const Shape& shape)
+    {
+        add_molecules(sp, num);
     }
 
 private:
