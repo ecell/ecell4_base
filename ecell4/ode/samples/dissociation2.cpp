@@ -9,12 +9,12 @@
 using namespace ecell4;
 using namespace ecell4::ode;
 
-double calculate_flux(double *state_array, double volume)
+double calculate_flux(std::vector<Real> const &state_array, double volume)
 {
     double k = 1.0;
     double flux = k / volume;
-    for(int i(0); i < 1; i++) {
-        flux *= double(*(state_array + i)) * volume;
+    for(int i(0); i < state_array.size(); i++) {
+        flux *= double(state_array[i]) * volume;
     }
     return flux;
 }

@@ -62,21 +62,18 @@ public:
             *i = 0.0;
         }
 
+        Ratelow::state_container_type reactant_states;
+        reactant_states.reserve(5); // A little bigger than usual reactants' size of ReactionRules.
         for (reaction_rule_container_type::const_iterator
             i(reaction_rules_.begin()); i != reaction_rules_.end(); ++i)
         {
-            //double flux((*i).k() * volume_);
-
             const ReactionRule::reactant_container_type&
                 reactants((*i).reactants());
             const ReactionRule::product_container_type&
                 products((*i).products());
-            //for (ReactionRule::reactant_container_type::const_iterator
-            //         j(reactants.begin()); j != reactants.end(); ++j)
-            //{
-            //    flux *= x[index_map_[*j]] / volume_;
-            //}
-            boost::scoped_array<Real> reactant_states(new Real[reactants.size()]);
+
+            //boost::scoped_array<Real> reactant_states(new Real[reactants.size()]);
+            reactant_states.resize( reactants.size() );
             state_type::size_type cnt(0);
             for (ReactionRule::reactant_container_type::const_iterator
                      j(reactants.begin()); j != reactants.end(); ++j)
@@ -84,7 +81,7 @@ public:
                 reactant_states[cnt] = x[index_map_[*j]];
             }
             boost::shared_ptr<Ratelow> ratelow = i->get_ratelow();
-            double flux = (*ratelow)(reactant_states.get(), volume_);
+            double flux = (*ratelow)(reactant_states, volume_);
             for (ReactionRule::reactant_container_type::const_iterator
                      j(reactants.begin()); j != reactants.end(); ++j)
             {
