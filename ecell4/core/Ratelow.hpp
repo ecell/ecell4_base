@@ -79,7 +79,7 @@ public:
         }
         return flux;
     }
-    Real set_k(Real k)
+    void set_k(Real k)
     {
         this->k_ = k;
     }
