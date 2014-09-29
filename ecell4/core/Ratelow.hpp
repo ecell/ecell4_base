@@ -7,6 +7,7 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/variant.hpp>
 #include <vector>
+#include <algorithm>
 
 namespace ecell4
 {
@@ -22,6 +23,8 @@ public:
     virtual ~Ratelow() {;}
     virtual bool is_available() const = 0;
     virtual Real operator()(state_container_type const &state_array, Real volume) = 0;
+    virtual Real deriv_func(state_container_type const &state_array, Real volume);
+    virtual void jacobi_func(state_container_type const &state_array, state_container_type &jacobian, Real volume) = 0;
 };
 
 class RatelowCppCallback : public Ratelow
@@ -48,6 +51,27 @@ public:
         }
         return this->func_(state_array, volume);
     }
+    virtual Real deriv_func(state_container_type const &state_array, Real volume)
+    {
+        // This is the same as deriv_func
+        // Should they be united to this function?
+        return (*this)(state_array, volume);
+    }
+    virtual void jacobi_func(
+            state_container_type const &state_array, state_container_type &jacobian, Real volume)
+    {
+        Real h( 1.0e-8 ); //XXX  Temporary using 1.0e-8. Should be fixed
+        std::fill(jacobian.begin(), jacobian.end(), Real(0.0));
+        Real flux( this->deriv_func(state_array, volume) );
+        for(int i(0); i < jacobian.size(); i++) 
+        {
+            //XXX For now, we are using FORWARD difference method.
+            state_container_type h_shift(state_array);
+            h_shift[i] += h;
+            jacobian[i] = ((this->deriv_func(h_shift, volume)) - flux) / h;
+        }
+    }
+
     Ratelow_Callback get_callback() const
     {
         return this->func_;
@@ -83,6 +107,28 @@ public:
             flux *= Real(state_array[i]) / volume;
         }
         return flux;
+    }
+    virtual Real deriv_func(state_container_type const &state_array, Real volume)
+    {
+        Real flux( (*this)(state_array, volume) );
+        return flux;
+    }
+    virtual void jacobi_func(
+            state_container_type const &state_array, state_container_type &jacobian, 
+            Real volume)
+    {
+        // The size of the argument 'jacobian' must be resized to 
+        //  the number of reactants.
+        std::fill(jacobian.begin(), jacobian.end(), Real(0.0));
+        Real flux( this->deriv_func(state_array, volume) );
+        if (flux == Real(0.0))
+        {
+            return;
+        }
+        for(int i(0); i < state_array.size(); i++) {
+            Real partial(flux / state_array[i]);
+            jacobian[i] = partial;
+        }
     }
     void set_k(Real k)
     {
