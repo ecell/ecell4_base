@@ -94,6 +94,13 @@ cdef class GillespieWorld:
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())
 
+    def as_base(self):
+        retval = Space()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Space](
+            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        return retval
+
 cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
     shared_ptr[Cpp_GillespieWorld] w):
     r = GillespieWorld(Position3(1, 1, 1))

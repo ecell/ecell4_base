@@ -127,6 +127,17 @@ cdef class ReactionRule:
 
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr)
 
+## Cpp_Space
+#  ecell4::Space
+cdef extern from "ecell4/core/Space.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Space "ecell4::Space":
+        pass
+
+## Space
+#  a python wrapper for Cpp_Space
+cdef class Space:
+    cdef shared_ptr[Cpp_Space]* thisptr
+
 ## Cpp_CompartmentSpaceVectorImpl
 #  ecell4::CompartmentSpaceVectorImpl
 cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
@@ -408,6 +419,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         string filename()
+        void log(Cpp_Space*)
 
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver

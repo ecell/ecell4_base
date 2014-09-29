@@ -204,6 +204,13 @@ cdef class BDWorld:
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())
 
+    def as_base(self):
+        retval = Space()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Space](
+            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        return retval
+
 cdef BDWorld BDWorld_from_Cpp_BDWorld(
     shared_ptr[Cpp_BDWorld] w):
     r = BDWorld(Position3(1, 1, 1))

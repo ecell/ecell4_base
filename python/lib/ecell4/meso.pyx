@@ -161,6 +161,13 @@ cdef class MesoscopicWorld:
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())
 
+    def as_base(self):
+        retval = Space()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Space](
+            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        return retval
+
 cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(
     shared_ptr[Cpp_MesoscopicWorld] w):
     r = MesoscopicWorld(Position3(1, 1, 1), 1, 1, 1)

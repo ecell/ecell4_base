@@ -95,6 +95,13 @@ cdef class ODEWorld:
     def bind_to(self, NetworkModel m):
         self.thisptr.get().bind_to(deref(m.thisptr))
 
+    def as_base(self):
+        retval = Space()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Space](
+            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        return retval
+
 cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(
     shared_ptr[Cpp_ODEWorld] w):
     r = ODEWorld(Position3(1, 1, 1))

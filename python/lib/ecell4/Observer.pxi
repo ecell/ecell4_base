@@ -134,6 +134,10 @@ cdef class FixedIntervalCSVObserver:
     def num_steps(self):
         return self.thisptr.get().num_steps()
 
+    def log(self, w):
+        cdef Space space = w.as_base()
+        self.thisptr.get().log(space.thisptr.get())
+
     def filename(self):
         return self.thisptr.get().filename()
 
