@@ -48,7 +48,7 @@ struct ParticleContainerUtils
         template<typename Titer_>
         void operator()(Titer_ const& i, length_type const& dist)
         {
-            if (!contains(ignore_, (*i).first))
+            if (!collection_contains(ignore_, (*i).first))
             {
                 if (!result_)
                 {

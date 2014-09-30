@@ -1,0 +1,20 @@
+/* WARNING! All changes made to this file will be lost! */
+#ifndef __ECELL4_CONFIG_H
+#define __ECELL4_CONFIG_H
+
+#ifdef _MSC_BUILD
+#define WIN32_MSC 1
+#else
+/* #undef WIN32_MSC */
+#endif
+
+#cmakedefine HAVE_BOOST_REGEX 1
+
+#cmakedefine HAVE_UNORDERED_MAP 1
+#cmakedefine HAVE_STD_HASH 1
+#cmakedefine HAVE_BOOST_UNORDERED_MAP_HPP 1
+#cmakedefine HAVE_BOOST_FUNCTIONAL_HASH_HPP 1
+#cmakedefine HAVE_TR1_UNORDERED_MAP 1
+#cmakedefine HAVE_TR1_FUNCTIONAL 1
+
+#endif /* __ECELL4_CONFIG_H */

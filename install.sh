@@ -1,61 +1,23 @@
-#!/usr/bin/env bash
+#!/bin/bash -x
 
 # PREFIX=/usr/local
 # PREFIX=${HOME}/local
 # PREFIX=
-# SUBMODS=("bd" "gillespie")
-SUBMODS=("bd" "gillespie" "ode" "egfrd" "spatiocyte")
-PYTHONMODS=("core_python" "gillespie_python" "ode_python" "spatiocyte_python" "egfrd_python" "reaction_reader" "util_python")
 
-CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0 -DDEBUG" # enable debug mode
-# WAFFLAGS="-v"
+make clean; rm -rf ${PREFIX}; rm -rf python/build python/lib/ecell4/*.cpp; rm CMakeCache.txt
+# rm -rf python/build python/lib/ecell4/*.cpp
+cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} .
+make
+# make test
+make install
 
-install_core()
-{
-    # install ecell4-core
-    cd core
-    CXXFLAGS=${CXXFLAGS} ../waf distclean update --files="boost,doxygen" \
-        configure --prefix=${PREFIX} ${WAFFLAGS} install
-    cd ..
-    return $?
-}
+# cd python
+# mkdir -p ${PREFIX}/lib/python2.7/site-packages
+# LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include install --prefix=${PREFIX}
+# PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python setup.py test
 
-install_submodule()
-{
-    # install a submodule
-    if [ $# != 1 ]; then
-        return 1
-    fi
-    cd $1
-    LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PREFIX}/lib \
-        LIBRARY_PATH=${LIBRARY_PATH}:${PREFIX}/lib \
-        CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:${PREFIX}/include \
-        CXXFLAGS=${CXXFLAGS} \
-        ../waf distclean configure --prefix=${PREFIX} ${WAFFLAGS} install
-    VAL=$?
-    cd ..
-    return ${VAL}
-}
-
-if [ "$PREFIX" == "" ]; then
-    echo "\${PREFIX} is undefined."
-    exit 1
-fi
-
-if [ $# == 0 ]; then
-    TMP=("core" ${SUBMODS[@]} ${PYTHONMODS[@]})
-else
-    TMP=$@
-fi
-
-for SUBMOD in ${TMP[@]}
-do
-    if [ $SUBMOD == "core" ]; then
-        install_core
-    else
-        install_submodule $SUBMOD
-    fi
-    if [ $? != 0 ]; then
-        exit 1
-    fi
-done
+cd epdp
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PREFIX/lib LIBRARY_PATH=$LIBRARY_PATH:$PREFIX/lib CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$PREFIX/include ./waf distclean configure --prefix=$PREFIX install
+cd SAMPLE
+g++ -I$PREFIX/include -L$PREFIX/lib mymapk.cpp -lecell4-core -lecell4_egfrd_intgl -lgsl -lboost_regex
+# LD_LIBRARY_PATH=$PREFIX/local/lib ./a.out

@@ -67,7 +67,7 @@ private:
 };
 
 template<typename T_>
-inline bool contains(T_ const& s, typename collection_value<T_>::type const& v)
+inline bool collection_contains(T_ const& s, typename collection_value<T_>::type const& v)
 {
     typename boost::range_const_iterator<T_>::type e(boost::end(s));
     return e != std::find(boost::begin(s), e, v);

@@ -436,7 +436,7 @@ protected:
         void operator()(Titer const& i, position_type const& off)
         {
             domain_id_type const& did((*i).second.did());
-            if (contains(ignore, did))
+            if (collection_contains(ignore, did))
                 return;
 
             length_type const distance(world.distance(shape(offset((*i).second, off)), cmp));
