@@ -42,7 +42,8 @@ cdef class Particle:
         return self.thisptr.D()
 
     def species(self):
-        return Species_from_Cpp_Species(address(self.thisptr.species()))
+        cdef Cpp_Species sp = self.thisptr.species()
+        return Species_from_Cpp_Species(address(sp))
 
 cdef ParticleID ParticleID_from_Cpp_ParticleID(Cpp_ParticleID* p):
     cdef Cpp_ParticleID *new_obj = new Cpp_ParticleID(<Cpp_ParticleID> deref(p))

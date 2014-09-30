@@ -26,9 +26,11 @@ public:
     typedef typename Tobj_::length_type length_type;
     typedef Tkey_ key_type;
     typedef Tobj_ mapped_type;
+    // typedef std::pair<key_type, mapped_type> value_type;
     typedef std::pair<const key_type, mapped_type> value_type;
     //typedef Vector3<length_type> position_type;
     typedef ecell4::Position3 position_type;
+    // typedef std::vector<value_type> all_values_type;
     typedef unassignable_adapter<value_type, get_default_impl::std::vector> all_values_type;
     typedef sorted_list<std::vector<typename all_values_type::size_type> > cell_type;
     typedef boost::multi_array<cell_type, 3> matrix_type;

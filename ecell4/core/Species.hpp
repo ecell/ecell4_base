@@ -47,7 +47,13 @@ public:
         ; // do nothing
     }
 
-    Species(const serial_type& name)
+    // Species(const Species& sp)
+    //     : units_()
+    // {
+    //     deserialize(sp.serial());
+    // }
+
+    explicit Species(const serial_type& name)
         : units_()
     {
         deserialize(name);

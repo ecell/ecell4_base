@@ -94,7 +94,6 @@ public:
 
     // const Species& species() const
     // {
-    //     // return Species(species_serial_);
     //     return species_;
     // }
 
