@@ -291,6 +291,16 @@ public:
 
     virtual const particle_container_type& particles() const = 0;
 
+    virtual Real get_value(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules(sp));
+    }
+
+    virtual Real get_value_exact(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules_exact(sp));
+    }
+
 protected:
 
     Real t_;
