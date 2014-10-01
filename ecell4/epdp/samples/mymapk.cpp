@@ -1,7 +1,6 @@
 // vim: foldmethod=marker
 // Sakamoto EPDP Sample
 
-#include <ecell4/egfrd_impl/config.h>
 #include <stdexcept>
 #include <vector>
 #include <string>
@@ -15,17 +14,18 @@
 #include <boost/format.hpp>
 
 // epdp headers
-#include <ecell4/egfrd_impl/utils/range.hpp>
-#include <ecell4/egfrd_impl/World.hpp>
-//#include <ecell4/egfrd_impl/ParticleModel.hpp>
-#include <ecell4/egfrd_impl/SpeciesType.hpp>
-//#include <ecell4/egfrd_impl/SpeciesTypeID.hpp>
-#include <ecell4/egfrd_impl/CuboidalRegion.hpp>
-//#include <ecell4/egfrd_impl/NetworkRules.hpp>
-//#include <ecell4/egfrd_impl/ReactionRule.hpp>
-#include <ecell4/egfrd_impl/EGFRDSimulator.hpp>
-#include <ecell4/egfrd_impl/NetworkRulesAdapter.hpp>
-//#include <ecell4/egfrd_impl/GSLRandomNumberGenerator.hpp>
+#include <ecell4/epdp/config.h>
+#include <ecell4/epdp/utils/range.hpp>
+#include <ecell4/epdp/World.hpp>
+//#include <ecell4/epdp/ParticleModel.hpp>
+#include <ecell4/epdp/SpeciesType.hpp>
+//#include <ecell4/epdp/SpeciesTypeID.hpp>
+#include <ecell4/epdp/CuboidalRegion.hpp>
+//#include <ecell4/epdp/NetworkRules.hpp>
+//#include <ecell4/epdp/ReactionRule.hpp>
+#include <ecell4/epdp/EGFRDSimulator.hpp>
+#include <ecell4/epdp/NetworkRulesAdapter.hpp>
+//#include <ecell4/epdp/GSLRandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/NetworkModel.hpp>
@@ -237,6 +237,7 @@ int main(int argc, char **argv)
         << n_st3 << "\t"
         << std::endl;
     Real next_time(0.0), dt(0.02);
+    // for(int i(0); i < 100; i++) {
     for(int i(0); i < 10; i++) {
         next_time += dt;
         while(sim->step(next_time)){};
