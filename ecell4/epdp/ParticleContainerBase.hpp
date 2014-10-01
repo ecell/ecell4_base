@@ -103,15 +103,22 @@ public:
 
     typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
 
+    typedef typename base_type::time_type time_type;
+
 protected:
 public:
     ParticleContainerBase(length_type world_size, size_type size)
         : pmat_(world_size, size) {}
 
-    virtual size_type num_particles() const
+    virtual ecell4::Integer num_particles() const
     {
         return pmat_.size();
     }
+
+    // virtual size_type num_particles() const
+    // {
+    //     return pmat_.size();
+    // }
 
     virtual length_type world_size() const
     {
@@ -260,8 +267,22 @@ public:
         return pmat_.erase(id);
     }
 
+    /** ecell4::Space
+     */
+    virtual const time_type& t() const
+    {
+        return t_;
+    }
+
+    virtual void set_t(const time_type& t)
+    {
+        t_ = t;
+    }
+
 protected:
     particle_matrix_type pmat_;
+
+    time_type t_;
 };
 
 template<typename Tderived_, typename Ttraits_>

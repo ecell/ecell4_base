@@ -43,12 +43,19 @@ public:
     typedef std::map<particle_id_type, particle_type> particle_map;
     typedef sized_iterator_range<typename particle_map::const_iterator> particle_id_pair_range;
 
+    typedef typename world_type::particle_container_type::time_type time_type;
+
     virtual ~MultiParticleContainer() {}
 
-    virtual size_type num_particles() const
+    virtual ecell4::Integer num_particles() const
     {
         return particles_.size();
     }
+
+    // virtual size_type num_particles() const
+    // {
+    //     return particles_.size();
+    // }
 
     virtual length_type world_size() const
     {
@@ -186,6 +193,18 @@ public:
     }
 
     MultiParticleContainer(world_type& world): world_(world) {}
+
+    /** ecell4::Space
+     */
+    virtual const time_type& t() const
+    {
+        return world_.t();
+    }
+
+    virtual void set_t(const time_type& t)
+    {
+        world_.set_t(t);
+    }
 
 private:
     world_type& world_;

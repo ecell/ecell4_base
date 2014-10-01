@@ -64,6 +64,8 @@ public:
     typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
     typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
 
+    typedef typename particle_container_type::time_type time_type;
+
 private:
     typedef std::map<typename particle_id_pair::first_type,
             typename particle_id_pair::second_type> particle_id_pair_set_type;
@@ -160,10 +162,15 @@ public:
         return pc_.get_species(id);
     }
 
-    virtual size_type num_particles() const
+    virtual ecell4::Integer num_particles() const
     {
         return pc_.num_particles();
     }
+
+    // virtual size_type num_particles() const
+    // {
+    //     return pc_.num_particles();
+    // }
 
     virtual length_type world_size() const
     {
@@ -247,6 +254,18 @@ public:
     virtual ~TransactionImpl() {}
 
     TransactionImpl(particle_container_type& pc): pc_(pc) {}
+
+    /** ecell4::Space
+     */
+    virtual const time_type& t() const
+    {
+        return pc_.t();
+    }
+
+    virtual void set_t(const time_type& t)
+    {
+        pc_.set_t(t);
+    }
 
 private:
     particle_id_pair get_original_particle(particle_id_type const& id) const

@@ -8,6 +8,7 @@
 #include <ecell4/core/Identifier.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Position3.hpp>
+#include <ecell4/core/Context.hpp>
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 
 #include "ParticleContainerBase.hpp"
@@ -45,6 +46,7 @@ bool is_initialized(std::string const &obj)
 template<typename Tderived_, typename TD_>
 struct WorldTraitsBase
 {
+    // typedef ecell4::Integer size_type;
     typedef std::size_t size_type;
     typedef ecell4::Real length_type;
     typedef ecell4::Real D_type;
@@ -209,7 +211,7 @@ public:
 
 public:
     World(length_type world_size = 1., size_type size = 1)
-        : base_type(world_size, size) {}
+        : base_type(world_size, size), edge_lengths_(world_size, world_size, world_size) {}
 
     virtual particle_id_pair new_particle(species_id_type const& sid,
             position_type const& pos)
@@ -338,11 +340,169 @@ public:
         return (*i).second;
     }
 
+    /** ecell4::Space
+     */
+
+    // virtual void save(const std::string& filename) const
+    // {
+    //     throw NotSupported(
+    //         "save(const std::string) is not supported by this space class");
+    // }
+
+    // virtual void load(const std::string& filename)
+    // {
+    //     throw NotSupported(
+    //         "load(const std::string) is not supported by this space class");
+    // }
+
+    virtual const length_type volume() const
+    {
+        const length_type L(this->world_size());
+        return L * L * L;
+    }
+
+    virtual const position_type& edge_lengths() const
+    {
+        return edge_lengths_;
+    }
+
+    virtual bool has_particle(const particle_id_type& pid) const
+    {
+        return base_type::has_particle(pid);
+    }
+
+    virtual ecell4::Integer num_particles() const
+    {
+        return base_type::num_particles();
+    }
+
+    virtual ecell4::Integer num_particles_exact(const ecell4::Species& sp) const
+    {
+        typename per_species_particle_id_set::const_iterator
+            i(particle_pool_.find(sp.serial()));
+        if (i == particle_pool_.end())
+        {
+            return 0;
+        }
+        return (*i).second.size();
+    }
+
+    virtual ecell4::Integer num_particles(const ecell4::Species& sp) const
+    {
+        ecell4::Integer retval(0);
+        ecell4::SpeciesExpressionMatcher sexp(sp);
+        for (typename per_species_particle_id_set::const_iterator
+            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
+        {
+            const ecell4::Species tgt((*i).first);
+            if (sexp.match(tgt))
+            {
+                retval += (*i).second.size();
+            }
+        }
+        return retval;
+    }
+
+    virtual ecell4::Real get_value(const ecell4::Species& sp) const
+    {
+        return static_cast<ecell4::Real>(num_molecules(sp));
+    }
+
+    virtual ecell4::Real get_value_exact(const ecell4::Species& sp) const
+    {
+        return static_cast<ecell4::Real>(num_molecules_exact(sp));
+    }
+
+    virtual ecell4::Integer num_molecules(const ecell4::Species& sp) const
+    {
+        ecell4::Integer retval(0);
+        ecell4::SpeciesExpressionMatcher sexp(sp);
+        for (typename per_species_particle_id_set::const_iterator
+            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
+        {
+            const ecell4::Species tgt((*i).first);
+            retval += sexp.count(tgt) * (*i).second.size();
+        }
+        return retval;
+    }
+
+    virtual ecell4::Integer num_molecules_exact(const ecell4::Species& sp) const
+    {
+        return num_particles_exact(sp);
+    }
+
+    virtual ecell4::Integer num_species() const
+    {
+        return particle_pool_.size();
+    }
+
+    virtual bool has_species(const ecell4::Species& sp) const
+    {
+        return (particle_pool_.find(sp.serial()) != particle_pool_.end());
+    }
+
+    virtual std::vector<std::pair<particle_id_type, particle_type> > list_particles() const
+    {
+        std::vector<std::pair<particle_id_type, particle_type> > retval;
+        retval.reserve(num_particles());
+        BOOST_FOREACH(particle_id_pair p, this->get_particles_range())
+        {
+            retval.push_back(p);
+        }
+        return retval;
+    }
+
+    virtual std::vector<std::pair<particle_id_type, particle_type> >
+        list_particles(const ecell4::Species& sp) const
+    {
+        std::vector<std::pair<particle_id_type, particle_type> > retval;
+        ecell4::SpeciesExpressionMatcher sexp(sp);
+        for (typename per_species_particle_id_set::const_iterator
+            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
+        {
+            const ecell4::Species tgt((*i).first);
+            if (sexp.match(tgt))
+            {
+                for (typename particle_id_set::const_iterator j((*i).second.begin());
+                    j != (*i).second.end(); ++j)
+                {
+                    const particle_id_type& pid(*j);
+                    retval.push_back(this->get_particle(pid));
+                }
+            }
+        }
+        return retval;
+    }
+
+    virtual std::vector<std::pair<particle_id_type, particle_type> >
+        list_particles_exact(const ecell4::Species& sp) const
+    {
+        std::vector<std::pair<particle_id_type, particle_type> > retval;
+        typename per_species_particle_id_set::const_iterator
+            i(particle_pool_.find(sp.serial()));
+        if (i == particle_pool_.end())
+        {
+            return retval;
+        }
+
+        for (typename particle_id_set::const_iterator j((*i).second.begin());
+            j != (*i).second.end(); ++j)
+        {
+            const particle_id_type& pid(*j);
+            retval.push_back(this->get_particle(pid));
+        }
+        return retval;
+    }
+
 private:
     particle_id_generator pidgen_;
     species_map species_map_;
     structure_map structure_map_;
     per_species_particle_id_set particle_pool_;
+
+    /** ecell4::Space
+     */
+    position_type edge_lengths_;
 };
 
 #endif /* WORLD_HPP */
