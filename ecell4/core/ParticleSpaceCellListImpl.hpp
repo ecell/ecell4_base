@@ -74,6 +74,8 @@ public:
     Integer num_particles() const;
     Integer num_particles(const Species& sp) const;
     Integer num_particles_exact(const Species& sp) const;
+    Integer num_molecules(const Species& sp) const;
+    Integer num_molecules_exact(const Species& sp) const;
 
     std::vector<std::pair<ParticleID, Particle> >
         list_particles() const;

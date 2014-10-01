@@ -79,7 +79,10 @@ Integer ParticleSpaceCellListImpl::num_particles(const Species& sp) const
         i != particle_pool_.end(); ++i)
     {
         const Species tgt((*i).first);
-        retval += sexp.count(tgt) * (*i).second.size();
+        if (sexp.match(tgt))
+        {
+            retval += (*i).second.size();
+        }
     }
     return retval;
 }
@@ -92,6 +95,24 @@ Integer ParticleSpaceCellListImpl::num_particles_exact(const Species& sp) const
         return 0;
     }
     return (*i).second.size();
+}
+
+Integer ParticleSpaceCellListImpl::num_molecules(const Species& sp) const
+{
+    Integer retval(0);
+    SpeciesExpressionMatcher sexp(sp);
+    for (per_species_particle_id_set::const_iterator i(particle_pool_.begin());
+        i != particle_pool_.end(); ++i)
+    {
+        const Species tgt((*i).first);
+        retval += sexp.count(tgt) * (*i).second.size();
+    }
+    return retval;
+}
+
+Integer ParticleSpaceCellListImpl::num_molecules_exact(const Species& sp) const
+{
+    return num_particles_exact(sp);
 }
 
 void ParticleSpaceCellListImpl::clear()
