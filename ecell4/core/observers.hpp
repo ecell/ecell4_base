@@ -345,11 +345,11 @@ public:
 
             unsigned int idx;
             serial_map_type::iterator
-                j(serials.find((*i).second.species().serial()));
+                j(serials.find((*i).second.species_serial()));
             if (j == serials.end())
             {
                 idx = cnt;
-                serials.insert(std::make_pair((*i).second.species().serial(), idx));
+                serials.insert(std::make_pair((*i).second.species_serial(), idx));
                 ++cnt;
             }
             else

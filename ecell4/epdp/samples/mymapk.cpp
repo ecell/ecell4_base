@@ -237,8 +237,8 @@ int main(int argc, char **argv)
         << n_st3 << "\t"
         << std::endl;
     Real next_time(0.0), dt(0.02);
-    // for(int i(0); i < 100; i++) {
-    for(int i(0); i < 10; i++) {
+    for(int i(0); i < 100; i++) {
+    // for(int i(0); i < 10; i++) {
         next_time += dt;
         while(sim->step(next_time)){};
         n_st1 = world->get_particle_ids(sp1.name()).size();

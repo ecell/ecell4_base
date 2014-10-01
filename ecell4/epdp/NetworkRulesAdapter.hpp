@@ -14,45 +14,49 @@
 
 
 // cf. epdp/NetworkRulesWrapper.hpp
-// NetworkRulesAdapter will substitute for NetworkRulesWrapper 
+// NetworkRulesAdapter will substitute for NetworkRulesWrapper
 //  which is instanciated in ParticleSimulatorTraitsBase.
 //
-//  This class is called via query_reaction_rule function by EGFRDSimulator implemented in epdp, 
-//  then, this class translates the query into ecell4::Species or ReactionRule object and 
+//  This class is called via query_reaction_rule function by EGFRDSimulator implemented in epdp,
+//  then, this class translates the query into ecell4::Species or ReactionRule object and
 //  consult ecell4::NetworkModel class.
 //template <typename T_, typename Trri_>
 
-template <typename Trri_> 
-class NetworkRulesAdapter 
+template <typename Trri_>
+class NetworkRulesAdapter
 {
 public:
-    typedef ecell4::NetworkModel backend_type;    // will not be used.
+
+    typedef ecell4::NetworkModel backend_type; // will not be used.
     typedef Trri_ reaction_rule_type;
     typedef typename reaction_rule_type::species_id_type species_id_type;
     typedef std::vector<reaction_rule_type> reaction_rule_vector;
     typedef reaction_rule_vector reaction_rules;
-    typedef std::map<species_id_type, reaction_rule_vector> first_order_reaction_rule_vector_map;
-    typedef std::map<std::pair<species_id_type, species_id_type>, reaction_rule_vector> second_order_reaction_rule_vector_map;
+    typedef std::map<species_id_type, reaction_rule_vector>
+        first_order_reaction_rule_vector_map;
+    typedef std::map<std::pair<species_id_type, species_id_type>, reaction_rule_vector>
+        second_order_reaction_rule_vector_map;
 
 public:
+
     reaction_rule_vector const& query_reaction_rule(species_id_type const& r1) const
     {
-        typename first_order_reaction_rule_vector_map::const_iterator i(
-                this->first_order_cache_.find(r1));
+        typename first_order_reaction_rule_vector_map::const_iterator
+            i(first_order_cache_.find(r1));
         if (i == this->first_order_cache_.end())
         {
-            ecell4::NetworkModel::reaction_rule_container_type 
-                reaction_rules_at_ecell4( this->ecell4_nw_model_->query_reaction_rules(ecell4::Species(r1)) );
+            ecell4::NetworkModel::reaction_rule_container_type
+                reaction_rules_at_ecell4(
+                    ecell4_nw_model_->query_reaction_rules(ecell4::Species(r1)));
 
-            std::pair<typename first_order_reaction_rule_vector_map::iterator, bool> 
-                x(this->first_order_cache_.insert( std::make_pair(r1, reaction_rule_vector()) ));
-                
-            for (std::vector<ecell4::ReactionRule>::iterator it( reaction_rules_at_ecell4.begin() );
-                    it != reaction_rules_at_ecell4.end();
-                    it++ ) 
+            std::pair<typename first_order_reaction_rule_vector_map::iterator, bool>
+                x(first_order_cache_.insert(std::make_pair(r1, reaction_rule_vector())));
+            for (std::vector<ecell4::ReactionRule>::const_iterator
+                it(reaction_rules_at_ecell4.begin());
+                it != reaction_rules_at_ecell4.end(); it++)
             {
-                //this->temporary_reaction_rule_vector_.push_back( convert_reaction_rule_type(*it) );
-                x.first->second.push_back(convert_reaction_rule_type( *it ));
+                // temporary_reaction_rule_vector_.push_back(convert_reaction_rule_type(*it));
+                x.first->second.push_back(convert_reaction_rule_type(*it));
             }
             return x.first->second;
         }
@@ -60,59 +64,70 @@ public:
     }
 
     reaction_rule_vector const& query_reaction_rule(
-            species_id_type const& r1, species_id_type const& r2) const
+        species_id_type const& r1, species_id_type const& r2) const
     {
-        typename second_order_reaction_rule_vector_map::const_iterator i(
-                this->second_order_cache_.find(std::make_pair(r1, r2)) );
-        if (i == this->second_order_cache_.end())
+        typename second_order_reaction_rule_vector_map::const_iterator
+            i(second_order_cache_.find(std::make_pair(r1, r2)));
+        if (i == second_order_cache_.end())
         {
-            ecell4::NetworkModel::reaction_rule_container_type 
-                reaction_rules_at_ecell4( this->ecell4_nw_model_->query_reaction_rules(ecell4::Species(r1), ecell4::Species(r2) ) );
+            ecell4::NetworkModel::reaction_rule_container_type
+                reaction_rules_at_ecell4(
+                    ecell4_nw_model_->query_reaction_rules(
+                        ecell4::Species(r1), ecell4::Species(r2)));
 
             std::pair<typename second_order_reaction_rule_vector_map::iterator, bool>
-                x(this->second_order_cache_.insert( std::make_pair(std::make_pair(r1, r2), reaction_rule_vector()) ));
+                x(second_order_cache_.insert(
+                    std::make_pair(std::make_pair(r1, r2), reaction_rule_vector())));
 
-            for (std::vector<ecell4::ReactionRule>::iterator it( reaction_rules_at_ecell4.begin() );
-                    it != reaction_rules_at_ecell4.end();
-                    it++ ) 
+            for (std::vector<ecell4::ReactionRule>::const_iterator
+                it(reaction_rules_at_ecell4.begin());
+                it != reaction_rules_at_ecell4.end(); it++)
             {
-                x.first->second.push_back(convert_reaction_rule_type( *it ));
+                x.first->second.push_back(convert_reaction_rule_type(*it));
             }
             return x.first->second;
         }
         return i->second;
     }
 
-    NetworkRulesAdapter(boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model):
-        ecell4_nw_model_(ecell4_nw_model) 
-    {;}
+    NetworkRulesAdapter(boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model)
+        : ecell4_nw_model_(ecell4_nw_model)
+    {
+        ;
+    }
 
 protected:
+
     inline reaction_rule_type convert_reaction_rule_type(const ecell4::ReactionRule& rr) const
     {
-        //typedef twofold_container<species_id_type> reactants_container_type;
+        // typedef twofold_container<species_id_type> reactants_container_type;
         typedef typename reaction_rule_type::rate_type rate_type;
 
         reaction_rule_type retval;
         std::vector<species_id_type> products;
         std::vector<species_id_type> reactants;
         rate_type rate;
-        try {
-            rate = boost::lexical_cast<rate_type>(rr.k());
-        } 
-        catch (boost::bad_lexical_cast &) 
+
+        try
         {
-            if (rr.k() == double(HUGE_VAL)) {
+            rate = boost::lexical_cast<rate_type>(rr.k());
+        }
+        catch (boost::bad_lexical_cast&)
+        {
+            if (rr.k() == double(HUGE_VAL))
+            {
                 rate = std::numeric_limits<rate_type>::infinity();
             }
-            else {
+            else
+            {
                 throw;
             }
         }
+
         for (ecell4::ReactionRule::product_container_type::const_iterator
-                 j(rr.products().begin()); j != rr.products().end(); ++j)
+            j(rr.products().begin()); j != rr.products().end(); ++j)
         {
-            products.push_back( j->name() );
+            products.push_back(j->name());
         }
 
         ecell4::ReactionRule::reactant_container_type::const_iterator
@@ -121,7 +136,7 @@ protected:
         {
         case 1:
             {
-                //const ::SpeciesTypeID sid1(find(*r));
+                // const ::SpeciesTypeID sid1(find(*r));
                 const species_id_type sid1(r->name());
                 reactants.push_back(sid1);
                 return reaction_rule_type(rr.id(), rate, reactants, products);
@@ -129,11 +144,11 @@ protected:
             break;
         case 2:
             {
-                //const ::SpeciesTypeID sid1(find(*r));
+                // const ::SpeciesTypeID sid1(find(*r));
                 const species_id_type sid1(r->name());
                 reactants.push_back(sid1);
                 ++r;
-                //const ::SpeciesTypeID sid2(find(*r));
+                // const ::SpeciesTypeID sid2(find(*r));
                 const species_id_type sid2(r->name());
                 reactants.push_back(sid2);
                 return reaction_rule_type(rr.id(), rate, reactants, products);
@@ -146,13 +161,11 @@ protected:
         return reaction_rule_type(); // never get here
     }
 
-
 private:
-    boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model_;
+
     mutable first_order_reaction_rule_vector_map first_order_cache_;
     mutable second_order_reaction_rule_vector_map second_order_cache_;
+    boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model_;
 };
-
-
 
 #endif  // __ECELL4_EGFRD_NETWORK_RULES_ADAPTER

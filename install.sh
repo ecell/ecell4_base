@@ -1,14 +1,16 @@
 #!/bin/bash -x
 
+CURDIR=$(cd $(dirname $0); pwd)
 # PREFIX=/usr/local
 # PREFIX=${HOME}/local
+# PREFIX=${CURDIR}/local
 # PREFIX=
 
 make clean; rm -rf ${PREFIX}; rm -rf python/build python/lib/ecell4/*.cpp; rm CMakeCache.txt
 # rm -rf python/build python/lib/ecell4/*.cpp
 cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} .
 make
-# make test
+make test
 make install
 
 cd python

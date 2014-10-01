@@ -100,12 +100,12 @@ void save_particle_space(const Tspace_& space, H5::Group* root)
     for (unsigned int i(0); i < num_particles; ++i)
     {
         species_id_map_type::const_iterator
-            it(species_id_map.find(particles[i].second.species().serial()));
+            it(species_id_map.find(particles[i].second.species_serial()));
         if (it == species_id_map.end())
         {
             species.push_back(particles[i].second.species());
             it = species_id_map.insert(
-                std::make_pair(particles[i].second.species().serial(),
+                std::make_pair(particles[i].second.species_serial(),
                                species.size())).first;
         }
 
@@ -220,12 +220,12 @@ void load_particle_space(const H5::Group& root, Tspace_* space)
         // for (unsigned int i(0); i < num_particles; ++i)
         // {
         //     species_id_map_type::const_iterator
-        //         it(species_id_map.find(particles[i].second.species().serial()));
+        //         it(species_id_map.find(particles[i].second.species_serial()));
         //     if (it == species_id_map.end())
         //     {
         //         species.push_back(particles[i].second.species());
         //         it = species_id_map.insert(
-        //             std::make_pair(particles[i].second.species().serial(),
+        //             std::make_pair(particles[i].second.species_serial(),
         //                            species.size())).first;
         //     }
 

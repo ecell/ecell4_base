@@ -37,19 +37,21 @@ public:
     explicit Particle(
         const Species& sp, const Position3& pos, const Real& radius,
         const Real& D)
+        // : position_(pos), radius_(radius), D_(D)
         : species_serial_(sp.serial()), position_(pos), radius_(radius), D_(D)
         // : species_(sp), species_serial_(sp.serial()), position_(pos), radius_(radius), D_(D)
     {
-        ;
+        // std::strcpy(species_serial_, sp.serial().c_str());
     }
 
     Particle(
         const species_serial_type& sid, const Position3& pos,
         const Real& radius, const Real& D)
+        // : position_(pos), radius_(radius), D_(D)
         : species_serial_(sid), position_(pos), radius_(radius), D_(D)
         // : species_(sid), species_serial_(sid), position_(pos), radius_(radius), D_(D)
     {
-        ;
+        // std::strcpy(species_serial_, sid.c_str());
     }
 
     Position3& position()
@@ -84,7 +86,7 @@ public:
 
     const Species species() const
     {
-        return Species(species_serial_);
+        return Species(species_serial());
     }
 
     // Species& species()
@@ -97,14 +99,34 @@ public:
     //     return species_;
     // }
 
-    Species::serial_type& sid()
+    Species::serial_type& species_serial()
     {
         return this->species_serial_;
     }
 
-    const Species::serial_type& sid() const
+    const Species::serial_type& species_serial() const
     {
         return this->species_serial_;
+    }
+
+    // Species::serial_type species_serial()
+    // {
+    //     return std::string(species_serial_);
+    // }
+
+    // const Species::serial_type species_serial() const
+    // {
+    //     return std::string(species_serial_);
+    // }
+
+    inline Species::serial_type& sid()
+    {
+        return species_serial();
+    }
+
+    inline const Species::serial_type& sid() const
+    {
+        return species_serial();
     }
 
     bool operator==(Particle const& rhs) const
@@ -131,6 +153,7 @@ private:
 
     // Species species_;
     species_serial_type species_serial_;
+    // char species_serial_[32];
     Position3 position_;
     Real radius_, D_;
 };
@@ -163,7 +186,8 @@ struct hash<ecell4::Particle>
         return hash<argument_type::position_type>()(val.position()) ^
             hash<argument_type::length_type>()(val.radius()) ^
             hash<argument_type::D_type>()(val.D()) ^
-            hash<argument_type::species_type>()(val.species());
+            // hash<argument_type::species_type>()(val.species());
+            hash<argument_type::species_serial_type>()(val.sid());
     }
 };
 

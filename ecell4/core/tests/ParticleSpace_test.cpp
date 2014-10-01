@@ -78,8 +78,8 @@ void ParticleSpace_test_manipulate_particle_template()
 
     const std::pair<ParticleID, Particle>
         pid_particle_pair2(target.get_particle(pid));
-    BOOST_CHECK_EQUAL(pid_particle_pair2.first, pid);
     BOOST_CHECK(pid_particle_pair2.second.species() == sp2);
+    BOOST_CHECK(Species(pid_particle_pair2.second.sid()) == sp2);
     for (Position3::size_type dim(0); dim < 3; ++dim)
     {
         BOOST_CHECK_CLOSE(pid_particle_pair2.second.position()[dim], L_2, 1e-6);

@@ -28,15 +28,15 @@ bool ParticleSpaceCellListImpl::update_particle(
     {
         if ((*i).second.species() != p.species())
         {
-            particle_pool_[(*i).second.species().serial()].erase((*i).first);
-            particle_pool_[p.species().serial()].insert(pid);
+            particle_pool_[(*i).second.species_serial()].erase((*i).first);
+            particle_pool_[p.species_serial()].insert(pid);
         }
         this->update(i, std::make_pair(pid, p));
         return false;
     }
     const bool succeeded(this->update(std::make_pair(pid, p)).second);
     // BOOST_ASSERT(succeeded);
-    particle_pool_[p.species().serial()].insert(pid);
+    particle_pool_[p.species_serial()].insert(pid);
     return true;
 }
 
@@ -62,7 +62,7 @@ void ParticleSpaceCellListImpl::remove_particle(const ParticleID& pid)
     //XXX: this remove_particle throws an error when no corresponding
     //XXX: particle is found.
     std::pair<ParticleID, Particle> pp(get_particle(pid)); //XXX: may raise an error.
-    particle_pool_[pp.second.species().serial()].erase(pid);
+    particle_pool_[pp.second.species_serial()].erase(pid);
     this->erase(pid);
 }
 
