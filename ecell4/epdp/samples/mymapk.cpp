@@ -124,24 +124,7 @@ int main(int argc, char **argv)
 
     // Thorow particles into world at random
     // {{{
-    // world->add_molecules(ecell4::Species("A"), N);
-    int number_of_particles_A(N);
-    for (int cnt = 0; cnt < number_of_particles_A; ++cnt)
-    {
-        // add particles at random.
-        for (; ; )
-        {
-            world_type::position_type pos(
-                    rng->uniform(0.0, edge_lengths[0]),
-                    rng->uniform(0.0, edge_lengths[1]),
-                    rng->uniform(0.0, edge_lengths[2]));
-            if (world->new_particle(sp1, pos).second)
-            {
-                std::cout << "(" << pos[0] << pos[1] << pos[2] << ")" << std::endl;
-                break;
-            }
-        }
-    }
+    world->add_molecules(ecell4::Species("A"), N);
     // }}}
 
     // Logger Settings

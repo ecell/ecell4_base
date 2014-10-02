@@ -521,28 +521,65 @@ public:
         return retval;
     }
 
-    // std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    // list_particles_within_radius(
-    //     const Position3& pos, const Real& radius) const
-    // {
-    //     boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-    //         base_type::check_overlap(particle_shape_type(pos, radius)));
-    // }
+    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+    list_particles_within_radius(
+        const position_type& pos, const length_type& radius) const
+    {
+        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+            base_type::check_overlap(particle_shape_type(pos, radius)));
+        std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+            retval;
+        if (overlapped && ::size(*overlapped))
+        {
+            for (typename particle_id_pair_and_distance_list::const_iterator
+                i(overlapped->begin()); i != overlapped->end(); ++i)
+            {
+                retval.push_back(*i);
+            }
+        }
+        return retval;
+    }
 
-    // std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    // list_particles_within_radius(
-    //     const Position3& pos, const Real& radius, const ParticleID& ignore) const
-    // {
-    //     return (*ps_).list_particles_within_radius(pos, radius, ignore);
-    // }
+    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+    list_particles_within_radius(
+        const position_type& pos, const length_type& radius,
+        const particle_id_type& ignore) const
+    {
+        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+            base_type::check_overlap(particle_shape_type(pos, radius, ignore)));
+        std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+            retval;
+        if (overlapped && ::size(*overlapped))
+        {
+            for (typename particle_id_pair_and_distance_list::const_iterator
+                i(overlapped->begin()); i != overlapped->end(); ++i)
+            {
+                retval.push_back(*i);
+            }
+        }
+        return retval;
+    }
 
-    // std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    // list_particles_within_radius(
-    //     const Position3& pos, const Real& radius,
-    //     const ParticleID& ignore1, const ParticleID& ignore2) const
-    // {
-    //     return (*ps_).list_particles_within_radius(pos, radius, ignore1, ignore2);
-    // }
+    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+    list_particles_within_radius(
+        const position_type& pos, const length_type& radius,
+        const particle_id_type& ignore1, const particle_id_type& ignore2) const
+    {
+        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+            base_type::check_overlap(
+                particle_shape_type(pos, radius, ignore1, ignore2)));
+        std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+            retval;
+        if (overlapped && ::size(*overlapped))
+        {
+            for (typename particle_id_pair_and_distance_list::const_iterator
+                i(overlapped->begin()); i != overlapped->end(); ++i)
+            {
+                retval.push_back(*i);
+            }
+        }
+        return retval;
+    }
 
     void bind_to(boost::shared_ptr<ecell4::Model> model)
     {
@@ -595,14 +632,14 @@ public:
 
     void add_molecules(const ecell4::Species& sp, const ecell4::Integer& num)
     {
-        ; // ecell4::extras::throw_in_particles(*this, sp, num, rng());
+        ecell4::extras::throw_in_particles(*this, sp, num, rng());
     }
 
     void add_molecules(
         const ecell4::Species& sp, const ecell4::Integer& num,
         const ecell4::Shape& shape)
     {
-        ; // ecell4::extras::throw_in_particles(*this, sp, num, shape, rng());
+        ecell4::extras::throw_in_particles(*this, sp, num, shape, rng());
     }
 
     /**
