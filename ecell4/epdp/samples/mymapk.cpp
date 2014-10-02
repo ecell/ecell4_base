@@ -114,6 +114,15 @@ int main(int argc, char **argv)
     // Thorow particles into world at random
     // {{{
     world->add_molecules(ecell4::Species("A"), N);
+
+    std::vector<std::pair<ecell4::ParticleID, ecell4::Particle> >
+        particles(world->list_particles());
+    for (std::vector<std::pair<ecell4::ParticleID, ecell4::Particle> >::const_iterator
+        i(particles.begin()); i != particles.end(); ++i)
+    {
+        const ecell4::Position3 pos((*i).second.position());
+        std::cout << "(" << pos[0] << pos[1] << pos[2] << ")" << std::endl;
+    }
     // }}}
 
     // Logger Settings
@@ -138,7 +147,7 @@ int main(int argc, char **argv)
     std::cout << sim->t() << "\t"
         << world->num_molecules_exact(sp1) << "\t"
         << world->num_molecules_exact(sp2) << "\t"
-        << world->num_molecules_exact(sp3) << std::endl;
+        << world->num_molecules_exact(sp3) << "\t" << std::endl;
     // for (int i(0); i < 10; i++)
     for (int i(0); i < 100; i++)
     {
@@ -148,7 +157,7 @@ int main(int argc, char **argv)
         std::cout << sim->t() << "\t"
             << world->num_molecules_exact(sp1) << "\t"
             << world->num_molecules_exact(sp2) << "\t"
-            << world->num_molecules_exact(sp3) << std::endl;
+            << world->num_molecules_exact(sp3) << "\t" << std::endl;
     }
     // }}}
 
