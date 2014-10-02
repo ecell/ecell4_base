@@ -1052,7 +1052,8 @@ public:
         _step();
     }
 
-    virtual bool step(time_type upto)
+    // virtual bool step(time_type upto)
+    virtual bool step(const time_type& upto)
     {
         if (dirty_)
         {

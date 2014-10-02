@@ -19,6 +19,8 @@
 #include "VolumeClearer.hpp"
 
 #include "NetworkRulesAdapter.hpp"
+#include <ecell4/core/Simulator.hpp>
+
 
 template<typename Tworld_>
 struct ParticleSimulatorTraitsBase
@@ -87,6 +89,7 @@ struct MutativeStructureVisitor
 
 template<typename Ttraits_>
 class ParticleSimulator
+    : public ecell4::Simulator
 {
 public:
     typedef Ttraits_ traits_type;
@@ -110,6 +113,7 @@ public:
     typedef typename traits_type::volume_clearer_type volume_clearer_type;
 
 public:
+
     virtual ~ParticleSimulator() {}
 
     ParticleSimulator(boost::shared_ptr<world_type> world,
@@ -163,14 +167,33 @@ public:
         return paranoiac_;
     }
 
-    int num_steps() const
+    // int num_steps() const
+    // {
+    //     return num_steps_;
+    // }
+
+    virtual ecell4::Integer num_steps() const
     {
         return num_steps_;
     }
 
     virtual void step() = 0;
 
-    virtual bool step(time_type upto) = 0;
+    // virtual bool step(time_type upto) = 0;
+    virtual bool step(const time_type& upto) = 0;
+
+    /* ecell4::Simulator
+     */
+    virtual void set_dt(const Real& dt)
+    {
+        std::cerr << "WARN: set_dt(const Real&) was just ignored." << std::endl;
+    }
+
+    virtual std::vector<ecell4::ReactionRule> last_reactions() const
+    {
+        std::cerr << "WARN: Not implemented yet." << std::endl;
+        return std::vector<ecell4::ReactionRule>();
+    }
 
 protected:
     boost::shared_ptr<world_type> world_;
