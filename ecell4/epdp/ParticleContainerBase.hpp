@@ -24,22 +24,37 @@ struct ParticleContainerUtils
     typedef typename traits_type::particle_id_pair_and_distance_list
         particle_id_pair_and_distance_list;
 
-    struct distance_comparator:
-            public std::binary_function<
-                typename particle_id_pair_and_distance_list::placeholder,
-                typename particle_id_pair_and_distance_list::placeholder,
-                bool>
+    // struct distance_comparator:
+    //         public std::binary_function<
+    //             typename particle_id_pair_and_distance_list::placeholder,
+    //             typename particle_id_pair_and_distance_list::placeholder,
+    //             bool>
+    // {
+    //     typedef typename particle_id_pair_and_distance_list::placeholder
+    //             first_argument_type;
+    //     typedef typename particle_id_pair_and_distance_list::const_caster const_caster;
+    //     bool operator()(first_argument_type const& lhs,
+    //                     first_argument_type const& rhs) const
+    //     {
+    //         return c_(lhs).second < c_(rhs).second;
+    //     }
+    //     const_caster c_;
+    // };
+
+    struct distance_comparator
+        : public std::binary_function<
+            typename particle_id_pair_and_distance_list::value_type,
+            typename particle_id_pair_and_distance_list::value_type,
+            bool>
     {
-        typedef typename particle_id_pair_and_distance_list::placeholder
+        typedef typename particle_id_pair_and_distance_list::value_type
                 first_argument_type;
-        typedef typename particle_id_pair_and_distance_list::const_caster const_caster;
+
         bool operator()(first_argument_type const& lhs,
                         first_argument_type const& rhs) const
         {
-            return c_(lhs).second < c_(rhs).second;
+            return lhs.second < rhs.second;
         }
-
-        const_caster c_;
     };
 
     template<typename Tset_>
@@ -64,7 +79,8 @@ struct ParticleContainerUtils
         {
             if (result_)
             {
-                std::sort(result_->pbegin(), result_->pend(), compare_);
+                // std::sort(result_->pbegin(), result_->pend(), compare_);
+                std::sort(result_->begin(), result_->end(), compare_);
             }
             return result_;
         }

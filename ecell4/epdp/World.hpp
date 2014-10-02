@@ -67,9 +67,11 @@ struct WorldTraitsBase
     typedef ecell4::GSLRandomNumberGenerator rng_type;
     typedef Structure<Tderived_> structure_type;
 
-    typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
+    // typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
+    typedef std::pair<particle_id_type, particle_type> particle_id_pair;
     typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
-    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
+    // typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
+    typedef std::vector<particle_id_pair_and_distance> particle_id_pair_and_distance_list;
     typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
 
     static const Real TOLERANCE = 1e-7;
