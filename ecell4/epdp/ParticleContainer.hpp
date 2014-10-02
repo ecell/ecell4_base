@@ -29,6 +29,7 @@ public:
     typedef typename traits_type::particle_id_type particle_id_type;
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::size_type size_type;
+    typedef typename traits_type::time_type time_type;
     typedef typename traits_type::structure_id_type structure_id_type;
     typedef typename traits_type::structure_type structure_type;
     typedef typename traits_type::particle_id_pair particle_id_pair;
@@ -39,8 +40,6 @@ public:
     typedef typename traits_type::particle_id_pair_and_distance_list
         particle_id_pair_and_distance_list;
     typedef Transaction<traits_type> transaction_type;
-
-    typedef ecell4::Real time_type;
 
 public:
 

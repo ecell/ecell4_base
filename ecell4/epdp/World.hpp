@@ -59,6 +59,7 @@ struct WorldTraitsBase
     typedef std::size_t size_type;
     typedef ecell4::Real length_type;
     typedef ecell4::Real D_type;
+    typedef ecell4::Real time_type;
     typedef TD_ v_type;
     typedef ecell4::ParticleID particle_id_type;
     typedef ecell4::SerialIDGenerator<particle_id_type> particle_id_generator;
