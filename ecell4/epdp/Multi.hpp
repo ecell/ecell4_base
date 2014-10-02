@@ -22,9 +22,12 @@ class MultiParticleContainer
     : public Ttraits_::world_type::particle_container_type
 {
 public:
-    typedef ParticleContainerUtils<typename Ttraits_::world_type::traits_type> utils;
+
+    typedef typename Ttraits_::world_type::particle_container_type base_type;
     typedef typename Ttraits_::world_type world_type;
     typedef typename world_type::traits_type traits_type;
+    typedef ParticleContainerUtils<traits_type> utils;
+
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_shape_type particle_shape_type;
     typedef typename traits_type::species_type species_type;
@@ -35,11 +38,16 @@ public:
     typedef typename traits_type::size_type size_type;
     typedef typename traits_type::structure_id_type structure_id_type;
     typedef typename traits_type::structure_type structure_type;
-    typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
-    typedef Transaction<traits_type> transaction_type;
-    typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
-    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
-    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
+    typedef typename traits_type::particle_id_pair particle_id_pair;
+    typedef typename traits_type::particle_id_pair_generator
+        particle_id_pair_generator;
+    typedef typename traits_type::particle_id_pair_and_distance
+        particle_id_pair_and_distance;
+    typedef typename traits_type::particle_id_pair_and_distance_list
+        particle_id_pair_and_distance_list;
+
+    typedef typename base_type::transaction_type transaction_type;
+
     typedef std::map<particle_id_type, particle_type> particle_map;
     typedef sized_iterator_range<typename particle_map::const_iterator> particle_id_pair_range;
 
@@ -215,6 +223,7 @@ template<typename Tsim_>
 class Multi: public Domain<typename Tsim_::traits_type>
 {
 public:
+
     typedef Tsim_ simulator_type;
     typedef typename simulator_type::traits_type traits_type;
     typedef Domain<traits_type> base_type;
@@ -228,13 +237,16 @@ public:
     typedef typename traits_type::world_type::size_type size_type;
     typedef typename traits_type::world_type::structure_type structure_type;
     typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
+    typedef typename traits_type::world_type::particle_id_pair_and_distance
+        particle_id_pair_and_distance;
+    typedef typename traits_type::world_type::particle_id_pair_and_distance_list
+        particle_id_pair_and_distance_list;
+
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::domain_id_type identifier_type;
     typedef typename traits_type::template shell_generator<
         typename simulator_type::sphere_type>::type spherical_shell_type;
     typedef std::pair<const typename traits_type::shell_id_type, spherical_shell_type> spherical_shell_id_pair;
-    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
-    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
     typedef typename traits_type::reaction_record_type reaction_record_type;
 
     typedef std::map<shell_id_type, spherical_shell_type> spherical_shell_map;

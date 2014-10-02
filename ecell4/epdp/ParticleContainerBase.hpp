@@ -18,9 +18,11 @@ struct ParticleContainerUtils
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_id_type particle_id_type;
-    typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
-    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
-    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
+    typedef typename traits_type::particle_id_pair particle_id_pair;
+    typedef typename traits_type::particle_id_pair_and_distance
+        particle_id_pair_and_distance;
+    typedef typename traits_type::particle_id_pair_and_distance_list
+        particle_id_pair_and_distance_list;
 
     struct distance_comparator:
             public std::binary_function<
@@ -79,6 +81,7 @@ class ParticleContainerBase
     : public ParticleContainer<Ttraits_>
 {
 public:
+
     typedef ParticleContainerUtils<Ttraits_> utils;
     typedef ParticleContainer<Ttraits_> base_type;
     typedef Ttraits_ traits_type;
@@ -93,17 +96,19 @@ public:
     typedef typename traits_type::size_type size_type;
     typedef typename traits_type::structure_id_type structure_id_type;
     typedef typename traits_type::structure_type structure_type;
-    typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
-    typedef Transaction<traits_type> transaction_type;
+    typedef typename traits_type::particle_id_pair particle_id_pair;
+    typedef typename traits_type::particle_id_pair_generator
+        particle_id_pair_generator;
+    typedef typename traits_type::particle_id_pair_and_distance
+        particle_id_pair_and_distance;
+    typedef typename traits_type::particle_id_pair_and_distance_list
+        particle_id_pair_and_distance_list;
+
+    typedef typename base_type::transaction_type transaction_type;
+    typedef typename base_type::time_type time_type;
 
     typedef MatrixSpace<particle_type, particle_id_type, ecell4::utils::get_mapper_mf> particle_matrix_type;
-    typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
-    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
-
-    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
-
-    typedef typename base_type::time_type time_type;
 
 protected:
 public:
@@ -286,7 +291,7 @@ protected:
 };
 
 template<typename Tderived_, typename Ttraits_>
-inline Transaction<Ttraits_>*
+inline typename ParticleContainerBase<Tderived_, Ttraits_>::transaction_type*
 ParticleContainerBase<Tderived_, Ttraits_>::create_transaction()
 {
     return new TransactionImpl<ParticleContainerBase>(*this);

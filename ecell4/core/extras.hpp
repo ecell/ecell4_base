@@ -20,6 +20,8 @@ void throw_in_particles(
     boost::shared_ptr<Trng_>& rng)
 {
     typedef typename Tworld_::molecule_info_type molecule_info_type;
+    boost::shared_ptr<RandomNumberGenerator>
+        myrng(static_cast<boost::shared_ptr<RandomNumberGenerator> >(rng));
 
     if (N < 0)
     {
@@ -37,7 +39,7 @@ void throw_in_particles(
             //     rng.uniform(0.0, edge_lengths[0]),
             //     rng.uniform(0.0, edge_lengths[1]),
             //     rng.uniform(0.0, edge_lengths[2]));
-            const Position3 pos(shape.draw_position(rng));
+            const Position3 pos(shape.draw_position(myrng));
             if (world.list_particles_within_radius(pos, info.radius).size()
                 == 0)
             {

@@ -124,6 +124,7 @@ int main(int argc, char **argv)
 
     // Thorow particles into world at random
     // {{{
+    // world->add_molecules(ecell4::Species("A"), N);
     int number_of_particles_A(N);
     for (int cnt = 0; cnt < number_of_particles_A; ++cnt)
     {

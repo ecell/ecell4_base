@@ -11,6 +11,7 @@
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/extras.hpp>
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 
 #include "ParticleContainerBase.hpp"
@@ -49,7 +50,6 @@ bool is_initialized(std::string const &obj)
 template<typename Tderived_, typename TD_>
 struct WorldTraitsBase
 {
-    // typedef ecell4::Integer size_type;
     typedef std::size_t size_type;
     typedef ecell4::Real length_type;
     typedef ecell4::Real D_type;
@@ -66,6 +66,11 @@ struct WorldTraitsBase
     typedef typename particle_type::position_type position_type;
     typedef ecell4::GSLRandomNumberGenerator rng_type;
     typedef Structure<Tderived_> structure_type;
+
+    typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
+    typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
+    typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
+    typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
 
     static const Real TOLERANCE = 1e-7;
 };
@@ -195,7 +200,9 @@ public:
     typedef typename traits_type::structure_id_type structure_id_type;
     typedef typename traits_type::structure_type structure_type;
     typedef typename traits_type::rng_type rng_type;
-    typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
+    typedef typename traits_type::particle_id_pair particle_id_pair;
+    typedef typename traits_type::particle_id_pair_and_distance_list
+        particle_id_pair_and_distance_list;
 
 protected:
     typedef std::map<species_id_type, species_type> species_map;
@@ -213,16 +220,16 @@ public:
     typedef sized_iterator_range<species_iterator> species_range;
     typedef sized_iterator_range<surface_iterator> structures_range;
 
-protected:
-
     /** ecell4
      */
     struct MoleculeInfo
     {
-        const Real radius;
-        const Real D;
+        const ecell4::Real radius;
+        const ecell4::Real D;
         const std::string structure_id;
     };
+
+    typedef MoleculeInfo molecule_info_type;
 
 public:
 
@@ -512,6 +519,29 @@ public:
         return retval;
     }
 
+    // std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    // list_particles_within_radius(
+    //     const Position3& pos, const Real& radius) const
+    // {
+    //     boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+    //         base_type::check_overlap(particle_shape_type(pos, radius)));
+    // }
+
+    // std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    // list_particles_within_radius(
+    //     const Position3& pos, const Real& radius, const ParticleID& ignore) const
+    // {
+    //     return (*ps_).list_particles_within_radius(pos, radius, ignore);
+    // }
+
+    // std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    // list_particles_within_radius(
+    //     const Position3& pos, const Real& radius,
+    //     const ParticleID& ignore1, const ParticleID& ignore2) const
+    // {
+    //     return (*ps_).list_particles_within_radius(pos, radius, ignore1, ignore2);
+    // }
+
     void bind_to(boost::shared_ptr<ecell4::Model> model)
     {
         if (boost::shared_ptr<ecell4::Model> bound_model = lock_model())
@@ -547,16 +577,30 @@ public:
     new_particle(const particle_type& p)
     {
         particle_id_pair retval(pidgen_(), p);
-        if (!base_type::check_overlap(
-            particle_shape_type(p.position(), p.radius())))
+        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+            base_type::check_overlap(
+                particle_shape_type(p.position(), p.radius())));
+        if (overlapped && ::size(*overlapped))
+        {
+            return std::make_pair(retval, false);
+        }
+        else
         {
             update_particle(retval);
             return std::make_pair(retval, true);
         }
-        else
-        {
-            return std::make_pair(retval, false);
-        }
+    }
+
+    void add_molecules(const ecell4::Species& sp, const ecell4::Integer& num)
+    {
+        ; // ecell4::extras::throw_in_particles(*this, sp, num, rng());
+    }
+
+    void add_molecules(
+        const ecell4::Species& sp, const ecell4::Integer& num,
+        const ecell4::Shape& shape)
+    {
+        ; // ecell4::extras::throw_in_particles(*this, sp, num, shape, rng());
     }
 
     /**
@@ -566,7 +610,7 @@ public:
      */
     MoleculeInfo get_molecule_info(const ecell4::Species& sp) const
     {
-        Real radius(0.0), D(0.0);
+        ecell4::Real radius(0.0), D(0.0);
         std::string structure_id("world");
 
         if (sp.has_attribute("radius") && sp.has_attribute("D"))
