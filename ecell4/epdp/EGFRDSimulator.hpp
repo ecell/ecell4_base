@@ -1060,7 +1060,7 @@ public:
             initialize();
         }
 
-        if (upto <= base_type::t_)
+        if (upto <= this->t())
         {
             return false;
         }
@@ -1073,7 +1073,7 @@ public:
 
         LOG_INFO(("stop at %.16g", upto));
 
-        base_type::t_ = upto;
+        this->set_t(upto);
 
         std::vector<domain_id_type> non_singles;
 
@@ -1134,7 +1134,7 @@ public:
 
         bool retval(true);
 
-        CHECK(base_type::t_ >= 0.0);
+        CHECK(this->t() >= 0.0);
         CHECK(base_type::dt_ >= 0.0);
 
         typedef std::map<domain_id_type, std::set<shell_id_type> >
@@ -1391,7 +1391,7 @@ protected:
             BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
 
         boost::shared_ptr<event_type> new_event(
-            new single_event(base_type::t_ + domain.dt(), domain, kind));
+            new single_event(this->t() + domain.dt(), domain, kind));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
         LOG_DEBUG(("add_event: #%d - %s", domain.event().first, boost::lexical_cast<std::string>(domain).c_str()));
     }
@@ -1402,7 +1402,7 @@ protected:
             BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
 
         boost::shared_ptr<event_type> new_event(
-            new pair_event(base_type::t_ + domain.dt(), domain, kind));
+            new pair_event(this->t() + domain.dt(), domain, kind));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
         LOG_DEBUG(("add_event: #%d - %s", domain.event().first, boost::lexical_cast<std::string>(domain).c_str()));
     }
@@ -1413,7 +1413,7 @@ protected:
             BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
 
         boost::shared_ptr<event_type> new_event(
-            new multi_event(base_type::t_ + domain.dt(), domain));
+            new multi_event(this->t() + domain.dt(), domain));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
         LOG_DEBUG(("add_event: #%d - %s", domain.event().first, boost::lexical_cast<std::string>(domain).c_str()));
     }
@@ -1914,14 +1914,14 @@ protected:
         length_type const particle_radius(domain.particle().second.radius());
 
         // Override dt, burst happens before single's scheduled event.
-        domain.dt() = base_type::t_ - domain.last_time();
-        LOG_DEBUG(("t=%.16g, domain.last_time=%.16g", base_type::t_, domain.last_time()));
+        domain.dt() = this->t() - domain.last_time();
+        LOG_DEBUG(("t=%.16g, domain.last_time=%.16g", this->t(), domain.last_time()));
 
         position_type const new_pos(draw_new_position(domain, domain.dt()));
 
         propagate(domain, new_pos, true);
 
-        domain.last_time() = base_type::t_;
+        domain.last_time() = this->t();
         domain.dt() = 0.;
         try
         {
@@ -1945,7 +1945,7 @@ protected:
     template<typename T>
     boost::array<boost::shared_ptr<single_type>, 2> burst(AnalyticalPair<traits_type, T>& domain)
     {
-        length_type const dt(base_type::t_ - domain.last_time());
+        length_type const dt(this->t() - domain.last_time());
 
         boost::array<boost::shared_ptr<single_type>, 2> const singles(
             propagate(domain, draw_new_positions<draw_on_burst>(domain, dt)));
@@ -1973,8 +1973,8 @@ protected:
     void burst(single_type& domain)
     {
         LOG_DEBUG(("burst: bursting %s", boost::lexical_cast<std::string>(domain).c_str()));
-        BOOST_ASSERT(base_type::t_ >= domain.last_time());
-        BOOST_ASSERT(base_type::t_ <= domain.last_time() + domain.dt());
+        BOOST_ASSERT(this->t() >= domain.last_time());
+        BOOST_ASSERT(this->t() <= domain.last_time() + domain.dt());
         {
             spherical_single_type* _domain(dynamic_cast<spherical_single_type*>(&domain));
             if (_domain)
@@ -2316,7 +2316,7 @@ protected:
             event_kind = SINGLE_EVENT_ESCAPE;
         }
 
-        domain.last_time() = base_type::t_;
+        domain.last_time() = this->t();
         add_event(domain, event_kind);
     }
 
@@ -2352,7 +2352,7 @@ protected:
             dt_reaction.first < dt_com_escape_or_iv_event.first ?
                 dt_reaction: dt_com_escape_or_iv_event);
         domain.dt() = dt_and_event_pair.first;
-        domain.last_time() = base_type::t_;
+        domain.last_time() = this->t();
         add_event(domain, dt_and_event_pair.second);
     }
 
@@ -2794,7 +2794,7 @@ protected:
         determine_next_event(*new_pair);
         BOOST_ASSERT(new_pair->dt() >= 0);
 
-        new_pair->last_time() = base_type::t_;
+        new_pair->last_time() = this->t();
 
         remove_domain(domain);
         remove_domain(possible_partner);
@@ -3031,8 +3031,8 @@ protected:
         single_type& domain(event.domain());
 #if 0
         BOOST_ASSERT(
-            std::abs(domain.dt() + domain.last_time() - base_type::t_)
-                <= 1e-18 * base_type::t_);
+            std::abs(domain.dt() + domain.last_time() - this->t())
+                <= 1e-18 * this->t());
 #endif
         ++single_step_count_[event.kind()];
         switch (event.kind())
@@ -3050,7 +3050,7 @@ protected:
                 LOG_DEBUG(("single reaction rejected"));
                 ++rejected_moves_;
                 domain.dt() = 0.;
-                domain.last_time() = base_type::t_;
+                domain.last_time() = this->t();
                 add_event(domain, SINGLE_EVENT_ESCAPE);
             }
             break;
@@ -3062,7 +3062,7 @@ protected:
             if (domain.D() == 0.)
             {
                 determine_next_event(domain);
-                domain.last_time() = base_type::t_;
+                domain.last_time() = this->t();
                 return;
             }
 
@@ -3362,17 +3362,17 @@ protected:
         ++base_type::num_steps_;
 
         event_id_pair_type ev(scheduler_.pop());
-        base_type::t_ = ev.second->time();
+        this->set_t(ev.second->time());
 
         LOG_INFO(("%d: t=%.16g dt=%.16g domain=%s rejectedmoves=%d",
-                  base_type::num_steps_, base_type::t_, base_type::dt_,
+                  base_type::num_steps_, this->t(), base_type::dt_,
                   boost::lexical_cast<std::string>(dynamic_cast<domain_event_base const*>(ev.second.get())->domain()).c_str(),
                   rejected_moves_));
 
         fire_event(*ev.second);
 
         time_type const next_time(scheduler_.top().second->time());
-        base_type::dt_ = next_time - base_type::t_; 
+        base_type::dt_ = next_time - this->t();
 
         if (base_type::dt_ == 0.)
         {
