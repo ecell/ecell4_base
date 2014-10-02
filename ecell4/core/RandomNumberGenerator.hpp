@@ -124,11 +124,6 @@ public:
         ;
     }
 
-    inline rng_handle handle()
-    {
-        return rng_;
-    }
-
     /** for epdp
      */
 

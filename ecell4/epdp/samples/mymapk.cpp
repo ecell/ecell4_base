@@ -106,9 +106,20 @@ int main(int argc, char **argv)
     // }}}
 
     boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model(new ecell4::NetworkModel());
+
+    // Random Number Generator (Instanciate and Initialize)
+    // {{{
+    boost::shared_ptr<ecell4::GSLRandomNumberGenerator>
+        rng(new ecell4::GSLRandomNumberGenerator());
+    // rng->seed(time(NULL));
+    rng->seed((unsigned long int)0);
+    // world_type::traits_type::rng_type internal_rng = world_type::traits_type::rng_type(rng->handle());
+    // }}}
+
     // World Definition
     // {{{
-    boost::shared_ptr<world_type> world(new world_type(world_size, matrix_size));
+    // boost::shared_ptr<world_type> world(new world_type(world_size, matrix_size));
+    boost::shared_ptr<world_type> world(new world_type(world_size, matrix_size, rng));
     world_type::position_type edge_length(world_size, world_size, world_size);
     world_type::position_type pos(world_size / 2, world_size / 2, world_size / 2);
 
@@ -117,15 +128,6 @@ int main(int argc, char **argv)
 
     world->add_structure(cuboidal_region );
     // }}}
-
-    // Random Number Generator (Instanciate and Initialize)
-    // {{{
-    boost::shared_ptr<ecell4::GSLRandomNumberGenerator> rng(new ecell4::GSLRandomNumberGenerator());
-    //rng->seed(time(NULL) );
-    rng->seed((unsigned long int) 0);
-    world_type::traits_type::rng_type internal_rng = world_type::traits_type::rng_type( rng->handle() );
-    // }}}
-
 
     // add ::SpeciesType to ::ParticleModel 
     // {{{
@@ -214,14 +216,17 @@ int main(int argc, char **argv)
     // {{{
     boost::shared_ptr<network_rules_type> nw_rules_adapter(
             new network_rules_type(ecell4_nw_model));
-    boost::shared_ptr< simulator_type> sim( 
-            new simulator_type(
-                world, 
-                nw_rules_adapter,
-                internal_rng,
-                dissociation_retry_moves
-                )
-            );
+    // boost::shared_ptr< simulator_type> sim( 
+    //         new simulator_type(
+    //             world, 
+    //             nw_rules_adapter,
+    //             internal_rng,
+    //             dissociation_retry_moves
+    //             )
+    //         );
+    boost::shared_ptr<simulator_type> sim(
+        new simulator_type(
+            world, nw_rules_adapter, dissociation_retry_moves));
     sim->initialize();
     // }}}
 

@@ -889,13 +889,38 @@ public:
         //                  select_second<typename domain_map::value_type>()));
     }
 
-    EGFRDSimulator(boost::shared_ptr<world_type> world,
-                   boost::shared_ptr<network_rules_type const> network_rules,
-                   rng_type& rng, int dissociation_retry_moves = 1,
-                   Real bd_dt_factor = 1e-5, 
-                   length_type user_max_shell_size =
-                    std::numeric_limits<length_type>::infinity())
-        : base_type(world, network_rules, rng),
+    // EGFRDSimulator(boost::shared_ptr<world_type> world,
+    //                boost::shared_ptr<network_rules_type const> network_rules,
+    //                rng_type& rng, int dissociation_retry_moves = 1,
+    //                Real bd_dt_factor = 1e-5, 
+    //                length_type user_max_shell_size =
+    //                 std::numeric_limits<length_type>::infinity())
+    //     : base_type(world, network_rules, rng),
+    //       num_retries_(dissociation_retry_moves),
+    //       bd_dt_factor_(bd_dt_factor),
+    //       user_max_shell_size_(user_max_shell_size),
+    //       ssmat_((*world).world_size(), (*world).matrix_size()),
+    //       csmat_((*world).world_size(), (*world).matrix_size()),
+    //       smatm_(boost::fusion::pair<spherical_shell_type,
+    //                                  spherical_shell_matrix_type&>(ssmat_),
+    //              boost::fusion::pair<cylindrical_shell_type,
+    //                                  cylindrical_shell_matrix_type&>(csmat_)),
+    //       single_shell_factor_(.1),
+    //       multi_shell_factor_(.05),
+    //       rejected_moves_(0), zero_step_count_(0), dirty_(true)
+    // {
+    //     std::fill(domain_count_per_type_.begin(), domain_count_per_type_.end(), 0);
+    //     std::fill(single_step_count_.begin(), single_step_count_.end(), 0);
+    //     std::fill(pair_step_count_.begin(), pair_step_count_.end(), 0);
+    //     std::fill(multi_step_count_.begin(), multi_step_count_.end(), 0);
+    // }
+
+    EGFRDSimulator(
+        const boost::shared_ptr<world_type>& world,
+        const boost::shared_ptr<network_rules_type const>& network_rules,
+        int dissociation_retry_moves = 1, Real bd_dt_factor = 1e-5,
+        length_type user_max_shell_size = std::numeric_limits<length_type>::infinity())
+        : base_type(world, network_rules),
           num_retries_(dissociation_retry_moves),
           bd_dt_factor_(bd_dt_factor),
           user_max_shell_size_(user_max_shell_size),
@@ -1681,14 +1706,14 @@ protected:
         length_type r)
     {
         double x, y, z;
-        base_type::rng_.dir_3d(&x, &y, &z);
+        this->rng().dir_3d(&x, &y, &z);
         return normalize(
             create_vector<position_type>(x, y, z), r);
 
-        // const double cos_theta(base_type::rng_.uniform(-1., 1.));
+        // const double cos_theta(this->rng().uniform(-1., 1.));
         // const double sin_theta(sqrt(1 - cos_theta * cos_theta));
         // double sin_phi, cos_phi;
-        // sincos(base_type::rng_.uniform(0., 2 * M_PI), &sin_phi, &cos_phi);
+        // sincos(this->rng().uniform(0., 2 * M_PI), &sin_phi, &cos_phi);
         // return normalize(
         //     create_vector<position_type>(
         //         sin_theta * cos_phi, sin_theta * sin_phi, cos_theta), r);
@@ -1713,7 +1738,7 @@ protected:
         typedef typename detail::get_greens_function<shape_type>::type greens_function;
         length_type const r(
             draw_r(
-                base_type::rng_,
+                this->rng(),
                 greens_function(
                     domain.particle().second.D(),
                     domain.mobility_radius()),
@@ -1798,7 +1823,7 @@ protected:
     boost::array<position_type, 2> draw_new_positions(
         AnalyticalPair<traits_type, T> const& domain, time_type dt)
     {
-        Tdraw d(base_type::rng_, *base_type::world_);
+        Tdraw d(this->rng(), *base_type::world_);
         position_type const new_com(d.draw_com(domain, dt));
         position_type const new_iv(d.draw_iv(domain, dt, domain.iv()));
         D_type const D0(domain.particles()[0].second.D());
@@ -2135,7 +2160,7 @@ protected:
                     position_type vector(
                         structure->random_vector(
                             r01 * traits_type::MINIMAL_SEPARATION_FACTOR,
-                            base_type::rng_));
+                            this->rng()));
                     // place particles according to the ratio D1:D2
                     // this way, species with D=0 doesn't move.
                     // FIXME: what if D1 == D2 == 0?
@@ -2218,7 +2243,7 @@ protected:
         }
         else
         {
-            const double rnd(base_type::rng_.uniform(0., 1.));
+            const double rnd(this->rng().uniform(0., 1.));
             if(rnd <= 0.)
             {
                 return std::numeric_limits<time_type>::infinity();
@@ -2244,7 +2269,7 @@ protected:
             typedef typename detail::get_greens_function<shape_type>::type greens_function;
             return greens_function(domain.particle().second.D(),
                             domain.mobility_radius())
-                .drawTime(base_type::rng_.uniform(0., 1.));
+                .drawTime(this->rng().uniform(0., 1.));
         }
     }
 
@@ -2259,10 +2284,10 @@ protected:
         typedef typename pair_greens_functions::com_type com_greens_function;
         BOOST_ASSERT(::size(domain.reactions()) == 1);
         time_type const dt_com(
-            com_greens_function(domain.D_R(), domain.a_R()).drawTime(base_type::rng_.uniform(0., 1.)));
+            com_greens_function(domain.D_R(), domain.a_R()).drawTime(this->rng().uniform(0., 1.)));
         time_type const dt_iv(
             iv_greens_function(domain.D_tot(), domain.reactions()[0].k(),
-                           domain.r0(), domain.sigma(), domain.a_r()).drawTime(base_type::rng_.uniform(0., 1.)));
+                           domain.r0(), domain.sigma(), domain.a_r()).drawTime(this->rng().uniform(0., 1.)));
         if (dt_com < dt_iv)
         {
             return std::make_pair(dt_com, PAIR_EVENT_COM_ESCAPE);
@@ -3139,7 +3164,7 @@ protected:
         reaction_rule_type const& r(domain.reactions()[0]);
         iv_greens_function const gf(domain.D_tot(), r.k(), domain.r0(), domain.sigma(), domain.a_r());
 
-        double const rnd(base_type::rng_.uniform(0, 1.));
+        double const rnd(this->rng().uniform(0, 1.));
         return gf.drawEventType(rnd, domain.dt());
     }
 
@@ -3249,7 +3274,7 @@ protected:
                         position_type const new_com(
                             (*base_type::world_).apply_boundary(
                                 draw_on_iv_reaction(
-                                    base_type::rng_,
+                                    this->rng(),
                                     *base_type::world_).draw_com(
                                         domain, domain.dt())));
                    
@@ -3711,7 +3736,7 @@ protected:
             return rules[0];
         }
 
-        const rate_type t(base_type::rng_.uniform(0., 1.) * k_tot);
+        const rate_type t(this->rng().uniform(0., 1.) * k_tot);
         rate_type a(0.);
         BOOST_FOREACH(reaction_rule_type const& r, rules)
         {
