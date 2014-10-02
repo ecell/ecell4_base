@@ -39,11 +39,15 @@ void throw_in_particles(
             //     rng.uniform(0.0, edge_lengths[0]),
             //     rng.uniform(0.0, edge_lengths[1]),
             //     rng.uniform(0.0, edge_lengths[2]));
+            // if (world.list_particles_within_radius(pos, info.radius).size()
+            //     == 0)
+            // {
+            //     world.new_particle(Particle(sp, pos, info.radius, info.D));
+            //     break;
+            // }
             const Position3 pos(shape.draw_position(myrng));
-            if (world.list_particles_within_radius(pos, info.radius).size()
-                == 0)
+            if (world.new_particle(Particle(sp, pos, info.radius, info.D)).second)
             {
-                world.new_particle(Particle(sp, pos, info.radius, info.D));
                 break;
             }
         }
