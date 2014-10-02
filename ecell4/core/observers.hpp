@@ -3,7 +3,7 @@
 
 #include "types.hpp"
 #include "Space.hpp"
-#include "SimulatorBase.hpp"
+#include "Simulator.hpp"
 
 #include <fstream>
 #include <boost/format.hpp>
@@ -42,7 +42,7 @@ public:
         ;
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space) = 0;
+    virtual void fire(const Simulator* sim, const Space* space) = 0;
 
     bool every()
     {
@@ -90,7 +90,7 @@ public:
         num_steps_ = 0;
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space)
+    virtual void fire(const Simulator* sim, const Space* space)
     {
         tnext_ += dt_;
         ++num_steps_;
@@ -170,7 +170,7 @@ public:
         logger_.initialize();
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space)
+    virtual void fire(const Simulator* sim, const Space* space)
     {
         logger_.log(space);
         base_type::fire(sim, space);
@@ -224,7 +224,7 @@ public:
         base_type::finalize(space);
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space)
+    virtual void fire(const Simulator* sim, const Space* space)
     {
         if (sim->last_reactions().size() > 0)
         {
@@ -272,7 +272,7 @@ public:
         base_type::initialize(space);
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space)
+    virtual void fire(const Simulator* sim, const Space* space)
     {
         space->save(filename());
 
@@ -323,7 +323,7 @@ public:
         base_type::initialize(space);
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space)
+    virtual void fire(const Simulator* sim, const Space* space)
     {
         typedef std::vector<std::pair<ParticleID, Particle> >
             particle_container_type;

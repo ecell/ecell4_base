@@ -9,7 +9,7 @@
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/core/Simulator.hpp>
+#include <ecell4/core/SimulatorBase.hpp>
 #include <ecell4/core/ModelWrapper.hpp>
 
 #include "ODEWorld.hpp"
@@ -27,11 +27,11 @@ namespace ode
 {
 
 class ODESimulator
-    : public Simulator<NetworkModel, ODEWorld>
+    : public SimulatorBase<NetworkModel, ODEWorld>
 {
 public:
 
-    typedef Simulator<NetworkModel, ODEWorld> base_type;
+    typedef SimulatorBase<NetworkModel, ODEWorld> base_type;
 
 public:
 

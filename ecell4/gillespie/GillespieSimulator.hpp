@@ -7,7 +7,7 @@
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/core/Simulator.hpp>
+#include <ecell4/core/SimulatorBase.hpp>
 
 #include "GillespieWorld.hpp"
 
@@ -19,11 +19,11 @@ namespace gillespie
 {
 
 class GillespieSimulator
-    : public Simulator<Model, GillespieWorld>
+    : public SimulatorBase<Model, GillespieWorld>
 {
 public:
 
-    typedef Simulator<Model, GillespieWorld> base_type;
+    typedef SimulatorBase<Model, GillespieWorld> base_type;
 
 protected:
 

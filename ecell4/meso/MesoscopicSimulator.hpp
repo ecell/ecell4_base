@@ -5,7 +5,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Model.hpp>
-#include <ecell4/core/Simulator.hpp>
+#include <ecell4/core/SimulatorBase.hpp>
 #include <ecell4/core/EventScheduler.hpp>
 
 #include "MesoscopicWorld.hpp"
@@ -17,11 +17,11 @@ namespace meso
 {
 
 class MesoscopicSimulator
-    : public Simulator<Model, MesoscopicWorld>
+    : public SimulatorBase<Model, MesoscopicWorld>
 {
 public:
 
-    typedef Simulator<Model, MesoscopicWorld> base_type;
+    typedef SimulatorBase<Model, MesoscopicWorld> base_type;
     typedef SubvolumeSpace::coordinate_type coordinate_type;
 
 protected:

@@ -5,7 +5,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/Model.hpp>
-#include <ecell4/core/Simulator.hpp>
+#include <ecell4/core/SimulatorBase.hpp>
 
 #include "BDWorld.hpp"
 #include "BDPropagator.hpp"
@@ -18,11 +18,11 @@ namespace bd
 {
 
 class BDSimulator
-    : public Simulator<Model, BDWorld>
+    : public SimulatorBase<Model, BDWorld>
 {
 public:
 
-    typedef Simulator<Model, BDWorld> base_type;
+    typedef SimulatorBase<Model, BDWorld> base_type;
 
 public:
 
