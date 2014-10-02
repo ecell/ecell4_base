@@ -626,7 +626,8 @@ public:
     void add_species(const ecell4::Species& sp)
     {
         MoleculeInfo info(get_molecule_info(sp));
-        species_type spinfo(sp.serial(), info.D, info.radius, info.structure_id);
+        species_type spinfo(sp.serial(), info.D, info.radius,
+            static_cast<typename species_type::structure_id_type>(info.structure_id));
         this->add_species(spinfo);
     }
 

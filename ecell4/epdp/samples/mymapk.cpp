@@ -36,68 +36,12 @@
 
 typedef double Real;
 
-// // Class to memize the positions of each particles
-// template <typename TPos_type>
-// class TemporaryParticleContainer
-// {
-// // {{{
-// public:
-// 
-//     typedef Real radius_type;
-//     typedef TPos_type position_type;
-//     typedef std::vector<std::pair<radius_type, position_type> >
-//         particle_position_container_type;
-// 
-// public:
-// 
-//     void add(radius_type r, position_type pos)
-//     {
-//         particle_position_container_.push_back(
-//             typename particle_position_container_type::value_type(r, pos));
-//     }
-// 
-//     particle_position_container_type list_particles_within_radius(
-//         radius_type r, position_type pos)
-//     {
-//         particle_position_container_type ret;
-//         for (typename particle_position_container_type::iterator
-//             it = particle_position_container_.begin();
-//             it != this->particle_position_container_.end(); it++)
-//         {
-//             double radius_new(r);
-//             double radius_st (it->first);
-//             if (this->distance(it->second, pos) < radius_st + radius_new)
-//             {
-//                 ret.push_back(*it);
-//             }
-//         }
-//         return ret;
-//     }
-// 
-//     double distance(const position_type& p1, const position_type& p2)
-//     {
-//         //XXX: This function doesn't accout periodic boundaries.
-//         double dsq = 0.0;
-//         position_type sq(
-//             gsl_pow_2(p2[0] - p1[0]),
-//             gsl_pow_2(p2[1] - p1[1]),
-//             gsl_pow_2(p2[2] - p2[2]));
-//         return sqrt(std::accumulate(sq.begin(), sq.end(), 0.0));
-//     }
-// 
-// private:
-// 
-//     particle_position_container_type particle_position_container_;
-// // }}}
-// };
-
 int main(int argc, char **argv)
 {
     // Traits typedefs
     // {{{
     typedef ::World< ::CyclicWorldTraits<Real> > world_type;
     typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> > simulator_type;
-    typedef simulator_type::traits_type::network_rules_type network_rules_type;
     typedef simulator_type::multi_type multi_type;
 
     typedef ::CuboidalRegion<simulator_type::traits_type> cuboidal_region_type;
@@ -197,47 +141,6 @@ int main(int argc, char **argv)
             }
         }
     }
-    // TemporaryParticleContainer<world_type::position_type> container;
-    // for (int cnt = 0; cnt < number_of_particles_A; cnt++)
-    // {
-    //     // add particles at random.
-    //     for (; ; )
-    //     {
-    //         world_type::position_type pos(
-    //                 rng->uniform(0.0, edge_lengths[0]),
-    //                 rng->uniform(0.0, edge_lengths[1]),
-    //                 rng->uniform(0.0, edge_lengths[2]));
-
-    //         double radius(boost::lexical_cast<double>(sp1.get_attribute("radius")));
-    //         if (container.list_particles_within_radius(radius, pos).size() == 0)
-    //         {
-    //             std::cout << "(" << pos[0] << pos[1] << pos[2] << ")" << std::endl;
-    //             container.add(radius, pos);
-    //             world->new_particle(sp1, pos);
-    //             break;
-    //         }
-    //     }
-    // }
-    // }}}
-
-    // world::set_all_repusive() equality section
-    // {{{
-    BOOST_FOREACH(ecell4::Species temp_sp1, ecell4_nw_model->list_species())
-    {
-        BOOST_FOREACH(ecell4::Species temp_sp2, ecell4_nw_model->list_species())
-        {
-            std::vector<ecell4::ReactionRule>
-                rrv(ecell4_nw_model->query_reaction_rules(temp_sp1, temp_sp2));
-            if (rrv.size() == 0)
-            {
-                ecell4::ReactionRule new_reaction;
-                new_reaction.add_reactant(temp_sp1);
-                new_reaction.add_reactant(temp_sp2);
-                new_reaction.set_k(double(0.0));
-                ecell4_nw_model->add_reaction_rule(new_reaction);
-            }
-        }
-    }
     // }}}
 
     // Logger Settings
@@ -250,35 +153,29 @@ int main(int argc, char **argv)
 
     // EGFRDSimulator instance generated
     // {{{
-    boost::shared_ptr<network_rules_type>
-        nw_rules_adapter(new network_rules_type(ecell4_nw_model));
-
     boost::shared_ptr<simulator_type> sim(
         new simulator_type(
-            world, nw_rules_adapter, dissociation_retry_moves));
+            world, ecell4_nw_model, dissociation_retry_moves));
     sim->initialize();
     // }}}
 
     // Simulation Executed
     // {{{
-    Integer n_st1, n_st2, n_st3;
-    n_st1 = world->get_particle_ids(sp1.name()).size();
-    n_st2 = world->get_particle_ids(sp2.name()).size();
-    n_st3 = world->get_particle_ids(sp3.name()).size();
-    std::cout << sim->t() << "\t"
-        << n_st1 << "\t" << n_st2 << "\t" << n_st3 << "\t" << std::endl;
     Real next_time(0.0), dt(0.02);
-    for (int i(0); i < 100; i++)
+    std::cout << sim->t() << "\t"
+        << world->num_molecules_exact(sp1) << "\t"
+        << world->num_molecules_exact(sp2) << "\t"
+        << world->num_molecules_exact(sp3) << std::endl;
     // for (int i(0); i < 10; i++)
+    for (int i(0); i < 100; i++)
     {
         next_time += dt;
         while (sim->step(next_time)) {};
 
-        n_st1 = world->get_particle_ids(sp1.name()).size();
-        n_st2 = world->get_particle_ids(sp2.name()).size();
-        n_st3 = world->get_particle_ids(sp3.name()).size();
         std::cout << sim->t() << "\t"
-            << n_st1 << "\t" << n_st2 << "\t" << n_st3 << "\t" << std::endl;
+            << world->num_molecules_exact(sp1) << "\t"
+            << world->num_molecules_exact(sp2) << "\t"
+            << world->num_molecules_exact(sp3) << std::endl;
     }
     // }}}
 

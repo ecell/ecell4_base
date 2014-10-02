@@ -10,7 +10,7 @@
 #include "exceptions.hpp"
 
 #include <ecell4/core/ReactionRule.hpp>
-#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/Model.hpp>
 
 
 // cf. epdp/NetworkRulesWrapper.hpp
@@ -19,15 +19,26 @@
 //
 //  This class is called via query_reaction_rule function by EGFRDSimulator implemented in epdp,
 //  then, this class translates the query into ecell4::Species or ReactionRule object and
-//  consult ecell4::NetworkModel class.
+//  consult ecell4::Model class.
 //template <typename T_, typename Trri_>
+
+ecell4::ReactionRule create_repulsive_reaction_rule(
+    const ecell4::Species& reactant1, const ecell4::Species& reactant2)
+{
+    ecell4::ReactionRule rr;
+    rr.set_k(0.0);
+    rr.add_reactant(reactant1);
+    rr.add_reactant(reactant2);
+    return rr;
+}
 
 template <typename Trri_>
 class NetworkRulesAdapter
 {
 public:
 
-    typedef ecell4::NetworkModel backend_type; // will not be used.
+    typedef ecell4::Model backend_type; // will not be used.
+
     typedef Trri_ reaction_rule_type;
     typedef typename reaction_rule_type::species_id_type species_id_type;
     typedef std::vector<reaction_rule_type> reaction_rule_vector;
@@ -45,9 +56,9 @@ public:
             i(first_order_cache_.find(r1));
         if (i == this->first_order_cache_.end())
         {
-            ecell4::NetworkModel::reaction_rule_container_type
+            ecell4::Model::reaction_rule_container_type
                 reaction_rules_at_ecell4(
-                    ecell4_nw_model_->query_reaction_rules(ecell4::Species(r1)));
+                    model_->query_reaction_rules(ecell4::Species(r1)));
 
             std::pair<typename first_order_reaction_rule_vector_map::iterator, bool>
                 x(first_order_cache_.insert(std::make_pair(r1, reaction_rule_vector())));
@@ -55,7 +66,6 @@ public:
                 it(reaction_rules_at_ecell4.begin());
                 it != reaction_rules_at_ecell4.end(); it++)
             {
-                // temporary_reaction_rule_vector_.push_back(convert_reaction_rule_type(*it));
                 x.first->second.push_back(convert_reaction_rule_type(*it));
             }
             return x.first->second;
@@ -70,15 +80,20 @@ public:
             i(second_order_cache_.find(std::make_pair(r1, r2)));
         if (i == second_order_cache_.end())
         {
-            ecell4::NetworkModel::reaction_rule_container_type
+            const ecell4::Species sp1(r1), sp2(r2);
+
+            ecell4::Model::reaction_rule_container_type
                 reaction_rules_at_ecell4(
-                    ecell4_nw_model_->query_reaction_rules(
-                        ecell4::Species(r1), ecell4::Species(r2)));
+                    model_->query_reaction_rules(sp1, sp2));
+            if (reaction_rules_at_ecell4.size() == 0)
+            {
+                reaction_rules_at_ecell4.push_back(
+                    create_repulsive_reaction_rule(sp1, sp2));
+            }
 
             std::pair<typename second_order_reaction_rule_vector_map::iterator, bool>
                 x(second_order_cache_.insert(
                     std::make_pair(std::make_pair(r1, r2), reaction_rule_vector())));
-
             for (std::vector<ecell4::ReactionRule>::const_iterator
                 it(reaction_rules_at_ecell4.begin());
                 it != reaction_rules_at_ecell4.end(); it++)
@@ -90,8 +105,8 @@ public:
         return i->second;
     }
 
-    NetworkRulesAdapter(boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model)
-        : ecell4_nw_model_(ecell4_nw_model)
+    NetworkRulesAdapter(boost::shared_ptr<ecell4::Model> model)
+        : model_(model)
     {
         ;
     }
@@ -165,7 +180,7 @@ private:
 
     mutable first_order_reaction_rule_vector_map first_order_cache_;
     mutable second_order_reaction_rule_vector_map second_order_cache_;
-    boost::shared_ptr<ecell4::NetworkModel> ecell4_nw_model_;
+    boost::shared_ptr<ecell4::Model> model_;
 };
 
 #endif  // __ECELL4_EGFRD_NETWORK_RULES_ADAPTER

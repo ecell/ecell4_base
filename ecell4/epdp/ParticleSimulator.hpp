@@ -112,6 +112,8 @@ public:
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
     typedef typename traits_type::volume_clearer_type volume_clearer_type;
 
+    typedef ecell4::Model ecell4_model_type;
+
 public:
 
     virtual ~ParticleSimulator() {}
@@ -123,12 +125,13 @@ public:
     //       t_(0.), dt_(0.), num_steps_(0), paranoiac_(false) {}
 
     ParticleSimulator(
-        boost::shared_ptr<world_type> world,
-        boost::shared_ptr<network_rules_type const> network_rules)
-        : world_(world), network_rules_(network_rules), rrec_(),
-          dt_(0.), num_steps_(0), paranoiac_(false)
+        const boost::shared_ptr<world_type>& world,
+        const boost::shared_ptr<ecell4_model_type>& ecell4_model)
+        : world_(world), model_(ecell4_model),
+        network_rules_(new network_rules_type(ecell4_model)),
+        rrec_(), dt_(0.), num_steps_(0), paranoiac_(false)
     {
-        ;
+        world_->bind_to(model_);
     }
 
     boost::shared_ptr<world_type> const& world() const
@@ -215,8 +218,14 @@ public:
         (*world_).set_t(t);
     }
 
+    const boost::shared_ptr<ecell4_model_type>& model()
+    {
+        return model_;
+    }
+
 protected:
     boost::shared_ptr<world_type> world_;
+    boost::shared_ptr<ecell4_model_type> model_; // ecell4
     boost::shared_ptr<network_rules_type const> network_rules_;
     boost::shared_ptr<reaction_recorder_type> rrec_;
     // rng_type& rng_;

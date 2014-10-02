@@ -17,6 +17,8 @@
 #include <boost/variant.hpp>
 
 #include <ecell4/core/get_mapper_mf.hpp>
+#include <ecell4/core/Model.hpp>
+
 #include "utils/array_helper.hpp"
 //#include "utils/get_mapper_mf.hpp"
 #include "utils/fun_composition.hpp"
@@ -215,6 +217,8 @@ public:
     typedef typename traits_type::event_id_type event_id_type;
     typedef typename traits_type::event_id_pair_type event_id_pair_type;
     typedef boost::variant<boost::none_t, spherical_shell_type, cylindrical_shell_type> shell_variant_type;
+
+    typedef typename base_type::ecell4_model_type ecell4_model_type;
 
     enum domain_kind
     {
@@ -917,10 +921,10 @@ public:
 
     EGFRDSimulator(
         const boost::shared_ptr<world_type>& world,
-        const boost::shared_ptr<network_rules_type const>& network_rules,
+        const boost::shared_ptr<ecell4_model_type>& ecell4_model,
         int dissociation_retry_moves = 1, Real bd_dt_factor = 1e-5,
         length_type user_max_shell_size = std::numeric_limits<length_type>::infinity())
-        : base_type(world, network_rules),
+        : base_type(world, ecell4_model),
           num_retries_(dissociation_retry_moves),
           bd_dt_factor_(bd_dt_factor),
           user_max_shell_size_(user_max_shell_size),
