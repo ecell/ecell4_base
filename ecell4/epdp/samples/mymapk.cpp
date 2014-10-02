@@ -120,27 +120,6 @@ int main(int argc, char **argv)
     boost::shared_ptr<ecell4::NetworkModel>
         ecell4_nw_model(new ecell4::NetworkModel());
 
-    // Random Number Generator (Instanciate and Initialize)
-    // {{{
-    boost::shared_ptr<ecell4::GSLRandomNumberGenerator>
-        rng(new ecell4::GSLRandomNumberGenerator());
-    rng->seed((unsigned long int)0);
-    // rng->seed(time(NULL));
-    // }}}
-
-    // World Definition
-    // {{{
-    boost::shared_ptr<world_type>
-        world(new world_type(world_size, matrix_size, rng));
-    world_type::position_type edge_length(world_size, world_size, world_size);
-    world_type::position_type center(world_size / 2, world_size / 2, world_size / 2);
-
-    boost::shared_ptr<cuboidal_region_type> cuboidal_region(
-        new cuboidal_region_type(
-            "world", cuboidal_region_type::shape_type(center, center)));
-    world->add_structure(cuboidal_region);
-    // }}}
-
     // add ::SpeciesType to ::ParticleModel
     // {{{
     ecell4::Species sp1(std::string("A"), std::string("2.5e-09"), std::string("1e-12"));
@@ -170,11 +149,34 @@ int main(int argc, char **argv)
     // }}}
     // }}}
 
-    // add ::SpeciesInfo to ::World
+    // Random Number Generator (Instanciate and Initialize)
     // {{{
-    world->add_species(world->get_molecule_info(sp1));
-    world->add_species(world->get_molecule_info(sp2));
-    world->add_species(world->get_molecule_info(sp3));
+    boost::shared_ptr<ecell4::GSLRandomNumberGenerator>
+        rng(new ecell4::GSLRandomNumberGenerator());
+    rng->seed((unsigned long int)0);
+    // rng->seed(time(NULL));
+    // }}}
+
+    // World Definition
+    // {{{
+    boost::shared_ptr<world_type>
+        world(new world_type(world_size, matrix_size, rng));
+    world->bind_to(ecell4_nw_model);
+
+    const world_type::position_type edge_lengths(world->edge_lengths());
+    const world_type::position_type center(edge_lengths * 0.5);
+
+    boost::shared_ptr<cuboidal_region_type> cuboidal_region(
+        new cuboidal_region_type(
+            "world", cuboidal_region_type::shape_type(center, center)));
+    world->add_structure(cuboidal_region);
+    // }}}
+
+    // add ecell4::Species( ::SpeciesInfo) to ::World
+    // {{{
+    world->add_species(ecell4::Species("A"));
+    world->add_species(ecell4::Species("B"));
+    world->add_species(ecell4::Species("C"));
     // }}}
 
     // Thorow particles into world at random
@@ -187,9 +189,9 @@ int main(int argc, char **argv)
         for (; ; )
         {
             world_type::position_type particle_pos(
-                    rng->uniform(0.0, edge_length[0]),
-                    rng->uniform(0.0, edge_length[1]),
-                    rng->uniform(0.0, edge_length[2]));
+                    rng->uniform(0.0, edge_lengths[0]),
+                    rng->uniform(0.0, edge_lengths[1]),
+                    rng->uniform(0.0, edge_lengths[2]));
 
             double radius(boost::lexical_cast<double>(sp1.get_attribute("radius")));
             if (container.list_particles_within_radius(radius, particle_pos).size() == 0)

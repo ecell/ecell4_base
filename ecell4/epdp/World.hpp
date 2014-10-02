@@ -10,6 +10,7 @@
 #include <ecell4/core/Position3.hpp>
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
+#include <ecell4/core/Model.hpp>
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 
 #include "ParticleContainerBase.hpp"
@@ -17,6 +18,7 @@
 
 #include <map>
 #include <boost/lexical_cast.hpp>
+#include <boost/weak_ptr.hpp>
 #include <boost/array.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -211,6 +213,17 @@ public:
     typedef sized_iterator_range<species_iterator> species_range;
     typedef sized_iterator_range<surface_iterator> structures_range;
 
+protected:
+
+    /** ecell4
+     */
+    struct MoleculeInfo
+    {
+        const Real radius;
+        const Real D;
+        const std::string structure_id;
+    };
+
 public:
 
     World(
@@ -278,32 +291,15 @@ public:
         particle_pool_[species.id()] = particle_id_set();
     }
 
-    /*
-    void add_species(species_id_type const &sid, MoleculeInfo const &info , structure_id_type structure_id = structure_id_type("world") )
-    {
-        species_type sp(sid, info.D, info.radius, structure_id);
-        species_map_[sp.id()] = sp;
-        particle_pool_[sp.id()] = particle_id_set();
-    }
-    MoleculeInfo get_molecule_info(const ecell4::Species &sp) const
-    {
-        const Real radius(std::atof(sp.get_attribute("radius").c_str()));
-        const Real D(std::atof(sp.get_attribute("D").c_str()));
-        MoleculeInfo info = {radius, D};
-        return info;
-    }*/
-    species_type get_molecule_info(const ecell4::Species &sp) const
-    {
-        const ecell4::Species::serial_type sid(sp.serial());
-        const Real D(std::atof( sp.get_attribute("D").c_str() ));
-        const Real radius(std::atof( sp.get_attribute("radius").c_str() ));
-        const typename species_type::structure_id_type 
-            structure_id( 
-                    sp.has_attribute("structure_id")? 
-                      sp.get_attribute("structure_id"):
-                      structure_id_type("world") );
-        return species_type(sid, D, radius, structure_id);
-    }
+    // void add_species(
+    //     species_id_type const &sid,
+    //     MoleculeInfo const &info,
+    //     structure_id_type structure_id = structure_id_type("world"))
+    // {
+    //     species_type sp(sid, info.D, info.radius, structure_id);
+    //     species_map_[sp.id()] = sp;
+    //     particle_pool_[sp.id()] = particle_id_set();
+    // }
 
     virtual species_type const& get_species(species_id_type const& id) const
     {
@@ -516,6 +512,95 @@ public:
         return retval;
     }
 
+    void bind_to(boost::shared_ptr<ecell4::Model> model)
+    {
+        if (boost::shared_ptr<ecell4::Model> bound_model = lock_model())
+        {
+            if (bound_model.get() != model.get())
+            {
+                std::cerr << "Warning: Model already bound to BDWorld"
+                    << std::endl;
+            }
+        }
+        model_ = model;
+    }
+
+    boost::shared_ptr<ecell4::Model> lock_model() const
+    {
+        return model_.lock();
+    }
+
+    /**
+     * draw attributes of species and return it as a molecule info.
+     * @param sp a species
+     * @return info a molecule info
+     */
+    MoleculeInfo get_molecule_info(const ecell4::Species& sp) const
+    {
+        Real radius(0.0), D(0.0);
+        std::string structure_id("world");
+
+        if (sp.has_attribute("radius") && sp.has_attribute("D"))
+        {
+            radius = std::atof(sp.get_attribute("radius").c_str());
+            D = std::atof(sp.get_attribute("D").c_str());
+            if (sp.has_attribute("structure_id"))
+            {
+                structure_id = sp.get_attribute("structure_id");
+            }
+        }
+        else if (boost::shared_ptr<ecell4::Model> bound_model = lock_model())
+        {
+            ecell4::Species attributed(bound_model->apply_species_attributes(sp));
+
+            if (attributed.has_attribute("radius")
+                && attributed.has_attribute("D"))
+            {
+                radius = std::atof(
+                    attributed.get_attribute("radius").c_str());
+                D = std::atof(attributed.get_attribute("D").c_str());
+            }
+
+            if (sp.has_attribute("structure_id"))
+            {
+                structure_id = attributed.get_attribute("structure_id");
+            }
+        }
+
+        MoleculeInfo info = {radius, D, structure_id};
+        return info;
+    }
+
+    // species_type get_molecule_info(const ecell4::Species &sp) const
+    // {
+    //     const ecell4::Species::serial_type sid(sp.serial());
+    //     const Real D(std::atof(sp.get_attribute("D").c_str()));
+    //     const Real radius(std::atof(sp.get_attribute("radius").c_str()));
+    //     const typename species_type::structure_id_type
+    //         structure_id(
+    //                 sp.has_attribute("structure_id")?
+    //                   sp.get_attribute("structure_id"):
+    //                   structure_id_type("world"));
+    //     return species_type(sid, D, radius, structure_id);
+    // }
+
+    // MoleculeInfo get_molecule_info(const ecell4::Species &sp) const
+    // {
+    //     const Real radius(std::atof(sp.get_attribute("radius").c_str()));
+    //     const Real D(std::atof(sp.get_attribute("D").c_str()));
+    //     MoleculeInfo info = {radius, D};
+    //     return info;
+    // }
+
+    /** an adapter function to "void add_species(species_type const&)".
+     */
+    void add_species(const ecell4::Species& sp)
+    {
+        MoleculeInfo info(get_molecule_info(sp));
+        species_type spinfo(sp.serial(), info.D, info.radius, info.structure_id);
+        this->add_species(spinfo);
+    }
+
 private:
     particle_id_generator pidgen_;
     species_map species_map_;
@@ -526,6 +611,7 @@ private:
      */
     position_type edge_lengths_;
     boost::shared_ptr<rng_type> rng_;
+    boost::weak_ptr<ecell4::Model> model_;
 };
 
 #endif /* WORLD_HPP */
