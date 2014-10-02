@@ -6,11 +6,6 @@
 #include "Sphere.hpp"
 #include "Cylinder.hpp"
 #include "Box.hpp"
-#include "ParticleSimulationStructure.hpp"
-#include "CuboidalRegion.hpp"
-#include "PlanarSurface.hpp"
-#include "CylindricalSurface.hpp"
-#include "SphericalSurface.hpp"
 #include "NetworkRules.hpp"
 //#include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
@@ -51,10 +46,10 @@ template<typename Ttraits_>
 struct ImmutativeStructureVisitor
 {
     typedef Ttraits_ traits_type;
-    typedef typename ParticleSimulator<traits_type>::spherical_surface_type spherical_surface_type;
-    typedef typename ParticleSimulator<traits_type>::cylindrical_surface_type cylindrical_surface_type;
-    typedef typename ParticleSimulator<traits_type>::planar_surface_type planar_surface_type;
-    typedef typename ParticleSimulator<traits_type>::cuboidal_region_type cuboidal_region_type;
+    typedef typename traits_type::spherical_surface_type spherical_surface_type;
+    typedef typename traits_type::cylindrical_surface_type cylindrical_surface_type;
+    typedef typename traits_type::planar_surface_type planar_surface_type;
+    typedef typename traits_type::cuboidal_region_type cuboidal_region_type;
 
     virtual ~ImmutativeStructureVisitor() {}
 
@@ -71,10 +66,10 @@ template<typename Ttraits_>
 struct MutativeStructureVisitor
 {
     typedef Ttraits_ traits_type;
-    typedef typename ParticleSimulator<traits_type>::spherical_surface_type spherical_surface_type;
-    typedef typename ParticleSimulator<traits_type>::cylindrical_surface_type cylindrical_surface_type;
-    typedef typename ParticleSimulator<traits_type>::planar_surface_type planar_surface_type;
-    typedef typename ParticleSimulator<traits_type>::cuboidal_region_type cuboidal_region_type;
+    typedef typename traits_type::spherical_surface_type spherical_surface_type;
+    typedef typename traits_type::cylindrical_surface_type cylindrical_surface_type;
+    typedef typename traits_type::planar_surface_type planar_surface_type;
+    typedef typename traits_type::cuboidal_region_type cuboidal_region_type;
 
     virtual ~MutativeStructureVisitor() {}
 
@@ -92,19 +87,14 @@ class ParticleSimulator
     : public ecell4::Simulator
 {
 public:
+
     typedef Ttraits_ traits_type;
     typedef typename traits_type::world_type world_type;
     typedef Sphere sphere_type;
     typedef Cylinder cylinder_type;
     typedef Box box_type;
     typedef Plane plane_type;
-    typedef ParticleSimulationStructure<traits_type> particle_simulation_structure_type;
-    typedef Surface<traits_type> surface_type;
-    typedef Region<traits_type> region_type;
-    typedef SphericalSurface<traits_type> spherical_surface_type;
-    typedef CylindricalSurface<traits_type> cylindrical_surface_type;
-    typedef PlanarSurface<traits_type> planar_surface_type;
-    typedef CuboidalRegion<traits_type> cuboidal_region_type;
+
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef typename world_type::traits_type::rng_type rng_type;
     typedef typename traits_type::time_type time_type;

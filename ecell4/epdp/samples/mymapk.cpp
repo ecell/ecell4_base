@@ -43,9 +43,6 @@ int main(int argc, char **argv)
     typedef ::World< ::CyclicWorldTraits<Real> > world_type;
     typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> > simulator_type;
     typedef simulator_type::multi_type multi_type;
-
-    typedef ::CuboidalRegion<simulator_type::traits_type> cuboidal_region_type;
-    typedef world_type::traits_type::structure_id_type structure_id_type;
     // }}}
 
     // Constants
@@ -105,14 +102,6 @@ int main(int argc, char **argv)
     boost::shared_ptr<world_type>
         world(new world_type(world_size, matrix_size, rng));
     world->bind_to(ecell4_nw_model);
-
-    const world_type::position_type edge_lengths(world->edge_lengths());
-    const world_type::position_type center(edge_lengths * 0.5);
-
-    boost::shared_ptr<cuboidal_region_type> cuboidal_region(
-        new cuboidal_region_type(
-            "world", cuboidal_region_type::shape_type(center, center)));
-    world->add_structure(cuboidal_region);
     // }}}
 
     // add ecell4::Species( ::SpeciesInfo) to ::World

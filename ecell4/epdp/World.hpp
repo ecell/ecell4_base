@@ -39,6 +39,12 @@
 #include "Point.hpp" // XXX: workaround. should be removed later.
 #include "utils/pair.hpp"
 
+#include "ParticleSimulationStructure.hpp"
+#include "CuboidalRegion.hpp"
+#include "PlanarSurface.hpp"
+#include "CylindricalSurface.hpp"
+#include "SphericalSurface.hpp"
+
 
 // For twofold_container
 inline
@@ -73,6 +79,15 @@ struct WorldTraitsBase
     // typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
     typedef std::vector<particle_id_pair_and_distance> particle_id_pair_and_distance_list;
     typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
+
+    typedef ParticleSimulationStructure<Tderived_>
+        particle_simulation_structure_type;
+    typedef Surface<Tderived_> surface_type;
+    typedef Region<Tderived_> region_type;
+    typedef SphericalSurface<Tderived_> spherical_surface_type;
+    typedef CylindricalSurface<Tderived_> cylindrical_surface_type;
+    typedef PlanarSurface<Tderived_> planar_surface_type;
+    typedef CuboidalRegion<Tderived_> cuboidal_region_type;
 
     static const Real TOLERANCE = 1e-7;
 };
@@ -241,6 +256,8 @@ public:
     {
         rng_ = boost::shared_ptr<rng_type>(new rng_type());
         (*rng_).seed();
+
+        add_world_structure();
     }
 
     World(
@@ -249,7 +266,7 @@ public:
         : base_type(world_size, size), edge_lengths_(world_size, world_size, world_size),
         rng_(rng)
     {
-        ;
+        add_world_structure();
     }
 
     virtual particle_id_pair new_particle(species_id_type const& sid,
@@ -712,6 +729,19 @@ public:
         species_type spinfo(sp.serial(), info.D, info.radius,
             static_cast<typename species_type::structure_id_type>(info.structure_id));
         this->add_species(spinfo);
+    }
+
+    void add_world_structure()
+    {
+        typedef typename traits_type::cuboidal_region_type cuboidal_region_type;
+        typedef typename cuboidal_region_type::shape_type
+            cuboidal_region_shape_type;
+
+        const position_type& center(edge_lengths() * 0.5);
+        this->add_structure(
+            boost::shared_ptr<structure_type>(
+                new cuboidal_region_type(
+                    "world", cuboidal_region_shape_type(center, center))));
     }
 
 private:

@@ -50,7 +50,8 @@ public:
         return shape_;
     }
 
-    virtual bool operator==(Structure<typename Ttraits_::world_type::traits_type> const& rhs) const
+    // virtual bool operator==(Structure<typename Ttraits_::world_type::traits_type> const& rhs) const
+    virtual bool operator==(Structure<Ttraits_> const& rhs) const
     {
         BasicRegionImpl const* _rhs(dynamic_cast<BasicRegionImpl const*>(&rhs));
         return _rhs && base_type::id_ == rhs.id() && shape_ == _rhs->shape();

@@ -168,11 +168,6 @@ public:
     typedef ParticleSimulator<Ttraits_> base_type;
     typedef typename base_type::sphere_type sphere_type;
     typedef typename base_type::cylinder_type cylinder_type;
-    typedef typename base_type::particle_simulation_structure_type particle_simulation_structure_type;
-    typedef typename base_type::spherical_surface_type spherical_surface_type;
-    typedef typename base_type::cylindrical_surface_type cylindrical_surface_type;
-    typedef typename base_type::planar_surface_type planar_surface_type;
-    typedef typename base_type::cuboidal_region_type cuboidal_region_type;
     typedef typename traits_type::world_type world_type;
     typedef typename traits_type::domain_id_type domain_id_type;
     typedef typename traits_type::shell_id_type shell_id_type;
@@ -196,6 +191,11 @@ public:
     typedef typename world_type::particle_id_pair particle_id_pair;
     typedef typename world_type::particle_id_pair_and_distance particle_id_pair_and_distance;
     typedef typename world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
+    typedef typename world_type::traits_type::particle_simulation_structure_type particle_simulation_structure_type;
+    typedef typename world_type::traits_type::spherical_surface_type spherical_surface_type;
+    typedef typename world_type::traits_type::cylindrical_surface_type cylindrical_surface_type;
+    typedef typename world_type::traits_type::planar_surface_type planar_surface_type;
+    typedef typename world_type::traits_type::cuboidal_region_type cuboidal_region_type;
 
     typedef typename traits_type::domain_type domain_type;
     typedef typename traits_type::domain_id_pair domain_id_pair;
@@ -1465,7 +1465,7 @@ protected:
         single_type* new_single(0);
         domain_id_type did(didgen_());
 
-        struct factory: ImmutativeStructureVisitor<traits_type>
+        struct factory: ImmutativeStructureVisitor<typename world_type::traits_type>
         {
             virtual ~factory() {}
 
@@ -1550,7 +1550,7 @@ protected:
         pair_type* new_pair(0);
         domain_id_type did(didgen_());
 
-        struct factory: ImmutativeStructureVisitor<traits_type>
+        struct factory: ImmutativeStructureVisitor<typename world_type::traits_type>
         {
             virtual void operator()(spherical_surface_type const& structure) const
             {
