@@ -531,6 +531,35 @@ public:
     }
 
     /**
+     * This is a function in the traits of ecell4::ParticleSpace.
+     * Be carefull about the difference from
+     * "particle_id_pair new_particle(species_id_type const&, position_type const&)".
+     */
+    std::pair<std::pair<particle_id_type, particle_type>, bool>
+    new_particle(const ecell4::Species& sp, const position_type& pos)
+    {
+        const species_id_type sid(sp.serial());
+        species_type const& spinfo(get_species(sid));
+        return new_particle(particle_type(sid, pos, spinfo.radius(), spinfo.D()));
+    }
+
+    std::pair<std::pair<particle_id_type, particle_type>, bool>
+    new_particle(const particle_type& p)
+    {
+        particle_id_pair retval(pidgen_(), p);
+        if (!base_type::check_overlap(
+            particle_shape_type(p.position(), p.radius())))
+        {
+            update_particle(retval);
+            return std::make_pair(retval, true);
+        }
+        else
+        {
+            return std::make_pair(retval, false);
+        }
+    }
+
+    /**
      * draw attributes of species and return it as a molecule info.
      * @param sp a species
      * @return info a molecule info

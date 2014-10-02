@@ -36,61 +36,60 @@
 
 typedef double Real;
 
-// Class to memize the positions of each particles
-template <typename TPos_type>
-class TemporaryParticleContainer
-{
-// {{{
-public:
-
-    typedef Real radius_type;
-    typedef TPos_type position_type;
-    typedef std::vector<std::pair<radius_type, position_type> >
-        particle_position_container_type;
-
-public:
-
-    void add(radius_type r, position_type pos)
-    {
-        particle_position_container_.push_back(
-            typename particle_position_container_type::value_type(r, pos));
-    }
-
-    particle_position_container_type list_particles_within_radius(
-        radius_type r, position_type pos)
-    {
-        particle_position_container_type ret;
-        for (typename particle_position_container_type::iterator
-            it = particle_position_container_.begin();
-            it != this->particle_position_container_.end(); it++)
-        {
-            double radius_new(r);
-            double radius_st (it->first);
-            if (this->distance(it->second, pos) < radius_st + radius_new)
-            {
-                ret.push_back(*it);
-            }
-        }
-        return ret;
-    }
-
-    double distance(const position_type& p1, const position_type& p2)
-    {
-        //XXX: This function doesn't accout periodic boundaries.
-        double dsq = 0.0;
-        position_type sq(
-            gsl_pow_2(p2[0] - p1[0]),
-            gsl_pow_2(p2[1] - p1[1]),
-            gsl_pow_2(p2[2] - p2[2]));
-        return sqrt(std::accumulate(sq.begin(), sq.end(), 0.0));
-    }
-
-private:
-
-    particle_position_container_type particle_position_container_;
-// }}}
-};
-
+// // Class to memize the positions of each particles
+// template <typename TPos_type>
+// class TemporaryParticleContainer
+// {
+// // {{{
+// public:
+// 
+//     typedef Real radius_type;
+//     typedef TPos_type position_type;
+//     typedef std::vector<std::pair<radius_type, position_type> >
+//         particle_position_container_type;
+// 
+// public:
+// 
+//     void add(radius_type r, position_type pos)
+//     {
+//         particle_position_container_.push_back(
+//             typename particle_position_container_type::value_type(r, pos));
+//     }
+// 
+//     particle_position_container_type list_particles_within_radius(
+//         radius_type r, position_type pos)
+//     {
+//         particle_position_container_type ret;
+//         for (typename particle_position_container_type::iterator
+//             it = particle_position_container_.begin();
+//             it != this->particle_position_container_.end(); it++)
+//         {
+//             double radius_new(r);
+//             double radius_st (it->first);
+//             if (this->distance(it->second, pos) < radius_st + radius_new)
+//             {
+//                 ret.push_back(*it);
+//             }
+//         }
+//         return ret;
+//     }
+// 
+//     double distance(const position_type& p1, const position_type& p2)
+//     {
+//         //XXX: This function doesn't accout periodic boundaries.
+//         double dsq = 0.0;
+//         position_type sq(
+//             gsl_pow_2(p2[0] - p1[0]),
+//             gsl_pow_2(p2[1] - p1[1]),
+//             gsl_pow_2(p2[2] - p2[2]));
+//         return sqrt(std::accumulate(sq.begin(), sq.end(), 0.0));
+//     }
+// 
+// private:
+// 
+//     particle_position_container_type particle_position_container_;
+// // }}}
+// };
 
 int main(int argc, char **argv)
 {
@@ -182,29 +181,43 @@ int main(int argc, char **argv)
     // Thorow particles into world at random
     // {{{
     int number_of_particles_A(N);
-    TemporaryParticleContainer<world_type::position_type> container;
-    for (int cnt = 0; cnt < number_of_particles_A; cnt++)
+    for (int cnt = 0; cnt < number_of_particles_A; ++cnt)
     {
         // add particles at random.
         for (; ; )
         {
-            world_type::position_type particle_pos(
+            world_type::position_type pos(
                     rng->uniform(0.0, edge_lengths[0]),
                     rng->uniform(0.0, edge_lengths[1]),
                     rng->uniform(0.0, edge_lengths[2]));
-
-            double radius(boost::lexical_cast<double>(sp1.get_attribute("radius")));
-            if (container.list_particles_within_radius(radius, particle_pos).size() == 0)
+            if (world->new_particle(sp1, pos).second)
             {
-                std::cout << "(" << particle_pos[0]
-                    << particle_pos[1] << particle_pos[2] << ")"
-                    << std::endl;
-                container.add(radius, particle_pos);
-                world->new_particle(sp1.name(), particle_pos);
+                std::cout << "(" << pos[0] << pos[1] << pos[2] << ")" << std::endl;
                 break;
             }
         }
     }
+    // TemporaryParticleContainer<world_type::position_type> container;
+    // for (int cnt = 0; cnt < number_of_particles_A; cnt++)
+    // {
+    //     // add particles at random.
+    //     for (; ; )
+    //     {
+    //         world_type::position_type pos(
+    //                 rng->uniform(0.0, edge_lengths[0]),
+    //                 rng->uniform(0.0, edge_lengths[1]),
+    //                 rng->uniform(0.0, edge_lengths[2]));
+
+    //         double radius(boost::lexical_cast<double>(sp1.get_attribute("radius")));
+    //         if (container.list_particles_within_radius(radius, pos).size() == 0)
+    //         {
+    //             std::cout << "(" << pos[0] << pos[1] << pos[2] << ")" << std::endl;
+    //             container.add(radius, pos);
+    //             world->new_particle(sp1, pos);
+    //             break;
+    //         }
+    //     }
+    // }
     // }}}
 
     // world::set_all_repusive() equality section
