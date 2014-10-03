@@ -1722,7 +1722,8 @@ protected:
         // return normalize(
         //     create_vector<position_type>(x, y, z), r);
 
-        return this->rng().direction3d(r);
+        // return this->rng().direction3d(r);
+        return normalize(this->rng().direction3d(1), r);
     }
 
     position_type draw_displacement(
