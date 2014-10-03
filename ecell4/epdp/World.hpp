@@ -660,6 +660,35 @@ public:
         ecell4::extras::throw_in_particles(*this, sp, num, shape, rng());
     }
 
+    void remove_molecules(const ecell4::Species& sp, const ecell4::Integer& num)
+    {
+        if (num == 0)
+        {
+            return;
+        }
+        else if (num < 0)
+        {
+            throw std::invalid_argument(
+                "The number of molecules must be positive.");
+        }
+
+        typename per_species_particle_id_set::const_iterator
+            i(particle_pool_.find(sp.serial()));
+        if (i == particle_pool_.end() || (*i).size() < num)
+        {
+            throw std::invalid_argument(
+                "The number of molecules cannot be negative.");
+        }
+
+        for (unsigned int j(0); j < num; ++j)
+        {
+            const Integer n(rng()->uniform_int(0, (*i).size() - 1));
+            typename particle_id_set::const_iterator
+                target(std::advance((*i).begin(), n));
+            this->remove_particle((*target).first);
+        }
+    }
+
     /**
      * draw attributes of species and return it as a molecule info.
      * @param sp a species
