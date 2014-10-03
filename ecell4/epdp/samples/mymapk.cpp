@@ -58,18 +58,18 @@ int main(int argc, char **argv)
     // }}}
 
     boost::shared_ptr<ecell4::NetworkModel>
-        ecell4_nw_model(new ecell4::NetworkModel());
+        model(new ecell4::NetworkModel());
 
     // add ::SpeciesType to ::ParticleModel
     // {{{
     ecell4::Species sp1(std::string("A"), std::string("2.5e-09"), std::string("1e-12"));
-    ecell4_nw_model->add_species_attribute(sp1);
+    model->add_species_attribute(sp1);
 
     ecell4::Species sp2(std::string("B"), std::string("2.5e-09"), std::string("1e-12"));
-    ecell4_nw_model->add_species_attribute(sp2);
+    model->add_species_attribute(sp2);
 
     ecell4::Species sp3(std::string("C"), std::string("2.5e-09"), std::string("1e-12"));
-    ecell4_nw_model->add_species_attribute(sp3);
+    model->add_species_attribute(sp3);
     // }}}
 
     // ReactionRules
@@ -78,14 +78,14 @@ int main(int argc, char **argv)
     // {{{
     ecell4::ReactionRule rr1(
         ecell4::create_unbinding_reaction_rule(sp1, sp2, sp3, k1));
-    ecell4_nw_model->add_reaction_rule(rr1);
+    model->add_reaction_rule(rr1);
     // }}}
 
     // B + C -> A   k2
     // {{{
     ecell4::ReactionRule rr2(
         ecell4::create_binding_reaction_rule(sp2, sp3, sp1, k2));
-    ecell4_nw_model->add_reaction_rule(rr2);
+    model->add_reaction_rule(rr2);
     // }}}
     // }}}
 
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
     // {{{
     boost::shared_ptr<world_type>
         world(new world_type(world_size, matrix_size, rng));
-    world->bind_to(ecell4_nw_model);
+    world->bind_to(model);
     // }}}
 
     // add ecell4::Species( ::SpeciesInfo) to ::World
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
     // {{{
     boost::shared_ptr<simulator_type> sim(
         new simulator_type(
-            world, ecell4_nw_model, dissociation_retry_moves));
+            world, model, dissociation_retry_moves));
     sim->initialize();
     // }}}
 
