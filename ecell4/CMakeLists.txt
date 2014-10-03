@@ -1,7 +1,7 @@
 add_subdirectory(core)
+add_subdirectory(epdp)
 add_subdirectory(gillespie)
 add_subdirectory(ode)
 add_subdirectory(bd)
 add_subdirectory(meso)
 add_subdirectory(lattice)
-add_subdirectory(epdp)

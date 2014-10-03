@@ -171,7 +171,7 @@ private:
             return false;
         }
 
-        const Real rnd(rng_() / dt_);
+        const Real rnd(rng_.random() / dt_);
         Real prob = 0.;
 
         for (typename boost::range_const_iterator<reaction_rules>::type
@@ -236,7 +236,7 @@ private:
                                 throw propagation_error("no space");
                             }
 
-                            const Real rnd(rng_());
+                            const Real rnd(rng_.random());
                             length_type pair_distance(
                                 drawR_gbd(rnd, r01, dt_, D01));
                             const position_type m(random_unit_vector() * pair_distance);
@@ -300,7 +300,7 @@ private:
                 s1(tx_.get_species(pp1.second.sid()));
         const length_type r01(s0.radius() + s1.radius());
 
-        const Real rnd(rng_());
+        const Real rnd(rng_.random());
         Real prob = 0;
 
         for (typename boost::range_const_iterator<reaction_rules>::type
@@ -397,7 +397,7 @@ private:
 private:
     position_type random_unit_vector()
     {
-        position_type v(rng_() - .5, rng_() - .5, rng_() - .5);
+        position_type v(rng_.random() - 0.5, rng_.random() - 0.5, rng_.random() - 0.5);
         return v / length(v);
     }
 

@@ -26,17 +26,13 @@ public:
         ;
     }
 
+    virtual Real random() = 0;
     virtual Real uniform(Real min, Real max) = 0;
     virtual Integer uniform_int(Integer min, Integer max) = 0;
-    virtual Real gaussian(Real mean, Real sigma) = 0;
+    virtual Real gaussian(Real sigma, Real mean = 0.0) = 0;
     virtual Integer binomial(Real p, Integer n) = 0;
-    virtual Position3 direction3d(Real length) = 0;
+    virtual Position3 direction3d(Real length = 1.0) = 0;
 
-    virtual Real normal(Real mean, Real sigma)  = 0;
-
-    virtual void dir_2d(Real *x, Real *y) = 0;
-    virtual void dir_3d(Real *x, Real *y, Real *z) = 0;
-    virtual double operator() () = 0;
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
 
@@ -65,49 +61,14 @@ public:
 
 public:
 
-    Real uniform(Real min, Real max)
-    {
-        return gsl_rng_uniform(rng_.get()) * (max - min) + min;
-    }
-
-    Integer uniform_int(Integer min, Integer max)
-    {
-        return gsl_rng_uniform_int(rng_.get(), max - min + 1) + min;
-    }
-
-    Real normal(Real loc, Real scale)
-    {   // This function is implecated for comatible for epdp::GSLRandomNumberGenerator.
-        // This function is the same as uniform().
-        return gsl_ran_gaussian(rng_.get(), scale) + loc;
-
-    }
-
-    Real gaussian(Real mean, Real sigma)
-    {
-        return gsl_ran_gaussian(rng_.get(), sigma) + mean;
-    }
-
-    Integer binomial(Real p, Integer n)
-    {
-        return gsl_ran_binomial(rng_.get(), p, n);
-    }
-
-    Position3 direction3d(Real length)
-    {
-        double x, y, z;
-        gsl_ran_dir_3d(rng_.get(), &x, &y, &z);
-        return Position3(x * length, y * length, z * length);
-    }
-
-    void seed(Integer val)
-    {
-        gsl_rng_set(rng_.get(), val);
-    }
-
-    void seed()
-    {
-        gsl_rng_set(rng_.get(), unsigned(std::time(0)));
-    }
+    Real random();
+    Real uniform(Real min, Real max);
+    Integer uniform_int(Integer min, Integer max);
+    Real gaussian(Real sigma, Real mean = 0.0);
+    Integer binomial(Real p, Integer n);
+    Position3 direction3d(Real length);
+    void seed(Integer val);
+    void seed();
 
     void save(H5::CommonFG* root) const;
     void load(const H5::CommonFG& root);
@@ -122,29 +83,6 @@ public:
         : rng_(rng, &gsl_rng_free)
     {
         ;
-    }
-
-    /** for epdp
-     */
-
-    Integer get_raw()
-    {
-        return gsl_rng_get(rng_.get());
-    }
-
-    void dir_2d(Real *x, Real *y)
-    {
-        gsl_ran_dir_2d(rng_.get(), x, y);
-    }
-
-    void dir_3d(Real *x, Real *y, Real *z)
-    {
-        gsl_ran_dir_3d(rng_.get(), x, y, z);
-    }
-
-    Real operator()()
-    {
-        return gsl_rng_uniform(rng_.get());
     }
 
 protected:

@@ -29,9 +29,9 @@ public:
                 (rng.uniform_int(0, 1) * 2 - 1) * r);
     }
 
-    virtual position_type bd_displacement(length_type const& r, rng_type& rng) const
+    virtual position_type bd_displacement(length_type const& sigma, rng_type& rng) const
     {
-        return multiply(base_type::shape().unit_z(), rng.normal(0., r));
+        return multiply(base_type::shape().unit_z(), rng.gaussian(sigma));
     }
 
     virtual length_type minimal_distance(length_type const& radius) const

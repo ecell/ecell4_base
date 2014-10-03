@@ -9,14 +9,17 @@ cdef class GSLRandomNumberGenerator:
     def __dealloc__(self):
         del self.thisptr
 
+    def random(self):
+        return self.thisptr.get().random()
+
     def uniform(self, Real min, Real max):
         return self.thisptr.get().uniform(min, max)
 
     def uniform_int(self, Integer min, Integer max):
         return self.thisptr.get().uniform_int(min, max)
 
-    def gaussian(self, Real mean, Real sigma):
-        return self.thisptr.get().gaussian(mean, sigma)
+    def gaussian(self, Real sigma, Real mean = 0.0):
+        return self.thisptr.get().gaussian(sigma, mean)
 
     def binomial(self, Real p, Integer n):
         return self.thisptr.get().binomial(p, n)

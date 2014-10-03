@@ -22,6 +22,7 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
     cdef cppclass Cpp_RandomNumberGenerator "ecell4::RandomNumberGenerator":
         # RandomNumberGenerator(shared_ptr[gsl_rng]) except +
         Cpp_RandomNumberGenerator() except +
+        Real random()
         Real uniform(Real, Real)
         Integer uniform_int(Integer, Integer)
         Real gaussian(Real, Real)

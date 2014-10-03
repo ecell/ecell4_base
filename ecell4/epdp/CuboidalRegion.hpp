@@ -35,15 +35,14 @@ public:
             create_vector<position_type>(
                 rng.uniform(-1., 1.),
                 rng.uniform(-1., 1.),
-                rng.uniform(-1., 1.)), r);
+                rng.uniform(-1., 1.)),
+            r);
     }
 
-    virtual position_type bd_displacement(length_type const& r, rng_type& rng) const
+    virtual position_type bd_displacement(length_type const& sigma, rng_type& rng) const
     {
         return create_vector<position_type>(
-            rng.normal(0., r),
-            rng.normal(0., r),
-            rng.normal(0., r)); 
+            rng.gaussian(sigma), rng.gaussian(sigma), rng.gaussian(sigma));
     }
 
     virtual void accept(ImmutativeStructureVisitor<traits_type> const& visitor) const

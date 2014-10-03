@@ -1709,11 +1709,6 @@ protected:
         AnalyticalSingle<traits_type, spherical_shell_type> const& domain,
         length_type r)
     {
-        double x, y, z;
-        this->rng().dir_3d(&x, &y, &z);
-        return normalize(
-            create_vector<position_type>(x, y, z), r);
-
         // const double cos_theta(this->rng().uniform(-1., 1.));
         // const double sin_theta(sqrt(1 - cos_theta * cos_theta));
         // double sin_phi, cos_phi;
@@ -1721,6 +1716,13 @@ protected:
         // return normalize(
         //     create_vector<position_type>(
         //         sin_theta * cos_phi, sin_theta * sin_phi, cos_theta), r);
+
+        // double x, y, z;
+        // this->rng().dir_3d(&x, &y, &z);
+        // return normalize(
+        //     create_vector<position_type>(x, y, z), r);
+
+        return this->rng().direction3d(r);
     }
 
     position_type draw_displacement(

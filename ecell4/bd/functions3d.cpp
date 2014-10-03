@@ -30,7 +30,7 @@ Position3 random_displacement_3d(
 {
     const Real sigma(std::sqrt(2 * D * t));
     return Position3(
-        rng.gaussian(0, sigma), rng.gaussian(0, sigma), rng.gaussian(0, sigma));
+        rng.gaussian(sigma), rng.gaussian(sigma), rng.gaussian(sigma));
 }
 
 Real Igbd_3d(const Real& sigma, const Real& t, const Real& D)

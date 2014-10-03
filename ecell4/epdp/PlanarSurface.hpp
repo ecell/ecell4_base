@@ -34,9 +34,9 @@ public:
                         base_type::shape().units()[1], rng.uniform(-1., 1.)))), r);
     }
 
-    virtual position_type bd_displacement(length_type const& r, rng_type& rng) const
+    virtual position_type bd_displacement(length_type const& sigma, rng_type& rng) const
     {
-        length_type const x(rng.normal(0., r)), y(rng.normal(0., r));
+        length_type const x(rng.gaussian(sigma)), y(rng.gaussian(sigma));
         return add(
             multiply(base_type::shape().unit_x(), x),
             multiply(base_type::shape().unit_y(), y));
