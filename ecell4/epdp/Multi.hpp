@@ -70,7 +70,12 @@ public:
         return world_.world_size();
     }
 
-    virtual species_type const& get_species(species_id_type const& id) const
+    virtual species_type const& find_species(species_id_type const& id) const
+    {
+        return world_.find_species(id);
+    }
+
+    virtual species_type const& get_species(species_id_type const& id)
     {
         return world_.get_species(id);
     }

@@ -93,7 +93,7 @@ public:
             return true;
         }
 
-        const species_type species(tx_.get_species(pp.second.sid()));
+        const species_type species(tx_.find_species(pp.second.sid()));
         if (species.D() == 0.)
             return true;
 
@@ -296,8 +296,8 @@ private:
             return false;
         }
 
-        const species_type s0(tx_.get_species(pp0.second.sid())),
-                s1(tx_.get_species(pp1.second.sid()));
+        const species_type s0(tx_.find_species(pp0.second.sid())),
+                s1(tx_.find_species(pp1.second.sid()));
         const length_type r01(s0.radius() + s1.radius());
 
         const Real rnd(rng_.random());

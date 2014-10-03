@@ -578,7 +578,7 @@ protected:
         {
             boost::shared_ptr<structure_type> const _structure(
                 world_.get_structure(
-                    world_.get_species(
+                    world_.find_species(
                         domain.particles()[0].second.sid())
                     .structure_id()));
             
@@ -609,70 +609,70 @@ protected:
         world_type const& world_;
     };
 
-    struct draw_on_single_reaction
-    {
-        position_type draw_com(spherical_pair_type const& domain,
-                               time_type dt) const
-        {
-            return add(
-                domain.shell().second.position(),
-                draw_r(rng_,
-                        GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
-                        dt, domain.a_R()));
+    // struct draw_on_single_reaction
+    // {
+    //     position_type draw_com(spherical_pair_type const& domain,
+    //                            time_type dt) const
+    //     {
+    //         return add(
+    //             domain.shell().second.position(),
+    //             draw_r(rng_,
+    //                     GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+    //                     dt, domain.a_R()));
 
-        }
+    //     }
 
-        position_type draw_iv(spherical_pair_type const& domain,
-                              time_type dt, position_type const& old_iv) const
-        {
-            boost::scoped_ptr<PairGreensFunction> const gf(
-                choose_pair_greens_function(domain, dt));
-            length_type const r(draw_r(
-                rng_, *gf, dt, domain.a_r(), domain.sigma()));
-            length_type const theta(draw_theta(rng_, *gf, dt, r));
-            return adjust_iv_with_old_iv(
-                spherical_to_cartesian(
-                    position_type(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
-                old_iv);
-        }
+    //     position_type draw_iv(spherical_pair_type const& domain,
+    //                           time_type dt, position_type const& old_iv) const
+    //     {
+    //         boost::scoped_ptr<PairGreensFunction> const gf(
+    //             choose_pair_greens_function(domain, dt));
+    //         length_type const r(draw_r(
+    //             rng_, *gf, dt, domain.a_r(), domain.sigma()));
+    //         length_type const theta(draw_theta(rng_, *gf, dt, r));
+    //         return adjust_iv_with_old_iv(
+    //             spherical_to_cartesian(
+    //                 position_type(r, theta, rng_.uniform(0., 1.) * 2 * M_PI)),
+    //             old_iv);
+    //     }
 
-        position_type draw_com(cylindrical_pair_type const& domain,
-                               time_type dt) const
-        {
-            boost::shared_ptr<structure_type> const _structure(
-                world_.get_species(
-                    domain.particles()[0].second.sid())
-                .structure_id());
-            
-            cylindrical_surface_type const* const structure(
-                dynamic_cast<cylindrical_surface_type*>(_structure.get()));
+    //     position_type draw_com(cylindrical_pair_type const& domain,
+    //                            time_type dt) const
+    //     {
+    //         boost::shared_ptr<structure_type> const _structure(
+    //             world_.find_species(
+    //                 domain.particles()[0].second.sid())
+    //             .structure_id());
+    //
+    //         cylindrical_surface_type const* const structure(
+    //             dynamic_cast<cylindrical_surface_type*>(_structure.get()));
 
-            BOOST_ASSERT(structure);
+    //         BOOST_ASSERT(structure);
 
-            return add(
-                domain.shell().second.position(),
-                multiply(structure->shape().unit_z(), domain.a_R()));
-        }
+    //         return add(
+    //             domain.shell().second.position(),
+    //             multiply(structure->shape().unit_z(), domain.a_R()));
+    //     }
 
-        position_type draw_iv(cylindrical_pair_type const& domain,
-                              time_type dt, position_type const& old_iv) const
-        {
-            BOOST_ASSERT(::size(domain.reactions()) == 1);
-            length_type const r(
-                draw_r(rng_, GreensFunction3DRadAbs(domain.D_tot(),
-                    domain.reactions()[0].k(), domain.r0(),
-                    domain.sigma(), domain().a_r()),
-                   dt, domain.a_r(), domain.sigma()));
-            BOOST_ASSERT(r > domain.sigma() && r <= domain.a_r());
-            return multiply(normalize(old_iv), r);
-        }
+    //     position_type draw_iv(cylindrical_pair_type const& domain,
+    //                           time_type dt, position_type const& old_iv) const
+    //     {
+    //         BOOST_ASSERT(::size(domain.reactions()) == 1);
+    //         length_type const r(
+    //             draw_r(rng_, GreensFunction3DRadAbs(domain.D_tot(),
+    //                 domain.reactions()[0].k(), domain.r0(),
+    //                 domain.sigma(), domain().a_r()),
+    //                dt, domain.a_r(), domain.sigma()));
+    //         BOOST_ASSERT(r > domain.sigma() && r <= domain.a_r());
+    //         return multiply(normalize(old_iv), r);
+    //     }
 
-        draw_on_single_reaction(rng_type& rng, world_type const& world)
-            : rng_(rng), world_(world) {}
+    //     draw_on_single_reaction(rng_type& rng, world_type const& world)
+    //         : rng_(rng), world_(world) {}
 
-        rng_type& rng_;
-        world_type const& world_;
-    };
+    //     rng_type& rng_;
+    //     world_type const& world_;
+    // };
 
     struct draw_on_iv_escape
     {
@@ -710,7 +710,7 @@ protected:
         {
             boost::shared_ptr<structure_type> const _structure(
                 world_.get_structure(
-                    world_.get_species(
+                    world_.find_species(
                         domain.particles()[0].second.sid())
                     .structure_id()));
             
@@ -777,7 +777,7 @@ protected:
         {
             boost::shared_ptr<structure_type> const _structure(
                 world_.get_structure(
-                    world_.get_species(
+                    world_.find_species(
                         domain.particles()[0].second.sid()).structure_id()));
             
             cylindrical_surface_type const* const structure(
@@ -844,7 +844,7 @@ protected:
         {
             boost::shared_ptr<structure_type> const _structure(
                 world_.get_structure(
-                    world_.get_species(
+                    world_.find_species(
                         domain.particles()[0].second.sid())
                     .structure_id()));
 
@@ -1529,7 +1529,7 @@ protected:
             domain_kind& kind;
         };
 
-        species_type const& species((*base_type::world_).get_species(p.second.sid()));
+        species_type const& species((*base_type::world_).find_species(p.second.sid()));
         dynamic_cast<particle_simulation_structure_type const&>(*(*base_type::world_).get_structure(species.structure_id())).accept(factory(this, p, did, new_single, kind));
         boost::shared_ptr<domain_type> const retval(new_single);
         domains_.insert(std::make_pair(did, retval));
@@ -1625,7 +1625,7 @@ protected:
             domain_kind& kind;
         };
 
-        species_type const& species((*base_type::world_).get_species(p0.second.sid()));
+        species_type const& species((*base_type::world_).find_species(p0.second.sid()));
         dynamic_cast<particle_simulation_structure_type&>(*(*base_type::world_).get_structure(species.structure_id())).accept(factory(this, p0, p1, com, iv, shell_size, did, new_pair, kind));
 
         boost::shared_ptr<domain_type> const retval(new_pair);
@@ -2090,7 +2090,7 @@ protected:
     bool attempt_single_reaction(single_type& domain)
     {
         const particle_id_pair reactant(domain.particle());
-        const species_type reactant_species((*base_type::world_).get_species(reactant.second.sid()));
+        const species_type reactant_species((*base_type::world_).find_species(reactant.second.sid()));
         reaction_rules const& rules((*base_type::network_rules_).query_reaction_rule(reactant.second.sid()));
         if (::size(rules) == 0)
         {

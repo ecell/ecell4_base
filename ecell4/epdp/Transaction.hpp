@@ -150,7 +150,12 @@ public:
         return pc_.get_structure(id);
     }
 
-    virtual species_type const& get_species(species_id_type const& id) const
+    virtual species_type const& find_species(species_id_type const& id) const
+    {
+        return pc_.find_species(id);
+    }
+
+    virtual species_type const& get_species(species_id_type const& id)
     {
         return pc_.get_species(id);
     }

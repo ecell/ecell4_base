@@ -50,7 +50,8 @@ public:
 
     virtual length_type world_size() const = 0;
 
-    virtual species_type const& get_species(species_id_type const& id) const = 0;
+    virtual species_type const& get_species(species_id_type const& id) = 0;
+    virtual species_type const& find_species(species_id_type const& id) const = 0;
 
     virtual boost::shared_ptr<structure_type> get_structure(
         structure_id_type const& id) const = 0;

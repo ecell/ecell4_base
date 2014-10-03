@@ -275,7 +275,7 @@ public:
     {
         species_type const& species(get_species(sid));
         particle_id_pair retval(pidgen_(),
-            particle_type(sid, pos, species.radius(), species.D() ));
+            particle_type(sid, pos, species.radius(), species.D()));
         update_particle(retval);
         return retval;
     }
@@ -328,12 +328,25 @@ public:
     //     particle_pool_[sp.id()] = particle_id_set();
     // }
 
-    virtual species_type const& get_species(species_id_type const& id) const
+    virtual species_type const& get_species(species_id_type const& sid)
     {
-        typename species_map::const_iterator i(species_map_.find(id));
+        typename species_map::const_iterator i(species_map_.find(sid));
         if (species_map_.end() == i)
         {
-            throw not_found(std::string("Unknown species (id=") + boost::lexical_cast<std::string>(id) + ")");
+            // return this->add_species(sid);
+            throw not_found(std::string("Unknown species (id=")
+                + boost::lexical_cast<std::string>(sid) + ")");
+        }
+        return (*i).second;
+    }
+
+    species_type const& find_species(species_id_type const& sid) const
+    {
+        typename species_map::const_iterator i(species_map_.find(sid));
+        if (species_map_.end() == i)
+        {
+            throw not_found(std::string("Unknown species (id=")
+                + boost::lexical_cast<std::string>(sid) + ")");
         }
         return (*i).second;
     }
@@ -753,12 +766,19 @@ public:
 
     /** an adapter function to "void add_species(species_type const&)".
      */
-    void add_species(const ecell4::Species& sp)
+
+    const species_type& add_species(const species_id_type& sid)
+    {
+        return this->add_species(ecell4::Species(sid));
+    }
+
+    const species_type& add_species(const ecell4::Species& sp)
     {
         MoleculeInfo info(get_molecule_info(sp));
         species_type spinfo(sp.serial(), info.D, info.radius,
             static_cast<typename species_type::structure_id_type>(info.structure_id));
         this->add_species(spinfo);
+        return species_map_[spinfo.id()];
     }
 
     void add_world_structure()
