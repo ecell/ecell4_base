@@ -61,11 +61,6 @@ inline double cbrt(const double x)
 {
     return pow(x, 1.0 / 3.0);
 }
-
-inline double round(const double x)
-{
-    return floor(x + 0.5);
-}
 #endif
 
 }

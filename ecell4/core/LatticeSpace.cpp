@@ -17,6 +17,11 @@ double rint(const double x)
 {
     return boost::numeric::interval_lib::detail::rint(x);
 }
+
+double round(const double x)
+{
+    return floor(x + 0.5);
+}
 #endif
 
 LatticeSpace::LatticeSpace(const Position3& edge_lengths,
