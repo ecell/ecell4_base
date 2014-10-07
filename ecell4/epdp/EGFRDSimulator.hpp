@@ -2128,8 +2128,9 @@ protected:
             break;
         case 1: 
             {
+                species_id_type const& product_id0(r.get_products()[0]);
                 species_info_type const& product_species(
-                    (*base_type::world_).get_species(r.get_products()[0]));
+                    (*base_type::world_).get_species(product_id0));
 
                 if (reactant_species.radius() < product_species.radius())
                     clear_volume(::shape(reactant.second), domain.id());
@@ -2143,9 +2144,12 @@ protected:
 
                 remove_domain(domain);
                 (*base_type::world_).remove_particle(reactant.first);
+                // particle_id_pair product(
+                //     (*base_type::world_).new_particle(
+                //         product_species.id(), reactant.second.position()));
                 particle_id_pair product(
                     (*base_type::world_).new_particle(
-                        product_species.id(), reactant.second.position()));
+                        product_id0, reactant.second.position()));
                 boost::shared_ptr<single_type> new_domain(create_single(product));
                 add_event(*new_domain, SINGLE_EVENT_ESCAPE);
                 if (base_type::rrec_)
@@ -2157,9 +2161,11 @@ protected:
             break;
         case 2:
             {
+                species_id_type const& product_id0(r.get_products()[0]);
+                species_id_type const& product_id1(r.get_products()[1]);
                 species_info_type const* const product_species[] = {
-                    &(*base_type::world_).get_species(r.get_products()[0]),
-                    &(*base_type::world_).get_species(r.get_products()[1])
+                    &(*base_type::world_).get_species(product_id0),
+                    &(*base_type::world_).get_species(product_id1)
                 };
 
                 D_type const D01(product_species[0]->D() + product_species[1]->D());
@@ -2224,9 +2230,9 @@ protected:
 
                 particle_id_pair const pp[] = {
                     (*base_type::world_).new_particle(
-                        product_species[0]->id(), new_particles[0].position()),
+                        product_id0, new_particles[0].position()),
                     (*base_type::world_).new_particle(
-                        product_species[1]->id(), new_particles[1].position())
+                        product_id1, new_particles[1].position())
                 };
                 // create domains for two particles and add them to
                 // the event queue
@@ -3286,9 +3292,9 @@ protected:
                 {
                 case 1:
                     {
+                        species_id_type const& new_species_id(r.get_products()[0]);
                         species_info_type const& new_species(
-                            (*base_type::world_).get_species(
-                                r.get_products()[0]));
+                            (*base_type::world_).get_species(new_species_id));
 
                         // calculate new R
                         position_type const new_com(
@@ -3309,7 +3315,7 @@ protected:
 
                         particle_id_pair const new_particle(
                             (*base_type::world_).new_particle(
-                                new_species.id(), new_com));
+                                new_species_id, new_com));
                         boost::shared_ptr<single_type> new_single(
                             create_single(new_particle));
                         add_event(*new_single, SINGLE_EVENT_ESCAPE);

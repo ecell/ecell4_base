@@ -332,11 +332,11 @@ public:
         return true;
     }
 
-    void add_species(species_info_type const& species)
-    {
-        species_map_[species.id()] = species;
-        particle_pool_[species.id()] = particle_id_set();
-    }
+    // void add_species(species_info_type const& species)
+    // {
+    //     species_map_[species.id()] = species;
+    //     particle_pool_[species.id()] = particle_id_set();
+    // }
 
     // void add_species(
     //     species_id_type const &sid,
@@ -795,10 +795,13 @@ public:
     const species_info_type& add_species(const ecell4::Species& sp)
     {
         MoleculeInfo info(get_molecule_info(sp));
-        species_info_type spinfo(sp.serial(), info.D, info.radius,
+        const species_id_type sid(sp.serial());
+        species_info_type spinfo(sid, info.D, info.radius,
             static_cast<typename species_info_type::structure_id_type>(info.structure_id));
-        this->add_species(spinfo);
-        return species_map_[spinfo.id()];
+        // this->add_species(spinfo);
+        species_map_[sid] = spinfo;
+        particle_pool_[sid] = particle_id_set();
+        return species_map_[sid];
     }
 
     void add_world_structure()

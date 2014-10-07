@@ -93,7 +93,8 @@ public:
             return true;
         }
 
-        const species_info_type species(tx_.find_species(pp.second.sid()));
+        const species_id_type& species_id(pp.second.sid());
+        const species_info_type species(tx_.find_species(species_id));
         if (species.D() == 0.)
             return true;
 
@@ -103,7 +104,7 @@ public:
                 add(pp.second.position(), displacement)));
 
         particle_id_pair particle_to_update(
-                pp.first, particle_type(species.id(),
+                pp.first, particle_type(species_id,
                     new_pos, species.radius(),
                     species.D()));
         boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
@@ -227,8 +228,10 @@ private:
 
                 case 2:
                     {
-                        const species_info_type s0(tx_.get_species(products[0])),
-                                s1(tx_.get_species(products[1]));
+                        const species_id_type& product_id0(products[0]),
+                            product_id1(products[1]);
+                        const species_info_type s0(tx_.get_species(product_id0)),
+                                s1(tx_.get_species(product_id1));
                         const Real D01(s0.D() + s1.D());
                         const length_type r01(s0.radius() + s1.radius());
                         int i = max_retry_count_;
@@ -281,8 +284,8 @@ private:
 
                         tx_.remove_particle(pp.first);
                         const particle_id_pair
-                            npp0(tx_.new_particle(s0.id(), np0)),
-                            npp1(tx_.new_particle(s1.id(), np1));
+                            npp0(tx_.new_particle(product_id0, np0)),
+                            npp1(tx_.new_particle(product_id1, np1));
 
                         if (rrec_)
                         {
