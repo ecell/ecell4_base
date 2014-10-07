@@ -586,7 +586,7 @@ protected:
                 world_.get_structure(
                     world_.find_species(
                         domain.particles()[0].second.sid())
-                    .structure_id()));
+                    .structure_id));
             
             cylindrical_surface_type const* const structure(
                 dynamic_cast<cylindrical_surface_type*>(_structure.get()));
@@ -648,7 +648,7 @@ protected:
     //         boost::shared_ptr<structure_type> const _structure(
     //             world_.find_species(
     //                 domain.particles()[0].second.sid())
-    //             .structure_id());
+    //             .structure_id);
     //
     //         cylindrical_surface_type const* const structure(
     //             dynamic_cast<cylindrical_surface_type*>(_structure.get()));
@@ -718,7 +718,7 @@ protected:
                 world_.get_structure(
                     world_.find_species(
                         domain.particles()[0].second.sid())
-                    .structure_id()));
+                    .structure_id));
             
             cylindrical_surface_type const* const structure(
                 dynamic_cast<cylindrical_surface_type*>(_structure.get()));
@@ -784,7 +784,7 @@ protected:
             boost::shared_ptr<structure_type> const _structure(
                 world_.get_structure(
                     world_.find_species(
-                        domain.particles()[0].second.sid()).structure_id()));
+                        domain.particles()[0].second.sid()).structure_id));
             
             cylindrical_surface_type const* const structure(
                 dynamic_cast<cylindrical_surface_type*>(_structure.get()));
@@ -852,7 +852,7 @@ protected:
                 world_.get_structure(
                     world_.find_species(
                         domain.particles()[0].second.sid())
-                    .structure_id()));
+                    .structure_id));
 
             cylindrical_surface_type const* const structure(
                 dynamic_cast<cylindrical_surface_type*>(_structure.get()));
@@ -1542,7 +1542,7 @@ protected:
         };
 
         species_info_type const& species((*base_type::world_).find_species(p.second.sid()));
-        dynamic_cast<particle_simulation_structure_type const&>(*(*base_type::world_).get_structure(species.structure_id())).accept(factory(this, p, did, new_single, kind));
+        dynamic_cast<particle_simulation_structure_type const&>(*(*base_type::world_).get_structure(species.structure_id)).accept(factory(this, p, did, new_single, kind));
         boost::shared_ptr<domain_type> const retval(new_single);
         domains_.insert(std::make_pair(did, retval));
         BOOST_ASSERT(kind != NONE);
@@ -1638,7 +1638,7 @@ protected:
         };
 
         species_info_type const& species((*base_type::world_).find_species(p0.second.sid()));
-        dynamic_cast<particle_simulation_structure_type&>(*(*base_type::world_).get_structure(species.structure_id())).accept(factory(this, p0, p1, com, iv, shell_size, did, new_pair, kind));
+        dynamic_cast<particle_simulation_structure_type&>(*(*base_type::world_).get_structure(species.structure_id)).accept(factory(this, p0, p1, com, iv, shell_size, did, new_pair, kind));
 
         boost::shared_ptr<domain_type> const retval(new_pair);
         domains_.insert(std::make_pair(did, retval));
@@ -2132,7 +2132,7 @@ protected:
                 species_info_type const& product_species(
                     (*base_type::world_).get_species(product_id0));
 
-                if (reactant_species.radius() < product_species.radius())
+                if (reactant_species.radius < product_species.radius)
                     clear_volume(::shape(reactant.second), domain.id());
 
                 if (!(*base_type::world_).no_overlap(
@@ -2168,11 +2168,13 @@ protected:
                     &(*base_type::world_).get_species(product_id1)
                 };
 
-                D_type const D01(product_species[0]->D() + product_species[1]->D());
-                length_type r01(product_species[0]->radius() + product_species[1]->radius());
+                D_type const D0(product_species[0]->D), D1(product_species[1]->D);
+                length_type const radius0(product_species[0]->radius),
+                    radius1(product_species[1]->radius);
+                D_type const D01(D0 + D1);
+                length_type r01(radius0 + radius1);
                 Real const rad(std::max(
-                        r01 * (product_species[0]->D() / D01) + product_species[0]->radius(),
-                        r01 * (product_species[1]->D() / D01) + product_species[1]->radius()));
+                        r01 * (D0 / D01) + radius0, r01 * (D1 / D01) + radius1));
                 clear_volume(particle_shape_type(reactant.second.position(), rad), domain.id());
 
                 particle_shape_type new_particles[2];
@@ -2182,7 +2184,7 @@ protected:
                 {
                     boost::shared_ptr<structure_type> structure(
                         (*base_type::world_).get_structure(
-                            reactant_species.structure_id()));
+                            reactant_species.structure_id));
                     position_type vector(
                         structure->random_vector(
                             r01 * traits_type::MINIMAL_SEPARATION_FACTOR,
@@ -2194,13 +2196,13 @@ protected:
                         new_particles[0] = particle_shape_type(
                             (*base_type::world_).apply_boundary(
                                 add(reactant.second.position(),
-                                    multiply(vector, product_species[0]->D() / D01))),
-                            product_species[0]->radius());
+                                    multiply(vector, D0 / D01))),
+                            radius0);
                         new_particles[1] = particle_shape_type(
                             (*base_type::world_).apply_boundary(
                                 add(reactant.second.position(),
-                                    multiply(vector, -product_species[1]->D() / D01))),
-                            product_species[1]->radius());
+                                    multiply(vector, -D1 / D01))),
+                            radius1);
 
                         length_type const distance_between_new_particles(
                             (*base_type::world_).distance(
@@ -3307,7 +3309,7 @@ protected:
                         BOOST_ASSERT(
                             (*base_type::world_).distance(
                                 domain.shell().second.position(),
-                                new_com) + new_species.radius()
+                                new_com) + new_species.radius
                             < shape(domain.shell().second).radius());
 
                         (*base_type::world_).remove_particle(domain.particles()[0].first);

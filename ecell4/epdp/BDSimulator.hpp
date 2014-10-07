@@ -84,10 +84,10 @@ public:
 
         BOOST_FOREACH(species_info_type s, world.get_species())
         {
-            if (D_max < s.D())
-                D_max = s.D();
-            if (radius_min > s.radius())
-                radius_min = s.radius();
+            if (D_max < s.D)
+                D_max = s.D;
+            if (radius_min > s.radius)
+                radius_min = s.radius;
         }
         return gsl_pow_2(radius_min * 2) / (D_max * 2);
     }

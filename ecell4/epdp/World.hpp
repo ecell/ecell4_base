@@ -28,7 +28,8 @@
 #include "filters.hpp"
 //#include "ParticleID.hpp"
 #include "SpeciesTypeID.hpp"
-#include "SpeciesInfo.hpp"
+//#include "SpeciesInfo.hpp"
+#include "Defs.hpp"
 #include "SerialIDGenerator.hpp"
 #include "Transaction.hpp"
 #include "Structure.hpp"
@@ -72,8 +73,17 @@ struct WorldTraitsBase
     typedef ecell4::GSLRandomNumberGenerator rng_type;
     typedef Structure<Tderived_> structure_type;
 
-    typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type>
-        species_info_type; // species_type;
+    struct MoleculeInfo
+    {
+        const ecell4::Real radius;
+        const ecell4::Real D;
+        const std::string structure_id;
+    };
+
+    typedef MoleculeInfo molecule_info_type;
+    typedef MoleculeInfo species_info_type;
+    // typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type>
+    //     species_info_type; // species_type;
 
     // typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
     typedef std::pair<particle_id_type, particle_type> particle_id_pair;
@@ -211,6 +221,7 @@ public:
     typedef ParticleContainer<traits_type> particle_container_type;
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::species_info_type species_info_type;
+    typedef typename traits_type::molecule_info_type molecule_info_type;
     typedef typename traits_type::position_type position_type;
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_id_type particle_id_type;
@@ -242,17 +253,6 @@ public:
     typedef sized_iterator_range<species_iterator> species_range;
     typedef sized_iterator_range<surface_iterator> structures_range;
 
-    /** ecell4
-     */
-    struct MoleculeInfo
-    {
-        const ecell4::Real radius;
-        const ecell4::Real D;
-        const std::string structure_id;
-    };
-
-    typedef MoleculeInfo molecule_info_type;
-
 public:
 
     World(
@@ -279,7 +279,7 @@ public:
     {
         species_info_type const& species(get_species(sid));
         particle_id_pair retval(pidgen_(),
-            particle_type(sid, pos, species.radius(), species.D()));
+            particle_type(sid, pos, species.radius, species.D));
         update_particle(retval);
         return retval;
     }
@@ -340,7 +340,7 @@ public:
 
     // void add_species(
     //     species_id_type const &sid,
-    //     MoleculeInfo const &info,
+    //     molecule_info_type const &info,
     //     structure_id_type structure_id = structure_id_type("world"))
     // {
     //     species_info_type sp(sid, info.D, info.radius, structure_id);
@@ -727,7 +727,7 @@ public:
      * @param sp a species
      * @return info a molecule info
      */
-    MoleculeInfo get_molecule_info(const ecell4::Species& sp) const
+    molecule_info_type get_molecule_info(const ecell4::Species& sp) const
     {
         ecell4::Real radius(0.0), D(0.0);
         std::string structure_id("world");
@@ -759,7 +759,7 @@ public:
             }
         }
 
-        MoleculeInfo info = {radius, D, structure_id};
+        molecule_info_type info = {radius, D, structure_id};
         return info;
     }
 
@@ -776,11 +776,11 @@ public:
     //     return species_info_type(sid, D, radius, structure_id);
     // }
 
-    // MoleculeInfo get_molecule_info(const ecell4::Species &sp) const
+    // molecule_info_type get_molecule_info(const ecell4::Species &sp) const
     // {
     //     const Real radius(std::atof(sp.get_attribute("radius").c_str()));
     //     const Real D(std::atof(sp.get_attribute("D").c_str()));
-    //     MoleculeInfo info = {radius, D};
+    //     molecule_info_type info = {radius, D};
     //     return info;
     // }
 
@@ -794,14 +794,13 @@ public:
 
     const species_info_type& add_species(const ecell4::Species& sp)
     {
-        MoleculeInfo info(get_molecule_info(sp));
+        molecule_info_type info(get_molecule_info(sp));
         const species_id_type sid(sp.serial());
-        species_info_type spinfo(sid, info.D, info.radius,
-            static_cast<typename species_info_type::structure_id_type>(info.structure_id));
-        // this->add_species(spinfo);
-        species_map_[sid] = spinfo;
+        // species_map_[sid] = spinfo;
+        species_map_.insert(std::make_pair(sid, info));
         particle_pool_[sid] = particle_id_set();
-        return species_map_[sid];
+        // return species_map_[sid];
+        return (*species_map_.find(sid)).second;
     }
 
     void add_world_structure()
