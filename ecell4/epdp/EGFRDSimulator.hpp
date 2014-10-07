@@ -2134,7 +2134,8 @@ protected:
                 if (reactant_species.radius() < product_species.radius())
                     clear_volume(::shape(reactant.second), domain.id());
 
-                if ((*base_type::world_).check_overlap(::shape(reactant.second), reactant.first))
+                if (!(*base_type::world_).no_overlap(
+                    ::shape(reactant.second), reactant.first))
                 {
                     LOG_INFO(("no space for product particle."));
                     throw no_space();
@@ -2206,9 +2207,9 @@ protected:
                     }
 
                     // accept the new positions if there is enough space.
-                    if ((!(*base_type::world_).check_overlap(
+                    if (((*base_type::world_).no_overlap(
                             new_particles[0], reactant.first)) &&
-                        (!(*base_type::world_).check_overlap(
+                        ((*base_type::world_).no_overlap(
                             new_particles[1], reactant.first)))
                         break;
                 }

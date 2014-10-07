@@ -195,8 +195,13 @@ private:
                         const particle_id_pair new_p(
                             pp.first, particle_type(products[0],
                                 pp.second.position(), s0.radius(), s0.D()));
-                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(tx_.check_overlap(shape(new_p.second), new_p.first));
-                        if (overlapped && overlapped->size() > 0)
+                        // boost::scoped_ptr<particle_id_pair_and_distance_list>
+                        //     overlapped(tx_.check_overlap(shape(new_p.second), new_p.first));
+                        // if (overlapped && overlapped->size() > 0)
+                        // {
+                        //     throw propagation_error("no space");
+                        // }
+                        if (!tx_.no_overlap(shape(new_p.second), new_p.first))
                         {
                             throw propagation_error("no space");
                         }
@@ -244,16 +249,26 @@ private:
                                     + m * (s0.D() / D01));
                             np1 = tx_.apply_boundary(pp.second.position()
                                     - m * (s1.D() / D01));
-                            boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s0(
-                                tx_.check_overlap(
-                                    particle_shape_type(np0, s0.radius()),
-                                    pp.first));
-                            boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s1(
-                                tx_.check_overlap(
-                                    particle_shape_type(np1, s1.radius()),
-                                    pp.first));
-                            if (!(overlapped_s0 && overlapped_s0->size() > 0) && !(overlapped_s1 && overlapped_s1->size() > 0))
+
+                            // boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s0(
+                            //     tx_.check_overlap(
+                            //         particle_shape_type(np0, s0.radius()),
+                            //         pp.first));
+                            // boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped_s1(
+                            //     tx_.check_overlap(
+                            //         particle_shape_type(np1, s1.radius()),
+                            //         pp.first));
+                            // if (!(overlapped_s0 && overlapped_s0->size() > 0)
+                            //     && !(overlapped_s1 && overlapped_s1->size() > 0))
+                            //     break;
+
+                            const particle_shape_type sphere1(np0, s0.radius());
+                            const particle_shape_type sphere2(np1, s1.radius());
+                            if (tx_.no_overlap(sphere1, pp.first)
+                                && tx_.no_overlap(sphere2, pp.first))
+                            {
                                 break;
+                            }
                         }
 
                         if (vc_)
@@ -340,10 +355,16 @@ private:
                                             pp1.second.position(),
                                             pp0.second.position()), s0.D())),
                                     (s0.D() + s1.D()))));
-                        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-                            tx_.check_overlap(particle_shape_type(new_pos, sp.radius()),
-                                              pp0.first, pp1.first));
-                        if (overlapped && overlapped->size() > 0)
+                        // boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+                        //     tx_.check_overlap(particle_shape_type(new_pos, sp.radius()),
+                        //                       pp0.first, pp1.first));
+                        // if (overlapped && overlapped->size() > 0)
+                        // {
+                        //     throw propagation_error("no space");
+                        // }
+                        if (!tx_.no_overlap(
+                            particle_shape_type(new_pos, sp.radius()),
+                            pp0.first, pp1.first))
                         {
                             throw propagation_error("no space");
                         }
