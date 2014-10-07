@@ -14,6 +14,7 @@
 #include "VolumeClearer.hpp"
 
 #include "NetworkRulesAdapter.hpp"
+#include "ReactionRecorderWrapper.hpp"
 #include <ecell4/core/Simulator.hpp>
 
 
@@ -23,7 +24,8 @@ struct ParticleSimulatorTraitsBase
     typedef Tworld_ world_type;
     typedef Real rate_type;
     typedef Real time_type;
-    typedef int reaction_rule_id_type;
+    // typedef int reaction_rule_id_type;
+    typedef ecell4::ReactionRule reaction_rule_id_type;
     typedef ReactionRuleInfo<
             reaction_rule_id_type,
             typename world_type::traits_type::species_id_type,
@@ -119,7 +121,8 @@ public:
         const boost::shared_ptr<ecell4_model_type>& ecell4_model)
         : world_(world), model_(ecell4_model),
         network_rules_(new network_rules_type(ecell4_model)),
-        rrec_(), dt_(0.), num_steps_(0), paranoiac_(false)
+        rrec_(new ReactionRecorderWrapper<reaction_record_type>()),
+        dt_(0.), num_steps_(0), paranoiac_(false)
     {
         world_->bind_to(model_);
     }
@@ -134,15 +137,15 @@ public:
         return network_rules_;
     }
 
-    boost::shared_ptr<reaction_recorder_type> const& reaction_recorder() const
-    {
-        return rrec_;
-    }
+    // boost::shared_ptr<reaction_recorder_type> const& reaction_recorder() const
+    // {
+    //     return rrec_;
+    // }
 
-    boost::shared_ptr<reaction_recorder_type>& reaction_recorder()
-    {
-        return rrec_;
-    }
+    // boost::shared_ptr<reaction_recorder_type>& reaction_recorder()
+    // {
+    //     return rrec_;
+    // }
 
     // rng_type& rng() const
     // {
@@ -197,12 +200,6 @@ public:
         std::cerr << "WARN: set_dt(const Real&) was just ignored." << std::endl;
     }
 
-    virtual std::vector<ecell4::ReactionRule> last_reactions() const
-    {
-        std::cerr << "WARN: Not implemented yet." << std::endl;
-        return std::vector<ecell4::ReactionRule>();
-    }
-
     virtual void set_t(const Real& t)
     {
         (*world_).set_t(t);
@@ -223,6 +220,7 @@ protected:
     time_type dt_;
     int num_steps_;
     bool paranoiac_;
+
 };
 
 #endif /* PARTICLE_SIMULATOR_HPP */

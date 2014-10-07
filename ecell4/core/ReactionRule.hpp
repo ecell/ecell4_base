@@ -25,12 +25,10 @@ public:
     typedef std::vector<Species> reactant_container_type;
     typedef std::vector<Species> product_container_type;
 
-    typedef int identifier_type;
-
 public:
 
     ReactionRule()
-        : k_(0), reactants_(), products_(), id_(-1)
+        : k_(0), reactants_(), products_()
     {
         ;
     }
@@ -86,20 +84,6 @@ public:
         products_.push_back(sp);
     }
 
-    identifier_type id() const
-    {
-        return id_;
-    }
-
-    void set_id(const identifier_type id)
-    {
-        if (id < 0)
-        {
-            throw std::invalid_argument("Id must be positive.");
-        }
-        id_ = id;
-    }
-
     const std::string as_string() const;
     Integer count(const reactant_container_type& reactants) const;
     std::vector<ReactionRule> generate(const reactant_container_type& reactants) const;
@@ -109,7 +93,6 @@ protected:
     Real k_;
     reactant_container_type reactants_;
     product_container_type products_;
-    identifier_type id_;
 };
 
 inline bool operator<(const ReactionRule& lhs, const ReactionRule& rhs)

@@ -154,7 +154,7 @@ protected:
                 // const ::SpeciesTypeID sid1(find(*r));
                 const species_id_type sid1(r->name());
                 reactants.push_back(sid1);
-                return reaction_rule_type(rr.id(), rate, reactants, products);
+                return reaction_rule_type(rr, rate, reactants, products);
             }
             break;
         case 2:
@@ -166,7 +166,7 @@ protected:
                 // const ::SpeciesTypeID sid2(find(*r));
                 const species_id_type sid2(r->name());
                 reactants.push_back(sid2);
-                return reaction_rule_type(rr.id(), rate, reactants, products);
+                return reaction_rule_type(rr, rate, reactants, products);
             }
             break;
         default:

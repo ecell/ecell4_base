@@ -43,6 +43,7 @@
 #include "GreensFunction3DAbs.hpp"
 #include "GreensFunction3D.hpp"
 
+
 template<typename Tworld_>
 struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
 {
@@ -1235,6 +1236,12 @@ public:
             retval = false;
         }
         return retval;
+    }
+
+    virtual std::vector<ecell4::ReactionRule> last_reactions() const
+    {
+        return (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
+            base_type::rrec_.get())).last_reactions();
     }
 
 protected:
@@ -3392,6 +3399,9 @@ protected:
             BOOST_ASSERT(check());
 
         ++base_type::num_steps_;
+
+        (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
+            base_type::rrec_.get())).clear();
 
         event_id_pair_type ev(scheduler_.pop());
         this->set_t(ev.second->time());

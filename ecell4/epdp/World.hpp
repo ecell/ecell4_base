@@ -289,13 +289,29 @@ public:
             if ((*i).second.sid() != pi_pair.second.sid())
             {
                 particle_pool_[(*i).second.sid()].erase((*i).first);
-                particle_pool_[pi_pair.second.sid()].insert(pi_pair.first);
+
+                typename per_species_particle_id_set::iterator
+                    j(particle_pool_.find(pi_pair.second.sid()));
+                if (j == particle_pool_.end())
+                {
+                    this->add_species(pi_pair.second.sid());
+                    j = particle_pool_.find(pi_pair.second.sid());
+                }
+                (*j).second.insert(pi_pair.first);
             }
             base_type::pmat_.update(i, pi_pair);
             return false;
         }
+
         BOOST_ASSERT(base_type::update_particle(pi_pair));
-        particle_pool_[pi_pair.second.sid()].insert(pi_pair.first);
+        typename per_species_particle_id_set::iterator
+            k(particle_pool_.find(pi_pair.second.sid()));
+        if (k == particle_pool_.end())
+        {
+            this->add_species(pi_pair.second.sid());
+            k = particle_pool_.find(pi_pair.second.sid());
+        }
+        (*k).second.insert(pi_pair.first);
         return true;
     }
 
@@ -333,9 +349,9 @@ public:
         typename species_map::const_iterator i(species_map_.find(sid));
         if (species_map_.end() == i)
         {
-            // return this->add_species(sid);
-            throw not_found(std::string("Unknown species (id=")
-                + boost::lexical_cast<std::string>(sid) + ")");
+            return this->add_species(sid);
+            // throw not_found(std::string("Unknown species (id=")
+            //     + boost::lexical_cast<std::string>(sid) + ")");
         }
         return (*i).second;
     }

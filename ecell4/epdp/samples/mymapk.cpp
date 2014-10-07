@@ -41,7 +41,8 @@ int main(int argc, char **argv)
     // Traits typedefs
     // {{{
     typedef ::World< ::CyclicWorldTraits<Real> > world_type;
-    typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> > simulator_type;
+    typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> >
+        simulator_type;
     typedef simulator_type::multi_type multi_type;
     // }}}
 
@@ -62,13 +63,16 @@ int main(int argc, char **argv)
 
     // add ::SpeciesType to ::ParticleModel
     // {{{
-    ecell4::Species sp1(std::string("A"), std::string("2.5e-09"), std::string("1e-12"));
+    ecell4::Species sp1(
+        std::string("A"), std::string("2.5e-09"), std::string("1e-12"));
     model->add_species_attribute(sp1);
 
-    ecell4::Species sp2(std::string("B"), std::string("2.5e-09"), std::string("1e-12"));
+    ecell4::Species sp2(
+        std::string("B"), std::string("2.5e-09"), std::string("1e-12"));
     model->add_species_attribute(sp2);
 
-    ecell4::Species sp3(std::string("C"), std::string("2.5e-09"), std::string("1e-12"));
+    ecell4::Species sp3(
+        std::string("C"), std::string("2.5e-09"), std::string("1e-12"));
     model->add_species_attribute(sp3);
     // }}}
 
@@ -106,19 +110,20 @@ int main(int argc, char **argv)
 
     // add ecell4::Species( ::SpeciesInfo) to ::World
     // {{{
-    world->add_species(ecell4::Species("A"));
-    world->add_species(ecell4::Species("B"));
-    world->add_species(ecell4::Species("C"));
+    // world->add_species(ecell4::Species("A"));
+    // world->add_species(ecell4::Species("B"));
+    // world->add_species(ecell4::Species("C"));
     // }}}
 
     // Thorow particles into world at random
     // {{{
     world->add_molecules(ecell4::Species("A"), N);
 
-    std::vector<std::pair<ecell4::ParticleID, ecell4::Particle> >
-        particles(world->list_particles());
-    for (std::vector<std::pair<ecell4::ParticleID, ecell4::Particle> >::const_iterator
-        i(particles.begin()); i != particles.end(); ++i)
+    typedef std::vector<std::pair<ecell4::ParticleID, ecell4::Particle> >
+        particle_id_pair_list;
+    const particle_id_pair_list particles(world->list_particles());
+    for (particle_id_pair_list::const_iterator i(particles.begin());
+        i != particles.end(); ++i)
     {
         const ecell4::Position3 pos((*i).second.position());
         std::cout << "(" << pos[0] << pos[1] << pos[2] << ")" << std::endl;
@@ -136,8 +141,7 @@ int main(int argc, char **argv)
     // EGFRDSimulator instance generated
     // {{{
     boost::shared_ptr<simulator_type> sim(
-        new simulator_type(
-            world, model, dissociation_retry_moves));
+        new simulator_type(world, model, dissociation_retry_moves));
     sim->initialize();
     // }}}
 
@@ -150,9 +154,19 @@ int main(int argc, char **argv)
         << world->num_molecules_exact(sp3) << "\t" << std::endl;
     // for (int i(0); i < 10; i++)
     for (int i(0); i < 100; i++)
+    // for (int i(0); i < 10000; i++)
     {
         next_time += dt;
-        while (sim->step(next_time)) {};
+        while (sim->step(next_time))
+        {
+            // if (sim->last_reactions().size() > 0)
+            // {
+            //     std::cout << sim->t() << "\t"
+            //         << world->num_molecules_exact(sp1) << "\t"
+            //         << world->num_molecules_exact(sp2) << "\t"
+            //         << world->num_molecules_exact(sp3) << "\t" << std::endl;
+            // }
+        }
 
         std::cout << sim->t() << "\t"
             << world->num_molecules_exact(sp1) << "\t"

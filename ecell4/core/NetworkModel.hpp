@@ -37,8 +37,6 @@ protected:
                      std::vector<reaction_rule_container_type::size_type> >
         second_order_reaction_rules_map_type;
 
-    typedef ReactionRule::identifier_type reaction_rule_id_type;
-
 public:
 
     NetworkModel()
