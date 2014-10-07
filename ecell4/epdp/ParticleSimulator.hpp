@@ -6,7 +6,7 @@
 #include "Sphere.hpp"
 #include "Cylinder.hpp"
 #include "Box.hpp"
-#include "NetworkRules.hpp"
+#include "utils/range_support.hpp"
 //#include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
 #include "ReactionRecorder.hpp"
@@ -98,13 +98,13 @@ public:
     typedef Plane plane_type;
 
     typedef typename traits_type::network_rules_type network_rules_type;
-    typedef typename world_type::traits_type::rng_type rng_type;
     typedef typename traits_type::time_type time_type;
     typedef typename traits_type::reaction_record_type reaction_record_type;
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
     typedef typename traits_type::volume_clearer_type volume_clearer_type;
 
-    typedef ecell4::Model ecell4_model_type;
+    typedef typename world_type::traits_type::rng_type rng_type;
+    typedef typename world_type::traits_type::model_type model_type;
 
 public:
 
@@ -118,7 +118,7 @@ public:
 
     ParticleSimulator(
         const boost::shared_ptr<world_type>& world,
-        const boost::shared_ptr<ecell4_model_type>& ecell4_model)
+        const boost::shared_ptr<model_type>& ecell4_model)
         : world_(world), model_(ecell4_model),
         network_rules_(new network_rules_type(ecell4_model)),
         rrec_(new ReactionRecorderWrapper<reaction_record_type>()),
@@ -205,14 +205,14 @@ public:
         (*world_).set_t(t);
     }
 
-    const boost::shared_ptr<ecell4_model_type>& model()
+    const boost::shared_ptr<model_type>& model()
     {
         return model_;
     }
 
 protected:
     boost::shared_ptr<world_type> world_;
-    boost::shared_ptr<ecell4_model_type> model_; // ecell4
+    boost::shared_ptr<model_type> model_; // ecell4
     boost::shared_ptr<network_rules_type const> network_rules_;
     boost::shared_ptr<reaction_recorder_type> rrec_;
     // rng_type& rng_;

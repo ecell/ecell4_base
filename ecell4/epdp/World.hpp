@@ -67,11 +67,13 @@ struct WorldTraitsBase
     typedef ecell4::Particle particle_type;
     typedef Sphere particle_shape_type;
     typedef std::string structure_id_type;
-    typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;
     typedef ecell4::Position3 point_type;
     typedef typename particle_type::position_type position_type;
     typedef ecell4::GSLRandomNumberGenerator rng_type;
     typedef Structure<Tderived_> structure_type;
+
+    typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type>
+        species_info_type; // species_type;
 
     // typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
     typedef std::pair<particle_id_type, particle_type> particle_id_pair;
@@ -208,7 +210,7 @@ public:
     typedef ParticleContainerBase<World> base_type;
     typedef ParticleContainer<traits_type> particle_container_type;
     typedef typename traits_type::length_type length_type;
-    typedef typename traits_type::species_type species_type;
+    typedef typename traits_type::species_info_type species_info_type;
     typedef typename traits_type::position_type position_type;
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_id_type particle_id_type;
@@ -225,7 +227,7 @@ public:
     typedef typename traits_type::model_type model_type;
 
 protected:
-    typedef std::map<species_id_type, species_type> species_map;
+    typedef std::map<species_id_type, species_info_type> species_map;
     typedef std::map<structure_id_type, boost::shared_ptr<structure_type> > structure_map;
     typedef std::set<particle_id_type> particle_id_set;
     typedef std::map<species_id_type, particle_id_set> per_species_particle_id_set;
@@ -275,7 +277,7 @@ public:
     virtual particle_id_pair new_particle(species_id_type const& sid,
             position_type const& pos)
     {
-        species_type const& species(get_species(sid));
+        species_info_type const& species(get_species(sid));
         particle_id_pair retval(pidgen_(),
             particle_type(sid, pos, species.radius(), species.D()));
         update_particle(retval);
@@ -330,7 +332,7 @@ public:
         return true;
     }
 
-    void add_species(species_type const& species)
+    void add_species(species_info_type const& species)
     {
         species_map_[species.id()] = species;
         particle_pool_[species.id()] = particle_id_set();
@@ -341,12 +343,12 @@ public:
     //     MoleculeInfo const &info,
     //     structure_id_type structure_id = structure_id_type("world"))
     // {
-    //     species_type sp(sid, info.D, info.radius, structure_id);
+    //     species_info_type sp(sid, info.D, info.radius, structure_id);
     //     species_map_[sp.id()] = sp;
     //     particle_pool_[sp.id()] = particle_id_set();
     // }
 
-    virtual species_type const& get_species(species_id_type const& sid)
+    virtual species_info_type const& get_species(species_id_type const& sid)
     {
         typename species_map::const_iterator i(species_map_.find(sid));
         if (species_map_.end() == i)
@@ -358,7 +360,7 @@ public:
         return (*i).second;
     }
 
-    species_type const& find_species(species_id_type const& sid) const
+    species_info_type const& find_species(species_id_type const& sid) const
     {
         typename species_map::const_iterator i(species_map_.find(sid));
         if (species_map_.end() == i)
@@ -657,7 +659,7 @@ public:
     new_particle(const ecell4::Species& sp, const position_type& pos)
     {
         const species_id_type sid(sp.serial());
-        species_type const& spinfo(get_species(sid));
+        species_info_type const& spinfo(get_species(sid));
         return new_particle(particle_type(sid, pos, spinfo.radius(), spinfo.D()));
     }
 
@@ -761,17 +763,17 @@ public:
         return info;
     }
 
-    // species_type get_molecule_info(const ecell4::Species &sp) const
+    // species_info_type get_molecule_info(const ecell4::Species &sp) const
     // {
     //     const ecell4::Species::serial_type sid(sp.serial());
     //     const Real D(std::atof(sp.get_attribute("D").c_str()));
     //     const Real radius(std::atof(sp.get_attribute("radius").c_str()));
-    //     const typename species_type::structure_id_type
+    //     const typename species_info_type::structure_id_type
     //         structure_id(
     //                 sp.has_attribute("structure_id")?
     //                   sp.get_attribute("structure_id"):
     //                   structure_id_type("world"));
-    //     return species_type(sid, D, radius, structure_id);
+    //     return species_info_type(sid, D, radius, structure_id);
     // }
 
     // MoleculeInfo get_molecule_info(const ecell4::Species &sp) const
@@ -782,19 +784,19 @@ public:
     //     return info;
     // }
 
-    /** an adapter function to "void add_species(species_type const&)".
+    /** an adapter function to "void add_species(species_info_type const&)".
      */
 
-    const species_type& add_species(const species_id_type& sid)
+    const species_info_type& add_species(const species_id_type& sid)
     {
         return this->add_species(ecell4::Species(sid));
     }
 
-    const species_type& add_species(const ecell4::Species& sp)
+    const species_info_type& add_species(const ecell4::Species& sp)
     {
         MoleculeInfo info(get_molecule_info(sp));
-        species_type spinfo(sp.serial(), info.D, info.radius,
-            static_cast<typename species_type::structure_id_type>(info.structure_id));
+        species_info_type spinfo(sp.serial(), info.D, info.radius,
+            static_cast<typename species_info_type::structure_id_type>(info.structure_id));
         this->add_species(spinfo);
         return species_map_[spinfo.id()];
     }

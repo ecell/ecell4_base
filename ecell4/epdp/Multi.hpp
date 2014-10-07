@@ -30,7 +30,7 @@ public:
 
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_shape_type particle_shape_type;
-    typedef typename traits_type::species_type species_type;
+    typedef typename traits_type::species_info_type species_info_type;
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::position_type position_type;
     typedef typename traits_type::particle_id_type particle_id_type;
@@ -70,12 +70,12 @@ public:
         return world_.world_size();
     }
 
-    virtual species_type const& find_species(species_id_type const& id) const
+    virtual species_info_type const& find_species(species_id_type const& id) const
     {
         return world_.find_species(id);
     }
 
-    virtual species_type const& get_species(species_id_type const& id)
+    virtual species_info_type const& get_species(species_id_type const& id)
     {
         return world_.get_species(id);
     }
@@ -234,7 +234,7 @@ public:
     typedef Domain<traits_type> base_type;
     typedef typename traits_type::world_type::particle_type particle_type;
     typedef typename traits_type::world_type::particle_shape_type particle_shape_type;
-    typedef typename traits_type::world_type::species_type species_type;
+    typedef typename traits_type::world_type::species_info_type species_info_type;
     typedef typename traits_type::world_type::species_id_type species_id_type;
     typedef typename traits_type::world_type::position_type position_type;
     typedef typename traits_type::world_type::particle_id_type particle_id_type;

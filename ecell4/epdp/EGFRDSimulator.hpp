@@ -49,12 +49,15 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
 {
     typedef ParticleSimulatorTraitsBase<Tworld_> base_type;
     typedef Tworld_ world_type;
+
     typedef ShellID shell_id_type;
     typedef DomainID domain_id_type;
     typedef SerialIDGenerator<shell_id_type> shell_id_generator;
-    typedef SerialIDGenerator<domain_id_type> domain_id_generator; typedef Domain<EGFRDSimulatorTraitsBase> domain_type;
+    typedef SerialIDGenerator<domain_id_type> domain_id_generator;
+    typedef Domain<EGFRDSimulatorTraitsBase> domain_type;
     typedef std::pair<const domain_id_type, boost::shared_ptr<domain_type> > domain_id_pair;
     typedef EventScheduler<typename base_type::time_type> event_scheduler_type;
+
     typedef typename event_scheduler_type::identifier_type event_id_type;
     typedef typename event_scheduler_type::Event event_type;
     typedef typename event_scheduler_type::value_type event_id_pair_type;
@@ -167,24 +170,35 @@ class EGFRDSimulator: public ParticleSimulator<Ttraits_>
 public:
     typedef Ttraits_ traits_type;
     typedef ParticleSimulator<Ttraits_> base_type;
+
     typedef typename base_type::sphere_type sphere_type;
     typedef typename base_type::cylinder_type cylinder_type;
+    typedef typename base_type::model_type model_type;
+
     typedef typename traits_type::world_type world_type;
     typedef typename traits_type::domain_id_type domain_id_type;
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::template shell_generator<sphere_type>::type spherical_shell_type;
     typedef typename traits_type::template shell_generator<cylinder_type>::type cylindrical_shell_type;
-    typedef std::pair<const shell_id_type, spherical_shell_type> spherical_shell_id_pair;
-    typedef std::pair<const shell_id_type, cylindrical_shell_type> cylindrical_shell_id_pair;
+    typedef typename traits_type::domain_type domain_type;
+    typedef typename traits_type::domain_id_pair domain_id_pair;
+    typedef typename traits_type::time_type time_type;
     typedef typename traits_type::shell_id_generator shell_id_generator;
     typedef typename traits_type::domain_id_generator domain_id_generator;
     typedef typename traits_type::network_rules_type network_rules_type;
+    typedef typename traits_type::reaction_record_type reaction_record_type;
+    typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
+    typedef typename traits_type::event_scheduler_type event_scheduler_type;
+    typedef typename traits_type::event_type event_type;
+    typedef typename traits_type::event_id_type event_id_type;
+    typedef typename traits_type::event_id_pair_type event_id_pair_type;
+
     typedef typename world_type::traits_type::length_type length_type;
     typedef typename world_type::traits_type::position_type position_type;
     typedef typename world_type::traits_type::rng_type rng_type;
     typedef typename world_type::traits_type::particle_type particle_type;
     typedef typename world_type::traits_type::D_type D_type;
-    typedef typename world_type::traits_type::species_type species_type;
+    typedef typename world_type::traits_type::species_info_type species_info_type;
     typedef typename world_type::traits_type::species_id_type species_id_type;
     typedef typename world_type::traits_type::structure_type structure_type;
     typedef typename world_type::particle_shape_type particle_shape_type;
@@ -198,9 +212,8 @@ public:
     typedef typename world_type::traits_type::planar_surface_type planar_surface_type;
     typedef typename world_type::traits_type::cuboidal_region_type cuboidal_region_type;
 
-    typedef typename traits_type::domain_type domain_type;
-    typedef typename traits_type::domain_id_pair domain_id_pair;
-    typedef typename traits_type::time_type time_type;
+    typedef std::pair<const shell_id_type, spherical_shell_type> spherical_shell_id_pair;
+    typedef std::pair<const shell_id_type, cylindrical_shell_type> cylindrical_shell_id_pair;
 
     typedef Single<traits_type> single_type;
     typedef Pair<traits_type> pair_type;
@@ -211,15 +224,7 @@ public:
     typedef AnalyticalPair<traits_type, spherical_shell_type> spherical_pair_type;
     typedef AnalyticalPair<traits_type, cylindrical_shell_type> cylindrical_pair_type;
 
-    typedef typename traits_type::reaction_record_type reaction_record_type;
-    typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
-    typedef typename traits_type::event_scheduler_type event_scheduler_type;
-    typedef typename traits_type::event_type event_type;
-    typedef typename traits_type::event_id_type event_id_type;
-    typedef typename traits_type::event_id_pair_type event_id_pair_type;
     typedef boost::variant<boost::none_t, spherical_shell_type, cylindrical_shell_type> shell_variant_type;
-
-    typedef typename base_type::ecell4_model_type ecell4_model_type;
 
     enum domain_kind
     {
@@ -922,7 +927,7 @@ public:
 
     EGFRDSimulator(
         const boost::shared_ptr<world_type>& world,
-        const boost::shared_ptr<ecell4_model_type>& ecell4_model,
+        const boost::shared_ptr<model_type>& ecell4_model,
         int dissociation_retry_moves = 1, Real bd_dt_factor = 1e-5,
         length_type user_max_shell_size = std::numeric_limits<length_type>::infinity())
         : base_type(world, ecell4_model),
@@ -1536,7 +1541,7 @@ protected:
             domain_kind& kind;
         };
 
-        species_type const& species((*base_type::world_).find_species(p.second.sid()));
+        species_info_type const& species((*base_type::world_).find_species(p.second.sid()));
         dynamic_cast<particle_simulation_structure_type const&>(*(*base_type::world_).get_structure(species.structure_id())).accept(factory(this, p, did, new_single, kind));
         boost::shared_ptr<domain_type> const retval(new_single);
         domains_.insert(std::make_pair(did, retval));
@@ -1632,7 +1637,7 @@ protected:
             domain_kind& kind;
         };
 
-        species_type const& species((*base_type::world_).find_species(p0.second.sid()));
+        species_info_type const& species((*base_type::world_).find_species(p0.second.sid()));
         dynamic_cast<particle_simulation_structure_type&>(*(*base_type::world_).get_structure(species.structure_id())).accept(factory(this, p0, p1, com, iv, shell_size, did, new_pair, kind));
 
         boost::shared_ptr<domain_type> const retval(new_pair);
@@ -2098,7 +2103,7 @@ protected:
     bool attempt_single_reaction(single_type& domain)
     {
         const particle_id_pair reactant(domain.particle());
-        const species_type reactant_species((*base_type::world_).find_species(reactant.second.sid()));
+        const species_info_type reactant_species((*base_type::world_).find_species(reactant.second.sid()));
         reaction_rules const& rules((*base_type::network_rules_).query_reaction_rule(reactant.second.sid()));
         if (::size(rules) == 0)
         {
@@ -2123,7 +2128,7 @@ protected:
             break;
         case 1: 
             {
-                species_type const& product_species(
+                species_info_type const& product_species(
                     (*base_type::world_).get_species(r.get_products()[0]));
 
                 if (reactant_species.radius() < product_species.radius())
@@ -2151,7 +2156,7 @@ protected:
             break;
         case 2:
             {
-                species_type const* const product_species[] = {
+                species_info_type const* const product_species[] = {
                     &(*base_type::world_).get_species(r.get_products()[0]),
                     &(*base_type::world_).get_species(r.get_products()[1])
                 };
@@ -3280,7 +3285,7 @@ protected:
                 {
                 case 1:
                     {
-                        species_type const& new_species(
+                        species_info_type const& new_species(
                             (*base_type::world_).get_species(
                                 r.get_products()[0]));
 

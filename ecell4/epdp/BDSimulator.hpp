@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <limits>
 #include <boost/foreach.hpp>
-#include "NetworkRules.hpp"
 #include "BDPropagator.hpp"
 #include "World.hpp"
 #include "ParticleSimulator.hpp"
@@ -24,7 +23,7 @@ public:
     typedef typename traits_type::world_type world_type;
     typedef typename world_type::traits_type::rng_type rng_type;
     typedef typename world_type::species_id_type species_id_type;
-    typedef typename world_type::species_type species_type;
+    typedef typename world_type::species_info_type species_info_type;
     typedef typename traits_type::time_type time_type;
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef typename traits_type::reaction_rule_type reaction_rule_type;
@@ -83,7 +82,7 @@ public:
     {
         Real D_max(0.), radius_min(std::numeric_limits<Real>::max());
 
-        BOOST_FOREACH(species_type s, world.get_species())
+        BOOST_FOREACH(species_info_type s, world.get_species())
         {
             if (D_max < s.D())
                 D_max = s.D();
