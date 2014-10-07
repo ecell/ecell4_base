@@ -11,7 +11,7 @@ struct SpeciesInfo
 {
     typedef Tid_ identifier_type;
     typedef TD_ D_type;
-    typedef TD_ v_type;
+    // typedef TD_ v_type;
     typedef Tlen_ length_type;
     typedef Tstructure_id_ structure_id_type;
 
@@ -50,20 +50,22 @@ struct SpeciesInfo
         return diffusion_coef_;
     }
     
-    v_type const& v() const
-    {
-        return drift_velocity_;
-    }
+    // v_type const& v() const
+    // {
+    //     return drift_velocity_;
+    // }
 
-    v_type& v()
-    {
-        return drift_velocity_;
-    }
+    // v_type& v()
+    // {
+    //     return drift_velocity_;
+    // }
 
     bool operator==(SpeciesInfo const& rhs) const
     {
-        return id_ == rhs.id() && diffusion_coef_ == rhs.D() && drift_velocity_ == rhs.v() &&
-                radius_ == rhs.radius() && structure_id_ == rhs.structure_id();
+        // return id_ == rhs.id() && diffusion_coef_ == rhs.D() && drift_velocity_ == rhs.v() &&
+        //         radius_ == rhs.radius() && structure_id_ == rhs.structure_id();
+        return (id_ == rhs.id() && diffusion_coef_ == rhs.D()
+            && radius_ == rhs.radius() && structure_id_ == rhs.structure_id());
     }
 
     bool operator!=(SpeciesInfo const& rhs) const
@@ -73,15 +75,23 @@ struct SpeciesInfo
 
     SpeciesInfo() {}
 
-    SpeciesInfo(identifier_type const& id, D_type const& D = 0., 
-                length_type const& r = 0., structure_id_type const& s = "", v_type const& v = 0.) 
-        : id_(id), diffusion_coef_(D), drift_velocity_(v), radius_(r), structure_id_(s) {}
-  
+    // SpeciesInfo(identifier_type const& id, D_type const& D = 0., 
+    //             length_type const& r = 0., structure_id_type const& s = "", v_type const& v = 0.) 
+    //     : id_(id), diffusion_coef_(D), drift_velocity_(v), radius_(r), structure_id_(s) {}
+
+    SpeciesInfo(
+        identifier_type const& id, D_type const& D = 0.,
+        length_type const& r = 0., structure_id_type const& s = "")
+        : id_(id), diffusion_coef_(D), radius_(r), structure_id_(s)
+    {
+        ;
+    }
 
 private:
+
     identifier_type id_;
     D_type diffusion_coef_;
-    v_type drift_velocity_;
+    // v_type drift_velocity_;
     length_type radius_;
     structure_id_type structure_id_;
 };

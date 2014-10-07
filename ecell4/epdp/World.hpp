@@ -60,7 +60,7 @@ struct WorldTraitsBase
     typedef ecell4::Real length_type;
     typedef ecell4::Real D_type;
     typedef ecell4::Real time_type;
-    typedef TD_ v_type;
+    // typedef TD_ v_type;
     typedef ecell4::ParticleID particle_id_type;
     typedef ecell4::SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef ecell4::Species::serial_type species_id_type; // std::string
@@ -68,7 +68,6 @@ struct WorldTraitsBase
     typedef Sphere particle_shape_type;
     typedef std::string structure_id_type;
     typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type> species_type;
-    typedef species_type molecule_info;
     typedef ecell4::Position3 point_type;
     typedef typename particle_type::position_type position_type;
     typedef ecell4::GSLRandomNumberGenerator rng_type;
@@ -89,6 +88,8 @@ struct WorldTraitsBase
     typedef CylindricalSurface<Tderived_> cylindrical_surface_type;
     typedef PlanarSurface<Tderived_> planar_surface_type;
     typedef CuboidalRegion<Tderived_> cuboidal_region_type;
+
+    typedef ecell4::Model model_type;
 
     static const Real TOLERANCE = 1e-7;
 };
@@ -221,6 +222,7 @@ public:
     typedef typename traits_type::particle_id_pair particle_id_pair;
     typedef typename traits_type::particle_id_pair_and_distance_list
         particle_id_pair_and_distance_list;
+    typedef typename traits_type::model_type model_type;
 
 protected:
     typedef std::map<species_id_type, species_type> species_map;
@@ -628,9 +630,9 @@ public:
         return retval;
     }
 
-    void bind_to(boost::shared_ptr<ecell4::Model> model)
+    void bind_to(boost::shared_ptr<model_type> model)
     {
-        if (boost::shared_ptr<ecell4::Model> bound_model = lock_model())
+        if (boost::shared_ptr<model_type> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -641,7 +643,7 @@ public:
         model_ = model;
     }
 
-    boost::shared_ptr<ecell4::Model> lock_model() const
+    boost::shared_ptr<model_type> lock_model() const
     {
         return model_.lock();
     }
@@ -737,7 +739,7 @@ public:
                 structure_id = sp.get_attribute("structure_id");
             }
         }
-        else if (boost::shared_ptr<ecell4::Model> bound_model = lock_model())
+        else if (boost::shared_ptr<model_type> bound_model = lock_model())
         {
             ecell4::Species attributed(bound_model->apply_species_attributes(sp));
 
@@ -820,7 +822,7 @@ private:
      */
     position_type edge_lengths_;
     boost::shared_ptr<rng_type> rng_;
-    boost::weak_ptr<ecell4::Model> model_;
+    boost::weak_ptr<model_type> model_;
 };
 
 #endif /* WORLD_HPP */
